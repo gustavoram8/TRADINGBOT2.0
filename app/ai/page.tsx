@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useTradingStore } from "@/store";
 import { fmtUSD, fmtPct, cn } from "@/lib/utils";
 import { Send, Trash2, Bot, User, Loader2 } from "lucide-react";
-import type { ChatMessage } from "@/lib/types";
+import type { ChatMessage, BacktestResult } from "@/lib/types";
 
 const QUICK_QUESTIONS = [
   "Analiza mi rendimiento general",
@@ -28,7 +28,7 @@ async function callAI(
   return data.reply;
 }
 
-function buildContext(backtestResult: ReturnType<typeof useTradingStore>["backtestResult"]): string {
+function buildContext(backtestResult: BacktestResult | null): string {
   if (!backtestResult) return "No hay datos de backtest disponibles.";
   const { metrics: m, trades, config } = backtestResult;
   return `
