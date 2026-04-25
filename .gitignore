@@ -1,0 +1,33 @@
+# Node / Next.js
+node_modules/
+.next/
+out/
+dist/
+.vercel/
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+*.pyc
+
+# Data cache
+data/cache/
+*.parquet
+
+# Env secrets
+.env
+.env.local
+.env.*.local
+.streamlit/secrets.toml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Reports output
+reports/*.txt
+reports/*.pdf

@@ -1,0 +1,88 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  background-color: #0d1117;
+  color: #e6edf3;
+  font-family: "Inter", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0d1117;
+}
+::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #58a6ff;
+}
+
+@layer components {
+  .card {
+    @apply bg-bg-secondary border border-border rounded-card p-5;
+  }
+
+  .card-sm {
+    @apply bg-bg-secondary border border-border rounded-card p-4;
+  }
+
+  .kpi-card {
+    @apply bg-bg-secondary border border-border rounded-card p-5 flex flex-col gap-1;
+  }
+
+  .btn-primary {
+    @apply bg-brand-dark hover:bg-brand-blue text-white font-medium px-4 py-2 rounded-md transition-colors text-sm;
+  }
+
+  .btn-secondary {
+    @apply bg-bg-tertiary hover:bg-border text-text-primary border border-border font-medium px-4 py-2 rounded-md transition-colors text-sm;
+  }
+
+  .badge-green {
+    @apply bg-fin-green/15 text-fin-green text-xs font-medium px-2 py-0.5 rounded-full;
+  }
+
+  .badge-red {
+    @apply bg-fin-red/15 text-fin-red text-xs font-medium px-2 py-0.5 rounded-full;
+  }
+
+  .badge-blue {
+    @apply bg-fin-blue/15 text-fin-blue text-xs font-medium px-2 py-0.5 rounded-full;
+  }
+
+  .tab-active {
+    @apply bg-brand-dark/20 text-brand-blue border-b-2 border-brand-blue;
+  }
+
+  .tab-inactive {
+    @apply text-text-secondary hover:text-text-primary hover:bg-bg-tertiary transition-colors;
+  }
+}
+
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  background-color: #1c2333 !important;
+  border: 1px solid #30363d !important;
+  border-radius: 6px !important;
+  color: #e6edf3 !important;
+}
+
+.recharts-cartesian-axis-tick-value {
+  fill: #8b949e !important;
+  font-size: 11px !important;
+}
