@@ -33,7 +33,7 @@ TP selection logic:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List, Optional, Tuple
+from typing import Generator, List, Optional, Tuple
 
 import pandas as pd
 
@@ -108,12 +108,22 @@ class SetupScorer:
         liq_map: LiquidityMap,
         fvg_high: FVGTracker,
         fvg_base: FVGTracker,
+        fvg_15m: Optional[FVGTracker] = None,
+        fvg_5m: Optional[FVGTracker] = None,
     ):
         self.structure  = structure_engine
         self.liq_map    = liq_map
-        self.fvg_high   = fvg_high   # Higher TF: used for path obstacles
-        self.fvg_base   = fvg_base   # Base TF: used for confirmations & protective FVG
+        self.fvg_high   = fvg_high   # 4H: path obstacles & short protective FVG
+        self.fvg_base   = fvg_base   # 1H: base confirmations
+        self.fvg_15m    = fvg_15m    # 15m (optional): finer entry confirmations
+        self.fvg_5m     = fvg_5m     # 5m (optional): finest entry confirmations
         self._current_bar: int = 0   # updated via set_bar() each bar
+
+    def _entry_trackers(self) -> Generator[Tuple[FVGTracker, str], None, None]:
+        """Yield (tracker, tf_name) from finest to coarsest entry-TF."""
+        for tracker, name in [(self.fvg_5m, "5m"), (self.fvg_15m, "15m"), (self.fvg_base, "base")]:
+            if tracker is not None:
+                yield tracker, name
 
     def set_bar(self, bar_idx: int):
         """Call once per bar so significance scores use correct age."""
@@ -230,21 +240,26 @@ class SetupScorer:
                 f"(max_sig={max_broken_sig:.1f} → +{broken_bonus:.1f})"
             )
 
-        # Base-TF bullish FVGs near price → potential protective FVG
-        bull_base_below = [
-            f for f in self.fvg_base.all_fvgs
-            if f.fvg_type == FVGType.BULLISH and f.is_active
-            and f.top <= price and price - f.top <= 150
-        ]
-        bull_base_below.sort(key=lambda f: price - f.top)
-
-        if bull_base_below:
-            bd.protective_fvg = bull_base_below[0]
-            bd.has_protective_fvg = True
-            bd.path_score += 1.0
-            bd.reasons.append(f"Protective bull FVG @ {bull_base_below[0].top:.1f}-{bull_base_below[0].bottom:.1f}")
+        # Gate C: protective bullish FVG below price for SL.
+        # Prefer finest TF (tightest SL), fall back to higher-TF.
+        for tracker, tf_name in self._entry_trackers():
+            candidates = [
+                f for f in tracker.all_fvgs
+                if f.fvg_type == FVGType.BULLISH and f.is_active
+                and f.top <= price and price - f.top <= 150
+            ]
+            if candidates:
+                candidates.sort(key=lambda f: price - f.top)
+                bd.protective_fvg = candidates[0]
+                bd.has_protective_fvg = True
+                bd.path_score += 1.0
+                bd.reasons.append(
+                    f"Protective bull FVG ({tf_name}) @ "
+                    f"{candidates[0].top:.1f}-{candidates[0].bottom:.1f}"
+                )
+                break
         else:
-            # Fallback: higher-TF bullish FVG below price
+            # Last resort: higher-TF bullish FVG below price
             ht_bull_below = self.fvg_high.get_nearest_protective_fvg(price, "long")
             if ht_bull_below:
                 bd.protective_fvg = ht_bull_below
@@ -387,28 +402,35 @@ class SetupScorer:
             bd.path_score -= 1.0
             bd.reasons.append(f"Heavy immediate obstacles weight={immediate_w:.1f} (PENALTY)")
 
-        # Base-TF bearish FVGs above price = downward intent confirmation
-        bear_base_above = [
-            f for f in self.fvg_base.all_fvgs
-            if f.fvg_type == FVGType.BEARISH and f.is_active and f.bottom >= price
-        ]
-        if bear_base_above:
-            bd.path_score += min(2.0, len(bear_base_above) * 0.75)
-            bd.reasons.append(f"{len(bear_base_above)} base-TF bearish FVG(s) above")
+        # Bearish FVGs above price in finest available TF = downward intent
+        for tracker, tf_name in self._entry_trackers():
+            bear_fine_above = [
+                f for f in tracker.all_fvgs
+                if f.fvg_type == FVGType.BEARISH and f.is_active and f.bottom >= price
+            ]
+            if bear_fine_above:
+                bd.path_score += min(2.0, len(bear_fine_above) * 0.75)
+                bd.reasons.append(f"{len(bear_fine_above)} {tf_name} bearish FVG(s) above")
+                break
 
-        # ── GATE C: protective bearish FVG for SL ─────────────────────
+        # Gate C: protective bearish FVG above price for SL.
+        # Prefer higher-TF (stronger resistance), fall back to finest entry TF.
         prot_ht = self.fvg_high.get_nearest_protective_fvg(price, "short")
         if prot_ht:
             bd.protective_fvg = prot_ht
             bd.has_protective_fvg = True
             bd.path_score += 1.0
-            bd.reasons.append(f"Protective higher-TF bear FVG @ {prot_ht.top:.1f}-{prot_ht.bottom:.1f}")
+            bd.reasons.append(
+                f"Protective higher-TF bear FVG @ {prot_ht.top:.1f}-{prot_ht.bottom:.1f}"
+            )
         else:
-            prot_base = self.fvg_base.get_nearest_protective_fvg(price, "short")
-            if prot_base:
-                bd.protective_fvg = prot_base
-                bd.has_protective_fvg = True
-                bd.reasons.append(f"Protective base-TF bear FVG")
+            for tracker, tf_name in self._entry_trackers():
+                prot = tracker.get_nearest_protective_fvg(price, "short")
+                if prot:
+                    bd.protective_fvg = prot
+                    bd.has_protective_fvg = True
+                    bd.reasons.append(f"Protective {tf_name} bear FVG")
+                    break
             else:
                 bd.reasons.append("No protective bearish FVG (GATE C fail)")
 

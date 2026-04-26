@@ -105,7 +105,11 @@ def step_download_data() -> dict[str, pd.DataFrame]:
     return data
 
 
-def step_training_backtest(df_1h: pd.DataFrame) -> dict:
+def step_training_backtest(
+    df_1h: pd.DataFrame,
+    df_15m: pd.DataFrame = None,
+    df_5m: pd.DataFrame = None,
+) -> dict:
     """Paso 2: Backtest en periodo de entrenamiento."""
     print("\n" + "=" * 60)
     print("  PASO 2: BACKTEST — ENTRENAMIENTO")
@@ -124,6 +128,8 @@ def step_training_backtest(df_1h: pd.DataFrame) -> dict:
         df_train,
         period_name="Training (Aug-Nov 2025)",
         verbose=False,
+        df_15m=df_15m,
+        df_5m=df_5m,
     )
 
     print("\n" + format_metrics_report(result["metrics"]))
@@ -158,7 +164,11 @@ def step_walk_forward_analysis(df_1h: pd.DataFrame) -> dict:
     return wfa_result
 
 
-def step_oos_backtest(df_1h: pd.DataFrame) -> dict:
+def step_oos_backtest(
+    df_1h: pd.DataFrame,
+    df_15m: pd.DataFrame = None,
+    df_5m: pd.DataFrame = None,
+) -> dict:
     """Paso 4: Backtest Out-of-Sample."""
     print("\n" + "=" * 60)
     print("  PASO 4: BACKTEST — OUT-OF-SAMPLE")
@@ -179,6 +189,8 @@ def step_oos_backtest(df_1h: pd.DataFrame) -> dict:
         df_oos,
         period_name="Out-of-Sample (Jan-Feb 2026)",
         verbose=False,
+        df_15m=df_15m,
+        df_5m=df_5m,
     )
 
     print("\n" + format_metrics_report(result["metrics"]))
@@ -330,23 +342,28 @@ def run_pipeline(quick: bool = False):
         return
 
     df_1h = data["1h"]
+    df_15m = data.get("15m")
+    df_5m  = data.get("5m")
 
     if quick:
         # Solo backtest rápido con todos los datos
-        result = run_backtest(df_1h, period_name="Backtest Rápido", verbose=True)
+        result = run_backtest(
+            df_1h, period_name="Backtest Rápido", verbose=True,
+            df_15m=df_15m, df_5m=df_5m,
+        )
         print("\n" + format_metrics_report(result["metrics"]))
         elapsed = time.time() - start_time
         print(f"\n  Tiempo total: {elapsed:.1f}s")
         return
 
     # ─── Paso 2: Training ───
-    train_result = step_training_backtest(df_1h)
+    train_result = step_training_backtest(df_1h, df_15m=df_15m, df_5m=df_5m)
 
     # ─── Paso 3: Walk-Forward ───
     wfa_result = step_walk_forward_analysis(df_1h)
 
     # ─── Paso 4: OOS ───
-    oos_result = step_oos_backtest(df_1h)
+    oos_result = step_oos_backtest(df_1h, df_15m=df_15m, df_5m=df_5m)
 
     # ─── Paso 5: Monte Carlo ───
     mc_result = None

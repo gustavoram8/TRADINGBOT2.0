@@ -7,6 +7,7 @@ la estrategia ICT, y genera las métricas de rendimiento.
 import os
 import sys
 from datetime import datetime
+from typing import Optional
 
 import backtrader as bt
 import numpy as np
@@ -38,6 +39,8 @@ def run_backtest(
     verbose: bool = True,
     plot: bool = False,
     strategy_params: dict = None,
+    df_15m: Optional[pd.DataFrame] = None,
+    df_5m: Optional[pd.DataFrame] = None,
 ) -> dict:
     """
     Ejecuta un backtest completo con Backtrader.
@@ -56,6 +59,10 @@ def run_backtest(
         Generar gráfico de Backtrader.
     strategy_params : dict
         Parámetros adicionales para la estrategia.
+    df_15m : pd.DataFrame, optional
+        Datos 15m. Solo se añaden si cubren el periodo completo del backtest.
+    df_5m : pd.DataFrame, optional
+        Datos 5m. Solo se añaden si cubren el periodo completo del backtest.
 
     Returns
     -------
@@ -96,6 +103,48 @@ def run_backtest(
         timeframe=bt.TimeFrame.Minutes,
         compression=240,
     )
+
+    # 15m feed — solo si cubre el periodo completo del backtest
+    if df_15m is not None and not df_15m.empty:
+        df_15m_bt = df_15m.copy()
+        if df_15m_bt.index.tz is not None:
+            df_15m_bt.index = df_15m_bt.index.tz_localize(None)
+        if df_15m_bt.index[0] <= df_bt.index[0]:
+            data_15m = bt.feeds.PandasData(
+                dataname=df_15m_bt,
+                datetime=None,
+                open="Open", high="High", low="Low",
+                close="Close", volume="Volume",
+                openinterest=-1,
+            )
+            cerebro.adddata(data_15m, name="15m")
+            print(f"  + 15m feed: {len(df_15m_bt)} bars added")
+        else:
+            print(
+                f"  ⚠ 15m data starts {df_15m_bt.index[0].date()}, "
+                f"backtest from {df_bt.index[0].date()} — 15m feed skipped"
+            )
+
+    # 5m feed — solo si cubre el periodo completo del backtest
+    if df_5m is not None and not df_5m.empty:
+        df_5m_bt = df_5m.copy()
+        if df_5m_bt.index.tz is not None:
+            df_5m_bt.index = df_5m_bt.index.tz_localize(None)
+        if df_5m_bt.index[0] <= df_bt.index[0]:
+            data_5m_feed = bt.feeds.PandasData(
+                dataname=df_5m_bt,
+                datetime=None,
+                open="Open", high="High", low="Low",
+                close="Close", volume="Volume",
+                openinterest=-1,
+            )
+            cerebro.adddata(data_5m_feed, name="5m")
+            print(f"  + 5m feed: {len(df_5m_bt)} bars added")
+        else:
+            print(
+                f"  ⚠ 5m data starts {df_5m_bt.index[0].date()}, "
+                f"backtest from {df_bt.index[0].date()} — 5m feed skipped"
+            )
 
     # =========================================================================
     # Configurar estrategia
@@ -168,6 +217,8 @@ def run_full_validation(
     df_train: pd.DataFrame,
     df_test: pd.DataFrame,
     period_name: str = "Full Validation",
+    df_15m: Optional[pd.DataFrame] = None,
+    df_5m: Optional[pd.DataFrame] = None,
 ) -> dict:
     """
     Ejecuta la validación completa:
@@ -195,6 +246,8 @@ def run_full_validation(
         df_train,
         period_name=f"{period_name} — Training",
         verbose=False,
+        df_15m=df_15m,
+        df_5m=df_5m,
     )
     results["train"] = train_result
     print(format_metrics_report(train_result["metrics"]))
@@ -209,6 +262,8 @@ def run_full_validation(
         df_test,
         period_name=f"{period_name} — OOS Test",
         verbose=False,
+        df_15m=df_15m,
+        df_5m=df_5m,
     )
     results["oos"] = oos_result
     print(format_metrics_report(oos_result["metrics"]))

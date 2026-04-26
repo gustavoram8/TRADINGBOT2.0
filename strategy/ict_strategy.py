@@ -110,31 +110,55 @@ class ICTStrategy(bt.Strategy):
 
     def __init__(self):
         # Data feeds
-        self.data_base = self.datas[0]       # Base TF (1H or 15m)
+        self.data_base = self.datas[0]
         self.data_4h = self.datas[1] if len(self.datas) > 1 else None
-        self.data_daily = self.datas[2] if len(self.datas) > 2 else None
 
-        # ATR indicator
-        # FVG and liquidity trackers
+        # Optional high-resolution feeds (added by run_backtest when available)
+        try:
+            self.data_15m = self.getdatabyname("15m")
+        except KeyError:
+            self.data_15m = None
+        try:
+            self.data_5m = self.getdatabyname("5m")
+        except KeyError:
+            self.data_5m = None
+
+        # FVG trackers — base, 4H, and optional 15m / 5m
         self.fvg_tracker = FVGTracker(
             dubious_break_pct=FVG_DUBIOUS_BREAK_PCT,
             dubious_wait_bars=FVG_DUBIOUS_WAIT_BARS,
         )
-        # Separate FVG tracker for 4H data (higher-TF obstacles / protective FVGs)
         self.fvg_tracker_4h = FVGTracker(
+            dubious_break_pct=FVG_DUBIOUS_BREAK_PCT,
+            dubious_wait_bars=FVG_DUBIOUS_WAIT_BARS,
+        )
+        self.fvg_tracker_15m = FVGTracker(
+            dubious_break_pct=FVG_DUBIOUS_BREAK_PCT,
+            dubious_wait_bars=FVG_DUBIOUS_WAIT_BARS,
+        )
+        self.fvg_tracker_5m = FVGTracker(
             dubious_break_pct=FVG_DUBIOUS_BREAK_PCT,
             dubious_wait_bars=FVG_DUBIOUS_WAIT_BARS,
         )
         self.liquidity_tracker = LiquidityTracker()
 
-        # New multi-TF modules
-        self.structure_engine = StructureEngine(["4h", "base"])
+        # Build TF list for structure engine based on available feeds
+        tf_list = ["4h", "base"]
+        if self.data_15m is not None:
+            tf_list.append("15m")
+        if self.data_5m is not None:
+            tf_list.append("5m")
+
+        # Multi-TF modules
+        self.structure_engine = StructureEngine(tf_list)
         self.liq_map = LiquidityMap()
         self.scorer = SetupScorer(
             structure_engine=self.structure_engine,
             liq_map=self.liq_map,
             fvg_high=self.fvg_tracker_4h,
             fvg_base=self.fvg_tracker,
+            fvg_15m=self.fvg_tracker_15m,
+            fvg_5m=self.fvg_tracker_5m,
         )
 
         # Risk managers
@@ -152,6 +176,8 @@ class ICTStrategy(bt.Strategy):
         self._bias_confidence: float = 0.0
         self._protective_fvg: Optional[FairValueGap] = None
         self._last_4h_len: int = 0
+        self._last_15m_len: int = 0
+        self._last_5m_len: int = 0
         self._ny_am_open_set: bool = False
         self._tp_price: Optional[float] = None
         self._sl_price: Optional[float] = None
@@ -347,6 +373,76 @@ class ICTStrategy(bt.Strategy):
                 self.data_4h.low[0],  self.data_4h.close[0],
                 pd.Timestamp(self.data_4h.datetime.datetime(0)),
             )
+
+        # ── 15m bars ──────────────────────────────────────────────────────────
+        if self.data_15m is not None:
+            new_15m = len(self.data_15m) - self._last_15m_len
+            if new_15m > 0 and len(self.data_15m) >= 3:
+                # Feed structure engine for all new 15m bars (oldest → newest)
+                for offset in range(new_15m - 1, -1, -1):
+                    self.structure_engine.update(
+                        "15m",
+                        self.data_15m.open[-offset],
+                        self.data_15m.high[-offset],
+                        self.data_15m.low[-offset],
+                        self.data_15m.close[-offset],
+                        pd.Timestamp(self.data_15m.datetime.datetime(-offset)),
+                    )
+                # FVG detection on most recent 3 bars of 15m
+                h2_15 = self.data_15m.high[-2]
+                h0_15 = self.data_15m.high[0]
+                l2_15 = self.data_15m.low[-2]
+                l0_15 = self.data_15m.low[0]
+                ts_15 = pd.Timestamp(self.data_15m.datetime.datetime(0))
+                bar_15 = self._last_15m_len + new_15m
+                if h2_15 < l0_15:
+                    self.fvg_tracker_15m.add_fvgs([FairValueGap(
+                        fvg_type=FVGType.BULLISH, top=l0_15, bottom=h2_15,
+                        timestamp=ts_15, timeframe="15m", candle_idx=bar_15,
+                    )])
+                if l2_15 > h0_15:
+                    self.fvg_tracker_15m.add_fvgs([FairValueGap(
+                        fvg_type=FVGType.BEARISH, top=l2_15, bottom=h0_15,
+                        timestamp=ts_15, timeframe="15m", candle_idx=bar_15,
+                    )])
+                self.fvg_tracker_15m.update(
+                    self.data_15m.high[0], self.data_15m.low[0], self.data_15m.close[0]
+                )
+                self._last_15m_len += new_15m
+
+        # ── 5m bars ───────────────────────────────────────────────────────────
+        if self.data_5m is not None:
+            new_5m = len(self.data_5m) - self._last_5m_len
+            if new_5m > 0 and len(self.data_5m) >= 3:
+                for offset in range(new_5m - 1, -1, -1):
+                    self.structure_engine.update(
+                        "5m",
+                        self.data_5m.open[-offset],
+                        self.data_5m.high[-offset],
+                        self.data_5m.low[-offset],
+                        self.data_5m.close[-offset],
+                        pd.Timestamp(self.data_5m.datetime.datetime(-offset)),
+                    )
+                h2_5 = self.data_5m.high[-2]
+                h0_5 = self.data_5m.high[0]
+                l2_5 = self.data_5m.low[-2]
+                l0_5 = self.data_5m.low[0]
+                ts_5 = pd.Timestamp(self.data_5m.datetime.datetime(0))
+                bar_5 = self._last_5m_len + new_5m
+                if h2_5 < l0_5:
+                    self.fvg_tracker_5m.add_fvgs([FairValueGap(
+                        fvg_type=FVGType.BULLISH, top=l0_5, bottom=h2_5,
+                        timestamp=ts_5, timeframe="5m", candle_idx=bar_5,
+                    )])
+                if l2_5 > h0_5:
+                    self.fvg_tracker_5m.add_fvgs([FairValueGap(
+                        fvg_type=FVGType.BEARISH, top=l2_5, bottom=h0_5,
+                        timestamp=ts_5, timeframe="5m", candle_idx=bar_5,
+                    )])
+                self.fvg_tracker_5m.update(
+                    self.data_5m.high[0], self.data_5m.low[0], self.data_5m.close[0]
+                )
+                self._last_5m_len += new_5m
 
         # PDH/PDL — al inicio de nuevo día
         current_date = self.data_base.datetime.date(0)
@@ -689,6 +785,8 @@ class ICTStrategy(bt.Strategy):
             self._update_context()
             self.fvg_tracker.cleanup_old()
             self.fvg_tracker_4h.cleanup_old()
+            self.fvg_tracker_15m.cleanup_old()
+            self.fvg_tracker_5m.cleanup_old()
 
         # Forced close check: 4:00 PM VET (UTC-4) — no exceptions
         if self.position and self._should_force_close():
