@@ -525,10 +525,27 @@ class ICTStrategy(bt.Strategy):
 
         price = self.data_base.close[0]
         self.scorer.set_bar(self._bar_count)
+        threshold = 12.0 if self.kill_switch.trades_today >= 1 else 8.0
+        long_bd, short_bd = self.scorer.score_both(price)
+
+        # Log both sides each bar so we can see what the scorer sees
+        self.log(f"SCORE {long_bd.log_str()}", "SCORE")
+        self.log(f"SCORE {short_bd.log_str()}", "SCORE")
+
         setup = self.scorer.best_setup(price, self.kill_switch.trades_today)
 
         if setup is not None:
             self._execute_entry(setup, price)
+        else:
+            # Log why neither direction qualified
+            for bd in (long_bd, short_bd):
+                reason = bd.rejection_reason()
+                if reason:
+                    self.log(
+                        f"  SKIP {bd.direction.upper()}: {reason} "
+                        f"(score={bd.total_score:.1f} need={threshold:.0f})",
+                        "SKIP",
+                    )
 
     def _execute_entry(self, setup: ScoreBreakdown, price: float):
         """Ejecuta una entrada basada en el ScoreBreakdown del scorer."""

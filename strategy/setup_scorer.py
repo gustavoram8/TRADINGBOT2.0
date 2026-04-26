@@ -48,6 +48,9 @@ from config.settings import (
     SCORER_CHOCH_LOOKBACK_BARS as CHOCH_LOOKBACK,
 )
 
+MIN_TP_DISTANCE_PTS = 25.0   # Hard filter: TP must be ≥ 25 points from entry
+MIN_RR_RATIO        = 1.0    # Hard filter: R:R must be ≥ 1:1
+
 
 # ---------------------------------------------------------------------------
 # Score breakdown
@@ -68,6 +71,11 @@ class ScoreBreakdown:
     has_sweep:          bool = False
     has_choch:          bool = False
     has_protective_fvg: bool = False
+    rr_filter_passed:   bool = True   # False = hard reject on R:R or TP distance
+
+    # R:R metrics (populated when both target and protective FVG are known)
+    rr_ratio:    float = 0.0
+    tp_distance: float = 0.0
 
     # Selected levels (filled in if gates pass)
     target_level:    Optional[LiquidityLevel] = None
@@ -77,16 +85,48 @@ class ScoreBreakdown:
 
     @property
     def gates_passed(self) -> bool:
-        return self.has_sweep and self.has_choch and self.has_protective_fvg
+        return (
+            self.has_sweep
+            and self.has_choch
+            and self.has_protective_fvg
+            and self.rr_filter_passed
+        )
 
     def log_str(self) -> str:
-        g = f"[S:{int(self.has_sweep)} C:{int(self.has_choch)} F:{int(self.has_protective_fvg)}]"
-        return (
-            f"{self.direction.upper()} {g} total={self.total_score:.1f} "
-            f"(swp={self.sweep_score:.1f} str={self.structure_score:.1f} "
+        """One-line summary with per-gate PASS/FAIL and score breakdown."""
+        sweep = "PASS" if self.has_sweep          else "FAIL"
+        choch = "PASS" if self.has_choch          else "FAIL"
+        fvg   = "PASS" if self.has_protective_fvg else "FAIL"
+        rr    = "PASS" if self.rr_filter_passed   else "FAIL"
+        gates = f"[Swp:{sweep} CHoCH:{choch} FVG:{fvg} RR:{rr}]"
+        scores = (
+            f"swp={self.sweep_score:.1f} str={self.structure_score:.1f} "
             f"path={self.path_score:.1f} tgt={self.target_score:.1f} "
-            f"mac={self.macro_score:.1f})"
+            f"mac={self.macro_score:.1f}"
         )
+        rr_str = f"RR={self.rr_ratio:.2f}:1 tp={self.tp_distance:.1f}pts"
+        return (
+            f"{self.direction.upper()} {gates} "
+            f"TOTAL={self.total_score:.1f} [{scores}] {rr_str}"
+        )
+
+    def rejection_reason(self) -> str:
+        """Short description of why this setup was rejected (empty if valid)."""
+        if self.gates_passed:
+            return ""
+        parts = []
+        if not self.has_sweep:
+            parts.append("no valid sweep")
+        if not self.has_choch:
+            parts.append("no CHoCH confirmed")
+        if not self.has_protective_fvg:
+            parts.append("no protective FVG")
+        if not self.rr_filter_passed:
+            parts.append(
+                f"R:R failed (tp={self.tp_distance:.1f}pts min={MIN_TP_DISTANCE_PTS:.0f} "
+                f"| rr={self.rr_ratio:.2f} min={MIN_RR_RATIO:.1f})"
+            )
+        return " | ".join(parts) if parts else "score below threshold"
 
 
 # ---------------------------------------------------------------------------
@@ -153,6 +193,47 @@ class SetupScorer:
     def _sig(self, fvg, tf: str = "base") -> float:
         """Shorthand: significance score for an FVG at the current bar."""
         return fvg.significance_score(self._current_bar, self._TF_WEIGHT.get(tf, 1.0))
+
+    def _apply_rr_filter(
+        self, bd: ScoreBreakdown, price: float, sl_price: float, tp_price: float
+    ) -> None:
+        """
+        Applies R:R hard filters and score adjustments to bd in place.
+
+        Hard filters (if either fails → rr_filter_passed = False):
+          - TP distance < MIN_TP_DISTANCE_PTS (25 pts absolute)
+          - R:R < MIN_RR_RATIO (1:1)
+
+        Score bonus/penalty on bd.target_score:
+          - R:R >= 3:1  → +1.0
+          - R:R >= 2:1  → +0.5
+          - R:R <  1.5  → -1.0 (poor but still valid above min threshold)
+        """
+        if sl_price <= 0 or tp_price <= 0:
+            return
+
+        sl_dist = abs(price - sl_price)
+        tp_dist = abs(tp_price - price)
+
+        bd.tp_distance = tp_dist
+        bd.rr_ratio = tp_dist / sl_dist if sl_dist > 0 else 0.0
+
+        if tp_dist < MIN_TP_DISTANCE_PTS or bd.rr_ratio < MIN_RR_RATIO:
+            bd.rr_filter_passed = False
+            bd.reasons.append(
+                f"RR FAIL: tp={tp_dist:.1f}pts rr={bd.rr_ratio:.2f}:1"
+            )
+            return
+
+        if bd.rr_ratio >= 3.0:
+            bd.target_score += 1.0
+            bd.reasons.append(f"RR={bd.rr_ratio:.1f}:1 → +1.0")
+        elif bd.rr_ratio >= 2.0:
+            bd.target_score += 0.5
+            bd.reasons.append(f"RR={bd.rr_ratio:.1f}:1 → +0.5")
+        elif bd.rr_ratio < 1.5:
+            bd.target_score -= 1.0
+            bd.reasons.append(f"RR={bd.rr_ratio:.1f}:1 → -1.0 (poor RR)")
 
     # ------------------------------------------------------------------
     # Public API
@@ -344,6 +425,14 @@ class SetupScorer:
         elif exhaustion >= 4.0:
             bd.macro_score += 0.5
 
+        # ── R:R FILTER (LONG) ─────────────────────────────────────────
+        if bd.target_level is not None and bd.protective_fvg is not None:
+            self._apply_rr_filter(
+                bd, price,
+                sl_price=bd.protective_fvg.bottom,
+                tp_price=bd.target_level.price,
+            )
+
         bd.total_score = (
             bd.sweep_score + bd.structure_score
             + bd.path_score + bd.target_score + bd.macro_score
@@ -517,6 +606,14 @@ class SetupScorer:
             bd.reasons.append(f"Upside exhausted {exhaustion:.1f}/10")
         elif exhaustion >= 4.0:
             bd.macro_score += 0.5
+
+        # ── R:R FILTER (SHORT) ────────────────────────────────────────
+        if bd.target_level is not None and bd.protective_fvg is not None:
+            self._apply_rr_filter(
+                bd, price,
+                sl_price=bd.protective_fvg.top,
+                tp_price=bd.target_level.price,
+            )
 
         bd.total_score = (
             bd.sweep_score + bd.structure_score
