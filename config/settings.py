@@ -249,3 +249,28 @@ MAX_BACKTEST_DAYS = 30
 MARKET_OPEN_ET = "09:30"       # Eastern Time (adjusts for DST)
 FORCE_CLOSE_VET = "16:00"      # Venezuela Time (UTC-4, no DST)
 FORCE_CLOSE_UTC = "20:00"      # 4:00 PM VET = 8:00 PM UTC (fixed)
+
+
+# =============================================================================
+# SETUP SCORER — Sum-of-ingredients entry evaluation
+# =============================================================================
+# Minimum total score to allow a trade (0–~18 raw points scale).
+SCORER_MIN_SCORE_TRADE_1 = 8.0    # First trade of the day
+SCORER_MIN_SCORE_TRADE_2 = 12.0   # Second trade (must be exceptional)
+
+# How many bars back (on base TF) to look for a valid CHoCH signal.
+SCORER_CHOCH_LOOKBACK_BARS = 30
+
+# NY AM open ± this many points = "in play" range for target selection.
+SCORER_PROXIMITY_RANGE_POINTS = 400.0
+
+# Max intact higher-TF FVGs allowed in the path between price and a target.
+# If more obstacles exist, skip that target and check the next one.
+SCORER_MAX_PATH_OBSTACLES = 2
+
+# Liquidity level hierarchy weights (used by LiquidityMap).
+# PDH/PDL=10 > EQH/EQL (=LRLR)=8 > Swing=5 > Minor swing=3.
+LIQ_WEIGHT_PDH_PDL  = 10
+LIQ_WEIGHT_EQH_EQL  = 8
+LIQ_WEIGHT_SWING    = 5
+LIQ_WEIGHT_MINOR    = 3
