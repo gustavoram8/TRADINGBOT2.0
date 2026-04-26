@@ -288,21 +288,30 @@ class ICTStrategy(bt.Strategy):
             self.liq_map.set_ny_am_open(price)
             self._ny_am_open_set = True
 
-        # Actualizar swing points cada 10 barras
+        # Actualizar swing points y equal levels cada 10 barras
         if self._bar_count % 10 == 0:
             lookback = min(50, len(self.data_base))
             df_mini = pd.DataFrame({
                 "High": [self.data_base.high[-i] for i in range(lookback - 1, -1, -1)],
-                "Low": [self.data_base.low[-i] for i in range(lookback - 1, -1, -1)],
+                "Low":  [self.data_base.low[-i]  for i in range(lookback - 1, -1, -1)],
             })
+
             swing_highs, swing_lows = find_swing_levels(df_mini, order=3, lookback=lookback)
             self.liquidity_tracker.add_levels(swing_highs + swing_lows)
 
-            # Agregar swings al liquidity map
+            # Swings al liquidity map
             for sh in swing_highs:
                 self.liq_map.add_swing(sh.price, LevelSide.ABOVE, ts)
             for sl in swing_lows:
                 self.liq_map.add_swing(sl.price, LevelSide.BELOW, ts)
+
+            # Equal Highs / Equal Lows → peso 8 (misma jerarquía que LRLR)
+            for eq in find_equal_levels(df_mini, "High", lookback=lookback):
+                self.liq_map.add_equal_level(eq.price, LevelSide.ABOVE, ts,
+                                             touches=getattr(eq, "touches", 2))
+            for eq in find_equal_levels(df_mini, "Low", lookback=lookback):
+                self.liq_map.add_equal_level(eq.price, LevelSide.BELOW, ts,
+                                             touches=getattr(eq, "touches", 2))
 
             # Track recent swings para discount/premium
             if swing_highs:

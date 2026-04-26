@@ -1,16 +1,16 @@
 """
-Determinación del Daily Bias (sesgo diario) multi-timeframe.
+DEPRECATED — Daily Bias Engine (sistema de sesgo diario con lock de dirección).
 
-Sigue el protocolo del manual ICT:
-1. Revisar ForexFactory (maletines rojos) — diferido a Fase 2
-2. Marcar ATH/ATL en 1D
-3. Marcar PDH/PDL en 1D
-4. Tendencia 4H (últimas 6-8 velas)
-5. FVGs en 1H (máx 4, rango 400pts)
-6. FVGs en 15m (máx 4, rango 300pts)
-7. Niveles de liquidez en 15m
-8. FVGs en 5m (máx 3, rango 200pts)
-→ Generar hipótesis: LONG, SHORT, NO_TRADE
+Este módulo implementa el sistema original de sesgo diario que generaba
+una decisión hard de LONG / SHORT / NO_TRADE al inicio de cada día.
+
+Ha sido reemplazado por:
+  - indicators/structure_engine.py  → CHoCH/BOS por TF (Dow theory)
+  - indicators/liquidity_map.py     → inventario de liquidez contextual
+  - strategy/setup_scorer.py        → suma de ingredientes (sin lock de dirección)
+
+El `DailyBiasEngine` aquí presente puede usarse como referencia o para
+análisis offline, pero ya NO es utilizado por ICTStrategy.
 """
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple

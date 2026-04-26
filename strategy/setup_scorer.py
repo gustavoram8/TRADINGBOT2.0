@@ -40,16 +40,13 @@ import pandas as pd
 from indicators.structure_engine import StructureEngine, StructureBias
 from indicators.liquidity_map import LiquidityMap, LiquidityLevel, LevelSide, LiqWeight
 from indicators.fvg import FVGTracker, FVGType, FVGStatus, FairValueGap
-
-
-# ---------------------------------------------------------------------------
-# Constants (can be overridden via config/settings.py imports)
-# ---------------------------------------------------------------------------
-MIN_SCORE_TRADE_1 = 8.0    # First trade per day
-MIN_SCORE_TRADE_2 = 12.0   # Second trade (must be exceptional)
-PROXIMITY_RANGE   = 400.0  # Max points from NY AM open considered "in play"
-MAX_OBSTACLES_HT  = 2      # Max intact higher-TF FVGs allowed in path to target
-CHOCH_LOOKBACK    = 30     # Bars to look back for a valid CHoCH
+from config.settings import (
+    SCORER_MIN_SCORE_TRADE_1 as MIN_SCORE_TRADE_1,
+    SCORER_MIN_SCORE_TRADE_2 as MIN_SCORE_TRADE_2,
+    SCORER_PROXIMITY_RANGE_POINTS as PROXIMITY_RANGE,
+    SCORER_MAX_PATH_OBSTACLES as MAX_OBSTACLES_HT,
+    SCORER_CHOCH_LOOKBACK_BARS as CHOCH_LOOKBACK,
+)
 
 
 # ---------------------------------------------------------------------------
