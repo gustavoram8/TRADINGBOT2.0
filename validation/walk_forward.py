@@ -64,6 +64,8 @@ def run_walk_forward(
     max_degradation: float = WFA_MAX_DEGRADATION,
     initial_capital: float = ACCOUNT_BALANCE,
     cerebro_setup_fn=None,
+    df_15m: Optional[pd.DataFrame] = None,
+    df_5m: Optional[pd.DataFrame] = None,
 ) -> WFAResult:
     """
     Ejecuta Walk-Forward Analysis completo.
@@ -122,14 +124,22 @@ def run_walk_forward(
             window_start += step_delta
             continue
 
+        # Slice 15m / 5m to matching windows (None if not provided)
+        train_15m = df_15m[window_start:train_end] if df_15m is not None else None
+        test_15m  = df_15m[test_start:test_end]    if df_15m is not None else None
+        train_5m  = df_5m[window_start:train_end]  if df_5m is not None else None
+        test_5m   = df_5m[test_start:test_end]     if df_5m is not None else None
+
         # Run backtests
         is_metrics = _run_single_backtest(
             train_data, strategy_class, strategy_params,
-            initial_capital, cerebro_setup_fn
+            initial_capital, cerebro_setup_fn,
+            df_15m=train_15m, df_5m=train_5m,
         )
         oos_metrics = _run_single_backtest(
             test_data, strategy_class, strategy_params,
-            initial_capital, cerebro_setup_fn
+            initial_capital, cerebro_setup_fn,
+            df_15m=test_15m, df_5m=test_5m,
         )
 
         # Calcular degradación
@@ -208,15 +218,21 @@ def _run_single_backtest(
     strategy_params: dict,
     initial_capital: float,
     cerebro_setup_fn=None,
+    df_15m: Optional[pd.DataFrame] = None,
+    df_5m: Optional[pd.DataFrame] = None,
 ) -> PerformanceMetrics:
     """Ejecuta un backtest individual y retorna las métricas."""
     from strategy.ict_strategy import MNQCommInfo
 
     cerebro = bt.Cerebro()
 
-    # Configurar datos
+    # Strip tz for Backtrader compatibility
+    df_bt = data_df.copy()
+    if df_bt.index.tz is not None:
+        df_bt.index = df_bt.index.tz_localize(None)
+
     data_feed = bt.feeds.PandasData(
-        dataname=data_df,
+        dataname=df_bt,
         datetime=None,
         open="Open", high="High", low="Low", close="Close",
         volume="Volume",
@@ -226,6 +242,36 @@ def _run_single_backtest(
     # Resample a 4H
     cerebro.resampledata(data_feed, name="4h",
                          timeframe=bt.TimeFrame.Minutes, compression=240)
+
+    # 15m feed — only if it covers the window period
+    if df_15m is not None and not df_15m.empty:
+        df_15m_bt = df_15m.copy()
+        if df_15m_bt.index.tz is not None:
+            df_15m_bt.index = df_15m_bt.index.tz_localize(None)
+        if df_15m_bt.index[0] <= df_bt.index[0]:
+            cerebro.adddata(
+                bt.feeds.PandasData(
+                    dataname=df_15m_bt, datetime=None,
+                    open="Open", high="High", low="Low",
+                    close="Close", volume="Volume", openinterest=-1,
+                ),
+                name="15m",
+            )
+
+    # 5m feed — only if it covers the window period
+    if df_5m is not None and not df_5m.empty:
+        df_5m_bt = df_5m.copy()
+        if df_5m_bt.index.tz is not None:
+            df_5m_bt.index = df_5m_bt.index.tz_localize(None)
+        if df_5m_bt.index[0] <= df_bt.index[0]:
+            cerebro.adddata(
+                bt.feeds.PandasData(
+                    dataname=df_5m_bt, datetime=None,
+                    open="Open", high="High", low="Low",
+                    close="Close", volume="Volume", openinterest=-1,
+                ),
+                name="5m",
+            )
 
     # Estrategia
     params = {**strategy_params, "verbose": False}

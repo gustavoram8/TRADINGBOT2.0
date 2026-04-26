@@ -333,6 +333,14 @@ if __name__ == "__main__":
         print("ERROR: No se pudieron descargar datos. Verifica tu conexión.")
         sys.exit(1)
 
+    # Intentar descargar 15m y 5m (últimos 60 días — puede estar vacío)
+    df_15m = download_data(interval="15m")
+    df_5m  = download_data(interval="5m")
+    if not df_15m.empty:
+        print(f"  15m: {len(df_15m)} velas")
+    if not df_5m.empty:
+        print(f"  5m:  {len(df_5m)} velas")
+
     # Split en training y test
     df_train = df_1h[TRAINING_START:TRAINING_END]
     df_val = df_1h[VALIDATION_START:VALIDATION_END]
@@ -343,14 +351,20 @@ if __name__ == "__main__":
     print(f"  Validation: {len(df_val)} velas ({VALIDATION_START} → {VALIDATION_END})")
     print(f"  OOS Test: {len(df_test)} velas ({OOS_TEST_START} → {OOS_TEST_END})")
 
+    _15m = df_15m if not df_15m.empty else None
+    _5m  = df_5m  if not df_5m.empty  else None
+
     if len(df_train) > 0 and len(df_test) > 0:
         results = run_full_validation(
             df_train=df_train,
             df_test=df_test,
             period_name="Ago 2025 → Feb 2026",
+            df_15m=_15m,
+            df_5m=_5m,
         )
     else:
         print("Datos insuficientes para validación completa. Ejecutando backtest simple...")
         if len(df_1h) > 50:
-            result = run_backtest(df_1h, period_name="Backtest Simple")
+            result = run_backtest(df_1h, period_name="Backtest Simple",
+                                   df_15m=_15m, df_5m=_5m)
             print(format_metrics_report(result["metrics"]))

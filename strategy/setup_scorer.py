@@ -125,6 +125,24 @@ class SetupScorer:
             if tracker is not None:
                 yield tracker, name
 
+    def _nesting_bonus(self, fvg: FairValueGap, direction: str) -> float:
+        """
+        Returns a confluence bonus when the entry FVG is nested inside
+        higher-TF FVGs of the same type (ICT nested order block / FVG concept).
+        A 5m FVG sitting inside a 1H FVG sitting inside a 4H FVG = high probability.
+        """
+        ht_type = FVGType.BULLISH if direction == "long" else FVGType.BEARISH
+        containing = [
+            f for f in self.fvg_high.all_fvgs
+            if f.fvg_type == ht_type and f.is_active
+            and f.bottom <= fvg.bottom and fvg.top <= f.top
+        ]
+        if len(containing) >= 2:
+            return 1.5
+        if len(containing) == 1:
+            return 1.0
+        return 0.0
+
     def set_bar(self, bar_idx: int):
         """Call once per bar so significance scores use correct age."""
         self._current_bar = bar_idx
@@ -267,6 +285,13 @@ class SetupScorer:
                 bd.reasons.append(f"Protective higher-TF bull FVG @ {ht_bull_below.top:.1f}")
             else:
                 bd.reasons.append("No protective FVG (GATE C fail)")
+
+        # Nested FVG confluence bonus
+        if bd.protective_fvg is not None:
+            bonus = self._nesting_bonus(bd.protective_fvg, "long")
+            if bonus > 0:
+                bd.path_score += bonus
+                bd.reasons.append(f"Nested FVG confluence (long) +{bonus:.1f}")
 
         # ── TARGET SELECTION (LONG) ───────────────────────────────────
         targets = self.liq_map.fresh_above(price, PROXIMITY_RANGE)
@@ -433,6 +458,13 @@ class SetupScorer:
                     break
             else:
                 bd.reasons.append("No protective bearish FVG (GATE C fail)")
+
+        # Nested FVG confluence bonus
+        if bd.protective_fvg is not None:
+            bonus = self._nesting_bonus(bd.protective_fvg, "short")
+            if bonus > 0:
+                bd.path_score += bonus
+                bd.reasons.append(f"Nested FVG confluence (short) +{bonus:.1f}")
 
         # ── TARGET SELECTION (SHORT) ──────────────────────────────────
         targets = self.liq_map.fresh_below(price, PROXIMITY_RANGE)

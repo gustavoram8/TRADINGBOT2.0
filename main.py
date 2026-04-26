@@ -136,7 +136,11 @@ def step_training_backtest(
     return result
 
 
-def step_walk_forward_analysis(df_1h: pd.DataFrame) -> dict:
+def step_walk_forward_analysis(
+    df_1h: pd.DataFrame,
+    df_15m: pd.DataFrame = None,
+    df_5m: pd.DataFrame = None,
+) -> dict:
     """Paso 3: Walk-Forward Analysis."""
     print("\n" + "=" * 60)
     print("  PASO 3: WALK-FORWARD ANALYSIS")
@@ -154,6 +158,8 @@ def step_walk_forward_analysis(df_1h: pd.DataFrame) -> dict:
         test_weeks=WFA_TEST_WEEKS,
         step_weeks=WFA_STEP_WEEKS,
         cerebro_setup_fn=_setup_cerebro,
+        df_15m=df_15m,
+        df_5m=df_5m,
     )
 
     if wfa_result:
@@ -360,7 +366,7 @@ def run_pipeline(quick: bool = False):
     train_result = step_training_backtest(df_1h, df_15m=df_15m, df_5m=df_5m)
 
     # ─── Paso 3: Walk-Forward ───
-    wfa_result = step_walk_forward_analysis(df_1h)
+    wfa_result = step_walk_forward_analysis(df_1h, df_15m=df_15m, df_5m=df_5m)
 
     # ─── Paso 4: OOS ───
     oos_result = step_oos_backtest(df_1h, df_15m=df_15m, df_5m=df_5m)
