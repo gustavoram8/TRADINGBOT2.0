@@ -41,6 +41,9 @@ from indicators.market_structure import (
     MarketBias, analyze_4h_trend, detect_swing_points,
     determine_structure, is_move_exhausted, classify_discount_premium,
 )
+from indicators.structure_engine import StructureEngine, StructureBias
+from indicators.liquidity_map import LiquidityMap, LevelSide
+from strategy.setup_scorer import SetupScorer, ScoreBreakdown
 from risk.position_sizing import PositionSizer
 from risk.preflight import preflight_check, PreflightResult
 from risk.kill_switch import KillSwitchManager
@@ -117,7 +120,22 @@ class ICTStrategy(bt.Strategy):
             dubious_break_pct=FVG_DUBIOUS_BREAK_PCT,
             dubious_wait_bars=FVG_DUBIOUS_WAIT_BARS,
         )
+        # Separate FVG tracker for 4H data (higher-TF obstacles / protective FVGs)
+        self.fvg_tracker_4h = FVGTracker(
+            dubious_break_pct=FVG_DUBIOUS_BREAK_PCT,
+            dubious_wait_bars=FVG_DUBIOUS_WAIT_BARS,
+        )
         self.liquidity_tracker = LiquidityTracker()
+
+        # New multi-TF modules
+        self.structure_engine = StructureEngine(["4h", "base"])
+        self.liq_map = LiquidityMap()
+        self.scorer = SetupScorer(
+            structure_engine=self.structure_engine,
+            liq_map=self.liq_map,
+            fvg_high=self.fvg_tracker_4h,
+            fvg_base=self.fvg_tracker,
+        )
 
         # Risk managers
         self.position_sizer = PositionSizer(
@@ -130,10 +148,11 @@ class ICTStrategy(bt.Strategy):
 
         # State tracking
         self._current_date = None
-        self._daily_bias: Optional[MarketBias] = None
+        self._daily_bias: Optional[MarketBias] = None   # kept for logging only
         self._bias_confidence: float = 0.0
-        self._entry_direction: Optional[str] = None  # "long" or "short"
         self._protective_fvg: Optional[FairValueGap] = None
+        self._last_4h_len: int = 0
+        self._ny_am_open_set: bool = False
         self._tp_price: Optional[float] = None
         self._sl_price: Optional[float] = None
         self._entry_price: Optional[float] = None
@@ -152,77 +171,38 @@ class ICTStrategy(bt.Strategy):
             print(f"[{dt}] [{level}] {msg}")
 
     # =========================================================================
-    # DAILY BIAS — Ejecutado una vez al inicio de cada día
+    # CONTEXT UPDATE — Ejecutado una vez al inicio de cada día (solo logging)
     # =========================================================================
-    def _compute_daily_bias(self):
+    def _update_context(self):
         """
-        Calcula el sesgo diario basado en:
-        1. Tendencia 4H
-        2. FVGs 1H (cuáles se rompen)
-        3. Balance de liquidez
+        Calcula y loggea el contexto del mercado al inicio de cada día.
+        Ya NO bloquea la dirección — el scorer evalúa ambos lados cada barra.
         """
-        # Tendencia 4H
+        # Tendencia 4H (solo informativa)
         if self.data_4h is not None and len(self.data_4h) >= self.p.structure_lookback:
-            # Construir un mini DataFrame de 4H
             df_4h = pd.DataFrame({
-                "Open": [self.data_4h.open[-i] for i in range(self.p.structure_lookback - 1, -1, -1)],
-                "High": [self.data_4h.high[-i] for i in range(self.p.structure_lookback - 1, -1, -1)],
-                "Low": [self.data_4h.low[-i] for i in range(self.p.structure_lookback - 1, -1, -1)],
+                "Open":  [self.data_4h.open[-i]  for i in range(self.p.structure_lookback - 1, -1, -1)],
+                "High":  [self.data_4h.high[-i]  for i in range(self.p.structure_lookback - 1, -1, -1)],
+                "Low":   [self.data_4h.low[-i]   for i in range(self.p.structure_lookback - 1, -1, -1)],
                 "Close": [self.data_4h.close[-i] for i in range(self.p.structure_lookback - 1, -1, -1)],
             })
             trend_4h = analyze_4h_trend(df_4h, lookback=self.p.structure_lookback)
         else:
             trend_4h = MarketBias.NEUTRAL
 
-        # FVGs — analizar qué se rompe
-        active_bullish = len(self.fvg_tracker.active_bullish)
-        active_bearish = len(self.fvg_tracker.active_bearish)
-        broken_bullish = len([f for f in self.fvg_tracker.all_fvgs
-                              if f.fvg_type == FVGType.BULLISH and f.status == FVGStatus.BROKEN])
-        broken_bearish = len([f for f in self.fvg_tracker.all_fvgs
-                              if f.fvg_type == FVGType.BEARISH and f.status == FVGStatus.BROKEN])
+        self._daily_bias = trend_4h  # kept for logging / stop() summary only
 
-        # Score de sesgo
-        score = 0
-        if trend_4h == MarketBias.BULLISH:
-            score += 2
-        elif trend_4h == MarketBias.BEARISH:
-            score -= 2
+        broken_bullish = sum(1 for f in self.fvg_tracker.all_fvgs
+                             if f.fvg_type == FVGType.BULLISH and f.status == FVGStatus.BROKEN)
+        broken_bearish = sum(1 for f in self.fvg_tracker.all_fvgs
+                             if f.fvg_type == FVGType.BEARISH and f.status == FVGStatus.BROKEN)
 
-        if broken_bullish > broken_bearish:
-            score -= 1  # Bullish FVGs rompiendo = bajista
-        elif broken_bearish > broken_bullish:
-            score += 1
-
-        # Liquidez
-        price = self.data_base.close[0]
-        buyside = self.liquidity_tracker.get_nearest_buyside(price)
-        sellside = self.liquidity_tracker.get_nearest_sellside(price)
-        swept_above = self.liquidity_tracker.count_swept_above()
-        swept_below = self.liquidity_tracker.count_swept_below()
-
-        if swept_above > swept_below and len(sellside) > 0:
-            score -= 1  # Más liquidez tomada arriba -> buscar abajo
-        elif swept_below > swept_above and len(buyside) > 0:
-            score += 1
-
-        # Determinar sesgo
-        self._bias_confidence = min(1.0, abs(score) / 5.0)
-
-        if score >= 2:
-            self._daily_bias = MarketBias.BULLISH
-            self._entry_direction = "long"
-        elif score <= -2:
-            self._daily_bias = MarketBias.BEARISH
-            self._entry_direction = "short"
-        else:
-            self._daily_bias = MarketBias.NEUTRAL
-            self._entry_direction = None
-
+        macro_bias = self.structure_engine.get_macro_bias()
         self.log(
-            f"DAILY BIAS: {self._daily_bias.value} | Score: {score} | "
-            f"Conf: {self._bias_confidence:.0%} | 4H: {trend_4h.value} | "
-            f"Bull FVG broken: {broken_bullish} | Bear FVG broken: {broken_bearish}"
+            f"CONTEXT: 4H={trend_4h.value} | engine_macro={macro_bias.value} | "
+            f"Bull FVG broken={broken_bullish} | Bear FVG broken={broken_bearish} | "
+            f"Upside_exhaust={self.liq_map.upside_exhaustion():.1f}/10 "
+            f"Downside_exhaust={self.liq_map.downside_exhaustion():.1f}/10"
         )
 
     # =========================================================================
@@ -272,6 +252,16 @@ class ICTStrategy(bt.Strategy):
             self.data_base.close[0],
         )
 
+        # Alimentar structure engine con la vela cerrada del base TF
+        self.structure_engine.update(
+            "base",
+            self.data_base.open[0],
+            self.data_base.high[0],
+            self.data_base.low[0],
+            self.data_base.close[0],
+            ts,
+        )
+
     # =========================================================================
     # LIQUIDITY TRACKING — Cada barra
     # =========================================================================
@@ -283,17 +273,23 @@ class ICTStrategy(bt.Strategy):
         price = self.data_base.close[0]
         ts = pd.Timestamp(self.data_base.datetime.datetime(0))
 
-        # Actualizar sweeps
-        self.liquidity_tracker.update(
-            self.data_base.high[0],
-            self.data_base.low[0],
-            self.data_base.close[0],
-            ts,
-        )
+        price = self.data_base.close[0]
+        high  = self.data_base.high[0]
+        low   = self.data_base.low[0]
+
+        # Actualizar sweeps (tracker legacy)
+        self.liquidity_tracker.update(high, low, price, ts)
+
+        # Actualizar liquidity map con la vela cerrada
+        self.liq_map.update(high, low, price, ts)
+
+        # Establecer apertura de NY AM para rango de proximidad
+        if not self._ny_am_open_set and self._get_current_session() == "ny_am":
+            self.liq_map.set_ny_am_open(price)
+            self._ny_am_open_set = True
 
         # Actualizar swing points cada 10 barras
         if self._bar_count % 10 == 0:
-            # Construir mini DataFrame de las últimas N barras
             lookback = min(50, len(self.data_base))
             df_mini = pd.DataFrame({
                 "High": [self.data_base.high[-i] for i in range(lookback - 1, -1, -1)],
@@ -302,16 +298,50 @@ class ICTStrategy(bt.Strategy):
             swing_highs, swing_lows = find_swing_levels(df_mini, order=3, lookback=lookback)
             self.liquidity_tracker.add_levels(swing_highs + swing_lows)
 
+            # Agregar swings al liquidity map
+            for sh in swing_highs:
+                self.liq_map.add_swing(sh.price, LevelSide.ABOVE, ts)
+            for sl in swing_lows:
+                self.liq_map.add_swing(sl.price, LevelSide.BELOW, ts)
+
             # Track recent swings para discount/premium
             if swing_highs:
                 self._recent_swing_high = swing_highs[-1].price
             if swing_lows:
                 self._recent_swing_low = swing_lows[-1].price
 
+        # Actualizar tracker de 4H cuando llega nueva vela de 4H
+        if self.data_4h is not None and len(self.data_4h) > self._last_4h_len:
+            self._last_4h_len = len(self.data_4h)
+            if len(self.data_4h) >= 3:
+                h2_4h = self.data_4h.high[-2]
+                h0_4h = self.data_4h.high[0]
+                l2_4h = self.data_4h.low[-2]
+                l0_4h = self.data_4h.low[0]
+                ts_4h = pd.Timestamp(self.data_4h.datetime.datetime(0))
+                if h2_4h < l0_4h:
+                    self.fvg_tracker_4h.add_fvgs([FairValueGap(
+                        fvg_type=FVGType.BULLISH, top=l0_4h, bottom=h2_4h,
+                        timestamp=ts_4h, timeframe="4h", candle_idx=self._last_4h_len,
+                    )])
+                if l2_4h > h0_4h:
+                    self.fvg_tracker_4h.add_fvgs([FairValueGap(
+                        fvg_type=FVGType.BEARISH, top=l2_4h, bottom=h0_4h,
+                        timestamp=ts_4h, timeframe="4h", candle_idx=self._last_4h_len,
+                    )])
+            self.fvg_tracker_4h.update(
+                self.data_4h.high[0], self.data_4h.low[0], self.data_4h.close[0]
+            )
+            self.structure_engine.update(
+                "4h",
+                self.data_4h.open[0], self.data_4h.high[0],
+                self.data_4h.low[0],  self.data_4h.close[0],
+                pd.Timestamp(self.data_4h.datetime.datetime(0)),
+            )
+
         # PDH/PDL — al inicio de nuevo día
         current_date = self.data_base.datetime.date(0)
         if self._current_date != current_date and len(self.data_base) >= 24:
-            # Buscar high/low del día anterior
             prev_high = -np.inf
             prev_low = np.inf
             for i in range(1, min(25, len(self.data_base))):
@@ -329,6 +359,10 @@ class ICTStrategy(bt.Strategy):
                     LiquidityLevel(LiquidityType.PDL, prev_low, ts,
                                    f"PDL {prev_low:.0f}"),
                 ])
+                # También al liquidity map
+                self.liq_map.add_pdh_pdl(prev_high, prev_low, ts)
+                self.liq_map.reset_intraday()
+                self._ny_am_open_set = False
 
     # =========================================================================
     # ENTRY LOGIC — Buscar oportunidades
@@ -362,97 +396,58 @@ class ICTStrategy(bt.Strategy):
         return None
 
     # =========================================================================
-    # ENTRY LOGIC — Buscar oportunidades
+    # ENTRY LOGIC — Scorer-based, evaluates BOTH sides every bar
     # =========================================================================
     def _check_entry(self):
         """
-        Evalúa si hay una oportunidad de entrada según el manual ICT.
-
-        Para LONG:
-        1. Bias diario = BULLISH
-        2. Un Bearish FVG se rompe (señal alcista)
-        3. Existe un Bullish FVG cercano para protección
-        4. Entrada "on discount" (no premium)
-        5. Preflight check aprobado
-
-        Para SHORT: inverso.
+        Evalúa long Y short cada barra usando el SetupScorer.
+        No hay lock de dirección — el scorer decide basándose en
+        la suma de ingredientes ICT (sweep + CHoCH + FVG path + targets).
         """
-        if self._entry_direction is None:
+        if self.position:
             return
 
-        if self.position:
-            return  # Ya estamos en posición
-
         if self._pending_order is not None:
-            return  # Orden pendiente — evitar doble entrada
+            return
 
-        # ── Killzone gate: solo entradas durante NY AM (9:30–11:00 ET) ──────
+        # Solo durante NY AM killzone
         if self._get_current_session() != "ny_am":
             return
 
-        price = self.data_base.close[0]
-
-        # Verificar kill switch
-        can_trade, reason = self.kill_switch.can_open_trade()
+        can_trade, _ = self.kill_switch.can_open_trade()
         if not can_trade:
             return
 
-        if self._entry_direction == "long":
-            self._check_long_entry(price)
-        elif self._entry_direction == "short":
-            self._check_short_entry(price)
+        price = self.data_base.close[0]
+        setup = self.scorer.best_setup(price, self.kill_switch.trades_today)
 
-    def _check_long_entry(self, price: float):
-        """Buscar entrada LONG según lógica ICT."""
-        # 1. ¿Se rompió un Bearish FVG recientemente?
-        recent_bear_breaks = [
-            f for f in self.fvg_tracker.all_fvgs
-            if f.fvg_type == FVGType.BEARISH
-            and f.status == FVGStatus.BROKEN
-            and (self._bar_count - f.candle_idx) < 10
-        ]
-        if not recent_bear_breaks:
+        if setup is not None:
+            self._execute_entry(setup, price)
+
+    def _execute_entry(self, setup: ScoreBreakdown, price: float):
+        """Ejecuta una entrada basada en el ScoreBreakdown del scorer."""
+        if setup.protective_fvg is None or setup.target_level is None:
             return
 
-        # 2. ¿Hay un Bullish FVG cercano para protección?
-        protective = self.fvg_tracker.get_nearest_protective_fvg(price, "long")
-        if protective is None:
-            return
-
-        # 3. ¿Estamos "on discount"?
-        if self._recent_swing_low and self._recent_swing_high:
-            zone = classify_discount_premium(
-                price, self._recent_swing_low, self._recent_swing_high,
-                self.p.discount_pct,
-            )
-            if zone in ("premium", "extreme_premium"):
-                return
-
-        # 4. Calcular SL y TP
-        # 4. Calcular SL y TP — SL exactamente en límite del FVG protector (sin buffer)
-        sl_price = protective.bottom
-
-        # TP en el siguiente nivel de liquidez arriba (buyside: swings, PDH, equal highs)
-        buyside = self.liquidity_tracker.get_nearest_buyside(price)
-        if not buyside:
-            # Sin nivel de liquidez disponible — skip trade (sin fallback a ATR)
-            return
-        tp_price = buyside[0].price
-
-        # 5. Preflight check
-        sl_points = price - sl_price
-        tp_points = tp_price - price
+        direction = setup.direction
+        if direction == "long":
+            sl_price = setup.protective_fvg.bottom
+            tp_price = setup.target_level.price
+            sl_points = price - sl_price
+            tp_points = tp_price - price
+        else:
+            sl_price = setup.protective_fvg.top
+            tp_price = setup.target_level.price
+            sl_points = sl_price - price
+            tp_points = price - tp_price
 
         if sl_points <= 0 or tp_points <= 0:
             return
 
         num_contracts = self.position_sizer.get_position_size(sl_points)
-
-        # Respetar límite de kill switch
         ks_max = self.kill_switch.get_max_contracts()
         if ks_max is not None:
             num_contracts = min(num_contracts, ks_max)
-
         if num_contracts <= 0:
             return
 
@@ -461,113 +456,34 @@ class ICTStrategy(bt.Strategy):
             stop_loss_price=sl_price,
             take_profit_price=tp_price,
             num_contracts=num_contracts,
-            direction="long",
+            direction=direction,
             current_daily_pnl=self.kill_switch.daily_pnl,
             trades_today=self.kill_switch.trades_today,
             current_drawdown=self.kill_switch.current_drawdown,
         )
 
         if not pf.passed:
-            self.log(f"LONG RECHAZADO: {pf.summary}", "WARN")
+            self.log(f"{direction.upper()} RECHAZADO: {pf.summary}", "WARN")
             return
 
-        # 6. EJECUTAR ENTRADA
         self.log(
-            f"-> LONG ENTRY @ {price:.1f} | SL={sl_price:.1f} | TP={tp_price:.1f} | "
-            f"Contracts={num_contracts} | R:R={tp_points / sl_points:.2f}:1"
+            f"-> {direction.upper()} ENTRY @ {price:.1f} | SL={sl_price:.1f} | "
+            f"TP={tp_price:.1f} | Contracts={num_contracts} | "
+            f"R:R={tp_points/sl_points:.2f}:1 | Score={setup.total_score:.1f}"
         )
+        self.log(f"   Razones: {' | '.join(setup.reasons[:5])}")
 
         self._entry_price = price
         self._sl_price = sl_price
         self._tp_price = tp_price
         self._entry_time = self.data_base.datetime.datetime(0)
         self._exit_reason = ""
-        self._protective_fvg = protective
+        self._protective_fvg = setup.protective_fvg
 
-        self._pending_order = self.buy(size=num_contracts)
-
-    def _check_short_entry(self, price: float):
-        """Buscar entrada SHORT según lógica ICT."""
-        # 1. ¿Se rompió un Bullish FVG recientemente?
-        recent_bull_breaks = [
-            f for f in self.fvg_tracker.all_fvgs
-            if f.fvg_type == FVGType.BULLISH
-            and f.status == FVGStatus.BROKEN
-            and (self._bar_count - f.candle_idx) < 10
-        ]
-        if not recent_bull_breaks:
-            return
-
-        # 2. ¿Hay un Bearish FVG cercano para protección?
-        protective = self.fvg_tracker.get_nearest_protective_fvg(price, "short")
-        if protective is None:
-            return
-
-        # 3. ¿Estamos "on premium"? (para SHORT, evitar zona discount)
-        if self._recent_swing_low and self._recent_swing_high:
-            zone = classify_discount_premium(
-                price, self._recent_swing_low, self._recent_swing_high,
-                self.p.discount_pct,
-            )
-            if zone in ("discount",):
-                return
-
-        # 4. Calcular SL y TP
-        # 4. Calcular SL y TP — SL exactamente en límite del FVG protector (sin buffer)
-        sl_price = protective.top
-
-        # TP en el siguiente nivel de liquidez abajo (sellside: swings, PDL, equal lows)
-        sellside = self.liquidity_tracker.get_nearest_sellside(price)
-        if not sellside:
-            # Sin nivel de liquidez disponible — skip trade (sin fallback a ATR)
-            return
-        tp_price = sellside[0].price
-
-        # 5. Preflight check
-        sl_points = sl_price - price
-        tp_points = price - tp_price
-
-        if sl_points <= 0 or tp_points <= 0:
-            return
-
-        num_contracts = self.position_sizer.get_position_size(sl_points)
-
-        ks_max = self.kill_switch.get_max_contracts()
-        if ks_max is not None:
-            num_contracts = min(num_contracts, ks_max)
-
-        if num_contracts <= 0:
-            return
-
-        pf = preflight_check(
-            entry_price=price,
-            stop_loss_price=sl_price,
-            take_profit_price=tp_price,
-            num_contracts=num_contracts,
-            direction="short",
-            current_daily_pnl=self.kill_switch.daily_pnl,
-            trades_today=self.kill_switch.trades_today,
-            current_drawdown=self.kill_switch.current_drawdown,
-        )
-
-        if not pf.passed:
-            self.log(f"SHORT RECHAZADO: {pf.summary}", "WARN")
-            return
-
-        # 6. EJECUTAR ENTRADA
-        self.log(
-            f"-> SHORT ENTRY @ {price:.1f} | SL={sl_price:.1f} | TP={tp_price:.1f} | "
-            f"Contracts={num_contracts} | R:R={tp_points / sl_points:.2f}:1"
-        )
-
-        self._entry_price = price
-        self._sl_price = sl_price
-        self._tp_price = tp_price
-        self._entry_time = self.data_base.datetime.datetime(0)
-        self._exit_reason = ""
-        self._protective_fvg = protective
-
-        self._pending_order = self.sell(size=num_contracts)
+        if direction == "long":
+            self._pending_order = self.buy(size=num_contracts)
+        else:
+            self._pending_order = self.sell(size=num_contracts)
 
     # =========================================================================
     # EXIT / POSITION MANAGEMENT — Cada barra durante un trade abierto
@@ -755,13 +671,14 @@ class ICTStrategy(bt.Strategy):
         self._update_fvgs()
         self._update_liquidity()
 
-        # Nuevo día -> recalcular daily bias
+        # Nuevo día -> actualizar contexto (sin lock de dirección)
         current_date = current_dt.date()
         if self._current_date != current_date:
             self._current_date = current_date
             self.kill_switch.new_day(current_date)
-            self._compute_daily_bias()
+            self._update_context()
             self.fvg_tracker.cleanup_old()
+            self.fvg_tracker_4h.cleanup_old()
 
         # Forced close check: 4:00 PM VET (UTC-4) — no exceptions
         if self.position and self._should_force_close():
