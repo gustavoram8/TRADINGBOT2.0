@@ -56,6 +56,31 @@ class FairValueGap:
         """Distancia en puntos desde el precio actual al centro del FVG."""
         return abs(price - self.midpoint)
 
+    def significance_score(self, current_bar_idx: int, tf_weight: float = 1.0) -> float:
+        """
+        Score 0–5 que indica cuán significativo es este FVG como obstáculo
+        o como nivel a respetar.
+
+        Factores:
+        - tf_weight  : peso del timeframe (4H=4, 1H=3, 15m=2, 5m=1).
+        - age_factor : crece logarítmicamente con la edad del FVG.
+                       Un FVG de hace 200 barras pesa ~3× más que uno reciente.
+                       Representa FVGs de días/semanas/meses que nunca fueron tocados.
+        - status_mult: ACTIVE (virgen) = 1.0 | TESTED (tocó pero defendió) = 0.7
+                       BROKEN = 0.0 (inválido).
+        """
+        if self.status == FVGStatus.BROKEN:
+            return 0.0
+
+        age_bars = max(0, current_bar_idx - self.candle_idx)
+        # log1p(200) ≈ 5.3  →  age_factor ≈ 1 + 5.3/5.3 = 2.0 at 200 bars
+        # log1p(500) ≈ 6.2  →  age_factor ≈ 2.17; capped at 3.0
+        age_factor = min(3.0, 1.0 + np.log1p(age_bars) / np.log1p(200))
+
+        status_mult = 1.0 if self.status == FVGStatus.ACTIVE else 0.7
+
+        return round(tf_weight * age_factor * status_mult, 3)
+
 
 def detect_fvgs(
     df: pd.DataFrame,

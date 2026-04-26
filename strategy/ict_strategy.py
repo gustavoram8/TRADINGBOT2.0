@@ -428,6 +428,7 @@ class ICTStrategy(bt.Strategy):
             return
 
         price = self.data_base.close[0]
+        self.scorer.set_bar(self._bar_count)
         setup = self.scorer.best_setup(price, self.kill_switch.trades_today)
 
         if setup is not None:

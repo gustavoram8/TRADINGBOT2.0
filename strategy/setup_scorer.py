@@ -113,6 +113,18 @@ class SetupScorer:
         self.liq_map    = liq_map
         self.fvg_high   = fvg_high   # Higher TF: used for path obstacles
         self.fvg_base   = fvg_base   # Base TF: used for confirmations & protective FVG
+        self._current_bar: int = 0   # updated via set_bar() each bar
+
+    def set_bar(self, bar_idx: int):
+        """Call once per bar so significance scores use correct age."""
+        self._current_bar = bar_idx
+
+    # Timeframe weights for significance_score()
+    _TF_WEIGHT = {"4h": 4.0, "1h": 3.0, "15m": 2.0, "5m": 1.0, "base": 3.0}
+
+    def _sig(self, fvg, tf: str = "base") -> float:
+        """Shorthand: significance score for an FVG at the current bar."""
+        return fvg.significance_score(self._current_bar, self._TF_WEIGHT.get(tf, 1.0))
 
     # ------------------------------------------------------------------
     # Public API
@@ -179,34 +191,44 @@ class SetupScorer:
                 bd.reasons.append(f"CHoCH on {confirmed_tfs}")
 
         # ── FVG PATH (LONG) ───────────────────────────────────────────
-        # Higher-TF bearish FVGs above price = obstacles to upside targets
+        # Higher-TF bearish FVGs above price = obstacles (weighted by significance)
         ht_bear_above = [
             f for f in self.fvg_high.all_fvgs
             if f.fvg_type == FVGType.BEARISH and f.is_active and f.bottom >= price
         ]
-        n_obstacles = len(ht_bear_above)
+        obstacle_w = sum(self._sig(f, "4h") for f in ht_bear_above)
 
-        if n_obstacles == 0:
+        if obstacle_w == 0:
             bd.path_score += 3.0
             bd.reasons.append("No higher-TF bearish FVGs above (clear path)")
-        elif n_obstacles == 1:
+        elif obstacle_w < 2.5:
             bd.path_score += 1.5
-            bd.reasons.append("1 higher-TF bearish FVG above (partial obstacle)")
-        elif n_obstacles == 2:
+            bd.reasons.append(f"Light bear obstacle weight={obstacle_w:.1f}")
+        elif obstacle_w < 5.0:
             bd.path_score += 0.5
-            bd.reasons.append("2 higher-TF bearish FVGs above (tight path)")
+            bd.reasons.append(f"Moderate bear obstacles weight={obstacle_w:.1f}")
         else:
             bd.path_score -= 1.0
-            bd.reasons.append(f"{n_obstacles} higher-TF bearish FVGs above (PENALTY)")
+            bd.reasons.append(f"Heavy bear obstacles weight={obstacle_w:.1f} (PENALTY)")
 
         # Recently broken higher-TF bearish FVGs → path opening
+        # Older/more significant broken FVG = bigger confirmation
         ht_bear_broken = [
             f for f in self.fvg_high.all_fvgs
             if f.fvg_type == FVGType.BEARISH and f.status == FVGStatus.BROKEN
         ]
         if ht_bear_broken:
-            bd.path_score += min(1.5, len(ht_bear_broken) * 0.75)
-            bd.reasons.append(f"{len(ht_bear_broken)} higher-TF bear FVG(s) broken")
+            # Use the most significant broken FVG as the signal strength
+            max_broken_sig = max(
+                fvg.significance_score(self._current_bar, self._TF_WEIGHT.get("4h", 4.0))
+                for fvg in ht_bear_broken
+            )
+            broken_bonus = min(2.0, 0.5 + max_broken_sig * 0.3)
+            bd.path_score += broken_bonus
+            bd.reasons.append(
+                f"{len(ht_bear_broken)} higher-TF bear FVG(s) broken "
+                f"(max_sig={max_broken_sig:.1f} → +{broken_bonus:.1f})"
+            )
 
         # Base-TF bullish FVGs near price → potential protective FVG
         bull_base_below = [
@@ -328,33 +350,42 @@ class SetupScorer:
                 bd.reasons.append(f"CHoCH on {confirmed_tfs}")
 
         # ── FVG PATH (SHORT) ──────────────────────────────────────────
-        # Higher-TF bullish FVGs below price that are still ACTIVE = obstacles
+        # Higher-TF bullish FVGs below price = obstacles (weighted by significance)
         ht_bull_below = [
             f for f in self.fvg_high.all_fvgs
             if f.fvg_type == FVGType.BULLISH and f.is_active and f.top <= price
         ]
         ht_bull_below.sort(key=lambda f: price - f.top)
 
-        # "Key" 1H bull FVGs just broken = path opening (most important signal)
+        # "Key" bull FVGs just broken: more significant broken FVG = stronger signal
         ht_bull_broken = [
             f for f in self.fvg_high.all_fvgs
             if f.fvg_type == FVGType.BULLISH and f.status == FVGStatus.BROKEN
         ]
         if ht_bull_broken:
-            bd.path_score += 3.0
-            bd.reasons.append(f"{len(ht_bull_broken)} key higher-TF bull FVG(s) BROKEN")
+            max_broken_sig = max(
+                fvg.significance_score(self._current_bar, self._TF_WEIGHT.get("4h", 4.0))
+                for fvg in ht_bull_broken
+            )
+            broken_bonus = min(4.0, 1.5 + max_broken_sig * 0.5)
+            bd.path_score += broken_bonus
+            bd.reasons.append(
+                f"{len(ht_bull_broken)} key higher-TF bull FVG(s) BROKEN "
+                f"(max_sig={max_broken_sig:.1f} → +{broken_bonus:.1f})"
+            )
 
-        # Immediate path: intact higher-TF bull FVGs within 100 pts below price
+        # Immediate path: significance-weighted obstacle score within 100 pts
         immediate = [f for f in ht_bull_below if price - f.top <= 100]
-        if len(immediate) == 0:
+        immediate_w = sum(self._sig(f, "4h") for f in immediate)
+        if immediate_w == 0:
             bd.path_score += 2.0
             bd.reasons.append("No higher-TF bull FVG in immediate 100-pt path")
-        elif len(immediate) == 1:
+        elif immediate_w < 2.5:
             bd.path_score += 0.5
-            bd.reasons.append("1 bull FVG in immediate path (manageable)")
+            bd.reasons.append(f"Light immediate obstacle weight={immediate_w:.1f}")
         else:
             bd.path_score -= 1.0
-            bd.reasons.append(f"{len(immediate)} bull FVGs blocking immediate path (PENALTY)")
+            bd.reasons.append(f"Heavy immediate obstacles weight={immediate_w:.1f} (PENALTY)")
 
         # Base-TF bearish FVGs above price = downward intent confirmation
         bear_base_above = [
