@@ -107,6 +107,53 @@ class LiquidityMap:
         self.sweep_history: List[SweepEvent] = []
         self._ny_am_open: Optional[float] = None
         self._current_price: float = 0.0
+        # ATH tracking — running max of all observed highs.
+        # ATL is intentionally NOT tracked here yet; the user will provide
+        # the marking methodology before that side is implemented.
+        self._ath: Optional[float] = None
+        self._ath_ts: Optional[pd.Timestamp] = None
+        # Bars since price last printed within ATH_PROXIMITY_PTS of ATH.
+        # Used to detect "post-reversal" state (price meaningfully away from ATH).
+        self._bars_since_near_ath: int = 0
+
+    # ATH proximity / reversal thresholds (points)
+    ATH_PROXIMITY_PTS  = 150.0   # "near ATH" zone
+    ATH_REVERSAL_PTS   = 350.0   # min distance from ATH for confirmed reversal
+    ATH_BARS_TO_REVERT = 24      # bars away from ATH zone before "post-reversal"
+
+    # ------------------------------------------------------------------
+    # ATH update / accessors
+    # ------------------------------------------------------------------
+    def seed_ath(self, ath: float, ts: Optional[pd.Timestamp] = None) -> None:
+        """Initialize ATH from historical data (e.g., precomputed from 1H feed)."""
+        if self._ath is None or ath > self._ath:
+            self._ath = ath
+            self._ath_ts = ts
+
+    @property
+    def ath(self) -> Optional[float]:
+        return self._ath
+
+    def distance_to_ath(self, price: Optional[float] = None) -> Optional[float]:
+        if self._ath is None:
+            return None
+        p = self._current_price if price is None else price
+        return self._ath - p
+
+    def is_near_ath(self, price: Optional[float] = None) -> bool:
+        d = self.distance_to_ath(price)
+        return d is not None and 0 <= d <= self.ATH_PROXIMITY_PTS
+
+    def is_post_ath_reversal(self, price: Optional[float] = None) -> bool:
+        """
+        True when price is at least ATH_REVERSAL_PTS below the ATH AND
+        has been outside the ATH proximity zone for ATH_BARS_TO_REVERT bars.
+        Distinguishes a real pullback from a brief shake-out.
+        """
+        d = self.distance_to_ath(price)
+        if d is None or d < self.ATH_REVERSAL_PTS:
+            return False
+        return self._bars_since_near_ath >= self.ATH_BARS_TO_REVERT
 
     # ------------------------------------------------------------------
     # Session anchor
@@ -156,6 +203,16 @@ class LiquidityMap:
     def update(self, high: float, low: float, close: float, ts: pd.Timestamp):
         """Call once per closed bar to update statuses and sweep events."""
         self._current_price = close
+
+        # ── ATH tracking ──────────────────────────────────────────────
+        if self._ath is None or high > self._ath:
+            self._ath = high
+            self._ath_ts = ts
+        if self._ath is not None:
+            if (self._ath - close) <= self.ATH_PROXIMITY_PTS:
+                self._bars_since_near_ath = 0
+            else:
+                self._bars_since_near_ath += 1
 
         for lvl in self.levels:
             if not lvl.is_fresh:

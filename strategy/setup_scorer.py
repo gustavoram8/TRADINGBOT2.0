@@ -51,6 +51,11 @@ from config.settings import (
 MIN_TP_DISTANCE_PTS = 25.0   # Hard filter: TP must be ≥ 25 points from entry
 MIN_RR_RATIO        = 1.0    # Hard filter: R:R must be ≥ 1:1
 
+# Tie-breaking guard for ATH bonus: if both directions are within this delta
+# in raw score, the ATH context bonus is suppressed (would otherwise decide
+# direction by itself).
+ATH_TIE_BREAK_DELTA = 0.5
+
 
 # ---------------------------------------------------------------------------
 # Score breakdown
@@ -76,6 +81,11 @@ class ScoreBreakdown:
     # R:R metrics (populated when both target and protective FVG are known)
     rr_ratio:    float = 0.0
     tp_distance: float = 0.0
+
+    # ATH context bonus, computed during scoring but applied conditionally
+    # (suppressed if the long vs short raw score gap is < ATH_TIE_BREAK_DELTA).
+    pending_ath_bonus: float = 0.0
+    pending_ath_reason: str  = ""
 
     # Selected levels (filled in if gates pass)
     target_level:    Optional[LiquidityLevel] = None
@@ -194,6 +204,67 @@ class SetupScorer:
         """Shorthand: significance score for an FVG at the current bar."""
         return fvg.significance_score(self._current_bar, self._TF_WEIGHT.get(tf, 1.0))
 
+    def _compute_ath_bonus(self, bd: ScoreBreakdown, price: float) -> None:
+        """
+        Stores a pending ATH-context bonus on bd. Not applied immediately so
+        that best_setup() / score_both() can suppress it when the long/short
+        scores are too close (per user's tie-breaking caveat).
+
+        Rules:
+          - LONG: near ATH (≤150 pts) AND macro 4H bullish → +1.0
+          - SHORT: post-ATH reversal (≥350 pts away, sustained) AND macro
+            4H bearish → +1.0
+          - No ATH known → no bonus (caller falls back to PDH/PDL via
+            existing fresh_above/fresh_below logic).
+        """
+        if self.liq_map.ath is None:
+            return
+
+        macro = self.structure.get_macro_bias()
+
+        if bd.direction == "long":
+            if self.liq_map.is_near_ath(price) and macro == StructureBias.BULLISH:
+                bd.pending_ath_bonus = 1.0
+                d = self.liq_map.distance_to_ath(price) or 0.0
+                bd.pending_ath_reason = (
+                    f"Near ATH ({d:.0f}pts away) + bullish macro → +1.0"
+                )
+        else:  # short
+            if self.liq_map.is_post_ath_reversal(price) and macro == StructureBias.BEARISH:
+                bd.pending_ath_bonus = 1.0
+                d = self.liq_map.distance_to_ath(price) or 0.0
+                bd.pending_ath_reason = (
+                    f"Post-ATH reversal ({d:.0f}pts) + bearish macro → +1.0"
+                )
+
+    def _apply_pending_ath_bonuses(
+        self, long_bd: ScoreBreakdown, short_bd: ScoreBreakdown
+    ) -> None:
+        """
+        Apply the per-direction pending ATH bonus, except when the raw
+        score gap is below ATH_TIE_BREAK_DELTA (caveat: don't let ATH
+        decide direction in a near-tie).
+        """
+        gap = abs(long_bd.total_score - short_bd.total_score)
+        if gap < ATH_TIE_BREAK_DELTA:
+            for bd in (long_bd, short_bd):
+                if bd.pending_ath_bonus != 0.0:
+                    bd.reasons.append(
+                        f"ATH bonus SUPPRESSED (tie-break: |Δ|={gap:.2f} < "
+                        f"{ATH_TIE_BREAK_DELTA})"
+                    )
+                    bd.pending_ath_bonus = 0.0
+                    bd.pending_ath_reason = ""
+            return
+
+        for bd in (long_bd, short_bd):
+            if bd.pending_ath_bonus != 0.0:
+                bd.macro_score += bd.pending_ath_bonus
+                bd.total_score += bd.pending_ath_bonus
+                bd.reasons.append(bd.pending_ath_reason)
+                bd.pending_ath_bonus = 0.0
+                bd.pending_ath_reason = ""
+
     def _apply_rr_filter(
         self, bd: ScoreBreakdown, price: float, sl_price: float, tp_price: float
     ) -> None:
@@ -247,6 +318,7 @@ class SetupScorer:
         threshold = MIN_SCORE_TRADE_2 if trades_today >= 1 else MIN_SCORE_TRADE_1
         long_bd  = self._score_long(price)
         short_bd = self._score_short(price)
+        self._apply_pending_ath_bonuses(long_bd, short_bd)
 
         candidates = [
             bd for bd in (long_bd, short_bd)
@@ -257,7 +329,10 @@ class SetupScorer:
     def score_both(
         self, price: float
     ) -> Tuple[ScoreBreakdown, ScoreBreakdown]:
-        return self._score_long(price), self._score_short(price)
+        long_bd  = self._score_long(price)
+        short_bd = self._score_short(price)
+        self._apply_pending_ath_bonuses(long_bd, short_bd)
+        return long_bd, short_bd
 
     # ------------------------------------------------------------------
     # LONG scoring
@@ -432,6 +507,10 @@ class SetupScorer:
                 sl_price=bd.protective_fvg.bottom,
                 tp_price=bd.target_level.price,
             )
+
+        # ── ATH CONTEXT (LONG) ────────────────────────────────────────
+        # Stored as pending; applied in best_setup/score_both with tie-break.
+        self._compute_ath_bonus(bd, price)
 
         bd.total_score = (
             bd.sweep_score + bd.structure_score
@@ -614,6 +693,9 @@ class SetupScorer:
                 sl_price=bd.protective_fvg.top,
                 tp_price=bd.target_level.price,
             )
+
+        # ── ATH CONTEXT (SHORT) ───────────────────────────────────────
+        self._compute_ath_bonus(bd, price)
 
         bd.total_score = (
             bd.sweep_score + bd.structure_score
