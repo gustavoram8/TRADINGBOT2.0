@@ -108,6 +108,10 @@ class ICTStrategy(bt.Strategy):
         # over-reactive flips per user's risk rule.
         ("loss_cooldown_bars", 3),
 
+        # Phase 6.3 — minimum trades expected per rolling 7-day window;
+        # below this we log a ⚠ TRADE PACE warning (no auto-action).
+        ("pace_warn_threshold_7d", 3),
+
         # Logging
         ("verbose", True),
     )
@@ -242,6 +246,29 @@ class ICTStrategy(bt.Strategy):
             f"Bull FVG broken={broken_bullish} | Bear FVG broken={broken_bearish} | "
             f"Upside_exhaust={self.liq_map.upside_exhaustion():.1f}/10 "
             f"Downside_exhaust={self.liq_map.downside_exhaustion():.1f}/10"
+        )
+
+        # Phase 6.3 — rolling trade pace
+        self._log_trade_pace()
+
+    def _log_trade_pace(self):
+        """
+        Logs trade count over last 7d / 30d. Emits a ⚠ warning when fewer
+        than pace_warn_threshold_7d trades have closed in the last 7 days.
+        """
+        if not self._trades_log:
+            return
+        now = self.data_base.datetime.datetime(0)
+        last7  = sum(1 for t in self._trades_log
+                     if (now - t["timestamp"]).days <= 7)
+        last30 = sum(1 for t in self._trades_log
+                     if (now - t["timestamp"]).days <= 30)
+        warn = last7 < self.p.pace_warn_threshold_7d
+        prefix = "⚠ TRADE PACE LOW" if warn else "TRADE PACE"
+        self.log(
+            f"{prefix}: {last7}/7d, {last30}/30d "
+            f"(target ≥{self.p.pace_warn_threshold_7d}/7d)",
+            "PACE",
         )
 
     # =========================================================================
