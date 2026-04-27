@@ -201,6 +201,9 @@ class ICTStrategy(bt.Strategy):
         # Phase 6.2 — thesis snapshot at entry (for live re-evaluation logs)
         self._thesis: Optional[Dict] = None
 
+        # Phase 6.1 — last "map snapshot" used to detect material changes bar-over-bar
+        self._last_map_snapshot: Optional[Dict] = None
+
     def log(self, msg: str, level: str = "INFO"):
         if self.p.verbose:
             dt = self.data_base.datetime.datetime(0)
@@ -240,6 +243,77 @@ class ICTStrategy(bt.Strategy):
             f"Upside_exhaust={self.liq_map.upside_exhaustion():.1f}/10 "
             f"Downside_exhaust={self.liq_map.downside_exhaustion():.1f}/10"
         )
+
+    # =========================================================================
+    # PHASE 6.1 — Live "map" snapshot & change detection
+    # =========================================================================
+    def _capture_map_snapshot(self) -> Dict:
+        """Cheap snapshot of the state that defines the trading map."""
+        def fvg_counts(tracker):
+            if tracker is None:
+                return (0, 0, 0, 0)  # bull_active, bear_active, bull_broken, bear_broken
+            ba = bra = bb = brb = 0
+            for f in tracker.all_fvgs:
+                if f.fvg_type == FVGType.BULLISH:
+                    if f.is_active:                        ba  += 1
+                    elif f.status == FVGStatus.BROKEN:     bb  += 1
+                else:
+                    if f.is_active:                        bra += 1
+                    elif f.status == FVGStatus.BROKEN:     brb += 1
+            return (ba, bra, bb, brb)
+
+        macro = self.structure_engine.get_macro_bias()
+        base_bias = self.structure_engine.get_bias("base")
+
+        return {
+            "macro":        macro,
+            "base_bias":    base_bias,
+            "fvg_4h":       fvg_counts(self.fvg_tracker_4h),
+            "fvg_1h":       fvg_counts(self.fvg_tracker),       # base = 1H
+            "fvg_15m":      fvg_counts(self.fvg_tracker_15m),
+            "fvg_5m":       fvg_counts(self.fvg_tracker_5m),
+            "ath":          self.liq_map.ath,
+            "near_ath":     self.liq_map.is_near_ath(),
+            "post_rev":     self.liq_map.is_post_ath_reversal(),
+            "n_sweeps":     len(self.liq_map.sweep_history),
+        }
+
+    def _emit_map_update_if_changed(self):
+        """
+        Emits a MAP UPDATE log only when something material changed since the
+        last snapshot — avoids per-bar noise.
+        """
+        snap = self._capture_map_snapshot()
+        prev = self._last_map_snapshot
+        self._last_map_snapshot = snap
+        if prev is None:
+            return
+
+        changes = []
+        if snap["macro"] != prev["macro"]:
+            changes.append(f"macro {prev['macro'].value}→{snap['macro'].value}")
+        if snap["base_bias"] != prev["base_bias"]:
+            changes.append(f"1H bias {prev['base_bias'].value}→{snap['base_bias'].value}")
+
+        # FVG breaks (broken count went up at any TF)
+        for tf, key in (("4h", "fvg_4h"), ("1h", "fvg_1h"),
+                        ("15m", "fvg_15m"), ("5m", "fvg_5m")):
+            ba_p, bra_p, bb_p, brb_p = prev[key]
+            ba,   bra,   bb,   brb   = snap[key]
+            if bb > bb_p:
+                changes.append(f"{tf}: +{bb - bb_p} bull FVG broken")
+            if brb > brb_p:
+                changes.append(f"{tf}: +{brb - brb_p} bear FVG broken")
+
+        if snap["n_sweeps"] > prev["n_sweeps"]:
+            changes.append(f"+{snap['n_sweeps'] - prev['n_sweeps']} new sweep(s)")
+        if snap["near_ath"] != prev["near_ath"]:
+            changes.append(f"near_ATH={snap['near_ath']}")
+        if snap["post_rev"] != prev["post_rev"]:
+            changes.append(f"post_ATH_reversal={snap['post_rev']}")
+
+        if changes:
+            self.log("MAP UPDATE: " + " | ".join(changes), "MAP")
 
     # =========================================================================
     # FVG DETECTION AND TRACKING — Cada barra
@@ -864,6 +938,9 @@ class ICTStrategy(bt.Strategy):
         # Actualizar FVGs y liquidez
         self._update_fvgs()
         self._update_liquidity()
+
+        # Phase 6.1 — emit MAP UPDATE if anything material changed this bar
+        self._emit_map_update_if_changed()
 
         # Nuevo día -> actualizar contexto (sin lock de dirección)
         current_date = current_dt.date()
