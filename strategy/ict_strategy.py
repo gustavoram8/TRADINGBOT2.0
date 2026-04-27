@@ -104,6 +104,10 @@ class ICTStrategy(bt.Strategy):
         ("trading_start", dtime(12, 30)),
         ("trading_end", dtime(20, 0)),
 
+        # Cooldown (in base-TF bars) after a losing trade closes — prevents
+        # over-reactive flips per user's risk rule.
+        ("loss_cooldown_bars", 3),
+
         # Logging
         ("verbose", True),
     )
@@ -190,6 +194,12 @@ class ICTStrategy(bt.Strategy):
         self._actual_exit_price: Optional[float] = None
         self._recent_swing_high: Optional[float] = None
         self._recent_swing_low: Optional[float] = None
+
+        # Phase 6.2 — cooldown after a losing trade
+        self._cooldown_until_bar: int = 0
+
+        # Phase 6.2 — thesis snapshot at entry (for live re-evaluation logs)
+        self._thesis: Optional[Dict] = None
 
     def log(self, msg: str, level: str = "INFO"):
         if self.p.verbose:
@@ -519,6 +529,15 @@ class ICTStrategy(bt.Strategy):
         if self._get_current_session() != "ny_am":
             return
 
+        # Phase 6.2 — cooldown after a losing trade (prevents over-reactive flips)
+        if self._bar_count < self._cooldown_until_bar:
+            remaining = self._cooldown_until_bar - self._bar_count
+            self.log(
+                f"COOLDOWN: {remaining} bar(s) remaining after recent loss",
+                "SKIP",
+            )
+            return
+
         can_trade, _ = self.kill_switch.can_open_trade()
         if not can_trade:
             return
@@ -603,10 +622,62 @@ class ICTStrategy(bt.Strategy):
         self._exit_reason = ""
         self._protective_fvg = setup.protective_fvg
 
+        # Phase 6.2 — thesis snapshot for live re-evaluation logging
+        self._thesis = {
+            "direction": direction,
+            "entry_score": setup.total_score,
+            "entry_bar": self._bar_count,
+            "top_reasons": list(setup.reasons[:5]),
+            "target_price": tp_price,
+            "sl_price": sl_price,
+            "last_opposite_dominant_bar": -1,  # tracks transient flips
+        }
+
         if direction == "long":
             self._pending_order = self.buy(size=num_contracts)
         else:
             self._pending_order = self.sell(size=num_contracts)
+
+    # =========================================================================
+    # LIVE THESIS REVIEW — Phase 6.2
+    # While in a position, keep scoring both directions and log when the
+    # opposite side becomes dominant. Does NOT trigger a close — per user
+    # rule, the only early-exit signal is a broken protective FVG (handled
+    # in _manage_position). This is purely observability.
+    # =========================================================================
+    def _review_thesis(self):
+        if not self.position or self._thesis is None:
+            return
+
+        price = self.data_base.close[0]
+        self.scorer.set_bar(self._bar_count)
+        long_bd, short_bd = self.scorer.score_both(price)
+
+        my_dir = self._thesis["direction"]
+        my_bd  = long_bd if my_dir == "long" else short_bd
+        op_bd  = short_bd if my_dir == "long" else long_bd
+
+        # Lightweight per-bar log for thesis health
+        self.log(
+            f"REVIEW [{my_dir.upper()}] mine={my_bd.total_score:.1f} "
+            f"opp={op_bd.total_score:.1f} "
+            f"entry_score={self._thesis['entry_score']:.1f}",
+            "REVIEW",
+        )
+
+        # Flag if the opposite side becomes dominant (passes its threshold AND
+        # outscores us by ≥0.5). Pure info — no auto-action.
+        threshold = 12.0 if self.kill_switch.trades_today >= 1 else 8.0
+        if (op_bd.gates_passed
+                and op_bd.total_score >= threshold
+                and op_bd.total_score > my_bd.total_score + 0.5):
+            self._thesis["last_opposite_dominant_bar"] = self._bar_count
+            self.log(
+                f"⚠ THESIS CHANGED: opposite ({op_bd.direction.upper()}) now "
+                f"dominant — score {op_bd.total_score:.1f} vs ours "
+                f"{my_bd.total_score:.1f}. Holding per FVG-only exit rule.",
+                "WARN",
+            )
 
     # =========================================================================
     # EXIT / POSITION MANAGEMENT — Cada barra durante un trade abierto
@@ -839,6 +910,11 @@ class ICTStrategy(bt.Strategy):
 
         # Within trading hours: manage or seek entry
         if self.position:
+            # Phase 6.2 — continuous review of thesis while in position.
+            # Only NY AM: avoids spammy logs outside the kill zone. Does NOT
+            # close the trade (only protective-FVG break does, in _manage_position).
+            if self._get_current_session() == "ny_am":
+                self._review_thesis()
             self._manage_position()
         else:
             # Do not open new positions if we're in the 5-min forced-close buffer
@@ -904,6 +980,15 @@ class ICTStrategy(bt.Strategy):
                 "exit_time": self.data_base.datetime.datetime(0),
             })
 
+            # Phase 6.2 — start cooldown after a loss to prevent over-reactive flips
+            if pnl_net < 0 and self.p.loss_cooldown_bars > 0:
+                self._cooldown_until_bar = self._bar_count + self.p.loss_cooldown_bars
+                self.log(
+                    f"COOLDOWN ARMED: skip new entries until bar "
+                    f"{self._cooldown_until_bar} (+{self.p.loss_cooldown_bars} bars)",
+                    "TRADE",
+                )
+
             # Reset state
             self._entry_price = None
             self._sl_price = None
@@ -912,6 +997,7 @@ class ICTStrategy(bt.Strategy):
             self._exit_reason = ""
             self._protective_fvg = None
             self._actual_exit_price = None
+            self._thesis = None
 
     # =========================================================================
     # STOP — Llamado al finalizar el backtest
