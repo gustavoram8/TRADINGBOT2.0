@@ -112,6 +112,11 @@ class ICTStrategy(bt.Strategy):
         # below this we log a ⚠ TRADE PACE warning (no auto-action).
         ("pace_warn_threshold_7d", 3),
 
+        # Phase 6.4 — opt-in granular 5m scoring log during NY AM.
+        # Only emits when the leading direction flips OR a score crosses
+        # the per-trade threshold; never spammy.
+        ("verbose_5m", False),
+
         # Logging
         ("verbose", True),
     )
@@ -208,6 +213,9 @@ class ICTStrategy(bt.Strategy):
         # Phase 6.1 — last "map snapshot" used to detect material changes bar-over-bar
         self._last_map_snapshot: Optional[Dict] = None
 
+        # Phase 6.4 — last 5m leading direction, used to suppress redundant logs
+        self._last_5m_lead: Optional[str] = None
+
     def log(self, msg: str, level: str = "INFO"):
         if self.p.verbose:
             dt = self.data_base.datetime.datetime(0)
@@ -250,6 +258,44 @@ class ICTStrategy(bt.Strategy):
 
         # Phase 6.3 — rolling trade pace
         self._log_trade_pace()
+
+    def _maybe_log_5m_scoring(self):
+        """
+        Phase 6.4 — granular re-score on each new 5m close during NY AM.
+
+        Skips logging unless something changed vs the last 5m bar:
+          - Leading direction flipped (long ↔ short)
+          - Either side crossed the per-trade threshold for the first time
+        Never emits while in a position (already covered by REVIEW logs).
+        """
+        if not self.p.verbose_5m:
+            return
+        if self.position:
+            return
+        if self._get_current_session() != "ny_am":
+            return
+        if self.data_5m is None:
+            return
+
+        price = self.data_5m.close[0]
+        self.scorer.set_bar(self._bar_count)
+        long_bd, short_bd = self.scorer.score_both(price)
+
+        threshold = 12.0 if self.kill_switch.trades_today >= 1 else 8.0
+        lead = "long" if long_bd.total_score > short_bd.total_score else "short"
+        crossed = (
+            (long_bd.gates_passed and long_bd.total_score >= threshold)
+            or (short_bd.gates_passed and short_bd.total_score >= threshold)
+        )
+
+        if lead != self._last_5m_lead or crossed:
+            self.log(
+                f"5M @ {price:.1f} → lead={lead.upper()} "
+                f"(L={long_bd.total_score:.1f} S={short_bd.total_score:.1f}, "
+                f"need ≥{threshold:.0f})",
+                "5M",
+            )
+            self._last_5m_lead = lead
 
     def _log_trade_pace(self):
         """
@@ -554,6 +600,9 @@ class ICTStrategy(bt.Strategy):
                     self.data_5m.high[0], self.data_5m.low[0], self.data_5m.close[0]
                 )
                 self._last_5m_len += new_5m
+
+                # Phase 6.4 — granular intra-bar scoring on each new 5m close
+                self._maybe_log_5m_scoring()
 
         # PDH/PDL — al inicio de nuevo día
         current_date = self.data_base.datetime.date(0)
