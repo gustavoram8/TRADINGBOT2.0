@@ -56,6 +56,15 @@ MIN_RR_RATIO        = 1.0    # Hard filter: R:R must be ≥ 1:1
 # direction by itself).
 ATH_TIE_BREAK_DELTA = 0.5
 
+# Phase 2 — Broken FVG weighting (Option D)
+# Per-TF contribution cap is BROKEN_WEIGHT * BROKEN_MAX_PER_TF (so 1H caps at 2.0).
+BROKEN_FVG_WEIGHT = {"4h": 1.5, "base": 1.0, "15m": 0.5, "5m": 0.3, "1m": 0.3}
+BROKEN_MAX_PER_TF = 2.0     # multiplier cap on per-TF weight
+TF_RANK = {"5m": 1, "15m": 2, "base": 3, "4h": 4, "1m": 0}
+DAMPENING_FACTOR = 0.7      # 30% dampening when higher-TF intact FVG ahead
+ALIGNMENT_TOLERANCE = 10.0  # points tolerance for "approximately same" boundary
+ALIGNMENT_BONUS     = 0.5
+
 
 # ---------------------------------------------------------------------------
 # Score breakdown
@@ -192,6 +201,127 @@ class SetupScorer:
         if len(containing) == 1:
             return 1.0
         return 0.0
+
+    def _all_trackers(self) -> List[Tuple[Optional[FVGTracker], str]]:
+        """All FVG trackers paired with their TF name (highest → lowest)."""
+        return [
+            (self.fvg_high, "4h"),
+            (self.fvg_base, "base"),   # base = 1H in this codebase
+            (self.fvg_15m,  "15m"),
+            (self.fvg_5m,   "5m"),
+        ]
+
+    def _broken_fvg_path_score(
+        self, price: float, direction: str
+    ) -> Tuple[float, List[str]]:
+        """
+        Option D: per-TF weighted contribution from broken opposing FVGs,
+        with 30% dampening when an intact higher-TF FVG of the SAME type
+        is still in the path ahead.
+
+        For LONG: counts broken BEARISH FVGs (path opening upwards).
+                  Dampened if intact bearish FVG above price at higher TF.
+        For SHORT: counts broken BULLISH FVGs (path opening downwards).
+                   Dampened if intact bullish FVG below price at higher TF.
+
+        Returns (total_score, reason_strings).
+        """
+        if direction == "long":
+            broken_type = FVGType.BEARISH
+            in_path = lambda f: f.bottom >= price   # bear FVG above price
+        else:
+            broken_type = FVGType.BULLISH
+            in_path = lambda f: f.top <= price      # bull FVG below price
+
+        trackers = self._all_trackers()
+        score = 0.0
+        reasons: List[str] = []
+
+        for tracker, tf_name in trackers:
+            if tracker is None:
+                continue
+            broken = [
+                f for f in tracker.all_fvgs
+                if f.fvg_type == broken_type and f.status == FVGStatus.BROKEN
+            ]
+            if not broken:
+                continue
+
+            weight = BROKEN_FVG_WEIGHT.get(tf_name, 0.0)
+            # Per-TF contribution: weight × min(count, BROKEN_MAX_PER_TF)
+            count_capped = min(len(broken), BROKEN_MAX_PER_TF)
+            contribution = weight * count_capped
+
+            # Dampening: any HIGHER-TF tracker with an intact same-type FVG
+            # still in the path? If yes, the broken-FVG signal is weakened
+            # because the higher-TF resistance/support hasn't conceded.
+            my_rank = TF_RANK.get(tf_name, 0)
+            damp = False
+            for ot_tracker, ot_name in trackers:
+                if ot_tracker is None:
+                    continue
+                if TF_RANK.get(ot_name, 0) <= my_rank:
+                    continue
+                if any(
+                    f.fvg_type == broken_type and f.is_active and in_path(f)
+                    for f in ot_tracker.all_fvgs
+                ):
+                    damp = True
+                    break
+
+            if damp:
+                contribution *= DAMPENING_FACTOR
+                reasons.append(
+                    f"{tf_name}: {len(broken)} broken {broken_type.value} "
+                    f"(dampened ×{DAMPENING_FACTOR}) → +{contribution:.2f}"
+                )
+            else:
+                reasons.append(
+                    f"{tf_name}: {len(broken)} broken {broken_type.value} → "
+                    f"+{contribution:.2f}"
+                )
+            score += contribution
+
+        return score, reasons
+
+    def _border_alignment_bonus(
+        self, protective_fvg: Optional[FairValueGap], direction: str
+    ) -> Tuple[float, str]:
+        """
+        Bonus when the protective (smaller-TF) FVG shares a boundary —
+        within ALIGNMENT_TOLERANCE points — with an OPPOSING FVG at a
+        HIGHER TF. Captures the "fake-out / breakdown entry" scenario:
+        smaller FVG's break aligns with a larger FVG's edge.
+
+        Recursive across all TF pairs (5m↔15m, 15m↔base, base↔4h, etc).
+        """
+        if protective_fvg is None:
+            return 0.0, ""
+
+        opposing = FVGType.BEARISH if direction == "long" else FVGType.BULLISH
+        prot_tf = protective_fvg.timeframe
+        prot_rank = TF_RANK.get(prot_tf, 0)
+        p_top = protective_fvg.top
+        p_bot = protective_fvg.bottom
+
+        for tracker, tf_name in self._all_trackers():
+            if tracker is None:
+                continue
+            if TF_RANK.get(tf_name, 0) <= prot_rank:
+                continue   # only LARGER TFs
+            for f in tracker.all_fvgs:
+                if f.fvg_type != opposing:
+                    continue
+                if (abs(f.top    - p_top) <= ALIGNMENT_TOLERANCE
+                    or abs(f.bottom - p_bot) <= ALIGNMENT_TOLERANCE
+                    or abs(f.top    - p_bot) <= ALIGNMENT_TOLERANCE
+                    or abs(f.bottom - p_top) <= ALIGNMENT_TOLERANCE):
+                    return ALIGNMENT_BONUS, (
+                        f"Border alignment {prot_tf}↔{tf_name} (opposing "
+                        f"{opposing.value}) → +{ALIGNMENT_BONUS:.1f}"
+                    )
+
+        return 0.0, ""
 
     def set_bar(self, bar_idx: int):
         """Call once per bar so significance scores use correct age."""
@@ -395,24 +525,11 @@ class SetupScorer:
             bd.path_score -= 1.0
             bd.reasons.append(f"Heavy bear obstacles weight={obstacle_w:.1f} (PENALTY)")
 
-        # Recently broken higher-TF bearish FVGs → path opening
-        # Older/more significant broken FVG = bigger confirmation
-        ht_bear_broken = [
-            f for f in self.fvg_high.all_fvgs
-            if f.fvg_type == FVGType.BEARISH and f.status == FVGStatus.BROKEN
-        ]
-        if ht_bear_broken:
-            # Use the most significant broken FVG as the signal strength
-            max_broken_sig = max(
-                fvg.significance_score(self._current_bar, self._TF_WEIGHT.get("4h", 4.0))
-                for fvg in ht_bear_broken
-            )
-            broken_bonus = min(2.0, 0.5 + max_broken_sig * 0.3)
-            bd.path_score += broken_bonus
-            bd.reasons.append(
-                f"{len(ht_bear_broken)} higher-TF bear FVG(s) broken "
-                f"(max_sig={max_broken_sig:.1f} → +{broken_bonus:.1f})"
-            )
+        # Broken bearish FVGs → path opening (Option D, weighted by TF + dampening)
+        bf_score, bf_reasons = self._broken_fvg_path_score(price, "long")
+        if bf_score > 0:
+            bd.path_score += bf_score
+            bd.reasons.extend(bf_reasons)
 
         # Gate C: protective bullish FVG below price for SL.
         # Prefer finest TF (tightest SL), fall back to higher-TF.
@@ -448,6 +565,15 @@ class SetupScorer:
             if bonus > 0:
                 bd.path_score += bonus
                 bd.reasons.append(f"Nested FVG confluence (long) +{bonus:.1f}")
+
+        # Border alignment bonus — fake-out / breakdown entry signal
+        if bd.protective_fvg is not None:
+            align_bonus, align_reason = self._border_alignment_bonus(
+                bd.protective_fvg, "long"
+            )
+            if align_bonus > 0:
+                bd.path_score += align_bonus
+                bd.reasons.append(align_reason)
 
         # ── TARGET SELECTION (LONG) ───────────────────────────────────
         targets = self.liq_map.fresh_above(price, PROXIMITY_RANGE)
@@ -565,22 +691,13 @@ class SetupScorer:
         ]
         ht_bull_below.sort(key=lambda f: price - f.top)
 
-        # "Key" bull FVGs just broken: more significant broken FVG = stronger signal
-        ht_bull_broken = [
-            f for f in self.fvg_high.all_fvgs
-            if f.fvg_type == FVGType.BULLISH and f.status == FVGStatus.BROKEN
-        ]
-        if ht_bull_broken:
-            max_broken_sig = max(
-                fvg.significance_score(self._current_bar, self._TF_WEIGHT.get("4h", 4.0))
-                for fvg in ht_bull_broken
-            )
-            broken_bonus = min(4.0, 1.5 + max_broken_sig * 0.5)
-            bd.path_score += broken_bonus
-            bd.reasons.append(
-                f"{len(ht_bull_broken)} key higher-TF bull FVG(s) BROKEN "
-                f"(max_sig={max_broken_sig:.1f} → +{broken_bonus:.1f})"
-            )
+        # Broken bullish FVGs → path opening (Option D, weighted by TF + dampening)
+        # Symmetric with long-side scoring; replaces the previous asymmetric
+        # +4.0 short-only bonus.
+        bf_score, bf_reasons = self._broken_fvg_path_score(price, "short")
+        if bf_score > 0:
+            bd.path_score += bf_score
+            bd.reasons.extend(bf_reasons)
 
         # Immediate path: significance-weighted obstacle score within 100 pts
         immediate = [f for f in ht_bull_below if price - f.top <= 100]
@@ -633,6 +750,15 @@ class SetupScorer:
             if bonus > 0:
                 bd.path_score += bonus
                 bd.reasons.append(f"Nested FVG confluence (short) +{bonus:.1f}")
+
+        # Border alignment bonus — fake-out / breakdown entry signal
+        if bd.protective_fvg is not None:
+            align_bonus, align_reason = self._border_alignment_bonus(
+                bd.protective_fvg, "short"
+            )
+            if align_bonus > 0:
+                bd.path_score += align_bonus
+                bd.reasons.append(align_reason)
 
         # ── TARGET SELECTION (SHORT) ──────────────────────────────────
         targets = self.liq_map.fresh_below(price, PROXIMITY_RANGE)
