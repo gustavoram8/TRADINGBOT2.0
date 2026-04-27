@@ -104,6 +104,19 @@ class ICTStrategy(bt.Strategy):
         ("trading_start", dtime(12, 30)),
         ("trading_end", dtime(20, 0)),
 
+        # Cooldown (in base-TF bars) after a losing trade closes — prevents
+        # over-reactive flips per user's risk rule.
+        ("loss_cooldown_bars", 3),
+
+        # Phase 6.3 — minimum trades expected per rolling 7-day window;
+        # below this we log a ⚠ TRADE PACE warning (no auto-action).
+        ("pace_warn_threshold_7d", 3),
+
+        # Phase 6.4 — opt-in granular 5m scoring log during NY AM.
+        # Only emits when the leading direction flips OR a score crosses
+        # the per-trade threshold; never spammy.
+        ("verbose_5m", False),
+
         # Logging
         ("verbose", True),
     )
@@ -191,6 +204,21 @@ class ICTStrategy(bt.Strategy):
         self._recent_swing_high: Optional[float] = None
         self._recent_swing_low: Optional[float] = None
 
+        # Phase 6.2 — cooldown after a losing trade
+        self._cooldown_until_bar: int = 0
+
+        # Phase 6.2 — thesis snapshot at entry (for live re-evaluation logs)
+        self._thesis: Optional[Dict] = None
+
+        # Phase 7.3 — manipulation burst cooldown (real-time, not bar-count based)
+        self._manipulation_until_ts: Optional[datetime] = None
+
+        # Phase 6.1 — last "map snapshot" used to detect material changes bar-over-bar
+        self._last_map_snapshot: Optional[Dict] = None
+
+        # Phase 6.4 — last 5m leading direction, used to suppress redundant logs
+        self._last_5m_lead: Optional[str] = None
+
     def log(self, msg: str, level: str = "INFO"):
         if self.p.verbose:
             dt = self.data_base.datetime.datetime(0)
@@ -230,6 +258,138 @@ class ICTStrategy(bt.Strategy):
             f"Upside_exhaust={self.liq_map.upside_exhaustion():.1f}/10 "
             f"Downside_exhaust={self.liq_map.downside_exhaustion():.1f}/10"
         )
+
+        # Phase 6.3 — rolling trade pace
+        self._log_trade_pace()
+
+    def _maybe_log_5m_scoring(self):
+        """
+        Phase 6.4 — granular re-score on each new 5m close during NY AM.
+
+        Skips logging unless something changed vs the last 5m bar:
+          - Leading direction flipped (long ↔ short)
+          - Either side crossed the per-trade threshold for the first time
+        Never emits while in a position (already covered by REVIEW logs).
+        """
+        if not self.p.verbose_5m:
+            return
+        if self.position:
+            return
+        if self._get_current_session() != "ny_am":
+            return
+        if self.data_5m is None:
+            return
+
+        price = self.data_5m.close[0]
+        self.scorer.set_bar(self._bar_count)
+        long_bd, short_bd = self.scorer.score_both(price)
+
+        threshold = 12.0 if self.kill_switch.trades_today >= 1 else 8.0
+        lead = "long" if long_bd.total_score > short_bd.total_score else "short"
+        crossed = (
+            (long_bd.gates_passed and long_bd.total_score >= threshold)
+            or (short_bd.gates_passed and short_bd.total_score >= threshold)
+        )
+
+        if lead != self._last_5m_lead or crossed:
+            self.log(
+                f"5M @ {price:.1f} → lead={lead.upper()} "
+                f"(L={long_bd.total_score:.1f} S={short_bd.total_score:.1f}, "
+                f"need ≥{threshold:.0f})",
+                "5M",
+            )
+            self._last_5m_lead = lead
+
+    def _log_trade_pace(self):
+        """
+        Logs trade count over last 7d / 30d. Emits a ⚠ warning when fewer
+        than pace_warn_threshold_7d trades have closed in the last 7 days.
+        """
+        if not self._trades_log:
+            return
+        now = self.data_base.datetime.datetime(0)
+        last7  = sum(1 for t in self._trades_log
+                     if (now - t["timestamp"]).days <= 7)
+        last30 = sum(1 for t in self._trades_log
+                     if (now - t["timestamp"]).days <= 30)
+        warn = last7 < self.p.pace_warn_threshold_7d
+        prefix = "⚠ TRADE PACE LOW" if warn else "TRADE PACE"
+        self.log(
+            f"{prefix}: {last7}/7d, {last30}/30d "
+            f"(target ≥{self.p.pace_warn_threshold_7d}/7d)",
+            "PACE",
+        )
+
+    # =========================================================================
+    # PHASE 6.1 — Live "map" snapshot & change detection
+    # =========================================================================
+    def _capture_map_snapshot(self) -> Dict:
+        """Cheap snapshot of the state that defines the trading map."""
+        def fvg_counts(tracker):
+            if tracker is None:
+                return (0, 0, 0, 0)  # bull_active, bear_active, bull_broken, bear_broken
+            ba = bra = bb = brb = 0
+            for f in tracker.all_fvgs:
+                if f.fvg_type == FVGType.BULLISH:
+                    if f.is_active:                        ba  += 1
+                    elif f.status == FVGStatus.BROKEN:     bb  += 1
+                else:
+                    if f.is_active:                        bra += 1
+                    elif f.status == FVGStatus.BROKEN:     brb += 1
+            return (ba, bra, bb, brb)
+
+        macro = self.structure_engine.get_macro_bias()
+        base_bias = self.structure_engine.get_bias("base")
+
+        return {
+            "macro":        macro,
+            "base_bias":    base_bias,
+            "fvg_4h":       fvg_counts(self.fvg_tracker_4h),
+            "fvg_1h":       fvg_counts(self.fvg_tracker),       # base = 1H
+            "fvg_15m":      fvg_counts(self.fvg_tracker_15m),
+            "fvg_5m":       fvg_counts(self.fvg_tracker_5m),
+            "ath":          self.liq_map.ath,
+            "near_ath":     self.liq_map.is_near_ath(),
+            "post_rev":     self.liq_map.is_post_ath_reversal(),
+            "n_sweeps":     len(self.liq_map.sweep_history),
+        }
+
+    def _emit_map_update_if_changed(self):
+        """
+        Emits a MAP UPDATE log only when something material changed since the
+        last snapshot — avoids per-bar noise.
+        """
+        snap = self._capture_map_snapshot()
+        prev = self._last_map_snapshot
+        self._last_map_snapshot = snap
+        if prev is None:
+            return
+
+        changes = []
+        if snap["macro"] != prev["macro"]:
+            changes.append(f"macro {prev['macro'].value}→{snap['macro'].value}")
+        if snap["base_bias"] != prev["base_bias"]:
+            changes.append(f"1H bias {prev['base_bias'].value}→{snap['base_bias'].value}")
+
+        # FVG breaks (broken count went up at any TF)
+        for tf, key in (("4h", "fvg_4h"), ("1h", "fvg_1h"),
+                        ("15m", "fvg_15m"), ("5m", "fvg_5m")):
+            ba_p, bra_p, bb_p, brb_p = prev[key]
+            ba,   bra,   bb,   brb   = snap[key]
+            if bb > bb_p:
+                changes.append(f"{tf}: +{bb - bb_p} bull FVG broken")
+            if brb > brb_p:
+                changes.append(f"{tf}: +{brb - brb_p} bear FVG broken")
+
+        if snap["n_sweeps"] > prev["n_sweeps"]:
+            changes.append(f"+{snap['n_sweeps'] - prev['n_sweeps']} new sweep(s)")
+        if snap["near_ath"] != prev["near_ath"]:
+            changes.append(f"near_ATH={snap['near_ath']}")
+        if snap["post_rev"] != prev["post_rev"]:
+            changes.append(f"post_ATH_reversal={snap['post_rev']}")
+
+        if changes:
+            self.log("MAP UPDATE: " + " | ".join(changes), "MAP")
 
     # =========================================================================
     # FVG DETECTION AND TRACKING — Cada barra
@@ -444,6 +604,9 @@ class ICTStrategy(bt.Strategy):
                 )
                 self._last_5m_len += new_5m
 
+                # Phase 6.4 — granular intra-bar scoring on each new 5m close
+                self._maybe_log_5m_scoring()
+
         # PDH/PDL — al inicio de nuevo día
         current_date = self.data_base.datetime.date(0)
         if self._current_date != current_date and len(self.data_base) >= 24:
@@ -501,6 +664,44 @@ class ICTStrategy(bt.Strategy):
         return None
 
     # =========================================================================
+    # PHASE 7.3 — Manipulation burst detection
+    # =========================================================================
+    def _update_manipulation_state(self):
+        """
+        Detects when ≥3 sweep events occurred within the last 60 minutes and
+        arms a 15-minute real-time cooldown. Re-arms whenever a new burst is
+        detected before the previous cooldown expires (extends the window).
+
+        Called every bar in next(). Only logs when the cooldown is first set
+        or extended — not on every bar of the cooldown period.
+        """
+        if len(self.liq_map.sweep_history) < 3:
+            return
+
+        now_ts = pd.Timestamp(self.data_base.datetime.datetime(0))
+        window_start = now_ts - pd.Timedelta(minutes=60)
+
+        recent = [
+            sw for sw in self.liq_map.sweep_history
+            if sw.timestamp >= window_start
+        ]
+
+        if len(recent) < 3:
+            return
+
+        last_sweep_ts = max(sw.timestamp for sw in recent)
+        new_until = (last_sweep_ts + pd.Timedelta(minutes=15)).to_pydatetime()
+
+        # Only update (and log) if this extends or creates the cooldown
+        if self._manipulation_until_ts is None or new_until > self._manipulation_until_ts:
+            self._manipulation_until_ts = new_until
+            self.log(
+                f"MANIPULATION DETECTED: {len(recent)} sweeps in last 60m. "
+                f"No new entries until {self._manipulation_until_ts.strftime('%H:%M')}",
+                "WARN",
+            )
+
+    # =========================================================================
     # ENTRY LOGIC — Scorer-based, evaluates BOTH sides every bar
     # =========================================================================
     def _check_entry(self):
@@ -518,6 +719,29 @@ class ICTStrategy(bt.Strategy):
         # Solo durante NY AM killzone
         if self._get_current_session() != "ny_am":
             return
+
+        # Phase 6.2 — cooldown after a losing trade (prevents over-reactive flips)
+        if self._bar_count < self._cooldown_until_bar:
+            remaining = self._cooldown_until_bar - self._bar_count
+            self.log(
+                f"COOLDOWN: {remaining} bar(s) remaining after recent loss",
+                "SKIP",
+            )
+            return
+
+        # Phase 7.3 — manipulation burst cooldown (real-time, 15 minutes)
+        if self._manipulation_until_ts is not None:
+            now = self.data_base.datetime.datetime(0)
+            if now < self._manipulation_until_ts:
+                remaining_m = int((self._manipulation_until_ts - now).total_seconds() / 60)
+                self.log(
+                    f"MANIPULATION COOLDOWN: {remaining_m}m remaining "
+                    f"(until {self._manipulation_until_ts.strftime('%H:%M')})",
+                    "SKIP",
+                )
+                return
+            else:
+                self._manipulation_until_ts = None  # expired
 
         can_trade, _ = self.kill_switch.can_open_trade()
         if not can_trade:
@@ -603,10 +827,62 @@ class ICTStrategy(bt.Strategy):
         self._exit_reason = ""
         self._protective_fvg = setup.protective_fvg
 
+        # Phase 6.2 — thesis snapshot for live re-evaluation logging
+        self._thesis = {
+            "direction": direction,
+            "entry_score": setup.total_score,
+            "entry_bar": self._bar_count,
+            "top_reasons": list(setup.reasons[:5]),
+            "target_price": tp_price,
+            "sl_price": sl_price,
+            "last_opposite_dominant_bar": -1,  # tracks transient flips
+        }
+
         if direction == "long":
             self._pending_order = self.buy(size=num_contracts)
         else:
             self._pending_order = self.sell(size=num_contracts)
+
+    # =========================================================================
+    # LIVE THESIS REVIEW — Phase 6.2
+    # While in a position, keep scoring both directions and log when the
+    # opposite side becomes dominant. Does NOT trigger a close — per user
+    # rule, the only early-exit signal is a broken protective FVG (handled
+    # in _manage_position). This is purely observability.
+    # =========================================================================
+    def _review_thesis(self):
+        if not self.position or self._thesis is None:
+            return
+
+        price = self.data_base.close[0]
+        self.scorer.set_bar(self._bar_count)
+        long_bd, short_bd = self.scorer.score_both(price)
+
+        my_dir = self._thesis["direction"]
+        my_bd  = long_bd if my_dir == "long" else short_bd
+        op_bd  = short_bd if my_dir == "long" else long_bd
+
+        # Lightweight per-bar log for thesis health
+        self.log(
+            f"REVIEW [{my_dir.upper()}] mine={my_bd.total_score:.1f} "
+            f"opp={op_bd.total_score:.1f} "
+            f"entry_score={self._thesis['entry_score']:.1f}",
+            "REVIEW",
+        )
+
+        # Flag if the opposite side becomes dominant (passes its threshold AND
+        # outscores us by ≥0.5). Pure info — no auto-action.
+        threshold = 12.0 if self.kill_switch.trades_today >= 1 else 8.0
+        if (op_bd.gates_passed
+                and op_bd.total_score >= threshold
+                and op_bd.total_score > my_bd.total_score + 0.5):
+            self._thesis["last_opposite_dominant_bar"] = self._bar_count
+            self.log(
+                f"⚠ THESIS CHANGED: opposite ({op_bd.direction.upper()}) now "
+                f"dominant — score {op_bd.total_score:.1f} vs ours "
+                f"{my_bd.total_score:.1f}. Holding per FVG-only exit rule.",
+                "WARN",
+            )
 
     # =========================================================================
     # EXIT / POSITION MANAGEMENT — Cada barra durante un trade abierto
@@ -794,6 +1070,12 @@ class ICTStrategy(bt.Strategy):
         self._update_fvgs()
         self._update_liquidity()
 
+        # Phase 6.1 — emit MAP UPDATE if anything material changed this bar
+        self._emit_map_update_if_changed()
+
+        # Phase 7.3 — update manipulation burst state every bar
+        self._update_manipulation_state()
+
         # Nuevo día -> actualizar contexto (sin lock de dirección)
         current_date = current_dt.date()
         if self._current_date != current_date:
@@ -839,6 +1121,11 @@ class ICTStrategy(bt.Strategy):
 
         # Within trading hours: manage or seek entry
         if self.position:
+            # Phase 6.2 — continuous review of thesis while in position.
+            # Only NY AM: avoids spammy logs outside the kill zone. Does NOT
+            # close the trade (only protective-FVG break does, in _manage_position).
+            if self._get_current_session() == "ny_am":
+                self._review_thesis()
             self._manage_position()
         else:
             # Do not open new positions if we're in the 5-min forced-close buffer
@@ -904,6 +1191,15 @@ class ICTStrategy(bt.Strategy):
                 "exit_time": self.data_base.datetime.datetime(0),
             })
 
+            # Phase 6.2 — start cooldown after a loss to prevent over-reactive flips
+            if pnl_net < 0 and self.p.loss_cooldown_bars > 0:
+                self._cooldown_until_bar = self._bar_count + self.p.loss_cooldown_bars
+                self.log(
+                    f"COOLDOWN ARMED: skip new entries until bar "
+                    f"{self._cooldown_until_bar} (+{self.p.loss_cooldown_bars} bars)",
+                    "TRADE",
+                )
+
             # Reset state
             self._entry_price = None
             self._sl_price = None
@@ -912,6 +1208,7 @@ class ICTStrategy(bt.Strategy):
             self._exit_reason = ""
             self._protective_fvg = None
             self._actual_exit_price = None
+            self._thesis = None
 
     # =========================================================================
     # STOP — Llamado al finalizar el backtest

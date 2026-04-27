@@ -38,7 +38,7 @@ from typing import Generator, List, Optional, Tuple
 import pandas as pd
 
 from indicators.structure_engine import StructureEngine, StructureBias
-from indicators.liquidity_map import LiquidityMap, LiquidityLevel, LevelSide, LiqWeight
+from indicators.liquidity_map import LiquidityMap, LiquidityLevel, LevelSide, LiqWeight, SweepEvent
 from indicators.fvg import FVGTracker, FVGType, FVGStatus, FairValueGap
 from config.settings import (
     SCORER_MIN_SCORE_TRADE_1 as MIN_SCORE_TRADE_1,
@@ -323,6 +323,63 @@ class SetupScorer:
 
         return 0.0, ""
 
+    def _sweep_quality_multiplier(
+        self, sw: SweepEvent, direction: str
+    ) -> Tuple[float, str]:
+        """
+        Phase 7.2 — Sweep quality gate.
+
+        Returns (multiplier, reason):
+          1.0 → quality sweep: an opposing FVG in the wick zone confirms the
+                rejection (institutional-level price acceptance).
+          0.5 → blind sweep:  no FVG context at the wick extreme → halved score.
+
+        For SHORT (upside sweep):
+          Key BEARISH higher-TF FVGs whose range overlaps the wick zone
+          [sweep_level, wick_extreme] — they are the supply that "caught" price
+          and sent it back. If none remain active there, the sweep is unanchored.
+
+        For LONG (downside sweep):
+          Key BULLISH higher-TF FVGs in the wick zone [wick_extreme, sweep_level]
+          — the demand that absorbed the wick and bounced price.
+        """
+        sw_price = sw.level.price
+        wick     = sw.wick_extreme
+
+        if direction == "short":
+            # Wick traveled UP through [sw_price … wick]. Bearish higher-TF FVGs
+            # overlapping that band = supply wall that rejected price.
+            zone_lo = sw_price - 20
+            zone_hi = wick + 20
+            key_fvgs = [
+                f for f in self.fvg_high.all_fvgs
+                if f.fvg_type == FVGType.BEARISH and f.is_active
+                and f.bottom <= zone_hi and f.top >= zone_lo
+            ]
+            if key_fvgs:
+                return 1.0, (
+                    f"Quality sweep: {len(key_fvgs)} bearish FVG(s) intact "
+                    f"in wick zone [{sw_price:.0f}–{wick:.0f}]"
+                )
+            return 0.5, "Blind sweep: no bearish FVG in wick zone → score ×0.5"
+
+        else:  # long / downside sweep
+            # Wick traveled DOWN through [wick … sw_price]. Bullish higher-TF FVGs
+            # overlapping that band = demand wall that absorbed the wick.
+            zone_lo = wick - 20
+            zone_hi = sw_price + 20
+            key_fvgs = [
+                f for f in self.fvg_high.all_fvgs
+                if f.fvg_type == FVGType.BULLISH and f.is_active
+                and f.bottom <= zone_hi and f.top >= zone_lo
+            ]
+            if key_fvgs:
+                return 1.0, (
+                    f"Quality sweep: {len(key_fvgs)} bullish FVG(s) intact "
+                    f"in wick zone [{wick:.0f}–{sw_price:.0f}]"
+                )
+            return 0.5, "Blind sweep: no bullish FVG in wick zone → score ×0.5"
+
     def set_bar(self, bar_idx: int):
         """Call once per bar so significance scores use correct age."""
         self._current_bar = bar_idx
@@ -489,6 +546,12 @@ class SetupScorer:
                 bd.sweep_score += min(1.5, extra * 0.5)
                 bd.reasons.append(f"+{extra} extra downside levels consumed")
 
+            # Phase 7.2 — sweep quality gate
+            mult, q_reason = self._sweep_quality_multiplier(sw, "long")
+            if mult < 1.0:
+                bd.sweep_score *= mult
+            bd.reasons.append(q_reason)
+
         # ── GATE B: CHoCH bullish (close-confirmed) ───────────────────
         if self.structure.had_confirmation_choch("bullish", CHOCH_LOOKBACK):
             bd.has_choch = True
@@ -626,6 +689,13 @@ class SetupScorer:
         elif exhaustion >= 4.0:
             bd.macro_score += 0.5
 
+        # Phase 7.1 — PDH/PDL state bonus (macro-conditioned)
+        pdh_pdl = self.liq_map.pdh_pdl_state()
+        if (pdh_pdl["pdl_consumed"] and pdh_pdl["pdh_untouched"]
+                and macro != StructureBias.BEARISH):
+            bd.macro_score += 1.0
+            bd.reasons.append("PDL consumed + PDH untouched → bullish liquidity skew +1.0")
+
         # ── R:R FILTER (LONG) ─────────────────────────────────────────
         if bd.target_level is not None and bd.protective_fvg is not None:
             self._apply_rr_filter(
@@ -668,6 +738,12 @@ class SetupScorer:
             if extra:
                 bd.sweep_score += min(1.5, extra * 0.5)
                 bd.reasons.append(f"+{extra} extra upside levels consumed")
+
+            # Phase 7.2 — sweep quality gate
+            mult, q_reason = self._sweep_quality_multiplier(sw, "short")
+            if mult < 1.0:
+                bd.sweep_score *= mult
+            bd.reasons.append(q_reason)
 
         # ── GATE B: CHoCH bearish (close-confirmed) ───────────────────
         if self.structure.had_confirmation_choch("bearish", CHOCH_LOOKBACK):
@@ -811,6 +887,13 @@ class SetupScorer:
             bd.reasons.append(f"Upside exhausted {exhaustion:.1f}/10")
         elif exhaustion >= 4.0:
             bd.macro_score += 0.5
+
+        # Phase 7.1 — PDH/PDL state bonus (macro-conditioned)
+        pdh_pdl = self.liq_map.pdh_pdl_state()
+        if (pdh_pdl["pdh_consumed"] and pdh_pdl["pdl_untouched"]
+                and macro != StructureBias.BULLISH):
+            bd.macro_score += 1.0
+            bd.reasons.append("PDH consumed + PDL untouched → bearish liquidity skew +1.0")
 
         # ── R:R FILTER (SHORT) ────────────────────────────────────────
         if bd.target_level is not None and bd.protective_fvg is not None:

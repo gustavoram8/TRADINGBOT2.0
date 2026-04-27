@@ -320,6 +320,32 @@ class LiquidityMap:
         total = consumed_w + fresh_w
         return min(10.0, consumed_w / total * 10.0) if total > 0 else 0.0
 
+    def pdh_pdl_state(self) -> dict:
+        """
+        Returns the current status of the most recent PDH and PDL levels.
+
+        Keys
+        ----
+        pdh_consumed  : bool — most recent PDH is swept or taken
+        pdh_untouched : bool — most recent PDH is still fresh
+        pdl_consumed  : bool — most recent PDL is swept or taken
+        pdl_untouched : bool — most recent PDL is still fresh
+        """
+        pdh = pdl = None
+        for lvl in self.levels:
+            if lvl.side == LevelSide.ABOVE and lvl.weight == LiqWeight.PDH_PDL:
+                if pdh is None or lvl.formed_at > pdh.formed_at:
+                    pdh = lvl
+            elif lvl.side == LevelSide.BELOW and lvl.weight == LiqWeight.PDH_PDL:
+                if pdl is None or lvl.formed_at > pdl.formed_at:
+                    pdl = lvl
+        return {
+            "pdh_consumed":  pdh is not None and pdh.is_consumed,
+            "pdh_untouched": pdh is not None and pdh.is_fresh,
+            "pdl_consumed":  pdl is not None and pdl.is_consumed,
+            "pdl_untouched": pdl is not None and pdl.is_fresh,
+        }
+
     # ------------------------------------------------------------------
     # Day reset
     # ------------------------------------------------------------------
