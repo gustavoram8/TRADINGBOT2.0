@@ -505,6 +505,9 @@ class ICTStrategy(bt.Strategy):
             if swing_lows:
                 self._recent_swing_low = swing_lows[-1].price
 
+            # Phase 8.2 — keep scorer's swing range in sync
+            self.liq_map.set_swing_range(self._recent_swing_high, self._recent_swing_low)
+
         # Actualizar tracker de 4H cuando llega nueva vela de 4H
         if self.data_4h is not None and len(self.data_4h) > self._last_4h_len:
             self._last_4h_len = len(self.data_4h)
@@ -531,6 +534,11 @@ class ICTStrategy(bt.Strategy):
                 "4h",
                 self.data_4h.open[0], self.data_4h.high[0],
                 self.data_4h.low[0],  self.data_4h.close[0],
+                pd.Timestamp(self.data_4h.datetime.datetime(0)),
+            )
+            # Phase 8.1 — feed rolling ATL from every new 4H bar
+            self.liq_map.update_atl(
+                self.data_4h.low[0],
                 pd.Timestamp(self.data_4h.datetime.datetime(0)),
             )
 
@@ -780,13 +788,59 @@ class ICTStrategy(bt.Strategy):
         if direction == "long":
             sl_price = setup.protective_fvg.bottom
             tp_price = setup.target_level.price
-            sl_points = price - sl_price
             tp_points = tp_price - price
         else:
             sl_price = setup.protective_fvg.top
             tp_price = setup.target_level.price
-            sl_points = sl_price - price
             tp_points = price - tp_price
+
+        # Phase 8.3 — Refine SL: push it just beyond the nearest fresh
+        # liquidity level on the far side of the protective FVG.
+        # Avoids wick/fake-out stop-outs while keeping the SL anchored to
+        # a level where a touch implies genuine structural breakdown.
+        _SL_LIQ_BUFFER  = 5.0    # pts beyond the liquidity level
+        _SL_SEARCH_DIST = 100.0  # max distance to search for that level
+
+        if direction == "long":
+            ssl = [
+                l for l in self.liq_map.levels
+                if l.side == LevelSide.BELOW and l.is_fresh
+                and l.price < sl_price
+                and sl_price - l.price <= _SL_SEARCH_DIST
+            ]
+            if ssl:
+                nearest = max(ssl, key=lambda l: l.price)  # closest below FVG
+                refined  = nearest.price - _SL_LIQ_BUFFER
+                if refined > 0:
+                    self.log(
+                        f"  SL refined: FVG bottom {sl_price:.1f} → "
+                        f"below {nearest.label} → {refined:.1f} "
+                        f"({sl_price - refined:.1f}pts wider)",
+                        "ENTRY",
+                    )
+                    sl_price = refined
+        else:
+            bsl = [
+                l for l in self.liq_map.levels
+                if l.side == LevelSide.ABOVE and l.is_fresh
+                and l.price > sl_price
+                and l.price - sl_price <= _SL_SEARCH_DIST
+            ]
+            if bsl:
+                nearest = min(bsl, key=lambda l: l.price)  # closest above FVG
+                refined  = nearest.price + _SL_LIQ_BUFFER
+                self.log(
+                    f"  SL refined: FVG top {sl_price:.1f} → "
+                    f"above {nearest.label} → {refined:.1f} "
+                    f"({refined - sl_price:.1f}pts wider)",
+                    "ENTRY",
+                )
+                sl_price = refined
+
+        if direction == "long":
+            sl_points = price - sl_price
+        else:
+            sl_points = sl_price - price
 
         if sl_points <= 0 or tp_points <= 0:
             return
@@ -911,6 +965,65 @@ class ICTStrategy(bt.Strategy):
         else:
             unrealized_pnl = (self._entry_price - price) * POINT_VALUE * abs(size)
             tp_total = (self._entry_price - self._tp_price) * POINT_VALUE * abs(size)
+
+        # --- TRAILING FVG UPDATE (Phase 8.3) ---
+        # While winning, promote _protective_fvg to the closest active FVG
+        # that supports the trade. CHECK 5 then closes on BROKEN (close beyond
+        # it), not SWEPT (wick through + close back), per user's rule.
+        if unrealized_pnl > 0:
+            all_trackers = [
+                self.fvg_tracker, self.fvg_tracker_15m, self.fvg_tracker_5m
+            ]
+            if is_long:
+                candidates = [
+                    f
+                    for tr in all_trackers
+                    for f in tr.all_fvgs
+                    if f.fvg_type == FVGType.BULLISH and f.is_active
+                    and f.top <= price and price - f.top <= 150
+                ]
+                if candidates:
+                    closest = max(candidates, key=lambda f: f.top)
+                    if (self._protective_fvg is None
+                            or closest.top > self._protective_fvg.top):
+                        prev = (
+                            f"{self._protective_fvg.timeframe} "
+                            f"[{self._protective_fvg.bottom:.1f}–"
+                            f"{self._protective_fvg.top:.1f}]"
+                            if self._protective_fvg else "—"
+                        )
+                        self._protective_fvg = closest
+                        self.log(
+                            f"TRAILING FVG: {prev} → bull "
+                            f"[{closest.bottom:.1f}–{closest.top:.1f}] "
+                            f"({closest.timeframe})",
+                            "TRAIL",
+                        )
+            else:
+                candidates = [
+                    f
+                    for tr in all_trackers
+                    for f in tr.all_fvgs
+                    if f.fvg_type == FVGType.BEARISH and f.is_active
+                    and f.bottom >= price and f.bottom - price <= 150
+                ]
+                if candidates:
+                    closest = min(candidates, key=lambda f: f.bottom)
+                    if (self._protective_fvg is None
+                            or closest.bottom < self._protective_fvg.bottom):
+                        prev = (
+                            f"{self._protective_fvg.timeframe} "
+                            f"[{self._protective_fvg.bottom:.1f}–"
+                            f"{self._protective_fvg.top:.1f}]"
+                            if self._protective_fvg else "—"
+                        )
+                        self._protective_fvg = closest
+                        self.log(
+                            f"TRAILING FVG: {prev} → bear "
+                            f"[{closest.bottom:.1f}–{closest.top:.1f}] "
+                            f"({closest.timeframe})",
+                            "TRAIL",
+                        )
 
         # --- CHECK 1: Stop Loss ---
         if is_long and low <= self._sl_price:

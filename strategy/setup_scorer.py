@@ -393,36 +393,48 @@ class SetupScorer:
 
     def _compute_ath_bonus(self, bd: ScoreBreakdown, price: float) -> None:
         """
-        Stores a pending ATH-context bonus on bd. Not applied immediately so
-        that best_setup() / score_both() can suppress it when the long/short
-        scores are too close (per user's tie-breaking caveat).
+        Phase 8.1 — Symmetric ATH / ATL proximity bonus (no macro condition).
 
         Rules:
-          - LONG: near ATH (≤150 pts) AND macro 4H bullish → +1.0
-          - SHORT: post-ATH reversal (≥350 pts away, sustained) AND macro
-            4H bearish → +1.0
-          - No ATH known → no bonus (caller falls back to PDH/PDL via
-            existing fresh_above/fresh_below logic).
+          - LONG:  ATH within 350 pts → +1.0
+                   (price near all-time high = upside momentum context)
+          - SHORT: ATL within 350 pts → +1.0
+                   (price near 30-day rolling low = downside momentum context)
+
+        Stored as pending; applied via _apply_pending_ath_bonuses() with the
+        tie-break guard (suppressed when scores are within ATH_TIE_BREAK_DELTA).
         """
-        if self.liq_map.ath is None:
-            return
-
-        macro = self.structure.get_macro_bias()
-
         if bd.direction == "long":
-            if self.liq_map.is_near_ath(price) and macro == StructureBias.BULLISH:
-                bd.pending_ath_bonus = 1.0
+            if self.liq_map.is_near_ath(price):
                 d = self.liq_map.distance_to_ath(price) or 0.0
-                bd.pending_ath_reason = (
-                    f"Near ATH ({d:.0f}pts away) + bullish macro → +1.0"
-                )
+                bd.pending_ath_bonus  = 1.0
+                bd.pending_ath_reason = f"Near ATH ({d:.0f}pts) → +1.0"
         else:  # short
-            if self.liq_map.is_post_ath_reversal(price) and macro == StructureBias.BEARISH:
-                bd.pending_ath_bonus = 1.0
-                d = self.liq_map.distance_to_ath(price) or 0.0
-                bd.pending_ath_reason = (
-                    f"Post-ATH reversal ({d:.0f}pts) + bearish macro → +1.0"
-                )
+            if self.liq_map.is_near_atl(price):
+                d = self.liq_map.distance_to_atl(price) or 0.0
+                bd.pending_ath_bonus  = 1.0
+                bd.pending_ath_reason = f"Near ATL ({d:.0f}pts) → +1.0"
+
+    def _discount_premium_bonus(self, bd: ScoreBreakdown, price: float) -> None:
+        """
+        Phase 8.2 — Discount / premium zone bonus.
+
+        Uses the current intraday swing range (set via LiquidityMap.set_swing_range).
+          - LONG  in discount zone (price < 50% of range) → +1.0
+          - SHORT in premium zone  (price > 50% of range) → +1.0
+
+        No bonus if the swing range is not yet established.
+        """
+        hi, lo = self.liq_map.swing_range
+        if hi is None or lo is None or hi <= lo:
+            return
+        pct = (price - lo) / (hi - lo)  # 0.0 = at swing low, 1.0 = at swing high
+        if bd.direction == "long" and pct < 0.50:
+            bd.macro_score += 1.0
+            bd.reasons.append(f"Discount zone ({pct:.0%} of swing range) → +1.0")
+        elif bd.direction == "short" and pct > 0.50:
+            bd.macro_score += 1.0
+            bd.reasons.append(f"Premium zone ({pct:.0%} of swing range) → +1.0")
 
     def _apply_pending_ath_bonuses(
         self, long_bd: ScoreBreakdown, short_bd: ScoreBreakdown
@@ -696,6 +708,9 @@ class SetupScorer:
             bd.macro_score += 1.0
             bd.reasons.append("PDL consumed + PDH untouched → bullish liquidity skew +1.0")
 
+        # Phase 8.2 — Discount / premium zone bonus
+        self._discount_premium_bonus(bd, price)
+
         # ── R:R FILTER (LONG) ─────────────────────────────────────────
         if bd.target_level is not None and bd.protective_fvg is not None:
             self._apply_rr_filter(
@@ -894,6 +909,9 @@ class SetupScorer:
                 and macro != StructureBias.BULLISH):
             bd.macro_score += 1.0
             bd.reasons.append("PDH consumed + PDL untouched → bearish liquidity skew +1.0")
+
+        # Phase 8.2 — Discount / premium zone bonus
+        self._discount_premium_bonus(bd, price)
 
         # ── R:R FILTER (SHORT) ────────────────────────────────────────
         if bd.target_level is not None and bd.protective_fvg is not None:

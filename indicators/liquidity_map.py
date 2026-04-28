@@ -23,6 +23,7 @@ Proximity framework:
   Target priority: nearest first, penalized by obstacle count (caller decides).
 """
 from dataclasses import dataclass, field
+from collections import deque
 from enum import Enum
 from typing import List, Optional
 
@@ -107,19 +108,29 @@ class LiquidityMap:
         self.sweep_history: List[SweepEvent] = []
         self._ny_am_open: Optional[float] = None
         self._current_price: float = 0.0
-        # ATH tracking — running max of all observed highs.
-        # ATL is intentionally NOT tracked here yet; the user will provide
-        # the marking methodology before that side is implemented.
+
+        # ATH — running max of all observed highs
         self._ath: Optional[float] = None
         self._ath_ts: Optional[pd.Timestamp] = None
-        # Bars since price last printed within ATH_PROXIMITY_PTS of ATH.
-        # Used to detect "post-reversal" state (price meaningfully away from ATH).
-        self._bars_since_near_ath: int = 0
+        self._bars_since_near_ath: int = 0  # for is_post_ath_reversal compat
 
-    # ATH proximity / reversal thresholds (points)
-    ATH_PROXIMITY_PTS  = 150.0   # "near ATH" zone
-    ATH_REVERSAL_PTS   = 350.0   # min distance from ATH for confirmed reversal
-    ATH_BARS_TO_REVERT = 24      # bars away from ATH zone before "post-reversal"
+        # ATL — rolling min of bar lows over the last 30 calendar days.
+        # Updated via update_atl() (called from the 4H feed in the strategy).
+        # Represents the nearest "floor" the market has visited recently — NOT
+        # the absolute historical minimum.
+        self._atl: Optional[float] = None
+        self._atl_ts: Optional[pd.Timestamp] = None
+        self._atl_window: deque = deque()  # (pd.Timestamp, low) pairs
+
+        # Swing range — set each time new swing highs/lows are detected.
+        # Used by the scorer for discount / premium zone classification.
+        self._swing_high: Optional[float] = None
+        self._swing_low: Optional[float] = None
+
+    # Proximity threshold: "near ATH/ATL" = within 350 pts of current price
+    ATH_PROXIMITY_PTS  = 350.0
+    ATH_REVERSAL_PTS   = 350.0   # kept for is_post_ath_reversal; not used by scorer
+    ATH_BARS_TO_REVERT = 24
 
     # ------------------------------------------------------------------
     # ATH update / accessors
@@ -154,6 +165,51 @@ class LiquidityMap:
         if d is None or d < self.ATH_REVERSAL_PTS:
             return False
         return self._bars_since_near_ath >= self.ATH_BARS_TO_REVERT
+
+    # ------------------------------------------------------------------
+    # ATL update / accessors
+    # ------------------------------------------------------------------
+    def update_atl(self, low: float, ts: pd.Timestamp) -> None:
+        """
+        Call once per 4H bar. Maintains a rolling 30-day ATL from bar lows.
+        ATL = lowest wick across all 4H bars within the last 30 calendar days.
+        """
+        cutoff = ts - pd.Timedelta(days=30)
+        self._atl_window.append((ts, low))
+        while self._atl_window and self._atl_window[0][0] < cutoff:
+            self._atl_window.popleft()
+        if self._atl_window:
+            min_pair = min(self._atl_window, key=lambda x: x[1])
+            self._atl_ts, self._atl = min_pair
+
+    @property
+    def atl(self) -> Optional[float]:
+        return self._atl
+
+    def distance_to_atl(self, price: Optional[float] = None) -> Optional[float]:
+        if self._atl is None:
+            return None
+        p = self._current_price if price is None else price
+        return p - self._atl  # positive when price is above ATL
+
+    def is_near_atl(self, price: Optional[float] = None) -> bool:
+        d = self.distance_to_atl(price)
+        return d is not None and 0 <= d <= self.ATH_PROXIMITY_PTS
+
+    # ------------------------------------------------------------------
+    # Swing range (discount / premium classification)
+    # ------------------------------------------------------------------
+    def set_swing_range(
+        self, swing_high: Optional[float], swing_low: Optional[float]
+    ) -> None:
+        """Update the current swing range for discount/premium classification."""
+        self._swing_high = swing_high
+        self._swing_low  = swing_low
+
+    @property
+    def swing_range(self):
+        """(swing_high, swing_low) — both None if not yet seeded."""
+        return (self._swing_high, self._swing_low)
 
     # ------------------------------------------------------------------
     # Session anchor
