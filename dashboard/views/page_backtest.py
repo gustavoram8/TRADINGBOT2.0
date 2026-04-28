@@ -240,6 +240,7 @@ def render():
         _show_results(st.session_state["backtest_result"])
 
 
+
 def _show_results(result: dict):
     """Display backtest results with interactive charts."""
     metrics = result["metrics"]
@@ -247,6 +248,7 @@ def _show_results(result: dict):
     equity_df = result["equity_curve"]
     fvgs = result.get("fvgs", [])
     fvg_summary = result.get("fvg_summary", {})
+    indicator_state = result.get("indicator_state", {})
 
     # -- KPIs --
     st.subheader("Performance Summary")
@@ -292,25 +294,36 @@ def _show_results(result: dict):
             help="Select the chart candle resolution. FVGs from all timeframes are overlaid.",
         )
 
-        # FVG display toggles
-        fvg_col1, fvg_col2 = st.columns(2, gap="large")
+        # Indicator display toggles
+        fvg_col1, fvg_col2, fvg_col3 = st.columns(3, gap="large")
         with fvg_col1:
             show_fvgs = st.multiselect(
-                "Show FVGs from timeframes",
-                MULTI_TF_FVG_TIMEFRAMES,
-                default=["1h", "15m"],
-                help="Select which timeframe FVGs to display on the chart.",
+                "FVGs por timeframe",
+                MULTI_TF_FVG_TIMEFRAMES + ["4h"],
+                default=["4h", "1h", "15m"],
+                help="Timeframes de FVGs a mostrar (fuente: estado real del bot durante el backtest).",
             )
         with fvg_col2:
             show_decisions = st.checkbox(
-                "Highlight decision FVGs only",
+                "Solo FVGs de decisión",
                 value=False,
-                help="Show only FVGs that influenced trade decisions.",
+                help="Muestra solo FVGs que influyeron en alguna entrada.",
             )
             show_session_levels = st.checkbox(
-                "Show previous session H/L",
+                "Niveles de sesión anteriores",
                 value=True,
-                help="Muestra niveles previos de Asia, London, NY AM y NY PM.",
+                help="Muestra PDH/PDL de Asia, London, NY AM y NY PM.",
+            )
+        with fvg_col3:
+            show_liquidity = st.checkbox(
+                "Niveles de liquidez",
+                value=True,
+                help="PDH/PDL, Equal Highs/Lows, Swing highs/lows.",
+            )
+            show_sweeps = st.checkbox(
+                "Sweeps de liquidez",
+                value=True,
+                help="Marca dónde el precio barrió un nivel de liquidez.",
             )
 
         # Load chart data for selected resolution
@@ -321,14 +334,20 @@ def _show_results(result: dict):
             if tf_df is not None and not tf_df.empty:
                 chart_df = tf_df
 
+        # Usar FVGs del estado real del bot si disponibles, si no los del analyzer
+        chart_fvgs = indicator_state.get("fvgs") or fvgs
+
         # Build the interactive chart
         fig = _build_backtest_chart(
             chart_df,
             trades_df,
-            fvgs,
+            chart_fvgs,
             show_fvgs,
             show_decisions,
             show_session_levels,
+            indicator_state=indicator_state if (show_liquidity or show_sweeps) else {},
+            show_liquidity=show_liquidity,
+            show_sweeps=show_sweeps,
         )
         st.plotly_chart(fig, width="stretch", config={
             "scrollZoom": True,
@@ -463,6 +482,9 @@ def _build_backtest_chart(
     show_fvg_tfs: list,
     show_decisions_only: bool,
     show_session_levels: bool = True,
+    indicator_state: dict = None,
+    show_liquidity: bool = True,
+    show_sweeps: bool = True,
 ) -> go.Figure:
     """
     Build the interactive candlestick chart with FVG zones and trade markers.
@@ -470,10 +492,10 @@ def _build_backtest_chart(
     Features:
     - Candlestick OHLC chart
     - Volume subplot
-    - FVG zones as colored rectangles
-    - Trade entry markers (green up arrow for long, red down arrow for short)
-    - Trade exit markers (blue circle)
-    - Hover tooltips with trade details
+    - FVG zones (rectangles coloreados por TF/dirección — estado real del bot)
+    - Niveles de liquidez (PDH/PDL, EQH/EQL, swings, ATH/ATL)
+    - Sweeps de liquidez (triangles en el wick)
+    - Trade entry/exit markers con hover tooltips
     """
     fig = make_subplots(
         rows=2, cols=1,
@@ -620,6 +642,80 @@ def _build_backtest_chart(
                 opacity=opacity,
                 row=1, col=1,
             )
+
+    # -- Liquidity Levels --
+    if show_liquidity and indicator_state:
+        _LIQ_COLORS = {
+            "PDH": "#1565c0", "PDL": "#1565c0",
+            "EQH": "#f57c00", "EQL": "#f57c00",
+            "ATH": "#7b1fa2", "ATL": "#7b1fa2",
+        }
+        x0_liq = df.index[0] if not df.empty else None
+        x1_liq = df.index[-1] if not df.empty else None
+        seen_prices: set = set()
+        levels_sorted = sorted(
+            indicator_state.get("liquidity", []),
+            key=lambda l: -l.get("weight", 0),
+        )
+        for lvl in levels_sorted[:60]:
+            price_key = round(lvl["price"], 1)
+            if price_key in seen_prices:
+                continue
+            seen_prices.add(price_key)
+
+            lbl_up = lvl["label"].upper()
+            color = next(
+                (v for k, v in _LIQ_COLORS.items() if k in lbl_up),
+                "#9e9e9e",
+            )
+            status = lvl.get("status", "untouched")
+            dash   = "solid" if status == "untouched" else ("dot" if status == "swept" else "dash")
+            width  = 1.5 if lvl.get("weight", 0) >= 8 else 1.0
+
+            if x0_liq is not None:
+                fig.add_shape(
+                    type="line", xref="x", yref="y",
+                    x0=x0_liq, x1=x1_liq,
+                    y0=lvl["price"], y1=lvl["price"],
+                    line=dict(color=color, width=width, dash=dash),
+                    layer="below", row=1, col=1,
+                )
+                fig.add_annotation(
+                    x=x1_liq, y=lvl["price"],
+                    text=f"  {lvl['label']}",
+                    showarrow=False, xanchor="left", yanchor="middle",
+                    font=dict(size=9, color=color),
+                    bgcolor="rgba(13,17,23,0.6)", bordercolor=color,
+                    borderwidth=1,
+                    row=1, col=1,
+                )
+
+    # -- Liquidity Sweeps --
+    if show_sweeps and indicator_state:
+        up_sweeps = [s for s in indicator_state.get("sweeps", []) if s["direction"] == "upside"]
+        dn_sweeps = [s for s in indicator_state.get("sweeps", []) if s["direction"] == "downside"]
+        if up_sweeps:
+            fig.add_trace(go.Scatter(
+                x=[pd.to_datetime(s["timestamp"]) for s in up_sweeps],
+                y=[s["wick_extreme"] for s in up_sweeps],
+                mode="markers",
+                marker=dict(symbol="triangle-down", size=12,
+                            color="#0d47a1", line=dict(color="white", width=1.2)),
+                name=f"Sweep buyside ({len(up_sweeps)})",
+                hovertext=[f"Swept {s['label']}" for s in up_sweeps],
+                hoverinfo="text+x+y",
+            ), row=1, col=1)
+        if dn_sweeps:
+            fig.add_trace(go.Scatter(
+                x=[pd.to_datetime(s["timestamp"]) for s in dn_sweeps],
+                y=[s["wick_extreme"] for s in dn_sweeps],
+                mode="markers",
+                marker=dict(symbol="triangle-up", size=12,
+                            color="#b71c1c", line=dict(color="white", width=1.2)),
+                name=f"Sweep sellside ({len(dn_sweeps)})",
+                hovertext=[f"Swept {s['label']}" for s in dn_sweeps],
+                hoverinfo="text+x+y",
+            ), row=1, col=1)
 
     # -- Trade Entry Markers --
     if not trades_df.empty:

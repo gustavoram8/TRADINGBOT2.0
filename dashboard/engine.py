@@ -36,6 +36,7 @@ from validation.metrics import compute_metrics, PerformanceMetrics
 from validation.monte_carlo import run_monte_carlo, MonteCarloResult
 from validation.walk_forward import run_walk_forward, WFAResult
 from reporting.consistency import check_consistency, ConsistencyResult
+from reporting.tradingview_chart import extract_indicator_state
 from strategy.ict_strategy import ICTStrategy, MNQCommInfo
 from indicators.multi_tf_fvg import MultiTFAnalyzer
 from data.database import (
@@ -247,12 +248,18 @@ def execute_backtest(
         "verbose": False,
     }
 
+    # Extraer feeds 15m y 5m del multi_tf_data (si están disponibles)
+    df_15m = multi_tf_data.get("15m") if multi_tf_data else None
+    df_5m  = multi_tf_data.get("5m")  if multi_tf_data else None
+
     result = run_backtest(
         df=df,
         period_name=period_name,
         initial_capital=config.get("initial_capital", ACCOUNT_BALANCE),
         verbose=False,
         strategy_params=strategy_params,
+        df_15m=df_15m,
+        df_5m=df_5m,
     )
 
     # Build equity curve from trades
@@ -298,14 +305,19 @@ def execute_backtest(
         period_name=period_name,
     )
 
+    # Estado de indicadores que la estrategia usó REALMENTE durante el backtest
+    # (FVGs de los trackers internos, niveles de liquidez, sweeps)
+    indicator_state = result.get("indicator_state", {"fvgs": [], "liquidity": [], "sweeps": []})
+
     return {
         "metrics": metrics,
         "trades_df": trades_df,
         "final_value": result["final_value"],
         "equity_curve": equity_curve,
         "config": config,
-        "fvgs": fvgs_data,
+        "fvgs": fvgs_data,              # MultiTFAnalyzer (para la tabla resumen)
         "fvg_summary": fvg_summary,
+        "indicator_state": indicator_state,  # Estado real del bot (para el chart)
         "backtest_id": backtest_id,
     }
 

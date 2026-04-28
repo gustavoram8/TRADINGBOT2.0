@@ -138,7 +138,7 @@ def extract_indicator_state(strategy: Any) -> Dict[str, List[Dict]]:
         for f in getattr(tracker, "all_fvgs", []):
             state["fvgs"].append({
                 "timeframe": tf_label,
-                "type":      f.fvg_type.value,    # "bullish"/"bearish"
+                "fvg_type":  f.fvg_type.value,    # "bullish"/"bearish" — key matches MultiTFAnalyzer
                 "top":       float(f.top),
                 "bottom":    float(f.bottom),
                 "timestamp": _tz_naive(f.timestamp),
@@ -211,7 +211,8 @@ def _add_fvg_shapes(
             # Si está roto, lo extendemos sólo hasta su muerte aproximada;
             # si no, hasta el final del backtest.
             x1 = end_ts
-            color_template = FVG_BULL_COLOR if f["type"] == "bullish" else FVG_BEAR_COLOR
+            fvg_dir = f.get("fvg_type") or f.get("type", "bullish")
+            color_template = FVG_BULL_COLOR if fvg_dir == "bullish" else FVG_BEAR_COLOR
             fill = color_template.format(a=opacity)
             line_dash = "dot" if f["status"] == "broken" else "solid"
 
