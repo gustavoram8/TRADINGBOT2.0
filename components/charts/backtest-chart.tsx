@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import type { UTCTimestamp } from "lightweight-charts";
 import type { OHLCBar, Trade, FVGZone, LiquidityLevel, SweepEvent } from "@/lib/types";
+
+function toTs(ms: number): UTCTimestamp {
+  return Math.floor(ms / 1000) as UTCTimestamp;
+}
 
 interface Props {
   ohlcData: OHLCBar[];
@@ -85,7 +90,15 @@ export function BacktestChart({
         wickUpColor: "#26a69a",
         wickDownColor: "#ef5350",
       });
-      candles.setData(ohlcData);
+      candles.setData(
+        ohlcData.map((b) => ({
+          time: b.time as UTCTimestamp,
+          open: b.open,
+          high: b.high,
+          low: b.low,
+          close: b.close,
+        }))
+      );
 
       // ── FVG zones (top + bottom price lines) ─────────────────
       for (const fvg of fvgZones.slice(-50)) {
@@ -132,7 +145,7 @@ export function BacktestChart({
 
       // ── Trade + sweep markers ─────────────────────────────────
       type Marker = {
-        time: number;
+        time: UTCTimestamp;
         position: "aboveBar" | "belowBar" | "inBar";
         shape: "circle" | "square" | "arrowUp" | "arrowDown";
         color: string;
@@ -144,8 +157,8 @@ export function BacktestChart({
       for (const t of trades) {
         const long = t.direction === "long";
         const win = t.pnl_net > 0;
-        const entryTs = Math.floor(new Date(t.entry_time).getTime() / 1000);
-        const exitTs = Math.floor(new Date(t.exit_time).getTime() / 1000);
+        const entryTs = toTs(new Date(t.entry_time).getTime());
+        const exitTs = toTs(new Date(t.exit_time).getTime());
 
         markers.push({
           time: entryTs,
@@ -166,10 +179,9 @@ export function BacktestChart({
       }
 
       for (const sw of sweeps) {
-        const ts = Math.floor(new Date(sw.timestamp).getTime() / 1000);
         const buyside = sw.sweep_type === "buyside";
         markers.push({
-          time: ts,
+          time: toTs(new Date(sw.timestamp).getTime()),
           position: buyside ? "aboveBar" : "belowBar",
           shape: buyside ? "arrowDown" : "arrowUp",
           color: "#FF9800",
