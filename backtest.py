@@ -30,6 +30,11 @@ from validation.metrics import compute_metrics, format_metrics_report
 from validation.monte_carlo import run_monte_carlo, format_monte_carlo_report
 from reporting.consistency import check_consistency, format_consistency_report
 from reporting.report_generator import generate_full_report
+from reporting.visualization import (
+    plot_backtest_dashboard,
+    build_trade_report,
+    export_trade_reports,
+)
 
 
 def run_backtest(
@@ -198,18 +203,36 @@ def run_backtest(
     trades_df = strategy.get_trades_df()
     metrics = compute_metrics(trades_df, initial_capital)
 
-    # Plot si se solicita
-    if plot and len(trades_df) > 0:
+    # Generar dashboard visual si se solicita
+    if plot:
         try:
-            cerebro.plot(style="candlestick", volume=True)
+            from datetime import datetime as _dt
+            ts_str    = _dt.now().strftime("%Y%m%d_%H%M%S")
+            safe_name = period_name.replace(" ", "_").replace("(", "").replace(")", "")
+            out_png   = os.path.join("reports", f"dashboard_{safe_name}_{ts_str}.png")
+            plot_backtest_dashboard(
+                df_ohlc=df_bt,
+                trades_df=trades_df,
+                initial_capital=initial_capital,
+                out_path=out_png,
+                title=f"ICT Trading Bot — {period_name}",
+            )
+            if not trades_df.empty:
+                reports_data = build_trade_report(trades_df, df_bt, initial_capital)
+                export_trade_reports(
+                    reports_data,
+                    out_dir="reports",
+                    basename=f"trade_reports_{safe_name}_{ts_str}",
+                )
         except Exception as e:
-            print(f"No se pudo generar gráfico: {e}")
+            print(f"[VIZ] No se pudo generar dashboard: {e}")
 
     return {
         "metrics": metrics,
         "trades_df": trades_df,
         "final_value": final_value,
         "strategy": strategy,
+        "df_ohlc": df_bt,          # OHLC tz-naive usado en el backtest
     }
 
 

@@ -42,6 +42,11 @@ from validation.walk_forward import run_walk_forward, format_wfa_report
 from validation.monte_carlo import run_monte_carlo, format_monte_carlo_report
 from reporting.consistency import check_consistency, format_consistency_report
 from reporting.report_generator import generate_full_report
+from reporting.visualization import (
+    plot_backtest_dashboard,
+    build_trade_report,
+    export_trade_reports,
+)
 
 
 BANNER = r"""
@@ -337,7 +342,7 @@ def step_final_verdict(
     return verdict
 
 
-def run_pipeline(quick: bool = False):
+def run_pipeline(quick: bool = False, plot: bool = False):
     """Ejecuta el pipeline completo de validación."""
     start_time = time.time()
 
@@ -355,7 +360,7 @@ def run_pipeline(quick: bool = False):
         # Solo backtest rápido con todos los datos
         result = run_backtest(
             df_1h, period_name="Backtest Rápido", verbose=True,
-            df_15m=df_15m, df_5m=df_5m,
+            plot=plot, df_15m=df_15m, df_5m=df_5m,
         )
         print("\n" + format_metrics_report(result["metrics"]))
         elapsed = time.time() - start_time
@@ -401,6 +406,50 @@ def run_pipeline(quick: bool = False):
             period_name="Pipeline Completo",
         )
 
+    # ─── Dashboard visual ────────────────────────────────────────────────────
+    print("\n" + "=" * 60)
+    print("  GENERANDO DASHBOARD VISUAL")
+    print("=" * 60)
+    try:
+        ts_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+        # Determinar la fuente OHLC para el gráfico:
+        # run_backtest ahora devuelve "df_ohlc" (tz-naive).
+        # Si OOS tiene su propio df_ohlc, lo usamos; si no, usamos df_1h completo.
+        if isinstance(oos_result, dict) and "df_ohlc" in oos_result:
+            ohlc_for_chart = oos_result["df_ohlc"]
+            chart_period   = "OOS"
+        else:
+            ohlc_for_chart = df_1h
+            chart_period   = "Completo"
+
+        trades_for_chart = (
+            oos_result.get("trades_df")
+            if isinstance(oos_result, dict)
+            else None
+        )
+        dash_path = plot_backtest_dashboard(
+            df_ohlc=ohlc_for_chart,
+            trades_df=trades_for_chart,
+            initial_capital=ACCOUNT_BALANCE,
+            out_path=f"reports/dashboard_{chart_period}_{ts_str}.png",
+            title=f"ICT Trading Bot — Backtest {chart_period}",
+        )
+
+        if trades_for_chart is not None and not trades_for_chart.empty:
+            rpts = build_trade_report(trades_for_chart, ohlc_for_chart, ACCOUNT_BALANCE)
+            export_trade_reports(
+                rpts,
+                out_dir="reports",
+                basename=f"trade_reports_{chart_period}_{ts_str}",
+            )
+            print(f"  ✓ {len(rpts)} trade reports exportados.")
+
+        if dash_path:
+            print(f"  ✓ Dashboard guardado: {dash_path}")
+    except Exception as e:
+        print(f"  ✗ Error generando dashboard: {e}")
+
     # ─── Tiempo total ───
     elapsed = time.time() - start_time
     minutes = int(elapsed // 60)
@@ -436,7 +485,7 @@ Ejemplos:
         print("\n  Descarga completada.")
         return
 
-    run_pipeline(quick=args.quick)
+    run_pipeline(quick=args.quick, plot=args.plot)
 
 
 if __name__ == "__main__":
