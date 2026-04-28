@@ -6,6 +6,9 @@ import type {
   BotConfig,
   FVGSummary,
   OHLCBar,
+  FVGZone,
+  LiquidityLevel,
+  SweepEvent,
 } from "./types";
 
 export const DEFAULT_CONFIG: BotConfig = {
@@ -259,23 +262,85 @@ export const MOCK_FVG_SUMMARY: FVGSummary[] = [
   { timeframe: "1m", total: 87, bullish: 46, bearish: 41, decision: 18, avg_confluence: 0.9 },
 ];
 
-export function generateMockOHLC(bars = 200): OHLCBar[] {
+export function generateMockOHLC(bars = 600): OHLCBar[] {
   const result: OHLCBar[] = [];
   let price = 19800;
-  let time = Math.floor(new Date("2025-11-01T09:30:00Z").getTime() / 1000);
+  // Start at Oct 1 to cover the mock trade period
+  let time = Math.floor(new Date("2025-10-01T09:30:00Z").getTime() / 1000);
   const barSec = 3600;
 
   for (let i = 0; i < bars; i++) {
-    const change = randomBetween(-80, 80);
+    // Slow sinusoidal trend + noise
+    const trend = Math.sin(i / 80) * 150;
+    const change = randomBetween(-55, 55) + trend * 0.015;
     const open = price;
     const close = price + change;
-    const high = Math.max(open, close) + randomBetween(5, 40);
-    const low = Math.min(open, close) - randomBetween(5, 40);
-    result.push({ time, open, high, low, close, volume: Math.floor(randomBetween(1000, 8000)) });
+    const high = Math.max(open, close) + randomBetween(4, 28);
+    const low = Math.min(open, close) - randomBetween(4, 28);
+    result.push({
+      time,
+      open: +open.toFixed(2),
+      high: +high.toFixed(2),
+      low: +low.toFixed(2),
+      close: +close.toFixed(2),
+      volume: Math.floor(randomBetween(800, 9000)),
+    });
     price = close;
     time += barSec;
   }
   return result;
+}
+
+export function generateMockFVGZones(): FVGZone[] {
+  const zones: FVGZone[] = [];
+  const tfs: Array<[string, number]> = [["4h", 2], ["1h", 5], ["15m", 8], ["5m", 6]];
+  const basePrice = 19800;
+
+  for (const [tf, count] of tfs) {
+    for (let i = 0; i < count; i++) {
+      const mid = basePrice + randomBetween(-700, 700);
+      const gap = randomBetween(8, 55);
+      const isBull = Math.random() > 0.48;
+      zones.push({
+        fvg_type: isBull ? "bullish" : "bearish",
+        timeframe: tf,
+        high: +(mid + gap / 2).toFixed(2),
+        low: +(mid - gap / 2).toFixed(2),
+        filled: Math.random() < 0.25,
+      });
+    }
+  }
+  return zones;
+}
+
+export function generateMockLiquidityLevels(): LiquidityLevel[] {
+  const base = 19800;
+  const levels: Array<[string, number]> = [
+    ["PDH", 305], ["PDL", -288], ["EQH", 162], ["EQL", -155],
+    ["ATH", 618], ["ATL", -572], ["swing_high", 88],
+    ["swing_high", 234], ["swing_low", -95], ["swing_low", -210],
+  ];
+  return levels.map(([type, offset]) => ({
+    price: +(base + offset + randomBetween(-15, 15)).toFixed(2),
+    level_type: type,
+    swept: Math.random() < 0.28,
+  }));
+}
+
+export function generateMockSweeps(): SweepEvent[] {
+  const sweeps: SweepEvent[] = [];
+  let d = new Date("2025-10-06T14:00:00Z");
+  for (let i = 0; i < 10; i++) {
+    d = new Date(d.getTime() + randomBetween(2, 6) * 24 * 3600 * 1000);
+    const buyside = Math.random() > 0.5;
+    sweeps.push({
+      price: +(19800 + (buyside ? 200 : -200) + randomBetween(-80, 80)).toFixed(2),
+      sweep_type: buyside ? "buyside" : "sellside",
+      timestamp: d.toISOString(),
+      timeframe: ["1h", "15m", "4h"][Math.floor(Math.random() * 3)],
+    });
+  }
+  return sweeps;
 }
 
 const MOCK_TRADES = generateMockTrades(38);
@@ -290,4 +355,8 @@ export const MOCK_BACKTEST_RESULT: BacktestResult = {
   config: DEFAULT_CONFIG,
   fvg_summary: MOCK_FVG_SUMMARY,
   period_name: "Oct–Nov 2025",
+  ohlc_data: generateMockOHLC(600),
+  fvg_zones: generateMockFVGZones(),
+  liquidity_levels: generateMockLiquidityLevels(),
+  sweeps: generateMockSweeps(),
 };

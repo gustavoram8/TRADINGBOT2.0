@@ -85,6 +85,29 @@ export interface BotConfig {
   close_at_pct: number;
 }
 
+export interface FVGZone {
+  fvg_type: "bullish" | "bearish";
+  timeframe: string;
+  high: number;
+  low: number;
+  timestamp?: string;
+  filled?: boolean;
+}
+
+export interface LiquidityLevel {
+  price: number;
+  level_type: string;
+  timestamp?: string;
+  swept?: boolean;
+}
+
+export interface SweepEvent {
+  price: number;
+  sweep_type: "buyside" | "sellside";
+  timestamp: string;
+  timeframe?: string;
+}
+
 export interface BacktestResult {
   backtest_id?: string;
   metrics: PerformanceMetrics;
@@ -93,6 +116,10 @@ export interface BacktestResult {
   config: BotConfig;
   fvg_summary: FVGSummary[];
   period_name?: string;
+  ohlc_data?: OHLCBar[];
+  fvg_zones?: FVGZone[];
+  liquidity_levels?: LiquidityLevel[];
+  sweeps?: SweepEvent[];
 }
 
 export interface MonteCarloResult {

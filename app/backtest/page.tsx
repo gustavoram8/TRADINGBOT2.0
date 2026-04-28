@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTradingStore } from "@/store";
 import { EquityCurve } from "@/components/charts/equity-curve";
 import { PnlChart } from "@/components/charts/pnl-chart";
+import { BacktestChart } from "@/components/charts/backtest-chart";
 import { fmtUSD, fmtPct, pnlColor, cn } from "@/lib/utils";
 import { runBacktest } from "@/lib/api";
 import { Play, Loader2, ChevronDown, ChevronUp } from "lucide-react";
@@ -140,16 +141,53 @@ export default function BacktestPage() {
           </div>
 
           {activeTab === "overview" && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="space-y-4">
+              {/* Primary: Candlestick chart with all ICT overlays */}
               <div className="card">
-                <p className="text-sm font-medium mb-3">Equity Curve</p>
-                <EquityCurve data={res.equity_curve} initialBalance={m.initial_balance} height={260} />
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm font-medium">Gráfico de Velas — ICT Overlays</p>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-text-secondary">
+                    <span className="flex items-center gap-1.5">
+                      <span className="inline-block w-4 h-0.5 bg-[#26a69a]" />FVG Bull
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="inline-block w-4 h-0.5 bg-[#ef5350]" />FVG Bear
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="inline-block w-4 h-0.5 bg-[#2979FF]" />PDH/PDL
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="inline-block w-4 h-0.5 bg-[#FF9800]" />EQ / Sweep
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="inline-block w-4 h-0.5 bg-[#AB47BC]" />ATH/ATL
+                    </span>
+                  </div>
+                </div>
+                <BacktestChart
+                  ohlcData={res.ohlc_data ?? []}
+                  trades={res.trades}
+                  fvgZones={res.fvg_zones ?? []}
+                  liquidityLevels={res.liquidity_levels ?? []}
+                  sweeps={res.sweeps ?? []}
+                  height={480}
+                />
               </div>
+
+              {/* Secondary: Equity curve + P&L */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="card">
+                  <p className="text-sm font-medium mb-3">Equity Curve</p>
+                  <EquityCurve data={res.equity_curve} initialBalance={m.initial_balance} height={200} />
+                </div>
+                <div className="card">
+                  <p className="text-sm font-medium mb-3">P&L por Trade</p>
+                  <PnlChart trades={res.trades} height={200} />
+                </div>
+              </div>
+
+              {/* FVG summary cards */}
               <div className="card">
-                <p className="text-sm font-medium mb-3">P&L por Trade</p>
-                <PnlChart trades={res.trades} height={260} />
-              </div>
-              <div className="card col-span-full">
                 <p className="text-sm font-medium mb-3">FVG Detectados por Timeframe</p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {res.fvg_summary?.map((f) => (
