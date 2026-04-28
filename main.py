@@ -47,6 +47,10 @@ from reporting.visualization import (
     build_trade_report,
     export_trade_reports,
 )
+from reporting.tradingview_chart import (
+    plot_tradingview_dashboard,
+    extract_indicator_state,
+)
 
 
 BANNER = r"""
@@ -60,9 +64,15 @@ BANNER = r"""
 
 def step_download_data() -> dict[str, pd.DataFrame]:
     """Paso 1: Descarga datos multi-timeframe."""
+    from config.settings import SYMBOL, ASSET_NAME, POINT_VALUE
     print("\n" + "=" * 60)
     print("  PASO 1: DESCARGA DE DATOS")
     print("=" * 60)
+    print(f"  Fuente:  Yahoo Finance (yfinance) — datos REALES del mercado")
+    print(f"  Ticker:  {SYMBOL} (Nasdaq-100 E-mini continuous futures, CME)")
+    print(f"  Activo:  {ASSET_NAME} | mismos precios que NQ, mult ${POINT_VALUE}/pt")
+    print(f"  Delay:   ~15 min (Yahoo no entrega tick en tiempo real)")
+    print(f"  Para verificar:  python -m data.verify_source")
 
     data = {}
 
@@ -408,13 +418,11 @@ def run_pipeline(quick: bool = False, plot: bool = False):
 
     # ─── Dashboard visual ────────────────────────────────────────────────────
     print("\n" + "=" * 60)
-    print("  GENERANDO DASHBOARD VISUAL")
+    print("  GENERANDO DASHBOARDS (PNG estático + HTML interactivo)")
     print("=" * 60)
     try:
         ts_str = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-        # Determinar la fuente OHLC para el gráfico:
-        # run_backtest ahora devuelve "df_ohlc" (tz-naive).
         # Si OOS tiene su propio df_ohlc, lo usamos; si no, usamos df_1h completo.
         if isinstance(oos_result, dict) and "df_ohlc" in oos_result:
             ohlc_for_chart = oos_result["df_ohlc"]
@@ -428,7 +436,14 @@ def run_pipeline(quick: bool = False, plot: bool = False):
             if isinstance(oos_result, dict)
             else None
         )
-        dash_path = plot_backtest_dashboard(
+        indicator_state_chart = (
+            oos_result.get("indicator_state")
+            if isinstance(oos_result, dict)
+            else None
+        )
+
+        # 1) PNG estático (matplotlib)
+        dash_png = plot_backtest_dashboard(
             df_ohlc=ohlc_for_chart,
             trades_df=trades_for_chart,
             initial_capital=ACCOUNT_BALANCE,
@@ -436,6 +451,18 @@ def run_pipeline(quick: bool = False, plot: bool = False):
             title=f"ICT Trading Bot — Backtest {chart_period}",
         )
 
+        # 2) HTML interactivo estilo TradingView con FVGs, liquidez, sweeps
+        dash_html = plot_tradingview_dashboard(
+            df_ohlc=ohlc_for_chart,
+            trades_df=trades_for_chart,
+            indicator_state=indicator_state_chart,
+            initial_capital=ACCOUNT_BALANCE,
+            out_path=f"reports/tv_dashboard_{chart_period}_{ts_str}.html",
+            title=f"ICT Trading Bot — Backtest {chart_period}",
+            data_source_label="yfinance | NQ=F (Nasdaq-100 E-mini Futures, real)",
+        )
+
+        # 3) Reporte técnico por trade
         if trades_for_chart is not None and not trades_for_chart.empty:
             rpts = build_trade_report(trades_for_chart, ohlc_for_chart, ACCOUNT_BALANCE)
             export_trade_reports(
@@ -445,8 +472,11 @@ def run_pipeline(quick: bool = False, plot: bool = False):
             )
             print(f"  ✓ {len(rpts)} trade reports exportados.")
 
-        if dash_path:
-            print(f"  ✓ Dashboard guardado: {dash_path}")
+        if dash_png:
+            print(f"  ✓ PNG estático:    {dash_png}")
+        if dash_html:
+            print(f"  ✓ HTML interactivo: {dash_html}")
+            print(f"     ↳ Ábrelo en cualquier navegador para ver FVGs, liquidez y sweeps.")
     except Exception as e:
         print(f"  ✗ Error generando dashboard: {e}")
 

@@ -35,6 +35,10 @@ from reporting.visualization import (
     build_trade_report,
     export_trade_reports,
 )
+from reporting.tradingview_chart import (
+    plot_tradingview_dashboard,
+    extract_indicator_state,
+)
 
 
 def run_backtest(
@@ -203,13 +207,23 @@ def run_backtest(
     trades_df = strategy.get_trades_df()
     metrics = compute_metrics(trades_df, initial_capital)
 
-    # Generar dashboard visual si se solicita
+    # Capturar estado final de indicadores (FVGs, liquidez, sweeps)
+    # — útil tanto para el dashboard interactivo como para análisis post-hoc
+    try:
+        indicator_state = extract_indicator_state(strategy)
+    except Exception as e:
+        print(f"[VIZ] No se pudo extraer estado de indicadores: {e}")
+        indicator_state = {"fvgs": [], "liquidity": [], "sweeps": []}
+
+    # Generar dashboards si se solicita
     if plot:
         try:
             from datetime import datetime as _dt
             ts_str    = _dt.now().strftime("%Y%m%d_%H%M%S")
             safe_name = period_name.replace(" ", "_").replace("(", "").replace(")", "")
-            out_png   = os.path.join("reports", f"dashboard_{safe_name}_{ts_str}.png")
+
+            # 1) Dashboard estático (PNG) — equity + drawdown + velas
+            out_png = os.path.join("reports", f"dashboard_{safe_name}_{ts_str}.png")
             plot_backtest_dashboard(
                 df_ohlc=df_bt,
                 trades_df=trades_df,
@@ -217,6 +231,20 @@ def run_backtest(
                 out_path=out_png,
                 title=f"ICT Trading Bot — {period_name}",
             )
+
+            # 2) Dashboard interactivo (HTML estilo TradingView) — con FVGs,
+            #    liquidez, sweeps, todas las anotaciones del bot.
+            out_html = os.path.join("reports", f"tv_dashboard_{safe_name}_{ts_str}.html")
+            plot_tradingview_dashboard(
+                df_ohlc=df_bt,
+                trades_df=trades_df,
+                indicator_state=indicator_state,
+                initial_capital=initial_capital,
+                out_path=out_html,
+                title=f"ICT Trading Bot — {period_name}",
+                data_source_label="yfinance | NQ=F (Nasdaq-100 E-mini Futures)",
+            )
+
             if not trades_df.empty:
                 reports_data = build_trade_report(trades_df, df_bt, initial_capital)
                 export_trade_reports(
@@ -232,7 +260,8 @@ def run_backtest(
         "trades_df": trades_df,
         "final_value": final_value,
         "strategy": strategy,
-        "df_ohlc": df_bt,          # OHLC tz-naive usado en el backtest
+        "df_ohlc": df_bt,                  # OHLC tz-naive usado en el backtest
+        "indicator_state": indicator_state, # FVGs / liquidez / sweeps post-backtest
     }
 
 
