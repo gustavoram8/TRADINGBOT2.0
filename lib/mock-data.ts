@@ -148,6 +148,17 @@ export function generateMockTrades(
   const dailyCount = new Map<string, number>();
   const dailyPnl = new Map<string, number>();
 
+  // ── Prop-firm drawdown guard ──────────────────────────────────────────
+  // Hard limit: 5 % of initial capital (prop-firm rule).
+  // Contracts scale down automatically as the bot approaches that ceiling:
+  //   DD < 60 % of limit  → full size  (config.default_contracts)
+  //   DD 60–80 % of limit → half size  (ceil(default / 2), min 1)
+  //   DD 80–100 % of limit → minimum  (1 contract)
+  //   DD ≥ 100 % of limit → stop trading (account blown)
+  const MAX_DD_USD = config.initial_capital * 0.05;
+  let equity = config.initial_capital;
+  let peakEquity = config.initial_capital;
+
   const step = (end.getTime() - start.getTime()) / targetCount;
   let d = nextWeekday(
     new Date(start.getTime() + between(rand, 0, step * 0.5))
@@ -159,7 +170,12 @@ export function generateMockTrades(
 
     const dateKey = d.toISOString().slice(0, 10);
 
-    // ── Kill switch: max trades per day ──────────────────────────
+    // ── Kill switch: account blown (5 % DD reached) ───────────────
+    const currentDD = peakEquity - equity;
+    const ddRatio = currentDD / MAX_DD_USD; // 0 = safe, 1 = blown
+    if (ddRatio >= 1.0) break;
+
+    // ── Kill switch: max trades per day ───────────────────────────
     if ((dailyCount.get(dateKey) ?? 0) >= config.max_trades_per_day) {
       d = nextWeekday(new Date(d.getTime() + MS_PER_DAY));
       d.setUTCHours(9, 30, 0, 0);
@@ -175,13 +191,21 @@ export function generateMockTrades(
       continue;
     }
 
+    // ── Dynamic contract sizing based on DD proximity ─────────────
+    let contracts: number;
+    if (ddRatio < 0.6) {
+      contracts = config.default_contracts;                          // safe zone
+    } else if (ddRatio < 0.8) {
+      contracts = Math.max(1, Math.ceil(config.default_contracts / 2)); // caution
+    } else {
+      contracts = 1;                                                 // danger zone
+    }
+
     // ── Trade parameters ──────────────────────────────────────────
     const dir: "long" | "short" = rand() > 0.45 ? "long" : "short";
     const basePrice = 19800 + between(rand, -500, 500);
     const slDist = between(rand, 15, 60);
     const tpDist = slDist * between(rand, 1.2, 2.8);
-    // Always use the configured contract count — never random
-    const contracts = config.default_contracts;
 
     const slPrice = dir === "long" ? basePrice - slDist : basePrice + slDist;
     const tpPrice = dir === "long" ? basePrice + tpDist : basePrice - tpDist;
@@ -208,9 +232,11 @@ export function generateMockTrades(
     const commission = contracts * 2 * 0.62 + contracts * 2 * 0.5;
     const pnlNet = pnlGross - commission;
 
-    // Update daily tracking
+    // Update daily tracking and running equity (used for DD guard next iteration)
     dailyCount.set(dateKey, (dailyCount.get(dateKey) ?? 0) + 1);
     dailyPnl.set(dateKey, (dailyPnl.get(dateKey) ?? 0) + pnlNet);
+    equity += pnlNet;
+    peakEquity = Math.max(peakEquity, equity);
 
     const entryTime = new Date(d);
     entryTime.setUTCHours(9, 30 + Math.floor(between(rand, 0, 90)), 0, 0);
