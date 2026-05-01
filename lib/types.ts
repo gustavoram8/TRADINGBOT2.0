@@ -13,6 +13,7 @@ export interface Trade {
   commission: number;
   contracts: number;
   reason: string;
+  context?: TradeContext;
 }
 
 export interface EquityPoint {
@@ -176,4 +177,27 @@ export interface GoNoGoCheck {
   passed: boolean;
   value: string;
   threshold: string;
+}
+
+export interface TradeSetupCondition {
+  label: string;
+  detail: string;
+  score: number;
+  passed: boolean;
+}
+
+export interface TradeContext {
+  market_structure: "bullish" | "bearish" | "ranging";
+  price_zone: "discount" | "premium" | "equilibrium";
+  killzone: string;
+  trigger_fvg_timeframe: string;
+  trigger_fvg_type: "bullish" | "bearish";
+  trigger_fvg_size_points: number;
+  fvg_confluence: { timeframe: string; type: "bullish" | "bearish" }[];
+  nearest_target: string;
+  recent_sweep: string | null;
+  setup_score: number;
+  min_score: number;
+  conditions: TradeSetupCondition[];
+  exit_detail: string;
 }

@@ -1,6 +1,8 @@
 import type {
   BacktestResult,
   Trade,
+  TradeContext,
+  TradeSetupCondition,
   EquityPoint,
   PerformanceMetrics,
   BotConfig,
@@ -105,6 +107,147 @@ function nextWeekday(d: Date): Date {
   if (day === 6) return new Date(d.getTime() + 2 * MS_PER_DAY);
   if (day === 0) return new Date(d.getTime() + MS_PER_DAY);
   return d;
+}
+
+// ── Trade context generator ──────────────────────────────────────────────
+// Builds the rich "why did the bot take this trade / how did it exit" context
+// that is displayed in the trade journal.
+function generateTradeContext(
+  trade: Omit<Trade, "context">,
+  rand: RandFn
+): TradeContext {
+  const entryHour = new Date(trade.entry_time).getUTCHours();
+
+  // Killzone classification by UTC hour
+  let killzone: string;
+  if (entryHour >= 2 && entryHour < 5)        killzone = "London Open";
+  else if (entryHour >= 7 && entryHour < 9)   killzone = "London/NY Overlap";
+  else if (entryHour >= 13 && entryHour < 16) killzone = "NY Open";
+  else if (entryHour >= 19 && entryHour < 21) killzone = "NY Afternoon";
+  else                                          killzone = "Off-Session";
+
+  const market_structure: TradeContext["market_structure"] =
+    trade.direction === "long"
+      ? (rand() > 0.2 ? "bullish" : "ranging")
+      : (rand() > 0.2 ? "bearish" : "ranging");
+
+  const zoneOptions: TradeContext["price_zone"][] = ["discount", "premium", "equilibrium"];
+  const price_zone = zoneOptions[Math.floor(rand() * 3)];
+
+  const tfOptions = ["1h", "15m", "5m", "1m"];
+  const trigger_fvg_timeframe = tfOptions[Math.floor(rand() * tfOptions.length)];
+  const trigger_fvg_type: TradeContext["trigger_fvg_type"] =
+    trade.direction === "long" ? "bullish" : "bearish";
+  const trigger_fvg_size_points = +between(rand, 5, 35).toFixed(1);
+
+  const confCount = Math.floor(rand() * 4);
+  const fvg_confluence = Array.from({ length: confCount }, () => ({
+    timeframe: tfOptions[Math.floor(rand() * tfOptions.length)],
+    type: (rand() > 0.3
+      ? trigger_fvg_type
+      : trigger_fvg_type === "bullish" ? "bearish" : "bullish") as TradeContext["trigger_fvg_type"],
+  }));
+
+  const targetLabels = ["PDH", "PDL", "EQH", "EQL", "ATH", "ATL", "Swing High", "Swing Low"];
+  const nearest_target = targetLabels[Math.floor(rand() * targetLabels.length)];
+
+  const sweepLabels = ["Buyside Sweep", "Sellside Sweep"];
+  const recent_sweep = rand() > 0.35 ? sweepLabels[Math.floor(rand() * 2)] : null;
+
+  const targetDist = +between(rand, 15, 80).toFixed(0);
+  const liqPassed = rand() > 0.25;
+  const killzonePassed = killzone !== "Off-Session";
+
+  const conditions: TradeSetupCondition[] = [
+    {
+      label: "Estructura de mercado",
+      detail:
+        market_structure === "bullish" ? "Break of structure alcista confirmado en 1H" :
+        market_structure === "bearish" ? "Break of structure bajista confirmado en 1H" :
+        "Sin estructura clara — mercado en rango",
+      score: 2,
+      passed: market_structure !== "ranging",
+    },
+    {
+      label: "FVG disparador",
+      detail: `FVG ${trigger_fvg_type === "bullish" ? "alcista" : "bajista"} de ${trigger_fvg_size_points} pts en ${trigger_fvg_timeframe.toUpperCase()} detectado`,
+      score: 2,
+      passed: true,
+    },
+    {
+      label: "Confluencia de FVGs",
+      detail:
+        confCount > 0
+          ? `${confCount} FVG(s) alineado(s) en ${fvg_confluence.map((f) => f.timeframe).join(", ")}`
+          : "Sin FVGs adicionales de confluencia",
+      score: 2,
+      passed: confCount > 0,
+    },
+    {
+      label: "Zona de precio",
+      detail:
+        price_zone === "discount" ? "Precio en zona de descuento — favorable para largos" :
+        price_zone === "premium"  ? "Precio en zona de prima — favorable para cortos" :
+        "Precio en equilibrio — zona neutral",
+      score: 1,
+      passed:
+        (price_zone === "discount" && trade.direction === "long") ||
+        (price_zone === "premium"  && trade.direction === "short"),
+    },
+    {
+      label: "Objetivo de liquidez",
+      detail: `${nearest_target} identificado como target a ${targetDist} pts`,
+      score: 1,
+      passed: liqPassed,
+    },
+    {
+      label: "Sweep reciente",
+      detail: recent_sweep
+        ? `${recent_sweep} detectado — reposicionamiento de smart money`
+        : "Sin sweep reciente — setup más débil sin confirmación",
+      score: 1,
+      passed: recent_sweep !== null,
+    },
+    {
+      label: "Killzone de entrada",
+      detail: `Entrada durante ${killzone}`,
+      score: 1,
+      passed: killzonePassed,
+    },
+  ];
+
+  const setup_score = conditions.reduce((s, c) => s + (c.passed ? c.score : 0), 0);
+  const min_score = 6;
+
+  const slDist = Math.abs(trade.entry_price - trade.sl_price).toFixed(1);
+  let exit_detail: string;
+  if (trade.reason === "TP Hit") {
+    exit_detail = `TP completo alcanzado en ${trade.exit_price.toFixed(2)}. Objetivo original: ${trade.tp_price.toFixed(2)}.`;
+  } else if (trade.reason === "90% TP") {
+    exit_detail = `Posición cerrada al 90% del objetivo (${trade.exit_price.toFixed(2)}) por regla close_at_pct.`;
+  } else if (trade.reason === "SL Hit") {
+    exit_detail = `Stop loss activado en ${trade.exit_price.toFixed(2)}. Riesgo contenido en ${slDist} pts.`;
+  } else if (trade.reason === "Break Even") {
+    exit_detail = `Trade movido a break-even y salida plana. FVG protector posiblemente invalidado.`;
+  } else {
+    exit_detail = `${trade.reason}: posición cerrada por reglas de sesión en ${trade.exit_price.toFixed(2)}.`;
+  }
+
+  return {
+    market_structure,
+    price_zone,
+    killzone,
+    trigger_fvg_timeframe,
+    trigger_fvg_type,
+    trigger_fvg_size_points,
+    fvg_confluence,
+    nearest_target,
+    recent_sweep,
+    setup_score,
+    min_score,
+    conditions,
+    exit_detail,
+  };
 }
 
 // ── Trade generator ──────────────────────────────────────────────────────
@@ -244,7 +387,7 @@ export function generateMockTrades(
       entryTime.getTime() + between(rand, 15, 120) * 60 * 1000
     );
 
-    trades.push({
+    const tradeBase = {
       id: `trade-${i}`,
       timestamp: entryTime.toISOString(),
       entry_time: entryTime.toISOString(),
@@ -259,7 +402,8 @@ export function generateMockTrades(
       commission,
       contracts,
       reason,
-    });
+    };
+    trades.push({ ...tradeBase, context: generateTradeContext(tradeBase, rand) });
 
     d = new Date(
       d.getTime() + step + between(rand, -step * 0.3, step * 0.3)

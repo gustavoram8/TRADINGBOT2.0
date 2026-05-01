@@ -12,6 +12,7 @@ import {
   SlidersHorizontal,
   BrainCircuit,
   FileText,
+  BookOpen,
   ChevronLeft,
   ChevronRight,
   TrendingUp,
@@ -27,6 +28,7 @@ const NAV = [
   { href: "/risk", label: "Risk Center", icon: Shield },
   { href: "/validation", label: "Validation", icon: CheckCircle2 },
   { href: "/configurator", label: "Bot Builder", icon: SlidersHorizontal },
+  { href: "/journal", label: "Trade Journal", icon: BookOpen },
   { href: "/ai", label: "AI Analyst", icon: BrainCircuit },
   { href: "/reports", label: "Reports", icon: FileText },
 ];
