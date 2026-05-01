@@ -60,7 +60,7 @@ export function Sidebar() {
               CHUKY BOT
             </p>
             <p className="text-[10px] text-text-muted mt-0.5">
-              ICT · MNQ · OneUpTrader
+              ICT · MNQ
             </p>
           </div>
         )}
