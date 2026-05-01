@@ -291,16 +291,22 @@ export function generateMockTrades(
   const dailyCount = new Map<string, number>();
   const dailyPnl = new Map<string, number>();
 
-  // ── Prop-firm drawdown guard ──────────────────────────────────────────
-  // Hard limit: 5 % of initial capital (prop-firm rule).
-  // Contracts scale down automatically as the bot approaches that ceiling:
-  //   DD < 60 % of limit  → full size  (config.default_contracts)
-  //   DD 60–80 % of limit → half size  (ceil(default / 2), min 1)
-  //   DD 80–100 % of limit → minimum  (1 contract)
-  //   DD ≥ 100 % of limit → stop trading (account blown)
+  // ── Prop-firm trailing drawdown guard (OneUpTrader rules) ────────────
+  // Hard limit: 5 % of initial capital (MAX_DD_USD).
+  // The floor trails the running peak by MAX_DD_USD UNTIL the peak crosses
+  // initial_capital + MAX_DD_USD; from that point on the floor LOCKS at
+  // initial_capital — once the trader has secured the buffer, the floor
+  // never moves above the starting balance no matter how high equity goes.
+  //   floor = min(peak − MAX_DD_USD, initial_capital)
+  // Buffer-from-floor (as % of MAX_DD_USD consumed) drives contract sizing:
+  //   < 60 % consumed → full size  (config.default_contracts)
+  //   60–80 % consumed → half size (ceil(default / 2), min 1)
+  //   80–100 % consumed → minimum  (1 contract)
+  //   ≥ 100 % consumed → stop trading (equity at/below floor → blown)
   const MAX_DD_USD = config.initial_capital * 0.05;
   let equity = config.initial_capital;
   let peakEquity = config.initial_capital;
+  let floor = config.initial_capital - MAX_DD_USD;
 
   const step = (end.getTime() - start.getTime()) / targetCount;
   let d = nextWeekday(
@@ -313,9 +319,14 @@ export function generateMockTrades(
 
     const dateKey = d.toISOString().slice(0, 10);
 
-    // ── Kill switch: account blown (5 % DD reached) ───────────────
-    const currentDD = peakEquity - equity;
-    const ddRatio = currentDD / MAX_DD_USD; // 0 = safe, 1 = blown
+    // ── Kill switch: equity reached the trailing floor ────────────
+    // ddRatio = fraction of the MAX_DD_USD buffer already consumed.
+    //   0 = full buffer (equity is MAX_DD_USD above floor or higher)
+    //   1 = at floor → account blown.
+    // Negative values (equity > floor + MAX_DD_USD, only possible after the
+    // floor locks at initial_capital) are clamped to 0 — full safe zone.
+    const buffer = equity - floor;
+    const ddRatio = Math.max(0, 1 - buffer / MAX_DD_USD);
     if (ddRatio >= 1.0) break;
 
     // ── Kill switch: max trades per day ───────────────────────────
@@ -379,7 +390,12 @@ export function generateMockTrades(
     dailyCount.set(dateKey, (dailyCount.get(dateKey) ?? 0) + 1);
     dailyPnl.set(dateKey, (dailyPnl.get(dateKey) ?? 0) + pnlNet);
     equity += pnlNet;
-    peakEquity = Math.max(peakEquity, equity);
+    if (equity > peakEquity) {
+      peakEquity = equity;
+      // Floor trails peak by MAX_DD_USD; once peak ≥ initial + MAX_DD_USD,
+      // the formula caps the floor at initial_capital (locked forever).
+      floor = Math.min(peakEquity - MAX_DD_USD, config.initial_capital);
+    }
 
     const entryTime = new Date(d);
     entryTime.setUTCHours(9, 30 + Math.floor(between(rand, 0, 90)), 0, 0);
