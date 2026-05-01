@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import type { BacktestResult, BotConfig, ChatMessage } from "@/lib/types";
 import { MOCK_BACKTEST_RESULT, DEFAULT_CONFIG } from "@/lib/mock-data";
 
@@ -16,17 +17,25 @@ interface TradingStore {
   loadMockData: () => void;
 }
 
-export const useTradingStore = create<TradingStore>((set) => ({
-  backtestResult: MOCK_BACKTEST_RESULT,
-  activeConfig: DEFAULT_CONFIG,
-  chatHistory: [],
-  isRunningBacktest: false,
+export const useTradingStore = create<TradingStore>()(
+  persist(
+    (set) => ({
+      backtestResult: MOCK_BACKTEST_RESULT,
+      activeConfig: DEFAULT_CONFIG,
+      chatHistory: [],
+      isRunningBacktest: false,
 
-  setBacktestResult: (result) => set({ backtestResult: result }),
-  setActiveConfig: (config) => set({ activeConfig: config }),
-  addChatMessage: (msg) =>
-    set((s) => ({ chatHistory: [...s.chatHistory, msg] })),
-  clearChat: () => set({ chatHistory: [] }),
-  setRunningBacktest: (v) => set({ isRunningBacktest: v }),
-  loadMockData: () => set({ backtestResult: MOCK_BACKTEST_RESULT }),
-}));
+      setBacktestResult: (result) => set({ backtestResult: result }),
+      setActiveConfig: (config) => set({ activeConfig: config }),
+      addChatMessage: (msg) =>
+        set((s) => ({ chatHistory: [...s.chatHistory, msg] })),
+      clearChat: () => set({ chatHistory: [] }),
+      setRunningBacktest: (v) => set({ isRunningBacktest: v }),
+      loadMockData: () => set({ backtestResult: MOCK_BACKTEST_RESULT }),
+    }),
+    {
+      name: "tradingbot-config",
+      partialize: (state) => ({ activeConfig: state.activeConfig }),
+    }
+  )
+);
