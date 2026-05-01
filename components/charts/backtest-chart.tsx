@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { UTCTimestamp } from "lightweight-charts";
 import type { OHLCBar, Trade, FVGZone, LiquidityLevel, SweepEvent } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 function toTs(ms: number): UTCTimestamp {
   return Math.floor(ms / 1000) as UTCTimestamp;
@@ -10,12 +11,15 @@ function toTs(ms: number): UTCTimestamp {
 
 interface Props {
   ohlcData: OHLCBar[];
+  ohlcByTimeframe?: Record<string, OHLCBar[]>;
   trades?: Trade[];
   fvgZones?: FVGZone[];
   liquidityLevels?: LiquidityLevel[];
   sweeps?: SweepEvent[];
   height?: number;
 }
+
+const TF_ORDER = ["1m", "5m", "15m", "1h", "4h"] as const;
 
 const TF_LABEL: Record<string, string> = {
   "4h": "4H", "1h": "1H", "15m": "15M", "5m": "5M", "1m": "1M",
@@ -34,6 +38,7 @@ const LIQ_COLOR: Record<string, string> = {
 
 export function BacktestChart({
   ohlcData,
+  ohlcByTimeframe,
   trades = [],
   fvgZones = [],
   liquidityLevels = [],
@@ -42,8 +47,18 @@ export function BacktestChart({
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const availableTfs = TF_ORDER.filter((tf) => ohlcByTimeframe?.[tf]?.length);
+  const initialTf =
+    availableTfs.includes("1h") ? "1h" : availableTfs[0] ?? "";
+  const [selectedTf, setSelectedTf] = useState<string>(initialTf);
+
+  const activeOhlc =
+    ohlcByTimeframe && selectedTf && ohlcByTimeframe[selectedTf]?.length
+      ? ohlcByTimeframe[selectedTf]
+      : ohlcData;
+
   useEffect(() => {
-    if (!containerRef.current || ohlcData.length === 0) return;
+    if (!containerRef.current || activeOhlc.length === 0) return;
 
     let destroyed = false;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -91,7 +106,7 @@ export function BacktestChart({
         wickDownColor: "#ef5350",
       });
       candles.setData(
-        ohlcData.map((b) => ({
+        activeOhlc.map((b) => ({
           time: b.time as UTCTimestamp,
           open: b.open,
           high: b.high,
@@ -211,9 +226,9 @@ export function BacktestChart({
       resizeObs?.disconnect();
       chartInst?.remove();
     };
-  }, [ohlcData, trades, fvgZones, liquidityLevels, sweeps, height]);
+  }, [activeOhlc, trades, fvgZones, liquidityLevels, sweeps, height]);
 
-  if (ohlcData.length === 0) {
+  if (activeOhlc.length === 0) {
     return (
       <div
         style={{ height }}
@@ -228,6 +243,27 @@ export function BacktestChart({
   }
 
   return (
-    <div ref={containerRef} className="w-full rounded overflow-hidden" style={{ height }} />
+    <div className="w-full">
+      {availableTfs.length > 1 && (
+        <div className="flex items-center gap-1 mb-2">
+          <span className="text-xs text-text-muted mr-1">TF:</span>
+          {availableTfs.map((tf) => (
+            <button
+              key={tf}
+              onClick={() => setSelectedTf(tf)}
+              className={cn(
+                "px-2 py-0.5 rounded text-xs font-mono transition-colors",
+                selectedTf === tf
+                  ? "bg-brand-blue text-white"
+                  : "bg-bg-tertiary text-text-secondary hover:text-text-primary border border-border"
+              )}
+            >
+              {TF_LABEL[tf] ?? tf.toUpperCase()}
+            </button>
+          ))}
+        </div>
+      )}
+      <div ref={containerRef} className="w-full rounded overflow-hidden" style={{ height }} />
+    </div>
   );
 }

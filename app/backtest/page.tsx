@@ -166,6 +166,7 @@ export default function BacktestPage() {
                 </div>
                 <BacktestChart
                   ohlcData={res.ohlc_data ?? []}
+                  ohlcByTimeframe={res.ohlc_by_timeframe}
                   trades={res.trades}
                   fvgZones={res.fvg_zones ?? []}
                   liquidityLevels={res.liquidity_levels ?? []}

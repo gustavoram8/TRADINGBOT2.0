@@ -262,15 +262,12 @@ export const MOCK_FVG_SUMMARY: FVGSummary[] = [
   { timeframe: "1m", total: 87, bullish: 46, bearish: 41, decision: 18, avg_confluence: 0.9 },
 ];
 
-export function generateMockOHLC(bars = 600): OHLCBar[] {
+export function generateMockOHLC(bars = 600, barSec = 3600): OHLCBar[] {
   const result: OHLCBar[] = [];
   let price = 19800;
-  // Start at Oct 1 to cover the mock trade period
   let time = Math.floor(new Date("2025-10-01T09:30:00Z").getTime() / 1000);
-  const barSec = 3600;
 
   for (let i = 0; i < bars; i++) {
-    // Slow sinusoidal trend + noise
     const trend = Math.sin(i / 80) * 150;
     const change = randomBetween(-55, 55) + trend * 0.015;
     const open = price;
@@ -289,6 +286,23 @@ export function generateMockOHLC(bars = 600): OHLCBar[] {
     time += barSec;
   }
   return result;
+}
+
+const TF_OHLC_CONFIG: Record<string, [number, number]> = {
+  "4h": [250, 14400],
+  "1h": [600, 3600],
+  "15m": [800, 900],
+  "5m": [1000, 300],
+  "1m": [600, 60],
+};
+
+export function generateMockOHLCByTimeframe(): Record<string, OHLCBar[]> {
+  return Object.fromEntries(
+    Object.entries(TF_OHLC_CONFIG).map(([tf, [bars, sec]]) => [
+      tf,
+      generateMockOHLC(bars, sec),
+    ])
+  );
 }
 
 export function generateMockFVGZones(): FVGZone[] {
@@ -356,6 +370,7 @@ export const MOCK_BACKTEST_RESULT: BacktestResult = {
   fvg_summary: MOCK_FVG_SUMMARY,
   period_name: "Oct–Nov 2025",
   ohlc_data: generateMockOHLC(600),
+  ohlc_by_timeframe: generateMockOHLCByTimeframe(),
   fvg_zones: generateMockFVGZones(),
   liquidity_levels: generateMockLiquidityLevels(),
   sweeps: generateMockSweeps(),

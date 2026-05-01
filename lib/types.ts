@@ -117,6 +117,7 @@ export interface BacktestResult {
   fvg_summary: FVGSummary[];
   period_name?: string;
   ohlc_data?: OHLCBar[];
+  ohlc_by_timeframe?: Record<string, OHLCBar[]>;
   fvg_zones?: FVGZone[];
   liquidity_levels?: LiquidityLevel[];
   sweeps?: SweepEvent[];
