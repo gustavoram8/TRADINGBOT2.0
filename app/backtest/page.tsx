@@ -28,7 +28,7 @@ export default function BacktestPage() {
       setBacktestResult(result);
     } catch (e) {
       setError(String(e));
-      setBacktestResult(generateMockBacktestResult(startDate, endDate, interval));
+      setBacktestResult(generateMockBacktestResult(startDate, endDate, interval, activeConfig));
     } finally {
       setRunningBacktest(false);
     }

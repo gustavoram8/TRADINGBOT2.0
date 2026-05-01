@@ -57,8 +57,45 @@ export const PRESET_CONFIGS: Record<string, BotConfig> = {
   },
 };
 
-function randomBetween(min: number, max: number): number {
-  return Math.random() * (max - min) + min;
+// ── Seeded PRNG (Mulberry32) ─────────────────────────────────────────────
+// Replaces Math.random() so that identical params → identical results.
+type RandFn = () => number;
+
+function createSeededRand(seed: number): RandFn {
+  let s = seed >>> 0;
+  return () => {
+    s = (s + 0x6d2b79f5) >>> 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 0x100000000;
+  };
+}
+
+function between(rand: RandFn, min: number, max: number): number {
+  return rand() * (max - min) + min;
+}
+
+// FNV-1a hash → deterministic integer seed from the run parameters
+function paramSeed(
+  startDate: string,
+  endDate: string,
+  interval: string,
+  cfg: BotConfig
+): number {
+  const key = [
+    startDate,
+    endDate,
+    interval,
+    cfg.default_contracts,
+    cfg.initial_capital,
+    cfg.max_daily_loss,
+    cfg.max_trades_per_day,
+  ].join("|");
+  let h = 2166136261;
+  for (let i = 0; i < key.length; i++) {
+    h = Math.imul(h ^ key.charCodeAt(i), 16777619);
+  }
+  return h >>> 0;
 }
 
 const MS_PER_DAY = 24 * 3600 * 1000;
@@ -70,17 +107,21 @@ function nextWeekday(d: Date): Date {
   return d;
 }
 
+// ── Trade generator ──────────────────────────────────────────────────────
+// Respects: default_contracts, max_trades_per_day, max_daily_loss, initial_capital
 export function generateMockTrades(
   startDate = "2025-10-01",
-  endDate = "2025-11-30"
+  endDate = "2025-11-30",
+  config: BotConfig = DEFAULT_CONFIG,
+  rand: RandFn = Math.random
 ): Trade[] {
   const start = new Date(startDate + "T00:00:00Z");
   const end = new Date(endDate + "T23:59:59Z");
 
   const totalDays = Math.max(1, (end.getTime() - start.getTime()) / MS_PER_DAY);
-  const tradingDays = Math.round(totalDays * 5 / 7);
-  // ~0.55 trades per trading day, clamp to [3, 200]
-  const count = Math.max(3, Math.min(200, Math.round(tradingDays * 0.55)));
+  const tradingDays = Math.round((totalDays * 5) / 7);
+  // ~0.55 target trades per trading day, but capped by max_trades_per_day ceiling
+  const targetCount = Math.max(3, Math.min(200, Math.round(tradingDays * 0.55)));
 
   const exitReasons = [
     "TP Hit",
@@ -95,7 +136,7 @@ export function generateMockTrades(
 
   function pickReason(): string {
     const total = reasonWeights.reduce((a, b) => a + b, 0);
-    let r = Math.random() * total;
+    let r = rand() * total;
     for (let i = 0; i < exitReasons.length; i++) {
       r -= reasonWeights[i];
       if (r <= 0) return exitReasons[i];
@@ -104,32 +145,56 @@ export function generateMockTrades(
   }
 
   const trades: Trade[] = [];
-  // Spread trades evenly, with jitter
-  const step = (end.getTime() - start.getTime()) / count;
-  let d = nextWeekday(new Date(start.getTime() + randomBetween(0, step * 0.5)));
+  const dailyCount = new Map<string, number>();
+  const dailyPnl = new Map<string, number>();
 
-  for (let i = 0; i < count; i++) {
+  const step = (end.getTime() - start.getTime()) / targetCount;
+  let d = nextWeekday(
+    new Date(start.getTime() + between(rand, 0, step * 0.5))
+  );
+
+  for (let i = 0; i < targetCount; i++) {
     d = nextWeekday(d);
     if (d > end) break;
 
-    const dir: "long" | "short" = Math.random() > 0.45 ? "long" : "short";
-    const basePrice = 19800 + randomBetween(-500, 500);
-    const slDist = randomBetween(15, 60);
-    const tpDist = slDist * randomBetween(1.2, 2.8);
-    const contracts = Math.floor(randomBetween(2, 5));
+    const dateKey = d.toISOString().slice(0, 10);
+
+    // ── Kill switch: max trades per day ──────────────────────────
+    if ((dailyCount.get(dateKey) ?? 0) >= config.max_trades_per_day) {
+      d = nextWeekday(new Date(d.getTime() + MS_PER_DAY));
+      d.setUTCHours(9, 30, 0, 0);
+      d = new Date(d.getTime() + between(rand, 0, step * 0.3));
+      continue;
+    }
+
+    // ── Kill switch: daily loss limit ─────────────────────────────
+    if ((dailyPnl.get(dateKey) ?? 0) <= -config.max_daily_loss) {
+      d = nextWeekday(new Date(d.getTime() + MS_PER_DAY));
+      d.setUTCHours(9, 30, 0, 0);
+      d = new Date(d.getTime() + between(rand, 0, step * 0.3));
+      continue;
+    }
+
+    // ── Trade parameters ──────────────────────────────────────────
+    const dir: "long" | "short" = rand() > 0.45 ? "long" : "short";
+    const basePrice = 19800 + between(rand, -500, 500);
+    const slDist = between(rand, 15, 60);
+    const tpDist = slDist * between(rand, 1.2, 2.8);
+    // Always use the configured contract count — never random
+    const contracts = config.default_contracts;
 
     const slPrice = dir === "long" ? basePrice - slDist : basePrice + slDist;
     const tpPrice = dir === "long" ? basePrice + tpDist : basePrice - tpDist;
 
-    const isWin = Math.random() < 0.55;
+    const isWin = rand() < 0.55;
     const reason = pickReason();
     let exitPrice: number;
     if (reason === "SL Hit") {
-      exitPrice = slPrice + randomBetween(-2, 2);
+      exitPrice = slPrice + between(rand, -2, 2);
     } else if (reason === "TP Hit") {
-      exitPrice = tpPrice + randomBetween(-2, 2);
+      exitPrice = tpPrice + between(rand, -2, 2);
     } else {
-      const pct = randomBetween(0.5, 1.0);
+      const pct = between(rand, 0.5, 1.0);
       exitPrice =
         dir === "long"
           ? basePrice + tpDist * pct * (isWin ? 1 : -0.3)
@@ -143,10 +208,14 @@ export function generateMockTrades(
     const commission = contracts * 2 * 0.62 + contracts * 2 * 0.5;
     const pnlNet = pnlGross - commission;
 
+    // Update daily tracking
+    dailyCount.set(dateKey, (dailyCount.get(dateKey) ?? 0) + 1);
+    dailyPnl.set(dateKey, (dailyPnl.get(dateKey) ?? 0) + pnlNet);
+
     const entryTime = new Date(d);
-    entryTime.setUTCHours(9, 30 + Math.floor(randomBetween(0, 90)), 0, 0);
+    entryTime.setUTCHours(9, 30 + Math.floor(between(rand, 0, 90)), 0, 0);
     const exitTime = new Date(
-      entryTime.getTime() + randomBetween(15, 120) * 60 * 1000
+      entryTime.getTime() + between(rand, 15, 120) * 60 * 1000
     );
 
     trades.push({
@@ -166,9 +235,8 @@ export function generateMockTrades(
       reason,
     });
 
-    // Advance cursor with jitter
     d = new Date(
-      d.getTime() + step + randomBetween(-step * 0.3, step * 0.3)
+      d.getTime() + step + between(rand, -step * 0.3, step * 0.3)
     );
   }
 
@@ -191,13 +259,7 @@ export function buildEquityCurve(
       : trades[0]?.entry_time ?? new Date().toISOString();
 
   const points: EquityPoint[] = [
-    {
-      datetime: firstDate,
-      equity: initial,
-      pnl: 0,
-      drawdown: 0,
-      drawdown_pct: 0,
-    },
+    { datetime: firstDate, equity: initial, pnl: 0, drawdown: 0, drawdown_pct: 0 },
   ];
 
   for (const t of trades) {
@@ -291,17 +353,18 @@ export function computeMockMetrics(
 }
 
 export const MOCK_FVG_SUMMARY: FVGSummary[] = [
-  { timeframe: "1h", total: 12, bullish: 7, bearish: 5, decision: 4, avg_confluence: 3.2 },
-  { timeframe: "15m", total: 28, bullish: 16, bearish: 12, decision: 9, avg_confluence: 2.1 },
-  { timeframe: "5m", total: 45, bullish: 24, bearish: 21, decision: 12, avg_confluence: 1.4 },
-  { timeframe: "1m", total: 87, bullish: 46, bearish: 41, decision: 18, avg_confluence: 0.9 },
+  { timeframe: "1h",  total: 12, bullish: 7,  bearish: 5,  decision: 4,  avg_confluence: 3.2 },
+  { timeframe: "15m", total: 28, bullish: 16, bearish: 12, decision: 9,  avg_confluence: 2.1 },
+  { timeframe: "5m",  total: 45, bullish: 24, bearish: 21, decision: 12, avg_confluence: 1.4 },
+  { timeframe: "1m",  total: 87, bullish: 46, bearish: 41, decision: 18, avg_confluence: 0.9 },
 ];
 
-// barSec: seconds per candle. Bar count is derived from the date range, capped at 2000.
+// ── OHLC generator (seeded) ──────────────────────────────────────────────
 export function generateMockOHLC(
   startDate = "2025-10-01",
   endDate = "2025-11-30",
-  barSec = 3600
+  barSec = 3600,
+  rand: RandFn = Math.random
 ): OHLCBar[] {
   const startTs = Math.floor(
     new Date(startDate + "T09:30:00Z").getTime() / 1000
@@ -318,18 +381,18 @@ export function generateMockOHLC(
 
   for (let i = 0; i < bars; i++) {
     const trend = Math.sin(i / 80) * 150;
-    const change = randomBetween(-55, 55) + trend * 0.015;
+    const change = between(rand, -55, 55) + trend * 0.015;
     const open = price;
     const close = price + change;
-    const high = Math.max(open, close) + randomBetween(4, 28);
-    const low = Math.min(open, close) - randomBetween(4, 28);
+    const high = Math.max(open, close) + between(rand, 4, 28);
+    const low = Math.min(open, close) - between(rand, 4, 28);
     result.push({
       time,
       open: +open.toFixed(2),
       high: +high.toFixed(2),
       low: +low.toFixed(2),
       close: +close.toFixed(2),
-      volume: Math.floor(randomBetween(800, 9000)),
+      volume: Math.floor(between(rand, 800, 9000)),
     });
     price = close;
     time += barSec;
@@ -347,39 +410,43 @@ const TF_BAR_SEC: Record<string, number> = {
 
 export function generateMockOHLCByTimeframe(
   startDate = "2025-10-01",
-  endDate = "2025-11-30"
+  endDate = "2025-11-30",
+  rand: RandFn = Math.random
 ): Record<string, OHLCBar[]> {
   return Object.fromEntries(
     Object.entries(TF_BAR_SEC).map(([tf, sec]) => [
       tf,
-      generateMockOHLC(startDate, endDate, sec),
+      generateMockOHLC(startDate, endDate, sec, rand),
     ])
   );
 }
 
-export function generateMockFVGZones(): FVGZone[] {
+export function generateMockFVGZones(rand: RandFn = Math.random): FVGZone[] {
   const zones: FVGZone[] = [];
-  const tfs: Array<[string, number]> = [["4h", 2], ["1h", 5], ["15m", 8], ["5m", 6]];
+  const tfs: Array<[string, number]> = [
+    ["4h", 2], ["1h", 5], ["15m", 8], ["5m", 6],
+  ];
   const basePrice = 19800;
-
   for (const [tf, count] of tfs) {
     for (let i = 0; i < count; i++) {
-      const mid = basePrice + randomBetween(-700, 700);
-      const gap = randomBetween(8, 55);
-      const isBull = Math.random() > 0.48;
+      const mid = basePrice + between(rand, -700, 700);
+      const gap = between(rand, 8, 55);
+      const isBull = rand() > 0.48;
       zones.push({
         fvg_type: isBull ? "bullish" : "bearish",
         timeframe: tf,
         high: +(mid + gap / 2).toFixed(2),
         low: +(mid - gap / 2).toFixed(2),
-        filled: Math.random() < 0.25,
+        filled: rand() < 0.25,
       });
     }
   }
   return zones;
 }
 
-export function generateMockLiquidityLevels(): LiquidityLevel[] {
+export function generateMockLiquidityLevels(
+  rand: RandFn = Math.random
+): LiquidityLevel[] {
   const base = 19800;
   const levels: Array<[string, number]> = [
     ["PDH", 305], ["PDL", -288], ["EQH", 162], ["EQL", -155],
@@ -387,69 +454,83 @@ export function generateMockLiquidityLevels(): LiquidityLevel[] {
     ["swing_high", 234], ["swing_low", -95], ["swing_low", -210],
   ];
   return levels.map(([type, offset]) => ({
-    price: +(base + offset + randomBetween(-15, 15)).toFixed(2),
+    price: +(base + offset + between(rand, -15, 15)).toFixed(2),
     level_type: type,
-    swept: Math.random() < 0.28,
+    swept: rand() < 0.28,
   }));
 }
 
 export function generateMockSweeps(
   startDate = "2025-10-01",
-  endDate = "2025-11-30"
+  endDate = "2025-11-30",
+  rand: RandFn = Math.random
 ): SweepEvent[] {
   const sweeps: SweepEvent[] = [];
   const start = new Date(startDate + "T09:00:00Z");
   const end = new Date(endDate + "T16:00:00Z");
   const range = Math.max(MS_PER_DAY, end.getTime() - start.getTime());
-
   const count = Math.max(3, Math.min(20, Math.floor(range / (3 * MS_PER_DAY))));
   const step = range / count;
-  let d = new Date(start.getTime() + randomBetween(0, step * 0.5));
+  let d = new Date(start.getTime() + between(rand, 0, step * 0.5));
 
   for (let i = 0; i < count; i++) {
     if (d > end) break;
-    const buyside = Math.random() > 0.5;
+    const buyside = rand() > 0.5;
     sweeps.push({
-      price: +(19800 + (buyside ? 200 : -200) + randomBetween(-80, 80)).toFixed(2),
+      price: +(19800 + (buyside ? 200 : -200) + between(rand, -80, 80)).toFixed(2),
       sweep_type: buyside ? "buyside" : "sellside",
       timestamp: d.toISOString(),
-      timeframe: ["1h", "15m", "4h"][Math.floor(Math.random() * 3)],
+      timeframe: ["1h", "15m", "4h"][Math.floor(rand() * 3)],
     });
-    d = new Date(
-      d.getTime() + step + randomBetween(-step * 0.2, step * 0.2)
-    );
+    d = new Date(d.getTime() + step + between(rand, -step * 0.2, step * 0.2));
   }
   return sweeps;
 }
 
+// ── Main entry point ─────────────────────────────────────────────────────
+// Creates one seeded RNG per generator category so they are independent
+// but each category is fully deterministic for the same parameters.
 export function generateMockBacktestResult(
   startDate: string,
   endDate: string,
-  interval = "1h"
+  interval = "1h",
+  config: BotConfig = DEFAULT_CONFIG
 ): BacktestResult {
+  const seed = paramSeed(startDate, endDate, interval, config);
   const barSec = TF_BAR_SEC[interval] ?? 3600;
-  const trades = generateMockTrades(startDate, endDate);
-  const equity_curve = buildEquityCurve(trades, 50000, startDate);
-  const metrics = computeMockMetrics(trades);
+
+  // Each generator gets its own seeded stream derived from the main seed.
+  // XOR with distinct constants so they never share state.
+  const tradeRand  = createSeededRand(seed);
+  const ohlcRand   = createSeededRand(seed ^ 0xa5a5a5a5);
+  const fvgRand    = createSeededRand(seed ^ 0xf0f0f0f0);
+  const liqRand    = createSeededRand(seed ^ 0x0f0f0f0f);
+  const sweepRand  = createSeededRand(seed ^ 0x5a5a5a5a);
+
+  const trades = generateMockTrades(startDate, endDate, config, tradeRand);
+  const equity_curve = buildEquityCurve(trades, config.initial_capital, startDate);
+  const metrics = computeMockMetrics(trades, config.initial_capital);
 
   return {
-    backtest_id: `mock-${startDate}-${endDate}`,
+    backtest_id: `mock-${startDate}-${endDate}-${interval}`,
     metrics,
     trades,
     equity_curve,
-    config: DEFAULT_CONFIG,
+    config,
     fvg_summary: MOCK_FVG_SUMMARY,
     period_name: `${startDate} → ${endDate}`,
-    ohlc_data: generateMockOHLC(startDate, endDate, barSec),
-    ohlc_by_timeframe: generateMockOHLCByTimeframe(startDate, endDate),
-    fvg_zones: generateMockFVGZones(),
-    liquidity_levels: generateMockLiquidityLevels(),
-    sweeps: generateMockSweeps(startDate, endDate),
+    ohlc_data: generateMockOHLC(startDate, endDate, barSec, ohlcRand),
+    ohlc_by_timeframe: generateMockOHLCByTimeframe(startDate, endDate, ohlcRand),
+    fvg_zones: generateMockFVGZones(fvgRand),
+    liquidity_levels: generateMockLiquidityLevels(liqRand),
+    sweeps: generateMockSweeps(startDate, endDate, sweepRand),
   };
 }
 
-// Static fallback used for initial page load before any backtest is run
+// Static fallback (initial page load, before any backtest is run)
 export const MOCK_BACKTEST_RESULT: BacktestResult = generateMockBacktestResult(
   "2025-10-01",
-  "2025-11-30"
+  "2025-11-30",
+  "1h",
+  DEFAULT_CONFIG
 );

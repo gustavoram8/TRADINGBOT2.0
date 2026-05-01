@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateMockBacktestResult } from "@/lib/mock-data";
+import { generateMockBacktestResult, DEFAULT_CONFIG } from "@/lib/mock-data";
+import type { BotConfig } from "@/lib/types";
 
 const PYTHON_API = process.env.PYTHON_API_URL ?? "";
 
@@ -8,14 +9,18 @@ export async function POST(req: NextRequest) {
     start_date?: string;
     end_date?: string;
     interval?: string;
+    config?: BotConfig;
     [key: string]: unknown;
   };
 
   if (!PYTHON_API) {
     const startDate = body.start_date ?? "2025-10-01";
-    const endDate = body.end_date ?? "2025-11-30";
-    const interval = body.interval ?? "1h";
-    return NextResponse.json(generateMockBacktestResult(startDate, endDate, interval));
+    const endDate   = body.end_date   ?? "2025-11-30";
+    const interval  = body.interval   ?? "1h";
+    const config    = body.config     ?? DEFAULT_CONFIG;
+    return NextResponse.json(
+      generateMockBacktestResult(startDate, endDate, interval, config)
+    );
   }
 
   try {
