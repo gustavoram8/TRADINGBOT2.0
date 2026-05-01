@@ -189,20 +189,73 @@ export default function BacktestPage() {
 
               {/* FVG summary cards */}
               <div className="card">
-                <p className="text-sm font-medium mb-3">FVG Detectados por Timeframe</p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {res.fvg_summary?.map((f) => (
-                    <div key={f.timeframe} className="bg-bg-tertiary rounded-md p-3">
-                      <p className="text-xs text-brand-blue font-mono font-semibold uppercase">{f.timeframe}</p>
-                      <p className="text-lg font-bold mt-1">{f.total}</p>
-                      <div className="flex gap-2 mt-1 text-xs">
-                        <span className="text-fin-green">{f.bullish}↑</span>
-                        <span className="text-fin-red">{f.bearish}↓</span>
-                        <span className="text-brand-blue">{f.decision} dec</span>
-                      </div>
-                    </div>
-                  ))}
+                {/* Header + glosario */}
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-4">
+                  <div>
+                    <p className="text-sm font-medium">FVG Detectados por Timeframe</p>
+                    <p className="text-xs text-text-secondary mt-0.5">
+                      Un <span className="text-text-primary font-medium">Fair Value Gap (FVG)</span> es una zona de precio donde el mercado se movió tan rápido que dejó un hueco sin negociar. El bot los busca para entrar en favor del desequilibrio.
+                    </p>
+                  </div>
+                  {/* Leyenda */}
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-text-muted shrink-0">
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-fin-green inline-block" />Alcistas (precio sube a llenar)</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-fin-red inline-block" />Bajistas (precio baja a llenar)</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-brand-blue inline-block" />Usados para entrar en un trade</span>
+                  </div>
                 </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {res.fvg_summary?.map((f) => {
+                    const usedPct = f.total > 0 ? Math.round((f.decision / f.total) * 100) : 0;
+                    const bullPct = f.total > 0 ? Math.round((f.bullish / f.total) * 100) : 50;
+                    return (
+                      <div key={f.timeframe} className="bg-bg-tertiary rounded-md p-3 space-y-2.5">
+                        {/* Timeframe + total */}
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-brand-blue font-mono font-bold uppercase tracking-wider">{f.timeframe}</span>
+                          <span className="text-xl font-bold">{f.total}</span>
+                        </div>
+                        <p className="text-[10px] text-text-muted -mt-1">FVGs escaneados</p>
+
+                        {/* Barra alcistas / bajistas */}
+                        <div>
+                          <div className="flex h-2 rounded-full overflow-hidden gap-px">
+                            <div className="bg-fin-green rounded-l-full transition-all" style={{ width: `${bullPct}%` }} />
+                            <div className="bg-fin-red rounded-r-full flex-1" />
+                          </div>
+                          <div className="flex justify-between text-[10px] mt-1">
+                            <span className="text-fin-green font-mono">{f.bullish} alcistas</span>
+                            <span className="text-fin-red font-mono">{f.bearish} bajistas</span>
+                          </div>
+                        </div>
+
+                        {/* Separador */}
+                        <div className="border-t border-border" />
+
+                        {/* Usados en trades */}
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] text-text-secondary">Usados en trades</span>
+                          <span className="text-xs font-mono">
+                            <span className="text-brand-blue font-semibold">{f.decision}</span>
+                            <span className="text-text-muted ml-1">({usedPct}%)</span>
+                          </span>
+                        </div>
+
+                        {/* Confluencia */}
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] text-text-secondary">Confluencia media</span>
+                          <span className="text-xs font-mono text-fin-gold">{f.avg_confluence.toFixed(1)}×</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Nota de confluencia */}
+                <p className="text-[10px] text-text-muted mt-3">
+                  <span className="text-fin-gold font-medium">Confluencia</span> = cuántos FVGs de distintos timeframes coincidían en la misma zona de precio al momento de la entrada. Más confluencia → señal más fuerte.
+                </p>
               </div>
             </div>
           )}
