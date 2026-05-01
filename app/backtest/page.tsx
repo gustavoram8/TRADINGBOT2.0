@@ -8,7 +8,7 @@ import { BacktestChart } from "@/components/charts/backtest-chart";
 import { fmtUSD, fmtPct, pnlColor, cn } from "@/lib/utils";
 import { runBacktest } from "@/lib/api";
 import { Play, Loader2, ChevronDown, ChevronUp } from "lucide-react";
-import { MOCK_BACKTEST_RESULT } from "@/lib/mock-data";
+import { generateMockBacktestResult } from "@/lib/mock-data";
 
 export default function BacktestPage() {
   const { backtestResult, setBacktestResult, activeConfig, setRunningBacktest, isRunningBacktest } = useTradingStore();
@@ -28,7 +28,7 @@ export default function BacktestPage() {
       setBacktestResult(result);
     } catch (e) {
       setError(String(e));
-      setBacktestResult(MOCK_BACKTEST_RESULT);
+      setBacktestResult(generateMockBacktestResult(startDate, endDate, interval));
     } finally {
       setRunningBacktest(false);
     }

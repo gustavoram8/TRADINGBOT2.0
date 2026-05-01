@@ -61,10 +61,26 @@ function randomBetween(min: number, max: number): number {
   return Math.random() * (max - min) + min;
 }
 
-export function generateMockTrades(count = 38): Trade[] {
-  const trades: Trade[] = [];
-  const startDate = new Date("2025-10-01T09:30:00");
-  let equity = 50000;
+const MS_PER_DAY = 24 * 3600 * 1000;
+
+function nextWeekday(d: Date): Date {
+  const day = d.getUTCDay();
+  if (day === 6) return new Date(d.getTime() + 2 * MS_PER_DAY);
+  if (day === 0) return new Date(d.getTime() + MS_PER_DAY);
+  return d;
+}
+
+export function generateMockTrades(
+  startDate = "2025-10-01",
+  endDate = "2025-11-30"
+): Trade[] {
+  const start = new Date(startDate + "T00:00:00Z");
+  const end = new Date(endDate + "T23:59:59Z");
+
+  const totalDays = Math.max(1, (end.getTime() - start.getTime()) / MS_PER_DAY);
+  const tradingDays = Math.round(totalDays * 5 / 7);
+  // ~0.55 trades per trading day, clamp to [3, 200]
+  const count = Math.max(3, Math.min(200, Math.round(tradingDays * 0.55)));
 
   const exitReasons = [
     "TP Hit",
@@ -87,11 +103,14 @@ export function generateMockTrades(count = 38): Trade[] {
     return exitReasons[0];
   }
 
-  let d = new Date(startDate);
+  const trades: Trade[] = [];
+  // Spread trades evenly, with jitter
+  const step = (end.getTime() - start.getTime()) / count;
+  let d = nextWeekday(new Date(start.getTime() + randomBetween(0, step * 0.5)));
+
   for (let i = 0; i < count; i++) {
-    d = new Date(d.getTime() + randomBetween(1, 3) * 24 * 3600 * 1000);
-    if (d.getDay() === 0) d = new Date(d.getTime() + 24 * 3600 * 1000);
-    if (d.getDay() === 6) d = new Date(d.getTime() + 2 * 24 * 3600 * 1000);
+    d = nextWeekday(d);
+    if (d > end) break;
 
     const dir: "long" | "short" = Math.random() > 0.45 ? "long" : "short";
     const basePrice = 19800 + randomBetween(-500, 500);
@@ -123,10 +142,9 @@ export function generateMockTrades(count = 38): Trade[] {
       2;
     const commission = contracts * 2 * 0.62 + contracts * 2 * 0.5;
     const pnlNet = pnlGross - commission;
-    equity += pnlNet;
 
     const entryTime = new Date(d);
-    entryTime.setHours(9, 30 + Math.floor(randomBetween(0, 90)), 0, 0);
+    entryTime.setUTCHours(9, 30 + Math.floor(randomBetween(0, 90)), 0, 0);
     const exitTime = new Date(
       entryTime.getTime() + randomBetween(15, 120) * 60 * 1000
     );
@@ -147,19 +165,34 @@ export function generateMockTrades(count = 38): Trade[] {
       contracts,
       reason,
     });
+
+    // Advance cursor with jitter
+    d = new Date(
+      d.getTime() + step + randomBetween(-step * 0.3, step * 0.3)
+    );
   }
-  return trades;
+
+  return trades.sort(
+    (a, b) =>
+      new Date(a.entry_time).getTime() - new Date(b.entry_time).getTime()
+  );
 }
 
 export function buildEquityCurve(
   trades: Trade[],
-  initial = 50000
+  initial = 50000,
+  startDate?: string
 ): EquityPoint[] {
   let equity = initial;
   let peak = initial;
+  const firstDate =
+    startDate
+      ? new Date(startDate).toISOString()
+      : trades[0]?.entry_time ?? new Date().toISOString();
+
   const points: EquityPoint[] = [
     {
-      datetime: new Date("2025-10-01").toISOString(),
+      datetime: firstDate,
       equity: initial,
       pnl: 0,
       drawdown: 0,
@@ -213,9 +246,11 @@ export function computeMockMetrics(
   const worstDay = Math.min(...dailyVals, 0);
 
   const pnls = trades.map((t) => t.pnl_net);
-  const mean = totalPnl / trades.length;
+  const mean = trades.length > 0 ? totalPnl / trades.length : 0;
   const variance =
-    pnls.reduce((s, p) => s + Math.pow(p - mean, 2), 0) / pnls.length;
+    pnls.length > 0
+      ? pnls.reduce((s, p) => s + Math.pow(p - mean, 2), 0) / pnls.length
+      : 0;
   const sharpe = variance > 0 ? mean / Math.sqrt(variance) : 0;
 
   const days =
@@ -262,10 +297,24 @@ export const MOCK_FVG_SUMMARY: FVGSummary[] = [
   { timeframe: "1m", total: 87, bullish: 46, bearish: 41, decision: 18, avg_confluence: 0.9 },
 ];
 
-export function generateMockOHLC(bars = 600, barSec = 3600): OHLCBar[] {
+// barSec: seconds per candle. Bar count is derived from the date range, capped at 2000.
+export function generateMockOHLC(
+  startDate = "2025-10-01",
+  endDate = "2025-11-30",
+  barSec = 3600
+): OHLCBar[] {
+  const startTs = Math.floor(
+    new Date(startDate + "T09:30:00Z").getTime() / 1000
+  );
+  const endTs = Math.floor(
+    new Date(endDate + "T16:00:00Z").getTime() / 1000
+  );
+  const totalSec = Math.max(barSec, endTs - startTs);
+  const bars = Math.min(Math.ceil(totalSec / barSec), 2000);
+
   const result: OHLCBar[] = [];
   let price = 19800;
-  let time = Math.floor(new Date("2025-10-01T09:30:00Z").getTime() / 1000);
+  let time = startTs;
 
   for (let i = 0; i < bars; i++) {
     const trend = Math.sin(i / 80) * 150;
@@ -288,19 +337,22 @@ export function generateMockOHLC(bars = 600, barSec = 3600): OHLCBar[] {
   return result;
 }
 
-const TF_OHLC_CONFIG: Record<string, [number, number]> = {
-  "4h": [250, 14400],
-  "1h": [600, 3600],
-  "15m": [800, 900],
-  "5m": [1000, 300],
-  "1m": [600, 60],
+const TF_BAR_SEC: Record<string, number> = {
+  "4h": 14400,
+  "1h": 3600,
+  "15m": 900,
+  "5m": 300,
+  "1m": 60,
 };
 
-export function generateMockOHLCByTimeframe(): Record<string, OHLCBar[]> {
+export function generateMockOHLCByTimeframe(
+  startDate = "2025-10-01",
+  endDate = "2025-11-30"
+): Record<string, OHLCBar[]> {
   return Object.fromEntries(
-    Object.entries(TF_OHLC_CONFIG).map(([tf, [bars, sec]]) => [
+    Object.entries(TF_BAR_SEC).map(([tf, sec]) => [
       tf,
-      generateMockOHLC(bars, sec),
+      generateMockOHLC(startDate, endDate, sec),
     ])
   );
 }
@@ -341,11 +393,21 @@ export function generateMockLiquidityLevels(): LiquidityLevel[] {
   }));
 }
 
-export function generateMockSweeps(): SweepEvent[] {
+export function generateMockSweeps(
+  startDate = "2025-10-01",
+  endDate = "2025-11-30"
+): SweepEvent[] {
   const sweeps: SweepEvent[] = [];
-  let d = new Date("2025-10-06T14:00:00Z");
-  for (let i = 0; i < 10; i++) {
-    d = new Date(d.getTime() + randomBetween(2, 6) * 24 * 3600 * 1000);
+  const start = new Date(startDate + "T09:00:00Z");
+  const end = new Date(endDate + "T16:00:00Z");
+  const range = Math.max(MS_PER_DAY, end.getTime() - start.getTime());
+
+  const count = Math.max(3, Math.min(20, Math.floor(range / (3 * MS_PER_DAY))));
+  const step = range / count;
+  let d = new Date(start.getTime() + randomBetween(0, step * 0.5));
+
+  for (let i = 0; i < count; i++) {
+    if (d > end) break;
     const buyside = Math.random() > 0.5;
     sweeps.push({
       price: +(19800 + (buyside ? 200 : -200) + randomBetween(-80, 80)).toFixed(2),
@@ -353,25 +415,41 @@ export function generateMockSweeps(): SweepEvent[] {
       timestamp: d.toISOString(),
       timeframe: ["1h", "15m", "4h"][Math.floor(Math.random() * 3)],
     });
+    d = new Date(
+      d.getTime() + step + randomBetween(-step * 0.2, step * 0.2)
+    );
   }
   return sweeps;
 }
 
-const MOCK_TRADES = generateMockTrades(38);
-const MOCK_CURVE = buildEquityCurve(MOCK_TRADES);
-const MOCK_METRICS = computeMockMetrics(MOCK_TRADES);
+export function generateMockBacktestResult(
+  startDate: string,
+  endDate: string,
+  interval = "1h"
+): BacktestResult {
+  const barSec = TF_BAR_SEC[interval] ?? 3600;
+  const trades = generateMockTrades(startDate, endDate);
+  const equity_curve = buildEquityCurve(trades, 50000, startDate);
+  const metrics = computeMockMetrics(trades);
 
-export const MOCK_BACKTEST_RESULT: BacktestResult = {
-  backtest_id: "mock-001",
-  metrics: MOCK_METRICS,
-  trades: MOCK_TRADES,
-  equity_curve: MOCK_CURVE,
-  config: DEFAULT_CONFIG,
-  fvg_summary: MOCK_FVG_SUMMARY,
-  period_name: "Oct–Nov 2025",
-  ohlc_data: generateMockOHLC(600),
-  ohlc_by_timeframe: generateMockOHLCByTimeframe(),
-  fvg_zones: generateMockFVGZones(),
-  liquidity_levels: generateMockLiquidityLevels(),
-  sweeps: generateMockSweeps(),
-};
+  return {
+    backtest_id: `mock-${startDate}-${endDate}`,
+    metrics,
+    trades,
+    equity_curve,
+    config: DEFAULT_CONFIG,
+    fvg_summary: MOCK_FVG_SUMMARY,
+    period_name: `${startDate} → ${endDate}`,
+    ohlc_data: generateMockOHLC(startDate, endDate, barSec),
+    ohlc_by_timeframe: generateMockOHLCByTimeframe(startDate, endDate),
+    fvg_zones: generateMockFVGZones(),
+    liquidity_levels: generateMockLiquidityLevels(),
+    sweeps: generateMockSweeps(startDate, endDate),
+  };
+}
+
+// Static fallback used for initial page load before any backtest is run
+export const MOCK_BACKTEST_RESULT: BacktestResult = generateMockBacktestResult(
+  "2025-10-01",
+  "2025-11-30"
+);

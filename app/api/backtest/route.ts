@@ -1,13 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { MOCK_BACKTEST_RESULT } from "@/lib/mock-data";
+import { generateMockBacktestResult } from "@/lib/mock-data";
 
 const PYTHON_API = process.env.PYTHON_API_URL ?? "";
 
 export async function POST(req: NextRequest) {
-  const body = await req.json() as unknown;
+  const body = await req.json() as {
+    start_date?: string;
+    end_date?: string;
+    interval?: string;
+    [key: string]: unknown;
+  };
 
   if (!PYTHON_API) {
-    return NextResponse.json(MOCK_BACKTEST_RESULT);
+    const startDate = body.start_date ?? "2025-10-01";
+    const endDate = body.end_date ?? "2025-11-30";
+    const interval = body.interval ?? "1h";
+    return NextResponse.json(generateMockBacktestResult(startDate, endDate, interval));
   }
 
   try {
