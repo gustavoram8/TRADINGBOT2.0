@@ -213,8 +213,8 @@ export default function ConfiguratorPage() {
                 onChange={(v) => update("initial_capital", v)}
               />
               <Slider
-                label="Contratos por defecto" value={config.default_contracts} min={1} max={6}
-                hint="Número de contratos que usa el bot en condiciones normales. Se reduce automáticamente si el drawdown se acerca al límite del 5%."
+                label="Contratos por defecto" value={config.default_contracts} min={1} max={20}
+                hint="Número de contratos MNQ que usa el bot en condiciones normales. Cada contrato MNQ vale $2 por punto. Con 10 contratos y 30 puntos de movimiento = $600 brutos. Se reduce automáticamente si el drawdown se acerca al límite del 5%."
                 onChange={(v) => update("default_contracts", v)}
               />
 
@@ -407,7 +407,7 @@ export default function ConfiguratorPage() {
           <div className="space-y-4">
             <div className="card">
               <InfoBox>
-                El mercado de futuros NQ/ES opera 23h al día, pero no todas las horas tienen la misma liquidez. El bot solo opera en horarios donde hay suficiente volumen para que las entradas y salidas sean eficientes. Todos los horarios están en <strong>ET (Eastern Time)</strong>.
+                El mercado de <strong>MNQ (Micro Nasdaq)</strong> opera 23h al día, pero no todas las horas tienen la misma liquidez. El bot solo opera en horarios donde hay suficiente volumen para que las entradas y salidas sean eficientes. Todos los horarios están en <strong>ET (Eastern Time)</strong>.
               </InfoBox>
             </div>
             <div className="card space-y-3">
@@ -469,7 +469,7 @@ export default function ConfiguratorPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             { label: "Capital inicial", value: `$${config.initial_capital.toLocaleString()}`, sub: "base de la cuenta" },
-            { label: "Contratos", value: String(config.default_contracts), sub: "en condiciones normales" },
+            { label: "Contratos MNQ", value: String(config.default_contracts), sub: `$${config.default_contracts * 2}/punto · $${config.default_contracts * 50}/trade (25 pts riesgo)` },
             { label: "DD máx diario", value: `$${config.max_daily_loss}`, sub: `${dailyLossPct.toFixed(0)}% del límite 5%` },
             { label: "Trades por día", value: `≤ ${config.max_trades_per_day}`, sub: "máximo permitido" },
             { label: "Break-even", value: `${bePct}% del TP`, sub: "SL → entrada al llegar aquí" },

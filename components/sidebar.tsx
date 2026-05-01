@@ -94,7 +94,7 @@ export function Sidebar() {
       {!collapsed && (
         <div className="px-4 py-3 border-t border-border">
           <p className="text-[10px] text-text-muted text-center leading-relaxed">
-            NQ Futures · $50k Funded
+            MNQ Futures · $50k Funded
             <br />
             <span className="text-brand-blue">v2.0</span>
           </p>
