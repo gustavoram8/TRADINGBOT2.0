@@ -4,7 +4,7 @@ import { Sidebar } from "@/components/sidebar";
 
 export const metadata: Metadata = {
   title: "Chuky Bot | Algorithmic Trading Platform",
-  description: "ICT Strategy · MNQ · OneUpTrader $50k",
+  description: "ICT Strategy · MNQ",
 };
 
 export default function RootLayout({
