@@ -10,11 +10,21 @@ import { runBacktest } from "@/lib/api";
 import { Play, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { generateMockBacktestResult } from "@/lib/mock-data";
 
+function usePersistentState(key: string, fallback: string) {
+  const stored = typeof window !== "undefined" ? (localStorage.getItem(key) ?? fallback) : fallback;
+  const [value, setValue] = useState(stored);
+  function set(v: string) {
+    localStorage.setItem(key, v);
+    setValue(v);
+  }
+  return [value, set] as const;
+}
+
 export default function BacktestPage() {
   const { backtestResult, setBacktestResult, activeConfig, setRunningBacktest, isRunningBacktest } = useTradingStore();
 
-  const [startDate, setStartDate] = useState("2025-10-01");
-  const [endDate, setEndDate] = useState("2025-11-30");
+  const [startDate, setStartDate] = usePersistentState("backtest-start-date", "2025-10-01");
+  const [endDate, setEndDate] = usePersistentState("backtest-end-date", "2025-11-30");
   const [interval, setInterval] = useState("1h");
   const [error, setError] = useState("");
   const [showTrades, setShowTrades] = useState(false);
