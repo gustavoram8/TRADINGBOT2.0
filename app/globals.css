@@ -35,15 +35,15 @@ body {
 
 @layer components {
   .card {
-    @apply bg-bg-secondary border border-border rounded-card p-5;
+    @apply bg-bg-secondary/70 backdrop-blur-md border border-border/80 rounded-card p-5 shadow-[0_1px_0_rgba(255,255,255,0.03)_inset];
   }
 
   .card-sm {
-    @apply bg-bg-secondary border border-border rounded-card p-4;
+    @apply bg-bg-secondary/70 backdrop-blur-md border border-border/80 rounded-card p-4 shadow-[0_1px_0_rgba(255,255,255,0.03)_inset];
   }
 
   .kpi-card {
-    @apply bg-bg-secondary border border-border rounded-card p-5 flex flex-col gap-1;
+    @apply bg-bg-secondary/70 backdrop-blur-md border border-border/80 rounded-card p-5 flex flex-col gap-1 shadow-[0_1px_0_rgba(255,255,255,0.03)_inset];
   }
 
   .btn-primary {
@@ -51,7 +51,7 @@ body {
   }
 
   .btn-secondary {
-    @apply bg-bg-tertiary hover:bg-border text-text-primary border border-border font-medium px-4 py-2 rounded-md transition-colors text-sm;
+    @apply bg-bg-tertiary/80 backdrop-blur-sm hover:bg-border text-text-primary border border-border font-medium px-4 py-2 rounded-md transition-colors text-sm;
   }
 
   .badge-green {
@@ -85,4 +85,28 @@ body {
 .recharts-cartesian-axis-tick-value {
   fill: #8b949e !important;
   font-size: 11px !important;
+}
+
+/* ───────── Market Pulse background animations ───────── */
+@keyframes mp-pulse-slow {
+  0%, 100% { transform: scale(1);    opacity: 0.22; }
+  50%      { transform: scale(1.08); opacity: 0.30; }
+}
+@keyframes mp-pulse-slower {
+  0%, 100% { transform: scale(1);    opacity: 0.18; }
+  50%      { transform: scale(1.10); opacity: 0.28; }
+}
+@keyframes mp-breathe {
+  0%, 100% { opacity: 0.85; transform: scaleY(1);    }
+  50%      { opacity: 1;    transform: scaleY(1.02); }
+}
+
+.animate-mp-pulse-slow   { animation: mp-pulse-slow   14s ease-in-out infinite; }
+.animate-mp-pulse-slower { animation: mp-pulse-slower 18s ease-in-out infinite; }
+.animate-mp-breathe      { animation: mp-breathe      9s  ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-mp-pulse-slow,
+  .animate-mp-pulse-slower,
+  .animate-mp-breathe { animation: none; }
 }
