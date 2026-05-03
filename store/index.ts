@@ -9,7 +9,7 @@ interface TradingStore {
   chatHistory: ChatMessage[];
   isRunningBacktest: boolean;
 
-  setBacktestResult: (result: BacktestResult) => void;
+  setBacktestResult: (result: BacktestResult | null) => void;
   setActiveConfig: (config: BotConfig) => void;
   addChatMessage: (msg: ChatMessage) => void;
   clearChat: () => void;
