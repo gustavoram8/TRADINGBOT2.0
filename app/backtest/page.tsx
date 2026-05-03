@@ -8,7 +8,7 @@ import { BacktestChart } from "@/components/charts/backtest-chart";
 import { fmtUSD, fmtPct, pnlColor, cn } from "@/lib/utils";
 import { runBacktest } from "@/lib/api";
 import { Play, Loader2, ChevronDown, ChevronUp } from "lucide-react";
-import { generateMockBacktestResult } from "@/lib/mock-data";
+;
 
 function usePersistentState(key: string, fallback: string) {
   const stored = typeof window !== "undefined" ? (localStorage.getItem(key) ?? fallback) : fallback;
@@ -38,7 +38,7 @@ export default function BacktestPage() {
       setBacktestResult(result);
     } catch (e) {
       setError(String(e));
-      setBacktestResult(generateMockBacktestResult(startDate, endDate, interval, activeConfig));
+      setBacktestResult(null);
     } finally {
       setRunningBacktest(false);
     }
@@ -105,14 +105,19 @@ export default function BacktestPage() {
             )}
           </button>
           {error && (
-            <p className="text-xs text-fin-gold">
-              {process.env.PYTHON_API_URL
-                ? error
-                : "Backend Python no conectado — mostrando datos de demostración"}
-            </p>
+            <p className="text-xs text-fin-red font-medium">Error al conectar con el backend</p>
           )}
         </div>
       </div>
+
+      {/* Error state */}
+      {error && !m && (
+        <div className="card border-fin-red/40 bg-fin-red/5 flex flex-col items-center justify-center py-12 gap-3">
+          <p className="text-fin-red font-semibold text-sm">El backtest no pudo completarse</p>
+          <p className="text-text-secondary text-xs text-center max-w-md">{error}</p>
+          <p className="text-text-muted text-xs">Revisa que el backend esté activo y que las fechas sean válidas.</p>
+        </div>
+      )}
 
       {/* Results */}
       {m && res && (
