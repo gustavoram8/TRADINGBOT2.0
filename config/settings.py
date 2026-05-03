@@ -259,7 +259,7 @@ SCORER_MIN_SCORE_TRADE_1 = 7.0    # First trade of the day
 SCORER_MIN_SCORE_TRADE_2 = 12.0   # Second trade (must be exceptional)
 
 # How many bars back (on base TF) to look for a valid CHoCH signal.
-SCORER_CHOCH_LOOKBACK_BARS = 30
+SCORER_CHOCH_LOOKBACK_BARS = 60
 
 # NY AM open ± this many points = "in play" range for target selection.
 SCORER_PROXIMITY_RANGE_POINTS = 400.0
