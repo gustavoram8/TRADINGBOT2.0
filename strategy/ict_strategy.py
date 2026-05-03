@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from config.settings import (
     POINT_VALUE, DEFAULT_CONTRACTS,
     BREAK_EVEN_TRIGGER_PCT, CLOSE_AT_PCT_OF_TP,
-    MAX_DAILY_LOSS, MAX_TRADES_PER_DAY,
+    MAX_DAILY_LOSS, MAX_TRADES_PER_DAY, MAX_LOSS_PER_TRADE,
     BIG_LOSS_THRESHOLD, BIG_WIN_THRESHOLD,
     COMMISSION_PER_SIDE, SLIPPAGE_TICKS,
     ACCOUNT_BALANCE, TRAILING_DRAWDOWN_MAX,
@@ -851,11 +851,10 @@ class ICTStrategy(bt.Strategy):
         # Reject if the logically-placed SL makes even 1 contract exceed the
         # per-trade loss limit.  The SL is set by ICT structure — we never
         # shrink it to fit a dollar target; instead we skip the trade.
-        from config.settings import POINT_VALUE as _PV
-        if sl_points * _PV > self.p.max_loss_per_trade:
+        if sl_points * POINT_VALUE > self.p.max_loss_per_trade:
             self.log(
                 f"  {direction.upper()} RECHAZADO: SL lógico ({sl_points:.1f} pts × "
-                f"${_PV}/pt = ${sl_points * _PV:.0f}) supera límite "
+                f"${POINT_VALUE}/pt = ${sl_points * POINT_VALUE:.0f}) supera límite "
                 f"${self.p.max_loss_per_trade:.0f}/trade", "WARN"
             )
             return
