@@ -199,6 +199,7 @@ class ICTStrategy(bt.Strategy):
         self._sl_price: Optional[float] = None
         self._entry_price: Optional[float] = None
         self._entry_time: Optional[datetime] = None
+        self._entry_contracts: int = 0
         self._exit_reason: str = ""
         self._bar_count: int = 0
         self._trades_log: List[Dict] = []
@@ -892,6 +893,7 @@ class ICTStrategy(bt.Strategy):
         self._sl_price = sl_price
         self._tp_price = tp_price
         self._entry_time = self.data_base.datetime.datetime(0)
+        self._entry_contracts = num_contracts
         self._exit_reason = ""
         self._protective_fvg = setup.protective_fvg
 
@@ -1312,7 +1314,7 @@ class ICTStrategy(bt.Strategy):
                 "pnl_gross": pnl,
                 "pnl_net": pnl_net,
                 "commission": trade.commission,
-                "contracts": abs(trade.size),
+                "contracts": self._entry_contracts,
                 "reason": self._exit_reason or "Manual",
                 "entry_time": self._entry_time,
                 "exit_time": self.data_base.datetime.datetime(0),
@@ -1332,6 +1334,7 @@ class ICTStrategy(bt.Strategy):
             self._sl_price = None
             self._tp_price = None
             self._entry_time = None
+            self._entry_contracts = 0
             self._exit_reason = ""
             self._protective_fvg = None
             self._actual_exit_price = None

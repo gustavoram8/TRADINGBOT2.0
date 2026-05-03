@@ -74,12 +74,14 @@ def serialize_metrics(metrics: Any) -> Dict[str, Any]:
     Convert validation.metrics.PerformanceMetrics → frontend dict.
 
     NOTE on percent fields:
-      - Python returns ``max_drawdown_pct`` and ``total_return_pct`` as
-        percent values (e.g. 2.5 means 2.5%).
-      - The frontend's mock generator stores them as decimals (0.025).
-        We follow the Python convention here; the frontend already handles
-        percent-style values via fmtPct() in lib/utils.ts.
+      - win_rate is already 0-1 from Python (e.g. 0.65 = 65%).
+      - total_return_pct and max_drawdown_pct come from Python as ×100
+        (e.g. 4.0 = 4%). We divide by 100 here so the frontend's fmtPct()
+        (which also multiplies ×100) displays them correctly.
     """
+    def _pct(v: Any) -> float:
+        return _safe_float(v) / 100.0
+
     return {
         "total_trades": _safe_int(getattr(metrics, "total_trades", 0)),
         "winning_trades": _safe_int(getattr(metrics, "winning_trades", 0)),
@@ -91,14 +93,14 @@ def serialize_metrics(metrics: Any) -> Dict[str, Any]:
         "total_commission": _safe_float(getattr(metrics, "total_commission", 0.0)),
         "initial_balance": _safe_float(getattr(metrics, "initial_balance", 0.0)),
         "final_balance": _safe_float(getattr(metrics, "final_balance", 0.0)),
-        "total_return_pct": _safe_float(getattr(metrics, "total_return_pct", 0.0)),
+        "total_return_pct": _pct(getattr(metrics, "total_return_pct", 0.0)),
         "avg_win": _safe_float(getattr(metrics, "avg_win", 0.0)),
         "avg_loss": _safe_float(getattr(metrics, "avg_loss", 0.0)),
         "expectancy": _safe_float(getattr(metrics, "expectancy", 0.0)),
         "largest_win": _safe_float(getattr(metrics, "largest_win", 0.0)),
         "largest_loss": _safe_float(getattr(metrics, "largest_loss", 0.0)),
         "max_drawdown_usd": _safe_float(getattr(metrics, "max_drawdown_usd", 0.0)),
-        "max_drawdown_pct": _safe_float(getattr(metrics, "max_drawdown_pct", 0.0)),
+        "max_drawdown_pct": _pct(getattr(metrics, "max_drawdown_pct", 0.0)),
         "max_drawdown_duration_days": _safe_int(
             getattr(metrics, "max_drawdown_duration_days", 0)
         ),
