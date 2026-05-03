@@ -70,6 +70,7 @@ export interface BotConfig {
   max_daily_loss: number;
   max_trades_per_day: number;
   default_contracts: number;
+  max_loss_per_trade: number;
   big_loss_threshold: number;
   big_win_threshold: number;
   fvg_lookback_1h: number;

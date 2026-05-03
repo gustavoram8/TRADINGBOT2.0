@@ -19,6 +19,7 @@ export const DEFAULT_CONFIG: BotConfig = {
   max_daily_loss: 550,
   max_trades_per_day: 2,
   default_contracts: 3,
+  max_loss_per_trade: 600,
   big_loss_threshold: 400,
   big_win_threshold: 800,
   fvg_lookback_1h: 10,

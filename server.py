@@ -183,6 +183,7 @@ def post_backtest(req: BacktestRequest) -> dict:
         "max_daily_loss":       cfg.max_daily_loss,
         "max_trades_per_day":   cfg.max_trades_per_day,
         "default_contracts":    cfg.default_contracts,
+        "max_loss_per_trade":   cfg.max_loss_per_trade,
         "break_even_pct":       cfg.break_even_pct,
         "close_at_pct":         cfg.close_at_pct,
         "big_loss_threshold":   cfg.big_loss_threshold,

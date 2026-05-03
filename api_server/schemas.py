@@ -26,6 +26,7 @@ class BotConfigPayload(BaseModel):
     max_trades_per_day: int
     default_contracts: int
 
+    max_loss_per_trade: float = 600.0
     big_loss_threshold: float
     big_win_threshold: float
 

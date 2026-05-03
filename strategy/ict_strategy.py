@@ -89,6 +89,7 @@ class ICTStrategy(bt.Strategy):
         ("max_daily_loss", MAX_DAILY_LOSS),
         ("max_trades_per_day", MAX_TRADES_PER_DAY),
         ("default_contracts", DEFAULT_CONTRACTS),
+        ("max_loss_per_trade", MAX_LOSS_PER_TRADE),
         ("break_even_pct", BREAK_EVEN_TRIGGER_PCT),
         ("close_at_pct", CLOSE_AT_PCT_OF_TP),
         ("big_loss_threshold", BIG_LOSS_THRESHOLD),
@@ -174,9 +175,11 @@ class ICTStrategy(bt.Strategy):
             fvg_5m=self.fvg_tracker_5m,
         )
 
-        # Risk managers
+        # Risk managers — use trader's chosen contracts ceiling and loss limit
         self.position_sizer = PositionSizer(
-            initial_equity=self.p.initial_capital
+            initial_equity=self.p.initial_capital,
+            max_contracts=self.p.default_contracts,
+            max_loss_per_trade=self.p.max_loss_per_trade,
         )
         self.kill_switch = KillSwitchManager(
             initial_balance=self.p.initial_capital,
@@ -843,6 +846,18 @@ class ICTStrategy(bt.Strategy):
             sl_points = sl_price - price
 
         if sl_points <= 0 or tp_points <= 0:
+            return
+
+        # Reject if the logically-placed SL makes even 1 contract exceed the
+        # per-trade loss limit.  The SL is set by ICT structure — we never
+        # shrink it to fit a dollar target; instead we skip the trade.
+        from config.settings import POINT_VALUE as _PV
+        if sl_points * _PV > self.p.max_loss_per_trade:
+            self.log(
+                f"  {direction.upper()} RECHAZADO: SL lógico ({sl_points:.1f} pts × "
+                f"${_PV}/pt = ${sl_points * _PV:.0f}) supera límite "
+                f"${self.p.max_loss_per_trade:.0f}/trade", "WARN"
+            )
             return
 
         num_contracts = self.position_sizer.get_position_size(sl_points)

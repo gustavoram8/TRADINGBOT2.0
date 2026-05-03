@@ -67,49 +67,58 @@ def calculate_position_size(
     point_value: float = POINT_VALUE,
     max_contracts: int = MAX_CONTRACTS,
     min_contracts: int = MIN_CONTRACTS,
+    max_loss_per_trade: float = MAX_LOSS_PER_TRADE,
 ) -> int:
     """
     Calcula el número de contratos basado en el riesgo.
+
+    El SL ya fue fijado por lógica ICT antes de llamar a esta función.
+    Aquí solo se determina cuántos contratos caben dentro del límite de
+    pérdida definido por el trader.  Si ni siquiera 1 contrato cabe,
+    devuelve 0 para que la estrategia rechace el trade.
 
     Parameters
     ----------
     account_equity : float
         Capital actual disponible.
     risk_per_trade_pct : float
-        % del capital a arriesgar (calculado por Kelly, e.g., 0.02 = 2%).
+        % del capital a arriesgar (Kelly fraccionado).
     stop_loss_points : float
-        Distancia al SL en puntos.
+        Distancia al SL en puntos (fijada por lógica, no por dinero).
     point_value : float
         Valor por punto por contrato ($2 para MNQ).
     max_contracts : int
-        Máximo de contratos permitidos.
+        Techo de contratos elegido por el trader en Bot Builder.
     min_contracts : int
         Mínimo de contratos.
+    max_loss_per_trade : float
+        Pérdida máxima aceptable por trade (elegida por el trader).
 
     Returns
     -------
-    int : Número de contratos a operar.
+    int : Contratos a operar. 0 = trade debe rechazarse.
     """
     if stop_loss_points <= 0:
         return 0
 
-    risk_amount = account_equity * risk_per_trade_pct
     risk_per_contract = stop_loss_points * point_value
 
-    # Verificar que la pérdida por contrato no exceda el máximo
-    if risk_per_contract * min_contracts > MAX_LOSS_PER_TRADE:
-        # Reducir a lo máximo permitido
-        contracts = max(1, int(MAX_LOSS_PER_TRADE / risk_per_contract))
-    else:
-        contracts = int(risk_amount / risk_per_contract)
+    # Si ni 1 contrato cabe dentro del límite de pérdida → rechazar
+    if risk_per_contract > max_loss_per_trade:
+        return 0
 
-    # Aplicar límites
+    # Contratos por Kelly
+    risk_amount = account_equity * risk_per_trade_pct
+    contracts = int(risk_amount / risk_per_contract) if risk_per_contract > 0 else 0
+
+    # Aplicar límites del trader (max = lo que eligió en Bot Builder)
     contracts = max(min_contracts, min(contracts, max_contracts))
 
-    # Verificación final: la pérdida potencial no debe exceder el máximo absoluto
-    potential_loss = contracts * risk_per_contract
-    if potential_loss > MAX_LOSS_PER_TRADE:
-        contracts = max(1, int(MAX_LOSS_PER_TRADE / risk_per_contract))
+    # Respetar el límite de pérdida: reducir si hace falta, pero nunca
+    # más allá de 1 contrato (si 1 contrato ya supera el límite, devuelve 0
+    # en el bloque de arriba).
+    while contracts > 1 and contracts * risk_per_contract > max_loss_per_trade:
+        contracts -= 1
 
     return contracts
 
@@ -173,10 +182,14 @@ class PositionSizer:
         self,
         initial_equity: float = ACCOUNT_BALANCE,
         kelly_fraction: float = KELLY_FRACTION_DEFAULT,
+        max_contracts: int = MAX_CONTRACTS,
+        max_loss_per_trade: float = MAX_LOSS_PER_TRADE,
     ):
         self.initial_equity = initial_equity
         self.current_equity = initial_equity
         self.kelly_fraction = kelly_fraction
+        self.max_contracts = max_contracts
+        self.max_loss_per_trade = max_loss_per_trade
 
         # Historial para cálculo de Kelly
         self.wins: list = []
@@ -230,9 +243,11 @@ class PositionSizer:
             # No hay suficiente historial → usar valor fijo conservador
             risk_pct = 0.01  # 1% del capital
 
-        # Calcular contratos base
+        # Calcular contratos base respetando los límites del trader
         base = calculate_position_size(
-            self.current_equity, risk_pct, stop_loss_points
+            self.current_equity, risk_pct, stop_loss_points,
+            max_contracts=self.max_contracts,
+            max_loss_per_trade=self.max_loss_per_trade,
         )
 
         # Ajustar por drawdown

@@ -217,6 +217,11 @@ export default function ConfiguratorPage() {
                 hint="Número de contratos MNQ que usa el bot en condiciones normales. Cada contrato MNQ vale $2 por punto. Con 10 contratos y 30 puntos de movimiento = $600 brutos. Se reduce automáticamente si el drawdown se acerca al límite del 5%."
                 onChange={(v) => update("default_contracts", v)}
               />
+              <Slider
+                label="Pérdida máxima por operación" value={config.max_loss_per_trade} min={100} max={2000} step={50} unit="$"
+                hint="Si el Stop Loss lógico del trade (basado en el FVG protector y la liquidez) implica perder más de este monto con 1 solo contrato, el bot descarta el trade. El SL siempre se coloca por lógica ICT — este valor decide si la operación es compatible con tu gestión de riesgo."
+                onChange={(v) => update("max_loss_per_trade", v)}
+              />
 
               <SectionTitle
                 title="Kill-switches diarios"
@@ -470,6 +475,7 @@ export default function ConfiguratorPage() {
           {[
             { label: "Capital inicial", value: `$${config.initial_capital.toLocaleString()}`, sub: "base de la cuenta" },
             { label: "Contratos MNQ", value: String(config.default_contracts), sub: `$${config.default_contracts * 2}/punto · $${config.default_contracts * 50}/trade (25 pts riesgo)` },
+            { label: "Máx. pérdida/trade", value: `$${config.max_loss_per_trade}`, sub: "trade descartado si SL supera esto" },
             { label: "DD máx diario", value: `$${config.max_daily_loss}`, sub: `${dailyLossPct.toFixed(0)}% del límite 5%` },
             { label: "Trades por día", value: `≤ ${config.max_trades_per_day}`, sub: "máximo permitido" },
             { label: "Break-even", value: `${bePct}% del TP`, sub: "SL → entrada al llegar aquí" },
