@@ -1,0 +1,37 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -e
+            cd /opt/tradingbot
+
+            # Pull latest changes
+            git pull origin main
+
+            # Install new frontend dependencies if any
+            npm install --production=false
+
+            # Rebuild frontend
+            npm run build
+
+            # Restart frontend
+            pm2 restart tradingbot-frontend
+
+            # Restart Python backend
+            systemctl restart tradingbot
+
+            echo "Deploy completed successfully"
