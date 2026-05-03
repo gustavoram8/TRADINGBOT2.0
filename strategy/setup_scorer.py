@@ -105,8 +105,7 @@ class ScoreBreakdown:
     @property
     def gates_passed(self) -> bool:
         return (
-            self.has_sweep
-            and self.has_choch
+            self.has_choch
             and self.has_protective_fvg
             and self.rr_filter_passed
         )
@@ -134,8 +133,6 @@ class ScoreBreakdown:
         if self.gates_passed:
             return ""
         parts = []
-        if not self.has_sweep:
-            parts.append("no valid sweep")
         if not self.has_choch:
             parts.append("no CHoCH confirmed")
         if not self.has_protective_fvg:
