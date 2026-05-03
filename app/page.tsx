@@ -48,14 +48,14 @@ export default function OverviewPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <h1 className="text-xl font-bold">Overview</h1>
           <p className="text-sm text-text-secondary mt-0.5">
             {period_name ?? "Backtest"} · {config.name} · MNQ / NAS100
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className={cn("badge-green", metrics.total_pnl < 0 && "badge-red")}>
             {metrics.total_pnl >= 0 ? "PROFITABLE" : "LOSS"}
           </span>

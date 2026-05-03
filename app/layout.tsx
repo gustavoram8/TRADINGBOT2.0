@@ -19,7 +19,7 @@ export default function RootLayout({
         <CandlestickBackground />
         <Sidebar />
         <main className="flex-1 overflow-y-auto relative z-10">
-          <div className="min-h-full p-6">{children}</div>
+          <div className="min-h-full p-4 pt-14 md:pt-4 md:p-6">{children}</div>
         </main>
       </body>
     </html>
