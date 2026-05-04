@@ -338,6 +338,7 @@ def assemble_backtest_result(
     indicator_state: Dict[str, Any],
     start_date: str,
     ohlc_by_timeframe: Optional[Dict[str, pd.DataFrame]] = None,
+    rejection_counts: Optional[Dict[str, int]] = None,
 ) -> Dict[str, Any]:
     """
     Final glue: takes everything ``run_backtest`` produced and emits the
@@ -349,6 +350,20 @@ def assemble_backtest_result(
         for tf, df in ohlc_by_timeframe.items():
             if df is not None and not df.empty:
                 ohlc_tf_out[tf] = serialize_ohlc(df)
+
+    # Build rejection diagnostics summary
+    rejection_diagnostics = None
+    if rejection_counts:
+        total = sum(rejection_counts.values())
+        rows = sorted(
+            [
+                {"reason": k, "count": v, "pct": round(v / total * 100, 1) if total else 0.0}
+                for k, v in rejection_counts.items()
+                if v > 0
+            ],
+            key=lambda r: -r["count"],
+        )
+        rejection_diagnostics = {"rows": rows, "total": total}
 
     return {
         "backtest_id": backtest_id,
@@ -367,4 +382,5 @@ def assemble_backtest_result(
         "fvg_zones": serialize_fvg_zones(indicator_state),
         "liquidity_levels": serialize_liquidity_levels(indicator_state),
         "sweeps": serialize_sweeps(indicator_state),
+        "rejection_diagnostics": rejection_diagnostics,
     }

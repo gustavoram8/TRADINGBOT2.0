@@ -363,6 +363,51 @@ export default function BacktestPage() {
           )}
 
           {activeTab === "metrics" && (
+            <div className="space-y-4">
+            {/* Rejection Diagnostics — shown only when available */}
+            {res.rejection_diagnostics && (
+              <div className="card">
+                <p className="text-sm font-semibold mb-1">Diagnóstico de Rechazos</p>
+                <p className="text-xs text-text-muted mb-3">
+                  Por cada barra del backtest dentro de las killzones, el bot evalúa si entrar.
+                  Esta tabla muestra por qué NO entró en cada caso.
+                </p>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="text-text-muted border-b border-border">
+                        <th className="text-left py-1.5 pr-4 font-medium">Razón</th>
+                        <th className="text-right py-1.5 pr-4 font-medium w-20">Barras</th>
+                        <th className="text-right py-1.5 font-medium w-16">%</th>
+                        <th className="py-1.5 pl-4 w-32"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {res.rejection_diagnostics.rows.map((row) => (
+                        <tr key={row.reason} className="border-b border-border/40">
+                          <td className="py-1.5 pr-4 font-mono text-text-secondary">{row.reason}</td>
+                          <td className="py-1.5 pr-4 font-mono text-right">{row.count.toLocaleString()}</td>
+                          <td className="py-1.5 font-mono text-right text-text-muted">{row.pct.toFixed(1)}%</td>
+                          <td className="py-1.5 pl-4">
+                            <div className="h-1.5 bg-bg-tertiary rounded-full overflow-hidden">
+                              <div
+                                className="h-full rounded-full bg-brand-blue"
+                                style={{ width: `${row.pct}%` }}
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                      <tr className="text-text-muted">
+                        <td className="py-2 pr-4 font-medium">TOTAL</td>
+                        <td className="py-2 pr-4 font-mono text-right">{res.rejection_diagnostics.total.toLocaleString()}</td>
+                        <td colSpan={2} />
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[
                 {
@@ -406,6 +451,7 @@ export default function BacktestPage() {
                   </div>
                 </div>
               ))}
+            </div>
             </div>
           )}
 

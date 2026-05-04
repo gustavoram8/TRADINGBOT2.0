@@ -110,6 +110,17 @@ export interface SweepEvent {
   timeframe?: string;
 }
 
+export interface RejectionDiagnosticsRow {
+  reason: string;
+  count: number;
+  pct: number;
+}
+
+export interface RejectionDiagnostics {
+  rows: RejectionDiagnosticsRow[];
+  total: number;
+}
+
 export interface BacktestResult {
   backtest_id?: string;
   metrics: PerformanceMetrics;
@@ -123,6 +134,7 @@ export interface BacktestResult {
   fvg_zones?: FVGZone[];
   liquidity_levels?: LiquidityLevel[];
   sweeps?: SweepEvent[];
+  rejection_diagnostics?: RejectionDiagnostics;
 }
 
 export interface MonteCarloResult {
