@@ -38,7 +38,7 @@ from typing import Generator, List, Optional, Tuple
 import pandas as pd
 
 from indicators.structure_engine import StructureEngine, StructureBias
-from indicators.liquidity_map import LiquidityMap, LiquidityLevel, LevelSide, LiqWeight, SweepEvent
+from indicators.liquidity_map import LiquidityMap, LiquidityLevel, LevelSide, LevelStatus, LiqWeight, SweepEvent
 from indicators.fvg import FVGTracker, FVGType, FVGStatus, FairValueGap
 from config.settings import (
     SCORER_MIN_SCORE_TRADE_1 as MIN_SCORE_TRADE_1,
@@ -599,7 +599,7 @@ class SetupScorer:
         for tracker, tf_name in self._entry_trackers():
             candidates = [
                 f for f in tracker.active_bullish
-                if f.top <= price and price - f.top <= 150
+                if f.top <= price and price - f.top <= 250
             ]
             if candidates:
                 candidates.sort(key=lambda f: price - f.top)
@@ -664,6 +664,24 @@ class SetupScorer:
                 bd.target_score += 0.5
                 bd.reasons.append(f"+{len(viable)-1} more viable targets above")
             bd.target_score -= obs * 0.5
+        elif bd.protective_fvg is not None:
+            # Fallback: synthetic 2:1 TP anchored to the protective FVG bottom
+            sl_dist = price - bd.protective_fvg.bottom
+            if sl_dist > 0:
+                synthetic_tp = price + sl_dist * 2.0
+                bd.target_level = LiquidityLevel(
+                    label="Synthetic 2:1 TP",
+                    price=synthetic_tp,
+                    side=LevelSide.ABOVE,
+                    weight=3,
+                    formed_at=pd.Timestamp.now(),
+                    status=LevelStatus.UNTOUCHED,
+                )
+                bd.target_score = 0.5
+                bd.reasons.append(
+                    f"Synthetic 2:1 target @ {synthetic_tp:.1f} "
+                    f"(no fresh levels in {PROXIMITY_RANGE:.0f}pt range)"
+                )
         else:
             bd.reasons.append("No viable target above")
 
@@ -859,6 +877,24 @@ class SetupScorer:
                 bd.target_score += 0.5
                 bd.reasons.append(f"+{len(viable)-1} more viable targets below")
             bd.target_score -= obs * 0.5
+        elif bd.protective_fvg is not None:
+            # Fallback: synthetic 2:1 TP anchored to the protective FVG top
+            sl_dist = bd.protective_fvg.top - price
+            if sl_dist > 0:
+                synthetic_tp = price - sl_dist * 2.0
+                bd.target_level = LiquidityLevel(
+                    label="Synthetic 2:1 TP",
+                    price=synthetic_tp,
+                    side=LevelSide.BELOW,
+                    weight=3,
+                    formed_at=pd.Timestamp.now(),
+                    status=LevelStatus.UNTOUCHED,
+                )
+                bd.target_score = 0.5
+                bd.reasons.append(
+                    f"Synthetic 2:1 target @ {synthetic_tp:.1f} "
+                    f"(no fresh levels in {PROXIMITY_RANGE:.0f}pt range)"
+                )
         else:
             bd.reasons.append("No viable target below")
 

@@ -231,6 +231,22 @@ class ICTStrategy(bt.Strategy):
         # Phase 6.4 — last 5m leading direction, used to suppress redundant logs
         self._last_5m_lead: Optional[str] = None
 
+        # Rejection counters — tallied each bar; printed in stop() for diagnosis
+        self._rejection_counts: Dict[str, int] = {
+            "no_killzone":              0,
+            "cooldown_loss":            0,
+            "cooldown_manipulation":    0,
+            "kill_switch":              0,
+            "gates_long":               0,  # scorer gates failed (LONG)
+            "gates_short":              0,  # scorer gates failed (SHORT)
+            "score_below_threshold":    0,
+            "entry_no_prot_fvg":        0,  # protective_fvg is None at execute
+            "entry_no_target":          0,  # target_level is None at execute
+            "entry_sl_limit":           0,  # SL × point_value > max_loss_per_trade
+            "entry_preflight":          0,  # preflight_check failed
+            "no_contracts":             0,
+        }
+
     def log(self, msg: str, level: str = "INFO"):
         if self.p.verbose:
             dt = self.data_base.datetime.datetime(0)
@@ -296,7 +312,7 @@ class ICTStrategy(bt.Strategy):
         self.scorer.set_bar(self._bar_count)
         long_bd, short_bd = self.scorer.score_both(price)
 
-        threshold = 12.0 if self.kill_switch.trades_today >= 1 else 8.0
+        threshold = SCORER_MIN_SCORE_TRADE_2 if self.kill_switch.trades_today >= 1 else SCORER_MIN_SCORE_TRADE_1
         lead = "long" if long_bd.total_score > short_bd.total_score else "short"
         crossed = (
             (long_bd.gates_passed and long_bd.total_score >= threshold)
@@ -744,6 +760,7 @@ class ICTStrategy(bt.Strategy):
 
         # Solo durante NY AM y NY PM killzones
         if self._get_current_session() not in ("ny_am", "ny_pm"):
+            self._rejection_counts["no_killzone"] += 1
             return
 
         # Phase 6.2 — cooldown after a losing trade (prevents over-reactive flips)
@@ -753,6 +770,7 @@ class ICTStrategy(bt.Strategy):
                 f"COOLDOWN: {remaining} bar(s) remaining after recent loss",
                 "SKIP",
             )
+            self._rejection_counts["cooldown_loss"] += 1
             return
 
         # Phase 7.3 — manipulation burst cooldown (real-time, 15 minutes)
@@ -765,12 +783,14 @@ class ICTStrategy(bt.Strategy):
                     f"(until {self._manipulation_until_ts.strftime('%H:%M')})",
                     "SKIP",
                 )
+                self._rejection_counts["cooldown_manipulation"] += 1
                 return
             else:
                 self._manipulation_until_ts = None  # expired
 
         can_trade, _ = self.kill_switch.can_open_trade()
         if not can_trade:
+            self._rejection_counts["kill_switch"] += 1
             return
 
         price = self.data_base.close[0]
@@ -787,8 +807,13 @@ class ICTStrategy(bt.Strategy):
         if setup is not None:
             self._execute_entry(setup, price)
         else:
-            # Log why neither direction qualified
+            # Tally per-direction gate failures for diagnosis
             for bd in (long_bd, short_bd):
+                key = f"gates_{bd.direction}"
+                if not bd.gates_passed:
+                    self._rejection_counts[key] += 1
+                elif bd.total_score < threshold:
+                    self._rejection_counts["score_below_threshold"] += 1
                 reason = bd.rejection_reason()
                 if reason:
                     self.log(
@@ -803,8 +828,10 @@ class ICTStrategy(bt.Strategy):
             missing = []
             if setup.protective_fvg is None:
                 missing.append("protective_fvg")
+                self._rejection_counts["entry_no_prot_fvg"] += 1
             if setup.target_level is None:
                 missing.append("target_level")
+                self._rejection_counts["entry_no_target"] += 1
             self.log(f"  ENTRY ABORTED: {', '.join(missing)} is None — setup incomplete", "WARN")
             return
 
@@ -878,6 +905,7 @@ class ICTStrategy(bt.Strategy):
                 f"${POINT_VALUE}/pt = ${sl_points * POINT_VALUE:.0f}) supera límite "
                 f"${self.p.max_loss_per_trade:.0f}/trade", "WARN"
             )
+            self._rejection_counts["entry_sl_limit"] += 1
             return
 
         num_contracts = self.position_sizer.get_position_size(sl_points)
@@ -885,6 +913,7 @@ class ICTStrategy(bt.Strategy):
         if ks_max is not None:
             num_contracts = min(num_contracts, ks_max)
         if num_contracts <= 0:
+            self._rejection_counts["no_contracts"] += 1
             return
 
         pf = preflight_check(
@@ -900,6 +929,7 @@ class ICTStrategy(bt.Strategy):
 
         if not pf.passed:
             self.log(f"{direction.upper()} RECHAZADO: {pf.summary}", "WARN")
+            self._rejection_counts["entry_preflight"] += 1
             return
 
         self.log(
@@ -962,7 +992,7 @@ class ICTStrategy(bt.Strategy):
 
         # Flag if the opposite side becomes dominant (passes its threshold AND
         # outscores us by ≥0.5). Pure info — no auto-action.
-        threshold = 12.0 if self.kill_switch.trades_today >= 1 else 8.0
+        threshold = SCORER_MIN_SCORE_TRADE_2 if self.kill_switch.trades_today >= 1 else SCORER_MIN_SCORE_TRADE_1
         if (op_bd.gates_passed
                 and op_bd.total_score >= threshold
                 and op_bd.total_score > my_bd.total_score + 0.5):
@@ -1359,11 +1389,21 @@ class ICTStrategy(bt.Strategy):
     # =========================================================================
     def stop(self):
         """Genera resumen al finalizar."""
+        # Always print rejection diagnostics — critical when trade count is 0
+        self.log("=" * 60)
+        self.log("REJECTION DIAGNOSTICS (bars where entry was blocked):")
+        total_rejections = sum(self._rejection_counts.values())
+        for reason, count in sorted(self._rejection_counts.items(), key=lambda x: -x[1]):
+            if count > 0:
+                pct = count / total_rejections * 100 if total_rejections else 0
+                self.log(f"  {reason:<28} {count:>6} bars  ({pct:.1f}%)")
+        self.log(f"  {'TOTAL':28} {total_rejections:>6} bars")
+        self.log("=" * 60)
+
         total_trades = len(self._trades_log)
         if total_trades == 0:
-            self.log("=" * 50)
             self.log("SIN TRADES EJECUTADOS")
-            self.log("=" * 50)
+            self.log("=" * 60)
             return
 
         wins = [t for t in self._trades_log if t["pnl_net"] > 0]
