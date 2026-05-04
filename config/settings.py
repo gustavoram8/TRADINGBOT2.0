@@ -104,7 +104,7 @@ KILLZONES = {
     "asia":     KillZone("Asia",       "20:00", "00:00", allow_entry=False, close_on_enter=False),
     "london":   KillZone("London",     "02:00", "05:00", allow_entry=False, close_on_enter=False),
     "ny_am":    KillZone("NY AM",      "09:30", "11:00", allow_entry=True,  close_on_enter=False),
-    "ny_lunch": KillZone("NY Lunch",   "12:00", "13:00", allow_entry=False, close_on_enter=True),
+    "ny_lunch": KillZone("NY Lunch",   "12:00", "13:00", allow_entry=False, close_on_enter=False),
     "ny_pm":    KillZone("NY PM",      "13:30", "16:00", allow_entry=False, close_on_enter=False),
 }
 

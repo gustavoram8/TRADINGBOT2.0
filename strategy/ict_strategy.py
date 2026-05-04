@@ -728,8 +728,8 @@ class ICTStrategy(bt.Strategy):
         if self._pending_order is not None:
             return
 
-        # Solo durante NY AM killzone
-        if self._get_current_session() != "ny_am":
+        # Solo durante NY AM y NY PM killzones
+        if self._get_current_session() not in ("ny_am", "ny_pm"):
             return
 
         # Phase 6.2 — cooldown after a losing trade (prevents over-reactive flips)
