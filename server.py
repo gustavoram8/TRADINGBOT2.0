@@ -24,6 +24,7 @@ import os
 import sys
 import time
 import traceback
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from datetime import datetime, date as date_type
 from typing import Optional
 
@@ -138,49 +139,78 @@ def post_backtest(req: BacktestRequest) -> dict:
         req.start_date, req.end_date, interval, _days, req.config.name,
     )
 
-    # ---------- 1. Download historical data --------------------------------
-    try:
-        df_base = download_data(
-            interval=interval,
-            start=req.start_date,
-            end=req.end_date,
+    # ---------- 1. Download historical data (all feeds in parallel) --------
+    # Sequential downloads (base + 15m + 5m) can exceed nginx's proxy
+    # timeout. ThreadPoolExecutor downloads all feeds simultaneously so the
+    # total wall time = max(individual times) instead of their sum.
+    _DOWNLOAD_TIMEOUT = 55  # seconds per feed before giving up
+
+    def _fetch(iv: str, start: Optional[str] = None, end: Optional[str] = None):
+        try:
+            return download_data(interval=iv, start=start, end=end)
+        except Exception as exc:
+            return exc  # surface error, don't swallow
+
+    with ThreadPoolExecutor(max_workers=3) as pool:
+        f_base = pool.submit(_fetch, interval, req.start_date, req.end_date)
+        f_15m  = pool.submit(_fetch, "15m") if interval != "15m" else None
+        f_5m   = pool.submit(_fetch, "5m")
+
+        # Collect base (mandatory)
+        try:
+            _res_base = f_base.result(timeout=_DOWNLOAD_TIMEOUT)
+        except FuturesTimeoutError:
+            raise HTTPException(status_code=504,
+                detail=f"Timeout descargando datos {interval}. Intenta de nuevo.")
+        if isinstance(_res_base, Exception):
+            log.exception("Data download failed: %s", _res_base)
+            raise HTTPException(status_code=502,
+                detail=f"No se pudieron descargar datos del mercado: {_res_base}")
+        df_base = _res_base
+
+        # Collect supplementary (optional — failures are non-fatal)
+        df_15m: Optional[object] = None
+        df_5m:  Optional[object] = None
+        if f_15m is not None:
+            try:
+                _r15 = f_15m.result(timeout=_DOWNLOAD_TIMEOUT)
+                if not isinstance(_r15, Exception) and _r15 is not None and not _r15.empty:
+                    df_15m = _r15
+                elif isinstance(_r15, Exception):
+                    log.warning("Could not fetch 15m feed: %s", _r15)
+            except FuturesTimeoutError:
+                log.warning("15m feed download timed out — skipped")
+        try:
+            _r5 = f_5m.result(timeout=_DOWNLOAD_TIMEOUT)
+            if not isinstance(_r5, Exception) and _r5 is not None and not _r5.empty:
+                df_5m = _r5
+            elif isinstance(_r5, Exception):
+                log.warning("Could not fetch 5m feed: %s", _r5)
+        except FuturesTimeoutError:
+            log.warning("5m feed download timed out — skipped")
+
+    # If 15m returned no data (date range older than 60 days), retry with 1h.
+    if (df_base is None or df_base.empty) and interval == "15m":
+        log.warning(
+            "15m returned no data for %s→%s — falling back to 1h",
+            req.start_date, req.end_date,
         )
-    except Exception as e:
-        log.exception("Data download failed")
-        raise HTTPException(
-            status_code=502,
-            detail=f"No se pudieron descargar datos del mercado: {e}",
-        )
+        interval = "1h"
+        try:
+            df_base = download_data(interval="1h", start=req.start_date, end=req.end_date)
+        except Exception as e:
+            raise HTTPException(status_code=502,
+                detail=f"No se pudieron descargar datos del mercado: {e}")
 
     if df_base is None or df_base.empty:
         raise HTTPException(
             status_code=400,
             detail=(
-                f"yfinance no devolvió datos para {interval} entre "
+                f"yfinance no devolvió datos entre "
                 f"{req.start_date} y {req.end_date}. "
-                f"Recuerda: 15m cubre los últimos 58 días, "
-                f"1h cubre hasta 730 días."
+                f"El rango máximo para 1h es 730 días."
             ),
         )
-
-    # Always try all supplementary feeds regardless of base TF.
-    # Backtest runner handles partial coverage gracefully.
-    df_15m: Optional[object] = None
-    df_5m:  Optional[object] = None
-    if interval != "15m":
-        # When base is 1h, try to attach 15m for structure richness
-        try:
-            _df_15m = download_data(interval="15m")
-            if _df_15m is not None and not _df_15m.empty:
-                df_15m = _df_15m
-        except Exception as e:
-            log.warning("Could not fetch 15m feed: %s", e)
-    try:
-        _df_5m = download_data(interval="5m")
-        if _df_5m is not None and not _df_5m.empty:
-            df_5m = _df_5m
-    except Exception as e:
-        log.warning("Could not fetch 5m feed: %s", e)
 
     # ---------- 2. Map the frontend BotConfig to ICTStrategy params --------
     # Only fields the strategy currently exposes as Backtrader params are
