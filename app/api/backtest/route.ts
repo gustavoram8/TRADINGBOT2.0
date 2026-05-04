@@ -16,10 +16,10 @@ const jobs = new Map<string, JobState>();
 // Clean up jobs older than 30 min to avoid memory leaks.
 setInterval(() => {
   const cutoff = Date.now() - 30 * 60 * 1000;
-  for (const [id] of jobs) {
+  Array.from(jobs.keys()).forEach((id) => {
     const ts = Number(id.split("-")[1] ?? 0);
     if (ts < cutoff) jobs.delete(id);
-  }
+  });
 }, 5 * 60 * 1000);
 
 // POST /api/backtest — start a job, return jobId immediately.
