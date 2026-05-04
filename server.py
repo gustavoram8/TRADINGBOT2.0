@@ -261,6 +261,7 @@ def _pipeline_sync(req: BacktestRequest) -> dict:
         indicator_state=result.get("indicator_state", {}),
         start_date=req.start_date,
         ohlc_by_timeframe=ohlc_by_timeframe,
+        rejection_counts=result.get("rejection_counts", {}),
     )
 
     log.info(

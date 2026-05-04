@@ -279,8 +279,9 @@ def run_backtest(
         "trades_df": trades_df,
         "final_value": final_value,
         "strategy": strategy,
-        "df_ohlc": df_bt,                  # OHLC tz-naive usado en el backtest
-        "indicator_state": indicator_state, # FVGs / liquidez / sweeps post-backtest
+        "df_ohlc": df_bt,
+        "indicator_state": indicator_state,
+        "rejection_counts": dict(strategy._rejection_counts),
     }
 
 
