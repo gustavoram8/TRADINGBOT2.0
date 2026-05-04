@@ -28,6 +28,7 @@ from config.settings import (
     FVG_DUBIOUS_BREAK_PCT, FVG_DUBIOUS_WAIT_BARS,
     DISCOUNT_ZONE_PCT, KILLZONES,
     STRUCTURE_LOOKBACK_4H,
+    SCORER_MIN_SCORE_TRADE_1, SCORER_MIN_SCORE_TRADE_2,
 )
 from indicators.fvg import (
     FVGType, FVGStatus, FVGTracker, FairValueGap,
@@ -774,7 +775,7 @@ class ICTStrategy(bt.Strategy):
 
         price = self.data_base.close[0]
         self.scorer.set_bar(self._bar_count)
-        threshold = 12.0 if self.kill_switch.trades_today >= 1 else 8.0
+        threshold = SCORER_MIN_SCORE_TRADE_2 if self.kill_switch.trades_today >= 1 else SCORER_MIN_SCORE_TRADE_1
         long_bd, short_bd = self.scorer.score_both(price)
 
         # Log both sides each bar so we can see what the scorer sees
@@ -799,6 +800,12 @@ class ICTStrategy(bt.Strategy):
     def _execute_entry(self, setup: ScoreBreakdown, price: float):
         """Ejecuta una entrada basada en el ScoreBreakdown del scorer."""
         if setup.protective_fvg is None or setup.target_level is None:
+            missing = []
+            if setup.protective_fvg is None:
+                missing.append("protective_fvg")
+            if setup.target_level is None:
+                missing.append("target_level")
+            self.log(f"  ENTRY ABORTED: {', '.join(missing)} is None — setup incomplete", "WARN")
             return
 
         direction = setup.direction
