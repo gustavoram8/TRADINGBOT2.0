@@ -28,16 +28,22 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   try {
     data = await res.json();
   } catch (parseErr) {
-    // TypeError here means the response stream was cut (connection dropped),
-    // not a malformed JSON payload — show it as a network error.
-    if (parseErr instanceof TypeError) {
+    // TypeError / "Failed to fetch" here means the response stream was cut
+    // (connection dropped by nginx/proxy), not a malformed JSON payload.
+    const errStr = String(parseErr);
+    const isNetworkAbort =
+      parseErr instanceof TypeError ||
+      errStr.includes("Failed to fetch") ||
+      errStr.includes("NetworkError") ||
+      errStr.includes("network error");
+    if (isNetworkAbort) {
       const hint =
         typeof window !== "undefined"
           ? `La conexión fue cortada mientras se recibía la respuesta de ${window.location.origin}. Ruta: ${path}`
           : `Stream cortado para ${path}`;
-      throw new Error(`[RED] ${hint} — ${String(parseErr)}`);
+      throw new Error(`[RED] ${hint} — ${errStr}`);
     }
-    throw new Error(`[PARSE] Respuesta no es JSON válido desde ${path} — ${String(parseErr)}`);
+    throw new Error(`[PARSE] Respuesta no es JSON válido desde ${path} — ${errStr}`);
   }
   // Streaming endpoints embed errors in the JSON body (HTTP 200 already committed)
   if (data && typeof data === "object" && "error" in data) {
