@@ -116,14 +116,24 @@ def run_backtest(
         compression=240,
     )
 
-    # Cuando la base es 15m, agregar resample 1h para estructura intermedia
+    # Cuando la base es 15m, agregar feed 1h pre-resampleado con pandas.
+    # Se usa adddata (no resampledata) para no llamar resampledata dos veces
+    # sobre el mismo data_base — Backtrader no lo soporta de forma estable.
     if base_tf == "15m":
-        cerebro.resampledata(
-            data_base, name="1h",
-            timeframe=bt.TimeFrame.Minutes,
-            compression=60,
-        )
-        print("  + 1h resample from 15m base added")
+        try:
+            df_1h_bt = resample_ohlcv(df_bt, "1h")
+            if not df_1h_bt.empty:
+                data_1h_feed = bt.feeds.PandasData(
+                    dataname=df_1h_bt,
+                    datetime=None,
+                    open="Open", high="High", low="Low",
+                    close="Close", volume="Volume",
+                    openinterest=-1,
+                )
+                cerebro.adddata(data_1h_feed, name="1h")
+                print(f"  + 1h feed (pre-resampled from 15m): {len(df_1h_bt)} bars added")
+        except Exception as e:
+            print(f"  ⚠ Could not add 1h feed: {e}")
 
     # 15m feed — adjuntar si hay solapamiento con el período (cobertura parcial OK)
     if df_15m is not None and not df_15m.empty and base_tf != "15m":
