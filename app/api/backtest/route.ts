@@ -55,14 +55,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Buffer the full Python response (which may include keepalive "\n" bytes
-    // before the final JSON) before forwarding to the browser.
-    // This prevents the browser from receiving a partial/aborted stream and
-    // throwing "TypeError: Failed to fetch" during res.json().
-    // The Python server sends "\n" keepalives every 5s — res.text() on the
-    // Node.js side buffers those safely; JSON.parse ignores leading whitespace.
-    const rawText = await res.text();
-    return new Response(rawText, {
+    // Stream the Python response body directly to the browser instead of
+    // buffering it. Python sends "\n" keepalive bytes every 5s; streaming lets
+    // those bytes flow through nginx immediately, preventing nginx from closing
+    // the connection due to proxy_read_timeout while Node.js was buffering.
+    // The browser's res.json() waits for the full stream, and JSON.parse
+    // ignores leading whitespace, so keepalive "\n" bytes are harmless.
+    return new Response(res.body, {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
