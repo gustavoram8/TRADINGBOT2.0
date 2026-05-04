@@ -137,7 +137,20 @@ export default function BacktestPage() {
                   </ul>
                 </div>
               );
-            if (e.includes("[HTTP 502]") || e.includes("502"))
+            if (e.includes("[HTTP 504]") || e.includes("504") || e.includes("tiempo máximo"))
+              return (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-fin-red">Timeout — el backtest tardó demasiado</p>
+                  <p className="text-xs text-text-secondary">
+                    El servidor Python no respondió dentro del tiempo límite (10 min).
+                  </p>
+                  <ul className="text-xs text-text-muted list-disc list-inside space-y-0.5">
+                    <li>Intenta con un rango de fechas más corto (máximo 2 meses)</li>
+                    <li>Verifica que el servidor Python tiene acceso a internet (descarga datos de yfinance)</li>
+                  </ul>
+                </div>
+              );
+            if (e.includes("[HTTP 502]") || e.includes("502") || e.includes("uvicorn"))
               return (
                 <div className="space-y-1">
                   <p className="text-xs font-medium text-fin-red">502 — Next.js no pudo contactar al backend Python</p>

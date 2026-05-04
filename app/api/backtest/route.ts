@@ -24,12 +24,20 @@ export async function POST(req: NextRequest) {
   }
 
   const backendUrl = `${PYTHON_API}/backtest`;
+  // Generous timeout: backtests can take 2–5 min for large date ranges.
+  // Python sends keepalive "\n" bytes every 5s so the TCP connection stays
+  // alive; we just need Node.js not to abort before the final JSON arrives.
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10 * 60 * 1000); // 10 min
+
   try {
     const res = await fetch(backendUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
 
     if (!res.ok) {
       const text = await res.text();
@@ -47,17 +55,25 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Pass Python's streaming body through directly so nginx sees the
-    // keepalive newlines and resets its proxy_read_timeout on each chunk.
-    return new Response(res.body, {
+    // Buffer the full Python response (which may include keepalive "\n" bytes
+    // before the final JSON) before forwarding to the browser.
+    // This prevents the browser from receiving a partial/aborted stream and
+    // throwing "TypeError: Failed to fetch" during res.json().
+    // The Python server sends "\n" keepalives every 5s — res.text() on the
+    // Node.js side buffers those safely; JSON.parse ignores leading whitespace.
+    const rawText = await res.text();
+    return new Response(rawText, {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
-    const isNetworkError =
-      err instanceof TypeError && String(err).includes("fetch");
+    clearTimeout(timeoutId);
+    const isAbort = err instanceof Error && err.name === "AbortError";
+    const isNetworkError = err instanceof TypeError && String(err).includes("fetch");
     return NextResponse.json(
       {
-        error: isNetworkError
+        error: isAbort
+          ? `El backtest superó el tiempo máximo (10 min) sin respuesta del servidor Python.`
+          : isNetworkError
           ? `No se pudo conectar con el servidor Python en ${backendUrl}. ¿Está corriendo uvicorn?`
           : `Error inesperado al llamar el backend: ${String(err)}`,
         diagnostic: {
@@ -68,7 +84,7 @@ export async function POST(req: NextRequest) {
           error_detail: String(err),
         },
       },
-      { status: 502 }
+      { status: isAbort ? 504 : 502 }
     );
   }
 }
