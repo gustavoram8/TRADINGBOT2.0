@@ -19,8 +19,9 @@ jobs:
             set -e
             cd /opt/tradingbot
 
-            # Pull latest changes
-            git pull origin main
+            # Pull latest changes (always match remote exactly)
+            git fetch origin main
+            git reset --hard origin/main
 
             # Install new frontend dependencies if any
             npm install --production=false
