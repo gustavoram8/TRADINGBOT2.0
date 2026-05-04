@@ -13,7 +13,16 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
     const text = await res.text();
     throw new Error(`API ${path} failed (${res.status}): ${text}`);
   }
-  return res.json() as Promise<T>;
+  const data = await res.json();
+  // Streaming endpoints (e.g. /backtest) embed errors in the JSON body
+  // with an "error" key because HTTP status is already committed (200).
+  if (data && typeof data === "object" && "error" in data) {
+    const status = typeof (data as Record<string, unknown>).__status === "number"
+      ? (data as Record<string, unknown>).__status
+      : 500;
+    throw new Error(`API ${path} failed (${status}): ${(data as Record<string, unknown>).error}`);
+  }
+  return data as T;
 }
 
 export async function runBacktest(

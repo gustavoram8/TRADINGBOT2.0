@@ -30,23 +30,18 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify(body),
     });
 
-    // Non-2xx from Python (e.g. 502 download error before streaming starts)
     if (!res.ok) {
       const text = await res.text();
       return NextResponse.json({ error: text }, { status: res.status });
     }
 
-    // The Python server streams newline keepalives then the final JSON.
-    // JSON.parse ignores leading whitespace so this works transparently.
-    const data = await res.json() as Record<string, unknown>;
-
-    // Errors that occurred mid-stream are embedded in the body.
-    if (data && typeof data === "object" && "error" in data) {
-      const status = typeof data.__status === "number" ? data.__status : 500;
-      return NextResponse.json({ error: data.error }, { status });
-    }
-
-    return NextResponse.json(data);
+    // Pass Python's streaming body through directly so nginx sees the
+    // keepalive newlines and resets its proxy_read_timeout on each chunk.
+    // The browser's res.json() buffers the full stream before parsing;
+    // JSON.parse ignores leading whitespace so the newlines are harmless.
+    return new Response(res.body, {
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (err) {
     return NextResponse.json(
       { error: `Backend connection failed: ${String(err)}` },
