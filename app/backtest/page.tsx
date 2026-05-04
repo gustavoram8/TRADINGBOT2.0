@@ -26,17 +26,22 @@ export default function BacktestPage() {
   const [startDate, setStartDate] = usePersistentState("backtest-start-date", "2025-10-01");
   const [endDate, setEndDate] = usePersistentState("backtest-end-date", "2025-11-30");
   const [error, setError] = useState("");
+  const [errorTs, setErrorTs] = useState("");
+  const [showErrorDetail, setShowErrorDetail] = useState(false);
   const [showTrades, setShowTrades] = useState(false);
   const [activeTab, setActiveTab] = useState<"overview" | "metrics" | "trades">("overview");
 
   async function handleRun() {
     setError("");
+    setErrorTs("");
+    setShowErrorDetail(false);
     setRunningBacktest(true);
     try {
       const result = await runBacktest(activeConfig, startDate, endDate);
       setBacktestResult(result);
     } catch (e) {
       setError(String(e));
+      setErrorTs(new Date().toLocaleTimeString());
       setBacktestResult(null);
     } finally {
       setRunningBacktest(false);
@@ -92,17 +97,99 @@ export default function BacktestPage() {
             )}
           </button>
           {error && (
-            <p className="text-xs text-fin-red font-medium">Error al conectar con el backend</p>
+            <p className="text-xs text-fin-red font-medium">Error — ver diagnóstico abajo</p>
           )}
         </div>
       </div>
 
-      {/* Error state */}
+      {/* Error state — full diagnostic panel */}
       {error && !m && (
-        <div className="card border-fin-red/40 bg-fin-red/5 flex flex-col items-center justify-center py-12 gap-3">
-          <p className="text-fin-red font-semibold text-sm">El backtest no pudo completarse</p>
-          <p className="text-text-secondary text-xs text-center max-w-md">{error}</p>
-          <p className="text-text-muted text-xs">Revisa que el backend esté activo y que las fechas sean válidas.</p>
+        <div className="card border border-fin-red/40 bg-fin-red/5 space-y-3 p-5">
+          {/* Header */}
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-fin-red font-semibold text-sm">El backtest no pudo completarse</p>
+              {errorTs && <p className="text-text-muted text-xs mt-0.5">Ocurrió a las {errorTs}</p>}
+            </div>
+            <button
+              onClick={() => setShowErrorDetail((v) => !v)}
+              className="text-xs text-text-secondary hover:text-text-primary flex items-center gap-1 shrink-0"
+            >
+              {showErrorDetail ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+              {showErrorDetail ? "Ocultar detalle" : "Ver detalle técnico"}
+            </button>
+          </div>
+
+          {/* Categorized message */}
+          {(() => {
+            const e = error;
+            if (e.includes("[RED]"))
+              return (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-fin-red">Fallo de red — el servidor no responde</p>
+                  <p className="text-xs text-text-secondary">
+                    El navegador no pudo alcanzar el servidor Next.js. Posibles causas:
+                  </p>
+                  <ul className="text-xs text-text-muted list-disc list-inside space-y-0.5">
+                    <li>El servidor Next.js (frontend) no está corriendo</li>
+                    <li>Bloqueado por CORS o un proxy</li>
+                    <li>La URL del servidor cambió</li>
+                  </ul>
+                </div>
+              );
+            if (e.includes("[HTTP 502]") || e.includes("502"))
+              return (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-fin-red">502 — Next.js no pudo contactar al backend Python</p>
+                  <p className="text-xs text-text-secondary">
+                    El servidor Next.js está activo pero no puede hablar con el servidor Python (FastAPI/uvicorn).
+                  </p>
+                  <ul className="text-xs text-text-muted list-disc list-inside space-y-0.5">
+                    <li>¿Está corriendo <code className="font-mono bg-bg-tertiary px-1 rounded">uvicorn server:app --port 8000</code>?</li>
+                    <li>¿Está configurada la variable de entorno <code className="font-mono bg-bg-tertiary px-1 rounded">PYTHON_API_URL</code>?</li>
+                    <li>¿Hay un firewall bloqueando el puerto 8000?</li>
+                  </ul>
+                </div>
+              );
+            if (e.includes("[HTTP"))
+              return (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-fin-red">Error HTTP desde el backend</p>
+                  <p className="text-xs text-text-secondary">El servidor respondió con un código de error.</p>
+                </div>
+              );
+            if (e.includes("[BACKEND"))
+              return (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-fin-red">Error en la ejecución del backtest</p>
+                  <p className="text-xs text-text-secondary">El backend Python devolvió un error al procesar los datos.</p>
+                </div>
+              );
+            return (
+              <p className="text-xs text-text-secondary">Error desconocido — ver detalle técnico.</p>
+            );
+          })()}
+
+          {/* Raw error — always visible, monospace */}
+          <div className="bg-bg-tertiary rounded p-3 border border-border">
+            <p className="text-xs text-text-muted font-mono break-all">{error}</p>
+          </div>
+
+          {/* Technical detail — expandable */}
+          {showErrorDetail && (
+            <div className="bg-bg-tertiary rounded p-3 border border-border space-y-2">
+              <p className="text-xs font-semibold text-text-secondary">Información de diagnóstico</p>
+              <div className="text-xs font-mono text-text-muted space-y-1">
+                <p><span className="text-text-secondary">Ruta llamada:</span> {window.location.origin}/api/backtest</p>
+                <p><span className="text-text-secondary">Fechas:</span> {startDate} → {endDate}</p>
+                <p><span className="text-text-secondary">Config:</span> {activeConfig.name}</p>
+                <p><span className="text-text-secondary">User-Agent:</span> {navigator.userAgent.slice(0, 80)}…</p>
+              </div>
+              <p className="text-[10px] text-text-muted mt-2">
+                Copia este bloque y el mensaje de error de arriba para reportar el problema.
+              </p>
+            </div>
+          )}
         </div>
       )}
 

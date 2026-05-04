@@ -5,22 +5,36 @@ const API_BASE =
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const url = `${API_BASE}${path}`;
-  const res = await fetch(url, {
-    headers: { "Content-Type": "application/json" },
-    ...options,
-  });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`API ${path} failed (${res.status}): ${text}`);
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      headers: { "Content-Type": "application/json" },
+      ...options,
+    });
+  } catch (networkErr) {
+    // Network-level failure (server down, CORS, DNS, etc.)
+    const hint =
+      typeof window !== "undefined"
+        ? `No se pudo conectar con el servidor Next.js en ${window.location.origin}. Ruta: ${url}`
+        : `fetch() falló en el servidor para ${url}`;
+    throw new Error(`[RED] ${hint} — ${String(networkErr)}`);
   }
-  const data = await res.json();
-  // Streaming endpoints (e.g. /backtest) embed errors in the JSON body
-  // with an "error" key because HTTP status is already committed (200).
+  if (!res.ok) {
+    let text = "";
+    try { text = await res.text(); } catch { /* ignore */ }
+    throw new Error(`[HTTP ${res.status}] ${path} — ${text || res.statusText}`);
+  }
+  let data: unknown;
+  try {
+    data = await res.json();
+  } catch (parseErr) {
+    throw new Error(`[PARSE] Respuesta no es JSON válido desde ${path} — ${String(parseErr)}`);
+  }
+  // Streaming endpoints embed errors in the JSON body (HTTP 200 already committed)
   if (data && typeof data === "object" && "error" in data) {
-    const status = typeof (data as Record<string, unknown>).__status === "number"
-      ? (data as Record<string, unknown>).__status
-      : 500;
-    throw new Error(`API ${path} failed (${status}): ${(data as Record<string, unknown>).error}`);
+    const d = data as Record<string, unknown>;
+    const status = typeof d.__status === "number" ? d.__status : 500;
+    throw new Error(`[BACKEND ${status}] ${path} — ${d.error}`);
   }
   return data as T;
 }

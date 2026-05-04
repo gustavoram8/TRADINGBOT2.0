@@ -23,8 +23,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const backendUrl = `${PYTHON_API}/backtest`;
   try {
-    const res = await fetch(`${PYTHON_API}/backtest`, {
+    const res = await fetch(backendUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -32,19 +33,41 @@ export async function POST(req: NextRequest) {
 
     if (!res.ok) {
       const text = await res.text();
-      return NextResponse.json({ error: text }, { status: res.status });
+      return NextResponse.json(
+        {
+          error: `El servidor Python respondió con error HTTP ${res.status}: ${text || res.statusText}`,
+          diagnostic: {
+            step: "python_api_response",
+            backend_url: backendUrl,
+            http_status: res.status,
+            body: text.slice(0, 500),
+          },
+        },
+        { status: res.status }
+      );
     }
 
     // Pass Python's streaming body through directly so nginx sees the
     // keepalive newlines and resets its proxy_read_timeout on each chunk.
-    // The browser's res.json() buffers the full stream before parsing;
-    // JSON.parse ignores leading whitespace so the newlines are harmless.
     return new Response(res.body, {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
+    const isNetworkError =
+      err instanceof TypeError && String(err).includes("fetch");
     return NextResponse.json(
-      { error: `Backend connection failed: ${String(err)}` },
+      {
+        error: isNetworkError
+          ? `No se pudo conectar con el servidor Python en ${backendUrl}. ¿Está corriendo uvicorn?`
+          : `Error inesperado al llamar el backend: ${String(err)}`,
+        diagnostic: {
+          step: "next_to_python_fetch",
+          backend_url: backendUrl,
+          PYTHON_API_URL_set: !!process.env.PYTHON_API_URL,
+          error_type: err instanceof Error ? err.constructor.name : typeof err,
+          error_detail: String(err),
+        },
+      },
       { status: 502 }
     );
   }
