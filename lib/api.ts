@@ -20,11 +20,10 @@ export async function runBacktest(
   config: BotConfig,
   startDate: string,
   endDate: string,
-  interval = "1h"
 ): Promise<BacktestResult> {
   return apiFetch<BacktestResult>("/api/backtest", {
     method: "POST",
-    body: JSON.stringify({ config, start_date: startDate, end_date: endDate, interval }),
+    body: JSON.stringify({ config, start_date: startDate, end_date: endDate }),
   });
 }
 

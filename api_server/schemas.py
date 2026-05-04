@@ -50,7 +50,7 @@ class BacktestRequest(BaseModel):
     """Body of POST /backtest."""
     start_date: str = Field(..., description="ISO date YYYY-MM-DD")
     end_date: str = Field(..., description="ISO date YYYY-MM-DD")
-    interval: str = Field("1h", description="Base TF: 1m | 5m | 15m | 1h")
+    interval: Optional[str] = Field(None, description="Deprecated — auto-selected by backend")
     config: BotConfigPayload
 
 

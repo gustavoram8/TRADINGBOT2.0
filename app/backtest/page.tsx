@@ -25,7 +25,6 @@ export default function BacktestPage() {
 
   const [startDate, setStartDate] = usePersistentState("backtest-start-date", "2025-10-01");
   const [endDate, setEndDate] = usePersistentState("backtest-end-date", "2025-11-30");
-  const [interval, setInterval] = useState("1h");
   const [error, setError] = useState("");
   const [showTrades, setShowTrades] = useState(false);
   const [activeTab, setActiveTab] = useState<"overview" | "metrics" | "trades">("overview");
@@ -34,7 +33,7 @@ export default function BacktestPage() {
     setError("");
     setRunningBacktest(true);
     try {
-      const result = await runBacktest(activeConfig, startDate, endDate, interval);
+      const result = await runBacktest(activeConfig, startDate, endDate);
       setBacktestResult(result);
     } catch (e) {
       setError(String(e));
@@ -57,7 +56,7 @@ export default function BacktestPage() {
       {/* Config panel */}
       <div className="card">
         <p className="text-sm font-semibold mb-4">Configuración del Backtest</p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div>
             <label className="text-xs text-text-secondary block mb-1">Fecha inicio</label>
             <input
@@ -75,18 +74,6 @@ export default function BacktestPage() {
               onChange={(e) => setEndDate(e.target.value)}
               className="w-full bg-bg-tertiary border border-border rounded-md px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:border-brand-blue"
             />
-          </div>
-          <div>
-            <label className="text-xs text-text-secondary block mb-1">Timeframe base</label>
-            <select
-              value={interval}
-              onChange={(e) => setInterval(e.target.value)}
-              className="w-full bg-bg-tertiary border border-border rounded-md px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:border-brand-blue"
-            >
-              {["1m", "5m", "15m", "1h"].map((tf) => (
-                <option key={tf} value={tf}>{tf}</option>
-              ))}
-            </select>
           </div>
           <div>
             <label className="text-xs text-text-secondary block mb-1">Config activa</label>

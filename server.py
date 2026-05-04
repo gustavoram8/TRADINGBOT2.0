@@ -24,7 +24,7 @@ import os
 import sys
 import time
 import traceback
-from datetime import datetime
+from datetime import datetime, date as date_type
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException
@@ -125,16 +125,23 @@ def post_backtest(req: BacktestRequest) -> dict:
       2. run_backtest() runs the Backtrader/ICTStrategy pipeline unchanged.
       3. assemble_backtest_result() reshapes the output into JSON.
     """
+    # Auto-select finest available TF based on date range.
+    # yfinance limit: 15m/5m → last 60 days only; 1h → last 730 days.
+    _start = datetime.strptime(req.start_date, "%Y-%m-%d").date()
+    _end   = datetime.strptime(req.end_date,   "%Y-%m-%d").date()
+    _days  = (_end - _start).days
+    interval = "15m" if _days <= 58 else "1h"
+
     t0 = time.time()
     log.info(
-        "POST /backtest %s → %s @ %s | preset=%s",
-        req.start_date, req.end_date, req.interval, req.config.name,
+        "POST /backtest %s → %s (auto-TF=%s, %d days) | preset=%s",
+        req.start_date, req.end_date, interval, _days, req.config.name,
     )
 
     # ---------- 1. Download historical data --------------------------------
     try:
         df_base = download_data(
-            interval=req.interval,
+            interval=interval,
             start=req.start_date,
             end=req.end_date,
         )
@@ -149,29 +156,31 @@ def post_backtest(req: BacktestRequest) -> dict:
         raise HTTPException(
             status_code=400,
             detail=(
-                f"yfinance no devolvió datos para {req.interval} entre "
+                f"yfinance no devolvió datos para {interval} entre "
                 f"{req.start_date} y {req.end_date}. "
-                f"Recuerda: 5m/15m solo cubren los últimos 60 días, "
+                f"Recuerda: 15m cubre los últimos 58 días, "
                 f"1h cubre hasta 730 días."
             ),
         )
 
-    # Optional intraday feeds — only attached if available (recent dates)
+    # Always try all supplementary feeds regardless of base TF.
+    # Backtest runner handles partial coverage gracefully.
     df_15m: Optional[object] = None
-    df_5m: Optional[object] = None
-    if req.interval in ("1h", "15m"):
+    df_5m:  Optional[object] = None
+    if interval != "15m":
+        # When base is 1h, try to attach 15m for structure richness
         try:
             _df_15m = download_data(interval="15m")
             if _df_15m is not None and not _df_15m.empty:
                 df_15m = _df_15m
         except Exception as e:
             log.warning("Could not fetch 15m feed: %s", e)
-        try:
-            _df_5m = download_data(interval="5m")
-            if _df_5m is not None and not _df_5m.empty:
-                df_5m = _df_5m
-        except Exception as e:
-            log.warning("Could not fetch 5m feed: %s", e)
+    try:
+        _df_5m = download_data(interval="5m")
+        if _df_5m is not None and not _df_5m.empty:
+            df_5m = _df_5m
+    except Exception as e:
+        log.warning("Could not fetch 5m feed: %s", e)
 
     # ---------- 2. Map the frontend BotConfig to ICTStrategy params --------
     # Only fields the strategy currently exposes as Backtrader params are
@@ -205,6 +214,7 @@ def post_backtest(req: BacktestRequest) -> dict:
             strategy_params=strategy_params,
             df_15m=df_15m,
             df_5m=df_5m,
+            base_tf=interval,
         )
     except Exception as e:
         log.error("Backtest crashed:\n%s", traceback.format_exc())
@@ -214,13 +224,17 @@ def post_backtest(req: BacktestRequest) -> dict:
         )
 
     # ---------- 4. Assemble the response ----------------------------------
-    # Build optional ohlc_by_timeframe so the chart's TF switcher works.
-    ohlc_by_timeframe = {req.interval: df_base}
-    if req.interval == "1h":
+    # Build ohlc_by_timeframe for the chart TF switcher.
+    ohlc_by_timeframe = {interval: df_base}
+    try:
+        ohlc_by_timeframe["4h"] = resample_ohlcv(df_base, "4h")
+    except Exception as e:
+        log.warning("Could not resample to 4h: %s", e)
+    if interval == "15m":
         try:
-            ohlc_by_timeframe["4h"] = resample_ohlcv(df_base, "4h")
+            ohlc_by_timeframe["1h"] = resample_ohlcv(df_base, "1h")
         except Exception as e:
-            log.warning("Could not resample to 4h: %s", e)
+            log.warning("Could not resample to 1h: %s", e)
     if df_15m is not None:
         ohlc_by_timeframe["15m"] = df_15m
     if df_5m is not None:

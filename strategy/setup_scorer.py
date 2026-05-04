@@ -563,14 +563,14 @@ class SetupScorer:
 
         # ── GATE B: CHoCH bullish (close-confirmed) ───────────────────
         if self.structure.had_confirmation_choch(
-            "bullish", CHOCH_LOOKBACK, confirmation_tfs=["4h", "base", "15m", "5m", "1m"]
+            "bullish", CHOCH_LOOKBACK, confirmation_tfs=["4h", "1h", "base", "15m", "5m", "1m"]
         ):
             bd.has_choch = True
             bd.structure_score = 3.0
             bd.reasons.append("CHoCH bullish confirmed")
             # Multi-TF bonus
             confirmed_tfs = [
-                tf for tf in ("4h", "base", "15m", "5m", "1m")
+                tf for tf in ("4h", "1h", "base", "15m", "5m", "1m")
                 if tf in self.structure.trackers
                 and self.structure.trackers[tf].had_choch_recently("bullish", CHOCH_LOOKBACK)
             ]
@@ -761,13 +761,13 @@ class SetupScorer:
 
         # ── GATE B: CHoCH bearish (close-confirmed) ───────────────────
         if self.structure.had_confirmation_choch(
-            "bearish", CHOCH_LOOKBACK, confirmation_tfs=["4h", "base", "15m", "5m", "1m"]
+            "bearish", CHOCH_LOOKBACK, confirmation_tfs=["4h", "1h", "base", "15m", "5m", "1m"]
         ):
             bd.has_choch = True
             bd.structure_score = 3.0
             bd.reasons.append("CHoCH bearish confirmed")
             confirmed_tfs = [
-                tf for tf in ("4h", "base", "15m", "5m", "1m")
+                tf for tf in ("4h", "1h", "base", "15m", "5m", "1m")
                 if tf in self.structure.trackers
                 and self.structure.trackers[tf].had_choch_recently("bearish", CHOCH_LOOKBACK)
             ]

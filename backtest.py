@@ -50,6 +50,7 @@ def run_backtest(
     strategy_params: dict = None,
     df_15m: Optional[pd.DataFrame] = None,
     df_5m: Optional[pd.DataFrame] = None,
+    base_tf: str = "1h",
 ) -> dict:
     """
     Ejecuta un backtest completo con Backtrader.
@@ -57,7 +58,7 @@ def run_backtest(
     Parameters
     ----------
     df : pd.DataFrame
-        Datos OHLCV con DatetimeIndex (1H resolution).
+        Datos OHLCV con DatetimeIndex.
     period_name : str
         Nombre del período para reportes.
     initial_capital : float
@@ -69,9 +70,11 @@ def run_backtest(
     strategy_params : dict
         Parámetros adicionales para la estrategia.
     df_15m : pd.DataFrame, optional
-        Datos 15m. Solo se añaden si cubren el periodo completo del backtest.
+        Datos 15m. Se añaden si hay solapamiento con el período del backtest.
     df_5m : pd.DataFrame, optional
-        Datos 5m. Solo se añaden si cubren el periodo completo del backtest.
+        Datos 5m. Se añaden si hay solapamiento con el período del backtest.
+    base_tf : str
+        Timeframe del feed base ("1h" o "15m"). Auto-seleccionado por server.py.
 
     Returns
     -------
@@ -106,19 +109,29 @@ def run_backtest(
     )
     cerebro.adddata(data_base, name="base")
 
-    # Resample a 4H para análisis multi-TF
+    # Resample a 4H para análisis multi-TF (siempre disponible)
     cerebro.resampledata(
         data_base, name="4h",
         timeframe=bt.TimeFrame.Minutes,
         compression=240,
     )
 
-    # 15m feed — solo si cubre el periodo completo del backtest
-    if df_15m is not None and not df_15m.empty:
+    # Cuando la base es 15m, agregar resample 1h para estructura intermedia
+    if base_tf == "15m":
+        cerebro.resampledata(
+            data_base, name="1h",
+            timeframe=bt.TimeFrame.Minutes,
+            compression=60,
+        )
+        print("  + 1h resample from 15m base added")
+
+    # 15m feed — adjuntar si hay solapamiento con el período (cobertura parcial OK)
+    if df_15m is not None and not df_15m.empty and base_tf != "15m":
         df_15m_bt = df_15m.copy()
         if df_15m_bt.index.tz is not None:
             df_15m_bt.index = df_15m_bt.index.tz_localize(None)
-        if df_15m_bt.index[0] <= df_bt.index[0]:
+        # Adjuntar si hay al menos un bar que solapa con el backtest
+        if df_15m_bt.index[-1] >= df_bt.index[0]:
             data_15m = bt.feeds.PandasData(
                 dataname=df_15m_bt,
                 datetime=None,
@@ -127,19 +140,17 @@ def run_backtest(
                 openinterest=-1,
             )
             cerebro.adddata(data_15m, name="15m")
-            print(f"  + 15m feed: {len(df_15m_bt)} bars added")
+            overlap_start = max(df_15m_bt.index[0], df_bt.index[0])
+            print(f"  + 15m feed: {len(df_15m_bt)} bars (overlap from {overlap_start.date()})")
         else:
-            print(
-                f"  ⚠ 15m data starts {df_15m_bt.index[0].date()}, "
-                f"backtest from {df_bt.index[0].date()} — 15m feed skipped"
-            )
+            print(f"  ⚠ 15m feed: no overlap with backtest period — skipped")
 
-    # 5m feed — solo si cubre el periodo completo del backtest
+    # 5m feed — adjuntar si hay solapamiento con el período (cobertura parcial OK)
     if df_5m is not None and not df_5m.empty:
         df_5m_bt = df_5m.copy()
         if df_5m_bt.index.tz is not None:
             df_5m_bt.index = df_5m_bt.index.tz_localize(None)
-        if df_5m_bt.index[0] <= df_bt.index[0]:
+        if df_5m_bt.index[-1] >= df_bt.index[0]:
             data_5m_feed = bt.feeds.PandasData(
                 dataname=df_5m_bt,
                 datetime=None,
@@ -148,12 +159,10 @@ def run_backtest(
                 openinterest=-1,
             )
             cerebro.adddata(data_5m_feed, name="5m")
-            print(f"  + 5m feed: {len(df_5m_bt)} bars added")
+            overlap_start = max(df_5m_bt.index[0], df_bt.index[0])
+            print(f"  + 5m feed: {len(df_5m_bt)} bars (overlap from {overlap_start.date()})")
         else:
-            print(
-                f"  ⚠ 5m data starts {df_5m_bt.index[0].date()}, "
-                f"backtest from {df_bt.index[0].date()} — 5m feed skipped"
-            )
+            print(f"  ⚠ 5m feed: no overlap with backtest period — skipped")
 
     # =========================================================================
     # Configurar estrategia

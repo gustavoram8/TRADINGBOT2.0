@@ -127,7 +127,11 @@ class ICTStrategy(bt.Strategy):
         self.data_base = self.datas[0]
         self.data_4h = self.datas[1] if len(self.datas) > 1 else None
 
-        # Optional high-resolution feeds (added by run_backtest when available)
+        # Optional intermediate/high-resolution feeds
+        try:
+            self.data_1h = self.getdatabyname("1h")   # resampled when base=15m
+        except KeyError:
+            self.data_1h = None
         try:
             self.data_15m = self.getdatabyname("15m")
         except KeyError:
@@ -158,6 +162,8 @@ class ICTStrategy(bt.Strategy):
 
         # Build TF list for structure engine based on available feeds
         tf_list = ["4h", "base"]
+        if self.data_1h is not None:
+            tf_list.append("1h")
         if self.data_15m is not None:
             tf_list.append("15m")
         if self.data_5m is not None:
@@ -192,6 +198,7 @@ class ICTStrategy(bt.Strategy):
         self._bias_confidence: float = 0.0
         self._protective_fvg: Optional[FairValueGap] = None
         self._last_4h_len: int = 0
+        self._last_1h_len: int = 0
         self._last_15m_len: int = 0
         self._last_5m_len: int = 0
         self._ny_am_open_set: bool = False
@@ -544,6 +551,16 @@ class ICTStrategy(bt.Strategy):
             self.liq_map.update_atl(
                 self.data_4h.low[0],
                 pd.Timestamp(self.data_4h.datetime.datetime(0)),
+            )
+
+        # ── 1h bars (resampled from 15m base, when base_tf="15m") ────────────
+        if self.data_1h is not None and len(self.data_1h) > self._last_1h_len:
+            self._last_1h_len = len(self.data_1h)
+            self.structure_engine.update(
+                "1h",
+                self.data_1h.open[0], self.data_1h.high[0],
+                self.data_1h.low[0],  self.data_1h.close[0],
+                pd.Timestamp(self.data_1h.datetime.datetime(0)),
             )
 
         # ── 15m bars ──────────────────────────────────────────────────────────
