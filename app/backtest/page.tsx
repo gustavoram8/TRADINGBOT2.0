@@ -327,7 +327,7 @@ export default function BacktestPage() {
               <table className="w-full text-xs">
                 <thead>
                   <tr className="text-text-muted border-b border-border">
-                    {["#", "Dir", "Entry", "Exit", "SL", "TP", "Contr.", "P&L", "Comisión", "Razón"].map((h) => (
+                    {["#", "Fecha", "H. Entrada", "H. Salida", "Dir", "Entry", "Exit", "SL", "TP", "Contr.", "P&L", "Comisión", "Razón"].map((h) => (
                       <th key={h} className="text-left py-2 pr-3 font-medium">{h}</th>
                     ))}
                   </tr>
@@ -336,6 +336,21 @@ export default function BacktestPage() {
                   {res.trades.map((t, i) => (
                     <tr key={i} className="border-b border-border/40 hover:bg-bg-tertiary/50">
                       <td className="py-1.5 pr-3 text-text-muted">{i + 1}</td>
+                      <td className="py-1.5 pr-3 text-text-secondary whitespace-nowrap">
+                        {t.entry_time
+                          ? new Date(t.entry_time).toLocaleDateString("es-VE", { day: "2-digit", month: "2-digit", year: "2-digit" })
+                          : "—"}
+                      </td>
+                      <td className="py-1.5 pr-3 font-mono text-text-secondary whitespace-nowrap">
+                        {t.entry_time
+                          ? new Date(t.entry_time).toLocaleTimeString("es-VE", { hour: "2-digit", minute: "2-digit" })
+                          : "—"}
+                      </td>
+                      <td className="py-1.5 pr-3 font-mono text-text-secondary whitespace-nowrap">
+                        {t.exit_time
+                          ? new Date(t.exit_time).toLocaleTimeString("es-VE", { hour: "2-digit", minute: "2-digit" })
+                          : "—"}
+                      </td>
                       <td className="py-1.5 pr-3">
                         <span className={t.direction === "long" ? "badge-green" : "badge-red"}>
                           {t.direction.toUpperCase()}
