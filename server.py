@@ -19,6 +19,8 @@ Run in production (VPS, behind nginx):
 """
 from __future__ import annotations
 
+import asyncio
+import json as _json
 import logging
 import os
 import sys
@@ -30,7 +32,7 @@ from typing import Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 
 # Make the project root importable so we can use the existing modules untouched.
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -69,7 +71,6 @@ app = FastAPI(
 )
 
 # CORS — allow the frontend (running on the same VPS or remote) to call us.
-# In production you can replace ["*"] with the explicit dashboard origin.
 _allowed_origins_env = os.environ.get("ALLOWED_ORIGINS", "*")
 _allowed_origins = (
     ["*"] if _allowed_origins_env.strip() == "*"
@@ -90,10 +91,6 @@ app.add_middleware(
 # =============================================================================
 @app.get("/health")
 def health() -> dict:
-    """
-    Liveness probe. Used by nginx / systemd / curl to verify the server
-    is up. Does NOT touch the strategy or download data.
-    """
     return {
         "status": "ok",
         "service": "tradingbot-api",
@@ -110,24 +107,17 @@ def root() -> dict:
 
 
 # =============================================================================
-# Backtest
+# Backtest — synchronous pipeline (runs in a thread pool worker)
 # =============================================================================
-@app.post("/backtest", response_model=BacktestResultOut)
-def post_backtest(req: BacktestRequest) -> dict:
+def _pipeline_sync(req: BacktestRequest) -> dict:
     """
-    Run a backtest with the user-provided config and date range.
+    Full download + backtest + serialization pipeline, executed in a thread
+    so the async endpoint can stream keepalive bytes while this runs.
 
-    Wire format matches lib/types.ts on the frontend exactly:
-      Request body  → BacktestRequest
-      Response body → BacktestResult (subset of BacktestResultOut)
-
-    Pipeline:
-      1. download_data() pulls historical OHLC from yfinance (with cache).
-      2. run_backtest() runs the Backtrader/ICTStrategy pipeline unchanged.
-      3. assemble_backtest_result() reshapes the output into JSON.
+    Returns the assembled payload dict on success.
+    Raises HTTPException on known errors (propagated by the async wrapper).
     """
     # Auto-select finest available TF based on date range.
-    # yfinance limit: 15m/5m → last 60 days only; 1h → last 730 days.
     _start = datetime.strptime(req.start_date, "%Y-%m-%d").date()
     _end   = datetime.strptime(req.end_date,   "%Y-%m-%d").date()
     _days  = (_end - _start).days
@@ -139,24 +129,20 @@ def post_backtest(req: BacktestRequest) -> dict:
         req.start_date, req.end_date, interval, _days, req.config.name,
     )
 
-    # ---------- 1. Download historical data (all feeds in parallel) --------
-    # Sequential downloads (base + 15m + 5m) can exceed nginx's proxy
-    # timeout. ThreadPoolExecutor downloads all feeds simultaneously so the
-    # total wall time = max(individual times) instead of their sum.
-    _DOWNLOAD_TIMEOUT = 55  # seconds per feed before giving up
+    # ---------- 1. Download historical data (all feeds in parallel) ----------
+    _DOWNLOAD_TIMEOUT = 55
 
     def _fetch(iv: str, start: Optional[str] = None, end: Optional[str] = None):
         try:
             return download_data(interval=iv, start=start, end=end)
         except Exception as exc:
-            return exc  # surface error, don't swallow
+            return exc
 
     with ThreadPoolExecutor(max_workers=3) as pool:
         f_base = pool.submit(_fetch, interval, req.start_date, req.end_date)
         f_15m  = pool.submit(_fetch, "15m") if interval != "15m" else None
         f_5m   = pool.submit(_fetch, "5m")
 
-        # Collect base (mandatory)
         try:
             _res_base = f_base.result(timeout=_DOWNLOAD_TIMEOUT)
         except FuturesTimeoutError:
@@ -168,7 +154,6 @@ def post_backtest(req: BacktestRequest) -> dict:
                 detail=f"No se pudieron descargar datos del mercado: {_res_base}")
         df_base = _res_base
 
-        # Collect supplementary (optional — failures are non-fatal)
         df_15m: Optional[object] = None
         df_5m:  Optional[object] = None
         if f_15m is not None:
@@ -189,7 +174,7 @@ def post_backtest(req: BacktestRequest) -> dict:
         except FuturesTimeoutError:
             log.warning("5m feed download timed out — skipped")
 
-    # If 15m returned no data (date range older than 60 days), retry with 1h.
+    # Fallback: 15m returned no data (date range older than 60 days)
     if (df_base is None or df_base.empty) and interval == "15m":
         log.warning(
             "15m returned no data for %s→%s — falling back to 1h",
@@ -212,10 +197,7 @@ def post_backtest(req: BacktestRequest) -> dict:
             ),
         )
 
-    # ---------- 2. Map the frontend BotConfig to ICTStrategy params --------
-    # Only fields the strategy currently exposes as Backtrader params are
-    # forwarded. Extra fields (e.g. fvg_lookback_*) are accepted on the wire
-    # but skipped here so we don't accidentally pass unknown kwargs.
+    # ---------- 2. Map frontend BotConfig → ICTStrategy params ---------------
     cfg = req.config
     strategy_params = {
         "initial_capital":      cfg.initial_capital,
@@ -233,7 +215,7 @@ def post_backtest(req: BacktestRequest) -> dict:
         "verbose":              False,
     }
 
-    # ---------- 3. Run the backtest ----------------------------------------
+    # ---------- 3. Run the backtest ------------------------------------------
     try:
         result = run_backtest(
             df=df_base,
@@ -253,8 +235,7 @@ def post_backtest(req: BacktestRequest) -> dict:
             detail=f"El backtest falló: {e}",
         )
 
-    # ---------- 4. Assemble the response ----------------------------------
-    # Build ohlc_by_timeframe for the chart TF switcher.
+    # ---------- 4. Assemble response -----------------------------------------
     ohlc_by_timeframe = {interval: df_base}
     try:
         ohlc_by_timeframe["4h"] = resample_ohlcv(df_base, "4h")
@@ -292,7 +273,65 @@ def post_backtest(req: BacktestRequest) -> dict:
 
 
 # =============================================================================
-# Catch-all error handler — keeps the JSON contract with the frontend
+# Backtest endpoint — async streaming wrapper
+# =============================================================================
+@app.post("/backtest")
+async def post_backtest(req: BacktestRequest):
+    """
+    Streaming endpoint: runs the backtest pipeline in a thread while sending
+    newline keepalive bytes every 5 seconds so the Node.js fetch() in the
+    Next.js server never times out waiting for the first response byte.
+    The final JSON payload is sent as the last chunk.
+
+    Error handling: errors are embedded in the JSON body with an "error" key
+    (and optional "__status" key) since we can't change the HTTP status code
+    after streaming has begun.
+    """
+    loop = asyncio.get_event_loop()
+    done: asyncio.Event = asyncio.Event()
+    result_box: dict = {}
+
+    async def _run():
+        try:
+            payload = await loop.run_in_executor(None, _pipeline_sync, req)
+            result_box["ok"] = payload
+        except HTTPException as exc:
+            result_box["http_err"] = {"status": exc.status_code, "detail": exc.detail}
+        except Exception as exc:
+            log.error("Unhandled pipeline error:\n%s", traceback.format_exc())
+            result_box["err"] = str(exc)
+        finally:
+            done.set()
+
+    asyncio.create_task(_run())
+
+    async def keepalive_stream():
+        # Send a newline every 5 seconds while the pipeline runs.
+        # This keeps the TCP connection alive and prevents Node.js undici
+        # from firing its headersTimeout (~30 s by default).
+        while not done.is_set():
+            yield b"\n"
+            try:
+                await asyncio.wait_for(asyncio.shield(done.wait()), timeout=5.0)
+            except asyncio.TimeoutError:
+                pass
+
+        # Pipeline finished — send the result JSON as the final chunk.
+        if "http_err" in result_box:
+            err = result_box["http_err"]
+            yield _json.dumps(
+                {"error": err["detail"], "__status": err["status"]}
+            ).encode()
+        elif "err" in result_box:
+            yield _json.dumps({"error": result_box["err"]}).encode()
+        else:
+            yield _json.dumps(result_box["ok"]).encode()
+
+    return StreamingResponse(keepalive_stream(), media_type="application/json")
+
+
+# =============================================================================
+# Catch-all error handler
 # =============================================================================
 @app.exception_handler(Exception)
 async def _unhandled_exception(_, exc: Exception):
