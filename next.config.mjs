@@ -6,6 +6,9 @@ const nextConfig = {
   // gzip compressor has enough data to flush, breaking long-running API routes.
   // nginx handles compression at the proxy level when needed.
   compress: false,
+  experimental: {
+    instrumentationHook: true,
+  },
   env: {
     PYTHON_API_URL: process.env.PYTHON_API_URL || "",
     GEMINI_API_KEY: process.env.GEMINI_API_KEY || "",
