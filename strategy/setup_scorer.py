@@ -187,11 +187,10 @@ class SetupScorer:
         higher-TF FVGs of the same type (ICT nested order block / FVG concept).
         A 5m FVG sitting inside a 1H FVG sitting inside a 4H FVG = high probability.
         """
-        ht_type = FVGType.BULLISH if direction == "long" else FVGType.BEARISH
+        ht_active = self.fvg_high.active_bullish if direction == "long" else self.fvg_high.active_bearish
         containing = [
-            f for f in self.fvg_high.all_fvgs
-            if f.fvg_type == ht_type and f.is_active
-            and f.bottom <= fvg.bottom and fvg.top <= f.top
+            f for f in ht_active
+            if f.bottom <= fvg.bottom and fvg.top <= f.top
         ]
         if len(containing) >= 2:
             return 1.5
@@ -237,21 +236,17 @@ class SetupScorer:
         for tracker, tf_name in trackers:
             if tracker is None:
                 continue
-            broken = [
-                f for f in tracker.all_fvgs
-                if f.fvg_type == broken_type and f.status == FVGStatus.BROKEN
-            ]
+            # Use broken_fvgs directly — avoids iterating active FVGs.
+            broken = [f for f in tracker.broken_fvgs if f.fvg_type == broken_type]
             if not broken:
                 continue
 
             weight = BROKEN_FVG_WEIGHT.get(tf_name, 0.0)
-            # Per-TF contribution: weight × min(count, BROKEN_MAX_PER_TF)
             count_capped = min(len(broken), BROKEN_MAX_PER_TF)
             contribution = weight * count_capped
 
             # Dampening: any HIGHER-TF tracker with an intact same-type FVG
-            # still in the path? If yes, the broken-FVG signal is weakened
-            # because the higher-TF resistance/support hasn't conceded.
+            # still in the path? Use active sub-lists to avoid scanning broken FVGs.
             my_rank = TF_RANK.get(tf_name, 0)
             damp = False
             for ot_tracker, ot_name in trackers:
@@ -259,10 +254,9 @@ class SetupScorer:
                     continue
                 if TF_RANK.get(ot_name, 0) <= my_rank:
                     continue
-                if any(
-                    f.fvg_type == broken_type and f.is_active and in_path(f)
-                    for f in ot_tracker.all_fvgs
-                ):
+                ot_active = (ot_tracker.active_bearish if broken_type == FVGType.BEARISH
+                             else ot_tracker.active_bullish)
+                if any(in_path(f) for f in ot_active):
                     damp = True
                     break
 
@@ -306,9 +300,9 @@ class SetupScorer:
                 continue
             if TF_RANK.get(tf_name, 0) <= prot_rank:
                 continue   # only LARGER TFs
-            for f in tracker.all_fvgs:
-                if f.fvg_type != opposing:
-                    continue
+            # Use active sub-list to avoid scanning broken FVGs unnecessarily
+            candidates = tracker.active_bearish if opposing == FVGType.BEARISH else tracker.active_bullish
+            for f in candidates:
                 if (abs(f.top    - p_top) <= ALIGNMENT_TOLERANCE
                     or abs(f.bottom - p_bot) <= ALIGNMENT_TOLERANCE
                     or abs(f.top    - p_bot) <= ALIGNMENT_TOLERANCE
@@ -344,14 +338,11 @@ class SetupScorer:
         wick     = sw.wick_extreme
 
         if direction == "short":
-            # Wick traveled UP through [sw_price … wick]. Bearish higher-TF FVGs
-            # overlapping that band = supply wall that rejected price.
             zone_lo = sw_price - 20
             zone_hi = wick + 20
             key_fvgs = [
-                f for f in self.fvg_high.all_fvgs
-                if f.fvg_type == FVGType.BEARISH and f.is_active
-                and f.bottom <= zone_hi and f.top >= zone_lo
+                f for f in self.fvg_high.active_bearish
+                if f.bottom <= zone_hi and f.top >= zone_lo
             ]
             if key_fvgs:
                 return 1.0, (
@@ -361,14 +352,11 @@ class SetupScorer:
             return 0.5, "Blind sweep: no bearish FVG in wick zone → score ×0.5"
 
         else:  # long / downside sweep
-            # Wick traveled DOWN through [wick … sw_price]. Bullish higher-TF FVGs
-            # overlapping that band = demand wall that absorbed the wick.
             zone_lo = wick - 20
             zone_hi = sw_price + 20
             key_fvgs = [
-                f for f in self.fvg_high.all_fvgs
-                if f.fvg_type == FVGType.BULLISH and f.is_active
-                and f.bottom <= zone_hi and f.top >= zone_lo
+                f for f in self.fvg_high.active_bullish
+                if f.bottom <= zone_hi and f.top >= zone_lo
             ]
             if key_fvgs:
                 return 1.0, (
@@ -580,10 +568,7 @@ class SetupScorer:
 
         # ── FVG PATH (LONG) ───────────────────────────────────────────
         # Higher-TF bearish FVGs above price = obstacles (weighted by significance)
-        ht_bear_above = [
-            f for f in self.fvg_high.all_fvgs
-            if f.fvg_type == FVGType.BEARISH and f.is_active and f.bottom >= price
-        ]
+        ht_bear_above = [f for f in self.fvg_high.active_bearish if f.bottom >= price]
         obstacle_w = sum(self._sig(f, "4h") for f in ht_bear_above)
 
         if obstacle_w == 0:
@@ -609,9 +594,8 @@ class SetupScorer:
         # Prefer finest TF (tightest SL), fall back to higher-TF.
         for tracker, tf_name in self._entry_trackers():
             candidates = [
-                f for f in tracker.all_fvgs
-                if f.fvg_type == FVGType.BULLISH and f.is_active
-                and f.top <= price and price - f.top <= 150
+                f for f in tracker.active_bullish
+                if f.top <= price and price - f.top <= 150
             ]
             if candidates:
                 candidates.sort(key=lambda f: price - f.top)
@@ -651,13 +635,11 @@ class SetupScorer:
 
         # ── TARGET SELECTION (LONG) ───────────────────────────────────
         targets = self.liq_map.fresh_above(price, PROXIMITY_RANGE)
+        _ht_bear_active = self.fvg_high.active_bearish
         viable: List[Tuple[LiquidityLevel, int]] = []
         for t in targets:
-            # Count intact higher-TF bear FVGs between price and target
             obstacles = sum(
-                1 for f in self.fvg_high.all_fvgs
-                if f.fvg_type == FVGType.BEARISH and f.is_active
-                and price < f.midpoint < t.price
+                1 for f in _ht_bear_active if price < f.midpoint < t.price
             )
             if obstacles <= MAX_OBSTACLES_HT:
                 viable.append((t, obstacles))
@@ -777,10 +759,7 @@ class SetupScorer:
 
         # ── FVG PATH (SHORT) ──────────────────────────────────────────
         # Higher-TF bullish FVGs below price = obstacles (weighted by significance)
-        ht_bull_below = [
-            f for f in self.fvg_high.all_fvgs
-            if f.fvg_type == FVGType.BULLISH and f.is_active and f.top <= price
-        ]
+        ht_bull_below = [f for f in self.fvg_high.active_bullish if f.top <= price]
         ht_bull_below.sort(key=lambda f: price - f.top)
 
         # Broken bullish FVGs → path opening (Option D, weighted by TF + dampening)
@@ -806,10 +785,7 @@ class SetupScorer:
 
         # Bearish FVGs above price in finest available TF = downward intent
         for tracker, tf_name in self._entry_trackers():
-            bear_fine_above = [
-                f for f in tracker.all_fvgs
-                if f.fvg_type == FVGType.BEARISH and f.is_active and f.bottom >= price
-            ]
+            bear_fine_above = [f for f in tracker.active_bearish if f.bottom >= price]
             if bear_fine_above:
                 bd.path_score += min(2.0, len(bear_fine_above) * 0.75)
                 bd.reasons.append(f"{len(bear_fine_above)} {tf_name} bearish FVG(s) above")
@@ -854,13 +830,11 @@ class SetupScorer:
 
         # ── TARGET SELECTION (SHORT) ──────────────────────────────────
         targets = self.liq_map.fresh_below(price, PROXIMITY_RANGE)
+        _ht_bull_active = self.fvg_high.active_bullish
         viable: List[Tuple[LiquidityLevel, int]] = []
         for t in targets:
-            # Count intact higher-TF bull FVGs between price and target
             obstacles = sum(
-                1 for f in self.fvg_high.all_fvgs
-                if f.fvg_type == FVGType.BULLISH and f.is_active
-                and t.price < f.midpoint < price
+                1 for f in _ht_bull_active if t.price < f.midpoint < price
             )
             if obstacles <= MAX_OBSTACLES_HT:
                 viable.append((t, obstacles))

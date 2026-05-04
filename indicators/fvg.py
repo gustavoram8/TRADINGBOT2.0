@@ -212,39 +212,45 @@ class FVGTracker:
     Actualiza el estado de cada FVG conforme el precio avanza vela a vela.
     """
 
+    _MAX_BROKEN = 100  # cap on retained broken FVGs to bound memory and iteration
+
     def __init__(self, dubious_break_pct: float = 0.30, dubious_wait_bars: int = 2):
-        self.all_fvgs: List[FairValueGap] = []
+        # Separate active vs broken lists: update() only iterates active FVGs,
+        # which are far fewer than the total accumulated over a backtest.
+        self._active_fvgs: List[FairValueGap] = []
+        self._broken_fvgs: List[FairValueGap] = []
+        # O(1) duplicate detection replaces the previous O(n) scan in add_fvgs().
+        self._seen_keys: set = set()
         self.dubious_break_pct = dubious_break_pct
         self.dubious_wait_bars = dubious_wait_bars
 
     @property
+    def all_fvgs(self) -> List[FairValueGap]:
+        """All FVGs (active + broken). Prefer active_bullish/active_bearish/broken_fvgs in hot paths."""
+        return self._active_fvgs + self._broken_fvgs
+
+    @property
     def active_bullish(self) -> List[FairValueGap]:
         """FVGs alcistas activos."""
-        return [f for f in self.all_fvgs
-                if f.fvg_type == FVGType.BULLISH and f.is_active]
+        return [f for f in self._active_fvgs if f.fvg_type == FVGType.BULLISH]
 
     @property
     def active_bearish(self) -> List[FairValueGap]:
         """FVGs bajistas activos."""
-        return [f for f in self.all_fvgs
-                if f.fvg_type == FVGType.BEARISH and f.is_active]
+        return [f for f in self._active_fvgs if f.fvg_type == FVGType.BEARISH]
 
     @property
     def broken_fvgs(self) -> List[FairValueGap]:
-        """FVGs recientemente rotos."""
-        return [f for f in self.all_fvgs if f.status == FVGStatus.BROKEN]
+        """FVGs rotos (capped at _MAX_BROKEN most recent)."""
+        return self._broken_fvgs
 
     def add_fvgs(self, new_fvgs: List[FairValueGap]):
         """Agrega nuevos FVGs detectados al tracker."""
         for fvg in new_fvgs:
-            # Evitar duplicados (mismo timestamp y tipo)
-            duplicate = any(
-                f.timestamp == fvg.timestamp and f.fvg_type == fvg.fvg_type
-                and abs(f.top - fvg.top) < 0.01
-                for f in self.all_fvgs
-            )
-            if not duplicate:
-                self.all_fvgs.append(fvg)
+            key = (fvg.timestamp, fvg.fvg_type)
+            if key not in self._seen_keys:
+                self._seen_keys.add(key)
+                self._active_fvgs.append(fvg)
 
     def update(self, candle_high: float, candle_low: float, candle_close: float):
         """
@@ -255,14 +261,20 @@ class FVGTracker:
         - Si la penetración es < 30% del tamaño → DUBIOUS (esperar 2 velas)
         - Si DUBIOUS y pasan 2 velas sin break completo → volver a ACTIVE
         """
-        for fvg in self.all_fvgs:
-            if not fvg.is_active:
-                continue
-
+        still_active: List[FairValueGap] = []
+        for fvg in self._active_fvgs:
             if fvg.fvg_type == FVGType.BULLISH:
                 self._update_bullish(fvg, candle_high, candle_low, candle_close)
             else:
                 self._update_bearish(fvg, candle_high, candle_low, candle_close)
+            if fvg.is_active:
+                still_active.append(fvg)
+            else:
+                self._broken_fvgs.append(fvg)
+
+        self._active_fvgs = still_active
+        if len(self._broken_fvgs) > self._MAX_BROKEN:
+            self._broken_fvgs = self._broken_fvgs[-self._MAX_BROKEN:]
 
     def _update_bullish(self, fvg: FairValueGap, high: float, low: float, close: float):
         """
@@ -339,14 +351,15 @@ class FVGTracker:
         Para SHORT: necesitamos un Bearish FVG cercano (SL encima de él)
         """
         if trade_direction == "long":
-            candidates = [f for f in self.active_bullish if f.top <= price]
+            candidates = [f for f in self._active_fvgs
+                          if f.fvg_type == FVGType.BULLISH and f.top <= price]
             if not candidates:
                 return None
-            # El más cercano por arriba del precio
             candidates.sort(key=lambda f: price - f.top)
             return candidates[0]
         else:
-            candidates = [f for f in self.active_bearish if f.bottom >= price]
+            candidates = [f for f in self._active_fvgs
+                          if f.fvg_type == FVGType.BEARISH and f.bottom >= price]
             if not candidates:
                 return None
             candidates.sort(key=lambda f: f.bottom - price)
@@ -362,22 +375,20 @@ class FVGTracker:
         Cuenta cuántos FVGs de un tipo se han roto recientemente.
         Usado para confirmar tendencia y reversiones.
         """
-        count = 0
-        for fvg in self.all_fvgs:
-            if (fvg.fvg_type == fvg_type
-                    and fvg.status == FVGStatus.BROKEN
-                    and since_idx <= fvg.candle_idx <= current_idx):
-                count += 1
-        return count
+        return sum(
+            1 for fvg in self._broken_fvgs
+            if fvg.fvg_type == fvg_type and since_idx <= fvg.candle_idx <= current_idx
+        )
 
     def cleanup_old(self, max_age_bars: int = 200):
-        """Elimina FVGs muy antiguos para mantener la memoria limpia."""
-        if not self.all_fvgs:
+        """Elimina FVGs rotos muy antiguos para mantener la memoria limpia."""
+        if not self._broken_fvgs:
             return
-        max_idx = max(f.candle_idx for f in self.all_fvgs)
-        self.all_fvgs = [
-            f for f in self.all_fvgs
-            if f.is_active or (max_idx - f.candle_idx) < max_age_bars
+        all_idxs = [f.candle_idx for f in self._active_fvgs] + [f.candle_idx for f in self._broken_fvgs]
+        max_idx = max(all_idxs)
+        self._broken_fvgs = [
+            f for f in self._broken_fvgs
+            if (max_idx - f.candle_idx) < max_age_bars
         ]
 
 
