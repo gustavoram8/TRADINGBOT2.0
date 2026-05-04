@@ -24,25 +24,42 @@ export async function POST(req: NextRequest) {
   }
 
   const backendUrl = `${PYTHON_API}/backtest`;
-  // Generous timeout: backtests can take 2–5 min for large date ranges.
-  // Python sends keepalive "\n" bytes every 5s so the TCP connection stays
-  // alive; we just need Node.js not to abort before the final JSON arrives.
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 10 * 60 * 1000); // 10 min
 
-  try {
-    const res = await fetch(backendUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
+  // Use a TransformStream so we can write keepalive "\n" bytes from Node.js
+  // directly — bypassing any gzip compression or Python-to-Node buffering that
+  // would otherwise swallow them before they reach nginx/browser.
+  const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>();
+  const writer = writable.getWriter();
+  const enc = new TextEncoder();
 
-    if (!res.ok) {
-      const text = await res.text();
-      return NextResponse.json(
-        {
+  let keepaliveTimer: ReturnType<typeof setInterval> | null = setInterval(() => {
+    writer.write(enc.encode("\n")).catch(() => stopKeepalive());
+  }, 5000);
+
+  const stopKeepalive = () => {
+    if (keepaliveTimer !== null) {
+      clearInterval(keepaliveTimer);
+      keepaliveTimer = null;
+    }
+  };
+
+  // Fetch Python in the background; write result (or error JSON) then close stream.
+  void (async () => {
+    try {
+      const res = await fetch(backendUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      stopKeepalive();
+
+      if (!res.ok) {
+        const text = await res.text();
+        await writer.write(enc.encode(JSON.stringify({
           error: `El servidor Python respondió con error HTTP ${res.status}: ${text || res.statusText}`,
           diagnostic: {
             step: "python_api_response",
@@ -50,29 +67,19 @@ export async function POST(req: NextRequest) {
             http_status: res.status,
             body: text.slice(0, 500),
           },
-        },
-        { status: res.status }
-      );
-    }
-
-    // Stream the Python response body directly to the browser.
-    // Python sends "\n" keepalive bytes every 5s; streaming lets those bytes
-    // flow through nginx to the browser immediately, keeping every hop alive.
-    // X-Accel-Buffering: no tells nginx to disable its proxy buffer for this
-    // response so the keepalive bytes reach the browser without accumulating.
-    // JSON.parse ignores leading whitespace, so "\n" keepalives are harmless.
-    return new Response(res.body, {
-      headers: {
-        "Content-Type": "application/json",
-        "X-Accel-Buffering": "no",
-      },
-    });
-  } catch (err) {
-    clearTimeout(timeoutId);
-    const isAbort = err instanceof Error && err.name === "AbortError";
-    const isNetworkError = err instanceof TypeError && String(err).includes("fetch");
-    return NextResponse.json(
-      {
+        })));
+      } else {
+        // Buffer the full Python response; keepalives already kept the
+        // browser connection alive during the wait.
+        const text = await res.text();
+        await writer.write(enc.encode(text));
+      }
+    } catch (err) {
+      clearTimeout(timeoutId);
+      stopKeepalive();
+      const isAbort = err instanceof Error && err.name === "AbortError";
+      const isNetworkError = err instanceof TypeError && String(err).includes("fetch");
+      await writer.write(enc.encode(JSON.stringify({
         error: isAbort
           ? `El backtest superó el tiempo máximo (10 min) sin respuesta del servidor Python.`
           : isNetworkError
@@ -85,8 +92,19 @@ export async function POST(req: NextRequest) {
           error_type: err instanceof Error ? err.constructor.name : typeof err,
           error_detail: String(err),
         },
-      },
-      { status: isAbort ? 504 : 502 }
-    );
-  }
+      })));
+    } finally {
+      await writer.close().catch(() => {});
+    }
+  })();
+
+  return new Response(readable, {
+    headers: {
+      "Content-Type": "application/json",
+      // Tell nginx not to buffer this streaming response.
+      "X-Accel-Buffering": "no",
+      // Prevent Next.js compression middleware from buffering keepalive chunks.
+      "Cache-Control": "no-transform, no-store",
+    },
+  });
 }
