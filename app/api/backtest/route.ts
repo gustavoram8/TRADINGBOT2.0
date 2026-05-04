@@ -55,10 +55,14 @@ export async function POST(req: NextRequest) {
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
-      stopKeepalive();
+      // Keep sending keepalives while we buffer the full response body.
+      // Python headers arrive quickly but res.text() waits for the entire
+      // body (54 s+). Without keepalives during this wait the router closes
+      // the idle connection after ~30 s.
 
       if (!res.ok) {
         const text = await res.text();
+        stopKeepalive();
         await writer.write(enc.encode(JSON.stringify({
           error: `El servidor Python respondió con error HTTP ${res.status}: ${text || res.statusText}`,
           diagnostic: {
@@ -69,9 +73,8 @@ export async function POST(req: NextRequest) {
           },
         })));
       } else {
-        // Buffer the full Python response; keepalives already kept the
-        // browser connection alive during the wait.
         const text = await res.text();
+        stopKeepalive();
         await writer.write(enc.encode(text));
       }
     } catch (err) {
