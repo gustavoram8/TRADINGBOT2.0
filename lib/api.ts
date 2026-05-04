@@ -59,10 +59,24 @@ export async function runBacktest(
   startDate: string,
   endDate: string,
 ): Promise<BacktestResult> {
-  return apiFetch<BacktestResult>("/api/backtest", {
+  // POST starts the job immediately and returns a jobId.
+  // This avoids long-lived HTTP connections that routers/firewalls close.
+  const { jobId } = await apiFetch<{ jobId: string }>("/api/backtest", {
     method: "POST",
     body: JSON.stringify({ config, start_date: startDate, end_date: endDate }),
   });
+
+  // Poll every 2 s until the job completes (max 15 min).
+  const deadline = Date.now() + 15 * 60 * 1000;
+  while (Date.now() < deadline) {
+    await new Promise((r) => setTimeout(r, 2000));
+    const poll = await apiFetch<BacktestResult | { status: "running" }>(
+      `/api/backtest?jobId=${encodeURIComponent(jobId)}`
+    );
+    if ("status" in poll && poll.status === "running") continue;
+    return poll as BacktestResult;
+  }
+  throw new Error("[RED] El backtest superó 15 minutos sin respuesta.");
 }
 
 export async function fetchConfigs(): Promise<BotConfig[]> {
