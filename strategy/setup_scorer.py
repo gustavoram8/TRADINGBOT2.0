@@ -107,6 +107,7 @@ class ScoreBreakdown:
         return (
             self.has_choch
             and self.has_protective_fvg
+            and self.target_level is not None
             and self.rr_filter_passed
         )
 
@@ -115,8 +116,9 @@ class ScoreBreakdown:
         sweep = "PASS" if self.has_sweep          else "FAIL"
         choch = "PASS" if self.has_choch          else "FAIL"
         fvg   = "PASS" if self.has_protective_fvg else "FAIL"
+        tgt   = "PASS" if self.target_level is not None else "FAIL"
         rr    = "PASS" if self.rr_filter_passed   else "FAIL"
-        gates = f"[Swp:{sweep} CHoCH:{choch} FVG:{fvg} RR:{rr}]"
+        gates = f"[Swp:{sweep} CHoCH:{choch} FVG:{fvg} Tgt:{tgt} RR:{rr}]"
         scores = (
             f"swp={self.sweep_score:.1f} str={self.structure_score:.1f} "
             f"path={self.path_score:.1f} tgt={self.target_score:.1f} "
@@ -137,6 +139,8 @@ class ScoreBreakdown:
             parts.append("no CHoCH confirmed")
         if not self.has_protective_fvg:
             parts.append("no protective FVG")
+        if self.target_level is None:
+            parts.append("no viable target (no fresh levels within 400pts)")
         if not self.rr_filter_passed:
             parts.append(
                 f"R:R failed (tp={self.tp_distance:.1f}pts min={MIN_TP_DISTANCE_PTS:.0f} "
