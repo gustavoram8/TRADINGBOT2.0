@@ -211,29 +211,34 @@ def find_equal_levels(
     data = df[column].values[-lookback:]
     timestamps = df.index[-lookback:]
 
-    # Agrupar valores similares
-    used = set()
-    for i in range(len(data)):
-        if i in used:
-            continue
+    # O(n log n) clustering: sort values then scan linearly for adjacent clusters.
+    sort_order = np.argsort(data, kind="stable")
+    sorted_data = data[sort_order]
+    sorted_ts   = timestamps[sort_order]
 
-        cluster = [i]
-        for j in range(i + 1, len(data)):
-            if j in used:
-                continue
-            if abs(data[j] - data[i]) / data[i] <= tolerance_pct:
-                cluster.append(j)
-                used.add(j)
+    ltype = LiquidityType.EQUAL_HIGH if column == "High" else LiquidityType.EQUAL_LOW
+    label_ch = "H" if column == "High" else "L"
 
-        if len(cluster) >= min_touches:
-            avg_price = np.mean([data[k] for k in cluster])
-            ltype = LiquidityType.EQUAL_HIGH if column == "High" else LiquidityType.EQUAL_LOW
+    i = 0
+    n = len(sorted_data)
+    while i < n:
+        ref = sorted_data[i]
+        j = i + 1
+        while j < n and abs(sorted_data[j] - ref) / ref <= tolerance_pct:
+            j += 1
+
+        cluster_size = j - i
+        if cluster_size >= min_touches:
+            avg_price = float(np.mean(sorted_data[i:j]))
+            latest_ts = max(sorted_ts[i:j])
             levels.append(LiquidityLevel(
                 level_type=ltype,
                 price=avg_price,
-                timestamp=timestamps[cluster[-1]],
-                label=f"EQ{'H' if column == 'High' else 'L'} {avg_price:.1f} ({len(cluster)} touches)",
+                timestamp=latest_ts,
+                label=f"EQ{label_ch} {avg_price:.1f} ({cluster_size} touches)",
             ))
+
+        i = j
 
     return levels
 

@@ -257,10 +257,10 @@ class ICTStrategy(bt.Strategy):
 
         self._daily_bias = trend_4h  # kept for logging / stop() summary only
 
-        broken_bullish = sum(1 for f in self.fvg_tracker.all_fvgs
-                             if f.fvg_type == FVGType.BULLISH and f.status == FVGStatus.BROKEN)
-        broken_bearish = sum(1 for f in self.fvg_tracker.all_fvgs
-                             if f.fvg_type == FVGType.BEARISH and f.status == FVGStatus.BROKEN)
+        broken_bullish = sum(1 for f in self.fvg_tracker.broken_fvgs
+                             if f.fvg_type == FVGType.BULLISH)
+        broken_bearish = sum(1 for f in self.fvg_tracker.broken_fvgs
+                             if f.fvg_type == FVGType.BEARISH)
 
         macro_bias = self.structure_engine.get_macro_bias()
         self.log(
@@ -339,14 +339,10 @@ class ICTStrategy(bt.Strategy):
         def fvg_counts(tracker):
             if tracker is None:
                 return (0, 0, 0, 0)  # bull_active, bear_active, bull_broken, bear_broken
-            ba = bra = bb = brb = 0
-            for f in tracker.all_fvgs:
-                if f.fvg_type == FVGType.BULLISH:
-                    if f.is_active:                        ba  += 1
-                    elif f.status == FVGStatus.BROKEN:     bb  += 1
-                else:
-                    if f.is_active:                        bra += 1
-                    elif f.status == FVGStatus.BROKEN:     brb += 1
+            ba  = sum(1 for f in tracker._active_fvgs if f.fvg_type == FVGType.BULLISH)
+            bra = sum(1 for f in tracker._active_fvgs if f.fvg_type == FVGType.BEARISH)
+            bb  = sum(1 for f in tracker._broken_fvgs if f.fvg_type == FVGType.BULLISH)
+            brb = sum(1 for f in tracker._broken_fvgs if f.fvg_type == FVGType.BEARISH)
             return (ba, bra, bb, brb)
 
         macro = self.structure_engine.get_macro_bias()
@@ -1011,9 +1007,8 @@ class ICTStrategy(bt.Strategy):
                 candidates = [
                     f
                     for tr in all_trackers
-                    for f in tr.all_fvgs
-                    if f.fvg_type == FVGType.BULLISH and f.is_active
-                    and f.top <= price and price - f.top <= 150
+                    for f in tr.active_bullish
+                    if f.top <= price and price - f.top <= 150
                 ]
                 if candidates:
                     closest = max(candidates, key=lambda f: f.top)
@@ -1036,9 +1031,8 @@ class ICTStrategy(bt.Strategy):
                 candidates = [
                     f
                     for tr in all_trackers
-                    for f in tr.all_fvgs
-                    if f.fvg_type == FVGType.BEARISH and f.is_active
-                    and f.bottom >= price and f.bottom - price <= 150
+                    for f in tr.active_bearish
+                    if f.bottom >= price and f.bottom - price <= 150
                 ]
                 if candidates:
                     closest = min(candidates, key=lambda f: f.bottom)
@@ -1094,17 +1088,13 @@ class ICTStrategy(bt.Strategy):
                 if is_long:
                     # Si Bullish FVGs de soporte se rompen -> BE
                     supporting_broken = any(
-                        f.fvg_type == FVGType.BULLISH
-                        and f.status == FVGStatus.BROKEN
-                        and f.candle_idx > self._bar_count - 5
-                        for f in self.fvg_tracker.all_fvgs
+                        f.fvg_type == FVGType.BULLISH and f.candle_idx > self._bar_count - 5
+                        for f in self.fvg_tracker.broken_fvgs
                     )
                 else:
                     supporting_broken = any(
-                        f.fvg_type == FVGType.BEARISH
-                        and f.status == FVGStatus.BROKEN
-                        and f.candle_idx > self._bar_count - 5
-                        for f in self.fvg_tracker.all_fvgs
+                        f.fvg_type == FVGType.BEARISH and f.candle_idx > self._bar_count - 5
+                        for f in self.fvg_tracker.broken_fvgs
                     )
 
                 if supporting_broken:
