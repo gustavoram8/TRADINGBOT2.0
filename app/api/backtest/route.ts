@@ -55,14 +55,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Stream the Python response body directly to the browser instead of
-    // buffering it. Python sends "\n" keepalive bytes every 5s; streaming lets
-    // those bytes flow through nginx immediately, preventing nginx from closing
-    // the connection due to proxy_read_timeout while Node.js was buffering.
-    // The browser's res.json() waits for the full stream, and JSON.parse
-    // ignores leading whitespace, so keepalive "\n" bytes are harmless.
+    // Stream the Python response body directly to the browser.
+    // Python sends "\n" keepalive bytes every 5s; streaming lets those bytes
+    // flow through nginx to the browser immediately, keeping every hop alive.
+    // X-Accel-Buffering: no tells nginx to disable its proxy buffer for this
+    // response so the keepalive bytes reach the browser without accumulating.
+    // JSON.parse ignores leading whitespace, so "\n" keepalives are harmless.
     return new Response(res.body, {
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "X-Accel-Buffering": "no",
+      },
     });
   } catch (err) {
     clearTimeout(timeoutId);

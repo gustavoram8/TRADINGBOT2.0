@@ -126,14 +126,26 @@ export default function BacktestPage() {
             if (e.includes("[RED]"))
               return (
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-fin-red">Fallo de red — el servidor no responde</p>
+                  <p className="text-xs font-medium text-fin-red">Fallo de red — conexión cortada</p>
                   <p className="text-xs text-text-secondary">
-                    El navegador no pudo alcanzar el servidor Next.js. Posibles causas:
+                    {e.includes("cortada")
+                      ? "La conexión se estableció pero fue cortada antes de recibir la respuesta completa. Posibles causas:"
+                      : "El navegador no pudo alcanzar el servidor Next.js. Posibles causas:"}
                   </p>
                   <ul className="text-xs text-text-muted list-disc list-inside space-y-0.5">
-                    <li>El servidor Next.js (frontend) no está corriendo</li>
-                    <li>Bloqueado por CORS o un proxy</li>
-                    <li>La URL del servidor cambió</li>
+                    {e.includes("cortada") ? (
+                      <>
+                        <li>Nginx cerró la conexión por timeout (revisa <code className="font-mono bg-bg-tertiary px-1 rounded">proxy_read_timeout</code> y <code className="font-mono bg-bg-tertiary px-1 rounded">send_timeout</code>)</li>
+                        <li>El servidor Next.js se reinició durante el backtest</li>
+                        <li>El backtest tardó más de lo esperado — intenta un rango de fechas menor</li>
+                      </>
+                    ) : (
+                      <>
+                        <li>El servidor Next.js (frontend) no está corriendo</li>
+                        <li>Bloqueado por CORS o un proxy</li>
+                        <li>La URL del servidor cambió</li>
+                      </>
+                    )}
                   </ul>
                 </div>
               );
