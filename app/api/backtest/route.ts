@@ -24,9 +24,6 @@ export async function POST(req: NextRequest) {
   }
 
   const backendUrl = `${PYTHON_API}/backtest`;
-  // Generous timeout: backtests can take 2–5 min for large date ranges.
-  // Python sends keepalive "\n" bytes every 5s so the TCP connection stays
-  // alive; we just need Node.js not to abort before the final JSON arrives.
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 10 * 60 * 1000); // 10 min
 
@@ -55,46 +52,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Buffer the full Python response (which includes keepalive "\n" bytes
-    // before the final JSON). This prevents the browser from receiving a
-    // partial/aborted stream and throwing "TypeError: Failed to fetch".
-    // nginx proxy_read_timeout is set to 600s, so buffering is safe.
-    const rawText = await res.text();
-    const trimmed = rawText.trim();
-
-    if (!trimmed) {
-      return NextResponse.json(
-        {
-          error: "El servidor Python cerró la conexión sin devolver datos. El backtest puede haber fallado internamente.",
-          diagnostic: {
-            step: "empty_python_response",
-            backend_url: backendUrl,
-            raw_length: rawText.length,
-          },
-        },
-        { status: 502 }
-      );
-    }
-
-    // Validate JSON before forwarding — surface Python serialization errors
-    // as a readable 502 instead of a cryptic [PARSE] browser error.
-    try {
-      JSON.parse(trimmed);
-    } catch {
-      return NextResponse.json(
-        {
-          error: `El servidor Python devolvió una respuesta inválida (no es JSON).`,
-          diagnostic: {
-            step: "invalid_python_json",
-            backend_url: backendUrl,
-            raw_preview: trimmed.slice(0, 300),
-          },
-        },
-        { status: 502 }
-      );
-    }
-
-    return new Response(trimmed, {
+    // Stream Python's response directly to the browser.
+    // Python sends "\n" keepalive bytes every 5s, which keeps nginx and any
+    // intermediate network layers from treating the connection as idle/dead.
+    // The browser's fetch().json() buffers all chunks; JSON.parse() handles
+    // the leading "\n" whitespace correctly.
+    return new Response(res.body, {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
