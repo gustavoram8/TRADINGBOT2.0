@@ -52,14 +52,78 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Stream Python's response directly to the browser.
-    // Python sends "\n" keepalive bytes every 5s, which keeps nginx and any
-    // intermediate network layers from treating the connection as idle/dead.
-    // The browser's fetch().json() buffers all chunks; JSON.parse() handles
-    // the leading "\n" whitespace correctly.
-    return new Response(res.body, {
-      headers: { "Content-Type": "application/json" },
+    // Read Python's response body in the background while streaming our own
+    // keepalive "\n" bytes to nginx/browser every 5s.  This keeps every layer
+    // of the chain alive regardless of proxy buffering mode or network policy.
+    const chunks: Uint8Array[] = [];
+    let pyDone = false;
+    let pyErr: string | null = null;
+
+    const readPromise = (async () => {
+      try {
+        const reader = res.body!.getReader();
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          if (value) chunks.push(value);
+        }
+      } catch (e) {
+        pyErr = String(e);
+      } finally {
+        pyDone = true;
+      }
+    })();
+
+    const enc = new TextEncoder();
+
+    const stream = new ReadableStream<Uint8Array>({
+      async start(ctrl) {
+        // Keep connections alive while Python processes
+        while (!pyDone) {
+          const winner = await Promise.race([
+            readPromise.then(() => "done" as const),
+            new Promise<"tick">((r) => setTimeout(() => r("tick"), 5000)),
+          ]);
+          if (winner === "tick") ctrl.enqueue(enc.encode("\n"));
+        }
+
+        if (pyErr !== null) {
+          ctrl.enqueue(enc.encode(JSON.stringify({
+            error: `Error leyendo respuesta de Python: ${pyErr}`,
+            diagnostic: { step: "reading_python_body" },
+          })));
+          ctrl.close();
+          return;
+        }
+
+        // Reassemble and validate the full response
+        const totalLen = chunks.reduce((s, c) => s + c.length, 0);
+        const buf = new Uint8Array(totalLen);
+        let off = 0;
+        for (const c of chunks) { buf.set(c, off); off += c.length; }
+        const full = new TextDecoder().decode(buf).trim();
+
+        if (!full) {
+          ctrl.enqueue(enc.encode(JSON.stringify({
+            error: "El servidor Python cerró la conexión sin devolver datos.",
+            diagnostic: { step: "empty_python_response" },
+          })));
+        } else {
+          try {
+            JSON.parse(full); // validate before forwarding
+            ctrl.enqueue(enc.encode(full));
+          } catch {
+            ctrl.enqueue(enc.encode(JSON.stringify({
+              error: "El servidor Python devolvió una respuesta inválida (no es JSON).",
+              diagnostic: { step: "invalid_python_json", raw_preview: full.slice(0, 300) },
+            })));
+          }
+        }
+        ctrl.close();
+      },
     });
+
+    return new Response(stream, { headers: { "Content-Type": "application/json" } });
   } catch (err) {
     clearTimeout(timeoutId);
     const isAbort = err instanceof Error && err.name === "AbortError";
