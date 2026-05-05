@@ -861,6 +861,16 @@ class ICTStrategy(bt.Strategy):
         if self._session_for_dt(dt_5m) not in ("ny_am", "ny_pm"):
             return
 
+        # Block entries within 15 minutes of the forced-close deadline.
+        # Entries at 3:45+ PM fill at the 3:50/4:00 PM bar open, at which
+        # point _should_force_close() fires and the position gets closed
+        # in the same bar — leaving _entry_price / _entry_time unlogged.
+        force_close_et = self._get_vet_close_in_et(dt_5m)
+        cutoff_min = force_close_et.hour * 60 + force_close_et.minute - 15
+        cutoff_time = dtime(cutoff_min // 60, cutoff_min % 60)
+        if dt_5m.time() >= cutoff_time:
+            return
+
         if self._bar_count < self._cooldown_until_bar:
             return
 
@@ -1262,20 +1272,24 @@ class ICTStrategy(bt.Strategy):
         # --- CHECK 1: Stop Loss ---
         if is_long and low <= self._sl_price:
             self.log(f"X SL HIT (LONG) @ ~{self._sl_price:.1f}", "EXIT")
+            self._exit_reason = "Stop Loss"
             self.close()
             return
         elif not is_long and high >= self._sl_price:
             self.log(f"X SL HIT (SHORT) @ ~{self._sl_price:.1f}", "EXIT")
+            self._exit_reason = "Stop Loss"
             self.close()
             return
 
         # --- CHECK 2: Take Profit completo ---
         if is_long and high >= self._tp_price:
             self.log(f"OK TP HIT (LONG) @ ~{self._tp_price:.1f}", "EXIT")
+            self._exit_reason = "Take Profit"
             self.close()
             return
         elif not is_long and low <= self._tp_price:
             self.log(f"OK TP HIT (SHORT) @ ~{self._tp_price:.1f}", "EXIT")
+            self._exit_reason = "Take Profit"
             self.close()
             return
 
@@ -1284,6 +1298,7 @@ class ICTStrategy(bt.Strategy):
             self.log(
                 f"OK 90% TP alcanzado: ${unrealized_pnl:.0f} / ${tp_total:.0f}", "EXIT"
             )
+            self._exit_reason = "Take Profit (90%)"
             self.close()
             return
 
@@ -1519,6 +1534,14 @@ class ICTStrategy(bt.Strategy):
             # Registrar en los managers de riesgo
             self.position_sizer.record_trade(pnl_net)
             self.kill_switch.record_trade(pnl_net)
+
+            # Warn if entry metadata is missing — helps diagnose timing bugs
+            if self._entry_price is None or self._entry_contracts == 0:
+                self.log(
+                    f"WARN: entry_price={self._entry_price} contracts={self._entry_contracts} "
+                    f"entry_time={self._entry_time} — possible forced-close timing issue",
+                    "WARN",
+                )
 
             # Log del trade
             self._trades_log.append({
