@@ -29,14 +29,23 @@ jobs:
             # Rebuild frontend
             npm run build
 
-            # Apply nginx config (idempotent — overwrites every deploy so the
-            # VPS always matches what's in the repo, no manual edits possible).
+            # ─── nginx config (idempotent) ────────────────────────────────
+            echo "=== nginx: applying config ==="
             cp deploy/nginx-tradingbot.conf /etc/nginx/sites-available/tradingbot
-            # Remove any stale duplicate configs that conflict on the same server_name
-            rm -f /etc/nginx/sites-enabled/default /etc/nginx/sites-enabled/.default.swp
-            ln -sf /etc/nginx/sites-available/tradingbot /etc/nginx/sites-enabled/tradingbot
+            # Remove all stale enabled configs and re-link only ours
+            rm -f /etc/nginx/sites-enabled/default \
+                  /etc/nginx/sites-enabled/.default.swp \
+                  /etc/nginx/sites-enabled/tradingbot
+            ln -s /etc/nginx/sites-available/tradingbot /etc/nginx/sites-enabled/tradingbot
+            echo "=== nginx: sites-enabled ==="
+            ls -la /etc/nginx/sites-enabled/
+            echo "=== nginx: validating ==="
             nginx -t
+            echo "=== nginx: reloading ==="
             systemctl reload nginx
+            echo "=== nginx: active timeouts (proxy_*_timeout) ==="
+            nginx -T 2>/dev/null | grep -i 'proxy_.*_timeout' || echo "(no proxy timeouts found)"
+            # ──────────────────────────────────────────────────────────────
 
             # Restart frontend
             pm2 restart tradingbot-frontend
