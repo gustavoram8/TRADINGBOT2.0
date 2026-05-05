@@ -43,7 +43,7 @@ from api_server.schemas import BacktestRequest, BacktestResultOut
 from api_server.serializers import assemble_backtest_result
 
 # Existing project modules — IMPORT-ONLY, NOT MODIFIED.
-from data.downloader import download_data, resample_ohlcv
+from data.downloader import download_data, resample_ohlcv, filter_trading_hours
 from backtest import run_backtest
 
 
@@ -173,6 +173,22 @@ def _pipeline_sync(req: BacktestRequest) -> dict:
                 log.warning("Could not fetch 5m feed: %s", _r5)
         except FuturesTimeoutError:
             log.warning("5m feed download timed out — skipped")
+
+    # Filter all feeds to regular NYSE trading hours (9:30 AM–4:00 PM ET).
+    # NQ=F yfinance data includes extended-hours bars (pre/post market) which
+    # cause spurious trades and corrupt the forced-close logic.
+    # filter_trading_hours() defaults to UTC 12:30–20:00 = 8:30 AM–4:00 PM ET
+    # during EDT, which covers the full NYSE session with a small pre-market
+    # buffer so the first bar of the day is always present.
+    try:
+        df_base = filter_trading_hours(df_base)
+        if df_15m is not None and not df_15m.empty:
+            df_15m = filter_trading_hours(df_15m)
+        if df_5m is not None and not df_5m.empty:
+            df_5m = filter_trading_hours(df_5m)
+        log.info("Trading hours filter applied to all feeds")
+    except Exception as exc:
+        log.warning("Could not apply trading hours filter: %s — skipping", exc)
 
     # Fallback: 15m returned no data (date range older than 60 days)
     if (df_base is None or df_base.empty) and interval == "15m":

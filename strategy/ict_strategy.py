@@ -1535,11 +1535,18 @@ class ICTStrategy(bt.Strategy):
             self.position_sizer.record_trade(pnl_net)
             self.kill_switch.record_trade(pnl_net)
 
-            # Warn if entry metadata is missing — helps diagnose timing bugs
+            # Backtrader's Trade object always has the true fill data.
+            # Use it as a guaranteed fallback when our manual tracking lost
+            # the values (e.g. forced-close timing edge cases on 15m base feed).
+            entry_price  = self._entry_price  if self._entry_price  is not None else trade.price
+            entry_time   = self._entry_time   if self._entry_time   is not None else self.data_base.datetime.datetime(0)
+            num_contracts = self._entry_contracts if self._entry_contracts > 0 else abs(int(trade.size))
+
             if self._entry_price is None or self._entry_contracts == 0:
                 self.log(
-                    f"WARN: entry_price={self._entry_price} contracts={self._entry_contracts} "
-                    f"entry_time={self._entry_time} — possible forced-close timing issue",
+                    f"WARN: entry metadata missing — using trade object fallback: "
+                    f"price={entry_price:.1f} size={num_contracts} "
+                    f"(manual was price={self._entry_price} size={self._entry_contracts})",
                     "WARN",
                 )
 
@@ -1547,16 +1554,16 @@ class ICTStrategy(bt.Strategy):
             self._trades_log.append({
                 "timestamp": self.data_base.datetime.datetime(0),
                 "direction": "long" if trade.long else "short",
-                "entry_price": self._entry_price,
+                "entry_price": entry_price,
                 "exit_price": self._actual_exit_price if self._actual_exit_price is not None else self.data_base.close[0],
                 "sl_price": self._sl_price,
                 "tp_price": self._tp_price,
                 "pnl_gross": pnl,
                 "pnl_net": pnl_net,
                 "commission": trade.commission,
-                "contracts": self._entry_contracts,
+                "contracts": num_contracts,
                 "reason": self._exit_reason or "Manual",
-                "entry_time": self._entry_time,
+                "entry_time": entry_time,
                 "exit_time": self.data_base.datetime.datetime(0),
             })
 
