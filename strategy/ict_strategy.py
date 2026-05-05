@@ -202,6 +202,7 @@ class ICTStrategy(bt.Strategy):
         self._last_1h_len: int = 0
         self._last_15m_len: int = 0
         self._last_5m_len: int = 0
+        self._5m_fvg_entries_used: set = set()  # FVG timestamps used for 5m entries
         self._ny_am_open_set: bool = False
         self._tp_price: Optional[float] = None
         self._sl_price: Optional[float] = None
@@ -641,6 +642,17 @@ class ICTStrategy(bt.Strategy):
                         fvg_type=FVGType.BEARISH, top=l2_5, bottom=h0_5,
                         timestamp=ts_5, timeframe="5m", candle_idx=bar_5,
                     )])
+
+                # Snapshot TESTED state before update to detect first-time mitigations
+                _pre_bull_tested = {
+                    f.timestamp for f in self.fvg_tracker_5m._active_fvgs
+                    if f.fvg_type == FVGType.BULLISH and f.status == FVGStatus.TESTED
+                }
+                _pre_bear_tested = {
+                    f.timestamp for f in self.fvg_tracker_5m._active_fvgs
+                    if f.fvg_type == FVGType.BEARISH and f.status == FVGStatus.TESTED
+                }
+
                 self.fvg_tracker_5m.update(
                     self.data_5m.high[0], self.data_5m.low[0], self.data_5m.close[0]
                 )
@@ -648,6 +660,21 @@ class ICTStrategy(bt.Strategy):
 
                 # Phase 6.4 — granular intra-bar scoring on each new 5m close
                 self._maybe_log_5m_scoring()
+
+                # 5m FVG mitigation entry — fires on each new 5m bar
+                if not self.position and self._pending_order is None:
+                    _post_bull_tested = {
+                        f.timestamp for f in self.fvg_tracker_5m._active_fvgs
+                        if f.fvg_type == FVGType.BULLISH and f.status == FVGStatus.TESTED
+                    }
+                    _post_bear_tested = {
+                        f.timestamp for f in self.fvg_tracker_5m._active_fvgs
+                        if f.fvg_type == FVGType.BEARISH and f.status == FVGStatus.TESTED
+                    }
+                    _new_bull = _post_bull_tested - _pre_bull_tested
+                    _new_bear = _post_bear_tested - _pre_bear_tested
+                    if _new_bull or _new_bear:
+                        self._check_entry_5m_fvg(_new_bull, _new_bear)
 
         # PDH/PDL — al inicio de nuevo día
         current_date = self.data_base.datetime.date(0)
@@ -673,6 +700,7 @@ class ICTStrategy(bt.Strategy):
                 self.liq_map.add_pdh_pdl(prev_high, prev_low, ts)
                 self.liq_map.reset_intraday()
                 self._ny_am_open_set = False
+                self._5m_fvg_entries_used.clear()
 
     # =========================================================================
     # ENTRY LOGIC — Buscar oportunidades
@@ -680,30 +708,25 @@ class ICTStrategy(bt.Strategy):
     # =========================================================================
     # SESSION / KILLZONE HELPERS
     # =========================================================================
-    def _get_current_session(self) -> Optional[str]:
-        """
-        Return the KILLZONES key matching the current bar's ET time, or None.
-        Backtrader feeds from yfinance for NQ=F are in Eastern Time (ET).
-        """
-        dt = self.data_base.datetime.datetime(0)
+    def _session_for_dt(self, dt) -> Optional[str]:
+        """Return the KILLZONES key for a given datetime, or None."""
         current_time = dt.time()
-
         for key, zone in KILLZONES.items():
             sh, sm = map(int, zone.start_et.split(":"))
             eh, em = map(int, zone.end_et.split(":"))
             zone_start = dtime(sh, sm)
             zone_end = dtime(eh, em)
-
-            # Standard window: start <= t < end
             if zone_start < zone_end:
                 if zone_start <= current_time < zone_end:
                     return key
                 continue
-
-            # Overnight window (wrap midnight): t >= start OR t < end
             if current_time >= zone_start or current_time < zone_end:
                 return key
         return None
+
+    def _get_current_session(self) -> Optional[str]:
+        """Return the KILLZONES key for the current base-TF bar, or None."""
+        return self._session_for_dt(self.data_base.datetime.datetime(0))
 
     # =========================================================================
     # PHASE 7.3 — Manipulation burst detection
@@ -821,6 +844,153 @@ class ICTStrategy(bt.Strategy):
                         f"(score={bd.total_score:.1f} need={threshold:.0f})",
                         "SKIP",
                     )
+
+    def _check_entry_5m_fvg(self, new_bull_tested: set, new_bear_tested: set):
+        """
+        Entry trigger: 5m FVG mitigation.
+
+        Fires when a fresh 5m FVG is first TESTED (price entered the zone but
+        closed without breaking through). Direction must be aligned with 1h
+        structural bias. SL = FVG boundary ±2pts (max 45pts). TP = nearest
+        liquidity level (min 25pts away) or synthetic 1:1.
+        """
+        if self.data_5m is None:
+            return
+
+        dt_5m = self.data_5m.datetime.datetime(0)
+        if self._session_for_dt(dt_5m) not in ("ny_am", "ny_pm"):
+            return
+
+        if self._bar_count < self._cooldown_until_bar:
+            return
+
+        if self._manipulation_until_ts is not None:
+            if dt_5m < self._manipulation_until_ts:
+                return
+            self._manipulation_until_ts = None
+
+        can_trade, _ = self.kill_switch.can_open_trade()
+        if not can_trade:
+            return
+
+        price = self.data_5m.close[0]
+        bar_high = self.data_5m.high[0]
+        bar_low = self.data_5m.low[0]
+        MAX_SL_PTS = 45.0
+        MIN_TP_PTS = 25.0
+
+        bias_1h = self.structure_engine.get_bias("1h")
+        bias_base = self.structure_engine.get_bias("base")
+        eff_bias = bias_1h if bias_1h != StructureBias.NEUTRAL else bias_base
+
+        # ── LONG: bullish 5m FVG newly tested ───────────────────────────────
+        if eff_bias != StructureBias.BEARISH and new_bull_tested:
+            for fvg in self.fvg_tracker_5m._active_fvgs:
+                if fvg.fvg_type != FVGType.BULLISH:
+                    continue
+                if fvg.timestamp not in new_bull_tested:
+                    continue
+                if fvg.timestamp in self._5m_fvg_entries_used:
+                    continue
+                if not (bar_low <= fvg.top and price >= fvg.bottom):
+                    continue
+
+                sl_price = fvg.bottom - 2.0
+                sl_dist = price - sl_price
+                if sl_dist <= 0 or sl_dist > MAX_SL_PTS:
+                    continue
+
+                # TP: nearest buyside liquidity at least MIN_TP_PTS away
+                target_liq = None
+                for lvl in self.liquidity_tracker.get_nearest_buyside(price):
+                    if lvl.price > price + MIN_TP_PTS:
+                        target_liq = lvl
+                        break
+                if target_liq is None:
+                    target_liq = LiquidityLevel(
+                        level_type=LiquidityType.SWING_HIGH,
+                        price=price + sl_dist,
+                        timestamp=pd.Timestamp(dt_5m),
+                        label="1:1 sintético",
+                    )
+
+                in_1h_fvg = any(
+                    f.fvg_type == FVGType.BULLISH and f.bottom <= price <= f.top
+                    for f in self.fvg_tracker._active_fvgs
+                )
+
+                bd = ScoreBreakdown("long")
+                bd.protective_fvg = fvg
+                bd.target_level = target_liq
+                bd.has_choch = True
+                bd.has_protective_fvg = True
+                bd.rr_filter_passed = True
+                bd.total_score = 7.0 if in_1h_fvg else 5.0
+                bd.reasons = [
+                    f"5m bull FVG {fvg.bottom:.0f}–{fvg.top:.0f} tested",
+                    f"SL={sl_price:.0f} ({sl_dist:.0f}pts)",
+                    f"bias={eff_bias.value}",
+                ] + (["1h FVG confluence"] if in_1h_fvg else [])
+
+                self._5m_fvg_entries_used.add(fvg.timestamp)
+                self._execute_entry(bd, price)
+                if self._entry_time is not None:
+                    self._entry_time = dt_5m
+                return
+
+        # ── SHORT: bearish 5m FVG newly tested ──────────────────────────────
+        if eff_bias != StructureBias.BULLISH and new_bear_tested:
+            for fvg in self.fvg_tracker_5m._active_fvgs:
+                if fvg.fvg_type != FVGType.BEARISH:
+                    continue
+                if fvg.timestamp not in new_bear_tested:
+                    continue
+                if fvg.timestamp in self._5m_fvg_entries_used:
+                    continue
+                if not (bar_high >= fvg.bottom and price <= fvg.top):
+                    continue
+
+                sl_price = fvg.top + 2.0
+                sl_dist = sl_price - price
+                if sl_dist <= 0 or sl_dist > MAX_SL_PTS:
+                    continue
+
+                target_liq = None
+                for lvl in self.liquidity_tracker.get_nearest_sellside(price):
+                    if lvl.price < price - MIN_TP_PTS:
+                        target_liq = lvl
+                        break
+                if target_liq is None:
+                    target_liq = LiquidityLevel(
+                        level_type=LiquidityType.SWING_LOW,
+                        price=price - sl_dist,
+                        timestamp=pd.Timestamp(dt_5m),
+                        label="1:1 sintético",
+                    )
+
+                in_1h_fvg = any(
+                    f.fvg_type == FVGType.BEARISH and f.bottom <= price <= f.top
+                    for f in self.fvg_tracker._active_fvgs
+                )
+
+                bd = ScoreBreakdown("short")
+                bd.protective_fvg = fvg
+                bd.target_level = target_liq
+                bd.has_choch = True
+                bd.has_protective_fvg = True
+                bd.rr_filter_passed = True
+                bd.total_score = 7.0 if in_1h_fvg else 5.0
+                bd.reasons = [
+                    f"5m bear FVG {fvg.bottom:.0f}–{fvg.top:.0f} tested",
+                    f"SL={sl_price:.0f} ({sl_dist:.0f}pts)",
+                    f"bias={eff_bias.value}",
+                ] + (["1h FVG confluence"] if in_1h_fvg else [])
+
+                self._5m_fvg_entries_used.add(fvg.timestamp)
+                self._execute_entry(bd, price)
+                if self._entry_time is not None:
+                    self._entry_time = dt_5m
+                return
 
     def _execute_entry(self, setup: ScoreBreakdown, price: float):
         """Ejecuta una entrada basada en el ScoreBreakdown del scorer."""
@@ -1303,7 +1473,10 @@ class ICTStrategy(bt.Strategy):
         else:
             # Do not open new positions if we're in the 5-min forced-close buffer
             if not self._should_force_close():
-                self._check_entry()
+                # 5m FVG mitigation entries fire within the 5m update block above.
+                # Fall back to 1h-based entry only when no 5m feed is available.
+                if self.data_5m is None:
+                    self._check_entry()
 
     # =========================================================================
     # ORDER NOTIFICATIONS
