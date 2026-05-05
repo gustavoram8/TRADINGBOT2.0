@@ -353,7 +353,7 @@ class SetupScorer:
                     f"Quality sweep: {len(key_fvgs)} bearish FVG(s) intact "
                     f"in wick zone [{sw_price:.0f}–{wick:.0f}]"
                 )
-            return 0.5, "Blind sweep: no bearish FVG in wick zone → score ×0.5"
+            return 0.7, "Blind sweep: no bearish FVG in wick zone → score ×0.7"
 
         else:  # long / downside sweep
             zone_lo = wick - 20
@@ -367,7 +367,7 @@ class SetupScorer:
                     f"Quality sweep: {len(key_fvgs)} bullish FVG(s) intact "
                     f"in wick zone [{wick:.0f}–{sw_price:.0f}]"
                 )
-            return 0.5, "Blind sweep: no bullish FVG in wick zone → score ×0.5"
+            return 0.7, "Blind sweep: no bullish FVG in wick zone → score ×0.7"
 
     def set_bar(self, bar_idx: int):
         """Call once per bar so significance scores use correct age."""

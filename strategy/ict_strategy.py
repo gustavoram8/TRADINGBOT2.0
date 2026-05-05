@@ -1585,21 +1585,21 @@ class ICTStrategy(bt.Strategy):
     # =========================================================================
     def stop(self):
         """Genera resumen al finalizar."""
-        # Always print rejection diagnostics — critical when trade count is 0
-        self.log("=" * 60)
-        self.log("REJECTION DIAGNOSTICS (bars where entry was blocked):")
+        # Always print rejection diagnostics regardless of verbose flag
+        print("=" * 60)
+        print("REJECTION DIAGNOSTICS (bars where entry was blocked):")
         total_rejections = sum(self._rejection_counts.values())
         for reason, count in sorted(self._rejection_counts.items(), key=lambda x: -x[1]):
             if count > 0:
                 pct = count / total_rejections * 100 if total_rejections else 0
-                self.log(f"  {reason:<28} {count:>6} bars  ({pct:.1f}%)")
-        self.log(f"  {'TOTAL':28} {total_rejections:>6} bars")
-        self.log("=" * 60)
+                print(f"  {reason:<28} {count:>6} bars  ({pct:.1f}%)")
+        print(f"  {'TOTAL':28} {total_rejections:>6} bars")
+        print("=" * 60)
 
         total_trades = len(self._trades_log)
         if total_trades == 0:
-            self.log("SIN TRADES EJECUTADOS")
-            self.log("=" * 60)
+            print("SIN TRADES EJECUTADOS")
+            print("=" * 60)
             return
 
         wins = [t for t in self._trades_log if t["pnl_net"] > 0]

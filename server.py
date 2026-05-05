@@ -261,6 +261,7 @@ def _pipeline_sync(req: BacktestRequest) -> dict:
         indicator_state=result.get("indicator_state", {}),
         start_date=req.start_date,
         ohlc_by_timeframe=ohlc_by_timeframe,
+        rejection_counts=result.get("rejection_counts", {}),
     )
 
     log.info(
@@ -325,7 +326,14 @@ async def post_backtest(req: BacktestRequest):
         elif "err" in result_box:
             yield _json.dumps({"error": result_box["err"]}).encode()
         else:
-            yield _json.dumps(result_box["ok"]).encode()
+            try:
+                yield _json.dumps(result_box["ok"]).encode()
+            except Exception as serial_err:
+                log.error("JSON serialization failed: %s", serial_err, exc_info=True)
+                yield _json.dumps({
+                    "error": f"Error al serializar el resultado: {serial_err}",
+                    "__status": 500,
+                }).encode()
 
     return StreamingResponse(keepalive_stream(), media_type="application/json")
 

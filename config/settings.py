@@ -255,11 +255,11 @@ FORCE_CLOSE_UTC = "20:00"      # 4:00 PM VET = 8:00 PM UTC (fixed)
 # SETUP SCORER — Sum-of-ingredients entry evaluation
 # =============================================================================
 # Minimum total score to allow a trade (0–~18 raw points scale).
-SCORER_MIN_SCORE_TRADE_1 = 7.0    # First trade of the day
-SCORER_MIN_SCORE_TRADE_2 = 12.0   # Second trade (must be exceptional)
+SCORER_MIN_SCORE_TRADE_1 = 5.5    # First trade of the day
+SCORER_MIN_SCORE_TRADE_2 = 9.0    # Second trade (must be exceptional)
 
 # How many bars back (on base TF) to look for a valid CHoCH signal.
-SCORER_CHOCH_LOOKBACK_BARS = 60
+SCORER_CHOCH_LOOKBACK_BARS = 120
 
 # NY AM open ± this many points = "in play" range for target selection.
 SCORER_PROXIMITY_RANGE_POINTS = 400.0
