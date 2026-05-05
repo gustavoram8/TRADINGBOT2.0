@@ -1,0 +1,39 @@
+# Nginx reverse-proxy config for TradingBot 2.0
+# Place in /etc/nginx/sites-available/tradingbot and symlink to sites-enabled/
+#
+# The /api/backtest route can take 2-5 minutes. Key settings:
+#   - proxy_read_timeout: time nginx waits between bytes from Next.js (not total)
+#     The Next.js route streams Python keepalive "\n" bytes every 5s, so 30s
+#     is already safe, but 600s avoids any edge-case gap.
+#   - proxy_buffering off: lets streaming bytes reach the browser immediately.
+
+server {
+    listen 80;
+    server_name _;  # Replace with your domain or IP
+
+    # --- General proxy settings ---
+    proxy_http_version 1.1;
+    proxy_set_header Host              $host;
+    proxy_set_header X-Real-IP         $remote_addr;
+    proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+    proxy_set_header Upgrade           $http_upgrade;
+    proxy_set_header Connection        "upgrade";
+
+    # --- Timeouts (applied globally, overridden per-location if needed) ---
+    proxy_connect_timeout  30s;
+    proxy_send_timeout     600s;
+    proxy_read_timeout     600s;
+    send_timeout           600s;
+
+    # --- Next.js frontend + API routes ---
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_buffering off;  # critical: stream keepalive bytes to browser immediately
+    }
+
+    # --- Python FastAPI backend (direct access, optional) ---
+    # Uncomment if you want /python/* to reach uvicorn directly.
+    # location /python/ {
+    #     proxy_pass http://127.0.0.1:8000/;
+    # }
+}

@@ -55,14 +55,46 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Buffer the full Python response (which may include keepalive "\n" bytes
-    // before the final JSON) before forwarding to the browser.
-    // This prevents the browser from receiving a partial/aborted stream and
-    // throwing "TypeError: Failed to fetch" during res.json().
-    // The Python server sends "\n" keepalives every 5s — res.text() on the
-    // Node.js side buffers those safely; JSON.parse ignores leading whitespace.
+    // Buffer the full Python response (which includes keepalive "\n" bytes
+    // before the final JSON). This prevents the browser from receiving a
+    // partial/aborted stream and throwing "TypeError: Failed to fetch".
+    // nginx proxy_read_timeout is set to 600s, so buffering is safe.
     const rawText = await res.text();
-    return new Response(rawText, {
+    const trimmed = rawText.trim();
+
+    if (!trimmed) {
+      return NextResponse.json(
+        {
+          error: "El servidor Python cerró la conexión sin devolver datos. El backtest puede haber fallado internamente.",
+          diagnostic: {
+            step: "empty_python_response",
+            backend_url: backendUrl,
+            raw_length: rawText.length,
+          },
+        },
+        { status: 502 }
+      );
+    }
+
+    // Validate JSON before forwarding — surface Python serialization errors
+    // as a readable 502 instead of a cryptic [PARSE] browser error.
+    try {
+      JSON.parse(trimmed);
+    } catch {
+      return NextResponse.json(
+        {
+          error: `El servidor Python devolvió una respuesta inválida (no es JSON).`,
+          diagnostic: {
+            step: "invalid_python_json",
+            backend_url: backendUrl,
+            raw_preview: trimmed.slice(0, 300),
+          },
+        },
+        { status: 502 }
+      );
+    }
+
+    return new Response(trimmed, {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
