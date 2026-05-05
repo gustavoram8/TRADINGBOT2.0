@@ -25,105 +25,17 @@ export async function POST(req: NextRequest) {
 
   const backendUrl = `${PYTHON_API}/backtest`;
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 10 * 60 * 1000); // 10 min
+  const timeoutId = setTimeout(() => controller.abort(), 10 * 60 * 1000);
 
+  let res: Response;
   try {
-    const res = await fetch(backendUrl, {
+    res = await fetch(backendUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
       signal: controller.signal,
     });
     clearTimeout(timeoutId);
-
-    if (!res.ok) {
-      const text = await res.text();
-      return NextResponse.json(
-        {
-          error: `El servidor Python respondió con error HTTP ${res.status}: ${text || res.statusText}`,
-          diagnostic: {
-            step: "python_api_response",
-            backend_url: backendUrl,
-            http_status: res.status,
-            body: text.slice(0, 500),
-          },
-        },
-        { status: res.status }
-      );
-    }
-
-    // Read Python's response body in the background while streaming our own
-    // keepalive "\n" bytes to nginx/browser every 5s.  This keeps every layer
-    // of the chain alive regardless of proxy buffering mode or network policy.
-    const chunks: Uint8Array[] = [];
-    let pyDone = false;
-    let pyErr: string | null = null;
-
-    const readPromise = (async () => {
-      try {
-        const reader = res.body!.getReader();
-        for (;;) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          if (value) chunks.push(value);
-        }
-      } catch (e) {
-        pyErr = String(e);
-      } finally {
-        pyDone = true;
-      }
-    })();
-
-    const enc = new TextEncoder();
-
-    const stream = new ReadableStream<Uint8Array>({
-      async start(ctrl) {
-        // Keep connections alive while Python processes
-        while (!pyDone) {
-          const winner = await Promise.race([
-            readPromise.then(() => "done" as const),
-            new Promise<"tick">((r) => setTimeout(() => r("tick"), 5000)),
-          ]);
-          if (winner === "tick") ctrl.enqueue(enc.encode("\n"));
-        }
-
-        if (pyErr !== null) {
-          ctrl.enqueue(enc.encode(JSON.stringify({
-            error: `Error leyendo respuesta de Python: ${pyErr}`,
-            diagnostic: { step: "reading_python_body" },
-          })));
-          ctrl.close();
-          return;
-        }
-
-        // Reassemble and validate the full response
-        const totalLen = chunks.reduce((s, c) => s + c.length, 0);
-        const buf = new Uint8Array(totalLen);
-        let off = 0;
-        for (const c of chunks) { buf.set(c, off); off += c.length; }
-        const full = new TextDecoder().decode(buf).trim();
-
-        if (!full) {
-          ctrl.enqueue(enc.encode(JSON.stringify({
-            error: "El servidor Python cerró la conexión sin devolver datos.",
-            diagnostic: { step: "empty_python_response" },
-          })));
-        } else {
-          try {
-            JSON.parse(full); // validate before forwarding
-            ctrl.enqueue(enc.encode(full));
-          } catch {
-            ctrl.enqueue(enc.encode(JSON.stringify({
-              error: "El servidor Python devolvió una respuesta inválida (no es JSON).",
-              diagnostic: { step: "invalid_python_json", raw_preview: full.slice(0, 300) },
-            })));
-          }
-        }
-        ctrl.close();
-      },
-    });
-
-    return new Response(stream, { headers: { "Content-Type": "application/json" } });
   } catch (err) {
     clearTimeout(timeoutId);
     const isAbort = err instanceof Error && err.name === "AbortError";
@@ -138,7 +50,6 @@ export async function POST(req: NextRequest) {
         diagnostic: {
           step: "next_to_python_fetch",
           backend_url: backendUrl,
-          PYTHON_API_URL_set: !!process.env.PYTHON_API_URL,
           error_type: err instanceof Error ? err.constructor.name : typeof err,
           error_detail: String(err),
         },
@@ -146,4 +57,108 @@ export async function POST(req: NextRequest) {
       { status: isAbort ? 504 : 502 }
     );
   }
+
+  if (!res.ok) {
+    const text = await res.text();
+    return NextResponse.json(
+      {
+        error: `El servidor Python respondió con error HTTP ${res.status}: ${text || res.statusText}`,
+        diagnostic: {
+          step: "python_api_response",
+          backend_url: backendUrl,
+          http_status: res.status,
+          body: text.slice(0, 500),
+        },
+      },
+      { status: res.status }
+    );
+  }
+
+  // CRITICAL: start() must be synchronous so the stream becomes "readable"
+  // immediately and the HTTP layer starts flushing bytes to nginx/browser.
+  // The async work runs in a background task that captures `ctrl`.
+  const enc = new TextEncoder();
+
+  const stream = new ReadableStream<Uint8Array>({
+    start(ctrl) {
+      // Send a newline immediately so nginx/browser see bytes right away.
+      ctrl.enqueue(enc.encode("\n"));
+
+      void (async () => {
+        const chunks: Uint8Array[] = [];
+        let pyErr: string | null = null;
+        let pyDone = false;
+
+        const readTask = (async () => {
+          try {
+            const reader = res.body!.getReader();
+            for (;;) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              if (value) chunks.push(value);
+            }
+          } catch (e) {
+            pyErr = String(e);
+          } finally {
+            pyDone = true;
+          }
+        })();
+
+        // Keepalive: enqueue "\n" every 5s until Python finishes.
+        while (!pyDone) {
+          await Promise.race([
+            readTask,
+            new Promise((r) => setTimeout(r, 5000)),
+          ]);
+          if (!pyDone) {
+            try { ctrl.enqueue(enc.encode("\n")); } catch { return; }
+          }
+        }
+
+        // Send the final payload.
+        try {
+          if (pyErr !== null) {
+            ctrl.enqueue(enc.encode(JSON.stringify({
+              error: `Error leyendo respuesta de Python: ${pyErr}`,
+              diagnostic: { step: "reading_python_body" },
+            })));
+          } else {
+            const totalLen = chunks.reduce((s, c) => s + c.length, 0);
+            const buf = new Uint8Array(totalLen);
+            let off = 0;
+            for (const c of chunks) { buf.set(c, off); off += c.length; }
+            const full = new TextDecoder().decode(buf).trim();
+
+            if (!full) {
+              ctrl.enqueue(enc.encode(JSON.stringify({
+                error: "El servidor Python cerró la conexión sin devolver datos.",
+                diagnostic: { step: "empty_python_response" },
+              })));
+            } else {
+              try {
+                JSON.parse(full);
+                ctrl.enqueue(enc.encode(full));
+              } catch {
+                ctrl.enqueue(enc.encode(JSON.stringify({
+                  error: "El servidor Python devolvió una respuesta inválida (no es JSON).",
+                  diagnostic: { step: "invalid_python_json", raw_preview: full.slice(0, 300) },
+                })));
+              }
+            }
+          }
+          ctrl.close();
+        } catch (e) {
+          try { ctrl.error(e); } catch {}
+        }
+      })();
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-cache, no-transform",
+      "X-Accel-Buffering": "no",
+    },
+  });
 }
