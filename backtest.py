@@ -188,6 +188,13 @@ def run_backtest(
     # =========================================================================
     cerebro.broker.setcash(initial_capital)
 
+    # Cheat-on-close: market orders fill at the CLOSE of the bar they are placed
+    # on, not at the next bar's open. This eliminates overnight GTC carry-over:
+    # a forced-close or entry placed at 3:55 PM fills same day, so notify_trade()
+    # fires at 09:30 AM the following day and _account_blown is set before any
+    # new entries can open on that day.
+    cerebro.broker.set_coc(True)
+
     # Comisión MNQ
     cerebro.broker.addcommissioninfo(MNQCommInfo())
 

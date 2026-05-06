@@ -223,6 +223,8 @@ class ICTStrategy(bt.Strategy):
         self._account_blown: bool = False
         # Stores the bar time when forced-close was ordered (vs when exit fills)
         self._forced_close_time: Optional[datetime] = None
+        # True while a close() order is in flight — prevents duplicate forced closes
+        self._close_pending: bool = False
 
         # Phase 6.2 — cooldown after a losing trade
         self._cooldown_until_bar: int = 0
@@ -1449,6 +1451,7 @@ class ICTStrategy(bt.Strategy):
         self._exit_reason = ""
         self._protective_fvg = None
         self._thesis = None
+        self._close_pending = False
 
     # =========================================================================
     # MAIN LOOP — next() de Backtrader
@@ -1509,7 +1512,9 @@ class ICTStrategy(bt.Strategy):
             self._reset_entry_state()
 
         # Forced close check: 4:00 PM VET (UTC-4) — no exceptions
-        if self.position and self._should_force_close():
+        # Guard: skip if a close order is already pending (prevents duplicate closes
+        # that would flip the position to short and produce ghost trades).
+        if self.position and self._should_force_close() and not self._close_pending:
             self.log(
                 f"FORCED CLOSE at VET 4:00 PM deadline | "
                 f"ET time: {current_dt.time()}",
@@ -1517,6 +1522,7 @@ class ICTStrategy(bt.Strategy):
             )
             self._exit_reason = "Forced Close (VET 4PM)"
             self._forced_close_time = current_dt
+            self._close_pending = True
             self.close()
             return
 
@@ -1681,6 +1687,7 @@ class ICTStrategy(bt.Strategy):
             self._reset_entry_state()
             self._actual_exit_price = None
             self._forced_close_time = None
+            self._close_pending = False
 
     # =========================================================================
     # STOP — Llamado al finalizar el backtest
