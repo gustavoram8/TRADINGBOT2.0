@@ -88,6 +88,7 @@ class ICTStrategy(bt.Strategy):
         # Risk management
         ("initial_capital", ACCOUNT_BALANCE),
         ("max_daily_loss", MAX_DAILY_LOSS),
+        ("trailing_drawdown_max", TRAILING_DRAWDOWN_MAX),
         ("max_trades_per_day", MAX_TRADES_PER_DAY),
         ("default_contracts", DEFAULT_CONTRACTS),
         ("max_loss_per_trade", MAX_LOSS_PER_TRADE),
@@ -216,6 +217,12 @@ class ICTStrategy(bt.Strategy):
         self._actual_exit_price: Optional[float] = None
         self._recent_swing_high: Optional[float] = None
         self._recent_swing_low: Optional[float] = None
+
+        # Cumulative P&L tracking for total account loss limit
+        self._total_pnl: float = 0.0
+        self._account_blown: bool = False
+        # Stores the bar time when forced-close was ordered (vs when exit fills)
+        self._forced_close_time: Optional[datetime] = None
 
         # Phase 6.2 — cooldown after a losing trade
         self._cooldown_until_bar: int = 0
@@ -1412,6 +1419,17 @@ class ICTStrategy(bt.Strategy):
 
         return current_time >= close_warning
 
+    def _reset_entry_state(self):
+        """Clear all entry metadata. Called when a pending order is cancelled."""
+        self._entry_price = None
+        self._sl_price = None
+        self._tp_price = None
+        self._entry_time = None
+        self._entry_contracts = 0
+        self._exit_reason = ""
+        self._protective_fvg = None
+        self._thesis = None
+
     # =========================================================================
     # MAIN LOOP — next() de Backtrader
     # =========================================================================
@@ -1445,6 +1463,30 @@ class ICTStrategy(bt.Strategy):
             self.fvg_tracker_15m.cleanup_old()
             self.fvg_tracker_5m.cleanup_old()
 
+        # Halt all activity once total account loss limit is reached
+        if self._account_blown:
+            if self.position:
+                self._exit_reason = "Cuenta Quemada"
+                self.close()
+            elif self._pending_order is not None:
+                self.cancel(self._pending_order)
+                self._pending_order = None
+                self._reset_entry_state()
+            return
+
+        # Cancel pending entry orders at EOD to prevent overnight GTC carry-over.
+        # A market order placed near close would fill at 09:30 AM next day,
+        # resulting in H.Entrada = H.Salida = 09:30 AM with SL/TP = 0.
+        if self._pending_order is not None and self._should_force_close():
+            self.log(
+                f"Pending entry CANCELLED at EOD — prevents GTC overnight carry-over | "
+                f"ET time: {current_dt.time()}",
+                "EXIT"
+            )
+            self.cancel(self._pending_order)
+            self._pending_order = None
+            self._reset_entry_state()
+
         # Forced close check: 4:00 PM VET (UTC-4) — no exceptions
         if self.position and self._should_force_close():
             self.log(
@@ -1453,6 +1495,7 @@ class ICTStrategy(bt.Strategy):
                 "EXIT"
             )
             self._exit_reason = "Forced Close (VET 4PM)"
+            self._forced_close_time = current_dt
             self.close()
             return
 
@@ -1557,11 +1600,28 @@ class ICTStrategy(bt.Strategy):
             self.position_sizer.record_trade(pnl_net)
             self.kill_switch.record_trade(pnl_net)
 
+            # Track cumulative account P&L for total trailing-drawdown limit ($2,500)
+            self._total_pnl += pnl_net
+            if not self._account_blown and self._total_pnl <= -abs(self.p.trailing_drawdown_max):
+                self._account_blown = True
+                self.log(
+                    f"CUENTA QUEMADA: P&L acumulado ${self._total_pnl:+,.2f} alcanzó límite "
+                    f"-${abs(self.p.trailing_drawdown_max):,.0f} — backtest detenido",
+                    "RISK"
+                )
+
             # notify_order() already rescued any missing fields from the actual
             # fill. trade.size is 0 for closed trades so we never use it.
             entry_price   = self._entry_price   if self._entry_price   is not None else trade.price
             entry_time    = self._entry_time    if self._entry_time    is not None else self.data_base.datetime.datetime(0)
             num_contracts = self._entry_contracts  # set by _execute_entry or notify_order backup
+
+            # Use the time the forced-close was ORDERED (not when the GTC fills)
+            exit_time = (
+                self._forced_close_time
+                if self._forced_close_time is not None
+                else self.data_base.datetime.datetime(0)
+            )
 
             if self._entry_price is None or num_contracts == 0:
                 self.log(
@@ -1572,7 +1632,7 @@ class ICTStrategy(bt.Strategy):
 
             # Log del trade
             self._trades_log.append({
-                "timestamp": self.data_base.datetime.datetime(0),
+                "timestamp": entry_time,
                 "direction": "long" if trade.long else "short",
                 "entry_price": entry_price,
                 "exit_price": self._actual_exit_price if self._actual_exit_price is not None else self.data_base.close[0],
@@ -1584,7 +1644,7 @@ class ICTStrategy(bt.Strategy):
                 "contracts": num_contracts,
                 "reason": self._exit_reason or "Manual",
                 "entry_time": entry_time,
-                "exit_time": self.data_base.datetime.datetime(0),
+                "exit_time": exit_time,
             })
 
             # Phase 6.2 — start cooldown after a loss to prevent over-reactive flips
@@ -1597,15 +1657,9 @@ class ICTStrategy(bt.Strategy):
                 )
 
             # Reset state
-            self._entry_price = None
-            self._sl_price = None
-            self._tp_price = None
-            self._entry_time = None
-            self._entry_contracts = 0
-            self._exit_reason = ""
-            self._protective_fvg = None
+            self._reset_entry_state()
             self._actual_exit_price = None
-            self._thesis = None
+            self._forced_close_time = None
 
     # =========================================================================
     # STOP — Llamado al finalizar el backtest

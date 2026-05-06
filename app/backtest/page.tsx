@@ -223,17 +223,18 @@ export default function BacktestPage() {
         <>
           {/* ── Cuenta Quemada banner ─────────────────────────────────────── */}
           {(() => {
-            const maxLoss = activeConfig.max_daily_loss ?? 2500;
-            const blown   = m.total_pnl <= -Math.abs(maxLoss);
+            // $2,500 = trailing drawdown limit (prop firm rule, fixed per account)
+            const trailingDrawdownMax = 2500;
+            const blown = m.total_pnl <= -trailingDrawdownMax;
             return blown ? (
               <div className="rounded-xl border border-fin-red bg-fin-red/10 px-5 py-4 flex items-start gap-4">
                 <span className="text-3xl leading-none select-none">🔥</span>
                 <div>
                   <p className="text-base font-bold text-fin-red tracking-wide">CUENTA QUEMADA</p>
                   <p className="text-sm text-text-secondary mt-0.5">
-                    El P&L neto ({fmtUSD(m.total_pnl)}) superó el límite de pérdida configurado
-                    de {fmtUSD(-Math.abs(maxLoss))}. En operación real el bot habría detenido toda
-                    actividad al alcanzar este umbral.
+                    El P&L acumulado ({fmtUSD(m.total_pnl)}) alcanzó el límite de pérdida total
+                    de {fmtUSD(-trailingDrawdownMax)}. El backtest se detuvo en ese punto y no se
+                    abrieron más trades.
                   </p>
                 </div>
               </div>
@@ -522,8 +523,8 @@ export default function BacktestPage() {
                       </td>
                       <td className="py-1.5 pr-3 font-mono">{t.entry_price.toFixed(0)}</td>
                       <td className="py-1.5 pr-3 font-mono">{t.exit_price.toFixed(0)}</td>
-                      <td className="py-1.5 pr-3 font-mono text-text-secondary">{t.sl_price.toFixed(0)}</td>
-                      <td className="py-1.5 pr-3 font-mono text-text-secondary">{t.tp_price.toFixed(0)}</td>
+                      <td className="py-1.5 pr-3 font-mono text-text-secondary">{t.sl_price ? t.sl_price.toFixed(0) : "—"}</td>
+                      <td className="py-1.5 pr-3 font-mono text-text-secondary">{t.tp_price ? t.tp_price.toFixed(0) : "—"}</td>
                       <td className="py-1.5 pr-3 text-center">{t.contracts}</td>
                       <td className={cn("py-1.5 pr-3 font-mono font-medium", pnlColor(t.pnl_net))}>
                         {fmtUSD(t.pnl_net)}
