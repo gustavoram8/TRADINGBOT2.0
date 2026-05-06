@@ -221,6 +221,25 @@ export default function BacktestPage() {
       {/* Results */}
       {m && res && (
         <>
+          {/* ── Cuenta Quemada banner ─────────────────────────────────────── */}
+          {(() => {
+            const maxLoss = activeConfig.max_daily_loss ?? 2500;
+            const blown   = m.total_pnl <= -Math.abs(maxLoss);
+            return blown ? (
+              <div className="rounded-xl border border-fin-red bg-fin-red/10 px-5 py-4 flex items-start gap-4">
+                <span className="text-3xl leading-none select-none">🔥</span>
+                <div>
+                  <p className="text-base font-bold text-fin-red tracking-wide">CUENTA QUEMADA</p>
+                  <p className="text-sm text-text-secondary mt-0.5">
+                    El P&L neto ({fmtUSD(m.total_pnl)}) superó el límite de pérdida configurado
+                    de {fmtUSD(-Math.abs(maxLoss))}. En operación real el bot habría detenido toda
+                    actividad al alcanzar este umbral.
+                  </p>
+                </div>
+              </div>
+            ) : null;
+          })()}
+
           {/* KPIs */}
           <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
             {[

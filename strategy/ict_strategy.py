@@ -1510,9 +1510,31 @@ class ICTStrategy(bt.Strategy):
                     f"Size={order.executed.size} | Cost=${order.executed.comm:.2f}",
                     "ORDER"
                 )
-            # Capture actual fill price for exit trades (position closed after this)
-            if self._entry_price is not None and not self.position:
-                self._actual_exit_price = order.executed.price
+
+            fill_size = abs(int(order.executed.size))
+            fill_price = order.executed.price
+
+            if self.position:
+                # Position is now open → this was an ENTRY fill.
+                # Guarantee entry metadata is set; _execute_entry() may have
+                # run on a previous bar where state was later reset.
+                if self._entry_price is None:
+                    self._entry_price = fill_price
+                    self.log(f"  [backup] entry_price set from fill: {fill_price:.1f}", "WARN")
+                if self._entry_time is None:
+                    self._entry_time = self.data_base.datetime.datetime(0)
+                    self.log(f"  [backup] entry_time set from fill bar", "WARN")
+                if self._entry_contracts == 0:
+                    self._entry_contracts = fill_size
+                    self.log(f"  [backup] entry_contracts set from fill: {fill_size}", "WARN")
+            else:
+                # Position is now flat → this was an EXIT fill.
+                # Capture exit price and rescue contracts for notify_trade().
+                if self._entry_price is not None:
+                    self._actual_exit_price = fill_price
+                if self._entry_contracts == 0 and fill_size > 0:
+                    self._entry_contracts = fill_size
+
             self._pending_order = None
 
         elif order.status in [order.Canceled, order.Margin, order.Rejected]:
@@ -1535,18 +1557,16 @@ class ICTStrategy(bt.Strategy):
             self.position_sizer.record_trade(pnl_net)
             self.kill_switch.record_trade(pnl_net)
 
-            # Backtrader's Trade object always has the true fill data.
-            # Use it as a guaranteed fallback when our manual tracking lost
-            # the values (e.g. forced-close timing edge cases on 15m base feed).
-            entry_price  = self._entry_price  if self._entry_price  is not None else trade.price
-            entry_time   = self._entry_time   if self._entry_time   is not None else self.data_base.datetime.datetime(0)
-            num_contracts = self._entry_contracts if self._entry_contracts > 0 else abs(int(trade.size))
+            # notify_order() already rescued any missing fields from the actual
+            # fill. trade.size is 0 for closed trades so we never use it.
+            entry_price   = self._entry_price   if self._entry_price   is not None else trade.price
+            entry_time    = self._entry_time    if self._entry_time    is not None else self.data_base.datetime.datetime(0)
+            num_contracts = self._entry_contracts  # set by _execute_entry or notify_order backup
 
-            if self._entry_price is None or self._entry_contracts == 0:
+            if self._entry_price is None or num_contracts == 0:
                 self.log(
-                    f"WARN: entry metadata missing — using trade object fallback: "
-                    f"price={entry_price:.1f} size={num_contracts} "
-                    f"(manual was price={self._entry_price} size={self._entry_contracts})",
+                    f"WARN: entry metadata still missing at close — "
+                    f"price={entry_price} contracts={num_contracts}",
                     "WARN",
                 )
 

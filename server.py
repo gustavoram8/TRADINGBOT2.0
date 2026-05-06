@@ -174,21 +174,31 @@ def _pipeline_sync(req: BacktestRequest) -> dict:
         except FuturesTimeoutError:
             log.warning("5m feed download timed out — skipped")
 
-    # Filter all feeds to regular NYSE trading hours (9:30 AM–4:00 PM ET).
-    # NQ=F yfinance data includes extended-hours bars (pre/post market) which
-    # cause spurious trades and corrupt the forced-close logic.
-    # filter_trading_hours() defaults to UTC 12:30–20:00 = 8:30 AM–4:00 PM ET
-    # during EDT, which covers the full NYSE session with a small pre-market
-    # buffer so the first bar of the day is always present.
+    # Filter all feeds to Regular Trading Hours (RTH): 9:30 AM–4:00 PM ET.
+    # NQ=F from yfinance includes pre/post-market bars that cause orders to
+    # fill at 8:30 AM (wrong day) and trigger spurious forced-close sequences.
+    # We filter directly on ET time because download_data() converts to ET.
+    def _rth_filter(df: "pd.DataFrame") -> "pd.DataFrame":
+        if df is None or df.empty:
+            return df
+        import pandas as _pd
+        t = df.index.time
+        mask = (
+            (t >= _pd.Timestamp("09:30").time()) &
+            (t <  _pd.Timestamp("16:01").time()) &
+            (df.index.dayofweek < 5)
+        )
+        return df.loc[mask]
+
     try:
-        df_base = filter_trading_hours(df_base)
+        df_base = _rth_filter(df_base)
         if df_15m is not None and not df_15m.empty:
-            df_15m = filter_trading_hours(df_15m)
+            df_15m = _rth_filter(df_15m)
         if df_5m is not None and not df_5m.empty:
-            df_5m = filter_trading_hours(df_5m)
-        log.info("Trading hours filter applied to all feeds")
+            df_5m = _rth_filter(df_5m)
+        log.info("RTH filter applied — pre/post-market bars removed")
     except Exception as exc:
-        log.warning("Could not apply trading hours filter: %s — skipping", exc)
+        log.warning("Could not apply RTH filter: %s — skipping", exc)
 
     # Fallback: 15m returned no data (date range older than 60 days)
     if (df_base is None or df_base.empty) and interval == "15m":
