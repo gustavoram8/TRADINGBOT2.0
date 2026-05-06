@@ -782,6 +782,9 @@ class ICTStrategy(bt.Strategy):
         No hay lock de dirección — el scorer decide basándose en
         la suma de ingredientes ICT (sweep + CHoCH + FVG path + targets).
         """
+        if self._account_blown:
+            return
+
         if self.position:
             return
 
@@ -861,6 +864,9 @@ class ICTStrategy(bt.Strategy):
         structural bias. SL = FVG boundary ±2pts (max 45pts). TP = nearest
         liquidity level (min 25pts away) or synthetic 1:1.
         """
+        if self._account_blown:
+            return
+
         if self.data_5m is None:
             return
 
@@ -1083,14 +1089,23 @@ class ICTStrategy(bt.Strategy):
         if sl_points <= 0 or tp_points <= 0:
             return
 
-        # Reject if the logically-placed SL makes even 1 contract exceed the
-        # per-trade loss limit.  The SL is set by ICT structure — we never
-        # shrink it to fit a dollar target; instead we skip the trade.
-        if sl_points * POINT_VALUE > self.p.max_loss_per_trade:
+        # Per-trade risk cap: a single trade can never lose more than the smaller
+        # of (a) max_loss_per_trade, or (b) remaining headroom before account blow.
+        # This ensures one trade cannot push the account past the drawdown limit.
+        remaining_headroom = abs(self.p.trailing_drawdown_max) - abs(self._total_pnl)
+        effective_max_risk = max(0.0, min(self.p.max_loss_per_trade, remaining_headroom))
+
+        if effective_max_risk <= 0:
+            self.log("  RECHAZADO: Sin margen de pérdida disponible (cuenta al límite)", "WARN")
+            self._rejection_counts["entry_sl_limit"] += 1
+            return
+
+        # Reject if even 1 contract's SL exceeds available headroom per contract
+        if sl_points * POINT_VALUE > effective_max_risk:
             self.log(
-                f"  {direction.upper()} RECHAZADO: SL lógico ({sl_points:.1f} pts × "
-                f"${POINT_VALUE}/pt = ${sl_points * POINT_VALUE:.0f}) supera límite "
-                f"${self.p.max_loss_per_trade:.0f}/trade", "WARN"
+                f"  {direction.upper()} RECHAZADO: SL ({sl_points:.1f} pts × "
+                f"${POINT_VALUE}/pt = ${sl_points * POINT_VALUE:.0f}) supera headroom "
+                f"${effective_max_risk:.0f}", "WARN"
             )
             self._rejection_counts["entry_sl_limit"] += 1
             return
@@ -1099,6 +1114,11 @@ class ICTStrategy(bt.Strategy):
         ks_max = self.kill_switch.get_max_contracts()
         if ks_max is not None:
             num_contracts = min(num_contracts, ks_max)
+
+        # Cap contracts so total SL loss ≤ effective_max_risk
+        if sl_points * POINT_VALUE * num_contracts > effective_max_risk:
+            num_contracts = max(1, int(effective_max_risk / (sl_points * POINT_VALUE)))
+
         if num_contracts <= 0:
             self._rejection_counts["no_contracts"] += 1
             return
@@ -1442,6 +1462,18 @@ class ICTStrategy(bt.Strategy):
         if current_dt.weekday() >= 5:
             return
 
+        # ── ACCOUNT BLOWN: check FIRST, before any FVG / entry logic ─────────
+        # Must run before _update_fvgs() so 5m entries don't slip through.
+        if self._account_blown:
+            if self.position:
+                self._exit_reason = "Cuenta Quemada"
+                self.close()
+            elif self._pending_order is not None:
+                self.cancel(self._pending_order)
+                self._pending_order = None
+                self._reset_entry_state()
+            return
+
         # Actualizar FVGs y liquidez
         self._update_fvgs()
         self._update_liquidity()
@@ -1462,17 +1494,6 @@ class ICTStrategy(bt.Strategy):
             self.fvg_tracker_4h.cleanup_old()
             self.fvg_tracker_15m.cleanup_old()
             self.fvg_tracker_5m.cleanup_old()
-
-        # Halt all activity once total account loss limit is reached
-        if self._account_blown:
-            if self.position:
-                self._exit_reason = "Cuenta Quemada"
-                self.close()
-            elif self._pending_order is not None:
-                self.cancel(self._pending_order)
-                self._pending_order = None
-                self._reset_entry_state()
-            return
 
         # Cancel pending entry orders at EOD to prevent overnight GTC carry-over.
         # A market order placed near close would fill at 09:30 AM next day,

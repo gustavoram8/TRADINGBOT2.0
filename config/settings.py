@@ -38,7 +38,7 @@ ROUND_TRIP_COST = (COMMISSION_PER_SIDE * 2) + (SLIPPAGE_USD * 2)  # ~$2.24
 # GESTIÓN DE RIESGO
 # =============================================================================
 MAX_DAILY_LOSS = 550.0         # USD — kill switch diario
-MAX_LOSS_PER_TRADE = 600.0     # USD — stop loss máximo por trade
+MAX_LOSS_PER_TRADE = 2_500.0   # USD — máximo riesgo por trade (prop firm rule)
 MIN_GAIN_PER_TRADE = 200.0     # USD — TP mínimo para que un trade valga la pena
 MAX_TRADES_PER_DAY = 2
 
