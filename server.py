@@ -138,10 +138,12 @@ def _pipeline_sync(req: BacktestRequest) -> dict:
         except Exception as exc:
             return exc
 
-    with ThreadPoolExecutor(max_workers=3) as pool:
+    with ThreadPoolExecutor(max_workers=5) as pool:
         f_base = pool.submit(_fetch, interval, req.start_date, req.end_date)
         f_15m  = pool.submit(_fetch, "15m") if interval != "15m" else None
         f_5m   = pool.submit(_fetch, "5m")
+        f_2m   = pool.submit(_fetch, "2m")
+        f_1m   = pool.submit(_fetch, "1m")
 
         try:
             _res_base = f_base.result(timeout=_DOWNLOAD_TIMEOUT)
@@ -156,6 +158,8 @@ def _pipeline_sync(req: BacktestRequest) -> dict:
 
         df_15m: Optional[object] = None
         df_5m:  Optional[object] = None
+        df_2m:  Optional[object] = None
+        df_1m:  Optional[object] = None
         if f_15m is not None:
             try:
                 _r15 = f_15m.result(timeout=_DOWNLOAD_TIMEOUT)
@@ -173,6 +177,22 @@ def _pipeline_sync(req: BacktestRequest) -> dict:
                 log.warning("Could not fetch 5m feed: %s", _r5)
         except FuturesTimeoutError:
             log.warning("5m feed download timed out — skipped")
+        try:
+            _r2m = f_2m.result(timeout=_DOWNLOAD_TIMEOUT)
+            if not isinstance(_r2m, Exception) and _r2m is not None and not _r2m.empty:
+                df_2m = _r2m
+            elif isinstance(_r2m, Exception):
+                log.warning("Could not fetch 2m feed: %s", _r2m)
+        except FuturesTimeoutError:
+            log.warning("2m feed download timed out — skipped")
+        try:
+            _r1m = f_1m.result(timeout=_DOWNLOAD_TIMEOUT)
+            if not isinstance(_r1m, Exception) and _r1m is not None and not _r1m.empty:
+                df_1m = _r1m
+            elif isinstance(_r1m, Exception):
+                log.warning("Could not fetch 1m feed: %s", _r1m)
+        except FuturesTimeoutError:
+            log.warning("1m feed download timed out — skipped")
 
     # Filter all feeds to Regular Trading Hours (RTH): 9:30 AM–4:00 PM ET.
     # NQ=F from yfinance includes pre/post-market bars that cause orders to
@@ -196,6 +216,10 @@ def _pipeline_sync(req: BacktestRequest) -> dict:
             df_15m = _rth_filter(df_15m)
         if df_5m is not None and not df_5m.empty:
             df_5m = _rth_filter(df_5m)
+        if df_2m is not None and not df_2m.empty:
+            df_2m = _rth_filter(df_2m)
+        if df_1m is not None and not df_1m.empty:
+            df_1m = _rth_filter(df_1m)
         log.info("RTH filter applied — pre/post-market bars removed")
     except Exception as exc:
         log.warning("Could not apply RTH filter: %s — skipping", exc)
@@ -252,6 +276,8 @@ def _pipeline_sync(req: BacktestRequest) -> dict:
             strategy_params=strategy_params,
             df_15m=df_15m,
             df_5m=df_5m,
+            df_2m=df_2m,
+            df_1m=df_1m,
             base_tf=interval,
         )
     except Exception as e:
