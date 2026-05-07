@@ -1066,18 +1066,16 @@ class ICTStrategy(bt.Strategy):
                 if tracker is None:
                     continue
                 for fvg in tracker.active_bullish:
-                    if (fvg.bottom - TOL <= trigger_fvg.bottom
-                            and fvg.top + TOL >= trigger_fvg.top
-                            and fvg.bottom - TOL <= price <= fvg.top + TOL * 3):
+                    # Price is inside (or very close to) a higher-TF bullish FVG
+                    if fvg.bottom - TOL <= price <= fvg.top + TOL * 3:
                         return fvg
         else:
             for tracker, _ in trackers:
                 if tracker is None:
                     continue
                 for fvg in tracker.active_bearish:
-                    if (fvg.bottom - TOL <= trigger_fvg.bottom
-                            and fvg.top + TOL >= trigger_fvg.top
-                            and fvg.bottom - TOL * 3 <= price <= fvg.top + TOL):
+                    # Price is inside (or very close to) a higher-TF bearish FVG
+                    if fvg.bottom - TOL * 3 <= price <= fvg.top + TOL:
                         return fvg
         return None
 
@@ -1213,9 +1211,13 @@ class ICTStrategy(bt.Strategy):
         if self._session_for_dt(trigger_dt) not in ("ny_am", "ny_pm"):
             return
 
-        force_close_et = self._get_vet_close_in_et(trigger_dt)
-        cutoff_min = force_close_et.hour * 60 + force_close_et.minute - 15
-        if trigger_dt.time() >= dtime(cutoff_min // 60, cutoff_min % 60):
+        # Use base bar time (same reference as _should_force_close) to avoid
+        # timezone mismatch between 1m trigger_dt and ET-based force-close cutoff.
+        # 30-minute buffer ensures the trade has runway for SL/TP to be hit.
+        _base_dt = self.data_base.datetime.datetime(0)
+        _force_close_et = self._get_vet_close_in_et(_base_dt)
+        _cutoff_min = _force_close_et.hour * 60 + _force_close_et.minute - 30
+        if _base_dt.time() >= dtime(_cutoff_min // 60, _cutoff_min % 60):
             return
 
         if self._bar_count < self._cooldown_until_bar:
@@ -1233,6 +1235,8 @@ class ICTStrategy(bt.Strategy):
 
         # ── LONG: bearish micro-TF FVG broken → price broke resistance ───────
         for broken_ts in newly_broken_bear:
+            if self.position or self._pending_order is not None:
+                return
             if broken_ts in entries_used:
                 continue
             broken_fvg = next(
@@ -1322,6 +1326,8 @@ class ICTStrategy(bt.Strategy):
 
         # ── SHORT: bullish micro-TF FVG broken → price broke support ─────────
         for broken_ts in newly_broken_bull:
+            if self.position or self._pending_order is not None:
+                return
             if broken_ts in entries_used:
                 continue
             broken_fvg = next(
