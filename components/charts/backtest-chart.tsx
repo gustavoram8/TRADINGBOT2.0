@@ -185,7 +185,10 @@ export function BacktestChart({
         });
         markers.push({
           time: exitTs,
-          position: long ? "aboveBar" : "belowBar",
+          // Win exits in the "good" direction, loss exits where the SL was hit:
+          // LONG win → above bar (price went up), LONG loss → below bar (SL below)
+          // SHORT win → below bar (price went down), SHORT loss → above bar (SL above)
+          position: (long === win) ? "aboveBar" : "belowBar",
           shape: win ? "circle" : "square",
           color: win ? "#26a69a" : "#ef5350",
           text: `${win ? "+" : ""}${t.pnl_net.toFixed(0)}`,
