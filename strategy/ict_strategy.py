@@ -227,6 +227,10 @@ class ICTStrategy(bt.Strategy):
         self._1m_fvg_entries_used: set = set()  # FVG timestamps used for 1m PDF entries
         self._last_2m_len: int = 0
         self._last_1m_len: int = 0
+        # SMT (Smart Money Trap) levels detected on 2m bars.
+        # Each entry: {"price": float, "direction": "bullish"|"bearish",
+        #              "timestamp": pd.Timestamp, "broken": bool}
+        self._smt_2m_levels: List[Dict] = []
         self._ny_am_open_set: bool = False
         self._tp_price: Optional[float] = None
         self._sl_price: Optional[float] = None
@@ -715,6 +719,7 @@ class ICTStrategy(bt.Strategy):
                 h0_2 = self.data_2m.high[0]
                 l2_2 = self.data_2m.low[-2]
                 l0_2 = self.data_2m.low[0]
+                c0_2 = self.data_2m.close[0]
                 ts_2 = pd.Timestamp(self.data_2m.datetime.datetime(0))
                 bar_2 = self._last_2m_len + new_2m
                 if h2_2 < l0_2:
@@ -727,10 +732,88 @@ class ICTStrategy(bt.Strategy):
                         fvg_type=FVGType.BEARISH, top=l2_2, bottom=h0_2,
                         timestamp=ts_2, timeframe="2m", candle_idx=bar_2,
                     )])
-                self.fvg_tracker_2m.update(
-                    self.data_2m.high[0], self.data_2m.low[0], self.data_2m.close[0]
-                )
+                self.fvg_tracker_2m.update(h0_2, l0_2, c0_2)
                 self._last_2m_len += new_2m
+
+                # ── SMT detection on 2m bars ──────────────────────────────────
+                # A bullish SMT forms when the current 2m bar's low is within
+                # SMT_TOL pts of a previous 2m bar's low (last 30 bars) AND
+                # both bars CLOSED above that low → price failed twice to break down.
+                # A bearish SMT mirrors this with highs.
+                # Invalidate existing SMTs when price closes through them.
+                SMT_TOL = 5.0    # pts — how close the two lows/highs must be
+                SMT_LOOKBACK = min(30, len(self.data_2m) - 1)
+
+                # Invalidate broken SMT levels
+                for smt in self._smt_2m_levels:
+                    if smt["broken"]:
+                        continue
+                    if smt["direction"] == "bullish" and c0_2 < smt["price"] - SMT_TOL:
+                        smt["broken"] = True
+                    elif smt["direction"] == "bearish" and c0_2 > smt["price"] + SMT_TOL:
+                        smt["broken"] = True
+
+                # Detect new bullish SMT: current low ≈ a recent low, close above both
+                if c0_2 > l0_2 + 1.0:  # current bar closed above its own low
+                    for i in range(1, SMT_LOOKBACK):
+                        prev_low  = self.data_2m.low[-i]
+                        prev_close = self.data_2m.close[-i]
+                        if abs(l0_2 - prev_low) <= SMT_TOL and prev_close > prev_low + 1.0:
+                            smt_price = (l0_2 + prev_low) / 2.0
+                            # Only register if not already tracked near this level
+                            already = any(
+                                s["direction"] == "bullish"
+                                and abs(s["price"] - smt_price) <= SMT_TOL * 2
+                                and not s["broken"]
+                                for s in self._smt_2m_levels
+                            )
+                            if not already:
+                                self._smt_2m_levels.append({
+                                    "price":     smt_price,
+                                    "direction": "bullish",
+                                    "timestamp": ts_2,
+                                    "broken":    False,
+                                })
+                                self.log(
+                                    f"SMT BULLISH 2m @ {smt_price:.0f} "
+                                    f"(lows: {prev_low:.0f} bar-{i} ↔ {l0_2:.0f} now)",
+                                    "SMT",
+                                )
+                            break
+
+                # Detect new bearish SMT: current high ≈ a recent high, close below both
+                if c0_2 < h0_2 - 1.0:
+                    for i in range(1, SMT_LOOKBACK):
+                        prev_high  = self.data_2m.high[-i]
+                        prev_close = self.data_2m.close[-i]
+                        if abs(h0_2 - prev_high) <= SMT_TOL and prev_close < prev_high - 1.0:
+                            smt_price = (h0_2 + prev_high) / 2.0
+                            already = any(
+                                s["direction"] == "bearish"
+                                and abs(s["price"] - smt_price) <= SMT_TOL * 2
+                                and not s["broken"]
+                                for s in self._smt_2m_levels
+                            )
+                            if not already:
+                                self._smt_2m_levels.append({
+                                    "price":     smt_price,
+                                    "direction": "bearish",
+                                    "timestamp": ts_2,
+                                    "broken":    False,
+                                })
+                                self.log(
+                                    f"SMT BEARISH 2m @ {smt_price:.0f} "
+                                    f"(highs: {prev_high:.0f} bar-{i} ↔ {h0_2:.0f} now)",
+                                    "SMT",
+                                )
+                            break
+
+                # Prune stale SMTs (older than 60 bars of 2m ≈ 2 hours)
+                self._smt_2m_levels = [
+                    s for s in self._smt_2m_levels
+                    if not s["broken"]
+                    and (ts_2 - s["timestamp"]).total_seconds() <= 7200
+                ]
 
         # ── 1m bars ───────────────────────────────────────────────────────────
         if self.data_1m is not None:
@@ -1075,6 +1158,28 @@ class ICTStrategy(bt.Strategy):
                     return best.bottom, f"Bull FVG {tf} ({best.bottom:.0f}–{best.top:.0f})"
         return None, ""
 
+    def _find_smt_in_container(
+        self, direction: str, container: "FairValueGap"
+    ) -> "Optional[Dict]":
+        """
+        Return the most recent valid 2m SMT level whose price falls inside
+        the container FVG, or None.
+
+        direction = "bullish" → look for a bullish SMT (two held lows)
+                                that supports a LONG entry inside the container
+        direction = "bearish" → bearish SMT (two held highs) for SHORT
+        """
+        TOL = 10.0
+        candidates = [
+            s for s in self._smt_2m_levels
+            if not s["broken"]
+            and s["direction"] == direction
+            and container.bottom - TOL <= s["price"] <= container.top + TOL
+        ]
+        if not candidates:
+            return None
+        return max(candidates, key=lambda s: s["timestamp"])
+
     def _check_entry_pdf_trigger(
         self,
         trigger_close: float,
@@ -1166,13 +1271,21 @@ class ICTStrategy(bt.Strategy):
                 label=tp_label,
             )
 
+            # SMT confirmation: bullish 2m SMT inside the container → +1.5 score
+            smt = self._find_smt_in_container("bullish", container)
+            smt_score = 1.5 if smt is not None else 0.0
+            smt_reason = (
+                f"SMT bullish 2m @ {smt['price']:.0f} dentro del container → +1.5"
+                if smt is not None else ""
+            )
+
             bd = ScoreBreakdown("long")
             bd.protective_fvg   = prot_fvg
             bd.target_level     = target_liq
             bd.has_choch        = True
             bd.has_protective_fvg = True
             bd.rr_filter_passed = True
-            bd.total_score      = 8.0
+            bd.total_score      = 8.0 + smt_score
             bd.reasons = [
                 f"PDF gatillo ({trigger_tf}): bear FVG {broken_fvg.bottom:.0f}–"
                 f"{broken_fvg.top:.0f} roto @ {trigger_close:.0f}",
@@ -1182,6 +1295,8 @@ class ICTStrategy(bt.Strategy):
                 f"{prot_fvg.bottom:.0f}–{prot_fvg.top:.0f}",
                 f"TP: {tp_label} @ {tp_price:.0f} | SL={sl_price:.0f} ({sl_dist:.0f}pts)",
             ]
+            if smt_reason:
+                bd.reasons.append(smt_reason)
 
             entries_used.add(broken_ts)
             self._execute_entry(bd, trigger_close)
@@ -1235,13 +1350,20 @@ class ICTStrategy(bt.Strategy):
                 label=tp_label,
             )
 
+            smt = self._find_smt_in_container("bearish", container)
+            smt_score = 1.5 if smt is not None else 0.0
+            smt_reason = (
+                f"SMT bearish 2m @ {smt['price']:.0f} dentro del container → +1.5"
+                if smt is not None else ""
+            )
+
             bd = ScoreBreakdown("short")
             bd.protective_fvg   = prot_fvg
             bd.target_level     = target_liq
             bd.has_choch        = True
             bd.has_protective_fvg = True
             bd.rr_filter_passed = True
-            bd.total_score      = 8.0
+            bd.total_score      = 8.0 + smt_score
             bd.reasons = [
                 f"PDF gatillo ({trigger_tf}): bull FVG {broken_fvg.bottom:.0f}–"
                 f"{broken_fvg.top:.0f} roto @ {trigger_close:.0f}",
@@ -1251,6 +1373,8 @@ class ICTStrategy(bt.Strategy):
                 f"{prot_fvg.bottom:.0f}–{prot_fvg.top:.0f}",
                 f"TP: {tp_label} @ {tp_price:.0f} | SL={sl_price:.0f} ({sl_dist:.0f}pts)",
             ]
+            if smt_reason:
+                bd.reasons.append(smt_reason)
 
             entries_used.add(broken_ts)
             self._execute_entry(bd, trigger_close)
