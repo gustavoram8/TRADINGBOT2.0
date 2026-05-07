@@ -694,8 +694,9 @@ class ICTStrategy(bt.Strategy):
                 # Phase 6.4 — granular intra-bar scoring on each new 5m close
                 self._maybe_log_5m_scoring()
 
-                # PDF trigger on 5m bars — only when no 1m feed available
-                if not self.position and self._pending_order is None and self.data_1m is None:
+                # PDF trigger on 5m bars — always active (not just when 1m is absent)
+                # 1m trigger is higher-precision; position/pending checks prevent double entry.
+                if not self.position and self._pending_order is None:
                     _post_5m_bear = {f.timestamp for f in self.fvg_tracker_5m._active_fvgs if f.fvg_type == FVGType.BEARISH}
                     _post_5m_bull = {f.timestamp for f in self.fvg_tracker_5m._active_fvgs if f.fvg_type == FVGType.BULLISH}
                     _new_bear_broken = _pre_5m_bear - _post_5m_bear

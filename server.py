@@ -140,10 +140,10 @@ def _pipeline_sync(req: BacktestRequest) -> dict:
 
     with ThreadPoolExecutor(max_workers=5) as pool:
         f_base = pool.submit(_fetch, interval, req.start_date, req.end_date)
-        f_15m  = pool.submit(_fetch, "15m") if interval != "15m" else None
-        f_5m   = pool.submit(_fetch, "5m")
-        f_2m   = pool.submit(_fetch, "2m")
-        f_1m   = pool.submit(_fetch, "1m")
+        f_15m  = pool.submit(_fetch, "15m", req.start_date, req.end_date) if interval != "15m" else None
+        f_5m   = pool.submit(_fetch, "5m",  req.start_date, req.end_date)
+        f_2m   = pool.submit(_fetch, "2m",  req.start_date, req.end_date)
+        f_1m   = pool.submit(_fetch, "1m",  req.start_date, req.end_date)
 
         try:
             _res_base = f_base.result(timeout=_DOWNLOAD_TIMEOUT)
