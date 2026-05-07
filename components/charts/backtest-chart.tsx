@@ -25,24 +25,12 @@ const TF_LABEL: Record<string, string> = {
   "4h": "4H", "1h": "1H", "15m": "15M", "5m": "5M", "1m": "1M",
 };
 
-const TF_ALPHA: Record<string, number> = {
-  "4h": 0.85, "1h": 0.70, "15m": 0.50, "5m": 0.35, "1m": 0.20,
-};
-
-const LIQ_COLOR: Record<string, string> = {
-  PDH: "#2979FF", PDL: "#2979FF",
-  EQH: "#FF9800", EQL: "#FF9800",
-  ATH: "#AB47BC", ATL: "#AB47BC",
-  swing_high: "#546E7A", swing_low: "#546E7A",
-};
-
 export function BacktestChart({
   ohlcData,
   ohlcByTimeframe,
   trades = [],
   fvgZones = [],
   liquidityLevels = [],
-  sweeps = [],
   height = 480,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -115,16 +103,21 @@ export function BacktestChart({
         }))
       );
 
-      // ── FVG zones (top + bottom price lines) ─────────────────
-      for (const fvg of fvgZones.slice(-50)) {
-        if (fvg.filled) continue;
+      // ── FVG zones — only unfilled, last 15, de mayor a menor TF ─
+      const tfPriority: Record<string, number> = { "4h": 0, "1h": 1, "15m": 2, "5m": 3, "1m": 4 };
+      const visibleFvgs = fvgZones
+        .filter((f) => !f.filled)
+        .sort((a, b) => (tfPriority[a.timeframe] ?? 5) - (tfPriority[b.timeframe] ?? 5))
+        .slice(0, 15);
+
+      for (const fvg of visibleFvgs) {
         const bull = fvg.fvg_type === "bullish";
-        const alpha = TF_ALPHA[fvg.timeframe] ?? 0.55;
-        const color = bull
-          ? `rgba(38,166,154,${alpha})`
-          : `rgba(239,83,80,${alpha})`;
-        const tf = TF_LABEL[fvg.timeframe] ?? fvg.timeframe.toUpperCase();
-        const label = `${tf} ${bull ? "BFVG" : "BRVG"}`;
+        const tfLabel = TF_LABEL[fvg.timeframe] ?? fvg.timeframe.toUpperCase();
+        // More opaque for higher timeframes
+        const alpha = tfPriority[fvg.timeframe] !== undefined
+          ? 0.8 - tfPriority[fvg.timeframe] * 0.12
+          : 0.4;
+        const color = bull ? `rgba(38,166,154,${alpha})` : `rgba(239,83,80,${alpha})`;
 
         candles.createPriceLine({
           price: fvg.high,
@@ -132,7 +125,7 @@ export function BacktestChart({
           lineWidth: 1,
           lineStyle: LineStyle.Dashed,
           axisLabelVisible: false,
-          title: label,
+          title: `${tfLabel} ${bull ? "BFVG" : "BRVG"}`,
         });
         candles.createPriceLine({
           price: fvg.low,
@@ -144,21 +137,32 @@ export function BacktestChart({
         });
       }
 
-      // ── Liquidity levels ─────────────────────────────────────
-      for (const liq of liquidityLevels.slice(-20)) {
-        const color = LIQ_COLOR[liq.level_type] ?? "#546E7A";
-        const swept = liq.swept ?? false;
+      // ── Liquidity levels — only the most relevant (max 8) ────
+      const importantTypes = ["PDH", "PDL", "ATH", "ATL"];
+      const liqColors: Record<string, string> = {
+        PDH: "#2979FF", PDL: "#2979FF",
+        EQH: "#FF9800", EQL: "#FF9800",
+        ATH: "#AB47BC", ATL: "#AB47BC",
+        swing_high: "#546E7A", swing_low: "#546E7A",
+      };
+      const visibleLiq = [
+        ...liquidityLevels.filter((l) => importantTypes.includes(l.level_type) && !(l.swept)),
+        ...liquidityLevels.filter((l) => !importantTypes.includes(l.level_type) && !(l.swept)).slice(-4),
+      ].slice(0, 8);
+
+      for (const liq of visibleLiq) {
+        const color = liqColors[liq.level_type] ?? "#546E7A";
         candles.createPriceLine({
           price: liq.price,
-          color: swept ? "#546E7A" : color,
-          lineWidth: swept ? 1 : 2,
-          lineStyle: swept ? LineStyle.Dotted : LineStyle.Solid,
+          color,
+          lineWidth: 2,
+          lineStyle: LineStyle.Solid,
           axisLabelVisible: true,
-          title: `${liq.level_type}${swept ? " ✓" : ""}`,
+          title: liq.level_type,
         });
       }
 
-      // ── Trade + sweep markers ─────────────────────────────────
+      // ── Trade markers + SL/TP lines ───────────────────────────
       type Marker = {
         time: UTCTimestamp;
         position: "aboveBar" | "belowBar" | "inBar";
@@ -175,6 +179,7 @@ export function BacktestChart({
         const entryTs = toTs(new Date(t.entry_time).getTime());
         const exitTs = toTs(new Date(t.exit_time).getTime());
 
+        // Entry marker
         markers.push({
           time: entryTs,
           position: long ? "belowBar" : "aboveBar",
@@ -183,29 +188,41 @@ export function BacktestChart({
           text: `${long ? "L" : "S"} @${t.entry_price.toFixed(0)}`,
           size: 2,
         });
+
+        // Exit marker — positioned where the exit actually was
+        // WIN: exits in the profitable direction; LOSS: exits where SL was
         markers.push({
           time: exitTs,
-          // Win exits in the "good" direction, loss exits where the SL was hit:
-          // LONG win → above bar (price went up), LONG loss → below bar (SL below)
-          // SHORT win → below bar (price went down), SHORT loss → above bar (SL above)
           position: (long === win) ? "aboveBar" : "belowBar",
           shape: win ? "circle" : "square",
           color: win ? "#26a69a" : "#ef5350",
           text: `${win ? "+" : ""}${t.pnl_net.toFixed(0)}`,
           size: 1.5,
         });
-      }
 
-      for (const sw of sweeps) {
-        const buyside = sw.sweep_type === "buyside";
-        markers.push({
-          time: toTs(new Date(sw.timestamp).getTime()),
-          position: buyside ? "aboveBar" : "belowBar",
-          shape: buyside ? "arrowDown" : "arrowUp",
-          color: "#FF9800",
-          text: buyside ? "BSL" : "SSL",
-          size: 1,
-        });
+        // SL line (red dashed)
+        if (t.sl_price) {
+          candles.createPriceLine({
+            price: t.sl_price,
+            color: "rgba(239,83,80,0.6)",
+            lineWidth: 1,
+            lineStyle: LineStyle.Dotted,
+            axisLabelVisible: false,
+            title: "SL",
+          });
+        }
+
+        // TP line (green dashed)
+        if (t.tp_price) {
+          candles.createPriceLine({
+            price: t.tp_price,
+            color: "rgba(38,166,154,0.6)",
+            lineWidth: 1,
+            lineStyle: LineStyle.Dotted,
+            axisLabelVisible: false,
+            title: "TP",
+          });
+        }
       }
 
       markers.sort((a, b) => a.time - b.time);
@@ -229,7 +246,7 @@ export function BacktestChart({
       resizeObs?.disconnect();
       chartInst?.remove();
     };
-  }, [activeOhlc, trades, fvgZones, liquidityLevels, sweeps, height]);
+  }, [activeOhlc, trades, fvgZones, liquidityLevels, height]);
 
   if (activeOhlc.length === 0) {
     return (
