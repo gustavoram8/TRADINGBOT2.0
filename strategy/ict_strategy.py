@@ -703,6 +703,7 @@ class ICTStrategy(bt.Strategy):
                     if _new_bear_broken or _new_bull_broken:
                         self._check_entry_pdf_trigger(
                             trigger_close=self.data_5m.close[0],
+                            trigger_open=self.data_5m.open[0],
                             trigger_dt=self.data_5m.datetime.datetime(0),
                             trigger_tf="5m",
                             newly_broken_bear=_new_bear_broken,
@@ -853,6 +854,7 @@ class ICTStrategy(bt.Strategy):
                     if _new_1m_bear_broken or _new_1m_bull_broken:
                         self._check_entry_pdf_trigger(
                             trigger_close=self.data_1m.close[0],
+                            trigger_open=self.data_1m.open[0],
                             trigger_dt=self.data_1m.datetime.datetime(0),
                             trigger_tf="1m",
                             newly_broken_bear=_new_1m_bear_broken,
@@ -1183,6 +1185,7 @@ class ICTStrategy(bt.Strategy):
     def _check_entry_pdf_trigger(
         self,
         trigger_close: float,
+        trigger_open: float,
         trigger_dt: "datetime",
         trigger_tf: str,
         newly_broken_bear: set,
@@ -1199,6 +1202,9 @@ class ICTStrategy(bt.Strategy):
 
         SL  = protective FVG bottom/top ± 5 pts buffer
         TP  = nearest unmitigated opposing FVG; fallback to liquidity levels
+
+        CISD bonus (+1.0): the breaking candle opened on the wrong side of the FVG
+        boundary (Change in State of Delivery), confirming a shift in price delivery.
         """
         if self._account_blown:
             return
@@ -1271,6 +1277,14 @@ class ICTStrategy(bt.Strategy):
                 label=tp_label,
             )
 
+            # CISD: breaking candle opened below FVG top → Change in State of Delivery
+            cisd_long = trigger_open < broken_fvg.top
+            cisd_score = 1.0 if cisd_long else 0.0
+            cisd_reason = (
+                f"CISD bullish: vela abrió {trigger_open:.0f} < FVG top {broken_fvg.top:.0f} → +1.0"
+                if cisd_long else ""
+            )
+
             # SMT confirmation: bullish 2m SMT inside the container → +1.5 score
             smt = self._find_smt_in_container("bullish", container)
             smt_score = 1.5 if smt is not None else 0.0
@@ -1285,7 +1299,7 @@ class ICTStrategy(bt.Strategy):
             bd.has_choch        = True
             bd.has_protective_fvg = True
             bd.rr_filter_passed = True
-            bd.total_score      = 8.0 + smt_score
+            bd.total_score      = 8.0 + cisd_score + smt_score
             bd.reasons = [
                 f"PDF gatillo ({trigger_tf}): bear FVG {broken_fvg.bottom:.0f}–"
                 f"{broken_fvg.top:.0f} roto @ {trigger_close:.0f}",
@@ -1295,6 +1309,8 @@ class ICTStrategy(bt.Strategy):
                 f"{prot_fvg.bottom:.0f}–{prot_fvg.top:.0f}",
                 f"TP: {tp_label} @ {tp_price:.0f} | SL={sl_price:.0f} ({sl_dist:.0f}pts)",
             ]
+            if cisd_reason:
+                bd.reasons.append(cisd_reason)
             if smt_reason:
                 bd.reasons.append(smt_reason)
 
@@ -1350,6 +1366,14 @@ class ICTStrategy(bt.Strategy):
                 label=tp_label,
             )
 
+            # CISD: breaking candle opened above FVG bottom → Change in State of Delivery
+            cisd_short = trigger_open > broken_fvg.bottom
+            cisd_score = 1.0 if cisd_short else 0.0
+            cisd_reason = (
+                f"CISD bearish: vela abrió {trigger_open:.0f} > FVG bottom {broken_fvg.bottom:.0f} → +1.0"
+                if cisd_short else ""
+            )
+
             smt = self._find_smt_in_container("bearish", container)
             smt_score = 1.5 if smt is not None else 0.0
             smt_reason = (
@@ -1363,7 +1387,7 @@ class ICTStrategy(bt.Strategy):
             bd.has_choch        = True
             bd.has_protective_fvg = True
             bd.rr_filter_passed = True
-            bd.total_score      = 8.0 + smt_score
+            bd.total_score      = 8.0 + cisd_score + smt_score
             bd.reasons = [
                 f"PDF gatillo ({trigger_tf}): bull FVG {broken_fvg.bottom:.0f}–"
                 f"{broken_fvg.top:.0f} roto @ {trigger_close:.0f}",
@@ -1373,6 +1397,8 @@ class ICTStrategy(bt.Strategy):
                 f"{prot_fvg.bottom:.0f}–{prot_fvg.top:.0f}",
                 f"TP: {tp_label} @ {tp_price:.0f} | SL={sl_price:.0f} ({sl_dist:.0f}pts)",
             ]
+            if cisd_reason:
+                bd.reasons.append(cisd_reason)
             if smt_reason:
                 bd.reasons.append(smt_reason)
 
