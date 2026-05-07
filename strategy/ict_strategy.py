@@ -226,6 +226,9 @@ class ICTStrategy(bt.Strategy):
         # True while a close() order is in flight — prevents duplicate forced closes
         self._close_pending: bool = False
 
+        # Trade context snapshot (captured at _execute_entry, stored until notify_trade)
+        self._entry_context: Optional[Dict] = None
+
         # Phase 6.2 — cooldown after a losing trade
         self._cooldown_until_bar: int = 0
 
@@ -1156,6 +1159,9 @@ class ICTStrategy(bt.Strategy):
         self._exit_reason = ""
         self._protective_fvg = setup.protective_fvg
 
+        # Capture full ICT context snapshot for trade journal
+        self._entry_context = self._build_entry_context(setup, price)
+
         # Phase 6.2 — thesis snapshot for live re-evaluation logging
         self._thesis = {
             "direction": direction,
@@ -1441,6 +1447,146 @@ class ICTStrategy(bt.Strategy):
 
         return current_time >= close_warning
 
+    # =========================================================================
+    # TRADE CONTEXT — Snapshot ICT setup details for journal display
+    # =========================================================================
+    def _build_entry_context(self, setup: "ScoreBreakdown", price: float) -> Dict:
+        """
+        Capture full ICT trade context at entry time.
+        The resulting dict matches the TradeContext interface in lib/types.ts.
+        Called from _execute_entry() immediately before placing the order.
+        """
+        # Market structure
+        macro = self.structure_engine.get_macro_bias()
+        if macro == StructureBias.BULLISH:
+            market_structure = "bullish"
+        elif macro == StructureBias.BEARISH:
+            market_structure = "bearish"
+        else:
+            market_structure = "ranging"
+
+        # Price zone (discount < 45% | equilibrium 45-55% | premium > 55%)
+        hi, lo = self.liq_map.swing_range
+        if hi is not None and lo is not None and hi > lo:
+            pct = (price - lo) / (hi - lo)
+            price_zone = "discount" if pct < 0.45 else ("premium" if pct > 0.55 else "equilibrium")
+        else:
+            price_zone = "equilibrium"
+
+        # Killzone name (human-readable from KILLZONES config)
+        killzone_key = self._get_current_session() or "none"
+        kz = KILLZONES.get(killzone_key)
+        killzone = kz.name if kz else killzone_key
+
+        # Trigger (protective) FVG details
+        prot_fvg = setup.protective_fvg
+        if prot_fvg is not None:
+            trigger_fvg_tf   = prot_fvg.timeframe
+            trigger_fvg_type = prot_fvg.fvg_type.value   # "bullish" | "bearish"
+            trigger_fvg_size = round(prot_fvg.top - prot_fvg.bottom, 1)
+        else:
+            trigger_fvg_tf   = "unknown"
+            trigger_fvg_type = "bullish" if setup.direction == "long" else "bearish"
+            trigger_fvg_size = 0.0
+
+        # FVG confluence — active FVGs from all TFs within 300 pts of entry
+        fvg_confluence = []
+        _seen: set = set()
+        for tracker, tf in [
+            (self.fvg_tracker_4h,  "4h"),
+            (self.fvg_tracker,     "base"),
+            (self.fvg_tracker_15m, "15m"),
+            (self.fvg_tracker_5m,  "5m"),
+        ]:
+            if tracker is None:
+                continue
+            for fvg in getattr(tracker, "_active_fvgs", []):
+                dist = min(abs(fvg.top - price), abs(fvg.bottom - price))
+                if dist <= 300:
+                    key = (tf, fvg.fvg_type.value, round(fvg.top))
+                    if key not in _seen:
+                        _seen.add(key)
+                        fvg_confluence.append({"timeframe": tf, "type": fvg.fvg_type.value})
+
+        # Nearest target label
+        nearest_target = "–"
+        if setup.target_level is not None:
+            lbl = getattr(setup.target_level, "label", "") or ""
+            tp_str = f"{setup.target_level.price:.0f}"
+            nearest_target = f"{lbl} @ {tp_str}" if lbl else tp_str
+
+        # Most recent sweep (direction + price + time)
+        recent_sweep: Optional[str] = None
+        if self.liq_map.sweep_history:
+            sw = self.liq_map.sweep_history[-1]
+            ts_str = (
+                sw.timestamp.strftime("%H:%M")
+                if hasattr(sw.timestamp, "strftime")
+                else str(sw.timestamp)
+            )
+            recent_sweep = f"{sw.direction} sweep @ {sw.wick_extreme:.0f} ({ts_str})"
+
+        # Threshold used for this trade
+        threshold = (
+            SCORER_MIN_SCORE_TRADE_2
+            if self.kill_switch.trades_today >= 1
+            else SCORER_MIN_SCORE_TRADE_1
+        )
+
+        # Per-component conditions (maps to TradeSetupCondition[])
+        def _pick_reason(keywords: List[str]) -> str:
+            matched = [r for r in setup.reasons if any(kw in r.lower() for kw in keywords)]
+            return "; ".join(matched) if matched else "—"
+
+        conditions = [
+            {
+                "label":  "Sweep Quality",
+                "detail": _pick_reason(["swept", "sweep", "downside", "upside", "blind"]),
+                "score":  round(setup.sweep_score, 1),
+                "passed": setup.has_sweep,
+            },
+            {
+                "label":  "Structure / CHoCH",
+                "detail": _pick_reason(["choch", "structure", "confirmed", "bos"]),
+                "score":  round(setup.structure_score, 1),
+                "passed": setup.has_choch,
+            },
+            {
+                "label":  "FVG Path",
+                "detail": _pick_reason(["fvg", "path", "obstacle", "protective", "broken", "nested", "border", "bear", "bull"]),
+                "score":  round(setup.path_score, 1),
+                "passed": setup.has_protective_fvg,
+            },
+            {
+                "label":  "Target Quality",
+                "detail": _pick_reason(["target", "pdh", "pdl", "rr=", "viable", "synthetic"]),
+                "score":  round(setup.target_score, 1),
+                "passed": setup.target_level is not None and setup.rr_filter_passed,
+            },
+            {
+                "label":  "Macro Context",
+                "detail": _pick_reason(["macro", "exhausted", "premium", "discount", "pdh consumed", "pdl consumed", "ath", "atl", "counter-trend"]),
+                "score":  round(setup.macro_score, 1),
+                "passed": setup.macro_score > 0,
+            },
+        ]
+
+        return {
+            "market_structure":       market_structure,
+            "price_zone":             price_zone,
+            "killzone":               killzone,
+            "trigger_fvg_timeframe":  trigger_fvg_tf,
+            "trigger_fvg_type":       trigger_fvg_type,
+            "trigger_fvg_size_points": trigger_fvg_size,
+            "fvg_confluence":         fvg_confluence,
+            "nearest_target":         nearest_target,
+            "recent_sweep":           recent_sweep,
+            "setup_score":            round(setup.total_score, 1),
+            "min_score":              round(threshold, 1),
+            "conditions":             conditions,
+            "exit_detail":            "",   # filled in notify_trade() at trade close
+        }
+
     def _reset_entry_state(self):
         """Clear all entry metadata. Called when a pending order is cancelled."""
         self._entry_price = None
@@ -1452,6 +1598,7 @@ class ICTStrategy(bt.Strategy):
         self._protective_fvg = None
         self._thesis = None
         self._close_pending = False
+        self._entry_context = None
 
     # =========================================================================
     # MAIN LOOP — next() de Backtrader
@@ -1657,6 +1804,10 @@ class ICTStrategy(bt.Strategy):
                     "WARN",
                 )
 
+            # Finalize exit detail on the captured context snapshot
+            if self._entry_context is not None:
+                self._entry_context["exit_detail"] = self._exit_reason or "Manual"
+
             # Log del trade
             self._trades_log.append({
                 "timestamp": entry_time,
@@ -1672,6 +1823,7 @@ class ICTStrategy(bt.Strategy):
                 "reason": self._exit_reason or "Manual",
                 "entry_time": entry_time,
                 "exit_time": exit_time,
+                "context": self._entry_context,
             })
 
             # Phase 6.2 — start cooldown after a loss to prevent over-reactive flips

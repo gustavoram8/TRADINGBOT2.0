@@ -137,7 +137,7 @@ def serialize_trades(trades_df: pd.DataFrame) -> List[Dict[str, Any]]:
 
     out: List[Dict[str, Any]] = []
     for i, row in trades_df.reset_index(drop=True).iterrows():
-        out.append({
+        trade: Dict[str, Any] = {
             "id": f"trade-{i}",
             "timestamp": _to_iso(row.get("timestamp") or row.get("entry_time")),
             "entry_time": _to_iso(row.get("entry_time")),
@@ -152,11 +152,50 @@ def serialize_trades(trades_df: pd.DataFrame) -> List[Dict[str, Any]]:
             "commission": _safe_float(row.get("commission")),
             "contracts": _safe_int(row.get("contracts")),
             "reason": str(row.get("reason", "")),
-            # context will be filled in a later phase from the strategy's
-            # setup scorer data; keep it absent for now so the journal page
-            # shows real trades but without synthesized narrative.
-        })
+        }
+
+        # Include ICT context snapshot when available
+        ctx = row.get("context")
+        if isinstance(ctx, dict):
+            trade["context"] = _serialize_trade_context(ctx)
+
+        out.append(trade)
     return out
+
+
+def _serialize_trade_context(ctx: Dict[str, Any]) -> Dict[str, Any]:
+    """Ensure the context dict from the strategy is JSON-safe."""
+    conditions: List[Dict[str, Any]] = []
+    for c in (ctx.get("conditions") or []):
+        conditions.append({
+            "label":  str(c.get("label", "")),
+            "detail": str(c.get("detail", "")),
+            "score":  _safe_float(c.get("score", 0.0)),
+            "passed": bool(c.get("passed", False)),
+        })
+
+    fvg_conf: List[Dict[str, Any]] = []
+    for f in (ctx.get("fvg_confluence") or []):
+        fvg_conf.append({
+            "timeframe": str(f.get("timeframe", "")),
+            "type":      str(f.get("type", "")),
+        })
+
+    return {
+        "market_structure":        str(ctx.get("market_structure", "ranging")),
+        "price_zone":              str(ctx.get("price_zone", "equilibrium")),
+        "killzone":                str(ctx.get("killzone", "")),
+        "trigger_fvg_timeframe":   str(ctx.get("trigger_fvg_timeframe", "")),
+        "trigger_fvg_type":        str(ctx.get("trigger_fvg_type", "bullish")),
+        "trigger_fvg_size_points": _safe_float(ctx.get("trigger_fvg_size_points", 0.0)),
+        "fvg_confluence":          fvg_conf,
+        "nearest_target":          str(ctx.get("nearest_target", "–")),
+        "recent_sweep":            ctx.get("recent_sweep"),   # None → null in JSON
+        "setup_score":             _safe_float(ctx.get("setup_score", 0.0)),
+        "min_score":               _safe_float(ctx.get("min_score", 0.0)),
+        "conditions":              conditions,
+        "exit_detail":             str(ctx.get("exit_detail", "")),
+    }
 
 
 # =============================================================================
