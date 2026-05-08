@@ -27,7 +27,7 @@ import sys
 import time
 import traceback
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
-from datetime import datetime, date as date_type
+from datetime import datetime, date as date_type, timedelta
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException
@@ -123,6 +123,9 @@ def _pipeline_sync(req: BacktestRequest) -> dict:
     _days  = (_end - _start).days
     interval = "15m" if _days <= 58 else "1h"
 
+    # yfinance end is exclusive — add 1 day so single-day ranges return data.
+    _download_end = str(_end + timedelta(days=1)) if _days == 0 else req.end_date
+
     t0 = time.time()
     log.info(
         "POST /backtest %s → %s (auto-TF=%s, %d days) | preset=%s",
@@ -139,7 +142,7 @@ def _pipeline_sync(req: BacktestRequest) -> dict:
             return exc
 
     with ThreadPoolExecutor(max_workers=3) as pool:
-        f_base = pool.submit(_fetch, interval, req.start_date, req.end_date)
+        f_base = pool.submit(_fetch, interval, req.start_date, _download_end)
         f_15m  = pool.submit(_fetch, "15m") if interval != "15m" else None
         f_5m   = pool.submit(_fetch, "5m")
 
@@ -182,7 +185,7 @@ def _pipeline_sync(req: BacktestRequest) -> dict:
         )
         interval = "1h"
         try:
-            df_base = download_data(interval="1h", start=req.start_date, end=req.end_date)
+            df_base = download_data(interval="1h", start=req.start_date, end=_download_end)
         except Exception as e:
             raise HTTPException(status_code=502,
                 detail=f"No se pudieron descargar datos del mercado: {e}")
