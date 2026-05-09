@@ -47,8 +47,13 @@ jobs:
             nginx -T 2>/dev/null | grep -i 'proxy_.*_timeout' || echo "(no proxy timeouts found)"
             # ──────────────────────────────────────────────────────────────
 
-            # Restart frontend
-            pm2 restart tradingbot-frontend
+            # Restart frontend — start fresh if PM2 process doesn't exist yet
+            if pm2 describe tradingbot-frontend > /dev/null 2>&1; then
+              pm2 restart tradingbot-frontend --update-env
+            else
+              pm2 start npm --name tradingbot-frontend -- start
+              pm2 save
+            fi
 
             # Restart Python backend
             systemctl restart tradingbot
