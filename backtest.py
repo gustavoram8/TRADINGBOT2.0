@@ -195,7 +195,7 @@ def run_backtest(
         else:
             print(f"  ⚠ 2m feed: no overlap with backtest period — skipped")
 
-    # 1m feed (yfinance limit: last 7 days only)
+    # 1m feed (yfinance limit: last 7 days only; may be None for older backtests)
     if df_1m is not None and not df_1m.empty:
         df_1m_bt = df_1m.copy()
         if df_1m_bt.index.tz is not None:

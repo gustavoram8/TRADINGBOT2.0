@@ -155,7 +155,7 @@ export default function TradesPage() {
         <table className="w-full text-xs">
           <thead>
             <tr className="text-text-muted border-b border-border">
-              {["#", "Entrada", "Salida", "Dir", "Price In", "Price Out", "SL", "TP", "Contr.", "P&L Neto", "Razón"].map((h) => (
+              {["#", "Entrada", "Salida", "Dir", "Price In", "Price Out", "SL", "TP", "Contr.", "P&L Neto", "Max Fav %TP", "Razón", "Revisar"].map((h) => (
                 <th key={h} className="text-left py-2 pr-3 font-medium">{h}</th>
               ))}
             </tr>
@@ -179,7 +179,22 @@ export default function TradesPage() {
                 <td className="py-1.5 pr-3 font-mono text-text-secondary">{t.tp_price.toFixed(0)}</td>
                 <td className="py-1.5 pr-3 text-center">{t.contracts}</td>
                 <td className={cn("py-1.5 pr-3 font-mono font-medium", pnlColor(t.pnl_net))}>{fmtUSD(t.pnl_net)}</td>
+                <td className="py-1.5 pr-3 font-mono text-text-secondary">
+                  {t.max_favorable_pct_of_tp != null
+                    ? `${(t.max_favorable_pct_of_tp * 100).toFixed(0)}%`
+                    : "—"}
+                </td>
                 <td className="py-1.5 pr-3 text-text-secondary">{t.reason}</td>
+                <td className="py-1.5 pr-3">
+                  {t.needs_review ? (
+                    <span
+                      className="badge-red"
+                      title="Trade no alcanzó 60% del TP — lectura potencialmente errónea"
+                    >
+                      ⚠ Revisar
+                    </span>
+                  ) : null}
+                </td>
               </tr>
             ))}
           </tbody>
