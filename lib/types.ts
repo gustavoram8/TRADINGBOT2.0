@@ -13,6 +13,10 @@ export interface Trade {
   commission: number;
   contracts: number;
   reason: string;
+  max_favorable_pnl?: number;
+  max_favorable_pct_of_tp?: number;
+  reached_60pct_tp?: boolean;
+  needs_review?: boolean;
   context?: TradeContext;
 }
 
