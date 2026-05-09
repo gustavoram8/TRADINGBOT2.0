@@ -1799,16 +1799,7 @@ class ICTStrategy(bt.Strategy):
             self.close()
             return
 
-        # --- CHECK 3: Cierre al 90% del TP ---
-        if tp_total > 0 and unrealized_pnl >= tp_total * self.p.close_at_pct:
-            self.log(
-                f"OK 90% TP alcanzado: ${unrealized_pnl:.0f} / ${tp_total:.0f}", "EXIT"
-            )
-            self._exit_reason = "Take Profit (90%)"
-            self.close()
-            return
-
-        # --- CHECK 4: Break-Even reverso ---
+        # --- CHECK 3: Break-Even reverso ---
         # Solo se arma si el trade *llegó* al 60% del TP. Si después se gira
         # y el precio vuelve al entry (PnL ≤ 0), salimos en BE en vez de
         # dejarlo ir al SL. Si nunca alcanzó 60%, no se arma — la lectura
@@ -1826,7 +1817,7 @@ class ICTStrategy(bt.Strategy):
             self.close()
             return
 
-        # --- CHECK 5: Ruptura del FVG protector ---
+        # --- CHECK 4: Ruptura del FVG protector ---
         if self._protective_fvg is not None and self._protective_fvg.status == FVGStatus.BROKEN:
             self.log(
                 f"X FVG PROTECTOR ROTO ({self._protective_fvg.fvg_type.value} "
