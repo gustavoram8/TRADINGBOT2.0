@@ -141,10 +141,14 @@ def _pipeline_sync(req: BacktestRequest) -> dict:
         except Exception as exc:
             return exc
 
-    with ThreadPoolExecutor(max_workers=3) as pool:
+    with ThreadPoolExecutor(max_workers=4) as pool:
         f_base = pool.submit(_fetch, interval, req.start_date, _download_end)
         f_15m  = pool.submit(_fetch, "15m") if interval != "15m" else None
         f_5m   = pool.submit(_fetch, "5m")
+        # yfinance only serves 1m for the last 7 days. Try; fall back gracefully.
+        _now_d = datetime.utcnow().date()
+        _try_1m = (_now_d - _start).days <= 7
+        f_1m   = pool.submit(_fetch, "1m") if _try_1m else None
 
         try:
             _res_base = f_base.result(timeout=_DOWNLOAD_TIMEOUT)
@@ -176,6 +180,17 @@ def _pipeline_sync(req: BacktestRequest) -> dict:
                 log.warning("Could not fetch 5m feed: %s", _r5)
         except FuturesTimeoutError:
             log.warning("5m feed download timed out — skipped")
+
+        df_1m: Optional[object] = None
+        if f_1m is not None:
+            try:
+                _r1 = f_1m.result(timeout=_DOWNLOAD_TIMEOUT)
+                if not isinstance(_r1, Exception) and _r1 is not None and not _r1.empty:
+                    df_1m = _r1
+                elif isinstance(_r1, Exception):
+                    log.warning("Could not fetch 1m feed: %s", _r1)
+            except FuturesTimeoutError:
+                log.warning("1m feed download timed out — skipped")
 
     # Fallback: 15m returned no data (date range older than 60 days)
     if (df_base is None or df_base.empty) and interval == "15m":
@@ -229,6 +244,7 @@ def _pipeline_sync(req: BacktestRequest) -> dict:
             strategy_params=strategy_params,
             df_15m=df_15m,
             df_5m=df_5m,
+            df_1m=df_1m,
             base_tf=interval,
         )
     except Exception as e:
@@ -253,6 +269,8 @@ def _pipeline_sync(req: BacktestRequest) -> dict:
         ohlc_by_timeframe["15m"] = df_15m
     if df_5m is not None:
         ohlc_by_timeframe["5m"] = df_5m
+    if df_1m is not None:
+        ohlc_by_timeframe["1m"] = df_1m
 
     payload = assemble_backtest_result(
         backtest_id=f"bt-{int(time.time())}",

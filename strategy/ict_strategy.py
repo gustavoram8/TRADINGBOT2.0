@@ -141,8 +141,12 @@ class ICTStrategy(bt.Strategy):
             self.data_5m = self.getdatabyname("5m")
         except KeyError:
             self.data_5m = None
+        try:
+            self.data_1m = self.getdatabyname("1m")
+        except KeyError:
+            self.data_1m = None
 
-        # FVG trackers — base, 4H, and optional 15m / 5m
+        # FVG trackers — base, 4H, and optional 15m / 5m / 1m
         self.fvg_tracker = FVGTracker(
             dubious_break_pct=FVG_DUBIOUS_BREAK_PCT,
             dubious_wait_bars=FVG_DUBIOUS_WAIT_BARS,
@@ -156,6 +160,10 @@ class ICTStrategy(bt.Strategy):
             dubious_wait_bars=FVG_DUBIOUS_WAIT_BARS,
         )
         self.fvg_tracker_5m = FVGTracker(
+            dubious_break_pct=FVG_DUBIOUS_BREAK_PCT,
+            dubious_wait_bars=FVG_DUBIOUS_WAIT_BARS,
+        )
+        self.fvg_tracker_1m = FVGTracker(
             dubious_break_pct=FVG_DUBIOUS_BREAK_PCT,
             dubious_wait_bars=FVG_DUBIOUS_WAIT_BARS,
         )
@@ -202,6 +210,9 @@ class ICTStrategy(bt.Strategy):
         self._last_1h_len: int = 0
         self._last_15m_len: int = 0
         self._last_5m_len: int = 0
+        self._last_1m_len: int = 0
+        self._max_favorable_pnl: float = 0.0
+        self._max_favorable_pct_of_tp: float = 0.0
         self._ny_am_open_set: bool = False
         self._tp_price: Optional[float] = None
         self._sl_price: Optional[float] = None
@@ -372,6 +383,7 @@ class ICTStrategy(bt.Strategy):
             "fvg_1h":       fvg_counts(self.fvg_tracker),       # base = 1H
             "fvg_15m":      fvg_counts(self.fvg_tracker_15m),
             "fvg_5m":       fvg_counts(self.fvg_tracker_5m),
+            "fvg_1m":       fvg_counts(self.fvg_tracker_1m),
             "ath":          self.liq_map.ath,
             "near_ath":     self.liq_map.is_near_ath(),
             "post_rev":     self.liq_map.is_post_ath_reversal(),
@@ -649,6 +661,33 @@ class ICTStrategy(bt.Strategy):
                 # Phase 6.4 — granular intra-bar scoring on each new 5m close
                 self._maybe_log_5m_scoring()
 
+        # ── 1m bars ───────────────────────────────────────────────────────────
+        # Used exclusively for the protective FVG (entry SL anchor + trailing).
+        # 1m FVGs are NOT fed to the structure engine to avoid noise.
+        if self.data_1m is not None:
+            new_1m = len(self.data_1m) - self._last_1m_len
+            if new_1m > 0 and len(self.data_1m) >= 3:
+                h2_1 = self.data_1m.high[-2]
+                h0_1 = self.data_1m.high[0]
+                l2_1 = self.data_1m.low[-2]
+                l0_1 = self.data_1m.low[0]
+                ts_1 = pd.Timestamp(self.data_1m.datetime.datetime(0))
+                bar_1 = self._last_1m_len + new_1m
+                if h2_1 < l0_1:
+                    self.fvg_tracker_1m.add_fvgs([FairValueGap(
+                        fvg_type=FVGType.BULLISH, top=l0_1, bottom=h2_1,
+                        timestamp=ts_1, timeframe="1m", candle_idx=bar_1,
+                    )])
+                if l2_1 > h0_1:
+                    self.fvg_tracker_1m.add_fvgs([FairValueGap(
+                        fvg_type=FVGType.BEARISH, top=l2_1, bottom=h0_1,
+                        timestamp=ts_1, timeframe="1m", candle_idx=bar_1,
+                    )])
+                self.fvg_tracker_1m.update(
+                    self.data_1m.high[0], self.data_1m.low[0], self.data_1m.close[0]
+                )
+                self._last_1m_len += new_1m
+
         # PDH/PDL — al inicio de nuevo día
         current_date = self.data_base.datetime.date(0)
         if self._current_date != current_date and len(self.data_base) >= 24:
@@ -822,6 +861,47 @@ class ICTStrategy(bt.Strategy):
                         "SKIP",
                     )
 
+    def _pick_protective_fvg(
+        self,
+        price: float,
+        direction: str,
+        setup_fvg: Optional[FairValueGap],
+    ) -> Optional[FairValueGap]:
+        """
+        Pick the protective FVG used to manage the trade exit.
+
+        Preference: closest active 1m FVG between price and the setup's
+        structural FVG. Falls back to 5m if 1m is unavailable (yfinance
+        only serves 1m for the last 7 days).
+
+        For LONG: candidate is bullish, sits below `price`, and its top is
+        at or above `setup_fvg.bottom` (so the gap really protects the trade).
+        For SHORT: mirrored.
+        """
+        is_long = direction == "long"
+        boundary = (setup_fvg.bottom if (setup_fvg and is_long)
+                    else setup_fvg.top if setup_fvg else None)
+
+        for tracker in (self.fvg_tracker_1m, self.fvg_tracker_5m):
+            if is_long:
+                cands = [
+                    f for f in tracker.active_bullish
+                    if f.top <= price
+                    and (boundary is None or f.top >= boundary)
+                ]
+                if cands:
+                    return max(cands, key=lambda f: f.top)  # closest to price
+            else:
+                cands = [
+                    f for f in tracker.active_bearish
+                    if f.bottom >= price
+                    and (boundary is None or f.bottom <= boundary)
+                ]
+                if cands:
+                    return min(cands, key=lambda f: f.bottom)
+
+        return setup_fvg  # last resort: keep the setup's FVG
+
     def _execute_entry(self, setup: ScoreBreakdown, price: float):
         """Ejecuta una entrada basada en el ScoreBreakdown del scorer."""
         if setup.protective_fvg is None or setup.target_level is None:
@@ -836,13 +916,26 @@ class ICTStrategy(bt.Strategy):
             return
 
         direction = setup.direction
+        tp_price = setup.target_level.price
+
+        # ── Protective FVG must be 1m (fallback 5m if 1m unavailable). ────────
+        # The setup's protective FVG (could be 1h/15m/5m) is used only for
+        # scoring. The actual *managed* protective FVG is the closest higher-
+        # resolution gap between price and the setup's protective FVG.
+        protective_fvg = self._pick_protective_fvg(price, direction, setup.protective_fvg)
+        if protective_fvg is None:
+            self.log(
+                "  ENTRY ABORTED: no 1m/5m protective FVG between price and "
+                "the setup's protective FVG", "WARN"
+            )
+            self._rejection_counts["entry_no_prot_fvg"] += 1
+            return
+
         if direction == "long":
-            sl_price = setup.protective_fvg.bottom
-            tp_price = setup.target_level.price
+            sl_price = protective_fvg.bottom
             tp_points = tp_price - price
         else:
-            sl_price = setup.protective_fvg.top
-            tp_price = setup.target_level.price
+            sl_price = protective_fvg.top
             tp_points = price - tp_price
 
         # Phase 8.3 — Refine SL: push it just beyond the nearest fresh
@@ -945,7 +1038,9 @@ class ICTStrategy(bt.Strategy):
         self._entry_time = self.data_base.datetime.datetime(0)
         self._entry_contracts = num_contracts
         self._exit_reason = ""
-        self._protective_fvg = setup.protective_fvg
+        self._protective_fvg = protective_fvg
+        self._max_favorable_pnl = 0.0
+        self._max_favorable_pct_of_tp = 0.0
 
         # Phase 6.2 — thesis snapshot for live re-evaluation logging
         self._thesis = {
@@ -1009,11 +1104,18 @@ class ICTStrategy(bt.Strategy):
     # =========================================================================
     def _manage_position(self):
         """
-        Gestión de posición abierta:
-        1. Check SL/TP
-        2. Break even al 50% del TP si el precio gira
-        3. Cierre al 90% del TP
-        4. Ruptura del FVG protector -> salir
+        Gestión de posición abierta — reglas del usuario:
+
+        1. SL hard: si el precio toca el SL estructural, salir.
+        2. TP completo: si el precio toca el TP, salir.
+        3. 90% TP: si el PnL alcanza el 90% del TP, salir (TP confirmado).
+        4. Break-even reverso: si el PnL llegó al 60% del TP y luego el
+           precio se gira de vuelta hasta el entry, salir en BE (no dejar
+           que vaya a SL). Si nunca alcanzó 60%, dejar correr al SL.
+        5. FVG protector roto: si el FVG de 1m que aguanta el trade se
+           rompe (cierre al lado contrario), salir.
+
+        El FVG protector solo se promueve a FVGs de 1m (fallback 5m).
         """
         if not self.position or self._entry_price is None:
             return
@@ -1032,80 +1134,93 @@ class ICTStrategy(bt.Strategy):
             unrealized_pnl = (self._entry_price - price) * POINT_VALUE * abs(size)
             tp_total = (self._entry_price - self._tp_price) * POINT_VALUE * abs(size)
 
-        # --- TRAILING FVG UPDATE (Phase 8.3) ---
-        # While winning, promote _protective_fvg to the closest active FVG
-        # that supports the trade. CHECK 5 then closes on BROKEN (close beyond
-        # it), not SWEPT (wick through + close back), per user's rule.
+        # Track max favorable excursion for the BE-reverse rule and dashboard flag.
+        if unrealized_pnl > self._max_favorable_pnl:
+            self._max_favorable_pnl = unrealized_pnl
+            if tp_total > 0:
+                self._max_favorable_pct_of_tp = unrealized_pnl / tp_total
+
+        # --- TRAILING FVG UPDATE (1m only, 5m fallback) ---
+        # While winning, promote _protective_fvg to the closest active 1m FVG
+        # that still supports the trade. If 1m has no candidates, try 5m.
         if unrealized_pnl > 0:
-            all_trackers = [
-                self.fvg_tracker, self.fvg_tracker_15m, self.fvg_tracker_5m
-            ]
+            trailing_trackers = [self.fvg_tracker_1m, self.fvg_tracker_5m]
             if is_long:
-                candidates = [
-                    f
-                    for tr in all_trackers
-                    for f in tr.active_bullish
-                    if f.top <= price and price - f.top <= 150
-                ]
-                if candidates:
-                    closest = max(candidates, key=lambda f: f.top)
-                    if (self._protective_fvg is None
-                            or closest.top > self._protective_fvg.top):
-                        prev = (
-                            f"{self._protective_fvg.timeframe} "
-                            f"[{self._protective_fvg.bottom:.1f}–"
-                            f"{self._protective_fvg.top:.1f}]"
-                            if self._protective_fvg else "—"
-                        )
-                        self._protective_fvg = closest
-                        self.log(
-                            f"TRAILING FVG: {prev} → bull "
-                            f"[{closest.bottom:.1f}–{closest.top:.1f}] "
-                            f"({closest.timeframe})",
-                            "TRAIL",
-                        )
+                closest = None
+                for tr in trailing_trackers:
+                    cands = [
+                        f for f in tr.active_bullish
+                        if f.top <= price and price - f.top <= 150
+                    ]
+                    if cands:
+                        closest = max(cands, key=lambda f: f.top)
+                        break
+                if closest is not None and (
+                    self._protective_fvg is None
+                    or closest.top > self._protective_fvg.top
+                ):
+                    prev = (
+                        f"{self._protective_fvg.timeframe} "
+                        f"[{self._protective_fvg.bottom:.1f}–"
+                        f"{self._protective_fvg.top:.1f}]"
+                        if self._protective_fvg else "—"
+                    )
+                    self._protective_fvg = closest
+                    self.log(
+                        f"TRAILING FVG: {prev} → bull "
+                        f"[{closest.bottom:.1f}–{closest.top:.1f}] "
+                        f"({closest.timeframe})",
+                        "TRAIL",
+                    )
             else:
-                candidates = [
-                    f
-                    for tr in all_trackers
-                    for f in tr.active_bearish
-                    if f.bottom >= price and f.bottom - price <= 150
-                ]
-                if candidates:
-                    closest = min(candidates, key=lambda f: f.bottom)
-                    if (self._protective_fvg is None
-                            or closest.bottom < self._protective_fvg.bottom):
-                        prev = (
-                            f"{self._protective_fvg.timeframe} "
-                            f"[{self._protective_fvg.bottom:.1f}–"
-                            f"{self._protective_fvg.top:.1f}]"
-                            if self._protective_fvg else "—"
-                        )
-                        self._protective_fvg = closest
-                        self.log(
-                            f"TRAILING FVG: {prev} → bear "
-                            f"[{closest.bottom:.1f}–{closest.top:.1f}] "
-                            f"({closest.timeframe})",
-                            "TRAIL",
-                        )
+                closest = None
+                for tr in trailing_trackers:
+                    cands = [
+                        f for f in tr.active_bearish
+                        if f.bottom >= price and f.bottom - price <= 150
+                    ]
+                    if cands:
+                        closest = min(cands, key=lambda f: f.bottom)
+                        break
+                if closest is not None and (
+                    self._protective_fvg is None
+                    or closest.bottom < self._protective_fvg.bottom
+                ):
+                    prev = (
+                        f"{self._protective_fvg.timeframe} "
+                        f"[{self._protective_fvg.bottom:.1f}–"
+                        f"{self._protective_fvg.top:.1f}]"
+                        if self._protective_fvg else "—"
+                    )
+                    self._protective_fvg = closest
+                    self.log(
+                        f"TRAILING FVG: {prev} → bear "
+                        f"[{closest.bottom:.1f}–{closest.top:.1f}] "
+                        f"({closest.timeframe})",
+                        "TRAIL",
+                    )
 
         # --- CHECK 1: Stop Loss ---
         if is_long and low <= self._sl_price:
             self.log(f"X SL HIT (LONG) @ ~{self._sl_price:.1f}", "EXIT")
+            self._exit_reason = "Stop Loss"
             self.close()
             return
         elif not is_long and high >= self._sl_price:
             self.log(f"X SL HIT (SHORT) @ ~{self._sl_price:.1f}", "EXIT")
+            self._exit_reason = "Stop Loss"
             self.close()
             return
 
         # --- CHECK 2: Take Profit completo ---
         if is_long and high >= self._tp_price:
             self.log(f"OK TP HIT (LONG) @ ~{self._tp_price:.1f}", "EXIT")
+            self._exit_reason = "Take Profit"
             self.close()
             return
         elif not is_long and low <= self._tp_price:
             self.log(f"OK TP HIT (SHORT) @ ~{self._tp_price:.1f}", "EXIT")
+            self._exit_reason = "Take Profit"
             self.close()
             return
 
@@ -1114,38 +1229,34 @@ class ICTStrategy(bt.Strategy):
             self.log(
                 f"OK 90% TP alcanzado: ${unrealized_pnl:.0f} / ${tp_total:.0f}", "EXIT"
             )
+            self._exit_reason = "90% TP"
             self.close()
             return
 
-        # --- CHECK 4: Break Even ---
-        if tp_total > 0 and unrealized_pnl >= tp_total * self.p.break_even_pct:
-            # ¿El precio está girando?  Check si FVGs a favor se están rompiendo
-            # Note: fvg_tracker.update() was already called in _update_fvgs() this bar
-            if self._protective_fvg is not None:
-                if is_long:
-                    # Si Bullish FVGs de soporte se rompen -> BE
-                    supporting_broken = any(
-                        f.fvg_type == FVGType.BULLISH and f.candle_idx > self._bar_count - 5
-                        for f in self.fvg_tracker.broken_fvgs
-                    )
-                else:
-                    supporting_broken = any(
-                        f.fvg_type == FVGType.BEARISH and f.candle_idx > self._bar_count - 5
-                        for f in self.fvg_tracker.broken_fvgs
-                    )
+        # --- CHECK 4: Break-Even reverso ---
+        # Solo se arma si el trade *llegó* al 60% del TP. Si después se gira
+        # y el precio vuelve al entry (PnL ≤ 0), salimos en BE en vez de
+        # dejarlo ir al SL. Si nunca alcanzó 60%, no se arma — la lectura
+        # estuvo errónea y dejamos que toque SL para revisar el setup.
+        if (tp_total > 0
+                and self._max_favorable_pnl >= tp_total * self.p.break_even_pct
+                and unrealized_pnl <= 0):
+            self.log(
+                f"<> BREAK EVEN @ ${unrealized_pnl:.0f} — max favorable fue "
+                f"${self._max_favorable_pnl:.0f} "
+                f"({self._max_favorable_pct_of_tp:.0%} TP), precio volvió al entry",
+                "EXIT",
+            )
+            self._exit_reason = "Break Even"
+            self.close()
+            return
 
-                if supporting_broken:
-                    self.log(
-                        f"<> BREAK EVEN @ {unrealized_pnl:.0f} — FVGs de soporte rotos", "EXIT"
-                    )
-                    self._exit_reason = "Break Even"
-                    self.close()
-                    return
-
-        # --- CHECK 5: Ruptura del FVG protector ("en seco") ---
+        # --- CHECK 5: Ruptura del FVG protector ---
         if self._protective_fvg is not None and self._protective_fvg.status == FVGStatus.BROKEN:
             self.log(
-                f"X FVG PROTECTOR ROTO ({self._protective_fvg.fvg_type.value}) — salir", "EXIT"
+                f"X FVG PROTECTOR ROTO ({self._protective_fvg.fvg_type.value} "
+                f"{self._protective_fvg.timeframe}) — salir",
+                "EXIT",
             )
             self._exit_reason = "FVG Protector Roto"
             self.close()
@@ -1259,6 +1370,7 @@ class ICTStrategy(bt.Strategy):
             self.fvg_tracker_4h.cleanup_old()
             self.fvg_tracker_15m.cleanup_old()
             self.fvg_tracker_5m.cleanup_old()
+            self.fvg_tracker_1m.cleanup_old()
 
         # Forced close check: 4:00 PM VET (UTC-4) — no exceptions
         if self.position and self._should_force_close():
@@ -1347,7 +1459,8 @@ class ICTStrategy(bt.Strategy):
             self.position_sizer.record_trade(pnl_net)
             self.kill_switch.record_trade(pnl_net)
 
-            # Log del trade
+            # Log del trade — incluye trazas de salida para revisión manual
+            reached_60 = self._max_favorable_pct_of_tp >= self.p.break_even_pct
             self._trades_log.append({
                 "timestamp": self.data_base.datetime.datetime(0),
                 "direction": "long" if trade.long else "short",
@@ -1362,6 +1475,10 @@ class ICTStrategy(bt.Strategy):
                 "reason": self._exit_reason or "Manual",
                 "entry_time": self._entry_time,
                 "exit_time": self.data_base.datetime.datetime(0),
+                "max_favorable_pnl": float(self._max_favorable_pnl),
+                "max_favorable_pct_of_tp": float(self._max_favorable_pct_of_tp),
+                "reached_60pct_tp": bool(reached_60),
+                "needs_review": bool(not reached_60),
             })
 
             # Phase 6.2 — start cooldown after a loss to prevent over-reactive flips
@@ -1383,6 +1500,8 @@ class ICTStrategy(bt.Strategy):
             self._protective_fvg = None
             self._actual_exit_price = None
             self._thesis = None
+            self._max_favorable_pnl = 0.0
+            self._max_favorable_pct_of_tp = 0.0
 
     # =========================================================================
     # STOP — Llamado al finalizar el backtest

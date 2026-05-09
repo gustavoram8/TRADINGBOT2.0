@@ -50,6 +50,7 @@ def run_backtest(
     strategy_params: dict = None,
     df_15m: Optional[pd.DataFrame] = None,
     df_5m: Optional[pd.DataFrame] = None,
+    df_1m: Optional[pd.DataFrame] = None,
     base_tf: str = "1h",
 ) -> dict:
     """
@@ -173,6 +174,25 @@ def run_backtest(
             print(f"  + 5m feed: {len(df_5m_bt)} bars (overlap from {overlap_start.date()})")
         else:
             print(f"  ⚠ 5m feed: no overlap with backtest period — skipped")
+
+    # 1m feed — yfinance only allows last 7 days; may be None for older backtests
+    if df_1m is not None and not df_1m.empty:
+        df_1m_bt = df_1m.copy()
+        if df_1m_bt.index.tz is not None:
+            df_1m_bt.index = df_1m_bt.index.tz_localize(None)
+        if df_1m_bt.index[-1] >= df_bt.index[0]:
+            data_1m_feed = bt.feeds.PandasData(
+                dataname=df_1m_bt,
+                datetime=None,
+                open="Open", high="High", low="Low",
+                close="Close", volume="Volume",
+                openinterest=-1,
+            )
+            cerebro.adddata(data_1m_feed, name="1m")
+            overlap_start = max(df_1m_bt.index[0], df_bt.index[0])
+            print(f"  + 1m feed: {len(df_1m_bt)} bars (overlap from {overlap_start.date()})")
+        else:
+            print(f"  ⚠ 1m feed: no overlap with backtest period — skipped")
 
     # =========================================================================
     # Configurar estrategia

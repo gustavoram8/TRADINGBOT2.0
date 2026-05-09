@@ -152,6 +152,10 @@ def serialize_trades(trades_df: pd.DataFrame) -> List[Dict[str, Any]]:
             "commission": _safe_float(row.get("commission")),
             "contracts": _safe_int(row.get("contracts")),
             "reason": str(row.get("reason", "")),
+            "max_favorable_pnl": _safe_float(row.get("max_favorable_pnl")),
+            "max_favorable_pct_of_tp": _safe_float(row.get("max_favorable_pct_of_tp")),
+            "reached_60pct_tp": bool(row.get("reached_60pct_tp", False)),
+            "needs_review": bool(row.get("needs_review", False)),
             # context will be filled in a later phase from the strategy's
             # setup scorer data; keep it absent for now so the journal page
             # shows real trades but without synthesized narrative.
