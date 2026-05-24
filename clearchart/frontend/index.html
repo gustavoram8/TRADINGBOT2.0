@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClearChart — Tu análisis, claro</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">◧</span>
+      <div>
+        <h1>ClearChart</h1>
+        <p class="tagline">Tu análisis, sin ruido.</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Paso 1: imagen -->
+    <section class="card" id="step-image">
+      <h2><span class="step-num">1</span> Subí tu gráfico</h2>
+      <p class="hint">Un solo timeframe, ya analizado por vos. Podés arrastrar el archivo,
+        elegirlo, o pegar una captura con Ctrl/Cmd + V.</p>
+
+      <div id="dropzone" class="dropzone" tabindex="0">
+        <input type="file" id="file-input" accept="image/png,image/jpeg,image/webp,image/gif" hidden />
+        <div id="dropzone-empty" class="dropzone-empty">
+          <span class="dz-icon">⤓</span>
+          <p><strong>Arrastrá tu gráfico acá</strong></p>
+          <p class="hint">o hacé clic para elegir · o pegá una captura</p>
+        </div>
+        <div id="dropzone-preview" class="dropzone-preview hidden">
+          <img id="preview-img" alt="Vista previa del gráfico" />
+          <button type="button" id="remove-img" class="ghost-btn">Quitar imagen</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Paso 2: preguntas -->
+    <section class="card" id="step-questions">
+      <h2><span class="step-num">2</span> Contame tu visión</h2>
+      <p class="hint">Respondé con tu propio lenguaje y metodología. ClearChart respeta tu enfoque.</p>
+      <form id="questions-form" class="questions-form"></form>
+    </section>
+
+    <!-- Acción -->
+    <section class="action-row">
+      <button id="analyze-btn" class="primary-btn" disabled>Generar Análisis</button>
+      <span id="action-msg" class="action-msg"></span>
+    </section>
+
+    <!-- Resultado -->
+    <section class="card result-card hidden" id="step-result">
+      <div class="result-head">
+        <h2>🗺️ Tu Mapa Limpio</h2>
+        <button id="new-analysis" class="ghost-btn">Nuevo análisis</button>
+      </div>
+      <div id="result-content" class="result-content"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>ClearChart · análisis neutral, metodológicamente agnóstico</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
