@@ -17,6 +17,8 @@ def analyze_chart(image_bytes: bytes, media_type: str, user_message: str) -> str
     """Envía la imagen + el mensaje del trader al modelo y devuelve el texto."""
     provider = os.getenv("AI_PROVIDER", "gemini").lower().strip()
 
+    if provider == "github":
+        return _analyze_github(image_bytes, media_type, user_message)
     if provider == "gemini":
         return _analyze_gemini(image_bytes, media_type, user_message)
     if provider == "openai":
@@ -24,8 +26,47 @@ def analyze_chart(image_bytes: bytes, media_type: str, user_message: str) -> str
     if provider == "anthropic":
         return _analyze_anthropic(image_bytes, media_type, user_message)
     raise AIProviderError(
-        f"AI_PROVIDER desconocido: '{provider}'. Usá 'gemini', 'openai' o 'anthropic'."
+        f"AI_PROVIDER desconocido: '{provider}'. Usá 'github', 'gemini', 'openai' o 'anthropic'."
     )
+
+
+def _analyze_github(image_bytes: bytes, media_type: str, user_message: str) -> str:
+    import base64
+
+    api_key = os.getenv("GITHUB_TOKEN")
+    if not api_key:
+        raise AIProviderError("Falta GITHUB_TOKEN en el entorno.")
+
+    try:
+        from openai import OpenAI
+    except ImportError as exc:
+        raise AIProviderError("Instalá la librería: pip install openai") from exc
+
+    client = OpenAI(
+        base_url="https://models.inference.ai.azure.com",
+        api_key=api_key,
+    )
+    model = os.getenv("GITHUB_MODEL", "gpt-4o")
+    b64 = base64.b64encode(image_bytes).decode("utf-8")
+
+    response = client.chat.completions.create(
+        model=model,
+        max_tokens=2000,
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": user_message},
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": f"data:{media_type};base64,{b64}"},
+                    },
+                ],
+            },
+        ],
+    )
+    return response.choices[0].message.content
 
 
 def _analyze_gemini(image_bytes: bytes, media_type: str, user_message: str) -> str:
