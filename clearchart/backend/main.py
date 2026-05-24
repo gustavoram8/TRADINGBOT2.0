@@ -6,6 +6,7 @@ devuelve el mapa limpio generado por el modelo de visión.
 """
 import json
 import os
+import re
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -25,6 +26,21 @@ MAX_IMAGE_BYTES = 10 * 1024 * 1024  # 10 MB
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
 
 app = FastAPI(title="ClearChart")
+
+
+def extract_analysis_json(text: str) -> dict:
+    """Extrae y parsea el JSON del texto de respuesta del modelo.
+
+    Elimina fences de markdown si están presentes, limpia espacios y parsea.
+    Si el parseo falla, retorna un dict con parse_error=True y el texto raw.
+    """
+    cleaned = re.sub(r"```(?:json)?\s*", "", text, flags=re.IGNORECASE)
+    cleaned = re.sub(r"```", "", cleaned)
+    cleaned = cleaned.strip()
+    try:
+        return json.loads(cleaned)
+    except (json.JSONDecodeError, ValueError):
+        return {"parse_error": True, "raw": text}
 
 
 @app.get("/api/health")
@@ -83,7 +99,8 @@ async def analyze(
     except Exception as exc:  # noqa: BLE001 - superficie de error del proveedor
         raise HTTPException(status_code=502, detail=f"Error al consultar el modelo: {exc}")
 
-    return JSONResponse({"analysis": result})
+    parsed = extract_analysis_json(result)
+    return JSONResponse({"analysis": parsed})
 
 
 # El frontend se monta al final para que las rutas /api/* tengan prioridad.

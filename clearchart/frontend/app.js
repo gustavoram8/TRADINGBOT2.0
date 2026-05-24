@@ -176,8 +176,8 @@ function setLoading(loading) {
   }
 }
 
-function showResult(markdown) {
-  els.resultContent.innerHTML = renderMarkdown(markdown);
+function showResult(data) {
+  els.resultContent.innerHTML = renderMap(data);
   els.resultCard.classList.remove("hidden");
   els.resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -235,6 +235,77 @@ function renderMarkdown(md) {
   }
   closeList();
   return html;
+}
+
+/* ---------- Render del mapa visual ---------- */
+function esc(s) {
+  return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function renderMap(data) {
+  if (!data || typeof data !== "object") {
+    return `<div class="map-card"><p style="color:var(--danger)">Respuesta inesperada del servidor.</p></div>`;
+  }
+
+  if (data.parse_error) {
+    return `<div class="map-card"><h3>Respuesta en texto libre</h3><pre style="white-space:pre-wrap;font-size:13px;color:var(--text-dim)">${esc(data.raw)}</pre></div>`;
+  }
+
+  const dir = (data.direction || "").toLowerCase();
+  const dirClass = dir.includes("bajist") ? "bajista" : dir.includes("alcist") ? "alcista" : "lateral";
+  const arrow = dirClass === "bajista" ? "↓" : dirClass === "alcista" ? "↑" : "↔";
+
+  const noiseItems = (data.cut_noise || []).map(n => `<li>${esc(n)}</li>`).join("");
+  const focusItems = (data.focus_list || []).map(f => `<li>${esc(f)}</li>`).join("");
+
+  return `
+<div class="map-wrapper">
+
+  <div class="map-header ${dirClass}">
+    <div class="direction-row">
+      <span class="direction-arrow">${arrow}</span>
+      <div>
+        <div class="instrument-label">${esc(data.instrument)}</div>
+        <span class="confidence">Confianza: ${esc(data.confidence)}</span>
+      </div>
+    </div>
+    <div class="headline">${esc(data.headline)}</div>
+  </div>
+
+  <div class="map-grid">
+    <div class="map-card critical">
+      <h3>⚡ Zona Crítica</h3>
+      <div class="zone-range">${esc(data.critical_zone?.range)}</div>
+      <span class="zone-type">${esc(data.critical_zone?.type)}</span>
+      <p class="verdict">${esc(data.critical_zone?.verdict)}</p>
+    </div>
+
+    <div class="map-card scenario ${dirClass}">
+      <h3>${arrow} Escenario Principal</h3>
+      <div class="target-price">${esc(data.primary_scenario?.target)}</div>
+      <p class="verdict">${esc(data.primary_scenario?.description)}</p>
+    </div>
+  </div>
+
+  <div class="map-card invalidation">
+    <h3>⚠️ Invalidación</h3>
+    <p class="trigger"><strong>Si:</strong> ${esc(data.invalidation?.trigger)}</p>
+    <p class="verdict"><strong>Entonces:</strong> ${esc(data.invalidation?.consequence)}</p>
+  </div>
+
+  <div class="map-grid">
+    <div class="map-card noise">
+      <h3>✂️ Ruido Eliminado</h3>
+      <ul class="noise-list">${noiseItems || "<li>Sin niveles a eliminar</li>"}</ul>
+    </div>
+
+    <div class="map-card focus">
+      <h3>👁 En Qué Enfocarte</h3>
+      <ul class="focus-list-items">${focusItems || "<li>Ver escenario principal</li>"}</ul>
+    </div>
+  </div>
+
+</div>`;
 }
 
 /* ---------- Init ---------- */

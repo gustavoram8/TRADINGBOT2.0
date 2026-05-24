@@ -204,3 +204,272 @@ body {
   .action-row { flex-direction: column; align-items: stretch; }
   .primary-btn { width: 100%; }
 }
+
+/* ============================================================
+   VISUAL MAP — caricature-style analysis output
+   ============================================================ */
+
+/* Wrapper: full-width flex column */
+.map-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+/* Header card — big direction statement */
+.map-header {
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+}
+
+.map-header.bajista {
+  background: linear-gradient(135deg, #1a0808, #2d0f0f);
+  border-color: #ff4444;
+}
+
+.map-header.alcista {
+  background: linear-gradient(135deg, #081a0a, #0f2d10);
+  border-color: #44ff6b;
+}
+
+.map-header.lateral {
+  background: linear-gradient(135deg, #1a1708, #2d2a0f);
+  border-color: #ffd700;
+}
+
+.map-header .direction-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.map-header .direction-arrow {
+  font-size: 48px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.map-header.bajista .direction-arrow { color: #ff4444; }
+.map-header.alcista .direction-arrow { color: #44ff6b; }
+.map-header.lateral .direction-arrow { color: #ffd700; }
+
+.map-header .instrument-label {
+  font-size: 13px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+}
+
+.map-header .confidence {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 3px 9px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-dim);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.map-header.bajista .confidence { background: rgba(255, 68, 68, 0.18); color: #ff7777; border-color: rgba(255, 68, 68, 0.3); }
+.map-header.alcista .confidence { background: rgba(68, 255, 107, 0.18); color: #6dff8a; border-color: rgba(68, 255, 107, 0.3); }
+.map-header.lateral .confidence { background: rgba(255, 215, 0, 0.18); color: #ffe55a; border-color: rgba(255, 215, 0, 0.3); }
+
+.map-header .headline {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.3;
+  margin-top: 8px;
+}
+
+/* Grid: 2 cols desktop, 1 col mobile */
+.map-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 600px) {
+  .map-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Base map card */
+.map-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  position: relative;
+}
+
+/* Accent border variants */
+.map-card.critical {
+  border-left: 4px solid #ff9500;
+}
+
+.map-card.scenario {
+  border-left: 4px solid var(--accent);
+}
+
+.map-card.scenario.bajista {
+  border-left-color: #ff4444;
+}
+
+.map-card.scenario.alcista {
+  border-left-color: #44ff6b;
+}
+
+.map-card.scenario.lateral {
+  border-left-color: #ffd700;
+}
+
+.map-card.invalidation {
+  border-left: 4px solid #ffd700;
+  background: rgba(255, 215, 0, 0.04);
+}
+
+.map-card.noise {
+  border-left: 4px solid #444a5a;
+  opacity: 0.75;
+}
+
+.map-card.focus {
+  border-left: 4px solid #4f9dff;
+}
+
+/* Card section label */
+.map-card h3 {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+  margin-bottom: 14px;
+}
+
+/* Price / range display */
+.map-card .zone-range {
+  font-size: 22px;
+  font-weight: 700;
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+  color: #ff9500;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+
+/* Level type badge */
+.map-card .zone-type {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(255, 149, 0, 0.15);
+  color: #ffb347;
+  border: 1px solid rgba(255, 149, 0, 0.3);
+  margin-bottom: 10px;
+}
+
+/* Verdict / body text */
+.map-card .verdict {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+/* Target price */
+.map-card .target-price {
+  font-size: 26px;
+  font-weight: 700;
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+  color: #fff;
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
+}
+
+.map-card.scenario.bajista .target-price { color: #ff7777; }
+.map-card.scenario.alcista .target-price { color: #6dff8a; }
+.map-card.scenario.lateral .target-price { color: #ffe55a; }
+
+/* Invalidation trigger */
+.map-card .trigger {
+  font-size: 13.5px;
+  color: var(--text-dim);
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.map-card .trigger strong {
+  color: #ffd700;
+  font-style: normal;
+}
+
+/* Noise list */
+.noise-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.noise-list li {
+  font-size: 13.5px;
+  color: var(--text-dim);
+  padding-left: 22px;
+  position: relative;
+  line-height: 1.5;
+}
+
+.noise-list li::before {
+  content: "✂";
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 13px;
+  color: #666;
+}
+
+/* Focus list */
+.focus-list-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.focus-list-items li {
+  font-size: 13.5px;
+  color: var(--text);
+  padding-left: 22px;
+  position: relative;
+  line-height: 1.5;
+}
+
+.focus-list-items li::before {
+  content: "👁";
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 12px;
+}
+
+/* Full-width card within a grid */
+.map-card.full-width {
+  grid-column: 1 / -1;
+}
