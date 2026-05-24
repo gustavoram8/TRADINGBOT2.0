@@ -1,8 +1,8 @@
 """Capa de abstracción para el modelo de visión.
 
-Soporta OpenAI (GPT-4o) y Anthropic (Claude). Se elige con la variable de
-entorno AI_PROVIDER ("openai" o "anthropic"). Cada proveedor lee su propia
-API key del entorno.
+Soporta Google Gemini (gratuito), OpenAI (GPT-4o) y Anthropic (Claude). Se
+elige con la variable de entorno AI_PROVIDER ("gemini", "openai" o
+"anthropic"). Cada proveedor lee su propia API key del entorno.
 """
 import os
 
@@ -15,15 +15,48 @@ class AIProviderError(Exception):
 
 def analyze_chart(image_bytes: bytes, media_type: str, user_message: str) -> str:
     """Envía la imagen + el mensaje del trader al modelo y devuelve el texto."""
-    provider = os.getenv("AI_PROVIDER", "openai").lower().strip()
+    provider = os.getenv("AI_PROVIDER", "gemini").lower().strip()
 
+    if provider == "gemini":
+        return _analyze_gemini(image_bytes, media_type, user_message)
     if provider == "openai":
         return _analyze_openai(image_bytes, media_type, user_message)
     if provider == "anthropic":
         return _analyze_anthropic(image_bytes, media_type, user_message)
     raise AIProviderError(
-        f"AI_PROVIDER desconocido: '{provider}'. Usá 'openai' o 'anthropic'."
+        f"AI_PROVIDER desconocido: '{provider}'. Usá 'gemini', 'openai' o 'anthropic'."
     )
+
+
+def _analyze_gemini(image_bytes: bytes, media_type: str, user_message: str) -> str:
+    api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+    if not api_key:
+        raise AIProviderError("Falta GEMINI_API_KEY en el entorno.")
+
+    try:
+        from google import genai
+        from google.genai import types
+    except ImportError as exc:
+        raise AIProviderError("Instalá la librería: pip install google-genai") from exc
+
+    client = genai.Client(api_key=api_key)
+    model = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+
+    response = client.models.generate_content(
+        model=model,
+        contents=[
+            types.Part.from_bytes(data=image_bytes, mime_type=media_type),
+            user_message,
+        ],
+        config=types.GenerateContentConfig(
+            system_instruction=SYSTEM_PROMPT,
+            max_output_tokens=2000,
+        ),
+    )
+    text = response.text
+    if not text:
+        raise AIProviderError("Gemini no devolvió texto (¿imagen bloqueada o vacía?).")
+    return text
 
 
 def _analyze_openai(image_bytes: bytes, media_type: str, user_message: str) -> str:
