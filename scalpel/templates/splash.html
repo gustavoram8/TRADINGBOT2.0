@@ -76,39 +76,31 @@
       50%      { transform: scale(1.04); opacity: 1; }
     }
 
-    /* ── ORBIT RING (faint guide) ── */
+    /* ── ORBIT RING — tilted ellipse guide ── */
     .ring {
       position: absolute;
-      inset: 0;
+      width: 276px;
+      height: 104px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-38deg);
       border-radius: 50%;
-      border: 1px dashed rgba(91,142,240,0.18);
+      border: 1px dashed rgba(91,142,240,0.22);
       animation: ringFade 3.2s ease-in-out infinite;
     }
     @keyframes ringFade {
-      0%, 100% { opacity: 0.5; }
-      50%      { opacity: 0.9; }
+      0%, 100% { opacity: 0.4; }
+      50%      { opacity: 0.85; }
     }
 
-    /* ── ORBITING BULLISH CANDLE ── */
-    .orbit {
-      position: absolute;
-      inset: 0;
-      animation: orbitSpin 4.5s linear infinite;
-      z-index: 3;
-    }
+    /* ── ORBITING BULLISH CANDLE — position driven by JS ── */
     .candle {
       position: absolute;
-      top: 2px;
-      left: 50%;
       width: 22px;
       height: 56px;
-      margin-left: -11px;
-      /* keep the candle upright while the orbit rotates */
-      animation: candleUpright 4.5s linear infinite;
-      filter: drop-shadow(0 0 6px rgba(34,197,94,0.55));
+      filter: drop-shadow(0 0 8px rgba(34,197,94,0.65));
+      pointer-events: none;
     }
-    @keyframes orbitSpin    { from { transform: rotate(0deg);   } to { transform: rotate(360deg);  } }
-    @keyframes candleUpright{ from { transform: rotate(0deg);   } to { transform: rotate(-360deg); } }
 
     /* ── TITLES ── */
     .titles { text-align: center; margin-top: 18px; }
@@ -214,7 +206,7 @@
     .skip:hover { color: var(--text); border-color: var(--accent); }
 
     @media (prefers-reduced-motion: reduce) {
-      .splash-logo, .orbit, .candle, .ring, .thinking-text, .dots span { animation: none; }
+      .splash-logo, .candle, .ring, .thinking-text, .dots span { animation: none; }
     }
 
     @media (max-width: 480px) {
@@ -241,16 +233,12 @@
          onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='block';" />
     <div id="logo-fallback" class="logo-fallback">SCALPEL</div>
 
-    <!-- Orbiting bullish candle -->
-    <div class="orbit">
-      <svg class="candle" viewBox="0 0 22 56" aria-hidden="true">
-        <!-- upper + lower wick -->
-        <line x1="11" y1="1"  x2="11" y2="14" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/>
-        <line x1="11" y1="42" x2="11" y2="55" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/>
-        <!-- bullish body -->
-        <rect x="3" y="14" width="16" height="28" rx="3" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/>
-      </svg>
-    </div>
+    <!-- Orbiting bullish candle — diagonal ellipse, path set by JS -->
+    <svg id="orbit-candle" class="candle" viewBox="0 0 22 56" aria-hidden="true">
+      <line x1="11" y1="1"  x2="11" y2="14" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="11" y1="42" x2="11" y2="55" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/>
+      <rect x="3" y="14" width="16" height="28" rx="3" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/>
+    </svg>
   </div>
 
   <div class="titles">
@@ -266,6 +254,34 @@
   <div class="progress"><div class="progress-bar" id="progress-bar"></div></div>
 
   <script>
+    // ── Diagonal elliptical orbit ──
+    (function () {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const stage  = document.querySelector('.stage');
+      const candle = document.getElementById('orbit-candle');
+      const period = 4500;                      // ms per revolution
+      const tilt   = -38 * Math.PI / 180;       // diagonal tilt angle
+      const cosT   = Math.cos(tilt);
+      const sinT   = Math.sin(tilt);
+      const cx     = stage.offsetWidth  / 2;    // stage center x
+      const cy     = stage.offsetHeight / 2;    // stage center y
+      const a      = cx * 0.863;                // semi-major axis
+      const b      = cy * 0.325;                // semi-minor axis
+
+      function frame(ts) {
+        const angle = (ts % period) / period * 2 * Math.PI;
+        const ex = a * Math.cos(angle);
+        const ey = b * Math.sin(angle);
+        const x  = ex * cosT - ey * sinT;
+        const y  = ex * sinT + ey * cosT;
+        candle.style.left   = (cx + x - 11) + 'px'; // 11 = half candle width
+        candle.style.top    = (cy + y - 28) + 'px'; // 28 = half candle height
+        candle.style.zIndex = y > 0 ? 4 : 1;        // behind logo on far arc, in front on near arc
+        requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    })();
+
     // ── Loading phrases (trading word-play), localized ──
     const PHRASES = {
       en: [
