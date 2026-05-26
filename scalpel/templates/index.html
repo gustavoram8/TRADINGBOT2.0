@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scalpel — ICT Trade Analysis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0c0e14;
+      --surface:  #13161f;
+      --card:     #181c28;
+      --border:   #252a3a;
+      --border2:  #2e344a;
+      --text:     #d4d8ec;
+      --muted:    #636882;
+      --accent:   #5b8ef0;
+      --accent-h: #7aaaf7;
+      --win:      #22c55e;
+      --loss:     #ef4444;
+      --be:       #eab308;
+      --radius:   10px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 32px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-icon svg { width: 18px; height: 18px; }
+
+    .logo-text {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--text);
+    }
+
+    .logo-sub {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      margin-top: -2px;
+    }
+
+    .nav-badge {
+      font-size: 11px;
+      color: var(--muted);
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ── LAYOUT ── */
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    .page-header {
+      margin-bottom: 36px;
+      text-align: center;
+    }
+
+    .page-header h1 {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .page-header p {
+      color: var(--muted);
+      font-size: 14px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+
+    .card-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    /* ── PILL GROUPS ── */
+    .pill-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .pill {
+      padding: 7px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border2);
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+
+    .pill:hover {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    .pill.selected {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .pill.win.selected   { background: var(--win);  border-color: var(--win);  }
+    .pill.loss.selected  { background: var(--loss); border-color: var(--loss); }
+    .pill.be.selected    { background: var(--be);   border-color: var(--be); color: #000; }
+    .pill.bull.selected  { background: #16a34a; border-color: #16a34a; }
+    .pill.bear.selected  { background: #dc2626; border-color: #dc2626; }
+
+    /* ── UPLOAD ── */
+    .upload-zone {
+      border: 2px dashed var(--border2);
+      border-radius: var(--radius);
+      padding: 36px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .upload-zone:hover, .upload-zone.dragging {
+      border-color: var(--accent);
+      background: rgba(91, 142, 240, 0.05);
+    }
+
+    .upload-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .upload-icon {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto 12px;
+      color: var(--muted);
+    }
+
+    .upload-text {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .upload-text strong {
+      color: var(--accent);
+    }
+
+    .preview-wrap {
+      display: none;
+      margin-top: 16px;
+      position: relative;
+    }
+
+    .preview-wrap img {
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      max-height: 300px;
+      object-fit: contain;
+      background: var(--surface);
+    }
+
+    .preview-remove {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(0,0,0,0.7);
+      border: none;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      cursor: pointer;
+      color: #fff;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+
+    .preview-remove:hover { background: var(--loss); }
+
+    /* ── TEXTAREA ── */
+    textarea {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      padding: 12px 14px;
+      resize: vertical;
+      min-height: 80px;
+      transition: border-color 0.15s;
+      outline: none;
+    }
+
+    textarea:focus { border-color: var(--accent); }
+    textarea::placeholder { color: var(--muted); }
+
+    /* ── SUBMIT ── */
+    .btn-analyze {
+      width: 100%;
+      padding: 14px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: 0.02em;
+      margin-top: 8px;
+    }
+
+    .btn-analyze:hover:not(:disabled) {
+      background: var(--accent-h);
+      transform: translateY(-1px);
+    }
+
+    .btn-analyze:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ── LOADING ── */
+    #loading-view {
+      display: none;
+      text-align: center;
+      padding: 60px 24px;
+    }
+
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 3px solid var(--border2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-text {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .loading-text strong {
+      display: block;
+      color: var(--text);
+      font-size: 16px;
+      margin-bottom: 6px;
+    }
+
+    /* ── RESULT ── */
+    #result-view {
+      display: none;
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .result-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .result-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .meta-tag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--border2);
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .meta-tag.win  { border-color: var(--win);  color: var(--win); }
+    .meta-tag.loss { border-color: var(--loss); color: var(--loss); }
+    .meta-tag.be   { border-color: var(--be);   color: var(--be); }
+
+    .analysis-body {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      line-height: 1.75;
+    }
+
+    .analysis-body h1, .analysis-body h2, .analysis-body h3 {
+      color: var(--text);
+      margin: 20px 0 10px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .analysis-body p { margin-bottom: 14px; color: var(--text); }
+
+    .analysis-body ul, .analysis-body ol {
+      padding-left: 20px;
+      margin-bottom: 14px;
+    }
+
+    .analysis-body li { margin-bottom: 8px; color: var(--text); }
+
+    .analysis-body strong { color: var(--accent-h); font-weight: 600; }
+
+    .analysis-body em { color: var(--muted); }
+
+    .analysis-body code {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--accent-h);
+    }
+
+    .btn-new {
+      margin-top: 24px;
+      width: 100%;
+      padding: 12px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 500;
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-new:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ── ERROR ── */
+    .error-box {
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 8px;
+      padding: 14px 16px;
+      color: #fca5a5;
+      font-size: 13px;
+      margin-top: 12px;
+      display: none;
+    }
+
+    /* ── DIVIDER ── */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 20px 0;
+    }
+
+    /* ── SECTION HEADER ── */
+    .section-row {
+      margin-bottom: 12px;
+    }
+
+    /* ── FADE ── */
+    .fade-out { animation: fadeOut 0.25s ease forwards; }
+    .fade-in  { animation: fadeIn  0.3s ease forwards; }
+
+    @keyframes fadeOut { to { opacity: 0; transform: translateY(-8px); } }
+    @keyframes fadeIn  { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 24px;
+      color: var(--muted);
+      font-size: 11px;
+      border-top: 1px solid var(--border);
+      letter-spacing: 0.04em;
+    }
+
+    @media (max-width: 480px) {
+      nav { padding: 14px 16px; }
+      .container { padding: 24px 16px 60px; }
+      .card { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+        <path d="M2 17l10 5 10-5"/>
+        <path d="M2 12l10 5 10-5"/>
+      </svg>
+    </div>
+    <div>
+      <div class="logo-text">SCALPEL</div>
+      <div class="logo-sub">ICT Trade Analysis</div>
+    </div>
+  </div>
+  <div class="nav-badge">Beta</div>
+</nav>
+
+<div class="container">
+
+  <!-- ── FORM VIEW ── -->
+  <div id="form-view">
+    <div class="page-header">
+      <h1>Analyze Your Setup</h1>
+      <p>Submit a trade for ICT analysis. Scalpel will identify possible setup errors and offer suggestions based on methodology — not verdicts.</p>
+    </div>
+
+    <form id="trade-form" enctype="multipart/form-data">
+
+      <!-- Trade Info -->
+      <div class="card">
+        <div class="card-label">Trade Details</div>
+
+        <div class="section-row">
+          <div style="font-size:12px; color:var(--muted); margin-bottom:8px;">Instrument</div>
+          <div class="pill-group" data-group="instrument" data-required="true">
+            <div class="pill" data-value="NQ">NQ</div>
+            <div class="pill" data-value="MNQ">MNQ</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="section-row">
+          <div style="font-size:12px; color:var(--muted); margin-bottom:8px;">Session</div>
+          <div class="pill-group" data-group="session" data-required="true">
+            <div class="pill" data-value="London">London</div>
+            <div class="pill" data-value="NY Morning">NY Morning</div>
+            <div class="pill" data-value="NY Afternoon">NY Afternoon</div>
+            <div class="pill" data-value="Overlap">Overlap</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="section-row">
+          <div style="font-size:12px; color:var(--muted); margin-bottom:8px;">Result</div>
+          <div class="pill-group" data-group="result" data-required="true">
+            <div class="pill win"  data-value="Win">Win</div>
+            <div class="pill loss" data-value="Loss">Loss</div>
+            <div class="pill be"   data-value="Breakeven">Breakeven</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analysis -->
+      <div class="card">
+        <div class="card-label">Your Pre-Trade Analysis</div>
+
+        <div class="section-row">
+          <div style="font-size:12px; color:var(--muted); margin-bottom:8px;">HTF Bias</div>
+          <div class="pill-group" data-group="htf_bias" data-required="true">
+            <div class="pill bull" data-value="Bullish">Bullish</div>
+            <div class="pill bear" data-value="Bearish">Bearish</div>
+            <div class="pill"      data-value="Neutral">Neutral</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="section-row">
+          <div style="font-size:12px; color:var(--muted); margin-bottom:8px;">Traded aligned with that bias?</div>
+          <div class="pill-group" data-group="aligned" data-required="true">
+            <div class="pill" data-value="Yes">Yes</div>
+            <div class="pill" data-value="No">No</div>
+            <div class="pill" data-value="Partially">Partially</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="section-row">
+          <div style="font-size:12px; color:var(--muted); margin-bottom:8px;">Approach / Model</div>
+          <div class="pill-group" data-group="approach" data-required="true">
+            <div class="pill" data-value="ICT General">ICT General</div>
+            <div class="pill" data-value="Liquidity Sweep">Liquidity Sweep</div>
+            <div class="pill" data-value="FVG Entry">FVG Entry</div>
+            <div class="pill" data-value="Silver Bullet">Silver Bullet</div>
+            <div class="pill" data-value="OTE">OTE</div>
+            <div class="pill" data-value="Midnight Open">Midnight Open</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Confluences -->
+      <div class="card">
+        <div class="card-label">Confluences You Identified <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;">(select all that apply)</span></div>
+        <div class="pill-group" data-group="confluences" data-multi="true">
+          <div class="pill" data-value="Liquidity Sweep">Liquidity Sweep</div>
+          <div class="pill" data-value="FVG">FVG</div>
+          <div class="pill" data-value="Kill Zone">Kill Zone</div>
+          <div class="pill" data-value="PDH/PDL">PDH / PDL</div>
+          <div class="pill" data-value="EQH/EQL">EQH / EQL</div>
+          <div class="pill" data-value="CHoCH/BOS">CHoCH / BOS</div>
+          <div class="pill" data-value="HTF Structure">HTF Structure</div>
+          <div class="pill" data-value="Order Block">Order Block</div>
+          <div class="pill" data-value="SMT Divergence">SMT Divergence</div>
+        </div>
+      </div>
+
+      <!-- Screenshot -->
+      <div class="card">
+        <div class="card-label">Chart Screenshot <span style="color:var(--loss);font-weight:400;text-transform:none;letter-spacing:0;">required</span></div>
+        <div class="upload-zone" id="upload-zone">
+          <input type="file" name="screenshot" id="screenshot-input" accept="image/*" />
+          <div id="upload-placeholder">
+            <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            <div class="upload-text">
+              <strong>Click or drag your chart screenshot here</strong><br/>
+              JPG, PNG or WebP — max 20MB
+            </div>
+          </div>
+          <div class="preview-wrap" id="preview-wrap">
+            <img id="preview-img" src="" alt="Chart preview" />
+            <button type="button" class="preview-remove" id="remove-img">×</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="card">
+        <div class="card-label">Notes <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;">(optional — anything you want Scalpel to know)</span></div>
+        <textarea name="notes" id="notes" placeholder="e.g. I thought price had swept SSL before I entered. It reversed right after my entry..."></textarea>
+      </div>
+
+      <div class="error-box" id="error-box"></div>
+
+      <button type="submit" class="btn-analyze" id="analyze-btn">
+        Analyze Setup →
+      </button>
+
+    </form>
+  </div>
+
+  <!-- ── LOADING VIEW ── -->
+  <div id="loading-view">
+    <div class="spinner"></div>
+    <div class="loading-text">
+      <strong>Analyzing your setup...</strong>
+      Scalpel is reading the chart and applying ICT theory. This takes 10–20 seconds.
+    </div>
+  </div>
+
+  <!-- ── RESULT VIEW ── -->
+  <div id="result-view">
+    <div class="result-header">
+      <div class="result-title">Setup Analysis</div>
+      <div class="result-meta" id="result-meta"></div>
+    </div>
+    <div class="analysis-body" id="analysis-body"></div>
+    <button class="btn-new" id="btn-new">← Analyze Another Trade</button>
+  </div>
+
+</div>
+
+<footer>SCALPEL · ICT Trade Analysis · For educational purposes only · Not financial advice</footer>
+
+<script>
+  // ── Pill Selection Logic ──
+  const selections = {};
+
+  document.querySelectorAll('.pill-group').forEach(group => {
+    const groupName = group.dataset.group;
+    const isMulti   = group.dataset.multi === 'true';
+    selections[groupName] = isMulti ? [] : null;
+
+    group.querySelectorAll('.pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        const val = pill.dataset.value;
+
+        if (isMulti) {
+          pill.classList.toggle('selected');
+          const arr = selections[groupName];
+          const idx = arr.indexOf(val);
+          if (idx === -1) arr.push(val);
+          else arr.splice(idx, 1);
+        } else {
+          group.querySelectorAll('.pill').forEach(p => p.classList.remove('selected'));
+          pill.classList.add('selected');
+          selections[groupName] = val;
+        }
+      });
+    });
+  });
+
+  // ── Screenshot Upload ──
+  const uploadZone   = document.getElementById('upload-zone');
+  const fileInput    = document.getElementById('screenshot-input');
+  const placeholder  = document.getElementById('upload-placeholder');
+  const previewWrap  = document.getElementById('preview-wrap');
+  const previewImg   = document.getElementById('preview-img');
+  const removeBtn    = document.getElementById('remove-img');
+
+  function showPreview(file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      previewImg.src = e.target.result;
+      placeholder.style.display = 'none';
+      previewWrap.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) showPreview(fileInput.files[0]);
+  });
+
+  removeBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    fileInput.value = '';
+    previewImg.src = '';
+    placeholder.style.display = 'block';
+    previewWrap.style.display = 'none';
+  });
+
+  uploadZone.addEventListener('dragover', e => {
+    e.preventDefault();
+    uploadZone.classList.add('dragging');
+  });
+
+  uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragging'));
+
+  uploadZone.addEventListener('drop', e => {
+    e.preventDefault();
+    uploadZone.classList.remove('dragging');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      fileInput.files = dt.files;
+      showPreview(file);
+    }
+  });
+
+  // ── Form Submit ──
+  const form        = document.getElementById('trade-form');
+  const formView    = document.getElementById('form-view');
+  const loadingView = document.getElementById('loading-view');
+  const resultView  = document.getElementById('result-view');
+  const errorBox    = document.getElementById('error-box');
+  const analyzeBtn  = document.getElementById('analyze-btn');
+
+  function showError(msg) {
+    errorBox.textContent = msg;
+    errorBox.style.display = 'block';
+    analyzeBtn.disabled = false;
+    analyzeBtn.textContent = 'Analyze Setup →';
+  }
+
+  function hideError() {
+    errorBox.style.display = 'none';
+  }
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    hideError();
+
+    // Validate required single-selects
+    const required = ['instrument', 'session', 'result', 'htf_bias', 'aligned', 'approach'];
+    for (const field of required) {
+      if (!selections[field]) {
+        showError(`Please select a value for: ${field.replace('_', ' ')}.`);
+        return;
+      }
+    }
+
+    if (!fileInput.files[0]) {
+      showError('Please upload a chart screenshot before submitting.');
+      return;
+    }
+
+    analyzeBtn.disabled = true;
+    analyzeBtn.textContent = 'Analyzing...';
+
+    // Build FormData
+    const fd = new FormData();
+    fd.append('instrument', selections.instrument);
+    fd.append('session',    selections.session);
+    fd.append('result',     selections.result);
+    fd.append('htf_bias',   selections.htf_bias);
+    fd.append('aligned',    selections.aligned);
+    fd.append('approach',   selections.approach);
+
+    selections.confluences.forEach(c => fd.append('confluences', c));
+
+    const notes = document.getElementById('notes').value.trim();
+    if (notes) fd.append('notes', notes);
+
+    fd.append('screenshot', fileInput.files[0]);
+
+    // Switch to loading
+    formView.style.display  = 'none';
+    loadingView.style.display = 'block';
+    resultView.style.display  = 'none';
+
+    try {
+      const res  = await fetch('/analyze', { method: 'POST', body: fd });
+      const data = await res.json();
+
+      loadingView.style.display = 'none';
+
+      if (!res.ok || data.error) {
+        formView.style.display = 'block';
+        showError(data.error || 'Something went wrong. Please try again.');
+        analyzeBtn.disabled = false;
+        analyzeBtn.textContent = 'Analyze Setup →';
+        return;
+      }
+
+      // Build result meta tags
+      const meta = document.getElementById('result-meta');
+      meta.innerHTML = '';
+
+      const resultClass = { 'Win': 'win', 'Loss': 'loss', 'Breakeven': 'be' }[selections.result] || '';
+      meta.innerHTML += `<span class="meta-tag ${resultClass}">${selections.result}</span>`;
+      meta.innerHTML += `<span class="meta-tag">${selections.instrument}</span>`;
+      meta.innerHTML += `<span class="meta-tag">${selections.session}</span>`;
+      meta.innerHTML += `<span class="meta-tag">${selections.approach}</span>`;
+
+      // Render markdown analysis
+      document.getElementById('analysis-body').innerHTML = marked.parse(data.analysis);
+
+      resultView.style.display = 'block';
+      resultView.classList.add('fade-in');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    } catch (err) {
+      loadingView.style.display = 'none';
+      formView.style.display    = 'block';
+      showError('Network error. Check your connection and try again.');
+      analyzeBtn.disabled = false;
+      analyzeBtn.textContent = 'Analyze Setup →';
+    }
+  });
+
+  // ── New Trade ──
+  document.getElementById('btn-new').addEventListener('click', () => {
+    // Reset selections
+    Object.keys(selections).forEach(k => {
+      selections[k] = Array.isArray(selections[k]) ? [] : null;
+    });
+    document.querySelectorAll('.pill.selected').forEach(p => p.classList.remove('selected'));
+
+    // Reset file
+    fileInput.value = '';
+    previewImg.src = '';
+    placeholder.style.display = 'block';
+    previewWrap.style.display = 'none';
+
+    // Reset notes
+    document.getElementById('notes').value = '';
+
+    // Reset button
+    analyzeBtn.disabled = false;
+    analyzeBtn.textContent = 'Analyze Setup →';
+    hideError();
+
+    resultView.style.display = 'none';
+    formView.style.display   = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+</script>
+</body>
+</html>
