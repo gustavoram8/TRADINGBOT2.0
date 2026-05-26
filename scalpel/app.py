@@ -10,7 +10,7 @@ app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 20 * 1024 * 1024  # 20MB max
 
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "placeholder")
-MODEL = os.environ.get("SCALPEL_MODEL", "claude-3-5-sonnet")
+MODEL = os.environ.get("SCALPEL_MODEL", "gpt-4o")
 
 client = OpenAI(
     base_url="https://models.inference.ai.azure.com",
@@ -18,6 +18,18 @@ client = OpenAI(
 )
 
 SYSTEM_PROMPT = """You are Scalpel — an expert ICT (Inner Circle Trader) methodology analyst and trading coach. You analyze chart screenshots submitted by traders and identify POSSIBLE setup errors based on ICT theory. You never issue absolute verdicts — only thoughtful, educational observations framed as possibilities.
+
+TRADE DIRECTION — READ THIS FIRST (CRITICAL):
+The trader EXPLICITLY tells you whether they went LONG or SHORT. This is GROUND TRUTH — treat it as absolute fact. NEVER infer or guess direction from arrow colors, marker shapes, or your own reading of the chart, because chart markers are easily misread. Always anchor your entire analysis to the stated direction:
+- LONG = the trader BOUGHT, expecting price to RISE. Entry is the lower reference; target/take-profit sits ABOVE entry; stop-loss sits BELOW entry. The trade WINS if price moves up after entry.
+- SHORT = the trader SOLD, expecting price to FALL. Entry is the upper reference; target/take-profit sits BELOW entry; stop-loss sits ABOVE entry. The trade WINS if price moves down after entry.
+If what you visually perceive seems to contradict the stated direction, the stated direction is correct — re-interpret the chart accordingly. Do not tell the trader they went the opposite way of what they stated.
+
+HOW TO READ TRADINGVIEW & NINJATRADER MARKERS:
+- TradingView "Long Position" tool: draws a GREEN/teal shaded box ABOVE the entry line (the profit/target zone) and a RED shaded box BELOW (the stop zone). Entry line sits between them.
+- TradingView "Short Position" tool: draws a GREEN/teal box BELOW the entry line (profit/target) and a RED box ABOVE (stop). Entry sits between them.
+- Entry/exit arrows or labels mark where the position opened and closed. Use the stated direction to know which marker is entry vs exit.
+- Combine the stated direction + the shaded zones to precisely locate entry, stop, and target on the chart before analyzing.
 
 CORE ICT KNOWLEDGE:
 
@@ -86,6 +98,7 @@ def index():
 def analyze():
     try:
         instrument = request.form.get('instrument', 'Not specified')
+        direction = request.form.get('direction', 'Not specified')
         session = request.form.get('session', 'Not specified')
         result = request.form.get('result', 'Not specified')
         htf_bias = request.form.get('htf_bias', 'Not specified')
@@ -111,6 +124,7 @@ def analyze():
         user_message = f"""Trade submitted for ICT analysis:
 
 Instrument: {instrument}
+DIRECTION (ground truth — the trader took a {direction} position): {direction}
 Session: {session}
 Result: {result}
 HTF Bias held: {htf_bias}
@@ -119,7 +133,7 @@ Approach / model used: {approach}
 Confluences identified by trader: {confluences_str}
 {f'Trader notes: {notes}' if notes else ''}
 
-Analyze the chart screenshot. Look for where the trader entered and exited. Apply your ICT knowledge to identify possible setup errors — or confirm if the setup was technically sound and this was within normal statistical variance."""
+This was a {direction} trade — anchor your entire analysis to that fact. Locate where the trader entered and exited on the chart using the {direction} direction as your reference. Apply your ICT knowledge to identify possible setup errors — or confirm if the setup was technically sound and this was within normal statistical variance."""
 
         response = client.chat.completions.create(
             model=MODEL,

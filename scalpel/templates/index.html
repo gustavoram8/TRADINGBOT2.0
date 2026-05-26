@@ -56,6 +56,20 @@
       text-decoration: none;
     }
 
+    .logo-img {
+      height: 34px;
+      width: auto;
+      filter: invert(1);
+      mix-blend-mode: lighten;
+      display: block;
+    }
+
+    .logo-fallback {
+      display: none;
+      align-items: center;
+      gap: 10px;
+    }
+
     .logo-icon {
       width: 32px;
       height: 32px;
@@ -173,6 +187,8 @@
     .pill.be.selected    { background: var(--be);   border-color: var(--be); color: #000; }
     .pill.bull.selected  { background: #16a34a; border-color: #16a34a; }
     .pill.bear.selected  { background: #dc2626; border-color: #dc2626; }
+    .pill.long.selected  { background: var(--win);  border-color: var(--win);  }
+    .pill.short.selected { background: var(--loss); border-color: var(--loss); }
 
     /* ── UPLOAD ── */
     .upload-zone {
@@ -474,19 +490,23 @@
 <body>
 
 <nav>
-  <div class="logo">
-    <div class="logo-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-        <path d="M2 17l10 5 10-5"/>
-        <path d="M2 12l10 5 10-5"/>
-      </svg>
+  <a href="/" class="logo">
+    <img src="/static/logo.png" alt="Scalpel" class="logo-img"
+         onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='flex';" />
+    <div id="logo-fallback" class="logo-fallback">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <div>
+        <div class="logo-text">SCALPEL</div>
+        <div class="logo-sub">ICT Trade Analysis</div>
+      </div>
     </div>
-    <div>
-      <div class="logo-text">SCALPEL</div>
-      <div class="logo-sub">ICT Trade Analysis</div>
-    </div>
-  </div>
+  </a>
   <div class="nav-badge">Beta</div>
 </nav>
 
@@ -510,6 +530,16 @@
           <div class="pill-group" data-group="instrument" data-required="true">
             <div class="pill" data-value="NQ">NQ</div>
             <div class="pill" data-value="MNQ">MNQ</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="section-row">
+          <div style="font-size:12px; color:var(--muted); margin-bottom:8px;">Direction</div>
+          <div class="pill-group" data-group="direction" data-required="true">
+            <div class="pill long"  data-value="Long">Long</div>
+            <div class="pill short" data-value="Short">Short</div>
           </div>
         </div>
 
@@ -752,7 +782,7 @@
     hideError();
 
     // Validate required single-selects
-    const required = ['instrument', 'session', 'result', 'htf_bias', 'aligned', 'approach'];
+    const required = ['instrument', 'direction', 'session', 'result', 'htf_bias', 'aligned', 'approach'];
     for (const field of required) {
       if (!selections[field]) {
         showError(`Please select a value for: ${field.replace('_', ' ')}.`);
@@ -771,6 +801,7 @@
     // Build FormData
     const fd = new FormData();
     fd.append('instrument', selections.instrument);
+    fd.append('direction',  selections.direction);
     fd.append('session',    selections.session);
     fd.append('result',     selections.result);
     fd.append('htf_bias',   selections.htf_bias);
@@ -808,8 +839,10 @@
       meta.innerHTML = '';
 
       const resultClass = { 'Win': 'win', 'Loss': 'loss', 'Breakeven': 'be' }[selections.result] || '';
+      const dirClass = selections.direction === 'Long' ? 'win' : 'loss';
       meta.innerHTML += `<span class="meta-tag ${resultClass}">${selections.result}</span>`;
       meta.innerHTML += `<span class="meta-tag">${selections.instrument}</span>`;
+      meta.innerHTML += `<span class="meta-tag ${dirClass}">${selections.direction}</span>`;
       meta.innerHTML += `<span class="meta-tag">${selections.session}</span>`;
       meta.innerHTML += `<span class="meta-tag">${selections.approach}</span>`;
 
