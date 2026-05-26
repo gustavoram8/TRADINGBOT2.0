@@ -187,6 +187,7 @@ def analyze():
         approach = request.form.get('approach', 'Not specified')
         confluences = request.form.getlist('confluences')
         notes = request.form.get('notes', '').strip()
+        language = request.form.get('language', 'English').strip() or 'English'
 
         screenshot = request.files.get('screenshot')
         if not screenshot or screenshot.filename == '':
@@ -214,7 +215,9 @@ Approach / model used: {approach}
 Confluences identified by trader: {confluences_str}
 {f'Trader notes: {notes}' if notes else ''}
 
-This was a {direction} trade — anchor your entire analysis to that fact. Locate where the trader entered and exited on the chart using the {direction} direction as your reference. Apply your ICT knowledge to identify possible setup errors — or confirm if the setup was technically sound and this was within normal statistical variance."""
+This was a {direction} trade — anchor your entire analysis to that fact. Locate where the trader entered and exited on the chart using the {direction} direction as your reference. Apply your ICT knowledge to identify possible setup errors — or confirm if the setup was technically sound and this was within normal statistical variance.
+
+LANGUAGE: Write your entire response in {language}. Keep ICT-specific terms and acronyms (FVG, IFVG, OTE, CHoCH, MSS, BOS, OB, SMT, BSL, SSL, EQH, EQL, Kill Zone, Silver Bullet, etc.) in their standard English form, but write all explanatory prose in {language}."""
 
         response = client.chat.completions.create(
             model=MODEL,

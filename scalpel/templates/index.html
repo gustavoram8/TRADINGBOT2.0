@@ -25,6 +25,38 @@
       --radius:   10px;
     }
 
+    /* ── LIGHT THEME ── */
+    body.light {
+      --bg:       #f4f5f8;
+      --surface:  #ffffff;
+      --card:     #ffffff;
+      --border:   #e3e6ee;
+      --border2:  #d2d7e3;
+      --text:     #1a1d28;
+      --muted:    #6b7186;
+      --accent:   #3f6fd6;
+      --accent-h: #2f5cc0;
+    }
+
+    body, nav, .card, .pill, .shot-guide, textarea, .analysis-body,
+    .meta-tag, .nav-badge, .modal, .btn-new {
+      transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+    }
+
+    /* Logo: inverted (black→white) on dark; shown as-is on light */
+    body.light .logo-img { filter: none; mix-blend-mode: normal; }
+
+    /* Cursor hint flips for contrast on the light nav */
+    body.light .cursor-hint path { fill: #15171f; stroke: #ffffff; }
+
+    body.light .error-box {
+      background: rgba(239, 68, 68, 0.07);
+      border-color: rgba(239, 68, 68, 0.35);
+      color: #b91c1c;
+    }
+
+    body.light .preview-remove { background: rgba(0,0,0,0.55); }
+
     html { scroll-behavior: smooth; }
 
     body {
@@ -193,6 +225,75 @@
       border-radius: 20px;
       font-family: 'JetBrains Mono', monospace;
     }
+
+    /* ── NAV CONTROLS ── */
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .lang-select {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--card);
+      border: 1px solid var(--border2);
+      border-radius: 20px;
+      padding: 0 8px 0 12px;
+      height: 34px;
+      color: var(--text);
+    }
+
+    .lang-select svg { width: 15px; height: 15px; color: var(--muted); flex-shrink: 0; }
+
+    .lang-select select {
+      appearance: none;
+      -webkit-appearance: none;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 0 18px 0 2px;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .lang-select select option { background: var(--surface); color: var(--text); }
+
+    .lang-select .caret {
+      position: absolute;
+      right: 10px;
+      pointer-events: none;
+      width: 12px;
+      height: 12px;
+      color: var(--muted);
+    }
+
+    .theme-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--card);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+
+    .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+    .theme-toggle svg { width: 17px; height: 17px; }
+    .theme-toggle .icon-sun  { display: none; }
+    .theme-toggle .icon-moon { display: block; }
+    body.light .theme-toggle .icon-sun  { display: block; }
+    body.light .theme-toggle .icon-moon { display: none; }
 
     /* ── LAYOUT ── */
     .container {
@@ -713,6 +814,13 @@
   </style>
 </head>
 <body>
+<script>
+  // Apply saved theme before paint to avoid a flash
+  (function () {
+    try { if (localStorage.getItem('scalpel_theme') === 'light') document.body.classList.add('light'); }
+    catch (e) {}
+  })();
+</script>
 
 <nav>
   <div class="logo-wrap">
@@ -740,10 +848,46 @@
       <path d="M4.5 2.2 L4.5 19.6 L9.2 15.1 L12.3 21.6 L15.1 20.3 L12.1 14.0 L18.4 14.0 Z"
             fill="#ffffff" stroke="#0c0e14" stroke-width="1.2" stroke-linejoin="round"/>
     </svg>
-    <span class="logo-tip" aria-hidden="true">See plans →</span>
+    <span class="logo-tip" aria-hidden="true" data-i18n="nav.tip">See plans →</span>
   </div>
 
-  <div class="nav-badge">Beta</div>
+  <div class="nav-controls">
+    <div class="lang-select">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="2" y1="12" x2="22" y2="12"/>
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+      </svg>
+      <select id="lang-select" aria-label="Language">
+        <option value="en">English</option>
+        <option value="es">Español</option>
+        <option value="fr">Français</option>
+        <option value="pt">Português</option>
+      </select>
+      <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+    </div>
+
+    <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle theme">
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="5"/>
+        <line x1="12" y1="1" x2="12" y2="3"/>
+        <line x1="12" y1="21" x2="12" y2="23"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="1" y1="12" x2="3" y2="12"/>
+        <line x1="21" y1="12" x2="23" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+    </button>
+
+    <div class="nav-badge">Beta</div>
+  </div>
 </nav>
 
 <div class="container">
@@ -751,18 +895,18 @@
   <!-- ── FORM VIEW ── -->
   <div id="form-view">
     <div class="page-header">
-      <h1>Analyze Your Setup</h1>
-      <p>Submit a trade for ICT analysis. Scalpel will identify possible setup errors and offer suggestions based on methodology — not verdicts.</p>
+      <h1 data-i18n="header.title">Analyze Your Setup</h1>
+      <p data-i18n="header.sub">Submit a trade for ICT analysis. Scalpel will identify possible setup errors and offer suggestions based on methodology — not verdicts.</p>
     </div>
 
     <form id="trade-form" enctype="multipart/form-data">
 
       <!-- Trade Info -->
       <div class="card">
-        <div class="card-label">Trade Details</div>
+        <div class="card-label" data-i18n="card.tradeDetails">Trade Details</div>
 
         <div class="section-row">
-          <div style="font-size:12px; color:var(--muted); margin-bottom:8px;">Instrument</div>
+          <div style="font-size:12px; color:var(--muted); margin-bottom:8px;" data-i18n="field.instrument">Instrument</div>
           <div class="pill-group" data-group="instrument" data-required="true">
             <div class="pill" data-value="NQ">NQ</div>
             <div class="pill" data-value="MNQ">MNQ</div>
@@ -772,67 +916,67 @@
         <div class="divider"></div>
 
         <div class="section-row">
-          <div style="font-size:12px; color:var(--muted); margin-bottom:8px;">Direction</div>
+          <div style="font-size:12px; color:var(--muted); margin-bottom:8px;" data-i18n="field.direction">Direction</div>
           <div class="pill-group" data-group="direction" data-required="true">
-            <div class="pill long"  data-value="Long">Long</div>
-            <div class="pill short" data-value="Short">Short</div>
+            <div class="pill long"  data-value="Long"  data-i18n="pill.long">Long</div>
+            <div class="pill short" data-value="Short" data-i18n="pill.short">Short</div>
           </div>
         </div>
 
         <div class="divider"></div>
 
         <div class="section-row">
-          <div style="font-size:12px; color:var(--muted); margin-bottom:8px;">Session</div>
+          <div style="font-size:12px; color:var(--muted); margin-bottom:8px;" data-i18n="field.session">Session</div>
           <div class="pill-group" data-group="session" data-required="true">
-            <div class="pill" data-value="London">London</div>
-            <div class="pill" data-value="NY Morning">NY Morning</div>
-            <div class="pill" data-value="NY Afternoon">NY Afternoon</div>
-            <div class="pill" data-value="Overlap">Overlap</div>
+            <div class="pill" data-value="London" data-i18n="pill.london">London</div>
+            <div class="pill" data-value="NY Morning" data-i18n="pill.nyMorning">NY Morning</div>
+            <div class="pill" data-value="NY Afternoon" data-i18n="pill.nyAfternoon">NY Afternoon</div>
+            <div class="pill" data-value="Overlap" data-i18n="pill.overlap">Overlap</div>
           </div>
         </div>
 
         <div class="divider"></div>
 
         <div class="section-row">
-          <div style="font-size:12px; color:var(--muted); margin-bottom:8px;">Result</div>
+          <div style="font-size:12px; color:var(--muted); margin-bottom:8px;" data-i18n="field.result">Result</div>
           <div class="pill-group" data-group="result" data-required="true">
-            <div class="pill win"  data-value="Win">Win</div>
-            <div class="pill loss" data-value="Loss">Loss</div>
-            <div class="pill be"   data-value="Breakeven">Breakeven</div>
+            <div class="pill win"  data-value="Win"  data-i18n="pill.win">Win</div>
+            <div class="pill loss" data-value="Loss" data-i18n="pill.loss">Loss</div>
+            <div class="pill be"   data-value="Breakeven" data-i18n="pill.breakeven">Breakeven</div>
           </div>
         </div>
       </div>
 
       <!-- Analysis -->
       <div class="card">
-        <div class="card-label">Your Pre-Trade Analysis</div>
+        <div class="card-label" data-i18n="card.preTrade">Your Pre-Trade Analysis</div>
 
         <div class="section-row">
-          <div style="font-size:12px; color:var(--muted); margin-bottom:8px;">HTF Bias</div>
+          <div style="font-size:12px; color:var(--muted); margin-bottom:8px;" data-i18n="field.htfBias">HTF Bias</div>
           <div class="pill-group" data-group="htf_bias" data-required="true">
-            <div class="pill bull" data-value="Bullish">Bullish</div>
-            <div class="pill bear" data-value="Bearish">Bearish</div>
-            <div class="pill"      data-value="Neutral">Neutral</div>
+            <div class="pill bull" data-value="Bullish" data-i18n="pill.bullish">Bullish</div>
+            <div class="pill bear" data-value="Bearish" data-i18n="pill.bearish">Bearish</div>
+            <div class="pill"      data-value="Neutral" data-i18n="pill.neutral">Neutral</div>
           </div>
         </div>
 
         <div class="divider"></div>
 
         <div class="section-row">
-          <div style="font-size:12px; color:var(--muted); margin-bottom:8px;">Traded aligned with that bias?</div>
+          <div style="font-size:12px; color:var(--muted); margin-bottom:8px;" data-i18n="field.aligned">Traded aligned with that bias?</div>
           <div class="pill-group" data-group="aligned" data-required="true">
-            <div class="pill" data-value="Yes">Yes</div>
-            <div class="pill" data-value="No">No</div>
-            <div class="pill" data-value="Partially">Partially</div>
+            <div class="pill" data-value="Yes" data-i18n="pill.yes">Yes</div>
+            <div class="pill" data-value="No" data-i18n="pill.no">No</div>
+            <div class="pill" data-value="Partially" data-i18n="pill.partially">Partially</div>
           </div>
         </div>
 
         <div class="divider"></div>
 
         <div class="section-row">
-          <div style="font-size:12px; color:var(--muted); margin-bottom:8px;">Approach / Model</div>
+          <div style="font-size:12px; color:var(--muted); margin-bottom:8px;" data-i18n="field.approach">Approach / Model</div>
           <div class="pill-group" data-group="approach" data-required="true">
-            <div class="pill" data-value="ICT General">ICT General</div>
+            <div class="pill" data-value="ICT General" data-i18n="pill.ictGeneral">ICT General</div>
             <div class="pill" data-value="Liquidity Sweep">Liquidity Sweep</div>
             <div class="pill" data-value="FVG Entry">FVG Entry</div>
             <div class="pill" data-value="Silver Bullet">Silver Bullet</div>
@@ -844,7 +988,7 @@
 
       <!-- Confluences -->
       <div class="card">
-        <div class="card-label">Confluences You Identified <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;">(select all that apply)</span></div>
+        <div class="card-label"><span data-i18n="card.confluences">Confluences You Identified</span> <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;" data-i18n="card.confluencesHint">(select all that apply)</span></div>
         <div class="pill-group" data-group="confluences" data-multi="true">
           <div class="pill" data-value="Liquidity Sweep">Liquidity Sweep</div>
           <div class="pill" data-value="FVG">FVG</div>
@@ -860,24 +1004,24 @@
 
       <!-- Screenshot -->
       <div class="card">
-        <div class="card-label">Chart Screenshot <span style="color:var(--loss);font-weight:400;text-transform:none;letter-spacing:0;">required</span></div>
+        <div class="card-label"><span data-i18n="card.screenshot">Chart Screenshot</span> <span style="color:var(--loss);font-weight:400;text-transform:none;letter-spacing:0;" data-i18n="card.required">required</span></div>
 
         <div class="shot-guide">
-          <div class="shot-guide-title">Your screenshot should clearly show:</div>
+          <div class="shot-guide-title" data-i18n="guide.title">Your screenshot should clearly show:</div>
           <div class="shot-guide-item">
             <span class="guide-icon req">→</span>
-            <span class="guide-text">Entry marker / arrow</span>
-            <span class="guide-tag req">required</span>
+            <span class="guide-text" data-i18n="guide.entry">Entry marker / arrow</span>
+            <span class="guide-tag req" data-i18n="guide.tagRequired">required</span>
           </div>
           <div class="shot-guide-item">
             <span class="guide-icon req">←</span>
-            <span class="guide-text">Exit marker / arrow</span>
-            <span class="guide-tag req">if trade closed</span>
+            <span class="guide-text" data-i18n="guide.exit">Exit marker / arrow</span>
+            <span class="guide-tag req" data-i18n="guide.tagIfClosed">if trade closed</span>
           </div>
           <div class="shot-guide-item">
             <span class="guide-icon opt">▢</span>
-            <span class="guide-text">Stop Loss / Take Profit zones</span>
-            <span class="guide-tag opt">recommended</span>
+            <span class="guide-text" data-i18n="guide.sltp">Stop Loss / Take Profit zones</span>
+            <span class="guide-tag opt" data-i18n="guide.tagRecommended">recommended</span>
           </div>
         </div>
 
@@ -888,8 +1032,8 @@
               <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
             </svg>
             <div class="upload-text">
-              <strong>Click or drag your chart screenshot here</strong><br/>
-              JPG, PNG or WebP — max 20MB
+              <strong data-i18n="upload.main">Click or drag your chart screenshot here</strong><br/>
+              <span data-i18n="upload.sub">JPG, PNG or WebP — max 20MB</span>
             </div>
           </div>
           <div class="preview-wrap" id="preview-wrap">
@@ -901,13 +1045,13 @@
 
       <!-- Notes -->
       <div class="card">
-        <div class="card-label">Notes <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;">(optional — anything you want Scalpel to know)</span></div>
-        <textarea name="notes" id="notes" placeholder="e.g. I thought price had swept SSL before I entered. It reversed right after my entry..."></textarea>
+        <div class="card-label"><span data-i18n="card.notes">Notes</span> <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;" data-i18n="card.notesHint">(optional — anything you want Scalpel to know)</span></div>
+        <textarea name="notes" id="notes" data-i18n-ph="notes.placeholder" placeholder="e.g. I thought price had swept SSL before I entered. It reversed right after my entry..."></textarea>
       </div>
 
       <div class="error-box" id="error-box"></div>
 
-      <button type="submit" class="btn-analyze" id="analyze-btn">
+      <button type="submit" class="btn-analyze" id="analyze-btn" data-i18n="btn.analyze">
         Analyze Setup →
       </button>
 
@@ -926,11 +1070,11 @@
   <!-- ── RESULT VIEW ── -->
   <div id="result-view">
     <div class="result-header">
-      <div class="result-title">Setup Analysis</div>
+      <div class="result-title" data-i18n="result.title">Setup Analysis</div>
       <div class="result-meta" id="result-meta"></div>
     </div>
     <div class="analysis-body" id="analysis-body"></div>
-    <button class="btn-new" id="btn-new">← Analyze Another Trade</button>
+    <button class="btn-new" id="btn-new" data-i18n="btn.new">← Analyze Another Trade</button>
   </div>
 
 </div>
@@ -942,15 +1086,280 @@
     <div class="modal-title" id="modal-title">Heads up</div>
     <div class="modal-body" id="modal-body"></div>
     <div class="modal-actions">
-      <button class="modal-btn secondary" id="modal-change">Change screenshot</button>
-      <button class="modal-btn primary" id="modal-proceed">Analyze anyway</button>
+      <button class="modal-btn secondary" id="modal-change" data-i18n="modal.change">Change screenshot</button>
+      <button class="modal-btn primary" id="modal-proceed" data-i18n="modal.proceed">Analyze anyway</button>
     </div>
   </div>
 </div>
 
-<footer>SCALPEL · ICT Trade Analysis · For educational purposes only · Not financial advice</footer>
+<footer data-i18n="footer.text">SCALPEL · ICT Trade Analysis · For educational purposes only · Not financial advice</footer>
 
 <script>
+  // ── i18n: UI translations (ICT jargon kept in English on purpose) ──
+  const I18N = {
+    en: {
+      'nav.tip': 'See plans →',
+      'header.title': 'Analyze Your Setup',
+      'header.sub': 'Submit a trade for ICT analysis. Scalpel will identify possible setup errors and offer suggestions based on methodology — not verdicts.',
+      'card.tradeDetails': 'Trade Details',
+      'card.preTrade': 'Your Pre-Trade Analysis',
+      'card.confluences': 'Confluences You Identified',
+      'card.confluencesHint': '(select all that apply)',
+      'card.screenshot': 'Chart Screenshot',
+      'card.required': 'required',
+      'card.notes': 'Notes',
+      'card.notesHint': '(optional — anything you want Scalpel to know)',
+      'field.instrument': 'Instrument',
+      'field.direction': 'Direction',
+      'field.session': 'Session',
+      'field.result': 'Result',
+      'field.htfBias': 'HTF Bias',
+      'field.aligned': 'Traded aligned with that bias?',
+      'field.approach': 'Approach / Model',
+      'pill.long': 'Long', 'pill.short': 'Short',
+      'pill.win': 'Win', 'pill.loss': 'Loss', 'pill.breakeven': 'Breakeven',
+      'pill.bullish': 'Bullish', 'pill.bearish': 'Bearish', 'pill.neutral': 'Neutral',
+      'pill.yes': 'Yes', 'pill.no': 'No', 'pill.partially': 'Partially',
+      'pill.london': 'London', 'pill.nyMorning': 'NY Morning', 'pill.nyAfternoon': 'NY Afternoon', 'pill.overlap': 'Overlap',
+      'pill.ictGeneral': 'ICT General',
+      'guide.title': 'Your screenshot should clearly show:',
+      'guide.entry': 'Entry marker / arrow',
+      'guide.exit': 'Exit marker / arrow',
+      'guide.sltp': 'Stop Loss / Take Profit zones',
+      'guide.tagRequired': 'required',
+      'guide.tagIfClosed': 'if trade closed',
+      'guide.tagRecommended': 'recommended',
+      'upload.main': 'Click or drag your chart screenshot here',
+      'upload.sub': 'JPG, PNG or WebP — max 20MB',
+      'notes.placeholder': 'e.g. I thought price had swept SSL before I entered. It reversed right after my entry...',
+      'btn.analyze': 'Analyze Setup →',
+      'btn.checking': 'Checking...',
+      'btn.new': '← Analyze Another Trade',
+      'loading.checkTitle': 'Checking your screenshot...',
+      'loading.checkSub': 'Confirming your trade markers are visible.',
+      'loading.analyzeTitle': 'Analyzing your setup...',
+      'loading.analyzeSub': 'Scalpel is reading the chart and applying ICT theory. This takes 10–20 seconds.',
+      'result.title': 'Setup Analysis',
+      'modal.noEntryTitle': 'No trade markers detected',
+      'modal.noEntryBody': "Scalpel couldn't clearly find an entry marker in your screenshot. The analysis will be general about the setup context rather than your specific entry.<br><br>You can analyze anyway, or upload a screenshot that shows your entry and exit.",
+      'modal.noExitTitle': 'Exit marker not detected',
+      'modal.noExitBody': "Scalpel sees your entry but couldn't clearly find where the trade closed. The analysis will focus on the entry setup.<br><br>For a fuller read, consider a screenshot that also shows your exit.",
+      'modal.change': 'Change screenshot',
+      'modal.proceed': 'Analyze anyway',
+      'err.selectField': 'Please select a value for: {field}.',
+      'err.uploadFirst': 'Please upload a chart screenshot before submitting.',
+      'err.generic': 'Something went wrong. Please try again.',
+      'err.network': 'Network error. Check your connection and try again.',
+      'footer.text': 'SCALPEL · ICT Trade Analysis · For educational purposes only · Not financial advice',
+      fieldNames: { instrument: 'Instrument', direction: 'Direction', session: 'Session', result: 'Result', htf_bias: 'HTF Bias', aligned: 'Bias alignment', approach: 'Approach / Model' }
+    },
+    es: {
+      'nav.tip': 'Ver planes →',
+      'header.title': 'Analiza tu Setup',
+      'header.sub': 'Envía un trade para análisis ICT. Scalpel identificará posibles errores del setup y ofrecerá sugerencias basadas en la metodología — no veredictos.',
+      'card.tradeDetails': 'Detalles del Trade',
+      'card.preTrade': 'Tu Análisis Previo',
+      'card.confluences': 'Confluencias que Identificaste',
+      'card.confluencesHint': '(selecciona todas las que apliquen)',
+      'card.screenshot': 'Captura del Gráfico',
+      'card.required': 'obligatorio',
+      'card.notes': 'Notas',
+      'card.notesHint': '(opcional — lo que quieras que Scalpel sepa)',
+      'field.instrument': 'Instrumento',
+      'field.direction': 'Dirección',
+      'field.session': 'Sesión',
+      'field.result': 'Resultado',
+      'field.htfBias': 'Sesgo HTF',
+      'field.aligned': '¿Operaste alineado con ese sesgo?',
+      'field.approach': 'Enfoque / Modelo',
+      'pill.long': 'Largo', 'pill.short': 'Corto',
+      'pill.win': 'Ganada', 'pill.loss': 'Perdida', 'pill.breakeven': 'Sin pérdida',
+      'pill.bullish': 'Alcista', 'pill.bearish': 'Bajista', 'pill.neutral': 'Neutral',
+      'pill.yes': 'Sí', 'pill.no': 'No', 'pill.partially': 'Parcialmente',
+      'pill.london': 'Londres', 'pill.nyMorning': 'NY Mañana', 'pill.nyAfternoon': 'NY Tarde', 'pill.overlap': 'Solapamiento',
+      'pill.ictGeneral': 'ICT General',
+      'guide.title': 'Tu captura debe mostrar claramente:',
+      'guide.entry': 'Marca / flecha de entrada',
+      'guide.exit': 'Marca / flecha de salida',
+      'guide.sltp': 'Zonas de Stop Loss / Take Profit',
+      'guide.tagRequired': 'obligatorio',
+      'guide.tagIfClosed': 'si el trade cerró',
+      'guide.tagRecommended': 'recomendado',
+      'upload.main': 'Haz clic o arrastra aquí la captura de tu gráfico',
+      'upload.sub': 'JPG, PNG o WebP — máx 20MB',
+      'notes.placeholder': 'ej. Pensé que el precio había barrido la SSL antes de entrar. Se revirtió justo después de mi entrada...',
+      'btn.analyze': 'Analizar Setup →',
+      'btn.checking': 'Verificando...',
+      'btn.new': '← Analizar otro Trade',
+      'loading.checkTitle': 'Verificando tu captura...',
+      'loading.checkSub': 'Confirmando que tus marcas del trade sean visibles.',
+      'loading.analyzeTitle': 'Analizando tu setup...',
+      'loading.analyzeSub': 'Scalpel está leyendo el gráfico y aplicando la teoría ICT. Esto tarda 10–20 segundos.',
+      'result.title': 'Análisis del Setup',
+      'modal.noEntryTitle': 'No se detectaron marcas del trade',
+      'modal.noEntryBody': 'Scalpel no pudo encontrar claramente una marca de entrada en tu captura. El análisis será general sobre el contexto del setup en vez de tu entrada específica.<br><br>Puedes analizar de todos modos, o subir una captura que muestre tu entrada y salida.',
+      'modal.noExitTitle': 'No se detectó la marca de salida',
+      'modal.noExitBody': 'Scalpel ve tu entrada pero no pudo encontrar claramente dónde cerró el trade. El análisis se enfocará en el setup de entrada.<br><br>Para un análisis más completo, considera una captura que también muestre tu salida.',
+      'modal.change': 'Cambiar captura',
+      'modal.proceed': 'Analizar igual',
+      'err.selectField': 'Por favor selecciona un valor para: {field}.',
+      'err.uploadFirst': 'Por favor sube una captura del gráfico antes de enviar.',
+      'err.generic': 'Algo salió mal. Inténtalo de nuevo.',
+      'err.network': 'Error de red. Revisa tu conexión e inténtalo de nuevo.',
+      'footer.text': 'SCALPEL · Análisis de Trades ICT · Solo con fines educativos · No es asesoría financiera',
+      fieldNames: { instrument: 'Instrumento', direction: 'Dirección', session: 'Sesión', result: 'Resultado', htf_bias: 'Sesgo HTF', aligned: 'Alineación con el sesgo', approach: 'Enfoque / Modelo' }
+    },
+    fr: {
+      'nav.tip': 'Voir les offres →',
+      'header.title': 'Analysez votre Setup',
+      'header.sub': 'Soumettez un trade pour une analyse ICT. Scalpel identifiera les erreurs possibles du setup et proposera des suggestions basées sur la méthodologie — pas des verdicts.',
+      'card.tradeDetails': 'Détails du Trade',
+      'card.preTrade': 'Votre Analyse Pré-Trade',
+      'card.confluences': 'Confluences Identifiées',
+      'card.confluencesHint': "(sélectionnez tout ce qui s'applique)",
+      'card.screenshot': 'Capture du Graphique',
+      'card.required': 'obligatoire',
+      'card.notes': 'Notes',
+      'card.notesHint': '(facultatif — ce que vous voulez que Scalpel sache)',
+      'field.instrument': 'Instrument',
+      'field.direction': 'Direction',
+      'field.session': 'Session',
+      'field.result': 'Résultat',
+      'field.htfBias': 'Biais HTF',
+      'field.aligned': 'Trade aligné avec ce biais ?',
+      'field.approach': 'Approche / Modèle',
+      'pill.long': 'Long', 'pill.short': 'Short',
+      'pill.win': 'Gagné', 'pill.loss': 'Perdu', 'pill.breakeven': 'Seuil',
+      'pill.bullish': 'Haussier', 'pill.bearish': 'Baissier', 'pill.neutral': 'Neutre',
+      'pill.yes': 'Oui', 'pill.no': 'Non', 'pill.partially': 'Partiellement',
+      'pill.london': 'Londres', 'pill.nyMorning': 'NY Matin', 'pill.nyAfternoon': 'NY Après-midi', 'pill.overlap': 'Chevauchement',
+      'pill.ictGeneral': 'ICT Général',
+      'guide.title': 'Votre capture doit montrer clairement :',
+      'guide.entry': "Marqueur / flèche d'entrée",
+      'guide.exit': 'Marqueur / flèche de sortie',
+      'guide.sltp': 'Zones de Stop Loss / Take Profit',
+      'guide.tagRequired': 'obligatoire',
+      'guide.tagIfClosed': 'si trade clôturé',
+      'guide.tagRecommended': 'recommandé',
+      'upload.main': 'Cliquez ou glissez la capture de votre graphique ici',
+      'upload.sub': 'JPG, PNG ou WebP — max 20 Mo',
+      'notes.placeholder': "ex. Je pensais que le prix avait balayé la SSL avant mon entrée. Il s'est inversé juste après...",
+      'btn.analyze': 'Analyser le Setup →',
+      'btn.checking': 'Vérification...',
+      'btn.new': '← Analyser un autre Trade',
+      'loading.checkTitle': 'Vérification de votre capture...',
+      'loading.checkSub': 'Confirmation que vos marqueurs de trade sont visibles.',
+      'loading.analyzeTitle': 'Analyse de votre setup...',
+      'loading.analyzeSub': 'Scalpel lit le graphique et applique la théorie ICT. Cela prend 10–20 secondes.',
+      'result.title': 'Analyse du Setup',
+      'modal.noEntryTitle': 'Aucun marqueur de trade détecté',
+      'modal.noEntryBody': "Scalpel n'a pas pu trouver clairement un marqueur d'entrée dans votre capture. L'analyse portera sur le contexte général du setup plutôt que sur votre entrée précise.<br><br>Vous pouvez analyser quand même, ou télécharger une capture montrant votre entrée et votre sortie.",
+      'modal.noExitTitle': 'Marqueur de sortie non détecté',
+      'modal.noExitBody': "Scalpel voit votre entrée mais n'a pas pu trouver clairement où le trade s'est clôturé. L'analyse se concentrera sur le setup d'entrée.<br><br>Pour une lecture plus complète, envisagez une capture montrant aussi votre sortie.",
+      'modal.change': 'Changer la capture',
+      'modal.proceed': 'Analyser quand même',
+      'err.selectField': 'Veuillez sélectionner une valeur pour : {field}.',
+      'err.uploadFirst': "Veuillez télécharger une capture du graphique avant d'envoyer.",
+      'err.generic': "Une erreur s'est produite. Veuillez réessayer.",
+      'err.network': 'Erreur réseau. Vérifiez votre connexion et réessayez.',
+      'footer.text': 'SCALPEL · Analyse de Trades ICT · À des fins éducatives uniquement · Pas un conseil financier',
+      fieldNames: { instrument: 'Instrument', direction: 'Direction', session: 'Session', result: 'Résultat', htf_bias: 'Biais HTF', aligned: 'Alignement avec le biais', approach: 'Approche / Modèle' }
+    },
+    pt: {
+      'nav.tip': 'Ver planos →',
+      'header.title': 'Analise seu Setup',
+      'header.sub': 'Envie um trade para análise ICT. O Scalpel identificará possíveis erros do setup e oferecerá sugestões baseadas na metodologia — não veredictos.',
+      'card.tradeDetails': 'Detalhes do Trade',
+      'card.preTrade': 'Sua Análise Pré-Trade',
+      'card.confluences': 'Confluências que Identificou',
+      'card.confluencesHint': '(selecione todas que se aplicam)',
+      'card.screenshot': 'Captura do Gráfico',
+      'card.required': 'obrigatório',
+      'card.notes': 'Notas',
+      'card.notesHint': '(opcional — o que você quer que o Scalpel saiba)',
+      'field.instrument': 'Instrumento',
+      'field.direction': 'Direção',
+      'field.session': 'Sessão',
+      'field.result': 'Resultado',
+      'field.htfBias': 'Viés HTF',
+      'field.aligned': 'Operou alinhado com esse viés?',
+      'field.approach': 'Abordagem / Modelo',
+      'pill.long': 'Long', 'pill.short': 'Short',
+      'pill.win': 'Ganho', 'pill.loss': 'Perda', 'pill.breakeven': 'Empate',
+      'pill.bullish': 'Alta', 'pill.bearish': 'Baixa', 'pill.neutral': 'Neutro',
+      'pill.yes': 'Sim', 'pill.no': 'Não', 'pill.partially': 'Parcialmente',
+      'pill.london': 'Londres', 'pill.nyMorning': 'NY Manhã', 'pill.nyAfternoon': 'NY Tarde', 'pill.overlap': 'Sobreposição',
+      'pill.ictGeneral': 'ICT Geral',
+      'guide.title': 'Sua captura deve mostrar claramente:',
+      'guide.entry': 'Marcador / seta de entrada',
+      'guide.exit': 'Marcador / seta de saída',
+      'guide.sltp': 'Zonas de Stop Loss / Take Profit',
+      'guide.tagRequired': 'obrigatório',
+      'guide.tagIfClosed': 'se o trade fechou',
+      'guide.tagRecommended': 'recomendado',
+      'upload.main': 'Clique ou arraste a captura do seu gráfico aqui',
+      'upload.sub': 'JPG, PNG ou WebP — máx 20MB',
+      'notes.placeholder': 'ex. Achei que o preço tinha varrido a SSL antes de eu entrar. Reverteu logo após minha entrada...',
+      'btn.analyze': 'Analisar Setup →',
+      'btn.checking': 'Verificando...',
+      'btn.new': '← Analisar outro Trade',
+      'loading.checkTitle': 'Verificando sua captura...',
+      'loading.checkSub': 'Confirmando que seus marcadores do trade estão visíveis.',
+      'loading.analyzeTitle': 'Analisando seu setup...',
+      'loading.analyzeSub': 'O Scalpel está lendo o gráfico e aplicando a teoria ICT. Isso leva de 10 a 20 segundos.',
+      'result.title': 'Análise do Setup',
+      'modal.noEntryTitle': 'Nenhum marcador de trade detectado',
+      'modal.noEntryBody': 'O Scalpel não conseguiu encontrar claramente um marcador de entrada na sua captura. A análise será geral sobre o contexto do setup em vez da sua entrada específica.<br><br>Você pode analisar mesmo assim, ou enviar uma captura que mostre sua entrada e saída.',
+      'modal.noExitTitle': 'Marcador de saída não detectado',
+      'modal.noExitBody': 'O Scalpel vê sua entrada mas não conseguiu encontrar claramente onde o trade fechou. A análise focará no setup de entrada.<br><br>Para uma leitura mais completa, considere uma captura que também mostre sua saída.',
+      'modal.change': 'Trocar captura',
+      'modal.proceed': 'Analisar mesmo assim',
+      'err.selectField': 'Por favor selecione um valor para: {field}.',
+      'err.uploadFirst': 'Por favor envie uma captura do gráfico antes de enviar.',
+      'err.generic': 'Algo deu errado. Tente novamente.',
+      'err.network': 'Erro de rede. Verifique sua conexão e tente novamente.',
+      'footer.text': 'SCALPEL · Análise de Trades ICT · Apenas para fins educativos · Não é aconselhamento financeiro',
+      fieldNames: { instrument: 'Instrumento', direction: 'Direção', session: 'Sessão', result: 'Resultado', htf_bias: 'Viés HTF', aligned: 'Alinhamento com o viés', approach: 'Abordagem / Modelo' }
+    }
+  };
+
+  const LANG_NAMES = { en: 'English', es: 'Spanish', fr: 'French', pt: 'Portuguese' };
+
+  let currentLang = 'en';
+  try { const stored = localStorage.getItem('scalpel_lang'); if (stored && I18N[stored]) currentLang = stored; } catch (e) {}
+
+  function T(key) {
+    const dict = I18N[currentLang] || I18N.en;
+    return dict[key] !== undefined ? dict[key] : (I18N.en[key] !== undefined ? I18N.en[key] : key);
+  }
+
+  function applyLanguage(lang) {
+    if (!I18N[lang]) lang = 'en';
+    currentLang = lang;
+    try { localStorage.setItem('scalpel_lang', lang); } catch (e) {}
+    document.documentElement.lang = lang;
+
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      el.textContent = T(el.getAttribute('data-i18n'));
+    });
+    document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+      el.setAttribute('placeholder', T(el.getAttribute('data-i18n-ph')));
+    });
+
+    const sel = document.getElementById('lang-select');
+    if (sel) sel.value = lang;
+  }
+
+  // ── Theme ──
+  let currentTheme = 'dark';
+  try { const th = localStorage.getItem('scalpel_theme'); if (th === 'light' || th === 'dark') currentTheme = th; } catch (e) {}
+
+  function applyTheme(theme) {
+    currentTheme = theme === 'light' ? 'light' : 'dark';
+    try { localStorage.setItem('scalpel_theme', currentTheme); } catch (e) {}
+    document.body.classList.toggle('light', currentTheme === 'light');
+  }
+
   // ── Pill Selection Logic ──
   const selections = {};
 
@@ -1039,7 +1448,7 @@
     errorBox.textContent = msg;
     errorBox.style.display = 'block';
     analyzeBtn.disabled = false;
-    analyzeBtn.textContent = 'Analyze Setup →';
+    analyzeBtn.textContent = T('btn.analyze');
   }
 
   function hideError() {
@@ -1070,7 +1479,7 @@
 
   function resetButton() {
     analyzeBtn.disabled = false;
-    analyzeBtn.textContent = 'Analyze Setup →';
+    analyzeBtn.textContent = T('btn.analyze');
   }
 
   function buildFormData() {
@@ -1085,6 +1494,7 @@
     selections.confluences.forEach(c => fd.append('confluences', c));
     const notes = document.getElementById('notes').value.trim();
     if (notes) fd.append('notes', notes);
+    fd.append('language', LANG_NAMES[currentLang] || 'English');
     fd.append('screenshot', fileInput.files[0]);
     return fd;
   }
@@ -1096,24 +1506,25 @@
     const required = ['instrument', 'direction', 'session', 'result', 'htf_bias', 'aligned', 'approach'];
     for (const field of required) {
       if (!selections[field]) {
-        showError(`Please select a value for: ${field.replace('_', ' ')}.`);
+        const names = (I18N[currentLang] && I18N[currentLang].fieldNames) || I18N.en.fieldNames;
+        showError(T('err.selectField').replace('{field}', names[field] || field));
         return;
       }
     }
 
     if (!fileInput.files[0]) {
-      showError('Please upload a chart screenshot before submitting.');
+      showError(T('err.uploadFirst'));
       return;
     }
 
     analyzeBtn.disabled = true;
-    analyzeBtn.textContent = 'Checking...';
+    analyzeBtn.textContent = T('btn.checking');
 
     const fd = buildFormData();
     pendingFormData = fd;
 
     // ── STEP 1: Validate the screenshot ──
-    setLoading('Checking your screenshot...', 'Confirming your trade markers are visible.');
+    setLoading(T('loading.checkTitle'), T('loading.checkSub'));
     showView('loading');
 
     let v;
@@ -1128,8 +1539,8 @@
     // ── Decide based on validation ──
     if (!v.skipped && !v.entry) {
       // No trade markers at all
-      modalTitle.textContent = 'No trade markers detected';
-      modalBody.innerHTML = "Scalpel couldn't clearly find an entry marker in your screenshot. The analysis will be general about the setup context rather than your specific entry.<br><br>You can analyze anyway, or upload a screenshot that shows your entry and exit.";
+      modalTitle.textContent = T('modal.noEntryTitle');
+      modalBody.innerHTML = T('modal.noEntryBody');
       showView('form');
       modalOverlay.classList.add('show');
       return;
@@ -1137,8 +1548,8 @@
 
     if (!v.skipped && v.entry && !v.exit && selections.result !== 'Breakeven') {
       // Entry but no exit
-      modalTitle.textContent = 'Exit marker not detected';
-      modalBody.innerHTML = "Scalpel sees your entry but couldn't clearly find where the trade closed. The analysis will focus on the entry setup.<br><br>For a fuller read, consider a screenshot that also shows your exit.";
+      modalTitle.textContent = T('modal.noExitTitle');
+      modalBody.innerHTML = T('modal.noExitBody');
       showView('form');
       modalOverlay.classList.add('show');
       return;
@@ -1151,7 +1562,7 @@
   // ── STEP 2: Full analysis ──
   async function runAnalysis(fd) {
     hideError();
-    setLoading('Analyzing your setup...', 'Scalpel is reading the chart and applying ICT theory. This takes 10–20 seconds.');
+    setLoading(T('loading.analyzeTitle'), T('loading.analyzeSub'));
     showView('loading');
 
     try {
@@ -1160,7 +1571,7 @@
 
       if (!res.ok || data.error) {
         showView('form');
-        showError(data.error || 'Something went wrong. Please try again.');
+        showError(data.error || T('err.generic'));
         resetButton();
         return;
       }
@@ -1183,7 +1594,7 @@
 
     } catch (err) {
       showView('form');
-      showError('Network error. Check your connection and try again.');
+      showError(T('err.network'));
       resetButton();
     }
   }
@@ -1221,13 +1632,26 @@
 
     // Reset button
     analyzeBtn.disabled = false;
-    analyzeBtn.textContent = 'Analyze Setup →';
+    analyzeBtn.textContent = T('btn.analyze');
     hideError();
 
     resultView.style.display = 'none';
     formView.style.display   = 'block';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
+
+  // ── Theme + Language controls ──
+  document.getElementById('theme-toggle').addEventListener('click', () => {
+    applyTheme(currentTheme === 'light' ? 'dark' : 'light');
+  });
+
+  document.getElementById('lang-select').addEventListener('change', e => {
+    applyLanguage(e.target.value);
+  });
+
+  // ── Init: apply saved preferences on load ──
+  applyTheme(currentTheme);
+  applyLanguage(currentLang);
 </script>
 </body>
 </html>
