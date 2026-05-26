@@ -55,7 +55,7 @@ body {
   filter: invert(1);
   mix-blend-mode: lighten;
 }
-body.light .auth-logo { filter: none; mix-blend-mode: normal; }
+body.light .auth-logo { filter: none; mix-blend-mode: multiply; }
 
 .auth-logo-fallback {
   display: none;
