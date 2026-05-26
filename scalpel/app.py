@@ -1,4 +1,5 @@
 import os
+import json
 import base64
 from flask import Flask, render_template, request, jsonify
 from openai import OpenAI
@@ -89,9 +90,84 @@ OUTPUT RULES:
 - Use ICT terminology naturally and precisely"""
 
 
+VALIDATION_PROMPT = """You are a screenshot validator for a trading analysis tool. Look at this trading chart screenshot (typically from TradingView or NinjaTrader) and determine which trade markers are visible.
+
+A trade ENTRY marker can be: an entry arrow, an entry price line/label, or the lower/upper edge of a TradingView position tool box.
+A trade EXIT marker can be: an exit arrow, an exit price line/label, or a close marker.
+SL/TP markers are: a red shaded box (stop loss zone), a green/teal shaded box (take profit zone), or labeled horizontal lines for stop and target.
+
+Respond with ONLY a raw JSON object and nothing else, in exactly this format:
+{"entry": true, "exit": true, "sl_tp": false, "note": "short description of what you see"}
+
+Set each field true only if you can clearly identify that marker. Be practical but honest — if the chart is clean with no trade markers at all, set entry and exit to false."""
+
+
+def parse_validation(raw):
+    """Extract the validation JSON from the model's response, robust to code fences."""
+    text = raw.strip()
+    if '```' in text:
+        parts = text.split('```')
+        if len(parts) >= 2:
+            text = parts[1]
+            if text.lstrip().lower().startswith('json'):
+                text = text.lstrip()[4:]
+    # Grab the first {...} block if extra text surrounds it
+    start = text.find('{')
+    end = text.rfind('}')
+    if start != -1 and end != -1:
+        text = text[start:end + 1]
+    try:
+        data = json.loads(text.strip())
+        return {
+            'entry': bool(data.get('entry', True)),
+            'exit': bool(data.get('exit', True)),
+            'sl_tp': bool(data.get('sl_tp', False)),
+            'note': str(data.get('note', '')),
+        }
+    except Exception:
+        # If parsing fails, never block the user — let analysis proceed
+        return {'entry': True, 'exit': True, 'sl_tp': False, 'note': '', 'skipped': True}
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
+
+
+@app.route('/validate', methods=['POST'])
+def validate():
+    try:
+        screenshot = request.files.get('screenshot')
+        if not screenshot or screenshot.filename == '':
+            return jsonify({'error': 'A chart screenshot is required.'}), 400
+
+        content_type = screenshot.content_type or 'image/jpeg'
+        image_bytes = screenshot.read()
+        image_data = base64.b64encode(image_bytes).decode('utf-8')
+
+        response = client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {"role": "system", "content": VALIDATION_PROMPT},
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "Validate this trading chart screenshot. Return only the JSON object."},
+                        {
+                            "type": "image_url",
+                            "image_url": {"url": f"data:{content_type};base64,{image_data}"}
+                        }
+                    ]
+                }
+            ],
+            max_tokens=150,
+            temperature=0
+        )
+        return jsonify(parse_validation(response.choices[0].message.content))
+
+    except Exception:
+        # On any failure, allow the user to proceed — validation is a soft gate
+        return jsonify({'entry': True, 'exit': True, 'sl_tp': False, 'note': '', 'skipped': True})
 
 
 @app.route('/analyze', methods=['POST'])

@@ -190,6 +190,143 @@
     .pill.long.selected  { background: var(--win);  border-color: var(--win);  }
     .pill.short.selected { background: var(--loss); border-color: var(--loss); }
 
+    /* ── SHOT GUIDE ── */
+    .shot-guide {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+
+    .shot-guide-title {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 10px;
+      font-weight: 500;
+    }
+
+    .shot-guide-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 5px 0;
+    }
+
+    .guide-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .guide-icon.req { background: rgba(91,142,240,0.15); color: var(--accent); }
+    .guide-icon.opt { background: rgba(99,104,130,0.15); color: var(--muted); }
+
+    .guide-text {
+      font-size: 13px;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .guide-tag {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+
+    .guide-tag.req { background: rgba(91,142,240,0.12); color: var(--accent); }
+    .guide-tag.opt { background: rgba(99,104,130,0.12); color: var(--muted); }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      backdrop-filter: blur(3px);
+    }
+
+    .modal-overlay.show { display: flex; }
+
+    .modal {
+      background: var(--card);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      padding: 28px;
+      max-width: 440px;
+      width: 100%;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .modal-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(234,179,8,0.12);
+      color: var(--be);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      margin-bottom: 16px;
+    }
+
+    .modal-title {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .modal-body {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 22px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .modal-btn {
+      flex: 1;
+      padding: 11px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      border: 1px solid var(--border2);
+    }
+
+    .modal-btn.secondary {
+      background: transparent;
+      color: var(--muted);
+    }
+    .modal-btn.secondary:hover { border-color: var(--text); color: var(--text); }
+
+    .modal-btn.primary {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .modal-btn.primary:hover { background: var(--accent-h); }
+
     /* ── UPLOAD ── */
     .upload-zone {
       border: 2px dashed var(--border2);
@@ -625,6 +762,26 @@
       <!-- Screenshot -->
       <div class="card">
         <div class="card-label">Chart Screenshot <span style="color:var(--loss);font-weight:400;text-transform:none;letter-spacing:0;">required</span></div>
+
+        <div class="shot-guide">
+          <div class="shot-guide-title">Your screenshot should clearly show:</div>
+          <div class="shot-guide-item">
+            <span class="guide-icon req">→</span>
+            <span class="guide-text">Entry marker / arrow</span>
+            <span class="guide-tag req">required</span>
+          </div>
+          <div class="shot-guide-item">
+            <span class="guide-icon req">←</span>
+            <span class="guide-text">Exit marker / arrow</span>
+            <span class="guide-tag req">if trade closed</span>
+          </div>
+          <div class="shot-guide-item">
+            <span class="guide-icon opt">▢</span>
+            <span class="guide-text">Stop Loss / Take Profit zones</span>
+            <span class="guide-tag opt">recommended</span>
+          </div>
+        </div>
+
         <div class="upload-zone" id="upload-zone">
           <input type="file" name="screenshot" id="screenshot-input" accept="image/*" />
           <div id="upload-placeholder">
@@ -662,8 +819,8 @@
   <div id="loading-view">
     <div class="spinner"></div>
     <div class="loading-text">
-      <strong>Analyzing your setup...</strong>
-      Scalpel is reading the chart and applying ICT theory. This takes 10–20 seconds.
+      <strong id="loading-title">Analyzing your setup...</strong>
+      <span id="loading-sub">Scalpel is reading the chart and applying ICT theory. This takes 10–20 seconds.</span>
     </div>
   </div>
 
@@ -677,6 +834,19 @@
     <button class="btn-new" id="btn-new">← Analyze Another Trade</button>
   </div>
 
+</div>
+
+<!-- ── VALIDATION MODAL ── -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-icon">!</div>
+    <div class="modal-title" id="modal-title">Heads up</div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-actions">
+      <button class="modal-btn secondary" id="modal-change">Change screenshot</button>
+      <button class="modal-btn primary" id="modal-proceed">Analyze anyway</button>
+    </div>
+  </div>
 </div>
 
 <footer>SCALPEL · ICT Trade Analysis · For educational purposes only · Not financial advice</footer>
@@ -777,11 +947,53 @@
     errorBox.style.display = 'none';
   }
 
+  // Modal elements
+  const modalOverlay = document.getElementById('modal-overlay');
+  const modalTitle   = document.getElementById('modal-title');
+  const modalBody    = document.getElementById('modal-body');
+  const modalChange  = document.getElementById('modal-change');
+  const modalProceed = document.getElementById('modal-proceed');
+  const loadingTitle = document.getElementById('loading-title');
+  const loadingSub   = document.getElementById('loading-sub');
+
+  let pendingFormData = null;
+
+  function setLoading(title, sub) {
+    loadingTitle.textContent = title;
+    loadingSub.textContent   = sub;
+  }
+
+  function showView(view) {
+    formView.style.display    = view === 'form'    ? 'block' : 'none';
+    loadingView.style.display = view === 'loading' ? 'block' : 'none';
+    resultView.style.display  = view === 'result'  ? 'block' : 'none';
+  }
+
+  function resetButton() {
+    analyzeBtn.disabled = false;
+    analyzeBtn.textContent = 'Analyze Setup →';
+  }
+
+  function buildFormData() {
+    const fd = new FormData();
+    fd.append('instrument', selections.instrument);
+    fd.append('direction',  selections.direction);
+    fd.append('session',    selections.session);
+    fd.append('result',     selections.result);
+    fd.append('htf_bias',   selections.htf_bias);
+    fd.append('aligned',    selections.aligned);
+    fd.append('approach',   selections.approach);
+    selections.confluences.forEach(c => fd.append('confluences', c));
+    const notes = document.getElementById('notes').value.trim();
+    if (notes) fd.append('notes', notes);
+    fd.append('screenshot', fileInput.files[0]);
+    return fd;
+  }
+
   form.addEventListener('submit', async e => {
     e.preventDefault();
     hideError();
 
-    // Validate required single-selects
     const required = ['instrument', 'direction', 'session', 'result', 'htf_bias', 'aligned', 'approach'];
     for (const field of required) {
       if (!selections[field]) {
@@ -796,48 +1008,66 @@
     }
 
     analyzeBtn.disabled = true;
-    analyzeBtn.textContent = 'Analyzing...';
+    analyzeBtn.textContent = 'Checking...';
 
-    // Build FormData
-    const fd = new FormData();
-    fd.append('instrument', selections.instrument);
-    fd.append('direction',  selections.direction);
-    fd.append('session',    selections.session);
-    fd.append('result',     selections.result);
-    fd.append('htf_bias',   selections.htf_bias);
-    fd.append('aligned',    selections.aligned);
-    fd.append('approach',   selections.approach);
+    const fd = buildFormData();
+    pendingFormData = fd;
 
-    selections.confluences.forEach(c => fd.append('confluences', c));
+    // ── STEP 1: Validate the screenshot ──
+    setLoading('Checking your screenshot...', 'Confirming your trade markers are visible.');
+    showView('loading');
 
-    const notes = document.getElementById('notes').value.trim();
-    if (notes) fd.append('notes', notes);
+    let v;
+    try {
+      const vRes = await fetch('/validate', { method: 'POST', body: fd });
+      v = await vRes.json();
+    } catch (err) {
+      // Validation failed silently — proceed straight to analysis
+      v = { entry: true, exit: true, sl_tp: false, skipped: true };
+    }
 
-    fd.append('screenshot', fileInput.files[0]);
+    // ── Decide based on validation ──
+    if (!v.skipped && !v.entry) {
+      // No trade markers at all
+      modalTitle.textContent = 'No trade markers detected';
+      modalBody.innerHTML = "Scalpel couldn't clearly find an entry marker in your screenshot. The analysis will be general about the setup context rather than your specific entry.<br><br>You can analyze anyway, or upload a screenshot that shows your entry and exit.";
+      showView('form');
+      modalOverlay.classList.add('show');
+      return;
+    }
 
-    // Switch to loading
-    formView.style.display  = 'none';
-    loadingView.style.display = 'block';
-    resultView.style.display  = 'none';
+    if (!v.skipped && v.entry && !v.exit && selections.result !== 'Breakeven') {
+      // Entry but no exit
+      modalTitle.textContent = 'Exit marker not detected';
+      modalBody.innerHTML = "Scalpel sees your entry but couldn't clearly find where the trade closed. The analysis will focus on the entry setup.<br><br>For a fuller read, consider a screenshot that also shows your exit.";
+      showView('form');
+      modalOverlay.classList.add('show');
+      return;
+    }
+
+    // ── All good — proceed to analysis ──
+    runAnalysis(fd);
+  });
+
+  // ── STEP 2: Full analysis ──
+  async function runAnalysis(fd) {
+    hideError();
+    setLoading('Analyzing your setup...', 'Scalpel is reading the chart and applying ICT theory. This takes 10–20 seconds.');
+    showView('loading');
 
     try {
       const res  = await fetch('/analyze', { method: 'POST', body: fd });
       const data = await res.json();
 
-      loadingView.style.display = 'none';
-
       if (!res.ok || data.error) {
-        formView.style.display = 'block';
+        showView('form');
         showError(data.error || 'Something went wrong. Please try again.');
-        analyzeBtn.disabled = false;
-        analyzeBtn.textContent = 'Analyze Setup →';
+        resetButton();
         return;
       }
 
-      // Build result meta tags
       const meta = document.getElementById('result-meta');
       meta.innerHTML = '';
-
       const resultClass = { 'Win': 'win', 'Loss': 'loss', 'Breakeven': 'be' }[selections.result] || '';
       const dirClass = selections.direction === 'Long' ? 'win' : 'loss';
       meta.innerHTML += `<span class="meta-tag ${resultClass}">${selections.result}</span>`;
@@ -846,20 +1076,31 @@
       meta.innerHTML += `<span class="meta-tag">${selections.session}</span>`;
       meta.innerHTML += `<span class="meta-tag">${selections.approach}</span>`;
 
-      // Render markdown analysis
       document.getElementById('analysis-body').innerHTML = marked.parse(data.analysis);
 
-      resultView.style.display = 'block';
+      showView('result');
       resultView.classList.add('fade-in');
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
     } catch (err) {
-      loadingView.style.display = 'none';
-      formView.style.display    = 'block';
+      showView('form');
       showError('Network error. Check your connection and try again.');
-      analyzeBtn.disabled = false;
-      analyzeBtn.textContent = 'Analyze Setup →';
+      resetButton();
     }
+  }
+
+  // ── Modal buttons ──
+  modalProceed.addEventListener('click', () => {
+    modalOverlay.classList.remove('show');
+    if (pendingFormData) runAnalysis(pendingFormData);
+  });
+
+  modalChange.addEventListener('click', () => {
+    modalOverlay.classList.remove('show');
+    showView('form');
+    resetButton();
+    // Scroll to the upload area so they can swap the screenshot
+    document.getElementById('upload-zone').scrollIntoView({ behavior: 'smooth', block: 'center' });
   });
 
   // ── New Trade ──
