@@ -49,11 +49,99 @@
       z-index: 10;
     }
 
+    .logo-wrap {
+      position: relative;
+      display: inline-flex;
+    }
+
     .logo {
       display: flex;
       align-items: center;
       gap: 10px;
       text-decoration: none;
+    }
+
+    /* ── ANIMATED CLICK HINT ── */
+    /* 13s loop: cursor visible & orbiting for ~5s, then hidden for ~8s */
+    .cursor-hint {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 26px;
+      height: 26px;
+      pointer-events: none;
+      opacity: 0;
+      z-index: 20;
+      filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));
+      animation: cursorGuide 13s ease-in-out infinite;
+    }
+
+    .cursor-ripple {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid var(--accent-h);
+      pointer-events: none;
+      opacity: 0;
+      z-index: 19;
+      animation: cursorRipple 13s ease-in-out infinite;
+    }
+
+    .logo-tip {
+      position: absolute;
+      bottom: -14px;
+      left: 50%;
+      transform: translateX(-50%) translateY(6px);
+      background: var(--accent);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      padding: 3px 10px;
+      border-radius: 14px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      z-index: 18;
+      animation: tipPulse 13s ease-in-out infinite;
+    }
+
+    /* Cursor path: enters bottom-right, sweeps across the wordmark,
+       lands on it with a click dip, then fades out for the rest of the loop. */
+    @keyframes cursorGuide {
+      0%   { opacity: 0; transform: translate(150px, 88px) scale(1); }
+      4%   { opacity: 1; transform: translate(150px, 88px) scale(1); }
+      14%  { opacity: 1; transform: translate(60px, 92px) scale(1); }
+      24%  { opacity: 1; transform: translate(108px, 40px) scale(1); }
+      30%  { opacity: 1; transform: translate(120px, 52px) scale(1); }
+      33%  { opacity: 1; transform: translate(120px, 52px) scale(0.82); }
+      36%  { opacity: 1; transform: translate(120px, 52px) scale(1); }
+      38.4%{ opacity: 1; transform: translate(120px, 52px) scale(1); }
+      42%  { opacity: 0; transform: translate(120px, 52px) scale(1); }
+      100% { opacity: 0; transform: translate(120px, 52px) scale(1); }
+    }
+
+    /* Ripple fires at the click moment (~33%) where the cursor lands */
+    @keyframes cursorRipple {
+      0%, 30%  { opacity: 0; transform: translate(112px, 44px) scale(0.2); }
+      33%      { opacity: 0.7; transform: translate(112px, 44px) scale(0.45); }
+      40%      { opacity: 0; transform: translate(112px, 44px) scale(1.3); }
+      100%     { opacity: 0; transform: translate(112px, 44px) scale(1.3); }
+    }
+
+    @keyframes tipPulse {
+      0%, 3%   { opacity: 0; transform: translateX(-50%) translateY(6px); }
+      8%       { opacity: 1; transform: translateX(-50%) translateY(0); }
+      36%      { opacity: 1; transform: translateX(-50%) translateY(0); }
+      42%      { opacity: 0; transform: translateX(-50%) translateY(6px); }
+      100%     { opacity: 0; transform: translateX(-50%) translateY(6px); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .cursor-hint, .cursor-ripple, .logo-tip { animation: none; opacity: 0; }
     }
 
     .logo-img {
@@ -627,23 +715,34 @@
 <body>
 
 <nav>
-  <a href="/" class="logo">
-    <img src="/static/logo.png" alt="Scalpel" class="logo-img"
-         onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='flex';" />
-    <div id="logo-fallback" class="logo-fallback">
-      <div class="logo-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-          <path d="M2 17l10 5 10-5"/>
-          <path d="M2 12l10 5 10-5"/>
-        </svg>
+  <div class="logo-wrap">
+    <a href="/pricing" target="_blank" rel="noopener" class="logo">
+      <img src="/static/logo.png" alt="Scalpel" class="logo-img"
+           onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='flex';" />
+      <div id="logo-fallback" class="logo-fallback">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div>
+          <div class="logo-text">SCALPEL</div>
+          <div class="logo-sub">ICT Trade Analysis</div>
+        </div>
       </div>
-      <div>
-        <div class="logo-text">SCALPEL</div>
-        <div class="logo-sub">ICT Trade Analysis</div>
-      </div>
-    </div>
-  </a>
+    </a>
+
+    <!-- Animated click hint: cursor orbits the logo (5s visible / 8s hidden) -->
+    <span class="cursor-ripple" aria-hidden="true"></span>
+    <svg class="cursor-hint" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4.5 2.2 L4.5 19.6 L9.2 15.1 L12.3 21.6 L15.1 20.3 L12.1 14.0 L18.4 14.0 Z"
+            fill="#ffffff" stroke="#0c0e14" stroke-width="1.2" stroke-linejoin="round"/>
+    </svg>
+    <span class="logo-tip" aria-hidden="true">See plans →</span>
+  </div>
+
   <div class="nav-badge">Beta</div>
 </nav>
 

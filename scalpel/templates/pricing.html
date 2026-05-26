@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scalpel — Plans & Pricing</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:      #15171f;
+      --ink-soft: #4a4f5e;
+      --muted:    #8a8f9e;
+      --line:     #2d3038;      /* dark gray borders */
+      --line-soft:#e4e6ec;
+      --free:     #6b7280;
+      --standard: #2563eb;
+      --premium:  #b8860b;
+      --premium-2:#e0a83d;
+      --radius:   16px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: #ffffff;
+      color: var(--ink);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── NAV ── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 32px;
+      border-bottom: 1px solid var(--line-soft);
+      position: sticky;
+      top: 0;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(8px);
+      z-index: 10;
+    }
+
+    .logo { display: flex; align-items: center; text-decoration: none; }
+    .logo-img { height: 80px; width: auto; display: block; }
+    .logo-fallback { display: none; align-items: center; gap: 10px; }
+    .logo-text { font-size: 18px; font-weight: 800; letter-spacing: 0.08em; color: var(--ink); }
+    .logo-sub  { font-size: 11px; color: var(--muted); letter-spacing: 0.05em; }
+
+    .back-link {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink-soft);
+      text-decoration: none;
+      padding: 8px 16px;
+      border: 1px solid var(--line-soft);
+      border-radius: 20px;
+      transition: all 0.15s ease;
+    }
+    .back-link:hover { border-color: var(--ink); color: var(--ink); }
+
+    /* ── HEADER ── */
+    .hero {
+      text-align: center;
+      padding: 64px 24px 40px;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .hero .eyebrow {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--standard);
+      margin-bottom: 14px;
+    }
+
+    .hero h1 {
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+
+    .hero p {
+      font-size: 17px;
+      color: var(--ink-soft);
+      max-width: 540px;
+      margin: 0 auto;
+    }
+
+    /* ── PRICING GRID ── */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 24px 24px 80px;
+      align-items: stretch;
+    }
+
+    .plan {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      border: 1.5px solid var(--line);
+      border-radius: var(--radius);
+      padding: 32px 28px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .plan:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(20,23,31,0.10);
+    }
+
+    .plan.featured {
+      border-color: var(--premium);
+      border-width: 2px;
+      box-shadow: 0 12px 36px rgba(184,134,11,0.16);
+    }
+
+    .badge-pop {
+      position: absolute;
+      top: -13px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, var(--premium), var(--premium-2));
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 5px 16px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    .plan-name {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .plan.free     .plan-name { color: var(--free); }
+    .plan.standard .plan-name { color: var(--standard); }
+    .plan.premium  .plan-name { color: var(--premium); }
+
+    .plan-tagline {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 22px;
+      min-height: 38px;
+    }
+
+    .price {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      margin-bottom: 6px;
+    }
+
+    .price .amount {
+      font-size: 46px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+
+    .price .currency {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--ink-soft);
+    }
+
+    .price .period {
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .plan-divider {
+      height: 1px;
+      background: var(--line-soft);
+      margin: 24px 0;
+    }
+
+    .features {
+      list-style: none;
+      flex: 1;
+      margin-bottom: 28px;
+    }
+
+    .features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 11px;
+      padding: 7px 0;
+      font-size: 14px;
+      color: var(--ink-soft);
+    }
+
+    .features li .check {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+    }
+
+    .features li .check svg { width: 12px; height: 12px; stroke-width: 3; }
+
+    .plan.free     .check { background: rgba(107,114,128,0.14); color: var(--free); }
+    .plan.standard .check { background: rgba(37,99,235,0.12);  color: var(--standard); }
+    .plan.premium  .check { background: rgba(184,134,11,0.15); color: var(--premium); }
+
+    .features li.soon { color: var(--muted); }
+    .features li.soon .label-soon {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: var(--line-soft);
+      padding: 1px 7px;
+      border-radius: 10px;
+      margin-left: 6px;
+    }
+
+    .cta {
+      display: block;
+      width: 100%;
+      text-align: center;
+      padding: 13px;
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: 10px;
+      cursor: pointer;
+      text-decoration: none;
+      border: 1.5px solid transparent;
+      transition: all 0.15s ease;
+    }
+
+    .plan.free .cta {
+      background: #fff;
+      color: var(--ink);
+      border-color: var(--line);
+    }
+    .plan.free .cta:hover { background: var(--ink); color: #fff; }
+
+    .plan.standard .cta {
+      background: var(--standard);
+      color: #fff;
+    }
+    .plan.standard .cta:hover { background: #1d4ed8; }
+
+    .plan.premium .cta {
+      background: linear-gradient(135deg, var(--premium), var(--premium-2));
+      color: #fff;
+    }
+    .plan.premium .cta:hover { filter: brightness(1.07); }
+
+    /* ── FOOTNOTE ── */
+    .foot-note {
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      max-width: 620px;
+      margin: 0 auto;
+      padding: 0 24px 60px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 28px;
+      color: var(--muted);
+      font-size: 11px;
+      border-top: 1px solid var(--line-soft);
+      letter-spacing: 0.04em;
+    }
+
+    @media (max-width: 900px) {
+      .pricing-grid { grid-template-columns: 1fr; max-width: 460px; }
+      .plan.featured { order: -1; }
+      .hero h1 { font-size: 34px; }
+    }
+
+    @media (max-width: 480px) {
+      nav { padding: 12px 16px; }
+      .logo-img { height: 60px; }
+      .hero { padding: 40px 20px 28px; }
+      .hero h1 { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">
+    <img src="/static/logo.png" alt="Scalpel" class="logo-img"
+         onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='flex';" />
+    <div id="logo-fallback" class="logo-fallback">
+      <div>
+        <div class="logo-text">SCALPEL</div>
+        <div class="logo-sub">ICT Trade Analysis</div>
+      </div>
+    </div>
+  </a>
+  <a href="/" class="back-link">← Back to app</a>
+</nav>
+
+<section class="hero">
+  <div class="eyebrow">Plans &amp; Pricing</div>
+  <h1>Sharpen every trade you take</h1>
+  <p>Start free. Upgrade when you want deeper, daily ICT analysis of your setups and full access to the Trade of the Day.</p>
+</section>
+
+<div class="pricing-grid">
+
+  <!-- ── FREE ── -->
+  <div class="plan free">
+    <div class="plan-name">Free</div>
+    <div class="plan-tagline">For traders just getting started with journaling.</div>
+    <div class="price">
+      <span class="currency">$</span>
+      <span class="amount">0</span>
+      <span class="period">/ month</span>
+    </div>
+    <div class="plan-divider"></div>
+    <ul class="features">
+      <li>
+        <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+        <span><strong>1</strong> screenshot analysis per week</span>
+      </li>
+      <li>
+        <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+        <span>Weekly <strong>Trade of the Day</strong> view</span>
+      </li>
+      <li>
+        <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+        <span>Full ICT feedback engine</span>
+      </li>
+    </ul>
+    <a href="/" class="cta">Start free</a>
+  </div>
+
+  <!-- ── STANDARD ── -->
+  <div class="plan standard">
+    <div class="plan-name">Standard</div>
+    <div class="plan-tagline">For active traders reviewing setups daily.</div>
+    <div class="price">
+      <span class="currency">$</span>
+      <span class="amount">10</span>
+      <span class="period">/ month</span>
+    </div>
+    <div class="plan-divider"></div>
+    <ul class="features">
+      <li>
+        <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+        <span><strong>1</strong> screenshot analysis per day</span>
+      </li>
+      <li>
+        <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+        <span>Daily <strong>Trade of the Day</strong> view</span>
+      </li>
+      <li>
+        <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+        <span>Full ICT feedback engine</span>
+      </li>
+      <li>
+        <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+        <span>Everything in Free</span>
+      </li>
+    </ul>
+    <a href="/" class="cta">Choose Standard</a>
+  </div>
+
+  <!-- ── PREMIUM ── -->
+  <div class="plan premium featured">
+    <div class="badge-pop">Most Popular</div>
+    <div class="plan-name">Premium</div>
+    <div class="plan-tagline">For serious traders who want unlimited review.</div>
+    <div class="price">
+      <span class="currency">$</span>
+      <span class="amount">30</span>
+      <span class="period">/ month</span>
+    </div>
+    <div class="plan-divider"></div>
+    <ul class="features">
+      <li>
+        <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+        <span><strong>Unlimited</strong> screenshot analyses</span>
+      </li>
+      <li>
+        <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+        <span>Daily <strong>Trade of the Day</strong> view</span>
+      </li>
+      <li>
+        <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+        <span>Full ICT feedback engine</span>
+      </li>
+      <li>
+        <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+        <span>Everything in Standard</span>
+      </li>
+      <li class="soon">
+        <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+        <span>More perks as Scalpel grows <span class="label-soon">soon</span></span>
+      </li>
+    </ul>
+    <a href="/" class="cta">Go Premium</a>
+  </div>
+
+</div>
+
+<p class="foot-note">
+  Plans shown are introductory. Billing is not active yet — these tiers preview what Scalpel will offer. For educational purposes only; not financial advice.
+</p>
+
+<footer>SCALPEL · ICT Trade Analysis · For educational purposes only · Not financial advice</footer>
+
+</body>
+</html>
