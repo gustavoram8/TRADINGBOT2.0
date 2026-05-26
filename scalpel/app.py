@@ -388,10 +388,24 @@ def parse_validation(raw):
 # ──────────────────────────────────────────────────────────────────────────
 # PUBLIC / ENTRY ROUTES
 # ──────────────────────────────────────────────────────────────────────────
+def _came_from_splash():
+    """True if the browser passed through the splash within the last 25 seconds."""
+    ts = request.cookies.get('scalpel_splash_ts')
+    if not ts:
+        return False
+    try:
+        return (datetime.now(timezone.utc).timestamp() - float(ts)) < 25
+    except (ValueError, TypeError):
+        return False
+
+
 @app.route('/')
 def splash():
-    session['splash_shown'] = True
-    return render_template('splash.html')
+    resp = make_response(render_template('splash.html'))
+    resp.set_cookie('scalpel_splash_ts',
+                    str(datetime.now(timezone.utc).timestamp()),
+                    max_age=25, httponly=True, samesite='Lax')
+    return resp
 
 
 @app.route('/pricing')
@@ -401,7 +415,7 @@ def pricing():
 
 @app.route('/app')
 def app_view():
-    if not session.get('splash_shown'):
+    if not _came_from_splash():
         return redirect(url_for('splash'))
     if not has_access():
         return redirect(url_for('login'))
@@ -419,7 +433,7 @@ def app_view():
 # ──────────────────────────────────────────────────────────────────────────
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if not session.get('splash_shown') and request.method == 'GET':
+    if request.method == 'GET' and not _came_from_splash():
         return redirect(url_for('splash'))
     if current_user.is_authenticated:
         return redirect(url_for('app_view'))
@@ -440,7 +454,7 @@ def login():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    if not session.get('splash_shown') and request.method == 'GET':
+    if request.method == 'GET' and not _came_from_splash():
         return redirect(url_for('splash'))
     if current_user.is_authenticated:
         return redirect(url_for('app_view'))
