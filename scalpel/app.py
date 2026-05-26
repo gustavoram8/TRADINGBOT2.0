@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 
 from flask import (
     Flask, render_template, request, jsonify,
-    redirect, url_for, abort, make_response
+    redirect, url_for, abort, make_response, session
 )
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import (
@@ -390,6 +390,7 @@ def parse_validation(raw):
 # ──────────────────────────────────────────────────────────────────────────
 @app.route('/')
 def splash():
+    session['splash_shown'] = True
     return render_template('splash.html')
 
 
@@ -400,6 +401,8 @@ def pricing():
 
 @app.route('/app')
 def app_view():
+    if not session.get('splash_shown'):
+        return redirect(url_for('splash'))
     if not has_access():
         return redirect(url_for('login'))
     return render_template(
@@ -416,6 +419,8 @@ def app_view():
 # ──────────────────────────────────────────────────────────────────────────
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if not session.get('splash_shown') and request.method == 'GET':
+        return redirect(url_for('splash'))
     if current_user.is_authenticated:
         return redirect(url_for('app_view'))
 
@@ -435,6 +440,8 @@ def login():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    if not session.get('splash_shown') and request.method == 'GET':
+        return redirect(url_for('splash'))
     if current_user.is_authenticated:
         return redirect(url_for('app_view'))
 
