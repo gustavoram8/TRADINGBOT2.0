@@ -388,23 +388,15 @@ def parse_validation(raw):
 # ──────────────────────────────────────────────────────────────────────────
 # PUBLIC / ENTRY ROUTES
 # ──────────────────────────────────────────────────────────────────────────
-def _came_from_splash():
-    """True if the browser passed through the splash within the last 25 seconds."""
-    ts = request.cookies.get('scalpel_splash_ts')
-    if not ts:
-        return False
-    try:
-        return (datetime.now(timezone.utc).timestamp() - float(ts)) < 25
-    except (ValueError, TypeError):
-        return False
+def _has_splash_pass():
+    """True if the browser holds the one-time splash pass cookie."""
+    return bool(request.cookies.get('scalpel_splash_ts'))
 
 
 @app.route('/')
 def splash():
     resp = make_response(render_template('splash.html'))
-    resp.set_cookie('scalpel_splash_ts',
-                    str(datetime.now(timezone.utc).timestamp()),
-                    max_age=25, httponly=True, samesite='Lax')
+    resp.set_cookie('scalpel_splash_ts', '1', max_age=60, httponly=True, samesite='Lax')
     return resp
 
 
@@ -415,17 +407,21 @@ def pricing():
 
 @app.route('/app')
 def app_view():
-    if not _came_from_splash():
+    if not _has_splash_pass():
         return redirect(url_for('splash'))
     if not has_access():
+        # Don't delete cookie here — /login still needs it
         return redirect(url_for('login'))
-    return render_template(
+    # Consume the pass so the next refresh triggers splash again
+    resp = make_response(render_template(
         'index.html',
         plan=current_plan(),
         is_admin=current_user.is_admin if current_user.is_authenticated else False,
         username=current_user.username if current_user.is_authenticated else None,
         is_guest=not current_user.is_authenticated,
-    )
+    ))
+    resp.delete_cookie('scalpel_splash_ts')
+    return resp
 
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -433,7 +429,7 @@ def app_view():
 # ──────────────────────────────────────────────────────────────────────────
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == 'GET' and not _came_from_splash():
+    if request.method == 'GET' and not _has_splash_pass():
         return redirect(url_for('splash'))
     if current_user.is_authenticated:
         return redirect(url_for('app_view'))
@@ -454,7 +450,7 @@ def login():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    if request.method == 'GET' and not _came_from_splash():
+    if request.method == 'GET' and not _has_splash_pass():
         return redirect(url_for('splash'))
     if current_user.is_authenticated:
         return redirect(url_for('app_view'))
