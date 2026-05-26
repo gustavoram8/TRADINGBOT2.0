@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scalpel — Create account</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/auth.css" />
+</head>
+<body>
+  <script>
+    (function () {
+      try { if (localStorage.getItem('scalpel_theme') === 'light') document.body.classList.add('light'); }
+      catch (e) {}
+    })();
+  </script>
+
+  <a href="/login" class="back-home" data-i18n="reg.login">← Sign in</a>
+
+  <img src="/static/logo.png" alt="Scalpel" class="auth-logo"
+       onerror="this.style.display='none'; document.getElementById('lf').style.display='block';" />
+  <div id="lf" class="auth-logo-fallback">SCALPEL</div>
+
+  <div class="auth-card">
+    <div class="auth-title" data-i18n="reg.title">Create your account</div>
+    <div class="auth-sub" data-i18n="reg.sub">For Standard and Premium subscribers</div>
+
+    {% if error == 'invalid' %}
+      <div class="alert alert-error" data-i18n="reg.errInvalid">Please check your details (username 3+, password 6+ chars).</div>
+    {% elif error == 'username_taken' %}
+      <div class="alert alert-error" data-i18n="reg.errUser">That username is already taken.</div>
+    {% elif error == 'email_taken' %}
+      <div class="alert alert-error" data-i18n="reg.errEmail">That email is already registered.</div>
+    {% endif %}
+
+    <form method="POST" action="/register">
+      <div class="field">
+        <label for="username" data-i18n="reg.username">Username</label>
+        <input type="text" id="username" name="username" value="{{ username or '' }}" autocomplete="username" minlength="3" required />
+      </div>
+      <div class="field">
+        <label for="email" data-i18n="reg.email">Email</label>
+        <input type="email" id="email" name="email" value="{{ email or '' }}" autocomplete="email" required />
+      </div>
+      <div class="field">
+        <label for="password" data-i18n="reg.password">Password</label>
+        <input type="password" id="password" name="password" autocomplete="new-password" minlength="6"
+               data-i18n-ph="reg.passwordHint" placeholder="At least 6 characters" required />
+      </div>
+      <button type="submit" class="btn btn-primary" data-i18n="reg.submit">Create account</button>
+    </form>
+
+    <div class="alert alert-info" style="margin-top:20px; margin-bottom:0;" data-i18n="reg.note">
+      After subscribing, your plan is activated by the Scalpel team. New accounts start on the free tier.
+    </div>
+
+    <div class="auth-links">
+      <span data-i18n="reg.haveAccount">Already have an account?</span>
+      <a href="/login" data-i18n="reg.login">Sign in</a>
+    </div>
+  </div>
+
+  <div class="legal" data-i18n="common.legal">For educational purposes only · Not financial advice</div>
+
+  <script src="/static/auth.js"></script>
+</body>
+</html>

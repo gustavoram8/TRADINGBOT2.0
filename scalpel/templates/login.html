@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scalpel — Sign in</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/auth.css" />
+</head>
+<body>
+  <script>
+    (function () {
+      try { if (localStorage.getItem('scalpel_theme') === 'light') document.body.classList.add('light'); }
+      catch (e) {}
+    })();
+  </script>
+
+  <a href="/" class="back-home" data-i18n="common.back">← Home</a>
+
+  <img src="/static/logo.png" alt="Scalpel" class="auth-logo"
+       onerror="this.style.display='none'; document.getElementById('lf').style.display='block';" />
+  <div id="lf" class="auth-logo-fallback">SCALPEL</div>
+
+  <div class="auth-card">
+    <div class="auth-title" data-i18n="login.title">Welcome back</div>
+    <div class="auth-sub" data-i18n="login.sub">Sign in to your Scalpel account</div>
+
+    {% if reset == 'success' %}
+      <div class="alert alert-ok" data-i18n="login.resetOk">Password updated. You can sign in now.</div>
+    {% endif %}
+    {% if error == 'invalid' %}
+      <div class="alert alert-error" data-i18n="login.errInvalid">Incorrect email/username or password.</div>
+    {% endif %}
+
+    <form method="POST" action="/login">
+      <div class="field">
+        <label for="identifier" data-i18n="login.identifier">Email or username</label>
+        <input type="text" id="identifier" name="identifier" autocomplete="username" required />
+      </div>
+      <div class="field">
+        <label for="password" data-i18n="login.password">Password</label>
+        <input type="password" id="password" name="password" autocomplete="current-password" required />
+      </div>
+      <button type="submit" class="btn btn-primary" data-i18n="login.submit">Sign in</button>
+    </form>
+
+    <a href="/forgot-password" class="auth-foot-link" data-i18n="login.forgot">Forgot your password?</a>
+
+    <div class="divider-row" data-i18n="login.or">or</div>
+
+    <a href="/start-free" class="btn btn-free" data-i18n="login.free">Start free — no account needed</a>
+
+    <div class="auth-links">
+      <span data-i18n="login.noAccount">Don't have a paid plan yet?</span>
+      <a href="/register" data-i18n="login.register">Create an account</a>
+    </div>
+  </div>
+
+  <div class="legal" data-i18n="common.legal">For educational purposes only · Not financial advice</div>
+
+  <script src="/static/auth.js"></script>
+</body>
+</html>

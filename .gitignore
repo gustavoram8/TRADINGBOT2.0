@@ -24,6 +24,11 @@ data/cache/
 .env.*.local
 .streamlit/secrets.toml
 
+# Scalpel local data (never commit DB or signing key)
+*.db
+scalpel/.secret_key
+instance/
+
 # OS
 .DS_Store
 Thumbs.db

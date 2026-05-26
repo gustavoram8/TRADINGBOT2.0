@@ -1,15 +1,77 @@
 import os
 import json
 import base64
-from flask import Flask, render_template, request, jsonify
+import socket
+import secrets
+from datetime import datetime, timedelta, timezone
+
+from flask import (
+    Flask, render_template, request, jsonify,
+    redirect, url_for, abort, make_response
+)
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import (
+    LoginManager, UserMixin, login_user, logout_user,
+    login_required, current_user
+)
+from flask_mail import Mail, Message
+from werkzeug.security import generate_password_hash, check_password_hash
+from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from openai import OpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
 
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 20 * 1024 * 1024  # 20MB max
 
+
+# ──────────────────────────────────────────────────────────────────────────
+# SECRET KEY — must stay stable across restarts so sessions / reset tokens
+# survive a server reboot. Read from env, else persist a generated one to a
+# gitignored file so "remember me" cookies keep working.
+# ──────────────────────────────────────────────────────────────────────────
+def _load_secret_key():
+    env_key = os.environ.get('SECRET_KEY')
+    if env_key:
+        return env_key
+    key_path = os.path.join(BASE_DIR, '.secret_key')
+    if os.path.exists(key_path):
+        with open(key_path) as f:
+            return f.read().strip()
+    new_key = secrets.token_hex(32)
+    try:
+        with open(key_path, 'w') as f:
+            f.write(new_key)
+    except OSError:
+        pass
+    return new_key
+
+
+app.config['SECRET_KEY'] = _load_secret_key()
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'scalpel.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
+
+# ── Email (Gmail SMTP) — used only for password recovery ──
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
+app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME', 'mauroramirezmij@gmail.com')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_APP_PASSWORD', '')
+app.config['MAIL_DEFAULT_SENDER'] = (
+    'Scalpel', os.environ.get('MAIL_USERNAME', 'mauroramirezmij@gmail.com')
+)
+
+db = SQLAlchemy(app)
+mail = Mail(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
+reset_serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+
+# ── AI client ──
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "placeholder")
 MODEL = os.environ.get("SCALPEL_MODEL", "gpt-4o")
 
@@ -17,6 +79,138 @@ client = OpenAI(
     base_url="https://models.inference.ai.azure.com",
     api_key=GITHUB_TOKEN,
 )
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# MODELS
+# ──────────────────────────────────────────────────────────────────────────
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(255), unique=True, nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
+    plan = db.Column(db.String(20), default='free', nullable=False)  # free / standard / premium
+    is_admin = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    def set_password(self, raw):
+        self.password_hash = generate_password_hash(raw)
+
+    def check_password(self, raw):
+        return check_password_hash(self.password_hash, raw)
+
+
+class UsageLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    anon_id = db.Column(db.String(64), nullable=True, index=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return db.session.get(User, int(user_id))
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# PLAN LIMITS & ACCESS HELPERS
+# ──────────────────────────────────────────────────────────────────────────
+PLAN_WINDOWS = {
+    'free': timedelta(days=7),
+    'standard': timedelta(days=1),
+    'premium': None,  # unlimited
+}
+
+ANON_COOKIE = 'scalpel_anon'
+
+
+def get_anon_id():
+    return request.cookies.get(ANON_COOKIE)
+
+
+def has_access():
+    """A request is allowed into the app if logged in OR carrying a free-tier anon cookie."""
+    return current_user.is_authenticated or bool(get_anon_id())
+
+
+def current_plan():
+    if current_user.is_authenticated:
+        return current_user.plan
+    return 'free'
+
+
+def _as_utc(dt):
+    if dt is None:
+        return None
+    return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+
+
+def check_rate_limit():
+    """Return None if an analysis is allowed, else a dict describing the block."""
+    plan = current_plan()
+    window = PLAN_WINDOWS.get(plan)
+    if window is None:
+        return None  # premium = unlimited
+
+    if current_user.is_authenticated:
+        last = (UsageLog.query
+                .filter_by(user_id=current_user.id)
+                .order_by(UsageLog.created_at.desc())
+                .first())
+    else:
+        anon = get_anon_id()
+        last = (UsageLog.query
+                .filter_by(anon_id=anon)
+                .order_by(UsageLog.created_at.desc())
+                .first()) if anon else None
+
+    if last is None:
+        return None  # never used → allow
+
+    next_allowed = _as_utc(last.created_at) + window
+    now = datetime.now(timezone.utc)
+    if now >= next_allowed:
+        return None
+
+    remaining = int((next_allowed - now).total_seconds())
+    return {
+        'plan': plan,
+        'remaining_seconds': remaining,
+        'next_available': next_allowed.isoformat(),
+    }
+
+
+def log_usage():
+    entry = UsageLog(
+        user_id=current_user.id if current_user.is_authenticated else None,
+        anon_id=None if current_user.is_authenticated else get_anon_id(),
+    )
+    db.session.add(entry)
+    db.session.commit()
+
+
+def send_reset_email(to_email, reset_url):
+    if not app.config.get('MAIL_PASSWORD'):
+        app.logger.warning('MAIL_APP_PASSWORD not configured — cannot send reset email.')
+        return False
+    msg = Message('Scalpel — Password Reset', recipients=[to_email])
+    msg.body = (
+        "We received a request to reset your Scalpel password.\n\n"
+        f"Reset it here (link valid for 1 hour):\n{reset_url}\n\n"
+        "If you didn't request this, you can safely ignore this email."
+    )
+    # Bound the SMTP attempt so an unreachable mail server can't hang the request.
+    prev_timeout = socket.getdefaulttimeout()
+    socket.setdefaulttimeout(15)
+    try:
+        mail.send(msg)
+        return True
+    except Exception as exc:
+        app.logger.warning('Failed to send reset email: %s', exc)
+        return False
+    finally:
+        socket.setdefaulttimeout(prev_timeout)
+
 
 SYSTEM_PROMPT = """You are Scalpel — an expert ICT (Inner Circle Trader) methodology analyst and trading coach. You analyze chart screenshots submitted by traders and identify POSSIBLE areas worth reflecting on, based on ICT theory. You NEVER issue verdicts, declare errors, or treat theory as absolute truth.
 
@@ -191,9 +385,12 @@ def parse_validation(raw):
         return {'entry': True, 'exit': True, 'sl_tp': False, 'note': '', 'skipped': True}
 
 
+# ──────────────────────────────────────────────────────────────────────────
+# PUBLIC / ENTRY ROUTES
+# ──────────────────────────────────────────────────────────────────────────
 @app.route('/')
-def index():
-    return render_template('index.html')
+def splash():
+    return render_template('splash.html')
 
 
 @app.route('/pricing')
@@ -201,8 +398,176 @@ def pricing():
     return render_template('pricing.html')
 
 
+@app.route('/app')
+def app_view():
+    if not has_access():
+        return redirect(url_for('login'))
+    return render_template(
+        'index.html',
+        plan=current_plan(),
+        is_admin=current_user.is_admin if current_user.is_authenticated else False,
+        username=current_user.username if current_user.is_authenticated else None,
+        is_guest=not current_user.is_authenticated,
+    )
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# AUTH ROUTES
+# ──────────────────────────────────────────────────────────────────────────
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('app_view'))
+
+    if request.method == 'POST':
+        identifier = request.form.get('identifier', '').strip()
+        password = request.form.get('password', '')
+        user = (User.query.filter_by(email=identifier.lower()).first()
+                or User.query.filter_by(username=identifier).first())
+        if user and user.check_password(password):
+            login_user(user, remember=True, duration=timedelta(days=30))
+            target = url_for('admin') if user.is_admin else url_for('app_view')
+            return redirect(target)
+        return render_template('login.html', error='invalid')
+
+    return render_template('login.html', reset=request.args.get('reset'))
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('app_view'))
+
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        email = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '')
+
+        if len(username) < 3 or len(email) < 5 or len(password) < 6:
+            return render_template('register.html', error='invalid', username=username, email=email)
+        if User.query.filter_by(username=username).first():
+            return render_template('register.html', error='username_taken', username=username, email=email)
+        if User.query.filter_by(email=email).first():
+            return render_template('register.html', error='email_taken', username=username, email=email)
+
+        user = User(username=username, email=email, plan='free')
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
+        login_user(user, remember=True, duration=timedelta(days=30))
+        return redirect(url_for('app_view'))
+
+    return render_template('register.html')
+
+
+@app.route('/start-free')
+def start_free():
+    resp = make_response(redirect(url_for('app_view')))
+    if not get_anon_id():
+        resp.set_cookie(
+            ANON_COOKIE, secrets.token_urlsafe(24),
+            max_age=60 * 60 * 24 * 365, samesite='Lax'
+        )
+    return resp
+
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    resp = make_response(redirect(url_for('login')))
+    resp.delete_cookie(ANON_COOKIE)
+    return resp
+
+
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip().lower()
+        user = User.query.filter_by(email=email).first()
+        if user:
+            token = reset_serializer.dumps(email, salt='password-reset')
+            reset_url = url_for('reset_password', token=token, _external=True)
+            send_reset_email(email, reset_url)
+        # Always report success — never reveal which emails are registered.
+        return render_template('forgot_password.html', sent=True)
+    return render_template('forgot_password.html')
+
+
+@app.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    try:
+        email = reset_serializer.loads(token, salt='password-reset', max_age=3600)
+    except (BadSignature, SignatureExpired):
+        return render_template('reset_password.html', invalid=True)
+
+    if request.method == 'POST':
+        password = request.form.get('password', '')
+        if len(password) < 6:
+            return render_template('reset_password.html', token=token, error='short')
+        user = User.query.filter_by(email=email).first()
+        if user:
+            user.set_password(password)
+            db.session.commit()
+        return redirect(url_for('login', reset='success'))
+
+    return render_template('reset_password.html', token=token)
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# ADMIN
+# ──────────────────────────────────────────────────────────────────────────
+@app.route('/admin')
+@login_required
+def admin():
+    if not current_user.is_admin:
+        return redirect(url_for('app_view'))
+    users = User.query.order_by(User.created_at.desc()).all()
+    counts = {
+        'total': len(users),
+        'premium': sum(1 for u in users if u.plan == 'premium'),
+        'standard': sum(1 for u in users if u.plan == 'standard'),
+        'free': sum(1 for u in users if u.plan == 'free'),
+    }
+    return render_template('admin.html', users=users, counts=counts)
+
+
+@app.route('/admin/set-plan', methods=['POST'])
+@login_required
+def admin_set_plan():
+    if not current_user.is_admin:
+        abort(403)
+    user_id = request.form.get('user_id')
+    plan = request.form.get('plan')
+    if plan not in ('free', 'standard', 'premium'):
+        abort(400)
+    user = db.session.get(User, int(user_id))
+    if user and not user.is_admin:
+        user.plan = plan
+        db.session.commit()
+    return redirect(url_for('admin'))
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# USAGE STATUS API (drives the live countdown on the frontend)
+# ──────────────────────────────────────────────────────────────────────────
+@app.route('/api/usage')
+def usage_status():
+    if not has_access():
+        return jsonify({'error': 'unauthorized'}), 401
+    info = check_rate_limit()
+    plan = current_plan()
+    if info:
+        return jsonify({'allowed': False, **info})
+    return jsonify({'allowed': True, 'plan': plan})
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# AI ROUTES
+# ──────────────────────────────────────────────────────────────────────────
 @app.route('/validate', methods=['POST'])
 def validate():
+    if not has_access():
+        return jsonify({'error': 'unauthorized'}), 401
     try:
         screenshot = request.files.get('screenshot')
         if not screenshot or screenshot.filename == '':
@@ -239,6 +604,14 @@ def validate():
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
+    if not has_access():
+        return jsonify({'error': 'unauthorized'}), 401
+
+    # ── Rate limit gate (free 1/week, standard 1/day, premium unlimited) ──
+    limit = check_rate_limit()
+    if limit:
+        return jsonify({'error': 'limit_reached', 'limit_reached': True, **limit}), 429
+
     try:
         instrument = request.form.get('instrument', 'Not specified')
         direction = request.form.get('direction', 'Not specified')
@@ -303,6 +676,7 @@ LANGUAGE: Write your entire response in {language}. Keep ICT-specific terms and 
         )
 
         analysis = response.choices[0].message.content
+        log_usage()  # record only on a successful analysis
         return jsonify({'analysis': analysis})
 
     except Exception as e:
@@ -312,6 +686,31 @@ LANGUAGE: Write your entire response in {language}. Keep ICT-specific terms and 
         if '429' in error_msg:
             return jsonify({'error': 'Rate limit reached. Please wait a moment and try again.'}), 429
         return jsonify({'error': f'Analysis failed: {error_msg}'}), 500
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# BOOTSTRAP: create tables + seed admin
+# ──────────────────────────────────────────────────────────────────────────
+def init_db():
+    with app.app_context():
+        db.create_all()
+        admin_email = os.environ.get('ADMIN_EMAIL', 'mauroramirezmij@gmail.com').lower()
+        admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
+        admin_password = os.environ.get('ADMIN_PASSWORD', 'Codica2310$')
+        if not User.query.filter_by(email=admin_email).first():
+            admin = User(
+                username=admin_username,
+                email=admin_email,
+                plan='premium',
+                is_admin=True,
+            )
+            admin.set_password(admin_password)
+            db.session.add(admin)
+            db.session.commit()
+            app.logger.info('Seeded admin account: %s', admin_email)
+
+
+init_db()
 
 
 if __name__ == '__main__':

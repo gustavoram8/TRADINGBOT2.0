@@ -295,6 +295,129 @@
     body.light .theme-toggle .icon-sun  { display: block; }
     body.light .theme-toggle .icon-moon { display: none; }
 
+    /* ── ACCOUNT MENU ── */
+    .account { position: relative; }
+    .account-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: 34px;
+      padding: 0 10px 0 12px;
+      background: var(--card);
+      border: 1px solid var(--border2);
+      border-radius: 20px;
+      color: var(--text);
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.15s ease;
+    }
+    .account-btn:hover { border-color: var(--accent); }
+    .plan-chip {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+    .plan-chip.free     { background: rgba(99,104,130,0.20); color: var(--muted); }
+    .plan-chip.standard { background: rgba(91,142,240,0.18); color: var(--accent); }
+    .plan-chip.premium  { background: rgba(224,168,61,0.18); color: #e0a83d; }
+    .account-btn .uname { font-size: 12.5px; font-weight: 600; max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .account-btn .chev { width: 13px; height: 13px; color: var(--muted); }
+
+    .account-menu {
+      position: absolute;
+      top: 42px;
+      right: 0;
+      min-width: 190px;
+      background: var(--card);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      box-shadow: 0 14px 36px rgba(0,0,0,0.35);
+      padding: 6px;
+      display: none;
+      z-index: 50;
+    }
+    body.light .account-menu { box-shadow: 0 14px 36px rgba(20,23,31,0.12); }
+    .account-menu.show { display: block; }
+    .account-menu .row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 11px;
+      border-radius: 7px;
+      font-size: 13px;
+      color: var(--text);
+      text-decoration: none;
+      cursor: pointer;
+      width: 100%;
+      background: none;
+      border: none;
+      font-family: 'Inter', sans-serif;
+      text-align: left;
+    }
+    .account-menu .row:hover { background: var(--surface); }
+    .account-menu .row svg { width: 15px; height: 15px; color: var(--muted); flex-shrink: 0; }
+    .account-menu .row.danger { color: var(--loss); }
+    .account-menu .row.danger svg { color: var(--loss); }
+    .account-menu .menu-head {
+      padding: 9px 11px 7px;
+      font-size: 11px;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 4px;
+    }
+    .account-menu .menu-head strong { color: var(--text); font-size: 12.5px; display: block; }
+
+    /* ── USAGE / LIMIT BANNER ── */
+    #limit-view { display: none; text-align: center; padding: 50px 24px; }
+    .limit-card {
+      max-width: 460px;
+      margin: 0 auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 36px 30px;
+    }
+    .limit-icon {
+      width: 54px; height: 54px; margin: 0 auto 18px;
+      border-radius: 50%;
+      background: rgba(234,179,8,0.12);
+      color: var(--be);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .limit-icon svg { width: 26px; height: 26px; }
+    .limit-title { font-size: 19px; font-weight: 700; margin-bottom: 10px; }
+    .limit-msg { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+    .countdown {
+      display: inline-flex;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .cd-unit {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      padding: 10px 14px;
+      min-width: 62px;
+    }
+    .cd-unit .num { font-size: 26px; font-weight: 800; font-family: 'JetBrains Mono', monospace; line-height: 1; }
+    .cd-unit .lab { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 5px; }
+    .limit-cta { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .limit-cta a {
+      padding: 11px 20px;
+      border-radius: 9px;
+      font-size: 13.5px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+    .limit-cta .upgrade { background: var(--accent); color: #fff; }
+    .limit-cta .upgrade:hover { background: var(--accent-h); }
+    .limit-cta .secondary { border: 1px solid var(--border2); color: var(--muted); }
+    .limit-cta .secondary:hover { color: var(--text); border-color: var(--accent); }
+
     /* ── LAYOUT ── */
     .container {
       max-width: 720px;
@@ -820,6 +943,14 @@
     try { if (localStorage.getItem('scalpel_theme') === 'light') document.body.classList.add('light'); }
     catch (e) {}
   })();
+
+  // Current account context, injected server-side
+  window.SCALPEL_USER = {
+    plan: "{{ plan|default('free') }}",
+    isAdmin: {{ 'true' if is_admin else 'false' }},
+    isGuest: {{ 'true' if is_guest else 'false' }},
+    username: {{ (username or '')|tojson }}
+  };
 </script>
 
 <nav>
@@ -886,7 +1017,38 @@
       </svg>
     </button>
 
-    <div class="nav-badge">Beta</div>
+    <!-- Account menu -->
+    <div class="account" id="account">
+      <button class="account-btn" id="account-btn" type="button">
+        <span class="plan-chip" id="plan-chip">Free</span>
+        <span class="uname" id="account-name">Guest</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+      <div class="account-menu" id="account-menu">
+        <div class="menu-head" id="menu-head">
+          <strong id="menu-name">Guest</strong>
+          <span id="menu-plan">Free plan</span>
+        </div>
+        <a class="row" href="/admin" id="menu-admin" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/></svg>
+          <span data-i18n="account.admin">Admin panel</span>
+        </a>
+        <a class="row" href="/pricing" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          <span data-i18n="account.plans">Plans &amp; pricing</span>
+        </a>
+        <a class="row" href="/login" id="menu-login" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          <span data-i18n="account.signin">Sign in</span>
+        </a>
+        <a class="row danger" href="/logout" id="menu-logout">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          <span id="menu-logout-label" data-i18n="account.logout">Sign out</span>
+        </a>
+      </div>
+    </div>
   </div>
 </nav>
 
@@ -1077,6 +1239,29 @@
     <button class="btn-new" id="btn-new" data-i18n="btn.new">← Analyze Another Trade</button>
   </div>
 
+  <!-- ── LIMIT REACHED VIEW ── -->
+  <div id="limit-view">
+    <div class="limit-card">
+      <div class="limit-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        </svg>
+      </div>
+      <div class="limit-title" id="limit-title" data-i18n="limit.title">You've reached your plan limit</div>
+      <div class="limit-msg" id="limit-msg" data-i18n="limit.msgFree">You've used your free analysis for this week. Please wait or upgrade your plan to keep going.</div>
+      <div class="countdown" id="countdown">
+        <div class="cd-unit"><div class="num" id="cd-d">0</div><div class="lab" data-i18n="limit.days">days</div></div>
+        <div class="cd-unit"><div class="num" id="cd-h">00</div><div class="lab" data-i18n="limit.hours">hrs</div></div>
+        <div class="cd-unit"><div class="num" id="cd-m">00</div><div class="lab" data-i18n="limit.mins">min</div></div>
+        <div class="cd-unit"><div class="num" id="cd-s">00</div><div class="lab" data-i18n="limit.secs">sec</div></div>
+      </div>
+      <div class="limit-cta">
+        <a href="/pricing" target="_blank" rel="noopener" class="upgrade" data-i18n="limit.upgrade">Upgrade plan</a>
+        <a href="#" class="secondary" id="limit-back" data-i18n="limit.back">Back</a>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- ── VALIDATION MODAL ── -->
@@ -1151,6 +1336,21 @@
       'err.generic': 'Something went wrong. Please try again.',
       'err.network': 'Network error. Check your connection and try again.',
       'footer.text': 'SCALPEL · ICT Trade Analysis · For educational purposes only · Not financial advice',
+      'account.admin': 'Admin panel',
+      'account.plans': 'Plans & pricing',
+      'account.signin': 'Sign in',
+      'account.logout': 'Sign out',
+      'account.guest': 'Guest',
+      'account.exitFree': 'Exit free mode',
+      'plan.free': 'Free', 'plan.standard': 'Standard', 'plan.premium': 'Premium',
+      'plan.freeLabel': 'Free plan', 'plan.standardLabel': 'Standard plan', 'plan.premiumLabel': 'Premium plan',
+      'limit.title': "You've reached your plan limit",
+      'limit.msgFree': "You've used your free analysis for this week. Please wait 7 days or upgrade your plan to keep going.",
+      'limit.msgStandard': "You've used your daily analysis on the Standard plan. Please wait or upgrade to Premium for unlimited analyses.",
+      'limit.days': 'days', 'limit.hours': 'hrs', 'limit.mins': 'min', 'limit.secs': 'sec',
+      'limit.upgrade': 'Upgrade plan',
+      'limit.back': 'Back',
+      'limit.available': 'You can analyze again now.',
       fieldNames: { instrument: 'Instrument', direction: 'Direction', session: 'Session', result: 'Result', htf_bias: 'HTF Bias', aligned: 'Bias alignment', approach: 'Approach / Model' }
     },
     es: {
@@ -1207,6 +1407,21 @@
       'err.generic': 'Algo salió mal. Inténtalo de nuevo.',
       'err.network': 'Error de red. Revisa tu conexión e inténtalo de nuevo.',
       'footer.text': 'SCALPEL · Análisis de Trades ICT · Solo con fines educativos · No es asesoría financiera',
+      'account.admin': 'Panel de admin',
+      'account.plans': 'Planes y precios',
+      'account.signin': 'Iniciar sesión',
+      'account.logout': 'Cerrar sesión',
+      'account.guest': 'Invitado',
+      'account.exitFree': 'Salir del modo gratis',
+      'plan.free': 'Gratis', 'plan.standard': 'Standard', 'plan.premium': 'Premium',
+      'plan.freeLabel': 'Plan gratis', 'plan.standardLabel': 'Plan Standard', 'plan.premiumLabel': 'Plan Premium',
+      'limit.title': 'Has alcanzado el límite de tu plan',
+      'limit.msgFree': 'Lo siento, has alcanzado el límite de uso del plan gratis. Por favor espera 7 días o modifica tu plan para poder seguir.',
+      'limit.msgStandard': 'Has usado tu análisis diario del plan Standard. Por favor espera o mejora a Premium para análisis ilimitados.',
+      'limit.days': 'días', 'limit.hours': 'hrs', 'limit.mins': 'min', 'limit.secs': 'seg',
+      'limit.upgrade': 'Mejorar plan',
+      'limit.back': 'Volver',
+      'limit.available': 'Ya puedes analizar de nuevo.',
       fieldNames: { instrument: 'Instrumento', direction: 'Dirección', session: 'Sesión', result: 'Resultado', htf_bias: 'Sesgo HTF', aligned: 'Alineación con el sesgo', approach: 'Enfoque / Modelo' }
     },
     fr: {
@@ -1263,6 +1478,21 @@
       'err.generic': "Une erreur s'est produite. Veuillez réessayer.",
       'err.network': 'Erreur réseau. Vérifiez votre connexion et réessayez.',
       'footer.text': 'SCALPEL · Analyse de Trades ICT · À des fins éducatives uniquement · Pas un conseil financier',
+      'account.admin': "Panneau d'admin",
+      'account.plans': 'Offres et tarifs',
+      'account.signin': 'Se connecter',
+      'account.logout': 'Se déconnecter',
+      'account.guest': 'Invité',
+      'account.exitFree': 'Quitter le mode gratuit',
+      'plan.free': 'Gratuit', 'plan.standard': 'Standard', 'plan.premium': 'Premium',
+      'plan.freeLabel': 'Offre gratuite', 'plan.standardLabel': 'Offre Standard', 'plan.premiumLabel': 'Offre Premium',
+      'limit.title': 'Vous avez atteint la limite de votre offre',
+      'limit.msgFree': "Vous avez utilisé votre analyse gratuite de la semaine. Veuillez patienter 7 jours ou changer d'offre pour continuer.",
+      'limit.msgStandard': "Vous avez utilisé votre analyse quotidienne de l'offre Standard. Patientez ou passez à Premium pour des analyses illimitées.",
+      'limit.days': 'jours', 'limit.hours': 'h', 'limit.mins': 'min', 'limit.secs': 'sec',
+      'limit.upgrade': "Changer d'offre",
+      'limit.back': 'Retour',
+      'limit.available': 'Vous pouvez analyser à nouveau.',
       fieldNames: { instrument: 'Instrument', direction: 'Direction', session: 'Session', result: 'Résultat', htf_bias: 'Biais HTF', aligned: 'Alignement avec le biais', approach: 'Approche / Modèle' }
     },
     pt: {
@@ -1319,6 +1549,21 @@
       'err.generic': 'Algo deu errado. Tente novamente.',
       'err.network': 'Erro de rede. Verifique sua conexão e tente novamente.',
       'footer.text': 'SCALPEL · Análise de Trades ICT · Apenas para fins educativos · Não é aconselhamento financeiro',
+      'account.admin': 'Painel de admin',
+      'account.plans': 'Planos e preços',
+      'account.signin': 'Entrar',
+      'account.logout': 'Sair',
+      'account.guest': 'Convidado',
+      'account.exitFree': 'Sair do modo grátis',
+      'plan.free': 'Grátis', 'plan.standard': 'Standard', 'plan.premium': 'Premium',
+      'plan.freeLabel': 'Plano grátis', 'plan.standardLabel': 'Plano Standard', 'plan.premiumLabel': 'Plano Premium',
+      'limit.title': 'Você atingiu o limite do seu plano',
+      'limit.msgFree': 'Você usou sua análise grátis desta semana. Por favor aguarde 7 dias ou mude de plano para continuar.',
+      'limit.msgStandard': 'Você usou sua análise diária do plano Standard. Aguarde ou mude para o Premium para análises ilimitadas.',
+      'limit.days': 'dias', 'limit.hours': 'hrs', 'limit.mins': 'min', 'limit.secs': 'seg',
+      'limit.upgrade': 'Mudar de plano',
+      'limit.back': 'Voltar',
+      'limit.available': 'Você já pode analisar de novo.',
       fieldNames: { instrument: 'Instrumento', direction: 'Direção', session: 'Sessão', result: 'Resultado', htf_bias: 'Viés HTF', aligned: 'Alinhamento com o viés', approach: 'Abordagem / Modelo' }
     }
   };
@@ -1471,10 +1716,13 @@
     loadingSub.textContent   = sub;
   }
 
+  const limitView = document.getElementById('limit-view');
+
   function showView(view) {
     formView.style.display    = view === 'form'    ? 'block' : 'none';
     loadingView.style.display = view === 'loading' ? 'block' : 'none';
     resultView.style.display  = view === 'result'  ? 'block' : 'none';
+    limitView.style.display   = view === 'limit'   ? 'block' : 'none';
   }
 
   function resetButton() {
@@ -1569,6 +1817,12 @@
       const res  = await fetch('/analyze', { method: 'POST', body: fd });
       const data = await res.json();
 
+      if (res.status === 429 && data.limit_reached) {
+        resetButton();
+        showLimit(data);
+        return;
+      }
+
       if (!res.ok || data.error) {
         showView('form');
         showError(data.error || T('err.generic'));
@@ -1647,11 +1901,95 @@
 
   document.getElementById('lang-select').addEventListener('change', e => {
     applyLanguage(e.target.value);
+    refreshAccountMenu();
+    if (limitView.style.display === 'block' && lastLimitData) showLimit(lastLimitData, true);
+  });
+
+  // ── Account menu ──
+  const U = window.SCALPEL_USER || { plan: 'free', isAdmin: false, isGuest: true, username: '' };
+  const accountBtn  = document.getElementById('account-btn');
+  const accountMenu = document.getElementById('account-menu');
+
+  function refreshAccountMenu() {
+    const plan = U.plan || 'free';
+    const chip = document.getElementById('plan-chip');
+    chip.className = 'plan-chip ' + plan;
+    chip.textContent = T('plan.' + plan) || plan;
+
+    const displayName = U.isGuest ? T('account.guest') : (U.username || T('account.guest'));
+    document.getElementById('account-name').textContent = displayName;
+    document.getElementById('menu-name').textContent = displayName;
+    document.getElementById('menu-plan').textContent = T('plan.' + plan + 'Label') || (plan + ' plan');
+
+    document.getElementById('menu-admin').style.display = U.isAdmin ? 'flex' : 'none';
+    // Guests get "Sign in"; the logout row doubles as "exit free mode"
+    document.getElementById('menu-login').style.display  = U.isGuest ? 'flex' : 'none';
+    document.getElementById('menu-logout-label').textContent =
+      U.isGuest ? T('account.exitFree') : T('account.logout');
+  }
+
+  accountBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    accountMenu.classList.toggle('show');
+  });
+  document.addEventListener('click', () => accountMenu.classList.remove('show'));
+  accountMenu.addEventListener('click', e => e.stopPropagation());
+
+  // ── Usage limit + live countdown ──
+  let lastLimitData = null;
+  let countdownTimer = null;
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function renderCountdown(seconds) {
+    const d = Math.floor(seconds / 86400);
+    const h = Math.floor((seconds % 86400) / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    document.getElementById('cd-d').textContent = d;
+    document.getElementById('cd-h').textContent = pad(h);
+    document.getElementById('cd-m').textContent = pad(m);
+    document.getElementById('cd-s').textContent = pad(s);
+  }
+
+  function showLimit(data, keepTimer) {
+    lastLimitData = data;
+    const plan = data.plan || U.plan || 'free';
+    document.getElementById('limit-title').textContent = T('limit.title');
+    document.getElementById('limit-msg').textContent =
+      plan === 'standard' ? T('limit.msgStandard') : T('limit.msgFree');
+
+    let remaining = Math.max(0, parseInt(data.remaining_seconds, 10) || 0);
+    // Anchor to an absolute end time so the countdown stays accurate.
+    const endAt = Date.now() + remaining * 1000;
+
+    renderCountdown(remaining);
+    showView('limit');
+
+    if (!keepTimer && countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
+    if (countdownTimer) clearInterval(countdownTimer);
+    countdownTimer = setInterval(() => {
+      const left = Math.round((endAt - Date.now()) / 1000);
+      if (left <= 0) {
+        clearInterval(countdownTimer); countdownTimer = null;
+        renderCountdown(0);
+        document.getElementById('limit-msg').textContent = T('limit.available');
+        return;
+      }
+      renderCountdown(left);
+    }, 1000);
+  }
+
+  document.getElementById('limit-back').addEventListener('click', e => {
+    e.preventDefault();
+    if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
+    showView('form');
   });
 
   // ── Init: apply saved preferences on load ──
   applyTheme(currentTheme);
   applyLanguage(currentLang);
+  refreshAccountMenu();
 </script>
 </body>
 </html>

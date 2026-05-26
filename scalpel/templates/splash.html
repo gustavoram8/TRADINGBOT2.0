@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scalpel — Financial Tech</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0c0e14;
+      --bg-2:      #11141d;
+      --text:      #d4d8ec;
+      --muted:     #636882;
+      --accent:    #5b8ef0;
+      --bull:      #22c55e;
+      --bull-dk:   #16a34a;
+    }
+
+    body.light {
+      --bg:        #f4f5f8;
+      --bg-2:      #ffffff;
+      --text:      #1a1d28;
+      --muted:     #6b7186;
+      --accent:    #3f6fd6;
+    }
+
+    html, body { height: 100%; }
+
+    body {
+      background:
+        radial-gradient(1200px 700px at 50% -10%, var(--bg-2), var(--bg) 60%);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .stage {
+      position: relative;
+      width: 320px;
+      height: 320px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ── LOGO ── */
+    .splash-logo {
+      width: 200px;
+      height: auto;
+      filter: invert(1);
+      mix-blend-mode: lighten;
+      animation: logoPulse 3.2s ease-in-out infinite;
+      z-index: 2;
+    }
+    body.light .splash-logo { filter: none; mix-blend-mode: normal; }
+
+    .logo-fallback {
+      display: none;
+      font-size: 40px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      color: var(--text);
+      z-index: 2;
+    }
+
+    @keyframes logoPulse {
+      0%, 100% { transform: scale(1);    opacity: 0.96; }
+      50%      { transform: scale(1.04); opacity: 1; }
+    }
+
+    /* ── ORBIT RING (faint guide) ── */
+    .ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 1px dashed rgba(91,142,240,0.18);
+      animation: ringFade 3.2s ease-in-out infinite;
+    }
+    @keyframes ringFade {
+      0%, 100% { opacity: 0.5; }
+      50%      { opacity: 0.9; }
+    }
+
+    /* ── ORBITING BULLISH CANDLE ── */
+    .orbit {
+      position: absolute;
+      inset: 0;
+      animation: orbitSpin 4.5s linear infinite;
+      z-index: 3;
+    }
+    .candle {
+      position: absolute;
+      top: 2px;
+      left: 50%;
+      width: 22px;
+      height: 56px;
+      margin-left: -11px;
+      /* keep the candle upright while the orbit rotates */
+      animation: candleUpright 4.5s linear infinite;
+      filter: drop-shadow(0 0 6px rgba(34,197,94,0.55));
+    }
+    @keyframes orbitSpin    { from { transform: rotate(0deg);   } to { transform: rotate(360deg);  } }
+    @keyframes candleUpright{ from { transform: rotate(0deg);   } to { transform: rotate(-360deg); } }
+
+    /* ── TITLES ── */
+    .titles { text-align: center; margin-top: 18px; }
+
+    .tagline {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.42em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 26px;
+      padding-left: 0.42em;
+      animation: fadeUp 0.8s ease 0.2s both;
+    }
+
+    /* ── THINKING / LOADING TEXT (Claude-style) ── */
+    .thinking {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      min-height: 22px;
+      animation: fadeUp 0.8s ease 0.5s both;
+    }
+
+    .thinking-text {
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 500;
+      background: linear-gradient(
+        90deg,
+        var(--muted) 0%, var(--muted) 35%,
+        var(--text) 50%,
+        var(--muted) 65%, var(--muted) 100%
+      );
+      background-size: 220% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: shimmer 2.4s linear infinite;
+      transition: opacity 0.35s ease;
+    }
+    @keyframes shimmer { from { background-position: 120% 0; } to { background-position: -120% 0; } }
+
+    .dots { display: inline-flex; gap: 4px; }
+    .dots span {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--accent);
+      opacity: 0.4;
+      animation: dotBounce 1.4s ease-in-out infinite;
+    }
+    .dots span:nth-child(2) { animation-delay: 0.2s; }
+    .dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes dotBounce {
+      0%, 60%, 100% { transform: translateY(0);    opacity: 0.4; }
+      30%           { transform: translateY(-5px); opacity: 1;   }
+    }
+
+    /* ── PROGRESS BAR ── */
+    .progress {
+      position: fixed;
+      bottom: 0; left: 0;
+      height: 3px;
+      width: 100%;
+      background: transparent;
+    }
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--bull));
+      transition: width 0.25s linear;
+    }
+
+    .footer-note {
+      position: fixed;
+      bottom: 18px;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      text-transform: uppercase;
+      opacity: 0.6;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .skip {
+      position: fixed;
+      top: 22px; right: 26px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      text-decoration: none;
+      border: 1px solid rgba(99,104,130,0.35);
+      padding: 7px 15px;
+      border-radius: 18px;
+      transition: all 0.15s ease;
+      opacity: 0;
+      animation: fadeUp 0.6s ease 1.2s forwards;
+    }
+    .skip:hover { color: var(--text); border-color: var(--accent); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .splash-logo, .orbit, .candle, .ring, .thinking-text, .dots span { animation: none; }
+    }
+
+    @media (max-width: 480px) {
+      .stage { width: 260px; height: 260px; }
+      .splash-logo { width: 150px; }
+    }
+  </style>
+</head>
+<body>
+  <script>
+    // Apply saved theme before paint (matches the main app)
+    (function () {
+      try { if (localStorage.getItem('scalpel_theme') === 'light') document.body.classList.add('light'); }
+      catch (e) {}
+    })();
+  </script>
+
+  <a href="/login" class="skip" id="skip">Skip →</a>
+
+  <div class="stage">
+    <div class="ring"></div>
+
+    <img src="/static/logo.png" alt="Scalpel" class="splash-logo"
+         onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='block';" />
+    <div id="logo-fallback" class="logo-fallback">SCALPEL</div>
+
+    <!-- Orbiting bullish candle -->
+    <div class="orbit">
+      <svg class="candle" viewBox="0 0 22 56" aria-hidden="true">
+        <!-- upper + lower wick -->
+        <line x1="11" y1="1"  x2="11" y2="14" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="11" y1="42" x2="11" y2="55" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- bullish body -->
+        <rect x="3" y="14" width="16" height="28" rx="3" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="titles">
+    <div class="tagline">Financial Tech</div>
+    <div class="thinking">
+      <span class="thinking-text" id="thinking-text">Loading the terminal</span>
+      <span class="dots"><span></span><span></span><span></span></span>
+    </div>
+  </div>
+
+  <div class="footer-note">Scalpel · For educational purposes only</div>
+
+  <div class="progress"><div class="progress-bar" id="progress-bar"></div></div>
+
+  <script>
+    // ── Loading phrases (trading word-play), localized ──
+    const PHRASES = {
+      en: [
+        'Sweeping liquidity',
+        'Mapping the draw on liquidity',
+        'Checking the kill zone',
+        'Aligning higher-timeframe bias',
+        'Filling the fair value gap',
+        'Reading the order flow',
+        'Marking the silver bullet window',
+        'Sharpening your edge',
+      ],
+      es: [
+        'Barriendo liquidez',
+        'Trazando el draw on liquidity',
+        'Revisando la kill zone',
+        'Alineando el sesgo de HTF',
+        'Rellenando el fair value gap',
+        'Leyendo el order flow',
+        'Marcando la ventana silver bullet',
+        'Afilando tu ventaja',
+      ],
+      fr: [
+        'Balayage de la liquidité',
+        'Cartographie du draw on liquidity',
+        'Vérification de la kill zone',
+        'Alignement du biais HTF',
+        'Comblement du fair value gap',
+        'Lecture de l’order flow',
+        'Repérage de la fenêtre silver bullet',
+        'Affûtage de votre edge',
+      ],
+      pt: [
+        'Varrendo liquidez',
+        'Mapeando o draw on liquidity',
+        'Checando a kill zone',
+        'Alinhando o viés de HTF',
+        'Preenchendo o fair value gap',
+        'Lendo o order flow',
+        'Marcando a janela silver bullet',
+        'Afiando sua vantagem',
+      ],
+    };
+
+    let lang = 'en';
+    try { const s = localStorage.getItem('scalpel_lang'); if (s && PHRASES[s]) lang = s; } catch (e) {}
+    const phrases = PHRASES[lang];
+
+    // First visit = 10s, returning = 5s
+    let returning = false;
+    try { returning = localStorage.getItem('scalpel_seen_splash') === '1'; } catch (e) {}
+    const DURATION = returning ? 5000 : 10000;
+    try { localStorage.setItem('scalpel_seen_splash', '1'); } catch (e) {}
+
+    // Cycle phrases
+    const textEl = document.getElementById('thinking-text');
+    let pi = 0;
+    textEl.textContent = phrases[0];
+    const cycleMs = Math.max(1100, Math.floor(DURATION / phrases.length));
+    const phraseTimer = setInterval(() => {
+      pi = (pi + 1) % phrases.length;
+      textEl.style.opacity = '0';
+      setTimeout(() => { textEl.textContent = phrases[pi]; textEl.style.opacity = '1'; }, 300);
+    }, cycleMs);
+
+    // Progress bar
+    const bar = document.getElementById('progress-bar');
+    const start = Date.now();
+    const progressTimer = setInterval(() => {
+      const pct = Math.min(100, ((Date.now() - start) / DURATION) * 100);
+      bar.style.width = pct + '%';
+      if (pct >= 100) clearInterval(progressTimer);
+    }, 100);
+
+    // Redirect to login
+    const go = () => { clearInterval(phraseTimer); window.location.href = '/login'; };
+    const redirectTimer = setTimeout(go, DURATION);
+    document.getElementById('skip').addEventListener('click', (e) => {
+      e.preventDefault(); clearTimeout(redirectTimer); go();
+    });
+  </script>
+</body>
+</html>
