@@ -157,6 +157,30 @@ class ModWarning(db.Model):
     user = db.relationship('User', backref='warnings')
 
 
+# ── Prop Firm Scout ──
+class PropFirm(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    slug = db.Column(db.String(100), unique=True, nullable=False)
+    website = db.Column(db.String(255))
+    account_costs = db.Column(db.JSON)          # {"10k":99,"25k":147,"50k":167,...}
+    allowed_worldwide = db.Column(db.Boolean, default=True)
+    blocked_countries = db.Column(db.JSON, default=list)   # ISO-2 codes explicitly blocked
+    venezuela_friendly = db.Column(db.Boolean, default=False)  # can enroll & withdraw from VE
+    rating = db.Column(db.Float, default=0.0)
+    payout_speed_days = db.Column(db.Integer, default=14)
+    withdrawal_methods = db.Column(db.JSON, default=list)  # bank,wise,usdt,btc,paypal,deel,rise
+    trading_platforms = db.Column(db.JSON, default=list)   # rithmic,tradovate,ninjatrader,quantower
+    drawdown_type = db.Column(db.String(20), default='trailing')  # static|trailing|both
+    has_promotion = db.Column(db.Boolean, default=False)
+    promotion_detail = db.Column(db.String(255))
+    profit_split = db.Column(db.Integer, default=80)
+    instruments = db.Column(db.JSON, default=list)
+    tags = db.Column(db.JSON, default=list)     # top_rated, most_popular, new, crypto_friendly
+    is_active = db.Column(db.Boolean, default=True)
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, int(user_id))
@@ -1222,6 +1246,463 @@ def forum_delete_comment(cid):
 
 
 # ──────────────────────────────────────────────────────────────────────────
+# PROP FIRM SCOUT — API ENDPOINTS
+# ──────────────────────────────────────────────────────────────────────────
+SCOUT_SEED = [
+    {
+        "name": "Apex Trader Funding", "slug": "apex-trader-funding",
+        "website": "https://apextraderfunding.com",
+        "account_costs": {"25k": 147, "50k": 167, "100k": 207, "150k": 297, "250k": 517},
+        "blocked_countries": ["IR", "KP", "CU", "SY"],
+        "venezuela_friendly": True,
+        "rating": 4.6, "payout_speed_days": 7,
+        "withdrawal_methods": ["bank", "wise", "usdt"],
+        "trading_platforms": ["rithmic", "ninjatrader", "tradovate"],
+        "drawdown_type": "trailing", "profit_split": 90, "has_promotion": False,
+        "instruments": ["futures"], "tags": ["top_rated", "most_popular"],
+    },
+    {
+        "name": "Topstep", "slug": "topstep",
+        "website": "https://topstep.com",
+        "account_costs": {"50k": 165, "100k": 325},
+        "blocked_countries": ["IR", "KP", "CU", "SY", "RU", "BY"],
+        "venezuela_friendly": False,
+        "rating": 4.4, "payout_speed_days": 7,
+        "withdrawal_methods": ["bank", "paypal"],
+        "trading_platforms": ["rithmic", "tradovate", "ninjatrader", "quantower"],
+        "drawdown_type": "trailing", "profit_split": 90, "has_promotion": False,
+        "instruments": ["futures"], "tags": ["most_popular", "top_rated"],
+    },
+    {
+        "name": "Tradeify", "slug": "tradeify",
+        "website": "https://tradeify.co",
+        "account_costs": {"10k": 49, "25k": 99, "50k": 149, "100k": 199, "150k": 299},
+        "blocked_countries": ["IR", "KP", "CU", "SY"],
+        "venezuela_friendly": True,
+        "rating": 4.3, "payout_speed_days": 7,
+        "withdrawal_methods": ["bank", "wise", "usdt", "rise"],
+        "trading_platforms": ["rithmic"],
+        "drawdown_type": "trailing", "profit_split": 90, "has_promotion": False,
+        "instruments": ["futures"], "tags": ["most_popular"],
+    },
+    {
+        "name": "Elite Trader Funding", "slug": "elite-trader-funding",
+        "website": "https://elitetraderfunding.com",
+        "account_costs": {"25k": 167, "50k": 297, "100k": 397, "150k": 447, "250k": 597},
+        "blocked_countries": ["IR", "KP", "CU", "SY"],
+        "venezuela_friendly": True,
+        "rating": 4.4, "payout_speed_days": 7,
+        "withdrawal_methods": ["bank", "usdt", "wise", "deel"],
+        "trading_platforms": ["rithmic", "tradovate"],
+        "drawdown_type": "trailing", "profit_split": 100, "has_promotion": False,
+        "instruments": ["futures"], "tags": ["top_rated"],
+    },
+    {
+        "name": "Earn2Trade", "slug": "earn2trade",
+        "website": "https://earn2trade.com",
+        "account_costs": {"25k": 150, "50k": 245, "100k": 345, "150k": 395},
+        "blocked_countries": ["IR", "KP", "CU", "SY"],
+        "venezuela_friendly": False,
+        "rating": 4.2, "payout_speed_days": 14,
+        "withdrawal_methods": ["bank", "wise"],
+        "trading_platforms": ["rithmic", "ninjatrader"],
+        "drawdown_type": "trailing", "profit_split": 80, "has_promotion": False,
+        "instruments": ["futures"], "tags": [],
+    },
+    {
+        "name": "MyFundedFutures", "slug": "myfundedfutures",
+        "website": "https://myfundedfutures.com",
+        "account_costs": {"50k": 165, "100k": 250, "150k": 345},
+        "blocked_countries": ["IR", "KP", "CU", "SY"],
+        "venezuela_friendly": True,
+        "rating": 4.3, "payout_speed_days": 14,
+        "withdrawal_methods": ["bank", "wise", "usdt"],
+        "trading_platforms": ["rithmic", "ninjatrader"],
+        "drawdown_type": "trailing", "profit_split": 80, "has_promotion": False,
+        "instruments": ["futures"], "tags": [],
+    },
+    {
+        "name": "TradeDay", "slug": "tradeday",
+        "website": "https://tradeday.com",
+        "account_costs": {"10k": 99, "25k": 125, "50k": 200, "100k": 300},
+        "blocked_countries": ["IR", "KP", "CU", "SY"],
+        "venezuela_friendly": True,
+        "rating": 4.2, "payout_speed_days": 7,
+        "withdrawal_methods": ["bank", "wise", "rise"],
+        "trading_platforms": ["rithmic", "tradovate"],
+        "drawdown_type": "trailing", "profit_split": 80, "has_promotion": False,
+        "instruments": ["futures"], "tags": [],
+    },
+    {
+        "name": "OneUp Trader", "slug": "oneup-trader",
+        "website": "https://oneuptrader.com",
+        "account_costs": {"25k": 125, "50k": 175, "100k": 225, "150k": 325, "250k": 525},
+        "blocked_countries": ["IR", "KP", "CU", "SY", "RU"],
+        "venezuela_friendly": False,
+        "rating": 4.1, "payout_speed_days": 14,
+        "withdrawal_methods": ["bank", "wise"],
+        "trading_platforms": ["rithmic", "tradovate"],
+        "drawdown_type": "trailing", "profit_split": 90, "has_promotion": False,
+        "instruments": ["futures"], "tags": [],
+    },
+    {
+        "name": "Bulenox", "slug": "bulenox",
+        "website": "https://bulenox.com",
+        "account_costs": {"10k": 79, "25k": 99, "50k": 159, "100k": 229},
+        "blocked_countries": ["IR", "KP", "CU", "SY"],
+        "venezuela_friendly": True,
+        "rating": 4.2, "payout_speed_days": 7,
+        "withdrawal_methods": ["bank", "usdt", "btc", "wise"],
+        "trading_platforms": ["rithmic"],
+        "drawdown_type": "trailing", "profit_split": 80, "has_promotion": False,
+        "instruments": ["futures"], "tags": ["crypto_friendly"],
+    },
+    {
+        "name": "UProfit", "slug": "uprofit",
+        "website": "https://uprofit.com",
+        "account_costs": {"10k": 69, "25k": 97, "50k": 197, "100k": 297},
+        "blocked_countries": ["IR", "KP", "CU", "SY"],
+        "venezuela_friendly": True,
+        "rating": 4.0, "payout_speed_days": 14,
+        "withdrawal_methods": ["bank", "usdt", "wise"],
+        "trading_platforms": ["rithmic"],
+        "drawdown_type": "both", "profit_split": 80, "has_promotion": False,
+        "instruments": ["futures"], "tags": [],
+    },
+    {
+        "name": "Leeloo Trading", "slug": "leeloo-trading",
+        "website": "https://leeloo.com",
+        "account_costs": {"25k": 165, "50k": 215, "100k": 325, "150k": 425},
+        "blocked_countries": ["IR", "KP", "CU", "SY"],
+        "venezuela_friendly": False,
+        "rating": 4.2, "payout_speed_days": 14,
+        "withdrawal_methods": ["bank", "wise"],
+        "trading_platforms": ["rithmic", "ninjatrader"],
+        "drawdown_type": "trailing", "profit_split": 90, "has_promotion": False,
+        "instruments": ["futures"], "tags": [],
+    },
+    {
+        "name": "Take Profit Trader", "slug": "take-profit-trader",
+        "website": "https://takeprofittrader.com",
+        "account_costs": {"25k": 140, "50k": 220, "100k": 320, "150k": 420},
+        "blocked_countries": ["IR", "KP", "CU", "SY"],
+        "venezuela_friendly": True,
+        "rating": 4.3, "payout_speed_days": 7,
+        "withdrawal_methods": ["bank", "wise", "rise"],
+        "trading_platforms": ["rithmic", "tradovate"],
+        "drawdown_type": "trailing", "profit_split": 80, "has_promotion": False,
+        "instruments": ["futures"], "tags": [],
+    },
+    {
+        "name": "Funded Engineer", "slug": "funded-engineer",
+        "website": "https://fundedengineer.com",
+        "account_costs": {"25k": 115, "50k": 185, "100k": 265},
+        "blocked_countries": ["IR", "KP", "CU", "SY"],
+        "venezuela_friendly": True,
+        "rating": 4.1, "payout_speed_days": 14,
+        "withdrawal_methods": ["bank", "usdt"],
+        "trading_platforms": ["rithmic"],
+        "drawdown_type": "both", "profit_split": 80, "has_promotion": False,
+        "instruments": ["futures"], "tags": [],
+    },
+    {
+        "name": "Ment Funding", "slug": "ment-funding",
+        "website": "https://mentfunding.com",
+        "account_costs": {"10k": 59, "25k": 99, "50k": 149, "100k": 249},
+        "blocked_countries": ["IR", "KP", "CU", "SY"],
+        "venezuela_friendly": True,
+        "rating": 4.1, "payout_speed_days": 7,
+        "withdrawal_methods": ["bank", "usdt", "wise", "rise"],
+        "trading_platforms": ["rithmic", "tradovate"],
+        "drawdown_type": "both", "profit_split": 80, "has_promotion": False,
+        "instruments": ["futures"], "tags": [],
+    },
+    {
+        "name": "Fast Track Trading", "slug": "fast-track-trading",
+        "website": "https://fasttracktrading.com",
+        "account_costs": {"10k": 75, "25k": 115, "50k": 195},
+        "blocked_countries": ["IR", "KP", "CU", "SY"],
+        "venezuela_friendly": True,
+        "rating": 3.8, "payout_speed_days": 14,
+        "withdrawal_methods": ["bank", "usdt"],
+        "trading_platforms": ["rithmic"],
+        "drawdown_type": "trailing", "profit_split": 80, "has_promotion": False,
+        "instruments": ["futures"], "tags": [],
+    },
+    {
+        "name": "BluSky Trading", "slug": "blusky-trading",
+        "website": "https://bluskytrading.com",
+        "account_costs": {"25k": 119, "50k": 199, "100k": 299},
+        "blocked_countries": ["IR", "KP", "CU", "SY"],
+        "venezuela_friendly": False,
+        "rating": 3.9, "payout_speed_days": 14,
+        "withdrawal_methods": ["bank", "wise"],
+        "trading_platforms": ["rithmic"],
+        "drawdown_type": "trailing", "profit_split": 80, "has_promotion": False,
+        "instruments": ["futures"], "tags": ["new"],
+    },
+    {
+        "name": "Traders Launch", "slug": "traders-launch",
+        "website": "https://traderslaunch.com",
+        "account_costs": {"10k": 69, "25k": 129, "50k": 199, "100k": 299},
+        "blocked_countries": ["IR", "KP", "CU", "SY"],
+        "venezuela_friendly": True,
+        "rating": 4.0, "payout_speed_days": 14,
+        "withdrawal_methods": ["bank", "usdt", "wise"],
+        "trading_platforms": ["rithmic", "ninjatrader"],
+        "drawdown_type": "trailing", "profit_split": 80, "has_promotion": False,
+        "instruments": ["futures"], "tags": [],
+    },
+    {
+        "name": "Breakout Prop", "slug": "breakout-prop",
+        "website": "https://breakoutprop.com",
+        "account_costs": {"25k": 109, "50k": 189, "100k": 289},
+        "blocked_countries": ["IR", "KP", "CU", "SY"],
+        "venezuela_friendly": True,
+        "rating": 3.9, "payout_speed_days": 14,
+        "withdrawal_methods": ["bank", "usdt"],
+        "trading_platforms": ["rithmic"],
+        "drawdown_type": "trailing", "profit_split": 80, "has_promotion": False,
+        "instruments": ["futures"], "tags": ["new"],
+    },
+    {
+        "name": "3Red Funded", "slug": "3red-funded",
+        "website": "https://3redfunded.com",
+        "account_costs": {"25k": 135, "50k": 215, "100k": 315},
+        "blocked_countries": ["IR", "KP", "CU", "SY"],
+        "venezuela_friendly": True,
+        "rating": 4.0, "payout_speed_days": 7,
+        "withdrawal_methods": ["bank", "usdt", "wise"],
+        "trading_platforms": ["rithmic", "tradovate"],
+        "drawdown_type": "trailing", "profit_split": 80, "has_promotion": False,
+        "instruments": ["futures"], "tags": [],
+    },
+    {
+        "name": "Funded Futures Network", "slug": "funded-futures-network",
+        "website": "https://fundedfuturesnetwork.com",
+        "account_costs": {"10k": 59, "25k": 99, "50k": 179, "100k": 279},
+        "blocked_countries": ["IR", "KP", "CU", "SY"],
+        "venezuela_friendly": True,
+        "rating": 4.0, "payout_speed_days": 14,
+        "withdrawal_methods": ["bank", "usdt"],
+        "trading_platforms": ["rithmic", "ninjatrader"],
+        "drawdown_type": "trailing", "profit_split": 80, "has_promotion": False,
+        "instruments": ["futures"], "tags": [],
+    },
+    {
+        "name": "RebelsFunding", "slug": "rebelsfunding",
+        "website": "https://rebelsfunding.com",
+        "account_costs": {"10k": 59, "25k": 89, "50k": 159, "100k": 249},
+        "blocked_countries": ["IR", "KP", "CU", "SY"],
+        "venezuela_friendly": True,
+        "rating": 4.1, "payout_speed_days": 14,
+        "withdrawal_methods": ["bank", "usdt", "wise"],
+        "trading_platforms": ["rithmic"],
+        "drawdown_type": "trailing", "profit_split": 80, "has_promotion": False,
+        "instruments": ["futures"], "tags": ["crypto_friendly"],
+    },
+    {
+        "name": "Alpha Path Capital", "slug": "alpha-path-capital",
+        "website": "https://alphapathcapital.com",
+        "account_costs": {"25k": 99, "50k": 179, "100k": 279},
+        "blocked_countries": ["IR", "KP", "CU", "SY"],
+        "venezuela_friendly": False,
+        "rating": 3.7, "payout_speed_days": 21,
+        "withdrawal_methods": ["bank"],
+        "trading_platforms": ["rithmic"],
+        "drawdown_type": "static", "profit_split": 80, "has_promotion": False,
+        "instruments": ["futures"], "tags": [],
+    },
+    {
+        "name": "Quantified Trader", "slug": "quantified-trader",
+        "website": "https://quantifiedtrader.com",
+        "account_costs": {"25k": 99, "50k": 179, "100k": 279},
+        "blocked_countries": ["IR", "KP", "CU", "SY"],
+        "venezuela_friendly": True,
+        "rating": 3.8, "payout_speed_days": 21,
+        "withdrawal_methods": ["bank", "usdt"],
+        "trading_platforms": ["rithmic"],
+        "drawdown_type": "trailing", "profit_split": 80, "has_promotion": False,
+        "instruments": ["futures"], "tags": [],
+    },
+    {
+        "name": "Club3Percent", "slug": "club3percent",
+        "website": "https://club3percent.com",
+        "account_costs": {"25k": 200, "50k": 350, "100k": 500},
+        "blocked_countries": ["IR", "KP", "CU", "SY"],
+        "venezuela_friendly": False,
+        "rating": 3.8, "payout_speed_days": 21,
+        "withdrawal_methods": ["bank"],
+        "trading_platforms": ["rithmic"],
+        "drawdown_type": "static", "profit_split": 97, "has_promotion": False,
+        "instruments": ["futures"], "tags": [],
+    },
+]
+
+
+def init_scout_data():
+    if PropFirm.query.count() > 0:
+        return
+    for d in SCOUT_SEED:
+        firm = PropFirm(
+            name=d['name'], slug=d['slug'], website=d.get('website', ''),
+            account_costs=d.get('account_costs', {}),
+            allowed_worldwide=True,
+            blocked_countries=d.get('blocked_countries', []),
+            venezuela_friendly=d.get('venezuela_friendly', False),
+            rating=d.get('rating', 0.0),
+            payout_speed_days=d.get('payout_speed_days', 14),
+            withdrawal_methods=d.get('withdrawal_methods', []),
+            trading_platforms=d.get('trading_platforms', []),
+            drawdown_type=d.get('drawdown_type', 'trailing'),
+            has_promotion=d.get('has_promotion', False),
+            promotion_detail=d.get('promotion_detail', ''),
+            profit_split=d.get('profit_split', 80),
+            instruments=d.get('instruments', ['futures']),
+            tags=d.get('tags', []),
+        )
+        db.session.add(firm)
+    db.session.commit()
+    app.logger.info('Seeded %d prop firms', len(SCOUT_SEED))
+
+
+@app.route('/api/scout/firms')
+@login_required
+def scout_firms():
+    if current_user.plan != 'premium':
+        return jsonify({'error': 'premium_required'}), 403
+
+    country     = request.args.get('country', '').strip().upper()
+    size        = request.args.get('size', '').strip()
+    drawdown    = request.args.get('drawdown', '').strip()
+    platform    = request.args.get('platform', '').strip()
+    withdrawal  = request.args.get('withdrawal', '').strip()
+    payout      = request.args.get('payout', '').strip()
+    promo       = request.args.get('promo', '').strip()
+    sort_by     = request.args.get('sort', 'rating').strip()
+
+    firms = PropFirm.query.filter_by(is_active=True).all()
+    results = []
+    for f in firms:
+        # Country filter — block if country is in blocked list
+        if country:
+            if f.blocked_countries and country in f.blocked_countries:
+                continue
+            # Special VE flag
+            if country == 'VE' and not f.venezuela_friendly:
+                continue
+
+        # Account size filter — firm must offer that size
+        if size and (not f.account_costs or size not in f.account_costs):
+            continue
+
+        # Drawdown filter
+        if drawdown:
+            if f.drawdown_type != drawdown and f.drawdown_type != 'both':
+                continue
+
+        # Platform filter
+        if platform and platform not in (f.trading_platforms or []):
+            continue
+
+        # Withdrawal filter
+        if withdrawal and withdrawal not in (f.withdrawal_methods or []):
+            continue
+
+        # Payout speed filter
+        if payout == 'fast'   and f.payout_speed_days > 7:   continue
+        if payout == 'medium' and not (7 < f.payout_speed_days <= 14): continue
+        if payout == 'slow'   and f.payout_speed_days <= 14: continue
+
+        # Promotion filter
+        if promo == '1' and not f.has_promotion:
+            continue
+
+        results.append({
+            'id': f.id, 'name': f.name, 'slug': f.slug, 'website': f.website,
+            'rating': f.rating, 'payout_speed_days': f.payout_speed_days,
+            'withdrawal_methods': f.withdrawal_methods or [],
+            'trading_platforms': f.trading_platforms or [],
+            'drawdown_type': f.drawdown_type,
+            'has_promotion': f.has_promotion,
+            'promotion_detail': f.promotion_detail or '',
+            'profit_split': f.profit_split,
+            'account_costs': f.account_costs or {},
+            'price_for_size': (f.account_costs or {}).get(size) if size else None,
+            'tags': f.tags or [],
+            'venezuela_friendly': f.venezuela_friendly,
+        })
+
+    if sort_by == 'cheapest':
+        results.sort(key=lambda x: x.get('price_for_size') or (min(x['account_costs'].values()) if x['account_costs'] else 9999))
+    elif sort_by == 'fastest':
+        results.sort(key=lambda x: x['payout_speed_days'])
+    else:
+        results.sort(key=lambda x: x['rating'], reverse=True)
+
+    return jsonify({'firms': results, 'total': len(results)})
+
+
+@app.route('/api/scout/chat', methods=['POST'])
+@login_required
+def scout_chat():
+    if current_user.plan != 'premium':
+        return jsonify({'error': 'premium_required'}), 403
+
+    data = request.get_json(silent=True) or {}
+    question = (data.get('question') or '').strip()
+    firm_ids = data.get('firm_ids') or []
+
+    if not question or len(question) > 800:
+        return jsonify({'error': 'invalid'}), 400
+
+    firms = PropFirm.query.filter(
+        PropFirm.id.in_(firm_ids), PropFirm.is_active == True  # noqa: E712
+    ).all() if firm_ids else []
+
+    firm_ctx = ''
+    for f in firms:
+        firm_ctx += (
+            f"\n\n## {f.name}\n"
+            f"Rating: {f.rating}/5\n"
+            f"Account costs: {json.dumps(f.account_costs)}\n"
+            f"Drawdown type: {f.drawdown_type}\n"
+            f"Profit split: {f.profit_split}%\n"
+            f"Payout speed: ~{f.payout_speed_days} days\n"
+            f"Withdrawal methods: {', '.join(f.withdrawal_methods or [])}\n"
+            f"Trading platforms: {', '.join(f.trading_platforms or [])}\n"
+            f"Venezuela friendly: {'yes' if f.venezuela_friendly else 'no'}\n"
+        )
+        if f.has_promotion:
+            firm_ctx += f"Active promotion: {f.promotion_detail}\n"
+
+    sys_prompt = (
+        "You are a knowledgeable prop trading firm advisor helping a futures trader "
+        "compare and choose prop firms. Answer in the same language the trader writes in "
+        "(English, Spanish, French, Portuguese). Be concise and honest. "
+        "If the firm data below is provided, use it as your primary source. "
+        "For anything not in the data, draw on general knowledge but flag it as potentially outdated."
+    )
+    user_msg = question
+    if firm_ctx:
+        user_msg = f"Current data for the firms:{firm_ctx}\n\nQuestion: {question}"
+
+    try:
+        resp = client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {"role": "system", "content": sys_prompt},
+                {"role": "user", "content": user_msg},
+            ],
+            max_tokens=700, temperature=0.4,
+        )
+        return jsonify({'answer': resp.choices[0].message.content})
+    except Exception as exc:
+        app.logger.error('Scout chat failed: %s', exc)
+        return jsonify({'error': 'api_error'}), 500
+
+
+# ──────────────────────────────────────────────────────────────────────────
 # BOOTSTRAP: create tables + seed admin
 # ──────────────────────────────────────────────────────────────────────────
 def init_db():
@@ -1241,6 +1722,7 @@ def init_db():
             db.session.add(admin)
             db.session.commit()
             app.logger.info('Seeded admin account: %s', admin_email)
+        init_scout_data()
 
 
 init_db()

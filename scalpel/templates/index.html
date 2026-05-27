@@ -1075,6 +1075,126 @@
     .composer-error .warn-sub, .comment-error .warn-sub { display: block; color: var(--muted); font-size: 11.5px; margin-top: 4px; }
     .composer-error .block-detail, .comment-error .block-detail { display: block; font-size: 12px; font-style: italic; margin-top: 5px; opacity: 0.85; }
 
+    /* ── Prop Firm Scout ── */
+    .scout-wrap { max-width: 1100px; margin: 0 auto; padding: 28px 20px 80px; }
+    .scout-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; }
+    .scout-h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+    .scout-intro { color: var(--muted); font-size: 13.5px; margin-top: 3px; }
+
+    .scout-layout { display: grid; grid-template-columns: 240px 1fr; gap: 22px; align-items: start; }
+    @media (max-width: 700px) { .scout-layout { grid-template-columns: 1fr; } }
+
+    /* Filters */
+    .scout-filters { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px 16px; position: sticky; top: 72px; }
+    .sf-section { margin-bottom: 18px; }
+    .sf-section:last-child { margin-bottom: 0; }
+    .sf-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 8px; }
+    .sf-pills { display: flex; flex-wrap: wrap; gap: 5px; }
+    .sf-pill {
+      font-size: 11.5px; font-weight: 600; padding: 5px 10px; border-radius: 20px; cursor: pointer;
+      border: 1px solid var(--border2); background: var(--surface); color: var(--muted); transition: all 0.12s;
+      font-family: 'Inter', sans-serif;
+    }
+    .sf-pill:hover { border-color: var(--accent); color: var(--accent); }
+    .sf-pill.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .sf-input {
+      width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 8px;
+      border: 1px solid var(--border2); background: var(--surface); color: var(--text);
+      font-size: 13px; font-family: 'Inter', sans-serif; outline: none;
+    }
+    .sf-input:focus { border-color: var(--accent); }
+    .sf-select {
+      width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border2);
+      background: var(--surface); color: var(--text); font-size: 13px; font-family: 'Inter', sans-serif; cursor: pointer;
+    }
+    .sf-toggle { display: flex; align-items: center; gap: 9px; cursor: pointer; font-size: 13px; color: var(--text); }
+    .sf-toggle input { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
+    .sf-reset {
+      width: 100%; margin-top: 6px; padding: 8px; border-radius: 8px; border: 1px solid var(--border2);
+      background: transparent; color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif;
+    }
+    .sf-reset:hover { color: var(--loss); border-color: var(--loss); }
+
+    /* Results */
+    .scout-results-meta { font-size: 12.5px; color: var(--muted); margin-bottom: 14px; }
+    .scout-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 14px; }
+    .scout-empty { text-align: center; color: var(--muted); padding: 60px 20px; font-size: 14px; }
+    .scout-loading { text-align: center; color: var(--muted); padding: 40px; font-size: 13px; }
+
+    /* Firm Card */
+    .firm-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px;
+      cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s; position: relative; overflow: hidden;
+    }
+    .firm-card:hover { border-color: var(--accent); box-shadow: 0 4px 20px rgba(91,142,240,0.12); }
+    .firm-card.selected { border-color: var(--accent); background: rgba(91,142,240,0.06); }
+    .firm-card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+    .firm-name { font-size: 14.5px; font-weight: 800; line-height: 1.2; }
+    .firm-rating { display: flex; align-items: center; gap: 4px; font-size: 12.5px; font-weight: 700; color: var(--premium); }
+    .firm-rating svg { width: 13px; height: 13px; fill: var(--premium); }
+    .firm-promo {
+      position: absolute; top: 0; right: 0; background: var(--premium); color: #1a1d28;
+      font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em;
+      padding: 4px 10px; border-radius: 0 14px 0 10px;
+    }
+    .firm-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 14px; }
+    .firm-chip {
+      font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .firm-chip.dd  { background: rgba(91,142,240,0.14); color: var(--accent); }
+    .firm-chip.pf  { background: rgba(78,205,120,0.14); color: #4ecd78; }
+    .firm-chip.ve  { background: rgba(224,168,61,0.16); color: var(--premium); }
+    .firm-chip.new { background: rgba(239,68,68,0.12); color: var(--loss); }
+    .firm-chip.crypto { background: rgba(168,85,247,0.14); color: #a855f7; }
+    .firm-prices { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+    .firm-price-tag {
+      background: var(--surface); border: 1px solid var(--border2); border-radius: 8px;
+      padding: 5px 10px; text-align: center;
+    }
+    .firm-price-tag .pt-size { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .firm-price-tag .pt-val { font-size: 13px; font-weight: 800; }
+    .firm-price-tag.highlight { border-color: var(--accent); background: rgba(91,142,240,0.08); }
+    .firm-price-tag.highlight .pt-val { color: var(--accent); }
+    .firm-footer { display: flex; align-items: center; justify-content: space-between; }
+    .firm-payout { font-size: 11.5px; color: var(--muted); }
+    .firm-payout strong { color: var(--text); }
+    .firm-chat-btn {
+      font-size: 11.5px; font-weight: 700; padding: 6px 13px; border-radius: 8px; cursor: pointer;
+      border: 1px solid var(--accent); background: transparent; color: var(--accent); transition: all 0.12s;
+      font-family: 'Inter', sans-serif;
+    }
+    .firm-chat-btn:hover { background: var(--accent); color: #fff; }
+
+    /* Scout Chat Panel */
+    .scout-chat-panel {
+      margin-top: 28px; background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+    }
+    .scp-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 18px; border-bottom: 1px solid var(--border);
+    }
+    .scp-title { font-size: 14px; font-weight: 800; }
+    .scp-selected { font-size: 12px; color: var(--muted); margin-top: 1px; }
+    .scp-close { background: none; border: none; cursor: pointer; color: var(--muted); padding: 4px; font-size: 18px; line-height: 1; }
+    .scp-close:hover { color: var(--text); }
+    .scp-messages { min-height: 80px; max-height: 320px; overflow-y: auto; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
+    .scp-msg { font-size: 13.5px; line-height: 1.6; }
+    .scp-msg.user { color: var(--muted); font-style: italic; }
+    .scp-msg.ai { color: var(--text); white-space: pre-wrap; }
+    .scp-msg.ai strong { color: var(--accent); }
+    .scp-input-row { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--border); }
+    .scp-input {
+      flex: 1; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border2);
+      background: var(--surface); color: var(--text); font-size: 13px; font-family: 'Inter', sans-serif; outline: none;
+    }
+    .scp-input:focus { border-color: var(--accent); }
+    .scp-send {
+      padding: 9px 16px; border-radius: 8px; border: none; background: var(--accent); color: #fff;
+      font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: background 0.12s;
+    }
+    .scp-send:hover { background: var(--accent-h); }
+    .scp-send:disabled { opacity: 0.5; cursor: default; }
+
     .forum-btn {
       border-radius: 8px; font-size: 13.5px; font-weight: 700; padding: 10px 18px; cursor: pointer;
       border: 1px solid transparent; transition: all 0.15s; font-family: 'Inter', sans-serif;
@@ -1640,6 +1760,130 @@
       <div class="feature-desc feat-state"></div>
       <a href="/pricing" target="_blank" rel="noopener" class="feature-upgrade" data-i18n="feature.upgrade">Upgrade to Premium</a>
     </div>
+
+    <!-- Real Scout App — shown only for Premium -->
+    <div class="scout-app" id="scout-app" style="display:none;">
+      <div class="scout-wrap">
+        <div class="scout-head">
+          <div>
+            <div class="scout-h1" data-i18n="scout.title">Prop Firm Scout</div>
+            <div class="scout-intro" data-i18n="scout.appDesc">Filter &amp; compare the top futures prop firms. Select one to chat with the AI advisor.</div>
+          </div>
+        </div>
+
+        <div class="scout-layout">
+          <!-- ── Filters ── -->
+          <div class="scout-filters">
+
+            <div class="sf-section">
+              <div class="sf-label" data-i18n="scout.f.country">Country</div>
+              <input class="sf-input" id="sf-country" data-i18n-placeholder="scout.f.countryHint" placeholder="e.g. Venezuela, ES, US…" autocomplete="off" />
+            </div>
+
+            <div class="sf-section">
+              <div class="sf-label" data-i18n="scout.f.size">Account Size</div>
+              <div class="sf-pills" id="sf-size-pills">
+                <button class="sf-pill active" data-filter="size" data-value="" data-i18n="scout.f.any">Any</button>
+                <button class="sf-pill" data-filter="size" data-value="10k">10k</button>
+                <button class="sf-pill" data-filter="size" data-value="25k">25k</button>
+                <button class="sf-pill" data-filter="size" data-value="50k">50k</button>
+                <button class="sf-pill" data-filter="size" data-value="100k">100k</button>
+                <button class="sf-pill" data-filter="size" data-value="150k">150k</button>
+                <button class="sf-pill" data-filter="size" data-value="200k">200k</button>
+              </div>
+            </div>
+
+            <div class="sf-section">
+              <div class="sf-label" data-i18n="scout.f.dd">Drawdown Type</div>
+              <div class="sf-pills" id="sf-dd-pills">
+                <button class="sf-pill active" data-filter="drawdown" data-value="" data-i18n="scout.f.any">Any</button>
+                <button class="sf-pill" data-filter="drawdown" data-value="static" data-i18n="scout.f.static">Static</button>
+                <button class="sf-pill" data-filter="drawdown" data-value="trailing" data-i18n="scout.f.trailing">Trailing</button>
+                <button class="sf-pill" data-filter="drawdown" data-value="both" data-i18n="scout.f.both">Both</button>
+              </div>
+            </div>
+
+            <div class="sf-section">
+              <div class="sf-label" data-i18n="scout.f.platform">Platform</div>
+              <div class="sf-pills" id="sf-platform-pills">
+                <button class="sf-pill active" data-filter="platform" data-value="" data-i18n="scout.f.any">Any</button>
+                <button class="sf-pill" data-filter="platform" data-value="rithmic">Rithmic</button>
+                <button class="sf-pill" data-filter="platform" data-value="tradovate">Tradovate</button>
+                <button class="sf-pill" data-filter="platform" data-value="ninjatrader">NinjaTrader</button>
+                <button class="sf-pill" data-filter="platform" data-value="quantower">Quantower</button>
+              </div>
+            </div>
+
+            <div class="sf-section">
+              <div class="sf-label" data-i18n="scout.f.withdrawal">Withdrawal</div>
+              <div class="sf-pills" id="sf-withdrawal-pills">
+                <button class="sf-pill active" data-filter="withdrawal" data-value="" data-i18n="scout.f.any">Any</button>
+                <button class="sf-pill" data-filter="withdrawal" data-value="bank" data-i18n="scout.f.bank">Bank</button>
+                <button class="sf-pill" data-filter="withdrawal" data-value="wise">Wise</button>
+                <button class="sf-pill" data-filter="withdrawal" data-value="usdt">USDT</button>
+                <button class="sf-pill" data-filter="withdrawal" data-value="btc">BTC</button>
+                <button class="sf-pill" data-filter="withdrawal" data-value="paypal">PayPal</button>
+                <button class="sf-pill" data-filter="withdrawal" data-value="deel">Deel</button>
+                <button class="sf-pill" data-filter="withdrawal" data-value="rise">Rise</button>
+              </div>
+            </div>
+
+            <div class="sf-section">
+              <div class="sf-label" data-i18n="scout.f.payout">Payout Speed</div>
+              <div class="sf-pills" id="sf-payout-pills">
+                <button class="sf-pill active" data-filter="payout" data-value="" data-i18n="scout.f.any">Any</button>
+                <button class="sf-pill" data-filter="payout" data-value="fast" data-i18n="scout.f.fast">Fast (&lt;7d)</button>
+                <button class="sf-pill" data-filter="payout" data-value="medium" data-i18n="scout.f.medium">7–14d</button>
+                <button class="sf-pill" data-filter="payout" data-value="slow" data-i18n="scout.f.slow">Slow (&gt;14d)</button>
+              </div>
+            </div>
+
+            <div class="sf-section">
+              <label class="sf-toggle">
+                <input type="checkbox" id="sf-promo" />
+                <span data-i18n="scout.f.promoOnly">Promotions only</span>
+              </label>
+            </div>
+
+            <div class="sf-section">
+              <div class="sf-label" data-i18n="scout.f.sort">Sort by</div>
+              <select class="sf-select" id="sf-sort">
+                <option value="rating" data-i18n="scout.f.sortRating">Best Rating</option>
+                <option value="cheapest" data-i18n="scout.f.sortCheapest">Lowest Cost</option>
+                <option value="fastest" data-i18n="scout.f.sortFastest">Fastest Payout</option>
+              </select>
+            </div>
+
+            <button class="sf-reset" id="sf-reset-btn" data-i18n="scout.f.reset">Reset filters</button>
+          </div>
+
+          <!-- ── Results ── -->
+          <div>
+            <div class="scout-results-meta" id="scout-results-meta"></div>
+            <div id="scout-loading" class="scout-loading" style="display:none;" data-i18n="scout.loading">Loading…</div>
+            <div class="scout-grid" id="scout-grid"></div>
+            <div class="scout-empty" id="scout-empty" style="display:none;" data-i18n="scout.empty">No prop firms match your filters.</div>
+          </div>
+        </div>
+
+        <!-- ── AI Chat Panel ── -->
+        <div class="scout-chat-panel" id="scout-chat-panel" style="display:none;">
+          <div class="scp-head">
+            <div>
+              <div class="scp-title" data-i18n="scout.chat.title">AI Advisor</div>
+              <div class="scp-selected" id="scp-selected-label"></div>
+            </div>
+            <button class="scp-close" id="scp-close-btn" title="Close">×</button>
+          </div>
+          <div class="scp-messages" id="scp-messages"></div>
+          <div class="scp-input-row">
+            <input class="scp-input" id="scp-input" data-i18n-placeholder="scout.chat.placeholder" placeholder="Ask about this firm or compare selected…" />
+            <button class="scp-send" id="scp-send-btn" data-i18n="scout.chat.send">Ask</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
   </div>
 
 </div>
@@ -1779,6 +2023,24 @@
       'indicators.desc': 'Access a curated library of trading indicators built around ICT methodology.',
       'scout.title': 'Prop Firm Scout',
       'scout.desc': 'Filter and compare prop firms by your exact criteria — funding size, profit split, rules, payout speed and more.',
+      'scout.appDesc': 'Filter & compare the top futures prop firms. Select one to chat with the AI advisor.',
+      'scout.loading': 'Loading…', 'scout.empty': 'No prop firms match your filters.',
+      'scout.results': '{n} firms found', 'scout.allResults': 'Showing all {n} firms',
+      'scout.f.country': 'Country', 'scout.f.countryHint': 'e.g. VE, US, ES…',
+      'scout.f.size': 'Account Size', 'scout.f.dd': 'Drawdown Type',
+      'scout.f.platform': 'Platform', 'scout.f.withdrawal': 'Withdrawal',
+      'scout.f.payout': 'Payout Speed', 'scout.f.sort': 'Sort by',
+      'scout.f.any': 'Any', 'scout.f.static': 'Static', 'scout.f.trailing': 'Trailing', 'scout.f.both': 'Both',
+      'scout.f.bank': 'Bank', 'scout.f.fast': 'Fast (<7d)', 'scout.f.medium': '7–14d', 'scout.f.slow': 'Slow (>14d)',
+      'scout.f.promoOnly': 'Promotions only', 'scout.f.reset': 'Reset filters',
+      'scout.f.sortRating': 'Best Rating', 'scout.f.sortCheapest': 'Lowest Cost', 'scout.f.sortFastest': 'Fastest Payout',
+      'scout.chip.trailing': 'Trailing DD', 'scout.chip.static': 'Static DD', 'scout.chip.both': 'Static + Trailing',
+      'scout.chip.ve': 'VE Friendly', 'scout.chip.crypto': 'Crypto Withdrawal',
+      'scout.card.split': 'Profit Split', 'scout.card.payout': 'Payout',
+      'scout.card.days': 'd avg', 'scout.card.askAI': 'Ask AI',
+      'scout.chat.title': 'AI Advisor', 'scout.chat.send': 'Ask',
+      'scout.chat.placeholder': 'Ask about this firm or compare selected…',
+      'scout.chat.context': 'Analyzing: ',
       'account.admin': 'Admin panel',
       'account.plans': 'Plans & pricing',
       'account.signin': 'Sign in',
@@ -1912,6 +2174,24 @@
       'indicators.desc': 'Accede a una biblioteca curada de indicadores de trading basados en la metodología ICT.',
       'scout.title': 'Prop Firm Scout',
       'scout.desc': 'Filtra y compara prop firms según tus criterios exactos — tamaño de fondeo, reparto de ganancias, reglas, velocidad de pago y más.',
+      'scout.appDesc': 'Filtra y compara las mejores prop firms de futuros. Selecciona una para chatear con el asesor IA.',
+      'scout.loading': 'Cargando…', 'scout.empty': 'Ninguna prop firm coincide con tus filtros.',
+      'scout.results': '{n} firms encontradas', 'scout.allResults': 'Mostrando las {n} firms',
+      'scout.f.country': 'País', 'scout.f.countryHint': 'Ej: VE, US, ES…',
+      'scout.f.size': 'Tamaño de cuenta', 'scout.f.dd': 'Tipo de Drawdown',
+      'scout.f.platform': 'Plataforma', 'scout.f.withdrawal': 'Retiro',
+      'scout.f.payout': 'Velocidad de pago', 'scout.f.sort': 'Ordenar por',
+      'scout.f.any': 'Cualquiera', 'scout.f.static': 'Static', 'scout.f.trailing': 'Trailing', 'scout.f.both': 'Ambos',
+      'scout.f.bank': 'Banco', 'scout.f.fast': 'Rápido (<7d)', 'scout.f.medium': '7–14d', 'scout.f.slow': 'Lento (>14d)',
+      'scout.f.promoOnly': 'Solo con promociones', 'scout.f.reset': 'Limpiar filtros',
+      'scout.f.sortRating': 'Mejor rating', 'scout.f.sortCheapest': 'Más económico', 'scout.f.sortFastest': 'Pago más rápido',
+      'scout.chip.trailing': 'Trailing DD', 'scout.chip.static': 'Static DD', 'scout.chip.both': 'Static + Trailing',
+      'scout.chip.ve': 'Disponible en VE', 'scout.chip.crypto': 'Retiro Crypto',
+      'scout.card.split': 'Profit Split', 'scout.card.payout': 'Pago',
+      'scout.card.days': 'd aprox.', 'scout.card.askAI': 'Preguntar IA',
+      'scout.chat.title': 'Asesor IA', 'scout.chat.send': 'Preguntar',
+      'scout.chat.placeholder': 'Pregunta sobre esta firm o compara las seleccionadas…',
+      'scout.chat.context': 'Analizando: ',
       'account.admin': 'Panel de admin',
       'account.plans': 'Planes y precios',
       'account.signin': 'Iniciar sesión',
@@ -2045,6 +2325,24 @@
       'indicators.desc': "Accédez à une bibliothèque d'indicateurs de trading construite autour de la méthodologie ICT.",
       'scout.title': 'Prop Firm Scout',
       'scout.desc': 'Filtrez et comparez les prop firms selon vos critères exacts — taille de financement, partage des profits, règles, rapidité de paiement et plus.',
+      'scout.appDesc': 'Filtrez et comparez les meilleures prop firms de futures. Sélectionnez-en une pour discuter avec le conseiller IA.',
+      'scout.loading': 'Chargement…', 'scout.empty': 'Aucune prop firm ne correspond à vos filtres.',
+      'scout.results': '{n} firms trouvées', 'scout.allResults': '{n} firms affichées',
+      'scout.f.country': 'Pays', 'scout.f.countryHint': 'ex: FR, US, VE…',
+      'scout.f.size': 'Taille du compte', 'scout.f.dd': 'Type de drawdown',
+      'scout.f.platform': 'Plateforme', 'scout.f.withdrawal': 'Retrait',
+      'scout.f.payout': 'Vitesse de paiement', 'scout.f.sort': 'Trier par',
+      'scout.f.any': 'Tous', 'scout.f.static': 'Statique', 'scout.f.trailing': 'Trailing', 'scout.f.both': 'Les deux',
+      'scout.f.bank': 'Banque', 'scout.f.fast': 'Rapide (<7j)', 'scout.f.medium': '7–14j', 'scout.f.slow': 'Lent (>14j)',
+      'scout.f.promoOnly': 'Promotions uniquement', 'scout.f.reset': 'Réinitialiser',
+      'scout.f.sortRating': 'Meilleure note', 'scout.f.sortCheapest': 'Moins cher', 'scout.f.sortFastest': 'Paiement rapide',
+      'scout.chip.trailing': 'Trailing DD', 'scout.chip.static': 'Static DD', 'scout.chip.both': 'Static + Trailing',
+      'scout.chip.ve': 'Dispo VE', 'scout.chip.crypto': 'Retrait Crypto',
+      'scout.card.split': 'Profit Split', 'scout.card.payout': 'Paiement',
+      'scout.card.days': 'j moy.', 'scout.card.askAI': 'Demander IA',
+      'scout.chat.title': 'Conseiller IA', 'scout.chat.send': 'Demander',
+      'scout.chat.placeholder': 'Posez une question sur cette firm ou comparez…',
+      'scout.chat.context': 'Analyse : ',
       'account.admin': "Panneau d'admin",
       'account.plans': 'Offres et tarifs',
       'account.signin': 'Se connecter',
@@ -2178,6 +2476,24 @@
       'indicators.desc': 'Acesse uma biblioteca selecionada de indicadores de trading baseados na metodologia ICT.',
       'scout.title': 'Prop Firm Scout',
       'scout.desc': 'Filtre e compare prop firms pelos seus critérios exatos — tamanho do financiamento, divisão de lucros, regras, velocidade de pagamento e mais.',
+      'scout.appDesc': 'Filtre e compare as melhores prop firms de futuros. Selecione uma para conversar com o consultor IA.',
+      'scout.loading': 'Carregando…', 'scout.empty': 'Nenhuma prop firm corresponde aos filtros.',
+      'scout.results': '{n} firms encontradas', 'scout.allResults': 'Mostrando {n} firms',
+      'scout.f.country': 'País', 'scout.f.countryHint': 'ex: VE, BR, US…',
+      'scout.f.size': 'Tamanho da conta', 'scout.f.dd': 'Tipo de drawdown',
+      'scout.f.platform': 'Plataforma', 'scout.f.withdrawal': 'Saque',
+      'scout.f.payout': 'Velocidade de pagamento', 'scout.f.sort': 'Ordenar por',
+      'scout.f.any': 'Qualquer', 'scout.f.static': 'Estático', 'scout.f.trailing': 'Trailing', 'scout.f.both': 'Ambos',
+      'scout.f.bank': 'Banco', 'scout.f.fast': 'Rápido (<7d)', 'scout.f.medium': '7–14d', 'scout.f.slow': 'Lento (>14d)',
+      'scout.f.promoOnly': 'Apenas com promoções', 'scout.f.reset': 'Limpar filtros',
+      'scout.f.sortRating': 'Melhor avaliação', 'scout.f.sortCheapest': 'Menor custo', 'scout.f.sortFastest': 'Pagamento mais rápido',
+      'scout.chip.trailing': 'Trailing DD', 'scout.chip.static': 'Static DD', 'scout.chip.both': 'Static + Trailing',
+      'scout.chip.ve': 'Disponível VE', 'scout.chip.crypto': 'Saque Crypto',
+      'scout.card.split': 'Profit Split', 'scout.card.payout': 'Pagamento',
+      'scout.card.days': 'd aprox.', 'scout.card.askAI': 'Perguntar IA',
+      'scout.chat.title': 'Consultor IA', 'scout.chat.send': 'Perguntar',
+      'scout.chat.placeholder': 'Pergunte sobre esta firm ou compare selecionadas…',
+      'scout.chat.context': 'Analisando: ',
       'account.admin': 'Painel de admin',
       'account.plans': 'Planos e preços',
       'account.signin': 'Entrar',
@@ -2625,7 +2941,7 @@
     const isPremium = U.plan === 'premium';
     document.querySelectorAll('.feature-view').forEach(view => {
       const panel   = view.querySelector('.feature-panel');
-      const realApp = view.querySelector('.forum-app');  // a built feature (currently: forum)
+      const realApp = view.querySelector('.forum-app, .scout-app');  // built features
       const badge   = view.querySelector('.feature-badge');
       const circle  = view.querySelector('.feature-circle');
       const state    = view.querySelector('.feat-state');
@@ -2675,6 +2991,7 @@
       v.style.display = (v.id === tab + '-view') ? 'block' : 'none';
     });
     if (tab === 'forum' && U.plan === 'premium' && window.Forum) window.Forum.open();
+    if (tab === 'scout' && U.plan === 'premium' && window.Scout) window.Scout.open();
     if (isFeature) window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -3178,6 +3495,205 @@
         backToList();
         if (!state.loaded) { state.loaded = true; loadFeed(true); }
       }
+    };
+  })();
+
+  // ── Prop Firm Scout ──
+  (() => {
+    const state = { loaded: false, firms: [], selectedIds: new Set(), filters: {} };
+
+    const grid      = document.getElementById('scout-grid');
+    const empty     = document.getElementById('scout-empty');
+    const loading   = document.getElementById('scout-loading');
+    const meta      = document.getElementById('scout-results-meta');
+    const chatPanel = document.getElementById('scout-chat-panel');
+    const scpMsgs   = document.getElementById('scp-messages');
+    const scpInput  = document.getElementById('scp-input');
+    const scpSend   = document.getElementById('scp-send-btn');
+    const scpLabel  = document.getElementById('scp-selected-label');
+    const scpClose  = document.getElementById('scp-close-btn');
+
+    function getFilters() {
+      return {
+        country:    (document.getElementById('sf-country')?.value || '').trim().toUpperCase(),
+        size:       document.querySelector('#sf-size-pills .sf-pill.active[data-value]')?.dataset.value || '',
+        drawdown:   document.querySelector('#sf-dd-pills .sf-pill.active[data-value]')?.dataset.value || '',
+        platform:   document.querySelector('#sf-platform-pills .sf-pill.active[data-value]')?.dataset.value || '',
+        withdrawal: document.querySelector('#sf-withdrawal-pills .sf-pill.active[data-value]')?.dataset.value || '',
+        payout:     document.querySelector('#sf-payout-pills .sf-pill.active[data-value]')?.dataset.value || '',
+        promo:      document.getElementById('sf-promo')?.checked ? '1' : '',
+        sort:       document.getElementById('sf-sort')?.value || 'rating',
+      };
+    }
+
+    function starsSVG(rating) {
+      const full = Math.round(rating);
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+    }
+
+    function ddChip(type) {
+      const map = { static: 'scout.chip.static', trailing: 'scout.chip.trailing', both: 'scout.chip.both' };
+      return `<span class="firm-chip dd">${T(map[type] || type)}</span>`;
+    }
+
+    function buildCard(f) {
+      const card = document.createElement('div');
+      card.className = 'firm-card' + (state.selectedIds.has(f.id) ? ' selected' : '');
+      card.dataset.id = f.id;
+
+      const costs = f.account_costs || {};
+      const sizeFilter = document.querySelector('#sf-size-pills .sf-pill.active[data-value]')?.dataset.value || '';
+      const sizesToShow = sizeFilter ? [sizeFilter] : ['25k', '50k', '100k'].filter(s => costs[s]);
+      const priceHtml = sizesToShow.length
+        ? sizesToShow.map(s => costs[s] ? `<div class="firm-price-tag${s === sizeFilter ? ' highlight' : ''}"><div class="pt-size">${s}</div><div class="pt-val">$${costs[s]}</div></div>` : '').join('')
+        : Object.entries(costs).slice(0, 3).map(([s, v]) => `<div class="firm-price-tag"><div class="pt-size">${s}</div><div class="pt-val">$${v}</div></div>`).join('');
+
+      const veChip  = f.venezuela_friendly ? `<span class="firm-chip ve">${T('scout.chip.ve')}</span>` : '';
+      const cryptoChip = (f.withdrawal_methods || []).some(w => ['usdt','btc','crypto'].includes(w))
+        ? `<span class="firm-chip crypto">${T('scout.chip.crypto')}</span>` : '';
+      const newChip = (f.tags || []).includes('new') ? `<span class="firm-chip new">NEW</span>` : '';
+      const promoTag = f.has_promotion ? `<div class="firm-promo">PROMO</div>` : '';
+
+      card.innerHTML = `
+        ${promoTag}
+        <div class="firm-card-top">
+          <div class="firm-name">${f.name}</div>
+          <div class="firm-rating">${starsSVG(f.rating)} ${f.rating.toFixed(1)}</div>
+        </div>
+        <div class="firm-chips">${ddChip(f.drawdown_type)}${veChip}${cryptoChip}${newChip}</div>
+        <div class="firm-prices">${priceHtml}</div>
+        <div class="firm-footer">
+          <div class="firm-payout">${T('scout.card.payout')}: <strong>${f.payout_speed_days}${T('scout.card.days')}</strong></div>
+          <button class="firm-chat-btn" data-id="${f.id}">${T('scout.card.askAI')}</button>
+        </div>
+      `;
+
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('.firm-chat-btn')) {
+          openChat([f]);
+          return;
+        }
+        card.classList.toggle('selected');
+        if (state.selectedIds.has(f.id)) state.selectedIds.delete(f.id);
+        else state.selectedIds.add(f.id);
+      });
+      return card;
+    }
+
+    function renderFirms(firms) {
+      grid.innerHTML = '';
+      state.firms = firms;
+      if (!firms.length) {
+        empty.style.display = 'block';
+        meta.textContent = '';
+        return;
+      }
+      empty.style.display = 'none';
+      const tpl = firms.length === 25 ? T('scout.allResults') : T('scout.results');
+      meta.textContent = tpl.replace('{n}', firms.length);
+      firms.forEach(f => grid.appendChild(buildCard(f)));
+    }
+
+    async function fetchFirms() {
+      const f = getFilters();
+      const params = new URLSearchParams(Object.entries(f).filter(([, v]) => v));
+      loading.style.display = 'block';
+      grid.innerHTML = '';
+      empty.style.display = 'none';
+      try {
+        const r = await fetch('/api/scout/firms?' + params);
+        const d = await r.json();
+        renderFirms(d.firms || []);
+      } catch {
+        empty.textContent = T('scout.empty');
+        empty.style.display = 'block';
+      } finally {
+        loading.style.display = 'none';
+      }
+    }
+
+    // Pill group — single-select within a group
+    document.querySelectorAll('.sf-pills').forEach(group => {
+      group.addEventListener('click', e => {
+        const btn = e.target.closest('.sf-pill');
+        if (!btn) return;
+        group.querySelectorAll('.sf-pill').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        fetchFirms();
+      });
+    });
+
+    let countryTimer;
+    document.getElementById('sf-country')?.addEventListener('input', () => {
+      clearTimeout(countryTimer);
+      countryTimer = setTimeout(fetchFirms, 500);
+    });
+    document.getElementById('sf-promo')?.addEventListener('change', fetchFirms);
+    document.getElementById('sf-sort')?.addEventListener('change', fetchFirms);
+
+    document.getElementById('sf-reset-btn')?.addEventListener('click', () => {
+      document.getElementById('sf-country').value = '';
+      document.getElementById('sf-promo').checked = false;
+      document.getElementById('sf-sort').value = 'rating';
+      document.querySelectorAll('.sf-pills').forEach(g => {
+        g.querySelectorAll('.sf-pill').forEach((p, i) => p.classList.toggle('active', i === 0));
+      });
+      fetchFirms();
+    });
+
+    // Chat
+    function openChat(firms) {
+      const names = firms.map(f => f.name).join(', ');
+      scpLabel.textContent = T('scout.chat.context') + names;
+      chatPanel.style.display = 'block';
+      chatPanel.dataset.firmIds = JSON.stringify(firms.map(f => f.id));
+      scpInput.focus();
+      chatPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    scpClose?.addEventListener('click', () => { chatPanel.style.display = 'none'; });
+
+    async function sendChat() {
+      const q = scpInput.value.trim();
+      if (!q) return;
+      const firmIds = JSON.parse(chatPanel.dataset.firmIds || '[]');
+
+      const userMsg = document.createElement('div');
+      userMsg.className = 'scp-msg user';
+      userMsg.textContent = q;
+      scpMsgs.appendChild(userMsg);
+      scpInput.value = '';
+      scpSend.disabled = true;
+
+      const thinking = document.createElement('div');
+      thinking.className = 'scp-msg ai';
+      thinking.textContent = '…';
+      scpMsgs.appendChild(thinking);
+      scpMsgs.scrollTop = scpMsgs.scrollHeight;
+
+      try {
+        const r = await fetch('/api/scout/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question: q, firm_ids: firmIds }),
+        });
+        const d = await r.json();
+        thinking.textContent = d.answer || T('forum.error');
+      } catch {
+        thinking.textContent = T('forum.error');
+      } finally {
+        scpSend.disabled = false;
+        scpMsgs.scrollTop = scpMsgs.scrollHeight;
+      }
+    }
+
+    scpSend?.addEventListener('click', sendChat);
+    scpInput?.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); } });
+
+    window.Scout = {
+      open() {
+        if (!state.loaded) { state.loaded = true; fetchFirms(); }
+      },
     };
   })();
 
