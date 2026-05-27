@@ -1128,8 +1128,18 @@
     }
     .firm-card:hover { border-color: var(--accent); box-shadow: 0 4px 20px rgba(91,142,240,0.12); }
     .firm-card.selected { border-color: var(--accent); background: rgba(91,142,240,0.06); }
-    .firm-card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
-    .firm-name { font-size: 14.5px; font-weight: 800; line-height: 1.2; }
+    .firm-card-top { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .firm-logo {
+      width: 48px; height: 48px; border-radius: 11px; flex-shrink: 0; background: #fff;
+      border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; overflow: hidden;
+    }
+    .firm-logo img { width: 34px; height: 34px; object-fit: contain; display: block; }
+    .firm-logo-fallback {
+      width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+      font-size: 21px; font-weight: 800; color: #fff;
+    }
+    .firm-head-info { flex: 1; min-width: 0; }
+    .firm-name { font-size: 14.5px; font-weight: 800; line-height: 1.2; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .firm-rating { display: flex; align-items: center; gap: 4px; font-size: 12.5px; font-weight: 700; color: var(--premium); }
     .firm-rating svg { width: 13px; height: 13px; fill: var(--premium); }
     .firm-promo {
@@ -3543,6 +3553,18 @@
       return `<span class="firm-chip dd">${T(map[type] || type)}</span>`;
     }
 
+    function domainOf(url) {
+      try { return new URL(url).hostname.replace(/^www\./, ''); }
+      catch { return (url || '').replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0]; }
+    }
+
+    function monoColor(name) {
+      const palette = ['#5b8ef0','#e0a83d','#4ecd78','#a855f7','#ef4444','#06b6d4','#f97316','#ec4899'];
+      let h = 0;
+      for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
+      return palette[Math.abs(h) % palette.length];
+    }
+
     function buildCard(f) {
       const card = document.createElement('div');
       card.className = 'firm-card' + (state.selectedIds.has(f.id) ? ' selected' : '');
@@ -3561,11 +3583,21 @@
       const newChip = (f.tags || []).includes('new') ? `<span class="firm-chip new">NEW</span>` : '';
       const promoTag = f.has_promotion ? `<div class="firm-promo">PROMO</div>` : '';
 
+      const domain = domainOf(f.website);
+      const mono = monoColor(f.name);
+      const initial = (f.name || '?').trim().charAt(0).toUpperCase();
+      const logoInner = domain
+        ? `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=128" alt="${f.name}" />`
+        : `<div class="firm-logo-fallback" style="background:${mono}">${initial}</div>`;
+
       card.innerHTML = `
         ${promoTag}
         <div class="firm-card-top">
-          <div class="firm-name">${f.name}</div>
-          <div class="firm-rating">${starsSVG(f.rating)} ${f.rating.toFixed(1)}</div>
+          <div class="firm-logo">${logoInner}</div>
+          <div class="firm-head-info">
+            <div class="firm-name">${f.name}</div>
+            <div class="firm-rating">${starsSVG(f.rating)} ${f.rating.toFixed(1)}</div>
+          </div>
         </div>
         <div class="firm-chips">${ddChip(f.drawdown_type)}${veChip}${cryptoChip}${newChip}</div>
         <div class="firm-prices">${priceHtml}</div>
@@ -3574,6 +3606,13 @@
           <button class="firm-chat-btn" data-id="${f.id}">${T('scout.card.askAI')}</button>
         </div>
       `;
+
+      const logoImg = card.querySelector('.firm-logo img');
+      if (logoImg) {
+        logoImg.addEventListener('error', () => {
+          logoImg.parentNode.innerHTML = `<div class="firm-logo-fallback" style="background:${mono}">${initial}</div>`;
+        });
+      }
 
       card.addEventListener('click', (e) => {
         if (e.target.closest('.firm-chat-btn')) {
