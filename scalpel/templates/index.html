@@ -2051,7 +2051,8 @@
       'plan.freeLabel': 'Free plan', 'plan.standardLabel': 'Standard plan', 'plan.premiumLabel': 'Premium plan',
       'limit.title': "You've reached your plan limit",
       'limit.msgFree': "You've used your free analysis for this week. Please wait 7 days or upgrade your plan to keep going.",
-      'limit.msgStandard': "You've used your daily analysis on the Standard plan. Please wait or upgrade to Premium for unlimited analyses.",
+      'limit.msgStandard': "You've used your daily analysis on the Standard plan. Please wait until tomorrow or upgrade to Premium for up to 5 analyses per day.",
+      'limit.msgPremium': "You've reached your 5 analyses for today. Your limit resets in 24 hours — come back tomorrow.",
       'limit.days': 'days', 'limit.hours': 'hrs', 'limit.mins': 'min', 'limit.secs': 'sec',
       'limit.upgrade': 'Upgrade plan',
       'limit.back': 'Back',
@@ -2202,7 +2203,8 @@
       'plan.freeLabel': 'Plan gratis', 'plan.standardLabel': 'Plan Standard', 'plan.premiumLabel': 'Plan Premium',
       'limit.title': 'Has alcanzado el límite de tu plan',
       'limit.msgFree': 'Lo siento, has alcanzado el límite de uso del plan gratis. Por favor espera 7 días o modifica tu plan para poder seguir.',
-      'limit.msgStandard': 'Has usado tu análisis diario del plan Standard. Por favor espera o mejora a Premium para análisis ilimitados.',
+      'limit.msgStandard': 'Has usado tu análisis diario del plan Standard. Por favor espera hasta mañana o mejora a Premium para hasta 5 análisis por día.',
+      'limit.msgPremium': 'Has alcanzado tus 5 análisis de hoy. Tu límite se reinicia en 24 horas — vuelve mañana.',
       'limit.days': 'días', 'limit.hours': 'hrs', 'limit.mins': 'min', 'limit.secs': 'seg',
       'limit.upgrade': 'Mejorar plan',
       'limit.back': 'Volver',
@@ -2353,7 +2355,8 @@
       'plan.freeLabel': 'Offre gratuite', 'plan.standardLabel': 'Offre Standard', 'plan.premiumLabel': 'Offre Premium',
       'limit.title': 'Vous avez atteint la limite de votre offre',
       'limit.msgFree': "Vous avez utilisé votre analyse gratuite de la semaine. Veuillez patienter 7 jours ou changer d'offre pour continuer.",
-      'limit.msgStandard': "Vous avez utilisé votre analyse quotidienne de l'offre Standard. Patientez ou passez à Premium pour des analyses illimitées.",
+      'limit.msgStandard': "Vous avez utilisé votre analyse quotidienne Standard. Attendez demain ou passez à Premium pour jusqu'à 5 analyses par jour.",
+      'limit.msgPremium': "Vous avez atteint vos 5 analyses du jour. Votre quota se renouvelle dans 24 heures.",
       'limit.days': 'jours', 'limit.hours': 'h', 'limit.mins': 'min', 'limit.secs': 'sec',
       'limit.upgrade': "Changer d'offre",
       'limit.back': 'Retour',
@@ -2504,7 +2507,8 @@
       'plan.freeLabel': 'Plano grátis', 'plan.standardLabel': 'Plano Standard', 'plan.premiumLabel': 'Plano Premium',
       'limit.title': 'Você atingiu o limite do seu plano',
       'limit.msgFree': 'Você usou sua análise grátis desta semana. Por favor aguarde 7 dias ou mude de plano para continuar.',
-      'limit.msgStandard': 'Você usou sua análise diária do plano Standard. Aguarde ou mude para o Premium para análises ilimitadas.',
+      'limit.msgStandard': 'Você usou sua análise diária do plano Standard. Aguarde até amanhã ou mude para o Premium para até 5 análises por dia.',
+      'limit.msgPremium': 'Você atingiu suas 5 análises de hoje. Seu limite renova em 24 horas — volte amanhã.',
       'limit.days': 'dias', 'limit.hours': 'hrs', 'limit.mins': 'min', 'limit.secs': 'seg',
       'limit.upgrade': 'Mudar de plano',
       'limit.back': 'Voltar',
@@ -2902,6 +2906,7 @@
     const plan = data.plan || U.plan || 'free';
     document.getElementById('limit-title').textContent = T('limit.title');
     document.getElementById('limit-msg').textContent =
+      plan === 'premium' ? T('limit.msgPremium') :
       plan === 'standard' ? T('limit.msgStandard') : T('limit.msgFree');
 
     let remaining = Math.max(0, parseInt(data.remaining_seconds, 10) || 0);

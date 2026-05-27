@@ -189,10 +189,10 @@ def load_user(user_id):
 # ──────────────────────────────────────────────────────────────────────────
 # PLAN LIMITS & ACCESS HELPERS
 # ──────────────────────────────────────────────────────────────────────────
-PLAN_WINDOWS = {
-    'free': timedelta(days=7),
-    'standard': timedelta(days=1),
-    'premium': None,  # unlimited
+PLAN_LIMITS = {
+    'free':     {'window': timedelta(days=7), 'max': 1},
+    'standard': {'window': timedelta(days=1), 'max': 1},
+    'premium':  {'window': timedelta(days=1), 'max': 5},
 }
 
 ANON_COOKIE = 'scalpel_anon'
@@ -236,37 +236,37 @@ def _as_utc(dt):
 
 
 def check_rate_limit():
-    """Return None if an analysis is allowed, else a dict describing the block."""
+    """Return None if analysis is allowed, else a dict describing the block."""
     plan = current_plan()
-    window = PLAN_WINDOWS.get(plan)
-    if window is None:
-        return None  # premium = unlimited
+    cfg = PLAN_LIMITS.get(plan, PLAN_LIMITS['free'])
+    window, max_count = cfg['window'], cfg['max']
+    since = datetime.now(timezone.utc) - window
 
     if current_user.is_authenticated:
-        last = (UsageLog.query
-                .filter_by(user_id=current_user.id)
-                .order_by(UsageLog.created_at.desc())
-                .first())
+        logs = (UsageLog.query
+                .filter(UsageLog.user_id == current_user.id,
+                        UsageLog.created_at >= since)
+                .order_by(UsageLog.created_at.asc()).all())
     else:
         anon = get_anon_id()
-        last = (UsageLog.query
-                .filter_by(anon_id=anon)
-                .order_by(UsageLog.created_at.desc())
-                .first()) if anon else None
+        logs = (UsageLog.query
+                .filter(UsageLog.anon_id == anon,
+                        UsageLog.created_at >= since)
+                .order_by(UsageLog.created_at.asc()).all()) if anon else []
 
-    if last is None:
-        return None  # never used → allow
+    if len(logs) < max_count:
+        return None  # under limit → allow
 
-    next_allowed = _as_utc(last.created_at) + window
+    # Oldest log determines when the next slot opens
+    oldest_allowed = _as_utc(logs[0].created_at) + window
     now = datetime.now(timezone.utc)
-    if now >= next_allowed:
-        return None
-
-    remaining = int((next_allowed - now).total_seconds())
+    remaining = max(0, int((oldest_allowed - now).total_seconds()))
     return {
         'plan': plan,
         'remaining_seconds': remaining,
-        'next_available': next_allowed.isoformat(),
+        'next_available': oldest_allowed.isoformat(),
+        'used': len(logs),
+        'max': max_count,
     }
 
 
@@ -863,7 +863,7 @@ def analyze():
     if not has_access():
         return jsonify({'error': 'unauthorized'}), 401
 
-    # ── Rate limit gate (free 1/week, standard 1/day, premium unlimited) ──
+    # ── Rate limit gate (free 1/week, standard 1/day, premium 5/day) ──
     limit = check_rate_limit()
     if limit:
         return jsonify({'error': 'limit_reached', 'limit_reached': True, **limit}), 429
