@@ -1017,6 +1017,162 @@
       .container { padding: 24px 16px 60px; }
       .card { padding: 18px; }
     }
+
+    /* ══════════════════════════════════════════════════════════
+       TRADING FORUM (Premium)
+       ══════════════════════════════════════════════════════════ */
+    .forum-app { max-width: 720px; margin: 0 auto; padding: 26px 20px 80px; text-align: left; }
+
+    .forum-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+    .forum-h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.01em; }
+    .forum-intro { font-size: 13px; color: var(--muted); margin-top: 4px; max-width: 480px; line-height: 1.5; }
+    .forum-new-btn {
+      display: inline-flex; align-items: center; gap: 7px; flex-shrink: 0;
+      background: var(--accent); color: #fff; border: none; border-radius: 9px;
+      font-size: 13.5px; font-weight: 700; padding: 10px 16px; cursor: pointer; transition: all 0.15s;
+    }
+    .forum-new-btn:hover { background: var(--accent-h); transform: translateY(-1px); }
+    .forum-new-btn svg { width: 16px; height: 16px; }
+
+    .forum-subbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+    .forum-tabs { display: inline-flex; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 4px; }
+    .forum-tab {
+      border: none; background: transparent; color: var(--muted); font-size: 13px; font-weight: 600;
+      padding: 7px 16px; border-radius: 7px; cursor: pointer; transition: all 0.15s;
+    }
+    .forum-tab.active { background: var(--card); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+    .forum-left { font-size: 12px; color: var(--muted); font-weight: 600; }
+    .forum-left b { color: var(--accent); }
+
+    /* Composer */
+    .forum-composer { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-bottom: 18px; }
+    .composer-field { margin-bottom: 12px; }
+    .composer-field label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
+    .composer-field input, .composer-field textarea {
+      width: 100%; background: var(--surface); border: 1px solid var(--border2); border-radius: 8px;
+      color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; padding: 11px 13px; outline: none; resize: vertical;
+      transition: border-color 0.15s;
+    }
+    .composer-field input:focus, .composer-field textarea:focus { border-color: var(--accent); }
+    .composer-img { position: relative; margin-bottom: 12px; }
+    .composer-img img { max-width: 100%; max-height: 240px; border-radius: 8px; border: 1px solid var(--border); display: block; }
+    .img-remove {
+      position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); color: #fff; border: none;
+      border-radius: 6px; font-size: 12px; font-weight: 600; padding: 5px 10px; cursor: pointer;
+    }
+    .composer-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .composer-spacer { flex: 1; }
+    .composer-attach {
+      display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; color: var(--muted);
+      border: 1px dashed var(--border2); border-radius: 8px; padding: 9px 13px; cursor: pointer; transition: all 0.15s;
+    }
+    .composer-attach:hover { color: var(--accent); border-color: var(--accent); }
+    .composer-attach svg { width: 16px; height: 16px; }
+    .composer-error, .comment-error {
+      font-size: 13px; color: var(--loss); background: rgba(239,68,68,0.10);
+      border: 1px solid rgba(239,68,68,0.30); border-radius: 8px; padding: 10px 12px; margin-bottom: 12px;
+    }
+    .composer-error .warn-sub, .comment-error .warn-sub { display: block; color: var(--muted); font-size: 11.5px; margin-top: 4px; }
+
+    .forum-btn {
+      border-radius: 8px; font-size: 13.5px; font-weight: 700; padding: 10px 18px; cursor: pointer;
+      border: 1px solid transparent; transition: all 0.15s; font-family: 'Inter', sans-serif;
+    }
+    .forum-btn.primary { background: var(--accent); color: #fff; }
+    .forum-btn.primary:hover { background: var(--accent-h); }
+    .forum-btn.primary:disabled { opacity: 0.55; cursor: default; }
+    .forum-btn.ghost { background: transparent; color: var(--text); border-color: var(--border2); }
+    .forum-btn.ghost:hover { border-color: var(--accent); color: var(--accent); }
+    .forum-loadmore { display: block; margin: 18px auto 0; }
+
+    /* Feed cards */
+    .forum-feed { display: flex; flex-direction: column; gap: 14px; }
+    .post-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 18px; cursor: pointer; transition: border-color 0.15s, transform 0.15s;
+    }
+    .post-card:hover { border-color: var(--accent); }
+    .post-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .post-avatar {
+      width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, var(--accent), var(--accent-h)); color: #fff; font-weight: 800; font-size: 14px; text-transform: uppercase;
+    }
+    .post-author { font-weight: 700; font-size: 13.5px; }
+    .post-time { font-size: 11.5px; color: var(--muted); }
+    .post-title { font-size: 16.5px; font-weight: 700; margin-bottom: 6px; line-height: 1.35; }
+    .post-body { font-size: 14px; color: var(--text); line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+    .post-body.preview { color: var(--muted); }
+    .post-img { margin-top: 12px; border-radius: 8px; border: 1px solid var(--border); max-width: 100%; max-height: 360px; display: block; }
+    .post-foot { display: flex; align-items: center; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+
+    /* Reactions */
+    .react-bar { display: inline-flex; gap: 5px; flex-wrap: wrap; }
+    .react-btn {
+      display: inline-flex; align-items: center; gap: 4px; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 4px 10px; font-size: 13px; cursor: pointer; transition: all 0.12s; color: var(--text);
+    }
+    .react-btn:hover { border-color: var(--accent); }
+    .react-btn.mine { background: rgba(91,142,240,0.16); border-color: var(--accent); }
+    .react-btn .rc { font-size: 11.5px; font-weight: 700; color: var(--muted); }
+    .react-btn.mine .rc { color: var(--accent); }
+
+    .post-action {
+      display: inline-flex; align-items: center; gap: 5px; background: transparent; border: none; color: var(--muted);
+      font-size: 12.5px; font-weight: 600; cursor: pointer; padding: 5px 8px; border-radius: 7px; transition: all 0.12s;
+    }
+    .post-action:hover { color: var(--accent); background: var(--surface); }
+    .post-action.active { color: var(--accent); }
+    .post-action svg { width: 15px; height: 15px; }
+    .post-action.danger:hover { color: var(--loss); }
+    .foot-spacer { flex: 1; }
+
+    /* Detail view */
+    .forum-back {
+      display: inline-flex; align-items: center; gap: 7px; background: transparent; border: none; color: var(--muted);
+      font-size: 13px; font-weight: 600; cursor: pointer; margin-bottom: 16px; padding: 6px 0;
+    }
+    .forum-back:hover { color: var(--accent); }
+    .forum-back svg { width: 17px; height: 17px; }
+    .detail-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; }
+
+    .forum-comments { margin-top: 24px; }
+    .forum-comments-h { font-size: 16px; font-weight: 800; margin-bottom: 14px; }
+    .comment-count { color: var(--muted); font-weight: 600; font-size: 14px; }
+    .comment-composer { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 8px; }
+    .comment-composer textarea {
+      flex: 1; background: var(--surface); border: 1px solid var(--border2); border-radius: 8px; color: var(--text);
+      font-family: 'Inter', sans-serif; font-size: 14px; padding: 10px 12px; outline: none; resize: vertical;
+    }
+    .comment-composer textarea:focus { border-color: var(--accent); }
+
+    .comment {
+      border-left: 2px solid var(--border); padding: 10px 0 4px 14px; margin-top: 12px;
+    }
+    .comment-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .comment-avatar {
+      width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, var(--accent), var(--accent-h)); color: #fff; font-weight: 800; font-size: 11px; text-transform: uppercase;
+    }
+    .comment-author { font-weight: 700; font-size: 13px; }
+    .comment-time { font-size: 11px; color: var(--muted); }
+    .comment-body { font-size: 13.5px; line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
+    .comment-body.deleted { color: var(--muted); font-style: italic; }
+    .comment-foot { display: flex; align-items: center; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+    .comment-children { margin-left: 6px; }
+    .reply-box { display: flex; gap: 8px; margin: 8px 0 4px; }
+    .reply-box textarea {
+      flex: 1; background: var(--surface); border: 1px solid var(--border2); border-radius: 8px; color: var(--text);
+      font-family: 'Inter', sans-serif; font-size: 13.5px; padding: 8px 11px; outline: none; resize: vertical;
+    }
+
+    .forum-empty { text-align: center; color: var(--muted); padding: 50px 20px; font-size: 14px; }
+
+    @media (max-width: 480px) {
+      .forum-app { padding: 20px 14px 70px; }
+      .forum-head { flex-direction: column; }
+      .forum-new-btn { width: 100%; justify-content: center; }
+      .forum-subbar { flex-direction: column; align-items: stretch; gap: 8px; }
+    }
   </style>
 </head>
 <body>
@@ -1379,6 +1535,80 @@
       <div class="feature-desc feat-state"></div>
       <a href="/pricing" target="_blank" rel="noopener" class="feature-upgrade" data-i18n="feature.upgrade">Upgrade to Premium</a>
     </div>
+
+    <!-- Real forum app — shown only for Premium members -->
+    <div class="forum-app" id="forum-app" style="display:none;">
+      <!-- LIST VIEW -->
+      <div id="forum-list-view">
+        <div class="forum-head">
+          <div class="forum-head-text">
+            <div class="forum-h1" data-i18n="forum.title">Trading Forum</div>
+            <div class="forum-intro" data-i18n="forum.intro"></div>
+          </div>
+          <button class="forum-new-btn" id="forum-new-btn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span data-i18n="forum.new">New post</span>
+          </button>
+        </div>
+
+        <div class="forum-subbar">
+          <div class="forum-tabs">
+            <button class="forum-tab active" type="button" data-feed="all" data-i18n="forum.feed">Feed</button>
+            <button class="forum-tab" type="button" data-feed="saved" data-i18n="forum.savedTab">Saved</button>
+          </div>
+          <div class="forum-left" id="forum-left"></div>
+        </div>
+
+        <!-- Composer -->
+        <div class="forum-composer" id="forum-composer" style="display:none;">
+          <div class="composer-field">
+            <label data-i18n="forum.titleLabel">Title</label>
+            <input type="text" id="post-title" maxlength="160" data-i18n-ph="forum.titlePh" />
+          </div>
+          <div class="composer-field">
+            <label data-i18n="forum.bodyLabel">Message</label>
+            <textarea id="post-body" rows="5" maxlength="8000" data-i18n-ph="forum.bodyPh"></textarea>
+          </div>
+          <div class="composer-img" id="composer-img-wrap" style="display:none;">
+            <img id="composer-img-preview" alt="" />
+            <button type="button" class="img-remove" id="post-img-remove" data-i18n="forum.removeImage">Remove</button>
+          </div>
+          <div class="composer-error" id="composer-error" style="display:none;"></div>
+          <div class="composer-actions">
+            <label class="composer-attach">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <span data-i18n="forum.addImage">Add chart image</span>
+              <input type="file" id="post-image" accept="image/png,image/jpeg,image/jpg,image/webp" hidden />
+            </label>
+            <div class="composer-spacer"></div>
+            <button class="forum-btn ghost" id="composer-cancel" type="button" data-i18n="forum.cancel">Cancel</button>
+            <button class="forum-btn primary" id="composer-publish" type="button" data-i18n="forum.publish">Publish</button>
+          </div>
+        </div>
+
+        <div class="forum-feed" id="forum-feed"></div>
+        <div class="forum-empty" id="forum-empty" style="display:none;"></div>
+        <button class="forum-btn ghost forum-loadmore" id="forum-loadmore" type="button" style="display:none;" data-i18n="forum.loadMore">Load more</button>
+      </div>
+
+      <!-- DETAIL VIEW -->
+      <div id="forum-detail-view" style="display:none;">
+        <button class="forum-back" id="forum-back" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          <span data-i18n="forum.back">Back to feed</span>
+        </button>
+        <div id="forum-detail"></div>
+        <div class="forum-comments">
+          <div class="forum-comments-h"><span data-i18n="forum.comments">Comments</span> <span id="comment-count" class="comment-count"></span></div>
+          <div class="comment-composer">
+            <textarea id="root-comment" rows="2" data-i18n-ph="forum.commentPh"></textarea>
+            <button class="forum-btn primary" id="root-comment-send" type="button" data-i18n="forum.send">Send</button>
+          </div>
+          <div class="comment-error" id="comment-error" style="display:none;"></div>
+          <div id="comments-tree"></div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ── INDICATORS (Premium) ── -->
@@ -1428,6 +1658,7 @@
 
 <footer data-i18n="footer.text">SCALPEL · ICT Trade Analysis · For educational purposes only · Not financial advice</footer>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
   // ── i18n: UI translations (ICT jargon kept in English on purpose) ──
   const I18N = {
@@ -1496,6 +1727,52 @@
       'feature.upgrade': 'Upgrade to Premium',
       'forum.title': 'Forum Trading',
       'forum.desc': 'Connect with other traders, share setups, and discuss ICT concepts in a dedicated community space.',
+      'forum.intro': 'Share setups, ask questions and discuss ICT with other Premium traders. Be respectful and stay on topic — every post is auto-moderated.',
+      'forum.new': 'New post',
+      'forum.feed': 'Feed',
+      'forum.savedTab': 'Saved',
+      'forum.empty': 'No posts yet. Be the first to share a setup.',
+      'forum.emptySaved': "You haven't saved any posts yet.",
+      'forum.titleLabel': 'Title',
+      'forum.titlePh': 'A clear title for your post',
+      'forum.bodyLabel': 'Message',
+      'forum.bodyPh': 'Share a setup, a question, an ICT concept…',
+      'forum.addImage': 'Add chart image',
+      'forum.removeImage': 'Remove',
+      'forum.publish': 'Publish',
+      'forum.cancel': 'Cancel',
+      'forum.publishing': 'Screening & publishing…',
+      'forum.postsLeft': 'posts left today',
+      'forum.noPostsLeft': "You've used your 2 posts for today. Come back tomorrow.",
+      'forum.back': 'Back to feed',
+      'forum.loadMore': 'Load more',
+      'forum.comments': 'Comments',
+      'forum.noComments': 'No comments yet — start the conversation.',
+      'forum.commentPh': 'Write a comment…',
+      'forum.replyPh': 'Write a reply…',
+      'forum.reply': 'Reply',
+      'forum.send': 'Send',
+      'forum.sending': 'Sending…',
+      'forum.save': 'Save',
+      'forum.savedBtn': 'Saved',
+      'forum.pdf': 'PDF',
+      'forum.delete': 'Delete',
+      'forum.deleteConfirm': 'Delete this? This cannot be undone.',
+      'forum.justNow': 'just now',
+      'forum.blockedTitle': 'Content blocked',
+      'forum.warnNote': 'This was logged. Repeated violations may lead to removal from the platform.',
+      'forum.block.insult': 'Blocked for insults or personal attacks.',
+      'forum.block.profanity': 'Blocked for aggressive or profane language.',
+      'forum.block.offtopic': 'Blocked — this forum is for trading discussion only.',
+      'forum.block.spam': 'Blocked — this looks like spam.',
+      'forum.block.sexual': 'Blocked for sexual or graphic content.',
+      'forum.block.hate': 'Blocked for hate speech.',
+      'forum.block.generic': 'Your content was blocked by moderation.',
+      'forum.block.spamRate': 'Slow down — you are posting too fast.',
+      'forum.img.blocked': 'Image blocked — only trading charts and platform screenshots are allowed.',
+      'forum.img.format': 'Please upload a JPG, PNG or WebP image.',
+      'forum.img.large': 'Image too large (max 8 MB).',
+      'forum.error': 'Something went wrong. Please try again.',
       'indicators.title': 'Indicators',
       'indicators.desc': 'Access a curated library of trading indicators built around ICT methodology.',
       'scout.title': 'Prop Firm Scout',
@@ -1582,6 +1859,52 @@
       'feature.upgrade': 'Mejorar a Premium',
       'forum.title': 'Foro Trading',
       'forum.desc': 'Conecta con otros traders, comparte setups y discute conceptos ICT en un espacio comunitario dedicado.',
+      'forum.intro': 'Comparte setups, haz preguntas y discute ICT con otros traders Premium. Sé respetuoso y mantente en tema — cada publicación se modera automáticamente.',
+      'forum.new': 'Nueva publicación',
+      'forum.feed': 'Feed',
+      'forum.savedTab': 'Guardados',
+      'forum.empty': 'Aún no hay publicaciones. Sé el primero en compartir un setup.',
+      'forum.emptySaved': 'Todavía no has guardado ninguna publicación.',
+      'forum.titleLabel': 'Título',
+      'forum.titlePh': 'Un título claro para tu publicación',
+      'forum.bodyLabel': 'Mensaje',
+      'forum.bodyPh': 'Comparte un setup, una pregunta, un concepto ICT…',
+      'forum.addImage': 'Añadir imagen del gráfico',
+      'forum.removeImage': 'Quitar',
+      'forum.publish': 'Publicar',
+      'forum.cancel': 'Cancelar',
+      'forum.publishing': 'Revisando y publicando…',
+      'forum.postsLeft': 'publicaciones restantes hoy',
+      'forum.noPostsLeft': 'Ya usaste tus 2 publicaciones de hoy. Vuelve mañana.',
+      'forum.back': 'Volver al feed',
+      'forum.loadMore': 'Cargar más',
+      'forum.comments': 'Comentarios',
+      'forum.noComments': 'Aún no hay comentarios — inicia la conversación.',
+      'forum.commentPh': 'Escribe un comentario…',
+      'forum.replyPh': 'Escribe una respuesta…',
+      'forum.reply': 'Responder',
+      'forum.send': 'Enviar',
+      'forum.sending': 'Enviando…',
+      'forum.save': 'Guardar',
+      'forum.savedBtn': 'Guardado',
+      'forum.pdf': 'PDF',
+      'forum.delete': 'Eliminar',
+      'forum.deleteConfirm': '¿Eliminar esto? No se puede deshacer.',
+      'forum.justNow': 'ahora mismo',
+      'forum.blockedTitle': 'Contenido bloqueado',
+      'forum.warnNote': 'Esto quedó registrado. Las infracciones repetidas pueden llevar a la expulsión de la plataforma.',
+      'forum.block.insult': 'Bloqueado por insultos o ataques personales.',
+      'forum.block.profanity': 'Bloqueado por lenguaje agresivo o vulgar.',
+      'forum.block.offtopic': 'Bloqueado — este foro es solo para temas de trading.',
+      'forum.block.spam': 'Bloqueado — esto parece spam.',
+      'forum.block.sexual': 'Bloqueado por contenido sexual o gráfico.',
+      'forum.block.hate': 'Bloqueado por discurso de odio.',
+      'forum.block.generic': 'Tu contenido fue bloqueado por la moderación.',
+      'forum.block.spamRate': 'Más despacio — estás publicando demasiado rápido.',
+      'forum.img.blocked': 'Imagen bloqueada — solo se permiten gráficos de trading y capturas de plataformas.',
+      'forum.img.format': 'Sube una imagen JPG, PNG o WebP.',
+      'forum.img.large': 'Imagen demasiado grande (máx. 8 MB).',
+      'forum.error': 'Algo salió mal. Inténtalo de nuevo.',
       'indicators.title': 'Indicadores',
       'indicators.desc': 'Accede a una biblioteca curada de indicadores de trading basados en la metodología ICT.',
       'scout.title': 'Prop Firm Scout',
@@ -1668,6 +1991,52 @@
       'feature.upgrade': 'Passer à Premium',
       'forum.title': 'Forum Trading',
       'forum.desc': "Connectez-vous avec d'autres traders, partagez vos setups et discutez des concepts ICT dans un espace communautaire dédié.",
+      'forum.intro': "Partagez vos setups, posez des questions et discutez ICT avec d'autres traders Premium. Restez respectueux et dans le sujet — chaque publication est modérée automatiquement.",
+      'forum.new': 'Nouvelle publication',
+      'forum.feed': 'Fil',
+      'forum.savedTab': 'Enregistrés',
+      'forum.empty': 'Aucune publication pour le moment. Soyez le premier à partager un setup.',
+      'forum.emptySaved': "Vous n'avez encore rien enregistré.",
+      'forum.titleLabel': 'Titre',
+      'forum.titlePh': 'Un titre clair pour votre publication',
+      'forum.bodyLabel': 'Message',
+      'forum.bodyPh': 'Partagez un setup, une question, un concept ICT…',
+      'forum.addImage': 'Ajouter une image du graphique',
+      'forum.removeImage': 'Retirer',
+      'forum.publish': 'Publier',
+      'forum.cancel': 'Annuler',
+      'forum.publishing': 'Vérification et publication…',
+      'forum.postsLeft': "publications restantes aujourd'hui",
+      'forum.noPostsLeft': "Vous avez utilisé vos 2 publications du jour. Revenez demain.",
+      'forum.back': 'Retour au fil',
+      'forum.loadMore': 'Charger plus',
+      'forum.comments': 'Commentaires',
+      'forum.noComments': 'Aucun commentaire — lancez la conversation.',
+      'forum.commentPh': 'Écrire un commentaire…',
+      'forum.replyPh': 'Écrire une réponse…',
+      'forum.reply': 'Répondre',
+      'forum.send': 'Envoyer',
+      'forum.sending': 'Envoi…',
+      'forum.save': 'Enregistrer',
+      'forum.savedBtn': 'Enregistré',
+      'forum.pdf': 'PDF',
+      'forum.delete': 'Supprimer',
+      'forum.deleteConfirm': 'Supprimer ceci ? Action irréversible.',
+      'forum.justNow': "à l'instant",
+      'forum.blockedTitle': 'Contenu bloqué',
+      'forum.warnNote': "Ceci a été enregistré. Les infractions répétées peuvent entraîner une exclusion de la plateforme.",
+      'forum.block.insult': 'Bloqué pour insultes ou attaques personnelles.',
+      'forum.block.profanity': 'Bloqué pour langage agressif ou vulgaire.',
+      'forum.block.offtopic': 'Bloqué — ce forum est réservé au trading.',
+      'forum.block.spam': 'Bloqué — cela ressemble à du spam.',
+      'forum.block.sexual': 'Bloqué pour contenu sexuel ou explicite.',
+      'forum.block.hate': 'Bloqué pour discours haineux.',
+      'forum.block.generic': 'Votre contenu a été bloqué par la modération.',
+      'forum.block.spamRate': 'Doucement — vous publiez trop vite.',
+      'forum.img.blocked': 'Image bloquée — seuls les graphiques de trading et captures de plateformes sont autorisés.',
+      'forum.img.format': 'Veuillez importer une image JPG, PNG ou WebP.',
+      'forum.img.large': 'Image trop volumineuse (max 8 Mo).',
+      'forum.error': "Une erreur s'est produite. Réessayez.",
       'indicators.title': 'Indicateurs',
       'indicators.desc': "Accédez à une bibliothèque d'indicateurs de trading construite autour de la méthodologie ICT.",
       'scout.title': 'Prop Firm Scout',
@@ -1754,6 +2123,52 @@
       'feature.upgrade': 'Fazer upgrade para Premium',
       'forum.title': 'Fórum Trading',
       'forum.desc': 'Conecte-se com outros traders, compartilhe setups e discuta conceitos ICT em um espaço comunitário dedicado.',
+      'forum.intro': 'Compartilhe setups, faça perguntas e discuta ICT com outros traders Premium. Seja respeitoso e mantenha o foco — cada publicação é moderada automaticamente.',
+      'forum.new': 'Nova publicação',
+      'forum.feed': 'Feed',
+      'forum.savedTab': 'Salvos',
+      'forum.empty': 'Ainda não há publicações. Seja o primeiro a compartilhar um setup.',
+      'forum.emptySaved': 'Você ainda não salvou nenhuma publicação.',
+      'forum.titleLabel': 'Título',
+      'forum.titlePh': 'Um título claro para sua publicação',
+      'forum.bodyLabel': 'Mensagem',
+      'forum.bodyPh': 'Compartilhe um setup, uma pergunta, um conceito ICT…',
+      'forum.addImage': 'Adicionar imagem do gráfico',
+      'forum.removeImage': 'Remover',
+      'forum.publish': 'Publicar',
+      'forum.cancel': 'Cancelar',
+      'forum.publishing': 'Verificando e publicando…',
+      'forum.postsLeft': 'publicações restantes hoje',
+      'forum.noPostsLeft': 'Você já usou suas 2 publicações de hoje. Volte amanhã.',
+      'forum.back': 'Voltar ao feed',
+      'forum.loadMore': 'Carregar mais',
+      'forum.comments': 'Comentários',
+      'forum.noComments': 'Ainda não há comentários — inicie a conversa.',
+      'forum.commentPh': 'Escreva um comentário…',
+      'forum.replyPh': 'Escreva uma resposta…',
+      'forum.reply': 'Responder',
+      'forum.send': 'Enviar',
+      'forum.sending': 'Enviando…',
+      'forum.save': 'Salvar',
+      'forum.savedBtn': 'Salvo',
+      'forum.pdf': 'PDF',
+      'forum.delete': 'Excluir',
+      'forum.deleteConfirm': 'Excluir isto? Não pode ser desfeito.',
+      'forum.justNow': 'agora mesmo',
+      'forum.blockedTitle': 'Conteúdo bloqueado',
+      'forum.warnNote': 'Isto foi registrado. Infrações repetidas podem levar à remoção da plataforma.',
+      'forum.block.insult': 'Bloqueado por insultos ou ataques pessoais.',
+      'forum.block.profanity': 'Bloqueado por linguagem agressiva ou vulgar.',
+      'forum.block.offtopic': 'Bloqueado — este fórum é apenas para trading.',
+      'forum.block.spam': 'Bloqueado — isto parece spam.',
+      'forum.block.sexual': 'Bloqueado por conteúdo sexual ou gráfico.',
+      'forum.block.hate': 'Bloqueado por discurso de ódio.',
+      'forum.block.generic': 'Seu conteúdo foi bloqueado pela moderação.',
+      'forum.block.spamRate': 'Mais devagar — você está publicando rápido demais.',
+      'forum.img.blocked': 'Imagem bloqueada — apenas gráficos de trading e capturas de plataformas são permitidos.',
+      'forum.img.format': 'Envie uma imagem JPG, PNG ou WebP.',
+      'forum.img.large': 'Imagem muito grande (máx. 8 MB).',
+      'forum.error': 'Algo deu errado. Tente novamente.',
       'indicators.title': 'Indicadores',
       'indicators.desc': 'Acesse uma biblioteca selecionada de indicadores de trading baseados na metodologia ICT.',
       'scout.title': 'Prop Firm Scout',
@@ -2204,29 +2619,40 @@
   function setupFeaturePanels() {
     const isPremium = U.plan === 'premium';
     document.querySelectorAll('.feature-view').forEach(view => {
+      const panel   = view.querySelector('.feature-panel');
+      const realApp = view.querySelector('.forum-app');  // a built feature (currently: forum)
       const badge   = view.querySelector('.feature-badge');
       const circle  = view.querySelector('.feature-circle');
-      const state   = view.querySelector('.feat-state');
+      const state    = view.querySelector('.feat-state');
       const lockIc  = view.querySelector('.ic-lock');
       const soonIc  = view.querySelector('.ic-soon');
       const upgrade = view.querySelector('.feature-upgrade');
 
-      if (isPremium) {
-        badge.className = 'feature-badge soon';
-        badge.setAttribute('data-i18n', 'feature.soon');
-        circle.className = 'feature-circle soon';
-        state.setAttribute('data-i18n', 'feature.soonMsg');
-        lockIc.style.display = 'none';
-        soonIc.style.display = 'block';
-        upgrade.style.display = 'none';
+      // Premium members get the real feature where it exists (Forum). The
+      // locked/coming-soon panel is only shown when there is no real app.
+      if (isPremium && realApp) {
+        if (panel) panel.style.display = 'none';
+        realApp.style.display = 'block';
       } else {
-        badge.className = 'feature-badge premium';
-        badge.setAttribute('data-i18n', 'feature.premium');
-        circle.className = 'feature-circle premium';
-        state.setAttribute('data-i18n', 'feature.lockedMsg');
-        lockIc.style.display = 'block';
-        soonIc.style.display = 'none';
-        upgrade.style.display = 'inline-block';
+        if (panel) panel.style.display = '';
+        if (realApp) realApp.style.display = 'none';
+        if (isPremium) {
+          badge.className = 'feature-badge soon';
+          badge.setAttribute('data-i18n', 'feature.soon');
+          circle.className = 'feature-circle soon';
+          state.setAttribute('data-i18n', 'feature.soonMsg');
+          lockIc.style.display = 'none';
+          soonIc.style.display = 'block';
+          upgrade.style.display = 'none';
+        } else {
+          badge.className = 'feature-badge premium';
+          badge.setAttribute('data-i18n', 'feature.premium');
+          circle.className = 'feature-circle premium';
+          state.setAttribute('data-i18n', 'feature.lockedMsg');
+          lockIc.style.display = 'block';
+          soonIc.style.display = 'none';
+          upgrade.style.display = 'inline-block';
+        }
       }
     });
     // Hide tab lock icons for Premium users
@@ -2243,12 +2669,506 @@
     document.querySelectorAll('.feature-view').forEach(v => {
       v.style.display = (v.id === tab + '-view') ? 'block' : 'none';
     });
+    if (tab === 'forum' && U.plan === 'premium' && window.Forum) window.Forum.open();
     if (isFeature) window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   document.querySelectorAll('.tab').forEach(t => {
     t.addEventListener('click', () => switchTab(t.dataset.tab));
   });
+
+  // ══════════════════════════════════════════════════════════════════════
+  // TRADING FORUM (Premium) — feed, composer, threaded comments, reactions
+  // ══════════════════════════════════════════════════════════════════════
+  (function () {
+    const root = document.getElementById('forum-app');
+    if (!root) return;
+
+    const REACTIONS = [
+      { key: 'like',  glyph: '👍' },
+      { key: 'love',  glyph: '❤️' },
+      { key: 'fire',  glyph: '🔥' },
+      { key: 'chart', glyph: '📈' },
+      { key: 'think', glyph: '🤔' },
+    ];
+    const SVG_COMMENT  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
+    const SVG_BOOKMARK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>';
+    const SVG_PDF      = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>';
+    const SVG_TRASH    = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+    const SVG_REPLY    = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>';
+
+    // DOM refs
+    const listView   = document.getElementById('forum-list-view');
+    const detailView = document.getElementById('forum-detail-view');
+    const feedEl     = document.getElementById('forum-feed');
+    const emptyEl    = document.getElementById('forum-empty');
+    const loadMore   = document.getElementById('forum-loadmore');
+    const leftEl     = document.getElementById('forum-left');
+    const newBtn     = document.getElementById('forum-new-btn');
+    const composer   = document.getElementById('forum-composer');
+    const titleInput = document.getElementById('post-title');
+    const bodyInput  = document.getElementById('post-body');
+    const imageInput = document.getElementById('post-image');
+    const imgWrap    = document.getElementById('composer-img-wrap');
+    const imgPreview = document.getElementById('composer-img-preview');
+    const imgRemove  = document.getElementById('post-img-remove');
+    const publishBtn = document.getElementById('composer-publish');
+    const cancelBtn  = document.getElementById('composer-cancel');
+    const composerErr= document.getElementById('composer-error');
+    const detailEl   = document.getElementById('forum-detail');
+    const treeEl     = document.getElementById('comments-tree');
+    const commentCnt = document.getElementById('comment-count');
+    const rootComment= document.getElementById('root-comment');
+    const rootSend   = document.getElementById('root-comment-send');
+    const commentErr = document.getElementById('comment-error');
+
+    const state = { feed: 'all', page: 1, hasMore: false, loading: false, loaded: false };
+    let currentPostId = null;
+
+    // ── Helpers ──
+    async function api(url, opts) {
+      opts = opts || {};
+      const init = { method: opts.method || 'GET' };
+      if (opts.form) init.body = opts.form;
+      try {
+        const res = await fetch(url, init);
+        const data = await res.json().catch(() => ({}));
+        return { ok: res.ok, status: res.status, data };
+      } catch (e) {
+        return { ok: false, status: 0, data: {} };
+      }
+    }
+
+    function fmtTime(iso) {
+      const t = new Date(iso).getTime();
+      const m = Math.floor(Math.max(0, Date.now() - t) / 60000);
+      if (m < 1) return T('forum.justNow');
+      if (m < 60) return m + ' min';
+      const h = Math.floor(m / 60);
+      if (h < 24) return h + ' h';
+      const d = Math.floor(h / 24);
+      if (d < 30) return d + ' d';
+      return new Date(iso).toLocaleDateString(currentLang);
+    }
+
+    function avatar(name, cls) {
+      const el = document.createElement('div');
+      el.className = cls;
+      el.textContent = ((name || '?').trim().charAt(0)) || '?';
+      return el;
+    }
+
+    function blockReason(data) {
+      if (data.error === 'spam')
+        return { msg: T('forum.block.spamRate'), warn: true };
+      if (data.error === 'image_blocked') {
+        if (data.reason === 'format')    return { msg: T('forum.img.format'), warn: false };
+        if (data.reason === 'too_large') return { msg: T('forum.img.large'),  warn: false };
+        return { msg: T('forum.img.blocked'), warn: true };
+      }
+      if (data.error === 'blocked') {
+        const key = 'forum.block.' + (data.category || 'generic');
+        let m = T(key);
+        if (m === key) m = T('forum.block.generic');
+        return { msg: m, warn: true };
+      }
+      if (data.error === 'daily_limit') return { msg: T('forum.noPostsLeft'), warn: false };
+      if (data.error === 'too_short')   return { msg: T('forum.error'), warn: false };
+      return { msg: T('forum.error'), warn: false };
+    }
+
+    function showErr(box, data) {
+      const r = blockReason(data);
+      box.innerHTML = '';
+      const span = document.createElement('span');
+      span.textContent = r.msg;
+      box.appendChild(span);
+      if (r.warn) {
+        const sub = document.createElement('span');
+        sub.className = 'warn-sub';
+        sub.textContent = T('forum.warnNote');
+        box.appendChild(sub);
+      }
+      box.style.display = 'block';
+    }
+
+    function actionBtn(svg, label, count) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'post-action';
+      b.innerHTML = svg;
+      if (label) { const s = document.createElement('span'); s.textContent = label; b.appendChild(s); }
+      if (count) { const s = document.createElement('span'); s.textContent = count; b.appendChild(s); }
+      return b;
+    }
+
+    function buildReactBar(reactions, mine, target) {
+      const bar = document.createElement('div');
+      bar.className = 'react-bar';
+      REACTIONS.forEach(r => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'react-btn' + (mine === r.key ? ' mine' : '');
+        const g = document.createElement('span'); g.textContent = r.glyph; btn.appendChild(g);
+        const c = document.createElement('span'); c.className = 'rc';
+        c.textContent = (reactions && reactions[r.key]) ? reactions[r.key] : '';
+        btn.appendChild(c);
+        btn.addEventListener('click', e => { e.stopPropagation(); toggleReaction(r.key, target, bar); });
+        bar.appendChild(btn);
+      });
+      return bar;
+    }
+
+    async function toggleReaction(emoji, target, barEl) {
+      const form = new FormData();
+      form.append('emoji', emoji);
+      if (target.post_id)    form.append('post_id', target.post_id);
+      if (target.comment_id) form.append('comment_id', target.comment_id);
+      const { ok, data } = await api('/forum/react', { method: 'POST', form });
+      if (!ok) return;
+      barEl.replaceWith(buildReactBar(data.counts || {}, data.mine, target));
+    }
+
+    async function toggleSave(id, btn) {
+      const form = new FormData(); form.append('post_id', id);
+      const { ok, data } = await api('/forum/save', { method: 'POST', form });
+      if (!ok) return;
+      btn.classList.toggle('active', data.saved);
+      const label = btn.querySelector('span');
+      if (label) label.textContent = data.saved ? T('forum.savedBtn') : T('forum.save');
+      if (state.feed === 'saved' && !data.saved && detailView.style.display === 'none') loadFeed(true);
+    }
+
+    async function deletePost(id, cardEl) {
+      if (!window.confirm(T('forum.deleteConfirm'))) return;
+      const { ok } = await api('/forum/post/' + id + '/delete', { method: 'POST' });
+      if (!ok) return;
+      if (detailView.style.display !== 'none') { backToList(); loadFeed(true); }
+      else if (cardEl) cardEl.remove();
+    }
+
+    async function deleteComment(id) {
+      if (!window.confirm(T('forum.deleteConfirm'))) return;
+      const { ok } = await api('/forum/comment/' + id + '/delete', { method: 'POST' });
+      if (ok) openPost(currentPostId);
+    }
+
+    // ── PDF export ──
+    function loadImageData(url) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          const c = document.createElement('canvas');
+          c.width = img.naturalWidth; c.height = img.naturalHeight;
+          c.getContext('2d').drawImage(img, 0, 0);
+          resolve({ data: c.toDataURL('image/jpeg', 0.92), w: img.naturalWidth, h: img.naturalHeight });
+        };
+        img.onerror = reject;
+        img.src = url;
+      });
+    }
+
+    async function exportPdf(p) {
+      const jsPDFns = window.jspdf;
+      if (!jsPDFns || !jsPDFns.jsPDF) return;
+      const doc = new jsPDFns.jsPDF({ unit: 'pt', format: 'a4' });
+      const margin = 48;
+      const pageW = doc.internal.pageSize.getWidth();
+      const pageH = doc.internal.pageSize.getHeight();
+      const width = pageW - margin * 2;
+      let y = margin;
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(16); doc.setTextColor(20);
+      doc.splitTextToSize(p.title, width).forEach(l => { doc.text(l, margin, y); y += 22; });
+      y += 4;
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(120);
+      doc.text((p.author || '') + '  ·  ' + new Date(p.created_at).toLocaleString(), margin, y); y += 22;
+      doc.setFontSize(11); doc.setTextColor(30);
+      doc.splitTextToSize(p.body || '', width).forEach(line => {
+        if (y > pageH - margin) { doc.addPage(); y = margin; }
+        doc.text(line, margin, y); y += 16;
+      });
+      if (p.image) {
+        try {
+          const im = await loadImageData(p.image);
+          const h = im.h * (width / im.w);
+          if (y + 12 + h > pageH - margin) { doc.addPage(); y = margin; } else { y += 12; }
+          doc.addImage(im.data, 'JPEG', margin, y, width, h);
+        } catch (e) { /* skip image on failure */ }
+      }
+      doc.setFontSize(8); doc.setTextColor(150);
+      doc.text('Scalpel — Trading Forum · For educational purposes only', margin, pageH - 24);
+      doc.save('scalpel-forum-' + p.id + '.pdf');
+    }
+
+    // ── Rendering ──
+    function postFooter(p, isDetail) {
+      const foot = document.createElement('div');
+      foot.className = 'post-foot';
+      foot.appendChild(buildReactBar(p.reactions || {}, p.my_reaction, { post_id: p.id }));
+      const spacer = document.createElement('div'); spacer.className = 'foot-spacer'; foot.appendChild(spacer);
+
+      const cc = actionBtn(SVG_COMMENT, '', p.comment_count || 0);
+      cc.addEventListener('click', e => { e.stopPropagation(); if (!isDetail) openPost(p.id); });
+      foot.appendChild(cc);
+
+      const save = actionBtn(SVG_BOOKMARK, p.saved ? T('forum.savedBtn') : T('forum.save'));
+      if (p.saved) save.classList.add('active');
+      save.addEventListener('click', e => { e.stopPropagation(); toggleSave(p.id, save); });
+      foot.appendChild(save);
+
+      if (isDetail) {
+        const pdf = actionBtn(SVG_PDF, T('forum.pdf'));
+        pdf.addEventListener('click', e => { e.stopPropagation(); exportPdf(p); });
+        foot.appendChild(pdf);
+      }
+      if (p.is_mine) {
+        const del = actionBtn(SVG_TRASH, T('forum.delete'));
+        del.classList.add('danger');
+        del.addEventListener('click', e => { e.stopPropagation(); deletePost(p.id, isDetail ? null : foot.closest('.post-card')); });
+        foot.appendChild(del);
+      }
+      return foot;
+    }
+
+    function postHeader(p, avatarCls) {
+      const top = document.createElement('div'); top.className = 'post-top';
+      top.appendChild(avatar(p.author, avatarCls || 'post-avatar'));
+      const meta = document.createElement('div');
+      const a = document.createElement('div'); a.className = 'post-author'; a.textContent = p.author;
+      const t = document.createElement('div'); t.className = 'post-time'; t.textContent = fmtTime(p.created_at);
+      meta.appendChild(a); meta.appendChild(t); top.appendChild(meta);
+      return top;
+    }
+
+    function renderPostCard(p) {
+      const card = document.createElement('div'); card.className = 'post-card';
+      card.appendChild(postHeader(p));
+      const title = document.createElement('div'); title.className = 'post-title'; title.textContent = p.title; card.appendChild(title);
+      const body = document.createElement('div'); body.className = 'post-body preview';
+      body.textContent = (p.body || '') + (p.truncated ? '…' : ''); card.appendChild(body);
+      if (p.image) { const img = document.createElement('img'); img.className = 'post-img'; img.src = p.image; img.alt = ''; card.appendChild(img); }
+      card.appendChild(postFooter(p, false));
+      card.addEventListener('click', () => openPost(p.id));
+      return card;
+    }
+
+    function renderDetail(p) {
+      detailEl.innerHTML = '';
+      const card = document.createElement('div'); card.className = 'detail-card';
+      card.appendChild(postHeader(p));
+      const title = document.createElement('div'); title.className = 'post-title'; title.style.fontSize = '20px'; title.textContent = p.title; card.appendChild(title);
+      const body = document.createElement('div'); body.className = 'post-body'; body.textContent = p.body || ''; card.appendChild(body);
+      if (p.image) { const img = document.createElement('img'); img.className = 'post-img'; img.src = p.image; img.alt = ''; card.appendChild(img); }
+      card.appendChild(postFooter(p, true));
+      detailEl.appendChild(card);
+    }
+
+    function renderComment(c) {
+      const wrap = document.createElement('div'); wrap.className = 'comment';
+      const head = document.createElement('div'); head.className = 'comment-head';
+      if (!c.deleted) head.appendChild(avatar(c.author, 'comment-avatar'));
+      const au = document.createElement('span'); au.className = 'comment-author'; au.textContent = c.deleted ? '' : c.author;
+      const tm = document.createElement('span'); tm.className = 'comment-time'; tm.textContent = fmtTime(c.created_at);
+      head.appendChild(au); head.appendChild(tm); wrap.appendChild(head);
+
+      const body = document.createElement('div');
+      body.className = 'comment-body' + (c.deleted ? ' deleted' : '');
+      body.textContent = c.body;
+      wrap.appendChild(body);
+
+      if (!c.deleted) {
+        const foot = document.createElement('div'); foot.className = 'comment-foot';
+        foot.appendChild(buildReactBar(c.reactions || {}, c.my_reaction, { comment_id: c.id }));
+        const reply = actionBtn(SVG_REPLY, T('forum.reply'));
+        reply.addEventListener('click', () => toggleReplyBox(wrap, c.id, children));
+        foot.appendChild(reply);
+        if (c.is_mine) {
+          const del = actionBtn(SVG_TRASH, T('forum.delete'));
+          del.classList.add('danger');
+          del.addEventListener('click', () => deleteComment(c.id));
+          foot.appendChild(del);
+        }
+        wrap.appendChild(foot);
+      }
+
+      const children = document.createElement('div'); children.className = 'comment-children';
+      wrap.appendChild(children);
+      return { wrap: wrap, children: children };
+    }
+
+    function toggleReplyBox(wrap, parentId, childrenEl) {
+      const existing = wrap.querySelector(':scope > .reply-box');
+      if (existing) { existing.remove(); return; }
+      const box = document.createElement('div'); box.className = 'reply-box';
+      const ta = document.createElement('textarea'); ta.rows = 2; ta.placeholder = T('forum.replyPh');
+      const send = document.createElement('button'); send.className = 'forum-btn primary'; send.type = 'button'; send.textContent = T('forum.reply');
+      box.appendChild(ta); box.appendChild(send);
+      const err = document.createElement('div'); err.className = 'comment-error'; err.style.display = 'none'; err.style.marginTop = '8px';
+      wrap.insertBefore(box, childrenEl);
+      wrap.insertBefore(err, childrenEl);
+      ta.focus();
+      send.addEventListener('click', async () => {
+        const v = ta.value.trim(); if (!v) return;
+        err.style.display = 'none';
+        send.disabled = true; send.textContent = T('forum.sending');
+        const res = await submitComment(v, parentId);
+        send.disabled = false; send.textContent = T('forum.reply');
+        if (res.ok) openPost(currentPostId);
+        else showErr(err, res.data);
+      });
+    }
+
+    function renderComments(comments) {
+      const live = comments.filter(c => !c.deleted).length;
+      commentCnt.textContent = '(' + live + ')';
+      treeEl.innerHTML = '';
+      if (!comments.length) {
+        const e = document.createElement('div'); e.className = 'forum-empty'; e.textContent = T('forum.noComments');
+        treeEl.appendChild(e); return;
+      }
+      const byParent = {};
+      comments.forEach(c => { const k = c.parent_id || 0; (byParent[k] = byParent[k] || []).push(c); });
+      (function build(parentId, container) {
+        (byParent[parentId] || []).forEach(c => {
+          const node = renderComment(c);
+          container.appendChild(node.wrap);
+          build(c.id, node.children);
+        });
+      })(0, treeEl);
+    }
+
+    // ── Actions ──
+    async function submitComment(body, parentId) {
+      const form = new FormData(); form.append('body', body);
+      if (parentId) form.append('parent_id', parentId);
+      return api('/forum/post/' + currentPostId + '/comment', { method: 'POST', form });
+    }
+
+    async function submitPost() {
+      const title = titleInput.value.trim();
+      const body = bodyInput.value.trim();
+      composerErr.style.display = 'none';
+      if (title.length < 4 || body.length < 10) { showErr(composerErr, { error: 'too_short' }); return; }
+      const form = new FormData();
+      form.append('title', title); form.append('body', body);
+      if (imageInput.files[0]) form.append('image', imageInput.files[0]);
+      publishBtn.disabled = true;
+      const orig = publishBtn.textContent; publishBtn.textContent = T('forum.publishing');
+      const { ok, data } = await api('/forum/post', { method: 'POST', form });
+      publishBtn.disabled = false; publishBtn.textContent = orig;
+      if (ok) {
+        titleInput.value = ''; bodyInput.value = ''; clearImage();
+        composer.style.display = 'none';
+        if (state.feed !== 'all') setFeed('all'); else loadFeed(true);
+        updatePostsLeft(data.posts_left_today);
+      } else {
+        showErr(composerErr, data);
+      }
+    }
+
+    function updatePostsLeft(n) {
+      if (n === undefined || n === null) return;
+      leftEl.innerHTML = '';
+      const b = document.createElement('b'); b.textContent = n;
+      leftEl.appendChild(b);
+      leftEl.appendChild(document.createTextNode(' ' + T('forum.postsLeft')));
+      newBtn.disabled = n <= 0;
+      newBtn.style.opacity = n <= 0 ? '0.55' : '';
+    }
+
+    async function loadFeed(reset) {
+      if (state.loading) return;
+      if (reset) { state.page = 1; feedEl.innerHTML = ''; }
+      state.loading = true;
+      const url = '/forum/feed?page=' + state.page + (state.feed === 'saved' ? '&saved=1' : '');
+      const { ok, data } = await api(url);
+      state.loading = false;
+      if (!ok) return;
+      updatePostsLeft(data.posts_left_today);
+      if (reset && (!data.posts || !data.posts.length)) {
+        emptyEl.textContent = state.feed === 'saved' ? T('forum.emptySaved') : T('forum.empty');
+        emptyEl.style.display = 'block';
+        loadMore.style.display = 'none';
+        return;
+      }
+      emptyEl.style.display = 'none';
+      (data.posts || []).forEach(p => feedEl.appendChild(renderPostCard(p)));
+      state.hasMore = !!data.has_more;
+      loadMore.style.display = data.has_more ? 'block' : 'none';
+    }
+
+    async function openPost(id) {
+      currentPostId = id;
+      const { ok, data } = await api('/forum/post/' + id);
+      if (!ok) { backToList(); return; }
+      renderDetail(data.post);
+      renderComments(data.comments || []);
+      commentErr.style.display = 'none';
+      rootComment.value = '';
+      listView.style.display = 'none';
+      detailView.style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function backToList() {
+      detailView.style.display = 'none';
+      listView.style.display = 'block';
+    }
+
+    function setFeed(feed) {
+      state.feed = feed;
+      document.querySelectorAll('.forum-tab').forEach(t => t.classList.toggle('active', t.dataset.feed === feed));
+      loadFeed(true);
+    }
+
+    function clearImage() {
+      imageInput.value = '';
+      imgPreview.src = '';
+      imgWrap.style.display = 'none';
+    }
+
+    // ── Wiring ──
+    newBtn.addEventListener('click', () => {
+      const open = composer.style.display !== 'none';
+      composer.style.display = open ? 'none' : 'block';
+      composerErr.style.display = 'none';
+      if (!open) titleInput.focus();
+    });
+    cancelBtn.addEventListener('click', () => {
+      composer.style.display = 'none';
+      titleInput.value = ''; bodyInput.value = ''; clearImage();
+      composerErr.style.display = 'none';
+    });
+    publishBtn.addEventListener('click', submitPost);
+    imgRemove.addEventListener('click', clearImage);
+    imageInput.addEventListener('change', () => {
+      const f = imageInput.files[0];
+      if (!f) { clearImage(); return; }
+      if (f.size > 8 * 1024 * 1024) { showErr(composerErr, { error: 'image_blocked', reason: 'too_large' }); clearImage(); return; }
+      imgPreview.src = URL.createObjectURL(f);
+      imgWrap.style.display = 'block';
+    });
+    document.querySelectorAll('.forum-tab').forEach(t => t.addEventListener('click', () => setFeed(t.dataset.feed)));
+    loadMore.addEventListener('click', () => { state.page += 1; loadFeed(false); });
+    document.getElementById('forum-back').addEventListener('click', backToList);
+    rootSend.addEventListener('click', async () => {
+      const v = rootComment.value.trim(); if (!v) return;
+      commentErr.style.display = 'none';
+      rootSend.disabled = true; const orig = rootSend.textContent; rootSend.textContent = T('forum.sending');
+      const res = await submitComment(v, null);
+      rootSend.disabled = false; rootSend.textContent = orig;
+      if (res.ok) openPost(currentPostId);
+      else showErr(commentErr, res.data);
+    });
+
+    window.Forum = {
+      open: function () {
+        backToList();
+        if (!state.loaded) { state.loaded = true; loadFeed(true); }
+      }
+    };
+  })();
 
   // ── Init: apply saved preferences on load ──
   applyTheme(currentTheme);

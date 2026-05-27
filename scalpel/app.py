@@ -3,6 +3,7 @@ import json
 import base64
 import socket
 import secrets
+from functools import wraps
 from datetime import datetime, timedelta, timezone
 
 from flask import (
@@ -107,6 +108,55 @@ class UsageLog(db.Model):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
 
 
+# ── Trading Forum (premium-only community) ──
+class ForumPost(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    title = db.Column(db.String(160), nullable=False)
+    body = db.Column(db.Text, nullable=False)
+    image_path = db.Column(db.String(255), nullable=True)  # relative to /static/
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    is_deleted = db.Column(db.Boolean, default=False, nullable=False)
+    user = db.relationship('User', backref='forum_posts')
+
+
+class ForumComment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('forum_post.id'), nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    parent_id = db.Column(db.Integer, db.ForeignKey('forum_comment.id'), nullable=True, index=True)
+    body = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    is_deleted = db.Column(db.Boolean, default=False, nullable=False)
+    user = db.relationship('User')
+
+
+class ForumReaction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('forum_post.id'), nullable=True, index=True)
+    comment_id = db.Column(db.Integer, db.ForeignKey('forum_comment.id'), nullable=True, index=True)
+    emoji = db.Column(db.String(16), nullable=False)  # like / love / fire / chart / think
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class SavedPost(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('forum_post.id'), nullable=False, index=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class ModWarning(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    reason = db.Column(db.String(64), nullable=False)    # category: insult / offtopic / spam ...
+    detail = db.Column(db.String(300), nullable=True)    # short human explanation
+    excerpt = db.Column(db.Text, nullable=True)          # the blocked content snippet
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    user = db.relationship('User', backref='warnings')
+
+
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, int(user_id))
@@ -137,6 +187,22 @@ def current_plan():
     if current_user.is_authenticated:
         return current_user.plan
     return 'free'
+
+
+def is_premium():
+    return current_user.is_authenticated and (current_user.plan == 'premium' or current_user.is_admin)
+
+
+def premium_required(fn):
+    """JSON guard for premium-only API endpoints (Trading Forum, Prop Firm Scout)."""
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return jsonify({'error': 'unauthorized'}), 401
+        if not is_premium():
+            return jsonify({'error': 'premium_required'}), 403
+        return fn(*args, **kwargs)
+    return wrapper
 
 
 def _as_utc(dt):
@@ -386,6 +452,103 @@ def parse_validation(raw):
 
 
 # ──────────────────────────────────────────────────────────────────────────
+# FORUM CONTENT MODERATION (AI gate, runs BEFORE anything is published)
+# ──────────────────────────────────────────────────────────────────────────
+FORUM_TEXT_MOD_PROMPT = """You are the content moderator for a PRIVATE TRADING FORUM (ICT methodology, futures, forex, indices, prop firms). Members discuss trading strategies, methodologies, setups, market analysis, trading psychology, prop firms, and ask each other for advice. The forum is multilingual (English, Spanish, French, Portuguese) — judge content in whatever language it is written.
+
+Decide whether a submitted post or comment is ALLOWED to be published.
+
+BLOCK (allowed=false) if the content contains ANY of:
+- Insults, harassment, personal attacks, name-calling, hate speech, or threats toward another person
+- Aggressive vulgar/profane language
+- Content clearly UNRELATED to trading or markets (politics, religion debates, dating, random chatter, unrelated advertising, links to unrelated sites)
+- Spam, scams, "pump" schemes, signal-selling solicitation, or referral farming
+- Sexual or graphic content
+
+ALLOW (allowed=true) normal trading discussion — including content that is critical of a strategy, an indicator, or a prop firm — as long as it stays civil and on-topic. Mild venting about losses or frustration with the market is fine. On-topic + civil = allowed.
+
+Respond with ONLY a raw JSON object, no markdown, exactly:
+{"allowed": true, "category": "ok", "reason": ""}
+When blocking, category is one of: "insult", "profanity", "offtopic", "spam", "sexual", "hate". reason = a short human-readable explanation (max 12 words, in English)."""
+
+
+FORUM_IMAGE_MOD_PROMPT = """You decide whether an uploaded image is appropriate for a TRADING forum where members share their charts and setups.
+
+ALLOW (allowed=true): trading chart screenshots (TradingView, NinjaTrader, MT4/MT5, ThinkOrSwim, etc.), candlestick or line charts, annotated charts, order/position panels, broker or prop-firm account dashboards, P&L screens, economic calendars, or any clearly trading-related screenshot.
+
+BLOCK (allowed=false): selfies or photos of people, memes unrelated to trading, random photographs, screenshots of non-trading apps (chats, social media, games), explicit/graphic content, or advertisements for unrelated products.
+
+Respond with ONLY a raw JSON object, no markdown:
+{"allowed": true, "reason": ""}  or  {"allowed": false, "reason": "short reason in English"}"""
+
+
+def _parse_mod_json(raw):
+    text = (raw or '').strip()
+    if '```' in text:
+        parts = text.split('```')
+        if len(parts) >= 2:
+            text = parts[1]
+            if text.lstrip().lower().startswith('json'):
+                text = text.lstrip()[4:]
+    start = text.find('{')
+    end = text.rfind('}')
+    if start != -1 and end != -1:
+        text = text[start:end + 1]
+    try:
+        d = json.loads(text.strip())
+        return {
+            'ok': bool(d.get('allowed', True)),
+            'category': str(d.get('category', 'ok')),
+            'reason': str(d.get('reason', '')),
+        }
+    except Exception:
+        return {'ok': True, 'category': 'ok', 'reason': ''}
+
+
+def moderate_forum_text(text, kind='post'):
+    """Return {'ok','category','reason'}. Fails OPEN on API error (post is allowed but logged)."""
+    try:
+        resp = client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {"role": "system", "content": FORUM_TEXT_MOD_PROMPT},
+                {"role": "user", "content": f"Content type: {kind}\n\nContent to moderate:\n\"\"\"\n{text}\n\"\"\""},
+            ],
+            max_tokens=120,
+            temperature=0,
+        )
+        return _parse_mod_json(resp.choices[0].message.content)
+    except Exception as exc:
+        app.logger.warning('Forum text moderation failed (allowing): %s', exc)
+        return {'ok': True, 'category': 'ok', 'reason': ''}
+
+
+def moderate_forum_image(image_data_b64, content_type):
+    """Return {'ok','reason'}. Fails OPEN on API error."""
+    try:
+        resp = client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {"role": "system", "content": FORUM_IMAGE_MOD_PROMPT},
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "Is this image appropriate for a trading forum? Return only the JSON."},
+                        {"type": "image_url", "image_url": {"url": f"data:{content_type};base64,{image_data_b64}"}},
+                    ],
+                },
+            ],
+            max_tokens=80,
+            temperature=0,
+        )
+        d = _parse_mod_json(resp.choices[0].message.content)
+        return {'ok': d['ok'], 'reason': d['reason']}
+    except Exception as exc:
+        app.logger.warning('Forum image moderation failed (allowing): %s', exc)
+        return {'ok': True, 'reason': ''}
+
+
+# ──────────────────────────────────────────────────────────────────────────
 # PUBLIC / ENTRY ROUTES
 # ──────────────────────────────────────────────────────────────────────────
 def _has_splash_pass():
@@ -545,7 +708,33 @@ def admin():
         'standard': sum(1 for u in users if u.plan == 'standard'),
         'free': sum(1 for u in users if u.plan == 'free'),
     }
-    return render_template('admin.html', users=users, counts=counts)
+
+    # ── Moderation: warning counts per user + recent flag feed ──
+    all_warnings = ModWarning.query.order_by(ModWarning.created_at.desc()).all()
+    warn_counts = {}
+    for w in all_warnings:
+        warn_counts[w.user_id] = warn_counts.get(w.user_id, 0) + 1
+    uname = {u.id: u.username for u in users}
+    recent_warnings = [{
+        'username': uname.get(w.user_id, 'unknown'),
+        'user_id': w.user_id,
+        'reason': w.reason,
+        'detail': w.detail,
+        'excerpt': w.excerpt,
+        'created_at': w.created_at,
+        'count': warn_counts.get(w.user_id, 0),
+    } for w in all_warnings[:60]]
+    # Users with 2+ warnings are surfaced as "at risk"
+    flagged = sorted(
+        [{'username': uname.get(uid, 'unknown'), 'user_id': uid, 'count': c}
+         for uid, c in warn_counts.items() if c >= 2],
+        key=lambda x: x['count'], reverse=True,
+    )
+
+    return render_template(
+        'admin.html', users=users, counts=counts,
+        warn_counts=warn_counts, recent_warnings=recent_warnings, flagged=flagged,
+    )
 
 
 @app.route('/admin/set-plan', methods=['POST'])
@@ -703,6 +892,307 @@ LANGUAGE: Write your entire response in {language}. Keep ICT-specific terms and 
         if '429' in error_msg:
             return jsonify({'error': 'Rate limit reached. Please wait a moment and try again.'}), 429
         return jsonify({'error': f'Analysis failed: {error_msg}'}), 500
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# TRADING FORUM (premium-only community)
+# ──────────────────────────────────────────────────────────────────────────
+EMOJI_SET = {'like', 'love', 'fire', 'chart', 'think'}
+DAILY_POST_LIMIT = 2
+FORUM_FEED_PAGE = 10
+
+
+def record_warning(user_id, category, detail, excerpt):
+    w = ModWarning(
+        user_id=user_id,
+        reason=category or 'other',
+        detail=(detail or '')[:300],
+        excerpt=(excerpt or '')[:1000],
+    )
+    db.session.add(w)
+    db.session.commit()
+
+
+def todays_post_count(user_id):
+    recent = (ForumPost.query.filter_by(user_id=user_id)
+              .order_by(ForumPost.created_at.desc()).limit(20).all())
+    today = datetime.now(timezone.utc).date()
+    return sum(1 for p in recent if _as_utc(p.created_at).date() == today)
+
+
+def detect_comment_spam(user_id, body):
+    """Lightweight spam heuristics. Returns a reason string or None."""
+    recent = (ForumComment.query.filter_by(user_id=user_id, is_deleted=False)
+              .order_by(ForumComment.created_at.desc()).limit(6).all())
+    now = datetime.now(timezone.utc)
+    within_min = [c for c in recent if (now - _as_utc(c.created_at)).total_seconds() <= 60]
+    if len(within_min) >= 5:
+        return 'too many comments in under a minute'
+    norm = body.strip().lower()
+    for c in recent[:3]:
+        if c.body.strip().lower() == norm:
+            return 'repeated identical comment'
+    compact = body.replace(' ', '')
+    if len(compact) >= 10 and len(set(compact)) <= 2:
+        return 'gibberish / keyboard mashing'
+    return None
+
+
+def reaction_summary(kind, obj_id):
+    if kind == 'post':
+        rows = ForumReaction.query.filter_by(post_id=obj_id, comment_id=None).all()
+    else:
+        rows = ForumReaction.query.filter_by(comment_id=obj_id).all()
+    counts = {}
+    mine = None
+    uid = current_user.id
+    for r in rows:
+        counts[r.emoji] = counts.get(r.emoji, 0) + 1
+        if r.user_id == uid:
+            mine = r.emoji
+    return {'counts': counts, 'mine': mine}
+
+
+def serialize_post(p, body=True):
+    rs = reaction_summary('post', p.id)
+    full = p.body or ''
+    return {
+        'id': p.id,
+        'title': p.title,
+        'body': full if body else full[:280],
+        'truncated': (not body) and len(full) > 280,
+        'image': url_for('static', filename=p.image_path) if p.image_path else None,
+        'author': p.user.username if p.user else 'Unknown',
+        'is_mine': p.user_id == current_user.id,
+        'created_at': _as_utc(p.created_at).isoformat(),
+        'comment_count': ForumComment.query.filter_by(post_id=p.id, is_deleted=False).count(),
+        'reactions': rs['counts'],
+        'my_reaction': rs['mine'],
+        'saved': SavedPost.query.filter_by(user_id=current_user.id, post_id=p.id).first() is not None,
+    }
+
+
+def serialize_comment(c):
+    rs = reaction_summary('comment', c.id)
+    return {
+        'id': c.id,
+        'parent_id': c.parent_id,
+        'body': '[deleted]' if c.is_deleted else c.body,
+        'deleted': c.is_deleted,
+        'author': '' if c.is_deleted else (c.user.username if c.user else 'Unknown'),
+        'is_mine': (c.user_id == current_user.id) and not c.is_deleted,
+        'created_at': _as_utc(c.created_at).isoformat(),
+        'reactions': rs['counts'],
+        'my_reaction': rs['mine'],
+    }
+
+
+def save_forum_image(file):
+    """Validate + AI-moderate + persist an uploaded chart image.
+    Returns (ok, relative_path_or_None, error_code)."""
+    allowed = {'image/jpeg', 'image/jpg', 'image/png', 'image/webp'}
+    ct = (file.content_type or 'image/jpeg').lower()
+    if ct not in allowed:
+        return False, None, 'format'
+    data = file.read()
+    if not data:
+        return False, None, 'empty'
+    if len(data) > 8 * 1024 * 1024:
+        return False, None, 'too_large'
+    b64 = base64.b64encode(data).decode('utf-8')
+    check = moderate_forum_image(b64, ct)
+    if not check['ok']:
+        return False, None, 'not_chart'
+    ext = {'image/jpeg': 'jpg', 'image/jpg': 'jpg', 'image/png': 'png', 'image/webp': 'webp'}[ct]
+    folder = os.path.join(BASE_DIR, 'static', 'uploads', 'forum')
+    os.makedirs(folder, exist_ok=True)
+    basename = f"{secrets.token_urlsafe(16)}.{ext}"
+    with open(os.path.join(folder, basename), 'wb') as f:
+        f.write(data)
+    return True, f"uploads/forum/{basename}", None
+
+
+@app.route('/forum/feed')
+@premium_required
+def forum_feed():
+    try:
+        page = max(1, int(request.args.get('page', 1)))
+    except (TypeError, ValueError):
+        page = 1
+    saved_only = request.args.get('saved') == '1'
+    q = ForumPost.query.filter_by(is_deleted=False)
+    if saved_only:
+        saved_ids = [s.post_id for s in SavedPost.query.filter_by(user_id=current_user.id).all()]
+        q = q.filter(ForumPost.id.in_(saved_ids or [-1]))
+    q = q.order_by(ForumPost.created_at.desc())
+    rows = q.offset((page - 1) * FORUM_FEED_PAGE).limit(FORUM_FEED_PAGE + 1).all()
+    has_more = len(rows) > FORUM_FEED_PAGE
+    rows = rows[:FORUM_FEED_PAGE]
+    return jsonify({
+        'posts': [serialize_post(p, body=False) for p in rows],
+        'has_more': has_more,
+        'posts_left_today': max(0, DAILY_POST_LIMIT - todays_post_count(current_user.id)),
+    })
+
+
+@app.route('/forum/post/<int:pid>')
+@premium_required
+def forum_post_detail(pid):
+    post = ForumPost.query.filter_by(id=pid, is_deleted=False).first()
+    if not post:
+        return jsonify({'error': 'not_found'}), 404
+    comments = (ForumComment.query.filter_by(post_id=pid)
+                .order_by(ForumComment.created_at.asc()).all())
+    # Hide deleted comments that have no surviving replies (keep ones needed for thread shape)
+    return jsonify({
+        'post': serialize_post(post, body=True),
+        'comments': [serialize_comment(c) for c in comments],
+    })
+
+
+@app.route('/forum/post', methods=['POST'])
+@premium_required
+def forum_create_post():
+    if todays_post_count(current_user.id) >= DAILY_POST_LIMIT:
+        return jsonify({'error': 'daily_limit', 'limit': DAILY_POST_LIMIT}), 429
+
+    title = (request.form.get('title') or '').strip()
+    body = (request.form.get('body') or '').strip()
+    if len(title) < 4 or len(body) < 10:
+        return jsonify({'error': 'too_short'}), 400
+    title = title[:160]
+    body = body[:8000]
+
+    mod = moderate_forum_text(f"TITLE: {title}\n\nBODY: {body}", 'post')
+    if not mod['ok']:
+        record_warning(current_user.id, mod['category'], mod['reason'], f"{title} — {body}")
+        return jsonify({'error': 'blocked', 'category': mod['category'], 'reason': mod['reason']}), 422
+
+    image_path = None
+    file = request.files.get('image')
+    if file and file.filename:
+        ok, rel, err = save_forum_image(file)
+        if not ok:
+            if err == 'not_chart':
+                record_warning(current_user.id, 'image', 'Non-trading image upload blocked', title)
+            return jsonify({'error': 'image_blocked', 'reason': err}), 422
+        image_path = rel
+
+    post = ForumPost(user_id=current_user.id, title=title, body=body, image_path=image_path)
+    db.session.add(post)
+    db.session.commit()
+    return jsonify({
+        'ok': True,
+        'post': serialize_post(post),
+        'posts_left_today': max(0, DAILY_POST_LIMIT - todays_post_count(current_user.id)),
+    })
+
+
+@app.route('/forum/post/<int:pid>/comment', methods=['POST'])
+@premium_required
+def forum_add_comment(pid):
+    post = ForumPost.query.filter_by(id=pid, is_deleted=False).first()
+    if not post:
+        return jsonify({'error': 'not_found'}), 404
+
+    body = (request.form.get('body') or '').strip()
+    if not body:
+        return jsonify({'error': 'empty'}), 400
+    body = body[:4000]
+
+    raw_parent = request.form.get('parent_id')
+    parent_id = int(raw_parent) if raw_parent and raw_parent.isdigit() else None
+    if parent_id:
+        parent = ForumComment.query.filter_by(id=parent_id, post_id=pid).first()
+        if not parent:
+            parent_id = None
+
+    spam = detect_comment_spam(current_user.id, body)
+    if spam:
+        record_warning(current_user.id, 'spam', spam, body)
+        return jsonify({'error': 'spam', 'reason': spam}), 429
+
+    mod = moderate_forum_text(body, 'comment')
+    if not mod['ok']:
+        record_warning(current_user.id, mod['category'], mod['reason'], body)
+        return jsonify({'error': 'blocked', 'category': mod['category'], 'reason': mod['reason']}), 422
+
+    c = ForumComment(post_id=pid, user_id=current_user.id, parent_id=parent_id, body=body)
+    db.session.add(c)
+    db.session.commit()
+    return jsonify({'ok': True, 'comment': serialize_comment(c)})
+
+
+@app.route('/forum/react', methods=['POST'])
+@premium_required
+def forum_react():
+    emoji = request.form.get('emoji')
+    if emoji not in EMOJI_SET:
+        return jsonify({'error': 'bad_emoji'}), 400
+    raw_pid = request.form.get('post_id')
+    raw_cid = request.form.get('comment_id')
+    pid = int(raw_pid) if raw_pid and raw_pid.isdigit() else None
+    cid = int(raw_cid) if raw_cid and raw_cid.isdigit() else None
+    if not pid and not cid:
+        return jsonify({'error': 'missing_target'}), 400
+
+    existing = ForumReaction.query.filter_by(
+        user_id=current_user.id, post_id=pid, comment_id=cid).first()
+    if existing:
+        if existing.emoji == emoji:
+            db.session.delete(existing)  # toggle off
+        else:
+            existing.emoji = emoji        # switch reaction
+    else:
+        db.session.add(ForumReaction(
+            user_id=current_user.id, post_id=pid, comment_id=cid, emoji=emoji))
+    db.session.commit()
+    summary = reaction_summary('post' if pid else 'comment', pid or cid)
+    return jsonify({'ok': True, 'counts': summary['counts'], 'mine': summary['mine']})
+
+
+@app.route('/forum/save', methods=['POST'])
+@premium_required
+def forum_save():
+    raw_pid = request.form.get('post_id')
+    if not (raw_pid and raw_pid.isdigit()):
+        return jsonify({'error': 'missing_target'}), 400
+    pid = int(raw_pid)
+    existing = SavedPost.query.filter_by(user_id=current_user.id, post_id=pid).first()
+    if existing:
+        db.session.delete(existing)
+        saved = False
+    else:
+        db.session.add(SavedPost(user_id=current_user.id, post_id=pid))
+        saved = True
+    db.session.commit()
+    return jsonify({'ok': True, 'saved': saved})
+
+
+@app.route('/forum/post/<int:pid>/delete', methods=['POST'])
+@premium_required
+def forum_delete_post(pid):
+    post = db.session.get(ForumPost, pid)
+    if not post:
+        return jsonify({'error': 'not_found'}), 404
+    if post.user_id != current_user.id and not current_user.is_admin:
+        return jsonify({'error': 'forbidden'}), 403
+    post.is_deleted = True
+    db.session.commit()
+    return jsonify({'ok': True})
+
+
+@app.route('/forum/comment/<int:cid>/delete', methods=['POST'])
+@premium_required
+def forum_delete_comment(cid):
+    c = db.session.get(ForumComment, cid)
+    if not c:
+        return jsonify({'error': 'not_found'}), 404
+    if c.user_id != current_user.id and not current_user.is_admin:
+        return jsonify({'error': 'forbidden'}), 403
+    c.is_deleted = True
+    db.session.commit()
+    return jsonify({'ok': True})
 
 
 # ──────────────────────────────────────────────────────────────────────────

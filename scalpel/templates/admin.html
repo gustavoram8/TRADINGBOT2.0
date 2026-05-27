@@ -78,6 +78,32 @@
 
     .admin-tag { font-size: 11px; color: var(--premium); font-weight: 700; }
     .empty { text-align: center; color: var(--muted); padding: 40px; }
+
+    /* ── Moderation ── */
+    .section-h { font-size: 18px; font-weight: 800; margin: 36px 0 6px; }
+    .section-d { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
+    .warn-badge {
+      display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700;
+      background: rgba(239,68,68,0.14); color: var(--loss); border: 1px solid rgba(239,68,68,0.3);
+      padding: 2px 9px; border-radius: 12px; margin-left: 8px;
+    }
+    .flag-row {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+      padding: 12px 16px; border-bottom: 1px solid var(--border);
+    }
+    .flag-row:last-child { border-bottom: none; }
+    .flag-name { font-weight: 700; }
+    .reason-tag {
+      display: inline-block; font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.04em; padding: 3px 9px; border-radius: 10px; margin-right: 6px;
+      background: rgba(239,68,68,0.13); color: var(--loss);
+    }
+    .reason-tag.spam   { background: rgba(224,168,61,0.16); color: var(--premium); }
+    .reason-tag.offtopic { background: rgba(91,142,240,0.16); color: var(--accent); }
+    .reason-tag.image  { background: rgba(91,142,240,0.16); color: var(--accent); }
+    .warn-detail { font-size: 13px; }
+    .warn-excerpt { color: var(--muted); font-size: 12px; font-family: 'JetBrains Mono', monospace; margin-top: 4px; word-break: break-word; }
+    .warn-time { color: var(--muted); font-size: 11px; white-space: nowrap; }
     @media (max-width: 640px) { .stats { grid-template-columns: repeat(2,1fr); } .u-email { display:none; } }
   </style>
 </head>
@@ -126,7 +152,7 @@
           {% for u in users %}
           <tr>
             <td>
-              <div class="u-name">{{ u.username }}{% if u.is_admin %} <span class="admin-tag">· admin</span>{% endif %}</div>
+              <div class="u-name">{{ u.username }}{% if u.is_admin %} <span class="admin-tag">· admin</span>{% endif %}{% if warn_counts.get(u.id, 0) >= 2 %} <span class="warn-badge" title="Flagged by auto-moderation">⚠ {{ warn_counts[u.id] }} warns</span>{% endif %}</div>
               <div class="u-email">{{ u.email }}</div>
             </td>
             <td><span class="plan-badge {{ u.plan }}">{{ u.plan }}</span></td>
@@ -153,6 +179,38 @@
           {% endfor %}
         </tbody>
       </table>
+    </div>
+
+    <div class="section-h">Forum Moderation</div>
+    <div class="section-d">Posts &amp; comments are auto-screened before publishing. Blocked content is logged here. Users with 2+ warnings are flagged in the table above.</div>
+
+    {% if flagged %}
+    <div class="table-card" style="margin-bottom:18px;">
+      {% for f in flagged %}
+      <div class="flag-row">
+        <div><span class="flag-name">{{ f.username }}</span></div>
+        <span class="warn-badge">⚠ {{ f.count }} warnings</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="table-card">
+      {% for w in recent_warnings %}
+      <div class="flag-row">
+        <div>
+          <div class="warn-detail">
+            <span class="reason-tag {{ w.reason }}">{{ w.reason }}</span>
+            <strong>{{ w.username }}</strong>
+            {% if w.detail %}<span style="color:var(--muted);"> — {{ w.detail }}</span>{% endif %}
+          </div>
+          {% if w.excerpt %}<div class="warn-excerpt">“{{ w.excerpt[:160] }}{% if w.excerpt|length > 160 %}…{% endif %}”</div>{% endif %}
+        </div>
+        <span class="warn-time">{{ w.created_at.strftime('%Y-%m-%d %H:%M') if w.created_at else '' }}</span>
+      </div>
+      {% else %}
+      <div class="empty">No moderation flags yet.</div>
+      {% endfor %}
     </div>
   </div>
 </body>
