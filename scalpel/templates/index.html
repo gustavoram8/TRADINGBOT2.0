@@ -2908,6 +2908,8 @@
     document.getElementById('limit-msg').textContent =
       plan === 'premium' ? T('limit.msgPremium') :
       plan === 'standard' ? T('limit.msgStandard') : T('limit.msgFree');
+    document.querySelector('.limit-cta .upgrade').style.display =
+      plan === 'premium' ? 'none' : '';
 
     let remaining = Math.max(0, parseInt(data.remaining_seconds, 10) || 0);
     // Anchor to an absolute end time so the countdown stays accurate.
