@@ -4404,8 +4404,9 @@
       return new fabric.Group([line, head], Object.assign(baseOpts(), {}));
     }
     function addText(x, y) {
-      const it = new fabric.IText('Text', Object.assign(baseOpts(), {
-        left: x, top: y, fill: colorInput.value,
+      // Textbox (not IText) so left/center/right alignment is meaningful within its width
+      const it = new fabric.Textbox('Text', Object.assign(baseOpts(), {
+        left: x, top: y, width: 260, fill: colorInput.value,
         fontFamily: textStyle.fontFamily, fontSize: textStyle.fontSize,
         fontWeight: textStyle.fontWeight, fontStyle: textStyle.fontStyle,
         underline: textStyle.underline, textAlign: textStyle.textAlign,
@@ -4851,7 +4852,7 @@
         if (canvas.freeDrawingBrush) canvas.freeDrawingBrush.color = colorInput.value;
         const o = canvas.getActiveObject();
         if (o) {
-          if (o.type === 'i-text' || o.type === 'text') o.set('fill', colorInput.value);
+          if (isTextObj(o)) o.set('fill', colorInput.value);
           else o.set('stroke', colorInput.value);
           canvas.requestRenderAll(); pushHistory(); updateThumb();
         }
@@ -4859,7 +4860,7 @@
       widthSel.addEventListener('change', () => {
         if (canvas.freeDrawingBrush) canvas.freeDrawingBrush.width = parseInt(widthSel.value, 10);
         const o = canvas.getActiveObject();
-        if (o && o.type !== 'i-text' && o.type !== 'text') { o.set('strokeWidth', parseInt(widthSel.value, 10)); canvas.requestRenderAll(); pushHistory(); updateThumb(); }
+        if (o && !isTextObj(o)) { o.set('strokeWidth', parseInt(widthSel.value, 10)); canvas.requestRenderAll(); pushHistory(); updateThumb(); }
       });
 
       // Text formatting controls
