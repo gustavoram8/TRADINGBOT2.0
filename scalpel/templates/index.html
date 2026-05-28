@@ -1345,6 +1345,27 @@
     }
     .slide-thumb:hover .st-del { display: flex; }
     .slide-thumb .st-del:hover { background: var(--loss); }
+    .slide-thumb.dragging { opacity: 0.35; }
+    .slide-thumb.drag-over { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(91,142,240,0.35); }
+
+    /* "Apply bg to all slides?" confirmation modal */
+    .sk-applyall-overlay {
+      display: none; position: fixed; inset: 0; z-index: 220; background: rgba(0,0,0,0.55);
+      align-items: center; justify-content: center;
+    }
+    .sk-applyall-overlay.show { display: flex; }
+    .sk-applyall-box {
+      background: var(--card); border: 1px solid var(--border2); border-radius: 14px;
+      padding: 24px 26px; max-width: 340px; width: 90%; box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+    }
+    .sk-applyall-box h3 { font-size: 15px; font-weight: 700; margin: 0 0 8px; }
+    .sk-applyall-box p  { font-size: 13px; color: var(--muted); margin: 0 0 20px; line-height: 1.5; }
+    .sk-applyall-btns { display: flex; gap: 10px; justify-content: flex-end; }
+    .sk-applyall-btns button {
+      padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid var(--border2);
+    }
+    .sk-applyall-btns .btn-secondary { background: var(--surface); color: var(--text); }
+    .sk-applyall-btns .btn-primary   { background: var(--accent); color: #fff; border-color: var(--accent); }
 
     /* Slide nav (mobile + under-canvas) */
     .scalper-slidenav {
@@ -2117,6 +2138,17 @@
 
     <!-- Real studio — Premium only -->
     <div class="scalper-app" id="scalper-app" style="display:none;">
+      <!-- "Apply bg change to all slides?" modal -->
+      <div class="sk-applyall-overlay" id="sk-applyall-overlay">
+        <div class="sk-applyall-box">
+          <h3>Apply to all slides?</h3>
+          <p>You changed the background of slide 1. Apply this change to all other existing slides too?</p>
+          <div class="sk-applyall-btns">
+            <button class="btn-secondary" id="sk-applyall-no" type="button">This slide only</button>
+            <button class="btn-primary"   id="sk-applyall-yes" type="button">Apply to all</button>
+          </div>
+        </div>
+      </div>
       <button class="present-exit" id="sk-present-exit" type="button">✕ <span data-i18n="scalper.exitPresent">Exit</span></button>
       <div class="present-nav" id="sk-present-nav">
         <button type="button" data-sk-prev>‹</button>
@@ -4196,11 +4228,13 @@
     const state = {
       loaded: false, tool: 'select', isDown: false, startX: 0, startY: 0, obj: null,
       cur: 0, slides: [], hist: [],
+      slide1BgVersion: 0, // counts bg changes on slide #1; triggers "apply all?" from 2nd change onward
     };
     // Polyline (continuous-click) tool state — capped at POLY_MAX_PTS clicks
     // 6 clicks = 5 visible connected segments
     const POLY_MAX_PTS = 6;
     let _polyPts = [], _polySegs = [], _polyPreview = null, _polyLastClick = 0;
+    let _pendingBgAll = null; // bg type waiting for "apply to all" confirmation
     // Erase-by-area (marquee) tool state
     let _eraseRect = null;
 
@@ -4231,7 +4265,7 @@
       for (let y = 0; y <= LOGICAL_H; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(LOGICAL_W, y); ctx.stroke(); }
       return g.toDataURL();
     }
-    function applyBg(type) {
+    function _doApplyBg(type) {
       if (state.slides[state.cur]) state.slides[state.cur].bg = type;
       if (type === 'grid') {
         canvas.setBackgroundColor('#0c0e14', () => {});
@@ -4245,6 +4279,22 @@
         canvas.setBackgroundColor(color, canvas.renderAll.bind(canvas));
       }
       highlightBg(type);
+    }
+    function applyBgToAll(type) {
+      const saved = state.cur;
+      state.slides.forEach((s, i) => { s.bg = type; });
+      _doApplyBg(type); // re-renders current slide canvas
+    }
+    function applyBg(type) {
+      _doApplyBg(type);
+      // Track bg changes on slide #1 and prompt to propagate from 2nd change onward
+      if (state.cur === 0) {
+        state.slide1BgVersion++;
+        if (state.slide1BgVersion >= 2 && state.slides.length > 1) {
+          _pendingBgAll = type;
+          document.getElementById('sk-applyall-overlay').classList.add('show');
+        }
+      }
     }
     function highlightBg(type) {
       document.querySelectorAll('#sk-bg-menu button[data-bg]').forEach(b =>
@@ -4499,7 +4549,9 @@
     }
     function addSlide() {
       saveCurrent();
-      state.slides.push({ json: null, bg: 'dark' });
+      // New slides inherit slide #1's background
+      const inheritBg = (state.slides[0] && state.slides[0].bg) || 'dark';
+      state.slides.push({ json: null, bg: inheritBg });
       state.hist.push({ stack: [], idx: -1 });
       state.cur = state.slides.length - 1;
       loadSlide(true); renderThumbs(); persist();
@@ -4532,6 +4584,7 @@
         const box = document.createElement('div');
         box.className = 'slide-thumb' + (i === state.cur ? ' active' : '');
         box.dataset.idx = i;
+        box.draggable = true;
         const num = document.createElement('span'); num.className = 'st-num'; num.textContent = i + 1;
         const del = document.createElement('button'); del.className = 'st-del'; del.type = 'button'; del.textContent = '×';
         const img = document.createElement('img');
@@ -4540,6 +4593,31 @@
         renderSlideDataURL(i, 0.22).then(d => { img.src = d; });
         box.addEventListener('click', e => { if (e.target === del) return; gotoSlide(i); });
         del.addEventListener('click', e => { e.stopPropagation(); deleteSlide(i); });
+
+        // Drag-to-reorder
+        box.addEventListener('dragstart', e => {
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', String(i));
+          setTimeout(() => box.classList.add('dragging'), 0);
+        });
+        box.addEventListener('dragend', () => box.classList.remove('dragging'));
+        box.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; box.classList.add('drag-over'); });
+        box.addEventListener('dragleave', () => box.classList.remove('drag-over'));
+        box.addEventListener('drop', e => {
+          e.preventDefault(); e.stopPropagation(); box.classList.remove('drag-over');
+          const from = parseInt(e.dataTransfer.getData('text/plain'), 10);
+          const to = i;
+          if (from === to) return;
+          saveCurrent();
+          // Reorder slides and history in tandem
+          const [ms] = state.slides.splice(from, 1); state.slides.splice(to, 0, ms);
+          const [mh] = state.hist.splice(from, 1);   state.hist.splice(to, 0, mh);
+          // Keep the active slide selected after move
+          if (state.cur === from) state.cur = to;
+          else if (from < state.cur && to >= state.cur) state.cur--;
+          else if (from > state.cur && to <= state.cur) state.cur++;
+          renderThumbs(); updateCounters(); persist();
+        });
       });
       updateCounters();
     }
@@ -4683,6 +4761,17 @@
         if (canvas.freeDrawingBrush) canvas.freeDrawingBrush.width = parseInt(widthSel.value, 10);
         const o = canvas.getActiveObject();
         if (o && o.type !== 'i-text' && o.type !== 'text') { o.set('strokeWidth', parseInt(widthSel.value, 10)); canvas.requestRenderAll(); pushHistory(); updateThumb(); }
+      });
+
+      // "Apply bg to all slides?" modal
+      document.getElementById('sk-applyall-yes').addEventListener('click', () => {
+        if (_pendingBgAll !== null) { applyBgToAll(_pendingBgAll); pushHistory(); updateThumb(); }
+        _pendingBgAll = null;
+        document.getElementById('sk-applyall-overlay').classList.remove('show');
+      });
+      document.getElementById('sk-applyall-no').addEventListener('click', () => {
+        _pendingBgAll = null;
+        document.getElementById('sk-applyall-overlay').classList.remove('show');
       });
 
       window.addEventListener('resize', () => { if (app.closest('.feature-view').style.display !== 'none') fitCanvas(); });
