@@ -2204,6 +2204,9 @@
           <button class="tool-btn" data-tool="text" data-tip="Text">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
           </button>
+          <button class="tool-btn" data-tool="erase" data-tip="Erase area (drag a box)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
+          </button>
           <div class="tool-sep"></div>
           <input type="color" class="tool-color" id="sk-color" value="#5b8ef0" title="Color" />
           <select class="tool-btn tool-width" id="sk-width" title="Stroke width" style="width:40px;height:34px;font-size:11px;font-weight:700;">
@@ -4196,6 +4199,8 @@
     };
     // Polyline (continuous-click) tool state
     let _polyPts = [], _polySegs = [], _polyPreview = null, _polyLastClick = 0;
+    // Erase-by-area (marquee) tool state
+    let _eraseRect = null;
 
     // ── helpers ──
     const SOLID = {
@@ -4336,6 +4341,14 @@
           canvas.add(ln); canvas.setActiveObject(ln); state.isDown = false; pushHistory(); updateThumb();
           setTool('select'); return;
         }
+        if (t === 'erase') {
+          _eraseRect = new fabric.Rect({
+            left: p.x, top: p.y, width: 0, height: 0,
+            fill: 'rgba(239,68,68,0.12)', stroke: '#ef4444', strokeWidth: 1, strokeDashArray: [4, 4],
+            selectable: false, evented: false, excludeFromExport: true,
+          });
+          canvas.add(_eraseRect); return;
+        }
         let obj = null;
         if (t === 'trendline' || t === 'ray' || t === 'arrow') {
           obj = new fabric.Line([p.x, p.y, p.x, p.y], Object.assign(baseOpts(), { stroke: color, strokeWidth: w }));
@@ -4348,6 +4361,18 @@
       });
 
       canvas.on('mouse:move', opt => {
+        // Erase marquee: resize the dashed red box while dragging
+        if (state.tool === 'erase') {
+          if (state.isDown && _eraseRect) {
+            const p = canvas.getPointer(opt.e);
+            _eraseRect.set({
+              left: Math.min(p.x, state.startX), top: Math.min(p.y, state.startY),
+              width: Math.abs(p.x - state.startX), height: Math.abs(p.y - state.startY),
+            });
+            _eraseRect.setCoords(); canvas.requestRenderAll();
+          }
+          return;
+        }
         // Polyline preview: update dashed preview line to cursor
         if (state.tool === 'polyline') {
           if (_polyPts.length > 0 && _polyPreview) {
@@ -4373,6 +4398,27 @@
       });
 
       canvas.on('mouse:up', () => {
+        // Erase marquee: remove everything the box touched, then return to Select
+        if (state.tool === 'erase') {
+          if (!state.isDown) return;
+          state.isDown = false;
+          const rect = _eraseRect; _eraseRect = null;
+          if (!rect) return;
+          const rb = rect.getBoundingRect();
+          canvas.remove(rect);
+          let removed = 0;
+          if (rb.width > 3 && rb.height > 3) {
+            canvas.getObjects().slice().forEach(o => {
+              const b = o.getBoundingRect();
+              const hit = !(b.left > rb.left + rb.width || b.left + b.width < rb.left ||
+                            b.top > rb.top + rb.height || b.top + b.height < rb.top);
+              if (hit) { canvas.remove(o); removed++; }
+            });
+          }
+          canvas.requestRenderAll();
+          if (removed) { pushHistory(); updateThumb(); }
+          setTool('select'); return;
+        }
         if (!state.isDown) return;
         state.isDown = false;
         const o = state.obj, t = state.tool; state.obj = null;
