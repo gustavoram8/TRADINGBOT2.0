@@ -4197,7 +4197,8 @@
       loaded: false, tool: 'select', isDown: false, startX: 0, startY: 0, obj: null,
       cur: 0, slides: [], hist: [],
     };
-    // Polyline (continuous-click) tool state
+    // Polyline (continuous-click) tool state — capped at POLY_MAX_PTS clicks
+    const POLY_MAX_PTS = 5;
     let _polyPts = [], _polySegs = [], _polyPreview = null, _polyLastClick = 0;
     // Erase-by-area (marquee) tool state
     let _eraseRect = null;
@@ -4324,6 +4325,8 @@
             canvas.add(seg); _polySegs.push(seg);
           }
           _polyPts.push({ x: p.x, y: p.y });
+          // Cap reached: finalize and require re-selecting the tool to continue
+          if (_polyPts.length >= POLY_MAX_PTS) { polyFinish(); return; }
           _polyPreview = new fabric.Line([p.x, p.y, p.x, p.y], { stroke: color, strokeWidth: w, strokeDashArray: [5, 5], selectable: false, evented: false, opacity: 0.55 });
           canvas.add(_polyPreview); canvas.requestRenderAll();
           return;
