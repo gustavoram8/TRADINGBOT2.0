@@ -1369,6 +1369,14 @@
     }
     .sk-menu button:hover { background: var(--surface); }
     .sk-swatch { width: 18px; height: 18px; border-radius: 5px; border: 1px solid var(--border2); flex-shrink: 0; }
+    .sk-menu-custom {
+      display: flex; align-items: center; gap: 9px; width: 100%; padding: 8px 10px; border-radius: 7px;
+      cursor: pointer; font-size: 13px; color: var(--text); position: relative; box-sizing: border-box;
+    }
+    .sk-menu-custom:hover { background: var(--surface); }
+    .sk-menu-custom input[type="color"] {
+      opacity: 0; position: absolute; inset: 0; width: 100%; height: 100%; cursor: pointer; border: none; padding: 0;
+    }
 
     /* Presentation (fullscreen) mode */
     .scalper-app.presenting .scalper-bar,
@@ -2130,6 +2138,16 @@
               <button type="button" data-bg="white"><span class="sk-swatch" style="background:#ffffff"></span><span data-i18n="scalper.bgWhite">White</span></button>
               <button type="button" data-bg="black"><span class="sk-swatch" style="background:#000000"></span><span data-i18n="scalper.bgBlack">Black</span></button>
               <button type="button" data-bg="grid"><span class="sk-swatch" style="background:repeating-linear-gradient(0deg,#0c0e14,#0c0e14 4px,#1d2436 5px),repeating-linear-gradient(90deg,#0c0e14,#0c0e14 4px,#1d2436 5px)"></span><span data-i18n="scalper.bgGrid">Chart grid</span></button>
+              <button type="button" data-bg="navy"><span class="sk-swatch" style="background:#0a1628"></span><span data-i18n="scalper.bgNavy">Navy</span></button>
+              <button type="button" data-bg="charcoal"><span class="sk-swatch" style="background:#1e1e1e"></span><span data-i18n="scalper.bgCharcoal">Charcoal</span></button>
+              <button type="button" data-bg="green"><span class="sk-swatch" style="background:#0d1a0d"></span><span data-i18n="scalper.bgForest">Forest</span></button>
+              <button type="button" data-bg="sepia"><span class="sk-swatch" style="background:#1a1508"></span><span data-i18n="scalper.bgSepia">Sepia</span></button>
+              <button type="button" data-bg="cream"><span class="sk-swatch" style="background:#faf6ee"></span><span data-i18n="scalper.bgCream">Cream</span></button>
+              <div class="sk-menu-custom">
+                <span class="sk-swatch" id="sk-custom-swatch" style="background:#444444"></span>
+                <span data-i18n="scalper.bgCustom">Custom…</span>
+                <input type="color" id="sk-custom-bg" value="#444444" title="Custom background color">
+              </div>
             </div>
           </div>
           <button class="sk-btn" id="sk-present-btn" type="button">
@@ -2165,6 +2183,12 @@
           </button>
           <button class="tool-btn" data-tool="hline" data-tip="Horizontal line">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/></svg>
+          </button>
+          <button class="tool-btn" data-tool="hray" data-tip="Horizontal ray">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="12" r="2" fill="currentColor" stroke="none"/><line x1="6" y1="12" x2="19" y2="12"/><polyline points="16 9 20 12 16 15"/></svg>
+          </button>
+          <button class="tool-btn" data-tool="polyline" data-tip="Continuous line (dbl-click to finish)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19 L8 8 L14 14 L20 5"/><circle cx="3" cy="19" r="1.8" fill="currentColor" stroke="none"/><circle cx="8" cy="8" r="1.8" fill="currentColor" stroke="none"/><circle cx="14" cy="14" r="1.8" fill="currentColor" stroke="none"/><circle cx="20" cy="5" r="1.8" fill="currentColor" stroke="none"/></svg>
           </button>
           <button class="tool-btn" data-tool="arrow" data-tip="Arrow">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
@@ -2383,6 +2407,7 @@
       'scalper.desc': 'A free-form trading whiteboard. Draw setups, mark structure, build multi-slide lessons and export them — for every trading style.',
       'scalper.tag': 'The Trading Education Studio',
       'scalper.bg': 'Background', 'scalper.bgDark': 'Dark', 'scalper.bgWhite': 'White', 'scalper.bgBlack': 'Black', 'scalper.bgGrid': 'Chart grid',
+      'scalper.bgNavy': 'Navy', 'scalper.bgCharcoal': 'Charcoal', 'scalper.bgForest': 'Forest', 'scalper.bgSepia': 'Sepia', 'scalper.bgCream': 'Cream', 'scalper.bgCustom': 'Custom…',
       'scalper.present': 'Present', 'scalper.exitPresent': 'Exit', 'scalper.exportPdf': 'Export PDF', 'scalper.slides': 'Slides',
       'account.admin': 'Admin panel',
       'account.plans': 'Plans & pricing',
@@ -2540,6 +2565,7 @@
       'scalper.desc': 'Un pizarrón de trading libre. Dibuja setups, marca estructura, arma lecciones de varias diapositivas y expórtalas — para cualquier estilo de trading.',
       'scalper.tag': 'El Estudio de Educación en Trading',
       'scalper.bg': 'Fondo', 'scalper.bgDark': 'Oscuro', 'scalper.bgWhite': 'Blanco', 'scalper.bgBlack': 'Negro', 'scalper.bgGrid': 'Cuadrícula',
+      'scalper.bgNavy': 'Marino', 'scalper.bgCharcoal': 'Carbón', 'scalper.bgForest': 'Bosque', 'scalper.bgSepia': 'Sepia', 'scalper.bgCream': 'Crema', 'scalper.bgCustom': 'Personalizado…',
       'scalper.present': 'Presentar', 'scalper.exitPresent': 'Salir', 'scalper.exportPdf': 'Exportar PDF', 'scalper.slides': 'Diapositivas',
       'account.admin': 'Panel de admin',
       'account.plans': 'Planes y precios',
@@ -2697,6 +2723,7 @@
       'scalper.desc': 'Un tableau de trading libre. Dessinez des setups, marquez la structure, créez des leçons multi-diapositives et exportez-les — pour tous les styles de trading.',
       'scalper.tag': "Le Studio d'Éducation au Trading",
       'scalper.bg': 'Arrière-plan', 'scalper.bgDark': 'Sombre', 'scalper.bgWhite': 'Blanc', 'scalper.bgBlack': 'Noir', 'scalper.bgGrid': 'Grille',
+      'scalper.bgNavy': 'Marine', 'scalper.bgCharcoal': 'Charbon', 'scalper.bgForest': 'Forêt', 'scalper.bgSepia': 'Sépia', 'scalper.bgCream': 'Crème', 'scalper.bgCustom': 'Personnalisé…',
       'scalper.present': 'Présenter', 'scalper.exitPresent': 'Quitter', 'scalper.exportPdf': 'Exporter PDF', 'scalper.slides': 'Diapositives',
       'account.admin': "Panneau d'admin",
       'account.plans': 'Offres et tarifs',
@@ -2854,6 +2881,7 @@
       'scalper.desc': 'Um quadro de trading livre. Desenhe setups, marque estrutura, crie aulas com vários slides e exporte-as — para qualquer estilo de trading.',
       'scalper.tag': 'O Estúdio de Educação em Trading',
       'scalper.bg': 'Fundo', 'scalper.bgDark': 'Escuro', 'scalper.bgWhite': 'Branco', 'scalper.bgBlack': 'Preto', 'scalper.bgGrid': 'Grade',
+      'scalper.bgNavy': 'Marinho', 'scalper.bgCharcoal': 'Carvão', 'scalper.bgForest': 'Floresta', 'scalper.bgSepia': 'Sépia', 'scalper.bgCream': 'Creme', 'scalper.bgCustom': 'Personalizado…',
       'scalper.present': 'Apresentar', 'scalper.exitPresent': 'Sair', 'scalper.exportPdf': 'Exportar PDF', 'scalper.slides': 'Slides',
       'account.admin': 'Painel de admin',
       'account.plans': 'Planos e preços',
@@ -4164,9 +4192,14 @@
       loaded: false, tool: 'select', isDown: false, startX: 0, startY: 0, obj: null,
       cur: 0, slides: [], hist: [],
     };
+    // Polyline (continuous-click) tool state
+    let _polyPts = [], _polySegs = [], _polyPreview = null, _polyLastClick = 0;
 
     // ── helpers ──
-    const SOLID = { dark: '#0c0e14', white: '#ffffff', black: '#000000' };
+    const SOLID = {
+      dark: '#0c0e14', white: '#ffffff', black: '#000000',
+      navy: '#0a1628', charcoal: '#1e1e1e', green: '#0d1a0d', sepia: '#1a1508', cream: '#faf6ee',
+    };
     function hexA(hex, a) {
       const h = hex.replace('#', '');
       const r = parseInt(h.substr(0, 2), 16), g = parseInt(h.substr(2, 2), 16), b = parseInt(h.substr(4, 2), 16);
@@ -4199,17 +4232,33 @@
         });
       } else {
         canvas.setBackgroundImage(null, () => {});
-        canvas.setBackgroundColor(SOLID[type] || SOLID.dark, canvas.renderAll.bind(canvas));
+        const color = SOLID[type] || (type && type[0] === '#' ? type : SOLID.dark);
+        canvas.setBackgroundColor(color, canvas.renderAll.bind(canvas));
       }
       highlightBg(type);
     }
     function highlightBg(type) {
-      document.querySelectorAll('#sk-bg-menu button').forEach(b =>
+      document.querySelectorAll('#sk-bg-menu button[data-bg]').forEach(b =>
         b.style.fontWeight = (b.dataset.bg === type) ? '800' : '400');
+      const swatch = document.getElementById('sk-custom-swatch');
+      if (swatch) {
+        if (type && type[0] === '#') {
+          swatch.style.background = type;
+          swatch.style.boxShadow = '0 0 0 2px var(--accent)';
+        } else {
+          swatch.style.boxShadow = '';
+        }
+      }
     }
 
     // ── tools ──
     function setTool(t) {
+      // Cancel in-progress polyline when switching to a different tool
+      if (state.tool === 'polyline' && t !== 'polyline' && _polyPts.length > 0) {
+        if (_polyPreview) { canvas.remove(_polyPreview); _polyPreview = null; }
+        _polyPts = []; _polySegs = []; _polyLastClick = 0;
+        canvas.requestRenderAll(); pushHistory(); updateThumb();
+      }
       state.tool = t;
       toolBtns.forEach(b => b.classList.toggle('active', b.dataset.tool === t));
       canvas.isDrawingMode = (t === 'pencil');
@@ -4242,17 +4291,48 @@
       setTool('select'); pushHistory();
     }
 
+    function polyFinish() {
+      if (_polyPreview) { canvas.remove(_polyPreview); _polyPreview = null; }
+      _polyPts = []; _polySegs = []; _polyLastClick = 0;
+      canvas.requestRenderAll(); pushHistory(); updateThumb();
+      setTool('select');
+    }
+
     function bindDrawing() {
       canvas.on('mouse:down', opt => {
         const t = state.tool;
         if (t === 'select' || t === 'pencil') return;
         const p = canvas.getPointer(opt.e);
-        state.isDown = true; state.startX = p.x; state.startY = p.y;
         const color = colorInput.value, w = parseInt(widthSel.value, 10);
+
+        // Polyline: each click adds a segment; double-click finishes
+        if (t === 'polyline') {
+          const now = Date.now();
+          if ((now - _polyLastClick) < 350 && _polyPts.length >= 1) { polyFinish(); return; }
+          _polyLastClick = now;
+          if (_polyPreview) { canvas.remove(_polyPreview); _polyPreview = null; }
+          if (_polyPts.length > 0) {
+            const prev = _polyPts[_polyPts.length - 1];
+            const seg = new fabric.Line([prev.x, prev.y, p.x, p.y], Object.assign(baseOpts(), { stroke: color, strokeWidth: w }));
+            canvas.add(seg); _polySegs.push(seg);
+          }
+          _polyPts.push({ x: p.x, y: p.y });
+          _polyPreview = new fabric.Line([p.x, p.y, p.x, p.y], { stroke: color, strokeWidth: w, strokeDashArray: [5, 5], selectable: false, evented: false, opacity: 0.55 });
+          canvas.add(_polyPreview); canvas.requestRenderAll();
+          return;
+        }
+
+        state.isDown = true; state.startX = p.x; state.startY = p.y;
         if (t === 'text') { addText(p.x, p.y); state.isDown = false; return; }
         if (t === 'hline') {
           const ln = new fabric.Line([0, p.y, LOGICAL_W, p.y], Object.assign(baseOpts(), { stroke: color, strokeWidth: w }));
-          canvas.add(ln); canvas.setActiveObject(ln); state.isDown = false; pushHistory(); updateThumb(); return;
+          canvas.add(ln); canvas.setActiveObject(ln); state.isDown = false; pushHistory(); updateThumb();
+          setTool('select'); return;
+        }
+        if (t === 'hray') {
+          const ln = new fabric.Line([p.x, p.y, LOGICAL_W * 6, p.y], Object.assign(baseOpts(), { stroke: color, strokeWidth: w }));
+          canvas.add(ln); canvas.setActiveObject(ln); state.isDown = false; pushHistory(); updateThumb();
+          setTool('select'); return;
         }
         let obj = null;
         if (t === 'trendline' || t === 'ray' || t === 'arrow') {
@@ -4266,6 +4346,15 @@
       });
 
       canvas.on('mouse:move', opt => {
+        // Polyline preview: update dashed preview line to cursor
+        if (state.tool === 'polyline') {
+          if (_polyPts.length > 0 && _polyPreview) {
+            const p = canvas.getPointer(opt.e);
+            _polyPreview.set({ x2: p.x, y2: p.y });
+            _polyPreview.setCoords(); canvas.requestRenderAll();
+          }
+          return;
+        }
         if (!state.isDown || !state.obj) return;
         const p = canvas.getPointer(opt.e), o = state.obj, t = state.tool;
         if (t === 'trendline' || t === 'arrow') {
@@ -4299,6 +4388,8 @@
           if (tiny) canvas.remove(o); else canvas.setActiveObject(o);
         }
         canvas.requestRenderAll(); pushHistory(); updateThumb();
+        // Auto-return to Select after any single-use draw tool
+        if (new Set(['trendline', 'ray', 'rect', 'circle', 'arrow']).has(t)) setTool('select');
       });
 
       canvas.on('path:created', () => { pushHistory(); updateThumb(); });
@@ -4435,8 +4526,10 @@
       canvas.setZoom(scale);
       // Reapply background — Fabric.js can drop it after setDimensions
       const bg = (state.slides[state.cur] || {}).bg || 'dark';
-      if (bg !== 'grid') canvas.setBackgroundColor(SOLID[bg] || SOLID.dark, canvas.renderAll.bind(canvas));
-      else canvas.requestRenderAll();
+      if (bg !== 'grid') {
+        const color = SOLID[bg] || (bg && bg[0] === '#' ? bg : SOLID.dark);
+        canvas.setBackgroundColor(color, canvas.renderAll.bind(canvas));
+      } else canvas.requestRenderAll();
     }
 
     // ── export ──
@@ -4508,8 +4601,19 @@
       const bgBtn = document.getElementById('sk-bg-btn'), bgMenu = document.getElementById('sk-bg-menu');
       bgBtn.addEventListener('click', e => { e.stopPropagation(); bgMenu.classList.toggle('show'); });
       document.addEventListener('click', () => bgMenu.classList.remove('show'));
-      bgMenu.querySelectorAll('button').forEach(b =>
+      bgMenu.querySelectorAll('button[data-bg]').forEach(b =>
         b.addEventListener('click', () => { applyBg(b.dataset.bg); bgMenu.classList.remove('show'); pushHistory(); updateThumb(); }));
+      const customBgInput = document.getElementById('sk-custom-bg');
+      const customBgSwatch = document.getElementById('sk-custom-swatch');
+      if (customBgInput) {
+        // Prevent the click from bubbling up and immediately closing the menu
+        customBgInput.closest('.sk-menu-custom').addEventListener('click', e => e.stopPropagation());
+        customBgInput.addEventListener('input', () => {
+          customBgSwatch.style.background = customBgInput.value;
+          applyBg(customBgInput.value); pushHistory(); updateThumb();
+        });
+        customBgInput.addEventListener('change', () => bgMenu.classList.remove('show'));
+      }
 
       document.querySelectorAll('[data-sk-prev]').forEach(b => b.addEventListener('click', () => gotoSlide(state.cur - 1)));
       document.querySelectorAll('[data-sk-next]').forEach(b => b.addEventListener('click', () => gotoSlide(state.cur + 1)));
@@ -4542,6 +4646,7 @@
         else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); }
         else if (app.classList.contains('presenting') && e.key === 'ArrowRight') { gotoSlide(state.cur + 1); }
         else if (app.classList.contains('presenting') && e.key === 'ArrowLeft') { gotoSlide(state.cur - 1); }
+        else if (e.key === 'Escape' && state.tool === 'polyline' && _polyPts.length > 0) { e.preventDefault(); polyFinish(); }
         else if (app.classList.contains('presenting') && e.key === 'Escape') { exitPresent(); }
       });
     }
