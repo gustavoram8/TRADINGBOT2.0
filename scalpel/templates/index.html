@@ -4265,25 +4265,29 @@
       for (let y = 0; y <= LOGICAL_H; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(LOGICAL_W, y); ctx.stroke(); }
       return g.toDataURL();
     }
-    function _doApplyBg(type) {
-      if (state.slides[state.cur]) state.slides[state.cur].bg = type;
+    // Apply a background (solid key / hex / 'grid') to ANY canvas (main or thumbnail).
+    // s.bg is the single source of truth — this overrides whatever the JSON baked in.
+    function setCanvasBg(cv, type, cb) {
       if (type === 'grid') {
-        canvas.setBackgroundColor('#0c0e14', () => {});
+        cv.setBackgroundColor('#0c0e14', () => {});
         fabric.Image.fromURL(makeGridDataURL(), img => {
           img.set({ selectable: false, evented: false });
-          canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), { originX: 'left', originY: 'top' });
+          cv.setBackgroundImage(img, () => { cv.renderAll(); if (cb) cb(); }, { originX: 'left', originY: 'top' });
         });
       } else {
-        canvas.setBackgroundImage(null, () => {});
+        cv.setBackgroundImage(null, () => {});
         const color = SOLID[type] || (type && type[0] === '#' ? type : SOLID.dark);
-        canvas.setBackgroundColor(color, canvas.renderAll.bind(canvas));
+        cv.setBackgroundColor(color, () => { cv.renderAll(); if (cb) cb(); });
       }
+    }
+    function _doApplyBg(type) {
+      if (state.slides[state.cur]) state.slides[state.cur].bg = type;
+      setCanvasBg(canvas, type);
       highlightBg(type);
     }
     function applyBgToAll(type) {
-      const saved = state.cur;
-      state.slides.forEach((s, i) => { s.bg = type; });
-      _doApplyBg(type); // re-renders current slide canvas
+      state.slides.forEach(s => { s.bg = type; });
+      _doApplyBg(type); // re-renders current slide; others pick up s.bg on load/thumbnail
     }
     function applyBg(type) {
       _doApplyBg(type);
@@ -4523,9 +4527,9 @@
       pushHistory(); updateThumb();
     }
     function clearSlide() {
-      const bg = state.slides[state.cur].bg;
-      canvas.clear(); applyBg(bg);
-      pushHistory(); updateThumb();
+      const bg = state.slides[state.cur].bg || 'dark';
+      canvas.clear();
+      setCanvasBg(canvas, bg, () => { highlightBg(bg); pushHistory(); updateThumb(); });
     }
 
     // ── slides ──
@@ -4540,8 +4544,9 @@
         // Defer fitCanvas so the container has had a chance to lay out
         requestAnimationFrame(() => { fitCanvas(); canvas.requestRenderAll(); });
       };
-      if (s.json) { canvas.loadFromJSON(s.json, () => { highlightBg(s.bg || 'dark'); finish(); }); }
-      else { canvas.clear(); applyBg(s.bg || 'dark'); finish(); }
+      // s.bg is authoritative — reapply it over whatever the JSON baked in
+      if (s.json) { canvas.loadFromJSON(s.json, () => { setCanvasBg(canvas, s.bg || 'dark', () => { highlightBg(s.bg || 'dark'); finish(); }); }); }
+      else { canvas.clear(); setCanvasBg(canvas, s.bg || 'dark', () => { highlightBg(s.bg || 'dark'); finish(); }); }
     }
     function gotoSlide(i) {
       if (i === state.cur || i < 0 || i >= state.slides.length) return;
@@ -4569,10 +4574,12 @@
       return new Promise(res => {
         const el = document.createElement('canvas');
         const tmp = new fabric.StaticCanvas(el, { width: LOGICAL_W, height: LOGICAL_H });
+        const bg = (state.slides[i] || {}).bg || 'dark';
         const done = () => { const d = tmp.toDataURL({ format: 'png', multiplier: mult || 1 }); tmp.dispose(); res(d); };
         const json = state.slides[i] && state.slides[i].json;
-        if (json) tmp.loadFromJSON(json, done);
-        else tmp.setBackgroundColor(SOLID[(state.slides[i] || {}).bg] || '#0c0e14', done);
+        // Reapply s.bg over the baked JSON so thumbnails/exports honor "apply to all"
+        if (json) tmp.loadFromJSON(json, () => setCanvasBg(tmp, bg, done));
+        else setCanvasBg(tmp, bg, done);
       });
     }
 
@@ -4656,10 +4663,7 @@
       canvas.setZoom(scale);
       // Reapply background — Fabric.js can drop it after setDimensions
       const bg = (state.slides[state.cur] || {}).bg || 'dark';
-      if (bg !== 'grid') {
-        const color = SOLID[bg] || (bg && bg[0] === '#' ? bg : SOLID.dark);
-        canvas.setBackgroundColor(color, canvas.renderAll.bind(canvas));
-      } else canvas.requestRenderAll();
+      setCanvasBg(canvas, bg);
     }
 
     // ── export ──
@@ -4765,7 +4769,7 @@
 
       // "Apply bg to all slides?" modal
       document.getElementById('sk-applyall-yes').addEventListener('click', () => {
-        if (_pendingBgAll !== null) { applyBgToAll(_pendingBgAll); pushHistory(); updateThumb(); }
+        if (_pendingBgAll !== null) { applyBgToAll(_pendingBgAll); pushHistory(); renderThumbs(); }
         _pendingBgAll = null;
         document.getElementById('sk-applyall-overlay').classList.remove('show');
       });
