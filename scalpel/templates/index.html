@@ -1283,7 +1283,7 @@
     .scalper-tools {
       background: var(--card); border: 1px solid var(--border); border-radius: 12px;
       padding: 8px 6px; display: flex; flex-direction: column; gap: 4px; align-items: center;
-      position: sticky; top: 72px; align-self: start;
+      position: sticky; top: 72px; align-self: start; z-index: 15;
     }
     .tool-btn {
       width: 40px; height: 40px; border-radius: 9px; border: 1px solid transparent;
@@ -1297,8 +1297,10 @@
     .tool-btn[data-tip]:hover::after {
       content: attr(data-tip); position: absolute; left: 48px; top: 50%; transform: translateY(-50%);
       background: var(--bg); color: var(--text); border: 1px solid var(--border2); white-space: nowrap;
-      font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 6px; z-index: 20; pointer-events: none;
+      font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 6px; z-index: 60; pointer-events: none;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.35);
     }
+    .tool-btn[data-tip]:hover { z-index: 60; }
     .tool-color { width: 30px; height: 30px; border: none; border-radius: 8px; padding: 0; cursor: pointer; background: none; }
     .tool-color::-webkit-color-swatch-wrapper { padding: 2px; }
     .tool-color::-webkit-color-swatch { border: 1px solid var(--border2); border-radius: 6px; }
