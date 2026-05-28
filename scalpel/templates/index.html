@@ -4198,7 +4198,8 @@
       cur: 0, slides: [], hist: [],
     };
     // Polyline (continuous-click) tool state — capped at POLY_MAX_PTS clicks
-    const POLY_MAX_PTS = 5;
+    // 6 clicks = 5 visible connected segments
+    const POLY_MAX_PTS = 6;
     let _polyPts = [], _polySegs = [], _polyPreview = null, _polyLastClick = 0;
     // Erase-by-area (marquee) tool state
     let _eraseRect = null;
