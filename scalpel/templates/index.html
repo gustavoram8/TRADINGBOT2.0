@@ -1279,6 +1279,30 @@
     }
     @media (max-width: 900px) { .scalper-stage { grid-template-columns: 50px 1fr; } .scalper-slides { display: none; } }
 
+    /* Text formatting toolbar (contextual — shown when text tool is active or a text object is selected) */
+    .sk-text-tools {
+      display: none; align-items: center; gap: 8px; flex-wrap: wrap;
+      background: var(--card); border: 1px solid var(--border2); border-radius: 10px;
+      padding: 7px 10px; margin-bottom: 12px;
+    }
+    .sk-text-tools.show { display: flex; }
+    .sk-text-tools .stt-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-right: 2px; }
+    .sk-text-tools select, .sk-text-tools input[type="number"] {
+      background: var(--surface); color: var(--text); border: 1px solid var(--border2);
+      border-radius: 7px; font-size: 12.5px; font-family: 'Inter', sans-serif; padding: 6px 8px; cursor: pointer;
+    }
+    .sk-text-tools input[type="number"] { width: 58px; }
+    .sk-text-tools .stt-sep { width: 1px; height: 22px; background: var(--border); margin: 0 2px; }
+    .stt-toggle {
+      width: 32px; height: 32px; border-radius: 7px; border: 1px solid var(--border2); background: var(--surface);
+      color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px;
+    }
+    .stt-toggle:hover { border-color: var(--accent); }
+    .stt-toggle.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .stt-toggle .stt-b { font-weight: 800; }
+    .stt-toggle .stt-i { font-style: italic; font-family: Georgia, serif; }
+    .stt-toggle .stt-u { text-decoration: underline; }
+
     /* Left tool rail */
     .scalper-tools {
       background: var(--card); border: 1px solid var(--border); border-radius: 12px;
@@ -2199,6 +2223,34 @@
         </div>
       </div>
 
+      <!-- Text formatting toolbar -->
+      <div class="sk-text-tools" id="sk-text-tools">
+        <span class="stt-label" data-i18n="scalper.text">Text</span>
+        <select id="sk-font" title="Font family">
+          <option value="Inter, sans-serif">Inter</option>
+          <option value="Arial, sans-serif">Arial</option>
+          <option value="'Helvetica Neue', Helvetica, sans-serif">Helvetica</option>
+          <option value="'Trebuchet MS', sans-serif">Trebuchet</option>
+          <option value="Verdana, sans-serif">Verdana</option>
+          <option value="Georgia, serif">Georgia</option>
+          <option value="'Times New Roman', serif">Times New Roman</option>
+          <option value="'Courier New', monospace">Courier New</option>
+          <option value="'Comic Sans MS', cursive">Comic Sans</option>
+          <option value="Impact, sans-serif">Impact</option>
+        </select>
+        <input type="number" id="sk-fontsize" min="8" max="200" step="1" value="30" title="Font size" />
+        <div class="stt-sep"></div>
+        <button class="stt-toggle" id="sk-bold" type="button" title="Bold"><span class="stt-b">B</span></button>
+        <button class="stt-toggle" id="sk-italic" type="button" title="Italic"><span class="stt-i">i</span></button>
+        <button class="stt-toggle" id="sk-underline" type="button" title="Underline"><span class="stt-u">U</span></button>
+        <div class="stt-sep"></div>
+        <select id="sk-align" title="Text alignment">
+          <option value="left">Left</option>
+          <option value="center">Center</option>
+          <option value="right">Right</option>
+        </select>
+      </div>
+
       <div class="scalper-stage">
         <!-- Tool rail -->
         <div class="scalper-tools" id="sk-tools">
@@ -2445,7 +2497,7 @@
       'scalper.tag': 'The Trading Education Studio',
       'scalper.bg': 'Background', 'scalper.bgDark': 'Dark', 'scalper.bgWhite': 'White', 'scalper.bgBlack': 'Black', 'scalper.bgGrid': 'Chart grid',
       'scalper.bgNavy': 'Navy', 'scalper.bgCharcoal': 'Charcoal', 'scalper.bgForest': 'Forest', 'scalper.bgSepia': 'Sepia', 'scalper.bgCream': 'Cream', 'scalper.bgCustom': 'Custom…',
-      'scalper.present': 'Present', 'scalper.exitPresent': 'Exit', 'scalper.exportPdf': 'Export PDF', 'scalper.slides': 'Slides',
+      'scalper.present': 'Present', 'scalper.exitPresent': 'Exit', 'scalper.exportPdf': 'Export PDF', 'scalper.slides': 'Slides', 'scalper.text': 'Text',
       'account.admin': 'Admin panel',
       'account.plans': 'Plans & pricing',
       'account.signin': 'Sign in',
@@ -2603,7 +2655,7 @@
       'scalper.tag': 'El Estudio de Educación en Trading',
       'scalper.bg': 'Fondo', 'scalper.bgDark': 'Oscuro', 'scalper.bgWhite': 'Blanco', 'scalper.bgBlack': 'Negro', 'scalper.bgGrid': 'Cuadrícula',
       'scalper.bgNavy': 'Marino', 'scalper.bgCharcoal': 'Carbón', 'scalper.bgForest': 'Bosque', 'scalper.bgSepia': 'Sepia', 'scalper.bgCream': 'Crema', 'scalper.bgCustom': 'Personalizado…',
-      'scalper.present': 'Presentar', 'scalper.exitPresent': 'Salir', 'scalper.exportPdf': 'Exportar PDF', 'scalper.slides': 'Diapositivas',
+      'scalper.present': 'Presentar', 'scalper.exitPresent': 'Salir', 'scalper.exportPdf': 'Exportar PDF', 'scalper.slides': 'Diapositivas', 'scalper.text': 'Texto',
       'account.admin': 'Panel de admin',
       'account.plans': 'Planes y precios',
       'account.signin': 'Iniciar sesión',
@@ -2761,7 +2813,7 @@
       'scalper.tag': "Le Studio d'Éducation au Trading",
       'scalper.bg': 'Arrière-plan', 'scalper.bgDark': 'Sombre', 'scalper.bgWhite': 'Blanc', 'scalper.bgBlack': 'Noir', 'scalper.bgGrid': 'Grille',
       'scalper.bgNavy': 'Marine', 'scalper.bgCharcoal': 'Charbon', 'scalper.bgForest': 'Forêt', 'scalper.bgSepia': 'Sépia', 'scalper.bgCream': 'Crème', 'scalper.bgCustom': 'Personnalisé…',
-      'scalper.present': 'Présenter', 'scalper.exitPresent': 'Quitter', 'scalper.exportPdf': 'Exporter PDF', 'scalper.slides': 'Diapositives',
+      'scalper.present': 'Présenter', 'scalper.exitPresent': 'Quitter', 'scalper.exportPdf': 'Exporter PDF', 'scalper.slides': 'Diapositives', 'scalper.text': 'Texte',
       'account.admin': "Panneau d'admin",
       'account.plans': 'Offres et tarifs',
       'account.signin': 'Se connecter',
@@ -2919,7 +2971,7 @@
       'scalper.tag': 'O Estúdio de Educação em Trading',
       'scalper.bg': 'Fundo', 'scalper.bgDark': 'Escuro', 'scalper.bgWhite': 'Branco', 'scalper.bgBlack': 'Preto', 'scalper.bgGrid': 'Grade',
       'scalper.bgNavy': 'Marinho', 'scalper.bgCharcoal': 'Carvão', 'scalper.bgForest': 'Floresta', 'scalper.bgSepia': 'Sépia', 'scalper.bgCream': 'Creme', 'scalper.bgCustom': 'Personalizado…',
-      'scalper.present': 'Apresentar', 'scalper.exitPresent': 'Sair', 'scalper.exportPdf': 'Exportar PDF', 'scalper.slides': 'Slides',
+      'scalper.present': 'Apresentar', 'scalper.exitPresent': 'Sair', 'scalper.exportPdf': 'Exportar PDF', 'scalper.slides': 'Slides', 'scalper.text': 'Texto',
       'account.admin': 'Painel de admin',
       'account.plans': 'Planos e preços',
       'account.signin': 'Entrar',
@@ -4237,6 +4289,9 @@
     let _pendingBgAll = null; // bg type waiting for "apply to all" confirmation
     // Erase-by-area (marquee) tool state
     let _eraseRect = null;
+    // Default text style — remembers the last choices for new text objects
+    const textStyle = { fontFamily: 'Inter, sans-serif', fontSize: 30, fontWeight: 'normal', fontStyle: 'normal', underline: false, textAlign: 'left' };
+    let _syncingText = false; // guards control->object loops while syncing toolbar
 
     // ── helpers ──
     const SOLID = {
@@ -4334,6 +4389,9 @@
       canvas.skipTargetFind = !isSelect && t !== 'pencil';
       canvas.defaultCursor = isSelect ? 'default' : 'crosshair';
       if (!isSelect) canvas.discardActiveObject().requestRenderAll();
+      // Text toolbar: show when the text tool is active (or a text object is selected)
+      if (t === 'text') { syncTextToolbar(null); showTextToolbar(true); }
+      else if (!isTextObj(canvas.getActiveObject())) { showTextToolbar(false); }
     }
 
     const baseOpts = () => ({ strokeUniform: true, strokeLineCap: 'round', strokeLineJoin: 'round', cornerColor: '#5b8ef0', borderColor: '#5b8ef0', cornerSize: 9, transparentCorners: false });
@@ -4347,11 +4405,48 @@
     }
     function addText(x, y) {
       const it = new fabric.IText('Text', Object.assign(baseOpts(), {
-        left: x, top: y, fill: colorInput.value, fontFamily: 'Inter, sans-serif', fontSize: 30, fontWeight: 600,
+        left: x, top: y, fill: colorInput.value,
+        fontFamily: textStyle.fontFamily, fontSize: textStyle.fontSize,
+        fontWeight: textStyle.fontWeight, fontStyle: textStyle.fontStyle,
+        underline: textStyle.underline, textAlign: textStyle.textAlign,
       }));
       canvas.add(it); canvas.setActiveObject(it);
       it.enterEditing(); it.selectAll();
       setTool('select'); pushHistory();
+      syncTextToolbar(it);
+    }
+
+    // ── text formatting toolbar ──
+    const textTools = document.getElementById('sk-text-tools');
+    const fontSel  = document.getElementById('sk-font');
+    const sizeInput = document.getElementById('sk-fontsize');
+    const boldBtn   = document.getElementById('sk-bold');
+    const italicBtn = document.getElementById('sk-italic');
+    const underlineBtn = document.getElementById('sk-underline');
+    const alignSel  = document.getElementById('sk-align');
+
+    function isTextObj(o) { return o && (o.type === 'i-text' || o.type === 'text' || o.type === 'textbox'); }
+    function showTextToolbar(show) { textTools.classList.toggle('show', !!show); }
+    // Reflect an object's (or the defaults') style into the toolbar controls
+    function syncTextToolbar(o) {
+      _syncingText = true;
+      const src = o || textStyle;
+      fontSel.value = src.fontFamily || 'Inter, sans-serif';
+      sizeInput.value = Math.round(src.fontSize || 30);
+      boldBtn.classList.toggle('active', (src.fontWeight === 'bold' || src.fontWeight === 700 || src.fontWeight === '700'));
+      italicBtn.classList.toggle('active', src.fontStyle === 'italic');
+      underlineBtn.classList.toggle('active', !!src.underline);
+      alignSel.value = src.textAlign || 'left';
+      _syncingText = false;
+    }
+    // Apply a style change to the active text object (if any) and remember it as default
+    function applyTextStyle(prop, value) {
+      textStyle[prop] = value;
+      const o = canvas.getActiveObject();
+      if (isTextObj(o)) {
+        o.set(prop, value);
+        o.setCoords(); canvas.requestRenderAll(); pushHistory(); updateThumb();
+      }
     }
 
     function polyFinish() {
@@ -4766,6 +4861,41 @@
         const o = canvas.getActiveObject();
         if (o && o.type !== 'i-text' && o.type !== 'text') { o.set('strokeWidth', parseInt(widthSel.value, 10)); canvas.requestRenderAll(); pushHistory(); updateThumb(); }
       });
+
+      // Text formatting controls
+      fontSel.addEventListener('change', () => { if (!_syncingText) applyTextStyle('fontFamily', fontSel.value); });
+      sizeInput.addEventListener('input', () => {
+        if (_syncingText) return;
+        let v = parseInt(sizeInput.value, 10); if (isNaN(v)) return;
+        v = Math.max(8, Math.min(200, v));
+        applyTextStyle('fontSize', v);
+      });
+      boldBtn.addEventListener('click', () => {
+        const on = !boldBtn.classList.contains('active');
+        boldBtn.classList.toggle('active', on);
+        applyTextStyle('fontWeight', on ? 'bold' : 'normal');
+      });
+      italicBtn.addEventListener('click', () => {
+        const on = !italicBtn.classList.contains('active');
+        italicBtn.classList.toggle('active', on);
+        applyTextStyle('fontStyle', on ? 'italic' : 'normal');
+      });
+      underlineBtn.addEventListener('click', () => {
+        const on = !underlineBtn.classList.contains('active');
+        underlineBtn.classList.toggle('active', on);
+        applyTextStyle('underline', on);
+      });
+      alignSel.addEventListener('change', () => { if (!_syncingText) applyTextStyle('textAlign', alignSel.value); });
+
+      // Show/sync the text toolbar when a text object is selected; hide otherwise
+      const onSelect = () => {
+        const o = canvas.getActiveObject();
+        if (isTextObj(o)) { syncTextToolbar(o); showTextToolbar(true); }
+        else if (state.tool !== 'text') { showTextToolbar(false); }
+      };
+      canvas.on('selection:created', onSelect);
+      canvas.on('selection:updated', onSelect);
+      canvas.on('selection:cleared', () => { if (state.tool !== 'text') showTextToolbar(false); });
 
       // "Apply bg to all slides?" modal
       document.getElementById('sk-applyall-yes').addEventListener('click', () => {
