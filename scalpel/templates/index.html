@@ -6,9 +6,8 @@
   <title>Scalpel — ICT Trade Analysis</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <!-- Scalpe® education studio: canvas engine + PDF export (lazy-used, Premium only) -->
-  <script src="https://cdn.jsdelivr.net/npm/fabric@5.3.1/dist/fabric.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <!-- Scalpe® studio loads its canvas engine (Fabric) + PDF export (jsPDF)
+       lazily on first open, with multi-CDN fallback — see Scalper.open() -->
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -1229,10 +1228,12 @@
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
-      animation: scalperWordShine 4s linear infinite;
+      /* 7s cycle: a quick ~1.4s sweep, then ~5.6s idle on solid text colour */
+      animation: scalperWordShine 7s linear infinite;
     }
     @keyframes scalperWordShine {
       0%   { background-position: 200% 0; }
+      20%  { background-position: -200% 0; }
       100% { background-position: -200% 0; }
     }
 
@@ -4545,26 +4546,81 @@
       });
     }
 
+    // Lazily load an external script, trying each URL in turn until one works.
+    function loadScript(urls) {
+      return new Promise((resolve, reject) => {
+        let i = 0;
+        const tryNext = () => {
+          if (i >= urls.length) { reject(new Error('all CDNs failed')); return; }
+          const s = document.createElement('script');
+          s.src = urls[i++];
+          s.async = true;
+          s.onload = () => resolve();
+          s.onerror = tryNext;
+          document.head.appendChild(s);
+        };
+        tryNext();
+      });
+    }
+    async function ensureLibs() {
+      if (typeof fabric === 'undefined') {
+        await loadScript([
+          'https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js',
+          'https://cdn.jsdelivr.net/npm/fabric@5.3.1/dist/fabric.min.js',
+          'https://unpkg.com/fabric@5.3.1/dist/fabric.min.js',
+        ]).catch(() => {});
+      }
+      if (!(window.jspdf && window.jspdf.jsPDF)) {
+        await loadScript([
+          'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+          'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',
+          'https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js',
+        ]).catch(() => {});
+      }
+    }
+    function showStatus(msg) {
+      wrap.innerHTML = `<div style="color:var(--muted);font-size:14px;text-align:center;padding:40px;line-height:1.6;">${msg}</div>`;
+    }
+
+    function initStudio() {
+      canvas = new fabric.Canvas('sk-canvas', { backgroundColor: SOLID.dark, preserveObjectStacking: true });
+      canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
+      canvas.freeDrawingBrush.color = colorInput.value;
+      canvas.freeDrawingBrush.width = parseInt(widthSel.value, 10);
+      bindDrawing();
+      if (!restore()) { state.slides = [{ json: null, bg: 'dark' }]; state.cur = 0; }
+      state.hist = state.slides.map(() => ({ stack: [], idx: -1 }));
+      setTool('select');
+      loadSlide(true);
+      renderThumbs();
+      wireUI();
+    }
+
+    let opening = false;
     window.Scalper = {
-      open() {
-        if (typeof fabric === 'undefined') { console.warn('Scalpe®: canvas engine not loaded'); return; }
+      async open() {
         if (state.loaded) {
-          // Re-entering tab: re-fit after layout paints
           requestAnimationFrame(() => { fitCanvas(); renderThumbs(); });
           return;
         }
+        if (opening) return;
+        opening = true;
+        if (typeof fabric === 'undefined' || !(window.jspdf && window.jspdf.jsPDF)) {
+          showStatus('Loading studio…');
+          await ensureLibs();
+        }
+        if (typeof fabric === 'undefined') {
+          showStatus('The drawing engine could not be loaded. Please check your internet connection and reopen this tab.');
+          opening = false;
+          return;
+        }
+        // Restore the canvas element (showStatus may have replaced it)
+        if (!document.getElementById('sk-canvas')) {
+          wrap.innerHTML = '<canvas id="sk-canvas"></canvas>';
+        }
         state.loaded = true;
-        canvas = new fabric.Canvas('sk-canvas', { backgroundColor: SOLID.dark, preserveObjectStacking: true });
-        canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
-        canvas.freeDrawingBrush.color = colorInput.value;
-        canvas.freeDrawingBrush.width = parseInt(widthSel.value, 10);
-        bindDrawing();
-        if (!restore()) { state.slides = [{ json: null, bg: 'dark' }]; state.cur = 0; }
-        state.hist = state.slides.map(() => ({ stack: [], idx: -1 }));
-        setTool('select');
-        loadSlide(true);
-        renderThumbs();
-        wireUI();
+        initStudio();
+        opening = false;
       },
     };
   })();
