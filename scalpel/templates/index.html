@@ -6,6 +6,9 @@
   <title>Scalpel — ICT Trade Analysis</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- Scalpe® education studio: canvas engine + PDF export (lazy-used, Premium only) -->
+  <script src="https://cdn.jsdelivr.net/npm/fabric@5.3.1/dist/fabric.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -1208,6 +1211,170 @@
     .scp-send:hover { background: var(--accent-h); }
     .scp-send:disabled { opacity: 0.5; cursor: default; }
 
+    /* ══════════════════════════════════════════════════════════
+       SCALPE® — Trading Education Studio (Premium)
+       ══════════════════════════════════════════════════════════ */
+
+    /* Animated golden ® wordmark (tab + studio header) */
+    .scalper-wordmark { display: inline-flex; align-items: baseline; }
+    .scalper-r {
+      font-weight: 800;
+      margin-left: 0px;
+      background: linear-gradient(100deg, #9a6b08 0%, #e0a83d 25%, #fff3cf 50%, #e0a83d 75%, #9a6b08 100%);
+      background-size: 250% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+      animation: scalperShine 3.5s linear infinite;
+    }
+    @keyframes scalperShine {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .scalper-app { padding: 18px 12px 60px; }
+    .scalper-bar {
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+      margin-bottom: 14px; flex-wrap: wrap;
+    }
+    .scalper-brand { display: flex; align-items: baseline; gap: 10px; }
+    .scalper-brand .sb-name { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+    .scalper-brand .sb-tag { font-size: 12.5px; color: var(--muted); }
+    .scalper-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+    .sk-btn {
+      display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+      background: var(--surface); color: var(--text); border: 1px solid var(--border2);
+      border-radius: 8px; font-size: 12.5px; font-weight: 600; padding: 8px 12px;
+      font-family: 'Inter', sans-serif; transition: all 0.13s;
+    }
+    .sk-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .sk-btn svg { width: 15px; height: 15px; }
+    .sk-btn.gold { border-color: #e0a83d; color: #e0a83d; }
+    .sk-btn.gold:hover { background: rgba(224,168,61,0.12); }
+
+    .scalper-stage {
+      display: grid; grid-template-columns: 56px 1fr 168px; gap: 12px; align-items: stretch;
+    }
+    @media (max-width: 900px) { .scalper-stage { grid-template-columns: 50px 1fr; } .scalper-slides { display: none; } }
+
+    /* Left tool rail */
+    .scalper-tools {
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+      padding: 8px 6px; display: flex; flex-direction: column; gap: 4px; align-items: center;
+      position: sticky; top: 72px; align-self: start;
+    }
+    .tool-btn {
+      width: 40px; height: 40px; border-radius: 9px; border: 1px solid transparent;
+      background: transparent; color: var(--muted); cursor: pointer; display: flex;
+      align-items: center; justify-content: center; transition: all 0.12s; position: relative;
+    }
+    .tool-btn svg { width: 19px; height: 19px; }
+    .tool-btn:hover { background: var(--surface); color: var(--text); }
+    .tool-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .tool-sep { width: 26px; height: 1px; background: var(--border); margin: 4px 0; }
+    .tool-btn[data-tip]:hover::after {
+      content: attr(data-tip); position: absolute; left: 48px; top: 50%; transform: translateY(-50%);
+      background: var(--bg); color: var(--text); border: 1px solid var(--border2); white-space: nowrap;
+      font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 6px; z-index: 20; pointer-events: none;
+    }
+    .tool-color { width: 30px; height: 30px; border: none; border-radius: 8px; padding: 0; cursor: pointer; background: none; }
+    .tool-color::-webkit-color-swatch-wrapper { padding: 2px; }
+    .tool-color::-webkit-color-swatch { border: 1px solid var(--border2); border-radius: 6px; }
+    .tool-width { width: 40px; }
+
+    /* Canvas */
+    .scalper-canvas-wrap {
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+      padding: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden;
+      min-height: 420px;
+    }
+    .scalper-canvas-wrap canvas { border-radius: 6px; box-shadow: 0 4px 18px rgba(0,0,0,0.25); }
+
+    /* Right slides panel */
+    .scalper-slides {
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 10px;
+      display: flex; flex-direction: column; gap: 9px; position: sticky; top: 72px; align-self: start;
+      max-height: calc(100vh - 96px); overflow-y: auto;
+    }
+    .slides-head { display: flex; align-items: center; justify-content: space-between; }
+    .slides-head .sh-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+    .slide-add {
+      width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--border2); background: var(--surface);
+      color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; line-height: 1;
+    }
+    .slide-add:hover { border-color: var(--accent); color: var(--accent); }
+    .slide-thumb {
+      position: relative; border: 2px solid var(--border); border-radius: 8px; overflow: hidden; cursor: pointer;
+      aspect-ratio: 16/9; background: #0c0e14; transition: border-color 0.12s;
+    }
+    .slide-thumb:hover { border-color: var(--border2); }
+    .slide-thumb.active { border-color: var(--accent); }
+    .slide-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .slide-thumb .st-num {
+      position: absolute; top: 3px; left: 5px; font-size: 10px; font-weight: 700; color: #fff;
+      background: rgba(0,0,0,0.55); padding: 0 5px; border-radius: 4px;
+    }
+    .slide-thumb .st-del {
+      position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; border: none; cursor: pointer;
+      background: rgba(0,0,0,0.55); color: #fff; border-radius: 4px; font-size: 12px; line-height: 1;
+      display: none; align-items: center; justify-content: center;
+    }
+    .slide-thumb:hover .st-del { display: flex; }
+    .slide-thumb .st-del:hover { background: var(--loss); }
+
+    /* Slide nav (mobile + under-canvas) */
+    .scalper-slidenav {
+      display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 12px;
+      font-size: 13px; color: var(--muted); font-weight: 600;
+    }
+    .scalper-slidenav button {
+      width: 30px; height: 30px; border-radius: 7px; border: 1px solid var(--border2); background: var(--surface);
+      color: var(--text); cursor: pointer; font-size: 15px; display: flex; align-items: center; justify-content: center;
+    }
+    .scalper-slidenav button:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* Background picker dropdown */
+    .sk-menu-wrap { position: relative; }
+    .sk-menu {
+      display: none; position: absolute; right: 0; top: calc(100% + 6px); z-index: 30;
+      background: var(--card); border: 1px solid var(--border2); border-radius: 10px; padding: 6px; min-width: 150px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+    }
+    .sk-menu.show { display: block; }
+    .sk-menu button {
+      display: flex; align-items: center; gap: 9px; width: 100%; text-align: left; border: none; background: none;
+      color: var(--text); font-size: 13px; font-family: 'Inter', sans-serif; padding: 8px 10px; border-radius: 7px; cursor: pointer;
+    }
+    .sk-menu button:hover { background: var(--surface); }
+    .sk-swatch { width: 18px; height: 18px; border-radius: 5px; border: 1px solid var(--border2); flex-shrink: 0; }
+
+    /* Presentation (fullscreen) mode */
+    .scalper-app.presenting .scalper-bar,
+    .scalper-app.presenting .scalper-tools,
+    .scalper-app.presenting .scalper-slides { display: none; }
+    .scalper-app.presenting { padding: 0; }
+    .scalper-app.presenting .scalper-stage { grid-template-columns: 1fr; gap: 0; height: 100vh; }
+    .scalper-app.presenting .scalper-canvas-wrap { border: none; border-radius: 0; height: 100vh; background: #0c0e14; }
+    .present-exit {
+      display: none; position: fixed; top: 16px; right: 16px; z-index: 100;
+      background: rgba(0,0,0,0.6); color: #fff; border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer; gap: 6px; align-items: center;
+    }
+    .scalper-app.presenting .present-exit { display: inline-flex; }
+    .present-nav {
+      display: none; position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); z-index: 100;
+      gap: 12px; align-items: center; background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 30px; padding: 8px 18px; color: #fff; font-size: 13px; font-weight: 600;
+    }
+    .scalper-app.presenting .present-nav { display: flex; }
+    .present-nav button {
+      width: 30px; height: 30px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3); background: transparent;
+      color: #fff; cursor: pointer; font-size: 15px; display: flex; align-items: center; justify-content: center;
+    }
+    .present-nav button:hover { background: rgba(255,255,255,0.15); }
+
     .forum-btn {
       border-radius: 8px; font-size: 13.5px; font-weight: 700; padding: 10px 18px; cursor: pointer;
       border: 1px solid transparent; transition: all 0.15s; font-family: 'Inter', sans-serif;
@@ -1440,6 +1607,10 @@
   <button class="tab" type="button" data-tab="scout">
     <svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
     <span data-i18n="tabs.scout">Prop Firm Scout</span>
+  </button>
+  <button class="tab" type="button" data-tab="scalper">
+    <svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    <span class="scalper-wordmark">Scalpe<span class="scalper-r">®</span></span>
   </button>
 </div>
 
@@ -1900,6 +2071,139 @@
     </div>
   </div>
 
+  <!-- ── SCALPE® — TRADING EDUCATION STUDIO (Premium) ── -->
+  <div class="feature-view" id="scalper-view">
+    <div class="feature-panel">
+      <div class="feature-badge"></div>
+      <div class="feature-circle">
+        <svg class="ic-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <svg class="ic-soon" style="display:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div class="feature-title">Scalpe<span class="scalper-r">®</span></div>
+      <div class="feature-desc feat-main" data-i18n="scalper.desc">A free-form trading whiteboard. Draw setups, mark structure, build multi-slide lessons and export them — for every trading style.</div>
+      <div class="feature-desc feat-state"></div>
+      <a href="/pricing" target="_blank" rel="noopener" class="feature-upgrade" data-i18n="feature.upgrade">Upgrade to Premium</a>
+    </div>
+
+    <!-- Real studio — Premium only -->
+    <div class="scalper-app" id="scalper-app" style="display:none;">
+      <button class="present-exit" id="sk-present-exit" type="button">✕ <span data-i18n="scalper.exitPresent">Exit</span></button>
+      <div class="present-nav" id="sk-present-nav">
+        <button type="button" data-sk-prev>‹</button>
+        <span id="sk-present-counter">1 / 1</span>
+        <button type="button" data-sk-next>›</button>
+      </div>
+
+      <div class="scalper-bar">
+        <div class="scalper-brand">
+          <div class="sb-name">Scalpe<span class="scalper-r">®</span></div>
+          <div class="sb-tag" data-i18n="scalper.tag">The Trading Education Studio</div>
+        </div>
+        <div class="scalper-actions">
+          <div class="sk-menu-wrap">
+            <button class="sk-btn" id="sk-bg-btn" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+              <span data-i18n="scalper.bg">Background</span>
+            </button>
+            <div class="sk-menu" id="sk-bg-menu">
+              <button type="button" data-bg="dark"><span class="sk-swatch" style="background:#0c0e14"></span><span data-i18n="scalper.bgDark">Dark</span></button>
+              <button type="button" data-bg="white"><span class="sk-swatch" style="background:#ffffff"></span><span data-i18n="scalper.bgWhite">White</span></button>
+              <button type="button" data-bg="black"><span class="sk-swatch" style="background:#000000"></span><span data-i18n="scalper.bgBlack">Black</span></button>
+              <button type="button" data-bg="grid"><span class="sk-swatch" style="background:repeating-linear-gradient(0deg,#0c0e14,#0c0e14 4px,#1d2436 5px),repeating-linear-gradient(90deg,#0c0e14,#0c0e14 4px,#1d2436 5px)"></span><span data-i18n="scalper.bgGrid">Chart grid</span></button>
+            </div>
+          </div>
+          <button class="sk-btn" id="sk-present-btn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h20v14H2z"/><path d="M8 21h8M12 17v4"/></svg>
+            <span data-i18n="scalper.present">Present</span>
+          </button>
+          <button class="sk-btn" id="sk-png-btn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>PNG</span>
+          </button>
+          <button class="sk-btn gold" id="sk-pdf-btn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span data-i18n="scalper.exportPdf">Export PDF</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="scalper-stage">
+        <!-- Tool rail -->
+        <div class="scalper-tools" id="sk-tools">
+          <button class="tool-btn active" data-tool="select" data-tip="Select / Move">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>
+          </button>
+          <button class="tool-btn" data-tool="pencil" data-tip="Freehand">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+          </button>
+          <div class="tool-sep"></div>
+          <button class="tool-btn" data-tool="trendline" data-tip="Trendline">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="20" x2="20" y2="4"/></svg>
+          </button>
+          <button class="tool-btn" data-tool="ray" data-tip="Ray">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="19" r="1.6"/><line x1="6" y1="18" x2="21" y2="3"/></svg>
+          </button>
+          <button class="tool-btn" data-tool="hline" data-tip="Horizontal line">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/></svg>
+          </button>
+          <button class="tool-btn" data-tool="arrow" data-tip="Arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+          </button>
+          <button class="tool-btn" data-tool="rect" data-tip="Rectangle / Zone">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="1"/></svg>
+          </button>
+          <button class="tool-btn" data-tool="circle" data-tip="Circle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>
+          </button>
+          <button class="tool-btn" data-tool="text" data-tip="Text">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+          </button>
+          <div class="tool-sep"></div>
+          <input type="color" class="tool-color" id="sk-color" value="#5b8ef0" title="Color" />
+          <select class="tool-btn tool-width" id="sk-width" title="Stroke width" style="width:40px;height:34px;font-size:11px;font-weight:700;">
+            <option value="2">2</option>
+            <option value="3" selected>3</option>
+            <option value="5">5</option>
+            <option value="8">8</option>
+          </select>
+          <div class="tool-sep"></div>
+          <button class="tool-btn" id="sk-undo" data-tip="Undo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
+          </button>
+          <button class="tool-btn" id="sk-redo" data-tip="Redo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13"/></svg>
+          </button>
+          <button class="tool-btn" id="sk-delete" data-tip="Delete selected">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+          </button>
+          <button class="tool-btn" id="sk-clear" data-tip="Clear slide">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="8" y1="8" x2="16" y2="16"/><line x1="16" y1="8" x2="8" y2="16"/></svg>
+          </button>
+        </div>
+
+        <!-- Canvas -->
+        <div class="scalper-canvas-wrap" id="sk-canvas-wrap">
+          <canvas id="sk-canvas"></canvas>
+        </div>
+
+        <!-- Slides -->
+        <div class="scalper-slides">
+          <div class="slides-head">
+            <span class="sh-title" data-i18n="scalper.slides">Slides</span>
+            <button class="slide-add" id="sk-add-slide" type="button" title="Add slide">+</button>
+          </div>
+          <div id="sk-thumbs"></div>
+        </div>
+      </div>
+
+      <div class="scalper-slidenav">
+        <button type="button" data-sk-prev>‹</button>
+        <span id="sk-slide-counter">1 / 1</span>
+        <button type="button" data-sk-next>›</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- ── VALIDATION MODAL ── -->
@@ -2056,6 +2360,10 @@
       'scout.chat.placeholder': 'Ask about this firm or compare selected…',
       'scout.chat.context': 'Analyzing: ',
       'scout.disclaimer': 'Data is for informational purposes only. Always verify directly with the prop firm before purchasing.',
+      'scalper.desc': 'A free-form trading whiteboard. Draw setups, mark structure, build multi-slide lessons and export them — for every trading style.',
+      'scalper.tag': 'The Trading Education Studio',
+      'scalper.bg': 'Background', 'scalper.bgDark': 'Dark', 'scalper.bgWhite': 'White', 'scalper.bgBlack': 'Black', 'scalper.bgGrid': 'Chart grid',
+      'scalper.present': 'Present', 'scalper.exitPresent': 'Exit', 'scalper.exportPdf': 'Export PDF', 'scalper.slides': 'Slides',
       'account.admin': 'Admin panel',
       'account.plans': 'Plans & pricing',
       'account.signin': 'Sign in',
@@ -2209,6 +2517,10 @@
       'scout.chat.placeholder': 'Pregunta sobre esta firm o compara las seleccionadas…',
       'scout.chat.context': 'Analizando: ',
       'scout.disclaimer': 'La información es solo de referencia. Verifica siempre directamente con la prop firm antes de comprar.',
+      'scalper.desc': 'Un pizarrón de trading libre. Dibuja setups, marca estructura, arma lecciones de varias diapositivas y expórtalas — para cualquier estilo de trading.',
+      'scalper.tag': 'El Estudio de Educación en Trading',
+      'scalper.bg': 'Fondo', 'scalper.bgDark': 'Oscuro', 'scalper.bgWhite': 'Blanco', 'scalper.bgBlack': 'Negro', 'scalper.bgGrid': 'Cuadrícula',
+      'scalper.present': 'Presentar', 'scalper.exitPresent': 'Salir', 'scalper.exportPdf': 'Exportar PDF', 'scalper.slides': 'Diapositivas',
       'account.admin': 'Panel de admin',
       'account.plans': 'Planes y precios',
       'account.signin': 'Iniciar sesión',
@@ -2362,6 +2674,10 @@
       'scout.chat.placeholder': 'Posez une question sur cette firm ou comparez…',
       'scout.chat.context': 'Analyse : ',
       'scout.disclaimer': 'Les données sont fournies à titre indicatif uniquement. Vérifiez toujours directement auprès de la prop firm avant tout achat.',
+      'scalper.desc': 'Un tableau de trading libre. Dessinez des setups, marquez la structure, créez des leçons multi-diapositives et exportez-les — pour tous les styles de trading.',
+      'scalper.tag': "Le Studio d'Éducation au Trading",
+      'scalper.bg': 'Arrière-plan', 'scalper.bgDark': 'Sombre', 'scalper.bgWhite': 'Blanc', 'scalper.bgBlack': 'Noir', 'scalper.bgGrid': 'Grille',
+      'scalper.present': 'Présenter', 'scalper.exitPresent': 'Quitter', 'scalper.exportPdf': 'Exporter PDF', 'scalper.slides': 'Diapositives',
       'account.admin': "Panneau d'admin",
       'account.plans': 'Offres et tarifs',
       'account.signin': 'Se connecter',
@@ -2515,6 +2831,10 @@
       'scout.chat.placeholder': 'Pergunte sobre esta firm ou compare selecionadas…',
       'scout.chat.context': 'Analisando: ',
       'scout.disclaimer': 'Os dados são apenas para fins informativos. Verifique sempre diretamente com a prop firm antes de comprar.',
+      'scalper.desc': 'Um quadro de trading livre. Desenhe setups, marque estrutura, crie aulas com vários slides e exporte-as — para qualquer estilo de trading.',
+      'scalper.tag': 'O Estúdio de Educação em Trading',
+      'scalper.bg': 'Fundo', 'scalper.bgDark': 'Escuro', 'scalper.bgWhite': 'Branco', 'scalper.bgBlack': 'Preto', 'scalper.bgGrid': 'Grade',
+      'scalper.present': 'Apresentar', 'scalper.exitPresent': 'Sair', 'scalper.exportPdf': 'Exportar PDF', 'scalper.slides': 'Slides',
       'account.admin': 'Painel de admin',
       'account.plans': 'Planos e preços',
       'account.signin': 'Entrar',
@@ -2966,7 +3286,7 @@
     const isPremium = U.plan === 'premium';
     document.querySelectorAll('.feature-view').forEach(view => {
       const panel   = view.querySelector('.feature-panel');
-      const realApp = view.querySelector('.forum-app, .scout-app');  // built features
+      const realApp = view.querySelector('.forum-app, .scout-app, .scalper-app');  // built features
       const badge   = view.querySelector('.feature-badge');
       const circle  = view.querySelector('.feature-circle');
       const state    = view.querySelector('.feat-state');
@@ -3015,10 +3335,11 @@
     document.querySelectorAll('.feature-view').forEach(v => {
       v.style.display = (v.id === tab + '-view') ? 'block' : 'none';
     });
-    // Widen container for Scout's marketplace layout, restore for other tabs
-    document.querySelector('.container').classList.toggle('scout-active', tab === 'scout');
+    // Widen container for Scout marketplace and Scalpe® studio, restore for other tabs
+    document.querySelector('.container').classList.toggle('scout-active', tab === 'scout' || tab === 'scalper');
     if (tab === 'forum' && U.plan === 'premium' && window.Forum) window.Forum.open();
     if (tab === 'scout' && U.plan === 'premium' && window.Scout) window.Scout.open();
+    if (tab === 'scalper' && U.plan === 'premium' && window.Scalper) window.Scalper.open();
     if (isFeature) window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -3797,6 +4118,424 @@
     window.Scout = {
       open() {
         if (!state.loaded) { state.loaded = true; fetchFirms(); }
+      },
+    };
+  })();
+
+  // ══════════════════════════════════════════════════════════════════════
+  // SCALPE® — Trading Education Studio (Premium)
+  // Free-form whiteboard: trading draw tools, multi-slide decks, present mode,
+  // PNG/PDF export. Fully client-side (Fabric.js + jsPDF), autosaved locally.
+  // ══════════════════════════════════════════════════════════════════════
+  (function () {
+    const app = document.getElementById('scalper-app');
+    if (!app) return;
+
+    const LOGICAL_W = 1280, LOGICAL_H = 720;
+    const wrap   = document.getElementById('sk-canvas-wrap');
+    const colorInput = document.getElementById('sk-color');
+    const widthSel   = document.getElementById('sk-width');
+    const thumbs = document.getElementById('sk-thumbs');
+    const toolBtns = Array.from(document.querySelectorAll('#sk-tools .tool-btn[data-tool]'));
+
+    let canvas = null;
+    let suppress = false;
+    const state = {
+      loaded: false, tool: 'select', isDown: false, startX: 0, startY: 0, obj: null,
+      cur: 0, slides: [], hist: [],
+    };
+
+    // ── helpers ──
+    const SOLID = { dark: '#0c0e14', white: '#ffffff', black: '#000000' };
+    function hexA(hex, a) {
+      const h = hex.replace('#', '');
+      const r = parseInt(h.substr(0, 2), 16), g = parseInt(h.substr(2, 2), 16), b = parseInt(h.substr(4, 2), 16);
+      return `rgba(${r},${g},${b},${a})`;
+    }
+    function downloadURI(uri, name) {
+      const a = document.createElement('a');
+      a.href = uri; a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+    }
+
+    // ── background ──
+    function makeGridDataURL() {
+      const g = document.createElement('canvas');
+      g.width = LOGICAL_W; g.height = LOGICAL_H;
+      const ctx = g.getContext('2d');
+      ctx.fillStyle = '#0c0e14'; ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+      ctx.strokeStyle = 'rgba(91,142,240,0.11)'; ctx.lineWidth = 1;
+      for (let x = 0; x <= LOGICAL_W; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, LOGICAL_H); ctx.stroke(); }
+      for (let y = 0; y <= LOGICAL_H; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(LOGICAL_W, y); ctx.stroke(); }
+      return g.toDataURL();
+    }
+    function applyBg(type) {
+      if (state.slides[state.cur]) state.slides[state.cur].bg = type;
+      if (type === 'grid') {
+        canvas.setBackgroundColor('#0c0e14', () => {});
+        fabric.Image.fromURL(makeGridDataURL(), img => {
+          img.set({ selectable: false, evented: false });
+          canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), { originX: 'left', originY: 'top' });
+        });
+      } else {
+        canvas.setBackgroundImage(null, () => {});
+        canvas.setBackgroundColor(SOLID[type] || SOLID.dark, canvas.renderAll.bind(canvas));
+      }
+      highlightBg(type);
+    }
+    function highlightBg(type) {
+      document.querySelectorAll('#sk-bg-menu button').forEach(b =>
+        b.style.fontWeight = (b.dataset.bg === type) ? '800' : '400');
+    }
+
+    // ── tools ──
+    function setTool(t) {
+      state.tool = t;
+      toolBtns.forEach(b => b.classList.toggle('active', b.dataset.tool === t));
+      canvas.isDrawingMode = (t === 'pencil');
+      if (t === 'pencil') {
+        canvas.freeDrawingBrush.color = colorInput.value;
+        canvas.freeDrawingBrush.width = parseInt(widthSel.value, 10);
+      }
+      const isSelect = (t === 'select');
+      canvas.selection = isSelect;
+      canvas.skipTargetFind = !isSelect && t !== 'pencil';
+      canvas.defaultCursor = isSelect ? 'default' : 'crosshair';
+      if (!isSelect) canvas.discardActiveObject().requestRenderAll();
+    }
+
+    const baseOpts = () => ({ strokeUniform: true, strokeLineCap: 'round', strokeLineJoin: 'round', cornerColor: '#5b8ef0', borderColor: '#5b8ef0', cornerSize: 9, transparentCorners: false });
+
+    function makeArrow(x1, y1, x2, y2, color, w) {
+      const line = new fabric.Line([x1, y1, x2, y2], { stroke: color, strokeWidth: w, strokeLineCap: 'round' });
+      const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+      const size = w * 3 + 9;
+      const head = new fabric.Triangle({ left: x2, top: y2, originX: 'center', originY: 'center', width: size, height: size, fill: color, angle: angle + 90 });
+      return new fabric.Group([line, head], Object.assign(baseOpts(), {}));
+    }
+    function addText(x, y) {
+      const it = new fabric.IText('Text', Object.assign(baseOpts(), {
+        left: x, top: y, fill: colorInput.value, fontFamily: 'Inter, sans-serif', fontSize: 30, fontWeight: 600,
+      }));
+      canvas.add(it); canvas.setActiveObject(it);
+      it.enterEditing(); it.selectAll();
+      setTool('select'); pushHistory();
+    }
+
+    function bindDrawing() {
+      canvas.on('mouse:down', opt => {
+        const t = state.tool;
+        if (t === 'select' || t === 'pencil') return;
+        const p = canvas.getPointer(opt.e);
+        state.isDown = true; state.startX = p.x; state.startY = p.y;
+        const color = colorInput.value, w = parseInt(widthSel.value, 10);
+        if (t === 'text') { addText(p.x, p.y); state.isDown = false; return; }
+        if (t === 'hline') {
+          const ln = new fabric.Line([0, p.y, LOGICAL_W, p.y], Object.assign(baseOpts(), { stroke: color, strokeWidth: w }));
+          canvas.add(ln); canvas.setActiveObject(ln); state.isDown = false; pushHistory(); updateThumb(); return;
+        }
+        let obj = null;
+        if (t === 'trendline' || t === 'ray' || t === 'arrow') {
+          obj = new fabric.Line([p.x, p.y, p.x, p.y], Object.assign(baseOpts(), { stroke: color, strokeWidth: w }));
+        } else if (t === 'rect') {
+          obj = new fabric.Rect(Object.assign(baseOpts(), { left: p.x, top: p.y, width: 0, height: 0, stroke: color, strokeWidth: w, fill: hexA(color, 0.13) }));
+        } else if (t === 'circle') {
+          obj = new fabric.Ellipse(Object.assign(baseOpts(), { left: p.x, top: p.y, rx: 0, ry: 0, stroke: color, strokeWidth: w, fill: 'transparent' }));
+        }
+        if (obj) { state.obj = obj; canvas.add(obj); }
+      });
+
+      canvas.on('mouse:move', opt => {
+        if (!state.isDown || !state.obj) return;
+        const p = canvas.getPointer(opt.e), o = state.obj, t = state.tool;
+        if (t === 'trendline' || t === 'arrow') {
+          o.set({ x2: p.x, y2: p.y });
+        } else if (t === 'ray') {
+          const dx = p.x - state.startX, dy = p.y - state.startY, len = Math.hypot(dx, dy) || 1, ext = 2400;
+          o.set({ x2: state.startX + dx / len * ext, y2: state.startY + dy / len * ext });
+        } else if (t === 'rect') {
+          o.set({ left: Math.min(p.x, state.startX), top: Math.min(p.y, state.startY), width: Math.abs(p.x - state.startX), height: Math.abs(p.y - state.startY) });
+        } else if (t === 'circle') {
+          o.set({ left: Math.min(p.x, state.startX), top: Math.min(p.y, state.startY), rx: Math.abs(p.x - state.startX) / 2, ry: Math.abs(p.y - state.startY) / 2 });
+        }
+        o.setCoords(); canvas.requestRenderAll();
+      });
+
+      canvas.on('mouse:up', () => {
+        if (!state.isDown) return;
+        state.isDown = false;
+        const o = state.obj, t = state.tool; state.obj = null;
+        if (!o) return;
+        if (t === 'arrow') {
+          const { x1, y1, x2, y2 } = o; canvas.remove(o);
+          if (Math.hypot(x2 - x1, y2 - y1) > 4) {
+            const g = makeArrow(x1, y1, x2, y2, colorInput.value, parseInt(widthSel.value, 10));
+            canvas.add(g); canvas.setActiveObject(g);
+          }
+        } else {
+          const tiny = ((t === 'rect') && (o.width < 4 || o.height < 4)) ||
+                       ((t === 'circle') && (o.rx < 3 || o.ry < 3)) ||
+                       ((t === 'trendline' || t === 'ray') && Math.hypot((o.x2 - o.x1), (o.y2 - o.y1)) < 4);
+          if (tiny) canvas.remove(o); else canvas.setActiveObject(o);
+        }
+        canvas.requestRenderAll(); pushHistory(); updateThumb();
+      });
+
+      canvas.on('path:created', () => { pushHistory(); updateThumb(); });
+      canvas.on('object:modified', () => { pushHistory(); updateThumb(); });
+    }
+
+    // ── per-slide history ──
+    function curHist() { return state.hist[state.cur]; }
+    function pushHistory() {
+      if (suppress) return;
+      const h = curHist(); if (!h) return;
+      const json = JSON.stringify(canvas.toJSON());
+      h.stack = h.stack.slice(0, h.idx + 1);
+      h.stack.push(json); h.idx = h.stack.length - 1;
+      persist();
+    }
+    function loadJSON(json, after) {
+      suppress = true;
+      canvas.loadFromJSON(json, () => { canvas.renderAll(); suppress = false; if (after) after(); });
+    }
+    function undo() { const h = curHist(); if (!h || h.idx <= 0) return; h.idx--; loadJSON(h.stack[h.idx], updateThumb); }
+    function redo() { const h = curHist(); if (!h || h.idx >= h.stack.length - 1) return; h.idx++; loadJSON(h.stack[h.idx], updateThumb); }
+
+    function deleteSel() {
+      const objs = canvas.getActiveObjects();
+      if (!objs.length) return;
+      objs.forEach(o => canvas.remove(o));
+      canvas.discardActiveObject(); canvas.requestRenderAll();
+      pushHistory(); updateThumb();
+    }
+    function clearSlide() {
+      const bg = state.slides[state.cur].bg;
+      canvas.clear(); applyBg(bg);
+      pushHistory(); updateThumb();
+    }
+
+    // ── slides ──
+    function saveCurrent() { if (state.slides[state.cur]) state.slides[state.cur].json = JSON.stringify(canvas.toJSON()); }
+    function loadSlide(initialHist) {
+      const s = state.slides[state.cur];
+      suppress = true;
+      const finish = () => {
+        canvas.renderAll(); fitCanvas(); suppress = false;
+        const h = curHist();
+        if (initialHist || !h.stack.length) { h.stack = [JSON.stringify(canvas.toJSON())]; h.idx = 0; }
+      };
+      if (s.json) { canvas.loadFromJSON(s.json, () => { highlightBg(s.bg || 'dark'); finish(); }); }
+      else { canvas.clear(); applyBg(s.bg || 'dark'); finish(); }
+    }
+    function gotoSlide(i) {
+      if (i === state.cur || i < 0 || i >= state.slides.length) return;
+      saveCurrent(); state.cur = i; loadSlide(); markActiveThumb(); updateCounters(); persist();
+    }
+    function addSlide() {
+      saveCurrent();
+      state.slides.push({ json: null, bg: 'dark' });
+      state.hist.push({ stack: [], idx: -1 });
+      state.cur = state.slides.length - 1;
+      loadSlide(true); renderThumbs(); persist();
+    }
+    function deleteSlide(i) {
+      if (state.slides.length <= 1) return;
+      state.slides.splice(i, 1); state.hist.splice(i, 1);
+      if (state.cur >= state.slides.length) state.cur = state.slides.length - 1;
+      else if (i < state.cur) state.cur--;
+      loadSlide(); renderThumbs(); persist();
+    }
+
+    // ── render slide to image (clean logical resolution, ignores display zoom) ──
+    function renderSlideDataURL(i, mult) {
+      return new Promise(res => {
+        const el = document.createElement('canvas');
+        const tmp = new fabric.StaticCanvas(el, { width: LOGICAL_W, height: LOGICAL_H });
+        const done = () => { const d = tmp.toDataURL({ format: 'png', multiplier: mult || 1 }); tmp.dispose(); res(d); };
+        const json = state.slides[i] && state.slides[i].json;
+        if (json) tmp.loadFromJSON(json, done);
+        else tmp.setBackgroundColor(SOLID[(state.slides[i] || {}).bg] || '#0c0e14', done);
+      });
+    }
+
+    // ── thumbnails ──
+    function renderThumbs() {
+      saveCurrent();
+      thumbs.innerHTML = '';
+      state.slides.forEach((s, i) => {
+        const box = document.createElement('div');
+        box.className = 'slide-thumb' + (i === state.cur ? ' active' : '');
+        box.dataset.idx = i;
+        const num = document.createElement('span'); num.className = 'st-num'; num.textContent = i + 1;
+        const del = document.createElement('button'); del.className = 'st-del'; del.type = 'button'; del.textContent = '×';
+        const img = document.createElement('img');
+        box.appendChild(num); box.appendChild(del); box.appendChild(img);
+        thumbs.appendChild(box);
+        renderSlideDataURL(i, 0.22).then(d => { img.src = d; });
+        box.addEventListener('click', e => { if (e.target === del) return; gotoSlide(i); });
+        del.addEventListener('click', e => { e.stopPropagation(); deleteSlide(i); });
+      });
+      updateCounters();
+    }
+    function markActiveThumb() {
+      document.querySelectorAll('#sk-thumbs .slide-thumb').forEach(b =>
+        b.classList.toggle('active', parseInt(b.dataset.idx, 10) === state.cur));
+    }
+    let thumbTimer;
+    function updateThumb() {
+      const i = state.cur;
+      saveCurrent();
+      clearTimeout(thumbTimer);
+      thumbTimer = setTimeout(() => {
+        const box = document.querySelector(`#sk-thumbs .slide-thumb[data-idx="${i}"] img`);
+        if (box) renderSlideDataURL(i, 0.22).then(d => { box.src = d; });
+      }, 250);
+    }
+    function updateCounters() {
+      const txt = (state.cur + 1) + ' / ' + state.slides.length;
+      const c1 = document.getElementById('sk-slide-counter'); if (c1) c1.textContent = txt;
+      const c2 = document.getElementById('sk-present-counter'); if (c2) c2.textContent = txt;
+    }
+
+    // ── fit / scale ──
+    function fitCanvas() {
+      if (!canvas) return;
+      const presenting = app.classList.contains('presenting');
+      let availW, availH;
+      if (presenting) { availW = window.innerWidth; availH = window.innerHeight; }
+      else { availW = wrap.clientWidth - 22; availH = Math.min(window.innerHeight - 230, LOGICAL_H); }
+      let scale = Math.min(availW / LOGICAL_W, availH / LOGICAL_H);
+      if (!presenting) scale = Math.min(scale, 1);
+      scale = Math.max(scale, 0.1);
+      canvas.setDimensions({ width: LOGICAL_W * scale, height: LOGICAL_H * scale });
+      canvas.setZoom(scale);
+      canvas.requestRenderAll();
+    }
+
+    // ── export ──
+    async function exportPNG() {
+      saveCurrent();
+      const data = await renderSlideDataURL(state.cur, 2);
+      downloadURI(data, 'scalper-slide-' + (state.cur + 1) + '.png');
+    }
+    async function exportPDF() {
+      saveCurrent();
+      const JS = (window.jspdf && window.jspdf.jsPDF);
+      if (!JS) { alert('PDF engine not loaded'); return; }
+      const pdf = new JS({ orientation: 'landscape', unit: 'px', format: [LOGICAL_W, LOGICAL_H] });
+      for (let i = 0; i < state.slides.length; i++) {
+        const data = await renderSlideDataURL(i, 2);
+        if (i > 0) pdf.addPage([LOGICAL_W, LOGICAL_H], 'landscape');
+        pdf.addImage(data, 'PNG', 0, 0, LOGICAL_W, LOGICAL_H);
+      }
+      pdf.save('scalper-board.pdf');
+    }
+
+    // ── presentation ──
+    function present() {
+      saveCurrent();
+      app.classList.add('presenting');
+      if (app.requestFullscreen) app.requestFullscreen().catch(() => {});
+      setTimeout(fitCanvas, 60); updateCounters();
+    }
+    function exitPresent() {
+      app.classList.remove('presenting');
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+      setTimeout(fitCanvas, 60);
+    }
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement && app.classList.contains('presenting')) {
+        app.classList.remove('presenting'); setTimeout(fitCanvas, 60);
+      }
+    });
+
+    // ── persistence ──
+    function persist() {
+      saveCurrent();
+      try { localStorage.setItem('scalperBoard', JSON.stringify({ slides: state.slides, cur: state.cur })); } catch (e) {}
+    }
+    function restore() {
+      try {
+        const raw = localStorage.getItem('scalperBoard');
+        if (raw) {
+          const d = JSON.parse(raw);
+          if (d.slides && d.slides.length) { state.slides = d.slides; state.cur = Math.min(d.cur || 0, d.slides.length - 1); return true; }
+        }
+      } catch (e) {}
+      return false;
+    }
+
+    // ── wire UI ──
+    function wireUI() {
+      toolBtns.forEach(b => b.addEventListener('click', () => setTool(b.dataset.tool)));
+      document.getElementById('sk-undo').addEventListener('click', undo);
+      document.getElementById('sk-redo').addEventListener('click', redo);
+      document.getElementById('sk-delete').addEventListener('click', deleteSel);
+      document.getElementById('sk-clear').addEventListener('click', clearSlide);
+      document.getElementById('sk-add-slide').addEventListener('click', addSlide);
+      document.getElementById('sk-png-btn').addEventListener('click', exportPNG);
+      document.getElementById('sk-pdf-btn').addEventListener('click', exportPDF);
+      document.getElementById('sk-present-btn').addEventListener('click', present);
+      document.getElementById('sk-present-exit').addEventListener('click', exitPresent);
+
+      const bgBtn = document.getElementById('sk-bg-btn'), bgMenu = document.getElementById('sk-bg-menu');
+      bgBtn.addEventListener('click', e => { e.stopPropagation(); bgMenu.classList.toggle('show'); });
+      document.addEventListener('click', () => bgMenu.classList.remove('show'));
+      bgMenu.querySelectorAll('button').forEach(b =>
+        b.addEventListener('click', () => { applyBg(b.dataset.bg); bgMenu.classList.remove('show'); pushHistory(); updateThumb(); }));
+
+      document.querySelectorAll('[data-sk-prev]').forEach(b => b.addEventListener('click', () => gotoSlide(state.cur - 1)));
+      document.querySelectorAll('[data-sk-next]').forEach(b => b.addEventListener('click', () => gotoSlide(state.cur + 1)));
+
+      colorInput.addEventListener('input', () => {
+        if (canvas.freeDrawingBrush) canvas.freeDrawingBrush.color = colorInput.value;
+        const o = canvas.getActiveObject();
+        if (o) {
+          if (o.type === 'i-text' || o.type === 'text') o.set('fill', colorInput.value);
+          else o.set('stroke', colorInput.value);
+          canvas.requestRenderAll(); pushHistory(); updateThumb();
+        }
+      });
+      widthSel.addEventListener('change', () => {
+        if (canvas.freeDrawingBrush) canvas.freeDrawingBrush.width = parseInt(widthSel.value, 10);
+        const o = canvas.getActiveObject();
+        if (o && o.type !== 'i-text' && o.type !== 'text') { o.set('strokeWidth', parseInt(widthSel.value, 10)); canvas.requestRenderAll(); pushHistory(); updateThumb(); }
+      });
+
+      window.addEventListener('resize', () => { if (app.closest('.feature-view').style.display !== 'none') fitCanvas(); });
+
+      document.addEventListener('keydown', e => {
+        const view = document.getElementById('scalper-view');
+        if (!view || view.style.display === 'none') return;
+        const ae = document.activeElement;
+        const typing = ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.tagName === 'SELECT');
+        const editing = canvas && canvas.getActiveObject() && canvas.getActiveObject().isEditing;
+        if (typing || editing) return;
+        if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); deleteSel(); }
+        else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); }
+        else if (app.classList.contains('presenting') && e.key === 'ArrowRight') { gotoSlide(state.cur + 1); }
+        else if (app.classList.contains('presenting') && e.key === 'ArrowLeft') { gotoSlide(state.cur - 1); }
+        else if (app.classList.contains('presenting') && e.key === 'Escape') { exitPresent(); }
+      });
+    }
+
+    window.Scalper = {
+      open() {
+        if (typeof fabric === 'undefined') { console.warn('Scalpe®: canvas engine not loaded'); return; }
+        if (state.loaded) { fitCanvas(); renderThumbs(); return; }
+        state.loaded = true;
+        canvas = new fabric.Canvas('sk-canvas', { backgroundColor: SOLID.dark, preserveObjectStacking: true });
+        canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
+        canvas.freeDrawingBrush.color = colorInput.value;
+        canvas.freeDrawingBrush.width = parseInt(widthSel.value, 10);
+        bindDrawing();
+        if (!restore()) { state.slides = [{ json: null, bg: 'dark' }]; state.cur = 0; }
+        state.hist = state.slides.map(() => ({ stack: [], idx: -1 }));
+        setTool('select');
+        loadSlide(true);
+        renderThumbs();
+        wireUI();
       },
     };
   })();
