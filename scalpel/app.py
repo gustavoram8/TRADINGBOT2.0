@@ -1248,6 +1248,54 @@ def forum_delete_comment(cid):
 # ──────────────────────────────────────────────────────────────────────────
 # PROP FIRM SCOUT — API ENDPOINTS
 # ──────────────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────
+#  OFAC COUNTRY BLOCKLIST (Prop Firm Scout)
+# ──────────────────────────────────────────────────────────────────────────────
+# Every prop firm in our dataset is a US-incorporated futures funding company
+# regulated by the NFA/CFTC. They therefore inherit the same OFAC restrictions
+# imposed by the US Treasury Department, and uniformly block traders from
+# sanctioned jurisdictions to avoid compliance penalties.
+#
+# This list reflects OFAC's sanctioned countries (comprehensive embargoes +
+# secondary executive-order sanctions + active conflict-zone restrictions).
+# It is applied to ALL firms by init_scout_data() as the default blocklist.
+#
+# Per-firm exceptions are documented separately (see VENEZUELA_ALLOWED_SLUGS).
+# Once OpenAI Web Search is paid, the agent can refresh per-firm T&C weekly
+# and override any of these defaults if a firm publishes specific exceptions.
+OFAC_DEFAULT_BLOCKLIST = [
+    # ── Comprehensive sanctions (full embargo — never accepted) ──
+    'IR',  # Iran
+    'KP',  # North Korea
+    'CU',  # Cuba
+    'SY',  # Syria
+    # ── Secondary / sectoral sanctions (uniformly blocked by US firms) ──
+    'RU',  # Russia
+    'BY',  # Belarus
+    'VE',  # Venezuela
+    'MM',  # Myanmar (Burma)
+    # ── Conflict zones & executive-order sanctions ──
+    'AF',  # Afghanistan
+    'IQ',  # Iraq
+    'LY',  # Libya
+    'SO',  # Somalia
+    'SD',  # Sudan
+    'SS',  # South Sudan
+    'YE',  # Yemen
+    'ZW',  # Zimbabwe
+    'NI',  # Nicaragua (regime sanctions)
+    'HT',  # Haiti
+    'CF',  # Central African Republic
+    'CD',  # DR Congo
+    'ML',  # Mali
+]
+
+# Firms with documented exceptions to the Venezuela OFAC block.
+# Per user research: OneUp Trader is the only firm in our 25 that historically
+# accepts Venezuelan traders. All others enforce the OFAC default.
+VENEZUELA_ALLOWED_SLUGS = {'oneup-trader'}
+
+
 SCOUT_SEED = [
     {
         "name": "Apex Trader Funding", "slug": "apex-trader-funding",
@@ -1541,29 +1589,49 @@ SCOUT_SEED = [
 
 
 def init_scout_data():
-    if PropFirm.query.count() > 0:
-        return
+    """Seed prop firms on first run, and update OFAC blocklist + Venezuela flag
+    on every startup so country-filter data stays consistent with current sanctions."""
+    is_first_run = PropFirm.query.count() == 0
+
     for d in SCOUT_SEED:
-        firm = PropFirm(
-            name=d['name'], slug=d['slug'], website=d.get('website', ''),
-            account_costs=d.get('account_costs', {}),
-            allowed_worldwide=True,
-            blocked_countries=d.get('blocked_countries', []),
-            venezuela_friendly=d.get('venezuela_friendly', False),
-            rating=d.get('rating', 0.0),
-            payout_speed_days=d.get('payout_speed_days', 14),
-            withdrawal_methods=d.get('withdrawal_methods', []),
-            trading_platforms=d.get('trading_platforms', []),
-            drawdown_type=d.get('drawdown_type', 'trailing'),
-            has_promotion=d.get('has_promotion', False),
-            promotion_detail=d.get('promotion_detail', ''),
-            profit_split=d.get('profit_split', 80),
-            instruments=d.get('instruments', ['futures']),
-            tags=d.get('tags', []),
-        )
-        db.session.add(firm)
+        slug = d['slug']
+        # OFAC default applies to every US-regulated futures prop firm.
+        # The only documented exception in our set is OneUp Trader for Venezuela.
+        blocklist = list(OFAC_DEFAULT_BLOCKLIST)
+        if slug in VENEZUELA_ALLOWED_SLUGS and 'VE' in blocklist:
+            blocklist.remove('VE')
+        ve_friendly = slug in VENEZUELA_ALLOWED_SLUGS
+
+        firm = PropFirm.query.filter_by(slug=slug).first()
+        if firm:
+            # Always refresh sanction-related fields so this acts as a migration
+            firm.blocked_countries = blocklist
+            firm.venezuela_friendly = ve_friendly
+            firm.updated_at = datetime.now(timezone.utc)
+        else:
+            firm = PropFirm(
+                name=d['name'], slug=slug, website=d.get('website', ''),
+                account_costs=d.get('account_costs', {}),
+                allowed_worldwide=True,
+                blocked_countries=blocklist,
+                venezuela_friendly=ve_friendly,
+                rating=d.get('rating', 0.0),
+                payout_speed_days=d.get('payout_speed_days', 14),
+                withdrawal_methods=d.get('withdrawal_methods', []),
+                trading_platforms=d.get('trading_platforms', []),
+                drawdown_type=d.get('drawdown_type', 'trailing'),
+                has_promotion=d.get('has_promotion', False),
+                promotion_detail=d.get('promotion_detail', ''),
+                profit_split=d.get('profit_split', 80),
+                instruments=d.get('instruments', ['futures']),
+                tags=d.get('tags', []),
+            )
+            db.session.add(firm)
     db.session.commit()
-    app.logger.info('Seeded %d prop firms', len(SCOUT_SEED))
+    if is_first_run:
+        app.logger.info('Seeded %d prop firms', len(SCOUT_SEED))
+    else:
+        app.logger.info('Refreshed OFAC blocklist on %d prop firms', len(SCOUT_SEED))
 
 
 @app.route('/api/scout/firms')
@@ -1584,13 +1652,11 @@ def scout_firms():
     firms = PropFirm.query.filter_by(is_active=True).all()
     results = []
     for f in firms:
-        # Country filter — block if country is in blocked list
-        if country:
-            if f.blocked_countries and country in f.blocked_countries:
-                continue
-            # Special VE flag
-            if country == 'VE' and not f.venezuela_friendly:
-                continue
+        # Country filter — block if user's country is in firm's OFAC blocklist.
+        # blocked_countries is populated by init_scout_data() using OFAC_DEFAULT_BLOCKLIST
+        # plus any per-firm exceptions (e.g. OneUp Trader accepts Venezuela).
+        if country and f.blocked_countries and country in f.blocked_countries:
+            continue
 
         # Account size filter — firm must offer that size
         if size and (not f.account_costs or size not in f.account_costs):
