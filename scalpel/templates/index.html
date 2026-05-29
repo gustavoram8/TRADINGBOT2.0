@@ -1563,12 +1563,7 @@
       margin-top: -40px; margin-bottom: -80px;
       height: calc(100vh - 108px); min-height: 460px;
       overflow: hidden; border: none; border-radius: 0;
-      background: radial-gradient(ellipse at 50% 64%, rgba(234,179,8,0.08), transparent 72%), #04060d;
-    }
-    /* Stage stays dark in both themes so the additive hologram glows;
-       only the hologram colour changes (blue in light mode, gold in dark). */
-    body.light .synapse-app {
-      background: radial-gradient(ellipse at 50% 64%, rgba(63,111,214,0.12), transparent 72%), #060a16;
+      background: var(--bg);
     }
     @media (max-width: 768px) {
       .synapse-app { margin-top: -24px; margin-bottom: -60px; height: calc(100vh - 92px); }
@@ -5486,11 +5481,14 @@
         halo.position.copy(pos);
         scene.add(halo);
 
-        // branch line from brain to node
-        const lg = new THREE.BufferGeometry().setFromPoints([bc.clone(), pos.clone()]);
-        const lm = new THREE.LineBasicMaterial({ color: colDim(), transparent: true, opacity: 0.5 });
-        baseMats.push(lm);
-        scene.add(new THREE.Line(lg, lm));
+        // branch line from brain to node — skip the dead-centre node so there is
+        // no vertical line running down the middle of the brain / head.
+        if (Math.abs(pos.x) > 0.6) {
+          const lg = new THREE.BufferGeometry().setFromPoints([bc.clone(), pos.clone()]);
+          const lm = new THREE.LineBasicMaterial({ color: colDim(), transparent: true, opacity: 0.5 });
+          baseMats.push(lm);
+          scene.add(new THREE.Line(lg, lm));
+        }
 
         // crisp HTML label that tracks the node
         const label = document.createElement('div');
