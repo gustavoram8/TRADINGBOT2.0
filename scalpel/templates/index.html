@@ -5240,10 +5240,8 @@
     const BRAIN_C = { x: 0, y: BRAIN_Y, z: 0 };
 
     function isLight() { return document.body.classList.contains('light'); }
-    // Light mode rides on the page's light background, so the hologram uses a
-    // deeper blue (good contrast on near-white); dark mode uses glowing gold.
-    function colDim()    { return isLight() ? 0x1c3a8f : 0xeab308; }
-    function colBright() { return isLight() ? 0x2e5fd6 : 0xffd23f; }
+    function colDim()    { return isLight() ? 0x7aaed4 : 0xeab308; }
+    function colBright() { return isLight() ? 0x5592c8 : 0xffd23f; }
 
     function ensureThree() {
       if (typeof THREE !== 'undefined') return Promise.resolve();
@@ -5388,7 +5386,7 @@
         color: colBright(), transparent: true, opacity: 0.5, depthWrite: false,
       });
       brightMats.push(wireMat);
-      holoLineMats.push({ mat: wireMat, dark: 0.5, light: 0.72 });
+      holoLineMats.push({ mat: wireMat, dark: 0.5, light: 0.46 });
       g.add(new THREE.LineSegments(wfGeo, wireMat));
 
       // outer bloom halo — the same edges scaled out a hair, very faint
@@ -5396,7 +5394,7 @@
         color: colBright(), transparent: true, opacity: 0.16, depthWrite: false,
       });
       brightMats.push(glowMat);
-      holoLineMats.push({ mat: glowMat, dark: 0.16, light: 0.1 });
+      holoLineMats.push({ mat: glowMat, dark: 0.16, light: 0.07 });
       const glowWire = new THREE.LineSegments(wfGeo, glowMat);
       glowWire.scale.set(1.025, 1.025, 1.025);
       g.add(glowWire);
@@ -5555,7 +5553,11 @@
         o.mat.opacity = light ? o.light : o.dark;
         o.mat.needsUpdate = true;
       });
-      if (brainMesh) { brainMesh.material.blending = blend; brainMesh.material.needsUpdate = true; }
+      if (brainMesh) {
+        brainMesh.material.blending = blend;
+        brainMesh.material.uniforms.uOpacity.value = light ? 0.05 : 0.12;
+        brainMesh.material.needsUpdate = true;
+      }
     }
 
     function resize() {
