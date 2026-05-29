@@ -5233,16 +5233,15 @@
 
     let opening = false, started = false;
     let renderer, scene, camera, raf, clock;
-    let bustGroup, brainGroup, brainMesh, brainWire, brainGlow, dataRings = [];
-    let netPts, netLines, fogPts;
+    let headGroup, brainGroup, brainMesh, brainGlow, dataRings = [];
+    let netPts, netLines;
     const nodes = [];
     let baseMats = [], brightMats = [], netMats = [], shaderMats = [];
     let raycaster, ndc, hovered = null, lastLight = null;
     let netPos, netVel, NET_N = 0;
-    let fogPos, fogVel, FOG_N = 0;
     let toastTimer = null;
 
-    const BRAIN_Y = 9.6;                                   // brain floats above the head
+    const BRAIN_Y = 11.3;                                  // brain floats above the head
     const BRAIN_C = { x: 0, y: BRAIN_Y, z: 0 };
 
     function isLight() { return document.body.classList.contains('light'); }
@@ -5300,134 +5299,95 @@
       return mat;
     }
 
-    // ── Bust: head + neck + shoulders, swept from a silhouette profile,
-    //    with elliptical cross-sections (wide shoulders, round head). ──
-    // profile: [y, radiusX, radiusZ]
-    const BUST_PROFILE = [
-      [ 8.6, 0.10, 0.10], [ 8.2, 0.62, 0.70], [ 7.7, 0.95, 1.06],
-      [ 7.1, 1.10, 1.20], [ 6.5, 1.05, 1.16], [ 6.0, 0.92, 1.00],
-      [ 5.55, 0.62, 0.62], [ 5.15, 0.45, 0.45], [ 4.8, 0.44, 0.44],
-      [ 4.45, 0.6, 0.5], [ 4.0, 1.15, 0.7], [ 3.4, 1.95, 0.92],
-      [ 2.7, 2.8, 1.08], [ 1.9, 3.5, 1.2], [ 1.0, 4.0, 1.28],
-      [-0.2, 4.3, 1.32],
-    ];
+    // ── Real anatomical models, loaded as OBJ and parsed inline (no external
+    //    loader scripts), then dressed in the holographic shader. ──
+    //    Head : classic "Walt" bust — defined nose, brow, jaw, eye sockets.
+    //    Brain: AFNI "Colin 27" average-brain pial surface (both hemispheres).
+    const HEAD_URL  = 'https://raw.githubusercontent.com/mrdoob/three.js/r128/examples/models/obj/walt/WaltHead.obj';
+    const BRAIN_URL = 'https://raw.githubusercontent.com/alperbayram/3DBrainmodel/main/obj/freesurff.Obj';
 
-    function profileAt(t) {
-      // t in [0,1] → interpolate the profile, returns {y, rx, rz}
-      const p = BUST_PROFILE, n = p.length - 1, f = t * n, i = Math.min(Math.floor(f), n - 1), k = f - i;
-      const a = p[i], b = p[i + 1];
-      return { y: a[0] + (b[0] - a[0]) * k, rx: a[1] + (b[1] - a[1]) * k, rz: a[2] + (b[2] - a[2]) * k };
-    }
-
-    function buildBust() {
-      const g = new THREE.Group();
-      const RINGS = 90, SEG = 56;
-      const pos = [], norm = [], idx = [];
-      for (let r = 0; r <= RINGS; r++) {
-        const pr = profileAt(r / RINGS);
-        for (let s = 0; s <= SEG; s++) {
-          const th = (s / SEG) * Math.PI * 2;
-          const x = Math.cos(th) * pr.rx, z = Math.sin(th) * pr.rz;
-          pos.push(x, pr.y, z);
-          const nx = Math.cos(th) / pr.rx, nz = Math.sin(th) / pr.rz;
-          const nl = Math.hypot(nx, 0.25, nz) || 1;
-          norm.push(nx / nl, 0.25 / nl, nz / nl);
+    function parseOBJ(text) {
+      const vs = [], vns = [], idx = [];
+      const lines = text.split('\n');
+      for (let li = 0; li < lines.length; li++) {
+        const line = lines[li];
+        const c0 = line.charCodeAt(0);
+        if (c0 === 118) {                                        // 'v'
+          const c1 = line.charCodeAt(1), t = line.split(/\s+/);
+          if (c1 === 32) vs.push(+t[1], +t[2], +t[3]);           // 'v '  position
+          else if (c1 === 110) vns.push(+t[1], +t[2], +t[3]);    // 'vn'  normal
+        } else if (c0 === 102 && line.charCodeAt(1) === 32) {    // 'f '  face
+          const toks = line.trim().split(/\s+/), fp = [];
+          for (let ti = 1; ti < toks.length; ti++) {
+            let pi = parseInt(toks[ti].split('/')[0], 10);
+            if (pi < 0) pi = vs.length / 3 + pi + 1;
+            fp.push(pi - 1);
+          }
+          for (let i = 1; i < fp.length - 1; i++) {              // fan-triangulate
+            idx.push(fp[0], fp[i], fp[i + 1]);
+          }
         }
       }
-      const cols = SEG + 1;
-      for (let r = 0; r < RINGS; r++) {
-        for (let s = 0; s < SEG; s++) {
-          const a = r * cols + s, b = a + cols;
-          idx.push(a, b, a + 1, a + 1, b, b + 1);
-        }
-      }
+      // Indexed geometry → shared vertices → computeVertexNormals yields smooth
+      // folds (brain). When the file ships aligned per-vertex normals, use them.
       const geo = new THREE.BufferGeometry();
-      geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-      geo.setAttribute('normal', new THREE.Float32BufferAttribute(norm, 3));
+      geo.setAttribute('position', new THREE.Float32BufferAttribute(vs, 3));
       geo.setIndex(idx);
-
-      // glowing translucent surface
-      g.add(wireMesh(geo, holoShader(colDim(), 0.1)));
-
-      // contour scan-rings (bright) every few profile steps
-      const ringMat = new THREE.LineBasicMaterial({ color: colBright(), transparent: true, opacity: 0.32 });
-      brightMats.push(ringMat);
-      for (let r = 2; r <= RINGS; r += 5) {
-        const pr = profileAt(r / RINGS), pts = [];
-        for (let s = 0; s <= SEG; s++) {
-          const th = (s / SEG) * Math.PI * 2;
-          pts.push(new THREE.Vector3(Math.cos(th) * pr.rx, pr.y, Math.sin(th) * pr.rz));
-        }
-        g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), ringMat));
-      }
-
-      // faint vertical wireframe ribs
-      const ribMat = new THREE.LineBasicMaterial({ color: colDim(), transparent: true, opacity: 0.14 });
-      baseMats.push(ribMat);
-      for (let s = 0; s < SEG; s += 4) {
-        const th = (s / SEG) * Math.PI * 2, pts = [];
-        for (let r = 0; r <= RINGS; r += 2) {
-          const pr = profileAt(r / RINGS);
-          pts.push(new THREE.Vector3(Math.cos(th) * pr.rx, pr.y, Math.sin(th) * pr.rz));
-        }
-        g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), ribMat));
-      }
-      return g;
-    }
-
-    // ── Organic brain: a high-detail icosphere whose vertices are displaced
-    //    by layered sine "noise" to form gyri/sulci bumps, grooved along the
-    //    midline (longitudinal fissure) and stretched front-to-back. ──
-    function brainGeometry() {
-      const geo = new THREE.IcosahedronGeometry(1.35, 4);
-      const p = geo.attributes.position;
-      const v = new THREE.Vector3();
-      for (let i = 0; i < p.count; i++) {
-        v.fromBufferAttribute(p, i);
-        const n = v.clone().normalize();
-        // layered bumps → folded cortical surface
-        let d = 0;
-        d += Math.sin(n.x * 7.0) * Math.sin(n.y * 7.0) * Math.sin(n.z * 7.0) * 0.13;
-        d += Math.sin(n.x * 13.0 + 1.7) * Math.sin(n.z * 13.0) * 0.07;
-        d += Math.sin(n.y * 19.0) * Math.sin(n.z * 11.0 + 0.6) * 0.045;
-        // longitudinal fissure: pinch radius near the x≈0 midline plane
-        const fissure = Math.exp(-(n.x * n.x) * 60.0) * 0.22;
-        const rad = 1.0 + d - fissure;
-        v.copy(n).multiplyScalar(1.35 * rad);
-        v.x *= 1.06; v.y *= 0.92; v.z *= 1.32;   // brain proportions (long, low)
-        p.setXYZ(i, v.x, v.y, v.z);
-      }
-      geo.computeVertexNormals();
+      if (vns.length === vs.length && vns.length) geo.setAttribute('normal', new THREE.Float32BufferAttribute(vns, 3));
+      else geo.computeVertexNormals();
       return geo;
     }
 
-    function buildBrain() {
+    function loadOBJGeo(url) {
+      return fetch(url).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); }).then(parseOBJ);
+    }
+
+    // Center a geometry at the origin and scale so its largest dimension = target.
+    function frameGeometry(geo, target) {
+      geo.computeBoundingBox();
+      const bb = geo.boundingBox, sz = new THREE.Vector3(), c = new THREE.Vector3();
+      bb.getSize(sz); bb.getCenter(c);
+      geo.translate(-c.x, -c.y, -c.z);
+      const s = target / Math.max(sz.x, sz.y, sz.z);
+      geo.scale(s, s, s);
+    }
+
+    async function buildHead() {
+      const geo = await loadOBJGeo(HEAD_URL);
+      frameGeometry(geo, 8.4);
+      const g = new THREE.Group();
+      g.add(wireMesh(geo, holoShader(colDim(), 0.1)));
+      // sharp feature edges (nose ridge, brow, jaw line, eye sockets)
+      const em = new THREE.LineBasicMaterial({ color: colBright(), transparent: true, opacity: 0.28 });
+      brightMats.push(em);
+      g.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo, 22), em));
+      g.position.set(0, 5.2, 0);          // crown high, neck base cropped by bottom edge
+      headGroup = g;
+      scene.add(g);
+    }
+
+    async function buildBrain() {
+      const geo = await loadOBJGeo(BRAIN_URL);
+      frameGeometry(geo, 3.6);
       const g = new THREE.Group();
       g.position.set(BRAIN_C.x, BRAIN_C.y, BRAIN_C.z);
-      const geo = brainGeometry();
 
-      // glowing translucent cortex
-      brainMesh = wireMesh(geo, holoShader(colBright(), 0.14, true));
+      // glowing cortical surface (Fresnel emphasises the gyri/sulci folds)
+      brainMesh = wireMesh(geo, holoShader(colBright(), 0.12, true));
       g.add(brainMesh);
 
-      // sulci/gyri wireframe overlay
-      const wm = new THREE.MeshBasicMaterial({ color: colBright(), wireframe: true, transparent: true, opacity: 0.22 });
-      brightMats.push(wm);
-      brainWire = wireMesh(geo, wm);
-      g.add(brainWire);
-
       // soft glow halo
-      const gm = new THREE.MeshBasicMaterial({ color: colBright(), transparent: true, opacity: 0.06 });
+      const gm = new THREE.MeshBasicMaterial({ color: colBright(), transparent: true, opacity: 0.05 });
       brightMats.push(gm);
-      brainGlow = wireMesh(new THREE.SphereGeometry(1.95, 20, 16), gm);
-      brainGlow.scale.set(1.06, 0.92, 1.32);
+      brainGlow = wireMesh(new THREE.SphereGeometry(2.05, 20, 16), gm);
+      brainGlow.scale.set(1.15, 0.9, 1.35);
       g.add(brainGlow);
 
-      // rotating data rings (medical-scanner feel)
+      // rotating scanner data-rings
       [[1, 0, 0], [0, 0, 1]].forEach((ax, i) => {
         const rm = new THREE.MeshBasicMaterial({ color: colDim(), transparent: true, opacity: 0.4, wireframe: true });
         baseMats.push(rm);
-        const ring = wireMesh(new THREE.TorusGeometry(2.35, 0.02, 6, 80), rm);
+        const ring = wireMesh(new THREE.TorusGeometry(2.6, 0.02, 6, 90), rm);
         if (ax[0]) ring.rotation.y = Math.PI / 2;
         if (ax[2]) ring.rotation.x = Math.PI / 2;
         ring.userData.spin = i ? 0.006 : -0.009;
@@ -5436,7 +5396,7 @@
       });
 
       brainGroup = g;
-      return g;
+      scene.add(g);
     }
 
     function buildNodes() {
@@ -5528,37 +5488,6 @@
       netLines.geometry.attributes.position.needsUpdate = true;
     }
 
-    // ── Atmosphere: slow rising "mist" particles around the bust ──
-    function buildFog() {
-      FOG_N = 130;
-      fogPos = new Float32Array(FOG_N * 3);
-      fogVel = new Float32Array(FOG_N);
-      for (let i = 0; i < FOG_N; i++) {
-        fogPos[i*3]   = (Math.random() - 0.5) * 10;
-        fogPos[i*3+1] = Math.random() * 11 - 1;
-        fogPos[i*3+2] = (Math.random() - 0.5) * 5 + 0.5;
-        fogVel[i] = 0.004 + Math.random() * 0.012;
-      }
-      const g = new THREE.BufferGeometry();
-      g.setAttribute('position', new THREE.BufferAttribute(fogPos, 3));
-      const m = new THREE.PointsMaterial({
-        color: colBright(), size: 0.13, transparent: true, opacity: 0.32,
-        sizeAttenuation: true, depthWrite: false, blending: THREE.AdditiveBlending,
-      });
-      brightMats.push(m);
-      fogPts = new THREE.Points(g, m);
-      scene.add(fogPts);
-    }
-
-    function updateFog() {
-      for (let i = 0; i < FOG_N; i++) {
-        fogPos[i*3+1] += fogVel[i];
-        fogPos[i*3]   += Math.sin((fogPos[i*3+1] + i) * 0.6) * 0.003;
-        if (fogPos[i*3+1] > 10) { fogPos[i*3+1] = -1; fogPos[i*3] = (Math.random() - 0.5) * 10; }
-      }
-      fogPts.geometry.attributes.position.needsUpdate = true;
-    }
-
     function recolor() {
       const d = colDim(), b = colBright();
       baseMats.forEach(m => m.color.setHex(d));
@@ -5622,13 +5551,17 @@
 
       shaderMats.forEach(m => { m.uniforms.uTime.value = t; });
 
-      bustGroup.rotation.y = Math.sin(t * 0.18) * 0.12;             // subtle holographic drift
-      bustGroup.position.y = Math.sin(t * 0.6) * 0.06;              // gentle float
-      brainMesh.rotation.y = brainWire.rotation.y += 0.0035;
-      brainMesh.rotation.x = brainWire.rotation.x = Math.sin(t * 0.35) * 0.08;
-      brainGroup.position.y = BRAIN_Y + Math.sin(t * 0.85) * 0.14;
-      brainGlow.scale.set(1.06 + Math.sin(t * 1.6) * 0.05, 0.92, 1.32);
-      dataRings.forEach(r => { r.rotation.z += r.userData.spin; });
+      if (headGroup) {
+        headGroup.rotation.y = Math.sin(t * 0.16) * 0.1;            // subtle holographic drift
+        headGroup.position.y = 5.2 + Math.sin(t * 0.6) * 0.05;      // gentle float
+      }
+      if (brainMesh) {
+        brainMesh.rotation.y += 0.0035;
+        brainMesh.rotation.x = Math.sin(t * 0.35) * 0.06;
+        brainGroup.position.y = BRAIN_Y + Math.sin(t * 0.85) * 0.13;
+        brainGlow.scale.set(1.15 + Math.sin(t * 1.6) * 0.05, 0.9, 1.35);
+        dataRings.forEach(r => { r.rotation.z += r.userData.spin; });
+      }
 
       // hover detection
       raycaster.setFromCamera(ndc, camera);
@@ -5650,39 +5583,36 @@
       });
 
       updateNet();
-      updateFog();
       projectLabels();
       renderer.render(scene, camera);
     }
 
-    function buildScene() {
+    async function buildScene() {
       const canvas = document.getElementById('synapse-canvas');
       renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 
       scene = new THREE.Scene();
       camera = new THREE.PerspectiveCamera(50, 1.6, 0.1, 100);
-      // Frame so the bust emerges from the bottom edge: focus high, bust bottom cut off.
-      camera.position.set(0, 8.4, 15.5);
-      camera.lookAt(0, 8.6, 0);
+      // Frame so the head emerges from the bottom edge: focus high, neck cropped.
+      camera.position.set(0, 9.5, 13.5);
+      camera.lookAt(0, 9.5, 0);
 
       ndc = new THREE.Vector2(-10, -10);
       raycaster = new THREE.Raycaster();
       clock = new THREE.Clock();
 
-      buildNet();                       // far background
-      bustGroup = buildBust();
-      scene.add(bustGroup);
-      scene.add(buildBrain());
-      buildFog();                       // mist around the bust
+      buildNet();                       // neural-network backdrop
       buildNodes();
       lastLight = isLight();
 
       renderer.domElement.addEventListener('pointermove', onPointerMove);
       renderer.domElement.addEventListener('click', onClick);
       window.addEventListener('resize', resize);
-
       resize();
+
+      // load the real anatomical models before starting the loop
+      await Promise.all([buildHead(), buildBrain()]);
       animate();
     }
 
@@ -5692,14 +5622,20 @@
         if (opening) return;
         opening = true;
         const loading = document.getElementById('syn-loading');
+        const errMsg = (m) => { if (loading) { const d = loading.querySelector('div:last-child'); if (d) d.textContent = m; } };
         await ensureThree();
         if (typeof THREE === 'undefined') {
-          if (loading) loading.querySelector('div:last-child').textContent =
-            'Could not load the 3D engine. Check your connection and reopen this tab.';
+          errMsg('Could not load the 3D engine. Check your connection and reopen this tab.');
           opening = false;
           return;
         }
-        buildScene();
+        try {
+          await buildScene();
+        } catch (e) {
+          errMsg('Could not load the holographic models. Check your connection and reopen this tab.');
+          opening = false;
+          return;
+        }
         started = true;
         opening = false;
         requestAnimationFrame(() => { resize(); if (loading) loading.classList.add('hidden'); });
