@@ -5241,7 +5241,7 @@
     let netPos, netVel, NET_N = 0;
     let toastTimer = null;
 
-    const BRAIN_Y = 11.3;                                  // brain floats above the head
+    const BRAIN_Y = 11.8;                                  // brain floats above the head
     const BRAIN_C = { x: 0, y: BRAIN_Y, z: 0 };
 
     function isLight() { return document.body.classList.contains('light'); }
@@ -5260,6 +5260,9 @@
     }
 
     function wireMesh(geom, mat) { const m = new THREE.Mesh(geom, mat); return m; }
+    function lineFrom(pts, mat) { return new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), mat); }
+    function loopFrom(pts, mat) { return new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), mat); }
+    const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
 
     // ── Holographic Fresnel shader: translucent core, glowing rim, rising
     //    scan-lines. The hallmark sci-fi hologram look. ──
@@ -5301,9 +5304,8 @@
 
     // ── Real anatomical models, loaded as OBJ and parsed inline (no external
     //    loader scripts), then dressed in the holographic shader. ──
-    //    Head : classic "Walt" bust — defined nose, brow, jaw, eye sockets.
     //    Brain: AFNI "Colin 27" average-brain pial surface (both hemispheres).
-    const HEAD_URL  = 'https://raw.githubusercontent.com/mrdoob/three.js/r128/examples/models/obj/walt/WaltHead.obj';
+    //    Head : built procedurally as an artist's construction sketch (below).
     const BRAIN_URL = 'https://raw.githubusercontent.com/alperbayram/3DBrainmodel/main/obj/freesurff.Obj';
 
     function parseOBJ(text) {
@@ -5352,16 +5354,71 @@
       geo.scale(s, s, s);
     }
 
-    async function buildHead() {
-      const geo = await loadOBJGeo(HEAD_URL);
-      frameGeometry(geo, 8.4);
+    // ── Head: an artist's construction sketch — Loomis cranium guides, marked
+    //    eye sockets, jaw planes, neck, shoulders and chest blocks. Pure glowing
+    //    line-work (no skin, hair, smile). Coords are local to the cranium centre. ──
+    function buildHead() {
       const g = new THREE.Group();
-      g.add(wireMesh(geo, holoShader(colDim(), 0.1)));
-      // sharp feature edges (nose ridge, brow, jaw line, eye sockets)
-      const em = new THREE.LineBasicMaterial({ color: colBright(), transparent: true, opacity: 0.28 });
-      brightMats.push(em);
-      g.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo, 22), em));
-      g.position.set(0, 5.2, 0);          // crown high, neck base cropped by bottom edge
+      g.position.set(0, 8.6, 0);
+      const r = 1.12, brow = -0.05;
+
+      const bright = new THREE.LineBasicMaterial({ color: colBright(), transparent: true, opacity: 0.82 });
+      brightMats.push(bright);
+
+      // faint cranium volume + soft holo glow fill
+      const sphMat = new THREE.MeshBasicMaterial({ color: colDim(), wireframe: true, transparent: true, opacity: 0.1 });
+      baseMats.push(sphMat);
+      const skull = wireMesh(new THREE.SphereGeometry(r, 22, 16), sphMat);
+      skull.scale.set(1, 1.08, 1.04); g.add(skull);
+      const glow = wireMesh(new THREE.SphereGeometry(r * 0.98, 24, 18), holoShader(colBright(), 0.05, true));
+      glow.scale.set(1, 1.08, 1.04); g.add(glow);
+
+      // Loomis guides: facial centre-line + brow band + front silhouette (great circles)
+      const vc = [], hc = [], sil = [];
+      for (let i = 0; i <= 72; i++) {
+        const a = i / 72 * Math.PI * 2;
+        vc.push(V3(0, Math.cos(a) * r * 1.08, Math.sin(a) * r * 1.04));
+        hc.push(V3(Math.cos(a) * r, brow, Math.sin(a) * r * 1.04));
+        sil.push(V3(Math.cos(a) * r, Math.sin(a) * r * 1.08, r * 0.16));
+      }
+      g.add(lineFrom(vc, bright)); g.add(lineFrom(hc, bright)); g.add(lineFrom(sil, bright));
+
+      // jaw: temple → cheekbone → chin → cheekbone → temple
+      const chin = V3(0, -r * 1.6, r * 0.55);
+      g.add(lineFrom([
+        V3(-r * 0.96, brow + 0.02, r * 0.18), V3(-r * 0.86, -r * 0.55, r * 0.42),
+        V3(-r * 0.4, chin.y + 0.18, r * 0.6), chin,
+        V3( r * 0.4, chin.y + 0.18, r * 0.6), V3( r * 0.86, -r * 0.55, r * 0.42),
+        V3( r * 0.96, brow + 0.02, r * 0.18),
+      ], bright));
+
+      // eye sockets — two clearly marked ellipses on the brow line
+      [-1, 1].forEach(s => {
+        const ex = s * r * 0.45, ey = brow - 0.06, ez = r * 0.84, pts = [];
+        for (let i = 0; i <= 30; i++) { const a = i / 30 * Math.PI * 2; pts.push(V3(ex + Math.cos(a) * r * 0.3, ey + Math.sin(a) * r * 0.17, ez)); }
+        g.add(loopFrom(pts, bright));
+      });
+
+      // nose: centre ridge + base
+      g.add(lineFrom([V3(0, brow - 0.05, r * 0.92), V3(0, brow - r * 0.62, r * 1.0)], bright));
+      g.add(lineFrom([V3(-r * 0.16, brow - r * 0.62, r * 0.92), V3(0, brow - r * 0.74, r * 1.02), V3(r * 0.16, brow - r * 0.62, r * 0.92)], bright));
+
+      // neck columns
+      g.add(lineFrom([V3(-0.5, -1.55, 0.22), V3(-0.6, -2.2, 0.08)], bright));
+      g.add(lineFrom([V3( 0.5, -1.55, 0.22), V3( 0.6, -2.2, 0.08)], bright));
+
+      // shoulders → deltoids
+      g.add(lineFrom([V3(-0.6, -2.2, 0.05), V3(-1.5, -2.35, 0.0), V3(-2.5, -2.65, -0.05)], bright));
+      g.add(lineFrom([V3( 0.6, -2.2, 0.05), V3( 1.5, -2.35, 0.0), V3( 2.5, -2.65, -0.05)], bright));
+      [-1, 1].forEach(s => g.add(lineFrom([V3(s * 2.5, -2.65, -0.05), V3(s * 2.55, -3.2, 0.05), V3(s * 2.2, -3.8, 0.1)], bright)));
+
+      // torso planes (sides taper, sternum centre-line, chest band, collar)
+      g.add(lineFrom([V3(-2.2, -3.8, 0.1), V3(-1.7, -5.2, 0.15)], bright));
+      g.add(lineFrom([V3( 2.2, -3.8, 0.1), V3( 1.7, -5.2, 0.15)], bright));
+      g.add(lineFrom([V3(0, -1.9, 0.2), V3(0, -5.2, 0.25)], bright));
+      g.add(lineFrom([V3(-1.7, -3.6, 0.1), V3(0, -3.85, 0.28), V3(1.7, -3.6, 0.1)], bright));
+      g.add(lineFrom([V3(-0.6, -2.2, 0.1), V3(0, -1.95, 0.28), V3(0.6, -2.2, 0.1)], bright));
+
       headGroup = g;
       scene.add(g);
     }
@@ -5374,13 +5431,14 @@
 
       // glowing cortical surface (Fresnel emphasises the gyri/sulci folds)
       brainMesh = wireMesh(geo, holoShader(colBright(), 0.12, true));
+      brainMesh.scale.set(1.28, 1.0, 1.05);   // a touch wider, as requested
       g.add(brainMesh);
 
       // soft glow halo
       const gm = new THREE.MeshBasicMaterial({ color: colBright(), transparent: true, opacity: 0.05 });
       brightMats.push(gm);
       brainGlow = wireMesh(new THREE.SphereGeometry(2.05, 20, 16), gm);
-      brainGlow.scale.set(1.15, 0.9, 1.35);
+      brainGlow.scale.set(1.4, 0.9, 1.3);
       g.add(brainGlow);
 
       // rotating scanner data-rings
@@ -5401,7 +5459,7 @@
 
     function buildNodes() {
       const bc = new THREE.Vector3(BRAIN_C.x, BRAIN_C.y, BRAIN_C.z);   // brain centre
-      const R = 5.0, n = METHODS.length;
+      const R = 4.2, n = METHODS.length;
       const overlay = document.getElementById('syn-overlay');
       METHODS.forEach((meth, i) => {
         const a = Math.PI * (0.12 + 0.76 * (i / (n - 1)));   // fan across the top arc
@@ -5553,13 +5611,13 @@
 
       if (headGroup) {
         headGroup.rotation.y = Math.sin(t * 0.16) * 0.1;            // subtle holographic drift
-        headGroup.position.y = 5.2 + Math.sin(t * 0.6) * 0.05;      // gentle float
+        headGroup.position.y = 8.6 + Math.sin(t * 0.6) * 0.05;      // gentle float
       }
       if (brainMesh) {
         brainMesh.rotation.y += 0.0035;
         brainMesh.rotation.x = Math.sin(t * 0.35) * 0.06;
         brainGroup.position.y = BRAIN_Y + Math.sin(t * 0.85) * 0.13;
-        brainGlow.scale.set(1.15 + Math.sin(t * 1.6) * 0.05, 0.9, 1.35);
+        brainGlow.scale.set(1.4 + Math.sin(t * 1.6) * 0.05, 0.9, 1.3);
         dataRings.forEach(r => { r.rotation.z += r.userData.spin; });
       }
 
@@ -5594,15 +5652,16 @@
 
       scene = new THREE.Scene();
       camera = new THREE.PerspectiveCamera(50, 1.6, 0.1, 100);
-      // Frame so the head emerges from the bottom edge: focus high, neck cropped.
-      camera.position.set(0, 9.5, 13.5);
-      camera.lookAt(0, 9.5, 0);
+      // Frame from a little below the shoulders up to the floating brain.
+      camera.position.set(0, 9.3, 13.5);
+      camera.lookAt(0, 9.3, 0);
 
       ndc = new THREE.Vector2(-10, -10);
       raycaster = new THREE.Raycaster();
       clock = new THREE.Clock();
 
       buildNet();                       // neural-network backdrop
+      buildHead();                      // procedural construction bust
       buildNodes();
       lastLight = isLight();
 
@@ -5611,8 +5670,8 @@
       window.addEventListener('resize', resize);
       resize();
 
-      // load the real anatomical models before starting the loop
-      await Promise.all([buildHead(), buildBrain()]);
+      // load the real anatomical brain model before starting the loop
+      await buildBrain();
       animate();
     }
 
