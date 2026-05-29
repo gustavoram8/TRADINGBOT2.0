@@ -5305,8 +5305,14 @@
     // ── Real anatomical models, loaded as OBJ and parsed inline (no external
     //    loader scripts), then dressed in the holographic shader. ──
     //    Brain: AFNI "Colin 27" average-brain pial surface (both hemispheres).
-    //    Head : built procedurally as an artist's construction sketch (below).
+    //    Head : "Simple Asaro Head" — the sculptors' planes-of-the-head study
+    //           (no skin, hair or expression — just the marked facial planes and
+    //           eye sockets the user wanted). Served from our own /static so there
+    //           is no cross-origin fetch to worry about.
     const BRAIN_URL = 'https://raw.githubusercontent.com/alperbayram/3DBrainmodel/main/obj/freesurff.Obj';
+    const HEAD_URL  = '/static/models/asaro_head.obj';
+
+    const HEAD_Y = 7.8;   // bust sits below the floating brain
 
     function parseOBJ(text) {
       const vs = [], vns = [], idx = [];
@@ -5354,70 +5360,55 @@
       geo.scale(s, s, s);
     }
 
-    // ── Head: an artist's construction sketch — Loomis cranium guides, marked
-    //    eye sockets, jaw planes, neck, shoulders and chest blocks. Pure glowing
-    //    line-work (no skin, hair, smile). Coords are local to the cranium centre. ──
-    function buildHead() {
+    // ── Head: the real "Simple Asaro Head" model, dressed in the holographic
+    //    Fresnel shader. Loaded as OBJ (no skin/hair/expression — just the
+    //    sculpted facial planes and eye sockets), framed and floated below the
+    //    brain, on a rotating scanner pedestal. ──
+    async function buildHead() {
       const g = new THREE.Group();
-      g.position.set(0, 8.6, 0);
-      const r = 1.12, brow = -0.05;
+      g.position.set(0, HEAD_Y, 0);
 
-      const bright = new THREE.LineBasicMaterial({ color: colBright(), transparent: true, opacity: 0.82 });
-      brightMats.push(bright);
-
-      // faint cranium volume + soft holo glow fill
-      const sphMat = new THREE.MeshBasicMaterial({ color: colDim(), wireframe: true, transparent: true, opacity: 0.1 });
-      baseMats.push(sphMat);
-      const skull = wireMesh(new THREE.SphereGeometry(r, 22, 16), sphMat);
-      skull.scale.set(1, 1.08, 1.04); g.add(skull);
-      const glow = wireMesh(new THREE.SphereGeometry(r * 0.98, 24, 18), holoShader(colBright(), 0.05, true));
-      glow.scale.set(1, 1.08, 1.04); g.add(glow);
-
-      // Loomis guides: facial centre-line + brow band + front silhouette (great circles)
-      const vc = [], hc = [], sil = [];
-      for (let i = 0; i <= 72; i++) {
-        const a = i / 72 * Math.PI * 2;
-        vc.push(V3(0, Math.cos(a) * r * 1.08, Math.sin(a) * r * 1.04));
-        hc.push(V3(Math.cos(a) * r, brow, Math.sin(a) * r * 1.04));
-        sil.push(V3(Math.cos(a) * r, Math.sin(a) * r * 1.08, r * 0.16));
+      let geo;
+      try {
+        geo = await loadOBJGeo(HEAD_URL);
+      } catch (e) {
+        headGroup = g; scene.add(g);       // fail soft — brain + nodes still show
+        return;
       }
-      g.add(lineFrom(vc, bright)); g.add(lineFrom(hc, bright)); g.add(lineFrom(sil, bright));
 
-      // jaw: temple → cheekbone → chin → cheekbone → temple
-      const chin = V3(0, -r * 1.6, r * 0.55);
-      g.add(lineFrom([
-        V3(-r * 0.96, brow + 0.02, r * 0.18), V3(-r * 0.86, -r * 0.55, r * 0.42),
-        V3(-r * 0.4, chin.y + 0.18, r * 0.6), chin,
-        V3( r * 0.4, chin.y + 0.18, r * 0.6), V3( r * 0.86, -r * 0.55, r * 0.42),
-        V3( r * 0.96, brow + 0.02, r * 0.18),
-      ], bright));
+      // frame so the bust stands ~6.4 units tall, then centre on the origin
+      frameGeometry(geo, 6.4);
+      // ZBrush export is Y-up with the face looking toward +Z (the camera) — no
+      // re-orientation needed. Nudge so the eye-line lands near the camera focus.
+      geo.translate(0, 0.7, 0);
 
-      // eye sockets — two clearly marked ellipses on the brow line
-      [-1, 1].forEach(s => {
-        const ex = s * r * 0.45, ey = brow - 0.06, ez = r * 0.84, pts = [];
-        for (let i = 0; i <= 30; i++) { const a = i / 30 * Math.PI * 2; pts.push(V3(ex + Math.cos(a) * r * 0.3, ey + Math.sin(a) * r * 0.17, ez)); }
-        g.add(loopFrom(pts, bright));
+      // glowing holographic surface — additive blending gives the translucent,
+      // x-ray "scanned bust" look; the Fresnel rim lights up the facial planes.
+      const headMesh = wireMesh(geo, holoShader(colBright(), 0.07, true));
+      g.add(headMesh);
+
+      // soft inner glow shell that pulses (built from a low-detail copy)
+      const glowGeo = geo.clone();
+      const glowMesh = wireMesh(glowGeo, holoShader(colDim(), 0.04, false));
+      glowMesh.scale.set(1.04, 1.04, 1.04);
+      g.add(glowMesh);
+
+      // rotating scanner pedestal beneath the neck — a clean grounding element
+      const pedY = -3.55;
+      [[3.0, -0.012], [2.4, 0.018]].forEach(([rad, spin]) => {
+        const rm = new THREE.MeshBasicMaterial({ color: colDim(), transparent: true, opacity: 0.45, wireframe: true });
+        baseMats.push(rm);
+        const ring = wireMesh(new THREE.TorusGeometry(rad, 0.025, 6, 96), rm);
+        ring.rotation.x = Math.PI / 2;
+        ring.position.y = pedY;
+        ring.userData.spin = spin;
+        dataRings.push(ring);
+        g.add(ring);
       });
-
-      // nose: centre ridge + base
-      g.add(lineFrom([V3(0, brow - 0.05, r * 0.92), V3(0, brow - r * 0.62, r * 1.0)], bright));
-      g.add(lineFrom([V3(-r * 0.16, brow - r * 0.62, r * 0.92), V3(0, brow - r * 0.74, r * 1.02), V3(r * 0.16, brow - r * 0.62, r * 0.92)], bright));
-
-      // neck columns
-      g.add(lineFrom([V3(-0.5, -1.55, 0.22), V3(-0.6, -2.2, 0.08)], bright));
-      g.add(lineFrom([V3( 0.5, -1.55, 0.22), V3( 0.6, -2.2, 0.08)], bright));
-
-      // shoulders → deltoids
-      g.add(lineFrom([V3(-0.6, -2.2, 0.05), V3(-1.5, -2.35, 0.0), V3(-2.5, -2.65, -0.05)], bright));
-      g.add(lineFrom([V3( 0.6, -2.2, 0.05), V3( 1.5, -2.35, 0.0), V3( 2.5, -2.65, -0.05)], bright));
-      [-1, 1].forEach(s => g.add(lineFrom([V3(s * 2.5, -2.65, -0.05), V3(s * 2.55, -3.2, 0.05), V3(s * 2.2, -3.8, 0.1)], bright)));
-
-      // torso planes (sides taper, sternum centre-line, chest band, collar)
-      g.add(lineFrom([V3(-2.2, -3.8, 0.1), V3(-1.7, -5.2, 0.15)], bright));
-      g.add(lineFrom([V3( 2.2, -3.8, 0.1), V3( 1.7, -5.2, 0.15)], bright));
-      g.add(lineFrom([V3(0, -1.9, 0.2), V3(0, -5.2, 0.25)], bright));
-      g.add(lineFrom([V3(-1.7, -3.6, 0.1), V3(0, -3.85, 0.28), V3(1.7, -3.6, 0.1)], bright));
-      g.add(lineFrom([V3(-0.6, -2.2, 0.1), V3(0, -1.95, 0.28), V3(0.6, -2.2, 0.1)], bright));
+      const disc = wireMesh(new THREE.CircleGeometry(2.7, 48), holoShader(colBright(), 0.05, true));
+      disc.rotation.x = -Math.PI / 2;
+      disc.position.y = pedY - 0.02;
+      g.add(disc);
 
       headGroup = g;
       scene.add(g);
@@ -5610,8 +5601,8 @@
       shaderMats.forEach(m => { m.uniforms.uTime.value = t; });
 
       if (headGroup) {
-        headGroup.rotation.y = Math.sin(t * 0.16) * 0.1;            // subtle holographic drift
-        headGroup.position.y = 8.6 + Math.sin(t * 0.6) * 0.05;      // gentle float
+        headGroup.rotation.y = Math.sin(t * 0.16) * 0.12;           // subtle holographic drift
+        headGroup.position.y = HEAD_Y + Math.sin(t * 0.6) * 0.06;   // gentle float
       }
       if (brainMesh) {
         brainMesh.rotation.y += 0.0035;
@@ -5661,7 +5652,6 @@
       clock = new THREE.Clock();
 
       buildNet();                       // neural-network backdrop
-      buildHead();                      // procedural construction bust
       buildNodes();
       lastLight = isLight();
 
@@ -5670,7 +5660,8 @@
       window.addEventListener('resize', resize);
       resize();
 
-      // load the real anatomical brain model before starting the loop
+      // load the real anatomical models (Asaro head + brain) before the loop
+      await buildHead();
       await buildBrain();
       animate();
     }
