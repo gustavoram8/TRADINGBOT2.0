@@ -3,8 +3,13 @@
 
 ---
 
-> **INSTRUCCIÓN PERMANENTE:** Al inicio de CADA sesión nueva, muestra al usuario
-> la sección "📋 TAREAS PENDIENTES" completa antes de cualquier otra cosa.
+> **INSTRUCCIÓN PERMANENTE — RECORDATORIO DIARIO:**
+> La fecha de hoy está disponible en el contexto del sistema (`currentDate`).
+> Muestra la sección "📋 TAREAS PENDIENTES" completa **la primera vez que el usuario
+> te escriba en cada día calendario** (lunes, martes, miércoles, etc.).
+> Si ya la mostraste hoy (misma fecha en `currentDate`), NO la repitas en mensajes
+> posteriores del mismo día. Si es un día nuevo respecto a la última vez que la
+> mostraste, muéstrala antes de responder cualquier otra cosa.
 > Esto es obligatorio sin excepción.
 
 ---
@@ -34,7 +39,7 @@
 
 ## 📋 TAREAS PENDIENTES
 
-> Mostrar esta lista al usuario al inicio de cada sesión.
+> Mostrar esta lista **una vez por día calendario**, la primera vez que el usuario escriba ese día.
 
 ### 🔴 Crítico — antes del lanzamiento
 
