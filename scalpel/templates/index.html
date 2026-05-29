@@ -2282,6 +2282,9 @@
           <button class="tool-btn" data-tool="rect" data-tip="Rectangle / Zone">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="1"/></svg>
           </button>
+          <button class="tool-btn" data-tool="fvg" data-tip="FVG zone">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="12" rx="1"/><text x="12" y="15.2" font-size="7" font-weight="700" fill="currentColor" stroke="none" text-anchor="middle" font-family="Inter, sans-serif">FVG</text></svg>
+          </button>
           <button class="tool-btn" data-tool="circle" data-tip="Circle">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>
           </button>
@@ -4506,7 +4509,7 @@
         let obj = null;
         if (t === 'trendline' || t === 'ray' || t === 'arrow') {
           obj = new fabric.Line([p.x, p.y, p.x, p.y], Object.assign(baseOpts(), { stroke: color, strokeWidth: w }));
-        } else if (t === 'rect') {
+        } else if (t === 'rect' || t === 'fvg') {
           obj = new fabric.Rect(Object.assign(baseOpts(), { left: p.x, top: p.y, width: 0, height: 0, stroke: color, strokeWidth: w, fill: hexA(color, 0.13) }));
         } else if (t === 'circle') {
           obj = new fabric.Ellipse(Object.assign(baseOpts(), { left: p.x, top: p.y, rx: 0, ry: 0, stroke: color, strokeWidth: w, fill: 'transparent' }));
@@ -4543,7 +4546,7 @@
         } else if (t === 'ray') {
           const dx = p.x - state.startX, dy = p.y - state.startY, len = Math.hypot(dx, dy) || 1, ext = 2400;
           o.set({ x2: state.startX + dx / len * ext, y2: state.startY + dy / len * ext });
-        } else if (t === 'rect') {
+        } else if (t === 'rect' || t === 'fvg') {
           o.set({ left: Math.min(p.x, state.startX), top: Math.min(p.y, state.startY), width: Math.abs(p.x - state.startX), height: Math.abs(p.y - state.startY) });
         } else if (t === 'circle') {
           o.set({ left: Math.min(p.x, state.startX), top: Math.min(p.y, state.startY), rx: Math.abs(p.x - state.startX) / 2, ry: Math.abs(p.y - state.startY) / 2 });
@@ -4583,6 +4586,20 @@
             const g = makeArrow(x1, y1, x2, y2, colorInput.value, parseInt(widthSel.value, 10));
             canvas.add(g); canvas.setActiveObject(g);
           }
+        } else if (t === 'fvg') {
+          // Wrap the drawn box + a centered "FVG" label into one movable group
+          const left = o.left, top = o.top, ww = o.width, hh = o.height; canvas.remove(o);
+          if (ww >= 4 && hh >= 4) {
+            const c = colorInput.value, sw = parseInt(widthSel.value, 10);
+            const rect = new fabric.Rect({ left, top, width: ww, height: hh, stroke: c, strokeWidth: sw, fill: hexA(c, 0.13), strokeUniform: true });
+            const label = new fabric.Text('FVG', {
+              left: left + ww / 2, top: top + hh / 2, originX: 'center', originY: 'center',
+              fontFamily: 'Inter, sans-serif', fontWeight: 700, fill: c,
+              fontSize: Math.max(12, Math.min(ww * 0.32, hh * 0.55, 48)),
+            });
+            const g = new fabric.Group([rect, label], baseOpts());
+            canvas.add(g); canvas.setActiveObject(g);
+          }
         } else {
           const tiny = ((t === 'rect') && (o.width < 4 || o.height < 4)) ||
                        ((t === 'circle') && (o.rx < 3 || o.ry < 3)) ||
@@ -4591,7 +4608,7 @@
         }
         canvas.requestRenderAll(); pushHistory(); updateThumb();
         // Auto-return to Select after any single-use draw tool
-        if (new Set(['trendline', 'ray', 'rect', 'circle', 'arrow']).has(t)) setTool('select');
+        if (new Set(['trendline', 'ray', 'rect', 'circle', 'arrow', 'fvg']).has(t)) setTool('select');
       });
 
       canvas.on('path:created', () => { pushHistory(); updateThumb(); });
