@@ -2302,6 +2302,9 @@
             <option value="5">5</option>
             <option value="8">8</option>
           </select>
+          <button class="tool-btn active" id="sk-fill" data-tip="Fill on/off (outline only)" aria-pressed="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" fill="currentColor" fill-opacity="0.35"/></svg>
+          </button>
           <div class="tool-sep"></div>
           <button class="tool-btn" id="sk-undo" data-tip="Undo">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
@@ -4284,7 +4287,9 @@
       loaded: false, tool: 'select', isDown: false, startX: 0, startY: 0, obj: null,
       cur: 0, slides: [], hist: [],
       slide1BgVersion: 0, // counts bg changes on slide #1; triggers "apply all?" from 2nd change onward
+      fillOn: true, // when false, new shapes are outline-only (no translucent fill)
     };
+    const FILL_ALPHA = 0.13; // translucent fill opacity for shapes/zones
     // Polyline (continuous-click) tool state — capped at POLY_MAX_PTS clicks
     // 6 clicks = 5 visible connected segments
     const POLY_MAX_PTS = 6;
@@ -4510,9 +4515,9 @@
         if (t === 'trendline' || t === 'ray' || t === 'arrow') {
           obj = new fabric.Line([p.x, p.y, p.x, p.y], Object.assign(baseOpts(), { stroke: color, strokeWidth: w }));
         } else if (t === 'rect' || t === 'fvg') {
-          obj = new fabric.Rect(Object.assign(baseOpts(), { left: p.x, top: p.y, width: 0, height: 0, stroke: color, strokeWidth: w, fill: hexA(color, 0.13) }));
+          obj = new fabric.Rect(Object.assign(baseOpts(), { left: p.x, top: p.y, width: 0, height: 0, stroke: color, strokeWidth: w, fill: state.fillOn ? hexA(color, FILL_ALPHA) : 'transparent' }));
         } else if (t === 'circle') {
-          obj = new fabric.Ellipse(Object.assign(baseOpts(), { left: p.x, top: p.y, rx: 0, ry: 0, stroke: color, strokeWidth: w, fill: 'transparent' }));
+          obj = new fabric.Ellipse(Object.assign(baseOpts(), { left: p.x, top: p.y, rx: 0, ry: 0, stroke: color, strokeWidth: w, fill: state.fillOn ? hexA(color, FILL_ALPHA) : 'transparent' }));
         }
         if (obj) { state.obj = obj; canvas.add(obj); }
       });
@@ -4591,7 +4596,7 @@
           const left = o.left, top = o.top, ww = o.width, hh = o.height; canvas.remove(o);
           if (ww >= 4 && hh >= 4) {
             const c = colorInput.value, sw = parseInt(widthSel.value, 10);
-            const rect = new fabric.Rect({ left, top, width: ww, height: hh, stroke: c, strokeWidth: sw, fill: hexA(c, 0.13), strokeUniform: true });
+            const rect = new fabric.Rect({ left, top, width: ww, height: hh, stroke: c, strokeWidth: sw, fill: state.fillOn ? hexA(c, FILL_ALPHA) : 'transparent', strokeUniform: true });
             const label = new fabric.Text('FVG', {
               left: left + ww / 2, top: top + hh / 2, originX: 'center', originY: 'center',
               fontFamily: 'Inter, sans-serif', fontWeight: 700, fill: c,
@@ -4839,6 +4844,29 @@
       document.getElementById('sk-redo').addEventListener('click', redo);
       document.getElementById('sk-delete').addEventListener('click', deleteSel);
       document.getElementById('sk-clear').addEventListener('click', clearSlide);
+
+      // Fill on/off toggle — affects new shapes and the current selection
+      function setFillObj(o, on) {
+        if (!o) return;
+        if (o.type === 'group' || o.type === 'activeSelection') {
+          (o._objects || o.getObjects()).forEach(ch => setFillObj(ch, on));
+          o.set('dirty', true); return;
+        }
+        if (isTextObj(o) || o.type === 'line' || o.type === 'triangle' || o.type === 'path') return;
+        if (typeof o.fill === 'string' && o.fill.indexOf('rgba(') !== 0 &&
+            o.fill !== 'transparent' && o.fill !== '' && o.fill !== null) return; // leave solid fills (e.g. text bg) alone
+        const c = (typeof o.stroke === 'string' && o.stroke[0] === '#') ? o.stroke : colorInput.value;
+        o.set('fill', on ? hexA(c, FILL_ALPHA) : 'transparent');
+        o.set('dirty', true);
+      }
+      const fillBtn = document.getElementById('sk-fill');
+      fillBtn.addEventListener('click', () => {
+        state.fillOn = !state.fillOn;
+        fillBtn.classList.toggle('active', state.fillOn);
+        fillBtn.setAttribute('aria-pressed', String(state.fillOn));
+        const o = canvas.getActiveObject();
+        if (o) { setFillObj(o, state.fillOn); canvas.requestRenderAll(); pushHistory(); updateThumb(); }
+      });
       document.getElementById('sk-add-slide').addEventListener('click', addSlide);
       document.getElementById('sk-png-btn').addEventListener('click', exportPNG);
       document.getElementById('sk-pdf-btn').addEventListener('click', exportPDF);
