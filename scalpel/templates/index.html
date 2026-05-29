@@ -5241,7 +5241,7 @@
     let netPos, netVel, NET_N = 0;
     let toastTimer = null;
 
-    const BRAIN_Y = 11.8;                                  // brain floats above the head
+    const BRAIN_Y = 13.8;                                  // brain floats clear above the head
     const BRAIN_C = { x: 0, y: BRAIN_Y, z: 0 };
 
     function isLight() { return document.body.classList.contains('light'); }
@@ -5376,22 +5376,40 @@
         return;
       }
 
-      // frame so the bust stands ~6.4 units tall, then centre on the origin
-      frameGeometry(geo, 6.4);
-      // ZBrush export is Y-up with the face looking toward +Z (the camera) — no
-      // re-orientation needed. Nudge so the eye-line lands near the camera focus.
-      geo.translate(0, 0.7, 0);
+      // frame the bust ~6 units tall, centred on the origin (eye-line lands
+      // near the camera focus). ZBrush export is Y-up, face toward +Z (camera).
+      frameGeometry(geo, 6.0);
 
-      // glowing holographic surface — additive blending gives the translucent,
-      // x-ray "scanned bust" look; the Fresnel rim lights up the facial planes.
-      const headMesh = wireMesh(geo, holoShader(colBright(), 0.07, true));
-      g.add(headMesh);
+      // ── Wireframe construction look (per the user's reference): the head is
+      //    drawn as a glowing mesh of edges, not a solid surface. Additive
+      //    blending flares overlapping / edge-on lines white-hot at the
+      //    silhouette, exactly like the reference render. ──
+      const wfGeo = new THREE.WireframeGeometry(geo);
 
-      // soft inner glow shell that pulses (built from a low-detail copy)
-      const glowGeo = geo.clone();
-      const glowMesh = wireMesh(glowGeo, holoShader(colDim(), 0.04, false));
-      glowMesh.scale.set(1.04, 1.04, 1.04);
-      g.add(glowMesh);
+      const wireMat = new THREE.LineBasicMaterial({
+        color: colBright(), transparent: true, opacity: 0.5,
+        blending: THREE.AdditiveBlending, depthWrite: false,
+      });
+      brightMats.push(wireMat);
+      g.add(new THREE.LineSegments(wfGeo, wireMat));
+
+      // outer bloom halo — the same edges scaled out a hair, very faint
+      const glowMat = new THREE.LineBasicMaterial({
+        color: colBright(), transparent: true, opacity: 0.16,
+        blending: THREE.AdditiveBlending, depthWrite: false,
+      });
+      brightMats.push(glowMat);
+      const glowWire = new THREE.LineSegments(wfGeo, glowMat);
+      glowWire.scale.set(1.025, 1.025, 1.025);
+      g.add(glowWire);
+
+      // ghost fill — barely-there volume so the wireframe doesn't read as flat
+      const fillMat = new THREE.MeshBasicMaterial({
+        color: colDim(), transparent: true, opacity: 0.035,
+        depthWrite: false, side: THREE.FrontSide,
+      });
+      baseMats.push(fillMat);
+      g.add(wireMesh(geo, fillMat));
 
       // rotating scanner pedestal beneath the neck — a clean grounding element
       const pedY = -3.55;
@@ -5454,7 +5472,7 @@
       const overlay = document.getElementById('syn-overlay');
       METHODS.forEach((meth, i) => {
         const a = Math.PI * (0.12 + 0.76 * (i / (n - 1)));   // fan across the top arc
-        const pos = new THREE.Vector3(Math.cos(a) * R, bc.y + Math.sin(a) * R * 0.66 + 0.6, -0.2);
+        const pos = new THREE.Vector3(Math.cos(a) * R, bc.y + Math.sin(a) * R * 0.6 + 0.5, -0.2);
 
         const sm = new THREE.MeshBasicMaterial({ color: colBright(), transparent: true, opacity: 0.95 });
         brightMats.push(sm);
@@ -5644,8 +5662,8 @@
       scene = new THREE.Scene();
       camera = new THREE.PerspectiveCamera(50, 1.6, 0.1, 100);
       // Frame from a little below the shoulders up to the floating brain.
-      camera.position.set(0, 9.3, 13.5);
-      camera.lookAt(0, 9.3, 0);
+      camera.position.set(0, 10, 15.5);
+      camera.lookAt(0, 10, 0);
 
       ndc = new THREE.Vector2(-10, -10);
       raycaster = new THREE.Raycaster();
