@@ -98,6 +98,37 @@
 
 ---
 
+## 🔵 Stand-by — Ideas descartadas temporalmente
+
+### Trade of the Day
+Feature complejo descartado hasta que el negocio genere ingresos estables.
+La idea: tras cada sesión (NY AM / NY PM / Lunch / London / Asia), el sistema detecta
+automáticamente los mejores setups válidos por instrumento y metodología (ICT primero,
+luego Patterns, Quant, STDV, etc.), los muestra al admin para que elija con un clic
+(Fase 2), y eventualmente la IA aprende de esas elecciones y escoge sola (Fase 3).
+
+**Por qué está en stand-by:** alto costo de desarrollo (~6 semanas intensivas) con
+retorno incierto comparado con features de mayor impacto en conversión y retención.
+
+**Costos estimados de implementación:**
+- Polygon.io (datos históricos + tiempo real, Forex + Futuros CME): ~$29/mes
+- Servidor adicional para correr el detector de setups y el modelo de ML: ~$20–40/mes
+  (puede compartirse con el VPS principal si tiene suficiente RAM)
+- Tiempo de desarrollo: ~6 semanas a 5h/día (Fase 2 completa con backtesting + display animado)
+- OpenAI API opcional para validación de setups con visión: ~$10–30/mes según volumen
+- **Total mensual en producción: ~$50–100/mes sobre los costos base del sitio**
+
+**Stack técnico decidido:**
+- Datos: Polygon.io ($29/mes)
+- Display animado: TradingView Lightweight Charts (open-source, MIT, gratis)
+- Detección: Python + scikit-learn para el modelo de scoring
+- Instrumentos: EURUSD, GBPUSD, XAUUSD, ES (E-mini S&P 500)
+- Timeframes: macro 4H/1H · estructura 1H/30m/15m/5m · entrada 5m/3m/2m/1m
+- Metodología inicial: ICT (FVG, sweep, OB, MSS, displacement, AMD, BPR)
+- Aprendizaje: RLHF-style — admin etiqueta sesiones históricas → modelo aprende criterio
+
+---
+
 ## Notas de arquitectura importantes
 
 - `init_scout_data()` corre en cada startup y refresca `blocked_countries`
