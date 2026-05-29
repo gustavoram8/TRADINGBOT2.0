@@ -43,6 +43,13 @@
 
 ### 🔴 Crítico — antes del lanzamiento
 
+- [ ] **Pagos — plan de monetización decidido:**
+      - **Fase 1 (ahora):** cobrar en USDT via Binance manualmente mientras se valida que la gente paga.
+      - **Fase 2 (con 10–20 clientes pagando):** constituir LLC en EE.UU. (Wyoming/Delaware via Stripe Atlas,
+        Firstbase.io o Northwest Registered Agent, ~$300–500 USD) y migrar a Stripe para automatizar
+        activación/desactivación de planes. Alternativa más rápida: empresa en Colombia, México o Panamá.
+      - **Opción puente:** ofrecer ambas opciones al usuario (Stripe + Binance USDT) para no perder clientes.
+
 - [ ] **Pagar OpenAI API** — necesario para análisis de screenshots en producción y
       para el asesor IA del Prop Firm Scout. Sin esto el sitio funciona pero con
       el token gratuito de GitHub Models (limitado).
