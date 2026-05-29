@@ -4865,19 +4865,43 @@
       document.querySelectorAll('[data-sk-prev]').forEach(b => b.addEventListener('click', () => gotoSlide(state.cur - 1)));
       document.querySelectorAll('[data-sk-next]').forEach(b => b.addEventListener('click', () => gotoSlide(state.cur + 1)));
 
+      function recolorObj(o, color) {
+        if (!o) return;
+        if (o.type === 'group' || o.type === 'activeSelection') {
+          (o._objects || o.getObjects()).forEach(ch => recolorObj(ch, color));
+          o.set('dirty', true); return;
+        }
+        if (isTextObj(o)) { o.set('fill', color); o.set('dirty', true); return; }
+        if (o.type === 'triangle') { o.set({ fill: color, stroke: color, dirty: true }); return; }
+        o.set('stroke', color);
+        const f = o.fill;
+        if (typeof f === 'string' && f.indexOf('rgba(') === 0) {
+          const a = parseFloat(f.split(',')[3]);
+          if (!isNaN(a)) o.set('fill', hexA(color, a));
+        }
+        o.set('dirty', true);
+      }
+      function restrokeObj(o, w) {
+        if (!o) return;
+        if (o.type === 'group' || o.type === 'activeSelection') {
+          (o._objects || o.getObjects()).forEach(ch => restrokeObj(ch, w));
+          o.set('dirty', true); return;
+        }
+        if (isTextObj(o)) return;
+        if (o.stroke) { o.set('strokeWidth', w); o.set('dirty', true); }
+      }
       colorInput.addEventListener('input', () => {
         if (canvas.freeDrawingBrush) canvas.freeDrawingBrush.color = colorInput.value;
         const o = canvas.getActiveObject();
         if (o) {
-          if (isTextObj(o)) o.set('fill', colorInput.value);
-          else o.set('stroke', colorInput.value);
+          recolorObj(o, colorInput.value);
           canvas.requestRenderAll(); pushHistory(); updateThumb();
         }
       });
       widthSel.addEventListener('change', () => {
         if (canvas.freeDrawingBrush) canvas.freeDrawingBrush.width = parseInt(widthSel.value, 10);
         const o = canvas.getActiveObject();
-        if (o && !isTextObj(o)) { o.set('strokeWidth', parseInt(widthSel.value, 10)); canvas.requestRenderAll(); pushHistory(); updateThumb(); }
+        if (o) { restrokeObj(o, parseInt(widthSel.value, 10)); canvas.requestRenderAll(); pushHistory(); updateThumb(); }
       });
 
       // Text formatting controls
