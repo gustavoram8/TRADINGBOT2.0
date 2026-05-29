@@ -50,6 +50,11 @@
 - [ ] **Revisión legal con Claude** — una vez terminado el sitio y redactados
       los T&C, hacer una prueba legal completa junto a Claude para identificar
       posibles problemas antes del lanzamiento público.
+- [ ] **Persistencia server-side de Scalpe® boards** — actualmente los boards/slides
+      se guardan en `localStorage` del navegador (por dispositivo). Si el usuario
+      migra de dispositivo, limpia el caché o se despliega en VPS, los pierde.
+      Implementar guardado en DB ligado a `user_id` (modelo `ScalperBoard`,
+      endpoint `/api/scalper/save` y `/api/scalper/load`) antes del lanzamiento.
 
 ### 🟡 Importante — mejoras post-lanzamiento
 
