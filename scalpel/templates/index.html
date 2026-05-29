@@ -1554,16 +1554,24 @@
        SYNAPSE — Interactive 3D Trading Knowledge Hologram (Premium)
        Light mode → blue · Dark mode → gold/yellow
        ════════════════════════════════════════════════════════════════ */
-    .synapse-wordmark { font-family: 'JetBrains Mono', monospace; letter-spacing: 0.16em; }
     #synapse-view { padding: 0; }
+    /* Full-bleed: break out of the constrained container and fill the viewport
+       below the sticky nav + tabs bar, so Synapse reads as a full screen. */
     .synapse-app {
-      position: relative; width: 100%; height: calc(100vh - 150px); min-height: 540px;
-      border-radius: 14px; overflow: hidden; border: 1px solid var(--border2);
-      background: radial-gradient(ellipse at 50% 32%, rgba(234,179,8,0.05), transparent 68%), #05070f;
+      position: relative;
+      width: 100vw; margin-left: calc(50% - 50vw);
+      margin-top: -40px; margin-bottom: -80px;
+      height: calc(100vh - 108px); min-height: 460px;
+      overflow: hidden; border: none; border-radius: 0;
+      background: radial-gradient(ellipse at 50% 64%, rgba(234,179,8,0.08), transparent 72%), #04060d;
     }
+    /* Stage stays dark in both themes so the additive hologram glows;
+       only the hologram colour changes (blue in light mode, gold in dark). */
     body.light .synapse-app {
-      background: radial-gradient(ellipse at 50% 32%, rgba(63,111,214,0.07), transparent 68%), #eef2fb;
-      border-color: var(--border);
+      background: radial-gradient(ellipse at 50% 64%, rgba(63,111,214,0.12), transparent 72%), #060a16;
+    }
+    @media (max-width: 768px) {
+      .synapse-app { margin-top: -24px; margin-bottom: -60px; height: calc(100vh - 92px); }
     }
     .synapse-canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; display: block; }
 
@@ -1590,10 +1598,10 @@
       box-shadow: 0 0 18px rgba(234,179,8,0.4);
     }
     body.light .syn-node-label {
-      color: #20407f; background: rgba(255,255,255,0.72); border-color: rgba(63,111,214,0.55);
+      color: #bcd4ff; background: rgba(20,40,90,0.4); border-color: rgba(99,150,255,0.6);
     }
     body.light .syn-node-label:hover, body.light .syn-node-label.active {
-      box-shadow: 0 0 18px rgba(63,111,214,0.35);
+      box-shadow: 0 0 18px rgba(99,150,255,0.45);
     }
 
     .syn-loading {
@@ -1620,7 +1628,7 @@
       color: #f5d77a; background: rgba(8,10,20,0.82); border: 1px solid rgba(234,179,8,0.45);
     }
     .syn-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-    body.light .syn-toast { color: #20407f; background: rgba(255,255,255,0.86); border-color: rgba(63,111,214,0.5); }
+    body.light .syn-toast { color: #bcd4ff; background: rgba(10,18,40,0.82); border-color: rgba(99,150,255,0.5); }
   </style>
 </head>
 <body>
@@ -1761,7 +1769,7 @@
   </button>
   <button class="tab" type="button" data-tab="synapse">
     <svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-    <span class="synapse-wordmark" data-i18n="tabs.synapse">Synapse</span>
+    <span data-i18n="tabs.synapse">Synapse</span>
   </button>
 </div>
 
@@ -5225,12 +5233,17 @@
 
     let opening = false, started = false;
     let renderer, scene, camera, raf, clock;
-    let humanGroup, brainGroup, brain, brainGlow, netPts, netLines;
+    let bustGroup, brainGroup, brainMesh, brainWire, brainGlow, dataRings = [];
+    let netPts, netLines, fogPts;
     const nodes = [];
-    let baseMats = [], brightMats = [], netMats = [];
+    let baseMats = [], brightMats = [], netMats = [], shaderMats = [];
     let raycaster, ndc, hovered = null, lastLight = null;
     let netPos, netVel, NET_N = 0;
+    let fogPos, fogVel, FOG_N = 0;
     let toastTimer = null;
+
+    const BRAIN_Y = 9.6;                                   // brain floats above the head
+    const BRAIN_C = { x: 0, y: BRAIN_Y, z: 0 };
 
     function isLight() { return document.body.classList.contains('light'); }
     function colDim()    { return isLight() ? 0x3f6fd6 : 0xeab308; }
@@ -5249,49 +5262,190 @@
 
     function wireMesh(geom, mat) { const m = new THREE.Mesh(geom, mat); return m; }
 
-    function buildHuman() {
+    // ── Holographic Fresnel shader: translucent core, glowing rim, rising
+    //    scan-lines. The hallmark sci-fi hologram look. ──
+    function holoShader(hex, opacity, bright) {
+      const mat = new THREE.ShaderMaterial({
+        transparent: true, depthWrite: false, side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending,
+        uniforms: {
+          uColor:   { value: new THREE.Color(hex) },
+          uTime:    { value: 0 },
+          uOpacity: { value: opacity },
+        },
+        vertexShader: `
+          varying vec3 vN; varying vec3 vV; varying float vY;
+          void main() {
+            vec4 mv = modelViewMatrix * vec4(position, 1.0);
+            vV = normalize(-mv.xyz);
+            vN = normalize(normalMatrix * normal);
+            vY = (modelMatrix * vec4(position, 1.0)).y;
+            gl_Position = projectionMatrix * mv;
+          }`,
+        fragmentShader: `
+          uniform vec3 uColor; uniform float uTime; uniform float uOpacity;
+          varying vec3 vN; varying vec3 vV; varying float vY;
+          void main() {
+            float fres = pow(1.0 - abs(dot(normalize(vN), normalize(vV))), 2.3);
+            float scan = 0.5 + 0.5 * sin(vY * 5.0 - uTime * 2.4);
+            scan = smoothstep(0.55, 1.0, scan) * 0.35;
+            float band = smoothstep(0.0, 0.04, abs(fract(vY * 0.12 - uTime * 0.05) - 0.5));
+            float a = clamp(uOpacity + fres * 0.85 + scan, 0.0, 0.96) * (0.55 + 0.45 * band);
+            vec3 col = uColor * (0.45 + fres * 1.7 + scan);
+            gl_FragColor = vec4(col, a);
+          }`,
+      });
+      mat.userData.bright = !!bright;
+      shaderMats.push(mat);
+      return mat;
+    }
+
+    // ── Bust: head + neck + shoulders, swept from a silhouette profile,
+    //    with elliptical cross-sections (wide shoulders, round head). ──
+    // profile: [y, radiusX, radiusZ]
+    const BUST_PROFILE = [
+      [ 8.6, 0.10, 0.10], [ 8.2, 0.62, 0.70], [ 7.7, 0.95, 1.06],
+      [ 7.1, 1.10, 1.20], [ 6.5, 1.05, 1.16], [ 6.0, 0.92, 1.00],
+      [ 5.55, 0.62, 0.62], [ 5.15, 0.45, 0.45], [ 4.8, 0.44, 0.44],
+      [ 4.45, 0.6, 0.5], [ 4.0, 1.15, 0.7], [ 3.4, 1.95, 0.92],
+      [ 2.7, 2.8, 1.08], [ 1.9, 3.5, 1.2], [ 1.0, 4.0, 1.28],
+      [-0.2, 4.3, 1.32],
+    ];
+
+    function profileAt(t) {
+      // t in [0,1] → interpolate the profile, returns {y, rx, rz}
+      const p = BUST_PROFILE, n = p.length - 1, f = t * n, i = Math.min(Math.floor(f), n - 1), k = f - i;
+      const a = p[i], b = p[i + 1];
+      return { y: a[0] + (b[0] - a[0]) * k, rx: a[1] + (b[1] - a[1]) * k, rz: a[2] + (b[2] - a[2]) * k };
+    }
+
+    function buildBust() {
       const g = new THREE.Group();
-      const mat = new THREE.MeshBasicMaterial({ color: colDim(), wireframe: true, transparent: true, opacity: 0.34 });
-      baseMats.push(mat);
-      const add = (geom, x, y, z, rz) => {
-        const m = wireMesh(geom, mat);
-        m.position.set(x, y, z);
-        if (rz) m.rotation.z = rz;
-        g.add(m);
-      };
-      add(new THREE.SphereGeometry(0.85, 16, 12), 0, 5.0, 0);              // head
-      add(new THREE.CylinderGeometry(0.26, 0.32, 0.5, 12), 0, 4.35, 0);   // neck
-      add(new THREE.CylinderGeometry(1.18, 0.82, 2.4, 18), 0, 2.95, 0);   // torso
-      add(new THREE.CylinderGeometry(0.86, 0.66, 0.7, 16), 0, 1.5, 0);    // hips
-      add(new THREE.CylinderGeometry(0.2, 0.16, 2.7, 10), 1.55, 2.8, 0, 0.32);   // right arm
-      add(new THREE.CylinderGeometry(0.2, 0.16, 2.7, 10), -1.55, 2.8, 0, -0.32); // left arm
-      add(new THREE.CylinderGeometry(0.28, 0.2, 3.0, 12), 0.5, -0.4, 0, 0.06);   // right leg
-      add(new THREE.CylinderGeometry(0.28, 0.2, 3.0, 12), -0.5, -0.4, 0, -0.06); // left leg
+      const RINGS = 90, SEG = 56;
+      const pos = [], norm = [], idx = [];
+      for (let r = 0; r <= RINGS; r++) {
+        const pr = profileAt(r / RINGS);
+        for (let s = 0; s <= SEG; s++) {
+          const th = (s / SEG) * Math.PI * 2;
+          const x = Math.cos(th) * pr.rx, z = Math.sin(th) * pr.rz;
+          pos.push(x, pr.y, z);
+          const nx = Math.cos(th) / pr.rx, nz = Math.sin(th) / pr.rz;
+          const nl = Math.hypot(nx, 0.25, nz) || 1;
+          norm.push(nx / nl, 0.25 / nl, nz / nl);
+        }
+      }
+      const cols = SEG + 1;
+      for (let r = 0; r < RINGS; r++) {
+        for (let s = 0; s < SEG; s++) {
+          const a = r * cols + s, b = a + cols;
+          idx.push(a, b, a + 1, a + 1, b, b + 1);
+        }
+      }
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+      geo.setAttribute('normal', new THREE.Float32BufferAttribute(norm, 3));
+      geo.setIndex(idx);
+
+      // glowing translucent surface
+      g.add(wireMesh(geo, holoShader(colDim(), 0.1)));
+
+      // contour scan-rings (bright) every few profile steps
+      const ringMat = new THREE.LineBasicMaterial({ color: colBright(), transparent: true, opacity: 0.32 });
+      brightMats.push(ringMat);
+      for (let r = 2; r <= RINGS; r += 5) {
+        const pr = profileAt(r / RINGS), pts = [];
+        for (let s = 0; s <= SEG; s++) {
+          const th = (s / SEG) * Math.PI * 2;
+          pts.push(new THREE.Vector3(Math.cos(th) * pr.rx, pr.y, Math.sin(th) * pr.rz));
+        }
+        g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), ringMat));
+      }
+
+      // faint vertical wireframe ribs
+      const ribMat = new THREE.LineBasicMaterial({ color: colDim(), transparent: true, opacity: 0.14 });
+      baseMats.push(ribMat);
+      for (let s = 0; s < SEG; s += 4) {
+        const th = (s / SEG) * Math.PI * 2, pts = [];
+        for (let r = 0; r <= RINGS; r += 2) {
+          const pr = profileAt(r / RINGS);
+          pts.push(new THREE.Vector3(Math.cos(th) * pr.rx, pr.y, Math.sin(th) * pr.rz));
+        }
+        g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), ribMat));
+      }
       return g;
+    }
+
+    // ── Organic brain: a high-detail icosphere whose vertices are displaced
+    //    by layered sine "noise" to form gyri/sulci bumps, grooved along the
+    //    midline (longitudinal fissure) and stretched front-to-back. ──
+    function brainGeometry() {
+      const geo = new THREE.IcosahedronGeometry(1.35, 4);
+      const p = geo.attributes.position;
+      const v = new THREE.Vector3();
+      for (let i = 0; i < p.count; i++) {
+        v.fromBufferAttribute(p, i);
+        const n = v.clone().normalize();
+        // layered bumps → folded cortical surface
+        let d = 0;
+        d += Math.sin(n.x * 7.0) * Math.sin(n.y * 7.0) * Math.sin(n.z * 7.0) * 0.13;
+        d += Math.sin(n.x * 13.0 + 1.7) * Math.sin(n.z * 13.0) * 0.07;
+        d += Math.sin(n.y * 19.0) * Math.sin(n.z * 11.0 + 0.6) * 0.045;
+        // longitudinal fissure: pinch radius near the x≈0 midline plane
+        const fissure = Math.exp(-(n.x * n.x) * 60.0) * 0.22;
+        const rad = 1.0 + d - fissure;
+        v.copy(n).multiplyScalar(1.35 * rad);
+        v.x *= 1.06; v.y *= 0.92; v.z *= 1.32;   // brain proportions (long, low)
+        p.setXYZ(i, v.x, v.y, v.z);
+      }
+      geo.computeVertexNormals();
+      return geo;
     }
 
     function buildBrain() {
       const g = new THREE.Group();
-      g.position.set(0, 7.25, 0);
-      const bm = new THREE.MeshBasicMaterial({ color: colBright(), wireframe: true, transparent: true, opacity: 0.72 });
-      brightMats.push(bm);
-      brain = wireMesh(new THREE.IcosahedronGeometry(1.3, 1), bm);
-      g.add(brain);
-      const gm = new THREE.MeshBasicMaterial({ color: colBright(), transparent: true, opacity: 0.07 });
+      g.position.set(BRAIN_C.x, BRAIN_C.y, BRAIN_C.z);
+      const geo = brainGeometry();
+
+      // glowing translucent cortex
+      brainMesh = wireMesh(geo, holoShader(colBright(), 0.14, true));
+      g.add(brainMesh);
+
+      // sulci/gyri wireframe overlay
+      const wm = new THREE.MeshBasicMaterial({ color: colBright(), wireframe: true, transparent: true, opacity: 0.22 });
+      brightMats.push(wm);
+      brainWire = wireMesh(geo, wm);
+      g.add(brainWire);
+
+      // soft glow halo
+      const gm = new THREE.MeshBasicMaterial({ color: colBright(), transparent: true, opacity: 0.06 });
       brightMats.push(gm);
-      brainGlow = wireMesh(new THREE.SphereGeometry(1.05, 18, 14), gm);
+      brainGlow = wireMesh(new THREE.SphereGeometry(1.95, 20, 16), gm);
+      brainGlow.scale.set(1.06, 0.92, 1.32);
       g.add(brainGlow);
+
+      // rotating data rings (medical-scanner feel)
+      [[1, 0, 0], [0, 0, 1]].forEach((ax, i) => {
+        const rm = new THREE.MeshBasicMaterial({ color: colDim(), transparent: true, opacity: 0.4, wireframe: true });
+        baseMats.push(rm);
+        const ring = wireMesh(new THREE.TorusGeometry(2.35, 0.02, 6, 80), rm);
+        if (ax[0]) ring.rotation.y = Math.PI / 2;
+        if (ax[2]) ring.rotation.x = Math.PI / 2;
+        ring.userData.spin = i ? 0.006 : -0.009;
+        dataRings.push(ring);
+        g.add(ring);
+      });
+
       brainGroup = g;
       return g;
     }
 
     function buildNodes() {
-      const bc = new THREE.Vector3(0, 7.25, 0);   // brain centre
-      const R = 4.3, n = METHODS.length;
+      const bc = new THREE.Vector3(BRAIN_C.x, BRAIN_C.y, BRAIN_C.z);   // brain centre
+      const R = 5.0, n = METHODS.length;
       const overlay = document.getElementById('syn-overlay');
       METHODS.forEach((meth, i) => {
-        const a = Math.PI * (0.16 + 0.68 * (i / (n - 1)));   // fan across the top arc
-        const pos = new THREE.Vector3(Math.cos(a) * R, bc.y + Math.sin(a) * R * 0.62 + 0.4, -0.4);
+        const a = Math.PI * (0.12 + 0.76 * (i / (n - 1)));   // fan across the top arc
+        const pos = new THREE.Vector3(Math.cos(a) * R, bc.y + Math.sin(a) * R * 0.66 + 0.6, -0.2);
 
         const sm = new THREE.MeshBasicMaterial({ color: colBright(), transparent: true, opacity: 0.95 });
         brightMats.push(sm);
@@ -5374,11 +5528,43 @@
       netLines.geometry.attributes.position.needsUpdate = true;
     }
 
+    // ── Atmosphere: slow rising "mist" particles around the bust ──
+    function buildFog() {
+      FOG_N = 130;
+      fogPos = new Float32Array(FOG_N * 3);
+      fogVel = new Float32Array(FOG_N);
+      for (let i = 0; i < FOG_N; i++) {
+        fogPos[i*3]   = (Math.random() - 0.5) * 10;
+        fogPos[i*3+1] = Math.random() * 11 - 1;
+        fogPos[i*3+2] = (Math.random() - 0.5) * 5 + 0.5;
+        fogVel[i] = 0.004 + Math.random() * 0.012;
+      }
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.BufferAttribute(fogPos, 3));
+      const m = new THREE.PointsMaterial({
+        color: colBright(), size: 0.13, transparent: true, opacity: 0.32,
+        sizeAttenuation: true, depthWrite: false, blending: THREE.AdditiveBlending,
+      });
+      brightMats.push(m);
+      fogPts = new THREE.Points(g, m);
+      scene.add(fogPts);
+    }
+
+    function updateFog() {
+      for (let i = 0; i < FOG_N; i++) {
+        fogPos[i*3+1] += fogVel[i];
+        fogPos[i*3]   += Math.sin((fogPos[i*3+1] + i) * 0.6) * 0.003;
+        if (fogPos[i*3+1] > 10) { fogPos[i*3+1] = -1; fogPos[i*3] = (Math.random() - 0.5) * 10; }
+      }
+      fogPts.geometry.attributes.position.needsUpdate = true;
+    }
+
     function recolor() {
       const d = colDim(), b = colBright();
       baseMats.forEach(m => m.color.setHex(d));
       brightMats.forEach(m => m.color.setHex(b));
       netMats.forEach(m => m.color.setHex(d));
+      shaderMats.forEach(m => m.uniforms.uColor.value.setHex(m.userData.bright ? b : d));
     }
 
     function resize() {
@@ -5434,11 +5620,15 @@
       const light = isLight();
       if (light !== lastLight) { recolor(); lastLight = light; }
 
-      humanGroup.rotation.y = Math.sin(t * 0.25) * 0.22;            // gentle holographic sway
-      brain.rotation.y += 0.004;
-      brain.rotation.x = Math.sin(t * 0.4) * 0.12;
-      brainGroup.position.y = 7.25 + Math.sin(t * 0.9) * 0.16;
-      brainGlow.scale.setScalar(1 + Math.sin(t * 1.6) * 0.05);
+      shaderMats.forEach(m => { m.uniforms.uTime.value = t; });
+
+      bustGroup.rotation.y = Math.sin(t * 0.18) * 0.12;             // subtle holographic drift
+      bustGroup.position.y = Math.sin(t * 0.6) * 0.06;              // gentle float
+      brainMesh.rotation.y = brainWire.rotation.y += 0.0035;
+      brainMesh.rotation.x = brainWire.rotation.x = Math.sin(t * 0.35) * 0.08;
+      brainGroup.position.y = BRAIN_Y + Math.sin(t * 0.85) * 0.14;
+      brainGlow.scale.set(1.06 + Math.sin(t * 1.6) * 0.05, 0.92, 1.32);
+      dataRings.forEach(r => { r.rotation.z += r.userData.spin; });
 
       // hover detection
       raycaster.setFromCamera(ndc, camera);
@@ -5460,6 +5650,7 @@
       });
 
       updateNet();
+      updateFog();
       projectLabels();
       renderer.render(scene, camera);
     }
@@ -5470,18 +5661,20 @@
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 
       scene = new THREE.Scene();
-      camera = new THREE.PerspectiveCamera(52, 1.6, 0.1, 100);
-      camera.position.set(0, 3.4, 18);
-      camera.lookAt(0, 3.2, 0);
+      camera = new THREE.PerspectiveCamera(50, 1.6, 0.1, 100);
+      // Frame so the bust emerges from the bottom edge: focus high, bust bottom cut off.
+      camera.position.set(0, 8.4, 15.5);
+      camera.lookAt(0, 8.6, 0);
 
       ndc = new THREE.Vector2(-10, -10);
       raycaster = new THREE.Raycaster();
       clock = new THREE.Clock();
 
-      humanGroup = buildHuman();
-      scene.add(humanGroup);
+      buildNet();                       // far background
+      bustGroup = buildBust();
+      scene.add(bustGroup);
       scene.add(buildBrain());
-      buildNet();
+      buildFog();                       // mist around the bust
       buildNodes();
       lastLight = isLight();
 
