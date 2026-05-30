@@ -2516,6 +2516,11 @@
 </div>
 
 <footer data-i18n="footer.text">SCALPEL · ICT Trade Analysis · For educational purposes only · Not financial advice</footer>
+<!-- CC-BY attribution for the Synapse hologram models (required by their licenses) -->
+<div class="model-credits" style="text-align:center; font-size:10px; color:var(--muted); opacity:0.6; padding:0 16px 18px; letter-spacing:0.02em;">
+  Synapse 3D models: “Human Head Base Mesh” by ferrumiron6 · brain model by dgallichan — licensed under
+  <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener" style="color:inherit; text-decoration:underline;">CC BY 4.0</a> (Sketchfab)
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
@@ -5356,17 +5361,32 @@
       return mat;
     }
 
-    // ── Real anatomical models, loaded as OBJ and parsed inline (no external
-    //    loader scripts), then dressed in the holographic shader. ──
-    //    Brain: AFNI "Colin 27" average-brain pial surface (both hemispheres).
-    //    Head : "Simple Asaro Head" — the sculptors' planes-of-the-head study
-    //           (no skin, hair or expression — just the marked facial planes and
-    //           eye sockets the user wanted). Served from our own /static so there
-    //           is no cross-origin fetch to worry about.
-    const BRAIN_URL = 'https://raw.githubusercontent.com/alperbayram/3DBrainmodel/main/obj/freesurff.Obj';
-    const HEAD_URL  = '/static/models/asaro_head.obj';
+    // ── Real anatomical models, dressed in the holographic shader. ──
+    //    Both meshes are framed (centred + uniformly scaled) automatically, so a
+    //    drop-in replacement of any reasonable OBJ/GLB keeps the same on-screen
+    //    size and the identical hologram treatment (colour, opacity, wireframe).
+    //
+    //    Replacement plan (legally-clean, CC-licensed models):
+    //      • Brain → "FreeSurfer MRI Brain" (CC-BY, dgallichan, Sketchfab B1)
+    //      • Head  → "Human Head Base Mesh"  (CC0, ferrumiron6, Sketchfab H2)
+    //    Drop the downloaded files into scalpel/static/models/ as brain.glb|obj
+    //    and head.glb|obj — the loader prefers those and falls back to the
+    //    current models until they are present, so nothing breaks meanwhile.
+    const BRAIN_SOURCES = [
+      '/static/models/brain.glb',
+      '/static/models/brain.obj',
+    ];
+    const HEAD_SOURCES = [
+      '/static/models/head.glb',
+      '/static/models/head.obj',
+    ];
 
     const HEAD_Y = 7.8;   // bust sits below the floating brain
+    // Per-model facing fixes — baked so the face looks toward the camera and the
+    // brain sits naturally, regardless of which axis convention each mesh ships
+    // with. head.obj ships Y-up / face +Z, so it needs no rotation.
+    const HEAD_ROT  = { x: 0, y: 0, z: 0 };
+    const BRAIN_ROT = { x: 0, y: 0, z: 0 };
 
     function parseOBJ(text) {
       const vs = [], vns = [], idx = [];
@@ -5404,6 +5424,81 @@
       return fetch(url).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); }).then(parseOBJ);
     }
 
+    // GLTFLoader is not in the three.js core build — pull the matching non-module
+    // example loader from the same CDN family already used for marked/three.
+    function ensureGLTF() {
+      if (typeof THREE !== 'undefined' && THREE.GLTFLoader) return Promise.resolve();
+      return new Promise((resolve) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
+        s.onload = () => resolve();
+        s.onerror = () => resolve();
+        document.head.appendChild(s);
+      });
+    }
+
+    // Flatten a loaded glTF scene into a single position(+normal) BufferGeometry
+    // in world space, keeping only what the holographic shader needs.
+    function geoFromGLTF(gltf) {
+      const parts = [];
+      gltf.scene.updateMatrixWorld(true);
+      gltf.scene.traverse(o => {
+        if (o.isMesh && o.geometry) {
+          let g = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone();
+          g.applyMatrix4(o.matrixWorld);
+          parts.push(g);
+        }
+      });
+      if (!parts.length) throw new Error('glTF has no mesh');
+      let total = 0;
+      parts.forEach(g => { total += g.getAttribute('position').count; });
+      const pos = new Float32Array(total * 3);
+      const hasN = parts.every(g => g.getAttribute('normal'));
+      const nor = hasN ? new Float32Array(total * 3) : null;
+      let off = 0;
+      parts.forEach(g => {
+        const p = g.getAttribute('position').array;
+        pos.set(p, off * 3);
+        if (hasN) nor.set(g.getAttribute('normal').array, off * 3);
+        off += g.getAttribute('position').count;
+      });
+      const out = new THREE.BufferGeometry();
+      out.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+      if (hasN) out.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+      else out.computeVertexNormals();
+      return out;
+    }
+
+    // Format-agnostic single-mesh loader (OBJ parsed inline, GLB/GLTF via loader).
+    // For glTF we fetch first so a missing file 404s cheaply (and we only pull the
+    // GLTFLoader script when a real file is actually present).
+    function loadModelGeo(url) {
+      const lower = url.toLowerCase();
+      if (lower.endsWith('.glb') || lower.endsWith('.gltf')) {
+        return fetch(url)
+          .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); })
+          .then(buf => ensureGLTF().then(() => new Promise((resolve, reject) => {
+            if (!THREE.GLTFLoader) { reject(new Error('GLTFLoader unavailable')); return; }
+            new THREE.GLTFLoader().parse(buf, '',
+              gltf => { try { resolve(geoFromGLTF(gltf)); } catch (e) { reject(e); } },
+              reject);
+          })));
+      }
+      return loadOBJGeo(url);
+    }
+
+    // Try each candidate source in order; first one that yields real geometry wins.
+    async function loadFirstModel(urls) {
+      for (const u of urls) {
+        try {
+          const geo = await loadModelGeo(u);
+          const p = geo && geo.getAttribute('position');
+          if (p && p.count > 0) return geo;
+        } catch (e) { /* fall through to the next source */ }
+      }
+      throw new Error('no model source available');
+    }
+
     // Center a geometry at the origin and scale so its largest dimension = target.
     function frameGeometry(geo, target) {
       geo.computeBoundingBox();
@@ -5414,24 +5509,25 @@
       geo.scale(s, s, s);
     }
 
-    // ── Head: the real "Simple Asaro Head" model, dressed in the holographic
-    //    Fresnel shader. Loaded as OBJ (no skin/hair/expression — just the
-    //    sculpted facial planes and eye sockets), framed and floated below the
-    //    brain, on a rotating scanner pedestal. ──
+    // ── Head: the real human head/bust mesh, dressed in the holographic Fresnel
+    //    shader (OBJ or GLB). Framed and floated below the brain on a rotating
+    //    scanner pedestal. HEAD_ROT lets us face the model toward the camera
+    //    regardless of which axis convention the source mesh shipped with. ──
     async function buildHead() {
       const g = new THREE.Group();
       g.position.set(0, HEAD_Y, 0);
+      g.rotation.set(HEAD_ROT.x, HEAD_ROT.y, HEAD_ROT.z);
 
       let geo;
       try {
-        geo = await loadOBJGeo(HEAD_URL);
+        geo = await loadFirstModel(HEAD_SOURCES);
       } catch (e) {
         headGroup = g; scene.add(g);       // fail soft — brain + nodes still show
         return;
       }
 
       // frame the bust ~6 units tall, centred on the origin (eye-line lands
-      // near the camera focus). ZBrush export is Y-up, face toward +Z (camera).
+      // near the camera focus).
       frameGeometry(geo, 6.0);
 
       // ── Wireframe construction look (per the user's reference): the head is
@@ -5471,8 +5567,11 @@
     }
 
     async function buildBrain() {
-      const geo = await loadOBJGeo(BRAIN_URL);
+      const geo = await loadFirstModel(BRAIN_SOURCES);
       frameGeometry(geo, 3.6);
+      if (BRAIN_ROT.x) geo.rotateX(BRAIN_ROT.x);   // bake orientation into the mesh
+      if (BRAIN_ROT.y) geo.rotateY(BRAIN_ROT.y);   // (the spin animation drives
+      if (BRAIN_ROT.z) geo.rotateZ(BRAIN_ROT.z);   //  brainMesh.rotation separately)
       const g = new THREE.Group();
       g.position.set(BRAIN_C.x, BRAIN_C.y, BRAIN_C.z);
 
@@ -5761,8 +5860,8 @@
       shaderMats.forEach(m => { m.uniforms.uTime.value = t; });
 
       if (headGroup) {
-        headGroup.rotation.y = Math.sin(t * 0.16) * 0.12;           // subtle holographic drift
-        headGroup.position.y = HEAD_Y + Math.sin(t * 0.6) * 0.06;   // gentle float
+        headGroup.rotation.y = HEAD_ROT.y + Math.sin(t * 0.16) * 0.12; // base facing + subtle drift
+        headGroup.position.y = HEAD_Y + Math.sin(t * 0.6) * 0.06;      // gentle float
       }
       if (brainMesh) {
         brainMesh.rotation.y += 0.0035;
