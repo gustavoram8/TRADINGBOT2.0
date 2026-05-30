@@ -5382,7 +5382,7 @@
     // brain sits naturally, regardless of which axis convention each mesh ships
     // with. head.obj ships Y-up / face +Z, so it needs no rotation.
     const HEAD_ROT  = { x: 0, y: 0, z: 0 };
-    const BRAIN_ROT = { x: Math.PI, y: 0, z: 0 };   // STL was Y-up flipped; rotate 180° to right it
+    const BRAIN_ROT = { x: -Math.PI / 2, y: 0, z: 0 };   // STL ships superior=+Z; tilt -90° so the dome points up
 
     function parseOBJ(text) {
       const vs = [], vns = [], idx = [];
