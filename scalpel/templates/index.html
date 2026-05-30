@@ -5240,8 +5240,8 @@
     const BRAIN_C = { x: 0, y: BRAIN_Y, z: 0 };
 
     function isLight() { return document.body.classList.contains('light'); }
-    function colDim()    { return isLight() ? 0x7aaed4 : 0xeab308; }
-    function colBright() { return isLight() ? 0x5592c8 : 0xffd23f; }
+    function colDim()    { return isLight() ? 0x7aaed4 : 0xb89a4e; }
+    function colBright() { return isLight() ? 0x5592c8 : 0xdcc06a; }
 
     function ensureThree() {
       if (typeof THREE !== 'undefined') return Promise.resolve();
@@ -5429,17 +5429,6 @@
       brainGlow.scale.set(1.4, 0.9, 1.3);
       g.add(brainGlow);
 
-      // a single horizontal scanner ring around the brain. (The old vertical
-      // ring was edge-on to the camera and read as a stray vertical line in the
-      // gap between the brain and head, so it was removed.)
-      const rm = new THREE.MeshBasicMaterial({ color: colDim(), transparent: true, opacity: 0.4, wireframe: true });
-      baseMats.push(rm);
-      const ring = wireMesh(new THREE.TorusGeometry(2.6, 0.02, 6, 90), rm);
-      ring.rotation.x = Math.PI / 2;
-      ring.userData.spin = 0.006;
-      dataRings.push(ring);
-      g.add(ring);
-
       brainGroup = g;
       scene.add(g);
     }
@@ -5615,10 +5604,7 @@
 
       shaderMats.forEach(m => { m.uniforms.uTime.value = t; });
 
-      if (headGroup) {
-        headGroup.rotation.y = Math.sin(t * 0.16) * 0.12;           // subtle holographic drift
-        headGroup.position.y = HEAD_Y + Math.sin(t * 0.6) * 0.06;   // gentle float
-      }
+      // head stays static, facing front (no drift / float) — only the brain moves
       if (brainMesh) {
         brainMesh.rotation.y += 0.0035;
         brainMesh.rotation.x = Math.sin(t * 0.35) * 0.06;
