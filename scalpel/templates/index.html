@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Scalpel — ICT Trade Analysis</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <!-- Scalpe® studio loads its canvas engine (Fabric) + PDF export (jsPDF)
        lazily on first open, with multi-CDN fallback — see Scalper.open() -->
@@ -1584,8 +1584,8 @@
        is clickable on the canvas. Disappears once fired. */
     .syn-fire-prompt {
       position: absolute; transform: translate(-50%, -50%);
-      font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600;
-      letter-spacing: 0.16em; text-transform: uppercase; white-space: nowrap;
+      font-family: 'Orbitron', sans-serif; font-size: 11px; font-weight: 600;
+      letter-spacing: 0.18em; text-transform: uppercase; white-space: nowrap;
       padding: 8px 18px; border-radius: 24px; cursor: pointer; pointer-events: auto;
       -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px); z-index: 3;
       color: #f5d77a; background: rgba(234,179,8,0.10); border: 1px solid rgba(234,179,8,0.5);
@@ -1605,24 +1605,42 @@
       50%      { opacity: 1; box-shadow: 0 0 34px rgba(234,179,8,0.5); }
     }
 
+    /* Methodology nodes — chamfered "HUD readout" chips. Diagonally cut corners
+       (top-left + bottom-right) give a cockpit / targeting-callout feel; the
+       solid background is the thin frame, the ::before is the translucent face,
+       and the drop-shadow glow follows the chamfer instead of a plain box. */
     .syn-node-label {
+      --syn-chamfer: 9px;
       position: absolute; transform: translate(-50%, -50%);
-      font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600;
-      letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap;
-      padding: 4px 11px; border-radius: 20px; cursor: pointer; pointer-events: auto;
-      transition: transform .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease;
+      font-family: 'Orbitron', sans-serif; font-size: 10px; font-weight: 600;
+      letter-spacing: 0.17em; text-transform: uppercase; white-space: nowrap;
+      padding: 7px 17px; cursor: pointer; pointer-events: auto;
+      color: #f5d77a; background: rgba(234,179,8,0.55);
+      -webkit-clip-path: polygon(var(--syn-chamfer) 0, 100% 0, 100% calc(100% - var(--syn-chamfer)), calc(100% - var(--syn-chamfer)) 100%, 0 100%, 0 var(--syn-chamfer));
+      clip-path: polygon(var(--syn-chamfer) 0, 100% 0, 100% calc(100% - var(--syn-chamfer)), calc(100% - var(--syn-chamfer)) 100%, 0 100%, 0 var(--syn-chamfer));
+      filter: drop-shadow(0 0 6px rgba(234,179,8,0.30));
+      transition: transform .2s cubic-bezier(.2,.8,.2,1), filter .2s ease, color .2s ease, letter-spacing .2s ease;
+    }
+    .syn-node-label::before {
+      content: ''; position: absolute; inset: 1.4px;
+      background: rgba(14,11,3,0.86);
+      -webkit-clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+      clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
       -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
-      color: #f5d77a; background: rgba(234,179,8,0.12); border: 1px solid rgba(234,179,8,0.5);
     }
     .syn-node-label:hover, .syn-node-label.active {
-      transform: translate(-50%, -50%) scale(1.13);
-      box-shadow: 0 0 18px rgba(234,179,8,0.4);
+      transform: translate(-50%, -50%) scale(1.12);
+      color: #ffe9a8; letter-spacing: 0.21em;
+      filter: drop-shadow(0 0 13px rgba(234,179,8,0.6));
     }
     body.light .syn-node-label {
-      color: #bcd4ff; background: rgba(20,40,90,0.4); border-color: rgba(99,150,255,0.6);
+      color: #cfe0ff; background: rgba(99,150,255,0.7);
+      filter: drop-shadow(0 0 6px rgba(99,150,255,0.32));
     }
+    body.light .syn-node-label::before { background: rgba(12,22,50,0.88); }
     body.light .syn-node-label:hover, body.light .syn-node-label.active {
-      box-shadow: 0 0 18px rgba(99,150,255,0.45);
+      color: #eaf2ff;
+      filter: drop-shadow(0 0 13px rgba(99,150,255,0.62));
     }
 
     .syn-loading {
@@ -5615,7 +5633,7 @@
       if (prompt && !fired) {
         v.set(BRAIN_C.x, BRAIN_C.y, BRAIN_C.z).project(camera);
         prompt.style.left = ((v.x * 0.5 + 0.5) * w) + 'px';
-        prompt.style.top  = ((-v.y * 0.5 + 0.5) * h + 78) + 'px';
+        prompt.style.top  = ((-v.y * 0.5 + 0.5) * h + 122) + 'px';
       }
 
       // node labels only exist once the synapse has fired
