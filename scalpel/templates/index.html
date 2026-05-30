@@ -5639,9 +5639,10 @@
 
       scene = new THREE.Scene();
       camera = new THREE.PerspectiveCamera(50, 1.6, 0.1, 100);
-      // Frame from a little below the shoulders up to the floating brain.
-      camera.position.set(0, 10, 15.5);
-      camera.lookAt(0, 10, 0);
+      // Frame from a little below the shoulders up to the floating brain, with
+      // headroom above the top nodes so they don't collide with the tabs bar.
+      camera.position.set(0, 11.3, 16.5);
+      camera.lookAt(0, 11.3, 0);
 
       ndc = new THREE.Vector2(-10, -10);
       raycaster = new THREE.Raycaster();
