@@ -5604,7 +5604,10 @@
 
       shaderMats.forEach(m => { m.uniforms.uTime.value = t; });
 
-      // head stays static, facing front (no drift / float) — only the brain moves
+      if (headGroup) {
+        headGroup.rotation.y = Math.sin(t * 0.16) * 0.12;           // subtle holographic drift
+        headGroup.position.y = HEAD_Y + Math.sin(t * 0.6) * 0.06;   // gentle float
+      }
       if (brainMesh) {
         brainMesh.rotation.y += 0.0035;
         brainMesh.rotation.x = Math.sin(t * 0.35) * 0.06;
