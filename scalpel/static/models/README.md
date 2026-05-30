@@ -14,33 +14,27 @@ holographic treatment (colour, opacity, wireframe).
 | Brain | `brain.glb` | `brain.obj` |
 | Head  | `head.glb`  | `head.obj`  |
 
-`.glb` is preferred if present, so you can later swap in a `.glb` without code
-changes. The previous models (`asaro_head.obj`, the external FreeSurfer URL) were
-removed to keep the repo free of any unclear-license assets.
+`.glb` is preferred if present, so you can later swap in a `.glb` without code changes.
 
-## Models currently in use (both CC-BY)
+## Models currently in use
 
-Both were downloaded from Sketchfab and are in place:
-
-- **Brain → `brain.obj`** — converted from the downloaded `final.stl`
-  (FreeSurfer MRI brain by *dgallichan*), license **CC BY**.
+- **Brain → `brain.obj`** — converted from `final.stl`
+  (FreeSurfer MRI Brain by *dgallichan*), license **CC BY 4.0**
   https://sketchfab.com/3d-models/brain-cadd2bde67404c43b2359a6a3281d84a
-- **Head → `head.obj`** — "Human Head Base Mesh" by *ferrumiron6*, license **CC BY**.
-  https://sketchfab.com/3d-models/human-head-base-mesh-e3fa4d8aed5f45869e3d7c616a8a0841
+
+- **Head → `head.glb`** — Lee Perry-Smith head scan by **Infinite Realities**,
+  distributed via the official Three.js examples, license **CC BY 3.0 Unported**
+  https://github.com/mrdoob/three.js/tree/dev/examples/models/gltf/LeePerrySmith
 
 ## ⚠️ Attribution (required — both are CC BY)
 
-CC BY permits commercial use but **requires crediting the author**. The credit
-line is already in the site footer (`index.html`):
+The credit line is already in the site footer (`index.html`):
 
-> Synapse 3D models: “Human Head Base Mesh” by ferrumiron6 · brain model by
-> dgallichan — licensed under CC BY 4.0 (Sketchfab)
+> Synapse 3D models: head scan by Lee Perry-Smith / Infinite Realities (CC BY 3.0) ·
+> brain model by dgallichan (CC BY 4.0, Sketchfab)
 
-Tip: Sketchfab's **COPY CREDITS** button gives the exact attribution string for
-each model — paste those if you want the precise wording.
-
-## After you add the files
+## After you swap a model
 
 Tell Claude. The face may need a one-line facing tweak (`HEAD_ROT` in `index.html`)
 depending on which axis the head mesh ships with — Claude will tune it so the face
-looks toward the camera, matching the current look.
+looks toward the camera.

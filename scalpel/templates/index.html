@@ -2517,9 +2517,8 @@
 
 <footer data-i18n="footer.text">SCALPEL · ICT Trade Analysis · For educational purposes only · Not financial advice</footer>
 <!-- CC-BY attribution for the Synapse hologram models (required by their licenses) -->
-<div class="model-credits" style="text-align:center; font-size:10px; color:var(--muted); opacity:0.6; padding:0 16px 18px; letter-spacing:0.02em;">
-  Synapse 3D models: “Human Head Base Mesh” by ferrumiron6 · brain model by dgallichan — licensed under
-  <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener" style="color:inherit; text-decoration:underline;">CC BY 4.0</a> (Sketchfab)
+<div class=”model-credits” style=”text-align:center; font-size:10px; color:var(--muted); opacity:0.6; padding:0 16px 18px; letter-spacing:0.02em;”>
+  Synapse 3D models: head scan by Lee Perry-Smith / Infinite Realities (CC BY 3.0) · brain model by dgallichan (CC BY 4.0, Sketchfab)
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -5366,12 +5365,9 @@
     //    drop-in replacement of any reasonable OBJ/GLB keeps the same on-screen
     //    size and the identical hologram treatment (colour, opacity, wireframe).
     //
-    //    Replacement plan (legally-clean, CC-licensed models):
-    //      • Brain → "FreeSurfer MRI Brain" (CC-BY, dgallichan, Sketchfab B1)
-    //      • Head  → "Human Head Base Mesh"  (CC0, ferrumiron6, Sketchfab H2)
-    //    Drop the downloaded files into scalpel/static/models/ as brain.glb|obj
-    //    and head.glb|obj — the loader prefers those and falls back to the
-    //    current models until they are present, so nothing breaks meanwhile.
+    //    Models in use (both CC-BY, attribution in footer):
+    //      • Brain → "FreeSurfer MRI Brain" (CC BY 4.0, dgallichan, Sketchfab)
+    //      • Head  → Lee Perry-Smith head scan (CC BY 3.0, Infinite Realities / three.js)
     const BRAIN_SOURCES = [
       '/static/models/brain.glb',
       '/static/models/brain.obj',
