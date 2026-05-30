@@ -72,6 +72,12 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 reset_serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 
+# ── Feature flags ──
+# Prop Firm Scout is fully built but temporarily disabled until a future launch.
+# Flip to True (or set SCOUT_ENABLED=1 in the environment) to re-enable it:
+# the Scout tab, its API endpoints and the pricing perk all come back instantly.
+SCOUT_ENABLED = os.environ.get("SCOUT_ENABLED", "0") in ("1", "true", "True")
+
 # ── AI client ──
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "placeholder")
 MODEL = os.environ.get("SCALPEL_MODEL", "gpt-4o")
@@ -80,6 +86,12 @@ client = OpenAI(
     base_url="https://models.inference.ai.azure.com",
     api_key=GITHUB_TOKEN,
 )
+
+
+# ── Expose feature flags to every template ──
+@app.context_processor
+def inject_feature_flags():
+    return {'scout_enabled': SCOUT_ENABLED}
 
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -1637,6 +1649,8 @@ def init_scout_data():
 @app.route('/api/scout/firms')
 @login_required
 def scout_firms():
+    if not SCOUT_ENABLED:
+        return jsonify({'error': 'not_found'}), 404
     if current_user.plan != 'premium':
         return jsonify({'error': 'premium_required'}), 403
 
@@ -1712,6 +1726,8 @@ def scout_firms():
 @app.route('/api/scout/chat', methods=['POST'])
 @login_required
 def scout_chat():
+    if not SCOUT_ENABLED:
+        return jsonify({'error': 'not_found'}), 404
     if current_user.plan != 'premium':
         return jsonify({'error': 'premium_required'}), 403
 

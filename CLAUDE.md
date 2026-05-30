@@ -129,6 +129,33 @@ retorno incierto comparado con features de mayor impacto en conversión y retenc
 
 ---
 
+## 🟣 Features construidos pero DESACTIVADOS (listos para reactivar)
+
+> **RECORDATORIO PERMANENTE — PROP FIRM SCOUT:**
+> El **Prop Firm Scout está completamente construido** (marketplace de 25 firmas,
+> filtros, asesor IA, blocklist OFAC, logos reales) pero **desactivado temporalmente**
+> mediante un feature flag. Saldrá al público mucho más adelante.
+>
+> **Cómo está apagado:** la variable `SCOUT_ENABLED` en `scalpel/app.py`
+> (sección *Feature flags*, cerca del cliente de IA). Por defecto está en `False`.
+> Con el flag apagado:
+> - La pestaña "Prop Firm Scout" del menú (`index.html`) se oculta.
+> - La vista `#scout-view` no se renderiza.
+> - Las APIs `/api/scout/firms` y `/api/scout/chat` devuelven 404.
+> - La mención del Scout en `pricing.html` (plan Premium) se oculta.
+> - El flag se expone a todas las plantillas vía `@app.context_processor`
+>   (`inject_feature_flags` → `scout_enabled`).
+>
+> **Cómo reactivarlo cuando el usuario lo pida:** cambiar a `SCOUT_ENABLED = True`
+> en `scalpel/app.py` (o arrancar con `SCOUT_ENABLED=1 python3 scalpel/app.py`)
+> y reiniciar el servidor. Todo el código del Scout (la pestaña, la vista, las APIs,
+> el modelo `PropFirm`, el seed `init_scout_data()` y los datos en la DB) permanece
+> **intacto** — no hay que reconstruir nada.
+>
+> ⚠️ El usuario reactivará el Scout **solo cuando lo solicite explícitamente.**
+
+---
+
 ## Notas de arquitectura importantes
 
 - `init_scout_data()` corre en cada startup y refresca `blocked_countries`
