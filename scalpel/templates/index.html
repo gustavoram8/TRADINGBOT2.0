@@ -1577,7 +1577,33 @@
       text-transform: uppercase; font-weight: 600; color: #eab308;
     }
     body.light .syn-title { color: #3f6fd6; }
-    .syn-sub { margin-top: 7px; font-size: 11px; color: var(--muted); letter-spacing: 0.1em; }
+    .syn-sub { margin-top: 7px; font-size: 11px; color: var(--muted); letter-spacing: 0.1em; opacity: 0; transition: opacity .6s ease; }
+
+    /* "Click to fire a synapse" — pulsing prompt that floats beneath the brain
+       until the user fires the first synapse. Clickable; also the brain itself
+       is clickable on the canvas. Disappears once fired. */
+    .syn-fire-prompt {
+      position: absolute; transform: translate(-50%, -50%);
+      font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600;
+      letter-spacing: 0.16em; text-transform: uppercase; white-space: nowrap;
+      padding: 8px 18px; border-radius: 24px; cursor: pointer; pointer-events: auto;
+      -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px); z-index: 3;
+      color: #f5d77a; background: rgba(234,179,8,0.10); border: 1px solid rgba(234,179,8,0.5);
+      box-shadow: 0 0 22px rgba(234,179,8,0.25);
+      animation: syn-fire-pulse 1.9s ease-in-out infinite;
+      transition: opacity .5s ease, transform .5s ease;
+    }
+    .syn-fire-prompt:hover { box-shadow: 0 0 32px rgba(234,179,8,0.55); }
+    .syn-fire-prompt.gone { animation: none; opacity: 0; pointer-events: none; transform: translate(-50%, -50%) scale(0.6); }
+    body.light .syn-fire-prompt {
+      color: #bcd4ff; background: rgba(20,40,90,0.4); border-color: rgba(99,150,255,0.6);
+      box-shadow: 0 0 22px rgba(99,150,255,0.3);
+    }
+    body.light .syn-fire-prompt:hover { box-shadow: 0 0 32px rgba(99,150,255,0.6); }
+    @keyframes syn-fire-pulse {
+      0%, 100% { opacity: 0.7; }
+      50%      { opacity: 1; box-shadow: 0 0 34px rgba(234,179,8,0.5); }
+    }
 
     .syn-node-label {
       position: absolute; transform: translate(-50%, -50%);
@@ -2446,8 +2472,9 @@
       <div class="syn-overlay" id="syn-overlay">
         <div class="syn-title-wrap">
           <div class="syn-title">Synapse</div>
-          <div class="syn-sub" data-i18n="synapse.sub">Click a node to explore its methodology</div>
+          <div class="syn-sub" id="syn-sub" data-i18n="synapse.sub">Click a node to explore its methodology</div>
         </div>
+        <div class="syn-fire-prompt" id="syn-fire-prompt" data-i18n="synapse.fire" style="display:none;">Click to fire a synapse</div>
       </div>
       <div class="syn-toast" id="syn-toast"></div>
       <div class="syn-loading" id="syn-loading">
@@ -2619,6 +2646,7 @@
       'synapse.sub': 'Click a node to explore its methodology',
       'synapse.loading': 'Initializing neural matrix…',
       'synapse.soon': '{name} library — coming soon',
+      'synapse.fire': 'Click to fire a synapse',
       'scalper.tag': 'The Trading Education Studio',
       'scalper.bg': 'Background', 'scalper.bgDark': 'Dark', 'scalper.bgWhite': 'White', 'scalper.bgBlack': 'Black', 'scalper.bgGrid': 'Chart grid',
       'scalper.bgNavy': 'Navy', 'scalper.bgCharcoal': 'Charcoal', 'scalper.bgForest': 'Forest', 'scalper.bgSepia': 'Sepia', 'scalper.bgCream': 'Cream', 'scalper.bgCustom': 'Custom…',
@@ -2782,6 +2810,7 @@
       'synapse.sub': 'Haz clic en un nodo para explorar su metodología',
       'synapse.loading': 'Inicializando matriz neuronal…',
       'synapse.soon': 'Biblioteca de {name} — próximamente',
+      'synapse.fire': 'Haz clic para activar la sinapsis',
       'scalper.tag': 'El Estudio de Educación en Trading',
       'scalper.bg': 'Fondo', 'scalper.bgDark': 'Oscuro', 'scalper.bgWhite': 'Blanco', 'scalper.bgBlack': 'Negro', 'scalper.bgGrid': 'Cuadrícula',
       'scalper.bgNavy': 'Marino', 'scalper.bgCharcoal': 'Carbón', 'scalper.bgForest': 'Bosque', 'scalper.bgSepia': 'Sepia', 'scalper.bgCream': 'Crema', 'scalper.bgCustom': 'Personalizado…',
@@ -2945,6 +2974,7 @@
       'synapse.sub': 'Cliquez sur un nœud pour explorer sa méthodologie',
       'synapse.loading': 'Initialisation de la matrice neuronale…',
       'synapse.soon': 'Bibliothèque {name} — bientôt disponible',
+      'synapse.fire': 'Cliquez pour activer la synapse',
       'scalper.tag': "Le Studio d'Éducation au Trading",
       'scalper.bg': 'Arrière-plan', 'scalper.bgDark': 'Sombre', 'scalper.bgWhite': 'Blanc', 'scalper.bgBlack': 'Noir', 'scalper.bgGrid': 'Grille',
       'scalper.bgNavy': 'Marine', 'scalper.bgCharcoal': 'Charbon', 'scalper.bgForest': 'Forêt', 'scalper.bgSepia': 'Sépia', 'scalper.bgCream': 'Crème', 'scalper.bgCustom': 'Personnalisé…',
@@ -3108,6 +3138,7 @@
       'synapse.sub': 'Clique em um nó para explorar sua metodologia',
       'synapse.loading': 'Inicializando matriz neural…',
       'synapse.soon': 'Biblioteca de {name} — em breve',
+      'synapse.fire': 'Clique para ativar a sinapse',
       'scalper.tag': 'O Estúdio de Educação em Trading',
       'scalper.bg': 'Fundo', 'scalper.bgDark': 'Escuro', 'scalper.bgWhite': 'Branco', 'scalper.bgBlack': 'Preto', 'scalper.bgGrid': 'Grade',
       'scalper.bgNavy': 'Marinho', 'scalper.bgCharcoal': 'Carvão', 'scalper.bgForest': 'Floresta', 'scalper.bgSepia': 'Sépia', 'scalper.bgCream': 'Creme', 'scalper.bgCustom': 'Personalizado…',
@@ -5240,6 +5271,14 @@
     let netPos, netVel, NET_N = 0;
     let toastTimer = null;
 
+    // ── "Fire the synapse" gate ──
+    // The methodology nodes stay hidden until the user clicks the brain. On the
+    // first click a burst of neural sparks fires and the nodes cascade open.
+    // Leaving and re-entering the Synapse tab (or a refresh) re-arms the gate.
+    let fired = false, fireStart = 0, brainHit = null, sparks = [];
+    const FIRE_DUR = 0.5;        // per-node reveal duration (s)
+    const FIRE_STAGGER = 0.09;   // delay between successive nodes (s)
+
     const BRAIN_Y = 13.8;                                  // brain floats clear above the head
     const BRAIN_C = { x: 0, y: BRAIN_Y, z: 0 };
 
@@ -5428,6 +5467,16 @@
 
       brainGroup = g;
       scene.add(g);
+
+      // invisible bounding sphere around the brain — cheap, reliable click/hover
+      // target for the "fire the synapse" interaction (the cortical mesh itself
+      // is too dense to raycast every frame).
+      brainHit = new THREE.Mesh(
+        new THREE.SphereGeometry(2.6, 16, 12),
+        new THREE.MeshBasicMaterial({ visible: false })
+      );
+      brainHit.position.set(BRAIN_C.x, BRAIN_C.y, BRAIN_C.z);
+      scene.add(brainHit);
     }
 
     function buildNodes() {
@@ -5451,22 +5500,25 @@
         scene.add(halo);
 
         // branch line from brain to node — skip the dead-centre node so there is
-        // no vertical line running down the middle of the brain / head.
+        // no vertical line running down the middle of the brain / head. Kept as a
+        // reference so the reveal can "draw" it from the brain outward on fire.
+        let branch = null;
         if (Math.abs(pos.x) > 0.6) {
           const lg = new THREE.BufferGeometry().setFromPoints([bc.clone(), pos.clone()]);
           const lm = new THREE.LineBasicMaterial({ color: colDim(), transparent: true, opacity: 0.5 });
           baseMats.push(lm);
-          scene.add(new THREE.Line(lg, lm));
+          branch = new THREE.Line(lg, lm);
+          scene.add(branch);
         }
 
         // crisp HTML label that tracks the node
         const label = document.createElement('div');
         label.className = 'syn-node-label';
         label.textContent = meth.name;
-        label.addEventListener('click', () => openMethod(meth));
+        label.addEventListener('click', () => { if (fired) openMethod(meth); });
         overlay.appendChild(label);
 
-        nodes.push({ meth, pos, sphere, halo, label, baseScale: 1, target: 1 });
+        nodes.push({ meth, pos, bc: bc.clone(), sphere, halo, label, branch, baseScale: 1, target: 1 });
       });
     }
 
@@ -5557,7 +5609,19 @@
     function projectLabels() {
       const w = app.clientWidth, h = app.clientHeight;
       const v = new THREE.Vector3();
+
+      // the "click to fire" prompt tracks the floating brain, sitting just below it
+      const prompt = document.getElementById('syn-fire-prompt');
+      if (prompt && !fired) {
+        v.set(BRAIN_C.x, BRAIN_C.y, BRAIN_C.z).project(camera);
+        prompt.style.left = ((v.x * 0.5 + 0.5) * w) + 'px';
+        prompt.style.top  = ((-v.y * 0.5 + 0.5) * h + 78) + 'px';
+      }
+
+      // node labels only exist once the synapse has fired
+      if (!fired) { nodes.forEach(nd => { nd.label.style.display = 'none'; }); return; }
       nodes.forEach(nd => {
+        if (!nd.sphere.visible) { nd.label.style.display = 'none'; return; }
         v.copy(nd.sphere.position).project(camera);
         const behind = v.z > 1;
         nd.label.style.display = behind ? 'none' : 'block';
@@ -5565,6 +5629,70 @@
         nd.label.style.left = ((v.x * 0.5 + 0.5) * w) + 'px';
         nd.label.style.top  = ((-v.y * 0.5 + 0.5) * h - 34) + 'px';
       });
+    }
+
+    // ── Re-arm the gate: hide every node, show the pulsing prompt. Runs each
+    //    time the Synapse tab is opened so leaving & returning requires a fresh
+    //    click on the brain. ──
+    function resetSynapse() {
+      fired = false;
+      sparks.forEach(s => { scene.remove(s.line); s.line.geometry.dispose(); s.mat.dispose(); });
+      sparks = [];
+      if (hovered) { hovered.label.classList.remove('active'); hovered = null; }
+      nodes.forEach(nd => {
+        nd.sphere.visible = false; nd.sphere.scale.setScalar(0.001);
+        nd.halo.visible = false;   nd.halo.scale.setScalar(0.001);
+        nd.baseScale = 0.001;
+        if (nd.branch) { nd.branch.visible = false; nd.branch.material.opacity = 0; }
+        nd.label.style.display = 'none';
+        nd.label.style.opacity = '0';
+        nd.label.classList.remove('active');
+      });
+      const sub = document.getElementById('syn-sub');
+      if (sub) sub.style.opacity = '0';
+      const prompt = document.getElementById('syn-fire-prompt');
+      if (prompt) { prompt.style.display = ''; prompt.classList.remove('gone'); }
+    }
+
+    // ── Fire the synapse: spark burst + cascade the nodes open. ──
+    function fire() {
+      if (fired) return;
+      fired = true;
+      fireStart = clock.getElapsedTime();
+      const prompt = document.getElementById('syn-fire-prompt');
+      if (prompt) prompt.classList.add('gone');
+      const sub = document.getElementById('syn-sub');
+      if (sub) sub.style.opacity = '1';
+      spawnSparks();
+      nodes.forEach(nd => {
+        nd.sphere.visible = true;
+        nd.halo.visible = true;
+        if (nd.branch) nd.branch.visible = true;
+      });
+    }
+
+    // ── Neural "destellos": short bright lines radiating from the brain centre,
+    //    fading out over a fraction of a second the instant the synapse fires. ──
+    function spawnSparks() {
+      const bc = new THREE.Vector3(BRAIN_C.x, BRAIN_C.y, BRAIN_C.z);
+      const N = 18;
+      for (let i = 0; i < N; i++) {
+        const dir = new THREE.Vector3(
+          (Math.random() - 0.5) * 2,
+          (Math.random() - 0.15) * 1.5,
+          (Math.random() - 0.5) * 1.2
+        ).normalize();
+        const len = 2.2 + Math.random() * 2.8;
+        const end = bc.clone().add(dir.multiplyScalar(len));
+        const geo = new THREE.BufferGeometry().setFromPoints([bc.clone(), end]);
+        const mat = new THREE.LineBasicMaterial({
+          color: colBright(), transparent: true, opacity: 0.95,
+          blending: THREE.AdditiveBlending, depthWrite: false,
+        });
+        const line = new THREE.Line(geo, mat);
+        scene.add(line);
+        sparks.push({ line, mat, born: clock.getElapsedTime(), life: 0.45 + Math.random() * 0.35 });
+      }
     }
 
     function showToast(msg) {
@@ -5588,8 +5716,23 @@
       ndc.x = ((e.clientX - r.left) / r.width) * 2 - 1;
       ndc.y = -((e.clientY - r.top) / r.height) * 2 + 1;
     }
-    function onClick() {
-      if (hovered) openMethod(hovered.meth);
+    function onClick(e) {
+      // raycast fresh from the event so a tap fires reliably on mobile too
+      const r = renderer.domElement.getBoundingClientRect();
+      ndc.x = ((e.clientX - r.left) / r.width) * 2 - 1;
+      ndc.y = -((e.clientY - r.top) / r.height) * 2 + 1;
+      raycaster.setFromCamera(ndc, camera);
+
+      if (!fired) {
+        // before firing, a click anywhere on the brain triggers the synapse
+        if (brainHit && raycaster.intersectObject(brainHit).length) fire();
+        return;
+      }
+      const hits = raycaster.intersectObjects(nodes.filter(n => n.sphere.visible).map(n => n.sphere));
+      if (hits.length) {
+        const nd = nodes.find(n => n.sphere === hits[0].object);
+        if (nd) openMethod(nd.meth);
+      }
     }
 
     function animate() {
@@ -5614,22 +5757,63 @@
 
       // hover detection
       raycaster.setFromCamera(ndc, camera);
-      const hits = raycaster.intersectObjects(nodes.map(n => n.sphere));
-      const hit = hits.length ? nodes.find(n => n.sphere === hits[0].object) : null;
-      if (hit !== hovered) {
-        if (hovered) hovered.label.classList.remove('active');
-        hovered = hit;
-        if (hovered) hovered.label.classList.add('active');
-        renderer.domElement.style.cursor = hovered ? 'pointer' : 'default';
+      if (!fired) {
+        // before firing, only the brain is interactive
+        const bh = brainHit ? raycaster.intersectObject(brainHit) : [];
+        renderer.domElement.style.cursor = bh.length ? 'pointer' : 'default';
+        if (hovered) { hovered.label.classList.remove('active'); hovered = null; }
+      } else {
+        const hits = raycaster.intersectObjects(nodes.filter(n => n.sphere.visible).map(n => n.sphere));
+        const hit = hits.length ? nodes.find(n => n.sphere === hits[0].object) : null;
+        if (hit !== hovered) {
+          if (hovered) hovered.label.classList.remove('active');
+          hovered = hit;
+          if (hovered) hovered.label.classList.add('active');
+          renderer.domElement.style.cursor = hovered ? 'pointer' : 'default';
+        }
       }
 
-      nodes.forEach((nd, i) => {
-        nd.target = (nd === hovered) ? 1.55 : 1 + Math.sin(t * 1.8 + i) * 0.06;
-        nd.baseScale += (nd.target - nd.baseScale) * 0.18;
-        nd.sphere.scale.setScalar(nd.baseScale);
-        nd.halo.scale.setScalar(nd.baseScale);
-        nd.halo.rotation.y += 0.01;
-      });
+      // node motion / reveal — only runs once the synapse has fired, with each
+      // node easing open in a staggered cascade and its branch line drawing out
+      // from the brain.
+      if (fired) {
+        const since = t - fireStart;
+        nodes.forEach((nd, i) => {
+          let rp = (since - i * FIRE_STAGGER) / FIRE_DUR;
+          rp = Math.max(0, Math.min(1, rp));
+          const ease = rp * rp * (3 - 2 * rp);                 // smoothstep
+
+          if (nd.branch) {
+            const mid = nd.bc.clone().lerp(nd.pos, ease);
+            const arr = nd.branch.geometry.attributes.position.array;
+            arr[3] = mid.x; arr[4] = mid.y; arr[5] = mid.z;
+            nd.branch.geometry.attributes.position.needsUpdate = true;
+            nd.branch.material.opacity = 0.5 * ease;
+          }
+
+          nd.target = (nd === hovered) ? 1.55 : 1 + Math.sin(t * 1.8 + i) * 0.06;
+          nd.baseScale += (nd.target - nd.baseScale) * 0.18;
+          const s = nd.baseScale * ease;
+          nd.sphere.scale.setScalar(s);
+          nd.halo.scale.setScalar(s);
+          nd.halo.rotation.y += 0.01;
+          nd.label.style.opacity = String(ease);
+        });
+      }
+
+      // fade out the spark burst
+      if (sparks.length) {
+        for (let i = sparks.length - 1; i >= 0; i--) {
+          const sp = sparks[i];
+          const k = (t - sp.born) / sp.life;
+          if (k >= 1) {
+            scene.remove(sp.line); sp.line.geometry.dispose(); sp.mat.dispose();
+            sparks.splice(i, 1);
+            continue;
+          }
+          sp.mat.opacity = (1 - k) * 0.95;
+        }
+      }
 
       updateNet();
       projectLabels();
@@ -5661,16 +5845,21 @@
       window.addEventListener('resize', resize);
       resize();
 
+      // the pulsing prompt is a direct click target too (not just the brain mesh)
+      const prompt = document.getElementById('syn-fire-prompt');
+      if (prompt) prompt.addEventListener('click', () => fire());
+
       // load the real anatomical models (Asaro head + brain) before the loop
       await buildHead();
       await buildBrain();
       recolor();                        // apply theme-correct colour + blending
+      resetSynapse();                   // start armed: nodes hidden, prompt shown
       animate();
     }
 
     window.Synapse = {
       async open() {
-        if (started) { requestAnimationFrame(resize); return; }
+        if (started) { resetSynapse(); requestAnimationFrame(resize); return; }
         if (opening) return;
         opening = true;
         const loading = document.getElementById('syn-loading');
