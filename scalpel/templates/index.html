@@ -5934,11 +5934,8 @@
         }
       }
 
-      // Split the two heaviest CPU/DOM tasks across alternating frames so no
-      // single frame pays for both. The constellation drifts slowly and the
-      // labels barely move, so 30fps for these is imperceptible.
-      if ((frame & 1) === 0) updateNet();
-      else                   projectLabels();
+      updateNet();
+      projectLabels();
       renderer.render(scene, camera);
     }
 
