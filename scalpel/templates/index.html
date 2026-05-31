@@ -3669,6 +3669,7 @@
     if (tab === 'scout' && U.plan === 'premium' && window.Scout) window.Scout.open();
     if (tab === 'scalper' && U.plan === 'premium' && window.Scalper) window.Scalper.open();
     if (tab === 'synapse' && U.plan === 'premium' && window.Synapse) window.Synapse.open();
+    else if (window.Synapse && window.Synapse.pause) window.Synapse.pause();  // free the GPU when leaving Synapse
     if (isFeature) window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -5283,6 +5284,7 @@
 
     let opening = false, started = false;
     let renderer, scene, camera, raf, clock;
+    let running = false, frame = 0;   // loop gate + frame counter (perf)
     let headGroup, brainGroup, brainMesh, dataRings = [];
     let netPts, netLines;
     const nodes = [];
@@ -5847,8 +5849,13 @@
       }
     }
 
+    function startLoop() { if (!running) { running = true; frame = 0; animate(); } }
+    function stopLoop()  { running = false; if (raf) cancelAnimationFrame(raf); raf = 0; }
+
     function animate() {
+      if (!running) return;            // gated: paused when tab/window not visible
       raf = requestAnimationFrame(animate);
+      frame++;
       const t = clock.getElapsedTime();
 
       const light = isLight();
@@ -5927,15 +5934,21 @@
         }
       }
 
-      updateNet();
-      projectLabels();
+      // Split the two heaviest CPU/DOM tasks across alternating frames so no
+      // single frame pays for both. The constellation drifts slowly and the
+      // labels barely move, so 30fps for these is imperceptible.
+      if ((frame & 1) === 0) updateNet();
+      else                   projectLabels();
       renderer.render(scene, camera);
     }
 
     async function buildScene() {
       const canvas = document.getElementById('synapse-canvas');
       renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      // Cap at 1.5 (not full retina 2): the additive-blended holograms are
+      // fill-rate bound, so every extra pixel is re-shaded many times. 1.5 cuts
+      // ~44% of the pixel work with no visible change to the soft glow look.
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
 
       scene = new THREE.Scene();
       camera = new THREE.PerspectiveCamera(50, 1.6, 0.1, 100);
@@ -5966,12 +5979,21 @@
       await buildBrain();
       recolor();                        // apply theme-correct colour + blending
       resetSynapse();                   // start armed: nodes hidden, prompt shown
-      animate();
+
+      // Pause the render loop whenever the browser tab/window is hidden — no
+      // point burning GPU/CPU on a hologram nobody is looking at.
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) stopLoop();
+        else if (started && document.getElementById('synapse-view').style.display !== 'none') startLoop();
+      });
+
+      startLoop();
     }
 
     window.Synapse = {
+      pause() { stopLoop(); },
       async open() {
-        if (started) { resetSynapse(); requestAnimationFrame(resize); return; }
+        if (started) { resetSynapse(); startLoop(); requestAnimationFrame(resize); return; }
         if (opening) return;
         opening = true;
         const loading = document.getElementById('syn-loading');
