@@ -5303,8 +5303,8 @@
     const BRAIN_C = { x: 0, y: BRAIN_Y, z: 0 };
 
     function isLight() { return document.body.classList.contains('light'); }
-    function colDim()    { return isLight() ? 0x7aaed4 : 0xb89a4e; }
-    function colBright() { return isLight() ? 0x5592c8 : 0xdcc06a; }
+    function colDim()    { return isLight() ? 0x7aaed4 : 0x9c8240; }
+    function colBright() { return isLight() ? 0x5592c8 : 0xc6a04e; }
 
     function ensureThree() {
       if (typeof THREE !== 'undefined') return Promise.resolve();
@@ -5350,8 +5350,8 @@
             float scan = 0.5 + 0.5 * sin(vY * 5.0 - uTime * 2.4);
             scan = smoothstep(0.55, 1.0, scan) * 0.35;
             float band = smoothstep(0.0, 0.04, abs(fract(vY * 0.12 - uTime * 0.05) - 0.5));
-            float a = clamp(uOpacity + fres * 0.85 + scan, 0.0, 0.96) * (0.55 + 0.45 * band);
-            vec3 col = uColor * (0.45 + fres * 1.7 + scan);
+            float a = clamp(uOpacity + fres * 0.6 + scan, 0.0, 0.8) * (0.55 + 0.45 * band);
+            vec3 col = uColor * (0.5 + fres * 0.95 + scan);
             gl_FragColor = vec4(col, a);
           }`,
       });
@@ -5538,7 +5538,7 @@
         color: colBright(), transparent: true, opacity: 0.5, depthWrite: false,
       });
       brightMats.push(wireMat);
-      holoLineMats.push({ mat: wireMat, dark: 0.5, light: 0.46 });
+      holoLineMats.push({ mat: wireMat, dark: 0.38, light: 0.46 });
       g.add(new THREE.LineSegments(wfGeo, wireMat));
 
       // outer bloom halo — the same edges scaled out a hair, very faint
@@ -5546,7 +5546,7 @@
         color: colBright(), transparent: true, opacity: 0.16, depthWrite: false,
       });
       brightMats.push(glowMat);
-      holoLineMats.push({ mat: glowMat, dark: 0.16, light: 0.07 });
+      holoLineMats.push({ mat: glowMat, dark: 0.08, light: 0.07 });
       const glowWire = new THREE.LineSegments(wfGeo, glowMat);
       glowWire.scale.set(1.025, 1.025, 1.025);
       g.add(glowWire);
@@ -5705,7 +5705,7 @@
       });
       if (brainMesh) {
         brainMesh.material.blending = blend;
-        brainMesh.material.uniforms.uOpacity.value = light ? 0.05 : 0.12;
+        brainMesh.material.uniforms.uOpacity.value = light ? 0.05 : 0.09;
         brainMesh.material.needsUpdate = true;
       }
     }
