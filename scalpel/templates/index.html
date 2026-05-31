@@ -5324,6 +5324,8 @@
     //    a bank facade, trend charts…) that a fast line traces out in the empty
     //    corners, hold, dissolve, then redraw on a loop. ──
     let figGroup = null, figSlots = [], figMats = [], figCycle = -1, FIGURES = [];
+    let figDeck = [];   // shuffled queue of figure indices, drawn without repeats
+    let figLastIdx = -1; // last figure shown, to avoid repeats across deck reshuffles
 
     // ── "Fire the synapse" gate ──
     // The methodology nodes stay hidden until the user clicks the brain. On the
@@ -5923,11 +5925,33 @@
       scene.add(figGroup);
     }
 
-    // Lay a fresh set of glyphs into the slots, rotating through the pool so
-    // every figure type cycles into view over successive rounds.
+    // Draw the next figure index from a shuffled deck. Every figure in the
+    // pool is shown exactly once before any repeats — when the deck empties it
+    // is reshuffled (avoiding an immediate repeat across the seam). This makes
+    // ALL 14 figures appear within the first few rounds instead of a slow,
+    // hard-to-notice modulo rotation that looked like "the same 6 or 7".
+    function nextFigureIdx() {
+      if (figDeck.length === 0) {
+        const prev = figLastIdx;
+        figDeck = FIGURES.map((_, i) => i);
+        for (let i = figDeck.length - 1; i > 0; i--) {  // Fisher–Yates shuffle
+          const j = Math.floor(Math.random() * (i + 1));
+          [figDeck[i], figDeck[j]] = [figDeck[j], figDeck[i]];
+        }
+        // avoid the same figure straddling two decks back-to-back
+        if (figDeck[figDeck.length - 1] === prev && figDeck.length > 1) {
+          [figDeck[0], figDeck[figDeck.length - 1]] = [figDeck[figDeck.length - 1], figDeck[0]];
+        }
+      }
+      figLastIdx = figDeck.pop();
+      return figLastIdx;
+    }
+
+    // Lay a fresh set of glyphs into the slots, pulling new figures from the
+    // shuffled deck so every type cycles into view quickly and without repeats.
     function assignFigureCycle(idx) {
       figSlots.forEach((fs, i) => {
-        const pts = FIGURES[(idx * figSlots.length + i) % FIGURES.length];
+        const pts = FIGURES[nextFigureIdx()];
         const arr = fs.geom.attributes.position.array;
         const n = Math.min(pts.length, FIG_CAP);
         for (let p = 0; p < n; p++) {
