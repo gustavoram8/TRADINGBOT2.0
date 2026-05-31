@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Scalpel — ICT Trade Analysis</title>
+  <title>Trader Acelerator — ICT Trade Analysis</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <!-- Scalpe® studio loads its canvas engine (Fabric) + PDF export (jsPDF)
@@ -1683,7 +1683,7 @@
 <nav>
   <div class="logo-wrap">
     <a href="/pricing" target="_blank" rel="noopener" class="logo">
-      <img src="/static/logo.png" alt="Scalpel" class="logo-img"
+      <img src="/static/logo.png" alt="Trader Acelerator" class="logo-img"
            onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='flex';" />
       <div id="logo-fallback" class="logo-fallback">
         <div class="logo-icon">
@@ -1694,7 +1694,7 @@
           </svg>
         </div>
         <div>
-          <div class="logo-text">SCALPEL</div>
+          <div class="logo-text">TRADER ACELERATOR</div>
           <div class="logo-sub">ICT Trade Analysis</div>
         </div>
       </div>
@@ -1814,7 +1814,7 @@
   <div id="form-view">
     <div class="page-header">
       <h1 data-i18n="header.title">Analyze Your Setup</h1>
-      <p data-i18n="header.sub">Submit a trade for ICT analysis. Scalpel will identify possible setup errors and offer suggestions based on methodology — not verdicts.</p>
+      <p data-i18n="header.sub">Submit a trade for ICT analysis. Trader Acelerator will identify possible setup errors and offer suggestions based on methodology — not verdicts.</p>
     </div>
 
     <form id="trade-form" enctype="multipart/form-data">
@@ -1963,7 +1963,7 @@
 
       <!-- Notes -->
       <div class="card">
-        <div class="card-label"><span data-i18n="card.notes">Notes</span> <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;" data-i18n="card.notesHint">(optional — anything you want Scalpel to know)</span></div>
+        <div class="card-label"><span data-i18n="card.notes">Notes</span> <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;" data-i18n="card.notesHint">(optional — anything you want Trader Acelerator to know)</span></div>
         <textarea name="notes" id="notes" data-i18n-ph="notes.placeholder" placeholder="e.g. I thought price had swept SSL before I entered. It reversed right after my entry..."></textarea>
       </div>
 
@@ -1981,7 +1981,7 @@
     <div class="spinner"></div>
     <div class="loading-text">
       <strong id="loading-title">Analyzing your setup...</strong>
-      <span id="loading-sub">Scalpel is reading the chart and applying ICT theory. This takes 10–20 seconds.</span>
+      <span id="loading-sub">Trader Acelerator is reading the chart and applying ICT theory. This takes 10–20 seconds.</span>
     </div>
   </div>
 
@@ -2510,9 +2510,9 @@
   </div>
 </div>
 
-<footer data-i18n="footer.text">SCALPEL · ICT Trade Analysis · For educational purposes only · Not financial advice</footer>
+<footer data-i18n="footer.text">TRADER ACELERATOR · ICT Trade Analysis · For educational purposes only · Not financial advice</footer>
 <!-- CC-BY attribution for the Synapse hologram models (required by their licenses) -->
-<div class="model-credits" style="text-align:center; font-size:7px; color:var(--muted); opacity:0.5; padding:0 16px 14px; letter-spacing:0.01em;">
+<div class="model-credits" style="text-align:center; font-size:7.35px; color:var(--muted); opacity:0.5; padding:0 16px 14px; letter-spacing:0.01em;">
   Synapse 3D models: head scan by Lee Perry-Smith / Infinite Realities (CC BY 3.0) · brain model by dgallichan (CC BY 4.0, Sketchfab)
 </div>
 
@@ -2523,7 +2523,7 @@
     en: {
       'nav.tip': 'See plans →',
       'header.title': 'Analyze Your Setup',
-      'header.sub': 'Submit a trade for ICT analysis. Scalpel will identify possible setup errors and offer suggestions based on methodology — not verdicts.',
+      'header.sub': 'Submit a trade for ICT analysis. Trader Acelerator will identify possible setup errors and offer suggestions based on methodology — not verdicts.',
       'card.tradeDetails': 'Trade Details',
       'card.preTrade': 'Your Pre-Trade Analysis',
       'card.confluences': 'Confluences You Identified',
@@ -2531,7 +2531,7 @@
       'card.screenshot': 'Chart Screenshot',
       'card.required': 'required',
       'card.notes': 'Notes',
-      'card.notesHint': '(optional — anything you want Scalpel to know)',
+      'card.notesHint': '(optional — anything you want Trader Acelerator to know)',
       'field.instrument': 'Instrument',
       'field.direction': 'Direction',
       'field.session': 'Session',
@@ -2561,19 +2561,19 @@
       'loading.checkTitle': 'Checking your screenshot...',
       'loading.checkSub': 'Confirming your trade markers are visible.',
       'loading.analyzeTitle': 'Analyzing your setup...',
-      'loading.analyzeSub': 'Scalpel is reading the chart and applying ICT theory. This takes 10–20 seconds.',
+      'loading.analyzeSub': 'Trader Acelerator is reading the chart and applying ICT theory. This takes 10–20 seconds.',
       'result.title': 'Setup Analysis',
       'modal.noEntryTitle': 'No trade markers detected',
-      'modal.noEntryBody': "Scalpel couldn't clearly find an entry marker in your screenshot. The analysis will be general about the setup context rather than your specific entry.<br><br>You can analyze anyway, or upload a screenshot that shows your entry and exit.",
+      'modal.noEntryBody': "Trader Acelerator couldn't clearly find an entry marker in your screenshot. The analysis will be general about the setup context rather than your specific entry.<br><br>You can analyze anyway, or upload a screenshot that shows your entry and exit.",
       'modal.noExitTitle': 'Exit marker not detected',
-      'modal.noExitBody': "Scalpel sees your entry but couldn't clearly find where the trade closed. The analysis will focus on the entry setup.<br><br>For a fuller read, consider a screenshot that also shows your exit.",
+      'modal.noExitBody': "Trader Acelerator sees your entry but couldn't clearly find where the trade closed. The analysis will focus on the entry setup.<br><br>For a fuller read, consider a screenshot that also shows your exit.",
       'modal.change': 'Change screenshot',
       'modal.proceed': 'Analyze anyway',
       'err.selectField': 'Please select a value for: {field}.',
       'err.uploadFirst': 'Please upload a chart screenshot before submitting.',
       'err.generic': 'Something went wrong. Please try again.',
       'err.network': 'Network error. Check your connection and try again.',
-      'footer.text': 'SCALPEL · ICT Trade Analysis · For educational purposes only · Not financial advice',
+      'footer.text': 'TRADER ACELERATOR · ICT Trade Analysis · For educational purposes only · Not financial advice',
       'tabs.analyze': 'Analyze',
       'tabs.forum': 'Forum Trading',
       'tabs.indicators': 'Indicators',
@@ -2687,7 +2687,7 @@
     es: {
       'nav.tip': 'Ver planes →',
       'header.title': 'Analiza tu Setup',
-      'header.sub': 'Envía un trade para análisis ICT. Scalpel identificará posibles errores del setup y ofrecerá sugerencias basadas en la metodología — no veredictos.',
+      'header.sub': 'Envía un trade para análisis ICT. Trader Acelerator identificará posibles errores del setup y ofrecerá sugerencias basadas en la metodología — no veredictos.',
       'card.tradeDetails': 'Detalles del Trade',
       'card.preTrade': 'Tu Análisis Previo',
       'card.confluences': 'Confluencias que Identificaste',
@@ -2695,7 +2695,7 @@
       'card.screenshot': 'Captura del Gráfico',
       'card.required': 'obligatorio',
       'card.notes': 'Notas',
-      'card.notesHint': '(opcional — lo que quieras que Scalpel sepa)',
+      'card.notesHint': '(opcional — lo que quieras que Trader Acelerator sepa)',
       'field.instrument': 'Instrumento',
       'field.direction': 'Dirección',
       'field.session': 'Sesión',
@@ -2725,19 +2725,19 @@
       'loading.checkTitle': 'Verificando tu captura...',
       'loading.checkSub': 'Confirmando que tus marcas del trade sean visibles.',
       'loading.analyzeTitle': 'Analizando tu setup...',
-      'loading.analyzeSub': 'Scalpel está leyendo el gráfico y aplicando la teoría ICT. Esto tarda 10–20 segundos.',
+      'loading.analyzeSub': 'Trader Acelerator está leyendo el gráfico y aplicando la teoría ICT. Esto tarda 10–20 segundos.',
       'result.title': 'Análisis del Setup',
       'modal.noEntryTitle': 'No se detectaron marcas del trade',
-      'modal.noEntryBody': 'Scalpel no pudo encontrar claramente una marca de entrada en tu captura. El análisis será general sobre el contexto del setup en vez de tu entrada específica.<br><br>Puedes analizar de todos modos, o subir una captura que muestre tu entrada y salida.',
+      'modal.noEntryBody': 'Trader Acelerator no pudo encontrar claramente una marca de entrada en tu captura. El análisis será general sobre el contexto del setup en vez de tu entrada específica.<br><br>Puedes analizar de todos modos, o subir una captura que muestre tu entrada y salida.',
       'modal.noExitTitle': 'No se detectó la marca de salida',
-      'modal.noExitBody': 'Scalpel ve tu entrada pero no pudo encontrar claramente dónde cerró el trade. El análisis se enfocará en el setup de entrada.<br><br>Para un análisis más completo, considera una captura que también muestre tu salida.',
+      'modal.noExitBody': 'Trader Acelerator ve tu entrada pero no pudo encontrar claramente dónde cerró el trade. El análisis se enfocará en el setup de entrada.<br><br>Para un análisis más completo, considera una captura que también muestre tu salida.',
       'modal.change': 'Cambiar captura',
       'modal.proceed': 'Analizar igual',
       'err.selectField': 'Por favor selecciona un valor para: {field}.',
       'err.uploadFirst': 'Por favor sube una captura del gráfico antes de enviar.',
       'err.generic': 'Algo salió mal. Inténtalo de nuevo.',
       'err.network': 'Error de red. Revisa tu conexión e inténtalo de nuevo.',
-      'footer.text': 'SCALPEL · Análisis de Trades ICT · Solo con fines educativos · No es asesoría financiera',
+      'footer.text': 'TRADER ACELERATOR · Análisis de Trades ICT · Solo con fines educativos · No es asesoría financiera',
       'tabs.analyze': 'Analizar',
       'tabs.forum': 'Foro Trading',
       'tabs.indicators': 'Indicadores',
@@ -2851,7 +2851,7 @@
     fr: {
       'nav.tip': 'Voir les offres →',
       'header.title': 'Analysez votre Setup',
-      'header.sub': 'Soumettez un trade pour une analyse ICT. Scalpel identifiera les erreurs possibles du setup et proposera des suggestions basées sur la méthodologie — pas des verdicts.',
+      'header.sub': 'Soumettez un trade pour une analyse ICT. Trader Acelerator identifiera les erreurs possibles du setup et proposera des suggestions basées sur la méthodologie — pas des verdicts.',
       'card.tradeDetails': 'Détails du Trade',
       'card.preTrade': 'Votre Analyse Pré-Trade',
       'card.confluences': 'Confluences Identifiées',
@@ -2859,7 +2859,7 @@
       'card.screenshot': 'Capture du Graphique',
       'card.required': 'obligatoire',
       'card.notes': 'Notes',
-      'card.notesHint': '(facultatif — ce que vous voulez que Scalpel sache)',
+      'card.notesHint': '(facultatif — ce que vous voulez que Trader Acelerator sache)',
       'field.instrument': 'Instrument',
       'field.direction': 'Direction',
       'field.session': 'Session',
@@ -2889,19 +2889,19 @@
       'loading.checkTitle': 'Vérification de votre capture...',
       'loading.checkSub': 'Confirmation que vos marqueurs de trade sont visibles.',
       'loading.analyzeTitle': 'Analyse de votre setup...',
-      'loading.analyzeSub': 'Scalpel lit le graphique et applique la théorie ICT. Cela prend 10–20 secondes.',
+      'loading.analyzeSub': 'Trader Acelerator lit le graphique et applique la théorie ICT. Cela prend 10–20 secondes.',
       'result.title': 'Analyse du Setup',
       'modal.noEntryTitle': 'Aucun marqueur de trade détecté',
-      'modal.noEntryBody': "Scalpel n'a pas pu trouver clairement un marqueur d'entrée dans votre capture. L'analyse portera sur le contexte général du setup plutôt que sur votre entrée précise.<br><br>Vous pouvez analyser quand même, ou télécharger une capture montrant votre entrée et votre sortie.",
+      'modal.noEntryBody': "Trader Acelerator n'a pas pu trouver clairement un marqueur d'entrée dans votre capture. L'analyse portera sur le contexte général du setup plutôt que sur votre entrée précise.<br><br>Vous pouvez analyser quand même, ou télécharger une capture montrant votre entrée et votre sortie.",
       'modal.noExitTitle': 'Marqueur de sortie non détecté',
-      'modal.noExitBody': "Scalpel voit votre entrée mais n'a pas pu trouver clairement où le trade s'est clôturé. L'analyse se concentrera sur le setup d'entrée.<br><br>Pour une lecture plus complète, envisagez une capture montrant aussi votre sortie.",
+      'modal.noExitBody': "Trader Acelerator voit votre entrée mais n'a pas pu trouver clairement où le trade s'est clôturé. L'analyse se concentrera sur le setup d'entrée.<br><br>Pour une lecture plus complète, envisagez une capture montrant aussi votre sortie.",
       'modal.change': 'Changer la capture',
       'modal.proceed': 'Analyser quand même',
       'err.selectField': 'Veuillez sélectionner une valeur pour : {field}.',
       'err.uploadFirst': "Veuillez télécharger une capture du graphique avant d'envoyer.",
       'err.generic': "Une erreur s'est produite. Veuillez réessayer.",
       'err.network': 'Erreur réseau. Vérifiez votre connexion et réessayez.',
-      'footer.text': 'SCALPEL · Analyse de Trades ICT · À des fins éducatives uniquement · Pas un conseil financier',
+      'footer.text': 'TRADER ACELERATOR · Analyse de Trades ICT · À des fins éducatives uniquement · Pas un conseil financier',
       'tabs.analyze': 'Analyser',
       'tabs.forum': 'Forum Trading',
       'tabs.indicators': 'Indicateurs',
@@ -3015,7 +3015,7 @@
     pt: {
       'nav.tip': 'Ver planos →',
       'header.title': 'Analise seu Setup',
-      'header.sub': 'Envie um trade para análise ICT. O Scalpel identificará possíveis erros do setup e oferecerá sugestões baseadas na metodologia — não veredictos.',
+      'header.sub': 'Envie um trade para análise ICT. O Trader Acelerator identificará possíveis erros do setup e oferecerá sugestões baseadas na metodologia — não veredictos.',
       'card.tradeDetails': 'Detalhes do Trade',
       'card.preTrade': 'Sua Análise Pré-Trade',
       'card.confluences': 'Confluências que Identificou',
@@ -3023,7 +3023,7 @@
       'card.screenshot': 'Captura do Gráfico',
       'card.required': 'obrigatório',
       'card.notes': 'Notas',
-      'card.notesHint': '(opcional — o que você quer que o Scalpel saiba)',
+      'card.notesHint': '(opcional — o que você quer que o Trader Acelerator saiba)',
       'field.instrument': 'Instrumento',
       'field.direction': 'Direção',
       'field.session': 'Sessão',
@@ -3053,19 +3053,19 @@
       'loading.checkTitle': 'Verificando sua captura...',
       'loading.checkSub': 'Confirmando que seus marcadores do trade estão visíveis.',
       'loading.analyzeTitle': 'Analisando seu setup...',
-      'loading.analyzeSub': 'O Scalpel está lendo o gráfico e aplicando a teoria ICT. Isso leva de 10 a 20 segundos.',
+      'loading.analyzeSub': 'O Trader Acelerator está lendo o gráfico e aplicando a teoria ICT. Isso leva de 10 a 20 segundos.',
       'result.title': 'Análise do Setup',
       'modal.noEntryTitle': 'Nenhum marcador de trade detectado',
-      'modal.noEntryBody': 'O Scalpel não conseguiu encontrar claramente um marcador de entrada na sua captura. A análise será geral sobre o contexto do setup em vez da sua entrada específica.<br><br>Você pode analisar mesmo assim, ou enviar uma captura que mostre sua entrada e saída.',
+      'modal.noEntryBody': 'O Trader Acelerator não conseguiu encontrar claramente um marcador de entrada na sua captura. A análise será geral sobre o contexto do setup em vez da sua entrada específica.<br><br>Você pode analisar mesmo assim, ou enviar uma captura que mostre sua entrada e saída.',
       'modal.noExitTitle': 'Marcador de saída não detectado',
-      'modal.noExitBody': 'O Scalpel vê sua entrada mas não conseguiu encontrar claramente onde o trade fechou. A análise focará no setup de entrada.<br><br>Para uma leitura mais completa, considere uma captura que também mostre sua saída.',
+      'modal.noExitBody': 'O Trader Acelerator vê sua entrada mas não conseguiu encontrar claramente onde o trade fechou. A análise focará no setup de entrada.<br><br>Para uma leitura mais completa, considere uma captura que também mostre sua saída.',
       'modal.change': 'Trocar captura',
       'modal.proceed': 'Analisar mesmo assim',
       'err.selectField': 'Por favor selecione um valor para: {field}.',
       'err.uploadFirst': 'Por favor envie uma captura do gráfico antes de enviar.',
       'err.generic': 'Algo deu errado. Tente novamente.',
       'err.network': 'Erro de rede. Verifique sua conexão e tente novamente.',
-      'footer.text': 'SCALPEL · Análise de Trades ICT · Apenas para fins educativos · Não é aconselhamento financeiro',
+      'footer.text': 'TRADER ACELERATOR · Análise de Trades ICT · Apenas para fins educativos · Não é aconselhamento financeiro',
       'tabs.analyze': 'Analisar',
       'tabs.forum': 'Fórum Trading',
       'tabs.indicators': 'Indicadores',
@@ -3898,7 +3898,7 @@
         } catch (e) { /* skip image on failure */ }
       }
       doc.setFontSize(8); doc.setTextColor(150);
-      doc.text('Scalpel — Trading Forum · For educational purposes only', margin, pageH - 24);
+      doc.text('Trader Acelerator — Trading Forum · For educational purposes only', margin, pageH - 24);
       doc.save('scalpel-forum-' + p.id + '.pdf');
     }
 
