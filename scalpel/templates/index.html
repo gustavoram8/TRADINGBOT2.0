@@ -1719,27 +1719,55 @@
     .quiz-action-btn:hover { opacity: .88; }
     .quiz-action-btn.secondary { background: transparent; color: var(--accent); }
 
-    /* ── Quiz progression map ── */
-    .quiz-prog-map { margin-bottom: 28px; }
-    .quiz-prog-method { margin-bottom: 20px; }
-    .quiz-prog-method-label { font-size: 11px; font-weight: 700; letter-spacing: .08em;
-      text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
-    .quiz-prog-levels { display: flex; gap: 10px; flex-wrap: wrap; }
-    .quiz-prog-card { flex: 1; min-width: 140px; border: 1px solid var(--border2);
-      border-radius: 10px; padding: 12px 14px; cursor: pointer; transition: all .15s;
-      background: var(--card); position: relative; }
-    .quiz-prog-card:hover:not(.locked) { border-color: var(--accent); }
-    .quiz-prog-card.locked { opacity: .45; cursor: not-allowed; }
-    .quiz-prog-card.done { border-color: #22c55e; background: rgba(34,197,94,.05); }
-    .quiz-prog-card .pc-level { font-size: 12px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: .06em; color: var(--muted); }
-    .quiz-prog-card.done .pc-level { color: #22c55e; }
-    .quiz-prog-card .pc-check { position: absolute; top: 10px; right: 12px; font-size: 16px; }
-    .quiz-prog-card .pc-score { font-size: 11px; color: var(--muted); margin-top: 4px; }
-    .quiz-prog-card .pc-lock  { position: absolute; top: 10px; right: 12px; font-size: 13px; color: var(--muted); }
-    .quiz-prog-card .pc-weak  { font-size: 10px; color: #f59e0b; margin-top: 4px; }
+    /* ── Quiz navigation (methodology / topic / level) ── */
     .quiz-prog-title { font-size: 19px; font-weight: 700; margin-bottom: 4px; }
     .quiz-prog-sub   { font-size: 13px; color: var(--muted); margin-bottom: 22px; }
+
+    .quiz-method-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; }
+    @media (max-width: 520px) { .quiz-method-grid { grid-template-columns: 1fr; } }
+    .quiz-method-card { border: 1px solid var(--border2); border-radius: 12px;
+      padding: 18px 18px; cursor: pointer; transition: all .15s; background: var(--card); }
+    .quiz-method-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .quiz-method-card .mc-name { font-size: 16px; font-weight: 700; }
+    .quiz-method-card .mc-meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    .quiz-topic-grid { display: flex; flex-direction: column; gap: 10px; }
+    .quiz-topic-card { display: flex; align-items: center; justify-content: space-between;
+      border: 1px solid var(--border2); border-radius: 10px; padding: 14px 16px;
+      cursor: pointer; transition: all .15s; background: var(--card); }
+    .quiz-topic-card:hover { border-color: var(--accent); }
+    .quiz-topic-card .tc-name { font-size: 14px; font-weight: 600; }
+    .quiz-topic-card .tc-arrow { color: var(--muted); font-size: 16px; }
+    .quiz-topic-card .tc-badge { font-size: 10px; font-weight: 700; color: #22c55e;
+      background: rgba(34,197,94,.12); border-radius: 6px; padding: 2px 7px; margin-left: 8px; }
+
+    /* placement CTA */
+    .quiz-placement-cta { display: flex; align-items: center; gap: 14px; width: 100%;
+      border: 1px solid var(--accent); border-radius: 12px; padding: 16px 18px;
+      background: rgba(99,150,255,.06); cursor: pointer; transition: all .15s; text-align: left; }
+    .quiz-placement-cta:hover { background: rgba(99,150,255,.12); }
+    .quiz-placement-cta .qpc-icon { font-size: 26px; }
+    .quiz-placement-cta .qpc-txt { display: flex; flex-direction: column; }
+    .quiz-placement-cta .qpc-title { font-size: 14px; font-weight: 700; color: var(--accent); }
+    .quiz-placement-cta .qpc-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    /* level cards */
+    .quiz-level-cards { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+    .quiz-level-card { flex: 1; min-width: 130px; border: 1px solid var(--border2);
+      border-radius: 10px; padding: 13px 14px; cursor: pointer; transition: all .15s;
+      background: var(--card); position: relative; }
+    .quiz-level-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .quiz-level-card.suggested { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+    .quiz-level-card .lc-level { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+    .quiz-level-card .lc-meta  { font-size: 11px; color: var(--muted); margin-top: 4px; }
+    .quiz-level-card .lc-best  { font-size: 11px; color: #22c55e; font-weight: 600; margin-top: 3px; }
+    .quiz-level-card .lc-weak  { font-size: 10px; color: #f59e0b; margin-top: 3px; }
+
+    /* placement result */
+    .quiz-place-suggest { text-align: center; margin-bottom: 18px; }
+    .quiz-place-suggest-label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+    .quiz-place-suggest-level { font-size: 24px; font-weight: 800; color: var(--accent); margin: 2px 0 6px; }
+    .quiz-place-suggest-hint { font-size: 12px; color: var(--muted); }
 
     /* SVG chart inside questions */
     .quiz-chart-svg-wrap { margin-bottom: 20px; border-radius: 10px; overflow: hidden;
@@ -2265,58 +2293,72 @@
     <!-- Real quiz app — shown only for Premium members -->
     <div class="quiz-app" id="quiz-app" style="display:none;">
 
-      <!-- ── SCREEN 0: Progress map ── -->
+      <!-- ── SCREEN 0: Methodologies ── -->
       <div id="quiz-home">
         <div class="quiz-header">
           <div class="quiz-h1" data-i18n="quiz.heading">Trading Quiz</div>
-          <div class="quiz-sub" data-i18n="quiz.subheading">Complete each level to unlock the next. Pass with ≥ 60 % to advance.</div>
+          <div class="quiz-sub" data-i18n="quiz.pickMethod">Pick a methodology to explore its topics.</div>
         </div>
-        <div class="quiz-prog-map" id="quiz-prog-map">
+        <div class="quiz-method-grid" id="quiz-method-grid">
           <!-- populated by JS -->
         </div>
-        <button class="quiz-start-btn" id="quiz-custom-btn" data-i18n="quiz.customSession">Custom session →</button>
       </div>
 
-      <!-- ── SCREEN 1: Setup ── -->
-      <div id="quiz-setup" style="display:none;">
+      <!-- ── SCREEN 0b: Topics of a methodology ── -->
+      <div id="quiz-topics-screen" style="display:none;">
         <div class="quiz-header">
-          <div class="quiz-prog-title" id="quiz-setup-title">ICT — Beginner</div>
-          <div class="quiz-prog-sub" data-i18n="quiz.subheading">Customize your session before starting</div>
+          <div class="quiz-prog-title" id="quiz-topics-title">ICT</div>
+          <div class="quiz-prog-sub" data-i18n="quiz.pickTopic">Choose the topic you want to be tested on.</div>
         </div>
-        <div class="quiz-setup-grid">
+        <div class="quiz-topic-grid" id="quiz-topic-grid">
+          <!-- populated by JS -->
+        </div>
+        <button class="quiz-action-btn secondary" id="quiz-topics-back" style="margin-top:22px;width:auto;padding:11px 18px;" data-i18n="quiz.back">← Back</button>
+      </div>
 
-          <div class="quiz-section-label" data-i18n="quiz.methodology">Methodology</div>
-          <div class="quiz-chips" id="quiz-methodology">
-            <button class="qchip active" data-val="ict">ICT</button>
-            <button class="qchip" data-val="patterns" data-i18n="quiz.m.patterns">Pattern Trading</button>
-            <button class="qchip" data-val="wyckoff">Wyckoff</button>
-            <button class="qchip" data-val="smc">SMC</button>
-          </div>
-
-          <div class="quiz-section-label" data-i18n="quiz.yourLevel">Your level</div>
-          <div class="quiz-chips" id="quiz-level">
-            <button class="qchip active" data-val="beginner" data-i18n="quiz.lv.beginner">Beginner</button>
-            <button class="qchip" data-val="intermediate" data-i18n="quiz.lv.intermediate">Intermediate</button>
-            <button class="qchip" data-val="advanced" data-i18n="quiz.lv.advanced">Advanced</button>
-          </div>
-
-          <div class="quiz-section-label" data-i18n="quiz.topics">Topics <span class="quiz-section-hint" data-i18n="quiz.topicsHint">(pick as many as you want)</span></div>
-          <div class="quiz-chips multi" id="quiz-topics">
-            <!-- populated by JS based on selected methodology -->
-          </div>
-
-          <div class="quiz-section-label" data-i18n="quiz.questions">Questions</div>
-          <div class="quiz-chips" id="quiz-count">
-            <button class="qchip" data-val="5">5</button>
-            <button class="qchip active" data-val="10">10</button>
-            <button class="qchip" data-val="20">20</button>
-          </div>
+      <!-- ── SCREEN 0c: Topic detail — placement test + level choice ── -->
+      <div id="quiz-topic-detail" style="display:none;">
+        <div class="quiz-header">
+          <div class="quiz-prog-title" id="quiz-detail-title">ICT · Fair Value Gaps</div>
+          <div class="quiz-prog-sub" data-i18n="quiz.pickLevel">Not sure of your level? Take the placement test. Otherwise, pick a level directly.</div>
         </div>
 
-        <div style="display:flex;gap:10px;margin-top:30px;">
-          <button class="quiz-action-btn secondary" id="quiz-back-home-btn" style="flex:0 0 auto;padding:13px 18px;" data-i18n="quiz.back">← Back</button>
-          <button class="quiz-start-btn" id="quiz-start-btn" style="margin-top:0;flex:1;" data-i18n="quiz.start">Start Quiz →</button>
+        <button class="quiz-placement-cta" id="quiz-placement-btn">
+          <span class="qpc-icon">🎯</span>
+          <span class="qpc-txt">
+            <span class="qpc-title" data-i18n="quiz.placementTitle">Take the placement test</span>
+            <span class="qpc-sub" data-i18n="quiz.placementSub">A few quick questions to find your level in this topic.</span>
+          </span>
+        </button>
+
+        <div class="quiz-section-label" style="margin-top:24px;" data-i18n="quiz.orPickLevel">Or pick your level</div>
+        <div class="quiz-level-cards" id="quiz-level-cards">
+          <!-- populated by JS -->
         </div>
+
+        <div class="quiz-section-label" style="margin-top:20px;" data-i18n="quiz.questions">Questions</div>
+        <div class="quiz-chips" id="quiz-count">
+          <button class="qchip" data-val="5">5</button>
+          <button class="qchip active" data-val="10">10</button>
+          <button class="qchip" data-val="20">20</button>
+        </div>
+
+        <button class="quiz-action-btn secondary" id="quiz-detail-back" style="margin-top:24px;width:auto;padding:11px 18px;" data-i18n="quiz.back">← Back</button>
+      </div>
+
+      <!-- ── SCREEN 0d: Placement result ── -->
+      <div id="quiz-placement-result" style="display:none;">
+        <div class="quiz-results-circle">
+          <svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" fill="none" stroke="var(--border2)" stroke-width="6"/><circle cx="40" cy="40" r="34" fill="none" stroke="var(--accent)" stroke-width="6" stroke-linecap="round" id="quiz-place-arc" stroke-dasharray="0 214"/></svg>
+          <div class="quiz-score-num" id="quiz-place-num">0/0</div>
+        </div>
+        <div class="quiz-place-suggest">
+          <div class="quiz-place-suggest-label" data-i18n="quiz.suggestedLevel">Suggested level</div>
+          <div class="quiz-place-suggest-level" id="quiz-place-level">Beginner</div>
+          <div class="quiz-place-suggest-hint" data-i18n="quiz.placementYourCall">It's your call — start at whichever level you prefer.</div>
+        </div>
+        <div class="quiz-level-cards" id="quiz-place-level-cards"></div>
+        <button class="quiz-action-btn secondary" id="quiz-place-back" style="margin-top:18px;width:auto;padding:11px 18px;" data-i18n="quiz.back">← Back</button>
       </div>
 
       <!-- ── SCREEN 2: Question ── -->
@@ -2856,6 +2898,16 @@
       'quiz.best': 'Best',
       'quiz.reinforce': 'Reinforce weak topics',
       'quiz.weakTitle': 'Reinforce these topics',
+      'quiz.pickMethod': 'Pick a methodology to explore its topics.',
+      'quiz.pickTopic': 'Choose the topic you want to be tested on.',
+      'quiz.pickLevel': "Not sure of your level? Take the placement test. Otherwise, pick a level directly.",
+      'quiz.placementTitle': 'Take the placement test',
+      'quiz.placementSub': 'A few quick questions to find your level in this topic.',
+      'quiz.orPickLevel': 'Or pick your level',
+      'quiz.suggestedLevel': 'Suggested level',
+      'quiz.placementYourCall': "It's your call — start at whichever level you prefer.",
+      'quiz.topicsWord': 'topics',
+      'quiz.qWord': 'questions',
       'quiz.excellent': 'Excellent work! 🎯',
       'quiz.good': 'Good effort! 📈',
       'quiz.keepStudying': 'Keep studying! 📚',
@@ -3051,6 +3103,16 @@
       'quiz.best': 'Mejor',
       'quiz.reinforce': 'Reforzar temas débiles',
       'quiz.weakTitle': 'Refuerza estos temas',
+      'quiz.pickMethod': 'Elige una metodología para ver sus temas.',
+      'quiz.pickTopic': 'Elige el tema sobre el que quieres evaluarte.',
+      'quiz.pickLevel': '¿No sabes tu nivel? Haz el test de ubicación. Si no, elige un nivel directamente.',
+      'quiz.placementTitle': 'Hacer el test de ubicación',
+      'quiz.placementSub': 'Unas preguntas rápidas para conocer tu nivel en este tema.',
+      'quiz.orPickLevel': 'O elige tu nivel',
+      'quiz.suggestedLevel': 'Nivel sugerido',
+      'quiz.placementYourCall': 'Tú decides — empieza en el nivel que prefieras.',
+      'quiz.topicsWord': 'temas',
+      'quiz.qWord': 'preguntas',
       'quiz.excellent': '¡Excelente trabajo! 🎯',
       'quiz.good': '¡Buen esfuerzo! 📈',
       'quiz.keepStudying': '¡Sigue estudiando! 📚',
@@ -3246,6 +3308,16 @@
       'quiz.best': 'Meilleur',
       'quiz.reinforce': 'Renforcer les sujets faibles',
       'quiz.weakTitle': 'Renforcez ces sujets',
+      'quiz.pickMethod': 'Choisissez une méthodologie pour explorer ses sujets.',
+      'quiz.pickTopic': 'Choisissez le sujet sur lequel vous voulez être évalué.',
+      'quiz.pickLevel': "Vous ne connaissez pas votre niveau ? Faites le test de positionnement. Sinon, choisissez un niveau directement.",
+      'quiz.placementTitle': 'Faire le test de positionnement',
+      'quiz.placementSub': 'Quelques questions rapides pour trouver votre niveau sur ce sujet.',
+      'quiz.orPickLevel': 'Ou choisissez votre niveau',
+      'quiz.suggestedLevel': 'Niveau suggéré',
+      'quiz.placementYourCall': "C'est vous qui décidez — commencez au niveau que vous préférez.",
+      'quiz.topicsWord': 'sujets',
+      'quiz.qWord': 'questions',
       'quiz.excellent': 'Excellent travail ! 🎯',
       'quiz.good': 'Bon effort ! 📈',
       'quiz.keepStudying': 'Continuez à étudier ! 📚',
@@ -3441,6 +3513,16 @@
       'quiz.best': 'Melhor',
       'quiz.reinforce': 'Reforçar tópicos fracos',
       'quiz.weakTitle': 'Reforce estes tópicos',
+      'quiz.pickMethod': 'Escolha uma metodologia para ver seus tópicos.',
+      'quiz.pickTopic': 'Escolha o tópico sobre o qual quer ser avaliado.',
+      'quiz.pickLevel': 'Não sabe seu nível? Faça o teste de nivelamento. Caso contrário, escolha um nível diretamente.',
+      'quiz.placementTitle': 'Fazer o teste de nivelamento',
+      'quiz.placementSub': 'Algumas perguntas rápidas para descobrir seu nível neste tópico.',
+      'quiz.orPickLevel': 'Ou escolha seu nível',
+      'quiz.suggestedLevel': 'Nível sugerido',
+      'quiz.placementYourCall': 'A decisão é sua — comece no nível que preferir.',
+      'quiz.topicsWord': 'tópicos',
+      'quiz.qWord': 'perguntas',
       'quiz.excellent': 'Excelente trabalho! 🎯',
       'quiz.good': 'Bom esforço! 📈',
       'quiz.keepStudying': 'Continue estudando! 📚',
@@ -6182,131 +6264,167 @@
 
       // ── State ──
       let qState = {
-        methodology:'ict', level:'beginner', topics:[], count:10,
+        methodology:'ict', topic:null, level:'beginner', count:10,
         questions:[], idx:0, score:0, timer:null, timeLeft:60,
-        answers:[], isProgression: false,
+        answers:[], placement:false,
       };
 
       // ── DOM refs ──
       const screens = {
-        home:     document.getElementById('quiz-home'),
-        setup:    document.getElementById('quiz-setup'),
-        question: document.getElementById('quiz-question'),
-        results:  document.getElementById('quiz-results'),
+        home:      document.getElementById('quiz-home'),
+        topics:    document.getElementById('quiz-topics-screen'),
+        detail:    document.getElementById('quiz-topic-detail'),
+        placement: document.getElementById('quiz-placement-result'),
+        question:  document.getElementById('quiz-question'),
+        results:   document.getElementById('quiz-results'),
       };
 
       function showScreen(name) {
         Object.values(screens).forEach(s => { if(s) s.style.display='none'; });
         if(screens[name]) screens[name].style.display='';
-        if(name === 'home') renderProgMap();
       }
 
-      // ── Progress map ──
-      function renderProgMap() {
-        const wrap = document.getElementById('quiz-prog-map');
+      // Count of questions available for a given methodology+topic (+level).
+      function countQ(m, topic, lv) {
+        return QUESTION_BANK.filter(q =>
+          q.m === m && q.topic === topic && (!lv || q.lv === lv)
+        ).length;
+      }
+
+      // ── SCREEN: methodologies ──
+      function renderMethods() {
+        const wrap = document.getElementById('quiz-method-grid');
         if(!wrap) return;
-        wrap.innerHTML = Object.entries(METHOD_LABELS).map(([m, label]) => {
-          const cards = LEVELS.map(lv => {
-            const prog   = progFor(m, lv);
-            const locked = isLocked(m, lv);
-            const done   = prog && prog.completed;
-            const pct    = prog && prog.total_q ? Math.round(prog.best_score/prog.total_q*100) : null;
-            const weak   = prog && prog.weak_topics && prog.weak_topics.length;
-            let cls = 'quiz-prog-card';
-            if (locked) cls += ' locked';
-            else if (done) cls += ' done';
-            return `<div class="${cls}" data-m="${m}" data-lv="${lv}" ${locked?'':'style="cursor:pointer;"'}>
-              <div class="pc-level">${trLevel(lv)}</div>
-              ${done ? `<span class="pc-check">✅</span>` : locked ? `<span class="pc-lock">🔒</span>` : ''}
-              ${pct !== null ? `<div class="pc-score">${T('quiz.best')||'Best'}: ${pct}%</div>` : ''}
-              ${weak && done ? `<div class="pc-weak">⚠ ${T('quiz.reinforce')||'Reinforce weak topics'}</div>` : ''}
-            </div>`;
-          }).join('');
-          return `<div class="quiz-prog-method">
-            <div class="quiz-prog-method-label">${label}</div>
-            <div class="quiz-prog-levels">${cards}</div>
+        wrap.innerHTML = Object.entries(METHOD_LABELS).map(([m,label]) => {
+          const nTopics = (TOPIC_MAP[m]||[]).length;
+          return `<div class="quiz-method-card" data-m="${m}">
+            <div class="mc-name">${label}</div>
+            <div class="mc-meta">${nTopics} ${T('quiz.topicsWord')||'topics'}</div>
           </div>`;
         }).join('');
+        wrap.querySelectorAll('.quiz-method-card').forEach(card=>{
+          card.addEventListener('click',()=>openMethod(card.dataset.m));
+        });
+      }
 
-        // click handler
-        wrap.querySelectorAll('.quiz-prog-card:not(.locked)').forEach(card => {
-          card.addEventListener('click', () => {
-            qState.methodology = card.dataset.m;
+      // ── SCREEN: topics of a methodology ──
+      function openMethod(m) {
+        qState.methodology = m;
+        const title = document.getElementById('quiz-topics-title');
+        if(title) title.textContent = METHOD_LABELS[m] || m;
+        renderTopicList();
+        showScreen('topics');
+      }
+
+      function renderTopicList() {
+        const wrap = document.getElementById('quiz-topic-grid');
+        if(!wrap) return;
+        const topics = TOPIC_MAP[qState.methodology] || [];
+        wrap.innerHTML = topics.map(t=>{
+          // best score across any level of this topic (for a small badge)
+          return `<div class="quiz-topic-card" data-topic="${t}">
+            <span class="tc-name">${trTopic(t)}</span>
+            <span class="tc-arrow">→</span>
+          </div>`;
+        }).join('');
+        wrap.querySelectorAll('.quiz-topic-card').forEach(card=>{
+          card.addEventListener('click',()=>openTopic(card.dataset.topic));
+        });
+      }
+
+      // ── SCREEN: topic detail (placement + level choice) ──
+      function openTopic(topic) {
+        qState.topic = topic;
+        const title = document.getElementById('quiz-detail-title');
+        if(title) title.textContent = `${METHOD_LABELS[qState.methodology]} · ${trTopic(topic)}`;
+        renderLevelCards('quiz-level-cards', null);
+        showScreen('detail');
+      }
+
+      // Render the 3 level cards into a container. `suggested` highlights one.
+      function renderLevelCards(containerId, suggested) {
+        const wrap = document.getElementById(containerId);
+        if(!wrap) return;
+        wrap.innerHTML = LEVELS.map(lv=>{
+          const prog = progFor(qState.methodology, lv);
+          const pct  = prog && prog.total_q ? Math.round(prog.best_score/prog.total_q*100) : null;
+          const n    = countQ(qState.methodology, qState.topic, lv);
+          const cls  = 'quiz-level-card' + (lv===suggested ? ' suggested' : '');
+          return `<div class="${cls}" data-lv="${lv}">
+            <div class="lc-level">${trLevel(lv)}</div>
+            <div class="lc-meta">${n} ${T('quiz.qWord')||'questions'}</div>
+            ${pct!==null ? `<div class="lc-best">${T('quiz.best')||'Best'}: ${pct}%</div>` : ''}
+          </div>`;
+        }).join('');
+        wrap.querySelectorAll('.quiz-level-card').forEach(card=>{
+          card.addEventListener('click',()=>{
             qState.level = card.dataset.lv;
-            qState.isProgression = true;
-            openSetupFor(qState.methodology, qState.level);
+            startQuiz();
           });
         });
       }
 
-      function openSetupFor(m, lv) {
-        // pre-select chips
-        document.querySelectorAll('#quiz-methodology .qchip').forEach(c => {
-          c.classList.toggle('active', c.dataset.val === m);
-        });
-        document.querySelectorAll('#quiz-level .qchip').forEach(c => {
-          c.classList.toggle('active', c.dataset.val === lv);
-        });
-        // update title
-        const title = document.getElementById('quiz-setup-title');
-        if(title) title.textContent = `${METHOD_LABELS[m] || m} — ${trLevel(lv)}`;
-        renderTopics();
-        showScreen('setup');
-      }
-
-      // ── Chip groups (single-select) ──
-      function bindChips(containerId, key) {
-        const el = document.getElementById(containerId);
-        if(!el) return;
-        el.addEventListener('click', e => {
-          const chip = e.target.closest('.qchip');
-          if(!chip) return;
-          el.querySelectorAll('.qchip').forEach(c => c.classList.remove('active'));
-          chip.classList.add('active');
-          qState[key] = chip.dataset.val;
-          if(key === 'methodology') { renderTopics(); updateSetupTitle(); }
-          if(key === 'level') updateSetupTitle();
-        });
-      }
-
-      function updateSetupTitle() {
-        const title = document.getElementById('quiz-setup-title');
-        if(title) title.textContent = `${METHOD_LABELS[qState.methodology]||qState.methodology} — ${trLevel(qState.level)}`;
-      }
-
-      // ── Topic chips (multi-select) ──
-      function renderTopics() {
-        const wrap = document.getElementById('quiz-topics');
-        if(!wrap) return;
-        const topics = TOPIC_MAP[qState.methodology] || [];
-        wrap.innerHTML = topics.map(t =>
-          `<button class="qchip active" data-val="${t}">${trTopic(t)}</button>`
-        ).join('');
-        qState.topics = [...topics];
-        wrap.addEventListener('click', e => {
-          const chip = e.target.closest('.qchip');
-          if(!chip) return;
-          chip.classList.toggle('active');
-          qState.topics = [...wrap.querySelectorAll('.qchip.active')].map(c => c.dataset.val);
-        });
-      }
-
-      // ── Build question list (no repeats within same m+lv bank) ──
+      // ── Build question list for a single topic+level (no repeats) ──
       function buildQuestions() {
         let pool = QUESTION_BANK.filter(q =>
           q.m === qState.methodology &&
-          q.lv === qState.level &&
-          (qState.topics.length === 0 || qState.topics.includes(q.topic))
+          q.topic === qState.topic &&
+          q.lv === qState.level
         );
+        // fall back to the whole topic (any level) if too few at this level
         if(pool.length < 3) {
           pool = QUESTION_BANK.filter(q =>
-            q.m === qState.methodology &&
-            (qState.topics.length === 0 || qState.topics.includes(q.topic))
+            q.m === qState.methodology && q.topic === qState.topic
           );
         }
         for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
         return pool.slice(0, parseInt(qState.count));
       }
+
+      // ── Build a short placement set across all levels of the topic ──
+      function buildPlacementQuestions() {
+        const byLevel = {};
+        LEVELS.forEach(lv=>{
+          byLevel[lv] = QUESTION_BANK.filter(q=>
+            q.m===qState.methodology && q.topic===qState.topic && q.lv===lv);
+        });
+        const pick = [];
+        // take up to 2 per level, easiest first
+        LEVELS.forEach(lv=>{
+          const arr=[...byLevel[lv]];
+          for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
+          pick.push(...arr.slice(0,2));
+        });
+        // if still empty (rare), fall back to any from the topic
+        if(pick.length===0) {
+          return QUESTION_BANK.filter(q=>q.m===qState.methodology&&q.topic===qState.topic).slice(0,5);
+        }
+        return pick;
+      }
+
+      function startQuiz() {
+        qState.placement=false;
+        qState.questions=buildQuestions();
+        if(qState.questions.length===0){alert(T('quiz.noQuestions'));return;}
+        qState.idx=0;qState.score=0;qState.answers=[];
+        showScreen('question');renderQuestion();
+      }
+
+      function startPlacement() {
+        qState.placement=true;
+        qState.questions=buildPlacementQuestions();
+        if(qState.questions.length===0){alert(T('quiz.noQuestions'));return;}
+        qState.idx=0;qState.score=0;qState.answers=[];
+        showScreen('question');renderQuestion();
+      }
+
+      // bind question-count chips
+      document.getElementById('quiz-count')?.addEventListener('click',e=>{
+        const chip=e.target.closest('.qchip'); if(!chip) return;
+        document.querySelectorAll('#quiz-count .qchip').forEach(c=>c.classList.remove('active'));
+        chip.classList.add('active');
+        qState.count=chip.dataset.val;
+      });
 
       // ── SVG chart renderer ──
       function renderChartSVG(q) {
@@ -6425,7 +6543,31 @@
       function nextQuestion() {
         qState.idx++;
         if(qState.idx<qState.questions.length) renderQuestion();
+        else if(qState.placement) showPlacementResult();
         else showResults();
+      }
+
+      // ── Placement result: suggest a level, let the user decide ──
+      function showPlacementResult() {
+        showScreen('placement');
+        const total = qState.questions.length;
+        const pct   = Math.round((qState.score/total)*100);
+
+        const arc=document.getElementById('quiz-place-arc');
+        if(arc) setTimeout(()=>arc.setAttribute('stroke-dasharray',`${214*pct/100} 214`),80);
+        const sn=document.getElementById('quiz-place-num');
+        if(sn) sn.textContent=`${qState.score}/${total}`;
+
+        // suggest a level from the score
+        let suggested = 'beginner';
+        if(pct >= 75) suggested = 'advanced';
+        else if(pct >= 45) suggested = 'intermediate';
+
+        const sl=document.getElementById('quiz-place-level');
+        if(sl) sl.textContent=trLevel(suggested);
+
+        // level cards (suggested highlighted) — picking one starts that quiz
+        renderLevelCards('quiz-place-level-cards', suggested);
       }
 
       // ── Results ──
@@ -6469,25 +6611,12 @@
         await saveProgress(qState.methodology, qState.level, qState.score, total, weakTopics);
       }
 
-      // ── Bind setup chips & start ──
-      bindChips('quiz-methodology','methodology');
-      bindChips('quiz-level','level');
-      bindChips('quiz-count','count');
-      renderTopics();
+      // ── Navigation bindings ──
+      document.getElementById('quiz-topics-back')?.addEventListener('click',()=>showScreen('home'));
+      document.getElementById('quiz-detail-back')?.addEventListener('click',()=>showScreen('topics'));
+      document.getElementById('quiz-place-back')?.addEventListener('click',()=>showScreen('detail'));
+      document.getElementById('quiz-placement-btn')?.addEventListener('click',startPlacement);
 
-      document.getElementById('quiz-start-btn')?.addEventListener('click', () => {
-        qState.questions=buildQuestions();
-        if(qState.questions.length===0){alert(T('quiz.noQuestions'));return;}
-        qState.idx=0;qState.score=0;qState.answers=[];
-        showScreen('question');renderQuestion();
-      });
-
-      document.getElementById('quiz-back-home-btn')?.addEventListener('click',()=>showScreen('home'));
-      document.getElementById('quiz-custom-btn')?.addEventListener('click',()=>{
-        qState.isProgression=false;
-        updateSetupTitle();
-        showScreen('setup');
-      });
       document.getElementById('quiz-next-btn')?.addEventListener('click',nextQuestion);
       document.getElementById('quiz-retry-btn')?.addEventListener('click',()=>{
         qState.questions=buildQuestions();
@@ -6496,19 +6625,22 @@
       });
       document.getElementById('quiz-new-btn')?.addEventListener('click',()=>showScreen('home'));
 
-      // Load progress from server, then show home
-      loadProgress().then(()=>{ renderProgMap(); });
+      renderMethods();
+      loadProgress().then(()=>{ renderMethods(); });
 
       window.Quiz = {
-        open() { loadProgress().then(()=>showScreen('home')); },
+        open() { loadProgress().then(()=>{ renderMethods(); showScreen('home'); }); },
         relang() {
-          renderProgMap();
-          const wrap=document.getElementById('quiz-topics');
-          if(wrap){
-            const selected=new Set([...wrap.querySelectorAll('.qchip.active')].map(c=>c.dataset.val));
-            wrap.querySelectorAll('.qchip').forEach(c=>{c.textContent=trTopic(c.dataset.val);c.classList.toggle('active',selected.has(c.dataset.val));});
+          renderMethods();
+          // re-translate whichever nav screen is visible
+          if(screens.topics && screens.topics.style.display!=='none') {
+            const t=document.getElementById('quiz-topics-title'); if(t)t.textContent=METHOD_LABELS[qState.methodology]||qState.methodology;
+            renderTopicList();
           }
-          updateSetupTitle();
+          if(screens.detail && screens.detail.style.display!=='none' && qState.topic) {
+            const t=document.getElementById('quiz-detail-title'); if(t)t.textContent=`${METHOD_LABELS[qState.methodology]} · ${trTopic(qState.topic)}`;
+            renderLevelCards('quiz-level-cards', null);
+          }
           if(screens.question&&screens.question.style.display!=='none'&&qState.questions.length){
             const q=qState.questions[qState.idx];
             const tp=document.getElementById('quiz-topic-pill');
