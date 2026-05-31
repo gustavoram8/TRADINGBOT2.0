@@ -5945,10 +5945,7 @@
     async function buildScene() {
       const canvas = document.getElementById('synapse-canvas');
       renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-      // Cap at 1.5 (not full retina 2): the additive-blended holograms are
-      // fill-rate bound, so every extra pixel is re-shaded many times. 1.5 cuts
-      // ~44% of the pixel work with no visible change to the soft glow look.
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 
       scene = new THREE.Scene();
       camera = new THREE.PerspectiveCamera(50, 1.6, 0.1, 100);
