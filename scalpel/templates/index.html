@@ -5306,6 +5306,9 @@
     function isLight() { return document.body.classList.contains('light'); }
     function colDim()    { return isLight() ? 0x7aaed4 : 0x9c8240; }
     function colBright() { return isLight() ? 0x5592c8 : 0xc6a04e; }
+    // Constellation backdrop has its own colour so it can read clearly on the
+    // white page (deep saturated blue) without darkening the head wireframe.
+    function netCol()    { return isLight() ? 0x2f5fa6 : 0x9c8240; }
 
     function ensureThree() {
       if (typeof THREE !== 'undefined') return Promise.resolve();
@@ -5636,7 +5639,7 @@
     }
 
     function buildNet() {
-      NET_N = 72;
+      NET_N = 144;   // doubled density of the neural-network backdrop
       netPos = new Float32Array(NET_N * 3);
       netVel = new Float32Array(NET_N * 3);
       for (let i = 0; i < NET_N; i++) {
@@ -5649,14 +5652,18 @@
       }
       const pg = new THREE.BufferGeometry();
       pg.setAttribute('position', new THREE.BufferAttribute(netPos, 3));
-      const pm = new THREE.PointsMaterial({ color: colDim(), size: 0.12, transparent: true, opacity: 0.78, sizeAttenuation: true });
+      // Per-theme opacity/size stored on userData so recolor() can swap them:
+      // light mode needs the dots/lines bolder to read on white.
+      const pm = new THREE.PointsMaterial({ color: netCol(), size: 0.12, transparent: true, opacity: 0.78, sizeAttenuation: true });
+      pm.userData = { dOp: 0.78, lOp: 0.95, dSize: 0.12, lSize: 0.17 };
       netMats.push(pm);
       netPts = new THREE.Points(pg, pm);
       scene.add(netPts);
 
       const lg = new THREE.BufferGeometry();
       lg.setAttribute('position', new THREE.BufferAttribute(new Float32Array(NET_N * NET_N * 3), 3));
-      const lm = new THREE.LineBasicMaterial({ color: colDim(), transparent: true, opacity: 0.24 });
+      const lm = new THREE.LineBasicMaterial({ color: netCol(), transparent: true, opacity: 0.24 });
+      lm.userData = { dOp: 0.24, lOp: 0.55 };
       netMats.push(lm);
       netLines = new THREE.LineSegments(lg, lm);
       scene.add(netLines);
@@ -5696,7 +5703,11 @@
       const light = isLight(), d = colDim(), b = colBright();
       baseMats.forEach(m => m.color.setHex(d));
       brightMats.forEach(m => m.color.setHex(b));
-      netMats.forEach(m => m.color.setHex(d));
+      netMats.forEach(m => {
+        m.color.setHex(netCol());
+        if (m.userData.dOp !== undefined) m.opacity = light ? m.userData.lOp : m.userData.dOp;
+        if (m.userData.dSize !== undefined) m.size = light ? m.userData.lSize : m.userData.dSize;
+      });
       shaderMats.forEach(m => m.uniforms.uColor.value.setHex(m.userData.bright ? b : d));
 
       // Additive blending only reads as a glow against a dark backdrop. On the
