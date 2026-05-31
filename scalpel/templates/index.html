@@ -5650,14 +5650,14 @@
       }
       const pg = new THREE.BufferGeometry();
       pg.setAttribute('position', new THREE.BufferAttribute(netPos, 3));
-      const pm = new THREE.PointsMaterial({ color: colDim(), size: 0.1, transparent: true, opacity: 0.7, sizeAttenuation: true });
+      const pm = new THREE.PointsMaterial({ color: colDim(), size: 0.12, transparent: true, opacity: 0.78, sizeAttenuation: true });
       netMats.push(pm);
       netPts = new THREE.Points(pg, pm);
       scene.add(netPts);
 
       const lg = new THREE.BufferGeometry();
       lg.setAttribute('position', new THREE.BufferAttribute(new Float32Array(NET_N * NET_N * 3), 3));
-      const lm = new THREE.LineBasicMaterial({ color: colDim(), transparent: true, opacity: 0.16 });
+      const lm = new THREE.LineBasicMaterial({ color: colDim(), transparent: true, opacity: 0.24 });
       netMats.push(lm);
       netLines = new THREE.LineSegments(lg, lm);
       scene.add(netLines);
@@ -5947,7 +5947,11 @@
     async function buildScene() {
       const canvas = document.getElementById('synapse-canvas');
       renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      // Cap at 1.5 (not full retina 2): the additive-blended holograms are
+      // fill-rate bound, so each extra pixel is re-shaded many times. 1.5 cuts
+      // ~44% of the pixel work. The constellation opacity/size below is nudged
+      // up to compensate so the faint lines survive the lower resolution.
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
 
       scene = new THREE.Scene();
       camera = new THREE.PerspectiveCamera(50, 1.6, 0.1, 100);
