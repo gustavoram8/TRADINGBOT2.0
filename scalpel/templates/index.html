@@ -5704,7 +5704,7 @@
           x = (Math.random() - 0.5) * 42;   // -21 … 21  (much wider)
           y = 1 + Math.random() * 21;       //  1 … 22   (centred ≈ 11.5)
           z = -4 - Math.random() * 8;       // -4 … -12
-        } while (inFigureColumn(x, y, z) && ++tries < 24);
+        } while ((inFigureColumn(x, y, z) || inFigureSlot(x, y)) && ++tries < 24);
         netPos[i*3]   = x;
         netPos[i*3+1] = y;
         netPos[i*3+2] = z;
@@ -5745,6 +5745,14 @@
           // nudge out of column immediately so it doesn't get stuck
           netPos[i*3] += netVel[i*3] * 2;
         }
+        // keep nodes out of the ghost-glyph corner boxes so the figures
+        // always form on empty background space
+        if (inFigureSlot(netPos[i*3], netPos[i*3+1])) {
+          netVel[i*3]   *= -1;
+          netVel[i*3+1] *= -1;
+          netPos[i*3]   += netVel[i*3] * 2;
+          netPos[i*3+1] += netVel[i*3+1] * 2;
+        }
       }
       netPts.geometry.attributes.position.needsUpdate = true;
       const arr = netLines.geometry.attributes.position.array;
@@ -5778,6 +5786,28 @@
     const FIG_START = 2.0, FIG_FORM = 1.1, FIG_HOLD = 1.7, FIG_DISS = 0.7, FIG_WAIT = 7.0;
     const FIG_PERIOD = FIG_FORM + FIG_HOLD + FIG_DISS + FIG_WAIT;
     const FIG_CAP = 128;  // max vertices reserved per slot (LineSegments → pairs)
+
+    // Fixed corner positions where the ghost glyphs are drawn. Promoted to
+    // module scope so updateNet() can keep neural-net nodes out of these
+    // boxes — the figures must always sit on empty (background) space.
+    const FIG_SLOTS = [
+      { x:-13, y:19.5, z:-9,  s:2.4 },
+      { x: 13, y:19.5, z:-9,  s:2.4 },
+      { x:-16.5, y:11, z:-10, s:2.7 },
+      { x: 16.5, y:11, z:-10, s:2.7 },
+      { x:-11.5, y:3.5, z:-8, s:2.2 },
+      { x: 11.5, y:3.5, z:-8, s:2.2 },
+    ];
+    // A glyph spans ±0.6 in normalized coords; scaled by slot.s plus a margin
+    // so net nodes are repelled a little before they actually touch a figure.
+    function inFigureSlot(x, y) {
+      for (let i = 0; i < FIG_SLOTS.length; i++) {
+        const s = FIG_SLOTS[i];
+        const half = s.s * 0.6 + 1.2;   // figure half-size + clearance margin
+        if (Math.abs(x - s.x) < half && Math.abs(y - s.y) < half) return true;
+      }
+      return false;
+    }
 
     function buildFigures() {
       const TAU = Math.PI * 2;
@@ -5875,14 +5905,7 @@
       ];
 
       // Anchor slots around the screen, all clear of the body column.
-      const SLOTS = [
-        { x:-13, y:19.5, z:-9,  s:2.4 },
-        { x: 13, y:19.5, z:-9,  s:2.4 },
-        { x:-16.5, y:11, z:-10, s:2.7 },
-        { x: 16.5, y:11, z:-10, s:2.7 },
-        { x:-11.5, y:3.5, z:-8, s:2.2 },
-        { x: 11.5, y:3.5, z:-8, s:2.2 },
-      ];
+      const SLOTS = FIG_SLOTS;
 
       figGroup = new THREE.Group();
       figSlots = [];
