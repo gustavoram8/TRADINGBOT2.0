@@ -5832,7 +5832,7 @@
         return v;
       };
 
-      // 14 sophisticated single-line mini-drawings (institutions / markets),
+      // 17 sophisticated single-line mini-drawings (institutions / markets),
       // normalised to roughly ±0.6.
       FIGURES = [
         /* capitol  */ glyph([[-0.58,-0.5],[0.58,-0.5]], [[-0.52,-0.42],[0.52,-0.42]],
@@ -5904,6 +5904,16 @@
         /* bars     */ glyph([[-0.45,-0.4],[0.45,-0.4]],
                              [[-0.32,-0.4],[-0.32,0.0]],[[-0.11,-0.4],[-0.11,0.28]],
                              [[0.1,-0.4],[0.1,-0.1]],[[0.31,-0.4],[0.31,0.38]]),
+        /* candle   */ glyph([[-0.3,-0.42],[-0.3,0.42],[0.3,0.42],[0.3,-0.42],[-0.3,-0.42]],
+                             [[0,0.42],[0,0.62]], [[0,-0.42],[0,-0.6]]),       // single big japanese candlestick
+        /* dollar   */ glyph([[0,-0.58],[0,0.58]],                              // $ sign
+                             arc(0,0.22,0.26,-0.5,Math.PI*1.05,16),
+                             arc(0,-0.18,0.26,Math.PI-0.5,Math.PI*2.05,16)),
+        /* coins    */ glyph(ell(-0.14,-0.34,0.32,0.12,0,TAU,12),               // stacked coins
+                             ell(-0.14,-0.16,0.32,0.12,0,TAU,12),
+                             ell(-0.14,0.02,0.32,0.12,0,TAU,12),
+                             [[-0.46,-0.34],[-0.46,0.02]], [[0.18,-0.34],[0.18,0.02]],
+                             arc(0.3,0.3,0.24,0,TAU,14), [[0.3,0.14],[0.3,0.46]]),
       ];
 
       // Anchor slots around the screen, all clear of the body column.
