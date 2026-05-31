@@ -45,8 +45,9 @@
       transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
     }
 
-    /* Logo: white plate behind it on dark to preserve brand colors; bare on light */
-    body.light .logo-img { background: transparent; padding: 0; mix-blend-mode: multiply; }
+    /* Logo: dark-mode variant via invert (Trader→white, a→gold, arrow→light);
+       lighten blend drops the inverted black background so no white box shows */
+    body.light .logo-img { filter: none; mix-blend-mode: multiply; }
 
     /* Cursor hint flips for contrast on the light nav */
     body.light .cursor-hint path { fill: #15171f; stroke: #ffffff; }
@@ -182,9 +183,8 @@
       height: 102px;
       width: auto;
       display: block;
-      background: #fff;
-      padding: 8px 14px;
-      border-radius: 14px;
+      filter: invert(1);
+      mix-blend-mode: lighten;
     }
 
     .logo-fallback {

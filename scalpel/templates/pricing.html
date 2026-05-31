@@ -48,8 +48,8 @@
     }
 
     .logo { display: flex; align-items: center; text-decoration: none; }
-    .logo-img { height: 80px; width: auto; display: block; background: #fff; padding: 6px 11px; border-radius: 12px; }
-    body.light .logo-img { background: transparent; padding: 0; mix-blend-mode: multiply; }
+    .logo-img { height: 80px; width: auto; display: block; filter: invert(1); mix-blend-mode: lighten; }
+    body.light .logo-img { filter: none; mix-blend-mode: multiply; }
     .logo-fallback { display: none; align-items: center; gap: 10px; }
     .logo-text { font-size: 18px; font-weight: 800; letter-spacing: 0.08em; color: var(--ink); }
     .logo-sub  { font-size: 11px; color: var(--muted); letter-spacing: 0.05em; }
