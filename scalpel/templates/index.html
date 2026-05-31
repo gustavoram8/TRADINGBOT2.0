@@ -1585,22 +1585,19 @@
        is clickable on the canvas. Disappears once fired. */
     .syn-fire-prompt {
       position: absolute; transform: translate(-50%, -50%);
-      font-family: 'Orbitron', sans-serif; font-size: 11px; font-weight: 600;
-      letter-spacing: 0.18em; text-transform: uppercase; white-space: nowrap;
-      padding: 8px 18px; border-radius: 24px; cursor: pointer; pointer-events: auto;
+      font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
+      letter-spacing: 0.03em; white-space: nowrap;
+      padding: 9px 20px; border-radius: 8px; cursor: pointer; pointer-events: auto;
       z-index: 3;
-      color: #f5d77a; background: rgba(10,8,2,0.82); border: 1px solid rgba(234,179,8,0.5);
-      box-shadow: 0 0 22px rgba(234,179,8,0.25);
+      color: var(--text); background: var(--card); border: 1px solid var(--border2);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.18);
       opacity: 1;
-      transition: opacity .5s ease, transform .5s ease;
+      transition: opacity .5s ease, transform .5s ease, box-shadow .2s ease;
     }
-    .syn-fire-prompt:hover { box-shadow: 0 0 32px rgba(234,179,8,0.55); }
-    .syn-fire-prompt.gone { opacity: 0; pointer-events: none; transform: translate(-50%, -50%) scale(0.6); }
-    body.light .syn-fire-prompt {
-      color: #bcd4ff; background: rgba(20,40,90,0.4); border-color: rgba(99,150,255,0.6);
-      box-shadow: 0 0 22px rgba(99,150,255,0.3);
-    }
-    body.light .syn-fire-prompt:hover { box-shadow: 0 0 32px rgba(99,150,255,0.6); }
+    .syn-fire-prompt:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.28); }
+    .syn-fire-prompt.gone { opacity: 0; pointer-events: none; transform: translate(-50%, -50%) scale(0.95); }
+    body.light .syn-fire-prompt { box-shadow: 0 2px 8px rgba(0,0,0,0.10); }
+    body.light .syn-fire-prompt:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.16); }
 
     /* Methodology nodes — chamfered "HUD readout" chips. Diagonally cut corners
        (top-left + bottom-right) give a cockpit / targeting-callout feel. The chip
@@ -1636,6 +1633,91 @@
       box-shadow: inset 0 0 0 1px rgba(99,150,255,0.9);
       filter: drop-shadow(0 0 14px rgba(99,150,255,0.65));
     }
+
+    /* ── QUIZ ────────────────────────────────────────────────────────────── */
+    .quiz-app { max-width: 680px; margin: 0 auto; padding: 28px 20px 60px; }
+
+    .quiz-header { text-align: center; margin-bottom: 32px; }
+    .quiz-h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+    .quiz-sub { font-size: 13px; color: var(--muted); }
+
+    .quiz-setup-grid { display: flex; flex-direction: column; gap: 10px; }
+    .quiz-section-label { font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--muted); margin-top: 10px; }
+    .quiz-section-hint { text-transform: none; letter-spacing: 0; font-weight: 400; }
+    .quiz-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .qchip { padding: 7px 16px; border-radius: 6px; border: 1px solid var(--border2);
+      background: var(--card); color: var(--text); font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: all .15s ease; }
+    .qchip:hover { border-color: var(--accent); color: var(--accent); }
+    .qchip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    .quiz-start-btn { display: block; width: 100%; margin-top: 30px; padding: 13px;
+      background: var(--accent); color: #fff; border: none; border-radius: 8px;
+      font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity .2s; }
+    .quiz-start-btn:hover { opacity: .88; }
+
+    /* question screen */
+    .quiz-question-top { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+    .quiz-progress-wrap { flex: 1; }
+    .quiz-progress-bar { height: 5px; background: var(--border2); border-radius: 3px; overflow: hidden; }
+    .quiz-progress-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width .4s ease; }
+    .quiz-progress-label { font-size: 11px; color: var(--muted); margin-top: 5px; }
+    .quiz-timer { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums;
+      min-width: 52px; text-align: right; }
+    .quiz-timer.danger { color: #ef4444; }
+
+    .quiz-meta-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .quiz-topic-pill, .quiz-level-pill { font-size: 11px; font-weight: 600; padding: 3px 10px;
+      border-radius: 20px; background: var(--border2); color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+    .quiz-level-pill { background: rgba(99,150,255,.13); color: var(--accent); }
+
+    .quiz-q-text { font-size: 17px; font-weight: 600; line-height: 1.5; margin-bottom: 20px; }
+
+    .quiz-chart-wrap { margin-bottom: 20px; border-radius: 10px; overflow: hidden;
+      border: 1px solid var(--border2); }
+    .quiz-chart-img { width: 100%; display: block; max-height: 280px; object-fit: cover; }
+    .quiz-chart-caption { font-size: 11px; color: var(--muted); padding: 8px 12px; background: var(--card); }
+
+    .quiz-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    .quiz-opt { padding: 13px 16px; border-radius: 8px; border: 1px solid var(--border2);
+      background: var(--card); color: var(--text); font-size: 14px; font-weight: 500;
+      cursor: pointer; text-align: left; transition: border-color .15s, background .15s; }
+    .quiz-opt:hover:not(:disabled) { border-color: var(--accent); }
+    .quiz-opt.correct { border-color: #22c55e; background: rgba(34,197,94,.08); color: #22c55e; }
+    .quiz-opt.wrong   { border-color: #ef4444; background: rgba(239,68,68,.08);  color: #ef4444; }
+    .quiz-opt:disabled { cursor: default; opacity: .85; }
+
+    .quiz-feedback { display: flex; flex-direction: column; gap: 6px;
+      padding: 14px 16px; border-radius: 8px; border: 1px solid var(--border2);
+      background: var(--card); margin-bottom: 18px; }
+    .quiz-feedback-icon { font-size: 20px; }
+    .quiz-feedback-text { font-weight: 600; font-size: 14px; }
+    .quiz-feedback-exp { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+    .quiz-next-btn { display: block; width: 100%; padding: 12px;
+      background: var(--accent); color: #fff; border: none; border-radius: 8px;
+      font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity .2s; }
+    .quiz-next-btn:hover { opacity: .88; }
+
+    /* results screen */
+    .quiz-results-circle { position: relative; width: 110px; height: 110px; margin: 20px auto 12px; }
+    .quiz-results-circle svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .quiz-score-num { position: absolute; inset: 0; display: flex; align-items: center;
+      justify-content: center; font-size: 20px; font-weight: 700; }
+    .quiz-score-label { text-align: center; font-size: 16px; font-weight: 600; margin-bottom: 22px; }
+    .quiz-results-breakdown { display: flex; flex-direction: column; gap: 8px; margin-bottom: 28px; }
+    .quiz-breakdown-row { display: flex; justify-content: space-between; align-items: center;
+      font-size: 13px; padding: 8px 0; border-bottom: 1px solid var(--border2); }
+    .quiz-breakdown-row:last-child { border: none; }
+    .qbr-correct { color: #22c55e; font-weight: 600; }
+    .qbr-wrong   { color: #ef4444; font-weight: 600; }
+    .quiz-results-actions { display: flex; gap: 10px; }
+    .quiz-action-btn { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--accent);
+      font-size: 14px; font-weight: 600; cursor: pointer; background: var(--accent);
+      color: #fff; transition: opacity .2s; }
+    .quiz-action-btn:hover { opacity: .88; }
+    .quiz-action-btn.secondary { background: transparent; color: var(--accent); }
 
     .syn-loading {
       position: absolute; inset: 0; z-index: 5; display: flex; align-items: center;
@@ -2132,16 +2214,107 @@
   <!-- ── QUIZ (Premium) ── -->
   <div class="feature-view" id="quiz-view">
     <div class="feature-panel">
-      <div class="feature-badge feature-badge--premium" data-i18n="feature.premium">Premium</div>
+      <div class="feature-badge premium" data-i18n="feature.premium">Premium</div>
       <div class="feature-circle premium">
         <svg class="ic-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         <svg class="ic-soon" style="display:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       </div>
       <div class="feature-title" data-i18n="quiz.title">Quiz</div>
-      <div class="feature-desc feat-main" data-i18n="quiz.desc">Test your ICT knowledge with curated quizzes. Coming soon.</div>
+      <div class="feature-desc feat-main" data-i18n="quiz.desc">Test your trading knowledge with timed quizzes tailored to your methodology and level.</div>
       <div class="feature-desc feat-state"></div>
       <a href="/pricing" target="_blank" rel="noopener" class="feature-upgrade" data-i18n="feature.upgrade">Upgrade to Premium</a>
     </div>
+
+    <!-- Real quiz app — shown only for Premium members -->
+    <div class="quiz-app" id="quiz-app" style="display:none;">
+
+      <!-- ── SCREEN 1: Setup ── -->
+      <div id="quiz-setup">
+        <div class="quiz-header">
+          <div class="quiz-h1">Trading Quiz</div>
+          <div class="quiz-sub">Customize your session before starting</div>
+        </div>
+        <div class="quiz-setup-grid">
+
+          <div class="quiz-section-label">Methodology</div>
+          <div class="quiz-chips" id="quiz-methodology">
+            <button class="qchip active" data-val="ict">ICT</button>
+            <button class="qchip" data-val="patterns">Pattern Trading</button>
+            <button class="qchip" data-val="wyckoff">Wyckoff</button>
+            <button class="qchip" data-val="smc">SMC</button>
+          </div>
+
+          <div class="quiz-section-label">Your level</div>
+          <div class="quiz-chips" id="quiz-level">
+            <button class="qchip" data-val="beginner">Beginner</button>
+            <button class="qchip active" data-val="intermediate">Intermediate</button>
+            <button class="qchip" data-val="advanced">Advanced</button>
+          </div>
+
+          <div class="quiz-section-label">Topics <span class="quiz-section-hint">(pick as many as you want)</span></div>
+          <div class="quiz-chips multi" id="quiz-topics">
+            <!-- populated by JS based on selected methodology -->
+          </div>
+
+          <div class="quiz-section-label">Questions</div>
+          <div class="quiz-chips" id="quiz-count">
+            <button class="qchip" data-val="5">5</button>
+            <button class="qchip active" data-val="10">10</button>
+            <button class="qchip" data-val="20">20</button>
+          </div>
+        </div>
+
+        <button class="quiz-start-btn" id="quiz-start-btn">Start Quiz →</button>
+      </div>
+
+      <!-- ── SCREEN 2: Question ── -->
+      <div id="quiz-question" style="display:none;">
+        <div class="quiz-question-top">
+          <div class="quiz-progress-wrap">
+            <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quiz-progress-fill"></div></div>
+            <div class="quiz-progress-label" id="quiz-progress-label">1 / 10</div>
+          </div>
+          <div class="quiz-timer" id="quiz-timer">1:00</div>
+        </div>
+
+        <div class="quiz-meta-row">
+          <span class="quiz-topic-pill" id="quiz-topic-pill"></span>
+          <span class="quiz-level-pill" id="quiz-level-pill"></span>
+        </div>
+
+        <div class="quiz-q-text" id="quiz-q-text"></div>
+
+        <div class="quiz-chart-wrap" id="quiz-chart-wrap" style="display:none;">
+          <img id="quiz-chart-img" class="quiz-chart-img" src="" alt="Chart" />
+          <div class="quiz-chart-caption" id="quiz-chart-caption"></div>
+        </div>
+
+        <div class="quiz-options" id="quiz-options"></div>
+
+        <div class="quiz-feedback" id="quiz-feedback" style="display:none;">
+          <div class="quiz-feedback-icon" id="quiz-feedback-icon"></div>
+          <div class="quiz-feedback-text" id="quiz-feedback-text"></div>
+          <div class="quiz-feedback-exp" id="quiz-feedback-exp"></div>
+        </div>
+
+        <button class="quiz-next-btn" id="quiz-next-btn" style="display:none;">Next →</button>
+      </div>
+
+      <!-- ── SCREEN 3: Results ── -->
+      <div id="quiz-results" style="display:none;">
+        <div class="quiz-results-circle">
+          <svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" fill="none" stroke="var(--border2)" stroke-width="6"/><circle cx="40" cy="40" r="34" fill="none" stroke="var(--accent)" stroke-width="6" stroke-linecap="round" id="quiz-score-arc" stroke-dasharray="0 214"/></svg>
+          <div class="quiz-score-num" id="quiz-score-num">0/10</div>
+        </div>
+        <div class="quiz-score-label" id="quiz-score-label"></div>
+        <div class="quiz-results-breakdown" id="quiz-results-breakdown"></div>
+        <div class="quiz-results-actions">
+          <button class="quiz-action-btn secondary" id="quiz-retry-btn">Try Again</button>
+          <button class="quiz-action-btn" id="quiz-new-btn">New Quiz</button>
+        </div>
+      </div>
+
+    </div><!-- /.quiz-app -->
   </div>
 
   {% if scout_enabled %}
@@ -3641,7 +3814,7 @@
     const isPremium = U.plan === 'premium';
     document.querySelectorAll('.feature-view').forEach(view => {
       const panel   = view.querySelector('.feature-panel');
-      const realApp = view.querySelector('.forum-app, .scout-app, .scalper-app, .synapse-app');  // built features
+      const realApp = view.querySelector('.forum-app, .scout-app, .scalper-app, .synapse-app, .quiz-app');  // built features
       const badge   = view.querySelector('.feature-badge');
       const circle  = view.querySelector('.feature-circle');
       const state    = view.querySelector('.feat-state');
@@ -3694,6 +3867,7 @@
     document.querySelector('.container').classList.toggle('scout-active', tab === 'scout' || tab === 'scalper' || tab === 'synapse');
     if (tab === 'forum' && U.plan === 'premium' && window.Forum) window.Forum.open();
     if (tab === 'scout' && U.plan === 'premium' && window.Scout) window.Scout.open();
+    if (tab === 'quiz'    && U.plan === 'premium' && window.Quiz)    window.Quiz.open();
     if (tab === 'scalper' && U.plan === 'premium' && window.Scalper) window.Scalper.open();
     if (tab === 'synapse' && U.plan === 'premium' && window.Synapse) window.Synapse.open();
     else if (window.Synapse && window.Synapse.pause) window.Synapse.pause();  // free the GPU when leaving Synapse
@@ -5259,6 +5433,432 @@
       renderThumbs();
       wireUI();
     }
+
+    // ── QUIZ ENGINE ─────────────────────────────────────────────────────────
+    {
+      // ── Question bank ──────────────────────────────────────────────────────
+      // Structure: { methodology, level, topic, q, options:[{t,ok}], exp, chart? }
+      // chart: { src: '/static/quiz/img.png', caption: '...' } (optional)
+      const QUESTION_BANK = [
+        // ── ICT / Beginner ──
+        { m:'ict', lv:'beginner', topic:'Order Blocks',
+          q:'What is an Order Block (OB) in ICT methodology?',
+          opts:[{t:'The last bearish candle before a bullish move (or vice versa)',ok:true},
+                {t:'A block of buy orders placed by retail traders',ok:false},
+                {t:'A support/resistance zone derived from moving averages',ok:false},
+                {t:'A candlestick pattern of 3 consecutive doji candles',ok:false}],
+          exp:'An Order Block is the last candle (body) opposing the direction of the ensuing impulse move — the institutional "footprint" left before a major displacement.' },
+        { m:'ict', lv:'beginner', topic:'Fair Value Gaps',
+          q:'A Fair Value Gap (FVG) is identified by:',
+          opts:[{t:'Three consecutive candles where the 1st and 3rd candle wicks do not overlap',ok:true},
+                {t:'A gap on the daily chart between two sessions',ok:false},
+                {t:'The spread between bid and ask at market open',ok:false},
+                {t:'Two candles closing at the same price level',ok:false}],
+          exp:'An FVG appears when a strong impulse leaves a gap between candle 1\'s high/low and candle 3\'s low/high — price tends to return to "fill" this imbalance.' },
+        { m:'ict', lv:'beginner', topic:'Market Structure',
+          q:'In ICT, a Break of Structure (BOS) occurs when:',
+          opts:[{t:'Price closes beyond the most recent swing high or low in the trend direction',ok:true},
+                {t:'Two moving averages cross each other',ok:false},
+                {t:'Volume drops below its 20-period average',ok:false},
+                {t:'Price gaps beyond the previous session close',ok:false}],
+          exp:'A BOS confirms trend continuation — price closes through a prior swing point in the direction of the prevailing trend, signaling the structure remains intact.' },
+        { m:'ict', lv:'beginner', topic:'Kill Zones',
+          q:'Which of these is a recognized ICT Kill Zone?',
+          opts:[{t:'London Open (2:00–5:00 AM ET)',ok:true},
+                {t:'Tokyo Lunch (11:00–13:00 JST)',ok:false},
+                {t:'Sydney Close (4:00–5:00 PM AEDT)',ok:false},
+                {t:'US Pre-market (5:00–8:00 AM ET)',ok:false}],
+          exp:'ICT Kill Zones are high-probability windows: London Open (2–5 AM ET), New York Open (7–10 AM ET), and the London/NY overlap — times when institutions are most active.' },
+
+        // ── ICT / Intermediate ──
+        { m:'ict', lv:'intermediate', topic:'Order Blocks',
+          q:'When does an Order Block become "mitigated" (invalidated)?',
+          opts:[{t:'Price returns and closes fully through the OB origin candle',ok:true},
+                {t:'The OB is more than 20 bars old',ok:false},
+                {t:'A new all-time high is printed on the chart',ok:false},
+                {t:'Volume during the OB candle was below average',ok:false}],
+          exp:'An OB is mitigated once price fills through the origin candle. The zone is then considered "used" and loses its predictive value for future reactions.' },
+        { m:'ict', lv:'intermediate', topic:'Fair Value Gaps',
+          q:'A Balanced Price Range (BPR) is formed when:',
+          opts:[{t:'Two overlapping FVGs from opposing moves create a fair-value equilibrium zone',ok:true},
+                {t:'Price trades inside the Asian range without breaking it',ok:false},
+                {t:'An OB coincides with a daily S/R level',ok:false},
+                {t:'Three consecutive FVGs stack in the same direction',ok:false}],
+          exp:'A BPR occurs when a bullish FVG and a bearish FVG overlap — the area of intersection represents where both sides perceive fair value and often acts as a magnet.' },
+        { m:'ict', lv:'intermediate', topic:'Liquidity',
+          q:'Sell-Side Liquidity (SSL) refers to:',
+          opts:[{t:'Stop-loss orders resting below swing lows and equal lows',ok:true},
+                {t:'Market sell orders placed by institutional desks at the open',ok:false},
+                {t:'Limit orders to sell above the current price',ok:false},
+                {t:'Liquidity pools found only on the weekly timeframe',ok:false}],
+          exp:'SSL pools sit below obvious lows where retail longs place their stops. Institutions drive price into these pools to fill their buy orders before reversing — a "stop hunt".' },
+        { m:'ict', lv:'intermediate', topic:'Market Structure',
+          q:'A Change of Character (ChoCh) differs from a BOS in that:',
+          opts:[{t:'ChoCh breaks structure AGAINST the prevailing trend, signaling a potential reversal',ok:true},
+                {t:'ChoCh only applies on timeframes above H4',ok:false},
+                {t:'ChoCh requires a gap to be created in the move',ok:false},
+                {t:'ChoCh is only valid after 3 consecutive BOS events',ok:false}],
+          exp:'ChoCh is the first structural break that goes against the current trend — it\'s the earliest warning of a potential reversal, before the trend is officially confirmed broken.' },
+
+        // ── ICT / Advanced ──
+        { m:'ict', lv:'advanced', topic:'AMD',
+          q:'In the AMD (Accumulation–Manipulation–Distribution) model, where does the true directional move begin?',
+          opts:[{t:'After the Manipulation phase raids liquidity opposite to the intended direction',ok:true},
+                {t:'At the open of the New York session regardless of prior price action',ok:false},
+                {t:'Exactly at the midpoint of the Asian range',ok:false},
+                {t:'When RSI divergence is confirmed on the 15m chart',ok:false}],
+          exp:'Smart money accumulates during Asia, manipulates retail during London (stop hunt in the wrong direction), then distributes / runs the actual move during NY — classic AMD cycle.' },
+        { m:'ict', lv:'advanced', topic:'PD Arrays',
+          q:'In order of delivery preference within a PD Array stack, which level does ICT prioritize FIRST as a draw on liquidity?',
+          opts:[{t:'Breaker blocks above/below the array',ok:false},
+                {t:'Optimal Trade Entry (OTE) inside a Fair Value Gap at 79% of the swing',ok:false},
+                {t:'Equal Highs / Equal Lows (liquidity pools)',ok:true},
+                {t:'Previous week\'s high/low',ok:false}],
+          exp:'ICT frames every move as price seeking liquidity. Equal highs/lows are the primary draw — once swept, price seeks the next PD array (OB, FVG, OTE) for the reversal entry.' },
+
+        // ── Pattern Trading / Beginner ──
+        { m:'patterns', lv:'beginner', topic:'Candlestick Patterns',
+          q:'A bullish engulfing pattern signals:',
+          opts:[{t:'A potential reversal from a downtrend — a large bullish candle fully engulfs the prior bearish candle',ok:true},
+                {t:'Trend continuation — bulls are dominating for the third consecutive session',ok:false},
+                {t:'A period of consolidation before the trend resumes',ok:false},
+                {t:'A guaranteed breakout above the nearest resistance level',ok:false}],
+          exp:'The bullish engulfing shows buyers overwhelming sellers — the bullish body completely engulfs the prior bearish body, signaling a potential reversal when found at key support.' },
+        { m:'patterns', lv:'beginner', topic:'Chart Patterns',
+          q:'A Head and Shoulders pattern has a neckline. Price breaking BELOW the neckline typically implies:',
+          opts:[{t:'A bearish reversal target equal to the distance from head to neckline',ok:true},
+                {t:'A bullish continuation to new highs',ok:false},
+                {t:'A neutral consolidation period',ok:false},
+                {t:'An immediate 50% retracement of the prior trend',ok:false}],
+          exp:'The classic H&S reversal projects a target by measuring head-to-neckline distance and subtracting from the breakout point — one of the most reliable reversal patterns.' },
+
+        // ── Pattern Trading / Intermediate ──
+        { m:'patterns', lv:'intermediate', topic:'Chart Patterns',
+          q:'An ascending triangle is generally considered a:',
+          opts:[{t:'Bullish continuation pattern with a flat top and rising lows',ok:true},
+                {t:'Reversal pattern that signals the end of any trend',ok:false},
+                {t:'Bearish pattern because buyers are losing momentum',ok:false},
+                {t:'Neutral pattern with no directional bias',ok:false}],
+          exp:'In an ascending triangle, buyers keep pushing lows higher (rising support) while hitting a ceiling (flat resistance). The compression usually resolves with a breakout to the upside.' },
+        { m:'patterns', lv:'intermediate', topic:'Harmonic Patterns',
+          q:'The Gartley pattern requires point D to retrace to approximately:',
+          opts:[{t:'78.6% of the XA leg',ok:true},
+                {t:'61.8% of the AB leg',ok:false},
+                {t:'127.2% of the BC leg',ok:false},
+                {t:'50% of the entire XA move',ok:false}],
+          exp:'In the Gartley, point D sits at the 78.6% retracement of XA — the key PRZ (Potential Reversal Zone). AB retraces 61.8% of XA, and BC retraces 38.2–88.6% of AB.' },
+
+        // ── Wyckoff / Beginner ──
+        { m:'wyckoff', lv:'beginner', topic:'Accumulation',
+          q:'In Wyckoff\'s Accumulation schematic, the "Spring" is:',
+          opts:[{t:'A shakeout below the trading range support that traps short sellers before a markup',ok:true},
+                {t:'The initial price drop that begins the accumulation range',ok:false},
+                {t:'The breakout above resistance that confirms the markup phase',ok:false},
+                {t:'The phase where composite operators distribute their positions',ok:false}],
+          exp:'The Spring is a false breakdown below support — smart money shakes out weak longs and triggers stops before driving price upward, absorbing all available supply.' },
+        { m:'wyckoff', lv:'beginner', topic:'Market Phases',
+          q:'Wyckoff\'s four phases of the market cycle are:',
+          opts:[{t:'Accumulation, Markup, Distribution, Markdown',ok:true},
+                {t:'Compression, Expansion, Retracement, Continuation',ok:false},
+                {t:'Support, Resistance, Breakout, Reversal',ok:false},
+                {t:'Bullish, Bearish, Sideways, Volatile',ok:false}],
+          exp:'Wyckoff\'s cycle: Accumulation (composite operators buy), Markup (uptrend), Distribution (operators sell to public), Markdown (downtrend) — then it repeats.' },
+
+        // ── Wyckoff / Intermediate ──
+        { m:'wyckoff', lv:'intermediate', topic:'Distribution',
+          q:'The UTAD (Upthrust After Distribution) in Wyckoff is characterized by:',
+          opts:[{t:'A price push above the distribution range that quickly reverses, confirming supply dominance',ok:true},
+                {t:'A high-volume breakout that signals the start of a new uptrend',ok:false},
+                {t:'The final point of supply before price begins accumulating',ok:false},
+                {t:'A test of the automatic rally with reduced volume',ok:false}],
+          exp:'UTAD mirrors the Spring but in a distribution schematic — a false breakout above range resistance that traps late buyers and confirms smart money is distributing, not buying.' },
+
+        // ── SMC / Beginner ──
+        { m:'smc', lv:'beginner', topic:'Structure',
+          q:'In Smart Money Concepts, an "inducement" is:',
+          opts:[{t:'Liquidity deliberately left by smart money to lure retail traders into bad positions',ok:true},
+                {t:'A signal from a market maker to open positions',ok:false},
+                {t:'An indicator measuring institutional order flow',ok:false},
+                {t:'The spread paid when entering a trade',ok:false}],
+          exp:'Inducement is a minor liquidity pool (e.g., small equal lows) that SM sets up to bait retail into entries, then sweeps them before running the real move in the opposite direction.' },
+        { m:'smc', lv:'intermediate', topic:'Confluences',
+          q:'A high-probability SMC entry ideally combines:',
+          opts:[{t:'ChoCh or BOS + OB or FVG + liquidity sweep on a lower timeframe',ok:true},
+                {t:'RSI oversold + MACD crossover + Bollinger Band touch',ok:false},
+                {t:'Three candlestick patterns on the same timeframe',ok:false},
+                {t:'News event alignment + round number + 200 EMA',ok:false}],
+          exp:'SMC entries stack: a structural shift (ChoCh/BOS) to confirm direction, a PD array (OB/FVG) for the entry zone, and a lower-timeframe liquidity sweep for the trigger.' },
+      ];
+
+      // Topics per methodology
+      const TOPIC_MAP = {
+        ict:      ['Order Blocks','Fair Value Gaps','Market Structure','Liquidity','Kill Zones','AMD','PD Arrays'],
+        patterns: ['Candlestick Patterns','Chart Patterns','Harmonic Patterns'],
+        wyckoff:  ['Accumulation','Distribution','Market Phases'],
+        smc:      ['Structure','Confluences','Liquidity'],
+      };
+
+      // ── State ──
+      let qState = {
+        methodology:'ict', level:'intermediate', topics:[], count:10,
+        questions:[], idx:0, score:0, timer:null, timeLeft:60,
+        answers:[],   // {q, correct, chosen}
+      };
+
+      // ── DOM refs ──
+      const screens = {
+        setup:    document.getElementById('quiz-setup'),
+        question: document.getElementById('quiz-question'),
+        results:  document.getElementById('quiz-results'),
+      };
+
+      function showScreen(name) {
+        Object.values(screens).forEach(s => { if(s) s.style.display='none'; });
+        if(screens[name]) screens[name].style.display='';
+      }
+
+      // ── Chip groups (single-select) ──
+      function bindChips(containerId, key) {
+        const el = document.getElementById(containerId);
+        if(!el) return;
+        el.addEventListener('click', e => {
+          const chip = e.target.closest('.qchip');
+          if(!chip) return;
+          el.querySelectorAll('.qchip').forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+          qState[key] = chip.dataset.val;
+          if(key === 'methodology') renderTopics();
+        });
+      }
+
+      // ── Topic chips (multi-select) ──
+      function renderTopics() {
+        const wrap = document.getElementById('quiz-topics');
+        if(!wrap) return;
+        const topics = TOPIC_MAP[qState.methodology] || [];
+        wrap.innerHTML = topics.map(t =>
+          `<button class="qchip active" data-val="${t}">${t}</button>`
+        ).join('');
+        qState.topics = [...topics];
+        wrap.addEventListener('click', e => {
+          const chip = e.target.closest('.qchip');
+          if(!chip) return;
+          chip.classList.toggle('active');
+          qState.topics = [...wrap.querySelectorAll('.qchip.active')].map(c => c.dataset.val);
+        });
+      }
+
+      // ── Build question list ──
+      function buildQuestions() {
+        let pool = QUESTION_BANK.filter(q =>
+          q.m === qState.methodology &&
+          q.lv === qState.level &&
+          (qState.topics.length === 0 || qState.topics.includes(q.topic))
+        );
+        // fallback: include adjacent levels if not enough questions
+        if(pool.length < 3) {
+          pool = QUESTION_BANK.filter(q =>
+            q.m === qState.methodology &&
+            (qState.topics.length === 0 || qState.topics.includes(q.topic))
+          );
+        }
+        // shuffle
+        for(let i = pool.length-1; i > 0; i--) {
+          const j = Math.floor(Math.random()*(i+1));
+          [pool[i],pool[j]] = [pool[j],pool[i]];
+        }
+        return pool.slice(0, parseInt(qState.count));
+      }
+
+      // ── Timer ──
+      function startTimer() {
+        const el = document.getElementById('quiz-timer');
+        qState.timeLeft = 60;
+        if(qState.timer) clearInterval(qState.timer);
+        qState.timer = setInterval(() => {
+          qState.timeLeft--;
+          const m = Math.floor(qState.timeLeft/60);
+          const s = String(qState.timeLeft%60).padStart(2,'0');
+          if(el) { el.textContent = `${m}:${s}`; el.classList.toggle('danger', qState.timeLeft <= 10); }
+          if(qState.timeLeft <= 0) { clearInterval(qState.timer); autoAdvance(); }
+        }, 1000);
+      }
+
+      function stopTimer() { if(qState.timer) { clearInterval(qState.timer); qState.timer=null; } }
+
+      // ── Render question ──
+      function renderQuestion() {
+        const q = qState.questions[qState.idx];
+        const total = qState.questions.length;
+
+        // progress
+        const fill = document.getElementById('quiz-progress-fill');
+        const lbl  = document.getElementById('quiz-progress-label');
+        if(fill) fill.style.width = `${(qState.idx/total)*100}%`;
+        if(lbl)  lbl.textContent  = `${qState.idx+1} / ${total}`;
+
+        // pills
+        const tp = document.getElementById('quiz-topic-pill');
+        const lp = document.getElementById('quiz-level-pill');
+        if(tp) tp.textContent = q.topic;
+        if(lp) lp.textContent = q.lv;
+
+        // question text
+        const qt = document.getElementById('quiz-q-text');
+        if(qt) qt.textContent = q.q;
+
+        // chart (optional)
+        const cw = document.getElementById('quiz-chart-wrap');
+        if(cw) {
+          if(q.chart) {
+            document.getElementById('quiz-chart-img').src = q.chart.src;
+            document.getElementById('quiz-chart-caption').textContent = q.chart.caption||'';
+            cw.style.display='';
+          } else { cw.style.display='none'; }
+        }
+
+        // options — shuffle each time
+        const opts = [...q.opts];
+        for(let i=opts.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[opts[i],opts[j]]=[opts[j],opts[i]];}
+        const ow = document.getElementById('quiz-options');
+        if(ow) {
+          ow.innerHTML = opts.map((o,i) =>
+            `<button class="quiz-opt" data-ok="${o.ok}" data-idx="${i}">${o.t}</button>`
+          ).join('');
+          ow.querySelectorAll('.quiz-opt').forEach(btn => {
+            btn.addEventListener('click', () => handleAnswer(btn, q));
+          });
+        }
+
+        // hide feedback & next
+        const fb = document.getElementById('quiz-feedback');
+        const nb = document.getElementById('quiz-next-btn');
+        if(fb) fb.style.display='none';
+        if(nb) nb.style.display='none';
+
+        // timer
+        const te = document.getElementById('quiz-timer');
+        if(te) { te.textContent='1:00'; te.classList.remove('danger'); }
+        startTimer();
+      }
+
+      function handleAnswer(btn, q) {
+        stopTimer();
+        const correct = btn.dataset.ok === 'true';
+        if(correct) qState.score++;
+        qState.answers.push({ q:q.q, topic:q.topic, correct, chosen:btn.textContent });
+
+        // colour all buttons
+        document.querySelectorAll('.quiz-opt').forEach(b => {
+          b.disabled = true;
+          if(b.dataset.ok==='true') b.classList.add('correct');
+          else if(b === btn && !correct) b.classList.add('wrong');
+        });
+
+        // feedback
+        const fb = document.getElementById('quiz-feedback');
+        const fi = document.getElementById('quiz-feedback-icon');
+        const ft = document.getElementById('quiz-feedback-text');
+        const fe = document.getElementById('quiz-feedback-exp');
+        if(fb && fi && ft && fe) {
+          fi.textContent = correct ? '✅' : '❌';
+          ft.textContent = correct ? 'Correct!' : 'Not quite.';
+          fe.textContent = q.exp;
+          fb.style.display = '';
+        }
+
+        const nb = document.getElementById('quiz-next-btn');
+        if(nb) {
+          nb.textContent = qState.idx+1 < qState.questions.length ? 'Next →' : 'See Results →';
+          nb.style.display = '';
+        }
+      }
+
+      function autoAdvance() {
+        // time ran out — mark as wrong, show answer
+        document.querySelectorAll('.quiz-opt').forEach(b => {
+          b.disabled = true;
+          if(b.dataset.ok==='true') b.classList.add('correct');
+        });
+        const q = qState.questions[qState.idx];
+        qState.answers.push({ q:q.q, topic:q.topic, correct:false, chosen:'—' });
+        const fb=document.getElementById('quiz-feedback');
+        const fi=document.getElementById('quiz-feedback-icon');
+        const ft=document.getElementById('quiz-feedback-text');
+        const fe=document.getElementById('quiz-feedback-exp');
+        if(fb&&fi&&ft&&fe){fi.textContent='⏱️';ft.textContent="Time's up!";fe.textContent=q.exp;fb.style.display='';}
+        const nb=document.getElementById('quiz-next-btn');
+        if(nb){nb.textContent=qState.idx+1<qState.questions.length?'Next →':'See Results →';nb.style.display='';}
+      }
+
+      function nextQuestion() {
+        qState.idx++;
+        if(qState.idx < qState.questions.length) { renderQuestion(); }
+        else { showResults(); }
+      }
+
+      // ── Results ──
+      function showResults() {
+        showScreen('results');
+        const total = qState.questions.length;
+        const pct   = Math.round((qState.score/total)*100);
+
+        // animated arc (circumference of r=34 → 2π×34 ≈ 214)
+        const arc = document.getElementById('quiz-score-arc');
+        if(arc) setTimeout(()=>{ arc.setAttribute('stroke-dasharray',`${214*pct/100} 214`); },80);
+
+        const sn = document.getElementById('quiz-score-num');
+        if(sn) sn.textContent = `${qState.score}/${total}`;
+
+        const sl = document.getElementById('quiz-score-label');
+        if(sl) sl.textContent = pct>=80?'Excellent work! 🎯':pct>=60?'Good effort! 📈':'Keep studying! 📚';
+
+        // breakdown by topic
+        const topicMap = {};
+        qState.answers.forEach(a=>{
+          if(!topicMap[a.topic]) topicMap[a.topic]={c:0,w:0};
+          a.correct?topicMap[a.topic].c++:topicMap[a.topic].w++;
+        });
+        const bd = document.getElementById('quiz-results-breakdown');
+        if(bd) bd.innerHTML = Object.entries(topicMap).map(([t,v])=>
+          `<div class="quiz-breakdown-row"><span>${t}</span><span><span class="qbr-correct">✓${v.c}</span> &nbsp; <span class="qbr-wrong">✗${v.w}</span></span></div>`
+        ).join('');
+      }
+
+      // ── Bind setup chips & start ──
+      bindChips('quiz-methodology','methodology');
+      bindChips('quiz-level','level');
+      bindChips('quiz-count','count');
+      renderTopics();
+
+      const startBtn = document.getElementById('quiz-start-btn');
+      if(startBtn) startBtn.addEventListener('click', () => {
+        qState.questions = buildQuestions();
+        if(qState.questions.length === 0) {
+          alert('No questions available for this combination. Try different topics or level.');
+          return;
+        }
+        qState.idx=0; qState.score=0; qState.answers=[];
+        showScreen('question');
+        renderQuestion();
+      });
+
+      const nextBtn = document.getElementById('quiz-next-btn');
+      if(nextBtn) nextBtn.addEventListener('click', nextQuestion);
+
+      const retryBtn = document.getElementById('quiz-retry-btn');
+      if(retryBtn) retryBtn.addEventListener('click', () => {
+        qState.questions = buildQuestions();
+        qState.idx=0; qState.score=0; qState.answers=[];
+        showScreen('question'); renderQuestion();
+      });
+
+      const newBtn = document.getElementById('quiz-new-btn');
+      if(newBtn) newBtn.addEventListener('click', () => { showScreen('setup'); });
+
+      window.Quiz = { open() { showScreen('setup'); } };
+    }
+    // ── END QUIZ ENGINE ──────────────────────────────────────────────────────
 
     let opening = false;
     window.Scalper = {
