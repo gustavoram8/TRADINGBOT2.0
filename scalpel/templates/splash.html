@@ -55,12 +55,13 @@
     .splash-logo {
       width: 200px;
       height: auto;
-      filter: invert(1);
-      mix-blend-mode: lighten;
+      background: #fff;
+      padding: 12px 20px;
+      border-radius: 18px;
       animation: logoPulse 3.2s ease-in-out infinite;
       z-index: 2;
     }
-    body.light .splash-logo { filter: none; mix-blend-mode: multiply; }
+    body.light .splash-logo { background: transparent; padding: 0; mix-blend-mode: multiply; }
 
     .logo-fallback {
       display: none;

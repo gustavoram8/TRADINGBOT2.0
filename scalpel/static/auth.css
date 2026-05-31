@@ -52,10 +52,11 @@ body {
   height: 74px;
   width: auto;
   margin: 0 auto 26px;
-  filter: invert(1);
-  mix-blend-mode: lighten;
+  background: #fff;
+  padding: 7px 12px;
+  border-radius: 12px;
 }
-body.light .auth-logo { filter: none; mix-blend-mode: multiply; }
+body.light .auth-logo { background: transparent; padding: 0; mix-blend-mode: multiply; }
 
 .auth-logo-fallback {
   display: none;
