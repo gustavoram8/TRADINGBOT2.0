@@ -1590,20 +1590,16 @@
       z-index: 3;
       color: #f5d77a; background: rgba(10,8,2,0.82); border: 1px solid rgba(234,179,8,0.5);
       box-shadow: 0 0 22px rgba(234,179,8,0.25);
-      animation: syn-fire-pulse 1.9s ease-in-out infinite;
+      opacity: 1;
       transition: opacity .5s ease, transform .5s ease;
     }
     .syn-fire-prompt:hover { box-shadow: 0 0 32px rgba(234,179,8,0.55); }
-    .syn-fire-prompt.gone { animation: none; opacity: 0; pointer-events: none; transform: translate(-50%, -50%) scale(0.6); }
+    .syn-fire-prompt.gone { opacity: 0; pointer-events: none; transform: translate(-50%, -50%) scale(0.6); }
     body.light .syn-fire-prompt {
       color: #bcd4ff; background: rgba(20,40,90,0.4); border-color: rgba(99,150,255,0.6);
       box-shadow: 0 0 22px rgba(99,150,255,0.3);
     }
     body.light .syn-fire-prompt:hover { box-shadow: 0 0 32px rgba(99,150,255,0.6); }
-    @keyframes syn-fire-pulse {
-      0%, 100% { opacity: 0.7; }
-      50%      { opacity: 1; box-shadow: 0 0 34px rgba(234,179,8,0.5); }
-    }
 
     /* Methodology nodes — chamfered "HUD readout" chips. Diagonally cut corners
        (top-left + bottom-right) give a cockpit / targeting-callout feel. The chip
@@ -2516,7 +2512,7 @@
 
 <footer data-i18n="footer.text">SCALPEL · ICT Trade Analysis · For educational purposes only · Not financial advice</footer>
 <!-- CC-BY attribution for the Synapse hologram models (required by their licenses) -->
-<div class=”model-credits” style=”text-align:center; font-size:10px; color:var(--muted); opacity:0.6; padding:0 16px 18px; letter-spacing:0.02em;”>
+<div class="model-credits" style="text-align:center; font-size:7px; color:var(--muted); opacity:0.5; padding:0 16px 14px; letter-spacing:0.01em;">
   Synapse 3D models: head scan by Lee Perry-Smith / Infinite Realities (CC BY 3.0) · brain model by dgallichan (CC BY 4.0, Sketchfab)
 </div>
 
