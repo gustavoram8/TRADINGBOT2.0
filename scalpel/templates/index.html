@@ -5318,10 +5318,11 @@
     function ensureThree() {
       if (typeof THREE !== 'undefined') return Promise.resolve();
       return new Promise((resolve) => {
+        const tid = setTimeout(resolve, 12000);  // give up after 12 s so we can show an error
         const s = document.createElement('script');
         s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-        s.onload = () => resolve();
-        s.onerror = () => resolve();
+        s.onload = () => { clearTimeout(tid); resolve(); };
+        s.onerror = () => { clearTimeout(tid); resolve(); };
         document.head.appendChild(s);
       });
     }
@@ -5481,8 +5482,11 @@
     function loadModelGeo(url) {
       const lower = url.toLowerCase().split('?')[0];   // ignore cache-buster query
       if (lower.endsWith('.glb') || lower.endsWith('.gltf')) {
-        return fetch(url)
-          .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); })
+        const ctrl = new AbortController();
+        const tid = setTimeout(() => ctrl.abort(), 15000);  // 15-second fetch timeout
+        return fetch(url, { signal: ctrl.signal })
+          .then(r => { clearTimeout(tid); if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); })
+          .catch(e => { clearTimeout(tid); throw e; })
           .then(buf => ensureGLTF().then(() => new Promise((resolve, reject) => {
             if (!THREE.GLTFLoader) { reject(new Error('GLTFLoader unavailable')); return; }
             new THREE.GLTFLoader().parse(buf, '',
@@ -6223,14 +6227,14 @@
         const errMsg = (m) => { if (loading) { const d = loading.querySelector('div:last-child'); if (d) d.textContent = m; } };
         await ensureThree();
         if (typeof THREE === 'undefined') {
-          errMsg('Could not load the 3D engine. Check your connection and reopen this tab.');
+          errMsg('No se pudo cargar el motor 3D. Verifica tu conexión a internet y vuelve a abrir esta pestaña.');
           opening = false;
           return;
         }
         try {
           await buildScene();
         } catch (e) {
-          errMsg('Could not load the holographic models. Check your connection and reopen this tab.');
+          errMsg('No se pudieron cargar los modelos holográficos. Verifica tu conexión y vuelve a abrir esta pestaña.');
           opening = false;
           return;
         }
