@@ -23,7 +23,8 @@
   - GPT-4o → moderación del foro + asesor del Scout
 - **Frontend:** Jinja2 + vanilla JS, i18n EN/ES/FR/PT
 - **Rama de desarrollo:** `claude/wonderful-gates-JAa9X` en `gustavoram8/TRADINGBOT2.0`
-- **App:** `scalpel/app.py` · arrancar con `python3 scalpel/app.py`
+- **App:** `scalpel/app.py` · arrancar con `FLASK_DEBUG=1 python3 scalpel/app.py`
+- **Acceso local desde iPhone:** `http://192.168.0.104:5001` (Mac en WiFi TP-Link, misma red)
 
 ---
 
@@ -67,6 +68,9 @@
       migra de dispositivo, limpia el caché o se despliega en VPS, los pierde.
       Implementar guardado en DB ligado a `user_id` (modelo `ScalperBoard`,
       endpoint `/api/scalper/save` y `/api/scalper/load`) antes del lanzamiento.
+- [ ] **Acceso desde iPhone sin servidor local** — actualmente el servidor solo
+      corre en el Mac. Para probar desde iPhone de forma permanente, desplegar
+      en VPS es la solución real (ver tarea de VPS arriba).
 
 ### 🟡 Importante — mejoras post-lanzamiento
 
@@ -95,6 +99,14 @@
 - [x] PDFs: desglose de costos + checklist pre-lanzamiento
 - [x] i18n en 4 idiomas: EN / ES / FR / PT
 - [x] Tema claro / oscuro
+- [x] **Synapse — cabeza wireframe con glow suavizado** (opacidades: wireMat dark 0.25, glowMat dark 0.04)
+- [x] **Synapse — reducción de lag** (~50% mejora: eliminado backdrop-filter blur, powerPreference high-performance, pixelRatio 1.5, loop pause al cambiar tab)
+- [x] **Synapse — constelaciones neuronales** visibles en light mode (color azul profundo `0x2f5fa6`), exclusión de zona del torso/cabeza con perfil gaussiano `figureHalf(y)`, spread ampliado a ±21 unidades
+- [x] **Synapse — figuras ghost (ghost glyphs)** — 14 mini-dibujos institucionales que se "dibujan solos" en las esquinas con animación de reveal progresivo (`setDrawRange`)
+- [x] **Synapse — NET_N reducido 25%** (144 → 108 nodos) — commit `bda4070`
+- [x] **Synapse — velocidad de constelaciones ×2** (netVel 0.006 → 0.012) — commit `bda4070`
+- [x] **Synapse — figuras renovadas** — eliminadas: clocktower, vault, rocket · agregadas: fed, bull, ticker, usaflag, bullish, bearish · total: 14 figuras — commit `973a83b`
+- [x] **Synapse — fix loading infinito** — `AbortController` 15s en fetch de modelos GLB, timeout 12s en `ensureThree()` — commit `705cbe4`
 
 ---
 
@@ -164,3 +176,65 @@ retorno incierto comparado con features de mayor impacto en conversión y retenc
 - `VENEZUELA_ALLOWED_SLUGS = {'oneup-trader'}` — única excepción documentada.
 - El seed solo inserta firmas nuevas; no duplica si ya existen.
 - Commits y pushes siempre a rama `claude/wonderful-gates-JAa9X`.
+
+---
+
+## 🎨 Synapse — Estado técnico actual (2026-05-31)
+
+### Parámetros clave en `scalpel/templates/index.html`
+
+```js
+// Constelaciones neuronales
+NET_N = 108           // nodos (144 → 108, -25%)
+netVel *= 0.012       // velocidad (era 0.006, ahora ×2)
+THRESH = 3.4          // distancia máxima para conectar nodos
+
+// Zona de exclusión del cuerpo (perfil gaussiano)
+FIG_Y0 = 3.0, FIG_Y1 = 16.8, CAM_Z = 16.5
+figureHalf(y) = Math.max(3.4, 5.3 * exp(-((y-5.7)/2.4)²))  // cubre torso+cabeza
+
+// Colores
+colDim()    → dark: 0x9c8240  · light: 0x7aaed4
+colBright() → dark: 0xc6a04e  · light: 0x5592c8
+netCol()    → dark: 0x9c8240  · light: 0x2f5fa6  // azul profundo en light mode
+
+// Modelos 3D
+MODEL_VER = '11'   // brain.glb decimado 25k→6.7k caras (118 KB)
+                   // head.glb Lee Perry-Smith, 15,076 caras
+HEAD_Y = 5.7, BRAIN_Y = 13.8
+
+// Wireframe opacidades (holoLineMats)
+wireMat: dark 0.25 / light 0.46
+glowMat: dark 0.04 / light 0.07
+
+// Ghost glyphs timing
+FIG_START=2.0, FIG_FORM=1.1, FIG_HOLD=1.7, FIG_DISS=0.7, FIG_WAIT=7.0
+FIG_PERIOD = 10.5s por ciclo · 6 SLOTS · FIG_CAP=128 vértices por slot
+```
+
+### Pool de figuras ghost (14 total)
+
+| # | Nombre | Descripción |
+|---|--------|-------------|
+| 1 | capitol | Capitolio con cúpula, 6 columnas, finial |
+| 2 | temple | Templo clásico con 5 columnas, doble frontón |
+| 3 | fed | Fachada Federal Reserve, 8 columnas, pedimento, puerta |
+| 4 | skyline | Skyline urbano con 5 edificios variados |
+| 5 | monument | Obelisco con escalones de base |
+| 6 | bull | Toro de Wall Street (silueta de cuerpo completo) |
+| 7 | scales | Balanza de la justicia |
+| 8 | globe | Globo terráqueo con meridianos/ecuador |
+| 9 | ticker | Cinta de ticker + candlesticks encima |
+| 10 | usaflag | Bandera USA con franjas, cantón de estrellas, asta |
+| 11 | bullish | Pantalla NYSE — tendencia alcista + flecha arriba |
+| 12 | bearish | Pantalla NYSE — tendencia bajista + flecha abajo |
+| 13 | chart | Gráfico de línea con ejes y flecha |
+| 14 | bars | Gráfico de barras con 4 barras y baseline |
+
+### Commits recientes (sesión 2026-05-31)
+
+| Commit | Descripción |
+|--------|-------------|
+| `bda4070` | NET_N 144→108 y velocidad ×2 |
+| `973a83b` | Figuras renovadas: quita clocktower/vault/rocket, agrega fed/bull/ticker/usaflag/bullish/bearish |
+| `705cbe4` | Fix loading infinito: AbortController 15s + timeout ensureThree 12s |
