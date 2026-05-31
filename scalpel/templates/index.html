@@ -5292,6 +5292,11 @@
     let netPos, netVel, NET_N = 0;
     let toastTimer = null;
 
+    // ── Background "ghost glyphs": single-stroke figures (currency symbols,
+    //    a bank facade, trend charts…) that a fast line traces out in the empty
+    //    corners, hold, dissolve, then redraw on a loop. ──
+    let figGroup = null, figSlots = [], figMats = [], figCycle = -1, FIGURES = [];
+
     // ── "Fire the synapse" gate ──
     // The methodology nodes stay hidden until the user clicks the brain. On the
     // first click a burst of neural sparks fires and the nodes cascade open.
@@ -5724,6 +5729,128 @@
       posAttr.needsUpdate = true;
     }
 
+    // ── Background ghost glyphs ────────────────────────────────────────────
+    // Timing (seconds, from scene start): wait → draw → hold → dissolve → wait…
+    const FIG_START = 2.0, FIG_FORM = 1.1, FIG_HOLD = 1.7, FIG_DISS = 0.7, FIG_WAIT = 7.0;
+    const FIG_PERIOD = FIG_FORM + FIG_HOLD + FIG_DISS + FIG_WAIT;
+    const FIG_CAP = 96;   // max vertices reserved per slot (LineSegments → pairs)
+
+    function buildFigures() {
+      const TAU = Math.PI * 2;
+      // arc helper → polyline points along a circle segment
+      const arc = (cx, cy, r, a0, a1, n) => {
+        const p = [];
+        for (let i = 0; i <= n; i++) { const a = a0 + (a1 - a0) * i / n; p.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]); }
+        return p;
+      };
+      // turn a list of strokes (each a polyline) into LineSegments endpoints,
+      // so the pen lifts between strokes instead of drawing ugly connectors.
+      const glyph = (...strokes) => {
+        const v = [];
+        strokes.forEach(st => { for (let i = 0; i < st.length - 1; i++) { v.push(st[i], st[i + 1]); } });
+        return v;
+      };
+
+      // 11 trading / banking glyphs, normalised to roughly ±0.6.
+      FIGURES = [
+        /* dollar  */ glyph([[0,0.62],[0,-0.62]],
+                            [[0.22,0.42],[0.04,0.52],[-0.16,0.43],[-0.2,0.26],[-0.02,0.13],[0.16,0.0],[0.22,-0.18],[0.04,-0.36],[-0.18,-0.34],[-0.26,-0.18]]),
+        /* euro    */ glyph(arc(0.08,0,0.42,Math.PI*0.30,Math.PI*1.70,16),
+                            [[-0.34,0.12],[0.2,0.12]], [[-0.36,-0.1],[0.18,-0.1]]),
+        /* pound   */ glyph([[0.22,0.46],[0.02,0.52],[-0.15,0.42],[-0.15,-0.18],[-0.3,-0.4]],
+                            [[-0.34,-0.44],[0.3,-0.44]], [[-0.3,0.02],[0.16,0.02]]),
+        /* yen     */ glyph([[-0.26,0.5],[0,0.08],[0.26,0.5]], [[0,0.08],[0,-0.46]],
+                            [[-0.22,-0.06],[0.22,-0.06]], [[-0.22,-0.26],[0.22,-0.26]]),
+        /* bitcoin */ glyph([[-0.14,0.5],[-0.14,-0.5]],
+                            [[-0.14,0.5],[0.16,0.4],[0.16,0.2],[-0.14,0.08]],
+                            [[-0.14,0.08],[0.22,-0.02],[0.22,-0.32],[-0.14,-0.42]],
+                            [[-0.02,0.62],[-0.02,0.5]], [[-0.02,-0.5],[-0.02,-0.62]]),
+        /* percent */ glyph([[-0.32,-0.36],[0.32,0.36]],
+                            arc(-0.22,0.3,0.13,0,TAU,12), arc(0.22,-0.3,0.13,0,TAU,12)),
+        /* trendUp */ glyph([[-0.42,0.42],[-0.42,-0.42],[0.42,-0.42]],
+                            [[-0.3,-0.2],[-0.02,0.06],[0.12,-0.06],[0.38,0.32]],
+                            [[0.18,0.32],[0.38,0.32],[0.38,0.12]]),
+        /* bars    */ glyph([[-0.42,-0.4],[0.42,-0.4]],
+                            [[-0.3,-0.4],[-0.3,0.0]], [[-0.1,-0.4],[-0.1,0.26]],
+                            [[0.1,-0.4],[0.1,-0.12]], [[0.3,-0.4],[0.3,0.36]]),
+        /* chart   */ glyph([[-0.45,0.4],[-0.45,-0.34],[0.45,-0.34]],
+                            [[-0.4,-0.2],[-0.18,0.06],[0.02,-0.08],[0.22,0.22],[0.42,0.34]]),
+        /* bank    */ glyph([[-0.48,-0.38],[0.48,-0.38]], [[-0.46,0.14],[0.46,0.14]],
+                            [[-0.5,0.16],[0,0.46],[0.5,0.16]],
+                            [[-0.36,-0.38],[-0.36,0.14]], [[-0.18,-0.38],[-0.18,0.14]],
+                            [[0,-0.38],[0,0.14]], [[0.18,-0.38],[0.18,0.14]], [[0.36,-0.38],[0.36,0.14]]),
+        /* coin    */ glyph(arc(0,0,0.44,0,TAU,18), [[0,0.27],[0,-0.27]]),
+      ];
+
+      // Anchor slots around the screen, all clear of the body column.
+      const SLOTS = [
+        { x:-13, y:19.5, z:-9,  s:2.4 },
+        { x: 13, y:19.5, z:-9,  s:2.4 },
+        { x:-16.5, y:11, z:-10, s:2.7 },
+        { x: 16.5, y:11, z:-10, s:2.7 },
+        { x:-11.5, y:3.5, z:-8, s:2.2 },
+        { x: 11.5, y:3.5, z:-8, s:2.2 },
+      ];
+
+      figGroup = new THREE.Group();
+      figSlots = [];
+      SLOTS.forEach((slot, i) => {
+        const geom = new THREE.BufferGeometry();
+        geom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(FIG_CAP * 3), 3));
+        const mat = new THREE.LineBasicMaterial({ color: colBright(), transparent: true, opacity: 0, depthWrite: false });
+        figMats.push(mat);
+        const line = new THREE.LineSegments(geom, mat);   // pen-up between strokes
+        line.visible = false;
+        line.renderOrder = -1;            // sit behind the holograms
+        figGroup.add(line);
+        figSlots.push({ slot, geom, mat, line, count: 0, delay: i * 0.07 });
+      });
+      scene.add(figGroup);
+    }
+
+    // Lay a fresh set of glyphs into the slots, rotating through the pool so
+    // every figure type cycles into view over successive rounds.
+    function assignFigureCycle(idx) {
+      figSlots.forEach((fs, i) => {
+        const pts = FIGURES[(idx * figSlots.length + i) % FIGURES.length];
+        const arr = fs.geom.attributes.position.array;
+        const n = Math.min(pts.length, FIG_CAP);
+        for (let p = 0; p < n; p++) {
+          arr[p*3]   = fs.slot.x + pts[p][0] * fs.slot.s;
+          arr[p*3+1] = fs.slot.y + pts[p][1] * fs.slot.s;
+          arr[p*3+2] = fs.slot.z;
+        }
+        fs.count = n;                       // total vertices (even → segment pairs)
+        fs.geom.attributes.position.needsUpdate = true;
+        fs.geom.setDrawRange(0, 0);
+      });
+    }
+
+    function updateFigures(t) {
+      if (!figGroup || t < FIG_START) return;
+      const cyc = t - FIG_START;
+      const idx = Math.floor(cyc / FIG_PERIOD);
+      const local = cyc - idx * FIG_PERIOD;
+      if (idx !== figCycle) { assignFigureCycle(idx); figCycle = idx; }
+
+      figSlots.forEach(fs => {
+        const lt = local - fs.delay;       // staggered start per slot
+        let drawFrac, op;
+        if (lt < 0)                              { drawFrac = 0; op = 0; }
+        else if (lt < FIG_FORM)                  { drawFrac = lt / FIG_FORM; op = 1; }
+        else if (lt < FIG_FORM + FIG_HOLD)       { drawFrac = 1; op = 1; }
+        else if (lt < FIG_FORM + FIG_HOLD + FIG_DISS) { drawFrac = 1; op = 1 - (lt - FIG_FORM - FIG_HOLD) / FIG_DISS; }
+        else                                     { drawFrac = 0; op = 0; }
+
+        // reveal whole segments (pairs of vertices) so the glyph draws itself
+        const segs = (fs.count / 2) | 0;
+        const reveal = Math.max(0, Math.floor(segs * drawFrac)) * 2;
+        fs.geom.setDrawRange(0, reveal);
+        fs.mat.opacity = op * (isLight() ? 0.6 : 0.5);
+        fs.line.visible = op > 0.01 && reveal >= 2;
+      });
+    }
+
     function recolor() {
       const light = isLight(), d = colDim(), b = colBright();
       baseMats.forEach(m => m.color.setHex(d));
@@ -5745,6 +5872,7 @@
         o.mat.opacity = light ? o.light : o.dark;
         o.mat.needsUpdate = true;
       });
+      figMats.forEach(m => { m.color.setHex(b); m.blending = blend; m.needsUpdate = true; });
       if (brainMesh) {
         brainMesh.material.blending = blend;
         brainMesh.material.uniforms.uOpacity.value = light ? 0.05 : 0.09;
@@ -5975,6 +6103,7 @@
       }
 
       updateNet();
+      updateFigures(t);
       projectLabels();
       renderer.render(scene, camera);
     }
@@ -6000,6 +6129,7 @@
       clock = new THREE.Clock();
 
       buildNet();                       // neural-network backdrop
+      buildFigures();                   // background ghost glyphs
       buildNodes();
       lastLight = isLight();
 
