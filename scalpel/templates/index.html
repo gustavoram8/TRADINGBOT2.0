@@ -5368,13 +5368,14 @@
     //    Models in use (both CC-BY, attribution in footer):
     //      • Brain → "FreeSurfer MRI Brain" (CC BY 4.0, dgallichan, Sketchfab)
     //      • Head  → Lee Perry-Smith head scan (CC BY 3.0, Infinite Realities / three.js)
+    // Cache-buster: bump MODEL_VER whenever a .glb is re-sculpted so browsers
+    // re-download instead of serving a stale cached mesh.
+    const MODEL_VER = '7';
     const BRAIN_SOURCES = [
-      '/static/models/brain.glb',
-      '/static/models/brain.obj',
+      '/static/models/brain.glb?v=' + MODEL_VER,
     ];
     const HEAD_SOURCES = [
-      '/static/models/head.glb',
-      '/static/models/head.obj',
+      '/static/models/head.glb?v=' + MODEL_VER,
     ];
 
     const HEAD_Y = 7.8;   // bust sits below the floating brain
@@ -5469,7 +5470,7 @@
     // For glTF we fetch first so a missing file 404s cheaply (and we only pull the
     // GLTFLoader script when a real file is actually present).
     function loadModelGeo(url) {
-      const lower = url.toLowerCase();
+      const lower = url.toLowerCase().split('?')[0];   // ignore cache-buster query
       if (lower.endsWith('.glb') || lower.endsWith('.gltf')) {
         return fetch(url)
           .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); })
