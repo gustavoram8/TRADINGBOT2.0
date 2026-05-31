@@ -5538,7 +5538,7 @@
         color: colBright(), transparent: true, opacity: 0.5, depthWrite: false,
       });
       brightMats.push(wireMat);
-      holoLineMats.push({ mat: wireMat, dark: 0.38, light: 0.46 });
+      holoLineMats.push({ mat: wireMat, dark: 0.25, light: 0.46 });
       g.add(new THREE.LineSegments(wfGeo, wireMat));
 
       // outer bloom halo — the same edges scaled out a hair, very faint
@@ -5546,7 +5546,7 @@
         color: colBright(), transparent: true, opacity: 0.16, depthWrite: false,
       });
       brightMats.push(glowMat);
-      holoLineMats.push({ mat: glowMat, dark: 0.08, light: 0.07 });
+      holoLineMats.push({ mat: glowMat, dark: 0.04, light: 0.07 });
       const glowWire = new THREE.LineSegments(wfGeo, glowMat);
       glowWire.scale.set(1.025, 1.025, 1.025);
       g.add(glowWire);
