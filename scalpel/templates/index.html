@@ -1719,6 +1719,43 @@
     .quiz-action-btn:hover { opacity: .88; }
     .quiz-action-btn.secondary { background: transparent; color: var(--accent); }
 
+    /* ── Quiz progression map ── */
+    .quiz-prog-map { margin-bottom: 28px; }
+    .quiz-prog-method { margin-bottom: 20px; }
+    .quiz-prog-method-label { font-size: 11px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+    .quiz-prog-levels { display: flex; gap: 10px; flex-wrap: wrap; }
+    .quiz-prog-card { flex: 1; min-width: 140px; border: 1px solid var(--border2);
+      border-radius: 10px; padding: 12px 14px; cursor: pointer; transition: all .15s;
+      background: var(--card); position: relative; }
+    .quiz-prog-card:hover:not(.locked) { border-color: var(--accent); }
+    .quiz-prog-card.locked { opacity: .45; cursor: not-allowed; }
+    .quiz-prog-card.done { border-color: #22c55e; background: rgba(34,197,94,.05); }
+    .quiz-prog-card .pc-level { font-size: 12px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .06em; color: var(--muted); }
+    .quiz-prog-card.done .pc-level { color: #22c55e; }
+    .quiz-prog-card .pc-check { position: absolute; top: 10px; right: 12px; font-size: 16px; }
+    .quiz-prog-card .pc-score { font-size: 11px; color: var(--muted); margin-top: 4px; }
+    .quiz-prog-card .pc-lock  { position: absolute; top: 10px; right: 12px; font-size: 13px; color: var(--muted); }
+    .quiz-prog-card .pc-weak  { font-size: 10px; color: #f59e0b; margin-top: 4px; }
+    .quiz-prog-title { font-size: 19px; font-weight: 700; margin-bottom: 4px; }
+    .quiz-prog-sub   { font-size: 13px; color: var(--muted); margin-bottom: 22px; }
+
+    /* SVG chart inside questions */
+    .quiz-chart-svg-wrap { margin-bottom: 20px; border-radius: 10px; overflow: hidden;
+      border: 1px solid var(--border2); background: var(--card); }
+    .quiz-chart-svg-wrap svg { display: block; width: 100%; height: auto; }
+    .quiz-chart-svg-caption { font-size: 11px; color: var(--muted); padding: 7px 12px; }
+
+    /* weak-topics alert on results */
+    .quiz-weak-alert { background: rgba(245,158,11,.07); border: 1px solid rgba(245,158,11,.3);
+      border-radius: 8px; padding: 12px 14px; margin-bottom: 18px; }
+    .quiz-weak-alert-title { font-size: 12px; font-weight: 700; color: #f59e0b; margin-bottom: 6px;
+      text-transform: uppercase; letter-spacing: .06em; }
+    .quiz-weak-topic-tag { display: inline-block; font-size: 11px; font-weight: 600;
+      background: rgba(245,158,11,.14); color: #d97706; border-radius: 6px;
+      padding: 3px 9px; margin: 2px 3px 2px 0; }
+
     .syn-loading {
       position: absolute; inset: 0; z-index: 5; display: flex; align-items: center;
       justify-content: center; flex-direction: column; gap: 16px; color: var(--muted);
@@ -2228,11 +2265,23 @@
     <!-- Real quiz app — shown only for Premium members -->
     <div class="quiz-app" id="quiz-app" style="display:none;">
 
-      <!-- ── SCREEN 1: Setup ── -->
-      <div id="quiz-setup">
+      <!-- ── SCREEN 0: Progress map ── -->
+      <div id="quiz-home">
         <div class="quiz-header">
           <div class="quiz-h1" data-i18n="quiz.heading">Trading Quiz</div>
-          <div class="quiz-sub" data-i18n="quiz.subheading">Customize your session before starting</div>
+          <div class="quiz-sub" data-i18n="quiz.subheading">Complete each level to unlock the next. Pass with ≥ 60 % to advance.</div>
+        </div>
+        <div class="quiz-prog-map" id="quiz-prog-map">
+          <!-- populated by JS -->
+        </div>
+        <button class="quiz-start-btn" id="quiz-custom-btn" data-i18n="quiz.customSession">Custom session →</button>
+      </div>
+
+      <!-- ── SCREEN 1: Setup ── -->
+      <div id="quiz-setup" style="display:none;">
+        <div class="quiz-header">
+          <div class="quiz-prog-title" id="quiz-setup-title">ICT — Beginner</div>
+          <div class="quiz-prog-sub" data-i18n="quiz.subheading">Customize your session before starting</div>
         </div>
         <div class="quiz-setup-grid">
 
@@ -2246,8 +2295,8 @@
 
           <div class="quiz-section-label" data-i18n="quiz.yourLevel">Your level</div>
           <div class="quiz-chips" id="quiz-level">
-            <button class="qchip" data-val="beginner" data-i18n="quiz.lv.beginner">Beginner</button>
-            <button class="qchip active" data-val="intermediate" data-i18n="quiz.lv.intermediate">Intermediate</button>
+            <button class="qchip active" data-val="beginner" data-i18n="quiz.lv.beginner">Beginner</button>
+            <button class="qchip" data-val="intermediate" data-i18n="quiz.lv.intermediate">Intermediate</button>
             <button class="qchip" data-val="advanced" data-i18n="quiz.lv.advanced">Advanced</button>
           </div>
 
@@ -2264,7 +2313,10 @@
           </div>
         </div>
 
-        <button class="quiz-start-btn" id="quiz-start-btn" data-i18n="quiz.start">Start Quiz →</button>
+        <div style="display:flex;gap:10px;margin-top:30px;">
+          <button class="quiz-action-btn secondary" id="quiz-back-home-btn" style="flex:0 0 auto;padding:13px 18px;" data-i18n="quiz.back">← Back</button>
+          <button class="quiz-start-btn" id="quiz-start-btn" style="margin-top:0;flex:1;" data-i18n="quiz.start">Start Quiz →</button>
+        </div>
       </div>
 
       <!-- ── SCREEN 2: Question ── -->
@@ -2283,6 +2335,9 @@
         </div>
 
         <div class="quiz-q-text" id="quiz-q-text"></div>
+
+        <!-- SVG chart (generated inline for visual questions) -->
+        <div class="quiz-chart-svg-wrap" id="quiz-chart-svg-wrap" style="display:none;"></div>
 
         <div class="quiz-chart-wrap" id="quiz-chart-wrap" style="display:none;">
           <img id="quiz-chart-img" class="quiz-chart-img" src="" alt="Chart" />
@@ -2307,10 +2362,14 @@
           <div class="quiz-score-num" id="quiz-score-num">0/10</div>
         </div>
         <div class="quiz-score-label" id="quiz-score-label"></div>
+        <div class="quiz-weak-alert" id="quiz-weak-alert" style="display:none;">
+          <div class="quiz-weak-alert-title" data-i18n="quiz.weakTitle">Reinforce these topics</div>
+          <div id="quiz-weak-tags"></div>
+        </div>
         <div class="quiz-results-breakdown" id="quiz-results-breakdown"></div>
         <div class="quiz-results-actions">
-          <button class="quiz-action-btn secondary" id="quiz-retry-btn">Try Again</button>
-          <button class="quiz-action-btn" id="quiz-new-btn">New Quiz</button>
+          <button class="quiz-action-btn secondary" id="quiz-retry-btn" data-i18n="quiz.tryAgain">Try Again</button>
+          <button class="quiz-action-btn" id="quiz-new-btn" data-i18n="quiz.newQuiz">New Quiz</button>
         </div>
       </div>
 
@@ -2792,6 +2851,11 @@
       'quiz.timesUp': "Time's up!",
       'quiz.tryAgain': 'Try Again',
       'quiz.newQuiz': 'New Quiz',
+      'quiz.back': '← Back',
+      'quiz.customSession': 'Custom session →',
+      'quiz.best': 'Best',
+      'quiz.reinforce': 'Reinforce weak topics',
+      'quiz.weakTitle': 'Reinforce these topics',
       'quiz.excellent': 'Excellent work! 🎯',
       'quiz.good': 'Good effort! 📈',
       'quiz.keepStudying': 'Keep studying! 📚',
@@ -2982,6 +3046,11 @@
       'quiz.timesUp': '¡Se acabó el tiempo!',
       'quiz.tryAgain': 'Intentar de nuevo',
       'quiz.newQuiz': 'Nuevo Quiz',
+      'quiz.back': '← Volver',
+      'quiz.customSession': 'Sesión personalizada →',
+      'quiz.best': 'Mejor',
+      'quiz.reinforce': 'Reforzar temas débiles',
+      'quiz.weakTitle': 'Refuerza estos temas',
       'quiz.excellent': '¡Excelente trabajo! 🎯',
       'quiz.good': '¡Buen esfuerzo! 📈',
       'quiz.keepStudying': '¡Sigue estudiando! 📚',
@@ -3172,6 +3241,11 @@
       'quiz.timesUp': 'Temps écoulé !',
       'quiz.tryAgain': 'Réessayer',
       'quiz.newQuiz': 'Nouveau Quiz',
+      'quiz.back': '← Retour',
+      'quiz.customSession': 'Session personnalisée →',
+      'quiz.best': 'Meilleur',
+      'quiz.reinforce': 'Renforcer les sujets faibles',
+      'quiz.weakTitle': 'Renforcez ces sujets',
       'quiz.excellent': 'Excellent travail ! 🎯',
       'quiz.good': 'Bon effort ! 📈',
       'quiz.keepStudying': 'Continuez à étudier ! 📚',
@@ -3362,6 +3436,11 @@
       'quiz.timesUp': 'Tempo esgotado!',
       'quiz.tryAgain': 'Tentar de novo',
       'quiz.newQuiz': 'Novo Quiz',
+      'quiz.back': '← Voltar',
+      'quiz.customSession': 'Sessão personalizada →',
+      'quiz.best': 'Melhor',
+      'quiz.reinforce': 'Reforçar tópicos fracos',
+      'quiz.weakTitle': 'Reforce estes tópicos',
       'quiz.excellent': 'Excelente trabalho! 🎯',
       'quiz.good': 'Bom esforço! 📈',
       'quiz.keepStudying': 'Continue estudando! 📚',
@@ -6065,15 +6144,52 @@
         smc:      ['Structure','Confluences','Liquidity'],
       };
 
+      const METHOD_LABELS = {
+        ict:'ICT', patterns:'Pattern Trading', wyckoff:'Wyckoff', smc:'SMC'
+      };
+      const LEVELS = ['beginner','intermediate','advanced'];
+
+      // ── Server-side progress cache ──
+      let progCache = [];   // [{methodology, level, completed, best_score, total_q, weak_topics}]
+
+      function progFor(m, lv) {
+        return progCache.find(r => r.methodology === m && r.level === lv) || null;
+      }
+      function isLocked(m, lv) {
+        const idx = LEVELS.indexOf(lv);
+        if (idx === 0) return false;
+        const prev = progFor(m, LEVELS[idx-1]);
+        return !prev || !prev.completed;
+      }
+
+      async function loadProgress() {
+        try {
+          const res = await fetch('/api/quiz/progress');
+          if (res.ok) progCache = await res.json();
+        } catch(e) {}
+      }
+
+      async function saveProgress(methodology, level, score, total, weakTopics) {
+        try {
+          await fetch('/api/quiz/complete', {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({methodology, level, score, total, weak_topics: weakTopics})
+          });
+          await loadProgress();
+        } catch(e) {}
+      }
+
       // ── State ──
       let qState = {
-        methodology:'ict', level:'intermediate', topics:[], count:10,
+        methodology:'ict', level:'beginner', topics:[], count:10,
         questions:[], idx:0, score:0, timer:null, timeLeft:60,
-        answers:[],   // {q, correct, chosen}
+        answers:[], isProgression: false,
       };
 
       // ── DOM refs ──
       const screens = {
+        home:     document.getElementById('quiz-home'),
         setup:    document.getElementById('quiz-setup'),
         question: document.getElementById('quiz-question'),
         results:  document.getElementById('quiz-results'),
@@ -6082,6 +6198,60 @@
       function showScreen(name) {
         Object.values(screens).forEach(s => { if(s) s.style.display='none'; });
         if(screens[name]) screens[name].style.display='';
+        if(name === 'home') renderProgMap();
+      }
+
+      // ── Progress map ──
+      function renderProgMap() {
+        const wrap = document.getElementById('quiz-prog-map');
+        if(!wrap) return;
+        wrap.innerHTML = Object.entries(METHOD_LABELS).map(([m, label]) => {
+          const cards = LEVELS.map(lv => {
+            const prog   = progFor(m, lv);
+            const locked = isLocked(m, lv);
+            const done   = prog && prog.completed;
+            const pct    = prog && prog.total_q ? Math.round(prog.best_score/prog.total_q*100) : null;
+            const weak   = prog && prog.weak_topics && prog.weak_topics.length;
+            let cls = 'quiz-prog-card';
+            if (locked) cls += ' locked';
+            else if (done) cls += ' done';
+            return `<div class="${cls}" data-m="${m}" data-lv="${lv}" ${locked?'':'style="cursor:pointer;"'}>
+              <div class="pc-level">${trLevel(lv)}</div>
+              ${done ? `<span class="pc-check">✅</span>` : locked ? `<span class="pc-lock">🔒</span>` : ''}
+              ${pct !== null ? `<div class="pc-score">${T('quiz.best')||'Best'}: ${pct}%</div>` : ''}
+              ${weak && done ? `<div class="pc-weak">⚠ ${T('quiz.reinforce')||'Reinforce weak topics'}</div>` : ''}
+            </div>`;
+          }).join('');
+          return `<div class="quiz-prog-method">
+            <div class="quiz-prog-method-label">${label}</div>
+            <div class="quiz-prog-levels">${cards}</div>
+          </div>`;
+        }).join('');
+
+        // click handler
+        wrap.querySelectorAll('.quiz-prog-card:not(.locked)').forEach(card => {
+          card.addEventListener('click', () => {
+            qState.methodology = card.dataset.m;
+            qState.level = card.dataset.lv;
+            qState.isProgression = true;
+            openSetupFor(qState.methodology, qState.level);
+          });
+        });
+      }
+
+      function openSetupFor(m, lv) {
+        // pre-select chips
+        document.querySelectorAll('#quiz-methodology .qchip').forEach(c => {
+          c.classList.toggle('active', c.dataset.val === m);
+        });
+        document.querySelectorAll('#quiz-level .qchip').forEach(c => {
+          c.classList.toggle('active', c.dataset.val === lv);
+        });
+        // update title
+        const title = document.getElementById('quiz-setup-title');
+        if(title) title.textContent = `${METHOD_LABELS[m] || m} — ${trLevel(lv)}`;
+        renderTopics();
+        showScreen('setup');
       }
 
       // ── Chip groups (single-select) ──
@@ -6094,8 +6264,14 @@
           el.querySelectorAll('.qchip').forEach(c => c.classList.remove('active'));
           chip.classList.add('active');
           qState[key] = chip.dataset.val;
-          if(key === 'methodology') renderTopics();
+          if(key === 'methodology') { renderTopics(); updateSetupTitle(); }
+          if(key === 'level') updateSetupTitle();
         });
+      }
+
+      function updateSetupTitle() {
+        const title = document.getElementById('quiz-setup-title');
+        if(title) title.textContent = `${METHOD_LABELS[qState.methodology]||qState.methodology} — ${trLevel(qState.level)}`;
       }
 
       // ── Topic chips (multi-select) ──
@@ -6115,26 +6291,32 @@
         });
       }
 
-      // ── Build question list ──
+      // ── Build question list (no repeats within same m+lv bank) ──
       function buildQuestions() {
         let pool = QUESTION_BANK.filter(q =>
           q.m === qState.methodology &&
           q.lv === qState.level &&
           (qState.topics.length === 0 || qState.topics.includes(q.topic))
         );
-        // fallback: include adjacent levels if not enough questions
         if(pool.length < 3) {
           pool = QUESTION_BANK.filter(q =>
             q.m === qState.methodology &&
             (qState.topics.length === 0 || qState.topics.includes(q.topic))
           );
         }
-        // shuffle
-        for(let i = pool.length-1; i > 0; i--) {
-          const j = Math.floor(Math.random()*(i+1));
-          [pool[i],pool[j]] = [pool[j],pool[i]];
-        }
+        for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
         return pool.slice(0, parseInt(qState.count));
+      }
+
+      // ── SVG chart renderer ──
+      function renderChartSVG(q) {
+        const wrap = document.getElementById('quiz-chart-svg-wrap');
+        if(!wrap) return;
+        if(!q.svg) { wrap.style.display='none'; return; }
+        wrap.style.display='';
+        const cap = wrap.querySelector('.quiz-chart-svg-caption');
+        wrap.querySelector('svg').outerHTML; // replaced below
+        wrap.innerHTML = q.svg + (q.chartCaption ? `<div class="quiz-chart-svg-caption">${tr(q.chartCaption)}</div>` : '');
       }
 
       // ── Timer ──
@@ -6144,112 +6326,93 @@
         if(qState.timer) clearInterval(qState.timer);
         qState.timer = setInterval(() => {
           qState.timeLeft--;
-          const m = Math.floor(qState.timeLeft/60);
-          const s = String(qState.timeLeft%60).padStart(2,'0');
-          if(el) { el.textContent = `${m}:${s}`; el.classList.toggle('danger', qState.timeLeft <= 10); }
-          if(qState.timeLeft <= 0) { clearInterval(qState.timer); autoAdvance(); }
-        }, 1000);
+          const m=Math.floor(qState.timeLeft/60), s=String(qState.timeLeft%60).padStart(2,'0');
+          if(el){el.textContent=`${m}:${s}`;el.classList.toggle('danger',qState.timeLeft<=10);}
+          if(qState.timeLeft<=0){clearInterval(qState.timer);autoAdvance();}
+        },1000);
       }
-
-      function stopTimer() { if(qState.timer) { clearInterval(qState.timer); qState.timer=null; } }
+      function stopTimer(){if(qState.timer){clearInterval(qState.timer);qState.timer=null;}}
 
       // ── Render question ──
       function renderQuestion() {
-        const q = qState.questions[qState.idx];
+        const q     = qState.questions[qState.idx];
         const total = qState.questions.length;
 
-        // progress
-        const fill = document.getElementById('quiz-progress-fill');
-        const lbl  = document.getElementById('quiz-progress-label');
-        if(fill) fill.style.width = `${(qState.idx/total)*100}%`;
-        if(lbl)  lbl.textContent  = `${qState.idx+1} / ${total}`;
+        const fill=document.getElementById('quiz-progress-fill');
+        const lbl=document.getElementById('quiz-progress-label');
+        if(fill) fill.style.width=`${(qState.idx/total)*100}%`;
+        if(lbl)  lbl.textContent=`${qState.idx+1} / ${total}`;
 
-        // pills
-        const tp = document.getElementById('quiz-topic-pill');
-        const lp = document.getElementById('quiz-level-pill');
-        if(tp) tp.textContent = trTopic(q.topic);
-        if(lp) lp.textContent = trLevel(q.lv);
+        const tp=document.getElementById('quiz-topic-pill');
+        const lp=document.getElementById('quiz-level-pill');
+        if(tp) tp.textContent=trTopic(q.topic);
+        if(lp) lp.textContent=trLevel(q.lv);
 
-        // question text
-        const qt = document.getElementById('quiz-q-text');
-        if(qt) qt.textContent = tr(q.q);
+        const qt=document.getElementById('quiz-q-text');
+        if(qt) qt.textContent=tr(q.q);
 
-        // chart (optional)
-        const cw = document.getElementById('quiz-chart-wrap');
-        if(cw) {
-          if(q.chart) {
-            document.getElementById('quiz-chart-img').src = q.chart.src;
-            document.getElementById('quiz-chart-caption').textContent = tr(q.chart.caption)||'';
-            cw.style.display='';
-          } else { cw.style.display='none'; }
+        // SVG chart
+        let svgWrap = document.getElementById('quiz-chart-svg-wrap');
+        if(!svgWrap) {
+          svgWrap = document.createElement('div');
+          svgWrap.id = 'quiz-chart-svg-wrap';
+          svgWrap.className = 'quiz-chart-svg-wrap';
+          qt.parentNode.insertBefore(svgWrap, qt.nextSibling);
         }
+        if(q.svg) {
+          svgWrap.style.display='';
+          svgWrap.innerHTML = q.svg + (q.chartCaption ? `<div class="quiz-chart-svg-caption">${tr(q.chartCaption)}</div>` : '');
+        } else { svgWrap.style.display='none'; }
 
-        // options — shuffle each time (keep original index so we can re-translate
-        // in place if the language changes mid-question)
-        const opts = q.opts.map((o, oi) => ({ ...o, oi }));
+        // static img chart (optional fallback)
+        const cw=document.getElementById('quiz-chart-wrap');
+        if(cw) cw.style.display='none';
+
+        const opts=q.opts.map((o,oi)=>({...o,oi}));
         for(let i=opts.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[opts[i],opts[j]]=[opts[j],opts[i]];}
-        const ow = document.getElementById('quiz-options');
-        if(ow) {
-          ow.innerHTML = opts.map((o,i) =>
-            `<button class="quiz-opt" data-ok="${o.ok}" data-orig-idx="${o.oi}">${tr(o.t)}</button>`
-          ).join('');
-          ow.querySelectorAll('.quiz-opt').forEach(btn => {
-            btn.addEventListener('click', () => handleAnswer(btn, q));
-          });
+        const ow=document.getElementById('quiz-options');
+        if(ow){
+          ow.innerHTML=opts.map(o=>`<button class="quiz-opt" data-ok="${o.ok}" data-orig-idx="${o.oi}">${tr(o.t)}</button>`).join('');
+          ow.querySelectorAll('.quiz-opt').forEach(btn=>btn.addEventListener('click',()=>handleAnswer(btn,q)));
         }
 
-        // hide feedback & next
-        const fb = document.getElementById('quiz-feedback');
-        const nb = document.getElementById('quiz-next-btn');
+        const fb=document.getElementById('quiz-feedback');
+        const nb=document.getElementById('quiz-next-btn');
         if(fb) fb.style.display='none';
         if(nb) nb.style.display='none';
-
-        // timer
-        const te = document.getElementById('quiz-timer');
-        if(te) { te.textContent='1:00'; te.classList.remove('danger'); }
+        const te=document.getElementById('quiz-timer');
+        if(te){te.textContent='1:00';te.classList.remove('danger');}
         startTimer();
       }
 
       function handleAnswer(btn, q) {
         stopTimer();
-        const correct = btn.dataset.ok === 'true';
+        const correct = btn.dataset.ok==='true';
         if(correct) qState.score++;
-        qState.answers.push({ q:q.q, topic:q.topic, correct, chosen:btn.textContent });
-
-        // colour all buttons
-        document.querySelectorAll('.quiz-opt').forEach(b => {
-          b.disabled = true;
+        qState.answers.push({q:q.q, topic:q.topic, correct, chosen:btn.textContent});
+        document.querySelectorAll('.quiz-opt').forEach(b=>{
+          b.disabled=true;
           if(b.dataset.ok==='true') b.classList.add('correct');
-          else if(b === btn && !correct) b.classList.add('wrong');
+          else if(b===btn&&!correct) b.classList.add('wrong');
         });
-
-        // feedback
-        const fb = document.getElementById('quiz-feedback');
-        const fi = document.getElementById('quiz-feedback-icon');
-        const ft = document.getElementById('quiz-feedback-text');
-        const fe = document.getElementById('quiz-feedback-exp');
-        if(fb && fi && ft && fe) {
-          fi.textContent = correct ? '✅' : '❌';
-          ft.textContent = correct ? T('quiz.correct') : T('quiz.incorrect');
-          fe.textContent = tr(q.exp);
-          fb.style.display = '';
+        const fb=document.getElementById('quiz-feedback');
+        const fi=document.getElementById('quiz-feedback-icon');
+        const ft=document.getElementById('quiz-feedback-text');
+        const fe=document.getElementById('quiz-feedback-exp');
+        if(fb&&fi&&ft&&fe){
+          fi.textContent=correct?'✅':'❌';
+          ft.textContent=correct?T('quiz.correct'):T('quiz.incorrect');
+          fe.textContent=tr(q.exp);
+          fb.style.display='';
         }
-
-        const nb = document.getElementById('quiz-next-btn');
-        if(nb) {
-          nb.textContent = qState.idx+1 < qState.questions.length ? T('quiz.next') : T('quiz.seeResults');
-          nb.style.display = '';
-        }
+        const nb=document.getElementById('quiz-next-btn');
+        if(nb){nb.textContent=qState.idx+1<qState.questions.length?T('quiz.next'):T('quiz.seeResults');nb.style.display='';}
       }
 
       function autoAdvance() {
-        // time ran out — mark as wrong, show answer
-        document.querySelectorAll('.quiz-opt').forEach(b => {
-          b.disabled = true;
-          if(b.dataset.ok==='true') b.classList.add('correct');
-        });
-        const q = qState.questions[qState.idx];
-        qState.answers.push({ q:q.q, topic:q.topic, correct:false, chosen:'—' });
+        document.querySelectorAll('.quiz-opt').forEach(b=>{b.disabled=true;if(b.dataset.ok==='true')b.classList.add('correct');});
+        const q=qState.questions[qState.idx];
+        qState.answers.push({q:q.q,topic:q.topic,correct:false,chosen:'—'});
         const fb=document.getElementById('quiz-feedback');
         const fi=document.getElementById('quiz-feedback-icon');
         const ft=document.getElementById('quiz-feedback-text');
@@ -6261,36 +6424,49 @@
 
       function nextQuestion() {
         qState.idx++;
-        if(qState.idx < qState.questions.length) { renderQuestion(); }
-        else { showResults(); }
+        if(qState.idx<qState.questions.length) renderQuestion();
+        else showResults();
       }
 
       // ── Results ──
-      function showResults() {
+      async function showResults() {
         showScreen('results');
         const total = qState.questions.length;
         const pct   = Math.round((qState.score/total)*100);
 
-        // animated arc (circumference of r=34 → 2π×34 ≈ 214)
-        const arc = document.getElementById('quiz-score-arc');
-        if(arc) setTimeout(()=>{ arc.setAttribute('stroke-dasharray',`${214*pct/100} 214`); },80);
+        const arc=document.getElementById('quiz-score-arc');
+        if(arc) setTimeout(()=>arc.setAttribute('stroke-dasharray',`${214*pct/100} 214`),80);
 
-        const sn = document.getElementById('quiz-score-num');
-        if(sn) sn.textContent = `${qState.score}/${total}`;
+        const sn=document.getElementById('quiz-score-num');
+        if(sn) sn.textContent=`${qState.score}/${total}`;
 
-        const sl = document.getElementById('quiz-score-label');
-        if(sl) sl.textContent = pct>=80?T('quiz.excellent'):pct>=60?T('quiz.good'):T('quiz.keepStudying');
+        const sl=document.getElementById('quiz-score-label');
+        if(sl) sl.textContent=pct>=80?T('quiz.excellent'):pct>=60?T('quiz.good'):T('quiz.keepStudying');
 
-        // breakdown by topic
-        const topicMap = {};
+        // compute weak topics (at least 1 wrong answer in that topic)
+        const topicMap={};
         qState.answers.forEach(a=>{
           if(!topicMap[a.topic]) topicMap[a.topic]={c:0,w:0};
           a.correct?topicMap[a.topic].c++:topicMap[a.topic].w++;
         });
-        const bd = document.getElementById('quiz-results-breakdown');
-        if(bd) bd.innerHTML = Object.entries(topicMap).map(([t,v])=>
+        const weakTopics = Object.entries(topicMap).filter(([,v])=>v.w>0).map(([t])=>t);
+
+        // breakdown
+        const bd=document.getElementById('quiz-results-breakdown');
+        if(bd) bd.innerHTML=Object.entries(topicMap).map(([t,v])=>
           `<div class="quiz-breakdown-row"><span>${trTopic(t)}</span><span><span class="qbr-correct">✓${v.c}</span> &nbsp; <span class="qbr-wrong">✗${v.w}</span></span></div>`
         ).join('');
+
+        // weak topics alert — always show if there are weak topics (even on pass)
+        const wa=document.getElementById('quiz-weak-alert');
+        const wt=document.getElementById('quiz-weak-tags');
+        if(wa&&wt&&weakTopics.length){
+          wt.innerHTML=weakTopics.map(t=>`<span class="quiz-weak-topic-tag">${trTopic(t)}</span>`).join('');
+          wa.style.display='';
+        } else if(wa) { wa.style.display='none'; }
+
+        // save to server
+        await saveProgress(qState.methodology, qState.level, qState.score, total, weakTopics);
       }
 
       // ── Bind setup chips & start ──
@@ -6299,66 +6475,53 @@
       bindChips('quiz-count','count');
       renderTopics();
 
-      const startBtn = document.getElementById('quiz-start-btn');
-      if(startBtn) startBtn.addEventListener('click', () => {
-        qState.questions = buildQuestions();
-        if(qState.questions.length === 0) {
-          alert(T('quiz.noQuestions'));
-          return;
-        }
-        qState.idx=0; qState.score=0; qState.answers=[];
-        showScreen('question');
-        renderQuestion();
+      document.getElementById('quiz-start-btn')?.addEventListener('click', () => {
+        qState.questions=buildQuestions();
+        if(qState.questions.length===0){alert(T('quiz.noQuestions'));return;}
+        qState.idx=0;qState.score=0;qState.answers=[];
+        showScreen('question');renderQuestion();
       });
 
-      const nextBtn = document.getElementById('quiz-next-btn');
-      if(nextBtn) nextBtn.addEventListener('click', nextQuestion);
-
-      const retryBtn = document.getElementById('quiz-retry-btn');
-      if(retryBtn) retryBtn.addEventListener('click', () => {
-        qState.questions = buildQuestions();
-        qState.idx=0; qState.score=0; qState.answers=[];
-        showScreen('question'); renderQuestion();
+      document.getElementById('quiz-back-home-btn')?.addEventListener('click',()=>showScreen('home'));
+      document.getElementById('quiz-custom-btn')?.addEventListener('click',()=>{
+        qState.isProgression=false;
+        updateSetupTitle();
+        showScreen('setup');
       });
+      document.getElementById('quiz-next-btn')?.addEventListener('click',nextQuestion);
+      document.getElementById('quiz-retry-btn')?.addEventListener('click',()=>{
+        qState.questions=buildQuestions();
+        qState.idx=0;qState.score=0;qState.answers=[];
+        showScreen('question');renderQuestion();
+      });
+      document.getElementById('quiz-new-btn')?.addEventListener('click',()=>showScreen('home'));
 
-      const newBtn = document.getElementById('quiz-new-btn');
-      if(newBtn) newBtn.addEventListener('click', () => { showScreen('setup'); });
+      // Load progress from server, then show home
+      loadProgress().then(()=>{ renderProgMap(); });
 
       window.Quiz = {
-        open() { showScreen('setup'); },
-        // Re-render dynamic content when the language changes. Topic chips are
-        // rebuilt preserving the current selection; an in-progress question has
-        // its visible text re-translated in place (options keep their order).
+        open() { loadProgress().then(()=>showScreen('home')); },
         relang() {
-          // rebuild topic chips, keeping selected values
-          const wrap = document.getElementById('quiz-topics');
-          if (wrap) {
-            const selected = new Set([...wrap.querySelectorAll('.qchip.active')].map(c => c.dataset.val));
-            wrap.querySelectorAll('.qchip').forEach(c => {
-              c.textContent = trTopic(c.dataset.val);
-              c.classList.toggle('active', selected.has(c.dataset.val));
-            });
+          renderProgMap();
+          const wrap=document.getElementById('quiz-topics');
+          if(wrap){
+            const selected=new Set([...wrap.querySelectorAll('.qchip.active')].map(c=>c.dataset.val));
+            wrap.querySelectorAll('.qchip').forEach(c=>{c.textContent=trTopic(c.dataset.val);c.classList.toggle('active',selected.has(c.dataset.val));});
           }
-          // if a question is on screen, re-translate its visible text in place
-          if (screens.question && screens.question.style.display !== 'none' && qState.questions.length) {
-            const q = qState.questions[qState.idx];
-            const tp = document.getElementById('quiz-topic-pill');
-            const lp = document.getElementById('quiz-level-pill');
-            const qt = document.getElementById('quiz-q-text');
-            if (tp) tp.textContent = trTopic(q.topic);
-            if (lp) lp.textContent = trLevel(q.lv);
-            if (qt) qt.textContent = tr(q.q);
-            // re-translate each option using its stored original index (order kept)
-            document.querySelectorAll('.quiz-opt').forEach(btn => {
-              const oi = btn.dataset.origIdx;
-              if (oi !== undefined && q.opts[oi]) btn.textContent = tr(q.opts[oi].t);
-            });
-            // re-translate feedback explanation if it's showing
-            const fb = document.getElementById('quiz-feedback');
-            const fe = document.getElementById('quiz-feedback-exp');
-            if (fb && fe && fb.style.display !== 'none') fe.textContent = tr(q.exp);
-            // chart caption
-            if (q.chart) { const cc = document.getElementById('quiz-chart-caption'); if (cc) cc.textContent = tr(q.chart.caption)||''; }
+          updateSetupTitle();
+          if(screens.question&&screens.question.style.display!=='none'&&qState.questions.length){
+            const q=qState.questions[qState.idx];
+            const tp=document.getElementById('quiz-topic-pill');
+            const lp=document.getElementById('quiz-level-pill');
+            const qt=document.getElementById('quiz-q-text');
+            if(tp) tp.textContent=trTopic(q.topic);
+            if(lp) lp.textContent=trLevel(q.lv);
+            if(qt) qt.textContent=tr(q.q);
+            document.querySelectorAll('.quiz-opt').forEach(btn=>{const oi=btn.dataset.origIdx;if(oi!==undefined&&q.opts[oi])btn.textContent=tr(q.opts[oi].t);});
+            const fb=document.getElementById('quiz-feedback');
+            const fe=document.getElementById('quiz-feedback-exp');
+            if(fb&&fe&&fb.style.display!=='none') fe.textContent=tr(q.exp);
+            if(q.chartCaption){const cc=document.querySelector('.quiz-chart-svg-caption');if(cc)cc.textContent=tr(q.chartCaption);}
           }
         }
       };

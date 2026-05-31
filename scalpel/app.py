@@ -1784,6 +1784,77 @@ def scout_chat():
         return jsonify({'error': 'api_error'}), 500
 
 
+# ── Quiz Progress (premium) ──
+class QuizProgress(db.Model):
+    """One row per (user, methodology, level) combination."""
+    id           = db.Column(db.Integer, primary_key=True)
+    user_id      = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    methodology  = db.Column(db.String(40), nullable=False)   # ict / smc / wyckoff / patterns
+    level        = db.Column(db.String(20), nullable=False)   # beginner / intermediate / advanced
+    completed    = db.Column(db.Boolean, default=False, nullable=False)
+    best_score   = db.Column(db.Integer, default=0)           # correct answers
+    total_q      = db.Column(db.Integer, default=0)
+    weak_topics  = db.Column(db.JSON, default=list)           # list of topic strings with errors
+    completed_at = db.Column(db.DateTime, nullable=True)
+    user         = db.relationship('User', backref='quiz_progress')
+    __table_args__ = (db.UniqueConstraint('user_id', 'methodology', 'level'),)
+
+
+@app.route('/api/quiz/progress')
+@login_required
+def quiz_get_progress():
+    if current_user.plan != 'premium' and not current_user.is_admin:
+        return jsonify({'error': 'premium_only'}), 403
+    rows = QuizProgress.query.filter_by(user_id=current_user.id).all()
+    return jsonify([{
+        'methodology': r.methodology,
+        'level':       r.level,
+        'completed':   r.completed,
+        'best_score':  r.best_score,
+        'total_q':     r.total_q,
+        'weak_topics': r.weak_topics or [],
+    } for r in rows])
+
+
+@app.route('/api/quiz/complete', methods=['POST'])
+@login_required
+def quiz_complete():
+    if current_user.plan != 'premium' and not current_user.is_admin:
+        return jsonify({'error': 'premium_only'}), 403
+    data = request.get_json(force=True)
+    methodology = data.get('methodology', '').strip().lower()
+    level       = data.get('level', '').strip().lower()
+    score       = int(data.get('score', 0))
+    total       = int(data.get('total', 0))
+    weak_topics = data.get('weak_topics', [])   # list of strings
+
+    valid_methods = {'ict', 'smc', 'wyckoff', 'patterns'}
+    valid_levels  = {'beginner', 'intermediate', 'advanced'}
+    if methodology not in valid_methods or level not in valid_levels:
+        return jsonify({'error': 'invalid_params'}), 400
+
+    row = QuizProgress.query.filter_by(
+        user_id=current_user.id, methodology=methodology, level=level
+    ).first()
+    pct = (score / total * 100) if total else 0
+    passed = pct >= 60
+
+    if row is None:
+        row = QuizProgress(user_id=current_user.id, methodology=methodology, level=level)
+        db.session.add(row)
+
+    if score > row.best_score:
+        row.best_score  = score
+        row.total_q     = total
+        row.weak_topics = weak_topics
+    if passed and not row.completed:
+        row.completed    = True
+        row.completed_at = datetime.now(timezone.utc)
+
+    db.session.commit()
+    return jsonify({'ok': True, 'completed': row.completed, 'best_score': row.best_score})
+
+
 # ──────────────────────────────────────────────────────────────────────────
 # BOOTSTRAP: create tables + seed admin
 # ──────────────────────────────────────────────────────────────────────────
