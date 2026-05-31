@@ -5683,9 +5683,14 @@
           }
         }
       }
-      for (let z = k; z < arr.length; z++) arr[z] = 0;   // clear stale segments
+      // setDrawRange already excludes the unused tail, so there's no need to
+      // zero it; and we only need to re-upload the live slice [0, k) to the GPU
+      // instead of the whole NET_N*NET_N buffer every frame.
       netLines.geometry.setDrawRange(0, k / 3);
-      netLines.geometry.attributes.position.needsUpdate = true;
+      const posAttr = netLines.geometry.attributes.position;
+      posAttr.updateRange.offset = 0;
+      posAttr.updateRange.count = k;
+      posAttr.needsUpdate = true;
     }
 
     function recolor() {
@@ -5941,7 +5946,7 @@
 
     async function buildScene() {
       const canvas = document.getElementById('synapse-canvas');
-      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 
       scene = new THREE.Scene();
