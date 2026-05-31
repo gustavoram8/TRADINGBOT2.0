@@ -5638,14 +5638,32 @@
       });
     }
 
+    // Vertical "no-fly" column around the figure (head + floating brain) so the
+    // constellation never draws over the body. Width is perspective-scaled: a
+    // node deeper in z must clear a wider world-x to stay off the silhouette.
+    const FIG_HALF = 4.2, FIG_Y0 = 2.5, FIG_Y1 = 17.5, CAM_Z = 16.5;
+    function inFigureColumn(x, y, z) {
+      if (y < FIG_Y0 || y > FIG_Y1) return false;
+      return Math.abs(x) < FIG_HALF * (CAM_Z - z) / CAM_Z;
+    }
+
     function buildNet() {
       NET_N = 144;   // doubled density of the neural-network backdrop
       netPos = new Float32Array(NET_N * 3);
       netVel = new Float32Array(NET_N * 3);
       for (let i = 0; i < NET_N; i++) {
-        netPos[i*3]   = (Math.random() - 0.5) * 30;
-        netPos[i*3+1] = Math.random() * 14 - 2;
-        netPos[i*3+2] = -5 - Math.random() * 5;
+        // Spread wide across the screen and centred on the view (y≈11.5), then
+        // reject any spawn that lands on the body column so the net frames the
+        // figure instead of piling up in the middle/bottom.
+        let x, y, z, tries = 0;
+        do {
+          x = (Math.random() - 0.5) * 42;   // -21 … 21  (much wider)
+          y = 1 + Math.random() * 21;       //  1 … 22   (centred ≈ 11.5)
+          z = -4 - Math.random() * 8;       // -4 … -12
+        } while (inFigureColumn(x, y, z) && ++tries < 24);
+        netPos[i*3]   = x;
+        netPos[i*3+1] = y;
+        netPos[i*3+2] = z;
         netVel[i*3]   = (Math.random() - 0.5) * 0.006;
         netVel[i*3+1] = (Math.random() - 0.5) * 0.006;
         netVel[i*3+2] = 0;
@@ -5674,8 +5692,10 @@
       for (let i = 0; i < NET_N; i++) {
         netPos[i*3]   += netVel[i*3];
         netPos[i*3+1] += netVel[i*3+1];
-        if (netPos[i*3]   >  16 || netPos[i*3]   < -16) netVel[i*3]   *= -1;
-        if (netPos[i*3+1] >  13 || netPos[i*3+1] <  -3) netVel[i*3+1] *= -1;
+        if (netPos[i*3]   >  22 || netPos[i*3]   < -22) netVel[i*3]   *= -1;
+        if (netPos[i*3+1] >  23 || netPos[i*3+1] <   0) netVel[i*3+1] *= -1;
+        // gently push a node back out if it drifts into the body column
+        if (inFigureColumn(netPos[i*3], netPos[i*3+1], netPos[i*3+2])) netVel[i*3] *= -1;
       }
       netPts.geometry.attributes.position.needsUpdate = true;
       const arr = netLines.geometry.attributes.position.array;
@@ -5684,6 +5704,11 @@
         for (let j = i + 1; j < NET_N; j++) {
           const dx = netPos[i*3]-netPos[j*3], dy = netPos[i*3+1]-netPos[j*3+1], dz = netPos[i*3+2]-netPos[j*3+2];
           if (dx*dx + dy*dy + dz*dz < t2) {
+            // skip any connection whose midpoint would cross the body silhouette
+            const mx = (netPos[i*3]+netPos[j*3]) * 0.5,
+                  my = (netPos[i*3+1]+netPos[j*3+1]) * 0.5,
+                  mz = (netPos[i*3+2]+netPos[j*3+2]) * 0.5;
+            if (inFigureColumn(mx, my, mz)) continue;
             arr[k++] = netPos[i*3];   arr[k++] = netPos[i*3+1];   arr[k++] = netPos[i*3+2];
             arr[k++] = netPos[j*3];   arr[k++] = netPos[j*3+1];   arr[k++] = netPos[j*3+2];
           }
