@@ -1723,6 +1723,16 @@
     .quiz-action-btn:hover { opacity: .88; }
     .quiz-action-btn.secondary { background: transparent; color: var(--accent); }
 
+    /* Result mascot (small) — happy on pass, surprised on fail.
+       Image swaps with the theme via CSS content. Hidden until classed. */
+    .quiz-result-mascot { display: none; height: 96px; width: auto;
+      margin: 14px auto 0; object-fit: contain; }
+    .quiz-result-mascot.pass, .quiz-result-mascot.fail { display: block; }
+    .quiz-result-mascot.pass { content: url('/static/logo3_dark.png'); }
+    body.light .quiz-result-mascot.pass { content: url('/static/logo3.png'); }
+    .quiz-result-mascot.fail { content: url('/static/logo4_dark.png'); }
+    body.light .quiz-result-mascot.fail { content: url('/static/logo4.png'); }
+
     /* Pass / fail verdict label */
     .quiz-score-label.pass { color: #22c55e; }
     .quiz-score-label.fail { color: #ef4444; }
@@ -2480,6 +2490,7 @@
 
       <!-- ── SCREEN 3: Results ── -->
       <div id="quiz-results" style="display:none;">
+        <img id="quiz-result-mascot" class="quiz-result-mascot" alt="" />
         <div class="quiz-results-circle">
           <svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" fill="none" stroke="var(--border2)" stroke-width="6"/><circle cx="40" cy="40" r="34" fill="none" stroke="var(--accent)" stroke-width="6" stroke-linecap="round" id="quiz-score-arc" stroke-dasharray="0 214"/></svg>
           <div class="quiz-score-num" id="quiz-score-num">0/10</div>
@@ -8299,6 +8310,10 @@
         }
         const pr=document.getElementById('quiz-pass-rule');
         if(pr){ pr.textContent = (T('quiz.passRule')||'You need at least 80% correct to pass.'); }
+
+        // mascot: happy (logo3) on pass, surprised (logo4) on fail
+        const mascot=document.getElementById('quiz-result-mascot');
+        if(mascot){ mascot.className = 'quiz-result-mascot ' + (passed ? 'pass' : 'fail'); }
 
         // compute weak topics (at least 1 wrong answer in that topic)
         const topicMap={};
