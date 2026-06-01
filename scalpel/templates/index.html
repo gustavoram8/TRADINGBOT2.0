@@ -9892,6 +9892,7 @@
         if (started) { resetSynapse(); startLoop(); requestAnimationFrame(resize); return; }
         if (opening) return;
         opening = true;
+        const _synapseOpenStart = Date.now();
         const loading = document.getElementById('syn-loading');
         const errMsg = (m) => { if (loading) { const d = loading.querySelector('div:last-child'); if (d) d.textContent = m; } };
         await ensureThree();
@@ -9909,7 +9910,12 @@
         }
         started = true;
         opening = false;
-        requestAnimationFrame(() => { resize(); if (loading) loading.classList.add('hidden'); });
+        // Hold the loading screen at least 10 s so the user sees it properly
+        const elapsed = Date.now() - _synapseOpenStart;
+        const remain  = Math.max(0, 10000 - elapsed);
+        setTimeout(() => {
+          requestAnimationFrame(() => { resize(); if (loading) loading.classList.add('hidden'); });
+        }, remain);
       },
     };
   })();
