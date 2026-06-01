@@ -645,6 +645,11 @@ def terms():
     return render_template('terms.html')
 
 
+@app.route('/settings')
+def settings():
+    return render_template('settings.html')
+
+
 @app.route('/app')
 def app_view():
     if not _has_splash_pass():

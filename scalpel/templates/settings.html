@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trader Acelerator — Settings</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --ink:#15171f; --ink-soft:#4a4f5e; --muted:#8a8f9e; --line:#e4e6ec; --accent:#2563eb; --radius:14px; }
+    body { background:#f8f9fc; color:var(--ink); font-family:'Inter',sans-serif; font-size:15px; line-height:1.6; min-height:100vh; -webkit-font-smoothing:antialiased; }
+    nav { display:flex; align-items:center; justify-content:space-between; padding:16px 32px; border-bottom:1px solid var(--line); position:sticky; top:0; background:rgba(248,249,252,0.94); backdrop-filter:blur(8px); z-index:10; }
+    .logo-img { height:72px; width:auto; display:block; }
+    .back-link { font-size:13px; font-weight:600; color:var(--muted); text-decoration:none; }
+    .back-link:hover { color:var(--accent); }
+    .wrap { max-width:680px; margin:0 auto; padding:48px 24px 96px; }
+    .page-title { font-size:30px; font-weight:800; letter-spacing:-.02em; margin-bottom:32px; }
+    .section { background:#fff; border:1px solid var(--line); border-radius:var(--radius); margin-bottom:20px; overflow:hidden; }
+    .section-head { padding:16px 22px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); border-bottom:1px solid var(--line); }
+    .setting-row { display:flex; align-items:center; justify-content:space-between; padding:16px 22px; border-bottom:1px solid var(--line); gap:20px; }
+    .setting-row:last-child { border-bottom:none; }
+    .setting-info { flex:1; }
+    .setting-label { font-size:14px; font-weight:600; }
+    .setting-desc  { font-size:12px; color:var(--muted); margin-top:2px; }
+    .setting-control { flex:none; }
+    .pill-soon { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; padding:3px 9px; border-radius:20px; background:#f1f5f9; color:var(--muted); }
+    .toggle-wrap { display:flex; align-items:center; }
+    input[type=checkbox].toggle { appearance:none; width:42px; height:24px; background:#e2e8f0; border-radius:12px; cursor:not-allowed; position:relative; transition:background .2s; opacity:.5; }
+    input[type=checkbox].toggle:checked { background:var(--accent); }
+    input[type=checkbox].toggle::after { content:''; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; transition:left .18s; }
+    input[type=checkbox].toggle:checked::after { left:21px; }
+  </style>
+</head>
+<body>
+<nav>
+  <a href="/" class="logo"><img src="/static/logo.png" alt="Trader Acelerator" class="logo-img" onerror="this.style.display='none';" /></a>
+  <a href="/app" class="back-link">← Back to app</a>
+</nav>
+<div class="wrap">
+  <div class="page-title">Settings</div>
+
+  <div class="section">
+    <div class="section-head">Account</div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-label">Email</div>
+        <div class="setting-desc">Update your account email address.</div>
+      </div>
+      <div class="setting-control"><span class="pill-soon">Coming soon</span></div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-label">Password</div>
+        <div class="setting-desc">Change your password.</div>
+      </div>
+      <div class="setting-control"><span class="pill-soon">Coming soon</span></div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-label">Subscription plan</div>
+        <div class="setting-desc">Manage or upgrade your plan.</div>
+      </div>
+      <div class="setting-control"><a href="/pricing" style="font-size:13px;font-weight:700;color:var(--accent);text-decoration:none;">View plans →</a></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">Preferences</div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-label">Language</div>
+        <div class="setting-desc">Interface language (EN / ES / FR / PT).</div>
+      </div>
+      <div class="setting-control"><span class="pill-soon">Coming soon</span></div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-label">Theme</div>
+        <div class="setting-desc">Dark or light mode (toggle available in-app).</div>
+      </div>
+      <div class="setting-control"><span class="pill-soon">Coming soon</span></div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-label">Active Camo</div>
+        <div class="setting-desc">Choose a purchased website skin.</div>
+      </div>
+      <div class="setting-control"><a href="/camos" style="font-size:13px;font-weight:700;color:var(--accent);text-decoration:none;">Browse Camos →</a></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">Notifications</div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-label">Email notifications</div>
+        <div class="setting-desc">Analysis results and important updates.</div>
+      </div>
+      <div class="setting-control toggle-wrap"><input type="checkbox" class="toggle" disabled /></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">Danger zone</div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-label">Delete account</div>
+        <div class="setting-desc">Permanently remove your account and all data.</div>
+      </div>
+      <div class="setting-control"><span class="pill-soon">Coming soon</span></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

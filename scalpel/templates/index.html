@@ -972,25 +972,69 @@
     .tab-products.open .products-caret { transform: rotate(180deg); }
     .tab-products.open { color: var(--accent); }
     .products-menu {
-      position: fixed; z-index: 60; min-width: 210px;
+      position: fixed; z-index: 60; min-width: 226px;
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; padding: 7px;
-      box-shadow: 0 12px 34px rgba(0,0,0,0.32);
+      border-radius: 14px; padding: 8px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.36), 0 2px 8px rgba(0,0,0,0.18);
       display: none; flex-direction: column; gap: 1px;
     }
     .products-menu.open { display: flex; }
-    .products-group-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: .08em; color: var(--muted); padding: 7px 12px 4px; }
-    .products-item { display: flex; align-items: center; gap: 9px;
-      padding: 10px 12px; border-radius: 8px; text-decoration: none;
-      color: var(--text); font-size: 13.5px; font-weight: 600;
-      transition: background 0.12s ease, color 0.12s ease; white-space: nowrap; }
-    .products-item:hover { background: var(--card); color: var(--accent); }
+    .products-group-label { font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .1em; color: var(--muted); padding: 7px 12px 4px; }
     .products-sep { height: 1px; background: var(--border); margin: 6px 4px; }
-    .pi-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-    .pi-dot.free     { background: #6b7280; }
-    .pi-dot.standard { background: #2563eb; }
-    .pi-dot.premium  { background: #e0a83d; }
+
+    /* generic item */
+    .products-item { display: flex; align-items: center; gap: 11px;
+      padding: 9px 11px; border-radius: 9px; text-decoration: none;
+      color: var(--text); font-size: 13px; font-weight: 600;
+      transition: background 0.13s ease; white-space: nowrap; }
+    .products-item:hover { background: var(--card); }
+
+    /* badge container (24×24) */
+    .pi-badge { flex: none; width: 26px; height: 26px; border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      overflow: visible; }
+    .pi-badge svg { width: 18px; height: 18px; }
+
+    /* ── Free: muted circle + checkmark ── */
+    .pi-badge-free { background: rgba(107,114,128,.12); }
+    .pi-free:hover .pi-badge-free svg circle { stroke: #9ca3af; }
+
+    /* ── Standard: blue star, spins slowly on hover ── */
+    .pi-badge-standard { background: rgba(59,130,246,.12); }
+    .pi-badge-standard svg { transition: transform 0.55s cubic-bezier(.25,.8,.25,1); }
+    .pi-standard:hover .pi-badge-standard svg { transform: rotate(72deg); }
+    .pi-standard:hover .pi-badge-standard svg path { stroke: #60a5fa; }
+
+    /* ── Premium: crown glows + bobs ── */
+    .pi-badge-premium { background: rgba(245,158,11,.14); }
+    .pi-crown-svg { animation: piCrownBob 2.8s ease-in-out infinite; }
+    @keyframes piCrownBob {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-2px); } }
+    .pi-premium:hover .pi-badge-premium {
+      background: rgba(245,158,11,.28);
+      box-shadow: 0 0 10px rgba(245,158,11,.45); }
+
+    /* ── Indicators: purple line chart ── */
+    .pi-badge-ind { background: rgba(139,92,246,.12); }
+    .products-item:hover .pi-badge-ind { background: rgba(139,92,246,.22); }
+
+    /* ── Camo: earthy badge ── */
+    .pi-badge-camo { background: rgba(74,124,89,.16); border-radius: 7px; }
+
+    /* ── Terms: slate document ── */
+    .pi-badge-terms { background: rgba(148,163,184,.12); }
+
+    /* ── Settings: gear spins on hover ── */
+    .pi-badge-settings { background: rgba(148,163,184,.12); color: var(--muted); }
+    .pi-gear-svg { transition: transform 0.5s cubic-bezier(.25,.8,.25,1); }
+    .pi-settings:hover .pi-gear-svg { transform: rotate(90deg); }
+    .pi-settings:hover .pi-badge-settings { background: rgba(148,163,184,.22); color: var(--text); }
+    .pi-settings:hover .pi-badge-settings svg { color: var(--text); }
+
+    /* label */
+    .pi-label { flex: 1; }
 
     /* ── FEATURE VIEWS (locked / coming soon) ── */
     .feature-view { display: none; }
@@ -2040,14 +2084,111 @@
 
 <!-- Products dropdown (fixed-positioned via JS to escape the tabs overflow) -->
 <div class="products-menu" id="products-menu" role="menu" aria-hidden="true">
+
   <div class="products-group-label" data-i18n="products.plans">Plans</div>
-  <a href="/pricing" class="products-item" role="menuitem"><span class="pi-dot free"></span>Free</a>
-  <a href="/pricing" class="products-item" role="menuitem"><span class="pi-dot standard"></span>Standard</a>
-  <a href="/pricing" class="products-item" role="menuitem"><span class="pi-dot premium"></span>Premium</a>
+
+  <!-- FREE -->
+  <a href="/pricing" class="products-item pi-free" role="menuitem">
+    <span class="pi-badge pi-badge-free" aria-hidden="true">
+      <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="10" cy="10" r="8.5" stroke="#6b7280" stroke-width="1.4"/>
+        <path d="M7 10.5l2 2 4-4" stroke="#6b7280" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </span>
+    <span class="pi-label">Free</span>
+  </a>
+
+  <!-- STANDARD -->
+  <a href="/pricing" class="products-item pi-standard" role="menuitem">
+    <span class="pi-badge pi-badge-standard" aria-hidden="true">
+      <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M10 2 L12.9 7.7 L19.5 8.6 L14.7 13.2 L16 19.7 L10 16.6 L4 19.7 L5.3 13.2 L0.5 8.6 L7.1 7.7 Z"
+          fill="none" stroke="#3b82f6" stroke-width="1.4" stroke-linejoin="round"/>
+      </svg>
+    </span>
+    <span class="pi-label">Standard</span>
+  </a>
+
+  <!-- PREMIUM — animated crown -->
+  <a href="/pricing" class="products-item pi-premium" role="menuitem">
+    <span class="pi-badge pi-badge-premium" aria-hidden="true">
+      <svg class="pi-crown-svg" viewBox="0 0 22 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="crownGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%"  stop-color="#fde68a"/>
+            <stop offset="50%" stop-color="#f59e0b"/>
+            <stop offset="100%" stop-color="#d97706"/>
+          </linearGradient>
+        </defs>
+        <!-- crown body -->
+        <path d="M1 15 L3 7 L7.5 11.5 L11 2 L14.5 11.5 L19 7 L21 15 Z"
+          fill="url(#crownGrad)" stroke="#d97706" stroke-width="0.9" stroke-linejoin="round"/>
+        <!-- base band -->
+        <rect x="1" y="14" width="20" height="2.8" rx="1.2" fill="#f59e0b"/>
+        <!-- three gems -->
+        <circle cx="5.2" cy="15.4" r="1.1" fill="#fff7" />
+        <circle cx="11"  cy="15.4" r="1.1" fill="#fff9" />
+        <circle cx="16.8" cy="15.4" r="1.1" fill="#fff7" />
+      </svg>
+    </span>
+    <span class="pi-label">Premium</span>
+  </a>
+
   <div class="products-sep"></div>
-  <a href="/store/indicators" class="products-item" role="menuitem"><span data-i18n="tabs.indicators">Indicators</span></a>
-  <a href="/camos" class="products-item" role="menuitem"><span data-i18n="products.camos">Camos</span></a>
-  <a href="/terms" class="products-item" role="menuitem"><span data-i18n="products.terms">Terms and Conditions</span></a>
+
+  <!-- INDICATORS -->
+  <a href="/store/indicators" class="products-item" role="menuitem">
+    <span class="pi-badge pi-badge-ind" aria-hidden="true">
+      <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polyline points="2,15 6,8 10,12 14,5 18,9" stroke="#8b5cf6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="14" cy="5" r="1.5" fill="#8b5cf6"/>
+      </svg>
+    </span>
+    <span class="pi-label" data-i18n="tabs.indicators">Indicators</span>
+  </a>
+
+  <!-- CAMOS -->
+  <a href="/camos" class="products-item" role="menuitem">
+    <span class="pi-badge pi-badge-camo" aria-hidden="true">
+      <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- camo blobs -->
+        <ellipse cx="6"  cy="7"  rx="3.5" ry="2.5" fill="#4a7c59" opacity=".9"/>
+        <ellipse cx="13" cy="6"  rx="2.8" ry="2"   fill="#2f4a2f" opacity=".85"/>
+        <ellipse cx="10" cy="12" rx="3.8" ry="2.4" fill="#6b8c4e" opacity=".9"/>
+        <ellipse cx="4"  cy="14" rx="2.4" ry="1.8" fill="#3d5c32" opacity=".8"/>
+        <ellipse cx="15.5" cy="13" rx="3" ry="2"   fill="#1f3320" opacity=".85"/>
+      </svg>
+    </span>
+    <span class="pi-label" data-i18n="products.camos">Camos</span>
+  </a>
+
+  <!-- TERMS -->
+  <a href="/terms" class="products-item" role="menuitem">
+    <span class="pi-badge pi-badge-terms" aria-hidden="true">
+      <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="3" y="1.5" width="14" height="17" rx="2" stroke="#94a3b8" stroke-width="1.4"/>
+        <line x1="6.5" y1="6.5"  x2="13.5" y2="6.5"  stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="6.5" y1="9.5"  x2="13.5" y2="9.5"  stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="6.5" y1="12.5" x2="10.5" y2="12.5" stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+    </span>
+    <span class="pi-label" data-i18n="products.terms">Terms and Conditions</span>
+  </a>
+
+  <div class="products-sep"></div>
+
+  <!-- SETTINGS -->
+  <a href="/settings" class="products-item pi-settings" role="menuitem">
+    <span class="pi-badge pi-badge-settings" aria-hidden="true">
+      <svg class="pi-gear-svg" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="10" cy="10" r="2.8" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M10 1.5v2M10 16.5v2M1.5 10h2M16.5 10h2M3.7 3.7l1.4 1.4M14.9 14.9l1.4 1.4M3.7 16.3l1.4-1.4M14.9 5.1l1.4-1.4"
+          stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+    </span>
+    <span class="pi-label" data-i18n="products.settings">Settings</span>
+  </a>
+
 </div>
 
 <div class="container">
@@ -3163,6 +3304,7 @@
       'products.plans': 'Plans',
       'products.camos': 'Camos',
       'products.terms': 'Terms and Conditions',
+      'products.settings': 'Settings',
       'synapse.desc': 'An interactive, futuristic trading knowledge base. A holographic mind branches into every major methodology — explore them in 3D.',
       'synapse.sub': 'Click a node to explore its methodology',
       'synapse.loading': 'Initializing neural matrix…',
@@ -3390,6 +3532,7 @@
       'products.plans': 'Planes',
       'products.camos': 'Camos',
       'products.terms': 'Términos y Condiciones',
+      'products.settings': 'Ajustes',
       'synapse.desc': 'Una base de conocimiento de trading interactiva y futurista. Una mente holográfica se ramifica hacia cada metodología — explóralas en 3D.',
       'synapse.sub': 'Haz clic en un nodo para explorar su metodología',
       'synapse.loading': 'Inicializando matriz neuronal…',
@@ -3617,6 +3760,7 @@
       'products.plans': 'Forfaits',
       'products.camos': 'Camos',
       'products.terms': 'Conditions Générales',
+      'products.settings': 'Paramètres',
       'synapse.desc': 'Une base de connaissances de trading interactive et futuriste. Un esprit holographique se ramifie vers chaque méthodologie — explorez-les en 3D.',
       'synapse.sub': 'Cliquez sur un nœud pour explorer sa méthodologie',
       'synapse.loading': 'Initialisation de la matrice neuronale…',
@@ -3844,6 +3988,7 @@
       'products.plans': 'Planos',
       'products.camos': 'Camos',
       'products.terms': 'Termos e Condições',
+      'products.settings': 'Configurações',
       'synapse.desc': 'Uma base de conhecimento de trading interativa e futurista. Uma mente holográfica se ramifica para cada metodologia — explore-as em 3D.',
       'synapse.sub': 'Clique em um nó para explorar sua metodologia',
       'synapse.loading': 'Inicializando matriz neural…',
