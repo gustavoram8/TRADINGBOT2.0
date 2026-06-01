@@ -1976,14 +1976,12 @@
       width: 0%; height: 100%; border-radius: 4px;
       background: linear-gradient(90deg, #b8860b, #eab308 60%, #fde047);
       box-shadow: 0 0 10px rgba(234,179,8,0.55);
+      transition: width 0.25s ease-out;   /* smooths the JS-driven width updates */
     }
     body.light .syn-progress-fill {
       background: linear-gradient(90deg, #2f5fa6, #3f6fd6 60%, #6f9be8);
       box-shadow: 0 0 10px rgba(63,111,214,0.45);
     }
-    /* fills 0 → 100% over 10s, synced with the JS hold time */
-    .syn-progress-fill.run { animation: synLoadBar 10s linear forwards; }
-    @keyframes synLoadBar { from { width: 0%; } to { width: 100%; } }
     .syn-progress-pct {
       color: var(--muted); font-family: 'JetBrains Mono', monospace;
       font-size: 12px; letter-spacing: 0.12em; font-variant-numeric: tabular-nums;
@@ -9942,14 +9940,21 @@
         const titleEl = loading ? loading.querySelector('.syn-load-title') : null;
         const errMsg  = (m) => { if (titleEl) titleEl.textContent = m; };
 
-        // Show screen + kick the CSS bar (purely compositor-driven, never freezes)
+        // Show screen
         if (loading) loading.classList.remove('hidden');
-        if (fill) { fill.classList.remove('run'); void fill.offsetWidth; fill.classList.add('run'); }
 
-        // Update the % text via rAF — survives heavy JS work better than setInterval
-        let _rafId;
+        // Progress is driven by rAF and CAPPED at 95% until the scene is actually
+        // ready, so 100% always means "revealing now" — never a stall at 100%.
+        let _rafId, _ready = false;
         const _tick = () => {
-          const pct = Math.min(100, Math.round((Date.now() - _start) / LOAD_MS * 100));
+          const elapsed = Date.now() - _start;
+          let pct;
+          if (_ready) {
+            pct = 100;                                   // assets done → finish
+          } else {
+            pct = Math.min(95, Math.round(elapsed / LOAD_MS * 100));  // cap at 95%
+          }
+          if (fill)  fill.style.width = pct + '%';
           if (pctEl) pctEl.textContent = pct + '%';
           if (pct < 100) _rafId = requestAnimationFrame(_tick);
         };
@@ -9959,7 +9964,6 @@
         await ensureThree();
         if (typeof THREE === 'undefined') {
           cancelAnimationFrame(_rafId);
-          if (fill) fill.classList.remove('run');
           errMsg('No se pudo cargar el motor 3D. Verifica tu conexión.');
           opening = false;
           return;
@@ -9968,7 +9972,6 @@
           await buildScene();
         } catch (e) {
           cancelAnimationFrame(_rafId);
-          if (fill) fill.classList.remove('run');
           errMsg('No se pudieron cargar los modelos. Verifica tu conexión.');
           opening = false;
           return;
@@ -9976,11 +9979,14 @@
         started = true;
         opening = false;
 
-        // Wait the remaining time so the bar always completes fully
+        // Honour the 10 s minimum, then mark ready so the bar shoots to 100%
         const remain = Math.max(0, LOAD_MS - (Date.now() - _start));
         await new Promise(r => setTimeout(r, remain));
+        _ready = true;
         cancelAnimationFrame(_rafId);
+        if (fill)  fill.style.width = '100%';
         if (pctEl) pctEl.textContent = '100%';
+        // Reveal on the next frame so the 100% paints first
         requestAnimationFrame(() => { resize(); if (loading) loading.classList.add('hidden'); });
       },
     };
