@@ -1651,8 +1651,10 @@
       height: 78vh; width: auto; max-width: none; object-fit: contain;
       transform: translateY(-50%) rotate(13deg); transform-origin: center;
       pointer-events: none; z-index: 0;
-      filter: drop-shadow(0 30px 60px rgba(0,0,0,.40)); }
-    body.light .quiz-welcome-logo { filter: drop-shadow(0 24px 48px rgba(0,0,0,.18)); }
+      filter: drop-shadow(0 30px 60px rgba(0,0,0,.40));
+      content: url('/static/logo2_dark.png'); }  /* dark mode → orange arrow */
+    body.light .quiz-welcome-logo { filter: drop-shadow(0 24px 48px rgba(0,0,0,.18));
+      content: url('/static/logo2.png'); }       /* light mode → blue arrow */
     /* Text + options sit in the centre-right of the screen */
     .qw-content { position: relative; z-index: 1; width: 100%; max-width: 540px;
       text-align: left; }
