@@ -9935,50 +9935,53 @@
         if (opening) return;
         opening = true;
         const LOAD_MS = 10000;
-        const _synapseOpenStart = Date.now();
+        const _start = Date.now();
         const loading = document.getElementById('syn-loading');
         const fill    = document.getElementById('syn-progress-fill');
         const pctEl   = document.getElementById('syn-progress-pct');
         const titleEl = loading ? loading.querySelector('.syn-load-title') : null;
         const errMsg  = (m) => { if (titleEl) titleEl.textContent = m; };
 
-        // Show the loading screen and start the 10 s progress bar + counter
+        // Show screen + kick the CSS bar (purely compositor-driven, never freezes)
         if (loading) loading.classList.remove('hidden');
         if (fill) { fill.classList.remove('run'); void fill.offsetWidth; fill.classList.add('run'); }
-        let _pct = 0;
-        const _pctTimer = setInterval(() => {
-          _pct = Math.min(100, Math.round((Date.now() - _synapseOpenStart) / LOAD_MS * 100));
-          if (pctEl) pctEl.textContent = _pct + '%';
-          if (_pct >= 100) clearInterval(_pctTimer);
-        }, 80);
 
+        // Update the % text via rAF — survives heavy JS work better than setInterval
+        let _rafId;
+        const _tick = () => {
+          const pct = Math.min(100, Math.round((Date.now() - _start) / LOAD_MS * 100));
+          if (pctEl) pctEl.textContent = pct + '%';
+          if (pct < 100) _rafId = requestAnimationFrame(_tick);
+        };
+        _rafId = requestAnimationFrame(_tick);
+
+        // Load assets in parallel with the timer
         await ensureThree();
         if (typeof THREE === 'undefined') {
-          clearInterval(_pctTimer);
+          cancelAnimationFrame(_rafId);
           if (fill) fill.classList.remove('run');
-          errMsg('No se pudo cargar el motor 3D. Verifica tu conexión a internet y vuelve a abrir esta pestaña.');
+          errMsg('No se pudo cargar el motor 3D. Verifica tu conexión.');
           opening = false;
           return;
         }
         try {
           await buildScene();
         } catch (e) {
-          clearInterval(_pctTimer);
+          cancelAnimationFrame(_rafId);
           if (fill) fill.classList.remove('run');
-          errMsg('No se pudieron cargar los modelos holográficos. Verifica tu conexión y vuelve a abrir esta pestaña.');
+          errMsg('No se pudieron cargar los modelos. Verifica tu conexión.');
           opening = false;
           return;
         }
         started = true;
         opening = false;
-        // Hold the loading screen for the full 10 s so the bar completes,
-        // then reveal the holograms.
-        const remain = Math.max(0, LOAD_MS - (Date.now() - _synapseOpenStart));
-        setTimeout(() => {
-          clearInterval(_pctTimer);
-          if (pctEl) pctEl.textContent = '100%';
-          requestAnimationFrame(() => { resize(); if (loading) loading.classList.add('hidden'); });
-        }, remain);
+
+        // Wait the remaining time so the bar always completes fully
+        const remain = Math.max(0, LOAD_MS - (Date.now() - _start));
+        await new Promise(r => setTimeout(r, remain));
+        cancelAnimationFrame(_rafId);
+        if (pctEl) pctEl.textContent = '100%';
+        requestAnimationFrame(() => { resize(); if (loading) loading.classList.add('hidden'); });
       },
     };
   })();
