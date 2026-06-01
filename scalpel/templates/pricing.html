@@ -19,12 +19,27 @@
       --premium:  #b8860b;
       --premium-2:#e0a83d;
       --radius:   16px;
+      --page-bg:  #ffffff;
+      --nav-bg:   rgba(255,255,255,0.92);
+      --card-bg:  #ffffff;
+    }
+
+    /* Dark mode — carried over from the main app via localStorage */
+    body.dark {
+      --ink:      #e8eaf0;
+      --ink-soft: #b0b5c2;
+      --muted:    #8a8f9e;
+      --line:     #2a2d35;
+      --line-soft:#23262e;
+      --page-bg:  #0d0f14;
+      --nav-bg:   rgba(13,15,20,0.92);
+      --card-bg:  #161922;
     }
 
     html { scroll-behavior: smooth; }
 
     body {
-      background: #ffffff;
+      background: var(--page-bg);
       color: var(--ink);
       font-family: 'Inter', sans-serif;
       font-size: 15px;
@@ -42,13 +57,14 @@
       border-bottom: 1px solid var(--line-soft);
       position: sticky;
       top: 0;
-      background: rgba(255,255,255,0.92);
+      background: var(--nav-bg);
       backdrop-filter: blur(8px);
       z-index: 10;
     }
 
     .logo { display: flex; align-items: center; text-decoration: none; }
     .logo-img { height: 80px; width: auto; display: block; mix-blend-mode: multiply; }
+    body.dark .logo-img { filter: invert(1); mix-blend-mode: screen; }
     .logo-fallback { display: none; align-items: center; gap: 10px; }
     .logo-text { font-size: 18px; font-weight: 800; letter-spacing: 0.08em; color: var(--ink); }
     .logo-sub  { font-size: 11px; color: var(--muted); letter-spacing: 0.05em; }
@@ -112,7 +128,7 @@
       position: relative;
       display: flex;
       flex-direction: column;
-      background: #fff;
+      background: var(--card-bg);
       border: 1.5px solid var(--line);
       border-radius: var(--radius);
       padding: 32px 28px;
@@ -256,11 +272,11 @@
     }
 
     .plan.free .cta {
-      background: #fff;
+      background: var(--card-bg);
       color: var(--ink);
       border-color: var(--line);
     }
-    .plan.free .cta:hover { background: var(--ink); color: #fff; }
+    .plan.free .cta:hover { background: var(--ink); color: var(--page-bg); }
 
     .plan.standard .cta {
       background: var(--standard);
@@ -308,6 +324,15 @@
   </style>
 </head>
 <body>
+<script>
+  // Carry over the theme chosen in the main app (default: dark)
+  (function () {
+    try {
+      var th = localStorage.getItem('scalpel_theme');
+      document.body.classList.add(th === 'light' ? 'light' : 'dark');
+    } catch (e) { document.body.classList.add('dark'); }
+  })();
+</script>
 
 <nav>
   <a href="/" class="logo">
