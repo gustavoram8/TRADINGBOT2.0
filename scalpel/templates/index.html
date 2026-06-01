@@ -1212,47 +1212,8 @@
     .scp-send:disabled { opacity: 0.5; cursor: default; }
 
     /* ══════════════════════════════════════════════════════════
-       SCALPE® — Trading Education Studio (Premium)
+       CHALKBOARD — Trading Education Studio (Premium)
        ══════════════════════════════════════════════════════════ */
-
-    /* Animated golden ® wordmark (tab + studio header) */
-    .scalper-wordmark { display: inline-flex; align-items: baseline; }
-
-    /* "Scalpe" — subtle silver-gold wave, smaller amplitude */
-    .scalper-word {
-      font-weight: 800;
-      background: linear-gradient(100deg,
-        var(--text) 0%, var(--text) 25%,
-        rgba(224,168,61,0.45) 45%, rgba(255,243,207,0.7) 50%, rgba(224,168,61,0.45) 55%,
-        var(--text) 75%, var(--text) 100%);
-      background-size: 300% 100%;
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      /* 7s cycle: a quick ~1.4s sweep, then ~5.6s idle on solid text colour */
-      animation: scalperWordShine 7s linear infinite;
-    }
-    @keyframes scalperWordShine {
-      0%   { background-position: 200% 0; }
-      20%  { background-position: -200% 0; }
-      100% { background-position: -200% 0; }
-    }
-
-    /* "®" — vivid gold, leads the sweep */
-    .scalper-r {
-      font-weight: 800;
-      background: linear-gradient(100deg, #9a6b08 0%, #e0a83d 25%, #fff3cf 50%, #e0a83d 75%, #9a6b08 100%);
-      background-size: 250% 100%;
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      color: transparent;
-      animation: scalperShine 3.5s linear infinite;
-    }
-    @keyframes scalperShine {
-      0%   { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
 
     .scalper-app { padding: 18px 12px 60px; }
     .scalper-bar {
@@ -1994,7 +1955,7 @@
   {% endif %}
   <button class="tab" type="button" data-tab="scalper">
     <svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-    <span class="scalper-wordmark"><span class="scalper-word">Scalpe</span><span class="scalper-r">®</span></span>
+    <span data-i18n="tabs.chalkboard">Chalkboard</span>
   </button>
   <button class="tab" type="button" data-tab="synapse">
     <svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -2367,6 +2328,23 @@
         </div>
       </div>
 
+      <!-- ── SCREEN 0x: Synapse topic picker (after choosing "test what I studied in Synapse") ── -->
+      <div id="quiz-synapse-picker" style="display:none;">
+        <div class="quiz-header">
+          <div class="quiz-h1" data-i18n="quiz.synapsePickTitle">Which topic do you want to practice?</div>
+          <div class="quiz-sub" data-i18n="quiz.synapsePickSub">Based on what you've explored in Synapse.</div>
+        </div>
+        <div class="quiz-method-grid" id="quiz-synapse-method-grid">
+          <!-- populated by JS -->
+        </div>
+        <div id="quiz-synapse-empty" style="display:none; text-align:center; padding:32px 0;">
+          <div style="font-size:40px; margin-bottom:14px;">🧠</div>
+          <div class="quiz-sub" data-i18n="quiz.synapseEmpty">You haven't explored any topics in Synapse yet. Head over to Synapse first and click on a methodology node.</div>
+          <button class="quiz-action-btn" id="quiz-synapse-go-btn" style="margin-top:20px;width:auto;padding:11px 22px;" data-i18n="quiz.synapseGoBtn">Go to Synapse →</button>
+        </div>
+        <button class="quiz-action-btn secondary" id="quiz-synapse-back" style="margin-top:22px;width:auto;padding:11px 18px;" data-i18n="quiz.back">← Back</button>
+      </div>
+
       <!-- ── SCREEN 0: Methodologies ── -->
       <div id="quiz-home">
         <div class="quiz-header">
@@ -2634,7 +2612,7 @@
   </div>
   {% endif %}
 
-  <!-- ── SCALPE® — TRADING EDUCATION STUDIO (Premium) ── -->
+  <!-- ── CHALKBOARD — TRADING EDUCATION STUDIO (Premium) ── -->
   <div class="feature-view" id="scalper-view">
     <div class="feature-panel">
       <div class="feature-badge"></div>
@@ -2642,7 +2620,7 @@
         <svg class="ic-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         <svg class="ic-soon" style="display:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       </div>
-      <div class="feature-title"><span class="scalper-word">Scalpe</span><span class="scalper-r">®</span></div>
+      <div class="feature-title" data-i18n="tabs.chalkboard">Chalkboard</div>
       <div class="feature-desc feat-main" data-i18n="scalper.desc">A free-form trading whiteboard. Draw setups, mark structure, build multi-slide lessons and export them — for every trading style.</div>
       <div class="feature-desc feat-state"></div>
       <a href="/pricing" target="_blank" rel="noopener" class="feature-upgrade" data-i18n="feature.upgrade">Upgrade to Premium</a>
@@ -2670,7 +2648,7 @@
 
       <div class="scalper-bar">
         <div class="scalper-brand">
-          <div class="sb-name"><span class="scalper-word">Scalpe</span><span class="scalper-r">®</span></div>
+          <div class="sb-name" data-i18n="tabs.chalkboard">Chalkboard</div>
           <div class="sb-tag" data-i18n="scalper.tag">The Trading Education Studio</div>
         </div>
         <div class="scalper-actions">
@@ -2956,6 +2934,10 @@
       'quiz.welcomeOptB': 'I want to verify the knowledge I already have',
       'quiz.welcomeOptC': "I can't quite understand some concepts",
       'quiz.welcomeOptD': "I'm just exploring",
+      'quiz.synapsePickTitle': 'Which topic do you want to practice?',
+      'quiz.synapsePickSub': 'Based on what you\'ve explored in Synapse.',
+      'quiz.synapseEmpty': "You haven't explored any topics in Synapse yet. Head over to Synapse first and click on a methodology node.",
+      'quiz.synapseGoBtn': 'Go to Synapse →',
       'quiz.subheading': 'Customize your session before starting',
       'quiz.methodology': 'Methodology',
       'quiz.m.patterns': 'Pattern Trading',
@@ -3072,6 +3054,7 @@
       'scout.chat.context': 'Analyzing: ',
       'scout.disclaimer': 'Data is for informational purposes only. Always verify directly with the prop firm before purchasing.',
       'scalper.desc': 'A free-form trading whiteboard. Draw setups, mark structure, build multi-slide lessons and export them — for every trading style.',
+      'tabs.chalkboard': 'Chalkboard',
       'tabs.synapse': 'Synapse',
       'synapse.desc': 'An interactive, futuristic trading knowledge base. A holographic mind branches into every major methodology — explore them in 3D.',
       'synapse.sub': 'Click a node to explore its methodology',
@@ -3168,6 +3151,10 @@
       'quiz.welcomeOptB': 'Quiero verificar los conocimientos que ya tengo',
       'quiz.welcomeOptC': 'No logro entender algunos conceptos',
       'quiz.welcomeOptD': 'Simplemente estoy explorando',
+      'quiz.synapsePickTitle': '¿Sobre qué tema quieres practicar?',
+      'quiz.synapsePickSub': 'Basado en lo que has explorado en Synapse.',
+      'quiz.synapseEmpty': 'Aún no has explorado ningún tema en Synapse. Ve a Synapse primero y haz clic en un nodo de metodología.',
+      'quiz.synapseGoBtn': 'Ir a Synapse →',
       'quiz.subheading': 'Personaliza tu sesión antes de empezar',
       'quiz.methodology': 'Metodología',
       'quiz.m.patterns': 'Trading de Patrones',
@@ -3284,6 +3271,7 @@
       'scout.chat.context': 'Analizando: ',
       'scout.disclaimer': 'La información es solo de referencia. Verifica siempre directamente con la prop firm antes de comprar.',
       'scalper.desc': 'Un pizarrón de trading libre. Dibuja setups, marca estructura, arma lecciones de varias diapositivas y expórtalas — para cualquier estilo de trading.',
+      'tabs.chalkboard': 'Chalkboard',
       'tabs.synapse': 'Synapse',
       'synapse.desc': 'Una base de conocimiento de trading interactiva y futurista. Una mente holográfica se ramifica hacia cada metodología — explóralas en 3D.',
       'synapse.sub': 'Haz clic en un nodo para explorar su metodología',
@@ -3379,8 +3367,12 @@
       'quiz.welcomeOptA': 'Je veux tester ce que j’ai étudié dans Synapse',
       'quiz.welcomeOptB': 'Je veux vérifier les connaissances que j’ai déjà',
       'quiz.welcomeOptC': 'Je ne comprends pas certains concepts',
-      'quiz.welcomeOptD': 'Je suis juste en train d’explorer',
-      'quiz.subheading': 'Personnalisez votre session avant de commencer',
+      ‘quiz.welcomeOptD’: ‘Je suis juste en train d’explorer’,
+      ‘quiz.synapsePickTitle’: ‘Quel sujet voulez-vous pratiquer ?’,
+      ‘quiz.synapsePickSub’: ‘Basé sur ce que vous avez exploré dans Synapse.’,
+      ‘quiz.synapseEmpty’: "Vous n’avez encore exploré aucun sujet dans Synapse. Rendez-vous d’abord dans Synapse et cliquez sur un nœud de méthodologie.",
+      ‘quiz.synapseGoBtn’: ‘Aller à Synapse →’,
+      ‘quiz.subheading’: ‘Personnalisez votre session avant de commencer’,
       'quiz.methodology': 'Méthodologie',
       'quiz.m.patterns': 'Trading de Figures',
       'quiz.yourLevel': 'Votre niveau',
@@ -3496,6 +3488,7 @@
       'scout.chat.context': 'Analyse : ',
       'scout.disclaimer': 'Les données sont fournies à titre indicatif uniquement. Vérifiez toujours directement auprès de la prop firm avant tout achat.',
       'scalper.desc': 'Un tableau de trading libre. Dessinez des setups, marquez la structure, créez des leçons multi-diapositives et exportez-les — pour tous les styles de trading.',
+      'tabs.chalkboard': 'Chalkboard',
       'tabs.synapse': 'Synapse',
       'synapse.desc': 'Une base de connaissances de trading interactive et futuriste. Un esprit holographique se ramifie vers chaque méthodologie — explorez-les en 3D.',
       'synapse.sub': 'Cliquez sur un nœud pour explorer sa méthodologie',
@@ -3592,6 +3585,10 @@
       'quiz.welcomeOptB': 'Quero verificar os conhecimentos que já tenho',
       'quiz.welcomeOptC': 'Não consigo entender alguns conceitos',
       'quiz.welcomeOptD': 'Estou apenas explorando',
+      'quiz.synapsePickTitle': 'Sobre qual tópico você quer praticar?',
+      'quiz.synapsePickSub': 'Com base no que você explorou no Synapse.',
+      'quiz.synapseEmpty': 'Você ainda não explorou nenhum tópico no Synapse. Vá primeiro ao Synapse e clique em um nó de metodologia.',
+      'quiz.synapseGoBtn': 'Ir para Synapse →',
       'quiz.subheading': 'Personalize sua sessão antes de começar',
       'quiz.methodology': 'Metodologia',
       'quiz.m.patterns': 'Trading de Padrões',
@@ -3708,6 +3705,7 @@
       'scout.chat.context': 'Analisando: ',
       'scout.disclaimer': 'Os dados são apenas para fins informativos. Verifique sempre diretamente com a prop firm antes de comprar.',
       'scalper.desc': 'Um quadro de trading livre. Desenhe setups, marque estrutura, crie aulas com vários slides e exporte-as — para qualquer estilo de trading.',
+      'tabs.chalkboard': 'Chalkboard',
       'tabs.synapse': 'Synapse',
       'synapse.desc': 'Uma base de conhecimento de trading interativa e futurista. Uma mente holográfica se ramifica para cada metodologia — explore-as em 3D.',
       'synapse.sub': 'Clique em um nó para explorar sua metodologia',
@@ -7905,13 +7903,14 @@
 
       // ── DOM refs ──
       const screens = {
-        welcome:   document.getElementById('quiz-welcome'),
-        home:      document.getElementById('quiz-home'),
-        topics:    document.getElementById('quiz-topics-screen'),
-        detail:    document.getElementById('quiz-topic-detail'),
-        placement: document.getElementById('quiz-placement-result'),
-        question:  document.getElementById('quiz-question'),
-        results:   document.getElementById('quiz-results'),
+        welcome:        document.getElementById('quiz-welcome'),
+        synapsePicker:  document.getElementById('quiz-synapse-picker'),
+        home:           document.getElementById('quiz-home'),
+        topics:         document.getElementById('quiz-topics-screen'),
+        detail:         document.getElementById('quiz-topic-detail'),
+        placement:      document.getElementById('quiz-placement-result'),
+        question:       document.getElementById('quiz-question'),
+        results:        document.getElementById('quiz-results'),
       };
 
       function showScreen(name) {
@@ -8260,17 +8259,70 @@
       });
       document.getElementById('quiz-new-btn')?.addEventListener('click',()=>showScreen('home'));
 
+      // ── Synapse topic tracking (localStorage) ──
+      const SYNAPSE_VIEWS_KEY = 'synapse_views';
+      function getSynapseViews() {
+        try { return JSON.parse(localStorage.getItem(SYNAPSE_VIEWS_KEY) || '[]'); } catch(e) { return []; }
+      }
+      function recordSynapseView(id) {
+        const views = getSynapseViews();
+        if (!views.includes(id)) { views.push(id); localStorage.setItem(SYNAPSE_VIEWS_KEY, JSON.stringify(views)); }
+      }
+
+      // Synapse id → quiz methodology id mapping
+      const SYNAPSE_TO_QUIZ = { ict:'ict', smc:'smc', wyckoff:'wyckoff', ta:null, price:null };
+
+      function renderSynapsePicker() {
+        const views = getSynapseViews();
+        const grid  = document.getElementById('quiz-synapse-method-grid');
+        const empty = document.getElementById('quiz-synapse-empty');
+        if (!grid) return;
+
+        // Filter: only show methodologies that map to an existing quiz method
+        const quizable = views.filter(id => SYNAPSE_TO_QUIZ[id]);
+
+        if (quizable.length === 0) {
+          grid.style.display  = 'none';
+          if (empty) empty.style.display = '';
+        } else {
+          if (empty) empty.style.display = 'none';
+          grid.style.display  = '';
+          grid.innerHTML = quizable.map(synapseId => {
+            const qId   = SYNAPSE_TO_QUIZ[synapseId];
+            const label = METHOD_LABELS[qId] || qId;
+            const nTopics = (TOPIC_MAP[qId]||[]).length;
+            return `<div class="quiz-method-card" data-m="${qId}">
+              <div class="mc-name">${label}</div>
+              <div class="mc-meta">${nTopics} ${T('quiz.topicsWord')||'topics'}</div>
+            </div>`;
+          }).join('');
+          grid.querySelectorAll('.quiz-method-card').forEach(card => {
+            card.addEventListener('click', () => openMethod(card.dataset.m));
+          });
+        }
+      }
+
+      document.getElementById('quiz-synapse-back')?.addEventListener('click', () => showScreen('welcome'));
+      document.getElementById('quiz-synapse-go-btn')?.addEventListener('click', () => {
+        const synapseTab = document.querySelector('.tab[data-tab="synapse"]');
+        if (synapseTab) synapseTab.click();
+      });
+
       // ── Welcome screen intent options ──
       document.querySelectorAll('#quiz-welcome .quiz-welcome-opt').forEach(opt=>{
         opt.addEventListener('click',()=>{
           const intent = opt.dataset.intent;
           if(intent==='learn'){
-            // "I can't understand some concepts" → take the user to Synapse
             const synapseTab = document.querySelector('.tab[data-tab="synapse"]');
             if(synapseTab) synapseTab.click();
             return;
           }
-          // a / b / d → proceed to the methodology picker
+          if(intent==='synapse-test'){
+            renderSynapsePicker();
+            showScreen('synapsePicker');
+            return;
+          }
+          // b / d → proceed to the methodology picker
           showScreen('home');
         });
       });
@@ -9186,7 +9238,12 @@
     }
 
     function openMethod(meth) {
-      // Libraries are a later milestone — for now confirm the branch is live.
+      // Track the visit so the Quiz can suggest this methodology later
+      try {
+        const key = 'synapse_views';
+        const views = JSON.parse(localStorage.getItem(key) || '[]');
+        if (!views.includes(meth.id)) { views.push(meth.id); localStorage.setItem(key, JSON.stringify(views)); }
+      } catch(e) {}
       const dict = I18N[currentLang] || I18N.en;
       const tmpl = dict['synapse.soon'] || '{name} library — coming soon';
       showToast(tmpl.replace('{name}', meth.name));
