@@ -2117,10 +2117,13 @@
         </div>
       </div>
 
-      <!-- Notes -->
+      <!-- Notes / Trade Construction -->
       <div class="card">
-        <div class="card-label"><span data-i18n="card.notes">Notes</span> <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;" data-i18n="card.notesHint">(optional — anything you want Trader Acelerator to know)</span></div>
-        <textarea name="notes" id="notes" data-i18n-ph="notes.placeholder" placeholder="e.g. I thought price had swept SSL before I entered. It reversed right after my entry..."></textarea>
+        <div class="card-label">
+          <span data-i18n="card.notes">Trade Construction</span>
+          <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;" data-i18n="card.notesHint">(optional — describe how you built this trade)</span>
+        </div>
+        <textarea name="notes" id="notes" rows="5" data-i18n-ph="notes.placeholder" placeholder="e.g. I was waiting for a sweep of the equal lows at 1.0842 (SSL). Once price swept and I saw a bullish displacement on the 1m, I entered long targeting the FVG above at 1.0875. My OB was the last bearish candle before the displacement..."></textarea>
       </div>
 
       <div class="error-box" id="error-box"></div>
@@ -2876,8 +2879,8 @@
       'card.confluencesHint': '(select all that apply)',
       'card.screenshot': 'Chart Screenshot',
       'card.required': 'required',
-      'card.notes': 'Notes',
-      'card.notesHint': '(optional — anything you want Trader Acelerator to know)',
+      'card.notes': 'Trade Construction',
+      'card.notesHint': '(optional — describe how you built this trade)',
       'field.instrument': 'Instrument',
       'field.direction': 'Direction',
       'field.session': 'Session',
@@ -2900,7 +2903,7 @@
       'guide.tagRecommended': 'recommended',
       'upload.main': 'Click or drag your chart screenshot here',
       'upload.sub': 'JPG, PNG or WebP — max 20MB',
-      'notes.placeholder': 'e.g. I thought price had swept SSL before I entered. It reversed right after my entry...',
+      'notes.placeholder': 'e.g. I waited for price to sweep equal lows at X (SSL). On the 1m I saw a bullish displacement, so I entered long targeting the FVG above. My entry OB was the last bearish candle before the impulse. HTF showed bullish PD array right below...',
       'btn.analyze': 'Analyze Setup →',
       'btn.checking': 'Checking...',
       'btn.new': '← Analyze Another Trade',
@@ -3093,8 +3096,8 @@
       'card.confluencesHint': '(selecciona todas las que apliquen)',
       'card.screenshot': 'Captura del Gráfico',
       'card.required': 'obligatorio',
-      'card.notes': 'Notas',
-      'card.notesHint': '(opcional — lo que quieras que Trader Acelerator sepa)',
+      'card.notes': 'Construcción del Trade',
+      'card.notesHint': '(opcional — describe cómo armaste este trade)',
       'field.instrument': 'Instrumento',
       'field.direction': 'Dirección',
       'field.session': 'Sesión',
@@ -3117,7 +3120,7 @@
       'guide.tagRecommended': 'recomendado',
       'upload.main': 'Haz clic o arrastra aquí la captura de tu gráfico',
       'upload.sub': 'JPG, PNG o WebP — máx 20MB',
-      'notes.placeholder': 'ej. Pensé que el precio había barrido la SSL antes de entrar. Se revirtió justo después de mi entrada...',
+      'notes.placeholder': 'ej. Esperé que el precio barriera los mínimos iguales en X (SSL). En el 1m vi un desplazamiento alcista, entré largo con target en el FVG de arriba. Mi OB de entrada era la última vela bajista antes del impulso. El HTF mostraba un PD array alcista justo debajo...',
       'btn.analyze': 'Analizar Setup →',
       'btn.checking': 'Verificando...',
       'btn.new': '← Analizar otro Trade',
@@ -3310,8 +3313,8 @@
       'card.confluencesHint': "(sélectionnez tout ce qui s'applique)",
       'card.screenshot': 'Capture du Graphique',
       'card.required': 'obligatoire',
-      'card.notes': 'Notes',
-      'card.notesHint': '(facultatif — ce que vous voulez que Trader Acelerator sache)',
+      'card.notes': 'Construction du Trade',
+      'card.notesHint': '(facultatif — décrivez comment vous avez construit ce trade)',
       'field.instrument': 'Instrument',
       'field.direction': 'Direction',
       'field.session': 'Session',
@@ -3334,7 +3337,7 @@
       'guide.tagRecommended': 'recommandé',
       'upload.main': 'Cliquez ou glissez la capture de votre graphique ici',
       'upload.sub': 'JPG, PNG ou WebP — max 20 Mo',
-      'notes.placeholder': "ex. Je pensais que le prix avait balayé la SSL avant mon entrée. Il s'est inversé juste après...",
+      'notes.placeholder': "ex. J'attendais que le prix balaie les bas égaux à X (SSL). Sur le 1m j'ai vu un déplacement haussier et j'ai entré long, ciblant le FVG au-dessus. Mon OB d'entrée était la dernière bougie baissière avant l'impulsion...",
       'btn.analyze': 'Analyser le Setup →',
       'btn.checking': 'Vérification...',
       'btn.new': '← Analyser un autre Trade',
@@ -3527,8 +3530,8 @@
       'card.confluencesHint': '(selecione todas que se aplicam)',
       'card.screenshot': 'Captura do Gráfico',
       'card.required': 'obrigatório',
-      'card.notes': 'Notas',
-      'card.notesHint': '(opcional — o que você quer que o Trader Acelerator saiba)',
+      'card.notes': 'Construção do Trade',
+      'card.notesHint': '(opcional — descreva como você construiu este trade)',
       'field.instrument': 'Instrumento',
       'field.direction': 'Direção',
       'field.session': 'Sessão',
@@ -3551,7 +3554,7 @@
       'guide.tagRecommended': 'recomendado',
       'upload.main': 'Clique ou arraste a captura do seu gráfico aqui',
       'upload.sub': 'JPG, PNG ou WebP — máx 20MB',
-      'notes.placeholder': 'ex. Achei que o preço tinha varrido a SSL antes de eu entrar. Reverteu logo após minha entrada...',
+      'notes.placeholder': 'ex. Aguardei o preço varrer as mínimas iguais em X (SSL). No 1m vi um deslocamento altista, entrei comprado mirando o FVG acima. Meu OB de entrada era a última vela de baixa antes do impulso. O HTF mostrava um PD array altista logo abaixo...',
       'btn.analyze': 'Analisar Setup →',
       'btn.checking': 'Verificando...',
       'btn.new': '← Analisar outro Trade',

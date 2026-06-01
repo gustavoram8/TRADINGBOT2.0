@@ -906,6 +906,19 @@ def analyze():
 
         confluences_str = ', '.join(confluences) if confluences else 'None specified'
 
+        trade_construction_block = ""
+        if notes:
+            trade_construction_block = f"""
+TRADER'S TRADE CONSTRUCTION (what the trader saw and why they took this trade):
+\"\"\"
+{notes}
+\"\"\"
+This is the trader's own account of how they built the trade — their reasoning, the levels they identified, what they were waiting for, and how they decided to enter. Treat this as their declared thesis. Your job is to:
+1. Evaluate whether what they described is visible and consistent with what you see on the chart.
+2. Contrast their declared construction against the actual price action — where does the chart confirm their thesis? Where does it diverge or show something they may not have accounted for?
+3. Be specific: if they say they identified a FVG or OB at a certain point, look for it on the chart and comment on its quality. If they mention a liquidity sweep, verify whether it looks like a clean sweep with displacement on the chart.
+Do NOT simply repeat their construction back — analyze and contrast it."""
+
         user_message = f"""Trade submitted for ICT analysis:
 
 Instrument: {instrument}
@@ -916,8 +929,7 @@ HTF Bias held: {htf_bias}
 Traded aligned with HTF bias: {aligned}
 Approach / model used: {approach}
 Confluences identified by trader: {confluences_str}
-{f'Trader notes: {notes}' if notes else ''}
-
+{trade_construction_block}
 This was a {direction} trade — anchor your entire analysis to that fact. Locate where the trader entered and exited on the chart using the {direction} direction as your reference. Apply your ICT knowledge to identify possible setup errors — or confirm if the setup was technically sound and this was within normal statistical variance.
 
 LANGUAGE: Write your entire response in {language}. Keep ICT-specific terms and acronyms (FVG, IFVG, OTE, CHoCH, MSS, BOS, OB, SMT, BSL, SSL, EQH, EQL, Kill Zone, Silver Bullet, etc.) in their standard English form, but write all explanatory prose in {language}."""
