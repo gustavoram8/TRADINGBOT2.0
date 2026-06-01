@@ -1750,25 +1750,15 @@
       background: radial-gradient(circle at 50% 38%, #fff1b0, #fde047 45%, #f0a712 100%);
       box-shadow: 0 0 6px rgba(255,160,30,0.9), inset 0 -1px 3px rgba(180,90,0,0.5);
       animation: qcEmber 0.45s ease-in-out infinite alternate; }
-    /* SVG cartoon flame */
-    .qc-fire-svg { position: absolute; left: 50%; bottom: -4px; z-index: 2;
-      width: 44px; height: 52px; transform: translateX(-50%);
-      transform-origin: 50% 100%;
-      animation: qcFlameBurn 0.55s ease-in-out infinite alternate;
-      mix-blend-mode: screen; pointer-events: none; }
-    .qc-fire-svg .flame-main { opacity: 0.82; }
-    .qc-fire-svg .flame-inner { opacity: 0.72; }
-    @keyframes qcFlameBurn {
-      0%   { transform: translateX(-50%) scaleX(1)    scaleY(0.92) skewX(-1deg); }
-      25%  { transform: translateX(-50%) scaleX(0.93) scaleY(1.06) skewX(2deg);  }
-      55%  { transform: translateX(-50%) scaleX(1.06) scaleY(0.97) skewX(-2deg); }
-      80%  { transform: translateX(-50%) scaleX(0.95) scaleY(1.04) skewX(1deg);  }
-      100% { transform: translateX(-50%) scaleX(1.03) scaleY(0.94) skewX(-1deg); } }
+    /* Canvas particle fire */
+    .qc-fire-canvas { position: absolute; left: 50%; bottom: -10px; z-index: 2;
+      width: 48px; height: 60px; transform: translateX(-50%);
+      pointer-events: none; mix-blend-mode: screen; }
     @keyframes qcEmber {
       0%   { box-shadow: 0 0 5px rgba(255,150,20,0.8),  inset 0 -1px 3px rgba(180,90,0,0.5); }
       100% { box-shadow: 0 0 11px rgba(255,190,60,1),   inset 0 -1px 3px rgba(180,90,0,0.5); } }
     @media (prefers-reduced-motion: reduce) {
-      .qc-star, .qc-fire-svg { animation: none; } }
+      .qc-star { animation: none; } }
     .qc-title { font-size: 15px; font-weight: 800; letter-spacing: .01em; }
     .qc-sub   { font-size: 12px; color: var(--muted); margin-top: 2px; }
     .qc-list  { display: flex; flex-direction: column; gap: 8px; }
@@ -2528,39 +2518,7 @@
         <div class="quiz-certified" id="quiz-certified">
           <div class="qc-head">
             <span class="qc-badge">
-              <svg class="qc-fire-svg" aria-hidden="true" viewBox="0 0 44 52" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                  <radialGradient id="fg1" cx="50%" cy="80%" r="65%">
-                    <stop offset="0%"   stop-color="#ff2200" stop-opacity="0.9"/>
-                    <stop offset="35%"  stop-color="#ff6600" stop-opacity="0.75"/>
-                    <stop offset="65%"  stop-color="#ffaa00" stop-opacity="0.55"/>
-                    <stop offset="100%" stop-color="#ffee44" stop-opacity="0"/>
-                  </radialGradient>
-                  <radialGradient id="fg2" cx="50%" cy="75%" r="55%">
-                    <stop offset="0%"   stop-color="#ff4400" stop-opacity="0.7"/>
-                    <stop offset="50%"  stop-color="#ffbb22" stop-opacity="0.5"/>
-                    <stop offset="100%" stop-color="#ffee88" stop-opacity="0"/>
-                  </radialGradient>
-                </defs>
-                <!-- outer flame body — large rounded teardrop -->
-                <path class="flame-main" fill="url(#fg1)"
-                  d="M22 2
-                     C22 2, 36 10, 38 22
-                     C40 30, 36 36, 34 40
-                     C30 46, 26 50, 22 51
-                     C18 50, 14 46, 10 40
-                     C8 36, 4 30, 6 22
-                     C8 10, 22 2, 22 2 Z"/>
-                <!-- inner brighter core -->
-                <path class="flame-inner" fill="url(#fg2)"
-                  d="M22 12
-                     C22 12, 31 18, 32 26
-                     C33 32, 30 37, 28 41
-                     C26 45, 24 48, 22 49
-                     C20 48, 18 45, 16 41
-                     C14 37, 11 32, 12 26
-                     C13 18, 22 12, 22 12 Z"/>
-              </svg>
+              <canvas class="qc-fire-canvas" id="qc-fire-canvas" width="48" height="60" aria-hidden="true"></canvas>
               <span class="qc-star">★</span>
             </span>
             <div>
@@ -8387,6 +8345,7 @@
 
         // refresh the certified traders panel (the user may have just qualified)
         renderCertified();
+        QCFire.start();
       }
 
       // ── Certified accelerated traders (Hall of Fame) ──
@@ -8424,6 +8383,77 @@
           </div>`).join('');
       }
       function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s==null?'':String(s); return d.innerHTML; }
+
+      // ── Canvas particle fire on the certified badge ──
+      const QCFire = (function(){
+        let canvas, ctx, W, H, particles, raf, running=false, dpr=1;
+        const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        function spawn(){
+          // emit from a small horizontal band at the base, biased to centre
+          const cx = W*0.5;
+          const spread = W*0.22;
+          const x = cx + (Math.random()*2-1)*spread*(0.4+Math.random()*0.6);
+          return {
+            x, y: H*0.86 + Math.random()*4,
+            vx: (cx - x)*0.012 + (Math.random()*2-1)*0.18,  // gentle pull toward centre + jitter
+            vy: -(0.85 + Math.random()*0.75),               // rise speed
+            life: 0, ttl: 26 + Math.random()*22,
+            r: 3.2 + Math.random()*3.4
+          };
+        }
+        function tick(){
+          ctx.clearRect(0,0,W,H);
+          ctx.globalCompositeOperation = 'lighter';
+          for(let i=particles.length-1;i>=0;i--){
+            const p = particles[i];
+            p.life++;
+            p.x += p.vx + Math.sin((p.life+p.x)*0.18)*0.22; // lateral wiggle = turbulence
+            p.y += p.vy;
+            p.vy *= 0.985;        // decelerate as it rises
+            p.vx *= 0.97;
+            p.r  *= 0.965;        // shrink
+            const t = p.life/p.ttl;
+            if(t>=1 || p.r<0.5){ particles.splice(i,1); continue; }
+            // colour: white/yellow hot at base → orange → red → fade
+            let col;
+            if(t<0.18)      col = `rgba(255,250,200,${0.95*(1-t)})`;
+            else if(t<0.45) col = `rgba(255,190,60,${0.85*(1-t)})`;
+            else if(t<0.72) col = `rgba(255,110,20,${0.7*(1-t)})`;
+            else            col = `rgba(200,40,10,${0.55*(1-t)})`;
+            const g = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r);
+            g.addColorStop(0, col);
+            g.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = g;
+            ctx.beginPath();
+            ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+            ctx.fill();
+          }
+          ctx.globalCompositeOperation = 'source-over';
+          // steady emission
+          const want = 4 + Math.floor(Math.random()*3);
+          for(let k=0;k<want && particles.length<90;k++) particles.push(spawn());
+          raf = requestAnimationFrame(tick);
+        }
+        function start(){
+          if(running || reduced) return;
+          canvas = document.getElementById('qc-fire-canvas');
+          if(!canvas) return;
+          dpr = Math.min(window.devicePixelRatio||1, 2);
+          const cw = canvas.width, ch = canvas.height;
+          canvas.width  = cw*dpr; canvas.height = ch*dpr;
+          W = cw; H = ch;
+          ctx = canvas.getContext('2d');
+          ctx.scale(dpr,dpr);
+          particles = [];
+          running = true;
+          tick();
+        }
+        function stop(){
+          running = false;
+          if(raf) cancelAnimationFrame(raf);
+        }
+        return { start, stop };
+      })();
 
       // ── Navigation bindings ──
       document.getElementById('quiz-topics-back')?.addEventListener('click',()=>showScreen('home'));
