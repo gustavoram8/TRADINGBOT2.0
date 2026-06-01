@@ -1723,6 +1723,32 @@
     .quiz-action-btn:hover { opacity: .88; }
     .quiz-action-btn.secondary { background: transparent; color: var(--accent); }
 
+    /* Pass / fail verdict label */
+    .quiz-score-label.pass { color: #22c55e; }
+    .quiz-score-label.fail { color: #ef4444; }
+    .quiz-pass-rule { text-align: center; font-size: 12px; color: var(--muted); margin: -16px 0 22px; }
+
+    /* ── Certified accelerated traders (Hall of Fame) ── */
+    .quiz-certified { margin-top: 30px; padding-top: 24px; border-top: 1px solid var(--border2); }
+    .qc-head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .qc-badge { flex: none; width: 38px; height: 38px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-size: 18px;
+      color: #0c0e14; background: linear-gradient(135deg, #fde047, #eab308);
+      box-shadow: 0 0 16px rgba(234,179,8,0.45); }
+    .qc-title { font-size: 15px; font-weight: 800; letter-spacing: .01em; }
+    .qc-sub   { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .qc-list  { display: flex; flex-direction: column; gap: 8px; }
+    .qc-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px;
+      border: 1px solid var(--border2); border-radius: 10px; background: var(--card); }
+    .qc-row.is-admin { border-color: rgba(234,179,8,0.45);
+      background: linear-gradient(90deg, rgba(234,179,8,0.08), transparent); }
+    .qc-rank { flex: none; width: 22px; font-size: 13px; font-weight: 700; color: var(--muted); text-align: center; }
+    .qc-name { flex: 1; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 7px; }
+    .qc-founder { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+      padding: 2px 6px; border-radius: 5px; color: #eab308; background: rgba(234,179,8,0.14); }
+    .qc-acc  { flex: none; font-size: 13px; font-weight: 700; color: #22c55e; }
+    .qc-empty { font-size: 13px; color: var(--muted); text-align: center; padding: 12px 0; }
+
     /* ── Quiz navigation (methodology / topic / level) ── */
     .quiz-prog-title { font-size: 19px; font-weight: 700; margin-bottom: 4px; }
     .quiz-prog-sub   { font-size: 13px; color: var(--muted); margin-bottom: 22px; }
@@ -2459,6 +2485,7 @@
           <div class="quiz-score-num" id="quiz-score-num">0/10</div>
         </div>
         <div class="quiz-score-label" id="quiz-score-label"></div>
+        <div class="quiz-pass-rule" id="quiz-pass-rule"></div>
         <div class="quiz-weak-alert" id="quiz-weak-alert" style="display:none;">
           <div class="quiz-weak-alert-title" data-i18n="quiz.weakTitle">Reinforce these topics</div>
           <div id="quiz-weak-tags"></div>
@@ -2467,6 +2494,19 @@
         <div class="quiz-results-actions">
           <button class="quiz-action-btn secondary" id="quiz-retry-btn" data-i18n="quiz.tryAgain">Try Again</button>
           <button class="quiz-action-btn" id="quiz-new-btn" data-i18n="quiz.newQuiz">New Quiz</button>
+        </div>
+
+        <!-- ── Certified accelerated traders (Hall of Fame) ── -->
+        <div class="quiz-certified" id="quiz-certified">
+          <div class="qc-head">
+            <span class="qc-badge">★</span>
+            <div>
+              <div class="qc-title" data-i18n="quiz.certifiedTitle">Our Certified Accelerated Traders</div>
+              <div class="qc-sub" id="quiz-certified-sub" data-i18n="quiz.certifiedSub">Premium members who passed every quiz with 80%+ accuracy.</div>
+            </div>
+          </div>
+          <div class="qc-list" id="quiz-certified-list"><!-- populated by JS --></div>
+          <div class="qc-empty" id="quiz-certified-empty" style="display:none;" data-i18n="quiz.certifiedEmpty">No certified traders yet — be the first to complete every quiz at 80%+.</div>
         </div>
       </div>
 
@@ -2977,6 +3017,13 @@
       'quiz.excellent': 'Excellent work! 🎯',
       'quiz.good': 'Good effort! 📈',
       'quiz.keepStudying': 'Keep studying! 📚',
+      'quiz.passed': 'Passed ✅',
+      'quiz.failed': 'Not passed ❌',
+      'quiz.passRule': 'You need at least 80% correct to pass.',
+      'quiz.certifiedTitle': 'Our Certified Accelerated Traders',
+      'quiz.certifiedSub': 'Premium members who passed every quiz with {pct}%+ accuracy.',
+      'quiz.certifiedEmpty': 'No certified traders yet — be the first to complete every quiz at 80%+.',
+      'quiz.founder': 'Founder',
       'quiz.noQuestions': 'No questions available for this combination. Try different topics or level.',
       'tabs.scout': 'Prop Firm Scout',
       'feature.premium': 'Premium',
@@ -3194,6 +3241,13 @@
       'quiz.excellent': '¡Excelente trabajo! 🎯',
       'quiz.good': '¡Buen esfuerzo! 📈',
       'quiz.keepStudying': '¡Sigue estudiando! 📚',
+      'quiz.passed': 'Aprobado ✅',
+      'quiz.failed': 'Reprobado ❌',
+      'quiz.passRule': 'Necesitas al menos 80% de aciertos para aprobar.',
+      'quiz.certifiedTitle': 'Nuestros Traders Acelerados Certificados',
+      'quiz.certifiedSub': 'Miembros Premium que aprobaron todos los quizzes con {pct}% o más de aciertos.',
+      'quiz.certifiedEmpty': 'Aún no hay traders certificados — sé el primero en completar todos los quizzes con 80%+.',
+      'quiz.founder': 'Fundador',
       'quiz.noQuestions': 'No hay preguntas para esta combinación. Prueba con otros temas o nivel.',
       'tabs.scout': 'Prop Firm Scout',
       'feature.premium': 'Premium',
@@ -3411,6 +3465,13 @@
       'quiz.excellent': 'Excellent travail ! 🎯',
       'quiz.good': 'Bon effort ! 📈',
       'quiz.keepStudying': 'Continuez à étudier ! 📚',
+      'quiz.passed': 'Réussi ✅',
+      'quiz.failed': 'Non réussi ❌',
+      'quiz.passRule': 'Vous avez besoin d\'au moins 80% de bonnes réponses pour réussir.',
+      'quiz.certifiedTitle': 'Nos Traders Accélérés Certifiés',
+      'quiz.certifiedSub': 'Membres Premium ayant réussi tous les quiz avec une précision de {pct}% ou plus.',
+      'quiz.certifiedEmpty': 'Aucun trader certifié pour l\'instant — soyez le premier à compléter tous les quiz avec 80%+.',
+      'quiz.founder': 'Fondateur',
       'quiz.noQuestions': 'Aucune question pour cette combinaison. Essayez d\'autres thèmes ou niveaux.',
       'tabs.scout': 'Prop Firm Scout',
       'feature.premium': 'Premium',
@@ -3628,6 +3689,13 @@
       'quiz.excellent': 'Excelente trabalho! 🎯',
       'quiz.good': 'Bom esforço! 📈',
       'quiz.keepStudying': 'Continue estudando! 📚',
+      'quiz.passed': 'Aprovado ✅',
+      'quiz.failed': 'Reprovado ❌',
+      'quiz.passRule': 'Você precisa de pelo menos 80% de acertos para passar.',
+      'quiz.certifiedTitle': 'Nossos Traders Acelerados Certificados',
+      'quiz.certifiedSub': 'Membros Premium que passaram em todos os quizzes com {pct}% ou mais de acertos.',
+      'quiz.certifiedEmpty': 'Ainda não há traders certificados — seja o primeiro a completar todos os quizzes com 80%+.',
+      'quiz.founder': 'Fundador',
       'quiz.noQuestions': 'Nenhuma pergunta para esta combinação. Tente outros temas ou nível.',
       'tabs.scout': 'Prop Firm Scout',
       'feature.premium': 'Premium',
@@ -8219,8 +8287,18 @@
         const sn=document.getElementById('quiz-score-num');
         if(sn) sn.textContent=`${qState.score}/${total}`;
 
+        // A quiz is passed with >= 80% accuracy.
+        const PASS_PCT = 80;
+        const passed = pct >= PASS_PCT;
         const sl=document.getElementById('quiz-score-label');
-        if(sl) sl.textContent=pct>=80?T('quiz.excellent'):pct>=60?T('quiz.good'):T('quiz.keepStudying');
+        if(sl){
+          sl.textContent = passed
+            ? `${T('quiz.passed')||'Passed'} — ${pct}%`
+            : `${T('quiz.failed')||'Not passed'} — ${pct}%`;
+          sl.className = 'quiz-score-label ' + (passed ? 'pass' : 'fail');
+        }
+        const pr=document.getElementById('quiz-pass-rule');
+        if(pr){ pr.textContent = (T('quiz.passRule')||'You need at least 80% correct to pass.'); }
 
         // compute weak topics (at least 1 wrong answer in that topic)
         const topicMap={};
@@ -8246,7 +8324,46 @@
 
         // save to server
         await saveProgress(qState.methodology, qState.level, qState.score, total, weakTopics);
+
+        // refresh the certified traders panel (the user may have just qualified)
+        renderCertified();
       }
+
+      // ── Certified accelerated traders (Hall of Fame) ──
+      async function renderCertified() {
+        const list  = document.getElementById('quiz-certified-list');
+        const empty = document.getElementById('quiz-certified-empty');
+        const sub   = document.getElementById('quiz-certified-sub');
+        if(!list) return;
+        let data;
+        try {
+          const res = await fetch('/api/quiz/certified');
+          if(!res.ok) throw new Error('fetch failed');
+          data = await res.json();
+        } catch(e) {
+          list.innerHTML=''; if(empty) empty.style.display='none';
+          return;
+        }
+        if(sub && data.cert_pct){
+          const tmpl = T('quiz.certifiedSub') || 'Premium members who passed every quiz with {pct}%+ accuracy.';
+          sub.textContent = tmpl.replace('{pct}', data.cert_pct);
+        }
+        const traders = data.traders || [];
+        if(!traders.length){
+          list.innerHTML='';
+          if(empty) empty.style.display='';
+          return;
+        }
+        if(empty) empty.style.display='none';
+        const founderLabel = T('quiz.founder') || 'Founder';
+        list.innerHTML = traders.map((t,i)=>`
+          <div class="qc-row ${t.is_admin?'is-admin':''}">
+            <span class="qc-rank">${i+1}</span>
+            <span class="qc-name">${escapeHtml(t.username)}${t.is_admin?`<span class="qc-founder">${founderLabel}</span>`:''}</span>
+            <span class="qc-acc">${t.accuracy}%</span>
+          </div>`).join('');
+      }
+      function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s==null?'':String(s); return d.innerHTML; }
 
       // ── Navigation bindings ──
       document.getElementById('quiz-topics-back')?.addEventListener('click',()=>showScreen('home'));

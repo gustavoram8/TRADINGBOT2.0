@@ -1797,6 +1797,19 @@ def scout_chat():
 
 
 # ── Quiz Progress (premium) ──
+# ── Quiz pass / certification rules ──────────────────────────────────────────
+# A quiz is PASSED with at least this accuracy (shown both in the UI and enforced
+# server-side). Anything below is a fail.
+QUIZ_PASS_PCT = 80
+
+# A trader is "certified" once they have PASSED every quiz of every methodology
+# and level, with an overall accuracy of at least QUIZ_CERT_PCT across all of them.
+QUIZ_CERT_METHODS = ['ict', 'smc', 'wyckoff', 'patterns']
+QUIZ_CERT_LEVELS  = ['beginner', 'intermediate', 'advanced']
+QUIZ_CERT_REQUIRED = len(QUIZ_CERT_METHODS) * len(QUIZ_CERT_LEVELS)   # 12 combos
+QUIZ_CERT_PCT = 80
+
+
 class QuizProgress(db.Model):
     """One row per (user, methodology, level) combination."""
     id           = db.Column(db.Integer, primary_key=True)
@@ -1849,7 +1862,7 @@ def quiz_complete():
         user_id=current_user.id, methodology=methodology, level=level
     ).first()
     pct = (score / total * 100) if total else 0
-    passed = pct >= 60
+    passed = pct >= QUIZ_PASS_PCT
 
     if row is None:
         row = QuizProgress(user_id=current_user.id, methodology=methodology, level=level)
@@ -1865,6 +1878,62 @@ def quiz_complete():
 
     db.session.commit()
     return jsonify({'ok': True, 'completed': row.completed, 'best_score': row.best_score})
+
+
+def user_certification(user_id):
+    """Return {'accuracy': int, 'completed_at': datetime|None} if the user has
+    passed EVERY quiz (all methodology+level combos) with an overall accuracy of
+    at least QUIZ_CERT_PCT, otherwise None."""
+    rows = QuizProgress.query.filter_by(user_id=user_id).all()
+    completed = [r for r in rows if r.completed]
+    # The unique (user, methodology, level) constraint means a full grid == count
+    if len(completed) < QUIZ_CERT_REQUIRED:
+        return None
+    total_correct = sum(r.best_score for r in completed)
+    total_q       = sum(r.total_q for r in completed)
+    if not total_q:
+        return None
+    pct = round(total_correct / total_q * 100)
+    if pct < QUIZ_CERT_PCT:
+        return None
+    last = max((r.completed_at for r in completed if r.completed_at), default=None)
+    return {'accuracy': pct, 'completed_at': last}
+
+
+@app.route('/api/quiz/certified')
+@login_required
+def quiz_certified():
+    """Leaderboard of certified accelerated traders: premium users who passed
+    every quiz with >= QUIZ_CERT_PCT overall. Admins are always showcased as
+    founding examples even if their grid isn't complete."""
+    if current_user.plan != 'premium' and not current_user.is_admin:
+        return jsonify({'error': 'premium_only'}), 403
+
+    entries = []
+    users = User.query.filter(
+        (User.plan == 'premium') | (User.is_admin == True)  # noqa: E712
+    ).all()
+    for u in users:
+        cert = user_certification(u.id)
+        if cert:
+            entries.append({
+                'username':  u.username,
+                'accuracy':  cert['accuracy'],
+                'is_admin':  u.is_admin,
+                'completed_at': cert['completed_at'].isoformat() if cert['completed_at'] else None,
+            })
+        elif u.is_admin:
+            # Founding example: admins are showcased even without a full grid.
+            entries.append({
+                'username':  u.username,
+                'accuracy':  cert['accuracy'] if cert else 100,
+                'is_admin':  True,
+                'completed_at': None,
+            })
+
+    # Highest accuracy first; admins (founders) bubble to the top on ties.
+    entries.sort(key=lambda e: (e['accuracy'], e['is_admin']), reverse=True)
+    return jsonify({'pass_pct': QUIZ_PASS_PCT, 'cert_pct': QUIZ_CERT_PCT, 'traders': entries})
 
 
 # ──────────────────────────────────────────────────────────────────────────
