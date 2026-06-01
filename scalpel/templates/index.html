@@ -996,32 +996,52 @@
       overflow: visible; }
     .pi-badge svg { width: 18px; height: 18px; }
 
-    /* ── Free: muted circle + checkmark ── */
+    /* ── Free: muted circle + checkmark — gentle pulse ── */
     .pi-badge-free { background: rgba(107,114,128,.12); }
+    .pi-badge-free svg { animation: piFreePulse 3s ease-in-out infinite; transform-origin: 50% 50%; }
+    @keyframes piFreePulse {
+      0%,100% { opacity: .8;  transform: scale(1); }
+      50%      { opacity: 1;  transform: scale(1.08); } }
     .pi-free:hover .pi-badge-free svg circle { stroke: #9ca3af; }
+    .pi-free:hover .pi-badge-free svg path   { stroke: #d1d5db; }
 
-    /* ── Standard: blue star, spins slowly on hover ── */
+    /* ── Standard: blue star — slow idle twinkle, full spin on hover ── */
     .pi-badge-standard { background: rgba(59,130,246,.12); }
-    .pi-badge-standard svg { transition: transform 0.55s cubic-bezier(.25,.8,.25,1); }
-    .pi-standard:hover .pi-badge-standard svg { transform: rotate(72deg); }
+    .pi-badge-standard svg { transition: transform 0.6s cubic-bezier(.25,.8,.25,1);
+      animation: piStarTwinkle 2.6s ease-in-out infinite; transform-origin: 50% 50%; }
+    @keyframes piStarTwinkle {
+      0%,100% { transform: rotate(0deg)  scale(1); }
+      50%      { transform: rotate(-8deg) scale(1.06); } }
+    .pi-standard:hover .pi-badge-standard svg { animation: none; transform: rotate(180deg) scale(1.05); }
     .pi-standard:hover .pi-badge-standard svg path { stroke: #60a5fa; }
 
-    /* ── Premium: crown glows + bobs ── */
+    /* ── Premium: crown bobs + sways, glows on hover, gems shimmer ── */
     .pi-badge-premium { background: rgba(245,158,11,.14); }
-    .pi-crown-svg { animation: piCrownBob 2.8s ease-in-out infinite; }
+    .pi-crown-svg { animation: piCrownBob 2.8s ease-in-out infinite; transform-origin: 50% 90%; }
     @keyframes piCrownBob {
-      0%,100% { transform: translateY(0); }
-      50%      { transform: translateY(-2px); } }
+      0%,100% { transform: translateY(0)    rotate(0deg); }
+      30%      { transform: translateY(-2px) rotate(-3deg); }
+      70%      { transform: translateY(-2px) rotate(3deg); } }
+    .pi-crown-svg circle { animation: piGemShimmer 1.6s ease-in-out infinite; }
+    .pi-crown-svg circle:nth-of-type(2) { animation-delay: .35s; }
+    .pi-crown-svg circle:nth-of-type(3) { animation-delay: .7s; }
+    @keyframes piGemShimmer {
+      0%,100% { opacity: .5; }
+      50%      { opacity: 1; } }
     .pi-premium:hover .pi-badge-premium {
       background: rgba(245,158,11,.28);
-      box-shadow: 0 0 10px rgba(245,158,11,.45); }
+      box-shadow: 0 0 12px rgba(245,158,11,.55); }
+    .pi-premium:hover .pi-crown-svg { animation-duration: 1.1s; }
 
     /* ── Indicators: purple line chart ── */
     .pi-badge-ind { background: rgba(139,92,246,.12); }
     .products-item:hover .pi-badge-ind { background: rgba(139,92,246,.22); }
 
-    /* ── Camo: earthy badge ── */
-    .pi-badge-camo { background: rgba(74,124,89,.16); border-radius: 7px; }
+    /* ── Camo: diagonal bars (theme-aware) ── */
+    .pi-badge-camo { background: rgba(120,120,120,.14); border-radius: 7px; }
+    .pi-camo-svg { color: #e8eaf0; }            /* dark mode: light bars */
+    body.light .pi-camo-svg { color: #15171f; } /* light mode: dark bars */
+    .products-item:hover .pi-badge-camo { background: rgba(120,120,120,.24); }
 
     /* ── Terms: slate document ── */
     .pi-badge-terms { background: rgba(148,163,184,.12); }
@@ -2150,13 +2170,14 @@
   <!-- CAMOS -->
   <a href="/camos" class="products-item" role="menuitem">
     <span class="pi-badge pi-badge-camo" aria-hidden="true">
-      <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- camo blobs -->
-        <ellipse cx="6"  cy="7"  rx="3.5" ry="2.5" fill="#4a7c59" opacity=".9"/>
-        <ellipse cx="13" cy="6"  rx="2.8" ry="2"   fill="#2f4a2f" opacity=".85"/>
-        <ellipse cx="10" cy="12" rx="3.8" ry="2.4" fill="#6b8c4e" opacity=".9"/>
-        <ellipse cx="4"  cy="14" rx="2.4" ry="1.8" fill="#3d5c32" opacity=".8"/>
-        <ellipse cx="15.5" cy="13" rx="3" ry="2"   fill="#1f3320" opacity=".85"/>
+      <svg class="pi-camo-svg" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" stroke-linecap="round">
+        <!-- diagonal parallel bars (matches the reference image) -->
+        <g stroke="currentColor" stroke-width="2.1">
+          <line x1="1"  y1="9"  x2="9"  y2="1"  />
+          <line x1="1"  y1="15" x2="15" y2="1"  />
+          <line x1="5"  y1="19" x2="19" y2="5"  />
+          <line x1="11" y1="19" x2="19" y2="11" />
+        </g>
       </svg>
     </span>
     <span class="pi-label" data-i18n="products.camos">Camos</span>
