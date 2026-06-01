@@ -1642,16 +1642,26 @@
     .quiz-sub { font-size: 13px; color: var(--muted); }
 
     /* ── Quiz welcome (intro) screen ── */
-    .quiz-welcome { text-align: center; padding: 6px 0 10px; }
-    .quiz-welcome-logo { height: 200px; width: auto; max-width: 90%; display: block;
-      margin: 0 auto 24px; object-fit: contain; }
-    @media (max-width: 520px) { .quiz-welcome-logo { height: 150px; } }
-    .quiz-welcome-title { font-size: 30px; font-weight: 800; line-height: 1.15; margin-bottom: 6px; }
-    .quiz-welcome-tag { font-size: 14px; font-weight: 700; letter-spacing: .12em;
-      text-transform: uppercase; color: var(--accent); margin-bottom: 18px; }
-    .quiz-welcome-q { font-size: 15px; color: var(--muted); margin-bottom: 26px; line-height: 1.5; }
+    /* Full-bleed: break out of the centered 680px quiz-app column */
+    #quiz-welcome { width: 100vw; position: relative; left: 50%; margin-left: -50vw; }
+    .qw-stage { position: relative; min-height: 80vh; display: flex; align-items: center;
+      justify-content: flex-end; overflow: hidden; padding: 24px 7vw 24px 0; }
+    /* Giant tilted logo spilling off the left edge of the screen */
+    .quiz-welcome-logo { position: absolute; left: -7vw; top: 50%;
+      height: 122vh; width: auto; max-width: none; object-fit: contain;
+      transform: translateY(-50%) rotate(-15deg); transform-origin: center;
+      pointer-events: none; z-index: 0;
+      filter: drop-shadow(0 30px 60px rgba(0,0,0,.40)); }
+    body.light .quiz-welcome-logo { filter: drop-shadow(0 24px 48px rgba(0,0,0,.18)); }
+    /* Text + options sit in the centre-right of the screen */
+    .qw-content { position: relative; z-index: 1; width: 100%; max-width: 540px;
+      text-align: left; }
+    .quiz-welcome-title { font-size: 40px; font-weight: 800; line-height: 1.1; margin-bottom: 6px; }
+    .quiz-welcome-tag { font-size: 15px; font-weight: 700; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 22px; }
+    .quiz-welcome-q { font-size: 16px; color: var(--muted); margin-bottom: 28px; line-height: 1.5; }
     .quiz-welcome-opts { display: flex; flex-direction: column; gap: 12px; text-align: left;
-      max-width: 520px; margin: 0 auto; }
+      max-width: 540px; margin: 0; }
     .quiz-welcome-opt { display: flex; align-items: center; gap: 14px; width: 100%;
       padding: 16px 18px; border-radius: 12px; border: 1px solid var(--border2);
       background: var(--card); cursor: pointer; transition: border-color .15s, transform .15s, background .15s; }
@@ -1662,6 +1672,18 @@
       background: rgba(99,150,255,.13); color: var(--accent); text-transform: uppercase; }
     .quiz-welcome-opt .wo-text { font-size: 14px; font-weight: 600; line-height: 1.4; }
     .quiz-welcome-opt.synapse .wo-letter { background: rgba(168,85,247,.15); color: #c084fc; }
+    /* Tablet / mobile: stack the logo above the content */
+    @media (max-width: 880px) {
+      .qw-stage { flex-direction: column; justify-content: flex-start;
+        align-items: center; min-height: auto; padding: 8px 18px 24px; }
+      .quiz-welcome-logo { position: relative; left: auto; top: auto;
+        height: auto; width: 78vw; max-width: 360px;
+        transform: rotate(-9deg); margin: 4px auto 22px;
+        filter: drop-shadow(0 18px 36px rgba(0,0,0,.30)); }
+      .qw-content { max-width: 540px; margin: 0 auto; text-align: center; }
+      .quiz-welcome-title { font-size: 30px; }
+      .quiz-welcome-opts { margin: 0 auto; text-align: left; }
+    }
 
     .quiz-setup-grid { display: flex; flex-direction: column; gap: 10px; }
     .quiz-section-label { font-size: 11px; font-weight: 600; text-transform: uppercase;
@@ -2317,28 +2339,30 @@
 
       <!-- ── SCREEN -1: Welcome / intent ── -->
       <div id="quiz-welcome">
-        <div class="quiz-welcome">
+        <div class="qw-stage">
           <img src="/static/logo2.png" alt="Trader Acelerator" class="quiz-welcome-logo"
                onerror="this.style.display='none';" />
-          <div class="quiz-welcome-title" data-i18n="quiz.welcomeTitle">Welcome to Trader Acelerator</div>
-          <div class="quiz-welcome-tag" data-i18n="quiz.welcomeTag">Quiz</div>
-          <div class="quiz-welcome-q" data-i18n="quiz.welcomeQuestion">Please let me know why you want to put your knowledge to the test.</div>
-          <div class="quiz-welcome-opts">
-            <div class="quiz-welcome-opt" data-intent="synapse-test">
-              <span class="wo-letter">a</span>
-              <span class="wo-text" data-i18n="quiz.welcomeOptA">I want to test what I studied in Synapse</span>
-            </div>
-            <div class="quiz-welcome-opt" data-intent="verify">
-              <span class="wo-letter">b</span>
-              <span class="wo-text" data-i18n="quiz.welcomeOptB">I want to verify the knowledge I already have</span>
-            </div>
-            <div class="quiz-welcome-opt synapse" data-intent="learn">
-              <span class="wo-letter">c</span>
-              <span class="wo-text" data-i18n="quiz.welcomeOptC">I can't quite understand some concepts → take me to Synapse</span>
-            </div>
-            <div class="quiz-welcome-opt" data-intent="explore">
-              <span class="wo-letter">d</span>
-              <span class="wo-text" data-i18n="quiz.welcomeOptD">I'm just exploring</span>
+          <div class="qw-content">
+            <div class="quiz-welcome-title" data-i18n="quiz.welcomeTitle">Welcome to Trader Acelerator</div>
+            <div class="quiz-welcome-tag" data-i18n="quiz.welcomeTag">Quiz</div>
+            <div class="quiz-welcome-q" data-i18n="quiz.welcomeQuestion">Please let me know why you want to put your knowledge to the test.</div>
+            <div class="quiz-welcome-opts">
+              <div class="quiz-welcome-opt" data-intent="synapse-test">
+                <span class="wo-letter">a</span>
+                <span class="wo-text" data-i18n="quiz.welcomeOptA">I want to test what I studied in Synapse</span>
+              </div>
+              <div class="quiz-welcome-opt" data-intent="verify">
+                <span class="wo-letter">b</span>
+                <span class="wo-text" data-i18n="quiz.welcomeOptB">I want to verify the knowledge I already have</span>
+              </div>
+              <div class="quiz-welcome-opt synapse" data-intent="learn">
+                <span class="wo-letter">c</span>
+                <span class="wo-text" data-i18n="quiz.welcomeOptC">I can't quite understand some concepts → take me to Synapse</span>
+              </div>
+              <div class="quiz-welcome-opt" data-intent="explore">
+                <span class="wo-letter">d</span>
+                <span class="wo-text" data-i18n="quiz.welcomeOptD">I'm just exploring</span>
+              </div>
             </div>
           </div>
         </div>
