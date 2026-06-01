@@ -1643,9 +1643,9 @@
 
     /* ── Quiz welcome (intro) screen ── */
     .quiz-welcome { text-align: center; padding: 6px 0 10px; }
-    .quiz-welcome-logo { height: 84px; width: auto; display: block; margin: 0 auto 22px;
-      filter: invert(1) brightness(1.6); mix-blend-mode: lighten; }
-    body.light .quiz-welcome-logo { filter: none; mix-blend-mode: multiply; }
+    .quiz-welcome-logo { height: 200px; width: auto; max-width: 90%; display: block;
+      margin: 0 auto 24px; object-fit: contain; }
+    @media (max-width: 520px) { .quiz-welcome-logo { height: 150px; } }
     .quiz-welcome-title { font-size: 30px; font-weight: 800; line-height: 1.15; margin-bottom: 6px; }
     .quiz-welcome-tag { font-size: 14px; font-weight: 700; letter-spacing: .12em;
       text-transform: uppercase; color: var(--accent); margin-bottom: 18px; }
