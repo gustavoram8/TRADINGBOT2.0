@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trader Acelerator — Camos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --ink:#15171f; --ink-soft:#4a4f5e; --muted:#8a8f9e; --line-soft:#e4e6ec; --accent:#2563eb; }
+    body { background:#fff; color:var(--ink); font-family:'Inter',sans-serif; font-size:15px; line-height:1.6; min-height:100vh; -webkit-font-smoothing:antialiased; }
+    nav { display:flex; align-items:center; justify-content:space-between; padding:16px 32px; border-bottom:1px solid var(--line-soft); position:sticky; top:0; background:rgba(255,255,255,0.92); backdrop-filter:blur(8px); z-index:10; }
+    .logo-img { height:72px; width:auto; display:block; }
+    .back-link { font-size:13px; font-weight:600; color:var(--ink-soft); text-decoration:none; }
+    .back-link:hover { color:var(--accent); }
+    .hero { text-align:center; padding:60px 24px 24px; }
+    .eyebrow { font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); margin-bottom:10px; }
+    h1 { font-size:42px; font-weight:800; letter-spacing:-.02em; margin-bottom:12px; }
+    .hero p { color:var(--ink-soft); max-width:620px; margin:0 auto; }
+    .grid { max-width:1040px; margin:36px auto 0; padding:0 24px 90px; display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+    @media (max-width:880px){ .grid { grid-template-columns:1fr; } }
+    .camo-card { border:1px solid var(--line-soft); border-radius:16px; overflow:hidden; background:#fff; transition:transform .15s, box-shadow .15s; }
+    .camo-card:hover { transform:translateY(-3px); box-shadow:0 14px 34px rgba(0,0,0,.08); }
+    .camo-swatch { height:150px; position:relative; }
+    .navy { background:linear-gradient(135deg,#0b1f3a,#13315c 55%,#1c3d6e); }
+    .desert { background:linear-gradient(135deg,#6e5a32,#9c854f 55%,#c4ab6e); }
+    .forest { background:linear-gradient(135deg,#1c3b22,#2f5a34 55%,#467a47); }
+    .camo-body { padding:18px 18px 22px; }
+    .camo-name { font-size:17px; font-weight:800; margin-bottom:4px; }
+    .camo-desc { font-size:13px; color:var(--muted); margin-bottom:14px; min-height:34px; }
+    .camo-cta { display:inline-block; font-size:13px; font-weight:700; padding:9px 16px; border-radius:9px; background:#15171f; color:#fff; text-decoration:none; opacity:.55; pointer-events:none; }
+    .soon-pill { position:absolute; top:12px; right:12px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; padding:4px 9px; border-radius:20px; background:rgba(255,255,255,.85); color:#15171f; }
+  </style>
+</head>
+<body>
+<nav>
+  <a href="/" class="logo"><img src="/static/logo.png" alt="Trader Acelerator" class="logo-img" onerror="this.style.display='none';" /></a>
+  <a href="/app" class="back-link">← Back to app</a>
+</nav>
+<section class="hero">
+  <div class="eyebrow">Website Skins</div>
+  <h1>Camos</h1>
+  <p>Custom visual themes for your Trader Acelerator workspace. Unlock a skin and
+     restyle the entire website to match your style. More designs coming soon.</p>
+</section>
+<div class="grid">
+  <div class="camo-card">
+    <div class="camo-swatch navy"><span class="soon-pill">Coming soon</span></div>
+    <div class="camo-body">
+      <div class="camo-name">The Navy Trader</div>
+      <div class="camo-desc">A disciplined, military-grade navy theme across the whole platform.</div>
+      <a href="#" class="camo-cta">Get this skin</a>
+    </div>
+  </div>
+  <div class="camo-card">
+    <div class="camo-swatch desert"><span class="soon-pill">Coming soon</span></div>
+    <div class="camo-body">
+      <div class="camo-name">Desert Ops</div>
+      <div class="camo-desc">Warm tactical desert tones for a focused trading session.</div>
+      <a href="#" class="camo-cta">Get this skin</a>
+    </div>
+  </div>
+  <div class="camo-card">
+    <div class="camo-swatch forest"><span class="soon-pill">Coming soon</span></div>
+    <div class="camo-body">
+      <div class="camo-name">Forest Recon</div>
+      <div class="camo-desc">Deep woodland green camo for a calm, grounded interface.</div>
+      <a href="#" class="camo-cta">Get this skin</a>
+    </div>
+  </div>
+</div>
+</body>
+</html>

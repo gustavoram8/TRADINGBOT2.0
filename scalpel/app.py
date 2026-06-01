@@ -630,6 +630,21 @@ def pricing():
     return render_template('pricing.html')
 
 
+@app.route('/store/indicators')
+def store_indicators():
+    return render_template('store_indicators.html')
+
+
+@app.route('/camos')
+def camos():
+    return render_template('camos.html')
+
+
+@app.route('/terms')
+def terms():
+    return render_template('terms.html')
+
+
 @app.route('/app')
 def app_view():
     if not _has_splash_pass():

@@ -966,6 +966,32 @@
     .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
     .tab .lock { width: 13px; height: 13px; flex-shrink: 0; opacity: 0.75; }
 
+    /* ── PRODUCTS dropdown tab ── */
+    .tab-products .products-caret { width: 14px; height: 14px; flex-shrink: 0;
+      transition: transform 0.18s ease; opacity: 0.85; }
+    .tab-products.open .products-caret { transform: rotate(180deg); }
+    .tab-products.open { color: var(--accent); }
+    .products-menu {
+      position: fixed; z-index: 60; min-width: 210px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 7px;
+      box-shadow: 0 12px 34px rgba(0,0,0,0.32);
+      display: none; flex-direction: column; gap: 1px;
+    }
+    .products-menu.open { display: flex; }
+    .products-group-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; color: var(--muted); padding: 7px 12px 4px; }
+    .products-item { display: flex; align-items: center; gap: 9px;
+      padding: 10px 12px; border-radius: 8px; text-decoration: none;
+      color: var(--text); font-size: 13.5px; font-weight: 600;
+      transition: background 0.12s ease, color 0.12s ease; white-space: nowrap; }
+    .products-item:hover { background: var(--card); color: var(--accent); }
+    .products-sep { height: 1px; background: var(--border); margin: 6px 4px; }
+    .pi-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .pi-dot.free     { background: #6b7280; }
+    .pi-dot.standard { background: #2563eb; }
+    .pi-dot.premium  { background: #e0a83d; }
+
     /* ── FEATURE VIEWS (locked / coming soon) ── */
     .feature-view { display: none; }
     .feature-panel {
@@ -2006,6 +2032,22 @@
     <svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
     <span data-i18n="tabs.synapse">Synapse</span>
   </button>
+  <button class="tab tab-products" type="button" id="products-tab" aria-haspopup="true" aria-expanded="false">
+    <span data-i18n="tabs.products">Products</span>
+    <svg class="products-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+  </button>
+</div>
+
+<!-- Products dropdown (fixed-positioned via JS to escape the tabs overflow) -->
+<div class="products-menu" id="products-menu" role="menu" aria-hidden="true">
+  <div class="products-group-label" data-i18n="products.plans">Plans</div>
+  <a href="/pricing" class="products-item" role="menuitem"><span class="pi-dot free"></span>Free</a>
+  <a href="/pricing" class="products-item" role="menuitem"><span class="pi-dot standard"></span>Standard</a>
+  <a href="/pricing" class="products-item" role="menuitem"><span class="pi-dot premium"></span>Premium</a>
+  <div class="products-sep"></div>
+  <a href="/store/indicators" class="products-item" role="menuitem"><span data-i18n="tabs.indicators">Indicators</span></a>
+  <a href="/camos" class="products-item" role="menuitem"><span data-i18n="products.camos">Camos</span></a>
+  <a href="/terms" class="products-item" role="menuitem"><span data-i18n="products.terms">Terms and Conditions</span></a>
 </div>
 
 <div class="container">
@@ -3117,6 +3159,10 @@
       'scalper.desc': 'A free-form trading whiteboard. Draw setups, mark structure, build multi-slide lessons and export them — for every trading style.',
       'tabs.chalkboard': 'Chalkboard',
       'tabs.synapse': 'Synapse',
+      'tabs.products': 'Products',
+      'products.plans': 'Plans',
+      'products.camos': 'Camos',
+      'products.terms': 'Terms and Conditions',
       'synapse.desc': 'An interactive, futuristic trading knowledge base. A holographic mind branches into every major methodology — explore them in 3D.',
       'synapse.sub': 'Click a node to explore its methodology',
       'synapse.loading': 'Initializing neural matrix…',
@@ -3340,6 +3386,10 @@
       'scalper.desc': 'Un pizarrón de trading libre. Dibuja setups, marca estructura, arma lecciones de varias diapositivas y expórtalas — para cualquier estilo de trading.',
       'tabs.chalkboard': 'Chalkboard',
       'tabs.synapse': 'Synapse',
+      'tabs.products': 'Productos',
+      'products.plans': 'Planes',
+      'products.camos': 'Camos',
+      'products.terms': 'Términos y Condiciones',
       'synapse.desc': 'Una base de conocimiento de trading interactiva y futurista. Una mente holográfica se ramifica hacia cada metodología — explóralas en 3D.',
       'synapse.sub': 'Haz clic en un nodo para explorar su metodología',
       'synapse.loading': 'Inicializando matriz neuronal…',
@@ -3563,6 +3613,10 @@
       'scalper.desc': 'Un tableau de trading libre. Dessinez des setups, marquez la structure, créez des leçons multi-diapositives et exportez-les — pour tous les styles de trading.',
       'tabs.chalkboard': 'Chalkboard',
       'tabs.synapse': 'Synapse',
+      'tabs.products': 'Produits',
+      'products.plans': 'Forfaits',
+      'products.camos': 'Camos',
+      'products.terms': 'Conditions Générales',
       'synapse.desc': 'Une base de connaissances de trading interactive et futuriste. Un esprit holographique se ramifie vers chaque méthodologie — explorez-les en 3D.',
       'synapse.sub': 'Cliquez sur un nœud pour explorer sa méthodologie',
       'synapse.loading': 'Initialisation de la matrice neuronale…',
@@ -3786,6 +3840,10 @@
       'scalper.desc': 'Um quadro de trading livre. Desenhe setups, marque estrutura, crie aulas com vários slides e exporte-as — para qualquer estilo de trading.',
       'tabs.chalkboard': 'Chalkboard',
       'tabs.synapse': 'Synapse',
+      'tabs.products': 'Produtos',
+      'products.plans': 'Planos',
+      'products.camos': 'Camos',
+      'products.terms': 'Termos e Condições',
       'synapse.desc': 'Uma base de conhecimento de trading interativa e futurista. Uma mente holográfica se ramifica para cada metodologia — explore-as em 3D.',
       'synapse.sub': 'Clique em um nó para explorar sua metodologia',
       'synapse.loading': 'Inicializando matriz neural…',
@@ -4310,8 +4368,43 @@
   }
 
   document.querySelectorAll('.tab').forEach(t => {
+    if (t.id === 'products-tab') return;   // Products is a dropdown, not a view tab
     t.addEventListener('click', () => switchTab(t.dataset.tab));
   });
+
+  // ── Products dropdown ──
+  (function () {
+    const btn  = document.getElementById('products-tab');
+    const menu = document.getElementById('products-menu');
+    if (!btn || !menu) return;
+    function place() {
+      const r = btn.getBoundingClientRect();
+      menu.style.top = (r.bottom + 6) + 'px';
+      // align right edge of menu with right edge of the button, clamp to viewport
+      let left = r.right - menu.offsetWidth;
+      left = Math.max(8, Math.min(left, window.innerWidth - menu.offsetWidth - 8));
+      menu.style.left = left + 'px';
+    }
+    function open() {
+      menu.classList.add('open'); btn.classList.add('open');
+      btn.setAttribute('aria-expanded', 'true'); menu.setAttribute('aria-hidden', 'false');
+      place();
+    }
+    function close() {
+      menu.classList.remove('open'); btn.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false'); menu.setAttribute('aria-hidden', 'true');
+    }
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      menu.classList.contains('open') ? close() : open();
+    });
+    document.addEventListener('click', (e) => {
+      if (!menu.contains(e.target) && e.target !== btn) close();
+    });
+    window.addEventListener('resize', () => { if (menu.classList.contains('open')) place(); });
+    window.addEventListener('scroll', () => { if (menu.classList.contains('open')) place(); }, true);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+  })();
 
   // ══════════════════════════════════════════════════════════════════════
   // TRADING FORUM (Premium) — feed, composer, threaded comments, reactions
