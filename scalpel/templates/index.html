@@ -1641,6 +1641,28 @@
     .quiz-h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
     .quiz-sub { font-size: 13px; color: var(--muted); }
 
+    /* ── Quiz welcome (intro) screen ── */
+    .quiz-welcome { text-align: center; padding: 6px 0 10px; }
+    .quiz-welcome-logo { height: 200px; width: auto; max-width: 90%; display: block;
+      margin: 0 auto 24px; object-fit: contain; }
+    @media (max-width: 520px) { .quiz-welcome-logo { height: 150px; } }
+    .quiz-welcome-title { font-size: 30px; font-weight: 800; line-height: 1.15; margin-bottom: 6px; }
+    .quiz-welcome-tag { font-size: 14px; font-weight: 700; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 18px; }
+    .quiz-welcome-q { font-size: 15px; color: var(--muted); margin-bottom: 26px; line-height: 1.5; }
+    .quiz-welcome-opts { display: flex; flex-direction: column; gap: 12px; text-align: left;
+      max-width: 520px; margin: 0 auto; }
+    .quiz-welcome-opt { display: flex; align-items: center; gap: 14px; width: 100%;
+      padding: 16px 18px; border-radius: 12px; border: 1px solid var(--border2);
+      background: var(--card); cursor: pointer; transition: border-color .15s, transform .15s, background .15s; }
+    .quiz-welcome-opt:hover { border-color: var(--accent); transform: translateY(-2px);
+      background: rgba(99,150,255,.06); }
+    .quiz-welcome-opt .wo-letter { flex: 0 0 32px; width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px;
+      background: rgba(99,150,255,.13); color: var(--accent); text-transform: uppercase; }
+    .quiz-welcome-opt .wo-text { font-size: 14px; font-weight: 600; line-height: 1.4; }
+    .quiz-welcome-opt.synapse .wo-letter { background: rgba(168,85,247,.15); color: #c084fc; }
+
     .quiz-setup-grid { display: flex; flex-direction: column; gap: 10px; }
     .quiz-section-label { font-size: 11px; font-weight: 600; text-transform: uppercase;
       letter-spacing: 0.08em; color: var(--muted); margin-top: 10px; }
@@ -2293,6 +2315,35 @@
     <!-- Real quiz app — shown only for Premium members -->
     <div class="quiz-app" id="quiz-app" style="display:none;">
 
+      <!-- ── SCREEN -1: Welcome / intent ── -->
+      <div id="quiz-welcome">
+        <div class="quiz-welcome">
+          <img src="/static/logo2.png" alt="Trader Acelerator" class="quiz-welcome-logo"
+               onerror="this.style.display='none';" />
+          <div class="quiz-welcome-title" data-i18n="quiz.welcomeTitle">Welcome to Trader Acelerator</div>
+          <div class="quiz-welcome-tag" data-i18n="quiz.welcomeTag">Quiz</div>
+          <div class="quiz-welcome-q" data-i18n="quiz.welcomeQuestion">Please let me know why you want to put your knowledge to the test.</div>
+          <div class="quiz-welcome-opts">
+            <div class="quiz-welcome-opt" data-intent="synapse-test">
+              <span class="wo-letter">a</span>
+              <span class="wo-text" data-i18n="quiz.welcomeOptA">I want to test what I studied in Synapse</span>
+            </div>
+            <div class="quiz-welcome-opt" data-intent="verify">
+              <span class="wo-letter">b</span>
+              <span class="wo-text" data-i18n="quiz.welcomeOptB">I want to verify the knowledge I already have</span>
+            </div>
+            <div class="quiz-welcome-opt synapse" data-intent="learn">
+              <span class="wo-letter">c</span>
+              <span class="wo-text" data-i18n="quiz.welcomeOptC">I can't quite understand some concepts → take me to Synapse</span>
+            </div>
+            <div class="quiz-welcome-opt" data-intent="explore">
+              <span class="wo-letter">d</span>
+              <span class="wo-text" data-i18n="quiz.welcomeOptD">I'm just exploring</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- ── SCREEN 0: Methodologies ── -->
       <div id="quiz-home">
         <div class="quiz-header">
@@ -2875,6 +2926,13 @@
       'quiz.title': 'Quiz',
       'quiz.desc': 'Test your trading knowledge with timed quizzes tailored to your methodology and level.',
       'quiz.heading': 'Trading Quiz',
+      'quiz.welcomeTitle': 'Welcome to Trader Acelerator',
+      'quiz.welcomeTag': 'Quiz',
+      'quiz.welcomeQuestion': 'Please let me know why you want to put your knowledge to the test.',
+      'quiz.welcomeOptA': 'I want to test what I studied in Synapse',
+      'quiz.welcomeOptB': 'I want to verify the knowledge I already have',
+      'quiz.welcomeOptC': "I can't quite understand some concepts → take me to Synapse",
+      'quiz.welcomeOptD': "I'm just exploring",
       'quiz.subheading': 'Customize your session before starting',
       'quiz.methodology': 'Methodology',
       'quiz.m.patterns': 'Pattern Trading',
@@ -3080,6 +3138,13 @@
       'quiz.title': 'Quiz',
       'quiz.desc': 'Pon a prueba tu conocimiento de trading con quizzes cronometrados según tu metodología y nivel.',
       'quiz.heading': 'Quiz de Trading',
+      'quiz.welcomeTitle': 'Bienvenido a Trader Acelerator',
+      'quiz.welcomeTag': 'Quiz',
+      'quiz.welcomeQuestion': 'Cuéntame por qué quieres poner a prueba tus conocimientos.',
+      'quiz.welcomeOptA': 'Quiero poner a prueba lo estudiado en Synapse',
+      'quiz.welcomeOptB': 'Quiero verificar los conocimientos que ya tengo',
+      'quiz.welcomeOptC': 'No logro entender algunos conceptos → llévame a Synapse',
+      'quiz.welcomeOptD': 'Simplemente estoy explorando',
       'quiz.subheading': 'Personaliza tu sesión antes de empezar',
       'quiz.methodology': 'Metodología',
       'quiz.m.patterns': 'Trading de Patrones',
@@ -3285,6 +3350,13 @@
       'quiz.title': 'Quiz',
       'quiz.desc': "Testez vos connaissances en trading avec des quiz chronométrés adaptés à votre méthodologie et votre niveau.",
       'quiz.heading': 'Quiz de Trading',
+      'quiz.welcomeTitle': 'Bienvenue sur Trader Acelerator',
+      'quiz.welcomeTag': 'Quiz',
+      'quiz.welcomeQuestion': 'Dites-moi pourquoi vous voulez mettre vos connaissances à l’épreuve.',
+      'quiz.welcomeOptA': 'Je veux tester ce que j’ai étudié dans Synapse',
+      'quiz.welcomeOptB': 'Je veux vérifier les connaissances que j’ai déjà',
+      'quiz.welcomeOptC': 'Je ne comprends pas certains concepts → emmenez-moi vers Synapse',
+      'quiz.welcomeOptD': 'Je suis juste en train d’explorer',
       'quiz.subheading': 'Personnalisez votre session avant de commencer',
       'quiz.methodology': 'Méthodologie',
       'quiz.m.patterns': 'Trading de Figures',
@@ -3490,6 +3562,13 @@
       'quiz.title': 'Quiz',
       'quiz.desc': 'Teste seu conhecimento de trading com quizzes cronometrados de acordo com sua metodologia e nível.',
       'quiz.heading': 'Quiz de Trading',
+      'quiz.welcomeTitle': 'Bem-vindo ao Trader Acelerator',
+      'quiz.welcomeTag': 'Quiz',
+      'quiz.welcomeQuestion': 'Conte-me por que você quer colocar seus conhecimentos à prova.',
+      'quiz.welcomeOptA': 'Quero testar o que estudei no Synapse',
+      'quiz.welcomeOptB': 'Quero verificar os conhecimentos que já tenho',
+      'quiz.welcomeOptC': 'Não consigo entender alguns conceitos → leve-me ao Synapse',
+      'quiz.welcomeOptD': 'Estou apenas explorando',
       'quiz.subheading': 'Personalize sua sessão antes de começar',
       'quiz.methodology': 'Metodologia',
       'quiz.m.patterns': 'Trading de Padrões',
@@ -7803,6 +7882,7 @@
 
       // ── DOM refs ──
       const screens = {
+        welcome:   document.getElementById('quiz-welcome'),
         home:      document.getElementById('quiz-home'),
         topics:    document.getElementById('quiz-topics-screen'),
         detail:    document.getElementById('quiz-topic-detail'),
@@ -8157,11 +8237,26 @@
       });
       document.getElementById('quiz-new-btn')?.addEventListener('click',()=>showScreen('home'));
 
+      // ── Welcome screen intent options ──
+      document.querySelectorAll('#quiz-welcome .quiz-welcome-opt').forEach(opt=>{
+        opt.addEventListener('click',()=>{
+          const intent = opt.dataset.intent;
+          if(intent==='learn'){
+            // "I can't understand some concepts" → take the user to Synapse
+            const synapseTab = document.querySelector('.tab[data-tab="synapse"]');
+            if(synapseTab) synapseTab.click();
+            return;
+          }
+          // a / b / d → proceed to the methodology picker
+          showScreen('home');
+        });
+      });
+
       renderMethods();
       loadProgress().then(()=>{ renderMethods(); });
 
       window.Quiz = {
-        open() { loadProgress().then(()=>{ renderMethods(); showScreen('home'); }); },
+        open() { loadProgress().then(()=>{ renderMethods(); showScreen('welcome'); }); },
         relang() {
           renderMethods();
           // re-translate whichever nav screen is visible
