@@ -1742,27 +1742,48 @@
     .quiz-certified { margin-top: 30px; padding-top: 24px; border-top: 1px solid var(--border2); }
     .qc-head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
     .qc-badge { position: relative; flex: none; width: 38px; height: 38px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center; font-size: 18px;
-      color: #0c0e14; background: linear-gradient(135deg, #fde047, #eab308);
-      z-index: 0; animation: qcBadgePulse 2.4s ease-in-out infinite; }
-    /* layered flame glow behind the star */
-    .qc-badge::before, .qc-badge::after {
-      content: ''; position: absolute; inset: -7px; border-radius: 50%; z-index: -1;
-      background: radial-gradient(circle at 50% 62%,
-        rgba(255,236,150,0.95) 0%, rgba(255,170,40,0.85) 32%,
-        rgba(255,94,12,0.55) 58%, rgba(255,60,0,0) 74%);
-      filter: blur(2px);
-      animation: qcFlame 1.15s ease-in-out infinite alternate; }
-    .qc-badge::after { animation-duration: 0.78s; animation-delay: -0.35s; opacity: 0.85; }
-    @keyframes qcFlame {
-      0%   { transform: scale(0.92) translateY(0.6px);   opacity: 0.7; }
-      50%  { transform: scale(1.06) translateY(-1.2px);  opacity: 1; }
-      100% { transform: scale(0.97) translateY(0.3px);   opacity: 0.8; } }
-    @keyframes qcBadgePulse {
-      0%,100% { box-shadow: 0 0 14px rgba(255,150,30,0.55), 0 0 4px rgba(255,90,0,0.5); }
-      50%     { box-shadow: 0 0 26px rgba(255,170,40,0.85), 0 0 9px rgba(255,110,0,0.7); } }
+      display: flex; align-items: center; justify-content: center;
+      isolation: isolate; }
+    .qc-star { position: relative; z-index: 3; font-size: 18px; color: #1a0d00;
+      width: 30px; height: 30px; border-radius: 50%; display: flex;
+      align-items: center; justify-content: center; line-height: 1;
+      background: radial-gradient(circle at 50% 38%, #fff1b0, #fde047 45%, #f0a712 100%);
+      box-shadow: 0 0 6px rgba(255,160,30,0.9), inset 0 -1px 3px rgba(180,90,0,0.5);
+      animation: qcEmber 0.45s ease-in-out infinite alternate; }
+    /* hot base glow that breathes under the flames */
+    .qc-badge::after { content: ''; position: absolute; inset: -8px; z-index: 1;
+      border-radius: 50%; background: radial-gradient(circle at 50% 60%,
+        rgba(255,180,40,0.7) 0%, rgba(255,90,10,0.45) 45%, rgba(255,40,0,0) 72%);
+      filter: blur(3px); animation: qcGlow 1.3s ease-in-out infinite alternate; }
+    /* the fire: 5 individual flame tongues licking up around the star */
+    .qc-fire { position: absolute; left: 50%; bottom: 6px; width: 0; height: 0;
+      z-index: 2; transform: translateX(-50%); }
+    .qc-fire .ff { position: absolute; bottom: 0;
+      width: 13px; height: 24px; --rot: 0deg;
+      background: linear-gradient(to top,
+        #ff3d00 0%, #ff6a00 28%, #ffae1a 55%, #ffe27a 78%, rgba(255,240,170,0) 100%);
+      border-radius: 50% 50% 50% 50% / 72% 72% 28% 28%;
+      transform-origin: 50% 100%; filter: blur(0.6px);
+      mix-blend-mode: screen;
+      animation: qcFlicker 0.7s ease-in-out infinite alternate; }
+    .qc-fire .f1 { left: -6px;  --rot: 0deg;   animation-delay: -0.05s; }
+    .qc-fire .f2 { left: -15px; height: 19px; --rot: -17deg; animation-delay: -0.32s; animation-duration: 0.55s; }
+    .qc-fire .f3 { left: 3px;   height: 19px; --rot: 17deg;  animation-delay: -0.5s;  animation-duration: 0.6s; }
+    .qc-fire .f4 { left: -21px; height: 14px; --rot: -32deg; animation-delay: -0.18s; animation-duration: 0.5s; }
+    .qc-fire .f5 { left: 9px;   height: 14px; --rot: 32deg;  animation-delay: -0.4s;  animation-duration: 0.5s; }
+    @keyframes qcFlicker {
+      0%   { transform: rotate(var(--rot)) scaleY(0.82) scaleX(1.06); opacity: 0.78; }
+      35%  { transform: rotate(var(--rot)) scaleY(1.2)  scaleX(0.86) skewX(4deg); opacity: 1; }
+      70%  { transform: rotate(var(--rot)) scaleY(0.94) scaleX(1.03) skewX(-3deg); opacity: 0.92; }
+      100% { transform: rotate(var(--rot)) scaleY(1.12) scaleX(0.93); opacity: 0.86; } }
+    @keyframes qcGlow {
+      0%   { opacity: 0.6; transform: scale(0.92); }
+      100% { opacity: 1;   transform: scale(1.08); } }
+    @keyframes qcEmber {
+      0%   { box-shadow: 0 0 5px rgba(255,150,20,0.8),  inset 0 -1px 3px rgba(180,90,0,0.5); }
+      100% { box-shadow: 0 0 11px rgba(255,190,60,1),   inset 0 -1px 3px rgba(180,90,0,0.5); } }
     @media (prefers-reduced-motion: reduce) {
-      .qc-badge, .qc-badge::before, .qc-badge::after { animation: none; } }
+      .qc-star, .qc-badge::after, .qc-fire .ff { animation: none; } }
     .qc-title { font-size: 15px; font-weight: 800; letter-spacing: .01em; }
     .qc-sub   { font-size: 12px; color: var(--muted); margin-top: 2px; }
     .qc-list  { display: flex; flex-direction: column; gap: 8px; }
@@ -2521,7 +2542,12 @@
         <!-- ── Certified accelerated traders (Hall of Fame) ── -->
         <div class="quiz-certified" id="quiz-certified">
           <div class="qc-head">
-            <span class="qc-badge">★</span>
+            <span class="qc-badge">
+              <span class="qc-fire" aria-hidden="true">
+                <span class="ff f1"></span><span class="ff f2"></span><span class="ff f3"></span><span class="ff f4"></span><span class="ff f5"></span>
+              </span>
+              <span class="qc-star">★</span>
+            </span>
             <div>
               <div class="qc-title" data-i18n="quiz.certifiedTitle">Our Certified Accelerated Traders</div>
               <div class="qc-sub" id="quiz-certified-sub" data-i18n="quiz.certifiedSub">Premium members who passed every quiz with 80%+ accuracy.</div>
