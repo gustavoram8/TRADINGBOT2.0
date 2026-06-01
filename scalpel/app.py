@@ -1868,7 +1868,7 @@ def quiz_complete():
         row = QuizProgress(user_id=current_user.id, methodology=methodology, level=level)
         db.session.add(row)
 
-    if score > row.best_score:
+    if score > (row.best_score or 0):
         row.best_score  = score
         row.total_q     = total
         row.weak_topics = weak_topics
