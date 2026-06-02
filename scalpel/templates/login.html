@@ -41,17 +41,17 @@
         <label for="password" data-i18n="login.password">Password</label>
         <input type="password" id="password" name="password" autocomplete="current-password" required />
       </div>
+      <label class="remember-row">
+        <input type="checkbox" name="remember" value="1" />
+        <span data-i18n="auth.remember">Remember this device</span>
+      </label>
       <button type="submit" class="btn btn-primary" data-i18n="login.submit">Sign in</button>
     </form>
 
     <a href="/forgot-password" class="auth-foot-link" data-i18n="login.forgot">Forgot your password?</a>
 
-    <div class="divider-row" data-i18n="login.or">or</div>
-
-    <a href="/start-free" class="btn btn-free" data-i18n="login.free">Start free — no account needed</a>
-
     <div class="auth-links">
-      <span data-i18n="login.noAccount">Don't have a paid plan yet?</span>
+      <span data-i18n="login.noAccount">Don't have an account yet?</span>
       <a href="/register" data-i18n="login.register">Create an account</a>
     </div>
   </div>

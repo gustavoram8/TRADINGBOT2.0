@@ -75,8 +75,16 @@
 
 ### 🟡 Importante — mejoras post-lanzamiento
 
-- [ ] **Migrar email a SendGrid** — actualmente no hay sistema de email
-      (confirmación de registro, recuperación de contraseña, notificaciones).
+- [ ] **Conectar el envío de emails (SendGrid o Gmail SMTP)** — El sistema de
+      **registro obligatorio + verificación por código (OTP) de 6 dígitos ya está
+      completamente construido y activo** (modelo `User.verification_code`, rutas
+      `/register`, `/verify-email`, `/resend-code`, plantilla `verify_email.html`,
+      email `send_verification_email()`). Lo único que falta para producción es
+      configurar las credenciales de correo: poner `MAIL_APP_PASSWORD` (Gmail App
+      Password) ahora, o migrar a SendGrid más adelante. **Sin credenciales el flujo
+      sigue funcionando** pero el código no llega por email: se imprime en el log
+      del servidor (`WARNING ... verification code for X is NNNNNN`) para pruebas
+      locales. La recuperación de contraseña usa el mismo canal SMTP.
 - [ ] **APScheduler + OpenAI Web Search para Scout** — agente que actualice
       automáticamente los datos de las 25 prop firms semanalmente (precios,
       países permitidos, promociones). Requiere OpenAI pagado.
@@ -120,6 +128,11 @@
 - [x] **`synapse_bg.jpg` procesada con Pillow** — volteada horizontalmente, logo "CLAUDE" en el bisel del laptop eliminado copiando parche limpio del bisel adyacente (x:232–326, y:535–560 → x:326–420).
 - [x] **`synapse_candles.png` creada con Pillow** — extracción de píxeles verdes (G>90, G-R>35, G-B>35, x<520) a PNG RGBA transparente. Animada con `@keyframes synCandleStorm` (drop-shadow verde, brightness/saturate altos, 3 destellos por ciclo de 2.6s).
 - [x] **Quiz — opción D eliminada** — removida la opción "I'm just exploring" del menú de bienvenida del quiz.
+- [x] **Registro obligatorio + verificación por email (OTP)** — eliminado el acceso de invitado (`/start-free` ahora redirige a `/register`, sin cookie anónima). Todo usuario debe crear cuenta con email + contraseña y verificar un código de 6 dígitos antes de entrar. Columnas nuevas en `User`: `email_verified`, `verification_code`, `verification_expires` (migración automática SQLite en `_migrate_user_verification_columns()` que marca verificados los usuarios previos). Falta solo conectar credenciales de email (ver tareas 🟡).
+- [x] **"Recordar este dispositivo"** — checkbox en login/register. Si se activa: `login_user(remember=True)` con `REMEMBER_COOKIE_DURATION = 3650 días` (indefinido) → próximas visitas saltan landing + login. Si no: cookie de sesión (se borra al cerrar el navegador) → siempre se muestra landing + login.
+- [x] **Nuevo flujo de entrada en 4 pasos** — Landing (`/`) → Login/Register → Welcome splash (`/welcome`, logo + candle orbitando) → App (`/app`). La `splash.html` (antes en `/`) ahora es la SEGUNDA pantalla post-login y redirige a `/app` en vez de `/login`.
+- [x] **Fix texto "Scalpel" → "Trader Acelerator"** en login/register — estaba en `static/auth.js` (i18n EN/ES/FR/PT), no en las plantillas.
+- [x] **Landing placeholder** (`landing.html`) — primera pantalla al entrar; pendiente diseño final en un paso posterior.
 
 ---
 
@@ -178,6 +191,41 @@ retorno incierto comparado con features de mayor impacto en conversión y retenc
 > **intacto** — no hay que reconstruir nada.
 >
 > ⚠️ El usuario reactivará el Scout **solo cuando lo solicite explícitamente.**
+
+---
+
+## 🔐 Flujo de autenticación — Arquitectura (sesión 2026-06-02)
+
+### Flujo de 4 pantallas
+```
+/  (landing.html, placeholder)
+   └─ si ya autenticado + verificado → salta a /welcome
+/login  ó  /register   (+ checkbox "Remember this device")
+   └─ register/login de cuenta no verificada → /verify-email (código OTP 6 díg.)
+/welcome  (splash.html — logo + candle orbitando; SEGUNDA pantalla de carga)
+   └─ redirige a /app
+/app  (index.html — analyzer + herramientas; @login_required + email_verified)
+```
+
+### Rutas clave en `app.py`
+| Ruta | Función | Notas |
+|------|---------|-------|
+| `/` | `landing()` | Primera pantalla. Si `is_authenticated && email_verified` → `/welcome` |
+| `/welcome` | `welcome()` | `@login_required`. Splash post-login (setea cookie `scalpel_splash_ts` 60s) |
+| `/app` | `app_view()` | `@login_required` + chequeo `email_verified`; sin splash-pass → `/welcome` |
+| `/login` | `login()` | checkbox `remember`; no verificado → manda a `/verify-email` |
+| `/register` | `register()` | crea user `email_verified=False`, genera código, → `/verify-email` |
+| `/verify-email` | `verify_email()` | valida código (15 min exp.), activa cuenta, `login_user` |
+| `/resend-code` | `resend_code()` | regenera y reenvía el código |
+| `/start-free` | `start_free()` | **retirado** — redirige a `/register` (ya no hay invitados) |
+
+### Detalles
+- **Remember device:** `login_user(remember=bool)`; `REMEMBER_COOKIE_DURATION = 3650 días`.
+  Pendientes de verificación se guardan en `session['pending_user_id']` y `session['pending_remember']`.
+- **Columnas nuevas en `User`:** `email_verified` (Bool), `verification_code` (str 6), `verification_expires` (DateTime).
+- **Migración SQLite:** `_migrate_user_verification_columns()` corre en `init_db()` — `ALTER TABLE` para columnas faltantes y marca `email_verified=1` a todos los usuarios previos (no se quedan bloqueados). El admin sembrado nace `email_verified=True`.
+- **Código OTP:** `_new_verification_code()` → 6 dígitos. Email vía `send_verification_email()` (mismo SMTP que el reset). Sin `MAIL_APP_PASSWORD` el código se loguea como WARNING para pruebas locales.
+- **Textos i18n** de login/register/verify viven en `scalpel/static/auth.js` (EN/ES/FR/PT), NO en las plantillas. `ve.sub` interpola `{email}` vía `data-email`.
 
 ---
 

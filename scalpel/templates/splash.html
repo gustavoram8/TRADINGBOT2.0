@@ -224,7 +224,7 @@
     })();
   </script>
 
-  <a href="/login" class="skip" id="skip">Skip →</a>
+  <a href="/app" class="skip" id="skip">Skip →</a>
 
   <div class="stage">
     <div class="ring"></div>
@@ -356,8 +356,8 @@
       if (pct >= 100) clearInterval(progressTimer);
     }, 100);
 
-    // Redirect to login
-    const go = () => { clearInterval(phraseTimer); window.location.href = '/login'; };
+    // Redirect into the app (this splash now plays after sign-in)
+    const go = () => { clearInterval(phraseTimer); window.location.href = '/app'; };
     const redirectTimer = setTimeout(go, DURATION);
     document.getElementById('skip').addEventListener('click', (e) => {
       e.preventDefault(); clearTimeout(redirectTimer); go();

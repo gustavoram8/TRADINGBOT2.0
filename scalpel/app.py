@@ -55,6 +55,8 @@ app.config['SECRET_KEY'] = _load_secret_key()
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'scalpel.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
+# "Remember this device" — when opted in, keep the user logged in indefinitely.
+app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=3650)
 
 # ── Email (Gmail SMTP) — used only for password recovery ──
 app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
@@ -105,6 +107,10 @@ class User(UserMixin, db.Model):
     plan = db.Column(db.String(20), default='free', nullable=False)  # free / standard / premium
     is_admin = db.Column(db.Boolean, default=False, nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    # ── Email verification (OTP) ──
+    email_verified = db.Column(db.Boolean, default=False, nullable=False)
+    verification_code = db.Column(db.String(6), nullable=True)
+    verification_expires = db.Column(db.DateTime, nullable=True)
 
     def set_password(self, raw):
         self.password_hash = generate_password_hash(raw)
@@ -312,6 +318,45 @@ def send_reset_email(to_email, reset_url):
         return False
     finally:
         socket.setdefaulttimeout(prev_timeout)
+
+
+def send_verification_email(to_email, code):
+    """Send the 6-digit email-verification code. Returns True if sent.
+
+    NOTE: this relies on the same Gmail SMTP config as password resets. The
+    whole verification flow is built and active; the only thing left to make
+    codes actually arrive in production is configuring the mail credentials
+    (MAIL_APP_PASSWORD now / SendGrid later). Without it, codes are still
+    generated and surfaced in the server log for local testing.
+    """
+    if not app.config.get('MAIL_PASSWORD'):
+        app.logger.warning(
+            'MAIL_APP_PASSWORD not configured — verification code for %s is %s',
+            to_email, code,
+        )
+        return False
+    msg = Message('Trader Acelerator — Verify your email', recipients=[to_email])
+    msg.body = (
+        "Welcome to Trader Acelerator!\n\n"
+        f"Your verification code is: {code}\n\n"
+        "Enter it on the verification screen to activate your account. "
+        "This code expires in 15 minutes.\n\n"
+        "If you didn't create this account, you can safely ignore this email."
+    )
+    prev_timeout = socket.getdefaulttimeout()
+    socket.setdefaulttimeout(15)
+    try:
+        mail.send(msg)
+        return True
+    except Exception as exc:
+        app.logger.warning('Failed to send verification email: %s', exc)
+        return False
+    finally:
+        socket.setdefaulttimeout(prev_timeout)
+
+
+def _new_verification_code():
+    return f"{secrets.randbelow(1_000_000):06d}"
 
 
 SYSTEM_PROMPT = """You are Scalpel — an expert ICT (Inner Circle Trader) methodology analyst and trading coach. You analyze chart screenshots submitted by traders and identify POSSIBLE areas worth reflecting on, based on ICT theory. You NEVER issue verdicts, declare errors, or treat theory as absolute truth.
@@ -619,7 +664,24 @@ def _has_splash_pass():
 
 
 @app.route('/')
-def splash():
+def landing():
+    """First screen on entering the site (placeholder for now).
+
+    If the visitor is already authenticated — e.g. they ticked "remember this
+    device" on a previous visit — skip the landing AND the login/register step
+    and send them straight through the welcome splash into the app.
+    """
+    if current_user.is_authenticated and getattr(current_user, 'email_verified', True):
+        return redirect(url_for('welcome'))
+    return render_template('landing.html')
+
+
+@app.route('/welcome')
+@login_required
+def welcome():
+    """Second loading screen (logo + orbiting candle) shown after auth, before /app."""
+    if not current_user.email_verified and not current_user.is_admin:
+        return redirect(url_for('verify_email'))
     resp = make_response(render_template('splash.html'))
     resp.set_cookie('scalpel_splash_ts', '1', max_age=60, httponly=True, samesite='Lax')
     return resp
@@ -651,19 +713,21 @@ def settings():
 
 
 @app.route('/app')
+@login_required
 def app_view():
+    # Unverified accounts must finish email verification first.
+    if not current_user.email_verified and not current_user.is_admin:
+        return redirect(url_for('verify_email'))
+    # Funnel everyone through the welcome splash so it always plays before the app.
     if not _has_splash_pass():
-        return redirect(url_for('splash'))
-    if not has_access():
-        # Don't delete cookie here — /login still needs it
-        return redirect(url_for('login'))
-    # Consume the pass so the next refresh triggers splash again
+        return redirect(url_for('welcome'))
+    # Consume the pass so the next entry triggers the splash again.
     resp = make_response(render_template(
         'index.html',
         plan=current_plan(),
-        is_admin=current_user.is_admin if current_user.is_authenticated else False,
-        username=current_user.username if current_user.is_authenticated else None,
-        is_guest=not current_user.is_authenticated,
+        is_admin=current_user.is_admin,
+        username=current_user.username,
+        is_guest=False,
     ))
     resp.delete_cookie('scalpel_splash_ts')
     return resp
@@ -674,20 +738,28 @@ def app_view():
 # ──────────────────────────────────────────────────────────────────────────
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == 'GET' and not _has_splash_pass():
-        return redirect(url_for('splash'))
     if current_user.is_authenticated:
-        return redirect(url_for('app_view'))
+        return redirect(url_for('welcome'))
 
     if request.method == 'POST':
         identifier = request.form.get('identifier', '').strip()
         password = request.form.get('password', '')
+        remember = bool(request.form.get('remember'))
         user = (User.query.filter_by(email=identifier.lower()).first()
                 or User.query.filter_by(username=identifier).first())
         if user and user.check_password(password):
-            login_user(user, remember=True, duration=timedelta(days=30))
-            target = url_for('admin') if user.is_admin else url_for('app_view')
-            return redirect(target)
+            # Unverified account → resume the email-verification flow.
+            if not user.email_verified and not user.is_admin:
+                code = _new_verification_code()
+                user.verification_code = code
+                user.verification_expires = datetime.now(timezone.utc) + timedelta(minutes=15)
+                db.session.commit()
+                send_verification_email(user.email, code)
+                session['pending_user_id'] = user.id
+                session['pending_remember'] = remember
+                return redirect(url_for('verify_email'))
+            login_user(user, remember=remember)
+            return redirect(url_for('welcome'))
         return render_template('login.html', error='invalid')
 
     return render_template('login.html', reset=request.args.get('reset'))
@@ -695,15 +767,14 @@ def login():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    if request.method == 'GET' and not _has_splash_pass():
-        return redirect(url_for('splash'))
     if current_user.is_authenticated:
-        return redirect(url_for('app_view'))
+        return redirect(url_for('welcome'))
 
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         email = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '')
+        remember = bool(request.form.get('remember'))
 
         if len(username) < 3 or len(email) < 5 or len(password) < 6:
             return render_template('register.html', error='invalid', username=username, email=email)
@@ -712,31 +783,84 @@ def register():
         if User.query.filter_by(email=email).first():
             return render_template('register.html', error='email_taken', username=username, email=email)
 
-        user = User(username=username, email=email, plan='free')
+        # Create the account unverified; activation happens after the email code.
+        code = _new_verification_code()
+        user = User(username=username, email=email, plan='free', email_verified=False)
         user.set_password(password)
+        user.verification_code = code
+        user.verification_expires = datetime.now(timezone.utc) + timedelta(minutes=15)
         db.session.add(user)
         db.session.commit()
-        login_user(user, remember=True, duration=timedelta(days=30))
-        return redirect(url_for('app_view'))
+        send_verification_email(email, code)
+        session['pending_user_id'] = user.id
+        session['pending_remember'] = remember
+        return redirect(url_for('verify_email'))
 
     return render_template('register.html')
 
 
+@app.route('/verify-email', methods=['GET', 'POST'])
+def verify_email():
+    """Enter the 6-digit code emailed at sign-up to activate the account."""
+    uid = session.get('pending_user_id')
+    if not uid:
+        return redirect(url_for('login'))
+    user = db.session.get(User, uid)
+    if not user:
+        session.pop('pending_user_id', None)
+        return redirect(url_for('register'))
+
+    if user.email_verified:
+        remember = session.pop('pending_remember', False)
+        session.pop('pending_user_id', None)
+        login_user(user, remember=remember)
+        return redirect(url_for('welcome'))
+
+    if request.method == 'POST':
+        code = request.form.get('code', '').strip()
+        expires = _as_utc(user.verification_expires)
+        if not user.verification_code or not expires or datetime.now(timezone.utc) > expires:
+            return render_template('verify_email.html', email=user.email, error='expired')
+        if code != user.verification_code:
+            return render_template('verify_email.html', email=user.email, error='invalid')
+        # Success — activate and log in.
+        user.email_verified = True
+        user.verification_code = None
+        user.verification_expires = None
+        db.session.commit()
+        remember = session.pop('pending_remember', False)
+        session.pop('pending_user_id', None)
+        login_user(user, remember=remember)
+        return redirect(url_for('welcome'))
+
+    return render_template('verify_email.html', email=user.email)
+
+
+@app.route('/resend-code', methods=['POST'])
+def resend_code():
+    uid = session.get('pending_user_id')
+    if not uid:
+        return redirect(url_for('login'))
+    user = db.session.get(User, uid)
+    if user and not user.email_verified:
+        code = _new_verification_code()
+        user.verification_code = code
+        user.verification_expires = datetime.now(timezone.utc) + timedelta(minutes=15)
+        db.session.commit()
+        send_verification_email(user.email, code)
+    return render_template('verify_email.html', email=user.email if user else '', resent=True)
+
+
 @app.route('/start-free')
 def start_free():
-    resp = make_response(redirect(url_for('app_view')))
-    if not get_anon_id():
-        resp.set_cookie(
-            ANON_COOKIE, secrets.token_urlsafe(24),
-            max_age=60 * 60 * 24 * 365, samesite='Lax'
-        )
-    return resp
+    # Guest access has been retired — registration is now required.
+    return redirect(url_for('register'))
 
 
 @app.route('/logout')
 def logout():
     logout_user()
-    resp = make_response(redirect(url_for('login')))
+    resp = make_response(redirect(url_for('landing')))
     resp.delete_cookie(ANON_COOKIE)
     return resp
 
@@ -1959,9 +2083,36 @@ def quiz_certified():
 # ──────────────────────────────────────────────────────────────────────────
 # BOOTSTRAP: create tables + seed admin
 # ──────────────────────────────────────────────────────────────────────────
+def _migrate_user_verification_columns():
+    """Add the email-verification columns to an existing SQLite `user` table.
+
+    db.create_all() never ALTERs existing tables, so accounts created before
+    this feature need the new columns added by hand. Pre-existing users are
+    marked verified so the new mandatory-verification flow can't lock them out.
+    """
+    from sqlalchemy import inspect, text
+    insp = inspect(db.engine)
+    cols = {c['name'] for c in insp.get_columns('user')}
+    stmts = []
+    if 'email_verified' not in cols:
+        stmts.append("ALTER TABLE user ADD COLUMN email_verified BOOLEAN NOT NULL DEFAULT 0")
+    if 'verification_code' not in cols:
+        stmts.append("ALTER TABLE user ADD COLUMN verification_code VARCHAR(6)")
+    if 'verification_expires' not in cols:
+        stmts.append("ALTER TABLE user ADD COLUMN verification_expires DATETIME")
+    if stmts:
+        with db.engine.begin() as conn:
+            for s in stmts:
+                conn.execute(text(s))
+            # Grandfather in every account that predates verification.
+            conn.execute(text("UPDATE user SET email_verified = 1"))
+        app.logger.info('Migrated user table: added email-verification columns.')
+
+
 def init_db():
     with app.app_context():
         db.create_all()
+        _migrate_user_verification_columns()
         admin_email = os.environ.get('ADMIN_EMAIL', 'mauroramirezmij@gmail.com').lower()
         admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
         admin_password = os.environ.get('ADMIN_PASSWORD', 'Codica2310$')
@@ -1971,6 +2122,7 @@ def init_db():
                 email=admin_email,
                 plan='premium',
                 is_admin=True,
+                email_verified=True,
             )
             admin.set_password(admin_password)
             db.session.add(admin)

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trader Acelerator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0c0e14; --bg-2: #11141d; --text: #d4d8ec;
+      --muted: #636882; --accent: #5b8ef0; --bull: #22c55e;
+    }
+    body.light { --bg: #f4f5f8; --bg-2: #ffffff; --text: #1a1d28; --muted: #6b7186; --accent: #3f6fd6; }
+    html, body { height: 100%; }
+    body {
+      background: radial-gradient(1200px 700px at 50% -10%, var(--bg-2), var(--bg) 60%);
+      color: var(--text); font-family: 'Inter', sans-serif;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 100vh; text-align: center; padding: 24px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .landing-logo { width: 200px; height: auto; margin-bottom: 8px; filter: invert(1); mix-blend-mode: lighten; }
+    body.light .landing-logo { filter: none; mix-blend-mode: multiply; }
+    .logo-fallback { display: none; font-size: 36px; font-weight: 800; letter-spacing: 0.1em; margin-bottom: 8px; }
+    .tagline {
+      font-size: 13px; font-weight: 600; letter-spacing: 0.42em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 30px; padding-left: 0.42em;
+    }
+    .headline { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; max-width: 600px; margin-bottom: 14px; line-height: 1.25; }
+    .subhead { font-size: 15px; color: var(--muted); max-width: 520px; margin-bottom: 36px; line-height: 1.6; }
+    .cta {
+      display: inline-block; padding: 15px 44px; font-size: 15px; font-weight: 700;
+      background: var(--accent); color: #fff; border: none; border-radius: 12px;
+      text-decoration: none; transition: transform 0.15s ease, box-shadow 0.15s ease;
+      box-shadow: 0 8px 24px rgba(91,142,240,0.30);
+    }
+    .cta:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(91,142,240,0.40); }
+    .legal {
+      position: fixed; bottom: 18px; font-size: 10px; letter-spacing: 0.08em;
+      color: var(--muted); text-transform: uppercase; opacity: 0.6;
+    }
+    /* NOTE: placeholder landing — full design comes in a later step. */
+  </style>
+</head>
+<body>
+  <script>
+    (function () {
+      try { if (localStorage.getItem('scalpel_theme') === 'light') document.body.classList.add('light'); }
+      catch (e) {}
+    })();
+  </script>
+
+  <img src="/static/logo.png" alt="Trader Acelerator" class="landing-logo"
+       onerror="this.style.display='none'; document.getElementById('lf').style.display='block';" />
+  <div id="lf" class="logo-fallback">TRADER ACELERATOR</div>
+
+  <div class="tagline">Financial Tech</div>
+  <div class="headline">Sharpen your edge with ICT-grade trade analysis</div>
+  <div class="subhead">Create your free account to access the analyzer, the trading community and every tool on the platform.</div>
+
+  <a href="/login" class="cta">Enter &rarr;</a>
+
+  <div class="legal">Trader Acelerator · For educational purposes only</div>
+</body>
+</html>
