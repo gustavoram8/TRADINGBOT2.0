@@ -942,9 +942,9 @@
        ════════════════════════════════════════ -->
   <script>
   // ─────────────────────────────────────────
-  //  Background: "Radial Compass"
-  //  Concentric amber circles + rotating rays
-  //  that follow the mouse with smooth easing.
+  //  Background: "Quantum Terminal"
+  //  Grid + crosshair + liquidity flow
+  //  particles + telemetry labels + data mist.
   // ─────────────────────────────────────────
   (function () {
     const cv  = document.getElementById('bg-canvas');
@@ -952,70 +952,139 @@
     const dark = () => document.body.classList.contains('dark');
 
     let W, H;
-    function resize() {
-      W = cv.width  = window.innerWidth;
-      H = cv.height = window.innerHeight;
-    }
+    function resize() { W = cv.width = window.innerWidth; H = cv.height = window.innerHeight; }
     resize();
     window.addEventListener('resize', resize, { passive: true });
 
-    let cx = W / 2, cy = H / 2;
-    let tx = W / 2, ty = H / 2;
-    window.addEventListener('mousemove', e => { tx = e.clientX; ty = e.clientY; }, { passive: true });
+    let mouse = { x: null, y: null, tx: null, ty: null, speed: 0 };
+    let lastMX = 0, lastMY = 0;
+    window.addEventListener('mousemove', e => {
+      mouse.tx = e.clientX; mouse.ty = e.clientY;
+      mouse.speed = Math.min(Math.hypot(e.clientX - lastMX, e.clientY - lastMY) * 0.1, 8);
+      lastMX = e.clientX; lastMY = e.clientY;
+    }, { passive: true });
 
-    let rotation = 0;
-    let raf;
+    // ── Palette ──────────────────────────────
+    function P(dk) { return {
+      amber:      dk ? 'rgba(232,169,58,'  : 'rgba(185,116,10,',
+      jade:       dk ? 'rgba(52,211,153,'  : 'rgba(16,145,100,',
+      terra:      dk ? 'rgba(224,120,92,'  : 'rgba(194,69,58,',
+      grid:       dk ? 'rgba(232,169,58,0.06)' : 'rgba(185,116,10,0.04)',
+      gridActive: dk ? 'rgba(52,211,153,0.18)' : 'rgba(16,145,100,0.13)',
+      bg:         dk ? '#141109' : '#ffffff',
+    }; }
 
-    function frame() {
-      rotation += 0.0005;
+    // ── Liquidity flow particles ─────────────
+    class Flow {
+      constructor(preplace) {
+        this.reset();
+        if (preplace) this.x = Math.random() * W;
+      }
+      reset() {
+        this.x     = 0;
+        this.y     = Math.random() * H;
+        this.len   = 15 + Math.random() * 30;
+        this.baseS = 1 + Math.random() * 3;
+        this.speed = this.baseS;
+        this.type  = Math.random() > 0.4 ? 'amber' : (Math.random() > 0.3 ? 'jade' : 'terra');
+        this.lw    = 0.5 + Math.random() * 1;
+      }
+      update() {
+        if (mouse.x !== null) {
+          const d = Math.hypot(mouse.x - this.x, mouse.y - this.y);
+          this.speed = d < 150 ? this.baseS + mouse.speed * 1.5
+                               : this.speed + (this.baseS - this.speed) * 0.05;
+        }
+        this.x += this.speed;
+        if (this.x > W) this.reset();
+      }
+      draw(pal) {
+        ctx.lineWidth = this.lw;
+        ctx.strokeStyle = pal[this.type] + '0.22)';
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(this.x - this.len, this.y);
+        ctx.stroke();
+      }
+    }
+
+    // ── Telemetry corner labels ──────────────
+    function makeTele() {
+      return [
+        { lbl:'SYS_AI.FREQ',      v: Math.random()*100, get x(){ return 28; },       get y(){ return 50; } },
+        { lbl:'MARKET_ALPHA.LOC', v: Math.random()*100, get x(){ return 28; },       get y(){ return H-38; } },
+        { lbl:'QUANT_VECTORS',    v: Math.random()*100, get x(){ return W-148; },    get y(){ return 50; } },
+        { lbl:'DATA_STREAM.HZ',   v: Math.random()*100, get x(){ return W-148; },    get y(){ return H-38; } },
+      ];
+    }
+    const flows = Array.from({ length: 60 }, () => new Flow(true));
+    const tele  = makeTele();
+
+    let mistTime = 0;
+
+    function drawMist(pal) {
+      mistTime += 0.002;
+      const gx = W/2 + Math.cos(mistTime) * W*0.25;
+      const gy = H/2 + Math.sin(mistTime*1.5) * H*0.25;
+      const g  = ctx.createRadialGradient(gx, gy, 50, W/2, H/2, Math.max(W,H)*0.6);
       const dk = dark();
+      g.addColorStop(0,   dk ? 'rgba(232,169,58,0.06)' : 'rgba(232,169,58,0.04)');
+      g.addColorStop(0.5, dk ? 'rgba(52,211,153,0.03)' : 'rgba(16,145,100,0.02)');
+      g.addColorStop(1,   dk ? 'rgba(20,17,9,0)'       : 'rgba(255,255,255,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+    }
 
-      // Smooth follow
-      cx += (tx - cx) * 0.04;
-      cy += (ty - cy) * 0.04;
+    function drawGrid(pal) {
+      const gs = 80;
+      ctx.lineWidth = 0.5;
+      for (let x = 0; x < W; x += gs) {
+        ctx.strokeStyle = (mouse.x !== null && Math.abs(x - mouse.x) < gs) ? pal.gridActive : pal.grid;
+        ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke();
+      }
+      for (let y = 0; y < H; y += gs) {
+        ctx.strokeStyle = (mouse.y !== null && Math.abs(y - mouse.y) < gs) ? pal.gridActive : pal.grid;
+        ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+      }
+      if (mouse.x !== null) {
+        ctx.strokeStyle = pal.amber + '0.07)';
+        ctx.beginPath();
+        ctx.moveTo(mouse.x,0); ctx.lineTo(mouse.x,H);
+        ctx.moveTo(0,mouse.y); ctx.lineTo(W,mouse.y);
+        ctx.stroke();
+        ctx.strokeStyle = pal.gridActive;
+        ctx.beginPath(); ctx.arc(mouse.x, mouse.y, 24, 0, Math.PI*2); ctx.stroke();
+      }
+    }
 
-      ctx.clearRect(0, 0, W, H);
-      ctx.fillStyle = dk ? '#141109' : '#ffffff';
+    function drawTele(pal) {
+      ctx.font = '8px monospace';
+      tele.forEach(t => {
+        t.v += (Math.random()-0.5) * 0.1;
+        ctx.fillStyle = pal.amber + '0.35)';
+        ctx.fillText(`${t.lbl}: ${t.v.toFixed(4)}`, t.x, t.y);
+        ctx.strokeStyle = pal.amber + '0.12)';
+        ctx.lineWidth = 0.8;
+        ctx.beginPath(); ctx.moveTo(t.x-4, t.y-3); ctx.lineTo(t.x+4, t.y-3); ctx.stroke();
+      });
+    }
+
+    let raf;
+    function frame() {
+      if (mouse.tx !== null) {
+        if (mouse.x === null) { mouse.x = mouse.tx; mouse.y = mouse.ty; }
+        mouse.x += (mouse.tx - mouse.x) * 0.08;
+        mouse.y += (mouse.ty - mouse.y) * 0.08;
+      }
+
+      const pal = P(dark());
+      ctx.fillStyle = pal.bg;
       ctx.fillRect(0, 0, W, H);
 
-      const amberRGB  = dk ? '232,169,58' : '185,116,10';
-      const terraRGB  = dk ? '224,120,92'  : '194,69,58';
-      const jadeRGB   = dk ? '52,211,153'  : '16,145,100';
-
-      ctx.lineWidth = 0.6;
-
-      // Concentric rings — alternate amber / jade every few rings
-      const ringStep = 75;
-      const maxR = Math.hypot(W, H);
-      for (let r = ringStep, idx = 0; r < maxR; r += ringStep, idx++) {
-        const isJade = idx % 6 === 4;
-        const rgb    = isJade ? jadeRGB : amberRGB;
-        const alpha  = dk ? 0.12 : 0.08;
-        ctx.strokeStyle = `rgba(${rgb},${alpha})`;
-        ctx.beginPath();
-        ctx.arc(cx, cy, r, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-
-      // Rotating rays — terracota, ultra faint
-      const rayCount = 24;
-      ctx.strokeStyle = `rgba(${terraRGB},${dk ? 0.06 : 0.04})`;
-      for (let i = 0; i < rayCount; i++) {
-        const angle = (i / rayCount) * Math.PI * 2 + rotation;
-        ctx.beginPath();
-        ctx.moveTo(cx, cy);
-        ctx.lineTo(cx + Math.cos(angle) * maxR, cy + Math.sin(angle) * maxR);
-        ctx.stroke();
-      }
-
-      // Subtle glow at center
-      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, ringStep * 1.2);
-      g.addColorStop(0, `rgba(${amberRGB},${dk ? 0.07 : 0.05})`);
-      g.addColorStop(1, `rgba(${amberRGB},0)`);
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(cx, cy, ringStep * 1.2, 0, Math.PI * 2);
-      ctx.fill();
+      drawMist(pal);
+      drawGrid(pal);
+      flows.forEach(f => { f.update(); f.draw(pal); });
+      drawTele(pal);
 
       raf = requestAnimationFrame(frame);
     }
