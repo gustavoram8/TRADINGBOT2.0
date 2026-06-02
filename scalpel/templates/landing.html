@@ -942,9 +942,12 @@
        ════════════════════════════════════════ -->
   <script>
   // ─────────────────────────────────────────
-  //  Background: "Quantum Terminal"
-  //  Grid + crosshair + liquidity flow
-  //  particles + telemetry labels + data mist.
+  //  Background: "Fractured Terminal"
+  //  Asymmetric diagonal split (white / terracotta),
+  //  giant amber analytic arc, wireframe jade sphere
+  //  on the cut line — Y-axis rotation, parallax,
+  //  viscous boundary + magnetic grid deformation.
+  //  Brutalismo premium · spec by Gemini.
   // ─────────────────────────────────────────
   (function () {
     const cv  = document.getElementById('bg-canvas');
@@ -956,135 +959,203 @@
     resize();
     window.addEventListener('resize', resize, { passive: true });
 
-    let mouse = { x: null, y: null, tx: null, ty: null, speed: 0 };
-    let lastMX = 0, lastMY = 0;
-    window.addEventListener('mousemove', e => {
-      mouse.tx = e.clientX; mouse.ty = e.clientY;
-      mouse.speed = Math.min(Math.hypot(e.clientX - lastMX, e.clientY - lastMY) * 0.1, 8);
-      lastMX = e.clientX; lastMY = e.clientY;
-    }, { passive: true });
+    // Smoothed mouse + normalized parallax offset (-1..1)
+    let mouse = { x: null, y: null, tx: null, ty: null };
+    let par = { x: 0, y: 0 };          // smoothed parallax
+    window.addEventListener('mousemove', e => { mouse.tx = e.clientX; mouse.ty = e.clientY; }, { passive: true });
+    window.addEventListener('mouseout', () => { mouse.tx = null; mouse.ty = null; }, { passive: true });
 
-    // ── Palette ──────────────────────────────
-    function P(dk) { return {
-      amber:      dk ? 'rgba(232,169,58,'  : 'rgba(185,116,10,',
-      jade:       dk ? 'rgba(52,211,153,'  : 'rgba(16,145,100,',
-      terra:      dk ? 'rgba(224,120,92,'  : 'rgba(194,69,58,',
-      grid:       dk ? 'rgba(232,169,58,0.06)' : 'rgba(185,116,10,0.04)',
-      gridActive: dk ? 'rgba(52,211,153,0.18)' : 'rgba(16,145,100,0.13)',
-      bg:         dk ? '#141109' : '#ffffff',
-    }; }
+    let t = 0;          // global time
+    let rotY = 0;       // sphere Y rotation
 
-    // ── Liquidity flow particles ─────────────
-    class Flow {
-      constructor(preplace) {
-        this.reset();
-        if (preplace) this.x = Math.random() * W;
+    // ── Build sphere lat/long grid once ──────────────
+    const LAT = 13, LON = 22;
+    const sphereGrid = [];
+    for (let i = 0; i <= LAT; i++) {
+      const phi = Math.PI * (i / LAT) - Math.PI/2;   // -90..90
+      const ring = [];
+      for (let j = 0; j <= LON; j++) {
+        const theta = (2 * Math.PI) * (j / LON);
+        ring.push({
+          x: Math.cos(phi) * Math.cos(theta),
+          y: Math.sin(phi),
+          z: Math.cos(phi) * Math.sin(theta),
+        });
       }
-      reset() {
-        this.x     = 0;
-        this.y     = Math.random() * H;
-        this.len   = 15 + Math.random() * 30;
-        this.baseS = 1 + Math.random() * 3;
-        this.speed = this.baseS;
-        this.type  = Math.random() > 0.4 ? 'amber' : (Math.random() > 0.3 ? 'jade' : 'terra');
-        this.lw    = 0.5 + Math.random() * 1;
-      }
-      update() {
-        if (mouse.x !== null) {
-          const d = Math.hypot(mouse.x - this.x, mouse.y - this.y);
-          this.speed = d < 150 ? this.baseS + mouse.speed * 1.5
-                               : this.speed + (this.baseS - this.speed) * 0.05;
-        }
-        this.x += this.speed;
-        if (this.x > W) this.reset();
-      }
-      draw(pal) {
-        ctx.lineWidth = this.lw;
-        ctx.strokeStyle = pal[this.type] + '0.22)';
-        ctx.beginPath();
-        ctx.moveTo(this.x, this.y);
-        ctx.lineTo(this.x - this.len, this.y);
-        ctx.stroke();
-      }
+      sphereGrid.push(ring);
     }
 
-    // ── Telemetry corner labels ──────────────
-    function makeTele() {
-      return [
-        { lbl:'SYS_AI.FREQ',      v: Math.random()*100, get x(){ return 28; },       get y(){ return 50; } },
-        { lbl:'MARKET_ALPHA.LOC', v: Math.random()*100, get x(){ return 28; },       get y(){ return H-38; } },
-        { lbl:'QUANT_VECTORS',    v: Math.random()*100, get x(){ return W-148; },    get y(){ return 50; } },
-        { lbl:'DATA_STREAM.HZ',   v: Math.random()*100, get x(){ return W-148; },    get y(){ return H-38; } },
-      ];
-    }
-    const flows = Array.from({ length: 60 }, () => new Flow(true));
-    const tele  = makeTele();
-
-    let mistTime = 0;
-
-    function drawMist(pal) {
-      mistTime += 0.002;
-      const gx = W/2 + Math.cos(mistTime) * W*0.25;
-      const gy = H/2 + Math.sin(mistTime*1.5) * H*0.25;
-      const g  = ctx.createRadialGradient(gx, gy, 50, W/2, H/2, Math.max(W,H)*0.6);
-      const dk = dark();
-      g.addColorStop(0,   dk ? 'rgba(232,169,58,0.06)' : 'rgba(232,169,58,0.04)');
-      g.addColorStop(0.5, dk ? 'rgba(52,211,153,0.03)' : 'rgba(16,145,100,0.02)');
-      g.addColorStop(1,   dk ? 'rgba(20,17,9,0)'       : 'rgba(255,255,255,0)');
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, W, H);
-    }
-
-    function drawGrid(pal) {
-      const gs = 80;
-      ctx.lineWidth = 0.5;
-      for (let x = 0; x < W; x += gs) {
-        ctx.strokeStyle = (mouse.x !== null && Math.abs(x - mouse.x) < gs) ? pal.gridActive : pal.grid;
-        ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke();
-      }
-      for (let y = 0; y < H; y += gs) {
-        ctx.strokeStyle = (mouse.y !== null && Math.abs(y - mouse.y) < gs) ? pal.gridActive : pal.grid;
-        ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
-      }
-      if (mouse.x !== null) {
-        ctx.strokeStyle = pal.amber + '0.07)';
-        ctx.beginPath();
-        ctx.moveTo(mouse.x,0); ctx.lineTo(mouse.x,H);
-        ctx.moveTo(0,mouse.y); ctx.lineTo(W,mouse.y);
-        ctx.stroke();
-        ctx.strokeStyle = pal.gridActive;
-        ctx.beginPath(); ctx.arc(mouse.x, mouse.y, 24, 0, Math.PI*2); ctx.stroke();
-      }
-    }
-
-    function drawTele(pal) {
-      ctx.font = '8px monospace';
-      tele.forEach(t => {
-        t.v += (Math.random()-0.5) * 0.1;
-        ctx.fillStyle = pal.amber + '0.35)';
-        ctx.fillText(`${t.lbl}: ${t.v.toFixed(4)}`, t.x, t.y);
-        ctx.strokeStyle = pal.amber + '0.12)';
-        ctx.lineWidth = 0.8;
-        ctx.beginPath(); ctx.moveTo(t.x-4, t.y-3); ctx.lineTo(t.x+4, t.y-3); ctx.stroke();
-      });
+    function proj(p, cx, cy, R) {
+      // rotate around Y
+      const cosR = Math.cos(rotY), sinR = Math.sin(rotY);
+      let x = p.x * cosR - p.z * sinR;
+      let z = p.x * sinR + p.z * cosR;
+      let y = p.y;
+      // slight perspective
+      const persp = 1 / (1.8 - z * 0.45);
+      let sx = cx + x * R * persp;
+      let sy = cy + y * R * persp;
+      return { sx, sy, z, persp };
     }
 
     let raf;
     function frame() {
+      t += 0.006;
+      rotY += 0.0022;
+      const dk = dark();
+
+      // Smooth mouse → parallax
       if (mouse.tx !== null) {
         if (mouse.x === null) { mouse.x = mouse.tx; mouse.y = mouse.ty; }
-        mouse.x += (mouse.tx - mouse.x) * 0.08;
-        mouse.y += (mouse.ty - mouse.y) * 0.08;
+        mouse.x += (mouse.tx - mouse.x) * 0.06;
+        mouse.y += (mouse.ty - mouse.y) * 0.06;
       }
+      const targetPX = mouse.x !== null ? (mouse.x / W - 0.5) : 0;
+      const targetPY = mouse.y !== null ? (mouse.y / H - 0.5) : 0;
+      par.x += (targetPX - par.x) * 0.05;
+      par.y += (targetPY - par.y) * 0.05;
 
-      const pal = P(dark());
-      ctx.fillStyle = pal.bg;
+      // ── Base white (or dark) ──
+      ctx.fillStyle = dk ? '#141109' : '#ffffff';
       ctx.fillRect(0, 0, W, H);
 
-      drawMist(pal);
-      drawGrid(pal);
-      flows.forEach(f => { f.update(); f.draw(pal); });
-      drawTele(pal);
+      // ── Diagonal split position (the "cut") with viscous wobble ──
+      // The cut runs top→bottom; ~58% from left at top, tilted ~15°.
+      const slope = Math.tan(15 * Math.PI / 180);
+      const baseCut = W * 0.60;
+      // viscous deformation: gentle sine wobble + mouse bulge near the line
+      function cutX(y) {
+        let cx = baseCut + (y - H/2) * slope;
+        cx += Math.sin(y * 0.004 + t) * 18;          // slow viscous breathing
+        cx += par.x * 40;                            // parallax drift of whole boundary
+        if (mouse.x !== null) {
+          const dy = Math.abs(y - mouse.y);
+          if (dy < 260) {
+            const force = (260 - dy) / 260;
+            // pull the boundary toward the cursor (elastic liquid)
+            cx += (mouse.x - cx) * force * 0.22;
+          }
+        }
+        return cx;
+      }
+
+      // ── Terracotta block (right side of the cut) ──
+      const terra = dk ? '#3a201b' : '#b8463a';
+      const terra2 = dk ? '#2a1713' : '#9c3a30';
+      const STEP = 8;
+      ctx.beginPath();
+      ctx.moveTo(W, 0);
+      ctx.lineTo(cutX(0), 0);
+      for (let y = 0; y <= H; y += STEP) ctx.lineTo(cutX(y), y);
+      ctx.lineTo(cutX(H), H);
+      ctx.lineTo(W, H);
+      ctx.closePath();
+      const tg = ctx.createLinearGradient(W*0.55, 0, W, H);
+      tg.addColorStop(0, terra);
+      tg.addColorStop(1, terra2);
+      ctx.fillStyle = tg;
+      ctx.fill();
+
+      // subtle texture lines on terracotta
+      ctx.save();
+      ctx.clip();
+      ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+      ctx.lineWidth = 0.5;
+      for (let yy = -H; yy < H*1.4; yy += 14) {
+        ctx.beginPath();
+        ctx.moveTo(W*0.45, yy);
+        ctx.lineTo(W*1.1, yy + W*0.18);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // ── Giant amber analytic arc (in the white section) ──
+      const amber = dk ? 'rgba(232,169,58,' : 'rgba(185,116,10,';
+      const arcCx = W * 0.30 - par.x * 60;   // parallax: arc moves opposite to sphere
+      const arcCy = H * 0.52 - par.y * 40;
+      const arcR  = Math.max(W, H) * 0.46;
+      ctx.lineWidth = 1;
+      // concentric thin arcs framing the headline
+      for (let k = 0; k < 3; k++) {
+        ctx.strokeStyle = amber + (0.12 - k*0.03) + ')';
+        ctx.beginPath();
+        ctx.arc(arcCx, arcCy, arcR - k*26, -Math.PI*0.62, Math.PI*0.32);
+        ctx.stroke();
+      }
+      // a couple radial ticks on the arc
+      ctx.strokeStyle = amber + '0.10)';
+      for (let a = -0.55; a < 0.30; a += 0.14) {
+        const ang = a * Math.PI;
+        ctx.beginPath();
+        ctx.moveTo(arcCx + Math.cos(ang)*(arcR-30), arcCy + Math.sin(ang)*(arcR-30));
+        ctx.lineTo(arcCx + Math.cos(ang)*(arcR+10), arcCy + Math.sin(ang)*(arcR+10));
+        ctx.stroke();
+      }
+
+      // ── Wireframe jade sphere on the cut line ──
+      const sphCx = cutX(H*0.46) + par.x * 70;   // parallax opposite to arc
+      const sphCy = H * 0.46 + par.y * 50;
+      const R = Math.min(W, H) * 0.30;
+      const jade = dk ? 'rgba(52,211,153,' : 'rgba(16,185,129,';
+
+      // magnetic deformation helper
+      function magnet(sx, sy) {
+        if (mouse.x === null) return [sx, sy];
+        const dx = sx - mouse.x, dy = sy - mouse.y;
+        const d = Math.hypot(dx, dy);
+        if (d < 130 && d > 0) {
+          const f = (130 - d) / 130;
+          return [sx + (dx/d) * f * 16, sy + (dy/d) * f * 16];
+        }
+        return [sx, sy];
+      }
+
+      // longitude lines
+      for (let j = 0; j <= LON; j++) {
+        ctx.beginPath();
+        let started = false;
+        for (let i = 0; i <= LAT; i++) {
+          const pr = proj(sphereGrid[i][j], sphCx, sphCy, R);
+          const front = pr.z > -0.15;
+          const [mx, my] = magnet(pr.sx, pr.sy);
+          const a = front ? 0.34 : 0.08;
+          if (!started) { ctx.moveTo(mx, my); started = true; }
+          else ctx.lineTo(mx, my);
+          // stroke per-segment to vary alpha by depth
+          ctx.strokeStyle = jade + a.toFixed(3) + ')';
+          ctx.lineWidth = front ? 0.8 : 0.5;
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(mx, my);
+        }
+      }
+      // latitude lines
+      for (let i = 0; i <= LAT; i++) {
+        ctx.beginPath();
+        let started = false;
+        for (let j = 0; j <= LON; j++) {
+          const pr = proj(sphereGrid[i][j], sphCx, sphCy, R);
+          const front = pr.z > -0.15;
+          const [mx, my] = magnet(pr.sx, pr.sy);
+          const a = front ? 0.30 : 0.07;
+          if (!started) { ctx.moveTo(mx, my); started = true; }
+          else ctx.lineTo(mx, my);
+          ctx.strokeStyle = jade + a.toFixed(3) + ')';
+          ctx.lineWidth = front ? 0.7 : 0.5;
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(mx, my);
+        }
+      }
+
+      // soft jade core glow
+      const cg = ctx.createRadialGradient(sphCx, sphCy, 0, sphCx, sphCy, R*0.9);
+      cg.addColorStop(0, jade + (dk ? '0.10)' : '0.07)'));
+      cg.addColorStop(1, jade + '0)');
+      ctx.fillStyle = cg;
+      ctx.beginPath();
+      ctx.arc(sphCx, sphCy, R*0.9, 0, Math.PI*2);
+      ctx.fill();
 
       raf = requestAnimationFrame(frame);
     }
