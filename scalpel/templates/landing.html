@@ -1039,9 +1039,9 @@
         return cx;
       }
 
-      // ── Terracotta block (right side of the cut) ──
-      const terra = dk ? '#3a201b' : '#b8463a';
-      const terra2 = dk ? '#2a1713' : '#9c3a30';
+      // ── Diagonal block (right side of the cut) — brand blue / black in dark ──
+      const terra  = dk ? '#0a0a0c' : '#1d4ed8';   // light: brand blue · dark: near-black
+      const terra2 = dk ? '#000000' : '#1538a8';   // gradient end
       const STEP = 8;
       ctx.beginPath();
       ctx.moveTo(W, 0);
