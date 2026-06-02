@@ -1962,20 +1962,22 @@
        of the dark layer so it stands out; aligned 1:1 with the photo */
     .syn-load-candles {
       mix-blend-mode: screen;
-      animation: synCandleStorm 3s ease-in-out infinite;
+      animation: synCandleStorm 2.6s ease-in-out infinite;
       will-change: filter, opacity;
     }
     @keyframes synCandleStorm {
-      0%   { opacity: .85; filter: drop-shadow(0 0 3px #1f3) drop-shadow(0 0 7px #0e4) brightness(1.1); }
-      6%   { opacity: 1;   filter: drop-shadow(0 0 16px #8dffae) drop-shadow(0 0 30px #2dff77) brightness(2.2); }  /* lightning */
-      10%  { opacity: .92; filter: drop-shadow(0 0 5px #2f6) drop-shadow(0 0 10px #0f5) brightness(1.2); }
-      40%  { opacity: .88; filter: drop-shadow(0 0 6px #2f6) drop-shadow(0 0 11px #0f5) brightness(1.25); }
-      48%  { opacity: 1;   filter: drop-shadow(0 0 18px #a8ffc1) drop-shadow(0 0 34px #34ff80) brightness(2.4); }  /* lightning */
-      54%  { opacity: .9;  filter: drop-shadow(0 0 5px #2f6) drop-shadow(0 0 10px #0f5) brightness(1.2); }
-      100% { opacity: .86; filter: drop-shadow(0 0 4px #1f3) drop-shadow(0 0 8px #0e4) brightness(1.15); } }
+      0%   { opacity: .95; filter: drop-shadow(0 0 6px #3dff7a) drop-shadow(0 0 12px #16ff5e) saturate(1.5) brightness(1.5); }
+      6%   { opacity: 1;   filter: drop-shadow(0 0 22px #c4ffd4) drop-shadow(0 0 40px #3dff80) saturate(1.8) brightness(3.0); }  /* lightning */
+      10%  { opacity: .98; filter: drop-shadow(0 0 9px #4dff86) drop-shadow(0 0 16px #1aff62) saturate(1.6) brightness(1.7); }
+      38%  { opacity: .95; filter: drop-shadow(0 0 10px #4dff86) drop-shadow(0 0 18px #1aff62) saturate(1.6) brightness(1.7); }
+      46%  { opacity: 1;   filter: drop-shadow(0 0 26px #d4ffe0) drop-shadow(0 0 46px #44ff88) saturate(1.9) brightness(3.3); }  /* lightning */
+      52%  { opacity: .97; filter: drop-shadow(0 0 9px #4dff86) drop-shadow(0 0 16px #1aff62) saturate(1.6) brightness(1.7); }
+      72%  { opacity: 1;   filter: drop-shadow(0 0 20px #b8ffcc) drop-shadow(0 0 38px #3dff80) saturate(1.8) brightness(2.8); }  /* lightning */
+      78%  { opacity: .96; filter: drop-shadow(0 0 9px #4dff86) drop-shadow(0 0 16px #1aff62) saturate(1.6) brightness(1.7); }
+      100% { opacity: .95; filter: drop-shadow(0 0 7px #3dff7a) drop-shadow(0 0 13px #16ff5e) saturate(1.5) brightness(1.6); } }
     @media (prefers-reduced-motion: reduce) {
       .syn-load-candles { animation: none;
-        filter: drop-shadow(0 0 8px #2dff77) brightness(1.4); } }
+        filter: drop-shadow(0 0 14px #3dff80) saturate(1.7) brightness(1.9); } }
 
     /* ── Title + progress, anchored at the bottom over the art ── */
     .syn-load-inner {
@@ -1996,12 +1998,21 @@
       width: 0%; height: 100%; border-radius: 4px;
       background: linear-gradient(90deg, #b8860b, #eab308 60%, #fde047);
       box-shadow: 0 0 10px rgba(234,179,8,0.55);
-      transition: width 0.25s ease-out;   /* smooths the JS-driven width updates */
+      transition: width 0.12s linear;   /* smooths the JS-driven width updates */
     }
     body.light .syn-progress-fill {
       background: linear-gradient(90deg, #2f5fa6, #3f6fd6 60%, #6f9be8);
       box-shadow: 0 0 10px rgba(63,111,214,0.45);
     }
+    /* indeterminate shimmer while heavy assets load (runs on the compositor,
+       so it never freezes even when the main thread is blocked by buildScene) */
+    .syn-progress.indeterminate .syn-progress-fill {
+      width: 40%; transition: none;
+      animation: synIndet 1.15s ease-in-out infinite;
+    }
+    @keyframes synIndet {
+      0%   { transform: translateX(-115%); }
+      100% { transform: translateX(265%); } }
     .syn-progress-pct {
       color: #d7dae3; font-family: 'JetBrains Mono', monospace;
       font-size: 12px; letter-spacing: 0.12em; font-variant-numeric: tabular-nums;
@@ -9955,38 +9966,27 @@
         if (started) { resetSynapse(); startLoop(); requestAnimationFrame(resize); return; }
         if (opening) return;
         opening = true;
-        const LOAD_MS = 10000;
+        const LOAD_MS = 10000;     // target total time on the loading screen
+        const COUNT_MS = 2600;     // minimum smooth count-up duration at the end
         const _start = Date.now();
-        const loading = document.getElementById('syn-loading');
-        const fill    = document.getElementById('syn-progress-fill');
-        const pctEl   = document.getElementById('syn-progress-pct');
-        const titleEl = loading ? loading.querySelector('.syn-load-title') : null;
-        const errMsg  = (m) => { if (titleEl) titleEl.textContent = m; };
+        const loading  = document.getElementById('syn-loading');
+        const progress = loading ? loading.querySelector('.syn-progress') : null;
+        const fill     = document.getElementById('syn-progress-fill');
+        const pctEl    = document.getElementById('syn-progress-pct');
+        const titleEl  = loading ? loading.querySelector('.syn-load-title') : null;
+        const errMsg   = (m) => { if (titleEl) titleEl.textContent = m; };
 
-        // Show screen
-        if (loading) loading.classList.remove('hidden');
+        // Phase 1 — show screen with an INDETERMINATE shimmer bar. This runs on
+        // the compositor, so it stays smooth even while buildScene() blocks the
+        // main thread (which is what used to freeze the % counter ~60%).
+        if (loading)  loading.classList.remove('hidden');
+        if (progress) progress.classList.add('indeterminate');
+        if (pctEl)    pctEl.textContent = '';
 
-        // Progress is driven by rAF and CAPPED at 95% until the scene is actually
-        // ready, so 100% always means "revealing now" — never a stall at 100%.
-        let _rafId, _ready = false;
-        const _tick = () => {
-          const elapsed = Date.now() - _start;
-          let pct;
-          if (_ready) {
-            pct = 100;                                   // assets done → finish
-          } else {
-            pct = Math.min(95, Math.round(elapsed / LOAD_MS * 100));  // cap at 95%
-          }
-          if (fill)  fill.style.width = pct + '%';
-          if (pctEl) pctEl.textContent = pct + '%';
-          if (pct < 100) _rafId = requestAnimationFrame(_tick);
-        };
-        _rafId = requestAnimationFrame(_tick);
-
-        // Load assets in parallel with the timer
+        // Do all the heavy/blocking work now (nothing is counting yet)
         await ensureThree();
         if (typeof THREE === 'undefined') {
-          cancelAnimationFrame(_rafId);
+          if (progress) progress.classList.remove('indeterminate');
           errMsg('No se pudo cargar el motor 3D. Verifica tu conexión.');
           opening = false;
           return;
@@ -9994,7 +9994,7 @@
         try {
           await buildScene();
         } catch (e) {
-          cancelAnimationFrame(_rafId);
+          if (progress) progress.classList.remove('indeterminate');
           errMsg('No se pudieron cargar los modelos. Verifica tu conexión.');
           opening = false;
           return;
@@ -10002,14 +10002,23 @@
         started = true;
         opening = false;
 
-        // Honour the 10 s minimum, then mark ready so the bar shoots to 100%
-        const remain = Math.max(0, LOAD_MS - (Date.now() - _start));
-        await new Promise(r => setTimeout(r, remain));
-        _ready = true;
-        cancelAnimationFrame(_rafId);
-        if (fill)  fill.style.width = '100%';
-        if (pctEl) pctEl.textContent = '100%';
-        // Reveal on the next frame so the 100% paints first
+        // Phase 2 — assets are ready, the main thread is now free, so the count
+        // to 100% is buttery smooth. Count over whatever time is left to reach
+        // the 10 s target (but at least COUNT_MS so it reads nicely).
+        if (progress) progress.classList.remove('indeterminate');
+        const countDur = Math.max(COUNT_MS, LOAD_MS - (Date.now() - _start));
+        const countStart = Date.now();
+        await new Promise(resolve => {
+          const step = () => {
+            const t = Math.min(1, (Date.now() - countStart) / countDur);
+            const pct = Math.round(t * 100);
+            if (fill)  fill.style.width = pct + '%';
+            if (pctEl) pctEl.textContent = pct + '%';
+            if (t < 1) requestAnimationFrame(step); else resolve();
+          };
+          requestAnimationFrame(step);
+        });
+        // Reveal on the next frame so 100% paints first
         requestAnimationFrame(() => { resize(); if (loading) loading.classList.add('hidden'); });
       },
     };
