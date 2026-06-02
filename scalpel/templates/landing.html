@@ -4,63 +4,387 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Trader Acelerator</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Light mode (default) ── */
     :root {
-      --bg: #0c0e14; --bg-2: #11141d; --text: #d4d8ec;
-      --muted: #636882; --accent: #5b8ef0; --bull: #22c55e;
+      --bg:         #f6f7fb;
+      --bg2:        #ffffff;
+      --text:       #13151f;
+      --muted:      #6b7186;
+      --accent:     #2563eb;
+      --accent-h:   #1d4ed8;
+      --shadow:     rgba(37, 99, 235, 0.26);
+      --flash:      rgba(37, 99, 235, 0.14);
+      --logo-mix:   multiply;
+      --logo-filt:  none;
     }
-    body.light { --bg: #f4f5f8; --bg-2: #ffffff; --text: #1a1d28; --muted: #6b7186; --accent: #3f6fd6; }
+    /* ── Dark mode (only when user previously chose it) ── */
+    body.dark {
+      --bg:         #0c0e14;
+      --bg2:        #11141d;
+      --text:       #d4d8ec;
+      --muted:      #636882;
+      --accent:     #5b8ef0;
+      --accent-h:   #4a7de8;
+      --shadow:     rgba(91, 142, 240, 0.26);
+      --flash:      rgba(160, 200, 255, 0.18);
+      --logo-mix:   lighten;
+      --logo-filt:  invert(1);
+    }
+
     html, body { height: 100%; }
+
     body {
-      background: radial-gradient(1200px 700px at 50% -10%, var(--bg-2), var(--bg) 60%);
-      color: var(--text); font-family: 'Inter', sans-serif;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      min-height: 100vh; text-align: center; padding: 24px;
+      background: radial-gradient(1200px 700px at 50% -5%, var(--bg2), var(--bg) 60%);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100dvh;
+      padding: 40px 24px 90px;
+      text-align: center;
+      overflow: hidden;
       -webkit-font-smoothing: antialiased;
     }
-    .landing-logo { width: 200px; height: auto; margin-bottom: 8px; filter: invert(1); mix-blend-mode: lighten; }
-    body.light .landing-logo { filter: none; mix-blend-mode: multiply; }
-    .logo-fallback { display: none; font-size: 36px; font-weight: 800; letter-spacing: 0.1em; margin-bottom: 8px; }
-    .tagline {
-      font-size: 13px; font-weight: 600; letter-spacing: 0.42em; text-transform: uppercase;
-      color: var(--accent); margin-bottom: 30px; padding-left: 0.42em;
+
+    /* ── Logo ── */
+    .logo-wrap {
+      margin-bottom: 22px;
+      opacity: 0;
+      animation: fadeDown 0.45s ease 0.05s forwards;
     }
-    .headline { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; max-width: 600px; margin-bottom: 14px; line-height: 1.25; }
-    .subhead { font-size: 15px; color: var(--muted); max-width: 520px; margin-bottom: 36px; line-height: 1.6; }
+    .logo-img {
+      height: 76px;
+      width: auto;
+      filter: var(--logo-filt);
+      mix-blend-mode: var(--logo-mix);
+    }
+
+    /* ── Brand name block ── */
+    #brand-block {
+      position: relative;
+      line-height: 1;
+      margin-bottom: 46px;
+    }
+
+    .brand-line {
+      display: block;
+      font-weight: 900;
+      letter-spacing: -0.035em;
+      white-space: nowrap;
+      font-size: clamp(46px, 9.5vw, 96px);
+    }
+    #brand-line1 { color: var(--text); }
+    #brand-line2 { color: var(--accent); }
+
+    /* Individual letters — invisible until animation fires */
+    .ltr {
+      display: inline-block;
+      opacity: 0;
+      will-change: transform, opacity;
+      animation: ltrSnap 0.42s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+    }
+
+    @keyframes ltrSnap {
+      0%   {
+        opacity: 0;
+        transform: translateY(var(--dy)) translateX(var(--dx)) rotate(var(--dr)) scale(0.45);
+      }
+      55%  {
+        opacity: 1;
+        transform: translateY(calc(var(--dy) * -0.10)) translateX(0) rotate(0deg) scale(1.07);
+      }
+      78%  {
+        transform: translateY(calc(var(--dy) * 0.04)) scale(0.96);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+      }
+    }
+
+    /* Post-assembly: whole block bounces in with elastic spring */
+    #brand-block.assembled {
+      animation: blockBounce 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+    @keyframes blockBounce {
+      0%   { transform: scale(1); }
+      40%  { transform: scale(1.075); }
+      68%  { transform: scale(0.965); }
+      100% { transform: scale(1); }
+    }
+
+    /* Flash burst radial glow */
+    .brand-flash {
+      position: absolute;
+      inset: -28px -44px;
+      border-radius: 28px;
+      background: radial-gradient(ellipse at center, var(--flash) 0%, transparent 68%);
+      opacity: 0;
+      pointer-events: none;
+    }
+    .brand-flash.burst { animation: flashOut 0.7s ease-out forwards; }
+    @keyframes flashOut {
+      0%   { opacity: 0; transform: scale(0.7); }
+      18%  { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(1.5); }
+    }
+
+    /* ── Cycling bullet line ── */
+    .bullet-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      height: 28px;
+      margin-bottom: 46px;
+      opacity: 0;
+      animation: fadeUp 0.4s ease 1.75s forwards;
+    }
+    .bullet-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--accent); opacity: 0.65; flex: none;
+    }
+    #bullet {
+      font-size: 14.5px;
+      font-weight: 500;
+      color: var(--muted);
+      transition: opacity 0.28s ease, color 0.28s ease, font-weight 0.28s ease;
+      white-space: nowrap;
+      max-width: min(480px, 80vw);
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    #bullet.fading  { opacity: 0; }
+    #bullet.hook    { color: var(--accent); font-weight: 700; }
+
+    /* ── CTA button ── */
     .cta {
-      display: inline-block; padding: 15px 44px; font-size: 15px; font-weight: 700;
-      background: var(--accent); color: #fff; border: none; border-radius: 12px;
-      text-decoration: none; transition: transform 0.15s ease, box-shadow 0.15s ease;
-      box-shadow: 0 8px 24px rgba(91,142,240,0.30);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 54px;
+      font-size: 15.5px;
+      font-weight: 700;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 14px;
+      text-decoration: none;
+      box-shadow: 0 8px 30px var(--shadow);
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+      opacity: 0;
+      animation: fadeUp 0.4s ease 1.95s forwards;
     }
-    .cta:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(91,142,240,0.40); }
+    .cta:hover {
+      background: var(--accent-h);
+      transform: translateY(-2px);
+      box-shadow: 0 14px 40px var(--shadow);
+    }
+    .cta svg { width: 16px; height: 16px; }
+
+    /* ── Footer ── */
     .legal {
-      position: fixed; bottom: 18px; font-size: 10px; letter-spacing: 0.08em;
-      color: var(--muted); text-transform: uppercase; opacity: 0.6;
+      position: fixed;
+      bottom: 18px; left: 0; right: 0;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      opacity: 0.45;
+      pointer-events: none;
     }
-    /* NOTE: placeholder landing — full design comes in a later step. */
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Respect reduced-motion preference */
+    @media (prefers-reduced-motion: reduce) {
+      .ltr             { animation: none !important; opacity: 1 !important; }
+      #brand-block.assembled { animation: none !important; }
+      .brand-flash     { display: none; }
+      .logo-wrap, .bullet-row, .cta { animation: none !important; opacity: 1 !important; }
+    }
+
+    @media (max-width: 480px) {
+      .brand-line { font-size: clamp(38px, 11vw, 54px); }
+      #bullet     { font-size: 13px; max-width: 88vw; }
+      .cta        { padding: 15px 38px; font-size: 14.5px; }
+    }
   </style>
 </head>
 <body>
+
+  <!-- Apply dark mode before paint — default is LIGHT -->
   <script>
     (function () {
-      try { if (localStorage.getItem('scalpel_theme') === 'light') document.body.classList.add('light'); }
+      try { if (localStorage.getItem('scalpel_theme') === 'dark') document.body.classList.add('dark'); }
       catch (e) {}
     })();
   </script>
 
-  <img src="/static/logo.png" alt="Trader Acelerator" class="landing-logo"
-       onerror="this.style.display='none'; document.getElementById('lf').style.display='block';" />
-  <div id="lf" class="logo-fallback">TRADER ACELERATOR</div>
+  <!-- Logo -->
+  <div class="logo-wrap">
+    <img src="/static/logo.png" alt="Trader Acelerator" class="logo-img"
+         onerror="this.style.display='none';" />
+  </div>
 
-  <div class="tagline">Financial Tech</div>
-  <div class="headline">Sharpen your edge with ICT-grade trade analysis</div>
-  <div class="subhead">Create your free account to access the analyzer, the trading community and every tool on the platform.</div>
+  <!-- Animated brand name -->
+  <div id="brand-block" aria-label="Trader Acelerator">
+    <div class="brand-flash" id="brand-flash"></div>
+    <span class="brand-line" id="brand-line1" aria-hidden="true"></span>
+    <span class="brand-line" id="brand-line2" aria-hidden="true"></span>
+  </div>
 
-  <a href="/login" class="cta">Enter &rarr;</a>
+  <!-- Cycling feature tagline -->
+  <div class="bullet-row">
+    <div class="bullet-dot"></div>
+    <span id="bullet"></span>
+  </div>
 
-  <div class="legal">Trader Acelerator · For educational purposes only</div>
+  <!-- CTA -->
+  <a href="/login" class="cta">
+    <span id="cta-label">Enter</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="5" y1="12" x2="19" y2="12"/>
+      <polyline points="12 5 19 12 12 19"/>
+    </svg>
+  </a>
+
+  <p class="legal" id="legal-note">Trader Acelerator · For educational purposes only</p>
+
+  <script>
+    // ── Language detection via browser locale ──
+    const rawL = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
+    const lang = rawL.startsWith('es') ? 'es'
+               : rawL.startsWith('fr') ? 'fr'
+               : rawL.startsWith('pt') ? 'pt'
+               : 'en';
+
+    const I18N = {
+      en: {
+        bullets: [
+          'Analyze your trades with structured feedback',
+          'Develop your edge across any trading approach',
+          'Belong to a community of serious traders',
+          'Test your knowledge and earn your certificate',
+          'Accelerate your growth — starting today',
+        ],
+        cta:   'Enter',
+        legal: 'Trader Acelerator · For educational purposes only',
+      },
+      es: {
+        bullets: [
+          'Analiza tus operaciones con retroalimentación estructurada',
+          'Desarrolla tu ventaja en cualquier estrategia',
+          'Únete a una comunidad de traders serios',
+          'Pon a prueba tu conocimiento y obtén tu certificado',
+          'Acelera tu crecimiento — desde hoy',
+        ],
+        cta:   'Entrar',
+        legal: 'Trader Acelerator · Solo con fines educativos',
+      },
+      fr: {
+        bullets: [
+          'Analysez vos trades avec un feedback structuré',
+          "Développez votre edge quelle que soit votre approche",
+          'Rejoignez une communauté de traders sérieux',
+          'Testez vos connaissances et obtenez votre certificat',
+          "Accélérez votre croissance — dès aujourd'hui",
+        ],
+        cta:   'Accéder',
+        legal: 'Trader Acelerator · À des fins éducatives uniquement',
+      },
+      pt: {
+        bullets: [
+          'Analise suas operações com feedback estruturado',
+          'Desenvolva sua vantagem em qualquer abordagem',
+          'Faça parte de uma comunidade de traders sérios',
+          'Teste seu conhecimento e conquiste seu certificado',
+          'Acelere seu crescimento — a partir de hoje',
+        ],
+        cta:   'Entrar',
+        legal: 'Trader Acelerator · Apenas para fins educativos',
+      },
+    };
+
+    const C = I18N[lang] || I18N.en;
+    document.documentElement.lang = lang;
+    document.getElementById('cta-label').textContent   = C.cta;
+    document.getElementById('legal-note').textContent  = C.legal;
+
+    // ── Letter-snap animation ──
+    const STEP_MS = 65;   // ms stagger between letters
+    const ANIM_MS = 420;  // matches CSS animation duration
+
+    function rand(a, b) { return a + Math.random() * (b - a); }
+
+    function buildLine(elId, word, startIdx) {
+      const el = document.getElementById(elId);
+      [...word].forEach((ch, i) => {
+        const span = document.createElement('span');
+        span.className = 'ltr';
+        span.textContent = ch;
+        // Each letter flies in from a slightly different position — "lego pieces" feel
+        span.style.setProperty('--dy', rand(-60, -28).toFixed(1) + 'px');
+        span.style.setProperty('--dx', rand(-16, 16).toFixed(1)  + 'px');
+        span.style.setProperty('--dr', rand(-9, 9).toFixed(1)    + 'deg');
+        span.style.animationDelay = ((startIdx + i) * STEP_MS) + 'ms';
+        el.appendChild(span);
+      });
+    }
+
+    const W1 = 'TRADER', W2 = 'ACELERATOR';
+    buildLine('brand-line1', W1, 0);
+    buildLine('brand-line2', W2, W1.length);
+
+    // When the last letter finishes landing → elastic bounce + glow burst
+    const lastStart = (W1.length + W2.length - 1) * STEP_MS;
+    const buildEnd  = lastStart + ANIM_MS + 35;
+
+    setTimeout(() => {
+      document.getElementById('brand-block').classList.add('assembled');
+      document.getElementById('brand-flash').classList.add('burst');
+    }, buildEnd);
+
+    // ── Cycling bullet tagline ──
+    const bullets  = C.bullets;
+    const bulletEl = document.getElementById('bullet');
+    const HOLD_MS  = 2300;
+    const FADE_MS  = 300;
+    let bi = 0;
+
+    function showBullet(idx) {
+      bulletEl.classList.remove('fading');
+      bulletEl.textContent = bullets[idx];
+      // Last bullet (hook) gets accent color treatment
+      bulletEl.classList.toggle('hook', idx === bullets.length - 1);
+    }
+
+    function nextBullet() {
+      bulletEl.classList.add('fading');
+      setTimeout(() => {
+        bi = (bi + 1) % bullets.length;
+        showBullet(bi);
+      }, FADE_MS);
+    }
+
+    // Start cycling shortly after the CTA fades in
+    setTimeout(() => {
+      showBullet(0);
+      setInterval(nextBullet, HOLD_MS);
+    }, 2100);
+  </script>
 </body>
 </html>
