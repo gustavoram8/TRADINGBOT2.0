@@ -968,6 +968,19 @@
     let t = 0;          // global time
     let rotY = 0;       // sphere Y rotation
 
+    // ── Market tickers anchored to the sphere ────────
+    // Mouse Y drives sentiment: top = bull (↑ green), bottom = bear (↓ red).
+    const TICKERS = [
+      { sym:'EURUSD', price:1.0842,  dec:4, lat:3,  lon:2  },
+      { sym:'XAU',    price:2024.5,  dec:1, lat:5,  lon:7  },
+      { sym:'ES',     price:5180.25, dec:2, lat:7,  lon:12 },
+      { sym:'NQ',     price:18240.0, dec:1, lat:4,  lon:16 },
+      { sym:'GBP',    price:1.2715,  dec:4, lat:9,  lon:5  },
+      { sym:'BTC',    price:67250.0, dec:0, lat:6,  lon:19 },
+      { sym:'SPX',    price:5165.8,  dec:1, lat:10, lon:10 },
+    ];
+    let sentiment = 0;     // smoothed -1..+1
+
     // ── Build sphere lat/long grid once ──────────────
     const LAT = 13, LON = 22;
     const sphereGrid = [];
@@ -1148,14 +1161,49 @@
         }
       }
 
-      // soft jade core glow
+      // soft core glow — tint shifts with sentiment (green=bull / red=bear)
+      const glowRGB = sentiment >= 0
+        ? (dk ? '52,211,153' : '16,185,129')      // jade / green
+        : (dk ? '232,140,90' : '220,38,38');       // amber-red / red
       const cg = ctx.createRadialGradient(sphCx, sphCy, 0, sphCx, sphCy, R*0.9);
-      cg.addColorStop(0, jade + (dk ? '0.10)' : '0.07)'));
-      cg.addColorStop(1, jade + '0)');
+      const glowA = 0.05 + Math.abs(sentiment) * 0.06;
+      cg.addColorStop(0, `rgba(${glowRGB},${glowA.toFixed(3)})`);
+      cg.addColorStop(1, `rgba(${glowRGB},0)`);
       ctx.fillStyle = cg;
       ctx.beginPath();
       ctx.arc(sphCx, sphCy, R*0.9, 0, Math.PI*2);
       ctx.fill();
+
+      // ── Sentiment from mouse Y: top → +1 bull · bottom → −1 bear ──
+      const targetSent = mouse.y !== null ? (0.5 - mouse.y / H) * 2 : 0;
+      sentiment += (Math.max(-1, Math.min(1, targetSent)) - sentiment) * 0.04;
+
+      // ── Market tickers floating on the sphere grid ──
+      const bull = sentiment >= 0;
+      const upRGB   = dk ? '52,211,153' : '16,185,129';
+      const downRGB = dk ? '232,120,90' : '220,38,38';
+      const tRGB = bull ? upRGB : downRGB;
+      const drift = sentiment * 0.0006;   // per-frame % move, sign follows sentiment
+      ctx.font = '600 11px Inter, monospace';
+      ctx.textBaseline = 'middle';
+      TICKERS.forEach(tk => {
+        // live price walk biased by sentiment
+        const noise = (Math.random() - 0.5) * 0.0004;
+        tk.price *= (1 + drift + noise);
+        // anchor point on sphere
+        const pr = proj(sphereGrid[tk.lat][tk.lon], sphCx, sphCy, R);
+        if (pr.z <= -0.1) return;   // hidden behind the sphere
+        const [mx, my] = magnet(pr.sx, pr.sy);
+        const a = (0.45 + pr.z * 0.3) * (0.7 + Math.abs(sentiment) * 0.3);
+        const arrow = bull ? '▲' : '▼';
+        const txt = `${tk.sym} ${arrow}${tk.price.toFixed(tk.dec)}`;
+        // node dot
+        ctx.fillStyle = `rgba(${tRGB},${(a*0.9).toFixed(3)})`;
+        ctx.beginPath(); ctx.arc(mx, my, 1.8, 0, Math.PI*2); ctx.fill();
+        // label
+        ctx.fillStyle = `rgba(${tRGB},${a.toFixed(3)})`;
+        ctx.fillText(txt, mx + 6, my);
+      });
 
       raf = requestAnimationFrame(frame);
     }
