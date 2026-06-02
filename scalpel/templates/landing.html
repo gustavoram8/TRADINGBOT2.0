@@ -8,46 +8,52 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ── Tokens ── */
+    /* ── Design tokens ── */
     :root {
-      --bg:        #f9fafb;
-      --bg2:       #ffffff;
-      --text:      #0f1117;
-      --muted:     #6b7280;
-      --accent:    #1a56db;
-      --accent-h:  #1447b0;
-      --bull:      #16a34a;
-      --bear:      #dc2626;
-      --shadow:    rgba(26,86,219,0.22);
-      --flash:     rgba(26,86,219,0.13);
-      --hair:      rgba(15,17,23,0.08);
-      --card-bg:   rgba(255,255,255,0.82);
-      --card-bd:   rgba(15,17,23,0.09);
-      --card-sh:   rgba(15,17,23,0.05);
-      --chip-bg:   rgba(26,86,219,0.07);
-      --chip-bd:   rgba(26,86,219,0.18);
+      --bg:      #f8f9fc;
+      --bg2:     #ffffff;
+      --text:    #0d0f1a;
+      --muted:   #64697e;
+      --subtle:  #9499ae;
+      --accent:  #1a50e0;
+      --acc-h:   #1342bf;
+      --bull:    #16a34a;
+      --bear:    #dc2626;
+      --gold:    #c5860a;
+      --shadow:  rgba(26,80,224,0.20);
+      --flash:   rgba(26,80,224,0.12);
+      --hair:    rgba(13,15,26,0.07);
+      --card:    rgba(255,255,255,0.78);
+      --card-bd: rgba(13,15,26,0.08);
+      --card-sh: rgba(13,15,26,0.04);
+      --chip:    rgba(26,80,224,0.07);
+      --chip-bd: rgba(26,80,224,0.16);
       --logo-mix:  multiply;
       --logo-filt: none;
+      --grid-col:  rgba(26,80,224,0.07);
     }
     body.dark {
-      --bg:        #0b0d14;
-      --bg2:       #10131e;
-      --text:      #e2e4f0;
-      --muted:     #8b90a8;
-      --accent:    #5b8ef0;
-      --accent-h:  #4a7de8;
-      --bull:      #22c55e;
-      --bear:      #ef4444;
-      --shadow:    rgba(91,142,240,0.24);
-      --flash:     rgba(160,200,255,0.17);
-      --hair:      rgba(255,255,255,0.07);
-      --card-bg:   rgba(22,26,40,0.70);
-      --card-bd:   rgba(255,255,255,0.08);
-      --card-sh:   rgba(0,0,0,0.40);
-      --chip-bg:   rgba(91,142,240,0.10);
-      --chip-bd:   rgba(91,142,240,0.24);
+      --bg:      #090b13;
+      --bg2:     #0e1120;
+      --text:    #dde0f0;
+      --muted:   #8890aa;
+      --subtle:  #5c6278;
+      --accent:  #5c8ff2;
+      --acc-h:   #4b7fe8;
+      --bull:    #22c55e;
+      --bear:    #ef4444;
+      --gold:    #f59e0b;
+      --shadow:  rgba(92,143,242,0.24);
+      --flash:   rgba(160,200,255,0.16);
+      --hair:    rgba(255,255,255,0.07);
+      --card:    rgba(20,24,40,0.72);
+      --card-bd: rgba(255,255,255,0.08);
+      --card-sh: rgba(0,0,0,0.35);
+      --chip:    rgba(92,143,242,0.10);
+      --chip-bd: rgba(92,143,242,0.22);
       --logo-mix:  lighten;
       --logo-filt: invert(1);
+      --grid-col:  rgba(92,143,242,0.08);
     }
 
     html { scroll-behavior: smooth; }
@@ -59,90 +65,79 @@
       overflow-x: hidden;
     }
 
-    /* ══════════ Floating candlestick canvas (background) ══════════ */
-    #candle-bg {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
+    /* ════════════════════════════════════════
+       BACKGROUND: animated perspective grid
+       ════════════════════════════════════════ */
+    #bg-canvas {
+      position: fixed; inset: 0;
+      z-index: 0; pointer-events: none;
     }
 
-    /* ══════════ Language selector ══════════ */
+    /* ════════════════════════════════════════
+       LANGUAGE SELECTOR — flags only
+       ════════════════════════════════════════ */
     .lang-sel {
-      position: fixed;
-      top: 18px; right: 20px;
-      display: flex; gap: 4px;
-      z-index: 30;
+      position: fixed; top: 16px; right: 18px;
+      display: flex; gap: 3px;
+      z-index: 40;
       opacity: 0;
-      animation: fadeDown 0.4s ease 0.3s forwards;
+      animation: fadeDown .4s ease .25s forwards;
     }
     .lang-btn {
-      font-family: 'Inter', sans-serif;
-      font-size: 11px; font-weight: 700;
-      letter-spacing: 0.06em;
-      padding: 5px 9px;
-      border-radius: 8px;
-      border: 1px solid transparent;
-      background: rgba(127,127,127,0.05);
-      color: var(--muted);
-      cursor: pointer;
+      width: 32px; height: 24px;
+      border-radius: 5px;
+      border: 1.5px solid transparent;
+      background: rgba(127,127,127,0.04);
       backdrop-filter: blur(6px);
-      transition: color .15s, background .15s, border-color .15s;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px; line-height: 1;
+      transition: border-color .15s, transform .12s, background .15s;
+      padding: 0;
     }
-    .lang-btn:hover { color: var(--text); }
+    .lang-btn:hover { transform: scale(1.12); }
     .lang-btn.active {
-      color: var(--accent);
-      background: var(--chip-bg);
       border-color: var(--chip-bd);
+      background: var(--chip);
     }
 
-    /* ══════════ HERO ══════════ */
+    /* ════════════════════════════════════════
+       HERO
+       ════════════════════════════════════════ */
     .hero {
-      position: relative;
-      z-index: 1;
+      position: relative; z-index: 1;
       min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
       text-align: center;
-      padding: 64px 24px 96px;
+      padding: 60px 24px 100px;
     }
 
-    /* Logo — isolated so mix-blend only affects the image itself */
+    /* Logo — multiply keeps it transparent on light bg */
     .logo-wrap {
-      margin-bottom: 22px;
+      margin-bottom: 20px;
       opacity: 0;
-      animation: fadeDown 0.45s ease 0.05s forwards;
+      animation: fadeDown .45s ease .04s forwards;
       isolation: isolate;
     }
     .logo-img {
-      height: 76px; width: auto;
-      display: block;
+      height: 72px; width: auto; display: block;
       filter: var(--logo-filt);
       mix-blend-mode: var(--logo-mix);
     }
 
-    /* Brand name */
-    #brand-block {
-      position: relative;
-      line-height: 1;
-      margin-bottom: 46px;
-    }
+    /* Brand */
+    #brand-block { position: relative; line-height: 1; margin-bottom: 44px; }
     .brand-line {
-      display: block;
-      font-weight: 900;
-      letter-spacing: -0.035em;
-      white-space: nowrap;
-      font-size: clamp(46px, 9.5vw, 96px);
+      display: block; font-weight: 900;
+      letter-spacing: -.035em; white-space: nowrap;
+      font-size: clamp(44px, 9.5vw, 96px);
       color: var(--text);
     }
     .ltr {
       display: inline-block;
-      clip-path: inset(100% 0 0 0);
-      opacity: 0;
-      will-change: clip-path, opacity;
-      animation: ltrBuild 0.16s ease-out forwards;
+      clip-path: inset(100% 0 0 0); opacity: 0;
+      animation: ltrBuild .16s ease-out forwards;
     }
     @keyframes ltrBuild {
       0%   { clip-path: inset(100% 0 0 0); opacity: 0; }
@@ -150,7 +145,7 @@
       100% { clip-path: inset(0 0 0 0);   opacity: 1; }
     }
     #brand-block.assembled {
-      animation: blockBounce 0.55s cubic-bezier(0.34,1.56,0.64,1) forwards;
+      animation: blockBounce .55s cubic-bezier(0.34,1.56,0.64,1) forwards;
     }
     @keyframes blockBounce {
       0%   { transform: scale(1); }
@@ -159,1120 +154,1317 @@
       100% { transform: scale(1); }
     }
     .brand-flash {
-      position: absolute;
-      inset: -28px -44px;
+      position: absolute; inset: -28px -44px;
       border-radius: 28px;
       background: radial-gradient(ellipse at center, var(--flash) 0%, transparent 68%);
-      opacity: 0;
-      pointer-events: none;
+      opacity: 0; pointer-events: none;
     }
-    .brand-flash.burst { animation: flashOut 0.7s ease-out forwards; }
+    .brand-flash.burst { animation: flashOut .7s ease-out forwards; }
     @keyframes flashOut {
-      0%   { opacity:0; transform:scale(0.7); }
-      18%  { opacity:1; transform:scale(1); }
-      100% { opacity:0; transform:scale(1.5); }
+      0%  { opacity:0; transform:scale(.7); }
+      18% { opacity:1; transform:scale(1); }
+      100%{ opacity:0; transform:scale(1.5); }
     }
 
-    /* Cycling bullet */
+    /* Bullet tagline */
     .bullet-row {
       display: flex; align-items: center; justify-content: center;
       gap: 10px; height: 28px;
-      margin-bottom: 46px;
+      margin-bottom: 44px;
       opacity: 0;
-      animation: fadeUp 0.4s ease 1.75s forwards;
+      animation: fadeUp .4s ease 1.75s forwards;
     }
-    .bullet-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--accent); opacity: 0.65; flex: none;
-    }
+    .bullet-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); opacity: .65; flex: none; }
     #bullet {
       font-size: 14.5px; font-weight: 500; color: var(--muted);
-      transition: opacity .28s ease, color .28s ease, font-weight .28s ease;
-      white-space: nowrap;
-      max-width: min(480px,80vw);
+      transition: opacity .28s, color .28s, font-weight .28s;
+      white-space: nowrap; max-width: min(500px, 82vw);
       overflow: hidden; text-overflow: ellipsis;
     }
     #bullet.fading { opacity: 0; }
     #bullet.hook   { color: var(--accent); font-weight: 700; }
 
     /* CTA */
-    .cta-hero {
+    .btn-primary {
       display: inline-flex; align-items: center; gap: 10px;
-      padding: 16px 54px;
-      font-size: 15.5px; font-weight: 700;
+      padding: 15px 52px; font-size: 15px; font-weight: 700;
       background: var(--accent); color: #fff;
       border-radius: 14px; text-decoration: none;
-      box-shadow: 0 8px 30px var(--shadow);
-      transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+      box-shadow: 0 8px 28px var(--shadow);
+      transition: transform .14s, box-shadow .14s, background .14s;
       opacity: 0;
-      animation: fadeUp 0.4s ease 1.95s forwards;
+      animation: fadeUp .4s ease 1.95s forwards;
     }
-    .cta-hero:hover {
-      background: var(--accent-h);
-      transform: translateY(-2px);
-      box-shadow: 0 14px 40px var(--shadow);
-    }
-    .cta-hero svg { width: 16px; height: 16px; }
+    .btn-primary:hover { background: var(--acc-h); transform: translateY(-2px); box-shadow: 0 14px 40px var(--shadow); }
+    .btn-primary svg { width: 15px; height: 15px; }
 
     /* Scroll hint */
     .scroll-hint {
-      position: absolute;
-      bottom: 30px; left: 50%; transform: translateX(-50%);
+      position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
       display: flex; flex-direction: column; align-items: center; gap: 7px;
-      color: var(--muted);
-      font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase;
-      opacity: 0;
-      animation: fadeUp 0.5s ease 2.4s forwards;
-      transition: opacity .4s ease;
+      color: var(--subtle); font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+      opacity: 0; animation: fadeUp .5s ease 2.4s forwards;
+      transition: opacity .4s;
     }
-    .scroll-hint.hidden { opacity: 0 !important; }
-    .scroll-mouse {
-      width: 22px; height: 34px;
-      border: 2px solid var(--muted);
-      border-radius: 12px; position: relative; opacity: .7;
+    .scroll-hint.gone { opacity: 0 !important; }
+    .s-mouse {
+      width: 20px; height: 32px;
+      border: 1.8px solid var(--subtle); border-radius: 11px;
+      position: relative; opacity: .7;
     }
-    .scroll-mouse::before {
-      content: ''; position: absolute;
-      top: 6px; left: 50%;
-      width: 3px; height: 6px; margin-left: -1.5px;
-      border-radius: 2px; background: var(--muted);
+    .s-mouse::before {
+      content: ''; position: absolute; top: 5px; left: 50%;
+      width: 2.5px; height: 5px; margin-left: -1.25px;
+      border-radius: 2px; background: var(--subtle);
       animation: wheel 1.6s ease-in-out infinite;
     }
-    @keyframes wheel {
-      0%   { opacity:0; transform:translateY(0); }
-      30%  { opacity:1; }
-      100% { opacity:0; transform:translateY(10px); }
-    }
+    @keyframes wheel { 0%{opacity:0;transform:translateY(0)} 30%{opacity:1} 100%{opacity:0;transform:translateY(9px)} }
 
-    /* ══════════ Sections ══════════ */
-    section.block {
+    /* ════════════════════════════════════════
+       GENERIC SECTION STRUCTURE
+       ════════════════════════════════════════ */
+    .section {
       position: relative; z-index: 1;
       padding: 108px 24px;
-      max-width: 1140px;
-      margin: 0 auto;
+      max-width: 1120px; margin: 0 auto;
     }
-    section.block.full { max-width: 100%; padding-left: 0; padding-right: 0; }
-
-    /* section divider */
-    .section-rule {
-      position: relative; z-index: 1;
-      max-width: 1140px; margin: 0 auto;
-      border: none;
-      border-top: 1px solid var(--hair);
-    }
+    .rule { position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; border: none; border-top: 1px solid var(--hair); }
 
     .eyebrow {
-      font-size: 12px; font-weight: 800;
-      letter-spacing: .2em; text-transform: uppercase;
-      color: var(--accent); margin-bottom: 16px;
+      font-size: 11px; font-weight: 800; letter-spacing: .22em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 14px;
     }
     .h2 {
-      font-size: clamp(26px,4.4vw,44px);
-      font-weight: 900; letter-spacing: -.03em; line-height: 1.1;
-      margin-bottom: 18px;
+      font-size: clamp(26px, 4.2vw, 44px); font-weight: 900;
+      letter-spacing: -.03em; line-height: 1.1; margin-bottom: 18px;
     }
     .lead {
-      font-size: clamp(15px,1.8vw,17.5px);
-      color: var(--muted); line-height: 1.75;
+      font-size: clamp(15px, 1.8vw, 17px); color: var(--muted); line-height: 1.75;
       max-width: 640px;
     }
-    .center { text-align: center; }
-    .center .lead { margin: 0 auto; }
+    .tc  { text-align: center; }
+    .tc .lead { margin: 0 auto; }
 
-    /* ── Stats strip ── */
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(3,1fr);
-      gap: 0;
-      margin-top: 60px;
+    /* ════════════════════════════════════════
+       S1 — "THE PROBLEM" intro
+       ════════════════════════════════════════ */
+    .intro-split {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 64px; align-items: center;
     }
-    .stat {
-      padding: 36px 28px;
-      border-top: 1px solid var(--hair);
-      border-bottom: 1px solid var(--hair);
+    .intro-pain {
+      display: flex; flex-direction: column; gap: 14px;
+      margin-top: 32px;
     }
-    .stat + .stat { border-left: 1px solid var(--hair); }
-    .stat .num {
-      font-size: clamp(32px,5vw,50px);
-      font-weight: 900; letter-spacing: -.03em;
-      color: var(--accent); line-height: 1;
+    .pain-item {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 14px 16px; border-radius: 12px;
+      background: var(--card); border: 1px solid var(--card-bd);
+      backdrop-filter: blur(8px);
     }
-    .stat .lbl {
-      margin-top: 8px; font-size: 13px;
-      color: var(--muted); font-weight: 500;
+    .pain-icon { font-size: 18px; flex: none; margin-top: 1px; }
+    .pain-text { font-size: 13.5px; color: var(--muted); line-height: 1.6; }
+    .pain-text strong { color: var(--text); }
+
+    .intro-right { display: flex; flex-direction: column; gap: 10px; }
+    .answer-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 13px 16px; border-radius: 12px;
+      background: var(--card); border: 1px solid var(--card-bd);
+      backdrop-filter: blur(8px);
+      font-size: 13.5px; font-weight: 600;
+    }
+    .a-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--bull); flex: none; }
+
+    /* ════════════════════════════════════════
+       S2 — MAIN PRODUCT: Analysis IA
+       ════════════════════════════════════════ */
+    .analyze-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 56px; align-items: center; margin-top: 0;
     }
 
-    /* ── MAIN TOOL (hero feature) ── */
-    .main-tool {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 60px;
-      align-items: center;
-    }
-    .main-tool-text .eyebrow { margin-bottom: 12px; }
-    .main-tool-text .h2 { margin-bottom: 14px; }
-    .main-tool-text .lead { margin-bottom: 28px; }
-
-    .tool-badge-list {
-      display: flex; flex-wrap: wrap; gap: 10px;
-    }
-    .tool-badge {
+    /* Methodology badges */
+    .method-wrap { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+    .mbadge {
       display: inline-flex; align-items: center; gap: 6px;
-      font-size: 12.5px; font-weight: 700;
-      padding: 7px 14px; border-radius: 999px;
-      background: var(--chip-bg);
-      border: 1px solid var(--chip-bd);
-      color: var(--text);
+      font-size: 12px; font-weight: 700; padding: 6px 13px; border-radius: 999px;
+      background: var(--chip); border: 1px solid var(--chip-bd); color: var(--text);
     }
-    .tool-badge svg { width: 13px; height: 13px; color: var(--accent); }
+    .mbadge-dot { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+    .bd-bull { background: var(--bull); }
+    .bd-acc  { background: var(--accent); }
 
-    /* mock analysis card */
-    .mock-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-bd);
-      border-radius: 20px;
-      padding: 26px;
-      backdrop-filter: blur(12px);
-      box-shadow: 0 20px 60px var(--card-sh);
+    /* Analysis mock — chat-style output */
+    .analysis-mock {
+      background: var(--card); border: 1px solid var(--card-bd); border-radius: 20px;
+      padding: 24px; backdrop-filter: blur(14px);
+      box-shadow: 0 18px 56px var(--card-sh);
     }
-    .mock-header {
-      display: flex; align-items: center; gap: 10px;
-      margin-bottom: 18px;
+    .am-head {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 18px;
+      padding-bottom: 14px; border-bottom: 1px solid var(--hair);
     }
-    .mock-dot { width: 10px; height: 10px; border-radius: 50%; }
-    .mock-title { font-size: 13px; font-weight: 700; }
-    .mock-label { font-size: 11px; color: var(--muted); margin-bottom: 6px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
-    .mock-bar-wrap { background: var(--hair); border-radius: 6px; height: 7px; margin-bottom: 14px; overflow: hidden; }
-    .mock-bar { height: 100%; border-radius: 6px; }
-    .mock-bar.bull { background: var(--bull); }
-    .mock-bar.bear { background: var(--bear); }
-    .mock-bar.mid  { background: var(--accent); }
-    .mock-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
-    .mock-tag {
-      font-size: 11px; font-weight: 700;
-      padding: 4px 10px; border-radius: 6px;
-    }
-    .mock-tag.g { background: rgba(22,163,74,.12); color: var(--bull); }
-    .mock-tag.r { background: rgba(220,38,38,.10); color: var(--bear); }
-    .mock-tag.b { background: var(--chip-bg); color: var(--accent); }
+    .am-status { width: 8px; height: 8px; border-radius: 50%; background: var(--bull); box-shadow: 0 0 0 3px rgba(22,163,74,.2); }
+    .am-title  { font-size: 13px; font-weight: 700; }
+    .am-tag    { margin-left: auto; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 6px; background: var(--chip); color: var(--accent); border: 1px solid var(--chip-bd); }
+    .am-body   { font-size: 13px; color: var(--muted); line-height: 1.72; }
+    .am-body em { color: var(--text); font-style: normal; font-weight: 600; }
+    .am-body .hl-bull { color: var(--bull); font-weight: 700; }
+    .am-body .hl-bear { color: var(--bear); font-weight: 700; }
+    .am-body .hl-acc  { color: var(--accent); font-weight: 700; }
+    .am-footer { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--hair); display: flex; gap: 8px; flex-wrap: wrap; }
+    .am-chip { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; }
+    .amc-g { background: rgba(22,163,74,.10); color: var(--bull); }
+    .amc-r { background: rgba(220,38,38,.10); color: var(--bear); }
+    .amc-b { background: var(--chip); color: var(--accent); border: 1px solid var(--chip-bd); }
 
-    /* ── Tools grid (secondary tools) ── */
+    /* ════════════════════════════════════════
+       S3 — ALL TOOLS (6 cards)
+       ════════════════════════════════════════ */
     .tools-grid {
-      display: grid;
-      grid-template-columns: repeat(3,1fr);
-      gap: 18px;
-      margin-top: 48px;
+      display: grid; grid-template-columns: repeat(3,1fr);
+      gap: 18px; margin-top: 52px;
     }
     .tool-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-bd);
-      border-radius: 18px;
-      padding: 26px 24px;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 12px 36px var(--card-sh);
-      transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
-      position: relative;
+      background: var(--card); border: 1px solid var(--card-bd);
+      border-radius: 18px; padding: 24px 22px;
+      backdrop-filter: blur(10px); box-shadow: 0 10px 32px var(--card-sh);
+      transition: transform .22s ease, border-color .22s, box-shadow .22s;
+      position: relative; overflow: hidden;
     }
-    .tool-card:hover {
-      transform: translateY(-4px);
-      border-color: var(--chip-bd);
-      box-shadow: 0 22px 55px var(--card-sh);
+    .tool-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0;
+      height: 3px; border-radius: 18px 18px 0 0;
+      background: var(--tc-accent, var(--accent));
+      opacity: 0; transition: opacity .22s;
     }
-    .tool-card .ico {
-      width: 44px; height: 44px; border-radius: 12px;
+    .tool-card:hover { transform: translateY(-4px); box-shadow: 0 20px 52px var(--card-sh); }
+    .tool-card:hover::before { opacity: 1; }
+    .tc-ico {
+      width: 42px; height: 42px; border-radius: 11px;
       display: flex; align-items: center; justify-content: center;
-      margin-bottom: 16px;
+      margin-bottom: 14px; font-size: 20px;
     }
-    .tool-card .ico svg { width: 22px; height: 22px; }
-    .ico-blue   { background: rgba(26,86,219,.10); color: var(--accent); }
-    .ico-green  { background: rgba(22,163,74,.12); color: var(--bull); }
-    .ico-amber  { background: rgba(217,119,6,.12); color: #d97706; }
-    .ico-purple { background: rgba(124,58,237,.12); color: #7c3aed; }
-    .ico-teal   { background: rgba(13,148,136,.12); color: #0d9488; }
-    body.dark .ico-amber  { background: rgba(245,158,11,.10); color: #fbbf24; }
-    body.dark .ico-purple { background: rgba(167,139,250,.10); color: #a78bfa; }
-    body.dark .ico-teal   { background: rgba(45,212,191,.10); color: #2dd4bf; }
-    .tool-card h3 { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
-    .tool-card p  { font-size: 13.5px; color: var(--muted); line-height: 1.6; }
-    .coming-badge {
-      position: absolute; top: 20px; right: 20px;
-      font-size: 10px; font-weight: 800;
-      letter-spacing: .1em; text-transform: uppercase;
-      padding: 3px 9px; border-radius: 999px;
-      background: rgba(217,119,6,.14);
-      color: #d97706;
-      border: 1px solid rgba(217,119,6,.24);
+    .tool-card h3 { font-size: 15px; font-weight: 800; margin-bottom: 7px; }
+    .tool-card p  { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .plan-chip {
+      position: absolute; top: 16px; right: 16px;
+      font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 999px;
     }
-    body.dark .coming-badge { background: rgba(245,158,11,.12); color: #fbbf24; border-color: rgba(245,158,11,.22); }
+    .pc-prem { background: rgba(197,134,10,.13); color: var(--gold); border: 1px solid rgba(197,134,10,.24); }
+    .pc-free { background: rgba(22,163,74,.10); color: var(--bull); border: 1px solid rgba(22,163,74,.22); }
 
-    /* ── How it works ── */
-    .steps {
-      display: grid;
-      grid-template-columns: repeat(3,1fr);
-      gap: 28px;
-      margin-top: 54px;
+    /* ════════════════════════════════════════
+       S4 — ANALYSIS DEEP DIVE
+       ════════════════════════════════════════ */
+    .capabilities {
+      display: grid; grid-template-columns: repeat(2,1fr);
+      gap: 14px; margin-top: 48px;
     }
-    .step { text-align: left; }
-    .step-n {
-      width: 44px; height: 44px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 900; font-size: 17px;
-      color: #fff; background: var(--accent);
-      box-shadow: 0 8px 22px var(--shadow);
-      margin-bottom: 18px;
+    .cap-item {
+      display: flex; gap: 13px; align-items: flex-start;
+      padding: 16px 18px; border-radius: 14px;
+      background: var(--card); border: 1px solid var(--card-bd);
+      backdrop-filter: blur(8px);
     }
-    .step h3 { font-size: 17px; font-weight: 800; margin-bottom: 8px; }
-    .step p  { font-size: 14px; color: var(--muted); line-height: 1.65; }
+    .cap-ico { font-size: 20px; flex: none; }
+    .cap-item h4 { font-size: 13.5px; font-weight: 700; margin-bottom: 4px; }
+    .cap-item p  { font-size: 12.5px; color: var(--muted); line-height: 1.55; }
 
-    /* ── Methodology chips ── */
-    .chips {
-      display: flex; flex-wrap: wrap; gap: 11px;
-      margin-top: 36px; justify-content: center;
+    /* ════════════════════════════════════════
+       S5 — COMMUNITY + QUIZ RANKING
+       ════════════════════════════════════════ */
+    .community-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 52px;
     }
-    .chip {
-      font-size: 13.5px; font-weight: 700;
-      padding: 10px 18px; border-radius: 999px;
-      background: var(--chip-bg);
-      border: 1px solid var(--chip-bd);
-      color: var(--text);
+    .comm-card {
+      background: var(--card); border: 1px solid var(--card-bd);
+      border-radius: 20px; padding: 30px 26px;
+      backdrop-filter: blur(10px); box-shadow: 0 12px 36px var(--card-sh);
     }
+    .comm-card h3 { font-size: 19px; font-weight: 800; margin: 14px 0 10px; }
+    .comm-card p  { font-size: 14px; color: var(--muted); line-height: 1.65; }
 
-    /* ── Plans row ── */
-    .plans {
-      display: grid;
-      grid-template-columns: repeat(3,1fr);
-      gap: 20px;
+    /* ranking mock */
+    .rank-list { margin-top: 18px; display: flex; flex-direction: column; gap: 8px; }
+    .rank-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 14px; border-radius: 10px;
+      background: var(--chip); border: 1px solid var(--chip-bd);
+      font-size: 13px;
+    }
+    .rank-n { font-weight: 900; color: var(--accent); width: 20px; text-align: center; }
+    .rank-name { font-weight: 600; flex: 1; }
+    .rank-score { font-size: 12px; color: var(--bull); font-weight: 700; }
+    .rank-badge { font-size: 14px; }
+
+    /* forum mock */
+    .forum-mock { margin-top: 18px; display: flex; flex-direction: column; gap: 8px; }
+    .forum-post {
+      padding: 12px 14px; border-radius: 10px;
+      background: var(--chip); border: 1px solid var(--chip-bd);
+    }
+    .fp-meta { font-size: 11px; color: var(--subtle); margin-bottom: 5px; }
+    .fp-title { font-size: 13px; font-weight: 600; }
+    .fp-tags  { display: flex; gap: 6px; margin-top: 7px; }
+    .fp-tag   { font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 5px; background: rgba(26,80,224,.08); color: var(--accent); }
+
+    /* ════════════════════════════════════════
+       S6 — STATS STRIP
+       ════════════════════════════════════════ */
+    .stats-strip {
+      display: grid; grid-template-columns: repeat(4,1fr);
+      gap: 0; border: 1px solid var(--hair); border-radius: 20px; overflow: hidden;
       margin-top: 52px;
+      background: var(--card); backdrop-filter: blur(10px);
     }
-    .plan-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-bd);
-      border-radius: 20px;
-      padding: 30px 26px;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 12px 36px var(--card-sh);
+    .stat-item {
+      padding: 36px 28px; text-align: center;
+    }
+    .stat-item + .stat-item { border-left: 1px solid var(--hair); }
+    .stat-n { font-size: clamp(28px,4vw,44px); font-weight: 900; letter-spacing: -.03em; color: var(--accent); line-height: 1; }
+    .stat-l { margin-top: 7px; font-size: 12.5px; color: var(--muted); font-weight: 500; }
+
+    /* Language flags strip */
+    .flags-row { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 30px; }
+    .flag-item { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; color: var(--muted); }
+    .flag-item span:first-child { font-size: 22px; }
+
+    /* ════════════════════════════════════════
+       S7 — PLANS
+       ════════════════════════════════════════ */
+    .plans-grid {
+      display: grid; grid-template-columns: repeat(3,1fr);
+      gap: 20px; margin-top: 52px;
+    }
+    .plan {
+      background: var(--card); border: 1px solid var(--card-bd);
+      border-radius: 20px; padding: 28px 24px;
+      backdrop-filter: blur(10px); box-shadow: 0 12px 36px var(--card-sh);
       display: flex; flex-direction: column;
     }
-    .plan-card.featured {
-      border-color: var(--accent);
-      box-shadow: 0 16px 50px var(--shadow);
+    .plan.featured { border-color: var(--accent); box-shadow: 0 16px 50px var(--shadow); position: relative; }
+    .plan-popular {
+      position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
+      font-size: 10.5px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+      padding: 4px 14px; border-radius: 999px;
+      background: var(--accent); color: #fff;
     }
-    .plan-name {
-      font-size: 13px; font-weight: 800;
-      letter-spacing: .14em; text-transform: uppercase;
-      color: var(--muted); margin-bottom: 14px;
-    }
-    .plan-card.featured .plan-name { color: var(--accent); }
-    .plan-price {
-      font-size: 38px; font-weight: 900; letter-spacing: -.03em;
-      color: var(--text); line-height: 1; margin-bottom: 6px;
-    }
-    .plan-cycle { font-size: 13px; color: var(--muted); margin-bottom: 22px; }
-    .plan-feats { list-style: none; flex: 1; }
+    .plan-name { font-size: 12px; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; color: var(--subtle); margin-bottom: 12px; }
+    .plan.featured .plan-name { color: var(--accent); }
+    .plan-price { font-size: 40px; font-weight: 900; letter-spacing: -.04em; line-height: 1; margin-bottom: 4px; }
+    .plan-cycle { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+    .plan-feats { list-style: none; flex: 1; margin-bottom: 28px; }
     .plan-feats li {
+      display: flex; align-items: flex-start; gap: 9px;
       font-size: 13.5px; color: var(--muted);
-      padding: 7px 0;
-      border-bottom: 1px solid var(--hair);
-      display: flex; align-items: center; gap: 9px;
+      padding: 8px 0; border-bottom: 1px solid var(--hair);
     }
     .plan-feats li:last-child { border-bottom: none; }
-    .check { color: var(--bull); font-size: 15px; }
-
-    /* ── Final CTA panel ── */
-    .cta-panel {
-      max-width: 860px; margin: 44px auto 0;
-      padding: 64px 40px;
-      border-radius: 26px; text-align: center;
-      background: var(--card-bg);
-      border: 1px solid var(--card-bd);
-      backdrop-filter: blur(12px);
-      box-shadow: 0 24px 70px var(--card-sh);
+    .chk { color: var(--bull); font-size: 14px; margin-top: 1px; flex: none; }
+    .plan-cta {
+      display: block; text-align: center;
+      padding: 13px; border-radius: 12px; font-weight: 700; font-size: 14px;
+      text-decoration: none; transition: transform .13s, box-shadow .13s, background .13s;
     }
-    .cta-panel .h2 { margin-bottom: 14px; }
-    .cta-panel .lead { margin: 0 auto 32px; }
+    .plan-cta.outline { border: 1.5px solid var(--chip-bd); color: var(--text); }
+    .plan-cta.outline:hover { background: var(--chip); transform: translateY(-1px); }
+    .plan-cta.solid   { background: var(--accent); color: #fff; box-shadow: 0 6px 20px var(--shadow); }
+    .plan-cta.solid:hover { background: var(--acc-h); transform: translateY(-2px); box-shadow: 0 10px 30px var(--shadow); }
 
-    /* secondary CTA style */
-    .btn-cta {
-      display: inline-flex; align-items: center; gap: 10px;
-      padding: 16px 50px;
-      font-size: 15.5px; font-weight: 700;
-      background: var(--accent); color: #fff;
-      border-radius: 14px; text-decoration: none;
-      box-shadow: 0 8px 30px var(--shadow);
-      transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
-    }
-    .btn-cta:hover {
-      background: var(--accent-h);
-      transform: translateY(-2px);
-      box-shadow: 0 14px 40px var(--shadow);
-    }
-    .btn-cta svg { width: 16px; height: 16px; }
-
-    /* footer */
-    .site-foot {
-      position: relative; z-index: 1;
+    /* ════════════════════════════════════════
+       FINAL CTA PANEL
+       ════════════════════════════════════════ */
+    .final-cta {
+      max-width: 820px; margin: 44px auto 0;
+      padding: 64px 40px; border-radius: 26px;
       text-align: center;
-      padding: 40px 24px 56px;
+      background: var(--card); border: 1px solid var(--card-bd);
+      backdrop-filter: blur(14px); box-shadow: 0 24px 70px var(--card-sh);
+      position: relative; overflow: hidden;
+    }
+    .final-cta::before {
+      content: ''; position: absolute;
+      top: 0; left: 10%; right: 10%; height: 3px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      border-radius: 0 0 4px 4px;
+    }
+    .final-cta .h2 { margin-bottom: 14px; }
+    .final-cta .lead { margin: 0 auto 32px; }
+
+    /* Footer */
+    .foot {
+      position: relative; z-index: 1; text-align: center;
+      padding: 36px 24px 52px;
       border-top: 1px solid var(--hair);
-    }
-    .legal {
       font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
-      color: var(--muted); opacity: .6;
+      color: var(--subtle); opacity: .7;
     }
 
-    /* ── Reveal on scroll ── */
-    .reveal {
-      opacity: 0; transform: translateY(26px);
-      transition: opacity .65s ease, transform .65s ease;
+    /* ════════════════════════════════════════
+       SCROLL REVEAL
+       ════════════════════════════════════════ */
+    .rv {
+      opacity: 0; transform: translateY(24px);
+      transition: opacity .6s ease, transform .6s ease;
     }
-    .reveal.in  { opacity: 1; transform: none; }
-    .reveal.d1  { transition-delay: .09s; }
-    .reveal.d2  { transition-delay: .18s; }
-    .reveal.d3  { transition-delay: .27s; }
-    .reveal.d4  { transition-delay: .36s; }
-    .reveal.d5  { transition-delay: .45s; }
+    .rv.in { opacity: 1; transform: none; }
+    .rv.d1 { transition-delay: .08s; } .rv.d2 { transition-delay: .16s; }
+    .rv.d3 { transition-delay: .24s; } .rv.d4 { transition-delay: .32s; }
+    .rv.d5 { transition-delay: .40s; } .rv.d6 { transition-delay: .48s; }
 
-    @keyframes fadeDown {
-      from { opacity:0; transform:translateY(-10px); }
-      to   { opacity:1; transform:translateY(0); }
-    }
-    @keyframes fadeUp {
-      from { opacity:0; transform:translateY(10px); }
-      to   { opacity:1; transform:translateY(0); }
-    }
+    /* ════════════════════════════════════════
+       KEYFRAMES
+       ════════════════════════════════════════ */
+    @keyframes fadeDown { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes fadeUp   { from{opacity:0;transform:translateY(10px)}  to{opacity:1;transform:translateY(0)} }
 
+    /* ════════════════════════════════════════
+       RESPONSIVE
+       ════════════════════════════════════════ */
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
-      .ltr, #brand-block.assembled, .brand-flash,
-      .scroll-mouse::before, .lang-sel,
-      .logo-wrap, .bullet-row, .cta-hero, .scroll-hint { animation: none !important; opacity: 1 !important; clip-path: none !important; }
-      .reveal { opacity: 1 !important; transform: none !important; }
-      #candle-bg { display: none; }
+      .ltr, #brand-block.assembled, .brand-flash, .s-mouse::before,
+      .logo-wrap, .bullet-row, .btn-primary, .scroll-hint, .lang-sel
+        { animation: none !important; opacity: 1 !important; clip-path: none !important; }
+      .rv { opacity: 1 !important; transform: none !important; }
+      #bg-canvas { display: none; }
     }
-
-    @media (max-width: 900px) {
-      .main-tool { grid-template-columns: 1fr; }
-      .mock-card { display: none; }
-      .tools-grid { grid-template-columns: 1fr 1fr; }
-      .plans { grid-template-columns: 1fr; max-width: 420px; margin-left: auto; margin-right: auto; }
-      .steps { grid-template-columns: 1fr; }
-      .stats { grid-template-columns: 1fr; }
-      .stat + .stat { border-left: none; border-top: 1px solid var(--hair); }
+    @media (max-width: 960px) {
+      .intro-split  { grid-template-columns: 1fr; gap: 36px; }
+      .analyze-grid { grid-template-columns: 1fr; }
+      .analysis-mock{ display: none; }
+      .tools-grid   { grid-template-columns: 1fr 1fr; }
+      .capabilities { grid-template-columns: 1fr; }
+      .community-grid { grid-template-columns: 1fr; }
+      .stats-strip  { grid-template-columns: 1fr 1fr; }
+      .stat-item:nth-child(2) { border-left: 1px solid var(--hair); }
+      .stat-item:nth-child(3) { border-left: none; border-top: 1px solid var(--hair); }
+      .stat-item:nth-child(4) { border-left: 1px solid var(--hair); border-top: 1px solid var(--hair); }
+      .plans-grid   { grid-template-columns: 1fr; max-width: 400px; margin-left: auto; margin-right: auto; }
     }
-    @media (max-width: 580px) {
+    @media (max-width: 600px) {
       .tools-grid { grid-template-columns: 1fr; }
-      section.block { padding: 80px 20px; }
-      .brand-line { font-size: clamp(38px,11vw,54px); }
+      .stats-strip { grid-template-columns: 1fr 1fr; }
+      .section { padding: 80px 20px; }
+      .brand-line { font-size: clamp(36px,11vw,52px); }
       #bullet     { font-size: 13px; max-width: 88vw; }
-      .cta-hero   { padding: 15px 38px; font-size: 14.5px; }
-      .cta-panel  { padding: 46px 22px; }
+      .btn-primary{ padding: 14px 36px; font-size: 14px; }
+      .final-cta  { padding: 44px 22px; }
+      .flags-row  { flex-wrap: wrap; gap: 10px 18px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Apply dark mode BEFORE paint — default is LIGHT -->
+  <!-- Dark mode pre-paint (default = LIGHT) -->
   <script>
-    (function () {
-      try { if (localStorage.getItem('scalpel_theme') === 'dark') document.body.classList.add('dark'); }
-      catch (e) {}
+    (function(){
+      try { if(localStorage.getItem('scalpel_theme')==='dark') document.body.classList.add('dark'); }
+      catch(e){}
     })();
   </script>
 
-  <!-- ══════════ Floating candlestick background (canvas) ══════════ -->
-  <canvas id="candle-bg" aria-hidden="true"></canvas>
+  <!-- Perspective grid canvas background -->
+  <canvas id="bg-canvas" aria-hidden="true"></canvas>
 
-  <!-- Language selector -->
-  <div class="lang-sel" id="lang-sel">
-    <button class="lang-btn" data-lang="en">EN</button>
-    <button class="lang-btn" data-lang="es">ES</button>
-    <button class="lang-btn" data-lang="fr">FR</button>
-    <button class="lang-btn" data-lang="pt">PT</button>
+  <!-- Language selector — flags only -->
+  <div class="lang-sel" id="lang-sel" role="navigation" aria-label="Language">
+    <button class="lang-btn" data-lang="en" title="English" aria-label="English">🇺🇸</button>
+    <button class="lang-btn" data-lang="es" title="Español" aria-label="Español">🇪🇸</button>
+    <button class="lang-btn" data-lang="fr" title="Français" aria-label="Français">🇫🇷</button>
+    <button class="lang-btn" data-lang="pt" title="Português" aria-label="Português">🇧🇷</button>
   </div>
 
-  <!-- ══════════ HERO ══════════ -->
+  <!-- ═══ HERO ═══ -->
   <header class="hero">
     <div class="logo-wrap">
-      <img src="/static/logo.png" alt="Trader Acelerator" class="logo-img"
-           onerror="this.style.display='none';" />
+      <img src="/static/logo.png" alt="Trader Acelerator" class="logo-img" onerror="this.style.display='none';" />
     </div>
-
     <div id="brand-block" aria-label="Trader Acelerator">
       <div class="brand-flash" id="brand-flash"></div>
       <span class="brand-line" id="brand-line1" aria-hidden="true"></span>
       <span class="brand-line" id="brand-line2" aria-hidden="true"></span>
     </div>
-
     <div class="bullet-row">
       <div class="bullet-dot"></div>
       <span id="bullet"></span>
     </div>
-
-    <a href="/login" class="cta-hero">
+    <a href="/login" class="btn-primary">
       <span id="cta-label">Enter</span>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-           stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="5" y1="12" x2="19" y2="12"/>
-        <polyline points="12 5 19 12 12 19"/>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
       </svg>
     </a>
-
     <div class="scroll-hint" id="scroll-hint">
-      <div class="scroll-mouse"></div>
+      <div class="s-mouse"></div>
       <span data-t="scrollHint">Scroll to explore</span>
     </div>
   </header>
 
-  <!-- ══════════ S1 — Platform intro + stats ══════════ -->
-  <hr class="section-rule">
-  <section class="block center">
-    <div class="eyebrow reveal" data-t="s1_eyebrow">The platform</div>
-    <h2 class="h2 reveal d1" data-t="s1_title">One platform. Every edge you need.</h2>
-    <p class="lead reveal d2" data-t="s1_body">From AI-powered trade reviews to community forums, knowledge certification and beyond — Trader Acelerator brings everything serious traders need into a single, focused space.</p>
-    <div class="stats">
-      <div class="stat reveal">
-        <div class="num" data-t="stat1_n">7</div>
-        <div class="lbl" data-t="stat1_l">Specialized tools</div>
-      </div>
-      <div class="stat reveal d1">
-        <div class="num" data-t="stat2_n">4+</div>
-        <div class="lbl" data-t="stat2_l">Trading methodologies</div>
-      </div>
-      <div class="stat reveal d2">
-        <div class="num" data-t="stat3_n">EN·ES·FR·PT</div>
-        <div class="lbl" data-t="stat3_l">Available languages</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ══════════ S2 — Main feature: Screenshot analysis ══════════ -->
-  <hr class="section-rule">
-  <section class="block">
-    <div class="main-tool">
-      <div class="main-tool-text">
-        <div class="eyebrow reveal" data-t="s2_eyebrow">Core feature</div>
-        <h2 class="h2 reveal d1" data-t="s2_title">AI analysis of your screenshots</h2>
-        <p class="lead reveal d2" data-t="s2_body">Upload any trade screenshot and get a precise, methodology-aware breakdown of your entry, structure, risk management and execution — not generic advice, real feedback calibrated to how you trade.</p>
-        <div class="tool-badge-list reveal d3" style="margin-top:28px;">
-          <span class="tool-badge" data-t="b_ict">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            ICT
-          </span>
-          <span class="tool-badge" data-t="b_pa">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            Price Action
-          </span>
-          <span class="tool-badge" data-t="b_quant">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            Quant
-          </span>
-          <span class="tool-badge" data-t="b_stdv">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            STDV
-          </span>
-          <span class="tool-badge" data-t="b_smc">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            Smart Money
-          </span>
+  <!-- ═══ S1 — THE PROBLEM ═══ -->
+  <hr class="rule">
+  <section class="section">
+    <div class="intro-split">
+      <div>
+        <div class="eyebrow rv" data-t="s1_brow">Sound familiar?</div>
+        <h2 class="h2 rv d1" data-t="s1_title">Trading alone is the hardest way to improve</h2>
+        <p class="lead rv d2" data-t="s1_body">Most traders review their trades in isolation, with no structured feedback and no way to know whether what they're seeing in the chart is actually there.</p>
+        <div class="intro-pain rv d3">
+          <div class="pain-item"><div class="pain-icon">🔁</div><div class="pain-text" data-t="pain1"><strong>Repeating the same mistakes</strong> without knowing exactly what they are or how to fix them.</div></div>
+          <div class="pain-item"><div class="pain-icon">📉</div><div class="pain-text" data-t="pain2"><strong>No benchmark for quality.</strong> You don't know if your entry was actually good or just got lucky.</div></div>
+          <div class="pain-item"><div class="pain-icon">🏝️</div><div class="pain-text" data-t="pain3"><strong>Studying in a vacuum.</strong> No community, no feedback loop, no one to challenge your thinking.</div></div>
         </div>
       </div>
-
-      <!-- Mock analysis card (decorative) -->
-      <div class="mock-card reveal d2">
-        <div class="mock-header">
-          <div class="mock-dot" style="background:var(--bull)"></div>
-          <div class="mock-title" data-t="mock_t">Trade Review — EURUSD 1H</div>
-        </div>
-        <div class="mock-label" data-t="mock_entry">Entry Quality</div>
-        <div class="mock-bar-wrap"><div class="mock-bar bull" style="width:82%"></div></div>
-        <div class="mock-label" data-t="mock_risk">Risk Management</div>
-        <div class="mock-bar-wrap"><div class="mock-bar mid" style="width:67%"></div></div>
-        <div class="mock-label" data-t="mock_exec">Execution</div>
-        <div class="mock-bar-wrap"><div class="mock-bar bull" style="width:91%"></div></div>
-        <div class="mock-label" data-t="mock_gaps">Identified Gaps</div>
-        <div class="mock-bar-wrap"><div class="mock-bar bear" style="width:38%"></div></div>
-        <div class="mock-tags">
-          <span class="mock-tag g" data-t="tag_fvg">FVG confirmed</span>
-          <span class="mock-tag g" data-t="tag_sweep">Liquidity sweep</span>
-          <span class="mock-tag r" data-t="tag_rr">RR &lt; 2:1</span>
-          <span class="mock-tag b" data-t="tag_ict">ICT methodology</span>
+      <div>
+        <div class="eyebrow rv" data-t="s1_sol_brow">The solution</div>
+        <h2 class="h2 rv d1" style="font-size:clamp(22px,3.4vw,34px);" data-t="s1_sol_title">Trader Acelerator gives you the feedback infrastructure serious traders need</h2>
+        <div class="intro-right rv d2">
+          <div class="answer-item"><div class="a-dot"></div><span data-t="ans1">AI that reads your actual chart screenshot</span></div>
+          <div class="answer-item"><div class="a-dot"></div><span data-t="ans2">Structured feedback grounded in your methodology</span></div>
+          <div class="answer-item"><div class="a-dot"></div><span data-t="ans3">A community of traders who operate at the same level</span></div>
+          <div class="answer-item"><div class="a-dot"></div><span data-t="ans4">A full library of ICT, SMC and pattern knowledge</span></div>
+          <div class="answer-item"><div class="a-dot"></div><span data-t="ans5">A ranking that proves you've actually mastered it</span></div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ══════════ S3 — All tools ══════════ -->
-  <hr class="section-rule">
-  <section class="block">
-    <div class="center">
-      <div class="eyebrow reveal" data-t="s3_eyebrow">The full toolkit</div>
-      <h2 class="h2 reveal d1" data-t="s3_title">Built tool by tool, for the serious trader</h2>
-      <p class="lead reveal d2" data-t="s3_body">Every feature was designed with one goal: to give you real information that turns into better trades.</p>
+  <!-- ═══ S2 — MAIN PRODUCT: AI ANALYSIS ═══ -->
+  <hr class="rule">
+  <section class="section">
+    <div class="analyze-grid">
+      <div>
+        <div class="eyebrow rv" data-t="s2_brow">Core feature</div>
+        <h2 class="h2 rv d1" data-t="s2_title">AI reads your chart like a senior trader would</h2>
+        <p class="lead rv d2" data-t="s2_body">Upload your screenshot, describe your trade, and get a detailed written analysis that identifies exactly where you may have deviated — with context, comparisons, and ICT concepts explained in your own language.</p>
+        <div class="method-wrap rv d3">
+          <span class="mbadge"><div class="mbadge-dot bd-acc"></div>ICT</span>
+          <span class="mbadge"><div class="mbadge-dot bd-acc"></div>Smart Money</span>
+          <span class="mbadge"><div class="mbadge-dot bd-bull"></div>Price Action</span>
+          <span class="mbadge"><div class="mbadge-dot bd-acc"></div>Liquidity Sweeps</span>
+          <span class="mbadge"><div class="mbadge-dot bd-bull"></div>Quantitative</span>
+          <span class="mbadge"><div class="mbadge-dot bd-acc"></div>Stat. Deviation</span>
+          <span class="mbadge"><div class="mbadge-dot bd-bull"></div>Silver Bullet</span>
+          <span class="mbadge"><div class="mbadge-dot bd-acc"></div>OTE / FVG / OB</span>
+        </div>
+      </div>
+
+      <!-- Mock AI output — realistic text, no fake bars -->
+      <div class="analysis-mock rv d2">
+        <div class="am-head">
+          <div class="am-status"></div>
+          <div class="am-title">Trade Review — NQ · NY Morning</div>
+          <div class="am-tag">ICT</div>
+        </div>
+        <div class="am-body" data-t="mock_body">
+          One thing worth considering: the <em>entry candle</em> formed just below a <span class="hl-acc">Fair Value Gap</span> on the 15m, but price hadn't yet <span class="hl-bear">swept the equal lows</span> sitting at the prior session low. Without that liquidity sweep, the FVG loses a significant part of its institutional backing — some traders would argue you entered before the market had finished its delivery phase. Additionally, your <em>HTF bias was bullish</em>, but the 1H showed a clear <span class="hl-bear">lower high structure</span>, which creates a misalignment worth flagging. The <span class="hl-bull">Kill Zone timing was correct</span> — NY AM open, which adds confluence. Consider whether the structure on the higher timeframe was truly supportive before the next similar setup.
+        </div>
+        <div class="am-footer">
+          <span class="am-chip amc-g" data-t="tag_kz">Kill Zone ✓</span>
+          <span class="am-chip amc-b" data-t="tag_fvg">FVG identified</span>
+          <span class="am-chip amc-r" data-t="tag_sweep">Sweep missing</span>
+          <span class="am-chip amc-r" data-t="tag_htf">HTF misaligned</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ S3 — ALL TOOLS ═══ -->
+  <hr class="rule">
+  <section class="section">
+    <div class="tc">
+      <div class="eyebrow rv" data-t="s3_brow">The full platform</div>
+      <h2 class="h2 rv d1" data-t="s3_title">Six tools. One mission: make you a better trader.</h2>
+      <p class="lead rv d2" data-t="s3_body">Every tool was built around a specific gap in how traders learn, review, and improve. Nothing generic. Nothing filler.</p>
     </div>
     <div class="tools-grid">
+
+      <!-- Análisis IA -->
+      <div class="tool-card rv" style="--tc-accent:var(--accent)">
+        <span class="plan-chip pc-free" data-t="chip_all">All plans</span>
+        <div class="tc-ico" style="background:rgba(26,80,224,.10)">🔬</div>
+        <h3 data-t="tc1_t">AI Screenshot Analysis</h3>
+        <p data-t="tc1_b">Upload any chart screenshot and receive detailed written feedback identifying deviations, missed confluences and structural issues — calibrated to your methodology and written in your language.</p>
+      </div>
+
+      <!-- Synapse -->
+      <div class="tool-card rv d1" style="--tc-accent:#7c3aed">
+        <span class="plan-chip pc-prem" data-t="chip_prem">Premium</span>
+        <div class="tc-ico" style="background:rgba(124,58,237,.10)">🧠</div>
+        <h3 data-t="tc2_t">Synapse — Knowledge Library</h3>
+        <p data-t="tc2_b">An immersive 3D environment covering every major trading theory and methodology — ICT, SMC, Wyckoff, classical patterns and more. Everything a trader needs to study, in one place.</p>
+      </div>
+
       <!-- Forum -->
-      <div class="tool-card reveal">
-        <div class="ico ico-blue">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        </div>
-        <h3 data-t="tc_forum_t">Trading Forum</h3>
-        <p data-t="tc_forum_b">Moderated community where traders share real setups, debate ideas and give each other structured feedback — no noise, no hype.</p>
+      <div class="tool-card rv d2" style="--tc-accent:#0d9488">
+        <span class="plan-chip pc-prem" data-t="chip_prem">Premium</span>
+        <div class="tc-ico" style="background:rgba(13,148,136,.10)">💬</div>
+        <h3 data-t="tc3_t">Trading Forum</h3>
+        <p data-t="tc3_b">A private, AI-moderated community. Share setups, post chart images, get structured feedback from peers and debate ideas with traders who take this as seriously as you do.</p>
       </div>
-      <!-- Quiz + Certificate -->
-      <div class="tool-card reveal d1">
-        <div class="ico ico-amber">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-        </div>
-        <h3 data-t="tc_quiz_t">Knowledge Quiz & Certificate</h3>
-        <p data-t="tc_quiz_b">Test your understanding across methodologies. Pass and earn a certificate that reflects real comprehension, not just time in front of charts.</p>
+
+      <!-- Quiz + Ranking -->
+      <div class="tool-card rv d3" style="--tc-accent:var(--gold)">
+        <span class="plan-chip pc-prem" data-t="chip_prem">Premium</span>
+        <div class="tc-ico" style="background:rgba(197,134,10,.11)">🏆</div>
+        <h3 data-t="tc4_t">Quizzes & Elite Ranking</h3>
+        <p data-t="tc4_b">Test your knowledge across ICT, SMC, Wyckoff and Patterns — 3 difficulty levels each. Score 80%+ on all 12 routes and earn your place on the exclusive Certified Traders ranking.</p>
       </div>
-      <!-- Scalper board -->
-      <div class="tool-card reveal d2">
-        <div class="ico ico-teal">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-        </div>
-        <h3 data-t="tc_scalp_t">Scalper Board</h3>
-        <p data-t="tc_scalp_b">A visual planning canvas for organizing your bias, sessions and setups before each trading day — your pre-market ritual, structured.</p>
+
+      <!-- Chalkboard -->
+      <div class="tool-card rv d4" style="--tc-accent:var(--bull)">
+        <span class="plan-chip pc-prem" data-t="chip_prem">Premium</span>
+        <div class="tc-ico" style="background:rgba(22,163,74,.11)">🖊️</div>
+        <h3 data-t="tc5_t">Chalkboard</h3>
+        <p data-t="tc5_b">A full drawing canvas for mapping out your bias, marking key levels and sketching trade ideas before the session opens — your pre-market ritual, built into the platform.</p>
       </div>
-      <!-- Synapse AI -->
-      <div class="tool-card reveal d3">
-        <div class="ico ico-purple">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>
-        </div>
-        <h3 data-t="tc_syn_t">Synapse</h3>
-        <p data-t="tc_syn_b">An immersive 3D neural AI visualization that brings markets to life — a unique experience built to train your pattern recognition.</p>
-      </div>
+
       <!-- Indicators -->
-      <div class="tool-card reveal d4">
-        <div class="ico ico-green">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-4 4 3 5-7"/></svg>
+      <div class="tool-card rv d5" style="--tc-accent:#e05a1a">
+        <span class="plan-chip pc-prem" data-t="chip_prem">Premium</span>
+        <div class="tc-ico" style="background:rgba(224,90,26,.10)">📊</div>
+        <h3 data-t="tc6_t">Indicator Library</h3>
+        <p data-t="tc6_b">Curated indicators built specifically for the methodologies we teach — FVG visualizers, Order Block markers, liquidity levels and more. Plug them into your platform from day one.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══ S4 — ANALYSIS CAPABILITIES ═══ -->
+  <hr class="rule">
+  <section class="section">
+    <div class="tc">
+      <div class="eyebrow rv" data-t="s4_brow">What the AI actually sees</div>
+      <h2 class="h2 rv d1" data-t="s4_title">Not a score. A real analysis.</h2>
+      <p class="lead rv d2" data-t="s4_body">The AI doesn't grade you with percentages. It reads your chart, cross-references your described confluences against what's actually visible, and gives you a written breakdown with specific concepts, comparisons and next steps.</p>
+    </div>
+    <div class="capabilities">
+      <div class="cap-item rv">
+        <div class="cap-ico">🎯</div>
+        <div>
+          <h4 data-t="cap1_t">Liquidity structure</h4>
+          <p data-t="cap1_b">Identifies whether the required liquidity sweep happened before your entry, or whether price entered a delivery zone prematurely.</p>
         </div>
-        <h3 data-t="tc_ind_t">Indicator Store</h3>
-        <p data-t="tc_ind_b">Curated trading indicators built for the methodologies we teach — plug them into your platform and get an edge from day one.</p>
       </div>
-      <!-- Prop Firm Scout -->
-      <div class="tool-card reveal d5">
-        <div class="ico ico-amber">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      <div class="cap-item rv d1">
+        <div class="cap-ico">🔗</div>
+        <div>
+          <h4 data-t="cap2_t">HTF / LTF alignment</h4>
+          <p data-t="cap2_b">Cross-checks your stated HTF bias against the lower timeframe structure visible in the screenshot — flags misalignments directly.</p>
         </div>
-        <h3 data-t="tc_scout_t">Prop Firm Scout</h3>
-        <p data-t="tc_scout_b">Compare 25+ prop firms side by side — fees, rules, payout structure, country restrictions and an AI advisor to find your best fit.</p>
-        <span class="coming-badge" data-t="coming">Coming soon</span>
+      </div>
+      <div class="cap-item rv d2">
+        <div class="cap-ico">⏰</div>
+        <div>
+          <h4 data-t="cap3_t">Kill Zone & session timing</h4>
+          <p data-t="cap3_b">Validates your entry against institutional time windows — NY Morning, London, Silver Bullet hours and known dead zones.</p>
+        </div>
+      </div>
+      <div class="cap-item rv d3">
+        <div class="cap-ico">↕️</div>
+        <div>
+          <h4 data-t="cap4_t">FVG, OB and displacement</h4>
+          <p data-t="cap4_b">Evaluates the Fair Value Gap, Order Block and displacement quality — whether the setup had the institutional backing it needed.</p>
+        </div>
+      </div>
+      <div class="cap-item rv d4">
+        <div class="cap-ico">🔀</div>
+        <div>
+          <h4 data-t="cap5_t">SMT divergence detection</h4>
+          <p data-t="cap5_b">Checks correlated pair behavior (NQ/ES, GC/SI, GBP/EUR) to validate whether institutional positioning was aligned with your direction.</p>
+        </div>
+      </div>
+      <div class="cap-item rv d5">
+        <div class="cap-ico">🌐</div>
+        <div>
+          <h4 data-t="cap6_t">Responds in your language</h4>
+          <p data-t="cap6_b">The full analysis is delivered in English, Spanish, French or Portuguese — ICT terminology preserved and explained in context.</p>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- ══════════ S4 — How it works ══════════ -->
-  <hr class="section-rule">
-  <section class="block">
-    <div class="center">
-      <div class="eyebrow reveal" data-t="s4_eyebrow">How it works</div>
-      <h2 class="h2 reveal d1" data-t="s4_title">From first screenshot to certified trader</h2>
+  <!-- ═══ S5 — COMMUNITY + RANKING ═══ -->
+  <hr class="rule">
+  <section class="section">
+    <div class="tc">
+      <div class="eyebrow rv" data-t="s5_brow">Community & recognition</div>
+      <h2 class="h2 rv d1" data-t="s5_title">The two things that separate traders who grow from those who don't</h2>
     </div>
-    <div class="steps">
-      <div class="step reveal">
-        <div class="step-n">1</div>
-        <h3 data-t="st1_t">Create your account</h3>
-        <p data-t="st1_b">Sign up free in seconds. Choose your methodology and preferred language — the platform calibrates to you.</p>
+    <div class="community-grid">
+
+      <!-- Forum -->
+      <div class="comm-card rv">
+        <div style="font-size:28px">💬</div>
+        <h3 data-t="forum_t">Trading Forum</h3>
+        <p data-t="forum_b">A private, AI-moderated space where serious traders share real setups with chart images, critique each other's execution and discuss methodology at depth. No noise. No hype. Just signal.</p>
+        <div class="forum-mock">
+          <div class="forum-post">
+            <div class="fp-meta">@mtrader · NY Morning</div>
+            <div class="fp-title" data-t="fp1">NQ short — sweep on 15m, entry on FVG reclaim. Thoughts on the HTF structure?</div>
+            <div class="fp-tags">
+              <span class="fp-tag">ICT</span><span class="fp-tag">FVG</span><span class="fp-tag">NQ</span>
+            </div>
+          </div>
+          <div class="forum-post">
+            <div class="fp-meta">@kzone_trader · London</div>
+            <div class="fp-title" data-t="fp2">EURUSD Silver Bullet — clean OTE, caught the displacement. Sharing for feedback.</div>
+            <div class="fp-tags">
+              <span class="fp-tag">SMC</span><span class="fp-tag">Silver Bullet</span><span class="fp-tag">EUR</span>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="step reveal d1">
-        <div class="step-n">2</div>
-        <h3 data-t="st2_t">Submit your trades</h3>
-        <p data-t="st2_b">Upload screenshots, join forum discussions, run through quizzes — every action feeds your development cycle.</p>
+
+      <!-- Ranking -->
+      <div class="comm-card rv d1">
+        <div style="font-size:28px">🏆</div>
+        <h3 data-t="rank_t">Elite Trader Ranking</h3>
+        <p data-t="rank_b">Pass all 12 quiz routes — ICT, SMC, Wyckoff and Patterns across Beginner, Intermediate and Advanced — with a minimum 80% accuracy, and your name joins the Certified Traders leaderboard. Not a badge. A proof of mastery.</p>
+        <div class="rank-list">
+          <div class="rank-item"><div class="rank-n">1</div><div class="rank-name">J. Mercado</div><div class="rank-score">94.2%</div><div class="rank-badge">🥇</div></div>
+          <div class="rank-item"><div class="rank-n">2</div><div class="rank-name">K. Fontaine</div><div class="rank-score">91.7%</div><div class="rank-badge">🥈</div></div>
+          <div class="rank-item"><div class="rank-n">3</div><div class="rank-name">A. Moreira</div><div class="rank-score">89.5%</div><div class="rank-badge">🥉</div></div>
+          <div class="rank-item rv d2"><div class="rank-n">—</div><div class="rank-name" data-t="rank_you">You?</div><div class="rank-score">—</div><div class="rank-badge">🎯</div></div>
+        </div>
       </div>
-      <div class="step reveal d2">
-        <div class="step-n">3</div>
-        <h3 data-t="st3_t">Measure your growth</h3>
-        <p data-t="st3_b">Track patterns over time, close your gaps and earn your certificate when your understanding reaches the next level.</p>
-      </div>
+
     </div>
   </section>
 
-  <!-- ══════════ S5 — Methodologies ══════════ -->
-  <hr class="section-rule">
-  <section class="block center">
-    <div class="eyebrow reveal" data-t="s5_eyebrow">Built for every style</div>
-    <h2 class="h2 reveal d1" data-t="s5_title">One platform, every approach</h2>
-    <p class="lead reveal d2" data-t="s5_body">Whatever framework you trade, Trader Acelerator speaks your language.</p>
-    <div class="chips reveal d2">
-      <span class="chip">ICT</span>
-      <span class="chip">Smart Money Concepts</span>
-      <span class="chip">Price Action</span>
-      <span class="chip">Classic Patterns</span>
-      <span class="chip">Quantitative</span>
-      <span class="chip">Statistical Deviation</span>
-      <span class="chip">Supply &amp; Demand</span>
-      <span class="chip">Order Flow</span>
+  <!-- ═══ S6 — STATS ═══ -->
+  <hr class="rule">
+  <section class="section tc">
+    <div class="eyebrow rv" data-t="s6_brow">By the numbers</div>
+    <h2 class="h2 rv d1" data-t="s6_title">Built with depth, not fluff</h2>
+    <div class="stats-strip">
+      <div class="stat-item rv">
+        <div class="stat-n">6</div>
+        <div class="stat-l" data-t="stat1">Specialized tools</div>
+      </div>
+      <div class="stat-item rv d1">
+        <div class="stat-n">12</div>
+        <div class="stat-l" data-t="stat2">Quiz routes to master</div>
+      </div>
+      <div class="stat-item rv d2">
+        <div class="stat-n">80%</div>
+        <div class="stat-l" data-t="stat3">Minimum to earn your ranking</div>
+      </div>
+      <div class="stat-item rv d3">
+        <div class="stat-n">4</div>
+        <div class="stat-l" data-t="stat4">Languages supported</div>
+      </div>
+    </div>
+    <div class="flags-row rv d2">
+      <div class="flag-item"><span>🇺🇸</span><span>English</span></div>
+      <div class="flag-item"><span>🇪🇸</span><span>Español</span></div>
+      <div class="flag-item"><span>🇫🇷</span><span>Français</span></div>
+      <div class="flag-item"><span>🇧🇷</span><span>Português</span></div>
     </div>
   </section>
 
-  <!-- ══════════ S6 — Plans ══════════ -->
-  <hr class="section-rule">
-  <section class="block center">
-    <div class="eyebrow reveal" data-t="s6_eyebrow">Simple pricing</div>
-    <h2 class="h2 reveal d1" data-t="s6_title">Start free. Scale when you're ready.</h2>
-    <p class="lead reveal d2" data-t="s6_body">No credit card needed to start. Upgrade anytime.</p>
-    <div class="plans">
-      <div class="plan-card reveal">
+  <!-- ═══ S7 — PLANS ═══ -->
+  <hr class="rule">
+  <section class="section tc">
+    <div class="eyebrow rv" data-t="s7_brow">Pricing</div>
+    <h2 class="h2 rv d1" data-t="s7_title">Start free. No card required.</h2>
+    <p class="lead rv d2" data-t="s7_body">Every plan includes the AI analysis engine. Upgrade when you want more.</p>
+    <div class="plans-grid">
+
+      <!-- Free -->
+      <div class="plan rv">
         <div class="plan-name">Free</div>
-        <div class="plan-price" data-t="pl_free_price">$0</div>
-        <div class="plan-cycle" data-t="pl_free_cycle">Always free</div>
+        <div class="plan-price">$0</div>
+        <div class="plan-cycle" data-t="pl_free_cycle">Forever free</div>
         <ul class="plan-feats">
-          <li><span class="check">✓</span><span data-t="pl_free_f1">1 analysis / 7 days</span></li>
-          <li><span class="check">✓</span><span data-t="pl_free_f2">Forum access</span></li>
-          <li><span class="check">✓</span><span data-t="pl_free_f3">Knowledge quiz</span></li>
-          <li><span class="check">✓</span><span data-t="pl_free_f4">Scalper board</span></li>
+          <li><span class="chk">✓</span><span data-t="pf1">1 AI analysis per week</span></li>
+          <li><span class="chk">✓</span><span data-t="pf2">All methodologies supported</span></li>
+          <li><span class="chk">✓</span><span data-t="pf3">EN / ES / FR / PT responses</span></li>
         </ul>
+        <a href="/login" class="plan-cta outline" data-t="pf_cta">Start free</a>
       </div>
-      <div class="plan-card reveal d1">
+
+      <!-- Standard -->
+      <div class="plan rv d1">
         <div class="plan-name">Standard</div>
-        <div class="plan-price" data-t="pl_std_price">$9</div>
+        <div class="plan-price">$10</div>
         <div class="plan-cycle" data-t="pl_std_cycle">per month</div>
         <ul class="plan-feats">
-          <li><span class="check">✓</span><span data-t="pl_std_f1">1 analysis / 24 h</span></li>
-          <li><span class="check">✓</span><span data-t="pl_std_f2">Priority feedback</span></li>
-          <li><span class="check">✓</span><span data-t="pl_std_f3">All free features</span></li>
+          <li><span class="chk">✓</span><span data-t="ps1">1 AI analysis per day</span></li>
+          <li><span class="chk">✓</span><span data-t="ps2">Everything in Free</span></li>
         </ul>
+        <a href="/login" class="plan-cta outline" data-t="ps_cta">Go Standard</a>
       </div>
-      <div class="plan-card featured reveal d2">
+
+      <!-- Premium -->
+      <div class="plan featured rv d2">
+        <div class="plan-popular" data-t="pop_badge">Most Popular</div>
         <div class="plan-name">Premium</div>
-        <div class="plan-price" data-t="pl_prm_price">$29</div>
+        <div class="plan-price">$30</div>
         <div class="plan-cycle" data-t="pl_prm_cycle">per month</div>
         <ul class="plan-feats">
-          <li><span class="check">✓</span><span data-t="pl_prm_f1">5 analyses / 24 h</span></li>
-          <li><span class="check">✓</span><span data-t="pl_prm_f2">Prop Firm Scout</span></li>
-          <li><span class="check">✓</span><span data-t="pl_prm_f3">Indicator store</span></li>
-          <li><span class="check">✓</span><span data-t="pl_prm_f4">Synapse AI</span></li>
-          <li><span class="check">✓</span><span data-t="pl_prm_f5">Priority support</span></li>
+          <li><span class="chk">✓</span><span data-t="pp1">5 AI analyses per day</span></li>
+          <li><span class="chk">✓</span><span data-t="pp2">Synapse knowledge library</span></li>
+          <li><span class="chk">✓</span><span data-t="pp3">Trading Forum (private)</span></li>
+          <li><span class="chk">✓</span><span data-t="pp4">Quizzes + Elite Ranking</span></li>
+          <li><span class="chk">✓</span><span data-t="pp5">Chalkboard canvas</span></li>
+          <li><span class="chk">✓</span><span data-t="pp6">Indicator Library</span></li>
         </ul>
+        <a href="/login" class="plan-cta solid" data-t="pp_cta">Go Premium</a>
       </div>
+
     </div>
   </section>
 
-  <!-- ══════════ S7 — Final CTA ══════════ -->
-  <hr class="section-rule">
-  <section class="block">
-    <div class="cta-panel reveal">
-      <h2 class="h2" data-t="cta_title">Ready to accelerate?</h2>
-      <p class="lead" data-t="cta_body">Create your free account and start turning every trade into a lesson — today.</p>
-      <a href="/login" class="btn-cta">
-        <span data-t="cta_btn">Get started free</span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="5" y1="12" x2="19" y2="12"/>
-          <polyline points="12 5 19 12 12 19"/>
+  <!-- ═══ FINAL CTA ═══ -->
+  <hr class="rule">
+  <section class="section">
+    <div class="final-cta rv">
+      <h2 class="h2" data-t="cta_t">Your next trade deserves real feedback.</h2>
+      <p class="lead" data-t="cta_b">Join Trader Acelerator and turn every screenshot into a structured lesson.</p>
+      <a href="/login" class="btn-primary" style="animation:none;opacity:1;display:inline-flex;">
+        <span data-t="cta_btn">Create your free account</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
         </svg>
       </a>
     </div>
   </section>
 
-  <footer class="site-foot">
-    <p class="legal" id="legal-note">Trader Acelerator · For educational purposes only</p>
+  <footer class="foot">
+    <p id="legal-note">Trader Acelerator · For educational purposes only</p>
   </footer>
 
-  <!-- ══════════ Scripts ══════════ -->
+  <!-- ════════════════════════════════════════
+       SCRIPTS
+       ════════════════════════════════════════ -->
   <script>
-    // ──────────────────────────────────────────────────────
-    //  Floating candlestick canvas background
-    // ──────────────────────────────────────────────────────
-    (function () {
-      const cv = document.getElementById('candle-bg');
-      const ctx = cv.getContext('2d');
-      const isDark = () => document.body.classList.contains('dark');
+  // ─────────────────────────────────────────
+  //  Background: animated perspective grid
+  //  — a receding grid that slowly scrolls
+  //    toward the viewer, with thin price
+  //    lines that auto-draw across it.
+  // ─────────────────────────────────────────
+  (function () {
+    const cv  = document.getElementById('bg-canvas');
+    const ctx = cv.getContext('2d');
+    const dark = () => document.body.classList.contains('dark');
 
-      function resize() {
-        cv.width  = window.innerWidth;
-        cv.height = window.innerHeight;
+    function resize() { cv.width = innerWidth; cv.height = innerHeight; }
+    resize();
+    window.addEventListener('resize', resize, { passive: true });
+
+    // Perspective grid parameters
+    const COLS   = 10;     // vertical lines
+    const ROWS   = 14;     // horizontal lines
+    const SPEED  = 0.00018; // how fast lines march toward viewer (0=freeze)
+    let   offset = 0;      // 0..1 cycles continuously
+
+    // Price lines — thin lines that sweep horizontally across the grid
+    const PRICE_LINES = 3;
+    const plines = Array.from({ length: PRICE_LINES }, (_, i) => ({
+      progress: i / PRICE_LINES,  // 0..1 across the screen width
+      y: 0.25 + (i * 0.22),       // normalized vertical position
+      speed: 0.0004 + Math.random() * 0.0003,
+      segments: [],                // [{x,y}]
+    }));
+
+    // Generate a realistic "price walk" path (random walk biased up slightly)
+    function genPricePath(seed) {
+      const pts = [];
+      let y = 0;
+      const steps = 160;
+      for (let i = 0; i < steps; i++) {
+        // simple GBM-ish: biased random walk
+        y += (Math.sin(seed + i * 0.13) * 0.4 + (Math.random() - 0.5)) * 0.6;
+        pts.push({ nx: i / (steps - 1), ny: y });
       }
-      resize();
-      window.addEventListener('resize', resize, { passive: true });
+      // normalise y to [-1, 1]
+      const mn = Math.min(...pts.map(p => p.ny));
+      const mx = Math.max(...pts.map(p => p.ny));
+      const range = mx - mn || 1;
+      pts.forEach(p => { p.ny = (p.ny - mn) / range * 2 - 1; });
+      return pts;
+    }
 
-      // Each candle: x, y, bodyH, wickT, wickB, bull, alpha, speed, w
-      const N = 28;
-      const candles = [];
+    const priceData = [
+      genPricePath(0),
+      genPricePath(42),
+      genPricePath(87),
+    ];
 
-      function spawn(forceY) {
-        const bull = Math.random() > 0.42;
-        const w    = 10 + Math.random() * 12;       // body width
-        const bodyH = 14 + Math.random() * 28;
-        const wickT = 6 + Math.random() * 20;
-        const wickB = 4 + Math.random() * 14;
-        return {
-          x: Math.random() * window.innerWidth,
-          y: forceY !== undefined ? forceY : window.innerHeight + 80,
-          w, bodyH, wickT, wickB, bull,
-          alpha: 0,
-          targetAlpha: 0.06 + Math.random() * 0.07,
-          speed: 0.18 + Math.random() * 0.28,
-          fadeIn: true,
-          fadeOut: false,
-        };
+    function drawGrid() {
+      const W = cv.width, H = cv.height;
+      const dk = dark();
+
+      // Gradient background (subtle radial)
+      const grad = ctx.createRadialGradient(W/2, H * 0.3, 0, W/2, H * 0.3, W * 0.7);
+      if (dk) {
+        grad.addColorStop(0, 'rgba(20,26,50,0.92)');
+        grad.addColorStop(1, 'rgba(9,11,19,0.98)');
+      } else {
+        grad.addColorStop(0, 'rgba(235,240,255,0.80)');
+        grad.addColorStop(1, 'rgba(248,249,252,0.94)');
       }
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
 
-      // Spread initial candles across the viewport
-      for (let i = 0; i < N; i++) {
-        const c = spawn();
-        c.y = Math.random() * window.innerHeight;
-        c.alpha = c.targetAlpha * Math.random();
-        candles.push(c);
-      }
+      // Perspective grid settings
+      const vanishX = W / 2;
+      const vanishY = H * 0.42;   // horizon line
+      const gridBot  = H + 80;
+      const gridL    = -W * 0.2;
+      const gridR    = W * 1.2;
 
-      function drawCandle(c) {
-        const dark = isDark();
-        const bullColor = dark ? 'rgba(34,197,94,'  : 'rgba(22,163,74,';
-        const bearColor = dark ? 'rgba(239,68,68,'  : 'rgba(220,38,38,';
-        const col = (c.bull ? bullColor : bearColor) + c.alpha + ')';
-        const cx  = c.x;
+      // Grid colour
+      const gAlpha = dk ? 0.12 : 0.08;
+      ctx.strokeStyle = `rgba(${dk ? '92,143,242' : '26,80,224'},${gAlpha})`;
+      ctx.lineWidth   = 0.8;
 
-        ctx.strokeStyle = col;
-        ctx.lineWidth   = 1.4;
-
-        // Upper wick
+      // Vertical grid lines (converge to vanishing point)
+      for (let c = 0; c <= COLS; c++) {
+        const t  = c / COLS;
+        const bx = gridL + (gridR - gridL) * t;
         ctx.beginPath();
-        ctx.moveTo(cx, c.y - c.bodyH / 2 - c.wickT);
-        ctx.lineTo(cx, c.y - c.bodyH / 2);
+        ctx.moveTo(vanishX, vanishY);
+        ctx.lineTo(bx, gridBot);
         ctx.stroke();
+      }
 
-        // Lower wick
+      // Horizontal grid lines (march toward viewer)
+      for (let r = 0; r <= ROWS; r++) {
+        // normalised depth: 0 = horizon, 1 = viewer
+        const depth = ((r / ROWS) + offset) % 1;
+        // perspective: small at top, large at bottom
+        const perspective = Math.pow(depth, 1.8);
+        const y = vanishY + (gridBot - vanishY) * perspective;
+        if (y < vanishY) continue;
+
+        // x extents narrow toward horizon
+        const xL = vanishX + (gridL - vanishX) * perspective;
+        const xR = vanishX + (gridR - vanishX) * perspective;
+
+        // Fade lines near horizon (depth→0) and at very bottom
+        const fadeTop = Math.min(depth * 6, 1);
+        const fadeBot = depth > 0.9 ? (1 - depth) * 10 : 1;
+        ctx.globalAlpha = gAlpha * fadeTop * fadeBot;
         ctx.beginPath();
-        ctx.moveTo(cx, c.y + c.bodyH / 2);
-        ctx.lineTo(cx, c.y + c.bodyH / 2 + c.wickB);
+        ctx.moveTo(xL, y);
+        ctx.lineTo(xR, y);
         ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
 
-        // Body
-        ctx.fillStyle = col;
+      // Price lines — drawn on the grid "floor"
+      plines.forEach((pl, idx) => {
+        const pts = priceData[idx];
+        const baseY = vanishY + (gridBot - vanishY) * (0.15 + pl.y * 0.7); // vertical strip
+        const amp   = (gridBot - vanishY) * 0.07;  // amplitude of price swing
+
+        // Only draw the "revealed so far" portion
+        const revealEnd = pl.progress;  // 0..1
+
+        ctx.save();
         ctx.beginPath();
-        ctx.roundRect(cx - c.w / 2, c.y - c.bodyH / 2, c.w, c.bodyH, 2);
-        ctx.fill();
-      }
+        // Clip to only the drawn portion of the grid width
+        const clipX0 = vanishX + (gridL - vanishX) * 0.15;
+        const clipX1 = vanishX + (gridR - vanishX) * 0.15;
+        // We'll just draw up to progress across the full grid width
+        const fullW = (vanishX + (gridR - vanishX) * 0.85) - (vanishX + (gridL - vanishX) * 0.85);
 
-      let raf;
-      function loop() {
-        ctx.clearRect(0, 0, cv.width, cv.height);
-        candles.forEach((c, i) => {
-          // Drift up
-          c.y -= c.speed;
+        ctx.beginPath();
+        let first = true;
+        for (let i = 0; i < pts.length; i++) {
+          if (pts[i].nx > revealEnd) break;
+          const screenX = (vanishX + (gridL - vanishX) * 0.15) + pts[i].nx * fullW;
+          // Foreshortened y: price line sits at a fixed depth on the grid floor
+          const screenY = baseY + pts[i].ny * amp;
+          if (first) { ctx.moveTo(screenX, screenY); first = false; }
+          else ctx.lineTo(screenX, screenY);
+        }
 
-          // Fade in near bottom
-          if (c.fadeIn) {
-            c.alpha = Math.min(c.alpha + 0.0012, c.targetAlpha);
-            if (c.alpha >= c.targetAlpha) c.fadeIn = false;
-          }
+        const lineAlpha = dk ? 0.35 : 0.22;
+        ctx.strokeStyle = idx === 1
+          ? `rgba(${dk ? '34,197,94' : '22,163,74'},${lineAlpha})`
+          : idx === 2
+            ? `rgba(${dk ? '239,68,68' : '220,38,38'},${lineAlpha * 0.8})`
+            : `rgba(${dk ? '92,143,242' : '26,80,224'},${lineAlpha})`;
+        ctx.lineWidth = 1.4;
+        ctx.lineJoin  = 'round';
+        ctx.stroke();
+        ctx.restore();
 
-          // Start fading out when near top
-          const topThresh = cv.height * 0.18;
-          if (!c.fadeOut && c.y < topThresh) c.fadeOut = true;
-          if (c.fadeOut) c.alpha = Math.max(0, c.alpha - 0.0018);
-
-          // Recycle
-          if (c.y < -80 || c.alpha <= 0) {
-            candles[i] = spawn();
-          } else {
-            drawCandle(c);
-          }
-        });
-        raf = requestAnimationFrame(loop);
-      }
-      loop();
-
-      // Pause when tab is hidden (perf)
-      document.addEventListener('visibilitychange', () => {
-        if (document.hidden) cancelAnimationFrame(raf);
-        else loop();
+        // advance progress; recycle
+        pl.progress += pl.speed;
+        if (pl.progress > 1) {
+          pl.progress = 0;
+          // regenerate path on recycle for variety
+          priceData[idx] = genPricePath(Math.random() * 200);
+        }
       });
-    })();
 
-    // ──────────────────────────────────────────────────────
-    //  i18n
-    // ──────────────────────────────────────────────────────
-    const SUPPORTED = ['en','es','fr','pt'];
-    function detectLang() {
-      try { const s = localStorage.getItem('scalpel_lang'); if (SUPPORTED.includes(s)) return s; } catch(e) {}
-      const raw = (navigator.language || 'en').toLowerCase();
-      return raw.startsWith('es') ? 'es' : raw.startsWith('fr') ? 'fr' : raw.startsWith('pt') ? 'pt' : 'en';
-    }
-    let lang = detectLang();
-
-    const I18N = {
-      en: {
-        bullets: [
-          'Analyze your trades with structured AI feedback',
-          'Develop your edge across any trading approach',
-          'Belong to a community of serious traders',
-          'Test your knowledge and earn your certificate',
-          'Accelerate your growth — starting today',
-        ],
-        cta: 'Enter',
-        legal: 'Trader Acelerator · For educational purposes only',
-        t: {
-          scrollHint:'Scroll to explore',
-          s1_eyebrow:'The platform', s1_title:'One platform. Every edge you need.',
-          s1_body:'From AI-powered trade reviews to community forums, knowledge certification and beyond — Trader Acelerator brings everything serious traders need into a single, focused space.',
-          stat1_n:'7', stat1_l:'Specialized tools',
-          stat2_n:'4+', stat2_l:'Trading methodologies',
-          stat3_n:'EN·ES·FR·PT', stat3_l:'Available languages',
-          s2_eyebrow:'Core feature', s2_title:'AI analysis of your screenshots',
-          s2_body:'Upload any trade screenshot and get a precise, methodology-aware breakdown of your entry, structure, risk management and execution — not generic advice, real feedback calibrated to how you trade.',
-          b_ict:'ICT', b_pa:'Price Action', b_quant:'Quant', b_stdv:'STDV', b_smc:'Smart Money',
-          mock_t:'Trade Review — EURUSD 1H', mock_entry:'Entry Quality', mock_risk:'Risk Management',
-          mock_exec:'Execution', mock_gaps:'Identified Gaps',
-          tag_fvg:'FVG confirmed', tag_sweep:'Liquidity sweep', tag_rr:'RR < 2:1', tag_ict:'ICT methodology',
-          s3_eyebrow:'The full toolkit', s3_title:'Built tool by tool, for the serious trader',
-          s3_body:'Every feature was designed with one goal: to give you real information that turns into better trades.',
-          tc_forum_t:'Trading Forum', tc_forum_b:'Moderated community where traders share real setups, debate ideas and give each other structured feedback — no noise, no hype.',
-          tc_quiz_t:'Knowledge Quiz & Certificate', tc_quiz_b:'Test your understanding across methodologies. Pass and earn a certificate that reflects real comprehension, not just time in front of charts.',
-          tc_scalp_t:'Scalper Board', tc_scalp_b:'A visual planning canvas for organizing your bias, sessions and setups before each trading day — your pre-market ritual, structured.',
-          tc_syn_t:'Synapse', tc_syn_b:'An immersive 3D neural AI visualization that brings markets to life — a unique experience built to train your pattern recognition.',
-          tc_ind_t:'Indicator Store', tc_ind_b:'Curated trading indicators built for the methodologies we teach — plug them into your platform and get an edge from day one.',
-          tc_scout_t:'Prop Firm Scout', tc_scout_b:'Compare 25+ prop firms side by side — fees, rules, payout structure, country restrictions and an AI advisor to find your best fit.',
-          coming:'Coming soon',
-          s4_eyebrow:'How it works', s4_title:'From first screenshot to certified trader',
-          st1_t:'Create your account', st1_b:'Sign up free in seconds. Choose your methodology and preferred language — the platform calibrates to you.',
-          st2_t:'Submit your trades', st2_b:'Upload screenshots, join forum discussions, run through quizzes — every action feeds your development cycle.',
-          st3_t:'Measure your growth', st3_b:'Track patterns over time, close your gaps and earn your certificate when your understanding reaches the next level.',
-          s5_eyebrow:'Built for every style', s5_title:'One platform, every approach',
-          s5_body:'Whatever framework you trade, Trader Acelerator speaks your language.',
-          s6_eyebrow:'Simple pricing', s6_title:'Start free. Scale when you\'re ready.',
-          s6_body:'No credit card needed to start. Upgrade anytime.',
-          pl_free_price:'$0', pl_free_cycle:'Always free', pl_free_f1:'1 analysis / 7 days',
-          pl_free_f2:'Forum access', pl_free_f3:'Knowledge quiz', pl_free_f4:'Scalper board',
-          pl_std_price:'$9', pl_std_cycle:'per month', pl_std_f1:'1 analysis / 24 h',
-          pl_std_f2:'Priority feedback', pl_std_f3:'All free features',
-          pl_prm_price:'$29', pl_prm_cycle:'per month', pl_prm_f1:'5 analyses / 24 h',
-          pl_prm_f2:'Prop Firm Scout', pl_prm_f3:'Indicator store', pl_prm_f4:'Synapse AI', pl_prm_f5:'Priority support',
-          cta_title:'Ready to accelerate?',
-          cta_body:'Create your free account and start turning every trade into a lesson — today.',
-          cta_btn:'Get started free',
-        },
-      },
-      es: {
-        bullets: [
-          'Analiza tus operaciones con retroalimentación estructurada por IA',
-          'Desarrolla tu ventaja en cualquier estrategia',
-          'Únete a una comunidad de traders serios',
-          'Pon a prueba tu conocimiento y obtén tu certificado',
-          'Acelera tu crecimiento — desde hoy',
-        ],
-        cta: 'Entrar',
-        legal: 'Trader Acelerator · Solo con fines educativos',
-        t: {
-          scrollHint:'Desliza para explorar',
-          s1_eyebrow:'La plataforma', s1_title:'Una plataforma. Cada ventaja que necesitas.',
-          s1_body:'Desde revisiones de operaciones con IA hasta foros, certificación de conocimiento y más — Trader Acelerator reúne todo lo que un trader serio necesita en un solo lugar.',
-          stat1_n:'7', stat1_l:'Herramientas especializadas',
-          stat2_n:'4+', stat2_l:'Metodologías de trading',
-          stat3_n:'EN·ES·FR·PT', stat3_l:'Idiomas disponibles',
-          s2_eyebrow:'Característica principal', s2_title:'Análisis de tus capturas con IA',
-          s2_body:'Sube cualquier captura y recibe un desglose preciso y acorde a tu metodología sobre tu entrada, estructura, gestión del riesgo y ejecución — no consejos genéricos, feedback real calibrado a cómo operas.',
-          b_ict:'ICT', b_pa:'Price Action', b_quant:'Quant', b_stdv:'STDV', b_smc:'Smart Money',
-          mock_t:'Revisión de operación — EURUSD 1H', mock_entry:'Calidad de entrada', mock_risk:'Gestión del riesgo',
-          mock_exec:'Ejecución', mock_gaps:'Brechas identificadas',
-          tag_fvg:'FVG confirmado', tag_sweep:'Barrido de liquidez', tag_rr:'RR < 2:1', tag_ict:'Metodología ICT',
-          s3_eyebrow:'El kit completo', s3_title:'Construida herramienta a herramienta, para el trader serio',
-          s3_body:'Cada función fue diseñada con un objetivo: darte información real que se traduzca en mejores operaciones.',
-          tc_forum_t:'Foro de trading', tc_forum_b:'Comunidad moderada donde los traders comparten setups reales, debaten ideas y se dan retroalimentación estructurada — sin ruido, sin hype.',
-          tc_quiz_t:'Quiz y certificado', tc_quiz_b:'Pon a prueba tu comprensión en distintas metodologías. Aprueba y obtén un certificado que refleja conocimiento real.',
-          tc_scalp_t:'Tablero del Scalper', tc_scalp_b:'Un canvas visual para organizar tu sesgo, sesiones y setups antes de cada día de trading — tu ritual previo al mercado, estructurado.',
-          tc_syn_t:'Synapse', tc_syn_b:'Una visualización 3D de IA neural que da vida a los mercados — una experiencia única construida para entrenar tu reconocimiento de patrones.',
-          tc_ind_t:'Tienda de indicadores', tc_ind_b:'Indicadores de trading diseñados para las metodologías que enseñamos — conéctalos a tu plataforma y obtén ventaja desde el primer día.',
-          tc_scout_t:'Prop Firm Scout', tc_scout_b:'Compara más de 25 prop firms — tarifas, reglas, estructura de pagos, restricciones por país y un asesor IA para encontrar la más adecuada para ti.',
-          coming:'Próximamente',
-          s4_eyebrow:'Cómo funciona', s4_title:'De tu primera captura a trader certificado',
-          st1_t:'Crea tu cuenta', st1_b:'Regístrate gratis en segundos. Elige tu metodología e idioma preferido — la plataforma se calibra a ti.',
-          st2_t:'Sube tus operaciones', st2_b:'Sube capturas, participa en el foro, realiza quizzes — cada acción alimenta tu ciclo de desarrollo.',
-          st3_t:'Mide tu crecimiento', st3_b:'Sigue tus patrones en el tiempo, cierra tus brechas y obtén tu certificado cuando tu comprensión llegue al siguiente nivel.',
-          s5_eyebrow:'Para cada estilo', s5_title:'Una plataforma, cualquier enfoque',
-          s5_body:'Sea cual sea tu marco de trabajo, Trader Acelerator habla tu idioma.',
-          s6_eyebrow:'Precios simples', s6_title:'Empieza gratis. Escala cuando estés listo.',
-          s6_body:'No necesitas tarjeta de crédito para empezar. Mejora tu plan cuando quieras.',
-          pl_free_price:'$0', pl_free_cycle:'Siempre gratis', pl_free_f1:'1 análisis / 7 días',
-          pl_free_f2:'Acceso al foro', pl_free_f3:'Quiz de conocimiento', pl_free_f4:'Tablero Scalper',
-          pl_std_price:'$9', pl_std_cycle:'por mes', pl_std_f1:'1 análisis / 24 h',
-          pl_std_f2:'Feedback prioritario', pl_std_f3:'Todos los beneficios Free',
-          pl_prm_price:'$29', pl_prm_cycle:'por mes', pl_prm_f1:'5 análisis / 24 h',
-          pl_prm_f2:'Prop Firm Scout', pl_prm_f3:'Tienda de indicadores', pl_prm_f4:'Synapse AI', pl_prm_f5:'Soporte prioritario',
-          cta_title:'¿Listo para acelerar?',
-          cta_body:'Crea tu cuenta gratis y empieza a convertir cada operación en una lección — hoy.',
-          cta_btn:'Comenzar gratis',
-        },
-      },
-      fr: {
-        bullets: [
-          'Analysez vos trades avec un feedback IA structuré',
-          "Développez votre edge quelle que soit votre approche",
-          'Rejoignez une communauté de traders sérieux',
-          'Testez vos connaissances et obtenez votre certificat',
-          "Accélérez votre croissance — dès aujourd'hui",
-        ],
-        cta: 'Accéder',
-        legal: 'Trader Acelerator · À des fins éducatives uniquement',
-        t: {
-          scrollHint:'Faites défiler pour explorer',
-          s1_eyebrow:'La plateforme', s1_title:'Une plateforme. Chaque edge dont vous avez besoin.',
-          s1_body:"Des analyses de trades par IA aux forums communautaires, en passant par la certification — Trader Acelerator réunit tout ce dont un trader sérieux a besoin en un seul endroit.",
-          stat1_n:'7', stat1_l:'Outils spécialisés',
-          stat2_n:'4+', stat2_l:'Méthodologies de trading',
-          stat3_n:'EN·ES·FR·PT', stat3_l:'Langues disponibles',
-          s2_eyebrow:'Fonctionnalité principale', s2_title:'Analyse IA de vos captures',
-          s2_body:"Téléversez n'importe quelle capture et recevez une analyse précise, adaptée à votre méthodologie, sur votre entrée, structure, gestion du risque et exécution.",
-          b_ict:'ICT', b_pa:'Price Action', b_quant:'Quant', b_stdv:'STDV', b_smc:'Smart Money',
-          mock_t:'Revue de trade — EURUSD 1H', mock_entry:'Qualité d\'entrée', mock_risk:'Gestion du risque',
-          mock_exec:'Exécution', mock_gaps:'Lacunes identifiées',
-          tag_fvg:'FVG confirmé', tag_sweep:'Balayage de liquidité', tag_rr:'RR < 2:1', tag_ict:'Méthodologie ICT',
-          s3_eyebrow:'La boîte à outils complète', s3_title:'Construit outil par outil, pour le trader sérieux',
-          s3_body:'Chaque fonctionnalité a été conçue avec un seul objectif : vous donner des informations réelles qui se traduisent en meilleurs trades.',
-          tc_forum_t:'Forum de trading', tc_forum_b:'Communauté modérée où les traders partagent de vrais setups, débattent et se donnent un feedback structuré — sans bruit, sans hype.',
-          tc_quiz_t:'Quiz & certificat', tc_quiz_b:"Testez votre compréhension sur différentes méthodologies. Réussissez et obtenez un certificat qui reflète une vraie maîtrise.",
-          tc_scalp_t:'Tableau Scalper', tc_scalp_b:'Un canvas visuel pour organiser votre biais, sessions et setups avant chaque journée de trading — votre rituel pré-marché, structuré.',
-          tc_syn_t:'Synapse', tc_syn_b:"Une visualisation 3D de l'IA neurale qui donne vie aux marchés — une expérience unique pour entraîner votre reconnaissance de patterns.",
-          tc_ind_t:'Boutique d\'indicateurs', tc_ind_b:'Indicateurs de trading conçus pour les méthodologies que nous enseignons — branchez-les sur votre plateforme et gagnez en edge dès le premier jour.',
-          tc_scout_t:'Prop Firm Scout', tc_scout_b:'Comparez plus de 25 prop firms — frais, règles, structure de paiement, restrictions par pays et un conseiller IA pour trouver la meilleure option.',
-          coming:'Bientôt disponible',
-          s4_eyebrow:'Comment ça marche', s4_title:'De votre première capture à trader certifié',
-          st1_t:'Créez votre compte', st1_b:'Inscrivez-vous gratuitement en quelques secondes. Choisissez votre méthodologie et votre langue préférée.',
-          st2_t:'Soumettez vos trades', st2_b:'Téléversez des captures, participez au forum, faites des quiz — chaque action alimente votre cycle de développement.',
-          st3_t:'Mesurez votre progression', st3_b:"Suivez vos schémas dans le temps, combler vos lacunes et obtenez votre certificat quand votre niveau atteint l'échelon suivant.",
-          s5_eyebrow:'Pour chaque style', s5_title:'Une plateforme, toutes les approches',
-          s5_body:'Quel que soit votre cadre, Trader Acelerator parle votre langage.',
-          s6_eyebrow:'Prix simples', s6_title:'Commencez gratuitement. Évoluez quand vous êtes prêt.',
-          s6_body:"Pas de carte bancaire nécessaire pour commencer. Passez à l'offre supérieure quand vous voulez.",
-          pl_free_price:'0 $', pl_free_cycle:'Toujours gratuit', pl_free_f1:'1 analyse / 7 jours',
-          pl_free_f2:'Accès au forum', pl_free_f3:'Quiz de connaissances', pl_free_f4:'Tableau Scalper',
-          pl_std_price:'9 $', pl_std_cycle:'par mois', pl_std_f1:'1 analyse / 24 h',
-          pl_std_f2:'Feedback prioritaire', pl_std_f3:'Tous les avantages Free',
-          pl_prm_price:'29 $', pl_prm_cycle:'par mois', pl_prm_f1:'5 analyses / 24 h',
-          pl_prm_f2:'Prop Firm Scout', pl_prm_f3:'Boutique d\'indicateurs', pl_prm_f4:'Synapse AI', pl_prm_f5:'Support prioritaire',
-          cta_title:'Prêt à accélérer ?',
-          cta_body:"Créez votre compte gratuit et commencez dès aujourd'hui à faire de chaque trade une leçon.",
-          cta_btn:'Commencer gratuitement',
-        },
-      },
-      pt: {
-        bullets: [
-          'Analise suas operações com feedback estruturado por IA',
-          'Desenvolva sua vantagem em qualquer abordagem',
-          'Faça parte de uma comunidade de traders sérios',
-          'Teste seu conhecimento e conquiste seu certificado',
-          'Acelere seu crescimento — a partir de hoje',
-        ],
-        cta: 'Entrar',
-        legal: 'Trader Acelerator · Apenas para fins educativos',
-        t: {
-          scrollHint:'Role para explorar',
-          s1_eyebrow:'A plataforma', s1_title:'Uma plataforma. Toda vantagem que você precisa.',
-          s1_body:'De análises de operações por IA a fóruns, certificação de conhecimento e muito mais — o Trader Acelerator reúne tudo que um trader sério precisa em um só lugar.',
-          stat1_n:'7', stat1_l:'Ferramentas especializadas',
-          stat2_n:'4+', stat2_l:'Metodologias de trading',
-          stat3_n:'EN·ES·FR·PT', stat3_l:'Idiomas disponíveis',
-          s2_eyebrow:'Funcionalidade principal', s2_title:'Análise por IA das suas capturas',
-          s2_body:'Envie qualquer captura de tela e receba uma análise precisa, alinhada à sua metodologia, sobre sua entrada, estrutura, gestão de risco e execução — não conselhos genéricos, feedback real calibrado à sua forma de operar.',
-          b_ict:'ICT', b_pa:'Price Action', b_quant:'Quant', b_stdv:'STDV', b_smc:'Smart Money',
-          mock_t:'Revisão de operação — EURUSD 1H', mock_entry:'Qualidade da entrada', mock_risk:'Gestão de risco',
-          mock_exec:'Execução', mock_gaps:'Lacunas identificadas',
-          tag_fvg:'FVG confirmado', tag_sweep:'Varredura de liquidez', tag_rr:'RR < 2:1', tag_ict:'Metodologia ICT',
-          s3_eyebrow:'O kit completo', s3_title:'Construída ferramenta por ferramenta, para o trader sério',
-          s3_body:'Cada funcionalidade foi projetada com um objetivo: dar a você informações reais que se traduzem em melhores operações.',
-          tc_forum_t:'Fórum de trading', tc_forum_b:'Comunidade moderada onde traders compartilham setups reais, debatem ideias e se dão feedback estruturado — sem ruído, sem hype.',
-          tc_quiz_t:'Quiz e certificado', tc_quiz_b:'Teste seu entendimento em diferentes metodologias. Passe e conquiste um certificado que reflete conhecimento real.',
-          tc_scalp_t:'Scalper Board', tc_scalp_b:'Um canvas visual para organizar seu viés, sessões e setups antes de cada dia de trading — seu ritual pré-mercado, estruturado.',
-          tc_syn_t:'Synapse', tc_syn_b:'Uma visualização 3D de IA neural que dá vida aos mercados — uma experiência única construída para treinar seu reconhecimento de padrões.',
-          tc_ind_t:'Loja de indicadores', tc_ind_b:'Indicadores de trading desenvolvidos para as metodologias que ensinamos — conecte-os à sua plataforma e ganhe vantagem desde o primeiro dia.',
-          tc_scout_t:'Prop Firm Scout', tc_scout_b:'Compare mais de 25 prop firms — taxas, regras, estrutura de pagamento, restrições por país e um consultor IA para encontrar a melhor opção para você.',
-          coming:'Em breve',
-          s4_eyebrow:'Como funciona', s4_title:'Da primeira captura ao trader certificado',
-          st1_t:'Crie sua conta', st1_b:'Cadastre-se grátis em segundos. Escolha sua metodologia e idioma preferido — a plataforma se calibra a você.',
-          st2_t:'Envie suas operações', st2_b:'Envie capturas, participe do fórum, faça quizzes — cada ação alimenta seu ciclo de desenvolvimento.',
-          st3_t:'Meça seu crescimento', st3_b:'Acompanhe seus padrões ao longo do tempo, feche suas lacunas e conquiste seu certificado quando seu entendimento alcançar o próximo nível.',
-          s5_eyebrow:'Para cada estilo', s5_title:'Uma plataforma, toda abordagem',
-          s5_body:'Seja qual for seu método, o Trader Acelerator fala a sua língua.',
-          s6_eyebrow:'Preços simples', s6_title:'Comece grátis. Evolua quando estiver pronto.',
-          s6_body:'Sem cartão de crédito para começar. Faça upgrade quando quiser.',
-          pl_free_price:'$0', pl_free_cycle:'Sempre grátis', pl_free_f1:'1 análise / 7 dias',
-          pl_free_f2:'Acesso ao fórum', pl_free_f3:'Quiz de conhecimento', pl_free_f4:'Scalper board',
-          pl_std_price:'$9', pl_std_cycle:'por mês', pl_std_f1:'1 análise / 24 h',
-          pl_std_f2:'Feedback prioritário', pl_std_f3:'Todos os benefícios Free',
-          pl_prm_price:'$29', pl_prm_cycle:'por mês', pl_prm_f1:'5 análises / 24 h',
-          pl_prm_f2:'Prop Firm Scout', pl_prm_f3:'Loja de indicadores', pl_prm_f4:'Synapse AI', pl_prm_f5:'Suporte prioritário',
-          cta_title:'Pronto para acelerar?',
-          cta_body:'Crie sua conta grátis e comece a transformar cada operação em uma lição — hoje.',
-          cta_btn:'Começar grátis',
-        },
-      },
-    };
-
-    function applyLang(code) {
-      const C = I18N[code] || I18N.en;
-      document.documentElement.lang = code;
-      document.getElementById('cta-label').textContent  = C.cta;
-      document.getElementById('legal-note').textContent = C.legal;
-      const dict = C.t || {};
-      document.querySelectorAll('[data-t]').forEach(el => {
-        const k = el.getAttribute('data-t');
-        if (dict[k] !== undefined) el.textContent = dict[k];
-      });
-      document.querySelectorAll('.lang-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.lang === code);
-      });
-      return C;
+      // Subtle glow at vanishing point
+      const vgrad = ctx.createRadialGradient(vanishX, vanishY, 0, vanishX, vanishY, W * 0.25);
+      vgrad.addColorStop(0, dk ? 'rgba(92,143,242,0.08)' : 'rgba(26,80,224,0.06)');
+      vgrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = vgrad;
+      ctx.fillRect(0, 0, W, H);
     }
 
-    let C = applyLang(lang);
-
-    // ── Brand animation ──
-    const STEP_MS = 100, ANIM_MS = 160;
-    function buildLine(elId, word, startIdx) {
-      const el = document.getElementById(elId);
-      [...word].forEach((ch, i) => {
-        const span = document.createElement('span');
-        span.className = 'ltr';
-        span.textContent = ch;
-        span.style.animationDelay = ((startIdx + i) * STEP_MS) + 'ms';
-        el.appendChild(span);
-      });
+    let raf;
+    function loop() {
+      offset = (offset + SPEED) % 1;
+      drawGrid();
+      raf = requestAnimationFrame(loop);
     }
-    const W1 = 'TRADER', W2 = 'ACELERATOR';
-    buildLine('brand-line1', W1, 0);
-    buildLine('brand-line2', W2, W1.length);
-    const buildEnd = (W1.length + W2.length - 1) * STEP_MS + ANIM_MS + 35;
-    setTimeout(() => {
-      document.getElementById('brand-block').classList.add('assembled');
-      document.getElementById('brand-flash').classList.add('burst');
-    }, buildEnd);
+    loop();
 
-    // ── Language selector ──
-    document.getElementById('lang-sel').addEventListener('click', e => {
-      const btn = e.target.closest('.lang-btn');
-      if (!btn) return;
-      lang = btn.dataset.lang;
-      try { localStorage.setItem('scalpel_lang', lang); } catch(e) {}
-      C = applyLang(lang);
-      bulletEl.classList.add('fading');
-      setTimeout(() => { bi = bi % C.bullets.length; showBullet(bi); }, 280);
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) cancelAnimationFrame(raf); else loop();
     });
+  })();
 
-    // ── Cycling bullet ──
-    const bulletEl = document.getElementById('bullet');
-    let bi = 0;
-    function showBullet(idx) {
-      bulletEl.classList.remove('fading');
-      bulletEl.textContent = C.bullets[idx];
-      bulletEl.classList.toggle('hook', idx === C.bullets.length - 1);
-    }
-    function nextBullet() {
-      bulletEl.classList.add('fading');
-      setTimeout(() => { bi = (bi + 1) % C.bullets.length; showBullet(bi); }, 300);
-    }
-    setTimeout(() => { showBullet(0); setInterval(nextBullet, 2300); }, 2100);
 
-    // ── Scroll-reveal ──
-    const io = new IntersectionObserver(entries => {
-      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
-    }, { threshold: 0.14, rootMargin: '0px 0px -6% 0px' });
-    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  // ─────────────────────────────────────────
+  //  i18n
+  // ─────────────────────────────────────────
+  const SUPPORTED = ['en','es','fr','pt'];
+  const FLAGS = { en:'🇺🇸', es:'🇪🇸', fr:'🇫🇷', pt:'🇧🇷' };
 
-    // ── Hide scroll hint ──
-    const hint = document.getElementById('scroll-hint');
-    window.addEventListener('scroll', () => { if (window.scrollY > 60) hint.classList.add('hidden'); }, { passive: true });
+  function detectLang() {
+    try { const s = localStorage.getItem('scalpel_lang'); if (SUPPORTED.includes(s)) return s; } catch(e) {}
+    const raw = (navigator.language||'en').toLowerCase();
+    return raw.startsWith('es')?'es': raw.startsWith('fr')?'fr': raw.startsWith('pt')?'pt':'en';
+  }
+  let lang = detectLang();
+
+  const I18N = {
+    en: {
+      bullets: [
+        'Structured AI feedback on every trade you take',
+        'ICT, SMC, Price Action — your methodology, your rules',
+        'Study every theory in Synapse, then prove it in the quiz',
+        'Join a private community of traders who mean it',
+        'Earn your place on the Elite Trader Ranking',
+      ],
+      cta: 'Enter', legal: 'Trader Acelerator · For educational purposes only',
+      t: {
+        scrollHint:'Scroll to explore',
+        s1_brow:'Sound familiar?', s1_title:'Trading alone is the hardest way to improve',
+        s1_body:'Most traders review their trades in isolation, with no structured feedback and no way to know whether what they\'re seeing in the chart is actually there.',
+        pain1:'Repeating the same mistakes without knowing exactly what they are or how to fix them.',
+        pain2:'No benchmark for quality. You don\'t know if your entry was actually good or just got lucky.',
+        pain3:'Studying in a vacuum. No community, no feedback loop, no one to challenge your thinking.',
+        s1_sol_brow:'The solution', s1_sol_title:'Trader Acelerator gives you the feedback infrastructure serious traders need',
+        ans1:'AI that reads your actual chart screenshot', ans2:'Structured feedback grounded in your methodology',
+        ans3:'A community of traders who operate at the same level', ans4:'A full library of ICT, SMC and pattern knowledge',
+        ans5:'A ranking that proves you\'ve actually mastered it',
+        s2_brow:'Core feature', s2_title:'AI reads your chart like a senior trader would',
+        s2_body:'Upload your screenshot, describe your trade, and get a detailed written analysis that identifies exactly where you may have deviated — with context, comparisons, and ICT concepts explained in your own language.',
+        mock_body:'One thing worth considering: the entry candle formed just below a Fair Value Gap on the 15m, but price hadn\'t yet swept the equal lows sitting at the prior session low. Without that liquidity sweep, the FVG loses a significant part of its institutional backing — some traders would argue you entered before the market had finished its delivery phase. Additionally, your HTF bias was bullish, but the 1H showed a clear lower high structure, which creates a misalignment worth flagging.',
+        tag_kz:'Kill Zone ✓', tag_fvg:'FVG identified', tag_sweep:'Sweep missing', tag_htf:'HTF misaligned',
+        s3_brow:'The full platform', s3_title:'Six tools. One mission: make you a better trader.',
+        s3_body:'Every tool was built around a specific gap in how traders learn, review, and improve.',
+        chip_all:'All plans', chip_prem:'Premium',
+        tc1_t:'AI Screenshot Analysis', tc1_b:'Upload any chart screenshot and receive detailed written feedback identifying deviations, missed confluences and structural issues — calibrated to your methodology.',
+        tc2_t:'Synapse — Knowledge Library', tc2_b:'An immersive 3D environment covering every major trading theory — ICT, SMC, Wyckoff, classical patterns. Everything you need to study, in one place.',
+        tc3_t:'Trading Forum', tc3_b:'A private, AI-moderated community. Share setups, post charts, get structured feedback from peers who take this as seriously as you do.',
+        tc4_t:'Quizzes & Elite Ranking', tc4_b:'Test across 4 methodologies × 3 levels. Score 80%+ on all 12 routes and earn your spot on the Certified Traders leaderboard.',
+        tc5_t:'Chalkboard', tc5_b:'A full drawing canvas for mapping out bias, marking key levels and sketching trade ideas before the session. Your pre-market ritual, built in.',
+        tc6_t:'Indicator Library', tc6_b:'Curated indicators for the methodologies we teach — FVG visualizers, Order Block markers, liquidity levels. Plug in from day one.',
+        s4_brow:'What the AI actually sees', s4_title:'Not a score. A real analysis.',
+        s4_body:'The AI doesn\'t grade you with percentages. It reads your chart, cross-references your confluences against what\'s visible, and gives you a written breakdown with specific concepts and next steps.',
+        cap1_t:'Liquidity structure', cap1_b:'Identifies whether the required liquidity sweep happened before your entry, or whether price entered a delivery zone prematurely.',
+        cap2_t:'HTF / LTF alignment', cap2_b:'Cross-checks your stated HTF bias against the lower timeframe structure visible in the screenshot — flags misalignments.',
+        cap3_t:'Kill Zone & session timing', cap3_b:'Validates your entry against institutional time windows — NY Morning, London, Silver Bullet hours and known dead zones.',
+        cap4_t:'FVG, OB and displacement', cap4_b:'Evaluates the Fair Value Gap, Order Block and displacement quality — whether the setup had the institutional backing it needed.',
+        cap5_t:'SMT divergence detection', cap5_b:'Checks correlated pair behavior (NQ/ES, GC/SI, GBP/EUR) to validate whether institutional positioning was aligned.',
+        cap6_t:'Responds in your language', cap6_b:'Full analysis delivered in English, Spanish, French or Portuguese — ICT terminology preserved and explained in context.',
+        s5_brow:'Community & recognition', s5_title:'The two things that separate traders who grow from those who don\'t',
+        forum_t:'Trading Forum', forum_b:'A private, AI-moderated space where serious traders share real setups with chart images, critique each other\'s execution and discuss methodology. No noise. Just signal.',
+        fp1:'NQ short — sweep on 15m, entry on FVG reclaim. Thoughts on the HTF structure?',
+        fp2:'EURUSD Silver Bullet — clean OTE, caught the displacement. Sharing for feedback.',
+        rank_t:'Elite Trader Ranking', rank_b:'Pass all 12 quiz routes — ICT, SMC, Wyckoff and Patterns across 3 difficulty levels — with a minimum 80% accuracy, and your name joins the Certified Traders leaderboard. Not a badge. A proof of mastery.',
+        rank_you:'You?',
+        s6_brow:'By the numbers', s6_title:'Built with depth, not fluff',
+        stat1:'Specialized tools', stat2:'Quiz routes to master', stat3:'Minimum to earn your ranking', stat4:'Languages supported',
+        s7_brow:'Pricing', s7_title:'Start free. No card required.',
+        s7_body:'Every plan includes the AI analysis engine. Upgrade when you want more.',
+        pl_free_cycle:'Forever free', pl_std_cycle:'per month', pl_prm_cycle:'per month',
+        pf1:'1 AI analysis per week', pf2:'All methodologies supported', pf3:'EN / ES / FR / PT responses', pf_cta:'Start free',
+        ps1:'1 AI analysis per day', ps2:'Everything in Free', ps_cta:'Go Standard',
+        pp1:'5 AI analyses per day', pp2:'Synapse knowledge library', pp3:'Trading Forum (private)',
+        pp4:'Quizzes + Elite Ranking', pp5:'Chalkboard canvas', pp6:'Indicator Library', pp_cta:'Go Premium',
+        pop_badge:'Most Popular',
+        cta_t:'Your next trade deserves real feedback.',
+        cta_b:'Join Trader Acelerator and turn every screenshot into a structured lesson.',
+        cta_btn:'Create your free account',
+      }
+    },
+    es: {
+      bullets: [
+        'Retroalimentación estructurada por IA en cada operación',
+        'ICT, SMC, Price Action — tu metodología, tus reglas',
+        'Estudia en Synapse, luego demuéstralo en el quiz',
+        'Únete a una comunidad privada de traders comprometidos',
+        'Gana tu lugar en el Ranking de Traders Elite',
+      ],
+      cta: 'Entrar', legal: 'Trader Acelerator · Solo con fines educativos',
+      t: {
+        scrollHint:'Desliza para explorar',
+        s1_brow:'¿Te suena familiar?', s1_title:'Operar solo es la manera más difícil de mejorar',
+        s1_body:'La mayoría de los traders revisa sus operaciones en aislamiento, sin retroalimentación estructurada y sin poder saber si lo que ven en el gráfico realmente está ahí.',
+        pain1:'Repetir los mismos errores sin saber exactamente cuáles son ni cómo corregirlos.',
+        pain2:'Sin un estándar de calidad. No sabes si tu entrada fue realmente buena o si simplemente tuviste suerte.',
+        pain3:'Estudiando en el vacío. Sin comunidad, sin ciclo de feedback, sin nadie que desafíe tu forma de pensar.',
+        s1_sol_brow:'La solución', s1_sol_title:'Trader Acelerator te da la infraestructura de feedback que los traders serios necesitan',
+        ans1:'IA que lee tu captura de pantalla real del gráfico', ans2:'Feedback estructurado basado en tu metodología',
+        ans3:'Una comunidad de traders que operan al mismo nivel', ans4:'Una biblioteca completa de ICT, SMC y patrones',
+        ans5:'Un ranking que prueba que realmente lo dominaste',
+        s2_brow:'Característica principal', s2_title:'La IA lee tu gráfico como lo haría un trader experimentado',
+        s2_body:'Sube tu captura, describe tu operación y recibe un análisis escrito detallado que identifica exactamente dónde pudiste haberte desviado — con contexto, comparaciones y conceptos ICT explicados en tu idioma.',
+        mock_body:'Algo que vale la pena considerar: la vela de entrada se formó justo debajo de un Fair Value Gap en el 15m, pero el precio aún no había barrido los mínimos iguales del mínimo de la sesión anterior. Sin ese barrido de liquidez, el FVG pierde gran parte de su respaldo institucional — algunos traders argumentarían que entraste antes de que el mercado terminara su fase de entrega. Además, tu sesgo HTF era alcista, pero el 1H mostraba una clara estructura de máximos descendentes.',
+        tag_kz:'Kill Zone ✓', tag_fvg:'FVG identificado', tag_sweep:'Barrido faltante', tag_htf:'HTF desalineado',
+        s3_brow:'La plataforma completa', s3_title:'Seis herramientas. Una misión: convertirte en un mejor trader.',
+        s3_body:'Cada herramienta fue construida alrededor de una brecha específica en cómo los traders aprenden, revisan y mejoran.',
+        chip_all:'Todos los planes', chip_prem:'Premium',
+        tc1_t:'Análisis de capturas por IA', tc1_b:'Sube cualquier captura y recibe retroalimentación escrita detallada que identifica desviaciones, confluencias perdidas y problemas estructurales — calibrada a tu metodología.',
+        tc2_t:'Synapse — Biblioteca de conocimiento', tc2_b:'Un entorno 3D inmersivo que cubre todas las teorías de trading — ICT, SMC, Wyckoff, patrones clásicos. Todo lo que necesitas estudiar, en un solo lugar.',
+        tc3_t:'Foro de Trading', tc3_b:'Comunidad privada y moderada por IA. Comparte setups, publica gráficos y recibe feedback estructurado de traders tan comprometidos como tú.',
+        tc4_t:'Quizzes y Ranking Elite', tc4_b:'Prueba en 4 metodologías × 3 niveles. Consigue un 80%+ en las 12 rutas y gana tu lugar en el ranking de Traders Certificados.',
+        tc5_t:'Chalkboard', tc5_b:'Un canvas de dibujo completo para mapear tu sesgo, marcar niveles clave y esbozar ideas de trading antes de la sesión. Tu ritual pre-mercado, integrado.',
+        tc6_t:'Biblioteca de Indicadores', tc6_b:'Indicadores diseñados para las metodologías que enseñamos — visualizadores de FVG, marcadores de Order Block, niveles de liquidez. Listos desde el primer día.',
+        s4_brow:'Qué ve realmente la IA', s4_title:'No un porcentaje. Un análisis real.',
+        s4_body:'La IA no te califica con porcentajes. Lee tu gráfico, cruza tus confluencias con lo que es visible y te da un desglose escrito con conceptos específicos y pasos a seguir.',
+        cap1_t:'Estructura de liquidez', cap1_b:'Identifica si el barrido de liquidez requerido ocurrió antes de tu entrada, o si el precio entró en la zona de entrega prematuramente.',
+        cap2_t:'Alineación HTF / LTF', cap2_b:'Compara tu sesgo HTF declarado con la estructura del marco temporal inferior visible en la captura — señala desalineaciones.',
+        cap3_t:'Kill Zone y temporización de sesión', cap3_b:'Valida tu entrada contra las ventanas temporales institucionales — NY Morning, Londres, Silver Bullet y zonas muertas conocidas.',
+        cap4_t:'FVG, OB y desplazamiento', cap4_b:'Evalúa la calidad del Fair Value Gap, Order Block y desplazamiento — si el setup tenía el respaldo institucional necesario.',
+        cap5_t:'Detección de divergencia SMT', cap5_b:'Revisa el comportamiento de pares correlacionados (NQ/ES, GC/SI, GBP/EUR) para validar si el posicionamiento institucional estaba alineado.',
+        cap6_t:'Responde en tu idioma', cap6_b:'El análisis completo se entrega en inglés, español, francés o portugués — terminología ICT preservada y explicada en contexto.',
+        s5_brow:'Comunidad y reconocimiento', s5_title:'Las dos cosas que separan a los traders que mejoran de los que no',
+        forum_t:'Foro de Trading', forum_b:'Un espacio privado y moderado por IA donde traders serios comparten setups reales con imágenes, critican la ejecución del otro y discuten metodología. Sin ruido. Solo señal.',
+        fp1:'NQ corto — barrido en 15m, entrada en reclaim de FVG. ¿Opiniones sobre la estructura HTF?',
+        fp2:'EURUSD Silver Bullet — OTE limpio, capturé el desplazamiento. Comparto para feedback.',
+        rank_t:'Ranking de Traders Elite', rank_b:'Aprueba las 12 rutas de quiz — ICT, SMC, Wyckoff y Patrones en 3 niveles de dificultad — con mínimo 80% de aciertos, y tu nombre entra al ranking de Traders Certificados. No es una insignia. Es una prueba de dominio.',
+        rank_you:'¿Tú?',
+        s6_brow:'En números', s6_title:'Construido con profundidad, no con relleno',
+        stat1:'Herramientas especializadas', stat2:'Rutas de quiz para dominar', stat3:'Mínimo para el ranking', stat4:'Idiomas disponibles',
+        s7_brow:'Precios', s7_title:'Empieza gratis. Sin tarjeta.',
+        s7_body:'Todos los planes incluyen el motor de análisis IA. Mejora cuando quieras más.',
+        pl_free_cycle:'Siempre gratis', pl_std_cycle:'por mes', pl_prm_cycle:'por mes',
+        pf1:'1 análisis IA por semana', pf2:'Todas las metodologías', pf3:'Respuestas EN / ES / FR / PT', pf_cta:'Comenzar gratis',
+        ps1:'1 análisis IA por día', ps2:'Todo lo de Free', ps_cta:'Ir a Standard',
+        pp1:'5 análisis IA por día', pp2:'Biblioteca Synapse', pp3:'Foro de Trading (privado)',
+        pp4:'Quizzes + Ranking Elite', pp5:'Canvas Chalkboard', pp6:'Biblioteca de Indicadores', pp_cta:'Ir a Premium',
+        pop_badge:'Más Popular',
+        cta_t:'Tu próxima operación merece feedback real.',
+        cta_b:'Únete a Trader Acelerator y convierte cada captura en una lección estructurada.',
+        cta_btn:'Crear tu cuenta gratis',
+      }
+    },
+    fr: {
+      bullets: [
+        'Feedback IA structuré sur chaque trade',
+        'ICT, SMC, Price Action — votre méthode, vos règles',
+        'Étudiez dans Synapse, prouvez-le dans le quiz',
+        'Rejoignez une communauté privée de traders sérieux',
+        'Gagnez votre place dans le Classement Elite',
+      ],
+      cta: 'Accéder', legal: 'Trader Acelerator · À des fins éducatives uniquement',
+      t: {
+        scrollHint:'Faites défiler pour explorer',
+        s1_brow:'Ça vous parle ?', s1_title:'Trader seul est la façon la plus difficile de progresser',
+        s1_body:'La plupart des traders analysent leurs trades en isolation, sans feedback structuré et sans moyen de savoir si ce qu\'ils voient sur le graphique est réellement là.',
+        pain1:'Répéter les mêmes erreurs sans savoir exactement lesquelles ni comment les corriger.',
+        pain2:'Aucun référentiel de qualité. Vous ne savez pas si votre entrée était vraiment bonne ou simplement chanceuse.',
+        pain3:'Étudier dans le vide. Pas de communauté, pas de boucle de feedback, personne pour challenger votre raisonnement.',
+        s1_sol_brow:'La solution', s1_sol_title:'Trader Acelerator vous donne l\'infrastructure de feedback dont les traders sérieux ont besoin',
+        ans1:'IA qui lit votre vraie capture d\'écran de graphique', ans2:'Feedback structuré ancré dans votre méthodologie',
+        ans3:'Une communauté de traders opérant au même niveau', ans4:'Une bibliothèque complète ICT, SMC et patterns',
+        ans5:'Un classement qui prouve que vous maîtrisez vraiment',
+        s2_brow:'Fonctionnalité principale', s2_title:'L\'IA lit votre graphique comme un trader senior',
+        s2_body:'Téléversez votre capture, décrivez votre trade et recevez une analyse écrite détaillée qui identifie exactement où vous avez pu dévier — avec contexte, comparaisons et concepts ICT expliqués dans votre langue.',
+        mock_body:'Un point à considérer : la bougie d\'entrée s\'est formée juste en dessous d\'un Fair Value Gap sur le 15m, mais le prix n\'avait pas encore sweepé les equal lows du plus bas de session précédent. Sans ce sweep de liquidité, le FVG perd une grande partie de son ancrage institutionnel.',
+        tag_kz:'Kill Zone ✓', tag_fvg:'FVG identifié', tag_sweep:'Sweep manquant', tag_htf:'HTF désaligné',
+        s3_brow:'La plateforme complète', s3_title:'Six outils. Une mission : faire de vous un meilleur trader.',
+        s3_body:'Chaque outil a été construit autour d\'une lacune spécifique dans la façon dont les traders apprennent, révisent et progressent.',
+        chip_all:'Tous les plans', chip_prem:'Premium',
+        tc1_t:'Analyse IA de captures', tc1_b:'Téléversez n\'importe quelle capture et recevez un feedback écrit détaillé identifiant déviations, confluences manquées et problèmes structurels.',
+        tc2_t:'Synapse — Bibliothèque', tc2_b:'Un environnement 3D immersif couvrant toutes les grandes théories de trading — ICT, SMC, Wyckoff, patterns classiques. Tout pour étudier, en un seul lieu.',
+        tc3_t:'Forum de Trading', tc3_b:'Communauté privée modérée par IA. Partagez des setups, publiez des graphiques et recevez un feedback structuré de traders aussi engagés que vous.',
+        tc4_t:'Quiz & Classement Elite', tc4_b:'Testez sur 4 méthodologies × 3 niveaux. Obtenez 80%+ sur les 12 routes et gagnez votre place dans le classement des Traders Certifiés.',
+        tc5_t:'Chalkboard', tc5_b:'Un canvas de dessin complet pour cartographier votre biais, marquer les niveaux clés et esquisser des idées avant la session. Votre rituel pré-marché, intégré.',
+        tc6_t:'Bibliothèque d\'indicateurs', tc6_b:'Indicateurs conçus pour les méthodologies que nous enseignons — visualiseurs FVG, marqueurs OB, niveaux de liquidité. Opérationnels dès le premier jour.',
+        s4_brow:'Ce que l\'IA voit vraiment', s4_title:'Pas un score. Une vraie analyse.',
+        s4_body:'L\'IA ne vous note pas en pourcentages. Elle lit votre graphique, croise vos confluences avec ce qui est visible et vous fournit une analyse écrite avec des concepts spécifiques.',
+        cap1_t:'Structure de liquidité', cap1_b:'Identifie si le sweep de liquidité requis s\'est produit avant votre entrée, ou si le prix est entré prématurément dans la zone de livraison.',
+        cap2_t:'Alignement HTF / LTF', cap2_b:'Croise votre biais HTF déclaré avec la structure LTF visible sur la capture — signale les désalignements.',
+        cap3_t:'Kill Zone & timing de session', cap3_b:'Valide votre entrée par rapport aux fenêtres temporelles institutionnelles — NY Morning, Londres, Silver Bullet et zones mortes.',
+        cap4_t:'FVG, OB et déplacement', cap4_b:'Évalue la qualité du Fair Value Gap, de l\'Order Block et du déplacement — si le setup avait le soutien institutionnel nécessaire.',
+        cap5_t:'Détection de divergence SMT', cap5_b:'Vérifie le comportement des paires corrélées (NQ/ES, GC/SI, GBP/EUR) pour valider l\'alignement du positionnement institutionnel.',
+        cap6_t:'Répond dans votre langue', cap6_b:'L\'analyse complète est livrée en anglais, espagnol, français ou portugais — terminologie ICT préservée et expliquée en contexte.',
+        s5_brow:'Communauté & reconnaissance', s5_title:'Les deux choses qui séparent les traders qui progressent de ceux qui stagnent',
+        forum_t:'Forum de Trading', forum_b:'Un espace privé et modéré par IA où les traders sérieux partagent de vrais setups avec graphiques, critiquent l\'exécution et discutent méthodologie en profondeur. Pas de bruit. Que du signal.',
+        fp1:'NQ short — sweep sur 15m, entrée sur reclaim FVG. Avis sur la structure HTF ?',
+        fp2:'EURUSD Silver Bullet — OTE propre, j\'ai capté le déplacement. Partage pour feedback.',
+        rank_t:'Classement Elite', rank_b:'Passez les 12 routes de quiz — ICT, SMC, Wyckoff et Patterns sur 3 niveaux — avec minimum 80% de précision, et votre nom rejoint le classement des Traders Certifiés. Pas un badge. Une preuve de maîtrise.',
+        rank_you:'Vous ?',
+        s6_brow:'En chiffres', s6_title:'Construit avec profondeur, pas du remplissage',
+        stat1:'Outils spécialisés', stat2:'Routes de quiz à maîtriser', stat3:'Minimum pour le classement', stat4:'Langues disponibles',
+        s7_brow:'Tarifs', s7_title:'Commencez gratuitement. Sans carte.',
+        s7_body:'Tous les plans incluent le moteur d\'analyse IA. Évoluez quand vous voulez.',
+        pl_free_cycle:'Toujours gratuit', pl_std_cycle:'par mois', pl_prm_cycle:'par mois',
+        pf1:'1 analyse IA par semaine', pf2:'Toutes les méthodologies', pf3:'Réponses EN / ES / FR / PT', pf_cta:'Commencer gratuitement',
+        ps1:'1 analyse IA par jour', ps2:'Tout ce qu\'inclut Free', ps_cta:'Passer à Standard',
+        pp1:'5 analyses IA par jour', pp2:'Bibliothèque Synapse', pp3:'Forum de Trading (privé)',
+        pp4:'Quiz + Classement Elite', pp5:'Canvas Chalkboard', pp6:'Bibliothèque d\'indicateurs', pp_cta:'Passer à Premium',
+        pop_badge:'Le plus populaire',
+        cta_t:'Votre prochain trade mérite un vrai feedback.',
+        cta_b:'Rejoignez Trader Acelerator et transformez chaque capture en leçon structurée.',
+        cta_btn:'Créer votre compte gratuit',
+      }
+    },
+    pt: {
+      bullets: [
+        'Feedback estruturado por IA em cada operação',
+        'ICT, SMC, Price Action — sua metodologia, suas regras',
+        'Estude no Synapse, depois prove no quiz',
+        'Faça parte de uma comunidade privada de traders sérios',
+        'Ganhe seu lugar no Ranking de Traders Elite',
+      ],
+      cta: 'Entrar', legal: 'Trader Acelerator · Apenas para fins educativos',
+      t: {
+        scrollHint:'Role para explorar',
+        s1_brow:'Parece familiar?', s1_title:'Operar sozinho é a forma mais difícil de melhorar',
+        s1_body:'A maioria dos traders revisa suas operações em isolamento, sem feedback estruturado e sem como saber se o que veem no gráfico está realmente lá.',
+        pain1:'Repetir os mesmos erros sem saber exatamente quais são nem como corrigi-los.',
+        pain2:'Sem parâmetro de qualidade. Você não sabe se sua entrada foi realmente boa ou se só teve sorte.',
+        pain3:'Estudando no vácuo. Sem comunidade, sem ciclo de feedback, ninguém para desafiar seu raciocínio.',
+        s1_sol_brow:'A solução', s1_sol_title:'O Trader Acelerator dá a você a infraestrutura de feedback que traders sérios precisam',
+        ans1:'IA que lê sua captura real do gráfico', ans2:'Feedback estruturado baseado na sua metodologia',
+        ans3:'Uma comunidade de traders que operam no mesmo nível', ans4:'Uma biblioteca completa de ICT, SMC e padrões',
+        ans5:'Um ranking que prova que você realmente dominou',
+        s2_brow:'Funcionalidade principal', s2_title:'A IA lê seu gráfico como um trader sênior faria',
+        s2_body:'Envie sua captura, descreva sua operação e receba uma análise escrita detalhada que identifica exatamente onde você pode ter desviado — com contexto, comparações e conceitos ICT explicados na sua língua.',
+        mock_body:'Algo que vale considerar: a vela de entrada se formou logo abaixo de um Fair Value Gap no 15m, mas o preço ainda não tinha varrido as mínimas iguais do mínimo da sessão anterior. Sem esse sweep de liquidez, o FVG perde grande parte do seu respaldo institucional.',
+        tag_kz:'Kill Zone ✓', tag_fvg:'FVG identificado', tag_sweep:'Sweep ausente', tag_htf:'HTF desalinhado',
+        s3_brow:'A plataforma completa', s3_title:'Seis ferramentas. Uma missão: tornar você um trader melhor.',
+        s3_body:'Cada ferramenta foi construída em torno de uma lacuna específica em como traders aprendem, revisam e melhoram.',
+        chip_all:'Todos os planos', chip_prem:'Premium',
+        tc1_t:'Análise de capturas por IA', tc1_b:'Envie qualquer captura e receba feedback escrito detalhado identificando desvios, confluências perdidas e problemas estruturais — calibrado à sua metodologia.',
+        tc2_t:'Synapse — Biblioteca de conhecimento', tc2_b:'Um ambiente 3D imersivo que cobre todas as grandes teorias de trading — ICT, SMC, Wyckoff, padrões clássicos. Tudo que você precisa estudar, em um só lugar.',
+        tc3_t:'Fórum de Trading', tc3_b:'Comunidade privada moderada por IA. Compartilhe setups, publique gráficos e receba feedback estruturado de traders tão comprometidos quanto você.',
+        tc4_t:'Quizzes & Ranking Elite', tc4_b:'Teste em 4 metodologias × 3 níveis. Acerte 80%+ nas 12 rotas e ganhe seu lugar no ranking de Traders Certificados.',
+        tc5_t:'Chalkboard', tc5_b:'Um canvas de desenho completo para mapear seu viés, marcar níveis-chave e esboçar ideias antes da sessão. Seu ritual pré-mercado, integrado.',
+        tc6_t:'Biblioteca de Indicadores', tc6_b:'Indicadores desenvolvidos para as metodologias que ensinamos — visualizadores FVG, marcadores OB, níveis de liquidez. Prontos desde o primeiro dia.',
+        s4_brow:'O que a IA realmente vê', s4_title:'Não uma nota. Uma análise real.',
+        s4_body:'A IA não te dá percentuais. Ela lê seu gráfico, cruza suas confluências com o que está visível e entrega uma análise escrita com conceitos específicos e próximos passos.',
+        cap1_t:'Estrutura de liquidez', cap1_b:'Identifica se o sweep de liquidez necessário aconteceu antes da sua entrada, ou se o preço entrou na zona de entrega prematuramente.',
+        cap2_t:'Alinhamento HTF / LTF', cap2_b:'Cruza seu viés HTF declarado com a estrutura LTF visível na captura — sinaliza desalinhamentos.',
+        cap3_t:'Kill Zone & timing de sessão', cap3_b:'Valida sua entrada contra as janelas de tempo institucionais — NY Morning, Londres, Silver Bullet e zonas mortas conhecidas.',
+        cap4_t:'FVG, OB e deslocamento', cap4_b:'Avalia a qualidade do Fair Value Gap, Order Block e deslocamento — se o setup tinha o respaldo institucional necessário.',
+        cap5_t:'Detecção de divergência SMT', cap5_b:'Verifica o comportamento de pares correlacionados (NQ/ES, GC/SI, GBP/EUR) para validar se o posicionamento institucional estava alinhado.',
+        cap6_t:'Responde no seu idioma', cap6_b:'A análise completa é entregue em inglês, espanhol, francês ou português — terminologia ICT preservada e explicada em contexto.',
+        s5_brow:'Comunidade & reconhecimento', s5_title:'As duas coisas que separam traders que evoluem dos que estagnam',
+        forum_t:'Fórum de Trading', forum_b:'Um espaço privado moderado por IA onde traders sérios compartilham setups reais com imagens, criticam a execução dos outros e discutem metodologia em profundidade. Sem ruído. Só sinal.',
+        fp1:'NQ short — sweep no 15m, entrada no reclaim do FVG. O que acham da estrutura HTF?',
+        fp2:'EURUSD Silver Bullet — OTE limpo, peguei o deslocamento. Compartilhando para feedback.',
+        rank_t:'Ranking Elite de Traders', rank_b:'Passe as 12 rotas de quiz — ICT, SMC, Wyckoff e Padrões em 3 níveis de dificuldade — com mínimo 80% de acerto, e seu nome entra no ranking de Traders Certificados. Não é um selo. É uma prova de domínio.',
+        rank_you:'Você?',
+        s6_brow:'Em números', s6_title:'Construído com profundidade, não com relleno',
+        stat1:'Ferramentas especializadas', stat2:'Rotas de quiz para dominar', stat3:'Mínimo para o ranking', stat4:'Idiomas disponíveis',
+        s7_brow:'Preços', s7_title:'Comece grátis. Sem cartão.',
+        s7_body:'Todos os planos incluem o motor de análise IA. Evolua quando quiser mais.',
+        pl_free_cycle:'Para sempre grátis', pl_std_cycle:'por mês', pl_prm_cycle:'por mês',
+        pf1:'1 análise IA por semana', pf2:'Todas as metodologias', pf3:'Respostas EN / ES / FR / PT', pf_cta:'Começar grátis',
+        ps1:'1 análise IA por dia', ps2:'Tudo do Free', ps_cta:'Ir para Standard',
+        pp1:'5 análises IA por dia', pp2:'Biblioteca Synapse', pp3:'Fórum de Trading (privado)',
+        pp4:'Quizzes + Ranking Elite', pp5:'Canvas Chalkboard', pp6:'Biblioteca de Indicadores', pp_cta:'Ir para Premium',
+        pop_badge:'Mais Popular',
+        cta_t:'Sua próxima operação merece feedback real.',
+        cta_b:'Junte-se ao Trader Acelerator e transforme cada captura em uma lição estruturada.',
+        cta_btn:'Criar sua conta grátis',
+      }
+    },
+  };
+
+  function applyLang(code) {
+    const C = I18N[code] || I18N.en;
+    document.documentElement.lang = code;
+    document.getElementById('cta-label').textContent = C.cta;
+    document.getElementById('legal-note').textContent = C.legal;
+    const dict = C.t || {};
+    document.querySelectorAll('[data-t]').forEach(el => {
+      const k = el.getAttribute('data-t');
+      if (dict[k] !== undefined) el.textContent = dict[k];
+    });
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.lang === code);
+    });
+    return C;
+  }
+
+  let C = applyLang(lang);
+
+  // ── Brand animation ──
+  const STEP_MS = 100, ANIM_MS = 160;
+  function buildLine(elId, word, startIdx) {
+    const el = document.getElementById(elId);
+    [...word].forEach((ch, i) => {
+      const span = document.createElement('span');
+      span.className = 'ltr';
+      span.textContent = ch;
+      span.style.animationDelay = ((startIdx + i) * STEP_MS) + 'ms';
+      el.appendChild(span);
+    });
+  }
+  const W1='TRADER', W2='ACELERATOR';
+  buildLine('brand-line1', W1, 0);
+  buildLine('brand-line2', W2, W1.length);
+  const buildEnd = (W1.length + W2.length - 1) * STEP_MS + ANIM_MS + 35;
+  setTimeout(() => {
+    document.getElementById('brand-block').classList.add('assembled');
+    document.getElementById('brand-flash').classList.add('burst');
+  }, buildEnd);
+
+  // ── Lang selector ──
+  document.getElementById('lang-sel').addEventListener('click', e => {
+    const btn = e.target.closest('.lang-btn');
+    if (!btn) return;
+    lang = btn.dataset.lang;
+    try { localStorage.setItem('scalpel_lang', lang); } catch(e) {}
+    C = applyLang(lang);
+    bulletEl.classList.add('fading');
+    setTimeout(() => { bi = bi % C.bullets.length; showBullet(bi); }, 280);
+  });
+
+  // ── Cycling bullet ──
+  const bulletEl = document.getElementById('bullet');
+  let bi = 0;
+  function showBullet(idx) {
+    bulletEl.classList.remove('fading');
+    bulletEl.textContent = C.bullets[idx];
+    bulletEl.classList.toggle('hook', idx === C.bullets.length - 1);
+  }
+  function nextBullet() {
+    bulletEl.classList.add('fading');
+    setTimeout(() => { bi = (bi+1)%C.bullets.length; showBullet(bi); }, 300);
+  }
+  setTimeout(() => { showBullet(0); setInterval(nextBullet, 2500); }, 2100);
+
+  // ── Scroll reveal ──
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }});
+  }, { threshold: 0.13, rootMargin: '0px 0px -5% 0px' });
+  document.querySelectorAll('.rv').forEach(el => io.observe(el));
+
+  // ── Scroll hint ──
+  const hint = document.getElementById('scroll-hint');
+  window.addEventListener('scroll', () => { if (scrollY > 60) hint.classList.add('gone'); }, { passive: true });
   </script>
 </body>
 </html>
