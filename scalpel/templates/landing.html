@@ -1065,11 +1065,11 @@
     window.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; }, { passive: true });
     window.addEventListener('mouseout',  () => { mx = null; my = null; }, { passive: true });
 
-    // scroll → sentiment
+    // scroll + mouse Y → sentiment
     let lastScrollY = window.scrollY, scrollVel = 0, sentiment = 0;
     window.addEventListener('scroll', () => {
       const y = window.scrollY;
-      scrollVel += (lastScrollY - y);
+      scrollVel += (lastScrollY - y) * 0.5;
       lastScrollY = y;
     }, { passive: true });
 
@@ -1135,8 +1135,13 @@
       { sym:'BTC',    price:67250.0, dec:0 },
       { sym:'SPX',    price:5165.8,  dec:1 },
     ];
-    // Clamp ticker vertex indices to valid range
-
+    // Assign vertex indices from TICKER_POS: lat_idx in [1..NP-1), lon_idx in [0..NM)
+    // Vertex at (ip, im) → index = (ip-1)*NM + im  (ip=1 is first non-pole parallel)
+    TICKER_POS.forEach(([latIdx, lonIdx], i) => {
+      const ip = Math.max(1, Math.min(NP - 1, latIdx));
+      const im = ((lonIdx % NM) + NM) % NM;
+      TICKERS[i].vi = (ip - 1) * NM + im;
+    });
 
     let rotY = 0, tAnim = 0, raf;
 
@@ -1162,10 +1167,11 @@
       px += (tpx - px) * 0.05;
       py += (tpy - py) * 0.05;
 
-      // sentiment
-      scrollVel *= 0.90;
-      const tSent = Math.max(-1, Math.min(1, scrollVel * 0.04));
-      sentiment += (tSent - sentiment) * 0.08;
+      // sentiment: scroll + mouse Y (moving mouse up = bullish, down = bearish)
+      scrollVel *= 0.88;
+      const mouseSent = my !== null ? -(my / H - 0.5) * 1.2 : 0;
+      const tSent = Math.max(-1, Math.min(1, scrollVel * 0.05 + mouseSent));
+      sentiment += (tSent - sentiment) * 0.06;
       const sAbs = Math.abs(sentiment);
 
       // clear
@@ -1238,29 +1244,50 @@
         }
       });
 
-      // tickers
+      // tickers — always visible; color shifts with sentiment
       const bull  = sentiment >= 0;
-      const tRGB  = sAbs > 0.04 ? sentRGB : metal.nodeRGB;
-      const drift = sentiment * 0.0007;
-      ctx.font = '600 11px Inter, system-ui, sans-serif';
+      const neutralRGB = metal.nodeRGB;
+      const tRGB  = sAbs > 0.08
+        ? sentRGB
+        : sAbs > 0.02
+          ? (bull ? upRGB : downRGB)
+          : neutralRGB;
+      const drift = sentiment * 0.0006;
+      ctx.font = 'bold 11px Inter, system-ui, sans-serif';
       ctx.textBaseline = 'middle';
 
       TICKERS.forEach(tk => {
-        const noise = (Math.random() - 0.5) * 0.0003;
+        const noise = (Math.random() - 0.5) * 0.0002;
         tk.price *= (1 + drift + noise);
         const p = proj[tk.vi];
-        if (!p || p.z <= -0.05) return;
-        const a = Math.min(1, (0.5 + p.z * 0.4) * (0.8 + sAbs * 0.2));
+        if (!p) return;
+        // show on front hemisphere; fade on back
+        if (p.z < -0.3) return;
+        const a = Math.min(0.95, 0.55 + p.z * 0.45);
         const x = p.x + 10, y = p.y;
-        // vector arrow
+
+        // pill background for legibility
+        const label = `${tk.sym}  ${tk.price.toFixed(tk.dec)}`;
+        const tw = ctx.measureText(label).width;
+        ctx.fillStyle = dk
+          ? `rgba(10,8,4,${(a * 0.55).toFixed(3)})`
+          : `rgba(255,255,255,${(a * 0.60).toFixed(3)})`;
+        ctx.beginPath();
+        ctx.roundRect(x + 7, y - 9, tw + 20, 18, 4);
+        ctx.fill();
+
+        // arrow chevron
         ctx.strokeStyle = `rgba(${tRGB},${a.toFixed(3)})`;
-        ctx.lineWidth = 1.4;
+        ctx.lineWidth = 1.5;
+        ctx.lineJoin = 'round';
         ctx.beginPath();
         if (bull) { ctx.moveTo(x, y + 4); ctx.lineTo(x + 4, y - 4); ctx.lineTo(x + 8, y + 4); }
         else      { ctx.moveTo(x, y - 4); ctx.lineTo(x + 4, y + 4); ctx.lineTo(x + 8, y - 4); }
         ctx.stroke();
+
+        // label
         ctx.fillStyle = `rgba(${tRGB},${a.toFixed(3)})`;
-        ctx.fillText(`${tk.sym}  ${tk.price.toFixed(tk.dec)}`, x + 13, y);
+        ctx.fillText(label, x + 13, y);
       });
 
       raf = requestAnimationFrame(frame);
