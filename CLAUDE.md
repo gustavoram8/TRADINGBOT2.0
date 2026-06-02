@@ -22,7 +22,8 @@
   - GPT-4o Vision → análisis de screenshots
   - GPT-4o → moderación del foro + asesor del Scout
 - **Frontend:** Jinja2 + vanilla JS, i18n EN/ES/FR/PT
-- **Rama de desarrollo:** `claude/wonderful-gates-JAa9X` en `gustavoram8/TRADINGBOT2.0`
+- **Rama de desarrollo activa:** `claude/epic-lovelace-GsOuo` en `gustavoram8/TRADINGBOT2.0`
+  - Rama anterior (archivada): `claude/wonderful-gates-JAa9X`
 - **App:** `scalpel/app.py` · arrancar con `FLASK_DEBUG=1 python3 scalpel/app.py`
 - **Acceso local desde iPhone:** `http://192.168.0.104:5001` (Mac en WiFi TP-Link, misma red)
 
@@ -107,6 +108,18 @@
 - [x] **Synapse — velocidad de constelaciones ×2** (netVel 0.006 → 0.012) — commit `bda4070`
 - [x] **Synapse — figuras renovadas** — eliminadas: clocktower, vault, rocket · agregadas: fed, bull, ticker, usaflag, bullish, bearish · total: 14 figuras — commit `973a83b`
 - [x] **Synapse — fix loading infinito** — `AbortController` 15s en fetch de modelos GLB, timeout 12s en `ensureThree()` — commit `705cbe4`
+- [x] **Badge certificado "QC" con fuego animado** — canvas particle fire (`QCFire` IIFE) con blending aditivo (`lighter`), partículas con ciclo de vida blanco→amarillo→naranja→rojo, sin círculo amarillo de fondo, estrella negra en light mode / blanca en dark mode
+- [x] **Products dropdown en la nav** — botón con caret, menú flotante (fixed, escapa overflow de tabs) con secciones: Plans (Free/Standard/Premium), Indicators, Camos, Terms, Settings. JS con `getBoundingClientRect()` para posicionamiento.
+- [x] **Íconos de plan animados (cadencia 8s)** — Standard: estrella fugaz (`piShootingStar`), Premium: corona vibrando (`piCrownVibrate`), Free: check estático. Animación burst + pausa larga de ~7s.
+- [x] **Ícono de Camos** — 4 barras diagonales paralelas (SVG), reemplaza ícono genérico.
+- [x] **Rutas nuevas en `app.py`** — `/store/indicators`, `/camos`, `/terms`, `/settings` con sus templates correspondientes.
+- [x] **Plantillas nuevas creadas** — `store_indicators.html`, `camos.html` (3 camos placeholder: Navy Trader, Desert Ops, Forest Recon), `terms.html`, `settings.html` (Account/Preferences/Notifications/Danger Zone).
+- [x] **Fix logo en pricing.html** — bug de capa gris por `mix-blend-mode` en fondo blanco. Solución: `multiply` en light, `invert(1) + screen` en dark. Pricing ahora respeta el tema claro/oscuro del `localStorage`.
+- [x] **Pantalla de carga de Synapse rediseñada** — pantalla opaca full-page con foto de fondo (`synapse_bg.jpg`), overlay oscuro radial, overlay de candlesticks animado (`synapse_candles.png`), barra de progreso two-phase.
+- [x] **Two-phase Synapse loader** — Fase 1: shimmer CSS indeterminado (corre en compositor, inmune al bloqueo del main thread durante `buildScene()`). Fase 2: conteo rAF 0→100% una vez el main thread queda libre. Soluciona el freeze del contador.
+- [x] **`synapse_bg.jpg` procesada con Pillow** — volteada horizontalmente, logo "CLAUDE" en el bisel del laptop eliminado copiando parche limpio del bisel adyacente (x:232–326, y:535–560 → x:326–420).
+- [x] **`synapse_candles.png` creada con Pillow** — extracción de píxeles verdes (G>90, G-R>35, G-B>35, x<520) a PNG RGBA transparente. Animada con `@keyframes synCandleStorm` (drop-shadow verde, brightness/saturate altos, 3 destellos por ciclo de 2.6s).
+- [x] **Quiz — opción D eliminada** — removida la opción "I'm just exploring" del menú de bienvenida del quiz.
 
 ---
 
@@ -175,11 +188,11 @@ retorno incierto comparado con features de mayor impacto en conversión y retenc
 - `OFAC_DEFAULT_BLOCKLIST` en `app.py` define los 21 países bloqueados.
 - `VENEZUELA_ALLOWED_SLUGS = {'oneup-trader'}` — única excepción documentada.
 - El seed solo inserta firmas nuevas; no duplica si ya existen.
-- Commits y pushes siempre a rama `claude/wonderful-gates-JAa9X`.
+- Commits y pushes siempre a rama `claude/epic-lovelace-GsOuo`.
 
 ---
 
-## 🎨 Synapse — Estado técnico actual (2026-05-31)
+## 🎨 Synapse — Estado técnico actual (2026-06-02)
 
 ### Parámetros clave en `scalpel/templates/index.html`
 
@@ -238,3 +251,122 @@ FIG_PERIOD = 10.5s por ciclo · 6 SLOTS · FIG_CAP=128 vértices por slot
 | `bda4070` | NET_N 144→108 y velocidad ×2 |
 | `973a83b` | Figuras renovadas: quita clocktower/vault/rocket, agrega fed/bull/ticker/usaflag/bullish/bearish |
 | `705cbe4` | Fix loading infinito: AbortController 15s + timeout ensureThree 12s |
+
+### Commits recientes (sesión 2026-06-02)
+
+| Commit | Descripción |
+|--------|-------------|
+| `b101f13` | Synapse loading screen: synapse_bg.jpg procesada, synapse_candles.png, two-phase loader, fix freeze contador |
+
+---
+
+## 🎨 Pantalla de carga de Synapse — Arquitectura
+
+### Archivos estáticos
+- **`scalpel/static/synapse_bg.jpg`** — ilustración de trading, volteada horizontalmente, logo "CLAUDE" del laptop eliminado con Pillow (patch copy x:232–420, y:535–560).
+- **`scalpel/static/synapse_candles.png`** — overlay RGBA con solo los píxeles verdes extraídos de la ilustración original. Se anima por separado sobre el fondo.
+
+### HTML de la pantalla de carga (en `index.html`, dentro de `#synapse-view`)
+```html
+<div class="syn-loading" id="syn-loading">
+  <div class="syn-load-bg">
+    <img class="syn-load-photo"  src="/static/synapse_bg.jpg" alt="" draggable="false" />
+    <div class="syn-load-dark"></div>
+    <img class="syn-load-candles" src="/static/synapse_candles.png" alt="" draggable="false" />
+  </div>
+  <div class="syn-load-inner">
+    <div class="syn-load-title" data-i18n="synapse.loading">Initializing neural matrix…</div>
+    <div class="syn-progress"><div class="syn-progress-fill" id="syn-progress-fill"></div></div>
+    <div class="syn-progress-pct" id="syn-progress-pct">0%</div>
+  </div>
+</div>
+```
+
+### CSS clave
+```css
+.syn-load-candles { mix-blend-mode:screen; animation:synCandleStorm 2.6s ease-in-out infinite; }
+@keyframes synCandleStorm {
+  0%  { opacity:.95; filter:drop-shadow(0 0 6px #3dff7a) drop-shadow(0 0 12px #16ff5e) saturate(1.5) brightness(1.5); }
+  6%  { opacity:1;   filter:drop-shadow(0 0 22px #c4ffd4) drop-shadow(0 0 40px #3dff80) saturate(1.8) brightness(3.0); }
+  46% { opacity:1;   filter:drop-shadow(0 0 26px #d4ffe0) drop-shadow(0 0 46px #44ff88) saturate(1.9) brightness(3.3); }
+  72% { opacity:1;   filter:drop-shadow(0 0 20px #b8ffcc) drop-shadow(0 0 38px #3dff80) saturate(1.8) brightness(2.8); }
+  100%{ opacity:.95; filter:drop-shadow(0 0 7px #3dff7a) drop-shadow(0 0 13px #16ff5e) saturate(1.5) brightness(1.6); } }
+/* Fase 1: shimmer indeterminado (compositor, inmune al main thread) */
+.syn-progress.indeterminate .syn-progress-fill {
+  width:40%; transition:none; animation:synIndet 1.15s ease-in-out infinite; }
+@keyframes synIndet { 0%{transform:translateX(-115%);} 100%{transform:translateX(265%);} }
+```
+
+### Two-phase loader JS (lógica clave en `SynapseModule.open()`)
+```javascript
+// Fase 1: shimmer mientras buildScene() bloquea main thread
+progress.classList.add('indeterminate');
+pctEl.textContent = '';
+await buildScene();   // bloquea JS, compositor sigue corriendo el shimmer
+// Fase 2: main thread libre → conteo suave rAF 0→100%
+progress.classList.remove('indeterminate');
+await new Promise(resolve => {
+  const step = () => {
+    const t = Math.min(1, (Date.now()-countStart)/countDur);
+    fill.style.width = Math.round(t*100)+'%';
+    pctEl.textContent = Math.round(t*100)+'%';
+    if (t<1) requestAnimationFrame(step); else resolve();
+  };
+  requestAnimationFrame(step);
+});
+```
+
+---
+
+## 🏷️ Badge certificado QCFire — Arquitectura
+
+### HTML (en la pestaña de análisis, `index.html`)
+```html
+<span class="qc-badge">
+  <canvas class="qc-fire-canvas" id="qc-fire-canvas" width="56" height="70" aria-hidden="true"></canvas>
+  <span class="qc-star">★</span>
+</span>
+```
+
+### CSS clave
+```css
+.qc-star { position:relative; z-index:3; font-size:22px; color:#fff; text-shadow:0 0 8px rgba(255,200,80,0.6); }
+body.light .qc-star { color:#111; text-shadow:0 0 8px rgba(255,200,80,0.45); }
+```
+
+### JS — IIFE `QCFire`
+- Canvas 2D con `globalCompositeOperation = 'lighter'` (blending aditivo).
+- Partículas spawneadas en anillo alrededor de la estrella (radio ~18–28% del canvas).
+- Ciclo de vida: blanco/amarillo (life<0.3) → naranja (life<0.6) → rojo→transparente.
+- `start()` inicializa canvas con DPR scaling y lanza el loop `requestAnimationFrame`.
+
+---
+
+## 🧭 Products Dropdown — Arquitectura
+
+### Posición en el DOM (`index.html`)
+- Botón `#products-tab` con clase `tab tab-products` — **no participa en `switchTab()`** (excluido con `if (t.id === 'products-tab') return;`).
+- Menú `#products-menu` con `position:fixed` — escapa el overflow de la barra de tabs.
+
+### Rutas del menú
+| Item | Ruta | Notas |
+|------|------|-------|
+| Free / Standard / Premium | `/pricing` | Los 3 redirigen a pricing |
+| Indicators | `/store/indicators` | Storefront separado del tab in-app |
+| Camos | `/camos` | Página de "skins" del sitio |
+| Terms | `/terms` | T&C placeholder |
+| Settings | `/settings` | Cuenta, preferencias, notificaciones |
+
+### Íconos animados de plan (cadencia 8s)
+- **Free:** check SVG estático.
+- **Standard:** estrella SVG con `@keyframes piShootingStar` — entra desde abajo-izquierda diagonal, escala, luego reposa 7s.
+- **Premium:** corona SVG dorada con `@keyframes piCrownVibrate` — vibra ~1s, reposa ~7s.
+- **Camos:** 4 barras diagonales SVG (sin animación).
+
+### Posicionamiento JS
+```javascript
+const rect = btn.getBoundingClientRect();
+menu.style.top  = (rect.bottom + 6) + 'px';
+menu.style.left = rect.left + 'px';
+```
+Cierre: clic fuera del menú, clic en cualquier item, o segundo clic en el botón.
