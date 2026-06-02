@@ -942,267 +942,211 @@
        ════════════════════════════════════════ -->
   <script>
   // ─────────────────────────────────────────
-  //  Background: "Fractured Terminal"
-  //  Asymmetric diagonal split (white / terracotta),
-  //  giant amber analytic arc, wireframe jade sphere
-  //  on the cut line — Y-axis rotation, parallax,
-  //  viscous boundary + magnetic grid deformation.
-  //  Brutalismo premium · spec by Gemini.
+  //  Background: "Geodesic Market"
+  //  Metallic wireframe icosahedron (brand blue
+  //  / mustard-gold) rotating in space. Market
+  //  tickers anchored to its vertices respond to
+  //  SCROLL: scroll down → prices fall (bear/red),
+  //  scroll up → prices rise (bull/green).
+  //  Inspired by the ENSIGNA polyhedron, rebuilt
+  //  from scratch for Trader Acelerator.
   // ─────────────────────────────────────────
   (function () {
     const cv  = document.getElementById('bg-canvas');
     const ctx = cv.getContext('2d');
     const dark = () => document.body.classList.contains('dark');
 
-    let W, H;
-    function resize() { W = cv.width = window.innerWidth; H = cv.height = window.innerHeight; }
+    let W, H, DPR;
+    function resize() {
+      DPR = Math.min(window.devicePixelRatio || 1, 2);
+      W = window.innerWidth; H = window.innerHeight;
+      cv.width = W * DPR; cv.height = H * DPR;
+      cv.style.width = W + 'px'; cv.style.height = H + 'px';
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    }
     resize();
     window.addEventListener('resize', resize, { passive: true });
 
-    // Smoothed mouse + normalized parallax offset (-1..1)
+    // ── Mouse (subtle parallax tilt) ─────────────────
     let mouse = { x: null, y: null, tx: null, ty: null };
-    let par = { x: 0, y: 0 };          // smoothed parallax
+    let par = { x: 0, y: 0 };
     window.addEventListener('mousemove', e => { mouse.tx = e.clientX; mouse.ty = e.clientY; }, { passive: true });
     window.addEventListener('mouseout', () => { mouse.tx = null; mouse.ty = null; }, { passive: true });
 
-    let t = 0;          // global time
-    let rotY = 0;       // sphere Y rotation
+    // ── Scroll → market sentiment ────────────────────
+    let lastScroll = window.scrollY;
+    let scrollVel  = 0;     // decaying scroll velocity
+    let sentiment  = 0;     // smoothed -1..+1 (down=bear, up=bull)
+    window.addEventListener('scroll', () => {
+      const y = window.scrollY;
+      scrollVel += (lastScroll - y);   // up → positive, down → negative
+      lastScroll = y;
+    }, { passive: true });
 
-    // ── Market tickers anchored to the sphere ────────
-    // Mouse Y drives sentiment: top = bull (↑ green), bottom = bear (↓ red).
-    const TICKERS = [
-      { sym:'EURUSD', price:1.0842,  dec:4, lat:3,  lon:2  },
-      { sym:'XAU',    price:2024.5,  dec:1, lat:5,  lon:7  },
-      { sym:'ES',     price:5180.25, dec:2, lat:7,  lon:12 },
-      { sym:'NQ',     price:18240.0, dec:1, lat:4,  lon:16 },
-      { sym:'GBP',    price:1.2715,  dec:4, lat:9,  lon:5  },
-      { sym:'BTC',    price:67250.0, dec:0, lat:6,  lon:19 },
-      { sym:'SPX',    price:5165.8,  dec:1, lat:10, lon:10 },
+    // ── Icosahedron geometry ─────────────────────────
+    const PHI = (1 + Math.sqrt(5)) / 2;
+    let V = [
+      [0,1,PHI],[0,-1,PHI],[0,1,-PHI],[0,-1,-PHI],
+      [1,PHI,0],[-1,PHI,0],[1,-PHI,0],[-1,-PHI,0],
+      [PHI,0,1],[-PHI,0,1],[PHI,0,-1],[-PHI,0,-1],
     ];
-    let sentiment = 0;     // smoothed -1..+1
-
-    // ── Build sphere lat/long grid once ──────────────
-    const LAT = 13, LON = 22;
-    const sphereGrid = [];
-    for (let i = 0; i <= LAT; i++) {
-      const phi = Math.PI * (i / LAT) - Math.PI/2;   // -90..90
-      const ring = [];
-      for (let j = 0; j <= LON; j++) {
-        const theta = (2 * Math.PI) * (j / LON);
-        ring.push({
-          x: Math.cos(phi) * Math.cos(theta),
-          y: Math.sin(phi),
-          z: Math.cos(phi) * Math.sin(theta),
-        });
-      }
-      sphereGrid.push(ring);
+    // normalize to unit
+    V = V.map(p => { const m = Math.hypot(p[0],p[1],p[2]); return [p[0]/m,p[1]/m,p[2]/m]; });
+    // edges = vertex pairs at the minimum distance
+    const edges = [];
+    let minD = Infinity;
+    for (let i=0;i<V.length;i++) for (let j=i+1;j<V.length;j++) {
+      const d = Math.hypot(V[i][0]-V[j][0], V[i][1]-V[j][1], V[i][2]-V[j][2]);
+      if (d < minD - 1e-6) minD = d;
+    }
+    for (let i=0;i<V.length;i++) for (let j=i+1;j<V.length;j++) {
+      const d = Math.hypot(V[i][0]-V[j][0], V[i][1]-V[j][1], V[i][2]-V[j][2]);
+      if (Math.abs(d - minD) < 1e-3) edges.push([i,j]);
     }
 
-    function proj(p, cx, cy, R) {
-      // rotate around Y
-      const cosR = Math.cos(rotY), sinR = Math.sin(rotY);
-      let x = p.x * cosR - p.z * sinR;
-      let z = p.x * sinR + p.z * cosR;
-      let y = p.y;
-      // slight perspective
-      const persp = 1 / (1.8 - z * 0.45);
-      let sx = cx + x * R * persp;
-      let sy = cy + y * R * persp;
-      return { sx, sy, z, persp };
+    // ── Tickers anchored to 7 vertices ───────────────
+    const TICKERS = [
+      { sym:'EURUSD', price:1.0842,  dec:4, vi:0 },
+      { sym:'XAU',    price:2024.5,  dec:1, vi:4 },
+      { sym:'ES',     price:5180.25, dec:2, vi:8 },
+      { sym:'NQ',     price:18240.0, dec:1, vi:10 },
+      { sym:'GBP',    price:1.2715,  dec:4, vi:5 },
+      { sym:'BTC',    price:67250.0, dec:0, vi:6 },
+      { sym:'SPX',    price:5165.8,  dec:1, vi:2 },
+    ];
+
+    let rotY = 0, rotX = 0, t = 0;
+
+    function rotate(p, ax, ay) {
+      // rotate around Y then X
+      let cy=Math.cos(ay), sy=Math.sin(ay);
+      let x = p[0]*cy - p[2]*sy;
+      let z = p[0]*sy + p[2]*cy;
+      let y = p[1];
+      let cx=Math.cos(ax), sx=Math.sin(ax);
+      let y2 = y*cx - z*sx;
+      let z2 = y*sx + z*cx;
+      return [x, y2, z2];
     }
 
     let raf;
     function frame() {
       t += 0.006;
-      rotY += 0.0022;
+      rotY += 0.0035;
+      rotX = Math.sin(t * 0.25) * 0.28;
       const dk = dark();
 
-      // Smooth mouse → parallax
+      // smooth mouse parallax
       if (mouse.tx !== null) {
         if (mouse.x === null) { mouse.x = mouse.tx; mouse.y = mouse.ty; }
         mouse.x += (mouse.tx - mouse.x) * 0.06;
         mouse.y += (mouse.ty - mouse.y) * 0.06;
       }
-      const targetPX = mouse.x !== null ? (mouse.x / W - 0.5) : 0;
-      const targetPY = mouse.y !== null ? (mouse.y / H - 0.5) : 0;
-      par.x += (targetPX - par.x) * 0.05;
-      par.y += (targetPY - par.y) * 0.05;
+      const tpx = mouse.x !== null ? (mouse.x/W - 0.5) : 0;
+      const tpy = mouse.y !== null ? (mouse.y/H - 0.5) : 0;
+      par.x += (tpx - par.x) * 0.05;
+      par.y += (tpy - par.y) * 0.05;
 
-      // ── Base white (or dark) ──
-      ctx.fillStyle = dk ? '#141109' : '#ffffff';
+      // scroll velocity → sentiment
+      scrollVel *= 0.90;                                  // decay toward 0
+      const targetSent = Math.max(-1, Math.min(1, scrollVel * 0.04));
+      sentiment += (targetSent - sentiment) * 0.08;
+
+      // ── clear ──
+      ctx.fillStyle = dk ? '#000000' : '#ffffff';
       ctx.fillRect(0, 0, W, H);
 
-      // ── Diagonal split position (the "cut") with viscous wobble ──
-      // The cut runs top→bottom; ~58% from left at top, tilted ~15°.
-      const slope = Math.tan(15 * Math.PI / 180);
-      const baseCut = W * 0.60;
-      // viscous deformation: gentle sine wobble + mouse bulge near the line
-      function cutX(y) {
-        let cx = baseCut + (y - H/2) * slope;
-        cx += Math.sin(y * 0.004 + t) * 18;          // slow viscous breathing
-        cx += par.x * 40;                            // parallax drift of whole boundary
-        if (mouse.x !== null) {
-          const dy = Math.abs(y - mouse.y);
-          if (dy < 260) {
-            const force = (260 - dy) / 260;
-            // pull the boundary toward the cursor (elastic liquid)
-            cx += (mouse.x - cx) * force * 0.22;
-          }
+      // ── layout: polyhedron centre-right of hero ──
+      const cx = W * (W < 900 ? 0.5 : 0.70) + par.x * 30;
+      const cy = H * 0.42 + par.y * 24;
+      const R  = Math.min(W, H) * (W < 900 ? 0.30 : 0.27);
+
+      // brand metallic palette
+      const metal = dk
+        ? { lo:'#7a5410', mid:'#e8a93a', hi:'#f7d27a', node:'232,169,58' }   // mustard-gold
+        : { lo:'#1e3a8a', mid:'#2563eb', hi:'#7cb0ff', node:'37,99,235' };    // brand blue
+
+      // sentiment colour (overrides tint when scrolling)
+      const sAbs = Math.abs(sentiment);
+      const upRGB   = dk ? '74,222,128' : '22,163,74';
+      const downRGB = dk ? '248,113,113' : '220,38,38';
+      const sentRGB = sentiment >= 0 ? upRGB : downRGB;
+
+      // project all vertices
+      const proj = V.map(p => {
+        const r = rotate(p, rotX + par.y*0.4, rotY + par.x*0.6);
+        const persp = 1 / (1.9 - r[2]*0.5);
+        return { x: cx + r[0]*R*persp, y: cy + r[1]*R*persp, z: r[2], persp };
+      });
+
+      // ── edges (painter's order: back first) ──
+      const drawEdges = edges.map(([a,b]) => ({ a, b, z:(proj[a].z+proj[b].z)/2 }))
+                             .sort((e1,e2)=>e1.z-e2.z);
+      drawEdges.forEach(({a,b,z}) => {
+        const p1 = proj[a], p2 = proj[b];
+        const front = z > -0.1;
+        const depth = (z + 1) / 2;                  // 0..1
+        const g = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
+        g.addColorStop(0, metal.lo);
+        g.addColorStop(0.5, metal.mid);
+        g.addColorStop(1, metal.hi);
+        ctx.strokeStyle = g;
+        ctx.globalAlpha = (front ? 0.85 : 0.22) * (0.55 + depth*0.45);
+        ctx.lineWidth = front ? 2.4 : 1.2;
+        ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(p1.x,p1.y); ctx.lineTo(p2.x,p2.y); ctx.stroke();
+        // sheen highlight
+        if (front) {
+          ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+          ctx.globalAlpha = 0.18 * depth;
+          ctx.lineWidth = 0.7;
+          ctx.beginPath(); ctx.moveTo(p1.x,p1.y); ctx.lineTo(p2.x,p2.y); ctx.stroke();
         }
-        return cx;
-      }
+      });
+      ctx.globalAlpha = 1;
 
-      // ── Diagonal block (right side of the cut) — brand blue / black in dark ──
-      const terra  = dk ? '#0a0a0c' : '#1d4ed8';   // light: brand blue · dark: near-black
-      const terra2 = dk ? '#000000' : '#1538a8';   // gradient end
-      const STEP = 8;
-      ctx.beginPath();
-      ctx.moveTo(W, 0);
-      ctx.lineTo(cutX(0), 0);
-      for (let y = 0; y <= H; y += STEP) ctx.lineTo(cutX(y), y);
-      ctx.lineTo(cutX(H), H);
-      ctx.lineTo(W, H);
-      ctx.closePath();
-      const tg = ctx.createLinearGradient(W*0.55, 0, W, H);
-      tg.addColorStop(0, terra);
-      tg.addColorStop(1, terra2);
-      ctx.fillStyle = tg;
-      ctx.fill();
-
-      // subtle texture lines on terracotta
-      ctx.save();
-      ctx.clip();
-      ctx.strokeStyle = 'rgba(255,255,255,0.04)';
-      ctx.lineWidth = 0.5;
-      for (let yy = -H; yy < H*1.4; yy += 14) {
-        ctx.beginPath();
-        ctx.moveTo(W*0.45, yy);
-        ctx.lineTo(W*1.1, yy + W*0.18);
-        ctx.stroke();
-      }
-      ctx.restore();
-
-      // ── Giant amber analytic arc (in the white section) ──
-      const amber = dk ? 'rgba(232,169,58,' : 'rgba(185,116,10,';
-      const arcCx = W * 0.30 - par.x * 60;   // parallax: arc moves opposite to sphere
-      const arcCy = H * 0.52 - par.y * 40;
-      const arcR  = Math.max(W, H) * 0.46;
-      ctx.lineWidth = 1;
-      // concentric thin arcs framing the headline
-      for (let k = 0; k < 3; k++) {
-        ctx.strokeStyle = amber + (0.12 - k*0.03) + ')';
-        ctx.beginPath();
-        ctx.arc(arcCx, arcCy, arcR - k*26, -Math.PI*0.62, Math.PI*0.32);
-        ctx.stroke();
-      }
-      // a couple radial ticks on the arc
-      ctx.strokeStyle = amber + '0.10)';
-      for (let a = -0.55; a < 0.30; a += 0.14) {
-        const ang = a * Math.PI;
-        ctx.beginPath();
-        ctx.moveTo(arcCx + Math.cos(ang)*(arcR-30), arcCy + Math.sin(ang)*(arcR-30));
-        ctx.lineTo(arcCx + Math.cos(ang)*(arcR+10), arcCy + Math.sin(ang)*(arcR+10));
-        ctx.stroke();
-      }
-
-      // ── Wireframe jade sphere on the cut line ──
-      const sphCx = cutX(H*0.46) + par.x * 70;   // parallax opposite to arc
-      const sphCy = H * 0.46 + par.y * 50;
-      const R = Math.min(W, H) * 0.30;
-      const jade = dk ? 'rgba(52,211,153,' : 'rgba(16,185,129,';
-
-      // magnetic deformation helper
-      function magnet(sx, sy) {
-        if (mouse.x === null) return [sx, sy];
-        const dx = sx - mouse.x, dy = sy - mouse.y;
-        const d = Math.hypot(dx, dy);
-        if (d < 130 && d > 0) {
-          const f = (130 - d) / 130;
-          return [sx + (dx/d) * f * 16, sy + (dy/d) * f * 16];
-        }
-        return [sx, sy];
-      }
-
-      // longitude lines
-      for (let j = 0; j <= LON; j++) {
-        ctx.beginPath();
-        let started = false;
-        for (let i = 0; i <= LAT; i++) {
-          const pr = proj(sphereGrid[i][j], sphCx, sphCy, R);
-          const front = pr.z > -0.15;
-          const [mx, my] = magnet(pr.sx, pr.sy);
-          const a = front ? 0.34 : 0.08;
-          if (!started) { ctx.moveTo(mx, my); started = true; }
-          else ctx.lineTo(mx, my);
-          // stroke per-segment to vary alpha by depth
-          ctx.strokeStyle = jade + a.toFixed(3) + ')';
-          ctx.lineWidth = front ? 0.8 : 0.5;
-          ctx.stroke();
-          ctx.beginPath();
-          ctx.moveTo(mx, my);
-        }
-      }
-      // latitude lines
-      for (let i = 0; i <= LAT; i++) {
-        ctx.beginPath();
-        let started = false;
-        for (let j = 0; j <= LON; j++) {
-          const pr = proj(sphereGrid[i][j], sphCx, sphCy, R);
-          const front = pr.z > -0.15;
-          const [mx, my] = magnet(pr.sx, pr.sy);
-          const a = front ? 0.30 : 0.07;
-          if (!started) { ctx.moveTo(mx, my); started = true; }
-          else ctx.lineTo(mx, my);
-          ctx.strokeStyle = jade + a.toFixed(3) + ')';
-          ctx.lineWidth = front ? 0.7 : 0.5;
-          ctx.stroke();
-          ctx.beginPath();
-          ctx.moveTo(mx, my);
-        }
-      }
-
-      // soft core glow — tint shifts with sentiment (green=bull / red=bear)
-      const glowRGB = sentiment >= 0
-        ? (dk ? '52,211,153' : '16,185,129')      // jade / green
-        : (dk ? '232,140,90' : '220,38,38');       // amber-red / red
-      const cg = ctx.createRadialGradient(sphCx, sphCy, 0, sphCx, sphCy, R*0.9);
-      const glowA = 0.05 + Math.abs(sentiment) * 0.06;
-      cg.addColorStop(0, `rgba(${glowRGB},${glowA.toFixed(3)})`);
+      // ── core glow ──
+      const glowRGB = sAbs > 0.06 ? sentRGB : metal.node;
+      const cg = ctx.createRadialGradient(cx, cy, 0, cx, cy, R*1.05);
+      cg.addColorStop(0, `rgba(${glowRGB},${(0.06 + sAbs*0.10).toFixed(3)})`);
       cg.addColorStop(1, `rgba(${glowRGB},0)`);
       ctx.fillStyle = cg;
-      ctx.beginPath();
-      ctx.arc(sphCx, sphCy, R*0.9, 0, Math.PI*2);
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(cx, cy, R*1.05, 0, Math.PI*2); ctx.fill();
 
-      // ── Sentiment from mouse Y: top → +1 bull · bottom → −1 bear ──
-      const targetSent = mouse.y !== null ? (0.5 - mouse.y / H) * 2 : 0;
-      sentiment += (Math.max(-1, Math.min(1, targetSent)) - sentiment) * 0.04;
+      // ── vertex nodes ──
+      proj.forEach(p => {
+        const front = p.z > -0.1;
+        ctx.fillStyle = `rgba(${metal.node},${front?0.9:0.3})`;
+        ctx.beginPath(); ctx.arc(p.x, p.y, front?3:1.6, 0, Math.PI*2); ctx.fill();
+        if (front) {
+          ctx.fillStyle = 'rgba(255,255,255,0.7)';
+          ctx.beginPath(); ctx.arc(p.x-0.8, p.y-0.8, 1, 0, Math.PI*2); ctx.fill();
+        }
+      });
 
-      // ── Market tickers floating on the sphere grid ──
+      // ── tickers (no emojis — vector arrows) ──
       const bull = sentiment >= 0;
-      const upRGB   = dk ? '52,211,153' : '16,185,129';
-      const downRGB = dk ? '232,120,90' : '220,38,38';
-      const tRGB = bull ? upRGB : downRGB;
-      const drift = sentiment * 0.0006;   // per-frame % move, sign follows sentiment
-      ctx.font = '600 11px Inter, monospace';
+      const tRGB = sAbs > 0.04 ? sentRGB : metal.node;
+      const drift = sentiment * 0.0007;
+      ctx.font = '600 11px Inter, system-ui, sans-serif';
       ctx.textBaseline = 'middle';
       TICKERS.forEach(tk => {
-        // live price walk biased by sentiment
-        const noise = (Math.random() - 0.5) * 0.0004;
+        const noise = (Math.random()-0.5) * 0.0003;
         tk.price *= (1 + drift + noise);
-        // anchor point on sphere
-        const pr = proj(sphereGrid[tk.lat][tk.lon], sphCx, sphCy, R);
-        if (pr.z <= -0.1) return;   // hidden behind the sphere
-        const [mx, my] = magnet(pr.sx, pr.sy);
-        const a = (0.45 + pr.z * 0.3) * (0.7 + Math.abs(sentiment) * 0.3);
-        const arrow = bull ? '▲' : '▼';
-        const txt = `${tk.sym} ${arrow}${tk.price.toFixed(tk.dec)}`;
-        // node dot
-        ctx.fillStyle = `rgba(${tRGB},${(a*0.9).toFixed(3)})`;
-        ctx.beginPath(); ctx.arc(mx, my, 1.8, 0, Math.PI*2); ctx.fill();
+        const p = proj[tk.vi];
+        if (p.z <= -0.05) return;
+        const a = (0.5 + p.z*0.3) * (0.75 + sAbs*0.25);
+        const x = p.x + 8, y = p.y;
+        // vector arrow
+        ctx.strokeStyle = `rgba(${tRGB},${a.toFixed(3)})`;
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        if (bull) { ctx.moveTo(x, y+3); ctx.lineTo(x+3, y-3); ctx.lineTo(x+6, y+3); }
+        else      { ctx.moveTo(x, y-3); ctx.lineTo(x+3, y+3); ctx.lineTo(x+6, y-3); }
+        ctx.stroke();
         // label
         ctx.fillStyle = `rgba(${tRGB},${a.toFixed(3)})`;
-        ctx.fillText(txt, mx + 6, my);
+        ctx.fillText(`${tk.sym}  ${tk.price.toFixed(tk.dec)}`, x+11, y);
       });
 
       raf = requestAnimationFrame(frame);
