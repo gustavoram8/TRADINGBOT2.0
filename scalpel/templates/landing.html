@@ -58,7 +58,7 @@
 
     html { scroll-behavior: smooth; }
     body {
-      background: var(--bg);
+      background: transparent;
       color: var(--text);
       font-family: 'Inter', sans-serif;
       -webkit-font-smoothing: antialiased;
@@ -942,10 +942,9 @@
        ════════════════════════════════════════ -->
   <script>
   // ─────────────────────────────────────────
-  //  Background: "Orbit Web"
-  //  45 nodes orbiting their base positions,
-  //  connected by amber/jade lines when close.
-  //  Mouse repels nearby nodes.
+  //  Background: "Radial Compass"
+  //  Concentric amber circles + rotating rays
+  //  that follow the mouse with smooth easing.
   // ─────────────────────────────────────────
   (function () {
     const cv  = document.getElementById('bg-canvas');
@@ -956,86 +955,71 @@
     function resize() {
       W = cv.width  = window.innerWidth;
       H = cv.height = window.innerHeight;
-      init();
     }
-
-    let nodes = [];
-    let mouse = { x: -1000, y: -1000 };
-    window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; }, { passive: true });
+    resize();
     window.addEventListener('resize', resize, { passive: true });
 
-    const CONNECT_DIST = 220;
-    const REPEL_DIST   = 180;
-    const REPEL_FORCE  = 25;
-    const ORBIT_R      = 20;
+    let cx = W / 2, cy = H / 2;
+    let tx = W / 2, ty = H / 2;
+    window.addEventListener('mousemove', e => { tx = e.clientX; ty = e.clientY; }, { passive: true });
 
-    class Node {
-      constructor() {
-        this.baseX = Math.random() * W;
-        this.baseY = Math.random() * H;
-        this.x     = this.baseX;
-        this.y     = this.baseY;
-        this.angle = Math.random() * Math.PI * 2;
-        this.speed = 0.0015 + Math.random() * 0.0015;
-        // slow drift so the web evolves over time
-        this.driftX = (Math.random() - 0.5) * 0.15;
-        this.driftY = (Math.random() - 0.5) * 0.10;
-      }
-      update() {
-        this.angle += this.speed;
-        this.baseX = (this.baseX + this.driftX + W) % W;
-        this.baseY = (this.baseY + this.driftY + H) % H;
-        this.x = this.baseX + Math.cos(this.angle) * ORBIT_R;
-        this.y = this.baseY + Math.sin(this.angle) * ORBIT_R;
-
-        const dx = mouse.x - this.x;
-        const dy = mouse.y - this.y;
-        const dist = Math.hypot(dx, dy);
-        if (dist < REPEL_DIST && dist > 0) {
-          const force = (REPEL_DIST - dist) / REPEL_DIST;
-          this.x -= (dx / dist) * force * REPEL_FORCE;
-          this.y -= (dy / dist) * force * REPEL_FORCE;
-        }
-      }
-    }
-
-    function init() {
-      nodes = Array.from({ length: 48 }, () => new Node());
-    }
-
+    let rotation = 0;
     let raf;
+
     function frame() {
+      rotation += 0.0005;
       const dk = dark();
+
+      // Smooth follow
+      cx += (tx - cx) * 0.04;
+      cy += (ty - cy) * 0.04;
+
       ctx.clearRect(0, 0, W, H);
       ctx.fillStyle = dk ? '#141109' : '#ffffff';
       ctx.fillRect(0, 0, W, H);
 
-      nodes.forEach(n => n.update());
+      const amberRGB  = dk ? '232,169,58' : '185,116,10';
+      const terraRGB  = dk ? '224,120,92'  : '194,69,58';
+      const jadeRGB   = dk ? '52,211,153'  : '16,145,100';
 
-      const amberRGB = dk ? '232,169,58' : '185,116,10';
-      const jadeRGB  = dk ? '52,211,153'  : '16,145,100';
+      ctx.lineWidth = 0.6;
 
-      for (let i = 0; i < nodes.length; i++) {
-        for (let j = i + 1; j < nodes.length; j++) {
-          const dist = Math.hypot(nodes[i].x - nodes[j].x, nodes[i].y - nodes[j].y);
-          if (dist < CONNECT_DIST) {
-            const t = 1 - dist / CONNECT_DIST;
-            const opacity = t * (dk ? 0.20 : 0.13);
-            const rgb = i % 3 === 0 ? jadeRGB : amberRGB;
-            ctx.strokeStyle = `rgba(${rgb},${opacity})`;
-            ctx.lineWidth = t * 1.1;
-            ctx.beginPath();
-            ctx.moveTo(nodes[i].x, nodes[i].y);
-            ctx.lineTo(nodes[j].x, nodes[j].y);
-            ctx.stroke();
-          }
-        }
+      // Concentric rings — alternate amber / jade every few rings
+      const ringStep = 75;
+      const maxR = Math.hypot(W, H);
+      for (let r = ringStep, idx = 0; r < maxR; r += ringStep, idx++) {
+        const isJade = idx % 6 === 4;
+        const rgb    = isJade ? jadeRGB : amberRGB;
+        const alpha  = dk ? 0.12 : 0.08;
+        ctx.strokeStyle = `rgba(${rgb},${alpha})`;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.stroke();
       }
+
+      // Rotating rays — terracota, ultra faint
+      const rayCount = 24;
+      ctx.strokeStyle = `rgba(${terraRGB},${dk ? 0.06 : 0.04})`;
+      for (let i = 0; i < rayCount; i++) {
+        const angle = (i / rayCount) * Math.PI * 2 + rotation;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(angle) * maxR, cy + Math.sin(angle) * maxR);
+        ctx.stroke();
+      }
+
+      // Subtle glow at center
+      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, ringStep * 1.2);
+      g.addColorStop(0, `rgba(${amberRGB},${dk ? 0.07 : 0.05})`);
+      g.addColorStop(1, `rgba(${amberRGB},0)`);
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(cx, cy, ringStep * 1.2, 0, Math.PI * 2);
+      ctx.fill();
 
       raf = requestAnimationFrame(frame);
     }
 
-    init();
     frame();
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) cancelAnimationFrame(raf); else frame();
