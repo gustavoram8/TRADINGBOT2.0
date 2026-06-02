@@ -943,10 +943,10 @@
        ════════════════════════════════════════ -->
   <script>
   // ─────────────────────────────────────────
-  //  Background: "Ripple Mesh"
-  //  Horizontal + vertical grid lines that
-  //  undulate like a fabric and distort
-  //  toward the mouse cursor.
+  //  Background: "Orbit Web"
+  //  45 nodes orbiting their base positions,
+  //  connected by amber/jade lines when close.
+  //  Mouse repels nearby nodes.
   // ─────────────────────────────────────────
   (function () {
     const cv  = document.getElementById('bg-canvas');
@@ -957,95 +957,86 @@
     function resize() {
       W = cv.width  = window.innerWidth;
       H = cv.height = window.innerHeight;
+      init();
     }
-    resize();
+
+    let nodes = [];
+    let mouse = { x: -1000, y: -1000 };
+    window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; }, { passive: true });
     window.addEventListener('resize', resize, { passive: true });
 
-    let mouse = { x: null, y: null, tx: null, ty: null };
-    window.addEventListener('mousemove', e => { mouse.tx = e.clientX; mouse.ty = e.clientY; }, { passive: true });
-    window.addEventListener('mouseout',  ()  => { mouse.tx = null; mouse.ty = null; }, { passive: true });
+    const CONNECT_DIST = 220;
+    const REPEL_DIST   = 180;
+    const REPEL_FORCE  = 25;
+    const ORBIT_R      = 20;
 
-    const SPACING    = 45;   // grid cell size (px)
-    const WAVE_AMP   = 14;   // max undulation
-    const MOUSE_R    = 200;  // mouse influence radius
-    const MOUSE_PULL = 0.28; // distortion strength
+    class Node {
+      constructor() {
+        this.baseX = Math.random() * W;
+        this.baseY = Math.random() * H;
+        this.x     = this.baseX;
+        this.y     = this.baseY;
+        this.angle = Math.random() * Math.PI * 2;
+        this.speed = 0.0015 + Math.random() * 0.0015;
+        // slow drift so the web evolves over time
+        this.driftX = (Math.random() - 0.5) * 0.15;
+        this.driftY = (Math.random() - 0.5) * 0.10;
+      }
+      update() {
+        this.angle += this.speed;
+        this.baseX = (this.baseX + this.driftX + W) % W;
+        this.baseY = (this.baseY + this.driftY + H) % H;
+        this.x = this.baseX + Math.cos(this.angle) * ORBIT_R;
+        this.y = this.baseY + Math.sin(this.angle) * ORBIT_R;
 
-    let time = 0;
+        const dx = mouse.x - this.x;
+        const dy = mouse.y - this.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < REPEL_DIST && dist > 0) {
+          const force = (REPEL_DIST - dist) / REPEL_DIST;
+          this.x -= (dx / dist) * force * REPEL_FORCE;
+          this.y -= (dy / dist) * force * REPEL_FORCE;
+        }
+      }
+    }
+
+    function init() {
+      nodes = Array.from({ length: 48 }, () => new Node());
+    }
 
     let raf;
     function frame() {
-      time += 0.005;
       const dk = dark();
-
-      // Smooth mouse
-      if (mouse.tx !== null) {
-        if (mouse.x === null) { mouse.x = mouse.tx; mouse.y = mouse.ty; }
-        mouse.x += (mouse.tx - mouse.x) * 0.10;
-        mouse.y += (mouse.ty - mouse.y) * 0.10;
-      }
-
       ctx.clearRect(0, 0, W, H);
       ctx.fillStyle = dk ? '#141109' : '#ffffff';
       ctx.fillRect(0, 0, W, H);
 
-      // Two amber tones: most lines at very low alpha, a few "accent" lines brighter
-      const amberBase   = dk ? '232,169,58' : '185,116,10';
-      const jadeBase    = dk ? '52,211,153'  : '16,145,100';
-      const alphaLine   = dk ? 0.10 : 0.07;
-      const alphaAccent = dk ? 0.22 : 0.15;
+      nodes.forEach(n => n.update());
 
-      ctx.lineWidth = 0.7;
+      const amberRGB = dk ? '232,169,58' : '185,116,10';
+      const jadeRGB  = dk ? '52,211,153'  : '16,145,100';
 
-      // ── Horizontal lines ──────────────────────────
-      let rowIdx = 0;
-      for (let gy = 0; gy <= H; gy += SPACING) {
-        rowIdx++;
-        // every 4th row: jade accent, rest amber
-        const isAccent = rowIdx % 5 === 0;
-        const rgb   = isAccent ? jadeBase : amberBase;
-        const alpha = isAccent ? alphaAccent : alphaLine;
-        ctx.strokeStyle = `rgba(${rgb},${alpha})`;
-        ctx.beginPath();
-        for (let x = 0; x <= W; x += 8) {
-          let dy = Math.sin(x * 0.005 + gy * 0.010 + time) * WAVE_AMP;
-          if (mouse.tx !== null) {
-            const dist = Math.hypot(x - mouse.x, gy - mouse.y);
-            if (dist < MOUSE_R) {
-              const force = (MOUSE_R - dist) / MOUSE_R;
-              dy += (mouse.y - gy) * force * MOUSE_PULL;
-            }
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dist = Math.hypot(nodes[i].x - nodes[j].x, nodes[i].y - nodes[j].y);
+          if (dist < CONNECT_DIST) {
+            const t = 1 - dist / CONNECT_DIST;
+            const opacity = t * (dk ? 0.20 : 0.13);
+            const rgb = i % 3 === 0 ? jadeRGB : amberRGB;
+            ctx.strokeStyle = `rgba(${rgb},${opacity})`;
+            ctx.lineWidth = t * 1.1;
+            ctx.beginPath();
+            ctx.moveTo(nodes[i].x, nodes[i].y);
+            ctx.lineTo(nodes[j].x, nodes[j].y);
+            ctx.stroke();
           }
-          x === 0 ? ctx.moveTo(x, gy + dy) : ctx.lineTo(x, gy + dy);
         }
-        ctx.stroke();
-      }
-
-      // ── Vertical lines ────────────────────────────
-      let colIdx = 0;
-      for (let gx = 0; gx <= W; gx += SPACING) {
-        colIdx++;
-        const isAccent = colIdx % 5 === 0;
-        const rgb   = isAccent ? jadeBase : amberBase;
-        const alpha = isAccent ? alphaAccent : alphaLine;
-        ctx.strokeStyle = `rgba(${rgb},${alpha})`;
-        ctx.beginPath();
-        for (let y = 0; y <= H; y += 8) {
-          let dx = Math.sin(gx * 0.010 + y * 0.005 + time) * WAVE_AMP;
-          if (mouse.tx !== null) {
-            const dist = Math.hypot(gx - mouse.x, y - mouse.y);
-            if (dist < MOUSE_R) {
-              const force = (MOUSE_R - dist) / MOUSE_R;
-              dx += (mouse.x - gx) * force * MOUSE_PULL;
-            }
-          }
-          y === 0 ? ctx.moveTo(gx + dx, y) : ctx.lineTo(gx + dx, y);
-        }
-        ctx.stroke();
       }
 
       raf = requestAnimationFrame(frame);
     }
 
+    init();
     frame();
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) cancelAnimationFrame(raf); else frame();
