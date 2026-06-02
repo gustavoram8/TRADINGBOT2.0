@@ -10,8 +10,8 @@
 
     /* ── Design tokens — warm amber/charcoal palette (own identity) ── */
     :root {
-      --bg:      #f7f4ed;   /* warm ivory */
-      --bg2:     #fffdf8;
+      --bg:      #ffffff;   /* pure white */
+      --bg2:     #ffffff;
       --text:    #1c1812;   /* warm near-black */
       --muted:   #6d6557;
       --subtle:  #a39a88;
@@ -943,183 +943,157 @@
        ════════════════════════════════════════ -->
   <script>
   // ─────────────────────────────────────────
-  //  Background: animated perspective grid
-  //  — a receding grid that slowly scrolls
-  //    toward the viewer, with thin price
-  //    lines that auto-draw across it.
+  //  Background: "Liquidity Flow"
+  //  — silk ribbons of capital that stream and
+  //    undulate across a clean white canvas,
+  //    layered with drifting gold-dust motes.
+  //    Original, premium, calm — built for
+  //    Trader Acelerator, nothing borrowed.
   // ─────────────────────────────────────────
   (function () {
     const cv  = document.getElementById('bg-canvas');
     const ctx = cv.getContext('2d');
     const dark = () => document.body.classList.contains('dark');
 
-    function resize() { cv.width = innerWidth; cv.height = innerHeight; }
+    let W, H, DPR;
+    function resize() {
+      DPR = Math.min(window.devicePixelRatio || 1, 2);
+      W = innerWidth; H = innerHeight;
+      cv.width = W * DPR; cv.height = H * DPR;
+      cv.style.width = W + 'px'; cv.style.height = H + 'px';
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    }
     resize();
     window.addEventListener('resize', resize, { passive: true });
 
-    // Perspective grid parameters
-    const COLS   = 10;     // vertical lines
-    const ROWS   = 14;     // horizontal lines
-    const SPEED  = 0.00018; // how fast lines march toward viewer (0=freeze)
-    let   offset = 0;      // 0..1 cycles continuously
-
-    // Price lines — thin lines that sweep horizontally across the grid
-    const PRICE_LINES = 3;
-    const plines = Array.from({ length: PRICE_LINES }, (_, i) => ({
-      progress: i / PRICE_LINES,  // 0..1 across the screen width
-      y: 0.25 + (i * 0.22),       // normalized vertical position
-      speed: 0.0004 + Math.random() * 0.0003,
-      segments: [],                // [{x,y}]
-    }));
-
-    // Generate a realistic "price walk" path (random walk biased up slightly)
-    function genPricePath(seed) {
-      const pts = [];
-      let y = 0;
-      const steps = 160;
-      for (let i = 0; i < steps; i++) {
-        // simple GBM-ish: biased random walk
-        y += (Math.sin(seed + i * 0.13) * 0.4 + (Math.random() - 0.5)) * 0.6;
-        pts.push({ nx: i / (steps - 1), ny: y });
-      }
-      // normalise y to [-1, 1]
-      const mn = Math.min(...pts.map(p => p.ny));
-      const mx = Math.max(...pts.map(p => p.ny));
-      const range = mx - mn || 1;
-      pts.forEach(p => { p.ny = (p.ny - mn) / range * 2 - 1; });
-      return pts;
-    }
-
-    const priceData = [
-      genPricePath(0),
-      genPricePath(42),
-      genPricePath(87),
+    // ── Palette: amber-gold, jade, terracotta, honey ──
+    const HUES = [
+      { r:185, g:116, b:10  },
+      { r:47,  g:143, b:91  },
+      { r:194, g:96,  b:58  },
+      { r:212, g:160, b:40  },
+    ];
+    const HUES_DK = [
+      { r:232, g:169, b:58 },
+      { r:69,  g:192, b:126 },
+      { r:224, g:120, b:92 },
+      { r:240, g:200, b:90 },
     ];
 
-    function drawGrid() {
-      const W = cv.width, H = cv.height;
-      const dk = dark();
+    // ── Ribbons: flowing bands of liquidity ──
+    const RIBBONS = 5;
+    const ribbons = Array.from({ length: RIBBONS }, (_, i) => ({
+      hue:    i % 4,
+      yBase:  0.16 + i * 0.17,
+      amp:    0.05 + Math.random()*0.06,
+      len:    1.6 + Math.random()*0.9,
+      phase:  Math.random() * Math.PI*2,
+      drift:  0.00010 + Math.random()*0.00012,
+      band:   34 + Math.random()*46,
+      tilt:   (Math.random()-0.5) * 0.10,
+    }));
 
-      // Gradient background (subtle radial) — warm amber/charcoal tones
-      const grad = ctx.createRadialGradient(W/2, H * 0.3, 0, W/2, H * 0.3, W * 0.7);
+    // ── Gold-dust motes drifting upward ──
+    const MOTES = 46;
+    const motes = Array.from({ length: MOTES }, () => ({
+      x: Math.random(), y: Math.random(),
+      r: 0.6 + Math.random()*1.8,
+      vy: 0.00006 + Math.random()*0.00012,
+      vx: (Math.random()-0.5)*0.00008,
+      tw: Math.random()*Math.PI*2,
+      tws: 0.01 + Math.random()*0.02,
+      hue: Math.floor(Math.random()*4),
+    }));
+
+    function drawRibbon(rb, pal) {
+      const c    = pal[rb.hue];
+      const yA   = rb.yBase * H;
+      const amp  = rb.amp * H;
+      const band = rb.band;
+      const steps = 56;
+
+      const top = [], bot = [];
+      for (let i = 0; i <= steps; i++) {
+        const nx = i / steps;
+        const x  = nx * W;
+        const wob = Math.sin(nx * Math.PI * rb.len + rb.phase)
+                  + 0.45 * Math.sin(nx * Math.PI * rb.len * 2.3 + rb.phase*1.7);
+        const cy = yA + wob * amp + (nx - 0.5) * rb.tilt * H;
+        const taper = Math.sin(nx * Math.PI);
+        const half = band * (0.35 + 0.65 * taper);
+        top.push({ x, y: cy - half });
+        bot.push({ x, y: cy + half });
+      }
+
+      const g = ctx.createLinearGradient(0, 0, W, 0);
+      const aBase = dark() ? 0.16 : 0.11;
+      g.addColorStop(0.0, `rgba(${c.r},${c.g},${c.b},0)`);
+      g.addColorStop(0.5, `rgba(${c.r},${c.g},${c.b},${aBase})`);
+      g.addColorStop(1.0, `rgba(${c.r},${c.g},${c.b},0)`);
+
+      ctx.beginPath();
+      ctx.moveTo(top[0].x, top[0].y);
+      for (let i = 1; i < top.length; i++) ctx.lineTo(top[i].x, top[i].y);
+      for (let i = bot.length - 1; i >= 0; i--) ctx.lineTo(bot[i].x, bot[i].y);
+      ctx.closePath();
+      ctx.fillStyle = g;
+      ctx.fill();
+
+      ctx.beginPath();
+      for (let i = 0; i <= steps; i++) {
+        const cy = (top[i].y + bot[i].y) / 2;
+        if (i === 0) ctx.moveTo(top[i].x, cy); else ctx.lineTo(top[i].x, cy);
+      }
+      const gl = ctx.createLinearGradient(0, 0, W, 0);
+      const lA = dark() ? 0.34 : 0.22;
+      gl.addColorStop(0,   `rgba(${c.r},${c.g},${c.b},0)`);
+      gl.addColorStop(0.5, `rgba(${c.r},${c.g},${c.b},${lA})`);
+      gl.addColorStop(1,   `rgba(${c.r},${c.g},${c.b},0)`);
+      ctx.strokeStyle = gl;
+      ctx.lineWidth = 1.3;
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+    }
+
+    function frame() {
+      const dk  = dark();
+      const pal = dk ? HUES_DK : HUES;
+
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = dk ? '#141109' : '#ffffff';
+      ctx.fillRect(0, 0, W, H);
+
+      const vg = ctx.createRadialGradient(W*0.5, H*0.12, 0, W*0.5, H*0.12, H*0.9);
       if (dk) {
-        grad.addColorStop(0, 'rgba(38,30,16,0.92)');
-        grad.addColorStop(1, 'rgba(20,17,9,0.98)');
+        vg.addColorStop(0, 'rgba(40,32,16,0.55)');
+        vg.addColorStop(1, 'rgba(20,17,9,0)');
       } else {
-        grad.addColorStop(0, 'rgba(252,246,232,0.82)');
-        grad.addColorStop(1, 'rgba(247,244,237,0.94)');
+        vg.addColorStop(0, 'rgba(255,246,225,0.55)');
+        vg.addColorStop(1, 'rgba(255,255,255,0)');
       }
-      ctx.fillStyle = grad;
+      ctx.fillStyle = vg;
       ctx.fillRect(0, 0, W, H);
 
-      // Perspective grid settings
-      const vanishX = W / 2;
-      const vanishY = H * 0.42;   // horizon line
-      const gridBot  = H + 80;
-      const gridL    = -W * 0.2;
-      const gridR    = W * 1.2;
+      ctx.globalCompositeOperation = dk ? 'screen' : 'multiply';
+      ribbons.forEach(rb => { rb.phase += rb.drift; drawRibbon(rb, pal); });
+      ctx.globalCompositeOperation = 'source-over';
 
-      // Grid colour — warm amber
-      const gAlpha = dk ? 0.13 : 0.085;
-      ctx.strokeStyle = `rgba(${dk ? '232,169,58' : '185,116,10'},${gAlpha})`;
-      ctx.lineWidth   = 0.8;
-
-      // Vertical grid lines (converge to vanishing point)
-      for (let c = 0; c <= COLS; c++) {
-        const t  = c / COLS;
-        const bx = gridL + (gridR - gridL) * t;
+      motes.forEach(m => {
+        m.y += -m.vy; m.x += m.vx; m.tw += m.tws;
+        if (m.y < -0.02) { m.y = 1.02; m.x = Math.random(); }
+        if (m.x < -0.02) m.x = 1.02; if (m.x > 1.02) m.x = -0.02;
+        const c = pal[m.hue];
+        const tw = 0.4 + 0.6 * (0.5 + 0.5*Math.sin(m.tw));
+        const a  = (dk ? 0.5 : 0.32) * tw;
         ctx.beginPath();
-        ctx.moveTo(vanishX, vanishY);
-        ctx.lineTo(bx, gridBot);
-        ctx.stroke();
-      }
-
-      // Horizontal grid lines (march toward viewer)
-      for (let r = 0; r <= ROWS; r++) {
-        // normalised depth: 0 = horizon, 1 = viewer
-        const depth = ((r / ROWS) + offset) % 1;
-        // perspective: small at top, large at bottom
-        const perspective = Math.pow(depth, 1.8);
-        const y = vanishY + (gridBot - vanishY) * perspective;
-        if (y < vanishY) continue;
-
-        // x extents narrow toward horizon
-        const xL = vanishX + (gridL - vanishX) * perspective;
-        const xR = vanishX + (gridR - vanishX) * perspective;
-
-        // Fade lines near horizon (depth→0) and at very bottom
-        const fadeTop = Math.min(depth * 6, 1);
-        const fadeBot = depth > 0.9 ? (1 - depth) * 10 : 1;
-        ctx.globalAlpha = gAlpha * fadeTop * fadeBot;
-        ctx.beginPath();
-        ctx.moveTo(xL, y);
-        ctx.lineTo(xR, y);
-        ctx.stroke();
-        ctx.globalAlpha = 1;
-      }
-
-      // Price lines — drawn on the grid "floor"
-      plines.forEach((pl, idx) => {
-        const pts = priceData[idx];
-        const baseY = vanishY + (gridBot - vanishY) * (0.15 + pl.y * 0.7); // vertical strip
-        const amp   = (gridBot - vanishY) * 0.07;  // amplitude of price swing
-
-        // Only draw the "revealed so far" portion
-        const revealEnd = pl.progress;  // 0..1
-
-        ctx.save();
-        ctx.beginPath();
-        // Clip to only the drawn portion of the grid width
-        const clipX0 = vanishX + (gridL - vanishX) * 0.15;
-        const clipX1 = vanishX + (gridR - vanishX) * 0.15;
-        // We'll just draw up to progress across the full grid width
-        const fullW = (vanishX + (gridR - vanishX) * 0.85) - (vanishX + (gridL - vanishX) * 0.85);
-
-        ctx.beginPath();
-        let first = true;
-        for (let i = 0; i < pts.length; i++) {
-          if (pts[i].nx > revealEnd) break;
-          const screenX = (vanishX + (gridL - vanishX) * 0.15) + pts[i].nx * fullW;
-          // Foreshortened y: price line sits at a fixed depth on the grid floor
-          const screenY = baseY + pts[i].ny * amp;
-          if (first) { ctx.moveTo(screenX, screenY); first = false; }
-          else ctx.lineTo(screenX, screenY);
-        }
-
-        const lineAlpha = dk ? 0.38 : 0.24;
-        ctx.strokeStyle = idx === 1
-          ? `rgba(${dk ? '69,192,126' : '47,143,91'},${lineAlpha})`
-          : idx === 2
-            ? `rgba(${dk ? '224,104,92' : '194,69,58'},${lineAlpha * 0.85})`
-            : `rgba(${dk ? '232,169,58' : '185,116,10'},${lineAlpha})`;
-        ctx.lineWidth = 1.4;
-        ctx.lineJoin  = 'round';
-        ctx.stroke();
-        ctx.restore();
-
-        // advance progress; recycle
-        pl.progress += pl.speed;
-        if (pl.progress > 1) {
-          pl.progress = 0;
-          // regenerate path on recycle for variety
-          priceData[idx] = genPricePath(Math.random() * 200);
-        }
+        ctx.arc(m.x*W, m.y*H, m.r, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(${c.r},${c.g},${c.b},${a})`;
+        ctx.fill();
       });
-
-      // Subtle glow at vanishing point
-      const vgrad = ctx.createRadialGradient(vanishX, vanishY, 0, vanishX, vanishY, W * 0.25);
-      vgrad.addColorStop(0, dk ? 'rgba(232,169,58,0.09)' : 'rgba(185,116,10,0.06)');
-      vgrad.addColorStop(1, 'transparent');
-      ctx.fillStyle = vgrad;
-      ctx.fillRect(0, 0, W, H);
     }
 
     let raf;
-    function loop() {
-      offset = (offset + SPEED) % 1;
-      drawGrid();
-      raf = requestAnimationFrame(loop);
-    }
+    function loop() { frame(); raf = requestAnimationFrame(loop); }
     loop();
 
     document.addEventListener('visibilitychange', () => {
