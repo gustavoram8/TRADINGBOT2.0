@@ -943,161 +943,136 @@
        ════════════════════════════════════════ -->
   <script>
   // ─────────────────────────────────────────
-  //  Background: "Liquidity Flow"
-  //  — silk ribbons of capital that stream and
-  //    undulate across a clean white canvas,
-  //    layered with drifting gold-dust motes.
-  //    Original, premium, calm — built for
-  //    Trader Acelerator, nothing borrowed.
+  //  Background: "Market Currents"
+  //  Multi-timeframe trend lines (slow/mid/fast)
+  //  with mouse-attraction + drifting AI data nodes.
+  //  Concept by Gemini, adapted for Trader Acelerator.
   // ─────────────────────────────────────────
   (function () {
     const cv  = document.getElementById('bg-canvas');
     const ctx = cv.getContext('2d');
     const dark = () => document.body.classList.contains('dark');
 
-    let W, H, DPR;
+    let W, H;
     function resize() {
-      DPR = Math.min(window.devicePixelRatio || 1, 2);
-      W = innerWidth; H = innerHeight;
-      cv.width = W * DPR; cv.height = H * DPR;
-      cv.style.width = W + 'px'; cv.style.height = H + 'px';
-      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      W = cv.width  = window.innerWidth;
+      H = cv.height = window.innerHeight;
     }
     resize();
     window.addEventListener('resize', resize, { passive: true });
 
-    // ── Palette: amber-gold, jade, terracotta, honey ──
-    const HUES = [
-      { r:185, g:116, b:10  },
-      { r:47,  g:143, b:91  },
-      { r:194, g:96,  b:58  },
-      { r:212, g:160, b:40  },
-    ];
-    const HUES_DK = [
-      { r:232, g:169, b:58 },
-      { r:69,  g:192, b:126 },
-      { r:224, g:120, b:92 },
-      { r:240, g:200, b:90 },
-    ];
+    // ── Palette ──────────────────────────────────────
+    const C = {
+      dark:  { amber:'232,169,58', jade:'52,211,153', terra:'248,113,113' },
+      light: { amber:'185,116,10', jade:'16,145,100', terra:'194,69,58'   },
+    };
+    function pal(key) { return dark() ? C.dark[key] : C.light[key]; }
 
-    // ── Ribbons: flowing bands of liquidity ──
-    const RIBBONS = 5;
-    const ribbons = Array.from({ length: RIBBONS }, (_, i) => ({
-      hue:    i % 4,
-      yBase:  0.16 + i * 0.17,
-      amp:    0.05 + Math.random()*0.06,
-      len:    1.6 + Math.random()*0.9,
-      phase:  Math.random() * Math.PI*2,
-      drift:  0.00010 + Math.random()*0.00012,
-      band:   34 + Math.random()*46,
-      tilt:   (Math.random()-0.5) * 0.10,
-    }));
+    // ── Mouse tracking (smoothed) ─────────────────────
+    let mouse = { x: undefined, y: undefined, tx: undefined, ty: undefined };
+    window.addEventListener('mousemove', e => { mouse.tx = e.clientX; mouse.ty = e.clientY; }, { passive:true });
 
-    // ── Gold-dust motes drifting upward ──
-    const MOTES = 46;
-    const motes = Array.from({ length: MOTES }, () => ({
-      x: Math.random(), y: Math.random(),
-      r: 0.6 + Math.random()*1.8,
-      vy: 0.00006 + Math.random()*0.00012,
-      vx: (Math.random()-0.5)*0.00008,
-      tw: Math.random()*Math.PI*2,
-      tws: 0.01 + Math.random()*0.02,
-      hue: Math.floor(Math.random()*4),
-    }));
-
-    function drawRibbon(rb, pal) {
-      const c    = pal[rb.hue];
-      const yA   = rb.yBase * H;
-      const amp  = rb.amp * H;
-      const band = rb.band;
-      const steps = 56;
-
-      const top = [], bot = [];
-      for (let i = 0; i <= steps; i++) {
-        const nx = i / steps;
-        const x  = nx * W;
-        const wob = Math.sin(nx * Math.PI * rb.len + rb.phase)
-                  + 0.45 * Math.sin(nx * Math.PI * rb.len * 2.3 + rb.phase*1.7);
-        const cy = yA + wob * amp + (nx - 0.5) * rb.tilt * H;
-        const taper = Math.sin(nx * Math.PI);
-        const half = band * (0.35 + 0.65 * taper);
-        top.push({ x, y: cy - half });
-        bot.push({ x, y: cy + half });
+    // ── Trend lines (macro / mid / micro) ────────────
+    class TrendLine {
+      constructor(yOffset, speed, amplitude, color, lw) {
+        this.yOffset = yOffset;
+        this.speed = speed;
+        this.amplitude = amplitude;
+        this.color = color;
+        this.lw = lw;
+        this.time = Math.random() * 100;
       }
-
-      const g = ctx.createLinearGradient(0, 0, W, 0);
-      const aBase = dark() ? 0.16 : 0.11;
-      g.addColorStop(0.0, `rgba(${c.r},${c.g},${c.b},0)`);
-      g.addColorStop(0.5, `rgba(${c.r},${c.g},${c.b},${aBase})`);
-      g.addColorStop(1.0, `rgba(${c.r},${c.g},${c.b},0)`);
-
-      ctx.beginPath();
-      ctx.moveTo(top[0].x, top[0].y);
-      for (let i = 1; i < top.length; i++) ctx.lineTo(top[i].x, top[i].y);
-      for (let i = bot.length - 1; i >= 0; i--) ctx.lineTo(bot[i].x, bot[i].y);
-      ctx.closePath();
-      ctx.fillStyle = g;
-      ctx.fill();
-
-      ctx.beginPath();
-      for (let i = 0; i <= steps; i++) {
-        const cy = (top[i].y + bot[i].y) / 2;
-        if (i === 0) ctx.moveTo(top[i].x, cy); else ctx.lineTo(top[i].x, cy);
-      }
-      const gl = ctx.createLinearGradient(0, 0, W, 0);
-      const lA = dark() ? 0.34 : 0.22;
-      gl.addColorStop(0,   `rgba(${c.r},${c.g},${c.b},0)`);
-      gl.addColorStop(0.5, `rgba(${c.r},${c.g},${c.b},${lA})`);
-      gl.addColorStop(1,   `rgba(${c.r},${c.g},${c.b},0)`);
-      ctx.strokeStyle = gl;
-      ctx.lineWidth = 1.3;
-      ctx.lineJoin = 'round';
-      ctx.stroke();
-    }
-
-    function frame() {
-      const dk  = dark();
-      const pal = dk ? HUES_DK : HUES;
-
-      ctx.clearRect(0, 0, W, H);
-      ctx.fillStyle = dk ? '#141109' : '#ffffff';
-      ctx.fillRect(0, 0, W, H);
-
-      const vg = ctx.createRadialGradient(W*0.5, H*0.12, 0, W*0.5, H*0.12, H*0.9);
-      if (dk) {
-        vg.addColorStop(0, 'rgba(40,32,16,0.55)');
-        vg.addColorStop(1, 'rgba(20,17,9,0)');
-      } else {
-        vg.addColorStop(0, 'rgba(255,246,225,0.55)');
-        vg.addColorStop(1, 'rgba(255,255,255,0)');
-      }
-      ctx.fillStyle = vg;
-      ctx.fillRect(0, 0, W, H);
-
-      ctx.globalCompositeOperation = dk ? 'screen' : 'multiply';
-      ribbons.forEach(rb => { rb.phase += rb.drift; drawRibbon(rb, pal); });
-      ctx.globalCompositeOperation = 'source-over';
-
-      motes.forEach(m => {
-        m.y += -m.vy; m.x += m.vx; m.tw += m.tws;
-        if (m.y < -0.02) { m.y = 1.02; m.x = Math.random(); }
-        if (m.x < -0.02) m.x = 1.02; if (m.x > 1.02) m.x = -0.02;
-        const c = pal[m.hue];
-        const tw = 0.4 + 0.6 * (0.5 + 0.5*Math.sin(m.tw));
-        const a  = (dk ? 0.5 : 0.32) * tw;
+      draw() {
+        this.time += this.speed;
+        if (mouse.tx !== undefined) {
+          if (mouse.x === undefined) { mouse.x = mouse.tx; mouse.y = mouse.ty; }
+          mouse.x += (mouse.tx - mouse.x) * 0.05;
+          mouse.y += (mouse.ty - mouse.y) * 0.05;
+        }
+        const dk = dark();
+        const baseAlpha = dk ? 0.18 : 0.13;
         ctx.beginPath();
-        ctx.arc(m.x*W, m.y*H, m.r, 0, Math.PI*2);
-        ctx.fillStyle = `rgba(${c.r},${c.g},${c.b},${a})`;
-        ctx.fill();
-      });
+        ctx.lineWidth = this.lw;
+        ctx.strokeStyle = `rgba(${pal(this.color)},${baseAlpha})`;
+        ctx.lineJoin = 'round';
+        for (let x = 0; x <= W; x += 8) {
+          let y = H * this.yOffset
+                + Math.sin(x * 0.003 + this.time) * this.amplitude
+                + Math.sin(x * 0.010 + this.time * 0.5) * (this.amplitude * 0.3);
+          if (mouse.x !== undefined) {
+            const dist = Math.abs(x - mouse.x);
+            if (dist < 280) {
+              const force = (280 - dist) / 280;
+              y += (mouse.y - y) * force * 0.18;
+            }
+          }
+          x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        // subtle glow pass
+        ctx.lineWidth = this.lw + 3;
+        ctx.strokeStyle = `rgba(${pal(this.color)},${baseAlpha * 0.3})`;
+        ctx.stroke();
+      }
     }
 
+    const lines = [
+      new TrendLine(0.40, 0.0015, 72, 'amber', 1.4),   // macro — slow, wide
+      new TrendLine(0.50, 0.0040, 48, 'jade',  1.2),   // mid
+      new TrendLine(0.58, 0.0070, 28, 'amber', 1.0),   // micro — fast, tight
+      new TrendLine(0.32, 0.0025, 55, 'terra', 1.0),   // extra macro high
+      new TrendLine(0.68, 0.0055, 35, 'jade',  1.0),   // extra micro low
+    ];
+
+    // ── Data-node particles (AI signal dots) ─────────
+    class DataNode {
+      constructor(preplace) {
+        this.init(preplace);
+      }
+      init(preplace) {
+        this.x     = preplace ? Math.random() * W : 0;
+        this.y     = H * (0.22 + Math.random() * 0.56);
+        this.speed = 0.4 + Math.random() * 1.4;
+        this.size  = 0.8 + Math.random() * 1.6;
+        this.color = Math.random() > 0.55 ? 'amber' : (Math.random() > 0.5 ? 'jade' : 'terra');
+        this.baseY = this.y;
+        this.wfreq = 0.015 + Math.random() * 0.012;
+        this.wamp  = 8 + Math.random() * 14;
+        this.phase = Math.random() * Math.PI * 2;
+      }
+      update() {
+        this.x += this.speed;
+        this.y = this.baseY + Math.sin(this.x * this.wfreq + this.phase) * this.wamp;
+        if (this.x > W + 4) this.init(false);
+      }
+      draw() {
+        const a = dark() ? 0.45 : 0.30;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${pal(this.color)},${a})`;
+        ctx.fill();
+      }
+    }
+
+    const nodes = Array.from({ length: 28 }, () => new DataNode(true));
+
+    // ── Animation loop ────────────────────────────────
     let raf;
-    function loop() { frame(); raf = requestAnimationFrame(loop); }
-    loop();
+    function frame() {
+      const dk = dark();
+      // Trail effect instead of full clear — gives flowing motion
+      ctx.fillStyle = dk ? 'rgba(20,17,9,0.12)' : 'rgba(255,255,255,0.12)';
+      ctx.fillRect(0, 0, W, H);
+
+      lines.forEach(l => l.draw());
+      nodes.forEach(n => { n.update(); n.draw(); });
+
+      raf = requestAnimationFrame(frame);
+    }
+    frame();
 
     document.addEventListener('visibilitychange', () => {
-      if (document.hidden) cancelAnimationFrame(raf); else loop();
+      if (document.hidden) cancelAnimationFrame(raf); else frame();
     });
   })();
 
