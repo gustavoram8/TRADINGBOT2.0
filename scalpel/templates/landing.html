@@ -20,45 +20,137 @@
       --flash:      rgba(37, 99, 235, 0.14);
       --logo-mix:   multiply;
       --logo-filt:  none;
+      --card-bg:    rgba(255, 255, 255, 0.72);
+      --card-bd:    rgba(19, 21, 31, 0.08);
+      --card-sh:    rgba(19, 21, 31, 0.06);
+      --hair:       rgba(19, 21, 31, 0.08);
+      --blob1:      rgba(37, 99, 235, 0.14);
+      --blob2:      rgba(16, 185, 129, 0.12);
+      --blob3:      rgba(168, 85, 247, 0.10);
+      --dot:        rgba(19, 21, 31, 0.05);
+      --chart:      rgba(37, 99, 235, 0.16);
+      --chip-bg:    rgba(37, 99, 235, 0.07);
+      --chip-bd:    rgba(37, 99, 235, 0.16);
     }
     /* ── Dark mode (only when user previously chose it) ── */
     body.dark {
       --bg:         #0c0e14;
       --bg2:        #11141d;
       --text:       #d4d8ec;
-      --muted:      #636882;
+      --muted:      #8b90a8;
       --accent:     #5b8ef0;
       --accent-h:   #4a7de8;
       --shadow:     rgba(91, 142, 240, 0.26);
       --flash:      rgba(160, 200, 255, 0.18);
       --logo-mix:   lighten;
       --logo-filt:  invert(1);
+      --card-bg:    rgba(24, 28, 40, 0.55);
+      --card-bd:    rgba(255, 255, 255, 0.07);
+      --card-sh:    rgba(0, 0, 0, 0.35);
+      --hair:       rgba(255, 255, 255, 0.07);
+      --blob1:      rgba(91, 142, 240, 0.18);
+      --blob2:      rgba(16, 185, 129, 0.14);
+      --blob3:      rgba(168, 85, 247, 0.15);
+      --dot:        rgba(255, 255, 255, 0.05);
+      --chart:      rgba(120, 170, 255, 0.18);
+      --chip-bg:    rgba(91, 142, 240, 0.10);
+      --chip-bd:    rgba(91, 142, 240, 0.22);
     }
 
-    html, body { height: 100%; }
+    html { scroll-behavior: smooth; }
+    html, body { height: auto; }
 
     body {
-      background: radial-gradient(1200px 700px at 50% -5%, var(--bg2), var(--bg) 60%);
+      background: var(--bg);
       color: var(--text);
       font-family: 'Inter', sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
       min-height: 100dvh;
-      padding: 40px 24px 90px;
-      text-align: center;
-      overflow: hidden;
       -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
     }
 
-    /* ── Language selector ── */
+    /* ══════════ Decorative animated background (fixed behind all) ══════════ */
+    .bg-deco {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      overflow: hidden;
+      pointer-events: none;
+      background: radial-gradient(1200px 700px at 50% -8%, var(--bg2), var(--bg) 60%);
+    }
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(70px);
+      will-change: transform;
+    }
+    .blob.b1 {
+      width: 46vw; height: 46vw;
+      background: var(--blob1);
+      top: -10vw; left: -8vw;
+      animation: float1 22s ease-in-out infinite;
+    }
+    .blob.b2 {
+      width: 40vw; height: 40vw;
+      background: var(--blob2);
+      bottom: -12vw; right: -6vw;
+      animation: float2 26s ease-in-out infinite;
+    }
+    .blob.b3 {
+      width: 34vw; height: 34vw;
+      background: var(--blob3);
+      top: 38%; left: 52%;
+      animation: float3 30s ease-in-out infinite;
+    }
+    @keyframes float1 {
+      0%,100% { transform: translate(0,0) scale(1); }
+      50%     { transform: translate(6vw, 5vw) scale(1.12); }
+    }
+    @keyframes float2 {
+      0%,100% { transform: translate(0,0) scale(1); }
+      50%     { transform: translate(-7vw, -4vw) scale(1.08); }
+    }
+    @keyframes float3 {
+      0%,100% { transform: translate(-50%, 0) scale(1); }
+      50%     { transform: translate(-58%, -6vw) scale(1.15); }
+    }
+    /* faint dot-grid */
+    .bg-deco::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(var(--dot) 1px, transparent 1px);
+      background-size: 30px 30px;
+      mask-image: radial-gradient(ellipse 90% 80% at 50% 30%, #000 30%, transparent 80%);
+      -webkit-mask-image: radial-gradient(ellipse 90% 80% at 50% 30%, #000 30%, transparent 80%);
+    }
+    /* drifting line-chart motif */
+    .bg-chart {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0.9;
+    }
+    .bg-chart svg { width: 100%; height: 100%; }
+    .bg-chart path {
+      fill: none;
+      stroke: var(--chart);
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 14 10;
+      animation: dashDrift 38s linear infinite;
+    }
+    @keyframes dashDrift { to { stroke-dashoffset: -480; } }
+
+    /* ══════════ Language selector (fixed) ══════════ */
     .lang-sel {
       position: fixed;
       top: 18px; right: 20px;
       display: flex;
       gap: 4px;
-      z-index: 10;
+      z-index: 30;
       opacity: 0;
       animation: fadeDown 0.4s ease 0.3s forwards;
     }
@@ -70,23 +162,31 @@
       padding: 5px 9px;
       border-radius: 8px;
       border: 1px solid transparent;
-      background: transparent;
+      background: rgba(127,127,127,0.04);
       color: var(--muted);
       cursor: pointer;
+      backdrop-filter: blur(6px);
       transition: color 0.15s, background 0.15s, border-color 0.15s;
     }
     .lang-btn:hover { color: var(--text); }
     .lang-btn.active {
       color: var(--accent);
-      background: rgba(37,99,235,0.08);
-      border-color: rgba(37,99,235,0.20);
-    }
-    body.dark .lang-btn.active {
-      background: rgba(91,142,240,0.12);
-      border-color: rgba(91,142,240,0.25);
+      background: var(--chip-bg);
+      border-color: var(--chip-bd);
     }
 
-    /* ── Logo ── */
+    /* ══════════ HERO (section 1) ══════════ */
+    .hero {
+      position: relative;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 64px 24px 96px;
+    }
+
     .logo-wrap {
       margin-bottom: 22px;
       opacity: 0;
@@ -99,13 +199,11 @@
       mix-blend-mode: var(--logo-mix);
     }
 
-    /* ── Brand name block ── */
     #brand-block {
       position: relative;
       line-height: 1;
       margin-bottom: 46px;
     }
-
     .brand-line {
       display: block;
       font-weight: 900;
@@ -116,24 +214,18 @@
     #brand-line1 { color: var(--text); }
     #brand-line2 { color: var(--text); }
 
-    /* Individual letters — built bottom-to-top like a crane raising a building.
-       The letter keeps its layout box (so the word width never shifts) and is
-       revealed upward via clip-path, one after another, quickly. */
     .ltr {
       display: inline-block;
-      clip-path: inset(100% 0 0 0);   /* fully hidden, revealed from the bottom up */
+      clip-path: inset(100% 0 0 0);
       opacity: 0;
       will-change: clip-path, opacity;
       animation: ltrBuild 0.16s ease-out forwards;
     }
-
     @keyframes ltrBuild {
       0%   { clip-path: inset(100% 0 0 0); opacity: 0; }
       12%  { opacity: 1; }
       100% { clip-path: inset(0 0 0 0);   opacity: 1; }
     }
-
-    /* Post-assembly: whole block bounces in with elastic spring */
     #brand-block.assembled {
       animation: blockBounce 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     }
@@ -143,8 +235,6 @@
       68%  { transform: scale(0.965); }
       100% { transform: scale(1); }
     }
-
-    /* Flash burst radial glow */
     .brand-flash {
       position: absolute;
       inset: -28px -44px;
@@ -160,7 +250,6 @@
       100% { opacity: 0; transform: scale(1.5); }
     }
 
-    /* ── Cycling bullet line ── */
     .bullet-row {
       display: flex;
       align-items: center;
@@ -188,7 +277,6 @@
     #bullet.fading  { opacity: 0; }
     #bullet.hook    { color: var(--accent); font-weight: 700; }
 
-    /* ── CTA button ── */
     .cta {
       display: inline-flex;
       align-items: center;
@@ -212,17 +300,226 @@
     }
     .cta svg { width: 16px; height: 16px; }
 
-    /* ── Footer ── */
-    .legal {
-      position: fixed;
-      bottom: 18px; left: 0; right: 0;
+    /* scroll-down hint */
+    .scroll-hint {
+      position: absolute;
+      bottom: 30px; left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 10.5px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      opacity: 0;
+      animation: fadeUp 0.5s ease 2.4s forwards;
+      transition: opacity 0.4s ease;
+    }
+    .scroll-hint.hidden { opacity: 0 !important; }
+    .scroll-mouse {
+      width: 22px; height: 34px;
+      border: 2px solid var(--muted);
+      border-radius: 12px;
+      position: relative;
+      opacity: 0.7;
+    }
+    .scroll-mouse::before {
+      content: '';
+      position: absolute;
+      top: 6px; left: 50%;
+      width: 3px; height: 6px;
+      margin-left: -1.5px;
+      border-radius: 2px;
+      background: var(--muted);
+      animation: wheel 1.6s ease-in-out infinite;
+    }
+    @keyframes wheel {
+      0%   { opacity: 0; transform: translateY(0); }
+      30%  { opacity: 1; }
+      100% { opacity: 0; transform: translateY(10px); }
+    }
+
+    /* ══════════ Generic section layout ══════════ */
+    section.block {
+      position: relative;
+      padding: 110px 24px;
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+    .eyebrow {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+    .h2 {
+      font-size: clamp(28px, 4.6vw, 46px);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.08;
+      margin-bottom: 18px;
+    }
+    .lead {
+      font-size: clamp(15px, 1.9vw, 18px);
+      color: var(--muted);
+      max-width: 640px;
+      line-height: 1.7;
+    }
+    .center { text-align: center; }
+    .center .lead { margin-left: auto; margin-right: auto; }
+
+    /* feature cards */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-top: 52px;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-bd);
+      border-radius: 18px;
+      padding: 30px 28px;
+      text-align: left;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 14px 40px var(--card-sh);
+      transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      border-color: var(--chip-bd);
+      box-shadow: 0 22px 55px var(--card-sh);
+    }
+    .card-ico {
+      width: 46px; height: 46px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--chip-bg);
+      color: var(--accent);
+      margin-bottom: 18px;
+    }
+    .card-ico svg { width: 24px; height: 24px; }
+    .card h3 {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      margin-bottom: 9px;
+    }
+    .card p {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    /* steps */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+      margin-top: 54px;
+      counter-reset: step;
+    }
+    .step { text-align: left; position: relative; }
+    .step-n {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 17px;
+      color: #fff;
+      background: var(--accent);
+      box-shadow: 0 8px 22px var(--shadow);
+      margin-bottom: 18px;
+    }
+    .step h3 { font-size: 17px; font-weight: 800; margin-bottom: 8px; }
+    .step p  { font-size: 14px; color: var(--muted); line-height: 1.65; }
+
+    /* methodology chips */
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 11px;
+      margin-top: 40px;
+      justify-content: center;
+    }
+    .chip {
+      font-size: 13.5px;
+      font-weight: 700;
+      padding: 10px 18px;
+      border-radius: 999px;
+      background: var(--chip-bg);
+      border: 1px solid var(--chip-bd);
+      color: var(--text);
+    }
+
+    /* stats strip */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 56px;
+      border-top: 1px solid var(--hair);
+      border-bottom: 1px solid var(--hair);
+      padding: 40px 0;
+    }
+    .stat .num {
+      font-size: clamp(30px, 5vw, 46px);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .stat .lbl {
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    /* final CTA panel */
+    .cta-panel {
+      max-width: 880px;
+      margin: 40px auto 0;
+      padding: 64px 40px;
+      border-radius: 26px;
+      text-align: center;
+      background:
+        radial-gradient(600px 300px at 50% 0%, var(--chip-bg), transparent 70%),
+        var(--card-bg);
+      border: 1px solid var(--card-bd);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 24px 70px var(--card-sh);
+    }
+    .cta-panel .h2 { margin-bottom: 14px; }
+    .cta-panel .lead { margin: 0 auto 32px; }
+
+    /* footer */
+    .site-foot {
+      text-align: center;
+      padding: 40px 24px 56px;
+      border-top: 1px solid var(--hair);
+    }
+    .site-foot .legal {
       font-size: 10px;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--muted);
-      opacity: 0.45;
-      pointer-events: none;
+      opacity: 0.6;
     }
+
+    /* scroll-reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.in { opacity: 1; transform: none; }
+    .reveal.d1 { transition-delay: 0.08s; }
+    .reveal.d2 { transition-delay: 0.16s; }
+    .reveal.d3 { transition-delay: 0.24s; }
 
     @keyframes fadeDown {
       from { opacity: 0; transform: translateY(-10px); }
@@ -233,18 +530,27 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* Respect reduced-motion preference */
     @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
       .ltr             { animation: none !important; opacity: 1 !important; clip-path: none !important; }
       #brand-block.assembled { animation: none !important; }
       .brand-flash     { display: none; }
-      .logo-wrap, .bullet-row, .cta { animation: none !important; opacity: 1 !important; }
+      .logo-wrap, .bullet-row, .cta, .scroll-hint, .lang-sel { animation: none !important; opacity: 1 !important; }
+      .blob, .bg-chart path, .scroll-mouse::before { animation: none !important; }
+      .reveal { opacity: 1 !important; transform: none !important; }
     }
 
+    @media (max-width: 760px) {
+      .grid  { grid-template-columns: 1fr; }
+      .steps { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: 1fr; gap: 30px; }
+      section.block { padding: 84px 22px; }
+    }
     @media (max-width: 480px) {
       .brand-line { font-size: clamp(38px, 11vw, 54px); }
       #bullet     { font-size: 13px; max-width: 88vw; }
       .cta        { padding: 15px 38px; font-size: 14.5px; }
+      .cta-panel  { padding: 48px 24px; }
     }
   </style>
 </head>
@@ -258,6 +564,19 @@
     })();
   </script>
 
+  <!-- Decorative animated background -->
+  <div class="bg-deco" aria-hidden="true">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+  </div>
+  <div class="bg-chart" aria-hidden="true">
+    <svg viewBox="0 0 1440 900" preserveAspectRatio="none">
+      <path d="M-40 620 L120 560 L260 600 L400 470 L540 520 L700 360 L860 410 L1020 250 L1180 300 L1340 150 L1500 200" />
+      <path d="M-40 780 L160 740 L320 760 L480 660 L640 700 L800 580 L960 620 L1120 500 L1280 540 L1480 430" opacity="0.6" />
+    </svg>
+  </div>
+
   <!-- Language selector -->
   <div class="lang-sel" id="lang-sel">
     <button class="lang-btn" data-lang="en">EN</button>
@@ -266,36 +585,160 @@
     <button class="lang-btn" data-lang="pt">PT</button>
   </div>
 
-  <!-- Logo -->
-  <div class="logo-wrap">
-    <img src="/static/logo.png" alt="Trader Acelerator" class="logo-img"
-         onerror="this.style.display='none';" />
-  </div>
+  <!-- ══════════ HERO ══════════ -->
+  <header class="hero">
+    <div class="logo-wrap">
+      <img src="/static/logo.png" alt="Trader Acelerator" class="logo-img"
+           onerror="this.style.display='none';" />
+    </div>
 
-  <!-- Animated brand name -->
-  <div id="brand-block" aria-label="Trader Acelerator">
-    <div class="brand-flash" id="brand-flash"></div>
-    <span class="brand-line" id="brand-line1" aria-hidden="true"></span>
-    <span class="brand-line" id="brand-line2" aria-hidden="true"></span>
-  </div>
+    <div id="brand-block" aria-label="Trader Acelerator">
+      <div class="brand-flash" id="brand-flash"></div>
+      <span class="brand-line" id="brand-line1" aria-hidden="true"></span>
+      <span class="brand-line" id="brand-line2" aria-hidden="true"></span>
+    </div>
 
-  <!-- Cycling feature tagline -->
-  <div class="bullet-row">
-    <div class="bullet-dot"></div>
-    <span id="bullet"></span>
-  </div>
+    <div class="bullet-row">
+      <div class="bullet-dot"></div>
+      <span id="bullet"></span>
+    </div>
 
-  <!-- CTA -->
-  <a href="/login" class="cta">
-    <span id="cta-label">Enter</span>
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-         stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <line x1="5" y1="12" x2="19" y2="12"/>
-      <polyline points="12 5 19 12 12 19"/>
-    </svg>
-  </a>
+    <a href="/login" class="cta">
+      <span id="cta-label">Enter</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="5" y1="12" x2="19" y2="12"/>
+        <polyline points="12 5 19 12 12 19"/>
+      </svg>
+    </a>
 
-  <p class="legal" id="legal-note">Trader Acelerator · For educational purposes only</p>
+    <div class="scroll-hint" id="scroll-hint">
+      <div class="scroll-mouse"></div>
+      <span data-t="scrollHint">Scroll to explore</span>
+    </div>
+  </header>
+
+  <!-- ══════════ SECTION 2 — Intro statement ══════════ -->
+  <section class="block center">
+    <div class="eyebrow reveal" data-t="s1_eyebrow">The platform</div>
+    <h2 class="h2 reveal d1" data-t="s1_title">Trade with structure, not guesswork</h2>
+    <p class="lead reveal d2" data-t="s1_body">Trader Acelerator turns every screenshot into structured feedback, sharpens your edge across any methodology, and surrounds you with serious traders — all in one place.</p>
+
+    <div class="stats">
+      <div class="stat reveal">
+        <div class="num" data-t="stat1_n">4+</div>
+        <div class="lbl" data-t="stat1_l">Trading methodologies</div>
+      </div>
+      <div class="stat reveal d1">
+        <div class="num" data-t="stat2_n">24/7</div>
+        <div class="lbl" data-t="stat2_l">AI-assisted analysis</div>
+      </div>
+      <div class="stat reveal d2">
+        <div class="num" data-t="stat3_n">100%</div>
+        <div class="lbl" data-t="stat3_l">Focused on your growth</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ SECTION 3 — Features ══════════ -->
+  <section class="block">
+    <div class="center">
+      <div class="eyebrow reveal" data-t="s2_eyebrow">What you get</div>
+      <h2 class="h2 reveal d1" data-t="s2_title">Everything to accelerate your edge</h2>
+    </div>
+    <div class="grid">
+      <div class="card reveal">
+        <div class="card-ico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-4 4 3 5-7"/></svg>
+        </div>
+        <h3 data-t="f1_t">Trade Analysis</h3>
+        <p data-t="f1_b">Upload a screenshot and receive structured, methodology-aware feedback on your entries, exits and risk.</p>
+      </div>
+      <div class="card reveal d1">
+        <div class="card-ico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <h3 data-t="f2_t">Trading Community</h3>
+        <p data-t="f2_b">A moderated forum of serious traders — share setups, debate ideas and grow alongside people who take this seriously.</p>
+      </div>
+      <div class="card reveal d2">
+        <div class="card-ico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+        </div>
+        <h3 data-t="f3_t">Knowledge & Certificate</h3>
+        <p data-t="f3_b">Test your understanding with structured quizzes and earn a certificate that reflects real comprehension.</p>
+      </div>
+      <div class="card reveal d3">
+        <div class="card-ico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>
+        </div>
+        <h3 data-t="f4_t">Any Methodology</h3>
+        <p data-t="f4_b">ICT, classic patterns, quant, statistical deviation and more — the platform adapts to how you actually trade.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ SECTION 4 — How it works ══════════ -->
+  <section class="block">
+    <div class="center">
+      <div class="eyebrow reveal" data-t="s3_eyebrow">How it works</div>
+      <h2 class="h2 reveal d1" data-t="s3_title">Three steps to a sharper edge</h2>
+    </div>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step-n">1</div>
+        <h3 data-t="st1_t">Capture your trade</h3>
+        <p data-t="st1_b">Screenshot any setup from your platform and upload it in seconds.</p>
+      </div>
+      <div class="step reveal d1">
+        <div class="step-n">2</div>
+        <h3 data-t="st2_t">Get structured feedback</h3>
+        <p data-t="st2_b">Receive a clear breakdown tied to your chosen methodology — what worked, what didn't, and why.</p>
+      </div>
+      <div class="step reveal d2">
+        <div class="step-n">3</div>
+        <h3 data-t="st3_t">Refine and repeat</h3>
+        <p data-t="st3_b">Track patterns over time, close your gaps and compound your improvement.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ SECTION 5 — Methodologies ══════════ -->
+  <section class="block center">
+    <div class="eyebrow reveal" data-t="s4_eyebrow">Built for every style</div>
+    <h2 class="h2 reveal d1" data-t="s4_title">One platform, every approach</h2>
+    <p class="lead reveal d2" data-t="s4_body">Whatever framework you trade, Trader Acelerator speaks your language.</p>
+    <div class="chips reveal d2">
+      <span class="chip">ICT</span>
+      <span class="chip">Smart Money</span>
+      <span class="chip">Price Action</span>
+      <span class="chip">Classic Patterns</span>
+      <span class="chip">Quant</span>
+      <span class="chip">Statistical Deviation</span>
+      <span class="chip">Supply &amp; Demand</span>
+      <span class="chip">Order Flow</span>
+    </div>
+  </section>
+
+  <!-- ══════════ SECTION 6 — Final CTA ══════════ -->
+  <section class="block">
+    <div class="cta-panel reveal">
+      <h2 class="h2" data-t="cta_title">Ready to accelerate?</h2>
+      <p class="lead" data-t="cta_body">Create your account and start turning every trade into a lesson today.</p>
+      <a href="/login" class="cta" style="animation:none;opacity:1;">
+        <span data-t="cta_btn">Get started</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"/>
+          <polyline points="12 5 19 12 12 19"/>
+        </svg>
+      </a>
+    </div>
+  </section>
+
+  <footer class="site-foot">
+    <p class="legal" id="legal-note">Trader Acelerator · For educational purposes only</p>
+  </footer>
 
   <script>
     // ── Language: saved preference → browser locale → 'en' ──
@@ -321,6 +764,32 @@
         ],
         cta:   'Enter',
         legal: 'Trader Acelerator · For educational purposes only',
+        t: {
+          scrollHint: 'Scroll to explore',
+          s1_eyebrow: 'The platform',
+          s1_title: 'Trade with structure, not guesswork',
+          s1_body: 'Trader Acelerator turns every screenshot into structured feedback, sharpens your edge across any methodology, and surrounds you with serious traders — all in one place.',
+          stat1_n: '4+', stat1_l: 'Trading methodologies',
+          stat2_n: '24/7', stat2_l: 'AI-assisted analysis',
+          stat3_n: '100%', stat3_l: 'Focused on your growth',
+          s2_eyebrow: 'What you get',
+          s2_title: 'Everything to accelerate your edge',
+          f1_t: 'Trade Analysis', f1_b: 'Upload a screenshot and receive structured, methodology-aware feedback on your entries, exits and risk.',
+          f2_t: 'Trading Community', f2_b: 'A moderated forum of serious traders — share setups, debate ideas and grow alongside people who take this seriously.',
+          f3_t: 'Knowledge & Certificate', f3_b: 'Test your understanding with structured quizzes and earn a certificate that reflects real comprehension.',
+          f4_t: 'Any Methodology', f4_b: 'ICT, classic patterns, quant, statistical deviation and more — the platform adapts to how you actually trade.',
+          s3_eyebrow: 'How it works',
+          s3_title: 'Three steps to a sharper edge',
+          st1_t: 'Capture your trade', st1_b: 'Screenshot any setup from your platform and upload it in seconds.',
+          st2_t: 'Get structured feedback', st2_b: "Receive a clear breakdown tied to your chosen methodology — what worked, what didn't, and why.",
+          st3_t: 'Refine and repeat', st3_b: 'Track patterns over time, close your gaps and compound your improvement.',
+          s4_eyebrow: 'Built for every style',
+          s4_title: 'One platform, every approach',
+          s4_body: 'Whatever framework you trade, Trader Acelerator speaks your language.',
+          cta_title: 'Ready to accelerate?',
+          cta_body: 'Create your account and start turning every trade into a lesson today.',
+          cta_btn: 'Get started',
+        },
       },
       es: {
         bullets: [
@@ -332,6 +801,32 @@
         ],
         cta:   'Entrar',
         legal: 'Trader Acelerator · Solo con fines educativos',
+        t: {
+          scrollHint: 'Desliza para explorar',
+          s1_eyebrow: 'La plataforma',
+          s1_title: 'Opera con estructura, no con suposiciones',
+          s1_body: 'Trader Acelerator convierte cada captura en retroalimentación estructurada, afina tu ventaja en cualquier metodología y te rodea de traders serios — todo en un solo lugar.',
+          stat1_n: '4+', stat1_l: 'Metodologías de trading',
+          stat2_n: '24/7', stat2_l: 'Análisis asistido por IA',
+          stat3_n: '100%', stat3_l: 'Enfocado en tu crecimiento',
+          s2_eyebrow: 'Lo que obtienes',
+          s2_title: 'Todo para acelerar tu ventaja',
+          f1_t: 'Análisis de operaciones', f1_b: 'Sube una captura y recibe retroalimentación estructurada y acorde a tu metodología sobre entradas, salidas y riesgo.',
+          f2_t: 'Comunidad de trading', f2_b: 'Un foro moderado de traders serios — comparte setups, debate ideas y crece junto a gente que se lo toma en serio.',
+          f3_t: 'Conocimiento y certificado', f3_b: 'Pon a prueba tu comprensión con cuestionarios estructurados y obtén un certificado que refleja conocimiento real.',
+          f4_t: 'Cualquier metodología', f4_b: 'ICT, patrones clásicos, quant, desviación estadística y más — la plataforma se adapta a cómo operas realmente.',
+          s3_eyebrow: 'Cómo funciona',
+          s3_title: 'Tres pasos hacia una ventaja más afilada',
+          st1_t: 'Captura tu operación', st1_b: 'Haz una captura de cualquier setup de tu plataforma y súbela en segundos.',
+          st2_t: 'Recibe feedback estructurado', st2_b: 'Obtén un desglose claro ligado a tu metodología — qué funcionó, qué no y por qué.',
+          st3_t: 'Refina y repite', st3_b: 'Sigue tus patrones en el tiempo, cierra tus brechas y acumula tu mejora.',
+          s4_eyebrow: 'Hecho para cada estilo',
+          s4_title: 'Una plataforma, cada enfoque',
+          s4_body: 'Sea cual sea tu marco de trabajo, Trader Acelerator habla tu idioma.',
+          cta_title: '¿Listo para acelerar?',
+          cta_body: 'Crea tu cuenta y empieza a convertir cada operación en una lección hoy mismo.',
+          cta_btn: 'Comenzar',
+        },
       },
       fr: {
         bullets: [
@@ -343,6 +838,32 @@
         ],
         cta:   'Accéder',
         legal: 'Trader Acelerator · À des fins éducatives uniquement',
+        t: {
+          scrollHint: 'Faites défiler pour explorer',
+          s1_eyebrow: 'La plateforme',
+          s1_title: 'Tradez avec structure, pas au hasard',
+          s1_body: "Trader Acelerator transforme chaque capture en feedback structuré, affine votre edge sur toute méthodologie et vous entoure de traders sérieux — le tout au même endroit.",
+          stat1_n: '4+', stat1_l: 'Méthodologies de trading',
+          stat2_n: '24/7', stat2_l: 'Analyse assistée par IA',
+          stat3_n: '100%', stat3_l: 'Axé sur votre progression',
+          s2_eyebrow: 'Ce que vous obtenez',
+          s2_title: 'Tout pour accélérer votre edge',
+          f1_t: 'Analyse de trades', f1_b: 'Téléversez une capture et recevez un feedback structuré, adapté à votre méthodologie, sur vos entrées, sorties et risque.',
+          f2_t: 'Communauté de trading', f2_b: 'Un forum modéré de traders sérieux — partagez vos setups, débattez et progressez avec des gens engagés.',
+          f3_t: 'Savoir & certificat', f3_b: 'Testez votre compréhension avec des quiz structurés et obtenez un certificat qui reflète un vrai savoir.',
+          f4_t: 'Toute méthodologie', f4_b: 'ICT, figures classiques, quant, déviation statistique et plus — la plateforme s\'adapte à votre façon de trader.',
+          s3_eyebrow: 'Comment ça marche',
+          s3_title: 'Trois étapes vers un edge affûté',
+          st1_t: 'Capturez votre trade', st1_b: "Faites une capture de n'importe quel setup et téléversez-la en quelques secondes.",
+          st2_t: 'Recevez un feedback structuré', st2_b: 'Obtenez une analyse claire liée à votre méthodologie — ce qui a marché, ce qui n\'a pas marché et pourquoi.',
+          st3_t: 'Affinez et répétez', st3_b: 'Suivez vos schémas dans le temps, comblez vos lacunes et cumulez vos progrès.',
+          s4_eyebrow: 'Conçu pour chaque style',
+          s4_title: 'Une plateforme, toutes les approches',
+          s4_body: 'Quel que soit votre cadre, Trader Acelerator parle votre langage.',
+          cta_title: 'Prêt à accélérer ?',
+          cta_body: 'Créez votre compte et commencez dès aujourd\'hui à faire de chaque trade une leçon.',
+          cta_btn: 'Commencer',
+        },
       },
       pt: {
         bullets: [
@@ -354,6 +875,32 @@
         ],
         cta:   'Entrar',
         legal: 'Trader Acelerator · Apenas para fins educativos',
+        t: {
+          scrollHint: 'Role para explorar',
+          s1_eyebrow: 'A plataforma',
+          s1_title: 'Opere com estrutura, não com palpites',
+          s1_body: 'O Trader Acelerator transforma cada captura em feedback estruturado, afia sua vantagem em qualquer metodologia e te cerca de traders sérios — tudo em um só lugar.',
+          stat1_n: '4+', stat1_l: 'Metodologias de trading',
+          stat2_n: '24/7', stat2_l: 'Análise assistida por IA',
+          stat3_n: '100%', stat3_l: 'Focado no seu crescimento',
+          s2_eyebrow: 'O que você recebe',
+          s2_title: 'Tudo para acelerar sua vantagem',
+          f1_t: 'Análise de operações', f1_b: 'Envie uma captura e receba feedback estruturado e alinhado à sua metodologia sobre entradas, saídas e risco.',
+          f2_t: 'Comunidade de trading', f2_b: 'Um fórum moderado de traders sérios — compartilhe setups, debata ideias e cresça ao lado de quem leva isso a sério.',
+          f3_t: 'Conhecimento e certificado', f3_b: 'Teste seu entendimento com quizzes estruturados e conquiste um certificado que reflete conhecimento real.',
+          f4_t: 'Qualquer metodologia', f4_b: 'ICT, padrões clássicos, quant, desvio estatístico e mais — a plataforma se adapta a como você realmente opera.',
+          s3_eyebrow: 'Como funciona',
+          s3_title: 'Três passos para uma vantagem mais afiada',
+          st1_t: 'Capture sua operação', st1_b: 'Faça uma captura de qualquer setup da sua plataforma e envie em segundos.',
+          st2_t: 'Receba feedback estruturado', st2_b: 'Receba uma análise clara ligada à sua metodologia — o que funcionou, o que não funcionou e por quê.',
+          st3_t: 'Refine e repita', st3_b: 'Acompanhe seus padrões ao longo do tempo, feche suas lacunas e acumule sua evolução.',
+          s4_eyebrow: 'Feito para cada estilo',
+          s4_title: 'Uma plataforma, toda abordagem',
+          s4_body: 'Seja qual for seu método, o Trader Acelerator fala a sua língua.',
+          cta_title: 'Pronto para acelerar?',
+          cta_body: 'Crie sua conta e comece a transformar cada operação em uma lição hoje mesmo.',
+          cta_btn: 'Começar',
+        },
       },
     };
 
@@ -363,7 +910,13 @@
       document.documentElement.lang = code;
       document.getElementById('cta-label').textContent  = C.cta;
       document.getElementById('legal-note').textContent = C.legal;
-      // Update active button
+      // Section copy via data-t
+      const dict = C.t || {};
+      document.querySelectorAll('[data-t]').forEach(el => {
+        const k = el.getAttribute('data-t');
+        if (dict[k] !== undefined) el.textContent = dict[k];
+      });
+      // Active language button
       document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.lang === code);
       });
@@ -372,11 +925,9 @@
 
     let C = applyLang(lang);
 
-    // ── Letter-by-letter "construction" animation ──
-    // Each letter is raised bottom-to-top, one finishing before the next starts
-    // (crane building an edifice), fast.
-    const STEP_MS = 100;  // sequential stagger between letters
-    const ANIM_MS = 160;  // matches CSS .ltr animation duration
+    // ── Letter-by-letter "construction" animation (unchanged) ──
+    const STEP_MS = 100;
+    const ANIM_MS = 160;
 
     function buildLine(elId, word, startIdx) {
       const el = document.getElementById(elId);
@@ -393,10 +944,8 @@
     buildLine('brand-line1', W1, 0);
     buildLine('brand-line2', W2, W1.length);
 
-    // When the last letter finishes landing → elastic bounce + glow burst
     const lastStart = (W1.length + W2.length - 1) * STEP_MS;
     const buildEnd  = lastStart + ANIM_MS + 35;
-
     setTimeout(() => {
       document.getElementById('brand-block').classList.add('assembled');
       document.getElementById('brand-flash').classList.add('burst');
@@ -409,7 +958,6 @@
       lang = btn.dataset.lang;
       try { localStorage.setItem('scalpel_lang', lang); } catch(e) {}
       C = applyLang(lang);
-      // Immediately show the current bullet in the new language
       bulletEl.classList.add('fading');
       setTimeout(() => { bi = bi % C.bullets.length; showBullet(bi); }, 280);
     });
@@ -425,7 +973,6 @@
       bulletEl.textContent = C.bullets[idx];
       bulletEl.classList.toggle('hook', idx === C.bullets.length - 1);
     }
-
     function nextBullet() {
       bulletEl.classList.add('fading');
       setTimeout(() => {
@@ -433,12 +980,24 @@
         showBullet(bi);
       }, FADE_MS);
     }
-
-    // Start cycling shortly after the CTA fades in
     setTimeout(() => {
       showBullet(0);
       setInterval(nextBullet, HOLD_MS);
     }, 2100);
+
+    // ── Scroll-reveal via IntersectionObserver ──
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(en => {
+        if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+      });
+    }, { threshold: 0.16, rootMargin: '0px 0px -8% 0px' });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+    // ── Hide scroll hint once the user scrolls ──
+    const hint = document.getElementById('scroll-hint');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 60) hint.classList.add('hidden');
+    }, { passive: true });
   </script>
 </body>
 </html>
