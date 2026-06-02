@@ -8,165 +8,86 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ── Light mode (default) ── */
+    /* ── Tokens ── */
     :root {
-      --bg:         #f6f7fb;
-      --bg2:        #ffffff;
-      --text:       #13151f;
-      --muted:      #6b7186;
-      --accent:     #2563eb;
-      --accent-h:   #1d4ed8;
-      --shadow:     rgba(37, 99, 235, 0.26);
-      --flash:      rgba(37, 99, 235, 0.14);
-      --logo-mix:   multiply;
-      --logo-filt:  none;
-      --card-bg:    rgba(255, 255, 255, 0.72);
-      --card-bd:    rgba(19, 21, 31, 0.08);
-      --card-sh:    rgba(19, 21, 31, 0.06);
-      --hair:       rgba(19, 21, 31, 0.08);
-      --blob1:      rgba(37, 99, 235, 0.14);
-      --blob2:      rgba(16, 185, 129, 0.12);
-      --blob3:      rgba(168, 85, 247, 0.10);
-      --dot:        rgba(19, 21, 31, 0.05);
-      --chart:      rgba(37, 99, 235, 0.16);
-      --chip-bg:    rgba(37, 99, 235, 0.07);
-      --chip-bd:    rgba(37, 99, 235, 0.16);
+      --bg:        #f9fafb;
+      --bg2:       #ffffff;
+      --text:      #0f1117;
+      --muted:     #6b7280;
+      --accent:    #1a56db;
+      --accent-h:  #1447b0;
+      --bull:      #16a34a;
+      --bear:      #dc2626;
+      --shadow:    rgba(26,86,219,0.22);
+      --flash:     rgba(26,86,219,0.13);
+      --hair:      rgba(15,17,23,0.08);
+      --card-bg:   rgba(255,255,255,0.82);
+      --card-bd:   rgba(15,17,23,0.09);
+      --card-sh:   rgba(15,17,23,0.05);
+      --chip-bg:   rgba(26,86,219,0.07);
+      --chip-bd:   rgba(26,86,219,0.18);
+      --logo-mix:  multiply;
+      --logo-filt: none;
     }
-    /* ── Dark mode (only when user previously chose it) ── */
     body.dark {
-      --bg:         #0c0e14;
-      --bg2:        #11141d;
-      --text:       #d4d8ec;
-      --muted:      #8b90a8;
-      --accent:     #5b8ef0;
-      --accent-h:   #4a7de8;
-      --shadow:     rgba(91, 142, 240, 0.26);
-      --flash:      rgba(160, 200, 255, 0.18);
-      --logo-mix:   lighten;
-      --logo-filt:  invert(1);
-      --card-bg:    rgba(24, 28, 40, 0.55);
-      --card-bd:    rgba(255, 255, 255, 0.07);
-      --card-sh:    rgba(0, 0, 0, 0.35);
-      --hair:       rgba(255, 255, 255, 0.07);
-      --blob1:      rgba(91, 142, 240, 0.18);
-      --blob2:      rgba(16, 185, 129, 0.14);
-      --blob3:      rgba(168, 85, 247, 0.15);
-      --dot:        rgba(255, 255, 255, 0.05);
-      --chart:      rgba(120, 170, 255, 0.18);
-      --chip-bg:    rgba(91, 142, 240, 0.10);
-      --chip-bd:    rgba(91, 142, 240, 0.22);
+      --bg:        #0b0d14;
+      --bg2:       #10131e;
+      --text:      #e2e4f0;
+      --muted:     #8b90a8;
+      --accent:    #5b8ef0;
+      --accent-h:  #4a7de8;
+      --bull:      #22c55e;
+      --bear:      #ef4444;
+      --shadow:    rgba(91,142,240,0.24);
+      --flash:     rgba(160,200,255,0.17);
+      --hair:      rgba(255,255,255,0.07);
+      --card-bg:   rgba(22,26,40,0.70);
+      --card-bd:   rgba(255,255,255,0.08);
+      --card-sh:   rgba(0,0,0,0.40);
+      --chip-bg:   rgba(91,142,240,0.10);
+      --chip-bd:   rgba(91,142,240,0.24);
+      --logo-mix:  lighten;
+      --logo-filt: invert(1);
     }
 
     html { scroll-behavior: smooth; }
-    html, body { height: auto; }
-
     body {
       background: var(--bg);
       color: var(--text);
       font-family: 'Inter', sans-serif;
-      min-height: 100dvh;
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
     }
 
-    /* ══════════ Decorative animated background (fixed behind all) ══════════ */
-    .bg-deco {
+    /* ══════════ Floating candlestick canvas (background) ══════════ */
+    #candle-bg {
       position: fixed;
       inset: 0;
-      z-index: -2;
-      overflow: hidden;
+      z-index: 0;
       pointer-events: none;
-      background: radial-gradient(1200px 700px at 50% -8%, var(--bg2), var(--bg) 60%);
     }
-    .blob {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(70px);
-      will-change: transform;
-    }
-    .blob.b1 {
-      width: 46vw; height: 46vw;
-      background: var(--blob1);
-      top: -10vw; left: -8vw;
-      animation: float1 22s ease-in-out infinite;
-    }
-    .blob.b2 {
-      width: 40vw; height: 40vw;
-      background: var(--blob2);
-      bottom: -12vw; right: -6vw;
-      animation: float2 26s ease-in-out infinite;
-    }
-    .blob.b3 {
-      width: 34vw; height: 34vw;
-      background: var(--blob3);
-      top: 38%; left: 52%;
-      animation: float3 30s ease-in-out infinite;
-    }
-    @keyframes float1 {
-      0%,100% { transform: translate(0,0) scale(1); }
-      50%     { transform: translate(6vw, 5vw) scale(1.12); }
-    }
-    @keyframes float2 {
-      0%,100% { transform: translate(0,0) scale(1); }
-      50%     { transform: translate(-7vw, -4vw) scale(1.08); }
-    }
-    @keyframes float3 {
-      0%,100% { transform: translate(-50%, 0) scale(1); }
-      50%     { transform: translate(-58%, -6vw) scale(1.15); }
-    }
-    /* faint dot-grid */
-    .bg-deco::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image: radial-gradient(var(--dot) 1px, transparent 1px);
-      background-size: 30px 30px;
-      mask-image: radial-gradient(ellipse 90% 80% at 50% 30%, #000 30%, transparent 80%);
-      -webkit-mask-image: radial-gradient(ellipse 90% 80% at 50% 30%, #000 30%, transparent 80%);
-    }
-    /* drifting line-chart motif */
-    .bg-chart {
-      position: fixed;
-      inset: 0;
-      z-index: -1;
-      pointer-events: none;
-      opacity: 0.9;
-    }
-    .bg-chart svg { width: 100%; height: 100%; }
-    .bg-chart path {
-      fill: none;
-      stroke: var(--chart);
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      stroke-dasharray: 14 10;
-      animation: dashDrift 38s linear infinite;
-    }
-    @keyframes dashDrift { to { stroke-dashoffset: -480; } }
 
-    /* ══════════ Language selector (fixed) ══════════ */
+    /* ══════════ Language selector ══════════ */
     .lang-sel {
       position: fixed;
       top: 18px; right: 20px;
-      display: flex;
-      gap: 4px;
+      display: flex; gap: 4px;
       z-index: 30;
       opacity: 0;
       animation: fadeDown 0.4s ease 0.3s forwards;
     }
     .lang-btn {
       font-family: 'Inter', sans-serif;
-      font-size: 11px;
-      font-weight: 700;
+      font-size: 11px; font-weight: 700;
       letter-spacing: 0.06em;
       padding: 5px 9px;
       border-radius: 8px;
       border: 1px solid transparent;
-      background: rgba(127,127,127,0.04);
+      background: rgba(127,127,127,0.05);
       color: var(--muted);
       cursor: pointer;
       backdrop-filter: blur(6px);
-      transition: color 0.15s, background 0.15s, border-color 0.15s;
+      transition: color .15s, background .15s, border-color .15s;
     }
     .lang-btn:hover { color: var(--text); }
     .lang-btn.active {
@@ -175,9 +96,10 @@
       border-color: var(--chip-bd);
     }
 
-    /* ══════════ HERO (section 1) ══════════ */
+    /* ══════════ HERO ══════════ */
     .hero {
       position: relative;
+      z-index: 1;
       min-height: 100dvh;
       display: flex;
       flex-direction: column;
@@ -187,18 +109,21 @@
       padding: 64px 24px 96px;
     }
 
+    /* Logo — isolated so mix-blend only affects the image itself */
     .logo-wrap {
       margin-bottom: 22px;
       opacity: 0;
       animation: fadeDown 0.45s ease 0.05s forwards;
+      isolation: isolate;
     }
     .logo-img {
-      height: 76px;
-      width: auto;
+      height: 76px; width: auto;
+      display: block;
       filter: var(--logo-filt);
       mix-blend-mode: var(--logo-mix);
     }
 
+    /* Brand name */
     #brand-block {
       position: relative;
       line-height: 1;
@@ -210,10 +135,8 @@
       letter-spacing: -0.035em;
       white-space: nowrap;
       font-size: clamp(46px, 9.5vw, 96px);
+      color: var(--text);
     }
-    #brand-line1 { color: var(--text); }
-    #brand-line2 { color: var(--text); }
-
     .ltr {
       display: inline-block;
       clip-path: inset(100% 0 0 0);
@@ -227,7 +150,7 @@
       100% { clip-path: inset(0 0 0 0);   opacity: 1; }
     }
     #brand-block.assembled {
-      animation: blockBounce 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      animation: blockBounce 0.55s cubic-bezier(0.34,1.56,0.64,1) forwards;
     }
     @keyframes blockBounce {
       0%   { transform: scale(1); }
@@ -245,17 +168,15 @@
     }
     .brand-flash.burst { animation: flashOut 0.7s ease-out forwards; }
     @keyframes flashOut {
-      0%   { opacity: 0; transform: scale(0.7); }
-      18%  { opacity: 1; transform: scale(1); }
-      100% { opacity: 0; transform: scale(1.5); }
+      0%   { opacity:0; transform:scale(0.7); }
+      18%  { opacity:1; transform:scale(1); }
+      100% { opacity:0; transform:scale(1.5); }
     }
 
+    /* Cycling bullet */
     .bullet-row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      gap: 10px; height: 28px;
       margin-bottom: 46px;
       opacity: 0;
       animation: fadeUp 0.4s ease 1.75s forwards;
@@ -265,298 +186,392 @@
       background: var(--accent); opacity: 0.65; flex: none;
     }
     #bullet {
-      font-size: 14.5px;
-      font-weight: 500;
-      color: var(--muted);
-      transition: opacity 0.28s ease, color 0.28s ease, font-weight 0.28s ease;
+      font-size: 14.5px; font-weight: 500; color: var(--muted);
+      transition: opacity .28s ease, color .28s ease, font-weight .28s ease;
       white-space: nowrap;
-      max-width: min(480px, 80vw);
-      overflow: hidden;
-      text-overflow: ellipsis;
+      max-width: min(480px,80vw);
+      overflow: hidden; text-overflow: ellipsis;
     }
-    #bullet.fading  { opacity: 0; }
-    #bullet.hook    { color: var(--accent); font-weight: 700; }
+    #bullet.fading { opacity: 0; }
+    #bullet.hook   { color: var(--accent); font-weight: 700; }
 
-    .cta {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
+    /* CTA */
+    .cta-hero {
+      display: inline-flex; align-items: center; gap: 10px;
       padding: 16px 54px;
-      font-size: 15.5px;
-      font-weight: 700;
-      background: var(--accent);
-      color: #fff;
-      border-radius: 14px;
-      text-decoration: none;
+      font-size: 15.5px; font-weight: 700;
+      background: var(--accent); color: #fff;
+      border-radius: 14px; text-decoration: none;
       box-shadow: 0 8px 30px var(--shadow);
-      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+      transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
       opacity: 0;
       animation: fadeUp 0.4s ease 1.95s forwards;
     }
-    .cta:hover {
+    .cta-hero:hover {
       background: var(--accent-h);
       transform: translateY(-2px);
       box-shadow: 0 14px 40px var(--shadow);
     }
-    .cta svg { width: 16px; height: 16px; }
+    .cta-hero svg { width: 16px; height: 16px; }
 
-    /* scroll-down hint */
+    /* Scroll hint */
     .scroll-hint {
       position: absolute;
-      bottom: 30px; left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 7px;
+      bottom: 30px; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 7px;
       color: var(--muted);
-      font-size: 10.5px;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
+      font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase;
       opacity: 0;
       animation: fadeUp 0.5s ease 2.4s forwards;
-      transition: opacity 0.4s ease;
+      transition: opacity .4s ease;
     }
     .scroll-hint.hidden { opacity: 0 !important; }
     .scroll-mouse {
       width: 22px; height: 34px;
       border: 2px solid var(--muted);
-      border-radius: 12px;
-      position: relative;
-      opacity: 0.7;
+      border-radius: 12px; position: relative; opacity: .7;
     }
     .scroll-mouse::before {
-      content: '';
-      position: absolute;
+      content: ''; position: absolute;
       top: 6px; left: 50%;
-      width: 3px; height: 6px;
-      margin-left: -1.5px;
-      border-radius: 2px;
-      background: var(--muted);
+      width: 3px; height: 6px; margin-left: -1.5px;
+      border-radius: 2px; background: var(--muted);
       animation: wheel 1.6s ease-in-out infinite;
     }
     @keyframes wheel {
-      0%   { opacity: 0; transform: translateY(0); }
-      30%  { opacity: 1; }
-      100% { opacity: 0; transform: translateY(10px); }
+      0%   { opacity:0; transform:translateY(0); }
+      30%  { opacity:1; }
+      100% { opacity:0; transform:translateY(10px); }
     }
 
-    /* ══════════ Generic section layout ══════════ */
+    /* ══════════ Sections ══════════ */
     section.block {
-      position: relative;
-      padding: 110px 24px;
-      max-width: 1120px;
+      position: relative; z-index: 1;
+      padding: 108px 24px;
+      max-width: 1140px;
       margin: 0 auto;
     }
+    section.block.full { max-width: 100%; padding-left: 0; padding-right: 0; }
+
+    /* section divider */
+    .section-rule {
+      position: relative; z-index: 1;
+      max-width: 1140px; margin: 0 auto;
+      border: none;
+      border-top: 1px solid var(--hair);
+    }
+
     .eyebrow {
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 16px;
+      font-size: 12px; font-weight: 800;
+      letter-spacing: .2em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 16px;
     }
     .h2 {
-      font-size: clamp(28px, 4.6vw, 46px);
-      font-weight: 900;
-      letter-spacing: -0.03em;
-      line-height: 1.08;
+      font-size: clamp(26px,4.4vw,44px);
+      font-weight: 900; letter-spacing: -.03em; line-height: 1.1;
       margin-bottom: 18px;
     }
     .lead {
-      font-size: clamp(15px, 1.9vw, 18px);
-      color: var(--muted);
+      font-size: clamp(15px,1.8vw,17.5px);
+      color: var(--muted); line-height: 1.75;
       max-width: 640px;
-      line-height: 1.7;
     }
     .center { text-align: center; }
-    .center .lead { margin-left: auto; margin-right: auto; }
+    .center .lead { margin: 0 auto; }
 
-    /* feature cards */
-    .grid {
+    /* ── Stats strip ── */
+    .stats {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
-      margin-top: 52px;
+      grid-template-columns: repeat(3,1fr);
+      gap: 0;
+      margin-top: 60px;
     }
-    .card {
+    .stat {
+      padding: 36px 28px;
+      border-top: 1px solid var(--hair);
+      border-bottom: 1px solid var(--hair);
+    }
+    .stat + .stat { border-left: 1px solid var(--hair); }
+    .stat .num {
+      font-size: clamp(32px,5vw,50px);
+      font-weight: 900; letter-spacing: -.03em;
+      color: var(--accent); line-height: 1;
+    }
+    .stat .lbl {
+      margin-top: 8px; font-size: 13px;
+      color: var(--muted); font-weight: 500;
+    }
+
+    /* ── MAIN TOOL (hero feature) ── */
+    .main-tool {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+    .main-tool-text .eyebrow { margin-bottom: 12px; }
+    .main-tool-text .h2 { margin-bottom: 14px; }
+    .main-tool-text .lead { margin-bottom: 28px; }
+
+    .tool-badge-list {
+      display: flex; flex-wrap: wrap; gap: 10px;
+    }
+    .tool-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12.5px; font-weight: 700;
+      padding: 7px 14px; border-radius: 999px;
+      background: var(--chip-bg);
+      border: 1px solid var(--chip-bd);
+      color: var(--text);
+    }
+    .tool-badge svg { width: 13px; height: 13px; color: var(--accent); }
+
+    /* mock analysis card */
+    .mock-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-bd);
+      border-radius: 20px;
+      padding: 26px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 20px 60px var(--card-sh);
+    }
+    .mock-header {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 18px;
+    }
+    .mock-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .mock-title { font-size: 13px; font-weight: 700; }
+    .mock-label { font-size: 11px; color: var(--muted); margin-bottom: 6px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+    .mock-bar-wrap { background: var(--hair); border-radius: 6px; height: 7px; margin-bottom: 14px; overflow: hidden; }
+    .mock-bar { height: 100%; border-radius: 6px; }
+    .mock-bar.bull { background: var(--bull); }
+    .mock-bar.bear { background: var(--bear); }
+    .mock-bar.mid  { background: var(--accent); }
+    .mock-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .mock-tag {
+      font-size: 11px; font-weight: 700;
+      padding: 4px 10px; border-radius: 6px;
+    }
+    .mock-tag.g { background: rgba(22,163,74,.12); color: var(--bull); }
+    .mock-tag.r { background: rgba(220,38,38,.10); color: var(--bear); }
+    .mock-tag.b { background: var(--chip-bg); color: var(--accent); }
+
+    /* ── Tools grid (secondary tools) ── */
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 18px;
+      margin-top: 48px;
+    }
+    .tool-card {
       background: var(--card-bg);
       border: 1px solid var(--card-bd);
       border-radius: 18px;
-      padding: 30px 28px;
-      text-align: left;
+      padding: 26px 24px;
       backdrop-filter: blur(10px);
-      box-shadow: 0 14px 40px var(--card-sh);
-      transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+      box-shadow: 0 12px 36px var(--card-sh);
+      transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+      position: relative;
     }
-    .card:hover {
-      transform: translateY(-5px);
+    .tool-card:hover {
+      transform: translateY(-4px);
       border-color: var(--chip-bd);
       box-shadow: 0 22px 55px var(--card-sh);
     }
-    .card-ico {
-      width: 46px; height: 46px;
-      border-radius: 12px;
+    .tool-card .ico {
+      width: 44px; height: 44px; border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      background: var(--chip-bg);
-      color: var(--accent);
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
-    .card-ico svg { width: 24px; height: 24px; }
-    .card h3 {
-      font-size: 18px;
-      font-weight: 800;
-      letter-spacing: -0.01em;
-      margin-bottom: 9px;
+    .tool-card .ico svg { width: 22px; height: 22px; }
+    .ico-blue   { background: rgba(26,86,219,.10); color: var(--accent); }
+    .ico-green  { background: rgba(22,163,74,.12); color: var(--bull); }
+    .ico-amber  { background: rgba(217,119,6,.12); color: #d97706; }
+    .ico-purple { background: rgba(124,58,237,.12); color: #7c3aed; }
+    .ico-teal   { background: rgba(13,148,136,.12); color: #0d9488; }
+    body.dark .ico-amber  { background: rgba(245,158,11,.10); color: #fbbf24; }
+    body.dark .ico-purple { background: rgba(167,139,250,.10); color: #a78bfa; }
+    body.dark .ico-teal   { background: rgba(45,212,191,.10); color: #2dd4bf; }
+    .tool-card h3 { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+    .tool-card p  { font-size: 13.5px; color: var(--muted); line-height: 1.6; }
+    .coming-badge {
+      position: absolute; top: 20px; right: 20px;
+      font-size: 10px; font-weight: 800;
+      letter-spacing: .1em; text-transform: uppercase;
+      padding: 3px 9px; border-radius: 999px;
+      background: rgba(217,119,6,.14);
+      color: #d97706;
+      border: 1px solid rgba(217,119,6,.24);
     }
-    .card p {
-      font-size: 14px;
-      color: var(--muted);
-      line-height: 1.65;
-    }
+    body.dark .coming-badge { background: rgba(245,158,11,.12); color: #fbbf24; border-color: rgba(245,158,11,.22); }
 
-    /* steps */
+    /* ── How it works ── */
     .steps {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(3,1fr);
       gap: 28px;
       margin-top: 54px;
-      counter-reset: step;
     }
-    .step { text-align: left; position: relative; }
+    .step { text-align: left; }
     .step-n {
-      width: 44px; height: 44px;
-      border-radius: 50%;
+      width: 44px; height: 44px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
       font-weight: 900; font-size: 17px;
-      color: #fff;
-      background: var(--accent);
+      color: #fff; background: var(--accent);
       box-shadow: 0 8px 22px var(--shadow);
       margin-bottom: 18px;
     }
     .step h3 { font-size: 17px; font-weight: 800; margin-bottom: 8px; }
     .step p  { font-size: 14px; color: var(--muted); line-height: 1.65; }
 
-    /* methodology chips */
+    /* ── Methodology chips ── */
     .chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 11px;
-      margin-top: 40px;
-      justify-content: center;
+      display: flex; flex-wrap: wrap; gap: 11px;
+      margin-top: 36px; justify-content: center;
     }
     .chip {
-      font-size: 13.5px;
-      font-weight: 700;
-      padding: 10px 18px;
-      border-radius: 999px;
+      font-size: 13.5px; font-weight: 700;
+      padding: 10px 18px; border-radius: 999px;
       background: var(--chip-bg);
       border: 1px solid var(--chip-bd);
       color: var(--text);
     }
 
-    /* stats strip */
-    .stats {
+    /* ── Plans row ── */
+    .plans {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
-      margin-top: 56px;
-      border-top: 1px solid var(--hair);
-      border-bottom: 1px solid var(--hair);
-      padding: 40px 0;
+      grid-template-columns: repeat(3,1fr);
+      gap: 20px;
+      margin-top: 52px;
     }
-    .stat .num {
-      font-size: clamp(30px, 5vw, 46px);
-      font-weight: 900;
-      letter-spacing: -0.03em;
-      color: var(--accent);
-      line-height: 1;
-    }
-    .stat .lbl {
-      margin-top: 8px;
-      font-size: 13px;
-      color: var(--muted);
-      font-weight: 500;
-    }
-
-    /* final CTA panel */
-    .cta-panel {
-      max-width: 880px;
-      margin: 40px auto 0;
-      padding: 64px 40px;
-      border-radius: 26px;
-      text-align: center;
-      background:
-        radial-gradient(600px 300px at 50% 0%, var(--chip-bg), transparent 70%),
-        var(--card-bg);
+    .plan-card {
+      background: var(--card-bg);
       border: 1px solid var(--card-bd);
+      border-radius: 20px;
+      padding: 30px 26px;
       backdrop-filter: blur(10px);
+      box-shadow: 0 12px 36px var(--card-sh);
+      display: flex; flex-direction: column;
+    }
+    .plan-card.featured {
+      border-color: var(--accent);
+      box-shadow: 0 16px 50px var(--shadow);
+    }
+    .plan-name {
+      font-size: 13px; font-weight: 800;
+      letter-spacing: .14em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 14px;
+    }
+    .plan-card.featured .plan-name { color: var(--accent); }
+    .plan-price {
+      font-size: 38px; font-weight: 900; letter-spacing: -.03em;
+      color: var(--text); line-height: 1; margin-bottom: 6px;
+    }
+    .plan-cycle { font-size: 13px; color: var(--muted); margin-bottom: 22px; }
+    .plan-feats { list-style: none; flex: 1; }
+    .plan-feats li {
+      font-size: 13.5px; color: var(--muted);
+      padding: 7px 0;
+      border-bottom: 1px solid var(--hair);
+      display: flex; align-items: center; gap: 9px;
+    }
+    .plan-feats li:last-child { border-bottom: none; }
+    .check { color: var(--bull); font-size: 15px; }
+
+    /* ── Final CTA panel ── */
+    .cta-panel {
+      max-width: 860px; margin: 44px auto 0;
+      padding: 64px 40px;
+      border-radius: 26px; text-align: center;
+      background: var(--card-bg);
+      border: 1px solid var(--card-bd);
+      backdrop-filter: blur(12px);
       box-shadow: 0 24px 70px var(--card-sh);
     }
     .cta-panel .h2 { margin-bottom: 14px; }
     .cta-panel .lead { margin: 0 auto 32px; }
 
+    /* secondary CTA style */
+    .btn-cta {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 16px 50px;
+      font-size: 15.5px; font-weight: 700;
+      background: var(--accent); color: #fff;
+      border-radius: 14px; text-decoration: none;
+      box-shadow: 0 8px 30px var(--shadow);
+      transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+    }
+    .btn-cta:hover {
+      background: var(--accent-h);
+      transform: translateY(-2px);
+      box-shadow: 0 14px 40px var(--shadow);
+    }
+    .btn-cta svg { width: 16px; height: 16px; }
+
     /* footer */
     .site-foot {
+      position: relative; z-index: 1;
       text-align: center;
       padding: 40px 24px 56px;
       border-top: 1px solid var(--hair);
     }
-    .site-foot .legal {
-      font-size: 10px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--muted);
-      opacity: 0.6;
+    .legal {
+      font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--muted); opacity: .6;
     }
 
-    /* scroll-reveal */
+    /* ── Reveal on scroll ── */
     .reveal {
-      opacity: 0;
-      transform: translateY(28px);
-      transition: opacity 0.7s ease, transform 0.7s ease;
+      opacity: 0; transform: translateY(26px);
+      transition: opacity .65s ease, transform .65s ease;
     }
-    .reveal.in { opacity: 1; transform: none; }
-    .reveal.d1 { transition-delay: 0.08s; }
-    .reveal.d2 { transition-delay: 0.16s; }
-    .reveal.d3 { transition-delay: 0.24s; }
+    .reveal.in  { opacity: 1; transform: none; }
+    .reveal.d1  { transition-delay: .09s; }
+    .reveal.d2  { transition-delay: .18s; }
+    .reveal.d3  { transition-delay: .27s; }
+    .reveal.d4  { transition-delay: .36s; }
+    .reveal.d5  { transition-delay: .45s; }
 
     @keyframes fadeDown {
-      from { opacity: 0; transform: translateY(-10px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from { opacity:0; transform:translateY(-10px); }
+      to   { opacity:1; transform:translateY(0); }
     }
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(10px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from { opacity:0; transform:translateY(10px); }
+      to   { opacity:1; transform:translateY(0); }
     }
 
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
-      .ltr             { animation: none !important; opacity: 1 !important; clip-path: none !important; }
-      #brand-block.assembled { animation: none !important; }
-      .brand-flash     { display: none; }
-      .logo-wrap, .bullet-row, .cta, .scroll-hint, .lang-sel { animation: none !important; opacity: 1 !important; }
-      .blob, .bg-chart path, .scroll-mouse::before { animation: none !important; }
+      .ltr, #brand-block.assembled, .brand-flash,
+      .scroll-mouse::before, .lang-sel,
+      .logo-wrap, .bullet-row, .cta-hero, .scroll-hint { animation: none !important; opacity: 1 !important; clip-path: none !important; }
       .reveal { opacity: 1 !important; transform: none !important; }
+      #candle-bg { display: none; }
     }
 
-    @media (max-width: 760px) {
-      .grid  { grid-template-columns: 1fr; }
+    @media (max-width: 900px) {
+      .main-tool { grid-template-columns: 1fr; }
+      .mock-card { display: none; }
+      .tools-grid { grid-template-columns: 1fr 1fr; }
+      .plans { grid-template-columns: 1fr; max-width: 420px; margin-left: auto; margin-right: auto; }
       .steps { grid-template-columns: 1fr; }
-      .stats { grid-template-columns: 1fr; gap: 30px; }
-      section.block { padding: 84px 22px; }
+      .stats { grid-template-columns: 1fr; }
+      .stat + .stat { border-left: none; border-top: 1px solid var(--hair); }
     }
-    @media (max-width: 480px) {
-      .brand-line { font-size: clamp(38px, 11vw, 54px); }
+    @media (max-width: 580px) {
+      .tools-grid { grid-template-columns: 1fr; }
+      section.block { padding: 80px 20px; }
+      .brand-line { font-size: clamp(38px,11vw,54px); }
       #bullet     { font-size: 13px; max-width: 88vw; }
-      .cta        { padding: 15px 38px; font-size: 14.5px; }
-      .cta-panel  { padding: 48px 24px; }
+      .cta-hero   { padding: 15px 38px; font-size: 14.5px; }
+      .cta-panel  { padding: 46px 22px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Apply dark mode before paint — default is LIGHT -->
+  <!-- Apply dark mode BEFORE paint — default is LIGHT -->
   <script>
     (function () {
       try { if (localStorage.getItem('scalpel_theme') === 'dark') document.body.classList.add('dark'); }
@@ -564,18 +579,8 @@
     })();
   </script>
 
-  <!-- Decorative animated background -->
-  <div class="bg-deco" aria-hidden="true">
-    <div class="blob b1"></div>
-    <div class="blob b2"></div>
-    <div class="blob b3"></div>
-  </div>
-  <div class="bg-chart" aria-hidden="true">
-    <svg viewBox="0 0 1440 900" preserveAspectRatio="none">
-      <path d="M-40 620 L120 560 L260 600 L400 470 L540 520 L700 360 L860 410 L1020 250 L1180 300 L1340 150 L1500 200" />
-      <path d="M-40 780 L160 740 L320 760 L480 660 L640 700 L800 580 L960 620 L1120 500 L1280 540 L1480 430" opacity="0.6" />
-    </svg>
-  </div>
+  <!-- ══════════ Floating candlestick background (canvas) ══════════ -->
+  <canvas id="candle-bg" aria-hidden="true"></canvas>
 
   <!-- Language selector -->
   <div class="lang-sel" id="lang-sel">
@@ -603,7 +608,7 @@
       <span id="bullet"></span>
     </div>
 
-    <a href="/login" class="cta">
+    <a href="/login" class="cta-hero">
       <span id="cta-label">Enter</span>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -618,115 +623,240 @@
     </div>
   </header>
 
-  <!-- ══════════ SECTION 2 — Intro statement ══════════ -->
+  <!-- ══════════ S1 — Platform intro + stats ══════════ -->
+  <hr class="section-rule">
   <section class="block center">
     <div class="eyebrow reveal" data-t="s1_eyebrow">The platform</div>
-    <h2 class="h2 reveal d1" data-t="s1_title">Trade with structure, not guesswork</h2>
-    <p class="lead reveal d2" data-t="s1_body">Trader Acelerator turns every screenshot into structured feedback, sharpens your edge across any methodology, and surrounds you with serious traders — all in one place.</p>
-
+    <h2 class="h2 reveal d1" data-t="s1_title">One platform. Every edge you need.</h2>
+    <p class="lead reveal d2" data-t="s1_body">From AI-powered trade reviews to community forums, knowledge certification and beyond — Trader Acelerator brings everything serious traders need into a single, focused space.</p>
     <div class="stats">
       <div class="stat reveal">
-        <div class="num" data-t="stat1_n">4+</div>
-        <div class="lbl" data-t="stat1_l">Trading methodologies</div>
+        <div class="num" data-t="stat1_n">7</div>
+        <div class="lbl" data-t="stat1_l">Specialized tools</div>
       </div>
       <div class="stat reveal d1">
-        <div class="num" data-t="stat2_n">24/7</div>
-        <div class="lbl" data-t="stat2_l">AI-assisted analysis</div>
+        <div class="num" data-t="stat2_n">4+</div>
+        <div class="lbl" data-t="stat2_l">Trading methodologies</div>
       </div>
       <div class="stat reveal d2">
-        <div class="num" data-t="stat3_n">100%</div>
-        <div class="lbl" data-t="stat3_l">Focused on your growth</div>
+        <div class="num" data-t="stat3_n">EN·ES·FR·PT</div>
+        <div class="lbl" data-t="stat3_l">Available languages</div>
       </div>
     </div>
   </section>
 
-  <!-- ══════════ SECTION 3 — Features ══════════ -->
+  <!-- ══════════ S2 — Main feature: Screenshot analysis ══════════ -->
+  <hr class="section-rule">
+  <section class="block">
+    <div class="main-tool">
+      <div class="main-tool-text">
+        <div class="eyebrow reveal" data-t="s2_eyebrow">Core feature</div>
+        <h2 class="h2 reveal d1" data-t="s2_title">AI analysis of your screenshots</h2>
+        <p class="lead reveal d2" data-t="s2_body">Upload any trade screenshot and get a precise, methodology-aware breakdown of your entry, structure, risk management and execution — not generic advice, real feedback calibrated to how you trade.</p>
+        <div class="tool-badge-list reveal d3" style="margin-top:28px;">
+          <span class="tool-badge" data-t="b_ict">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            ICT
+          </span>
+          <span class="tool-badge" data-t="b_pa">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Price Action
+          </span>
+          <span class="tool-badge" data-t="b_quant">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Quant
+          </span>
+          <span class="tool-badge" data-t="b_stdv">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            STDV
+          </span>
+          <span class="tool-badge" data-t="b_smc">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Smart Money
+          </span>
+        </div>
+      </div>
+
+      <!-- Mock analysis card (decorative) -->
+      <div class="mock-card reveal d2">
+        <div class="mock-header">
+          <div class="mock-dot" style="background:var(--bull)"></div>
+          <div class="mock-title" data-t="mock_t">Trade Review — EURUSD 1H</div>
+        </div>
+        <div class="mock-label" data-t="mock_entry">Entry Quality</div>
+        <div class="mock-bar-wrap"><div class="mock-bar bull" style="width:82%"></div></div>
+        <div class="mock-label" data-t="mock_risk">Risk Management</div>
+        <div class="mock-bar-wrap"><div class="mock-bar mid" style="width:67%"></div></div>
+        <div class="mock-label" data-t="mock_exec">Execution</div>
+        <div class="mock-bar-wrap"><div class="mock-bar bull" style="width:91%"></div></div>
+        <div class="mock-label" data-t="mock_gaps">Identified Gaps</div>
+        <div class="mock-bar-wrap"><div class="mock-bar bear" style="width:38%"></div></div>
+        <div class="mock-tags">
+          <span class="mock-tag g" data-t="tag_fvg">FVG confirmed</span>
+          <span class="mock-tag g" data-t="tag_sweep">Liquidity sweep</span>
+          <span class="mock-tag r" data-t="tag_rr">RR &lt; 2:1</span>
+          <span class="mock-tag b" data-t="tag_ict">ICT methodology</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ S3 — All tools ══════════ -->
+  <hr class="section-rule">
   <section class="block">
     <div class="center">
-      <div class="eyebrow reveal" data-t="s2_eyebrow">What you get</div>
-      <h2 class="h2 reveal d1" data-t="s2_title">Everything to accelerate your edge</h2>
+      <div class="eyebrow reveal" data-t="s3_eyebrow">The full toolkit</div>
+      <h2 class="h2 reveal d1" data-t="s3_title">Built tool by tool, for the serious trader</h2>
+      <p class="lead reveal d2" data-t="s3_body">Every feature was designed with one goal: to give you real information that turns into better trades.</p>
     </div>
-    <div class="grid">
-      <div class="card reveal">
-        <div class="card-ico">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-4 4 3 5-7"/></svg>
-        </div>
-        <h3 data-t="f1_t">Trade Analysis</h3>
-        <p data-t="f1_b">Upload a screenshot and receive structured, methodology-aware feedback on your entries, exits and risk.</p>
-      </div>
-      <div class="card reveal d1">
-        <div class="card-ico">
+    <div class="tools-grid">
+      <!-- Forum -->
+      <div class="tool-card reveal">
+        <div class="ico ico-blue">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         </div>
-        <h3 data-t="f2_t">Trading Community</h3>
-        <p data-t="f2_b">A moderated forum of serious traders — share setups, debate ideas and grow alongside people who take this seriously.</p>
+        <h3 data-t="tc_forum_t">Trading Forum</h3>
+        <p data-t="tc_forum_b">Moderated community where traders share real setups, debate ideas and give each other structured feedback — no noise, no hype.</p>
       </div>
-      <div class="card reveal d2">
-        <div class="card-ico">
+      <!-- Quiz + Certificate -->
+      <div class="tool-card reveal d1">
+        <div class="ico ico-amber">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
         </div>
-        <h3 data-t="f3_t">Knowledge & Certificate</h3>
-        <p data-t="f3_b">Test your understanding with structured quizzes and earn a certificate that reflects real comprehension.</p>
+        <h3 data-t="tc_quiz_t">Knowledge Quiz & Certificate</h3>
+        <p data-t="tc_quiz_b">Test your understanding across methodologies. Pass and earn a certificate that reflects real comprehension, not just time in front of charts.</p>
       </div>
-      <div class="card reveal d3">
-        <div class="card-ico">
+      <!-- Scalper board -->
+      <div class="tool-card reveal d2">
+        <div class="ico ico-teal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        </div>
+        <h3 data-t="tc_scalp_t">Scalper Board</h3>
+        <p data-t="tc_scalp_b">A visual planning canvas for organizing your bias, sessions and setups before each trading day — your pre-market ritual, structured.</p>
+      </div>
+      <!-- Synapse AI -->
+      <div class="tool-card reveal d3">
+        <div class="ico ico-purple">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>
         </div>
-        <h3 data-t="f4_t">Any Methodology</h3>
-        <p data-t="f4_b">ICT, classic patterns, quant, statistical deviation and more — the platform adapts to how you actually trade.</p>
+        <h3 data-t="tc_syn_t">Synapse</h3>
+        <p data-t="tc_syn_b">An immersive 3D neural AI visualization that brings markets to life — a unique experience built to train your pattern recognition.</p>
+      </div>
+      <!-- Indicators -->
+      <div class="tool-card reveal d4">
+        <div class="ico ico-green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-4 4 3 5-7"/></svg>
+        </div>
+        <h3 data-t="tc_ind_t">Indicator Store</h3>
+        <p data-t="tc_ind_b">Curated trading indicators built for the methodologies we teach — plug them into your platform and get an edge from day one.</p>
+      </div>
+      <!-- Prop Firm Scout -->
+      <div class="tool-card reveal d5">
+        <div class="ico ico-amber">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <h3 data-t="tc_scout_t">Prop Firm Scout</h3>
+        <p data-t="tc_scout_b">Compare 25+ prop firms side by side — fees, rules, payout structure, country restrictions and an AI advisor to find your best fit.</p>
+        <span class="coming-badge" data-t="coming">Coming soon</span>
       </div>
     </div>
   </section>
 
-  <!-- ══════════ SECTION 4 — How it works ══════════ -->
+  <!-- ══════════ S4 — How it works ══════════ -->
+  <hr class="section-rule">
   <section class="block">
     <div class="center">
-      <div class="eyebrow reveal" data-t="s3_eyebrow">How it works</div>
-      <h2 class="h2 reveal d1" data-t="s3_title">Three steps to a sharper edge</h2>
+      <div class="eyebrow reveal" data-t="s4_eyebrow">How it works</div>
+      <h2 class="h2 reveal d1" data-t="s4_title">From first screenshot to certified trader</h2>
     </div>
     <div class="steps">
       <div class="step reveal">
         <div class="step-n">1</div>
-        <h3 data-t="st1_t">Capture your trade</h3>
-        <p data-t="st1_b">Screenshot any setup from your platform and upload it in seconds.</p>
+        <h3 data-t="st1_t">Create your account</h3>
+        <p data-t="st1_b">Sign up free in seconds. Choose your methodology and preferred language — the platform calibrates to you.</p>
       </div>
       <div class="step reveal d1">
         <div class="step-n">2</div>
-        <h3 data-t="st2_t">Get structured feedback</h3>
-        <p data-t="st2_b">Receive a clear breakdown tied to your chosen methodology — what worked, what didn't, and why.</p>
+        <h3 data-t="st2_t">Submit your trades</h3>
+        <p data-t="st2_b">Upload screenshots, join forum discussions, run through quizzes — every action feeds your development cycle.</p>
       </div>
       <div class="step reveal d2">
         <div class="step-n">3</div>
-        <h3 data-t="st3_t">Refine and repeat</h3>
-        <p data-t="st3_b">Track patterns over time, close your gaps and compound your improvement.</p>
+        <h3 data-t="st3_t">Measure your growth</h3>
+        <p data-t="st3_b">Track patterns over time, close your gaps and earn your certificate when your understanding reaches the next level.</p>
       </div>
     </div>
   </section>
 
-  <!-- ══════════ SECTION 5 — Methodologies ══════════ -->
+  <!-- ══════════ S5 — Methodologies ══════════ -->
+  <hr class="section-rule">
   <section class="block center">
-    <div class="eyebrow reveal" data-t="s4_eyebrow">Built for every style</div>
-    <h2 class="h2 reveal d1" data-t="s4_title">One platform, every approach</h2>
-    <p class="lead reveal d2" data-t="s4_body">Whatever framework you trade, Trader Acelerator speaks your language.</p>
+    <div class="eyebrow reveal" data-t="s5_eyebrow">Built for every style</div>
+    <h2 class="h2 reveal d1" data-t="s5_title">One platform, every approach</h2>
+    <p class="lead reveal d2" data-t="s5_body">Whatever framework you trade, Trader Acelerator speaks your language.</p>
     <div class="chips reveal d2">
       <span class="chip">ICT</span>
-      <span class="chip">Smart Money</span>
+      <span class="chip">Smart Money Concepts</span>
       <span class="chip">Price Action</span>
       <span class="chip">Classic Patterns</span>
-      <span class="chip">Quant</span>
+      <span class="chip">Quantitative</span>
       <span class="chip">Statistical Deviation</span>
       <span class="chip">Supply &amp; Demand</span>
       <span class="chip">Order Flow</span>
     </div>
   </section>
 
-  <!-- ══════════ SECTION 6 — Final CTA ══════════ -->
+  <!-- ══════════ S6 — Plans ══════════ -->
+  <hr class="section-rule">
+  <section class="block center">
+    <div class="eyebrow reveal" data-t="s6_eyebrow">Simple pricing</div>
+    <h2 class="h2 reveal d1" data-t="s6_title">Start free. Scale when you're ready.</h2>
+    <p class="lead reveal d2" data-t="s6_body">No credit card needed to start. Upgrade anytime.</p>
+    <div class="plans">
+      <div class="plan-card reveal">
+        <div class="plan-name">Free</div>
+        <div class="plan-price" data-t="pl_free_price">$0</div>
+        <div class="plan-cycle" data-t="pl_free_cycle">Always free</div>
+        <ul class="plan-feats">
+          <li><span class="check">✓</span><span data-t="pl_free_f1">1 analysis / 7 days</span></li>
+          <li><span class="check">✓</span><span data-t="pl_free_f2">Forum access</span></li>
+          <li><span class="check">✓</span><span data-t="pl_free_f3">Knowledge quiz</span></li>
+          <li><span class="check">✓</span><span data-t="pl_free_f4">Scalper board</span></li>
+        </ul>
+      </div>
+      <div class="plan-card reveal d1">
+        <div class="plan-name">Standard</div>
+        <div class="plan-price" data-t="pl_std_price">$9</div>
+        <div class="plan-cycle" data-t="pl_std_cycle">per month</div>
+        <ul class="plan-feats">
+          <li><span class="check">✓</span><span data-t="pl_std_f1">1 analysis / 24 h</span></li>
+          <li><span class="check">✓</span><span data-t="pl_std_f2">Priority feedback</span></li>
+          <li><span class="check">✓</span><span data-t="pl_std_f3">All free features</span></li>
+        </ul>
+      </div>
+      <div class="plan-card featured reveal d2">
+        <div class="plan-name">Premium</div>
+        <div class="plan-price" data-t="pl_prm_price">$29</div>
+        <div class="plan-cycle" data-t="pl_prm_cycle">per month</div>
+        <ul class="plan-feats">
+          <li><span class="check">✓</span><span data-t="pl_prm_f1">5 analyses / 24 h</span></li>
+          <li><span class="check">✓</span><span data-t="pl_prm_f2">Prop Firm Scout</span></li>
+          <li><span class="check">✓</span><span data-t="pl_prm_f3">Indicator store</span></li>
+          <li><span class="check">✓</span><span data-t="pl_prm_f4">Synapse AI</span></li>
+          <li><span class="check">✓</span><span data-t="pl_prm_f5">Priority support</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ S7 — Final CTA ══════════ -->
+  <hr class="section-rule">
   <section class="block">
     <div class="cta-panel reveal">
       <h2 class="h2" data-t="cta_title">Ready to accelerate?</h2>
-      <p class="lead" data-t="cta_body">Create your account and start turning every trade into a lesson today.</p>
-      <a href="/login" class="cta" style="animation:none;opacity:1;">
-        <span data-t="cta_btn">Get started</span>
+      <p class="lead" data-t="cta_body">Create your free account and start turning every trade into a lesson — today.</p>
+      <a href="/login" class="btn-cta">
+        <span data-t="cta_btn">Get started free</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <line x1="5" y1="12" x2="19" y2="12"/>
@@ -740,183 +870,346 @@
     <p class="legal" id="legal-note">Trader Acelerator · For educational purposes only</p>
   </footer>
 
+  <!-- ══════════ Scripts ══════════ -->
   <script>
-    // ── Language: saved preference → browser locale → 'en' ──
-    const SUPPORTED = ['en', 'es', 'fr', 'pt'];
+    // ──────────────────────────────────────────────────────
+    //  Floating candlestick canvas background
+    // ──────────────────────────────────────────────────────
+    (function () {
+      const cv = document.getElementById('candle-bg');
+      const ctx = cv.getContext('2d');
+      const isDark = () => document.body.classList.contains('dark');
+
+      function resize() {
+        cv.width  = window.innerWidth;
+        cv.height = window.innerHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize, { passive: true });
+
+      // Each candle: x, y, bodyH, wickT, wickB, bull, alpha, speed, w
+      const N = 28;
+      const candles = [];
+
+      function spawn(forceY) {
+        const bull = Math.random() > 0.42;
+        const w    = 10 + Math.random() * 12;       // body width
+        const bodyH = 14 + Math.random() * 28;
+        const wickT = 6 + Math.random() * 20;
+        const wickB = 4 + Math.random() * 14;
+        return {
+          x: Math.random() * window.innerWidth,
+          y: forceY !== undefined ? forceY : window.innerHeight + 80,
+          w, bodyH, wickT, wickB, bull,
+          alpha: 0,
+          targetAlpha: 0.06 + Math.random() * 0.07,
+          speed: 0.18 + Math.random() * 0.28,
+          fadeIn: true,
+          fadeOut: false,
+        };
+      }
+
+      // Spread initial candles across the viewport
+      for (let i = 0; i < N; i++) {
+        const c = spawn();
+        c.y = Math.random() * window.innerHeight;
+        c.alpha = c.targetAlpha * Math.random();
+        candles.push(c);
+      }
+
+      function drawCandle(c) {
+        const dark = isDark();
+        const bullColor = dark ? 'rgba(34,197,94,'  : 'rgba(22,163,74,';
+        const bearColor = dark ? 'rgba(239,68,68,'  : 'rgba(220,38,38,';
+        const col = (c.bull ? bullColor : bearColor) + c.alpha + ')';
+        const cx  = c.x;
+
+        ctx.strokeStyle = col;
+        ctx.lineWidth   = 1.4;
+
+        // Upper wick
+        ctx.beginPath();
+        ctx.moveTo(cx, c.y - c.bodyH / 2 - c.wickT);
+        ctx.lineTo(cx, c.y - c.bodyH / 2);
+        ctx.stroke();
+
+        // Lower wick
+        ctx.beginPath();
+        ctx.moveTo(cx, c.y + c.bodyH / 2);
+        ctx.lineTo(cx, c.y + c.bodyH / 2 + c.wickB);
+        ctx.stroke();
+
+        // Body
+        ctx.fillStyle = col;
+        ctx.beginPath();
+        ctx.roundRect(cx - c.w / 2, c.y - c.bodyH / 2, c.w, c.bodyH, 2);
+        ctx.fill();
+      }
+
+      let raf;
+      function loop() {
+        ctx.clearRect(0, 0, cv.width, cv.height);
+        candles.forEach((c, i) => {
+          // Drift up
+          c.y -= c.speed;
+
+          // Fade in near bottom
+          if (c.fadeIn) {
+            c.alpha = Math.min(c.alpha + 0.0012, c.targetAlpha);
+            if (c.alpha >= c.targetAlpha) c.fadeIn = false;
+          }
+
+          // Start fading out when near top
+          const topThresh = cv.height * 0.18;
+          if (!c.fadeOut && c.y < topThresh) c.fadeOut = true;
+          if (c.fadeOut) c.alpha = Math.max(0, c.alpha - 0.0018);
+
+          // Recycle
+          if (c.y < -80 || c.alpha <= 0) {
+            candles[i] = spawn();
+          } else {
+            drawCandle(c);
+          }
+        });
+        raf = requestAnimationFrame(loop);
+      }
+      loop();
+
+      // Pause when tab is hidden (perf)
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) cancelAnimationFrame(raf);
+        else loop();
+      });
+    })();
+
+    // ──────────────────────────────────────────────────────
+    //  i18n
+    // ──────────────────────────────────────────────────────
+    const SUPPORTED = ['en','es','fr','pt'];
     function detectLang() {
       try { const s = localStorage.getItem('scalpel_lang'); if (SUPPORTED.includes(s)) return s; } catch(e) {}
-      const raw = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
-      if (raw.startsWith('es')) return 'es';
-      if (raw.startsWith('fr')) return 'fr';
-      if (raw.startsWith('pt')) return 'pt';
-      return 'en';
+      const raw = (navigator.language || 'en').toLowerCase();
+      return raw.startsWith('es') ? 'es' : raw.startsWith('fr') ? 'fr' : raw.startsWith('pt') ? 'pt' : 'en';
     }
     let lang = detectLang();
 
     const I18N = {
       en: {
         bullets: [
-          'Analyze your trades with structured feedback',
+          'Analyze your trades with structured AI feedback',
           'Develop your edge across any trading approach',
           'Belong to a community of serious traders',
           'Test your knowledge and earn your certificate',
           'Accelerate your growth — starting today',
         ],
-        cta:   'Enter',
+        cta: 'Enter',
         legal: 'Trader Acelerator · For educational purposes only',
         t: {
-          scrollHint: 'Scroll to explore',
-          s1_eyebrow: 'The platform',
-          s1_title: 'Trade with structure, not guesswork',
-          s1_body: 'Trader Acelerator turns every screenshot into structured feedback, sharpens your edge across any methodology, and surrounds you with serious traders — all in one place.',
-          stat1_n: '4+', stat1_l: 'Trading methodologies',
-          stat2_n: '24/7', stat2_l: 'AI-assisted analysis',
-          stat3_n: '100%', stat3_l: 'Focused on your growth',
-          s2_eyebrow: 'What you get',
-          s2_title: 'Everything to accelerate your edge',
-          f1_t: 'Trade Analysis', f1_b: 'Upload a screenshot and receive structured, methodology-aware feedback on your entries, exits and risk.',
-          f2_t: 'Trading Community', f2_b: 'A moderated forum of serious traders — share setups, debate ideas and grow alongside people who take this seriously.',
-          f3_t: 'Knowledge & Certificate', f3_b: 'Test your understanding with structured quizzes and earn a certificate that reflects real comprehension.',
-          f4_t: 'Any Methodology', f4_b: 'ICT, classic patterns, quant, statistical deviation and more — the platform adapts to how you actually trade.',
-          s3_eyebrow: 'How it works',
-          s3_title: 'Three steps to a sharper edge',
-          st1_t: 'Capture your trade', st1_b: 'Screenshot any setup from your platform and upload it in seconds.',
-          st2_t: 'Get structured feedback', st2_b: "Receive a clear breakdown tied to your chosen methodology — what worked, what didn't, and why.",
-          st3_t: 'Refine and repeat', st3_b: 'Track patterns over time, close your gaps and compound your improvement.',
-          s4_eyebrow: 'Built for every style',
-          s4_title: 'One platform, every approach',
-          s4_body: 'Whatever framework you trade, Trader Acelerator speaks your language.',
-          cta_title: 'Ready to accelerate?',
-          cta_body: 'Create your account and start turning every trade into a lesson today.',
-          cta_btn: 'Get started',
+          scrollHint:'Scroll to explore',
+          s1_eyebrow:'The platform', s1_title:'One platform. Every edge you need.',
+          s1_body:'From AI-powered trade reviews to community forums, knowledge certification and beyond — Trader Acelerator brings everything serious traders need into a single, focused space.',
+          stat1_n:'7', stat1_l:'Specialized tools',
+          stat2_n:'4+', stat2_l:'Trading methodologies',
+          stat3_n:'EN·ES·FR·PT', stat3_l:'Available languages',
+          s2_eyebrow:'Core feature', s2_title:'AI analysis of your screenshots',
+          s2_body:'Upload any trade screenshot and get a precise, methodology-aware breakdown of your entry, structure, risk management and execution — not generic advice, real feedback calibrated to how you trade.',
+          b_ict:'ICT', b_pa:'Price Action', b_quant:'Quant', b_stdv:'STDV', b_smc:'Smart Money',
+          mock_t:'Trade Review — EURUSD 1H', mock_entry:'Entry Quality', mock_risk:'Risk Management',
+          mock_exec:'Execution', mock_gaps:'Identified Gaps',
+          tag_fvg:'FVG confirmed', tag_sweep:'Liquidity sweep', tag_rr:'RR < 2:1', tag_ict:'ICT methodology',
+          s3_eyebrow:'The full toolkit', s3_title:'Built tool by tool, for the serious trader',
+          s3_body:'Every feature was designed with one goal: to give you real information that turns into better trades.',
+          tc_forum_t:'Trading Forum', tc_forum_b:'Moderated community where traders share real setups, debate ideas and give each other structured feedback — no noise, no hype.',
+          tc_quiz_t:'Knowledge Quiz & Certificate', tc_quiz_b:'Test your understanding across methodologies. Pass and earn a certificate that reflects real comprehension, not just time in front of charts.',
+          tc_scalp_t:'Scalper Board', tc_scalp_b:'A visual planning canvas for organizing your bias, sessions and setups before each trading day — your pre-market ritual, structured.',
+          tc_syn_t:'Synapse', tc_syn_b:'An immersive 3D neural AI visualization that brings markets to life — a unique experience built to train your pattern recognition.',
+          tc_ind_t:'Indicator Store', tc_ind_b:'Curated trading indicators built for the methodologies we teach — plug them into your platform and get an edge from day one.',
+          tc_scout_t:'Prop Firm Scout', tc_scout_b:'Compare 25+ prop firms side by side — fees, rules, payout structure, country restrictions and an AI advisor to find your best fit.',
+          coming:'Coming soon',
+          s4_eyebrow:'How it works', s4_title:'From first screenshot to certified trader',
+          st1_t:'Create your account', st1_b:'Sign up free in seconds. Choose your methodology and preferred language — the platform calibrates to you.',
+          st2_t:'Submit your trades', st2_b:'Upload screenshots, join forum discussions, run through quizzes — every action feeds your development cycle.',
+          st3_t:'Measure your growth', st3_b:'Track patterns over time, close your gaps and earn your certificate when your understanding reaches the next level.',
+          s5_eyebrow:'Built for every style', s5_title:'One platform, every approach',
+          s5_body:'Whatever framework you trade, Trader Acelerator speaks your language.',
+          s6_eyebrow:'Simple pricing', s6_title:'Start free. Scale when you\'re ready.',
+          s6_body:'No credit card needed to start. Upgrade anytime.',
+          pl_free_price:'$0', pl_free_cycle:'Always free', pl_free_f1:'1 analysis / 7 days',
+          pl_free_f2:'Forum access', pl_free_f3:'Knowledge quiz', pl_free_f4:'Scalper board',
+          pl_std_price:'$9', pl_std_cycle:'per month', pl_std_f1:'1 analysis / 24 h',
+          pl_std_f2:'Priority feedback', pl_std_f3:'All free features',
+          pl_prm_price:'$29', pl_prm_cycle:'per month', pl_prm_f1:'5 analyses / 24 h',
+          pl_prm_f2:'Prop Firm Scout', pl_prm_f3:'Indicator store', pl_prm_f4:'Synapse AI', pl_prm_f5:'Priority support',
+          cta_title:'Ready to accelerate?',
+          cta_body:'Create your free account and start turning every trade into a lesson — today.',
+          cta_btn:'Get started free',
         },
       },
       es: {
         bullets: [
-          'Analiza tus operaciones con retroalimentación estructurada',
+          'Analiza tus operaciones con retroalimentación estructurada por IA',
           'Desarrolla tu ventaja en cualquier estrategia',
           'Únete a una comunidad de traders serios',
           'Pon a prueba tu conocimiento y obtén tu certificado',
           'Acelera tu crecimiento — desde hoy',
         ],
-        cta:   'Entrar',
+        cta: 'Entrar',
         legal: 'Trader Acelerator · Solo con fines educativos',
         t: {
-          scrollHint: 'Desliza para explorar',
-          s1_eyebrow: 'La plataforma',
-          s1_title: 'Opera con estructura, no con suposiciones',
-          s1_body: 'Trader Acelerator convierte cada captura en retroalimentación estructurada, afina tu ventaja en cualquier metodología y te rodea de traders serios — todo en un solo lugar.',
-          stat1_n: '4+', stat1_l: 'Metodologías de trading',
-          stat2_n: '24/7', stat2_l: 'Análisis asistido por IA',
-          stat3_n: '100%', stat3_l: 'Enfocado en tu crecimiento',
-          s2_eyebrow: 'Lo que obtienes',
-          s2_title: 'Todo para acelerar tu ventaja',
-          f1_t: 'Análisis de operaciones', f1_b: 'Sube una captura y recibe retroalimentación estructurada y acorde a tu metodología sobre entradas, salidas y riesgo.',
-          f2_t: 'Comunidad de trading', f2_b: 'Un foro moderado de traders serios — comparte setups, debate ideas y crece junto a gente que se lo toma en serio.',
-          f3_t: 'Conocimiento y certificado', f3_b: 'Pon a prueba tu comprensión con cuestionarios estructurados y obtén un certificado que refleja conocimiento real.',
-          f4_t: 'Cualquier metodología', f4_b: 'ICT, patrones clásicos, quant, desviación estadística y más — la plataforma se adapta a cómo operas realmente.',
-          s3_eyebrow: 'Cómo funciona',
-          s3_title: 'Tres pasos hacia una ventaja más afilada',
-          st1_t: 'Captura tu operación', st1_b: 'Haz una captura de cualquier setup de tu plataforma y súbela en segundos.',
-          st2_t: 'Recibe feedback estructurado', st2_b: 'Obtén un desglose claro ligado a tu metodología — qué funcionó, qué no y por qué.',
-          st3_t: 'Refina y repite', st3_b: 'Sigue tus patrones en el tiempo, cierra tus brechas y acumula tu mejora.',
-          s4_eyebrow: 'Hecho para cada estilo',
-          s4_title: 'Una plataforma, cada enfoque',
-          s4_body: 'Sea cual sea tu marco de trabajo, Trader Acelerator habla tu idioma.',
-          cta_title: '¿Listo para acelerar?',
-          cta_body: 'Crea tu cuenta y empieza a convertir cada operación en una lección hoy mismo.',
-          cta_btn: 'Comenzar',
+          scrollHint:'Desliza para explorar',
+          s1_eyebrow:'La plataforma', s1_title:'Una plataforma. Cada ventaja que necesitas.',
+          s1_body:'Desde revisiones de operaciones con IA hasta foros, certificación de conocimiento y más — Trader Acelerator reúne todo lo que un trader serio necesita en un solo lugar.',
+          stat1_n:'7', stat1_l:'Herramientas especializadas',
+          stat2_n:'4+', stat2_l:'Metodologías de trading',
+          stat3_n:'EN·ES·FR·PT', stat3_l:'Idiomas disponibles',
+          s2_eyebrow:'Característica principal', s2_title:'Análisis de tus capturas con IA',
+          s2_body:'Sube cualquier captura y recibe un desglose preciso y acorde a tu metodología sobre tu entrada, estructura, gestión del riesgo y ejecución — no consejos genéricos, feedback real calibrado a cómo operas.',
+          b_ict:'ICT', b_pa:'Price Action', b_quant:'Quant', b_stdv:'STDV', b_smc:'Smart Money',
+          mock_t:'Revisión de operación — EURUSD 1H', mock_entry:'Calidad de entrada', mock_risk:'Gestión del riesgo',
+          mock_exec:'Ejecución', mock_gaps:'Brechas identificadas',
+          tag_fvg:'FVG confirmado', tag_sweep:'Barrido de liquidez', tag_rr:'RR < 2:1', tag_ict:'Metodología ICT',
+          s3_eyebrow:'El kit completo', s3_title:'Construida herramienta a herramienta, para el trader serio',
+          s3_body:'Cada función fue diseñada con un objetivo: darte información real que se traduzca en mejores operaciones.',
+          tc_forum_t:'Foro de trading', tc_forum_b:'Comunidad moderada donde los traders comparten setups reales, debaten ideas y se dan retroalimentación estructurada — sin ruido, sin hype.',
+          tc_quiz_t:'Quiz y certificado', tc_quiz_b:'Pon a prueba tu comprensión en distintas metodologías. Aprueba y obtén un certificado que refleja conocimiento real.',
+          tc_scalp_t:'Tablero del Scalper', tc_scalp_b:'Un canvas visual para organizar tu sesgo, sesiones y setups antes de cada día de trading — tu ritual previo al mercado, estructurado.',
+          tc_syn_t:'Synapse', tc_syn_b:'Una visualización 3D de IA neural que da vida a los mercados — una experiencia única construida para entrenar tu reconocimiento de patrones.',
+          tc_ind_t:'Tienda de indicadores', tc_ind_b:'Indicadores de trading diseñados para las metodologías que enseñamos — conéctalos a tu plataforma y obtén ventaja desde el primer día.',
+          tc_scout_t:'Prop Firm Scout', tc_scout_b:'Compara más de 25 prop firms — tarifas, reglas, estructura de pagos, restricciones por país y un asesor IA para encontrar la más adecuada para ti.',
+          coming:'Próximamente',
+          s4_eyebrow:'Cómo funciona', s4_title:'De tu primera captura a trader certificado',
+          st1_t:'Crea tu cuenta', st1_b:'Regístrate gratis en segundos. Elige tu metodología e idioma preferido — la plataforma se calibra a ti.',
+          st2_t:'Sube tus operaciones', st2_b:'Sube capturas, participa en el foro, realiza quizzes — cada acción alimenta tu ciclo de desarrollo.',
+          st3_t:'Mide tu crecimiento', st3_b:'Sigue tus patrones en el tiempo, cierra tus brechas y obtén tu certificado cuando tu comprensión llegue al siguiente nivel.',
+          s5_eyebrow:'Para cada estilo', s5_title:'Una plataforma, cualquier enfoque',
+          s5_body:'Sea cual sea tu marco de trabajo, Trader Acelerator habla tu idioma.',
+          s6_eyebrow:'Precios simples', s6_title:'Empieza gratis. Escala cuando estés listo.',
+          s6_body:'No necesitas tarjeta de crédito para empezar. Mejora tu plan cuando quieras.',
+          pl_free_price:'$0', pl_free_cycle:'Siempre gratis', pl_free_f1:'1 análisis / 7 días',
+          pl_free_f2:'Acceso al foro', pl_free_f3:'Quiz de conocimiento', pl_free_f4:'Tablero Scalper',
+          pl_std_price:'$9', pl_std_cycle:'por mes', pl_std_f1:'1 análisis / 24 h',
+          pl_std_f2:'Feedback prioritario', pl_std_f3:'Todos los beneficios Free',
+          pl_prm_price:'$29', pl_prm_cycle:'por mes', pl_prm_f1:'5 análisis / 24 h',
+          pl_prm_f2:'Prop Firm Scout', pl_prm_f3:'Tienda de indicadores', pl_prm_f4:'Synapse AI', pl_prm_f5:'Soporte prioritario',
+          cta_title:'¿Listo para acelerar?',
+          cta_body:'Crea tu cuenta gratis y empieza a convertir cada operación en una lección — hoy.',
+          cta_btn:'Comenzar gratis',
         },
       },
       fr: {
         bullets: [
-          'Analysez vos trades avec un feedback structuré',
+          'Analysez vos trades avec un feedback IA structuré',
           "Développez votre edge quelle que soit votre approche",
           'Rejoignez une communauté de traders sérieux',
           'Testez vos connaissances et obtenez votre certificat',
           "Accélérez votre croissance — dès aujourd'hui",
         ],
-        cta:   'Accéder',
+        cta: 'Accéder',
         legal: 'Trader Acelerator · À des fins éducatives uniquement',
         t: {
-          scrollHint: 'Faites défiler pour explorer',
-          s1_eyebrow: 'La plateforme',
-          s1_title: 'Tradez avec structure, pas au hasard',
-          s1_body: "Trader Acelerator transforme chaque capture en feedback structuré, affine votre edge sur toute méthodologie et vous entoure de traders sérieux — le tout au même endroit.",
-          stat1_n: '4+', stat1_l: 'Méthodologies de trading',
-          stat2_n: '24/7', stat2_l: 'Analyse assistée par IA',
-          stat3_n: '100%', stat3_l: 'Axé sur votre progression',
-          s2_eyebrow: 'Ce que vous obtenez',
-          s2_title: 'Tout pour accélérer votre edge',
-          f1_t: 'Analyse de trades', f1_b: 'Téléversez une capture et recevez un feedback structuré, adapté à votre méthodologie, sur vos entrées, sorties et risque.',
-          f2_t: 'Communauté de trading', f2_b: 'Un forum modéré de traders sérieux — partagez vos setups, débattez et progressez avec des gens engagés.',
-          f3_t: 'Savoir & certificat', f3_b: 'Testez votre compréhension avec des quiz structurés et obtenez un certificat qui reflète un vrai savoir.',
-          f4_t: 'Toute méthodologie', f4_b: 'ICT, figures classiques, quant, déviation statistique et plus — la plateforme s\'adapte à votre façon de trader.',
-          s3_eyebrow: 'Comment ça marche',
-          s3_title: 'Trois étapes vers un edge affûté',
-          st1_t: 'Capturez votre trade', st1_b: "Faites une capture de n'importe quel setup et téléversez-la en quelques secondes.",
-          st2_t: 'Recevez un feedback structuré', st2_b: 'Obtenez une analyse claire liée à votre méthodologie — ce qui a marché, ce qui n\'a pas marché et pourquoi.',
-          st3_t: 'Affinez et répétez', st3_b: 'Suivez vos schémas dans le temps, comblez vos lacunes et cumulez vos progrès.',
-          s4_eyebrow: 'Conçu pour chaque style',
-          s4_title: 'Une plateforme, toutes les approches',
-          s4_body: 'Quel que soit votre cadre, Trader Acelerator parle votre langage.',
-          cta_title: 'Prêt à accélérer ?',
-          cta_body: 'Créez votre compte et commencez dès aujourd\'hui à faire de chaque trade une leçon.',
-          cta_btn: 'Commencer',
+          scrollHint:'Faites défiler pour explorer',
+          s1_eyebrow:'La plateforme', s1_title:'Une plateforme. Chaque edge dont vous avez besoin.',
+          s1_body:"Des analyses de trades par IA aux forums communautaires, en passant par la certification — Trader Acelerator réunit tout ce dont un trader sérieux a besoin en un seul endroit.",
+          stat1_n:'7', stat1_l:'Outils spécialisés',
+          stat2_n:'4+', stat2_l:'Méthodologies de trading',
+          stat3_n:'EN·ES·FR·PT', stat3_l:'Langues disponibles',
+          s2_eyebrow:'Fonctionnalité principale', s2_title:'Analyse IA de vos captures',
+          s2_body:"Téléversez n'importe quelle capture et recevez une analyse précise, adaptée à votre méthodologie, sur votre entrée, structure, gestion du risque et exécution.",
+          b_ict:'ICT', b_pa:'Price Action', b_quant:'Quant', b_stdv:'STDV', b_smc:'Smart Money',
+          mock_t:'Revue de trade — EURUSD 1H', mock_entry:'Qualité d\'entrée', mock_risk:'Gestion du risque',
+          mock_exec:'Exécution', mock_gaps:'Lacunes identifiées',
+          tag_fvg:'FVG confirmé', tag_sweep:'Balayage de liquidité', tag_rr:'RR < 2:1', tag_ict:'Méthodologie ICT',
+          s3_eyebrow:'La boîte à outils complète', s3_title:'Construit outil par outil, pour le trader sérieux',
+          s3_body:'Chaque fonctionnalité a été conçue avec un seul objectif : vous donner des informations réelles qui se traduisent en meilleurs trades.',
+          tc_forum_t:'Forum de trading', tc_forum_b:'Communauté modérée où les traders partagent de vrais setups, débattent et se donnent un feedback structuré — sans bruit, sans hype.',
+          tc_quiz_t:'Quiz & certificat', tc_quiz_b:"Testez votre compréhension sur différentes méthodologies. Réussissez et obtenez un certificat qui reflète une vraie maîtrise.",
+          tc_scalp_t:'Tableau Scalper', tc_scalp_b:'Un canvas visuel pour organiser votre biais, sessions et setups avant chaque journée de trading — votre rituel pré-marché, structuré.',
+          tc_syn_t:'Synapse', tc_syn_b:"Une visualisation 3D de l'IA neurale qui donne vie aux marchés — une expérience unique pour entraîner votre reconnaissance de patterns.",
+          tc_ind_t:'Boutique d\'indicateurs', tc_ind_b:'Indicateurs de trading conçus pour les méthodologies que nous enseignons — branchez-les sur votre plateforme et gagnez en edge dès le premier jour.',
+          tc_scout_t:'Prop Firm Scout', tc_scout_b:'Comparez plus de 25 prop firms — frais, règles, structure de paiement, restrictions par pays et un conseiller IA pour trouver la meilleure option.',
+          coming:'Bientôt disponible',
+          s4_eyebrow:'Comment ça marche', s4_title:'De votre première capture à trader certifié',
+          st1_t:'Créez votre compte', st1_b:'Inscrivez-vous gratuitement en quelques secondes. Choisissez votre méthodologie et votre langue préférée.',
+          st2_t:'Soumettez vos trades', st2_b:'Téléversez des captures, participez au forum, faites des quiz — chaque action alimente votre cycle de développement.',
+          st3_t:'Mesurez votre progression', st3_b:"Suivez vos schémas dans le temps, combler vos lacunes et obtenez votre certificat quand votre niveau atteint l'échelon suivant.",
+          s5_eyebrow:'Pour chaque style', s5_title:'Une plateforme, toutes les approches',
+          s5_body:'Quel que soit votre cadre, Trader Acelerator parle votre langage.',
+          s6_eyebrow:'Prix simples', s6_title:'Commencez gratuitement. Évoluez quand vous êtes prêt.',
+          s6_body:"Pas de carte bancaire nécessaire pour commencer. Passez à l'offre supérieure quand vous voulez.",
+          pl_free_price:'0 $', pl_free_cycle:'Toujours gratuit', pl_free_f1:'1 analyse / 7 jours',
+          pl_free_f2:'Accès au forum', pl_free_f3:'Quiz de connaissances', pl_free_f4:'Tableau Scalper',
+          pl_std_price:'9 $', pl_std_cycle:'par mois', pl_std_f1:'1 analyse / 24 h',
+          pl_std_f2:'Feedback prioritaire', pl_std_f3:'Tous les avantages Free',
+          pl_prm_price:'29 $', pl_prm_cycle:'par mois', pl_prm_f1:'5 analyses / 24 h',
+          pl_prm_f2:'Prop Firm Scout', pl_prm_f3:'Boutique d\'indicateurs', pl_prm_f4:'Synapse AI', pl_prm_f5:'Support prioritaire',
+          cta_title:'Prêt à accélérer ?',
+          cta_body:"Créez votre compte gratuit et commencez dès aujourd'hui à faire de chaque trade une leçon.",
+          cta_btn:'Commencer gratuitement',
         },
       },
       pt: {
         bullets: [
-          'Analise suas operações com feedback estruturado',
+          'Analise suas operações com feedback estruturado por IA',
           'Desenvolva sua vantagem em qualquer abordagem',
           'Faça parte de uma comunidade de traders sérios',
           'Teste seu conhecimento e conquiste seu certificado',
           'Acelere seu crescimento — a partir de hoje',
         ],
-        cta:   'Entrar',
+        cta: 'Entrar',
         legal: 'Trader Acelerator · Apenas para fins educativos',
         t: {
-          scrollHint: 'Role para explorar',
-          s1_eyebrow: 'A plataforma',
-          s1_title: 'Opere com estrutura, não com palpites',
-          s1_body: 'O Trader Acelerator transforma cada captura em feedback estruturado, afia sua vantagem em qualquer metodologia e te cerca de traders sérios — tudo em um só lugar.',
-          stat1_n: '4+', stat1_l: 'Metodologias de trading',
-          stat2_n: '24/7', stat2_l: 'Análise assistida por IA',
-          stat3_n: '100%', stat3_l: 'Focado no seu crescimento',
-          s2_eyebrow: 'O que você recebe',
-          s2_title: 'Tudo para acelerar sua vantagem',
-          f1_t: 'Análise de operações', f1_b: 'Envie uma captura e receba feedback estruturado e alinhado à sua metodologia sobre entradas, saídas e risco.',
-          f2_t: 'Comunidade de trading', f2_b: 'Um fórum moderado de traders sérios — compartilhe setups, debata ideias e cresça ao lado de quem leva isso a sério.',
-          f3_t: 'Conhecimento e certificado', f3_b: 'Teste seu entendimento com quizzes estruturados e conquiste um certificado que reflete conhecimento real.',
-          f4_t: 'Qualquer metodologia', f4_b: 'ICT, padrões clássicos, quant, desvio estatístico e mais — a plataforma se adapta a como você realmente opera.',
-          s3_eyebrow: 'Como funciona',
-          s3_title: 'Três passos para uma vantagem mais afiada',
-          st1_t: 'Capture sua operação', st1_b: 'Faça uma captura de qualquer setup da sua plataforma e envie em segundos.',
-          st2_t: 'Receba feedback estruturado', st2_b: 'Receba uma análise clara ligada à sua metodologia — o que funcionou, o que não funcionou e por quê.',
-          st3_t: 'Refine e repita', st3_b: 'Acompanhe seus padrões ao longo do tempo, feche suas lacunas e acumule sua evolução.',
-          s4_eyebrow: 'Feito para cada estilo',
-          s4_title: 'Uma plataforma, toda abordagem',
-          s4_body: 'Seja qual for seu método, o Trader Acelerator fala a sua língua.',
-          cta_title: 'Pronto para acelerar?',
-          cta_body: 'Crie sua conta e comece a transformar cada operação em uma lição hoje mesmo.',
-          cta_btn: 'Começar',
+          scrollHint:'Role para explorar',
+          s1_eyebrow:'A plataforma', s1_title:'Uma plataforma. Toda vantagem que você precisa.',
+          s1_body:'De análises de operações por IA a fóruns, certificação de conhecimento e muito mais — o Trader Acelerator reúne tudo que um trader sério precisa em um só lugar.',
+          stat1_n:'7', stat1_l:'Ferramentas especializadas',
+          stat2_n:'4+', stat2_l:'Metodologias de trading',
+          stat3_n:'EN·ES·FR·PT', stat3_l:'Idiomas disponíveis',
+          s2_eyebrow:'Funcionalidade principal', s2_title:'Análise por IA das suas capturas',
+          s2_body:'Envie qualquer captura de tela e receba uma análise precisa, alinhada à sua metodologia, sobre sua entrada, estrutura, gestão de risco e execução — não conselhos genéricos, feedback real calibrado à sua forma de operar.',
+          b_ict:'ICT', b_pa:'Price Action', b_quant:'Quant', b_stdv:'STDV', b_smc:'Smart Money',
+          mock_t:'Revisão de operação — EURUSD 1H', mock_entry:'Qualidade da entrada', mock_risk:'Gestão de risco',
+          mock_exec:'Execução', mock_gaps:'Lacunas identificadas',
+          tag_fvg:'FVG confirmado', tag_sweep:'Varredura de liquidez', tag_rr:'RR < 2:1', tag_ict:'Metodologia ICT',
+          s3_eyebrow:'O kit completo', s3_title:'Construída ferramenta por ferramenta, para o trader sério',
+          s3_body:'Cada funcionalidade foi projetada com um objetivo: dar a você informações reais que se traduzem em melhores operações.',
+          tc_forum_t:'Fórum de trading', tc_forum_b:'Comunidade moderada onde traders compartilham setups reais, debatem ideias e se dão feedback estruturado — sem ruído, sem hype.',
+          tc_quiz_t:'Quiz e certificado', tc_quiz_b:'Teste seu entendimento em diferentes metodologias. Passe e conquiste um certificado que reflete conhecimento real.',
+          tc_scalp_t:'Scalper Board', tc_scalp_b:'Um canvas visual para organizar seu viés, sessões e setups antes de cada dia de trading — seu ritual pré-mercado, estruturado.',
+          tc_syn_t:'Synapse', tc_syn_b:'Uma visualização 3D de IA neural que dá vida aos mercados — uma experiência única construída para treinar seu reconhecimento de padrões.',
+          tc_ind_t:'Loja de indicadores', tc_ind_b:'Indicadores de trading desenvolvidos para as metodologias que ensinamos — conecte-os à sua plataforma e ganhe vantagem desde o primeiro dia.',
+          tc_scout_t:'Prop Firm Scout', tc_scout_b:'Compare mais de 25 prop firms — taxas, regras, estrutura de pagamento, restrições por país e um consultor IA para encontrar a melhor opção para você.',
+          coming:'Em breve',
+          s4_eyebrow:'Como funciona', s4_title:'Da primeira captura ao trader certificado',
+          st1_t:'Crie sua conta', st1_b:'Cadastre-se grátis em segundos. Escolha sua metodologia e idioma preferido — a plataforma se calibra a você.',
+          st2_t:'Envie suas operações', st2_b:'Envie capturas, participe do fórum, faça quizzes — cada ação alimenta seu ciclo de desenvolvimento.',
+          st3_t:'Meça seu crescimento', st3_b:'Acompanhe seus padrões ao longo do tempo, feche suas lacunas e conquiste seu certificado quando seu entendimento alcançar o próximo nível.',
+          s5_eyebrow:'Para cada estilo', s5_title:'Uma plataforma, toda abordagem',
+          s5_body:'Seja qual for seu método, o Trader Acelerator fala a sua língua.',
+          s6_eyebrow:'Preços simples', s6_title:'Comece grátis. Evolua quando estiver pronto.',
+          s6_body:'Sem cartão de crédito para começar. Faça upgrade quando quiser.',
+          pl_free_price:'$0', pl_free_cycle:'Sempre grátis', pl_free_f1:'1 análise / 7 dias',
+          pl_free_f2:'Acesso ao fórum', pl_free_f3:'Quiz de conhecimento', pl_free_f4:'Scalper board',
+          pl_std_price:'$9', pl_std_cycle:'por mês', pl_std_f1:'1 análise / 24 h',
+          pl_std_f2:'Feedback prioritário', pl_std_f3:'Todos os benefícios Free',
+          pl_prm_price:'$29', pl_prm_cycle:'por mês', pl_prm_f1:'5 análises / 24 h',
+          pl_prm_f2:'Prop Firm Scout', pl_prm_f3:'Loja de indicadores', pl_prm_f4:'Synapse AI', pl_prm_f5:'Suporte prioritário',
+          cta_title:'Pronto para acelerar?',
+          cta_body:'Crie sua conta grátis e comece a transformar cada operação em uma lição — hoje.',
+          cta_btn:'Começar grátis',
         },
       },
     };
 
-    // Apply content for a given language code
     function applyLang(code) {
       const C = I18N[code] || I18N.en;
       document.documentElement.lang = code;
       document.getElementById('cta-label').textContent  = C.cta;
       document.getElementById('legal-note').textContent = C.legal;
-      // Section copy via data-t
       const dict = C.t || {};
       document.querySelectorAll('[data-t]').forEach(el => {
         const k = el.getAttribute('data-t');
         if (dict[k] !== undefined) el.textContent = dict[k];
       });
-      // Active language button
       document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.lang === code);
       });
@@ -925,10 +1218,8 @@
 
     let C = applyLang(lang);
 
-    // ── Letter-by-letter "construction" animation (unchanged) ──
-    const STEP_MS = 100;
-    const ANIM_MS = 160;
-
+    // ── Brand animation ──
+    const STEP_MS = 100, ANIM_MS = 160;
     function buildLine(elId, word, startIdx) {
       const el = document.getElementById(elId);
       [...word].forEach((ch, i) => {
@@ -939,19 +1230,16 @@
         el.appendChild(span);
       });
     }
-
     const W1 = 'TRADER', W2 = 'ACELERATOR';
     buildLine('brand-line1', W1, 0);
     buildLine('brand-line2', W2, W1.length);
-
-    const lastStart = (W1.length + W2.length - 1) * STEP_MS;
-    const buildEnd  = lastStart + ANIM_MS + 35;
+    const buildEnd = (W1.length + W2.length - 1) * STEP_MS + ANIM_MS + 35;
     setTimeout(() => {
       document.getElementById('brand-block').classList.add('assembled');
       document.getElementById('brand-flash').classList.add('burst');
     }, buildEnd);
 
-    // ── Language selector handler ──
+    // ── Language selector ──
     document.getElementById('lang-sel').addEventListener('click', e => {
       const btn = e.target.closest('.lang-btn');
       if (!btn) return;
@@ -962,12 +1250,9 @@
       setTimeout(() => { bi = bi % C.bullets.length; showBullet(bi); }, 280);
     });
 
-    // ── Cycling bullet tagline ──
+    // ── Cycling bullet ──
     const bulletEl = document.getElementById('bullet');
-    const HOLD_MS  = 2300;
-    const FADE_MS  = 300;
     let bi = 0;
-
     function showBullet(idx) {
       bulletEl.classList.remove('fading');
       bulletEl.textContent = C.bullets[idx];
@@ -975,29 +1260,19 @@
     }
     function nextBullet() {
       bulletEl.classList.add('fading');
-      setTimeout(() => {
-        bi = (bi + 1) % C.bullets.length;
-        showBullet(bi);
-      }, FADE_MS);
+      setTimeout(() => { bi = (bi + 1) % C.bullets.length; showBullet(bi); }, 300);
     }
-    setTimeout(() => {
-      showBullet(0);
-      setInterval(nextBullet, HOLD_MS);
-    }, 2100);
+    setTimeout(() => { showBullet(0); setInterval(nextBullet, 2300); }, 2100);
 
-    // ── Scroll-reveal via IntersectionObserver ──
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(en => {
-        if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
-      });
-    }, { threshold: 0.16, rootMargin: '0px 0px -8% 0px' });
+    // ── Scroll-reveal ──
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: 0.14, rootMargin: '0px 0px -6% 0px' });
     document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 
-    // ── Hide scroll hint once the user scrolls ──
+    // ── Hide scroll hint ──
     const hint = document.getElementById('scroll-hint');
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 60) hint.classList.add('hidden');
-    }, { passive: true });
+    window.addEventListener('scroll', () => { if (window.scrollY > 60) hint.classList.add('hidden'); }, { passive: true });
   </script>
 </body>
 </html>
