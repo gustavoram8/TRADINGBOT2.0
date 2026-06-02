@@ -52,6 +52,40 @@
       -webkit-font-smoothing: antialiased;
     }
 
+    /* ── Language selector ── */
+    .lang-sel {
+      position: fixed;
+      top: 18px; right: 20px;
+      display: flex;
+      gap: 4px;
+      z-index: 10;
+      opacity: 0;
+      animation: fadeDown 0.4s ease 0.3s forwards;
+    }
+    .lang-btn {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      padding: 5px 9px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: color 0.15s, background 0.15s, border-color 0.15s;
+    }
+    .lang-btn:hover { color: var(--text); }
+    .lang-btn.active {
+      color: var(--accent);
+      background: rgba(37,99,235,0.08);
+      border-color: rgba(37,99,235,0.20);
+    }
+    body.dark .lang-btn.active {
+      background: rgba(91,142,240,0.12);
+      border-color: rgba(91,142,240,0.25);
+    }
+
     /* ── Logo ── */
     .logo-wrap {
       margin-bottom: 22px;
@@ -80,32 +114,23 @@
       font-size: clamp(46px, 9.5vw, 96px);
     }
     #brand-line1 { color: var(--text); }
-    #brand-line2 { color: var(--accent); }
+    #brand-line2 { color: var(--text); }
 
-    /* Individual letters — invisible until animation fires */
+    /* Individual letters — built bottom-to-top like a crane raising a building.
+       The letter keeps its layout box (so the word width never shifts) and is
+       revealed upward via clip-path, one after another, quickly. */
     .ltr {
       display: inline-block;
+      clip-path: inset(100% 0 0 0);   /* fully hidden, revealed from the bottom up */
       opacity: 0;
-      will-change: transform, opacity;
-      animation: ltrSnap 0.42s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+      will-change: clip-path, opacity;
+      animation: ltrBuild 0.16s ease-out forwards;
     }
 
-    @keyframes ltrSnap {
-      0%   {
-        opacity: 0;
-        transform: translateY(var(--dy)) translateX(var(--dx)) rotate(var(--dr)) scale(0.45);
-      }
-      55%  {
-        opacity: 1;
-        transform: translateY(calc(var(--dy) * -0.10)) translateX(0) rotate(0deg) scale(1.07);
-      }
-      78%  {
-        transform: translateY(calc(var(--dy) * 0.04)) scale(0.96);
-      }
-      100% {
-        opacity: 1;
-        transform: translateY(0) translateX(0) rotate(0deg) scale(1);
-      }
+    @keyframes ltrBuild {
+      0%   { clip-path: inset(100% 0 0 0); opacity: 0; }
+      12%  { opacity: 1; }
+      100% { clip-path: inset(0 0 0 0);   opacity: 1; }
     }
 
     /* Post-assembly: whole block bounces in with elastic spring */
@@ -210,7 +235,7 @@
 
     /* Respect reduced-motion preference */
     @media (prefers-reduced-motion: reduce) {
-      .ltr             { animation: none !important; opacity: 1 !important; }
+      .ltr             { animation: none !important; opacity: 1 !important; clip-path: none !important; }
       #brand-block.assembled { animation: none !important; }
       .brand-flash     { display: none; }
       .logo-wrap, .bullet-row, .cta { animation: none !important; opacity: 1 !important; }
@@ -232,6 +257,14 @@
       catch (e) {}
     })();
   </script>
+
+  <!-- Language selector -->
+  <div class="lang-sel" id="lang-sel">
+    <button class="lang-btn" data-lang="en">EN</button>
+    <button class="lang-btn" data-lang="es">ES</button>
+    <button class="lang-btn" data-lang="fr">FR</button>
+    <button class="lang-btn" data-lang="pt">PT</button>
+  </div>
 
   <!-- Logo -->
   <div class="logo-wrap">
@@ -265,12 +298,17 @@
   <p class="legal" id="legal-note">Trader Acelerator · For educational purposes only</p>
 
   <script>
-    // ── Language detection via browser locale ──
-    const rawL = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
-    const lang = rawL.startsWith('es') ? 'es'
-               : rawL.startsWith('fr') ? 'fr'
-               : rawL.startsWith('pt') ? 'pt'
-               : 'en';
+    // ── Language: saved preference → browser locale → 'en' ──
+    const SUPPORTED = ['en', 'es', 'fr', 'pt'];
+    function detectLang() {
+      try { const s = localStorage.getItem('scalpel_lang'); if (SUPPORTED.includes(s)) return s; } catch(e) {}
+      const raw = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
+      if (raw.startsWith('es')) return 'es';
+      if (raw.startsWith('fr')) return 'fr';
+      if (raw.startsWith('pt')) return 'pt';
+      return 'en';
+    }
+    let lang = detectLang();
 
     const I18N = {
       en: {
@@ -319,16 +357,26 @@
       },
     };
 
-    const C = I18N[lang] || I18N.en;
-    document.documentElement.lang = lang;
-    document.getElementById('cta-label').textContent   = C.cta;
-    document.getElementById('legal-note').textContent  = C.legal;
+    // Apply content for a given language code
+    function applyLang(code) {
+      const C = I18N[code] || I18N.en;
+      document.documentElement.lang = code;
+      document.getElementById('cta-label').textContent  = C.cta;
+      document.getElementById('legal-note').textContent = C.legal;
+      // Update active button
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === code);
+      });
+      return C;
+    }
 
-    // ── Letter-snap animation ──
-    const STEP_MS = 65;   // ms stagger between letters
-    const ANIM_MS = 420;  // matches CSS animation duration
+    let C = applyLang(lang);
 
-    function rand(a, b) { return a + Math.random() * (b - a); }
+    // ── Letter-by-letter "construction" animation ──
+    // Each letter is raised bottom-to-top, one finishing before the next starts
+    // (crane building an edifice), fast.
+    const STEP_MS = 100;  // sequential stagger between letters
+    const ANIM_MS = 160;  // matches CSS .ltr animation duration
 
     function buildLine(elId, word, startIdx) {
       const el = document.getElementById(elId);
@@ -336,10 +384,6 @@
         const span = document.createElement('span');
         span.className = 'ltr';
         span.textContent = ch;
-        // Each letter flies in from a slightly different position — "lego pieces" feel
-        span.style.setProperty('--dy', rand(-60, -28).toFixed(1) + 'px');
-        span.style.setProperty('--dx', rand(-16, 16).toFixed(1)  + 'px');
-        span.style.setProperty('--dr', rand(-9, 9).toFixed(1)    + 'deg');
         span.style.animationDelay = ((startIdx + i) * STEP_MS) + 'ms';
         el.appendChild(span);
       });
@@ -358,8 +402,19 @@
       document.getElementById('brand-flash').classList.add('burst');
     }, buildEnd);
 
+    // ── Language selector handler ──
+    document.getElementById('lang-sel').addEventListener('click', e => {
+      const btn = e.target.closest('.lang-btn');
+      if (!btn) return;
+      lang = btn.dataset.lang;
+      try { localStorage.setItem('scalpel_lang', lang); } catch(e) {}
+      C = applyLang(lang);
+      // Immediately show the current bullet in the new language
+      bulletEl.classList.add('fading');
+      setTimeout(() => { bi = bi % C.bullets.length; showBullet(bi); }, 280);
+    });
+
     // ── Cycling bullet tagline ──
-    const bullets  = C.bullets;
     const bulletEl = document.getElementById('bullet');
     const HOLD_MS  = 2300;
     const FADE_MS  = 300;
@@ -367,15 +422,14 @@
 
     function showBullet(idx) {
       bulletEl.classList.remove('fading');
-      bulletEl.textContent = bullets[idx];
-      // Last bullet (hook) gets accent color treatment
-      bulletEl.classList.toggle('hook', idx === bullets.length - 1);
+      bulletEl.textContent = C.bullets[idx];
+      bulletEl.classList.toggle('hook', idx === C.bullets.length - 1);
     }
 
     function nextBullet() {
       bulletEl.classList.add('fading');
       setTimeout(() => {
-        bi = (bi + 1) % bullets.length;
+        bi = (bi + 1) % C.bullets.length;
         showBullet(bi);
       }, FADE_MS);
     }
