@@ -229,6 +229,8 @@
     }
     .stat-label { font-size: 13px; font-weight: 700; color: var(--text); margin-top: 5px; }
     .stat-sub   { font-size: 12px; color: var(--muted); margin-top: 3px; letter-spacing: .01em; }
+    .stat-flags { display: flex; gap: 7px; justify-content: center; margin-top: 5px; }
+    .stat-flags .flag { font-size: 17px; line-height: 1; filter: drop-shadow(0 1px 2px rgba(0,0,0,.25)); }
 
     /* ── GENERIC SECTION ── */
     .section {
@@ -597,14 +599,19 @@
         <div class="stat-sub">ICT · SMC · Wyckoff · Price Action</div>
       </div>
       <div class="stat-col rv d1">
-        <div class="stat-num">25</div>
+        <div class="stat-num">6</div>
         <div class="stat-label" data-t="stat_tools">Tools</div>
         <div class="stat-sub">Analysis · Education · Community</div>
       </div>
       <div class="stat-col rv d2">
         <div class="stat-num">4</div>
         <div class="stat-label" data-t="stat_langs">Languages</div>
-        <div class="stat-sub">EN · ES · FR · PT</div>
+        <div class="stat-flags" aria-label="EN ES FR PT">
+          <span class="flag" title="English">🇬🇧</span>
+          <span class="flag" title="Español">🇪🇸</span>
+          <span class="flag" title="Français">🇫🇷</span>
+          <span class="flag" title="Português">🇵🇹</span>
+        </div>
       </div>
     </div>
   </div>
@@ -765,7 +772,7 @@
             <polyline points="2 7 9 2 15 7 22 2"/>
           </svg>
         </div>
-        <h3 data-t="tc4_t">Elite Ranking</h3>
+        <h3 data-t="tc4_t">Quiz</h3>
         <p data-t="tc4_b">Score 80%+ across all quiz routes — every methodology, every level. Your results earn you a permanent place on the leaderboard.</p>
       </div>
 
@@ -1006,7 +1013,7 @@
           </li>
           <li class="plan-feat-item">
             <svg class="chk-svg" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            <span data-t="pp4">Elite Ranking Quiz</span>
+            <span data-t="pp4">Quiz</span>
           </li>
           <li class="plan-feat-item">
             <svg class="chk-svg" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -1340,7 +1347,7 @@
         tc1_t:'AI Screenshot Analysis', tc1_b:'Upload any chart. The AI identifies structure, liquidity, and methodology — giving you a detailed text diagnosis in your language.',
         tc2_t:'Synapse', tc2_b:'An immersive 3D knowledge library covering ICT, SMC, Wyckoff, classical patterns and quantitative theory — all in one neural interface.',
         tc3_t:'Trading Forum', tc3_b:'AI-moderated community where traders share setups, debate structure, and hold each other to institutional standards. No noise.',
-        tc4_t:'Elite Ranking', tc4_b:'Score 80%+ across all quiz routes — every methodology, every level. Your results earn you a permanent place on the leaderboard.',
+        tc4_t:'Quiz', tc4_b:'Score 80%+ across all quiz routes — every methodology, every level. Your results earn you a permanent place on the leaderboard.',
         tc5_t:'Chalkboard', tc5_b:'A digital canvas for pre-session bias mapping, key level marking, and trade idea sketching — your structured ritual before every open.',
         tc6_t:'Indicator Library', tc6_b:'Curated custom indicators for TradingView, built around ICT and SMC concepts — no repaint, no lag, plug in from day one.',
         s5_title:'Institutional-grade pattern recognition.',
