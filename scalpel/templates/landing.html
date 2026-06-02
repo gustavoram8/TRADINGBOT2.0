@@ -8,52 +8,52 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ── Design tokens ── */
+    /* ── Design tokens — warm amber/charcoal palette (own identity) ── */
     :root {
-      --bg:      #f8f9fc;
-      --bg2:     #ffffff;
-      --text:    #0d0f1a;
-      --muted:   #64697e;
-      --subtle:  #9499ae;
-      --accent:  #1a50e0;
-      --acc-h:   #1342bf;
-      --bull:    #16a34a;
-      --bear:    #dc2626;
-      --gold:    #c5860a;
-      --shadow:  rgba(26,80,224,0.20);
-      --flash:   rgba(26,80,224,0.12);
-      --hair:    rgba(13,15,26,0.07);
-      --card:    rgba(255,255,255,0.78);
-      --card-bd: rgba(13,15,26,0.08);
-      --card-sh: rgba(13,15,26,0.04);
-      --chip:    rgba(26,80,224,0.07);
-      --chip-bd: rgba(26,80,224,0.16);
-      --logo-mix:  multiply;
+      --bg:      #f7f4ed;   /* warm ivory */
+      --bg2:     #fffdf8;
+      --text:    #1c1812;   /* warm near-black */
+      --muted:   #6d6557;
+      --subtle:  #a39a88;
+      --accent:  #b9740a;   /* amber-gold */
+      --acc-h:   #9c6108;
+      --bull:    #2f8f5b;   /* muted jade */
+      --bear:    #c2453a;   /* terracotta red */
+      --gold:    #b9740a;
+      --shadow:  rgba(185,116,10,0.22);
+      --flash:   rgba(185,116,10,0.14);
+      --hair:    rgba(28,24,18,0.08);
+      --card:    rgba(255,253,248,0.80);
+      --card-bd: rgba(28,24,18,0.09);
+      --card-sh: rgba(120,90,30,0.07);
+      --chip:    rgba(185,116,10,0.08);
+      --chip-bd: rgba(185,116,10,0.20);
+      --logo-mix:  normal;
       --logo-filt: none;
-      --grid-col:  rgba(26,80,224,0.07);
+      --grid-col:  rgba(185,116,10,0.09);
     }
     body.dark {
-      --bg:      #090b13;
-      --bg2:     #0e1120;
-      --text:    #dde0f0;
-      --muted:   #8890aa;
-      --subtle:  #5c6278;
-      --accent:  #5c8ff2;
-      --acc-h:   #4b7fe8;
-      --bull:    #22c55e;
-      --bear:    #ef4444;
-      --gold:    #f59e0b;
-      --shadow:  rgba(92,143,242,0.24);
-      --flash:   rgba(160,200,255,0.16);
-      --hair:    rgba(255,255,255,0.07);
-      --card:    rgba(20,24,40,0.72);
-      --card-bd: rgba(255,255,255,0.08);
-      --card-sh: rgba(0,0,0,0.35);
-      --chip:    rgba(92,143,242,0.10);
-      --chip-bd: rgba(92,143,242,0.22);
-      --logo-mix:  lighten;
+      --bg:      #141109;   /* deep warm charcoal */
+      --bg2:     #1c1810;
+      --text:    #ece5d6;
+      --muted:   #a89d88;
+      --subtle:  #6b6151;
+      --accent:  #e8a93a;   /* warm gold */
+      --acc-h:   #f0b850;
+      --bull:    #45c07e;
+      --bear:    #e0685c;
+      --gold:    #e8a93a;
+      --shadow:  rgba(232,169,58,0.22);
+      --flash:   rgba(245,210,140,0.16);
+      --hair:    rgba(255,248,235,0.08);
+      --card:    rgba(34,28,18,0.72);
+      --card-bd: rgba(255,248,235,0.09);
+      --card-sh: rgba(0,0,0,0.4);
+      --chip:    rgba(232,169,58,0.11);
+      --chip-bd: rgba(232,169,58,0.24);
+      --logo-mix:  normal;
       --logo-filt: invert(1);
-      --grid-col:  rgba(92,143,242,0.08);
+      --grid-col:  rgba(232,169,58,0.09);
     }
 
     html { scroll-behavior: smooth; }
@@ -409,7 +409,7 @@
     .fp-meta { font-size: 11px; color: var(--subtle); margin-bottom: 5px; }
     .fp-title { font-size: 13px; font-weight: 600; }
     .fp-tags  { display: flex; gap: 6px; margin-top: 7px; }
-    .fp-tag   { font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 5px; background: rgba(26,80,224,.08); color: var(--accent); }
+    .fp-tag   { font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 5px; background: var(--chip); color: var(--accent); }
 
     /* ════════════════════════════════════════
        S6 — STATS STRIP
@@ -581,7 +581,7 @@
   <!-- ═══ HERO ═══ -->
   <header class="hero">
     <div class="logo-wrap">
-      <img src="/static/logo.png" alt="Trader Acelerator" class="logo-img" onerror="this.style.display='none';" />
+      <img src="/static/logo_t.png" alt="Trader Acelerator" class="logo-img" onerror="this.onerror=null;this.src='/static/logo.png';" />
     </div>
     <div id="brand-block" aria-label="Trader Acelerator">
       <div class="brand-flash" id="brand-flash"></div>
@@ -685,7 +685,7 @@
       <!-- Análisis IA -->
       <div class="tool-card rv" style="--tc-accent:var(--accent)">
         <span class="plan-chip pc-free" data-t="chip_all">All plans</span>
-        <div class="tc-ico" style="background:rgba(26,80,224,.10)">🔬</div>
+        <div class="tc-ico" style="background:rgba(185,116,10,.11)">🔬</div>
         <h3 data-t="tc1_t">AI Screenshot Analysis</h3>
         <p data-t="tc1_b">Upload any chart screenshot and receive detailed written feedback identifying deviations, missed confluences and structural issues — calibrated to your methodology and written in your language.</p>
       </div>
@@ -1000,14 +1000,14 @@
       const W = cv.width, H = cv.height;
       const dk = dark();
 
-      // Gradient background (subtle radial)
+      // Gradient background (subtle radial) — warm amber/charcoal tones
       const grad = ctx.createRadialGradient(W/2, H * 0.3, 0, W/2, H * 0.3, W * 0.7);
       if (dk) {
-        grad.addColorStop(0, 'rgba(20,26,50,0.92)');
-        grad.addColorStop(1, 'rgba(9,11,19,0.98)');
+        grad.addColorStop(0, 'rgba(38,30,16,0.92)');
+        grad.addColorStop(1, 'rgba(20,17,9,0.98)');
       } else {
-        grad.addColorStop(0, 'rgba(235,240,255,0.80)');
-        grad.addColorStop(1, 'rgba(248,249,252,0.94)');
+        grad.addColorStop(0, 'rgba(252,246,232,0.82)');
+        grad.addColorStop(1, 'rgba(247,244,237,0.94)');
       }
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, W, H);
@@ -1019,9 +1019,9 @@
       const gridL    = -W * 0.2;
       const gridR    = W * 1.2;
 
-      // Grid colour
-      const gAlpha = dk ? 0.12 : 0.08;
-      ctx.strokeStyle = `rgba(${dk ? '92,143,242' : '26,80,224'},${gAlpha})`;
+      // Grid colour — warm amber
+      const gAlpha = dk ? 0.13 : 0.085;
+      ctx.strokeStyle = `rgba(${dk ? '232,169,58' : '185,116,10'},${gAlpha})`;
       ctx.lineWidth   = 0.8;
 
       // Vertical grid lines (converge to vanishing point)
@@ -1086,12 +1086,12 @@
           else ctx.lineTo(screenX, screenY);
         }
 
-        const lineAlpha = dk ? 0.35 : 0.22;
+        const lineAlpha = dk ? 0.38 : 0.24;
         ctx.strokeStyle = idx === 1
-          ? `rgba(${dk ? '34,197,94' : '22,163,74'},${lineAlpha})`
+          ? `rgba(${dk ? '69,192,126' : '47,143,91'},${lineAlpha})`
           : idx === 2
-            ? `rgba(${dk ? '239,68,68' : '220,38,38'},${lineAlpha * 0.8})`
-            : `rgba(${dk ? '92,143,242' : '26,80,224'},${lineAlpha})`;
+            ? `rgba(${dk ? '224,104,92' : '194,69,58'},${lineAlpha * 0.85})`
+            : `rgba(${dk ? '232,169,58' : '185,116,10'},${lineAlpha})`;
         ctx.lineWidth = 1.4;
         ctx.lineJoin  = 'round';
         ctx.stroke();
@@ -1108,7 +1108,7 @@
 
       // Subtle glow at vanishing point
       const vgrad = ctx.createRadialGradient(vanishX, vanishY, 0, vanishX, vanishY, W * 0.25);
-      vgrad.addColorStop(0, dk ? 'rgba(92,143,242,0.08)' : 'rgba(26,80,224,0.06)');
+      vgrad.addColorStop(0, dk ? 'rgba(232,169,58,0.09)' : 'rgba(185,116,10,0.06)');
       vgrad.addColorStop(1, 'transparent');
       ctx.fillStyle = vgrad;
       ctx.fillRect(0, 0, W, H);
