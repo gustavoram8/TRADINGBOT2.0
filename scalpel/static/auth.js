@@ -214,8 +214,9 @@ const AUTH_I18N = {
   const t = (k) => (dict[k] !== undefined ? dict[k] : (AUTH_I18N.en[k] || k));
 
   document.documentElement.lang = lang;
-  try { if (localStorage.getItem('scalpel_theme') === 'light') document.body.classList.add('light'); }
-  catch (e) {}
+  // Default is LIGHT; switch to dark only if the user previously saved dark.
+  try { if (localStorage.getItem('scalpel_theme') !== 'dark') document.body.classList.add('light'); }
+  catch (e) { document.body.classList.add('light'); }
 
   document.querySelectorAll('[data-i18n]').forEach((el) => {
     let txt = t(el.getAttribute('data-i18n'));

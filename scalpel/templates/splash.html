@@ -219,8 +219,9 @@
   <script>
     // Apply saved theme before paint (matches the main app)
     (function () {
-      try { if (localStorage.getItem('scalpel_theme') === 'light') document.body.classList.add('light'); }
-      catch (e) {}
+      // Default is LIGHT; switch to dark only if the user previously saved dark.
+      try { if (localStorage.getItem('scalpel_theme') !== 'dark') document.body.classList.add('light'); }
+      catch (e) { document.body.classList.add('light'); }
     })();
   </script>
 

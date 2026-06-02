@@ -2035,8 +2035,9 @@
 <script>
   // Apply saved theme before paint to avoid a flash
   (function () {
-    try { if (localStorage.getItem('scalpel_theme') === 'light') document.body.classList.add('light'); }
-    catch (e) {}
+    // Default is LIGHT; switch to dark only if the user previously saved dark.
+    try { if (localStorage.getItem('scalpel_theme') !== 'dark') document.body.classList.add('light'); }
+    catch (e) { document.body.classList.add('light'); }
   })();
 
   // Current account context, injected server-side
@@ -4159,7 +4160,8 @@
   }
 
   // ── Theme ──
-  let currentTheme = 'dark';
+  // Default is LIGHT across the whole site; persisted choice (incl. dark) wins.
+  let currentTheme = 'light';
   try { const th = localStorage.getItem('scalpel_theme'); if (th === 'light' || th === 'dark') currentTheme = th; } catch (e) {}
 
   function applyTheme(theme) {
