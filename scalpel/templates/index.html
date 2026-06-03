@@ -2346,15 +2346,22 @@
     /* a neuron (topic). trigger neurons get spikier dendrites (drawn in JS) */
     .syn-neuron { cursor: pointer; }
     .syn-neuron .syn-soma {
-      transition: fill .25s ease, r .2s ease;
+      transition: fill .25s ease;
       filter: drop-shadow(0 0 5px rgba(140,210,235,.85));
       animation: synPulse 3.2s ease-in-out infinite;
     }
+    /* Entry trigger diamond: faster amber pulse */
+    .syn-neuron .syn-soma[points] {
+      filter: drop-shadow(0 0 6px rgba(245,175,60,.9));
+      animation: synTrigPulse 2.1s ease-in-out infinite;
+    }
     .syn-neuron:hover .syn-soma { filter: drop-shadow(0 0 9px rgba(190,235,255,1)); }
+    .syn-neuron:hover .syn-soma[points] { filter: drop-shadow(0 0 12px rgba(255,185,50,1)) drop-shadow(0 0 22px rgba(255,155,30,.6)); }
     .syn-neuron.studied .syn-soma {
       filter: drop-shadow(0 0 8px rgba(255,200,90,.95)) drop-shadow(0 0 16px rgba(255,180,60,.6));
     }
     @keyframes synPulse { 0%,100%{opacity:.7;} 50%{opacity:1;} }
+    @keyframes synTrigPulse { 0%,100%{opacity:.65;transform-box:fill-box;transform-origin:center;transform:scale(.97);} 50%{opacity:1;transform:scale(1.04);} }
 
     .syn-lib-hint {
       position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%);
@@ -11129,25 +11136,55 @@
     // A neuron soma: a dendrite-branched body. type 'c' concept / 't' trigger.
     function neuron(g, x, y, opt) {
       const { studied, trigger, r } = opt;
-      const col = studied ? '#ffd86b' : (trigger ? '#8fe3d0' : '#bcd6ff');
-      // dendrite spikes
-      const spikes = trigger ? 6 : 5;
-      for (let k=0;k<spikes;k++){
-        const a = (Math.PI*2/spikes)*k + (trigger?0.4:0);
-        const len = r + (trigger?9:7);
-        g.appendChild(el('line', {
-          x1:x+Math.cos(a)*r*0.6, y1:y+Math.sin(a)*r*0.6,
-          x2:x+Math.cos(a)*len,  y2:y+Math.sin(a)*len,
-          stroke: studied?'rgba(255,210,110,.55)':'rgba(150,200,230,.4)', 'stroke-width':'1.1'
-        }));
+      const col = studied ? '#ffd86b' : (trigger ? '#f5b942' : '#bcd6ff');
+
+      if (trigger) {
+        // Entry triggers: diamond soma (rotated square) — visually distinct from concept circles
+        const d = r * 1.55; // half-diagonal of the diamond
+        const pts = `${x},${y-d} ${x+d},${y} ${x},${y+d} ${x-d},${y}`;
+        // outer pulse ring (second diamond, offset for depth)
+        const d2 = d + 6;
+        const pts2 = `${x},${y-d2} ${x+d2},${y} ${x},${y+d2} ${x-d2},${y}`;
+        g.appendChild(el('polygon', { points:pts2, fill:'none',
+          stroke: studied?'rgba(255,200,90,.55)':'rgba(245,175,60,.4)', 'stroke-width':'1' }));
+        // corner spikes along diamond axes (4 cardinal directions)
+        [[0,-1],[1,0],[0,1],[-1,0]].forEach(([dx,dy]) => {
+          g.appendChild(el('line', {
+            x1:x+dx*d*0.55, y1:y+dy*d*0.55,
+            x2:x+dx*(d+11),  y2:y+dy*(d+11),
+            stroke: studied?'rgba(255,210,110,.55)':'rgba(245,175,60,.5)', 'stroke-width':'1.2'
+          }));
+        });
+        // diagonal secondary spikes (×)
+        [[0.7,-0.7],[0.7,0.7],[-0.7,0.7],[-0.7,-0.7]].forEach(([dx,dy]) => {
+          g.appendChild(el('line', {
+            x1:x+dx*d*0.5, y1:y+dy*d*0.5,
+            x2:x+dx*(d+6.5), y2:y+dy*(d+6.5),
+            stroke: studied?'rgba(255,210,110,.35)':'rgba(245,175,60,.3)', 'stroke-width':'0.9'
+          }));
+        });
+        const soma = el('polygon', { class:'syn-soma', points:pts, fill:col,
+          style:'filter:drop-shadow(0 0 5px rgba(245,175,60,.7));' });
+        g.appendChild(soma);
+        return soma;
+      } else {
+        // Concept neurons: rounded circle soma
+        const spikes = 5;
+        for (let k=0;k<spikes;k++){
+          const a = (Math.PI*2/spikes)*k;
+          const len = r + 7;
+          g.appendChild(el('line', {
+            x1:x+Math.cos(a)*r*0.6, y1:y+Math.sin(a)*r*0.6,
+            x2:x+Math.cos(a)*len,  y2:y+Math.sin(a)*len,
+            stroke: studied?'rgba(255,210,110,.55)':'rgba(150,200,230,.4)', 'stroke-width':'1.1'
+          }));
+        }
+        g.appendChild(el('circle', { cx:x, cy:y, r:r+5, fill:'none',
+          stroke: studied?'rgba(255,200,90,.5)':'rgba(150,200,235,.32)', 'stroke-width':'1' }));
+        const soma = el('circle', { class:'syn-soma', cx:x, cy:y, r:r, fill:col });
+        g.appendChild(soma);
+        return soma;
       }
-      // outer membrane glow
-      g.appendChild(el('circle', { cx:x, cy:y, r:r+5, fill:'none',
-        stroke: studied?'rgba(255,200,90,.5)':'rgba(150,200,235,.32)', 'stroke-width':'1' }));
-      // soma body
-      const soma = el('circle', { class:'syn-soma', cx:x, cy:y, r:r, fill:col });
-      g.appendChild(soma);
-      return soma;
     }
 
     // ── NEURAL MAP: 5 methodology clusters across the tissue ──
@@ -11234,9 +11271,10 @@
         const soma = neuron(g, p.x, p.y, { studied:isCk, trigger:isTrig, r:isTrig?6:6.5 });
         soma.style.animationDelay = (i*0.12)+'s';
         // label below
-        g.appendChild(svgText((isTrig?'⚡ ':'')+t.label, p.x, p.y+24, {
-          fill: isCk ? '#ffd86b' : (isTrig ? '#9fe6d4' : '#cdddf6'),
-          'font-size':'11.5', 'font-weight': isTrig?'600':'500',
+        g.appendChild(svgText(t.label, p.x, p.y+24, {
+          fill: isCk ? '#ffd86b' : (isTrig ? '#f5c060' : '#cdddf6'),
+          'font-size':'11.5', 'font-weight': isTrig?'700':'500',
+          'font-style': isTrig?'italic':'normal',
           'paint-order':'stroke', stroke:'rgba(2,8,14,.9)', 'stroke-width':'3.2', 'stroke-linejoin':'round',
         }));
         g.addEventListener('click', () => openTopic(t.slug));
