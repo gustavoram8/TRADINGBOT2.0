@@ -502,9 +502,10 @@
     .price .period { font-size: 14px; color: var(--muted); font-weight: 500; }
     .plan-divider { height: 1px; background: var(--pp-line-soft); margin: 24px 0; }
     .features { list-style: none; flex: 1; margin-bottom: 28px; }
+    .features { text-align: left; }
     .features li {
       display: flex; align-items: flex-start; gap: 11px; padding: 7px 0;
-      font-size: 14px; color: var(--pp-ink-soft);
+      font-size: 14px; color: var(--pp-ink-soft); text-align: left;
     }
     .features li .check {
       flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%;
@@ -1106,11 +1107,23 @@
           </li>
           <li>
             <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span data-t="pp_synapse"><strong>Synapse</strong> — interactive AI knowledge map to explore trading concepts</span>
+          </li>
+          <li>
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span data-t="pp_quiz"><strong>Quiz</strong> — test your knowledge across every methodology and level</span>
+          </li>
+          <li>
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span data-t="pp_chalk"><strong>Chalkboard</strong> — draw &amp; annotate your setups on a dedicated canvas</span>
+          </li>
+          <li>
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
             <span data-t="pp4">Everything in Standard</span>
           </li>
-          <li class="soon">
+          <li>
             <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-            <span><span data-t="pp5">Indicators library</span> <span class="label-soon" data-t="soon_label">soon</span></span>
+            <span data-t="pp5">Indicators library</span>
           </li>
         </ul>
         <a href="/register" class="cta" data-t="pp_cta">Go Premium</a>
@@ -1454,7 +1467,10 @@
         pf1:'<strong>1</strong> screenshot analysis per week', pf2:'Full AI feedback engine', pf_cta:'Start free',
         ps1:'<strong>1</strong> screenshot analysis per day', ps2:'Full AI feedback engine', ps3:'Everything in Free', ps_cta:'Choose Standard',
         pp1:'Up to <strong>5 screenshot analyses per day</strong>', pp2:'Full AI feedback engine', pp3:'<strong>Trading Forum</strong> — AI-moderated community to share setups &amp; ideas',
-        pp4:'Everything in Standard', pp5:'Indicators library', soon_label:'soon', pp_cta:'Go Premium',
+        pp_synapse:'<strong>Synapse</strong> — interactive AI knowledge map to explore trading concepts',
+        pp_quiz:'<strong>Quiz</strong> — test your knowledge across every methodology and level',
+        pp_chalk:'<strong>Chalkboard</strong> — draw &amp; annotate your setups on a dedicated canvas',
+        pp4:'Everything in Standard', pp5:'Indicators library', pp_cta:'Go Premium',
         pop_badge:'MOST POPULAR',
         cta_final:'Ready to trade with precision?',
         cta_sub:'Join traders who\'ve made Trader Acelerator their daily ritual.',
@@ -1509,7 +1525,10 @@
         pf1:'<strong>1</strong> análisis de captura por semana', pf2:'Motor completo de feedback IA', pf_cta:'Comenzar gratis',
         ps1:'<strong>1</strong> análisis de captura por día', ps2:'Motor completo de feedback IA', ps3:'Todo lo del plan Free', ps_cta:'Elegir Standard',
         pp1:'Hasta <strong>5 análisis de captura por día</strong>', pp2:'Motor completo de feedback IA', pp3:'<strong>Foro de Trading</strong> — comunidad moderada por IA para compartir setups e ideas',
-        pp4:'Todo lo del plan Standard', pp5:'Biblioteca de indicadores', soon_label:'pronto', pp_cta:'Ir a Premium',
+        pp_synapse:'<strong>Synapse</strong> — mapa interactivo de conocimiento con IA para explorar conceptos de trading',
+        pp_quiz:'<strong>Quiz</strong> — pon a prueba tus conocimientos en cada metodología y nivel',
+        pp_chalk:'<strong>Chalkboard</strong> — dibuja y anota tus setups en un lienzo dedicado',
+        pp4:'Todo lo del plan Standard', pp5:'Biblioteca de indicadores', pp_cta:'Ir a Premium',
         pop_badge:'MÁS POPULAR',
         cta_final:'¿Listo para operar con precisión?',
         cta_sub:'Únete a los traders que han hecho de Trader Acelerator su ritual diario.',
@@ -1564,7 +1583,10 @@
         pf1:'<strong>1</strong> analyse de capture par semaine', pf2:'Moteur de feedback IA complet', pf_cta:'Commencer gratuitement',
         ps1:'<strong>1</strong> analyse de capture par jour', ps2:'Moteur de feedback IA complet', ps3:'Tout le plan Free', ps_cta:'Choisir Standard',
         pp1:'Jusqu\'à <strong>5 analyses de capture par jour</strong>', pp2:'Moteur de feedback IA complet', pp3:'<strong>Forum de Trading</strong> — communauté modérée par IA pour partager setups et idées',
-        pp4:'Tout le plan Standard', pp5:'Bibliothèque d\'indicateurs', soon_label:'bientôt', pp_cta:'Passer à Premium',
+        pp_synapse:'<strong>Synapse</strong> — carte de connaissances interactive par IA pour explorer les concepts de trading',
+        pp_quiz:'<strong>Quiz</strong> — testez vos connaissances sur chaque méthodologie et niveau',
+        pp_chalk:'<strong>Chalkboard</strong> — dessinez et annotez vos setups sur un canevas dédié',
+        pp4:'Tout le plan Standard', pp5:'Bibliothèque d\'indicateurs', pp_cta:'Passer à Premium',
         pop_badge:'LE PLUS POPULAIRE',
         cta_final:'Prêt à trader avec précision ?',
         cta_sub:'Rejoignez les traders qui ont fait de Trader Acelerator leur rituel quotidien.',
@@ -1619,7 +1641,10 @@
         pf1:'<strong>1</strong> análise de captura por semana', pf2:'Motor completo de feedback IA', pf_cta:'Começar grátis',
         ps1:'<strong>1</strong> análise de captura por dia', ps2:'Motor completo de feedback IA', ps3:'Tudo do plano Free', ps_cta:'Escolher Standard',
         pp1:'Até <strong>5 análises de captura por dia</strong>', pp2:'Motor completo de feedback IA', pp3:'<strong>Fórum de Trading</strong> — comunidade moderada por IA para compartilhar setups e ideias',
-        pp4:'Tudo do plano Standard', pp5:'Biblioteca de indicadores', soon_label:'em breve', pp_cta:'Ir para Premium',
+        pp_synapse:'<strong>Synapse</strong> — mapa interativo de conhecimento com IA para explorar conceitos de trading',
+        pp_quiz:'<strong>Quiz</strong> — teste seus conhecimentos em cada metodologia e nível',
+        pp_chalk:'<strong>Chalkboard</strong> — desenhe e anote seus setups em um quadro dedicado',
+        pp4:'Tudo do plano Standard', pp5:'Biblioteca de indicadores', pp_cta:'Ir para Premium',
         pop_badge:'MAIS POPULAR',
         cta_final:'Pronto para operar com precisão?',
         cta_sub:'Junte-se aos traders que fizeram do Trader Acelerator seu ritual diário.',
