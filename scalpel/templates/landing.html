@@ -87,6 +87,25 @@
     .lang-btn:hover { transform: scale(1.12); }
     .lang-btn.active { border-color: var(--chip-bd); background: var(--chip); }
 
+    /* ── Theme toggle ── */
+    .theme-btn {
+      width: 32px; height: 24px; border-radius: 5px;
+      border: 1.5px solid transparent;
+      background: rgba(127,127,127,0.04);
+      backdrop-filter: blur(6px);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      color: var(--text); padding: 0;
+      transition: border-color .15s, transform .12s, background .15s;
+    }
+    .theme-btn:hover { transform: scale(1.12); border-color: var(--chip-bd); }
+    .theme-btn svg { width: 15px; height: 15px; }
+    .theme-sep { width: 1px; align-self: stretch; margin: 3px 4px; background: var(--chip-bd); opacity: .5; }
+    /* default (light) → show moon (click to go dark); dark → show sun */
+    .theme-btn .icon-sun  { display: none; }
+    .theme-btn .icon-moon { display: block; }
+    body.dark .theme-btn .icon-sun  { display: block; }
+    body.dark .theme-btn .icon-moon { display: none; }
+
     /* ── HERO ── */
     .hero {
       position: relative; z-index: 1;
@@ -551,6 +570,19 @@
 
   <!-- Language selector -->
   <div class="lang-sel" id="lang-sel" role="navigation" aria-label="Language">
+    <button class="theme-btn" id="theme-btn" type="button" title="Toggle theme" aria-label="Toggle theme">
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="5"/>
+        <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+    </button>
+    <div class="theme-sep" aria-hidden="true"></div>
     <button class="lang-btn" data-lang="en" title="English" aria-label="English">&#127482;&#127480;</button>
     <button class="lang-btn" data-lang="es" title="Español" aria-label="Español">&#127466;&#127480;</button>
     <button class="lang-btn" data-lang="fr" title="Français" aria-label="Français">&#127467;&#127479;</button>
@@ -1572,6 +1604,12 @@
     document.getElementById('brand-block').classList.add('assembled');
     document.getElementById('brand-flash').classList.add('burst');
   }, buildEnd);
+
+  // Theme toggle — persists to scalpel_theme so all pages honor it
+  document.getElementById('theme-btn').addEventListener('click', () => {
+    const nowDark = document.body.classList.toggle('dark');
+    try { localStorage.setItem('scalpel_theme', nowDark ? 'dark' : 'light'); } catch(e) {}
+  });
 
   // Lang selector
   document.getElementById('lang-sel').addEventListener('click', e => {
