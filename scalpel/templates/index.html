@@ -3562,7 +3562,7 @@
       'proj.hint': 'Preset your usual buttons for a strategy, save it, and reuse it in one click. Direction & Result are always marked fresh.',
       'proj.count': '{used} / {limit} projects',
       'proj.new': 'New project',
-      'proj.freehands': 'Free hands',
+      'proj.freehands': 'Quick Analysis',
       'proj.freehandsTip': 'Analyze without any preset — mark every button manually',
       'proj.loadTip': 'Click to load this project',
       'proj.limitTip': 'Project limit reached ({limit}). Upgrade your plan for more.',
@@ -3812,7 +3812,7 @@
       'proj.hint': 'Preconfigura los botones que sueles usar para una estrategia, guárdala y reúsala con un clic. Dirección y Resultado siempre se marcan frescos.',
       'proj.count': '{used} / {limit} proyectos',
       'proj.new': 'Nuevo proyecto',
-      'proj.freehands': 'Manos libres',
+      'proj.freehands': 'Análisis rápido',
       'proj.freehandsTip': 'Analiza sin ningún preset — marca cada botón a mano',
       'proj.loadTip': 'Haz clic para cargar este proyecto',
       'proj.limitTip': 'Límite de proyectos alcanzado ({limit}). Mejora tu plan para más.',
@@ -4062,7 +4062,7 @@
       'proj.hint': 'Préconfigurez vos boutons habituels pour une stratégie, enregistrez-la et réutilisez-la en un clic. Direction et Résultat se marquent toujours à neuf.',
       'proj.count': '{used} / {limit} projets',
       'proj.new': 'Nouveau projet',
-      'proj.freehands': 'Mains libres',
+      'proj.freehands': 'Analyse rapide',
       'proj.freehandsTip': 'Analysez sans aucun préset — marquez chaque bouton à la main',
       'proj.loadTip': 'Cliquez pour charger ce projet',
       'proj.limitTip': 'Limite de projets atteinte ({limit}). Améliorez votre forfait pour plus.',
@@ -4312,7 +4312,7 @@
       'proj.hint': 'Pré-configure os botões que você costuma usar para uma estratégia, salve e reutilize com um clique. Direção e Resultado são sempre marcados na hora.',
       'proj.count': '{used} / {limit} projetos',
       'proj.new': 'Novo projeto',
-      'proj.freehands': 'Mãos livres',
+      'proj.freehands': 'Análise rápida',
       'proj.freehandsTip': 'Analise sem nenhum preset — marque cada botão manualmente',
       'proj.loadTip': 'Clique para carregar este projeto',
       'proj.limitTip': 'Limite de projetos atingido ({limit}). Faça upgrade do seu plano para mais.',
@@ -4692,7 +4692,7 @@
       // "Free hands" mode — analyze without any preset (highlighted when no project is active).
       const freeChip = document.createElement('div');
       freeChip.className = 'proj-chip proj-chip-free' + (activeId === null ? ' active' : '');
-      freeChip.textContent = '🖐 ' + T('proj.freehands');
+      freeChip.textContent = '⚡ ' + T('proj.freehands');
       freeChip.title = T('proj.freehandsTip');
       freeChip.addEventListener('click', clearActive);
       chipsEl.appendChild(freeChip);
