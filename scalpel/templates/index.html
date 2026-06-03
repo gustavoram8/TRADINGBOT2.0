@@ -448,12 +448,36 @@
     }
 
     /* ── CARD ── */
+    /* Option B: the panel itself is near-invisible (blends with the page),
+       defined only by a thin outline and a coloured left edge per section. */
     .card {
-      background: var(--card);
+      background: transparent;
       border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 24px;
-      margin-bottom: 16px;
+      border-left: 3px solid var(--card-accent, var(--accent));
+      border-radius: 3px var(--radius) var(--radius) 3px;
+      padding: 22px 24px;
+      margin-bottom: 14px;
+    }
+    body.light .card { background: var(--card); }
+
+    /* ── Dark mode only: lift all analyzer prose (titles, subtitles, field
+       labels, hints, info) to the header's near-white. Pills and buttons keep
+       their own colours; functional red indicators (required/error) stay too.
+       Light mode is untouched. ── */
+    body:not(.light) #analyze-container .page-header p,
+    body:not(.light) #analyze-container .card-label,
+    body:not(.light) #analyze-container .card-label span[data-i18n="card.confluencesHint"],
+    body:not(.light) #analyze-container .card-label span[data-i18n="card.notesHint"],
+    body:not(.light) #analyze-container .section-row > div:not(.pill-group),
+    body:not(.light) #analyze-container #projects-card > p,
+    body:not(.light) #analyze-container .proj-count,
+    body:not(.light) #analyze-container .proj-active-label,
+    body:not(.light) #analyze-container .proj-tile .tile-meta,
+    body:not(.light) #analyze-container .shot-guide-title,
+    body:not(.light) #analyze-container .guide-text,
+    body:not(.light) #analyze-container .upload-text strong,
+    body:not(.light) #analyze-container .upload-text span {
+      color: var(--text) !important;
     }
 
     .card-label {
@@ -2523,7 +2547,7 @@
     </div>
 
     <!-- ── ANALYSIS PROJECTS ── -->
-    <div class="card proj-card" id="projects-card">
+    <div class="card proj-card" id="projects-card" style="--card-accent:#8b5cf6;">
       <div class="proj-head">
         <div class="card-label" style="margin:0;">
           <span data-i18n="proj.title">Your Analysis Projects</span>
@@ -2552,7 +2576,7 @@
     <form id="trade-form" enctype="multipart/form-data">
 
       <!-- Trade Info -->
-      <div class="card">
+      <div class="card" style="--card-accent:#5b8ef0;">
         <div class="card-label" data-i18n="card.tradeDetails">Trade Details</div>
 
         <div class="section-row">
@@ -2627,7 +2651,7 @@
       </div>
 
       <!-- Analysis -->
-      <div class="card">
+      <div class="card" style="--card-accent:#14b8a6;">
         <div class="card-label" data-i18n="card.preTrade">Your Pre-Trade Analysis</div>
 
         <div class="section-row">
@@ -2666,7 +2690,7 @@
       </div>
 
       <!-- Confluences -->
-      <div class="card">
+      <div class="card" style="--card-accent:#06b6d4;">
         <div class="card-label"><span data-i18n="card.confluences">Confluences You Identified</span> <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;" data-i18n="card.confluencesHint">(select all that apply)</span></div>
         <div class="pill-group" data-group="confluences" data-multi="true">
           <div class="pill" data-value="Liquidity Sweep">Liquidity Sweep</div>
@@ -2682,7 +2706,7 @@
       </div>
 
       <!-- Screenshot -->
-      <div class="card">
+      <div class="card" style="--card-accent:#f59e0b;">
         <div class="card-label"><span data-i18n="card.screenshot">Chart Screenshot</span> <span style="color:var(--loss);font-weight:400;text-transform:none;letter-spacing:0;" data-i18n="card.required">required</span></div>
 
         <div class="shot-guide">
@@ -2723,7 +2747,7 @@
       </div>
 
       <!-- Notes / Trade Construction -->
-      <div class="card">
+      <div class="card" style="--card-accent:#64748b;">
         <div class="card-label">
           <span data-i18n="card.notes">Trade Construction</span>
           <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;" data-i18n="card.notesHint">(optional — describe how you built this trade)</span>
