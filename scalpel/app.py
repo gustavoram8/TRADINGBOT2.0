@@ -2126,8 +2126,11 @@ def init_db():
             )
             admin.set_password(admin_password)
             db.session.add(admin)
-            db.session.commit()
-            app.logger.info('Seeded admin account: %s', admin_email)
+            try:
+                db.session.commit()
+                app.logger.info('Seeded admin account: %s', admin_email)
+            except Exception:
+                db.session.rollback()
         init_scout_data()
 
 
