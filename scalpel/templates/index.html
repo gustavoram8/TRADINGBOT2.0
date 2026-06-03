@@ -11070,56 +11070,101 @@
 
     let mode = 'map';        // 'map' | 'cluster'
     let activeMethod = null; // method id when in cluster mode
-    let fieldRAF = 0, particles = [];
+    let fieldRAF = 0, particles = [], fieldW = 0, fieldH = 0, fieldLast = 0;
 
-    // ── Neural-field backdrop (canvas) ──
-    // Drifting synaptic particles linked by faint axon threads — the living
-    // tissue the methodology clusters float inside.
+    // ── Neural-field backdrop (canvas 2D — NO Three.js, no WebGL) ──
+    // Mirrors the golden node-net seen behind the Synapse 3D brain, but drawn
+    // purely on 2D canvas so it stays light. Depth layers (far/near) give the
+    // net a sense of 3D volume; the heavy O(n²) link pass is bucketed into a
+    // spatial grid and uses squared distance (no Math.hypot) to stay smooth.
+    const F_LINK = 138;                 // max link distance (px)
+    const F_LINK2 = F_LINK * F_LINK;    // squared, for cheap comparison
     function sizeField() {
       const r = lib.getBoundingClientRect();
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      fieldW = r.width; fieldH = r.height;
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.75);
       stars.width = Math.max(1, r.width * dpr); stars.height = Math.max(1, r.height * dpr);
       stars.style.width = r.width + 'px'; stars.style.height = r.height + 'px';
       stars.getContext('2d').setTransform(dpr,0,0,dpr,0,0);
       particles = [];
-      const n = Math.round(r.width * r.height / 16000);
-      for (let i=0;i<n;i++) particles.push({
-        x:Math.random()*r.width, y:Math.random()*r.height,
-        vx:(Math.random()-0.5)*0.18, vy:(Math.random()-0.5)*0.18,
-        r:Math.random()*1.3+0.5, p:Math.random()*Math.PI*2
-      });
+      // density capped so very large screens never explode the particle count
+      const n = Math.min(95, Math.round(r.width * r.height / 17000));
+      for (let i=0;i<n;i++) {
+        // depth ∈ [0,1]: 0 = far (small/dim/slow), 1 = near (big/bright/faster)
+        const depth = Math.random();
+        particles.push({
+          x:Math.random()*r.width, y:Math.random()*r.height,
+          vx:(Math.random()-0.5)*(0.06+depth*0.13),
+          vy:(Math.random()-0.5)*(0.06+depth*0.13),
+          r:0.5 + depth*1.7, p:Math.random()*Math.PI*2, z:depth
+        });
+      }
     }
-    function drawField() {
-      const ctx = stars.getContext('2d'); const r = lib.getBoundingClientRect();
-      ctx.clearRect(0,0,r.width,r.height);
+    function drawField(ts) {
+      fieldRAF = requestAnimationFrame(drawField);
+      // cap to ~40fps — the backdrop doesn't need 60, and this halves CPU
+      if (ts && ts - fieldLast < 24) return;
+      fieldLast = ts || 0;
+      const ctx = stars.getContext('2d');
+      const W = fieldW, H = fieldH;
+      ctx.clearRect(0,0,W,H);
       const t = Date.now()*0.001;
       // drift
-      particles.forEach(d => {
-        d.x += d.vx; d.y += d.vy;
-        if (d.x<0||d.x>r.width) d.vx*=-1;
-        if (d.y<0||d.y>r.height) d.vy*=-1;
-      });
-      // synaptic links between nearby particles
-      const LINK = 132;
       for (let i=0;i<particles.length;i++){
-        for (let j=i+1;j<particles.length;j++){
-          const a=particles[i], b=particles[j];
-          const dx=a.x-b.x, dy=a.y-b.y; const dist=Math.hypot(dx,dy);
-          if (dist<LINK){
-            const al = (1-dist/LINK)*0.16;
-            ctx.strokeStyle='rgba(120,190,210,'+al.toFixed(3)+')';
-            ctx.lineWidth=0.7;
-            ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+        const d = particles[i];
+        d.x += d.vx; d.y += d.vy;
+        if (d.x<0||d.x>W) d.vx*=-1;
+        if (d.y<0||d.y>H) d.vy*=-1;
+      }
+      // ── spatial grid: only test particles in neighbouring buckets ──
+      const cell = F_LINK;
+      const cols = Math.max(1, Math.ceil(W/cell)), rows = Math.max(1, Math.ceil(H/cell));
+      const grid = new Array(cols*rows);
+      for (let i=0;i<particles.length;i++){
+        const d = particles[i];
+        const cx = Math.min(cols-1, Math.max(0, (d.x/cell)|0));
+        const cy = Math.min(rows-1, Math.max(0, (d.y/cell)|0));
+        const key = cy*cols+cx;
+        (grid[key] || (grid[key]=[])).push(i);
+      }
+      // golden axon threads between near neighbours
+      ctx.lineWidth = 0.7;
+      for (let cy=0;cy<rows;cy++) for (let cx=0;cx<cols;cx++){
+        const here = grid[cy*cols+cx]; if (!here) continue;
+        for (let ny=cy;ny<=cy+1;ny++) for (let nx=cx-1;nx<=cx+1;nx++){
+          if (ny<0||ny>=rows||nx<0||nx>=cols) continue;
+          if (ny===cy && nx<cx) continue;            // avoid double-counting
+          const there = grid[ny*cols+nx]; if (!there) continue;
+          for (let ii=0;ii<here.length;ii++){
+            const a = particles[here[ii]];
+            const startJ = (ny===cy && nx===cx) ? ii+1 : 0;
+            for (let jj=startJ;jj<there.length;jj++){
+              const b = particles[there[jj]];
+              const dx=a.x-b.x, dy=a.y-b.y; const d2=dx*dx+dy*dy;
+              if (d2<F_LINK2){
+                const al = (1 - Math.sqrt(d2)/F_LINK) * 0.18 * (0.45+0.55*((a.z+b.z)/2));
+                ctx.strokeStyle = 'rgba(196,162,82,'+al.toFixed(3)+')'; // golden net
+                ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+              }
+            }
           }
         }
       }
-      // soma dots, gently pulsing
-      particles.forEach(d => {
-        const a = 0.30 + 0.4*(0.5+0.5*Math.sin(t*1.4 + d.p));
+      // soma nodes — golden, gently pulsing, brighter when "near"
+      for (let i=0;i<particles.length;i++){
+        const d = particles[i];
+        const pulse = 0.5 + 0.5*Math.sin(t*1.3 + d.p);
+        const a = (0.22 + 0.45*pulse) * (0.4 + 0.6*d.z);
         ctx.beginPath(); ctx.arc(d.x,d.y,d.r,0,Math.PI*2);
-        ctx.fillStyle = 'rgba(150,210,225,'+a.toFixed(3)+')'; ctx.fill();
-      });
-      fieldRAF = requestAnimationFrame(drawField);
+        ctx.fillStyle = 'rgba(206,168,80,'+a.toFixed(3)+')';
+        ctx.fill();
+        // near nodes get a faint halo for depth
+        if (d.z>0.7){
+          ctx.beginPath(); ctx.arc(d.x,d.y,d.r*2.4,0,Math.PI*2);
+          ctx.fillStyle = 'rgba(206,168,80,'+(a*0.12).toFixed(3)+')';
+          ctx.fill();
+        }
+      }
     }
 
     // ── Geometry helpers ──
