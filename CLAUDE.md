@@ -76,8 +76,23 @@
       el token gratuito de GitHub Models (limitado).
 - [ ] **Configurar Stripe** — pagos de suscripción (Free → Standard → Premium).
       Sin esto no hay monetización.
-- [ ] **Desplegar en VPS** — el sitio corre localmente; necesita servidor en
-      producción (DigitalOcean, Railway, Render, etc.) con dominio propio.
+- [x] **Desplegar en VPS** — sitio corriendo en Contabo VPS (`62.171.180.22:5001`)
+      con supervisor (autostart + autorestart). Falta dominio propio (ver tarea abajo).
+- [ ] **Comprar dominio en Cloudflare Registrar** — costo ~$10.46 USD/año para `.com`.
+      URL: cloudflare.com/registrar → "Domain Registration" → "Register Domains".
+      Dominio objetivo: `traderacelerator.com` (verificar disponibilidad al momento de comprar).
+      Una vez comprado: apuntar DNS a IP del VPS `62.171.180.22` y configurar nginx + SSL
+      (HTTPS gratis via Let's Encrypt) para que el sitio corra en `https://traderacelerator.com`
+      en vez de `http://62.171.180.22:5001`.
+- [ ] **Migrar email de envío a cuenta dedicada** — actualmente los emails de verificación
+      OTP y recuperación de contraseña salen desde el Gmail personal `mauroramirezmij@gmail.com`.
+      Pasos una vez comprado el dominio:
+      1. Crear Gmail dedicado (ej. `noreply.traderacelerator@gmail.com` o configurar
+         `hola@traderacelerator.com` con Google Workspace ~$6/mes).
+      2. Activar 2FA en esa cuenta → generar nuevo App Password.
+      3. En el VPS actualizar `/etc/supervisor/conf.d/traderacelerator.conf`:
+         cambiar `MAIL_USERNAME` a la nueva dirección y `MAIL_APP_PASSWORD` a la nueva clave.
+      4. `supervisorctl reread && supervisorctl restart traderacelerator`
 - [ ] **Páginas legales** — redactar Términos y Condiciones + Política de
       Privacidad. Actualmente el footer solo tiene un disclaimer básico.
 - [ ] **Revisión legal con Claude** — una vez terminado el sitio y redactados
@@ -94,16 +109,9 @@
 
 ### 🟡 Importante — mejoras post-lanzamiento
 
-- [ ] **Conectar el envío de emails (SendGrid o Gmail SMTP)** — El sistema de
-      **registro obligatorio + verificación por código (OTP) de 6 dígitos ya está
-      completamente construido y activo** (modelo `User.verification_code`, rutas
-      `/register`, `/verify-email`, `/resend-code`, plantilla `verify_email.html`,
-      email `send_verification_email()`). Lo único que falta para producción es
-      configurar las credenciales de correo: poner `MAIL_APP_PASSWORD` (Gmail App
-      Password) ahora, o migrar a SendGrid más adelante. **Sin credenciales el flujo
-      sigue funcionando** pero el código no llega por email: se imprime en el log
-      del servidor (`WARNING ... verification code for X is NNNNNN`) para pruebas
-      locales. La recuperación de contraseña usa el mismo canal SMTP.
+- [x] **Conectar el envío de emails (Gmail SMTP)** — `MAIL_APP_PASSWORD` configurado
+      en el VPS (supervisor). Emails de verificación OTP y recuperación de contraseña
+      funcionando. Pendiente: migrar a cuenta de email dedicada (ver tarea 🔴 arriba).
 - [ ] **APScheduler + OpenAI Web Search para Scout** — agente que actualice
       automáticamente los datos de las 25 prop firms semanalmente (precios,
       países permitidos, promociones). Requiere OpenAI pagado.
