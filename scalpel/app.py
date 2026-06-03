@@ -2025,29 +2025,61 @@ class QuizProgress(db.Model):
 # Slugs are globally unique and methodology-prefixed so collisions like ICT's
 # "Liquidity" vs SMC's "Liquidity" never clash. (slug, human label) pairs.
 SYNAPSE_TOPICS = {
-    'ict': [
-        ('ict.order-blocks',     'Order Blocks'),
-        ('ict.fair-value-gaps',  'Fair Value Gaps'),
-        ('ict.market-structure', 'Market Structure'),
-        ('ict.liquidity',        'Liquidity'),
-        ('ict.kill-zones',       'Kill Zones'),
-        ('ict.amd',              'AMD'),
-        ('ict.pd-arrays',        'PD Arrays'),
+    'price': [
+        ('price.support-resistance', 'Support & Resistance'),
+        ('price.trend-structure',    'Trend & Structure'),
+        ('price.candles',            'Candlestick Reading'),
+        ('price.chart-patterns',     'Chart Patterns'),
+        ('price.supply-demand',      'Supply & Demand'),
+        # entry triggers
+        ('price.pin-bar',            'Pin Bar Rejection'),
+        ('price.engulfing',          'Engulfing Confirmation'),
+        ('price.breakout-retest',    'Breakout Retest'),
+        ('price.harmonic',           'Harmonic Completion'),
     ],
-    'patterns': [
-        ('patterns.candlestick-patterns', 'Candlestick Patterns'),
-        ('patterns.chart-patterns',       'Chart Patterns'),
-        ('patterns.harmonic-patterns',    'Harmonic Patterns'),
-    ],
-    'wyckoff': [
-        ('wyckoff.accumulation',  'Accumulation'),
-        ('wyckoff.distribution',  'Distribution'),
-        ('wyckoff.market-phases', 'Market Phases'),
+    'technical': [
+        ('technical.moving-averages', 'Moving Averages'),
+        ('technical.rsi',             'RSI'),
+        ('technical.macd',            'MACD'),
+        ('technical.bollinger',       'Bollinger Bands'),
+        ('technical.volume',          'Volume'),
+        # entry triggers
+        ('technical.ma-cross',        'MA Crossover'),
+        ('technical.rsi-divergence',  'RSI Divergence'),
+        ('technical.macd-cross',      'MACD Cross'),
+        ('technical.squeeze-break',   'Bollinger Squeeze Break'),
     ],
     'smc': [
-        ('smc.structure',   'Structure'),
-        ('smc.confluences', 'Confluences'),
-        ('smc.liquidity',   'Liquidity'),
+        ('smc.wyckoff-roots',     'Wyckoff Roots'),
+        ('smc.market-structure',  'Market Structure (BOS/ChoCH)'),
+        ('smc.order-blocks',      'Order Blocks'),
+        ('smc.fair-value-gaps',   'Fair Value Gaps'),
+        ('smc.liquidity',         'Liquidity'),
+        ('smc.pd-arrays',         'Premium / Discount'),
+        ('smc.kill-zones',        'Kill Zones'),
+        # entry triggers
+        ('smc.ote',               'OTE Entry'),
+        ('smc.ob-retest',         'Order Block Retest'),
+        ('smc.fvg-fill',          'FVG Fill'),
+        ('smc.liquidity-sweep',   'Liquidity Sweep Reversal'),
+    ],
+    'fundamental': [
+        ('fundamental.macro-drivers',  'Macro Drivers'),
+        ('fundamental.interest-rates', 'Interest Rates'),
+        ('fundamental.news-data',      'News & Data Releases'),
+        ('fundamental.intermarket',    'Intermarket Correlations'),
+        # entry triggers
+        ('fundamental.news-fade',      'News Spike Fade'),
+        ('fundamental.data-continuation', 'Data-Release Continuation'),
+    ],
+    'quant': [
+        ('quant.probability',  'Statistics & Probability'),
+        ('quant.backtesting',  'Backtesting'),
+        ('quant.risk-of-ruin', 'Risk of Ruin'),
+        ('quant.algo-systems', 'Algo Systems'),
+        # entry triggers
+        ('quant.mean-reversion', 'Mean-Reversion Signal'),
+        ('quant.momentum',       'Momentum Signal'),
     ],
 }
 
