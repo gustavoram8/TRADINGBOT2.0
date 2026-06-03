@@ -626,6 +626,26 @@
     }
     .proj-tile.tile-free .tile-mark { color: var(--accent); }
 
+    /* SVG watermark (e.g. the Quick Analysis bolt) — text-shadow can't reach an
+       SVG glyph, so it glows via a drop-shadow filter in the accent color. */
+    .proj-tile .tile-mark-svg {
+      font-size: 0; line-height: 0;
+      right: -8px; bottom: -16px;
+      filter: drop-shadow(0 0 12px var(--tile-accent)) drop-shadow(0 0 26px var(--tile-accent));
+    }
+    .proj-tile .tile-mark-svg svg {
+      width: 78px; height: 78px; display: block; color: var(--tile-accent);
+    }
+    .proj-tile:hover .tile-mark-svg {
+      filter: drop-shadow(0 0 16px var(--tile-accent)) drop-shadow(0 0 36px var(--tile-accent));
+    }
+    .proj-tile.active .tile-mark-svg {
+      filter: drop-shadow(0 0 18px var(--tile-accent)) drop-shadow(0 0 44px var(--tile-accent));
+    }
+    body.light .proj-tile .tile-mark-svg,
+    body.light .proj-tile:hover .tile-mark-svg,
+    body.light .proj-tile.active .tile-mark-svg { filter: none; }
+
     /* New project ghost tile */
     .proj-tile.tile-new {
       background: transparent;
@@ -4819,7 +4839,7 @@
         '<div class="tile-bar"></div>' +
         '<div class="tile-name">' + escapeHtml(T('proj.freehands')) + '</div>' +
         '<div class="tile-meta">' + escapeHtml(T('proj.freehandsMeta')) + '</div>' +
-        '<div class="tile-mark">⚡︎</div>';  // ︎ forces monochrome so it takes the accent color + glow
+        '<div class="tile-mark tile-mark-svg"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="13 1.5 3.5 13.8 11.3 13.8 10.2 22.5 20.5 9.6 12.2 9.6 13 1.5"/></svg></div>';
       freeTile.addEventListener('click', clearActive);
       deckEl.appendChild(freeTile);
 
