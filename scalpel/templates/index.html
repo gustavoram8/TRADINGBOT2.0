@@ -508,15 +508,24 @@
     }
 
     .pill.selected {
-      background: linear-gradient(135deg, var(--grp), color-mix(in srgb, var(--grp) 70%, #000 30%));
+      /* Overlay gloss on a SOLID --grp fill — no color-mix(), so the
+         background never fails to render (white text always stays legible). */
+      background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(0,0,0,0.26)), var(--grp);
       border-color: var(--grp);
       color: #fff;
       font-weight: 600;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.35);
       box-shadow: 0 0 0 1px var(--grp), 0 5px 16px -4px var(--grp);
     }
     body.light .pill.selected { box-shadow: 0 0 0 1px var(--grp), 0 4px 12px -4px var(--grp); }
 
-    .pill.be.selected { color: #000; }
+    /* Light-coloured accents (amber, cyan) need dark text for legibility. */
+    .pill.be.selected,
+    .pill-group[data-group="session"] .pill.selected,
+    .pill-group[data-group="confluences"] .pill.selected {
+      color: #0b1220;
+      text-shadow: none;
+    }
 
     /* ── SEGMENTED-CONTROL STYLE (option 2 prototype) ───────────────────
        Single-select groups become a recessed "track" with connected
