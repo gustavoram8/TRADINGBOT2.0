@@ -4805,8 +4805,6 @@
     return { init, refresh };
   })();
 
-  Projects.init();
-
   // ── New Trade ──
   document.getElementById('btn-new').addEventListener('click', () => {
     // Reset selections
@@ -5003,6 +5001,9 @@
     if (t.id === 'products-tab') return;   // Products is a dropdown, not a view tab
     t.addEventListener('click', () => switchTab(t.dataset.tab));
   });
+
+  // Analysis Projects — init after `U` is declared (avoids TDZ ReferenceError)
+  Projects.init();
 
   // ── Products dropdown ──
   (function () {
