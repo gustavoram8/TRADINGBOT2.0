@@ -11297,10 +11297,16 @@
       });
 
       // central methodology soma (the cluster's nucleus)
+      // Outer glow ring for depth
+      svg.appendChild(el('circle', { cx:CX, cy:CY, r:32, fill:'none',
+        stroke:m.accent, 'stroke-width':'1', opacity:'.35' }));
       svg.appendChild(el('circle', { cx:CX, cy:CY, r:20, fill:m.accent, opacity:'.9',
-        style:'filter:drop-shadow(0 0 16px '+m.accent+');' }));
-      svg.appendChild(svgText(m.name, CX, CY, {
-        fill:'#06121a', 'font-size':'9', 'font-weight':'800', 'letter-spacing':'.5', 'pointer-events':'none',
+        style:'filter:drop-shadow(0 0 18px '+m.accent+');' }));
+      // Label above the nucleus — large, readable, with dark stroke backdrop
+      svg.appendChild(svgText(m.name, CX, CY - 42, {
+        fill:'#f0f6ff', 'font-size':'17', 'font-weight':'800', 'letter-spacing':'1.5',
+        'paint-order':'stroke', stroke:'rgba(2,8,14,.95)', 'stroke-width':'5', 'stroke-linejoin':'round',
+        'pointer-events':'none',
       }));
 
       // axons from nucleus to each neuron
