@@ -553,7 +553,12 @@
       color: var(--text);
     }
     .pill-group:not([data-group="instrument"]) .pill.selected {
-      /* gradient fill stays; trade the big halo for a tight lift inside the track */
+      /* Re-assert the fill here: the segmented `.pill { background:transparent }`
+         rule above has higher specificity than `.pill.selected`, so without this
+         the selected segment stays transparent and its label turns invisible. */
+      background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(0,0,0,0.26)), var(--grp);
+      border-color: var(--grp);
+      /* tight lift inside the track instead of the big halo */
       box-shadow: 0 2px 6px -1px var(--grp), 0 1px 2px rgba(0,0,0,.3);
     }
     body.light .pill-group:not([data-group="instrument"]) .pill.selected {
