@@ -113,6 +113,95 @@
       margin: 0 auto;
     }
 
+    /* ── BILLING TOGGLE ── */
+    .billing-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin: 0 auto 8px;
+      padding: 5px;
+      background: var(--card-bg);
+      border: 1.5px solid var(--line);
+      border-radius: 30px;
+    }
+    .billing-wrap { text-align: center; padding: 8px 24px 0; }
+
+    .bt-opt {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 22px;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: inherit;
+      color: var(--ink-soft);
+      background: transparent;
+      border: none;
+      border-radius: 24px;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+    .bt-opt:hover { color: var(--ink); }
+    .bt-opt.active {
+      color: #fff;
+      background: linear-gradient(135deg, var(--standard), #1d4ed8);
+    }
+
+    .bt-save {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 12px;
+      background: rgba(16,185,129,0.16);
+      color: #10b981;
+      white-space: nowrap;
+    }
+    .bt-opt.active .bt-save { background: rgba(255,255,255,0.22); color: #fff; }
+
+    .billing-sub {
+      font-size: 12.5px;
+      color: var(--muted);
+      margin-top: 12px;
+    }
+
+    /* ── ANNUAL PRICE DETAILS ── */
+    .hidden { display: none !important; }
+
+    .price-annual .price { margin-bottom: 4px; }
+
+    .annual-detail {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 2px;
+    }
+    .annual-was {
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .annual-was s { opacity: 0.8; }
+    .annual-billed {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink-soft);
+    }
+    .annual-save {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      align-self: flex-start;
+      font-size: 12.5px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      padding: 3px 11px;
+      border-radius: 14px;
+      background: rgba(16,185,129,0.14);
+      color: #10b981;
+    }
+
     /* ── PRICING GRID ── */
     .pricing-grid {
       display: grid;
@@ -354,6 +443,16 @@
   <p>Start free. Upgrade when you want deeper, daily analysis of your setups.</p>
 </section>
 
+<div class="billing-wrap">
+  <div class="billing-toggle" role="tablist" aria-label="Billing cycle">
+    <button type="button" class="bt-opt active" data-cycle="monthly" role="tab" aria-selected="true">Monthly</button>
+    <button type="button" class="bt-opt" data-cycle="annual" role="tab" aria-selected="false">
+      Annual <span class="bt-save">Save 20%</span>
+    </button>
+  </div>
+  <div class="billing-sub" id="billing-sub">Pay month to month, cancel anytime.</div>
+</div>
+
 <div class="pricing-grid">
 
   <!-- ── FREE ── -->
@@ -383,10 +482,23 @@
   <div class="plan standard">
     <div class="plan-name">Standard</div>
     <div class="plan-tagline">For active traders reviewing setups daily.</div>
-    <div class="price">
-      <span class="currency">$</span>
-      <span class="amount">10</span>
-      <span class="period">/ month</span>
+    <div class="price-monthly">
+      <div class="price">
+        <span class="currency">$</span>
+        <span class="amount">10</span>
+        <span class="period">/ month</span>
+      </div>
+    </div>
+    <div class="price-annual hidden">
+      <div class="price">
+        <span class="currency">$</span>
+        <span class="amount">8</span>
+        <span class="period">/ month</span>
+      </div>
+      <div class="annual-detail">
+        <span class="annual-billed"><s>$120</s> &nbsp;$96 billed yearly</span>
+        <span class="annual-save">↓ 20% — you save $24/yr</span>
+      </div>
     </div>
     <div class="plan-divider"></div>
     <ul class="features">
@@ -411,10 +523,23 @@
     <div class="badge-pop">Most Popular</div>
     <div class="plan-name">Premium</div>
     <div class="plan-tagline">For serious traders who want deep daily review.</div>
-    <div class="price">
-      <span class="currency">$</span>
-      <span class="amount">30</span>
-      <span class="period">/ month</span>
+    <div class="price-monthly">
+      <div class="price">
+        <span class="currency">$</span>
+        <span class="amount">30</span>
+        <span class="period">/ month</span>
+      </div>
+    </div>
+    <div class="price-annual hidden">
+      <div class="price">
+        <span class="currency">$</span>
+        <span class="amount">24</span>
+        <span class="period">/ month</span>
+      </div>
+      <div class="annual-detail">
+        <span class="annual-billed"><s>$360</s> &nbsp;$288 billed yearly</span>
+        <span class="annual-save">↓ 20% — you save $72/yr</span>
+      </div>
     </div>
     <div class="plan-divider"></div>
     <ul class="features">
@@ -455,6 +580,36 @@
 </p>
 
 <footer>TRADER ACELERATOR · Trade Analysis Platform · For educational purposes only · Not financial advice</footer>
+
+<script>
+  (function () {
+    var opts = document.querySelectorAll('.bt-opt');
+    var sub  = document.getElementById('billing-sub');
+    var SUBS = {
+      monthly: 'Pay month to month, cancel anytime.',
+      annual:  'Pay once a year and save 20% — that’s 2 months free on every paid plan.'
+    };
+
+    function setCycle(cycle) {
+      opts.forEach(function (o) {
+        var on = o.dataset.cycle === cycle;
+        o.classList.toggle('active', on);
+        o.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      document.querySelectorAll('.price-monthly').forEach(function (el) {
+        el.classList.toggle('hidden', cycle !== 'monthly');
+      });
+      document.querySelectorAll('.price-annual').forEach(function (el) {
+        el.classList.toggle('hidden', cycle !== 'annual');
+      });
+      if (sub) sub.textContent = SUBS[cycle];
+    }
+
+    opts.forEach(function (o) {
+      o.addEventListener('click', function () { setCycle(o.dataset.cycle); });
+    });
+  })();
+</script>
 
 </body>
 </html>
