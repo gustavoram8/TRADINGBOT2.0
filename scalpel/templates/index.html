@@ -470,7 +470,17 @@
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
+      /* Default category accent — each group can override --grp below so its
+         pills carry their own colour identity (Bloomberg-style colour coding). */
+      --grp: var(--accent);
     }
+
+    /* Per-category colour identity (semantic groups keep their meaningful
+       green/red and are handled by the .win/.loss/.bull/.bear rules instead). */
+    .pill-group[data-group="session"]     { --grp: #f59e0b; }  /* amber  */
+    .pill-group[data-group="aligned"]     { --grp: #14b8a6; }  /* teal   */
+    .pill-group[data-group="approach"]    { --grp: #8b5cf6; }  /* violet */
+    .pill-group[data-group="confluences"] { --grp: #06b6d4; }  /* cyan   */
 
     .pill {
       padding: 7px 16px;
@@ -485,25 +495,28 @@
       user-select: none;
     }
 
+    /* Semantic pills carry their own accent so the glow matches their meaning. */
+    .pill.win, .pill.long   { --grp: var(--win); }
+    .pill.loss, .pill.short { --grp: var(--loss); }
+    .pill.be                { --grp: var(--be); }
+    .pill.bull              { --grp: #16a34a; }
+    .pill.bear              { --grp: #dc2626; }
+
     .pill:hover {
-      border-color: var(--accent);
+      border-color: var(--grp);
       color: var(--text);
     }
 
     .pill.selected {
-      background: var(--accent);
-      border-color: var(--accent);
+      background: linear-gradient(135deg, var(--grp), color-mix(in srgb, var(--grp) 70%, #000 30%));
+      border-color: var(--grp);
       color: #fff;
       font-weight: 600;
+      box-shadow: 0 0 0 1px var(--grp), 0 5px 16px -4px var(--grp);
     }
+    body.light .pill.selected { box-shadow: 0 0 0 1px var(--grp), 0 4px 12px -4px var(--grp); }
 
-    .pill.win.selected   { background: var(--win);  border-color: var(--win);  }
-    .pill.loss.selected  { background: var(--loss); border-color: var(--loss); }
-    .pill.be.selected    { background: var(--be);   border-color: var(--be); color: #000; }
-    .pill.bull.selected  { background: #16a34a; border-color: #16a34a; }
-    .pill.bear.selected  { background: #dc2626; border-color: #dc2626; }
-    .pill.long.selected  { background: var(--win);  border-color: var(--win);  }
-    .pill.short.selected { background: var(--loss); border-color: var(--loss); }
+    .pill.be.selected { color: #000; }
 
     /* ── INSTRUMENT CATEGORIES (full-width line break inside a pill-group) ── */
     .instr-cat {
