@@ -518,6 +518,39 @@
 
     .pill.be.selected { color: #000; }
 
+    /* ── SEGMENTED-CONTROL STYLE (option 2 prototype) ───────────────────
+       Single-select groups become a recessed "track" with connected
+       segments (iOS / toggle-group look). Instrument keeps the floating
+       pills because it has category sub-headers. Keeps per-category --grp. */
+    .pill-group:not([data-group="instrument"]) {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 4px;
+      gap: 4px;
+    }
+    .pill-group:not([data-group="instrument"]) .pill {
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      flex: 1 1 auto;
+      text-align: center;
+      min-width: max-content;
+      box-shadow: none;
+    }
+    .pill-group:not([data-group="instrument"]) .pill:hover:not(.selected) {
+      background: var(--surface);
+      border-color: transparent;
+      color: var(--text);
+    }
+    .pill-group:not([data-group="instrument"]) .pill.selected {
+      /* gradient fill stays; trade the big halo for a tight lift inside the track */
+      box-shadow: 0 2px 6px -1px var(--grp), 0 1px 2px rgba(0,0,0,.3);
+    }
+    body.light .pill-group:not([data-group="instrument"]) .pill.selected {
+      box-shadow: 0 2px 6px -2px var(--grp);
+    }
+
     /* ── INSTRUMENT CATEGORIES (full-width line break inside a pill-group) ── */
     .instr-cat {
       flex-basis: 100%;
