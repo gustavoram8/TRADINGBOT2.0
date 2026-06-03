@@ -538,6 +538,8 @@
     .proj-chip.active {
       background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600;
     }
+    .proj-chip-free { border-style: dashed; }
+    .proj-chip-free.active { border-style: solid; }
     .proj-chip .chip-edit {
       opacity: 0.6; font-size: 12px; line-height: 1;
       padding: 0 2px; border-radius: 4px;
@@ -2382,7 +2384,6 @@
         <button type="button" class="proj-btn" id="proj-save" data-i18n="proj.save">Save changes</button>
         <button type="button" class="proj-btn" id="proj-rename" data-i18n="proj.rename">Rename</button>
         <button type="button" class="proj-btn danger" id="proj-delete" data-i18n="proj.delete">Delete</button>
-        <button type="button" class="proj-btn" id="proj-clear" data-i18n="proj.clear">Close project</button>
       </div>
     </div>
 
@@ -3561,6 +3562,8 @@
       'proj.hint': 'Preset your usual buttons for a strategy, save it, and reuse it in one click. Direction & Result are always marked fresh.',
       'proj.count': '{used} / {limit} projects',
       'proj.new': 'New project',
+      'proj.freehands': 'Free hands',
+      'proj.freehandsTip': 'Analyze without any preset — mark every button manually',
       'proj.loadTip': 'Click to load this project',
       'proj.limitTip': 'Project limit reached ({limit}). Upgrade your plan for more.',
       'proj.activeLabel': 'Active: {name}',
@@ -3809,6 +3812,8 @@
       'proj.hint': 'Preconfigura los botones que sueles usar para una estrategia, guárdala y reúsala con un clic. Dirección y Resultado siempre se marcan frescos.',
       'proj.count': '{used} / {limit} proyectos',
       'proj.new': 'Nuevo proyecto',
+      'proj.freehands': 'Manos libres',
+      'proj.freehandsTip': 'Analiza sin ningún preset — marca cada botón a mano',
       'proj.loadTip': 'Haz clic para cargar este proyecto',
       'proj.limitTip': 'Límite de proyectos alcanzado ({limit}). Mejora tu plan para más.',
       'proj.activeLabel': 'Activo: {name}',
@@ -4057,6 +4062,8 @@
       'proj.hint': 'Préconfigurez vos boutons habituels pour une stratégie, enregistrez-la et réutilisez-la en un clic. Direction et Résultat se marquent toujours à neuf.',
       'proj.count': '{used} / {limit} projets',
       'proj.new': 'Nouveau projet',
+      'proj.freehands': 'Mains libres',
+      'proj.freehandsTip': 'Analysez sans aucun préset — marquez chaque bouton à la main',
       'proj.loadTip': 'Cliquez pour charger ce projet',
       'proj.limitTip': 'Limite de projets atteinte ({limit}). Améliorez votre forfait pour plus.',
       'proj.activeLabel': 'Actif : {name}',
@@ -4305,6 +4312,8 @@
       'proj.hint': 'Pré-configure os botões que você costuma usar para uma estratégia, salve e reutilize com um clique. Direção e Resultado são sempre marcados na hora.',
       'proj.count': '{used} / {limit} projetos',
       'proj.new': 'Novo projeto',
+      'proj.freehands': 'Mãos livres',
+      'proj.freehandsTip': 'Analise sem nenhum preset — marque cada botão manualmente',
       'proj.loadTip': 'Clique para carregar este projeto',
       'proj.limitTip': 'Limite de projetos atingido ({limit}). Faça upgrade do seu plano para mais.',
       'proj.activeLabel': 'Ativo: {name}',
@@ -4679,6 +4688,15 @@
     function render() {
       countEl.textContent = T('proj.count').replace('{used}', used).replace('{limit}', limit);
       chipsEl.innerHTML = '';
+
+      // "Free hands" mode — analyze without any preset (highlighted when no project is active).
+      const freeChip = document.createElement('div');
+      freeChip.className = 'proj-chip proj-chip-free' + (activeId === null ? ' active' : '');
+      freeChip.textContent = '🖐 ' + T('proj.freehands');
+      freeChip.title = T('proj.freehandsTip');
+      freeChip.addEventListener('click', clearActive);
+      chipsEl.appendChild(freeChip);
+
       projects.forEach(p => {
         const chip = document.createElement('div');
         chip.className = 'proj-chip' + (p.id === activeId ? ' active' : '');
@@ -4788,6 +4806,15 @@
     }
 
     function clearActive() {
+      // Switching from a saved project back to free hands → start with a clean slate.
+      if (activeId !== null) {
+        document.querySelectorAll('.pill-group').forEach(group => {
+          const g = group.dataset.group;
+          group.querySelectorAll('.pill').forEach(p => p.classList.remove('selected'));
+          selections[g] = group.dataset.multi === 'true' ? [] : null;
+        });
+        hideError();
+      }
       activeId = null;
       render();
     }
@@ -4798,7 +4825,6 @@
       document.getElementById('proj-save').addEventListener('click', saveActive);
       document.getElementById('proj-rename').addEventListener('click', renameActive);
       document.getElementById('proj-delete').addEventListener('click', deleteActive);
-      document.getElementById('proj-clear').addEventListener('click', clearActive);
       refresh();
     }
 
