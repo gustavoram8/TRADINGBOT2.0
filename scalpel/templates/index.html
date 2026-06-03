@@ -4357,6 +4357,7 @@
 
     // Let the quiz re-render its dynamic (non-data-i18n) content on language change
     if (window.Quiz && window.Quiz.relang) window.Quiz.relang();
+    if (window.Projects && window.Projects.relang) window.Projects.relang();
   }
 
   // ── Theme ──
@@ -4633,7 +4634,7 @@
   });
 
   // ── Analysis Projects (saved presets) ──
-  const Projects = (function () {
+  const Projects = window.Projects = (function () {
     const PRESET_SKIP = ['direction', 'result'];  // per-trade outcomes, never preset
     let projects = [];
     let activeId = null;
@@ -4828,7 +4829,8 @@
       refresh();
     }
 
-    return { init, refresh };
+    function relang() { render(); }
+    return { init, refresh, relang };
   })();
 
   // ── New Trade ──
