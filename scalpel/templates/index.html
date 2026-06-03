@@ -2326,7 +2326,10 @@
       transition: transform .9s cubic-bezier(.22,.61,.36,1);
     }
     .syn-map-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-    .syn-map-labels { position: absolute; inset: 0; pointer-events: none; }
+    /* SVG native text (hub names, star labels) — no coordinate conversion needed */
+    .syn-map-svg text { font-family: inherit; pointer-events: none; }
+    .syn-constellation text { pointer-events: auto; }
+    .syn-star text { pointer-events: none; }
 
     /* constellation links */
     .syn-edge { stroke: rgba(120,160,255,.22); stroke-width: 1; }
@@ -3692,8 +3695,7 @@
       <!-- the map: an SVG universe that pans/zooms between galaxy and constellation -->
       <div class="syn-lib-stage" id="syn-lib-stage">
         <div class="syn-map-vp" id="syn-map-vp">
-          <svg class="syn-map-svg" id="syn-map-svg" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice"></svg>
-          <div class="syn-map-labels" id="syn-map-labels"></div>
+          <svg class="syn-map-svg" id="syn-map-svg" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet"></svg>
         </div>
         <div class="syn-lib-hint" id="syn-lib-hint">Tap a constellation to explore it</div>
       </div>
@@ -11067,7 +11069,6 @@
     // ── DOM refs ──
     const stars   = document.getElementById('syn-lib-stars');
     const svg     = document.getElementById('syn-map-svg');
-    const labels  = document.getElementById('syn-map-labels');
     const vp      = document.getElementById('syn-map-vp');
     const titleEl = document.getElementById('syn-lib-title');
     const backBtn = document.getElementById('syn-lib-back');
@@ -11114,14 +11115,11 @@
 
     function checked(slug) { return window.SynapseProgress && window.SynapseProgress.isChecked(slug); }
 
-    // Place an HTML caption over an SVG point (viewBox is 1000×1000, slice-mapped)
-    function placeCap(node, x, y) {
-      // svg uses preserveAspectRatio slice → 1000-unit box covers the larger side
-      const r = svg.getBoundingClientRect();
-      const side = Math.max(r.width, r.height);
-      const offX = (r.width - side)/2, offY = (r.height - side)/2;
-      node.style.left = (offX + x/1000*side) + 'px';
-      node.style.top  = (offY + y/1000*side) + 'px';
+    // SVG text helper — all labels live inside the SVG so no coordinate conversion
+    // is ever needed. Positioning is done in pure viewBox units.
+    function svgText(txt, x, y, attrs) {
+      const t = el('text', Object.assign({ x, y, 'text-anchor':'middle', 'dominant-baseline':'central' }, attrs));
+      t.textContent = txt; return t;
     }
 
     // ── GALAXY: all 5 constellations ──
@@ -11134,35 +11132,41 @@
       svg.parentElement.style.setProperty('--syn-accent', '#6f9bff');
 
       CATALOG.forEach(m => {
-        const g = el('g', { class:'syn-constellation' });
+        const g = el('g', { class:'syn-constellation', style:'cursor:pointer' });
         // hub halo
-        g.appendChild(el('circle', { class:'syn-hub-glow', cx:m.cx, cy:m.cy, r:62 }));
-        // mini stars around hub
+        g.appendChild(el('circle', { class:'syn-hub-glow', cx:m.cx, cy:m.cy, r:68 }));
+        // mini topic dots + spokes radiating from hub
         m.topics.forEach((t, i) => {
-          const p = spiral(i, 14, 9, m.cx, m.cy);
+          const p = spiral(i, 18, 8, m.cx, m.cy);
           g.appendChild(el('line', { class:'syn-edge'+(checked(t.slug)?' lit':''), x1:m.cx, y1:m.cy, x2:p.x, y2:p.y }));
-          const dot = el('circle', { cx:p.x, cy:p.y, r:checked(t.slug)?2.6:2.0,
-            fill: checked(t.slug)?'#ffd86b':'#cfe0ff', opacity: checked(t.slug)?1:0.8 });
-          g.appendChild(dot);
+          g.appendChild(el('circle', { cx:p.x, cy:p.y,
+            r: checked(t.slug)?3:2.2,
+            fill: checked(t.slug)?'#ffd86b':'#cfe0ff',
+            opacity: checked(t.slug)?1:0.75 }));
         });
-        svg.appendChild(g);
-        // hub label (HTML, clickable)
-        const cap = document.createElement('div');
-        cap.className = 'syn-hub-cap';
+        // transparent hit area
+        g.appendChild(el('circle', { cx:m.cx, cy:m.cy, r:70, fill:'transparent' }));
+        // hub name
         const done = m.topics.filter(t=>checked(t.slug)).length;
-        cap.innerHTML = m.name + '<span class="hub-sub">'+done+' / '+m.topics.length+'</span>';
-        cap.style.color = '#e7eefc';
-        cap.addEventListener('click', () => open(m.id));
-        labels.appendChild(cap);
-        placeCap(cap, m.cx, m.cy);
-        // hub click target (transparent big circle)
-        const hit = el('circle', { cx:m.cx, cy:m.cy, r:66, fill:'transparent', style:'cursor:pointer' });
-        hit.addEventListener('click', () => open(m.id));
-        svg.appendChild(hit);
+        const nameT = svgText(m.name, m.cx, m.cy - 10, {
+          fill: '#e7eefc', 'font-size':'14', 'font-weight':'700',
+          'letter-spacing':'2', 'text-transform':'uppercase',
+          style:'text-shadow:0 0 14px rgba(90,140,255,.7);',
+        });
+        g.appendChild(nameT);
+        const subT = svgText(done+' / '+m.topics.length, m.cx, m.cy + 12, {
+          fill: '#7b93cc', 'font-size':'10.5', 'letter-spacing':'1',
+        });
+        g.appendChild(subT);
+        g.addEventListener('click', () => open(m.id));
+        svg.appendChild(g);
       });
     }
 
-    // ── CONSTELLATION: one methodology, topics as big stars ──
+    // ── CONSTELLATION: one methodology, topics as named stars ──
+    // Stars are laid out in a circular/spiral arrangement; trigger stars carry
+    // a diamond accent ring. Every star shows its label inline so the user
+    // never has to guess what a star is.
     function renderConstellation(mid) {
       const m = METH_BY_ID[mid]; if (!m) return;
       mode = 'constellation'; activeMethod = mid;
@@ -11172,30 +11176,79 @@
       hintEl.textContent = L().hintC; hintEl.style.display = '';
       svg.parentElement.style.setProperty('--syn-accent', m.accent);
 
-      const CX = 500, CY = 510;
-      const pts = m.topics.map((t, i) => spiral(i, 95, 52, CX, CY));
-      // chain edges along the spiral for a constellation feel
-      for (let i=1;i<pts.length;i++) {
+      // Spread topics in a wider, more evenly-spaced arc around the center
+      const CX = 500, CY = 500;
+      const n = m.topics.length;
+      const pts = m.topics.map((_, i) => {
+        // Spread 360° for short lists; spiral outward for longer ones
+        const rings = Math.ceil(n / 6);
+        const ring = Math.floor(i / 6);
+        const idx  = i % 6;
+        const perRing = Math.min(n - ring*6, 6);
+        const baseR = 155 + ring * 110;
+        const ang = (Math.PI*2 / perRing) * idx - Math.PI/2;
+        return { x: CX + Math.cos(ang)*baseR, y: CY + Math.sin(ang)*baseR };
+      });
+
+      // Chain edges along adjacent stars in each ring for the constellation look
+      for (let i=1; i<pts.length; i++) {
         const lit = checked(m.topics[i].slug) && checked(m.topics[i-1].slug);
-        svg.appendChild(el('line', { class:'syn-edge'+(lit?' lit':''), x1:pts[i-1].x, y1:pts[i-1].y, x2:pts[i].x, y2:pts[i].y }));
+        svg.appendChild(el('line', { class:'syn-edge'+(lit?' lit':''),
+          x1:pts[i-1].x, y1:pts[i-1].y, x2:pts[i].x, y2:pts[i].y }));
       }
+
       m.topics.forEach((t, i) => {
         const p = pts[i]; const isCk = checked(t.slug); const isTrig = t.type === 't';
-        const g = el('g', { class:'syn-star'+(isCk?' studied':'') });
-        if (isTrig) g.appendChild(el('circle', { class:'s-ring', cx:p.x, cy:p.y, r:13 }));
-        g.appendChild(el('circle', { class:'s-ring', cx:p.x, cy:p.y, r:9 }));
-        const core = el('circle', { class:'s-core s-twinkle', cx:p.x, cy:p.y, r:isTrig?4.2:5 });
-        core.style.animationDelay = (i*0.18)+'s';
+        const g = el('g', { class:'syn-star'+(isCk?' studied':''), style:'cursor:pointer' });
+        // outer rings
+        if (isTrig) {
+          // diamond accent: rotated square outline for triggers
+          const sz = 16;
+          const diamond = el('polygon', {
+            points:`${p.x},${p.y-sz} ${p.x+sz},${p.y} ${p.x},${p.y+sz} ${p.x-sz},${p.y}`,
+            fill:'none', stroke: isCk?'rgba(255,210,110,.65)':'rgba(160,190,255,.35)', 'stroke-width':'1.2'
+          });
+          g.appendChild(diamond);
+        }
+        g.appendChild(el('circle', { class:'s-ring', cx:p.x, cy:p.y, r:10 }));
+        const core = el('circle', { class:'s-core s-twinkle', cx:p.x, cy:p.y, r:isTrig?4.5:5.5 });
+        core.style.animationDelay = (i*0.15)+'s';
         g.appendChild(core);
+
+        // label — always visible, positioned below the star
+        const lbl = svgText(t.label, p.x, p.y+22, {
+          fill: isCk ? '#ffd86b' : '#c2d2f5',
+          'font-size': '11.5',
+          'paint-order': 'stroke',
+          stroke: 'rgba(2,4,14,.9)',
+          'stroke-width': '3',
+          'stroke-linejoin': 'round',
+        });
+        // trigger badge pill around label text
+        if (isTrig) {
+          const badge = svgText('⚡ '+t.label, p.x, p.y+22, {
+            fill: isCk ? '#ffd86b' : '#b8cfff',
+            'font-size': '11',
+            'paint-order': 'stroke',
+            stroke: 'rgba(2,4,14,.9)',
+            'stroke-width': '3',
+            'stroke-linejoin': 'round',
+          });
+          g.appendChild(badge);
+        } else {
+          g.appendChild(lbl);
+        }
+
         g.addEventListener('click', () => openTopic(t.slug));
         svg.appendChild(g);
-        // caption
-        const cap = document.createElement('div');
-        cap.className = 'syn-node-cap'+(isCk?' studied':'');
-        cap.textContent = t.label;
-        labels.appendChild(cap);
-        placeCap(cap, p.x, p.y);
       });
+
+      // Methodology name watermark in the center
+      svg.appendChild(svgText(m.name, CX, CY, {
+        fill: m.accent, 'font-size':'28', 'font-weight':'800',
+        'letter-spacing':'3', opacity:'.12', 'pointer-events':'none',
+        style:'user-select:none;',
+      }));
     }
 
     // ── Dossier ──
