@@ -505,6 +505,69 @@
     .pill.long.selected  { background: var(--win);  border-color: var(--win);  }
     .pill.short.selected { background: var(--loss); border-color: var(--loss); }
 
+    /* ── INSTRUMENT CATEGORIES (full-width line break inside a pill-group) ── */
+    .instr-cat {
+      flex-basis: 100%;
+      width: 100%;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 8px 0 0;
+      opacity: 0.72;
+    }
+    .instr-cat:first-child { margin-top: 0; }
+
+    /* ── ANALYSIS PROJECTS PANEL ── */
+    .proj-card { position: relative; }
+    .proj-head {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; flex-wrap: wrap;
+    }
+    .proj-count { font-size: 12px; color: var(--muted); font-weight: 500; }
+    .proj-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .proj-chip {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 7px 12px; border-radius: 20px;
+      border: 1px solid var(--border2); background: var(--surface);
+      color: var(--text); font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: all 0.15s ease; user-select: none;
+    }
+    .proj-chip:hover { border-color: var(--accent); }
+    .proj-chip.active {
+      background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600;
+    }
+    .proj-chip .chip-edit {
+      opacity: 0.6; font-size: 12px; line-height: 1;
+      padding: 0 2px; border-radius: 4px;
+    }
+    .proj-chip .chip-edit:hover { opacity: 1; }
+    .proj-new-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px; border-radius: 20px;
+      border: 1px dashed var(--border2); background: transparent;
+      color: var(--muted); font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all 0.15s ease;
+    }
+    .proj-new-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--text); }
+    .proj-new-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .proj-actions {
+      display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;
+      padding-top: 12px; border-top: 1px solid var(--border);
+    }
+    .proj-actions.hidden { display: none; }
+    .proj-btn {
+      padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border2);
+      background: var(--surface); color: var(--text);
+      font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s ease;
+    }
+    .proj-btn:hover { border-color: var(--accent); }
+    .proj-btn.danger { color: var(--loss); }
+    .proj-btn.danger:hover { border-color: var(--loss); }
+    .proj-active-label { font-size: 12px; color: var(--muted); align-self: center; }
+    .proj-active-label strong { color: var(--text); }
+
     /* ── SHOT GUIDE ── */
     .shot-guide {
       background: var(--surface);
@@ -2304,6 +2367,25 @@
       <p data-i18n="header.sub">Submit a trade for ICT analysis. Trader Acelerator will identify possible setup errors and offer suggestions based on methodology — not verdicts.</p>
     </div>
 
+    <!-- ── ANALYSIS PROJECTS ── -->
+    <div class="card proj-card" id="projects-card">
+      <div class="proj-head">
+        <div class="card-label" style="margin:0;">
+          <span data-i18n="proj.title">Your Analysis Projects</span>
+        </div>
+        <div class="proj-count" id="proj-count"></div>
+      </div>
+      <p style="font-size:12px; color:var(--muted); margin:6px 0 0;" data-i18n="proj.hint">Preset your usual buttons for a strategy, save it, and reuse it in one click. Direction &amp; Result are always marked fresh.</p>
+      <div class="proj-chips" id="proj-chips"></div>
+      <div class="proj-actions hidden" id="proj-actions">
+        <span class="proj-active-label" id="proj-active-label"></span>
+        <button type="button" class="proj-btn" id="proj-save" data-i18n="proj.save">Save changes</button>
+        <button type="button" class="proj-btn" id="proj-rename" data-i18n="proj.rename">Rename</button>
+        <button type="button" class="proj-btn danger" id="proj-delete" data-i18n="proj.delete">Delete</button>
+        <button type="button" class="proj-btn" id="proj-clear" data-i18n="proj.clear">Close project</button>
+      </div>
+    </div>
+
     <form id="trade-form" enctype="multipart/form-data">
 
       <!-- Trade Info -->
@@ -2313,8 +2395,37 @@
         <div class="section-row">
           <div style="font-size:12px; color:var(--muted); margin-bottom:8px;" data-i18n="field.instrument">Instrument</div>
           <div class="pill-group" data-group="instrument" data-required="true">
+            <div class="instr-cat" data-i18n="instr.cat.indices">Futures — Indices</div>
             <div class="pill" data-value="NQ">NQ</div>
             <div class="pill" data-value="MNQ">MNQ</div>
+            <div class="pill" data-value="ES">ES</div>
+            <div class="pill" data-value="MES">MES</div>
+            <div class="pill" data-value="YM">YM</div>
+            <div class="pill" data-value="MYM">MYM</div>
+            <div class="pill" data-value="RTY">RTY</div>
+            <div class="pill" data-value="M2K">M2K</div>
+            <div class="instr-cat" data-i18n="instr.cat.fxMajors">Forex — Majors</div>
+            <div class="pill" data-value="EURUSD">EURUSD</div>
+            <div class="pill" data-value="GBPUSD">GBPUSD</div>
+            <div class="pill" data-value="USDJPY">USDJPY</div>
+            <div class="pill" data-value="USDCHF">USDCHF</div>
+            <div class="pill" data-value="AUDUSD">AUDUSD</div>
+            <div class="pill" data-value="USDCAD">USDCAD</div>
+            <div class="pill" data-value="NZDUSD">NZDUSD</div>
+            <div class="instr-cat" data-i18n="instr.cat.fxMinors">Forex — Minors</div>
+            <div class="pill" data-value="GBPJPY">GBPJPY</div>
+            <div class="pill" data-value="EURJPY">EURJPY</div>
+            <div class="pill" data-value="EURGBP">EURGBP</div>
+            <div class="pill" data-value="AUDJPY">AUDJPY</div>
+            <div class="pill" data-value="GBPAUD">GBPAUD</div>
+            <div class="pill" data-value="EURAUD">EURAUD</div>
+            <div class="instr-cat" data-i18n="instr.cat.metals">Metals</div>
+            <div class="pill" data-value="XAUUSD">XAUUSD</div>
+            <div class="pill" data-value="XAGUSD">XAGUSD</div>
+            <div class="instr-cat" data-i18n="instr.cat.energy">Energy</div>
+            <div class="pill" data-value="CL">CL</div>
+            <div class="pill" data-value="MCL">MCL</div>
+            <div class="pill" data-value="NG">NG</div>
           </div>
         </div>
 
@@ -3441,6 +3552,26 @@
       'limit.upgrade': 'Upgrade plan',
       'limit.back': 'Back',
       'limit.available': 'You can analyze again now.',
+      'instr.cat.indices': 'Futures — Indices',
+      'instr.cat.fxMajors': 'Forex — Majors',
+      'instr.cat.fxMinors': 'Forex — Minors',
+      'instr.cat.metals': 'Metals',
+      'instr.cat.energy': 'Energy',
+      'proj.title': 'Your Analysis Projects',
+      'proj.hint': 'Preset your usual buttons for a strategy, save it, and reuse it in one click. Direction & Result are always marked fresh.',
+      'proj.count': '{used} / {limit} projects',
+      'proj.new': 'New project',
+      'proj.loadTip': 'Click to load this project',
+      'proj.limitTip': 'Project limit reached ({limit}). Upgrade your plan for more.',
+      'proj.activeLabel': 'Active: {name}',
+      'proj.save': 'Save changes',
+      'proj.saved': 'Saved ✓',
+      'proj.rename': 'Rename',
+      'proj.delete': 'Delete',
+      'proj.clear': 'Close project',
+      'proj.namePrompt': 'Name your new project (e.g. ICT + STDV):',
+      'proj.renamePrompt': 'Rename project:',
+      'proj.deleteConfirm': 'Delete project "{name}"? This cannot be undone.',
       fieldNames: { instrument: 'Instrument', direction: 'Direction', session: 'Session', result: 'Result', htf_bias: 'HTF Bias', aligned: 'Bias alignment', approach: 'Approach / Model' }
     },
     es: {
@@ -3669,6 +3800,26 @@
       'limit.upgrade': 'Mejorar plan',
       'limit.back': 'Volver',
       'limit.available': 'Ya puedes analizar de nuevo.',
+      'instr.cat.indices': 'Futuros — Índices',
+      'instr.cat.fxMajors': 'Forex — Mayores',
+      'instr.cat.fxMinors': 'Forex — Menores',
+      'instr.cat.metals': 'Metales',
+      'instr.cat.energy': 'Energía',
+      'proj.title': 'Tus Proyectos de Análisis',
+      'proj.hint': 'Preconfigura los botones que sueles usar para una estrategia, guárdala y reúsala con un clic. Dirección y Resultado siempre se marcan frescos.',
+      'proj.count': '{used} / {limit} proyectos',
+      'proj.new': 'Nuevo proyecto',
+      'proj.loadTip': 'Haz clic para cargar este proyecto',
+      'proj.limitTip': 'Límite de proyectos alcanzado ({limit}). Mejora tu plan para más.',
+      'proj.activeLabel': 'Activo: {name}',
+      'proj.save': 'Guardar cambios',
+      'proj.saved': 'Guardado ✓',
+      'proj.rename': 'Renombrar',
+      'proj.delete': 'Eliminar',
+      'proj.clear': 'Cerrar proyecto',
+      'proj.namePrompt': 'Nombra tu nuevo proyecto (ej. ICT + STDV):',
+      'proj.renamePrompt': 'Renombrar proyecto:',
+      'proj.deleteConfirm': '¿Eliminar el proyecto "{name}"? Esto no se puede deshacer.',
       fieldNames: { instrument: 'Instrumento', direction: 'Dirección', session: 'Sesión', result: 'Resultado', htf_bias: 'Sesgo HTF', aligned: 'Alineación con el sesgo', approach: 'Enfoque / Modelo' }
     },
     fr: {
@@ -3897,6 +4048,26 @@
       'limit.upgrade': "Changer d'offre",
       'limit.back': 'Retour',
       'limit.available': 'Vous pouvez analyser à nouveau.',
+      'instr.cat.indices': 'Futures — Indices',
+      'instr.cat.fxMajors': 'Forex — Majeures',
+      'instr.cat.fxMinors': 'Forex — Mineures',
+      'instr.cat.metals': 'Métaux',
+      'instr.cat.energy': 'Énergie',
+      'proj.title': 'Vos Projets d\'Analyse',
+      'proj.hint': 'Préconfigurez vos boutons habituels pour une stratégie, enregistrez-la et réutilisez-la en un clic. Direction et Résultat se marquent toujours à neuf.',
+      'proj.count': '{used} / {limit} projets',
+      'proj.new': 'Nouveau projet',
+      'proj.loadTip': 'Cliquez pour charger ce projet',
+      'proj.limitTip': 'Limite de projets atteinte ({limit}). Améliorez votre forfait pour plus.',
+      'proj.activeLabel': 'Actif : {name}',
+      'proj.save': 'Enregistrer',
+      'proj.saved': 'Enregistré ✓',
+      'proj.rename': 'Renommer',
+      'proj.delete': 'Supprimer',
+      'proj.clear': 'Fermer le projet',
+      'proj.namePrompt': 'Nommez votre nouveau projet (ex. ICT + STDV) :',
+      'proj.renamePrompt': 'Renommer le projet :',
+      'proj.deleteConfirm': 'Supprimer le projet « {name} » ? Action irréversible.',
       fieldNames: { instrument: 'Instrument', direction: 'Direction', session: 'Session', result: 'Résultat', htf_bias: 'Biais HTF', aligned: 'Alignement avec le biais', approach: 'Approche / Modèle' }
     },
     pt: {
@@ -4125,6 +4296,26 @@
       'limit.upgrade': 'Mudar de plano',
       'limit.back': 'Voltar',
       'limit.available': 'Você já pode analisar de novo.',
+      'instr.cat.indices': 'Futuros — Índices',
+      'instr.cat.fxMajors': 'Forex — Maiores',
+      'instr.cat.fxMinors': 'Forex — Menores',
+      'instr.cat.metals': 'Metais',
+      'instr.cat.energy': 'Energia',
+      'proj.title': 'Seus Projetos de Análise',
+      'proj.hint': 'Pré-configure os botões que você costuma usar para uma estratégia, salve e reutilize com um clique. Direção e Resultado são sempre marcados na hora.',
+      'proj.count': '{used} / {limit} projetos',
+      'proj.new': 'Novo projeto',
+      'proj.loadTip': 'Clique para carregar este projeto',
+      'proj.limitTip': 'Limite de projetos atingido ({limit}). Faça upgrade do seu plano para mais.',
+      'proj.activeLabel': 'Ativo: {name}',
+      'proj.save': 'Salvar alterações',
+      'proj.saved': 'Salvo ✓',
+      'proj.rename': 'Renomear',
+      'proj.delete': 'Excluir',
+      'proj.clear': 'Fechar projeto',
+      'proj.namePrompt': 'Dê um nome ao seu novo projeto (ex. ICT + STDV):',
+      'proj.renamePrompt': 'Renomear projeto:',
+      'proj.deleteConfirm': 'Excluir o projeto "{name}"? Isso não pode ser desfeito.',
       fieldNames: { instrument: 'Instrumento', direction: 'Direção', session: 'Sessão', result: 'Resultado', htf_bias: 'Viés HTF', aligned: 'Alinhamento com o viés', approach: 'Abordagem / Modelo' }
     }
   };
@@ -4431,6 +4622,190 @@
     // Scroll to the upload area so they can swap the screenshot
     document.getElementById('upload-zone').scrollIntoView({ behavior: 'smooth', block: 'center' });
   });
+
+  // ── Analysis Projects (saved presets) ──
+  const Projects = (function () {
+    const PRESET_SKIP = ['direction', 'result'];  // per-trade outcomes, never preset
+    let projects = [];
+    let activeId = null;
+    let limit = 2, used = 0;
+
+    const card      = document.getElementById('projects-card');
+    const countEl   = document.getElementById('proj-count');
+    const chipsEl   = document.getElementById('proj-chips');
+    const actionsEl = document.getElementById('proj-actions');
+    const activeLbl = document.getElementById('proj-active-label');
+
+    function snapshotConfig() {
+      const cfg = {};
+      document.querySelectorAll('.pill-group').forEach(group => {
+        const g = group.dataset.group;
+        if (PRESET_SKIP.includes(g)) return;
+        if (group.dataset.multi === 'true') {
+          if (Array.isArray(selections[g]) && selections[g].length) cfg[g] = selections[g].slice();
+        } else if (selections[g]) {
+          cfg[g] = selections[g];
+        }
+      });
+      return cfg;
+    }
+
+    function applyConfig(cfg) {
+      cfg = cfg || {};
+      document.querySelectorAll('.pill-group').forEach(group => {
+        const g = group.dataset.group;
+        if (PRESET_SKIP.includes(g)) {
+          // Clear per-trade fields so the user marks them fresh.
+          group.querySelectorAll('.pill').forEach(p => p.classList.remove('selected'));
+          selections[g] = group.dataset.multi === 'true' ? [] : null;
+          return;
+        }
+        if (group.dataset.multi === 'true') {
+          const set = new Set(Array.isArray(cfg[g]) ? cfg[g] : []);
+          group.querySelectorAll('.pill').forEach(p => p.classList.toggle('selected', set.has(p.dataset.value)));
+          selections[g] = Array.from(set);
+        } else {
+          const val = typeof cfg[g] === 'string' ? cfg[g] : null;
+          group.querySelectorAll('.pill').forEach(p => p.classList.toggle('selected', p.dataset.value === val));
+          selections[g] = val;
+        }
+      });
+    }
+
+    function activeProject() {
+      return projects.find(p => p.id === activeId) || null;
+    }
+
+    function render() {
+      countEl.textContent = T('proj.count').replace('{used}', used).replace('{limit}', limit);
+      chipsEl.innerHTML = '';
+      projects.forEach(p => {
+        const chip = document.createElement('div');
+        chip.className = 'proj-chip' + (p.id === activeId ? ' active' : '');
+        chip.textContent = p.name;
+        chip.title = T('proj.loadTip');
+        chip.addEventListener('click', () => loadProject(p.id));
+        chipsEl.appendChild(chip);
+      });
+      const newBtn = document.createElement('button');
+      newBtn.type = 'button';
+      newBtn.className = 'proj-new-btn';
+      newBtn.textContent = '+ ' + T('proj.new');
+      newBtn.disabled = used >= limit;
+      newBtn.title = used >= limit ? T('proj.limitTip').replace('{limit}', limit) : '';
+      newBtn.addEventListener('click', createNew);
+      chipsEl.appendChild(newBtn);
+
+      const act = activeProject();
+      if (act) {
+        actionsEl.classList.remove('hidden');
+        activeLbl.innerHTML = T('proj.activeLabel').replace('{name}', '<strong>' + escapeHtml(act.name) + '</strong>');
+      } else {
+        actionsEl.classList.add('hidden');
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    async function refresh() {
+      try {
+        const res = await fetch('/api/projects');
+        if (!res.ok) return;
+        const data = await res.json();
+        projects = data.projects || [];
+        limit = data.limit; used = data.used;
+        if (!projects.some(p => p.id === activeId)) activeId = null;
+        render();
+      } catch (e) { /* offline — leave panel as-is */ }
+    }
+
+    function loadProject(id) {
+      const p = projects.find(x => x.id === id);
+      if (!p) return;
+      activeId = id;
+      applyConfig(p.config);
+      hideError();
+      render();
+    }
+
+    async function createNew() {
+      if (used >= limit) { alert(T('proj.limitTip').replace('{limit}', limit)); return; }
+      const name = (prompt(T('proj.namePrompt')) || '').trim();
+      if (!name) return;
+      const res = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, config: snapshotConfig() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        if (data.error === 'limit_reached') alert(T('proj.limitTip').replace('{limit}', data.limit));
+        return;
+      }
+      await refresh();
+      activeId = data.project.id;
+      render();
+    }
+
+    async function saveActive() {
+      const act = activeProject();
+      if (!act) return;
+      const res = await fetch('/api/projects/' + act.id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ config: snapshotConfig() }),
+      });
+      if (res.ok) {
+        act.config = snapshotConfig();
+        const btn = document.getElementById('proj-save');
+        const orig = btn.textContent;
+        btn.textContent = T('proj.saved');
+        setTimeout(() => { btn.textContent = orig; }, 1400);
+      }
+    }
+
+    async function renameActive() {
+      const act = activeProject();
+      if (!act) return;
+      const name = (prompt(T('proj.renamePrompt'), act.name) || '').trim();
+      if (!name || name === act.name) return;
+      const res = await fetch('/api/projects/' + act.id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      });
+      if (res.ok) { act.name = name; render(); }
+    }
+
+    async function deleteActive() {
+      const act = activeProject();
+      if (!act) return;
+      if (!confirm(T('proj.deleteConfirm').replace('{name}', act.name))) return;
+      const res = await fetch('/api/projects/' + act.id, { method: 'DELETE' });
+      if (res.ok) { activeId = null; await refresh(); }
+    }
+
+    function clearActive() {
+      activeId = null;
+      render();
+    }
+
+    function init() {
+      if (!card) return;
+      if (U.isGuest) { card.style.display = 'none'; return; }
+      document.getElementById('proj-save').addEventListener('click', saveActive);
+      document.getElementById('proj-rename').addEventListener('click', renameActive);
+      document.getElementById('proj-delete').addEventListener('click', deleteActive);
+      document.getElementById('proj-clear').addEventListener('click', clearActive);
+      refresh();
+    }
+
+    return { init, refresh };
+  })();
+
+  Projects.init();
 
   // ── New Trade ──
   document.getElementById('btn-new').addEventListener('click', () => {

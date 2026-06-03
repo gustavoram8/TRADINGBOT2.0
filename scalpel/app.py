@@ -126,6 +126,21 @@ class UsageLog(db.Model):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
 
 
+# ── Analysis Projects (saved presets for the Analyze form) ──
+# A project stores the user's reusable strategy config (instrument, session,
+# HTF bias, bias alignment, approach, confluences). It deliberately does NOT
+# store Direction or Result — those are per-trade outcomes marked fresh each time.
+class AnalysisProject(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    name = db.Column(db.String(60), nullable=False)
+    config = db.Column(db.JSON, nullable=False, default=dict)  # {instrument, session, htf_bias, aligned, approach, confluences:[]}
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc),
+                           onupdate=lambda: datetime.now(timezone.utc))
+    user = db.relationship('User', backref='analysis_projects')
+
+
 # ── Trading Forum (premium-only community) ──
 class ForumPost(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -212,6 +227,16 @@ PLAN_LIMITS = {
     'standard': {'window': timedelta(days=1), 'max': 1},
     'premium':  {'window': timedelta(days=1), 'max': 5},
 }
+
+# Max number of saved Analysis Projects per plan.
+PROJECT_LIMITS = {'free': 2, 'standard': 5, 'premium': 10}
+
+
+def project_limit():
+    """How many analysis projects the current user may save."""
+    if current_user.is_authenticated and current_user.is_admin:
+        return PROJECT_LIMITS['premium']
+    return PROJECT_LIMITS.get(current_plan(), PROJECT_LIMITS['free'])
 
 ANON_COOKIE = 'scalpel_anon'
 
@@ -2085,6 +2110,105 @@ def quiz_certified():
     # Highest accuracy first; admins (founders) bubble to the top on ties.
     entries.sort(key=lambda e: (e['accuracy'], e['is_admin']), reverse=True)
     return jsonify({'pass_pct': QUIZ_PASS_PCT, 'cert_pct': QUIZ_CERT_PCT, 'traders': entries})
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# ANALYSIS PROJECTS (saved presets for the Analyze form)
+# ──────────────────────────────────────────────────────────────────────────
+# Fields a project may store. Direction & Result are intentionally excluded —
+# they are per-trade outcomes the user marks fresh on every analysis.
+PROJECT_SINGLE_FIELDS = ('instrument', 'session', 'htf_bias', 'aligned', 'approach')
+PROJECT_MULTI_FIELDS = ('confluences',)
+
+
+def _sanitize_project_config(raw):
+    """Keep only known fields, coerce types, cap sizes. Returns a clean dict."""
+    cfg = {}
+    if not isinstance(raw, dict):
+        return cfg
+    for k in PROJECT_SINGLE_FIELDS:
+        v = raw.get(k)
+        if isinstance(v, str) and v.strip():
+            cfg[k] = v.strip()[:60]
+    for k in PROJECT_MULTI_FIELDS:
+        v = raw.get(k)
+        if isinstance(v, list):
+            cfg[k] = [str(x).strip()[:60] for x in v if isinstance(x, str) and x.strip()][:30]
+    return cfg
+
+
+def serialize_project(p):
+    return {
+        'id': p.id,
+        'name': p.name,
+        'config': p.config or {},
+        'updated_at': _as_utc(p.updated_at).isoformat() if p.updated_at else None,
+    }
+
+
+@app.route('/api/projects', methods=['GET'])
+@login_required
+def list_projects():
+    rows = (AnalysisProject.query
+            .filter_by(user_id=current_user.id)
+            .order_by(AnalysisProject.updated_at.desc())
+            .all())
+    return jsonify({
+        'projects': [serialize_project(p) for p in rows],
+        'limit': project_limit(),
+        'used': len(rows),
+    })
+
+
+@app.route('/api/projects', methods=['POST'])
+@login_required
+def create_project():
+    data = request.get_json(silent=True) or {}
+    name = (data.get('name') or '').strip()[:60]
+    if len(name) < 1:
+        return jsonify({'error': 'name_required'}), 400
+
+    count = AnalysisProject.query.filter_by(user_id=current_user.id).count()
+    if count >= project_limit():
+        return jsonify({'error': 'limit_reached', 'limit': project_limit()}), 403
+
+    proj = AnalysisProject(
+        user_id=current_user.id,
+        name=name,
+        config=_sanitize_project_config(data.get('config')),
+    )
+    db.session.add(proj)
+    db.session.commit()
+    return jsonify({'ok': True, 'project': serialize_project(proj)})
+
+
+@app.route('/api/projects/<int:pid>', methods=['PUT'])
+@login_required
+def update_project(pid):
+    proj = AnalysisProject.query.filter_by(id=pid, user_id=current_user.id).first()
+    if not proj:
+        return jsonify({'error': 'not_found'}), 404
+    data = request.get_json(silent=True) or {}
+    if 'name' in data:
+        name = (data.get('name') or '').strip()[:60]
+        if len(name) < 1:
+            return jsonify({'error': 'name_required'}), 400
+        proj.name = name
+    if 'config' in data:
+        proj.config = _sanitize_project_config(data.get('config'))
+    db.session.commit()
+    return jsonify({'ok': True, 'project': serialize_project(proj)})
+
+
+@app.route('/api/projects/<int:pid>', methods=['DELETE'])
+@login_required
+def delete_project(pid):
+    proj = AnalysisProject.query.filter_by(id=pid, user_id=current_user.id).first()
+    if not proj:
+        return jsonify({'error': 'not_found'}), 404
+    db.session.delete(proj)
+    db.session.commit()
+    return jsonify({'ok': True})
 
 
 # ──────────────────────────────────────────────────────────────────────────
