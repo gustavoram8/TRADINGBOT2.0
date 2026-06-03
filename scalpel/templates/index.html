@@ -9432,47 +9432,121 @@
       });
       document.getElementById('quiz-new-btn')?.addEventListener('click',()=>showScreen('home'));
 
-      // ── Synapse topic tracking (localStorage) ──
-      const SYNAPSE_VIEWS_KEY = 'synapse_views';
-      function getSynapseViews() {
-        try { return JSON.parse(localStorage.getItem(SYNAPSE_VIEWS_KEY) || '[]'); } catch(e) { return []; }
-      }
-      function recordSynapseView(id) {
-        const views = getSynapseViews();
-        if (!views.includes(id)) { views.push(id); localStorage.setItem(SYNAPSE_VIEWS_KEY, JSON.stringify(views)); }
-      }
+      // ── Synapse topic tracking (DB-backed, per account) ──────────────────
+      // The Synapse library UI doesn't exist yet, but the full check-off
+      // pipeline is live: this module loads/toggles a user's "studied" topics
+      // against the server (/api/synapse/*). The future library just needs to
+      // call window.SynapseProgress.toggle(slug) on each topic's check button,
+      // and the quiz picker below will surface the checked topics automatically.
+      //
+      // Client mirror of the server registry (app.py SYNAPSE_TOPICS). Slug is
+      // methodology-prefixed so ICT "Liquidity" and SMC "Liquidity" don't clash.
+      const SYNAPSE_TOPICS = {
+        ict: [
+          ['ict.order-blocks','Order Blocks'], ['ict.fair-value-gaps','Fair Value Gaps'],
+          ['ict.market-structure','Market Structure'], ['ict.liquidity','Liquidity'],
+          ['ict.kill-zones','Kill Zones'], ['ict.amd','AMD'], ['ict.pd-arrays','PD Arrays'],
+        ],
+        patterns: [
+          ['patterns.candlestick-patterns','Candlestick Patterns'],
+          ['patterns.chart-patterns','Chart Patterns'],
+          ['patterns.harmonic-patterns','Harmonic Patterns'],
+        ],
+        wyckoff: [
+          ['wyckoff.accumulation','Accumulation'], ['wyckoff.distribution','Distribution'],
+          ['wyckoff.market-phases','Market Phases'],
+        ],
+        smc: [
+          ['smc.structure','Structure'], ['smc.confluences','Confluences'],
+          ['smc.liquidity','Liquidity'],
+        ],
+      };
+      // slug → {method, label}
+      const SYNAPSE_SLUG_META = {};
+      Object.entries(SYNAPSE_TOPICS).forEach(([m, list]) => {
+        list.forEach(([slug, label]) => { SYNAPSE_SLUG_META[slug] = { method: m, label }; });
+      });
 
-      // Synapse id → quiz methodology id mapping
-      const SYNAPSE_TO_QUIZ = { ict:'ict', smc:'smc', wyckoff:'wyckoff', ta:null, price:null };
+      const SynapseProgress = window.SynapseProgress = (function () {
+        let checked = new Set();   // slugs the user has marked studied
+        let loaded  = false;
 
-      function renderSynapsePicker() {
-        const views = getSynapseViews();
+        async function load() {
+          try {
+            const res = await fetch('/api/synapse/progress');
+            if (res.ok) {
+              const data = await res.json();
+              checked = new Set((data.checked || []).map(r => r.slug));
+              loaded = true;
+            }
+          } catch (e) {}
+          return checked;
+        }
+        function isChecked(slug) { return checked.has(slug); }
+        function checkedSlugs() { return [...checked]; }
+        async function toggle(slug) {
+          // optimistic flip, reconcile with server response
+          const want = !checked.has(slug);
+          if (want) checked.add(slug); else checked.delete(slug);
+          try {
+            const res = await fetch('/api/synapse/toggle', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ topic_slug: slug }),
+            });
+            if (res.ok) {
+              const data = await res.json();
+              if (data.checked) checked.add(slug); else checked.delete(slug);
+              return data.checked;
+            }
+          } catch (e) {}
+          // on failure, revert the optimistic change
+          if (want) checked.delete(slug); else checked.add(slug);
+          return checked.has(slug);
+        }
+        return { load, toggle, isChecked, checkedSlugs, catalog: SYNAPSE_TOPICS, ensureLoaded: () => loaded ? Promise.resolve(checked) : load() };
+      })();
+
+      async function renderSynapsePicker() {
         const grid  = document.getElementById('quiz-synapse-method-grid');
         const empty = document.getElementById('quiz-synapse-empty');
         if (!grid) return;
 
-        // Filter: only show methodologies that map to an existing quiz method
-        const quizable = views.filter(id => SYNAPSE_TO_QUIZ[id]);
+        await SynapseProgress.load();
+        // Group the checked topics by methodology (only methods quizable today).
+        const QUIZABLE = new Set(Object.keys(METHOD_LABELS));
+        const byMethod = {};
+        SynapseProgress.checkedSlugs().forEach(slug => {
+          const meta = SYNAPSE_SLUG_META[slug];
+          if (!meta || !QUIZABLE.has(meta.method)) return;
+          (byMethod[meta.method] = byMethod[meta.method] || []).push({ slug, label: meta.label });
+        });
 
-        if (quizable.length === 0) {
-          grid.style.display  = 'none';
+        const methods = Object.keys(byMethod);
+        if (methods.length === 0) {
+          grid.style.display = 'none';
           if (empty) empty.style.display = '';
-        } else {
-          if (empty) empty.style.display = 'none';
-          grid.style.display  = '';
-          grid.innerHTML = quizable.map(synapseId => {
-            const qId   = SYNAPSE_TO_QUIZ[synapseId];
-            const label = METHOD_LABELS[qId] || qId;
-            const nTopics = (TOPIC_MAP[qId]||[]).length;
-            return `<div class="quiz-method-card" data-m="${qId}">
-              <div class="mc-name">${label}</div>
-              <div class="mc-meta">${nTopics} ${T('quiz.topicsWord')||'topics'}</div>
-            </div>`;
-          }).join('');
-          grid.querySelectorAll('.quiz-method-card').forEach(card => {
-            card.addEventListener('click', () => openMethod(card.dataset.m));
-          });
+          return;
         }
+        if (empty) empty.style.display = 'none';
+        grid.style.display = '';
+        // Each checked topic is its own clickable card → jumps straight to that
+        // methodology's topic in the quiz.
+        grid.innerHTML = methods.map(m => {
+          const label = METHOD_LABELS[m] || m;
+          const cards = byMethod[m].map(t =>
+            `<div class="quiz-topic-card" data-m="${m}" data-topic="${t.label}">
+              <span class="tc-name">${trTopic(t.label)}</span>
+            </div>`).join('');
+          return `<div style="grid-column:1/-1;margin:6px 0 2px;font-size:12px;letter-spacing:.04em;
+                       text-transform:uppercase;opacity:.7;">${label}</div>${cards}`;
+        }).join('');
+        grid.querySelectorAll('.quiz-topic-card').forEach(card => {
+          card.addEventListener('click', () => {
+            openMethod(card.dataset.m);
+            openTopic(card.dataset.topic);
+          });
+        });
       }
 
       document.getElementById('quiz-synapse-back')?.addEventListener('click', () => showScreen('welcome'));
@@ -9491,8 +9565,8 @@
             return;
           }
           if(intent==='synapse-test'){
-            renderSynapsePicker();
             showScreen('synapsePicker');
+            renderSynapsePicker();
             return;
           }
           // b / d → proceed to the methodology picker

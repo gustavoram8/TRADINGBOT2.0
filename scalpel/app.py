@@ -2014,6 +2014,128 @@ class QuizProgress(db.Model):
     __table_args__ = (db.UniqueConstraint('user_id', 'methodology', 'level'),)
 
 
+# ──────────────────────────────────────────────────────────────────────────
+# SYNAPSE — topic completion tracking
+# ──────────────────────────────────────────────────────────────────────────
+# Canonical registry of every studiable Synapse topic, grouped by methodology.
+# The library UI doesn't exist yet, but the backend is fully built so that the
+# moment a user can "check off" a topic in Synapse, it persists per-account and
+# the Quiz ("test what I studied in Synapse") can surface those topics.
+#
+# Slugs are globally unique and methodology-prefixed so collisions like ICT's
+# "Liquidity" vs SMC's "Liquidity" never clash. (slug, human label) pairs.
+SYNAPSE_TOPICS = {
+    'ict': [
+        ('ict.order-blocks',     'Order Blocks'),
+        ('ict.fair-value-gaps',  'Fair Value Gaps'),
+        ('ict.market-structure', 'Market Structure'),
+        ('ict.liquidity',        'Liquidity'),
+        ('ict.kill-zones',       'Kill Zones'),
+        ('ict.amd',              'AMD'),
+        ('ict.pd-arrays',        'PD Arrays'),
+    ],
+    'patterns': [
+        ('patterns.candlestick-patterns', 'Candlestick Patterns'),
+        ('patterns.chart-patterns',       'Chart Patterns'),
+        ('patterns.harmonic-patterns',    'Harmonic Patterns'),
+    ],
+    'wyckoff': [
+        ('wyckoff.accumulation',  'Accumulation'),
+        ('wyckoff.distribution',  'Distribution'),
+        ('wyckoff.market-phases', 'Market Phases'),
+    ],
+    'smc': [
+        ('smc.structure',   'Structure'),
+        ('smc.confluences', 'Confluences'),
+        ('smc.liquidity',   'Liquidity'),
+    ],
+}
+
+# Reverse lookups: slug → methodology, and slug → label. Built once at import.
+SYNAPSE_SLUG_TO_METHOD = {}
+SYNAPSE_SLUG_TO_LABEL  = {}
+for _m, _topics in SYNAPSE_TOPICS.items():
+    for _slug, _label in _topics:
+        SYNAPSE_SLUG_TO_METHOD[_slug] = _m
+        SYNAPSE_SLUG_TO_LABEL[_slug]  = _label
+SYNAPSE_VALID_SLUGS = set(SYNAPSE_SLUG_TO_METHOD)
+
+
+class SynapseProgress(db.Model):
+    """One row per (user, synapse topic) the user has marked as studied."""
+    id          = db.Column(db.Integer, primary_key=True)
+    user_id     = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    methodology = db.Column(db.String(40), nullable=False)   # ict / smc / wyckoff / patterns
+    topic_slug  = db.Column(db.String(80), nullable=False)    # ict.order-blocks ...
+    checked_at  = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    user        = db.relationship('User', backref='synapse_progress')
+    __table_args__ = (db.UniqueConstraint('user_id', 'topic_slug'),)
+
+
+@app.route('/api/synapse/topics')
+@login_required
+def synapse_topics():
+    """The full registry of studiable Synapse topics (for the future library UI
+    and the quiz picker), plus which ones THIS user has already checked off."""
+    if current_user.plan != 'premium' and not current_user.is_admin:
+        return jsonify({'error': 'premium_only'}), 403
+    checked = {r.topic_slug for r in
+               SynapseProgress.query.filter_by(user_id=current_user.id).all()}
+    catalog = {
+        m: [{'slug': slug, 'label': label, 'checked': slug in checked}
+            for slug, label in topics]
+        for m, topics in SYNAPSE_TOPICS.items()
+    }
+    return jsonify({'topics': catalog, 'checked': sorted(checked)})
+
+
+@app.route('/api/synapse/progress')
+@login_required
+def synapse_progress():
+    """Flat list of the slugs this user has checked off as studied."""
+    if current_user.plan != 'premium' and not current_user.is_admin:
+        return jsonify({'error': 'premium_only'}), 403
+    rows = SynapseProgress.query.filter_by(user_id=current_user.id).all()
+    return jsonify({'checked': [{
+        'slug':        r.topic_slug,
+        'methodology': r.methodology,
+        'label':       SYNAPSE_SLUG_TO_LABEL.get(r.topic_slug, r.topic_slug),
+        'checked_at':  r.checked_at.isoformat() if r.checked_at else None,
+    } for r in rows]})
+
+
+@app.route('/api/synapse/toggle', methods=['POST'])
+@login_required
+def synapse_toggle():
+    """Toggle a topic's studied state for the current user. Returns the new
+    state. Adding a check inserts a row; un-checking deletes it."""
+    if current_user.plan != 'premium' and not current_user.is_admin:
+        return jsonify({'error': 'premium_only'}), 403
+    data = request.get_json(force=True) or {}
+    slug = str(data.get('topic_slug', '')).strip()
+    if slug not in SYNAPSE_VALID_SLUGS:
+        return jsonify({'error': 'invalid_topic'}), 400
+
+    row = SynapseProgress.query.filter_by(
+        user_id=current_user.id, topic_slug=slug
+    ).first()
+
+    if row is None:
+        row = SynapseProgress(
+            user_id=current_user.id,
+            methodology=SYNAPSE_SLUG_TO_METHOD[slug],
+            topic_slug=slug,
+        )
+        db.session.add(row)
+        checked = True
+    else:
+        db.session.delete(row)
+        checked = False
+
+    db.session.commit()
+    return jsonify({'ok': True, 'topic_slug': slug, 'checked': checked})
+
+
 @app.route('/api/quiz/progress')
 @login_required
 def quiz_get_progress():
