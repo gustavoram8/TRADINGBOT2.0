@@ -497,6 +497,37 @@
     .plan.premium  .plan-name { color: var(--pp-premium); }
     .plan-tagline { font-size: 13px; color: var(--muted); margin-bottom: 22px; min-height: 38px; }
     .price { display: flex; align-items: baseline; gap: 4px; margin-bottom: 6px; }
+
+    /* ── BILLING TOGGLE ── */
+    .billing-wrap { text-align: center; margin-bottom: 28px; }
+    .billing-toggle {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 5px; background: var(--pp-card-bg);
+      border: 1.5px solid var(--pp-line); border-radius: 30px;
+    }
+    .bt-opt {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 9px 22px; font-size: 14px; font-weight: 700; font-family: inherit;
+      color: var(--pp-ink-soft); background: transparent;
+      border: none; border-radius: 24px; cursor: pointer; transition: all 0.18s;
+    }
+    .bt-opt:hover { color: var(--pp-ink); }
+    .bt-opt.active { color: #fff; background: linear-gradient(135deg,#2563eb,#1d4ed8); }
+    .bt-save {
+      font-size: 10px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;
+      padding: 2px 8px; border-radius: 12px;
+      background: rgba(16,185,129,0.16); color: #10b981; white-space: nowrap;
+    }
+    .bt-opt.active .bt-save { background: rgba(255,255,255,0.22); color: #fff; }
+    .billing-sub { font-size: 12.5px; color: var(--muted); margin-top: 10px; }
+    .price-annual-block { display: none; }
+    .price-annual-block .price { margin-bottom: 4px; }
+    .annual-billed { font-size: 13px; font-weight: 600; color: var(--pp-ink-soft); display: block; margin-bottom: 4px; }
+    .annual-save {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12.5px; font-weight: 800; padding: 3px 11px;
+      border-radius: 14px; background: rgba(16,185,129,0.14); color: #10b981;
+    }
     .price .amount { font-size: 46px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; color: var(--pp-ink); }
     .price .currency { font-size: 22px; font-weight: 700; color: var(--pp-ink-soft); }
     .price .period { font-size: 14px; color: var(--muted); font-weight: 500; }
@@ -1029,6 +1060,17 @@
     <div class="eyebrow rv" data-t="brow_pricing">PRICING</div>
     <h2 class="h2 rv d1" data-t="s7_title">Start free. Scale when you're ready.</h2>
     <p class="lead rv d2" data-t="s7_body">Every plan includes the AI analysis engine. Upgrade when you want more.</p>
+
+    <div class="billing-wrap">
+      <div class="billing-toggle" role="tablist">
+        <button type="button" class="bt-opt active" data-cycle="monthly">Monthly</button>
+        <button type="button" class="bt-opt" data-cycle="annual">
+          Annual <span class="bt-save">Save 20%</span>
+        </button>
+      </div>
+      <div class="billing-sub" id="landing-billing-sub">Pay month to month, cancel anytime.</div>
+    </div>
+
     <div class="pricing-grid">
 
       <!-- Free -->
@@ -1058,10 +1100,19 @@
       <div class="plan standard rv d1">
         <div class="plan-name" data-t="plan_std_name">Standard</div>
         <div class="plan-tagline" data-t="ps_tag">For active traders reviewing setups daily.</div>
-        <div class="price">
-          <span class="currency">$</span>
-          <span class="amount">10</span>
-          <span class="period" data-t="pl_std_cycle">/ month</span>
+        <div class="price-monthly-block">
+          <div class="price">
+            <span class="currency">$</span><span class="amount">10</span>
+            <span class="period" data-t="pl_std_cycle">/ month</span>
+          </div>
+        </div>
+        <div class="price-annual-block">
+          <div class="price">
+            <span class="currency">$</span><span class="amount">8</span>
+            <span class="period">/ month</span>
+          </div>
+          <span class="annual-billed"><s>$120</s>&nbsp; $96 billed yearly</span>
+          <span class="annual-save">↓ 20% — you save $24/yr</span>
         </div>
         <div class="plan-divider"></div>
         <ul class="features">
@@ -1086,10 +1137,19 @@
         <div class="badge-pop" data-t="pop_badge">MOST POPULAR</div>
         <div class="plan-name" data-t="plan_prem_name">Premium</div>
         <div class="plan-tagline" data-t="pp_tag">For serious traders who want deep daily review.</div>
-        <div class="price">
-          <span class="currency">$</span>
-          <span class="amount">30</span>
-          <span class="period" data-t="pl_prm_cycle">/ month</span>
+        <div class="price-monthly-block">
+          <div class="price">
+            <span class="currency">$</span><span class="amount">30</span>
+            <span class="period" data-t="pl_prm_cycle">/ month</span>
+          </div>
+        </div>
+        <div class="price-annual-block">
+          <div class="price">
+            <span class="currency">$</span><span class="amount">24</span>
+            <span class="period">/ month</span>
+          </div>
+          <span class="annual-billed"><s>$360</s>&nbsp; $288 billed yearly</span>
+          <span class="annual-save">↓ 20% — you save $72/yr</span>
         </div>
         <div class="plan-divider"></div>
         <ul class="features">
@@ -1795,6 +1855,27 @@
       };
       window.addEventListener('load', () => setTimeout(go, 350));
     }
+  })();
+
+  // ── BILLING TOGGLE ──────────────────────────────────────────────
+  (function () {
+    var opts = document.querySelectorAll('.billing-toggle .bt-opt');
+    var sub  = document.getElementById('landing-billing-sub');
+    var SUBS = {
+      monthly: 'Pay month to month, cancel anytime.',
+      annual:  "Pay once a year and save 20% — that's 2 months free on every paid plan."
+    };
+    function setCycle(cycle) {
+      opts.forEach(function (o) { o.classList.toggle('active', o.dataset.cycle === cycle); });
+      document.querySelectorAll('.price-monthly-block').forEach(function (el) {
+        el.style.display = cycle === 'monthly' ? '' : 'none';
+      });
+      document.querySelectorAll('.price-annual-block').forEach(function (el) {
+        el.style.display = cycle === 'annual' ? 'block' : 'none';
+      });
+      if (sub) sub.textContent = SUBS[cycle];
+    }
+    opts.forEach(function (o) { o.addEventListener('click', function () { setCycle(o.dataset.cycle); }); });
   })();
   </script>
 </body>
