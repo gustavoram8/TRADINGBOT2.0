@@ -11350,14 +11350,20 @@
       svg.parentElement.style.setProperty('--syn-accent', m.accent);
 
       // Ring-based layout (≤6 per ring) keeps labels readable and on-screen.
+      // Each ring is rotated by half a step (+π/perRing) so the top-centre is
+      // ALWAYS a gap between two neurons — never a neuron itself. This reserves
+      // a clean vertical corridor above the nucleus for its (sometimes long)
+      // name label, so it can't collide with the upper neurons' labels.
       const CX = 500, CY = 470, n = m.topics.length;
       const pts = m.topics.map((_, i) => {
         const ring = Math.floor(i / 6);
         const idx  = i % 6;
         const perRing = Math.min(n - ring*6, 6);
-        const baseR = 150 + ring * 130;
-        // single-item ring sits at center-top; otherwise spread evenly
-        const ang = perRing===1 ? -Math.PI/2 : (Math.PI*2/perRing)*idx - Math.PI/2;
+        const baseR = 158 + ring * 132;
+        // single-item ring sits at center-top; otherwise spread evenly with the
+        // half-step offset that keeps a gap straddling the top centre.
+        const ang = perRing===1 ? -Math.PI/2
+                  : (Math.PI*2/perRing)*idx - Math.PI/2 + Math.PI/perRing;
         return { x: CX + Math.cos(ang)*baseR, y: CY + Math.sin(ang)*baseR };
       });
 
@@ -11367,10 +11373,11 @@
         stroke:m.accent, 'stroke-width':'1', opacity:'.35' }));
       svg.appendChild(el('circle', { cx:CX, cy:CY, r:20, fill:m.accent, opacity:'.9',
         style:'filter:drop-shadow(0 0 18px '+m.accent+');' }));
-      // Label above the nucleus — large, readable, with stroke backdrop
+      // Label above the nucleus — sits in the reserved top-centre gap. Letter
+      // spacing tightened so long names ("Fundamental Analysis") stay compact.
       const lt2 = isLight();
-      svg.appendChild(svgText(m.name, CX, CY - 42, {
-        fill: lt2?'#0d1e40':'#f0f6ff', 'font-size':'17', 'font-weight':'800', 'letter-spacing':'1.5',
+      svg.appendChild(svgText(m.name, CX, CY - 50, {
+        fill: lt2?'#0d1e40':'#f0f6ff', 'font-size':'17', 'font-weight':'800', 'letter-spacing':'.6',
         'paint-order':'stroke', stroke: lt2?'rgba(235,243,255,.95)':'rgba(2,8,14,.95)', 'stroke-width':'5', 'stroke-linejoin':'round',
         'pointer-events':'none',
       }));
