@@ -14,6 +14,25 @@
 
 ---
 
+> **INSTRUCCIÓN PERMANENTE — DEPLOY EN VPS:**
+> El sitio Trader Acelerator está desplegado en el VPS de Contabo (IP: `62.171.180.22`,
+> puerto `5001`) gestionado por **supervisor**.
+>
+> **REGLA OBLIGATORIA:** Después de CADA push de cambios al repo, recordar siempre
+> al usuario que debe ejecutar en el VPS:
+> ```
+> supervisorctl restart traderacelerator
+> ```
+> Sin este comando, los cambios pusheados NO se reflejan en el sitio en vivo.
+> El flujo completo para aplicar cambios en producción es:
+> 1. `git pull origin claude/epic-lovelace-GsOuo` (en el VPS)
+> 2. `supervisorctl restart traderacelerator`
+>
+> El VPS corre Ubuntu con supervisor — el proceso arranca automáticamente al reiniciar
+> el servidor, sin necesidad de intervención manual.
+
+---
+
 ## Stack técnico
 
 - **Backend:** Flask + SQLAlchemy + SQLite (`scalpel.db`)
