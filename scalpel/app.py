@@ -670,8 +670,15 @@ def landing():
     If the visitor is already authenticated — e.g. they ticked "remember this
     device" on a previous visit — skip the landing AND the login/register step
     and send them straight through the welcome splash into the app.
+
+    Exception: when arriving with ?plans=1 (the in-app "See plans" link) we
+    always render the landing so the user can scroll to the pricing section,
+    even if they're logged in.
     """
-    if current_user.is_authenticated and getattr(current_user, 'email_verified', True):
+    wants_plans = request.args.get('plans')
+    if (not wants_plans
+            and current_user.is_authenticated
+            and getattr(current_user, 'email_verified', True)):
         return redirect(url_for('welcome'))
     return render_template('landing.html')
 
