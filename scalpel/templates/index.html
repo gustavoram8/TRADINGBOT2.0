@@ -563,12 +563,28 @@
     /* watermark initial */
     .proj-tile .tile-mark {
       position: absolute;
-      right: -4px; bottom: -18px;
-      font-size: 74px; font-weight: 800; line-height: 1;
+      right: -6px; bottom: -20px;
+      font-size: 80px; font-weight: 800; line-height: 1;
       color: var(--tile-accent);
-      opacity: .13; pointer-events: none; user-select: none;
+      opacity: .22; pointer-events: none; user-select: none;
+      transition: opacity .22s ease, text-shadow .22s ease, transform .22s ease;
     }
-    body.light .proj-tile .tile-mark { opacity: .15; }
+    /* Dark mode — let the symbol glow with its accent color so it reads "powerful". */
+    body.dark .proj-tile .tile-mark {
+      opacity: .32;
+      text-shadow: 0 0 14px var(--tile-accent), 0 0 30px var(--tile-accent);
+    }
+    body.dark .proj-tile:hover .tile-mark {
+      opacity: .55; transform: scale(1.06);
+      text-shadow: 0 0 18px var(--tile-accent), 0 0 42px var(--tile-accent);
+    }
+    body.dark .proj-tile.active .tile-mark {
+      opacity: .6;
+      text-shadow: 0 0 20px var(--tile-accent), 0 0 48px var(--tile-accent);
+    }
+    /* Light mode — subtler, no glow (impact is intentionally softer here). */
+    body.light .proj-tile .tile-mark { opacity: .16; text-shadow: none; }
+    body.light .proj-tile:hover .tile-mark { opacity: .24; transform: scale(1.04); }
 
     .proj-tile .tile-bar {
       width: 26px; height: 4px; border-radius: 4px;
