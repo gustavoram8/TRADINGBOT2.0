@@ -2373,6 +2373,110 @@
     /* ══ Progress pill (cluster view) ══
        Discreet bottom-left counter that expands into a checklist of
        the current methodology's studied topics. */
+    /* ── PDF button (bottom-right of map stage) ── */
+    .syn-pdf-btn {
+      position: absolute; right: 18px; bottom: 22px; z-index: 6;
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(0,0,0,.45); border: 1px solid rgba(255,255,255,.15);
+      border-radius: 20px; padding: 6px 14px 6px 10px; cursor: pointer;
+      color: rgba(255,255,255,.85); font-size: 12px; font-weight: 600;
+      font-family: inherit; letter-spacing: .02em;
+      transition: background .18s, border-color .18s;
+    }
+    .syn-pdf-btn:hover { background: rgba(61,90,254,.55); border-color: rgba(61,90,254,.6); }
+    body.light .syn-pdf-btn {
+      background: rgba(255,255,255,.72); border-color: rgba(0,0,0,.12);
+      color: rgba(20,20,40,.8); backdrop-filter: blur(8px);
+    }
+    body.light .syn-pdf-btn:hover { background: rgba(61,90,254,.1); border-color: rgba(61,90,254,.35); }
+
+    /* ── PDF purchase overlay + card ── */
+    .syn-pdf-overlay {
+      position: fixed; inset: 0; z-index: 9000;
+      background: rgba(0,0,0,.7); backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity .22s;
+    }
+    .syn-pdf-overlay.open { opacity: 1; pointer-events: auto; }
+    .syn-pdf-card {
+      position: relative; width: 360px; max-width: calc(100vw - 32px);
+      background: #0f0f1e; border: 1px solid rgba(61,90,254,.35);
+      border-radius: 18px; padding: 32px 28px 24px;
+      box-shadow: 0 32px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(61,90,254,.1);
+      transform: scale(.96) translateY(10px);
+      transition: transform .22s;
+    }
+    .syn-pdf-overlay.open .syn-pdf-card { transform: scale(1) translateY(0); }
+    body.light .syn-pdf-card {
+      background: #fff; border-color: rgba(61,90,254,.25);
+      box-shadow: 0 24px 60px rgba(0,0,0,.15);
+    }
+    .syn-pdf-close {
+      position: absolute; top: 14px; right: 14px; background: none; border: none;
+      cursor: pointer; color: rgba(255,255,255,.4); padding: 4px;
+      border-radius: 6px; transition: color .15s;
+    }
+    .syn-pdf-close:hover { color: rgba(255,255,255,.85); }
+    body.light .syn-pdf-close { color: rgba(0,0,0,.3); }
+    body.light .syn-pdf-close:hover { color: rgba(0,0,0,.7); }
+
+    .syn-pdf-badge {
+      display: inline-block; background: rgba(61,90,254,.18);
+      color: #7090ff; font-size: 9px; font-weight: 800; letter-spacing: .12em;
+      text-transform: uppercase; border-radius: 6px; padding: 3px 8px;
+      margin-bottom: 12px; border: 1px solid rgba(61,90,254,.3);
+    }
+    body.light .syn-pdf-badge { background: rgba(61,90,254,.08); color: #3d5afe; }
+
+    .syn-pdf-title {
+      font-size: 22px; font-weight: 800; color: #fff;
+      margin-bottom: 4px; line-height: 1.2;
+    }
+    body.light .syn-pdf-title { color: #1a1a2e; }
+    .syn-pdf-sub { font-size: 12px; color: rgba(255,255,255,.45); margin-bottom: 18px; }
+    body.light .syn-pdf-sub { color: rgba(20,20,40,.5); }
+
+    .syn-pdf-perks { list-style: none; margin-bottom: 20px; }
+    .syn-pdf-perks li { display: flex; align-items: flex-start; gap: 8px;
+                        font-size: 12.5px; color: rgba(255,255,255,.75);
+                        margin-bottom: 7px; }
+    body.light .syn-pdf-perks li { color: rgba(20,20,40,.75); }
+    .syn-pdf-check { color: #3d5afe; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+
+    .syn-pdf-price-row { display: flex; align-items: baseline; gap: 10px; margin-bottom: 18px; }
+    .syn-pdf-old {
+      font-size: 16px; color: rgba(255,255,255,.25); text-decoration: line-through;
+    }
+    body.light .syn-pdf-old { color: rgba(20,20,40,.25); }
+    .syn-pdf-price {
+      font-size: 34px; font-weight: 900; color: #fff; letter-spacing: -.02em;
+    }
+    body.light .syn-pdf-price { color: #1a1a2e; }
+    .syn-pdf-launch {
+      font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+      color: #3d5afe; background: rgba(61,90,254,.12); border-radius: 6px;
+      padding: 3px 7px; border: 1px solid rgba(61,90,254,.25);
+    }
+
+    .syn-pdf-cta {
+      display: flex; align-items: center; justify-content: center;
+      width: 100%; padding: 13px; border-radius: 10px; border: none;
+      font-size: 14px; font-weight: 700; cursor: not-allowed;
+      background: rgba(61,90,254,.35); color: rgba(255,255,255,.45);
+      margin-bottom: 12px; font-family: inherit;
+    }
+    .syn-pdf-note {
+      font-size: 10.5px; color: rgba(255,255,255,.35); text-align: center;
+      margin-bottom: 14px; line-height: 1.5;
+    }
+    body.light .syn-pdf-note { color: rgba(20,20,40,.4); }
+    .syn-pdf-disclaimer {
+      font-size: 9px; color: rgba(255,255,255,.2); text-align: center;
+      border-top: 1px solid rgba(255,255,255,.06); padding-top: 10px;
+    }
+    body.light .syn-pdf-disclaimer { color: rgba(20,20,40,.3); border-color: rgba(0,0,0,.08); }
+
     .syn-prog-pill {
       position: absolute; left: 18px; bottom: 22px; z-index: 6;
       display: none; /* shown only in cluster mode via JS */
@@ -3957,6 +4061,12 @@
         </div>
         <div class="syn-lib-hint" id="syn-lib-hint">Tap a methodology cluster to explore it</div>
 
+        <!-- PDF download button — bottom-right corner of the map stage -->
+        <button class="syn-pdf-btn" id="syn-pdf-btn" type="button">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>
+          <span data-i18n="synapse.pdfBtn">Get PDF</span>
+        </button>
+
         <!-- progress pill — shown when a methodology cluster is open -->
         <div class="syn-prog-pill" id="syn-prog-pill">
           <div class="syn-prog-pill-list" id="syn-prog-pill-list"></div>
@@ -4006,6 +4116,42 @@
     </div>
   </div>
 
+</div>
+
+<!-- ── SYNAPSE PDF PURCHASE MODAL ── -->
+<div class="syn-pdf-overlay" id="syn-pdf-overlay" role="dialog" aria-modal="true" aria-label="Synapse PDF">
+  <div class="syn-pdf-card">
+    <button class="syn-pdf-close" id="syn-pdf-close" type="button" aria-label="Close">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+
+    <div class="syn-pdf-badge">PDF</div>
+    <h2 class="syn-pdf-title" data-i18n="synapse.pdfTitle">Synapse Library</h2>
+    <p class="syn-pdf-sub" data-i18n="synapse.pdfSub">Complete Trading Knowledge Base — Offline Edition</p>
+
+    <ul class="syn-pdf-perks">
+      <li><span class="syn-pdf-check">✓</span> <span data-i18n="synapse.pdfPerk1">All 41 topics · 5 full methodologies</span></li>
+      <li><span class="syn-pdf-check">✓</span> <span data-i18n="synapse.pdfPerk2">SVG diagrams on every topic</span></li>
+      <li><span class="syn-pdf-check">✓</span> <span data-i18n="synapse.pdfPerk3">Mechanics, setups &amp; common mistakes</span></li>
+      <li><span class="syn-pdf-check">✓</span> <span data-i18n="synapse.pdfPerk4">100% offline — no internet needed</span></li>
+      <li><span class="syn-pdf-check">✓</span> <span data-i18n="synapse.pdfPerk5">Personalized &amp; watermarked to you</span></li>
+    </ul>
+
+    <div class="syn-pdf-price-row">
+      <span class="syn-pdf-old">$47</span>
+      <span class="syn-pdf-price">$20</span>
+      <span class="syn-pdf-launch" data-i18n="synapse.pdfLaunch">Launch price</span>
+    </div>
+
+    <button class="syn-pdf-cta" type="button" disabled>
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px"><circle cx="12" cy="12" r="10"/><polyline points="12,8 12,12 14,14"/></svg>
+      <span data-i18n="synapse.pdfCta">Coming Soon</span>
+    </button>
+
+    <p class="syn-pdf-note" data-i18n="synapse.pdfNote">Payment &amp; instant delivery coming shortly. Join the waitlist to be first.</p>
+
+    <div class="syn-pdf-disclaimer" data-i18n="synapse.pdfDisclaimer">For educational purposes only · Not financial advice</div>
+  </div>
 </div>
 
 <!-- ── VALIDATION MODAL ── -->
@@ -4239,6 +4385,18 @@
       'synapse.loading': 'Initializing neural matrix…',
       'synapse.soon': '{name} library — coming soon',
       'synapse.fire': 'Click to fire a synapse',
+      'synapse.pdfBtn': 'Get PDF',
+      'synapse.pdfTitle': 'Synapse Library',
+      'synapse.pdfSub': 'Complete Trading Knowledge Base — Offline Edition',
+      'synapse.pdfPerk1': 'All 41 topics · 5 full methodologies',
+      'synapse.pdfPerk2': 'SVG diagrams on every topic',
+      'synapse.pdfPerk3': 'Mechanics, setups & common mistakes',
+      'synapse.pdfPerk4': '100% offline — no internet needed',
+      'synapse.pdfPerk5': 'Personalized & watermarked to you',
+      'synapse.pdfLaunch': 'Launch price',
+      'synapse.pdfCta': 'Coming Soon',
+      'synapse.pdfNote': 'Payment & instant delivery coming shortly.',
+      'synapse.pdfDisclaimer': 'For educational purposes only · Not financial advice',
       'scalper.tag': 'The Trading Education Studio',
       'scalper.bg': 'Background', 'scalper.bgDark': 'Dark', 'scalper.bgWhite': 'White', 'scalper.bgBlack': 'Black', 'scalper.bgGrid': 'Chart grid',
       'scalper.bgNavy': 'Navy', 'scalper.bgCharcoal': 'Charcoal', 'scalper.bgForest': 'Forest', 'scalper.bgSepia': 'Sepia', 'scalper.bgCream': 'Cream', 'scalper.bgCustom': 'Custom…',
@@ -4491,6 +4649,18 @@
       'synapse.loading': 'Inicializando matriz neuronal…',
       'synapse.soon': 'Biblioteca de {name} — próximamente',
       'synapse.fire': 'Haz clic para activar la sinapsis',
+      'synapse.pdfBtn': 'Obtener PDF',
+      'synapse.pdfTitle': 'Biblioteca Synapse',
+      'synapse.pdfSub': 'Base completa de conocimiento — Edición offline',
+      'synapse.pdfPerk1': '41 temas · 5 metodologías completas',
+      'synapse.pdfPerk2': 'Diagramas SVG en cada tema',
+      'synapse.pdfPerk3': 'Mecánicas, setups y errores comunes',
+      'synapse.pdfPerk4': '100% offline — sin internet',
+      'synapse.pdfPerk5': 'Personalizado y con marca de agua para ti',
+      'synapse.pdfLaunch': 'Precio de lanzamiento',
+      'synapse.pdfCta': 'Próximamente',
+      'synapse.pdfNote': 'Pago y entrega inmediata disponibles pronto.',
+      'synapse.pdfDisclaimer': 'Solo con fines educativos · No es asesoramiento financiero',
       'scalper.tag': 'El Estudio de Educación en Trading',
       'scalper.bg': 'Fondo', 'scalper.bgDark': 'Oscuro', 'scalper.bgWhite': 'Blanco', 'scalper.bgBlack': 'Negro', 'scalper.bgGrid': 'Cuadrícula',
       'scalper.bgNavy': 'Marino', 'scalper.bgCharcoal': 'Carbón', 'scalper.bgForest': 'Bosque', 'scalper.bgSepia': 'Sepia', 'scalper.bgCream': 'Crema', 'scalper.bgCustom': 'Personalizado…',
@@ -4743,6 +4913,18 @@
       'synapse.loading': 'Initialisation de la matrice neuronale…',
       'synapse.soon': 'Bibliothèque {name} — bientôt disponible',
       'synapse.fire': 'Cliquez pour activer la synapse',
+      'synapse.pdfBtn': 'Obtenir PDF',
+      'synapse.pdfTitle': 'Bibliothèque Synapse',
+      'synapse.pdfSub': 'Base complète de connaissances — Édition hors ligne',
+      'synapse.pdfPerk1': '41 sujets · 5 méthodologies complètes',
+      'synapse.pdfPerk2': 'Diagrammes SVG sur chaque sujet',
+      'synapse.pdfPerk3': 'Mécaniques, configurations et erreurs courantes',
+      'synapse.pdfPerk4': '100% hors ligne — sans internet',
+      'synapse.pdfPerk5': 'Personnalisé et marqué en filigrane pour vous',
+      'synapse.pdfLaunch': 'Prix de lancement',
+      'synapse.pdfCta': 'Bientôt disponible',
+      'synapse.pdfNote': 'Paiement et livraison instantanée bientôt disponibles.',
+      'synapse.pdfDisclaimer': 'À des fins éducatives uniquement · Pas un conseil financier',
       'scalper.tag': "Le Studio d'Éducation au Trading",
       'scalper.bg': 'Arrière-plan', 'scalper.bgDark': 'Sombre', 'scalper.bgWhite': 'Blanc', 'scalper.bgBlack': 'Noir', 'scalper.bgGrid': 'Grille',
       'scalper.bgNavy': 'Marine', 'scalper.bgCharcoal': 'Charbon', 'scalper.bgForest': 'Forêt', 'scalper.bgSepia': 'Sépia', 'scalper.bgCream': 'Crème', 'scalper.bgCustom': 'Personnalisé…',
@@ -4995,6 +5177,18 @@
       'synapse.loading': 'Inicializando matriz neural…',
       'synapse.soon': 'Biblioteca de {name} — em breve',
       'synapse.fire': 'Clique para ativar a sinapse',
+      'synapse.pdfBtn': 'Obter PDF',
+      'synapse.pdfTitle': 'Biblioteca Synapse',
+      'synapse.pdfSub': 'Base completa de conhecimento — Edição offline',
+      'synapse.pdfPerk1': '41 tópicos · 5 metodologias completas',
+      'synapse.pdfPerk2': 'Diagramas SVG em cada tópico',
+      'synapse.pdfPerk3': 'Mecânicas, configurações e erros comuns',
+      'synapse.pdfPerk4': '100% offline — sem internet',
+      'synapse.pdfPerk5': 'Personalizado e com marca d\'água para você',
+      'synapse.pdfLaunch': 'Preço de lançamento',
+      'synapse.pdfCta': 'Em breve',
+      'synapse.pdfNote': 'Pagamento e entrega imediata disponíveis em breve.',
+      'synapse.pdfDisclaimer': 'Apenas para fins educacionais · Não é aconselhamento financeiro',
       'scalper.tag': 'O Estúdio de Educação em Trading',
       'scalper.bg': 'Fundo', 'scalper.bgDark': 'Escuro', 'scalper.bgWhite': 'Branco', 'scalper.bgBlack': 'Preto', 'scalper.bgGrid': 'Grade',
       'scalper.bgNavy': 'Marinho', 'scalper.bgCharcoal': 'Carvão', 'scalper.bgForest': 'Floresta', 'scalper.bgSepia': 'Sépia', 'scalper.bgCream': 'Creme', 'scalper.bgCustom': 'Personalizado…',
@@ -11702,6 +11896,22 @@
     if (pillBtn) {
       pillBtn.addEventListener('click', () => { pillEl.classList.toggle('open'); });
     }
+
+    // ══ Synapse PDF purchase modal ══
+    (function () {
+      const pdfBtn     = document.getElementById('syn-pdf-btn');
+      const pdfOverlay = document.getElementById('syn-pdf-overlay');
+      const pdfClose   = document.getElementById('syn-pdf-close');
+      if (!pdfBtn || !pdfOverlay) return;
+
+      function openPdfModal()  { pdfOverlay.classList.add('open'); document.body.style.overflow = 'hidden'; }
+      function closePdfModal() { pdfOverlay.classList.remove('open'); document.body.style.overflow = ''; }
+
+      pdfBtn.addEventListener('click', openPdfModal);
+      pdfClose.addEventListener('click', closePdfModal);
+      pdfOverlay.addEventListener('click', (e) => { if (e.target === pdfOverlay) closePdfModal(); });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePdfModal(); });
+    })();
 
     // ══ Dossier "book" — editorial flipbook ══
     // Each topic opens as a 4-page (concept) or 5-page (entry trigger) booklet:

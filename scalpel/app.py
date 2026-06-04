@@ -1193,175 +1193,344 @@ def admin_unban():
 # ──────────────────────────────────────────────────────────────────────────
 # SYNAPSE PDF — personalized, watermarked download
 # ──────────────────────────────────────────────────────────────────────────
-_SYNAPSE_TOPICS = [
-    # (slug, title, methodology)
-    ('price.support-resistance', 'Support & Resistance', 'Price Action'),
-    ('price.trend-structure',    'Trend & Structure',    'Price Action'),
-    ('price.candles',            'Candlestick Reading',  'Price Action'),
-    ('price.chart-patterns',     'Chart Patterns',       'Price Action'),
-    ('price.supply-demand',      'Supply & Demand',      'Price Action'),
-    ('price.pin-bar',            'Pin Bar Rejection',    'Price Action'),
-    ('price.engulfing',          'Engulfing Confirmation','Price Action'),
-    ('price.breakout-retest',    'Breakout Retest',      'Price Action'),
-    ('price.harmonic',           'Harmonic Completion',  'Price Action'),
-    ('technical.moving-averages','Moving Averages',      'Technical Analysis'),
-    ('technical.rsi',            'RSI',                  'Technical Analysis'),
-    ('technical.macd',           'MACD',                 'Technical Analysis'),
-    ('technical.bollinger',      'Bollinger Bands',      'Technical Analysis'),
-    ('technical.volume',         'Volume Analysis',      'Technical Analysis'),
-    ('technical.fibonacci',      'Fibonacci Retracements','Technical Analysis'),
-    ('technical.atr',            'ATR & Volatility',     'Technical Analysis'),
-    ('technical.multi-tf',       'Multi-Timeframe Analysis','Technical Analysis'),
-    ('smc.order-blocks',         'Order Blocks',         'SMC / ICT'),
-    ('smc.fair-value-gaps',      'Fair Value Gaps',      'SMC / ICT'),
+# Ordered list of (slug, display-title, methodology) used for the PDF TOC + page order.
+# Slugs must match the keys in synapse_export.json (generated from synapse_library.js).
+_SYNAPSE_ORDER = [
+    # Price Action
+    ('price.support-resistance', 'Support & Resistance',      'Price Action'),
+    ('price.trend-structure',    'Trend & Structure',          'Price Action'),
+    ('price.candles',            'Candlestick Reading',        'Price Action'),
+    ('price.chart-patterns',     'Chart Patterns',             'Price Action'),
+    ('price.supply-demand',      'Supply & Demand',            'Price Action'),
+    ('price.pin-bar',            'Pin Bar Rejection',          'Price Action'),
+    ('price.engulfing',          'Engulfing Confirmation',     'Price Action'),
+    ('price.breakout-retest',    'Breakout Retest',            'Price Action'),
+    ('price.harmonic',           'Harmonic Completion',        'Price Action'),
+    # Technical Analysis
+    ('technical.moving-averages','Moving Averages',            'Technical Analysis'),
+    ('technical.rsi',            'RSI',                        'Technical Analysis'),
+    ('technical.rsi-divergence', 'RSI Divergence',             'Technical Analysis'),
+    ('technical.macd',           'MACD',                       'Technical Analysis'),
+    ('technical.macd-cross',     'MACD Cross',                 'Technical Analysis'),
+    ('technical.bollinger',      'Bollinger Bands',            'Technical Analysis'),
+    ('technical.volume',         'Volume Analysis',            'Technical Analysis'),
+    ('technical.ma-cross',       'MA Cross',                   'Technical Analysis'),
+    ('technical.squeeze-break',  'Squeeze Breakout',           'Technical Analysis'),
+    # SMC / ICT
+    ('smc.order-blocks',         'Order Blocks',               'SMC / ICT'),
+    ('smc.ob-retest',            'Order Block Retest',         'SMC / ICT'),
+    ('smc.fair-value-gaps',      'Fair Value Gaps',            'SMC / ICT'),
+    ('smc.fvg-fill',             'FVG Fill',                   'SMC / ICT'),
     ('smc.market-structure',     'Market Structure (BOS/ChoCH)','SMC / ICT'),
-    ('smc.liquidity',            'Liquidity',            'SMC / ICT'),
-    ('smc.kill-zones',           'Kill Zones',           'SMC / ICT'),
-    ('smc.pd-arrays',            'Premium / Discount',   'SMC / ICT'),
-    ('smc.breaker-blocks',       'Breaker Blocks',       'SMC / ICT'),
-    ('smc.mitigation-blocks',    'Mitigation Blocks',    'SMC / ICT'),
-    ('fundamental.central-banks','Central Banks & Rates','Fundamental Analysis'),
-    ('fundamental.economic-calendar','Economic Calendar','Fundamental Analysis'),
-    ('fundamental.cot-report',   'COT Report',           'Fundamental Analysis'),
-    ('fundamental.dxy',          'DXY & Correlations',   'Fundamental Analysis'),
-    ('fundamental.market-sessions','Market Sessions',    'Fundamental Analysis'),
-    ('quant.position-sizing',    'Position Sizing',      'Quantitative'),
-    ('quant.risk-reward',        'Risk / Reward',        'Quantitative'),
-    ('quant.expectancy',         'Expectancy & Edge',    'Quantitative'),
-    ('quant.backtesting',        'Backtesting',          'Quantitative'),
-    ('quant.journaling',         'Trade Journaling',     'Quantitative'),
-    ('quant.monte-carlo',        'Monte Carlo Simulation','Quantitative'),
+    ('smc.liquidity',            'Liquidity',                  'SMC / ICT'),
+    ('smc.liquidity-sweep',      'Liquidity Sweep',            'SMC / ICT'),
+    ('smc.kill-zones',           'Kill Zones',                 'SMC / ICT'),
+    ('smc.pd-arrays',            'Premium / Discount',         'SMC / ICT'),
+    ('smc.ote',                  'Optimal Trade Entry',        'SMC / ICT'),
+    ('smc.wyckoff-roots',        'Wyckoff Roots',              'SMC / ICT'),
+    # Fundamental Analysis
+    ('fundamental.interest-rates',   'Interest Rates',         'Fundamental Analysis'),
+    ('fundamental.macro-drivers',    'Macro Drivers',          'Fundamental Analysis'),
+    ('fundamental.news-data',        'High-Impact News',       'Fundamental Analysis'),
+    ('fundamental.news-fade',        'News Fade',              'Fundamental Analysis'),
+    ('fundamental.data-continuation','Data Continuation',      'Fundamental Analysis'),
+    ('fundamental.intermarket',      'Intermarket Analysis',   'Fundamental Analysis'),
+    # Quantitative
+    ('quant.probability',    'Probability & Edge',             'Quantitative'),
+    ('quant.risk-of-ruin',   'Risk of Ruin',                   'Quantitative'),
+    ('quant.backtesting',    'Backtesting',                    'Quantitative'),
+    ('quant.mean-reversion', 'Mean Reversion',                 'Quantitative'),
+    ('quant.momentum',       'Momentum',                       'Quantitative'),
+    ('quant.algo-systems',   'Algo Systems',                   'Quantitative'),
 ]
+
+# Accent color per methodology (used for the section header bar in the PDF)
+_METHOD_ACCENT = {
+    'Price Action':         '#3d5afe',
+    'Technical Analysis':   '#00897b',
+    'SMC / ICT':            '#8e24aa',
+    'Fundamental Analysis': '#e65100',
+    'Quantitative':         '#1565c0',
+}
+
+# CSS variables resolved to light-mode values so SVGs render correctly in PDF
+_DF_CSS = """
+  :root {
+    --df-up:   #26a269;
+    --df-down: #e01b24;
+    --df-wick: #888;
+    --df-axis: #bbb;
+    --df-grid: #ddd;
+    --df-faint: #999;
+    --df-ink:   #333;
+    --syn-accent: #3d5afe;
+  }
+  /* df-* classes (mirrors index.html .syn-figure rules, light-mode resolved) */
+  .df-up    { fill: #26a269; }
+  .df-down  { fill: #e01b24; }
+  .df-up-s  { stroke: #26a269; fill: none; }
+  .df-down-s{ stroke: #e01b24; fill: none; }
+  .df-wick  { stroke: #888; stroke-width: 1.4; fill: none; }
+  .df-axis  { stroke: #bbb; stroke-width: 1; fill: none; }
+  .df-grid  { stroke: #ddd; stroke-width: 1; fill: none; }
+  .df-accent   { stroke: #3d5afe; fill: none; }
+  .df-accent-f { fill: #3d5afe; }
+  .df-zone      { fill: #3d5afe; opacity: .10; stroke: #3d5afe; stroke-opacity:.45; stroke-width:1; }
+  .df-zone-up   { fill: #26a269; opacity: .13; stroke: #26a269; stroke-opacity:.55; stroke-width:1; }
+  .df-zone-down { fill: #e01b24; opacity: .13; stroke: #e01b24; stroke-opacity:.55; stroke-width:1; }
+  .df-line        { stroke: #aaa; stroke-width: 1.6; fill: none; }
+  .df-line-accent { stroke: #3d5afe; stroke-width: 2; fill: none; }
+  .df-dash        { stroke: #aaa; stroke-width: 1.2; stroke-dasharray: 4 4; fill: none; }
+  .df-dash-accent { stroke: #3d5afe; stroke-width:1.3; stroke-dasharray:4 4; fill:none; }
+  .df-label { fill: #333; font-size: 12px; font-family: sans-serif; }
+  .df-tag   { fill: #999; font-size: 10.5px; letter-spacing: .04em; font-family: sans-serif; }
+  .df-tag-accent { fill: #3d5afe; font-size: 10.5px; font-weight: 600; font-family: sans-serif; }
+  .df-tag-down   { fill: #e01b24; font-size: 10.5px; letter-spacing: .04em; font-family: sans-serif; }
+"""
+
+
+def _load_synapse_export() -> dict:
+    """Load synapse_export.json — generated once by scripts/export_synapse.js."""
+    path = os.path.join(BASE_DIR, 'static', 'synapse_export.json')
+    if not os.path.exists(path):
+        return {}
+    with open(path, encoding='utf-8') as f:
+        return json.load(f)
 
 
 def _build_synapse_pdf(buyer_name: str, buyer_email: str, order_id: str) -> bytes:
-    """Generate a personalized, watermarked Synapse Library PDF."""
+    """Generate a full-content, personalized, watermarked Synapse Library PDF."""
     import html as _html
+
     wm_name  = _html.escape(buyer_name)
     wm_email = _html.escape(buyer_email)
     wm_order = _html.escape(order_id)
     wm_date  = datetime.now(timezone.utc).strftime('%Y-%m-%d')
 
-    watermark_css = f"""
-    @page {{
-        margin: 18mm 16mm 22mm 16mm;
-        @bottom-center {{
-            content: "LICENSED TO: {wm_name} · {wm_email} · Order {wm_order}";
-            font-size: 7pt;
-            color: rgba(120,120,120,0.6);
-            font-family: Inter, sans-serif;
-        }}
-    }}
-    """
+    library = _load_synapse_export()
 
-    # Build topic cards HTML
-    topic_html_parts = []
+    # ── helpers ──────────────────────────────────────────────────────────────
+    def esc(s):
+        return _html.escape(str(s)) if s else ''
+
+    def mechanics_html(mlist):
+        if not mlist:
+            return ''
+        rows = ''.join(
+            f'<tr><td class="mc-term">{esc(m.get("term",""))}</td>'
+            f'<td class="mc-text">{esc(m.get("text",""))}</td></tr>'
+            for m in mlist
+        )
+        return f'<table class="mc-table">{rows}</table>'
+
+    def mistake_html(m):
+        if not m:
+            return ''
+        text = ' '.join(m) if isinstance(m, list) else str(m)
+        return f'<div class="mistake"><span class="mistake-label">Common mistake</span> {esc(text)}</div>'
+
+    def setup_html(s):
+        if not s:
+            return ''
+        parts = []
+        labels = {'cond': 'Conditions', 'entry': 'Entry', 'stop': 'Stop', 'target': 'Target'}
+        for k, label in labels.items():
+            if s.get(k):
+                parts.append(f'<div class="setup-row"><span class="setup-key">{label}</span> {esc(s[k])}</div>')
+        return f'<div class="setup-box">{"".join(parts)}</div>' if parts else ''
+
+    def terms_html(tlist):
+        if not tlist:
+            return ''
+        pills = ''.join(f'<span class="term-pill">{esc(t)}</span>' for t in tlist)
+        return f'<div class="terms-row">{pills}</div>'
+
+    # ── TOC ──────────────────────────────────────────────────────────────────
+    toc_rows = []
     current_method = None
-    for slug, title, method in _SYNAPSE_TOPICS:
+    for slug, title, method in _SYNAPSE_ORDER:
         if method != current_method:
             current_method = method
-            topic_html_parts.append(f'<div class="method-header">{_html.escape(method)}</div>')
-        topic_html_parts.append(f"""
-        <div class="topic-card">
-          <div class="topic-title">{_html.escape(title)}</div>
-          <div class="topic-slug">{_html.escape(slug)}</div>
-        </div>
-        """)
-    topics_html = '\n'.join(topic_html_parts)
+            accent = _METHOD_ACCENT.get(method, '#333')
+            toc_rows.append(
+                f'<div class="toc-method" style="color:{accent}">{esc(method)}</div>'
+            )
+        toc_rows.append(f'<div class="toc-item">· {esc(title)}</div>')
+    toc_html = '\n'.join(toc_rows)
 
+    # ── Topic pages ───────────────────────────────────────────────────────────
+    pages = []
+    current_method = None
+    for slug, title, method in _SYNAPSE_ORDER:
+        data    = library.get(slug, {})
+        content = data.get('content') or {}
+        svg_raw = data.get('svg') or ''
+
+        # Method divider page
+        if method != current_method:
+            current_method = method
+            accent = _METHOD_ACCENT.get(method, '#333')
+            pages.append(f"""
+<div class="method-divider" style="border-left:6px solid {accent};">
+  <div class="md-label" style="color:{accent}">Methodology</div>
+  <div class="md-name">{esc(method)}</div>
+</div>""")
+
+        lead     = content.get('lead', '')
+        body     = content.get('body', '')
+        mech     = content.get('mechanics', [])
+        mistake  = content.get('mistake', '')
+        setup    = content.get('setup')
+        terms    = content.get('terms', [])
+        figcap   = content.get('figcap', '')
+        accent   = _METHOD_ACCENT.get(method, '#333')
+
+        pages.append(f"""
+<div class="topic-page">
+  <div class="tp-header" style="border-left:4px solid {accent};">
+    <div class="tp-method" style="color:{accent}">{esc(method)}</div>
+    <div class="tp-title">{esc(title)}</div>
+  </div>
+
+  {f'<p class="tp-lead">{esc(lead)}</p>' if lead else ''}
+  {f'<p class="tp-body">{esc(body)}</p>' if body else ''}
+
+  {mechanics_html(mech)}
+  {setup_html(setup)}
+  {mistake_html(mistake)}
+  {terms_html(terms)}
+
+  {f'''<div class="tp-figure">
+    <div class="svg-wrap">{svg_raw}</div>
+    {f'<div class="tp-figcap">{esc(figcap)}</div>' if figcap else ''}
+  </div>''' if svg_raw else ''}
+</div>""")
+
+    pages_html = '\n'.join(pages)
+
+    # ── Full HTML document ────────────────────────────────────────────────────
     html_content = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
 <style>
-  {watermark_css}
+  @page {{
+    size: A4;
+    margin: 16mm 15mm 22mm 15mm;
+    @bottom-center {{
+      content: "LICENSED TO: {wm_name}  ·  {wm_email}  ·  Order {wm_order}";
+      font-size: 6.5pt;
+      color: #bbb;
+      font-family: sans-serif;
+    }}
+  }}
+  @page cover {{ margin: 0; @bottom-center {{ content: none; }} }}
+
+  {_DF_CSS}
+
   * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-  body {{
-    font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
-    font-size: 10pt;
-    color: #1a1a2e;
-    background: #fff;
-  }}
-  .cover {{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 240mm;
-    text-align: center;
-    page-break-after: always;
-  }}
-  .cover-brand {{ font-size: 13pt; letter-spacing: 0.15em; color: #888; text-transform: uppercase; margin-bottom: 12pt; }}
-  .cover-title {{ font-size: 32pt; font-weight: 800; color: #1a1a2e; line-height: 1.2; margin-bottom: 8pt; }}
-  .cover-sub {{ font-size: 13pt; color: #555; margin-bottom: 28pt; }}
-  .cover-wm {{ font-size: 9pt; color: #aaa; border-top: 1px solid #e8e8e8; padding-top: 10pt; width: 100%; }}
-  .cover-wm strong {{ color: #777; }}
-  .disclaimer {{
-    background: #fff8e7;
-    border-left: 3px solid #f0a500;
-    padding: 10pt 14pt;
-    margin: 16pt 0 0 0;
-    font-size: 8.5pt;
-    color: #5a4200;
-    page-break-after: always;
-  }}
-  .disclaimer h3 {{ font-size: 10pt; margin-bottom: 6pt; color: #7a5800; }}
-  .method-header {{
-    font-size: 14pt;
-    font-weight: 700;
-    color: #fff;
-    background: linear-gradient(90deg, #1a1a2e, #3b3b70);
-    padding: 8pt 12pt;
-    margin: 16pt 0 6pt 0;
-    border-radius: 4pt;
-  }}
-  .topic-card {{
-    border: 1px solid #e8e8ef;
-    border-radius: 6pt;
-    padding: 10pt 14pt;
-    margin-bottom: 6pt;
-    background: #fafafe;
-  }}
-  .topic-title {{ font-size: 11pt; font-weight: 600; color: #1a1a2e; }}
-  .topic-slug  {{ font-size: 8pt; color: #aaa; margin-top: 2pt; font-family: monospace; }}
-  .toc-title {{
-    font-size: 18pt; font-weight: 700; margin-bottom: 14pt; color: #1a1a2e;
-    border-bottom: 2px solid #1a1a2e; padding-bottom: 6pt;
-  }}
-  .footer-note {{
-    margin-top: 24pt; font-size: 8pt; color: #aaa; text-align: center;
-    border-top: 1px solid #eee; padding-top: 8pt;
-  }}
+  body {{ font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 9.5pt; color: #1a1a2e; background: #fff; }}
+
+  /* ── Cover ── */
+  .cover {{ page: cover; width: 210mm; height: 297mm; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; text-align: center;
+            background: #0f0f1e; color: #fff; }}
+  .cv-brand {{ font-size: 10pt; letter-spacing: .2em; color: #7080b0; text-transform: uppercase; margin-bottom: 16pt; }}
+  .cv-title {{ font-size: 36pt; font-weight: 800; line-height: 1.15; margin-bottom: 6pt; }}
+  .cv-sub   {{ font-size: 13pt; color: #8898cc; margin-bottom: 32pt; }}
+  .cv-divider {{ width: 60pt; height: 2pt; background: #3d5afe; margin: 0 auto 28pt; }}
+  .cv-wm {{ font-size: 8pt; color: #445; border-top: 1px solid #222; padding-top: 14pt; width: 80%; line-height: 1.7; }}
+  .cv-wm strong {{ color: #6680cc; }}
+
+  /* ── Disclaimer ── */
+  .disclaimer {{ background: #fff8e7; border-left: 3px solid #f0a500; padding: 11pt 14pt;
+                 margin-bottom: 0; page-break-after: always; }}
+  .disclaimer h3 {{ font-size: 10pt; margin-bottom: 5pt; color: #7a4f00; }}
+  .disclaimer p  {{ font-size: 8pt; color: #5a3800; line-height: 1.55; }}
+
+  /* ── TOC ── */
+  .toc-page {{ page-break-after: always; }}
+  .toc-title {{ font-size: 18pt; font-weight: 800; margin-bottom: 14pt; color: #1a1a2e;
+                border-bottom: 2px solid #1a1a2e; padding-bottom: 5pt; }}
+  .toc-method {{ font-size: 10pt; font-weight: 700; margin: 10pt 0 3pt; letter-spacing:.04em; }}
+  .toc-item {{ font-size: 8.5pt; color: #555; margin: 1pt 0 1pt 10pt; }}
+
+  /* ── Method divider ── */
+  .method-divider {{ page-break-before: always; page-break-after: always;
+                     display: flex; flex-direction: column; justify-content: center;
+                     min-height: 200mm; padding: 20mm 18mm; }}
+  .md-label {{ font-size: 10pt; letter-spacing:.15em; text-transform: uppercase; margin-bottom: 10pt; }}
+  .md-name  {{ font-size: 30pt; font-weight: 800; color: #1a1a2e; }}
+
+  /* ── Topic page ── */
+  .topic-page {{ page-break-before: always; padding-bottom: 8pt; }}
+  .tp-header {{ padding: 7pt 10pt; margin-bottom: 10pt; background: #f5f6fc; }}
+  .tp-method {{ font-size: 8pt; letter-spacing:.1em; text-transform: uppercase; margin-bottom: 2pt; }}
+  .tp-title  {{ font-size: 16pt; font-weight: 800; color: #1a1a2e; }}
+  .tp-lead {{ font-size: 10pt; font-weight: 600; color: #2a2a4e; margin-bottom: 7pt; line-height: 1.5; }}
+  .tp-body {{ font-size: 9pt; color: #444; margin-bottom: 10pt; line-height: 1.6; }}
+
+  /* Mechanics table */
+  .mc-table {{ width: 100%; border-collapse: collapse; margin-bottom: 10pt; }}
+  .mc-table tr {{ border-bottom: 1px solid #eee; }}
+  .mc-term {{ font-size: 8.5pt; font-weight: 700; color: #1a1a2e; width: 28%; padding: 4pt 6pt 4pt 0; vertical-align: top; }}
+  .mc-text {{ font-size: 8.5pt; color: #444; padding: 4pt 0; line-height: 1.5; vertical-align: top; }}
+
+  /* Setup box */
+  .setup-box {{ background: #f0f4ff; border-radius: 5pt; padding: 8pt 11pt; margin-bottom: 10pt; }}
+  .setup-row {{ font-size: 8.5pt; margin-bottom: 3pt; line-height: 1.5; }}
+  .setup-key {{ font-weight: 700; color: #3d5afe; display: inline; margin-right: 4pt; }}
+
+  /* Mistake */
+  .mistake {{ background: #fff3f3; border-left: 3px solid #e01b24; padding: 7pt 10pt; margin-bottom: 10pt; font-size: 8.5pt; color: #4a0000; line-height: 1.55; }}
+  .mistake-label {{ font-weight: 700; color: #c0000c; margin-right: 4pt; }}
+
+  /* Terms */
+  .terms-row {{ margin-bottom: 10pt; }}
+  .term-pill {{ display: inline-block; background: #eef1ff; color: #3d5afe; font-size: 7.5pt;
+                font-weight: 600; border-radius: 20pt; padding: 1.5pt 7pt; margin: 2pt 2pt 0 0; }}
+
+  /* Figure */
+  .tp-figure {{ margin-top: 8pt; text-align: center; }}
+  .svg-wrap {{ display: inline-block; width: 100%; max-width: 340pt; }}
+  .svg-wrap svg {{ width: 100%; height: auto; display: block; }}
+  .tp-figcap {{ font-size: 7.5pt; color: #888; margin-top: 4pt; font-style: italic; text-align: center; }}
 </style>
 </head>
 <body>
 
+<!-- Cover -->
 <div class="cover">
-  <div class="cover-brand">Trader Acelerator</div>
-  <div class="cover-title">Synapse Library</div>
-  <div class="cover-sub">Complete Trading Knowledge Base</div>
-  <div class="cover-wm">
+  <div class="cv-brand">Trader Acelerator</div>
+  <div class="cv-title">Synapse Library</div>
+  <div class="cv-sub">Complete Trading Knowledge Base</div>
+  <div class="cv-divider"></div>
+  <div class="cv-wm">
     Licensed to: <strong>{wm_name}</strong> &lt;{wm_email}&gt;<br/>
     Order: <strong>{wm_order}</strong> &nbsp;·&nbsp; Generated: {wm_date}<br/>
-    <em>This document is personalized. Sharing or redistribution is prohibited.</em>
+    <em style="color:#334;font-size:7.5pt;">This document is personalized. Sharing or redistribution is prohibited.</em>
   </div>
 </div>
 
+<!-- Disclaimer -->
 <div class="disclaimer">
-  <h3>⚠ Educational Use Only</h3>
-  This document is provided exclusively for educational purposes. Nothing contained herein constitutes
-  financial advice, investment advice, trading advice, or any other type of advice. Trading carries
-  significant risk of financial loss. Past performance is not indicative of future results.
-  This document is licensed solely to the named individual above and may not be shared, reproduced,
-  or distributed in any form.
+  <h3>⚠ Educational Use Only — Not Financial Advice</h3>
+  <p>This document is provided exclusively for educational purposes. Nothing contained herein constitutes
+  financial advice, investment advice, trading advice, or any other type of advice. Trading financial
+  instruments carries significant risk of financial loss and may not be suitable for all investors.
+  Past performance is not indicative of future results. This document is licensed solely to the
+  individual named above. Sharing, copying, or redistribution in any form is strictly prohibited.
+  Violators may have their account suspended.</p>
 </div>
 
-<div class="toc-title">Topics Index</div>
-{topics_html}
-
-<div class="footer-note">
-  © Trader Acelerator · For educational purposes only · Not financial advice
+<!-- Table of Contents -->
+<div class="toc-page">
+  <div class="toc-title">Table of Contents</div>
+  {toc_html}
 </div>
+
+<!-- Topic pages -->
+{pages_html}
 
 </body>
 </html>"""
