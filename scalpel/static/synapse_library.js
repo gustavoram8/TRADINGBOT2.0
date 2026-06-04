@@ -587,6 +587,326 @@
       path(price, 'df-line-accent') + arrow(270, 110, 305, 64, 'df-line-accent'));
   };
 
+  // ══════════════════════════════════════════════════════════════════════
+  // METHODOLOGY 3 — SMC / ICT
+  // ══════════════════════════════════════════════════════════════════════
+
+  C['smc.wyckoff-roots'] = {
+    lead: 'Wyckoff\'s 1930s framework is the bedrock beneath modern smart-money trading: a single large operator — the "Composite Man" — systematically accumulates and distributes through engineered price cycles you can learn to read.',
+    body: 'Understanding Wyckoff gives you the why behind every ICT concept — order blocks are his demand zones, liquidity sweeps are his springs, BOS is his sign of strength.',
+    mechanics: [
+      { term: 'The Composite Man', text: 'Think like one rational large operator orchestrating the move, rather than reacting emotionally to price.' },
+      { term: 'Three Laws', text: 'Supply/Demand; Cause & Effect (range size sets the move size); Effort vs Result (volume should match price progress).' },
+      { term: 'Accumulation phases', text: 'A (selling stops) → B (cause-building) → C (the Spring) → D (Sign of Strength) → E (markup begins).' },
+      { term: 'Spring & Upthrust', text: 'The Spring is a false break below range support on low volume — the optimal long; the UTAD is its mirror at tops.' },
+    ],
+    mistake: 'Volume is inseparable from Wyckoff — a Spring on high volume is suspect (real selling), a Spring on low volume is ideal (no supply). Modern algos also compress these phases: what took weeks in 1930 can complete in hours on a 5-minute chart.',
+    terms: ['Composite Man', 'Accumulation', 'Distribution', 'Spring', 'Sign of Strength', 'Cause & Effect'],
+    figcap: 'A Wyckoff accumulation range: a spring dips below support, then markup begins out of the range.',
+  };
+  D['smc.wyckoff-roots'] = () => {
+    const sup = 150, res = 80;
+    const rng = 'M40 120 L70 96 L100 140 L130 100 L160 144 L190 104 L210 150';
+    const spring = 'M210 150 L228 178 L246 138';  // spring below support
+    const markup = 'M246 138 L280 100 L310 70 L345 44 L372 34';
+    return svg(frame() +
+      line(40, sup, 372, sup, 'df-dash') + txt(44, sup - 5, 'support', 'df-tag', 'start') +
+      line(40, res, 246, res, 'df-dash') + txt(44, res - 5, 'resistance', 'df-tag', 'start') +
+      path(rng, 'df-line') + path(spring, 'df-line-accent') + path(markup, 'df-line-accent') +
+      dot(228, 178, 3.5) + txt(228, 194, 'spring', 'df-tag-accent', 'middle') +
+      arrow(310, 70, 345, 44, 'df-line-accent') + txt(330, 130, 'accumulation', 'df-tag', 'middle'));
+  };
+
+  C['smc.market-structure'] = {
+    lead: 'In SMC, structure is the sequence of swings that defines trend. A Break of Structure (BOS) confirms continuation; a Change of Character (ChoCH) is the first break of the opposing extreme — the early warning of reversal.',
+    mechanics: [
+      { term: 'BOS', text: 'Price closes beyond the prior structural high (uptrend) or low (downtrend) — the trend casting a vote to continue.' },
+      { term: 'ChoCH', text: 'The first time price breaks the opposing swing (e.g. a higher low in an uptrend) — control is shifting; a warning, not yet a reversal.' },
+      { term: 'Internal vs external', text: 'External = the headline swings; internal = the smaller swings inside each leg, used to time entries on lower timeframes.' },
+      { term: 'MSS', text: 'A Market Structure Shift is ICT\'s ChoCH after a liquidity sweep + displacement — confirmation the sweep mattered.' },
+    ],
+    mistake: 'The same candle "breaking a high" can be a BOS or a ChoCH depending on whether it broke internal or external structure — context decides. Mark only significant swings; labelling every micro-wiggle turns the chart to chaos. And HTF structure always overrides LTF.',
+    terms: ['BOS', 'ChoCH', 'MSS', 'Internal structure', 'External structure', 'Displacement'],
+    figcap: 'An uptrend of BOS continuations, then a ChoCH as price breaks the last higher low — reversal warning.',
+  };
+  D['smc.market-structure'] = () => {
+    const pts = [[40,170],[85,110],[120,140],[165,80],[205,116],[250,56],[290,120],[330,150],[372,176]];
+    let pth = 'M' + pts[0][0] + ' ' + pts[0][1];
+    for (let i = 1; i < pts.length; i++) pth += ' L' + pts[i][0] + ' ' + pts[i][1];
+    return svg(frame() + path(pth, 'df-line-accent') +
+      line(85, 110, 230, 110, 'df-dash') + txt(150, 104, 'BOS', 'df-tag-accent', 'middle') +
+      line(205, 116, 320, 116, 'df-dash') + txt(300, 110, 'ChoCH', 'df-tag-down', 'middle') +
+      arrow(290, 120, 330, 150, 'df-line-down'));
+  };
+
+  C['smc.order-blocks'] = {
+    lead: 'An order block is the last opposing candle before an impulsive institutional move — the final accumulation (or distribution) footprint where unfilled orders rest until price returns.',
+    body: 'A bullish OB is the last down candle before a rally; a bearish OB is the last up candle before a sell-off. Price tends to react when it "mitigates" that zone.',
+    mechanics: [
+      { term: 'Identification', text: 'Find the last opposing candle right before a displacement move — its high-to-low range is the OB zone.' },
+      { term: 'Validation', text: 'The move away must be impulsive (large, clean, leaving FVGs) and produce a BOS — that confirms the OB.' },
+      { term: 'Mitigation', text: 'When price returns, it fills resting orders; the proximal edge is the entry zone, the distal edge the stop reference.' },
+      { term: 'Breaker block', text: 'A failed OB (price closes through its distal edge) flips polarity and acts on the opposite side on the next return.' },
+    ],
+    mistake: 'Beginners mark every candle before a move as an OB — it must be the last opposing candle, color non-negotiable. And the OB alone is not enough: the best ones follow a liquidity sweep, produce a displacement with FVGs, and sit in the right premium/discount area.',
+    terms: ['Last opposing candle', 'Displacement', 'Mitigation', 'Proximal / distal', 'Breaker block', 'BOS'],
+    figcap: 'The last down candle before a rally is marked as a bullish order block; price returns to mitigate it.',
+  };
+  D['smc.order-blocks'] = () => svg(
+    frame() +
+    bar(70, 84, 120, 'down', 12, 78, 126) +
+    bar(100, 100, 140, 'down', 12, 94, 146) +
+    // the order block: last down candle before rally
+    rect(120, 116, 130, 28, 'df-zone') + txt(126, 110, 'order block', 'df-tag-accent', 'start') +
+    candle(132, 118, 146, 142, 122, 13) +
+    // displacement up
+    bar(168, 80, 124, 'up', 12, 74, 128) +
+    bar(198, 50, 90, 'up', 12, 44, 94) +
+    arrow(150, 150, 210, 60, 'df-line-up') +
+    // return to mitigate
+    bar(280, 50, 96, 'down', 12, 44, 102) +
+    bar(310, 100, 134, 'down', 12, 94, 138) +
+    arrow(322, 150, 330, 126, 'df-line-up') + txt(330, 168, 'mitigation', 'df-tag', 'middle')
+  );
+
+  C['smc.fair-value-gaps'] = {
+    lead: 'A Fair Value Gap is a three-candle imbalance: price moves so fast that candle 3\'s wick never reaches candle 1\'s wick, leaving a one-sided zone the market is drawn back to "rebalance".',
+    mechanics: [
+      { term: 'Bullish FVG', text: 'In an up sequence, candle 3\'s low sits above candle 1\'s high — that gap acts as support on the return.' },
+      { term: 'Consequent Encroachment', text: 'The 50% midpoint of the gap — often the most reactive level and the refined entry target.' },
+      { term: 'Fill dynamics', text: 'Strong trends reach only the CE before resuming; weaker ones fill the whole gap before reacting.' },
+      { term: 'Inverse FVG', text: 'A bullish FVG broken downward flips to resistance on the return (and vice versa).' },
+    ],
+    mistake: 'Not every gap is tradable — an FVG from a high-volume displacement after a sweep is gold; one from a dead overnight session is noise. And FVGs deep inside a powerful trend may never fill — treating all of them as guaranteed fill targets fades you into freight trains.',
+    terms: ['Three-candle imbalance', 'Consequent Encroachment', '50% midpoint', 'Inverse FVG', 'Rebalancing', 'Displacement'],
+    figcap: 'Three candles leave a bullish FVG (the shaded gap); price later returns to its 50% midpoint to rebalance.',
+  };
+  D['smc.fair-value-gaps'] = () => svg(
+    frame() +
+    candle(90, 150, 178, 172, 158, 16) +
+    candle(140, 96, 150, 142, 104, 16) +
+    candle(190, 58, 104, 96, 66, 16) +
+    // FVG = gap between candle1 high (~150) and candle3 low (~104)
+    rect(70, 108, 240, 40, 'df-zone') + txt(316, 130, 'FVG', 'df-tag-accent', 'start') +
+    line(70, 128, 310, 128, 'df-dash-accent') + txt(316, 124, 'CE', 'df-tag-accent', 'start') +
+    // return to fill CE
+    bar(280, 58, 96, 'down', 13, 52, 102) +
+    bar(310, 100, 126, 'up', 13, 94, 132) +
+    arrow(322, 150, 330, 128, 'df-line-accent')
+  );
+
+  C['smc.liquidity'] = {
+    lead: 'Liquidity is the pools of resting orders — stops and pending entries — clustered at obvious levels. Institutions drive price to those pools to fill their size, using predictable retail behaviour as fuel.',
+    mechanics: [
+      { term: 'Buy-side (BSL)', text: 'Rests above swing highs and equal highs (short stops + breakout buys). Price runs up to sell into it.' },
+      { term: 'Sell-side (SSL)', text: 'Rests below swing lows and equal lows (long stops + breakdown sells). Price runs down to buy from it.' },
+      { term: 'Equal highs/lows', text: 'Two identical extremes concentrate stops just beyond — the market almost always sweeps them before the real move.' },
+      { term: 'Stop run', text: 'Price spikes past the level, triggers the stops, then reverses hard — often on a displacement candle.' },
+    ],
+    mistake: 'Placing stops at the obvious level (just past a key high/low) puts them exactly where stop hunts aim. Put stops beyond the next significant structure instead. And not every sweep reverses — some just accelerate the trend; the displacement after tells you which.',
+    terms: ['Buy-side liquidity', 'Sell-side liquidity', 'Equal highs/lows', 'Stop hunt', 'Liquidity pool', 'Displacement'],
+    figcap: 'Equal highs build a buy-side liquidity pool; price sweeps the stops above, then reverses down.',
+  };
+  D['smc.liquidity'] = () => svg(
+    frame() +
+    line(60, 70, 300, 70, 'df-dash') + txt(64, 64, 'equal highs · BSL', 'df-tag', 'start') +
+    bar(80, 74, 130, 'up', 12, 68, 136) +
+    bar(120, 110, 150, 'down', 12, 104, 156) +
+    bar(160, 74, 120, 'up', 12, 70, 126) +
+    bar(200, 108, 146, 'down', 12, 102, 152) +
+    // sweep above equal highs then reverse
+    candle(248, 50, 120, 64, 110, 13) + txt(248, 42, 'sweep', 'df-tag-accent', 'middle') +
+    bar(288, 96, 140, 'down', 12, 90, 146) +
+    bar(322, 130, 172, 'down', 12, 124, 178) +
+    arrow(248, 58, 322, 150, 'df-line-down')
+  );
+
+  C['smc.pd-arrays'] = {
+    lead: 'Premium/Discount splits a dealing range at its 50% equilibrium: above is premium (expensive), below is discount (cheap). Smart money buys discount and sells premium — so you should too.',
+    mechanics: [
+      { term: 'Equilibrium', text: 'The 50% of the swing low-to-high is "fair value"; everything keys off this midpoint.' },
+      { term: 'Premium arrays', text: 'OB/FVG/OTE sitting above 50% — where you look for shorts as institutions distribute into chasers.' },
+      { term: 'Discount arrays', text: 'OB/FVG/OTE sitting below 50% — where you look for longs as institutions accumulate from panic sellers.' },
+      { term: 'Rule', text: 'In a bullish bias, only buy when price retraces into discount; never chase a long while price sits in premium.' },
+    ],
+    mistake: 'Using the wrong dealing range gives wrong equilibrium — anchor to the most recent significant swing. And a Fib level alone is no edge; it only matters when discount overlaps an actual array (OB/FVG) and the timeframes agree.',
+    terms: ['Equilibrium', '50% midpoint', 'Premium', 'Discount', 'OTE', 'Dealing range'],
+    figcap: 'A dealing range split at 50% equilibrium: discount below (buy zone) and premium above (sell zone).',
+  };
+  D['smc.pd-arrays'] = () => {
+    const hi = 50, lo = 180, mid = (hi + lo) / 2;
+    return svg(frame() +
+      rect(40, mid, 332, lo - mid, 'df-zone-up') +
+      rect(40, hi, 332, mid - hi, 'df-zone-down') +
+      line(40, mid, 372, mid, 'df-dash-accent') + txt(376, mid - 4, 'EQ 50%', 'df-tag-accent', 'end') +
+      line(40, hi, 372, hi, 'df-dash') + txt(44, hi + 12, 'swing high', 'df-tag', 'start') +
+      line(40, lo, 372, lo, 'df-dash') + txt(44, lo - 6, 'swing low', 'df-tag', 'start') +
+      txt(200, hi + 28, 'PREMIUM · sell', 'df-tag-down', 'middle') +
+      txt(200, lo - 18, 'DISCOUNT · buy', 'df-tag', 'middle'));
+  };
+
+  C['smc.kill-zones'] = {
+    lead: 'Kill Zones are the time windows when institutional activity peaks and the cleanest setups form. Trading only inside them — and avoiding the dead lunch hours — is a core ICT discipline.',
+    mechanics: [
+      { term: 'London Open', text: '02:00–05:00 EST — highest liquidity for EUR/GBP; the open often sweeps the Asian range before the true move.' },
+      { term: 'New York Open', text: '07:00–10:00 EST — high-impact US data hits 08:30; the second-most active window of the day.' },
+      { term: 'Silver Bullet', text: 'The 10:00–11:00 EST hour — a 15-min FVG aligned with daily bias is one of ICT\'s highest-conviction setups.' },
+      { term: 'Avoid lunch', text: 'NY lunch / London close (12:00–14:00 EST) is low-volume chop where retail gets ground up.' },
+    ],
+    mistake: 'The same OB or FVG that prints clean entries in the London Open turns into indecisive chop during lunch. And track daylight-saving shifts — EST→EDT moves every window by an hour relative to GMT.',
+    terms: ['London Open', 'New York Open', 'Silver Bullet', 'Asian range', 'Session overlap', 'IPDA'],
+    figcap: 'A 24-hour bar highlighting the London, New York, and Silver Bullet kill zones against the dead lunch hours.',
+  };
+  D['smc.kill-zones'] = () => {
+    const y = 96, h = 40, x0 = 40, x1 = 372, span = x1 - x0;
+    const at = hr => x0 + (hr / 24) * span;
+    const zone = (a, b, label, cls) => rect(at(a), y, at(b) - at(a), h, cls || 'df-zone') +
+      txt((at(a) + at(b)) / 2, y + h + 16, label, 'df-tag-accent', 'middle');
+    return svg(
+      rect(x0, y, span, h, 'df-grid') + line(x0, y + h, x1, y + h, 'df-axis') +
+      zone(2, 5, 'London') + zone(7, 10, 'New York') + zone(10, 11, 'SB') +
+      txt(x0, y - 10, '00:00', 'df-tag', 'start') + txt(x1, y - 10, '24:00 EST', 'df-tag', 'end') +
+      txt(at(13), y + h + 16, 'lunch', 'df-tag', 'middle'));
+  };
+
+  C['smc.ote'] = {
+    type: 't',
+    lead: 'The Optimal Trade Entry is ICT\'s Fibonacci pocket: in a confirmed trend, the highest-probability retracement entry sits between the 61.8% and 79% levels, with 70.5% the sweet spot.',
+    body: 'It marries a deep-discount (or deep-premium) Fib zone with an actual institutional array for maximum confluence.',
+    mechanics: [
+      { term: 'Measurement', text: 'Anchor the Fib from the recent significant swing low to high (bullish); the OTE is the 0.62–0.79 band.' },
+      { term: '70.5% sweet spot', text: 'ICT\'s most reactive level — a limit there with other confluences balances entry depth and stop efficiency.' },
+      { term: 'Confluence required', text: 'OTE must align with a confirmed bias (HTF BOS), an array (OB/FVG) in the pocket, and Kill-Zone timing.' },
+      { term: 'Discount alignment', text: 'In a bullish trade the OTE should sit in the discount half of the dealing range.' },
+    ],
+    mistake: 'Using OTE on a minor internal swing instead of the significant structural swing puts entries at irrelevant levels. And OTE without bias, array, and timing is just a Fib level with no edge — all the pieces must converge.',
+    setup: {
+      cond: 'HTF BOS confirms bias; price retraces into the 0.62–0.79 pocket; an OB/FVG sits inside it; Kill Zone active.',
+      entry: 'Limit at the 70.5% sweet spot, or a rejection confirmation inside the pocket.',
+      stop: 'Beyond the swing that anchored the Fib, plus a buffer past the array.',
+      target: 'Prior swing high/low and the liquidity beyond it; 1:3 or better is typical.',
+    },
+    terms: ['Fibonacci pocket', '61.8% / 70.5% / 79%', 'OTE zone', 'Discount', 'Confluence', 'HTF bias'],
+    figcap: 'A bullish impulse, then a retrace into the 62–79% OTE pocket where the entry is taken.',
+  };
+  D['smc.ote'] = () => {
+    const lo = 180, hi = 50;
+    const f = pct => hi + (lo - hi) * pct;
+    const imp = 'M40 180 L90 150 L130 120 L175 78 L210 56';
+    const ret = 'M210 56 L250 96 L285 130 L300 142';
+    const cont = 'M300 142 L335 96 L372 48';
+    return svg(frame() +
+      rect(40, f(0.62), 332, f(0.79) - f(0.62), 'df-zone') +
+      line(40, f(0.62), 372, f(0.62), 'df-dash') + txt(376, f(0.62) - 3, '.62', 'df-tag', 'end') +
+      line(40, f(0.705), 372, f(0.705), 'df-dash-accent') + txt(376, f(0.705) - 3, '.705', 'df-tag-accent', 'end') +
+      line(40, f(0.79), 372, f(0.79), 'df-dash') + txt(376, f(0.79) + 10, '.79', 'df-tag', 'end') +
+      path(imp, 'df-line') + path(ret, 'df-line') + path(cont, 'df-line-accent') +
+      txt(150, 200, 'OTE pocket', 'df-tag-accent', 'middle') +
+      arrow(300, 142, 335, 96, 'df-line-accent'));
+  };
+
+  C['smc.ob-retest'] = {
+    type: 't',
+    lead: 'The order-block retest is the core ICT entry: after a sweep, displacement, and BOS leave an order block at the move\'s origin, price retraces into that OB to restart the move.',
+    mechanics: [
+      { term: 'Sequence', text: 'Liquidity sweep → displacement leaving OB+FVG → BOS confirms direction → retrace into the OB.' },
+      { term: 'Entry zone', text: 'The proximal edge of the OB; the distal edge sets the stop reference.' },
+      { term: 'Confirmation', text: 'Wait for a lower-timeframe rejection or MSS at the OB rather than a blind tap.' },
+      { term: 'Confluence', text: 'Best when the OB overlaps an FVG, the OTE pocket, premium/discount alignment, and Kill-Zone timing.' },
+    ],
+    mistake: 'The biggest failure is entering before the retest actually happens — many pre-place limits and price never returns. And "wick through, don\'t close through": price may pierce the OB, but a body close beyond the distal edge invalidates it.',
+    setup: {
+      cond: 'HTF BOS after displacement; OB at the origin; price retracing toward it during a Kill Zone with LTF confirmation.',
+      entry: 'At the OB\'s proximal edge on a rejection, or a limit there for experienced traders.',
+      stop: 'Beyond the OB\'s distal edge plus a buffer, or past the sweep extreme.',
+      target: 'The next draw on liquidity (BSL/SSL) and prior structure; 1:3+.',
+    },
+    terms: ['Proximal / distal', 'Mitigation', 'Displacement', 'MSS', 'Confluence', 'Draw on liquidity'],
+    figcap: 'After displacement and a BOS, price returns to the order block\'s proximal edge — the retest entry.',
+  };
+  D['smc.ob-retest'] = () => svg(
+    frame() +
+    rect(60, 120, 70, 28, 'df-zone') + txt(64, 114, 'OB', 'df-tag-accent', 'start') +
+    candle(95, 122, 150, 146, 126, 13) +
+    bar(140, 84, 126, 'up', 12, 78, 130) +
+    bar(172, 50, 92, 'up', 12, 44, 96) +
+    line(140, 84, 320, 84, 'df-dash') + txt(250, 78, 'BOS', 'df-tag-accent', 'middle') +
+    arrow(120, 150, 180, 56, 'df-line-up') +
+    bar(250, 50, 96, 'down', 12, 44, 102) +
+    bar(282, 96, 134, 'down', 12, 90, 138) +
+    arrow(294, 150, 300, 130, 'df-line-up') + txt(300, 166, 'retest', 'df-tag', 'middle') +
+    bar(330, 70, 120, 'up', 12, 64, 126)
+  );
+
+  C['smc.fvg-fill'] = {
+    type: 't',
+    lead: 'The FVG fill enters as price returns to a fair value gap, in the direction of the impulse that created it — the gap acts as a magnetic, institutionally-relevant zone with defined risk.',
+    mechanics: [
+      { term: 'Three entry levels', text: 'Full gap, the 50% Consequent Encroachment (primary reactive level), or the proximal edge for the tightest stop.' },
+      { term: 'Partial vs full', text: 'Strong trends often tag only the CE before resuming; weaker ones fill the whole gap first.' },
+      { term: 'Entry vs target', text: 'An FVG ahead of price is a target (draw on liquidity); an FVG price returns to is an entry — know which role it plays.' },
+      { term: 'Inverse FVG', text: 'A broken bullish FVG becomes a short entry on the return from below, and vice versa.' },
+    ],
+    mistake: 'Waiting for a full fill often means missing the reaction — price frequently taps the CE and reverses without touching the bottom, giving worse R:R. And an FVG in isolation has no bias; context (OTE, premium/discount, BOS) makes it bullish or bearish.',
+    setup: {
+      cond: 'FVG from a clear displacement; HTF bias confirmed; price retracing toward the gap in a Kill Zone.',
+      entry: 'Limit at the CE (50%), or the proximal edge for a tighter stop, with LTF confirmation.',
+      stop: 'Beyond the far edge of the FVG plus a buffer.',
+      target: 'Next liquidity draw / prior swing / next FVG; 1:3+.',
+    },
+    terms: ['Consequent Encroachment', '50% midpoint', 'Partial fill', 'Inverse FVG', 'Draw on liquidity'],
+    figcap: 'Price returns to a fair value gap and reacts at its 50% midpoint (CE), resuming the original move.',
+  };
+  D['smc.fvg-fill'] = () => svg(
+    frame() +
+    bar(70, 150, 178, 'up', 13, 144, 184) +
+    candle(105, 100, 152, 144, 108, 16) +
+    bar(140, 56, 104, 'up', 13, 50, 110) +
+    rect(56, 108, 250, 38, 'df-zone') +
+    line(56, 127, 306, 127, 'df-dash-accent') + txt(312, 123, 'CE', 'df-tag-accent', 'start') +
+    bar(240, 50, 92, 'down', 13, 44, 98) +
+    bar(275, 96, 124, 'down', 13, 90, 130) +
+    arrow(288, 150, 296, 128, 'df-line-accent') +
+    bar(322, 70, 118, 'up', 13, 64, 124)
+  );
+
+  C['smc.liquidity-sweep'] = {
+    type: 't',
+    lead: 'The liquidity-sweep reversal is the foundational ICT setup: price runs beyond a pool of stops, fills institutional orders, then reverses — confirmed by a Market Structure Shift before you enter.',
+    mechanics: [
+      { term: 'Identify the pool', text: 'Equal highs/lows, prior session or swing extremes where retail stops predictably cluster.' },
+      { term: 'The sweep', text: 'Price spikes past the pool and snaps back — a strong wick beyond, closing back inside.' },
+      { term: 'Displacement + MSS', text: 'A forceful candle reverses and breaks internal structure (MSS), confirming the sweep was institutional.' },
+      { term: 'Enter the retrace', text: 'After MSS, price pulls back into the displacement\'s FVG or OB — that\'s the entry at institutional value.' },
+    ],
+    mistake: 'Entering on the sweep close before MSS is aggressive — some sweeps run further first. Waiting for the MSS costs a little entry price but filters fakes. And the more obvious the pool (equal highs touched 3+ times), the more reliable the reversal.',
+    setup: {
+      cond: 'A clear liquidity pool swept (wick/close beyond), immediate displacement, and an MSS on the lower timeframe.',
+      entry: 'Limit at the displacement\'s FVG CE or OB proximal edge, or market on the MSS candle close.',
+      stop: 'Beyond the extreme of the sweep wick, plus a buffer.',
+      target: 'The opposite liquidity pool; 1:3 minimum, often 1:5–1:10 with confluence.',
+    },
+    terms: ['Liquidity pool', 'Stop hunt', 'Displacement', 'MSS', 'Equal highs/lows', 'FVG entry'],
+    figcap: 'Price sweeps the stops above equal highs, displaces down with an MSS, then retraces for the short entry.',
+  };
+  D['smc.liquidity-sweep'] = () => svg(
+    frame() +
+    line(60, 76, 250, 76, 'df-dash') + txt(64, 70, 'liquidity pool', 'df-tag', 'start') +
+    bar(80, 80, 130, 'up', 12, 74, 136) +
+    bar(118, 110, 150, 'down', 12, 104, 156) +
+    bar(156, 80, 124, 'up', 12, 76, 130) +
+    // sweep
+    candle(200, 52, 122, 66, 112, 13) + txt(200, 44, 'sweep', 'df-tag-accent', 'middle') +
+    // displacement down + MSS
+    bar(236, 100, 150, 'down', 12, 94, 156) +
+    bar(268, 130, 178, 'down', 12, 124, 184) +
+    line(150, 150, 300, 150, 'df-dash') + txt(280, 144, 'MSS', 'df-tag-down', 'middle') +
+    arrow(200, 60, 268, 150, 'df-line-down') +
+    // retrace entry
+    bar(310, 120, 160, 'up', 12, 114, 166) +
+    arrow(322, 100, 316, 124, 'df-line-down')
+  );
+
   // ── publish (merge so later methodology files/edits can extend) ──────────
   window.SynapseContent = Object.assign(window.SynapseContent || {}, C);
   window.SynapseDiagrams = Object.assign(window.SynapseDiagrams || {}, D);
