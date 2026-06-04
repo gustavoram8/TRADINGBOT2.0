@@ -1058,6 +1058,161 @@
       arrow(270, 86, 350, 40, 'df-line-accent'));
   };
 
+  // ══════════════════════════════════════════════════════════════════════
+  // METHODOLOGY 5 — QUANTITATIVE
+  // ══════════════════════════════════════════════════════════════════════
+
+  C['quant.probability'] = {
+    lead: 'Quant trading rests on statistical thinking: trading is a probability game judged over large samples, not single outcomes. Expectancy tells you if you have an edge; variance explains the painful streaks along the way.',
+    mechanics: [
+      { term: 'Expectancy', text: 'E = (win% × avg win) − (loss% × avg loss). Positive = viable; negative = no discipline can save it.' },
+      { term: 'Win-rate vs R:R', text: 'They trade off — a 25% win rate at 4:1 is profitable; the combination must be positive, not either metric alone.' },
+      { term: 'Law of large numbers', text: 'Edge only shows over 100+ trades; judging a system on 10 trades is measuring variance, not edge.' },
+      { term: 'Variance', text: 'Even a great system prints 10–20 loss streaks by chance — size positions to survive them.' },
+    ],
+    mistake: 'The number-one psychological error is treating a normal losing streak as a "broken" system and abandoning it mid-drawdown. The other is chasing high win rate for comfort — 70% win rates often hide tiny R:R and negative expectancy. The math doesn\'t care how it feels.',
+    terms: ['Expectancy', 'Win rate', 'Risk:reward', 'Law of large numbers', 'Variance', 'Edge'],
+    figcap: 'A positive-expectancy equity curve rises overall while still suffering normal variance drawdowns.',
+  };
+  D['quant.probability'] = () => {
+    const eq = 'M40 180 L70 150 L95 168 L130 120 L160 138 L195 96 L225 118 L265 78 L300 96 L335 54 L372 40';
+    return svg(frame() +
+      path(eq, 'df-line-accent') +
+      line(40, 188, 372, 44, 'df-dash') + txt(360, 56, 'edge', 'df-tag-accent', 'end') +
+      txt(160, 156, 'variance', 'df-tag', 'middle') + arrow(160, 150, 195, 100, 'df-line'));
+  };
+
+  C['quant.backtesting'] = {
+    lead: 'Backtesting applies a strategy to historical data to estimate its edge before risking capital — but it is riddled with traps that manufacture fake profitability that never survives live trading.',
+    mechanics: [
+      { term: 'Look-ahead bias', text: 'Using data unavailable at decision time (tomorrow\'s open, the bar\'s final high) — destroys all validity.' },
+      { term: 'Overfitting', text: 'Tuning parameters on the same data you evaluate on memorises noise; more parameters = more overfit.' },
+      { term: 'Walk-forward', text: 'Optimise on in-sample, then test untouched out-of-sample data; the gap reveals how much was overfit.' },
+      { term: 'Costs & slippage', text: 'A strategy profitable before spreads/commissions/slippage and negative after was never real.' },
+    ],
+    mistake: 'Backtests are always optimistic versus live — the gap is "strategy decay", and it grows with complexity. You need 200–300+ trades across trending and ranging, high- and low-volatility regimes; 50 trades in one bull year tells you almost nothing.',
+    terms: ['Look-ahead bias', 'Overfitting', 'Walk-forward', 'In/out-of-sample', 'Slippage', 'Strategy decay'],
+    figcap: 'Walk-forward split: a strong in-sample curve and the out-of-sample test that exposes overfitting.',
+  };
+  D['quant.backtesting'] = () => {
+    const inS  = 'M40 180 L80 150 L120 158 L160 110 L200 90';
+    const outS = 'M200 90 L240 96 L280 110 L320 104 L372 120';
+    return svg(frame() +
+      line(200, 24, 200, 196, 'df-dash-accent') +
+      txt(118, 40, 'in-sample', 'df-tag', 'middle') + txt(290, 40, 'out-of-sample', 'df-tag-accent', 'middle') +
+      path(inS, 'df-line-accent') + path(outS, 'df-line') +
+      txt(300, 140, 'decay', 'df-tag', 'middle'));
+  };
+
+  C['quant.risk-of-ruin'] = {
+    lead: 'Risk of Ruin is the probability of losing enough capital to be knocked out of the game — a function of edge, risk per trade, and how much variance your account can absorb. Position sizing matters as much as the strategy.',
+    mechanics: [
+      { term: 'The math', text: 'RoR rises sharply with risk-per-trade — even a real edge ruins you if positions are too big for the variance.' },
+      { term: 'Kelly Criterion', text: 'f* = (b·p − q)/b maximises growth, but full Kelly draws down ~50% — most use a quarter- to half-Kelly.' },
+      { term: 'Drawdown asymmetry', text: 'A 25% loss needs +33% to recover; 50% needs +100%; 90% needs +900%. Losses compound against you.' },
+      { term: 'Fixed fractional', text: 'Risk a fixed % of equity per trade — it compounds on the way up and auto-derisks on the way down.' },
+    ],
+    mistake: 'The deadliest belief is "I have an edge, so I should bet big to grow fast." Variance will produce a losing streak that, at large size, exceeds what the account can survive — and full Kelly is psychologically impossible to hold through its drawdowns.',
+    terms: ['Kelly Criterion', 'Fixed fractional', 'Drawdown recovery', 'Variance', 'Position sizing', 'Half-Kelly'],
+    figcap: 'Drawdown asymmetry: the gain required to recover grows non-linearly as the loss deepens.',
+  };
+  D['quant.risk-of-ruin'] = () => {
+    const base = 188; let bars = '';
+    const data = [['10%', 11, 60], ['25%', 33, 130], ['50%', 100, 220], ['75%', 300, 300]];
+    data.forEach((d, i) => {
+      const x = 70 + i * 78;
+      const lossH = d[1] * 0.0 + (i + 1) * 18; // loss bar (illustrative steps)
+      const gainH = Math.min(150, d[2] * 0.5);
+      bars += rect(x - 22, base - (i + 1) * 22, 18, (i + 1) * 22, 'df-down') +
+        rect(x + 2, base - gainH, 18, gainH, 'df-up') +
+        txt(x - 8, base + 14, d[0], 'df-tag', 'middle');
+    });
+    return svg(line(34, base, 384, base, 'df-axis') + bars +
+      txt(70, 40, 'loss', 'df-tag-down', 'middle') + txt(120, 40, 'gain to recover', 'df-tag', 'start'));
+  };
+
+  C['quant.algo-systems'] = {
+    lead: 'Algorithmic systems execute pre-defined rules automatically, removing emotion and enabling rigorous testing. Different approaches exploit different inefficiencies — trend-following, mean-reversion, market-making, and arbitrage.',
+    mechanics: [
+      { term: 'Trend-following', text: 'Buy strength, sell weakness (MA crosses, ADX). Wins in trends, bleeds in ranges — the classic CTA approach.' },
+      { term: 'Mean-reversion', text: 'Fade extremes back to the average (z-score, bands). Wins in ranges, suffers in trends.' },
+      { term: 'Regime dependence', text: 'A system optimised in one regime fails in another — robust systems detect regime (ADX/volatility) and adapt.' },
+      { term: 'Execution', text: 'Latency, slippage, and API limits decide high-frequency viability; retail latency disqualifies many fast strategies.' },
+    ],
+    mistake: 'Automation doesn\'t remove risk — it executes a flawed strategy with perfect consistency, so a bad system blows up faster. Keep a high trade-to-parameter ratio (30+ trades per parameter) and demand out-of-sample within 50–70% of in-sample.',
+    terms: ['Trend-following', 'Mean-reversion', 'Arbitrage', 'Regime detection', 'Latency', 'Overfitting'],
+    figcap: 'Two regimes: a trending stretch (trend-following territory) and a range (mean-reversion territory).',
+  };
+  D['quant.algo-systems'] = () => {
+    const trend = 'M40 170 L80 150 L110 158 L150 120 L185 96 L215 70';
+    const range = 'M215 70 L245 110 L275 76 L305 112 L335 78 L372 110';
+    return svg(frame() +
+      line(215, 24, 215, 196, 'df-dash') +
+      path(trend, 'df-line-accent') + path(range, 'df-line') +
+      txt(120, 40, 'trend', 'df-tag-accent', 'middle') + txt(300, 40, 'range', 'df-tag', 'middle'));
+  };
+
+  C['quant.mean-reversion'] = {
+    type: 't',
+    lead: 'A mean-reversion signal fires when price has stretched statistically far from its average — by z-score, band, or RSI extreme — betting on a snap back to the mean. But the regime must be range-bound first.',
+    mechanics: [
+      { term: 'Z-score', text: 'z = (price − mean) / σ; ±2 is a tradable extreme, ±3 statistically anomalous. Target = z back to 0.' },
+      { term: 'Band reversion', text: 'A close beyond the 2σ Bollinger Band, then a reversal candle back inside; target the middle band.' },
+      { term: 'Pairs trading', text: 'Trade the spread between two cointegrated assets when it deviates ±2σ — market-neutral by construction.' },
+      { term: 'Regime gate', text: 'Require range-bound conditions (ADX < 20, flat MAs) before any reversion signal is valid.' },
+    ],
+    mistake: 'Applying mean-reversion in a trend is fatal — RSI below 20 in a strong downtrend is continuation, not a buy. Assess the regime before the signal. And correlation is not cointegration: pairs that "looked correlated" can diverge permanently.',
+    setup: {
+      cond: 'Range confirmed (ADX < 20, flat MAs); price 2+ σ from the mean; a reversal candle/structure at the extreme.',
+      entry: 'On the confirmation candle at the extreme, not on the reach of it; or systematic limit at ±2σ.',
+      stop: 'At ±3σ from the mean, or beyond the recent swing extreme.',
+      target: 'Return to the mean (z=0 / middle band / RSI 50); typically 1:1.5–1:3.',
+    },
+    terms: ['Z-score', 'Standard deviation', 'Band reversion', 'Pairs trading', 'Cointegration', 'ADX gate'],
+    figcap: 'Price stretches to the +2σ band in a range, then reverts to the mean — the reversion trade.',
+  };
+  D['quant.mean-reversion'] = () => {
+    const mean = 110;
+    const upper = 60, lower = 160;
+    const price = 'M40 110 L70 84 L95 64 L120 96 L150 112 L180 138 L205 156 L235 120 L265 108 L300 70 L330 100 L372 112';
+    return svg(frame() +
+      line(40, upper, 372, upper, 'df-dash-accent') + txt(376, upper - 3, '+2σ', 'df-tag-accent', 'end') +
+      line(40, lower, 372, lower, 'df-dash-accent') + txt(376, lower + 10, '−2σ', 'df-tag-accent', 'end') +
+      line(40, mean, 372, mean, 'df-dash') + txt(376, mean - 4, 'mean', 'df-tag', 'end') +
+      path(price, 'df-line-accent') +
+      dot(95, 64, 3) + arrow(95, 70, 120, 104, 'df-line') +
+      dot(205, 156, 3) + arrow(205, 150, 235, 116, 'df-line'));
+  };
+
+  C['quant.momentum'] = {
+    type: 't',
+    lead: 'A momentum signal enters when price moves with enough directional strength to ride — capturing persistence rather than fading it. ADX separates real momentum from noise.',
+    mechanics: [
+      { term: 'Rate of Change', text: 'ROC measures % change over a lookback; positive and rising = accelerating; zero-line crosses flag shifts.' },
+      { term: 'ADX gate', text: 'ADX > 25 confirms a trend; > 45 warns of exhaustion (fade, don\'t chase). +DI/−DI give the direction.' },
+      { term: 'Breakout entry', text: 'Enter a level break only when ADX is rising above 25 — filtering the fakeouts that fire on flat ADX.' },
+      { term: 'Trend entries', text: 'Pullback to the 20/50 EMA, MACD cross, or RSI through 50 — all with ADX confirming the trend.' },
+    ],
+    mistake: 'ADX shows strength, not direction — without +DI/−DI you have half the picture. The worst outcome is a breakout that\'s really a liquidity sweep; check that the break isn\'t just grabbing stops. Momentum also needs wide stops beyond structure, not tight ATR clips that get whipped out.',
+    setup: {
+      cond: 'ADX > 25 and rising; direction confirmed by +DI/−DI; price at a level (breakout or pullback) with ROC/MACD agreeing.',
+      entry: 'On the breakout/pullback rejection close, or a MACD signal cross with ADX > 25.',
+      stop: 'Beyond the most recent structural swing that invalidates the trend.',
+      target: 'A trending objective; trail the 20/50 EMA, banking partials at key levels.',
+    },
+    terms: ['Rate of Change', 'ADX', '+DI / −DI', 'Momentum breakout', 'Fakeout', 'Trailing stop'],
+    figcap: 'An ADX-confirmed breakout running into a sustained trend, trailed by a rising moving average.',
+  };
+  D['quant.momentum'] = () => {
+    const price = 'M40 170 L75 162 L110 166 L145 150 L165 118 L195 96 L230 104 L265 70 L300 80 L335 48 L372 36';
+    const trail = 'M40 184 L120 174 L200 132 L280 96 L372 60';
+    return svg(frame() +
+      line(150, 150, 372, 150, 'df-dash') + txt(120, 144, 'level', 'df-tag', 'end') +
+      path(trail, 'df-dash-accent') + path(price, 'df-line-accent') +
+      arrow(150, 150, 168, 120, 'df-line-accent') + txt(176, 116, 'breakout', 'df-tag-accent', 'start') +
+      txt(330, 74, 'trail', 'df-tag-accent', 'end'));
+  };
+
   // ── publish (merge so later methodology files/edits can extend) ──────────
   window.SynapseContent = Object.assign(window.SynapseContent || {}, C);
   window.SynapseDiagrams = Object.assign(window.SynapseDiagrams || {}, D);
