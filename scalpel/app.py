@@ -1461,9 +1461,9 @@ def _build_synapse_pdf(buyer_name: str, buyer_email: str, order_id: str) -> byte
     size: A4;
     margin: 16mm 15mm 22mm 15mm;
     @bottom-center {{
-      content: "LICENSED TO: {wm_name}  ·  {wm_email}  ·  Order {wm_order}";
-      font-size: 6.5pt;
-      color: #bbb;
+      content: "CONFIDENTIAL — Licensed to: {wm_name} · {wm_email} · Order {wm_order} · Unauthorized distribution is prohibited";
+      font-size: 6pt;
+      color: #999;
       font-family: sans-serif;
     }}
   }}
@@ -1485,11 +1485,40 @@ def _build_synapse_pdf(buyer_name: str, buyer_email: str, order_id: str) -> byte
   .cv-wm {{ font-size: 8pt; color: #445; border-top: 1px solid #222; padding-top: 14pt; width: 80%; line-height: 1.7; }}
   .cv-wm strong {{ color: #6680cc; }}
 
-  /* ── Disclaimer ── */
-  .disclaimer {{ background: #fff8e7; border-left: 3px solid #f0a500; padding: 11pt 14pt;
-                 margin-bottom: 0; page-break-after: always; }}
-  .disclaimer h3 {{ font-size: 10pt; margin-bottom: 5pt; color: #7a4f00; }}
-  .disclaimer p  {{ font-size: 8pt; color: #5a3800; line-height: 1.55; }}
+  /* ── Legal page ── */
+  .legal-page {{ page-break-after: always; padding: 4pt 0; }}
+  .legal-section {{ margin-bottom: 16pt; }}
+  .legal-section-title {{
+    font-size: 8pt; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+    color: #1a1a2e; border-bottom: 1.5px solid #1a1a2e; padding-bottom: 3pt; margin-bottom: 7pt;
+  }}
+  .legal-section p {{ font-size: 8pt; color: #333; line-height: 1.65; margin-bottom: 5pt; }}
+  .legal-section ul {{ padding-left: 14pt; margin: 0; }}
+  .legal-section li {{ font-size: 8pt; color: #333; line-height: 1.65; margin-bottom: 3pt; }}
+  .legal-warn {{
+    background: #fff3f3; border: 1.5px solid #d5503c; border-radius: 5pt;
+    padding: 10pt 13pt; margin-bottom: 16pt;
+  }}
+  .legal-warn-title {{ font-size: 9pt; font-weight: 800; color: #b03020; margin-bottom: 5pt; }}
+  .legal-warn p {{ font-size: 8pt; color: #5a1a10; line-height: 1.65; margin-bottom: 4pt; }}
+  .legal-warn p:last-child {{ margin-bottom: 0; }}
+  .legal-edu {{
+    background: #fff8e7; border: 1.5px solid #f0a500; border-radius: 5pt;
+    padding: 10pt 13pt; margin-bottom: 16pt;
+  }}
+  .legal-edu-title {{ font-size: 9pt; font-weight: 800; color: #8a5200; margin-bottom: 5pt; }}
+  .legal-edu p {{ font-size: 8pt; color: #5a3800; line-height: 1.65; margin-bottom: 4pt; }}
+  .legal-edu p:last-child {{ margin-bottom: 0; }}
+  .legal-id-box {{
+    border: 1px solid #dde; border-radius: 5pt; padding: 9pt 12pt;
+    background: #f8f8fc; margin-bottom: 16pt;
+    font-size: 8pt; color: #333; line-height: 1.8;
+  }}
+  .legal-id-box strong {{ color: #1a1a2e; }}
+  .legal-footer-note {{
+    font-size: 7.5pt; color: #888; text-align: center; margin-top: 18pt;
+    border-top: 1px solid #eee; padding-top: 8pt;
+  }}
 
   /* ── TOC ── */
   .toc-page {{ page-break-after: always; }}
@@ -1549,21 +1578,85 @@ def _build_synapse_pdf(buyer_name: str, buyer_email: str, order_id: str) -> byte
   <div class="cv-sub">Complete Trading Knowledge Base</div>
   <div class="cv-divider"></div>
   <div class="cv-wm">
-    Licensed to: <strong>{wm_name}</strong> &lt;{wm_email}&gt;<br/>
-    Order: <strong>{wm_order}</strong> &nbsp;·&nbsp; Generated: {wm_date}<br/>
-    <em style="color:#334;font-size:7.5pt;">This document is personalized. Sharing or redistribution is prohibited.</em>
+    Licensed exclusively to: <strong>{wm_name}</strong> &lt;{wm_email}&gt;<br/>
+    Order: <strong>{wm_order}</strong> &nbsp;·&nbsp; Issued: {wm_date}<br/>
+    <em style="color:#6070a0;font-size:7.5pt;">CONFIDENTIAL — Unauthorized distribution is strictly prohibited and may result in legal action.</em>
   </div>
 </div>
 
-<!-- Disclaimer -->
-<div class="disclaimer">
-  <h3>⚠ Educational Use Only — Not Financial Advice</h3>
-  <p>This document is provided exclusively for educational purposes. Nothing contained herein constitutes
-  financial advice, investment advice, trading advice, or any other type of advice. Trading financial
-  instruments carries significant risk of financial loss and may not be suitable for all investors.
-  Past performance is not indicative of future results. This document is licensed solely to the
-  individual named above. Sharing, copying, or redistribution in any form is strictly prohibited.
-  Violators may have their account suspended.</p>
+<!-- Legal Notice -->
+<div class="legal-page">
+
+  <div class="legal-id-box">
+    <strong>Document identification</strong><br/>
+    Licensed to: <strong>{wm_name}</strong> &nbsp;·&nbsp; {wm_email}<br/>
+    Order reference: <strong>{wm_order}</strong> &nbsp;·&nbsp; Issue date: {wm_date}<br/>
+    Publisher: <strong>Trader Acelerator</strong> &nbsp;·&nbsp; Product: Synapse Library (Digital Edition)
+  </div>
+
+  <div class="legal-warn">
+    <div class="legal-warn-title">⚠ CONFIDENTIAL DOCUMENT — RESTRICTED LICENSE</div>
+    <p>This document is the exclusive and confidential property of Trader Acelerator. It is licensed
+    solely and personally to the individual identified above for their own private study. This license
+    grants no other rights whatsoever.</p>
+    <p><strong>The following actions are strictly prohibited</strong> under the terms and conditions
+    accepted at the time of purchase, and may constitute a violation of applicable intellectual property
+    and copyright law:</p>
+    <ul style="padding-left:14pt;margin:6pt 0 6pt;">
+      <li>Reproducing, copying, or duplicating this document, in whole or in part, by any means.</li>
+      <li>Sharing, distributing, or transmitting this document to any third party, whether free of charge
+          or for commercial gain, through any medium (email, messaging platforms, file-sharing services,
+          social networks, or otherwise).</li>
+      <li>Reselling, sublicensing, or commercializing this document or any portion of its content.</li>
+      <li>Removing, obscuring, or altering any watermark, copyright notice, or identification data
+          embedded in this document.</li>
+      <li>Publishing or uploading this document, or any derivative thereof, to any public or private
+          online platform.</li>
+    </ul>
+    <p>Every copy of this document contains unique digital identification data tied to the licensed
+    user's account. Any unauthorized copy that surfaces publicly can be traced back to its origin.</p>
+  </div>
+
+  <div class="legal-section">
+    <div class="legal-section-title">Consequences of unauthorized distribution</div>
+    <p>Trader Acelerator reserves the right to take any or all of the following actions against any
+    individual found to have violated the terms of this license:</p>
+    <ul>
+      <li><strong>Immediate and permanent suspension</strong> of the user's account on the Trader
+          Acelerator platform, without refund of any fees paid.</li>
+      <li><strong>Civil legal action</strong> for copyright infringement and breach of contract,
+          including claims for compensatory damages, loss of revenue, and, where applicable under
+          applicable law, statutory damages and legal costs.</li>
+      <li><strong>Criminal referral</strong> where the unauthorized distribution constitutes an offence
+          under applicable national or international intellectual property legislation.</li>
+      <li>Notification to relevant professional bodies, brokers, or prop firms where the infringer's
+          identity is known and such disclosure is lawfully permitted.</li>
+    </ul>
+    <p>Trader Acelerator actively monitors public and private channels for unauthorized copies of its
+    proprietary materials. We take intellectual property violations seriously and will pursue all
+    available legal remedies without prior warning.</p>
+  </div>
+
+  <div class="legal-edu">
+    <div class="legal-edu-title">Educational use only — Not financial advice</div>
+    <p>All content in this document is provided exclusively for educational and informational purposes.
+    Nothing contained herein constitutes financial advice, investment advice, trading recommendations,
+    or any other form of regulated advice.</p>
+    <p>Trading financial instruments, including but not limited to forex, futures, indices, and
+    commodities, involves a substantial risk of loss and is not suitable for every investor. Past
+    performance, simulated results, and hypothetical scenarios are not indicative of future results.
+    You are solely responsible for all trading decisions you make.</p>
+    <p>Trader Acelerator, its founders, employees, and affiliates shall not be held liable for any
+    financial losses incurred as a result of applying, directly or indirectly, any concept, strategy,
+    or information presented in this document.</p>
+  </div>
+
+  <div class="legal-footer-note">
+    © {wm_date[:4]} Trader Acelerator. All rights reserved. Unauthorized reproduction or distribution
+    of this document, or any portion of it, may result in severe civil and criminal penalties,
+    and will be prosecuted to the maximum extent permitted by law.
+  </div>
+
 </div>
 
 <!-- Table of Contents -->
