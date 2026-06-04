@@ -78,24 +78,31 @@
   };
   D['price.support-resistance'] = () => svg(
     frame() +
-    line(40, 70, 384, 70, 'df-dash-accent') +
-    txt(372, 64, 'level', 'df-tag-accent', 'end') +
-    // two rejections from above (resistance)
-    bar(70, 78, 120, 'down', 11, 72, 128) +
-    bar(92, 72, 110, 'down', 11, 70, 120) +
-    arrow(105, 74, 112, 104, 'df-line-accent') +
-    bar(150, 74, 118, 'down', 11, 71, 126) +
-    arrow(163, 76, 170, 104, 'df-line-accent') +
-    // breakout through level
-    bar(200, 60, 96, 'up', 11, 54, 100) +
-    bar(222, 44, 82, 'up', 11, 40, 88) +
-    // retest from below = support flip
-    bar(270, 60, 88, 'down', 11, 56, 96) +
-    bar(292, 66, 96, 'up', 11, 50, 100) +
-    arrow(305, 92, 312, 64, 'df-line-accent') +
-    bar(330, 40, 72, 'up', 11, 34, 78) +
-    txt(60, 150, 'resistance', 'df-tag', 'start') +
-    txt(300, 150, 'now support', 'df-tag', 'start')
+    // the horizontal level
+    line(40, 90, 384, 90, 'df-dash-accent') +
+    txt(44, 84, 'resistance', 'df-tag-accent', 'start') +
+    // rally up to level — rejected (rejection 1)
+    bar(60, 130, 170, 'up', 11, 124, 176) +
+    bar(84, 96, 138, 'up', 11, 90, 144) +
+    bar(108, 94, 118, 'down', 11, 92, 126) +
+    arrow(108, 82, 108, 116, 'df-down-s') +
+    // second approach — rejected again
+    bar(148, 110, 160, 'up', 11, 104, 166) +
+    bar(172, 94, 122, 'up', 11, 88, 128) +
+    bar(196, 93, 112, 'down', 11, 91, 118) +
+    arrow(196, 82, 196, 110, 'df-down-s') +
+    // breakout — strong close above
+    bar(236, 64, 100, 'up', 13, 58, 106) +
+    txt(236, 50, 'break', 'df-tag-accent', 'middle') +
+    // retest from above — support
+    bar(276, 72, 100, 'down', 11, 66, 106) +
+    bar(300, 88, 108, 'up', 11, 82, 114) +
+    arrow(300, 76, 300, 62, 'df-up-s') +
+    txt(310, 108, 'retest', 'df-tag', 'start') +
+    // continue up
+    bar(336, 50, 80, 'up', 11, 44, 86) +
+    bar(360, 32, 62, 'up', 11, 26, 68) +
+    txt(310, 130, 'now support', 'df-tag-accent', 'start')
   );
 
   C['price.trend-structure'] = {
@@ -113,13 +120,25 @@
     figcap: 'An uptrend as a staircase of higher highs (HH) and higher lows (HL) connected by impulse and correction.',
   };
   D['price.trend-structure'] = () => {
-    const pts = [[40,180],[90,110],[130,140],[180,80],[225,112],[280,50],[330,86],[372,30]];
+    // HH HL staircase: [x, y, label, labelDY]
+    const pts = [
+      [40, 188, '', 0],
+      [90, 120, 'HH', -10],
+      [130, 148, 'HL', 14],
+      [180, 88, 'HH', -10],
+      [224, 116, 'HL', 14],
+      [272, 60, 'HH', -10],
+      [316, 88, 'HL', 14],
+      [370, 34, 'HH', -10],
+    ];
     let pth = 'M' + pts[0][0] + ' ' + pts[0][1];
     for (let i = 1; i < pts.length; i++) pth += ' L' + pts[i][0] + ' ' + pts[i][1];
-    const labels = ['', 'HH', 'HL', 'HH', 'HL', 'HH', 'HL', 'HH'];
     let marks = '';
-    pts.forEach((p, i) => { if (labels[i]) marks += dot(p[0], p[1], 3) + txt(p[0], p[1] + (i % 2 ? 16 : -8), labels[i], 'df-tag-accent', 'middle'); });
-    return svg(frame() + path(pth, 'df-line-accent') + marks + arrow(330, 86, 372, 30, 'df-line-accent'));
+    pts.forEach(p => {
+      if (p[2]) marks += dot(p[0], p[1], 3) + txt(p[0], p[1] + p[3], p[2], 'df-tag-accent', 'middle');
+    });
+    return svg(frame() + path(pth, 'df-line-accent') + marks +
+      arrow(350, 46, 378, 22, 'df-line-accent'));
   };
 
   C['price.candles'] = {
@@ -136,15 +155,21 @@
     figcap: 'Anatomy of a candle: body (open→close) plus upper and lower wicks marking the rejected extremes.',
   };
   D['price.candles'] = () => svg(
-    // big bullish candle anatomy on the left
-    candle(150, 30, 196, 150, 70, 40) +
-    line(150, 30, 250, 30, 'df-grid') + txt(258, 34, 'high', 'df-label', 'start') +
-    line(170, 70, 250, 70, 'df-grid') + txt(258, 74, 'close', 'df-label', 'start') +
-    line(170, 150, 250, 150, 'df-grid') + txt(258, 154, 'open', 'df-label', 'start') +
-    line(150, 196, 250, 196, 'df-grid') + txt(258, 200, 'low', 'df-label', 'start') +
-    txt(150, 16, 'upper wick', 'df-tag', 'middle') +
-    arrow(110, 50, 130, 50, 'df-line-accent') + txt(60, 54, 'body', 'df-tag', 'start') +
-    txt(150, 212, 'lower wick', 'df-tag', 'middle')
+    // large bullish candle at x=120
+    candle(120, 28, 192, 148, 68, 36) +
+    // leader lines + labels
+    line(120, 28, 220, 28, 'df-grid') + txt(225, 32, 'high', 'df-label', 'start') +
+    line(138, 68, 220, 68, 'df-grid') + txt(225, 72, 'close', 'df-label', 'start') +
+    line(138, 148, 220, 148, 'df-grid') + txt(225, 152, 'open', 'df-label', 'start') +
+    line(120, 192, 220, 192, 'df-grid') + txt(225, 196, 'low', 'df-label', 'start') +
+    // wick labels with arrows
+    txt(120, 18, 'upper wick', 'df-tag', 'middle') +
+    arrow(120, 22, 120, 36, 'df-line-accent') +
+    txt(120, 210, 'lower wick', 'df-tag', 'middle') +
+    arrow(120, 204, 120, 188, 'df-line-accent') +
+    // body label
+    txt(66, 112, 'body', 'df-tag', 'middle') +
+    arrow(84, 112, 100, 112, 'df-line-accent')
   );
 
   C['price.chart-patterns'] = {
@@ -162,14 +187,21 @@
     figcap: 'A head-and-shoulders top: left shoulder, higher head, right shoulder, and the neckline whose break confirms.',
   };
   D['price.chart-patterns'] = () => {
-    const pts = [[40,150],[80,150],[110,110],[140,150],[200,60],[260,150],[300,112],[330,150],[372,150]];
+    // H&S: left shoulder peak=100, head peak=50, right shoulder peak=100, troughs at 140
+    const pts = [[40,170],[75,170],[100,100],[130,140],[190,50],[250,140],[280,100],[310,140],[350,140]];
     let pth = 'M' + pts[0][0] + ' ' + pts[0][1];
     for (let i = 1; i < pts.length; i++) pth += ' L' + pts[i][0] + ' ' + pts[i][1];
-    return svg(frame() + path(pth, 'df-line-accent') +
-      line(110, 150, 300, 150, 'df-dash') +
-      txt(110, 100, 'L sh', 'df-tag', 'middle') + txt(200, 50, 'head', 'df-tag-accent', 'middle') + txt(300, 102, 'R sh', 'df-tag', 'middle') +
-      txt(310, 144, 'neckline', 'df-tag', 'start') +
-      arrow(330, 152, 350, 188, 'df-line-down'));
+    return svg(frame() +
+      path(pth, 'df-line-accent') +
+      // neckline through the two troughs at y=140
+      line(80, 140, 370, 140, 'df-dash') +
+      txt(355, 134, 'neckline', 'df-tag', 'end') +
+      // labels
+      txt(100, 90, 'L sh', 'df-tag', 'middle') +
+      txt(190, 40, 'head', 'df-tag-accent', 'middle') +
+      txt(280, 90, 'R sh', 'df-tag', 'middle') +
+      // neckline break down
+      arrow(350, 142, 370, 190, 'df-down-s'));
   };
 
   C['price.supply-demand'] = {
@@ -187,20 +219,24 @@
   };
   D['price.supply-demand'] = () => svg(
     frame() +
-    rect(40, 130, 120, 34, 'df-zone-up') + txt(46, 124, 'demand zone', 'df-tag', 'start') +
-    bar(60, 138, 158, 'down', 10, 134, 162) +
-    bar(82, 134, 160, 'up', 10, 130, 164) +
-    bar(104, 138, 158, 'down', 10, 134, 162) +
-    bar(126, 134, 160, 'up', 10, 130, 164) +
-    // explosive impulse away
-    bar(170, 96, 140, 'up', 11, 92, 144) +
-    bar(196, 60, 100, 'up', 11, 54, 104) +
-    bar(222, 36, 66, 'up', 11, 30, 70) +
-    arrow(150, 150, 232, 48, 'df-line-up') +
-    // return to zone
-    bar(300, 40, 90, 'down', 11, 36, 96) +
-    bar(326, 80, 150, 'down', 11, 74, 156) +
-    arrow(338, 150, 345, 120, 'df-line-up')
+    // demand zone rect over the base
+    rect(40, 148, 110, 30, 'df-zone-up') +
+    txt(95, 142, 'demand zone', 'df-tag', 'end') +
+    // tight consolidation base
+    bar(58, 154, 172, 'down', 10, 150, 176) +
+    bar(80, 152, 170, 'up', 10, 148, 174) +
+    bar(102, 155, 172, 'down', 10, 151, 176) +
+    bar(124, 150, 170, 'up', 10, 147, 174) +
+    // explosive rally
+    bar(158, 110, 154, 'up', 12, 104, 158) +
+    bar(184, 74, 116, 'up', 12, 68, 120) +
+    bar(210, 42, 80, 'up', 12, 36, 84) +
+    arrow(170, 168, 220, 54, 'df-up-s') +
+    // return to zone and bounce
+    bar(280, 48, 96, 'down', 12, 42, 102) +
+    bar(308, 108, 158, 'down', 12, 102, 164) +
+    bar(336, 136, 168, 'up', 12, 130, 174) +
+    arrow(348, 158, 348, 120, 'df-up-s')
   );
 
   C['price.pin-bar'] = {
@@ -225,18 +261,25 @@
   };
   D['price.pin-bar'] = () => svg(
     frame() +
-    line(40, 150, 384, 150, 'df-dash-accent') + txt(372, 144, 'support', 'df-tag-accent', 'end') +
-    bar(90, 70, 110, 'down', 12, 64, 116) +
-    bar(125, 90, 120, 'down', 12, 84, 128) +
-    // the pin bar: small body near top, long lower tail piercing support
-    candle(180, 96, 184, 118, 104, 16) +
-    txt(180, 86, 'pin bar', 'df-tag-accent', 'middle') +
-    arrow(180, 178, 180, 130, 'df-line-accent') +
+    // support line
+    line(40, 138, 384, 138, 'df-dash-accent') +
+    txt(376, 134, 'support', 'df-tag-accent', 'end') +
+    // some down candles approaching support
+    bar(70, 80, 118, 'down', 12, 74, 124) +
+    bar(100, 94, 130, 'down', 12, 88, 136) +
+    // pin bar: tiny body near top, long lower wick piercing support
+    candle(140, 88, 188, 112, 98, 14) +
+    txt(140, 78, 'pin bar', 'df-tag-accent', 'middle') +
+    // stop label at wick bottom
+    txt(156, 194, 'stop', 'df-tag', 'start') +
+    arrow(152, 190, 144, 184, 'df-line-accent') +
+    // UP arrow indicating reversal
+    arrow(140, 174, 140, 116, 'df-up-s') +
     // continuation up
-    bar(235, 86, 116, 'up', 12, 80, 120) +
-    bar(270, 56, 96, 'up', 12, 50, 100) +
-    bar(305, 34, 70, 'up', 12, 28, 74) +
-    txt(150, 200, 'stop below wick', 'df-tag', 'start')
+    bar(184, 76, 116, 'up', 12, 70, 122) +
+    bar(216, 52, 90, 'up', 12, 46, 96) +
+    bar(248, 30, 64, 'up', 12, 24, 70) +
+    bar(280, 14, 44, 'up', 12, 10, 50)
   );
 
   C['price.engulfing'] = {
@@ -261,16 +304,25 @@
   };
   D['price.engulfing'] = () => svg(
     frame() +
-    line(40, 150, 384, 150, 'df-dash') +
-    bar(80, 70, 108, 'down', 12, 64, 114) +
-    bar(115, 86, 120, 'down', 12, 80, 126) +
-    // small down candle then big engulfing up candle
-    candle(170, 110, 150, 138, 120, 14) + txt(170, 102, 'down', 'df-tag', 'middle') +
-    candle(200, 96, 152, 124, 104, 20) + txt(214, 96, 'engulfs', 'df-tag-accent', 'start') +
-    arrow(200, 170, 200, 132, 'df-line-accent') +
-    bar(250, 88, 116, 'up', 12, 82, 120) +
-    bar(285, 58, 96, 'up', 12, 52, 100) +
-    bar(320, 38, 70, 'up', 12, 32, 74)
+    // support line
+    line(40, 162, 384, 162, 'df-dash') +
+    txt(44, 156, 'support', 'df-tag', 'start') +
+    // downtrend approaching support
+    bar(65, 90, 128, 'down', 11, 84, 134) +
+    bar(90, 108, 148, 'down', 11, 102, 154) +
+    bar(115, 122, 158, 'down', 11, 116, 164) +
+    // small bearish candle
+    candle(152, 138, 168, 158, 144, 13) +
+    txt(152, 130, 'small', 'df-tag', 'middle') +
+    // large bullish engulfing candle — body wider and taller
+    candle(190, 126, 172, 166, 124, 22) +
+    txt(215, 118, 'engulfs', 'df-tag-accent', 'start') +
+    arrow(212, 126, 205, 136, 'df-line-accent') +
+    // continuation up
+    bar(232, 96, 136, 'up', 12, 90, 142) +
+    bar(264, 66, 106, 'up', 12, 60, 112) +
+    bar(296, 42, 80, 'up', 12, 36, 86) +
+    bar(328, 22, 56, 'up', 12, 16, 62)
   );
 
   C['price.breakout-retest'] = {
@@ -295,19 +347,27 @@
   };
   D['price.breakout-retest'] = () => svg(
     frame() +
-    line(40, 96, 384, 96, 'df-dash-accent') + txt(372, 90, 'level', 'df-tag-accent', 'end') +
-    bar(70, 104, 150, 'down', 11, 100, 156) +
-    bar(96, 110, 150, 'up', 11, 104, 156) +
-    bar(122, 104, 148, 'down', 11, 100, 154) +
-    // breakout close above
-    bar(170, 60, 104, 'up', 12, 54, 108) + txt(170, 48, 'break', 'df-tag-accent', 'middle') +
-    bar(200, 50, 86, 'up', 11, 44, 90) +
-    // retest of level from above
-    bar(244, 60, 92, 'down', 11, 56, 98) +
-    bar(270, 70, 94, 'up', 11, 60, 100) + txt(284, 88, 'retest', 'df-tag', 'start') +
-    arrow(282, 92, 290, 70, 'df-line-accent') +
-    bar(316, 50, 78, 'up', 11, 44, 82) +
-    bar(346, 32, 64, 'up', 11, 26, 68)
+    // the resistance level
+    line(40, 100, 384, 100, 'df-dash-accent') +
+    txt(376, 96, 'level', 'df-tag-accent', 'end') +
+    // consolidation below level
+    bar(60, 108, 148, 'up', 11, 102, 154) +
+    bar(84, 118, 158, 'down', 11, 112, 164) +
+    bar(108, 110, 150, 'up', 11, 104, 156) +
+    // strong breakout candle
+    bar(148, 60, 108, 'up', 13, 54, 112) +
+    txt(148, 48, 'break', 'df-tag-accent', 'middle') +
+    bar(176, 46, 76, 'up', 11, 40, 82) +
+    // retest: price pulls back to level from above
+    bar(216, 56, 88, 'down', 11, 50, 94) +
+    bar(244, 80, 108, 'down', 11, 74, 114) +
+    dot(244, 100, 3.5) +
+    txt(258, 114, 'retest', 'df-tag', 'start') +
+    arrow(258, 110, 252, 102, 'df-line-accent') +
+    // bounce and continue up
+    bar(280, 68, 104, 'up', 11, 62, 110) +
+    bar(308, 44, 80, 'up', 11, 38, 86) +
+    bar(336, 24, 58, 'up', 11, 18, 64)
   );
 
   C['price.harmonic'] = {
@@ -331,13 +391,24 @@
     figcap: 'An X-A-B-C-D harmonic structure completing at the PRZ (point D), where the reversal entry is taken.',
   };
   D['price.harmonic'] = () => {
-    const X = [40,60], A = [120,176], B = [190,110], Cp = [260,168], Dp = [330,128];
-    const seg = (p, q) => line(p[0], p[1], q[0], q[1], 'df-line');
-    const lbl = (p, s, dy) => dot(p[0], p[1], 3) + txt(p[0], p[1] + (dy || -8), s, 'df-tag-accent', 'middle');
-    return svg(frame() + seg(X, A) + seg(A, B) + seg(B, Cp) + seg(Cp, Dp) +
+    const X = [44, 56], A = [120, 178], B = [196, 108], Cp = [268, 162], Dp = [336, 120];
+    const seg = (p, q, cls) => line(p[0], p[1], q[0], q[1], cls || 'df-line');
+    const lbl = (p, s, dy) => dot(p[0], p[1], 3.5) + txt(p[0], p[1] + dy, s, 'df-tag-accent', 'middle');
+    return svg(frame() +
+      seg(X, A) + seg(A, B) + seg(B, Cp) + seg(Cp, Dp) +
+      // XD reference line dashed
       line(X[0], X[1], Dp[0], Dp[1], 'df-dash') +
-      rect(310, 116, 40, 28, 'df-zone') + txt(330, 110, 'PRZ', 'df-tag-accent', 'middle') +
-      lbl(X, 'X', -8) + lbl(A, 'A', 16) + lbl(B, 'B', -8) + lbl(Cp, 'C', 16) + lbl(Dp, 'D', -10));
+      // PRZ zone at D
+      rect(318, 108, 36, 28, 'df-zone') +
+      txt(336, 102, 'PRZ', 'df-tag-accent', 'middle') +
+      // point labels
+      lbl(X, 'X', -10) +
+      lbl(A, 'A', 14) +
+      lbl(B, 'B', -10) +
+      lbl(Cp, 'C', 14) +
+      lbl(Dp, 'D', -10) +
+      // reversal arrow up at D
+      arrow(336, 136, 336, 108, 'df-up-s'));
   };
 
   // ══════════════════════════════════════════════════════════════════════
@@ -358,12 +429,20 @@
     figcap: 'Price trends upward while repeatedly using the moving average as dynamic support on each pullback.',
   };
   D['technical.moving-averages'] = () => {
-    const price = 'M40 180 L80 150 L110 168 L150 120 L185 140 L225 92 L265 110 L305 64 L345 84 L372 50';
-    const ma = 'M40 188 L120 162 L200 128 L280 96 L372 64';
-    return svg(frame() + path(ma, 'df-line-accent') + path(price, 'df-line') +
-      txt(330, 60, 'MA', 'df-tag-accent', 'start') +
-      dot(110, 168, 2.5) + dot(185, 140, 2.5) + dot(265, 110, 2.5) +
-      txt(185, 158, 'bounce', 'df-tag', 'middle'));
+    // price zigzags up, MA is smoother below it
+    const price = 'M40 184 L70 158 L95 174 L125 136 L155 154 L190 106 L225 122 L260 78 L295 96 L330 56 L360 72';
+    const ma    = 'M40 190 L100 172 L170 144 L240 112 L310 80 L360 62';
+    // bounce dots where price touches MA
+    const bx = [[95,174],[155,154],[225,122]];
+    let dots = '';
+    bx.forEach(b => { dots += dot(b[0], b[1], 3.5); });
+    return svg(frame() +
+      path(ma, 'df-line-accent') +
+      path(price, 'df-line') +
+      dots +
+      txt(368, 58, 'MA', 'df-tag-accent', 'end') +
+      txt(155, 168, 'bounce', 'df-tag', 'middle') +
+      arrow(160, 164, 158, 156, 'df-line-accent'));
   };
 
   C['technical.rsi'] = {
@@ -380,14 +459,21 @@
     figcap: 'The RSI oscillator with the 70/30 bands; it can ride along overbought through a strong trend.',
   };
   D['technical.rsi'] = () => {
-    const top = 40, bot = 196, y = v => bot - (v / 100) * (bot - top);
-    const curve = 'M40 ' + y(45) + ' C90 ' + y(78) + ' 140 ' + y(82) + ' 190 ' + y(72) +
-                  ' C240 ' + y(60) + ' 290 ' + y(30) + ' 372 ' + y(38);
-    return svg(line(34, top, 34, bot, 'df-axis') + line(34, bot, 384, bot, 'df-axis') +
-      line(34, y(70), 384, y(70), 'df-dash') + txt(384, y(70) - 4, '70', 'df-tag', 'end') +
-      line(34, y(30), 384, y(30), 'df-dash') + txt(384, y(30) - 4, '30', 'df-tag', 'end') +
-      line(34, y(50), 384, y(50), 'df-grid') +
-      path(curve, 'df-line-accent') + txt(40, 30, 'RSI', 'df-tag-accent', 'start'));
+    const top = 30, bot = 200, y = v => bot - (v / 100) * (bot - top);
+    // curve: rises to overbought zone (~75), stays elevated, then dips toward 35
+    const curve = 'M40 ' + y(38) + ' C80 ' + y(65) + ' 120 ' + y(78) + ' 170 ' + y(74) +
+                  ' C220 ' + y(70) + ' 270 ' + y(42) + ' 372 ' + y(36);
+    return svg(
+      line(34, top, 34, bot, 'df-axis') + line(34, bot, 384, bot, 'df-axis') +
+      // overbought zone tint
+      rect(34, y(100), 350, y(70) - y(100), 'df-zone-down') +
+      // oversold zone tint
+      rect(34, y(30), 350, y(0) - y(30), 'df-zone-up') +
+      line(34, y(70), 384, y(70), 'df-dash') + txt(376, y(70) - 4, '70', 'df-tag', 'end') +
+      line(34, y(30), 384, y(30), 'df-dash') + txt(376, y(30) + 10, '30', 'df-tag', 'end') +
+      line(34, y(50), 384, y(50), 'df-grid') + txt(376, y(50) - 4, '50', 'df-tag', 'end') +
+      path(curve, 'df-line-accent') +
+      txt(44, top + 10, 'RSI', 'df-tag-accent', 'start'));
   };
 
   C['technical.macd'] = {
@@ -404,15 +490,27 @@
     figcap: 'MACD and signal lines crossing above a histogram whose bars flip from negative to positive.',
   };
   D['technical.macd'] = () => {
-    const mid = 130;
+    const mid = 110;
+    // histogram: 4 red bars then 4 green bars
+    const hv = [-28, -36, -30, -14, 10, 22, 32, 20];
     let hist = '';
-    const hv = [-18,-26,-22,-10,4,16,24,18,8];
-    hv.forEach((v, i) => { const x = 50 + i * 36; const cls = v >= 0 ? 'df-up' : 'df-down'; hist += rect(x - 8, v >= 0 ? mid - v : mid, 16, Math.abs(v), cls); });
-    const macd = 'M40 168 C110 150 150 120 200 116 C250 112 320 96 372 86';
-    const sig  = 'M40 158 C110 152 160 134 210 126 C260 118 330 104 372 98';
-    return svg(line(34, mid, 384, mid, 'df-axis') + hist +
-      path(sig, 'df-line') + path(macd, 'df-line-accent') +
-      dot(205, 120, 3) + txt(212, 112, 'cross', 'df-tag-accent', 'start'));
+    hv.forEach((v, i) => {
+      const x = 52 + i * 40;
+      hist += rect(x - 10, v >= 0 ? mid - v : mid, 20, Math.abs(v), v >= 0 ? 'df-up' : 'df-down');
+    });
+    // cross happens between bar 4 and 5 (x≈212)
+    const macd = 'M40 172 C100 158 140 138 184 130 C220 124 280 104 372 88';
+    const sig  = 'M40 160 C100 154 148 146 196 138 C240 130 300 116 372 100';
+    return svg(
+      line(34, mid, 384, mid, 'df-axis') +
+      txt(38, mid - 4, '0', 'df-tag', 'start') +
+      hist +
+      path(sig, 'df-line') +
+      path(macd, 'df-line-accent') +
+      dot(212, 132, 3.5) +
+      txt(220, 124, 'cross', 'df-tag-accent', 'start') +
+      txt(44, 30, 'MACD', 'df-tag-accent', 'start') +
+      txt(44, 44, '—— signal', 'df-tag', 'start'));
   };
 
   C['technical.bollinger'] = {
@@ -429,13 +527,19 @@
     figcap: 'Bands contract into a squeeze, then expand violently as price breaks out and walks the upper band.',
   };
   D['technical.bollinger'] = () => {
-    const upper = 'M40 70 C110 84 150 104 200 106 C250 108 320 70 372 44';
-    const lower = 'M40 150 C110 138 150 116 200 114 C250 112 320 150 372 176';
-    const mid   = 'M40 110 C110 111 150 110 200 110 C250 110 320 110 372 110';
-    const price = 'M40 120 L70 100 L100 128 L130 112 L160 116 L195 108 L225 104 L255 80 L285 58 L320 64 L350 48';
-    return svg(frame() + path(upper, 'df-dash-accent') + path(lower, 'df-dash-accent') + path(mid, 'df-line') +
+    // bands pinch in the middle (x≈160-220), then widen on right
+    const upper = 'M40 60 C90 72 130 96 165 104 C200 110 240 86 290 54 C320 36 350 28 372 22';
+    const lower = 'M40 160 C90 148 130 124 165 116 C200 110 240 134 290 166 C320 184 350 192 372 198';
+    const mid   = 'M40 110 C120 110 160 110 200 110 C240 110 300 110 372 110';
+    // price walking upper band after breakout
+    const price = 'M40 120 L75 108 L110 132 L145 114 L175 112 L205 108 L235 88 L260 68 L290 50 L320 36 L352 24';
+    return svg(frame() +
+      path(upper, 'df-dash-accent') + path(lower, 'df-dash-accent') + path(mid, 'df-line') +
+      // squeeze zone rect
+      rect(148, 100, 60, 20, 'df-zone') +
+      txt(178, 94, 'squeeze', 'df-tag', 'middle') +
       path(price, 'df-line-accent') +
-      txt(200, 128, 'squeeze', 'df-tag', 'middle') + arrow(285, 120, 320, 70, 'df-line-accent'));
+      arrow(230, 88, 256, 64, 'df-up-s'));
   };
 
   C['technical.volume'] = {
@@ -452,16 +556,34 @@
     figcap: 'Rising price on healthy volume, then a climax bar — outsized volume with little progress — warning of exhaustion.',
   };
   D['technical.volume'] = () => {
-    // [x, bodyTop, bodyBot, dir, volume]
-    const data = [[62,128,150,'up',26],[96,118,142,'up',34],[130,128,148,'down',28],
-      [164,104,130,'up',40],[198,86,118,'up',48],[232,72,98,'up',38],[266,60,88,'up',30],[300,54,84,'down',64]];
-    const divider = 158, volBase = 210;
+    // Two-panel: price top (y 24-142), volume bottom (y 148-196)
+    // [x, bodyTop, bodyBot, dir, volH]
+    const data = [
+      [55, 96, 118, 'up', 18],
+      [82, 84, 108, 'up', 24],
+      [109, 90, 114, 'down', 16],
+      [136, 68, 96, 'up', 28],
+      [163, 52, 82, 'up', 32],
+      [190, 38, 70, 'up', 26],
+      [217, 44, 76, 'down', 20],
+      [244, 30, 62, 'up', 24],
+      // climax bar: large red with big volume
+      [286, 28, 136, 'down', 44],
+    ];
+    const divY = 144, volBase = 194;
     const candles = data.map(d => bar(d[0], d[1], d[2], d[3], 12)).join('');
-    const vols = data.map(d => rect(d[0] - 7, volBase - d[4], 14, d[4], d[3] === 'up' ? 'df-up' : 'df-down')).join('');
-    return svg(line(34, divider, 384, divider, 'df-axis') + line(34, divider, 34, 30, 'df-axis') +
+    const vols = data.map((d, i) => {
+      const cls = i === data.length - 1 ? 'df-down' : (d[3] === 'up' ? 'df-up' : 'df-down');
+      const h = Math.min(d[4], volBase - divY - 2);
+      return rect(d[0] - 8, volBase - h, 16, h, cls);
+    }).join('');
+    return svg(
+      line(34, divY, 384, divY, 'df-axis') +
+      line(34, 20, 34, divY, 'df-axis') +
+      line(34, volBase, 384, volBase, 'df-axis') +
       candles + vols +
-      txt(300, volBase - 70, 'climax', 'df-tag-down', 'middle') +
-      txt(40, 174, 'volume', 'df-tag', 'start'));
+      txt(286, 22, 'climax', 'df-tag-down', 'middle') +
+      txt(44, 188, 'volume', 'df-tag', 'start'));
   };
 
   C['technical.ma-cross'] = {
@@ -485,11 +607,17 @@
     figcap: 'A golden cross: the fast moving average crosses up through the slow one, marking the trend trigger.',
   };
   D['technical.ma-cross'] = () => {
-    const fast = 'M40 150 C110 150 150 140 200 120 C250 100 320 70 372 48';
-    const slow = 'M40 120 C120 122 180 124 240 124 C300 124 350 116 372 108';
-    return svg(frame() + path(slow, 'df-line') + path(fast, 'df-line-accent') +
-      dot(232, 124, 4) + txt(232, 146, 'golden cross', 'df-tag-accent', 'middle') +
-      txt(360, 44, 'fast', 'df-tag-accent', 'end') + txt(372, 104, 'slow', 'df-tag', 'end'));
+    // fast starts below slow, crosses above at ~x=200, then diverges
+    const fast = 'M40 168 C90 160 140 148 180 130 C220 112 280 76 372 44';
+    const slow = 'M40 140 C100 140 160 138 210 132 C260 126 320 118 372 108';
+    // cross point approximately at x=196, y=132
+    return svg(frame() +
+      path(slow, 'df-line') +
+      path(fast, 'df-line-accent') +
+      dot(196, 132, 4.5) +
+      txt(196, 150, 'golden cross', 'df-tag-accent', 'middle') +
+      txt(372, 40, 'fast', 'df-tag-accent', 'end') +
+      txt(372, 116, 'slow', 'df-tag', 'end'));
   };
 
   C['technical.rsi-divergence'] = {
