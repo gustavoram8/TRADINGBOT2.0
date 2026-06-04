@@ -2464,8 +2464,13 @@
       width: 100%; padding: 13px; border-radius: 10px; border: none;
       font-size: 14px; font-weight: 700; cursor: not-allowed;
       background: rgba(61,90,254,.35); color: rgba(255,255,255,.45);
-      margin-bottom: 12px; font-family: inherit;
+      margin-bottom: 12px; font-family: inherit; text-decoration: none;
     }
+    .syn-pdf-cta--active {
+      cursor: pointer; background: #3d5afe; color: #fff;
+      transition: background .18s, transform .12s;
+    }
+    .syn-pdf-cta--active:hover { background: #5571ff; transform: translateY(-1px); }
     .syn-pdf-note {
       font-size: 10.5px; color: rgba(255,255,255,.35); text-align: center;
       margin-bottom: 14px; line-height: 1.5;
@@ -4143,12 +4148,19 @@
       <span class="syn-pdf-launch" data-i18n="synapse.pdfLaunch">Launch price</span>
     </div>
 
+    {% if current_user.is_admin %}
+    <a class="syn-pdf-cta syn-pdf-cta--active" href="/synapse/pdf/admin-download">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download PDF
+    </a>
+    <p class="syn-pdf-note">Admin preview — personalized to your account.</p>
+    {% else %}
     <button class="syn-pdf-cta" type="button" disabled>
       <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px"><circle cx="12" cy="12" r="10"/><polyline points="12,8 12,12 14,14"/></svg>
       <span data-i18n="synapse.pdfCta">Coming Soon</span>
     </button>
-
-    <p class="syn-pdf-note" data-i18n="synapse.pdfNote">Payment &amp; instant delivery coming shortly. Join the waitlist to be first.</p>
+    <p class="syn-pdf-note" data-i18n="synapse.pdfNote">Payment &amp; instant delivery coming shortly.</p>
+    {% endif %}
 
     <div class="syn-pdf-disclaimer" data-i18n="synapse.pdfDisclaimer">For educational purposes only · Not financial advice</div>
   </div>

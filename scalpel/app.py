@@ -1601,6 +1601,28 @@ def synapse_pdf_download(token):
     return resp
 
 
+@app.route('/synapse/pdf/admin-download')
+@login_required
+def synapse_pdf_admin_download():
+    """Instant PDF download for admin users only — no payment required."""
+    if not current_user.is_admin:
+        abort(403)
+    try:
+        pdf_bytes = _build_synapse_pdf(
+            buyer_name=current_user.username,
+            buyer_email=current_user.email,
+            order_id='ADMIN-PREVIEW'
+        )
+    except Exception as e:
+        app.logger.error('Admin PDF generation error: %s', e)
+        abort(500)
+
+    resp = make_response(pdf_bytes)
+    resp.headers['Content-Type'] = 'application/pdf'
+    resp.headers['Content-Disposition'] = 'attachment; filename="synapse-library-admin-preview.pdf"'
+    return resp
+
+
 # ──────────────────────────────────────────────────────────────────────────
 # USAGE STATUS API (drives the live countdown on the frontend)
 # ──────────────────────────────────────────────────────────────────────────
