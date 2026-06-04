@@ -2370,84 +2370,248 @@
     }
     @keyframes synHintPulse { 0%,100%{opacity:.4;} 50%{opacity:.9;} }
 
-    /* ── Classified dossier ── */
+    /* ══ Editorial "book" dossier (flipbook) ══
+       Aesthetic reference: a premium financial research note (The Economist /
+       Bloomberg Businessweek) — typographic hierarchy, a single accent rule,
+       generous whitespace. No glow, no spy-tech chrome. */
     .syn-dossier {
       position: absolute; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center;
-      padding: 22px; opacity: 0; pointer-events: none; visibility: hidden;
-      background: rgba(2,4,12,.55); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+      padding: 20px; opacity: 0; pointer-events: none; visibility: hidden;
+      background: rgba(4,8,12,.62); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
       transition: opacity .35s ease;
     }
     .syn-dossier.open { opacity: 1; pointer-events: auto; visibility: visible; }
-    .syn-dossier-card {
-      position: relative; width: min(640px, 94vw); max-height: 88vh; overflow-y: auto;
-      background: linear-gradient(160deg, #11192e 0%, #0b1120 100%);
-      border: 1px solid rgba(150,180,255,.2); border-radius: 14px;
-      box-shadow: 0 30px 90px -20px rgba(0,0,0,.8), inset 0 0 0 1px rgba(255,255,255,.03);
-      padding: 26px 30px 30px; transform: translateY(18px) scale(.97);
-      transition: transform .4s cubic-bezier(.22,.61,.36,1);
+
+    .syn-book {
+      --paper:#1c1f24; --ink:#eceae4; --ink-soft:#b7b5ad; --ink-faint:#86847d;
+      --rule:rgba(255,255,255,.10); --paper-edge:rgba(255,255,255,.06);
+      position: relative; width: min(720px, 96vw); height: min(640px, 92vh);
+      display: flex; flex-direction: column; overflow: hidden;
+      background: var(--paper); color: var(--ink);
+      border-radius: 6px; border: 1px solid var(--paper-edge);
+      box-shadow: 0 40px 120px -30px rgba(0,0,0,.85), 0 2px 0 rgba(255,255,255,.04) inset;
+      transform: translateY(20px) scale(.975); opacity: 0;
+      transition: transform .42s cubic-bezier(.22,.61,.36,1), opacity .3s ease;
     }
-    .syn-dossier.open .syn-dossier-card { transform: translateY(0) scale(1); }
-    .syn-dossier-card::before {
-      content: ""; position: absolute; inset: 0; border-radius: 14px; pointer-events: none;
-      background: repeating-linear-gradient(0deg, rgba(255,255,255,.018) 0 2px, transparent 2px 4px);
-    }
-    .syn-dossier-head { display: flex; align-items: center; justify-content: space-between; }
-    .syn-dossier-cls {
-      font-size: 9.5px; letter-spacing: .3em; color: #d36a6a;
-      border: 1px solid rgba(211,106,106,.4); border-radius: 4px; padding: 4px 9px;
-    }
-    .syn-dossier-x {
-      background: transparent; border: 1px solid rgba(150,180,255,.2); border-radius: 8px;
-      color: #aeb9d8; cursor: pointer; padding: 6px; transition: background .15s ease;
-    }
-    .syn-dossier-x:hover { background: rgba(150,180,255,.12); }
-    .syn-dossier-kicker {
-      margin-top: 18px; font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase;
-      color: var(--syn-accent, #6f9bff);
-    }
-    .syn-dossier-title {
-      margin-top: 6px; font-size: 26px; font-weight: 700; color: #fff; line-height: 1.15;
-      text-shadow: 0 0 22px rgba(110,155,255,.35);
-    }
-    .syn-dossier-body { margin-top: 16px; }
-    .syn-dossier-body .d-lead {
-      font-size: 14px; line-height: 1.6; color: #c8d4ef;
-      border-left: 3px solid var(--syn-accent, #6f9bff); padding-left: 14px; margin-bottom: 18px;
-    }
-    .syn-dossier-body h4 {
-      font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: #8ea3cf;
-      margin: 18px 0 9px;
-    }
-    .syn-dossier-body ul { margin: 0; padding-left: 18px; }
-    .syn-dossier-body li { font-size: 13.5px; line-height: 1.6; color: #d2dcf2; margin-bottom: 6px; }
-    .syn-dossier-body .d-note {
-      margin-top: 18px; font-size: 12px; line-height: 1.55; color: #9aa8cc;
-      background: rgba(120,160,255,.06); border: 1px dashed rgba(120,160,255,.25);
-      border-radius: 8px; padding: 11px 13px;
+    .syn-dossier.open .syn-book { transform: translateY(0) scale(1); opacity: 1; }
+    /* the methodology-coloured spine running down the left edge */
+    .syn-book-spine {
+      position: absolute; top: 0; left: 0; bottom: 0; width: 6px;
+      background: var(--syn-accent, #5b8ef0); z-index: 3;
     }
 
-    .syn-dossier-foot { margin-top: 24px; display: flex; justify-content: flex-end; }
-    .syn-stamp-btn {
-      position: relative; display: inline-flex; align-items: center; gap: 0;
-      background: rgba(120,160,255,.08); border: 1px solid rgba(120,160,255,.3);
-      color: #cfe0ff; border-radius: 10px; padding: 11px 18px; cursor: pointer;
-      font-size: 13px; letter-spacing: .03em; overflow: hidden;
-      transition: background .18s ease, border-color .18s ease;
+    /* ── header ── */
+    .syn-book-head {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+      padding: 26px 30px 18px 36px; border-bottom: 1px solid var(--rule); flex: none;
     }
-    .syn-stamp-btn:hover { background: rgba(120,160,255,.16); }
+    .syn-book-meta {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 9px;
+      font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; font-weight: 600;
+    }
+    .syn-book-method { color: var(--syn-accent, #5b8ef0); }
+    .syn-book-dot { color: var(--ink-faint); }
+    .syn-book-type { color: var(--ink-faint); }
+    .syn-book-title {
+      margin: 0; font-size: 30px; line-height: 1.1; font-weight: 600; letter-spacing: -.01em;
+      color: var(--ink);
+      font-family: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Times New Roman', serif;
+    }
+    .syn-book-x {
+      flex: none; background: transparent; border: 1px solid var(--rule); border-radius: 8px;
+      color: var(--ink-soft); cursor: pointer; padding: 7px; line-height: 0;
+      transition: background .15s ease, color .15s ease, border-color .15s ease;
+    }
+    .syn-book-x:hover { background: rgba(255,255,255,.07); color: var(--ink); }
+
+    /* ── page stage ── */
+    .syn-book-stage { position: relative; flex: 1; overflow: hidden; }
+    .syn-book-track {
+      display: flex; height: 100%; width: 100%;
+      transition: transform .46s cubic-bezier(.5,.05,.2,1);
+    }
+    .syn-page {
+      flex: 0 0 100%; height: 100%; overflow-y: auto; overflow-x: hidden;
+      padding: 28px 40px 30px 44px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .syn-page-num {
+      font-size: 10.5px; letter-spacing: .22em; text-transform: uppercase;
+      color: var(--ink-faint); font-weight: 600; margin-bottom: 4px;
+    }
+    .syn-page-head {
+      font-size: 17px; font-weight: 600; color: var(--ink); margin: 0 0 18px;
+      letter-spacing: .005em;
+      font-family: Georgia, 'Iowan Old Style', 'Palatino Linotype', serif;
+    }
+    .syn-page-head::after {
+      content: ""; display: block; width: 34px; height: 2px; margin-top: 11px;
+      background: var(--syn-accent, #5b8ef0); opacity: .85;
+    }
+    /* lead paragraph — the "drop" intro */
+    .syn-page .lead {
+      font-size: 17px; line-height: 1.62; color: var(--ink); margin: 0 0 16px;
+      font-family: Georgia, 'Iowan Old Style', 'Palatino Linotype', serif;
+    }
+    .syn-page .lead::first-letter {
+      float: left; font-size: 52px; line-height: .82; padding: 4px 10px 0 0;
+      color: var(--syn-accent, #5b8ef0); font-weight: 600;
+    }
+    .syn-page p { font-size: 14.5px; line-height: 1.68; color: var(--ink-soft); margin: 0 0 13px; }
+    .syn-page p strong, .syn-page li strong { color: var(--ink); font-weight: 600; }
+    /* mechanics list — term + explanation rows */
+    .syn-mech { list-style: none; margin: 0; padding: 0; }
+    .syn-mech li {
+      position: relative; padding: 0 0 14px 20px; margin: 0 0 14px;
+      border-bottom: 1px solid var(--rule); font-size: 14px; line-height: 1.62; color: var(--ink-soft);
+    }
+    .syn-mech li:last-child { border-bottom: none; margin-bottom: 0; }
+    .syn-mech li::before {
+      content: ""; position: absolute; left: 0; top: 8px; width: 7px; height: 7px;
+      border-radius: 50%; background: var(--syn-accent, #5b8ef0);
+    }
+    .syn-mech .term { display: block; color: var(--ink); font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+    /* the "beginner's mistake" callout */
+    .syn-pitfall {
+      border-left: 3px solid var(--syn-accent, #5b8ef0); padding: 2px 0 2px 16px; margin: 0 0 18px;
+    }
+    .syn-pitfall .lead { font-size: 15.5px; }
+    .syn-pitfall .lead::first-letter { float: none; font-size: inherit; padding: 0; color: inherit; font-weight: inherit; }
+    /* setup grid (entry triggers) */
+    .syn-setup { display: grid; gap: 12px; margin: 4px 0 0; }
+    .syn-setup-row {
+      display: grid; grid-template-columns: 84px 1fr; gap: 14px; align-items: baseline;
+      padding-bottom: 12px; border-bottom: 1px solid var(--rule);
+    }
+    .syn-setup-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .syn-setup-k {
+      font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; font-weight: 700;
+      color: var(--syn-accent, #5b8ef0); padding-top: 1px;
+    }
+    .syn-setup-v { font-size: 14px; line-height: 1.6; color: var(--ink-soft); }
+    /* visual reference page */
+    .syn-figure {
+      width: 100%; border: 1px solid var(--rule); border-radius: 6px; overflow: hidden;
+      background: rgba(255,255,255,.02); margin: 0 0 14px;
+    }
+    .syn-figure svg { display: block; width: 100%; height: auto; }
+    .syn-figcap { font-size: 12.5px; line-height: 1.55; color: var(--ink-faint); font-style: italic; margin: 0 0 18px; }
+    .syn-terms { display: flex; flex-wrap: wrap; gap: 7px; }
+    .syn-term-chip {
+      font-size: 11px; letter-spacing: .02em; color: var(--ink-soft);
+      border: 1px solid var(--rule); border-radius: 20px; padding: 4px 11px;
+      background: rgba(255,255,255,.02);
+    }
+    .syn-terms-label, .syn-mech-none {
+      font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase;
+      color: var(--ink-faint); font-weight: 600; margin: 0 0 10px;
+    }
+
+    /* ── Diagram palette (textbook SVG figures) ──
+       Diagrams emit semantic classes; colours resolve here so they adapt to
+       light/dark automatically with zero JS re-rendering. */
+    .syn-figure {
+      --df-up:#4bb38a; --df-down:#e0695a; --df-wick:#9a988f;
+      --df-axis:rgba(255,255,255,.16); --df-grid:rgba(255,255,255,.06);
+      --df-ink:#cfcdc6; --df-faint:#8a887f; --df-paper:#202329;
+    }
+    body.light .syn-figure {
+      --df-up:#1a9e69; --df-down:#d5503c; --df-wick:#8a887f;
+      --df-axis:rgba(20,20,16,.18); --df-grid:rgba(20,20,16,.06);
+      --df-ink:#3a3a34; --df-faint:#8d8c83; --df-paper:#ffffff;
+    }
+    .syn-figure .df-up   { fill: var(--df-up); }
+    .syn-figure .df-down { fill: var(--df-down); }
+    .syn-figure .df-up-s   { stroke: var(--df-up); }
+    .syn-figure .df-down-s { stroke: var(--df-down); }
+    .syn-figure .df-wick { stroke: var(--df-wick); stroke-width: 1.4; }
+    .syn-figure .df-axis { stroke: var(--df-axis); stroke-width: 1; }
+    .syn-figure .df-grid { stroke: var(--df-grid); stroke-width: 1; }
+    .syn-figure .df-accent   { stroke: var(--syn-accent,#5b8ef0); }
+    .syn-figure .df-accent-f { fill: var(--syn-accent,#5b8ef0); }
+    .syn-figure .df-zone {
+      fill: var(--syn-accent,#5b8ef0); opacity: .13;
+      stroke: var(--syn-accent,#5b8ef0); stroke-opacity: .5; stroke-width: 1;
+    }
+    .syn-figure .df-zone-up   { fill: var(--df-up);   opacity: .13; stroke: var(--df-up);   stroke-opacity:.55; stroke-width:1; }
+    .syn-figure .df-zone-down { fill: var(--df-down); opacity: .13; stroke: var(--df-down); stroke-opacity:.55; stroke-width:1; }
+    .syn-figure .df-line  { stroke: var(--df-faint); stroke-width: 1.6; fill: none; }
+    .syn-figure .df-line-accent { stroke: var(--syn-accent,#5b8ef0); stroke-width: 2; fill: none; }
+    .syn-figure .df-dash  { stroke: var(--df-faint); stroke-width: 1.2; stroke-dasharray: 4 4; fill: none; }
+    .syn-figure .df-dash-accent { stroke: var(--syn-accent,#5b8ef0); stroke-width:1.3; stroke-dasharray:4 4; fill:none; }
+    .syn-figure .df-label { fill: var(--df-ink); font-size: 12px; font-family: inherit; }
+    .syn-figure .df-tag   { fill: var(--df-faint); font-size: 10.5px; letter-spacing: .04em; font-family: inherit; }
+    .syn-figure .df-tag-accent { fill: var(--syn-accent,#5b8ef0); font-size: 10.5px; font-weight: 600; font-family: inherit; }
+
+    /* nav arrows */
+    .syn-book-arrow {
+      position: absolute; top: 50%; transform: translateY(-50%); z-index: 4;
+      width: 38px; height: 38px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--paper); border: 1px solid var(--rule); color: var(--ink-soft);
+      cursor: pointer; transition: background .15s ease, color .15s ease, opacity .2s ease, transform .15s ease;
+      box-shadow: 0 6px 18px -8px rgba(0,0,0,.6);
+    }
+    .syn-book-arrow:hover { color: var(--ink); background: rgba(255,255,255,.06); }
+    .syn-book-arrow.prev { left: 8px; }
+    .syn-book-arrow.next { right: 8px; }
+    .syn-book-arrow[disabled] { opacity: 0; pointer-events: none; }
+
+    /* ── footer: page dots + studied stamp ── */
+    .syn-book-foot {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      padding: 14px 30px 16px 36px; border-top: 1px solid var(--rule); flex: none;
+    }
+    .syn-book-dots { display: flex; align-items: center; gap: 9px; }
+    .syn-book-dots .dot {
+      width: 8px; height: 8px; border-radius: 50%; cursor: pointer;
+      background: var(--ink-faint); opacity: .4; transition: opacity .2s ease, transform .2s ease, background .2s ease;
+    }
+    .syn-book-dots .dot:hover { opacity: .7; }
+    .syn-book-dots .dot.active { opacity: 1; background: var(--syn-accent, #5b8ef0); transform: scale(1.25); }
+    .syn-stamp-btn {
+      position: relative; display: inline-flex; align-items: center; justify-content: center;
+      background: transparent; border: 1px solid var(--rule);
+      color: var(--ink-soft); border-radius: 8px; padding: 9px 16px; cursor: pointer;
+      font-size: 12.5px; letter-spacing: .02em; overflow: hidden; min-width: 150px;
+      transition: background .18s ease, border-color .18s ease, color .18s ease;
+    }
+    .syn-stamp-btn:hover { background: rgba(255,255,255,.05); color: var(--ink); }
     .syn-stamp-ink {
       position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-      font-weight: 800; letter-spacing: .26em; font-size: 15px; color: #e2604f;
-      border: 2.5px solid #e2604f; border-radius: 8px; margin: 4px;
-      transform: rotate(-9deg) scale(1.4); opacity: 0; transition: opacity .25s ease, transform .25s ease;
-      text-shadow: 0 0 1px rgba(226,96,79,.4);
+      font-weight: 600; letter-spacing: .03em; font-size: 12.5px; color: var(--syn-accent, #5b8ef0);
+      opacity: 0; transition: opacity .22s ease;
     }
-    .syn-stamp-btn.studied { border-color: rgba(226,96,79,.5); background: rgba(226,96,79,.07); }
-    .syn-stamp-btn.studied .syn-stamp-ink { opacity: .92; transform: rotate(-9deg) scale(1); }
+    .syn-stamp-btn.studied { border-color: var(--syn-accent, #5b8ef0); background: rgba(255,255,255,.02); }
+    .syn-stamp-btn.studied .syn-stamp-ink { opacity: 1; }
     .syn-stamp-btn.studied .syn-stamp-label { opacity: 0; }
 
+    /* ── Light mode: warm paper ── */
+    body.light .syn-dossier { background: rgba(40,55,80,.5); }
+    body.light .syn-book {
+      --paper:#fbfaf6; --ink:#1c1c19; --ink-soft:#4a4a44; --ink-faint:#8d8c83;
+      --rule:rgba(20,20,16,.12); --paper-edge:rgba(20,20,16,.10);
+      box-shadow: 0 40px 110px -34px rgba(30,45,70,.5), 0 1px 0 rgba(255,255,255,.6) inset;
+    }
+    body.light .syn-book-x:hover { background: rgba(20,20,16,.05); }
+    body.light .syn-book-arrow:hover { background: rgba(20,20,16,.04); }
+    body.light .syn-figure { background: rgba(20,20,16,.015); }
+    body.light .syn-term-chip { background: rgba(20,20,16,.02); }
+    body.light .syn-stamp-btn:hover { background: rgba(20,20,16,.04); }
+
     @media (max-width: 600px) {
-      .syn-dossier-title { font-size: 22px; }
+      .syn-book { width: 100%; height: 96vh; border-radius: 4px; }
+      .syn-book-head { padding: 18px 18px 14px 24px; }
+      .syn-book-title { font-size: 23px; }
+      .syn-page { padding: 22px 22px 26px 26px; }
+      .syn-page .lead { font-size: 16px; }
+      .syn-book-arrow { width: 32px; height: 32px; }
+      .syn-book-arrow.prev { left: 4px; } .syn-book-arrow.next { right: 4px; }
+      .syn-book-foot { padding: 12px 18px 14px 24px; }
+      .syn-stamp-btn { min-width: 0; padding: 9px 12px; font-size: 11.5px; }
+    }
+
+    @media (max-width: 600px) {
       .syn-lib-title { font-size: 12px; letter-spacing: .18em; }
     }
 
@@ -2498,28 +2662,7 @@
     body.light .syn-neuron.studied .syn-soma {
       filter: drop-shadow(0 0 8px rgba(200,150,10,.9)) drop-shadow(0 0 16px rgba(180,120,0,.5));
     }
-    /* Dossier in light mode */
-    body.light .syn-dossier { background: rgba(200,215,240,.55); }
-    body.light .syn-dossier-card {
-      background: linear-gradient(160deg, #f6f9ff 0%, #eff4fc 100%);
-      border-color: rgba(60,100,200,.2);
-      box-shadow: 0 20px 60px -15px rgba(60,100,200,.2), inset 0 0 0 1px rgba(255,255,255,.8);
-    }
-    body.light .syn-dossier-card::before { background: none; }
-    body.light .syn-dossier-x { border-color: rgba(60,100,200,.2); color: #3a5a9a; }
-    body.light .syn-dossier-x:hover { background: rgba(60,100,200,.1); }
-    body.light .syn-dossier-title { color: #0f1f40; text-shadow: none; }
-    body.light .syn-dossier-body .d-lead { color: #2a3e6a; }
-    body.light .syn-dossier-body h4 { color: #4a68a8; }
-    body.light .syn-dossier-body li { color: #2e4070; }
-    body.light .syn-dossier-body .d-note {
-      color: #3a5080; background: rgba(80,120,220,.05); border-color: rgba(80,120,220,.2);
-    }
-    body.light .syn-stamp-btn {
-      background: rgba(60,100,200,.07); border-color: rgba(60,100,200,.28); color: #1e3a7a;
-    }
-    body.light .syn-stamp-btn:hover { background: rgba(60,100,200,.14); }
-    body.light .syn-stamp-btn.studied { border-color: rgba(200,60,50,.45); background: rgba(200,60,50,.06); }
+    /* (Book dossier light-mode handled in its own block above) */
   </style>
 </head>
 <body>
@@ -3763,22 +3906,37 @@
 
       <!-- classified dossier -->
       <div class="syn-dossier" id="syn-dossier" aria-hidden="true">
-        <div class="syn-dossier-card" id="syn-dossier-card">
-          <div class="syn-dossier-head">
-            <div class="syn-dossier-cls">CLASSIFIED · INSTITUTIONAL BRIEFING</div>
-            <button class="syn-dossier-x" id="syn-dossier-x" type="button" aria-label="Close dossier">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        <div class="syn-book" id="syn-book" role="dialog" aria-modal="true">
+          <span class="syn-book-spine" id="syn-book-spine"></span>
+          <header class="syn-book-head">
+            <div class="syn-book-head-text">
+              <div class="syn-book-meta">
+                <span class="syn-book-method" id="syn-book-method">Method</span>
+                <span class="syn-book-dot">·</span>
+                <span class="syn-book-type" id="syn-book-type">Concept</span>
+              </div>
+              <h1 class="syn-book-title" id="syn-book-title">Topic</h1>
+            </div>
+            <button class="syn-book-x" id="syn-book-x" type="button" aria-label="Close">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+          </header>
+          <div class="syn-book-stage" id="syn-book-stage">
+            <div class="syn-book-track" id="syn-book-track"><!-- pages injected --></div>
+            <button class="syn-book-arrow prev" id="syn-book-prev" type="button" aria-label="Previous page">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <button class="syn-book-arrow next" id="syn-book-next" type="button" aria-label="Next page">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
             </button>
           </div>
-          <div class="syn-dossier-kicker" id="syn-dossier-kicker">METHOD · TYPE</div>
-          <div class="syn-dossier-title" id="syn-dossier-title">Topic</div>
-          <div class="syn-dossier-body" id="syn-dossier-body"></div>
-          <div class="syn-dossier-foot">
+          <footer class="syn-book-foot">
+            <div class="syn-book-dots" id="syn-book-dots"></div>
             <button class="syn-stamp-btn" id="syn-stamp-btn" type="button">
-              <span class="syn-stamp-ink">REVIEWED</span>
+              <span class="syn-stamp-ink" id="syn-stamp-ink">✓ Studied</span>
               <span class="syn-stamp-label" id="syn-stamp-label">Mark as studied</span>
             </button>
-          </div>
+          </footer>
         </div>
       </div>
     </div>
@@ -3806,6 +3964,8 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- Synapse Library: real content + textbook SVG diagrams for the 41 topics -->
+<script src="/static/synapse_library.js?v=1"></script>
 <script>
   // ── i18n: UI translations (ICT jargon kept in English on purpose) ──
   const I18N = {
@@ -11409,32 +11569,166 @@
       });
     }
 
-    // ── Dossier ──
-    let dossierSlug = null;
+    // ══ Dossier "book" — editorial flipbook ══
+    // Each topic opens as a 4-page (concept) or 5-page (entry trigger) booklet:
+    //   01 The idea · 02 Mechanics · 03 The beginner's mistake ·
+    //   [04 The setup — triggers only] · 0N Visual reference
+    // Rich content lives in window.SynapseContent[slug]; diagrams in
+    // window.SynapseDiagrams[slug](). Falls back to the CATALOG sketch text
+    // for any topic whose full content hasn't been written yet.
+    const book    = document.getElementById('syn-book');
+    const bTrack  = document.getElementById('syn-book-track');
+    const bDots   = document.getElementById('syn-book-dots');
+    const bPrev   = document.getElementById('syn-book-prev');
+    const bNext   = document.getElementById('syn-book-next');
+    const bMethod = document.getElementById('syn-book-method');
+    const bType   = document.getElementById('syn-book-type');
+    const bTitle  = document.getElementById('syn-book-title');
+
+    // Page section labels (chrome only). {n} = dynamic reference-page number.
+    const PG = {
+      en:{ p1k:'01 · The idea',  p1h:'What it is',
+           p2k:'02 · Mechanics', p2h:'How it works',
+           p3k:'03 · The edge',  p3h:"The beginner's mistake",
+           p4k:'04 · The setup', p4h:'Trigger blueprint',
+           pRk:'{n} · Reference', pRh:'Visual reference',
+           cond:'Setup', entry:'Entry', stop:'Stop', target:'Target',
+           terms:'Key terms', soon:'Full briefing in production.', figSoon:'Diagram in production.' },
+      es:{ p1k:'01 · La idea',     p1h:'Qué es',
+           p2k:'02 · Mecánica',    p2h:'Cómo funciona',
+           p3k:'03 · La clave',    p3h:'El error del novato',
+           p4k:'04 · El setup',    p4h:'Plano del gatillo',
+           pRk:'{n} · Referencia', pRh:'Referencia visual',
+           cond:'Setup', entry:'Entrada', stop:'Stop', target:'Objetivo',
+           terms:'Términos clave', soon:'Informe completo en producción.', figSoon:'Diagrama en producción.' },
+      fr:{ p1k:'01 · L\'idée',     p1h:'Qu\'est-ce que c\'est',
+           p2k:'02 · Mécanique',   p2h:'Comment ça marche',
+           p3k:'03 · La clé',      p3h:'L\'erreur du débutant',
+           p4k:'04 · Le setup',    p4h:'Plan du déclencheur',
+           pRk:'{n} · Référence',  pRh:'Référence visuelle',
+           cond:'Setup', entry:'Entrée', stop:'Stop', target:'Objectif',
+           terms:'Termes clés', soon:'Fiche complète en production.', figSoon:'Diagramme en production.' },
+      pt:{ p1k:'01 · A ideia',     p1h:'O que é',
+           p2k:'02 · Mecânica',    p2h:'Como funciona',
+           p3k:'03 · A chave',     p3h:'O erro do iniciante',
+           p4k:'04 · O setup',     p4h:'Plano do gatilho',
+           pRk:'{n} · Referência', pRh:'Referência visual',
+           cond:'Setup', entry:'Entrada', stop:'Stop', target:'Alvo',
+           terms:'Termos-chave', soon:'Resumo completo em produção.', figSoon:'Diagrama em produção.' },
+    };
+    const P = () => PG[(typeof currentLang!=='undefined'&&PG[currentLang])?currentLang:'en'];
+
+    let dossierSlug = null, bookPage = 0, bookPageCount = 0;
+
+    const toParas = (txt) => Array.isArray(txt) ? txt.map(s=>'<p>'+s+'</p>').join('') : (txt?'<p>'+txt+'</p>':'');
+    const pageEl  = (kick, head, body) =>
+      '<article class="syn-page"><div class="syn-page-num">'+kick+'</div>'+
+      '<h2 class="syn-page-head">'+head+'</h2>'+body+'</article>';
+
+    function buildPages(slug) {
+      const t = TOPIC_BY_SLUG[slug], p = P(), isTrig = t.type === 't';
+      const c = (window.SynapseContent && window.SynapseContent[slug]) || null;
+      const pages = [];
+
+      // 01 — the idea (lead with drop cap + optional body paragraphs)
+      const lead = (c && c.lead) || t.lead;
+      const body1 = c && c.body ? toParas(c.body) : '';
+      pages.push(pageEl(p.p1k, p.p1h, '<p class="lead">'+lead+'</p>'+body1));
+
+      // 02 — mechanics
+      let mech;
+      if (c && c.mechanics && c.mechanics.length) {
+        mech = '<ul class="syn-mech">'+c.mechanics.map(x =>
+          '<li>'+(x.term?'<span class="term">'+x.term+'</span>':'')+x.text+'</li>').join('')+'</ul>';
+      } else {
+        mech = '<ul class="syn-mech">'+(t.points||[]).map(x=>'<li>'+x+'</li>').join('')+'</ul>';
+      }
+      pages.push(pageEl(p.p2k, p.p2h, mech));
+
+      // 03 — the beginner's mistake
+      const mis = (c && c.mistake) || t.note || p.soon;
+      const misBody = Array.isArray(mis)
+        ? '<p class="lead">'+mis[0]+'</p>'+toParas(mis.slice(1))
+        : '<p class="lead">'+mis+'</p>';
+      pages.push(pageEl(p.p3k, p.p3h, '<div class="syn-pitfall">'+misBody+'</div>'));
+
+      // 04 — the setup (entry triggers only)
+      if (isTrig) {
+        const s = c && c.setup;
+        const row = (k,v)=> v ? '<div class="syn-setup-row"><div class="syn-setup-k">'+k+'</div><div class="syn-setup-v">'+v+'</div></div>' : '';
+        const setup = s
+          ? '<div class="syn-setup">'+row(p.cond,s.cond)+row(p.entry,s.entry)+row(p.stop,s.stop)+row(p.target,s.target)+'</div>'
+          : '<p>'+p.soon+'</p>';
+        pages.push(pageEl(p.p4k, p.p4h, setup));
+      }
+
+      // 0N — visual reference (diagram + caption + key-term chips)
+      const refNum = isTrig ? '05' : '04';
+      const diagFn = window.SynapseDiagrams && window.SynapseDiagrams[slug];
+      const fig = diagFn
+        ? '<div class="syn-figure">'+diagFn()+'</div>'
+        : '<div class="syn-figure" style="padding:40px 20px;text-align:center;color:var(--ink-faint);font-size:13px;">'+p.figSoon+'</div>';
+      const cap = c && c.figcap ? '<p class="syn-figcap">'+c.figcap+'</p>' : '';
+      const terms = (c && c.terms && c.terms.length)
+        ? '<p class="syn-terms-label">'+p.terms+'</p><div class="syn-terms">'+c.terms.map(x=>'<span class="syn-term-chip">'+x+'</span>').join('')+'</div>'
+        : '';
+      pages.push(pageEl(p.pRk.replace('{n}',refNum), p.pRh, fig+cap+terms));
+
+      return pages;
+    }
+
+    function applyPage(animate) {
+      if (!animate) bTrack.style.transition = 'none';
+      bTrack.style.transform = 'translateX(-'+(bookPage*100)+'%)';
+      if (!animate) requestAnimationFrame(()=>{ bTrack.style.transition = ''; });
+      [...bDots.children].forEach((d,i)=>d.classList.toggle('active', i===bookPage));
+      bPrev.disabled = bookPage===0;
+      bNext.disabled = bookPage===bookPageCount-1;
+      const pg = bTrack.children[bookPage]; if (pg) pg.scrollTop = 0;
+    }
+    function goPage(n) { bookPage = Math.max(0, Math.min(bookPageCount-1, n)); applyPage(true); }
+
     function openTopic(slug) {
       const t = TOPIC_BY_SLUG[slug]; if (!t) return;
       dossierSlug = slug;
       const m = METH_BY_ID[t._mid];
-      document.getElementById('syn-dossier-card').style.setProperty('--syn-accent', m.accent);
-      document.getElementById('syn-dossier-kicker').textContent =
-        m.name + ' · ' + (t.type==='t' ? L().trigger : L().concept);
-      document.getElementById('syn-dossier-title').textContent = t.label;
-      const body = document.getElementById('syn-dossier-body');
-      body.innerHTML =
-        '<div class="d-lead">'+t.lead+'</div>' +
-        '<h4>'+L().keys+'</h4><ul>'+ t.points.map(p=>'<li>'+p+'</li>').join('') +'</ul>' +
-        (t.note ? '<div class="d-note"><strong>'+L().note+':</strong> '+t.note+'</div>' : '');
+      book.style.setProperty('--syn-accent', m.accent);
+      bMethod.textContent = m.name;
+      bType.textContent   = t.type==='t' ? L().trigger : L().concept;
+      bTitle.textContent  = t.label;
+      const pages = buildPages(slug);
+      bookPageCount = pages.length;
+      bTrack.innerHTML = pages.join('');
+      bDots.innerHTML = pages.map((_,i)=>'<span class="dot'+(i===0?' active':'')+'" data-i="'+i+'"></span>').join('');
+      bookPage = 0; applyPage(false);
       syncStamp();
       dossier.classList.add('open'); dossier.setAttribute('aria-hidden','false');
     }
     function syncStamp() {
       const btn = document.getElementById('syn-stamp-btn');
       const lbl = document.getElementById('syn-stamp-label');
+      const ink = document.getElementById('syn-stamp-ink');
       const on = checked(dossierSlug);
       btn.classList.toggle('studied', !!on);
-      lbl.textContent = on ? L().studied : L().mark;
+      lbl.textContent = L().mark;
+      if (ink) ink.textContent = '✓ ' + L().studied;
     }
     function closeDossier() { dossier.classList.remove('open'); dossier.setAttribute('aria-hidden','true'); dossierSlug = null; }
+
+    bPrev.addEventListener('click', () => goPage(bookPage-1));
+    bNext.addEventListener('click', () => goPage(bookPage+1));
+    bDots.addEventListener('click', (e) => { const d=e.target.closest('.dot'); if (d) goPage(+d.dataset.i); });
+    document.getElementById('syn-book-x').addEventListener('click', closeDossier);
+    dossier.addEventListener('click', (e) => { if (e.target === dossier) closeDossier(); });
+
+    // swipe between pages (touch)
+    let swX = 0, swY = 0, swActive = false;
+    book.addEventListener('touchstart', (e) => { swX = e.touches[0].clientX; swY = e.touches[0].clientY; swActive = true; }, {passive:true});
+    book.addEventListener('touchend', (e) => {
+      if (!swActive) return; swActive = false;
+      const dx = e.changedTouches[0].clientX - swX, dy = e.changedTouches[0].clientY - swY;
+      if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy)*1.4) goPage(bookPage + (dx<0?1:-1));
+    }, {passive:true});
 
     document.getElementById('syn-stamp-btn').addEventListener('click', async () => {
       if (!dossierSlug || !window.SynapseProgress) return;
@@ -11444,8 +11738,6 @@
       if (mode === 'cluster') renderConstellation(activeMethod);
       else renderGalaxy();
     });
-    document.getElementById('syn-dossier-x').addEventListener('click', closeDossier);
-    dossier.addEventListener('click', (e) => { if (e.target === dossier) closeDossier(); });
 
     // ── Open / close / synaptic fire transition ──
     // A short "fire" the cluster: flash a class that pulses the viewport, then
@@ -11500,9 +11792,16 @@
     backBtn.addEventListener('click', () => renderGalaxy());
     closeBtn.addEventListener('click', close);
     document.addEventListener('keydown', (e) => {
-      if (e.key !== 'Escape' || !lib.classList.contains('open')) return;
-      if (dossier.classList.contains('open')) closeDossier();
-      else if (mode === 'cluster') renderGalaxy();
+      if (!lib.classList.contains('open')) return;
+      // when the book is open, arrows flip pages; Escape closes it
+      if (dossier.classList.contains('open')) {
+        if (e.key === 'Escape') closeDossier();
+        else if (e.key === 'ArrowRight') goPage(bookPage+1);
+        else if (e.key === 'ArrowLeft')  goPage(bookPage-1);
+        return;
+      }
+      if (e.key !== 'Escape') return;
+      if (mode === 'cluster') renderGalaxy();
       else close();
     });
     window.addEventListener('resize', () => {
