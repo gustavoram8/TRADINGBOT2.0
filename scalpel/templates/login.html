@@ -32,6 +32,9 @@
     {% if error == 'invalid' %}
       <div class="alert alert-error" data-i18n="login.errInvalid">Incorrect email/username or password.</div>
     {% endif %}
+    {% if error == 'banned' %}
+      <div class="alert alert-error" data-i18n="login.errBanned">This account has been suspended for violating our terms of use. Contact support if you believe this is a mistake.</div>
+    {% endif %}
 
     <form method="POST" action="/login">
       <div class="field">

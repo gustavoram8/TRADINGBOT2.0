@@ -104,6 +104,32 @@
     .warn-detail { font-size: 13px; }
     .warn-excerpt { color: var(--muted); font-size: 12px; font-family: 'JetBrains Mono', monospace; margin-top: 4px; word-break: break-word; }
     .warn-time { color: var(--muted); font-size: 11px; white-space: nowrap; }
+
+    /* ── Ban suggestion queue ── */
+    .ban-card { border: 1px solid rgba(224,90,70,0.35); border-radius: 12px;
+      padding: 16px 18px; margin-bottom: 12px; background: rgba(224,90,70,0.05); }
+    .ban-card .bc-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+    .ban-card .bc-name { font-weight: 700; font-size: 14px; }
+    .ban-card .bc-email { color: var(--muted); font-size: 12px; }
+    .ban-cat { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+      padding: 2px 9px; border-radius: 20px; }
+    .ban-cat.leak { background: rgba(224,90,70,0.18); color: #e05a46; }
+    .ban-cat.conduct { background: rgba(224,168,61,0.18); color: var(--premium); }
+    .ban-card .bc-detail { font-size: 13px; margin: 4px 0 6px; }
+    .ban-card .bc-evidence { color: var(--muted); font-size: 12px; font-family: 'JetBrains Mono', monospace;
+      word-break: break-word; margin-bottom: 12px; }
+    .ban-card .bc-actions { display: flex; gap: 10px; align-items: center; }
+    .ban-btn { border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: inherit; }
+    .ban-btn.confirm { background: #e05a46; color: #fff; }
+    .ban-btn.confirm:hover { background: #c84832; }
+    .ban-btn.dismiss { background: transparent; color: var(--muted); border: 1px solid var(--border, rgba(128,128,128,.3)); }
+    .ban-btn.dismiss:hover { color: var(--text, #222); }
+    .ban-time { color: var(--muted); font-size: 11px; margin-left: auto; }
+    .banned-badge { background: rgba(224,90,70,0.18); color: #e05a46; font-size: 10.5px;
+      font-weight: 700; padding: 1px 7px; border-radius: 12px; }
+    .unban-btn { background: transparent; border: 1px solid rgba(224,90,70,0.4); color: #e05a46;
+      font-size: 11px; padding: 3px 9px; border-radius: 6px; cursor: pointer; font-family: inherit; }
     @media (max-width: 640px) { .stats { grid-template-columns: repeat(2,1fr); } .u-email { display:none; } }
   </style>
 </head>
@@ -153,8 +179,15 @@
           {% for u in users %}
           <tr>
             <td>
-              <div class="u-name">{{ u.username }}{% if u.is_admin %} <span class="admin-tag">· admin</span>{% endif %}{% if warn_counts.get(u.id, 0) >= 2 %} <span class="warn-badge" title="Flagged by auto-moderation">⚠ {{ warn_counts[u.id] }} warns</span>{% endif %}</div>
+              <div class="u-name">{{ u.username }}{% if u.is_admin %} <span class="admin-tag">· admin</span>{% endif %}{% if u.is_banned %} <span class="banned-badge" title="{{ u.ban_reason }}">BANNED</span>{% endif %}{% if warn_counts.get(u.id, 0) >= 2 %} <span class="warn-badge" title="Flagged by auto-moderation">⚠ {{ warn_counts[u.id] }} warns</span>{% endif %}</div>
               <div class="u-email">{{ u.email }}</div>
+              {% if u.is_banned %}
+              <form method="POST" action="/admin/unban" style="margin-top:6px;"
+                    onsubmit="return confirm('Lift the ban on {{ u.username }}?');">
+                <input type="hidden" name="user_id" value="{{ u.id }}" />
+                <button type="submit" class="unban-btn">Unban</button>
+              </form>
+              {% endif %}
             </td>
             <td><span class="plan-badge {{ u.plan }}">{{ u.plan }}</span></td>
             <td style="color:var(--muted);font-size:12px;">{{ u.created_at.strftime('%Y-%m-%d') if u.created_at else '—' }}</td>
@@ -180,6 +213,38 @@
           {% endfor %}
         </tbody>
       </table>
+    </div>
+
+    <div class="section-h">Ban Suggestions</div>
+    <div class="section-d">Flagged accounts proposed for a ban — by conduct (repeated warnings) or content leak (a watermarked PDF found shared publicly). <strong>Nothing is banned automatically.</strong> Review the evidence, then confirm or dismiss.</div>
+
+    <div style="margin-bottom:22px;">
+      {% for b in ban_queue %}
+      <div class="ban-card">
+        <div class="bc-head">
+          <span class="ban-cat {{ b.category }}">{{ 'Content leak' if b.category == 'leak' else 'Conduct' }}</span>
+          <span class="bc-name">{{ b.username }}</span>
+          <span class="bc-email">{{ b.email }}</span>
+          {% if b.warn_count %}<span class="warn-badge">⚠ {{ b.warn_count }} warns</span>{% endif %}
+          <span class="ban-time">{{ b.created_at.strftime('%Y-%m-%d %H:%M') if b.created_at else '' }}</span>
+        </div>
+        <div class="bc-detail">{{ b.detail }}</div>
+        {% if b.evidence %}<div class="bc-evidence">Evidence: {{ b.evidence }}</div>{% endif %}
+        <div class="bc-actions">
+          <form method="POST" action="/admin/ban/confirm"
+                onsubmit="return confirm('Ban {{ b.username }} ({{ b.email }}) permanently? They will be logged out and unable to sign in.');">
+            <input type="hidden" name="suggestion_id" value="{{ b.id }}" />
+            <button type="submit" class="ban-btn confirm">Confirm ban ▸</button>
+          </form>
+          <form method="POST" action="/admin/ban/dismiss">
+            <input type="hidden" name="suggestion_id" value="{{ b.id }}" />
+            <button type="submit" class="ban-btn dismiss">Dismiss</button>
+          </form>
+        </div>
+      </div>
+      {% else %}
+      <div class="empty">No ban suggestions pending review.</div>
+      {% endfor %}
     </div>
 
     <div class="section-h">Forum Moderation</div>

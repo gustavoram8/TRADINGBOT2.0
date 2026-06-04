@@ -111,6 +111,10 @@ class User(UserMixin, db.Model):
     email_verified = db.Column(db.Boolean, default=False, nullable=False)
     verification_code = db.Column(db.String(6), nullable=True)
     verification_expires = db.Column(db.DateTime, nullable=True)
+    # ── Account ban (always confirmed by an admin; never automatic) ──
+    is_banned = db.Column(db.Boolean, default=False, nullable=False)
+    banned_at = db.Column(db.DateTime, nullable=True)
+    ban_reason = db.Column(db.String(300), nullable=True)
 
     def set_password(self, raw):
         self.password_hash = generate_password_hash(raw)
@@ -190,6 +194,21 @@ class ModWarning(db.Model):
     user = db.relationship('User', backref='warnings')
 
 
+class BanSuggestion(db.Model):
+    """A flagged account proposed for a ban. NEVER bans automatically — it only
+    surfaces in the admin panel, where a human reviews the evidence and either
+    confirms the ban or dismisses the suggestion."""
+    id          = db.Column(db.Integer, primary_key=True)
+    user_id     = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    category    = db.Column(db.String(40), nullable=False)   # 'conduct' | 'leak'
+    detail      = db.Column(db.String(400), nullable=False)  # human explanation of WHY
+    evidence    = db.Column(db.Text, nullable=True)          # link / watermark id / excerpt
+    status      = db.Column(db.String(16), default='pending', nullable=False, index=True)  # pending|confirmed|dismissed
+    created_at  = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    resolved_at = db.Column(db.DateTime, nullable=True)
+    user        = db.relationship('User', backref='ban_suggestions')
+
+
 # ── Prop Firm Scout ──
 class PropFirm(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -217,6 +236,18 @@ class PropFirm(db.Model):
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, int(user_id))
+
+
+@app.before_request
+def _enforce_ban():
+    """A confirmed ban takes effect immediately, even on an active session:
+    a banned non-admin user is logged out on their next request."""
+    if current_user.is_authenticated and getattr(current_user, 'is_banned', False) \
+            and not current_user.is_admin:
+        logout_user()
+        if request.path.startswith('/api/'):
+            return jsonify({'error': 'banned'}), 403
+        return redirect(url_for('login', banned=1))
 
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -793,6 +824,9 @@ def login():
         user = (User.query.filter_by(email=identifier.lower()).first()
                 or User.query.filter_by(username=identifier).first())
         if user and user.check_password(password):
+            # Banned accounts can never log in (admins are exempt).
+            if user.is_banned and not user.is_admin:
+                return render_template('login.html', error='banned')
             # Unverified account → resume the email-verification flow.
             if not user.email_verified and not user.is_admin:
                 code = _new_verification_code()
@@ -807,7 +841,8 @@ def login():
             return redirect(url_for('welcome'))
         return render_template('login.html', error='invalid')
 
-    return render_template('login.html', reset=request.args.get('reset'))
+    return render_template('login.html', reset=request.args.get('reset'),
+                           error='banned' if request.args.get('banned') else None)
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -982,10 +1017,50 @@ def admin():
         key=lambda x: x['count'], reverse=True,
     )
 
+    # ── Ban suggestions: pending review queue (human-confirmed only) ──
+    pending = (BanSuggestion.query
+               .filter_by(status='pending')
+               .order_by(BanSuggestion.created_at.desc()).all())
+    udict = {u.id: u for u in users}
+    ban_queue = []
+    for s in pending:
+        u = udict.get(s.user_id) or db.session.get(User, s.user_id)
+        if not u or u.is_banned or u.is_admin:
+            continue
+        ban_queue.append({
+            'id': s.id, 'user_id': s.user_id,
+            'username': u.username, 'email': u.email,
+            'category': s.category, 'detail': s.detail, 'evidence': s.evidence,
+            'created_at': s.created_at,
+            'warn_count': warn_counts.get(s.user_id, 0),
+        })
+
     return render_template(
         'admin.html', users=users, counts=counts,
         warn_counts=warn_counts, recent_warnings=recent_warnings, flagged=flagged,
+        ban_queue=ban_queue,
     )
+
+
+def suggest_ban(user_id, category, detail, evidence=None):
+    """Queue a ban suggestion for admin review. Idempotent: won't stack a second
+    pending suggestion for the same (user, category). Never bans on its own."""
+    if category not in ('conduct', 'leak'):
+        category = 'conduct'
+    existing = BanSuggestion.query.filter_by(
+        user_id=user_id, category=category, status='pending').first()
+    if existing:
+        # refresh the explanation/evidence with the latest signal
+        existing.detail = detail
+        if evidence:
+            existing.evidence = evidence
+        db.session.commit()
+        return existing
+    s = BanSuggestion(user_id=user_id, category=category,
+                      detail=detail, evidence=evidence, status='pending')
+    db.session.add(s)
+    db.session.commit()
+    return s
 
 
 @app.route('/admin/set-plan', methods=['POST'])
@@ -1000,6 +1075,62 @@ def admin_set_plan():
     user = db.session.get(User, int(user_id))
     if user and not user.is_admin:
         user.plan = plan
+        db.session.commit()
+    return redirect(url_for('admin'))
+
+
+@app.route('/admin/ban/confirm', methods=['POST'])
+@login_required
+def admin_ban_confirm():
+    if not current_user.is_admin:
+        abort(403)
+    sug_id = request.form.get('suggestion_id')
+    suggestion = db.session.get(BanSuggestion, int(sug_id)) if sug_id else None
+    if not suggestion:
+        abort(404)
+    user = db.session.get(User, suggestion.user_id)
+    if user and not user.is_admin:
+        user.is_banned = True
+        user.banned_at = datetime.now(timezone.utc)
+        cat = 'Content leak' if suggestion.category == 'leak' else 'Conduct violation'
+        user.ban_reason = f'{cat}: {suggestion.detail}'[:300]
+        suggestion.status = 'confirmed'
+        suggestion.resolved_at = datetime.now(timezone.utc)
+        # close any other pending suggestions for this user — they're moot now
+        for other in BanSuggestion.query.filter_by(
+                user_id=user.id, status='pending').all():
+            if other.id != suggestion.id:
+                other.status = 'confirmed'
+                other.resolved_at = datetime.now(timezone.utc)
+        db.session.commit()
+    return redirect(url_for('admin'))
+
+
+@app.route('/admin/ban/dismiss', methods=['POST'])
+@login_required
+def admin_ban_dismiss():
+    if not current_user.is_admin:
+        abort(403)
+    sug_id = request.form.get('suggestion_id')
+    suggestion = db.session.get(BanSuggestion, int(sug_id)) if sug_id else None
+    if not suggestion:
+        abort(404)
+    suggestion.status = 'dismissed'
+    suggestion.resolved_at = datetime.now(timezone.utc)
+    db.session.commit()
+    return redirect(url_for('admin'))
+
+
+@app.route('/admin/unban', methods=['POST'])
+@login_required
+def admin_unban():
+    if not current_user.is_admin:
+        abort(403)
+    user = db.session.get(User, int(request.form.get('user_id', 0)))
+    if user:
+        user.is_banned = False
+        user.banned_at = None
+        user.ban_reason = None
         db.session.commit()
     return redirect(url_for('admin'))
 
@@ -1165,6 +1296,9 @@ DAILY_POST_LIMIT = 2
 FORUM_FEED_PAGE = 10
 
 
+CONDUCT_BAN_THRESHOLD = 3   # warnings that trigger a ban *suggestion* (not a ban)
+
+
 def record_warning(user_id, category, detail, excerpt):
     w = ModWarning(
         user_id=user_id,
@@ -1174,6 +1308,17 @@ def record_warning(user_id, category, detail, excerpt):
     )
     db.session.add(w)
     db.session.commit()
+
+    # At the threshold, queue a conduct ban suggestion for admin review.
+    # This never bans on its own — it only surfaces in the admin panel.
+    count = ModWarning.query.filter_by(user_id=user_id).count()
+    if count >= CONDUCT_BAN_THRESHOLD:
+        suggest_ban(
+            user_id, 'conduct',
+            f'{count} moderation warnings accumulated '
+            f'(latest: {category or "other"} — {(detail or "").strip()}).',
+            evidence=(excerpt or '')[:400] or None,
+        )
 
 
 def todays_post_count(user_id):
@@ -2398,13 +2543,22 @@ def _migrate_user_verification_columns():
         stmts.append("ALTER TABLE user ADD COLUMN verification_code VARCHAR(6)")
     if 'verification_expires' not in cols:
         stmts.append("ALTER TABLE user ADD COLUMN verification_expires DATETIME")
+    grandfather = bool(stmts)  # only mark-all-verified on the verification migration
+    # ── Ban columns (added later; must not re-trigger the grandfather UPDATE) ──
+    if 'is_banned' not in cols:
+        stmts.append("ALTER TABLE user ADD COLUMN is_banned BOOLEAN NOT NULL DEFAULT 0")
+    if 'banned_at' not in cols:
+        stmts.append("ALTER TABLE user ADD COLUMN banned_at DATETIME")
+    if 'ban_reason' not in cols:
+        stmts.append("ALTER TABLE user ADD COLUMN ban_reason VARCHAR(300)")
     if stmts:
         with db.engine.begin() as conn:
             for s in stmts:
                 conn.execute(text(s))
             # Grandfather in every account that predates verification.
-            conn.execute(text("UPDATE user SET email_verified = 1"))
-        app.logger.info('Migrated user table: added email-verification columns.')
+            if grandfather:
+                conn.execute(text("UPDATE user SET email_verified = 1"))
+        app.logger.info('Migrated user table: added missing columns (%d).', len(stmts))
 
 
 def init_db():
