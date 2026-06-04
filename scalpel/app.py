@@ -1256,37 +1256,80 @@ _METHOD_ACCENT = {
 # CSS variables resolved to light-mode values so SVGs render correctly in PDF
 _DF_CSS = """
   :root {
-    --df-up:   #26a269;
-    --df-down: #e01b24;
-    --df-wick: #888;
+    --df-up:   #1a9e69;
+    --df-down: #d5503c;
+    --df-wick: #8a887f;
     --df-axis: #bbb;
     --df-grid: #ddd;
-    --df-faint: #999;
-    --df-ink:   #333;
-    --syn-accent: #3d5afe;
+    --df-faint: #8d8c83;
+    --df-ink:   #3a3a34;
+    --syn-accent: #5b8ef0;
   }
   /* df-* classes (mirrors index.html .syn-figure rules, light-mode resolved) */
-  .df-up    { fill: #26a269; }
-  .df-down  { fill: #e01b24; }
-  .df-up-s  { stroke: #26a269; fill: none; }
-  .df-down-s{ stroke: #e01b24; fill: none; }
-  .df-wick  { stroke: #888; stroke-width: 1.4; fill: none; }
+  .df-up    { fill: #1a9e69; }
+  .df-down  { fill: #d5503c; }
+  .df-up-s  { stroke: #1a9e69; fill: none; }
+  .df-down-s{ stroke: #d5503c; fill: none; }
+  .df-wick  { stroke: #8a887f; stroke-width: 1.4; fill: none; }
   .df-axis  { stroke: #bbb; stroke-width: 1; fill: none; }
   .df-grid  { stroke: #ddd; stroke-width: 1; fill: none; }
-  .df-accent   { stroke: #3d5afe; fill: none; }
-  .df-accent-f { fill: #3d5afe; }
-  .df-zone      { fill: #3d5afe; opacity: .10; stroke: #3d5afe; stroke-opacity:.45; stroke-width:1; }
-  .df-zone-up   { fill: #26a269; opacity: .13; stroke: #26a269; stroke-opacity:.55; stroke-width:1; }
-  .df-zone-down { fill: #e01b24; opacity: .13; stroke: #e01b24; stroke-opacity:.55; stroke-width:1; }
-  .df-line        { stroke: #aaa; stroke-width: 1.6; fill: none; }
-  .df-line-accent { stroke: #3d5afe; stroke-width: 2; fill: none; }
-  .df-dash        { stroke: #aaa; stroke-width: 1.2; stroke-dasharray: 4 4; fill: none; }
-  .df-dash-accent { stroke: #3d5afe; stroke-width:1.3; stroke-dasharray:4 4; fill:none; }
-  .df-label { fill: #333; font-size: 12px; font-family: sans-serif; }
-  .df-tag   { fill: #999; font-size: 10.5px; letter-spacing: .04em; font-family: sans-serif; }
-  .df-tag-accent { fill: #3d5afe; font-size: 10.5px; font-weight: 600; font-family: sans-serif; }
-  .df-tag-down   { fill: #e01b24; font-size: 10.5px; letter-spacing: .04em; font-family: sans-serif; }
+  .df-accent   { stroke: #5b8ef0; fill: none; }
+  .df-accent-f { fill: #5b8ef0; }
+  .df-zone      { fill: #5b8ef0; opacity: .10; stroke: #5b8ef0; stroke-opacity:.45; stroke-width:1; }
+  .df-zone-up   { fill: #1a9e69; opacity: .13; stroke: #1a9e69; stroke-opacity:.55; stroke-width:1; }
+  .df-zone-down { fill: #d5503c; opacity: .13; stroke: #d5503c; stroke-opacity:.55; stroke-width:1; }
+  .df-line        { stroke: #8d8c83; stroke-width: 1.6; fill: none; }
+  .df-line-accent { stroke: #5b8ef0; stroke-width: 2; fill: none; }
+  .df-dash        { stroke: #8d8c83; stroke-width: 1.2; stroke-dasharray: 4 4; fill: none; }
+  .df-dash-accent { stroke: #5b8ef0; stroke-width:1.3; stroke-dasharray:4 4; fill:none; }
+  .df-label { fill: #3a3a34; font-size: 12px; font-family: sans-serif; }
+  .df-tag   { fill: #8d8c83; font-size: 10.5px; letter-spacing: .04em; font-family: sans-serif; }
+  .df-tag-accent { fill: #5b8ef0; font-size: 10.5px; font-weight: 600; font-family: sans-serif; }
+  .df-tag-down   { fill: #d5503c; font-size: 10.5px; letter-spacing: .04em; font-family: sans-serif; }
 """
+
+# Stylesheet injected INSIDE each inline <svg> — WeasyPrint does NOT cascade
+# the HTML document's CSS into inline SVG, so diagram classes must be styled
+# from a <style> element that lives within the SVG itself. Without this every
+# path falls back to the SVG default (fill:black, stroke:none), turning
+# stroke-only figures (trend lines, head-and-shoulders, arrows) into solid
+# black blobs that swallow nearby labels. Axis/grid colours are darkened
+# slightly vs screen values so they stay visible on white print paper.
+_SVG_DF_STYLE = """<style>
+  .df-up{fill:#1a9e69}
+  .df-down{fill:#d5503c}
+  .df-up-s{stroke:#1a9e69;fill:none;stroke-width:1.6}
+  .df-down-s{stroke:#d5503c;fill:none;stroke-width:1.6}
+  .df-line-up{stroke:#1a9e69;fill:none;stroke-width:2}
+  .df-line-down{stroke:#d5503c;fill:none;stroke-width:2}
+  .df-wick{stroke:#8a887f;stroke-width:1.4;fill:none}
+  .df-axis{stroke:rgba(20,20,16,.30);stroke-width:1;fill:none}
+  .df-grid{stroke:rgba(20,20,16,.10);stroke-width:1;fill:none}
+  .df-accent{stroke:#5b8ef0;fill:none}
+  .df-accent-f{fill:#5b8ef0}
+  .df-zone{fill:#5b8ef0;opacity:.13;stroke:#5b8ef0;stroke-opacity:.5;stroke-width:1}
+  .df-zone-up{fill:#1a9e69;opacity:.13;stroke:#1a9e69;stroke-opacity:.55;stroke-width:1}
+  .df-zone-down{fill:#d5503c;opacity:.13;stroke:#d5503c;stroke-opacity:.55;stroke-width:1}
+  .df-line{stroke:#8d8c83;stroke-width:1.6;fill:none}
+  .df-line-accent{stroke:#5b8ef0;stroke-width:2;fill:none}
+  .df-dash{stroke:#8d8c83;stroke-width:1.2;stroke-dasharray:4 4;fill:none}
+  .df-dash-accent{stroke:#5b8ef0;stroke-width:1.3;stroke-dasharray:4 4;fill:none}
+  .df-label{fill:#3a3a34;font-size:12px;font-family:sans-serif}
+  .df-tag{fill:#8d8c83;font-size:10.5px;font-family:sans-serif}
+  .df-tag-accent{fill:#5b8ef0;font-size:10.5px;font-weight:600;font-family:sans-serif}
+  .df-tag-down{fill:#d5503c;font-size:10.5px;font-family:sans-serif}
+</style>"""
+
+
+def _style_svg(svg_raw: str) -> str:
+    """Inject the diagram stylesheet inside the <svg> so WeasyPrint paints
+    the df-* classes correctly (HTML CSS does not reach inline SVG)."""
+    if not svg_raw:
+        return ''
+    idx = svg_raw.find('>')
+    if idx == -1:
+        return svg_raw
+    return svg_raw[:idx + 1] + _SVG_DF_STYLE + svg_raw[idx + 1:]
 
 
 def _load_synapse_export() -> dict:
@@ -1364,7 +1407,7 @@ def _build_synapse_pdf(buyer_name: str, buyer_email: str, order_id: str) -> byte
     for slug, title, method in _SYNAPSE_ORDER:
         data    = library.get(slug, {})
         content = data.get('content') or {}
-        svg_raw = data.get('svg') or ''
+        svg_raw = _style_svg(data.get('svg') or '')
 
         # Method divider page
         if method != current_method:
