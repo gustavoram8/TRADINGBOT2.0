@@ -247,6 +247,36 @@
       {% endfor %}
     </div>
 
+    <div class="section-h">Synapse PDF Downloads</div>
+    <div class="section-d">Issue a personalized, watermarked PDF of the Synapse Library to a paying user. The link expires in 24 h and allows up to 3 downloads.</div>
+
+    {% if request.args.get('pdf_issued') %}
+    <div class="alert-ok" style="margin-bottom:14px; padding:10px 16px; background:rgba(80,180,80,0.12); border:1px solid rgba(80,180,80,0.35); border-radius:8px; font-size:13px; word-break:break-all;">
+      ✓ Download link created: <strong>{{ request.args.get('pdf_issued') }}</strong>
+    </div>
+    {% endif %}
+
+    <div class="table-card" style="padding:18px 20px; margin-bottom:22px;">
+      <form method="POST" action="/admin/synapse-pdf/issue" style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+        <div>
+          <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">User ID</label>
+          <input type="number" name="user_id" placeholder="e.g. 3" required
+                 style="padding:7px 10px; border-radius:7px; border:1px solid rgba(255,255,255,0.1);
+                        background:rgba(255,255,255,0.05); color:var(--fg); font-size:13px; width:100px;" />
+        </div>
+        <div>
+          <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Order ID</label>
+          <input type="text" name="order_id" placeholder="e.g. MANUAL-001"
+                 style="padding:7px 10px; border-radius:7px; border:1px solid rgba(255,255,255,0.1);
+                        background:rgba(255,255,255,0.05); color:var(--fg); font-size:13px; width:160px;" />
+        </div>
+        <button type="submit" style="padding:8px 18px; border-radius:8px; border:none; cursor:pointer;
+                background:#5b8ef0; color:#fff; font-size:13px; font-weight:600;">
+          Issue download link
+        </button>
+      </form>
+    </div>
+
     <div class="section-h">Forum Moderation</div>
     <div class="section-d">Posts &amp; comments are auto-screened before publishing. Blocked content is logged here. Users with 2+ warnings are flagged in the table above.</div>
 

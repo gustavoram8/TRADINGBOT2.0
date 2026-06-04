@@ -229,6 +229,26 @@ class BannedFingerprint(db.Model):
     source_user = db.relationship('User', backref='banned_fingerprints')
 
 
+class SynapseDownloadToken(db.Model):
+    """A one-time download token for the personalized Synapse PDF.
+    Expires in 24 h; max 3 downloads; token is a 48-char hex string."""
+    id           = db.Column(db.Integer, primary_key=True)
+    token        = db.Column(db.String(48), unique=True, nullable=False, index=True)
+    user_id      = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    order_id     = db.Column(db.String(64), nullable=False)   # e.g. "MANUAL-001" or Stripe order id
+    downloads    = db.Column(db.Integer, default=0, nullable=False)
+    max_dl       = db.Column(db.Integer, default=3, nullable=False)
+    created_at   = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    expires_at   = db.Column(db.DateTime, nullable=False)
+    user         = db.relationship('User', backref='download_tokens')
+
+    @property
+    def is_valid(self):
+        if self.downloads >= self.max_dl:
+            return False
+        return datetime.now(timezone.utc) < _as_utc(self.expires_at)
+
+
 # ── Prop Firm Scout ──
 class PropFirm(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -1168,6 +1188,248 @@ def admin_unban():
         user.ban_reason = None
         db.session.commit()
     return redirect(url_for('admin'))
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# SYNAPSE PDF — personalized, watermarked download
+# ──────────────────────────────────────────────────────────────────────────
+_SYNAPSE_TOPICS = [
+    # (slug, title, methodology)
+    ('price.support-resistance', 'Support & Resistance', 'Price Action'),
+    ('price.trend-structure',    'Trend & Structure',    'Price Action'),
+    ('price.candles',            'Candlestick Reading',  'Price Action'),
+    ('price.chart-patterns',     'Chart Patterns',       'Price Action'),
+    ('price.supply-demand',      'Supply & Demand',      'Price Action'),
+    ('price.pin-bar',            'Pin Bar Rejection',    'Price Action'),
+    ('price.engulfing',          'Engulfing Confirmation','Price Action'),
+    ('price.breakout-retest',    'Breakout Retest',      'Price Action'),
+    ('price.harmonic',           'Harmonic Completion',  'Price Action'),
+    ('technical.moving-averages','Moving Averages',      'Technical Analysis'),
+    ('technical.rsi',            'RSI',                  'Technical Analysis'),
+    ('technical.macd',           'MACD',                 'Technical Analysis'),
+    ('technical.bollinger',      'Bollinger Bands',      'Technical Analysis'),
+    ('technical.volume',         'Volume Analysis',      'Technical Analysis'),
+    ('technical.fibonacci',      'Fibonacci Retracements','Technical Analysis'),
+    ('technical.atr',            'ATR & Volatility',     'Technical Analysis'),
+    ('technical.multi-tf',       'Multi-Timeframe Analysis','Technical Analysis'),
+    ('smc.order-blocks',         'Order Blocks',         'SMC / ICT'),
+    ('smc.fair-value-gaps',      'Fair Value Gaps',      'SMC / ICT'),
+    ('smc.market-structure',     'Market Structure (BOS/ChoCH)','SMC / ICT'),
+    ('smc.liquidity',            'Liquidity',            'SMC / ICT'),
+    ('smc.kill-zones',           'Kill Zones',           'SMC / ICT'),
+    ('smc.pd-arrays',            'Premium / Discount',   'SMC / ICT'),
+    ('smc.breaker-blocks',       'Breaker Blocks',       'SMC / ICT'),
+    ('smc.mitigation-blocks',    'Mitigation Blocks',    'SMC / ICT'),
+    ('fundamental.central-banks','Central Banks & Rates','Fundamental Analysis'),
+    ('fundamental.economic-calendar','Economic Calendar','Fundamental Analysis'),
+    ('fundamental.cot-report',   'COT Report',           'Fundamental Analysis'),
+    ('fundamental.dxy',          'DXY & Correlations',   'Fundamental Analysis'),
+    ('fundamental.market-sessions','Market Sessions',    'Fundamental Analysis'),
+    ('quant.position-sizing',    'Position Sizing',      'Quantitative'),
+    ('quant.risk-reward',        'Risk / Reward',        'Quantitative'),
+    ('quant.expectancy',         'Expectancy & Edge',    'Quantitative'),
+    ('quant.backtesting',        'Backtesting',          'Quantitative'),
+    ('quant.journaling',         'Trade Journaling',     'Quantitative'),
+    ('quant.monte-carlo',        'Monte Carlo Simulation','Quantitative'),
+]
+
+
+def _build_synapse_pdf(buyer_name: str, buyer_email: str, order_id: str) -> bytes:
+    """Generate a personalized, watermarked Synapse Library PDF."""
+    import html as _html
+    wm_name  = _html.escape(buyer_name)
+    wm_email = _html.escape(buyer_email)
+    wm_order = _html.escape(order_id)
+    wm_date  = datetime.now(timezone.utc).strftime('%Y-%m-%d')
+
+    watermark_css = f"""
+    @page {{
+        margin: 18mm 16mm 22mm 16mm;
+        @bottom-center {{
+            content: "LICENSED TO: {wm_name} · {wm_email} · Order {wm_order}";
+            font-size: 7pt;
+            color: rgba(120,120,120,0.6);
+            font-family: Inter, sans-serif;
+        }}
+    }}
+    """
+
+    # Build topic cards HTML
+    topic_html_parts = []
+    current_method = None
+    for slug, title, method in _SYNAPSE_TOPICS:
+        if method != current_method:
+            current_method = method
+            topic_html_parts.append(f'<div class="method-header">{_html.escape(method)}</div>')
+        topic_html_parts.append(f"""
+        <div class="topic-card">
+          <div class="topic-title">{_html.escape(title)}</div>
+          <div class="topic-slug">{_html.escape(slug)}</div>
+        </div>
+        """)
+    topics_html = '\n'.join(topic_html_parts)
+
+    html_content = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<style>
+  {watermark_css}
+  * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+  body {{
+    font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10pt;
+    color: #1a1a2e;
+    background: #fff;
+  }}
+  .cover {{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 240mm;
+    text-align: center;
+    page-break-after: always;
+  }}
+  .cover-brand {{ font-size: 13pt; letter-spacing: 0.15em; color: #888; text-transform: uppercase; margin-bottom: 12pt; }}
+  .cover-title {{ font-size: 32pt; font-weight: 800; color: #1a1a2e; line-height: 1.2; margin-bottom: 8pt; }}
+  .cover-sub {{ font-size: 13pt; color: #555; margin-bottom: 28pt; }}
+  .cover-wm {{ font-size: 9pt; color: #aaa; border-top: 1px solid #e8e8e8; padding-top: 10pt; width: 100%; }}
+  .cover-wm strong {{ color: #777; }}
+  .disclaimer {{
+    background: #fff8e7;
+    border-left: 3px solid #f0a500;
+    padding: 10pt 14pt;
+    margin: 16pt 0 0 0;
+    font-size: 8.5pt;
+    color: #5a4200;
+    page-break-after: always;
+  }}
+  .disclaimer h3 {{ font-size: 10pt; margin-bottom: 6pt; color: #7a5800; }}
+  .method-header {{
+    font-size: 14pt;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(90deg, #1a1a2e, #3b3b70);
+    padding: 8pt 12pt;
+    margin: 16pt 0 6pt 0;
+    border-radius: 4pt;
+  }}
+  .topic-card {{
+    border: 1px solid #e8e8ef;
+    border-radius: 6pt;
+    padding: 10pt 14pt;
+    margin-bottom: 6pt;
+    background: #fafafe;
+  }}
+  .topic-title {{ font-size: 11pt; font-weight: 600; color: #1a1a2e; }}
+  .topic-slug  {{ font-size: 8pt; color: #aaa; margin-top: 2pt; font-family: monospace; }}
+  .toc-title {{
+    font-size: 18pt; font-weight: 700; margin-bottom: 14pt; color: #1a1a2e;
+    border-bottom: 2px solid #1a1a2e; padding-bottom: 6pt;
+  }}
+  .footer-note {{
+    margin-top: 24pt; font-size: 8pt; color: #aaa; text-align: center;
+    border-top: 1px solid #eee; padding-top: 8pt;
+  }}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="cover-brand">Trader Acelerator</div>
+  <div class="cover-title">Synapse Library</div>
+  <div class="cover-sub">Complete Trading Knowledge Base</div>
+  <div class="cover-wm">
+    Licensed to: <strong>{wm_name}</strong> &lt;{wm_email}&gt;<br/>
+    Order: <strong>{wm_order}</strong> &nbsp;·&nbsp; Generated: {wm_date}<br/>
+    <em>This document is personalized. Sharing or redistribution is prohibited.</em>
+  </div>
+</div>
+
+<div class="disclaimer">
+  <h3>⚠ Educational Use Only</h3>
+  This document is provided exclusively for educational purposes. Nothing contained herein constitutes
+  financial advice, investment advice, trading advice, or any other type of advice. Trading carries
+  significant risk of financial loss. Past performance is not indicative of future results.
+  This document is licensed solely to the named individual above and may not be shared, reproduced,
+  or distributed in any form.
+</div>
+
+<div class="toc-title">Topics Index</div>
+{topics_html}
+
+<div class="footer-note">
+  © Trader Acelerator · For educational purposes only · Not financial advice
+</div>
+
+</body>
+</html>"""
+
+    from weasyprint import HTML as WP_HTML
+    pdf_bytes = WP_HTML(string=html_content).write_pdf()
+    return pdf_bytes
+
+
+@app.route('/admin/synapse-pdf/issue', methods=['POST'])
+@login_required
+def admin_issue_synapse_pdf():
+    """Admin endpoint to issue a download token for a specific user."""
+    if not current_user.is_admin:
+        abort(403)
+    user_id  = request.form.get('user_id', '').strip()
+    order_id = request.form.get('order_id', '').strip() or 'MANUAL-001'
+    if not user_id:
+        abort(400)
+    user = db.session.get(User, int(user_id))
+    if not user:
+        abort(404)
+
+    token = secrets.token_hex(24)   # 48-char hex
+    expires = datetime.now(timezone.utc) + timedelta(hours=24)
+    dl_token = SynapseDownloadToken(
+        token=token, user_id=user.id, order_id=order_id,
+        expires_at=expires, max_dl=3
+    )
+    db.session.add(dl_token)
+    db.session.commit()
+
+    download_url = url_for('synapse_pdf_download', token=token, _external=True)
+    # Return a simple redirect back to admin with the URL in a flash-style param
+    return redirect(url_for('admin', pdf_issued=download_url))
+
+
+@app.route('/synapse-pdf/<token>')
+def synapse_pdf_download(token):
+    """Public one-time download route for the personalized Synapse PDF."""
+    dl = SynapseDownloadToken.query.filter_by(token=token).first_or_404()
+
+    if not dl.is_valid:
+        return render_template('pdf_expired.html'), 410
+
+    user = db.session.get(User, dl.user_id)
+    if not user:
+        abort(404)
+
+    try:
+        pdf_bytes = _build_synapse_pdf(
+            buyer_name=user.username,
+            buyer_email=user.email,
+            order_id=dl.order_id
+        )
+    except Exception as e:
+        app.logger.error('PDF generation error: %s', e)
+        abort(500)
+
+    dl.downloads += 1
+    db.session.commit()
+
+    resp = make_response(pdf_bytes)
+    resp.headers['Content-Type'] = 'application/pdf'
+    resp.headers['Content-Disposition'] = (
+        f'attachment; filename="synapse-library-{dl.order_id}.pdf"'
+    )
+    return resp
 
 
 # ──────────────────────────────────────────────────────────────────────────
