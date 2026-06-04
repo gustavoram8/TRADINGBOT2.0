@@ -2370,6 +2370,59 @@
     }
     @keyframes synHintPulse { 0%,100%{opacity:.4;} 50%{opacity:.9;} }
 
+    /* ══ Progress pill (cluster view) ══
+       Discreet bottom-left counter that expands into a checklist of
+       the current methodology's studied topics. */
+    .syn-prog-pill {
+      position: absolute; left: 18px; bottom: 22px; z-index: 6;
+      display: none; /* shown only in cluster mode via JS */
+      flex-direction: column; align-items: flex-start; gap: 0;
+    }
+    .syn-prog-pill-btn {
+      display: flex; align-items: center; gap: 7px;
+      background: rgba(0,0,0,.45); border: 1px solid rgba(255,255,255,.12);
+      border-radius: 20px; padding: 5px 13px 5px 9px;
+      font-size: 11.5px; letter-spacing: .04em; color: rgba(255,255,255,.65);
+      cursor: pointer; transition: background .18s, border-color .18s; white-space: nowrap;
+    }
+    .syn-prog-pill-btn:hover { background: rgba(0,0,0,.6); border-color: rgba(255,255,255,.25); }
+    .syn-prog-pill-btn .spp-check { font-size: 12px; color: var(--syn-accent,#5b8ef0); }
+    .syn-prog-pill-btn .spp-caret {
+      font-size: 9px; opacity: .5; transition: transform .2s; margin-left: 2px;
+    }
+    .syn-prog-pill.open .spp-caret { transform: rotate(180deg); }
+    .syn-prog-pill-list {
+      background: rgba(8,12,18,.88); border: 1px solid rgba(255,255,255,.10);
+      border-radius: 10px; padding: 8px 0; margin-bottom: 6px;
+      min-width: 210px; max-height: 280px; overflow-y: auto;
+      opacity: 0; pointer-events: none; transform: translateY(6px);
+      transition: opacity .18s, transform .18s;
+    }
+    .syn-prog-pill.open .syn-prog-pill-list { opacity: 1; pointer-events: auto; transform: translateY(0); }
+    .syn-prog-pill-list-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 5px 14px; font-size: 11.5px; color: rgba(255,255,255,.55);
+      transition: color .14s;
+    }
+    .syn-prog-pill-list-item.done { color: rgba(255,255,255,.85); }
+    .syn-prog-pill-list-item .spi-dot {
+      width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+      background: rgba(255,255,255,.18); transition: background .14s;
+    }
+    .syn-prog-pill-list-item.done .spi-dot { background: var(--syn-accent,#5b8ef0); }
+    /* light mode overrides */
+    body.light .syn-prog-pill-btn {
+      background: rgba(255,255,255,.72); border-color: rgba(20,20,16,.14);
+      color: rgba(20,20,16,.65);
+    }
+    body.light .syn-prog-pill-btn:hover { background: rgba(255,255,255,.9); }
+    body.light .syn-prog-pill-list {
+      background: rgba(250,249,245,.96); border-color: rgba(20,20,16,.12);
+    }
+    body.light .syn-prog-pill-list-item { color: rgba(20,20,16,.5); }
+    body.light .syn-prog-pill-list-item.done { color: rgba(20,20,16,.85); }
+    body.light .syn-prog-pill-list-item .spi-dot { background: rgba(20,20,16,.15); }
+
     /* ══ Editorial "book" dossier (flipbook) ══
        Aesthetic reference: a premium financial research note (The Economist /
        Bloomberg Businessweek) — typographic hierarchy, a single accent rule,
@@ -3903,6 +3956,16 @@
           <svg class="syn-map-svg" id="syn-map-svg" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet"></svg>
         </div>
         <div class="syn-lib-hint" id="syn-lib-hint">Tap a methodology cluster to explore it</div>
+
+        <!-- progress pill — shown when a methodology cluster is open -->
+        <div class="syn-prog-pill" id="syn-prog-pill">
+          <div class="syn-prog-pill-list" id="syn-prog-pill-list"></div>
+          <button class="syn-prog-pill-btn" id="syn-prog-pill-btn" type="button">
+            <span class="spp-check">✓</span>
+            <span id="syn-prog-pill-label">0 studied</span>
+            <span class="spp-caret">▲</span>
+          </button>
+        </div>
       </div>
 
       <!-- classified dossier -->
@@ -9979,49 +10042,85 @@
         return { load, toggle, isChecked, checkedSlugs, catalog: SYNAPSE_TOPICS, ensureLoaded: () => loaded ? Promise.resolve(checked) : load() };
       })();
 
+      // Map Synapse methodologies → Quiz methodologies (best-effort)
+      const SYNAPSE_TO_QUIZ_METHOD = {
+        price:       'patterns',
+        technical:   'ict',
+        smc:         'smc',
+        fundamental: null,   // no quiz bank yet
+        quant:       null,   // no quiz bank yet
+      };
+      // Map Synapse topic labels → Quiz topic labels (exact matches where they exist)
+      const SYNAPSE_TO_QUIZ_TOPIC = {
+        'Order Blocks':                   'Order Blocks',
+        'Fair Value Gaps':                'Fair Value Gaps',
+        'Market Structure (BOS/ChoCH)':   'Market Structure',
+        'Liquidity':                      'Liquidity',
+        'Kill Zones':                     'Kill Zones',
+        'Premium / Discount':             'PD Arrays',
+        'Candlestick Reading':            'Candlestick Patterns',
+        'Chart Patterns':                 'Chart Patterns',
+        'Harmonic Completion':            'Harmonic Patterns',
+      };
+
       async function renderSynapsePicker() {
         const grid  = document.getElementById('quiz-synapse-method-grid');
         const empty = document.getElementById('quiz-synapse-empty');
         if (!grid) return;
 
         await SynapseProgress.load();
-        // Group the checked topics by methodology, but only surface a topic that
-        // actually has a quiz today: its methodology must exist in METHOD_LABELS
-        // AND its label must exist in that methodology's TOPIC_MAP. (The Synapse
-        // library covers more methodologies/topics than the quiz does for now;
-        // this guard prevents dead clicks until the quiz banks are filled in.)
-        const QUIZABLE = new Set(Object.keys(METHOD_LABELS));
-        const byMethod = {};
-        SynapseProgress.checkedSlugs().forEach(slug => {
-          const meta = SYNAPSE_SLUG_META[slug];
-          if (!meta || !QUIZABLE.has(meta.method)) return;
-          if (!(TOPIC_MAP[meta.method] || []).includes(meta.label)) return;
-          (byMethod[meta.method] = byMethod[meta.method] || []).push({ slug, label: meta.label });
-        });
+        const slugs = SynapseProgress.checkedSlugs();
 
-        const methods = Object.keys(byMethod);
-        if (methods.length === 0) {
+        if (slugs.length === 0) {
           grid.style.display = 'none';
           if (empty) empty.style.display = '';
           return;
         }
+
+        // Group all studied topics by their Synapse methodology.
+        // Each topic is classified as quizable or "coming soon".
+        const byMethod = {};
+        slugs.forEach(slug => {
+          const meta = SYNAPSE_SLUG_META[slug];
+          if (!meta) return;
+          const qm = SYNAPSE_TO_QUIZ_METHOD[meta.method];
+          const qt = SYNAPSE_TO_QUIZ_TOPIC[meta.label];
+          const hasQuiz = !!(qm && qt && METHOD_LABELS[qm] && (TOPIC_MAP[qm]||[]).includes(qt));
+          const entry = { slug, label: meta.label, qm, qt, hasQuiz };
+          (byMethod[meta.method] = byMethod[meta.method] || []).push(entry);
+        });
+
         if (empty) empty.style.display = 'none';
         grid.style.display = '';
-        // Each checked topic is its own clickable card → jumps straight to that
-        // methodology's topic in the quiz.
-        grid.innerHTML = methods.map(m => {
-          const label = METHOD_LABELS[m] || m;
-          const cards = byMethod[m].map(t =>
-            `<div class="quiz-topic-card" data-m="${m}" data-topic="${t.label}">
-              <span class="tc-name">${trTopic(t.label)}</span>
-            </div>`).join('');
-          return `<div style="grid-column:1/-1;margin:6px 0 2px;font-size:12px;letter-spacing:.04em;
-                       text-transform:uppercase;opacity:.7;">${label}</div>${cards}`;
+
+        // Method label map for Synapse methodologies (displayed in the picker)
+        const SYN_METHOD_NAMES = {
+          price: 'Price Action', technical: 'Technical Analysis',
+          smc: 'SMC / ICT', fundamental: 'Fundamental Analysis', quant: 'Quantitative',
+        };
+
+        const methodOrder = ['price','technical','smc','fundamental','quant'];
+        grid.innerHTML = methodOrder.filter(m => byMethod[m]).map(m => {
+          const heading = SYN_METHOD_NAMES[m] || m;
+          const cards = byMethod[m].map(t => {
+            if (t.hasQuiz) {
+              return `<div class="quiz-topic-card" data-qm="${t.qm}" data-qt="${t.qt}">
+                <span class="tc-name">${t.label}</span>
+              </div>`;
+            }
+            return `<div class="quiz-topic-card" style="opacity:.45;cursor:default;" title="Quiz questions for this topic are coming soon">
+              <span class="tc-name">${t.label}</span>
+              <span style="font-size:9.5px;letter-spacing:.05em;opacity:.75;margin-left:4px;">soon</span>
+            </div>`;
+          }).join('');
+          return `<div style="grid-column:1/-1;margin:8px 0 3px;font-size:11px;letter-spacing:.06em;
+                       text-transform:uppercase;opacity:.55;">${heading}</div>${cards}`;
         }).join('');
-        grid.querySelectorAll('.quiz-topic-card').forEach(card => {
+
+        grid.querySelectorAll('.quiz-topic-card[data-qm]').forEach(card => {
           card.addEventListener('click', () => {
-            openMethod(card.dataset.m);
-            openTopic(card.dataset.topic);
+            openMethod(card.dataset.qm);
+            openTopic(card.dataset.qt);
           });
         });
       }
@@ -11461,6 +11560,7 @@
     function renderGalaxy() {   // (level 1 — kept name to avoid touching call sites)
       mode = 'map'; activeMethod = null;
       clearMap();
+      hideProgressPill();
       titleEl.textContent = L().title;
       backBtn.hidden = true;
       hintEl.textContent = L().hintG; hintEl.style.display = '';
@@ -11568,6 +11668,39 @@
         g.addEventListener('click', () => openTopic(t.slug));
         svg.appendChild(g);
       });
+
+      // ── progress pill ──
+      renderProgressPill(m);
+    }
+
+    // Progress pill: discreet bottom-left counter + expandable checklist
+    const pillEl   = document.getElementById('syn-prog-pill');
+    const pillBtn  = document.getElementById('syn-prog-pill-btn');
+    const pillLbl  = document.getElementById('syn-prog-pill-label');
+    const pillList = document.getElementById('syn-prog-pill-list');
+
+    function renderProgressPill(m) {
+      if (!pillEl || !m) return;
+      const total   = m.topics.length;
+      const done    = m.topics.filter(t => checked(t.slug)).length;
+      pillLbl.textContent = done + ' / ' + total + ' studied';
+      pillEl.style.display = 'flex';
+      pillEl.classList.remove('open');
+
+      // build list items
+      pillList.innerHTML = m.topics.map(t => {
+        const ck = checked(t.slug);
+        return '<div class="syn-prog-pill-list-item' + (ck ? ' done' : '') + '">' +
+               '<span class="spi-dot"></span>' + t.label + '</div>';
+      }).join('');
+    }
+
+    function hideProgressPill() {
+      if (pillEl) { pillEl.style.display = 'none'; pillEl.classList.remove('open'); }
+    }
+
+    if (pillBtn) {
+      pillBtn.addEventListener('click', () => { pillEl.classList.toggle('open'); });
     }
 
     // ══ Dossier "book" — editorial flipbook ══
