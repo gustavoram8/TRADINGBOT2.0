@@ -340,6 +340,253 @@
       lbl(X, 'X', -8) + lbl(A, 'A', 16) + lbl(B, 'B', -8) + lbl(Cp, 'C', 16) + lbl(Dp, 'D', -10));
   };
 
+  // ══════════════════════════════════════════════════════════════════════
+  // METHODOLOGY 2 — TECHNICAL ANALYSIS
+  // ══════════════════════════════════════════════════════════════════════
+
+  C['technical.moving-averages'] = {
+    lead: 'A moving average smooths price into a single flowing line, filtering noise to reveal the underlying trend — and acting as dynamic support and resistance as price travels.',
+    body: 'Different calculations weight the data differently: the SMA treats all periods equally, the EMA favours recent price, and VWAP weights by volume to mark the session\'s true institutional cost basis.',
+    mechanics: [
+      { term: 'SMA vs EMA', text: 'SMA reacts slower but cleaner; EMA hugs recent price and turns faster. Common periods: 20, 50, 200.' },
+      { term: 'The 200-day', text: 'The 200 SMA is watched by virtually every large fund — breaks across it on volume are genuine structural events.' },
+      { term: 'VWAP', text: 'Volume-weighted, session-reset — the real intraday institutional benchmark; price above = bullish bias, below = bearish.' },
+      { term: 'Dynamic S/R', text: 'In trends, price repeatedly bounces off the 20 EMA (support up-trends, resistance down-trends).' },
+    ],
+    mistake: 'Every MA lags by definition — it reacts to price, it never predicts it. Treating a cross as a forecast leads to chronically late entries. And the "right" period is contextual: the 20 EMA is great support in a trend but meaningless in a range.',
+    terms: ['SMA', 'EMA', 'VWAP', '200-day', 'Dynamic S/R', 'Lag'],
+    figcap: 'Price trends upward while repeatedly using the moving average as dynamic support on each pullback.',
+  };
+  D['technical.moving-averages'] = () => {
+    const price = 'M40 180 L80 150 L110 168 L150 120 L185 140 L225 92 L265 110 L305 64 L345 84 L372 50';
+    const ma = 'M40 188 L120 162 L200 128 L280 96 L372 64';
+    return svg(frame() + path(ma, 'df-line-accent') + path(price, 'df-line') +
+      txt(330, 60, 'MA', 'df-tag-accent', 'start') +
+      dot(110, 168, 2.5) + dot(185, 140, 2.5) + dot(265, 110, 2.5) +
+      txt(185, 158, 'bounce', 'df-tag', 'middle'));
+  };
+
+  C['technical.rsi'] = {
+    lead: 'The RSI is a 0–100 momentum oscillator measuring the speed and size of recent price changes — most powerful not as a crude overbought/oversold gauge but as a reader of momentum, divergence, and trend regime.',
+    body: 'Wilder set 70 as overbought and 30 as oversold, but in real trends those thresholds mislead constantly. The deeper signal is the range RSI lives in.',
+    mechanics: [
+      { term: 'Formula', text: 'RSI = 100 − 100/(1+RS), where RS = average gain ÷ average loss over the lookback (default 14).' },
+      { term: 'Trend regime', text: 'Uptrends tend to hold RSI between 40–80, downtrends 20–60 — the range itself tells you the regime (Cardwell).' },
+      { term: 'Divergence', text: 'Price makes a new extreme but RSI does not — a warning that momentum is fading beneath the move.' },
+      { term: 'Centerline (50)', text: 'Crossing above 50 = positive momentum shift; below 50 = negative — a clean trend filter.' },
+    ],
+    mistake: 'The 70/30 levels only work in ranges. In a strong trend, RSI can sit above 70 for weeks — shorting every "overbought" reading in an uptrend is the classic way to get run over. Read the regime before the level.',
+    terms: ['Momentum oscillator', 'Overbought / oversold', 'Divergence', 'Centerline', 'Trend regime', 'Lookback'],
+    figcap: 'The RSI oscillator with the 70/30 bands; it can ride along overbought through a strong trend.',
+  };
+  D['technical.rsi'] = () => {
+    const top = 40, bot = 196, y = v => bot - (v / 100) * (bot - top);
+    const curve = 'M40 ' + y(45) + ' C90 ' + y(78) + ' 140 ' + y(82) + ' 190 ' + y(72) +
+                  ' C240 ' + y(60) + ' 290 ' + y(30) + ' 372 ' + y(38);
+    return svg(line(34, top, 34, bot, 'df-axis') + line(34, bot, 384, bot, 'df-axis') +
+      line(34, y(70), 384, y(70), 'df-dash') + txt(384, y(70) - 4, '70', 'df-tag', 'end') +
+      line(34, y(30), 384, y(30), 'df-dash') + txt(384, y(30) - 4, '30', 'df-tag', 'end') +
+      line(34, y(50), 384, y(50), 'df-grid') +
+      path(curve, 'df-line-accent') + txt(40, 30, 'RSI', 'df-tag-accent', 'start'));
+  };
+
+  C['technical.macd'] = {
+    lead: 'MACD blends trend and momentum from two EMAs into three parts — the MACD line, its signal line, and a histogram — revealing direction, strength, and turning points at once.',
+    body: 'Built entirely from lagging averages, it stays one of the most versatile indicators because the histogram exposes momentum shifts before the lines themselves cross.',
+    mechanics: [
+      { term: 'MACD line', text: '12-EMA minus 26-EMA. Positive = bullish momentum, negative = bearish; its slope matters as much as its level.' },
+      { term: 'Signal line', text: '9-EMA of the MACD line. A cross above = bullish trigger, below = bearish.' },
+      { term: 'Histogram', text: 'MACD minus signal. Growing bars = momentum building; shrinking bars warn of an upcoming cross.' },
+      { term: 'Zero line', text: 'Crossing zero means the 12-EMA crossed the 26-EMA — slower but structurally more significant than a signal cross.' },
+    ],
+    mistake: 'In sideways markets MACD fires endless signal-line crosses that whipsaw you. The histogram is the underused tip: shrinking bars while price still rises often precede the cross by several candles — earlier, lower-risk warning. Always filter with trend context.',
+    terms: ['MACD line', 'Signal line', 'Histogram', 'Zero line', 'Divergence', 'Crossover'],
+    figcap: 'MACD and signal lines crossing above a histogram whose bars flip from negative to positive.',
+  };
+  D['technical.macd'] = () => {
+    const mid = 130;
+    let hist = '';
+    const hv = [-18,-26,-22,-10,4,16,24,18,8];
+    hv.forEach((v, i) => { const x = 50 + i * 36; const cls = v >= 0 ? 'df-up' : 'df-down'; hist += rect(x - 8, v >= 0 ? mid - v : mid, 16, Math.abs(v), cls); });
+    const macd = 'M40 168 C110 150 150 120 200 116 C250 112 320 96 372 86';
+    const sig  = 'M40 158 C110 152 160 134 210 126 C260 118 330 104 372 98';
+    return svg(line(34, mid, 384, mid, 'df-axis') + hist +
+      path(sig, 'df-line') + path(macd, 'df-line-accent') +
+      dot(205, 120, 3) + txt(212, 112, 'cross', 'df-tag-accent', 'start'));
+  };
+
+  C['technical.bollinger'] = {
+    lead: 'Bollinger Bands wrap a 20-period average in two bands set two standard deviations away — a volatility envelope that expands when markets move and contracts when they rest.',
+    body: 'They are first a volatility tool, not a reversal tool: the most actionable pattern is the squeeze, where contraction precedes expansion.',
+    mechanics: [
+      { term: 'Construction', text: 'Upper/lower = 20 SMA ± 2σ; ~95% of recent price sits inside, so band touches are statistically unusual.' },
+      { term: 'Squeeze', text: 'Bands narrowing to a multi-month low signal coiled energy and an imminent breakout — direction not yet decided.' },
+      { term: 'Walking the bands', text: 'In strong trends price rides the upper (or lower) band for long stretches — that\'s continuation, not reversal.' },
+      { term: '%B and Bandwidth', text: '%B locates price within the bands; Bandwidth quantifies the squeeze — its lowest readings precede the biggest moves.' },
+    ],
+    mistake: 'Fading every band touch expecting mean reversion is the cardinal error — in a trend, touching the band is confirmation, not a turn. Assess trend context first. The middle band (20 SMA) is often better dynamic support than the outer bands.',
+    terms: ['Standard deviation', 'Squeeze', '%B', 'Bandwidth', 'Walking the bands', 'Mean reversion'],
+    figcap: 'Bands contract into a squeeze, then expand violently as price breaks out and walks the upper band.',
+  };
+  D['technical.bollinger'] = () => {
+    const upper = 'M40 70 C110 84 150 104 200 106 C250 108 320 70 372 44';
+    const lower = 'M40 150 C110 138 150 116 200 114 C250 112 320 150 372 176';
+    const mid   = 'M40 110 C110 111 150 110 200 110 C250 110 320 110 372 110';
+    const price = 'M40 120 L70 100 L100 128 L130 112 L160 116 L195 108 L225 104 L255 80 L285 58 L320 64 L350 48';
+    return svg(frame() + path(upper, 'df-dash-accent') + path(lower, 'df-dash-accent') + path(mid, 'df-line') +
+      path(price, 'df-line-accent') +
+      txt(200, 128, 'squeeze', 'df-tag', 'middle') + arrow(285, 120, 320, 70, 'df-line-accent'));
+  };
+
+  C['technical.volume'] = {
+    lead: 'Volume is the most direct measure of participation and conviction. Volume Profile sharpens it by distributing trades across price levels instead of time, exposing where the real auction happened.',
+    body: 'It reveals the institutional footprint candles alone cannot: institutions must transact in size, leaving detectable signatures at specific prices.',
+    mechanics: [
+      { term: 'Point of Control', text: 'The price with the most traded volume — a magnet price tends to return to; the "fairest" agreed price.' },
+      { term: 'Value Area', text: 'The range holding 70% of volume (VAH–VAL); price outside it is "unfair" and tends to revert.' },
+      { term: 'High/low volume nodes', text: 'Price stalls at HVNs (thick volume) and rips through LVNs (thin volume) with little friction.' },
+      { term: 'Volume in trends', text: 'Healthy trends show higher volume on with-trend bars; a climax bar (huge volume, little progress) warns of exhaustion.' },
+    ],
+    mistake: 'Many traders ignore Volume Profile entirely and miss the institutional footprint. And the POC is not an automatic turning point — in strong trends it gets broken through; context decides whether it holds or breaks.',
+    terms: ['POC', 'Value Area', 'VAH / VAL', 'HVN / LVN', 'Volume climax', 'Volume Profile'],
+    figcap: 'Rising price on healthy volume, then a climax bar — outsized volume with little progress — warning of exhaustion.',
+  };
+  D['technical.volume'] = () => {
+    // [x, bodyTop, bodyBot, dir, volume]
+    const data = [[62,128,150,'up',26],[96,118,142,'up',34],[130,128,148,'down',28],
+      [164,104,130,'up',40],[198,86,118,'up',48],[232,72,98,'up',38],[266,60,88,'up',30],[300,54,84,'down',64]];
+    const divider = 158, volBase = 210;
+    const candles = data.map(d => bar(d[0], d[1], d[2], d[3], 12)).join('');
+    const vols = data.map(d => rect(d[0] - 7, volBase - d[4], 14, d[4], d[3] === 'up' ? 'df-up' : 'df-down')).join('');
+    return svg(line(34, divider, 384, divider, 'df-axis') + line(34, divider, 34, 30, 'df-axis') +
+      candles + vols +
+      txt(300, volBase - 70, 'climax', 'df-tag-down', 'middle') +
+      txt(40, 174, 'volume', 'df-tag', 'start'));
+  };
+
+  C['technical.ma-cross'] = {
+    type: 't',
+    lead: 'An MA crossover fires when a faster average crosses a slower one: the golden cross (fast above slow) hints uptrend, the death cross (fast below slow) hints downtrend.',
+    body: 'It is among the simplest signals in technical analysis — and among the most overused, because it always confirms the move after it has begun.',
+    mechanics: [
+      { term: 'Golden / death cross', text: 'Classic = 50 SMA crossing the 200 SMA; faster swing versions use 20/50 EMA, intraday 8/21 EMA.' },
+      { term: 'Lag', text: 'The cross prints after the trend starts — by the time the slow MA confirms, much of the first move is gone.' },
+      { term: 'Whipsaws', text: 'In ranges the two MAs weave back and forth, producing cross after cross that cancel each other out.' },
+      { term: 'Filters', text: 'Require ADX > 25, the long MA sloping with the cross, or wait for a pullback to the fast MA before entering.' },
+    ],
+    mistake: 'The cross is mostly a lagging confirmation of structure that price showed weeks earlier — structure traders are usually in before it. Treat it as confirmation, not prediction, and never trade it in a known-ranging market.',
+    setup: {
+      cond: 'ADX > 25 confirming a trend; long-term MA sloping with the cross; price the right side of the long MA.',
+      entry: 'On the candle after the confirmed cross, or the first pullback to the faster MA.',
+      stop: 'Below the slower MA (longs) / above it (shorts), or beyond the recent swing.',
+      target: 'Next key level; trail the faster MA as the trend develops.',
+    },
+    terms: ['Golden cross', 'Death cross', 'Lag', 'Whipsaw', 'ADX filter', 'Pullback entry'],
+    figcap: 'A golden cross: the fast moving average crosses up through the slow one, marking the trend trigger.',
+  };
+  D['technical.ma-cross'] = () => {
+    const fast = 'M40 150 C110 150 150 140 200 120 C250 100 320 70 372 48';
+    const slow = 'M40 120 C120 122 180 124 240 124 C300 124 350 116 372 108';
+    return svg(frame() + path(slow, 'df-line') + path(fast, 'df-line-accent') +
+      dot(232, 124, 4) + txt(232, 146, 'golden cross', 'df-tag-accent', 'middle') +
+      txt(360, 44, 'fast', 'df-tag-accent', 'end') + txt(372, 104, 'slow', 'df-tag', 'end'));
+  };
+
+  C['technical.rsi-divergence'] = {
+    type: 't',
+    lead: 'RSI divergence is when price and momentum disagree — price prints a new extreme but RSI does not — signalling the move is running on fumes.',
+    body: 'Regular divergence warns of reversal; hidden divergence, the underused cousin, signals trend continuation on pullbacks.',
+    mechanics: [
+      { term: 'Regular bearish', text: 'Price higher high, RSI lower high — buying pressure fading near a top.' },
+      { term: 'Regular bullish', text: 'Price lower low, RSI higher low — selling pressure fading near a bottom.' },
+      { term: 'Hidden divergence', text: 'In an uptrend, price higher low while RSI lower low = continuation; the best in-trend entries with great R:R.' },
+      { term: 'Confirmation', text: 'Never trade divergence alone — require a structure break or reversal candle at the divergence point.' },
+    ],
+    mistake: 'In strong trends, regular bearish divergence can appear repeatedly while price keeps climbing — shorting each one bleeds you out. Divergence on the daily carries far more weight than on the 15-minute, where noise dominates.',
+    setup: {
+      cond: 'Clear divergence at a significant level; trend context aligned (regular = reversal, hidden = continuation).',
+      entry: 'On a confirmation candle or a short-term structure break after the divergence forms.',
+      stop: 'Beyond the swing extreme that created the divergence.',
+      target: 'Nearest key level in the new direction; first target at the divergence\'s origin.',
+    },
+    terms: ['Regular divergence', 'Hidden divergence', 'Momentum', 'Confirmation candle', 'Trend context'],
+    figcap: 'Price makes a higher high while RSI makes a lower high — bearish regular divergence warning of a top.',
+  };
+  D['technical.rsi-divergence'] = () => {
+    // price panel top, rsi panel bottom
+    const pPrice = 'M40 120 L80 90 L120 110 L170 64 L210 96 L250 70';
+    const rTop = 60, rBot = 150, ry = v => rBot - (v / 100) * (rBot - rTop) * 0.9;
+    const rsiCurve = 'M40 ' + (rBot) + ' L80 ' + ry(82) + ' L120 ' + ry(55) + ' L170 ' + ry(72) + ' L210 ' + ry(50) + ' L250 ' + ry(60);
+    return svg(
+      // price section
+      path(pPrice, 'df-line-accent') +
+      dot(80, 90, 3) + dot(170, 64, 3) + line(80, 88, 170, 62, 'df-dash') + txt(125, 52, 'higher high', 'df-tag', 'middle') +
+      line(40, 158, 384, 158, 'df-axis') +
+      // rsi section
+      path(rsiCurve, 'df-line') + txt(40, 176, 'RSI', 'df-tag', 'start') +
+      dot(80, ry(82), 3) + dot(170, ry(72), 3) + line(80, ry(82), 170, ry(72), 'df-dash-accent') +
+      txt(125, ry(90), 'lower high', 'df-tag-accent', 'middle') +
+      arrow(250, 78, 280, 120, 'df-line-down')
+    );
+  };
+
+  C['technical.macd-cross'] = {
+    type: 't',
+    lead: 'A MACD cross fires when the MACD line crosses its signal line (frequent, early) or the zero line (rarer, more significant) — momentum entries that need context to be worth taking.',
+    mechanics: [
+      { term: 'Signal cross', text: 'MACD above signal = bullish; most reliable when it happens below zero recovering from oversold momentum.' },
+      { term: 'Zero cross', text: 'MACD through zero confirms the 12/26 EMA cross — slower, more confirmed; better as trend confirmation than trigger.' },
+      { term: 'Histogram lead', text: 'Shrinking histogram bars precede the signal cross — the earliest (if noisiest) actionable hint.' },
+      { term: 'Reliability', text: 'Zero cross > signal cross in trend context > histogram reversal (earliest but most prone to noise).' },
+    ],
+    mistake: 'Crosses near the zero line, with no momentum, are pure noise. In ranges they fire continuously with no follow-through. The best crosses happen at MACD extremes beginning to reverse — pair with RSI moving through 50 for confirmation.',
+    setup: {
+      cond: 'Clear higher-timeframe trend; signal cross after MACD was at an extreme; ideally RSI confirming and price at a key level.',
+      entry: 'On the candle after the confirmed cross, or on histogram-slope reversal for an earlier fill.',
+      stop: 'Below the recent swing low (longs) / above the swing high (shorts).',
+      target: 'Next structural level; trail as the trend develops.',
+    },
+    terms: ['Signal cross', 'Zero cross', 'Histogram', 'MACD extreme', 'Trend filter', 'Whipsaw'],
+    figcap: 'The MACD line crossing up through the signal line as the histogram flips from red to green.',
+  };
+  D['technical.macd-cross'] = () => {
+    const mid = 140; let hist = '';
+    const hv = [-22,-26,-20,-8,6,18,26];
+    hv.forEach((v, i) => { const x = 60 + i * 44; hist += rect(x - 9, v >= 0 ? mid - v : mid, 18, Math.abs(v), v >= 0 ? 'df-up' : 'df-down'); });
+    const macd = 'M40 176 C120 156 170 132 220 124 C280 114 340 96 372 86';
+    const sig  = 'M40 162 C120 154 180 140 240 132 C300 124 350 108 372 100';
+    return svg(line(34, mid, 384, mid, 'df-axis') + hist + path(sig, 'df-line') + path(macd, 'df-line-accent') +
+      dot(214, 126, 3.5) + txt(222, 116, 'cross', 'df-tag-accent', 'start'));
+  };
+
+  C['technical.squeeze-break'] = {
+    type: 't',
+    lead: 'The Bollinger squeeze break trades the statistical truth that very low volatility precedes explosive moves: when the bands compress to a multi-month low, energy is coiling for a breakout.',
+    mechanics: [
+      { term: 'Squeeze ID', text: 'Bandwidth at a 6-month low — or, in the TTM Squeeze, Bollinger Bands contracting inside the Keltner Channels.' },
+      { term: 'No built-in direction', text: 'The squeeze says a move is coming, not which way; the break + momentum (MACD histogram, %B) chooses the side.' },
+      { term: 'Entry', text: 'First candle closing clearly beyond the squeeze range, ideally with %B breaching 1.0 (up) or 0.0 (down).' },
+      { term: 'Volume', text: 'A breakout on weak volume often fails back inside the range — volume expansion is the key filter.' },
+    ],
+    mistake: 'Entering the moment Bandwidth hits a low — before any actual break — leaves you stuck as the squeeze drags on for more bars. And a squeeze right before scheduled news is often just positioning that reverts after the release.',
+    setup: {
+      cond: 'Bandwidth at a multi-month low (or BB inside Keltner); a clear directional break with momentum confirmation.',
+      entry: 'On the close of the first candle breaking the squeeze range; %B > 1.0 (long) / < 0.0 (short).',
+      stop: 'Below the squeeze range low (long) / above its high (short), or beyond the middle band.',
+      target: '1–2× the squeeze-range height; trail with the 20 SMA.',
+    },
+    terms: ['Squeeze', 'Bandwidth', 'TTM Squeeze', 'Keltner Channels', '%B', 'Volatility expansion'],
+    figcap: 'Bands pinch into a tight squeeze, then expand sharply as price breaks out with momentum.',
+  };
+  D['technical.squeeze-break'] = () => {
+    const upper = 'M40 80 C120 96 170 108 210 108 C250 108 300 80 372 40';
+    const lower = 'M40 140 C120 124 170 112 210 112 C250 112 300 140 372 180';
+    const price = 'M40 112 L70 104 L100 116 L130 108 L165 112 L200 110 L235 96 L270 72 L305 60 L345 44';
+    return svg(frame() + path(upper, 'df-dash-accent') + path(lower, 'df-dash-accent') +
+      rect(190, 106, 40, 12, 'df-zone') + txt(210, 132, 'squeeze', 'df-tag', 'middle') +
+      path(price, 'df-line-accent') + arrow(270, 110, 305, 64, 'df-line-accent'));
+  };
+
   // ── publish (merge so later methodology files/edits can extend) ──────────
   window.SynapseContent = Object.assign(window.SynapseContent || {}, C);
   window.SynapseDiagrams = Object.assign(window.SynapseDiagrams || {}, D);
