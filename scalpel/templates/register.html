@@ -32,9 +32,12 @@
       <div class="alert alert-error" data-i18n="reg.errUser">That username is already taken.</div>
     {% elif error == 'email_taken' %}
       <div class="alert alert-error" data-i18n="reg.errEmail">That email is already registered.</div>
+    {% elif error == 'device_banned' %}
+      <div class="alert alert-error" data-i18n="reg.errDeviceBanned">Account creation is not available from this device. Contact support if you believe this is a mistake.</div>
     {% endif %}
 
-    <form method="POST" action="/register">
+    <form method="POST" action="/register" id="reg-form">
+      <input type="hidden" name="_fp" id="reg-fp" value="" />
       <div class="field">
         <label for="username" data-i18n="reg.username">Username</label>
         <input type="text" id="username" name="username" value="{{ username or '' }}" autocomplete="username" minlength="3" required />
@@ -68,5 +71,43 @@
   <div class="legal" data-i18n="common.legal">For educational purposes only · Not financial advice</div>
 
   <script src="/static/auth.js"></script>
+  <script>
+    // Collect browser fingerprint and embed it in the form before submit.
+    (function () {
+      function fpHash(cb) {
+        var parts = [
+          navigator.userAgent || '',
+          navigator.language || '',
+          screen.colorDepth || '',
+          screen.width + 'x' + screen.height,
+          new Date().getTimezoneOffset(),
+          navigator.hardwareConcurrency || '',
+          navigator.deviceMemory || '',
+          navigator.platform || ''
+        ];
+        var raw = parts.join('|');
+        if (window.crypto && crypto.subtle) {
+          var enc = new TextEncoder().encode(raw);
+          crypto.subtle.digest('SHA-256', enc).then(function (buf) {
+            var hex = Array.from(new Uint8Array(buf)).map(function (b) {
+              return b.toString(16).padStart(2, '0');
+            }).join('');
+            cb(hex);
+          }).catch(function () { cb(''); });
+        } else {
+          // Fallback: simple hash for older browsers
+          var h = 0;
+          for (var i = 0; i < raw.length; i++) {
+            h = (Math.imul(31, h) + raw.charCodeAt(i)) | 0;
+          }
+          cb(Math.abs(h).toString(16).padStart(8, '0'));
+        }
+      }
+      fpHash(function (hash) {
+        var fpInput = document.getElementById('reg-fp');
+        if (fpInput) fpInput.value = hash;
+      });
+    })();
+  </script>
 </body>
 </html>

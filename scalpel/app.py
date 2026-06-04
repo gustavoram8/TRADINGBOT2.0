@@ -209,6 +209,26 @@ class BanSuggestion(db.Model):
     user        = db.relationship('User', backref='ban_suggestions')
 
 
+class BrowserFingerprint(db.Model):
+    """Stores the most recent browser fingerprint hash for each user.
+    Used to correlate ban-evading re-registrations from the same device."""
+    id           = db.Column(db.Integer, primary_key=True)
+    user_id      = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    fp_hash      = db.Column(db.String(64), nullable=False, index=True)
+    collected_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    user         = db.relationship('User', backref='fingerprints')
+
+
+class BannedFingerprint(db.Model):
+    """A fingerprint hash copied from BrowserFingerprint when a ban is confirmed.
+    New registration attempts from a matching device are blocked."""
+    id         = db.Column(db.Integer, primary_key=True)
+    fp_hash    = db.Column(db.String(64), nullable=False, unique=True, index=True)
+    banned_uid = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    source_user = db.relationship('User', backref='banned_fingerprints')
+
+
 # ── Prop Firm Scout ──
 class PropFirm(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -855,6 +875,7 @@ def register():
         email = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '')
         remember = bool(request.form.get('remember'))
+        fp_hash = (request.form.get('_fp') or '').strip()[:64]
 
         if len(username) < 3 or len(email) < 5 or len(password) < 6:
             return render_template('register.html', error='invalid', username=username, email=email)
@@ -862,6 +883,10 @@ def register():
             return render_template('register.html', error='username_taken', username=username, email=email)
         if User.query.filter_by(email=email).first():
             return render_template('register.html', error='email_taken', username=username, email=email)
+
+        # Block registrations from known-banned devices
+        if fp_hash and BannedFingerprint.query.filter_by(fp_hash=fp_hash).first():
+            return render_template('register.html', error='device_banned', username=username, email=email)
 
         # Create the account unverified; activation happens after the email code.
         code = _new_verification_code()
@@ -871,6 +896,12 @@ def register():
         user.verification_expires = datetime.now(timezone.utc) + timedelta(minutes=15)
         db.session.add(user)
         db.session.commit()
+
+        # Store the fingerprint for this new account
+        if fp_hash:
+            db.session.add(BrowserFingerprint(user_id=user.id, fp_hash=fp_hash))
+            db.session.commit()
+
         send_verification_email(email, code)
         session['pending_user_id'] = user.id
         session['pending_remember'] = remember
@@ -1102,6 +1133,10 @@ def admin_ban_confirm():
             if other.id != suggestion.id:
                 other.status = 'confirmed'
                 other.resolved_at = datetime.now(timezone.utc)
+        # Block all known fingerprints from this user's device
+        for fp in BrowserFingerprint.query.filter_by(user_id=user.id).all():
+            if not BannedFingerprint.query.filter_by(fp_hash=fp.fp_hash).first():
+                db.session.add(BannedFingerprint(fp_hash=fp.fp_hash, banned_uid=user.id))
         db.session.commit()
     return redirect(url_for('admin'))
 
@@ -2247,6 +2282,33 @@ class SynapseProgress(db.Model):
     checked_at  = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     user        = db.relationship('User', backref='synapse_progress')
     __table_args__ = (db.UniqueConstraint('user_id', 'topic_slug'),)
+
+
+@app.route('/api/fingerprint', methods=['POST'])
+def store_fingerprint():
+    """Receive a browser fingerprint hash from the client.
+    - If the user is authenticated: store/update their fingerprint.
+    - If the hash is in BannedFingerprint: return 403 so the register form can block.
+    """
+    data = request.get_json(silent=True) or {}
+    fp_hash = (data.get('fp') or '').strip()[:64]
+    if not fp_hash:
+        return jsonify({'ok': False}), 400
+
+    is_banned_fp = BannedFingerprint.query.filter_by(fp_hash=fp_hash).first() is not None
+
+    if current_user.is_authenticated:
+        existing = BrowserFingerprint.query.filter_by(user_id=current_user.id).first()
+        if existing:
+            existing.fp_hash = fp_hash
+            existing.collected_at = datetime.now(timezone.utc)
+        else:
+            db.session.add(BrowserFingerprint(user_id=current_user.id, fp_hash=fp_hash))
+        db.session.commit()
+
+    if is_banned_fp:
+        return jsonify({'ok': False, 'banned': True}), 403
+    return jsonify({'ok': True})
 
 
 @app.route('/api/synapse/topics')
