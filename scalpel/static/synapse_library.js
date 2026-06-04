@@ -907,6 +907,157 @@
     arrow(322, 100, 316, 124, 'df-line-down')
   );
 
+  // ══════════════════════════════════════════════════════════════════════
+  // METHODOLOGY 4 — FUNDAMENTAL ANALYSIS
+  // ══════════════════════════════════════════════════════════════════════
+
+  C['fundamental.macro-drivers'] = {
+    lead: 'Macro drivers are the large forces — growth, employment, inflation, and central-bank policy — that set the long-term directional bias of currencies, indices, and commodities.',
+    body: 'They explain why an asset trends for weeks or months, providing the fundamental backdrop against which every technical setup either flows or fights.',
+    mechanics: [
+      { term: 'The cycle', text: 'Expansion → peak → contraction → trough; each phase has predictable effects on currency and equity valuations.' },
+      { term: 'Growth & jobs', text: 'Strong GDP and employment attract capital and let central banks tighten — both currency-positive.' },
+      { term: 'Inflation', text: 'Above-target inflation pushes policy hawkish (currency up); below-target permits easing (currency down).' },
+      { term: 'Relative advantage', text: 'In FX the trade is always between two currencies — what matters is the differential, not either economy alone.' },
+    ],
+    mistake: 'Ignoring fundamentals leaves you blind to why a clean setup either runs hard (fundamentals align) or keeps failing (they oppose it). And markets price expectations far ahead — the reaction is to the deviation from consensus, not the absolute number.',
+    terms: ['Economic cycle', 'GDP', 'Inflation', 'Central bank', 'Policy differential', 'Hawkish / dovish'],
+    figcap: 'The economic cycle as a wave through expansion, peak, contraction, and trough.',
+  };
+  D['fundamental.macro-drivers'] = () => {
+    const wave = 'M40 120 C90 60 130 60 170 110 C210 160 250 160 290 110 C320 72 350 80 372 100';
+    return svg(line(34, 196, 384, 196, 'df-axis') + line(34, 16, 34, 196, 'df-axis') +
+      line(40, 120, 372, 120, 'df-grid') +
+      path(wave, 'df-line-accent') +
+      dot(150, 66, 3) + txt(150, 56, 'peak', 'df-tag-accent', 'middle') +
+      dot(230, 158, 3) + txt(230, 176, 'trough', 'df-tag', 'middle') +
+      txt(95, 150, 'expansion', 'df-tag', 'middle') + txt(270, 70, 'recovery', 'df-tag', 'middle'));
+  };
+
+  C['fundamental.interest-rates'] = {
+    lead: 'Interest rates — and the market\'s expectations for future rates — are the single most powerful driver of currency value. Capital flows toward the highest risk-adjusted return.',
+    mechanics: [
+      { term: 'Mechanism', text: 'Higher rates → higher yields → foreign inflows → currency demand → appreciation. Cuts do the reverse.' },
+      { term: 'Rate differential', text: 'The gap between two currencies\' rates drives the carry trade — borrow low-rate, hold high-rate, collect the rollover.' },
+      { term: 'Hawkish vs dovish', text: 'The shift in tone (toward hikes or cuts) often moves price more than the decision itself.' },
+      { term: 'Forward guidance', text: 'A single word change in a statement ("transitory"→"persistent") can move markets more than a 25bp move.' },
+    ],
+    mistake: 'Trading a decision without knowing what was priced in is dangerous — a fully-expected hike can make a currency fall as positioning unwinds ("sell the fact"). What matters is the surprise versus consensus. Carry trades also unwind violently in risk-off.',
+    terms: ['Rate differential', 'Carry trade', 'Hawkish / dovish', 'Forward guidance', 'Bond yields', 'DXY'],
+    figcap: 'As the policy rate rises, the currency strengthens in step — the rate/currency relationship.',
+  };
+  D['fundamental.interest-rates'] = () => {
+    const rate = 'M40 170 L110 168 L160 140 L210 138 L260 100 L310 70 L372 60';
+    const ccy  = 'M40 176 L110 172 L160 150 L210 146 L260 112 L310 82 L372 70';
+    return svg(frame() +
+      path(rate, 'df-line-accent') + txt(360, 56, 'rate', 'df-tag-accent', 'end') +
+      path(ccy, 'df-line') + txt(372, 80, 'currency', 'df-tag', 'end') +
+      arrow(310, 70, 372, 60, 'df-line-accent'));
+  };
+
+  C['fundamental.news-data'] = {
+    lead: 'Economic releases are scheduled publications of key metrics that spike volatility when the data deviates from consensus. Knowing what each measures — and when — is essential whether you trade them or avoid them.',
+    mechanics: [
+      { term: 'NFP', text: 'US Nonfarm Payrolls, first Friday 08:30 EST — the most market-moving FX release; the surprise vs consensus is what counts.' },
+      { term: 'CPI / Core CPI', text: 'The key inflation read for the Fed; hot CPI is USD-bullish and equity-volatile, soft CPI the reverse.' },
+      { term: 'FOMC', text: 'Eight times a year: the decision, statement, and dot plot — the press conference often moves more than the decision.' },
+      { term: 'Impact tiers', text: 'Calendars colour-code events; only red (high-impact) reliably produces tradable volatility.' },
+    ],
+    mistake: '"Good news = up" is often wrong — markets are forward-looking and price expectations in advance; they react to the surprise. The 30-minute window before a red release is a no-trade zone of widening spreads and stop hunts. And prior-month revisions can cancel a headline beat.',
+    terms: ['NFP', 'CPI', 'FOMC', 'Dot plot', 'Consensus', 'Economic calendar'],
+    figcap: 'A scheduled release fires a volatility spike at the announcement time on the calendar.',
+  };
+  D['fundamental.news-data'] = () => {
+    const pre = 'M40 120 L70 116 L100 122 L130 118 L160 120';
+    const spike = 'M160 120 L172 60 L184 150 L196 90';
+    const post = 'M196 90 L240 96 L290 80 L340 70 L372 64';
+    return svg(frame() +
+      line(160, 24, 160, 196, 'df-dash-accent') + txt(160, 18, 'release', 'df-tag-accent', 'middle') +
+      path(pre, 'df-line') + path(spike, 'df-line-accent') + path(post, 'df-line'));
+  };
+
+  C['fundamental.intermarket'] = {
+    lead: 'Intermarket analysis reads the relationships between asset classes — stocks, bonds, currencies, commodities — because global capital is interconnected and a move in one market often foretells another.',
+    mechanics: [
+      { term: 'USD vs Gold/Oil', text: 'A stronger dollar generally pressures gold and oil (both priced in USD); a weaker dollar lifts them.' },
+      { term: 'Yields vs equities', text: 'Rising yields raise the discount on future earnings and compete with stocks — often inversely related short-term.' },
+      { term: 'Risk-on / risk-off', text: 'Risk-on buys equities and commodity currencies (AUD/CAD/NZD); risk-off buys JPY, CHF, USD, and bonds.' },
+      { term: 'DXY as master', text: 'As the reserve and commodity-pricing currency, DXY direction underpins gold, oil, EM, and the major pairs.' },
+    ],
+    mistake: 'Correlations are not static — the USD/gold inverse can break in a systemic crisis when everything sells for liquidity. The real value is spotting when a normal correlation breaks down — that regime shift is itself the signal.',
+    terms: ['Risk-on / risk-off', 'Safe havens', 'Commodity currencies', 'DXY', 'Bond yields', 'Regime shift'],
+    figcap: 'DXY and gold moving inversely — a classic intermarket correlation used as confluence.',
+  };
+  D['fundamental.intermarket'] = () => {
+    const dxy  = 'M40 150 L90 120 L140 132 L190 90 L240 104 L290 64 L340 78 L372 50';
+    const gold = 'M40 70 L90 100 L140 88 L190 130 L240 116 L290 156 L340 142 L372 170';
+    return svg(frame() +
+      path(dxy, 'df-line-accent') + txt(360, 46, 'DXY', 'df-tag-accent', 'end') +
+      path(gold, 'df-line') + txt(372, 184, 'gold', 'df-tag', 'end'));
+  };
+
+  C['fundamental.news-fade'] = {
+    type: 't',
+    lead: 'The news-spike fade trades the knee-jerk overreaction to a release: price spikes on the headline, then reverts toward pre-release levels as the initial algo response gives way to rational pricing.',
+    mechanics: [
+      { term: 'Why it fades', text: 'Algos hit the headline instantly; humans then judge whether it truly changes the macro story — if not, the spike becomes liquidity to fade.' },
+      { term: 'Timing', text: 'The spike is the first 1–5 minutes; the fade develops in the 5–30 minute window as momentum exhausts.' },
+      { term: 'Fadeable signs', text: 'The spike overshoots a key level, volume drops after the burst, and price fails to extend after 5–10 minutes.' },
+      { term: 'When NOT to fade', text: 'A genuine paradigm-shifting surprise turns the spike into a sustained trend — strong continuation means stand aside.' },
+    ],
+    mistake: 'Fading a true macro surprise (the first CPI that broke the "transitory" narrative) is catastrophic — the spike becomes the trend. Distinguishing a fadeable overreaction from a regime change needs macro context, not just the candle. Spreads also gut these trades.',
+    setup: {
+      cond: 'High-impact release; an outsized spike that overshoots a level; a reversal candle and no follow-through after 5+ min.',
+      entry: 'On the reversal candle at the spike extreme, or a break of the first post-spike consolidation against the spike.',
+      stop: 'Beyond the spike\'s extreme wick, with extra room for slippage.',
+      target: 'Pre-release level or VWAP; conservative, given the speed.',
+    },
+    terms: ['Knee-jerk', 'Spike exhaustion', 'Mean reversion', 'Reversal candle', 'Slippage', 'Macro surprise'],
+    figcap: 'Price spikes on the release, exhausts, and reverts back toward the pre-release level — the fade.',
+  };
+  D['fundamental.news-fade'] = () => {
+    const pre = 'M40 120 L100 118 L150 120';
+    const spike = 'M150 120 L170 40 L188 96';
+    const fade = 'M188 96 L240 112 L300 118 L372 120';
+    return svg(frame() +
+      line(40, 120, 372, 120, 'df-dash') + txt(44, 114, 'pre-release', 'df-tag', 'start') +
+      line(150, 24, 150, 196, 'df-dash-accent') + txt(150, 18, 'release', 'df-tag-accent', 'middle') +
+      path(pre, 'df-line') + path(spike, 'df-line') + path(fade, 'df-line-accent') +
+      arrow(200, 90, 300, 118, 'df-line-accent') + txt(290, 138, 'fade', 'df-tag-accent', 'middle'));
+  };
+
+  C['fundamental.data-continuation'] = {
+    type: 't',
+    lead: 'The data-release continuation rides a release that confirms the existing macro trend: after the spike and a brief pullback, price continues in the data-confirmed direction.',
+    body: 'Unlike the fade, this follows the move — but only when the data agrees with the established fundamental narrative.',
+    mechanics: [
+      { term: 'Pre-conditions', text: 'A clear fundamental trend already in place (e.g. a hiking cycle) that the release reinforces.' },
+      { term: 'The pullback', text: 'After the initial spike, a partial retrace is final profit-taking before continuation — that retrace is the entry.' },
+      { term: 'Entry at a level', text: 'Wait for the pullback to a technical level (prior resistance-turned-support, VWAP) for precision.' },
+      { term: 'Confluence', text: 'Strongest when the surprise direction agrees with the trend, the central-bank narrative, and risk sentiment.' },
+    ],
+    mistake: 'Entering on the initial spike gives terrible fills and huge slippage — wait for the retrace to a level. And counter-trend data does not automatically reverse the trend; it often just pauses it unless the surprise is large.',
+    setup: {
+      cond: 'Existing macro trend; release surprises in the trend\'s direction; initial spike then a retrace to a key level.',
+      entry: 'A rejection at the technical level on the pullback, or a break of the post-spike consolidation with trend.',
+      stop: 'Below the retrace low (longs) / above the high (shorts), under the level used.',
+      target: 'The next major structural level; hold into the session, or overnight for paradigm-shift data.',
+    },
+    terms: ['Macro alignment', 'Spike-and-retrace', 'Post-release consolidation', 'Fundamental backdrop', 'Confluence'],
+    figcap: 'A release spikes with the trend, pulls back to a level, then continues — the continuation entry.',
+  };
+  D['fundamental.data-continuation'] = () => {
+    const pre = 'M40 150 L100 146 L150 148';
+    const spike = 'M150 148 L168 96 L186 112';
+    const cont = 'M186 112 L210 130 L230 124 L270 86 L310 60 L350 40';
+    return svg(frame() +
+      line(150, 24, 150, 196, 'df-dash-accent') + txt(150, 18, 'release', 'df-tag-accent', 'middle') +
+      line(40, 124, 372, 124, 'df-dash') + txt(44, 118, 'level', 'df-tag', 'start') +
+      path(pre, 'df-line') + path(spike, 'df-line') + path(cont, 'df-line-accent') +
+      dot(230, 124, 3) + txt(238, 138, 'pullback', 'df-tag', 'start') +
+      arrow(270, 86, 350, 40, 'df-line-accent'));
+  };
+
   // ── publish (merge so later methodology files/edits can extend) ──────────
   window.SynapseContent = Object.assign(window.SynapseContent || {}, C);
   window.SynapseDiagrams = Object.assign(window.SynapseDiagrams || {}, D);
