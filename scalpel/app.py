@@ -112,6 +112,10 @@ class User(UserMixin, db.Model):
     plan = db.Column(db.String(20), default='free', nullable=False)  # free / standard / premium
     is_admin = db.Column(db.Boolean, default=False, nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    # ── Paid-plan lifecycle (manual activation today; Stripe webhook later) ──
+    plan_cycle = db.Column(db.String(10), nullable=True)       # monthly / annual
+    plan_started_at = db.Column(db.DateTime, nullable=True)
+    plan_expires_at = db.Column(db.DateTime, nullable=True)    # NULL = no expiry (free/admin)
     # ── Email verification (OTP) ──
     email_verified = db.Column(db.Boolean, default=False, nullable=False)
     verification_code = db.Column(db.String(6), nullable=True)
@@ -279,6 +283,96 @@ class PropFirm(db.Model):
     tags = db.Column(db.JSON, default=list)     # top_rated, most_popular, new, crypto_friendly
     is_active = db.Column(db.Boolean, default=True)
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# PRICING — single source of truth for plan costs (USD)
+# ──────────────────────────────────────────────────────────────────────────
+# Monthly = price charged each month. Annual = total charged once per year
+# (already discounted ~20% vs paying monthly). Mirrors pricing.html.
+PLAN_PRICING = {
+    'standard': {'monthly': 10.0, 'annual': 96.0},
+    'premium':  {'monthly': 30.0, 'annual': 288.0},
+}
+PLAN_LABELS = {'standard': 'Standard', 'premium': 'Premium'}
+
+
+def _plan_base_price(plan, cycle):
+    """Return the list price for a plan+cycle, or None if invalid."""
+    if plan not in PLAN_PRICING or cycle not in ('monthly', 'annual'):
+        return None
+    return PLAN_PRICING[plan][cycle]
+
+
+class Order(db.Model):
+    """A purchase of a paid plan. Created as 'pending' at checkout; an admin
+    (or, later, a Stripe webhook) marks it 'paid', which activates the plan.
+
+    `applied_at` is the idempotency guard: plan activation runs exactly once
+    per order, so marking an order paid twice can never double the duration."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    plan = db.Column(db.String(20), nullable=False)            # standard / premium
+    billing_cycle = db.Column(db.String(10), nullable=False)   # monthly / annual
+    base_price = db.Column(db.Float, nullable=False)           # list price before discount
+    discount_pct = db.Column(db.Integer, default=0)            # 0–100
+    final_price = db.Column(db.Float, nullable=False)          # what the user actually pays
+    promo_code = db.Column(db.String(40), nullable=True)       # code applied, if any
+    status = db.Column(db.String(12), default='pending', nullable=False)  # pending/paid/cancelled
+    payment_method = db.Column(db.String(30), nullable=True)   # e.g. 'usdt-binance', 'stripe'
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    paid_at = db.Column(db.DateTime, nullable=True)
+    applied_at = db.Column(db.DateTime, nullable=True)         # when the plan was granted
+    note = db.Column(db.String(300), nullable=True)
+    user = db.relationship('User', backref='orders')
+
+
+class PromoCode(db.Model):
+    """Discount / creator code. Applied at checkout for MONTHLY plans only
+    (per product decision). Tracks usage so partners can see conversions."""
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(40), unique=True, nullable=False, index=True)
+    discount_pct = db.Column(db.Integer, nullable=False)       # 1–100
+    creator_name = db.Column(db.String(120), nullable=True)    # influencer / partner
+    kind = db.Column(db.String(20), default='discount')        # 'discount' or 'creator'
+    valid_for = db.Column(db.String(10), default='monthly')    # monthly / annual / both
+    max_uses = db.Column(db.Integer, nullable=True)            # NULL = unlimited
+    uses_count = db.Column(db.Integer, default=0, nullable=False)
+    active = db.Column(db.Boolean, default=True, nullable=False)
+    expires_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    def is_redeemable(self, cycle):
+        """Whether this code can currently be applied to the given cycle."""
+        if not self.active:
+            return False, 'inactive'
+        if self.expires_at and datetime.now(timezone.utc) > _aware(self.expires_at):
+            return False, 'expired'
+        if self.max_uses is not None and self.uses_count >= self.max_uses:
+            return False, 'maxed'
+        if self.valid_for != 'both' and self.valid_for != cycle:
+            return False, 'cycle'
+        return True, 'ok'
+
+
+class Expense(db.Model):
+    """Monthly business expense, entered manually by an admin, used to compute
+    profit & loss against order revenue."""
+    id = db.Column(db.Integer, primary_key=True)
+    label = db.Column(db.String(160), nullable=False)         # e.g. 'Contabo VPS'
+    category = db.Column(db.String(40), default='other')      # hosting/api/domain/marketing/other
+    amount = db.Column(db.Float, nullable=False)              # USD
+    incurred_on = db.Column(db.Date, default=lambda: datetime.now(timezone.utc).date(), index=True)
+    recurring = db.Column(db.Boolean, default=False)          # monthly recurring?
+    note = db.Column(db.String(300), nullable=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+def _aware(dt):
+    """Treat naive DB datetimes as UTC so comparisons never crash."""
+    if dt is None:
+        return None
+    return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
 
 
 @login_manager.user_loader
@@ -1163,11 +1257,92 @@ def admin():
             'warn_count': warn_counts.get(s.user_id, 0),
         })
 
+    # ── Revenue / orders / promos / expenses dashboard ──
+    revenue = _build_revenue_context()
+
     return render_template(
         'admin.html', users=users, counts=counts,
         warn_counts=warn_counts, recent_warnings=recent_warnings, flagged=flagged,
-        ban_queue=ban_queue,
+        ban_queue=ban_queue, **revenue,
     )
+
+
+def _build_revenue_context():
+    """Assemble all the financial data the admin dashboard renders:
+    pending orders, this-month revenue per plan, promo codes, expenses, P&L."""
+    now = datetime.now(timezone.utc)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+    uname = {u.id: u.username for u in User.query.all()}
+    uemail = {u.id: u.email for u in User.query.all()}
+
+    def deco(o):
+        return {
+            'id': o.id, 'username': uname.get(o.user_id, 'unknown'),
+            'email': uemail.get(o.user_id, ''),
+            'plan': o.plan, 'cycle': o.billing_cycle,
+            'base_price': o.base_price, 'discount_pct': o.discount_pct,
+            'final_price': o.final_price, 'promo_code': o.promo_code,
+            'status': o.status, 'created_at': o.created_at, 'paid_at': o.paid_at,
+        }
+
+    pending_orders = [deco(o) for o in Order.query
+                      .filter_by(status='pending')
+                      .order_by(Order.created_at.desc()).all()]
+
+    # Paid orders this calendar month
+    paid_month = Order.query.filter(
+        Order.status == 'paid',
+        Order.paid_at >= month_start).order_by(Order.paid_at.desc()).all()
+
+    rev_by_plan = {}
+    for o in paid_month:
+        key = f'{o.plan}'
+        slot = rev_by_plan.setdefault(key, {'count': 0, 'total': 0.0})
+        slot['count'] += 1
+        slot['total'] += o.final_price or 0.0
+    revenue_total = round(sum(s['total'] for s in rev_by_plan.values()), 2)
+    paid_month_rows = [deco(o) for o in paid_month]
+
+    # All-time paid revenue (lifetime)
+    lifetime_total = round(sum(
+        o.final_price or 0.0
+        for o in Order.query.filter_by(status='paid').all()), 2)
+
+    # Expenses this month
+    exp_month = Expense.query.filter(
+        Expense.incurred_on >= month_start.date()).order_by(
+        Expense.incurred_on.desc()).all()
+    expenses_total = round(sum(e.amount for e in exp_month), 2)
+    expense_rows = [{
+        'id': e.id, 'label': e.label, 'category': e.category,
+        'amount': e.amount, 'incurred_on': e.incurred_on,
+        'recurring': e.recurring, 'note': e.note,
+    } for e in exp_month]
+
+    net_profit = round(revenue_total - expenses_total, 2)
+
+    promos = [{
+        'id': p.id, 'code': p.code, 'discount_pct': p.discount_pct,
+        'creator_name': p.creator_name, 'kind': p.kind,
+        'valid_for': p.valid_for, 'max_uses': p.max_uses,
+        'uses_count': p.uses_count, 'active': p.active,
+        'expires_at': p.expires_at,
+    } for p in PromoCode.query.order_by(PromoCode.created_at.desc()).all()]
+
+    return {
+        'pending_orders': pending_orders,
+        'rev_by_plan': rev_by_plan,
+        'revenue_total': revenue_total,
+        'lifetime_total': lifetime_total,
+        'paid_month_rows': paid_month_rows,
+        'expense_rows': expense_rows,
+        'expenses_total': expenses_total,
+        'net_profit': net_profit,
+        'promos': promos,
+        'plan_labels': PLAN_LABELS,
+        'month_name': now.strftime('%B %Y'),
+    }
 
 
 def suggest_ban(user_id, category, detail, evidence=None):
@@ -1189,6 +1364,257 @@ def suggest_ban(user_id, category, detail, evidence=None):
     db.session.add(s)
     db.session.commit()
     return s
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# ORDERS / CHECKOUT — plan purchases (manual fulfilment today, Stripe-ready)
+# ──────────────────────────────────────────────────────────────────────────
+def _activate_plan_from_order(order):
+    """Grant the purchased plan to the user, exactly once per order.
+
+    Idempotency guard: only runs when the order is 'paid' AND has never been
+    applied (`applied_at is None`). This is what makes double-clicking
+    'mark paid' — or a webhook firing twice — safe: the duration can never
+    stack accidentally.
+
+    Renewal of the SAME active plan extends from the current expiry; an
+    upgrade, a new plan, or a lapsed plan starts fresh from now.
+    """
+    if order.status != 'paid' or order.applied_at is not None:
+        return False
+    user = db.session.get(User, order.user_id)
+    if not user:
+        return False
+    now = datetime.now(timezone.utc)
+    days = 365 if order.billing_cycle == 'annual' else 30
+    base = now
+    cur_exp = _aware(user.plan_expires_at)
+    if user.plan == order.plan and cur_exp and cur_exp > now:
+        base = cur_exp  # renewal → stack onto remaining time
+    user.plan = order.plan
+    user.plan_cycle = order.billing_cycle
+    if not user.plan_started_at:
+        user.plan_started_at = now
+    user.plan_expires_at = base + timedelta(days=days)
+    order.applied_at = now
+    db.session.commit()
+    return True
+
+
+def _validate_promo(code_str, cycle):
+    """Look up and validate a promo code for a billing cycle.
+    Returns (PromoCode|None, reason)."""
+    if not code_str:
+        return None, 'empty'
+    promo = PromoCode.query.filter(
+        db.func.lower(PromoCode.code) == code_str.strip().lower()).first()
+    if not promo:
+        return None, 'not_found'
+    ok, reason = promo.is_redeemable(cycle)
+    if not ok:
+        return None, reason
+    return promo, 'ok'
+
+
+def _quote(plan, cycle, promo=None):
+    """Compute pricing for a plan+cycle with an optional validated promo.
+    Returns a dict with base_price, discount_pct, final_price."""
+    base = _plan_base_price(plan, cycle) or 0.0
+    discount = promo.discount_pct if promo else 0
+    final = round(base * (1 - discount / 100.0), 2)
+    return {'base_price': base, 'discount_pct': discount, 'final_price': final}
+
+
+@app.route('/checkout')
+@login_required
+def checkout():
+    plan = request.args.get('plan', '')
+    cycle = request.args.get('cycle', 'monthly')
+    if plan not in PLAN_PRICING or cycle not in ('monthly', 'annual'):
+        return redirect(url_for('pricing'))
+    q = _quote(plan, cycle)
+    return render_template('checkout.html', plan=plan, cycle=cycle,
+                           plan_label=PLAN_LABELS[plan], quote=q)
+
+
+@app.route('/api/checkout/validate-code', methods=['POST'])
+@login_required
+def api_validate_code():
+    data = request.get_json(silent=True) or {}
+    plan = data.get('plan', '')
+    cycle = data.get('cycle', 'monthly')
+    code = (data.get('code') or '').strip()
+    if plan not in PLAN_PRICING or cycle not in ('monthly', 'annual'):
+        return jsonify({'ok': False, 'error': 'invalid_plan'}), 400
+    promo, reason = _validate_promo(code, cycle)
+    if not promo:
+        return jsonify({'ok': False, 'error': reason}), 200
+    q = _quote(plan, cycle, promo)
+    return jsonify({'ok': True, 'discount_pct': promo.discount_pct,
+                    'creator': promo.creator_name, **q})
+
+
+@app.route('/checkout/create', methods=['POST'])
+@login_required
+def checkout_create():
+    plan = request.form.get('plan', '')
+    cycle = request.form.get('cycle', 'monthly')
+    code = (request.form.get('promo_code') or '').strip()
+    if plan not in PLAN_PRICING or cycle not in ('monthly', 'annual'):
+        return redirect(url_for('pricing'))
+
+    # Guard: don't let a user stack multiple pending orders.
+    existing = Order.query.filter_by(
+        user_id=current_user.id, status='pending').first()
+    if existing:
+        return render_template('checkout_done.html', order=existing,
+                               plan_label=PLAN_LABELS.get(existing.plan, existing.plan),
+                               duplicate=True)
+
+    promo, _reason = _validate_promo(code, cycle) if code else (None, '')
+    q = _quote(plan, cycle, promo)
+    order = Order(
+        user_id=current_user.id, plan=plan, billing_cycle=cycle,
+        base_price=q['base_price'], discount_pct=q['discount_pct'],
+        final_price=q['final_price'],
+        promo_code=(promo.code if promo else None),
+        status='pending', payment_method='usdt-binance',
+    )
+    db.session.add(order)
+    # Reserve the promo use optimistically; released if the order is cancelled.
+    if promo:
+        promo.uses_count = (promo.uses_count or 0) + 1
+    db.session.commit()
+    return render_template('checkout_done.html', order=order,
+                           plan_label=PLAN_LABELS.get(plan, plan), duplicate=False)
+
+
+@app.route('/admin/order/mark-paid', methods=['POST'])
+@login_required
+def admin_order_mark_paid():
+    if not current_user.is_admin:
+        abort(403)
+    order = db.session.get(Order, int(request.form.get('order_id', 0)))
+    if not order:
+        abort(404)
+    if order.status == 'pending':
+        order.status = 'paid'
+        order.paid_at = datetime.now(timezone.utc)
+        db.session.commit()
+        _activate_plan_from_order(order)  # idempotent
+    return redirect(url_for('admin') + '#revenue')
+
+
+@app.route('/admin/order/cancel', methods=['POST'])
+@login_required
+def admin_order_cancel():
+    if not current_user.is_admin:
+        abort(403)
+    order = db.session.get(Order, int(request.form.get('order_id', 0)))
+    if not order:
+        abort(404)
+    if order.status == 'pending':
+        order.status = 'cancelled'
+        # Release the reserved promo use.
+        if order.promo_code:
+            promo = PromoCode.query.filter(
+                db.func.lower(PromoCode.code) == order.promo_code.lower()).first()
+            if promo and promo.uses_count > 0:
+                promo.uses_count -= 1
+        db.session.commit()
+    return redirect(url_for('admin') + '#revenue')
+
+
+# ── Promo codes ──
+@app.route('/admin/promo/create', methods=['POST'])
+@login_required
+def admin_promo_create():
+    if not current_user.is_admin:
+        abort(403)
+    code = (request.form.get('code') or '').strip().upper()
+    try:
+        discount = int(request.form.get('discount_pct', 0))
+    except ValueError:
+        discount = 0
+    if not code or not (1 <= discount <= 100):
+        return redirect(url_for('admin') + '#promos')
+    if PromoCode.query.filter(db.func.lower(PromoCode.code) == code.lower()).first():
+        return redirect(url_for('admin') + '#promos')
+    max_uses = request.form.get('max_uses') or None
+    try:
+        max_uses = int(max_uses) if max_uses else None
+    except ValueError:
+        max_uses = None
+    promo = PromoCode(
+        code=code, discount_pct=discount,
+        creator_name=(request.form.get('creator_name') or '').strip() or None,
+        kind=request.form.get('kind', 'discount'),
+        valid_for=request.form.get('valid_for', 'monthly'),
+        max_uses=max_uses, active=True,
+    )
+    db.session.add(promo)
+    db.session.commit()
+    return redirect(url_for('admin') + '#promos')
+
+
+@app.route('/admin/promo/toggle', methods=['POST'])
+@login_required
+def admin_promo_toggle():
+    if not current_user.is_admin:
+        abort(403)
+    promo = db.session.get(PromoCode, int(request.form.get('promo_id', 0)))
+    if promo:
+        promo.active = not promo.active
+        db.session.commit()
+    return redirect(url_for('admin') + '#promos')
+
+
+@app.route('/admin/promo/delete', methods=['POST'])
+@login_required
+def admin_promo_delete():
+    if not current_user.is_admin:
+        abort(403)
+    promo = db.session.get(PromoCode, int(request.form.get('promo_id', 0)))
+    if promo:
+        db.session.delete(promo)
+        db.session.commit()
+    return redirect(url_for('admin') + '#promos')
+
+
+# ── Expenses ──
+@app.route('/admin/expense/add', methods=['POST'])
+@login_required
+def admin_expense_add():
+    if not current_user.is_admin:
+        abort(403)
+    label = (request.form.get('label') or '').strip()
+    try:
+        amount = float(request.form.get('amount', 0))
+    except ValueError:
+        amount = 0.0
+    if not label or amount <= 0:
+        return redirect(url_for('admin') + '#expenses')
+    exp = Expense(
+        label=label[:160], amount=amount,
+        category=request.form.get('category', 'other'),
+        recurring=bool(request.form.get('recurring')),
+        note=(request.form.get('note') or '').strip()[:300] or None,
+    )
+    db.session.add(exp)
+    db.session.commit()
+    return redirect(url_for('admin') + '#expenses')
+
+
+@app.route('/admin/expense/delete', methods=['POST'])
+@login_required
+def admin_expense_delete():
+    if not current_user.is_admin:
+        abort(403)
+    exp = db.session.get(Expense, int(request.form.get('expense_id', 0)))
+    if exp:
+        db.session.delete(exp)
+        db.session.commit()
+    return redirect(url_for('admin') + '#expenses')
 
 
 @app.route('/admin/set-plan', methods=['POST'])
@@ -3255,6 +3681,13 @@ def _migrate_user_verification_columns():
         stmts.append("ALTER TABLE user ADD COLUMN terms_accepted_at DATETIME")
     if 'terms_version' not in cols:
         stmts.append("ALTER TABLE user ADD COLUMN terms_version VARCHAR(20)")
+    # ── Paid-plan lifecycle columns ──
+    if 'plan_cycle' not in cols:
+        stmts.append("ALTER TABLE user ADD COLUMN plan_cycle VARCHAR(10)")
+    if 'plan_started_at' not in cols:
+        stmts.append("ALTER TABLE user ADD COLUMN plan_started_at DATETIME")
+    if 'plan_expires_at' not in cols:
+        stmts.append("ALTER TABLE user ADD COLUMN plan_expires_at DATETIME")
     if stmts:
         with db.engine.begin() as conn:
             for s in stmts:

@@ -131,6 +131,46 @@
     .unban-btn { background: transparent; border: 1px solid rgba(224,90,70,0.4); color: #e05a46;
       font-size: 11px; padding: 3px 9px; border-radius: 6px; cursor: pointer; font-family: inherit; }
     @media (max-width: 640px) { .stats { grid-template-columns: repeat(2,1fr); } .u-email { display:none; } }
+
+    /* ── Finance dashboard ── */
+    .fin-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px; }
+    .fin-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:18px 20px; }
+    .fin-card .n { font-size:24px; font-weight:800; letter-spacing:-.02em; }
+    .fin-card .l { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-top:3px; }
+    .fin-card.rev .n   { color:var(--win); }
+    .fin-card.exp .n   { color:var(--loss); }
+    .fin-card.net .n.pos { color:var(--win); }
+    .fin-card.net .n.neg { color:var(--loss); }
+    @media (max-width: 640px) { .fin-grid { grid-template-columns: repeat(2,1fr); } }
+
+    .pill-tag { display:inline-block; font-size:10.5px; font-weight:700; text-transform:uppercase;
+      letter-spacing:.04em; padding:2px 8px; border-radius:10px; }
+    .pill-tag.monthly { background:rgba(91,142,240,0.16); color:var(--accent); }
+    .pill-tag.annual  { background:rgba(224,168,61,0.16); color:var(--premium); }
+    .pill-tag.paid     { background:rgba(34,197,94,0.16); color:var(--win); }
+    .pill-tag.pending  { background:rgba(224,168,61,0.16); color:var(--premium); }
+    .pill-tag.cancelled{ background:rgba(99,104,130,0.18); color:var(--muted); }
+
+    .mini-form { display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end; padding:16px 18px; }
+    .mini-form .fld { display:flex; flex-direction:column; gap:4px; }
+    .mini-form label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+    .mini-form input, .mini-form select {
+      padding:7px 10px; border-radius:7px; border:1px solid var(--border2);
+      background:var(--surface); color:var(--text); font-size:13px; font-family:inherit; }
+    .mini-form input[type=text]  { width:130px; }
+    .mini-form input[type=number]{ width:90px; }
+    .mini-btn { padding:8px 16px; border-radius:8px; border:none; cursor:pointer;
+      background:var(--accent); color:#fff; font-size:13px; font-weight:600; font-family:inherit; }
+    .mini-btn:hover { background:var(--accent-h, #2f5cc0); }
+    .row-btn { border:none; border-radius:7px; padding:6px 12px; font-size:12px; font-weight:600;
+      cursor:pointer; font-family:inherit; }
+    .row-btn.pay     { background:var(--win); color:#fff; }
+    .row-btn.cancel  { background:transparent; color:var(--muted); border:1px solid var(--border2); }
+    .row-btn.del     { background:transparent; color:#e05a46; border:1px solid rgba(224,90,70,0.4); }
+    .row-btn.toggle  { background:transparent; color:var(--accent); border:1px solid var(--border2); }
+    .code-mono { font-family:'JetBrains Mono',monospace; font-weight:700; font-size:13px; }
+    .inactive-row { opacity:.5; }
+    .sum-row td { font-weight:800; background:var(--surface); }
   </style>
 </head>
 <body>
@@ -211,6 +251,166 @@
           {% else %}
           <tr><td colspan="4" class="empty">No users yet.</td></tr>
           {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ════════════════════ FINANCE DASHBOARD ════════════════════ -->
+    <div class="section-h" id="revenue">💰 Revenue &amp; Finances — {{ month_name }}</div>
+    <div class="section-d">Live business overview. Revenue counts only orders marked as paid this calendar month.</div>
+
+    <div class="fin-grid">
+      <div class="fin-card rev"><div class="n">${{ '%.2f'|format(revenue_total) }}</div><div class="l">Revenue this month</div></div>
+      <div class="fin-card exp"><div class="n">${{ '%.2f'|format(expenses_total) }}</div><div class="l">Expenses this month</div></div>
+      <div class="fin-card net"><div class="n {{ 'pos' if net_profit >= 0 else 'neg' }}">${{ '%.2f'|format(net_profit) }}</div><div class="l">Net profit</div></div>
+      <div class="fin-card"><div class="n">${{ '%.2f'|format(lifetime_total) }}</div><div class="l">Lifetime revenue</div></div>
+    </div>
+
+    <!-- PENDING ORDERS -->
+    <div class="section-h" style="font-size:16px;">Pending Orders</div>
+    <div class="section-d">Orders awaiting payment confirmation. Marking one as paid activates the plan immediately (safe against double-clicks — duration never stacks twice).</div>
+    <div class="table-card" style="margin-bottom:22px;">
+      <table>
+        <thead>
+          <tr><th>Order</th><th>User</th><th>Plan</th><th>Code</th><th>Amount</th><th>Created</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+          {% for o in pending_orders %}
+          <tr>
+            <td class="u-email">#{{ '%05d'|format(o.id) }}</td>
+            <td><div class="u-name">{{ o.username }}</div><div class="u-email">{{ o.email }}</div></td>
+            <td><span class="plan-badge {{ o.plan }}">{{ o.plan }}</span> <span class="pill-tag {{ o.cycle }}">{{ o.cycle }}</span></td>
+            <td>{% if o.promo_code %}<span class="code-mono">{{ o.promo_code }}</span> <span style="color:var(--muted);font-size:11px;">−{{ o.discount_pct }}%</span>{% else %}<span style="color:var(--muted);">—</span>{% endif %}</td>
+            <td><strong>${{ '%.2f'|format(o.final_price) }}</strong></td>
+            <td class="u-email">{{ o.created_at.strftime('%Y-%m-%d %H:%M') if o.created_at else '' }}</td>
+            <td>
+              <div style="display:flex;gap:6px;">
+                <form method="POST" action="/admin/order/mark-paid" onsubmit="return confirm('Mark order #{{ '%05d'|format(o.id) }} as PAID and activate {{ o.username }}\'s {{ o.plan }} plan?');">
+                  <input type="hidden" name="order_id" value="{{ o.id }}" />
+                  <button type="submit" class="row-btn pay">Mark paid ✓</button>
+                </form>
+                <form method="POST" action="/admin/order/cancel" onsubmit="return confirm('Cancel order #{{ '%05d'|format(o.id) }}?');">
+                  <input type="hidden" name="order_id" value="{{ o.id }}" />
+                  <button type="submit" class="row-btn cancel">Cancel</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7" class="empty">No pending orders.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- SALES THIS MONTH -->
+    <div class="section-h" style="font-size:16px;">Sales This Month</div>
+    <div class="section-d">All paid orders in {{ month_name }}, broken down by plan.</div>
+    <div class="table-card" style="margin-bottom:14px;">
+      <table>
+        <thead><tr><th>Plan</th><th>Units sold</th><th>Revenue</th></tr></thead>
+        <tbody>
+          {% for plan_key, data in rev_by_plan.items() %}
+          <tr>
+            <td><span class="plan-badge {{ plan_key }}">{{ plan_labels.get(plan_key, plan_key) }}</span></td>
+            <td>{{ data.count }}</td>
+            <td><strong>${{ '%.2f'|format(data.total) }}</strong></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3" class="empty">No sales yet this month.</td></tr>
+          {% endfor %}
+          {% if rev_by_plan %}
+          <tr class="sum-row"><td>TOTAL</td><td>{{ paid_month_rows|length }}</td><td>${{ '%.2f'|format(revenue_total) }}</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PROMO CODES -->
+    <div class="section-h" id="promos" style="font-size:16px;">Promo &amp; Creator Codes</div>
+    <div class="section-d">Discount codes for partnerships. Monthly plans only (per current policy). Track usage per creator.</div>
+    <div class="table-card" style="margin-bottom:14px;">
+      <form method="POST" action="/admin/promo/create" class="mini-form" style="border-bottom:1px solid var(--border);">
+        <div class="fld"><label>Code</label><input type="text" name="code" placeholder="TRADER20" required style="text-transform:uppercase;" /></div>
+        <div class="fld"><label>Discount %</label><input type="number" name="discount_pct" min="1" max="100" placeholder="20" required /></div>
+        <div class="fld"><label>Creator</label><input type="text" name="creator_name" placeholder="@influencer" /></div>
+        <div class="fld"><label>Type</label><select name="kind"><option value="creator">Creator</option><option value="discount">Discount</option></select></div>
+        <div class="fld"><label>Valid for</label><select name="valid_for"><option value="monthly">Monthly</option><option value="both">Both</option><option value="annual">Annual</option></select></div>
+        <div class="fld"><label>Max uses</label><input type="number" name="max_uses" min="1" placeholder="∞" /></div>
+        <button type="submit" class="mini-btn">Create code</button>
+      </form>
+      <table>
+        <thead><tr><th>Code</th><th>Discount</th><th>Creator</th><th>Valid</th><th>Uses</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          {% for p in promos %}
+          <tr class="{{ '' if p.active else 'inactive-row' }}">
+            <td><span class="code-mono">{{ p.code }}</span></td>
+            <td>{{ p.discount_pct }}%</td>
+            <td>{{ p.creator_name or '—' }}</td>
+            <td><span class="pill-tag {{ p.valid_for if p.valid_for != 'both' else 'monthly' }}">{{ p.valid_for }}</span></td>
+            <td>{{ p.uses_count }}{% if p.max_uses %} / {{ p.max_uses }}{% endif %}</td>
+            <td><span class="pill-tag {{ 'paid' if p.active else 'cancelled' }}">{{ 'active' if p.active else 'off' }}</span></td>
+            <td>
+              <div style="display:flex;gap:6px;">
+                <form method="POST" action="/admin/promo/toggle">
+                  <input type="hidden" name="promo_id" value="{{ p.id }}" />
+                  <button type="submit" class="row-btn toggle">{{ 'Disable' if p.active else 'Enable' }}</button>
+                </form>
+                <form method="POST" action="/admin/promo/delete" onsubmit="return confirm('Delete code {{ p.code }}?');">
+                  <input type="hidden" name="promo_id" value="{{ p.id }}" />
+                  <button type="submit" class="row-btn del">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7" class="empty">No promo codes yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- EXPENSES -->
+    <div class="section-h" id="expenses" style="font-size:16px;">Monthly Expenses</div>
+    <div class="section-d">Track business costs to compare against revenue. Net profit above updates automatically.</div>
+    <div class="table-card" style="margin-bottom:22px;">
+      <form method="POST" action="/admin/expense/add" class="mini-form" style="border-bottom:1px solid var(--border);">
+        <div class="fld"><label>Label</label><input type="text" name="label" placeholder="Contabo VPS" required /></div>
+        <div class="fld"><label>Amount $</label><input type="number" name="amount" min="0.01" step="0.01" placeholder="12.00" required /></div>
+        <div class="fld"><label>Category</label>
+          <select name="category">
+            <option value="hosting">Hosting</option>
+            <option value="api">API / AI</option>
+            <option value="domain">Domain</option>
+            <option value="marketing">Marketing</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="fld"><label>Recurring</label><select name="recurring"><option value="">One-time</option><option value="1">Monthly</option></select></div>
+        <button type="submit" class="mini-btn">Add expense</button>
+      </form>
+      <table>
+        <thead><tr><th>Expense</th><th>Category</th><th>Amount</th><th>Date</th><th></th></tr></thead>
+        <tbody>
+          {% for e in expense_rows %}
+          <tr>
+            <td><div class="u-name">{{ e.label }}</div>{% if e.recurring %}<span class="u-email">recurring monthly</span>{% endif %}</td>
+            <td><span class="pill-tag monthly">{{ e.category }}</span></td>
+            <td><strong>${{ '%.2f'|format(e.amount) }}</strong></td>
+            <td class="u-email">{{ e.incurred_on.strftime('%Y-%m-%d') if e.incurred_on else '' }}</td>
+            <td>
+              <form method="POST" action="/admin/expense/delete" onsubmit="return confirm('Delete this expense?');">
+                <input type="hidden" name="expense_id" value="{{ e.id }}" />
+                <button type="submit" class="row-btn del">Delete</button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5" class="empty">No expenses logged this month.</td></tr>
+          {% endfor %}
+          {% if expense_rows %}
+          <tr class="sum-row"><td>TOTAL</td><td></td><td>${{ '%.2f'|format(expenses_total) }}</td><td colspan="2"></td></tr>
+          {% endif %}
         </tbody>
       </table>
     </div>

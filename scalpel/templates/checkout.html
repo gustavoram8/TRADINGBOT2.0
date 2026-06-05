@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trader Acelerator — Checkout</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --ink:#15171f; --ink-soft:#4a4f5e; --muted:#8a8f9e;
+      --line:#e4e6ec; --accent:#2563eb; --accent-h:#1d4ed8; --accent-bg:#eff4ff;
+      --premium:#b8860b; --ok:#166534; --ok-bg:#f0fdf4; --ok-border:#bbf7d0;
+      --err:#991b1b; --err-bg:#fef2f2; --radius:14px;
+    }
+    body { background:#f4f5f8; color:var(--ink); font-family:'Inter',sans-serif;
+           font-size:15px; line-height:1.65; min-height:100vh; -webkit-font-smoothing:antialiased; }
+    nav { display:flex; align-items:center; justify-content:space-between;
+          padding:16px 32px; border-bottom:1px solid var(--line);
+          background:rgba(255,255,255,.93); position:sticky; top:0; z-index:10; }
+    .logo-img { height:64px; }
+    .back-link { font-size:13px; font-weight:600; color:var(--ink-soft); text-decoration:none; }
+    .back-link:hover { color:var(--accent); }
+
+    .wrap { max-width:560px; margin:0 auto; padding:48px 24px 90px; }
+    .eyebrow { font-size:11px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+               color:var(--accent); margin-bottom:8px; }
+    h1 { font-size:30px; font-weight:800; letter-spacing:-.02em; margin-bottom:28px; }
+
+    .card { background:#fff; border:1px solid var(--line); border-radius:var(--radius);
+            padding:28px; margin-bottom:20px; }
+
+    .summary-row { display:flex; justify-content:space-between; align-items:center;
+                   padding:10px 0; font-size:15px; }
+    .summary-row .label { color:var(--ink-soft); }
+    .summary-row .val { font-weight:600; }
+    .plan-name { font-size:20px; font-weight:800; }
+    .plan-name.premium { color:var(--premium); }
+    .plan-name.standard { color:var(--accent); }
+    .cycle-tag { display:inline-block; font-size:11px; font-weight:700; text-transform:uppercase;
+                 letter-spacing:.05em; padding:3px 10px; border-radius:12px;
+                 background:var(--accent-bg); color:var(--accent); margin-left:8px; }
+    .divider { height:1px; background:var(--line); margin:14px 0; }
+
+    .discount-row { display:flex; justify-content:space-between; padding:6px 0;
+                    color:var(--ok); font-weight:600; font-size:14px; }
+    .total-row { display:flex; justify-content:space-between; align-items:baseline;
+                 padding-top:12px; margin-top:6px; border-top:2px solid var(--line); }
+    .total-row .t-label { font-size:16px; font-weight:700; }
+    .total-row .t-val { font-size:28px; font-weight:800; letter-spacing:-.02em; }
+    .total-row .t-cycle { font-size:13px; color:var(--muted); font-weight:500; }
+
+    /* Promo */
+    .promo-label { font-size:13px; font-weight:600; color:var(--ink-soft); margin-bottom:8px; display:block; }
+    .promo-box { display:flex; gap:8px; }
+    .promo-box input { flex:1; padding:11px 14px; border:1px solid var(--line);
+                       border-radius:9px; font-size:14px; font-family:inherit;
+                       text-transform:uppercase; outline:none; }
+    .promo-box input:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(37,99,235,.1); }
+    .promo-box button { padding:11px 20px; background:var(--ink); color:#fff; border:none;
+                        border-radius:9px; font-size:14px; font-weight:600; cursor:pointer;
+                        font-family:inherit; transition:background .15s; }
+    .promo-box button:hover { background:#000; }
+    .promo-box button:disabled { opacity:.5; cursor:not-allowed; }
+    .promo-msg { font-size:13px; margin-top:10px; font-weight:600; display:none; }
+    .promo-msg.ok  { color:var(--ok); display:block; }
+    .promo-msg.err { color:var(--err); display:block; }
+    .promo-note { font-size:12px; color:var(--muted); margin-top:10px; }
+
+    .pay-btn { display:block; width:100%; padding:15px; background:var(--accent); color:#fff;
+               border:none; border-radius:11px; font-size:16px; font-weight:700; cursor:pointer;
+               font-family:inherit; transition:background .15s; text-align:center; text-decoration:none; }
+    .pay-btn:hover { background:var(--accent-h); }
+
+    .info { font-size:12.5px; color:var(--muted); text-align:center; margin-top:16px; line-height:1.6; }
+    .info a { color:var(--accent); }
+
+    @media(max-width:540px){ h1{font-size:24px;} .card{padding:20px;} }
+  </style>
+</head>
+<body>
+  <script>
+    try { if (localStorage.getItem('scalpel_theme') !== 'dark') {} } catch(e){}
+  </script>
+
+  <nav>
+    <a href="/"><img src="/static/logo.png" alt="Trader Acelerator" class="logo-img" onerror="this.style.display='none';" /></a>
+    <a href="/pricing" class="back-link">← Back to plans</a>
+  </nav>
+
+  <div class="wrap">
+    <div class="eyebrow">Checkout</div>
+    <h1>Review your order</h1>
+
+    <div class="card">
+      <div class="summary-row">
+        <span class="plan-name {{ plan }}">{{ plan_label }}</span>
+        <span class="cycle-tag">{{ 'Annual' if cycle == 'annual' else 'Monthly' }}</span>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="summary-row">
+        <span class="label">{{ plan_label }} plan ({{ 'billed yearly' if cycle == 'annual' else 'billed monthly' }})</span>
+        <span class="val">$<span id="base-price">{{ '%.2f'|format(quote.base_price) }}</span></span>
+      </div>
+
+      <div class="discount-row" id="discount-row" style="display:none;">
+        <span id="discount-label">Discount</span>
+        <span>−$<span id="discount-amount">0.00</span></span>
+      </div>
+
+      <div class="total-row">
+        <span class="t-label">Total
+          <span class="t-cycle">{{ '/ year' if cycle == 'annual' else '/ month' }}</span>
+        </span>
+        <span class="t-val">$<span id="final-price">{{ '%.2f'|format(quote.final_price) }}</span></span>
+      </div>
+    </div>
+
+    <!-- PROMO (monthly only, per product decision) -->
+    {% if cycle == 'monthly' %}
+    <div class="card">
+      <label class="promo-label" for="promo-input">Have a discount or creator code?</label>
+      <div class="promo-box">
+        <input type="text" id="promo-input" placeholder="Enter code" maxlength="40" autocomplete="off" />
+        <button type="button" id="promo-apply">Apply</button>
+      </div>
+      <div class="promo-msg" id="promo-msg"></div>
+      <div class="promo-note">Creator codes support the trader who referred you and may unlock a discount.</div>
+    </div>
+    {% endif %}
+
+    <!-- CONFIRM -->
+    <form method="POST" action="/checkout/create" id="checkout-form">
+      <input type="hidden" name="plan" value="{{ plan }}" />
+      <input type="hidden" name="cycle" value="{{ cycle }}" />
+      <input type="hidden" name="promo_code" id="promo-hidden" value="" />
+      <button type="submit" class="pay-btn">Continue to payment →</button>
+    </form>
+
+    <p class="info">
+      You'll receive payment instructions on the next step. Your plan activates
+      once payment is confirmed by our team.<br />
+      By continuing you agree to our <a href="/terms" target="_blank">Terms &amp; Conditions</a>.
+    </p>
+  </div>
+
+  <script>
+  (function () {
+    var plan  = {{ plan|tojson }};
+    var cycle = {{ cycle|tojson }};
+    var basePrice = {{ quote.base_price }};
+
+    var input    = document.getElementById('promo-input');
+    var applyBtn = document.getElementById('promo-apply');
+    var msg      = document.getElementById('promo-msg');
+    var hidden   = document.getElementById('promo-hidden');
+    var discRow  = document.getElementById('discount-row');
+    var discLbl  = document.getElementById('discount-label');
+    var discAmt  = document.getElementById('discount-amount');
+    var finalEl  = document.getElementById('final-price');
+
+    var ERRORS = {
+      not_found: 'That code does not exist.',
+      expired:   'That code has expired.',
+      maxed:     'That code has reached its usage limit.',
+      inactive:  'That code is no longer active.',
+      cycle:     'That code is not valid for this billing cycle.',
+      empty:     'Please enter a code.'
+    };
+
+    if (!applyBtn) return;
+
+    applyBtn.addEventListener('click', function () {
+      var code = (input.value || '').trim();
+      if (!code) { showErr('empty'); return; }
+      applyBtn.disabled = true;
+      applyBtn.textContent = '…';
+      fetch('/api/checkout/validate-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: plan, cycle: cycle, code: code })
+      })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        applyBtn.disabled = false;
+        applyBtn.textContent = 'Apply';
+        if (d.ok) {
+          var saved = (basePrice - d.final_price).toFixed(2);
+          discRow.style.display = 'flex';
+          discLbl.textContent = 'Discount (' + d.discount_pct + '%' +
+            (d.creator ? ' · ' + d.creator : '') + ')';
+          discAmt.textContent = saved;
+          finalEl.textContent = d.final_price.toFixed(2);
+          hidden.value = code;
+          msg.className = 'promo-msg ok';
+          msg.textContent = '✓ Code applied — you save $' + saved + '.';
+          input.disabled = true;
+          applyBtn.textContent = 'Applied';
+          applyBtn.disabled = true;
+        } else {
+          showErr(d.error);
+        }
+      })
+      .catch(function () {
+        applyBtn.disabled = false;
+        applyBtn.textContent = 'Apply';
+        showErr('not_found');
+      });
+    });
+
+    function showErr(code) {
+      // reset to base price
+      discRow.style.display = 'none';
+      finalEl.textContent = basePrice.toFixed(2);
+      hidden.value = '';
+      msg.className = 'promo-msg err';
+      msg.textContent = ERRORS[code] || 'That code could not be applied.';
+    }
+  })();
+  </script>
+</body>
+</html>

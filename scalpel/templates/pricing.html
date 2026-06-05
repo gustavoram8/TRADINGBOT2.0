@@ -515,7 +515,7 @@
         <span>Everything in Free</span>
       </li>
     </ul>
-    <a href="/" class="cta">Choose Standard</a>
+    <a href="/checkout?plan=standard&cycle=monthly" class="cta cta-buy" data-plan="standard">Choose Standard</a>
   </div>
 
   <!-- ── PREMIUM ── -->
@@ -570,7 +570,7 @@
         <span>Indicators library <span class="label-soon">soon</span></span>
       </li>
     </ul>
-    <a href="/" class="cta">Go Premium</a>
+    <a href="/checkout?plan=premium&cycle=monthly" class="cta cta-buy" data-plan="premium">Go Premium</a>
   </div>
 
 </div>
@@ -601,6 +601,10 @@
       });
       document.querySelectorAll('.price-annual').forEach(function (el) {
         el.classList.toggle('hidden', cycle !== 'annual');
+      });
+      // Keep the buy buttons pointed at the selected billing cycle.
+      document.querySelectorAll('.cta-buy').forEach(function (a) {
+        a.href = '/checkout?plan=' + a.dataset.plan + '&cycle=' + cycle;
       });
       if (sub) sub.textContent = SUBS[cycle];
     }
