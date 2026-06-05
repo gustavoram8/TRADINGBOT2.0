@@ -71,7 +71,21 @@ for table in TABLES:
         col_list = ','.join([f'"{c}"' for c in cols])
         sql = f'INSERT INTO "{table}" ({col_list}) VALUES ({placeholders}) ON CONFLICT DO NOTHING'
 
-        data = [tuple(row) for row in rows]
+        # SQLite stores booleans as 0/1 integers; PostgreSQL needs True/False
+        bool_cols = set()
+        pgc.execute("""
+            SELECT column_name FROM information_schema.columns
+            WHERE table_name=%s AND data_type='boolean'
+        """, (table,))
+        bool_cols = {r[0] for r in pgc.fetchall()}
+
+        def fix_row(row):
+            return tuple(
+                bool(v) if col in bool_cols and v is not None else v
+                for col, v in zip(cols, row)
+            )
+
+        data = [fix_row(row) for row in rows]
         pgc.executemany(sql, data)
         pg.commit()
         print(f"  ✅ {table}: {len(rows)} rows migrated.")
