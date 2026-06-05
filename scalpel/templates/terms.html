@@ -7,36 +7,583 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root { --ink:#15171f; --ink-soft:#4a4f5e; --muted:#8a8f9e; --line-soft:#e4e6ec; --accent:#2563eb; }
-    body { background:#fff; color:var(--ink); font-family:'Inter',sans-serif; font-size:15px; line-height:1.7; min-height:100vh; -webkit-font-smoothing:antialiased; }
-    nav { display:flex; align-items:center; justify-content:space-between; padding:16px 32px; border-bottom:1px solid var(--line-soft); position:sticky; top:0; background:rgba(255,255,255,0.92); backdrop-filter:blur(8px); z-index:10; }
+    :root {
+      --ink:#15171f; --ink-soft:#4a4f5e; --muted:#8a8f9e;
+      --line-soft:#e4e6ec; --accent:#2563eb; --accent-bg:#eff4ff;
+      --warn:#b91c1c; --warn-bg:#fef2f2;
+      --surface:#fafbfc; --radius:12px;
+    }
+    body { background:#fff; color:var(--ink); font-family:'Inter',sans-serif; font-size:15px; line-height:1.75; min-height:100vh; -webkit-font-smoothing:antialiased; }
+
+    /* NAV */
+    nav { display:flex; align-items:center; justify-content:space-between; padding:16px 32px; border-bottom:1px solid var(--line-soft); position:sticky; top:0; background:rgba(255,255,255,0.93); backdrop-filter:blur(10px); z-index:10; }
     .logo-img { height:72px; width:auto; display:block; }
     .back-link { font-size:13px; font-weight:600; color:var(--ink-soft); text-decoration:none; }
     .back-link:hover { color:var(--accent); }
+
+    /* LAYOUT */
     .wrap { max-width:820px; margin:0 auto; padding:56px 24px 96px; }
-    .eyebrow { font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); margin-bottom:10px; }
-    h1 { font-size:38px; font-weight:800; letter-spacing:-.02em; margin-bottom:14px; }
-    .updated { font-size:13px; color:var(--muted); margin-bottom:40px; }
-    h2 { font-size:20px; font-weight:700; margin:34px 0 10px; }
-    p { color:var(--ink-soft); margin-bottom:14px; }
-    .placeholder { border:1px dashed var(--line-soft); border-radius:14px; padding:28px; background:#fafbfc; color:var(--muted); font-size:14px; }
+
+    /* HEADER */
+    .eyebrow { font-size:11px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); margin-bottom:10px; }
+    h1 { font-size:38px; font-weight:800; letter-spacing:-.02em; margin-bottom:10px; }
+    .updated { font-size:13px; color:var(--muted); margin-bottom:16px; }
+    .intro-note { font-size:14px; color:var(--ink-soft); margin-bottom:40px; padding:16px 20px; background:var(--accent-bg); border-radius:var(--radius); border-left:3px solid var(--accent); }
+
+    /* TOC */
+    .toc { background:var(--surface); border:1px solid var(--line-soft); border-radius:var(--radius); padding:24px 28px; margin-bottom:48px; }
+    .toc-title { font-size:12px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:14px; }
+    .toc ol { padding-left:18px; }
+    .toc li { margin-bottom:5px; }
+    .toc a { font-size:13.5px; font-weight:500; color:var(--accent); text-decoration:none; }
+    .toc a:hover { text-decoration:underline; }
+
+    /* SECTIONS */
+    .section { margin-bottom:44px; }
+    h2 { font-size:19px; font-weight:700; margin-bottom:12px; padding-top:8px; border-top:1px solid var(--line-soft); }
+    h2 .sec-num { color:var(--muted); font-weight:500; margin-right:6px; font-size:16px; }
+    p { color:var(--ink-soft); margin-bottom:12px; }
+    ul, ol { color:var(--ink-soft); padding-left:22px; margin-bottom:12px; }
+    li { margin-bottom:5px; }
+
+    /* CALLOUT BOXES */
+    .callout { border-radius:var(--radius); padding:16px 20px; margin-bottom:14px; }
+    .callout.warn { background:var(--warn-bg); border-left:3px solid var(--warn); }
+    .callout.warn p { color:#7f1d1d; margin:0; }
+    .callout.info { background:var(--accent-bg); border-left:3px solid var(--accent); }
+    .callout.info p { color:#1e3a8a; margin:0; }
+
+    /* FOOTER */
+    .terms-footer { margin-top:64px; padding-top:28px; border-top:1px solid var(--line-soft); font-size:13px; color:var(--muted); text-align:center; }
+    .terms-footer a { color:var(--accent); text-decoration:none; }
+    .terms-footer a:hover { text-decoration:underline; }
+
+    @media(max-width:600px) {
+      h1 { font-size:28px; }
+      .wrap { padding:36px 16px 72px; }
+      nav { padding:12px 16px; }
+    }
   </style>
 </head>
 <body>
+
 <nav>
   <a href="/" class="logo"><img src="/static/logo.png" alt="Trader Acelerator" class="logo-img" onerror="this.style.display='none';" /></a>
   <a href="/app" class="back-link">← Back to app</a>
 </nav>
+
 <div class="wrap">
+
   <div class="eyebrow">Legal</div>
   <h1>Terms &amp; Conditions</h1>
-  <div class="updated">Draft — to be completed before public launch.</div>
-  <div class="placeholder">
-    This page is a placeholder. The full Terms &amp; Conditions of the company will be
-    drafted and reviewed here before launch (service description, eligibility,
-    payments &amp; refunds, acceptable use, disclaimers, limitation of liability,
-    governing law, and contact information).
+  <div class="updated">Last updated: June 5, 2026</div>
+
+  <div class="intro-note">
+    Please read these Terms and Conditions carefully before using Trader Acelerator.
+    By creating an account or accessing any part of the Service, you agree to be bound
+    by these Terms. If you do not agree, do not use the Service.
   </div>
+
+  <!-- TABLE OF CONTENTS -->
+  <div class="toc">
+    <div class="toc-title">Table of Contents</div>
+    <ol>
+      <li><a href="#s1">Acceptance of Terms</a></li>
+      <li><a href="#s2">Description of Service — Educational Disclaimer</a></li>
+      <li><a href="#s3">Eligibility</a></li>
+      <li><a href="#s4">User Accounts</a></li>
+      <li><a href="#s5">Plans, Payments &amp; Billing</a></li>
+      <li><a href="#s6">Refund Policy</a></li>
+      <li><a href="#s7">Intellectual Property &amp; Content License</a></li>
+      <li><a href="#s8">Prohibited Conduct</a></li>
+      <li><a href="#s9">Termination &amp; Suspension</a></li>
+      <li><a href="#s10">Disclaimers</a></li>
+      <li><a href="#s11">Limitation of Liability</a></li>
+      <li><a href="#s12">Indemnification</a></li>
+      <li><a href="#s13">Dispute Resolution — Binding Arbitration</a></li>
+      <li><a href="#s14">Governing Law</a></li>
+      <li><a href="#s15">Modifications</a></li>
+      <li><a href="#s16">Contact</a></li>
+    </ol>
+  </div>
+
+  <!-- SECTION 1 -->
+  <div class="section" id="s1">
+    <h2><span class="sec-num">1.</span> Acceptance of Terms</h2>
+    <p>
+      These Terms and Conditions ("Terms") constitute a legally binding agreement between
+      you ("User," "you," or "your") and Trader Acelerator ("Company," "we," "us," or "our"),
+      governing your access to and use of the website, platform, tools, digital content,
+      and any related services (collectively, the "Service").
+    </p>
+    <p>
+      By registering an account, clicking "I Agree," making a payment, or otherwise
+      accessing or using any part of the Service, you acknowledge that you have read,
+      understood, and agree to be bound by these Terms in their entirety, as well as
+      any additional policies referenced herein.
+    </p>
+    <p>
+      If you are using the Service on behalf of a third party or organization, you
+      represent that you have authority to bind that party to these Terms.
+    </p>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section" id="s2">
+    <h2><span class="sec-num">2.</span> Description of Service — Educational Disclaimer</h2>
+    <p>
+      Trader Acelerator is a digital educational platform designed to provide general
+      educational content about financial markets, trading concepts, technical analysis
+      methodologies, and related topics.
+    </p>
+    <div class="callout warn">
+      <p>
+        <strong>Important — Not Financial Advice:</strong> All content provided through
+        the Service, including but not limited to articles, tutorials, PDF documents,
+        AI-generated analyses, chart reviews, forum discussions, and any other material,
+        is provided strictly for <strong>educational and informational purposes only</strong>.
+        Nothing on this platform constitutes, and should not be interpreted as, financial
+        advice, investment advice, trading recommendations, or solicitation to buy or sell
+        any financial instrument or asset of any kind.
+      </p>
+    </div>
+    <p>
+      We are not registered as investment advisors, broker-dealers, financial planners,
+      or any regulated financial professional in any jurisdiction. Trading and investing
+      in financial markets involves substantial risk of loss, including the possible loss
+      of all invested capital. Past educational examples or historical market scenarios
+      described within the Service do not guarantee or predict future results.
+    </p>
+    <p>
+      You acknowledge that any trading or investment decisions you make are solely your
+      own responsibility. Trader Acelerator shall not be liable for any financial losses,
+      damages, or consequences arising from your interpretation or application of any
+      content provided through the Service.
+    </p>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="section" id="s3">
+    <h2><span class="sec-num">3.</span> Eligibility</h2>
+    <p>
+      To access or use the Service, you must meet all of the following requirements:
+    </p>
+    <ul>
+      <li>You must be at least <strong>18 years of age</strong>.</li>
+      <li>You must have the legal capacity to enter into a binding contract under the
+          laws of your jurisdiction.</li>
+      <li>You must not be a resident of, or subject to the jurisdiction of, any country
+          or territory subject to comprehensive sanctions by the United States Office of
+          Foreign Assets Control (OFAC), the United Nations Security Council, the
+          European Union, or any other applicable sanctions authority that would
+          prohibit your access to or use of the Service.</li>
+      <li>You must not have been previously suspended or permanently banned from the
+          Service by Trader Acelerator.</li>
+    </ul>
+    <p>
+      By creating an account, you represent and warrant that you meet all of the above
+      eligibility requirements. If you do not meet these requirements, you must not
+      access or use the Service. We reserve the right to suspend or terminate any
+      account found to have been created in violation of these eligibility criteria,
+      without notice and without refund.
+    </p>
+  </div>
+
+  <!-- SECTION 4 -->
+  <div class="section" id="s4">
+    <h2><span class="sec-num">4.</span> User Accounts</h2>
+    <p>
+      To access most features of the Service, you must register and maintain a personal
+      user account. You agree to provide accurate, current, and complete information
+      during registration and to update such information as necessary.
+    </p>
+    <p>
+      You are solely responsible for maintaining the confidentiality of your account
+      credentials, including your password. You are fully responsible for all activities
+      that occur under your account, regardless of whether such activities are authorized
+      by you. You agree to notify us immediately of any unauthorized access or suspected
+      security breach.
+    </p>
+    <p>
+      Account sharing is strictly prohibited. Each account is personal and
+      non-transferable. You may not create, use, or maintain more than one account.
+      Accounts found to be shared, transferred, sold, or duplicated may be suspended
+      or permanently terminated without notice and without refund.
+    </p>
+    <p>
+      Trader Acelerator reserves the right to refuse registration, cancel accounts,
+      or remove or edit content at its sole discretion.
+    </p>
+  </div>
+
+  <!-- SECTION 5 -->
+  <div class="section" id="s5">
+    <h2><span class="sec-num">5.</span> Plans, Payments &amp; Billing</h2>
+    <p>
+      Trader Acelerator offers the following subscription tiers: Free, Standard, and
+      Premium. Each plan provides access to specific features as described on the
+      pricing page, which may be updated from time to time at our sole discretion.
+    </p>
+    <p>
+      Paid plans are available on a <strong>monthly or annual billing cycle</strong>.
+      Annual plans are billed as a single upfront payment covering twelve (12) months
+      of access. Monthly plans are billed on a recurring monthly basis.
+    </p>
+    <p>
+      All prices are displayed in United States Dollars (USD) and are exclusive of
+      any applicable taxes, levies, or duties imposed by your local jurisdiction.
+      You are solely responsible for any such taxes arising from your purchase.
+    </p>
+    <p>
+      Your subscription will automatically renew at the end of each billing period
+      unless you cancel it prior to the renewal date. By providing your payment
+      information, you authorize Trader Acelerator or its designated payment processor
+      to charge the applicable subscription fee on each renewal date.
+    </p>
+    <p>
+      We reserve the right to modify subscription prices at any time. For existing
+      subscribers, price changes will take effect at the start of the next billing
+      cycle following notice via email or in-platform notification.
+    </p>
+  </div>
+
+  <!-- SECTION 6 -->
+  <div class="section" id="s6">
+    <h2><span class="sec-num">6.</span> Refund Policy</h2>
+    <div class="callout warn">
+      <p>
+        <strong>No Refunds:</strong> All payments made to Trader Acelerator for any
+        subscription plan, digital content, or downloadable material are
+        <strong>final and non-refundable</strong>, except as expressly stated below.
+      </p>
+    </div>
+    <p>
+      You acknowledge and accept that, given the immediate digital nature of the
+      Service and the instant delivery of access to educational content upon payment,
+      no right of withdrawal, cooling-off period, or refund applies once a subscription
+      has been activated or digital content has been delivered or made available.
+    </p>
+    <p>
+      <strong>Sole Exception — Verified Technical Failure:</strong> A refund or
+      account credit may be considered solely in cases of a documented technical failure
+      exclusively attributable to Trader Acelerator's infrastructure that completely
+      prevents access to the subscribed Service for a continuous period exceeding
+      seventy-two (72) hours, and only upon timely written request submitted to our
+      support contact. Trader Acelerator retains sole discretion to determine whether
+      the reported failure qualifies and whether to issue a refund or an equivalent
+      account credit.
+    </p>
+    <p>
+      No refunds will be issued in any of the following circumstances, including but
+      not limited to: dissatisfaction with content, change of mind, failure to use
+      the Service, account suspension or termination due to violation of these Terms,
+      or inability to access the Service due to the User's own device, connection,
+      or jurisdictional restrictions.
+    </p>
+  </div>
+
+  <!-- SECTION 7 -->
+  <div class="section" id="s7">
+    <h2><span class="sec-num">7.</span> Intellectual Property &amp; Content License</h2>
+    <p>
+      All content, materials, features, and functionality available through the Service —
+      including but not limited to text, graphics, diagrams, SVG illustrations, PDF
+      documents, educational guides, software, audio, video, logos, trademarks, and
+      the overall look and feel of the platform — are the exclusive intellectual property
+      of Trader Acelerator and are protected by applicable copyright, trademark, and
+      other intellectual property laws.
+    </p>
+    <p>
+      <strong>Limited Personal License:</strong> Subject to your compliance with these
+      Terms and timely payment of applicable fees, Trader Acelerator grants you a
+      limited, non-exclusive, non-transferable, non-sublicensable, revocable license
+      to access and use the Service and its content solely for your own personal,
+      non-commercial educational purposes.
+    </p>
+    <div class="callout warn">
+      <p>
+        <strong>Strictly Prohibited:</strong> You may not, under any circumstances
+        and without the prior written authorization of Trader Acelerator:
+        (a) reproduce, copy, distribute, publish, transmit, or broadcast any content
+        from the Service; (b) sell, resell, rent, lease, sublicense, or otherwise
+        commercially exploit any content or any portion thereof; (c) share, forward,
+        upload, or make available any downloaded or purchased digital content —
+        including PDF documents — to any third party through any medium; (d) modify,
+        adapt, translate, reverse-engineer, or create derivative works based on the
+        Service's content; or (e) use any content for any public display, commercial
+        presentation, or any purpose other than personal educational use.
+      </p>
+    </div>
+    <p>
+      Any unauthorized use, reproduction, or distribution of Trader Acelerator's
+      intellectual property constitutes both an infringement of copyright under
+      applicable law and a material breach of these Terms, and may result in
+      immediate account termination, civil liability, and/or criminal prosecution
+      to the fullest extent permitted by law.
+    </p>
+    <p>
+      By submitting content to public areas of the Service (such as forum posts or
+      comments), you grant Trader Acelerator a perpetual, irrevocable, worldwide,
+      royalty-free license to use, display, and moderate such content in connection
+      with the operation of the Service.
+    </p>
+  </div>
+
+  <!-- SECTION 8 -->
+  <div class="section" id="s8">
+    <h2><span class="sec-num">8.</span> Prohibited Conduct</h2>
+    <p>
+      You agree not to engage in any conduct that Trader Acelerator, in its sole
+      discretion, determines to be harmful, abusive, fraudulent, or otherwise
+      inconsistent with the spirit and purpose of the Service. Prohibited conduct
+      includes, but is not limited to, the following:
+    </p>
+    <ul>
+      <li>Violating any applicable local, national, or international law or regulation.</li>
+      <li>Impersonating any person or entity, or falsely representing your affiliation
+          with any person or entity.</li>
+      <li>Creating multiple accounts or using another person's account without
+          authorization.</li>
+      <li>Posting, transmitting, or distributing spam, unsolicited messages, or
+          commercial solicitations through any feature of the Service, including
+          the trading forum.</li>
+      <li>Engaging in harassment, threats, intimidation, hate speech, or any form
+          of abusive, discriminatory, or offensive behavior toward other users or
+          members of the Trader Acelerator team.</li>
+      <li>Uploading, posting, or transmitting any content that is unlawful, obscene,
+          defamatory, pornographic, or otherwise objectionable.</li>
+      <li>Attempting to gain unauthorized access to any portion of the Service,
+          other user accounts, or associated systems or networks.</li>
+      <li>Using automated tools, bots, scrapers, or similar means to extract data
+          from the Service without express written permission.</li>
+      <li>Interfering with or disrupting the integrity, performance, or security
+          of the Service or its underlying infrastructure.</li>
+      <li>Using the Service for any fraudulent purpose or in connection with any
+          criminal activity.</li>
+      <li>Sharing, reselling, or otherwise distributing access to your account
+          or any paid content obtained through the Service.</li>
+    </ul>
+    <p>
+      This list is illustrative and not exhaustive. Trader Acelerator reserves the
+      right to determine, at its sole discretion, whether any conduct violates these
+      Terms and to take appropriate action accordingly.
+    </p>
+  </div>
+
+  <!-- SECTION 9 -->
+  <div class="section" id="s9">
+    <h2><span class="sec-num">9.</span> Termination &amp; Suspension</h2>
+    <p>
+      Trader Acelerator reserves the right to suspend, restrict, or permanently
+      terminate your account and access to the Service at any time, with or without
+      prior notice, for any reason it deems appropriate in its sole discretion,
+      including but not limited to a violation of these Terms, prohibited conduct,
+      fraudulent activity, or any behavior deemed harmful to the Service, its users,
+      or the Company.
+    </p>
+    <div class="callout warn">
+      <p>
+        <strong>Termination for Cause — No Refund:</strong> In the event your account
+        is suspended or permanently terminated due to a violation of these Terms or
+        any applicable policy, your access to the Service will cease immediately upon
+        such action, and <strong>no refund of any subscription fees or payments will
+        be issued</strong>, regardless of any remaining subscription period.
+        Termination for cause is permanent — banned accounts may not re-register
+        under the same or a different identity.
+      </p>
+    </div>
+    <p>
+      You may cancel your subscription at any time through your account settings or
+      by contacting support. Cancellation will take effect at the end of the current
+      billing period, and you will retain access to the Service until that date.
+      Voluntary cancellation does not entitle you to any refund for amounts already
+      paid.
+    </p>
+    <p>
+      Upon termination of your account for any reason, all licenses granted to you
+      under these Terms will immediately terminate, and you must cease all use of
+      the Service and any content obtained through it.
+    </p>
+  </div>
+
+  <!-- SECTION 10 -->
+  <div class="section" id="s10">
+    <h2><span class="sec-num">10.</span> Disclaimers</h2>
+    <p>
+      THE SERVICE IS PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS, WITHOUT ANY
+      WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED. TRADER ACELERATOR EXPRESSLY
+      DISCLAIMS ALL WARRANTIES, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF
+      MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, ACCURACY, NON-INFRINGEMENT,
+      AND UNINTERRUPTED OR ERROR-FREE OPERATION.
+    </p>
+    <p>
+      We do not warrant that the Service will be available at all times, that it will
+      be free of errors or security vulnerabilities, or that any defects will be
+      corrected. We do not warrant the accuracy, completeness, or usefulness of any
+      content on the platform.
+    </p>
+    <p>
+      Trader Acelerator makes no representations or warranties regarding the
+      suitability of any educational content for your specific circumstances,
+      trading style, risk tolerance, or financial situation.
+    </p>
+  </div>
+
+  <!-- SECTION 11 -->
+  <div class="section" id="s11">
+    <h2><span class="sec-num">11.</span> Limitation of Liability</h2>
+    <p>
+      TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL TRADER
+      ACELERATOR, ITS OPERATORS, AFFILIATES, LICENSORS, OR SERVICE PROVIDERS BE
+      LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, PUNITIVE, OR
+      EXEMPLARY DAMAGES OF ANY KIND, INCLUDING BUT NOT LIMITED TO LOST PROFITS,
+      LOSS OF DATA, LOSS OF GOODWILL, BUSINESS INTERRUPTION, OR ANY FINANCIAL LOSS,
+      ARISING OUT OF OR RELATED TO YOUR USE OF OR INABILITY TO USE THE SERVICE,
+      EVEN IF WE HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+    </p>
+    <p>
+      IN NO EVENT SHALL THE TOTAL AGGREGATE LIABILITY OF TRADER ACELERATOR TO YOU
+      FOR ALL CLAIMS ARISING OUT OF OR RELATED TO THESE TERMS OR THE SERVICE EXCEED
+      THE GREATER OF: (A) THE TOTAL AMOUNT YOU PAID TO TRADER ACELERATOR IN THE
+      TWELVE (12) MONTHS IMMEDIATELY PRECEDING THE EVENT GIVING RISE TO THE CLAIM,
+      OR (B) ONE HUNDRED UNITED STATES DOLLARS (USD $100.00).
+    </p>
+    <p>
+      Some jurisdictions do not allow the exclusion or limitation of certain damages.
+      In such cases, our liability will be limited to the greatest extent permitted
+      by applicable law.
+    </p>
+  </div>
+
+  <!-- SECTION 12 -->
+  <div class="section" id="s12">
+    <h2><span class="sec-num">12.</span> Indemnification</h2>
+    <p>
+      You agree to defend, indemnify, and hold harmless Trader Acelerator and its
+      operators, affiliates, and licensors from and against any and all claims,
+      damages, losses, liabilities, costs, and expenses (including reasonable
+      attorneys' fees) arising out of or related to: (a) your use of or access to
+      the Service; (b) your violation of any provision of these Terms; (c) your
+      violation of any third-party rights, including intellectual property rights
+      or privacy rights; or (d) any content you submit, post, or transmit through
+      the Service.
+    </p>
+    <p>
+      We reserve the right, at your expense, to assume exclusive control over the
+      defense of any matter subject to indemnification by you. You agree to cooperate
+      fully with our defense of such claims.
+    </p>
+  </div>
+
+  <!-- SECTION 13 -->
+  <div class="section" id="s13">
+    <h2><span class="sec-num">13.</span> Dispute Resolution — Binding Arbitration</h2>
+    <div class="callout info">
+      <p>
+        <strong>Please read this section carefully.</strong> It requires you to resolve
+        most disputes with Trader Acelerator through binding individual arbitration
+        rather than in court, and waives your right to participate in class actions.
+      </p>
+    </div>
+    <p>
+      <strong>Informal Resolution First:</strong> Before initiating any formal
+      proceeding, you agree to contact us at the address listed in Section 16 and
+      give us a reasonable opportunity of at least thirty (30) days to resolve the
+      dispute informally.
+    </p>
+    <p>
+      <strong>Binding Arbitration:</strong> If the dispute cannot be resolved
+      informally, you and Trader Acelerator agree that any dispute, claim, or
+      controversy arising out of or relating to these Terms or the Service —
+      including questions about the validity, interpretation, or enforceability
+      of these Terms — shall be resolved exclusively through binding individual
+      arbitration administered by the American Arbitration Association (AAA) in
+      accordance with its Consumer Arbitration Rules, as modified by these Terms.
+      Arbitration shall be conducted in English.
+    </p>
+    <p>
+      <strong>Waiver of Class Actions:</strong> You and Trader Acelerator each
+      waive any right to participate in a class action, class-wide arbitration,
+      private attorney general action, or any other representative proceeding.
+      All claims must be brought on an individual basis only.
+    </p>
+    <p>
+      <strong>Exceptions:</strong> Either party may seek emergency injunctive or
+      other equitable relief from a court of competent jurisdiction to prevent
+      imminent harm, including unauthorized use or distribution of intellectual
+      property, without waiving the right to arbitrate the underlying dispute.
+    </p>
+    <p>
+      <strong>Opt-Out:</strong> You may opt out of this arbitration agreement by
+      sending written notice to our contact address within thirty (30) days of
+      first accepting these Terms. If you opt out, you and Trader Acelerator each
+      agree to submit to the exclusive jurisdiction of the courts specified in
+      Section 14.
+    </p>
+  </div>
+
+  <!-- SECTION 14 -->
+  <div class="section" id="s14">
+    <h2><span class="sec-num">14.</span> Governing Law</h2>
+    <p>
+      These Terms and any dispute arising out of or related to them or the Service
+      shall be governed by and construed in accordance with the laws of the
+      <strong>State of Delaware, United States of America</strong>, without regard
+      to its conflict of law principles.
+    </p>
+    <p>
+      To the extent any dispute is not subject to arbitration under Section 13,
+      both parties consent to the exclusive personal jurisdiction and venue of the
+      state and federal courts located in the State of Delaware for the resolution
+      of such disputes.
+    </p>
+    <p>
+      If you are accessing the Service from outside the United States, you do so
+      on your own initiative and are solely responsible for compliance with local
+      laws applicable to your jurisdiction. Trader Acelerator makes no representation
+      that the Service is appropriate or available in any particular location.
+    </p>
+  </div>
+
+  <!-- SECTION 15 -->
+  <div class="section" id="s15">
+    <h2><span class="sec-num">15.</span> Modifications to These Terms</h2>
+    <p>
+      Trader Acelerator reserves the right to modify these Terms at any time.
+      When we make material changes, we will update the "Last updated" date at the
+      top of this page and, where appropriate, notify you via email or an in-platform
+      notice.
+    </p>
+    <p>
+      Your continued use of the Service after any such modification constitutes
+      your acceptance of the updated Terms. If you do not agree to the revised Terms,
+      you must discontinue your use of the Service. We encourage you to review these
+      Terms periodically.
+    </p>
+  </div>
+
+  <!-- SECTION 16 -->
+  <div class="section" id="s16">
+    <h2><span class="sec-num">16.</span> Contact</h2>
+    <p>
+      For questions, concerns, legal notices, or support requests related to these
+      Terms or the Service, please contact us at:
+    </p>
+    <p>
+      <strong>Trader Acelerator</strong><br />
+      Email: <a href="mailto:support@traderacelerator.com">support@traderacelerator.com</a>
+    </p>
+    <p style="font-size:13px; color:var(--muted);">
+      Response times may vary. For account-related issues, please include your
+      registered email address and a description of your request.
+    </p>
+  </div>
+
+  <div class="terms-footer">
+    &copy; 2026 Trader Acelerator. All rights reserved. &nbsp;|&nbsp;
+    <a href="/app">Back to app</a>
+  </div>
+
 </div>
 </body>
 </html>
