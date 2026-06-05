@@ -1,0 +1,1397 @@
+{
+ "price.support-resistance": {
+  "lead": "O suporte e a resistência são zonas de preço onde o mercado reverteu repetidamente — a memória do gráfico sobre onde compradores e vendedores lutaram antes.",
+  "body": "Não são linhas exatas mas faixas, formadas onde ordens não executadas se acumulam em torno de máximos e mínimos anteriores. O suporte é onde o preço em queda tende a parar e ressaltar; a resistência é onde o preço em alta tende a travar e virar.",
+  "mechanics": [
+   {
+    "term": "Níveis estáticos",
+    "text": "Formam-se em máximos/mínimos anteriores onde restam ordens em repouso — o preço os revisita e reage a eles."
+   },
+   {
+    "term": "Níveis psicológicos",
+    "text": "Os números redondos (1.2000, 50.00) atraem stops e ordens pendentes agrupadas, amplificando a sua atração."
+   },
+   {
+    "term": "Inversão de papel",
+    "text": "Uma vez que o suporte quebra e o preço fecha abaixo, esse nível passa a resistência no reteste — e vice-versa."
+   },
+   {
+    "term": "Força por toques",
+    "text": "Os níveis mais testados são mais significativos — mas cada teste consome ordens em repouso, enfraquecendo por fim a zona."
+   },
+   {
+    "term": "Desenhar com corpos",
+    "text": "Ancore os níveis a fechos de vela agrupados, não a pavios isolados; desloque a linha para maximizar o contacto em ambos os lados."
+   }
+  ],
+  "mistake": "O erro número um é tratar o suporte/resistência como uma linha exata e entrar mesmo sobre ela. São zonas de vários pips de largura. Espere uma rejeição da zona em vez de um toque preciso. E lembre-se: um nível é mais forte no seu primeiro reteste após formar-se — cada teste adicional esgota as ordens que ali repousam.",
+  "terms": [
+   "Máximos/mínimos",
+   "Inversão de papel",
+   "Níveis psicológicos",
+   "Largura de zona",
+   "Confluência",
+   "Aglomerados de ordens"
+  ],
+  "figcap": "O preço respeita um nível duas vezes como resistência, quebra-o, depois reteste-o como suporte (inversão de papel)."
+ },
+ "price.trend-structure": {
+  "lead": "A estrutura de mercado lê a tendência através de uma sequência de swings: uma tendência de alta imprime máximos e mínimos mais altos; uma de baixa imprime máximos e mínimos mais baixos.",
+  "body": "A tendência nunca é uniforme — alterna entre pernas impulsivas (fortes, direcionais) e pernas corretivas (recuos sobrepostos). Ler qual perna é qual é a tarefa central do trader.",
+  "mechanics": [
+   {
+    "term": "Pontos de swing",
+    "text": "Um máximo de swing é um pico flanqueado por velas mais baixas; um mínimo de swing é um vale flanqueado por velas mais altas. Estes definem a estrutura."
+   },
+   {
+    "term": "Impulso vs correção",
+    "text": "As pernas de impulso são longas e fecham perto do seu extremo; as correções são mais curtas e sobrepostas. O impulso fixa a direção, a correção oferece entradas."
+   },
+   {
+    "term": "Multitemporal",
+    "text": "Os tempos gráficos altos fixam o viés; os baixos cronometram a entrada. Um recuo em 1H dentro de um diário de alta é uma compra, não uma venda."
+   },
+   {
+    "term": "Mudança de tendência",
+    "text": "Uma tendência só reverte quando o lado oposto quebra o extremo de swing mais recente com um fecho — não um único pavio."
+   },
+   {
+    "term": "Ranges",
+    "text": "Quando o preço alterna entre máximos e mínimos definidos sem quebrar nenhum, o mercado está em range e as ferramentas de tendência falham."
+   }
+  ],
+  "mistake": "Os principiantes mudam o viés depressa demais — uma vela na direção \"errada\" não quebra a estrutura. O ponto de swing tem de ser realmente superado por um fecho de corpo. Leia a estrutura um ou dois tempos gráficos acima do seu tempo de entrada para não se afogar no ruído.",
+  "terms": [
+   "Máximos/mínimos mais altos",
+   "Ponto de swing",
+   "Perna de impulso",
+   "Perna corretiva",
+   "Multitemporal",
+   "Range"
+  ],
+  "figcap": "Uma tendência de alta como escada de máximos mais altos (HH) e mínimos mais altos (HL) ligados por impulso e correção."
+ },
+ "price.candles": {
+  "lead": "Uma vela comprime quatro números — abertura, máximo, mínimo, fecho — numa única forma que regista a batalha entre compradores e vendedores ao longo de um período.",
+  "body": "O corpo (abertura-fecho) mostra quem venceu; os pavios mostram até onde o lado perdedor empurrou antes de ser rejeitado. Ler velas é ler o fluxo de ordens em forma visual.",
+  "mechanics": [
+   {
+    "term": "Corpo",
+    "text": "Um corpo grande a fechar perto do seu extremo sinaliza convicção; um corpo pequeno (doji) sinaliza indecisão e equilíbrio."
+   },
+   {
+    "term": "Pavio superior",
+    "text": "O preço foi empurrado para cima e depois vendido antes do fecho — quanto mais longo o pavio, mais forte a rejeição de preços altos."
+   },
+   {
+    "term": "Pavio inferior (cauda)",
+    "text": "O preço foi empurrado para baixo e depois recomprado — caudas longas em mínimos-chave estão entre os sinais de reversão mais fiáveis."
+   },
+   {
+    "term": "Sequências",
+    "text": "Velas isoladas raramente confirmam; 2–3 velas constroem contexto. Corpos crescentes = momentum a acelerar; pavios crescentes = momentum a desvanecer."
+   }
+  ],
+  "mistake": "Ler uma vela de forma isolada é quase inútil — o contexto é tudo. Um martelo num suporte-chave é um sinal; o mesmo martelo a meio do range é ruído. E não descarte os pavios: são a parte mais rica em informação da vela.",
+  "terms": [
+   "Corpo",
+   "Pavio / sombra",
+   "Doji",
+   "Martelo",
+   "Convicção",
+   "Rejeição"
+  ],
+  "figcap": "Anatomia de uma vela: corpo (abertura→fecho) mais pavios superior e inferior marcando os extremos rejeitados."
+ },
+ "price.chart-patterns": {
+  "lead": "Os padrões gráficos são formações geométricas recorrentes nascidas da psicologia repetida da multidão — dividem-se em padrões de continuação (a tendência retoma) e de reversão (a tendência termina).",
+  "body": "Cada um carrega um objetivo de preço mensurável derivado das suas próprias dimensões, dando tanto um viés direcional como um alvo.",
+  "mechanics": [
+   {
+    "term": "Bandeiras e flâmulas",
+    "text": "Um \"mastro\" abrupto e depois uma pausa apertada — continuação. Alvo = comprimento do mastro projetado a partir do rompimento."
+   },
+   {
+    "term": "Triângulos",
+    "text": "Ascendente (topo plano) é de alta, descendente (base plana) de baixa, simétrico é neutro até ao rompimento. Alvo = altura máxima."
+   },
+   {
+    "term": "Ombro-cabeça-ombro",
+    "text": "Três picos com o central mais alto; um fecho abaixo da linha de pescoço confirma a reversão. Alvo = altura da cabeça desde a linha de pescoço."
+   },
+   {
+    "term": "Duplos topos/fundos",
+    "text": "Dois extremos iguais; quebrar o nível intermédio (linha de pescoço) confirma. Alvo = altura do padrão."
+   },
+   {
+    "term": "Volume",
+    "text": "Os padrões clássicos querem volume a contrair na construção e a expandir no rompimento. Rompimentos com volume plano são suspeitos."
+   }
+  ],
+  "mistake": "Os padrões falham em completar-se 30–40% das vezes, por isso o movimento medido é um guia, não uma promessa. Em mercados dominados por algoritmos, muitos \"ombro-cabeça-ombro\" são caças a stops orquestradas acima do ombro direito antes do movimento real — faça gestão de risco em vez de assumir a conclusão.",
+  "terms": [
+   "Mastro",
+   "Linha de pescoço",
+   "Movimento medido",
+   "Rompimento",
+   "Continuação",
+   "Reversão"
+  ],
+  "figcap": "Um ombro-cabeça-ombro de topo: ombro esquerdo, cabeça mais alta, ombro direito, e a linha de pescoço cuja quebra confirma."
+ },
+ "price.supply-demand": {
+  "lead": "As zonas de oferta e procura marcam onde ordens institucionais — grandes demais para executar de uma vez — deixaram resíduo não executado, fazendo o preço reagir ao regressar a essa origem.",
+  "body": "Ao contrário do suporte/resistência, que marca onde o preço reagiu, uma zona de oferta/procura marca a causa — a base de onde um movimento impulsivo se originou e onde ainda repousam ordens restantes.",
+  "mechanics": [
+   {
+    "term": "Base de origem",
+    "text": "Uma zona válida é a pequena consolidação mesmo antes de um impulso agressivo de saída — essa base é onde as instituições se posicionaram."
+   },
+   {
+    "term": "Anatomia da zona",
+    "text": "Procura = último mínimo da base até à primeira vela de impulso; oferta = último máximo da base até ao primeiro impulso de baixa."
+   },
+   {
+    "term": "Fresca vs testada",
+    "text": "Uma zona fresca e intacta é a de maior probabilidade; após 3+ testes as ordens estão em grande parte executadas e a zona está \"esgotada\"."
+   },
+   {
+    "term": "Qualidade",
+    "text": "Quanto mais brusco e rápido o movimento de saída (idealmente deixando desequilíbrios), mais forte a intenção institucional por trás da zona."
+   }
+  ],
+  "mistake": "Desenhar zonas a partir de pavios em vez de corpos, e reentrar em zonas já tocadas várias vezes. Cada teste consome ordens — a qualidade degrada-se. O tamanho e a velocidade do movimento de saída é o que indica quão sérias são as ordens restantes.",
+  "terms": [
+   "Base de origem",
+   "Movimento impulsivo",
+   "Zona fresca",
+   "Zona esgotada",
+   "Desequilíbrio",
+   "Proximal / distal"
+  ],
+  "figcap": "Uma base apertada seguida de um rally explosivo — a base torna-se uma zona de procura à qual o preço regressa."
+ },
+ "price.pin-bar": {
+  "lead": "Um pin bar é uma reversão de uma única vela: um corpo pequeno com um pavio longo que mostra que o preço foi empurrado com força num sentido e depois rejeitado vigorosamente, fechando perto de onde abriu.",
+  "body": "A cauda aponta para a reversão esperada; o nariz marca o extremo rejeitado. A localização é tudo — um pin bar só importa num nível significativo.",
+  "mechanics": [
+   {
+    "term": "Anatomia",
+    "text": "Corpo abaixo de ~25% do range, cauda de pelo menos dois terços, pouco ou nenhum pavio oposto."
+   },
+   {
+    "term": "Rácio pavio-corpo",
+    "text": "Aponte para 2:1 mínimo; os sinais de elite mostram 3:1 ou mais — quanto mais longa a cauda, mais forte a rejeição."
+   },
+   {
+    "term": "Localização",
+    "text": "Só conta em S/R chave, oferta/procura, um nível de Fibonacci, ou alinhado com a tendência do tempo gráfico superior."
+   },
+   {
+    "term": "Entrada refinada",
+    "text": "Entrar no recuo de 50% do pin bar (em vez do fecho) melhora o risco/retorno e filtra algumas falsas."
+   }
+  ],
+  "mistake": "Um pin bar por si só não significa nada — a mesma vela num preço aleatório a meio do range tem vantagem quase nula. E os pins de baixa contra uma forte tendência de alta normalmente falham; o pin deve concordar com o viés do tempo gráfico superior.",
+  "setup": {
+   "cond": "O pin bar forma-se num S/R chave, uma zona de oferta/procura ou um nível de Fibonacci alinhado com a tendência do tempo gráfico superior.",
+   "entry": "No fecho do pin bar, ou um limite no seu recuo de 50%; os agressivos usam uma quebra do extremo do corpo oposto.",
+   "stop": "Logo além da ponta do pavio, com uma pequena margem ATR para a volatilidade.",
+   "target": "O próximo nível-chave na direção da reversão; mínimo 1:2, ou 2× o range do pin bar."
+  },
+  "terms": [
+   "Vela de rejeição",
+   "Rácio pavio-corpo",
+   "Cauda / nariz",
+   "Entrada a 50%",
+   "Confluência",
+   "Viés HTF"
+  ],
+  "figcap": "Um pin bar de alta a rejeitar o suporte: uma longa cauda inferior, corpo minúsculo, entrada no fecho, stop abaixo do pavio."
+ },
+ "price.engulfing": {
+  "lead": "Um padrão de engolfo é uma reversão de duas velas onde o corpo da segunda engole por completo o da primeira — uma tomada de controlo decisiva pelo lado oposto.",
+  "body": "O engolfo de alta aparece em mínimos (uma grande vela de alta come a de baixa anterior); o engolfo de baixa em máximos (uma grande vela de baixa come a de alta anterior).",
+  "mechanics": [
+   {
+    "term": "Engolfo do corpo",
+    "text": "O segundo corpo deve conter por completo o primeiro (os pavios importam menos). Engolfos parciais de 80%+ são mais fracos mas operáveis."
+   },
+   {
+    "term": "Tamanho",
+    "text": "Os sinais mais fortes têm uma segunda vela 2×+ a primeira — uma mudança dramática no fluxo de ordens."
+   },
+   {
+    "term": "Contexto",
+    "text": "Só tem vantagem em níveis significativos — S/R maior, oferta/procura, extremos de tendência — não a meio do range."
+   },
+   {
+    "term": "Volume",
+    "text": "Maior volume na vela de engolfo confirma a participação institucional a absorver o movimento anterior."
+   }
+  ],
+  "mistake": "Operar velas de engolfo a meio de um range produz uma série de perdedoras. O padrão só é vantagem em níveis estruturais. Uma \"barra exterior\" completa (pavios também engolidos) num nível-chave é a versão de maior qualidade.",
+  "setup": {
+   "cond": "Tendência prévia estabelecida; o padrão forma-se num S/R chave, uma zona de oferta/procura ou confluência de Fibonacci; a segunda vela fecha de forma decisiva.",
+   "entry": "No fecho da vela de engolfo, ou um pequeno recuo ao seu ponto médio.",
+   "stop": "Além do mínimo de todo o padrão (alta) ou do seu máximo (baixa), mais uma margem.",
+   "target": "Próximo nível-chave; 1:2 mínimo, ou 2× a altura do padrão."
+  },
+  "terms": [
+   "Barra exterior",
+   "Engolfo do corpo",
+   "Mudança de fluxo de ordens",
+   "Contexto",
+   "Confirmação por volume"
+  ],
+  "figcap": "Um engolfo de alta num mínimo: o corpo verde engole por completo o corpo vermelho anterior, sinalizando uma tomada de controlo."
+ },
+ "price.breakout-retest": {
+  "lead": "O rompimento-e-reteste espera que o preço feche de forma decisiva além de um nível, depois regresse a testar esse nível rompido pelo outro lado antes de entrar — operando a inversão de papel com confirmação.",
+  "body": "Sacrifica o primeiro movimento por um preço de entrada muito melhor e uma invalidação mais limpa do que perseguir o rompimento.",
+  "mechanics": [
+   {
+    "term": "Rompimento válido",
+    "text": "Um fecho claro além do nível (não só um pavio), idealmente com volume acima da média e uma vela de corpo forte."
+   },
+   {
+    "term": "O reteste",
+    "text": "A realização de lucros puxa o preço de volta ao nível rompido, que — como prevê a inversão de papel — deve agora aguentar."
+   },
+   {
+    "term": "Confirmação",
+    "text": "Procure uma rejeição (pin/engolfo) no reteste, ou uma contração de volume na direção dele seguida de expansão de saída."
+   },
+   {
+    "term": "Filtro de falso rompimento",
+    "text": "Um rompimento real reteste e continua; um falso fecha de volta dentro do nível. Stops mesmo dentro do nível exploram isto."
+   }
+  ],
+  "mistake": "Nem todo rompimento reteste — alguns disparam de imediato, por isso esperar só pelo reteste implica perder trades; muitos dividem o tamanho (metade no rompimento, metade no reteste). Além disso, ranges agitados geram falsos rompimentos constantes — isto só funciona com momentum real ou em níveis genuinamente significativos.",
+  "setup": {
+   "cond": "Um nível estrutural claro rompido com uma vela de fecho e volume, depois um regresso na direção desse nível pelo novo lado.",
+   "entry": "Numa vela de rejeição no reteste, ou uma ordem limite na zona do nível rompido.",
+   "stop": "Abaixo do mínimo do reteste (compras) / acima do máximo do reteste (vendas), ou mesmo dentro do nível rompido.",
+   "target": "O movimento medido desde o rompimento, ou o próximo nível estrutural-chave; 1:2 mínimo."
+  },
+  "terms": [
+   "Inversão de papel",
+   "Throwback",
+   "Vela de rompimento",
+   "Falso rompimento",
+   "Confirmação por volume"
+  ],
+  "figcap": "A resistência quebra num fecho forte, o preço reteste-a como suporte, depois continua — o reteste é a entrada."
+ },
+ "price.harmonic": {
+  "lead": "Os padrões harmónicos são estruturas de cinco pontos (X-A-B-C-D) cujas pernas obedecem a rácios de Fibonacci precisos, projetando uma Zona de Reversão Potencial no ponto D onde a reversão é operada.",
+  "body": "Codificados por Scott Carney a partir do trabalho original de Gartley, a família inclui o Gartley, Bat, Butterfly e Crab — cada um definido pelo seu próprio conjunto de rácios.",
+  "mechanics": [
+   {
+    "term": "Gartley",
+    "text": "B = 61.8% de XA, D = 78.6% de XA — o padrão mais conservador com a PRZ mais apertada."
+   },
+   {
+    "term": "Bat",
+    "text": "B = 38.2–50% de XA, D = 88.6% de XA — um recuo mais profundo que se adapta a tendências fortes."
+   },
+   {
+    "term": "Butterfly",
+    "text": "B = 78.6% de XA, D = extensão de 127–162% de XA (além de X) — captura movimentos de exaustão."
+   },
+   {
+    "term": "PRZ",
+    "text": "Em D, vários níveis de Fibonacci agrupam-se; quanta mais confluência nessa zona, maior a probabilidade de reversão."
+   }
+  ],
+  "mistake": "Dois assassinos: afrouxar os rácios (um B a 65% não é um Gartley), e entrar assim que o preço atinge a PRZ sem uma vela de reversão — sobretudo em Butterfly/Crab, que ultrapassam. O padrão dá o onde, não o quando; espere confirmação em D.",
+  "setup": {
+   "cond": "Os cinco pontos formados com rácios de Fibonacci corretos; a PRZ atingida com múltiplas confluências de Fibonacci.",
+   "entry": "Numa vela de confirmação de reversão no ponto D (pin/engolfo ou mudança de momentum).",
+   "stop": "Além do extremo da PRZ (p. ex. o 1.272/1.618 de XA para Butterfly/Crab).",
+   "target": "Primeiro o recuo ao ponto C, depois o ponto A; alvos estendidos rumo a X em reversões fortes."
+  },
+  "terms": [
+   "PRZ",
+   "Confluência de Fibonacci",
+   "Gartley",
+   "Bat",
+   "Butterfly",
+   "Ponto D"
+  ],
+  "figcap": "Uma estrutura harmónica X-A-B-C-D a completar-se na PRZ (ponto D), onde se toma a entrada de reversão."
+ },
+ "technical.moving-averages": {
+  "lead": "Uma média móvel suaviza o preço numa única linha fluida, filtrando o ruído para revelar a tendência subjacente — e atuando como suporte e resistência dinâmicos enquanto o preço avança.",
+  "body": "Diferentes cálculos ponderam os dados de forma diferente: a SMA trata todos os períodos por igual, a EMA favorece o preço recente, e o VWAP pondera por volume para marcar o verdadeiro custo institucional da sessão.",
+  "mechanics": [
+   {
+    "term": "SMA vs EMA",
+    "text": "A SMA reage mais lenta mas mais limpa; a EMA cola-se ao preço recente e vira mais depressa. Períodos comuns: 20, 50, 200."
+   },
+   {
+    "term": "A de 200",
+    "text": "A SMA de 200 é vigiada por praticamente todos os grandes fundos — quebras através dela com volume são eventos estruturais genuínos."
+   },
+   {
+    "term": "VWAP",
+    "text": "Ponderado por volume, reinicia por sessão — o verdadeiro benchmark institucional intradiário; preço acima = viés de alta, abaixo = de baixa."
+   },
+   {
+    "term": "S/R dinâmico",
+    "text": "Em tendências, o preço ressalta repetidamente na EMA de 20 (suporte na alta, resistência na baixa)."
+   }
+  ],
+  "mistake": "Toda média móvel atrasa por definição — reage ao preço, nunca o prevê. Tratar um cruzamento como previsão leva a entradas cronicamente tardias. E o período \"certo\" é contextual: a EMA de 20 é um ótimo suporte em tendência mas sem sentido em range.",
+  "terms": [
+   "SMA",
+   "EMA",
+   "VWAP",
+   "De 200 sessões",
+   "S/R dinâmico",
+   "Atraso"
+  ],
+  "figcap": "O preço sobe usando repetidamente a média móvel como suporte dinâmico em cada recuo."
+ },
+ "technical.rsi": {
+  "lead": "O RSI é um oscilador de momentum de 0–100 que mede a velocidade e o tamanho das mudanças recentes de preço — mais potente não como um cru medidor de sobrecompra/sobrevenda mas como leitor de momentum, divergência e regime de tendência.",
+  "body": "Wilder fixou 70 como sobrecompra e 30 como sobrevenda, mas em tendências reais esses limiares enganam constantemente. O sinal mais profundo é a faixa em que o RSI vive.",
+  "mechanics": [
+   {
+    "term": "Fórmula",
+    "text": "RSI = 100 − 100/(1+RS), onde RS = ganho médio ÷ perda média no período (14 por defeito)."
+   },
+   {
+    "term": "Regime de tendência",
+    "text": "As altas tendem a manter o RSI entre 40–80, as baixas 20–60 — a própria faixa indica o regime (Cardwell)."
+   },
+   {
+    "term": "Divergência",
+    "text": "O preço faz um novo extremo mas o RSI não — um aviso de que o momentum desvanece sob o movimento."
+   },
+   {
+    "term": "Linha central (50)",
+    "text": "Cruzar acima de 50 = mudança de momentum positiva; abaixo de 50 = negativa — um filtro de tendência limpo."
+   }
+  ],
+  "mistake": "Os níveis 70/30 só funcionam em ranges. Numa tendência forte, o RSI pode ficar acima de 70 durante semanas — vender cada leitura \"sobrecomprada\" numa alta é a forma clássica de ser atropelado. Leia o regime antes do nível.",
+  "terms": [
+   "Oscilador de momentum",
+   "Sobrecompra / sobrevenda",
+   "Divergência",
+   "Linha central",
+   "Regime de tendência",
+   "Período"
+  ],
+  "figcap": "O oscilador RSI com as bandas 70/30; pode manter-se colado à sobrecompra durante uma tendência forte."
+ },
+ "technical.macd": {
+  "lead": "O MACD combina tendência e momentum a partir de duas EMAs em três partes — a linha MACD, a sua linha de sinal e um histograma — revelando direção, força e pontos de viragem ao mesmo tempo.",
+  "body": "Construído por completo a partir de médias atrasadas, continua um dos indicadores mais versáteis porque o histograma expõe as mudanças de momentum antes de as próprias linhas se cruzarem.",
+  "mechanics": [
+   {
+    "term": "Linha MACD",
+    "text": "EMA de 12 menos EMA de 26. Positiva = momentum de alta, negativa = de baixa; o seu declive importa tanto como o seu nível."
+   },
+   {
+    "term": "Linha de sinal",
+    "text": "EMA de 9 da linha MACD. Um cruzamento acima = gatilho de alta, abaixo = de baixa."
+   },
+   {
+    "term": "Histograma",
+    "text": "MACD menos sinal. Barras crescentes = momentum a construir-se; barras decrescentes avisam de um cruzamento próximo."
+   },
+   {
+    "term": "Linha zero",
+    "text": "Cruzar zero significa que a EMA de 12 cruzou a de 26 — mais lento mas estruturalmente mais significativo que um cruzamento de sinal."
+   }
+  ],
+  "mistake": "Em mercados laterais o MACD dispara infinitos cruzamentos de sinal que o sacodem. O histograma é a pista subutilizada: barras decrescentes enquanto o preço ainda sobe costumam preceder o cruzamento por várias velas — um aviso mais precoce e de menor risco. Filtre sempre com o contexto de tendência.",
+  "terms": [
+   "Linha MACD",
+   "Linha de sinal",
+   "Histograma",
+   "Linha zero",
+   "Divergência",
+   "Cruzamento"
+  ],
+  "figcap": "As linhas MACD e de sinal a cruzar acima de um histograma cujas barras passam de negativas a positivas."
+ },
+ "technical.bollinger": {
+  "lead": "As Bandas de Bollinger envolvem uma média de 20 períodos em duas bandas situadas a dois desvios-padrão — um envelope de volatilidade que se expande quando os mercados se movem e se contrai quando descansam.",
+  "body": "São primeiro uma ferramenta de volatilidade, não de reversão: o padrão mais acionável é a compressão, onde a contração precede a expansão.",
+  "mechanics": [
+   {
+    "term": "Construção",
+    "text": "Superior/inferior = SMA de 20 ± 2σ; ~95% do preço recente fica dentro, por isso os toques de banda são estatisticamente invulgares."
+   },
+   {
+    "term": "Compressão (squeeze)",
+    "text": "Bandas a estreitar-se a um mínimo de vários meses sinalizam energia acumulada e um rompimento iminente — direção ainda por decidir."
+   },
+   {
+    "term": "Caminhar as bandas",
+    "text": "Em tendências fortes o preço cavalga a banda superior (ou inferior) durante longos trechos — isso é continuação, não reversão."
+   },
+   {
+    "term": "%B e Bandwidth",
+    "text": "%B localiza o preço dentro das bandas; o Bandwidth quantifica a compressão — as suas leituras mais baixas precedem os maiores movimentos."
+   }
+  ],
+  "mistake": "Desvanecer cada toque de banda à espera de reversão à média é o erro cardinal — numa tendência, tocar a banda é confirmação, não uma viragem. Avalie primeiro o contexto de tendência. A banda média (SMA de 20) costuma ser melhor suporte dinâmico que as bandas exteriores.",
+  "terms": [
+   "Desvio-padrão",
+   "Compressão",
+   "%B",
+   "Bandwidth",
+   "Caminhar as bandas",
+   "Reversão à média"
+  ],
+  "figcap": "As bandas contraem-se numa compressão, depois expandem-se violentamente quando o preço rompe e caminha a banda superior."
+ },
+ "technical.volume": {
+  "lead": "O volume é a medida mais direta de participação e convicção. O Perfil de Volume afina-o distribuindo as transações por níveis de preço em vez de tempo, expondo onde ocorreu o verdadeiro leilão.",
+  "body": "Revela a pegada institucional que as velas sozinhas não conseguem: as instituições têm de transacionar em tamanho, deixando assinaturas detetáveis em preços específicos.",
+  "mechanics": [
+   {
+    "term": "Ponto de Controlo",
+    "text": "O preço com mais volume transacionado — um preço-íman ao qual o mercado tende a regressar; o preço acordado \"mais justo\"."
+   },
+   {
+    "term": "Área de Valor",
+    "text": "A faixa que contém 70% do volume (VAH–VAL); o preço fora dela é \"injusto\" e tende a reverter."
+   },
+   {
+    "term": "Nós de alto/baixo volume",
+    "text": "O preço trava nos HVN (volume espesso) e atravessa os LVN (volume fino) com pouca fricção."
+   },
+   {
+    "term": "Volume em tendências",
+    "text": "As tendências saudáveis mostram mais volume nas barras a favor; uma barra clímax (volume enorme, pouco avanço) avisa de exaustão."
+   }
+  ],
+  "mistake": "Muitos traders ignoram por completo o Perfil de Volume e perdem a pegada institucional. E o POC não é um ponto de viragem automático — em tendências fortes é atravessado; o contexto decide se aguenta ou quebra.",
+  "terms": [
+   "POC",
+   "Área de Valor",
+   "VAH / VAL",
+   "HVN / LVN",
+   "Clímax de volume",
+   "Perfil de Volume"
+  ],
+  "figcap": "Preço a subir com volume saudável, depois uma barra clímax — volume desmesurado com pouco avanço — a avisar de exaustão."
+ },
+ "technical.ma-cross": {
+  "lead": "Um cruzamento de médias dispara quando uma média mais rápida cruza uma mais lenta: o cruzamento dourado (rápida acima da lenta) sugere alta, o cruzamento da morte (rápida abaixo da lenta) sugere baixa.",
+  "body": "Está entre os sinais mais simples da análise técnica — e entre os mais sobreutilizados, porque confirma sempre o movimento depois de ele ter começado.",
+  "mechanics": [
+   {
+    "term": "Cruzamento dourado / da morte",
+    "text": "Clássico = SMA de 50 a cruzar a SMA de 200; versões de swing mais rápidas usam EMA 20/50, intradiário EMA 8/21."
+   },
+   {
+    "term": "Atraso",
+    "text": "O cruzamento imprime-se após iniciar-se a tendência — quando a média lenta confirma, boa parte do primeiro movimento já passou."
+   },
+   {
+    "term": "Chicotadas",
+    "text": "Em ranges as duas médias entrelaçam-se, produzindo cruzamento após cruzamento que se anulam."
+   },
+   {
+    "term": "Filtros",
+    "text": "Exija ADX > 25, a média longa inclinada com o cruzamento, ou espere um recuo à média rápida antes de entrar."
+   }
+  ],
+  "mistake": "O cruzamento é sobretudo uma confirmação atrasada da estrutura que o preço mostrou semanas antes — os traders de estrutura costumam estar dentro antes. Trate-o como confirmação, não previsão, e nunca o opere num mercado conhecido em range.",
+  "setup": {
+   "cond": "ADX > 25 a confirmar tendência; média de longo prazo inclinada com o cruzamento; preço no lado certo da média longa.",
+   "entry": "Na vela após o cruzamento confirmado, ou no primeiro recuo à média mais rápida.",
+   "stop": "Abaixo da média mais lenta (compras) / acima dela (vendas), ou além do swing recente.",
+   "target": "Próximo nível-chave; arraste a média mais rápida à medida que a tendência se desenvolve."
+  },
+  "terms": [
+   "Cruzamento dourado",
+   "Cruzamento da morte",
+   "Atraso",
+   "Chicotada",
+   "Filtro ADX",
+   "Entrada em recuo"
+  ],
+  "figcap": "Um cruzamento dourado: a média móvel rápida cruza para cima a lenta, marcando o gatilho da tendência."
+ },
+ "technical.rsi-divergence": {
+  "lead": "A divergência de RSI é quando preço e momentum discordam — o preço imprime um novo extremo mas o RSI não — sinalizando que o movimento anda com a reserva.",
+  "body": "A divergência regular avisa de reversão; a divergência oculta, a prima subutilizada, sinaliza continuação de tendência nos recuos.",
+  "mechanics": [
+   {
+    "term": "Baixa regular",
+    "text": "Preço máximo mais alto, RSI máximo mais baixo — pressão compradora a desvanecer perto de um topo."
+   },
+   {
+    "term": "Alta regular",
+    "text": "Preço mínimo mais baixo, RSI mínimo mais alto — pressão vendedora a desvanecer perto de um fundo."
+   },
+   {
+    "term": "Divergência oculta",
+    "text": "Numa alta, preço com mínimo mais alto enquanto o RSI faz mínimo mais baixo = continuação; as melhores entradas a favor da tendência com ótimo R:R."
+   },
+   {
+    "term": "Confirmação",
+    "text": "Nunca opere a divergência sozinha — exija uma quebra de estrutura ou vela de reversão no ponto de divergência."
+   }
+  ],
+  "mistake": "Em tendências fortes, a divergência de baixa regular pode aparecer repetidamente enquanto o preço continua a subir — vender cada uma sangra-o. A divergência no diário pesa muito mais que no de 15 minutos, onde domina o ruído.",
+  "setup": {
+   "cond": "Divergência clara num nível significativo; contexto de tendência alinhado (regular = reversão, oculta = continuação).",
+   "entry": "Numa vela de confirmação ou numa quebra de estrutura de curto prazo após formar-se a divergência.",
+   "stop": "Além do extremo de swing que criou a divergência.",
+   "target": "Nível-chave mais próximo na nova direção; primeiro alvo na origem da divergência."
+  },
+  "terms": [
+   "Divergência regular",
+   "Divergência oculta",
+   "Momentum",
+   "Vela de confirmação",
+   "Contexto de tendência"
+  ],
+  "figcap": "O preço faz um máximo mais alto enquanto o RSI faz um máximo mais baixo — divergência de baixa regular a avisar de um topo."
+ },
+ "technical.macd-cross": {
+  "lead": "Um cruzamento de MACD dispara quando a linha MACD cruza a sua linha de sinal (frequente, precoce) ou a linha zero (mais raro, mais significativo) — entradas de momentum que precisam de contexto para valer a pena.",
+  "mechanics": [
+   {
+    "term": "Cruzamento de sinal",
+    "text": "MACD acima do sinal = alta; mais fiável quando ocorre abaixo de zero a recuperar de momentum sobrevendido."
+   },
+   {
+    "term": "Cruzamento de zero",
+    "text": "MACD através de zero confirma o cruzamento de EMA 12/26 — mais lento, mais confirmado; melhor como confirmação de tendência que como gatilho."
+   },
+   {
+    "term": "Vantagem do histograma",
+    "text": "Barras decrescentes do histograma precedem o cruzamento de sinal — a pista acionável mais precoce (embora a mais ruidosa)."
+   },
+   {
+    "term": "Fiabilidade",
+    "text": "Cruzamento de zero > cruzamento de sinal em contexto de tendência > reversão do histograma (a mais precoce mas a mais propensa ao ruído)."
+   }
+  ],
+  "mistake": "Os cruzamentos perto da linha zero, sem momentum, são puro ruído. Em ranges disparam continuamente sem continuação. Os melhores cruzamentos ocorrem em extremos do MACD que começam a reverter — combine-os com o RSI a cruzar 50 para confirmar.",
+  "setup": {
+   "cond": "Tendência clara do tempo gráfico superior; cruzamento de sinal após um extremo do MACD; idealmente RSI a confirmar e preço num nível-chave.",
+   "entry": "Na vela após o cruzamento confirmado, ou na reversão do declive do histograma para uma entrada mais precoce.",
+   "stop": "Abaixo do mínimo de swing recente (compras) / acima do máximo de swing (vendas).",
+   "target": "Próximo nível estrutural; arraste à medida que a tendência se desenvolve."
+  },
+  "terms": [
+   "Cruzamento de sinal",
+   "Cruzamento de zero",
+   "Histograma",
+   "Extremo do MACD",
+   "Filtro de tendência",
+   "Chicotada"
+  ],
+  "figcap": "A linha MACD a cruzar para cima a linha de sinal enquanto o histograma passa de vermelho a verde."
+ },
+ "technical.squeeze-break": {
+  "lead": "O rompimento de compressão de Bollinger opera a verdade estatística de que uma volatilidade muito baixa precede movimentos explosivos: quando as bandas se comprimem a um mínimo de vários meses, a energia acumula-se para um rompimento.",
+  "mechanics": [
+   {
+    "term": "Identificar a compressão",
+    "text": "Bandwidth num mínimo de 6 meses — ou, no TTM Squeeze, as Bandas de Bollinger a contrair-se dentro dos Canais de Keltner."
+   },
+   {
+    "term": "Sem direção incorporada",
+    "text": "A compressão diz que vem um movimento, não em que sentido; o rompimento + momentum (histograma MACD, %B) escolhe o lado."
+   },
+   {
+    "term": "Entrada",
+    "text": "Primeira vela a fechar claramente além da faixa de compressão, idealmente com %B a ultrapassar 1.0 (alta) ou 0.0 (baixa)."
+   },
+   {
+    "term": "Volume",
+    "text": "Um rompimento com volume fraco falha muitas vezes de volta dentro da faixa — a expansão de volume é o filtro-chave."
+   }
+  ],
+  "mistake": "Entrar assim que o Bandwidth toca um mínimo — antes de qualquer rompimento real — deixa-o preso enquanto a compressão se prolonga por mais barras. E uma compressão mesmo antes de notícias agendadas costuma ser apenas posicionamento que reverte após a publicação.",
+  "setup": {
+   "cond": "Bandwidth num mínimo de vários meses (ou BB dentro de Keltner); um rompimento direcional claro com confirmação de momentum.",
+   "entry": "No fecho da primeira vela a romper a faixa de compressão; %B > 1.0 (compra) / < 0.0 (venda).",
+   "stop": "Abaixo do mínimo da faixa de compressão (compra) / acima do seu máximo (venda), ou além da banda média.",
+   "target": "1–2× a altura da faixa de compressão; arraste com a SMA de 20."
+  },
+  "terms": [
+   "Compressão",
+   "Bandwidth",
+   "TTM Squeeze",
+   "Canais de Keltner",
+   "%B",
+   "Expansão de volatilidade"
+  ],
+  "figcap": "As bandas apertam-se numa compressão estreita, depois expandem-se bruscamente quando o preço rompe com momentum."
+ },
+ "smc.wyckoff-roots": {
+  "lead": "O quadro de Wyckoff dos anos 1930 é o alicerce sob o trading moderno de smart money: um único grande operador — o \"Homem Composto\" — acumula e distribui sistematicamente através de ciclos de preço orquestrados que pode aprender a ler.",
+  "body": "Compreender Wyckoff dá-lhe o porquê por trás de cada conceito do ICT — os order blocks são as suas zonas de procura, os varrimentos de liquidez são os seus springs, o BOS é o seu sinal de força.",
+  "mechanics": [
+   {
+    "term": "O Homem Composto",
+    "text": "Pense como um único grande operador racional a orquestrar o movimento, em vez de reagir emocionalmente ao preço."
+   },
+   {
+    "term": "As Três Leis",
+    "text": "Oferta/Procura; Causa e Efeito (o tamanho do range fixa o tamanho do movimento); Esforço vs Resultado (o volume deve corresponder ao avanço do preço)."
+   },
+   {
+    "term": "Fases de acumulação",
+    "text": "A (param as vendas) → B (construção de causa) → C (o Spring) → D (Sinal de Força) → E (começa o markup)."
+   },
+   {
+    "term": "Spring e Upthrust",
+    "text": "O Spring é um falso rompimento abaixo do suporte do range com baixo volume — a compra ótima; o UTAD é o seu espelho nos topos."
+   }
+  ],
+  "mistake": "O volume é inseparável de Wyckoff — um Spring com alto volume é suspeito (venda real), um Spring com baixo volume é ideal (sem oferta). Os algoritmos modernos também comprimem estas fases: o que demorava semanas em 1930 pode completar-se em horas num gráfico de 5 minutos.",
+  "terms": [
+   "Homem Composto",
+   "Acumulação",
+   "Distribuição",
+   "Spring",
+   "Sinal de Força",
+   "Causa e Efeito"
+  ],
+  "figcap": "Um range de acumulação de Wyckoff: um spring mergulha abaixo do suporte, depois começa o markup fora do range."
+ },
+ "smc.market-structure": {
+  "lead": "No SMC, a estrutura é a sequência de swings que define a tendência. Uma Quebra de Estrutura (BOS) confirma continuação; uma Mudança de Caráter (ChoCH) é a primeira quebra do extremo oposto — o aviso precoce de reversão.",
+  "mechanics": [
+   {
+    "term": "BOS",
+    "text": "O preço fecha além do máximo estrutural anterior (alta) ou mínimo (baixa) — a tendência a votar por continuar."
+   },
+   {
+    "term": "ChoCH",
+    "text": "A primeira vez que o preço quebra o swing oposto (p. ex. um mínimo mais alto numa alta) — o controlo está a mudar; um aviso, ainda não uma reversão."
+   },
+   {
+    "term": "Interna vs externa",
+    "text": "Externa = os swings principais; interna = os swings menores dentro de cada perna, usados para cronometrar entradas em tempos gráficos baixos."
+   },
+   {
+    "term": "MSS",
+    "text": "Uma Mudança de Estrutura de Mercado é o ChoCH do ICT após um varrimento de liquidez + deslocamento — confirmação de que o varrimento importou."
+   }
+  ],
+  "mistake": "A mesma vela \"a quebrar um máximo\" pode ser um BOS ou um ChoCH consoante quebrou estrutura interna ou externa — o contexto decide. Marque só swings significativos; etiquetar cada micro-oscilação transforma o gráfico em caos. E a estrutura HTF prevalece sempre sobre a LTF.",
+  "terms": [
+   "BOS",
+   "ChoCH",
+   "MSS",
+   "Estrutura interna",
+   "Estrutura externa",
+   "Deslocamento"
+  ],
+  "figcap": "Uma tendência de alta de continuações BOS, depois um ChoCH quando o preço quebra o último mínimo mais alto — aviso de reversão."
+ },
+ "smc.order-blocks": {
+  "lead": "Um order block é a última vela oposta antes de um movimento institucional impulsivo — a pegada final de acumulação (ou distribuição) onde repousam ordens não executadas até o preço regressar.",
+  "body": "Um OB de alta é a última vela de baixa antes de um rally; um OB de baixa é a última vela de alta antes de uma queda. O preço tende a reagir quando \"mitiga\" essa zona.",
+  "mechanics": [
+   {
+    "term": "Identificação",
+    "text": "Encontre a última vela oposta mesmo antes de um movimento de deslocamento — o seu range de máximo a mínimo é a zona do OB."
+   },
+   {
+    "term": "Validação",
+    "text": "O movimento de saída deve ser impulsivo (grande, limpo, deixando FVGs) e produzir um BOS — isso confirma o OB."
+   },
+   {
+    "term": "Mitigação",
+    "text": "Quando o preço regressa, executa ordens em repouso; o bordo proximal é a zona de entrada, o bordo distal a referência do stop."
+   },
+   {
+    "term": "Breaker block",
+    "text": "Um OB falhado (o preço fecha através do seu bordo distal) inverte a polaridade e atua no lado oposto no regresso seguinte."
+   }
+  ],
+  "mistake": "Os principiantes marcam cada vela antes de um movimento como um OB — tem de ser a última vela oposta, cor inegociável. E o OB sozinho não basta: os melhores seguem um varrimento de liquidez, produzem um deslocamento com FVGs e situam-se na área correta de premium/discount.",
+  "terms": [
+   "Última vela oposta",
+   "Deslocamento",
+   "Mitigação",
+   "Proximal / distal",
+   "Breaker block",
+   "BOS"
+  ],
+  "figcap": "A última vela de baixa antes de um rally é marcada como order block de alta; o preço regressa para o mitigar."
+ },
+ "smc.fair-value-gaps": {
+  "lead": "Um Fair Value Gap é um desequilíbrio de três velas: o preço move-se tão depressa que o pavio da vela 3 nunca alcança o da vela 1, deixando uma zona unilateral à qual o mercado é atraído para \"reequilibrar\".",
+  "mechanics": [
+   {
+    "term": "FVG de alta",
+    "text": "Numa sequência de alta, o mínimo da vela 3 fica acima do máximo da vela 1 — esse gap atua como suporte no regresso."
+   },
+   {
+    "term": "Consequent Encroachment",
+    "text": "O ponto médio de 50% do gap — muitas vezes o nível mais reativo e o alvo de entrada refinado."
+   },
+   {
+    "term": "Dinâmica de preenchimento",
+    "text": "As tendências fortes alcançam só o CE antes de retomar; as mais fracas preenchem todo o gap antes de reagir."
+   },
+   {
+    "term": "FVG inverso",
+    "text": "Um FVG de alta rompido para baixo inverte-se para resistência no regresso (e vice-versa)."
+   }
+  ],
+  "mistake": "Nem todo gap é operável — um FVG de um deslocamento de alto volume após um varrimento é ouro; um de uma sessão noturna morta é ruído. E os FVGs no fundo de uma tendência potente podem nunca preencher — tratá-los todos como alvos de preenchimento garantidos atira-o contra comboios de carga.",
+  "terms": [
+   "Desequilíbrio de três velas",
+   "Consequent Encroachment",
+   "Ponto médio de 50%",
+   "FVG inverso",
+   "Reequilíbrio",
+   "Deslocamento"
+  ],
+  "figcap": "Três velas deixam um FVG de alta (o gap sombreado); o preço depois regressa ao seu ponto médio de 50% para reequilibrar."
+ },
+ "smc.liquidity": {
+  "lead": "A liquidez são as bolsas de ordens em repouso — stops e entradas pendentes — agrupadas em níveis óbvios. As instituições levam o preço a essas bolsas para executar o seu tamanho, usando o comportamento previsível do retalho como combustível.",
+  "mechanics": [
+   {
+    "term": "Buy-side (BSL)",
+    "text": "Repousa acima de máximos de swing e máximos iguais (stops de vendas + compras de rompimento). O preço sobe para vender nela."
+   },
+   {
+    "term": "Sell-side (SSL)",
+    "text": "Repousa abaixo de mínimos de swing e mínimos iguais (stops de compras + vendas de rompimento). O preço desce para comprar dela."
+   },
+   {
+    "term": "Máximos/mínimos iguais",
+    "text": "Dois extremos idênticos concentram stops mesmo além — o mercado quase sempre os varre antes do movimento real."
+   },
+   {
+    "term": "Caça a stops",
+    "text": "O preço dispara além do nível, ativa os stops, depois reverte com força — muitas vezes numa vela de deslocamento."
+   }
+  ],
+  "mistake": "Colocar stops no nível óbvio (mesmo além de um máximo/mínimo-chave) põe-nos exatamente onde as caças a stops apontam. Ponha os stops além da próxima estrutura significativa. E nem todo varrimento reverte — alguns só aceleram a tendência; o deslocamento posterior indica qual.",
+  "terms": [
+   "Liquidez buy-side",
+   "Liquidez sell-side",
+   "Máximos/mínimos iguais",
+   "Caça a stops",
+   "Bolsa de liquidez",
+   "Deslocamento"
+  ],
+  "figcap": "Máximos iguais constroem uma bolsa de liquidez buy-side; o preço varre os stops acima, depois reverte para baixo."
+ },
+ "smc.pd-arrays": {
+  "lead": "Premium/Discount divide um range de negociação no seu equilíbrio de 50%: acima é premium (caro), abaixo é discount (barato). O smart money compra em discount e vende em premium — por isso também deve.",
+  "mechanics": [
+   {
+    "term": "Equilíbrio",
+    "text": "O 50% do swing de mínimo a máximo é o \"valor justo\"; tudo se ancora a este ponto médio."
+   },
+   {
+    "term": "Arrays premium",
+    "text": "OB/FVG/OTE situados acima de 50% — onde procura vendas enquanto as instituições distribuem aos perseguidores."
+   },
+   {
+    "term": "Arrays discount",
+    "text": "OB/FVG/OTE situados abaixo de 50% — onde procura compras enquanto as instituições acumulam de vendedores em pânico."
+   },
+   {
+    "term": "Regra",
+    "text": "Com viés de alta, compre só quando o preço recua ao discount; nunca persiga uma compra enquanto o preço está em premium."
+   }
+  ],
+  "mistake": "Usar o range de negociação errado dá o equilíbrio errado — ancore ao swing significativo mais recente. E um nível de Fibonacci sozinho não é vantagem; só importa quando o discount se sobrepõe a um array real (OB/FVG) e os tempos gráficos concordam.",
+  "terms": [
+   "Equilíbrio",
+   "Ponto médio de 50%",
+   "Premium",
+   "Discount",
+   "OTE",
+   "Range de negociação"
+  ],
+  "figcap": "Um range de negociação dividido no equilíbrio de 50%: discount abaixo (zona de compra) e premium acima (zona de venda)."
+ },
+ "smc.kill-zones": {
+  "lead": "As Kill Zones são as janelas temporais em que a atividade institucional atinge o pico e se formam os setups mais limpos. Operar só dentro delas — e evitar as horas mortas do almoço — é uma disciplina central do ICT.",
+  "mechanics": [
+   {
+    "term": "Abertura de Londres",
+    "text": "02:00–05:00 EST — a maior liquidez para EUR/GBP; a abertura muitas vezes varre o range asiático antes do movimento real."
+   },
+   {
+    "term": "Abertura de Nova Iorque",
+    "text": "07:00–10:00 EST — os dados de alto impacto dos EUA saem às 08:30; a segunda janela mais ativa do dia."
+   },
+   {
+    "term": "Silver Bullet",
+    "text": "A hora 10:00–11:00 EST — um FVG de 15 min alinhado com o viés diário é um dos setups de maior convicção do ICT."
+   },
+   {
+    "term": "Evite o almoço",
+    "text": "O almoço de NY / fecho de Londres (12:00–14:00 EST) é um chop de baixo volume onde o retalho se desgasta."
+   }
+  ],
+  "mistake": "O mesmo OB ou FVG que imprime entradas limpas na abertura de Londres torna-se num chop indeciso durante o almoço. E acompanhe as mudanças de horário de verão — EST→EDT desloca cada janela uma hora em relação ao GMT.",
+  "terms": [
+   "Abertura de Londres",
+   "Abertura de Nova Iorque",
+   "Silver Bullet",
+   "Range asiático",
+   "Sobreposição de sessões",
+   "IPDA"
+  ],
+  "figcap": "Uma barra de 24 horas a realçar as kill zones de Londres, Nova Iorque e Silver Bullet face às horas mortas do almoço."
+ },
+ "smc.ote": {
+  "lead": "A Entrada Ótima (OTE) é o bolso de Fibonacci do ICT: numa tendência confirmada, a entrada de recuo de maior probabilidade situa-se entre os níveis 61.8% e 79%, com 70.5% como ponto ideal.",
+  "body": "Combina uma zona de Fibonacci de discount profundo (ou premium profundo) com um array institucional real para máxima confluência.",
+  "mechanics": [
+   {
+    "term": "Medição",
+    "text": "Ancore o Fibonacci do mínimo ao máximo de swing significativo recente (alta); o OTE é a faixa 0.62–0.79."
+   },
+   {
+    "term": "Ponto ideal 70.5%",
+    "text": "O nível mais reativo do ICT — um limite aí com outras confluências equilibra profundidade de entrada e eficiência do stop."
+   },
+   {
+    "term": "Confluência exigida",
+    "text": "O OTE deve alinhar-se com um viés confirmado (BOS HTF), um array (OB/FVG) no bolso, e o timing de Kill Zone."
+   },
+   {
+    "term": "Alinhamento discount",
+    "text": "Num trade de alta, o OTE deve situar-se na metade discount do range de negociação."
+   }
+  ],
+  "mistake": "Usar o OTE num swing interno menor em vez do swing estrutural significativo coloca entradas em níveis irrelevantes. E o OTE sem viés, array e timing é só um nível de Fibonacci sem vantagem — todas as peças têm de convergir.",
+  "setup": {
+   "cond": "O BOS HTF confirma o viés; o preço recua ao bolso 0.62–0.79; um OB/FVG está dentro; Kill Zone ativa.",
+   "entry": "Limite no ponto ideal 70.5%, ou uma confirmação de rejeição dentro do bolso.",
+   "stop": "Além do swing que ancorou o Fibonacci, mais uma margem além do array.",
+   "target": "Máximo/mínimo de swing anterior e a liquidez além dele; 1:3 ou melhor é o típico."
+  },
+  "terms": [
+   "Bolso de Fibonacci",
+   "61.8% / 70.5% / 79%",
+   "Zona OTE",
+   "Discount",
+   "Confluência",
+   "Viés HTF"
+  ],
+  "figcap": "Um impulso de alta, depois um recuo ao bolso OTE de 62–79% onde se toma a entrada."
+ },
+ "smc.ob-retest": {
+  "lead": "O reteste de order block é a entrada central do ICT: após um varrimento, deslocamento e BOS deixarem um order block na origem do movimento, o preço recua a esse OB para reiniciar o movimento.",
+  "mechanics": [
+   {
+    "term": "Sequência",
+    "text": "Varrimento de liquidez → deslocamento a deixar OB+FVG → BOS confirma a direção → recuo ao OB."
+   },
+   {
+    "term": "Zona de entrada",
+    "text": "O bordo proximal do OB; o bordo distal fixa a referência do stop."
+   },
+   {
+    "term": "Confirmação",
+    "text": "Espere uma rejeição de tempo gráfico inferior ou um MSS no OB em vez de um toque cego."
+   },
+   {
+    "term": "Confluência",
+    "text": "Melhor quando o OB se sobrepõe a um FVG, ao bolso OTE, ao alinhamento premium/discount e ao timing de Kill Zone."
+   }
+  ],
+  "mistake": "A maior falha é entrar antes de o reteste acontecer realmente — muitos colocam limites antecipadamente e o preço nunca regressa. E \"pavio através, não fecho através\": o preço pode perfurar o OB, mas um fecho de corpo além do bordo distal invalida-o.",
+  "setup": {
+   "cond": "BOS HTF após deslocamento; OB na origem; o preço a recuar na direção dele durante uma Kill Zone com confirmação LTF.",
+   "entry": "No bordo proximal do OB numa rejeição, ou um limite aí para traders experientes.",
+   "stop": "Além do bordo distal do OB mais uma margem, ou além do extremo do varrimento.",
+   "target": "O próximo alvo de liquidez (BSL/SSL) e estrutura anterior; 1:3+."
+  },
+  "terms": [
+   "Proximal / distal",
+   "Mitigação",
+   "Deslocamento",
+   "MSS",
+   "Confluência",
+   "Alvo de liquidez"
+  ],
+  "figcap": "Após um deslocamento e um BOS, o preço regressa ao bordo proximal do order block — a entrada de reteste."
+ },
+ "smc.fvg-fill": {
+  "lead": "O preenchimento de FVG entra quando o preço regressa a um fair value gap, na direção do impulso que o criou — o gap atua como uma zona magnética, institucionalmente relevante, com risco definido.",
+  "mechanics": [
+   {
+    "term": "Três níveis de entrada",
+    "text": "Gap completo, o Consequent Encroachment de 50% (nível reativo principal), ou o bordo proximal para o stop mais apertado."
+   },
+   {
+    "term": "Parcial vs completo",
+    "text": "As tendências fortes muitas vezes só tocam o CE antes de retomar; as mais fracas preenchem todo o gap primeiro."
+   },
+   {
+    "term": "Entrada vs alvo",
+    "text": "Um FVG à frente do preço é um alvo (alvo de liquidez); um FVG ao qual o preço regressa é uma entrada — saiba que papel desempenha."
+   },
+   {
+    "term": "FVG inverso",
+    "text": "Um FVG de alta rompido torna-se uma entrada em venda no regresso de baixo, e vice-versa."
+   }
+  ],
+  "mistake": "Esperar um preenchimento completo muitas vezes implica perder a reação — o preço frequentemente toca o CE e reverte sem tocar o fundo, dando pior R:R. E um FVG isolado não tem viés; o contexto (OTE, premium/discount, BOS) torna-o de alta ou de baixa.",
+  "setup": {
+   "cond": "FVG de um deslocamento claro; viés HTF confirmado; preço a recuar na direção do gap numa Kill Zone.",
+   "entry": "Limite no CE (50%), ou no bordo proximal para um stop mais apertado, com confirmação LTF.",
+   "stop": "Além do bordo distante do FVG mais uma margem.",
+   "target": "Próximo alvo de liquidez / swing anterior / próximo FVG; 1:3+."
+  },
+  "terms": [
+   "Consequent Encroachment",
+   "Ponto médio de 50%",
+   "Preenchimento parcial",
+   "FVG inverso",
+   "Alvo de liquidez"
+  ],
+  "figcap": "O preço regressa a um fair value gap e reage no seu ponto médio de 50% (CE), retomando o movimento original."
+ },
+ "smc.liquidity-sweep": {
+  "lead": "A reversão por varrimento de liquidez é o setup fundador do ICT: o preço corre além de uma bolsa de stops, executa ordens institucionais, depois reverte — confirmado por uma Mudança de Estrutura de Mercado antes de entrar.",
+  "mechanics": [
+   {
+    "term": "Identifique a bolsa",
+    "text": "Máximos/mínimos iguais, extremos de sessão ou swing anteriores onde os stops de retalho se agrupam de forma previsível."
+   },
+   {
+    "term": "O varrimento",
+    "text": "O preço dispara além da bolsa e recua — um pavio forte além, a fechar de volta dentro."
+   },
+   {
+    "term": "Deslocamento + MSS",
+    "text": "Uma vela contundente reverte e quebra a estrutura interna (MSS), confirmando que o varrimento foi institucional."
+   },
+   {
+    "term": "Entre no recuo",
+    "text": "Após o MSS, o preço recua ao FVG ou OB do deslocamento — essa é a entrada no valor institucional."
+   }
+  ],
+  "mistake": "Entrar no fecho do varrimento antes do MSS é agressivo — alguns varrimentos correm mais longe primeiro. Esperar o MSS custa algum preço de entrada mas filtra falsas. E quanto mais óbvia a bolsa (máximos iguais tocados 3+ vezes), mais fiável a reversão.",
+  "setup": {
+   "cond": "Uma bolsa de liquidez clara varrida (pavio/fecho além), deslocamento imediato, e um MSS no tempo gráfico inferior.",
+   "entry": "Limite no CE do FVG do deslocamento ou no bordo proximal do OB, ou a mercado no fecho da vela MSS.",
+   "stop": "Além do extremo do pavio do varrimento, mais uma margem.",
+   "target": "A bolsa de liquidez oposta; 1:3 mínimo, muitas vezes 1:5–1:10 com confluência."
+  },
+  "terms": [
+   "Bolsa de liquidez",
+   "Caça a stops",
+   "Deslocamento",
+   "MSS",
+   "Máximos/mínimos iguais",
+   "Entrada em FVG"
+  ],
+  "figcap": "O preço varre os stops acima de máximos iguais, desloca para baixo com um MSS, depois recua para a entrada em venda."
+ },
+ "fundamental.macro-drivers": {
+  "lead": "Os drivers macro são as grandes forças — crescimento, emprego, inflação e política dos bancos centrais — que fixam o viés direcional de longo prazo de divisas, índices e matérias-primas.",
+  "body": "Explicam porque um ativo tende durante semanas ou meses, fornecendo o pano de fundo fundamental contra o qual cada setup técnico flui ou luta.",
+  "mechanics": [
+   {
+    "term": "O ciclo",
+    "text": "Expansão → pico → contração → vale; cada fase tem efeitos previsíveis sobre as valorizações de divisas e ações."
+   },
+   {
+    "term": "Crescimento e emprego",
+    "text": "Um PIB e emprego fortes atraem capital e permitem aos bancos centrais apertar — ambos positivos para a divisa."
+   },
+   {
+    "term": "Inflação",
+    "text": "A inflação acima da meta empurra a política para hawkish (divisa em alta); abaixo permite flexibilizar (divisa em baixa)."
+   },
+   {
+    "term": "Vantagem relativa",
+    "text": "No FX o trade é sempre entre duas divisas — o que importa é o diferencial, não cada economia isolada."
+   }
+  ],
+  "mistake": "Ignorar os fundamentais deixa-o cego ao porquê de um setup limpo correr forte (os fundamentais alinham-se) ou continuar a falhar (opõem-se a ele). E os mercados descontam expectativas com muita antecedência — a reação é ao desvio do consenso, não ao número absoluto.",
+  "terms": [
+   "Ciclo económico",
+   "PIB",
+   "Inflação",
+   "Banco central",
+   "Diferencial de política",
+   "Hawkish / dovish"
+  ],
+  "figcap": "O ciclo económico como uma onda através de expansão, pico, contração e vale."
+ },
+ "fundamental.interest-rates": {
+  "lead": "As taxas de juro — e as expectativas do mercado sobre as taxas futuras — são o driver mais poderoso do valor de uma divisa. O capital flui para o maior retorno ajustado ao risco.",
+  "mechanics": [
+   {
+    "term": "Mecanismo",
+    "text": "Taxas mais altas → maiores rendimentos → entradas estrangeiras → procura de divisa → apreciação. Os cortes fazem o inverso."
+   },
+   {
+    "term": "Diferencial de taxas",
+    "text": "A diferença entre as taxas de duas divisas impulsiona o carry trade — pedir emprestado a taxa baixa, manter a taxa alta, receber o rollover."
+   },
+   {
+    "term": "Hawkish vs dovish",
+    "text": "A mudança de tom (rumo a subidas ou cortes) muitas vezes move o preço mais que a própria decisão."
+   },
+   {
+    "term": "Forward guidance",
+    "text": "A mudança de uma única palavra num comunicado (\"transitório\"→\"persistente\") pode mover os mercados mais que um movimento de 25 pb."
+   }
+  ],
+  "mistake": "Operar uma decisão sem saber o que estava descontado é perigoso — uma subida totalmente esperada pode fazer cair uma divisa quando o posicionamento se desfaz (\"vender o facto\"). O que importa é a surpresa face ao consenso. Os carry trades também se desfazem violentamente em risk-off.",
+  "terms": [
+   "Diferencial de taxas",
+   "Carry trade",
+   "Hawkish / dovish",
+   "Forward guidance",
+   "Rendimentos de obrigações",
+   "DXY"
+  ],
+  "figcap": "À medida que a taxa de política sobe, a divisa fortalece-se ao mesmo ritmo — a relação taxa/divisa."
+ },
+ "fundamental.news-data": {
+  "lead": "As publicações económicas são lançamentos agendados de métricas-chave que disparam a volatilidade quando o dado se desvia do consenso. Saber o que cada um mede — e quando — é essencial quer os opere quer os evite.",
+  "mechanics": [
+   {
+    "term": "NFP",
+    "text": "Folhas de pagamento não agrícolas dos EUA, primeira sexta 08:30 EST — a publicação de FX que mais move o mercado; o que conta é a surpresa vs consenso."
+   },
+   {
+    "term": "IPC / IPC subjacente",
+    "text": "A leitura-chave de inflação para a Fed; um IPC quente é de alta para o USD e volátil para ações, um IPC fraco o inverso."
+   },
+   {
+    "term": "FOMC",
+    "text": "Oito vezes por ano: a decisão, o comunicado e o dot plot — a conferência de imprensa muitas vezes move mais que a decisão."
+   },
+   {
+    "term": "Níveis de impacto",
+    "text": "Os calendários codificam os eventos por cor; só o vermelho (alto impacto) produz de forma fiável volatilidade operável."
+   }
+  ],
+  "mistake": "\"Boas notícias = sobe\" é muitas vezes falso — os mercados são antecipatórios e descontam expectativas com antecedência; reagem à surpresa. A janela de 30 minutos antes de uma publicação vermelha é uma zona de não operar, com spreads a alargar e caças a stops. E as revisões do mês anterior podem anular um título favorável.",
+  "terms": [
+   "NFP",
+   "IPC",
+   "FOMC",
+   "Dot plot",
+   "Consenso",
+   "Calendário económico"
+  ],
+  "figcap": "Uma publicação agendada dispara um pico de volatilidade no momento do anúncio no calendário."
+ },
+ "fundamental.intermarket": {
+  "lead": "A análise intermercados lê as relações entre classes de ativos — ações, obrigações, divisas, matérias-primas — porque o capital global está interligado e um movimento num mercado muitas vezes pressagia outro.",
+  "mechanics": [
+   {
+    "term": "USD vs Ouro/Petróleo",
+    "text": "Um dólar mais forte geralmente pressiona o ouro e o petróleo (ambos cotados em USD); um dólar mais fraco eleva-os."
+   },
+   {
+    "term": "Rendimentos vs ações",
+    "text": "Rendimentos em alta aumentam o desconto sobre lucros futuros e competem com as ações — muitas vezes inversamente relacionados a curto prazo."
+   },
+   {
+    "term": "Risk-on / risk-off",
+    "text": "O risk-on compra ações e divisas de matérias-primas (AUD/CAD/NZD); o risk-off compra JPY, CHF, USD e obrigações."
+   },
+   {
+    "term": "DXY como mestre",
+    "text": "Como divisa de reserva e de cotação de matérias-primas, a direção do DXY sustenta ouro, petróleo, EM e os pares principais."
+   }
+  ],
+  "mistake": "As correlações não são estáticas — a inversa USD/ouro pode quebrar numa crise sistémica quando tudo se vende por liquidez. O valor real está em detetar quando uma correlação normal se quebra — essa mudança de regime é em si o sinal.",
+  "terms": [
+   "Risk-on / risk-off",
+   "Refúgios",
+   "Divisas de matérias-primas",
+   "DXY",
+   "Rendimentos de obrigações",
+   "Mudança de regime"
+  ],
+  "figcap": "O DXY e o ouro a moverem-se inversamente — uma correlação intermercados clássica usada como confluência."
+ },
+ "fundamental.news-fade": {
+  "lead": "O fade do pico de notícias opera a sobre-reação reflexa a uma publicação: o preço dispara no título, depois reverte rumo aos níveis anteriores à medida que a resposta algorítmica inicial dá lugar a um preço racional.",
+  "mechanics": [
+   {
+    "term": "Porque se desvanece",
+    "text": "Os algos atingem o título instantaneamente; os humanos depois julgam se realmente muda a história macro — se não, o pico torna-se liquidez a desvanecer."
+   },
+   {
+    "term": "Timing",
+    "text": "O pico é o primeiro 1–5 minutos; o fade desenvolve-se na janela de 5–30 minutos à medida que o momentum se esgota."
+   },
+   {
+    "term": "Sinais de fade",
+    "text": "O pico ultrapassa um nível-chave, o volume cai após a explosão, e o preço não consegue estender-se após 5–10 minutos."
+   },
+   {
+    "term": "Quando NÃO desvanecer",
+    "text": "Uma surpresa genuína que muda o paradigma transforma o pico em tendência sustentada — uma continuação forte significa afastar-se."
+   }
+  ],
+  "mistake": "Desvanecer uma surpresa macro real (o primeiro IPC que quebrou o narrativo \"transitório\") é catastrófico — o pico torna-se a tendência. Distinguir uma sobre-reação desvanecível de uma mudança de regime exige contexto macro, não só a vela. Os spreads também arruínam estes trades.",
+  "setup": {
+   "cond": "Publicação de alto impacto; um pico desmesurado que ultrapassa um nível; uma vela de reversão e sem continuação após 5+ min.",
+   "entry": "Na vela de reversão no extremo do pico, ou uma quebra da primeira consolidação pós-pico contra o pico.",
+   "stop": "Além do pavio extremo do pico, com margem extra para slippage.",
+   "target": "Nível anterior à publicação ou VWAP; conservador, dada a velocidade."
+  },
+  "terms": [
+   "Reação reflexa",
+   "Exaustão do pico",
+   "Reversão à média",
+   "Vela de reversão",
+   "Slippage",
+   "Surpresa macro"
+  ],
+  "figcap": "O preço dispara na publicação, esgota-se, e reverte rumo ao nível anterior à publicação — o fade."
+ },
+ "fundamental.data-continuation": {
+  "lead": "A continuação após o dado cavalga uma publicação que confirma a tendência macro existente: após o pico e um breve recuo, o preço continua na direção confirmada pelo dado.",
+  "body": "Ao contrário do fade, esta segue o movimento — mas só quando o dado concorda com o narrativo fundamental estabelecido.",
+  "mechanics": [
+   {
+    "term": "Pré-condições",
+    "text": "Uma tendência fundamental clara já em marcha (p. ex. um ciclo de subidas) que a publicação reforça."
+   },
+   {
+    "term": "O recuo",
+    "text": "Após o pico inicial, um recuo parcial é a realização de lucros final antes da continuação — esse recuo é a entrada."
+   },
+   {
+    "term": "Entrada num nível",
+    "text": "Espere o recuo a um nível técnico (resistência anterior tornada suporte, VWAP) para precisão."
+   },
+   {
+    "term": "Confluência",
+    "text": "A mais forte quando a direção da surpresa concorda com a tendência, o narrativo do banco central e o sentimento de risco."
+   }
+  ],
+  "mistake": "Entrar no pico inicial dá execuções terríveis e enorme slippage — espere o recuo a um nível. E um dado contra-tendência não reverte automaticamente a tendência; muitas vezes só a pausa salvo se a surpresa for grande.",
+  "setup": {
+   "cond": "Tendência macro existente; a publicação surpreende na direção da tendência; pico inicial e depois recuo a um nível-chave.",
+   "entry": "Uma rejeição no nível técnico no recuo, ou uma quebra da consolidação pós-pico com a tendência.",
+   "stop": "Abaixo do mínimo do recuo (compras) / acima do máximo (vendas), sob o nível usado.",
+   "target": "O próximo nível estrutural maior; mantenha durante a sessão, ou de um dia para o outro em dados que mudam o paradigma."
+  },
+  "terms": [
+   "Alinhamento macro",
+   "Pico-e-recuo",
+   "Consolidação pós-publicação",
+   "Pano de fundo fundamental",
+   "Confluência"
+  ],
+  "figcap": "Uma publicação dispara com a tendência, recua a um nível, depois continua — a entrada de continuação."
+ },
+ "quant.probability": {
+  "lead": "O trading quantitativo assenta no pensamento estatístico: operar é um jogo de probabilidades julgado sobre grandes amostras, não resultados isolados. A esperança diz-lhe se tem vantagem; a variância explica as séries dolorosas ao longo do caminho.",
+  "mechanics": [
+   {
+    "term": "Esperança",
+    "text": "E = (%acertos × ganho médio) − (%erros × perda média). Positiva = viável; negativa = nenhuma disciplina a pode salvar."
+   },
+   {
+    "term": "Win-rate vs R:R",
+    "text": "Compensam-se — um win-rate de 25% a 4:1 é rentável; a combinação deve ser positiva, não cada métrica isolada."
+   },
+   {
+    "term": "Lei dos grandes números",
+    "text": "A vantagem só aparece em 100+ trades; julgar um sistema em 10 trades é medir variância, não vantagem."
+   },
+   {
+    "term": "Variância",
+    "text": "Mesmo um ótimo sistema imprime séries de 10–20 perdas por acaso — dimensione posições para sobreviver-lhes."
+   }
+  ],
+  "mistake": "O erro psicológico número um é tratar uma série perdedora normal como um sistema \"avariado\" e abandoná-lo a meio do drawdown. O outro é perseguir um win-rate alto por conforto — os win-rates de 70% muitas vezes escondem um R:R minúsculo e esperança negativa. À matemática não importa como se sente.",
+  "terms": [
+   "Esperança",
+   "Win-rate",
+   "Risco:retorno",
+   "Lei dos grandes números",
+   "Variância",
+   "Vantagem"
+  ],
+  "figcap": "Uma curva de capital de esperança positiva sobe no conjunto enquanto sofre drawdowns de variância normais."
+ },
+ "quant.backtesting": {
+  "lead": "O backtesting aplica uma estratégia a dados históricos para estimar a sua vantagem antes de arriscar capital — mas está repleto de armadilhas que fabricam uma rentabilidade falsa que nunca sobrevive em real.",
+  "mechanics": [
+   {
+    "term": "Viés de antecipação",
+    "text": "Usar dados indisponíveis no momento da decisão (a abertura de amanhã, o máximo final da barra) — destrói toda a validade."
+   },
+   {
+    "term": "Sobreajuste",
+    "text": "Ajustar parâmetros sobre os mesmos dados que avalia memoriza o ruído; mais parâmetros = mais sobreajuste."
+   },
+   {
+    "term": "Walk-forward",
+    "text": "Otimize na amostra interna, depois teste em dados externos intactos; a diferença revela quanto foi sobreajustado."
+   },
+   {
+    "term": "Custos e slippage",
+    "text": "Uma estratégia rentável antes de spreads/comissões/slippage e negativa depois nunca foi real."
+   }
+  ],
+  "mistake": "Os backtests são sempre otimistas face ao real — a diferença é a \"degradação da estratégia\", e cresce com a complexidade. Precisa de 200–300+ trades através de regimes tendenciais e de range, de alta e baixa volatilidade; 50 trades num ano de alta não dizem quase nada.",
+  "terms": [
+   "Viés de antecipação",
+   "Sobreajuste",
+   "Walk-forward",
+   "Amostra interna/externa",
+   "Slippage",
+   "Degradação de estratégia"
+  ],
+  "figcap": "Divisão walk-forward: uma curva forte na amostra interna e o teste externo que expõe o sobreajuste."
+ },
+ "quant.risk-of-ruin": {
+  "lead": "O Risco de Ruína é a probabilidade de perder capital suficiente para ser eliminado do jogo — uma função da vantagem, do risco por trade e de quanta variância a sua conta consegue absorver. O dimensionamento importa tanto como a estratégia.",
+  "mechanics": [
+   {
+    "term": "A matemática",
+    "text": "O RdR sobe abruptamente com o risco por trade — mesmo uma vantagem real o arruína se as posições forem grandes demais para a variância."
+   },
+   {
+    "term": "Critério de Kelly",
+    "text": "f* = (b·p − q)/b maximiza o crescimento, mas o Kelly completo gera drawdowns de ~50% — a maioria usa um quarto a meio Kelly."
+   },
+   {
+    "term": "Assimetria do drawdown",
+    "text": "Uma perda de 25% precisa de +33% para recuperar; 50% precisa de +100%; 90% precisa de +900%. As perdas compõem-se contra si."
+   },
+   {
+    "term": "Fração fixa",
+    "text": "Arrisque um % fixo do capital por trade — compõe-se na subida e reduz o risco automaticamente na descida."
+   }
+  ],
+  "mistake": "A crença mais mortal é \"tenho vantagem, por isso devo apostar grande para crescer depressa\". A variância produzirá uma série perdedora que, em tamanho grande, excede o que a conta consegue sobreviver — e o Kelly completo é psicologicamente impossível de aguentar através dos seus drawdowns.",
+  "terms": [
+   "Critério de Kelly",
+   "Fração fixa",
+   "Recuperação de drawdown",
+   "Variância",
+   "Dimensionamento",
+   "Meio Kelly"
+  ],
+  "figcap": "Assimetria do drawdown: o ganho exigido para recuperar cresce de forma não linear à medida que a perda se aprofunda."
+ },
+ "quant.algo-systems": {
+  "lead": "Os sistemas algorítmicos executam regras predefinidas de forma automática, eliminando a emoção e permitindo testes rigorosos. Diferentes abordagens exploram diferentes ineficiências — seguimento de tendência, reversão à média, criação de mercado e arbitragem.",
+  "mechanics": [
+   {
+    "term": "Seguimento de tendência",
+    "text": "Comprar força, vender fraqueza (cruzamentos de médias, ADX). Ganha em tendências, sangra em ranges — a abordagem clássica CTA."
+   },
+   {
+    "term": "Reversão à média",
+    "text": "Desvanecer extremos de volta à média (z-score, bandas). Ganha em ranges, sofre em tendências."
+   },
+   {
+    "term": "Dependência do regime",
+    "text": "Um sistema otimizado num regime falha noutro — os sistemas robustos detetam o regime (ADX/volatilidade) e adaptam-se."
+   },
+   {
+    "term": "Execução",
+    "text": "A latência, o slippage e os limites da API decidem a viabilidade de alta frequência; a latência de retalho desqualifica muitas estratégias rápidas."
+   }
+  ],
+  "mistake": "A automatização não elimina o risco — executa uma estratégia defeituosa com consistência perfeita, por isso um mau sistema rebenta mais depressa. Mantenha um rácio trades-por-parâmetro alto (30+ trades por parâmetro) e exija um externo dentro de 50–70% do interno.",
+  "terms": [
+   "Seguimento de tendência",
+   "Reversão à média",
+   "Arbitragem",
+   "Deteção de regime",
+   "Latência",
+   "Sobreajuste"
+  ],
+  "figcap": "Dois regimes: um trecho tendencial (território de seguimento de tendência) e um range (território de reversão à média)."
+ },
+ "quant.mean-reversion": {
+  "lead": "Um sinal de reversão à média dispara quando o preço se esticou estatisticamente longe da sua média — por z-score, banda ou extremo de RSI — apostando num regresso brusco à média. Mas o regime deve estar primeiro em range.",
+  "mechanics": [
+   {
+    "term": "Z-score",
+    "text": "z = (preço − média) / σ; ±2 é um extremo operável, ±3 estatisticamente anómalo. Alvo = z de volta a 0."
+   },
+   {
+    "term": "Reversão de banda",
+    "text": "Um fecho além da banda de Bollinger de 2σ, depois uma vela de reversão de volta dentro; alvo a banda média."
+   },
+   {
+    "term": "Trading de pares",
+    "text": "Opere o spread entre dois ativos cointegrados quando se desvia ±2σ — neutro ao mercado por construção."
+   },
+   {
+    "term": "Filtro de regime",
+    "text": "Exija condições de range (ADX < 20, médias planas) antes de qualquer sinal de reversão ser válido."
+   }
+  ],
+  "mistake": "Aplicar reversão à média numa tendência é fatal — um RSI abaixo de 20 numa forte baixa é continuação, não uma compra. Avalie o regime antes do sinal. E correlação não é cointegração: pares que \"pareciam correlacionados\" podem divergir permanentemente.",
+  "setup": {
+   "cond": "Range confirmado (ADX < 20, médias planas); preço a 2+ σ da média; uma vela/estrutura de reversão no extremo.",
+   "entry": "Na vela de confirmação no extremo, não ao alcançá-lo; ou um limite sistemático a ±2σ.",
+   "stop": "A ±3σ da média, ou além do extremo de swing recente.",
+   "target": "Regresso à média (z=0 / banda média / RSI 50); tipicamente 1:1.5–1:3."
+  },
+  "terms": [
+   "Z-score",
+   "Desvio-padrão",
+   "Reversão de banda",
+   "Trading de pares",
+   "Cointegração",
+   "Filtro ADX"
+  ],
+  "figcap": "O preço estica-se à banda de +2σ num range, depois reverte à média — o trade de reversão."
+ },
+ "quant.momentum": {
+  "lead": "Um sinal de momentum entra quando o preço se move com força direcional suficiente para cavalgar — capturando a persistência em vez de a desvanecer. O ADX separa o momentum real do ruído.",
+  "mechanics": [
+   {
+    "term": "Taxa de Variação",
+    "text": "O ROC mede a % de variação num período; positivo e crescente = a acelerar; os cruzamentos da linha zero assinalam mudanças."
+   },
+   {
+    "term": "Filtro ADX",
+    "text": "ADX > 25 confirma tendência; > 45 avisa de exaustão (desvaneça, não persiga). +DI/−DI dão a direção."
+   },
+   {
+    "term": "Entrada de rompimento",
+    "text": "Entre num rompimento de nível só quando o ADX sobe acima de 25 — filtrando os falsos rompimentos que disparam com ADX plano."
+   },
+   {
+    "term": "Entradas de tendência",
+    "text": "Recuo à EMA 20/50, cruzamento de MACD, ou RSI através de 50 — tudo com o ADX a confirmar a tendência."
+   }
+  ],
+  "mistake": "O ADX mostra força, não direção — sem +DI/−DI tem metade do quadro. O pior desfecho é um rompimento que na verdade é um varrimento de liquidez; verifique que o rompimento não é só uma recolha de stops. O momentum também precisa de stops amplos além da estrutura, não cortes ATR apertados que o expulsam com chicotadas.",
+  "setup": {
+   "cond": "ADX > 25 e crescente; direção confirmada por +DI/−DI; preço num nível (rompimento ou recuo) com ROC/MACD em acordo.",
+   "entry": "No fecho do rompimento/rejeição de recuo, ou um cruzamento de sinal de MACD com ADX > 25.",
+   "stop": "Além do swing estrutural mais recente que invalida a tendência.",
+   "target": "Um objetivo tendencial; arraste a EMA 20/50, assegurando parciais em níveis-chave."
+  },
+  "terms": [
+   "Taxa de Variação",
+   "ADX",
+   "+DI / −DI",
+   "Rompimento de momentum",
+   "Falso rompimento",
+   "Stop dinâmico"
+  ],
+  "figcap": "Um rompimento confirmado por ADX a entrar numa tendência sustentada, arrastado por uma média móvel crescente."
+ }
+}

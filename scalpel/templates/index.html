@@ -2459,6 +2459,28 @@
       padding: 3px 7px; border: 1px solid rgba(61,90,254,.25);
     }
 
+    /* Language picker */
+    .syn-pdf-lang { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .syn-pdf-lang-label {
+      font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+      color: rgba(255,255,255,.45);
+    }
+    body.light .syn-pdf-lang-label { color: rgba(20,20,40,.5); }
+    .syn-pdf-lang-opts { display: flex; gap: 5px; }
+    .syn-pdf-lang-btn {
+      min-width: 38px; padding: 5px 9px; border-radius: 8px; cursor: pointer;
+      font-size: 12px; font-weight: 700; font-family: inherit;
+      background: rgba(255,255,255,.06); color: rgba(255,255,255,.55);
+      border: 1px solid rgba(255,255,255,.12); transition: all .15s;
+    }
+    .syn-pdf-lang-btn:hover { background: rgba(61,90,254,.2); color: #fff; }
+    .syn-pdf-lang-btn.active {
+      background: #3d5afe; color: #fff; border-color: #3d5afe;
+    }
+    body.light .syn-pdf-lang-btn { background: rgba(20,20,40,.04); color: rgba(20,20,40,.55); border-color: rgba(20,20,40,.12); }
+    body.light .syn-pdf-lang-btn:hover { background: rgba(61,90,254,.12); color: #3d5afe; }
+    body.light .syn-pdf-lang-btn.active { background: #3d5afe; color: #fff; border-color: #3d5afe; }
+
     .syn-pdf-cta {
       display: flex; align-items: center; justify-content: center;
       width: 100%; padding: 13px; border-radius: 10px; border: none;
@@ -4148,8 +4170,19 @@
       <span class="syn-pdf-launch" data-i18n="synapse.pdfLaunch">Launch price</span>
     </div>
 
+    <!-- Language picker -->
+    <div class="syn-pdf-lang">
+      <span class="syn-pdf-lang-label" data-i18n="synapse.pdfLang">Language</span>
+      <div class="syn-pdf-lang-opts" id="syn-pdf-lang-opts" role="group" aria-label="PDF language">
+        <button type="button" class="syn-pdf-lang-btn active" data-lang="en">EN</button>
+        <button type="button" class="syn-pdf-lang-btn" data-lang="es">ES</button>
+        <button type="button" class="syn-pdf-lang-btn" data-lang="fr">FR</button>
+        <button type="button" class="syn-pdf-lang-btn" data-lang="pt">PT</button>
+      </div>
+    </div>
+
     {% if current_user.is_admin %}
-    <a class="syn-pdf-cta syn-pdf-cta--active" href="/synapse/pdf/admin-download">
+    <a class="syn-pdf-cta syn-pdf-cta--active" id="syn-pdf-download" href="/synapse/pdf/admin-download?lang=en">
       <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Download PDF
     </a>
@@ -4406,6 +4439,7 @@
       'synapse.pdfPerk4': '100% offline — no internet needed',
       'synapse.pdfPerk5': 'Personalized & watermarked to you',
       'synapse.pdfLaunch': 'Launch price',
+      'synapse.pdfLang': 'Language',
       'synapse.pdfCta': 'Coming Soon',
       'synapse.pdfNote': 'Payment & instant delivery coming shortly.',
       'synapse.pdfDisclaimer': 'For educational purposes only · Not financial advice',
@@ -4670,6 +4704,7 @@
       'synapse.pdfPerk4': '100% offline — sin internet',
       'synapse.pdfPerk5': 'Personalizado y con marca de agua para ti',
       'synapse.pdfLaunch': 'Precio de lanzamiento',
+      'synapse.pdfLang': 'Idioma',
       'synapse.pdfCta': 'Próximamente',
       'synapse.pdfNote': 'Pago y entrega inmediata disponibles pronto.',
       'synapse.pdfDisclaimer': 'Solo con fines educativos · No es asesoramiento financiero',
@@ -4934,6 +4969,7 @@
       'synapse.pdfPerk4': '100% hors ligne — sans internet',
       'synapse.pdfPerk5': 'Personnalisé et marqué en filigrane pour vous',
       'synapse.pdfLaunch': 'Prix de lancement',
+      'synapse.pdfLang': 'Langue',
       'synapse.pdfCta': 'Bientôt disponible',
       'synapse.pdfNote': 'Paiement et livraison instantanée bientôt disponibles.',
       'synapse.pdfDisclaimer': 'À des fins éducatives uniquement · Pas un conseil financier',
@@ -5198,6 +5234,7 @@
       'synapse.pdfPerk4': '100% offline — sem internet',
       'synapse.pdfPerk5': 'Personalizado e com marca d\'água para você',
       'synapse.pdfLaunch': 'Preço de lançamento',
+      'synapse.pdfLang': 'Idioma',
       'synapse.pdfCta': 'Em breve',
       'synapse.pdfNote': 'Pagamento e entrega imediata disponíveis em breve.',
       'synapse.pdfDisclaimer': 'Apenas para fins educacionais · Não é aconselhamento financeiro',
@@ -11923,6 +11960,23 @@
       pdfClose.addEventListener('click', closePdfModal);
       pdfOverlay.addEventListener('click', (e) => { if (e.target === pdfOverlay) closePdfModal(); });
       document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePdfModal(); });
+
+      // Language picker → updates the admin download link + active state
+      const langOpts = document.getElementById('syn-pdf-lang-opts');
+      const dlBtn    = document.getElementById('syn-pdf-download');
+      if (langOpts) {
+        // default to the user's current UI language if it's one we support
+        let pdfLang = (typeof currentLang !== 'undefined' && ['en','es','fr','pt'].includes(currentLang)) ? currentLang : 'en';
+        const syncLang = () => {
+          langOpts.querySelectorAll('.syn-pdf-lang-btn').forEach(b =>
+            b.classList.toggle('active', b.dataset.lang === pdfLang));
+          if (dlBtn) dlBtn.setAttribute('href', '/synapse/pdf/admin-download?lang=' + pdfLang);
+        };
+        langOpts.querySelectorAll('.syn-pdf-lang-btn').forEach(btn => {
+          btn.addEventListener('click', () => { pdfLang = btn.dataset.lang; syncLang(); });
+        });
+        syncLang();
+      }
     })();
 
     // ══ Dossier "book" — editorial flipbook ══

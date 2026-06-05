@@ -1705,14 +1705,19 @@ def synapse_pdf_download(token):
 @app.route('/synapse/pdf/admin-download')
 @login_required
 def synapse_pdf_admin_download():
-    """Instant PDF download for admin users only — no payment required."""
+    """Instant PDF download for admin users only — no payment required.
+    Accepts ?lang=en|es|fr|pt to pick the output language."""
     if not current_user.is_admin:
         abort(403)
+    lang = (request.args.get('lang') or 'en').lower()
+    if lang not in ('en', 'es', 'fr', 'pt'):
+        lang = 'en'
     try:
         pdf_bytes = _build_synapse_pdf(
             buyer_name=current_user.username,
             buyer_email=current_user.email,
-            order_id='ADMIN-PREVIEW'
+            order_id='ADMIN-PREVIEW',
+            lang=lang
         )
     except Exception as e:
         app.logger.error('Admin PDF generation error: %s', e)
@@ -1720,7 +1725,7 @@ def synapse_pdf_admin_download():
 
     resp = make_response(pdf_bytes)
     resp.headers['Content-Type'] = 'application/pdf'
-    resp.headers['Content-Disposition'] = 'attachment; filename="synapse-library-admin-preview.pdf"'
+    resp.headers['Content-Disposition'] = f'attachment; filename="synapse-library-{lang}-admin-preview.pdf"'
     return resp
 
 
