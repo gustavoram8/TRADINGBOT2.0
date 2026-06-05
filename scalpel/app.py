@@ -80,6 +80,11 @@ reset_serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 # the Scout tab, its API endpoints and the pricing perk all come back instantly.
 SCOUT_ENABLED = os.environ.get("SCOUT_ENABLED", "0") in ("1", "true", "True")
 
+# Bump this date every time the Terms & Conditions are materially updated.
+# It is stored on each user record at the moment of acceptance so there is
+# a permanent audit trail of which version they agreed to.
+TERMS_VERSION = "2026-06-05"
+
 # ── AI client ──
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "placeholder")
 MODEL = os.environ.get("SCALPEL_MODEL", "gpt-4o")
@@ -117,6 +122,7 @@ class User(UserMixin, db.Model):
     ban_reason = db.Column(db.String(300), nullable=True)
     # ── Terms & Conditions acceptance (clickwrap evidence) ──
     terms_accepted_at = db.Column(db.DateTime, nullable=True)
+    terms_version = db.Column(db.String(20), nullable=True)  # e.g. "2026-06-05"
 
     def set_password(self, raw):
         self.password_hash = generate_password_hash(raw)
@@ -883,6 +889,7 @@ def login():
             # by signing in (the login page shows the notice beneath the button).
             if not user.terms_accepted_at:
                 user.terms_accepted_at = datetime.now(timezone.utc)
+                user.terms_version = TERMS_VERSION
                 db.session.commit()
             login_user(user, remember=remember)
             return redirect(url_for('welcome'))
@@ -926,6 +933,7 @@ def register():
         user.verification_code = code
         user.verification_expires = datetime.now(timezone.utc) + timedelta(minutes=15)
         user.terms_accepted_at = datetime.now(timezone.utc)
+        user.terms_version = TERMS_VERSION
         db.session.add(user)
         db.session.commit()
 
@@ -3188,6 +3196,8 @@ def _migrate_user_verification_columns():
     #    who accept on their next login via the passive consent notice) ──
     if 'terms_accepted_at' not in cols:
         stmts.append("ALTER TABLE user ADD COLUMN terms_accepted_at DATETIME")
+    if 'terms_version' not in cols:
+        stmts.append("ALTER TABLE user ADD COLUMN terms_version VARCHAR(20)")
     if stmts:
         with db.engine.begin() as conn:
             for s in stmts:
@@ -3213,6 +3223,7 @@ def init_db():
                 is_admin=True,
                 email_verified=True,
                 terms_accepted_at=datetime.now(timezone.utc),
+                terms_version=TERMS_VERSION,
             )
             admin.set_password(admin_password)
             db.session.add(admin)
