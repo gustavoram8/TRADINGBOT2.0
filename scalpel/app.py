@@ -3,6 +3,10 @@ import json
 import base64
 import socket
 import secrets
+import time
+import threading
+import urllib.request
+import urllib.parse
 from functools import wraps
 from datetime import datetime, timedelta, timezone
 
@@ -84,6 +88,26 @@ SCOUT_ENABLED = os.environ.get("SCOUT_ENABLED", "0") in ("1", "true", "True")
 # It is stored on each user record at the moment of acceptance so there is
 # a permanent audit trail of which version they agreed to.
 TERMS_VERSION = "2026-06-05"
+
+# ── WhatsApp alerts (CallMeBot) ──
+WA_PHONE  = os.environ.get("WA_PHONE", "")   # e.g. +584125556345
+WA_APIKEY = os.environ.get("WA_APIKEY", "")  # CallMeBot API key
+
+def send_whatsapp_alert(message):
+    """Send a WhatsApp message via CallMeBot. Fire-and-forget, never raises."""
+    if not WA_PHONE or not WA_APIKEY:
+        app.logger.warning("WhatsApp alert skipped — WA_PHONE or WA_APIKEY not set.")
+        return
+    def _send():
+        try:
+            encoded = urllib.parse.quote(message)
+            url = (f"https://api.callmebot.com/whatsapp.php"
+                   f"?phone={WA_PHONE}&text={encoded}&apikey={WA_APIKEY}")
+            with urllib.request.urlopen(url, timeout=10):
+                pass
+        except Exception as e:
+            app.logger.error("WhatsApp alert failed: %s", e)
+    threading.Thread(target=_send, daemon=True).start()
 
 # ── AI client ──
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "placeholder")
@@ -3773,6 +3797,39 @@ def init_db():
 
 
 init_db()
+
+
+# ── Health check endpoint ──────────────────────────────────────────────────
+@app.route('/health')
+def health_check():
+    """Public health endpoint — exposes site metrics for monitoring scripts."""
+    try:
+        user_count   = User.query.count()
+        paid_users   = User.query.filter(User.plan != 'free').count()
+        pending_orders = Order.query.filter_by(status='pending').count()
+        db_path = os.path.join(BASE_DIR, 'scalpel.db')
+        db_size_mb = round(os.path.getsize(db_path) / 1024 / 1024, 2) if os.path.exists(db_path) else 0
+        return jsonify({
+            'status':          'ok',
+            'timestamp':       datetime.now(timezone.utc).isoformat(),
+            'users_total':     user_count,
+            'users_paid':      paid_users,
+            'orders_pending':  pending_orders,
+            'db_size_mb':      db_size_mb,
+        })
+    except Exception as e:
+        return jsonify({'status': 'error', 'detail': str(e)}), 500
+
+
+# ── Global error handler — sends WhatsApp alert on 500s ───────────────────
+@app.errorhandler(500)
+def handle_500(e):
+    msg = (f"🚨 *Trader Acelerator — ERROR 500*\n"
+           f"URL: {request.url}\n"
+           f"Error: {str(e)[:200]}\n"
+           f"Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}")
+    send_whatsapp_alert(msg)
+    return jsonify({'error': 'Internal server error'}), 500
 
 
 if __name__ == '__main__':
