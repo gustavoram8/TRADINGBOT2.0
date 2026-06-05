@@ -524,6 +524,8 @@
     </ul>
     {% if user_plan == 'standard' %}
     <span class="cta cta-current">✓ Current Plan</span>
+    {% elif user_plan == 'premium' %}
+    <span class="cta cta-current">—</span>
     {% else %}
     <a href="/checkout?plan=standard&cycle=monthly" class="cta cta-buy" data-plan="standard">Choose Standard</a>
     {% endif %}

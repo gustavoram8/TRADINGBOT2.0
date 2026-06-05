@@ -1135,6 +1135,8 @@
         {% if current_user.is_authenticated %}
           {% if current_user.plan == 'standard' %}
             <span class="cta cta-current">✓ Current Plan</span>
+          {% elif current_user.plan == 'premium' %}
+            <span class="cta cta-current">—</span>
           {% else %}
             <a href="/checkout?plan=standard&cycle=monthly" class="cta" data-t="ps_cta">Choose Standard</a>
           {% endif %}

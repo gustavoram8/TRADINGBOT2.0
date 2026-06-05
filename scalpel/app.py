@@ -1433,6 +1433,10 @@ def checkout():
     cycle = request.args.get('cycle', 'monthly')
     if plan not in PLAN_PRICING or cycle not in ('monthly', 'annual'):
         return redirect(url_for('pricing'))
+    # Block same-plan or downgrade purchases
+    PLAN_RANK = {'free': 0, 'standard': 1, 'premium': 2}
+    if PLAN_RANK.get(plan, 0) <= PLAN_RANK.get(current_user.plan, 0):
+        return redirect(url_for('pricing'))
     q = _quote(plan, cycle)
     return render_template('checkout.html', plan=plan, cycle=cycle,
                            plan_label=PLAN_LABELS[plan], quote=q)
