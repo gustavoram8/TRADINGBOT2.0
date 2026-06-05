@@ -116,6 +116,7 @@ class User(UserMixin, db.Model):
     plan_cycle = db.Column(db.String(10), nullable=True)       # monthly / annual
     plan_started_at = db.Column(db.DateTime, nullable=True)
     plan_expires_at = db.Column(db.DateTime, nullable=True)    # NULL = no expiry (free/admin)
+    cancel_at_period_end = db.Column(db.Boolean, default=False, nullable=False)
     # ── Email verification (OTP) ──
     email_verified = db.Column(db.Boolean, default=False, nullable=False)
     verification_code = db.Column(db.String(6), nullable=True)
@@ -390,6 +391,21 @@ def _enforce_ban():
         if request.path.startswith('/api/'):
             return jsonify({'error': 'banned'}), 403
         return redirect(url_for('login', banned=1))
+
+
+@app.before_request
+def _expire_plan():
+    """Downgrade plan to free when the paid period has ended."""
+    if not current_user.is_authenticated or current_user.plan == 'free':
+        return
+    expires = _aware(getattr(current_user, 'plan_expires_at', None))
+    if expires and expires < datetime.now(timezone.utc):
+        current_user.plan = 'free'
+        current_user.plan_cycle = None
+        current_user.plan_started_at = None
+        current_user.plan_expires_at = None
+        current_user.cancel_at_period_end = False
+        db.session.commit()
 
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -960,8 +976,29 @@ def terms():
 
 
 @app.route('/settings')
+@login_required
 def settings():
-    return render_template('settings.html')
+    return render_template('settings.html', user=current_user)
+
+
+@app.route('/account/cancel-plan', methods=['POST'])
+@login_required
+def cancel_plan():
+    if current_user.plan == 'free':
+        return redirect(url_for('settings'))
+    current_user.cancel_at_period_end = True
+    db.session.commit()
+    return redirect(url_for('settings', cancelled=1))
+
+
+@app.route('/account/reactivate-plan', methods=['POST'])
+@login_required
+def reactivate_plan():
+    if current_user.plan == 'free':
+        return redirect(url_for('settings'))
+    current_user.cancel_at_period_end = False
+    db.session.commit()
+    return redirect(url_for('settings', reactivated=1))
 
 
 @app.route('/contact', methods=['GET', 'POST'])
@@ -3693,6 +3730,8 @@ def _migrate_user_verification_columns():
         stmts.append("ALTER TABLE user ADD COLUMN plan_started_at DATETIME")
     if 'plan_expires_at' not in cols:
         stmts.append("ALTER TABLE user ADD COLUMN plan_expires_at DATETIME")
+    if 'cancel_at_period_end' not in cols:
+        stmts.append("ALTER TABLE user ADD COLUMN cancel_at_period_end BOOLEAN NOT NULL DEFAULT 0")
     if stmts:
         with db.engine.begin() as conn:
             for s in stmts:
