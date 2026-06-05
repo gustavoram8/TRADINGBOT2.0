@@ -940,7 +940,8 @@ def welcome():
 
 @app.route('/pricing')
 def pricing():
-    return render_template('pricing.html')
+    user_plan = current_user.plan if current_user.is_authenticated else 'free'
+    return render_template('pricing.html', user_plan=user_plan)
 
 
 @app.route('/store/indicators')

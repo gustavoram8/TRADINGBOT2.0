@@ -379,6 +379,13 @@
     }
     .plan.premium .cta:hover { filter: brightness(1.07); }
 
+    .cta-current {
+      display: block; background: transparent; border: 2px solid var(--line);
+      color: var(--muted); cursor: default; pointer-events: none;
+      font-size: 14px; letter-spacing: .01em;
+    }
+    .cta-current:hover { filter: none; background: transparent; }
+
     /* ── FOOTNOTE ── */
     .foot-note {
       text-align: center;
@@ -515,7 +522,11 @@
         <span>Everything in Free</span>
       </li>
     </ul>
+    {% if user_plan == 'standard' %}
+    <span class="cta cta-current">✓ Current Plan</span>
+    {% else %}
     <a href="/checkout?plan=standard&cycle=monthly" class="cta cta-buy" data-plan="standard">Choose Standard</a>
+    {% endif %}
   </div>
 
   <!-- ── PREMIUM ── -->
@@ -570,7 +581,11 @@
         <span>Indicators library <span class="label-soon">soon</span></span>
       </li>
     </ul>
+    {% if user_plan == 'premium' %}
+    <span class="cta cta-current">✓ Current Plan</span>
+    {% else %}
     <a href="/checkout?plan=premium&cycle=monthly" class="cta cta-buy" data-plan="premium">Go Premium</a>
+    {% endif %}
   </div>
 
 </div>
