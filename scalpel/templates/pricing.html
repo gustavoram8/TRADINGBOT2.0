@@ -482,7 +482,9 @@
         <span>Full AI feedback engine</span>
       </li>
     </ul>
+    {% if not current_user.is_authenticated %}
     <a href="/" class="cta">Start free</a>
+    {% endif %}
   </div>
 
   <!-- ── STANDARD ── -->

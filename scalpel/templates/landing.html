@@ -1096,7 +1096,9 @@
             <span data-t="pf2">Full AI feedback engine</span>
           </li>
         </ul>
+        {% if not current_user.is_authenticated %}
         <a href="/register" class="cta" data-t="pf_cta">Start free</a>
+        {% endif %}
       </div>
 
       <!-- Standard -->
