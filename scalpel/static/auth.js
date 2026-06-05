@@ -37,7 +37,7 @@ const AUTH_I18N = {
     'reg.errUser': 'That username is already taken.',
     'reg.errEmail': 'That email is already registered.',
     'reg.errTerms': 'You must be 18 or older and accept the Terms & Conditions to create an account.',
-    'reg.terms': 'I confirm I am <strong>18 years of age or older</strong>, and I have read and agree to the <a href="/terms" target="_blank" rel="noopener">Terms &amp; Conditions</a> and understand that all sales are final.',
+    'reg.terms': 'I confirm I am <strong>18 years of age or older</strong> and I have read and accepted the <a href="/terms" target="_blank" rel="noopener">Terms &amp; Conditions</a>, including the no-refund policy.',
     'reg.note': 'After subscribing, your plan is activated by the Trader Acelerator team. New accounts start on the free tier.',
     'fp.title': 'Reset your password',
     'fp.sub': "Enter your email and we'll send you a reset link",
