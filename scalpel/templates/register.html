@@ -34,6 +34,8 @@
       <div class="alert alert-error" data-i18n="reg.errEmail">That email is already registered.</div>
     {% elif error == 'device_banned' %}
       <div class="alert alert-error" data-i18n="reg.errDeviceBanned">Account creation is not available from this device. Contact support if you believe this is a mistake.</div>
+    {% elif error == 'terms_required' %}
+      <div class="alert alert-error" data-i18n="reg.errTerms">You must accept the Terms &amp; Conditions to create an account.</div>
     {% endif %}
 
     <form method="POST" action="/register" id="reg-form">
@@ -54,6 +56,10 @@
       <label class="remember-row">
         <input type="checkbox" name="remember" value="1" />
         <span data-i18n="auth.remember">Remember this device</span>
+      </label>
+      <label class="remember-row terms-row">
+        <input type="checkbox" name="accept_terms" value="1" required />
+        <span data-i18n-html="reg.terms">I have read and agree to the <a href="/terms" target="_blank" rel="noopener">Terms &amp; Conditions</a> and understand that all sales are final.</span>
       </label>
       <button type="submit" class="btn btn-primary" data-i18n="reg.submit">Create account</button>
     </form>

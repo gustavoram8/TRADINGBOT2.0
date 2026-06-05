@@ -14,6 +14,7 @@ const AUTH_I18N = {
     'login.register': 'Create an account',
     'login.errInvalid': 'Incorrect email/username or password.',
     'login.resetOk': 'Password updated. You can sign in now.',
+    'login.terms': 'By signing in you agree to our <a href="/terms" target="_blank" rel="noopener">Terms &amp; Conditions</a>.',
     'auth.remember': 'Remember this device',
     've.title': 'Verify your email',
     've.sub': 'We sent a 6-digit code to {email}. Enter it below to activate your account.',
@@ -35,6 +36,8 @@ const AUTH_I18N = {
     'reg.errInvalid': 'Please check your details (username 3+, password 6+ chars).',
     'reg.errUser': 'That username is already taken.',
     'reg.errEmail': 'That email is already registered.',
+    'reg.errTerms': 'You must accept the Terms & Conditions to create an account.',
+    'reg.terms': 'I have read and agree to the <a href="/terms" target="_blank" rel="noopener">Terms &amp; Conditions</a> and understand that all sales are final.',
     'reg.note': 'After subscribing, your plan is activated by the Trader Acelerator team. New accounts start on the free tier.',
     'fp.title': 'Reset your password',
     'fp.sub': "Enter your email and we'll send you a reset link",
@@ -65,6 +68,7 @@ const AUTH_I18N = {
     'login.register': 'Crear una cuenta',
     'login.errInvalid': 'Correo/usuario o contraseña incorrectos.',
     'login.resetOk': 'Contraseña actualizada. Ya puedes iniciar sesión.',
+    'login.terms': 'Al iniciar sesión aceptas nuestros <a href="/terms" target="_blank" rel="noopener">Términos y Condiciones</a>.',
     'auth.remember': 'Recordar este dispositivo',
     've.title': 'Verifica tu correo',
     've.sub': 'Enviamos un código de 6 dígitos a {email}. Ingrésalo para activar tu cuenta.',
@@ -86,6 +90,8 @@ const AUTH_I18N = {
     'reg.errInvalid': 'Revisa tus datos (usuario 3+, contraseña 6+ caracteres).',
     'reg.errUser': 'Ese usuario ya está en uso.',
     'reg.errEmail': 'Ese correo ya está registrado.',
+    'reg.errTerms': 'Debes aceptar los Términos y Condiciones para crear una cuenta.',
+    'reg.terms': 'He leído y acepto los <a href="/terms" target="_blank" rel="noopener">Términos y Condiciones</a> y entiendo que todas las compras son finales.',
     'reg.note': 'Tras suscribirte, el equipo de Trader Acelerator activa tu plan. Las cuentas nuevas empiezan en el plan gratis.',
     'fp.title': 'Recupera tu contraseña',
     'fp.sub': 'Ingresa tu correo y te enviaremos un enlace de recuperación',
@@ -116,6 +122,7 @@ const AUTH_I18N = {
     'login.register': 'Créer un compte',
     'login.errInvalid': 'Email/identifiant ou mot de passe incorrect.',
     'login.resetOk': 'Mot de passe mis à jour. Vous pouvez vous connecter.',
+    'login.terms': 'En vous connectant, vous acceptez nos <a href="/terms" target="_blank" rel="noopener">Conditions Générales</a>.',
     'auth.remember': 'Se souvenir de cet appareil',
     've.title': 'Vérifiez votre email',
     've.sub': 'Nous avons envoyé un code à 6 chiffres à {email}. Saisissez-le pour activer votre compte.',
@@ -137,6 +144,8 @@ const AUTH_I18N = {
     'reg.errInvalid': 'Vérifiez vos infos (identifiant 3+, mot de passe 6+ caractères).',
     'reg.errUser': 'Cet identifiant est déjà pris.',
     'reg.errEmail': 'Cet email est déjà enregistré.',
+    'reg.errTerms': 'Vous devez accepter les Conditions Générales pour créer un compte.',
+    'reg.terms': "J'ai lu et j'accepte les <a href=\"/terms\" target=\"_blank\" rel=\"noopener\">Conditions Générales</a> et je comprends que tous les achats sont définitifs.",
     'reg.note': "Après l'abonnement, l'équipe Trader Acelerator active votre offre. Les nouveaux comptes démarrent en gratuit.",
     'fp.title': 'Réinitialiser le mot de passe',
     'fp.sub': 'Entrez votre email et nous vous enverrons un lien',
@@ -167,6 +176,7 @@ const AUTH_I18N = {
     'login.register': 'Criar uma conta',
     'login.errInvalid': 'Email/usuário ou senha incorretos.',
     'login.resetOk': 'Senha atualizada. Você já pode entrar.',
+    'login.terms': 'Ao entrar, você concorda com nossos <a href="/terms" target="_blank" rel="noopener">Termos e Condições</a>.',
     'auth.remember': 'Lembrar deste dispositivo',
     've.title': 'Verifique seu email',
     've.sub': 'Enviamos um código de 6 dígitos para {email}. Digite-o para ativar sua conta.',
@@ -188,6 +198,8 @@ const AUTH_I18N = {
     'reg.errInvalid': 'Verifique seus dados (usuário 3+, senha 6+ caracteres).',
     'reg.errUser': 'Esse usuário já está em uso.',
     'reg.errEmail': 'Esse email já está registrado.',
+    'reg.errTerms': 'Você precisa aceitar os Termos e Condições para criar uma conta.',
+    'reg.terms': 'Li e aceito os <a href="/terms" target="_blank" rel="noopener">Termos e Condições</a> e entendo que todas as compras são finais.',
     'reg.note': 'Após assinar, a equipe Trader Acelerator ativa seu plano. Contas novas começam no plano grátis.',
     'fp.title': 'Redefina sua senha',
     'fp.sub': 'Digite seu email e enviaremos um link de redefinição',
@@ -228,5 +240,10 @@ const AUTH_I18N = {
   });
   document.querySelectorAll('[data-i18n-ph]').forEach((el) => {
     el.setAttribute('placeholder', t(el.getAttribute('data-i18n-ph')));
+  });
+  // Strings that legitimately contain markup (e.g. the Terms link) opt in here.
+  // Values come only from the translation table below — never from user input.
+  document.querySelectorAll('[data-i18n-html]').forEach((el) => {
+    el.innerHTML = t(el.getAttribute('data-i18n-html'));
   });
 })();

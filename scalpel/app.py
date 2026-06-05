@@ -115,6 +115,8 @@ class User(UserMixin, db.Model):
     is_banned = db.Column(db.Boolean, default=False, nullable=False)
     banned_at = db.Column(db.DateTime, nullable=True)
     ban_reason = db.Column(db.String(300), nullable=True)
+    # ── Terms & Conditions acceptance (clickwrap evidence) ──
+    terms_accepted_at = db.Column(db.DateTime, nullable=True)
 
     def set_password(self, raw):
         self.password_hash = generate_password_hash(raw)
@@ -877,6 +879,11 @@ def login():
                 session['pending_user_id'] = user.id
                 session['pending_remember'] = remember
                 return redirect(url_for('verify_email'))
+            # Passive consent: existing accounts predating the T&C accept them
+            # by signing in (the login page shows the notice beneath the button).
+            if not user.terms_accepted_at:
+                user.terms_accepted_at = datetime.now(timezone.utc)
+                db.session.commit()
             login_user(user, remember=remember)
             return redirect(url_for('welcome'))
         return render_template('login.html', error='invalid')
@@ -895,10 +902,14 @@ def register():
         email = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '')
         remember = bool(request.form.get('remember'))
+        accepted_terms = bool(request.form.get('accept_terms'))
         fp_hash = (request.form.get('_fp') or '').strip()[:64]
 
         if len(username) < 3 or len(email) < 5 or len(password) < 6:
             return render_template('register.html', error='invalid', username=username, email=email)
+        # Clickwrap: the account cannot be created without explicit T&C consent.
+        if not accepted_terms:
+            return render_template('register.html', error='terms_required', username=username, email=email)
         if User.query.filter_by(username=username).first():
             return render_template('register.html', error='username_taken', username=username, email=email)
         if User.query.filter_by(email=email).first():
@@ -914,6 +925,7 @@ def register():
         user.set_password(password)
         user.verification_code = code
         user.verification_expires = datetime.now(timezone.utc) + timedelta(minutes=15)
+        user.terms_accepted_at = datetime.now(timezone.utc)
         db.session.add(user)
         db.session.commit()
 
@@ -3172,6 +3184,10 @@ def _migrate_user_verification_columns():
         stmts.append("ALTER TABLE user ADD COLUMN banned_at DATETIME")
     if 'ban_reason' not in cols:
         stmts.append("ALTER TABLE user ADD COLUMN ban_reason VARCHAR(300)")
+    # ── Terms acceptance column (added later; left NULL for pre-existing users,
+    #    who accept on their next login via the passive consent notice) ──
+    if 'terms_accepted_at' not in cols:
+        stmts.append("ALTER TABLE user ADD COLUMN terms_accepted_at DATETIME")
     if stmts:
         with db.engine.begin() as conn:
             for s in stmts:
@@ -3196,6 +3212,7 @@ def init_db():
                 plan='premium',
                 is_admin=True,
                 email_verified=True,
+                terms_accepted_at=datetime.now(timezone.utc),
             )
             admin.set_password(admin_password)
             db.session.add(admin)
