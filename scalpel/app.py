@@ -56,7 +56,10 @@ def _load_secret_key():
 
 
 app.config['SECRET_KEY'] = _load_secret_key()
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'scalpel.db')
+# Use PostgreSQL if DATABASE_URL is set, otherwise fall back to SQLite (dev only)
+_db_url = os.environ.get('DATABASE_URL', 'sqlite:///' + os.path.join(BASE_DIR, 'scalpel.db'))
+app.config['SQLALCHEMY_DATABASE_URI'] = _db_url
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_pre_ping': True, 'pool_recycle': 300}
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 # "Remember this device" — when opted in, keep the user logged in indefinitely.
