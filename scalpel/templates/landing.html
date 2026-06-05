@@ -563,6 +563,9 @@
     .plan.standard .cta:hover { background: #1d4ed8; }
     .plan.premium .cta { background: linear-gradient(135deg, var(--pp-premium), var(--pp-premium-2)); color: #fff; }
     .plan.premium .cta:hover { filter: brightness(1.07); }
+    .cta-current { background: transparent !important; border: 2px solid var(--pp-line) !important;
+                   color: var(--pp-muted) !important; cursor: default; pointer-events: none;
+                   filter: none !important; font-size: 14px; }
     @media (max-width: 900px) {
       .pricing-grid { grid-template-columns: 1fr; max-width: 460px; }
       .plan.featured { order: -1; }
@@ -1129,7 +1132,15 @@
             <span data-t="ps3">Everything in Free</span>
           </li>
         </ul>
-        <a href="/register" class="cta" data-t="ps_cta">Choose Standard</a>
+        {% if current_user.is_authenticated %}
+          {% if current_user.plan == 'standard' %}
+            <span class="cta cta-current">✓ Current Plan</span>
+          {% else %}
+            <a href="/checkout?plan=standard&cycle=monthly" class="cta" data-t="ps_cta">Choose Standard</a>
+          {% endif %}
+        {% else %}
+          <a href="/register" class="cta" data-t="ps_cta">Choose Standard</a>
+        {% endif %}
       </div>
 
       <!-- Premium -->
@@ -1190,7 +1201,15 @@
             <span data-t="pp5">Indicators library</span>
           </li>
         </ul>
-        <a href="/register" class="cta" data-t="pp_cta">Go Premium</a>
+        {% if current_user.is_authenticated %}
+          {% if current_user.plan == 'premium' %}
+            <span class="cta cta-current">✓ Current Plan</span>
+          {% else %}
+            <a href="/checkout?plan=premium&cycle=monthly" class="cta" data-t="pp_cta">Go Premium</a>
+          {% endif %}
+        {% else %}
+          <a href="/register" class="cta" data-t="pp_cta">Go Premium</a>
+        {% endif %}
       </div>
 
     </div>
