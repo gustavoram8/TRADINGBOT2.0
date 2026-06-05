@@ -12251,5 +12251,114 @@
   applyLanguage(currentLang);
   refreshAccountMenu();
 </script>
+
+<!-- ── FLOATING SUPPORT BUTTON ── -->
+<style>
+  .help-fab {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 50px;
+    height: 44px;
+    width: 44px;
+    overflow: hidden;
+    text-decoration: none;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.28);
+    transition: width .3s cubic-bezier(.4,0,.2,1),
+                box-shadow .2s ease,
+                background .15s ease;
+    white-space: nowrap;
+  }
+  .help-fab:hover {
+    width: 148px;
+    box-shadow: 0 6px 28px rgba(0,0,0,0.36);
+    background: var(--accent-h);
+  }
+  .help-fab-icon {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .help-fab-icon svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: #fff;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .help-fab-label {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .01em;
+    opacity: 0;
+    max-width: 0;
+    overflow: hidden;
+    transition: opacity .2s ease .1s, max-width .3s ease;
+    padding-right: 0;
+  }
+  .help-fab:hover .help-fab-label {
+    opacity: 1;
+    max-width: 120px;
+    padding-right: 16px;
+  }
+  /* Hide on scroll down, show on scroll up */
+  .help-fab.hidden {
+    transform: translateY(90px);
+    pointer-events: none;
+    transition: transform .3s ease, width .3s cubic-bezier(.4,0,.2,1);
+  }
+  @media (max-width: 600px) {
+    .help-fab { bottom: 20px; right: 16px; }
+  }
+</style>
+
+<a href="/contact" class="help-fab" id="help-fab" aria-label="Contact Support">
+  <span class="help-fab-icon">
+    <!-- envelope icon -->
+    <svg viewBox="0 0 24 24">
+      <rect x="2" y="4" width="20" height="16" rx="3"/>
+      <path d="M2 7l10 7 10-7"/>
+    </svg>
+  </span>
+  <span class="help-fab-label" data-i18n="support.fab">Support</span>
+</a>
+
+<script>
+(function () {
+  // Translate the FAB label using the already-applied language
+  var fabLabel = document.querySelector('.help-fab-label');
+  if (fabLabel) {
+    var fabI18n = { en:'Support', es:'Soporte', fr:'Support', pt:'Suporte' };
+    try {
+      var l = localStorage.getItem('scalpel_lang') || 'en';
+      fabLabel.textContent = fabI18n[l] || 'Support';
+    } catch(e) {}
+  }
+
+  // Hide FAB on scroll down, reveal on scroll up
+  var fab = document.getElementById('help-fab');
+  var lastY = 0;
+  window.addEventListener('scroll', function () {
+    var y = window.scrollY;
+    if (y > lastY && y > 120) {
+      fab.classList.add('hidden');
+    } else {
+      fab.classList.remove('hidden');
+    }
+    lastY = y;
+  }, { passive: true });
+})();
+</script>
 </body>
 </html>

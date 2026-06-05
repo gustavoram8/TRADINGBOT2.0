@@ -18,7 +18,6 @@
            font-size:15px; line-height:1.7; min-height:100vh;
            -webkit-font-smoothing:antialiased; }
 
-    /* NAV */
     nav { display:flex; align-items:center; justify-content:space-between;
           padding:16px 32px; border-bottom:1px solid var(--line-soft);
           position:sticky; top:0; background:rgba(255,255,255,0.93);
@@ -27,25 +26,21 @@
     .back-link { font-size:13px; font-weight:600; color:var(--ink-soft); text-decoration:none; }
     .back-link:hover { color:var(--accent); }
 
-    /* LAYOUT */
     .wrap { max-width:680px; margin:0 auto; padding:56px 24px 96px; }
     .eyebrow { font-size:11px; font-weight:700; letter-spacing:.14em;
                text-transform:uppercase; color:var(--accent); margin-bottom:10px; }
     h1 { font-size:34px; font-weight:800; letter-spacing:-.02em; margin-bottom:8px; }
     .sub { font-size:15px; color:var(--ink-soft); margin-bottom:36px; }
 
-    /* CARD */
     .card { background:#fff; border:1px solid var(--line-soft);
             border-radius:var(--radius); padding:36px; }
 
-    /* ALERTS */
     .alert { border-radius:10px; padding:14px 18px; font-size:14px;
              margin-bottom:24px; display:flex; gap:12px; align-items:flex-start; }
     .alert-ok  { background:var(--ok-bg);  border:1px solid var(--ok-border);  color:var(--ok); }
     .alert-err { background:var(--err-bg); border:1px solid var(--err-border); color:var(--err); }
     .alert-icon { font-size:18px; flex-shrink:0; line-height:1.4; }
 
-    /* FORM */
     .field { margin-bottom:20px; }
     label { display:block; font-size:13px; font-weight:600;
             color:var(--ink-soft); margin-bottom:6px; }
@@ -56,13 +51,11 @@
     input:focus, select:focus, textarea:focus {
       border-color:var(--accent); box-shadow:0 0 0 3px rgba(37,99,235,.1); }
     textarea { resize:vertical; min-height:140px; line-height:1.6; }
-    select { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a8f9e' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    select { appearance:none;
+             background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a8f9e' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
              background-repeat:no-repeat; background-position:right 14px center; padding-right:36px; }
+    .char-count { font-size:12px; color:var(--muted); text-align:right; margin-top:4px; }
 
-    .char-count { font-size:12px; color:var(--muted); text-align:right;
-                  margin-top:4px; }
-
-    /* SUBMIT */
     .btn-submit { width:100%; padding:13px; background:var(--accent);
                   color:#fff; border:none; border-radius:10px;
                   font-size:15px; font-weight:700; font-family:inherit;
@@ -70,7 +63,6 @@
     .btn-submit:hover { background:#1d4ed8; }
     .btn-submit:disabled { background:#93c5fd; cursor:not-allowed; }
 
-    /* SUCCESS STATE */
     .success-wrap { text-align:center; padding:20px 0; }
     .success-icon { font-size:52px; margin-bottom:16px; }
     .success-title { font-size:22px; font-weight:700; margin-bottom:10px; }
@@ -80,7 +72,6 @@
                 font-weight:600; font-size:14px; }
     .btn-back:hover { background:#1d4ed8; }
 
-    /* FAQ */
     .faq { margin-top:44px; }
     .faq-title { font-size:13px; font-weight:700; letter-spacing:.1em;
                  text-transform:uppercase; color:var(--muted); margin-bottom:18px; }
@@ -93,6 +84,7 @@
     .faq-q.open .caret { transform:rotate(180deg); }
     .faq-a { font-size:13.5px; color:var(--ink-soft); margin-top:10px;
              line-height:1.65; display:none; }
+    .faq-a a { color:var(--accent); }
     .faq-a.open { display:block; }
 
     @media(max-width:600px) {
@@ -106,34 +98,34 @@
 <body>
 
 <nav>
-  <a href="/" class="logo"><img src="/static/logo.png" alt="Trader Acelerator" class="logo-img"
-     onerror="this.style.display='none';" /></a>
-  <a href="/app" class="back-link">← Back to app</a>
+  <a href="/" class="logo">
+    <img src="/static/logo.png" alt="Trader Acelerator" class="logo-img"
+         onerror="this.style.display='none';" />
+  </a>
+  <a href="/app" class="back-link" data-i18n="contact.back">← Back to app</a>
 </nav>
 
 <div class="wrap">
-  <div class="eyebrow">Support</div>
-  <h1>Contact us</h1>
-  <p class="sub">We typically respond within 24–48 hours on business days.</p>
+  <div class="eyebrow" data-i18n="contact.eyebrow">Support</div>
+  <h1 data-i18n="contact.title">Contact us</h1>
+  <p class="sub" data-i18n="contact.sub">We typically respond within 24–48 hours on business days.</p>
 
   <div class="card">
 
     {% if success %}
       <div class="success-wrap">
         <div class="success-icon">✉️</div>
-        <div class="success-title">Message received</div>
+        <div class="success-title" data-i18n="contact.successTitle">Message received</div>
         {% if sent %}
-          <p class="success-sub">
-            We've received your message and will get back to you
-            as soon as possible. Please check your inbox for a confirmation.
+          <p class="success-sub" data-i18n="contact.successSent">
+            We've received your message and will get back to you as soon as possible.
           </p>
         {% else %}
-          <p class="success-sub">
-            Your message was logged. Our team will review it shortly.<br />
-            <small style="color:var(--muted);">(Email delivery temporarily unavailable — your request is still on record.)</small>
+          <p class="success-sub" data-i18n="contact.successLogged">
+            Your message was logged. Our team will review it shortly.
           </p>
         {% endif %}
-        <a href="/app" class="btn-back">Back to app</a>
+        <a href="/app" class="btn-back" data-i18n="contact.backApp">Back to app</a>
       </div>
 
     {% else %}
@@ -141,45 +133,48 @@
       {% if error == 'missing' %}
         <div class="alert alert-err">
           <span class="alert-icon">⚠️</span>
-          <span>Please fill in all required fields before submitting.</span>
+          <span data-i18n="contact.errMissing">Please fill in all required fields before submitting.</span>
         </div>
       {% endif %}
 
       <form method="POST" action="/contact" id="contact-form">
         <div class="field">
-          <label for="name">Full name <span style="color:#ef4444">*</span></label>
+          <label for="name" data-i18n="contact.labelName">Full name <span style="color:#ef4444">*</span></label>
           <input type="text" id="name" name="name"
                  value="{{ name or prefill_name or '' }}"
+                 data-i18n-ph="contact.phName"
                  placeholder="Your name" required maxlength="120" />
         </div>
 
         <div class="field">
-          <label for="email">Email address <span style="color:#ef4444">*</span></label>
+          <label for="email" data-i18n="contact.labelEmail">Email address <span style="color:#ef4444">*</span></label>
           <input type="email" id="email" name="email"
                  value="{{ email or prefill_email or '' }}"
                  placeholder="you@example.com" required maxlength="255" />
         </div>
 
         <div class="field">
-          <label for="category">Subject</label>
+          <label for="category" data-i18n="contact.labelSubject">Subject</label>
           <select id="category" name="category">
-            <option value="Technical Issue"  {% if category == 'Technical Issue'  %}selected{% endif %}>🔧 Technical Issue</option>
-            <option value="Billing"          {% if category == 'Billing'          %}selected{% endif %}>💳 Billing</option>
-            <option value="Account"          {% if category == 'Account'          %}selected{% endif %}>👤 Account</option>
-            <option value="Legal"            {% if category == 'Legal'            %}selected{% endif %}>⚖️ Legal</option>
-            <option value="Content"          {% if category == 'Content'          %}selected{% endif %}>📚 Content / Educational material</option>
-            <option value="Other"            {% if not category or category == 'Other' %}selected{% endif %}>💬 Other</option>
+            <option value="Technical Issue" {% if category == 'Technical Issue' %}selected{% endif %} data-i18n-opt="contact.catTech">🔧 Technical Issue</option>
+            <option value="Billing"         {% if category == 'Billing'         %}selected{% endif %} data-i18n-opt="contact.catBilling">💳 Billing</option>
+            <option value="Account"         {% if category == 'Account'         %}selected{% endif %} data-i18n-opt="contact.catAccount">👤 Account</option>
+            <option value="Legal"           {% if category == 'Legal'           %}selected{% endif %} data-i18n-opt="contact.catLegal">⚖️ Legal</option>
+            <option value="Content"         {% if category == 'Content'         %}selected{% endif %} data-i18n-opt="contact.catContent">📚 Content / Educational material</option>
+            <option value="Other"           {% if not category or category == 'Other' %}selected{% endif %} data-i18n-opt="contact.catOther">💬 Other</option>
           </select>
         </div>
 
         <div class="field">
-          <label for="message">Message <span style="color:#ef4444">*</span></label>
-          <textarea id="message" name="message" placeholder="Describe your issue or question in detail…"
+          <label for="message" data-i18n="contact.labelMsg">Message <span style="color:#ef4444">*</span></label>
+          <textarea id="message" name="message"
+                    data-i18n-ph="contact.phMsg"
+                    placeholder="Describe your issue or question in detail…"
                     required maxlength="4000">{{ message or '' }}</textarea>
           <div class="char-count"><span id="char-cur">0</span> / 4000</div>
         </div>
 
-        <button type="submit" class="btn-submit" id="submit-btn">Send message</button>
+        <button type="submit" class="btn-submit" id="submit-btn" data-i18n="contact.submit">Send message</button>
       </form>
 
     {% endif %}
@@ -187,14 +182,14 @@
 
   <!-- FAQ -->
   <div class="faq">
-    <div class="faq-title">Frequently asked questions</div>
+    <div class="faq-title" data-i18n="contact.faqTitle">Frequently asked questions</div>
 
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">
-        How long does it take to get a response?
+        <span data-i18n="contact.faq1q">How long does it take to get a response?</span>
         <span class="caret">▼</span>
       </div>
-      <div class="faq-a">
+      <div class="faq-a" data-i18n="contact.faq1a">
         We aim to respond within 24–48 business hours. For urgent account or
         billing issues, please select the appropriate category so we can prioritize your request.
       </div>
@@ -202,10 +197,10 @@
 
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">
-        I paid but my plan was not activated. What do I do?
+        <span data-i18n="contact.faq2q">I paid but my plan was not activated. What do I do?</span>
         <span class="caret">▼</span>
       </div>
-      <div class="faq-a">
+      <div class="faq-a" data-i18n="contact.faq2a">
         Please send us a message selecting "Billing" as the subject, and include
         your registered email and proof of payment. We will verify and activate
         your plan manually as quickly as possible.
@@ -214,38 +209,33 @@
 
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">
-        My account was suspended. Can I appeal?
+        <span data-i18n="contact.faq3q">My account was suspended. Can I appeal?</span>
         <span class="caret">▼</span>
       </div>
       <div class="faq-a">
-        If you believe your account was suspended in error, select "Account"
+        <span data-i18n="contact.faq3a">If you believe your account was suspended in error, select "Account"
         and explain your situation. We review every appeal individually.
-        Please note that suspensions issued for clear violations of our
-        <a href="/terms" style="color:var(--accent);">Terms &amp; Conditions</a>
-        are generally not reversed.
+        Suspensions issued for clear violations of our </span><a href="/terms" data-i18n="contact.termsLink">Terms &amp; Conditions</a><span data-i18n="contact.faq3b"> are generally not reversed.</span>
       </div>
     </div>
 
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">
-        I have a legal concern or dispute.
+        <span data-i18n="contact.faq4q">I have a legal concern or dispute.</span>
         <span class="caret">▼</span>
       </div>
       <div class="faq-a">
-        Select "Legal" as the subject and describe your concern in detail.
-        As stated in our <a href="/terms" style="color:var(--accent);">Terms &amp; Conditions</a>
-        (Section 13), we require a minimum 30-day informal resolution period
-        before any formal arbitration proceeding. Contacting us here fulfills
-        that requirement.
+        <span data-i18n="contact.faq4a">Select "Legal" as the subject and describe your concern in detail.
+        As stated in our </span><a href="/terms" data-i18n="contact.termsLink">Terms &amp; Conditions</a><span data-i18n="contact.faq4b"> (Section 13), we require a minimum 30-day informal resolution period before any formal arbitration proceeding. Contacting us here fulfills that requirement.</span>
       </div>
     </div>
 
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">
-        I have a question about a PDF or educational material I purchased.
+        <span data-i18n="contact.faq5q">I have a question about a PDF or educational material I purchased.</span>
         <span class="caret">▼</span>
       </div>
-      <div class="faq-a">
+      <div class="faq-a" data-i18n="contact.faq5a">
         Select "Content / Educational material" and include your order details.
         Please note that all sales are final per our refund policy, but we are
         happy to assist with access issues or content questions.
@@ -256,39 +246,223 @@
 </div>
 
 <script>
-  // Character counter for textarea
+(function () {
+  var CONTACT_I18N = {
+    en: {
+      'contact.back': '← Back to app',
+      'contact.eyebrow': 'Support',
+      'contact.title': 'Contact us',
+      'contact.sub': 'We typically respond within 24–48 hours on business days.',
+      'contact.successTitle': 'Message received',
+      'contact.successSent': 'We\'ve received your message and will get back to you as soon as possible.',
+      'contact.successLogged': 'Your message was logged. Our team will review it shortly.',
+      'contact.backApp': 'Back to app',
+      'contact.errMissing': 'Please fill in all required fields before submitting.',
+      'contact.labelName': 'Full name',
+      'contact.phName': 'Your name',
+      'contact.labelEmail': 'Email address',
+      'contact.labelSubject': 'Subject',
+      'contact.catTech': '🔧 Technical Issue',
+      'contact.catBilling': '💳 Billing',
+      'contact.catAccount': '👤 Account',
+      'contact.catLegal': '⚖️ Legal',
+      'contact.catContent': '📚 Content / Educational material',
+      'contact.catOther': '💬 Other',
+      'contact.labelMsg': 'Message',
+      'contact.phMsg': 'Describe your issue or question in detail…',
+      'contact.submit': 'Send message',
+      'contact.sending': 'Sending…',
+      'contact.faqTitle': 'Frequently asked questions',
+      'contact.faq1q': 'How long does it take to get a response?',
+      'contact.faq1a': 'We aim to respond within 24–48 business hours. For urgent account or billing issues, please select the appropriate category so we can prioritize your request.',
+      'contact.faq2q': 'I paid but my plan was not activated. What do I do?',
+      'contact.faq2a': 'Please send us a message selecting "Billing" as the subject, and include your registered email and proof of payment. We will verify and activate your plan manually as quickly as possible.',
+      'contact.faq3q': 'My account was suspended. Can I appeal?',
+      'contact.faq3a': 'If you believe your account was suspended in error, select "Account" and explain your situation. We review every appeal individually. Suspensions issued for clear violations of our ',
+      'contact.faq3b': ' are generally not reversed.',
+      'contact.faq4q': 'I have a legal concern or dispute.',
+      'contact.faq4a': 'Select "Legal" as the subject and describe your concern in detail. As stated in our ',
+      'contact.faq4b': ' (Section 13), we require a minimum 30-day informal resolution period before any formal arbitration proceeding. Contacting us here fulfills that requirement.',
+      'contact.faq5q': 'I have a question about a PDF or educational material I purchased.',
+      'contact.faq5a': 'Select "Content / Educational material" and include your order details. Please note that all sales are final per our refund policy, but we are happy to assist with access issues or content questions.',
+      'contact.termsLink': 'Terms &amp; Conditions',
+    },
+    es: {
+      'contact.back': '← Volver a la app',
+      'contact.eyebrow': 'Soporte',
+      'contact.title': 'Contáctanos',
+      'contact.sub': 'Respondemos en un plazo de 24–48 horas en días hábiles.',
+      'contact.successTitle': 'Mensaje recibido',
+      'contact.successSent': 'Hemos recibido tu mensaje y te responderemos lo antes posible.',
+      'contact.successLogged': 'Tu mensaje fue registrado. Nuestro equipo lo revisará pronto.',
+      'contact.backApp': 'Volver a la app',
+      'contact.errMissing': 'Por favor completa todos los campos obligatorios antes de enviar.',
+      'contact.labelName': 'Nombre completo',
+      'contact.phName': 'Tu nombre',
+      'contact.labelEmail': 'Correo electrónico',
+      'contact.labelSubject': 'Asunto',
+      'contact.catTech': '🔧 Problema técnico',
+      'contact.catBilling': '💳 Facturación',
+      'contact.catAccount': '👤 Cuenta',
+      'contact.catLegal': '⚖️ Legal',
+      'contact.catContent': '📚 Contenido / Material educativo',
+      'contact.catOther': '💬 Otro',
+      'contact.labelMsg': 'Mensaje',
+      'contact.phMsg': 'Describe tu problema o pregunta en detalle…',
+      'contact.submit': 'Enviar mensaje',
+      'contact.sending': 'Enviando…',
+      'contact.faqTitle': 'Preguntas frecuentes',
+      'contact.faq1q': '¿Cuánto tiempo tarda una respuesta?',
+      'contact.faq1a': 'Respondemos en un plazo de 24–48 horas hábiles. Para problemas urgentes de cuenta o facturación, selecciona la categoría correspondiente.',
+      'contact.faq2q': 'Pagué pero mi plan no fue activado. ¿Qué hago?',
+      'contact.faq2a': 'Envíanos un mensaje seleccionando "Facturación" como asunto e incluye tu correo registrado y comprobante de pago. Activaremos tu plan manualmente lo antes posible.',
+      'contact.faq3q': 'Mi cuenta fue suspendida. ¿Puedo apelar?',
+      'contact.faq3a': 'Si crees que tu cuenta fue suspendida por error, selecciona "Cuenta" y explica tu situación. Revisamos cada apelación individualmente. Las suspensiones por violaciones claras a nuestros ',
+      'contact.faq3b': ' generalmente no se revierten.',
+      'contact.faq4q': 'Tengo una preocupación o disputa legal.',
+      'contact.faq4a': 'Selecciona "Legal" como asunto y describe tu situación en detalle. Según nuestros ',
+      'contact.faq4b': ' (Sección 13), requerimos un período mínimo de 30 días de resolución informal antes de cualquier arbitraje. Contactarnos aquí cumple ese requisito.',
+      'contact.faq5q': 'Tengo una pregunta sobre un PDF o material educativo que compré.',
+      'contact.faq5a': 'Selecciona "Contenido / Material educativo" e incluye los detalles de tu pedido. Todas las ventas son finales según nuestra política, pero con gusto te ayudamos con problemas de acceso.',
+      'contact.termsLink': 'Términos y Condiciones',
+    },
+    fr: {
+      'contact.back': '← Retour à l\'app',
+      'contact.eyebrow': 'Support',
+      'contact.title': 'Contactez-nous',
+      'contact.sub': 'Nous répondons généralement sous 24–48 heures ouvrables.',
+      'contact.successTitle': 'Message reçu',
+      'contact.successSent': 'Nous avons bien reçu votre message et vous répondrons dès que possible.',
+      'contact.successLogged': 'Votre message a été enregistré. Notre équipe le traitera prochainement.',
+      'contact.backApp': 'Retour à l\'app',
+      'contact.errMissing': 'Veuillez remplir tous les champs obligatoires avant d\'envoyer.',
+      'contact.labelName': 'Nom complet',
+      'contact.phName': 'Votre nom',
+      'contact.labelEmail': 'Adresse email',
+      'contact.labelSubject': 'Sujet',
+      'contact.catTech': '🔧 Problème technique',
+      'contact.catBilling': '💳 Facturation',
+      'contact.catAccount': '👤 Compte',
+      'contact.catLegal': '⚖️ Juridique',
+      'contact.catContent': '📚 Contenu / Matériel éducatif',
+      'contact.catOther': '💬 Autre',
+      'contact.labelMsg': 'Message',
+      'contact.phMsg': 'Décrivez votre problème ou question en détail…',
+      'contact.submit': 'Envoyer le message',
+      'contact.sending': 'Envoi en cours…',
+      'contact.faqTitle': 'Questions fréquentes',
+      'contact.faq1q': 'Combien de temps faut-il pour obtenir une réponse ?',
+      'contact.faq1a': 'Nous répondons sous 24–48 heures ouvrables. Pour les problèmes urgents, sélectionnez la catégorie appropriée.',
+      'contact.faq2q': 'J\'ai payé mais mon forfait n\'a pas été activé. Que faire ?',
+      'contact.faq2a': 'Envoyez-nous un message avec "Facturation" comme sujet, et incluez votre email enregistré et la preuve de paiement. Nous activerons votre forfait manuellement.',
+      'contact.faq3q': 'Mon compte a été suspendu. Puis-je faire appel ?',
+      'contact.faq3a': 'Si vous pensez que la suspension est une erreur, sélectionnez "Compte" et expliquez votre situation. Nous examinons chaque appel individuellement. Les suspensions pour violations claires de nos ',
+      'contact.faq3b': ' ne sont généralement pas annulées.',
+      'contact.faq4q': 'J\'ai une préoccupation ou un litige juridique.',
+      'contact.faq4a': 'Sélectionnez "Juridique" et décrivez votre situation. Conformément à nos ',
+      'contact.faq4b': ' (Section 13), nous exigeons 30 jours de résolution informelle avant tout arbitrage. Nous contacter ici remplit cette condition.',
+      'contact.faq5q': 'J\'ai une question sur un PDF ou matériel éducatif acheté.',
+      'contact.faq5a': 'Sélectionnez "Contenu / Matériel éducatif" avec les détails de votre commande. Toutes les ventes sont définitives, mais nous sommes heureux d\'aider pour les problèmes d\'accès.',
+      'contact.termsLink': 'Conditions Générales',
+    },
+    pt: {
+      'contact.back': '← Voltar para o app',
+      'contact.eyebrow': 'Suporte',
+      'contact.title': 'Fale conosco',
+      'contact.sub': 'Respondemos em até 24–48 horas em dias úteis.',
+      'contact.successTitle': 'Mensagem recebida',
+      'contact.successSent': 'Recebemos sua mensagem e retornaremos o mais breve possível.',
+      'contact.successLogged': 'Sua mensagem foi registrada. Nossa equipe a analisará em breve.',
+      'contact.backApp': 'Voltar para o app',
+      'contact.errMissing': 'Por favor, preencha todos os campos obrigatórios antes de enviar.',
+      'contact.labelName': 'Nome completo',
+      'contact.phName': 'Seu nome',
+      'contact.labelEmail': 'Endereço de email',
+      'contact.labelSubject': 'Assunto',
+      'contact.catTech': '🔧 Problema técnico',
+      'contact.catBilling': '💳 Cobrança',
+      'contact.catAccount': '👤 Conta',
+      'contact.catLegal': '⚖️ Jurídico',
+      'contact.catContent': '📚 Conteúdo / Material educativo',
+      'contact.catOther': '💬 Outro',
+      'contact.labelMsg': 'Mensagem',
+      'contact.phMsg': 'Descreva seu problema ou dúvida em detalhes…',
+      'contact.submit': 'Enviar mensagem',
+      'contact.sending': 'Enviando…',
+      'contact.faqTitle': 'Perguntas frequentes',
+      'contact.faq1q': 'Quanto tempo leva para receber uma resposta?',
+      'contact.faq1a': 'Respondemos em até 24–48 horas úteis. Para problemas urgentes de conta ou cobrança, selecione a categoria correta.',
+      'contact.faq2q': 'Paguei mas meu plano não foi ativado. O que faço?',
+      'contact.faq2a': 'Envie uma mensagem selecionando "Cobrança" como assunto e inclua seu email e comprovante de pagamento. Ativaremos seu plano manualmente o quanto antes.',
+      'contact.faq3q': 'Minha conta foi suspensa. Posso recorrer?',
+      'contact.faq3a': 'Se acredita que a suspensão foi um erro, selecione "Conta" e explique sua situação. Analisamos cada recurso individualmente. Suspensões por violações claras dos nossos ',
+      'contact.faq3b': ' geralmente não são revertidas.',
+      'contact.faq4q': 'Tenho uma preocupação ou disputa jurídica.',
+      'contact.faq4a': 'Selecione "Jurídico" e descreva sua situação em detalhes. Conforme nossos ',
+      'contact.faq4b': ' (Seção 13), exigimos 30 dias de resolução informal antes de qualquer arbitragem. Entrar em contato aqui cumpre esse requisito.',
+      'contact.faq5q': 'Tenho uma dúvida sobre um PDF ou material educativo que comprei.',
+      'contact.faq5a': 'Selecione "Conteúdo / Material educativo" com os detalhes do seu pedido. Todas as vendas são finais, mas ficamos felizes em ajudar com problemas de acesso.',
+      'contact.termsLink': 'Termos e Condições',
+    }
+  };
+
+  var lang = 'en';
+  try { lang = localStorage.getItem('scalpel_lang') || 'en'; } catch(e) {}
+  if (!CONTACT_I18N[lang]) lang = 'en';
+  var t = CONTACT_I18N[lang];
+
+  // data-i18n: textContent
+  document.querySelectorAll('[data-i18n]').forEach(function(el) {
+    var key = el.getAttribute('data-i18n');
+    if (t[key] !== undefined) el.textContent = t[key];
+  });
+
+  // data-i18n-ph: placeholder
+  document.querySelectorAll('[data-i18n-ph]').forEach(function(el) {
+    var key = el.getAttribute('data-i18n-ph');
+    if (t[key] !== undefined) el.setAttribute('placeholder', t[key]);
+  });
+
+  // data-i18n-opt: select option text
+  document.querySelectorAll('[data-i18n-opt]').forEach(function(el) {
+    var key = el.getAttribute('data-i18n-opt');
+    if (t[key] !== undefined) el.textContent = t[key];
+  });
+
+  // Translate submit button sending state
+  var btn = document.getElementById('submit-btn');
+  var form = document.getElementById('contact-form');
+  if (form && btn) {
+    form.addEventListener('submit', function() {
+      btn.disabled = true;
+      btn.textContent = t['contact.sending'] || 'Sending…';
+    });
+  }
+})();
+
+// Character counter
+(function() {
   var ta = document.getElementById('message');
   var cc = document.getElementById('char-cur');
   if (ta && cc) {
     cc.textContent = ta.value.length;
-    ta.addEventListener('input', function () { cc.textContent = ta.value.length; });
+    ta.addEventListener('input', function() { cc.textContent = ta.value.length; });
   }
+})();
 
-  // Disable submit button on submit to prevent double sends
-  var form = document.getElementById('contact-form');
-  var btn  = document.getElementById('submit-btn');
-  if (form && btn) {
-    form.addEventListener('submit', function () {
-      btn.disabled = true;
-      btn.textContent = 'Sending…';
-    });
+// FAQ accordion
+function toggleFaq(el) {
+  var answer = el.nextElementSibling;
+  var isOpen = el.classList.contains('open');
+  document.querySelectorAll('.faq-q').forEach(function(q) {
+    q.classList.remove('open');
+    q.nextElementSibling.classList.remove('open');
+  });
+  if (!isOpen) {
+    el.classList.add('open');
+    answer.classList.add('open');
   }
-
-  // FAQ accordion
-  function toggleFaq(el) {
-    var answer = el.nextElementSibling;
-    var isOpen = el.classList.contains('open');
-    // Close all
-    document.querySelectorAll('.faq-q').forEach(function(q) {
-      q.classList.remove('open');
-      q.nextElementSibling.classList.remove('open');
-    });
-    // Open this one if it wasn't open
-    if (!isOpen) {
-      el.classList.add('open');
-      answer.classList.add('open');
-    }
-  }
+}
 </script>
 
 </body>
