@@ -14,7 +14,34 @@
 
 ---
 
-> **🚨🚨🚨 ALERTA URGENTE — RECORDATORIO TRIPLE DIARIO (A PARTIR DEL 2026-06-06) 🚨🚨🚨**
+> **🚨🚨🚨 ALERTA URGENTE #2 — RECORDATORIO DIARIO (A PARTIR DEL 2026-06-06) 🚨🚨🚨**
+>
+> Mostrar este bloque la primera vez que el usuario escriba cada día, JUNTO con la alerta #1.
+>
+> ╔══════════════════════════════════════════════════════════════════╗
+> ║  🔧  DOS TAREAS TÉCNICAS CRÍTICAS PENDIENTES — MAÑANA           ║
+> ║                                                                  ║
+> ║  1. 🗄️  MIGRACIÓN PostgreSQL (escalar a 500+ usuarios)          ║
+> ║     → SQLite actual NO soporta escrituras simultáneas           ║
+> ║     → Con 50+ usuarios simultáneos empieza a fallar             ║
+> ║     → Migrar a PostgreSQL + Gunicorn en el VPS (costo: $0)      ║
+> ║     → Tiempo estimado: ~1-2 horas                               ║
+> ║     → Sin esto: el website se puede caer con crecimiento        ║
+> ║                                                                  ║
+> ║  2. 🩺  SISTEMA DE MONITOREO / HEALTH CHECK con IA              ║
+> ║     → UptimeRobot: alerta si el sitio cae (gratis, 5 min)      ║
+> ║     → Sentry: captura bugs automáticamente (gratis, 3 líneas)   ║
+> ║     → Health endpoint propio: métricas de usuarios, DB, carga   ║
+> ║     → Te avisa ANTES de que el sitio se rompa                   ║
+> ║     → Tiempo estimado: ~30 min                                  ║
+> ║                                                                  ║
+> ║  RECOMENDACIÓN: hacer #2 primero (30 min), luego #1 (delicado)  ║
+> ║  Así si algo sale mal en la migración, ya tienes alertas activas ║
+> ╚══════════════════════════════════════════════════════════════════╝
+
+---
+
+> **🚨🚨🚨 ALERTA URGENTE #1 — RECORDATORIO TRIPLE DIARIO (A PARTIR DEL 2026-06-06) 🚨🚨🚨**
 >
 > A partir del **viernes 5 de junio de 2026**, y **CADA DÍA** hasta que el usuario
 > confirme que completó estas tareas, debes mostrar el siguiente bloque
