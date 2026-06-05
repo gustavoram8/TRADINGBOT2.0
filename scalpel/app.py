@@ -1098,6 +1098,9 @@ def register():
         email = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '')
         remember = bool(request.form.get('remember'))
+        # Single clickwrap covering BOTH age (18+) and T&C acceptance.
+        # The terms_accepted_at timestamp + terms_version is the legal evidence
+        # of the user's affirmation (the T&C version contains the 18+ clause).
         accepted_terms = bool(request.form.get('accept_terms'))
         fp_hash = (request.form.get('_fp') or '').strip()[:64]
 
