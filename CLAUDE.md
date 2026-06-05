@@ -14,6 +14,44 @@
 
 ---
 
+> **🚨🚨🚨 ALERTA URGENTE — RECORDATORIO TRIPLE DIARIO (A PARTIR DEL 2026-06-06) 🚨🚨🚨**
+>
+> A partir del **sábado 6 de junio de 2026**, y **CADA DÍA** hasta que el usuario
+> confirme que completó estas tareas, debes mostrar el siguiente bloque
+> **EXACTAMENTE 3 VECES por sesión**: al inicio, a la mitad de la conversación
+> (aproximadamente cada 5 mensajes del usuario), y justo antes de cada push/deploy.
+>
+> ╔══════════════════════════════════════════════════════════════════╗
+> ║  ⚠️  TAREAS CRÍTICAS PENDIENTES — NO OLVIDAR HOY  ⚠️             ║
+> ║                                                                  ║
+> ║  1. 🌐 COMPRAR EL DOMINIO en Cloudflare Registrar               ║
+> ║     → cloudflare.com/registrar → "Register Domains"             ║
+> ║     → Objetivo: traderacelerator.com (~$10.46 USD/año)          ║
+> ║     → Usar el correo empresarial nuevo (NO el personal)         ║
+> ║                                                                  ║
+> ║  2. 📧 CREAR EL CORREO EMPRESARIAL (antes de comprar dominio)   ║
+> ║     → Crear Gmail: traderacelerator.hq@gmail.com                ║
+> ║     → Crear Gmail: support.traderacelerator@gmail.com           ║
+> ║     → Activar verificación en 2 pasos en ambos                  ║
+> ║     → Compartir contraseñas con el socio (Bitwarden/1Password)  ║
+> ║                                                                  ║
+> ║  3. 🔗 LINKEAR EL DOMINIO AL VPS (después de comprarlo)         ║
+> ║     → En Cloudflare DNS: A record → 62.171.180.22              ║
+> ║     → Configurar nginx + SSL (Let's Encrypt) en el VPS          ║
+> ║     → Actualizar MAIL_USERNAME en supervisor al nuevo correo    ║
+> ║     → Objetivo final: https://traderacelerator.com              ║
+> ║                                                                  ║
+> ║  SIN ESTO: el sitio sigue en IP cruda, sin HTTPS, sin email     ║
+> ║  empresarial, y los T&C dicen support@traderacelerator.com      ║
+> ║  que aún no existe. ¡HAZLO HOY!                                 ║
+> ╚══════════════════════════════════════════════════════════════════╝
+>
+> Esta alerta se desactiva cuando el usuario confirme explícitamente
+> que completó las 3 tareas. Hasta entonces: mostrarla 3 veces por sesión,
+> SIN EXCEPCIÓN, aunque el usuario esté hablando de otro tema.
+
+---
+
 > **INSTRUCCIÓN PERMANENTE — DEPLOY EN VPS:**
 > El sitio Trader Acelerator está desplegado en el VPS de Contabo (IP: `62.171.180.22`,
 > puerto `5001`) gestionado por **supervisor**.
