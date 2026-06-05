@@ -459,6 +459,39 @@ def send_verification_email(to_email, code):
         socket.setdefaulttimeout(prev_timeout)
 
 
+def _send_contact_email(sender_name, sender_email, category, message):
+    """Forward a contact-form submission to the support inbox. Returns True if sent."""
+    support_inbox = app.config.get('MAIL_USERNAME', 'mauroramirezmij@gmail.com')
+    if not app.config.get('MAIL_PASSWORD'):
+        app.logger.warning(
+            'MAIL_APP_PASSWORD not configured — contact form submission from %s (%s): %s',
+            sender_name, sender_email, message[:200],
+        )
+        return False
+    subject = f'[Trader Acelerator Contact] {category} — {sender_name}'
+    body = (
+        f"Category : {category}\n"
+        f"Name     : {sender_name}\n"
+        f"Email    : {sender_email}\n"
+        f"{'─' * 48}\n\n"
+        f"{message}\n\n"
+        f"{'─' * 48}\n"
+        f"Reply directly to this email to respond to the user."
+    )
+    msg = Message(subject, recipients=[support_inbox], reply_to=sender_email)
+    msg.body = body
+    prev_timeout = socket.getdefaulttimeout()
+    socket.setdefaulttimeout(15)
+    try:
+        mail.send(msg)
+        return True
+    except Exception as exc:
+        app.logger.warning('Failed to send contact email: %s', exc)
+        return False
+    finally:
+        socket.setdefaulttimeout(prev_timeout)
+
+
 def _new_verification_code():
     return f"{secrets.randbelow(1_000_000):06d}"
 
@@ -834,6 +867,30 @@ def terms():
 @app.route('/settings')
 def settings():
     return render_template('settings.html')
+
+
+@app.route('/contact', methods=['GET', 'POST'])
+def contact():
+    if request.method == 'POST':
+        name    = request.form.get('name', '').strip()[:120]
+        email   = request.form.get('email', '').strip().lower()[:255]
+        category = request.form.get('category', 'Other').strip()[:60]
+        message = request.form.get('message', '').strip()[:4000]
+
+        if not name or not email or not message:
+            return render_template('contact.html', error='missing',
+                                   name=name, email=email,
+                                   category=category, message=message)
+
+        sent = _send_contact_email(name, email, category, message)
+        return render_template('contact.html', success=True, sent=sent)
+
+    # Pre-fill name/email for logged-in users.
+    prefill_name  = current_user.username if current_user.is_authenticated else ''
+    prefill_email = current_user.email    if current_user.is_authenticated else ''
+    return render_template('contact.html',
+                           prefill_name=prefill_name,
+                           prefill_email=prefill_email)
 
 
 @app.route('/app')

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trader Acelerator — Contact</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --ink:#15171f; --ink-soft:#4a4f5e; --muted:#8a8f9e;
+      --line-soft:#e4e6ec; --accent:#2563eb; --accent-bg:#eff4ff;
+      --surface:#fafbfc; --radius:14px;
+      --ok:#166534; --ok-bg:#f0fdf4; --ok-border:#bbf7d0;
+      --err:#991b1b; --err-bg:#fef2f2; --err-border:#fecaca;
+    }
+    body { background:#f4f5f8; color:var(--ink); font-family:'Inter',sans-serif;
+           font-size:15px; line-height:1.7; min-height:100vh;
+           -webkit-font-smoothing:antialiased; }
+
+    /* NAV */
+    nav { display:flex; align-items:center; justify-content:space-between;
+          padding:16px 32px; border-bottom:1px solid var(--line-soft);
+          position:sticky; top:0; background:rgba(255,255,255,0.93);
+          backdrop-filter:blur(10px); z-index:10; }
+    .logo-img { height:72px; width:auto; display:block; }
+    .back-link { font-size:13px; font-weight:600; color:var(--ink-soft); text-decoration:none; }
+    .back-link:hover { color:var(--accent); }
+
+    /* LAYOUT */
+    .wrap { max-width:680px; margin:0 auto; padding:56px 24px 96px; }
+    .eyebrow { font-size:11px; font-weight:700; letter-spacing:.14em;
+               text-transform:uppercase; color:var(--accent); margin-bottom:10px; }
+    h1 { font-size:34px; font-weight:800; letter-spacing:-.02em; margin-bottom:8px; }
+    .sub { font-size:15px; color:var(--ink-soft); margin-bottom:36px; }
+
+    /* CARD */
+    .card { background:#fff; border:1px solid var(--line-soft);
+            border-radius:var(--radius); padding:36px; }
+
+    /* ALERTS */
+    .alert { border-radius:10px; padding:14px 18px; font-size:14px;
+             margin-bottom:24px; display:flex; gap:12px; align-items:flex-start; }
+    .alert-ok  { background:var(--ok-bg);  border:1px solid var(--ok-border);  color:var(--ok); }
+    .alert-err { background:var(--err-bg); border:1px solid var(--err-border); color:var(--err); }
+    .alert-icon { font-size:18px; flex-shrink:0; line-height:1.4; }
+
+    /* FORM */
+    .field { margin-bottom:20px; }
+    label { display:block; font-size:13px; font-weight:600;
+            color:var(--ink-soft); margin-bottom:6px; }
+    input[type="text"], input[type="email"], select, textarea {
+      width:100%; padding:10px 14px; border:1px solid var(--line-soft);
+      border-radius:9px; font-size:14px; font-family:inherit;
+      color:var(--ink); background:#fff; transition:border-color .15s; outline:none; }
+    input:focus, select:focus, textarea:focus {
+      border-color:var(--accent); box-shadow:0 0 0 3px rgba(37,99,235,.1); }
+    textarea { resize:vertical; min-height:140px; line-height:1.6; }
+    select { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a8f9e' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+             background-repeat:no-repeat; background-position:right 14px center; padding-right:36px; }
+
+    .char-count { font-size:12px; color:var(--muted); text-align:right;
+                  margin-top:4px; }
+
+    /* SUBMIT */
+    .btn-submit { width:100%; padding:13px; background:var(--accent);
+                  color:#fff; border:none; border-radius:10px;
+                  font-size:15px; font-weight:700; font-family:inherit;
+                  cursor:pointer; transition:background .15s; margin-top:6px; }
+    .btn-submit:hover { background:#1d4ed8; }
+    .btn-submit:disabled { background:#93c5fd; cursor:not-allowed; }
+
+    /* SUCCESS STATE */
+    .success-wrap { text-align:center; padding:20px 0; }
+    .success-icon { font-size:52px; margin-bottom:16px; }
+    .success-title { font-size:22px; font-weight:700; margin-bottom:10px; }
+    .success-sub { font-size:14px; color:var(--ink-soft); margin-bottom:28px; }
+    .btn-back { display:inline-block; padding:11px 28px; background:var(--accent);
+                color:#fff; border-radius:9px; text-decoration:none;
+                font-weight:600; font-size:14px; }
+    .btn-back:hover { background:#1d4ed8; }
+
+    /* FAQ */
+    .faq { margin-top:44px; }
+    .faq-title { font-size:13px; font-weight:700; letter-spacing:.1em;
+                 text-transform:uppercase; color:var(--muted); margin-bottom:18px; }
+    .faq-item { border:1px solid var(--line-soft); border-radius:10px;
+                padding:16px 20px; margin-bottom:10px; background:#fff; }
+    .faq-q { font-size:14px; font-weight:600; color:var(--ink);
+             cursor:pointer; user-select:none; display:flex;
+             justify-content:space-between; align-items:center; gap:10px; }
+    .faq-q .caret { color:var(--muted); font-size:12px; transition:transform .2s; flex-shrink:0; }
+    .faq-q.open .caret { transform:rotate(180deg); }
+    .faq-a { font-size:13.5px; color:var(--ink-soft); margin-top:10px;
+             line-height:1.65; display:none; }
+    .faq-a.open { display:block; }
+
+    @media(max-width:600px) {
+      h1 { font-size:26px; }
+      .wrap { padding:32px 16px 72px; }
+      nav { padding:12px 16px; }
+      .card { padding:24px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo"><img src="/static/logo.png" alt="Trader Acelerator" class="logo-img"
+     onerror="this.style.display='none';" /></a>
+  <a href="/app" class="back-link">← Back to app</a>
+</nav>
+
+<div class="wrap">
+  <div class="eyebrow">Support</div>
+  <h1>Contact us</h1>
+  <p class="sub">We typically respond within 24–48 hours on business days.</p>
+
+  <div class="card">
+
+    {% if success %}
+      <div class="success-wrap">
+        <div class="success-icon">✉️</div>
+        <div class="success-title">Message received</div>
+        {% if sent %}
+          <p class="success-sub">
+            We've received your message and will get back to you
+            as soon as possible. Please check your inbox for a confirmation.
+          </p>
+        {% else %}
+          <p class="success-sub">
+            Your message was logged. Our team will review it shortly.<br />
+            <small style="color:var(--muted);">(Email delivery temporarily unavailable — your request is still on record.)</small>
+          </p>
+        {% endif %}
+        <a href="/app" class="btn-back">Back to app</a>
+      </div>
+
+    {% else %}
+
+      {% if error == 'missing' %}
+        <div class="alert alert-err">
+          <span class="alert-icon">⚠️</span>
+          <span>Please fill in all required fields before submitting.</span>
+        </div>
+      {% endif %}
+
+      <form method="POST" action="/contact" id="contact-form">
+        <div class="field">
+          <label for="name">Full name <span style="color:#ef4444">*</span></label>
+          <input type="text" id="name" name="name"
+                 value="{{ name or prefill_name or '' }}"
+                 placeholder="Your name" required maxlength="120" />
+        </div>
+
+        <div class="field">
+          <label for="email">Email address <span style="color:#ef4444">*</span></label>
+          <input type="email" id="email" name="email"
+                 value="{{ email or prefill_email or '' }}"
+                 placeholder="you@example.com" required maxlength="255" />
+        </div>
+
+        <div class="field">
+          <label for="category">Subject</label>
+          <select id="category" name="category">
+            <option value="Technical Issue"  {% if category == 'Technical Issue'  %}selected{% endif %}>🔧 Technical Issue</option>
+            <option value="Billing"          {% if category == 'Billing'          %}selected{% endif %}>💳 Billing</option>
+            <option value="Account"          {% if category == 'Account'          %}selected{% endif %}>👤 Account</option>
+            <option value="Legal"            {% if category == 'Legal'            %}selected{% endif %}>⚖️ Legal</option>
+            <option value="Content"          {% if category == 'Content'          %}selected{% endif %}>📚 Content / Educational material</option>
+            <option value="Other"            {% if not category or category == 'Other' %}selected{% endif %}>💬 Other</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="message">Message <span style="color:#ef4444">*</span></label>
+          <textarea id="message" name="message" placeholder="Describe your issue or question in detail…"
+                    required maxlength="4000">{{ message or '' }}</textarea>
+          <div class="char-count"><span id="char-cur">0</span> / 4000</div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submit-btn">Send message</button>
+      </form>
+
+    {% endif %}
+  </div>
+
+  <!-- FAQ -->
+  <div class="faq">
+    <div class="faq-title">Frequently asked questions</div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        How long does it take to get a response?
+        <span class="caret">▼</span>
+      </div>
+      <div class="faq-a">
+        We aim to respond within 24–48 business hours. For urgent account or
+        billing issues, please select the appropriate category so we can prioritize your request.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        I paid but my plan was not activated. What do I do?
+        <span class="caret">▼</span>
+      </div>
+      <div class="faq-a">
+        Please send us a message selecting "Billing" as the subject, and include
+        your registered email and proof of payment. We will verify and activate
+        your plan manually as quickly as possible.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        My account was suspended. Can I appeal?
+        <span class="caret">▼</span>
+      </div>
+      <div class="faq-a">
+        If you believe your account was suspended in error, select "Account"
+        and explain your situation. We review every appeal individually.
+        Please note that suspensions issued for clear violations of our
+        <a href="/terms" style="color:var(--accent);">Terms &amp; Conditions</a>
+        are generally not reversed.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        I have a legal concern or dispute.
+        <span class="caret">▼</span>
+      </div>
+      <div class="faq-a">
+        Select "Legal" as the subject and describe your concern in detail.
+        As stated in our <a href="/terms" style="color:var(--accent);">Terms &amp; Conditions</a>
+        (Section 13), we require a minimum 30-day informal resolution period
+        before any formal arbitration proceeding. Contacting us here fulfills
+        that requirement.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        I have a question about a PDF or educational material I purchased.
+        <span class="caret">▼</span>
+      </div>
+      <div class="faq-a">
+        Select "Content / Educational material" and include your order details.
+        Please note that all sales are final per our refund policy, but we are
+        happy to assist with access issues or content questions.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // Character counter for textarea
+  var ta = document.getElementById('message');
+  var cc = document.getElementById('char-cur');
+  if (ta && cc) {
+    cc.textContent = ta.value.length;
+    ta.addEventListener('input', function () { cc.textContent = ta.value.length; });
+  }
+
+  // Disable submit button on submit to prevent double sends
+  var form = document.getElementById('contact-form');
+  var btn  = document.getElementById('submit-btn');
+  if (form && btn) {
+    form.addEventListener('submit', function () {
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+    });
+  }
+
+  // FAQ accordion
+  function toggleFaq(el) {
+    var answer = el.nextElementSibling;
+    var isOpen = el.classList.contains('open');
+    // Close all
+    document.querySelectorAll('.faq-q').forEach(function(q) {
+      q.classList.remove('open');
+      q.nextElementSibling.classList.remove('open');
+    });
+    // Open this one if it wasn't open
+    if (!isOpen) {
+      el.classList.add('open');
+      answer.classList.add('open');
+    }
+  }
+</script>
+
+</body>
+</html>

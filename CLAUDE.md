@@ -16,7 +16,7 @@
 
 > **🚨🚨🚨 ALERTA URGENTE — RECORDATORIO TRIPLE DIARIO (A PARTIR DEL 2026-06-06) 🚨🚨🚨**
 >
-> A partir del **sábado 6 de junio de 2026**, y **CADA DÍA** hasta que el usuario
+> A partir del **viernes 5 de junio de 2026**, y **CADA DÍA** hasta que el usuario
 > confirme que completó estas tareas, debes mostrar el siguiente bloque
 > **EXACTAMENTE 3 VECES por sesión**: al inicio, a la mitad de la conversación
 > (aproximadamente cada 5 mensajes del usuario), y justo antes de cada push/deploy.
