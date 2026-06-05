@@ -1341,8 +1341,37 @@ def _load_synapse_export() -> dict:
         return json.load(f)
 
 
-def _build_synapse_pdf(buyer_name: str, buyer_email: str, order_id: str) -> bytes:
-    """Generate a full-content, personalized, watermarked Synapse Library PDF."""
+def _load_synapse_content(lang: str) -> dict:
+    """Load per-language topic content overrides (static/synapse_content_{lang}.json).
+    Returns {} for English (the base content already lives in synapse_export.json)
+    or when the file is absent — callers fall back to the English content."""
+    if lang == 'en':
+        return {}
+    path = os.path.join(BASE_DIR, 'static', f'synapse_content_{lang}.json')
+    if not os.path.exists(path):
+        return {}
+    try:
+        with open(path, encoding='utf-8') as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def _build_synapse_pdf(buyer_name: str, buyer_email: str, order_id: str,
+                       lang: str = 'en') -> bytes:
+    """Generate a full-content, personalized, watermarked Synapse Library PDF.
+
+    `lang` selects the output language (en/es/fr/pt). Topic content is taken
+    from the per-language override file when available, falling back to the
+    English base for any missing topic or field. SVG diagrams (and their
+    English chart labels) are shared across all languages."""
+    try:
+        import synapse_translations as T          # run as script (python3 scalpel/app.py)
+    except ModuleNotFoundError:
+        from scalpel import synapse_translations as T   # imported as package
+    if lang not in T.SUPPORTED_LANGS:
+        lang = 'en'
+    CH = T.chrome(lang)
     import html as _html
 
     wm_name  = _html.escape(buyer_name)
@@ -1351,6 +1380,7 @@ def _build_synapse_pdf(buyer_name: str, buyer_email: str, order_id: str) -> byte
     wm_date  = datetime.now(timezone.utc).strftime('%Y-%m-%d')
 
     library = _load_synapse_export()
+    overrides = _load_synapse_content(lang)   # {} for en / missing file
 
     # ── helpers ──────────────────────────────────────────────────────────────
     def esc(s):
@@ -1370,13 +1400,14 @@ def _build_synapse_pdf(buyer_name: str, buyer_email: str, order_id: str) -> byte
         if not m:
             return ''
         text = ' '.join(m) if isinstance(m, list) else str(m)
-        return f'<div class="mistake"><span class="mistake-label">Common mistake</span> {esc(text)}</div>'
+        return f'<div class="mistake"><span class="mistake-label">{esc(CH["common_mistake"])}</span> {esc(text)}</div>'
 
     def setup_html(s):
         if not s:
             return ''
         parts = []
-        labels = {'cond': 'Conditions', 'entry': 'Entry', 'stop': 'Stop', 'target': 'Target'}
+        labels = {'cond': CH['setup_cond'], 'entry': CH['setup_entry'],
+                  'stop': CH['setup_stop'], 'target': CH['setup_target']}
         for k, label in labels.items():
             if s.get(k):
                 parts.append(f'<div class="setup-row"><span class="setup-key">{label}</span> {esc(s[k])}</div>')
@@ -1396,9 +1427,9 @@ def _build_synapse_pdf(buyer_name: str, buyer_email: str, order_id: str) -> byte
             current_method = method
             accent = _METHOD_ACCENT.get(method, '#333')
             toc_rows.append(
-                f'<div class="toc-method" style="color:{accent}">{esc(method)}</div>'
+                f'<div class="toc-method" style="color:{accent}">{esc(T.method_name(method, lang))}</div>'
             )
-        toc_rows.append(f'<div class="toc-item">· {esc(title)}</div>')
+        toc_rows.append(f'<div class="toc-item">· {esc(T.topic_title(slug, title, lang))}</div>')
     toc_html = '\n'.join(toc_rows)
 
     # ── Topic pages ───────────────────────────────────────────────────────────
@@ -1406,8 +1437,10 @@ def _build_synapse_pdf(buyer_name: str, buyer_email: str, order_id: str) -> byte
     current_method = None
     for slug, title, method in _SYNAPSE_ORDER:
         data    = library.get(slug, {})
-        content = data.get('content') or {}
+        content = overrides.get(slug) or data.get('content') or {}
         svg_raw = _style_svg(data.get('svg') or '')
+        title_l = T.topic_title(slug, title, lang)
+        method_l = T.method_name(method, lang)
 
         # Method divider page
         if method != current_method:
@@ -1415,8 +1448,8 @@ def _build_synapse_pdf(buyer_name: str, buyer_email: str, order_id: str) -> byte
             accent = _METHOD_ACCENT.get(method, '#333')
             pages.append(f"""
 <div class="method-divider" style="border-left:6px solid {accent};">
-  <div class="md-label" style="color:{accent}">Methodology</div>
-  <div class="md-name">{esc(method)}</div>
+  <div class="md-label" style="color:{accent}">{esc(CH['methodology'])}</div>
+  <div class="md-name">{esc(method_l)}</div>
 </div>""")
 
         lead     = content.get('lead', '')
@@ -1431,8 +1464,8 @@ def _build_synapse_pdf(buyer_name: str, buyer_email: str, order_id: str) -> byte
         pages.append(f"""
 <div class="topic-page">
   <div class="tp-header" style="border-left:4px solid {accent};">
-    <div class="tp-method" style="color:{accent}">{esc(method)}</div>
-    <div class="tp-title">{esc(title)}</div>
+    <div class="tp-method" style="color:{accent}">{esc(method_l)}</div>
+    <div class="tp-title">{esc(title_l)}</div>
   </div>
 
   {f'<p class="tp-lead">{esc(lead)}</p>' if lead else ''}
@@ -1451,9 +1484,13 @@ def _build_synapse_pdf(buyer_name: str, buyer_email: str, order_id: str) -> byte
 
     pages_html = '\n'.join(pages)
 
+    # Translated legal page + footer watermark
+    legal_html = T.legal_page_html(lang, wm_name, wm_email, wm_order, wm_date)
+    footer_text = CH['footer'].format(name=wm_name, email=wm_email, order=wm_order)
+
     # ── Full HTML document ────────────────────────────────────────────────────
     html_content = f"""<!DOCTYPE html>
-<html lang="en">
+<html lang="{lang}">
 <head>
 <meta charset="UTF-8"/>
 <style>
@@ -1461,7 +1498,7 @@ def _build_synapse_pdf(buyer_name: str, buyer_email: str, order_id: str) -> byte
     size: A4;
     margin: 16mm 15mm 22mm 15mm;
     @bottom-center {{
-      content: "CONFIDENTIAL — Licensed to: {wm_name} · {wm_email} · Order {wm_order} · Unauthorized distribution is prohibited";
+      content: "{footer_text}";
       font-size: 6pt;
       color: #999;
       font-family: sans-serif;
@@ -1575,93 +1612,21 @@ def _build_synapse_pdf(buyer_name: str, buyer_email: str, order_id: str) -> byte
 <div class="cover">
   <div class="cv-brand">Trader Acelerator</div>
   <div class="cv-title">Synapse Library</div>
-  <div class="cv-sub">Complete Trading Knowledge Base</div>
+  <div class="cv-sub">{esc(CH['cover_sub'])}</div>
   <div class="cv-divider"></div>
   <div class="cv-wm">
-    Licensed exclusively to: <strong>{wm_name}</strong> &lt;{wm_email}&gt;<br/>
-    Order: <strong>{wm_order}</strong> &nbsp;·&nbsp; Issued: {wm_date}<br/>
-    <em style="color:#6070a0;font-size:7.5pt;">CONFIDENTIAL — Unauthorized distribution is strictly prohibited and may result in legal action.</em>
+    {esc(CH['cover_licensed'])}: <strong>{wm_name}</strong> &lt;{wm_email}&gt;<br/>
+    {esc(CH['cover_order'])}: <strong>{wm_order}</strong> &nbsp;·&nbsp; {esc(CH['cover_issued'])}: {wm_date}<br/>
+    <em style="color:#6070a0;font-size:7.5pt;">{esc(CH['cover_confidential'])}</em>
   </div>
 </div>
 
 <!-- Legal Notice -->
-<div class="legal-page">
-
-  <div class="legal-id-box">
-    <strong>Document identification</strong><br/>
-    Licensed to: <strong>{wm_name}</strong> &nbsp;·&nbsp; {wm_email}<br/>
-    Order reference: <strong>{wm_order}</strong> &nbsp;·&nbsp; Issue date: {wm_date}<br/>
-    Publisher: <strong>Trader Acelerator</strong> &nbsp;·&nbsp; Product: Synapse Library (Digital Edition)
-  </div>
-
-  <div class="legal-warn">
-    <div class="legal-warn-title">⚠ CONFIDENTIAL DOCUMENT — RESTRICTED LICENSE</div>
-    <p>This document is the exclusive and confidential property of Trader Acelerator. It is licensed
-    solely and personally to the individual identified above for their own private study. This license
-    grants no other rights whatsoever.</p>
-    <p><strong>The following actions are strictly prohibited</strong> under the terms and conditions
-    accepted at the time of purchase, and may constitute a violation of applicable intellectual property
-    and copyright law:</p>
-    <ul style="padding-left:14pt;margin:6pt 0 6pt;">
-      <li>Reproducing, copying, or duplicating this document, in whole or in part, by any means.</li>
-      <li>Sharing, distributing, or transmitting this document to any third party, whether free of charge
-          or for commercial gain, through any medium (email, messaging platforms, file-sharing services,
-          social networks, or otherwise).</li>
-      <li>Reselling, sublicensing, or commercializing this document or any portion of its content.</li>
-      <li>Removing, obscuring, or altering any watermark, copyright notice, or identification data
-          embedded in this document.</li>
-      <li>Publishing or uploading this document, or any derivative thereof, to any public or private
-          online platform.</li>
-    </ul>
-    <p>Every copy of this document contains unique digital identification data tied to the licensed
-    user's account. Any unauthorized copy that surfaces publicly can be traced back to its origin.</p>
-  </div>
-
-  <div class="legal-section">
-    <div class="legal-section-title">Consequences of unauthorized distribution</div>
-    <p>Trader Acelerator reserves the right to take any or all of the following actions against any
-    individual found to have violated the terms of this license:</p>
-    <ul>
-      <li><strong>Immediate and permanent suspension</strong> of the user's account on the Trader
-          Acelerator platform, without refund of any fees paid.</li>
-      <li><strong>Civil legal action</strong> for copyright infringement and breach of contract,
-          including claims for compensatory damages, loss of revenue, and, where applicable under
-          applicable law, statutory damages and legal costs.</li>
-      <li><strong>Criminal referral</strong> where the unauthorized distribution constitutes an offence
-          under applicable national or international intellectual property legislation.</li>
-      <li>Notification to relevant professional bodies, brokers, or prop firms where the infringer's
-          identity is known and such disclosure is lawfully permitted.</li>
-    </ul>
-    <p>Trader Acelerator actively monitors public and private channels for unauthorized copies of its
-    proprietary materials. We take intellectual property violations seriously and will pursue all
-    available legal remedies without prior warning.</p>
-  </div>
-
-  <div class="legal-edu">
-    <div class="legal-edu-title">Educational use only — Not financial advice</div>
-    <p>All content in this document is provided exclusively for educational and informational purposes.
-    Nothing contained herein constitutes financial advice, investment advice, trading recommendations,
-    or any other form of regulated advice.</p>
-    <p>Trading financial instruments, including but not limited to forex, futures, indices, and
-    commodities, involves a substantial risk of loss and is not suitable for every investor. Past
-    performance, simulated results, and hypothetical scenarios are not indicative of future results.
-    You are solely responsible for all trading decisions you make.</p>
-    <p>Trader Acelerator, its founders, employees, and affiliates shall not be held liable for any
-    financial losses incurred as a result of applying, directly or indirectly, any concept, strategy,
-    or information presented in this document.</p>
-  </div>
-
-  <div class="legal-footer-note">
-    © {wm_date[:4]} Trader Acelerator. All rights reserved. Unauthorized reproduction or distribution
-    of this document, or any portion of it, may result in severe civil and criminal penalties,
-    and will be prosecuted to the maximum extent permitted by law.
-  </div>
-
-</div>
+{legal_html}
 
 <!-- Table of Contents -->
 <div class="toc-page">
-  <div class="toc-title">Table of Contents</div>
+  <div class="toc-title">{esc(CH['toc_title'])}</div>
   {toc_html}
 </div>
 
