@@ -3,6 +3,55 @@
 
 ---
 
+> **🟢 TAREA PENDIENTE PRIORITARIA — LIMPIEZA FINAL DE DISTRACTORES DEL QUIZ (cuando el usuario avise que tiene tokens)**
+>
+> El usuario pidió retomar esto cuando recupere tokens. Avisará explícitamente.
+>
+> **Contexto:** El `QUESTION_BANK` en `scalpel/templates/index.html` tuvo una pasada
+> completa para hacer todos los distractores `ok:false` técnicamente plausibles
+> (misconceptions reales, no respuestas absurdas/dismissive). El **nivel avanzado quedó
+> 100% limpio** (5 commits: `716502a`, `ac1b7fd`, `b50283a`, `95b092e`, `54fcf29`).
+> Pero el barrido final reveló **residuos genuinamente malos** que las pasadas previas
+> (que apuntaron a listas específicas) dejaron sin tocar:
+>
+> - **BEGINNER: 11 distractores malos.** Ejemplos exactos a arreglar:
+>   - L8158 Order Blocks: "Nothing, OBs are random" · "It guarantees a 100% win"
+>   - L8540 Liquidity: "Equal highs mean the market is bullish forever"
+>   - L8548 Liquidity: "They are never targets"
+>   - L9290 Confluences: "A coin flip" · "Closing the chart"
+>   - L9294 Confluences: "Guaranteed wins" · L9302 Confluences: "It guarantees losses"
+>   - L9362 Liquidity: "Nowhere" · L9366 Liquidity: "Nothing" · L9460 Candlestick: "Nothing"
+>
+> - **INTERMEDIATE: 59 distractores malos.** Frases dismissive tipo: "They are identical",
+>   "They are unrelated", "Never trade ranges", "AMD cannot nest", "Walls never break",
+>   "Liquidity is fictional", "Flip a coin", "Ignore liquidity", "Phases never change",
+>   "ICT does not use stops", "No stop needed for FVGs", "Close the platform",
+>   "Any candle is an OB", "OBs only form on news", "Volume causes news", "Over-analysis",
+>   "PO3 is unrelated to AMD", "Gartley has no D point", etc.
+>   (lista completa: correr el script de barrido de abajo para regenerar líneas exactas)
+>
+> **Cómo retomarlo (procedimiento probado que funcionó para el avanzado):**
+> 1. **Regenerar la lista exacta** con un script Python que busca líneas `lv:'beginner'`/
+>    `lv:'intermediate'`, ubica el `opts:` en las siguientes ~5 líneas, y extrae las
+>    opciones `ok:false` cortas (<24 chars) o con frases dismissive.
+> 2. **Principio:** cada distractor `ok:false` debe ser una *misconception técnicamente
+>    plausible* (algo que un trader real creería pero está mal), misma longitud que la
+>    respuesta `ok:true`, en los **4 idiomas (en/es/fr/pt)**, conservando `ok:false`.
+> 3. **⚠️ REGLA DE ESCAPING CRÍTICA:** dentro de un string JS con comilla simple, escapar
+>    apóstrofes con UN solo backslash `\'` — NUNCA dos (`\\'` rompe el archivo). Mejor aún:
+>    si el valor tiene apóstrofe, usar comillas dobles como delimitador (`fr:"l'OB..."`).
+> 4. **Validar SIEMPRE** tras editar: extraer el `<script>` que contiene `QUESTION_BANK`
+>    y correr `node --check`. Verificar que `\\'` aparezca 0 veces.
+> 5. **Commit por nivel** (beginner, luego intermediate) y push a `claude/epic-lovelace-GsOuo`.
+>    Recordar al usuario el `git pull` + `supervisorctl restart traderacelerator` en el VPS.
+> 6. Se pueden usar agentes Opus en **secuencia** (no paralelo — editan el mismo archivo y
+>    colisionan), uno por metodología, dándoles los strings exactos a reemplazar.
+>
+> **DESPUÉS de esto:** sigue pendiente el **Quiz Hardcore con gráficos de TradingView**
+> (Lightweight Charts) — preguntas basadas en gráficos reales. Aún no empezado.
+
+---
+
 > **INSTRUCCIÓN PERMANENTE — RECORDATORIO DIARIO:**
 > La fecha de hoy está disponible en el contexto del sistema (`currentDate`).
 > Muestra la sección "📋 TAREAS PENDIENTES" completa **la primera vez que el usuario
