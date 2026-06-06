@@ -2193,13 +2193,22 @@
     .quiz-hc-card .hc-best { font-size: 11px; color: #22c55e; font-weight: 600; margin-top: 5px; }
 
     /* ── Hardcore chart (Lightweight Charts container + zone overlay) ── */
-    .quiz-hc-chartbox { position: relative; margin-bottom: 14px; border-radius: 10px;
+    .quiz-hc-chartbox { margin-bottom: 14px; border-radius: 10px;
       overflow: hidden; border: 1px solid var(--border2); background: var(--card); }
-    .quiz-hc-chart { width: 100%; height: 300px; }
+    .quiz-hc-chartarea { position: relative; width: 100%; }
+    .quiz-hc-chart { width: 100%; height: 340px; }
     .quiz-hc-overlay { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
     .quiz-hc-zone { position: absolute; border-radius: 2px; box-sizing: border-box; }
-    .quiz-hc-zlabel { position: absolute; font-size: 9.5px; font-weight: 700; padding: 1px 5px;
-      border-radius: 3px; white-space: nowrap; pointer-events: none; }
+    /* legend strip below the chart — explains every element so nothing needs
+       to be labelled on the candles themselves */
+    .quiz-hc-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center;
+      padding: 9px 12px; border-top: 1px solid var(--border2);
+      background: rgba(127,127,127,.05); }
+    .quiz-hc-legend .hcl-item { display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 600; color: var(--text); white-space: nowrap; }
+    .quiz-hc-legend .hcl-swatch { width: 13px; height: 11px; border-radius: 2px; display: inline-block; flex: none; }
+    .quiz-hc-legend .hcl-glyph { font-size: 12px; line-height: 1; }
+    .quiz-hc-legend .hcl-line { width: 14px; height: 2px; border-radius: 1px; display: inline-block; flex: none; }
     .quiz-hc-caption { font-size: 11px; color: var(--muted); padding: 7px 12px;
       border-top: 1px solid var(--border2); }
     /* scenario progress bar (stage X of Y) */
@@ -9783,7 +9792,7 @@
               [99.1,99.3,98.6,98.8],[98.8,99.0,98.6,98.9],[98.9,99.1,98.6,98.7],
               [98.7,98.9,98.2,98.3],[98.3,99.4,98.25,99.3],[99.3,99.6,99.0,99.1],[99.1,99.2,98.7,98.8]]),
             zones:[{ i0:6,i1:9, pLow:98.2, pHigh:98.7, ...Z_DEMAND, label:'Bullish OB' }],
-            lines:[{ price:98.6, color:'#eab308', title:'SSL (equal lows)' }],
+            lines:[{ price:98.6, color:'#eab308', title:'SSL' }],
             markers:[{ i:6, pos:'belowBar', shape:'arrowUp', color:'#eab308', text:'Sweep' },
                      { i:7, pos:'aboveBar', shape:'arrowUp', color:'#22c55e', text:'Displacement' }],
           },
@@ -9820,7 +9829,7 @@
               [50.7,51.0,50.1,50.3],[50.3,50.6,50.0,50.5],[50.5,51.2,50.3,51.0],
               [51.0,51.4,50.6,50.7],[50.7,50.9,49.6,49.8],[49.8,50.9,49.7,50.8]]),
             zones:[],
-            lines:[{ price:50.0, color:'#eab308', title:'Range support' }],
+            lines:[{ price:50.0, color:'#eab308', title:'Support' }],
             markers:[{ i:7, pos:'belowBar', shape:'arrowUp', color:'#22c55e', text:'Spring' }],
           },
           q:{en:'Inside an accumulation range, price sprang below support and immediately reclaimed it. According to Wyckoff, the next likely move is:',
@@ -9843,7 +9852,7 @@
               [51.0,51.4,50.6,50.7],[50.7,50.9,49.6,49.8],[49.8,50.9,49.7,50.8],
               [50.8,51.6,50.7,51.5],[51.5,52.2,51.4,52.1],[52.1,52.8,52.0,52.7],[52.7,53.3,52.6,53.2]]),
             zones:[],
-            lines:[{ price:52.0, color:'#94a3b8', title:'Range high' },{ price:53.2, color:'#22c55e', title:'TP' }],
+            lines:[{ price:52.0, color:'#94a3b8', title:'Range hi' },{ price:53.2, color:'#22c55e', title:'TP' }],
             markers:[{ i:8, pos:'belowBar', shape:'arrowUp', color:'#22c55e', text:'Long' }],
           },
           outcome:'win',
@@ -10209,35 +10218,41 @@
           if(typeof LightweightCharts==='undefined' || !box) return;
           const chartEl = box.querySelector('.quiz-hc-chart');
           const overlay = box.querySelector('.quiz-hc-overlay');
+          const legendEl = box.querySelector('.quiz-hc-legend');
           if(!chartEl||!overlay) return;
           overlay.innerHTML = '';
           const dark = !document.body.classList.contains('light');
           const candles = spec.candles || [];
           const chart = LightweightCharts.createChart(chartEl, {
             width: chartEl.clientWidth || 320,
-            height: chartEl.clientHeight || 300,
+            height: chartEl.clientHeight || 340,
             layout: { background:{ type:LightweightCharts.ColorType.Solid, color:'transparent' },
-                      textColor: dark ? '#9aa4b2' : '#5a6473', fontSize: 10 },
-            grid: { vertLines:{ color: dark?'rgba(255,255,255,.04)':'rgba(0,0,0,.045)' },
-                    horzLines:{ color: dark?'rgba(255,255,255,.04)':'rgba(0,0,0,.045)' } },
-            rightPriceScale:{ borderColor: dark?'rgba(255,255,255,.08)':'rgba(0,0,0,.1)' },
-            timeScale:{ borderColor: dark?'rgba(255,255,255,.08)':'rgba(0,0,0,.1)', timeVisible:false, secondsVisible:false },
-            crosshair:{ mode: LightweightCharts.CrosshairMode.Normal },
+                      textColor: dark ? '#9aa4b2' : '#5a6473', fontSize: 11 },
+            grid: { vertLines:{ color: dark?'rgba(255,255,255,.035)':'rgba(0,0,0,.04)' },
+                    horzLines:{ color: dark?'rgba(255,255,255,.035)':'rgba(0,0,0,.04)' } },
+            rightPriceScale:{ borderColor: dark?'rgba(255,255,255,.08)':'rgba(0,0,0,.1)',
+                              // vertical breathing room so candles/zones never touch the edges
+                              scaleMargins:{ top:0.18, bottom:0.18 } },
+            // Synthetic timestamps carry no real meaning — hide the date axis to
+            // remove clutter and prevent overlapping labels.
+            timeScale:{ visible:false, borderVisible:false, fixLeftEdge:true, fixRightEdge:true },
+            crosshair:{ mode: LightweightCharts.CrosshairMode.Hidden },
             handleScroll:false, handleScale:false,
           });
           const series = chart.addCandlestickSeries({
-            upColor:'#22c55e', downColor:'#ef4444', borderUpColor:'#22c55e',
-            borderDownColor:'#ef4444', wickUpColor:'#22c55e', wickDownColor:'#ef4444',
+            upColor:'#22c55e', downColor:'#ef4444', borderUpColor:'#16a34a',
+            borderDownColor:'#dc2626', wickUpColor:'#22c55e', wickDownColor:'#ef4444',
           });
           series.setData(candles);
-          // Native markers (entry arrows, sweep flags, etc.)
+          // Native markers — arrows only (no text on the candles, to avoid
+          // adjacent labels colliding). What each marker means lives in the legend.
           if(spec.markers && spec.markers.length){
             series.setMarkers(spec.markers
               .filter(m=>candles[m.i])
               .map(m=>({ time:candles[m.i].time, position:m.pos||'aboveBar',
-                         color:m.color||'#eab308', shape:m.shape||'circle', text:m.text||'' })));
+                         color:m.color||'#eab308', shape:m.shape||'circle', text:'' })));
           }
-          // Native horizontal price lines (SL / TP / entry)
+          // Native horizontal price lines (SL / TP). Titles render on the price axis.
           if(spec.lines && spec.lines.length){
             spec.lines.forEach(l=>series.createPriceLine({
               price:l.price, color:l.color||'#eab308', lineWidth:1,
@@ -10246,14 +10261,15 @@
           }
           chart.timeScale().fitContent();
 
-          // Zone overlay (OB / FVG / premium-discount rectangles)
+          // Zone overlay (OB / FVG / supply-demand rectangles). No on-chart text —
+          // labels are clamped to a small chip only when the zone is tall enough.
           const draw = () => {
             overlay.innerHTML = '';
             (spec.zones||[]).forEach(z=>{
               if(!candles[z.i0]||!candles[z.i1]) return;
               const ts=chart.timeScale();
-              let x0=ts.timeToCoordinate(candles[z.i0].time);
-              let x1=ts.timeToCoordinate(candles[z.i1].time);
+              const x0=ts.timeToCoordinate(candles[z.i0].time);
+              const x1=ts.timeToCoordinate(candles[z.i1].time);
               const y0=series.priceToCoordinate(z.pHigh);
               const y1=series.priceToCoordinate(z.pLow);
               if([x0,x1,y0,y1].some(v=>v==null)) return;
@@ -10263,19 +10279,27 @@
               d.className='quiz-hc-zone';
               d.style.cssText=`left:${left}px;top:${top}px;width:${w}px;height:${h}px;background:${z.fill};border:1px ${z.dashed?'dashed':'solid'} ${z.stroke};`;
               overlay.appendChild(d);
-              if(z.label){
-                const lab=document.createElement('div');
-                lab.className='quiz-hc-zlabel';
-                lab.textContent=z.label;
-                lab.style.cssText=`left:${left+3}px;top:${Math.max(0,top-1)}px;background:${z.stroke};color:#fff;`;
-                overlay.appendChild(lab);
-              }
             });
           };
           draw();
           chart.timeScale().subscribeVisibleTimeRangeChange(draw);
           const ro=new ResizeObserver(()=>{ chart.applyOptions({width:chartEl.clientWidth}); draw(); });
           ro.observe(chartEl);
+
+          // ── Legend: one clean strip describing every chart element ──
+          if(legendEl){
+            const items=[];
+            (spec.zones||[]).forEach(z=>{ if(z.label) items.push(
+              `<span class="hcl-item"><span class="hcl-swatch" style="background:${z.fill};border:1px ${z.dashed?'dashed':'solid'} ${z.stroke};"></span>${z.label}</span>`); });
+            (spec.markers||[]).forEach(m=>{ if(m.text){
+              const glyph = m.shape==='arrowUp' ? '▲' : m.shape==='arrowDown' ? '▼' : '●';
+              items.push(`<span class="hcl-item"><span class="hcl-glyph" style="color:${m.color||'#eab308'};">${glyph}</span>${m.text}</span>`); }});
+            (spec.lines||[]).forEach(l=>{ if(l.title) items.push(
+              `<span class="hcl-item"><span class="hcl-line" style="background:${l.color||'#eab308'};"></span>${l.title}</span>`); });
+            legendEl.innerHTML = items.join('');
+            legendEl.style.display = items.length ? '' : 'none';
+          }
+
           this._chart=chart; this._series=series; this._ro=ro; this._draw=draw;
         },
         redraw(){ if(this._draw) this._draw(); }
@@ -10360,7 +10384,7 @@
         }
         if(!hcBox){
           hcBox=document.createElement('div'); hcBox.id='quiz-hc-box'; hcBox.className='quiz-hc-chartbox';
-          hcBox.innerHTML='<div class="quiz-hc-chart"></div><div class="quiz-hc-overlay"></div><div class="quiz-hc-caption" style="display:none;"></div>';
+          hcBox.innerHTML='<div class="quiz-hc-chartarea"><div class="quiz-hc-chart"></div><div class="quiz-hc-overlay"></div></div><div class="quiz-hc-legend"></div><div class="quiz-hc-caption" style="display:none;"></div>';
           qt.parentNode.insertBefore(hcBox, qt);
         }
         if(!hcOut){
