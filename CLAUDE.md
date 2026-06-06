@@ -3,9 +3,18 @@
 
 ---
 
-> **🟢 TAREA PENDIENTE PRIORITARIA — LIMPIEZA FINAL DE DISTRACTORES DEL QUIZ (cuando el usuario avise que tiene tokens)**
+> **✅ COMPLETADO (2026-06-06) — LIMPIEZA FINAL DE DISTRACTORES DEL QUIZ**
 >
-> El usuario pidió retomar esto cuando recupere tokens. Avisará explícitamente.
+> Hecho: **11 distractores beginner** (commit `8947397`) y **~60 distractores intermediate**
+> (commit `7c2a2a8`) reescritos como misconceptions técnicamente plausibles en EN/ES/FR/PT,
+> validados con `node --check` (0 ocurrencias de `\\'`), pusheados a `claude/epic-lovelace-GsOuo`.
+> Los 3 niveles (beginner/intermediate/advanced) quedan limpios. **SIGUIENTE:** Quiz Hardcore
+> con TradingView Lightweight Charts (aún no empezado). El detalle histórico de abajo se conserva
+> como referencia del procedimiento.
+>
+> ---
+>
+> **🟢 (HISTÓRICO) TAREA — LIMPIEZA FINAL DE DISTRACTORES DEL QUIZ**
 >
 > **Contexto:** El `QUESTION_BANK` en `scalpel/templates/index.html` tuvo una pasada
 > completa para hacer todos los distractores `ok:false` técnicamente plausibles
