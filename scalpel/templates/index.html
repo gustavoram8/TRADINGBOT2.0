@@ -10096,8 +10096,8 @@
         // ── Hardcore card (only on topics that have scenarios) ──
         const nHard = countHardcore(qState.methodology, qState.topic);
         if(nHard > 0){
-          // Unlocked once Advanced is passed in this methodology (admins bypass for preview).
-          const advDone = U.isAdmin || !!(progFor(qState.methodology,'advanced')||{}).completed;
+          // Hardcore is always accessible to Premium users — no prerequisite required.
+          const advDone = true;
           const hp = progFor(qState.methodology,'hardcore');
           const hpct = hp && hp.total_q ? Math.round(hp.best_score/hp.total_q*100) : null;
           const card = document.createElement('div');
