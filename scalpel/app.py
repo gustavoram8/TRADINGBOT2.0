@@ -3538,7 +3538,9 @@ def quiz_complete():
     weak_topics = data.get('weak_topics', [])   # list of strings
 
     valid_methods = {'ict', 'smc', 'wyckoff', 'patterns'}
-    valid_levels  = {'beginner', 'intermediate', 'advanced'}
+    # 'hardcore' is an expert chart-based tier saved alongside the base levels.
+    # It is intentionally kept OUT of the certification grid (see user_certification).
+    valid_levels  = {'beginner', 'intermediate', 'advanced', 'hardcore'}
     if methodology not in valid_methods or level not in valid_levels:
         return jsonify({'error': 'invalid_params'}), 400
 
@@ -3569,7 +3571,9 @@ def user_certification(user_id):
     passed EVERY quiz (all methodology+level combos) with an overall accuracy of
     at least QUIZ_CERT_PCT, otherwise None."""
     rows = QuizProgress.query.filter_by(user_id=user_id).all()
-    completed = [r for r in rows if r.completed]
+    # Hardcore is an optional expert tier — it does NOT count toward the base
+    # certification grid (12 combos) nor its accuracy, so exclude it here.
+    completed = [r for r in rows if r.completed and r.level != 'hardcore']
     # The unique (user, methodology, level) constraint means a full grid == count
     if len(completed) < QUIZ_CERT_REQUIRED:
         return None

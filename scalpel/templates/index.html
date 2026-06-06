@@ -2171,6 +2171,52 @@
     .quiz-chart-svg-wrap svg { display: block; width: 100%; height: auto; }
     .quiz-chart-svg-caption { font-size: 11px; color: var(--muted); padding: 7px 12px; }
 
+    /* ── Hardcore level card (premium expert tier) ── */
+    .quiz-hc-card { flex-basis: 100%; min-width: 100%; border-radius: 10px; padding: 15px 16px;
+      cursor: pointer; transition: all .15s; position: relative; overflow: hidden;
+      border: 1px solid #b8860b;
+      background: linear-gradient(135deg, rgba(184,134,11,.12), rgba(120,53,15,.06)); }
+    body:not(.light) .quiz-hc-card { background: linear-gradient(135deg, rgba(212,160,40,.14), rgba(60,30,5,.20)); }
+    .quiz-hc-card:hover:not(.locked) { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(184,134,11,.25); border-color: #d4a028; }
+    .quiz-hc-card.locked { cursor: not-allowed; opacity: .7; border-color: var(--border2);
+      background: var(--card); }
+    .quiz-hc-card .hc-top { display: flex; align-items: center; gap: 10px; }
+    .quiz-hc-card .hc-flame { font-size: 20px; line-height: 1; }
+    .quiz-hc-card .hc-name { font-size: 14px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: .06em; color: #b8860b; }
+    body:not(.light) .quiz-hc-card .hc-name { color: #e3b84b; }
+    .quiz-hc-card.locked .hc-name { color: var(--muted); }
+    .quiz-hc-card .hc-tag { margin-left: auto; font-size: 10px; font-weight: 700; padding: 2px 8px;
+      border-radius: 999px; background: rgba(184,134,11,.18); color: #b8860b; text-transform: uppercase; letter-spacing: .05em; }
+    body:not(.light) .quiz-hc-card .hc-tag { color: #e3b84b; background: rgba(212,160,40,.18); }
+    .quiz-hc-card .hc-sub { font-size: 11.5px; color: var(--muted); margin-top: 6px; line-height: 1.45; }
+    .quiz-hc-card .hc-best { font-size: 11px; color: #22c55e; font-weight: 600; margin-top: 5px; }
+
+    /* ── Hardcore chart (Lightweight Charts container + zone overlay) ── */
+    .quiz-hc-chartbox { position: relative; margin-bottom: 14px; border-radius: 10px;
+      overflow: hidden; border: 1px solid var(--border2); background: var(--card); }
+    .quiz-hc-chart { width: 100%; height: 300px; }
+    .quiz-hc-overlay { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+    .quiz-hc-zone { position: absolute; border-radius: 2px; box-sizing: border-box; }
+    .quiz-hc-zlabel { position: absolute; font-size: 9.5px; font-weight: 700; padding: 1px 5px;
+      border-radius: 3px; white-space: nowrap; pointer-events: none; }
+    .quiz-hc-caption { font-size: 11px; color: var(--muted); padding: 7px 12px;
+      border-top: 1px solid var(--border2); }
+    /* scenario progress bar (stage X of Y) */
+    .quiz-hc-scenario { display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+      font-size: 11px; font-weight: 700; color: #b8860b; text-transform: uppercase; letter-spacing: .05em; }
+    body:not(.light) .quiz-hc-scenario { color: #e3b84b; }
+    .quiz-hc-scenario .hcs-dots { display: flex; gap: 5px; }
+    .quiz-hc-scenario .hcs-dot { width: 8px; height: 8px; border-radius: 50%;
+      background: var(--border2); transition: background .2s; }
+    .quiz-hc-scenario .hcs-dot.done { background: #22c55e; }
+    .quiz-hc-scenario .hcs-dot.active { background: #b8860b; box-shadow: 0 0 0 2px rgba(184,134,11,.25); }
+    /* outcome banner shown after answering a reveal stage */
+    .quiz-hc-outcome { display: flex; align-items: center; gap: 8px; font-size: 12px;
+      font-weight: 600; padding: 8px 12px; border-radius: 8px; margin-bottom: 12px; }
+    .quiz-hc-outcome.win  { background: rgba(34,197,94,.1);  color: #22c55e; border: 1px solid rgba(34,197,94,.3); }
+    .quiz-hc-outcome.loss { background: rgba(239,68,68,.1);  color: #ef4444; border: 1px solid rgba(239,68,68,.3); }
+
     /* weak-topics alert on results */
     .quiz-weak-alert { background: rgba(245,158,11,.07); border: 1px solid rgba(245,158,11,.3);
       border-radius: 8px; padding: 12px 14px; margin-bottom: 18px; }
@@ -4232,6 +4278,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <!-- Synapse Library: real content + textbook SVG diagrams for the 41 topics -->
 <script src="/static/synapse_library.js?v=1"></script>
+<!-- TradingView Lightweight Charts (Apache 2.0) — vendored locally for the Hardcore quiz -->
+<script src="/static/vendor/lightweight-charts.standalone.production.js"></script>
 <script>
   // ── i18n: UI translations (ICT jargon kept in English on purpose) ──
   const I18N = {
@@ -4313,6 +4361,15 @@
       'quiz.lv.beginner': 'Beginner',
       'quiz.lv.intermediate': 'Intermediate',
       'quiz.lv.advanced': 'Advanced',
+      'quiz.lv.hardcore': 'Hardcore',
+      'quiz.hc.title': 'Hardcore Mode',
+      'quiz.hc.sub': 'Expert chart-based scenarios. Read real price action and trade like the live market.',
+      'quiz.hc.locked': 'Complete Advanced in this topic to unlock Hardcore.',
+      'quiz.hc.tag': 'Expert',
+      'quiz.hc.stage': 'Chart {n} of {t}',
+      'quiz.hc.outcomeWin': 'Correct read — the trade played out.',
+      'quiz.hc.outcomeLoss': 'Missed — see how price actually delivered.',
+      'quiz.hc.reveal': 'How the trade developed',
       'quiz.topics': 'Topics',
       'quiz.topicsHint': '(pick as many as you want)',
       'quiz.questions': 'Questions',
@@ -4579,6 +4636,15 @@
       'quiz.lv.beginner': 'Principiante',
       'quiz.lv.intermediate': 'Intermedio',
       'quiz.lv.advanced': 'Avanzado',
+      'quiz.lv.hardcore': 'Hardcore',
+      'quiz.hc.title': 'Modo Hardcore',
+      'quiz.hc.sub': 'Escenarios expertos basados en gráficos. Lee la acción del precio real y opera como en el mercado en vivo.',
+      'quiz.hc.locked': 'Completa Avanzado en este tema para desbloquear Hardcore.',
+      'quiz.hc.tag': 'Experto',
+      'quiz.hc.stage': 'Gráfico {n} de {t}',
+      'quiz.hc.outcomeWin': 'Lectura correcta — el trade se desarrolló.',
+      'quiz.hc.outcomeLoss': 'Fallaste — mira cómo el precio realmente se entregó.',
+      'quiz.hc.reveal': 'Cómo se desarrolló el trade',
       'quiz.topics': 'Temas',
       'quiz.topicsHint': '(elige los que quieras)',
       'quiz.questions': 'Preguntas',
@@ -4845,6 +4911,15 @@
       'quiz.lv.beginner': 'Débutant',
       'quiz.lv.intermediate': 'Intermédiaire',
       'quiz.lv.advanced': 'Avancé',
+      'quiz.lv.hardcore': 'Hardcore',
+      'quiz.hc.title': 'Mode Hardcore',
+      'quiz.hc.sub': 'Scénarios experts basés sur des graphiques. Lisez le price action réel et tradez comme en marché réel.',
+      'quiz.hc.locked': 'Terminez le niveau Avancé de ce sujet pour débloquer Hardcore.',
+      'quiz.hc.tag': 'Expert',
+      'quiz.hc.stage': 'Graphique {n} sur {t}',
+      'quiz.hc.outcomeWin': 'Bonne lecture — le trade s\'est déroulé.',
+      'quiz.hc.outcomeLoss': 'Manqué — voyez comment le prix a réellement évolué.',
+      'quiz.hc.reveal': 'Comment le trade s\'est développé',
       'quiz.topics': 'Thèmes',
       'quiz.topicsHint': '(choisissez-en autant que vous voulez)',
       'quiz.questions': 'Questions',
@@ -5111,6 +5186,15 @@
       'quiz.lv.beginner': 'Iniciante',
       'quiz.lv.intermediate': 'Intermediário',
       'quiz.lv.advanced': 'Avançado',
+      'quiz.lv.hardcore': 'Hardcore',
+      'quiz.hc.title': 'Modo Hardcore',
+      'quiz.hc.sub': 'Cenários avançados baseados em gráficos. Leia o price action real e opere como no mercado ao vivo.',
+      'quiz.hc.locked': 'Complete o nível Avançado neste tema para desbloquear o Hardcore.',
+      'quiz.hc.tag': 'Especialista',
+      'quiz.hc.stage': 'Gráfico {n} de {t}',
+      'quiz.hc.outcomeWin': 'Leitura correta — o trade se desenvolveu.',
+      'quiz.hc.outcomeLoss': 'Errou — veja como o preço realmente se entregou.',
+      'quiz.hc.reveal': 'Como o trade se desenvolveu',
       'quiz.topics': 'Temas',
       'quiz.topicsHint': '(escolha quantos quiser)',
       'quiz.questions': 'Perguntas',
@@ -9682,6 +9766,183 @@
 
       ];
 
+      // ── HARDCORE SCENARIOS ────────────────────────────────────────────────
+      // Chart-based expert scenarios. Each scenario = { id, m, topic, stages[] }.
+      // A stage = { chart, revealChart?, q, opts:[{t,ok}], exp }.
+      // chart/revealChart = { candles:mkC([[o,h,l,c],...]), zones[], lines[], markers[] }.
+      //   zones:   { i0,i1, pLow,pHigh, fill, stroke, dashed?, label }   (i = candle index)
+      //   lines:   { price, color, title, dashed? }
+      //   markers: { i, pos:'aboveBar'|'belowBar', shape:'arrowUp'|'arrowDown'|'circle', color, text }
+      const Z_DEMAND = { fill:'rgba(34,197,94,.10)',  stroke:'rgba(34,197,94,.75)' };
+      const Z_SUPPLY = { fill:'rgba(239,68,68,.10)',  stroke:'rgba(239,68,68,.75)' };
+      const HARDCORE_SCENARIOS = [
+        // ───────────── ICT · Order Blocks — find the ideal entry ─────────────
+        { id:'ict_ob_h1', m:'ict', topic:'Order Blocks', stages:[{
+          chart:{
+            candles: mkC([[100,100.4,99.6,99.8],[99.8,100.0,99.2,99.3],[99.3,99.6,98.9,99.1],
+              [99.1,99.3,98.6,98.8],[98.8,99.0,98.6,98.9],[98.9,99.1,98.6,98.7],
+              [98.7,98.9,98.2,98.3],[98.3,99.4,98.25,99.3],[99.3,99.6,99.0,99.1],[99.1,99.2,98.7,98.8]]),
+            zones:[{ i0:6,i1:9, pLow:98.2, pHigh:98.7, ...Z_DEMAND, label:'Bullish OB' }],
+            lines:[{ price:98.6, color:'#eab308', title:'SSL (equal lows)' }],
+            markers:[{ i:6, pos:'belowBar', shape:'arrowUp', color:'#eab308', text:'Sweep' },
+                     { i:7, pos:'aboveBar', shape:'arrowUp', color:'#22c55e', text:'Displacement' }],
+          },
+          q:{en:'Price swept the sell-side liquidity below the equal lows, then displaced up leaving a bullish Order Block. Where is the ideal long entry?',
+             es:'El precio barrió la liquidez sell-side bajo los mínimos iguales y luego desplazó al alza dejando un Order Block alcista. ¿Dónde está la entrada larga ideal?',
+             fr:'Le prix a balayé la liquidité sell-side sous les bas égaux, puis a déplacé à la hausse en laissant un Order Block haussier. Où est l\'entrée longue idéale ?',
+             pt:'O preço varreu a liquidez sell-side abaixo das mínimas iguais e depois deslocou para cima deixando um Order Block de alta. Onde está a entrada comprada ideal?'},
+          opts:[
+            {t:{en:'At the bullish OB on the pullback, stop just below the sweep low',es:'En el OB alcista en el pullback, stop justo debajo del mínimo del barrido',fr:'Au OB haussier sur le pullback, stop juste sous le bas du sweep',pt:'No OB de alta no pullback, stop logo abaixo da mínima da varredura'},ok:true},
+            {t:{en:'At the equal lows before the sweep, to catch the bottom early',es:'En los mínimos iguales antes del barrido, para tomar el fondo antes',fr:'Aux bas égaux avant le sweep, pour anticiper le creux',pt:'Nas mínimas iguais antes da varredura, para pegar o fundo cedo'},ok:false},
+            {t:{en:'At the top of the displacement candle, riding the momentum',es:'En el techo de la vela de desplazamiento, siguiendo el momentum',fr:'Au sommet de la bougie de déplacement, en suivant le momentum',pt:'No topo da vela de deslocamento, seguindo o momentum'},ok:false},
+            {t:{en:'Market buy immediately with no defined stop',es:'Compra a mercado de inmediato sin stop definido',fr:'Achat au marché immédiat sans stop défini',pt:'Compra a mercado imediatamente sem stop definido'},ok:false},
+          ],
+          exp:{en:'The displacement that swept the SSL and broke structure validates the OB. The high-probability entry is the retracement into that OB, with the stop protected below the sweep low.',
+               es:'El desplazamiento que barrió la SSL y rompió estructura valida el OB. La entrada de alta probabilidad es el retroceso a ese OB, con el stop protegido bajo el mínimo del barrido.',
+               fr:'Le déplacement qui a balayé la SSL et cassé la structure valide le OB. L\'entrée à haute probabilité est le retracement dans ce OB, stop sous le bas du sweep.',
+               pt:'O deslocamento que varreu a SSL e quebrou a estrutura valida o OB. A entrada de alta probabilidade é o retorno a esse OB, com o stop protegido abaixo da mínima da varredura.'},
+          revealChart:{
+            candles: mkC([[100,100.4,99.6,99.8],[99.8,100.0,99.2,99.3],[99.3,99.6,98.9,99.1],
+              [99.1,99.3,98.6,98.8],[98.8,99.0,98.6,98.9],[98.9,99.1,98.6,98.7],
+              [98.7,98.9,98.2,98.3],[98.3,99.4,98.25,99.3],[99.3,99.6,99.0,99.1],[99.1,99.2,98.7,98.8],
+              [98.8,99.5,98.7,99.4],[99.4,100.1,99.3,100.0],[100.0,100.6,99.9,100.5],[100.5,101.0,100.3,100.9]]),
+            zones:[{ i0:6,i1:9, pLow:98.2, pHigh:98.7, ...Z_DEMAND, label:'Bullish OB' }],
+            lines:[{ price:98.1, color:'#ef4444', title:'SL' },{ price:100.9, color:'#22c55e', title:'TP' }],
+            markers:[{ i:9, pos:'belowBar', shape:'arrowUp', color:'#22c55e', text:'Long' }],
+          },
+          outcome:'win',
+        }]},
+
+        // ───────────── Wyckoff · Accumulation — direction bias ─────────────
+        { id:'wyk_acc_h1', m:'wyckoff', topic:'Accumulation', stages:[{
+          chart:{
+            candles: mkC([[51,51.3,50.7,50.8],[50.8,51.5,50.5,51.2],[51.2,51.6,50.6,50.7],
+              [50.7,51.0,50.1,50.3],[50.3,50.6,50.0,50.5],[50.5,51.2,50.3,51.0],
+              [51.0,51.4,50.6,50.7],[50.7,50.9,49.6,49.8],[49.8,50.9,49.7,50.8]]),
+            zones:[],
+            lines:[{ price:50.0, color:'#eab308', title:'Range support' }],
+            markers:[{ i:7, pos:'belowBar', shape:'arrowUp', color:'#22c55e', text:'Spring' }],
+          },
+          q:{en:'Inside an accumulation range, price sprang below support and immediately reclaimed it. According to Wyckoff, the next likely move is:',
+             es:'Dentro de un rango de acumulación, el precio hizo un spring bajo el soporte y lo recuperó de inmediato. Según Wyckoff, el próximo movimiento probable es:',
+             fr:'Dans une plage d\'accumulation, le prix a fait un spring sous le support et l\'a immédiatement repris. Selon Wyckoff, le prochain mouvement probable est :',
+             pt:'Dentro de um range de acumulação, o preço fez um spring abaixo do suporte e o reclamou imediatamente. Segundo Wyckoff, o próximo movimento provável é:'},
+          opts:[
+            {t:{en:'A markup (break to the upside) — the spring absorbed sell-side liquidity',es:'Un markup (ruptura al alza) — el spring absorbió la liquidez sell-side',fr:'Un markup (cassure à la hausse) — le spring a absorbé la liquidité sell-side',pt:'Um markup (rompimento de alta) — o spring absorveu a liquidez sell-side'},ok:true},
+            {t:{en:'A continued breakdown — support has clearly failed',es:'Una ruptura bajista continua — el soporte claramente falló',fr:'Une cassure baissière continue — le support a clairement cédé',pt:'Um rompimento de baixa contínuo — o suporte claramente falhou'},ok:false},
+            {t:{en:'A long sideways drift with no directional bias',es:'Una deriva lateral larga sin sesgo direccional',fr:'Une longue dérive latérale sans biais directionnel',pt:'Uma longa deriva lateral sem viés direcional'},ok:false},
+            {t:{en:'A retest of the spring low before a deeper low',es:'Un retest del mínimo del spring antes de un mínimo más profundo',fr:'Un retest du bas du spring avant un creux plus profond',pt:'Um reteste da mínima do spring antes de uma mínima mais profunda'},ok:false},
+          ],
+          exp:{en:'A spring is a bear trap: it sweeps stops below support then reclaims the range, signalling smart-money accumulation is complete and a markup phase typically follows.',
+               es:'Un spring es una trampa bajista: barre stops bajo el soporte y luego recupera el rango, señalando que la acumulación del smart money terminó y suele seguir una fase de markup.',
+               fr:'Un spring est un piège baissier : il balaie les stops sous le support puis reprend la plage, signalant que l\'accumulation est terminée et qu\'un markup suit généralement.',
+               pt:'Um spring é uma armadilha de baixa: varre os stops abaixo do suporte e depois reclama o range, sinalizando que a acumulação do smart money terminou e geralmente segue uma fase de markup.'},
+          revealChart:{
+            candles: mkC([[51,51.3,50.7,50.8],[50.8,51.5,50.5,51.2],[51.2,51.6,50.6,50.7],
+              [50.7,51.0,50.1,50.3],[50.3,50.6,50.0,50.5],[50.5,51.2,50.3,51.0],
+              [51.0,51.4,50.6,50.7],[50.7,50.9,49.6,49.8],[49.8,50.9,49.7,50.8],
+              [50.8,51.6,50.7,51.5],[51.5,52.2,51.4,52.1],[52.1,52.8,52.0,52.7],[52.7,53.3,52.6,53.2]]),
+            zones:[],
+            lines:[{ price:52.0, color:'#94a3b8', title:'Range high' },{ price:53.2, color:'#22c55e', title:'TP' }],
+            markers:[{ i:8, pos:'belowBar', shape:'arrowUp', color:'#22c55e', text:'Long' }],
+          },
+          outcome:'win',
+        }]},
+
+        // ───────────── SMC · Structure — multi-stage (HTF bias → LTF entry) ──
+        { id:'smc_str_h1', m:'smc', topic:'Structure', stages:[
+          { // STAGE 1 — HTF bias
+            chart:{
+              candles: mkC([[200,200.5,199,199.3],[199.3,199.6,198,198.3],[198.3,199.2,198.1,199.0],
+                [199.0,199.1,197.3,197.5],[197.5,198.6,197.4,198.4],[198.4,198.5,196.6,196.8],
+                [196.8,197.9,196.7,197.7],[197.7,198.6,197.6,198.5]]),
+              zones:[{ i0:2,i1:7, pLow:198.4, pHigh:199.6, ...Z_SUPPLY, label:'HTF Supply' }],
+              lines:[], markers:[],
+            },
+            q:{en:'This is the higher-timeframe structure: a clean series of lower highs and lower lows, with price now rallying into supply. What is your directional bias?',
+               es:'Esta es la estructura de temporalidad mayor: una serie clara de máximos y mínimos descendentes, con el precio ahora subiendo hacia la oferta. ¿Cuál es tu sesgo direccional?',
+               fr:'Voici la structure en unité de temps supérieure : une série nette de plus hauts et plus bas descendants, le prix montant désormais dans l\'offre. Quel est votre biais directionnel ?',
+               pt:'Esta é a estrutura de tempo gráfico maior: uma série clara de topos e fundos descendentes, com o preço agora subindo em direção à oferta. Qual é o seu viés direcional?'},
+            opts:[
+              {t:{en:'Bearish — sell rallies into the supply zone',es:'Bajista — vender los rallies hacia la zona de oferta',fr:'Baissier — vendre les rallyes dans la zone d\'offre',pt:'Baixista — vender os rallies na zona de oferta'},ok:true},
+              {t:{en:'Bullish — the rally signals a new uptrend',es:'Alcista — el rally señala una nueva tendencia alcista',fr:'Haussier — le rallye signale une nouvelle tendance haussière',pt:'Altista — o rally sinaliza uma nova tendência de alta'},ok:false},
+              {t:{en:'Neutral — wait, the market is ranging',es:'Neutral — esperar, el mercado está en rango',fr:'Neutre — attendre, le marché est en range',pt:'Neutro — esperar, o mercado está em range'},ok:false},
+              {t:{en:'Bullish reversal — the lower lows are now over',es:'Reversión alcista — los mínimos descendentes ya terminaron',fr:'Renversement haussier — les plus bas descendants sont terminés',pt:'Reversão de alta — os fundos descendentes acabaram'},ok:false},
+            ],
+            exp:{en:'Consistent lower highs and lower lows define a bearish trend. The rally into the HTF supply is a selling opportunity, not a reversal — bias stays bearish until structure breaks up.',
+                 es:'Máximos y mínimos descendentes consistentes definen una tendencia bajista. El rally hacia la oferta HTF es una oportunidad de venta, no una reversión — el sesgo sigue bajista hasta que la estructura rompa al alza.',
+                 fr:'Des plus hauts et plus bas descendants définissent une tendance baissière. Le rallye dans l\'offre HTF est une opportunité de vente, pas un renversement — biais baissier jusqu\'à cassure haussière.',
+                 pt:'Topos e fundos descendentes consistentes definem uma tendência de baixa. O rally na oferta HTF é uma oportunidade de venda, não uma reversão — o viés segue baixista até a estrutura romper para cima.'},
+          },
+          { // STAGE 2 — LTF entry trigger
+            chart:{
+              candles: mkC([[198.5,199.0,198.4,198.9],[198.9,199.4,198.8,199.3],[199.3,199.6,199.2,199.4],
+                [199.4,199.5,198.8,198.9],[198.9,199.0,198.3,198.4],[198.4,198.9,198.3,198.8]]),
+              zones:[{ i0:1,i1:5, pLow:199.2, pHigh:199.6, ...Z_SUPPLY, label:'Supply' }],
+              lines:[], markers:[{ i:4, pos:'belowBar', shape:'arrowDown', color:'#ef4444', text:'CHoCH' }],
+            },
+            q:{en:'Zoomed to the lower timeframe: price tapped the HTF supply and printed a CHoCH down. What is the entry trigger?',
+               es:'Ampliado a la temporalidad menor: el precio tocó la oferta HTF e imprimió un CHoCH a la baja. ¿Cuál es el gatillo de entrada?',
+               fr:'Zoom sur l\'unité de temps inférieure : le prix a touché l\'offre HTF et imprimé un CHoCH baissier. Quel est le déclencheur d\'entrée ?',
+               pt:'Ampliado para o tempo gráfico menor: o preço tocou a oferta HTF e imprimiu um CHoCH de baixa. Qual é o gatilho de entrada?'},
+            opts:[
+              {t:{en:'Short on the pullback after the CHoCH, stop above the supply',es:'Corto en el pullback tras el CHoCH, stop sobre la oferta',fr:'Short sur le pullback après le CHoCH, stop au-dessus de l\'offre',pt:'Vendido no pullback após o CHoCH, stop acima da oferta'},ok:true},
+              {t:{en:'Buy the bounce off the supply zone',es:'Comprar el rebote en la zona de oferta',fr:'Acheter le rebond sur la zone d\'offre',pt:'Comprar o repique na zona de oferta'},ok:false},
+              {t:{en:'Wait for a bullish BOS before doing anything',es:'Esperar un BOS alcista antes de hacer nada',fr:'Attendre un BOS haussier avant d\'agir',pt:'Esperar um BOS de alta antes de fazer qualquer coisa'},ok:false},
+              {t:{en:'Market short instantly with no stop',es:'Corto a mercado al instante sin stop',fr:'Short au marché instantané sans stop',pt:'Vendido a mercado instantâneo sem stop'},ok:false},
+            ],
+            exp:{en:'The HTF supply tap plus an LTF CHoCH down confirms sellers stepping in. Enter short on the pullback into the broken structure / supply, stop above the zone.',
+                 es:'El toque de la oferta HTF más un CHoCH bajista de TF menor confirma la entrada de vendedores. Entra corto en el pullback hacia la estructura rota / oferta, stop sobre la zona.',
+                 fr:'Le tap de l\'offre HTF plus un CHoCH baissier LTF confirme l\'arrivée des vendeurs. Entre short sur le pullback dans la structure cassée / l\'offre, stop au-dessus de la zone.',
+                 pt:'O toque da oferta HTF mais um CHoCH de baixa no TF menor confirma a entrada dos vendedores. Entre vendido no pullback para a estrutura rompida / oferta, stop acima da zona.'},
+            revealChart:{
+              candles: mkC([[198.5,199.0,198.4,198.9],[198.9,199.4,198.8,199.3],[199.3,199.6,199.2,199.4],
+                [199.4,199.5,198.8,198.9],[198.9,199.0,198.3,198.4],[198.4,198.9,198.3,198.8],
+                [198.8,198.9,198.0,198.1],[198.1,198.3,197.3,197.5],[197.5,197.7,196.8,197.0]]),
+              zones:[{ i0:1,i1:5, pLow:199.2, pHigh:199.6, ...Z_SUPPLY, label:'Supply' }],
+              lines:[{ price:199.7, color:'#ef4444', title:'SL' },{ price:197.0, color:'#22c55e', title:'TP' }],
+              markers:[{ i:5, pos:'aboveBar', shape:'arrowDown', color:'#ef4444', text:'Short' }],
+            },
+            outcome:'win',
+          },
+        ]},
+
+        // ───────────── Patterns · Chart Patterns — bull flag entry ─────────────
+        { id:'pat_flag_h1', m:'patterns', topic:'Chart Patterns', stages:[{
+          chart:{
+            candles: mkC([[30,30.2,29.9,30.1],[30.1,30.4,30.0,30.3],[30.3,31.2,30.3,31.1],
+              [31.1,32.0,31.0,31.9],[31.9,32.6,31.8,32.5],[32.5,32.6,32.0,32.1],
+              [32.1,32.3,31.7,31.8],[31.8,32.0,31.5,31.6]]),
+            zones:[{ i0:5,i1:7, pLow:31.5, pHigh:32.3, fill:'rgba(148,163,184,.10)', stroke:'rgba(148,163,184,.8)', label:'Flag' }],
+            lines:[], markers:[{ i:4, pos:'aboveBar', shape:'circle', color:'#94a3b8', text:'Flagpole' }],
+          },
+          q:{en:'A strong impulse (flagpole) was followed by a small downward-sloping consolidation (bull flag). What is the ideal entry?',
+             es:'Un impulso fuerte (mástil) fue seguido por una pequeña consolidación descendente (bandera alcista). ¿Cuál es la entrada ideal?',
+             fr:'Une forte impulsion (hampe) a été suivie d\'une petite consolidation descendante (bull flag). Quelle est l\'entrée idéale ?',
+             pt:'Um impulso forte (mastro) foi seguido por uma pequena consolidação descendente (bandeira de alta). Qual é a entrada ideal?'},
+          opts:[
+            {t:{en:'On the breakout above the flag\'s upper trendline, stop below the flag low',es:'En la ruptura sobre la directriz superior de la bandera, stop bajo el mínimo de la bandera',fr:'Sur la cassure au-dessus de la trendline haute du flag, stop sous le bas du flag',pt:'No rompimento acima da linha superior da bandeira, stop abaixo da mínima da bandeira'},ok:true},
+            {t:{en:'Short the flag, expecting the down-slope to continue',es:'Cortar la bandera, esperando que la pendiente bajista continúe',fr:'Shorter le flag, en pariant sur la continuation baissière',pt:'Vender a bandeira, esperando que a inclinação de baixa continue'},ok:false},
+            {t:{en:'Buy now at the flag low with no confirmation',es:'Comprar ahora en el mínimo de la bandera sin confirmación',fr:'Acheter maintenant au bas du flag sans confirmation',pt:'Comprar agora na mínima da bandeira sem confirmação'},ok:false},
+            {t:{en:'Wait for price to fall back to the flagpole base',es:'Esperar a que el precio vuelva a la base del mástil',fr:'Attendre que le prix retombe à la base de la hampe',pt:'Esperar o preço voltar à base do mastro'},ok:false},
+          ],
+          exp:{en:'A bull flag is a continuation pattern. The trigger is the breakout above the flag\'s upper boundary, confirming the impulse resumes; the stop sits below the flag low and the measured-move target equals the flagpole height.',
+               es:'Una bandera alcista es un patrón de continuación. El gatillo es la ruptura sobre el límite superior de la bandera, confirmando que el impulso se reanuda; el stop va bajo el mínimo y el objetivo de movimiento medido iguala la altura del mástil.',
+               fr:'Un bull flag est un motif de continuation. Le déclencheur est la cassure au-dessus de la limite haute du flag, confirmant la reprise de l\'impulsion ; stop sous le bas, cible = hauteur de la hampe.',
+               pt:'Uma bandeira de alta é um padrão de continuação. O gatilho é o rompimento acima do limite superior da bandeira, confirmando a retomada do impulso; o stop fica abaixo da mínima e o alvo de movimento medido iguala a altura do mastro.'},
+          revealChart:{
+            candles: mkC([[30,30.2,29.9,30.1],[30.1,30.4,30.0,30.3],[30.3,31.2,30.3,31.1],
+              [31.1,32.0,31.0,31.9],[31.9,32.6,31.8,32.5],[32.5,32.6,32.0,32.1],
+              [32.1,32.3,31.7,31.8],[31.8,32.0,31.5,31.6],
+              [31.6,32.2,31.6,32.1],[32.1,32.9,32.0,32.8],[32.8,33.6,32.7,33.5],[33.5,34.2,33.4,34.1]]),
+            zones:[{ i0:5,i1:7, pLow:31.5, pHigh:32.3, fill:'rgba(148,163,184,.10)', stroke:'rgba(148,163,184,.8)', label:'Flag' }],
+            lines:[{ price:31.4, color:'#ef4444', title:'SL' },{ price:34.0, color:'#22c55e', title:'TP' }],
+            markers:[{ i:8, pos:'belowBar', shape:'arrowUp', color:'#22c55e', text:'Long' }],
+          },
+          outcome:'win',
+        }]},
+      ];
+
       // Topics per methodology
       const TOPIC_MAP = {
         ict:      ['Order Blocks','Fair Value Gaps','Market Structure','Liquidity','Kill Zones','AMD','PD Arrays'],
@@ -9822,6 +10083,31 @@
             ${pct!==null ? `<div class="lc-best">${T('quiz.best')||'Best'}: ${pct}%</div>` : ''}
           </div>`;
         }).join('');
+
+        // ── Hardcore card (only on topics that have scenarios) ──
+        const nHard = countHardcore(qState.methodology, qState.topic);
+        if(nHard > 0){
+          // Unlocked once Advanced is passed in this methodology (admins bypass for preview).
+          const advDone = U.isAdmin || !!(progFor(qState.methodology,'advanced')||{}).completed;
+          const hp = progFor(qState.methodology,'hardcore');
+          const hpct = hp && hp.total_q ? Math.round(hp.best_score/hp.total_q*100) : null;
+          const card = document.createElement('div');
+          card.className = 'quiz-hc-card' + (advDone ? '' : ' locked');
+          card.dataset.lv = 'hardcore';
+          card.innerHTML = `
+            <div class="hc-top">
+              <span class="hc-flame">${advDone ? '🔥' : '🔒'}</span>
+              <span class="hc-name">${trLevel('hardcore')}</span>
+              <span class="hc-tag">${T('quiz.hc.tag')||'Expert'}</span>
+            </div>
+            <div class="hc-sub">${advDone ? (T('quiz.hc.sub')||'') : (T('quiz.hc.locked')||'')}</div>
+            ${(advDone && hpct!==null) ? `<div class="hc-best">${T('quiz.best')||'Best'}: ${hpct}%</div>` : ''}`;
+          if(advDone){
+            card.addEventListener('click', startHardcore);
+          }
+          wrap.appendChild(card);
+        }
+
         wrap.querySelectorAll('.quiz-level-card').forEach(card=>{
           card.addEventListener('click',()=>{
             qState.level = card.dataset.lv;
@@ -9896,6 +10182,139 @@
         wrap.innerHTML = q.svg + (q.chartCaption ? `<div class="quiz-chart-svg-caption">${tr(q.chartCaption)}</div>` : '');
       }
 
+      // ════════════════════════════════════════════════════════════════════
+      // HARDCORE MODE — chart-based expert scenarios (TradingView Lightweight
+      // Charts). Each scenario flattens into one or more sequential "stages";
+      // each stage is a scored question rendered over a live candlestick chart.
+      // ════════════════════════════════════════════════════════════════════
+
+      // Expand a terse candle list [[o,h,l,c],...] into LWC bars with sequential
+      // timestamps (5-minute steps from an arbitrary base).
+      function mkC(arr, base) {
+        const b = base || 1700000000;
+        return arr.map((c,i) => ({ time: b + i*300, open:c[0], high:c[1], low:c[2], close:c[3] }));
+      }
+
+      // Live-chart renderer. Owns a single chart instance at a time and draws
+      // OB/FVG zones via a pixel-positioned overlay (LWC v4 has no native boxes).
+      const HardcoreCharts = {
+        _chart:null, _series:null, _ro:null, _draw:null,
+        destroy() {
+          if(this._ro){ try{this._ro.disconnect();}catch(e){} this._ro=null; }
+          if(this._chart){ try{this._chart.remove();}catch(e){} this._chart=null; }
+          this._series=null; this._draw=null;
+        },
+        render(box, spec) {
+          this.destroy();
+          if(typeof LightweightCharts==='undefined' || !box) return;
+          const chartEl = box.querySelector('.quiz-hc-chart');
+          const overlay = box.querySelector('.quiz-hc-overlay');
+          if(!chartEl||!overlay) return;
+          overlay.innerHTML = '';
+          const dark = !document.body.classList.contains('light');
+          const candles = spec.candles || [];
+          const chart = LightweightCharts.createChart(chartEl, {
+            width: chartEl.clientWidth || 320,
+            height: chartEl.clientHeight || 300,
+            layout: { background:{ type:LightweightCharts.ColorType.Solid, color:'transparent' },
+                      textColor: dark ? '#9aa4b2' : '#5a6473', fontSize: 10 },
+            grid: { vertLines:{ color: dark?'rgba(255,255,255,.04)':'rgba(0,0,0,.045)' },
+                    horzLines:{ color: dark?'rgba(255,255,255,.04)':'rgba(0,0,0,.045)' } },
+            rightPriceScale:{ borderColor: dark?'rgba(255,255,255,.08)':'rgba(0,0,0,.1)' },
+            timeScale:{ borderColor: dark?'rgba(255,255,255,.08)':'rgba(0,0,0,.1)', timeVisible:false, secondsVisible:false },
+            crosshair:{ mode: LightweightCharts.CrosshairMode.Normal },
+            handleScroll:false, handleScale:false,
+          });
+          const series = chart.addCandlestickSeries({
+            upColor:'#22c55e', downColor:'#ef4444', borderUpColor:'#22c55e',
+            borderDownColor:'#ef4444', wickUpColor:'#22c55e', wickDownColor:'#ef4444',
+          });
+          series.setData(candles);
+          // Native markers (entry arrows, sweep flags, etc.)
+          if(spec.markers && spec.markers.length){
+            series.setMarkers(spec.markers
+              .filter(m=>candles[m.i])
+              .map(m=>({ time:candles[m.i].time, position:m.pos||'aboveBar',
+                         color:m.color||'#eab308', shape:m.shape||'circle', text:m.text||'' })));
+          }
+          // Native horizontal price lines (SL / TP / entry)
+          if(spec.lines && spec.lines.length){
+            spec.lines.forEach(l=>series.createPriceLine({
+              price:l.price, color:l.color||'#eab308', lineWidth:1,
+              lineStyle: l.dashed!==false ? LightweightCharts.LineStyle.Dashed : LightweightCharts.LineStyle.Solid,
+              axisLabelVisible:true, title:l.title||'' }));
+          }
+          chart.timeScale().fitContent();
+
+          // Zone overlay (OB / FVG / premium-discount rectangles)
+          const draw = () => {
+            overlay.innerHTML = '';
+            (spec.zones||[]).forEach(z=>{
+              if(!candles[z.i0]||!candles[z.i1]) return;
+              const ts=chart.timeScale();
+              let x0=ts.timeToCoordinate(candles[z.i0].time);
+              let x1=ts.timeToCoordinate(candles[z.i1].time);
+              const y0=series.priceToCoordinate(z.pHigh);
+              const y1=series.priceToCoordinate(z.pLow);
+              if([x0,x1,y0,y1].some(v=>v==null)) return;
+              const left=Math.min(x0,x1), top=Math.min(y0,y1);
+              const w=Math.max(2,Math.abs(x1-x0)), h=Math.max(2,Math.abs(y1-y0));
+              const d=document.createElement('div');
+              d.className='quiz-hc-zone';
+              d.style.cssText=`left:${left}px;top:${top}px;width:${w}px;height:${h}px;background:${z.fill};border:1px ${z.dashed?'dashed':'solid'} ${z.stroke};`;
+              overlay.appendChild(d);
+              if(z.label){
+                const lab=document.createElement('div');
+                lab.className='quiz-hc-zlabel';
+                lab.textContent=z.label;
+                lab.style.cssText=`left:${left+3}px;top:${Math.max(0,top-1)}px;background:${z.stroke};color:#fff;`;
+                overlay.appendChild(lab);
+              }
+            });
+          };
+          draw();
+          chart.timeScale().subscribeVisibleTimeRangeChange(draw);
+          const ro=new ResizeObserver(()=>{ chart.applyOptions({width:chartEl.clientWidth}); draw(); });
+          ro.observe(chartEl);
+          this._chart=chart; this._series=series; this._ro=ro; this._draw=draw;
+        },
+        redraw(){ if(this._draw) this._draw(); }
+      };
+
+      // Count hardcore scenarios available for a methodology + topic.
+      function countHardcore(m, topic) {
+        return HARDCORE_SCENARIOS.filter(s=>s.m===m && s.topic===topic).length;
+      }
+
+      // Flatten the matching scenarios into a sequential list of stage-questions.
+      function buildHardcoreQuestions() {
+        const scen = HARDCORE_SCENARIOS.filter(s=>
+          s.m===qState.methodology && s.topic===qState.topic);
+        // shuffle scenario order, but keep each scenario's stages sequential
+        for(let i=scen.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[scen[i],scen[j]]=[scen[j],scen[i]];}
+        const out=[];
+        scen.forEach(s=>{
+          s.stages.forEach((st,si)=>{
+            out.push({
+              m:s.m, topic:s.topic, lv:'hardcore',
+              scenarioId:s.id, scenarioStage:si+1, scenarioTotal:s.stages.length,
+              chart:st.chart, revealChart:st.revealChart||null,
+              q:st.q, opts:st.opts, exp:st.exp,
+            });
+          });
+        });
+        return out;
+      }
+
+      function startHardcore() {
+        qState.placement=false;
+        qState.level='hardcore';
+        qState.questions=buildHardcoreQuestions();
+        if(qState.questions.length===0){alert(T('quiz.noQuestions'));return;}
+        qState.idx=0;qState.score=0;qState.answers=[];
+        showScreen('question');renderQuestion();
+      }
+
       // ── Timer ──
       function startTimer() {
         const el = document.getElementById('quiz-timer');
@@ -9928,6 +10347,51 @@
         const qt=document.getElementById('quiz-q-text');
         if(qt) qt.textContent=tr(q.q);
 
+        const isHardcore = !!q.chart;
+
+        // ── Hardcore: live chart + scenario bar (inserted BEFORE the question text) ──
+        // Insert order (all before the question text): scenario bar → chart → outcome → qt
+        let hcBar = document.getElementById('quiz-hc-scenario');
+        let hcBox = document.getElementById('quiz-hc-box');
+        let hcOut = document.getElementById('quiz-hc-outcome');
+        if(!hcBar){
+          hcBar=document.createElement('div'); hcBar.id='quiz-hc-scenario'; hcBar.className='quiz-hc-scenario';
+          qt.parentNode.insertBefore(hcBar, qt);
+        }
+        if(!hcBox){
+          hcBox=document.createElement('div'); hcBox.id='quiz-hc-box'; hcBox.className='quiz-hc-chartbox';
+          hcBox.innerHTML='<div class="quiz-hc-chart"></div><div class="quiz-hc-overlay"></div><div class="quiz-hc-caption" style="display:none;"></div>';
+          qt.parentNode.insertBefore(hcBox, qt);
+        }
+        if(!hcOut){
+          hcOut=document.createElement('div'); hcOut.id='quiz-hc-outcome'; hcOut.className='quiz-hc-outcome'; hcOut.style.display='none';
+          qt.parentNode.insertBefore(hcOut, qt);
+        }
+        hcOut.style.display='none';
+        // reset reveal caption each render
+        const _cap = hcBox.querySelector('.quiz-hc-caption');
+        if(_cap){ _cap.style.display='none'; _cap.textContent=''; }
+
+        if(isHardcore){
+          // scenario progress dots (only meaningful for multi-stage scenarios)
+          const stg=q.scenarioStage||1, tot=q.scenarioTotal||1;
+          const lbl2=(T('quiz.hc.stage')||'Chart {n} of {t}').replace('{n}',stg).replace('{t}',tot);
+          let dots='';
+          if(tot>1){
+            dots='<span class="hcs-dots">'+Array.from({length:tot},(_,i)=>
+              `<span class="hcs-dot ${i+1<stg?'done':(i+1===stg?'active':'')}"></span>`).join('')+'</span>';
+          }
+          hcBar.innerHTML=`<span>${lbl2}</span>${dots}`;
+          hcBar.style.display='';
+          hcBox.style.display='';
+          // render chart on next frame so the container has its width
+          requestAnimationFrame(()=>HardcoreCharts.render(hcBox, q.chart));
+        } else {
+          hcBar.style.display='none';
+          hcBox.style.display='none';
+          HardcoreCharts.destroy();
+        }
+
         // SVG chart
         let svgWrap = document.getElementById('quiz-chart-svg-wrap');
         if(!svgWrap) {
@@ -9936,7 +10400,7 @@
           svgWrap.className = 'quiz-chart-svg-wrap';
           qt.parentNode.insertBefore(svgWrap, qt.nextSibling);
         }
-        if(q.svg) {
+        if(q.svg && !isHardcore) {
           svgWrap.style.display='';
           svgWrap.innerHTML = q.svg + (q.chartCaption ? `<div class="quiz-chart-svg-caption">${tr(q.chartCaption)}</div>` : '');
         } else { svgWrap.style.display='none'; }
@@ -9958,8 +10422,13 @@
         if(fb) fb.style.display='none';
         if(nb) nb.style.display='none';
         const te=document.getElementById('quiz-timer');
-        if(te){te.textContent='1:00';te.classList.remove('danger');}
-        startTimer();
+        // Hardcore has no countdown — reading a chart properly takes longer.
+        if(isHardcore){
+          if(te){ te.style.display='none'; }
+        } else {
+          if(te){ te.style.display=''; te.textContent='1:00'; te.classList.remove('danger'); }
+          startTimer();
+        }
       }
 
       function handleAnswer(btn, q) {
@@ -9981,6 +10450,19 @@
           ft.textContent=correct?T('quiz.correct'):T('quiz.incorrect');
           fe.textContent=tr(q.exp);
           fb.style.display='';
+        }
+        // ── Hardcore: reveal how the trade actually developed + outcome banner ──
+        if(q.chart && q.revealChart){
+          const hcBox=document.getElementById('quiz-hc-box');
+          const cap=hcBox && hcBox.querySelector('.quiz-hc-caption');
+          if(cap){ cap.textContent=T('quiz.hc.reveal')||''; cap.style.display=''; }
+          requestAnimationFrame(()=>HardcoreCharts.render(hcBox, q.revealChart));
+          const hcOut=document.getElementById('quiz-hc-outcome');
+          if(hcOut){
+            hcOut.className='quiz-hc-outcome '+(correct?'win':'loss');
+            hcOut.textContent=(correct?'✅ ':'❌ ')+(correct?(T('quiz.hc.outcomeWin')||''):(T('quiz.hc.outcomeLoss')||''));
+            hcOut.style.display='';
+          }
         }
         const nb=document.getElementById('quiz-next-btn');
         if(nb){nb.textContent=qState.idx+1<qState.questions.length?T('quiz.next'):T('quiz.seeResults');nb.style.display='';}
@@ -10031,6 +10513,7 @@
 
       // ── Results ──
       async function showResults() {
+        HardcoreCharts.destroy();   // free the live chart instance
         showScreen('results');
         const total = qState.questions.length;
         const pct   = Math.round((qState.score/total)*100);
@@ -10204,11 +10687,11 @@
 
       document.getElementById('quiz-next-btn')?.addEventListener('click',nextQuestion);
       document.getElementById('quiz-retry-btn')?.addEventListener('click',()=>{
-        qState.questions=buildQuestions();
+        qState.questions = (qState.level==='hardcore') ? buildHardcoreQuestions() : buildQuestions();
         qState.idx=0;qState.score=0;qState.answers=[];
         showScreen('question');renderQuestion();
       });
-      document.getElementById('quiz-new-btn')?.addEventListener('click',()=>showScreen('home'));
+      document.getElementById('quiz-new-btn')?.addEventListener('click',()=>{ HardcoreCharts.destroy(); showScreen('home'); });
 
       // ── Synapse topic tracking (DB-backed, per account) ──────────────────
       // The Synapse library UI doesn't exist yet, but the full check-off
