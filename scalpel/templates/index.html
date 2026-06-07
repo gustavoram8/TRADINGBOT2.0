@@ -10775,7 +10775,7 @@
         { id:'ict_fvg_h5', m:'ict', topic:'Fair Value Gaps', stages:[{
           chart:{
             candles: mkC([[100,100.3,99.7,100.1],[100.1,101.1,100.0,101.0],[101.0,101.3,100.7,100.9],
-              [100.9,101.2,100.5,100.6],[100.6,100.8,100.2,100.7],[100.7,101.0,100.6,100.9]]),
+              [100.9,101.2,99.9,100.1],[100.1,100.4,99.8,100.0],[100.0,100.3,99.7,100.2]]),
             zones:[{ i0:0,i1:2, pLow:100.3, pHigh:100.7, fill:'rgba(148,163,184,.10)', stroke:'rgba(148,163,184,.7)', label:'FVG (already filled)' }],
             lines:[], markers:[{ i:3, pos:'aboveBar', shape:'arrowDown', color:'#ef4444', text:'Filled' }],
           },
@@ -10795,10 +10795,10 @@
                pt:'O preço já retornou e preencheu totalmente o gap (velas 3-4 o atravessaram), então o imbalance está mitigado e não oferece valor novo. Entrar como se estivesse intacto ignora que a ineficiência foi reequilibrada.'},
           revealChart:{
             candles: mkC([[100,100.3,99.7,100.1],[100.1,101.1,100.0,101.0],[101.0,101.3,100.7,100.9],
-              [100.9,101.2,100.5,100.6],[100.6,100.8,100.2,100.7],[100.7,101.0,100.6,100.9],
-              [100.9,100.95,100.0,100.1],[100.1,100.2,99.5,99.6],[99.6,99.8,99.2,99.4]]),
+              [100.9,101.2,99.9,100.1],[100.1,100.4,99.8,100.0],[100.0,100.3,99.7,100.2],
+              [100.2,100.35,99.8,100.1],[100.1,100.2,99.5,99.6],[99.6,99.8,99.2,99.4]]),
             zones:[{ i0:0,i1:2, pLow:100.3, pHigh:100.7, fill:'rgba(148,163,184,.10)', stroke:'rgba(148,163,184,.7)', label:'Filled FVG' }],
-            lines:[{ price:101.0, color:'#22c55e', title:'TP (missed)' },{ price:100.6, color:'#ef4444', title:'SL' }],
+            lines:[{ price:101.0, color:'#22c55e', title:'TP (missed)' },{ price:99.7, color:'#ef4444', title:'SL hit' }],
             markers:[{ i:5, pos:'aboveBar', shape:'arrowUp', color:'#ef4444', text:'Bad long' }],
           },
           outcome:'loss',
