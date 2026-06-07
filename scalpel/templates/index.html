@@ -15076,6 +15076,318 @@
           outcome:'win',
         }]},
 
+        // h2 — Find the Stop (Bearish Bat: SL above 1.13 XA extension)
+        { id:'pat_harm_h2', m:'patterns', topic:'Harmonic Patterns', stages:[{
+          chart:{
+            candles: mkC([[100,100.5,99.8,100.2],[100.2,102.8,100.1,102.6],[102.6,103.0,101.4,101.6],[101.6,102.2,100.8,101.0],[101.0,101.5,99.2,99.4],[99.4,101.3,99.3,101.1],[101.1,101.4,100.3,100.5]]),
+            zones:[{ i0:5,i1:6, pLow:100.8, pHigh:101.4, fill:'rgba(239,68,68,.10)', stroke:'rgba(239,68,68,.7)', label:'PRZ (D) — Bearish Bat' }],
+            lines:[{ price:102.6, color:'#eab308', title:'X' },{ price:101.1, color:'#94a3b8', title:'0.886 XA' }],
+            markers:[
+              { i:0, pos:'belowBar', shape:'circle', color:'#94a3b8', text:'X' },
+              { i:1, pos:'aboveBar', shape:'circle', color:'#94a3b8', text:'A' },
+              { i:2, pos:'belowBar', shape:'circle', color:'#94a3b8', text:'B' },
+              { i:3, pos:'aboveBar', shape:'circle', color:'#94a3b8', text:'C' },
+              { i:6, pos:'aboveBar', shape:'circle', color:'#ef4444', text:'D?' },
+            ],
+          },
+          q:{en:'A bearish Bat pattern is completing at D (0.886 XA). Where should the stop-loss be placed?',es:'Un patrón Bat bajista se completa en D (0.886 XA). ¿Dónde se coloca el stop-loss?',fr:'Un Bat baissier se complète en D (0.886 XA). Où placer le stop-loss?',pt:'Um padrão Bat de baixa se completa em D (0.886 XA). Onde colocar o stop-loss?'},
+          opts:[
+            {t:{en:'Above the 1.13 XA extension level',es:'Por encima de la extensión 1.13 XA',fr:'Au-dessus de l\'extension 1.13 XA',pt:'Acima da extensão 1.13 XA'},ok:true},
+            {t:{en:'Above the swing high at A',es:'Por encima del máximo en A',fr:'Au-dessus du sommet en A',pt:'Acima da máxima em A'},ok:false},
+            {t:{en:'At the 0.786 retracement of XA',es:'En el retroceso 0.786 de XA',fr:'Au retracement 0.786 de XA',pt:'No retrocesso 0.786 de XA'},ok:false},
+            {t:{en:'Just above the B point high',es:'Justo por encima del máximo en B',fr:'Juste au-dessus du sommet en B',pt:'Logo acima da máxima em B'},ok:false},
+          ],
+          exp:{en:'In a bearish Bat, D sits at 0.886 XA. The pattern is invalidated if price exceeds 1.13 XA (going beyond X\'s range). The stop goes just above that 1.13 level — not above A, which is too far away.',es:'En un Bat bajista, D está en 0.886 XA. El patrón se invalida si el precio supera 1.13 XA. El stop va justo por encima de ese nivel — no sobre A, que queda demasiado lejos.',fr:'Dans un Bat baissier, D est à 0.886 XA. Le pattern est invalidé si le prix dépasse 1.13 XA. Le stop se place juste au-dessus de ce niveau.',pt:'No Bat de baixa, D fica em 0.886 XA. O padrão é invalidado se o preço ultrapassar 1.13 XA. O stop fica logo acima desse nível.'},
+          revealChart:{
+            candles: mkC([[100,100.5,99.8,100.2],[100.2,102.8,100.1,102.6],[102.6,103.0,101.4,101.6],[101.6,102.2,100.8,101.0],[101.0,101.5,99.2,99.4],[99.4,101.3,99.3,101.1],[101.1,101.4,100.3,100.5],[100.5,101.0,99.6,99.7],[99.7,100.0,98.8,99.0],[99.0,99.3,98.5,98.6]]),
+            zones:[{ i0:5,i1:6, pLow:100.8, pHigh:101.4, fill:'rgba(239,68,68,.10)', stroke:'rgba(239,68,68,.7)', label:'PRZ (D)' }],
+            lines:[{ price:101.75, color:'#ef4444', title:'SL (1.13 XA)' },{ price:99.5, color:'#22c55e', title:'TP (0.382 BC)' }],
+            markers:[{ i:6, pos:'aboveBar', shape:'arrowDown', color:'#ef4444', text:'Short' }],
+          },
+          outcome:'win',
+        }]},
+
+        // h3 — Find the Target (Bullish Butterfly: TP at 0.382 and 0.618 of CD)
+        { id:'pat_harm_h3', m:'patterns', topic:'Harmonic Patterns', stages:[{
+          chart:{
+            candles: mkC([[80,80.4,79.7,80.1],[80.1,81.9,80.0,81.7],[81.7,82.0,80.5,80.7],[80.7,81.2,79.8,80.0],[80.0,80.5,78.2,78.5],[78.5,79.0,77.6,77.8],[77.8,78.2,76.9,77.0]]),
+            zones:[{ i0:5,i1:6, pLow:77.0, pHigh:78.2, fill:'rgba(34,197,94,.10)', stroke:'rgba(34,197,94,.7)', label:'PRZ (D) — Bullish Butterfly' }],
+            lines:[{ price:80.1, color:'#eab308', title:'X (80.1)' },{ price:81.7, color:'#94a3b8', title:'A (81.7)' }],
+            markers:[
+              { i:0, pos:'belowBar', shape:'circle', color:'#94a3b8', text:'X' },
+              { i:1, pos:'aboveBar', shape:'circle', color:'#94a3b8', text:'A' },
+              { i:2, pos:'belowBar', shape:'circle', color:'#94a3b8', text:'B' },
+              { i:3, pos:'aboveBar', shape:'circle', color:'#94a3b8', text:'C' },
+              { i:6, pos:'belowBar', shape:'circle', color:'#22c55e', text:'D?' },
+            ],
+          },
+          q:{en:'A bullish Butterfly completes at D (1.27 XA extension, below X). What are the primary take-profit targets?',es:'Un Butterfly alcista se completa en D (extensión 1.27 XA, por debajo de X). ¿Cuáles son los objetivos principales de take-profit?',fr:'Un Butterfly haussier se complète en D (extension 1.27 XA, sous X). Quels sont les objectifs de prise de profit?',pt:'Um Butterfly de alta se completa em D (extensão 1.27 XA, abaixo de X). Quais são os alvos de take-profit?'},
+          opts:[
+            {t:{en:'0.382 and 0.618 retracements of the CD leg',es:'Retrocesos 0.382 y 0.618 del tramo CD',fr:'Retracements 0.382 et 0.618 de la jambe CD',pt:'Retrocessos 0.382 e 0.618 da perna CD'},ok:true},
+            {t:{en:'0.786 retracement of XA and point A',es:'Retroceso 0.786 de XA y el punto A',fr:'Retracement 0.786 de XA et le point A',pt:'Retrocesso 0.786 de XA e o ponto A'},ok:false},
+            {t:{en:'1.272 and 1.618 extensions of BC beyond C',es:'Extensiones 1.272 y 1.618 de BC más allá de C',fr:'Extensions 1.272 et 1.618 de BC au-delà de C',pt:'Extensões 1.272 e 1.618 de BC além de C'},ok:false},
+            {t:{en:'0.5 and 0.886 retracements of the AB leg',es:'Retrocesos 0.5 y 0.886 del tramo AB',fr:'Retracements 0.5 et 0.886 de la jambe AB',pt:'Retrocessos 0.5 e 0.886 da perna AB'},ok:false},
+          ],
+          exp:{en:'After a Butterfly reversal at D, the standard targets are 0.382 and 0.618 of the CD leg (the last impulse). These measure how much price retraces back into the structure. Point A is a secondary target only if the full pattern retraces.',es:'Tras la reversión del Butterfly en D, los objetivos estándar son 0.382 y 0.618 del tramo CD. Estos miden cuánto retrocede el precio hacia la estructura. El punto A es un objetivo secundario solo si el patrón retrocede completamente.',fr:'Après un retournement Butterfly en D, les objectifs standards sont 0.382 et 0.618 de la jambe CD. Ces niveaux mesurent le retrace dans la structure.',pt:'Após a reversão do Butterfly em D, os alvos padrão são 0.382 e 0.618 da perna CD. Esses níveis medem o quanto o preço retorna à estrutura.'},
+          revealChart:{
+            candles: mkC([[80,80.4,79.7,80.1],[80.1,81.9,80.0,81.7],[81.7,82.0,80.5,80.7],[80.7,81.2,79.8,80.0],[80.0,80.5,78.2,78.5],[78.5,79.0,77.6,77.8],[77.8,78.2,76.9,77.0],[77.0,77.8,76.85,77.6],[77.6,78.4,77.5,78.3],[78.3,79.1,78.2,79.0]]),
+            zones:[{ i0:5,i1:6, pLow:77.0, pHigh:78.2, fill:'rgba(34,197,94,.10)', stroke:'rgba(34,197,94,.7)', label:'PRZ (D)' }],
+            lines:[{ price:76.8, color:'#ef4444', title:'SL' },{ price:79.3, color:'#22c55e', title:'TP1 (0.382 CD)' },{ price:80.0, color:'#22c55e', title:'TP2 (0.618 CD)' }],
+            markers:[{ i:6, pos:'belowBar', shape:'arrowUp', color:'#22c55e', text:'D / Long' }],
+          },
+          outcome:'win',
+        }]},
+
+        // h4 — Identify the Pattern (Bat vs Gartley — key ratio difference)
+        { id:'pat_harm_h4', m:'patterns', topic:'Harmonic Patterns', stages:[{
+          chart:{
+            candles: mkC([[50,50.3,49.8,50.1],[50.1,53.5,50.0,53.2],[53.2,53.6,51.9,52.1],[52.1,53.0,51.8,52.8],[52.8,53.2,50.6,50.9],[50.9,51.4,49.95,50.1],[50.1,50.6,49.9,50.3]]),
+            zones:[{ i0:5,i1:6, pLow:49.9, pHigh:50.6, fill:'rgba(34,197,94,.10)', stroke:'rgba(34,197,94,.7)', label:'PRZ — Bullish?' }],
+            lines:[
+              { price:50.1, color:'#eab308', title:'X (50.1)' },
+              { price:53.2, color:'#94a3b8', title:'A (53.2)' },
+              { price:52.1, color:'#3b82f6', title:'B (52.1) — 0.5 XA' },
+              { price:50.1, color:'#94a3b8', title:'D zone — 0.886 XA' },
+            ],
+            markers:[
+              { i:0, pos:'belowBar', shape:'circle', color:'#94a3b8', text:'X' },
+              { i:1, pos:'aboveBar', shape:'circle', color:'#94a3b8', text:'A' },
+              { i:2, pos:'belowBar', shape:'circle', color:'#94a3b8', text:'B' },
+              { i:3, pos:'aboveBar', shape:'circle', color:'#94a3b8', text:'C' },
+              { i:6, pos:'belowBar', shape:'circle', color:'#22c55e', text:'D?' },
+            ],
+          },
+          q:{en:'B retraces 0.5 of XA and D completes near 0.886 XA. Which harmonic pattern is this, and what distinguishes it from a Gartley?',es:'B retrocede 0.5 de XA y D se completa cerca de 0.886 XA. ¿Qué patrón armónico es y qué lo distingue del Gartley?',fr:'B retrace 0.5 de XA et D se complète près de 0.886 XA. Quel pattern harmonique est-ce, et qu\'est-ce qui le distingue du Gartley?',pt:'B retrocede 0.5 de XA e D se completa perto de 0.886 XA. Qual padrão harmônico é esse, e o que o distingue do Gartley?'},
+          opts:[
+            {t:{en:'Bat — B at 0.382–0.5 XA and D at 0.886 XA (vs Gartley\'s B=0.618 and D=0.786)',es:'Bat — B en 0.382–0.5 XA y D en 0.886 XA (vs Gartley: B=0.618 y D=0.786)',fr:'Bat — B à 0.382–0.5 XA et D à 0.886 XA (vs Gartley: B=0.618 et D=0.786)',pt:'Bat — B em 0.382–0.5 XA e D em 0.886 XA (vs Gartley: B=0.618 e D=0.786)'},ok:true},
+            {t:{en:'Gartley — both patterns share the same B and D ratios',es:'Gartley — ambos patrones comparten los mismos ratios en B y D',fr:'Gartley — les deux patterns partagent les mêmes ratios en B et D',pt:'Gartley — ambos os padrões compartilham os mesmos ratios em B e D'},ok:false},
+            {t:{en:'Butterfly — B at 0.5 XA indicates it extends beyond X at D',es:'Butterfly — B en 0.5 XA indica que se extiende más allá de X en D',fr:'Butterfly — B à 0.5 XA indique qu\'il dépasse X en D',pt:'Butterfly — B em 0.5 XA indica que ele vai além de X em D'},ok:false},
+            {t:{en:'Crab — D at 0.886 XA is the defining ratio of the Crab',es:'Crab — D en 0.886 XA es el ratio definitorio del Crab',fr:'Crab — D à 0.886 XA est le ratio définissant le Crab',pt:'Crab — D em 0.886 XA é o ratio definidor do Crab'},ok:false},
+          ],
+          exp:{en:'The Bat is defined by B retracing 0.382–0.5 of XA and D completing at 0.886 XA. The Gartley uses B=0.618 and D=0.786 XA. Both D points stay within XA, but the Bat\'s 0.886 D sits much deeper. The Butterfly goes beyond X; the Crab\'s D is at 1.618 XA.',es:'El Bat se define por B en 0.382–0.5 de XA y D en 0.886 XA. El Gartley usa B=0.618 y D=0.786 XA. Ambos D se mantienen dentro de XA, pero el D del Bat es más profundo. El Butterfly va más allá de X; el Crab tiene D en 1.618 XA.',fr:'Le Bat est défini par B à 0.382–0.5 de XA et D à 0.886 XA. Le Gartley utilise B=0.618 et D=0.786 XA. Le Butterfly dépasse X; le Crab a D à 1.618 XA.',pt:'O Bat é definido por B em 0.382–0.5 de XA e D em 0.886 XA. O Gartley usa B=0.618 e D=0.786 XA. O Butterfly vai além de X; o Crab tem D em 1.618 XA.'},
+          revealChart:{
+            candles: mkC([[50,50.3,49.8,50.1],[50.1,53.5,50.0,53.2],[53.2,53.6,51.9,52.1],[52.1,53.0,51.8,52.8],[52.8,53.2,50.6,50.9],[50.9,51.4,49.95,50.1],[50.1,50.6,49.9,50.3],[50.3,51.2,50.2,51.0],[51.0,51.8,50.9,51.7],[51.7,52.3,51.6,52.2]]),
+            zones:[{ i0:5,i1:6, pLow:49.9, pHigh:50.6, fill:'rgba(34,197,94,.10)', stroke:'rgba(34,197,94,.7)', label:'PRZ (Bat D)' }],
+            lines:[{ price:49.7, color:'#ef4444', title:'SL (below 1.13 XA)' },{ price:52.1, color:'#22c55e', title:'TP (0.382 CD)' }],
+            markers:[{ i:6, pos:'belowBar', shape:'arrowUp', color:'#22c55e', text:'D / Long' }],
+          },
+          outcome:'win',
+        }]},
+
+        // h5 — Spot the Mistake (entering at D without reversal confirmation)
+        { id:'pat_harm_h5', m:'patterns', topic:'Harmonic Patterns', stages:[{
+          chart:{
+            candles: mkC([[60,60.4,59.7,60.2],[60.2,63.0,60.1,62.8],[62.8,63.1,61.5,61.7],[61.7,62.3,61.3,62.0],[62.0,62.5,59.4,59.6],[59.6,60.0,59.3,59.8],[59.8,60.2,59.2,59.3],[59.3,59.5,58.6,58.7]]),
+            zones:[{ i0:4,i1:5, pLow:59.3, pHigh:60.0, fill:'rgba(34,197,94,.10)', stroke:'rgba(34,197,94,.7)', label:'PRZ (D) — Bullish Gartley' }],
+            lines:[{ price:62.8, color:'#eab308', title:'A (62.8)' },{ price:59.5, color:'#94a3b8', title:'D — 0.786 XA' }],
+            markers:[
+              { i:0, pos:'belowBar', shape:'circle', color:'#94a3b8', text:'X' },
+              { i:1, pos:'aboveBar', shape:'circle', color:'#94a3b8', text:'A' },
+              { i:2, pos:'belowBar', shape:'circle', color:'#94a3b8', text:'B' },
+              { i:3, pos:'aboveBar', shape:'circle', color:'#94a3b8', text:'C' },
+              { i:4, pos:'belowBar', shape:'circle', color:'#eab308', text:'D — ratio met' },
+              { i:4, pos:'belowBar', shape:'arrowUp', color:'#22c55e', text:'Entered here' },
+              { i:7, pos:'belowBar', shape:'circle', color:'#ef4444', text:'SL hit' },
+            ],
+          },
+          q:{en:'A trader enters long the moment price hits the D ratio with no further confirmation. Price continues lower and stops out. What was the critical mistake?',es:'Un trader entra largo en cuanto el precio toca el ratio D sin más confirmación. El precio sigue bajando y lo para. ¿Cuál fue el error crítico?',fr:'Un trader entre long dès que le prix atteint le ratio D sans confirmation. Le prix continue de baisser et stoppe. Quelle était l\'erreur critique?',pt:'Um trader entra comprado assim que o preço toca o ratio D sem confirmação. O preço continua caindo e aciona o stop. Qual foi o erro crítico?'},
+          opts:[
+            {t:{en:'Entering at the ratio without waiting for a reversal candle or PA confirmation',es:'Entrar en el ratio sin esperar una vela de reversión o confirmación de PA',fr:'Entrer au ratio sans attendre une bougie de retournement ou confirmation PA',pt:'Entrar no ratio sem aguardar vela de reversão ou confirmação de PA'},ok:true},
+            {t:{en:'Using a Gartley instead of a Bat at this price level',es:'Usar un Gartley en lugar de un Bat en este nivel de precio',fr:'Utiliser un Gartley plutôt qu\'un Bat à ce niveau de prix',pt:'Usar um Gartley em vez de um Bat nesse nível de preço'},ok:false},
+            {t:{en:'Placing the stop-loss too far below the D point',es:'Colocar el stop-loss demasiado lejos por debajo del punto D',fr:'Placer le stop-loss trop loin sous le point D',pt:'Colocar o stop-loss muito longe abaixo do ponto D'},ok:false},
+            {t:{en:'Trading a harmonic pattern during a trending market session',es:'Operar un patrón armónico durante una sesión de mercado en tendencia',fr:'Trader un pattern harmonique pendant une session de marché en tendance',pt:'Operar um padrão harmônico durante uma sessão de mercado em tendência'},ok:false},
+          ],
+          exp:{en:'Harmonic patterns define a PRZ (Potential Reversal Zone), not a guaranteed reversal. Entering the moment price touches the D ratio — without a bullish engulfing, pin bar, or other confirmation — exposes the trader to a pattern failure. Always wait for price action to confirm the turn.',es:'Los patrones armónicos definen una PRZ (zona potencial de reversión), no una reversión garantizada. Entrar en cuanto el precio toca el ratio D — sin envolvente alcista, pin bar u otra confirmación — expone al trader a un fallo del patrón. Siempre espera que el price action confirme el giro.',fr:'Les patterns harmoniques définissent une PRZ, pas un retournement garanti. Entrer dès que le prix touche le ratio D sans confirmation expose le trader à un échec du pattern. Toujours attendre une confirmation du retournement.',pt:'Padrões harmônicos definem uma PRZ, não uma reversão garantida. Entrar assim que o preço toca o ratio D sem confirmação expõe o trader a uma falha do padrão. Sempre aguarde confirmação da reversão.'},
+          revealChart:{
+            candles: mkC([[60,60.4,59.7,60.2],[60.2,63.0,60.1,62.8],[62.8,63.1,61.5,61.7],[61.7,62.3,61.3,62.0],[62.0,62.5,59.4,59.6],[59.6,60.0,59.3,59.8],[59.8,60.2,59.2,59.3],[59.3,59.5,58.6,58.7],[58.7,59.8,58.5,59.6],[59.6,60.5,59.5,60.4]]),
+            zones:[{ i0:4,i1:5, pLow:59.3, pHigh:60.0, fill:'rgba(34,197,94,.10)', stroke:'rgba(34,197,94,.7)', label:'PRZ (D)' }],
+            lines:[{ price:58.4, color:'#ef4444', title:'SL' },{ price:61.5, color:'#22c55e', title:'TP' }],
+            markers:[
+              { i:4, pos:'belowBar', shape:'arrowUp', color:'#ef4444', text:'Premature entry' },
+              { i:7, pos:'belowBar', shape:'circle', color:'#ef4444', text:'SL hit' },
+              { i:8, pos:'belowBar', shape:'arrowUp', color:'#22c55e', text:'Confirmed entry' },
+            ],
+          },
+          outcome:'loss',
+        }]},
+
+        // h6 — What Happens Next (Bearish Crab at D: 1.618 XA — likely reversal)
+        { id:'pat_harm_h6', m:'patterns', topic:'Harmonic Patterns', stages:[{
+          chart:{
+            candles: mkC([[110,110.6,109.8,110.3],[110.3,112.0,110.2,111.8],[111.8,112.2,110.4,110.6],[110.6,111.8,110.2,111.5],[111.5,114.2,111.4,114.0],[114.0,114.5,113.6,114.3],[114.3,114.8,114.1,114.6]]),
+            zones:[{ i0:5,i1:6, pLow:114.0, pHigh:114.8, fill:'rgba(239,68,68,.10)', stroke:'rgba(239,68,68,.7)', label:'PRZ (D) — Bearish Crab' }],
+            lines:[
+              { price:110.3, color:'#eab308', title:'X (110.3)' },
+              { price:112.0, color:'#94a3b8', title:'A (112.0)' },
+              { price:114.6, color:'#3b82f6', title:'D — 1.618 XA' },
+            ],
+            markers:[
+              { i:0, pos:'belowBar', shape:'circle', color:'#94a3b8', text:'X' },
+              { i:1, pos:'aboveBar', shape:'circle', color:'#94a3b8', text:'A' },
+              { i:2, pos:'belowBar', shape:'circle', color:'#94a3b8', text:'B' },
+              { i:3, pos:'aboveBar', shape:'circle', color:'#94a3b8', text:'C' },
+              { i:6, pos:'aboveBar', shape:'circle', color:'#ef4444', text:'D (1.618 XA)' },
+            ],
+          },
+          q:{en:'Price has just completed a bearish Crab at D (exactly 1.618 XA extension, well above X). What is the most likely next move?',es:'El precio acaba de completar un Crab bajista en D (exactamente extensión 1.618 XA, muy por encima de X). ¿Cuál es el siguiente movimiento más probable?',fr:'Le prix vient de compléter un Crab baissier en D (extension 1.618 XA, bien au-dessus de X). Quel est le prochain mouvement le plus probable?',pt:'O preço acabou de completar um Crab de baixa em D (exatamente extensão 1.618 XA, bem acima de X). Qual é o próximo movimento mais provável?'},
+          opts:[
+            {t:{en:'Sharp reversal downward — the Crab\'s extreme extension often produces violent reversals',es:'Reversión brusca hacia abajo — la extensión extrema del Crab suele producir reversiones violentas',fr:'Retournement brusque à la baisse — l\'extension extrême du Crab produit souvent de violents retournements',pt:'Reversão acentuada para baixo — a extensão extrema do Crab frequentemente produz reversões violentas'},ok:true},
+            {t:{en:'Continuation higher — the 1.618 extension signals strong bullish momentum',es:'Continuación al alza — la extensión 1.618 señala un fuerte impulso alcista',fr:'Continuation à la hausse — l\'extension 1.618 signale un fort momentum haussier',pt:'Continuação para cima — a extensão 1.618 sinaliza forte momentum de alta'},ok:false},
+            {t:{en:'Sideways consolidation — D points always lead to choppy price action',es:'Consolidación lateral — los puntos D siempre generan acción de precio choppy',fr:'Consolidation latérale — les points D entraînent toujours une action des prix irrégulière',pt:'Consolidação lateral — pontos D sempre levam a price action irregular'},ok:false},
+            {t:{en:'Gradual retracement to B — Crabs typically retrace only to the B point',es:'Retroceso gradual hasta B — los Crabs normalmente retroceden solo hasta el punto B',fr:'Retracement progressif vers B — les Crabs retracent typiquement jusqu\'au point B',pt:'Retrocesso gradual até B — Crabs tipicamente retrocedem apenas até o ponto B'},ok:false},
+          ],
+          exp:{en:'The Crab is the most extreme harmonic pattern — D lands at the 1.618 XA extension, far beyond X. This extreme overextension creates a high-probability reversal zone. The sharp counter-move is characteristic of Crab completions, though price action confirmation (a bearish engulfing or strong wick) is still needed.',es:'El Crab es el patrón armónico más extremo: D cae en la extensión 1.618 XA, muy lejos de X. Esta sobreextensión extrema crea una zona de alta probabilidad de reversión. El movimiento contrario brusco es característico de los cierres de Crab.',fr:'Le Crab est le pattern harmonique le plus extrême — D atterrit à l\'extension 1.618 XA, loin de X. Cette surextension extrême crée une zone de retournement à haute probabilité.',pt:'O Crab é o padrão harmônico mais extremo — D fica na extensão 1.618 XA, bem além de X. Essa sobreextensão extrema cria uma zona de reversão de alta probabilidade.'},
+          revealChart:{
+            candles: mkC([[110,110.6,109.8,110.3],[110.3,112.0,110.2,111.8],[111.8,112.2,110.4,110.6],[110.6,111.8,110.2,111.5],[111.5,114.2,111.4,114.0],[114.0,114.5,113.6,114.3],[114.3,114.8,114.1,114.6],[114.6,114.7,112.8,113.0],[113.0,113.2,111.5,111.7],[111.7,112.0,110.8,111.0]]),
+            zones:[{ i0:5,i1:6, pLow:114.0, pHigh:114.8, fill:'rgba(239,68,68,.10)', stroke:'rgba(239,68,68,.7)', label:'PRZ (D)' }],
+            lines:[{ price:115.0, color:'#ef4444', title:'SL' },{ price:111.5, color:'#22c55e', title:'TP (0.382 CD)' }],
+            markers:[{ i:6, pos:'aboveBar', shape:'arrowDown', color:'#ef4444', text:'Short' }],
+          },
+          outcome:'win',
+        }]},
+
+        // h7 — Identify the Phase (AB=CD: which leg are we in?)
+        { id:'pat_harm_h7', m:'patterns', topic:'Harmonic Patterns', stages:[{
+          chart:{
+            candles: mkC([[70,70.4,69.7,70.1],[70.1,73.2,70.0,73.0],[73.0,73.4,71.6,71.8],[71.8,72.6,71.5,72.4],[72.4,72.8,70.5,70.7],[70.7,70.9,69.9,70.2]]),
+            zones:[],
+            lines:[
+              { price:70.1, color:'#eab308', title:'A (70.1)' },
+              { price:73.0, color:'#94a3b8', title:'B (73.0)' },
+              { price:71.8, color:'#eab308', title:'C (71.8) — 0.618 retrace' },
+              { price:70.2, color:'#3b82f6', title:'D target (AB=CD)' },
+            ],
+            markers:[
+              { i:0, pos:'belowBar', shape:'circle', color:'#94a3b8', text:'A' },
+              { i:1, pos:'aboveBar', shape:'circle', color:'#94a3b8', text:'B' },
+              { i:2, pos:'belowBar', shape:'circle', color:'#94a3b8', text:'C' },
+              { i:5, pos:'belowBar', shape:'circle', color:'#3b82f6', text:'Here' },
+            ],
+          },
+          q:{en:'In an AB=CD pattern, A was the low, B the high, C retraced 0.618 of AB. Price is now falling from C. Which leg is currently forming, and what confirms completion?',es:'En un patrón AB=CD, A fue el mínimo, B el máximo, C retrocedió 0.618 de AB. El precio ahora cae desde C. ¿Qué tramo se está formando y qué confirma su completación?',fr:'Dans un pattern AB=CD, A était le bas, B le haut, C a retracé 0.618 de AB. Le prix baisse depuis C. Quelle jambe se forme actuellement et qu\'est-ce qui confirme sa complétion?',pt:'Em um padrão AB=CD, A foi a mínima, B a máxima, C retrocedeu 0.618 de AB. O preço está caindo de C. Qual perna está se formando e o que confirma sua conclusão?'},
+          opts:[
+            {t:{en:'The CD leg — confirmed when CD equals AB in length (price) at the 1.272–1.618 BC extension',es:'El tramo CD — confirmado cuando CD iguala a AB en longitud al nivel 1.272–1.618 de la extensión BC',fr:'La jambe CD — confirmée quand CD égale AB en longueur à l\'extension 1.272–1.618 de BC',pt:'A perna CD — confirmada quando CD iguala AB em comprimento na extensão 1.272–1.618 de BC'},ok:true},
+            {t:{en:'The BC leg — C has not yet confirmed as a valid pivot high',es:'El tramo BC — C aún no ha confirmado como pivot alto válido',fr:'La jambe BC — C n\'a pas encore confirmé comme pivot haut valide',pt:'A perna BC — C ainda não confirmou como pivot de alta válido'},ok:false},
+            {t:{en:'A new AB leg — the pattern resets whenever price breaks below A',es:'Un nuevo tramo AB — el patrón se reinicia cuando el precio rompe por debajo de A',fr:'Une nouvelle jambe AB — le pattern se réinitialise quand le prix casse sous A',pt:'Uma nova perna AB — o padrão reinicia quando o preço quebra abaixo de A'},ok:false},
+            {t:{en:'The XA leg — AB=CD is always the second sub-pattern within a Gartley',es:'El tramo XA — AB=CD siempre es el segundo sub-patrón dentro de un Gartley',fr:'La jambe XA — AB=CD est toujours le deuxième sous-pattern dans un Gartley',pt:'A perna XA — AB=CD é sempre o segundo sub-padrão dentro de um Gartley'},ok:false},
+          ],
+          exp:{en:'Once A, B, and C are established, the active leg is CD. In a classic AB=CD, the CD leg equals AB in price distance. The CD leg also often relates to the 1.272 or 1.618 extension of BC. When CD equals AB, point D is reached and the pattern is complete.',es:'Una vez establecidos A, B y C, el tramo activo es CD. En un AB=CD clásico, el tramo CD iguala a AB en distancia de precio. El tramo CD también suele relacionarse con la extensión 1.272 o 1.618 de BC. Cuando CD iguala AB, se alcanza el punto D y el patrón se completa.',fr:'Une fois A, B et C établis, la jambe active est CD. Dans un AB=CD classique, la jambe CD égale AB en distance de prix. Quand CD égale AB, le point D est atteint et le pattern est complet.',pt:'Uma vez estabelecidos A, B e C, a perna ativa é CD. No AB=CD clássico, a perna CD iguala AB em distância de preço. Quando CD iguala AB, o ponto D é atingido e o padrão se completa.'},
+          revealChart:{
+            candles: mkC([[70,70.4,69.7,70.1],[70.1,73.2,70.0,73.0],[73.0,73.4,71.6,71.8],[71.8,72.6,71.5,72.4],[72.4,72.8,70.5,70.7],[70.7,70.9,69.9,70.2],[70.2,70.6,70.0,70.4],[70.4,71.3,70.3,71.1],[71.1,71.9,71.0,71.8],[71.8,72.5,71.7,72.4]]),
+            zones:[{ i0:5,i1:6, pLow:69.9, pHigh:70.7, fill:'rgba(34,197,94,.10)', stroke:'rgba(34,197,94,.7)', label:'D — AB=CD complete' }],
+            lines:[{ price:69.6, color:'#ef4444', title:'SL' },{ price:71.8, color:'#22c55e', title:'TP (C level)' }],
+            markers:[{ i:5, pos:'belowBar', shape:'arrowUp', color:'#22c55e', text:'D / Long' }],
+          },
+          outcome:'win',
+        }]},
+
+        // h8 — True or False (Butterfly D always goes beyond X)
+        { id:'pat_harm_h8', m:'patterns', topic:'Harmonic Patterns', stages:[{
+          chart:{
+            candles: mkC([[55,55.4,54.8,55.1],[55.1,58.5,55.0,58.2],[58.2,58.6,56.5,56.8],[56.8,57.8,56.3,57.5],[57.5,57.9,54.0,54.3],[54.3,54.6,53.4,53.6],[53.6,53.9,52.8,53.0]]),
+            zones:[{ i0:5,i1:6, pLow:52.8, pHigh:54.3, fill:'rgba(34,197,94,.10)', stroke:'rgba(34,197,94,.7)', label:'PRZ (D) — Butterfly' }],
+            lines:[
+              { price:55.1, color:'#eab308', title:'X (55.1)' },
+              { price:58.2, color:'#94a3b8', title:'A (58.2)' },
+              { price:53.0, color:'#3b82f6', title:'D (1.27 XA below X)' },
+            ],
+            markers:[
+              { i:0, pos:'belowBar', shape:'circle', color:'#94a3b8', text:'X' },
+              { i:1, pos:'aboveBar', shape:'circle', color:'#94a3b8', text:'A' },
+              { i:2, pos:'belowBar', shape:'circle', color:'#94a3b8', text:'B' },
+              { i:3, pos:'aboveBar', shape:'circle', color:'#94a3b8', text:'C' },
+              { i:6, pos:'belowBar', shape:'circle', color:'#22c55e', text:'D (below X)' },
+            ],
+          },
+          q:{en:'TRUE or FALSE: In a bullish Butterfly pattern, the D point always extends beyond X (below X on a bullish pattern), unlike the Gartley and Bat where D stays within XA.',es:'VERDADERO o FALSO: En un Butterfly alcista, el punto D siempre se extiende más allá de X (por debajo de X en un patrón alcista), a diferencia del Gartley y el Bat donde D se queda dentro de XA.',fr:'VRAI ou FAUX: Dans un Butterfly haussier, le point D s\'étend toujours au-delà de X (sous X pour un pattern haussier), contrairement au Gartley et au Bat où D reste dans XA.',pt:'VERDADEIRO ou FALSO: No Butterfly de alta, o ponto D sempre se estende além de X (abaixo de X em um padrão de alta), ao contrário do Gartley e do Bat onde D fica dentro de XA.'},
+          opts:[
+            {t:{en:'TRUE — Butterfly D is at 1.27–1.618 XA, always extending beyond X',es:'VERDADERO — D del Butterfly está en 1.27–1.618 XA, siempre extendiéndose más allá de X',fr:'VRAI — le D du Butterfly est à 1.27–1.618 XA, s\'étendant toujours au-delà de X',pt:'VERDADEIRO — D do Butterfly está em 1.27–1.618 XA, sempre se estendendo além de X'},ok:true},
+            {t:{en:'FALSE — Butterfly D can sometimes fall short of X at 0.886 XA',es:'FALSO — el D del Butterfly a veces puede quedarse corto de X en 0.886 XA',fr:'FAUX — le D du Butterfly peut parfois s\'arrêter avant X à 0.886 XA',pt:'FALSO — o D do Butterfly às vezes pode ficar aquém de X em 0.886 XA'},ok:false},
+            {t:{en:'FALSE — only the Deep Crab extends beyond X; Butterfly stays within XA',es:'FALSO — solo el Deep Crab se extiende más allá de X; el Butterfly se queda dentro de XA',fr:'FAUX — seul le Deep Crab dépasse X; le Butterfly reste dans XA',pt:'FALSO — apenas o Deep Crab vai além de X; o Butterfly permanece dentro de XA'},ok:false},
+            {t:{en:'TRUE — but only bearish Butterflies go beyond X; bullish ones stay within XA',es:'VERDADERO — pero solo los Butterfly bajistas van más allá de X; los alcistas se quedan en XA',fr:'VRAI — mais seuls les Butterfly baissiers dépassent X; les haussiers restent dans XA',pt:'VERDADEIRO — mas apenas os Butterfly de baixa vão além de X; os de alta ficam dentro de XA'},ok:false},
+          ],
+          exp:{en:'TRUE. The Butterfly is defined by D reaching 1.27 to 1.618 times the XA distance beyond X. In a bullish Butterfly, D drops below X (the original starting point). This is the key structural difference from the Gartley (D=0.786 XA, within XA) and Bat (D=0.886 XA, within XA). The Crab also extends beyond X but at the more extreme 1.618 level.',es:'VERDADERO. El Butterfly se define por D alcanzando 1.27 a 1.618 veces la distancia XA más allá de X. En un Butterfly alcista, D cae por debajo de X. Esta es la diferencia estructural clave respecto al Gartley (D=0.786 XA) y el Bat (D=0.886 XA), ambos dentro de XA.',fr:'VRAI. Le Butterfly est défini par D atteignant 1.27 à 1.618 fois la distance XA au-delà de X. Dans un Butterfly haussier, D tombe sous X. C\'est la différence structurelle clé avec le Gartley et le Bat.',pt:'VERDADEIRO. O Butterfly é definido por D atingindo 1.27 a 1.618 vezes a distância XA além de X. Em um Butterfly de alta, D cai abaixo de X. Essa é a diferença estrutural chave em relação ao Gartley e ao Bat.'},
+          revealChart:{
+            candles: mkC([[55,55.4,54.8,55.1],[55.1,58.5,55.0,58.2],[58.2,58.6,56.5,56.8],[56.8,57.8,56.3,57.5],[57.5,57.9,54.0,54.3],[54.3,54.6,53.4,53.6],[53.6,53.9,52.8,53.0],[53.0,53.8,52.75,53.7],[53.7,54.6,53.6,54.5],[54.5,55.3,54.4,55.2]]),
+            zones:[{ i0:5,i1:6, pLow:52.8, pHigh:54.3, fill:'rgba(34,197,94,.10)', stroke:'rgba(34,197,94,.7)', label:'PRZ (D)' }],
+            lines:[{ price:52.5, color:'#ef4444', title:'SL' },{ price:56.5, color:'#22c55e', title:'TP (0.618 CD)' }],
+            markers:[{ i:6, pos:'belowBar', shape:'arrowUp', color:'#22c55e', text:'D / Long' }],
+          },
+          outcome:'win',
+        }]},
+
+        // h9 — Rate the Setup (well-formed Cypher pattern)
+        { id:'pat_harm_h9', m:'patterns', topic:'Harmonic Patterns', stages:[{
+          chart:{
+            candles: mkC([[85,85.5,84.7,85.2],[85.2,88.0,85.1,87.8],[87.8,88.2,86.2,86.5],[86.5,90.1,86.4,89.9],[89.9,90.3,87.8,88.0],[88.0,88.5,87.2,87.4],[87.4,87.8,87.0,87.3]]),
+            zones:[{ i0:5,i1:6, pLow:87.0, pHigh:88.0, fill:'rgba(239,68,68,.10)', stroke:'rgba(239,68,68,.7)', label:'PRZ (D) — Bearish Cypher' }],
+            lines:[
+              { price:85.2, color:'#eab308', title:'X (85.2)' },
+              { price:87.8, color:'#94a3b8', title:'A (87.8) — B=0.5 XA' },
+              { price:89.9, color:'#3b82f6', title:'C (89.9) — 1.414 XA ext' },
+              { price:87.4, color:'#94a3b8', title:'D — 0.786 XC retrace' },
+            ],
+            markers:[
+              { i:0, pos:'belowBar', shape:'circle', color:'#94a3b8', text:'X' },
+              { i:1, pos:'aboveBar', shape:'circle', color:'#94a3b8', text:'A' },
+              { i:2, pos:'belowBar', shape:'circle', color:'#94a3b8', text:'B' },
+              { i:3, pos:'aboveBar', shape:'circle', color:'#94a3b8', text:'C' },
+              { i:6, pos:'aboveBar', shape:'circle', color:'#ef4444', text:'D?' },
+            ],
+          },
+          q:{en:'A bearish Cypher shows: B=0.5 XA, C=1.414 XA extension, D=0.786 XC retracement. How would you rate this setup\'s harmonic validity?',es:'Un Cypher bajista muestra: B=0.5 XA, C=1.414 XA extensión, D=0.786 XC retroceso. ¿Cómo calificarías la validez armónica de este setup?',fr:'Un Cypher baissier montre: B=0.5 XA, C=1.414 extension XA, D=0.786 retracement XC. Comment évalueriez-vous la validité harmonique de ce setup?',pt:'Um Cypher de baixa mostra: B=0.5 XA, C=1.414 extensão XA, D=0.786 retrocesso XC. Como você avaliaria a validade harmônica desse setup?'},
+          opts:[
+            {t:{en:'High validity — all three key Cypher ratios are precisely met',es:'Alta validez — los tres ratios clave del Cypher están precisamente cumplidos',fr:'Haute validité — les trois ratios clés du Cypher sont précisément respectés',pt:'Alta validade — os três ratios-chave do Cypher estão precisamente satisfeitos'},ok:true},
+            {t:{en:'Low validity — the C point extension of 1.414 exceeds the Cypher\'s 1.272 maximum',es:'Baja validez — la extensión de C en 1.414 supera el máximo de 1.272 del Cypher',fr:'Faible validité — l\'extension du point C à 1.414 dépasse le maximum 1.272 du Cypher',pt:'Baixa validade — a extensão do ponto C em 1.414 excede o máximo de 1.272 do Cypher'},ok:false},
+            {t:{en:'Medium validity — Cypher requires D at 0.618 XC, not 0.786',es:'Validez media — el Cypher requiere D en 0.618 XC, no en 0.786',fr:'Validité moyenne — le Cypher exige D à 0.618 XC, pas à 0.786',pt:'Validade média — o Cypher exige D em 0.618 XC, não em 0.786'},ok:false},
+            {t:{en:'Invalid — the Cypher pattern requires B to retrace at least 0.618 of XA',es:'Inválido — el patrón Cypher requiere que B retroceda al menos 0.618 de XA',fr:'Invalide — le pattern Cypher exige que B retrace au moins 0.618 de XA',pt:'Inválido — o padrão Cypher exige que B retroceda pelo menos 0.618 de XA'},ok:false},
+          ],
+          exp:{en:'The Cypher has specific ratios: B at 0.382–0.618 XA, C at 1.272–1.414 XA extension (beyond A), and D at exactly 0.786 XC retracement. All three ratios here (B=0.5, C=1.414, D=0.786) fall within the valid ranges — this is a high-validity Cypher setup.',es:'El Cypher tiene ratios específicos: B en 0.382–0.618 XA, C en extensión 1.272–1.414 XA (más allá de A), y D en exactamente 0.786 XC retroceso. Los tres ratios aquí (B=0.5, C=1.414, D=0.786) están dentro de los rangos válidos.',fr:'Le Cypher a des ratios spécifiques: B à 0.382–0.618 XA, C à l\'extension 1.272–1.414 XA, et D à exactement 0.786 XC. Les trois ratios ici (B=0.5, C=1.414, D=0.786) sont dans les plages valides.',pt:'O Cypher tem ratios específicos: B em 0.382–0.618 XA, C na extensão 1.272–1.414 XA, e D exatamente em 0.786 XC. Os três ratios aqui (B=0.5, C=1.414, D=0.786) estão dentro dos intervalos válidos.'},
+          revealChart:{
+            candles: mkC([[85,85.5,84.7,85.2],[85.2,88.0,85.1,87.8],[87.8,88.2,86.2,86.5],[86.5,90.1,86.4,89.9],[89.9,90.3,87.8,88.0],[88.0,88.5,87.2,87.4],[87.4,87.8,87.0,87.3],[87.3,87.6,86.0,86.2],[86.2,86.5,85.5,85.7],[85.7,86.0,85.0,85.2]]),
+            zones:[{ i0:5,i1:6, pLow:87.0, pHigh:88.0, fill:'rgba(239,68,68,.10)', stroke:'rgba(239,68,68,.7)', label:'PRZ (D)' }],
+            lines:[{ price:88.4, color:'#ef4444', title:'SL' },{ price:85.5, color:'#22c55e', title:'TP (0.382 CD)' }],
+            markers:[{ i:6, pos:'aboveBar', shape:'arrowDown', color:'#ef4444', text:'Short' }],
+          },
+          outcome:'win',
+        }]},
+
+        // h10 — Find the Entry (precise entry in PRZ: wait for PA vs entering at ratio)
+        { id:'pat_harm_h10', m:'patterns', topic:'Harmonic Patterns', stages:[{
+          chart:{
+            candles: mkC([[40,40.4,39.7,40.1],[40.1,43.5,40.0,43.2],[43.2,43.6,41.5,41.8],[41.8,42.8,41.4,42.6],[42.6,43.0,40.3,40.6],[40.6,41.0,39.85,40.1],[40.1,40.5,39.6,39.8],[39.8,40.3,39.55,40.1]]),
+            zones:[{ i0:5,i1:7, pLow:39.55, pHigh:40.6, fill:'rgba(34,197,94,.10)', stroke:'rgba(34,197,94,.7)', label:'PRZ (D) — Bullish Bat' }],
+            lines:[
+              { price:43.2, color:'#eab308', title:'A (43.2)' },
+              { price:40.1, color:'#94a3b8', title:'D — 0.886 XA (40.1)' },
+              { price:39.5, color:'#3b82f6', title:'1.13 XA (invalidation)' },
+            ],
+            markers:[
+              { i:0, pos:'belowBar', shape:'circle', color:'#94a3b8', text:'X' },
+              { i:1, pos:'aboveBar', shape:'circle', color:'#94a3b8', text:'A' },
+              { i:2, pos:'belowBar', shape:'circle', color:'#94a3b8', text:'B' },
+              { i:3, pos:'aboveBar', shape:'circle', color:'#94a3b8', text:'C' },
+              { i:5, pos:'belowBar', shape:'circle', color:'#eab308', text:'PRZ touched' },
+              { i:7, pos:'belowBar', shape:'circle', color:'#22c55e', text:'Entry?' },
+            ],
+          },
+          q:{en:'Price has entered the PRZ of a bullish Bat (0.886 XA). The last two bars show a wick rejection and a small bullish close inside the PRZ. What is the optimal entry approach?',es:'El precio ha entrado en la PRZ de un Bat alcista (0.886 XA). Las últimas dos velas muestran rechazo de mecha y un pequeño cierre alcista dentro de la PRZ. ¿Cuál es el enfoque de entrada óptimo?',fr:'Le prix est entré dans la PRZ d\'un Bat haussier (0.886 XA). Les deux dernières bougies montrent un rejet par mèche et une petite clôture haussière dans la PRZ. Quelle est l\'approche d\'entrée optimale?',pt:'O preço entrou na PRZ de um Bat de alta (0.886 XA). As duas últimas velas mostram rejeição de pavio e um pequeno fechamento de alta dentro da PRZ. Qual é a abordagem de entrada ideal?'},
+          opts:[
+            {t:{en:'Enter long on the confirmed bullish PA (wick rejection + bullish close) within the PRZ',es:'Entrar largo en la PA alcista confirmada (rechazo de mecha + cierre alcista) dentro de la PRZ',fr:'Entrer long sur la PA haussière confirmée (rejet par mèche + clôture haussière) dans la PRZ',pt:'Entrar comprado na PA de alta confirmada (rejeição de pavio + fechamento de alta) dentro da PRZ'},ok:true},
+            {t:{en:'Enter at the exact 0.886 XA level with a limit order regardless of candle shape',es:'Entrar en el nivel exacto 0.886 XA con una orden limitada independientemente de la forma de la vela',fr:'Entrer au niveau exact 0.886 XA avec un ordre limite quelle que soit la forme de la bougie',pt:'Entrar no nível exato 0.886 XA com uma ordem limitada independentemente da forma da vela'},ok:false},
+            {t:{en:'Wait for price to reach the full 1.13 XA before considering any entry',es:'Esperar a que el precio alcance el 1.13 XA completo antes de considerar cualquier entrada',fr:'Attendre que le prix atteigne le 1.13 XA complet avant d\'envisager une entrée',pt:'Aguardar o preço atingir o 1.13 XA completo antes de considerar qualquer entrada'},ok:false},
+            {t:{en:'Enter at the midpoint between 0.886 and 1.13 XA to average into the position',es:'Entrar en el punto medio entre 0.886 y 1.13 XA para promediar la posición',fr:'Entrer au milieu entre 0.886 et 1.13 XA pour moyenner la position',pt:'Entrar no ponto médio entre 0.886 e 1.13 XA para fazer preço médio na posição'},ok:false},
+          ],
+          exp:{en:'The PRZ is a zone, not a single price point. The best entry combines the harmonic ratio confluence with price action confirmation. Wick rejection into the PRZ followed by a bullish close signals buyers are defending the level. Entering at the exact ratio with a blind limit order — without PA confirmation — ignores the pattern failure risk.',es:'La PRZ es una zona, no un único punto de precio. La mejor entrada combina la confluencia del ratio armónico con confirmación de price action. Un rechazo de mecha en la PRZ seguido de un cierre alcista señala que los compradores defienden el nivel.',fr:'La PRZ est une zone, pas un point de prix unique. La meilleure entrée combine la confluence du ratio harmonique avec une confirmation PA. Un rejet par mèche suivi d\'une clôture haussière dans la PRZ signale que les acheteurs défendent le niveau.',pt:'A PRZ é uma zona, não um único ponto de preço. A melhor entrada combina a confluência do ratio harmônico com confirmação de price action. Rejeição de pavio seguida de fechamento de alta na PRZ sinaliza que compradores estão defendendo o nível.'},
+          revealChart:{
+            candles: mkC([[40,40.4,39.7,40.1],[40.1,43.5,40.0,43.2],[43.2,43.6,41.5,41.8],[41.8,42.8,41.4,42.6],[42.6,43.0,40.3,40.6],[40.6,41.0,39.85,40.1],[40.1,40.5,39.6,39.8],[39.8,40.3,39.55,40.1],[40.1,41.2,40.0,41.1],[41.1,42.0,41.0,41.9]]),
+            zones:[{ i0:5,i1:7, pLow:39.55, pHigh:40.6, fill:'rgba(34,197,94,.10)', stroke:'rgba(34,197,94,.7)', label:'PRZ (D)' }],
+            lines:[{ price:39.3, color:'#ef4444', title:'SL (below 1.13 XA)' },{ price:41.8, color:'#22c55e', title:'TP (C level)' }],
+            markers:[{ i:7, pos:'belowBar', shape:'arrowUp', color:'#22c55e', text:'Entry (PA confirmed)' }],
+          },
+          outcome:'win',
+        }]},
+
       ];
 
       // Topics per methodology
