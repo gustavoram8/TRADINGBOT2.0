@@ -13189,6 +13189,241 @@
           },
           outcome:'win',
         }]},
+        // h2 — Find the Stop
+        { id:'wyk_phase_h2', m:'wyckoff', topic:'Market Phases', stages:[{
+          chart:{
+            candles: mkC([[42,42.5,41.8,42.3],[42.3,43.1,42.2,43.0],[43.0,43.8,42.9,43.7],[43.7,44.5,43.6,44.4],[44.4,45.2,44.3,45.1],[45.1,45.8,44.9,45.0],[45.0,45.9,44.8,45.7]]),
+            zones:[{ i0:4,i1:6, pLow:44.3, pHigh:45.9, fill:'rgba(239,68,68,.10)', stroke:'rgba(239,68,68,.75)', label:'Distribution TR' }],
+            lines:[{ price:45.9, color:'#eab308', title:'TR High' }],
+            markers:[{ i:6, pos:'aboveBar', shape:'arrowDown', color:'#ef4444', text:'UTAD' }],
+          },
+          q:{en:'Price has formed a Distribution trading range with a UTAD at 45.9. You short at 45.0. Where is the logical stop-loss placement?',es:'El precio formó un rango de Distribución con UTAD en 45.9. Vendes en 45.0. ¿Dónde va el stop-loss lógico?',fr:'Le prix a formé une plage de Distribution avec un UTAD à 45.9. Vous shortez à 45.0. Où placer le stop-loss logique?',pt:'O preço formou um intervalo de Distribuição com UTAD em 45.9. Você vende em 45.0. Onde fica o stop-loss lógico?'},
+          opts:[
+            {t:{en:'Just above the UTAD high at ~46.1',es:'Justo por encima del máximo del UTAD, ~46.1',fr:'Juste au-dessus du plus haut du UTAD, ~46.1',pt:'Logo acima da máxima do UTAD, ~46.1'},ok:true},
+            {t:{en:'Just below the Distribution TR low at ~44.2',es:'Justo por debajo del mínimo del rango, ~44.2',fr:'Juste en dessous du bas de la plage, ~44.2',pt:'Logo abaixo da mínima do intervalo, ~44.2'},ok:false},
+            {t:{en:'At the midpoint of the trading range at ~45.1',es:'En el punto medio del rango de trading, ~45.1',fr:'Au milieu de la plage de trading, ~45.1',pt:'No ponto médio do intervalo de negociação, ~45.1'},ok:false},
+            {t:{en:'At the entry price since risk is undefined',es:'En el precio de entrada porque el riesgo no está definido',fr:'Au prix d\'entrée car le risque est indéfini',pt:'No preço de entrada pois o risco é indefinido'},ok:false},
+          ],
+          exp:{en:'In Wyckoff, the stop goes just beyond the phase boundary. A UTAD marks the final supply test — if price trades above that high, the distribution thesis is invalid. The stop belongs above 45.9, not inside the range.',es:'En Wyckoff el stop va justo más allá del límite de la fase. El UTAD es el último test de oferta; si el precio supera ese máximo, la tesis de distribución queda invalidada. El stop debe ir por encima de 45.9, no dentro del rango.',fr:'En Wyckoff, le stop se place juste au-delà de la frontière de la phase. Le UTAD est le dernier test d\'offre — si le prix dépasse ce sommet, la thèse de distribution est invalidée. Le stop doit être au-dessus de 45.9.',pt:'No Wyckoff, o stop vai logo além do limite da fase. O UTAD marca o último teste de oferta — se o preço superar essa máxima, a tese de distribuição é invalidada. O stop deve ficar acima de 45.9.'},
+          revealChart:{
+            candles: mkC([[42,42.5,41.8,42.3],[42.3,43.1,42.2,43.0],[43.0,43.8,42.9,43.7],[43.7,44.5,43.6,44.4],[44.4,45.2,44.3,45.1],[45.1,45.8,44.9,45.0],[45.0,45.9,44.8,45.7],[45.7,45.8,44.5,44.6],[44.6,44.8,43.9,44.0],[44.0,44.1,43.2,43.3]]),
+            zones:[{ i0:4,i1:6, pLow:44.3, pHigh:45.9, fill:'rgba(239,68,68,.10)', stroke:'rgba(239,68,68,.75)', label:'Distribution TR' }],
+            lines:[{ price:46.1, color:'#ef4444', title:'SL' },{ price:43.0, color:'#22c55e', title:'TP' }],
+            markers:[{ i:6, pos:'aboveBar', shape:'arrowDown', color:'#ef4444', text:'Short entry' }],
+          },
+          outcome:'win',
+        }]},
+
+        // h3 — Find the Target
+        { id:'wyk_phase_h3', m:'wyckoff', topic:'Market Phases', stages:[{
+          chart:{
+            candles: mkC([[55,55.4,54.8,55.2],[55.2,55.6,55.0,55.5],[55.5,57.0,55.4,56.8],[56.8,58.2,56.7,58.0],[58.0,59.1,57.9,58.9],[58.9,60.2,58.8,60.0],[60.0,60.4,59.2,59.3]]),
+            zones:[{ i0:0,i1:2, pLow:54.8, pHigh:55.6, fill:'rgba(34,197,94,.10)', stroke:'rgba(34,197,94,.75)', label:'Accumulation base' }],
+            lines:[{ price:55.6, color:'#eab308', title:'Resistance/Creek' }],
+            markers:[{ i:6, pos:'aboveBar', shape:'arrowDown', color:'#ef4444', text:'Distribution?' }],
+          },
+          q:{en:'Price accumulated between 54.8–55.6 for two bars, then surged to 60.4. The markup is stalling. Where does Wyckoff theory project the markdown to terminate?',es:'El precio acumuló entre 54.8–55.6 dos barras, luego subió a 60.4. El markup se detiene. ¿Dónde proyecta la teoría de Wyckoff el fin del markdown?',fr:'Le prix a accumulé entre 54.8–55.6 pendant deux bougies, puis a grimpé à 60.4. Le markup stagne. Où la théorie de Wyckoff projette-t-elle la fin du markdown?',pt:'O preço acumulou entre 54.8–55.6 por duas barras, depois subiu para 60.4. O markup para. Onde a teoria de Wyckoff projeta o fim do markdown?'},
+          opts:[
+            {t:{en:'Near the prior accumulation base, around 54.8–55.6',es:'Cerca de la base de acumulación previa, ~54.8–55.6',fr:'Près de la base d\'accumulation précédente, ~54.8–55.6',pt:'Perto da base de acumulação anterior, ~54.8–55.6'},ok:true},
+            {t:{en:'Exactly 50% of the markup range, around 57.6',es:'Exactamente el 50% del rango del markup, ~57.6',fr:'Exactement 50 % de la plage du markup, ~57.6',pt:'Exatamente 50% do intervalo do markup, ~57.6'},ok:false},
+            {t:{en:'At a new all-time low below the accumulation base',es:'En un nuevo mínimo histórico por debajo de la base de acumulación',fr:'À un nouveau plus bas historique sous la base d\'accumulation',pt:'Em uma nova mínima histórica abaixo da base de acumulação'},ok:false},
+            {t:{en:'One tick below the distribution high at 60.3',es:'Un tick por debajo del máximo de distribución, 60.3',fr:'Un tick sous le sommet de distribution à 60.3',pt:'Um tick abaixo da máxima de distribuição em 60.3'},ok:false},
+          ],
+          exp:{en:'Wyckoff\'s cause-and-effect principle states that the extent of the move (effect) mirrors the cause built in the preceding phase. The cause was built at 54.8–55.6; markdown should exhaust near that same base, which now acts as major support.',es:'El principio de causa y efecto de Wyckoff establece que la magnitud del movimiento refleja la causa construida en la fase anterior. La causa se construyó en 54.8–55.6; el markdown debe agotarse cerca de esa misma base, que ahora actúa como soporte mayor.',fr:'Le principe de cause à effet de Wyckoff stipule que l\'étendue du mouvement reflète la cause construite dans la phase précédente. La cause a été construite à 54.8–55.6 ; le markdown devrait s\'épuiser près de cette base, qui fait maintenant office de support majeur.',pt:'O princípio de causa e efeito de Wyckoff afirma que a extensão do movimento reflete a causa construída na fase anterior. A causa foi construída em 54.8–55.6; o markdown deve se esgotar perto dessa base, que agora age como suporte principal.'},
+          revealChart:{
+            candles: mkC([[55,55.4,54.8,55.2],[55.2,55.6,55.0,55.5],[55.5,57.0,55.4,56.8],[56.8,58.2,56.7,58.0],[58.0,59.1,57.9,58.9],[58.9,60.2,58.8,60.0],[60.0,60.4,59.2,59.3],[59.3,59.5,58.4,58.5],[58.5,58.7,57.6,57.7],[57.7,57.9,56.8,56.9],[56.9,57.0,55.5,55.6]]),
+            zones:[{ i0:0,i1:2, pLow:54.8, pHigh:55.6, fill:'rgba(34,197,94,.10)', stroke:'rgba(34,197,94,.75)', label:'Accumulation base' }],
+            lines:[{ price:60.5, color:'#ef4444', title:'SL' },{ price:55.6, color:'#22c55e', title:'TP (cause base)' }],
+            markers:[{ i:6, pos:'aboveBar', shape:'arrowDown', color:'#ef4444', text:'Short' }],
+          },
+          outcome:'win',
+        }]},
+
+        // h4 — Identify the Pattern (full Wyckoff cycle)
+        { id:'wyk_phase_h4', m:'wyckoff', topic:'Market Phases', stages:[{
+          chart:{
+            candles: mkC([[70,70.5,69.8,70.2],[70.2,70.4,69.7,69.8],[69.8,70.6,69.7,70.5],[70.5,72.0,70.4,71.8],[71.8,73.5,71.7,73.3],[73.3,73.8,73.1,73.2],[73.2,73.5,73.0,73.1],[73.1,73.3,72.4,72.5],[72.5,72.7,71.8,71.9]]),
+            zones:[
+              { i0:0,i1:2, pLow:69.7, pHigh:70.6, fill:'rgba(34,197,94,.10)', stroke:'rgba(34,197,94,.75)', label:'Phase A' },
+              { i0:5,i1:7, pLow:73.0, pHigh:73.8, fill:'rgba(239,68,68,.10)', stroke:'rgba(239,68,68,.75)', label:'Phase B?' },
+            ],
+            lines:[{ price:70.6, color:'#eab308', title:'Creek (resistance)' }],
+            markers:[{ i:3, pos:'belowBar', shape:'arrowUp', color:'#22c55e', text:'Markup start' }],
+          },
+          q:{en:'Bars 0–2 show tight sideways action followed by a surge (bars 3–4), then renewed sideways at a higher level (bars 5–7). What is the correct Wyckoff phase sequence shown?',es:'Las barras 0–2 muestran lateralidad estrecha seguida de un impulso (barras 3–4) y luego lateralidad renovada en un nivel superior (barras 5–7). ¿Cuál es la secuencia correcta de fases Wyckoff?',fr:'Les bougies 0–2 montrent une action latérale étroite suivie d\'une poussée (bougies 3–4), puis une nouvelle latéralité à un niveau plus élevé (bougies 5–7). Quelle est la séquence correcte des phases Wyckoff?',pt:'As barras 0–2 mostram ação lateral estreita seguida de um impulso (barras 3–4), depois lateralidade renovada em nível mais alto (barras 5–7). Qual é a sequência correta de fases Wyckoff?'},
+          opts:[
+            {t:{en:'Accumulation → Markup → Re-accumulation',es:'Acumulación → Markup → Re-acumulación',fr:'Accumulation → Markup → Ré-accumulation',pt:'Acumulação → Markup → Re-acumulação'},ok:true},
+            {t:{en:'Distribution → Markdown → Re-distribution',es:'Distribución → Markdown → Re-distribución',fr:'Distribution → Markdown → Re-distribution',pt:'Distribuição → Markdown → Re-distribuição'},ok:false},
+            {t:{en:'Accumulation → Distribution → Markup',es:'Acumulación → Distribución → Markup',fr:'Accumulation → Distribution → Markup',pt:'Acumulação → Distribuição → Markup'},ok:false},
+            {t:{en:'Markup → Accumulation → Re-accumulation',es:'Markup → Acumulación → Re-acumulación',fr:'Markup → Accumulation → Ré-accumulation',pt:'Markup → Acumulação → Re-acumulação'},ok:false},
+          ],
+          exp:{en:'The initial consolidation (bars 0–2) is accumulation where the Composite Operator absorbs supply. The breakout (bars 3–4) is markup. A higher consolidation (bars 5–7) is re-accumulation — a pause to re-load before continuing the markup, not distribution, because price did not break down.',es:'La consolidación inicial (barras 0–2) es acumulación donde el Operador Compuesto absorbe la oferta. El breakout (barras 3–4) es markup. La consolidación a mayor nivel (barras 5–7) es re-acumulación — una pausa para recargar antes de continuar el markup, no distribución, porque el precio no rompe a la baja.',fr:'La consolidation initiale (bougies 0–2) est une accumulation où l\'Opérateur Composite absorbe l\'offre. La cassure (bougies 3–4) est le markup. La consolidation à un niveau supérieur (bougies 5–7) est une ré-accumulation — une pause pour recharger avant de reprendre le markup, pas une distribution.',pt:'A consolidação inicial (barras 0–2) é acumulação onde o Operador Composto absorve a oferta. O rompimento (barras 3–4) é markup. A consolidação em nível mais alto (barras 5–7) é re-acumulação — uma pausa para recarregar antes de continuar o markup, não distribuição.'},
+          revealChart:{
+            candles: mkC([[70,70.5,69.8,70.2],[70.2,70.4,69.7,69.8],[69.8,70.6,69.7,70.5],[70.5,72.0,70.4,71.8],[71.8,73.5,71.7,73.3],[73.3,73.8,73.1,73.2],[73.2,73.5,73.0,73.1],[73.1,73.3,72.4,72.5],[72.5,72.7,71.8,71.9],[71.9,73.8,71.8,73.7],[73.7,75.0,73.6,74.8]]),
+            zones:[
+              { i0:0,i1:2, pLow:69.7, pHigh:70.6, fill:'rgba(34,197,94,.10)', stroke:'rgba(34,197,94,.75)', label:'Accumulation' },
+              { i0:5,i1:7, pLow:73.0, pHigh:73.8, fill:'rgba(59,130,246,.10)', stroke:'rgba(59,130,246,.75)', label:'Re-accumulation' },
+            ],
+            lines:[{ price:71.7, color:'#ef4444', title:'SL' },{ price:75.0, color:'#22c55e', title:'TP' }],
+            markers:[{ i:9, pos:'belowBar', shape:'arrowUp', color:'#22c55e', text:'Long' }],
+          },
+          outcome:'win',
+        }]},
+
+        // h5 — Spot the Mistake
+        { id:'wyk_phase_h5', m:'wyckoff', topic:'Market Phases', stages:[{
+          chart:{
+            candles: mkC([[80,80.4,79.6,80.2],[80.2,80.3,79.2,79.3],[79.3,79.4,78.5,78.6],[78.6,78.8,77.8,77.9],[77.9,78.1,77.0,77.1],[77.1,77.3,76.3,76.4],[76.4,77.0,76.2,76.8]]),
+            zones:[{ i0:5,i1:6, pLow:76.2, pHigh:77.3, fill:'rgba(34,197,94,.10)', stroke:'rgba(34,197,94,.75)', label:'Possible Accumulation?' }],
+            lines:[{ price:80.2, color:'#eab308', title:'Prior high' }],
+            markers:[{ i:6, pos:'belowBar', shape:'arrowUp', color:'#22c55e', text:'Trader buys here' }],
+          },
+          q:{en:'A trader sees two bars of sideways action after a sharp decline and buys, calling it accumulation. What is the critical Wyckoff mistake?',es:'Un trader ve dos barras laterales tras una caída aguda y compra, llamándolo acumulación. ¿Cuál es el error crítico de Wyckoff?',fr:'Un trader observe deux bougies latérales après une baisse forte et achète, appelant cela une accumulation. Quelle est l\'erreur critique de Wyckoff?',pt:'Um trader vê duas barras laterais após uma queda acentuada e compra, chamando de acumulação. Qual é o erro crítico de Wyckoff?'},
+          opts:[
+            {t:{en:'No Selling Climax or Spring — accumulation is not confirmed',es:'No hay Selling Climax ni Spring — la acumulación no está confirmada',fr:'Pas de Selling Climax ni de Spring — l\'accumulation n\'est pas confirmée',pt:'Sem Selling Climax ou Spring — a acumulação não está confirmada'},ok:true},
+            {t:{en:'The trader should have waited for a UTAD before buying',es:'El trader debería haber esperado un UTAD antes de comprar',fr:'Le trader aurait dû attendre un UTAD avant d\'acheter',pt:'O trader deveria ter esperado um UTAD antes de comprar'},ok:false},
+            {t:{en:'Accumulation always requires at least ten bars of sideways action',es:'La acumulación siempre requiere al menos diez barras de lateralidad',fr:'L\'accumulation nécessite toujours au moins dix bougies latérales',pt:'A acumulação sempre requer pelo menos dez barras de lateralidade'},ok:false},
+            {t:{en:'Volume must be declining on every bar for accumulation to be valid',es:'El volumen debe decrecer en cada barra para que la acumulación sea válida',fr:'Le volume doit diminuer sur chaque bougie pour que l\'accumulation soit valide',pt:'O volume deve cair em cada barra para que a acumulação seja válida'},ok:false},
+          ],
+          exp:{en:'Wyckoff accumulation requires specific events: a Selling Climax (SC) to stop the decline, an Automatic Rally (AR), and ideally a Spring (a final shakeout below support). Buying into a downtrend after only two sideways bars, without a SC or Spring, means entering during markdown — not accumulation.',es:'La acumulación de Wyckoff requiere eventos específicos: un Selling Climax (SC) para detener el descenso, un Automatic Rally (AR) y, idealmente, un Spring (sacudida final por debajo del soporte). Comprar en una tendencia bajista tras solo dos barras laterales, sin SC ni Spring, significa entrar en markdown, no en acumulación.',fr:'L\'accumulation Wyckoff nécessite des événements spécifiques : un Selling Climax (SC) pour stopper la baisse, un Automatic Rally (AR), et idéalement un Spring (secouer les longs sous le support). Acheter dans une tendance baissière après seulement deux bougies latérales, sans SC ni Spring, revient à entrer en markdown.',pt:'A acumulação de Wyckoff requer eventos específicos: um Selling Climax (SC) para deter o declínio, um Automatic Rally (AR) e, idealmente, um Spring (sacudida final abaixo do suporte). Comprar em uma tendência de baixa após apenas duas barras laterais, sem SC ou Spring, significa entrar no markdown.'},
+          revealChart:{
+            candles: mkC([[80,80.4,79.6,80.2],[80.2,80.3,79.2,79.3],[79.3,79.4,78.5,78.6],[78.6,78.8,77.8,77.9],[77.9,78.1,77.0,77.1],[77.1,77.3,76.3,76.4],[76.4,77.0,76.2,76.8],[76.8,76.9,75.8,75.9],[75.9,76.0,74.9,75.0],[75.0,75.2,74.2,74.3]]),
+            zones:[{ i0:5,i1:6, pLow:76.2, pHigh:77.3, fill:'rgba(239,68,68,.10)', stroke:'rgba(239,68,68,.75)', label:'Still markdown' }],
+            lines:[{ price:77.1, color:'#ef4444', title:'SL hit' }],
+            markers:[{ i:6, pos:'belowBar', shape:'arrowUp', color:'#ef4444', text:'Bad buy' }],
+          },
+          outcome:'loss',
+        }]},
+
+        // h6 — What Happens Next
+        { id:'wyk_phase_h6', m:'wyckoff', topic:'Market Phases', stages:[{
+          chart:{
+            candles: mkC([[62,62.4,61.8,62.2],[62.2,63.0,62.1,62.9],[62.9,64.1,62.8,64.0],[64.0,65.2,63.9,65.1],[65.1,65.8,64.9,65.0],[65.0,65.3,64.7,64.8],[64.8,65.2,64.5,64.9]]),
+            zones:[{ i0:4,i1:6, pLow:64.5, pHigh:65.8, fill:'rgba(148,163,184,.10)', stroke:'rgba(148,163,184,.7)', label:'Pause at resistance' }],
+            lines:[{ price:65.8, color:'#eab308', title:'Prior resistance' }],
+          },
+          q:{en:'After a strong markup, price pauses in a tight range just below prior resistance (64.5–65.8). What Wyckoff characteristic best distinguishes re-accumulation from distribution here?',es:'Tras un markup fuerte, el precio pausa en un rango estrecho justo debajo de resistencia previa (64.5–65.8). ¿Qué característica de Wyckoff distingue mejor la re-acumulación de la distribución?',fr:'Après un markup fort, le prix fait une pause dans une plage étroite juste sous la résistance précédente (64.5–65.8). Quelle caractéristique Wyckoff distingue le mieux la ré-accumulation de la distribution?',pt:'Após um markup forte, o preço pausa em um intervalo estrecho logo abaixo da resistência anterior (64.5–65.8). Qual característica de Wyckoff melhor distingue a re-acumulação da distribuição?'},
+          opts:[
+            {t:{en:'Re-accumulation shows no supply (shrinking volume on down-bars, support holds)',es:'La re-acumulación muestra ausencia de oferta (volumen reducido en barras bajistas, soporte sostenido)',fr:'La ré-accumulation montre une absence d\'offre (volume réduit sur les bougies baissières, support tenu)',pt:'A re-acumulação mostra ausência de oferta (volume reduzido nas barras de baixa, suporte sustentado)'},ok:true},
+            {t:{en:'Re-accumulation always breaks out upward within three bars',es:'La re-acumulación siempre rompe al alza en tres barras o menos',fr:'La ré-accumulation casse toujours à la hausse en trois bougies ou moins',pt:'A re-acumulação sempre rompe para cima em três barras ou menos'},ok:false},
+            {t:{en:'Distribution can be ruled out if price is above the 50-period moving average',es:'La distribución puede descartarse si el precio está por encima de la media móvil de 50 períodos',fr:'La distribution peut être écartée si le prix est au-dessus de la moyenne mobile à 50 périodes',pt:'A distribuição pode ser descartada se o preço estiver acima da média móvel de 50 períodos'},ok:false},
+            {t:{en:'Re-accumulation requires a Spring below the trading range low',es:'La re-acumulación requiere un Spring por debajo del mínimo del rango',fr:'La ré-accumulation nécessite un Spring sous le bas de la plage',pt:'A re-acumulação requer um Spring abaixo da mínima do intervalo'},ok:false},
+          ],
+          exp:{en:'In re-accumulation the Composite Operator is still absorbing supply; down-bars show narrow spreads and light volume (no genuine selling). In distribution, down-bars expand and volume picks up as the CO distributes stock to the public. A Spring can appear in re-accumulation but is not mandatory.',es:'En la re-acumulación el Operador Compuesto sigue absorbiendo oferta; las barras bajistas muestran rangos estrechos y volumen bajo (no hay venta genuina). En distribución, las barras bajistas se amplían y el volumen aumenta mientras el CO distribuye al público. Un Spring puede aparecer en re-acumulación pero no es obligatorio.',fr:'En ré-accumulation, l\'Opérateur Composite absorbe encore l\'offre ; les bougies baissières montrent des spreads étroits et un volume faible (pas de vente genuine). En distribution, les bougies baissières s\'élargissent et le volume augmente. Un Spring peut apparaître en ré-accumulation mais n\'est pas obligatoire.',pt:'Na re-acumulação, o Operador Composto ainda absorve oferta; as barras de baixa mostram spreads estreitos e volume baixo (sem venda genuína). Na distribuição, as barras de baixa se expandem e o volume aumenta. Um Spring pode aparecer na re-acumulação, mas não é obrigatório.'},
+          revealChart:{
+            candles: mkC([[62,62.4,61.8,62.2],[62.2,63.0,62.1,62.9],[62.9,64.1,62.8,64.0],[64.0,65.2,63.9,65.1],[65.1,65.8,64.9,65.0],[65.0,65.3,64.7,64.8],[64.8,65.2,64.5,64.9],[64.9,66.5,64.8,66.4],[66.4,67.8,66.3,67.6],[67.6,68.9,67.5,68.7]]),
+            zones:[{ i0:4,i1:6, pLow:64.5, pHigh:65.8, fill:'rgba(59,130,246,.10)', stroke:'rgba(59,130,246,.75)', label:'Re-accumulation' }],
+            lines:[{ price:64.3, color:'#ef4444', title:'SL' },{ price:68.9, color:'#22c55e', title:'TP' }],
+            markers:[{ i:7, pos:'belowBar', shape:'arrowUp', color:'#22c55e', text:'Long breakout' }],
+          },
+          outcome:'win',
+        }]},
+
+        // h7 — Rate the Setup
+        { id:'wyk_phase_h7', m:'wyckoff', topic:'Market Phases', stages:[{
+          chart:{
+            candles: mkC([[50,50.3,49.8,50.1],[50.1,51.0,50.0,50.9],[50.9,51.0,50.4,50.5],[50.5,52.1,50.4,52.0],[52.0,52.2,51.5,51.6],[51.6,53.4,51.5,53.3],[53.3,53.5,52.9,53.0]]),
+            zones:[{ i0:0,i1:1, pLow:49.8, pHigh:51.0, fill:'rgba(34,197,94,.10)', stroke:'rgba(34,197,94,.75)', label:'Accumulation' }],
+            lines:[{ price:51.0, color:'#eab308', title:'Creek breakout' }],
+          },
+          q:{en:'The market shows HH/HL structure with price breaking the Creek at 51.0, then re-testing (bar 2), and advancing with expanding spreads on bars 3 and 5. How would Wyckoff rate this markup setup?',es:'El mercado muestra estructura HH/HL con el precio rompiendo el Creek en 51.0, luego re-testeando (barra 2) y avanzando con spreads en expansión en barras 3 y 5. ¿Cómo valoraría Wyckoff este setup de markup?',fr:'Le marché montre une structure HH/HL avec le prix cassant le Creek à 51.0, puis re-testant (bougie 2), et avançant avec des spreads élargis sur les bougies 3 et 5. Comment Wyckoff évaluerait-il ce setup de markup?',pt:'O mercado mostra estrutura HH/HL com o preço rompendo o Creek em 51.0, depois re-testando (barra 2) e avançando com spreads em expansão nas barras 3 e 5. Como o Wyckoff avaliaria este setup de markup?'},
+          opts:[
+            {t:{en:'High-quality: breakout, back-test, and expanding demand confirm markup',es:'Alta calidad: breakout, back-test y demanda en expansión confirman el markup',fr:'Haute qualité : cassure, re-test et demande en expansion confirment le markup',pt:'Alta qualidade: rompimento, re-teste e demanda em expansão confirmam o markup'},ok:true},
+            {t:{en:'Low-quality: valid markup never re-tests the Creek after breaking it',es:'Baja calidad: un markup válido nunca re-testea el Creek tras romperlo',fr:'Faible qualité : un markup valide ne re-teste jamais le Creek après l\'avoir cassé',pt:'Baixa qualidade: um markup válido nunca re-testa o Creek após rompê-lo'},ok:false},
+            {t:{en:'Neutral: expanding spreads on up-bars are bearish in Wyckoff',es:'Neutral: los spreads en expansión en barras alcistas son bajistas según Wyckoff',fr:'Neutre : les spreads élargis sur les bougies haussières sont baissiers selon Wyckoff',pt:'Neutro: spreads em expansão nas barras de alta são bearish no Wyckoff'},ok:false},
+            {t:{en:'Invalid: markup requires volume to shrink on every advance bar',es:'Inválido: el markup requiere que el volumen se reduzca en cada barra de avance',fr:'Invalide : le markup nécessite que le volume réduise sur chaque bougie d\'avance',pt:'Inválido: o markup requer que o volume diminua em cada barra de avanço'},ok:false},
+          ],
+          exp:{en:'A quality Wyckoff markup shows: (1) a clean creek breakout, (2) a successful back-test (Last Point of Support / LPS), and (3) subsequent advances on wide spreads — evidence that demand is overcoming supply. The re-test of the Creek is healthy, not a weakness.',es:'Un markup de calidad Wyckoff muestra: (1) ruptura limpia del Creek, (2) back-test exitoso (Last Point of Support / LPS) y (3) avances posteriores con spreads amplios — evidencia de que la demanda supera la oferta. El re-testeo del Creek es saludable, no una debilidad.',fr:'Un markup Wyckoff de qualité montre : (1) une cassure nette du Creek, (2) un re-test réussi (Last Point of Support / LPS), et (3) des avancées ultérieures avec des spreads larges — preuve que la demande domine l\'offre. Le re-test du Creek est sain, pas une faiblesse.',pt:'Um markup de qualidade Wyckoff mostra: (1) rompimento limpo do Creek, (2) re-teste bem-sucedido (Last Point of Support / LPS) e (3) avanços posteriores com spreads amplos — evidência de que a demanda supera a oferta. O re-teste do Creek é saudável, não uma fraqueza.'},
+          revealChart:{
+            candles: mkC([[50,50.3,49.8,50.1],[50.1,51.0,50.0,50.9],[50.9,51.0,50.4,50.5],[50.5,52.1,50.4,52.0],[52.0,52.2,51.5,51.6],[51.6,53.4,51.5,53.3],[53.3,53.5,52.9,53.0],[53.0,54.8,52.9,54.7],[54.7,55.0,54.2,54.3]]),
+            zones:[{ i0:0,i1:1, pLow:49.8, pHigh:51.0, fill:'rgba(34,197,94,.10)', stroke:'rgba(34,197,94,.75)', label:'Accumulation' }],
+            lines:[{ price:50.3, color:'#ef4444', title:'SL (below LPS)' },{ price:55.0, color:'#22c55e', title:'TP' }],
+            markers:[{ i:2, pos:'belowBar', shape:'arrowUp', color:'#22c55e', text:'Long at LPS' }],
+          },
+          outcome:'win',
+        }]},
+
+        // h8 — True or False
+        { id:'wyk_phase_h8', m:'wyckoff', topic:'Market Phases', stages:[{
+          chart:{
+            candles: mkC([[90,90.4,89.8,90.2],[90.2,91.5,90.1,91.4],[91.4,92.8,91.3,92.7],[92.7,94.1,92.6,94.0],[94.0,95.3,93.9,95.2],[95.2,95.5,94.8,94.9],[94.9,95.1,94.4,94.5]]),
+            zones:[{ i0:5,i1:6, pLow:94.4, pHigh:95.5, fill:'rgba(148,163,184,.10)', stroke:'rgba(148,163,184,.7)', label:'Consolidation' }],
+            lines:[{ price:90.2, color:'#eab308', title:'No accumulation base' }],
+          },
+          q:{en:'True or False: In Wyckoff theory, a sustained markup (trending rally) can occur without a prior accumulation phase — the rally itself generates buying interest without composite-operator preparation.',es:'Verdadero o Falso: En la teoría de Wyckoff, un markup sostenido puede ocurrir sin una fase de acumulación previa — el rally en sí genera interés comprador sin preparación del operador compuesto.',fr:'Vrai ou Faux : En théorie de Wyckoff, un markup soutenu peut se produire sans phase d\'accumulation préalable — le rally lui-même génère de l\'intérêt acheteur sans préparation de l\'opérateur composite.',pt:'Verdadeiro ou Falso: Na teoria de Wyckoff, um markup sustentado pode ocorrer sem uma fase de acumulação prévia — o próprio rally gera interesse comprador sem preparação do operador composto.'},
+          opts:[
+            {t:{en:'False — markup is the effect; accumulation is the necessary cause',es:'Falso — el markup es el efecto; la acumulación es la causa necesaria',fr:'Faux — le markup est l\'effet ; l\'accumulation est la cause nécessaire',pt:'Falso — o markup é o efeito; a acumulação é a causa necessária'},ok:true},
+            {t:{en:'True — strong momentum can create its own accumulation inline',es:'Verdadero — el momentum fuerte puede crear su propia acumulación en línea',fr:'Vrai — un fort momentum peut créer sa propre accumulation en cours de route',pt:'Verdadeiro — momentum forte pode criar sua própria acumulação durante o movimento'},ok:false},
+            {t:{en:'True — Wyckoff phases are optional labels, not causal requirements',es:'Verdadero — las fases Wyckoff son etiquetas opcionales, no requisitos causales',fr:'Vrai — les phases Wyckoff sont des étiquettes optionnelles, pas des exigences causales',pt:'Verdadeiro — as fases Wyckoff são rótulos opcionais, não requisitos causais'},ok:false},
+            {t:{en:'False — but only for small-cap stocks; large-caps can rally without accumulation',es:'Falso — pero solo para acciones de baja capitalización; las grandes pueden subir sin acumulación',fr:'Faux — mais seulement pour les petites capitalisations ; les grandes peuvent monter sans accumulation',pt:'Falso — mas apenas para ações de pequena capitalização; as grandes podem subir sem acumulação'},ok:false},
+          ],
+          exp:{en:'Wyckoff\'s cause-and-effect law is absolute: every markup must be preceded by an accumulation that builds the cause. The larger the accumulation (cause), the larger the markup (effect). A rally without prior accumulation is either short-lived or part of a re-accumulation embedded in a larger campaign.',es:'La ley de causa y efecto de Wyckoff es absoluta: todo markup debe ir precedido de una acumulación que construya la causa. Cuanto mayor es la acumulación (causa), mayor es el markup (efecto). Un rally sin acumulación previa es efímero o parte de una re-acumulación dentro de una campaña mayor.',fr:'La loi de cause à effet de Wyckoff est absolue : tout markup doit être précédé d\'une accumulation qui construit la cause. Plus l\'accumulation (cause) est grande, plus le markup (effet) est grand. Un rally sans accumulation préalable est éphémère ou fait partie d\'une ré-accumulation.',pt:'A lei de causa e efeito de Wyckoff é absoluta: todo markup deve ser precedido de uma acumulação que construa a causa. Quanto maior a acumulação (causa), maior o markup (efeito). Um rally sem acumulação prévia é efêmero ou parte de uma re-acumulação dentro de uma campanha maior.'},
+          revealChart:{
+            candles: mkC([[90,90.4,89.8,90.2],[90.2,91.5,90.1,91.4],[91.4,92.8,91.3,92.7],[92.7,94.1,92.6,94.0],[94.0,95.3,93.9,95.2],[95.2,95.5,94.8,94.9],[94.9,95.1,94.4,94.5],[94.5,94.7,93.6,93.7],[93.7,93.9,92.8,92.9]]),
+            zones:[
+              { i0:0,i1:0, pLow:89.8, pHigh:90.4, fill:'rgba(148,163,184,.10)', stroke:'rgba(148,163,184,.7)', label:'No clear accumulation' },
+              { i0:5,i1:6, pLow:94.4, pHigh:95.5, fill:'rgba(239,68,68,.10)', stroke:'rgba(239,68,68,.75)', label:'Distribution / exhaustion' },
+            ],
+            lines:[{ price:95.6, color:'#ef4444', title:'SL' },{ price:92.8, color:'#22c55e', title:'TP' }],
+            markers:[{ i:7, pos:'aboveBar', shape:'arrowDown', color:'#ef4444', text:'Short — no cause' }],
+          },
+          outcome:'win',
+        }]},
+
+        // h9 — Find the Entry
+        { id:'wyk_phase_h9', m:'wyckoff', topic:'Market Phases', stages:[{
+          chart:{
+            candles: mkC([[33,33.4,32.8,33.1],[33.1,33.3,32.7,32.8],[32.8,33.5,32.7,33.4],[33.4,33.5,32.9,33.0],[33.0,33.6,32.8,33.5],[33.5,33.7,33.1,33.2],[33.2,33.8,33.1,33.7]]),
+            zones:[{ i0:0,i1:6, pLow:32.7, pHigh:33.8, fill:'rgba(34,197,94,.10)', stroke:'rgba(34,197,94,.75)', label:'Accumulation TR' }],
+            lines:[{ price:33.8, color:'#eab308', title:'Creek (TR high)' }],
+          },
+          q:{en:'Price has been accumulating between 32.7–33.8 for seven bars. The Creek is at 33.8. According to Wyckoff, where is the optimal markup entry?',es:'El precio acumuló entre 32.7–33.8 por siete barras. El Creek está en 33.8. Según Wyckoff, ¿cuál es la entrada óptima al markup?',fr:'Le prix a accumulé entre 32.7–33.8 pendant sept bougies. Le Creek est à 33.8. Selon Wyckoff, où est l\'entrée optimale pour le markup?',pt:'O preço acumulou entre 32.7–33.8 por sete barras. O Creek está em 33.8. Segundo Wyckoff, onde fica a entrada ideal para o markup?'},
+          opts:[
+            {t:{en:'On a confirmed close above the Creek (33.8) or on the back-test of the Creek',es:'En un cierre confirmado por encima del Creek (33.8) o en el back-test del Creek',fr:'Sur une clôture confirmée au-dessus du Creek (33.8) ou sur le re-test du Creek',pt:'Em um fechamento confirmado acima do Creek (33.8) ou no back-teste do Creek'},ok:true},
+            {t:{en:'At the midpoint of the trading range (33.2) to improve the risk-reward',es:'En el punto medio del rango (33.2) para mejorar el riesgo/recompensa',fr:'Au milieu de la plage de trading (33.2) pour améliorer le ratio risque/récompense',pt:'No ponto médio do intervalo (33.2) para melhorar o risco/retorno'},ok:false},
+            {t:{en:'At the Trading Range low (32.7) anticipating the Spring',es:'En el mínimo del rango (32.7) anticipando el Spring',fr:'Au bas de la plage (32.7) en anticipant le Spring',pt:'Na mínima do intervalo (32.7) antecipando o Spring'},ok:false},
+            {t:{en:'After price has moved 20% above the Creek to confirm momentum',es:'Después de que el precio haya subido 20% sobre el Creek para confirmar el momentum',fr:'Après que le prix ait monté de 20 % au-dessus du Creek pour confirmer le momentum',pt:'Após o preço ter subido 20% acima do Creek para confirmar o momentum'},ok:false},
+          ],
+          exp:{en:'The Wyckoff entry for markup is the Jump Across the Creek (JAC) — a strong close above the TR high — or, preferably, a re-test of the Creek (now acting as support) called the Back Up to the Creek (BUTC). This offers a high-probability entry with a tight stop below the Creek.',es:'La entrada Wyckoff al markup es el Jump Across the Creek (JAC) — cierre fuerte por encima del máximo del rango — o, preferiblemente, el re-testeo del Creek (ahora soporte) llamado Back Up to the Creek (BUTC). Ofrece una entrada de alta probabilidad con stop ajustado bajo el Creek.',fr:'L\'entrée Wyckoff pour le markup est le Jump Across the Creek (JAC) — une clôture forte au-dessus du haut de la plage — ou, de préférence, le re-test du Creek (maintenant support) appelé Back Up to the Creek (BUTC). Cela offre une entrée haute probabilité avec un stop serré sous le Creek.',pt:'A entrada Wyckoff para o markup é o Jump Across the Creek (JAC) — um fechamento forte acima da máxima do intervalo — ou, de preferência, o re-teste do Creek (agora suporte) chamado Back Up to the Creek (BUTC). Isso oferece uma entrada de alta probabilidade com stop justo abaixo do Creek.'},
+          revealChart:{
+            candles: mkC([[33,33.4,32.8,33.1],[33.1,33.3,32.7,32.8],[32.8,33.5,32.7,33.4],[33.4,33.5,32.9,33.0],[33.0,33.6,32.8,33.5],[33.5,33.7,33.1,33.2],[33.2,33.8,33.1,33.7],[33.7,34.3,33.7,34.2],[34.2,34.3,33.7,33.8],[33.8,35.1,33.7,35.0]]),
+            zones:[{ i0:0,i1:6, pLow:32.7, pHigh:33.8, fill:'rgba(34,197,94,.10)', stroke:'rgba(34,197,94,.75)', label:'Accumulation TR' }],
+            lines:[{ price:33.5, color:'#ef4444', title:'SL (below Creek)' },{ price:35.1, color:'#22c55e', title:'TP' }],
+            markers:[{ i:8, pos:'belowBar', shape:'arrowUp', color:'#22c55e', text:'Long BUTC' }],
+          },
+          outcome:'win',
+        }]},
+
+        // h10 — Which Zone Is Real
+        { id:'wyk_phase_h10', m:'wyckoff', topic:'Market Phases', stages:[{
+          chart:{
+            candles: mkC([[20,20.4,19.8,20.2],[20.2,20.4,19.9,20.1],[20.1,20.5,20.0,20.4],[20.4,22.0,20.3,21.9],[21.9,23.5,21.8,23.4],[23.4,23.8,23.2,23.3],[23.3,23.6,23.1,23.5],[23.5,23.7,23.0,23.1],[23.1,23.3,22.5,22.6]]),
+            zones:[
+              { i0:0,i1:2, pLow:19.8, pHigh:20.5, fill:'rgba(34,197,94,.10)', stroke:'rgba(34,197,94,.75)', label:'Zone A' },
+              { i0:3,i1:4, pLow:20.3, pHigh:23.5, fill:'rgba(59,130,246,.10)', stroke:'rgba(59,130,246,.75)', label:'Zone B' },
+              { i0:5,i1:7, pLow:23.0, pHigh:23.8, fill:'rgba(239,68,68,.10)', stroke:'rgba(239,68,68,.75)', label:'Zone C' },
+            ],
+            lines:[{ price:20.5, color:'#eab308', title:'Creek' }],
+          },
+          q:{en:'Three zones are labelled A (bars 0–2), B (bars 3–4), and C (bars 5–7). Which correctly matches Zone A = Accumulation, Zone B = Markup, Zone C = Distribution?',es:'Tres zonas están etiquetadas A (barras 0–2), B (barras 3–4) y C (barras 5–7). ¿Cuál identifica correctamente Zona A = Acumulación, Zona B = Markup, Zona C = Distribución?',fr:'Trois zones sont étiquetées A (bougies 0–2), B (bougies 3–4) et C (bougies 5–7). Laquelle identifie correctement Zone A = Accumulation, Zone B = Markup, Zone C = Distribution?',pt:'Três zonas são rotuladas A (barras 0–2), B (barras 3–4) e C (barras 5–7). Qual identifica corretamente Zona A = Acumulação, Zona B = Markup, Zona C = Distribuição?'},
+          opts:[
+            {t:{en:'Zone A = Accumulation, Zone B = Markup, Zone C = Distribution',es:'Zona A = Acumulación, Zona B = Markup, Zona C = Distribución',fr:'Zone A = Accumulation, Zone B = Markup, Zone C = Distribution',pt:'Zona A = Acumulação, Zona B = Markup, Zona C = Distribuição'},ok:true},
+            {t:{en:'Zone A = Distribution, Zone B = Markdown, Zone C = Re-accumulation',es:'Zona A = Distribución, Zona B = Markdown, Zona C = Re-acumulación',fr:'Zone A = Distribution, Zone B = Markdown, Zone C = Ré-accumulation',pt:'Zona A = Distribuição, Zona B = Markdown, Zona C = Re-acumulação'},ok:false},
+            {t:{en:'Zone A = Re-accumulation, Zone B = Distribution, Zone C = Markdown',es:'Zona A = Re-acumulación, Zona B = Distribución, Zona C = Markdown',fr:'Zone A = Ré-accumulation, Zone B = Distribution, Zone C = Markdown',pt:'Zona A = Re-acumulação, Zona B = Distribuição, Zona C = Markdown'},ok:false},
+            {t:{en:'Zone A = Markup, Zone B = Accumulation, Zone C = Re-accumulation',es:'Zona A = Markup, Zona B = Acumulación, Zona C = Re-acumulación',fr:'Zone A = Markup, Zone B = Accumulation, Zone C = Ré-accumulation',pt:'Zona A = Markup, Zona B = Acumulação, Zona C = Re-acumulação'},ok:false},
+          ],
+          exp:{en:'Zone A (bars 0–2): tight sideways, narrow spreads — the Composite Operator absorbs supply → Accumulation. Zone B (bars 3–4): wide spread surge with rising closes, crossing the Creek — Markup. Zone C (bars 5–7): sideways at the high with narrowing closes — the CO distributes to the public → Distribution. Markdown would follow if price breaks the Zone C low.',es:'Zona A (barras 0–2): lateralidad estrecha, spreads reducidos — el Operador Compuesto absorbe oferta → Acumulación. Zona B (barras 3–4): impulso de spread amplio con cierres ascendentes, cruzando el Creek — Markup. Zona C (barras 5–7): lateralidad en el máximo con cierres que se estrechan — el CO distribuye al público → Distribución. El markdown seguiría si el precio rompe el mínimo de la Zona C.',fr:'Zone A (bougies 0–2) : latéralité étroite, spreads réduits — l\'Opérateur Composite absorbe l\'offre → Accumulation. Zone B (bougies 3–4) : impulsion à large spread avec des clôtures montantes, franchissant le Creek — Markup. Zone C (bougies 5–7) : latéralité au sommet avec des clôtures qui se rétrécissent — le CO distribue → Distribution.',pt:'Zona A (barras 0–2): lateralidade estreita, spreads reduzidos — o Operador Composto absorve oferta → Acumulação. Zona B (barras 3–4): impulso de spread amplo com fechamentos ascendentes, cruzando o Creek — Markup. Zona C (barras 5–7): lateralidade na máxima com fechamentos se estreitando — o CO distribui para o público → Distribuição.'},
+          revealChart:{
+            candles: mkC([[20,20.4,19.8,20.2],[20.2,20.4,19.9,20.1],[20.1,20.5,20.0,20.4],[20.4,22.0,20.3,21.9],[21.9,23.5,21.8,23.4],[23.4,23.8,23.2,23.3],[23.3,23.6,23.1,23.5],[23.5,23.7,23.0,23.1],[23.1,23.3,22.5,22.6],[22.6,22.7,21.8,21.9],[21.9,22.0,21.1,21.2]]),
+            zones:[
+              { i0:0,i1:2, pLow:19.8, pHigh:20.5, fill:'rgba(34,197,94,.10)', stroke:'rgba(34,197,94,.75)', label:'Accumulation' },
+              { i0:5,i1:7, pLow:23.0, pHigh:23.8, fill:'rgba(239,68,68,.10)', stroke:'rgba(239,68,68,.75)', label:'Distribution' },
+            ],
+            lines:[{ price:23.9, color:'#ef4444', title:'SL' },{ price:21.2, color:'#22c55e', title:'TP (markdown)' }],
+            markers:[{ i:7, pos:'aboveBar', shape:'arrowDown', color:'#ef4444', text:'Short' }],
+          },
+          outcome:'win',
+        }]},
       ];
 
       // Topics per methodology
