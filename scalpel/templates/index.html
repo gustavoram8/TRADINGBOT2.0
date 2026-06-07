@@ -13424,6 +13424,240 @@
           },
           outcome:'win',
         }]},
+        // ───────────── SMC · Structure — h2 Find the Stop ─────────────
+        { id:'smc_str_h2', m:'smc', topic:'Structure', stages:[{
+          chart:{
+            candles: mkC([[105,105.5,104.6,104.8],[104.8,105.0,104.2,104.3],[104.3,104.6,103.8,104.0],[104.0,104.2,103.4,103.6],[103.6,103.9,103.2,103.4],[103.4,103.6,103.0,103.1]]),
+            zones:[{ i0:0,i1:2, pLow:104.6,pHigh:105.5, ...Z_SUPPLY, label:'Supply' }],
+            lines:[{ price:104.1, color:'#3b82f6', title:'CHoCH level' }],
+            markers:[{ i:4, pos:'aboveBar', shape:'arrowDown', color:'#ef4444', text:'CHoCH' }],
+          },
+          q:{en:'Price broke the CHoCH level bearishly. Where do you place your stop-loss for a short entry?',es:'El precio rompió el nivel CHoCH bajistamente. ¿Dónde colocas tu stop-loss para una entrada corta?',fr:"Le prix a cassé le niveau CHoCH baissièrement. Où placez-vous votre stop-loss pour une entrée courte ?",pt:'O preço rompeu o nível CHoCH de forma bearish. Onde você coloca seu stop-loss para uma entrada curta?'},
+          opts:[
+            {t:{en:'Above the origin Supply zone high (105.5)',es:'Por encima del máximo de la zona de oferta origen (105.5)',fr:"Au-dessus du plus haut de la zone d'offre d'origine (105.5)",pt:'Acima da máxima da zona de oferta de origem (105.5)'},ok:true},
+            {t:{en:'Just below the CHoCH candle low (103.0)',es:'Justo por debajo del mínimo de la vela CHoCH (103.0)',fr:'Juste en dessous du plus bas de la bougie CHoCH (103.0)',pt:'Logo abaixo da mínima do candle CHoCH (103.0)'},ok:false},
+            {t:{en:'At the CHoCH level itself (104.1)',es:'En el nivel CHoCH mismo (104.1)',fr:'Au niveau du CHoCH lui-même (104.1)',pt:'No próprio nível do CHoCH (104.1)'},ok:false},
+            {t:{en:'Above the most recent candle high (103.9)',es:'Por encima del máximo del candle más reciente (103.9)',fr:'Au-dessus du plus haut de la bougie la plus récente (103.9)',pt:'Acima da máxima do candle mais recente (103.9)'},ok:false},
+          ],
+          exp:{en:'The stop goes above the origin of the move — the Supply zone high (105.5). Any invalidation of that supply means the bearish CHoCH is negated.',es:'El stop va por encima del origen del movimiento — el máximo de la zona Supply (105.5). Si el precio invalida esa zona, el CHoCH bajista queda negado.',fr:"Le stop se place au-dessus de l'origine du mouvement — le plus haut de la zone Supply (105.5). Toute invalidation de cette zone nie le CHoCH baissier.",pt:'O stop vai acima da origem do movimento — a máxima da zona Supply (105.5). Qualquer invalidação dessa zona nega o CHoCH bearish.'},
+          revealChart:{
+            candles: mkC([[105,105.5,104.6,104.8],[104.8,105.0,104.2,104.3],[104.3,104.6,103.8,104.0],[104.0,104.2,103.4,103.6],[103.6,103.9,103.2,103.4],[103.4,103.6,103.0,103.1],[103.1,103.3,102.5,102.6],[102.6,102.8,102.0,102.1]]),
+            zones:[{ i0:0,i1:2, pLow:104.6,pHigh:105.5, ...Z_SUPPLY, label:'Supply' }],
+            lines:[{ price:105.6, color:'#ef4444', title:'SL' },{ price:102.1, color:'#22c55e', title:'TP' }],
+            markers:[{ i:5, pos:'aboveBar', shape:'arrowDown', color:'#ef4444', text:'Short' }],
+          },
+          outcome:'win',
+        }]},
+        // ───────────── SMC · Structure — h3 Find the Target ─────────────
+        { id:'smc_str_h3', m:'smc', topic:'Structure', stages:[{
+          chart:{
+            candles: mkC([[110,110.6,109.8,110.1],[110.1,110.3,109.4,109.5],[109.5,109.7,108.9,109.0],[109.0,109.2,108.4,108.5],[108.5,108.7,107.8,107.9],[107.9,108.0,107.2,107.3]]),
+            zones:[{ i0:0,i1:1, pLow:109.8,pHigh:110.6, ...Z_SUPPLY, label:'Supply' }],
+            lines:[{ price:108.8, color:'#3b82f6', title:'BOS level' }],
+            markers:[{ i:4, pos:'aboveBar', shape:'arrowDown', color:'#ef4444', text:'BOS' }],
+          },
+          q:{en:'A bearish BOS confirms the downtrend. Where is the most logical take-profit target?',es:'Un BOS bajista confirma la tendencia bajista. ¿Cuál es el objetivo de take-profit más lógico?',fr:"Un BOS baissier confirme la tendance baissière. Où se trouve l'objectif de prise de profit le plus logique ?",pt:'Um BOS bearish confirma a tendência de baixa. Onde está o alvo de take-profit mais lógico?'},
+          opts:[
+            {t:{en:'Prior swing low / sell-side liquidity below 107.2',es:'Mínimo de swing previo / liquidez vendedora por debajo de 107.2',fr:'Plus bas de swing précédent / liquidité côté vente sous 107.2',pt:'Mínimo de swing anterior / liquidez sell-side abaixo de 107.2'},ok:true},
+            {t:{en:'The BOS candle close at 107.9',es:'El cierre de la vela BOS en 107.9',fr:'La clôture de la bougie BOS à 107.9',pt:'O fechamento do candle BOS em 107.9'},ok:false},
+            {t:{en:'The midpoint of the last Supply zone',es:'El punto medio de la última zona Supply',fr:'Le point médian de la dernière zone Supply',pt:'O ponto médio da última zona Supply'},ok:false},
+            {t:{en:'The BOS level itself (108.8) as a magnet',es:'El nivel BOS mismo (108.8) como imán de precio',fr:'Le niveau BOS lui-même (108.8) comme aimant de prix',pt:'O próprio nível BOS (108.8) como ímã de preço'},ok:false},
+          ],
+          exp:{en:'After a bearish BOS, smart money targets the sell-side liquidity resting below the prior swing low. That pool of sell-stops is the natural draw on liquidity.',es:'Tras un BOS bajista, el smart money apunta a la liquidez vendedora por debajo del mínimo del swing previo. Ese pool de stops vendedores es el draw natural.',fr:"Après un BOS baissier, le smart money cible la liquidité côté vente sous le plus bas de swing précédent. Ce pool de stops vendeurs est l'attraction naturelle.",pt:'Após um BOS bearish, o smart money mira a liquidez sell-side abaixo do mínimo de swing anterior. Esse pool de stops é o draw natural sobre liquidez.'},
+          revealChart:{
+            candles: mkC([[110,110.6,109.8,110.1],[110.1,110.3,109.4,109.5],[109.5,109.7,108.9,109.0],[109.0,109.2,108.4,108.5],[108.5,108.7,107.8,107.9],[107.9,108.0,107.2,107.3],[107.3,107.5,106.8,106.9],[106.9,107.0,106.4,106.5]]),
+            zones:[{ i0:0,i1:1, pLow:109.8,pHigh:110.6, ...Z_SUPPLY, label:'Supply' }],
+            lines:[{ price:110.7, color:'#ef4444', title:'SL' },{ price:106.5, color:'#22c55e', title:'TP (sell-side liq.)' }],
+            markers:[{ i:5, pos:'aboveBar', shape:'arrowDown', color:'#ef4444', text:'Short' }],
+          },
+          outcome:'win',
+        }]},
+        // ───────────── SMC · Structure — h4 Identify the Pattern ─────────────
+        { id:'smc_str_h4', m:'smc', topic:'Structure', stages:[{
+          chart:{
+            candles: mkC([[50,50.6,49.8,50.1],[50.1,50.4,49.5,49.6],[49.6,49.8,49.0,49.2],[49.2,49.4,48.6,48.8],[48.8,49.6,48.6,49.4],[49.4,50.0,49.2,49.8]]),
+            lines:[{ price:50.1, color:'#eab308', title:'Prior high' },{ price:48.8, color:'#3b82f6', title:'Prior low' }],
+            markers:[
+              { i:3, pos:'belowBar', shape:'circle', color:'#ef4444', text:'Low' },
+              { i:5, pos:'aboveBar', shape:'circle', color:'#22c55e', text:'Break?' },
+            ],
+          },
+          q:{en:'The last candle closes above the prior high (50.1). How do you classify this break?',es:'El último candle cierra por encima del máximo previo (50.1). ¿Cómo clasificas esta ruptura?',fr:'La dernière bougie clôture au-dessus du plus haut précédent (50.1). Comment classifiez-vous cette cassure ?',pt:'O último candle fecha acima da máxima anterior (50.1). Como você classifica essa ruptura?'},
+          opts:[
+            {t:{en:'CHoCH — first counter-trend break after a bearish sequence',es:'CHoCH — primera ruptura contra tendencia tras una secuencia bajista',fr:'CHoCH — première cassure contre-tendance après une séquence baissière',pt:'CHoCH — primeira ruptura contra-tendência após uma sequência bearish'},ok:true},
+            {t:{en:'BOS — continuation of the existing downtrend',es:'BOS — continuación de la tendencia bajista existente',fr:'BOS — continuation de la tendance baissière existante',pt:'BOS — continuação da tendência de baixa existente'},ok:false},
+            {t:{en:'BOS — because price broke a swing high unconditionally',es:'BOS — porque el precio rompió un máximo de swing incondicionalmente',fr:'BOS — car le prix a cassé un plus haut de swing inconditionnellement',pt:'BOS — porque o preço rompeu uma máxima de swing incondicionalmente'},ok:false},
+            {t:{en:'Neither — a single candle close is not enough confirmation',es:'Ninguno — el cierre de un solo candle no es suficiente confirmación',fr:"Aucun — la clôture d'une seule bougie ne suffit pas",pt:'Nenhum — o fechamento de um único candle não é confirmação suficiente'},ok:false},
+          ],
+          exp:{en:'Price had been making lower highs and lower lows. Breaking the most recent swing high against that trend is the definition of a CHoCH — not a BOS, which continues the trend.',es:'El precio venía haciendo máximos y mínimos decrecientes. Romper el último máximo de swing contra esa tendencia es la definición de CHoCH — no BOS, que continúa la tendencia.',fr:"Le prix faisait des plus hauts et plus bas décroissants. Casser le dernier plus haut contre cette tendance est la définition d'un CHoCH — pas un BOS qui continue la tendance.",pt:'O preço vinha fazendo topos e fundos decrescentes. Romper a última máxima de swing contra essa tendência é a definição de CHoCH — não BOS, que continua a tendência.'},
+          revealChart:{
+            candles: mkC([[50,50.6,49.8,50.1],[50.1,50.4,49.5,49.6],[49.6,49.8,49.0,49.2],[49.2,49.4,48.6,48.8],[48.8,49.6,48.6,49.4],[49.4,50.0,49.2,49.8],[49.8,50.2,49.6,50.1],[50.1,50.5,50.0,50.3]]),
+            lines:[{ price:50.1, color:'#3b82f6', title:'CHoCH level' }],
+            markers:[{ i:4, pos:'belowBar', shape:'arrowUp', color:'#22c55e', text:'CHoCH' }],
+          },
+          outcome:'win',
+        }]},
+        // ───────────── SMC · Structure — h5 Spot the Mistake ─────────────
+        { id:'smc_str_h5', m:'smc', topic:'Structure', stages:[{
+          chart:{
+            candles: mkC([[80,80.5,79.8,80.1],[80.1,80.3,79.5,79.6],[79.6,79.8,79.0,79.2],[79.2,79.9,79.0,79.3],[79.3,79.5,78.7,79.0],[79.0,79.2,78.4,78.6]]),
+            lines:[{ price:79.2, color:'#3b82f6', title:'Structure low' }],
+            markers:[
+              { i:3, pos:'belowBar', shape:'arrowDown', color:'#ef4444', text:'Wick break?' },
+              { i:3, pos:'aboveBar', shape:'circle', color:'#eab308', text:'Body closed above' },
+            ],
+          },
+          q:{en:"A trader marks a bearish BOS because candle 3's wick pierced below 79.2, but the body closed above it. What is the mistake?",es:'Un trader marca un BOS bajista porque la mecha del candle 3 perforó por debajo de 79.2, pero el cuerpo cerró por encima. ¿Cuál es el error?',fr:"Un trader marque un BOS baissier parce que la mèche de la bougie 3 a percé sous 79.2, mais le corps a clôturé au-dessus. Quelle est l'erreur ?",pt:'Um trader marca um BOS bearish porque a sombra do candle 3 penetrou abaixo de 79.2, mas o corpo fechou acima. Qual é o erro?'},
+          opts:[
+            {t:{en:'BOS requires a candle body to close beyond the level, not just a wick',es:'El BOS requiere que el cuerpo del candle cierre más allá del nivel, no solo la mecha',fr:"Un BOS nécessite qu'un corps de bougie clôture au-delà du niveau, pas seulement une mèche",pt:'BOS requer que o corpo do candle feche além do nível, não apenas a sombra'},ok:true},
+            {t:{en:'BOS is valid — any penetration of the price level counts',es:'El BOS es válido — cualquier penetración del nivel de precio cuenta',fr:'Le BOS est valide — toute pénétration du niveau de prix compte',pt:'BOS é válido — qualquer penetração do nível de preço conta'},ok:false},
+            {t:{en:'The mistake is using structure lows instead of swing highs for bearish BOS',es:'El error es usar mínimos de estructura en lugar de máximos de swing para BOS bajista',fr:"L'erreur est d'utiliser des plus bas de structure au lieu de plus hauts pour un BOS baissier",pt:'O erro é usar mínimos de estrutura em vez de máximas de swing para BOS bearish'},ok:false},
+            {t:{en:'Wick-only breaks are acceptable only on higher timeframes',es:'Las rupturas solo por mecha son aceptables solo en marcos temporales superiores',fr:'Les cassures par mèche uniquement sont acceptables uniquement sur les timeframes supérieurs',pt:'Rupturas só por sombra são aceitáveis apenas em timeframes superiores'},ok:false},
+          ],
+          exp:{en:'In SMC, a genuine BOS requires the candle body to close beyond the structure level. A wick piercing without a body close is a liquidity grab or manipulation, not a confirmed structural break.',es:'En SMC, un BOS genuino requiere que el cuerpo del candle cierre más allá del nivel de estructura. Una mecha sin cierre del cuerpo es una captura de liquidez o manipulación, no una ruptura estructural confirmada.',fr:"En SMC, un vrai BOS nécessite que le corps de la bougie clôture au-delà du niveau de structure. Une mèche sans clôture du corps est une capture de liquidité ou manipulation, pas une cassure structurelle confirmée.",pt:'Em SMC, um BOS genuíno requer que o corpo do candle feche além do nível de estrutura. Uma sombra sem fechamento do corpo é uma captura de liquidez ou manipulação, não uma ruptura estrutural confirmada.'},
+          revealChart:{
+            candles: mkC([[80,80.5,79.8,80.1],[80.1,80.3,79.5,79.6],[79.6,79.8,79.0,79.2],[79.2,79.9,79.0,79.3],[79.3,79.5,78.7,79.0],[79.0,79.2,78.4,78.6],[78.6,79.0,78.3,78.8],[78.8,79.2,78.6,79.0]]),
+            lines:[{ price:79.2, color:'#3b82f6', title:'Structure low' },{ price:78.3, color:'#22c55e', title:'TP (if confirmed)' }],
+            markers:[{ i:3, pos:'belowBar', shape:'circle', color:'#eab308', text:'Wick only — no BOS' }],
+          },
+          outcome:'loss',
+        }]},
+        // ───────────── SMC · Structure — h6 What Happens Next ─────────────
+        { id:'smc_str_h6', m:'smc', topic:'Structure', stages:[{
+          chart:{
+            candles: mkC([[60,60.5,59.7,60.2],[60.2,60.8,60.0,60.6],[60.6,60.9,60.2,60.4],[60.4,60.6,59.8,60.0],[60.0,60.2,59.5,59.7],[59.7,60.3,59.6,60.2]]),
+            zones:[{ i0:2,i1:3, pLow:60.2,pHigh:60.9, fill:'rgba(148,163,184,.10)', stroke:'rgba(148,163,184,.7)', label:'Broken resistance — support' }],
+            lines:[{ price:60.2, color:'#3b82f6', title:'CHoCH level (now support)' }],
+            markers:[{ i:1, pos:'aboveBar', shape:'arrowUp', color:'#22c55e', text:'CHoCH' }],
+          },
+          q:{en:'After a bullish CHoCH, price pulled back to the broken structure level (now support). What is the most probable next move?',es:'Tras un CHoCH alcista, el precio retrocedió al nivel de estructura roto (ahora soporte). ¿Cuál es el próximo movimiento más probable?',fr:"Après un CHoCH haussier, le prix est revenu au niveau de structure cassé (maintenant support). Quel est le prochain mouvement le plus probable ?",pt:'Após um CHoCH bullish, o preço recuou para o nível de estrutura rompido (agora suporte). Qual é o próximo movimento mais provável?'},
+          opts:[
+            {t:{en:'Continuation higher — broken resistance as new support confirms bullish structure',es:'Continuación alcista — la resistencia rota como nuevo soporte confirma estructura alcista',fr:'Continuation haussière — la résistance cassée en nouveau support confirme la structure haussière',pt:'Continuação altista — resistência rompida como novo suporte confirma estrutura bullish'},ok:true},
+            {t:{en:'Reversal lower — the pullback to the CHoCH level negates the bullish break',es:'Reversión bajista — el retroceso al nivel CHoCH niega la ruptura alcista',fr:'Retournement baissier — le repli au niveau CHoCH nie la cassure haussière',pt:'Reversão baixista — o recuo ao nível CHoCH nega a ruptura bullish'},ok:false},
+            {t:{en:'Consolidation only — CHoCH levels act as equilibrium zones, not directional triggers',es:'Solo consolidación — los niveles CHoCH actúan como zonas de equilibrio, no disparadores',fr:"Consolidation uniquement — les niveaux CHoCH agissent comme zones d'équilibre, pas déclencheurs",pt:'Apenas consolidação — níveis CHoCH atuam como zonas de equilíbrio, não gatilhos direcionais'},ok:false},
+            {t:{en:'BOS downward — pullbacks to CHoCH always produce bearish continuation signals',es:'BOS bajista — los retrocesos al CHoCH siempre producen señales de continuación bajista',fr:'BOS baissier — les replis au CHoCH produisent toujours des signaux de continuation baissière',pt:'BOS baixista — recuos ao CHoCH sempre produzem sinais de continuação bearish'},ok:false},
+          ],
+          exp:{en:'Broken resistance converting to support is the classic SMC structure continuation. A pullback to test that level and hold is a high-probability long setup, targeting the next draw on liquidity above.',es:'La resistencia rota que se convierte en soporte es la continuación estructural clásica de SMC. Un retroceso para testear ese nivel y aguantar es un setup largo de alta probabilidad, apuntando al próximo draw de liquidez arriba.',fr:"La résistance cassée qui se convertit en support est la continuation structurelle classique en SMC. Un repli pour tester ce niveau et tenir est un setup long de haute probabilité, visant le prochain draw sur la liquidité au-dessus.",pt:'Resistência rompida que se converte em suporte é a continuação estrutural clássica do SMC. Um recuo para testar esse nível e segurar é um setup de compra de alta probabilidade, mirando o próximo draw de liquidez acima.'},
+          revealChart:{
+            candles: mkC([[60,60.5,59.7,60.2],[60.2,60.8,60.0,60.6],[60.6,60.9,60.2,60.4],[60.4,60.6,59.8,60.0],[60.0,60.2,59.5,59.7],[59.7,60.3,59.6,60.2],[60.2,60.7,60.1,60.6],[60.6,61.2,60.5,61.0]]),
+            zones:[{ i0:2,i1:3, pLow:60.2,pHigh:60.9, fill:'rgba(148,163,184,.10)', stroke:'rgba(148,163,184,.7)', label:'Support' }],
+            lines:[{ price:59.5, color:'#ef4444', title:'SL' },{ price:61.5, color:'#22c55e', title:'TP' }],
+            markers:[{ i:5, pos:'belowBar', shape:'arrowUp', color:'#22c55e', text:'Long' }],
+          },
+          outcome:'win',
+        }]},
+        // ───────────── SMC · Structure — h7 Identify the Phase ─────────────
+        { id:'smc_str_h7', m:'smc', topic:'Structure', stages:[{
+          chart:{
+            candles: mkC([[90,90.8,89.6,90.4],[90.4,91.0,90.2,90.7],[90.7,91.2,90.4,90.5],[90.5,90.7,89.8,90.0],[90.0,90.3,89.4,89.6],[89.6,90.2,89.4,90.1]]),
+            lines:[
+              { price:91.2, color:'#eab308', title:'External swing high' },
+              { price:90.7, color:'#3b82f6', title:'Internal high' },
+            ],
+            markers:[
+              { i:2, pos:'aboveBar', shape:'circle', color:'#eab308', text:'External H' },
+              { i:1, pos:'aboveBar', shape:'circle', color:'#3b82f6', text:'Internal H' },
+              { i:5, pos:'aboveBar', shape:'arrowDown', color:'#ef4444', text:'Break?' },
+            ],
+          },
+          q:{en:'Candle 5 closes above the internal high (90.7) but below the external swing high (91.2). Which type of structural break is this?',es:'El candle 5 cierra por encima del máximo interno (90.7) pero por debajo del máximo externo de swing (91.2). ¿Qué tipo de ruptura estructural es esta?',fr:'La bougie 5 clôture au-dessus du plus haut interne (90.7) mais sous le plus haut externe (91.2). Quel type de cassure structurelle est-ce ?',pt:'O candle 5 fecha acima da máxima interna (90.7) mas abaixo da máxima externa de swing (91.2). Que tipo de ruptura estrutural é essa?'},
+          opts:[
+            {t:{en:'Internal structure shift only — external BOS is still pending',es:'Cambio de estructura interna solo — el BOS externo sigue pendiente',fr:'Changement de structure interne uniquement — le BOS externe est toujours en attente',pt:'Mudança de estrutura interna apenas — BOS externo ainda pendente'},ok:true},
+            {t:{en:'Full external BOS — breaking any prior high confirms the swing',es:'BOS externo completo — romper cualquier máximo previo confirma el swing',fr:'BOS externe complet — casser tout plus haut précédent confirme le swing',pt:'BOS externo completo — romper qualquer máxima anterior confirma o swing'},ok:false},
+            {t:{en:'CHoCH — because the break is counter to the most recent internal leg',es:'CHoCH — porque la ruptura es contraria a la pierna interna más reciente',fr:'CHoCH — car la cassure est contraire à la dernière jambe interne',pt:'CHoCH — porque a ruptura é contrária ao último segmento interno'},ok:false},
+            {t:{en:'Inducement — internal highs are always liquidity grabs, never real breaks',es:'Inducement — los máximos internos siempre son capturas de liquidez, nunca rupturas reales',fr:'Inducement — les plus hauts internes sont toujours des captures de liquidité, jamais de vraies cassures',pt:'Inducement — máximas internas são sempre capturas de liquidez, nunca rupturas reais'},ok:false},
+          ],
+          exp:{en:'Internal structure refers to swings within the current leg. Breaking an internal high is an internal shift, confirming continuation intent but not the full external BOS. The external swing high must also be taken for a confirmed higher-timeframe BOS.',es:'La estructura interna se refiere a los swings dentro de la pierna actual. Romper un máximo interno es un cambio interno, que confirma intención de continuación pero no el BOS externo completo. El máximo externo de swing también debe ser tomado para un BOS confirmado en marco superior.',fr:"La structure interne fait référence aux swings dans la jambe actuelle. Casser un plus haut interne est un changement interne, confirmant l'intention de continuation mais pas le BOS externe complet. Le plus haut externe doit aussi être pris pour un BOS confirmé sur timeframe supérieur.",pt:'Estrutura interna refere-se aos swings dentro da perna atual. Romper uma máxima interna é uma mudança interna, confirmando intenção de continuação mas não o BOS externo completo. A máxima externa de swing também deve ser tomada para um BOS confirmado no timeframe superior.'},
+          revealChart:{
+            candles: mkC([[90,90.8,89.6,90.4],[90.4,91.0,90.2,90.7],[90.7,91.2,90.4,90.5],[90.5,90.7,89.8,90.0],[90.0,90.3,89.4,89.6],[89.6,90.2,89.4,90.1],[90.1,90.5,89.9,90.3],[90.3,91.3,90.2,91.2]]),
+            lines:[
+              { price:91.2, color:'#eab308', title:'External BOS (now broken)' },
+              { price:90.7, color:'#3b82f6', title:'Internal high' },
+            ],
+            markers:[{ i:7, pos:'aboveBar', shape:'arrowUp', color:'#22c55e', text:'External BOS' }],
+          },
+          outcome:'win',
+        }]},
+        // ───────────── SMC · Structure — h8 Rate the Setup ─────────────
+        { id:'smc_str_h8', m:'smc', topic:'Structure', stages:[{
+          chart:{
+            candles: mkC([[75,75.6,74.8,75.0],[75.0,75.2,74.3,74.4],[74.4,74.6,73.7,73.8],[73.8,74.8,73.6,74.6],[74.6,75.8,74.5,75.6],[75.6,75.8,75.0,75.2]]),
+            zones:[{ i0:0,i1:1, pLow:74.8,pHigh:75.6, ...Z_SUPPLY, label:'Supply (origin)' }],
+            lines:[{ price:74.6, color:'#3b82f6', title:'CHoCH level' }],
+            markers:[
+              { i:3, pos:'belowBar', shape:'arrowUp', color:'#22c55e', text:'Displacement' },
+              { i:3, pos:'aboveBar', shape:'circle', color:'#22c55e', text:'Body BOS' },
+            ],
+          },
+          q:{en:'Price broke the CHoCH level (74.6) with a displacement candle whose body closed below it, then pulled back cleanly into Supply. How do you rate this short setup?',es:'El precio rompió el nivel CHoCH (74.6) con un candle de displacement cuyo cuerpo cerró por debajo, luego retrocedió limpiamente hacia la zona Supply. ¿Cómo calificas este setup corto?',fr:'Le prix a cassé le niveau CHoCH (74.6) avec une bougie de déplacement dont le corps a clôturé en dessous, puis est revenu proprement dans la zone Supply. Comment notez-vous ce setup court ?',pt:'O preço rompeu o nível CHoCH (74.6) com um candle de displacement cujo corpo fechou abaixo, depois recuou limpo para a zona Supply. Como você avalia esse setup curto?'},
+          opts:[
+            {t:{en:'High-quality: displacement + body close BOS + clean pullback to Supply',es:'Alta calidad: displacement + BOS con cierre de cuerpo + retroceso limpio a Supply',fr:'Haute qualité : déplacement + BOS avec clôture du corps + repli propre vers Supply',pt:'Alta qualidade: displacement + BOS com fechamento de corpo + recuo limpo para Supply'},ok:true},
+            {t:{en:'Low-quality: displacement candles invalidate the Supply zone origin',es:'Baja calidad: los candles de displacement invalidan la zona Supply de origen',fr:"Faible qualité : les bougies de déplacement invalident la zone Supply d'origine",pt:'Baixa qualidade: candles de displacement invalidam a zona Supply de origem'},ok:false},
+            {t:{en:'Moderate: body BOS is valid but pullback into Supply reduces probability',es:'Moderada: el BOS de cuerpo es válido pero el retroceso a Supply reduce la probabilidad',fr:'Modéré : le BOS de corps est valide mais le repli dans Supply réduit la probabilité',pt:'Moderada: BOS de corpo é válido mas recuo para Supply reduz a probabilidade'},ok:false},
+            {t:{en:'Invalid: a displacement candle alone is insufficient without a second signal',es:'Inválido: un candle de displacement solo es insuficiente sin una segunda señal',fr:'Invalide : une bougie de déplacement seule est insuffisante sans deuxième signal',pt:'Inválido: um candle de displacement sozinho é insuficiente sem um segundo sinal'},ok:false},
+          ],
+          exp:{en:'Three confluences align: (1) displacement candle shows institutional intent, (2) candle body closes beyond CHoCH = confirmed structural break, (3) pullback to the supply origin gives a precise entry. This is a textbook high-quality SMC short setup.',es:'Tres confluencias se alinean: (1) candle de displacement muestra intención institucional, (2) el cuerpo cierra más allá del CHoCH = ruptura estructural confirmada, (3) retroceso al origen del supply da entrada precisa. Este es un setup corto SMC de manual de alta calidad.',fr:"Trois confluences s'alignent : (1) la bougie de déplacement montre une intention institutionnelle, (2) le corps clôture au-delà du CHoCH = cassure structurelle confirmée, (3) le repli vers l'origine du Supply donne une entrée précise. C'est un setup court SMC de manuel haute qualité.",pt:'Três confluências se alinham: (1) candle de displacement mostra intenção institucional, (2) corpo fecha além do CHoCH = ruptura estrutural confirmada, (3) recuo à origem do Supply dá entrada precisa. Este é um setup curto SMC de manual de alta qualidade.'},
+          revealChart:{
+            candles: mkC([[75,75.6,74.8,75.0],[75.0,75.2,74.3,74.4],[74.4,74.6,73.7,73.8],[73.8,74.8,73.6,74.6],[74.6,75.8,74.5,75.6],[75.6,75.8,75.0,75.2],[75.2,75.4,74.5,74.6],[74.6,74.8,73.8,74.0]]),
+            zones:[{ i0:0,i1:1, pLow:74.8,pHigh:75.6, ...Z_SUPPLY, label:'Supply' }],
+            lines:[{ price:75.9, color:'#ef4444', title:'SL' },{ price:73.5, color:'#22c55e', title:'TP' }],
+            markers:[{ i:5, pos:'aboveBar', shape:'arrowDown', color:'#ef4444', text:'Short' }],
+          },
+          outcome:'win',
+        }]},
+        // ───────────── SMC · Structure — h9 True or False ─────────────
+        { id:'smc_str_h9', m:'smc', topic:'Structure', stages:[{
+          chart:{
+            candles: mkC([[55,55.8,54.9,55.5],[55.5,56.0,55.3,55.8],[55.8,56.2,55.5,55.7],[55.7,55.9,55.1,55.2],[55.2,55.4,54.6,54.8],[54.8,55.6,54.7,55.5]]),
+            lines:[{ price:55.1, color:'#3b82f6', title:'Prior swing low' }],
+            markers:[
+              { i:4, pos:'belowBar', shape:'circle', color:'#eab308', text:'No sweep' },
+              { i:5, pos:'aboveBar', shape:'arrowUp', color:'#22c55e', text:'CHoCH?' },
+            ],
+          },
+          q:{en:"True or False: A CHoCH can form without price first sweeping the prior swing low's liquidity.",es:'Verdadero o Falso: Un CHoCH puede formarse sin que el precio primero barra la liquidez del mínimo de swing previo.',fr:"Vrai ou Faux : Un CHoCH peut se former sans que le prix balaie d'abord la liquidité du plus bas de swing précédent.",pt:'Verdadeiro ou Falso: Um CHoCH pode se formar sem que o preço primeiro varra a liquidez da mínima de swing anterior.'},
+          opts:[
+            {t:{en:'False — a liquidity sweep before CHoCH is not always required by strict SMC rules',es:'Falso — un barrido de liquidez antes del CHoCH no siempre es exigido por las reglas SMC estrictas',fr:"Faux — un sweep de liquidité avant le CHoCH n'est pas toujours requis selon les règles SMC strictes",pt:'Falso — uma varredura de liquidez antes do CHoCH nem sempre é exigida pelas regras SMC estritas'},ok:true},
+            {t:{en:'True — SMC rules require a sweep of sell-side liquidity before every CHoCH',es:'Verdadero — las reglas SMC requieren un barrido de liquidez vendedora antes de todo CHoCH',fr:'Vrai — les règles SMC exigent un sweep de liquidité côté vente avant chaque CHoCH',pt:'Verdadeiro — as regras SMC exigem uma varredura de liquidez sell-side antes de todo CHoCH'},ok:false},
+            {t:{en:'True — without a sweep the break is classified as a BOS by definition',es:'Verdadero — sin barrido la ruptura se clasifica como BOS por definición',fr:'Vrai — sans sweep la cassure est classifiée comme BOS par définition',pt:'Verdadeiro — sem varredura a ruptura é classificada como BOS por definição'},ok:false},
+            {t:{en:'True — CHoCH and liquidity sweep are always simultaneous in SMC models',es:'Verdadero — CHoCH y barrido de liquidez son siempre simultáneos en los modelos SMC',fr:'Vrai — CHoCH et sweep de liquidité sont toujours simultanés dans les modèles SMC',pt:'Verdadeiro — CHoCH e varredura de liquidez são sempre simultâneos nos modelos SMC'},ok:false},
+          ],
+          exp:{en:'Although a liquidity sweep before a CHoCH is a high-probability confluence that strengthens the signal, it is not a strict prerequisite. A CHoCH is defined purely by the first counter-trend break of a swing high or low — the sweep is a bonus confirmation, not a rule.',es:'Aunque un barrido de liquidez antes de un CHoCH es una confluencia de alta probabilidad que fortalece la señal, no es un prerrequisito estricto. Un CHoCH se define puramente por la primera ruptura contra tendencia de un máximo o mínimo de swing — el barrido es una confirmación extra, no una regla.',fr:"Bien qu'un sweep de liquidité avant un CHoCH soit une confluence de haute probabilité qui renforce le signal, ce n'est pas un prérequis strict. Un CHoCH est défini purement par la première cassure contre-tendance d'un plus haut ou plus bas de swing — le sweep est une confirmation bonus, pas une règle.",pt:'Embora uma varredura de liquidez antes de um CHoCH seja uma confluência de alta probabilidade que fortalece o sinal, não é um pré-requisito estrito. Um CHoCH é definido puramente pela primeira ruptura contra-tendência de uma máxima ou mínima de swing — a varredura é uma confirmação extra, não uma regra.'},
+          revealChart:{
+            candles: mkC([[55,55.8,54.9,55.5],[55.5,56.0,55.3,55.8],[55.8,56.2,55.5,55.7],[55.7,55.9,55.1,55.2],[55.2,55.4,54.6,54.8],[54.8,55.6,54.7,55.5],[55.5,56.0,55.4,55.8],[55.8,56.4,55.7,56.2]]),
+            lines:[{ price:55.1, color:'#3b82f6', title:'CHoCH level' }],
+            markers:[{ i:5, pos:'belowBar', shape:'arrowUp', color:'#22c55e', text:'CHoCH (no sweep)' }],
+          },
+          outcome:'win',
+        }]},
+        // ───────────── SMC · Structure — h10 Which Zone Is Real ─────────────
+        { id:'smc_str_h10', m:'smc', topic:'Structure', stages:[{
+          chart:{
+            candles: mkC([[120,120.8,119.7,120.3],[120.3,121.0,120.1,120.7],[120.7,121.5,120.5,120.6],[120.6,120.8,119.8,120.0],[120.0,120.3,119.2,119.4],[119.4,120.4,119.3,120.2]]),
+            zones:[
+              { i0:0,i1:0, pLow:119.7,pHigh:120.8, fill:'rgba(148,163,184,.10)', stroke:'rgba(148,163,184,.7)', label:'Level A' },
+              { i0:1,i1:2, pLow:120.1,pHigh:121.5, ...Z_SUPPLY, label:'Level B (Supply)' },
+              { i0:2,i1:3, pLow:120.5,pHigh:121.5, fill:'rgba(59,130,246,.10)', stroke:'rgba(59,130,246,.75)', label:'Level C' },
+            ],
+            lines:[{ price:120.3, color:'#eab308', title:'CHoCH after BOS' }],
+            markers:[{ i:4, pos:'belowBar', shape:'arrowDown', color:'#ef4444', text:'CHoCH' }],
+          },
+          q:{en:'Three broken-structure levels are marked (A, B, C). After the bearish CHoCH, which is the valid breaker block to trade the short?',es:'Tres niveles de estructura rota están marcados (A, B, C). Tras el CHoCH bajista, ¿cuál es el breaker block válido para operar el corto?',fr:'Trois niveaux de structure cassée sont marqués (A, B, C). Après le CHoCH baissier, lequel est le breaker block valide pour trader le court ?',pt:'Três níveis de estrutura rompida estão marcados (A, B, C). Após o CHoCH bearish, qual é o breaker block válido para operar o curto?'},
+          opts:[
+            {t:{en:'Level B — Supply zone that was the last up-close before the bearish displacement',es:'Nivel B — zona Supply que fue el último cierre alcista antes del displacement bajista',fr:"Niveau B — zone Supply qui était la dernière clôture haussière avant le déplacement baissier",pt:'Nível B — zona Supply que foi o último fechamento de alta antes do displacement de baixa'},ok:true},
+            {t:{en:'Level A — the first broken level is always the most relevant breaker',es:'Nivel A — el primer nivel roto siempre es el breaker más relevante',fr:'Niveau A — le premier niveau cassé est toujours le breaker le plus pertinent',pt:'Nível A — o primeiro nível rompido é sempre o breaker mais relevante'},ok:false},
+            {t:{en:'Level C — the most recent broken high has the highest institutional order density',es:'Nivel C — el máximo roto más reciente tiene la mayor densidad de órdenes institucionales',fr:"Niveau C — le plus haut cassé le plus récent a la plus haute densité d'ordres institutionnels",pt:'Nível C — a máxima rompida mais recente tem a maior densidade de ordens institucionais'},ok:false},
+            {t:{en:'All three levels are equally valid breaker blocks after a CHoCH',es:'Los tres niveles son breaker blocks igualmente válidos después de un CHoCH',fr:'Les trois niveaux sont des breaker blocks également valides après un CHoCH',pt:'Os três níveis são breaker blocks igualmente válidos após um CHoCH'},ok:false},
+          ],
+          exp:{en:'The valid breaker block is the last up-close candle(s) before the bearish displacement — Level B (Supply). Level A is too far back and lacks the displacement origin context. Level C overlaps but is narrower and less well-defined. The breaker must be the origin of the move that created the structural break.',es:'El breaker block válido son los candles de cierre alcista justo antes del displacement bajista — Nivel B (Supply). El Nivel A está demasiado atrás y carece del contexto de origen de displacement. El Nivel C se superpone pero es más estrecho y menos definido. El breaker debe ser el origen del movimiento que creó la ruptura estructural.',fr:"Le breaker block valide est la/les bougie(s) de clôture haussière juste avant le déplacement baissier — Niveau B (Supply). Le Niveau A est trop en arrière et manque du contexte d'origine du déplacement. Le Niveau C se chevauche mais est plus étroit et moins bien défini. Le breaker doit être l'origine du mouvement qui a créé la cassure structurelle.",pt:'O breaker block válido são os candles de fechamento de alta imediatamente antes do displacement de baixa — Nível B (Supply). O Nível A está muito atrás e falta o contexto de origem do displacement. O Nível C sobrepõe mas é mais estreito e menos definido. O breaker deve ser a origem do movimento que criou a ruptura estrutural.'},
+          revealChart:{
+            candles: mkC([[120,120.8,119.7,120.3],[120.3,121.0,120.1,120.7],[120.7,121.5,120.5,120.6],[120.6,120.8,119.8,120.0],[120.0,120.3,119.2,119.4],[119.4,120.4,119.3,120.2],[120.2,120.6,119.9,120.1],[120.1,120.2,119.3,119.4]]),
+            zones:[{ i0:1,i1:2, pLow:120.1,pHigh:121.5, ...Z_SUPPLY, label:'Breaker (Level B)' }],
+            lines:[{ price:121.6, color:'#ef4444', title:'SL' },{ price:119.0, color:'#22c55e', title:'TP' }],
+            markers:[{ i:5, pos:'aboveBar', shape:'arrowDown', color:'#ef4444', text:'Short' }],
+          },
+          outcome:'win',
+        }]},
       ];
 
       // Topics per methodology
