@@ -156,6 +156,84 @@
 
 ---
 
+> **📝 CONTEXTO — HARDCORE QUIZ · KILL ZONES y METODOLOGÍAS PENDIENTES**
+>
+> **Qué se hizo:** Se reconstruyeron los 10 escenarios `ict_kz_h1–h10` del array
+> `HARDCORE_SCENARIOS` en `scalpel/templates/index.html`. Cada escenario tiene
+> `chart` + `q` (4 idiomas) + `opts` (4 opciones) + `exp` + `revealChart` + `outcome`.
+>
+> **Los 10 ángulos implementados (en orden de id):**
+> 1. `h1` — Setup perfecto 15 min antes de que cierre el KZ → Skip (outcome: loss)
+> 2. `h2` — London alcista + NY abre bajista → el sesgo HTF diario manda, no la sesión más reciente (outcome: win)
+> 3. `h3` — Setup válido fuera de toda kill zone → no tomarlo, falta volumen institucional (outcome: loss)
+> 4. `h4` — KZ abierto pero ya ~90 pips expandidos → validez reducida, R:R colapsado (outcome: loss)
+> 5. `h5` — London sweep bajista + NY setup alcista misma zona → confluencia AMD (outcome: win)
+> 6. `h6` — Asia rango limpio, London rompe con vela pequeña sin desplazamiento → fake break (outcome: win)
+> 7. `h7` — Dos setups opuestos en mismo KZ por timeframe → priorizar HTF sobre LTF (outcome: win)
+> 8. `h8` — KZ de NY ya cerró, precio en zona perfecta → no operar (outcome: loss)
+> 9. `h9` — Silver Bullet activo pero HTF en distribución → no confiar ciegamente (outcome: loss)
+> 10. `h10` — 3 KZs con señales mixtas → sesgo viene del HTF draw, no del conteo de sesiones (outcome: win)
+>
+> **Outcomes: 4 loss (h3, h4, h8, h9) · 6 win (h2, h5, h6, h7, h10 · h1=skip/loss pedagógico)**
+>
+> ---
+>
+> **📋 ESTADO ACTUAL DEL HARDCORE QUIZ — Metodologías completadas vs. pendientes**
+>
+> **✅ Completadas (4 metodologías):**
+> - Order Blocks (`ict_ob_h1–h10`)
+> - FVGs (`ict_fvg_h1–h10`)
+> - Market Structure (`ict_ms_h1–h10`)
+> - Kill Zones (`ict_kz_h1–h10`) — reconstruidas 2026-06-08, **distractores pendientes de revisión** (ver abajo)
+>
+> **🔴 PENDIENTE INMEDIATO — Kill Zones distractores:**
+> Los escenarios `ict_kz_h1–h10` tienen distractores `ok:false` que quedaron obviamente
+> absurdos o dismissive. Deben reescribirse como misconceptions técnicamente plausibles
+> siguiendo el mismo procedimiento probado con beginner/intermediate:
+> 1. Script de barrido → lista exacta de líneas con distractores malos
+> 2. Reescritura como misconceptions reales de trader (recencia, primacía de sesión, momentum,
+>    hedge, mecánica del Silver Bullet, etc.) — misma longitud que la correcta, 4 idiomas
+> 3. Validar pipeline completo → commit → push a `claude/epic-lovelace-GsOuo`
+>
+> **🔴 PENDIENTE — Resto de metodologías (el usuario tiene las preguntas en Notas del iMac):**
+> Cada metodología sigue este modelo completo de reconstrucción:
+> - **Chart acoplado a la pregunta** — refleja exactamente el escenario descrito
+> - **Elementos del chart sin conflicto**: líneas ≥0.25 apart, ≤2 zonas, ≤2 marcadores en
+>   velas distintas, OHLC coherente (H≥max(O,C), L≤min(O,C))
+> - **Respuestas con lógica de trader real**: distractores = misconceptions plausibles,
+>   NUNCA absurdos, dismissive ni sin sentido
+> - **Balance de longitud** (`es:` como referencia): longest-wins ≤2/10, shortest-wins ≤2/10
+>
+> Metodologías que faltan por construir (el usuario tiene los ángulos en Notas del iMac):
+> - Liquidity / Sweeps
+> - AMD (Accumulation–Manipulation–Distribution)
+> - PD Arrays
+> - Silver Bullet
+> - STDV / Deviations
+> - Confluences / Multi-confluence
+> - SMC (Smart Money Concepts generales)
+> - Patterns (pattern trades)
+> - Wyckoff
+>
+> **⚠️ INSTRUCCIÓN AL INICIO DE CADA SESIÓN DE QUIZ:**
+> Pedir al usuario que pegue los ángulos/preguntas de la metodología a trabajar
+> (los tiene en Notas del iMac). No inventar ángulos nuevos — usar exactamente
+> los que el usuario proporciona. Construir chart + opciones + exp a partir de esos ángulos.
+>
+> ---
+>
+> **Estándares de calidad (pipeline obligatorio para cada commit):**
+> - **Balance de longitud**: script de ranking por `es:` → longest-wins ≤2/10, shortest-wins ≤2/10
+> - **Geometría**: líneas ≥0.25 entre sí; ≤2 zonas; ≤2 marcadores en velas distintas;
+>   revealChart extiende chart inicial con 2–3 velas extra
+> - **Escaping**: `grep -c "\\\\'"` = 0; apóstrofes → `\'` (nunca `\\'`)
+> - **Parse**: extraer `<script>` con `HARDCORE_SCENARIOS`, correr `node --check`; total esperado: 160+
+> - **Distractores**: misconceptions plausibles con desarrollo técnico — nunca frases vacías o absurdas
+>
+> **Rama activa:** `claude/epic-lovelace-GsOuo` · Último commit KZ: `feaf2ec`
+
+---
+
 ## Stack técnico
 
 - **Backend:** Flask + SQLAlchemy + SQLite (`scalpel.db`)
