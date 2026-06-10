@@ -180,20 +180,13 @@
 >
 > **📋 ESTADO ACTUAL DEL HARDCORE QUIZ — Metodologías completadas vs. pendientes**
 >
-> **✅ Completadas (4 metodologías):**
+> **✅ Completadas (6 metodologías):**
 > - Order Blocks (`ict_ob_h1–h10`)
 > - FVGs (`ict_fvg_h1–h10`)
 > - Market Structure (`ict_ms_h1–h10`)
-> - Kill Zones (`ict_kz_h1–h10`) — reconstruidas 2026-06-08, **distractores pendientes de revisión** (ver abajo)
->
-> **🔴 PENDIENTE INMEDIATO — Kill Zones distractores:**
-> Los escenarios `ict_kz_h1–h10` tienen distractores `ok:false` que quedaron obviamente
-> absurdos o dismissive. Deben reescribirse como misconceptions técnicamente plausibles
-> siguiendo el mismo procedimiento probado con beginner/intermediate:
-> 1. Script de barrido → lista exacta de líneas con distractores malos
-> 2. Reescritura como misconceptions reales de trader (recencia, primacía de sesión, momentum,
->    hedge, mecánica del Silver Bullet, etc.) — misma longitud que la correcta, 4 idiomas
-> 3. Validar pipeline completo → commit → push a `claude/epic-lovelace-GsOuo`
+> - Liquidity / Sweeps (`ict_liq_h1–h10`) — reconstruidas commit `1e04f0e`
+> - Kill Zones (`ict_kz_h1–h10`) — reconstruidas commit `feaf2ec`, distractores ya plausibles y validados (longest-wins 1/10, shortest 0/10)
+> - AMD (`ict_amd_h1–h10`) — reconstruidas 2026-06-10 commit `ed538d9` con los 10 ángulos del usuario (manipulación extendida, acum vs distrib, AMD anidado, D sin sweep BSL, M sin expansión, acum larga, anclaje del ciclo, D diario vs H1, doble purga en una vela, micro-acum en mitad del trade). Outcomes 3 loss / 7 win.
 >
 > **🔴 PENDIENTE — Resto de metodologías (el usuario tiene las preguntas en Notas del iMac):**
 > Cada metodología sigue este modelo completo de reconstrucción:
@@ -205,8 +198,6 @@
 > - **Balance de longitud** (`es:` como referencia): longest-wins ≤2/10, shortest-wins ≤2/10
 >
 > Metodologías que faltan por construir (el usuario tiene los ángulos en Notas del iMac):
-> - Liquidity / Sweeps
-> - AMD (Accumulation–Manipulation–Distribution)
 > - PD Arrays
 > - Silver Bullet
 > - STDV / Deviations
