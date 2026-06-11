@@ -3,6 +3,79 @@
 
 ---
 
+> **✅ COMPLETADO (2026-06-11) — SISTEMA DE FIABILIDAD: AUDIT LOG + ALERTAS + BACKUPS + SENTRY**
+>
+> Sesión del 2026-06-10/11 (commits `b67f1c3`, perf/XSS, `6f63d54` — pusheados a
+> `claude/epic-lovelace-GsOuo` y `claude/intelligent-turing-94qh5i`, **desplegado y verificado en el VPS**):
+>
+> **1. Pre-Flight — UI (commit `b67f1c3`):**
+> - Tab Pre-Flight movido ANTES del tab Quiz en la nav (orden alfabético).
+> - Tablas de estadísticas/comparación (`.pf-table`, `.pf-stats-table`) rediseñadas estilo
+>   Excel/spreadsheet: grid completo de bordes, zebra striping, tipografía normal (sin monospace),
+>   verde/rojo suaves `#16a34a`/`#dc2626`, `tabular-nums`.
+>
+> **2. Performance + seguridad (`index.html`):**
+> - Synapse: `figureHalf(y)` reemplazada por LUT precomputada (`FIG_HALF_LUT`, Float32Array,
+>   step 0.05) — elimina ~5778 llamadas a `Math.exp()` por frame en `updateNet()`.
+> - QCFire (fuego del badge del quiz): el loop rAF ahora se salta el trabajo pesado cuando
+>   `document.hidden || canvas.offsetParent === null` (antes corría infinito en background).
+> - XSS: salida de `marked.parse(data.analysis)` ahora se sanitiza con **DOMPurify**
+>   (CDN `dompurify@3` agregado en `<head>`) antes del `innerHTML` en el Analyze.
+>
+> **3. Sistema de auditoría (commit `6f63d54` — `app.py` + `admin.html`):**
+> - Modelo nuevo **`AuditEvent`** (tabla `audit_event`, creada auto por `db.create_all()`).
+> - Helper **`record_audit_event(event_type, user_id, detail, success)`** — nunca lanza excepción.
+> - 13 call-sites instrumentados: `order_created`, `order_paid`, `order_cancelled`, `plan_expired`,
+>   `promo_created`, `pdf_issued`, `pdf_downloaded`, `email_verification` (register/login/resend),
+>   `email_reset`, `email_contact`, `analysis_error`.
+> - **Alertas inmediatas**: si falla un evento del set `AUDIT_ALERT_ON_FAILURE` (pagos, PDFs,
+>   emails, analysis), `_send_audit_alert_email()` manda correo al admin (threaded, fire-and-forget).
+> - **Panel admin**: sección "Audit Log" al final de `/admin` (últimos 150 eventos, filas rojas
+>   para fallos, contador `(N ⚠)` en el nav).
+>
+> **4. Scripts cron nuevos (raíz del repo):**
+> - **`daily_audit_summary.py`** — digest diario por correo de los AuditEvent de las últimas 24h.
+>   ⚠️ Debe correr con el **Python del venv** (necesita Flask).
+> - **`backup_db.py`** — backup diario de `scalpel.db` vía SQLite online backup API a `backups/`
+>   (gitignored), retiene 14 días. Corre con Python del sistema (solo stdlib).
+> - **Crontab del VPS (root) quedó así:**
+>   ```
+>   0 * * * *  WA_PHONE=... WA_APIKEY=... SITE_URL=... /usr/bin/python3 /var/www/TRADINGBOT2.0/monitor.py >> /var/log/ta_monitor.log 2>&1
+>   0 8 * * *  cd /var/www/TRADINGBOT2.0 && /var/www/TRADINGBOT2.0/venv/bin/python3 daily_audit_summary.py >> /var/log/ta_audit_summary.log 2>&1
+>   30 7 * * * cd /var/www/TRADINGBOT2.0 && /usr/bin/python3 backup_db.py >> /var/log/ta_backup.log 2>&1
+>   ```
+>
+> **5. Sentry — instalado pero INACTIVO:**
+> - Bloque opcional en `app.py` (tras `app = Flask(...)`) que solo se activa si existe la env var
+>   `SENTRY_DSN`. `sentry-sdk==2.20.0` instalado en el **venv** del VPS. Para activarlo: cuenta
+>   gratis en sentry.io → copiar DSN → agregar `SENTRY_DSN="..."` al `environment=` del supervisor
+>   conf → `supervisorctl reread && update && restart traderacelerator`. Capturaría TODA excepción
+>   no controlada (dashboard en sentry.io, no en el panel admin).
+>
+> **6. Datos clave del VPS descubiertos/cambiados en esta sesión:**
+> - La app corre con **venv**: `command=/var/www/TRADINGBOT2.0/venv/bin/gunicorn -w 4 -b 0.0.0.0:5001 scalpel.app:app`.
+>   El `python3` del sistema NO tiene Flask (y pip del sistema es externally-managed; usar
+>   `venv/bin/pip` o `--break-system-packages`).
+> - Env vars de producción viven en `environment=` de `/etc/supervisor/conf.d/traderacelerator.conf`
+>   (6 vars: DATABASE_URL, WA_PHONE, WA_APIKEY, GITHUB_TOKEN, SECRET_KEY, MAIL_APP_PASSWORD).
+>   Ahora también hay un **`scalpel/.env`** (gitignored, chmod 600) con las mismas vars entre
+>   comillas, para que los scripts cron las vean vía `load_dotenv()`. **⚠️ Si se cambia una env var
+>   en supervisor, actualizar TAMBIÉN `scalpel/.env`.**
+> - **Gmail App Password renovado (2026-06-11):** el anterior estaba muerto (Google lo rechazaba
+>   con 535 BadCredentials → los OTP/reset llevaban tiempo fallando en silencio). Se generó uno
+>   nuevo, actualizado en supervisor conf y `scalpel/.env`, verificado con envío real exitoso.
+>   Pendiente del usuario: borrar el App Password viejo en myaccount.google.com/apppasswords.
+> - ⚠️ El terminal del usuario (Mac) convierte comillas rectas en curvas (“ ” ‘) al pegar —
+>   si un `sed` falla con "unknown option to `s'", es eso. Preferir bloques `python3 - <<'EOF'`.
+> - El usuario se pierde en editores tipo nano/vim — para el crontab usar el patrón
+>   `(crontab -l | grep -v ...; echo '...') | crontab -` en vez de `crontab -e`.
+>
+> **Red de seguridad completa ahora:** fallo en pago/PDF/email → alerta inmediata por correo +
+> fila roja en Audit Log · resumen diario 8:00 AM · backup DB diario 7:30 AM · monitor de salud
+> cada hora (WhatsApp) · Sentry listo para activar.
+
+---
+
 > **✅ COMPLETADO (2026-06-11) — QUIZ HARDCORE 100% RECONSTRUIDO (16 metodologías / 160 escenarios)**
 >
 > Las 16 metodologías del Quiz Hardcore (Order Blocks, FVGs, Market Structure, Liquidity, Kill Zones,
