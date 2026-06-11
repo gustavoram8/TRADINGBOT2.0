@@ -6,6 +6,7 @@
   <title>Trader Acelerator — ICT Trade Analysis</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
   <!-- Scalpe® studio loads its canvas engine (Fabric) + PDF export (jsPDF)
        lazily on first open, with multi-CDN fallback — see Scalper.open() -->
   <style>
@@ -6621,7 +6622,13 @@
       meta.innerHTML += `<span class="meta-tag">${selections.session}</span>`;
       meta.innerHTML += `<span class="meta-tag">${selections.approach}</span>`;
 
-      document.getElementById('analysis-body').innerHTML = marked.parse(data.analysis);
+      // The AI response is rendered as HTML via marked — sanitize it first so
+      // any markup the model emits (intentionally or via prompt injection from
+      // an uploaded image) can't execute scripts in the user's session.
+      const analysisHtml = marked.parse(data.analysis);
+      document.getElementById('analysis-body').innerHTML = window.DOMPurify
+        ? DOMPurify.sanitize(analysisHtml)
+        : analysisHtml;
 
       showView('result');
       resultView.classList.add('fade-in');
@@ -17824,6 +17831,14 @@
           };
         }
         function tick(){
+          // Once started, this loop never stops on its own — if the user leaves
+          // the Quiz tab the canvas is hidden via display:none but rAF kept
+          // firing 60x/sec doing gradient/arc work for nothing. Skip the heavy
+          // work entirely while the canvas (or an ancestor) isn't visible.
+          if (document.hidden || canvas.offsetParent === null) {
+            raf = requestAnimationFrame(tick);
+            return;
+          }
           ctx.clearRect(0,0,W,H);
           ctx.globalCompositeOperation = 'lighter';
           for(let i=particles.length-1;i>=0;i--){
@@ -18546,10 +18561,25 @@
     // column for the narrow head and floating brain. It's perspective-scaled so
     // a node deeper in z must clear a proportionally wider world-x.
     const FIG_Y0 = 3.0, FIG_Y1 = 16.8, CAM_Z = 16.5;
+    // Precomputed lookup table for figureHalf(): this is called thousands of
+    // times per frame from updateNet()'s O(N²) connection pass, and the
+    // Math.exp() per call was the dominant CPU cost of that loop. The
+    // Gaussian curve is smooth, so a 0.05-step LUT is visually identical.
+    const FIG_HALF_STEP = 0.05;
+    const FIG_HALF_LUT = (() => {
+      const n = Math.round((FIG_Y1 - FIG_Y0) / FIG_HALF_STEP) + 1;
+      const lut = new Float32Array(n);
+      for (let i = 0; i < n; i++) {
+        const y = FIG_Y0 + i * FIG_HALF_STEP;
+        const shoulders = 5.3 * Math.exp(-Math.pow((y - 5.7) / 2.4, 2));
+        lut[i] = Math.max(3.4, shoulders);
+      }
+      return lut;
+    })();
     function figureHalf(y) {
       if (y < FIG_Y0 || y > FIG_Y1) return 0;
-      const shoulders = 5.3 * Math.exp(-Math.pow((y - 5.7) / 2.4, 2)); // torso bulge + margin
-      return Math.max(3.4, shoulders);                                 // slim baseline for head/brain
+      const idx = Math.round((y - FIG_Y0) / FIG_HALF_STEP);
+      return FIG_HALF_LUT[idx];
     }
     function inFigureColumn(x, y, z) {
       const half = figureHalf(y);
