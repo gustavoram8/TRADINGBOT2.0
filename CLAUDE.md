@@ -36,8 +36,13 @@
 > **4. Scripts cron nuevos (raíz del repo):**
 > - **`daily_audit_summary.py`** — digest diario por correo de los AuditEvent de las últimas 24h.
 >   ⚠️ Debe correr con el **Python del venv** (necesita Flask).
-> - **`backup_db.py`** — backup diario de `scalpel.db` vía SQLite online backup API a `backups/`
->   (gitignored), retiene 14 días. Corre con Python del sistema (solo stdlib).
+> - **`backup_db.py`** — backup diario a `backups/` (gitignored), retiene 14 días. Corre con
+>   Python del sistema (solo stdlib). Detecta `DATABASE_URL` (env o `scalpel/.env`): si es
+>   **PostgreSQL usa `pg_dump --format=custom`** (`.dump`); si no, copia SQLite (`.db`).
+>   ⚠️ **PRODUCCIÓN USA POSTGRESQL** (confirmado 2026-06-11: `DATABASE_URL="postgresql...` en el
+>   supervisor conf — la migración SQLite→PostgreSQL de la alerta de abajo YA SE HIZO en una
+>   sesión anterior, junto con gunicorn -w 4). El `scalpel.db` del VPS es un residuo viejo.
+>   Restaurar: `pg_restore --clean --if-exists -d "$DATABASE_URL" backups/scalpel_FECHA.dump`.
 > - **Crontab del VPS (root) quedó así:**
 >   ```
 >   0 * * * *  WA_PHONE=... WA_APIKEY=... SITE_URL=... /usr/bin/python3 /var/www/TRADINGBOT2.0/monitor.py >> /var/log/ta_monitor.log 2>&1
@@ -156,30 +161,13 @@
 
 ---
 
-> **🚨🚨🚨 ALERTA URGENTE #2 — RECORDATORIO DIARIO (A PARTIR DEL 2026-06-06) 🚨🚨🚨**
+> **✅ ALERTA #2 RESUELTA (2026-06-11) — ya NO mostrar este bloque diariamente:**
 >
-> Mostrar este bloque la primera vez que el usuario escriba cada día, JUNTO con la alerta #1.
->
-> ╔══════════════════════════════════════════════════════════════════╗
-> ║  🔧  DOS TAREAS TÉCNICAS CRÍTICAS PENDIENTES — MAÑANA           ║
-> ║                                                                  ║
-> ║  1. 🗄️  MIGRACIÓN PostgreSQL (escalar a 500+ usuarios)          ║
-> ║     → SQLite actual NO soporta escrituras simultáneas           ║
-> ║     → Con 50+ usuarios simultáneos empieza a fallar             ║
-> ║     → Migrar a PostgreSQL + Gunicorn en el VPS (costo: $0)      ║
-> ║     → Tiempo estimado: ~1-2 horas                               ║
-> ║     → Sin esto: el website se puede caer con crecimiento        ║
-> ║                                                                  ║
-> ║  2. 🩺  SISTEMA DE MONITOREO / HEALTH CHECK con IA              ║
-> ║     → UptimeRobot: alerta si el sitio cae (gratis, 5 min)      ║
-> ║     → Sentry: captura bugs automáticamente (gratis, 3 líneas)   ║
-> ║     → Health endpoint propio: métricas de usuarios, DB, carga   ║
-> ║     → Te avisa ANTES de que el sitio se rompa                   ║
-> ║     → Tiempo estimado: ~30 min                                  ║
-> ║                                                                  ║
-> ║  RECOMENDACIÓN: hacer #2 primero (30 min), luego #1 (delicado)  ║
-> ║  Así si algo sale mal en la migración, ya tienes alertas activas ║
-> ╚══════════════════════════════════════════════════════════════════╝
+> 1. 🗄️ **MIGRACIÓN PostgreSQL — HECHA** (sesión anterior): producción corre PostgreSQL
+>    (`DATABASE_URL="postgresql...` en supervisor conf) + gunicorn -w 4. Confirmado 2026-06-11.
+> 2. 🩺 **MONITOREO — HECHO** (2026-06-11): monitor.py cada hora (WhatsApp) + Audit Log con
+>    alertas inmediatas por correo + resumen diario 8AM + backup pg_dump diario 7:30AM +
+>    Sentry instalado (inactivo hasta configurar SENTRY_DSN). UptimeRobot descartado por el usuario.
 
 ---
 
