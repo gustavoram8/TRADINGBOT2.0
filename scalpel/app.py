@@ -222,6 +222,7 @@ class PreflightCheck(db.Model):
     instrument = db.Column(db.String(20), nullable=True)
     direction = db.Column(db.String(10), nullable=True)         # 'long' | 'short'
     entry_price = db.Column(db.Float, nullable=True)
+    exit_price = db.Column(db.Float, nullable=True)
     rr = db.Column(db.Float, nullable=True)
     position_size = db.Column(db.Float, nullable=True)
     pnl = db.Column(db.Float, nullable=True)
@@ -3828,6 +3829,7 @@ def serialize_check(c):
         'instrument': c.instrument,
         'direction': c.direction,
         'entry_price': c.entry_price,
+        'exit_price': c.exit_price,
         'rr': c.rr,
         'position_size': c.position_size,
         'pnl': c.pnl,
@@ -3874,6 +3876,7 @@ def _parse_trade_meta(data):
         return v
 
     meta['entry_price'] = _num('entry_price', 0)
+    meta['exit_price'] = _num('exit_price', 0)
     meta['rr'] = _num('rr', -100, 100)
     meta['position_size'] = _num('position_size', 0)
     meta['pnl'] = _num('pnl', -1e9, 1e9)
@@ -4012,7 +4015,7 @@ def preflight_list_checks():
     rows = (PreflightCheck.query
             .filter_by(user_id=current_user.id)
             .order_by(PreflightCheck.created_at.desc())
-            .limit(100)
+            .limit(500)
             .all())
     return jsonify({
         'checks': [serialize_check(c) for c in rows],
@@ -4079,7 +4082,7 @@ def preflight_update_check(cid):
         check.outcome = outcome
     if 'note' in data:
         check.note = str(data.get('note') or '').strip()[:200] or None
-    meta_keys = ('trade_date', 'instrument', 'direction', 'entry_price', 'rr', 'position_size', 'pnl')
+    meta_keys = ('trade_date', 'instrument', 'direction', 'entry_price', 'exit_price', 'rr', 'position_size', 'pnl')
     if any(k in data for k in meta_keys):
         meta = _parse_trade_meta(data)
         for k in meta_keys:
@@ -4176,6 +4179,8 @@ def _migrate_preflight_check_columns():
         stmts.append("ALTER TABLE preflight_check ADD COLUMN direction VARCHAR(10)")
     if 'entry_price' not in cols:
         stmts.append("ALTER TABLE preflight_check ADD COLUMN entry_price FLOAT")
+    if 'exit_price' not in cols:
+        stmts.append("ALTER TABLE preflight_check ADD COLUMN exit_price FLOAT")
     if 'rr' not in cols:
         stmts.append("ALTER TABLE preflight_check ADD COLUMN rr FLOAT")
     if 'position_size' not in cols:

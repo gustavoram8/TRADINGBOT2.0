@@ -756,19 +756,75 @@
     }
     .pf-input:focus { outline: none; border-color: var(--accent); }
 
-    /* Numbered steps inside the builder / trade-details block */
-    .pf-step { margin-top: 22px; padding-top: 18px; border-top: 1px dashed var(--border2); }
-    .pf-step:first-of-type { margin-top: 16px; padding-top: 0; border-top: none; }
-    .pf-step-head { display: flex; align-items: center; gap: 10px; }
-    .pf-step-num {
-      flex: none; width: 24px; height: 24px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      background: var(--accent); color: #fff; font-size: 12px; font-weight: 800;
+    /* Sub-tabs (Board / By project / Compare) */
+    .pf-tabs { display: flex; gap: 8px; margin: 0 0 18px; }
+    .pf-tab {
+      padding: 9px 18px; border-radius: 10px; cursor: pointer;
+      background: var(--card); border: 1px solid var(--border2);
+      color: var(--muted); font-size: 13px; font-weight: 700; font-family: inherit;
+      transition: all .15s ease;
     }
-    .pf-step-title { font-size: 14px; font-weight: 800; color: var(--text); }
-    .pf-step-hint { font-size: 12px; color: var(--muted); margin: 6px 0 0 34px; }
+    .pf-tab:hover { border-color: var(--accent); color: var(--text); }
+    .pf-tab.active { border-color: var(--accent); color: var(--accent); background: var(--surface); }
 
-    .pf-template-btns { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 0 34px; }
+    /* Steps inside the builder / trade-details block */
+    .pf-step { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border2); }
+    .pf-step:first-of-type { margin-top: 16px; padding-top: 0; border-top: none; }
+    .pf-step-head { display: flex; align-items: baseline; gap: 10px; }
+    .pf-step-num {
+      flex: none; font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; font-weight: 700; color: var(--accent); letter-spacing: .06em;
+    }
+    .pf-step-num::after { content: ''; }
+    .pf-step-title { font-size: 13px; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: .05em; }
+    .pf-step-hint { font-size: 12px; color: var(--muted); margin: 5px 0 0; }
+
+    .pf-template-btns { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 0; }
+
+    /* Project chips (selectors in By-project / Compare panes) */
+    .pf-proj-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+    .pf-proj-chip {
+      padding: 8px 16px; border-radius: 999px; cursor: pointer;
+      background: var(--card); border: 1.5px solid var(--border2);
+      color: var(--muted); font-size: 12.5px; font-weight: 700; font-family: inherit;
+      transition: all .15s ease;
+    }
+    .pf-proj-chip:hover { border-color: var(--tile-accent, var(--accent)); color: var(--text); }
+    .pf-proj-chip.active {
+      border-color: var(--tile-accent, var(--accent));
+      color: var(--tile-accent, var(--accent));
+      background: var(--surface);
+    }
+
+    /* Generic data table (trades + comparison) */
+    .pf-table-wrap { margin-top: 16px; overflow-x: auto; }
+    .pf-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .pf-table th {
+      text-align: left; padding: 8px 10px; white-space: nowrap;
+      color: var(--muted); font-weight: 700; font-size: 10.5px;
+      text-transform: uppercase; letter-spacing: .05em;
+      border-bottom: 1px solid var(--border);
+    }
+    .pf-table td { padding: 9px 10px; border-bottom: 1px solid var(--border2); color: var(--text); white-space: nowrap; }
+    .pf-table tr:last-child td { border-bottom: none; }
+    .pf-table td.num { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; }
+    .pf-table td.pos { color: #22c55e; }
+    .pf-table td.neg { color: #ef4444; }
+    .pf-table td.muted { color: var(--muted); }
+
+    /* Stats table (label + value rows, or label + N project columns) */
+    .pf-stats-table { margin-top: 14px; overflow-x: auto; }
+    .pf-stats-table table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    .pf-stats-table th {
+      text-align: right; padding: 9px 12px; color: var(--text); font-weight: 800; font-size: 12px;
+      border-bottom: 1px solid var(--border); white-space: nowrap;
+    }
+    .pf-stats-table th:first-child { text-align: left; color: var(--muted); font-weight: 700; font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; }
+    .pf-stats-table td { padding: 9px 12px; border-bottom: 1px solid var(--border2); }
+    .pf-stats-table td:first-child { color: var(--muted); font-weight: 600; }
+    .pf-stats-table td + td { text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--text); white-space: nowrap; }
+    .pf-stats-table tr:last-child td { border-bottom: none; }
+    .pf-stats-table td.best { color: #22c55e; font-weight: 700; }
 
     .pf-builder-rows { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
     .pf-builder-row { display: flex; align-items: center; gap: 8px; }
@@ -4094,6 +4150,15 @@
       <p data-i18n="pf.sub">Your discipline trainer. Define the confluences your trigger requires, run a pre-flight check before every trade, and let the data show which confluences actually pay.</p>
     </div>
 
+    <!-- Sub-tabs: Board / Per project / Compare -->
+    <div class="pf-tabs">
+      <button type="button" class="pf-tab active" data-pftab="board"    data-i18n="pf.tabBoard">Check</button>
+      <button type="button" class="pf-tab"        data-pftab="projects" data-i18n="pf.tabProjects">By project</button>
+      <button type="button" class="pf-tab"        data-pftab="compare"  data-i18n="pf.tabCompare">Compare</button>
+    </div>
+
+    <div id="pf-pane-board">
+
     <!-- Onboarding strip — shown until the trader has at least one checklist -->
     <div class="card pf-onboard" id="pf-onboard" style="--card-accent:#5b8ef0; display:none;">
       <div class="card-label" data-i18n="pf.onboardTitle">How Pre-Flight works</div>
@@ -4146,7 +4211,7 @@
 
       <div class="pf-step">
         <div class="pf-step-head">
-          <span class="pf-step-num">1</span>
+          <span class="pf-step-num">01</span>
           <span class="pf-step-title" data-i18n="pf.stepName">Name this checklist</span>
         </div>
         <p class="pf-step-hint" data-i18n="pf.stepNameHint">This is just your own label — it never changes the confluences below.</p>
@@ -4155,7 +4220,7 @@
 
       <div class="pf-step">
         <div class="pf-step-head">
-          <span class="pf-step-num">2</span>
+          <span class="pf-step-num">02</span>
           <span class="pf-step-title" data-i18n="pf.stepPreset">Start from a preset (optional)</span>
         </div>
         <p class="pf-step-hint" data-i18n="pf.stepPresetHint">Picking a preset only fills the confluence list below with example rows — edit, add or delete any of them afterwards.</p>
@@ -4164,7 +4229,7 @@
 
       <div class="pf-step">
         <div class="pf-step-head">
-          <span class="pf-step-num">3</span>
+          <span class="pf-step-num">03</span>
           <span class="pf-step-title" data-i18n="pf.stepConf">Your confluences</span>
         </div>
         <p class="pf-step-hint" data-i18n="pf.stepConfHint">One confluence per row — the conditions you check before pulling the trigger.</p>
@@ -4174,7 +4239,7 @@
 
       <div class="pf-step">
         <div class="pf-step-head">
-          <span class="pf-step-num">4</span>
+          <span class="pf-step-num">04</span>
           <span class="pf-step-title" data-i18n="pf.stepThresh">Verdict thresholds</span>
         </div>
         <p class="pf-step-hint" data-i18n="pf.stepThreshHint">How many ticked confluences turn the lamp GO or CAUTION?</p>
@@ -4236,6 +4301,10 @@
             <input type="number" id="pf-trade-entry" class="pf-input" step="any" min="0" data-i18n-ph="pf.entryPh" placeholder="Entry price" />
           </label>
           <label class="pf-field">
+            <span data-i18n="pf.fieldExit">Exit price</span>
+            <input type="number" id="pf-trade-exit" class="pf-input" step="any" min="0" data-i18n-ph="pf.exitPh" placeholder="Exit price" />
+          </label>
+          <label class="pf-field">
             <span data-i18n="pf.fieldRR">R:R</span>
             <input type="number" id="pf-trade-rr" class="pf-input" step="0.1" data-i18n-ph="pf.rrPh" placeholder="e.g. 2.5" />
           </label>
@@ -4267,6 +4336,31 @@
     <div class="card" id="pf-history-card" style="--card-accent:#5b8ef0;">
       <div class="card-label" data-i18n="pf.historyTitle">Recent Checks</div>
       <div class="pf-history" id="pf-history"></div>
+    </div>
+    </div><!-- /pf-pane-board -->
+
+    <!-- ── BY PROJECT: trades table + ~20 stats, segmented per checklist ── -->
+    <div id="pf-pane-projects" style="display:none;">
+      <div class="card" style="--card-accent:#5b8ef0;">
+        <div class="card-label" data-i18n="pf.projTitle">Project breakdown</div>
+        <p style="font-size:12px; color:var(--muted); margin:6px 0 0;" data-i18n="pf.projHint">Pick a checklist to see only its trades and its full statistics.</p>
+        <div class="pf-proj-chips" id="pf-proj-chips"></div>
+        <div class="pf-table-wrap" id="pf-proj-table-wrap"></div>
+      </div>
+      <div class="card" style="--card-accent:#22c55e;">
+        <div class="card-label" data-i18n="pf.projStatsTitle">Project statistics</div>
+        <div class="pf-stats-table" id="pf-proj-stats"></div>
+      </div>
+    </div>
+
+    <!-- ── COMPARE: side-by-side stats between checklists ── -->
+    <div id="pf-pane-compare" style="display:none;">
+      <div class="card" style="--card-accent:#f59e0b;">
+        <div class="card-label" data-i18n="pf.cmpTitle">Compare projects</div>
+        <p style="font-size:12px; color:var(--muted); margin:6px 0 0;" data-i18n="pf.cmpHint">Select two or more checklists to compare their statistics side by side.</p>
+        <div class="pf-proj-chips" id="pf-cmp-chips"></div>
+        <div class="pf-table-wrap" id="pf-cmp-table"></div>
+      </div>
     </div>
   </div>
   {% endif %}
@@ -4806,7 +4900,42 @@
       'pf.entryPh': 'Entry price',
       'pf.rrPh': 'e.g. 2.5',
       'pf.sizePh': 'Lots / contracts',
-      'pf.pnlPh': '+/- amount',
+      'pf.pnlPh': 'Auto, or type +/- amount',
+      'pf.fieldExit': 'Exit price',
+      'pf.exitPh': 'Exit price',
+      'pf.tabBoard': 'Check',
+      'pf.tabProjects': 'By project',
+      'pf.tabCompare': 'Compare',
+      'pf.projTitle': 'Project breakdown',
+      'pf.projHint': 'Pick a checklist to see only its trades and its full statistics.',
+      'pf.projStatsTitle': 'Project statistics',
+      'pf.cmpTitle': 'Compare projects',
+      'pf.cmpHint': 'Select two or more checklists to compare their statistics side by side.',
+      'pf.cmpNeedTwo': 'Select at least two projects to compare.',
+      'pf.noTrades': 'No trades logged for this project yet.',
+      'pf.thDate': 'Date', 'pf.thInstr': 'Instrument', 'pf.thDir': 'Dir', 'pf.thEntry': 'Entry',
+      'pf.thExit': 'Exit', 'pf.thSize': 'Size', 'pf.thRR': 'R:R', 'pf.thScore': 'Conf.',
+      'pf.thVerdict': 'Verdict', 'pf.thOutcome': 'Result', 'pf.thPnl': 'P&L',
+      'pf.s1': 'Trades logged',
+      'pf.s2': 'With result (win/loss)',
+      'pf.s3': 'Win rate',
+      'pf.s4': 'Win rate GO · CAUTION · NO-GO',
+      'pf.s5': 'Win rate by confluences ticked',
+      'pf.s6': 'Profit factor',
+      'pf.s7': 'Total P&L',
+      'pf.s8': 'Expectancy (avg P&L per trade)',
+      'pf.s9': 'Best · worst trade',
+      'pf.s10': 'Avg R:R in wins · losses',
+      'pf.s11': 'Win rate Long · Short',
+      'pf.s12': 'Best instrument',
+      'pf.s13': 'Best · worst confluence',
+      'pf.s14': 'Streak now · max wins · max losses',
+      'pf.s15': 'Best weekday',
+      'pf.s16': 'Win rate by R:R bucket',
+      'pf.s17': 'False GOs (GO but lost)',
+      'pf.s18': 'Winning overrides (below GO, won)',
+      'pf.s19': 'Avg position size',
+      'pf.s20': 'Avg confluences in wins · losses',
       'quiz.title': 'Quiz',
       'quiz.desc': 'Test your trading knowledge with timed quizzes tailored to your methodology and level.',
       'quiz.heading': 'Trading Quiz',
@@ -5161,7 +5290,42 @@
       'pf.entryPh': 'Precio de entrada',
       'pf.rrPh': 'ej. 2.5',
       'pf.sizePh': 'Lotes / contratos',
-      'pf.pnlPh': 'Monto +/-',
+      'pf.pnlPh': 'Automático, o escribe monto +/-',
+      'pf.fieldExit': 'Precio de salida',
+      'pf.exitPh': 'Precio de salida',
+      'pf.tabBoard': 'Chequeo',
+      'pf.tabProjects': 'Por proyecto',
+      'pf.tabCompare': 'Comparar',
+      'pf.projTitle': 'Desglose por proyecto',
+      'pf.projHint': 'Elige una checklist para ver solo sus trades y sus estadísticas completas.',
+      'pf.projStatsTitle': 'Estadísticas del proyecto',
+      'pf.cmpTitle': 'Comparar proyectos',
+      'pf.cmpHint': 'Selecciona dos o más checklists para comparar sus estadísticas lado a lado.',
+      'pf.cmpNeedTwo': 'Selecciona al menos dos proyectos para comparar.',
+      'pf.noTrades': 'Aún no hay trades registrados en este proyecto.',
+      'pf.thDate': 'Fecha', 'pf.thInstr': 'Instrumento', 'pf.thDir': 'Dir', 'pf.thEntry': 'Entrada',
+      'pf.thExit': 'Salida', 'pf.thSize': 'Tamaño', 'pf.thRR': 'R:R', 'pf.thScore': 'Conf.',
+      'pf.thVerdict': 'Veredicto', 'pf.thOutcome': 'Resultado', 'pf.thPnl': 'P&L',
+      'pf.s1': 'Trades registrados',
+      'pf.s2': 'Con resultado (win/loss)',
+      'pf.s3': 'Win rate',
+      'pf.s4': 'Win rate GO · CAUTION · NO-GO',
+      'pf.s5': 'Win rate por confluencias marcadas',
+      'pf.s6': 'Profit factor',
+      'pf.s7': 'P&L total',
+      'pf.s8': 'Expectativa (P&L promedio por trade)',
+      'pf.s9': 'Mejor · peor trade',
+      'pf.s10': 'R:R promedio en wins · losses',
+      'pf.s11': 'Win rate Long · Short',
+      'pf.s12': 'Mejor instrumento',
+      'pf.s13': 'Mejor · peor confluencia',
+      'pf.s14': 'Racha actual · máx wins · máx losses',
+      'pf.s15': 'Mejor día de la semana',
+      'pf.s16': 'Win rate por rango de R:R',
+      'pf.s17': 'GOs falsos (GO pero perdió)',
+      'pf.s18': 'Overrides ganadores (bajo GO, ganó)',
+      'pf.s19': 'Tamaño de posición promedio',
+      'pf.s20': 'Confluencias promedio en wins · losses',
       'quiz.title': 'Quiz',
       'quiz.desc': 'Pon a prueba tu conocimiento de trading con quizzes cronometrados según tu metodología y nivel.',
       'quiz.heading': 'Quiz de Trading',
@@ -5516,7 +5680,42 @@
       'pf.entryPh': "Prix d'entrée",
       'pf.rrPh': 'ex. 2.5',
       'pf.sizePh': 'Lots / contrats',
-      'pf.pnlPh': 'Montant +/-',
+      'pf.pnlPh': 'Auto, ou saisissez le montant +/-',
+      'pf.fieldExit': 'Prix de sortie',
+      'pf.exitPh': 'Prix de sortie',
+      'pf.tabBoard': 'Check',
+      'pf.tabProjects': 'Par projet',
+      'pf.tabCompare': 'Comparer',
+      'pf.projTitle': 'Détail par projet',
+      'pf.projHint': 'Choisissez une checklist pour voir uniquement ses trades et ses statistiques complètes.',
+      'pf.projStatsTitle': 'Statistiques du projet',
+      'pf.cmpTitle': 'Comparer les projets',
+      'pf.cmpHint': 'Sélectionnez deux checklists ou plus pour comparer leurs statistiques côte à côte.',
+      'pf.cmpNeedTwo': 'Sélectionnez au moins deux projets à comparer.',
+      'pf.noTrades': 'Aucun trade enregistré pour ce projet.',
+      'pf.thDate': 'Date', 'pf.thInstr': 'Instrument', 'pf.thDir': 'Dir', 'pf.thEntry': 'Entrée',
+      'pf.thExit': 'Sortie', 'pf.thSize': 'Taille', 'pf.thRR': 'R:R', 'pf.thScore': 'Conf.',
+      'pf.thVerdict': 'Verdict', 'pf.thOutcome': 'Résultat', 'pf.thPnl': 'P&L',
+      'pf.s1': 'Trades enregistrés',
+      'pf.s2': 'Avec résultat (gain/perte)',
+      'pf.s3': 'Win rate',
+      'pf.s4': 'Win rate GO · CAUTION · NO-GO',
+      'pf.s5': 'Win rate par confluences cochées',
+      'pf.s6': 'Profit factor',
+      'pf.s7': 'P&L total',
+      'pf.s8': 'Espérance (P&L moyen par trade)',
+      'pf.s9': 'Meilleur · pire trade',
+      'pf.s10': 'R:R moyen gains · pertes',
+      'pf.s11': 'Win rate Long · Short',
+      'pf.s12': 'Meilleur instrument',
+      'pf.s13': 'Meilleure · pire confluence',
+      'pf.s14': 'Série en cours · max gains · max pertes',
+      'pf.s15': 'Meilleur jour de la semaine',
+      'pf.s16': 'Win rate par tranche de R:R',
+      'pf.s17': 'Faux GO (GO mais perdu)',
+      'pf.s18': 'Overrides gagnants (sous GO, gagné)',
+      'pf.s19': 'Taille de position moyenne',
+      'pf.s20': 'Confluences moyennes gains · pertes',
       'quiz.title': 'Quiz',
       'quiz.desc': "Testez vos connaissances en trading avec des quiz chronométrés adaptés à votre méthodologie et votre niveau.",
       'quiz.heading': 'Quiz de Trading',
@@ -5871,7 +6070,42 @@
       'pf.entryPh': 'Preço de entrada',
       'pf.rrPh': 'ex. 2.5',
       'pf.sizePh': 'Lotes / contratos',
-      'pf.pnlPh': 'Valor +/-',
+      'pf.pnlPh': 'Automático, ou digite o valor +/-',
+      'pf.fieldExit': 'Preço de saída',
+      'pf.exitPh': 'Preço de saída',
+      'pf.tabBoard': 'Check',
+      'pf.tabProjects': 'Por projeto',
+      'pf.tabCompare': 'Comparar',
+      'pf.projTitle': 'Detalhe por projeto',
+      'pf.projHint': 'Escolha uma checklist para ver apenas seus trades e suas estatísticas completas.',
+      'pf.projStatsTitle': 'Estatísticas do projeto',
+      'pf.cmpTitle': 'Comparar projetos',
+      'pf.cmpHint': 'Selecione duas ou mais checklists para comparar suas estatísticas lado a lado.',
+      'pf.cmpNeedTwo': 'Selecione pelo menos dois projetos para comparar.',
+      'pf.noTrades': 'Nenhum trade registrado neste projeto ainda.',
+      'pf.thDate': 'Data', 'pf.thInstr': 'Instrumento', 'pf.thDir': 'Dir', 'pf.thEntry': 'Entrada',
+      'pf.thExit': 'Saída', 'pf.thSize': 'Tamanho', 'pf.thRR': 'R:R', 'pf.thScore': 'Conf.',
+      'pf.thVerdict': 'Veredito', 'pf.thOutcome': 'Resultado', 'pf.thPnl': 'P&L',
+      'pf.s1': 'Trades registrados',
+      'pf.s2': 'Com resultado (win/loss)',
+      'pf.s3': 'Win rate',
+      'pf.s4': 'Win rate GO · CAUTION · NO-GO',
+      'pf.s5': 'Win rate por confluências marcadas',
+      'pf.s6': 'Profit factor',
+      'pf.s7': 'P&L total',
+      'pf.s8': 'Expectativa (P&L médio por trade)',
+      'pf.s9': 'Melhor · pior trade',
+      'pf.s10': 'R:R médio em wins · losses',
+      'pf.s11': 'Win rate Long · Short',
+      'pf.s12': 'Melhor instrumento',
+      'pf.s13': 'Melhor · pior confluência',
+      'pf.s14': 'Sequência atual · máx wins · máx losses',
+      'pf.s15': 'Melhor dia da semana',
+      'pf.s16': 'Win rate por faixa de R:R',
+      'pf.s17': 'GOs falsos (GO mas perdeu)',
+      'pf.s18': 'Overrides vencedores (abaixo de GO, ganhou)',
+      'pf.s19': 'Tamanho médio de posição',
+      'pf.s20': 'Confluências médias em wins · losses',
       'quiz.title': 'Quiz',
       'quiz.desc': 'Teste seu conhecimento de trading com quizzes cronometrados de acordo com sua metodologia e nível.',
       'quiz.heading': 'Quiz de Trading',
@@ -6790,15 +7024,11 @@
       checks.forEach(c => {
         const row = document.createElement('div');
         row.className = 'pf-hist-row';
-        const when = c.trade_date
-          ? c.trade_date
-          : c.created_at
-            ? new Date(c.created_at).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-            : '';
+        const when = fmtTradeDate(c);
         const meta = [];
         if (c.instrument) meta.push('<span class="pf-hist-tag">' + escapeHtml(c.instrument) + '</span>');
         if (c.direction) meta.push('<span class="pf-hist-tag ' + c.direction + '">' + escapeHtml(c.direction === 'long' ? T('pill.long') : T('pill.short')) + '</span>');
-        if (c.entry_price !== null && c.entry_price !== undefined) meta.push('<span class="pf-hist-tag">@ ' + c.entry_price + '</span>');
+        if (c.entry_price !== null && c.entry_price !== undefined) meta.push('<span class="pf-hist-tag">@ ' + c.entry_price + (c.exit_price !== null && c.exit_price !== undefined ? ' → ' + c.exit_price : '') + '</span>');
         if (c.rr !== null && c.rr !== undefined) meta.push('<span class="pf-hist-tag">R:R ' + c.rr + '</span>');
         if (c.position_size !== null && c.position_size !== undefined) meta.push('<span class="pf-hist-tag">' + c.position_size + '</span>');
         if (c.pnl !== null && c.pnl !== undefined) meta.push('<span class="pf-hist-tag ' + (c.pnl >= 0 ? 'pnl-pos' : 'pnl-neg') + '">' + (c.pnl > 0 ? '+' : '') + c.pnl + '</span>');
@@ -6938,7 +7168,43 @@
       renderBoard();
     }
 
-    // ── Trade details (date/instrument/direction/entry/R:R/size/P&L) ──
+    // ── Trade details (date/instrument/direction/entry/exit/R:R/size/P&L) ──
+    const LOCALES = { en: 'en-US', es: 'es-ES', fr: 'fr-FR', pt: 'pt-BR' };
+    function fmtTradeDate(c) {
+      // "Wed, Jul 12" style — weekday included, in the active UI language.
+      const d = c.trade_date ? new Date(c.trade_date + 'T12:00:00')
+              : c.created_at ? new Date(c.created_at) : null;
+      if (!d || isNaN(d)) return '';
+      return d.toLocaleDateString(LOCALES[currentLang] || 'en-US', { weekday: 'short', day: 'numeric', month: 'short' });
+    }
+    // P&L per 1.00 of price movement, per contract/lot. Futures use CME point
+    // values; spot FX/metals assume one standard lot (P&L lands in the quote
+    // currency). The P&L field stays editable for manual override.
+    const POINT_VALUE = {
+      NQ: 20, MNQ: 2, ES: 50, MES: 5, YM: 5, MYM: 0.5, RTY: 50, M2K: 5,
+      CL: 1000, MCL: 100, NG: 10000,
+      XAUUSD: 100, XAGUSD: 5000,
+      EURUSD: 100000, GBPUSD: 100000, USDJPY: 100000, USDCHF: 100000,
+      AUDUSD: 100000, USDCAD: 100000, NZDUSD: 100000,
+      GBPJPY: 100000, EURJPY: 100000, EURGBP: 100000,
+      AUDJPY: 100000, GBPAUD: 100000, EURAUD: 100000,
+    };
+    let pnlTouched = false;          // true once the user types P&L by hand
+    function autoPnl() {
+      const instr = document.getElementById('pf-trade-instrument').value.trim().toUpperCase();
+      const pv = POINT_VALUE[instr];
+      const entry = parseFloat(document.getElementById('pf-trade-entry').value);
+      const exit = parseFloat(document.getElementById('pf-trade-exit').value);
+      const size = parseFloat(document.getElementById('pf-trade-size').value);
+      if (!pv || !direction || !isFinite(entry) || !isFinite(exit) || !isFinite(size)) return null;
+      const sign = direction === 'short' ? -1 : 1;
+      return Math.round((exit - entry) * sign * size * pv * 100) / 100;
+    }
+    function maybeAutoPnl() {
+      if (pnlTouched) return;
+      const v = autoPnl();
+      if (v !== null) document.getElementById('pf-trade-pnl').value = v;
+    }
     function todayISO() {
       const d = new Date();
       return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
@@ -6948,15 +7214,18 @@
       document.querySelectorAll('#pf-trade-direction .pf-dir-btn').forEach(b => {
         b.classList.toggle('active', b.dataset.val === direction);
       });
+      maybeAutoPnl();
     }
     function resetTradeFields() {
       document.getElementById('pf-trade-date').value = todayISO();
       document.getElementById('pf-trade-instrument').value = '';
       document.getElementById('pf-trade-entry').value = '';
+      document.getElementById('pf-trade-exit').value = '';
       document.getElementById('pf-trade-rr').value = '';
       document.getElementById('pf-trade-size').value = '';
       document.getElementById('pf-trade-pnl').value = '';
       document.getElementById('pf-note').value = '';
+      pnlTouched = false;
       setDirection(null);
     }
     function tradeFieldsPayload() {
@@ -6969,6 +7238,7 @@
         instrument: document.getElementById('pf-trade-instrument').value.trim() || null,
         direction: direction,
         entry_price: num('pf-trade-entry'),
+        exit_price: num('pf-trade-exit'),
         rr: num('pf-trade-rr'),
         position_size: num('pf-trade-size'),
         pnl: num('pf-trade-pnl'),
@@ -7057,7 +7327,229 @@
         stats = data.stats || null;
         renderStats();
         renderHistory();
+        if (pfPane === 'projects') renderProjects();
+        if (pfPane === 'compare') renderCompare();
       } catch (e) { /* offline — leave panel as-is */ }
+    }
+
+    // ── Per-project segmentation & the 20-stat engine ──
+    let projSel = null;              // selected group key on the By-project pane
+    let cmpSel = new Set();          // selected group keys on the Compare pane
+    let pfPane = 'board';
+
+    // Group checks by checklist: live checklists keep their id; checks whose
+    // checklist was deleted are grouped by their snapshotted name.
+    function checkGroups() {
+      const groups = [];
+      const byKey = {};
+      checklists.forEach(cl => {
+        const g = { key: 'id:' + cl.id, name: cl.name, rows: [] };
+        groups.push(g); byKey[g.key] = g;
+      });
+      checks.forEach(c => {
+        const key = c.checklist_id !== null && byKey['id:' + c.checklist_id]
+          ? 'id:' + c.checklist_id : 'nm:' + c.checklist_name;
+        if (!byKey[key]) {
+          const g = { key, name: c.checklist_name, rows: [] };
+          groups.push(g); byKey[key] = g;
+        }
+        byKey[key].rows.push(c);
+      });
+      return groups;
+    }
+
+    function fmtMoney(v) { return (v > 0 ? '+' : '') + (Math.round(v * 100) / 100); }
+    function fmtPct(p) { return p === null ? '—' : (Math.round(p * 10) / 10) + '%'; }
+    function rate(subset) {
+      return subset.length ? 100 * subset.filter(c => c.outcome === 'win').length / subset.length : null;
+    }
+    function weekdayShort(idx) {
+      // idx 0=Sunday — localized via a fixed known week (2024-01-07 was a Sunday).
+      return new Date(2024, 0, 7 + idx).toLocaleDateString(LOCALES[currentLang] || 'en-US', { weekday: 'short' });
+    }
+
+    // Returns the ordered list of 20 stats: [{label, value}].
+    function computeStats(rows) {
+      const dec = rows.filter(c => c.outcome === 'win' || c.outcome === 'loss');
+      const wins = dec.filter(c => c.outcome === 'win');
+      const losses = dec.filter(c => c.outcome === 'loss');
+      const pnls = rows.filter(c => typeof c.pnl === 'number');
+      const grossW = pnls.filter(c => c.pnl > 0).reduce((a, c) => a + c.pnl, 0);
+      const grossL = -pnls.filter(c => c.pnl < 0).reduce((a, c) => a + c.pnl, 0);
+      const avg = (arr, f) => arr.length ? arr.reduce((a, c) => a + f(c), 0) / arr.length : null;
+      const r1 = v => v === null ? '—' : Math.round(v * 100) / 100;
+
+      // 4 — by verdict
+      const byVerdict = ['go', 'caution', 'no-go']
+        .map(v => fmtPct(rate(dec.filter(c => c.verdict === v)))).join(' · ');
+      // 5 — by # of confluences ticked
+      const scoreMap = {};
+      dec.forEach(c => { (scoreMap[c.score] = scoreMap[c.score] || []).push(c); });
+      const byScore = Object.keys(scoreMap).sort((a, b) => a - b)
+        .map(s => s + '✓ ' + fmtPct(rate(scoreMap[s])) + ' (' + scoreMap[s].length + ')').join(' · ') || '—';
+      // 12 — best instrument
+      const instMap = {};
+      dec.filter(c => c.instrument).forEach(c => { (instMap[c.instrument] = instMap[c.instrument] || []).push(c); });
+      const instRank = Object.keys(instMap).filter(k => instMap[k].length >= 2)
+        .map(k => ({ k, r: rate(instMap[k]), n: instMap[k].length }))
+        .sort((a, b) => b.r - a.r || b.n - a.n);
+      const bestInst = instRank.length ? instRank[0].k + ' ' + fmtPct(instRank[0].r) + ' (' + instRank[0].n + ')' : '—';
+      // 13 — best/worst confluence
+      const confMap = {};
+      dec.forEach(c => (c.checked || []).forEach(l => { (confMap[l] = confMap[l] || []).push(c); }));
+      const confRank = Object.keys(confMap).filter(k => confMap[k].length >= 2)
+        .map(k => ({ k, r: rate(confMap[k]), n: confMap[k].length }))
+        .sort((a, b) => b.r - a.r || b.n - a.n);
+      const bestConf = confRank.length
+        ? confRank[0].k + ' ' + fmtPct(confRank[0].r) + ' · ' + confRank[confRank.length - 1].k + ' ' + fmtPct(confRank[confRank.length - 1].r)
+        : '—';
+      // 14 — streaks (chronological: rows arrive newest-first)
+      const chrono = dec.slice().reverse();
+      let cur = 0, curKind = null, maxW = 0, maxL = 0;
+      chrono.forEach(c => {
+        if (c.outcome === curKind) cur++;
+        else { curKind = c.outcome; cur = 1; }
+        if (curKind === 'win') maxW = Math.max(maxW, cur); else maxL = Math.max(maxL, cur);
+      });
+      const streaks = dec.length
+        ? cur + (curKind === 'win' ? 'W' : 'L') + ' · ' + maxW + 'W · ' + maxL + 'L' : '—';
+      // 15 — best weekday
+      const dayMap = {};
+      dec.forEach(c => {
+        const d = c.trade_date ? new Date(c.trade_date + 'T12:00:00') : c.created_at ? new Date(c.created_at) : null;
+        if (d && !isNaN(d)) (dayMap[d.getDay()] = dayMap[d.getDay()] || []).push(c);
+      });
+      const dayRank = Object.keys(dayMap).filter(k => dayMap[k].length >= 2)
+        .map(k => ({ k, r: rate(dayMap[k]), n: dayMap[k].length }))
+        .sort((a, b) => b.r - a.r || b.n - a.n);
+      const bestDay = dayRank.length ? weekdayShort(+dayRank[0].k) + ' ' + fmtPct(dayRank[0].r) + ' (' + dayRank[0].n + ')' : '—';
+      // 16 — by R:R bucket
+      const rrB = { '<1': [], '1–2': [], '2–3': [], '3+': [] };
+      dec.filter(c => typeof c.rr === 'number').forEach(c => {
+        const b = c.rr < 1 ? '<1' : c.rr < 2 ? '1–2' : c.rr < 3 ? '2–3' : '3+';
+        rrB[b].push(c);
+      });
+      const byRR = Object.keys(rrB).filter(b => rrB[b].length)
+        .map(b => b + ' ' + fmtPct(rate(rrB[b])) + ' (' + rrB[b].length + ')').join(' · ') || '—';
+      // 17/18 — discipline signals
+      const goDec = dec.filter(c => c.verdict === 'go');
+      const belowDec = dec.filter(c => c.verdict !== 'go');
+      const falseGo = goDec.length ? fmtPct(100 * goDec.filter(c => c.outcome === 'loss').length / goDec.length) : '—';
+      const overrides = belowDec.length ? fmtPct(100 * belowDec.filter(c => c.outcome === 'win').length / belowDec.length) : '—';
+
+      const pair = (a, b) => (a === '—' && b === '—') ? '—' : a + ' · ' + b;
+      return [
+        { label: T('pf.s1'), value: String(rows.length) },
+        { label: T('pf.s2'), value: rows.length ? fmtPct(100 * dec.length / rows.length) + ' (' + dec.length + ')' : '—' },
+        { label: T('pf.s3'), value: fmtPct(rate(dec)) },
+        { label: T('pf.s4'), value: byVerdict },
+        { label: T('pf.s5'), value: byScore },
+        { label: T('pf.s6'), value: grossL > 0 ? r1(grossW / grossL) : (grossW > 0 ? '∞' : '—') },
+        { label: T('pf.s7'), value: pnls.length ? fmtMoney(pnls.reduce((a, c) => a + c.pnl, 0)) : '—' },
+        { label: T('pf.s8'), value: pnls.length ? fmtMoney(avg(pnls, c => c.pnl)) : '—' },
+        { label: T('pf.s9'), value: pnls.length ? fmtMoney(Math.max(...pnls.map(c => c.pnl))) + ' · ' + fmtMoney(Math.min(...pnls.map(c => c.pnl))) : '—' },
+        { label: T('pf.s10'), value: pair(r1(avg(wins.filter(c => typeof c.rr === 'number'), c => c.rr)) + '', r1(avg(losses.filter(c => typeof c.rr === 'number'), c => c.rr)) + '').replace(/null/g, '—') },
+        { label: T('pf.s11'), value: pair(fmtPct(rate(dec.filter(c => c.direction === 'long'))), fmtPct(rate(dec.filter(c => c.direction === 'short')))) },
+        { label: T('pf.s12'), value: bestInst },
+        { label: T('pf.s13'), value: bestConf },
+        { label: T('pf.s14'), value: streaks },
+        { label: T('pf.s15'), value: bestDay },
+        { label: T('pf.s16'), value: byRR },
+        { label: T('pf.s17'), value: falseGo },
+        { label: T('pf.s18'), value: overrides },
+        { label: T('pf.s19'), value: r1(avg(rows.filter(c => typeof c.position_size === 'number'), c => c.position_size)) },
+        { label: T('pf.s20'), value: pair(r1(avg(wins, c => c.score)) + '', r1(avg(losses, c => c.score)) + '').replace(/null/g, '—') },
+      ];
+    }
+
+    function projChipsInto(el, isActive, onClick) {
+      el.innerHTML = '';
+      checkGroups().forEach(g => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'pf-proj-chip' + (isActive(g.key) ? ' active' : '');
+        b.style.setProperty('--tile-accent', 'hsl(' + hueFromName(g.name) + ', 62%, 58%)');
+        b.textContent = g.name + ' (' + g.rows.length + ')';
+        b.addEventListener('click', () => onClick(g.key));
+        el.appendChild(b);
+      });
+    }
+
+    function tradesTableHtml(rows) {
+      if (!rows.length) return '<div class="pf-empty">' + escapeHtml(T('pf.noTrades')) + '</div>';
+      const th = k => '<th>' + escapeHtml(T(k)) + '</th>';
+      const n = v => (v === null || v === undefined) ? '<td class="muted">—</td>' : '<td class="num">' + v + '</td>';
+      let html = '<table class="pf-table"><thead><tr>' +
+        th('pf.thDate') + th('pf.thInstr') + th('pf.thDir') + th('pf.thEntry') + th('pf.thExit') +
+        th('pf.thSize') + th('pf.thRR') + th('pf.thScore') + th('pf.thVerdict') + th('pf.thOutcome') + th('pf.thPnl') +
+        '</tr></thead><tbody>';
+      rows.forEach(c => {
+        const pnlCls = typeof c.pnl === 'number' ? (c.pnl >= 0 ? 'num pos' : 'num neg') : 'muted';
+        html += '<tr>' +
+          '<td>' + escapeHtml(fmtTradeDate(c)) + '</td>' +
+          '<td>' + (c.instrument ? escapeHtml(c.instrument) : '<span class="muted">—</span>') + '</td>' +
+          '<td>' + (c.direction ? escapeHtml(c.direction === 'long' ? T('pill.long') : T('pill.short')) : '—') + '</td>' +
+          n(c.entry_price) + n(c.exit_price) + n(c.position_size) + n(c.rr) +
+          '<td class="num">' + c.score + '/' + c.total + '</td>' +
+          '<td><span class="pf-chip ' + c.verdict + '">' + escapeHtml(verdictLabel(c.verdict)) + '</span></td>' +
+          '<td>' + (c.outcome ? escapeHtml(T('pf.' + (c.outcome === 'skipped' ? 'skipped' : c.outcome))) : '<span class="muted">—</span>') + '</td>' +
+          '<td class="' + pnlCls + '">' + (typeof c.pnl === 'number' ? fmtMoney(c.pnl) : '—') + '</td>' +
+          '</tr>';
+      });
+      return html + '</tbody></table>';
+    }
+
+    function renderProjects() {
+      const groups = checkGroups();
+      if (!groups.some(g => g.key === projSel)) projSel = groups.length ? groups[0].key : null;
+      projChipsInto(document.getElementById('pf-proj-chips'),
+        k => k === projSel,
+        k => { projSel = k; renderProjects(); });
+      const g = groups.find(x => x.key === projSel);
+      const rows = g ? g.rows : [];
+      document.getElementById('pf-proj-table-wrap').innerHTML = tradesTableHtml(rows);
+      const statsEl = document.getElementById('pf-proj-stats');
+      if (!g) { statsEl.innerHTML = '<div class="pf-empty">' + escapeHtml(T('pf.noTrades')) + '</div>'; return; }
+      let html = '<table>';
+      computeStats(rows).forEach(s => {
+        html += '<tr><td>' + escapeHtml(s.label) + '</td><td>' + escapeHtml(s.value) + '</td></tr>';
+      });
+      statsEl.innerHTML = html + '</table>';
+    }
+
+    function renderCompare() {
+      const groups = checkGroups();
+      cmpSel.forEach(k => { if (!groups.some(g => g.key === k)) cmpSel.delete(k); });
+      projChipsInto(document.getElementById('pf-cmp-chips'),
+        k => cmpSel.has(k),
+        k => { cmpSel.has(k) ? cmpSel.delete(k) : cmpSel.add(k); renderCompare(); });
+      const sel = groups.filter(g => cmpSel.has(g.key));
+      const out = document.getElementById('pf-cmp-table');
+      if (sel.length < 2) {
+        out.innerHTML = '<div class="pf-empty">' + escapeHtml(T('pf.cmpNeedTwo')) + '</div>';
+        return;
+      }
+      const cols = sel.map(g => computeStats(g.rows));
+      let html = '<div class="pf-stats-table"><table><thead><tr><th></th>';
+      sel.forEach(g => { html += '<th>' + escapeHtml(g.name) + '</th>'; });
+      html += '</tr></thead><tbody>';
+      cols[0].forEach((s, i) => {
+        html += '<tr><td>' + escapeHtml(s.label) + '</td>';
+        cols.forEach(c => { html += '<td>' + escapeHtml(c[i].value) + '</td>'; });
+        html += '</tr>';
+      });
+      out.innerHTML = html + '</tbody></table></div>';
+    }
+
+    function switchPfTab(name) {
+      pfPane = name;
+      document.querySelectorAll('.pf-tab').forEach(b =>
+        b.classList.toggle('active', b.dataset.pftab === name));
+      document.getElementById('pf-pane-board').style.display = name === 'board' ? 'block' : 'none';
+      document.getElementById('pf-pane-projects').style.display = name === 'projects' ? 'block' : 'none';
+      document.getElementById('pf-pane-compare').style.display = name === 'compare' ? 'block' : 'none';
+      if (name === 'projects') renderProjects();
+      if (name === 'compare') renderCompare();
     }
 
     function open() {
@@ -7070,6 +7562,8 @@
     function relang() {
       if (!view) return;
       renderDeck(); renderBoard(); renderStats(); renderHistory();
+      if (pfPane === 'projects') renderProjects();
+      if (pfPane === 'compare') renderCompare();
     }
     function init() {
       if (!view) return;
@@ -7084,6 +7578,15 @@
         b.addEventListener('click', () => setDirection(direction === b.dataset.val ? null : b.dataset.val));
       });
       instrListEl.innerHTML = INSTRUMENTS.map(i => '<option value="' + i + '"></option>').join('');
+      // Auto P&L: recompute on any pricing input; manual typing in the P&L
+      // field takes over until the form is reset.
+      ['pf-trade-instrument', 'pf-trade-entry', 'pf-trade-exit', 'pf-trade-size'].forEach(id => {
+        document.getElementById(id).addEventListener('input', maybeAutoPnl);
+      });
+      document.getElementById('pf-trade-pnl').addEventListener('input', () => { pnlTouched = true; });
+      document.querySelectorAll('.pf-tab').forEach(b => {
+        b.addEventListener('click', () => switchPfTab(b.dataset.pftab));
+      });
       resetTradeFields();
       renderStats();
     }
