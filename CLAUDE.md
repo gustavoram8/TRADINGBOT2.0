@@ -3,14 +3,25 @@
 
 ---
 
-> **✅ COMPLETADO (2026-06-06) — LIMPIEZA FINAL DE DISTRACTORES DEL QUIZ**
+> **✅ COMPLETADO (2026-06-11) — QUIZ HARDCORE 100% RECONSTRUIDO (16 metodologías / 160 escenarios)**
+>
+> Las 16 metodologías del Quiz Hardcore (Order Blocks, FVGs, Market Structure, Liquidity, Kill Zones,
+> AMD, PD Arrays, Wyckoff Accumulation/Distribution/Market Phases, SMC Structure/Confluences/Liquidity,
+> Chart Patterns, Candlestick Patterns, Harmonic Patterns) están reconstruidas con los ángulos del
+> usuario, validadas (`node --check` OK, 0 `\\'`, sin ids duplicados, balance de longitud dentro de
+> límites) y pusheadas a `claude/epic-lovelace-GsOuo` (último commit `98ecd1e`). Detalle de commits
+> por grupo en la sección "ESTADO ACTUAL DEL HARDCORE QUIZ" más abajo. **SIGUIENTE:** sin tarea de
+> quiz pendiente — a la espera de nuevas indicaciones del usuario.
+>
+> ---
+>
+> **✅ (HISTÓRICO 2026-06-06) — LIMPIEZA FINAL DE DISTRACTORES DEL QUIZ**
 >
 > Hecho: **11 distractores beginner** (commit `8947397`) y **~60 distractores intermediate**
 > (commit `7c2a2a8`) reescritos como misconceptions técnicamente plausibles en EN/ES/FR/PT,
 > validados con `node --check` (0 ocurrencias de `\\'`), pusheados a `claude/epic-lovelace-GsOuo`.
-> Los 3 niveles (beginner/intermediate/advanced) quedan limpios. **SIGUIENTE:** Quiz Hardcore
-> con TradingView Lightweight Charts (aún no empezado). El detalle histórico de abajo se conserva
-> como referencia del procedimiento.
+> Los 3 niveles (beginner/intermediate/advanced) quedan limpios. El detalle histórico de abajo se
+> conserva como referencia del procedimiento.
 >
 > ---
 >
@@ -180,36 +191,27 @@
 >
 > **📋 ESTADO ACTUAL DEL HARDCORE QUIZ — Metodologías completadas vs. pendientes**
 >
-> **✅ Completadas (6 metodologías):**
+> **✅ Completadas (16 metodologías — TODAS):**
 > - Order Blocks (`ict_ob_h1–h10`)
 > - FVGs (`ict_fvg_h1–h10`)
 > - Market Structure (`ict_ms_h1–h10`)
 > - Liquidity / Sweeps (`ict_liq_h1–h10`) — reconstruidas commit `1e04f0e`
 > - Kill Zones (`ict_kz_h1–h10`) — reconstruidas commit `feaf2ec`, distractores ya plausibles y validados (longest-wins 1/10, shortest 0/10)
 > - AMD (`ict_amd_h1–h10`) — reconstruidas 2026-06-10 commit `ed538d9` con los 10 ángulos del usuario (manipulación extendida, acum vs distrib, AMD anidado, D sin sweep BSL, M sin expansión, acum larga, anclaje del ciclo, D diario vs H1, doble purga en una vela, micro-acum en mitad del trade). Outcomes 3 loss / 7 win.
+> - PD Arrays (`ict_pd_h1–h10`) — reconstruidas 2026-06-11 commit `ffa4d25`.
+> - Wyckoff Accumulation (`wyk_acc_h1–h10`) — reconstruidas 2026-06-11 commit `b4ca6f1`. Outcomes 2 loss / 8 win.
+> - Wyckoff Distribution (`wyk_dist_h1–h10`) — reconstruidas 2026-06-11 commit `bc828b8`. Outcomes 2 loss / 8 win.
+> - Wyckoff Market Phases (`wyk_phase_h1–h10`) — reconstruidas 2026-06-11 commit `64f7b5a`. Outcomes 2 loss / 8 win.
+> - SMC Structure (`smc_str_h1–h10`) — reconstruidas 2026-06-11 commit `b4c9c4f`. Outcomes 2 loss / 8 win.
+> - SMC Confluences (`smc_conf_h1–h10`) — reconstruidas 2026-06-11 commit `89cf6b8`. Outcomes 0 loss / 10 win.
+> - SMC Liquidity (`smc_liq_h1–h10`) — reconstruidas 2026-06-11 commit `48ed38f`. Outcomes 3 loss / 7 win.
+> - Chart Patterns (`pat_flag_h1–h10`) — reconstruidas 2026-06-11 commit `cc261f2`. Outcomes 5 loss / 5 win.
+> - Candlestick Patterns (`pat_candle_h1–h10`) — reconstruidas 2026-06-11 commit `78a4924`. Outcomes 4 loss / 6 win.
+> - Harmonic Patterns (`pat_harm_h1–h10`) — reconstruidas 2026-06-11 commit `98ecd1e`. Outcomes 1 loss / 9 win.
 >
-> **🔴 PENDIENTE — Resto de metodologías (el usuario tiene las preguntas en Notas del iMac):**
-> Cada metodología sigue este modelo completo de reconstrucción:
-> - **Chart acoplado a la pregunta** — refleja exactamente el escenario descrito
-> - **Elementos del chart sin conflicto**: líneas ≥0.25 apart, ≤2 zonas, ≤2 marcadores en
->   velas distintas, OHLC coherente (H≥max(O,C), L≤min(O,C))
-> - **Respuestas con lógica de trader real**: distractores = misconceptions plausibles,
->   NUNCA absurdos, dismissive ni sin sentido
-> - **Balance de longitud** (`es:` como referencia): longest-wins ≤2/10, shortest-wins ≤2/10
->
-> Metodologías que faltan por construir (el usuario tiene los ángulos en Notas del iMac):
-> - PD Arrays
-> - Silver Bullet
-> - STDV / Deviations
-> - Confluences / Multi-confluence
-> - SMC (Smart Money Concepts generales)
-> - Patterns (pattern trades)
-> - Wyckoff
->
-> **⚠️ INSTRUCCIÓN AL INICIO DE CADA SESIÓN DE QUIZ:**
-> Pedir al usuario que pegue los ángulos/preguntas de la metodología a trabajar
-> (los tiene en Notas del iMac). No inventar ángulos nuevos — usar exactamente
-> los que el usuario proporciona. Construir chart + opciones + exp a partir de esos ángulos.
+> **Estado: las 160 escenarios de HARDCORE_SCENARIOS están reconstruidos y validados** (escaping `\\'`=0,
+> `node --check` OK, sin ids duplicados, balance de longitud dentro de límites en todos los grupos).
+> No quedan metodologías pendientes de los ángulos provistos por el usuario.
 >
 > ---
 >
@@ -221,7 +223,7 @@
 > - **Parse**: extraer `<script>` con `HARDCORE_SCENARIOS`, correr `node --check`; total esperado: 160+
 > - **Distractores**: misconceptions plausibles con desarrollo técnico — nunca frases vacías o absurdas
 >
-> **Rama activa:** `claude/epic-lovelace-GsOuo` · Último commit KZ: `feaf2ec`
+> **Rama activa:** `claude/epic-lovelace-GsOuo` · Último commit Quiz Hardcore: `98ecd1e` (Harmonic Patterns, 2026-06-11) — las 16 metodologías / 160 escenarios completos.
 
 ---
 
