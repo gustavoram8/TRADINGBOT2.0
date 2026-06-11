@@ -747,6 +747,130 @@
     .proj-btn.danger { color: var(--loss); }
     .proj-btn.danger:hover { border-color: var(--loss); background: rgba(239,68,68,.08); }
 
+    /* ── PRE-FLIGHT ── */
+    .pf-input {
+      width: 100%; box-sizing: border-box; margin-top: 14px;
+      padding: 10px 12px; border-radius: 10px;
+      background: var(--surface); border: 1px solid var(--border2);
+      color: var(--text); font-size: 13.5px; font-family: inherit;
+    }
+    .pf-input:focus { outline: none; border-color: var(--accent); }
+
+    .pf-template-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    .pf-template-label { font-size: 12px; color: var(--muted); }
+    .pf-template-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .pf-builder-rows { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .pf-builder-row { display: flex; align-items: center; gap: 8px; }
+    .pf-builder-row .pf-input { margin-top: 0; flex: 1; }
+    .pf-row-del {
+      flex: none; width: 30px; height: 30px; border-radius: 8px;
+      border: 1px solid var(--border2); background: var(--card); color: var(--muted);
+      font-size: 15px; line-height: 1; cursor: pointer; transition: all .15s ease;
+    }
+    .pf-row-del:hover { border-color: var(--loss); color: var(--loss); }
+
+    .pf-thresholds { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 14px; }
+    .pf-thresholds label { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+    .pf-thresholds input {
+      width: 64px; padding: 7px 9px; border-radius: 8px;
+      background: var(--surface); border: 1px solid var(--border2);
+      color: var(--text); font-size: 13px; font-family: inherit;
+    }
+    #pf-builder-actions { margin-top: 16px; }
+
+    /* Big toggleable confluence rows */
+    .pf-rows { margin-top: 16px; display: flex; flex-direction: column; gap: 10px; }
+    .pf-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 13px 16px; border-radius: 12px;
+      background: var(--surface); border: 1.5px solid var(--border2);
+      cursor: pointer; user-select: none;
+      font-size: 14px; font-weight: 600; color: var(--text);
+      transition: border-color .15s ease, background .15s ease, transform .12s ease;
+    }
+    .pf-row:hover { border-color: var(--accent); transform: translateY(-1px); }
+    .pf-row .pf-box {
+      flex: none; width: 22px; height: 22px; border-radius: 7px;
+      border: 1.5px solid var(--border2); background: var(--card);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; transition: all .15s ease;
+    }
+    .pf-row .pf-box svg { width: 13px; height: 13px; stroke-width: 3.5; opacity: 0; }
+    .pf-row.on { border-color: #22c55e; background: rgba(34,197,94,.08); }
+    .pf-row.on .pf-box { background: #22c55e; border-color: #22c55e; }
+    .pf-row.on .pf-box svg { opacity: 1; }
+    body.light .pf-row.on { background: rgba(34,197,94,.10); }
+
+    /* Verdict panel */
+    .pf-verdict {
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+      margin-top: 18px; padding: 14px 16px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    }
+    .pf-lamp {
+      flex: none; width: 34px; height: 34px; border-radius: 50%;
+      background: var(--border2); transition: background .25s ease, box-shadow .25s ease;
+    }
+    .pf-verdict.go .pf-lamp      { background: #22c55e; box-shadow: 0 0 16px rgba(34,197,94,.7);  animation: pfPulse 1.6s ease-in-out infinite; }
+    .pf-verdict.caution .pf-lamp { background: #f59e0b; box-shadow: 0 0 16px rgba(245,158,11,.7); animation: pfPulse 1.6s ease-in-out infinite; }
+    .pf-verdict.no-go .pf-lamp   { background: #ef4444; box-shadow: 0 0 16px rgba(239,68,68,.7); }
+    @keyframes pfPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+    .pf-verdict-text { display: flex; flex-direction: column; gap: 2px; }
+    .pf-verdict-label { font-size: 16px; font-weight: 800; letter-spacing: .04em; color: var(--text); }
+    .pf-verdict.go .pf-verdict-label      { color: #22c55e; }
+    .pf-verdict.caution .pf-verdict-label { color: #f59e0b; }
+    .pf-verdict.no-go .pf-verdict-label   { color: #ef4444; }
+    .pf-score { font-size: 12px; color: var(--muted); font-weight: 600; }
+    .pf-verdict .pf-note { flex: 1; min-width: 160px; margin-top: 0; }
+
+    /* Stats strip */
+    .pf-stats {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px; margin: 18px 0;
+    }
+    .pf-stat {
+      padding: 13px 15px; border-radius: 12px;
+      background: var(--card); border: 1px solid var(--border2);
+    }
+    .pf-stat .pf-stat-val { font-size: 20px; font-weight: 800; color: var(--text); }
+    .pf-stat .pf-stat-key { font-size: 11px; color: var(--muted); font-weight: 600; margin-top: 3px; }
+    .pf-stat .pf-stat-sub { font-size: 10.5px; color: var(--muted); margin-top: 2px; }
+
+    /* History */
+    .pf-history { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .pf-empty { font-size: 12.5px; color: var(--muted); padding: 8px 0; }
+    .pf-hist-row {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      padding: 10px 12px; border-radius: 10px;
+      background: var(--surface); border: 1px solid var(--border2);
+      font-size: 12.5px; color: var(--text);
+    }
+    .pf-hist-date { color: var(--muted); font-size: 11.5px; min-width: 86px; }
+    .pf-hist-name { font-weight: 700; }
+    .pf-hist-score { color: var(--muted); }
+    .pf-chip {
+      padding: 3px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 800;
+      letter-spacing: .04em;
+    }
+    .pf-chip.go      { background: rgba(34,197,94,.16);  color: #22c55e; }
+    .pf-chip.caution { background: rgba(245,158,11,.16); color: #f59e0b; }
+    .pf-chip.no-go   { background: rgba(239,68,68,.16);  color: #ef4444; }
+    .pf-hist-note { color: var(--muted); font-style: italic; }
+    .pf-hist-row select {
+      margin-left: auto; padding: 5px 8px; border-radius: 8px;
+      background: var(--card); border: 1px solid var(--border2);
+      color: var(--text); font-size: 12px; font-family: inherit; cursor: pointer;
+    }
+    .pf-hist-row select.win  { border-color: #22c55e; color: #22c55e; }
+    .pf-hist-row select.loss { border-color: #ef4444; color: #ef4444; }
+    .pf-hist-del {
+      flex: none; width: 26px; height: 26px; border-radius: 8px;
+      border: 1px solid var(--border2); background: var(--card); color: var(--muted);
+      font-size: 13px; line-height: 1; cursor: pointer; transition: all .15s ease;
+    }
+    .pf-hist-del:hover { border-color: var(--loss); color: var(--loss); }
+
     /* ── SHOT GUIDE ── */
     .shot-guide {
       background: var(--surface);
@@ -3038,6 +3162,12 @@
     <svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
     <span data-i18n="tabs.quiz">Quiz</span>
   </button>
+  {% if preflight_enabled %}
+  <button class="tab" type="button" data-tab="preflight">
+    <svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+    <span data-i18n="tabs.preflight">Pre-Flight</span>
+  </button>
+  {% endif %}
   {% if scout_enabled %}
   <button class="tab" type="button" data-tab="scout">
     <svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -3894,6 +4024,94 @@
   </div>
   {% endif %}
 
+  <!-- ── PRE-FLIGHT — CONFLUENCE CHECKLIST TRAINER (draft) ── -->
+  {% if preflight_enabled %}
+  <div class="feature-view" id="preflight-view">
+    <div class="page-header">
+      <h1 data-i18n="pf.title">Pre-Flight</h1>
+      <p data-i18n="pf.sub">Your discipline trainer. Define the confluences your trigger requires, run a pre-flight check before every trade, and let the data show which confluences actually pay.</p>
+    </div>
+
+    <!-- Checklist presets deck (same UX as Analysis Projects) -->
+    <div class="card proj-card" id="pf-checklists-card" style="--card-accent:#22c55e;">
+      <div class="proj-head">
+        <div class="card-label" style="margin:0;">
+          <span data-i18n="pf.decksTitle">Your Checklists</span>
+        </div>
+        <div class="proj-count" id="pf-count"></div>
+      </div>
+      <p style="font-size:12px; color:var(--muted); margin:6px 0 0;" data-i18n="pf.decksHint">Save your personal trigger as a checklist preset and reuse it before every trade. Start from a built-in template or build your own.</p>
+      <div class="proj-deck" id="pf-deck"></div>
+      <div class="proj-actions hidden" id="pf-actions">
+        <span class="proj-active-label" id="pf-active-label"></span>
+        <button type="button" class="proj-btn" id="pf-edit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+          <span data-i18n="pf.edit">Edit</span>
+        </button>
+        <button type="button" class="proj-btn" id="pf-rename">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          <span data-i18n="pf.rename">Rename</span>
+        </button>
+        <button type="button" class="proj-btn danger" id="pf-delete">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          <span data-i18n="pf.delete">Delete</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Checklist builder (create / edit) -->
+    <div class="card" id="pf-builder" style="--card-accent:#f59e0b; display:none;">
+      <div class="card-label" id="pf-builder-title" data-i18n="pf.builderNew">New checklist</div>
+      <div class="pf-template-row">
+        <span class="pf-template-label" data-i18n="pf.startFrom">Start from a template:</span>
+        <div class="pf-template-btns" id="pf-template-btns"></div>
+      </div>
+      <input type="text" class="pf-input" id="pf-builder-name" maxlength="60" data-i18n-ph="pf.namePh" placeholder="Checklist name (e.g. My ICT trigger)" />
+      <div class="pf-builder-rows" id="pf-builder-rows"></div>
+      <button type="button" class="proj-btn" id="pf-add-row" data-i18n="pf.addRow">+ Add confluence</button>
+      <div class="pf-thresholds">
+        <label><span data-i18n="pf.minGo">Minimum for GO</span> <input type="number" id="pf-min-go" min="1" step="1" /></label>
+        <label><span data-i18n="pf.minCaution">Minimum for CAUTION</span> <input type="number" id="pf-min-caution" min="1" step="1" /></label>
+      </div>
+      <div class="proj-actions" id="pf-builder-actions">
+        <button type="button" class="proj-btn" id="pf-builder-save">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          <span data-i18n="pf.saveChecklist">Save checklist</span>
+        </button>
+        <button type="button" class="proj-btn" id="pf-builder-cancel"><span data-i18n="pf.cancel">Cancel</span></button>
+      </div>
+    </div>
+
+    <!-- The Pre-Flight board: tick confluences, get a live verdict -->
+    <div class="card" id="pf-board" style="--card-accent:#22c55e; display:none;">
+      <div class="card-label"><span data-i18n="pf.boardTitle">Pre-Flight Check</span> — <span id="pf-board-name"></span></div>
+      <p style="font-size:12px; color:var(--muted); margin:6px 0 0;" data-i18n="pf.boardHint">Tick every confluence that is present right now — then trust the verdict.</p>
+      <div class="pf-rows" id="pf-rows"></div>
+      <div class="pf-verdict" id="pf-verdict">
+        <div class="pf-lamp" id="pf-lamp"></div>
+        <div class="pf-verdict-text">
+          <div class="pf-verdict-label" id="pf-verdict-label">—</div>
+          <div class="pf-score" id="pf-score">0 / 0</div>
+        </div>
+        <input type="text" class="pf-input pf-note" id="pf-note" maxlength="200" data-i18n-ph="pf.notePh" placeholder="Optional note (pair, session…)" />
+        <button type="button" class="proj-btn" id="pf-log">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <span data-i18n="pf.log">Log this check</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats strip -->
+    <div class="pf-stats" id="pf-stats"></div>
+
+    <!-- History -->
+    <div class="card" id="pf-history-card" style="--card-accent:#5b8ef0;">
+      <div class="card-label" data-i18n="pf.historyTitle">Recent Checks</div>
+      <div class="pf-history" id="pf-history"></div>
+    </div>
+  </div>
+  {% endif %}
+
   <!-- ── CHALKBOARD — TRADING EDUCATION STUDIO (Premium) ── -->
   <div class="feature-view" id="scalper-view">
     <div class="feature-panel">
@@ -4350,6 +4568,56 @@
       'tabs.forum': 'Forum Trading',
       'tabs.indicators': 'Indicators',
       'tabs.quiz': 'Quiz',
+      'tabs.preflight': 'Pre-Flight',
+      'pf.title': 'Pre-Flight',
+      'pf.sub': 'Your discipline trainer. Define the confluences your trigger requires, run a pre-flight check before every trade, and let the data show which confluences actually pay.',
+      'pf.decksTitle': 'Your Checklists',
+      'pf.decksHint': 'Save your personal trigger as a checklist preset and reuse it before every trade. Start from a built-in template or build your own.',
+      'pf.count': '{used} / {limit} checklists',
+      'pf.new': 'New checklist',
+      'pf.loadTip': 'Click to run this checklist',
+      'pf.limitTip': 'Checklist limit reached ({limit}). Upgrade your plan for more.',
+      'pf.activeLabel': 'Active: {name}',
+      'pf.confMeta': '{n} confluences',
+      'pf.edit': 'Edit',
+      'pf.rename': 'Rename',
+      'pf.delete': 'Delete',
+      'pf.renamePrompt': 'Rename checklist:',
+      'pf.deleteConfirm': 'Delete checklist "{name}"? Logged checks are kept.',
+      'pf.builderNew': 'New checklist',
+      'pf.builderEdit': 'Edit checklist',
+      'pf.startFrom': 'Start from a template:',
+      'pf.blank': 'Blank',
+      'pf.namePh': 'Checklist name (e.g. My ICT trigger)',
+      'pf.confPh': 'Confluence (e.g. Liquidity sweep taken)',
+      'pf.addRow': '+ Add confluence',
+      'pf.minGo': 'Minimum for GO',
+      'pf.minCaution': 'Minimum for CAUTION',
+      'pf.saveChecklist': 'Save checklist',
+      'pf.cancel': 'Cancel',
+      'pf.needName': 'Give your checklist a name.',
+      'pf.needRows': 'Add at least one confluence.',
+      'pf.boardTitle': 'Pre-Flight Check',
+      'pf.boardHint': 'Tick every confluence that is present right now — then trust the verdict.',
+      'pf.go': 'GO',
+      'pf.caution': 'CAUTION',
+      'pf.nogo': 'NO-GO',
+      'pf.log': 'Log this check',
+      'pf.logged': 'Logged ✓',
+      'pf.notePh': 'Optional note (pair, session…)',
+      'pf.historyTitle': 'Recent Checks',
+      'pf.historyEmpty': 'No checks logged yet. Run your first pre-flight above.',
+      'pf.outcomeNone': 'Outcome…',
+      'pf.win': 'Win',
+      'pf.loss': 'Loss',
+      'pf.skipped': 'Skipped',
+      'pf.deleteCheck': 'Delete this check?',
+      'pf.statTotal': 'Checks logged',
+      'pf.statWin': 'Overall win rate',
+      'pf.statGo': 'Win rate on GO',
+      'pf.statNotGo': 'Win rate below GO',
+      'pf.statTop': 'Top confluence',
+      'pf.statTopMeta': '{rate}% in {n} trades',
       'quiz.title': 'Quiz',
       'quiz.desc': 'Test your trading knowledge with timed quizzes tailored to your methodology and level.',
       'quiz.heading': 'Trading Quiz',
@@ -4625,6 +4893,56 @@
       'tabs.forum': 'Foro Trading',
       'tabs.indicators': 'Indicadores',
       'tabs.quiz': 'Quiz',
+      'tabs.preflight': 'Pre-Flight',
+      'pf.title': 'Pre-Flight',
+      'pf.sub': 'Tu entrenador de disciplina. Define las confluencias que exige tu gatillo, corre un chequeo pre-vuelo antes de cada trade, y deja que los datos muestren qué confluencias realmente pagan.',
+      'pf.decksTitle': 'Tus Checklists',
+      'pf.decksHint': 'Guarda tu gatillo personal como preset de checklist y reutilízalo antes de cada trade. Parte de una plantilla incluida o crea la tuya.',
+      'pf.count': '{used} / {limit} checklists',
+      'pf.new': 'Nueva checklist',
+      'pf.loadTip': 'Clic para usar esta checklist',
+      'pf.limitTip': 'Límite de checklists alcanzado ({limit}). Mejora tu plan para más.',
+      'pf.activeLabel': 'Activa: {name}',
+      'pf.confMeta': '{n} confluencias',
+      'pf.edit': 'Editar',
+      'pf.rename': 'Renombrar',
+      'pf.delete': 'Eliminar',
+      'pf.renamePrompt': 'Renombrar checklist:',
+      'pf.deleteConfirm': '¿Eliminar la checklist "{name}"? Los chequeos registrados se conservan.',
+      'pf.builderNew': 'Nueva checklist',
+      'pf.builderEdit': 'Editar checklist',
+      'pf.startFrom': 'Empezar desde una plantilla:',
+      'pf.blank': 'En blanco',
+      'pf.namePh': 'Nombre de la checklist (ej. Mi gatillo ICT)',
+      'pf.confPh': 'Confluencia (ej. Barrido de liquidez tomado)',
+      'pf.addRow': '+ Agregar confluencia',
+      'pf.minGo': 'Mínimo para GO',
+      'pf.minCaution': 'Mínimo para CAUTION',
+      'pf.saveChecklist': 'Guardar checklist',
+      'pf.cancel': 'Cancelar',
+      'pf.needName': 'Dale un nombre a tu checklist.',
+      'pf.needRows': 'Agrega al menos una confluencia.',
+      'pf.boardTitle': 'Chequeo Pre-Vuelo',
+      'pf.boardHint': 'Marca cada confluencia presente ahora mismo — y confía en el veredicto.',
+      'pf.go': 'GO',
+      'pf.caution': 'PRECAUCIÓN',
+      'pf.nogo': 'NO-GO',
+      'pf.log': 'Registrar chequeo',
+      'pf.logged': 'Registrado ✓',
+      'pf.notePh': 'Nota opcional (par, sesión…)',
+      'pf.historyTitle': 'Chequeos Recientes',
+      'pf.historyEmpty': 'Aún no hay chequeos registrados. Corre tu primer pre-vuelo arriba.',
+      'pf.outcomeNone': 'Resultado…',
+      'pf.win': 'Win',
+      'pf.loss': 'Loss',
+      'pf.skipped': 'Omitido',
+      'pf.deleteCheck': '¿Eliminar este chequeo?',
+      'pf.statTotal': 'Chequeos registrados',
+      'pf.statWin': 'Win rate general',
+      'pf.statGo': 'Win rate en GO',
+      'pf.statNotGo': 'Win rate bajo GO',
+      'pf.statTop': 'Confluencia top',
+      'pf.statTopMeta': '{rate}% en {n} trades',
       'quiz.title': 'Quiz',
       'quiz.desc': 'Pon a prueba tu conocimiento de trading con quizzes cronometrados según tu metodología y nivel.',
       'quiz.heading': 'Quiz de Trading',
@@ -4900,6 +5218,56 @@
       'tabs.forum': 'Forum Trading',
       'tabs.indicators': 'Indicateurs',
       'tabs.quiz': 'Quiz',
+      'tabs.preflight': 'Pre-Flight',
+      'pf.title': 'Pre-Flight',
+      'pf.sub': "Votre entraîneur de discipline. Définissez les confluences qu’exige votre déclencheur, faites un check pré-vol avant chaque trade, et laissez les données montrer quelles confluences paient vraiment.",
+      'pf.decksTitle': 'Vos Checklists',
+      'pf.decksHint': "Enregistrez votre déclencheur personnel comme preset de checklist et réutilisez-le avant chaque trade. Partez d’un modèle intégré ou créez le vôtre.",
+      'pf.count': '{used} / {limit} checklists',
+      'pf.new': 'Nouvelle checklist',
+      'pf.loadTip': 'Cliquez pour utiliser cette checklist',
+      'pf.limitTip': 'Limite de checklists atteinte ({limit}). Améliorez votre plan pour plus.',
+      'pf.activeLabel': 'Active : {name}',
+      'pf.confMeta': '{n} confluences',
+      'pf.edit': 'Modifier',
+      'pf.rename': 'Renommer',
+      'pf.delete': 'Supprimer',
+      'pf.renamePrompt': 'Renommer la checklist :',
+      'pf.deleteConfirm': 'Supprimer la checklist "{name}" ? Les checks enregistrés sont conservés.',
+      'pf.builderNew': 'Nouvelle checklist',
+      'pf.builderEdit': 'Modifier la checklist',
+      'pf.startFrom': "Partir d’un modèle :",
+      'pf.blank': 'Vierge',
+      'pf.namePh': 'Nom de la checklist (ex. Mon déclencheur ICT)',
+      'pf.confPh': 'Confluence (ex. Sweep de liquidité pris)',
+      'pf.addRow': '+ Ajouter une confluence',
+      'pf.minGo': 'Minimum pour GO',
+      'pf.minCaution': 'Minimum pour CAUTION',
+      'pf.saveChecklist': 'Enregistrer la checklist',
+      'pf.cancel': 'Annuler',
+      'pf.needName': 'Donnez un nom à votre checklist.',
+      'pf.needRows': 'Ajoutez au moins une confluence.',
+      'pf.boardTitle': 'Check Pré-Vol',
+      'pf.boardHint': 'Cochez chaque confluence présente maintenant — puis faites confiance au verdict.',
+      'pf.go': 'GO',
+      'pf.caution': 'PRUDENCE',
+      'pf.nogo': 'NO-GO',
+      'pf.log': 'Enregistrer ce check',
+      'pf.logged': 'Enregistré ✓',
+      'pf.notePh': 'Note facultative (paire, session…)',
+      'pf.historyTitle': 'Checks Récents',
+      'pf.historyEmpty': 'Aucun check enregistré. Lancez votre premier pré-vol ci-dessus.',
+      'pf.outcomeNone': 'Résultat…',
+      'pf.win': 'Gain',
+      'pf.loss': 'Perte',
+      'pf.skipped': 'Passé',
+      'pf.deleteCheck': 'Supprimer ce check ?',
+      'pf.statTotal': 'Checks enregistrés',
+      'pf.statWin': 'Win rate global',
+      'pf.statGo': 'Win rate en GO',
+      'pf.statNotGo': 'Win rate sous GO',
+      'pf.statTop': 'Confluence top',
+      'pf.statTopMeta': '{rate}% sur {n} trades',
       'quiz.title': 'Quiz',
       'quiz.desc': "Testez vos connaissances en trading avec des quiz chronométrés adaptés à votre méthodologie et votre niveau.",
       'quiz.heading': 'Quiz de Trading',
@@ -5175,6 +5543,56 @@
       'tabs.forum': 'Fórum Trading',
       'tabs.indicators': 'Indicadores',
       'tabs.quiz': 'Quiz',
+      'tabs.preflight': 'Pre-Flight',
+      'pf.title': 'Pre-Flight',
+      'pf.sub': 'Seu treinador de disciplina. Defina as confluências que seu gatilho exige, faça um check pré-voo antes de cada trade, e deixe os dados mostrarem quais confluências realmente pagam.',
+      'pf.decksTitle': 'Suas Checklists',
+      'pf.decksHint': 'Salve seu gatilho pessoal como preset de checklist e reutilize antes de cada trade. Comece de um modelo incluído ou crie o seu.',
+      'pf.count': '{used} / {limit} checklists',
+      'pf.new': 'Nova checklist',
+      'pf.loadTip': 'Clique para usar esta checklist',
+      'pf.limitTip': 'Limite de checklists atingido ({limit}). Melhore seu plano para mais.',
+      'pf.activeLabel': 'Ativa: {name}',
+      'pf.confMeta': '{n} confluências',
+      'pf.edit': 'Editar',
+      'pf.rename': 'Renomear',
+      'pf.delete': 'Excluir',
+      'pf.renamePrompt': 'Renomear checklist:',
+      'pf.deleteConfirm': 'Excluir a checklist "{name}"? Os checks registrados são mantidos.',
+      'pf.builderNew': 'Nova checklist',
+      'pf.builderEdit': 'Editar checklist',
+      'pf.startFrom': 'Começar de um modelo:',
+      'pf.blank': 'Em branco',
+      'pf.namePh': 'Nome da checklist (ex. Meu gatilho ICT)',
+      'pf.confPh': 'Confluência (ex. Sweep de liquidez tomado)',
+      'pf.addRow': '+ Adicionar confluência',
+      'pf.minGo': 'Mínimo para GO',
+      'pf.minCaution': 'Mínimo para CAUTION',
+      'pf.saveChecklist': 'Salvar checklist',
+      'pf.cancel': 'Cancelar',
+      'pf.needName': 'Dê um nome à sua checklist.',
+      'pf.needRows': 'Adicione ao menos uma confluência.',
+      'pf.boardTitle': 'Check Pré-Voo',
+      'pf.boardHint': 'Marque cada confluência presente agora — e confie no veredito.',
+      'pf.go': 'GO',
+      'pf.caution': 'CAUTELA',
+      'pf.nogo': 'NO-GO',
+      'pf.log': 'Registrar este check',
+      'pf.logged': 'Registrado ✓',
+      'pf.notePh': 'Nota opcional (par, sessão…)',
+      'pf.historyTitle': 'Checks Recentes',
+      'pf.historyEmpty': 'Nenhum check registrado ainda. Faça seu primeiro pré-voo acima.',
+      'pf.outcomeNone': 'Resultado…',
+      'pf.win': 'Win',
+      'pf.loss': 'Loss',
+      'pf.skipped': 'Pulado',
+      'pf.deleteCheck': 'Excluir este check?',
+      'pf.statTotal': 'Checks registrados',
+      'pf.statWin': 'Win rate geral',
+      'pf.statGo': 'Win rate em GO',
+      'pf.statNotGo': 'Win rate abaixo de GO',
+      'pf.statTop': 'Confluência top',
+      'pf.statTopMeta': '{rate}% em {n} trades',
       'quiz.title': 'Quiz',
       'quiz.desc': 'Teste seu conhecimento de trading com quizzes cronometrados de acordo com sua metodologia e nível.',
       'quiz.heading': 'Quiz de Trading',
@@ -5423,6 +5841,7 @@
     // Let the quiz re-render its dynamic (non-data-i18n) content on language change
     if (window.Quiz && window.Quiz.relang) window.Quiz.relang();
     if (window.Projects && window.Projects.relang) window.Projects.relang();
+    if (window.Preflight && window.Preflight.relang) window.Preflight.relang();
   }
 
   // ── Theme ──
@@ -5925,6 +6344,409 @@
     return { init, refresh, relang };
   })();
 
+  // ── Pre-Flight (confluence checklist trainer) ──
+  const Preflight = window.Preflight = (function () {
+    // Built-in starter templates — applied client-side in the builder, never seeded in the DB.
+    const TEMPLATES = [
+      { key: 'ICT', rows: ['Kill zone active', 'Liquidity sweep taken', 'FVG present', 'Order Block respected', 'Displacement confirmed', 'HTF bias aligned', 'Premium/Discount OK'] },
+      { key: 'SMC', rows: ['CHoCH/BOS confirmed', 'Liquidity swept', 'OB+FVG confluence', 'HTF structure aligned', 'Equilibrium respected'] },
+      { key: 'Wyckoff', rows: ['Phase identified', 'Spring/UTAD confirmed', 'Volume agrees', 'HTF context aligned'] },
+      { key: 'Patterns', rows: ['Pattern fully formed', 'Breakout with displacement', 'Retest held', 'HTF trend aligned'] },
+    ];
+    const MAX_ROWS = 20;
+
+    let checklists = [], activeId = null, limit = 2, used = 0;
+    let checks = [], stats = null;
+    let ticked = new Set();        // confluence ids ticked on the board
+    let editingId = null;          // checklist id being edited (null = creating new)
+    let loaded = false;
+
+    const view       = document.getElementById('preflight-view');
+    const countEl    = document.getElementById('pf-count');
+    const deckEl     = document.getElementById('pf-deck');
+    const actionsEl  = document.getElementById('pf-actions');
+    const activeLbl  = document.getElementById('pf-active-label');
+    const builderEl  = document.getElementById('pf-builder');
+    const boardEl    = document.getElementById('pf-board');
+
+    const CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
+    // Same deterministic hue trick as the Analysis Projects deck.
+    function hueFromName(name) {
+      let h = 0;
+      for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % 360;
+      return h;
+    }
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+    function activeChecklist() { return checklists.find(c => c.id === activeId) || null; }
+    function confs(cl) { return (cl && cl.config && Array.isArray(cl.config.confluences)) ? cl.config.confluences : []; }
+    function verdictFor(score, cfg) {
+      const n = (cfg.confluences || []).length;
+      if (!n) return 'no-go';
+      if (score >= (cfg.min_go || n)) return 'go';
+      if (score >= (cfg.min_caution || 1)) return 'caution';
+      return 'no-go';
+    }
+    function verdictLabel(v) { return v === 'go' ? T('pf.go') : v === 'caution' ? T('pf.caution') : T('pf.nogo'); }
+
+    // ── Deck ──
+    function renderDeck() {
+      countEl.textContent = T('pf.count').replace('{used}', used).replace('{limit}', limit);
+      deckEl.innerHTML = '';
+
+      checklists.forEach(c => {
+        const tile = document.createElement('div');
+        tile.className = 'proj-tile' + (c.id === activeId ? ' active' : '');
+        tile.style.setProperty('--tile-accent', 'hsl(' + hueFromName(c.name) + ', 62%, 58%)');
+        tile.title = T('pf.loadTip');
+        const meta = T('pf.confMeta').replace('{n}', confs(c).length);
+        const initial = (c.name.trim()[0] || '?').toUpperCase();
+        tile.innerHTML =
+          '<div class="tile-check">' + CHECK_SVG + '</div>' +
+          '<div class="tile-bar"></div>' +
+          '<div class="tile-name">' + escapeHtml(c.name) + '</div>' +
+          '<div class="tile-meta">' + escapeHtml(meta) + '</div>' +
+          '<div class="tile-mark">' + escapeHtml(initial) + '</div>';
+        tile.addEventListener('click', () => loadChecklist(c.id));
+        deckEl.appendChild(tile);
+      });
+
+      // New checklist ghost tile.
+      const atLimit = used >= limit;
+      const newTile = document.createElement('div');
+      newTile.className = 'proj-tile tile-new' + (atLimit ? ' disabled' : '');
+      newTile.title = atLimit ? T('pf.limitTip').replace('{limit}', limit) : T('pf.new');
+      newTile.innerHTML =
+        '<div class="tile-plus">+</div>' +
+        '<div class="tile-new-label">' + escapeHtml(T('pf.new')) + '</div>';
+      if (!atLimit) newTile.addEventListener('click', () => openBuilder(null));
+      deckEl.appendChild(newTile);
+
+      const act = activeChecklist();
+      if (act) {
+        actionsEl.classList.remove('hidden');
+        activeLbl.innerHTML = T('pf.activeLabel').replace('{name}', '<strong>' + escapeHtml(act.name) + '</strong>');
+      } else {
+        actionsEl.classList.add('hidden');
+      }
+    }
+
+    // ── Board ──
+    function renderBoard() {
+      const act = activeChecklist();
+      boardEl.style.display = act ? 'block' : 'none';
+      if (!act) return;
+      document.getElementById('pf-board-name').textContent = act.name;
+      const rowsEl = document.getElementById('pf-rows');
+      rowsEl.innerHTML = '';
+      confs(act).forEach(c => {
+        const row = document.createElement('div');
+        row.className = 'pf-row' + (ticked.has(c.id) ? ' on' : '');
+        row.innerHTML = '<div class="pf-box">' + CHECK_SVG + '</div><span>' + escapeHtml(c.label) + '</span>';
+        row.addEventListener('click', () => {
+          ticked.has(c.id) ? ticked.delete(c.id) : ticked.add(c.id);
+          row.classList.toggle('on', ticked.has(c.id));
+          renderVerdict();
+        });
+        rowsEl.appendChild(row);
+      });
+      renderVerdict();
+    }
+
+    function renderVerdict() {
+      const act = activeChecklist();
+      if (!act) return;
+      const total = confs(act).length;
+      const score = ticked.size;
+      const v = verdictFor(score, act.config || {});
+      const panel = document.getElementById('pf-verdict');
+      panel.classList.remove('go', 'caution', 'no-go');
+      panel.classList.add(v);
+      document.getElementById('pf-verdict-label').textContent = verdictLabel(v);
+      document.getElementById('pf-score').textContent = score + ' / ' + total;
+    }
+
+    // ── Stats strip ──
+    function statCard(value, key, sub) {
+      return '<div class="pf-stat"><div class="pf-stat-val">' + value + '</div>' +
+             '<div class="pf-stat-key">' + escapeHtml(key) + '</div>' +
+             (sub ? '<div class="pf-stat-sub">' + escapeHtml(sub) + '</div>' : '') + '</div>';
+    }
+    function pct(v) { return (v === null || v === undefined) ? '—' : v + '%'; }
+    function renderStats() {
+      const el = document.getElementById('pf-stats');
+      const s = stats || {};
+      const top = s.top_confluence;
+      el.innerHTML =
+        statCard(s.total_checks || 0, T('pf.statTotal')) +
+        statCard(pct(s.win_rate), T('pf.statWin')) +
+        statCard(pct(s.win_rate_go), T('pf.statGo')) +
+        statCard(pct(s.win_rate_not_go), T('pf.statNotGo')) +
+        statCard(top ? escapeHtml(top.label) : '—', T('pf.statTop'),
+                 top ? T('pf.statTopMeta').replace('{rate}', top.win_rate).replace('{n}', top.n) : '');
+    }
+
+    // ── History ──
+    function renderHistory() {
+      const el = document.getElementById('pf-history');
+      el.innerHTML = '';
+      if (!checks.length) {
+        el.innerHTML = '<div class="pf-empty">' + escapeHtml(T('pf.historyEmpty')) + '</div>';
+        return;
+      }
+      checks.forEach(c => {
+        const row = document.createElement('div');
+        row.className = 'pf-hist-row';
+        const when = c.created_at
+          ? new Date(c.created_at).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+          : '';
+        row.innerHTML =
+          '<span class="pf-hist-date">' + escapeHtml(when) + '</span>' +
+          '<span class="pf-hist-name">' + escapeHtml(c.checklist_name) + '</span>' +
+          '<span class="pf-hist-score">' + c.score + ' / ' + c.total + '</span>' +
+          '<span class="pf-chip ' + c.verdict + '">' + escapeHtml(verdictLabel(c.verdict)) + '</span>' +
+          (c.note ? '<span class="pf-hist-note">' + escapeHtml(c.note) + '</span>' : '');
+        const sel = document.createElement('select');
+        sel.innerHTML =
+          '<option value="">' + escapeHtml(T('pf.outcomeNone')) + '</option>' +
+          '<option value="win">' + escapeHtml(T('pf.win')) + '</option>' +
+          '<option value="loss">' + escapeHtml(T('pf.loss')) + '</option>' +
+          '<option value="skipped">' + escapeHtml(T('pf.skipped')) + '</option>';
+        sel.value = c.outcome || '';
+        sel.className = c.outcome || '';
+        sel.addEventListener('change', async () => {
+          const res = await fetch('/api/preflight/checks/' + c.id, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ outcome: sel.value || null }),
+          });
+          if (res.ok) refreshChecks();   // outcomes feed the stats strip
+        });
+        row.appendChild(sel);
+        const del = document.createElement('button');
+        del.type = 'button';
+        del.className = 'pf-hist-del';
+        del.textContent = '✕';
+        del.addEventListener('click', async () => {
+          if (!confirm(T('pf.deleteCheck'))) return;
+          const res = await fetch('/api/preflight/checks/' + c.id, { method: 'DELETE' });
+          if (res.ok) refreshChecks();
+        });
+        row.appendChild(del);
+        el.appendChild(row);
+      });
+    }
+
+    // ── Builder ──
+    function builderRow(label) {
+      const rowsEl = document.getElementById('pf-builder-rows');
+      if (rowsEl.children.length >= MAX_ROWS) return;
+      const row = document.createElement('div');
+      row.className = 'pf-builder-row';
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'pf-input';
+      input.maxLength = 80;
+      input.placeholder = T('pf.confPh');
+      input.value = label || '';
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'pf-row-del';
+      del.textContent = '✕';
+      del.addEventListener('click', () => { row.remove(); suggestThresholds(); });
+      row.appendChild(input);
+      row.appendChild(del);
+      rowsEl.appendChild(row);
+    }
+    function builderLabels() {
+      return Array.from(document.querySelectorAll('#pf-builder-rows .pf-builder-row input'))
+        .map(i => i.value.trim()).filter(Boolean).slice(0, MAX_ROWS);
+    }
+    // Defaults: GO = all-but-one, CAUTION = simple majority.
+    function suggestThresholds() {
+      const n = builderLabels().length;
+      if (!n) return;
+      document.getElementById('pf-min-go').value = Math.max(1, n - 1);
+      document.getElementById('pf-min-caution').value = Math.floor(n / 2) + 1;
+    }
+    function applyTemplate(rows) {
+      document.getElementById('pf-builder-rows').innerHTML = '';
+      rows.forEach(builderRow);
+      suggestThresholds();
+    }
+    function openBuilder(cl) {
+      editingId = cl ? cl.id : null;
+      const title = document.getElementById('pf-builder-title');
+      title.textContent = cl ? T('pf.builderEdit') : T('pf.builderNew');
+      document.getElementById('pf-builder-name').value = cl ? cl.name : '';
+      // Template chips (Blank + the 4 built-ins) — only useful when creating.
+      const btns = document.getElementById('pf-template-btns');
+      btns.innerHTML = '';
+      const blank = document.createElement('button');
+      blank.type = 'button';
+      blank.className = 'proj-btn';
+      blank.textContent = T('pf.blank');
+      blank.addEventListener('click', () => applyTemplate([]));
+      btns.appendChild(blank);
+      TEMPLATES.forEach(t => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'proj-btn';
+        b.textContent = t.key;
+        b.addEventListener('click', () => applyTemplate(t.rows));
+        btns.appendChild(b);
+      });
+      applyTemplate(cl ? confs(cl).map(c => c.label) : TEMPLATES[0].rows);
+      if (cl && cl.config) {
+        if (cl.config.min_go) document.getElementById('pf-min-go').value = cl.config.min_go;
+        if (cl.config.min_caution) document.getElementById('pf-min-caution').value = cl.config.min_caution;
+      }
+      builderEl.style.display = 'block';
+      builderEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    function closeBuilder() { builderEl.style.display = 'none'; editingId = null; }
+
+    async function saveBuilder() {
+      const name = document.getElementById('pf-builder-name').value.trim();
+      if (!name) { alert(T('pf.needName')); return; }
+      const labels = builderLabels();
+      if (!labels.length) { alert(T('pf.needRows')); return; }
+      const config = {
+        confluences: labels.map((label, i) => ({ id: 'c' + (i + 1), label })),
+        min_go: parseInt(document.getElementById('pf-min-go').value, 10) || Math.max(1, labels.length - 1),
+        min_caution: parseInt(document.getElementById('pf-min-caution').value, 10) || (Math.floor(labels.length / 2) + 1),
+      };
+      const url = editingId ? '/api/preflight/checklists/' + editingId : '/api/preflight/checklists';
+      const res = await fetch(url, {
+        method: editingId ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, config }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        if (data.error === 'limit_reached') alert(T('pf.limitTip').replace('{limit}', data.limit));
+        return;
+      }
+      closeBuilder();
+      await refreshChecklists();
+      activeId = data.checklist.id;
+      ticked = new Set();
+      renderDeck();
+      renderBoard();
+    }
+
+    // ── Checklist actions ──
+    function loadChecklist(id) {
+      if (activeId !== id) ticked = new Set();   // fresh check on every switch
+      activeId = id;
+      closeBuilder();
+      renderDeck();
+      renderBoard();
+    }
+    async function renameActive() {
+      const act = activeChecklist();
+      if (!act) return;
+      const name = (prompt(T('pf.renamePrompt'), act.name) || '').trim();
+      if (!name || name === act.name) return;
+      const res = await fetch('/api/preflight/checklists/' + act.id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      });
+      if (res.ok) { act.name = name; renderDeck(); renderBoard(); }
+    }
+    async function deleteActive() {
+      const act = activeChecklist();
+      if (!act) return;
+      if (!confirm(T('pf.deleteConfirm').replace('{name}', act.name))) return;
+      const res = await fetch('/api/preflight/checklists/' + act.id, { method: 'DELETE' });
+      if (res.ok) { activeId = null; ticked = new Set(); await refreshChecklists(); renderBoard(); }
+    }
+
+    // ── Log a check ──
+    async function logCheck() {
+      const act = activeChecklist();
+      if (!act) return;
+      const rows = confs(act);
+      const checkedLabels = rows.filter(c => ticked.has(c.id)).map(c => c.label);
+      const verdict = verdictFor(ticked.size, act.config || {});
+      const noteEl = document.getElementById('pf-note');
+      const res = await fetch('/api/preflight/checks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          checklist_id: act.id,
+          checklist_name: act.name,
+          checked: checkedLabels,
+          total: rows.length,
+          verdict: verdict,
+          note: noteEl.value.trim(),
+        }),
+      });
+      if (res.ok) {
+        const lbl = document.querySelector('#pf-log span');
+        const orig = lbl.textContent;
+        lbl.textContent = T('pf.logged');
+        setTimeout(() => { lbl.textContent = orig; }, 1400);
+        noteEl.value = '';
+        ticked = new Set();          // next trade starts from a clean slate
+        renderBoard();
+        refreshChecks();
+      }
+    }
+
+    // ── Data ──
+    async function refreshChecklists() {
+      try {
+        const res = await fetch('/api/preflight/checklists');
+        if (!res.ok) return;
+        const data = await res.json();
+        checklists = data.checklists || [];
+        limit = data.limit; used = data.used;
+        if (!checklists.some(c => c.id === activeId)) { activeId = null; ticked = new Set(); }
+        renderDeck();
+        renderBoard();
+      } catch (e) { /* offline — leave panel as-is */ }
+    }
+    async function refreshChecks() {
+      try {
+        const res = await fetch('/api/preflight/checks');
+        if (!res.ok) return;
+        const data = await res.json();
+        checks = data.checks || [];
+        stats = data.stats || null;
+        renderStats();
+        renderHistory();
+      } catch (e) { /* offline — leave panel as-is */ }
+    }
+
+    function open() {
+      if (loaded) return;
+      loaded = true;
+      refreshChecklists();
+      refreshChecks();
+      renderStats();
+    }
+    function relang() {
+      if (!view) return;
+      renderDeck(); renderBoard(); renderStats(); renderHistory();
+    }
+    function init() {
+      if (!view) return;
+      document.getElementById('pf-edit').addEventListener('click', () => { const a = activeChecklist(); if (a) openBuilder(a); });
+      document.getElementById('pf-rename').addEventListener('click', renameActive);
+      document.getElementById('pf-delete').addEventListener('click', deleteActive);
+      document.getElementById('pf-add-row').addEventListener('click', () => { builderRow(''); suggestThresholds(); });
+      document.getElementById('pf-builder-save').addEventListener('click', saveBuilder);
+      document.getElementById('pf-builder-cancel').addEventListener('click', closeBuilder);
+      document.getElementById('pf-log').addEventListener('click', logCheck);
+      renderStats();
+    }
+    return { init, open, relang };
+  })();
+
   // ── New Trade ──
   document.getElementById('btn-new').addEventListener('click', () => {
     // Reset selections
@@ -6111,6 +6933,7 @@
     if (tab === 'forum' && U.plan === 'premium' && window.Forum) window.Forum.open();
     if (tab === 'scout' && U.plan === 'premium' && window.Scout) window.Scout.open();
     if (tab === 'quiz'    && U.plan === 'premium' && window.Quiz)    window.Quiz.open();
+    if (tab === 'preflight' && window.Preflight) window.Preflight.open();
     if (tab === 'scalper' && U.plan === 'premium' && window.Scalper) window.Scalper.open();
     if (tab === 'synapse' && U.plan === 'premium' && window.Synapse) window.Synapse.open();
     else if (window.Synapse && window.Synapse.pause) window.Synapse.pause();  // free the GPU when leaving Synapse
@@ -6124,6 +6947,9 @@
 
   // Analysis Projects — init after `U` is declared (avoids TDZ ReferenceError)
   Projects.init();
+
+  // Pre-Flight — wire its static buttons (data loads lazily on first tab open)
+  Preflight.init();
 
   // ── Products dropdown ──
   (function () {

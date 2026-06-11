@@ -87,6 +87,10 @@ reset_serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 # the Scout tab, its API endpoints and the pricing perk all come back instantly.
 SCOUT_ENABLED = os.environ.get("SCOUT_ENABLED", "0") in ("1", "true", "True")
 
+# Pre-Flight (trade confluence checklist trainer) — enabled by default while
+# the draft is iterated. Set PREFLIGHT_ENABLED=0 to hide the tab and its APIs.
+PREFLIGHT_ENABLED = os.environ.get("PREFLIGHT_ENABLED", "1") in ("1", "true", "True")
+
 # Bump this date every time the Terms & Conditions are materially updated.
 # It is stored on each user record at the moment of acceptance so there is
 # a permanent audit trail of which version they agreed to.
@@ -125,7 +129,7 @@ client = OpenAI(
 # ── Expose feature flags to every template ──
 @app.context_processor
 def inject_feature_flags():
-    return {'scout_enabled': SCOUT_ENABLED}
+    return {'scout_enabled': SCOUT_ENABLED, 'preflight_enabled': PREFLIGHT_ENABLED}
 
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -183,6 +187,38 @@ class AnalysisProject(db.Model):
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc),
                            onupdate=lambda: datetime.now(timezone.utc))
     user = db.relationship('User', backref='analysis_projects')
+
+
+# ── Pre-Flight checklists (saved confluence presets) ──
+# A checklist is the user's personal "trigger": the confluences they require
+# before entering a trade, plus the score thresholds for the GO / CAUTION verdict.
+class PreflightChecklist(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    name = db.Column(db.String(60), nullable=False)
+    config = db.Column(db.JSON, nullable=False, default=dict)  # {confluences:[{id,label}], min_go, min_caution}
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc),
+                           onupdate=lambda: datetime.now(timezone.utc))
+    user = db.relationship('User', backref='preflight_checklists')
+
+
+# ── Pre-Flight checks (one logged pre-trade run of a checklist) ──
+# Snapshot-heavy on purpose: the checklist may be edited or deleted later,
+# so each check keeps its own name, labels and totals for honest stats.
+class PreflightCheck(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    checklist_id = db.Column(db.Integer, db.ForeignKey('preflight_checklist.id'), nullable=True)
+    checklist_name = db.Column(db.String(60), nullable=False)
+    checked = db.Column(db.JSON, nullable=False, default=list)  # labels ticked at log time
+    total = db.Column(db.Integer, nullable=False, default=0)    # confluences in the checklist
+    score = db.Column(db.Integer, nullable=False, default=0)    # confluences ticked
+    verdict = db.Column(db.String(10), nullable=False)          # 'go' | 'caution' | 'no-go'
+    outcome = db.Column(db.String(10), nullable=True)           # 'win' | 'loss' | 'skipped'
+    note = db.Column(db.String(200), nullable=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    user = db.relationship('User', backref='preflight_checks')
 
 
 # ── Trading Forum (premium-only community) ──
@@ -3719,6 +3755,282 @@ def delete_project(pid):
     if not proj:
         return jsonify({'error': 'not_found'}), 404
     db.session.delete(proj)
+    db.session.commit()
+    return jsonify({'ok': True})
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# PRE-FLIGHT (confluence checklist trainer)
+# ──────────────────────────────────────────────────────────────────────────
+PREFLIGHT_VERDICTS = ('go', 'caution', 'no-go')
+PREFLIGHT_OUTCOMES = ('win', 'loss', 'skipped')
+
+
+def _sanitize_checklist_config(raw):
+    """Keep only known fields, coerce types, cap sizes. Returns a clean dict."""
+    cfg = {'confluences': [], 'min_go': 0, 'min_caution': 0}
+    if not isinstance(raw, dict):
+        return cfg
+    rows = raw.get('confluences')
+    if isinstance(rows, list):
+        for i, row in enumerate(rows[:20]):
+            if not isinstance(row, dict):
+                continue
+            label = str(row.get('label', '')).strip()[:80]
+            if not label:
+                continue
+            cid = str(row.get('id', '')).strip()[:24] or f'c{i + 1}'
+            cfg['confluences'].append({'id': cid, 'label': label})
+    n = len(cfg['confluences'])
+    # Defaults: GO = all-but-one, CAUTION = simple majority. Clamp user values to [1, n].
+    def _clamp(v, default):
+        try:
+            v = int(v)
+        except (TypeError, ValueError):
+            return default
+        return max(1, min(n, v)) if n else 0
+    cfg['min_go'] = _clamp(raw.get('min_go'), max(1, n - 1) if n else 0)
+    cfg['min_caution'] = _clamp(raw.get('min_caution'), (n // 2 + 1) if n else 0)
+    if n and cfg['min_caution'] > cfg['min_go']:
+        cfg['min_caution'] = cfg['min_go']
+    return cfg
+
+
+def serialize_checklist(c):
+    return {
+        'id': c.id,
+        'name': c.name,
+        'config': c.config or {},
+        'updated_at': _as_utc(c.updated_at).isoformat() if c.updated_at else None,
+    }
+
+
+def serialize_check(c):
+    return {
+        'id': c.id,
+        'checklist_id': c.checklist_id,
+        'checklist_name': c.checklist_name,
+        'checked': c.checked or [],
+        'total': c.total,
+        'score': c.score,
+        'verdict': c.verdict,
+        'outcome': c.outcome,
+        'note': c.note,
+        'created_at': _as_utc(c.created_at).isoformat() if c.created_at else None,
+    }
+
+
+def _preflight_guard():
+    """Mirror the Scout pattern: APIs answer 404 while the feature is disabled."""
+    if not PREFLIGHT_ENABLED:
+        return jsonify({'error': 'not_found'}), 404
+    return None
+
+
+@app.route('/api/preflight/checklists', methods=['GET'])
+@login_required
+def preflight_list_checklists():
+    guard = _preflight_guard()
+    if guard:
+        return guard
+    rows = (PreflightChecklist.query
+            .filter_by(user_id=current_user.id)
+            .order_by(PreflightChecklist.updated_at.desc())
+            .all())
+    return jsonify({
+        'checklists': [serialize_checklist(c) for c in rows],
+        'limit': project_limit(),
+        'used': len(rows),
+    })
+
+
+@app.route('/api/preflight/checklists', methods=['POST'])
+@login_required
+def preflight_create_checklist():
+    guard = _preflight_guard()
+    if guard:
+        return guard
+    data = request.get_json(silent=True) or {}
+    name = (data.get('name') or '').strip()[:60]
+    if len(name) < 1:
+        return jsonify({'error': 'name_required'}), 400
+
+    count = PreflightChecklist.query.filter_by(user_id=current_user.id).count()
+    if count >= project_limit():
+        return jsonify({'error': 'limit_reached', 'limit': project_limit()}), 403
+
+    cfg = _sanitize_checklist_config(data.get('config'))
+    if not cfg['confluences']:
+        return jsonify({'error': 'confluences_required'}), 400
+    cl = PreflightChecklist(user_id=current_user.id, name=name, config=cfg)
+    db.session.add(cl)
+    db.session.commit()
+    return jsonify({'ok': True, 'checklist': serialize_checklist(cl)})
+
+
+@app.route('/api/preflight/checklists/<int:cid>', methods=['PUT'])
+@login_required
+def preflight_update_checklist(cid):
+    guard = _preflight_guard()
+    if guard:
+        return guard
+    cl = PreflightChecklist.query.filter_by(id=cid, user_id=current_user.id).first()
+    if not cl:
+        return jsonify({'error': 'not_found'}), 404
+    data = request.get_json(silent=True) or {}
+    if 'name' in data:
+        name = (data.get('name') or '').strip()[:60]
+        if len(name) < 1:
+            return jsonify({'error': 'name_required'}), 400
+        cl.name = name
+    if 'config' in data:
+        cfg = _sanitize_checklist_config(data.get('config'))
+        if not cfg['confluences']:
+            return jsonify({'error': 'confluences_required'}), 400
+        cl.config = cfg
+    db.session.commit()
+    return jsonify({'ok': True, 'checklist': serialize_checklist(cl)})
+
+
+@app.route('/api/preflight/checklists/<int:cid>', methods=['DELETE'])
+@login_required
+def preflight_delete_checklist(cid):
+    guard = _preflight_guard()
+    if guard:
+        return guard
+    cl = PreflightChecklist.query.filter_by(id=cid, user_id=current_user.id).first()
+    if not cl:
+        return jsonify({'error': 'not_found'}), 404
+    # Keep logged checks (their snapshots stay valid) — just detach the FK.
+    PreflightCheck.query.filter_by(user_id=current_user.id, checklist_id=cl.id)\
+        .update({'checklist_id': None})
+    db.session.delete(cl)
+    db.session.commit()
+    return jsonify({'ok': True})
+
+
+def _preflight_stats(rows):
+    """Simple discipline stats over the user's checks (win/loss only count)."""
+    decided = [c for c in rows if c.outcome in ('win', 'loss')]
+    wins = [c for c in decided if c.outcome == 'win']
+
+    def _rate(subset):
+        return round(100.0 * sum(1 for c in subset if c.outcome == 'win') / len(subset), 1) if subset else None
+
+    go = [c for c in decided if c.verdict == 'go']
+    not_go = [c for c in decided if c.verdict != 'go']
+
+    # Per-confluence ranking: win rate of decided checks where the label was ticked.
+    per = {}
+    for c in decided:
+        for label in (c.checked or []):
+            d = per.setdefault(label, {'wins': 0, 'n': 0})
+            d['n'] += 1
+            d['wins'] += 1 if c.outcome == 'win' else 0
+    ranking = sorted(
+        ({'label': k, 'n': v['n'], 'win_rate': round(100.0 * v['wins'] / v['n'], 1)}
+         for k, v in per.items() if v['n'] >= 2),
+        key=lambda r: (r['win_rate'], r['n']), reverse=True)
+
+    return {
+        'total_checks': len(rows),
+        'decided': len(decided),
+        'win_rate': _rate(decided),
+        'win_rate_go': _rate(go),
+        'win_rate_not_go': _rate(not_go),
+        'top_confluence': ranking[0] if ranking else None,
+        'confluence_ranking': ranking[:10],
+    }
+
+
+@app.route('/api/preflight/checks', methods=['GET'])
+@login_required
+def preflight_list_checks():
+    guard = _preflight_guard()
+    if guard:
+        return guard
+    rows = (PreflightCheck.query
+            .filter_by(user_id=current_user.id)
+            .order_by(PreflightCheck.created_at.desc())
+            .limit(100)
+            .all())
+    return jsonify({
+        'checks': [serialize_check(c) for c in rows],
+        'stats': _preflight_stats(rows),
+    })
+
+
+@app.route('/api/preflight/checks', methods=['POST'])
+@login_required
+def preflight_create_check():
+    guard = _preflight_guard()
+    if guard:
+        return guard
+    data = request.get_json(silent=True) or {}
+    name = (data.get('checklist_name') or '').strip()[:60]
+    if not name:
+        return jsonify({'error': 'name_required'}), 400
+    verdict = data.get('verdict')
+    if verdict not in PREFLIGHT_VERDICTS:
+        return jsonify({'error': 'bad_verdict'}), 400
+    checked_raw = data.get('checked')
+    checked = ([str(x).strip()[:80] for x in checked_raw if isinstance(x, str) and x.strip()][:20]
+               if isinstance(checked_raw, list) else [])
+    try:
+        total = max(0, min(20, int(data.get('total', 0))))
+    except (TypeError, ValueError):
+        total = 0
+    checklist_id = data.get('checklist_id')
+    if checklist_id is not None:
+        cl = PreflightChecklist.query.filter_by(id=checklist_id, user_id=current_user.id).first()
+        checklist_id = cl.id if cl else None
+
+    check = PreflightCheck(
+        user_id=current_user.id,
+        checklist_id=checklist_id,
+        checklist_name=name,
+        checked=checked,
+        total=total,
+        score=len(checked),
+        verdict=verdict,
+        note=(str(data.get('note') or '').strip()[:200] or None),
+    )
+    db.session.add(check)
+    db.session.commit()
+    return jsonify({'ok': True, 'check': serialize_check(check)})
+
+
+@app.route('/api/preflight/checks/<int:cid>', methods=['PUT'])
+@login_required
+def preflight_update_check(cid):
+    guard = _preflight_guard()
+    if guard:
+        return guard
+    check = PreflightCheck.query.filter_by(id=cid, user_id=current_user.id).first()
+    if not check:
+        return jsonify({'error': 'not_found'}), 404
+    data = request.get_json(silent=True) or {}
+    if 'outcome' in data:
+        outcome = data.get('outcome')
+        if outcome is not None and outcome not in PREFLIGHT_OUTCOMES:
+            return jsonify({'error': 'bad_outcome'}), 400
+        check.outcome = outcome
+    if 'note' in data:
+        check.note = str(data.get('note') or '').strip()[:200] or None
+    db.session.commit()
+    return jsonify({'ok': True, 'check': serialize_check(check)})
+
+
+@app.route('/api/preflight/checks/<int:cid>', methods=['DELETE'])
+@login_required
+def preflight_delete_check(cid):
+    guard = _preflight_guard()
+    if guard:
+        return guard
+    check = PreflightCheck.query.filter_by(id=cid, user_id=current_user.id).first()
+    if not check:
+        return jsonify({'error': 'not_found'}), 404
+    db.session.delete(check)
     db.session.commit()
     return jsonify({'ok': True})
 
