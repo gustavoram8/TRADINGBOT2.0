@@ -756,9 +756,19 @@
     }
     .pf-input:focus { outline: none; border-color: var(--accent); }
 
-    .pf-template-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
-    .pf-template-label { font-size: 12px; color: var(--muted); }
-    .pf-template-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+    /* Numbered steps inside the builder / trade-details block */
+    .pf-step { margin-top: 22px; padding-top: 18px; border-top: 1px dashed var(--border2); }
+    .pf-step:first-of-type { margin-top: 16px; padding-top: 0; border-top: none; }
+    .pf-step-head { display: flex; align-items: center; gap: 10px; }
+    .pf-step-num {
+      flex: none; width: 24px; height: 24px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--accent); color: #fff; font-size: 12px; font-weight: 800;
+    }
+    .pf-step-title { font-size: 14px; font-weight: 800; color: var(--text); }
+    .pf-step-hint { font-size: 12px; color: var(--muted); margin: 6px 0 0 34px; }
+
+    .pf-template-btns { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 0 34px; }
 
     .pf-builder-rows { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
     .pf-builder-row { display: flex; align-items: center; gap: 8px; }
@@ -822,7 +832,59 @@
     .pf-verdict.caution .pf-verdict-label { color: #f59e0b; }
     .pf-verdict.no-go .pf-verdict-label   { color: #ef4444; }
     .pf-score { font-size: 12px; color: var(--muted); font-weight: 600; }
-    .pf-verdict .pf-note { flex: 1; min-width: 160px; margin-top: 0; }
+
+    /* Onboarding strip */
+    .pf-onboard-steps {
+      margin-top: 12px; display: grid; gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+    .pf-onboard-step { display: flex; gap: 10px; align-items: flex-start; }
+    .pf-onboard-num {
+      flex: none; width: 26px; height: 26px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--accent); color: #fff; font-size: 12.5px; font-weight: 800;
+    }
+    .pf-onboard-step strong { font-size: 13.5px; color: var(--text); }
+    .pf-onboard-step p { font-size: 12px; color: var(--muted); margin: 4px 0 0; line-height: 1.5; }
+
+    /* Trade details block */
+    .pf-trade { margin-top: 18px; padding-top: 18px; border-top: 1px dashed var(--border2); }
+    .pf-trade-grid {
+      margin-top: 12px; display: grid; gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    }
+    .pf-field { display: flex; flex-direction: column; font-size: 11.5px; color: var(--muted); font-weight: 600; }
+    .pf-field .pf-input { margin-top: 6px; }
+    .pf-field-note { grid-column: 1 / -1; }
+
+    /* Long/Short toggle */
+    .pf-dir-toggle { display: flex; gap: 6px; margin-top: 6px; }
+    .pf-dir-btn {
+      flex: 1; padding: 9px 10px; border-radius: 10px; cursor: pointer;
+      background: var(--surface); border: 1px solid var(--border2);
+      color: var(--muted); font-size: 12.5px; font-weight: 700; font-family: inherit;
+      transition: all .15s ease;
+    }
+    .pf-dir-btn.long.active  { background: rgba(34,197,94,.14); border-color: #22c55e; color: #22c55e; }
+    .pf-dir-btn.short.active { background: rgba(239,68,68,.14); border-color: #ef4444; color: #ef4444; }
+
+    .pf-log-btn {
+      margin-top: 16px; width: 100%; justify-content: center;
+      padding: 12px 16px; font-size: 13.5px; font-weight: 800;
+      border-color: #22c55e; color: #22c55e;
+    }
+    .pf-log-btn:hover { background: rgba(34,197,94,.1); }
+
+    /* Trade metadata badges in history */
+    .pf-hist-meta { display: flex; gap: 6px; flex-wrap: wrap; }
+    .pf-hist-tag {
+      padding: 2px 8px; border-radius: 999px; font-size: 10.5px; font-weight: 700;
+      background: var(--card); border: 1px solid var(--border2); color: var(--muted);
+    }
+    .pf-hist-tag.long  { color: #22c55e; border-color: rgba(34,197,94,.4); }
+    .pf-hist-tag.short { color: #ef4444; border-color: rgba(239,68,68,.4); }
+    .pf-hist-tag.pnl-pos { color: #22c55e; }
+    .pf-hist-tag.pnl-neg { color: #ef4444; }
 
     /* Stats strip */
     .pf-stats {
@@ -4032,6 +4094,25 @@
       <p data-i18n="pf.sub">Your discipline trainer. Define the confluences your trigger requires, run a pre-flight check before every trade, and let the data show which confluences actually pay.</p>
     </div>
 
+    <!-- Onboarding strip — shown until the trader has at least one checklist -->
+    <div class="card pf-onboard" id="pf-onboard" style="--card-accent:#5b8ef0; display:none;">
+      <div class="card-label" data-i18n="pf.onboardTitle">How Pre-Flight works</div>
+      <div class="pf-onboard-steps">
+        <div class="pf-onboard-step">
+          <span class="pf-onboard-num">1</span>
+          <div><strong data-i18n="pf.onboard1Title">Build your checklist</strong><p data-i18n="pf.onboard1Body">List the exact confluences your entry trigger requires — your own rules, in your own words.</p></div>
+        </div>
+        <div class="pf-onboard-step">
+          <span class="pf-onboard-num">2</span>
+          <div><strong data-i18n="pf.onboard2Title">Run it before every trade</strong><p data-i18n="pf.onboard2Body">Tick what's present right now. The lamp tells you GO, CAUTION or NO-GO before you click buy or sell.</p></div>
+        </div>
+        <div class="pf-onboard-step">
+          <span class="pf-onboard-num">3</span>
+          <div><strong data-i18n="pf.onboard3Title">Log the trade and learn</strong><p data-i18n="pf.onboard3Body">Add the date, instrument, R:R and result — backtests or live papertrades. Over time the stats show which confluences actually pay.</p></div>
+        </div>
+      </div>
+    </div>
+
     <!-- Checklist presets deck (same UX as Analysis Projects) -->
     <div class="card proj-card" id="pf-checklists-card" style="--card-accent:#22c55e;">
       <div class="proj-head">
@@ -4062,17 +4143,47 @@
     <!-- Checklist builder (create / edit) -->
     <div class="card" id="pf-builder" style="--card-accent:#f59e0b; display:none;">
       <div class="card-label" id="pf-builder-title" data-i18n="pf.builderNew">New checklist</div>
-      <div class="pf-template-row">
-        <span class="pf-template-label" data-i18n="pf.startFrom">Start from a template:</span>
+
+      <div class="pf-step">
+        <div class="pf-step-head">
+          <span class="pf-step-num">1</span>
+          <span class="pf-step-title" data-i18n="pf.stepName">Name this checklist</span>
+        </div>
+        <p class="pf-step-hint" data-i18n="pf.stepNameHint">This is just your own label — it never changes the confluences below.</p>
+        <input type="text" class="pf-input" id="pf-builder-name" maxlength="60" data-i18n-ph="pf.namePh" placeholder="Checklist name (e.g. My ICT trigger)" />
+      </div>
+
+      <div class="pf-step">
+        <div class="pf-step-head">
+          <span class="pf-step-num">2</span>
+          <span class="pf-step-title" data-i18n="pf.stepPreset">Start from a preset (optional)</span>
+        </div>
+        <p class="pf-step-hint" data-i18n="pf.stepPresetHint">Picking a preset only fills the confluence list below with example rows — edit, add or delete any of them afterwards.</p>
         <div class="pf-template-btns" id="pf-template-btns"></div>
       </div>
-      <input type="text" class="pf-input" id="pf-builder-name" maxlength="60" data-i18n-ph="pf.namePh" placeholder="Checklist name (e.g. My ICT trigger)" />
-      <div class="pf-builder-rows" id="pf-builder-rows"></div>
-      <button type="button" class="proj-btn" id="pf-add-row" data-i18n="pf.addRow">+ Add confluence</button>
-      <div class="pf-thresholds">
-        <label><span data-i18n="pf.minGo">Minimum for GO</span> <input type="number" id="pf-min-go" min="1" step="1" /></label>
-        <label><span data-i18n="pf.minCaution">Minimum for CAUTION</span> <input type="number" id="pf-min-caution" min="1" step="1" /></label>
+
+      <div class="pf-step">
+        <div class="pf-step-head">
+          <span class="pf-step-num">3</span>
+          <span class="pf-step-title" data-i18n="pf.stepConf">Your confluences</span>
+        </div>
+        <p class="pf-step-hint" data-i18n="pf.stepConfHint">One confluence per row — the conditions you check before pulling the trigger.</p>
+        <div class="pf-builder-rows" id="pf-builder-rows"></div>
+        <button type="button" class="proj-btn" id="pf-add-row" data-i18n="pf.addRow">+ Add confluence</button>
       </div>
+
+      <div class="pf-step">
+        <div class="pf-step-head">
+          <span class="pf-step-num">4</span>
+          <span class="pf-step-title" data-i18n="pf.stepThresh">Verdict thresholds</span>
+        </div>
+        <p class="pf-step-hint" data-i18n="pf.stepThreshHint">How many ticked confluences turn the lamp GO or CAUTION?</p>
+        <div class="pf-thresholds">
+          <label><span data-i18n="pf.minGo">Minimum for GO</span> <input type="number" id="pf-min-go" min="1" step="1" /></label>
+          <label><span data-i18n="pf.minCaution">Minimum for CAUTION</span> <input type="number" id="pf-min-caution" min="1" step="1" /></label>
+        </div>
+      </div>
+
       <div class="proj-actions" id="pf-builder-actions">
         <button type="button" class="proj-btn" id="pf-builder-save">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
@@ -4086,19 +4197,67 @@
     <div class="card" id="pf-board" style="--card-accent:#22c55e; display:none;">
       <div class="card-label"><span data-i18n="pf.boardTitle">Pre-Flight Check</span> — <span id="pf-board-name"></span></div>
       <p style="font-size:12px; color:var(--muted); margin:6px 0 0;" data-i18n="pf.boardHint">Tick every confluence that is present right now — then trust the verdict.</p>
+
       <div class="pf-rows" id="pf-rows"></div>
+
       <div class="pf-verdict" id="pf-verdict">
         <div class="pf-lamp" id="pf-lamp"></div>
         <div class="pf-verdict-text">
           <div class="pf-verdict-label" id="pf-verdict-label">—</div>
           <div class="pf-score" id="pf-score">0 / 0</div>
         </div>
-        <input type="text" class="pf-input pf-note" id="pf-note" maxlength="200" data-i18n-ph="pf.notePh" placeholder="Optional note (pair, session…)" />
-        <button type="button" class="proj-btn" id="pf-log">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          <span data-i18n="pf.log">Log this check</span>
-        </button>
       </div>
+
+      <!-- Trade metadata — for backtesting (pick a past date) or live papertrading (today) -->
+      <div class="pf-trade">
+        <div class="pf-step-head">
+          <span class="pf-step-title" data-i18n="pf.tradeDetails">Trade details</span>
+        </div>
+        <p class="pf-step-hint" data-i18n="pf.tradeDetailsHint">Optional. Fill these in for a backtest (pick the trade's date) or a live papertrade (leave today's date) — they feed your stats below.</p>
+        <div class="pf-trade-grid">
+          <label class="pf-field">
+            <span data-i18n="pf.fieldDate">Date</span>
+            <input type="date" id="pf-trade-date" class="pf-input" />
+          </label>
+          <label class="pf-field">
+            <span data-i18n="pf.fieldInstrument">Instrument</span>
+            <input type="text" id="pf-trade-instrument" class="pf-input" maxlength="20" list="pf-instr-list" data-i18n-ph="pf.instrumentPh" placeholder="e.g. EURUSD" />
+            <datalist id="pf-instr-list"></datalist>
+          </label>
+          <label class="pf-field">
+            <span data-i18n="pf.fieldDirection">Direction</span>
+            <div class="pf-dir-toggle" id="pf-trade-direction">
+              <button type="button" class="pf-dir-btn long" data-val="long" data-i18n="pill.long">Long</button>
+              <button type="button" class="pf-dir-btn short" data-val="short" data-i18n="pill.short">Short</button>
+            </div>
+          </label>
+          <label class="pf-field">
+            <span data-i18n="pf.fieldEntry">Entry price</span>
+            <input type="number" id="pf-trade-entry" class="pf-input" step="any" min="0" data-i18n-ph="pf.entryPh" placeholder="Entry price" />
+          </label>
+          <label class="pf-field">
+            <span data-i18n="pf.fieldRR">R:R</span>
+            <input type="number" id="pf-trade-rr" class="pf-input" step="0.1" data-i18n-ph="pf.rrPh" placeholder="e.g. 2.5" />
+          </label>
+          <label class="pf-field">
+            <span data-i18n="pf.fieldSize">Size</span>
+            <input type="number" id="pf-trade-size" class="pf-input" step="any" min="0" data-i18n-ph="pf.sizePh" placeholder="Lots / contracts" />
+          </label>
+          <label class="pf-field">
+            <span data-i18n="pf.fieldPnl">P&amp;L</span>
+            <input type="number" id="pf-trade-pnl" class="pf-input" step="any" data-i18n-ph="pf.pnlPh" placeholder="+/- amount" />
+          </label>
+          <label class="pf-field pf-field-note">
+            <span data-i18n="pf.fieldNote">Note</span>
+            <input type="text" class="pf-input pf-note" id="pf-note" maxlength="200" data-i18n-ph="pf.notePh" placeholder="Optional note (pair, session…)" />
+          </label>
+        </div>
+      </div>
+
+      <button type="button" class="proj-btn pf-log-btn" id="pf-log">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <span data-i18n="pf.log">Log this check</span>
+      </button>
     </div>
 
     <!-- Stats strip -->
@@ -4618,6 +4777,36 @@
       'pf.statNotGo': 'Win rate below GO',
       'pf.statTop': 'Top confluence',
       'pf.statTopMeta': '{rate}% in {n} trades',
+      'pf.onboardTitle': 'How Pre-Flight works',
+      'pf.onboard1Title': 'Build your checklist',
+      'pf.onboard1Body': 'List the exact confluences your entry trigger requires — your own rules, in your own words.',
+      'pf.onboard2Title': 'Run it before every trade',
+      'pf.onboard2Body': "Tick what's present right now. The lamp tells you GO, CAUTION or NO-GO before you click buy or sell.",
+      'pf.onboard3Title': 'Log the trade and learn',
+      'pf.onboard3Body': 'Add the date, instrument, R:R and result — backtests or live papertrades. Over time the stats show which confluences actually pay.',
+      'pf.stepName': 'Name this checklist',
+      'pf.stepNameHint': 'This is just your own label — it never changes the confluences below.',
+      'pf.stepPreset': 'Start from a preset (optional)',
+      'pf.stepPresetHint': 'Picking a preset only fills the confluence list below with example rows — edit, add or delete any of them afterwards.',
+      'pf.stepConf': 'Your confluences',
+      'pf.stepConfHint': 'One confluence per row — the conditions you check before pulling the trigger.',
+      'pf.stepThresh': 'Verdict thresholds',
+      'pf.stepThreshHint': 'How many ticked confluences turn the lamp GO or CAUTION?',
+      'pf.tradeDetails': 'Trade details',
+      'pf.tradeDetailsHint': "Optional. Fill these in for a backtest (pick the trade's date) or a live papertrade (leave today's date) — they feed your stats below.",
+      'pf.fieldDate': 'Date',
+      'pf.fieldInstrument': 'Instrument',
+      'pf.fieldDirection': 'Direction',
+      'pf.fieldEntry': 'Entry price',
+      'pf.fieldRR': 'R:R',
+      'pf.fieldSize': 'Size',
+      'pf.fieldPnl': 'P&L',
+      'pf.fieldNote': 'Note',
+      'pf.instrumentPh': 'e.g. EURUSD',
+      'pf.entryPh': 'Entry price',
+      'pf.rrPh': 'e.g. 2.5',
+      'pf.sizePh': 'Lots / contracts',
+      'pf.pnlPh': '+/- amount',
       'quiz.title': 'Quiz',
       'quiz.desc': 'Test your trading knowledge with timed quizzes tailored to your methodology and level.',
       'quiz.heading': 'Trading Quiz',
@@ -4943,6 +5132,36 @@
       'pf.statNotGo': 'Win rate bajo GO',
       'pf.statTop': 'Confluencia top',
       'pf.statTopMeta': '{rate}% en {n} trades',
+      'pf.onboardTitle': 'Cómo funciona Pre-Flight',
+      'pf.onboard1Title': 'Arma tu checklist',
+      'pf.onboard1Body': 'Lista las confluencias exactas que exige tu gatillo de entrada — tus propias reglas, en tus propias palabras.',
+      'pf.onboard2Title': 'Córrela antes de cada trade',
+      'pf.onboard2Body': 'Marca lo que está presente ahora mismo. La luz te dice GO, CAUTION o NO-GO antes de hacer clic en comprar o vender.',
+      'pf.onboard3Title': 'Registra el trade y aprende',
+      'pf.onboard3Body': 'Agrega la fecha, el instrumento, el R:R y el resultado — backtests o papertrades en vivo. Con el tiempo las estadísticas muestran qué confluencias realmente pagan.',
+      'pf.stepName': 'Nombra esta checklist',
+      'pf.stepNameHint': 'Es solo tu propia etiqueta — nunca cambia las confluencias de abajo.',
+      'pf.stepPreset': 'Empezar desde un preset (opcional)',
+      'pf.stepPresetHint': 'Elegir un preset solo llena la lista de confluencias de abajo con filas de ejemplo — edítalas, agrega o elimina las que quieras después.',
+      'pf.stepConf': 'Tus confluencias',
+      'pf.stepConfHint': 'Una confluencia por fila — las condiciones que revisas antes de jalar el gatillo.',
+      'pf.stepThresh': 'Umbrales del veredicto',
+      'pf.stepThreshHint': '¿Cuántas confluencias marcadas hacen que la luz pase a GO o CAUTION?',
+      'pf.tradeDetails': 'Detalles del trade',
+      'pf.tradeDetailsHint': 'Opcional. Llénalos para un backtest (elige la fecha del trade) o un papertrade en vivo (deja la fecha de hoy) — alimentan tus estadísticas de abajo.',
+      'pf.fieldDate': 'Fecha',
+      'pf.fieldInstrument': 'Instrumento',
+      'pf.fieldDirection': 'Dirección',
+      'pf.fieldEntry': 'Precio de entrada',
+      'pf.fieldRR': 'R:R',
+      'pf.fieldSize': 'Tamaño',
+      'pf.fieldPnl': 'P&L',
+      'pf.fieldNote': 'Nota',
+      'pf.instrumentPh': 'ej. EURUSD',
+      'pf.entryPh': 'Precio de entrada',
+      'pf.rrPh': 'ej. 2.5',
+      'pf.sizePh': 'Lotes / contratos',
+      'pf.pnlPh': 'Monto +/-',
       'quiz.title': 'Quiz',
       'quiz.desc': 'Pon a prueba tu conocimiento de trading con quizzes cronometrados según tu metodología y nivel.',
       'quiz.heading': 'Quiz de Trading',
@@ -5268,6 +5487,36 @@
       'pf.statNotGo': 'Win rate sous GO',
       'pf.statTop': 'Confluence top',
       'pf.statTopMeta': '{rate}% sur {n} trades',
+      'pf.onboardTitle': 'Comment fonctionne Pre-Flight',
+      'pf.onboard1Title': 'Construisez votre checklist',
+      'pf.onboard1Body': "Listez les confluences exactes qu'exige votre déclencheur d'entrée — vos propres règles, dans vos propres mots.",
+      'pf.onboard2Title': 'Lancez-la avant chaque trade',
+      'pf.onboard2Body': "Cochez ce qui est présent maintenant. Le voyant indique GO, CAUTION ou NO-GO avant de cliquer sur acheter ou vendre.",
+      'pf.onboard3Title': 'Enregistrez le trade et apprenez',
+      'pf.onboard3Body': 'Ajoutez la date, l\'instrument, le R:R et le résultat — backtests ou papertrades en direct. Avec le temps, les statistiques montrent quelles confluences paient vraiment.',
+      'pf.stepName': 'Nommez cette checklist',
+      'pf.stepNameHint': "C'est juste votre propre étiquette — cela ne change jamais les confluences ci-dessous.",
+      'pf.stepPreset': 'Partir d\'un preset (optionnel)',
+      'pf.stepPresetHint': 'Choisir un preset ne fait que remplir la liste de confluences ci-dessous avec des exemples — modifiez, ajoutez ou supprimez-les ensuite.',
+      'pf.stepConf': 'Vos confluences',
+      'pf.stepConfHint': 'Une confluence par ligne — les conditions que vous vérifiez avant de déclencher.',
+      'pf.stepThresh': 'Seuils du verdict',
+      'pf.stepThreshHint': 'Combien de confluences cochées font passer le voyant à GO ou CAUTION ?',
+      'pf.tradeDetails': 'Détails du trade',
+      'pf.tradeDetailsHint': "Optionnel. Remplissez pour un backtest (choisissez la date du trade) ou un papertrade en direct (laissez la date du jour) — alimente vos statistiques ci-dessous.",
+      'pf.fieldDate': 'Date',
+      'pf.fieldInstrument': 'Instrument',
+      'pf.fieldDirection': 'Direction',
+      'pf.fieldEntry': "Prix d'entrée",
+      'pf.fieldRR': 'R:R',
+      'pf.fieldSize': 'Taille',
+      'pf.fieldPnl': 'P&L',
+      'pf.fieldNote': 'Note',
+      'pf.instrumentPh': 'ex. EURUSD',
+      'pf.entryPh': "Prix d'entrée",
+      'pf.rrPh': 'ex. 2.5',
+      'pf.sizePh': 'Lots / contrats',
+      'pf.pnlPh': 'Montant +/-',
       'quiz.title': 'Quiz',
       'quiz.desc': "Testez vos connaissances en trading avec des quiz chronométrés adaptés à votre méthodologie et votre niveau.",
       'quiz.heading': 'Quiz de Trading',
@@ -5593,6 +5842,36 @@
       'pf.statNotGo': 'Win rate abaixo de GO',
       'pf.statTop': 'Confluência top',
       'pf.statTopMeta': '{rate}% em {n} trades',
+      'pf.onboardTitle': 'Como funciona o Pre-Flight',
+      'pf.onboard1Title': 'Monte sua checklist',
+      'pf.onboard1Body': 'Liste as confluências exatas que seu gatilho de entrada exige — suas próprias regras, com suas próprias palavras.',
+      'pf.onboard2Title': 'Rode antes de cada trade',
+      'pf.onboard2Body': 'Marque o que está presente agora. A luz mostra GO, CAUTION ou NO-GO antes de clicar em comprar ou vender.',
+      'pf.onboard3Title': 'Registre o trade e aprenda',
+      'pf.onboard3Body': 'Adicione a data, o instrumento, o R:R e o resultado — backtests ou papertrades ao vivo. Com o tempo as estatísticas mostram quais confluências realmente pagam.',
+      'pf.stepName': 'Nomeie esta checklist',
+      'pf.stepNameHint': 'É só sua própria etiqueta — nunca muda as confluências abaixo.',
+      'pf.stepPreset': 'Começar de um preset (opcional)',
+      'pf.stepPresetHint': 'Escolher um preset apenas preenche a lista de confluências abaixo com linhas de exemplo — edite, adicione ou remova qualquer uma depois.',
+      'pf.stepConf': 'Suas confluências',
+      'pf.stepConfHint': 'Uma confluência por linha — as condições que você verifica antes de puxar o gatilho.',
+      'pf.stepThresh': 'Limites do veredito',
+      'pf.stepThreshHint': 'Quantas confluências marcadas fazem a luz virar GO ou CAUTION?',
+      'pf.tradeDetails': 'Detalhes do trade',
+      'pf.tradeDetailsHint': 'Opcional. Preencha para um backtest (escolha a data do trade) ou um papertrade ao vivo (deixe a data de hoje) — alimenta suas estatísticas abaixo.',
+      'pf.fieldDate': 'Data',
+      'pf.fieldInstrument': 'Instrumento',
+      'pf.fieldDirection': 'Direção',
+      'pf.fieldEntry': 'Preço de entrada',
+      'pf.fieldRR': 'R:R',
+      'pf.fieldSize': 'Tamanho',
+      'pf.fieldPnl': 'P&L',
+      'pf.fieldNote': 'Nota',
+      'pf.instrumentPh': 'ex. EURUSD',
+      'pf.entryPh': 'Preço de entrada',
+      'pf.rrPh': 'ex. 2.5',
+      'pf.sizePh': 'Lotes / contratos',
+      'pf.pnlPh': 'Valor +/-',
       'quiz.title': 'Quiz',
       'quiz.desc': 'Teste seu conhecimento de trading com quizzes cronometrados de acordo com sua metodologia e nível.',
       'quiz.heading': 'Quiz de Trading',
@@ -6355,19 +6634,30 @@
     ];
     const MAX_ROWS = 20;
 
+    // Same instrument universe as the Analyze tab — used for the trade-details datalist.
+    const INSTRUMENTS = [
+      'NQ','MNQ','ES','MES','YM','MYM','RTY','M2K',
+      'EURUSD','GBPUSD','USDJPY','USDCHF','AUDUSD','USDCAD','NZDUSD',
+      'GBPJPY','EURJPY','EURGBP','AUDJPY','GBPAUD','EURAUD',
+      'XAUUSD','XAGUSD','CL','MCL','NG',
+    ];
+
     let checklists = [], activeId = null, limit = 2, used = 0;
     let checks = [], stats = null;
     let ticked = new Set();        // confluence ids ticked on the board
     let editingId = null;          // checklist id being edited (null = creating new)
+    let direction = null;          // 'long' | 'short' | null on the board's trade-details
     let loaded = false;
 
     const view       = document.getElementById('preflight-view');
+    const onboardEl  = document.getElementById('pf-onboard');
     const countEl    = document.getElementById('pf-count');
     const deckEl     = document.getElementById('pf-deck');
     const actionsEl  = document.getElementById('pf-actions');
     const activeLbl  = document.getElementById('pf-active-label');
     const builderEl  = document.getElementById('pf-builder');
     const boardEl    = document.getElementById('pf-board');
+    const instrListEl = document.getElementById('pf-instr-list');
 
     const CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
 
@@ -6431,6 +6721,7 @@
       } else {
         actionsEl.classList.add('hidden');
       }
+      onboardEl.style.display = used === 0 ? 'block' : 'none';
     }
 
     // ── Board ──
@@ -6499,14 +6790,24 @@
       checks.forEach(c => {
         const row = document.createElement('div');
         row.className = 'pf-hist-row';
-        const when = c.created_at
-          ? new Date(c.created_at).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-          : '';
+        const when = c.trade_date
+          ? c.trade_date
+          : c.created_at
+            ? new Date(c.created_at).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+            : '';
+        const meta = [];
+        if (c.instrument) meta.push('<span class="pf-hist-tag">' + escapeHtml(c.instrument) + '</span>');
+        if (c.direction) meta.push('<span class="pf-hist-tag ' + c.direction + '">' + escapeHtml(c.direction === 'long' ? T('pill.long') : T('pill.short')) + '</span>');
+        if (c.entry_price !== null && c.entry_price !== undefined) meta.push('<span class="pf-hist-tag">@ ' + c.entry_price + '</span>');
+        if (c.rr !== null && c.rr !== undefined) meta.push('<span class="pf-hist-tag">R:R ' + c.rr + '</span>');
+        if (c.position_size !== null && c.position_size !== undefined) meta.push('<span class="pf-hist-tag">' + c.position_size + '</span>');
+        if (c.pnl !== null && c.pnl !== undefined) meta.push('<span class="pf-hist-tag ' + (c.pnl >= 0 ? 'pnl-pos' : 'pnl-neg') + '">' + (c.pnl > 0 ? '+' : '') + c.pnl + '</span>');
         row.innerHTML =
           '<span class="pf-hist-date">' + escapeHtml(when) + '</span>' +
           '<span class="pf-hist-name">' + escapeHtml(c.checklist_name) + '</span>' +
           '<span class="pf-hist-score">' + c.score + ' / ' + c.total + '</span>' +
           '<span class="pf-chip ' + c.verdict + '">' + escapeHtml(verdictLabel(c.verdict)) + '</span>' +
+          (meta.length ? '<span class="pf-hist-meta">' + meta.join('') + '</span>' : '') +
           (c.note ? '<span class="pf-hist-note">' + escapeHtml(c.note) + '</span>' : '');
         const sel = document.createElement('select');
         sel.innerHTML =
@@ -6637,9 +6938,46 @@
       renderBoard();
     }
 
+    // ── Trade details (date/instrument/direction/entry/R:R/size/P&L) ──
+    function todayISO() {
+      const d = new Date();
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+    function setDirection(val) {
+      direction = val;
+      document.querySelectorAll('#pf-trade-direction .pf-dir-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.val === direction);
+      });
+    }
+    function resetTradeFields() {
+      document.getElementById('pf-trade-date').value = todayISO();
+      document.getElementById('pf-trade-instrument').value = '';
+      document.getElementById('pf-trade-entry').value = '';
+      document.getElementById('pf-trade-rr').value = '';
+      document.getElementById('pf-trade-size').value = '';
+      document.getElementById('pf-trade-pnl').value = '';
+      document.getElementById('pf-note').value = '';
+      setDirection(null);
+    }
+    function tradeFieldsPayload() {
+      const num = id => {
+        const v = document.getElementById(id).value;
+        return v === '' ? null : v;
+      };
+      return {
+        trade_date: document.getElementById('pf-trade-date').value || null,
+        instrument: document.getElementById('pf-trade-instrument').value.trim() || null,
+        direction: direction,
+        entry_price: num('pf-trade-entry'),
+        rr: num('pf-trade-rr'),
+        position_size: num('pf-trade-size'),
+        pnl: num('pf-trade-pnl'),
+      };
+    }
+
     // ── Checklist actions ──
     function loadChecklist(id) {
-      if (activeId !== id) ticked = new Set();   // fresh check on every switch
+      if (activeId !== id) { ticked = new Set(); resetTradeFields(); }   // fresh check on every switch
       activeId = id;
       closeBuilder();
       renderDeck();
@@ -6676,22 +7014,22 @@
       const res = await fetch('/api/preflight/checks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: JSON.stringify(Object.assign({
           checklist_id: act.id,
           checklist_name: act.name,
           checked: checkedLabels,
           total: rows.length,
           verdict: verdict,
           note: noteEl.value.trim(),
-        }),
+        }, tradeFieldsPayload())),
       });
       if (res.ok) {
         const lbl = document.querySelector('#pf-log span');
         const orig = lbl.textContent;
         lbl.textContent = T('pf.logged');
         setTimeout(() => { lbl.textContent = orig; }, 1400);
-        noteEl.value = '';
         ticked = new Set();          // next trade starts from a clean slate
+        resetTradeFields();
         renderBoard();
         refreshChecks();
       }
@@ -6742,6 +7080,11 @@
       document.getElementById('pf-builder-save').addEventListener('click', saveBuilder);
       document.getElementById('pf-builder-cancel').addEventListener('click', closeBuilder);
       document.getElementById('pf-log').addEventListener('click', logCheck);
+      document.querySelectorAll('#pf-trade-direction .pf-dir-btn').forEach(b => {
+        b.addEventListener('click', () => setDirection(direction === b.dataset.val ? null : b.dataset.val));
+      });
+      instrListEl.innerHTML = INSTRUMENTS.map(i => '<option value="' + i + '"></option>').join('');
+      resetTradeFields();
       renderStats();
     }
     return { init, open, relang };

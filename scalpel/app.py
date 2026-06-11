@@ -217,6 +217,14 @@ class PreflightCheck(db.Model):
     verdict = db.Column(db.String(10), nullable=False)          # 'go' | 'caution' | 'no-go'
     outcome = db.Column(db.String(10), nullable=True)           # 'win' | 'loss' | 'skipped'
     note = db.Column(db.String(200), nullable=True)
+    # ── Trade metadata (optional — backtesting or live papertrading log) ──
+    trade_date = db.Column(db.Date, nullable=True)
+    instrument = db.Column(db.String(20), nullable=True)
+    direction = db.Column(db.String(10), nullable=True)         # 'long' | 'short'
+    entry_price = db.Column(db.Float, nullable=True)
+    rr = db.Column(db.Float, nullable=True)
+    position_size = db.Column(db.Float, nullable=True)
+    pnl = db.Column(db.Float, nullable=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     user = db.relationship('User', backref='preflight_checks')
 
@@ -3816,8 +3824,60 @@ def serialize_check(c):
         'verdict': c.verdict,
         'outcome': c.outcome,
         'note': c.note,
+        'trade_date': c.trade_date.isoformat() if c.trade_date else None,
+        'instrument': c.instrument,
+        'direction': c.direction,
+        'entry_price': c.entry_price,
+        'rr': c.rr,
+        'position_size': c.position_size,
+        'pnl': c.pnl,
         'created_at': _as_utc(c.created_at).isoformat() if c.created_at else None,
     }
+
+
+def _parse_trade_meta(data):
+    """Pull the optional trade-metadata fields out of a request payload.
+
+    Every field is optional and silently dropped (None) if missing or
+    malformed — this is a discipline log, not a strict ledger.
+    """
+    from datetime import date as _date
+    meta = {}
+    raw_date = data.get('trade_date')
+    if isinstance(raw_date, str) and raw_date.strip():
+        try:
+            meta['trade_date'] = _date.fromisoformat(raw_date.strip()[:10])
+        except ValueError:
+            meta['trade_date'] = None
+    else:
+        meta['trade_date'] = None
+
+    instrument = data.get('instrument')
+    meta['instrument'] = str(instrument).strip()[:20].upper() if isinstance(instrument, str) and instrument.strip() else None
+
+    direction = data.get('direction')
+    direction = str(direction).strip().lower() if isinstance(direction, str) else None
+    meta['direction'] = direction if direction in ('long', 'short') else None
+
+    def _num(key, lo=None, hi=None):
+        v = data.get(key)
+        if v is None or v == '':
+            return None
+        try:
+            v = float(v)
+        except (TypeError, ValueError):
+            return None
+        if lo is not None:
+            v = max(lo, v)
+        if hi is not None:
+            v = min(hi, v)
+        return v
+
+    meta['entry_price'] = _num('entry_price', 0)
+    meta['rr'] = _num('rr', -100, 100)
+    meta['position_size'] = _num('position_size', 0)
+    meta['pnl'] = _num('pnl', -1e9, 1e9)
+    return meta
 
 
 def _preflight_guard():
@@ -3985,6 +4045,7 @@ def preflight_create_check():
         cl = PreflightChecklist.query.filter_by(id=checklist_id, user_id=current_user.id).first()
         checklist_id = cl.id if cl else None
 
+    meta = _parse_trade_meta(data)
     check = PreflightCheck(
         user_id=current_user.id,
         checklist_id=checklist_id,
@@ -3994,6 +4055,7 @@ def preflight_create_check():
         score=len(checked),
         verdict=verdict,
         note=(str(data.get('note') or '').strip()[:200] or None),
+        **meta,
     )
     db.session.add(check)
     db.session.commit()
@@ -4017,6 +4079,12 @@ def preflight_update_check(cid):
         check.outcome = outcome
     if 'note' in data:
         check.note = str(data.get('note') or '').strip()[:200] or None
+    meta_keys = ('trade_date', 'instrument', 'direction', 'entry_price', 'rr', 'position_size', 'pnl')
+    if any(k in data for k in meta_keys):
+        meta = _parse_trade_meta(data)
+        for k in meta_keys:
+            if k in data:
+                setattr(check, k, meta[k])
     db.session.commit()
     return jsonify({'ok': True, 'check': serialize_check(check)})
 
@@ -4088,10 +4156,44 @@ def _migrate_user_verification_columns():
         app.logger.info('Migrated user table: added missing columns (%d).', len(stmts))
 
 
+def _migrate_preflight_check_columns():
+    """Add the trade-metadata columns to an existing `preflight_check` table.
+
+    db.create_all() never ALTERs existing tables, so checks logged before
+    this feature need the new (all-nullable) columns added by hand.
+    """
+    from sqlalchemy import inspect, text
+    insp = inspect(db.engine)
+    if 'preflight_check' not in insp.get_table_names():
+        return
+    cols = {c['name'] for c in insp.get_columns('preflight_check')}
+    stmts = []
+    if 'trade_date' not in cols:
+        stmts.append("ALTER TABLE preflight_check ADD COLUMN trade_date DATE")
+    if 'instrument' not in cols:
+        stmts.append("ALTER TABLE preflight_check ADD COLUMN instrument VARCHAR(20)")
+    if 'direction' not in cols:
+        stmts.append("ALTER TABLE preflight_check ADD COLUMN direction VARCHAR(10)")
+    if 'entry_price' not in cols:
+        stmts.append("ALTER TABLE preflight_check ADD COLUMN entry_price FLOAT")
+    if 'rr' not in cols:
+        stmts.append("ALTER TABLE preflight_check ADD COLUMN rr FLOAT")
+    if 'position_size' not in cols:
+        stmts.append("ALTER TABLE preflight_check ADD COLUMN position_size FLOAT")
+    if 'pnl' not in cols:
+        stmts.append("ALTER TABLE preflight_check ADD COLUMN pnl FLOAT")
+    if stmts:
+        with db.engine.begin() as conn:
+            for s in stmts:
+                conn.execute(text(s))
+        app.logger.info('Migrated preflight_check table: added missing columns (%d).', len(stmts))
+
+
 def init_db():
     with app.app_context():
         db.create_all()
         _migrate_user_verification_columns()
+        _migrate_preflight_check_columns()
         admin_email = os.environ.get('ADMIN_EMAIL', 'mauroramirezmij@gmail.com').lower()
         admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
         admin_password = os.environ.get('ADMIN_PASSWORD', 'Codica2310$')
