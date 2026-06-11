@@ -34,6 +34,27 @@ app.config['MAX_CONTENT_LENGTH'] = 20 * 1024 * 1024  # 20MB max
 
 
 # ──────────────────────────────────────────────────────────────────────────
+# SENTRY (optional) — error tracking. Inert until SENTRY_DSN is set as an
+# env var (free account at sentry.io). Catches unhandled exceptions across
+# the Flask app and reports them with stack traces / request context.
+# ──────────────────────────────────────────────────────────────────────────
+_sentry_dsn = os.environ.get('SENTRY_DSN')
+if _sentry_dsn:
+    try:
+        import sentry_sdk
+        from sentry_sdk.integrations.flask import FlaskIntegration
+        sentry_sdk.init(
+            dsn=_sentry_dsn,
+            integrations=[FlaskIntegration()],
+            traces_sample_rate=0.0,
+            send_default_pii=False,
+        )
+    except ImportError:
+        print("SENTRY_DSN is set but the 'sentry-sdk' package is not installed — "
+              "run: pip install sentry-sdk")
+
+
+# ──────────────────────────────────────────────────────────────────────────
 # SECRET KEY — must stay stable across restarts so sessions / reset tokens
 # survive a server reboot. Read from env, else persist a generated one to a
 # gitignored file so "remember me" cookies keep working.
@@ -441,6 +462,83 @@ class Expense(db.Model):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
 
+class AuditEvent(db.Model):
+    """Append-only trail of sensitive operations: payments, plan grants/expirations,
+    PDF deliveries, and outbound emails (OTP, password reset, contact form).
+
+    Lets the admin (and the daily summary email) see at a glance whether a paid
+    feature actually fired correctly — e.g. "did this user's Synapse PDF really
+    get delivered?" or "did the verification email bounce?" — without digging
+    through server logs."""
+    id = db.Column(db.Integer, primary_key=True)
+    event_type = db.Column(db.String(40), nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    success = db.Column(db.Boolean, default=True, nullable=False, index=True)
+    detail = db.Column(db.String(500), nullable=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+
+
+# Event types that immediately email the admin inbox when they fail — these
+# are the "user paid / clicked something and it silently didn't work" cases.
+AUDIT_ALERT_ON_FAILURE = {
+    'order_paid', 'pdf_issued', 'pdf_downloaded',
+    'email_verification', 'email_reset', 'email_contact', 'analysis_error',
+}
+
+
+def record_audit_event(event_type, user_id=None, detail='', success=True):
+    """Log a sensitive operation. Never raises — auditing must not break the
+    request it's observing. On failure of an alert-worthy event, also emails
+    the admin inbox immediately (best-effort, fire-and-forget)."""
+    try:
+        evt = AuditEvent(
+            event_type=event_type, user_id=user_id,
+            success=success, detail=(detail or '')[:500],
+        )
+        db.session.add(evt)
+        db.session.commit()
+    except Exception as e:
+        app.logger.error('record_audit_event failed: %s', e)
+        return
+    if not success and event_type in AUDIT_ALERT_ON_FAILURE:
+        _send_audit_alert_email(event_type, user_id, detail)
+
+
+def _send_audit_alert_email(event_type, user_id, detail):
+    """Fire-and-forget email to the admin inbox when a payment/delivery/email
+    event fails. Uses the same MAIL_USERNAME as everything else, so swapping
+    to a business inbox later (per the pending domain task) updates this too."""
+    if not app.config.get('MAIL_PASSWORD'):
+        app.logger.warning('Audit alert (%s) skipped — MAIL_APP_PASSWORD not configured.', event_type)
+        return
+    admin_inbox = app.config.get('MAIL_USERNAME', 'mauroramirezmij@gmail.com')
+    subject = f'[Trader Acelerator] Action needed — {event_type} failed'
+    body = (
+        f"Event   : {event_type}\n"
+        f"User ID : {user_id if user_id is not None else '(none)'}\n"
+        f"Detail  : {detail or '(none)'}\n"
+        f"Time    : {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}\n\n"
+        f"Check the Audit Log tab in the admin panel for context."
+    )
+    msg = Message(subject, recipients=[admin_inbox])
+    msg.body = body
+
+    def _send():
+        prev_timeout = socket.getdefaulttimeout()
+        socket.setdefaulttimeout(15)
+        try:
+            with app.app_context():
+                mail.send(msg)
+        except Exception as e:
+            app.logger.error('Audit alert email failed: %s', e)
+        finally:
+            socket.setdefaulttimeout(prev_timeout)
+
+    threading.Thread(target=_send, daemon=True).start()
+
+
+
+
 def _aware(dt):
     """Treat naive DB datetimes as UTC so comparisons never crash."""
     if dt is None:
@@ -472,12 +570,14 @@ def _expire_plan():
         return
     expires = _aware(getattr(current_user, 'plan_expires_at', None))
     if expires and expires < datetime.now(timezone.utc):
+        old_plan = current_user.plan
         current_user.plan = 'free'
         current_user.plan_cycle = None
         current_user.plan_started_at = None
         current_user.plan_expires_at = None
         current_user.cancel_at_period_end = False
         db.session.commit()
+        record_audit_event('plan_expired', user_id=current_user.id, detail=f'{old_plan} -> free')
 
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -1087,6 +1187,9 @@ def contact():
                                    category=category, message=message)
 
         sent = _send_contact_email(name, email, category, message)
+        record_audit_event('email_contact',
+                            user_id=current_user.id if current_user.is_authenticated else None,
+                            detail=f'{category} — {email}', success=sent)
         return render_template('contact.html', success=True, sent=sent)
 
     # Pre-fill name/email for logged-in users.
@@ -1142,7 +1245,8 @@ def login():
                 user.verification_code = code
                 user.verification_expires = datetime.now(timezone.utc) + timedelta(minutes=15)
                 db.session.commit()
-                send_verification_email(user.email, code)
+                sent = send_verification_email(user.email, code)
+                record_audit_event('email_verification', user_id=user.id, detail=user.email, success=sent)
                 session['pending_user_id'] = user.id
                 session['pending_remember'] = remember
                 return redirect(url_for('verify_email'))
@@ -1206,7 +1310,8 @@ def register():
             db.session.add(BrowserFingerprint(user_id=user.id, fp_hash=fp_hash))
             db.session.commit()
 
-        send_verification_email(email, code)
+        sent = send_verification_email(email, code)
+        record_audit_event('email_verification', user_id=user.id, detail=email, success=sent)
         session['pending_user_id'] = user.id
         session['pending_remember'] = remember
         return redirect(url_for('verify_email'))
@@ -1262,7 +1367,8 @@ def resend_code():
         user.verification_code = code
         user.verification_expires = datetime.now(timezone.utc) + timedelta(minutes=15)
         db.session.commit()
-        send_verification_email(user.email, code)
+        sent = send_verification_email(user.email, code)
+        record_audit_event('email_verification', user_id=user.id, detail=f'{user.email} (resend)', success=sent)
     return render_template('verify_email.html', email=user.email if user else '', resent=True)
 
 
@@ -1288,7 +1394,8 @@ def forgot_password():
         if user:
             token = reset_serializer.dumps(email, salt='password-reset')
             reset_url = url_for('reset_password', token=token, _external=True)
-            send_reset_email(email, reset_url)
+            sent = send_reset_email(email, reset_url)
+            record_audit_event('email_reset', user_id=user.id, detail=email, success=sent)
         # Always report success — never reveal which emails are registered.
         return render_template('forgot_password.html', sent=True)
     return render_template('forgot_password.html')
@@ -1373,8 +1480,20 @@ def admin():
     # ── Revenue / orders / promos / expenses dashboard ──
     revenue = _build_revenue_context()
 
+    # ── Audit log: payments, plan grants, PDF deliveries, outbound emails ──
+    audit_rows = AuditEvent.query.order_by(AuditEvent.created_at.desc()).limit(150).all()
+    audit_events = [{
+        'event_type': a.event_type,
+        'username': uname.get(a.user_id, '—') if a.user_id else '—',
+        'detail': a.detail,
+        'success': a.success,
+        'created_at': a.created_at,
+    } for a in audit_rows]
+    audit_failed_count = sum(1 for a in audit_rows if not a.success)
+
     return render_template(
         'admin.html', users=users, counts=counts,
+        audit_events=audit_events, audit_failed_count=audit_failed_count,
         warn_counts=warn_counts, recent_warnings=recent_warnings, flagged=flagged,
         ban_queue=ban_queue, **revenue,
     )
@@ -1602,6 +1721,9 @@ def checkout_create():
     if promo:
         promo.uses_count = (promo.uses_count or 0) + 1
     db.session.commit()
+    record_audit_event('order_created', user_id=current_user.id,
+                        detail=f'{plan}/{cycle} ${q["final_price"]:.2f}'
+                               + (f' promo={promo.code}' if promo else ''))
     return render_template('checkout_done.html', order=order,
                            plan_label=PLAN_LABELS.get(plan, plan), duplicate=False)
 
@@ -1618,7 +1740,10 @@ def admin_order_mark_paid():
         order.status = 'paid'
         order.paid_at = datetime.now(timezone.utc)
         db.session.commit()
-        _activate_plan_from_order(order)  # idempotent
+        activated = _activate_plan_from_order(order)  # idempotent
+        record_audit_event('order_paid', user_id=order.user_id,
+                            detail=f'order #{order.id} {order.plan}/{order.billing_cycle} ${order.final_price:.2f}',
+                            success=activated)
     return redirect(url_for('admin') + '#revenue')
 
 
@@ -1639,6 +1764,8 @@ def admin_order_cancel():
             if promo and promo.uses_count > 0:
                 promo.uses_count -= 1
         db.session.commit()
+        record_audit_event('order_cancelled', user_id=order.user_id,
+                            detail=f'order #{order.id} {order.plan}/{order.billing_cycle} ${order.final_price:.2f}')
     return redirect(url_for('admin') + '#revenue')
 
 
@@ -1671,6 +1798,8 @@ def admin_promo_create():
     )
     db.session.add(promo)
     db.session.commit()
+    record_audit_event('promo_created', user_id=current_user.id,
+                        detail=f'{code} {discount}% ({promo.kind}/{promo.valid_for})')
     return redirect(url_for('admin') + '#promos')
 
 
@@ -2285,6 +2414,7 @@ def admin_issue_synapse_pdf():
     db.session.commit()
 
     download_url = url_for('synapse_pdf_download', token=token, _external=True)
+    record_audit_event('pdf_issued', user_id=user.id, detail=f'order={order_id} token={token[:8]}…')
     # Return a simple redirect back to admin with the URL in a flash-style param
     return redirect(url_for('admin', pdf_issued=download_url))
 
@@ -2295,6 +2425,9 @@ def synapse_pdf_download(token):
     dl = SynapseDownloadToken.query.filter_by(token=token).first_or_404()
 
     if not dl.is_valid:
+        record_audit_event('pdf_downloaded', user_id=dl.user_id,
+                            detail=f'order={dl.order_id} token={token[:8]}… (expired/exhausted link)',
+                            success=False)
         return render_template('pdf_expired.html'), 410
 
     user = db.session.get(User, dl.user_id)
@@ -2309,10 +2442,14 @@ def synapse_pdf_download(token):
         )
     except Exception as e:
         app.logger.error('PDF generation error: %s', e)
+        record_audit_event('pdf_downloaded', user_id=user.id,
+                            detail=f'order={dl.order_id} generation error: {e}', success=False)
         abort(500)
 
     dl.downloads += 1
     db.session.commit()
+    record_audit_event('pdf_downloaded', user_id=user.id,
+                        detail=f'order={dl.order_id} download #{dl.downloads}/{dl.max_dl}')
 
     resp = make_response(pdf_bytes)
     resp.headers['Content-Type'] = 'application/pdf'
@@ -2495,6 +2632,9 @@ LANGUAGE: Write your entire response in {language}. Keep ICT-specific terms and 
 
     except Exception as e:
         error_msg = str(e)
+        record_audit_event('analysis_error',
+                            user_id=current_user.id if current_user.is_authenticated else None,
+                            detail=error_msg[:300], success=False)
         if 'token' in error_msg.lower() or 'auth' in error_msg.lower() or '401' in error_msg:
             return jsonify({'error': 'Authentication failed. Check your GITHUB_TOKEN in the .env file.'}), 401
         if '429' in error_msg:

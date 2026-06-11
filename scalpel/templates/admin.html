@@ -105,6 +105,24 @@
     .warn-excerpt { color: var(--muted); font-size: 12px; font-family: 'JetBrains Mono', monospace; margin-top: 4px; word-break: break-word; }
     .warn-time { color: var(--muted); font-size: 11px; white-space: nowrap; }
 
+    /* ── Audit log ── */
+    .audit-row {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+      padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 12.5px;
+    }
+    .audit-row:last-child { border-bottom: none; }
+    .audit-row.fail { background: rgba(239,68,68,0.07); }
+    .audit-type {
+      display: inline-block; font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.04em; padding: 3px 9px; border-radius: 10px; margin-right: 8px;
+      background: rgba(91,142,240,0.16); color: var(--accent); white-space: nowrap;
+    }
+    .audit-status { font-weight: 700; margin-right: 6px; }
+    .audit-status.ok { color: #22c55e; }
+    .audit-status.fail { color: var(--loss); }
+    .audit-detail { color: var(--muted); }
+    .audit-user { font-weight: 600; }
+
     /* ── Ban suggestion queue ── */
     .ban-card { border: 1px solid rgba(224,90,70,0.35); border-radius: 12px;
       padding: 16px 18px; margin-bottom: 12px; background: rgba(224,90,70,0.05); }
@@ -189,6 +207,7 @@
       <span class="badge">Admin</span>
     </div>
     <div class="links">
+      <a href="#audit">Audit log{% if audit_failed_count %} ({{ audit_failed_count }} ⚠){% endif %}</a>
       <a href="/app">Open app →</a>
       <a href="/logout">Sign out</a>
     </div>
@@ -506,6 +525,31 @@
       </div>
       {% else %}
       <div class="empty">No moderation flags yet.</div>
+      {% endfor %}
+    </div>
+
+    <div class="section-h" id="audit">📋 Audit Log — payments, plan grants, PDF deliveries &amp; emails</div>
+    <div class="section-d">
+      Every order, plan grant/expiration, promo creation, Synapse PDF issue/download, and outbound
+      email (verification, password reset, contact form) is logged here. Rows in red are failures —
+      e.g. a verification email that didn't send, a PDF link that was already expired/exhausted, or
+      an analysis request that errored. Failures on payment/PDF/email events also send you an
+      immediate alert email.
+    </div>
+
+    <div class="table-card">
+      {% for a in audit_events %}
+      <div class="audit-row {{ '' if a.success else 'fail' }}">
+        <div>
+          <span class="audit-type">{{ a.event_type }}</span>
+          <span class="audit-status {{ 'ok' if a.success else 'fail' }}">{{ '✓' if a.success else '✗' }}</span>
+          {% if a.username and a.username != '—' %}<span class="audit-user">{{ a.username }}</span> — {% endif %}
+          {% if a.detail %}<span class="audit-detail">{{ a.detail }}</span>{% endif %}
+        </div>
+        <span class="warn-time">{{ a.created_at.strftime('%Y-%m-%d %H:%M') if a.created_at else '' }}</span>
+      </div>
+      {% else %}
+      <div class="empty">No audit events yet.</div>
       {% endfor %}
     </div>
   </div>

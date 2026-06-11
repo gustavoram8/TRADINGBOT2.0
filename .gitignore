@@ -28,6 +28,7 @@ data/cache/
 *.db
 scalpel/.secret_key
 instance/
+backups/
 
 # OS
 .DS_Store
