@@ -4722,8 +4722,11 @@ def init_db():
     with app.app_context():
         db.create_all()
         _migrate_user_verification_columns()
-        _migrate_user_alt_id_column()
+        # NOTE: the review-column migration must run BEFORE the alt_id one —
+        # the alt_id backfill issues an ORM query that SELECTs every User
+        # column, so any column the model knows about must already exist.
         _migrate_user_review_column()
+        _migrate_user_alt_id_column()
         _migrate_order_columns()
         _migrate_promo_code_columns()
         _migrate_preflight_check_columns()
