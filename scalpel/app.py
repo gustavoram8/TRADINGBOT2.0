@@ -4506,8 +4506,8 @@ def _migrate_user_alt_id_column():
     cols = {c['name'] for c in insp.get_columns('user')}
     if 'alt_id' not in cols:
         with db.engine.begin() as conn:
-            conn.execute(text("ALTER TABLE user ADD COLUMN alt_id VARCHAR(40)"))
-            conn.execute(text("CREATE UNIQUE INDEX ix_user_alt_id ON user (alt_id)"))
+            conn.execute(text('ALTER TABLE "user" ADD COLUMN alt_id VARCHAR(40)'))
+            conn.execute(text('CREATE UNIQUE INDEX ix_user_alt_id ON "user" (alt_id)'))
         app.logger.info('Migrated user table: added alt_id column + index.')
 
     users_without_alt_id = User.query.filter(
