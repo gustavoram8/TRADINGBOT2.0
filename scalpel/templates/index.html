@@ -2249,11 +2249,6 @@
       font-weight: 700; font-size: 13px; animation: dailyPulse 1.6s ease-in-out infinite;
     }
     @keyframes dailyPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-    .daily-coupons-btn {
-      background: none; border: none; cursor: pointer; padding: 2px 4px;
-      font-size: 12px; font-weight: 600; color: var(--muted); font-family: inherit;
-    }
-    .daily-coupons-btn:hover { color: var(--accent); }
     .coupons-list { display: flex; flex-direction: column; gap: 10px; }
     .coupon-row {
       display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
@@ -3433,6 +3428,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
           <span data-i18n="account.plans">Plans &amp; pricing</span>
         </a>
+        <a class="row" href="#" id="menu-coupons" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a2 2 0 0 1 2-2V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v3a2 2 0 0 1 0 4v3a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-3a2 2 0 0 1-2-2z"/><line x1="13" y1="5" x2="13" y2="7"/><line x1="13" y1="11" x2="13" y2="13"/><line x1="13" y1="17" x2="13" y2="19"/></svg>
+          <span data-i18n="daily.coupons">My coupons</span>
+        </a>
         <a class="row" href="/login" id="menu-login" style="display:none;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
           <span data-i18n="account.signin">Sign in</span>
@@ -3445,6 +3444,17 @@
     </div>
   </div>
 </nav>
+
+<!-- My coupons modal (global: opened from the account menu) -->
+<div class="daily-overlay" id="coupons-overlay" style="display:none;">
+  <div class="daily-modal">
+    <div class="daily-modal-head">
+      🎟 <span data-i18n="daily.couponsTitle">My coupons</span>
+      <button class="daily-close" id="coupons-close-btn" aria-label="Close">×</button>
+    </div>
+    <div class="coupons-list" id="coupons-list"><!-- populated by JS --></div>
+  </div>
+</div>
 
 <div class="tabs" id="tabs">
   <button class="tab active" type="button" data-tab="analyze">
@@ -4069,9 +4079,6 @@
               🎡 <span data-i18n="daily.spinReady">Spin the wheel!</span> <span id="daily-spin-count"></span>
             </button>
             <div class="daily-played-msg" id="daily-played-msg" style="display:none;"></div>
-            <button class="daily-coupons-btn" id="daily-coupons-btn">
-              🎟 <span data-i18n="daily.coupons">My coupons</span>
-            </button>
           </div>
         </div>
         <div class="quiz-method-grid" id="quiz-method-grid">
@@ -4202,16 +4209,6 @@
       </div>
 
       <!-- ── Daily Challenge modal (question + 60s timer) ── -->
-      <div class="daily-overlay" id="coupons-overlay" style="display:none;">
-        <div class="daily-modal">
-          <div class="daily-modal-head">
-            🎟 <span data-i18n="daily.couponsTitle">My coupons</span>
-            <button class="daily-close" id="coupons-close-btn" aria-label="Close">×</button>
-          </div>
-          <div class="coupons-list" id="coupons-list"><!-- populated by JS --></div>
-        </div>
-      </div>
-
       <div class="daily-overlay" id="daily-overlay" style="display:none;">
         <div class="daily-modal">
           <div class="daily-modal-head">
@@ -8128,6 +8125,9 @@
     document.getElementById('menu-plan').textContent = T('plan.' + plan + 'Label') || (plan + ' plan');
 
     document.getElementById('menu-admin').style.display = U.isAdmin ? 'flex' : 'none';
+    // Roulette coupons are a premium feature (won via the Daily Challenge).
+    document.getElementById('menu-coupons').style.display =
+      (U.plan === 'premium' || U.isAdmin) ? 'flex' : 'none';
     // Guests get "Sign in"; the logout row doubles as "exit free mode"
     document.getElementById('menu-login').style.display  = U.isGuest ? 'flex' : 'none';
     document.getElementById('menu-logout-label').textContent =
@@ -8137,6 +8137,11 @@
   accountBtn.addEventListener('click', e => {
     e.stopPropagation();
     accountMenu.classList.toggle('show');
+  });
+  document.getElementById('menu-coupons').addEventListener('click', e => {
+    e.preventDefault();
+    accountMenu.classList.remove('show');
+    if (window.openMyCoupons) window.openMyCoupons();
   });
   document.addEventListener('click', () => accountMenu.classList.remove('show'));
   accountMenu.addEventListener('click', e => e.stopPropagation());
@@ -18829,7 +18834,7 @@
         }
 
         // ── Wire up ──
-        $('daily-coupons-btn')?.addEventListener('click', openCoupons);
+        window.openMyCoupons = openCoupons;   // opened from the account menu in the nav
         $('coupons-close-btn')?.addEventListener('click', () => { $('coupons-overlay').style.display = 'none'; });
         $('daily-play-btn')?.addEventListener('click', play);
         $('daily-close-btn')?.addEventListener('click', closeModal);
