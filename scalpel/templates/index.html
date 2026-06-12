@@ -8592,6 +8592,14 @@
 
     if (!U.reviewPrompt) return;
 
+    // Usage gate: only show the prompt after ~20 minutes of accumulated
+    // real usage (tab visible), so brand-new upgraders aren't asked to
+    // rate features they haven't tried yet. Tracked across visits.
+    const USAGE_KEY = 'ta_usage_min';
+    const USAGE_GOAL = 20;
+    let usageMin = parseInt(localStorage.getItem(USAGE_KEY) || '0', 10) || 0;
+    let shown = false;
+
     const rov = document.getElementById('review-overlay');
     rov.querySelectorAll('[data-i18n]').forEach(el => {
       const t = T(el.getAttribute('data-i18n'));
@@ -8633,7 +8641,19 @@
       }).finally(close);
     });
 
-    rov.style.display = '';
+    function maybeShow() {
+      if (shown || usageMin < USAGE_GOAL) return;
+      shown = true;
+      rov.style.display = '';
+    }
+    // Count one usage minute per minute while the tab is actually visible.
+    setInterval(() => {
+      if (document.hidden) return;
+      usageMin += 1;
+      localStorage.setItem(USAGE_KEY, String(usageMin));
+      maybeShow();
+    }, 60000);
+    maybeShow();
   })();
 
   // ── Usage limit + live countdown ──
