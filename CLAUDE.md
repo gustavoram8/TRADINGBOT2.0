@@ -3,6 +3,28 @@
 
 ---
 
+> **🚨 MÁS URGENTE — PENDIENTE: CONECTAR CUENTA BANCARIA (pago por transferencia, NO Binance)**
+>
+> El usuario decidió que los pagos serán por **transferencia bancaria en USD a la cuenta
+> de su amigo/socio**, NO por USDT/Binance como dice actualmente el sitio.
+>
+> **Hoy `scalpel/templates/checkout_done.html:109` dice textualmente:**
+> `"Send ${{ '%.2f'|format(order.final_price) }} USD in USDT to our Binance account."`
+>
+> **Cuando el usuario traiga los datos bancarios** (banco, titular, número de cuenta /
+> routing / SWIFT según corresponda), hay que:
+> 1. Reemplazar ese texto en `checkout_done.html` por las instrucciones de transferencia
+>    bancaria reales.
+> 2. Cambiar `payment_method='usdt-binance'` (en `checkout_create()`, `scalpel/app.py`
+>    ~línea 1760) a algo como `'bank-transfer'`.
+> 3. Revisar si hay otras menciones a "Binance"/"USDT" en el sitio (`grep -rn
+>    "Binance\|USDT\|usdt-binance" scalpel/`) y actualizarlas también.
+>
+> Esta tarea bloquea poder cobrar de forma realista — es la más urgente de todas
+> las pendientes hasta que el usuario traiga los datos de la cuenta.
+
+---
+
 > **✅ COMPLETADO (2026-06-11) — SISTEMA DE FIABILIDAD: AUDIT LOG + ALERTAS + BACKUPS + SENTRY**
 >
 > Sesión del 2026-06-10/11 (commits `b67f1c3`, perf/XSS, `6f63d54` — pusheados a
