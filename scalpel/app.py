@@ -180,12 +180,21 @@ class User(UserMixin, db.Model):
     # ── Terms & Conditions acceptance (clickwrap evidence) ──
     terms_accepted_at = db.Column(db.DateTime, nullable=True)
     terms_version = db.Column(db.String(20), nullable=True)  # e.g. "2026-06-05"
+    # ── Stable login identifier for session/remember-me cookies ──
+    # A random token (not the DB primary key) so cookies issued before a
+    # database migration (e.g. SQLite -> PostgreSQL, where numeric ids can
+    # shift) can never resolve to a different account.
+    alt_id = db.Column(db.String(40), unique=True, nullable=True, index=True,
+                       default=lambda: secrets.token_hex(20))
 
     def set_password(self, raw):
         self.password_hash = generate_password_hash(raw)
 
     def check_password(self, raw):
         return check_password_hash(self.password_hash, raw)
+
+    def get_id(self):
+        return self.alt_id
 
 
 class UsageLog(db.Model):
@@ -576,7 +585,7 @@ def _aware(dt):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return db.session.get(User, int(user_id))
+    return User.query.filter_by(alt_id=user_id).first()
 
 
 @app.before_request
@@ -4484,6 +4493,33 @@ def _migrate_user_verification_columns():
         app.logger.info('Migrated user table: added missing columns (%d).', len(stmts))
 
 
+def _migrate_user_alt_id_column():
+    """Add `alt_id` and backfill it for every existing user.
+
+    Login/remember-me cookies store this value instead of the numeric
+    primary key, so cookies issued before this migration (or before a
+    DB engine swap that could shift numeric ids) simply stop matching
+    any account instead of risking a mismatch.
+    """
+    from sqlalchemy import inspect, text
+    insp = inspect(db.engine)
+    cols = {c['name'] for c in insp.get_columns('user')}
+    if 'alt_id' not in cols:
+        with db.engine.begin() as conn:
+            conn.execute(text("ALTER TABLE user ADD COLUMN alt_id VARCHAR(40)"))
+            conn.execute(text("CREATE UNIQUE INDEX ix_user_alt_id ON user (alt_id)"))
+        app.logger.info('Migrated user table: added alt_id column + index.')
+
+    users_without_alt_id = User.query.filter(
+        (User.alt_id.is_(None)) | (User.alt_id == '')
+    ).all()
+    if users_without_alt_id:
+        for u in users_without_alt_id:
+            u.alt_id = secrets.token_hex(20)
+        db.session.commit()
+        app.logger.info('Backfilled alt_id for %d existing user(s).', len(users_without_alt_id))
+
+
 def _migrate_preflight_check_columns():
     """Add the trade-metadata columns to an existing `preflight_check` table.
 
@@ -4523,6 +4559,7 @@ def init_db():
     with app.app_context():
         db.create_all()
         _migrate_user_verification_columns()
+        _migrate_user_alt_id_column()
         _migrate_preflight_check_columns()
         admin_email = os.environ.get('ADMIN_EMAIL', 'mauroramirezmij@gmail.com').lower()
         admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
