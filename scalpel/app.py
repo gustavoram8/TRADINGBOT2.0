@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import base64
 import socket
@@ -1344,6 +1345,19 @@ def login():
                            error='banned' if request.args.get('banned') else None)
 
 
+# ── Credential rules ──
+# Username: 3-20 chars, letters/digits/dot/underscore/hyphen, must start
+# with a letter or digit. Password: 8+ chars with at least one letter and
+# one digit. Existing accounts are unaffected (rules apply on create/reset).
+USERNAME_RE = re.compile(r'^[A-Za-z0-9][A-Za-z0-9._-]{2,19}$')
+
+
+def _valid_password(pw):
+    return (len(pw) >= 8
+            and re.search(r'[A-Za-z]', pw) is not None
+            and re.search(r'\d', pw) is not None)
+
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
@@ -1360,8 +1374,12 @@ def register():
         accepted_terms = bool(request.form.get('accept_terms'))
         fp_hash = (request.form.get('_fp') or '').strip()[:64]
 
-        if len(username) < 3 or len(email) < 5 or len(password) < 6:
+        if len(email) < 5:
             return render_template('register.html', error='invalid', username=username, email=email)
+        if not USERNAME_RE.match(username):
+            return render_template('register.html', error='invalid_username', username=username, email=email)
+        if not _valid_password(password):
+            return render_template('register.html', error='invalid_password', username=username, email=email)
         # Clickwrap: the account cannot be created without explicit T&C consent.
         if not accepted_terms:
             return render_template('register.html', error='terms_required', username=username, email=email)
@@ -1490,7 +1508,7 @@ def reset_password(token):
 
     if request.method == 'POST':
         password = request.form.get('password', '')
-        if len(password) < 6:
+        if not _valid_password(password):
             return render_template('reset_password.html', token=token, error='short')
         user = User.query.filter_by(email=email).first()
         if user:

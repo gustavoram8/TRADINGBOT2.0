@@ -27,7 +27,11 @@
     <div class="auth-sub" data-i18n="reg.sub">For Standard and Premium subscribers</div>
 
     {% if error == 'invalid' %}
-      <div class="alert alert-error" data-i18n="reg.errInvalid">Please check your details (username 3+, password 6+ chars).</div>
+      <div class="alert alert-error" data-i18n="reg.errInvalid">Please check your details.</div>
+    {% elif error == 'invalid_username' %}
+      <div class="alert alert-error" data-i18n="reg.errUsername">Username must be 3-20 characters: letters, numbers, dots, underscores or hyphens (no spaces).</div>
+    {% elif error == 'invalid_password' %}
+      <div class="alert alert-error" data-i18n="reg.errPassword">Password must be at least 8 characters and include a letter and a number.</div>
     {% elif error == 'username_taken' %}
       <div class="alert alert-error" data-i18n="reg.errUser">That username is already taken.</div>
     {% elif error == 'email_taken' %}
@@ -42,7 +46,8 @@
       <input type="hidden" name="_fp" id="reg-fp" value="" />
       <div class="field">
         <label for="username" data-i18n="reg.username">Username</label>
-        <input type="text" id="username" name="username" value="{{ username or '' }}" autocomplete="username" minlength="3" required />
+        <input type="text" id="username" name="username" value="{{ username or '' }}" autocomplete="username"
+               minlength="3" maxlength="20" pattern="[A-Za-z0-9][A-Za-z0-9._\-]{2,19}" required />
       </div>
       <div class="field">
         <label for="email" data-i18n="reg.email">Email</label>
@@ -50,8 +55,8 @@
       </div>
       <div class="field">
         <label for="password" data-i18n="reg.password">Password</label>
-        <input type="password" id="password" name="password" autocomplete="new-password" minlength="6"
-               data-i18n-ph="reg.passwordHint" placeholder="At least 6 characters" required />
+        <input type="password" id="password" name="password" autocomplete="new-password" minlength="8"
+               data-i18n-ph="reg.passwordHint" placeholder="8+ characters, with a letter and a number" required />
       </div>
       <label class="remember-row">
         <input type="checkbox" name="remember" value="1" />
