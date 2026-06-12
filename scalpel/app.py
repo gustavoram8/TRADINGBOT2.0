@@ -3980,7 +3980,7 @@ def daily_spin():
         db.session.add(PromoCode(
             code=promo_code, discount_pct=discount, kind='discount',
             creator_name=f'roulette:{current_user.username}',
-            valid_for='both', max_uses=1,
+            valid_for='monthly', max_uses=1,
             expires_at=datetime.now(timezone.utc) + timedelta(days=90),
         ))
     else:
