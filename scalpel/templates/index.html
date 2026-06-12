@@ -2374,6 +2374,18 @@
     @media (prefers-reduced-motion: reduce) {
       .unlock-rays, .unlock-halo, .unlock-icon { animation: none; }
     }
+
+    /* "NEW" pill — tiny color-cycling shine (compositor-cheap: background-position only) */
+    .new-badge {
+      display: inline-block; margin-left: 7px; padding: 1px 7px 2px; border-radius: 999px;
+      font-size: 9px; font-weight: 900; letter-spacing: 0.08em; color: #10131c;
+      vertical-align: 2px; line-height: 1.5;
+      background: linear-gradient(90deg, #f3d57c, #7af0a0, #7ab8f0, #e89ae8, #f3d57c);
+      background-size: 320% 100%;
+      animation: newBadgeShift 3.2s linear infinite;
+    }
+    @keyframes newBadgeShift { to { background-position: 320% 0; } }
+    @media (prefers-reduced-motion: reduce) { .new-badge { animation: none; } }
     .daily-played-msg { font-size: 12.5px; font-weight: 600; }
     .daily-played-msg.ok { color: #22c55e; }
     .daily-played-msg.bad { color: #ef4444; }
@@ -3599,6 +3611,7 @@
   <button class="tab" type="button" data-tab="preflight">
     <svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
     <span data-i18n="tabs.preflight">Pre-Flight</span>
+    <span class="new-badge" aria-hidden="true">NEW</span>
   </button>
   {% endif %}
   <button class="tab" type="button" data-tab="quiz">
@@ -8279,13 +8292,15 @@
         'unlock.sub': 'Here is everything you just got access to',
         'unlock.f.analyzer5.n': 'AI Analyzer ×5',
         'unlock.f.analyzer5.d': 'Up to 5 chart screenshot analyses per day with GPT-4o Vision — structure, entries and risk reviewed in seconds.',
+        'unlock.f.preflight.n': 'Pre-Flight',
+        'unlock.f.preflight.d': 'Your pre-trade checklist: validate every setup against your rules before entry, log the trade and track your discipline stats.',
         'unlock.f.forum.n': 'Trading Forum',
         'unlock.f.forum.d': 'A private community of traders with AI moderation. Share setups, get feedback, talk ICT.',
         'unlock.f.quiz.n': 'Quiz Academy',
         'unlock.f.quiz.d': 'Full access to every methodology and the Hardcore mode: 160 chart scenarios that put your read to the test.',
         'unlock.f.daily.n': 'Daily Challenge & Roulette',
         'unlock.f.daily.d': 'One timed question a day. Build a 7-day streak and spin the roulette for renewal discounts and free months.',
-        'unlock.f.scalper.n': 'Scalpe® Boards',
+        'unlock.f.scalper.n': 'Chalkboard',
         'unlock.f.scalper.d': 'Your visual trading whiteboards — build slides, annotate charts and keep your playbook in one place.',
         'unlock.f.synapse.n': 'Synapse',
         'unlock.f.synapse.d': 'An immersive 3D study experience: explore institutional concepts inside a living neural interface.',
@@ -8305,13 +8320,15 @@
         'unlock.sub': 'Esto es todo a lo que acabas de obtener acceso',
         'unlock.f.analyzer5.n': 'AI Analyzer ×5',
         'unlock.f.analyzer5.d': 'Hasta 5 análisis de screenshots al día con GPT-4o Vision — estructura, entradas y riesgo revisados en segundos.',
+        'unlock.f.preflight.n': 'Pre-Flight',
+        'unlock.f.preflight.d': 'Tu checklist pre-trade: valida cada setup contra tus reglas antes de entrar, registra el trade y mide tu disciplina.',
         'unlock.f.forum.n': 'Foro de Trading',
         'unlock.f.forum.d': 'Una comunidad privada de traders con moderación por IA. Comparte setups, recibe feedback, habla ICT.',
         'unlock.f.quiz.n': 'Quiz Academy',
         'unlock.f.quiz.d': 'Acceso total a todas las metodologías y al modo Hardcore: 160 escenarios de gráficos que ponen a prueba tu lectura.',
         'unlock.f.daily.n': 'Reto Diario y Ruleta',
         'unlock.f.daily.d': 'Una pregunta cronometrada al día. Logra una racha de 7 días y gira la ruleta por descuentos y meses gratis.',
-        'unlock.f.scalper.n': 'Scalpe® Boards',
+        'unlock.f.scalper.n': 'Chalkboard',
         'unlock.f.scalper.d': 'Tus pizarras visuales de trading — crea slides, anota gráficos y guarda tu playbook en un solo lugar.',
         'unlock.f.synapse.n': 'Synapse',
         'unlock.f.synapse.d': 'Una experiencia de estudio 3D inmersiva: explora conceptos institucionales dentro de una interfaz neuronal viva.',
@@ -8331,13 +8348,15 @@
         'unlock.sub': 'Voici tout ce à quoi vous venez d’accéder',
         'unlock.f.analyzer5.n': 'AI Analyzer ×5',
         'unlock.f.analyzer5.d': 'Jusqu’à 5 analyses de captures par jour avec GPT-4o Vision — structure, entrées et risque en quelques secondes.',
+        'unlock.f.preflight.n': 'Pre-Flight',
+        'unlock.f.preflight.d': 'Votre checklist pré-trade : validez chaque setup selon vos règles avant d’entrer, consignez le trade et suivez votre discipline.',
         'unlock.f.forum.n': 'Forum de Trading',
         'unlock.f.forum.d': 'Une communauté privée de traders avec modération IA. Partagez vos setups, recevez des retours, parlez ICT.',
         'unlock.f.quiz.n': 'Quiz Academy',
         'unlock.f.quiz.d': 'Accès complet à toutes les méthodologies et au mode Hardcore : 160 scénarios graphiques pour tester votre lecture.',
         'unlock.f.daily.n': 'Défi Quotidien et Roulette',
         'unlock.f.daily.d': 'Une question chronométrée par jour. Tenez 7 jours d’affilée et tournez la roulette : réductions et mois gratuits.',
-        'unlock.f.scalper.n': 'Scalpe® Boards',
+        'unlock.f.scalper.n': 'Chalkboard',
         'unlock.f.scalper.d': 'Vos tableaux visuels de trading — créez des slides, annotez vos graphiques, gardez votre playbook au même endroit.',
         'unlock.f.synapse.n': 'Synapse',
         'unlock.f.synapse.d': 'Une expérience d’étude 3D immersive : explorez les concepts institutionnels dans une interface neuronale vivante.',
@@ -8357,13 +8376,15 @@
         'unlock.sub': 'Aqui está tudo o que você acabou de desbloquear',
         'unlock.f.analyzer5.n': 'AI Analyzer ×5',
         'unlock.f.analyzer5.d': 'Até 5 análises de screenshots por dia com GPT-4o Vision — estrutura, entradas e risco revisados em segundos.',
+        'unlock.f.preflight.n': 'Pre-Flight',
+        'unlock.f.preflight.d': 'Seu checklist pré-trade: valide cada setup contra suas regras antes de entrar, registre o trade e acompanhe sua disciplina.',
         'unlock.f.forum.n': 'Fórum de Trading',
         'unlock.f.forum.d': 'Uma comunidade privada de traders com moderação por IA. Compartilhe setups, receba feedback, fale ICT.',
         'unlock.f.quiz.n': 'Quiz Academy',
         'unlock.f.quiz.d': 'Acesso total a todas as metodologias e ao modo Hardcore: 160 cenários de gráficos que testam sua leitura.',
         'unlock.f.daily.n': 'Desafio Diário e Roleta',
         'unlock.f.daily.d': 'Uma pergunta cronometrada por dia. Faça uma sequência de 7 dias e gire a roleta por descontos e meses grátis.',
-        'unlock.f.scalper.n': 'Scalpe® Boards',
+        'unlock.f.scalper.n': 'Chalkboard',
         'unlock.f.scalper.d': 'Seus quadros visuais de trading — crie slides, anote gráficos e mantenha seu playbook em um só lugar.',
         'unlock.f.synapse.n': 'Synapse',
         'unlock.f.synapse.d': 'Uma experiência de estudo 3D imersiva: explore conceitos institucionais dentro de uma interface neural viva.',
@@ -8393,6 +8414,7 @@
       clock:      `<svg viewBox="0 0 24 24" ${S}><circle cx="12" cy="12" r="9"/><polyline points="12 6.5 12 12 15.8 14.2"/></svg>`,
       projects:   `<svg viewBox="0 0 24 24" ${S}><path d="M3 7.5V18a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-8l-2-2.5H5a2 2 0 0 0-2 2.5z"/><line x1="12" y1="11.5" x2="12" y2="16.5"/><line x1="9.5" y1="14" x2="14.5" y2="14"/></svg>`,
       camo:       `<svg viewBox="0 0 24 24" ${S}><line x1="3" y1="14" x2="13" y2="4"/><line x1="5.5" y1="17.5" x2="18" y2="5"/><line x1="9" y1="20" x2="20.5" y2="8.5"/><line x1="13.5" y1="21.5" x2="21.5" y2="13.5"/></svg>`,
+      preflight:  `<svg viewBox="0 0 24 24" ${S}><rect x="4" y="3" width="16" height="18" rx="2"/><line x1="8" y1="3" x2="8" y2="1.8"/><line x1="12" y1="3" x2="12" y2="1.8"/><line x1="16" y1="3" x2="16" y2="1.8"/><polyline points="7.5 9 9.3 10.8 12.5 7.6"/><line x1="14.5" y1="9.2" x2="17" y2="9.2"/><polyline points="7.5 15 9.3 16.8 12.5 13.6"/><line x1="14.5" y1="15.2" x2="17" y2="15.2"/></svg>`,
     };
     const FEATURES = {
       standard: [
@@ -8402,6 +8424,7 @@
       ],
       premium: [
         { icon: 'analyzer',   key: 'analyzer5' },
+        { icon: 'preflight',  key: 'preflight', isNew: true },
         { icon: 'forum',      key: 'forum' },
         { icon: 'quiz',       key: 'quiz' },
         { icon: 'daily',      key: 'daily' },
@@ -8427,7 +8450,14 @@
 
     function render() {
       document.getElementById('unlock-icon').innerHTML = ICONS[slides[idx].icon];
-      document.getElementById('unlock-name').textContent = T('unlock.f.' + slides[idx].key + '.n');
+      const nameEl = document.getElementById('unlock-name');
+      nameEl.textContent = T('unlock.f.' + slides[idx].key + '.n');
+      if (slides[idx].isNew) {
+        const b = document.createElement('span');
+        b.className = 'new-badge';
+        b.textContent = 'NEW';
+        nameEl.appendChild(b);
+      }
       document.getElementById('unlock-desc').textContent = T('unlock.f.' + slides[idx].key + '.d');
       dotsEl.querySelectorAll('.unlock-dot').forEach((d, i) => d.classList.toggle('on', i === idx));
       const item = ov.querySelector('.unlock-item');
