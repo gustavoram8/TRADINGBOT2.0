@@ -2300,33 +2300,41 @@
     .daily-result-title.bad { color: #ef4444; }
     .daily-result-exp { font-size: 12.5px; color: var(--muted); line-height: 1.5; margin-bottom: 14px; text-align: left; }
 
-    /* ── Roulette wheel ── */
+    /* ── Roulette wheel (market-gauge style: gold bezel, candle motifs, fixed hub) ── */
     .roulette-modal { text-align: center; }
-    .roulette-stage { position: relative; width: 280px; height: 296px; margin: 6px auto 18px; }
+    .roulette-stage { position: relative; width: 280px; height: 300px; margin: 6px auto 18px; }
     .roulette-pointer {
-      position: absolute; top: -2px; left: 50%; transform: translateX(-50%);
-      font-size: 22px; color: var(--accent); z-index: 2;
-      filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4));
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      z-index: 3; line-height: 0;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.45));
     }
     .roulette-wheel {
-      position: absolute; top: 16px; left: 0; width: 280px; height: 280px; border-radius: 50%;
-      border: 5px solid var(--border);
-      background: conic-gradient(
-        #3b82f6 0deg 144deg,        /* d5  40% */
-        #8b5cf6 144deg 252deg,      /* d10 30% */
-        #06b6d4 252deg 306deg,      /* d15 15% */
-        #f59e0b 306deg 342deg,      /* d25 10% */
-        #ef4444 342deg 360deg       /* month 5% */
-      );
+      position: absolute; top: 20px; left: 0; width: 280px; height: 280px;
+      line-height: 0; border-radius: 50%;
+      box-shadow: 0 6px 28px rgba(0,0,0,0.35), 0 0 0 1px rgba(232,198,106,0.25);
       transition: transform 4.2s cubic-bezier(0.12, 0.6, 0.04, 1);
+      will-change: transform;
     }
-    .roulette-seg-label {
-      position: absolute; left: 50%; top: 50%; transform-origin: 0 0;
-      font-size: 11.5px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.6);
-      white-space: nowrap;
+    .roulette-wheel svg { display: block; border-radius: 50%; }
+    .roulette-hub {
+      position: absolute; top: 160px; left: 140px; transform: translate(-50%, -50%);
+      z-index: 2; line-height: 0;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
     }
+    .roulette-stage.spinning .roulette-wheel {
+      box-shadow: 0 6px 28px rgba(0,0,0,0.35), 0 0 26px rgba(232,198,106,0.55);
+    }
+    .roulette-stage.spinning .roulette-pointer svg {
+      transform-origin: 50% 22%;
+      animation: rlPointerTick 0.13s linear infinite alternate;
+    }
+    @keyframes rlPointerTick { from { transform: rotate(-6deg); } to { transform: rotate(6deg); } }
     .roulette-prize { margin-top: 16px; }
-    .roulette-prize-label { font-size: 17px; font-weight: 800; color: #f59e0b; margin-bottom: 10px; }
+    .roulette-prize-label {
+      font-size: 17px; font-weight: 800; color: #f59e0b; margin-bottom: 10px;
+      animation: rlPrizePop 0.5s cubic-bezier(0.2, 1.4, 0.4, 1);
+    }
+    @keyframes rlPrizePop { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     .roulette-prize-code-wrap { display: flex; gap: 10px; align-items: center; justify-content: center; margin-bottom: 10px; }
     .roulette-prize-code {
       padding: 9px 16px; border: 1px dashed var(--accent); border-radius: 8px;
@@ -4196,10 +4204,94 @@
             🎡 <span data-i18n="daily.spinTitle">Rewards Roulette</span>
             <button class="daily-close" id="roulette-close-btn" aria-label="Close">×</button>
           </div>
-          <div class="roulette-stage">
-            <div class="roulette-pointer">▼</div>
+          <div class="roulette-stage" id="roulette-stage">
+            <div class="roulette-pointer">
+              <svg viewBox="0 0 30 38" width="26" height="33" aria-hidden="true">
+                <defs>
+                  <linearGradient id="rl-pin" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#f3d57c"/><stop offset="1" stop-color="#b8860b"/>
+                  </linearGradient>
+                </defs>
+                <path d="M15 37 L2 14 A14.5 14.5 0 1 1 28 14 Z" fill="url(#rl-pin)" stroke="#7a5a10" stroke-width="1.4"/>
+                <circle cx="15" cy="13" r="5.2" fill="#10131c"/>
+              </svg>
+            </div>
             <div class="roulette-wheel" id="roulette-wheel">
-              <!-- segment labels populated by JS -->
+              <svg viewBox="0 0 280 280" width="280" height="280" aria-hidden="true">
+                <defs>
+                  <linearGradient id="rl-bezel" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#6b4f12"/><stop offset="0.3" stop-color="#ecd283"/>
+                    <stop offset="0.55" stop-color="#a87f1f"/><stop offset="0.8" stop-color="#ecd283"/>
+                    <stop offset="1" stop-color="#6b4f12"/>
+                  </linearGradient>
+                  <radialGradient id="rl-s1" cx="0.5" cy="0.5" r="0.5">
+                    <stop offset="0.25" stop-color="#16284f"/><stop offset="1" stop-color="#3b82f6"/>
+                  </radialGradient>
+                  <radialGradient id="rl-s2" cx="0.5" cy="0.5" r="0.5">
+                    <stop offset="0.25" stop-color="#2a1058"/><stop offset="1" stop-color="#8b5cf6"/>
+                  </radialGradient>
+                  <radialGradient id="rl-s3" cx="0.5" cy="0.5" r="0.5">
+                    <stop offset="0.25" stop-color="#06303d"/><stop offset="1" stop-color="#06b6d4"/>
+                  </radialGradient>
+                  <radialGradient id="rl-s4" cx="0.5" cy="0.5" r="0.5">
+                    <stop offset="0.25" stop-color="#5c3406"/><stop offset="1" stop-color="#f59e0b"/>
+                  </radialGradient>
+                  <radialGradient id="rl-s5" cx="0.5" cy="0.5" r="0.5">
+                    <stop offset="0.25" stop-color="#4f0f0f"/><stop offset="1" stop-color="#ef4444"/>
+                  </radialGradient>
+                </defs>
+                <!-- gold bezel with tick marks, like a market gauge -->
+                <circle cx="140" cy="140" r="136" fill="url(#rl-bezel)"/>
+                <circle cx="140" cy="140" r="129" fill="none" stroke="#10131c"
+                        stroke-width="6" stroke-dasharray="2.2 31.6" opacity="0.55"/>
+                <!-- prize sectors (angles must match Daily.SEGMENTS in JS) -->
+                <path d="M140 140 L140 18 A122 122 0 0 1 211.7 238.7 Z" fill="url(#rl-s1)" stroke="#e8c66a" stroke-width="1.6"/>
+                <path d="M140 140 L211.7 238.7 A122 122 0 0 1 24 177.7 Z" fill="url(#rl-s2)" stroke="#e8c66a" stroke-width="1.6"/>
+                <path d="M140 140 L24 177.7 A122 122 0 0 1 41.3 68.3 Z" fill="url(#rl-s3)" stroke="#e8c66a" stroke-width="1.6"/>
+                <path d="M140 140 L41.3 68.3 A122 122 0 0 1 102.3 24 Z" fill="url(#rl-s4)" stroke="#e8c66a" stroke-width="1.6"/>
+                <path d="M140 140 L102.3 24 A122 122 0 0 1 140 18 Z" fill="url(#rl-s5)" stroke="#e8c66a" stroke-width="1.6"/>
+                <!-- labels + candlestick motifs -->
+                <g font-family="inherit" font-weight="800" fill="#fff" text-anchor="middle"
+                   style="paint-order:stroke" stroke="rgba(0,0,0,0.35)" stroke-width="2.5">
+                  <g transform="rotate(72 140 140)">
+                    <text x="140" y="58" font-size="16">5%</text>
+                    <g stroke="none" fill="#fff" opacity="0.8">
+                      <rect x="128" y="70" width="6" height="11" rx="1"/><rect x="130.6" y="64" width="1" height="22"/>
+                      <rect x="143" y="66" width="6" height="11" rx="1"/><rect x="145.6" y="61" width="1" height="22"/>
+                    </g>
+                  </g>
+                  <g transform="rotate(198 140 140)">
+                    <text x="140" y="58" font-size="16" transform="rotate(180 140 53)">10%</text>
+                    <g stroke="none" fill="#fff" opacity="0.8" transform="rotate(180 140 75)">
+                      <rect x="128" y="70" width="6" height="11" rx="1"/><rect x="130.6" y="64" width="1" height="22"/>
+                      <rect x="143" y="66" width="6" height="11" rx="1"/><rect x="145.6" y="61" width="1" height="22"/>
+                    </g>
+                  </g>
+                  <g transform="rotate(279 140 140)">
+                    <text x="140" y="58" font-size="15">15%</text>
+                  </g>
+                  <g transform="rotate(324 140 140)">
+                    <text x="140" y="56" font-size="13">25%</text>
+                  </g>
+                  <g transform="rotate(351 140 140)">
+                    <text x="140" y="54" font-size="10.5">1M ★</text>
+                  </g>
+                </g>
+              </svg>
+            </div>
+            <!-- fixed hub: stays still while the wheel spins around it -->
+            <div class="roulette-hub" aria-hidden="true">
+              <svg viewBox="0 0 64 64" width="64" height="64">
+                <defs>
+                  <linearGradient id="rl-hubg" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#ecd283"/><stop offset="1" stop-color="#8a661a"/>
+                  </linearGradient>
+                </defs>
+                <circle cx="32" cy="32" r="29" fill="#10131c" stroke="url(#rl-hubg)" stroke-width="3.5"/>
+                <polyline points="14,43 23,34 29,38 42,24" stroke="#e8c66a" stroke-width="3"
+                          fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M47 19 L36.8 21.4 L44.6 29.2 Z" fill="#e8c66a"/>
+              </svg>
             </div>
           </div>
           <button class="daily-play-btn" id="roulette-spin-btn" data-i18n="daily.spin">SPIN</button>
@@ -18589,24 +18681,8 @@
           $('daily-overlay').style.display = 'none';
         }
 
-        // ── Roulette ──
-        function renderWheelLabels() {
-          const wheel = $('roulette-wheel');
-          // keep only the gradient; rebuild labels
-          wheel.querySelectorAll('.roulette-seg-label').forEach(n => n.remove());
-          SEGMENTS.forEach(s => {
-            const mid = (s.from + s.to) / 2;
-            const lbl = document.createElement('span');
-            lbl.className = 'roulette-seg-label';
-            lbl.textContent = s.key === 'month' ? '1M' : s.key.replace('d','') + '%';
-            // rotate from center, push outward, keep text upright-ish
-            lbl.style.transform = `rotate(${mid - 90}deg) translate(86px, -7px)`;
-            wheel.appendChild(lbl);
-          });
-        }
-
+        // ── Roulette (labels live in the SVG; angles match SEGMENTS) ──
         function openRoulette() {
-          renderWheelLabels();
           $('roulette-prize').style.display = 'none';
           $('roulette-spin-btn').style.display = '';
           $('roulette-spin-btn').disabled = false;
@@ -18630,9 +18706,11 @@
           const landAt = seg.from + margin + Math.random() * (seg.to - seg.from - margin * 2);
           wheelTurns += 5;                                     // always spin forward
           const finalDeg = wheelTurns * 360 + (360 - landAt);
+          $('roulette-stage').classList.add('spinning');
           $('roulette-wheel').style.transform = `rotate(${finalDeg}deg)`;
 
           setTimeout(() => {
+            $('roulette-stage').classList.remove('spinning');
             $('roulette-prize-label').textContent = T('daily.prize.' + data.prize_key);
             const codeWrap = $('roulette-prize-code-wrap');
             if (data.promo_code) {
