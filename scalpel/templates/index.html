@@ -2249,6 +2249,32 @@
       font-weight: 700; font-size: 13px; animation: dailyPulse 1.6s ease-in-out infinite;
     }
     @keyframes dailyPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    .daily-coupons-btn {
+      background: none; border: none; cursor: pointer; padding: 2px 4px;
+      font-size: 12px; font-weight: 600; color: var(--muted); font-family: inherit;
+    }
+    .daily-coupons-btn:hover { color: var(--accent); }
+    .coupons-list { display: flex; flex-direction: column; gap: 10px; }
+    .coupon-row {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      padding: 11px 14px; border: 1px solid var(--border2); border-radius: 10px;
+      background: var(--surface);
+    }
+    .coupon-row.used, .coupon-row.expired { opacity: 0.55; }
+    .coupon-code {
+      font-family: 'SF Mono', Menlo, Consolas, monospace; font-size: 13.5px; font-weight: 800;
+      letter-spacing: 0.06em; color: var(--accent); cursor: pointer;
+    }
+    .coupon-row.used .coupon-code, .coupon-row.expired .coupon-code {
+      cursor: default; text-decoration: line-through;
+    }
+    .coupon-pct { font-size: 13px; font-weight: 700; }
+    .coupon-meta { font-size: 11.5px; color: var(--muted); margin-left: auto; text-align: right; }
+    .coupon-status { font-size: 10.5px; font-weight: 800; padding: 2px 8px; border-radius: 999px; }
+    .coupon-status.active { color: #16a34a; background: rgba(34,197,94,0.14); }
+    .coupon-status.used { color: var(--muted); background: var(--border2); }
+    .coupon-status.expired { color: #dc2626; background: rgba(239,68,68,0.12); }
+    .coupons-empty { font-size: 13px; color: var(--muted); text-align: center; padding: 22px 0; }
     .daily-played-msg { font-size: 12.5px; font-weight: 600; }
     .daily-played-msg.ok { color: #22c55e; }
     .daily-played-msg.bad { color: #ef4444; }
@@ -4043,6 +4069,9 @@
               🎡 <span data-i18n="daily.spinReady">Spin the wheel!</span> <span id="daily-spin-count"></span>
             </button>
             <div class="daily-played-msg" id="daily-played-msg" style="display:none;"></div>
+            <button class="daily-coupons-btn" id="daily-coupons-btn">
+              🎟 <span data-i18n="daily.coupons">My coupons</span>
+            </button>
           </div>
         </div>
         <div class="quiz-method-grid" id="quiz-method-grid">
@@ -4173,6 +4202,16 @@
       </div>
 
       <!-- ── Daily Challenge modal (question + 60s timer) ── -->
+      <div class="daily-overlay" id="coupons-overlay" style="display:none;">
+        <div class="daily-modal">
+          <div class="daily-modal-head">
+            🎟 <span data-i18n="daily.couponsTitle">My coupons</span>
+            <button class="daily-close" id="coupons-close-btn" aria-label="Close">×</button>
+          </div>
+          <div class="coupons-list" id="coupons-list"><!-- populated by JS --></div>
+        </div>
+      </div>
+
       <div class="daily-overlay" id="daily-overlay" style="display:none;">
         <div class="daily-modal">
           <div class="daily-modal-head">
@@ -6658,6 +6697,10 @@
       'daily.close': 'Close',
       'daily.codeNote': 'Use this single-use code at checkout on your next monthly renewal. Valid 90 days.',
       'daily.codeNoteStore': 'Use this single-use code on any indicator or camo purchase in the store. Valid 1 year. Linked to your account.',
+      'daily.coupons': 'My coupons', 'daily.couponsTitle': 'My coupons',
+      'daily.cpActive': 'Active', 'daily.cpUsed': 'Used', 'daily.cpExpired': 'Expired',
+      'daily.cpMonthly': 'Monthly renewal', 'daily.cpStore': 'Store (indicators/camos)',
+      'daily.cpExpires': 'Expires', 'daily.cpEmpty': 'No coupons yet — win them on the roulette with a 7-day streak!',
       'daily.monthNote': 'Your Premium plan was just extended by 30 days. Enjoy!',
       'daily.prize.d5': '5% off your next renewal',
       'daily.prize.d10': '10% off your next renewal',
@@ -6684,6 +6727,10 @@
       'daily.close': 'Cerrar',
       'daily.codeNote': 'Usa este código de un solo uso al pagar tu próxima renovación mensual. Válido 90 días.',
       'daily.codeNoteStore': 'Usa este código de un solo uso en cualquier compra de indicadores o camos en la tienda. Válido 1 año. Vinculado a tu cuenta.',
+      'daily.coupons': 'Mis cupones', 'daily.couponsTitle': 'Mis cupones',
+      'daily.cpActive': 'Activo', 'daily.cpUsed': 'Usado', 'daily.cpExpired': 'Vencido',
+      'daily.cpMonthly': 'Renovación mensual', 'daily.cpStore': 'Tienda (indicadores/camos)',
+      'daily.cpExpires': 'Vence', 'daily.cpEmpty': '¡Aún no tienes cupones — gánalos en la ruleta con una racha de 7 días!',
       'daily.monthNote': 'Tu plan Premium acaba de extenderse 30 días. ¡Disfrútalo!',
       'daily.prize.d5': '5% de descuento en tu próxima renovación',
       'daily.prize.d10': '10% de descuento en tu próxima renovación',
@@ -6710,6 +6757,10 @@
       'daily.close': 'Fermer',
       'daily.codeNote': 'Utilisez ce code à usage unique lors de votre prochain renouvellement mensuel. Valable 90 jours.',
       'daily.codeNoteStore': 'Utilisez ce code à usage unique pour tout achat d\'indicateur ou de camo dans la boutique. Valable 1 an. Lié à votre compte.',
+      'daily.coupons': 'Mes coupons', 'daily.couponsTitle': 'Mes coupons',
+      'daily.cpActive': 'Actif', 'daily.cpUsed': 'Utilisé', 'daily.cpExpired': 'Expiré',
+      'daily.cpMonthly': 'Renouvellement mensuel', 'daily.cpStore': 'Boutique (indicateurs/camos)',
+      'daily.cpExpires': 'Expire', 'daily.cpEmpty': 'Pas encore de coupons — gagnez-les à la roulette avec une série de 7 jours !',
       'daily.monthNote': 'Votre plan Premium vient d\'être prolongé de 30 jours. Profitez-en !',
       'daily.prize.d5': '5% de réduction sur votre prochain renouvellement',
       'daily.prize.d10': '10% de réduction sur votre prochain renouvellement',
@@ -6736,6 +6787,10 @@
       'daily.close': 'Fechar',
       'daily.codeNote': 'Use este código de uso único na sua próxima renovação mensal. Válido por 90 dias.',
       'daily.codeNoteStore': 'Use este código de uso único em qualquer compra de indicadores ou camos na loja. Válido por 1 ano. Vinculado à sua conta.',
+      'daily.coupons': 'Meus cupons', 'daily.couponsTitle': 'Meus cupons',
+      'daily.cpActive': 'Ativo', 'daily.cpUsed': 'Usado', 'daily.cpExpired': 'Expirado',
+      'daily.cpMonthly': 'Renovação mensal', 'daily.cpStore': 'Loja (indicadores/camos)',
+      'daily.cpExpires': 'Expira', 'daily.cpEmpty': 'Ainda sem cupons — ganhe na roleta com uma sequência de 7 dias!',
       'daily.monthNote': 'Seu plano Premium acaba de ser estendido por 30 dias. Aproveite!',
       'daily.prize.d5': '5% de desconto na sua próxima renovação',
       'daily.prize.d10': '10% de desconto na sua próxima renovação',
@@ -18733,7 +18788,49 @@
           }, 4400);
         }
 
+        // ── My coupons ──
+        async function openCoupons() {
+          const list = $('coupons-list');
+          list.innerHTML = '';
+          $('coupons-overlay').style.display = '';
+          let data;
+          try {
+            const res = await fetch('/api/daily/coupons');
+            if (!res.ok) return;
+            data = await res.json();
+          } catch (e) { return; }
+          if (!data.coupons.length) {
+            list.innerHTML = `<div class="coupons-empty">${escapeHtml(T('daily.cpEmpty'))}</div>`;
+            return;
+          }
+          data.coupons.forEach(cp => {
+            const row = document.createElement('div');
+            row.className = 'coupon-row ' + cp.status;
+            const scope = T(cp.valid_for === 'store' ? 'daily.cpStore' : 'daily.cpMonthly');
+            const stKey = { active: 'daily.cpActive', used: 'daily.cpUsed', expired: 'daily.cpExpired' }[cp.status];
+            row.innerHTML =
+              `<span class="coupon-code">${escapeHtml(cp.code)}</span>` +
+              `<span class="coupon-pct">-${cp.discount_pct}%</span>` +
+              `<span class="coupon-status ${cp.status}">${escapeHtml(T(stKey))}</span>` +
+              `<span class="coupon-meta">${escapeHtml(scope)}` +
+              (cp.expires_at ? `<br>${escapeHtml(T('daily.cpExpires'))}: ${cp.expires_at}` : '') + `</span>`;
+            if (cp.status === 'active') {
+              const codeEl = row.querySelector('.coupon-code');
+              codeEl.title = T('daily.copy');
+              codeEl.addEventListener('click', () => {
+                navigator.clipboard?.writeText(cp.code).then(() => {
+                  codeEl.textContent = T('daily.copied');
+                  setTimeout(() => { codeEl.textContent = cp.code; }, 1400);
+                });
+              });
+            }
+            list.appendChild(row);
+          });
+        }
+
         // ── Wire up ──
+        $('daily-coupons-btn')?.addEventListener('click', openCoupons);
+        $('coupons-close-btn')?.addEventListener('click', () => { $('coupons-overlay').style.display = 'none'; });
         $('daily-play-btn')?.addEventListener('click', play);
         $('daily-close-btn')?.addEventListener('click', closeModal);
         $('daily-result-close')?.addEventListener('click', closeModal);

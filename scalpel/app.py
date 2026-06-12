@@ -3987,7 +3987,12 @@ def daily_spin():
         # (there isn't one), so their prize is a store discount (indicators /
         # camos) instead — longer expiry since the store launches later.
         code_scope = 'store' if current_user.plan_cycle == 'annual' else 'monthly'
-        promo_code = f'SPIN-{secrets.token_hex(3).upper()}'
+        # Guaranteed-unique code: regenerate on the (rare) collision instead of
+        # relying solely on the DB unique constraint to abort the spin.
+        while True:
+            promo_code = f'SPIN-{secrets.token_hex(3).upper()}'
+            if not PromoCode.query.filter_by(code=promo_code).first():
+                break
         db.session.add(PromoCode(
             code=promo_code, discount_pct=discount, kind='discount',
             creator_name=f'roulette:{current_user.username}',
@@ -4015,6 +4020,27 @@ def daily_spin():
         'spins_available': st.spins_available,
         'segments': [{'key': p[0], 'label': p[3]} for p in ROULETTE_PRIZES],
     })
+
+
+@app.route('/api/daily/coupons')
+@premium_required
+def daily_coupons():
+    """List the personal promo codes this user has won on the roulette."""
+    codes = (PromoCode.query.filter_by(restrict_user_id=current_user.id)
+             .order_by(PromoCode.created_at.desc()).all())
+    now = datetime.now(timezone.utc)
+    out = []
+    for p in codes:
+        used = p.max_uses is not None and (p.uses_count or 0) >= p.max_uses
+        expired = bool(p.expires_at) and now > _aware(p.expires_at)
+        out.append({
+            'code': p.code,
+            'discount_pct': p.discount_pct,
+            'valid_for': p.valid_for,
+            'expires_at': p.expires_at.strftime('%Y-%m-%d') if p.expires_at else None,
+            'status': 'used' if used else ('expired' if expired else 'active'),
+        })
+    return jsonify({'coupons': out})
 
 
 # ──────────────────────────────────────────────────────────────────────────
