@@ -677,6 +677,19 @@
       .testi-card { transition: opacity .2s ease; }
       .testi-card.leaving, .testi-card.entering { transform: none; }
     }
+    /* Light mode: deep navy panel instead of graphite/gold */
+    body:not(.dark) .testi-panel {
+      background: linear-gradient(160deg, #0e1c3c 0%, #16294f 60%, #0e1c3c 100%);
+      border-color: rgba(91,142,240,0.28);
+      box-shadow: 0 24px 70px rgba(20,40,90,0.25);
+    }
+    body:not(.dark) .testi-avatar { background: linear-gradient(135deg, #9dbcf7, #1d4ed8); color: #0e1c3c; }
+    body:not(.dark) .testi-stars { color: #8fb3f5; }
+    body:not(.dark) .testi-quote { color: #eef3fd; }
+    body:not(.dark) .testi-name { color: #9dbcf7; }
+    body:not(.dark) .testi-plan { color: #7d93c4; }
+    body:not(.dark) .testi-dot { background: rgba(91,142,240,0.3); }
+    body:not(.dark) .testi-dot.on { background: #8fb3f5; }
 
     /* ── FINAL CTA ── */
     .final-cta {
