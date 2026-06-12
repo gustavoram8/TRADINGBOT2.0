@@ -25,6 +25,95 @@
 
 ---
 
+> **✅ COMPLETADO (2026-06-11/12) — SESIÓN GRANDE: LOGIN alt_id · RULETA · CUPONES · UNLOCK REVEAL · TESTIMONIALS · LANDING REFRESH**
+>
+> Todo pusheado a `claude/epic-lovelace-GsOuo` Y `claude/intelligent-turing-94qh5i`, desplegado y verificado en el VPS.
+> Último commit de la sesión: `77d5940`.
+>
+> **1. Fix de acceso intermitente ("candados") — `User.alt_id` (commits `8ca45f3`, `23cebec`):**
+> - Causa raíz: cookies "remember me" viejas guardaban el PK numérico de antes de la migración
+>   SQLite→PostgreSQL y podían resolver a la cuenta equivocada. La DB nunca estuvo mal.
+> - Fix: `User.alt_id` (token aleatorio de 40 chars, unique+indexed), `get_id()` devuelve `alt_id`,
+>   `load_user` busca por `alt_id`. Migración `_migrate_user_alt_id_column()` con backfill.
+> - ⚠️ **LECCIÓN PostgreSQL #1**: `user` y `order` son palabras reservadas — SIEMPRE quotear
+>   `"user"`/`"order"` en SQL crudo. El commit inicial sin quotes TUMBÓ producción (crash-loop).
+> - ⚠️ Para tests con `test_client`: `s['_user_id'] = user.alt_id` (ya NO el id numérico).
+>
+> **2. Ruleta — rediseño visual + alcance de cupones (commits `d7372d7`, `7722fa4`, `4e07e71`, `dca4a00`):**
+> - Rueda SVG estilo "market gauge": bisel dorado, 5 sectores grafito que se vuelven más dorados
+>   según rareza del premio (5%→casi negro · mes gratis→oro pleno). Al usuario LE GUSTÓ este diseño
+>   (el primero le pareció "carnaval/candy crush").
+> - Códigos de descuento (`SPIN-XXXXXX`): únicos (loop anti-colisión), `max_uses=1`,
+>   `restrict_user_id` (solo el ganador puede canjearlos — `_validate_promo` lo verifica).
+> - Plan mensual → `valid_for='monthly'` (90 días). Plan ANUAL → `valid_for='store'` (1 año,
+>   para futuras compras de indicadores/camos). `PromoCode.valid_for` ahora acepta 'store'.
+> - "1 mes gratis" extiende `plan_expires_at` +30 días en cualquier ciclo.
+>
+> **3. "Mis cupones" (commits `fbbad57`, `270fd9b`):**
+> - Endpoint `/api/daily/coupons` (@premium_required) — lista códigos del usuario con estado
+>   (active/used/expired). Modal global `#coupons-overlay` + entrada `#menu-coupons` en el
+>   account-menu (arriba, junto al User ID), visible solo para premium/admin.
+>
+> **4. Unlock reveal estilo Call of Duty (commits `3b56013`, `ba77cdf`, `4632676`, `46a83a3`):**
+> - Panel full-screen mostrado UNA vez tras activarse una compra: `Order.celebrated_at`
+>   (+ `_migrate_order_columns()` con `"order"` quoteado) se sella al renderizar `/app`.
+> - Carrusel de features desbloqueados con flechas, dots, halo, rayos rotatorios, skip.
+> - **Temas por plan via CSS vars** (`--uk`, `--uk-bright`, `--uk-mid`, `--uk-deep`):
+>   Premium = dorado (default) · Standard = azul navy (`.unlock-overlay.standard`).
+> - Slides Premium: analyzer5, **preflight (con badge NEW animado)**, forum, quiz, daily,
+>   scalper (renombrado "Chalkboard"), synapse, indicators, **camos3** (3 camos).
+> - Slides Standard: analyzer24, projects5, **camo1** (1 camo de regalo).
+> - Landing: card Standard ahora anuncia "1 Camo included" (`ps4` i18n, 4 idiomas).
+> - Tab Pre-Flight de la app también lleva badge `NEW` animado (`.new-badge`, animación barata
+>   de background-position).
+> - **Confidencialidad IA**: TODA mención a "GPT-4o" eliminada del sitio (commit `4d89449`) —
+>   ahora dice "our proprietary AI engine" / "motor de IA propio". NUNCA revelar qué modelo se usa.
+>
+> **5. Sistema de TESTIMONIALS/reviews (commits `1199b50`, `9b28948`, `e3c3c2b`, `a90f86c`, `77d5940`):**
+> - **Decisión legal**: NO reseñas inventadas (ilegal — regla FTC 2024, multas). Solo usuarios
+>   reales. Curar testimonios positivos es legal si no se presenta como "score agregado".
+> - Modelo `Testimonial` (user_id, rating 1-5, text, display_name snapshot, plan, published)
+>   + `User.last_review_prompt_at` (+ migración).
+> - Prompt in-app cada 30 días para Standard/Premium (modal estrellas+texto+consentimiento).
+>   Gate adicional: solo aparece tras **20 min de uso real acumulado** (localStorage
+>   `ta_usage_min`, cuenta solo con pestaña visible). "Más tarde" pospone 30 días.
+> - Publicación AUTOMÁTICA si: rating ≥4 + consentimiento + texto. Ratings 1-3 quedan privados.
+> - Endpoints: `/api/testimonial/submit` (POST) y `/api/testimonials` (público, máx 24).
+> - **Carrusel book-flip en landing** (entre Pricing y CTA final): rotateY 3D cada 6s, avatar
+>   monograma, estrellas, cita serif. Oculto hasta que exista ≥1 reseña publicada
+>   (mostrar con `style.display='block'` — `''` NO funciona contra regla CSS, bug ya corregido).
+> - Tema dual: dark = grafito/dorado · light = azul navy profundo.
+> - ⚠️ **LECCIÓN PostgreSQL #2 (commit `9b28948`)**: una migración de columna nueva debe correr
+>   ANTES que cualquier migración que consulte esa tabla via ORM (el SELECT pide TODAS las
+>   columnas del modelo). `_migrate_user_review_column()` corre antes que la de alt_id.
+>   Este bug también tumbó producción brevemente — probar migraciones simulando DB vieja.
+>
+> **6. Reglas de credenciales (commit `80c4ec8`):**
+> - Username: 3-20 chars, `^[A-Za-z0-9][A-Za-z0-9._-]{2,19}$` (sin espacios).
+> - Contraseña: 8+ chars con al menos 1 letra y 1 número. Aplica en register y reset.
+> - Server-side + atributos HTML + mensajes específicos i18n 4 idiomas (auth.js).
+> - Cuentas existentes NO afectadas. Admin renombrado: username ahora es **`maurotradesve`**.
+>
+> **7. Landing refresh v1+v2 (commits `f226847`, `3a82f7a`) — misma estructura, mejor acabado:**
+> - **Card #7 "Pre-Flight"** en YOUR TOOLKIT (chip Premium + badge NEW animado, i18n `tc7_t/b`
+>   4 idiomas). Título: "Seven instruments. One platform." · stat strip dice "7 Tools".
+> - Hero: aurora dorada estática detrás del titular (gradiente puro, costo cero).
+> - **Mock-terminal con efecto "typing en vivo"**: el análisis IA se escribe solo al entrar en
+>   viewport (token-based, los spans se colorean mientras escribe), caret parpadeante, chips
+>   de resultado en cascada al terminar.
+> - Stat numbers cuentan 0→N con ease-out al revelarse.
+> - Micro-interacciones hover: tool-cards (ícono spring + borde), cap-items (lift + letra se
+>   rellena), pain-cards (slide), comm-cards (lift). CTA con barrido de luz.
+> - Pricing: card Premium featured a scale(1.035) + halo dorado (jerarquía visual).
+> - Tamaños de título "Sound familiar" vs "The solution" son DISTINTOS a propósito (decisión
+>   del usuario: dejarlo así).
+> - Todo respeta `prefers-reduced-motion` y usa solo transform/opacity/background-position.
+>
+> **Pendiente próximo de esta línea de trabajo:** seguir reduciendo lag en apartados pesados;
+> posible ronda 3 de la landing si el usuario la pide.
+
+---
+
 > **✅ COMPLETADO (2026-06-11) — SISTEMA DE FIABILIDAD: AUDIT LOG + ALERTAS + BACKUPS + SENTRY**
 >
 > Sesión del 2026-06-10/11 (commits `b67f1c3`, perf/XSS, `6f63d54` — pusheados a
