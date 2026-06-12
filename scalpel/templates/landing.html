@@ -208,7 +208,15 @@
       border-radius: 14px; text-decoration: none;
       box-shadow: 0 8px 28px var(--shadow);
       transition: transform .14s, box-shadow .14s, background .14s;
+      position: relative; overflow: hidden;
     }
+    .btn-primary::after {
+      content: ''; position: absolute; top: 0; bottom: 0; left: -75%; width: 50%;
+      background: linear-gradient(105deg, transparent, rgba(255,255,255,0.35), transparent);
+      transform: skewX(-20deg); pointer-events: none;
+    }
+    .btn-primary:hover::after { animation: btnSheen .7s ease; }
+    @keyframes btnSheen { to { left: 125%; } }
     .btn-primary:hover { background: var(--acc-h); transform: translateY(-2px); box-shadow: 0 14px 40px var(--shadow); }
     .btn-primary svg { width: 14px; height: 14px; }
     .btn-ghost {
@@ -371,7 +379,21 @@
     }
     .mock-body {
       font-size: 13px; color: var(--muted); line-height: 1.78;
+      min-height: 196px;   /* reserve space so the live-typing effect doesn't shift layout */
     }
+    .mock-caret {
+      display: inline-block; width: 7px; height: 14px; margin-left: 2px;
+      background: var(--accent); vertical-align: -2px;
+      animation: mockCaret 0.85s steps(1) infinite;
+    }
+    @keyframes mockCaret { 50% { opacity: 0; } }
+    .mock-foot .mock-chip {
+      opacity: 0; transform: translateY(6px);
+      transition: opacity .4s ease, transform .4s ease;
+    }
+    .mock-foot.chips-in .mock-chip { opacity: 1; transform: none; }
+    .mock-foot.chips-in .mock-chip:nth-child(2) { transition-delay: .15s; }
+    .mock-foot.chips-in .mock-chip:nth-child(3) { transition-delay: .3s; }
     .mock-body em  { color: var(--text); font-style: normal; font-weight: 600; }
     .mock-body .hl-bull { color: var(--bull); font-weight: 700; }
     .mock-body .hl-bear { color: var(--bear); font-weight: 700; }
@@ -680,7 +702,7 @@
     }
 
     /* ── SCROLL REVEAL ── */
-    .rv { opacity: 0; transform: translateY(24px); transition: opacity .6s ease, transform .6s ease; }
+    .rv { opacity: 0; transform: translateY(24px) scale(.985); transition: opacity .6s ease, transform .6s ease; }
     .rv.in { opacity: 1; transform: none; }
     .rv.d1 { transition-delay: .08s; } .rv.d2 { transition-delay: .16s; }
     .rv.d3 { transition-delay: .24s; } .rv.d4 { transition-delay: .32s; }
@@ -2020,6 +2042,75 @@
       if (sub) sub.textContent = SUBS[cycle];
     }
     opts.forEach(function (o) { o.addEventListener('click', function () { setCycle(o.dataset.cycle); }); });
+  })();
+
+  // ── AI TERMINAL: live-typing effect ────────────────────────────
+  // The analysis "types itself" the first time the terminal scrolls into
+  // view. Token-based (tags appended atomically) so the highlight spans
+  // colorize mid-typing. Skipped entirely under prefers-reduced-motion.
+  (function () {
+    const term = document.querySelector('.mock-terminal');
+    const body = document.querySelector('.mock-body');
+    const foot = document.querySelector('.mock-foot');
+    if (!term || !body || !foot) return;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) { foot.classList.add('chips-in'); return; }
+
+    const src = body.innerHTML;
+    body.innerHTML = '';
+    let started = false;
+
+    function type() {
+      let i = 0, buf = '';
+      const caret = '<span class="mock-caret"></span>';
+      const timer = setInterval(() => {
+        // 3 tokens per tick ≈ fast senior-trader typing without dragging
+        for (let n = 0; n < 3 && i < src.length; n++) {
+          if (src[i] === '<') {
+            const j = src.indexOf('>', i);
+            buf += src.slice(i, j + 1); i = j + 1;
+          } else {
+            buf += src[i++];
+          }
+        }
+        if (i >= src.length) {
+          clearInterval(timer);
+          body.innerHTML = src;
+          foot.classList.add('chips-in');
+        } else {
+          body.innerHTML = buf + caret;
+        }
+      }, 16);
+    }
+
+    const tio = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting && !started) { started = true; type(); tio.disconnect(); }
+      });
+    }, { threshold: 0.35 });
+    tio.observe(term);
+  })();
+
+  // ── STAT STRIP: count-up numbers ───────────────────────────────
+  (function () {
+    const nums = document.querySelectorAll('.stat-num');
+    if (!nums.length || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const sio = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        sio.unobserve(e.target);
+        const target = parseInt(e.target.textContent, 10);
+        if (!target) return;
+        const t0 = performance.now(), dur = 900;
+        function tick(now) {
+          const p = Math.min(1, (now - t0) / dur);
+          e.target.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
+          if (p < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+      });
+    }, { threshold: 0.6 });
+    nums.forEach(n => sio.observe(n));
   })();
 
   // ── TESTIMONIALS CAROUSEL (book-flip) ──────────────────────────
