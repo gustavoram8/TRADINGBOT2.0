@@ -1969,7 +1969,7 @@
       const section = document.getElementById('testimonials');
       const stage = document.getElementById('testi-stage');
       const dotsEl = document.getElementById('testi-dots');
-      section.style.display = '';
+      section.style.display = 'block';   // overrides the .testi-section{display:none} default
 
       items.forEach(() => {
         const d = document.createElement('span');
