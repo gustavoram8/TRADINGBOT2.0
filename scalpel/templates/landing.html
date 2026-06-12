@@ -571,6 +571,48 @@
       .plan.featured { order: -1; }
     }
 
+    /* ── TESTIMONIALS (book-flip carousel) ── */
+    .testi-section { display: none; } /* shown via JS once at least one testimonial loads */
+    .testi-panel {
+      max-width: 760px; margin: 0 auto; padding: 56px 40px;
+      border-radius: 24px; position: relative; overflow: hidden;
+      background: linear-gradient(160deg, #14110a 0%, #1c1710 60%, #14110a 100%);
+      border: 1px solid rgba(232,169,58,0.18);
+      box-shadow: 0 24px 70px rgba(0,0,0,0.35);
+      perspective: 1200px;
+    }
+    .testi-stage { position: relative; min-height: 178px; }
+    .testi-card {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      align-items: center; text-align: center; gap: 14px;
+      backface-visibility: hidden; transform: rotateY(0deg); opacity: 1;
+      transition: transform .6s cubic-bezier(.4,.1,.2,1), opacity .35s ease;
+      pointer-events: none;
+    }
+    .testi-card.active { position: relative; opacity: 1; transform: rotateY(0deg); pointer-events: auto; }
+    .testi-card.leaving { opacity: 0; transform: rotateY(-100deg); }
+    .testi-card.entering { opacity: 0; transform: rotateY(100deg); }
+    .testi-avatar {
+      width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, #f3d57c, #b8860b); color: #1c1710;
+      font-weight: 800; font-size: 16px; letter-spacing: .02em;
+    }
+    .testi-stars { color: #e8c66a; font-size: 15px; letter-spacing: 2px; }
+    .testi-quote {
+      font-family: Georgia, 'Times New Roman', serif; font-size: 19px; line-height: 1.55;
+      color: #f4ede0; max-width: 560px; margin: 0;
+    }
+    .testi-name { font-size: 12.5px; font-weight: 700; color: #e8c66a; letter-spacing: .04em; }
+    .testi-plan { font-size: 10px; color: #a89d88; text-transform: uppercase; letter-spacing: .12em; }
+    .testi-dots { display: flex; gap: 7px; justify-content: center; margin-top: 26px; }
+    .testi-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(232,169,58,0.25); transition: background .2s; }
+    .testi-dot.on { background: #e8c66a; }
+    @media (prefers-reduced-motion: reduce) {
+      .testi-card { transition: opacity .2s ease; }
+      .testi-card.leaving, .testi-card.entering { transform: none; }
+    }
+
     /* ── FINAL CTA ── */
     .final-cta {
       max-width: 820px; margin: 44px auto 0;
@@ -1223,6 +1265,16 @@
     </div>
   </section>
 
+  <!-- TESTIMONIALS -->
+  <section class="section tc testi-section" id="testimonials">
+    <div class="eyebrow rv" data-t="brow_testi">FROM OUR TRADERS</div>
+    <h2 class="h2 rv d1" data-t="testi_title">What traders are saying</h2>
+    <div class="testi-panel rv d2">
+      <div class="testi-stage" id="testi-stage"></div>
+      <div class="testi-dots" id="testi-dots"></div>
+    </div>
+  </section>
+
   <!-- FINAL CTA -->
   <hr class="rule">
   <section class="section">
@@ -1545,7 +1597,8 @@
         tc6_t:'Indicator Library', tc6_b:'Curated custom indicators for TradingView, built around ICT and SMC concepts — no repaint, no lag, plug in from day one.',
         s5_title:'Institutional-grade pattern recognition.',
         s5_body:'Every screenshot is analyzed against your chosen methodology — ICT, SMC, Wyckoff, classical patterns, STDV or Price Action — delivering structured, expert-level feedback in seconds.',
-        brow_core:'CORE FEATURE', brow_toolkit:'YOUR TOOLKIT', brow_airead:'WHAT THE AI READS', brow_community:'COMMUNITY', brow_pricing:'PRICING',
+        brow_core:'CORE FEATURE', brow_toolkit:'YOUR TOOLKIT', brow_airead:'WHAT THE AI READS', brow_community:'COMMUNITY', brow_pricing:'PRICING', brow_testi:'FROM OUR TRADERS',
+        testi_title:'What traders are saying',
         cap_ict_t:'Inner Circle Trader', cap_ict_b:'Fair Value Gaps, Order Blocks, Liquidity Sweeps, AMD cycles, Optimal Trade Entry — the full institutional toolkit.',
         cap_smc_t:'Smart Money Concepts', cap_smc_b:'Break of Structure, Change of Character, Supply &amp; Demand zones, and institutional order flow analysis.',
         cap_wyc_t:'Wyckoff Method', cap_wyc_b:'Accumulation and distribution schematics, Springs, Upthrusts, and the Composite Man logic applied to modern markets.',
@@ -1614,7 +1667,8 @@
         tc6_t:'Biblioteca de Indicadores', tc6_b:'Indicadores personalizados para TradingView, basados en ICT y SMC — sin repintado, sin lag.',
         s5_title:'Reconocimiento de patrones a nivel institucional.',
         s5_body:'Cada captura se analiza según la metodología que elijas — ICT, SMC, Wyckoff, patrones clásicos, STDV o Price Action — entregando feedback estructurado de nivel experto en segundos.',
-        brow_core:'FUNCIÓN PRINCIPAL', brow_toolkit:'TUS HERRAMIENTAS', brow_airead:'LO QUE LEE LA IA', brow_community:'COMUNIDAD', brow_pricing:'PRECIOS',
+        brow_core:'FUNCIÓN PRINCIPAL', brow_toolkit:'TUS HERRAMIENTAS', brow_airead:'LO QUE LEE LA IA', brow_community:'COMUNIDAD', brow_pricing:'PRECIOS', brow_testi:'NUESTROS TRADERS',
+        testi_title:'Lo que dicen los traders',
         cap_ict_t:'Inner Circle Trader', cap_ict_b:'Fair Value Gaps, Order Blocks, barridos de liquidez, ciclos AMD, Optimal Trade Entry — el kit institucional completo.',
         cap_smc_t:'Smart Money Concepts', cap_smc_b:'Break of Structure, Change of Character, zonas de oferta y demanda, y análisis del order flow institucional.',
         cap_wyc_t:'Método Wyckoff', cap_wyc_b:'Esquemas de acumulación y distribución, Springs, Upthrusts y la lógica del Composite Man aplicada a los mercados modernos.',
@@ -1683,7 +1737,8 @@
         tc6_t:'Bibliothèque d\'indicateurs', tc6_b:'Indicateurs personnalisés pour TradingView, basés sur ICT et SMC — sans repaint, sans lag.',
         s5_title:'Reconnaissance de patterns de niveau institutionnel.',
         s5_body:'Chaque capture est analysée selon la méthodologie que vous choisissez — ICT, SMC, Wyckoff, patterns classiques, STDV ou Price Action — pour un feedback structuré de niveau expert en quelques secondes.',
-        brow_core:'FONCTION CLÉ', brow_toolkit:'VOS OUTILS', brow_airead:'CE QUE LIT L\'IA', brow_community:'COMMUNAUTÉ', brow_pricing:'TARIFS',
+        brow_core:'FONCTION CLÉ', brow_toolkit:'VOS OUTILS', brow_airead:'CE QUE LIT L\'IA', brow_community:'COMMUNAUTÉ', brow_pricing:'TARIFS', brow_testi:'NOS TRADERS',
+        testi_title:'Ce que disent les traders',
         cap_ict_t:'Inner Circle Trader', cap_ict_b:'Fair Value Gaps, Order Blocks, balayages de liquidité, cycles AMD, Optimal Trade Entry — la boîte à outils institutionnelle complète.',
         cap_smc_t:'Smart Money Concepts', cap_smc_b:'Break of Structure, Change of Character, zones d\'offre et de demande, et analyse de l\'order flow institutionnel.',
         cap_wyc_t:'Méthode Wyckoff', cap_wyc_b:'Schémas d\'accumulation et de distribution, Springs, Upthrusts et la logique du Composite Man appliquée aux marchés modernes.',
@@ -1752,7 +1807,8 @@
         tc6_t:'Biblioteca de Indicadores', tc6_b:'Indicadores personalizados para TradingView, baseados em ICT e SMC — sem repintura, sem lag.',
         s5_title:'Reconhecimento de padrões de nível institucional.',
         s5_body:'Cada captura é analisada de acordo com a metodologia que você escolher — ICT, SMC, Wyckoff, padrões clássicos, STDV ou Price Action — entregando feedback estruturado de nível especialista em segundos.',
-        brow_core:'RECURSO PRINCIPAL', brow_toolkit:'SUAS FERRAMENTAS', brow_airead:'O QUE A IA LÊ', brow_community:'COMUNIDADE', brow_pricing:'PREÇOS',
+        brow_core:'RECURSO PRINCIPAL', brow_toolkit:'SUAS FERRAMENTAS', brow_airead:'O QUE A IA LÊ', brow_community:'COMUNIDADE', brow_pricing:'PREÇOS', brow_testi:'NOSSOS TRADERS',
+        testi_title:'O que dizem os traders',
         cap_ict_t:'Inner Circle Trader', cap_ict_b:'Fair Value Gaps, Order Blocks, varreduras de liquidez, ciclos AMD, Optimal Trade Entry — o kit institucional completo.',
         cap_smc_t:'Smart Money Concepts', cap_smc_b:'Break of Structure, Change of Character, zonas de oferta e demanda, e análise do order flow institucional.',
         cap_wyc_t:'Método Wyckoff', cap_wyc_b:'Esquemas de acumulação e distribuição, Springs, Upthrusts e a lógica do Composite Man aplicada aos mercados modernos.',
@@ -1903,6 +1959,63 @@
       if (sub) sub.textContent = SUBS[cycle];
     }
     opts.forEach(function (o) { o.addEventListener('click', function () { setCycle(o.dataset.cycle); }); });
+  })();
+
+  // ── TESTIMONIALS CAROUSEL (book-flip) ──────────────────────────
+  (function () {
+    fetch('/api/testimonials').then(r => r.json()).then(data => {
+      const items = (data && data.testimonials) || [];
+      if (!items.length) return;
+      const section = document.getElementById('testimonials');
+      const stage = document.getElementById('testi-stage');
+      const dotsEl = document.getElementById('testi-dots');
+      section.style.display = '';
+
+      items.forEach(() => {
+        const d = document.createElement('span');
+        d.className = 'testi-dot';
+        dotsEl.appendChild(d);
+      });
+      const dots = dotsEl.querySelectorAll('.testi-dot');
+
+      function cardHTML(item) {
+        const initial = (item.name || '?').trim().charAt(0).toUpperCase();
+        const stars = '★'.repeat(item.rating) + '☆'.repeat(5 - item.rating);
+        const plan = item.plan ? item.plan.charAt(0).toUpperCase() + item.plan.slice(1) : '';
+        return '<div class="testi-avatar">' + initial + '</div>'
+          + '<div class="testi-stars">' + stars + '</div>'
+          + '<p class="testi-quote">“' + item.text.replace(/</g, '&lt;') + '”</p>'
+          + '<div class="testi-name">' + item.name.replace(/</g, '&lt;') + '</div>'
+          + (plan ? '<div class="testi-plan">' + plan + ' plan</div>' : '');
+      }
+
+      let idx = 0;
+      const first = document.createElement('div');
+      first.className = 'testi-card active';
+      first.innerHTML = cardHTML(items[0]);
+      stage.appendChild(first);
+      dots[0].classList.add('on');
+
+      function next() {
+        const nextIdx = (idx + 1) % items.length;
+        const current = stage.querySelector('.testi-card.active');
+        const incoming = document.createElement('div');
+        incoming.className = 'testi-card entering';
+        incoming.innerHTML = cardHTML(items[nextIdx]);
+        stage.appendChild(incoming);
+        requestAnimationFrame(() => {
+          current.classList.remove('active');
+          current.classList.add('leaving');
+          incoming.classList.remove('entering');
+          incoming.classList.add('active');
+        });
+        setTimeout(() => current.remove(), 650);
+        dots.forEach((d, i) => d.classList.toggle('on', i === nextIdx));
+        idx = nextIdx;
+      }
+
+      if (items.length > 1) setInterval(next, 6000);
+    }).catch(() => {});
   })();
   </script>
 </body>

@@ -186,6 +186,8 @@ class User(UserMixin, db.Model):
     # shift) can never resolve to a different account.
     alt_id = db.Column(db.String(40), unique=True, nullable=True, index=True,
                        default=lambda: secrets.token_hex(20))
+    # ── Periodic testimonial prompt (paid plans only) ──
+    last_review_prompt_at = db.Column(db.DateTime, nullable=True)
 
     def set_password(self, raw):
         self.password_hash = generate_password_hash(raw)
@@ -473,6 +475,22 @@ class Expense(db.Model):
     recurring = db.Column(db.Boolean, default=False)          # monthly recurring?
     note = db.Column(db.String(300), nullable=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class Testimonial(db.Model):
+    """A paying trader's periodic rating/review, collected via a recurring
+    in-app prompt. Only ratings of 4-5 stars (with consent) are published to
+    the public landing-page testimonial panel; lower ratings stay private as
+    feedback for the team. These are real accounts tied to real activity —
+    never fabricated personas."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    rating = db.Column(db.Integer, nullable=False)              # 1-5
+    text = db.Column(db.String(500), nullable=False)
+    display_name = db.Column(db.String(80), nullable=False)     # snapshot at submit time
+    plan = db.Column(db.String(20), nullable=True)
+    published = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
 
 
 class AuditEvent(db.Model):
@@ -1262,6 +1280,13 @@ def app_view():
         unlock_plan = pending_unlock.plan
         pending_unlock.celebrated_at = datetime.now(timezone.utc)
         db.session.commit()
+    # Periodic testimonial prompt: every 30 days, for paid plans only, and
+    # never on the same load as the unlock reveal.
+    review_prompt = False
+    if not unlock_plan and current_user.plan in ('standard', 'premium'):
+        last = _aware(current_user.last_review_prompt_at)
+        if last is None or (datetime.now(timezone.utc) - last).days >= 30:
+            review_prompt = True
     # Consume the pass so the next entry triggers the splash again.
     resp = make_response(render_template(
         'index.html',
@@ -1270,6 +1295,7 @@ def app_view():
         username=current_user.username,
         is_guest=False,
         unlock_plan=unlock_plan,
+        review_prompt=review_prompt,
     ))
     resp.delete_cookie('scalpel_splash_ts')
     return resp
@@ -4057,6 +4083,51 @@ def daily_coupons():
     return jsonify({'coupons': out})
 
 
+@app.route('/api/testimonial/submit', methods=['POST'])
+@login_required
+def testimonial_submit():
+    """Record a periodic rating/review from a paid user. 4-5 star reviews
+    (with consent to publish) appear on the public landing-page panel;
+    everything else stays private as feedback for the team."""
+    data = request.get_json(silent=True) or {}
+    try:
+        rating = int(data.get('rating', 0))
+    except (TypeError, ValueError):
+        rating = 0
+    if data.get('skipped'):
+        # "Maybe later" — just push the next prompt out ~30 days, no record.
+        current_user.last_review_prompt_at = datetime.now(timezone.utc)
+        db.session.commit()
+        return jsonify({'ok': True})
+    if rating < 1 or rating > 5:
+        return jsonify({'error': 'invalid_rating'}), 400
+    text = (data.get('text') or '').strip()[:500]
+    consent = bool(data.get('consent'))
+    published = rating >= 4 and consent and bool(text)
+    t = Testimonial(
+        user_id=current_user.id, rating=rating, text=text,
+        display_name=current_user.username, plan=current_user.plan,
+        published=published,
+    )
+    current_user.last_review_prompt_at = datetime.now(timezone.utc)
+    db.session.add(t)
+    db.session.commit()
+    record_audit_event('testimonial_submitted', user_id=current_user.id,
+                        detail=f'{rating}/5 published={published}')
+    return jsonify({'ok': True})
+
+
+@app.route('/api/testimonials')
+def testimonials_public():
+    """Public feed of published testimonials for the landing page panel."""
+    rows = (Testimonial.query.filter_by(published=True)
+            .order_by(Testimonial.created_at.desc()).limit(24).all())
+    return jsonify({'testimonials': [
+        {'name': r.display_name, 'rating': r.rating, 'text': r.text, 'plan': r.plan}
+        for r in rows
+    ]})
+
+
 # ──────────────────────────────────────────────────────────────────────────
 # ANALYSIS PROJECTS (saved presets for the Analyze form)
 # ──────────────────────────────────────────────────────────────────────────
@@ -4636,11 +4707,23 @@ def _migrate_preflight_check_columns():
         app.logger.info('Migrated preflight_check table: added missing columns (%d).', len(stmts))
 
 
+def _migrate_user_review_column():
+    """Add `last_review_prompt_at` to an existing user table."""
+    from sqlalchemy import inspect, text
+    insp = inspect(db.engine)
+    cols = {c['name'] for c in insp.get_columns('user')}
+    if 'last_review_prompt_at' not in cols:
+        with db.engine.begin() as conn:
+            conn.execute(text('ALTER TABLE "user" ADD COLUMN last_review_prompt_at TIMESTAMP'))
+        app.logger.info('Migrated user table: added last_review_prompt_at column.')
+
+
 def init_db():
     with app.app_context():
         db.create_all()
         _migrate_user_verification_columns()
         _migrate_user_alt_id_column()
+        _migrate_user_review_column()
         _migrate_order_columns()
         _migrate_promo_code_columns()
         _migrate_preflight_check_columns()
