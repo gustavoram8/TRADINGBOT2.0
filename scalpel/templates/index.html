@@ -6657,6 +6657,7 @@
       'daily.copied': 'Copied!',
       'daily.close': 'Close',
       'daily.codeNote': 'Use this single-use code at checkout on your next monthly renewal. Valid 90 days.',
+      'daily.codeNoteStore': 'Use this single-use code on any indicator or camo purchase in the store. Valid 1 year. Linked to your account.',
       'daily.monthNote': 'Your Premium plan was just extended by 30 days. Enjoy!',
       'daily.prize.d5': '5% off your next renewal',
       'daily.prize.d10': '10% off your next renewal',
@@ -6682,6 +6683,7 @@
       'daily.copied': '¡Copiado!',
       'daily.close': 'Cerrar',
       'daily.codeNote': 'Usa este código de un solo uso al pagar tu próxima renovación mensual. Válido 90 días.',
+      'daily.codeNoteStore': 'Usa este código de un solo uso en cualquier compra de indicadores o camos en la tienda. Válido 1 año. Vinculado a tu cuenta.',
       'daily.monthNote': 'Tu plan Premium acaba de extenderse 30 días. ¡Disfrútalo!',
       'daily.prize.d5': '5% de descuento en tu próxima renovación',
       'daily.prize.d10': '10% de descuento en tu próxima renovación',
@@ -6707,6 +6709,7 @@
       'daily.copied': 'Copié !',
       'daily.close': 'Fermer',
       'daily.codeNote': 'Utilisez ce code à usage unique lors de votre prochain renouvellement mensuel. Valable 90 jours.',
+      'daily.codeNoteStore': 'Utilisez ce code à usage unique pour tout achat d\'indicateur ou de camo dans la boutique. Valable 1 an. Lié à votre compte.',
       'daily.monthNote': 'Votre plan Premium vient d\'être prolongé de 30 jours. Profitez-en !',
       'daily.prize.d5': '5% de réduction sur votre prochain renouvellement',
       'daily.prize.d10': '10% de réduction sur votre prochain renouvellement',
@@ -6732,6 +6735,7 @@
       'daily.copied': 'Copiado!',
       'daily.close': 'Fechar',
       'daily.codeNote': 'Use este código de uso único na sua próxima renovação mensal. Válido por 90 dias.',
+      'daily.codeNoteStore': 'Use este código de uso único em qualquer compra de indicadores ou camos na loja. Válido por 1 ano. Vinculado à sua conta.',
       'daily.monthNote': 'Seu plano Premium acaba de ser estendido por 30 dias. Aproveite!',
       'daily.prize.d5': '5% de desconto na sua próxima renovação',
       'daily.prize.d10': '10% de desconto na sua próxima renovação',
@@ -18717,7 +18721,7 @@
             if (data.promo_code) {
               codeWrap.style.display = '';
               $('roulette-prize-code').textContent = data.promo_code;
-              $('roulette-prize-note').textContent = T('daily.codeNote');
+              $('roulette-prize-note').textContent = T(data.code_scope === 'store' ? 'daily.codeNoteStore' : 'daily.codeNote');
             } else {
               codeWrap.style.display = 'none';
               $('roulette-prize-note').textContent = T('daily.monthNote');

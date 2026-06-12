@@ -438,8 +438,11 @@ class PromoCode(db.Model):
     discount_pct = db.Column(db.Integer, nullable=False)       # 1–100
     creator_name = db.Column(db.String(120), nullable=True)    # influencer / partner
     kind = db.Column(db.String(20), default='discount')        # 'discount' or 'creator'
-    valid_for = db.Column(db.String(10), default='monthly')    # monthly / annual / both
+    valid_for = db.Column(db.String(10), default='monthly')    # monthly / annual / both / store
     max_uses = db.Column(db.Integer, nullable=True)            # NULL = unlimited
+    # Personal codes (e.g. roulette prizes) are bound to their winner:
+    # nobody else can redeem them even if the code leaks.
+    restrict_user_id = db.Column(db.Integer, nullable=True)
     uses_count = db.Column(db.Integer, default=0, nullable=False)
     active = db.Column(db.Boolean, default=True, nullable=False)
     expires_at = db.Column(db.DateTime, nullable=True)
@@ -1678,6 +1681,9 @@ def _validate_promo(code_str, cycle):
     promo = PromoCode.query.filter(
         db.func.lower(PromoCode.code) == code_str.strip().lower()).first()
     if not promo:
+        return None, 'not_found'
+    # Personal codes only work for the account that won them.
+    if promo.restrict_user_id and promo.restrict_user_id != current_user.id:
         return None, 'not_found'
     ok, reason = promo.is_redeemable(cycle)
     if not ok:
@@ -3975,13 +3981,20 @@ def daily_spin():
     _, discount, _, label = next(p for p in ROULETTE_PRIZES if p[0] == prize_key)
 
     promo_code = None
+    code_scope = None
     if discount:
+        # Annual subscribers can't redeem a code on their next monthly renewal
+        # (there isn't one), so their prize is a store discount (indicators /
+        # camos) instead — longer expiry since the store launches later.
+        code_scope = 'store' if current_user.plan_cycle == 'annual' else 'monthly'
         promo_code = f'SPIN-{secrets.token_hex(3).upper()}'
         db.session.add(PromoCode(
             code=promo_code, discount_pct=discount, kind='discount',
             creator_name=f'roulette:{current_user.username}',
-            valid_for='monthly', max_uses=1,
-            expires_at=datetime.now(timezone.utc) + timedelta(days=90),
+            valid_for=code_scope, max_uses=1,
+            restrict_user_id=current_user.id,
+            expires_at=datetime.now(timezone.utc)
+                + timedelta(days=365 if code_scope == 'store' else 90),
         ))
     else:
         # Free month: extend the active plan directly — no code to redeem.
@@ -3998,6 +4011,7 @@ def daily_spin():
 
     return jsonify({
         'prize_key': prize_key, 'label': label, 'promo_code': promo_code,
+        'code_scope': code_scope,
         'spins_available': st.spins_available,
         'segments': [{'key': p[0], 'label': p[3]} for p in ROULETTE_PRIZES],
     })
@@ -4520,6 +4534,19 @@ def _migrate_user_alt_id_column():
         app.logger.info('Backfilled alt_id for %d existing user(s).', len(users_without_alt_id))
 
 
+def _migrate_promo_code_columns():
+    """Add `restrict_user_id` to an existing promo_code table."""
+    from sqlalchemy import inspect, text
+    insp = inspect(db.engine)
+    if 'promo_code' not in insp.get_table_names():
+        return
+    cols = {c['name'] for c in insp.get_columns('promo_code')}
+    if 'restrict_user_id' not in cols:
+        with db.engine.begin() as conn:
+            conn.execute(text("ALTER TABLE promo_code ADD COLUMN restrict_user_id INTEGER"))
+        app.logger.info('Migrated promo_code table: added restrict_user_id column.')
+
+
 def _migrate_preflight_check_columns():
     """Add the trade-metadata columns to an existing `preflight_check` table.
 
@@ -4560,6 +4587,7 @@ def init_db():
         db.create_all()
         _migrate_user_verification_columns()
         _migrate_user_alt_id_column()
+        _migrate_promo_code_columns()
         _migrate_preflight_check_columns()
         admin_email = os.environ.get('ADMIN_EMAIL', 'mauroramirezmij@gmail.com').lower()
         admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
