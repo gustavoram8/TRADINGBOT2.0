@@ -2206,6 +2206,122 @@
     /* ── QUIZ ────────────────────────────────────────────────────────────── */
     .quiz-app { max-width: 680px; margin: 0 auto; padding: 28px 20px 60px; }
 
+    /* ── Daily Challenge card ── */
+    .daily-card {
+      display: flex; align-items: center; justify-content: space-between; gap: 18px;
+      flex-wrap: wrap; margin: 0 0 26px; padding: 16px 18px;
+      border: 1px solid var(--accent); border-radius: 14px;
+      background: linear-gradient(135deg, rgba(91,142,240,0.10), rgba(91,142,240,0.02));
+    }
+    .daily-card-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 7px; }
+    .daily-card-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+    .daily-flame { font-size: 17px; }
+    .daily-streak-row { display: flex; gap: 6px; margin-top: 10px; align-items: center; }
+    .daily-dot {
+      width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--border2);
+      display: inline-flex; align-items: center; justify-content: center; font-size: 10px;
+      color: var(--muted); background: var(--surface);
+    }
+    .daily-dot.lit { border-color: #f59e0b; background: rgba(245,158,11,0.15); }
+    .daily-streak-label { font-size: 11.5px; color: var(--muted); margin-left: 4px; font-weight: 600; }
+    .daily-card-right { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+    .daily-play-btn {
+      padding: 11px 20px; border-radius: 9px; border: none; cursor: pointer;
+      background: var(--accent); color: #fff; font-weight: 700; font-size: 13px;
+    }
+    .daily-play-btn:hover { filter: brightness(1.1); }
+    .daily-spin-btn {
+      padding: 11px 20px; border-radius: 9px; border: none; cursor: pointer;
+      background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff;
+      font-weight: 700; font-size: 13px; animation: dailyPulse 1.6s ease-in-out infinite;
+    }
+    @keyframes dailyPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    .daily-played-msg { font-size: 12.5px; font-weight: 600; }
+    .daily-played-msg.ok { color: #22c55e; }
+    .daily-played-msg.bad { color: #ef4444; }
+
+    /* ── Daily / roulette modal ── */
+    .daily-overlay {
+      position: fixed; inset: 0; z-index: 600; background: rgba(0,0,0,0.65);
+      display: flex; align-items: center; justify-content: center; padding: 20px;
+    }
+    .daily-modal {
+      width: 100%; max-width: 540px; max-height: 90vh; overflow-y: auto;
+      background: var(--bg); border: 1px solid var(--border); border-radius: 16px;
+      padding: 20px 22px 26px;
+    }
+    .daily-modal-head {
+      display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700;
+      margin-bottom: 16px;
+    }
+    .daily-close {
+      margin-left: auto; background: none; border: none; color: var(--muted);
+      font-size: 24px; cursor: pointer; line-height: 1; padding: 2px 6px;
+    }
+    .daily-timer-wrap {
+      position: relative; height: 22px; border-radius: 11px; overflow: hidden;
+      background: var(--surface); border: 1px solid var(--border2); margin-bottom: 16px;
+    }
+    .daily-timer-bar {
+      position: absolute; inset: 0; width: 100%; transform-origin: left;
+      background: linear-gradient(90deg, #22c55e, #f59e0b 70%, #ef4444);
+    }
+    .daily-timer-num {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.55);
+      font-variant-numeric: tabular-nums;
+    }
+    .daily-q { font-size: 14.5px; font-weight: 600; line-height: 1.45; margin-bottom: 14px; }
+    .daily-opts { display: flex; flex-direction: column; gap: 9px; }
+    .daily-opt {
+      padding: 11px 14px; border: 1px solid var(--border2); border-radius: 10px;
+      cursor: pointer; font-size: 13px; line-height: 1.4; background: var(--surface);
+    }
+    .daily-opt:hover { border-color: var(--accent); }
+    .daily-opt.correct { border-color: #22c55e; background: rgba(34,197,94,0.12); }
+    .daily-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,0.12); }
+    .daily-opt.disabled { pointer-events: none; opacity: 0.75; }
+    .daily-result { text-align: center; margin-top: 18px; }
+    .daily-result-title { font-size: 17px; font-weight: 800; margin-bottom: 8px; }
+    .daily-result-title.ok { color: #22c55e; }
+    .daily-result-title.bad { color: #ef4444; }
+    .daily-result-exp { font-size: 12.5px; color: var(--muted); line-height: 1.5; margin-bottom: 14px; text-align: left; }
+
+    /* ── Roulette wheel ── */
+    .roulette-modal { text-align: center; }
+    .roulette-stage { position: relative; width: 280px; height: 296px; margin: 6px auto 18px; }
+    .roulette-pointer {
+      position: absolute; top: -2px; left: 50%; transform: translateX(-50%);
+      font-size: 22px; color: var(--accent); z-index: 2;
+      filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4));
+    }
+    .roulette-wheel {
+      position: absolute; top: 16px; left: 0; width: 280px; height: 280px; border-radius: 50%;
+      border: 5px solid var(--border);
+      background: conic-gradient(
+        #3b82f6 0deg 144deg,        /* d5  40% */
+        #8b5cf6 144deg 252deg,      /* d10 30% */
+        #06b6d4 252deg 306deg,      /* d15 15% */
+        #f59e0b 306deg 342deg,      /* d25 10% */
+        #ef4444 342deg 360deg       /* month 5% */
+      );
+      transition: transform 4.2s cubic-bezier(0.12, 0.6, 0.04, 1);
+    }
+    .roulette-seg-label {
+      position: absolute; left: 50%; top: 50%; transform-origin: 0 0;
+      font-size: 11.5px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+      white-space: nowrap;
+    }
+    .roulette-prize { margin-top: 16px; }
+    .roulette-prize-label { font-size: 17px; font-weight: 800; color: #f59e0b; margin-bottom: 10px; }
+    .roulette-prize-code-wrap { display: flex; gap: 10px; align-items: center; justify-content: center; margin-bottom: 10px; }
+    .roulette-prize-code {
+      padding: 9px 16px; border: 1px dashed var(--accent); border-radius: 8px;
+      font-size: 15px; font-weight: 800; letter-spacing: 0.08em; color: var(--accent);
+      background: var(--surface);
+    }
+    .roulette-prize-note { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
     .quiz-header { text-align: center; margin-bottom: 32px; }
     .quiz-h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
     .quiz-sub { font-size: 13px; color: var(--muted); }
@@ -3889,6 +4005,25 @@
           <div class="quiz-h1" data-i18n="quiz.heading">Trading Quiz</div>
           <div class="quiz-sub" data-i18n="quiz.pickMethod">Pick a methodology to explore its topics.</div>
         </div>
+
+        <!-- ── Daily Challenge card (premium retention loop) ── -->
+        <div class="daily-card" id="daily-card" style="display:none;">
+          <div class="daily-card-left">
+            <div class="daily-card-title">
+              <span class="daily-flame">🔥</span>
+              <span data-i18n="daily.title">Daily Challenge</span>
+            </div>
+            <div class="daily-card-sub" id="daily-card-sub" data-i18n="daily.sub">One question. 60 seconds. 7-day streak = roulette spin.</div>
+            <div class="daily-streak-row" id="daily-streak-row"><!-- dots populated by JS --></div>
+          </div>
+          <div class="daily-card-right">
+            <button class="daily-play-btn" id="daily-play-btn" data-i18n="daily.play">Play today's question</button>
+            <button class="daily-spin-btn" id="daily-spin-open-btn" style="display:none;">
+              🎡 <span data-i18n="daily.spinReady">Spin the wheel!</span> <span id="daily-spin-count"></span>
+            </button>
+            <div class="daily-played-msg" id="daily-played-msg" style="display:none;"></div>
+          </div>
+        </div>
         <div class="quiz-method-grid" id="quiz-method-grid">
           <!-- populated by JS -->
         </div>
@@ -4013,6 +4148,56 @@
           </div>
           <div class="qc-list" id="quiz-certified-list"><!-- populated by JS --></div>
           <div class="qc-empty" id="quiz-certified-empty" style="display:none;" data-i18n="quiz.certifiedEmpty">No certified traders yet — be the first to complete every quiz at 80%+.</div>
+        </div>
+      </div>
+
+      <!-- ── Daily Challenge modal (question + 60s timer) ── -->
+      <div class="daily-overlay" id="daily-overlay" style="display:none;">
+        <div class="daily-modal">
+          <div class="daily-modal-head">
+            <span class="daily-flame">🔥</span>
+            <span data-i18n="daily.title">Daily Challenge</span>
+            <button class="daily-close" id="daily-close-btn" aria-label="Close">×</button>
+          </div>
+          <div class="daily-timer-wrap" id="daily-timer-wrap">
+            <div class="daily-timer-bar" id="daily-timer-bar"></div>
+            <div class="daily-timer-num" id="daily-timer-num">60</div>
+          </div>
+          <div class="daily-q" id="daily-q-text"></div>
+          <div class="daily-opts" id="daily-opts"></div>
+          <div class="daily-result" id="daily-result" style="display:none;">
+            <div class="daily-result-title" id="daily-result-title"></div>
+            <div class="daily-result-exp" id="daily-result-exp"></div>
+            <button class="daily-play-btn" id="daily-result-spin-btn" style="display:none;">
+              🎡 <span data-i18n="daily.spinReady">Spin the wheel!</span>
+            </button>
+            <button class="quiz-action-btn secondary" id="daily-result-close" style="margin-top:14px;width:auto;padding:10px 22px;" data-i18n="daily.close">Close</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Roulette modal ── -->
+      <div class="daily-overlay" id="roulette-overlay" style="display:none;">
+        <div class="daily-modal roulette-modal">
+          <div class="daily-modal-head">
+            🎡 <span data-i18n="daily.spinTitle">Rewards Roulette</span>
+            <button class="daily-close" id="roulette-close-btn" aria-label="Close">×</button>
+          </div>
+          <div class="roulette-stage">
+            <div class="roulette-pointer">▼</div>
+            <div class="roulette-wheel" id="roulette-wheel">
+              <!-- segment labels populated by JS -->
+            </div>
+          </div>
+          <button class="daily-play-btn" id="roulette-spin-btn" data-i18n="daily.spin">SPIN</button>
+          <div class="roulette-prize" id="roulette-prize" style="display:none;">
+            <div class="roulette-prize-label" id="roulette-prize-label"></div>
+            <div class="roulette-prize-code-wrap" id="roulette-prize-code-wrap" style="display:none;">
+              <code class="roulette-prize-code" id="roulette-prize-code"></code>
+              <button class="quiz-action-btn secondary" id="roulette-copy-btn" style="width:auto;padding:8px 16px;" data-i18n="daily.copy">Copy</button>
+            </div>
+            <div class="roulette-prize-note" id="roulette-prize-note"></div>
+          </div>
         </div>
       </div>
 
@@ -6345,6 +6530,111 @@
   };
 
   const LANG_NAMES = { en: 'English', es: 'Spanish', fr: 'French', pt: 'Portuguese' };
+
+  // ── Daily Challenge / Roulette i18n (merged into the main dicts) ──
+  const DAILY_I18N = {
+    en: {
+      'daily.title': 'Daily Challenge',
+      'daily.sub': 'One question. 60 seconds. A 7-day streak earns a roulette spin.',
+      'daily.play': "Play today's question",
+      'daily.playedOk': '✓ Solved today — come back tomorrow!',
+      'daily.playedBad': '✗ Missed today — streak resets. Try tomorrow!',
+      'daily.streakLabel': 'day streak',
+      'daily.correct': 'Correct! 🔥',
+      'daily.wrong': 'Not this time',
+      'daily.timeout': "Time's up!",
+      'daily.earnedSpin': 'You completed a 7-day streak — you earned a roulette spin! 🎡',
+      'daily.spinReady': 'Spin the wheel!',
+      'daily.spin': 'SPIN',
+      'daily.spinTitle': 'Rewards Roulette',
+      'daily.copy': 'Copy',
+      'daily.copied': 'Copied!',
+      'daily.close': 'Close',
+      'daily.codeNote': 'Use this single-use code at checkout on your next renewal. Valid 90 days.',
+      'daily.monthNote': 'Your Premium plan was just extended by 30 days. Enjoy!',
+      'daily.prize.d5': '5% off your next renewal',
+      'daily.prize.d10': '10% off your next renewal',
+      'daily.prize.d15': '15% off your next renewal',
+      'daily.prize.d25': '25% off your next renewal',
+      'daily.prize.month': '1 month of Premium — FREE',
+    },
+    es: {
+      'daily.title': 'Reto Diario',
+      'daily.sub': 'Una pregunta. 60 segundos. Racha de 7 días = tirada de ruleta.',
+      'daily.play': 'Jugar la pregunta de hoy',
+      'daily.playedOk': '✓ Resuelta hoy — ¡vuelve mañana!',
+      'daily.playedBad': '✗ Fallada hoy — la racha se reinicia. ¡Inténtalo mañana!',
+      'daily.streakLabel': 'días de racha',
+      'daily.correct': '¡Correcto! 🔥',
+      'daily.wrong': 'Esta vez no',
+      'daily.timeout': '¡Se acabó el tiempo!',
+      'daily.earnedSpin': 'Completaste una racha de 7 días — ¡ganaste una tirada de ruleta! 🎡',
+      'daily.spinReady': '¡Gira la ruleta!',
+      'daily.spin': 'GIRAR',
+      'daily.spinTitle': 'Ruleta de Premios',
+      'daily.copy': 'Copiar',
+      'daily.copied': '¡Copiado!',
+      'daily.close': 'Cerrar',
+      'daily.codeNote': 'Usa este código de un solo uso al pagar tu próxima renovación. Válido 90 días.',
+      'daily.monthNote': 'Tu plan Premium acaba de extenderse 30 días. ¡Disfrútalo!',
+      'daily.prize.d5': '5% de descuento en tu próxima renovación',
+      'daily.prize.d10': '10% de descuento en tu próxima renovación',
+      'daily.prize.d15': '15% de descuento en tu próxima renovación',
+      'daily.prize.d25': '25% de descuento en tu próxima renovación',
+      'daily.prize.month': '1 mes de Premium — GRATIS',
+    },
+    fr: {
+      'daily.title': 'Défi Quotidien',
+      'daily.sub': 'Une question. 60 secondes. Série de 7 jours = un tour de roulette.',
+      'daily.play': "Jouer la question du jour",
+      'daily.playedOk': "✓ Résolue aujourd'hui — revenez demain !",
+      'daily.playedBad': "✗ Ratée aujourd'hui — la série repart à zéro. Réessayez demain !",
+      'daily.streakLabel': 'jours de série',
+      'daily.correct': 'Correct ! 🔥',
+      'daily.wrong': 'Pas cette fois',
+      'daily.timeout': 'Temps écoulé !',
+      'daily.earnedSpin': 'Série de 7 jours complétée — vous avez gagné un tour de roulette ! 🎡',
+      'daily.spinReady': 'Faites tourner la roue !',
+      'daily.spin': 'TOURNER',
+      'daily.spinTitle': 'Roulette des Récompenses',
+      'daily.copy': 'Copier',
+      'daily.copied': 'Copié !',
+      'daily.close': 'Fermer',
+      'daily.codeNote': 'Utilisez ce code à usage unique lors de votre prochain renouvellement. Valable 90 jours.',
+      'daily.monthNote': 'Votre plan Premium vient d\'être prolongé de 30 jours. Profitez-en !',
+      'daily.prize.d5': '5% de réduction sur votre prochain renouvellement',
+      'daily.prize.d10': '10% de réduction sur votre prochain renouvellement',
+      'daily.prize.d15': '15% de réduction sur votre prochain renouvellement',
+      'daily.prize.d25': '25% de réduction sur votre prochain renouvellement',
+      'daily.prize.month': '1 mois de Premium — GRATUIT',
+    },
+    pt: {
+      'daily.title': 'Desafio Diário',
+      'daily.sub': 'Uma pergunta. 60 segundos. Sequência de 7 dias = giro de roleta.',
+      'daily.play': 'Jogar a pergunta de hoje',
+      'daily.playedOk': '✓ Resolvida hoje — volte amanhã!',
+      'daily.playedBad': '✗ Errada hoje — a sequência reinicia. Tente amanhã!',
+      'daily.streakLabel': 'dias de sequência',
+      'daily.correct': 'Correto! 🔥',
+      'daily.wrong': 'Desta vez não',
+      'daily.timeout': 'Tempo esgotado!',
+      'daily.earnedSpin': 'Você completou uma sequência de 7 dias — ganhou um giro de roleta! 🎡',
+      'daily.spinReady': 'Gire a roleta!',
+      'daily.spin': 'GIRAR',
+      'daily.spinTitle': 'Roleta de Prêmios',
+      'daily.copy': 'Copiar',
+      'daily.copied': 'Copiado!',
+      'daily.close': 'Fechar',
+      'daily.codeNote': 'Use este código de uso único na sua próxima renovação. Válido por 90 dias.',
+      'daily.monthNote': 'Seu plano Premium acaba de ser estendido por 30 dias. Aproveite!',
+      'daily.prize.d5': '5% de desconto na sua próxima renovação',
+      'daily.prize.d10': '10% de desconto na sua próxima renovação',
+      'daily.prize.d15': '15% de desconto na sua próxima renovação',
+      'daily.prize.d25': '25% de desconto na sua próxima renovação',
+      'daily.prize.month': '1 mês de Premium — GRÁTIS',
+    }
+  };
+  Object.keys(DAILY_I18N).forEach(l => { if (I18N[l]) Object.assign(I18N[l], DAILY_I18N[l]); });
 
   let currentLang = 'en';
   try { const stored = localStorage.getItem('scalpel_lang'); if (stored && I18N[stored]) currentLang = stored; } catch (e) {}
@@ -18102,13 +18392,250 @@
         });
       });
 
+      // ════════════════════════════════════════════════════════════════════
+      // DAILY CHALLENGE + ROULETTE
+      // One timed question per UTC day (server-enforced). 7-day streak of
+      // correct answers earns a roulette spin for renewal discounts.
+      // ════════════════════════════════════════════════════════════════════
+      const Daily = (() => {
+        const POOL = QUESTION_BANK.filter(q => q.lv === 'advanced');
+        // Segment geometry must match the conic-gradient in .roulette-wheel CSS.
+        const SEGMENTS = [
+          { key:'d5',    from:0,   to:144 },
+          { key:'d10',   from:144, to:252 },
+          { key:'d15',   from:252, to:306 },
+          { key:'d25',   from:306, to:342 },
+          { key:'month', from:342, to:360 },
+        ];
+        let status = null;
+        let timerId = null;
+        let answered = false;
+        let wheelTurns = 0;
+
+        const $ = id => document.getElementById(id);
+
+        function renderCard() {
+          const card = $('daily-card');
+          if (!card || !status) return;
+          card.style.display = '';
+          // streak dots (current position within the 7-day cycle)
+          const row = $('daily-streak-row');
+          const inCycle = status.streak % status.streak_target;
+          const lit = (status.streak > 0 && inCycle === 0) ? status.streak_target : inCycle;
+          let dots = '';
+          for (let i = 0; i < status.streak_target; i++) {
+            dots += `<span class="daily-dot ${i < lit ? 'lit' : ''}">${i < lit ? '🔥' : ''}</span>`;
+          }
+          dots += `<span class="daily-streak-label">${status.streak} ${T('daily.streakLabel')}</span>`;
+          row.innerHTML = dots;
+
+          const playBtn = $('daily-play-btn');
+          const msg = $('daily-played-msg');
+          if (status.played_today) {
+            playBtn.style.display = 'none';
+            msg.style.display = '';
+            msg.className = 'daily-played-msg ' + (status.last_result ? 'ok' : 'bad');
+            msg.textContent = T(status.last_result ? 'daily.playedOk' : 'daily.playedBad');
+          } else {
+            playBtn.style.display = '';
+            msg.style.display = 'none';
+          }
+
+          const spinBtn = $('daily-spin-open-btn');
+          if (status.spins_available > 0) {
+            spinBtn.style.display = '';
+            $('daily-spin-count').textContent = status.spins_available > 1 ? `×${status.spins_available}` : '';
+          } else {
+            spinBtn.style.display = 'none';
+          }
+        }
+
+        async function load() {
+          try {
+            const res = await fetch('/api/daily/status');
+            if (!res.ok) { $('daily-card') && ($('daily-card').style.display = 'none'); return; }
+            status = await res.json();
+            renderCard();
+          } catch(e) {}
+        }
+
+        function todaysQuestion(seed) {
+          return POOL[((seed % POOL.length) + POOL.length) % POOL.length];
+        }
+
+        async function play() {
+          let data;
+          try {
+            const res = await fetch('/api/daily/start', { method:'POST' });
+            if (!res.ok) { load(); return; }
+            data = await res.json();
+          } catch(e) { return; }
+
+          const q = todaysQuestion(data.seed);
+          answered = false;
+          $('daily-q-text').textContent = q.q[currentLang] || q.q.en;
+          $('daily-result').style.display = 'none';
+          $('daily-timer-wrap').style.display = '';
+          const opts = $('daily-opts');
+          opts.style.display = '';
+          opts.innerHTML = q.opts.map((o, i) =>
+            `<div class="daily-opt" data-i="${i}">${o.t[currentLang] || o.t.en}</div>`).join('');
+          opts.querySelectorAll('.daily-opt').forEach(el => {
+            el.addEventListener('click', () => submit(q, parseInt(el.dataset.i, 10), el));
+          });
+          $('daily-overlay').style.display = '';
+
+          // countdown (server enforces the real window; this is the visible clock)
+          let left = data.seconds_left;
+          const total = status ? status.seconds : 60;
+          const bar = $('daily-timer-bar'), num = $('daily-timer-num');
+          clearInterval(timerId);
+          const tick = () => {
+            num.textContent = left;
+            bar.style.transform = `scaleX(${Math.max(0, left / total)})`;
+            if (left <= 0) { clearInterval(timerId); if (!answered) submit(q, -1, null); }
+            left--;
+          };
+          tick();
+          timerId = setInterval(tick, 1000);
+        }
+
+        async function submit(q, optIdx, el) {
+          if (answered) return;
+          answered = true;
+          clearInterval(timerId);
+          const correct = optIdx >= 0 && !!q.opts[optIdx].ok;
+
+          // reveal right/wrong in the option list
+          const opts = $('daily-opts');
+          opts.querySelectorAll('.daily-opt').forEach((o, i) => {
+            o.classList.add('disabled');
+            if (q.opts[i].ok) o.classList.add('correct');
+            else if (i === optIdx && !correct) o.classList.add('wrong');
+          });
+
+          let resp = null;
+          try {
+            const res = await fetch('/api/daily/answer', {
+              method:'POST', headers:{'Content-Type':'application/json'},
+              body: JSON.stringify({ correct })
+            });
+            if (res.ok) resp = await res.json();
+          } catch(e) {}
+          if (resp) { status = resp; renderCard(); }
+
+          const finalCorrect = resp ? resp.correct : correct;
+          const timedOut = resp && resp.timed_out;
+          const title = $('daily-result-title');
+          title.className = 'daily-result-title ' + (finalCorrect ? 'ok' : 'bad');
+          title.textContent = timedOut ? T('daily.timeout') : T(finalCorrect ? 'daily.correct' : 'daily.wrong');
+          const exp = $('daily-result-exp');
+          exp.textContent = (q.exp && (q.exp[currentLang] || q.exp.en)) || '';
+          if (resp && resp.earned_spin) {
+            exp.textContent = T('daily.earnedSpin') + '\n\n' + exp.textContent;
+            $('daily-result-spin-btn').style.display = '';
+          } else {
+            $('daily-result-spin-btn').style.display = 'none';
+          }
+          $('daily-result').style.display = '';
+        }
+
+        function closeModal() {
+          clearInterval(timerId);
+          // Closing without answering does NOT pause the server clock — but we
+          // only auto-fail on timer expiry while the modal is open. The server
+          // window keeps running either way.
+          $('daily-overlay').style.display = 'none';
+        }
+
+        // ── Roulette ──
+        function renderWheelLabels() {
+          const wheel = $('roulette-wheel');
+          // keep only the gradient; rebuild labels
+          wheel.querySelectorAll('.roulette-seg-label').forEach(n => n.remove());
+          SEGMENTS.forEach(s => {
+            const mid = (s.from + s.to) / 2;
+            const lbl = document.createElement('span');
+            lbl.className = 'roulette-seg-label';
+            lbl.textContent = s.key === 'month' ? '1M' : s.key.replace('d','') + '%';
+            // rotate from center, push outward, keep text upright-ish
+            lbl.style.transform = `rotate(${mid - 90}deg) translate(86px, -7px)`;
+            wheel.appendChild(lbl);
+          });
+        }
+
+        function openRoulette() {
+          renderWheelLabels();
+          $('roulette-prize').style.display = 'none';
+          $('roulette-spin-btn').style.display = '';
+          $('roulette-spin-btn').disabled = false;
+          $('roulette-overlay').style.display = '';
+          $('daily-overlay').style.display = 'none';
+        }
+
+        async function spin() {
+          const btn = $('roulette-spin-btn');
+          btn.disabled = true;
+          let data;
+          try {
+            const res = await fetch('/api/daily/spin', { method:'POST' });
+            if (!res.ok) { btn.disabled = false; return; }
+            data = await res.json();
+          } catch(e) { btn.disabled = false; return; }
+
+          const seg = SEGMENTS.find(s => s.key === data.prize_key) || SEGMENTS[0];
+          // land at a random point inside the winning segment (pointer is at 0°/top)
+          const margin = (seg.to - seg.from) * 0.18;
+          const landAt = seg.from + margin + Math.random() * (seg.to - seg.from - margin * 2);
+          wheelTurns += 5;                                     // always spin forward
+          const finalDeg = wheelTurns * 360 + (360 - landAt);
+          $('roulette-wheel').style.transform = `rotate(${finalDeg}deg)`;
+
+          setTimeout(() => {
+            $('roulette-prize-label').textContent = T('daily.prize.' + data.prize_key);
+            const codeWrap = $('roulette-prize-code-wrap');
+            if (data.promo_code) {
+              codeWrap.style.display = '';
+              $('roulette-prize-code').textContent = data.promo_code;
+              $('roulette-prize-note').textContent = T('daily.codeNote');
+            } else {
+              codeWrap.style.display = 'none';
+              $('roulette-prize-note').textContent = T('daily.monthNote');
+            }
+            $('roulette-prize').style.display = '';
+            btn.style.display = 'none';
+            status && (status.spins_available = data.spins_available);
+            renderCard();
+          }, 4400);
+        }
+
+        // ── Wire up ──
+        $('daily-play-btn')?.addEventListener('click', play);
+        $('daily-close-btn')?.addEventListener('click', closeModal);
+        $('daily-result-close')?.addEventListener('click', closeModal);
+        $('daily-spin-open-btn')?.addEventListener('click', openRoulette);
+        $('daily-result-spin-btn')?.addEventListener('click', openRoulette);
+        $('roulette-close-btn')?.addEventListener('click', () => { $('roulette-overlay').style.display = 'none'; });
+        $('roulette-spin-btn')?.addEventListener('click', spin);
+        $('roulette-copy-btn')?.addEventListener('click', () => {
+          const code = $('roulette-prize-code').textContent;
+          navigator.clipboard?.writeText(code).then(() => {
+            $('roulette-copy-btn').textContent = T('daily.copied');
+            setTimeout(() => { $('roulette-copy-btn').textContent = T('daily.copy'); }, 1600);
+          });
+        });
+
+        return { load, renderCard };
+      })();
+
       renderMethods();
       loadProgress().then(()=>{ renderMethods(); });
 
       window.Quiz = {
-        open() { loadProgress().then(()=>{ renderMethods(); showScreen('welcome'); }); },
+        open() { loadProgress().then(()=>{ renderMethods(); showScreen('welcome'); }); Daily.load(); },
         relang() {
           renderMethods();
+          Daily.renderCard();
           // re-translate whichever nav screen is visible
           if(screens.topics && screens.topics.style.display!=='none') {
             const t=document.getElementById('quiz-topics-title'); if(t)t.textContent=METHOD_LABELS[qState.methodology]||qState.methodology;

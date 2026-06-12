@@ -478,6 +478,34 @@ class AuditEvent(db.Model):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
 
 
+class DailyQuizState(db.Model):
+    """Per-user state of the Daily Challenge (premium-only): one timed question
+    per UTC day. A streak of consecutive correct answers earns roulette spins.
+
+    Dates are stored as 'YYYY-MM-DD' UTC strings so day boundaries are
+    unambiguous regardless of the user's timezone."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), unique=True, nullable=False, index=True)
+    streak = db.Column(db.Integer, default=0, nullable=False)
+    last_played = db.Column(db.String(10), nullable=True)       # date of last ANSWER
+    last_result = db.Column(db.Boolean, nullable=True)
+    spins_available = db.Column(db.Integer, default=0, nullable=False)
+    total_correct = db.Column(db.Integer, default=0, nullable=False)
+    served_for = db.Column(db.String(10), nullable=True)        # date the open question belongs to
+    question_served_at = db.Column(db.DateTime, nullable=True)  # starts the 60s window
+
+
+class RouletteSpin(db.Model):
+    """A redeemed roulette spin and the prize it landed on. `promo_code` links
+    to the single-use PromoCode generated for discount prizes."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    prize_key = db.Column(db.String(20), nullable=False)        # d5/d10/d15/d25/month
+    label = db.Column(db.String(120), nullable=False)
+    promo_code = db.Column(db.String(40), nullable=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+
 # Event types that immediately email the admin inbox when they fail — these
 # are the "user paid / clicked something and it silently didn't work" cases.
 AUDIT_ALERT_ON_FAILURE = {
@@ -3807,6 +3835,163 @@ def quiz_certified():
     # Highest accuracy first; admins (founders) bubble to the top on ties.
     entries.sort(key=lambda e: (e['accuracy'], e['is_admin']), reverse=True)
     return jsonify({'pass_pct': QUIZ_PASS_PCT, 'cert_pct': QUIZ_CERT_PCT, 'traders': entries})
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# DAILY CHALLENGE + ROULETTE (premium-only retention loop)
+# One timed question per UTC day; a 7-day streak of correct answers earns a
+# roulette spin. Prizes: renewal discounts (single-use promo codes) or a free
+# month of Premium (direct plan extension).
+# ──────────────────────────────────────────────────────────────────────────
+DAILY_STREAK_TARGET = 7
+DAILY_ANSWER_SECONDS = 60
+DAILY_ANSWER_GRACE = 5          # network latency allowance on top of the 60s
+
+# (key, discount_pct or None for free month, probability weight, label)
+ROULETTE_PRIZES = [
+    ('d5',    5,    40, '5% off your next renewal'),
+    ('d10',   10,   30, '10% off your next renewal'),
+    ('d15',   15,   15, '15% off your next renewal'),
+    ('d25',   25,   10, '25% off your next renewal'),
+    ('month', None,  5, '1 month of Premium — free'),
+]
+
+
+def _utc_today():
+    return datetime.now(timezone.utc).strftime('%Y-%m-%d')
+
+
+def _daily_state():
+    """Get or create the current user's DailyQuizState row."""
+    st = DailyQuizState.query.filter_by(user_id=current_user.id).first()
+    if not st:
+        st = DailyQuizState(user_id=current_user.id)
+        db.session.add(st)
+        db.session.commit()
+    return st
+
+
+def _daily_seed():
+    """Deterministic per-day seed — same question for every user worldwide."""
+    return (datetime.now(timezone.utc).date() - datetime(2026, 1, 1, tzinfo=timezone.utc).date()).days
+
+
+def _daily_status_payload(st):
+    return {
+        'today': _utc_today(),
+        'played_today': st.last_played == _utc_today(),
+        'last_result': st.last_result,
+        'streak': st.streak,
+        'streak_target': DAILY_STREAK_TARGET,
+        'spins_available': st.spins_available,
+        'total_correct': st.total_correct,
+        'seconds': DAILY_ANSWER_SECONDS,
+    }
+
+
+@app.route('/api/daily/status')
+@premium_required
+def daily_status():
+    st = _daily_state()
+    # A missed day (no answer yesterday) silently breaks the streak.
+    if st.last_played and st.streak > 0:
+        last = datetime.strptime(st.last_played, '%Y-%m-%d').date()
+        if (datetime.now(timezone.utc).date() - last).days > 1:
+            st.streak = 0
+            db.session.commit()
+    return jsonify(_daily_status_payload(st))
+
+
+@app.route('/api/daily/start', methods=['POST'])
+@premium_required
+def daily_start():
+    st = _daily_state()
+    today = _utc_today()
+    if st.last_played == today:
+        return jsonify({'error': 'already_played'}), 409
+    # Restarting the same day's question does NOT reset the clock — the 60s
+    # window runs from the FIRST open, so reloading the page can't buy time.
+    if st.served_for != today or not st.question_served_at:
+        st.served_for = today
+        st.question_served_at = datetime.now(timezone.utc)
+        db.session.commit()
+    elapsed = (datetime.now(timezone.utc) - _aware(st.question_served_at)).total_seconds()
+    remaining = max(0, DAILY_ANSWER_SECONDS - int(elapsed))
+    return jsonify({'seed': _daily_seed(), 'seconds_left': remaining})
+
+
+@app.route('/api/daily/answer', methods=['POST'])
+@premium_required
+def daily_answer():
+    st = _daily_state()
+    today = _utc_today()
+    if st.last_played == today:
+        return jsonify({'error': 'already_played'}), 409
+    if st.served_for != today or not st.question_served_at:
+        return jsonify({'error': 'not_started'}), 400
+
+    elapsed = (datetime.now(timezone.utc) - _aware(st.question_served_at)).total_seconds()
+    timed_out = elapsed > (DAILY_ANSWER_SECONDS + DAILY_ANSWER_GRACE)
+    correct = bool((request.json or {}).get('correct')) and not timed_out
+
+    st.last_played = today
+    st.last_result = correct
+    earned_spin = False
+    if correct:
+        st.streak += 1
+        st.total_correct += 1
+        if st.streak % DAILY_STREAK_TARGET == 0:
+            st.spins_available += 1
+            earned_spin = True
+    else:
+        st.streak = 0
+    db.session.commit()
+
+    payload = _daily_status_payload(st)
+    payload.update({'correct': correct, 'timed_out': timed_out, 'earned_spin': earned_spin})
+    return jsonify(payload)
+
+
+@app.route('/api/daily/spin', methods=['POST'])
+@premium_required
+def daily_spin():
+    st = _daily_state()
+    if st.spins_available <= 0:
+        return jsonify({'error': 'no_spins'}), 409
+
+    import random as _random
+    keys = [p[0] for p in ROULETTE_PRIZES]
+    weights = [p[2] for p in ROULETTE_PRIZES]
+    prize_key = _random.choices(keys, weights=weights, k=1)[0]
+    _, discount, _, label = next(p for p in ROULETTE_PRIZES if p[0] == prize_key)
+
+    promo_code = None
+    if discount:
+        promo_code = f'SPIN-{secrets.token_hex(3).upper()}'
+        db.session.add(PromoCode(
+            code=promo_code, discount_pct=discount, kind='discount',
+            creator_name=f'roulette:{current_user.username}',
+            valid_for='both', max_uses=1,
+            expires_at=datetime.now(timezone.utc) + timedelta(days=90),
+        ))
+    else:
+        # Free month: extend the active plan directly — no code to redeem.
+        cur = _aware(current_user.plan_expires_at)
+        base = cur if cur and cur > datetime.now(timezone.utc) else datetime.now(timezone.utc)
+        current_user.plan_expires_at = base + timedelta(days=30)
+
+    st.spins_available -= 1
+    db.session.add(RouletteSpin(user_id=current_user.id, prize_key=prize_key,
+                                label=label, promo_code=promo_code))
+    db.session.commit()
+    record_audit_event('roulette_prize', user_id=current_user.id,
+                        detail=f'{prize_key} ({label})' + (f' code={promo_code}' if promo_code else ''))
+
+    return jsonify({
+        'prize_key': prize_key, 'label': label, 'promo_code': promo_code,
+        'spins_available': st.spins_available,
+        'segments': [{'key': p[0], 'label': p[3]} for p in ROULETTE_PRIZES],
+    })
 
 
 # ──────────────────────────────────────────────────────────────────────────
