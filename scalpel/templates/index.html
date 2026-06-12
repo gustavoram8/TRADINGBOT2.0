@@ -2273,23 +2273,30 @@
 
     /* ── Unlock reveal (COD-style, shown once after a purchase) ── */
     .unlock-overlay {
+      /* gold theme (premium); .standard overrides to navy blue */
+      --uk: 232,198,106; --uk-tint: 64,50,12;
+      --uk-bright: #f3d57c; --uk-mid: #e8c66a; --uk-deep: #b8860b;
       position: fixed; inset: 0; z-index: 700; overflow: hidden;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      background: radial-gradient(ellipse at 50% 42%, rgba(64,50,12,0.55), rgba(5,6,10,0.97) 68%), #05060a;
+      background: radial-gradient(ellipse at 50% 42%, rgba(var(--uk-tint),0.55), rgba(5,6,10,0.97) 68%), #05060a;
       animation: unlockFadeIn 0.45s ease;
+    }
+    .unlock-overlay.standard {
+      --uk: 91,142,240; --uk-tint: 12,28,64;
+      --uk-bright: #9dbcf7; --uk-mid: #5b8ef0; --uk-deep: #1d4ed8;
     }
     @keyframes unlockFadeIn { from { opacity: 0; } to { opacity: 1; } }
     .unlock-rays {
       position: absolute; left: 50%; top: 42%; width: 1200px; height: 1200px;
       transform: translate(-50%, -50%);
       background: conic-gradient(
-        rgba(232,198,106,0.10) 0deg 14deg, transparent 14deg 45deg,
-        rgba(232,198,106,0.07) 45deg 60deg, transparent 60deg 95deg,
-        rgba(232,198,106,0.10) 95deg 110deg, transparent 110deg 150deg,
-        rgba(232,198,106,0.07) 150deg 168deg, transparent 168deg 205deg,
-        rgba(232,198,106,0.10) 205deg 220deg, transparent 220deg 262deg,
-        rgba(232,198,106,0.07) 262deg 278deg, transparent 278deg 318deg,
-        rgba(232,198,106,0.10) 318deg 332deg, transparent 332deg 360deg);
+        rgba(var(--uk),0.10) 0deg 14deg, transparent 14deg 45deg,
+        rgba(var(--uk),0.07) 45deg 60deg, transparent 60deg 95deg,
+        rgba(var(--uk),0.10) 95deg 110deg, transparent 110deg 150deg,
+        rgba(var(--uk),0.07) 150deg 168deg, transparent 168deg 205deg,
+        rgba(var(--uk),0.10) 205deg 220deg, transparent 220deg 262deg,
+        rgba(var(--uk),0.07) 262deg 278deg, transparent 278deg 318deg,
+        rgba(var(--uk),0.10) 318deg 332deg, transparent 332deg 360deg);
       border-radius: 50%;
       animation: unlockRays 36s linear infinite;
       pointer-events: none;
@@ -2300,20 +2307,20 @@
     }
     .unlock-skip {
       position: absolute; top: 18px; right: 20px; z-index: 2;
-      background: rgba(255,255,255,0.06); border: 1px solid rgba(232,198,106,0.4);
-      color: #e8c66a; font-weight: 700; font-size: 13px; font-family: inherit;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(var(--uk),0.4);
+      color: var(--uk-mid); font-weight: 700; font-size: 13px; font-family: inherit;
       padding: 8px 18px; border-radius: 999px; cursor: pointer;
     }
-    .unlock-skip:hover { background: rgba(232,198,106,0.15); }
+    .unlock-skip:hover { background: rgba(var(--uk),0.15); }
     .unlock-head { position: relative; z-index: 1; text-align: center; margin-bottom: 26px; }
     .unlock-plan {
       display: inline-block; font-size: 13px; font-weight: 800; letter-spacing: 0.3em;
-      color: #10131c; background: linear-gradient(135deg, #f3d57c, #b8860b);
+      color: #10131c; background: linear-gradient(135deg, var(--uk-bright), var(--uk-deep));
       padding: 5px 16px 5px 19px; border-radius: 999px; margin-bottom: 12px;
     }
     .unlock-title {
       font-size: clamp(30px, 6vw, 46px); font-weight: 900; letter-spacing: 0.18em;
-      color: #fff; text-shadow: 0 0 28px rgba(232,198,106,0.5);
+      color: #fff; text-shadow: 0 0 28px rgba(var(--uk),0.5);
     }
     .unlock-sub { font-size: 13.5px; color: rgba(255,255,255,0.6); margin-top: 8px; }
     .unlock-stage {
@@ -2321,12 +2328,12 @@
       display: flex; align-items: center; gap: clamp(8px, 4vw, 42px);
     }
     .unlock-arrow {
-      background: rgba(255,255,255,0.05); border: 1px solid rgba(232,198,106,0.35);
-      color: #e8c66a; font-size: 30px; line-height: 1; font-family: inherit;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(var(--uk),0.35);
+      color: var(--uk-mid); font-size: 30px; line-height: 1; font-family: inherit;
       width: 48px; height: 48px; border-radius: 50%; cursor: pointer; flex-shrink: 0;
       padding-bottom: 4px;
     }
-    .unlock-arrow:hover { background: rgba(232,198,106,0.16); }
+    .unlock-arrow:hover { background: rgba(var(--uk),0.16); }
     .unlock-item {
       position: relative; width: min(340px, 74vw); text-align: center; padding: 12px 0 4px;
     }
@@ -2340,7 +2347,7 @@
     .unlock-halo {
       position: absolute; left: 50%; top: 64px; width: 220px; height: 220px;
       transform: translate(-50%, -50%);
-      background: radial-gradient(circle, rgba(232,198,106,0.4), rgba(232,198,106,0.08) 52%, transparent 70%);
+      background: radial-gradient(circle, rgba(var(--uk),0.4), rgba(var(--uk),0.08) 52%, transparent 70%);
       border-radius: 50%; pointer-events: none;
       animation: unlockHalo 2.6s ease-in-out infinite;
     }
@@ -2349,9 +2356,9 @@
       50%      { opacity: 1;    transform: translate(-50%, -50%) scale(1.12); }
     }
     .unlock-icon {
-      position: relative; display: inline-block; margin-bottom: 18px;
+      position: relative; display: inline-block; margin-bottom: 18px; color: var(--uk-mid);
       animation: unlockFloat 3.4s ease-in-out infinite;
-      filter: drop-shadow(0 0 14px rgba(232,198,106,0.55));
+      filter: drop-shadow(0 0 14px rgba(var(--uk),0.55));
     }
     .unlock-icon svg { display: block; width: 88px; height: 88px; }
     @keyframes unlockFloat {
@@ -2359,7 +2366,7 @@
       50%      { transform: translateY(-10px); }
     }
     .unlock-name {
-      position: relative; font-size: 20px; font-weight: 800; color: #f3d57c; margin-bottom: 10px;
+      position: relative; font-size: 20px; font-weight: 800; color: var(--uk-bright); margin-bottom: 10px;
     }
     .unlock-desc {
       position: relative; font-size: 13.5px; line-height: 1.55; color: rgba(255,255,255,0.75);
@@ -2370,7 +2377,7 @@
       width: 8px; height: 8px; border-radius: 50%;
       background: rgba(255,255,255,0.18); transition: background 0.25s;
     }
-    .unlock-dot.on { background: #e8c66a; }
+    .unlock-dot.on { background: var(--uk-mid); }
     @media (prefers-reduced-motion: reduce) {
       .unlock-rays, .unlock-halo, .unlock-icon { animation: none; }
     }
@@ -8402,7 +8409,7 @@
     };
     Object.keys(UNLOCK_I18N).forEach(l => { if (I18N[l]) Object.assign(I18N[l], UNLOCK_I18N[l]); });
 
-    const S = 'fill="none" stroke="#e8c66a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"';
+    const S = 'fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"';
     const ICONS = {
       analyzer:   `<svg viewBox="0 0 24 24" ${S}><rect x="2.5" y="3.5" width="19" height="15" rx="2"/><polyline points="6 13.5 9.5 9.5 12.5 12 17.5 7"/><polyline points="14.5 7 17.5 7 17.5 10"/><line x1="8" y1="21.5" x2="16" y2="21.5"/></svg>`,
       forum:      `<svg viewBox="0 0 24 24" ${S}><path d="M20 11.5a7 7 0 0 1-7 7H6l-3.5 3v-10a7 7 0 0 1 7-7h3.5a7 7 0 0 1 7 7z"/><line x1="8" y1="10" x2="15" y2="10"/><line x1="8" y1="13.5" x2="12.5" y2="13.5"/></svg>`,
@@ -8467,6 +8474,7 @@
     }
 
     document.getElementById('unlock-plan-name').textContent = plan.toUpperCase();
+    ov.classList.add(plan);              // 'standard' switches the gold theme to navy blue
     document.getElementById('unlock-prev').addEventListener('click', () => { idx = (idx - 1 + slides.length) % slides.length; render(); });
     document.getElementById('unlock-next').addEventListener('click', () => { idx = (idx + 1) % slides.length; render(); });
     document.getElementById('unlock-skip').addEventListener('click', () => { ov.style.display = 'none'; });
