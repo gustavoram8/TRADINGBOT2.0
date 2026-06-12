@@ -2208,10 +2208,23 @@
 
     /* ── Daily Challenge card ── */
     .daily-card {
+      --daily-glow: rgba(250,204,21,0.65);
       display: flex; align-items: center; justify-content: space-between; gap: 18px;
       flex-wrap: wrap; margin: 0 0 26px; padding: 16px 18px;
-      border: 1px solid var(--accent); border-radius: 14px;
-      background: linear-gradient(135deg, rgba(91,142,240,0.10), rgba(91,142,240,0.02));
+      border: 1px solid transparent; border-radius: 14px;
+      background:
+        linear-gradient(135deg, rgba(91,142,240,0.10), rgba(91,142,240,0.02)) padding-box,
+        linear-gradient(90deg, transparent 0%, var(--daily-glow) 50%, transparent 100%) border-box;
+      background-size: 100% 100%, 240% 100%;
+      background-position: 0 0, 0% 0;
+      animation: dailyGlowSweep 5.5s linear infinite;
+    }
+    body.light .daily-card { --daily-glow: rgba(56,123,214,0.55); }
+    @keyframes dailyGlowSweep {
+      to { background-position: 0 0, 240% 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .daily-card { animation: none; }
     }
     .daily-card-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 7px; }
     .daily-card-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
