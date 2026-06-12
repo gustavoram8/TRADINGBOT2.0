@@ -426,6 +426,7 @@ class Order(db.Model):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     paid_at = db.Column(db.DateTime, nullable=True)
     applied_at = db.Column(db.DateTime, nullable=True)         # when the plan was granted
+    celebrated_at = db.Column(db.DateTime, nullable=True)      # unlock reveal shown to the user
     note = db.Column(db.String(300), nullable=True)
     user = db.relationship('User', backref='orders')
 
@@ -1249,6 +1250,18 @@ def app_view():
     # Funnel everyone through the welcome splash so it always plays before the app.
     if not _has_splash_pass():
         return redirect(url_for('welcome'))
+    # COD-style unlock reveal: shown exactly once after a purchase is applied.
+    # Marked as celebrated at render time so a reload can't replay it.
+    unlock_plan = ''
+    pending_unlock = (Order.query
+                      .filter_by(user_id=current_user.id, status='paid', celebrated_at=None)
+                      .filter(Order.applied_at.isnot(None))
+                      .order_by(Order.applied_at.desc())
+                      .first())
+    if pending_unlock:
+        unlock_plan = pending_unlock.plan
+        pending_unlock.celebrated_at = datetime.now(timezone.utc)
+        db.session.commit()
     # Consume the pass so the next entry triggers the splash again.
     resp = make_response(render_template(
         'index.html',
@@ -1256,6 +1269,7 @@ def app_view():
         is_admin=current_user.is_admin,
         username=current_user.username,
         is_guest=False,
+        unlock_plan=unlock_plan,
     ))
     resp.delete_cookie('scalpel_splash_ts')
     return resp
@@ -4560,6 +4574,20 @@ def _migrate_user_alt_id_column():
         app.logger.info('Backfilled alt_id for %d existing user(s).', len(users_without_alt_id))
 
 
+def _migrate_order_columns():
+    """Add `celebrated_at` to an existing order table.
+    NOTE: "order" is a reserved word in both SQLite and PostgreSQL — keep it quoted."""
+    from sqlalchemy import inspect, text
+    insp = inspect(db.engine)
+    if 'order' not in insp.get_table_names():
+        return
+    cols = {c['name'] for c in insp.get_columns('order')}
+    if 'celebrated_at' not in cols:
+        with db.engine.begin() as conn:
+            conn.execute(text('ALTER TABLE "order" ADD COLUMN celebrated_at TIMESTAMP'))
+        app.logger.info('Migrated order table: added celebrated_at column.')
+
+
 def _migrate_promo_code_columns():
     """Add `restrict_user_id` to an existing promo_code table."""
     from sqlalchemy import inspect, text
@@ -4613,6 +4641,7 @@ def init_db():
         db.create_all()
         _migrate_user_verification_columns()
         _migrate_user_alt_id_column()
+        _migrate_order_columns()
         _migrate_promo_code_columns()
         _migrate_preflight_check_columns()
         admin_email = os.environ.get('ADMIN_EMAIL', 'mauroramirezmij@gmail.com').lower()

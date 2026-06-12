@@ -2270,6 +2270,110 @@
     .coupon-status.used { color: var(--muted); background: var(--border2); }
     .coupon-status.expired { color: #dc2626; background: rgba(239,68,68,0.12); }
     .coupons-empty { font-size: 13px; color: var(--muted); text-align: center; padding: 22px 0; }
+
+    /* ── Unlock reveal (COD-style, shown once after a purchase) ── */
+    .unlock-overlay {
+      position: fixed; inset: 0; z-index: 700; overflow: hidden;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: radial-gradient(ellipse at 50% 42%, rgba(64,50,12,0.55), rgba(5,6,10,0.97) 68%), #05060a;
+      animation: unlockFadeIn 0.45s ease;
+    }
+    @keyframes unlockFadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .unlock-rays {
+      position: absolute; left: 50%; top: 42%; width: 1200px; height: 1200px;
+      transform: translate(-50%, -50%);
+      background: conic-gradient(
+        rgba(232,198,106,0.10) 0deg 14deg, transparent 14deg 45deg,
+        rgba(232,198,106,0.07) 45deg 60deg, transparent 60deg 95deg,
+        rgba(232,198,106,0.10) 95deg 110deg, transparent 110deg 150deg,
+        rgba(232,198,106,0.07) 150deg 168deg, transparent 168deg 205deg,
+        rgba(232,198,106,0.10) 205deg 220deg, transparent 220deg 262deg,
+        rgba(232,198,106,0.07) 262deg 278deg, transparent 278deg 318deg,
+        rgba(232,198,106,0.10) 318deg 332deg, transparent 332deg 360deg);
+      border-radius: 50%;
+      animation: unlockRays 36s linear infinite;
+      pointer-events: none;
+    }
+    @keyframes unlockRays {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to   { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+    .unlock-skip {
+      position: absolute; top: 18px; right: 20px; z-index: 2;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(232,198,106,0.4);
+      color: #e8c66a; font-weight: 700; font-size: 13px; font-family: inherit;
+      padding: 8px 18px; border-radius: 999px; cursor: pointer;
+    }
+    .unlock-skip:hover { background: rgba(232,198,106,0.15); }
+    .unlock-head { position: relative; z-index: 1; text-align: center; margin-bottom: 26px; }
+    .unlock-plan {
+      display: inline-block; font-size: 13px; font-weight: 800; letter-spacing: 0.3em;
+      color: #10131c; background: linear-gradient(135deg, #f3d57c, #b8860b);
+      padding: 5px 16px 5px 19px; border-radius: 999px; margin-bottom: 12px;
+    }
+    .unlock-title {
+      font-size: clamp(30px, 6vw, 46px); font-weight: 900; letter-spacing: 0.18em;
+      color: #fff; text-shadow: 0 0 28px rgba(232,198,106,0.5);
+    }
+    .unlock-sub { font-size: 13.5px; color: rgba(255,255,255,0.6); margin-top: 8px; }
+    .unlock-stage {
+      position: relative; z-index: 1;
+      display: flex; align-items: center; gap: clamp(8px, 4vw, 42px);
+    }
+    .unlock-arrow {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(232,198,106,0.35);
+      color: #e8c66a; font-size: 30px; line-height: 1; font-family: inherit;
+      width: 48px; height: 48px; border-radius: 50%; cursor: pointer; flex-shrink: 0;
+      padding-bottom: 4px;
+    }
+    .unlock-arrow:hover { background: rgba(232,198,106,0.16); }
+    .unlock-item {
+      position: relative; width: min(340px, 74vw); text-align: center; padding: 12px 0 4px;
+    }
+    .unlock-item.swap .unlock-icon,
+    .unlock-item.swap .unlock-name,
+    .unlock-item.swap .unlock-desc { animation: unlockSwap 0.38s ease; }
+    @keyframes unlockSwap {
+      from { opacity: 0; transform: scale(0.78) translateY(8px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .unlock-halo {
+      position: absolute; left: 50%; top: 64px; width: 220px; height: 220px;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(circle, rgba(232,198,106,0.4), rgba(232,198,106,0.08) 52%, transparent 70%);
+      border-radius: 50%; pointer-events: none;
+      animation: unlockHalo 2.6s ease-in-out infinite;
+    }
+    @keyframes unlockHalo {
+      0%, 100% { opacity: 0.65; transform: translate(-50%, -50%) scale(1); }
+      50%      { opacity: 1;    transform: translate(-50%, -50%) scale(1.12); }
+    }
+    .unlock-icon {
+      position: relative; display: inline-block; margin-bottom: 18px;
+      animation: unlockFloat 3.4s ease-in-out infinite;
+      filter: drop-shadow(0 0 14px rgba(232,198,106,0.55));
+    }
+    .unlock-icon svg { display: block; width: 88px; height: 88px; }
+    @keyframes unlockFloat {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-10px); }
+    }
+    .unlock-name {
+      position: relative; font-size: 20px; font-weight: 800; color: #f3d57c; margin-bottom: 10px;
+    }
+    .unlock-desc {
+      position: relative; font-size: 13.5px; line-height: 1.55; color: rgba(255,255,255,0.75);
+      min-height: 64px;
+    }
+    .unlock-dots { position: relative; z-index: 1; display: flex; gap: 8px; margin-top: 22px; }
+    .unlock-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: rgba(255,255,255,0.18); transition: background 0.25s;
+    }
+    .unlock-dot.on { background: #e8c66a; }
+    @media (prefers-reduced-motion: reduce) {
+      .unlock-rays, .unlock-halo, .unlock-icon { animation: none; }
+    }
     .daily-played-msg { font-size: 12.5px; font-weight: 600; }
     .daily-played-msg.ok { color: #22c55e; }
     .daily-played-msg.bad { color: #ef4444; }
@@ -3336,6 +3440,7 @@
   // Current account context, injected server-side
   window.SCALPEL_USER = {
     plan: "{{ plan|default('free') }}",
+    unlockPlan: "{{ unlock_plan|default('') }}",
     isAdmin: {{ 'true' if is_admin else 'false' }},
     isGuest: {{ 'true' if is_guest else 'false' }},
     username: {{ (username or '')|tojson }}
@@ -3454,6 +3559,28 @@
     </div>
     <div class="coupons-list" id="coupons-list"><!-- populated by JS --></div>
   </div>
+</div>
+
+<!-- COD-style unlock reveal (shown once after a plan purchase) -->
+<div class="unlock-overlay" id="unlock-overlay" style="display:none;">
+  <div class="unlock-rays" aria-hidden="true"></div>
+  <button class="unlock-skip" id="unlock-skip" type="button" data-i18n="unlock.skip">Skip ✕</button>
+  <div class="unlock-head">
+    <div class="unlock-plan" id="unlock-plan-name">PREMIUM</div>
+    <div class="unlock-title" data-i18n="unlock.title">UNLOCKED</div>
+    <div class="unlock-sub" data-i18n="unlock.sub">Here's everything you just got access to</div>
+  </div>
+  <div class="unlock-stage">
+    <button class="unlock-arrow" id="unlock-prev" type="button" aria-label="Previous">‹</button>
+    <div class="unlock-item">
+      <div class="unlock-halo" aria-hidden="true"></div>
+      <div class="unlock-icon" id="unlock-icon"></div>
+      <div class="unlock-name" id="unlock-name"></div>
+      <div class="unlock-desc" id="unlock-desc"></div>
+    </div>
+    <button class="unlock-arrow" id="unlock-next" type="button" aria-label="Next">›</button>
+  </div>
+  <div class="unlock-dots" id="unlock-dots"></div>
 </div>
 
 <div class="tabs" id="tabs">
@@ -8143,6 +8270,165 @@
     accountMenu.classList.remove('show');
     if (window.openMyCoupons) window.openMyCoupons();
   });
+
+  // ── Unlock reveal (COD-style, plays once right after a purchased plan is applied) ──
+  (function () {
+    const UNLOCK_I18N = {
+      en: {
+        'unlock.title': 'UNLOCKED', 'unlock.skip': 'Skip ✕',
+        'unlock.sub': 'Here is everything you just got access to',
+        'unlock.f.analyzer5.n': 'AI Analyzer ×5',
+        'unlock.f.analyzer5.d': 'Up to 5 chart screenshot analyses per day with GPT-4o Vision — structure, entries and risk reviewed in seconds.',
+        'unlock.f.forum.n': 'Trading Forum',
+        'unlock.f.forum.d': 'A private community of traders with AI moderation. Share setups, get feedback, talk ICT.',
+        'unlock.f.quiz.n': 'Quiz Academy',
+        'unlock.f.quiz.d': 'Full access to every methodology and the Hardcore mode: 160 chart scenarios that put your read to the test.',
+        'unlock.f.daily.n': 'Daily Challenge & Roulette',
+        'unlock.f.daily.d': 'One timed question a day. Build a 7-day streak and spin the roulette for renewal discounts and free months.',
+        'unlock.f.scalper.n': 'Scalpe® Boards',
+        'unlock.f.scalper.d': 'Your visual trading whiteboards — build slides, annotate charts and keep your playbook in one place.',
+        'unlock.f.synapse.n': 'Synapse',
+        'unlock.f.synapse.d': 'An immersive 3D study experience: explore institutional concepts inside a living neural interface.',
+        'unlock.f.indicators.n': 'Indicators Store',
+        'unlock.f.indicators.d': 'Early access to our custom indicators as they release — built for the methodology you already trade.',
+        'unlock.f.analyzer24.n': 'AI Analyzer — every 24h',
+        'unlock.f.analyzer24.d': 'Analyze a chart screenshot every 24 hours instead of once a week. Seven times more reps for your edge.',
+        'unlock.f.projects5.n': '5 Analysis Projects',
+        'unlock.f.projects5.d': 'Save up to 5 analysis presets — your instruments, your timeframes, your setups, one click away.',
+      },
+      es: {
+        'unlock.title': 'DESBLOQUEADO', 'unlock.skip': 'Saltar ✕',
+        'unlock.sub': 'Esto es todo a lo que acabas de obtener acceso',
+        'unlock.f.analyzer5.n': 'AI Analyzer ×5',
+        'unlock.f.analyzer5.d': 'Hasta 5 análisis de screenshots al día con GPT-4o Vision — estructura, entradas y riesgo revisados en segundos.',
+        'unlock.f.forum.n': 'Foro de Trading',
+        'unlock.f.forum.d': 'Una comunidad privada de traders con moderación por IA. Comparte setups, recibe feedback, habla ICT.',
+        'unlock.f.quiz.n': 'Quiz Academy',
+        'unlock.f.quiz.d': 'Acceso total a todas las metodologías y al modo Hardcore: 160 escenarios de gráficos que ponen a prueba tu lectura.',
+        'unlock.f.daily.n': 'Reto Diario y Ruleta',
+        'unlock.f.daily.d': 'Una pregunta cronometrada al día. Logra una racha de 7 días y gira la ruleta por descuentos y meses gratis.',
+        'unlock.f.scalper.n': 'Scalpe® Boards',
+        'unlock.f.scalper.d': 'Tus pizarras visuales de trading — crea slides, anota gráficos y guarda tu playbook en un solo lugar.',
+        'unlock.f.synapse.n': 'Synapse',
+        'unlock.f.synapse.d': 'Una experiencia de estudio 3D inmersiva: explora conceptos institucionales dentro de una interfaz neuronal viva.',
+        'unlock.f.indicators.n': 'Tienda de Indicadores',
+        'unlock.f.indicators.d': 'Acceso anticipado a nuestros indicadores personalizados a medida que salgan — hechos para tu metodología.',
+        'unlock.f.analyzer24.n': 'AI Analyzer — cada 24h',
+        'unlock.f.analyzer24.d': 'Analiza un screenshot cada 24 horas en vez de una vez por semana. Siete veces más repeticiones para tu edge.',
+        'unlock.f.projects5.n': '5 Proyectos de Análisis',
+        'unlock.f.projects5.d': 'Guarda hasta 5 presets de análisis — tus instrumentos, tus timeframes, tus setups, a un clic.',
+      },
+      fr: {
+        'unlock.title': 'DÉBLOQUÉ', 'unlock.skip': 'Passer ✕',
+        'unlock.sub': 'Voici tout ce à quoi vous venez d’accéder',
+        'unlock.f.analyzer5.n': 'AI Analyzer ×5',
+        'unlock.f.analyzer5.d': 'Jusqu’à 5 analyses de captures par jour avec GPT-4o Vision — structure, entrées et risque en quelques secondes.',
+        'unlock.f.forum.n': 'Forum de Trading',
+        'unlock.f.forum.d': 'Une communauté privée de traders avec modération IA. Partagez vos setups, recevez des retours, parlez ICT.',
+        'unlock.f.quiz.n': 'Quiz Academy',
+        'unlock.f.quiz.d': 'Accès complet à toutes les méthodologies et au mode Hardcore : 160 scénarios graphiques pour tester votre lecture.',
+        'unlock.f.daily.n': 'Défi Quotidien et Roulette',
+        'unlock.f.daily.d': 'Une question chronométrée par jour. Tenez 7 jours d’affilée et tournez la roulette : réductions et mois gratuits.',
+        'unlock.f.scalper.n': 'Scalpe® Boards',
+        'unlock.f.scalper.d': 'Vos tableaux visuels de trading — créez des slides, annotez vos graphiques, gardez votre playbook au même endroit.',
+        'unlock.f.synapse.n': 'Synapse',
+        'unlock.f.synapse.d': 'Une expérience d’étude 3D immersive : explorez les concepts institutionnels dans une interface neuronale vivante.',
+        'unlock.f.indicators.n': 'Boutique d’Indicateurs',
+        'unlock.f.indicators.d': 'Accès anticipé à nos indicateurs personnalisés dès leur sortie — conçus pour votre méthodologie.',
+        'unlock.f.analyzer24.n': 'AI Analyzer — toutes les 24h',
+        'unlock.f.analyzer24.d': 'Analysez une capture toutes les 24 heures au lieu d’une fois par semaine. Sept fois plus de répétitions.',
+        'unlock.f.projects5.n': '5 Projets d’Analyse',
+        'unlock.f.projects5.d': 'Enregistrez jusqu’à 5 presets d’analyse — vos instruments, vos timeframes, vos setups, en un clic.',
+      },
+      pt: {
+        'unlock.title': 'DESBLOQUEADO', 'unlock.skip': 'Pular ✕',
+        'unlock.sub': 'Aqui está tudo o que você acabou de desbloquear',
+        'unlock.f.analyzer5.n': 'AI Analyzer ×5',
+        'unlock.f.analyzer5.d': 'Até 5 análises de screenshots por dia com GPT-4o Vision — estrutura, entradas e risco revisados em segundos.',
+        'unlock.f.forum.n': 'Fórum de Trading',
+        'unlock.f.forum.d': 'Uma comunidade privada de traders com moderação por IA. Compartilhe setups, receba feedback, fale ICT.',
+        'unlock.f.quiz.n': 'Quiz Academy',
+        'unlock.f.quiz.d': 'Acesso total a todas as metodologias e ao modo Hardcore: 160 cenários de gráficos que testam sua leitura.',
+        'unlock.f.daily.n': 'Desafio Diário e Roleta',
+        'unlock.f.daily.d': 'Uma pergunta cronometrada por dia. Faça uma sequência de 7 dias e gire a roleta por descontos e meses grátis.',
+        'unlock.f.scalper.n': 'Scalpe® Boards',
+        'unlock.f.scalper.d': 'Seus quadros visuais de trading — crie slides, anote gráficos e mantenha seu playbook em um só lugar.',
+        'unlock.f.synapse.n': 'Synapse',
+        'unlock.f.synapse.d': 'Uma experiência de estudo 3D imersiva: explore conceitos institucionais dentro de uma interface neural viva.',
+        'unlock.f.indicators.n': 'Loja de Indicadores',
+        'unlock.f.indicators.d': 'Acesso antecipado aos nossos indicadores personalizados conforme forem lançados — feitos para sua metodologia.',
+        'unlock.f.analyzer24.n': 'AI Analyzer — a cada 24h',
+        'unlock.f.analyzer24.d': 'Analise um screenshot a cada 24 horas em vez de uma vez por semana. Sete vezes mais repetições para seu edge.',
+        'unlock.f.projects5.n': '5 Projetos de Análise',
+        'unlock.f.projects5.d': 'Salve até 5 presets de análise — seus instrumentos, seus timeframes, seus setups, a um clique.',
+      },
+    };
+    Object.keys(UNLOCK_I18N).forEach(l => { if (I18N[l]) Object.assign(I18N[l], UNLOCK_I18N[l]); });
+
+    const S = 'fill="none" stroke="#e8c66a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"';
+    const ICONS = {
+      analyzer:   `<svg viewBox="0 0 24 24" ${S}><rect x="2.5" y="3.5" width="19" height="15" rx="2"/><polyline points="6 13.5 9.5 9.5 12.5 12 17.5 7"/><polyline points="14.5 7 17.5 7 17.5 10"/><line x1="8" y1="21.5" x2="16" y2="21.5"/></svg>`,
+      forum:      `<svg viewBox="0 0 24 24" ${S}><path d="M20 11.5a7 7 0 0 1-7 7H6l-3.5 3v-10a7 7 0 0 1 7-7h3.5a7 7 0 0 1 7 7z"/><line x1="8" y1="10" x2="15" y2="10"/><line x1="8" y1="13.5" x2="12.5" y2="13.5"/></svg>`,
+      quiz:       `<svg viewBox="0 0 24 24" ${S}><path d="M12 3 1.5 8 12 13l10.5-5L12 3z"/><path d="M5.5 10.2V15c0 1.7 2.9 3.2 6.5 3.2s6.5-1.5 6.5-3.2v-4.8"/><line x1="22" y1="8.5" x2="22" y2="14.5"/></svg>`,
+      daily:      `<svg viewBox="0 0 24 24" ${S}><path d="M12 22c4 0 7-2.9 7-6.8 0-2.9-1.6-4.7-3-6.7-1.2-1.7-2.4-3.5-2.6-6-2.6 1.4-3.6 4-3.4 6.3-1.1-.4-1.9-1.3-2.2-2.5C6.2 8 5 10.4 5 15.2 5 19.1 8 22 12 22z"/></svg>`,
+      scalper:    `<svg viewBox="0 0 24 24" ${S}><rect x="2.5" y="3" width="19" height="14" rx="2"/><line x1="2.5" y1="8" x2="21.5" y2="8"/><line x1="9" y1="8" x2="9" y2="17"/><line x1="12" y1="20.8" x2="12" y2="17"/><line x1="8" y1="21" x2="16" y2="21"/></svg>`,
+      synapse:    `<svg viewBox="0 0 24 24" ${S}><circle cx="12" cy="12" r="3.2"/><circle cx="4.5" cy="6" r="1.6"/><circle cx="19.5" cy="5.5" r="1.6"/><circle cx="4.5" cy="18.5" r="1.6"/><circle cx="19.5" cy="18.5" r="1.6"/><line x1="6" y1="7" x2="9.7" y2="10.2"/><line x1="18.2" y1="6.5" x2="14.3" y2="10"/><line x1="6" y1="17.5" x2="9.7" y2="13.9"/><line x1="18.2" y1="17.6" x2="14.3" y2="14"/></svg>`,
+      indicators: `<svg viewBox="0 0 24 24" ${S}><line x1="5" y1="3.5" x2="5" y2="20.5"/><circle cx="5" cy="9" r="2.2"/><line x1="12" y1="3.5" x2="12" y2="20.5"/><circle cx="12" cy="15.5" r="2.2"/><line x1="19" y1="3.5" x2="19" y2="20.5"/><circle cx="19" cy="7" r="2.2"/></svg>`,
+      clock:      `<svg viewBox="0 0 24 24" ${S}><circle cx="12" cy="12" r="9"/><polyline points="12 6.5 12 12 15.8 14.2"/></svg>`,
+      projects:   `<svg viewBox="0 0 24 24" ${S}><path d="M3 7.5V18a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-8l-2-2.5H5a2 2 0 0 0-2 2.5z"/><line x1="12" y1="11.5" x2="12" y2="16.5"/><line x1="9.5" y1="14" x2="14.5" y2="14"/></svg>`,
+    };
+    const FEATURES = {
+      standard: [
+        { icon: 'clock',    key: 'analyzer24' },
+        { icon: 'projects', key: 'projects5' },
+      ],
+      premium: [
+        { icon: 'analyzer',   key: 'analyzer5' },
+        { icon: 'forum',      key: 'forum' },
+        { icon: 'quiz',       key: 'quiz' },
+        { icon: 'daily',      key: 'daily' },
+        { icon: 'scalper',    key: 'scalper' },
+        { icon: 'synapse',    key: 'synapse' },
+        { icon: 'indicators', key: 'indicators' },
+      ],
+    };
+
+    const plan = (U.unlockPlan || '').toLowerCase();
+    const slides = FEATURES[plan];
+    if (!slides) return;
+
+    const ov = document.getElementById('unlock-overlay');
+    const dotsEl = document.getElementById('unlock-dots');
+    let idx = 0;
+    slides.forEach(() => {
+      const d = document.createElement('span');
+      d.className = 'unlock-dot';
+      dotsEl.appendChild(d);
+    });
+
+    function render() {
+      document.getElementById('unlock-icon').innerHTML = ICONS[slides[idx].icon];
+      document.getElementById('unlock-name').textContent = T('unlock.f.' + slides[idx].key + '.n');
+      document.getElementById('unlock-desc').textContent = T('unlock.f.' + slides[idx].key + '.d');
+      dotsEl.querySelectorAll('.unlock-dot').forEach((d, i) => d.classList.toggle('on', i === idx));
+      const item = ov.querySelector('.unlock-item');
+      item.classList.remove('swap');
+      void item.offsetWidth;            // restart the swap animation
+      item.classList.add('swap');
+    }
+
+    document.getElementById('unlock-plan-name').textContent = plan.toUpperCase();
+    document.getElementById('unlock-prev').addEventListener('click', () => { idx = (idx - 1 + slides.length) % slides.length; render(); });
+    document.getElementById('unlock-next').addEventListener('click', () => { idx = (idx + 1) % slides.length; render(); });
+    document.getElementById('unlock-skip').addEventListener('click', () => { ov.style.display = 'none'; });
+    // The merge above may run after applyLanguage already painted — translate the chrome now.
+    ov.querySelectorAll('[data-i18n]').forEach(el => {
+      const t = T(el.getAttribute('data-i18n'));
+      if (t) el.textContent = t;
+    });
+    render();
+    ov.style.display = '';
+  })();
   document.addEventListener('click', () => accountMenu.classList.remove('show'));
   accountMenu.addEventListener('click', e => e.stopPropagation());
 
