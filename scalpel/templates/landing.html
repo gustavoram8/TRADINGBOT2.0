@@ -138,6 +138,15 @@
       padding: 0 7vw;
       gap: 0;
     }
+    /* Soft static aurora behind the headline — pure gradient, zero runtime cost */
+    .hero::before {
+      content: ''; position: absolute; pointer-events: none; z-index: -1;
+      top: 8%; left: -6%; width: 62%; height: 84%;
+      background:
+        radial-gradient(ellipse 60% 45% at 32% 38%, var(--flash), transparent 70%),
+        radial-gradient(ellipse 38% 30% at 18% 72%, var(--chip), transparent 72%);
+      filter: blur(2px);
+    }
     .hero-left {
       display: flex; flex-direction: column;
       align-items: flex-start; justify-content: center;
@@ -304,7 +313,9 @@
       padding: 18px 20px; border-radius: 14px;
       background: var(--card); border: 1px solid var(--card-bd);
       backdrop-filter: blur(8px);
+      transition: transform .2s, border-color .2s;
     }
+    .pain-card:hover { transform: translateX(4px); border-color: var(--chip-bd); }
     .pain-card-title { font-size: 14px; font-weight: 700; margin-bottom: 5px; display: flex; align-items: center; gap: 10px; }
     .pain-card-body  { font-size: 13px; color: var(--muted); line-height: 1.6; }
     .pain-icon-wrap {
@@ -391,12 +402,14 @@
       background: var(--tc-accent, var(--accent));
       opacity: 0; transition: opacity .22s;
     }
-    .tool-card:hover { transform: translateY(-4px); box-shadow: 0 20px 52px var(--card-sh); }
+    .tool-card:hover { transform: translateY(-4px); box-shadow: 0 20px 52px var(--card-sh); border-color: var(--chip-bd); }
     .tool-card:hover::before { opacity: 1; }
+    .tool-card:hover .tc-ico { transform: scale(1.12) rotate(-4deg); }
     .tc-ico {
       width: 42px; height: 42px; border-radius: 11px;
       display: flex; align-items: center; justify-content: center;
       margin-bottom: 14px;
+      transition: transform .25s cubic-bezier(.34,1.56,.64,1);
     }
     .tc-ico svg { width: 22px; height: 22px; }
     .tool-card h3 { font-size: 15px; font-weight: 800; margin-bottom: 7px; }
@@ -408,6 +421,16 @@
     }
     .pc-prem { background: rgba(197,134,10,.13); color: var(--gold); border: 1px solid rgba(197,134,10,.24); }
     .pc-free { background: rgba(22,163,74,.10); color: var(--bull); border: 1px solid rgba(22,163,74,.22); }
+    .tc-new {
+      display: inline-block; margin-left: 8px; padding: 1px 7px 2px; border-radius: 999px;
+      font-size: 9px; font-weight: 900; letter-spacing: .08em; color: #10131c;
+      vertical-align: 2px; line-height: 1.5;
+      background: linear-gradient(90deg, #f3d57c, #7af0a0, #7ab8f0, #e89ae8, #f3d57c);
+      background-size: 320% 100%;
+      animation: tcNewShift 3.2s linear infinite;
+    }
+    @keyframes tcNewShift { to { background-position: 320% 0; } }
+    @media (prefers-reduced-motion: reduce) { .tc-new { animation: none; } }
 
     /* ── S5 METHODOLOGY ── */
     .capabilities {
@@ -417,7 +440,14 @@
       display: flex; gap: 16px; align-items: flex-start;
       padding: 18px 20px; border-radius: 14px;
       background: var(--card); border: 1px solid var(--card-bd); backdrop-filter: blur(8px);
+      transition: transform .2s, border-color .2s, box-shadow .2s;
     }
+    .cap-item:hover {
+      transform: translateY(-3px); border-color: var(--chip-bd);
+      box-shadow: 0 12px 32px var(--card-sh);
+    }
+    .cap-item:hover .cap-letter { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .cap-letter { transition: background .2s, color .2s, border-color .2s; }
     .cap-letter {
       width: 32px; height: 32px; border-radius: 8px; flex: none;
       display: flex; align-items: center; justify-content: center;
@@ -435,6 +465,11 @@
       background: var(--card); border: 1px solid var(--card-bd);
       border-radius: 20px; padding: 30px 26px;
       backdrop-filter: blur(10px); box-shadow: 0 12px 36px var(--card-sh);
+      transition: transform .22s, box-shadow .22s, border-color .22s;
+    }
+    .comm-card:hover {
+      transform: translateY(-4px); border-color: var(--chip-bd);
+      box-shadow: 0 22px 56px var(--card-sh);
     }
     .comm-card-icon {
       width: 40px; height: 40px; border-radius: 10px;
@@ -481,7 +516,15 @@
     .plan.featured {
       border-color: var(--pp-premium); border-width: 2px;
       box-shadow: 0 12px 36px rgba(184,134,11,0.16);
+      transform: scale(1.035);
+      position: relative; z-index: 1;
     }
+    .plan.featured::after {
+      content: ''; position: absolute; inset: -2px; border-radius: 16px;
+      pointer-events: none; z-index: -1;
+      background: radial-gradient(ellipse 80% 40% at 50% 0%, rgba(224,168,61,0.22), transparent 70%);
+    }
+    .plan.featured:hover { transform: scale(1.035) translateY(-4px); box-shadow: 0 22px 56px rgba(184,134,11,0.26); }
     .badge-pop {
       position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
       background: linear-gradient(135deg, var(--pp-premium), var(--pp-premium-2));
@@ -758,7 +801,7 @@
         <div class="stat-sub">ICT · SMC · Wyckoff · Price Action</div>
       </div>
       <div class="stat-col rv d1">
-        <div class="stat-num">6</div>
+        <div class="stat-num">7</div>
         <div class="stat-label" data-t="stat_tools">Tools</div>
         <div class="stat-sub">Analysis · Education · Community</div>
       </div>
@@ -879,7 +922,7 @@
   <section class="section">
     <div class="tc">
       <div class="eyebrow rv" data-t="brow_toolkit">YOUR TOOLKIT</div>
-      <h2 class="h2 rv d1" data-t="s4_title">Six instruments. One platform.</h2>
+      <h2 class="h2 rv d1" data-t="s4_title">Seven instruments. One platform.</h2>
       <p class="lead rv d2" data-t="s4_body">Every tool was built around a specific gap in how traders learn, review, and improve. Nothing generic. Nothing filler.</p>
     </div>
     <div class="tools-grid">
@@ -959,6 +1002,20 @@
         </div>
         <h3 data-t="tc6_t">Indicator Library</h3>
         <p data-t="tc6_b">Curated custom indicators for TradingView, built around ICT and SMC concepts — no repaint, no lag, plug in from day one.</p>
+      </div>
+
+      <!-- Pre-Flight -->
+      <div class="tool-card rv d6" style="--tc-accent:#2563eb">
+        <span class="plan-chip pc-prem" data-t="chip_prem">Premium</span>
+        <div class="tc-ico" style="background:rgba(37,99,235,.10)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="3" width="16" height="18" rx="2"/>
+            <polyline points="7.5 9 9.3 10.8 12.5 7.6"/><line x1="14.5" y1="9.2" x2="17" y2="9.2"/>
+            <polyline points="7.5 15 9.3 16.8 12.5 13.6"/><line x1="14.5" y1="15.2" x2="17" y2="15.2"/>
+          </svg>
+        </div>
+        <h3><span data-t="tc7_t">Pre-Flight</span><span class="tc-new" aria-hidden="true">NEW</span></h3>
+        <p data-t="tc7_b">Your pre-trade checklist: validate every setup against your own rules before entry, log the trade, and track your discipline stats over time.</p>
       </div>
 
     </div>
@@ -1586,7 +1643,7 @@
         
         s3_title:'Upload a screenshot. Get a diagnosis.',
         s3_body:'The AI reads your chart like a senior trader would — identifying structure, liquidity, session timing, and methodology alignment. Written in your language, grounded in institutional concepts.',
-        s4_title:'Six instruments. One platform.',
+        s4_title:'Seven instruments. One platform.',
         s4_body:'Every tool was built around a specific gap in how traders learn, review, and improve. Nothing generic. Nothing filler.',
         chip_all:'All plans', chip_prem:'Premium',
         tc1_t:'AI Screenshot Analysis', tc1_b:'Upload any chart. The AI identifies structure, liquidity, and methodology — giving you a detailed text diagnosis in your language.',
@@ -1595,6 +1652,7 @@
         tc4_t:'Quiz', tc4_b:'Score 80%+ across all quiz routes — every methodology, every level. Your results earn you a permanent place on the leaderboard.',
         tc5_t:'Chalkboard', tc5_b:'A digital canvas for pre-session bias mapping, key level marking, and trade idea sketching — your structured ritual before every open.',
         tc6_t:'Indicator Library', tc6_b:'Curated custom indicators for TradingView, built around ICT and SMC concepts — no repaint, no lag, plug in from day one.',
+        tc7_t:'Pre-Flight', tc7_b:'Your pre-trade checklist: validate every setup against your own rules before entry, log the trade, and track your discipline stats over time.',
         s5_title:'Institutional-grade pattern recognition.',
         s5_body:'Every screenshot is analyzed against your chosen methodology — ICT, SMC, Wyckoff, classical patterns, STDV or Price Action — delivering structured, expert-level feedback in seconds.',
         brow_core:'CORE FEATURE', brow_toolkit:'YOUR TOOLKIT', brow_airead:'WHAT THE AI READS', brow_community:'COMMUNITY', brow_pricing:'PRICING', brow_testi:'FROM OUR TRADERS',
@@ -1656,7 +1714,7 @@
         
         s3_title:'Sube una captura. Obtén un diagnóstico.',
         s3_body:'La IA lee tu gráfico como lo haría un trader senior — identificando estructura, liquidez, sesión y alineación metodológica. Escrito en tu idioma, basado en conceptos institucionales.',
-        s4_title:'Seis instrumentos. Una plataforma.',
+        s4_title:'Siete instrumentos. Una plataforma.',
         s4_body:'Cada herramienta fue construida alrededor de una brecha específica en cómo los traders aprenden, revisan y mejoran.',
         chip_all:'Todos los planes', chip_prem:'Premium',
         tc1_t:'Análisis de capturas por IA', tc1_b:'Sube cualquier gráfico. La IA identifica estructura, liquidez y metodología — entregándote un diagnóstico escrito en tu idioma.',
@@ -1665,6 +1723,7 @@
         tc4_t:'Quiz', tc4_b:'Obtén 80%+ en todas las rutas de quiz — toda metodología, todo nivel — y gana tu lugar permanente en el ranking global.',
         tc5_t:'Chalkboard', tc5_b:'Un canvas digital para mapear tu sesgo antes de la sesión, marcar niveles clave y esbozar ideas de trading.',
         tc6_t:'Biblioteca de Indicadores', tc6_b:'Indicadores personalizados para TradingView, basados en ICT y SMC — sin repintado, sin lag.',
+        tc7_t:'Pre-Flight', tc7_b:'Tu checklist pre-trade: valida cada setup contra tus propias reglas antes de entrar, registra el trade y mide tu disciplina con el tiempo.',
         s5_title:'Reconocimiento de patrones a nivel institucional.',
         s5_body:'Cada captura se analiza según la metodología que elijas — ICT, SMC, Wyckoff, patrones clásicos, STDV o Price Action — entregando feedback estructurado de nivel experto en segundos.',
         brow_core:'FUNCIÓN PRINCIPAL', brow_toolkit:'TUS HERRAMIENTAS', brow_airead:'LO QUE LEE LA IA', brow_community:'COMUNIDAD', brow_pricing:'PRECIOS', brow_testi:'NUESTROS TRADERS',
@@ -1726,7 +1785,7 @@
         
         s3_title:'Téléversez une capture. Obtenez un diagnostic.',
         s3_body:'L\'IA lit votre graphique comme un trader senior — identifiant structure, liquidité, timing de session et alignement méthodologique. Rédigé dans votre langue.',
-        s4_title:'Six instruments. Une plateforme.',
+        s4_title:'Sept instruments. Une plateforme.',
         s4_body:'Chaque outil a été conçu autour d\'une lacune spécifique dans la façon dont les traders apprennent, révisent et progressent.',
         chip_all:'Tous les plans', chip_prem:'Premium',
         tc1_t:'Analyse IA de captures', tc1_b:'Téléversez n\'importe quel graphique. L\'IA identifie structure, liquidité et méthodologie — diagnostic écrit dans votre langue.',
@@ -1735,6 +1794,7 @@
         tc4_t:'Quiz', tc4_b:'Obtenez 80%+ sur toutes les routes de quiz — chaque méthodologie, chaque niveau — et gagnez votre place permanente au classement.',
         tc5_t:'Chalkboard', tc5_b:'Un canvas numérique pour cartographier votre biais, marquer les niveaux clés et esquisser des idées avant la session.',
         tc6_t:'Bibliothèque d\'indicateurs', tc6_b:'Indicateurs personnalisés pour TradingView, basés sur ICT et SMC — sans repaint, sans lag.',
+        tc7_t:'Pre-Flight', tc7_b:'Votre checklist pré-trade : validez chaque setup selon vos propres règles avant d\'entrer, consignez le trade et suivez votre discipline dans le temps.',
         s5_title:'Reconnaissance de patterns de niveau institutionnel.',
         s5_body:'Chaque capture est analysée selon la méthodologie que vous choisissez — ICT, SMC, Wyckoff, patterns classiques, STDV ou Price Action — pour un feedback structuré de niveau expert en quelques secondes.',
         brow_core:'FONCTION CLÉ', brow_toolkit:'VOS OUTILS', brow_airead:'CE QUE LIT L\'IA', brow_community:'COMMUNAUTÉ', brow_pricing:'TARIFS', brow_testi:'NOS TRADERS',
@@ -1796,7 +1856,7 @@
         
         s3_title:'Envie uma captura. Receba um diagnóstico.',
         s3_body:'A IA lê seu gráfico como um trader sênior — identificando estrutura, liquidez, timing de sessão e alinhamento metodológico. Escrito no seu idioma.',
-        s4_title:'Seis instrumentos. Uma plataforma.',
+        s4_title:'Sete instrumentos. Uma plataforma.',
         s4_body:'Cada ferramenta foi construída em torno de uma lacuna específica em como traders aprendem, revisam e melhoram.',
         chip_all:'Todos os planos', chip_prem:'Premium',
         tc1_t:'Análise de capturas por IA', tc1_b:'Envie qualquer gráfico. A IA identifica estrutura, liquidez e metodologia — entregando um diagnóstico escrito no seu idioma.',
@@ -1805,6 +1865,7 @@
         tc4_t:'Quiz', tc4_b:'Obtenha 80%+ em todas as rotas de quiz — toda metodologia, todo nível — e ganhe seu lugar permanente no ranking global.',
         tc5_t:'Chalkboard', tc5_b:'Um canvas digital para mapear seu viés antes da sessão, marcar níveis-chave e esboçar ideias de trading.',
         tc6_t:'Biblioteca de Indicadores', tc6_b:'Indicadores personalizados para TradingView, baseados em ICT e SMC — sem repintura, sem lag.',
+        tc7_t:'Pre-Flight', tc7_b:'Seu checklist pré-trade: valide cada setup contra suas próprias regras antes de entrar, registre o trade e acompanhe sua disciplina ao longo do tempo.',
         s5_title:'Reconhecimento de padrões de nível institucional.',
         s5_body:'Cada captura é analisada de acordo com a metodologia que você escolher — ICT, SMC, Wyckoff, padrões clássicos, STDV ou Price Action — entregando feedback estruturado de nível especialista em segundos.',
         brow_core:'RECURSO PRINCIPAL', brow_toolkit:'SUAS FERRAMENTAS', brow_airead:'O QUE A IA LÊ', brow_community:'COMUNIDADE', brow_pricing:'PREÇOS', brow_testi:'NOSSOS TRADERS',
