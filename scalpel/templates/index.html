@@ -8295,6 +8295,10 @@
         'unlock.f.analyzer24.d': 'Analyze a chart screenshot every 24 hours instead of once a week. Seven times more reps for your edge.',
         'unlock.f.projects5.n': '5 Analysis Projects',
         'unlock.f.projects5.d': 'Save up to 5 analysis presets — your instruments, your timeframes, your setups, one click away.',
+        'unlock.f.camo1.n': '1 Camo Included',
+        'unlock.f.camo1.d': 'An exclusive design theme for your dashboard — make the platform look like yours.',
+        'unlock.f.camos3.n': '3 Camos Included',
+        'unlock.f.camos3.d': 'Three exclusive design themes — Navy Trader, Desert Ops and Forest Recon — to personalize your dashboard.',
       },
       es: {
         'unlock.title': 'DESBLOQUEADO', 'unlock.skip': 'Saltar ✕',
@@ -8317,6 +8321,10 @@
         'unlock.f.analyzer24.d': 'Analiza un screenshot cada 24 horas en vez de una vez por semana. Siete veces más repeticiones para tu edge.',
         'unlock.f.projects5.n': '5 Proyectos de Análisis',
         'unlock.f.projects5.d': 'Guarda hasta 5 presets de análisis — tus instrumentos, tus timeframes, tus setups, a un clic.',
+        'unlock.f.camo1.n': '1 Camo Incluido',
+        'unlock.f.camo1.d': 'Un tema de diseño exclusivo para tu dashboard — haz que la plataforma se vea tuya.',
+        'unlock.f.camos3.n': '3 Camos Incluidos',
+        'unlock.f.camos3.d': 'Tres temas de diseño exclusivos — Navy Trader, Desert Ops y Forest Recon — para personalizar tu dashboard.',
       },
       fr: {
         'unlock.title': 'DÉBLOQUÉ', 'unlock.skip': 'Passer ✕',
@@ -8339,6 +8347,10 @@
         'unlock.f.analyzer24.d': 'Analysez une capture toutes les 24 heures au lieu d’une fois par semaine. Sept fois plus de répétitions.',
         'unlock.f.projects5.n': '5 Projets d’Analyse',
         'unlock.f.projects5.d': 'Enregistrez jusqu’à 5 presets d’analyse — vos instruments, vos timeframes, vos setups, en un clic.',
+        'unlock.f.camo1.n': '1 Camo Inclus',
+        'unlock.f.camo1.d': 'Un thème de design exclusif pour votre dashboard — donnez à la plateforme votre style.',
+        'unlock.f.camos3.n': '3 Camos Inclus',
+        'unlock.f.camos3.d': 'Trois thèmes de design exclusifs — Navy Trader, Desert Ops et Forest Recon — pour personnaliser votre dashboard.',
       },
       pt: {
         'unlock.title': 'DESBLOQUEADO', 'unlock.skip': 'Pular ✕',
@@ -8361,6 +8373,10 @@
         'unlock.f.analyzer24.d': 'Analise um screenshot a cada 24 horas em vez de uma vez por semana. Sete vezes mais repetições para seu edge.',
         'unlock.f.projects5.n': '5 Projetos de Análise',
         'unlock.f.projects5.d': 'Salve até 5 presets de análise — seus instrumentos, seus timeframes, seus setups, a um clique.',
+        'unlock.f.camo1.n': '1 Camo Incluído',
+        'unlock.f.camo1.d': 'Um tema de design exclusivo para seu dashboard — deixe a plataforma com a sua cara.',
+        'unlock.f.camos3.n': '3 Camos Incluídos',
+        'unlock.f.camos3.d': 'Três temas de design exclusivos — Navy Trader, Desert Ops e Forest Recon — para personalizar seu dashboard.',
       },
     };
     Object.keys(UNLOCK_I18N).forEach(l => { if (I18N[l]) Object.assign(I18N[l], UNLOCK_I18N[l]); });
@@ -8376,11 +8392,13 @@
       indicators: `<svg viewBox="0 0 24 24" ${S}><line x1="5" y1="3.5" x2="5" y2="20.5"/><circle cx="5" cy="9" r="2.2"/><line x1="12" y1="3.5" x2="12" y2="20.5"/><circle cx="12" cy="15.5" r="2.2"/><line x1="19" y1="3.5" x2="19" y2="20.5"/><circle cx="19" cy="7" r="2.2"/></svg>`,
       clock:      `<svg viewBox="0 0 24 24" ${S}><circle cx="12" cy="12" r="9"/><polyline points="12 6.5 12 12 15.8 14.2"/></svg>`,
       projects:   `<svg viewBox="0 0 24 24" ${S}><path d="M3 7.5V18a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-8l-2-2.5H5a2 2 0 0 0-2 2.5z"/><line x1="12" y1="11.5" x2="12" y2="16.5"/><line x1="9.5" y1="14" x2="14.5" y2="14"/></svg>`,
+      camo:       `<svg viewBox="0 0 24 24" ${S}><line x1="3" y1="14" x2="13" y2="4"/><line x1="5.5" y1="17.5" x2="18" y2="5"/><line x1="9" y1="20" x2="20.5" y2="8.5"/><line x1="13.5" y1="21.5" x2="21.5" y2="13.5"/></svg>`,
     };
     const FEATURES = {
       standard: [
         { icon: 'clock',    key: 'analyzer24' },
         { icon: 'projects', key: 'projects5' },
+        { icon: 'camo',     key: 'camo1' },
       ],
       premium: [
         { icon: 'analyzer',   key: 'analyzer5' },
@@ -8390,6 +8408,7 @@
         { icon: 'scalper',    key: 'scalper' },
         { icon: 'synapse',    key: 'synapse' },
         { icon: 'indicators', key: 'indicators' },
+        { icon: 'camo',       key: 'camos3' },
       ],
     };
 
