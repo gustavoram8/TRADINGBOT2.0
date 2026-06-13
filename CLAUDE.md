@@ -131,6 +131,35 @@
 
 ---
 
+> **🔔 SPAM OBLIGATORIO AL VOLVER (pedido por el usuario 2026-06-13, 1AM, antes de dormir):**
+> La PRÓXIMA vez que el usuario escriba, mostrarle esta lista de "lo que falta del sistema de
+> XP/Rangos". Etapas 1 (backend) y 2 (UI: medallas v3 + panel "My Rank Progress") YA están
+> hechas, probadas y pusheadas (commits `5ea7bb0` backend, `6575905` UI). Falta:
+>
+> 1. **⚠️ CABLEAR EL QUIZ AL XP (gap real):** el endpoint `POST /api/quiz/answer` existe y otorga
+>    XP, pero el quiz client-side (`QUESTION_BANK` en `index.html`) **todavía NO lo llama** cuando
+>    aciertas una pregunta por primera vez. Hay que hacer que, al responder correcto, el cliente
+>    haga `fetch('/api/quiz/answer', {question_id, level})`. Sin esto, la fuente de XP del quiz
+>    no suma nada todavía. (Las otras fuentes —login, análisis, daily, pre-flight, foro,
+>    testimonial— SÍ están cableadas server-side y funcionan.)
+> 2. **Certificado PDF al subir de rango:** diseñar + lógica, reusando el generador de PDFs
+>    existente. Idea: un panel/celebración "¡Subiste a [rango]!" con botón "Descargar certificado".
+>    Hoy el rank-up solo emite un `record_audit_event('rank_up', ...)` silencioso — falta el
+>    momento visual de celebración + el PDF descargable.
+> 3. **Camos por rango (8):** diseñarlos UNO POR UNO con el usuario (ya es tarea prioritaria
+>    anotada abajo). Los badges ya están; los camos no.
+> 4. **Acceso beta prioritario (rangos 6-8):** es una política, no hay código aún — se cablea
+>    cuando salga una feature nueva (mostrarla antes a rangos altos).
+> 5. **Desplegar la Etapa 2 en el VPS y verificar visualmente** (el usuario aún no la había
+>    desplegado al irse a dormir): `git pull` + `supervisorctl restart traderacelerator`, luego
+>    abrir el menú de cuenta → ver la medalla + "My rank progress".
+> 6. **Verificar/pulir en vivo:** medallas en foro (lag con muchos posts), look en light/dark,
+>    el panel "My Rank Progress" con datos reales, y que el rango se vea en testimonials/landing.
+> 7. (Opcional) **Backfill de XP** para dar XP retroactivo por actividad histórica si el usuario
+>    lo quiere — hoy todos arrancan en xp=0 / Paper Trader.
+>
+> ---
+
 > **🚨 MÁS URGENTE — PENDIENTE: CONECTAR CUENTA BANCARIA (pago por transferencia, NO Binance)**
 >
 > El usuario decidió que los pagos serán por **transferencia bancaria en USD a la cuenta
