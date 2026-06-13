@@ -3,49 +3,131 @@
 
 ---
 
-> **📌 EN DISEÑO (2026-06-13) — SISTEMA DE XP / RANGOS ("hacer más vivo el sitio")**
+> **📌 EN DISEÑO (2026-06-13) — SISTEMA DE XP / RANGOS ("hacer más vivo el sitio") — ESPEC. CONGELADA**
 >
 > Contexto: discusión sobre ganchos de retención (idea original mencionada por el usuario como
 > sugerida por "Fable" en otra sesión) — el sitio tiene mucha amplitud pero pocas razones para
 > volver al día siguiente. Ya implementado: testimonials + ruleta del daily challenge. Siguiente
-> en la cola: **sistema de XP / Rangos** + **reloj de Kill Zones en vivo + calendario económico**
-> (este último en stand-by hasta terminar el de rangos).
+> en la cola: **sistema de XP / Rangos** (diseño CONGELADO, luz verde del usuario 2026-06-13) +
+> **reloj de Kill Zones en vivo + calendario económico** (en stand-by hasta terminar rangos).
 >
-> **Decisiones tomadas hasta ahora (sistema de Rangos):**
-> - **8 rangos**, nombres con temática de trading — el usuario prefirió la opción con sabor
->   ICT/Smart Money Concepts: Retail Trader → Liquidity Seeker → Structure Reader → Order Flow
->   Analyst → Smart Money Apprentice → Liquidity Hunter → Institutional Trader → Legend/Apex
->   Predator (nombre final del rango 8 pendiente de confirmar).
-> - **Multiplicador de XP por plan**: Free ×1, Standard ×2, Premium ×4 ("inercia": premium sube
->   muchísimo más rápido).
-> - **Recompensas SIN dinero** (para no quemar margen — la ruleta sigue siendo el único lugar
->   con descuentos):
->   1. Badge de rango visible junto al username — en el foro (posts/comentarios), en
->      testimonials/landing, Y en el menú inicial al lado del badge de plan (Free/Standard/Premium).
->   2. **Camo exclusivo por rango** (8 camos nuevos).
->   3. Acceso beta prioritario a features nuevas para los rangos más altos.
->   4. Certificado PDF descargable al subir de rango (reusa el generador de PDFs existente).
-> - **Anti-abuso (clave — el usuario señaló que casi todo es "burlable")**:
->   - Quiz: XP solo la PRIMERA vez que se acierta cada `question_id` (no repetible infinito).
->   - Foro: tope diario de XP por categoría + reversión de XP si la moderación IA marca el
->     post/comentario como spam dentro de 24h.
->   - Reacciones recibidas: tope diario muy bajo (~5 XP/día).
->   - Análisis IA / Daily Challenge / Testimonial: ya protegidos por los límites de plan
->     existentes (no necesitan nada extra).
->   - **Tope maestro de XP total por día** según plan (ej. Free 30/día, Standard 80/día,
->     Premium 200/día) — el verdadero candado: farmear una sola fuente no acelera nada, solo
->     el uso variado y real llena el tope.
+> **⚠️ ACCESO REAL POR PLAN (verificado en código — base de todo el balance):**
+> - **Free:** solo Analyze (1 análisis/7 días) + 1 camo de regalo NO (eso es Standard). Free = solo Analyze.
+> - **Standard:** Analyze (1 análisis/24h) + 1 camo de regalo al comprar. Nada más.
+> - **Premium:** TODO — Analyze (5/24h), Quiz, Pre-Flight, Foro, Daily Challenge+ruleta, Synapse, Chalkboard (Scalper).
+> - Gates en `app.py`: Foro y Daily Challenge son `@premium_required`; Quiz/Synapse/Scalper chequean
+>   `U.plan === 'premium'` en `switchTab` (`index.html`); Pre-Flight está en `FEATURES.premium` del
+>   unlock reveal (premium-only, aunque su API hoy solo tiene `@login_required` — posible inconsistencia
+>   a revisar). Analyze límites: `PLAN_LIMITS` = free 1/7d, standard 1/24h, premium 5/24h.
+> - **Testimonial: abierto a TODOS los planes** (free incluido) — commit `d4d6a3d` cambió
+>   `app_view()` de `plan in ('standard','premium')` a `if not unlock_plan:`. Sigue con gate de
+>   ~20 min de uso real (localStorage `ta_usage_min`) del lado cliente.
+>
+> **DECISIÓN CLAVE — SIN MULTIPLICADOR (descarta el ×1/×2/×4 del boceto viejo):**
+> La brecha entre planes NO se hace con multiplicador, sino con **ponderación inversa por plan**
+> (las acciones que un plan pobre SÍ puede hacer valen MÁS por acción, para compensar que tiene
+> menos fuentes). Objetivo de balance pedido por el usuario: **ratio a Legend Premium 1 : Standard ~2
+> : Free ~3** (antes daba 12:1, inaceptable). El XP mide "progreso como trader", no "cuántas features
+> tienes", por eso se normaliza.
+>
+> **TABLA DE XP — ACCIONES COMPARTIDAS (ponderadas por plan):**
+> | Acción | Free | Standard | Premium |
+> |---|---|---|---|
+> | Primera visita del día¹ | +18 | +12 | +5 |
+> | Análisis IA exitoso | +60 | +30 | +10 |
+> | Testimonial (cada 30 días)² | +30 | +30 | +30 |
+>
+> **TABLA DE XP — EXCLUSIVAS DE PREMIUM:**
+> | Acción | XP | Tope diario |
+> |---|---|---|
+> | Quiz — acertar pregunta NUEVA | +5/+8/+12 (beg/int/adv) | 20 XP/día |
+> | Daily Challenge correcto | +15 | 1/día |
+> | Daily Challenge — racha (cada 7)² | +30 | exento |
+> | 1er checklist Pre-Flight² (único en la vida) | +20 | exento |
+> | Pre-Flight check registrado | +5 c/u | solo primeros 3/día (15) |
+> | Foro — post | +5 | 2/día (10) |
+> | Foro — comentario | +2 | 5/día (10) |
+> | Foro — reacción recibida | +1 | 5/día (5) |
+>
+> ¹ "Primera visita del día" = +XP la 1ª vez que se abre `/app` en un día calendario **UTC**
+>   (misma convención que el Daily Challenge `_utc_today()`; funciona con sesión recordada, NO
+>   depende de login por contraseña). Se guarda la fecha (`User.last_xp_active_date` propuesto);
+>   recargar no vuelve a pagar.
+> ² Exento del techo diario (recompensas raras, no farmeables).
+>
+> **TECHO MAESTRO DE XP/DÍA:**
+> - Free: SIN techo (su límite de 1 análisis/semana ya lo topa naturalmente).
+> - Standard: SIN techo (1 análisis/día ya es el tope natural).
+> - **Premium: 80 XP/día** — único plan que combina muchas fuentes → necesita el candado.
+>   Tras tocarlo, toda acción recurrente suma 0 ese día (testimonial/racha/1er-checklist exentos).
+>
+> **PROMEDIO REALISTA XP/DÍA:** Free ~27.6 · Standard ~43 · Premium ~84.
+>
+> **LOS 8 RANGOS (nombres CONFIRMADOS — mezcla general+ICT+mercados, NO solo ICT):**
+> | # | Rango | XP acumulado |
+> |---|---|---|
+> | 1 | Paper Trader | 0 |
+> | 2 | Retail Trader | 200 |
+> | 3 | Chart Technician | 600 |
+> | 4 | Liquidity Hunter | 1,400 |
+> | 5 | Swing Strategist | 2,800 |
+> | 6 | Order Flow Sniper | 5,000 |
+> | 7 | Market Maker | 8,000 |
+> | 8 | **Trading Legend** | 12,000 |
+> Curva acelerada (incrementos +200/+400/+800/+1400/+2200/+3000/+4000). El usuario notó el salto
+> final; se ofreció suavizarla pero quedó con esta. Pool de nombres alternos por si se cambia alguno:
+> R3 Chartist/Technical Analyst · R5 Position/Trend Strategist · R6 Order Flow Analyst/Smart Money
+> Sniper · R7 Institutional/Prop Trader · R8 Market Wizard/Apex Trader/The 1%.
+>
+> **VELOCIDAD (días a cada rango) — confirma el ratio 1:2:3 a Legend:**
+> | Rango | Free | Standard | Premium |
+> |---|---|---|---|
+> | 2 Retail Trader | ~7d | ~5d | ~2d |
+> | 3 Chart Technician | ~22d | ~14d | ~7d |
+> | 4 Liquidity Hunter | ~1.7mes | ~1mes | ~17d |
+> | 5 Swing Strategist | ~3.3mes | ~2.2mes | ~1mes |
+> | 6 Order Flow Sniper | ~6mes | ~3.8mes | ~2mes |
+> | 7 Market Maker | ~9.5mes | ~6mes | ~3.1mes |
+> | 8 **Trading Legend** | **~14.3mes** | **~9.2mes** | **~4.7mes** |
+> Mínimo absoluto a Legend (premium topando 80/día sin fallar): ~150 días (~5 meses) — prestigioso.
+>
+> **REGLA DEL TOPE DE QUIZ ("pagar completo o no pagar"):** una pregunta solo paga si CABE entera
+> bajo el tope de 20/día. Si vas 13/20 y respondes una de +12, NO da un parcial de +7 ni quema la
+> pregunta: queda disponible y mañana paga los +12 completos. Los topes NUNCA ruedan al día
+> siguiente, pero así nunca se pierde el valor de una pregunta.
+>
+> **RECOMPENSAS POR RANGO (SIN dinero — la ruleta sigue siendo el único lugar con descuentos):**
+> 1. **Badge de rango** junto al username — en foro (posts/comentarios), en testimonials/landing,
+>    y en el menú inicial al lado del badge de plan (Free/Standard/Premium).
+> 2. **Camo exclusivo** por cada subida de rango (8 camos — diseñar juntos, ver tarea prioritaria abajo).
+> 3. **Acceso beta prioritario** a features nuevas para los rangos altos (rango 6-8).
+> 4. **Certificado PDF descargable** al subir de rango (reusa el generador de PDFs existente).
+>
+> **ANTI-ABUSO (resumen de candados):**
+> - Todo XP server-side, con llave de deduplicación por acción (no recontar reenviando). Tabla
+>   `XPLog` auditable/reversible.
+> - Login: 1×/día UTC (fecha guardada). · Análisis: solo si exitoso y consume cupo del plan.
+> - Quiz: solo 1ª vez por `question_id` + tope 20/día. · Pre-Flight: checks ilimitados en FUNCIÓN,
+>   pero solo primeros 3/día dan XP. · Daily Challenge: 1/día, cronometrado (ya existe).
+> - Foro: topes por tipo + **reversión automática** si moderación IA marca spam en 24h.
+> - Reacciones: tope 5/día + no cuentan las de cuentas nuevas/mismo dispositivo (anti-sockpuppet).
+> - Premium techo maestro 80/día = candado final.
+>
+> **UI PEDIDA POR EL USUARIO — apartado "My Rank Progress":** en el menú del engranaje, JUSTO
+> DEBAJO de "My Coupons" (`#menu-coupons`). Muestra: barra de XP + rango actual + "faltan X XP para
+> [siguiente rango]" + lista de **acciones aún disponibles hoy** para sumar puntos (ej. "Daily
+> Challenge ✓ · Quiz: 12/20 XP restantes · Análisis: 2/5 usados").
 >
 > **🔴 TAREA PRIORITARIA A FUTURO — DISEÑAR LOS CAMOS UNO POR UNO CON EL USUARIO:**
-> Hay que diseñar EN CONJUNTO (usuario + Claude) los camos: los 8 de recompensa por rango,
-> + los que trae cada plan (Standard ya anuncia "1 Camo included", Premium "3 camos"), + los
-> que estarán disponibles para comprar en la tienda. Hoy solo existen 3 placeholders (Navy
-> Trader, Desert Ops, Forest Recon) en `camos.html`. NO diseñar esto de forma autónoma —
-> esperar a que el usuario quiera sentarse a iterar el diseño visual de cada uno.
+> Diseñar EN CONJUNTO (usuario + Claude): los 8 camos de recompensa por rango + los de cada plan
+> (Standard "1 Camo included", Premium "3 camos") + los de la tienda. Hoy solo hay 3 placeholders
+> (Navy Trader, Desert Ops, Forest Recon) en `camos.html`. NO hacerlo de forma autónoma.
 >
-> **Siguiente paso técnico** (aún no iniciado): modelo `XPLog`/campo `User.xp` + `User.rank`,
-> helper `add_xp(user, source, amount)` con los topes de arriba, endpoint de progreso/UI del
-> badge, backfill de XP para usuarios existentes.
+> **SIGUIENTE PASO TÉCNICO (aún no iniciado):** modelo `XPLog` + campos `User.xp`/`User.rank` +
+> `User.last_xp_active_date`; helper `add_xp(user, source, amount)` con dedup + topes; tracking de
+> `question_id` premiados (quiz) y flag de 1er checklist; endpoint de progreso `/api/rank/progress`;
+> UI "My Rank Progress" + badges; backfill de XP para usuarios existentes. DESPUÉS de esto: badges
+> (diseño visual + animaciones por rango) — es lo siguiente a iterar con el usuario.
 
 ---
 
