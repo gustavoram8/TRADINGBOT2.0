@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Rank Seals — Preview · Trader Acelerator</title>
+<style>
+  /* ── Real Trader Acelerator palette (dark default / light) ── */
+  :root{
+    --bg:#0c0e14; --surface:#13161f; --card:#181c28; --border:#252a3a; --border2:#2e344a;
+    --text:#d4d8ec; --muted:#636882; --accent:#5b8ef0; --accent-h:#7aaaf7;
+    --gold:#e0a83d; --gold-br:#f3c768;
+  }
+  body.light{
+    --bg:#f4f5f8; --surface:#ffffff; --card:#ffffff; --border:#e3e6ee; --border2:#d2d7e3;
+    --text:#1a1d28; --muted:#6b7186; --accent:#3f6fd6; --accent-h:#2f5cc0;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+       background:var(--bg);color:var(--text);transition:background .2s,color .2s;padding:34px 20px 80px}
+  h1{font-size:20px;font-weight:800;letter-spacing:-.01em;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:13px;margin:0 0 26px}
+  .toggle{position:fixed;top:16px;right:16px;z-index:5;border:1px solid var(--border2);
+          background:var(--card);color:var(--text);padding:7px 14px;border-radius:20px;
+          font-size:12.5px;font-weight:600;cursor:pointer}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(186px,1fr));gap:14px;max-width:1080px}
+  .cell{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 16px 16px;
+        display:flex;flex-direction:column;align-items:center;gap:9px;text-align:center}
+  .rk-name{font-size:13.5px;font-weight:700;letter-spacing:.01em}
+  .rk-xp{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .rk-no{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+  .ctx{max-width:1080px;margin:34px 0 0}
+  .ctx h2{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin:0 0 12px}
+  .row{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid var(--border);
+       border-radius:10px;background:var(--surface);margin-bottom:8px;max-width:420px}
+  .uname{font-size:13px;font-weight:600}
+  .plan-chip{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:10px}
+  .plan-chip.premium{background:rgba(224,168,61,.18);color:#e0a83d}
+  .plan-chip.standard{background:rgba(91,142,240,.18);color:var(--accent)}
+  .plan-chip.free{background:rgba(99,104,130,.20);color:var(--muted)}
+
+  /* ════════ RANK SEAL COMPONENT (production-ready) ════════ */
+  .rank-seal{
+    --sz:22px;
+    position:relative;display:inline-grid;place-items:center;flex:0 0 auto;vertical-align:middle;
+    width:var(--sz);height:var(--sz);border-radius:50%;overflow:hidden;
+    background:var(--seal);color:var(--ink);
+    box-shadow:inset 0 0 0 1.6px var(--ring),
+               inset 0 1.5px 2px rgba(255,255,255,.16),
+               inset 0 -2px 3px rgba(0,0,0,.35),
+               0 1px 2px rgba(0,0,0,.28);
+  }
+  .rank-seal .rs-glyph{position:relative;z-index:2;width:60%;height:60%;
+    stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  /* sheen sweep — ranks 3+ (one cheap background-position move) */
+  .rank-seal.sheen::after{content:"";position:absolute;inset:-30%;z-index:3;border-radius:50%;
+    background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,.42) 50%,transparent 62%);
+    background-size:250% 250%;animation:rsSheen 5.5s ease-in-out infinite}
+  @keyframes rsSheen{0%,72%{background-position:140% 140%}100%{background-position:-40% -40%}}
+  /* gold glow pulse — ranks 7-8 (opacity only) */
+  .rank-seal.glow::before{content:"";position:absolute;inset:0;z-index:1;border-radius:50%;
+    background:radial-gradient(circle at 50% 38%,rgba(243,199,104,.55),transparent 70%);
+    opacity:.35;animation:rsGlow 3.2s ease-in-out infinite}
+  @keyframes rsGlow{0%,100%{opacity:.28}50%{opacity:.62}}
+  /* prismatic rotating ring — Legend only (transform rotate) */
+  .rank-seal.legend .rs-ring{content:"";position:absolute;inset:-2px;z-index:0;border-radius:50%;
+    background:conic-gradient(from 0deg,#f3c768,#fff3cf,#e0a83d,#f3c768,#b9842a,#f3c768);
+    animation:rsSpin 6s linear infinite;filter:saturate(1.15)}
+  .rank-seal.legend{box-shadow:inset 0 1.5px 2px rgba(255,255,255,.25),inset 0 -2px 3px rgba(0,0,0,.4),0 1px 4px rgba(224,168,61,.4)}
+  .rank-seal.legend .rs-face{position:absolute;inset:2.2px;z-index:1;border-radius:50%;background:var(--seal)}
+  @keyframes rsSpin{to{transform:rotate(360deg)}}
+
+  @media (prefers-reduced-motion:reduce){
+    .rank-seal.sheen::after,.rank-seal.glow::before,.rank-seal.legend .rs-ring{animation:none}
+  }
+
+  /* ── Per-rank finishes (DARK) — graphite → blue → gold ramp ── */
+  .rank-seal.r1{--ring:#444a61;--seal:linear-gradient(160deg,#2c3143,#1b1f2e);--ink:#878ca6}
+  .rank-seal.r2{--ring:#565d79;--seal:linear-gradient(160deg,#363c52,#212636);--ink:#b6bbd4}
+  .rank-seal.r3{--ring:#4d72b4;--seal:linear-gradient(160deg,#2c3a5b,#1d2740);--ink:#a6c6ff}
+  .rank-seal.r4{--ring:#5b8ef0;--seal:linear-gradient(160deg,#284271,#1a2b4d);--ink:#c2daff}
+  .rank-seal.r5{--ring:#6f9cf5;--seal:linear-gradient(160deg,#2d4c88,#1d3360);--ink:#d4e3ff}
+  .rank-seal.r6{--ring:#9d9ad0;--seal:linear-gradient(160deg,#39406a,#272a3f);--ink:#ffd98a}
+  .rank-seal.r6 .rs-ring2{position:absolute;inset:0;z-index:0;border-radius:50%;
+    background:conic-gradient(from 200deg,#5b8ef0,#9d8fe0,#e0a83d,#5b8ef0)}
+  .rank-seal.r7{--ring:#e0a83d;--seal:linear-gradient(160deg,#4c3c1d,#2f2413);--ink:#ffdd92}
+  .rank-seal.r8{--ring:#f3c768;--seal:linear-gradient(160deg,#5b4517,#392b0f);--ink:#ffe9b0}
+
+  /* ── Per-rank finishes (LIGHT) — lifted, readable on white ── */
+  body.light .rank-seal.r1{--ring:#aab0c4;--seal:linear-gradient(160deg,#eef0f6,#dde1ec);--ink:#7a7f96}
+  body.light .rank-seal.r2{--ring:#9aa1bd;--seal:linear-gradient(160deg,#eef0f7,#d8dcea);--ink:#5d6480}
+  body.light .rank-seal.r3{--ring:#7ea0e0;--seal:linear-gradient(160deg,#eaf1fe,#d3e0fb);--ink:#37589f}
+  body.light .rank-seal.r4{--ring:#3f6fd6;--seal:linear-gradient(160deg,#e2ecff,#c9dcff);--ink:#234a9a}
+  body.light .rank-seal.r5{--ring:#3f6fd6;--seal:linear-gradient(160deg,#dde9ff,#bdd3ff);--ink:#1d3f86}
+  body.light .rank-seal.r6{--ring:#9a8fd0;--seal:linear-gradient(160deg,#eef0fb,#dcdcf2);--ink:#9a6a13}
+  body.light .rank-seal.r7{--ring:#d39a2c;--seal:linear-gradient(160deg,#fdf1d8,#f6e3b6);--ink:#8a5e12}
+  body.light .rank-seal.r8{--ring:#e0a83d;--seal:linear-gradient(160deg,#fdeecb,#f3d692);--ink:#7a5410}
+  body.light .rank-seal.glow::before{opacity:.22}
+</style>
+</head>
+<body class="">
+<button class="toggle" id="toggle">☀️ Light / 🌙 Dark</button>
+<h1>Rank Seals — los 8 badges</h1>
+<p class="sub">Escala grafito → azul → dorado. Animaciones CSS baratas (sheen / glow / anillo prismático). Prueba el toggle de tema.</p>
+
+<div class="grid" id="grid"></div>
+
+<div class="ctx">
+  <h2>Cómo se ve inline (foro / menú / testimonials)</h2>
+  <div class="row"><span class="rank-seal r6 sheen" style="--sz:20px"><span class="rs-ring2"></span><svg class="rs-glyph" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><line x1="12" y1="2.5" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="21.5"/><line x1="2.5" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="21.5" y2="12"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/></svg></span><span class="plan-chip premium">Premium</span><span class="uname">maurotradesve</span></div>
+  <div class="row"><span class="rank-seal r3 sheen" style="--sz:20px"><svg class="rs-glyph" viewBox="0 0 24 24"><polyline points="3 16 9 10 13 13 21 5"/><polyline points="16 5 21 5 21 10"/></svg></span><span class="plan-chip standard">Standard</span><span class="uname">trader_ana</span></div>
+  <div class="row"><span class="rank-seal r8 legend glow" style="--sz:20px"><span class="rs-ring"></span><span class="rs-face"></span><svg class="rs-glyph" viewBox="0 0 24 24"><path d="M5 19h14"/><path d="M6 19c-1-5-2-8 1.5-11 1 2 1.5 3 1.5 3s1-2.5 3-4c2 1.5 3 4 3 4s.5-1 1.5-3C23 11 20 14 18 19"/></svg></span><span class="plan-chip premium">Premium</span><span class="uname">eltrader_legend</span></div>
+</div>
+
+<script>
+  // glyphs per rank (universal trading, not ICT-specific)
+  const G = {
+    1:'<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="15.5" x2="15" y2="15.5"/>',          // page
+    2:'<line x1="12" y1="3" x2="12" y2="7"/><line x1="12" y1="17" x2="12" y2="21"/><rect x="9" y="7" width="6" height="10" rx="1"/>',                  // candle
+    3:'<polyline points="3 16 9 10 13 13 21 5"/><polyline points="16 5 21 5 21 10"/>',                                                                  // trendline
+    4:'<line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="15" y2="12"/><line x1="4" y1="17" x2="18" y2="17"/>',                                // liquidity depth
+    5:'<path d="M3 15c3 0 3-7 6-7s3 7 6 7 3-7 6-7"/>',                                                                                                  // swing wave
+    6:'<circle cx="12" cy="12" r="7"/><line x1="12" y1="2.5" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="21.5"/><line x1="2.5" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="21.5" y2="12"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/>', // crosshair
+    7:'<line x1="4" y1="20" x2="20" y2="20"/><path d="M5 20V9l7-4 7 4v11"/><line x1="9" y1="20" x2="9" y2="13"/><line x1="12" y1="20" x2="12" y2="13"/><line x1="15" y1="20" x2="15" y2="13"/>', // institution
+    8:'<path d="M5 19h14"/><path d="M6 19c-1-5-2-8 1.5-11 1 2 1.5 3 1.5 3s1-2.5 3-4c2 1.5 3 4 3 4s.5-1 1.5-3C23 11 20 14 18 19"/>',                       // laurel/crown
+  };
+  const NAMES=['Paper Trader','Retail Trader','Chart Technician','Liquidity Hunter','Swing Strategist','Order Flow Sniper','Market Maker','Trading Legend'];
+  const XP=[0,200,600,1400,2800,5000,8000,12000];
+  const anim={1:'',2:'',3:'sheen',4:'sheen',5:'sheen',6:'sheen',7:'sheen glow',8:'legend glow'};
+  const grid=document.getElementById('grid');
+  for(let i=1;i<=8;i++){
+    const extra = i===6?'<span class="rs-ring2"></span>': i===8?'<span class="rs-ring"></span><span class="rs-face"></span>':'';
+    grid.insertAdjacentHTML('beforeend',
+      `<div class="cell">
+         <span class="rank-seal r${i} ${anim[i]}" style="--sz:60px">${extra}<svg class="rs-glyph" viewBox="0 0 24 24">${G[i]}</svg></span>
+         <div class="rk-no">Rango ${i}</div>
+         <div class="rk-name">${NAMES[i-1]}</div>
+         <div class="rk-xp">${XP[i-1].toLocaleString()} XP</div>
+       </div>`);
+  }
+  document.getElementById('toggle').addEventListener('click',()=>document.body.classList.toggle('light'));
+</script>
+</body>
+</html>
