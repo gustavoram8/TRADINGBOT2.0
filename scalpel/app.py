@@ -187,7 +187,7 @@ class User(UserMixin, db.Model):
     # shift) can never resolve to a different account.
     alt_id = db.Column(db.String(40), unique=True, nullable=True, index=True,
                        default=lambda: secrets.token_hex(20))
-    # ── Periodic testimonial prompt (paid plans only) ──
+    # ── Periodic testimonial prompt (all plans, free included) ──
     last_review_prompt_at = db.Column(db.DateTime, nullable=True)
 
     def set_password(self, raw):
@@ -1281,10 +1281,12 @@ def app_view():
         unlock_plan = pending_unlock.plan
         pending_unlock.celebrated_at = datetime.now(timezone.utc)
         db.session.commit()
-    # Periodic testimonial prompt: every 30 days, for paid plans only, and
-    # never on the same load as the unlock reveal.
+    # Periodic testimonial prompt: every 30 days, for every plan (free included),
+    # and never on the same load as the unlock reveal. The client still gates it
+    # behind ~20 min of accumulated real usage so brand-new users aren't asked
+    # to rate features they haven't tried yet.
     review_prompt = False
-    if not unlock_plan and current_user.plan in ('standard', 'premium'):
+    if not unlock_plan:
         last = _aware(current_user.last_review_prompt_at)
         if last is None or (datetime.now(timezone.utc) - last).days >= 30:
             review_prompt = True
@@ -4104,9 +4106,9 @@ def daily_coupons():
 @app.route('/api/testimonial/submit', methods=['POST'])
 @login_required
 def testimonial_submit():
-    """Record a periodic rating/review from a paid user. 4-5 star reviews
-    (with consent to publish) appear on the public landing-page panel;
-    everything else stays private as feedback for the team."""
+    """Record a periodic rating/review from any logged-in user (all plans).
+    4-5 star reviews (with consent to publish) appear on the public
+    landing-page panel; everything else stays private as feedback."""
     data = request.get_json(silent=True) or {}
     try:
         rating = int(data.get('rating', 0))
