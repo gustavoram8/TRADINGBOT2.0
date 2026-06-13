@@ -2077,12 +2077,11 @@
       background: linear-gradient(135deg, var(--accent), var(--accent-h)); color: #fff; font-weight: 800; font-size: 14px; text-transform: uppercase;
     }
     .post-author { font-weight: 700; font-size: 13.5px; display: inline-flex; align-items: center; gap: 5px; flex-wrap: wrap; }
-    /* Mini rank-name label next to a forum author's name */
-    .rank-tag { font-weight: 600; font-size: 10.5px; letter-spacing: .02em; line-height: 1;
-      padding: 2px 7px; border-radius: 999px; white-space: nowrap;
-      color: var(--gold, #b8902f); background: rgba(184,144,47,.12); border: 1px solid rgba(184,144,47,.32); }
-    body.light .rank-tag { color: #8a6a1e; background: rgba(184,144,47,.10); border-color: rgba(184,144,47,.30); }
-    .comment-author .rank-tag { font-size: 9.5px; padding: 1px 6px; }
+    /* Mini rank-name label next to a forum author's name (color set per-rank in JS) */
+    .rank-tag { font-weight: 600; font-size: 9px; letter-spacing: .02em; line-height: 1;
+      padding: 2px 5px; border-radius: 3px; white-space: nowrap;
+      border: 1px solid transparent; }
+    .comment-author .rank-tag { font-size: 8.5px; padding: 1.5px 4px; }
     .post-time { font-size: 11.5px; color: var(--muted); }
     .post-title { font-size: 16.5px; font-weight: 700; margin-bottom: 6px; line-height: 1.35; }
     .post-body { font-size: 14px; color: var(--text); line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
@@ -3619,6 +3618,21 @@
     return el;
   };
   window.RANK_NAMES = NAMES;
+  // Representative accent per rank (mid-metal tone) for the small forum labels.
+  var RANK_HEX = ['#6b7290','#c98f5e','#8fa0bd','#5f8fe8','#34a5b8','#9f8fe8','#e0a83d','#edc25a'];
+  window.RANK_COLORS = RANK_HEX;
+  function _rgba(hex, a){
+    var h = hex.replace('#',''); if(h.length===3){ h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2]; }
+    var n = parseInt(h,16);
+    return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';
+  }
+  // Paint a .rank-tag pill with its rank's accent (text/bg/border share one hue).
+  window.styleRankTag = function(el, rank){
+    var hex = RANK_HEX[Math.max(1,Math.min(8,parseInt(rank,10)||1))-1];
+    el.style.color = hex;
+    el.style.background = _rgba(hex, .13);
+    el.style.borderColor = _rgba(hex, .34);
+  };
 })();
 </script>
 
@@ -9389,7 +9403,9 @@
       a.appendChild(document.createTextNode(p.author));
       if (window.RANK_NAMES && p.author_rank) {
         const tag = document.createElement('span'); tag.className = 'rank-tag';
-        tag.textContent = window.RANK_NAMES[p.author_rank - 1] || ''; a.appendChild(tag);
+        tag.textContent = window.RANK_NAMES[p.author_rank - 1] || '';
+        if (window.styleRankTag) window.styleRankTag(tag, p.author_rank);
+        a.appendChild(tag);
       }
       const t = document.createElement('div'); t.className = 'post-time'; t.textContent = fmtTime(p.created_at);
       meta.appendChild(a); meta.appendChild(t); top.appendChild(meta);
@@ -9428,7 +9444,9 @@
       au.appendChild(document.createTextNode(c.deleted ? '' : c.author));
       if (!c.deleted && window.RANK_NAMES && c.author_rank) {
         const tag = document.createElement('span'); tag.className = 'rank-tag';
-        tag.textContent = window.RANK_NAMES[c.author_rank - 1] || ''; au.appendChild(tag);
+        tag.textContent = window.RANK_NAMES[c.author_rank - 1] || '';
+        if (window.styleRankTag) window.styleRankTag(tag, c.author_rank);
+        au.appendChild(tag);
       }
       const tm = document.createElement('span'); tm.className = 'comment-time'; tm.textContent = fmtTime(c.created_at);
       head.appendChild(au); head.appendChild(tm); wrap.appendChild(head);
