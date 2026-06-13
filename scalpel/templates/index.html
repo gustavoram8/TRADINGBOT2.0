@@ -19490,8 +19490,10 @@
           $('daily-overlay').style.display = '';
 
           // countdown (server enforces the real window; this is the visible clock)
-          let left = data.seconds_left;
           const total = status ? status.seconds : 60;
+          // never show more than the real window — guards against a skewed clock
+          // making seconds_left balloon past `total`.
+          let left = Math.max(0, Math.min(total, data.seconds_left));
           const bar = $('daily-timer-bar'), num = $('daily-timer-num');
           clearInterval(timerId);
           const tick = () => {

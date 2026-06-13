@@ -4156,7 +4156,9 @@ def daily_start():
         st.question_served_at = datetime.now(timezone.utc)
         db.session.commit()
     elapsed = (datetime.now(timezone.utc) - _aware(st.question_served_at)).total_seconds()
-    remaining = max(0, DAILY_ANSWER_SECONDS - int(elapsed))
+    # Clamp to [0, window]: a future-dated served_at (clock/timezone skew) would
+    # otherwise make `60 - negative` balloon to thousands of seconds.
+    remaining = max(0, min(DAILY_ANSWER_SECONDS, DAILY_ANSWER_SECONDS - int(elapsed)))
     return jsonify({'seed': _daily_seed(), 'seconds_left': remaining})
 
 
