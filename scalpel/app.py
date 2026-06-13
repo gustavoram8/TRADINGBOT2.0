@@ -189,6 +189,15 @@ class User(UserMixin, db.Model):
                        default=lambda: secrets.token_hex(20))
     # ── Periodic testimonial prompt (all plans, free included) ──
     last_review_prompt_at = db.Column(db.DateTime, nullable=True)
+    # ── XP / Rank system (retention loop) ──
+    # `xp` is the lifetime accumulated total; `rank` (1-8) is derived from it
+    # but stored for cheap reads. `last_xp_active_date` (UTC 'YYYY-MM-DD') gates
+    # the once-per-day login bonus. `first_preflight_xp` flags the one-time
+    # "created your first Pre-Flight checklist" bonus.
+    xp = db.Column(db.Integer, default=0, nullable=False)
+    rank = db.Column(db.Integer, default=1, nullable=False)
+    last_xp_active_date = db.Column(db.String(10), nullable=True)
+    first_preflight_xp = db.Column(db.Boolean, default=False, nullable=False)
 
     def set_password(self, raw):
         self.password_hash = generate_password_hash(raw)
@@ -536,6 +545,138 @@ class RouletteSpin(db.Model):
     label = db.Column(db.String(120), nullable=False)
     promo_code = db.Column(db.String(40), nullable=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class XPLog(db.Model):
+    """Append-only ledger of every XP award. Lets us enforce daily/category
+    caps (sum today's rows), deduplicate one-time awards (e.g. a quiz question
+    can only ever pay once — keyed by `ref`), and reverse XP later (forum spam
+    flagged by AI moderation) without losing the audit trail.
+
+    `day` is a 'YYYY-MM-DD' UTC string so cap windows are timezone-agnostic,
+    matching the Daily Challenge convention."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    source = db.Column(db.String(30), nullable=False, index=True)   # login/analysis/quiz/...
+    amount = db.Column(db.Integer, nullable=False)
+    ref = db.Column(db.String(60), nullable=True, index=True)       # dedup key (question_id, post id...)
+    day = db.Column(db.String(10), nullable=False, index=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# XP / RANK CONFIG  (spec frozen 2026-06-13 — see CLAUDE.md)
+# No per-plan multiplier: the gap comes from access (premium-only sources) +
+# inverse weighting (actions a poorer plan CAN do are worth more). Target
+# time-to-Legend ratio Premium 1 : Standard ~2 : Free ~3.
+# ──────────────────────────────────────────────────────────────────────────
+RANK_NAMES = ['Paper Trader', 'Retail Trader', 'Chart Technician', 'Liquidity Hunter',
+              'Swing Strategist', 'Order Flow Sniper', 'Market Maker', 'Trading Legend']
+RANK_THRESHOLDS = [0, 200, 600, 1400, 2800, 5000, 8000, 12000]
+
+# Shared actions: XP weighted by plan (inverse — fewer sources => worth more).
+XP_SHARED = {
+    'login':       {'free': 18, 'standard': 12, 'premium': 5},
+    'analysis':    {'free': 60, 'standard': 30, 'premium': 10},
+    'testimonial': {'free': 30, 'standard': 30, 'premium': 30},
+}
+# Premium-only actions: flat XP.
+XP_PREMIUM = {
+    'quiz_beginner': 5, 'quiz_intermediate': 8, 'quiz_advanced': 12,
+    'daily_correct': 15, 'daily_streak': 30,
+    'preflight_first': 20, 'preflight_check': 5,
+    'forum_post': 5, 'forum_comment': 2, 'forum_reaction': 1,
+}
+# Per-source daily XP ceilings (anti-farm).
+XP_DAILY_CAP = {
+    'quiz': 20, 'preflight_check': 15,
+    'forum_post': 10, 'forum_comment': 10, 'forum_reaction': 5,
+}
+# Master daily cap — only premium needs one (free/standard are capped by their
+# own plan limits). Exempt sources bypass it (rare rewards, not farmable).
+XP_MASTER_CAP = {'free': None, 'standard': None, 'premium': 80}
+XP_CAP_EXEMPT = {'testimonial', 'daily_streak', 'preflight_first'}
+
+
+def rank_for_xp(xp):
+    """Return the rank number (1-8) for a given lifetime XP total."""
+    r = 1
+    for i, threshold in enumerate(RANK_THRESHOLDS):
+        if xp >= threshold:
+            r = i + 1
+    return r
+
+
+def _xp_day():
+    return datetime.now(timezone.utc).strftime('%Y-%m-%d')
+
+
+def _xp_sum_today(user_id, source=None):
+    """Sum of XP awarded to a user today (optionally for one source)."""
+    q = db.session.query(db.func.coalesce(db.func.sum(XPLog.amount), 0)).filter(
+        XPLog.user_id == user_id, XPLog.day == _xp_day())
+    if source is not None:
+        q = q.filter(XPLog.source == source)
+    return int(q.scalar() or 0)
+
+
+def add_xp(user, source, amount=None, ref=None):
+    """Award XP to `user` for `source`, enforcing all caps and dedup. Returns
+    the XP actually granted (0 if nothing). Never raises — XP must never break a
+    real user action.
+
+    - `amount`: explicit value; if None it is resolved from the XP tables. For
+      'quiz' the caller passes the difficulty-based amount explicitly.
+    - `ref`: a one-time dedup key (e.g. a quiz question id). If an XPLog row with
+      the same (user, source, ref) already exists, nothing is awarded.
+    The 'pay full or not at all' rule applies: if the award would overflow a
+    daily cap, it is NOT granted (and the dedup ref stays unused for next time).
+    """
+    try:
+        plan = (user.plan or 'free')
+        # Resolve amount from the config tables when not given explicitly.
+        if amount is None:
+            if source in XP_SHARED:
+                amount = XP_SHARED[source].get(plan, XP_SHARED[source]['free'])
+            elif source in XP_PREMIUM:
+                amount = XP_PREMIUM[source]
+            else:
+                return 0
+        if amount <= 0:
+            return 0
+        # One-time dedup (e.g. a given quiz question only ever pays once).
+        if ref is not None:
+            exists = XPLog.query.filter_by(user_id=user.id, source=source, ref=ref).first()
+            if exists:
+                return 0
+        # Per-source daily cap — pay full or not at all.
+        if source in XP_DAILY_CAP:
+            if _xp_sum_today(user.id, source) + amount > XP_DAILY_CAP[source]:
+                return 0
+        # Master daily cap (premium only), bypassed by exempt sources.
+        master = XP_MASTER_CAP.get(plan)
+        if master is not None and source not in XP_CAP_EXEMPT:
+            # Sum only non-exempt sources toward the master cap.
+            used_master = (db.session.query(db.func.coalesce(db.func.sum(XPLog.amount), 0))
+                           .filter(XPLog.user_id == user.id, XPLog.day == _xp_day(),
+                                   ~XPLog.source.in_(list(XP_CAP_EXEMPT))).scalar() or 0)
+            if used_master + amount > master:
+                return 0
+        # Award it.
+        db.session.add(XPLog(user_id=user.id, source=source, amount=amount,
+                             ref=ref, day=_xp_day()))
+        user.xp = (user.xp or 0) + amount
+        new_rank = rank_for_xp(user.xp)
+        ranked_up = new_rank > (user.rank or 1)
+        user.rank = new_rank
+        db.session.commit()
+        if ranked_up:
+            record_audit_event('rank_up', user_id=user.id,
+                               detail=f'{RANK_NAMES[new_rank-1]} (xp={user.xp})')
+        return amount
+    except Exception:
+        db.session.rollback()
+        return 0
 
 
 # Event types that immediately email the admin inbox when they fail — these
@@ -1290,6 +1431,13 @@ def app_view():
         last = _aware(current_user.last_review_prompt_at)
         if last is None or (datetime.now(timezone.utc) - last).days >= 30:
             review_prompt = True
+    # Daily login XP: once per UTC day, regardless of how they got here
+    # (remember-me cookie, password, mobile...). Guarded by last_xp_active_date.
+    today = _xp_day()
+    if getattr(current_user, 'last_xp_active_date', None) != today:
+        current_user.last_xp_active_date = today
+        db.session.commit()
+        add_xp(current_user, 'login', ref=today)
     # Consume the pass so the next entry triggers the splash again.
     resp = make_response(render_template(
         'index.html',
@@ -1299,6 +1447,8 @@ def app_view():
         is_guest=False,
         unlock_plan=unlock_plan,
         review_prompt=review_prompt,
+        user_rank=current_user.rank or 1,
+        user_xp=current_user.xp or 0,
     ))
     resp.delete_cookie('scalpel_splash_ts')
     return resp
@@ -2731,6 +2881,8 @@ LANGUAGE: Write your entire response in {language}. Keep ICT-specific terms and 
 
         analysis = response.choices[0].message.content
         log_usage()  # record only on a successful analysis
+        if current_user.is_authenticated:
+            add_xp(current_user, 'analysis')
         return jsonify({'analysis': analysis})
 
     except Exception as e:
@@ -2946,6 +3098,7 @@ def forum_create_post():
     post = ForumPost(user_id=current_user.id, title=title, body=body, image_path=image_path)
     db.session.add(post)
     db.session.commit()
+    add_xp(current_user, 'forum_post', ref=f'post:{post.id}')
     return jsonify({
         'ok': True,
         'post': serialize_post(post),
@@ -2985,6 +3138,7 @@ def forum_add_comment(pid):
     c = ForumComment(post_id=pid, user_id=current_user.id, parent_id=parent_id, body=body)
     db.session.add(c)
     db.session.commit()
+    add_xp(current_user, 'forum_comment', ref=f'comment:{c.id}')
     return jsonify({'ok': True, 'comment': serialize_comment(c)})
 
 
@@ -3011,6 +3165,15 @@ def forum_react():
     else:
         db.session.add(ForumReaction(
             user_id=current_user.id, post_id=pid, comment_id=cid, emoji=emoji))
+        # XP goes to the AUTHOR of the reacted content (a reaction *received*),
+        # never to the reactor, and never for reacting to your own content.
+        target = (ForumPost.query.get(pid) if pid
+                  else ForumComment.query.get(cid))
+        if target and target.user_id != current_user.id:
+            author = User.query.get(target.user_id)
+            if author:
+                add_xp(author, 'forum_reaction',
+                       ref=f'react:{current_user.id}:{"p" if pid else "c"}{pid or cid}')
     db.session.commit()
     summary = reaction_summary('post' if pid else 'comment', pid or cid)
     return jsonify({'ok': True, 'counts': summary['counts'], 'mine': summary['mine']})
@@ -4022,6 +4185,12 @@ def daily_answer():
         st.streak = 0
     db.session.commit()
 
+    if correct:
+        # XP: one award per UTC day (ref=date), plus a streak bonus every 7.
+        add_xp(current_user, 'daily_correct', ref=today)
+        if earned_spin:
+            add_xp(current_user, 'daily_streak', ref=f'{today}:streak')
+
     payload = _daily_status_payload(st)
     payload.update({'correct': correct, 'timed_out': timed_out, 'earned_spin': earned_spin})
     return jsonify(payload)
@@ -4132,6 +4301,7 @@ def testimonial_submit():
     current_user.last_review_prompt_at = datetime.now(timezone.utc)
     db.session.add(t)
     db.session.commit()
+    add_xp(current_user, 'testimonial', ref=f'testimonial:{t.id}')
     record_audit_event('testimonial_submitted', user_id=current_user.id,
                         detail=f'{rating}/5 published={published}')
     return jsonify({'ok': True})
@@ -4146,6 +4316,67 @@ def testimonials_public():
         {'name': r.display_name, 'rating': r.rating, 'text': r.text, 'plan': r.plan}
         for r in rows
     ]})
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# XP / RANK — quiz award + progress endpoint
+# ──────────────────────────────────────────────────────────────────────────
+@app.route('/api/quiz/answer', methods=['POST'])
+@premium_required
+def quiz_answer_xp():
+    """Award XP for a correctly answered quiz question. The quiz bank lives
+    client-side, so the client reports (question_id, level); a question only
+    ever pays once (dedup by ref) and the whole source is capped at 20 XP/day,
+    so even a forged report can't farm faster than an honest user."""
+    data = request.get_json(silent=True) or {}
+    qid = str(data.get('question_id') or '').strip()[:60]
+    level = str(data.get('level') or '').strip()
+    if not qid or level not in ('beginner', 'intermediate', 'advanced'):
+        return jsonify({'error': 'bad_request'}), 400
+    amount = XP_PREMIUM.get(f'quiz_{level}', 0)
+    awarded = add_xp(current_user, 'quiz', amount=amount, ref=f'q:{qid}')
+    return jsonify({'ok': True, 'awarded': awarded, 'xp': current_user.xp,
+                    'rank': current_user.rank})
+
+
+def _rank_progress_payload(user):
+    xp = user.xp or 0
+    rank = rank_for_xp(xp)
+    cur_floor = RANK_THRESHOLDS[rank - 1]
+    next_floor = RANK_THRESHOLDS[rank] if rank < len(RANK_THRESHOLDS) else None
+    plan = user.plan or 'free'
+    sources_used = {}
+    for src in ('quiz', 'preflight_check', 'forum_post', 'forum_comment',
+                'forum_reaction', 'analysis', 'daily_correct', 'login'):
+        sources_used[src] = _xp_sum_today(user.id, src)
+    master_used = (db.session.query(db.func.coalesce(db.func.sum(XPLog.amount), 0))
+                   .filter(XPLog.user_id == user.id, XPLog.day == _xp_day(),
+                           ~XPLog.source.in_(list(XP_CAP_EXEMPT))).scalar() or 0)
+    return {
+        'xp': xp,
+        'rank': rank,
+        'rank_name': RANK_NAMES[rank - 1],
+        'next_rank_name': RANK_NAMES[rank] if rank < len(RANK_NAMES) else None,
+        'current_floor': cur_floor,
+        'next_floor': next_floor,
+        'xp_into_rank': xp - cur_floor,
+        'xp_to_next': (next_floor - xp) if next_floor is not None else 0,
+        'ranks': [{'n': i + 1, 'name': RANK_NAMES[i], 'threshold': RANK_THRESHOLDS[i]}
+                  for i in range(len(RANK_NAMES))],
+        'plan': plan,
+        'today': {
+            'master_used': int(master_used),
+            'master_cap': XP_MASTER_CAP.get(plan),
+            'sources': sources_used,
+            'daily_caps': XP_DAILY_CAP,
+        },
+    }
+
+
+@app.route('/api/rank/progress')
+@login_required
+def rank_progress():
+    return jsonify(_rank_progress_payload(current_user))
 
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -4541,6 +4772,13 @@ def preflight_create_check():
     )
     db.session.add(check)
     db.session.commit()
+    # XP: a one-time bonus for the very first logged check ever, then +5/check
+    # capped at the first 3/day (function itself stays unlimited).
+    if not current_user.first_preflight_xp:
+        current_user.first_preflight_xp = True
+        db.session.commit()
+        add_xp(current_user, 'preflight_first', ref='first')
+    add_xp(current_user, 'preflight_check')
     return jsonify({'ok': True, 'check': serialize_check(check)})
 
 
@@ -4738,14 +4976,37 @@ def _migrate_user_review_column():
         app.logger.info('Migrated user table: added last_review_prompt_at column.')
 
 
+def _migrate_user_xp_columns():
+    """Add the XP/Rank columns to an existing user table. MUST run before the
+    alt_id migration (whose ORM backfill SELECTs every User column)."""
+    from sqlalchemy import inspect, text
+    insp = inspect(db.engine)
+    cols = {c['name'] for c in insp.get_columns('user')}
+    stmts = []
+    if 'xp' not in cols:
+        stmts.append('ALTER TABLE "user" ADD COLUMN xp INTEGER NOT NULL DEFAULT 0')
+    if 'rank' not in cols:
+        stmts.append('ALTER TABLE "user" ADD COLUMN rank INTEGER NOT NULL DEFAULT 1')
+    if 'last_xp_active_date' not in cols:
+        stmts.append('ALTER TABLE "user" ADD COLUMN last_xp_active_date VARCHAR(10)')
+    if 'first_preflight_xp' not in cols:
+        stmts.append('ALTER TABLE "user" ADD COLUMN first_preflight_xp BOOLEAN NOT NULL DEFAULT FALSE')
+    if stmts:
+        with db.engine.begin() as conn:
+            for s in stmts:
+                conn.execute(text(s))
+        app.logger.info('Migrated user table: added XP/Rank columns (%d).', len(stmts))
+
+
 def init_db():
     with app.app_context():
         db.create_all()
         _migrate_user_verification_columns()
-        # NOTE: the review-column migration must run BEFORE the alt_id one —
-        # the alt_id backfill issues an ORM query that SELECTs every User
-        # column, so any column the model knows about must already exist.
+        # NOTE: these column migrations must run BEFORE the alt_id one — the
+        # alt_id backfill issues an ORM query that SELECTs every User column,
+        # so any column the model knows about must already exist.
         _migrate_user_review_column()
+        _migrate_user_xp_columns()
         _migrate_user_alt_id_column()
         _migrate_order_columns()
         _migrate_promo_code_columns()
