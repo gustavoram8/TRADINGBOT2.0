@@ -676,9 +676,29 @@
         activación/desactivación de planes. Alternativa más rápida: empresa en Colombia, México o Panamá.
       - **Opción puente:** ofrecer ambas opciones al usuario (Stripe + Binance USDT) para no perder clientes.
 
-- [ ] **Pagar OpenAI API** — necesario para análisis de screenshots en producción y
-      para el asesor IA del Prop Firm Scout. Sin esto el sitio funciona pero con
-      el token gratuito de GitHub Models (limitado).
+- [ ] **Pagar OpenAI API + conectar nuestra IA + probar consumo real con $5 de "combustible"**
+      — necesario para análisis de screenshots en producción. Sin esto el sitio funciona pero
+      con el token gratuito de GitHub Models (limitado por rate). Plan de 3 pasos:
+      1. **Crear cuenta + cargar $5** en `platform.openai.com` (modelo prepago pago-por-uso,
+         NO suscripción mensual; mínimo $5). Generar una `OPENAI_API_KEY`.
+      2. **Conectar nuestra IA a GPT-4o pago — solo cambian 2 líneas de CONEXIÓN en `app.py`**
+         (la lógica/prompt/flujo NO se toca, es el mismo modelo `gpt-4o`):
+         ```python
+         # HOY:  client = OpenAI(base_url="https://models.inference.ai.azure.com", api_key=GITHUB_TOKEN)
+         # PAGO: client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+         ```
+         Agregar `OPENAI_API_KEY` al `environment=` del supervisor conf **y** a `scalpel/.env`,
+         luego `supervisorctl restart traderacelerator`. El `SYSTEM_PROMPT` ICT, validate→analyze,
+         `max_tokens` (validate=150, analyze=900) y todo lo demás queda IDÉNTICO.
+      3. **Probar cuánto gasta de verdad:** hacer 5-10 análisis de screenshots reales y mirar
+         (a) el dashboard `platform.openai.com/usage` — costo real $ por request — y/o
+         (b) el `response.usage` de cada respuesta (tokens reales). Objetivo: confirmar el
+         estimado de **~$0.02/análisis** y ver cuántos análisis salen con los $5 (~250 esperados).
+      - ⚠️ **El miedo de "que me claven $1 por screenshot" es imposible por código:** `max_tokens`
+        topa el output (analyze=900, validate=150) → el peor caso absoluto es ~$0.025/análisis.
+        Para llegar a $1 OpenAI tendría que subir precios ×40 o habría que quitar el `max_tokens`.
+      - (Opcional, pendiente de decidir con el usuario) loguear `response.usage` en el Audit Log
+        para ver el costo real centavo-por-centavo desde el panel admin.
 - [ ] **Configurar Stripe** — pagos de suscripción (Free → Standard → Premium).
       Sin esto no hay monetización.
 - [x] **Desplegar en VPS** — sitio corriendo en Contabo VPS (`62.171.180.22:5001`)
