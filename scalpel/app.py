@@ -1348,6 +1348,11 @@ def terms():
     return render_template('terms.html')
 
 
+@app.route('/privacy')
+def privacy():
+    return render_template('privacy.html')
+
+
 @app.route('/settings')
 @login_required
 def settings():

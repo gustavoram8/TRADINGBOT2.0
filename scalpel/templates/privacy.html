@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trader Acelerator — Privacy Policy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --ink:#15171f; --ink-soft:#4a4f5e; --muted:#8a8f9e;
+      --line-soft:#e4e6ec; --accent:#2563eb; --accent-bg:#eff4ff;
+      --warn:#b91c1c; --warn-bg:#fef2f2;
+      --surface:#fafbfc; --radius:12px;
+    }
+    body { background:#fff; color:var(--ink); font-family:'Inter',sans-serif; font-size:15px; line-height:1.75; min-height:100vh; -webkit-font-smoothing:antialiased; }
+
+    /* NAV */
+    nav { display:flex; align-items:center; justify-content:space-between; padding:16px 32px; border-bottom:1px solid var(--line-soft); position:sticky; top:0; background:rgba(255,255,255,0.93); backdrop-filter:blur(10px); z-index:10; }
+    .logo-img { height:72px; width:auto; display:block; }
+    .back-link { font-size:13px; font-weight:600; color:var(--ink-soft); text-decoration:none; }
+    .back-link:hover { color:var(--accent); }
+
+    /* LAYOUT */
+    .wrap { max-width:820px; margin:0 auto; padding:56px 24px 96px; }
+
+    /* HEADER */
+    .eyebrow { font-size:11px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); margin-bottom:10px; }
+    h1 { font-size:38px; font-weight:800; letter-spacing:-.02em; margin-bottom:10px; }
+    .updated { font-size:13px; color:var(--muted); margin-bottom:16px; }
+    .intro-note { font-size:14px; color:var(--ink-soft); margin-bottom:40px; padding:16px 20px; background:var(--accent-bg); border-radius:var(--radius); border-left:3px solid var(--accent); }
+
+    /* TOC */
+    .toc { background:var(--surface); border:1px solid var(--line-soft); border-radius:var(--radius); padding:24px 28px; margin-bottom:48px; }
+    .toc-title { font-size:12px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:14px; }
+    .toc ol { padding-left:18px; }
+    .toc li { margin-bottom:5px; }
+    .toc a { font-size:13.5px; font-weight:500; color:var(--accent); text-decoration:none; }
+    .toc a:hover { text-decoration:underline; }
+
+    /* SECTIONS */
+    .section { margin-bottom:44px; }
+    h2 { font-size:19px; font-weight:700; margin-bottom:12px; padding-top:8px; border-top:1px solid var(--line-soft); }
+    h2 .sec-num { color:var(--muted); font-weight:500; margin-right:6px; font-size:16px; }
+    h3 { font-size:15px; font-weight:700; margin:16px 0 8px; }
+    p { color:var(--ink-soft); margin-bottom:12px; }
+    ul, ol { color:var(--ink-soft); padding-left:22px; margin-bottom:12px; }
+    li { margin-bottom:5px; }
+    table { width:100%; border-collapse:collapse; margin:8px 0 16px; font-size:13.5px; }
+    th, td { border:1px solid var(--line-soft); padding:9px 12px; text-align:left; vertical-align:top; }
+    th { background:var(--surface); font-weight:600; color:var(--ink); }
+    td { color:var(--ink-soft); }
+
+    /* CALLOUT BOXES */
+    .callout { border-radius:var(--radius); padding:16px 20px; margin-bottom:14px; }
+    .callout.warn { background:var(--warn-bg); border-left:3px solid var(--warn); }
+    .callout.warn p { color:#7f1d1d; margin:0; }
+    .callout.info { background:var(--accent-bg); border-left:3px solid var(--accent); }
+    .callout.info p { color:#1e3a8a; margin:0; }
+
+    /* FOOTER */
+    .terms-footer { margin-top:64px; padding-top:28px; border-top:1px solid var(--line-soft); font-size:13px; color:var(--muted); text-align:center; }
+    .terms-footer a { color:var(--accent); text-decoration:none; }
+    .terms-footer a:hover { text-decoration:underline; }
+
+    @media(max-width:600px) {
+      h1 { font-size:28px; }
+      .wrap { padding:36px 16px 72px; }
+      nav { padding:12px 16px; }
+      table, thead, tbody, th, td, tr { display:block; }
+      th { display:none; }
+      td { border:none; border-bottom:1px solid var(--line-soft); padding:6px 0; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo"><img src="/static/logo.png" alt="Trader Acelerator" class="logo-img" onerror="this.style.display='none';" /></a>
+  <a href="/app" class="back-link">← Back to app</a>
+</nav>
+
+<div class="wrap">
+
+  <div class="eyebrow">Legal</div>
+  <h1>Privacy Policy</h1>
+  <div class="updated">Last updated: June 13, 2026</div>
+
+  <div class="intro-note">
+    This Privacy Policy explains what information Trader Acelerator ("we," "us," or "our")
+    collects when you use our website, platform, tools, and related services (the "Service"),
+    how we use and protect it, and the choices you have. By using the Service, you agree to
+    the practices described here. This Policy should be read together with our
+    <a href="/terms">Terms &amp; Conditions</a>.
+  </div>
+
+  <div class="callout warn" style="margin-bottom:32px;">
+    <p>
+      <strong>Controlling Language:</strong> The controlling language of this Policy is
+      <strong>English</strong>. Any translations are provided for convenience only and have
+      no legal effect. In the event of any conflict, the English version prevails.
+    </p>
+  </div>
+
+  <!-- TABLE OF CONTENTS -->
+  <div class="toc">
+    <div class="toc-title">Table of Contents</div>
+    <ol>
+      <li><a href="#s1">Who We Are &amp; Scope</a></li>
+      <li><a href="#s2">Information We Collect</a></li>
+      <li><a href="#s3">How We Use Your Information</a></li>
+      <li><a href="#s4">Legal Bases for Processing</a></li>
+      <li><a href="#s5">AI Processing of Uploaded Content</a></li>
+      <li><a href="#s6">Cookies &amp; Local Storage</a></li>
+      <li><a href="#s7">How We Share Information — Service Providers</a></li>
+      <li><a href="#s8">Data Retention</a></li>
+      <li><a href="#s9">Data Security</a></li>
+      <li><a href="#s10">Your Privacy Rights</a></li>
+      <li><a href="#s11">International Data Transfers</a></li>
+      <li><a href="#s12">Children's Privacy</a></li>
+      <li><a href="#s13">Third-Party Links</a></li>
+      <li><a href="#s14">Changes to This Policy</a></li>
+      <li><a href="#s15">Contact</a></li>
+    </ol>
+  </div>
+
+  <!-- SECTION 1 -->
+  <div class="section" id="s1">
+    <h2><span class="sec-num">1.</span> Who We Are &amp; Scope</h2>
+    <p>
+      Trader Acelerator is a digital educational platform for financial-markets and
+      technical-analysis education. We are the data controller responsible for the personal
+      information processed through the Service. This Policy applies to information we collect
+      through the Service and through communications with us. It does not apply to third-party
+      websites or services we do not control.
+    </p>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section" id="s2">
+    <h2><span class="sec-num">2.</span> Information We Collect</h2>
+    <p>We collect only the information needed to operate the Service. Specifically:</p>
+
+    <h3>2.1 Account information</h3>
+    <p>
+      When you register, we collect your <strong>username</strong>, <strong>email
+      address</strong>, and a <strong>password</strong> (which we store only as a salted
+      cryptographic hash — we never store your password in plain text). We also store your
+      plan tier and its lifecycle dates, your email-verification status and temporary
+      one-time verification codes, the date you accepted our Terms, and account status flags.
+    </p>
+
+    <h3>2.2 Payment information</h3>
+    <p>
+      For paid plans we create an order record containing the plan, billing cycle, amount,
+      and payment status. Payments are currently processed <strong>outside the platform</strong>
+      (e.g., bank or other transfer confirmed manually), and we do <strong>not</strong> collect
+      or store your card numbers or banking credentials on our servers. If we introduce an
+      automated payment processor in the future, your payment-card data would be handled
+      directly by that processor under its own privacy terms, not stored by us.
+    </p>
+
+    <h3>2.3 Content and self-logged data you provide</h3>
+    <ul>
+      <li><strong>Uploaded images</strong> (e.g., chart screenshots you submit for AI analysis).</li>
+      <li><strong>Forum posts and comments</strong>, and reactions.</li>
+      <li><strong>Reviews / testimonials</strong> you choose to submit (which, with your
+          consent, may be displayed publicly — see Section 7).</li>
+      <li><strong>Pre-Flight checklists and self-logged trade details</strong> (such as
+          instrument, direction, dates, prices, and notes) that you enter yourself.</li>
+      <li><strong>Messages</strong> you send us via the contact form (name, email, category,
+          and your message).</li>
+    </ul>
+
+    <h3>2.4 Activity &amp; gamification data</h3>
+    <p>
+      To operate engagement features we store your quiz/challenge progress, experience points
+      (XP), rank, badges, streaks, daily-challenge state, and any promotional codes issued to
+      you, together with an append-only log of these reward events for accuracy and
+      anti-abuse purposes.
+    </p>
+
+    <h3>2.5 Information we do <em>not</em> collect</h3>
+    <div class="callout info">
+      <p>
+        We do <strong>not</strong> store your IP address, device fingerprint, or browsing
+        history in our application database, and we do <strong>not</strong> use advertising or
+        cross-site tracking cookies. As with any website, our hosting and the third-party
+        content-delivery networks that serve fonts and scripts may process your IP address
+        transiently to deliver those resources and maintain security (see Sections 6 and 7).
+      </p>
+    </div>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="section" id="s3">
+    <h2><span class="sec-num">3.</span> How We Use Your Information</h2>
+    <p>We use the information described above to:</p>
+    <ul>
+      <li>Create and maintain your account and authenticate your logins;</li>
+      <li>Provide the educational tools and features of your plan, including AI analysis,
+          quizzes, the Daily Challenge, Pre-Flight, the forum, and gamification;</li>
+      <li>Verify your email and send essential service emails (verification codes, password
+          resets, and responses to your support requests);</li>
+      <li>Process and activate your subscription and keep billing/plan records;</li>
+      <li>Operate and secure reward features and prevent fraud, cheating, and abuse;</li>
+      <li>Moderate community content and enforce our Terms;</li>
+      <li>Maintain operational and security logs of sensitive events (such as payments and
+          email delivery); and</li>
+      <li>Comply with legal obligations and protect our rights.</li>
+    </ul>
+    <p>
+      We do <strong>not</strong> sell your personal information, and we do not use it for
+      third-party advertising.
+    </p>
+  </div>
+
+  <!-- SECTION 4 -->
+  <div class="section" id="s4">
+    <h2><span class="sec-num">4.</span> Legal Bases for Processing</h2>
+    <p>
+      Where applicable law (such as the EU/UK GDPR) requires a legal basis, we rely on:
+      <strong>performance of a contract</strong> (to provide the Service you sign up for);
+      <strong>legitimate interests</strong> (to secure the Service, prevent abuse, and improve
+      our features, balanced against your rights); <strong>consent</strong> (for example, to
+      publish a testimonial you submit, which you may withdraw); and <strong>compliance with
+      legal obligations</strong>.
+    </p>
+  </div>
+
+  <!-- SECTION 5 -->
+  <div class="section" id="s5">
+    <h2><span class="sec-num">5.</span> AI Processing of Uploaded Content</h2>
+    <p>
+      When you use AI-assisted features (such as chart-screenshot analysis or community
+      moderation), the image or text you submit is transmitted to a third-party AI processing
+      provider that generates the analysis or moderation result on our behalf. That content is
+      processed to return a result to you and is subject to the provider's own data-handling
+      terms.
+    </p>
+    <div class="callout warn">
+      <p>
+        <strong>Please do not upload sensitive personal information</strong> (such as
+        government IDs, financial-account numbers, or other people's personal data) within
+        screenshots or text, as the educational analysis features are not designed to handle
+        such data.
+      </p>
+    </div>
+  </div>
+
+  <!-- SECTION 6 -->
+  <div class="section" id="s6">
+    <h2><span class="sec-num">6.</span> Cookies &amp; Local Storage</h2>
+    <p>
+      We use a minimal set of <strong>strictly necessary</strong> cookies and browser storage —
+      we do <strong>not</strong> use advertising or cross-site tracking cookies:
+    </p>
+    <ul>
+      <li><strong>Session cookie:</strong> a signed cookie that keeps you logged in during your
+          visit.</li>
+      <li><strong>"Remember this device" cookie:</strong> an optional signed cookie that keeps
+          you logged in across visits if you choose it.</li>
+      <li><strong>Local storage:</strong> small preferences kept in your own browser, such as
+          your theme (light/dark), language, accumulated in-app usage time, and locally saved
+          boards. This data stays on your device.</li>
+    </ul>
+    <p>
+      You can clear cookies and local storage through your browser settings; doing so may log
+      you out and reset local preferences.
+    </p>
+  </div>
+
+  <!-- SECTION 7 -->
+  <div class="section" id="s7">
+    <h2><span class="sec-num">7.</span> How We Share Information — Service Providers</h2>
+    <p>
+      We do not sell your personal information. We share it only as needed to run the Service,
+      with the categories of providers below, each acting under appropriate confidentiality
+      and data-processing obligations:
+    </p>
+    <table>
+      <tr><th>Recipient category</th><th>Purpose</th></tr>
+      <tr><td>Hosting / infrastructure provider</td><td>Runs our servers and database.</td></tr>
+      <tr><td>AI processing provider</td><td>Generates analysis/moderation from content you submit.</td></tr>
+      <tr><td>Email delivery provider</td><td>Sends verification, password-reset, and support emails.</td></tr>
+      <tr><td>Payment processor (when enabled)</td><td>Processes subscription payments. Today payments are confirmed manually and no card data is stored by us.</td></tr>
+      <tr><td>Content-delivery networks (CDNs)</td><td>Serve fonts and front-end libraries; may receive your IP to deliver those assets.</td></tr>
+    </table>
+    <p>
+      <strong>Public content:</strong> forum posts, comments, and any testimonial you submit
+      with consent to publish are visible to other users or the public, along with the
+      username (or display name) and rank shown with them. Do not post anything you wish to
+      keep private.
+    </p>
+    <p>
+      We may also disclose information if required by law, to enforce our Terms, to protect the
+      rights, safety, or property of Trader Acelerator or others, or in connection with a
+      business transfer (such as a merger or acquisition).
+    </p>
+  </div>
+
+  <!-- SECTION 8 -->
+  <div class="section" id="s8">
+    <h2><span class="sec-num">8.</span> Data Retention</h2>
+    <p>
+      We retain your account information for as long as your account is active and as needed to
+      provide the Service. We keep certain records (such as billing/order records and security
+      or audit logs) for longer where necessary to comply with legal, accounting, or
+      fraud-prevention obligations. When you delete your account, we delete or anonymize your
+      personal information within a reasonable period, except where retention is required by
+      law or for the establishment or defense of legal claims. Public content you posted may
+      remain visible unless you remove it or request its removal.
+    </p>
+  </div>
+
+  <!-- SECTION 9 -->
+  <div class="section" id="s9">
+    <h2><span class="sec-num">9.</span> Data Security</h2>
+    <p>
+      We use reasonable technical and organizational measures to protect your information,
+      including hashing of passwords, cryptographically signed authentication cookies,
+      transport encryption (HTTPS), access controls, and operational logging of sensitive
+      events. However, no method of transmission or storage is completely secure, and we cannot
+      guarantee absolute security. You are responsible for keeping your account credentials
+      confidential and for notifying us of any suspected unauthorized access.
+    </p>
+  </div>
+
+  <!-- SECTION 10 -->
+  <div class="section" id="s10">
+    <h2><span class="sec-num">10.</span> Your Privacy Rights</h2>
+    <p>
+      Depending on your jurisdiction, you may have the right to access, correct, update, or
+      delete your personal information; to object to or restrict certain processing; to
+      withdraw consent (for example, for a published testimonial); and to request a portable
+      copy of the information you provided. Where the EU/UK GDPR applies, you also have the
+      right to lodge a complaint with your local data-protection authority.
+    </p>
+    <p>
+      <strong>California residents:</strong> we do not sell or "share" personal information as
+      those terms are defined under the CCPA/CPRA, and we will not discriminate against you for
+      exercising your rights.
+    </p>
+    <p>
+      To exercise any of these rights, contact us using the details in Section 15. We may need
+      to verify your identity before acting on your request.
+    </p>
+  </div>
+
+  <!-- SECTION 11 -->
+  <div class="section" id="s11">
+    <h2><span class="sec-num">11.</span> International Data Transfers</h2>
+    <p>
+      Trader Acelerator is operated from, and relies on service providers located in, various
+      countries, which may include the United States, the European Union, and others. If you
+      access the Service from outside those locations, your information may be transferred to
+      and processed in countries whose data-protection laws differ from those of your country.
+      Where required, we take steps to ensure such transfers are subject to appropriate
+      safeguards.
+    </p>
+  </div>
+
+  <!-- SECTION 12 -->
+  <div class="section" id="s12">
+    <h2><span class="sec-num">12.</span> Children's Privacy</h2>
+    <p>
+      The Service is intended solely for users who are at least <strong>18 years of age</strong>.
+      We do not knowingly collect personal information from anyone under 18. If we learn that we
+      have collected information from a person under 18, we will delete it. If you believe a
+      minor has provided us information, please contact us.
+    </p>
+  </div>
+
+  <!-- SECTION 13 -->
+  <div class="section" id="s13">
+    <h2><span class="sec-num">13.</span> Third-Party Links</h2>
+    <p>
+      The Service may contain links to third-party websites or resources. We are not
+      responsible for the privacy practices or content of those third parties. We encourage you
+      to review the privacy policies of any site you visit.
+    </p>
+  </div>
+
+  <!-- SECTION 14 -->
+  <div class="section" id="s14">
+    <h2><span class="sec-num">14.</span> Changes to This Policy</h2>
+    <p>
+      We may update this Privacy Policy from time to time. When we make material changes, we
+      will update the "Last updated" date above and, where appropriate, notify you by email or
+      an in-platform notice. Your continued use of the Service after the changes take effect
+      constitutes your acceptance of the updated Policy.
+    </p>
+  </div>
+
+  <!-- SECTION 15 -->
+  <div class="section" id="s15">
+    <h2><span class="sec-num">15.</span> Contact</h2>
+    <p>
+      For privacy questions, requests, or to exercise your rights, contact us at:
+    </p>
+    <p>
+      <strong>Trader Acelerator</strong><br />
+      Email: <a href="mailto:support@traderacelerator.com">support@traderacelerator.com</a>
+    </p>
+    <p style="font-size:13px; color:var(--muted);">
+      Please include your registered email address and a description of your request so we can
+      respond efficiently.
+    </p>
+  </div>
+
+  <div class="terms-footer">
+    &copy; 2026 Trader Acelerator. All rights reserved. &nbsp;|&nbsp;
+    <a href="/terms">Terms &amp; Conditions</a> &nbsp;|&nbsp;
+    <a href="/app">Back to app</a> &nbsp;|&nbsp;
+    <a href="/contact">Contact &amp; Support</a>
+  </div>
+
+</div>
+</body>
+</html>
