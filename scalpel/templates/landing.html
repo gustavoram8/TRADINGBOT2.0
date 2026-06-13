@@ -729,6 +729,13 @@
       font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
       color: var(--subtle); opacity: .7;
     }
+    .foot-links { margin-top: 10px; }
+    .foot-links a {
+      color: var(--subtle); text-decoration: none; letter-spacing: .08em;
+      text-transform: uppercase; font-size: 10px;
+    }
+    .foot-links a:hover { text-decoration: underline; }
+    .foot-links .sep { margin: 0 8px; opacity: .6; }
 
     /* ── SCROLL REVEAL ── */
     .rv { opacity: 0; transform: translateY(24px) scale(.985); transition: opacity .6s ease, transform .6s ease; }
@@ -1400,6 +1407,11 @@
 
   <footer class="foot">
     <p id="legal-note">Trader Acelerator &middot; For educational purposes only &middot; Not financial advice</p>
+    <p class="foot-links">
+      <a href="/terms">Terms &amp; Conditions</a>
+      <span class="sep">&middot;</span>
+      <a href="/privacy">Privacy Policy</a>
+    </p>
   </footer>
 
   <script>
