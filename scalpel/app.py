@@ -4294,6 +4294,16 @@ def testimonial_submit():
         return jsonify({'ok': True})
     if rating < 1 or rating > 5:
         return jsonify({'error': 'invalid_rating'}), 400
+    # Anti-farm: 'testimonial' XP is exempt from the daily master cap, so without
+    # a server-side cooldown a user could POST this endpoint repeatedly for
+    # unlimited XP (and spam the table). Enforce the same ~30-day window the
+    # prompt uses, on the server, keyed to the user's last real testimonial.
+    recent = (Testimonial.query.filter_by(user_id=current_user.id)
+              .order_by(Testimonial.created_at.desc()).first())
+    if recent and (datetime.now(timezone.utc) - _aware(recent.created_at)).days < 30:
+        current_user.last_review_prompt_at = datetime.now(timezone.utc)
+        db.session.commit()
+        return jsonify({'ok': True, 'throttled': True})
     text = (data.get('text') or '').strip()[:500]
     consent = bool(data.get('consent'))
     published = rating >= 4 and consent and bool(text)
