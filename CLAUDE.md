@@ -3,6 +3,52 @@
 
 ---
 
+> **📌 EN DISEÑO (2026-06-13) — SISTEMA DE XP / RANGOS ("hacer más vivo el sitio")**
+>
+> Contexto: discusión sobre ganchos de retención (idea original mencionada por el usuario como
+> sugerida por "Fable" en otra sesión) — el sitio tiene mucha amplitud pero pocas razones para
+> volver al día siguiente. Ya implementado: testimonials + ruleta del daily challenge. Siguiente
+> en la cola: **sistema de XP / Rangos** + **reloj de Kill Zones en vivo + calendario económico**
+> (este último en stand-by hasta terminar el de rangos).
+>
+> **Decisiones tomadas hasta ahora (sistema de Rangos):**
+> - **8 rangos**, nombres con temática de trading — el usuario prefirió la opción con sabor
+>   ICT/Smart Money Concepts: Retail Trader → Liquidity Seeker → Structure Reader → Order Flow
+>   Analyst → Smart Money Apprentice → Liquidity Hunter → Institutional Trader → Legend/Apex
+>   Predator (nombre final del rango 8 pendiente de confirmar).
+> - **Multiplicador de XP por plan**: Free ×1, Standard ×2, Premium ×4 ("inercia": premium sube
+>   muchísimo más rápido).
+> - **Recompensas SIN dinero** (para no quemar margen — la ruleta sigue siendo el único lugar
+>   con descuentos):
+>   1. Badge de rango visible junto al username — en el foro (posts/comentarios), en
+>      testimonials/landing, Y en el menú inicial al lado del badge de plan (Free/Standard/Premium).
+>   2. **Camo exclusivo por rango** (8 camos nuevos).
+>   3. Acceso beta prioritario a features nuevas para los rangos más altos.
+>   4. Certificado PDF descargable al subir de rango (reusa el generador de PDFs existente).
+> - **Anti-abuso (clave — el usuario señaló que casi todo es "burlable")**:
+>   - Quiz: XP solo la PRIMERA vez que se acierta cada `question_id` (no repetible infinito).
+>   - Foro: tope diario de XP por categoría + reversión de XP si la moderación IA marca el
+>     post/comentario como spam dentro de 24h.
+>   - Reacciones recibidas: tope diario muy bajo (~5 XP/día).
+>   - Análisis IA / Daily Challenge / Testimonial: ya protegidos por los límites de plan
+>     existentes (no necesitan nada extra).
+>   - **Tope maestro de XP total por día** según plan (ej. Free 30/día, Standard 80/día,
+>     Premium 200/día) — el verdadero candado: farmear una sola fuente no acelera nada, solo
+>     el uso variado y real llena el tope.
+>
+> **🔴 TAREA PRIORITARIA A FUTURO — DISEÑAR LOS CAMOS UNO POR UNO CON EL USUARIO:**
+> Hay que diseñar EN CONJUNTO (usuario + Claude) los camos: los 8 de recompensa por rango,
+> + los que trae cada plan (Standard ya anuncia "1 Camo included", Premium "3 camos"), + los
+> que estarán disponibles para comprar en la tienda. Hoy solo existen 3 placeholders (Navy
+> Trader, Desert Ops, Forest Recon) en `camos.html`. NO diseñar esto de forma autónoma —
+> esperar a que el usuario quiera sentarse a iterar el diseño visual de cada uno.
+>
+> **Siguiente paso técnico** (aún no iniciado): modelo `XPLog`/campo `User.xp` + `User.rank`,
+> helper `add_xp(user, source, amount)` con los topes de arriba, endpoint de progreso/UI del
+> badge, backfill de XP para usuarios existentes.
+
+---
+
 > **🚨 MÁS URGENTE — PENDIENTE: CONECTAR CUENTA BANCARIA (pago por transferencia, NO Binance)**
 >
 > El usuario decidió que los pagos serán por **transferencia bancaria en USD a la cuenta
