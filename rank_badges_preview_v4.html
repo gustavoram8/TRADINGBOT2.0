@@ -27,6 +27,14 @@
   .avatar{width:30px;height:30px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;font-weight:700;font-size:13px;color:#fff;background:linear-gradient(135deg,#566,#344)}
   /* ── rank-tag (square, colored per rank in JS) ── */
   .rank-tag{font-weight:600;font-size:9px;letter-spacing:.02em;line-height:1;padding:2px 5px;border-radius:3px;white-space:nowrap;border:1px solid transparent}
+  /* Trading Legend (rank 8) lightning strike — forum labels only */
+  .rank-tag.legend{position:relative;overflow:visible;animation:legendShock 10s ease-in-out infinite}
+  .rank-tag.legend::before{content:'';position:absolute;left:50%;top:-15px;width:13px;height:17px;margin-left:-6.5px;pointer-events:none;opacity:0;background:no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M13 2 L4 14 H11 L9 22 L20 9 H12 Z' fill='%23d6ecff' stroke='%23ffffff' stroke-width='1'/%3E%3C/svg%3E");filter:drop-shadow(0 0 3px #9fd4ff);animation:legendBolt 10s ease-in-out infinite}
+  .rank-tag.legend::after{content:'';position:absolute;inset:-2px;border-radius:3px;pointer-events:none;opacity:0;box-shadow:0 0 7px 1px rgba(150,210,255,.85),inset 0 0 5px rgba(195,230,255,.7);animation:legendArc 10s ease-in-out infinite}
+  .rank-tag.legend.paused,.rank-tag.legend.paused::before,.rank-tag.legend.paused::after{animation-play-state:paused!important}
+  @keyframes legendBolt{0%{opacity:0;transform:translateY(-9px) scaleY(.55)}2%{opacity:1;transform:translateY(0) scaleY(1)}4%{opacity:.25}5%{opacity:1}7%{opacity:0}100%{opacity:0}}
+  @keyframes legendArc{0%{opacity:0}3%{opacity:1}6%{opacity:.35}9%{opacity:.95}13%{opacity:.4}18%{opacity:.9}24%{opacity:.45}29%{opacity:.85}30%,100%{opacity:0}}
+  @keyframes legendShock{0%,30%,100%{transform:translate(0,0);text-shadow:none}3%{transform:translate(.6px,-.4px);text-shadow:0 0 4px #cfe9ff,0 0 8px #7fc4ff}6%{transform:translate(-.5px,.5px);text-shadow:0 0 2px #bfe0ff}9%{transform:translate(.5px,.3px);text-shadow:0 0 5px #cfe9ff,0 0 9px #7fc4ff}13%{transform:translate(-.6px,-.3px);text-shadow:0 0 2px #bfe0ff}18%{transform:translate(.4px,.5px);text-shadow:0 0 4px #cfe9ff,0 0 8px #7fc4ff}24%{transform:translate(-.4px,-.4px);text-shadow:0 0 2px #bfe0ff}29%{transform:translate(.2px,.2px);text-shadow:0 0 3px #cfe9ff}}
 
   /* ===== medal component (copied verbatim from index.html) ===== */
   .medal{position:relative;display:inline-grid;place-items:center;flex:0 0 auto;vertical-align:middle;width:var(--sz,18px);height:var(--sz,18px)}
@@ -165,7 +173,7 @@
     var a=document.createElement('div');a.className='post-author';
     a.appendChild(renderRankBadge(j,17));
     a.appendChild(document.createTextNode(sampleNames[j-1]));
-    var tag=document.createElement('span');tag.className='rank-tag';tag.textContent=NAMES[j-1];styleRankTag(tag,j);a.appendChild(tag);
+    var tag=document.createElement('span');tag.className='rank-tag';tag.textContent=NAMES[j-1];styleRankTag(tag,j);if(j===8)tag.classList.add('legend');a.appendChild(tag);
     row.appendChild(a);
     fr.appendChild(row);
   }
