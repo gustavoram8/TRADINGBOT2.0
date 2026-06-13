@@ -18890,6 +18890,20 @@
         stopTimer();
         const correct = btn.dataset.ok==='true';
         if(correct) qState.score++;
+        // Award XP server-side for a first-time-correct beginner/intermediate/advanced
+        // question (premium only — dedup + daily cap enforced in the backend).
+        if(correct && ['beginner','intermediate','advanced'].includes(q.lv)){
+          const U = window.SCALPEL_USER;
+          if(U && (U.plan==='premium' || U.isAdmin)){
+            const qid = String(QUESTION_BANK.indexOf(q));
+            fetch('/api/quiz/answer', {
+              method:'POST', headers:{'Content-Type':'application/json'},
+              body: JSON.stringify({ question_id: qid, level: q.lv })
+            }).then(r=>r.ok?r.json():null).then(data=>{
+              if(data && data.awarded && U){ U.xp = data.xp; U.rank = data.rank; }
+            }).catch(()=>{});
+          }
+        }
         qState.answers.push({q:q.q, topic:q.topic, correct, chosen:btn.textContent});
         document.querySelectorAll('.quiz-opt').forEach(b=>{
           b.disabled=true;
