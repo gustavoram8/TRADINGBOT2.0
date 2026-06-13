@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Trading Legend — Preview del efecto de electrocución</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;background:#0d0f16;color:#e7ebf3;
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:30px;padding:48px 20px 80px}
+  h1{font-size:22px;font-weight:800;letter-spacing:-.01em}
+  .sub{font-size:13px;color:#9aa0b5;max-width:560px;text-align:center;line-height:1.6}
+  .panel{width:100%;max-width:620px;border-radius:16px;padding:34px;display:flex;
+    flex-direction:column;align-items:center;gap:26px;border:1px solid rgba(255,255,255,.08)}
+  .panel.dark{background:#13161f}
+  .panel.light{background:#f4f6fb;color:#15171f;border-color:#e2e6ee}
+  .panel .ptitle{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.6}
+  .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center}
+  .zoom{transform:scale(4.2);transform-origin:center;margin:40px 0}
+  .controls{display:flex;gap:12px;align-items:center;font-size:13px}
+  button{background:#222634;color:#e7ebf3;border:1px solid rgba(255,255,255,.14);
+    border-radius:8px;padding:7px 14px;font-size:13px;cursor:pointer}
+  button:hover{background:#2c3142}
+  .note{font-size:11.5px;color:#7e8499;text-align:center}
+
+  /* ── Avatar/author mock so it reads like the forum ── */
+  .mock-author{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:13px}
+  .mock-dot{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#f3c768,#a6781f);flex:none}
+
+  /* ════════ COPIED 1:1 FROM index.html (Trading Legend electrocution) ════════ */
+  .rank-tag{font-weight:600;font-size:9px;letter-spacing:.02em;line-height:1;
+    padding:2px 5px;border-radius:3px;border:1px solid;display:inline-block;white-space:nowrap}
+  .rank-tag.legend{position:relative;overflow:visible;color:#f3c768;
+    background:rgba(243,199,104,.13);border-color:rgba(243,199,104,.34);
+    animation:legendShock 10s ease-in-out infinite}
+  .legend-fx{position:absolute;inset:-4px;pointer-events:none;overflow:visible;z-index:2}
+  .legend-fx svg{width:100%;height:100%;overflow:visible;
+    filter:drop-shadow(0 0 2px #cfeaff) drop-shadow(0 0 4px #7fc4ff)}
+  .legend-fx path{fill:none;stroke-linecap:round;stroke-linejoin:round;
+    stroke:#f2f9ff;stroke-width:1.1;opacity:0}
+  .legend-fx .fa{animation:legendFa 10s linear infinite}
+  .legend-fx .fb{animation:legendFb 10s linear infinite}
+  .rank-tag.legend::after{content:'';position:absolute;inset:-2px;border-radius:3px;
+    pointer-events:none;opacity:0;
+    box-shadow:0 0 7px 1px rgba(150,210,255,.85),inset 0 0 5px rgba(195,230,255,.7);
+    animation:legendArc 10s ease-in-out infinite}
+  @keyframes legendFa{
+    0%,1%{opacity:0}2%{opacity:1}4%{opacity:.15}6%{opacity:1}
+    9%{opacity:.25}12%{opacity:.9}16%{opacity:.2}19%{opacity:1}23%{opacity:.3}27%{opacity:.85}
+    30%,100%{opacity:0}}
+  @keyframes legendFb{
+    0%,2%{opacity:0}3%{opacity:.9}5%{opacity:.2}8%{opacity:1}
+    11%{opacity:.25}14%{opacity:.9}18%{opacity:.2}21%{opacity:.95}25%{opacity:.3}28%{opacity:.8}
+    30%,100%{opacity:0}}
+  @keyframes legendArc{
+    0%{opacity:0}3%{opacity:1}6%{opacity:.35}9%{opacity:.95}
+    13%{opacity:.4}18%{opacity:.9}24%{opacity:.45}29%{opacity:.85}30%,100%{opacity:0}}
+  @keyframes legendShock{
+    0%,30%,100%{transform:translate(0,0);text-shadow:none}
+    3%{transform:translate(.6px,-.4px);text-shadow:0 0 4px #cfe9ff,0 0 8px #7fc4ff}
+    6%{transform:translate(-.5px,.5px);text-shadow:0 0 2px #bfe0ff}
+    9%{transform:translate(.5px,.3px);text-shadow:0 0 5px #cfe9ff,0 0 9px #7fc4ff}
+    13%{transform:translate(-.6px,-.3px);text-shadow:0 0 2px #bfe0ff}
+    18%{transform:translate(.4px,.5px);text-shadow:0 0 4px #cfe9ff,0 0 8px #7fc4ff}
+    24%{transform:translate(-.4px,-.4px);text-shadow:0 0 2px #bfe0ff}
+    29%{transform:translate(.2px,.2px);text-shadow:0 0 3px #cfe9ff}}
+  /* ═══════════════════════════════════════════════════════════════════════════ */
+</style>
+</head>
+<body>
+  <h1>⚡ Trading Legend — nuevo efecto</h1>
+  <p class="sub">Así se ve el badge de rango 8 en el foro. Ya no tiene el rayito que caía:
+    ahora son arcos eléctricos vectoriales que crepitan y se ramifican (electrocución).
+    Cada ~10s hace una descarga de ~3s y descansa. Mira la versión ampliada para el detalle.</p>
+
+  <div class="controls">
+    <button id="zap">⚡ Disparar descarga ahora</button>
+    <span class="note">(o espera el ciclo automático)</span>
+  </div>
+
+  <!-- DARK -->
+  <div class="panel dark" id="panelDark">
+    <div class="ptitle">Tamaño real · fondo oscuro (foro)</div>
+    <div class="row">
+      <span class="mock-author"><span class="mock-dot"></span>maurotradesve</span>
+      <span class="rank-tag legend" data-legend>Trading Legend</span>
+    </div>
+    <div class="ptitle" style="margin-top:18px">Ampliado ×4</div>
+    <div class="zoom"><span class="rank-tag legend" data-legend>Trading Legend</span></div>
+  </div>
+
+  <!-- LIGHT -->
+  <div class="panel light">
+    <div class="ptitle">Tamaño real · fondo claro</div>
+    <div class="row">
+      <span class="mock-author"><span class="mock-dot"></span>maurotradesve</span>
+      <span class="rank-tag legend" data-legend>Trading Legend</span>
+    </div>
+  </div>
+
+<script>
+  // Same SVG injection used by styleRankTag() in index.html
+  function injectFx(el){
+    if(el.querySelector('.legend-fx')) return;
+    var fx=document.createElement('span');
+    fx.className='legend-fx'; fx.setAttribute('aria-hidden','true');
+    fx.innerHTML='<svg viewBox="0 0 120 28" preserveAspectRatio="none">'+
+      '<path class="fa" d="M0 16 L16 9 L28 19 L42 8 L56 17 L70 7 L84 18 L98 10 L120 15 '+
+        'M42 8 L46 1 M70 7 L74 0 M28 19 L24 28 M84 18 L88 28"/>'+
+      '<path class="fb" d="M0 13 L14 20 L26 8 L40 18 L54 9 L68 19 L82 8 L96 18 L120 12 '+
+        'M54 9 L58 2 M82 8 L86 1 M40 18 L36 27 M96 18 L100 27"/>'+
+      '</svg>';
+    el.appendChild(fx);
+  }
+  document.querySelectorAll('[data-legend]').forEach(injectFx);
+
+  // Manual "fire now": restart the animations by reflowing
+  document.getElementById('zap').addEventListener('click', function(){
+    document.querySelectorAll('.rank-tag.legend').forEach(function(el){
+      el.style.animation='none';
+      el.querySelectorAll('.fa,.fb').forEach(function(p){p.style.animation='none';});
+      void el.offsetWidth; // reflow
+      el.style.animation='';
+      el.querySelectorAll('.fa,.fb').forEach(function(p){p.style.animation='';});
+    });
+  });
+</script>
+</body>
+</html>
