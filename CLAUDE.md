@@ -588,6 +588,56 @@
 
 ---
 
+> **💰 CONTEXTO — COSTOS REALES DE LA API DE IA (revisión 2026-06-13)**
+>
+> **Modelo usado:** `gpt-4o` (GPT-4o), vía `OpenAI` SDK apuntando hoy al endpoint gratuito de
+> GitHub Models (`https://models.inference.ai.azure.com`, `GITHUB_TOKEN`). El plan es migrar a
+> la **API paga de OpenAI** (mismo modelo `gpt-4o`, mismo prompt/lógica — igual de certero, sin
+> los límites de rate del tier gratuito). Si el usuario le dice a alguien qué IA usa: **"OpenAI
+> API, GPT-4o"** es correcto — eso sí, en el SITIO PÚBLICO sigue la regla de confidencialidad
+> de abajo ("our proprietary AI engine", nunca mencionar GPT-4o/OpenAI en el front-end).
+>
+> **⚠️ Corrección importante sobre qué consume tokens (el PDF `Scalpel_Costos_Operativos_IA.pdf`
+> contaba solo 1 llamada y el Scout, que está DESACTIVADO → $0):**
+>
+> El análisis de un screenshot dispara **DOS llamadas Vision a GPT-4o**, no una:
+> 1. `/validate` (`app.py`) — pre-chequeo: ¿se ven entry/exit/SL-TP en la imagen? `max_tokens=150`.
+> 2. `/analyze` (`app.py`) — la llamada principal: imagen + `SYSTEM_PROMPT` ICT + datos del
+>    formulario (instrument, direction, session, result, HTF bias, approach, confluences,
+>    **notes/tesis del trader**), `max_tokens=900`.
+>
+> **¿Por qué el formulario consume tokens si "solo suben fotos"?** Porque las `notes` (tesis del
+> trader) y los demás campos se mandan a la IA junto con la imagen para que **contraste lo que
+> el trader dice que vio contra lo que realmente está en el gráfico** (no es un análisis
+> genérico de la imagen sola). El costo del texto del formulario es marginal (~$0.001-0.002);
+> lo caro es la imagen + el output.
+>
+> Aparte, **moderación del Foro** (solo premium): `moderate_forum_text` (texto de posts/
+> comentarios, `max_tokens=120`, centavos) y `moderate_forum_image` (Vision, solo si el post
+> lleva imagen).
+>
+> **Costo real por análisis (tarifas GPT-4o $2.50/1M input · $10/1M output):**
+> | Llamada | Input (~tok) | Output (~tok) | Costo |
+> |---|---|---|---|
+> | `/validate` | ~1,400 | ~150 | ~$0.005 |
+> | `/analyze` | ~2,600 | ~900 | ~$0.016 |
+> | **Total por análisis** | | | **≈ $0.02** |
+>
+> **Proyección con 500 usuarios** (mix supuesto: Free 350 · Standard 100 · Premium 50 →
+> ingresos $2,500/mes con Standard $10 + Premium $30). Límites: Free 1/semana (~4.3/mes) ·
+> Standard 1/24h (~30/mes) · Premium 5/24h (~150/mes):
+>
+> | Escenario | Free (350) | Standard (100) | Premium (50) | Costo IA total | Margen sobre $2,500 |
+> |---|---|---|---|---|---|
+> | **Peor caso** (100% del límite) | 1,505 análisis → $30 | 3,000 → $60 | 7,500 → $150 | **≈ $240/mes** | ~90% |
+> | **Realista** (~30-40% del límite) | ~700 → $14 | ~1,200 → $24 | ~2,000 → $40 | **≈ $80/mes** (+ ~$3 moderación) | ~97% |
+>
+> Conclusión: con 500 usuarios, la API de OpenAI cuesta entre **~$80 y ~$240/mes** según uso real,
+> contra **$2,500/mes** de ingresos → margen de IA ~90-97%. Infraestructura (VPS+dominio) es
+> aparte (~$7-13/mes), no es costo de OpenAI.
+
+---
+
 ## Stack técnico
 
 - **Backend:** Flask + SQLAlchemy + SQLite (`scalpel.db`)
