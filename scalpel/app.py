@@ -4781,12 +4781,15 @@ def preflight_create_check():
     db.session.add(check)
     db.session.commit()
     # XP: a one-time bonus for the very first logged check ever, then +5/check
-    # capped at the first 3/day (function itself stays unlimited).
-    if not current_user.first_preflight_xp:
-        current_user.first_preflight_xp = True
-        db.session.commit()
-        add_xp(current_user, 'preflight_first', ref='first')
-    add_xp(current_user, 'preflight_check')
+    # capped at the first 3/day (function itself stays unlimited). Pre-Flight XP
+    # is a premium-only source — this endpoint is only @login_required, so gate
+    # the reward here so free/standard can't farm it by calling the API directly.
+    if is_premium():
+        if not current_user.first_preflight_xp:
+            current_user.first_preflight_xp = True
+            db.session.commit()
+            add_xp(current_user, 'preflight_first', ref='first')
+        add_xp(current_user, 'preflight_check')
     return jsonify({'ok': True, 'check': serialize_check(check)})
 
 

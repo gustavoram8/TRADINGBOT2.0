@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Rank badges + labels — preview v4</title>
+<style>
+  :root{ --bg:#0e1118; --card:#161b25; --text:#e8edf6; --muted:#8b94a7; --border:rgba(255,255,255,.08); }
+  body.light{ --bg:#f4f6fb; --card:#ffffff; --text:#1d2330; --muted:#5a6473; --border:rgba(0,0,0,.10); }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);transition:background .3s,color .3s}
+  .wrap{max-width:980px;margin:0 auto;padding:28px 20px 60px}
+  h1{font-size:22px;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:22px}
+  .toggle{position:fixed;top:16px;right:16px;z-index:10;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 14px;font-weight:600;cursor:pointer}
+  .panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:22px}
+  .panel h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 16px}
+  /* big medals grid */
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+  .cell{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+  .cell .nm{font-size:12px;font-weight:700}
+  .cell .xp{font-size:11px;color:var(--muted)}
+  /* forum-style rows */
+  .frow{display:flex;align-items:center;gap:8px;padding:10px 6px;border-bottom:1px solid var(--border)}
+  .frow:last-child{border-bottom:none}
+  .post-author{font-weight:700;font-size:13.5px;display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap}
+  .avatar{width:30px;height:30px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;font-weight:700;font-size:13px;color:#fff;background:linear-gradient(135deg,#566,#344)}
+  /* ── rank-tag (square, colored per rank in JS) ── */
+  .rank-tag{font-weight:600;font-size:9px;letter-spacing:.02em;line-height:1;padding:2px 5px;border-radius:3px;white-space:nowrap;border:1px solid transparent}
+
+  /* ===== medal component (copied verbatim from index.html) ===== */
+  .medal{position:relative;display:inline-grid;place-items:center;flex:0 0 auto;vertical-align:middle;width:var(--sz,18px);height:var(--sz,18px)}
+  .medal svg{width:100%;height:100%;overflow:visible;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))}
+  .medal .em{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .medal.paused *{animation-play-state:paused!important}
+  .a2sheen{transform:translateX(-46px);animation:mA2 6s ease-in-out infinite}
+  @keyframes mA2{0%,72%{transform:translateX(-46px)}100%{transform:translateX(46px)}}
+  .a3line{stroke-dasharray:100;stroke-dashoffset:100;animation:mA3 3.4s ease-in-out infinite}
+  @keyframes mA3{0%{stroke-dashoffset:100}45%,100%{stroke-dashoffset:0}}
+  .a3dot{transform-box:fill-box;transform-origin:center;animation:mA3d 3.4s ease-in-out infinite}
+  @keyframes mA3d{0%,40%{opacity:0;transform:scale(.4)}55%{opacity:1;transform:scale(1.3)}80%,100%{opacity:.85;transform:scale(1)}}
+  .a4b{transform-box:fill-box;transform-origin:left center;animation:mA4 2.8s ease-in-out infinite}
+  .a4b2{animation-delay:.22s}.a4b3{animation-delay:.44s}
+  @keyframes mA4{0%{transform:scaleX(.15);opacity:.45}35%{transform:scaleX(1);opacity:1}80%,100%{transform:scaleX(1);opacity:1}}
+  .a5dot{offset-path:path('M3 15c3 0 3-7 6-7s3 7 6 7 3-7 6-7');offset-rotate:0;animation:mA5 2.6s linear infinite}
+  @keyframes mA5{to{offset-distance:100%}}
+  .a6tick{stroke-dasharray:4;stroke-dashoffset:0;animation:mA6 2.4s ease-in-out infinite}
+  @keyframes mA6{0%,100%{stroke-dashoffset:0}40%,60%{stroke-dashoffset:3.6}}
+  .a6flash{transform-box:fill-box;transform-origin:center;opacity:0;animation:mA6f 2.4s ease-out infinite}
+  @keyframes mA6f{0%,55%{opacity:0;transform:scale(.5)}62%{opacity:.7;transform:scale(.9)}85%,100%{opacity:0;transform:scale(1.3)}}
+  .medal.r7 svg{animation:mA7 3.4s ease-in-out infinite}
+  @keyframes mA7{0%,100%{filter:drop-shadow(0 0 2px rgba(243,199,104,.35)) drop-shadow(0 1px 2px rgba(0,0,0,.45))}50%{filter:drop-shadow(0 0 7px rgba(243,199,104,.8)) drop-shadow(0 1px 2px rgba(0,0,0,.45))}}
+  .medal.r8 svg{animation:mA8 4s ease-in-out infinite}
+  @keyframes mA8{0%,100%{filter:drop-shadow(0 0 4px rgba(243,199,104,.55)) drop-shadow(0 1px 2px rgba(0,0,0,.45))}50%{filter:drop-shadow(0 0 10px rgba(255,230,140,.95)) drop-shadow(0 1px 2px rgba(0,0,0,.45))}}
+  .a8prism{transform:translateX(-50px);animation:mA8s 3.6s ease-in-out infinite}
+  @keyframes mA8s{0%,60%{transform:translateX(-50px)}100%{transform:translateX(50px)}}
+  .a8spark{transform-box:fill-box;transform-origin:center;animation:mA8p 1.8s ease-in-out infinite}
+  .a8spark.s2{animation-delay:.6s}.a8spark.s3{animation-delay:1.1s}
+  @keyframes mA8p{0%,100%{opacity:0;transform:scale(.3)}50%{opacity:1;transform:scale(1)}}
+</style>
+</head>
+<body>
+<button class="toggle" id="toggle">☀️ / 🌙 Toggle theme</button>
+<div class="wrap">
+  <h1>Rank badges + labels — preview v4</h1>
+  <div class="sub">Las 8 medallas (animadas) y la nueva mini-label cuadrada coloreada por rango, tal como se ven en el foro. Usa el botón de arriba para alternar dark / light.</div>
+
+  <div class="panel">
+    <h2>Medallas (tamaño grande)</h2>
+    <div class="grid" id="grid-big"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Como se ve en el foro — medalla + nombre + label de rango</h2>
+    <div id="forum-rows"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var UID=0;
+  var NAMES=['Paper Trader','Retail Trader','Chart Technician','Liquidity Hunter','Swing Strategist','Order Flow Sniper','Market Maker','Trading Legend'];
+  var THR=[0,200,600,1400,2800,5000,8000,12000];
+  var HEX={big:'M28,11 L72,11 L93,50 L72,89 L28,89 L7,50 Z',sm:'M33,21 L67,21 L83.5,50 L67,79 L33,79 L16.5,50 Z'};
+  var SHIELD={big:'M50,7 L85,18 L85,50 C85,72 69,86 50,93 C31,86 15,72 15,50 L15,18 Z',sm:'M50,18 L74,26 L74,50 C74,66 62,77 50,82 C38,77 26,66 26,50 L26,26 Z'};
+  var OCT={big:'M33,9 L67,9 L91,33 L91,67 L67,91 L33,91 L9,67 L9,33 Z',sm:'M37,21 L63,21 L79,37 L79,63 L63,79 L37,79 L21,63 L21,37 Z'};
+  var SHAPES={1:HEX,2:HEX,3:HEX,4:SHIELD,5:OCT,6:HEX,7:HEX,8:HEX};
+  var D={
+   1:{rim:['#5a6076','#3d4258','#262a3a'],face:['#343a4d','#1d2130'],edge:'#1b1f2c',ink:'#9aa0ba'},
+   2:{rim:['#c98f5e','#9a6336','#5e3a1d'],face:['#7a4f2e','#3f2614'],edge:'#321d0e',ink:'#f3d3ab'},
+   3:{rim:['#d6dde9','#9aa7bd','#5d6a82'],face:['#7c8aa3','#3f4a60'],edge:'#2a3142',ink:'#eef3fb'},
+   4:{rim:['#7db0ff','#4f86e8','#2c5bb0'],face:['#2f5aa0','#1a3163'],edge:'#13234a',ink:'#dce9ff'},
+   5:{rim:['#6fe0d2','#34a5b8','#1d6a86'],face:['#1f6f86','#123f55'],edge:'#0c2c3c',ink:'#d8fbff'},
+   6:{rim:['#c6b8ff','#8f7fe0','#5a4ca0'],face:['#5a4ca0','#2f2a55'],edge:'#1f1c3a',ink:'#ffe6b0'},
+   7:{rim:['#ffe79a','#e0a83d','#9a6b14'],face:['#9a6b1e','#5a3d0f'],edge:'#3a2708',ink:'#fff2c4'},
+   8:{rim:['#fff6da','#f3c768','#caa23a'],face:['#a6781f','#5e400f'],edge:'#3a2708',ink:'#fff7e0'}
+  };
+  function emblem(i){
+    switch(i){
+     case 1:return '<path class="em" d="M6 3h8l4 4v14H6z"/><path class="em" d="M14 3v4h4"/><line class="em" x1="9" y1="12" x2="15" y2="12"/><line class="em" x1="9" y1="15.5" x2="15" y2="15.5"/>';
+     case 2:return '<line class="em" x1="12" y1="3" x2="12" y2="7"/><line class="em" x1="12" y1="17" x2="12" y2="21"/><rect class="em" x="9" y="7" width="6" height="10" rx="1"/>';
+     case 3:return '<polyline class="em a3line" pathLength="100" points="3 16 9 10 13 13 21 5"/><polyline class="em" points="16 5 21 5 21 10"/><circle class="a3dot" cx="21" cy="5" r="2" fill="currentColor"/>';
+     case 4:return '<line class="em a4b a4b1" x1="4" y1="7" x2="20" y2="7"/><line class="em a4b a4b2" x1="4" y1="12" x2="15" y2="12"/><line class="em a4b a4b3" x1="4" y1="17" x2="18" y2="17"/>';
+     case 5:return '<path class="em" d="M3 15c3 0 3-7 6-7s3 7 6 7 3-7 6-7"/><circle class="a5dot" r="1.7" fill="currentColor"/>';
+     case 6:return '<circle class="em" cx="12" cy="12" r="6.5"/><line class="em a6tick" x1="12" y1="2.5" x2="12" y2="5.5"/><line class="em a6tick" x1="12" y1="18.5" x2="12" y2="21.5"/><line class="em a6tick" x1="2.5" y1="12" x2="5.5" y2="12"/><line class="em a6tick" x1="18.5" y1="12" x2="21.5" y2="12"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle class="em a6flash" cx="12" cy="12" r="6.5" opacity="0"/>';
+     case 7:return '<line class="em" x1="4" y1="20" x2="20" y2="20"/><path class="em" d="M5 20V9l7-4 7 4v11"/><line class="em" x1="9" y1="20" x2="9" y2="13"/><line class="em" x1="12" y1="20" x2="12" y2="13"/><line class="em" x1="15" y1="20" x2="15" y2="13"/>';
+     case 8:return '<path class="em" d="M5 19h14"/><path class="em" d="M6 19c-1-5-2-8 1.5-11 1 2 1.5 3 1.5 3s1-2.5 3-4c2 1.5 3 4 3 4s.5-1 1.5-3C23 11 20 14 18 19"/>';
+    }
+    return '';
+  }
+  function pips(n,c){var s='';for(var k=0;k<n;k++){var x=50+(k-(n-1)/2)*9;s+='<path d="M'+x+' 80.5 l2.3 2.3 -2.3 2.3 -2.3 -2.3 Z" fill="'+c+'" stroke="rgba(0,0,0,.3)" stroke-width=".5"/>';}return s;}
+  function laurel(){var s='<g fill="none" stroke="url(#wr)" stroke-width="2.3" stroke-linecap="round"><path d="M50 96 C29 91 17 74 16 53"/><path d="M50 96 C71 91 83 74 84 53"/>';
+    for(var k=0;k<4;k++){s+='<path d="M'+(18+k)+' '+(57+k*7)+' q-6 -3 -8 -8 q6 0 8 8"/>';s+='<path d="M'+(82-k)+' '+(57+k*7)+' q6 -3 8 -8 q-6 0 -8 8"/>';}
+    return s+'</g>';}
+  function svgFor(i){
+    var d=D[i]||D[1], S=SHAPES[i]||HEX, u=++UID;
+    var orna = i>=6 ? laurel() : pips(i, d.rim[0]);
+    var sheen='', sparks='';
+    if(i===2) sheen='<g clip-path="url(#c'+u+')"><rect class="a2sheen" x="0" y="-10" width="26" height="120" fill="url(#sh'+u+')"/></g>';
+    if(i===8){ sheen='<g clip-path="url(#c'+u+')"><rect class="a8prism" x="0" y="-10" width="30" height="120" fill="url(#pr'+u+')"/></g>';
+      sparks='<g fill="#fff7e0"><path class="a8spark s1" d="M30 30 l1.2 2.6 2.6 1.2 -2.6 1.2 -1.2 2.6 -1.2 -2.6 -2.6 -1.2 2.6 -1.2 Z"/><path class="a8spark s2" d="M72 36 l1 2 2 1 -2 1 -1 2 -1 -2 -2 -1 2 -1 Z"/><path class="a8spark s3" d="M60 64 l1 2 2 1 -2 1 -1 2 -1 -2 -2 -1 2 -1 Z"/></g>'; }
+    return '<svg viewBox="0 0 100 100"><defs>'+
+      '<linearGradient id="rim'+u+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+d.rim[0]+'"/><stop offset=".5" stop-color="'+d.rim[1]+'"/><stop offset="1" stop-color="'+d.rim[2]+'"/></linearGradient>'+
+      '<radialGradient id="face'+u+'" cx=".38" cy=".30" r=".85"><stop offset="0" stop-color="'+d.face[0]+'"/><stop offset="1" stop-color="'+d.face[1]+'"/></radialGradient>'+
+      '<linearGradient id="wr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+d.rim[0]+'"/><stop offset="1" stop-color="'+d.rim[2]+'"/></linearGradient>'+
+      '<linearGradient id="sh'+u+'" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".45"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>'+
+      '<linearGradient id="pr'+u+'" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".4" stop-color="#aef" stop-opacity=".5"/><stop offset=".6" stop-color="#fcd" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>'+
+      '<clipPath id="c'+u+'"><path d="'+S.sm+'"/></clipPath></defs>'+
+      (i>=6?orna:'')+
+      '<path d="'+S.big+'" fill="url(#rim'+u+')" stroke="'+d.edge+'" stroke-width="2" stroke-linejoin="round"/>'+
+      '<path d="'+S.sm+'" fill="url(#face'+u+')" stroke="rgba(0,0,0,.3)" stroke-width="1" stroke-linejoin="round"/>'+
+      '<g transform="translate(26,23) scale(2)" stroke="'+d.ink+'" style="color:'+d.ink+'">'+emblem(i)+'</g>'+
+      sparks+
+      (i<6?orna:'')+
+      '</svg>';
+  }
+  function renderRankBadge(rank, sizePx){
+    rank=Math.max(1,Math.min(8,parseInt(rank,10)||1));
+    var el=document.createElement('span');
+    el.className='medal r'+rank;
+    el.style.setProperty('--sz',(sizePx||18)+'px');
+    el.title=NAMES[rank-1];
+    el.innerHTML=svgFor(rank);
+    return el;
+  }
+  var RANK_HEX=['#6b7290','#c98f5e','#8fa0bd','#5f8fe8','#34a5b8','#9f8fe8','#e0a83d','#edc25a'];
+  function _rgba(hex,a){var h=hex.replace('#','');if(h.length===3){h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];}var n=parseInt(h,16);return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';}
+  function styleRankTag(el,rank){var hex=RANK_HEX[Math.max(1,Math.min(8,parseInt(rank,10)||1))-1];el.style.color=hex;el.style.background=_rgba(hex,.13);el.style.borderColor=_rgba(hex,.34);}
+
+  // ── build big grid ──
+  var gb=document.getElementById('grid-big');
+  for(var i=1;i<=8;i++){
+    var cell=document.createElement('div');cell.className='cell';
+    cell.appendChild(renderRankBadge(i,64));
+    var nm=document.createElement('div');nm.className='nm';nm.textContent=i+'. '+NAMES[i-1];cell.appendChild(nm);
+    var xp=document.createElement('div');xp.className='xp';xp.textContent=THR[i-1].toLocaleString()+' XP';cell.appendChild(xp);
+    gb.appendChild(cell);
+  }
+  // ── build forum rows ──
+  var fr=document.getElementById('forum-rows');
+  var sampleNames=['paper_pete','retail_rita','chart_carlos','liq_hunter','swing_sam','flow_fiona','mm_marco','legend_lucia'];
+  for(var j=1;j<=8;j++){
+    var row=document.createElement('div');row.className='frow';
+    var av=document.createElement('div');av.className='avatar';av.textContent=sampleNames[j-1][0].toUpperCase();row.appendChild(av);
+    var a=document.createElement('div');a.className='post-author';
+    a.appendChild(renderRankBadge(j,17));
+    a.appendChild(document.createTextNode(sampleNames[j-1]));
+    var tag=document.createElement('span');tag.className='rank-tag';tag.textContent=NAMES[j-1];styleRankTag(tag,j);a.appendChild(tag);
+    row.appendChild(a);
+    fr.appendChild(row);
+  }
+  document.getElementById('toggle').addEventListener('click',function(){document.body.classList.toggle('light');});
+})();
+</script>
+</body>
+</html>
