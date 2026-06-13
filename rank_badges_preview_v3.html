@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Rank Medals v3 — formas + animación única por rango</title>
+<style>
+  :root{
+    --bg:#0c0e14; --surface:#13161f; --card:#181c28; --border:#252a3a; --border2:#2e344a;
+    --text:#d4d8ec; --muted:#636882; --accent:#5b8ef0; --gold:#e0a83d;
+  }
+  body.light{
+    --bg:#f4f5f8; --surface:#ffffff; --card:#ffffff; --border:#e3e6ee; --border2:#d2d7e3;
+    --text:#1a1d28; --muted:#6b7186; --accent:#3f6fd6;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+       background:var(--bg);color:var(--text);transition:background .2s,color .2s;padding:34px 20px 90px}
+  h1{font-size:20px;font-weight:800;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:13px;margin:0 0 24px;max-width:720px}
+  .toggle{position:fixed;top:16px;right:16px;z-index:5;border:1px solid var(--border2);
+          background:var(--card);color:var(--text);padding:7px 14px;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;max-width:1120px}
+  .cell{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px 16px 16px;
+        display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+  .rk-name{font-size:14px;font-weight:800}
+  .rk-xp{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .rk-no{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.09em}
+  .rk-anim{font-size:10.5px;color:var(--accent);font-weight:600}
+  .ctx{max-width:1120px;margin:36px 0 0}
+  .ctx h2{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin:0 0 12px}
+  .row{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid var(--border);
+       border-radius:10px;background:var(--surface);margin-bottom:8px;max-width:430px}
+  .uname{font-size:13px;font-weight:600}
+  .plan-chip{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:10px}
+  .plan-chip.premium{background:rgba(224,168,61,.18);color:#e0a83d}
+
+  /* ════════ MEDAL BASE ════════ */
+  .medal{--sz:82px;position:relative;display:inline-grid;place-items:center;
+         width:var(--sz);height:var(--sz);flex:0 0 auto;vertical-align:middle}
+  .medal svg{width:100%;height:100%;overflow:visible;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
+  .medal .em{stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+
+  /* ── Per-rank UNIQUE animations ── */
+  /* #2 Retail — subtle slow glint sweep */
+  .a2sheen{transform:translateX(-46px);animation:a2 6s ease-in-out infinite}
+  @keyframes a2{0%,72%{transform:translateX(-46px)}100%{transform:translateX(46px)}}
+  /* #3 Chart Technician — the trendline draws itself, end-dot pulses */
+  .a3line{stroke-dasharray:100;stroke-dashoffset:100;animation:a3draw 3.4s ease-in-out infinite}
+  @keyframes a3draw{0%{stroke-dashoffset:100}45%,100%{stroke-dashoffset:0}}
+  .a3dot{transform-box:fill-box;transform-origin:center;animation:a3dot 3.4s ease-in-out infinite}
+  @keyframes a3dot{0%,40%{opacity:0;transform:scale(.4)}55%{opacity:1;transform:scale(1.3)}80%,100%{opacity:.85;transform:scale(1)}}
+  /* #4 Liquidity Hunter — depth bars fill left→right in cascade */
+  .a4b{transform-box:fill-box;transform-origin:left center;animation:a4fill 2.8s ease-in-out infinite}
+  .a4b2{animation-delay:.22s}.a4b3{animation-delay:.44s}
+  @keyframes a4fill{0%{transform:scaleX(.15);opacity:.45}35%{transform:scaleX(1);opacity:1}80%,100%{transform:scaleX(1);opacity:1}}
+  /* #5 Swing Strategist — a dot rides the swing wave */
+  .a5dot{offset-path:path('M3 15c3 0 3-7 6-7s3 7 6 7 3-7 6-7');offset-rotate:0;animation:a5ride 2.6s linear infinite}
+  @keyframes a5ride{to{offset-distance:100%}}
+  /* #6 Order Flow Sniper — crosshair locks (ticks retract) + flash ring */
+  .a6tick{stroke-dasharray:4;stroke-dashoffset:0;animation:a6lock 2.4s ease-in-out infinite}
+  @keyframes a6lock{0%,100%{stroke-dashoffset:0}40%{stroke-dashoffset:3.6}60%{stroke-dashoffset:3.6}}
+  .a6flash{transform-box:fill-box;transform-origin:center;opacity:0;animation:a6flash 2.4s ease-out infinite}
+  @keyframes a6flash{0%,55%{opacity:0;transform:scale(.5)}62%{opacity:.7;transform:scale(.9)}85%,100%{opacity:0;transform:scale(1.3)}}
+  /* #7 Market Maker — warm gold glow breath + column shimmer */
+  .medal.r7 svg{animation:a7glow 3.4s ease-in-out infinite}
+  @keyframes a7glow{0%,100%{filter:drop-shadow(0 0 2px rgba(243,199,104,.35)) drop-shadow(0 2px 3px rgba(0,0,0,.45))}
+                    50%{filter:drop-shadow(0 0 8px rgba(243,199,104,.8)) drop-shadow(0 2px 3px rgba(0,0,0,.45))}}
+  /* #8 Trading Legend — prismatic sheen sweep + twinkle sparkles + breath */
+  .medal.r8 svg{animation:a8breath 4s ease-in-out infinite}
+  @keyframes a8breath{0%,100%{filter:drop-shadow(0 0 4px rgba(243,199,104,.55)) drop-shadow(0 2px 3px rgba(0,0,0,.45))}
+                      50%{filter:drop-shadow(0 0 11px rgba(255,230,140,.95)) drop-shadow(0 2px 3px rgba(0,0,0,.45))}}
+  .a8prism{transform:translateX(-50px);animation:a8sweep 3.6s ease-in-out infinite}
+  @keyframes a8sweep{0%,60%{transform:translateX(-50px)}100%{transform:translateX(50px)}}
+  .a8spark{transform-box:fill-box;transform-origin:center;animation:a8sp 1.8s ease-in-out infinite}
+  .a8spark.s2{animation-delay:.6s}.a8spark.s3{animation-delay:1.1s}
+  @keyframes a8sp{0%,100%{opacity:0;transform:scale(.3)}50%{opacity:1;transform:scale(1)}}
+
+  @media (prefers-reduced-motion:reduce){
+    .a2sheen,.a3line,.a3dot,.a4b,.a5dot,.a6tick,.a6flash,.a8prism,.a8spark,
+    .medal.r7 svg,.medal.r8 svg{animation:none}
+    .a3line{stroke-dashoffset:0}.a6flash,.a8spark{opacity:0}}
+</style>
+</head>
+<body>
+<button class="toggle" id="toggle">☀️ Light / 🌙 Dark</button>
+<h1>Rank Medals v3 — cada rango: su forma y su animación</h1>
+<p class="sub">Formas distintas (hex · escudo · octágono · hex+corona), sin disco giratorio, y una animación ORIGINAL por rango que se vuelve más fachera al subir. Prueba el toggle de tema.</p>
+
+<div class="grid" id="grid"></div>
+<div class="ctx"><h2>Inline (foro / menú / testimonials)</h2><div id="inline"></div></div>
+
+<script>
+const NAMES=['Paper Trader','Retail Trader','Chart Technician','Liquidity Hunter','Swing Strategist','Order Flow Sniper','Market Maker','Trading Legend'];
+const ANIM=['estático','destello sutil','línea que se dibuja','barras que se llenan','punto recorre la onda','crosshair lock + flash','glow dorado + brillo','prismático + destellos'];
+const XP=[0,200,600,1400,2800,5000,8000,12000];
+
+// Shapes: big rim path + inner face path
+const HEX={big:'M28,11 L72,11 L93,50 L72,89 L28,89 L7,50 Z', sm:'M33,21 L67,21 L83.5,50 L67,79 L33,79 L16.5,50 Z'};
+const SHIELD={big:'M50,7 L85,18 L85,50 C85,72 69,86 50,93 C31,86 15,72 15,50 L15,18 Z', sm:'M50,18 L74,26 L74,50 C74,66 62,77 50,82 C38,77 26,66 26,50 L26,26 Z'};
+const OCT={big:'M33,9 L67,9 L91,33 L91,67 L67,91 L33,91 L9,67 L9,33 Z', sm:'M37,21 L63,21 L79,37 L79,63 L63,79 L37,79 L21,63 L21,37 Z'};
+const SHAPES={1:HEX,2:HEX,3:HEX,4:SHIELD,5:OCT,6:HEX,7:HEX,8:HEX};
+
+// Metal ramps (dark)
+const D={
+ 1:{rim:['#5a6076','#3d4258','#262a3a'],face:['#343a4d','#1d2130'],edge:'#1b1f2c',ink:'#9aa0ba'},
+ 2:{rim:['#c98f5e','#9a6336','#5e3a1d'],face:['#7a4f2e','#3f2614'],edge:'#321d0e',ink:'#f3d3ab'},
+ 3:{rim:['#d6dde9','#9aa7bd','#5d6a82'],face:['#7c8aa3','#3f4a60'],edge:'#2a3142',ink:'#eef3fb'},
+ 4:{rim:['#7db0ff','#4f86e8','#2c5bb0'],face:['#2f5aa0','#1a3163'],edge:'#13234a',ink:'#dce9ff'},
+ 5:{rim:['#6fe0d2','#34a5b8','#1d6a86'],face:['#1f6f86','#123f55'],edge:'#0c2c3c',ink:'#d8fbff'},
+ 6:{rim:['#c6b8ff','#8f7fe0','#5a4ca0'],face:['#5a4ca0','#2f2a55'],edge:'#1f1c3a',ink:'#ffe6b0'},
+ 7:{rim:['#ffe79a','#e0a83d','#9a6b14'],face:['#9a6b1e','#5a3d0f'],edge:'#3a2708',ink:'#fff2c4'},
+ 8:{rim:['#fff6da','#f3c768','#caa23a'],face:['#a6781f','#5e400f'],edge:'#3a2708',ink:'#fff7e0'},
+};
+const L={
+ 1:{face:['#e9ecf4','#cfd4e2'],ink:'#5d6480',edge:'#aab0c4'},2:{face:['#f3dcc1','#e0b98f'],ink:'#7a4d22',edge:'#b07d49'},
+ 3:{face:['#eef2f8','#cdd6e6'],ink:'#37496e',edge:'#9aa7bd'},4:{face:['#dde9ff','#bcd2f6'],ink:'#23457f',edge:'#5f8bd8'},
+ 5:{face:['#d6f6f6','#aee0e6'],ink:'#1a5a6e',edge:'#4bbcc4'},6:{face:['#ece8ff','#d2c9f5'],ink:'#7a5210',edge:'#9a8fd0'},
+ 7:{face:['#fdeecb','#f3d692'],ink:'#7a5410',edge:'#d39a2c'},8:{face:['#fff4d4','#f6dd9c'],ink:'#7a5410',edge:'#e0a83d'},
+};
+
+function emblem(i){ // returns SVG markup positioned via outer <g translate(26,23) scale(2)>
+ switch(i){
+  case 1:return '<path class="em" d="M6 3h8l4 4v14H6z"/><path class="em" d="M14 3v4h4"/><line class="em" x1="9" y1="12" x2="15" y2="12"/><line class="em" x1="9" y1="15.5" x2="15" y2="15.5"/>';
+  case 2:return '<line class="em" x1="12" y1="3" x2="12" y2="7"/><line class="em" x1="12" y1="17" x2="12" y2="21"/><rect class="em" x="9" y="7" width="6" height="10" rx="1"/>';
+  case 3:return '<polyline class="em a3line" pathLength="100" points="3 16 9 10 13 13 21 5"/><polyline class="em" points="16 5 21 5 21 10"/><circle class="a3dot" cx="21" cy="5" r="2" fill="currentColor"/>';
+  case 4:return '<line class="em a4b a4b1" x1="4" y1="7" x2="20" y2="7"/><line class="em a4b a4b2" x1="4" y1="12" x2="15" y2="12"/><line class="em a4b a4b3" x1="4" y1="17" x2="18" y2="17"/>';
+  case 5:return '<path class="em" d="M3 15c3 0 3-7 6-7s3 7 6 7 3-7 6-7"/><circle class="a5dot" r="1.7" fill="currentColor"/>';
+  case 6:return '<circle class="em" cx="12" cy="12" r="6.5"/><line class="em a6tick" x1="12" y1="2.5" x2="12" y2="5.5"/><line class="em a6tick" x1="12" y1="18.5" x2="12" y2="21.5"/><line class="em a6tick" x1="2.5" y1="12" x2="5.5" y2="12"/><line class="em a6tick" x1="18.5" y1="12" x2="21.5" y2="12"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle class="em a6flash" cx="12" cy="12" r="6.5" opacity="0"/>';
+  case 7:return '<line class="em" x1="4" y1="20" x2="20" y2="20"/><path class="em" d="M5 20V9l7-4 7 4v11"/><line class="em" x1="9" y1="20" x2="9" y2="13"/><line class="em" x1="12" y1="20" x2="12" y2="13"/><line class="em" x1="15" y1="20" x2="15" y2="13"/>';
+  case 8:return '<path class="em" d="M5 19h14"/><path class="em" d="M6 19c-1-5-2-8 1.5-11 1 2 1.5 3 1.5 3s1-2.5 3-4c2 1.5 3 4 3 4s.5-1 1.5-3C23 11 20 14 18 19"/>';
+ }
+}
+function pips(n){let s='';for(let k=0;k<n;k++){const x=50+(k-(n-1)/2)*9;s+=`<path d="M${x} 80.5 l2.3 2.3 -2.3 2.3 -2.3 -2.3 Z" fill="${'var(--pip)'}" stroke="rgba(0,0,0,.3)" stroke-width=".5"/>`;}return s;}
+function laurel(c1,c2){return `<g fill="none" stroke="url(#wr)" stroke-width="2.3" stroke-linecap="round">
+   <path d="M50 96 C29 91 17 74 16 53"/><path d="M50 96 C71 91 83 74 84 53"/>
+   ${[0,1,2,3].map(k=>`<path d="M${18+k*1} ${57+k*7} q-6 -3 -8 -8 q6 0 8 8"/>`).join('')}
+   ${[0,1,2,3].map(k=>`<path d="M${82-k*1} ${57+k*7} q6 -3 8 -8 q-6 0 -8 8"/>`).join('')}</g>`;}
+
+function svgFor(i,dark){
+ const d=D[i], li=(!dark&&L[i])?L[i]:null;
+ const face=li?li.face:d.face, ink=li?li.ink:d.ink, edge=li?li.edge:d.edge, S=SHAPES[i];
+ const orna = i>=6 ? laurel(d.rim[0],d.rim[2]) : pips(i);
+ // unique sheen overlays for #2 and #8
+ let sheen='';
+ if(i===2) sheen=`<g clip-path="url(#c${i})"><rect class="a2sheen" x="0" y="-10" width="26" height="120" fill="url(#sh)"/></g>`;
+ if(i===8) sheen=`<g clip-path="url(#c${i})"><rect class="a8prism" x="0" y="-10" width="30" height="120" fill="url(#prism)"/></g>`;
+ const sparks = i===8 ? `<g fill="#fff7e0">
+   <path class="a8spark s1" d="M30 30 l1.4 3 3 1.4 -3 1.4 -1.4 3 -1.4 -3 -3 -1.4 3 -1.4 Z" transform="scale(.8)" transform-origin="30 30"/>
+   <path class="a8spark s2" d="M72 36 l1 2 2 1 -2 1 -1 2 -1 -2 -2 -1 2 -1 Z"/>
+   <path class="a8spark s3" d="M60 64 l1 2 2 1 -2 1 -1 2 -1 -2 -2 -1 2 -1 Z"/></g>`:'';
+ return `<svg viewBox="0 0 100 100" style="--pip:${d.rim[0]}">
+  <defs>
+   <linearGradient id="rim${i}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${d.rim[0]}"/><stop offset=".5" stop-color="${d.rim[1]}"/><stop offset="1" stop-color="${d.rim[2]}"/></linearGradient>
+   <radialGradient id="face${i}" cx=".38" cy=".30" r=".85"><stop offset="0" stop-color="${face[0]}"/><stop offset="1" stop-color="${face[1]}"/></radialGradient>
+   <linearGradient id="wr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${d.rim[0]}"/><stop offset="1" stop-color="${d.rim[2]}"/></linearGradient>
+   <linearGradient id="sh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".45"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+   <linearGradient id="prism" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".4" stop-color="#aef" stop-opacity=".5"/><stop offset=".6" stop-color="#fcd" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+   <clipPath id="c${i}"><path d="${S.sm}"/></clipPath>
+  </defs>
+  ${i>=6?orna:''}
+  <path d="${S.big}" fill="url(#rim${i})" stroke="${edge}" stroke-width="2" stroke-linejoin="round"/>
+  <path d="${S.sm}" fill="url(#face${i})" stroke="rgba(0,0,0,.3)" stroke-width="1" stroke-linejoin="round"/>
+  ${sheen}
+  <g transform="translate(26,23) scale(2)" stroke="${ink}" style="color:${ink}">${emblem(i)}</g>
+  ${sparks}
+  ${i<6?orna:''}
+ </svg>`;
+}
+function medal(i,sz){return `<span class="medal r${i}" style="--sz:${sz}">${svgFor(i,!document.body.classList.contains('light'))}</span>`;}
+
+function render(){
+ const grid=document.getElementById('grid');grid.innerHTML='';
+ for(let i=1;i<=8;i++)grid.insertAdjacentHTML('beforeend',
+  `<div class="cell">${medal(i,'84px')}<div class="rk-no">Rango ${i}</div><div class="rk-name">${NAMES[i-1]}</div>
+    <div class="rk-xp">${XP[i-1].toLocaleString()} XP</div><div class="rk-anim">✦ ${ANIM[i-1]}</div></div>`);
+ const inl=document.getElementById('inline');
+ inl.innerHTML=`<div class="row">${medal(8,'24px')}<span class="plan-chip premium">Premium</span><span class="uname">maurotradesve</span></div>`+
+  `<div class="row">${medal(5,'24px')}<span class="plan-chip premium">Premium</span><span class="uname">swing_master</span></div>`+
+  `<div class="row">${medal(4,'24px')}<span class="plan-chip premium">Premium</span><span class="uname">liq_hunter</span></div>`;
+}
+render();
+document.getElementById('toggle').addEventListener('click',()=>{document.body.classList.toggle('light');render();});
+</script>
+</body>
+</html>
