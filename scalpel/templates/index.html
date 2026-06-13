@@ -18986,10 +18986,13 @@
         if(correct && ['beginner','intermediate','advanced'].includes(q.lv)){
           const U = window.SCALPEL_USER;
           if(U && (U.plan==='premium' || U.isAdmin)){
-            const qid = String(QUESTION_BANK.indexOf(q));
+            const qid = QUESTION_BANK.indexOf(q);
+            // Send the ORIGINAL index of the option we picked; the server checks
+            // it against its answer key and decides whether to award XP.
+            const picked = parseInt(btn.dataset.origIdx, 10);
             fetch('/api/quiz/answer', {
               method:'POST', headers:{'Content-Type':'application/json'},
-              body: JSON.stringify({ question_id: qid, level: q.lv })
+              body: JSON.stringify({ question_id: qid, level: q.lv, selected: picked })
             }).then(r=>r.ok?r.json():null).then(data=>{
               if(data && data.awarded && U){ U.xp = data.xp; U.rank = data.rank; }
             }).catch(()=>{});
@@ -19615,7 +19618,9 @@
           try {
             const res = await fetch('/api/daily/answer', {
               method:'POST', headers:{'Content-Type':'application/json'},
-              body: JSON.stringify({ correct })
+              // Server decides correctness from the option we picked (original
+              // index; -1 means timed out / no pick). We never assert "correct".
+              body: JSON.stringify({ selected: optIdx })
             });
             if (res.ok) resp = await res.json();
           } catch(e) {}

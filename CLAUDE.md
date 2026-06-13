@@ -3,6 +3,20 @@
 
 ---
 
+> **🔐 ANTI-TRAMPA QUIZ/DAILY (2026-06-13) — LLAVE DE RESPUESTAS SERVER-SIDE:**
+> El Daily Challenge y el Quiz ya NO confían en que el cliente diga "acerté". El cliente
+> manda la **opción que marcó** (`selected`, índice original) y el **servidor la juzga**
+> contra `scalpel/quiz_answer_key.json` (validación devuelve solo correcto/incorrecto, nunca
+> la respuesta). La llave la genera `tools/extract_quiz_key.js` evaluando el `QUESTION_BANK`
+> real (sin tocar preguntas/respuestas). `_load_quiz_key()` en `app.py` la **regenera al
+> arrancar si hay `node`**, si no usa el JSON commiteado.
+> **⚠️ SI EDITAS EL `QUESTION_BANK` (index.html):** corre `node tools/extract_quiz_key.js`
+> y commitea el JSON actualizado (por si el VPS no tiene node). El puerto Python de
+> `mulberry32`/`_cycle_order` está verificado bit a bit contra el cliente — NO lo alteres
+> sin re-verificar paridad.
+
+---
+
 > **📌 EN DISEÑO (2026-06-13) — SISTEMA DE XP / RANGOS ("hacer más vivo el sitio") — ESPEC. CONGELADA**
 >
 > Contexto: discusión sobre ganchos de retención (idea original mencionada por el usuario como

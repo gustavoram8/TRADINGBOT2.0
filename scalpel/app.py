@@ -4116,6 +4116,93 @@ def _daily_seed():
     return (datetime.now(timezone.utc).date() - datetime(2026, 1, 1, tzinfo=timezone.utc).date()).days
 
 
+# ── Server-side answer key (anti-cheat for Daily Challenge + Quiz) ──
+# The question bank lives client-side for instant feedback, but the client must
+# never be trusted to assert "I was correct". It submits which option it picked
+# and the SERVER judges it against this key (derived from the same bank by
+# tools/extract_quiz_key.js). Validation only ever returns correct/incorrect —
+# the answer index is never sent back to a client.
+_QUIZ_KEY = []        # by bank index: [{'lv':..., 'ans':int}, ...]
+_ADV_ANS = []         # correct option indices for advanced questions, in POOL order
+
+
+def _load_quiz_key():
+    """Load (and best-effort regenerate) the server-side answer key. Regenerating
+    at startup keeps it in sync whenever node is available; otherwise the
+    committed JSON is used."""
+    global _QUIZ_KEY, _ADV_ANS
+    base = os.path.dirname(os.path.abspath(__file__))
+    repo = os.path.dirname(base)
+    keypath = os.path.join(base, 'quiz_answer_key.json')
+    try:
+        import subprocess
+        subprocess.run(['node', os.path.join(repo, 'tools', 'extract_quiz_key.js')],
+                       cwd=repo, capture_output=True, timeout=30)
+    except Exception:
+        pass  # node unavailable on this host → fall back to the committed JSON
+    try:
+        with open(keypath, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        _QUIZ_KEY = data.get('key', [])
+        _ADV_ANS = [k['ans'] for k in _QUIZ_KEY if k.get('lv') == 'advanced']
+        app.logger.info('Loaded quiz answer key: %d questions, %d advanced.',
+                        len(_QUIZ_KEY), len(_ADV_ANS))
+    except Exception as e:
+        app.logger.error('Could not load quiz answer key: %s', e)
+        _QUIZ_KEY, _ADV_ANS = [], []
+
+
+# Exact port of the client's deterministic question picker (index.html). Verified
+# bit-for-bit against the JS so the server agrees on "today's question".
+def _u32(x):
+    return x & 0xFFFFFFFF
+
+
+def _i32(x):
+    x &= 0xFFFFFFFF
+    return x - 0x100000000 if x >= 0x80000000 else x
+
+
+def _imul(a, b):
+    return _i32(_u32(a) * _u32(b))
+
+
+def _mulberry32(a):
+    state = _i32(a)
+
+    def rng():
+        nonlocal state
+        state = _i32(state + 0x6D2B79F5)
+        t = _imul(state ^ (_u32(state) >> 15), 1 | state)
+        t = _i32(t + _imul(t ^ (_u32(t) >> 7), 61 | t)) ^ t
+        return _u32(t ^ (_u32(t) >> 14)) / 4294967296.0
+    return rng
+
+
+def _cycle_order(cycle, n):
+    order = list(range(n))
+    if cycle == 0:
+        return order
+    rng = _mulberry32(_u32(cycle * 2654435761))
+    for i in range(len(order) - 1, 0, -1):
+        j = int(rng() * (i + 1))
+        order[i], order[j] = order[j], order[i]
+    return order
+
+
+def _daily_correct_index():
+    """The correct option index (original order) of today's Daily Challenge
+    question — computed entirely server-side. Returns None if the key is missing."""
+    n = len(_ADV_ANS)
+    if n == 0:
+        return None
+    seed = _daily_seed()
+    cycle = seed // n
+    pos = ((seed % n) + n) % n
+    pool_idx = _cycle_order(cycle, n)[pos]
+    return _ADV_ANS[pool_idx]
+
+
 def _daily_status_payload(st):
     return {
         'today': _utc_today(),
@@ -4174,7 +4261,15 @@ def daily_answer():
 
     elapsed = (datetime.now(timezone.utc) - _aware(st.question_served_at)).total_seconds()
     timed_out = elapsed > (DAILY_ANSWER_SECONDS + DAILY_ANSWER_GRACE)
-    correct = bool((request.json or {}).get('correct')) and not timed_out
+    # Anti-cheat: correctness is decided by the SERVER. The client submits which
+    # option index it picked (original order); we compare it to the server-held
+    # answer key. A forged {selected:...} can't win unless it's the real answer.
+    try:
+        selected = int((request.json or {}).get('selected', -1))
+    except (TypeError, ValueError):
+        selected = -1
+    answer_idx = _daily_correct_index()
+    correct = (answer_idx is not None and selected == answer_idx) and not timed_out
 
     st.last_played = today
     st.last_result = correct
@@ -4342,19 +4437,34 @@ def testimonials_public():
 @app.route('/api/quiz/answer', methods=['POST'])
 @premium_required
 def quiz_answer_xp():
-    """Award XP for a correctly answered quiz question. The quiz bank lives
-    client-side, so the client reports (question_id, level); a question only
-    ever pays once (dedup by ref) and the whole source is capped at 20 XP/day,
-    so even a forged report can't farm faster than an honest user."""
+    """Award XP for a correctly answered quiz question. The client reports the
+    question's bank index, the option it picked, and the level; the SERVER
+    validates the pick against its answer key (the client can't just claim it was
+    right). A question pays once (dedup by ref) and the source caps at 20 XP/day."""
     data = request.get_json(silent=True) or {}
-    qid = str(data.get('question_id') or '').strip()[:60]
-    level = str(data.get('level') or '').strip()
-    if not qid or level not in ('beginner', 'intermediate', 'advanced'):
+    try:
+        qid = int(data.get('question_id'))
+    except (TypeError, ValueError):
         return jsonify({'error': 'bad_request'}), 400
-    amount = XP_PREMIUM.get(f'quiz_{level}', 0)
-    awarded = add_xp(current_user, 'quiz', amount=amount, ref=f'q:{qid}')
-    return jsonify({'ok': True, 'awarded': awarded, 'xp': current_user.xp,
-                    'rank': current_user.rank})
+    try:
+        selected = int(data.get('selected', -1))
+    except (TypeError, ValueError):
+        selected = -1
+    if qid < 0 or qid >= len(_QUIZ_KEY):
+        return jsonify({'error': 'bad_request'}), 400
+    entry = _QUIZ_KEY[qid]
+    level = entry.get('lv')
+    if level not in ('beginner', 'intermediate', 'advanced'):
+        # hardcore / unkeyed questions don't pay XP here
+        return jsonify({'ok': True, 'awarded': 0, 'correct': False,
+                        'xp': current_user.xp, 'rank': current_user.rank})
+    correct = (selected == entry.get('ans'))
+    awarded = 0
+    if correct:
+        amount = XP_PREMIUM.get(f'quiz_{level}', 0)
+        awarded = add_xp(current_user, 'quiz', amount=amount, ref=f'q:{qid}')
+    return jsonify({'ok': True, 'awarded': awarded, 'correct': correct,
+                    'xp': current_user.xp, 'rank': current_user.rank})
 
 
 def _rank_progress_payload(user):
@@ -5056,6 +5166,7 @@ def init_db():
 
 
 init_db()
+_load_quiz_key()
 
 
 # ── Health check endpoint ──────────────────────────────────────────────────
