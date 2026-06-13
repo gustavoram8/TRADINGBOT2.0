@@ -3,17 +3,35 @@
 
 ---
 
-> **🔐 ANTI-TRAMPA QUIZ/DAILY (2026-06-13) — LLAVE DE RESPUESTAS SERVER-SIDE:**
-> El Daily Challenge y el Quiz ya NO confían en que el cliente diga "acerté". El cliente
-> manda la **opción que marcó** (`selected`, índice original) y el **servidor la juzga**
-> contra `scalpel/quiz_answer_key.json` (validación devuelve solo correcto/incorrecto, nunca
-> la respuesta). La llave la genera `tools/extract_quiz_key.js` evaluando el `QUESTION_BANK`
-> real (sin tocar preguntas/respuestas). `_load_quiz_key()` en `app.py` la **regenera al
-> arrancar si hay `node`**, si no usa el JSON commiteado.
-> **⚠️ SI EDITAS EL `QUESTION_BANK` (index.html):** corre `node tools/extract_quiz_key.js`
-> y commitea el JSON actualizado (por si el VPS no tiene node). El puerto Python de
-> `mulberry32`/`_cycle_order` está verificado bit a bit contra el cliente — NO lo alteres
-> sin re-verificar paridad.
+> **🥇 PRIORIDAD #1 — LO PRIMERO QUE CLAUDE DEBE ENTENDER EN CADA SESIÓN NUEVA**
+> **(ANTI-TRAMPA QUIZ/DAILY — LLAVE DE RESPUESTAS SERVER-SIDE, 2026-06-13):**
+>
+> El Daily Challenge y el Quiz ya **NO confían en que el cliente diga "acerté"**. Esto es
+> crítico entenderlo antes de tocar nada del quiz/daily/XP:
+>
+> 1. ✅ **Las preguntas y respuestas NO se tocaron** — solo se derivó una llave
+>    (`scalpel/quiz_answer_key.json`) del banco existente con un extractor que lo evalúa tal cual.
+> 2. ✅ **El user tiene que marcar la opción real** — el cliente manda `selected` (cuál marcó,
+>    índice original) y el **servidor juzga**; `{correct:true}` ya no gana nada (verificado en test).
+> 3. ✅ **El servidor nunca expone la respuesta** — la validación solo devuelve correcto/incorrecto,
+>    jamás el índice correcto. El Daily da 1 intento/día (no se puede fuzzear). Bonus: también se
+>    cerró un spoof de nivel (decir que una beginner es advanced ya no paga +12).
+>
+> **Piezas:** `tools/extract_quiz_key.js` (extractor, evalúa el `QUESTION_BANK` real con Node) →
+> `scalpel/quiz_answer_key.json` (la llave) → `_load_quiz_key()` en `app.py` (la **regenera al
+> arrancar si hay `node`**, si no usa el JSON commiteado). El puerto Python de
+> `mulberry32`/`_cycle_order` en `app.py` está **verificado bit a bit** contra el cliente — NO lo
+> alteres sin re-verificar paridad. Endpoints: `/api/daily/answer` y `/api/quiz/answer` reciben
+> `selected` y validan server-side.
+>
+> **⚠️ SI EDITAS EL `QUESTION_BANK` (index.html):** corre `node tools/extract_quiz_key.js` y
+> commitea el JSON actualizado (por si el VPS no tiene node).
+>
+> **🚀 DEPLOY (este cambio es backend + necesita el JSON nuevo). En el VPS:**
+> ```
+> cd /var/www/TRADINGBOT2.0 && git pull origin claude/epic-lovelace-GsOuo && supervisorctl restart traderacelerator
+> ```
+> (Si el VPS tiene `node`, la llave se regenera sola al arrancar; si no, usa el JSON commiteado.)
 
 ---
 
