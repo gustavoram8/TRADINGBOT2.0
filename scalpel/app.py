@@ -2980,6 +2980,7 @@ def serialize_post(p, body=True):
         'truncated': (not body) and len(full) > 280,
         'image': url_for('static', filename=p.image_path) if p.image_path else None,
         'author': p.user.username if p.user else 'Unknown',
+        'author_rank': (p.user.rank or 1) if p.user else 1,
         'is_mine': p.user_id == current_user.id,
         'created_at': _as_utc(p.created_at).isoformat(),
         'comment_count': ForumComment.query.filter_by(post_id=p.id, is_deleted=False).count(),
@@ -2997,6 +2998,7 @@ def serialize_comment(c):
         'body': '[deleted]' if c.is_deleted else c.body,
         'deleted': c.is_deleted,
         'author': '' if c.is_deleted else (c.user.username if c.user else 'Unknown'),
+        'author_rank': 1 if c.is_deleted else ((c.user.rank or 1) if c.user else 1),
         'is_mine': (c.user_id == current_user.id) and not c.is_deleted,
         'created_at': _as_utc(c.created_at).isoformat(),
         'reactions': rs['counts'],
@@ -4309,12 +4311,16 @@ def testimonial_submit():
 
 @app.route('/api/testimonials')
 def testimonials_public():
-    """Public feed of published testimonials for the landing page panel."""
-    rows = (Testimonial.query.filter_by(published=True)
+    """Public feed of published testimonials for the landing page panel.
+    `rank` is the author's CURRENT rank (live), joined fresh each time."""
+    rows = (db.session.query(Testimonial, User.rank)
+            .outerjoin(User, User.id == Testimonial.user_id)
+            .filter(Testimonial.published == True)  # noqa: E712
             .order_by(Testimonial.created_at.desc()).limit(24).all())
     return jsonify({'testimonials': [
-        {'name': r.display_name, 'rating': r.rating, 'text': r.text, 'plan': r.plan}
-        for r in rows
+        {'name': r.display_name, 'rating': r.rating, 'text': r.text,
+         'plan': r.plan, 'rank': rank or 1}
+        for r, rank in rows
     ]})
 
 
