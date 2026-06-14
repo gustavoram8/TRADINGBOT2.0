@@ -1507,15 +1507,15 @@ def app_view():
         current_user.last_xp_active_date = today
         db.session.commit()
         add_xp(current_user, 'login', ref=today)
-    # Rank-up reveal: fires once when `rank` outruns the last celebrated rank,
-    # then seals it so a reload can't replay it (mirrors the unlock reveal).
-    # Checked AFTER the login bonus so a rank-up earned by today's login is
-    # caught on this same load. Never stacked on top of the unlock reveal.
+    # Rank-up reveal: shown whenever `rank` outruns the last celebrated rank.
+    # We DELIBERATELY do not seal it here — the client acknowledges it (via
+    # POST /api/rank/celebrated) only when the user dismisses the panel. That
+    # way a render the user never actually sees (browser cache, the welcome
+    # splash funnel, a background prefetch) can't silently swallow the one-time
+    # celebration; it simply re-appears on the next load until acknowledged.
     rank_up_to = 0
     if not unlock_plan and (current_user.rank or 1) > (getattr(current_user, 'rank_celebrated', 1) or 1):
         rank_up_to = current_user.rank
-        current_user.rank_celebrated = current_user.rank
-        db.session.commit()
         review_prompt = False  # one full-screen moment at a time
     # Consume the pass so the next entry triggers the splash again.
     resp = make_response(render_template(
@@ -1531,6 +1531,9 @@ def app_view():
         user_xp=current_user.xp or 0,
     ))
     resp.delete_cookie('scalpel_splash_ts')
+    # Never let a cache serve a stale /app (which could hide a fresh rank-up
+    # reveal or unlock reveal). The page is per-user and cheap to re-render.
+    resp.headers['Cache-Control'] = 'no-store, must-revalidate'
     return resp
 
 
@@ -4585,6 +4588,18 @@ def _rank_progress_payload(user):
 @login_required
 def rank_progress():
     return jsonify(_rank_progress_payload(current_user))
+
+
+@app.route('/api/rank/celebrated', methods=['POST'])
+@login_required
+def rank_celebrated_ack():
+    """Seal the rank-up reveal once the user has actually dismissed the panel.
+    Called by the client when the reveal is closed; until then the reveal keeps
+    re-appearing on each /app load so it can never be missed."""
+    if (current_user.rank or 1) > (getattr(current_user, 'rank_celebrated', 1) or 1):
+        current_user.rank_celebrated = current_user.rank
+        db.session.commit()
+    return jsonify({'ok': True, 'rank_celebrated': current_user.rank_celebrated})
 
 
 # ──────────────────────────────────────────────────────────────────────────
