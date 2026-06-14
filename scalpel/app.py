@@ -4694,6 +4694,68 @@ def _hexa(hx, a):
     return 'rgba(%d,%d,%d,%s)' % (int(hx[0:2], 16), int(hx[2:4], 16), int(hx[4:6], 16), a)
 
 
+_CERT_LANGS = ('en', 'es', 'fr', 'pt')
+# Rank names stay in English everywhere (brand/proper nouns, like the medals and
+# ICT acronyms). Only the surrounding prose is translated.
+CERT_I18N = {
+    'en': {'kicker': 'Certificate of Achievement', 'title': 'Rank Certificate',
+           'presented': 'This certificate is awarded to',
+           'attained': 'for having attained, through practice and dedication, the rank of',
+           'rank': 'Rank', 'of': 'of', 'issued': 'Issue date', 'issuedBy': 'Issued by',
+           'download': 'Download PDF', 'back': 'Back'},
+    'es': {'kicker': 'Certificate of Achievement', 'title': 'Certificado de Rango',
+           'presented': 'Se otorga el presente certificado a',
+           'attained': 'por haber alcanzado, mediante práctica y dedicación, el rango de',
+           'rank': 'Rango', 'of': 'de', 'issued': 'Fecha de emisión', 'issuedBy': 'Emitido por',
+           'download': 'Descargar PDF', 'back': 'Volver'},
+    'fr': {'kicker': 'Certificate of Achievement', 'title': 'Certificat de Rang',
+           'presented': 'Le présent certificat est décerné à',
+           'attained': 'pour avoir atteint, par la pratique et la persévérance, le rang de',
+           'rank': 'Rang', 'of': 'sur', 'issued': "Date d'émission", 'issuedBy': 'Émis par',
+           'download': 'Télécharger le PDF', 'back': 'Retour'},
+    'pt': {'kicker': 'Certificate of Achievement', 'title': 'Certificado de Rank',
+           'presented': 'O presente certificado é concedido a',
+           'attained': 'por ter alcançado, com prática e dedicação, o rank de',
+           'rank': 'Rank', 'of': 'de', 'issued': 'Data de emissão', 'issuedBy': 'Emitido por',
+           'download': 'Baixar PDF', 'back': 'Voltar'},
+}
+VERIFY_I18N = {
+    'en': {'okStatus': 'Certificate verified', 'okTitle': 'Authentic document',
+           'attained': 'attained the rank of', 'rank': 'Rank', 'issued': 'Issued', 'code': 'Code',
+           'note': 'Issued by Trader Acelerator. This certificate is genuine and on record.',
+           'noStatus': 'Not verified', 'noTitle': 'Certificate not found',
+           'noDesc': 'does not match any certificate issued by Trader Acelerator. It may be mistyped or forged.'},
+    'es': {'okStatus': 'Certificado verificado', 'okTitle': 'Documento auténtico',
+           'attained': 'alcanzó el rango de', 'rank': 'Rango', 'issued': 'Emitido', 'code': 'Código',
+           'note': 'Emitido por Trader Acelerator. Este certificado es genuino y consta en nuestros registros.',
+           'noStatus': 'No verificado', 'noTitle': 'Certificado no encontrado',
+           'noDesc': 'no corresponde a ningún certificado emitido por Trader Acelerator. Podría estar mal escrito o ser falso.'},
+    'fr': {'okStatus': 'Certificat vérifié', 'okTitle': 'Document authentique',
+           'attained': 'a atteint le rang de', 'rank': 'Rang', 'issued': 'Émis', 'code': 'Code',
+           'note': 'Émis par Trader Acelerator. Ce certificat est authentique et enregistré.',
+           'noStatus': 'Non vérifié', 'noTitle': 'Certificat introuvable',
+           'noDesc': "ne correspond à aucun certificat émis par Trader Acelerator. Il peut être mal saisi ou falsifié."},
+    'pt': {'okStatus': 'Certificado verificado', 'okTitle': 'Documento autêntico',
+           'attained': 'alcançou o rank de', 'rank': 'Rank', 'issued': 'Emitido', 'code': 'Código',
+           'note': 'Emitido por Trader Acelerator. Este certificado é genuíno e consta nos registros.',
+           'noStatus': 'Não verificado', 'noTitle': 'Certificado não encontrado',
+           'noDesc': 'não corresponde a nenhum certificado emitido por Trader Acelerator. Pode estar incorreto ou ser falso.'},
+}
+
+
+def _cert_lang(req):
+    """Resolve certificate/verify language: explicit ?lang= wins (the in-app panel
+    passes the user's current language), else Accept-Language, else English."""
+    q = (req.args.get('lang') or '').lower()
+    if q in _CERT_LANGS:
+        return q
+    al = (req.headers.get('Accept-Language') or '').lower()
+    for code in _CERT_LANGS:
+        if al.startswith(code):
+            return code
+    return 'en'
+
+
 def _cert_theme(rank):
     acc, acc2, bright = _CERT_THEME[max(1, min(8, rank))]
     return {'acc': acc, 'acc2': acc2, 'bright': bright,
@@ -4731,13 +4793,14 @@ def certificate_view(rank):
     if not current_user.is_admin and (current_user.rank or 1) < rank:
         abort(403)
     cert = _issue_or_get_certificate(current_user, rank)
+    lang = _cert_lang(request)
     verify_url = url_for('verify_certificate', code=cert.code, _external=True)
     return render_template(
         'certificate.html', rank=rank, rank_name=RANK_CERT_NAMES_ES[rank - 1],
         roman=_ROMAN[rank - 1], xp=RANK_THRESHOLDS[rank - 1], cert=cert,
         medal_svg=rank_medal_svg(rank, 132), verify_url=verify_url,
         qr_svg=_cert_qr_svg(verify_url), is_legend=(rank == 8), for_pdf=False,
-        theme=_cert_theme(rank))
+        theme=_cert_theme(rank), cl=CERT_I18N[lang], lang=lang)
 
 
 @app.route('/certificate/<int:rank>/pdf')
@@ -4749,13 +4812,14 @@ def certificate_pdf(rank):
     if not current_user.is_admin and (current_user.rank or 1) < rank:
         abort(403)
     cert = _issue_or_get_certificate(current_user, rank)
+    lang = _cert_lang(request)
     verify_url = url_for('verify_certificate', code=cert.code, _external=True)
     html_content = render_template(
         'certificate.html', rank=rank, rank_name=RANK_CERT_NAMES_ES[rank - 1],
         roman=_ROMAN[rank - 1], xp=RANK_THRESHOLDS[rank - 1], cert=cert,
         medal_svg=rank_medal_svg(rank, 132), verify_url=verify_url,
         qr_svg=_cert_qr_svg(verify_url), is_legend=(rank == 8), for_pdf=True,
-        theme=_cert_theme(rank))
+        theme=_cert_theme(rank), cl=CERT_I18N[lang], lang=lang)
     try:
         from weasyprint import HTML as WP_HTML
         pdf_bytes = WP_HTML(string=html_content, base_url=request.host_url).write_pdf()
@@ -4779,11 +4843,12 @@ def verify_certificate(code):
     confirm a certificate code resolves to a genuine holder, rank and date."""
     cert = RankCertificate.query.filter_by(code=(code or '').strip()).first()
     valid = cert is not None
+    lang = _cert_lang(request)
     return render_template(
         'verify_certificate.html', valid=valid, cert=cert,
         rank_name=(RANK_CERT_NAMES_ES[cert.rank - 1] if valid else None),
         medal_svg=(rank_medal_svg(cert.rank, 96) if valid else None),
-        code=code)
+        code=code, vl=VERIFY_I18N[lang])
 
 
 # ──────────────────────────────────────────────────────────────────────────

@@ -37,24 +37,24 @@
     <div class="badge ok">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
     </div>
-    <div class="status ok">Certificado verificado</div>
-    <h1>Documento auténtico</h1>
+    <div class="status ok">{{ vl.okStatus }}</div>
+    <h1>{{ vl.okTitle }}</h1>
     <div class="medal">{{ medal_svg|safe }}</div>
     <div class="holder">{{ cert.display_name }}</div>
-    <div class="rank">alcanzó el rango de <strong style="color:#eef0f6">{{ rank_name }}</strong></div>
+    <div class="rank">{{ vl.attained }} <strong style="color:#eef0f6">{{ rank_name }}</strong></div>
     <div class="meta">
-      <div class="row"><span class="k">Rango</span><span class="v">{{ rank_name }} (#{{ cert.rank }})</span></div>
-      <div class="row"><span class="k">Emitido</span><span class="v">{{ cert.issued_at.strftime('%d/%m/%Y') if cert.issued_at else '—' }}</span></div>
-      <div class="row"><span class="k">Código</span><span class="v code">{{ cert.code }}</span></div>
+      <div class="row"><span class="k">{{ vl.rank }}</span><span class="v">{{ rank_name }} (#{{ cert.rank }})</span></div>
+      <div class="row"><span class="k">{{ vl.issued }}</span><span class="v">{{ cert.issued_at.strftime('%d/%m/%Y') if cert.issued_at else '—' }}</span></div>
+      <div class="row"><span class="k">{{ vl.code }}</span><span class="v code">{{ cert.code }}</span></div>
     </div>
-    <div class="muted" style="margin-top:14px">Emitido por Trader Acelerator. Este certificado es genuino y consta en nuestros registros.</div>
+    <div class="muted" style="margin-top:14px">{{ vl.note }}</div>
   {% else %}
     <div class="badge no">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
     </div>
-    <div class="status no">No verificado</div>
-    <h1>Certificado no encontrado</h1>
-    <div class="muted">El código <span class="code">{{ code }}</span> no corresponde a ningún certificado emitido por Trader Acelerator. Podría estar mal escrito o ser falso.</div>
+    <div class="status no">{{ vl.noStatus }}</div>
+    <h1>{{ vl.noTitle }}</h1>
+    <div class="muted"><span class="code">{{ code }}</span> {{ vl.noDesc }}</div>
   {% endif %}
   <a class="home" href="/">← Trader Acelerator</a>
 </div>

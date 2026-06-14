@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="{{ lang|default('es') }}">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -121,19 +121,19 @@
       Trader Acelerator
     </div>
     <div class="cert-rule"><span class="ln"></span><span class="dia"></span><span class="ln"></span></div>
-    <div class="cert-kicker">Certificate of Achievement</div>
-    <h1 class="cert-h1">Certificado de Rango</h1>
+    <div class="cert-kicker">{{ cl.kicker }}</div>
+    <h1 class="cert-h1">{{ cl.title }}</h1>
 
     <div class="cert-medal">{{ medal_svg|safe }}</div>
-    <div class="cert-presented">Se otorga el presente certificado a</div>
+    <div class="cert-presented">{{ cl.presented }}</div>
     <div class="cert-name">{{ cert.display_name }}</div>
-    <div class="cert-attained">por haber alcanzado, mediante práctica y dedicación, el rango de</div>
+    <div class="cert-attained">{{ cl.attained }}</div>
     <div class="cert-rk">{{ rank_name }}</div>
-    <div class="cert-meta">Rango {{ roman }} de VIII &nbsp;·&nbsp; {{ '{:,}'.format(xp) }} XP</div>
+    <div class="cert-meta">{{ cl.rank }} {{ roman }} {{ cl.of }} VIII &nbsp;·&nbsp; {{ '{:,}'.format(xp) }} XP</div>
     {% if is_legend %}<div class="cert-serial">★ Trading Legend · No. {{ '%03d'|format(cert.id) }} ★</div>{% endif %}
 
     <div class="cert-foot">
-      <div class="blk"><div class="line"></div><div class="lbl">Fecha de emisión</div>
+      <div class="blk"><div class="line"></div><div class="lbl">{{ cl.issued }}</div>
         <div class="val">{{ cert.issued_at.strftime('%d/%m/%Y') if cert.issued_at else '—' }}</div></div>
       <div class="cert-seal">
         <div class="cert-qr">
@@ -142,7 +142,7 @@
         <div class="cert-vid">{{ cert.code }}</div>
         <div class="cert-verify">{{ verify_url }}</div>
       </div>
-      <div class="blk"><div class="line"></div><div class="lbl">Emitido por</div>
+      <div class="blk"><div class="line"></div><div class="lbl">{{ cl.issuedBy }}</div>
         <div class="val">Trader Acelerator</div></div>
     </div>
   </div>
@@ -150,8 +150,8 @@
 
 {% if not for_pdf %}
 <div class="cert-dl">
-  <a class="sec" href="/app">← Volver</a>
-  <a class="pri" href="/certificate/{{ rank }}/pdf">Descargar PDF</a>
+  <a class="sec" href="/app">← {{ cl.back }}</a>
+  <a class="pri" href="/certificate/{{ rank }}/pdf?lang={{ lang }}">{{ cl.download }}</a>
 </div>
 {% endif %}
 </body>
