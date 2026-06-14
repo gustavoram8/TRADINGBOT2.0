@@ -3608,7 +3608,10 @@
     isGuest: {{ 'true' if is_guest else 'false' }},
     username: {{ (username or '')|tojson }},
     rank: {{ user_rank|default(1) }},
-    xp: {{ user_xp|default(0) }}
+    xp: {{ user_xp|default(0) }},
+    hasBeta: {{ 'true' if has_beta_access else 'false' }},
+    betaMinRank: {{ beta_min_rank|default(6) }},
+    rankUpTo: {{ rank_up_to|default(0) }}
   };
 </script>
 
@@ -4012,6 +4015,98 @@
     <button class="unlock-arrow" id="unlock-next" type="button" aria-label="Next">›</button>
   </div>
   <div class="unlock-dots" id="unlock-dots"></div>
+</div>
+
+<!-- ── Rank-Up reveal (XP/Rank system) — fires once when a new rank is reached ── -->
+<style>
+  .ru-overlay{position:fixed;inset:0;z-index:710;display:none;align-items:center;justify-content:center;
+    overflow:hidden;padding:24px;background:var(--bg)}
+  .ru-overlay.show{display:flex}
+  .ru-bloom{position:absolute;pointer-events:none;border-radius:50%;filter:blur(85px)}
+  .ru-bloom.b1{width:580px;height:580px;right:-190px;bottom:-210px;background:radial-gradient(circle,var(--ru-glow),transparent 70%)}
+  .ru-bloom.b2{width:440px;height:440px;left:-150px;top:-170px;background:radial-gradient(circle,var(--ru-glow2),transparent 70%)}
+  .ru-flash{position:absolute;left:50%;top:50%;width:10px;height:10px;transform:translate(-50%,-50%);border-radius:50%;
+    pointer-events:none;background:radial-gradient(circle,var(--ru-bright),var(--ru-acc) 30%,transparent 70%);opacity:0}
+  .ru-shock{position:absolute;left:50%;top:50%;width:120px;height:120px;transform:translate(-50%,-50%) scale(0);
+    border-radius:50%;pointer-events:none;border:2px solid var(--ru-acc);opacity:0}
+  .ru-overlay.reveal .ru-flash{animation:ruFlash .8s ease-out forwards}
+  .ru-overlay.reveal .ru-shock{animation:ruShock 1s cubic-bezier(.1,.6,.3,1) .08s forwards}
+  @keyframes ruFlash{0%{opacity:0;width:10px;height:10px}14%{opacity:.9;width:480px;height:480px}100%{opacity:0;width:760px;height:760px}}
+  @keyframes ruShock{0%{transform:translate(-50%,-50%) scale(.2);opacity:.9}100%{transform:translate(-50%,-50%) scale(3.4);opacity:0}}
+  .ru-card{position:relative;z-index:2;width:100%;max-width:480px;border-radius:20px;background:var(--surface);
+    border:1px solid var(--border);box-shadow:0 30px 90px rgba(0,0,0,.45);padding:38px 36px 32px}
+  body.light .ru-card{box-shadow:0 20px 60px rgba(20,30,60,.12)}
+  .ru-overlay.reveal .ru-card{animation:ruCardIn .55s cubic-bezier(.2,.85,.25,1) both}
+  @keyframes ruCardIn{from{opacity:0;transform:translateY(22px) scale(.96)}to{opacity:1;transform:none}}
+  .ru-skip{position:absolute;top:16px;right:18px;font:inherit;font-size:17px;line-height:1;color:var(--muted);
+    background:transparent;border:0;cursor:pointer;width:30px;height:30px;border-radius:8px;display:grid;place-items:center}
+  .ru-skip:hover{color:var(--text);background:var(--border)}
+  .ru-eyebrow{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;letter-spacing:.3em;
+    text-transform:uppercase;color:var(--ru-acc);margin-bottom:18px}
+  .ru-overlay.reveal .ru-eyebrow{animation:ruUp .5s .25s both}
+  .ru-eyebrow .ln{flex:1;height:1px;background:linear-gradient(90deg,var(--ru-line),transparent)}
+  .ru-head{display:flex;align-items:center;gap:18px;margin-bottom:24px}
+  .ru-medal-wrap{position:relative;flex:0 0 auto}
+  .ru-halo{position:absolute;left:50%;top:50%;width:130%;height:130%;transform:translate(-50%,-50%);border-radius:50%;
+    background:radial-gradient(circle,var(--ru-glow),transparent 68%);animation:ruHalo 2.8s ease-in-out infinite;pointer-events:none}
+  @keyframes ruHalo{0%,100%{opacity:.5;transform:translate(-50%,-50%) scale(1)}50%{opacity:.9;transform:translate(-50%,-50%) scale(1.12)}}
+  .ru-head .medal{position:relative;z-index:1}
+  .ru-overlay.reveal .ru-medal-wrap{animation:ruMedalPop .8s cubic-bezier(.16,.9,.3,1.25) .1s both}
+  @keyframes ruMedalPop{from{opacity:0;transform:scale(.2) rotate(-18deg)}to{opacity:1;transform:none}}
+  .ru-head-tx{min-width:0}
+  .ru-overlay.reveal .ru-head-tx{animation:ruUp .5s .32s both}
+  .ru-rankname{font-size:23px;font-weight:800;letter-spacing:-.01em;line-height:1.35;color:var(--text);margin:0}
+  .ru-xp{font-size:12.5px;color:var(--muted);margin-top:3px;font-variant-numeric:tabular-nums}
+  .ru-xp b{color:var(--ru-acc);font-weight:700}
+  .ru-rewards{display:flex;flex-direction:column;gap:1px;border-radius:14px;overflow:hidden;border:1px solid var(--border);margin-bottom:22px}
+  .ru-rwd{display:flex;align-items:center;gap:14px;padding:13px 15px;background:var(--bg)}
+  body.light .ru-rwd{background:#f8f9fc}
+  .ru-rwd + .ru-rwd{border-top:1px solid var(--border)}
+  .ru-overlay.reveal .ru-rwd{animation:ruUp .5s both}
+  .ru-overlay.reveal .ru-rwd:nth-child(1){animation-delay:.40s}.ru-overlay.reveal .ru-rwd:nth-child(2){animation-delay:.49s}
+  .ru-overlay.reveal .ru-rwd:nth-child(3){animation-delay:.58s}.ru-overlay.reveal .ru-rwd:nth-child(4){animation-delay:.67s}
+  .ru-rwd .ic{flex:0 0 auto;width:34px;height:34px;border-radius:9px;display:grid;place-items:center;
+    color:var(--ru-acc);background:var(--ru-soft);border:1px solid var(--ru-bd)}
+  .ru-rwd .ic svg{width:17px;height:17px}
+  .ru-rwd .tx{min-width:0;flex:1}
+  .ru-rwd .tx .n{font-size:13.5px;font-weight:700;color:var(--text)}
+  .ru-rwd .tx .d{font-size:11.5px;color:var(--muted);line-height:1.4;margin-top:1px}
+  .ru-rwd .tag{flex:0 0 auto;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+    padding:3px 8px;border-radius:20px;background:var(--ru-soft);color:var(--ru-acc);border:1px solid var(--ru-bd)}
+  .ru-cta{display:flex;gap:10px}
+  .ru-overlay.reveal .ru-cta{animation:ruUp .5s .76s both}
+  .ru-cta button,.ru-cta a{flex:1;font:inherit;font-size:13.5px;font-weight:800;padding:13px;border-radius:11px;cursor:pointer;
+    border:1px solid;text-align:center;text-decoration:none}
+  .ru-cert{background:transparent;color:var(--text);border-color:var(--border2)}
+  .ru-cert:hover{border-color:var(--ru-acc)}
+  .ru-cont{background:linear-gradient(180deg,var(--ru-bright),var(--ru-acc));color:var(--ru-ink);border-color:var(--ru-acc);
+    box-shadow:0 6px 20px var(--ru-glow)}
+  .ru-cont:hover{filter:brightness(1.05)}
+  @keyframes ruUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){
+    .ru-overlay.reveal .ru-flash,.ru-overlay.reveal .ru-shock,.ru-halo,
+    .ru-overlay.reveal .ru-card,.ru-overlay.reveal .ru-medal-wrap,.ru-overlay.reveal .ru-eyebrow,
+    .ru-overlay.reveal .ru-head-tx,.ru-overlay.reveal .ru-rwd,.ru-overlay.reveal .ru-cta{animation:none}}
+</style>
+<div class="ru-overlay" id="rankup-overlay" aria-modal="true" role="dialog">
+  <div class="ru-bloom b1"></div><div class="ru-bloom b2"></div>
+  <div class="ru-flash"></div><div class="ru-shock"></div>
+  <div class="ru-card">
+    <button class="ru-skip" id="rankup-skip" aria-label="Close">✕</button>
+    <div class="ru-eyebrow" id="rankup-eyebrow">Rank Up<span class="ln"></span></div>
+    <div class="ru-head">
+      <div class="ru-medal-wrap"><div class="ru-halo"></div><span id="rankup-medal"></span></div>
+      <div class="ru-head-tx">
+        <p class="ru-rankname" id="rankup-rankname">—</p>
+        <div class="ru-xp" id="rankup-xp"></div>
+      </div>
+    </div>
+    <div class="ru-rewards" id="rankup-rewards"></div>
+    <div class="ru-cta">
+      <a class="ru-cert" id="rankup-cert" href="#" target="_blank" rel="noopener">Certificate</a>
+      <button class="ru-cont" id="rankup-cont">Continue</button>
+    </div>
+  </div>
 </div>
 
 <!-- Periodic testimonial / review prompt (paid plans, every ~30 days) -->
@@ -8963,6 +9058,98 @@
     render();
     ov.style.display = '';
   })();
+
+  // ── Rank-Up reveal: fires once when the server flags a newly reached rank ──
+  (function(){
+    var rank = parseInt(U.rankUpTo, 10) || 0;
+    if (rank < 1 || rank > 8) return;
+    if (!window.renderRankBadge) return;
+    var L = (typeof currentLang !== 'undefined' && currentLang) ||
+            (document.documentElement.getAttribute('lang') || 'en');
+    var I18N = {
+      en:{up:'Rank Up',rankOf:'Rank {n} of 8',max:'Rank 8 of 8 · top rank',xp:'{x} XP',
+          badge:'{name} medal',badgeD:'Shown next to your name in the forum, testimonials and menu.',
+          camo:'Exclusive camo',camoD:'A design reserved for this rank.',
+          beta:'Priority beta access',betaD:'Try new sections before everyone else.',
+          cert:'Official certificate',certD:'Download the document that certifies your rank.',
+          certBtn:'View certificate',cont:'Continue'},
+      es:{up:'Subiste de rango',rankOf:'Rango {n} de 8',max:'Rango 8 de 8 · rango máximo',xp:'{x} XP',
+          badge:'Medalla de {name}',badgeD:'Visible junto a tu nombre en el foro, testimonios y el menú.',
+          camo:'Camo exclusivo',camoD:'Un diseño reservado para este rango.',
+          beta:'Acceso beta prioritario',betaD:'Prueba apartados nuevos antes que el resto.',
+          cert:'Certificado oficial',certD:'Descarga el documento que acredita tu rango.',
+          certBtn:'Ver certificado',cont:'Continuar'},
+      fr:{up:'Niveau supérieur',rankOf:'Rang {n} sur 8',max:'Rang 8 sur 8 · rang maximal',xp:'{x} XP',
+          badge:'Médaille {name}',badgeD:'Affichée à côté de votre nom dans le forum, les avis et le menu.',
+          camo:'Camo exclusif',camoD:'Un design réservé à ce rang.',
+          beta:'Accès bêta prioritaire',betaD:'Essayez les nouvelles sections avant tout le monde.',
+          cert:'Certificat officiel',certD:'Téléchargez le document qui atteste votre rang.',
+          certBtn:'Voir le certificat',cont:'Continuer'},
+      pt:{up:'Subiu de rank',rankOf:'Rank {n} de 8',max:'Rank 8 de 8 · rank máximo',xp:'{x} XP',
+          badge:'Medalha de {name}',badgeD:'Visível ao lado do seu nome no fórum, depoimentos e menu.',
+          camo:'Camo exclusivo',camoD:'Um design reservado para este rank.',
+          beta:'Acesso beta prioritário',betaD:'Experimente novas seções antes de todos.',
+          cert:'Certificado oficial',certD:'Baixe o documento que comprova seu rank.',
+          certBtn:'Ver certificado',cont:'Continuar'}
+    };
+    var t = I18N[L] || I18N.en;
+    var NAMES = window.RANK_NAMES || ['Paper Trader','Retail Trader','Chart Technician','Liquidity Hunter','Swing Strategist','Order Flow Sniper','Market Maker','Trading Legend'];
+    var THRESH = [0,200,600,1400,2800,5000,8000,12000];
+    // acc, acc2(bloom), bright, ink — mirrors the approved preview themes.
+    var TH = {1:['#8a92ad','#5f8fe8','#b9c0d4','#10131c'],2:['#c98f5e','#e0a83d','#e7b888','#2a1a0c'],
+              3:['#9aabc4','#6fd0e0','#c5d2e4','#161d29'],4:['#5f8fe8','#8f7fe0','#92b4f2','#0a1530'],
+              5:['#2fa6b8','#4fc88a','#5fcdd9','#04222a'],6:['#9f8fe8','#e08fd0','#c0b0f5','#15102e'],
+              7:['#e0a83d','#e07a3d','#f3c768','#2a1c05'],8:['#f3c768','#e05a28','#fff0c8','#1a1205']};
+    function rgba(hex,a){var h=hex.replace('#','');var n=parseInt(h,16);return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';}
+    var ICONS = {
+      badge:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M8.5 13 7 21l5-2.5L17 21l-1.5-8"/></svg>',
+      camo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v4l-3 3 3 3v6H4v-6l3-3-3-3Z"/></svg>',
+      beta:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg>',
+      cert:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2h8v6l-2-1.2L12 8l-2-1.2L8 8z"/><path d="M5 8h14v12a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1Z"/></svg>'
+    };
+    function fmt(s,o){return s.replace(/\{(\w+)\}/g,function(_,k){return o[k]!=null?o[k]:'';});}
+
+    var th = TH[rank], ov = document.getElementById('rankup-overlay'), st = ov.style;
+    st.setProperty('--ru-acc',th[0]); st.setProperty('--ru-bright',th[2]); st.setProperty('--ru-ink',th[3]);
+    st.setProperty('--ru-glow',rgba(th[0],'.30')); st.setProperty('--ru-glow2',rgba(th[1],'.20'));
+    st.setProperty('--ru-soft',rgba(th[0],'.11')); st.setProperty('--ru-bd',rgba(th[0],'.30'));
+    st.setProperty('--ru-line',rgba(th[0],'.5'));
+
+    document.getElementById('rankup-eyebrow').firstChild.textContent = t.up + ' ';
+    document.getElementById('rankup-rankname').textContent = NAMES[rank-1];
+    document.getElementById('rankup-xp').innerHTML =
+      (rank===8 ? t.max : fmt(t.rankOf,{n:rank})) + ' · <b>' + fmt(t.xp,{x:THRESH[rank-1].toLocaleString()}) + '</b>';
+    var mw = document.getElementById('rankup-medal'); mw.innerHTML=''; mw.appendChild(window.renderRankBadge(rank,58));
+
+    var rewards = [
+      {ic:'badge',n:fmt(t.badge,{name:NAMES[rank-1]}),d:t.badgeD},
+      {ic:'camo',n:t.camo,d:t.camoD,tag:'R'+rank}
+    ];
+    if (rank >= (U.betaMinRank||6)) rewards.push({ic:'beta',n:t.beta,d:t.betaD});
+    rewards.push({ic:'cert',n:t.cert,d:t.certD});
+    var rw = document.getElementById('rankup-rewards'); rw.innerHTML='';
+    rewards.forEach(function(x){
+      var row=document.createElement('div'); row.className='ru-rwd';
+      row.innerHTML='<div class="ic">'+ICONS[x.ic]+'</div><div class="tx"><div class="n"></div><div class="d"></div></div>'+(x.tag?'<span class="tag"></span>':'');
+      row.querySelector('.n').textContent=x.n; row.querySelector('.d').textContent=x.d;
+      if(x.tag) row.querySelector('.tag').textContent=x.tag;
+      rw.appendChild(row);
+    });
+
+    var certLink=document.getElementById('rankup-cert');
+    certLink.href='/certificate/'+rank; certLink.textContent=t.certBtn;
+    document.getElementById('rankup-cont').textContent=t.cont;
+
+    function close(){ ov.classList.remove('show','reveal'); }
+    document.getElementById('rankup-skip').addEventListener('click',close);
+    document.getElementById('rankup-cont').addEventListener('click',close);
+    ov.addEventListener('click',function(e){ if(e.target===ov) close(); });
+
+    ov.classList.add('show');
+    void ov.offsetWidth;
+    ov.classList.add('reveal');
+  })();
+
   document.addEventListener('click', () => accountMenu.classList.remove('show'));
   accountMenu.addEventListener('click', e => e.stopPropagation());
 

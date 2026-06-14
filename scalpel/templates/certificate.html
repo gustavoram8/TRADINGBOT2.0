@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Certificado · {{ rank_name }} · Trader Acelerator</title>
+{% if not for_pdf %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&family=Cinzel:wght@500;600;700&display=swap" rel="stylesheet" />
+{% endif %}
+<style>
+  :root{
+    --acc:{{ theme.acc }}; --acc2:{{ theme.acc2 }}; --bright:{{ theme.bright }};
+    --glow:{{ theme.glow }}; --glow2:{{ theme.glow2 }}; --frame:{{ theme.frame }};
+    --soft:{{ theme.soft }}; --bd:{{ theme.bd }};
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  {% if for_pdf %}
+  @page{ size:A4 landscape; margin:0; }
+  html,body{width:297mm;height:210mm}
+  {% else %}
+  body{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:22px;padding:40px 20px 60px;background:#0a0b10;font-family:'Inter',sans-serif}
+  {% endif %}
+
+  .cert{position:relative;width:100%;{% if for_pdf %}height:100%;{% else %}max-width:880px;aspect-ratio:1.5/1;border-radius:4px;{% endif %}
+    overflow:hidden;color:#f3f1ea;font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif;
+    background:
+      radial-gradient(ellipse 70% 60% at 14% 8%, var(--glow), transparent 60%),
+      radial-gradient(ellipse 70% 60% at 86% 96%, var(--glow2), transparent 60%),
+      linear-gradient(155deg,#13141d 0%,#191b26 52%,#14151f 100%);
+    {% if not for_pdf %}box-shadow:0 30px 90px rgba(0,0,0,.55),0 0 0 1px var(--bd);{% endif %}}
+
+  .cert-guilloche{position:absolute;inset:0;opacity:.10;color:var(--acc);pointer-events:none}
+  .cert-watermark{position:absolute;inset:0;pointer-events:none;display:flex;flex-wrap:wrap;align-content:center;
+    justify-content:center;gap:54px 84px;transform:rotate(-22deg) scale(1.4);opacity:.05;
+    font-family:'Cinzel',serif;font-size:13px;font-weight:600;letter-spacing:.3em;text-transform:uppercase;
+    white-space:nowrap;color:#fff}
+  .cert::before{content:"";position:absolute;inset:16px;border:1.5px solid var(--frame);pointer-events:none}
+  .cert::after{content:"";position:absolute;inset:23px;border:1px solid var(--bd);pointer-events:none}
+
+  .cert-in{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;align-items:center;
+    text-align:center;padding:34px 56px 30px}
+  .cert-brand{display:flex;align-items:center;gap:10px;font-family:'Inter',sans-serif;
+    font-size:11px;font-weight:800;letter-spacing:.32em;text-transform:uppercase;color:var(--acc)}
+  .cert-brand svg{width:14px;height:14px}
+  .cert-rule{display:flex;align-items:center;gap:14px;margin:12px 0 4px;width:100%;max-width:380px}
+  .cert-rule .ln{flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--frame),transparent)}
+  .cert-rule .dia{width:6px;height:6px;border:1px solid var(--acc);transform:rotate(45deg)}
+  .cert-kicker{font-family:'Inter',sans-serif;font-size:11px;letter-spacing:.4em;text-transform:uppercase;color:#8b93a7;margin-top:6px}
+  .cert-h1{font-family:'Cinzel',serif;font-size:38px;font-weight:600;letter-spacing:.04em;margin-top:6px;color:#f8eccf}
+
+  .cert-medal{margin:10px 0 2px}
+  .cert-medal svg{filter:drop-shadow(0 4px 16px var(--glow))}
+  .cert-presented{font-family:'Inter',sans-serif;font-size:13px;color:#8b93a7;margin:6px 0 6px;letter-spacing:.02em}
+  .cert-name{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:600;color:#fff;
+    padding:0 6px 8px;border-bottom:1px solid var(--frame);min-width:300px}
+  .cert-attained{font-family:'Inter',sans-serif;font-size:12px;color:#8b93a7;margin:14px 0 6px}
+  .cert-rk{font-family:'Cinzel',serif;font-size:30px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--bright)}
+  .cert-meta{font-family:'Inter',sans-serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--acc);margin-top:6px}
+
+  .cert-foot{margin-top:auto;width:100%;display:grid;grid-template-columns:1fr auto 1fr;align-items:end;gap:24px;
+    font-family:'Inter',sans-serif;padding-top:14px}
+  .cert-foot .blk{text-align:center}
+  .cert-foot .line{height:1px;background:var(--frame);margin-bottom:7px}
+  .cert-foot .lbl{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#8b93a7}
+  .cert-foot .val{color:#efe6d2;margin-bottom:6px;font-family:'Cormorant Garamond',serif;font-size:15px}
+  .cert-seal{display:flex;flex-direction:column;align-items:center;gap:6px}
+  .cert-qr{width:58px;height:58px;border-radius:4px;padding:4px;background:#fff;display:grid;place-items:center}
+  .cert-qr svg{width:100%;height:100%;display:block}
+  .cert-qrfallback{font-family:'Inter',sans-serif;font-size:8px;color:#000;text-align:center;line-height:1.2;font-weight:700}
+  .cert-vid{font-family:'Inter',sans-serif;font-size:9px;letter-spacing:.1em;color:var(--acc);font-weight:700}
+  .cert-verify{font-family:'Inter',sans-serif;font-size:8.5px;color:#8b93a7;margin-top:2px}
+
+  {% if is_legend %}
+  .cert-holo{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;
+    background:linear-gradient(115deg,transparent 34%,rgba(120,210,255,.16) 44%,rgba(255,210,140,.22) 50%,rgba(255,140,210,.16) 56%,transparent 66%)}
+  .cert-foil{position:absolute;inset:16px;pointer-events:none;padding:1.5px;
+    background:linear-gradient(115deg,#9a6b14,#fff6da,#f3c768,#9a6b14,#fff6da);
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+  .cert.legend::before{border-color:transparent}
+  .cert-corner{position:absolute;width:52px;height:52px;pointer-events:none;color:#f3c768;opacity:.85}
+  .cert-corner.tl{top:24px;left:24px}.cert-corner.tr{top:24px;right:24px;transform:scaleX(-1)}
+  .cert-corner.bl{bottom:24px;left:24px;transform:scaleY(-1)}.cert-corner.br{bottom:24px;right:24px;transform:scale(-1)}
+  .cert-serial{display:inline-block;font-family:'Cinzel',serif;font-size:10px;font-weight:600;letter-spacing:.28em;
+    text-transform:uppercase;color:#f3c768;margin-top:6px;padding:3px 14px;border:1px solid rgba(243,199,104,.5);border-radius:20px}
+  {% endif %}
+
+  {% if not for_pdf %}
+  .cert-dl{display:flex;gap:10px;font-family:'Inter',sans-serif}
+  .cert-dl a,.cert-dl button{font:inherit;font-size:13.5px;font-weight:800;padding:12px 26px;border-radius:10px;cursor:pointer;
+    border:1px solid;text-decoration:none;display:inline-block}
+  .cert-dl .pri{background:linear-gradient(180deg,var(--bright),var(--acc));color:#1a1205;border-color:var(--acc)}
+  .cert-dl .sec{background:transparent;color:#eef0f6;border-color:#363b4c}
+  {% endif %}
+</style>
+</head>
+<body>
+<div class="cert {% if is_legend %}legend{% endif %}">
+  <svg class="cert-guilloche" viewBox="0 0 880 587" preserveAspectRatio="none" aria-hidden="true">
+    <defs><pattern id="guil" width="58" height="58" patternUnits="userSpaceOnUse">
+      <circle cx="29" cy="29" r="26" fill="none" stroke="currentColor" stroke-width=".5"/>
+      <circle cx="29" cy="29" r="18" fill="none" stroke="currentColor" stroke-width=".5"/>
+      <circle cx="29" cy="29" r="10" fill="none" stroke="currentColor" stroke-width=".5"/>
+    </pattern></defs>
+    <rect width="880" height="587" fill="url(#guil)"/>
+  </svg>
+  <div class="cert-watermark" aria-hidden="true">
+    {% for i in range(28) %}<span>TRADER ACELERATOR · VERIFIED</span>{% endfor %}
+  </div>
+  {% if is_legend %}
+  <div class="cert-holo" aria-hidden="true"></div>
+  <div class="cert-foil" aria-hidden="true"></div>
+  {% for c in ['tl','tr','bl','br'] %}
+  <svg class="cert-corner {{ c }}" viewBox="0 0 52 52" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M4 28 C4 14 14 4 28 4"/><path d="M4 20 C4 10 10 4 20 4"/><circle cx="9" cy="9" r="2.2" fill="currentColor" stroke="none"/></svg>
+  {% endfor %}
+  {% endif %}
+
+  <div class="cert-in">
+    <div class="cert-brand">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      Trader Acelerator
+    </div>
+    <div class="cert-rule"><span class="ln"></span><span class="dia"></span><span class="ln"></span></div>
+    <div class="cert-kicker">Certificate of Achievement</div>
+    <h1 class="cert-h1">Certificado de Rango</h1>
+
+    <div class="cert-medal">{{ medal_svg|safe }}</div>
+    <div class="cert-presented">Se otorga el presente certificado a</div>
+    <div class="cert-name">{{ cert.display_name }}</div>
+    <div class="cert-attained">por haber alcanzado, mediante práctica y dedicación, el rango de</div>
+    <div class="cert-rk">{{ rank_name }}</div>
+    <div class="cert-meta">Rango {{ roman }} de VIII &nbsp;·&nbsp; {{ '{:,}'.format(xp) }} XP</div>
+    {% if is_legend %}<div class="cert-serial">★ Trading Legend · No. {{ '%03d'|format(cert.id) }} ★</div>{% endif %}
+
+    <div class="cert-foot">
+      <div class="blk"><div class="line"></div><div class="lbl">Fecha de emisión</div>
+        <div class="val">{{ cert.issued_at.strftime('%d/%m/%Y') if cert.issued_at else '—' }}</div></div>
+      <div class="cert-seal">
+        <div class="cert-qr">
+          {% if qr_svg %}{{ qr_svg|safe }}{% else %}<div class="cert-qrfallback">VERIFY<br>{{ cert.code }}</div>{% endif %}
+        </div>
+        <div class="cert-vid">{{ cert.code }}</div>
+        <div class="cert-verify">{{ verify_url }}</div>
+      </div>
+      <div class="blk"><div class="line"></div><div class="lbl">Emitido por</div>
+        <div class="val">Trader Acelerator</div></div>
+    </div>
+  </div>
+</div>
+
+{% if not for_pdf %}
+<div class="cert-dl">
+  <a class="sec" href="/app">← Volver</a>
+  <a class="pri" href="/certificate/{{ rank }}/pdf">Descargar PDF</a>
+</div>
+{% endif %}
+</body>
+</html>

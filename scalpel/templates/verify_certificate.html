@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Verificación de certificado · Trader Acelerator</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@600&display=swap" rel="stylesheet" />
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+    background:radial-gradient(ellipse 70% 50% at 50% 0%,#15171f,#0a0b10 70%);
+    font-family:'Inter',sans-serif;color:#eef0f6}
+  .card{width:100%;max-width:440px;background:#14161f;border:1px solid #252834;border-radius:18px;
+    padding:36px 32px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+  .badge{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;margin:0 auto 18px}
+  .badge.ok{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.4);color:#22c55e}
+  .badge.no{background:rgba(220,38,38,.12);border:1px solid rgba(220,38,38,.4);color:#dc2626}
+  .badge svg{width:30px;height:30px}
+  .status{font-size:12px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;margin-bottom:6px}
+  .status.ok{color:#22c55e}.status.no{color:#dc2626}
+  h1{font-size:20px;font-weight:800;margin-bottom:18px}
+  .medal{margin:6px auto 14px;display:inline-block}
+  .holder{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:600;color:#fff;line-height:1.2}
+  .rank{font-size:13px;color:#8b93a7;margin-top:2px}
+  .meta{margin-top:18px;border-top:1px solid #252834;padding-top:16px;display:grid;gap:8px;font-size:12.5px}
+  .meta .row{display:flex;justify-content:space-between;gap:12px}
+  .meta .row .k{color:#8b93a7}.meta .row .v{color:#eef0f6;font-weight:600}
+  .muted{font-size:12.5px;color:#8b93a7;line-height:1.55;margin-top:6px}
+  .home{display:inline-block;margin-top:22px;font-size:13px;font-weight:700;color:#e0a83d;text-decoration:none}
+  .home:hover{text-decoration:underline}
+  .code{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#8b93a7;word-break:break-all}
+</style>
+</head>
+<body>
+<div class="card">
+  {% if valid %}
+    <div class="badge ok">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+    </div>
+    <div class="status ok">Certificado verificado</div>
+    <h1>Documento auténtico</h1>
+    <div class="medal">{{ medal_svg|safe }}</div>
+    <div class="holder">{{ cert.display_name }}</div>
+    <div class="rank">alcanzó el rango de <strong style="color:#eef0f6">{{ rank_name }}</strong></div>
+    <div class="meta">
+      <div class="row"><span class="k">Rango</span><span class="v">{{ rank_name }} (#{{ cert.rank }})</span></div>
+      <div class="row"><span class="k">Emitido</span><span class="v">{{ cert.issued_at.strftime('%d/%m/%Y') if cert.issued_at else '—' }}</span></div>
+      <div class="row"><span class="k">Código</span><span class="v code">{{ cert.code }}</span></div>
+    </div>
+    <div class="muted" style="margin-top:14px">Emitido por Trader Acelerator. Este certificado es genuino y consta en nuestros registros.</div>
+  {% else %}
+    <div class="badge no">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </div>
+    <div class="status no">No verificado</div>
+    <h1>Certificado no encontrado</h1>
+    <div class="muted">El código <span class="code">{{ code }}</span> no corresponde a ningún certificado emitido por Trader Acelerator. Podría estar mal escrito o ser falso.</div>
+  {% endif %}
+  <a class="home" href="/">← Trader Acelerator</a>
+</div>
+</body>
+</html>

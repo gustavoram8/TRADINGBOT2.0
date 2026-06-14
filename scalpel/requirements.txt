@@ -9,3 +9,7 @@ gunicorn==23.0.0
 
 # Optional: error tracking. Only used if SENTRY_DSN env var is set.
 sentry-sdk[flask]==2.20.0
+
+# Optional: scannable QR on rank certificates. Pure-python, no deps. If absent,
+# the certificate falls back to printing the verification code + URL as text.
+segno==1.6.1

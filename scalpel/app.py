@@ -151,7 +151,12 @@ client = OpenAI(
 # ── Expose feature flags to every template ──
 @app.context_processor
 def inject_feature_flags():
-    return {'scout_enabled': SCOUT_ENABLED, 'preflight_enabled': PREFLIGHT_ENABLED}
+    return {
+        'scout_enabled': SCOUT_ENABLED,
+        'preflight_enabled': PREFLIGHT_ENABLED,
+        'has_beta_access': has_beta_access(),
+        'beta_min_rank': BETA_MIN_RANK,
+    }
 
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -198,6 +203,10 @@ class User(UserMixin, db.Model):
     rank = db.Column(db.Integer, default=1, nullable=False)
     last_xp_active_date = db.Column(db.String(10), nullable=True)
     first_preflight_xp = db.Column(db.Boolean, default=False, nullable=False)
+    # Highest rank whose rank-up celebration has already been shown. The /app
+    # reveal fires once when `rank` outruns this, then seals it (a reload can't
+    # replay it) — same one-time pattern as the plan-purchase unlock reveal.
+    rank_celebrated = db.Column(db.Integer, default=1, nullable=False)
 
     def set_password(self, raw):
         self.password_hash = generate_password_hash(raw)
@@ -564,6 +573,23 @@ class XPLog(db.Model):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
 
 
+class RankCertificate(db.Model):
+    """One issued rank certificate per (user, rank). The `code` is the public
+    verification id printed on the certificate (and encoded in its QR); the
+    /verify/<code> page confirms authenticity server-side — that, not the visual
+    design, is what stops anyone from fabricating a certificate. `display_name`
+    is snapshotted at issue time so a later username change doesn't rewrite an
+    already-issued document."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    rank = db.Column(db.Integer, nullable=False)
+    code = db.Column(db.String(24), unique=True, nullable=False, index=True)
+    display_name = db.Column(db.String(40), nullable=False)
+    issued_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    user = db.relationship('User', backref='rank_certificates')
+    __table_args__ = (db.UniqueConstraint('user_id', 'rank', name='uq_rankcert_user_rank'),)
+
+
 # ──────────────────────────────────────────────────────────────────────────
 # XP / RANK CONFIG  (spec frozen 2026-06-13 — see CLAUDE.md)
 # No per-plan multiplier: the gap comes from access (premium-only sources) +
@@ -820,6 +846,36 @@ def current_plan():
 
 def is_premium():
     return current_user.is_authenticated and (current_user.plan == 'premium' or current_user.is_admin)
+
+
+# Beta access is a RANK reward (not a plan): unlocked at Order Flow Sniper (rank 6)
+# and above. Sections shipped under the "BETA" label gate on this so they light up
+# automatically for high-rank users the moment they exist — no per-feature wiring.
+BETA_MIN_RANK = 6
+
+
+def has_beta_access(user=None):
+    """True if `user` (default: current_user) has reached the beta-access rank.
+    Admins always pass. Never raises for anonymous users."""
+    user = user or (current_user if current_user.is_authenticated else None)
+    if user is None:
+        return False
+    if getattr(user, 'is_admin', False):
+        return True
+    return (user.rank or 1) >= BETA_MIN_RANK
+
+
+def beta_required(fn):
+    """JSON guard for endpoints shipped under the BETA label — rank 6+ (or admin).
+    Mirrors premium_required so future beta APIs gate with a single decorator."""
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return jsonify({'error': 'unauthorized'}), 401
+        if not has_beta_access():
+            return jsonify({'error': 'beta_required', 'min_rank': BETA_MIN_RANK}), 403
+        return fn(*args, **kwargs)
+    return wrapper
 
 
 def premium_required(fn):
@@ -1451,6 +1507,16 @@ def app_view():
         current_user.last_xp_active_date = today
         db.session.commit()
         add_xp(current_user, 'login', ref=today)
+    # Rank-up reveal: fires once when `rank` outruns the last celebrated rank,
+    # then seals it so a reload can't replay it (mirrors the unlock reveal).
+    # Checked AFTER the login bonus so a rank-up earned by today's login is
+    # caught on this same load. Never stacked on top of the unlock reveal.
+    rank_up_to = 0
+    if not unlock_plan and (current_user.rank or 1) > (getattr(current_user, 'rank_celebrated', 1) or 1):
+        rank_up_to = current_user.rank
+        current_user.rank_celebrated = current_user.rank
+        db.session.commit()
+        review_prompt = False  # one full-screen moment at a time
     # Consume the pass so the next entry triggers the splash again.
     resp = make_response(render_template(
         'index.html',
@@ -1460,6 +1526,7 @@ def app_view():
         is_guest=False,
         unlock_plan=unlock_plan,
         review_prompt=review_prompt,
+        rank_up_to=rank_up_to,
         user_rank=current_user.rank or 1,
         user_xp=current_user.xp or 0,
     ))
@@ -4521,6 +4588,205 @@ def rank_progress():
 
 
 # ──────────────────────────────────────────────────────────────────────────
+# RANK CERTIFICATES — viewable page + watermarked PDF + public verification.
+# The medal SVG is ported from the client `renderRankBadge()` so the PDF (which
+# runs no JS) shows the real rank medal. Anti-forgery = the verification code is
+# checked server-side at /verify/<code>, not the artwork.
+# ──────────────────────────────────────────────────────────────────────────
+_MED_HEX = {'big': 'M28,11 L72,11 L93,50 L72,89 L28,89 L7,50 Z',
+            'sm': 'M33,21 L67,21 L83.5,50 L67,79 L33,79 L16.5,50 Z'}
+_MED_SHIELD = {'big': 'M50,7 L85,18 L85,50 C85,72 69,86 50,93 C31,86 15,72 15,50 L15,18 Z',
+               'sm': 'M50,18 L74,26 L74,50 C74,66 62,77 50,82 C38,77 26,66 26,50 L26,26 Z'}
+_MED_OCT = {'big': 'M33,9 L67,9 L91,33 L91,67 L67,91 L33,91 L9,67 L9,33 Z',
+            'sm': 'M37,21 L63,21 L79,37 L79,63 L63,79 L37,79 L21,63 L21,37 Z'}
+_MED_SHAPES = {1: _MED_HEX, 2: _MED_HEX, 3: _MED_HEX, 4: _MED_SHIELD,
+               5: _MED_OCT, 6: _MED_HEX, 7: _MED_HEX, 8: _MED_HEX}
+_MED_D = {
+    1: {'rim': ['#5a6076', '#3d4258', '#262a3a'], 'face': ['#343a4d', '#1d2130'], 'edge': '#1b1f2c', 'ink': '#9aa0ba'},
+    2: {'rim': ['#c98f5e', '#9a6336', '#5e3a1d'], 'face': ['#7a4f2e', '#3f2614'], 'edge': '#321d0e', 'ink': '#f3d3ab'},
+    3: {'rim': ['#d6dde9', '#9aa7bd', '#5d6a82'], 'face': ['#7c8aa3', '#3f4a60'], 'edge': '#2a3142', 'ink': '#eef3fb'},
+    4: {'rim': ['#7db0ff', '#4f86e8', '#2c5bb0'], 'face': ['#2f5aa0', '#1a3163'], 'edge': '#13234a', 'ink': '#dce9ff'},
+    5: {'rim': ['#6fe0d2', '#34a5b8', '#1d6a86'], 'face': ['#1f6f86', '#123f55'], 'edge': '#0c2c3c', 'ink': '#d8fbff'},
+    6: {'rim': ['#c6b8ff', '#8f7fe0', '#5a4ca0'], 'face': ['#5a4ca0', '#2f2a55'], 'edge': '#1f1c3a', 'ink': '#ffe6b0'},
+    7: {'rim': ['#ffe79a', '#e0a83d', '#9a6b14'], 'face': ['#9a6b1e', '#5a3d0f'], 'edge': '#3a2708', 'ink': '#fff2c4'},
+    8: {'rim': ['#fff6da', '#f3c768', '#caa23a'], 'face': ['#a6781f', '#5e400f'], 'edge': '#3a2708', 'ink': '#fff7e0'},
+}
+_MED_EMBLEM = {
+    1: '<path class="em" d="M6 3h8l4 4v14H6z"/><path class="em" d="M14 3v4h4"/><line class="em" x1="9" y1="12" x2="15" y2="12"/><line class="em" x1="9" y1="15.5" x2="15" y2="15.5"/>',
+    2: '<line class="em" x1="12" y1="3" x2="12" y2="7"/><line class="em" x1="12" y1="17" x2="12" y2="21"/><rect class="em" x="9" y="7" width="6" height="10" rx="1"/>',
+    3: '<polyline class="em" points="3 16 9 10 13 13 21 5"/><polyline class="em" points="16 5 21 5 21 10"/><circle cx="21" cy="5" r="2" fill="currentColor"/>',
+    4: '<line class="em" x1="4" y1="7" x2="20" y2="7"/><line class="em" x1="4" y1="12" x2="15" y2="12"/><line class="em" x1="4" y1="17" x2="18" y2="17"/>',
+    5: '<path class="em" d="M3 15c3 0 3-7 6-7s3 7 6 7 3-7 6-7"/>',
+    6: '<circle class="em" cx="12" cy="12" r="6.5"/><line class="em" x1="12" y1="2.5" x2="12" y2="5.5"/><line class="em" x1="12" y1="18.5" x2="12" y2="21.5"/><line class="em" x1="2.5" y1="12" x2="5.5" y2="12"/><line class="em" x1="18.5" y1="12" x2="21.5" y2="12"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/>',
+    7: '<line class="em" x1="4" y1="20" x2="20" y2="20"/><path class="em" d="M5 20V9l7-4 7 4v11"/><line class="em" x1="9" y1="20" x2="9" y2="13"/><line class="em" x1="12" y1="20" x2="12" y2="13"/><line class="em" x1="15" y1="20" x2="15" y2="13"/>',
+    8: '<path class="em" d="M5 19h14"/><path class="em" d="M6 19c-1-5-2-8 1.5-11 1 2 1.5 3 1.5 3s1-2.5 3-4c2 1.5 3 4 3 4s.5-1 1.5-3C23 11 20 14 18 19"/>',
+}
+
+
+def _med_pips(n, c):
+    s = ''
+    for k in range(n):
+        x = 50 + (k - (n - 1) / 2) * 9
+        s += ('<path d="M%s 80.5 l2.3 2.3 -2.3 2.3 -2.3 -2.3 Z" fill="%s" '
+              'stroke="rgba(0,0,0,.3)" stroke-width=".5"/>' % (x, c))
+    return s
+
+
+def _med_laurel():
+    s = ('<g fill="none" stroke="url(#wr)" stroke-width="2.3" stroke-linecap="round">'
+         '<path d="M50 96 C29 91 17 74 16 53"/><path d="M50 96 C71 91 83 74 84 53"/>')
+    for k in range(4):
+        s += '<path d="M%s %s q-6 -3 -8 -8 q6 0 8 8"/>' % (18 + k, 57 + k * 7)
+        s += '<path d="M%s %s q6 -3 8 -8 q-6 0 -8 8"/>' % (82 - k, 57 + k * 7)
+    return s + '</g>'
+
+
+def rank_medal_svg(rank, size_px=64):
+    """Static (animation-free) port of the client medal for server-rendered
+    HTML/PDF. Faithful colors/shapes/emblems; flourish animations are dropped."""
+    rank = max(1, min(8, int(rank or 1)))
+    d, S = _MED_D[rank], _MED_SHAPES[rank]
+    orna = _med_laurel() if rank >= 6 else _med_pips(rank, d['rim'][0])
+    return (
+        '<svg class="rank-medal" width="%d" height="%d" viewBox="0 0 100 100">' % (size_px, size_px) +
+        '<style>.em{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}</style>'
+        '<defs>'
+        '<linearGradient id="rim" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="%s"/><stop offset=".5" stop-color="%s"/><stop offset="1" stop-color="%s"/></linearGradient>' % (d['rim'][0], d['rim'][1], d['rim'][2]) +
+        '<radialGradient id="face" cx=".38" cy=".30" r=".85"><stop offset="0" stop-color="%s"/><stop offset="1" stop-color="%s"/></radialGradient>' % (d['face'][0], d['face'][1]) +
+        '<linearGradient id="wr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="%s"/><stop offset="1" stop-color="%s"/></linearGradient>' % (d['rim'][0], d['rim'][2]) +
+        '</defs>' +
+        (orna if rank >= 6 else '') +
+        '<path d="%s" fill="url(#rim)" stroke="%s" stroke-width="2" stroke-linejoin="round"/>' % (S['big'], d['edge']) +
+        '<path d="%s" fill="url(#face)" stroke="rgba(0,0,0,.3)" stroke-width="1" stroke-linejoin="round"/>' % S['sm'] +
+        '<g transform="translate(26,23) scale(2)" stroke="%s" style="color:%s">%s</g>' % (d['ink'], d['ink'], _MED_EMBLEM[rank]) +
+        (orna if rank < 6 else '') +
+        '</svg>'
+    )
+
+
+def _cert_qr_svg(url):
+    """Real scannable QR pointing at the verification URL, if `segno` is
+    installed; otherwise None (the certificate falls back to printing the
+    verification code + URL as text, which verifies the same way)."""
+    try:
+        import segno
+        return segno.make(url, error='m').svg_inline(scale=3, dark='#000', light='#fff')
+    except Exception:
+        return None
+
+
+# Display copy per rank (Spanish primary; the on-screen panel handles full i18n).
+RANK_CERT_NAMES_ES = ['Paper Trader', 'Retail Trader', 'Chart Technician', 'Liquidity Hunter',
+                      'Swing Strategist', 'Order Flow Sniper', 'Market Maker', 'Trading Legend']
+_ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII']
+# Per-rank accent (acc), secondary bloom (acc2) and bright tint — mirrors the
+# approved preview so each certificate reads as a distinct metal.
+_CERT_THEME = {
+    1: ('#8a92ad', '#5f8fe8', '#b9c0d4'), 2: ('#c98f5e', '#e0a83d', '#e7b888'),
+    3: ('#9aabc4', '#6fd0e0', '#c5d2e4'), 4: ('#5f8fe8', '#8f7fe0', '#92b4f2'),
+    5: ('#2fa6b8', '#4fc88a', '#5fcdd9'), 6: ('#9f8fe8', '#e08fd0', '#c0b0f5'),
+    7: ('#e0a83d', '#e07a3d', '#f3c768'), 8: ('#f3c768', '#e05a28', '#fff0c8'),
+}
+
+
+def _hexa(hx, a):
+    hx = hx.lstrip('#')
+    return 'rgba(%d,%d,%d,%s)' % (int(hx[0:2], 16), int(hx[2:4], 16), int(hx[4:6], 16), a)
+
+
+def _cert_theme(rank):
+    acc, acc2, bright = _CERT_THEME[max(1, min(8, rank))]
+    return {'acc': acc, 'acc2': acc2, 'bright': bright,
+            'glow': _hexa(acc, '0.28'), 'glow2': _hexa(acc2, '0.18'),
+            'frame': _hexa(acc, '0.5'), 'soft': _hexa(acc, '0.11'), 'bd': _hexa(acc, '0.3')}
+
+
+def _issue_or_get_certificate(user, rank):
+    """Return the user's RankCertificate for `rank`, creating it (with a unique
+    verification code) on first request. Snapshots the display name at issue."""
+    cert = RankCertificate.query.filter_by(user_id=user.id, rank=rank).first()
+    if cert:
+        return cert
+    for _ in range(6):
+        code = 'TA-R%d-%s' % (rank, secrets.token_hex(4).upper())
+        if not RankCertificate.query.filter_by(code=code).first():
+            break
+    cert = RankCertificate(user_id=user.id, rank=rank, code=code,
+                           display_name=(user.username or 'Trader')[:40])
+    db.session.add(cert)
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        cert = RankCertificate.query.filter_by(user_id=user.id, rank=rank).first()
+    return cert
+
+
+@app.route('/certificate/<int:rank>')
+@login_required
+def certificate_view(rank):
+    """On-screen certificate for a rank the current user has reached."""
+    if rank < 1 or rank > 8:
+        abort(404)
+    if not current_user.is_admin and (current_user.rank or 1) < rank:
+        abort(403)
+    cert = _issue_or_get_certificate(current_user, rank)
+    verify_url = url_for('verify_certificate', code=cert.code, _external=True)
+    return render_template(
+        'certificate.html', rank=rank, rank_name=RANK_CERT_NAMES_ES[rank - 1],
+        roman=_ROMAN[rank - 1], xp=RANK_THRESHOLDS[rank - 1], cert=cert,
+        medal_svg=rank_medal_svg(rank, 132), verify_url=verify_url,
+        qr_svg=_cert_qr_svg(verify_url), is_legend=(rank == 8), for_pdf=False,
+        theme=_cert_theme(rank))
+
+
+@app.route('/certificate/<int:rank>/pdf')
+@login_required
+def certificate_pdf(rank):
+    """Downloadable watermarked PDF of the rank certificate."""
+    if rank < 1 or rank > 8:
+        abort(404)
+    if not current_user.is_admin and (current_user.rank or 1) < rank:
+        abort(403)
+    cert = _issue_or_get_certificate(current_user, rank)
+    verify_url = url_for('verify_certificate', code=cert.code, _external=True)
+    html_content = render_template(
+        'certificate.html', rank=rank, rank_name=RANK_CERT_NAMES_ES[rank - 1],
+        roman=_ROMAN[rank - 1], xp=RANK_THRESHOLDS[rank - 1], cert=cert,
+        medal_svg=rank_medal_svg(rank, 132), verify_url=verify_url,
+        qr_svg=_cert_qr_svg(verify_url), is_legend=(rank == 8), for_pdf=True,
+        theme=_cert_theme(rank))
+    try:
+        from weasyprint import HTML as WP_HTML
+        pdf_bytes = WP_HTML(string=html_content, base_url=request.host_url).write_pdf()
+    except Exception as e:
+        app.logger.error('Certificate PDF error: %s', e)
+        record_audit_event('pdf_downloaded', user_id=current_user.id,
+                            detail='rank_cert rank=%d FAILED' % rank, success=False)
+        abort(500)
+    record_audit_event('pdf_downloaded', user_id=current_user.id,
+                        detail='rank_cert rank=%d code=%s' % (rank, cert.code))
+    resp = make_response(pdf_bytes)
+    resp.headers['Content-Type'] = 'application/pdf'
+    resp.headers['Content-Disposition'] = (
+        'attachment; filename="trader-acelerator-%s.pdf"' % cert.code)
+    return resp
+
+
+@app.route('/verify/<code>')
+def verify_certificate(code):
+    """Public authenticity check — the real anti-forgery mechanism. Anyone can
+    confirm a certificate code resolves to a genuine holder, rank and date."""
+    cert = RankCertificate.query.filter_by(code=(code or '').strip()).first()
+    valid = cert is not None
+    return render_template(
+        'verify_certificate.html', valid=valid, cert=cert,
+        rank_name=(RANK_CERT_NAMES_ES[cert.rank - 1] if valid else None),
+        medal_svg=(rank_medal_svg(cert.rank, 96) if valid else None),
+        code=code)
+
+
+# ──────────────────────────────────────────────────────────────────────────
 # ANALYSIS PROJECTS (saved presets for the Analyze form)
 # ──────────────────────────────────────────────────────────────────────────
 # Fields a project may store. Direction & Result are intentionally excluded —
@@ -5135,10 +5401,18 @@ def _migrate_user_xp_columns():
         stmts.append('ALTER TABLE "user" ADD COLUMN last_xp_active_date VARCHAR(10)')
     if 'first_preflight_xp' not in cols:
         stmts.append('ALTER TABLE "user" ADD COLUMN first_preflight_xp BOOLEAN NOT NULL DEFAULT FALSE')
+    add_rank_celebrated = 'rank_celebrated' not in cols
+    if add_rank_celebrated:
+        stmts.append('ALTER TABLE "user" ADD COLUMN rank_celebrated INTEGER NOT NULL DEFAULT 1')
     if stmts:
         with db.engine.begin() as conn:
             for s in stmts:
                 conn.execute(text(s))
+            # Suppress retroactive celebrations: seal existing users at their
+            # current rank so nobody is greeted by a reveal for a rank they
+            # earned long before this feature shipped. New rank-ups still fire.
+            if add_rank_celebrated:
+                conn.execute(text('UPDATE "user" SET rank_celebrated = rank'))
         app.logger.info('Migrated user table: added XP/Rank columns (%d).', len(stmts))
 
 
