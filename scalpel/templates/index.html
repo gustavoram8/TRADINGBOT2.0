@@ -1350,6 +1350,16 @@
       font-weight: 700;
     }
 
+    .analysis-disclaimer {
+      margin-top: 18px;
+      padding: 12px 14px;
+      border-top: 1px solid var(--border, rgba(255,255,255,0.1));
+      font-size: 11.5px;
+      line-height: 1.5;
+      color: var(--muted, #8a8f9e);
+      font-style: italic;
+    }
+
     .result-meta {
       display: flex;
       gap: 8px;
@@ -4450,6 +4460,7 @@
       <div class="result-meta" id="result-meta"></div>
     </div>
     <div class="analysis-body" id="analysis-body"></div>
+    <div class="analysis-disclaimer" id="analysis-disclaimer" data-i18n="result.disclaimer">This AI-generated analysis is educational and illustrative only. It reviews a trade you have already taken — it is not financial advice and not a recommendation to buy, sell, or hold any instrument. Trading involves substantial risk of loss; all decisions are your own.</div>
     <button class="btn-new" id="btn-new" data-i18n="btn.new">← Analyze Another Trade</button>
   </div>
 
@@ -5739,6 +5750,7 @@
       'loading.analyzeTitle': 'Analyzing your setup...',
       'loading.analyzeSub': 'Trader Acelerator is reading the chart and applying ICT theory. This takes 10–20 seconds.',
       'result.title': 'Setup Analysis',
+      'result.disclaimer': 'This AI-generated analysis is educational and illustrative only. It reviews a trade you have already taken — it is not financial advice and not a recommendation to buy, sell, or hold any instrument. Trading involves substantial risk of loss; all decisions are your own.',
       'modal.noEntryTitle': 'No trade markers detected',
       'modal.noEntryBody': "Trader Acelerator couldn't clearly find an entry marker in your screenshot. The analysis will be general about the setup context rather than your specific entry.<br><br>You can analyze anyway, or upload a screenshot that shows your entry and exit.",
       'modal.noExitTitle': 'Exit marker not detected',
@@ -6130,6 +6142,7 @@
       'loading.analyzeTitle': 'Analizando tu setup...',
       'loading.analyzeSub': 'Trader Acelerator está leyendo el gráfico y aplicando la teoría ICT. Esto tarda 10–20 segundos.',
       'result.title': 'Análisis del Setup',
+      'result.disclaimer': 'Este análisis generado por IA es solo educativo e ilustrativo. Revisa una operación que ya realizaste — no es asesoría financiera ni una recomendación de compra, venta o mantenimiento de ningún instrumento. Operar implica un riesgo sustancial de pérdida; todas las decisiones son tuyas.',
       'modal.noEntryTitle': 'No se detectaron marcas del trade',
       'modal.noEntryBody': 'Trader Acelerator no pudo encontrar claramente una marca de entrada en tu captura. El análisis será general sobre el contexto del setup en vez de tu entrada específica.<br><br>Puedes analizar de todos modos, o subir una captura que muestre tu entrada y salida.',
       'modal.noExitTitle': 'No se detectó la marca de salida',
@@ -6521,6 +6534,7 @@
       'loading.analyzeTitle': 'Analyse de votre setup...',
       'loading.analyzeSub': 'Trader Acelerator lit le graphique et applique la théorie ICT. Cela prend 10–20 secondes.',
       'result.title': 'Analyse du Setup',
+      'result.disclaimer': "Cette analyse générée par IA est uniquement éducative et illustrative. Elle examine une transaction que vous avez déjà effectuée — ce n'est pas un conseil financier ni une recommandation d'acheter, de vendre ou de conserver un quelconque instrument. Le trading comporte un risque substantiel de perte ; toutes les décisions vous appartiennent.",
       'modal.noEntryTitle': 'Aucun marqueur de trade détecté',
       'modal.noEntryBody': "Trader Acelerator n'a pas pu trouver clairement un marqueur d'entrée dans votre capture. L'analyse portera sur le contexte général du setup plutôt que sur votre entrée précise.<br><br>Vous pouvez analyser quand même, ou télécharger une capture montrant votre entrée et votre sortie.",
       'modal.noExitTitle': 'Marqueur de sortie non détecté',
@@ -6912,6 +6926,7 @@
       'loading.analyzeTitle': 'Analisando seu setup...',
       'loading.analyzeSub': 'O Trader Acelerator está lendo o gráfico e aplicando a teoria ICT. Isso leva de 10 a 20 segundos.',
       'result.title': 'Análise do Setup',
+      'result.disclaimer': 'Esta análise gerada por IA é apenas educativa e ilustrativa. Ela revisa uma operação que você já realizou — não é aconselhamento financeiro nem uma recomendação de compra, venda ou manutenção de qualquer instrumento. Operar envolve risco substancial de perda; todas as decisões são suas.',
       'modal.noEntryTitle': 'Nenhum marcador de trade detectado',
       'modal.noEntryBody': 'O Trader Acelerator não conseguiu encontrar claramente um marcador de entrada na sua captura. A análise será geral sobre o contexto do setup em vez da sua entrada específica.<br><br>Você pode analisar mesmo assim, ou enviar uma captura que mostre sua entrada e saída.',
       'modal.noExitTitle': 'Marcador de saída não detectado',
