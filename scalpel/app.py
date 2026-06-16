@@ -865,6 +865,28 @@ def has_beta_access(user=None):
     return (user.rank or 1) >= BETA_MIN_RANK
 
 
+# ── Admin-only Demo / Preview mode ──────────────────────────────────────────
+# Lets the admin replay one-time reveals (rank-up, unlock, testimonial), preview
+# the app as any plan, and force a real roulette spin — all WITHOUT mutating real
+# account state (rank_celebrated / Order.celebrated_at are never touched in demo).
+# It is STRICTLY gated on is_admin: a normal user can never activate it, and any
+# stale demo flag found on a non-admin session is ignored AND cleared. No code
+# path for ordinary or paying users is altered by this feature.
+DEMO_PLANS = ('free', 'standard', 'premium')
+
+
+def _admin_demo():
+    """Return the active demo dict for the current admin, or None.
+    Never raises; returns None for anyone who isn't a logged-in admin (and
+    defensively scrubs any demo flag that somehow rode along on their session)."""
+    if not (current_user.is_authenticated and getattr(current_user, 'is_admin', False)):
+        if session.get('_admin_demo') is not None:
+            session.pop('_admin_demo', None)
+        return None
+    d = session.get('_admin_demo')
+    return d if isinstance(d, dict) else None
+
+
 def beta_required(fn):
     """JSON guard for endpoints shipped under the BETA label — rank 6+ (or admin).
     Mirrors premium_required so future beta APIs gate with a single decorator."""
@@ -1517,11 +1539,49 @@ def app_view():
     if not unlock_plan and (current_user.rank or 1) > (getattr(current_user, 'rank_celebrated', 1) or 1):
         rank_up_to = current_user.rank
         review_prompt = False  # one full-screen moment at a time
+
+    # ── Admin Demo / Preview overlay (no DB writes) ──
+    # Replaces the reveal/plan variables in memory only, so the admin can stage
+    # any first-time moment on demand. Never seals anything; a normal load is
+    # completely unaffected because `_admin_demo()` is None for everyone else.
+    plan_view = current_plan()
+    is_admin_view = current_user.is_admin
+    demo_mode = False
+    demo_label = ''
+    demo_open = ''
+    demo = _admin_demo()
+    if demo:
+        demo_mode = True
+        if demo.get('rank_up'):
+            rank_up_to = int(demo['rank_up'])
+            unlock_plan = ''
+            review_prompt = False
+            demo_label = 'Rank-up ' + str(rank_up_to)
+        elif demo.get('unlock') in DEMO_PLANS:
+            unlock_plan = demo['unlock']
+            rank_up_to = 0
+            review_prompt = False
+            demo_label = 'Unlock ' + demo['unlock'].capitalize()
+        elif demo.get('review'):
+            review_prompt = True
+            unlock_plan = ''
+            rank_up_to = 0
+            demo_label = 'Testimonial'
+        if demo.get('spin'):
+            demo_open = 'roulette'
+            demo_label = (demo_label + ' · ' if demo_label else '') + 'Roulette'
+        if demo.get('plan') in DEMO_PLANS:
+            plan_view = demo['plan']
+            # Mirror a real user of that plan: drop admin so client gating
+            # (which often reads `plan === 'premium' || isAdmin`) behaves true-to-plan.
+            is_admin_view = False
+            demo_label = (demo_label + ' · ' if demo_label else '') + 'View as ' + demo['plan'].capitalize()
+
     # Consume the pass so the next entry triggers the splash again.
     resp = make_response(render_template(
         'index.html',
-        plan=current_plan(),
-        is_admin=current_user.is_admin,
+        plan=plan_view,
+        is_admin=is_admin_view,
         username=current_user.username,
         is_guest=False,
         unlock_plan=unlock_plan,
@@ -1529,6 +1589,9 @@ def app_view():
         rank_up_to=rank_up_to,
         user_rank=current_user.rank or 1,
         user_xp=current_user.xp or 0,
+        demo_mode=demo_mode,
+        demo_label=demo_label,
+        demo_open=demo_open,
     ))
     resp.delete_cookie('scalpel_splash_ts')
     # Never let a cache serve a stale /app (which could hide a fresh rank-up
@@ -1828,7 +1891,7 @@ def admin():
         'admin.html', users=users, counts=counts,
         audit_events=audit_events, audit_failed_count=audit_failed_count,
         warn_counts=warn_counts, recent_warnings=recent_warnings, flagged=flagged,
-        ban_queue=ban_queue, **revenue,
+        ban_queue=ban_queue, demo_active=_admin_demo() is not None, **revenue,
     )
 
 
@@ -2213,6 +2276,53 @@ def admin_set_plan():
         user.plan = plan
         db.session.commit()
     return redirect(url_for('admin'))
+
+
+@app.route('/admin/demo/set', methods=['POST'])
+@login_required
+def admin_demo_set():
+    """Stage an admin-only demo scenario in the session, then open /app to play
+    it. Strictly admin-gated; writes nothing to the database."""
+    if not current_user.is_admin:
+        abort(403)
+    scenario = request.form.get('scenario', '')
+    d = {}
+    if scenario == 'plan':
+        p = request.form.get('plan')
+        if p in DEMO_PLANS:
+            d['plan'] = p
+    elif scenario == 'rank':
+        try:
+            r = int(request.form.get('rank', 0))
+        except (TypeError, ValueError):
+            r = 0
+        if 1 <= r <= 8:
+            d['rank_up'] = r
+    elif scenario == 'unlock':
+        p = request.form.get('plan')
+        if p in DEMO_PLANS:
+            d['unlock'] = p
+    elif scenario == 'review':
+        d['review'] = True
+    elif scenario == 'spin':
+        # Preview the roulette as a premium member would see it, with a real spin.
+        d['plan'] = 'premium'
+        d['spin'] = True
+    if not d:
+        abort(400)
+    session['_admin_demo'] = d
+    return redirect(url_for('app_view'))
+
+
+@app.route('/admin/demo/clear', methods=['POST'])
+@login_required
+def admin_demo_clear():
+    """Exit demo mode and return to a normal view."""
+    if not current_user.is_admin:
+        abort(403)
+    session.pop('_admin_demo', None)
+    nxt = request.form.get('next')
+    return redirect(nxt if nxt in ('/app', '/admin') else url_for('admin'))
 
 
 @app.route('/admin/ban/confirm', methods=['POST'])
@@ -4381,8 +4491,9 @@ def daily_answer():
 @app.route('/api/daily/spin', methods=['POST'])
 @premium_required
 def daily_spin():
+    demo_spin = bool(_admin_demo() and _admin_demo().get('spin'))
     st = _daily_state()
-    if st.spins_available <= 0:
+    if st.spins_available <= 0 and not demo_spin:
         return jsonify({'error': 'no_spins'}), 409
 
     import random as _random
@@ -4418,7 +4529,8 @@ def daily_spin():
         base = cur if cur and cur > datetime.now(timezone.utc) else datetime.now(timezone.utc)
         current_user.plan_expires_at = base + timedelta(days=30)
 
-    st.spins_available -= 1
+    if st.spins_available > 0:   # guard: a demo spin must never go negative
+        st.spins_available -= 1
     db.session.add(RouletteSpin(user_id=current_user.id, prize_key=prize_key,
                                 label=label, promo_code=promo_code))
     db.session.commit()
@@ -4596,6 +4708,10 @@ def rank_celebrated_ack():
     """Seal the rank-up reveal once the user has actually dismissed the panel.
     Called by the client when the reveal is closed; until then the reveal keeps
     re-appearing on each /app load so it can never be missed."""
+    # In admin demo mode the reveal is staged, not real — never seal it so it can
+    # be replayed as many times as the demo needs.
+    if _admin_demo():
+        return jsonify({'ok': True, 'demo': True})
     if (current_user.rank or 1) > (getattr(current_user, 'rank_celebrated', 1) or 1):
         current_user.rank_celebrated = current_user.rank
         db.session.commit()

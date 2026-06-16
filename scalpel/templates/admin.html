@@ -39,6 +39,28 @@
     .admin-h1 { font-size: 24px; font-weight: 800; margin-bottom: 4px; }
     .admin-desc { color: var(--muted); font-size: 14px; margin-bottom: 26px; }
 
+    .demo-panel { background: var(--card); border: 1px solid var(--premium);
+      border-radius: 12px; padding: 20px 22px; margin-bottom: 28px;
+      box-shadow: 0 0 0 1px rgba(224,168,61,0.12); }
+    .demo-title { font-size: 16px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+    .demo-badge { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--premium); border: 1px solid var(--premium); padding: 2px 8px; border-radius: 12px; }
+    .demo-note { color: var(--muted); font-size: 12.5px; line-height: 1.5; margin: 6px 0 16px; }
+    .demo-group { margin-bottom: 14px; }
+    .demo-glabel { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--muted); font-weight: 700; margin-bottom: 7px; }
+    .demo-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .demo-row form { margin: 0; }
+    .demo-btn { font: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+      background: var(--surface); color: var(--text); border: 1px solid var(--border2);
+      padding: 8px 14px; border-radius: 18px; transition: all 0.15s; }
+    .demo-btn:hover { border-color: var(--accent); color: var(--text); }
+    .demo-btn.accent { border-color: var(--premium); color: var(--premium); }
+    .demo-btn.warn { border-color: #dc2626; color: #dc2626; }
+    .demo-exit-row { display: flex; align-items: center; gap: 12px; margin-top: 16px;
+      padding-top: 14px; border-top: 1px solid var(--border); }
+    .demo-active-tag { font-size: 12px; font-weight: 700; color: #16a34a; }
+
     .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
     .stat {
       background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px;
@@ -214,6 +236,48 @@
   </nav>
 
   <div class="admin-wrap">
+    <div class="demo-panel">
+      <div class="demo-head">
+        <div class="demo-title">🎬 Demo / Preview <span class="demo-badge">admin only</span></div>
+        <div class="demo-note">Stage any first-time moment on demand — without touching your real rank, plan or coupons. Each button opens the app playing that scenario. Use “Exit demo” (top of the app) to return to normal.</div>
+      </div>
+
+      <div class="demo-group">
+        <div class="demo-glabel">View the app as a plan</div>
+        <div class="demo-row">
+          <form method="POST" action="/admin/demo/set"><input type="hidden" name="scenario" value="plan"><input type="hidden" name="plan" value="free"><button class="demo-btn">Free</button></form>
+          <form method="POST" action="/admin/demo/set"><input type="hidden" name="scenario" value="plan"><input type="hidden" name="plan" value="standard"><button class="demo-btn">Standard</button></form>
+          <form method="POST" action="/admin/demo/set"><input type="hidden" name="scenario" value="plan"><input type="hidden" name="plan" value="premium"><button class="demo-btn">Premium</button></form>
+        </div>
+      </div>
+
+      <div class="demo-group">
+        <div class="demo-glabel">Rank-up reveal</div>
+        <div class="demo-row">
+          {% for r in range(1, 9) %}
+          <form method="POST" action="/admin/demo/set"><input type="hidden" name="scenario" value="rank"><input type="hidden" name="rank" value="{{ r }}"><button class="demo-btn">Rank {{ r }}</button></form>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="demo-group">
+        <div class="demo-glabel">Other reveals</div>
+        <div class="demo-row">
+          <form method="POST" action="/admin/demo/set"><input type="hidden" name="scenario" value="unlock"><input type="hidden" name="plan" value="standard"><button class="demo-btn">Unlock Standard</button></form>
+          <form method="POST" action="/admin/demo/set"><input type="hidden" name="scenario" value="unlock"><input type="hidden" name="plan" value="premium"><button class="demo-btn">Unlock Premium</button></form>
+          <form method="POST" action="/admin/demo/set"><input type="hidden" name="scenario" value="review"><button class="demo-btn">Testimonial prompt</button></form>
+          <form method="POST" action="/admin/demo/set"><input type="hidden" name="scenario" value="spin"><button class="demo-btn accent">Open roulette (real spin)</button></form>
+        </div>
+      </div>
+
+      {% if demo_active %}
+      <form method="POST" action="/admin/demo/clear" class="demo-exit-row">
+        <span class="demo-active-tag">● Demo active</span>
+        <button class="demo-btn warn">Exit demo</button>
+      </form>
+      {% endif %}
+    </div>
+
     <div class="admin-h1">User Management</div>
     <div class="admin-desc">Assign plans manually. Standard = 1 analysis/day · Premium = unlimited · Free = 1 analysis/week.</div>
 

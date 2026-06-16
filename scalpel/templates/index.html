@@ -3611,7 +3611,10 @@
     xp: {{ user_xp|default(0) }},
     hasBeta: {{ 'true' if has_beta_access else 'false' }},
     betaMinRank: {{ beta_min_rank|default(6) }},
-    rankUpTo: {{ rank_up_to|default(0) }}
+    rankUpTo: {{ rank_up_to|default(0) }},
+    demoMode: {{ 'true' if demo_mode else 'false' }},
+    demoLabel: {{ (demo_label or '')|tojson }},
+    demoOpen: {{ (demo_open or '')|tojson }}
   };
 </script>
 
@@ -9156,6 +9159,34 @@
     ov.classList.add('show');
     void ov.offsetWidth;
     ov.classList.add('reveal');
+  })();
+
+  // ── Admin Demo / Preview bar (admin-only; staged server-side) ──
+  (function(){
+    if (!U.demoMode) return;
+    var bar = document.createElement('div');
+    bar.id = 'demo-bar';
+    bar.style.cssText = 'position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:99999;'
+      + 'display:flex;align-items:center;gap:12px;padding:9px 9px 9px 16px;border-radius:30px;'
+      + 'background:rgba(20,22,31,.96);border:1px solid #e0a83d;color:#eef0f6;'
+      + 'font-family:Inter,sans-serif;font-size:13px;font-weight:700;box-shadow:0 12px 40px rgba(0,0,0,.5)';
+    var txt = document.createElement('span');
+    txt.innerHTML = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#16a34a;'
+      + 'margin-right:8px;box-shadow:0 0 8px #16a34a"></span>DEMO' + (U.demoLabel ? ' · ' + U.demoLabel : '');
+    var f = document.createElement('form');
+    f.method = 'POST'; f.action = '/admin/demo/clear'; f.style.margin = '0';
+    f.innerHTML = '<input type="hidden" name="next" value="/app">';
+    var btn = document.createElement('button');
+    btn.type = 'submit'; btn.textContent = 'Exit demo';
+    btn.style.cssText = 'font:inherit;cursor:pointer;background:transparent;color:#dc2626;'
+      + 'border:1px solid #dc2626;padding:6px 14px;border-radius:20px';
+    f.appendChild(btn); bar.appendChild(txt); bar.appendChild(f);
+    document.body.appendChild(bar);
+    // Auto-open the roulette when staged so the partner sees the wheel instantly.
+    if (U.demoOpen === 'roulette') {
+      var ov = document.getElementById('roulette-overlay');
+      if (ov) ov.style.display = '';
+    }
   })();
 
   document.addEventListener('click', () => accountMenu.classList.remove('show'));
