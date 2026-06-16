@@ -5187,6 +5187,21 @@
   <!-- ── PRE-FLIGHT — CONFLUENCE CHECKLIST TRAINER (draft) ── -->
   {% if preflight_enabled %}
   <div class="feature-view" id="preflight-view">
+    <!-- Locked card for Free/Standard — Pre-Flight is a Premium-only feature -->
+    <div class="feature-panel">
+      <div class="feature-badge"></div>
+      <div class="feature-circle">
+        <svg class="ic-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <svg class="ic-soon" style="display:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div class="feature-title" data-i18n="pf.title">Pre-Flight</div>
+      <div class="feature-desc feat-main" data-i18n="pf.sub">Your discipline trainer. Define the confluences your trigger requires, run a pre-flight check before every trade, and let the data show which confluences actually pay.</div>
+      <div class="feature-desc feat-state"></div>
+      <a href="/?plans=1#plans" target="_blank" rel="noopener" class="feature-upgrade" data-i18n="feature.upgrade">Upgrade to Premium</a>
+    </div>
+
+    <!-- Real Pre-Flight trainer — shown only for Premium members -->
+    <div class="preflight-app" id="preflight-app" style="display:none;">
     <div class="page-header">
       <h1 data-i18n="pf.title">Pre-Flight</h1>
       <p data-i18n="pf.sub">Your discipline trainer. Define the confluences your trigger requires, run a pre-flight check before every trade, and let the data show which confluences actually pay.</p>
@@ -5404,6 +5419,7 @@
         <div class="pf-table-wrap" id="pf-cmp-table"></div>
       </div>
     </div>
+    </div><!-- /preflight-app -->
   </div>
   {% endif %}
 
@@ -9364,7 +9380,7 @@
     const isPremium = U.plan === 'premium';
     document.querySelectorAll('.feature-view').forEach(view => {
       const panel   = view.querySelector('.feature-panel');
-      const realApp = view.querySelector('.forum-app, .scout-app, .scalper-app, .synapse-app, .quiz-app');  // built features
+      const realApp = view.querySelector('.forum-app, .scout-app, .scalper-app, .synapse-app, .quiz-app, .preflight-app');  // built features
       const badge   = view.querySelector('.feature-badge');
       const circle  = view.querySelector('.feature-circle');
       const state    = view.querySelector('.feat-state');
@@ -9422,7 +9438,7 @@
     if (tab === 'forum' && U.plan === 'premium' && window.Forum) window.Forum.open();
     if (tab === 'scout' && U.plan === 'premium' && window.Scout) window.Scout.open();
     if (tab === 'quiz'    && U.plan === 'premium' && window.Quiz)    window.Quiz.open();
-    if (tab === 'preflight' && window.Preflight) window.Preflight.open();
+    if (tab === 'preflight' && U.plan === 'premium' && window.Preflight) window.Preflight.open();
     if (tab === 'scalper' && U.plan === 'premium' && window.Scalper) window.Scalper.open();
     if (tab === 'synapse' && U.plan === 'premium' && window.Synapse) window.Synapse.open();
     else if (window.Synapse && window.Synapse.pause) window.Synapse.pause();  // free the GPU when leaving Synapse

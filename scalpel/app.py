@@ -5197,9 +5197,12 @@ def _parse_trade_meta(data):
 
 
 def _preflight_guard():
-    """Mirror the Scout pattern: APIs answer 404 while the feature is disabled."""
+    """Pre-Flight is a Premium-only feature. APIs answer 404 while the feature is
+    disabled, and 403 for non-premium plans (admins always pass via is_premium)."""
     if not PREFLIGHT_ENABLED:
         return jsonify({'error': 'not_found'}), 404
+    if not is_premium():
+        return jsonify({'error': 'premium_required'}), 403
     return None
 
 
