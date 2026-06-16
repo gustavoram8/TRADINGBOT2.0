@@ -817,11 +817,15 @@ PLAN_LIMITS = {
 }
 
 # Max number of saved Analysis Projects per plan.
-PROJECT_LIMITS = {'free': 2, 'standard': 5, 'premium': 10}
+PROJECT_LIMITS = {'free': 3, 'standard': 5, 'premium': 10}
 
 
 def project_limit():
     """How many analysis projects the current user may save."""
+    # Demo / Preview: mirror the staged plan so the limit shown matches it.
+    demo = _admin_demo()
+    if demo and demo.get('plan') in PROJECT_LIMITS:
+        return PROJECT_LIMITS[demo['plan']]
     if current_user.is_authenticated and current_user.is_admin:
         return PROJECT_LIMITS['premium']
     return PROJECT_LIMITS.get(current_plan(), PROJECT_LIMITS['free'])
