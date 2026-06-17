@@ -35,9 +35,12 @@
      layout (QR, footer, serial) never shifts or clips. */
   .cert-shell{position:relative;width:100%;max-width:880px;aspect-ratio:1.5/1;
     container-type:inline-size;border-radius:4px;
-    box-shadow:0 30px 90px rgba(0,0,0,.55),0 0 0 1px var(--bd)}
-  .cert{position:absolute;top:0;left:0;width:880px;height:587px;
-    transform-origin:top left;transform:scale(calc(100cqw / 880))}
+    box-shadow:0 30px 90px rgba(0,0,0,.55),0 0 0 1px var(--bd);
+    /* Hidden until the real fonts are loaded + the height is fitted, so the
+       FOUT (fallback serif → Cinzel/Cormorant) is never visible. The .ready
+       class is added by script; a timed fallback reveals it no matter what. */
+    opacity:0;transition:opacity .2s ease}
+  .cert-shell.ready{opacity:1}
   {% endif %}
 
   .cert-guilloche{position:absolute;inset:0;opacity:.10;color:var(--acc);pointer-events:none}
@@ -175,7 +178,8 @@
   // down to 587 so nothing ever clips — for every rank and language.
   (function(){
     var inner = document.querySelector('.cert-in');
-    if (!inner) return;
+    var shell = document.querySelector('.cert-shell');
+    if (!inner || !shell) return;
     var BOX = 587; // design height of the certificate
     function fit(){
       // reset, then measure the natural (un-distributed) content height
@@ -190,11 +194,14 @@
         inner.style.height = BOX + 'px'; // restore rhythm: footer pinned to bottom
       }
     }
-    fit();
-    requestAnimationFrame(fit);
-    // Re-fit after fonts swap in (the real cause of the late jump) and as a guard.
+    function reveal(){ fit(); shell.classList.add('ready'); }
+    // Reveal only once the real fonts are in, so the typeface/sizes never visibly
+    // swap. Fallback timer guarantees it always appears even if fonts stall.
     if (document.fonts && document.fonts.ready){
-      document.fonts.ready.then(function(){ requestAnimationFrame(fit); });
+      document.fonts.ready.then(function(){ requestAnimationFrame(reveal); });
+      setTimeout(reveal, 1500);
+    } else {
+      reveal();
     }
     [120, 400, 900].forEach(function(ms){ setTimeout(fit, ms); });
     window.addEventListener('resize', fit);
