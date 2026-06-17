@@ -9212,6 +9212,31 @@
     var txt = document.createElement('span');
     txt.innerHTML = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#16a34a;'
       + 'margin-right:8px;box-shadow:0 0 8px #16a34a"></span>DEMO' + (U.demoLabel ? ' · ' + U.demoLabel : '');
+    bar.appendChild(txt);
+    // Rank navigation: ◀ [Rank N · Name] ▶ — advances through ranks with reveal
+    var RNAMES = ['Paper Trader','Retail Trader','Chart Technician','Liquidity Hunter',
+      'Swing Strategist','Order Flow Sniper','Market Maker','Trading Legend'];
+    var curR = U.rank || 1;
+    var rankWrap = document.createElement('span');
+    rankWrap.style.cssText = 'display:flex;align-items:center;gap:6px;margin-left:4px';
+    function mkRankBtn(label, targetRank) {
+      var b = document.createElement('button');
+      b.textContent = label;
+      b.style.cssText = 'font:inherit;cursor:pointer;background:transparent;color:#e0a83d;'
+        + 'border:1px solid #e0a83d;padding:4px 10px;border-radius:14px;font-size:12px';
+      if (targetRank < 1 || targetRank > 8) { b.disabled = true; b.style.opacity = '0.3'; b.style.cursor = 'default'; }
+      else { b.addEventListener('click', function(){ var fm = document.createElement('form'); fm.method='POST'; fm.action='/admin/demo/set';
+        fm.innerHTML='<input type="hidden" name="scenario" value="rank"><input type="hidden" name="rank" value="'+targetRank+'">';
+        document.body.appendChild(fm); fm.submit(); }); }
+      return b;
+    }
+    rankWrap.appendChild(mkRankBtn('◀', curR - 1));
+    var rlbl = document.createElement('span');
+    rlbl.textContent = 'Rank ' + curR + ' · ' + (RNAMES[curR - 1] || '');
+    rlbl.style.cssText = 'color:#e0a83d;font-size:12px;white-space:nowrap';
+    rankWrap.appendChild(rlbl);
+    rankWrap.appendChild(mkRankBtn('▶', curR + 1));
+    bar.appendChild(rankWrap);
     var f = document.createElement('form');
     f.method = 'POST'; f.action = '/admin/demo/clear'; f.style.margin = '0';
     f.innerHTML = '<input type="hidden" name="next" value="/app">';
@@ -9219,7 +9244,7 @@
     btn.type = 'submit'; btn.textContent = 'Exit demo';
     btn.style.cssText = 'font:inherit;cursor:pointer;background:transparent;color:#dc2626;'
       + 'border:1px solid #dc2626;padding:6px 14px;border-radius:20px';
-    f.appendChild(btn); bar.appendChild(txt); bar.appendChild(f);
+    f.appendChild(btn); bar.appendChild(f);
     document.body.appendChild(bar);
     // Auto-open the roulette when staged so the partner sees the wheel instantly.
     if (U.demoOpen === 'roulette') {
