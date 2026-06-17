@@ -22,13 +22,23 @@
     gap:22px;padding:40px 20px 60px;background:#0a0b10;font-family:'Inter',sans-serif}
   {% endif %}
 
-  .cert{position:relative;width:100%;{% if for_pdf %}height:100%;{% else %}max-width:880px;aspect-ratio:1.5/1;border-radius:4px;{% endif %}
-    overflow:hidden;color:#f3f1ea;font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif;
+  .cert{overflow:hidden;color:#f3f1ea;font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif;
     background:
       radial-gradient(ellipse 70% 60% at 14% 8%, var(--glow), transparent 60%),
       radial-gradient(ellipse 70% 60% at 86% 96%, var(--glow2), transparent 60%),
-      linear-gradient(155deg,#13141d 0%,#191b26 52%,#14151f 100%);
-    {% if not for_pdf %}box-shadow:0 30px 90px rgba(0,0,0,.55),0 0 0 1px var(--bd);{% endif %}}
+      linear-gradient(155deg,#13141d 0%,#191b26 52%,#14151f 100%);}
+  {% if for_pdf %}
+  .cert-shell{width:297mm;height:210mm}
+  .cert{width:100%;height:100%}
+  {% else %}
+  /* Fixed 880×587 design, scaled to fit the shell at any width so the internal
+     layout (QR, footer, serial) never shifts or clips. */
+  .cert-shell{position:relative;width:100%;max-width:880px;aspect-ratio:1.5/1;
+    container-type:inline-size;border-radius:4px;
+    box-shadow:0 30px 90px rgba(0,0,0,.55),0 0 0 1px var(--bd)}
+  .cert{position:absolute;top:0;left:0;width:880px;height:587px;
+    transform-origin:top left;transform:scale(calc(100cqw / 880))}
+  {% endif %}
 
   .cert-guilloche{position:absolute;inset:0;opacity:.10;color:var(--acc);pointer-events:none}
   .cert-watermark{position:absolute;inset:0;pointer-events:none;display:flex;flex-wrap:wrap;align-content:center;
@@ -39,7 +49,7 @@
   .cert::after{content:"";position:absolute;inset:23px;border:1px solid var(--bd);pointer-events:none}
 
   .cert-in{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;align-items:center;
-    text-align:center;padding:34px 56px 30px}
+    text-align:center;padding:28px 56px 24px}
   .cert-brand{display:flex;align-items:center;gap:10px;font-family:'Inter',sans-serif;
     font-size:11px;font-weight:800;letter-spacing:.32em;text-transform:uppercase;color:var(--acc)}
   .cert-brand svg{width:14px;height:14px}
@@ -49,12 +59,12 @@
   .cert-kicker{font-family:'Inter',sans-serif;font-size:11px;letter-spacing:.4em;text-transform:uppercase;color:#8b93a7;margin-top:6px}
   .cert-h1{font-family:'Cinzel',serif;font-size:38px;font-weight:600;letter-spacing:.04em;margin-top:6px;color:#f8eccf}
 
-  .cert-medal{margin:10px 0 2px}
+  .cert-medal{margin:4px 0 0}
   .cert-medal svg{filter:drop-shadow(0 4px 16px var(--glow))}
   .cert-presented{font-family:'Inter',sans-serif;font-size:13px;color:#8b93a7;margin:6px 0 6px;letter-spacing:.02em}
   .cert-name{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:600;color:#fff;
     padding:0 6px 8px;border-bottom:1px solid var(--frame);min-width:300px}
-  .cert-attained{font-family:'Inter',sans-serif;font-size:12px;color:#8b93a7;margin:14px 0 6px}
+  .cert-attained{font-family:'Inter',sans-serif;font-size:12px;color:#8b93a7;margin:8px 0 4px}
   .cert-rk{font-family:'Cinzel',serif;font-size:30px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--bright)}
   .cert-meta{font-family:'Inter',sans-serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--acc);margin-top:6px}
 
@@ -95,6 +105,7 @@
 </style>
 </head>
 <body>
+<div class="cert-shell">
 <div class="cert {% if is_legend %}legend{% endif %}">
   <svg class="cert-guilloche" viewBox="0 0 880 587" preserveAspectRatio="none" aria-hidden="true">
     <defs><pattern id="guil" width="58" height="58" patternUnits="userSpaceOnUse">
@@ -146,6 +157,7 @@
         <div class="val">Trader Acelerator</div></div>
     </div>
   </div>
+</div>
 </div>
 
 {% if not for_pdf %}
