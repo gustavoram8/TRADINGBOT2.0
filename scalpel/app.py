@@ -4710,12 +4710,12 @@ def quiz_answer_xp():
                     'xp': current_user.xp, 'rank': current_user.rank})
 
 
-def _rank_progress_payload(user):
-    xp = user.xp or 0
+def _rank_progress_payload(user, xp_override=None, plan_override=None):
+    xp = user.xp or 0 if xp_override is None else xp_override
     rank = rank_for_xp(xp)
     cur_floor = RANK_THRESHOLDS[rank - 1]
     next_floor = RANK_THRESHOLDS[rank] if rank < len(RANK_THRESHOLDS) else None
-    plan = user.plan or 'free'
+    plan = plan_override or user.plan or 'free'
     sources_used = {}
     for src in ('quiz', 'preflight_check', 'forum_post', 'forum_comment',
                 'forum_reaction', 'analysis', 'daily_correct', 'login'):
@@ -4747,7 +4747,21 @@ def _rank_progress_payload(user):
 @app.route('/api/rank/progress')
 @login_required
 def rank_progress():
-    return jsonify(_rank_progress_payload(current_user))
+    # Mirror the demo overlay so the "My Rank Progress" panel matches what the
+    # demo shows on-screen (reset to rank 1 for a plan view, or the chosen
+    # rank-up). Reads nothing from the DB beyond the real values as a fallback.
+    xp_override = None
+    plan_override = None
+    demo = _admin_demo()
+    if demo:
+        if demo.get('rank_up'):
+            r = int(demo['rank_up'])
+            xp_override = RANK_THRESHOLDS[r - 1] if r <= len(RANK_THRESHOLDS) else 0
+        elif demo.get('plan'):
+            xp_override = 0
+        if demo.get('plan') in DEMO_PLANS:
+            plan_override = demo['plan']
+    return jsonify(_rank_progress_payload(current_user, xp_override, plan_override))
 
 
 @app.route('/api/rank/celebrated', methods=['POST'])
