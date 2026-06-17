@@ -166,29 +166,37 @@
   <a class="pri" href="/certificate/{{ rank }}/pdf?lang={{ lang }}">{{ cl.download }}</a>
 </div>
 <script>
-  // Auto-fit: once the real fonts (Cinzel/Cormorant) load, the content can grow
-  // taller than the fixed 587px design box and overflow the frame (dates pushed
-  // below the border). Measure the real content height and uniformly scale it
-  // down so it always fits — for every rank/language, no matter which font won
-  // the FOUT race. Outer width-scaling stays in CSS; this only handles height.
+  // Auto-fit: the cert has a fixed 587px design height for its vertical rhythm,
+  // but once the real fonts (Cinzel/Cormorant) load the content can grow taller
+  // (and some lines wrap), overflowing the frame so the date crosses the border.
+  // We measure the TRUE natural content height (height:auto, so the flex footer's
+  // margin-top:auto collapses and offsetHeight = the real stacked content), then,
+  // if it exceeds the box, give the column that height and uniformly scale it back
+  // down to 587 so nothing ever clips — for every rank and language.
   (function(){
     var inner = document.querySelector('.cert-in');
     if (!inner) return;
     var BOX = 587; // design height of the certificate
     function fit(){
+      // reset, then measure the natural (un-distributed) content height
       inner.style.transform = '';
-      inner.style.height = '';
-      var need = inner.scrollHeight;
+      inner.style.height = 'auto';
+      var need = inner.offsetHeight;
       if (need > BOX){
         inner.style.height = need + 'px';
         inner.style.transformOrigin = 'top center';
         inner.style.transform = 'scale(' + (BOX / need) + ')';
+      } else {
+        inner.style.height = BOX + 'px'; // restore rhythm: footer pinned to bottom
       }
     }
     fit();
+    requestAnimationFrame(fit);
+    // Re-fit after fonts swap in (the real cause of the late jump) and as a guard.
     if (document.fonts && document.fonts.ready){
       document.fonts.ready.then(function(){ requestAnimationFrame(fit); });
     }
+    [120, 400, 900].forEach(function(ms){ setTimeout(fit, ms); });
     window.addEventListener('resize', fit);
   })();
 </script>
