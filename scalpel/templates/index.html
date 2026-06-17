@@ -504,6 +504,84 @@
       margin: 0 auto;
     }
 
+    /* ── MARKET TIMING (Kill Zones + Economic Calendar) ── */
+    .mt-divider{display:flex;align-items:center;gap:12px;margin:0 0 28px}
+    .mt-div-line{flex:1;height:1px;background:var(--border)}
+    .mt-div-label{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.18em;
+      text-transform:uppercase;color:var(--muted);white-space:nowrap}
+    .kz-section{margin-bottom:36px}
+    .kz-header{display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px;margin-bottom:16px}
+    .kz-title{font-size:18px;font-weight:700;color:var(--text);margin:0;flex:1 1 auto}
+    .kz-clock{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:8px;
+      background:var(--surface);border:1px solid var(--border);font-variant-numeric:tabular-nums}
+    .kz-clock-label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+    .kz-clock-time{font-size:14px;font-weight:600;color:var(--text);font-family:'JetBrains Mono',monospace}
+
+    .kz-active-banner{display:flex;align-items:center;gap:10px;padding:12px 18px;border-radius:10px;
+      margin-bottom:18px;border:1px solid var(--border);background:var(--surface);transition:all .3s ease}
+    .kz-active-banner.live{border-color:rgba(22,163,74,.45);background:rgba(22,163,74,.08)}
+    body.light .kz-active-banner.live{background:rgba(22,163,74,.06)}
+    .kz-active-banner.idle{border-color:var(--border)}
+    .kz-pulse{width:10px;height:10px;border-radius:50%;background:#636882;flex-shrink:0}
+    .kz-active-banner.live .kz-pulse{background:#16a34a;box-shadow:0 0 8px #16a34a;animation:kzPulse 1.8s ease-in-out infinite}
+    @keyframes kzPulse{0%,100%{box-shadow:0 0 4px #16a34a}50%{box-shadow:0 0 14px #16a34a,0 0 24px rgba(22,163,74,.3)}}
+    .kz-active-name{font-size:15px;font-weight:700;color:var(--text)}
+    .kz-active-window{font-size:12px;color:var(--muted);margin-left:auto;font-variant-numeric:tabular-nums}
+
+    .kz-timeline-wrap{position:relative;margin-bottom:22px;padding:0 1px}
+    .kz-timeline{display:flex;height:32px;border-radius:6px;overflow:hidden;border:1px solid var(--border);
+      background:var(--surface);position:relative}
+    .kz-seg{position:absolute;top:0;height:100%;display:flex;align-items:center;justify-content:center;
+      font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.85);
+      overflow:hidden;white-space:nowrap;transition:opacity .3s}
+    body.light .kz-seg{color:rgba(0,0,0,.7)}
+    .kz-seg.active{opacity:1}.kz-seg.dim{opacity:.45}
+    .kz-seg[data-kz="asia"]{background:rgba(124,58,237,.55)}
+    .kz-seg[data-kz="london"]{background:rgba(37,99,235,.55)}
+    .kz-seg[data-kz="nyam"]{background:rgba(234,88,12,.55)}
+    .kz-seg[data-kz="lunch"]{background:rgba(100,116,139,.35)}
+    .kz-seg[data-kz="nypm"]{background:rgba(220,38,38,.50)}
+    .kz-seg[data-kz="sb"]{background:rgba(16,185,129,.40);font-size:8px}
+    body.light .kz-seg[data-kz="asia"]{background:rgba(124,58,237,.30)}
+    body.light .kz-seg[data-kz="london"]{background:rgba(37,99,235,.30)}
+    body.light .kz-seg[data-kz="nyam"]{background:rgba(234,88,12,.30)}
+    body.light .kz-seg[data-kz="lunch"]{background:rgba(100,116,139,.20)}
+    body.light .kz-seg[data-kz="nypm"]{background:rgba(220,38,38,.30)}
+    body.light .kz-seg[data-kz="sb"]{background:rgba(16,185,129,.25)}
+    .kz-now-marker{position:absolute;top:-4px;bottom:-2px;width:2px;z-index:3;pointer-events:none;transition:left .3s linear}
+    .kz-now-line{width:2px;height:100%;background:#f59e0b}
+    .kz-now-dot{width:8px;height:8px;border-radius:50%;background:#f59e0b;position:absolute;top:-3px;left:-3px;
+      box-shadow:0 0 6px #f59e0b}
+    .kz-now-label{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:800;
+      letter-spacing:.1em;color:#f59e0b;white-space:nowrap}
+    .kz-timeline-hours{display:flex;justify-content:space-between;padding:4px 0 0;font-size:9px;color:var(--muted);
+      font-variant-numeric:tabular-nums}
+
+    .kz-sessions{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+    .kz-card{padding:12px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);
+      display:flex;flex-direction:column;gap:4px;transition:border-color .3s,background .3s}
+    .kz-card.active{border-color:rgba(22,163,74,.5);background:rgba(22,163,74,.06)}
+    .kz-card-name{font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px}
+    .kz-card-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+    .kz-card-window{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+    .kz-card-status{font-size:11px;font-weight:600;margin-top:2px}
+    .kz-card-status.on{color:#16a34a}
+    .kz-card-status.off{color:var(--muted)}
+    .kz-card-status.next{color:#f59e0b}
+
+    .ec-section{margin-bottom:24px}
+    .ec-header{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+    .ec-powered{font-size:11px;color:var(--muted);margin-left:auto}
+    .ec-widget-wrap{border-radius:10px;overflow:hidden;border:1px solid var(--border);min-height:420px;
+      background:var(--surface);position:relative}
+    .ec-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+      min-height:420px}
+
+    @media (max-width:600px){
+      .kz-header{flex-direction:column;align-items:flex-start}
+      .kz-sessions{grid-template-columns:1fr 1fr}
+    }
+
     /* ── CARD ── */
     /* Option B: the panel itself is near-invisible (blends with the page),
        defined only by a thin outline and a coloured left edge per section. */
@@ -4608,6 +4686,81 @@
     </div>
   </div>
 
+  </div><!-- /limit-view -->
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       MARKET TIMING — Kill Zones + Economic Calendar (scroll section)
+       Below the analyzer, same tab, accessed by scrolling down.
+       ══════════════════════════════════════════════════════════════════ -->
+  <div id="market-timing" style="margin-top:38px;">
+
+    <!-- ── Visual divider ── -->
+    <div class="mt-divider">
+      <span class="mt-div-line"></span>
+      <span class="mt-div-label">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span data-i18n="mt.divider">Market Timing</span>
+      </span>
+      <span class="mt-div-line"></span>
+    </div>
+
+    <!-- ── KILL ZONES (live clock) ── -->
+    <div class="kz-section">
+      <div class="kz-header">
+        <h2 class="kz-title" data-i18n="kz.title">Kill Zone Sessions</h2>
+        <div class="kz-clock" id="kz-clock-ny">
+          <span class="kz-clock-label">NY</span>
+          <span class="kz-clock-time" id="kz-time-ny">--:--:--</span>
+        </div>
+        <div class="kz-clock">
+          <span class="kz-clock-label" data-i18n="kz.local">Local</span>
+          <span class="kz-clock-time" id="kz-time-local">--:--:--</span>
+        </div>
+      </div>
+
+      <!-- Active session banner -->
+      <div class="kz-active-banner" id="kz-banner">
+        <div class="kz-pulse"></div>
+        <span class="kz-active-name" id="kz-active-name">—</span>
+        <span class="kz-active-window" id="kz-active-window"></span>
+      </div>
+
+      <!-- 24h timeline bar -->
+      <div class="kz-timeline-wrap">
+        <div class="kz-timeline" id="kz-timeline">
+          <!-- Segments injected by JS -->
+        </div>
+        <div class="kz-now-marker" id="kz-now-marker">
+          <div class="kz-now-line"></div>
+          <div class="kz-now-dot"></div>
+          <div class="kz-now-label">NOW</div>
+        </div>
+        <div class="kz-timeline-hours" id="kz-timeline-hours"></div>
+      </div>
+
+      <!-- Session list (cards) -->
+      <div class="kz-sessions" id="kz-sessions">
+        <!-- Cards injected by JS -->
+      </div>
+    </div>
+
+    <!-- ── ECONOMIC CALENDAR (TradingView widget, lazy-loaded) ── -->
+    <div class="ec-section" id="ec-section">
+      <div class="ec-header">
+        <h2 class="kz-title" data-i18n="ec.title">Economic Calendar</h2>
+        <span class="ec-powered" data-i18n="ec.powered">Powered by TradingView</span>
+      </div>
+      <div class="ec-widget-wrap" id="ec-widget-wrap">
+        <!-- TradingView widget injected on scroll (IntersectionObserver) -->
+        <div class="ec-placeholder" id="ec-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:32px;height:32px;color:var(--muted)"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span style="color:var(--muted);font-size:13px" data-i18n="ec.loading">Loading calendar…</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /market-timing -->
+
   </div><!-- /analyze-container -->
 
   <!-- ── FORUM TRADING (Premium) ── -->
@@ -7544,6 +7697,99 @@
   // Fold in deferred translation packs (e.g. the rank panel's RI dict, defined
   // in an earlier <script> that couldn't reach this const-scoped I18N).
   try { if (window.__RANK_I18N) { for (const c in window.__RANK_I18N) { if (I18N[c]) Object.assign(I18N[c], window.__RANK_I18N[c]); } } } catch (e) {}
+
+  // ── Market Timing i18n ──
+  const MT_I18N = {
+    en: {
+      'mt.divider': 'Market Timing',
+      'kz.title': 'Kill Zone Sessions',
+      'kz.local': 'Local',
+      'kz.active': 'ACTIVE',
+      'kz.closed': 'Closed',
+      'kz.next': 'Next',
+      'kz.nextIn': 'Starts in',
+      'kz.noSession': 'No active session',
+      'kz.nextSession': 'Next session',
+      'kz.asia': 'Asia',
+      'kz.london': 'London Open',
+      'kz.nyam': 'NY AM',
+      'kz.lunch': 'NY Lunch',
+      'kz.nypm': 'NY PM',
+      'kz.sb1': 'Silver Bullet 1',
+      'kz.sb2': 'Silver Bullet 2',
+      'kz.sb3': 'Silver Bullet 3',
+      'ec.title': 'Economic Calendar',
+      'ec.powered': 'Powered by TradingView',
+      'ec.loading': 'Loading calendar…',
+    },
+    es: {
+      'mt.divider': 'Horarios de Mercado',
+      'kz.title': 'Sesiones Kill Zone',
+      'kz.local': 'Local',
+      'kz.active': 'ACTIVA',
+      'kz.closed': 'Cerrada',
+      'kz.next': 'Siguiente',
+      'kz.nextIn': 'Comienza en',
+      'kz.noSession': 'Ninguna sesión activa',
+      'kz.nextSession': 'Próxima sesión',
+      'kz.asia': 'Asia',
+      'kz.london': 'Apertura Londres',
+      'kz.nyam': 'NY AM',
+      'kz.lunch': 'NY Almuerzo',
+      'kz.nypm': 'NY PM',
+      'kz.sb1': 'Silver Bullet 1',
+      'kz.sb2': 'Silver Bullet 2',
+      'kz.sb3': 'Silver Bullet 3',
+      'ec.title': 'Calendario Económico',
+      'ec.powered': 'Desarrollado por TradingView',
+      'ec.loading': 'Cargando calendario…',
+    },
+    fr: {
+      'mt.divider': 'Horaires de Marché',
+      'kz.title': 'Sessions Kill Zone',
+      'kz.local': 'Locale',
+      'kz.active': 'ACTIVE',
+      'kz.closed': 'Fermée',
+      'kz.next': 'Suivante',
+      'kz.nextIn': 'Commence dans',
+      'kz.noSession': 'Aucune session active',
+      'kz.nextSession': 'Prochaine session',
+      'kz.asia': 'Asie',
+      'kz.london': 'Ouverture Londres',
+      'kz.nyam': 'NY AM',
+      'kz.lunch': 'NY Déjeuner',
+      'kz.nypm': 'NY PM',
+      'kz.sb1': 'Silver Bullet 1',
+      'kz.sb2': 'Silver Bullet 2',
+      'kz.sb3': 'Silver Bullet 3',
+      'ec.title': 'Calendrier Économique',
+      'ec.powered': 'Propulsé par TradingView',
+      'ec.loading': 'Chargement du calendrier…',
+    },
+    pt: {
+      'mt.divider': 'Horários de Mercado',
+      'kz.title': 'Sessões Kill Zone',
+      'kz.local': 'Local',
+      'kz.active': 'ATIVA',
+      'kz.closed': 'Fechada',
+      'kz.next': 'Próxima',
+      'kz.nextIn': 'Começa em',
+      'kz.noSession': 'Nenhuma sessão ativa',
+      'kz.nextSession': 'Próxima sessão',
+      'kz.asia': 'Ásia',
+      'kz.london': 'Abertura Londres',
+      'kz.nyam': 'NY AM',
+      'kz.lunch': 'NY Almoço',
+      'kz.nypm': 'NY PM',
+      'kz.sb1': 'Silver Bullet 1',
+      'kz.sb2': 'Silver Bullet 2',
+      'kz.sb3': 'Silver Bullet 3',
+      'ec.title': 'Calendário Econômico',
+      'ec.powered': 'Desenvolvido por TradingView',
+      'ec.loading': 'Carregando calendário…',
+    }
+  };
+  Object.keys(MT_I18N).forEach(l => { if (I18N[l]) Object.assign(I18N[l], MT_I18N[l]); });
 
   let currentLang = 'en';
   try { const stored = localStorage.getItem('scalpel_lang'); if (stored && I18N[stored]) currentLang = stored; } catch (e) {}
@@ -21967,6 +22213,239 @@
   setupFeaturePanels();
   applyLanguage(currentLang);
   refreshAccountMenu();
+
+  // ══════════════════════════════════════════════════════════════════════
+  // MARKET TIMING — Kill Zones live clock + Economic Calendar lazy widget
+  // ══════════════════════════════════════════════════════════════════════
+  (function(){
+    if (!document.getElementById('kz-timeline')) return;
+
+    // ICT Standard Kill Zones in NY time (ET — handles DST via Intl)
+    // [id, i18nKey, startHour, startMin, endHour, endMin, cssKz]
+    const ZONES = [
+      ['asia',   'kz.asia',   20, 0,  0, 0,  'asia'],
+      ['london', 'kz.london',  2, 0,  5, 0,  'london'],
+      ['sb1',    'kz.sb1',     3, 0,  4, 0,  'sb'],
+      ['nyam',   'kz.nyam',    7, 0, 10, 0,  'nyam'],
+      ['sb2',    'kz.sb2',    10, 0, 11, 0,  'sb'],
+      ['lunch',  'kz.lunch',  12, 0, 13, 0,  'lunch'],
+      ['nypm',   'kz.nypm',   13,30, 16, 0,  'nypm'],
+      ['sb3',    'kz.sb3',    14, 0, 15, 0,  'sb'],
+    ];
+
+    const TL  = document.getElementById('kz-timeline');
+    const MK  = document.getElementById('kz-now-marker');
+    const HRS = document.getElementById('kz-timeline-hours');
+    const BN  = document.getElementById('kz-banner');
+    const BN_NAME = document.getElementById('kz-active-name');
+    const BN_WIN  = document.getElementById('kz-active-window');
+    const SESS = document.getElementById('kz-sessions');
+    const CLK_NY  = document.getElementById('kz-time-ny');
+    const CLK_LOC = document.getElementById('kz-time-local');
+
+    // Convert a NY hour:min to fraction of 24h
+    function frac(h, m){ return (h + m / 60) / 24; }
+    // NY time via Intl
+    function nyNow(){
+      const s = new Date().toLocaleString('en-US', {timeZone:'America/New_York',hour12:false,
+        hour:'2-digit',minute:'2-digit',second:'2-digit'});
+      const [hh,mm,ss] = s.split(':').map(Number);
+      return {h:hh,m:mm,s:ss,frac:(hh+mm/60+ss/3600)/24};
+    }
+    function pad2(n){ return n < 10 ? '0'+n : ''+n; }
+    function fmt(h,m){ return pad2(h)+':'+pad2(m); }
+    function t(k){ return (I18N[currentLang]||I18N.en)[k] || (I18N.en)[k] || k; }
+    function hhmm(h,m){ var p=h>=12?'PM':'AM'; var h12=h%12||12; return h12+':'+pad2(m)+' '+p; }
+
+    // Build timeline segments
+    ZONES.forEach(function(z){
+      var seg = document.createElement('div');
+      seg.className = 'kz-seg';
+      seg.dataset.kz = z[6];
+      seg.dataset.id = z[0];
+      var s = frac(z[2],z[3]), e = frac(z[4],z[5]);
+      if (e <= s) e += 1; // wraps midnight (Asia)
+      seg.style.left  = (s * 100) + '%';
+      seg.style.width = ((e - s) * 100) + '%';
+      seg.textContent = z[0].toUpperCase().replace('SB','SB');
+      TL.appendChild(seg);
+      // Asia wraps — show tail at start of bar
+      if (z[4] < z[2] || (z[4]===z[2] && z[5]<z[3])){
+        var tail = seg.cloneNode(true);
+        tail.style.left = '0%';
+        tail.style.width = (frac(z[4],z[5]) * 100) + '%';
+        TL.appendChild(tail);
+        // Fix main segment to not exceed 100%
+        seg.style.width = ((1 - s) * 100) + '%';
+      }
+    });
+
+    // Hour labels
+    for(var h=0;h<24;h+=3){
+      var sp = document.createElement('span');
+      sp.textContent = pad2(h);
+      HRS.appendChild(sp);
+    }
+
+    // Session cards
+    ZONES.filter(z => !z[0].startsWith('sb')).forEach(function(z){
+      var c = document.createElement('div');
+      c.className = 'kz-card';
+      c.id = 'kz-card-' + z[0];
+      c.innerHTML = '<div class="kz-card-name"><span class="kz-card-dot" style="background:var(--muted)"></span>'
+        + '<span data-i18n="'+z[1]+'">'+t(z[1])+'</span></div>'
+        + '<div class="kz-card-window">' + hhmm(z[2],z[3]) + ' — ' + hhmm(z[4],z[5]) + ' ET</div>'
+        + '<div class="kz-card-status off" data-i18n="kz.closed">' + t('kz.closed') + '</div>';
+      SESS.appendChild(c);
+    });
+
+    // Countdown helper
+    function countdown(targetH, targetM, ny){
+      var nowMin = ny.h * 60 + ny.m;
+      var tgtMin = targetH * 60 + targetM;
+      var diff = tgtMin - nowMin;
+      if (diff <= 0) diff += 1440; // next day
+      var hh = Math.floor(diff / 60);
+      var mm = diff % 60;
+      return hh > 0 ? hh + 'h ' + pad2(mm) + 'm' : mm + 'm';
+    }
+
+    // Check if NY time is within a zone
+    function inZone(z, ny){
+      var nowMin = ny.h * 60 + ny.m;
+      var sMin = z[2] * 60 + z[3];
+      var eMin = z[4] * 60 + z[5];
+      if (eMin <= sMin){ // wraps midnight
+        return nowMin >= sMin || nowMin < eMin;
+      }
+      return nowMin >= sMin && nowMin < eMin;
+    }
+
+    var dotColors = {
+      asia:'#7c3aed', london:'#2563eb', nyam:'#ea580c', lunch:'#64748b', nypm:'#dc2626'
+    };
+
+    function tick(){
+      var ny = nyNow();
+      CLK_NY.textContent = pad2(ny.h)+':'+pad2(ny.m)+':'+pad2(ny.s);
+      var loc = new Date();
+      CLK_LOC.textContent = pad2(loc.getHours())+':'+pad2(loc.getMinutes())+':'+pad2(loc.getSeconds());
+
+      // NOW marker position
+      MK.style.left = (ny.frac * 100) + '%';
+
+      // Determine active zones
+      var activeMain = null;
+      var activeSBs = [];
+
+      ZONES.forEach(function(z){
+        var on = inZone(z, ny);
+        // Highlight timeline segments
+        TL.querySelectorAll('.kz-seg[data-id="'+z[0]+'"]').forEach(function(seg){
+          seg.classList.toggle('active', on);
+          seg.classList.toggle('dim', !on);
+        });
+        if (z[0].startsWith('sb')){
+          if (on) activeSBs.push(z);
+        } else {
+          // Update card
+          var card = document.getElementById('kz-card-' + z[0]);
+          if (card){
+            card.classList.toggle('active', on);
+            var dot = card.querySelector('.kz-card-dot');
+            if (dot) dot.style.background = on ? dotColors[z[0]] : 'var(--muted)';
+            var st = card.querySelector('.kz-card-status');
+            if (st){
+              if (on){
+                st.className = 'kz-card-status on';
+                st.textContent = '● ' + t('kz.active');
+              } else {
+                st.className = 'kz-card-status off';
+                st.textContent = t('kz.closed');
+              }
+            }
+          }
+          if (on && !activeMain) activeMain = z;
+        }
+      });
+
+      // Banner
+      if (activeMain){
+        BN.className = 'kz-active-banner live';
+        BN_NAME.textContent = t(activeMain[1]) + (activeSBs.length ? '  +  ' + activeSBs.map(s=>t(s[1])).join(', ') : '');
+        BN_WIN.textContent = hhmm(activeMain[2],activeMain[3]) + ' — ' + hhmm(activeMain[4],activeMain[5]) + ' ET';
+      } else {
+        BN.className = 'kz-active-banner idle';
+        // Find next session
+        var mainZones = ZONES.filter(z => !z[0].startsWith('sb'));
+        var nextZ = null;
+        var minDiff = Infinity;
+        mainZones.forEach(function(z){
+          var nowMin = ny.h * 60 + ny.m;
+          var sMin = z[2] * 60 + z[3];
+          var diff = sMin - nowMin;
+          if (diff <= 0) diff += 1440;
+          if (diff < minDiff){ minDiff = diff; nextZ = z; }
+        });
+        BN_NAME.textContent = t('kz.noSession');
+        if (nextZ){
+          BN_WIN.textContent = t('kz.nextIn') + ': ' + countdown(nextZ[2], nextZ[3], ny) + ' → ' + t(nextZ[1]);
+        } else {
+          BN_WIN.textContent = '';
+        }
+      }
+    }
+
+    tick();
+    setInterval(tick, 1000);
+
+    // ── Economic Calendar — TradingView widget (lazy load on scroll) ──
+    var ecWrap = document.getElementById('ec-widget-wrap');
+    var ecLoaded = false;
+    if (ecWrap && 'IntersectionObserver' in window){
+      var obs = new IntersectionObserver(function(entries){
+        if (entries[0].isIntersecting && !ecLoaded){
+          ecLoaded = true;
+          obs.disconnect();
+          var isDark = document.body.classList.contains('light') ? 'light' : 'dark';
+          ecWrap.innerHTML = '<div class="tradingview-widget-container">'
+            + '<div class="tradingview-widget-container__widget"></div></div>';
+          var s = document.createElement('script');
+          s.type = 'text/javascript';
+          s.src = 'https://s3.tradingview.com/external-embedding/embed-widget-events.js';
+          s.async = true;
+          s.textContent = JSON.stringify({
+            "colorTheme": isDark,
+            "isTransparent": true,
+            "width": "100%",
+            "height": "460",
+            "locale": currentLang === 'pt' ? 'br' : (currentLang || 'en'),
+            "importanceFilter": "-1,0,1",
+            "countryFilter": "us,eu,gb,jp,au,ca,ch,cn,nz"
+          });
+          ecWrap.querySelector('.tradingview-widget-container').appendChild(s);
+        }
+      }, {rootMargin:'200px'});
+      obs.observe(ecWrap);
+    }
+
+    // Re-apply i18n on language change for the market timing section
+    var origApply = window.applyLanguage;
+    if (origApply){
+      window.applyLanguage = function(lang){
+        origApply(lang);
+        // Re-render the session cards status text
+        tick();
+        ZONES.filter(z => !z[0].startsWith('sb')).forEach(function(z){
+          var card = document.getElementById('kz-card-' + z[0]);
+          if (card){
+            var nameSpan = card.querySelector('[data-i18n]');
+            if (nameSpan) nameSpan.textContent = t(nameSpan.dataset.i18n);
+          }
+        });
+      };
+    }
+  })();
 
   window.__TA_INIT_OK = true;
 </script>
