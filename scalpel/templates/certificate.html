@@ -165,6 +165,33 @@
   <a class="sec" href="/app">← {{ cl.back }}</a>
   <a class="pri" href="/certificate/{{ rank }}/pdf?lang={{ lang }}">{{ cl.download }}</a>
 </div>
+<script>
+  // Auto-fit: once the real fonts (Cinzel/Cormorant) load, the content can grow
+  // taller than the fixed 587px design box and overflow the frame (dates pushed
+  // below the border). Measure the real content height and uniformly scale it
+  // down so it always fits — for every rank/language, no matter which font won
+  // the FOUT race. Outer width-scaling stays in CSS; this only handles height.
+  (function(){
+    var inner = document.querySelector('.cert-in');
+    if (!inner) return;
+    var BOX = 587; // design height of the certificate
+    function fit(){
+      inner.style.transform = '';
+      inner.style.height = '';
+      var need = inner.scrollHeight;
+      if (need > BOX){
+        inner.style.height = need + 'px';
+        inner.style.transformOrigin = 'top center';
+        inner.style.transform = 'scale(' + (BOX / need) + ')';
+      }
+    }
+    fit();
+    if (document.fonts && document.fonts.ready){
+      document.fonts.ready.then(function(){ requestAnimationFrame(fit); });
+    }
+    window.addEventListener('resize', fit);
+  })();
+</script>
 {% endif %}
 </body>
 </html>
