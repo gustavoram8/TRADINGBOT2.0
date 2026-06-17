@@ -4,9 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Trader Acelerator — ICT Trade Analysis</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js" defer></script>
   <!-- Scalpe® studio loads its canvas engine (Fabric) + PDF export (jsPDF)
        lazily on first open, with multi-CDN fallback — see Scalper.open() -->
   <style>
@@ -5813,7 +5813,7 @@
   Synapse 3D models: head scan by Lee Perry-Smith / Infinite Realities (CC BY 3.0) · brain model by dgallichan (CC BY 4.0, Sketchfab)
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 <!-- Synapse Library: real content + textbook SVG diagrams for the 41 topics -->
 <script src="/static/synapse_library.js?v=1"></script>
 <!-- TradingView Lightweight Charts (Apache 2.0) — vendored locally for the Hardcore quiz -->
@@ -7801,7 +7801,7 @@
       // The AI response is rendered as HTML via marked — sanitize it first so
       // any markup the model emits (intentionally or via prompt injection from
       // an uploaded image) can't execute scripts in the user's session.
-      const analysisHtml = marked.parse(data.analysis);
+      const analysisHtml = window.marked ? marked.parse(data.analysis) : data.analysis;
       document.getElementById('analysis-body').innerHTML = window.DOMPurify
         ? DOMPurify.sanitize(analysisHtml)
         : analysisHtml;
