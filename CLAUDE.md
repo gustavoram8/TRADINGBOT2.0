@@ -3,6 +3,66 @@
 
 ---
 
+> **🟢 EN CURSO (2026-06-17) — MARKET TIMING: KILL ZONES EN VIVO + CALENDARIO ECONÓMICO**
+> **(RETOMAR ESTO — el usuario tuvo que abrir sesión nueva por caídas del navegador "OH NO")**
+>
+> **Rama de trabajo de esta línea:** `claude/intelligent-turing-94qh5i` (NO la `epic-lovelace`).
+> Working tree limpio, todo pusheado. Commits relevantes:
+> - `6386884` — 1ª versión: sección "Market Timing" debajo del analizador (Kill Zones + widget
+>   de calendario de TradingView).
+> - `52a4c5a` — rediseño a dos carriles (sesiones arriba / Silver Bullets abajo) + filtro del
+>   calendario a alto/medio impacto (`importanceFilter:"0,1"`).
+>
+> **QUÉ ES:** una sección nueva **dentro de la pestaña del Analizador** (NO una pestaña nueva —
+> decisión del usuario: NO crear más apartados), que aparece **al hacer scroll hacia abajo**
+> debajo del analizador de screenshots. Vive en `scalpel/templates/index.html`:
+> - HTML: `<div id="market-timing">` justo antes de `</div><!-- /analyze-container -->`.
+> - CSS: bloque "MARKET TIMING (Kill Zones + Economic Calendar)" antes de `.card {`.
+> - JS: IIFE "MARKET TIMING — Kill Zones live clock + Economic Calendar" justo antes de
+>   `window.__TA_INIT_OK = true;`.
+> - i18n: `MT_I18N` (en/es/fr/pt) fusionado con `Object.keys(MT_I18N).forEach(...)`.
+> - Kill Zones implementadas (hora NY/ET, maneja DST vía Intl): Asia 20–00, London 02–05,
+>   NY AM 07–10, Lunch 12–13, NY PM 13:30–16, Silver Bullets SB1 03–04 / SB2 10–11 / SB3 14–15.
+> - Calendario: widget oficial de TradingView (embed-widget-events.js), lazy-load con
+>   IntersectionObserver, filtrado a rojo+naranja, países us,eu,gb,jp,au,ca,ch,cn,nz.
+>
+> **⚠️ FEEDBACK DEL USUARIO QUE FALTA APLICAR (lo más importante a retomar):**
+> 1. **Las Kill Zones todavía se ven "muy de Claude" / genéricas y confusas** — el usuario
+>    quiere **MÁS originalidad y creatividad on-brand** (identidad de trading/ICT, estética
+>    grafito+oro del sitio como la ruleta del Daily). Aún hay sensación de choque/poca claridad.
+> 2. **Mostrar la HORA EXACTA EN VIVO sobre la barra/indicador amarillo (NOW)** — hoy el marcador
+>    NOW se mueve pero no muestra la hora exacta pegada a él. Requisito explícito.
+> 3. **Calendario estilo Forex Factory + SIN redirigir a TradingView:** el usuario quiere que al
+>    hacer clic en "more events" NO se vaya a TradingView, y mostrar SOLO maletines rojos/naranjas
+>    (alto/medio impacto). **REALIDAD TÉCNICA YA EXPLICADA AL USUARIO:** el widget de TradingView
+>    SIEMPRE redirige a TV al hacer clic en un evento (iframe cross-origin, no se puede interceptar).
+>    Para cumplir el requisito hay que **DEJAR el widget y construir un calendario PROPIO** con un
+>    feed de datos público cargado server-side (más trabajo). **Decisión del usuario aún PENDIENTE.**
+>
+> **ACUERDOS DE ESTRUCTURA (Claude propuso, falta implementar):** como KZ + calendario van debajo
+> del analizador en la MISMA pestaña (patrón dashboard-scroll tipo TradingView, que al usuario le
+> gusta), para que se sienta intencional y no desordenado: (1) **mini-nav sticky de anclas**
+> `Analyzer · Kill Zones · Calendar`; (2) **chevron animado "↓ Market Timing"** al final del
+> analizador como afford­ance de scroll; (3) **divisores de sección con peso visual**.
+>
+> **🔢 3 DECISIONES PENDIENTES QUE EL USUARIO DEBE RESPONDER ANTES DE CONSTRUIR:**
+> 1. ¿Calendario PROPIO (sin TV, sin redirección, control total Forex-Factory) con feed de datos?
+>    ¿o se queda el widget de TradingView aceptando que los clics redirigen?
+> 2. ¿Estilo visual de Kill Zones? Opciones propuestas: **A)** "Terminal de trading" (oscuro tipo
+>    Bloomberg, monospace, ámbar/verde) · **B)** "Forex Factory mejorado" (tabla limpia por sesión +
+>    countdown) · **C)** "Gauge/dashboard" (reloj circular tipo velocímetro, sesión activa al centro).
+> 3. ¿Confirma el mini-nav sticky + chevron de scroll?
+>
+> **DESPLIEGUE:** el usuario debe correr en el VPS:
+> `cd /var/www/TRADINGBOT2.0 && git pull origin claude/intelligent-turing-94qh5i && supervisorctl restart traderacelerator`
+> (Posiblemente aún NO desplegó `52a4c5a` — si reporta textos encimados, está viendo versión vieja.)
+>
+> **NOTA DE INFRAESTRUCTURA:** esta semana el usuario sufre caídas del navegador ("OH NO" + robot)
+> por conversaciones MUY largas que agotan la RAM del navegador. Solución acordada: sesiones nuevas
+> y limpias + cerrar pestañas viejas. Por eso se creó esta nota: para retomar sin perder contexto.
+
+---
+
 > **🥇 PRIORIDAD #1 — LO PRIMERO QUE CLAUDE DEBE ENTENDER EN CADA SESIÓN NUEVA**
 > **(ANTI-TRAMPA QUIZ/DAILY — LLAVE DE RESPUESTAS SERVER-SIDE, 2026-06-13):**
 >
