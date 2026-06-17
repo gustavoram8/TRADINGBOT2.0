@@ -2336,6 +2336,8 @@ def admin_demo_set():
         p = request.form.get('plan')
         if p in DEMO_PLANS:
             d['plan'] = p
+            if p != 'free':
+                d['unlock'] = p
     elif scenario == 'rank':
         try:
             r = int(request.form.get('rank', 0))
