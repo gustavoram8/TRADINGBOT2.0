@@ -4807,7 +4807,7 @@ _MED_D = {
 _MED_EMBLEM = {
     1: '<path class="em" d="M6 3h8l4 4v14H6z"/><path class="em" d="M14 3v4h4"/><line class="em" x1="9" y1="12" x2="15" y2="12"/><line class="em" x1="9" y1="15.5" x2="15" y2="15.5"/>',
     2: '<line class="em" x1="12" y1="3" x2="12" y2="7"/><line class="em" x1="12" y1="17" x2="12" y2="21"/><rect class="em" x="9" y="7" width="6" height="10" rx="1"/>',
-    3: '<polyline class="em" points="3 16 9 10 13 13 21 5"/><polyline class="em" points="16 5 21 5 21 10"/><circle cx="21" cy="5" r="2" fill="currentColor"/>',
+    3: '<polyline class="em" points="3 16 9 10 13 13 21 5"/><polyline class="em" points="16 5 21 5 21 10"/>',
     4: '<line class="em" x1="4" y1="7" x2="20" y2="7"/><line class="em" x1="4" y1="12" x2="15" y2="12"/><line class="em" x1="4" y1="17" x2="18" y2="17"/>',
     5: '<path class="em" d="M3 15c3 0 3-7 6-7s3 7 6 7 3-7 6-7"/>',
     6: '<circle class="em" cx="12" cy="12" r="6.5"/><line class="em" x1="12" y1="2.5" x2="12" y2="5.5"/><line class="em" x1="12" y1="18.5" x2="12" y2="21.5"/><line class="em" x1="2.5" y1="12" x2="5.5" y2="12"/><line class="em" x1="18.5" y1="12" x2="21.5" y2="12"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/>',
