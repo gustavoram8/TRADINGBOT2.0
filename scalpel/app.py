@@ -1,6 +1,7 @@
 import os
 import re
 import json
+import gzip
 import base64
 import socket
 import secrets
@@ -102,6 +103,30 @@ mail = Mail(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 reset_serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+
+
+@app.after_request
+def _gzip_response(response):
+    """Compress large text responses so the 2.8 MB app page transfers in ~300 KB."""
+    if (response.status_code < 200 or response.status_code >= 300
+            or response.direct_passthrough
+            or 'Content-Encoding' in response.headers
+            or 'gzip' not in request.headers.get('Accept-Encoding', '')
+            or response.content_length is not None and response.content_length < 1024):
+        return response
+    ct = response.content_type or ''
+    if not (ct.startswith('text/') or ct.startswith('application/json')
+            or ct.startswith('application/javascript')):
+        return response
+    data = response.get_data()
+    if len(data) < 1024:
+        return response
+    compressed = gzip.compress(data, compresslevel=6)
+    response.set_data(compressed)
+    response.headers['Content-Encoding'] = 'gzip'
+    response.headers['Content-Length'] = len(compressed)
+    response.headers['Vary'] = 'Accept-Encoding'
+    return response
 
 # ── Feature flags ──
 # Prop Firm Scout is fully built but temporarily disabled until a future launch.

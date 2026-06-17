@@ -7,6 +7,29 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js" defer></script>
+  <script>
+  // Health-check: if the main JS never finishes initializing (truncated page,
+  // network glitch, CDN timeout), auto-reload ONCE so the user doesn't get
+  // stuck in a broken "Free-guest" state with no dark mode or projects.
+  (function(){
+    var KEY = '_ta_reload_guard';
+    window.addEventListener('load', function(){
+      // The main script sets this flag when it finishes initializing.
+      setTimeout(function(){
+        if (!window.__TA_INIT_OK) {
+          // Avoid infinite reload loop: only retry once per page load.
+          try {
+            if (sessionStorage.getItem(KEY)) { sessionStorage.removeItem(KEY); return; }
+            sessionStorage.setItem(KEY, '1');
+          } catch(e) { return; }
+          window.location.reload();
+        } else {
+          try { sessionStorage.removeItem(KEY); } catch(e) {}
+        }
+      }, 4000);
+    });
+  })();
+  </script>
   <!-- Scalpe® studio loads its canvas engine (Fabric) + PDF export (jsPDF)
        lazily on first open, with multi-CDN fallback — see Scalper.open() -->
   <style>
@@ -21919,6 +21942,8 @@
   setupFeaturePanels();
   applyLanguage(currentLang);
   refreshAccountMenu();
+
+  window.__TA_INIT_OK = true;
 </script>
 
 <!-- ── FLOATING SUPPORT BUTTON ── -->
