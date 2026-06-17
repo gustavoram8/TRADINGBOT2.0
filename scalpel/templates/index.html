@@ -528,34 +528,33 @@
     .kz-active-name{font-size:15px;font-weight:700;color:var(--text)}
     .kz-active-window{font-size:12px;color:var(--muted);margin-left:auto;font-variant-numeric:tabular-nums}
 
-    .kz-timeline-wrap{position:relative;margin-bottom:22px;padding:0 1px}
-    .kz-timeline{display:flex;height:32px;border-radius:6px;overflow:hidden;border:1px solid var(--border);
-      background:var(--surface);position:relative}
-    .kz-seg{position:absolute;top:0;height:100%;display:flex;align-items:center;justify-content:center;
-      font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.85);
-      overflow:hidden;white-space:nowrap;transition:opacity .3s}
-    body.light .kz-seg{color:rgba(0,0,0,.7)}
-    .kz-seg.active{opacity:1}.kz-seg.dim{opacity:.45}
-    .kz-seg[data-kz="asia"]{background:rgba(124,58,237,.55)}
-    .kz-seg[data-kz="london"]{background:rgba(37,99,235,.55)}
-    .kz-seg[data-kz="nyam"]{background:rgba(234,88,12,.55)}
-    .kz-seg[data-kz="lunch"]{background:rgba(100,116,139,.35)}
-    .kz-seg[data-kz="nypm"]{background:rgba(220,38,38,.50)}
-    .kz-seg[data-kz="sb"]{background:rgba(16,185,129,.40);font-size:8px}
-    body.light .kz-seg[data-kz="asia"]{background:rgba(124,58,237,.30)}
-    body.light .kz-seg[data-kz="london"]{background:rgba(37,99,235,.30)}
-    body.light .kz-seg[data-kz="nyam"]{background:rgba(234,88,12,.30)}
-    body.light .kz-seg[data-kz="lunch"]{background:rgba(100,116,139,.20)}
-    body.light .kz-seg[data-kz="nypm"]{background:rgba(220,38,38,.30)}
-    body.light .kz-seg[data-kz="sb"]{background:rgba(16,185,129,.25)}
-    .kz-now-marker{position:absolute;top:-4px;bottom:-2px;width:2px;z-index:3;pointer-events:none;transition:left .3s linear}
-    .kz-now-line{width:2px;height:100%;background:#f59e0b}
-    .kz-now-dot{width:8px;height:8px;border-radius:50%;background:#f59e0b;position:absolute;top:-3px;left:-3px;
-      box-shadow:0 0 6px #f59e0b}
-    .kz-now-label{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:800;
-      letter-spacing:.1em;color:#f59e0b;white-space:nowrap}
-    .kz-timeline-hours{display:flex;justify-content:space-between;padding:4px 0 0;font-size:9px;color:var(--muted);
-      font-variant-numeric:tabular-nums}
+    /* Timeline: hour ruler + two non-overlapping lanes (main sessions / silver bullets) */
+    .kz-timeline-wrap{position:relative;margin:0 0 22px;padding:22px 0 0}
+    .kz-ruler{position:relative;height:14px;margin-bottom:5px}
+    .kz-ruler-tick{position:absolute;top:0;transform:translateX(-50%);font-size:9px;color:var(--muted);
+      font-variant-numeric:tabular-nums;white-space:nowrap}
+    .kz-ruler-tick::after{content:'';position:absolute;top:13px;left:50%;width:1px;height:4px;background:var(--border2)}
+    .kz-lane{position:relative;border-radius:6px;border:1px solid var(--border);background:var(--surface);overflow:hidden}
+    .kz-lane-main{height:34px;margin-bottom:5px}
+    .kz-lane-sb{height:20px}
+    .kz-lane-tag{position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:8px;font-weight:700;
+      letter-spacing:.1em;text-transform:uppercase;color:var(--muted);z-index:2;pointer-events:none}
+    .kz-block{position:absolute;top:0;height:100%;display:flex;align-items:center;justify-content:center;
+      font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#fff;
+      overflow:hidden;white-space:nowrap;transition:opacity .3s,filter .3s;opacity:.5}
+    .kz-block.active{opacity:1;filter:saturate(1.3) brightness(1.08)}
+    body.light .kz-block{color:rgba(255,255,255,.95)}
+    .kz-block[data-kz="asia"]{background:#7c3aed}
+    .kz-block[data-kz="london"]{background:#2563eb}
+    .kz-block[data-kz="nyam"]{background:#ea580c}
+    .kz-block[data-kz="lunch"]{background:#64748b}
+    .kz-block[data-kz="nypm"]{background:#dc2626}
+    .kz-block[data-kz="sb"]{background:#10b981;font-size:8px;letter-spacing:0}
+    .kz-now{position:absolute;top:16px;bottom:0;width:0;z-index:4;pointer-events:none;transition:left .9s linear}
+    .kz-now-line{position:absolute;top:0;bottom:0;left:0;width:2px;transform:translateX(-1px);
+      background:#f5b942;box-shadow:0 0 6px rgba(245,185,66,.7)}
+    .kz-now-flag{position:absolute;top:-17px;left:0;transform:translateX(-50%);font-size:8px;font-weight:800;
+      letter-spacing:.08em;color:#0c0e14;background:#f5b942;padding:2px 5px;border-radius:3px;white-space:nowrap}
 
     .kz-sessions{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
     .kz-card{padding:12px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);
@@ -570,12 +569,13 @@
     .kz-card-status.next{color:#f59e0b}
 
     .ec-section{margin-bottom:24px}
-    .ec-header{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+    .ec-header{display:flex;align-items:center;gap:14px;margin-bottom:6px}
     .ec-powered{font-size:11px;color:var(--muted);margin-left:auto}
-    .ec-widget-wrap{border-radius:10px;overflow:hidden;border:1px solid var(--border);min-height:420px;
+    .ec-hint{font-size:12px;color:var(--muted);margin:0 0 14px;line-height:1.4}
+    .ec-widget-wrap{border-radius:10px;overflow:hidden;border:1px solid var(--border);min-height:600px;
       background:var(--surface);position:relative}
     .ec-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
-      min-height:420px}
+      min-height:600px}
 
     @media (max-width:600px){
       .kz-header{flex-direction:column;align-items:flex-start}
@@ -4725,17 +4725,17 @@
         <span class="kz-active-window" id="kz-active-window"></span>
       </div>
 
-      <!-- 24h timeline bar -->
+      <!-- 24h timeline (NY time) — two lanes -->
       <div class="kz-timeline-wrap">
-        <div class="kz-timeline" id="kz-timeline">
-          <!-- Segments injected by JS -->
+        <div class="kz-ruler" id="kz-ruler"></div>
+        <div class="kz-lane kz-lane-main" id="kz-lane-main"></div>
+        <div class="kz-lane kz-lane-sb" id="kz-lane-sb">
+          <span class="kz-lane-tag">SB</span>
         </div>
-        <div class="kz-now-marker" id="kz-now-marker">
+        <div class="kz-now" id="kz-now">
           <div class="kz-now-line"></div>
-          <div class="kz-now-dot"></div>
-          <div class="kz-now-label">NOW</div>
+          <div class="kz-now-flag">NOW · NY</div>
         </div>
-        <div class="kz-timeline-hours" id="kz-timeline-hours"></div>
       </div>
 
       <!-- Session list (cards) -->
@@ -4750,6 +4750,7 @@
         <h2 class="kz-title" data-i18n="ec.title">Economic Calendar</h2>
         <span class="ec-powered" data-i18n="ec.powered">Powered by TradingView</span>
       </div>
+      <p class="ec-hint" data-i18n="ec.hint">High &amp; medium impact only. Use the tabs inside to browse today, this week and next week.</p>
       <div class="ec-widget-wrap" id="ec-widget-wrap">
         <!-- TradingView widget injected on scroll (IntersectionObserver) -->
         <div class="ec-placeholder" id="ec-placeholder">
@@ -7720,6 +7721,7 @@
       'kz.sb3': 'Silver Bullet 3',
       'ec.title': 'Economic Calendar',
       'ec.powered': 'Powered by TradingView',
+      'ec.hint': 'High & medium impact only. Use the tabs inside to browse today, this week and next week.',
       'ec.loading': 'Loading calendar…',
     },
     es: {
@@ -7742,6 +7744,7 @@
       'kz.sb3': 'Silver Bullet 3',
       'ec.title': 'Calendario Económico',
       'ec.powered': 'Desarrollado por TradingView',
+      'ec.hint': 'Solo alto y medio impacto. Usa las pestañas internas para ver hoy, esta semana y la próxima.',
       'ec.loading': 'Cargando calendario…',
     },
     fr: {
@@ -7764,6 +7767,7 @@
       'kz.sb3': 'Silver Bullet 3',
       'ec.title': 'Calendrier Économique',
       'ec.powered': 'Propulsé par TradingView',
+      'ec.hint': 'Impact élevé et moyen uniquement. Utilisez les onglets internes pour voir aujourd\'hui, cette semaine et la suivante.',
       'ec.loading': 'Chargement du calendrier…',
     },
     pt: {
@@ -7786,6 +7790,7 @@
       'kz.sb3': 'Silver Bullet 3',
       'ec.title': 'Calendário Econômico',
       'ec.powered': 'Desenvolvido por TradingView',
+      'ec.hint': 'Apenas alto e médio impacto. Use as abas internas para ver hoje, esta semana e a próxima.',
       'ec.loading': 'Carregando calendário…',
     }
   };
@@ -22218,24 +22223,25 @@
   // MARKET TIMING — Kill Zones live clock + Economic Calendar lazy widget
   // ══════════════════════════════════════════════════════════════════════
   (function(){
-    if (!document.getElementById('kz-timeline')) return;
+    if (!document.getElementById('kz-lane-main')) return;
 
     // ICT Standard Kill Zones in NY time (ET — handles DST via Intl)
-    // [id, i18nKey, startHour, startMin, endHour, endMin, cssKz]
+    // [id, i18nKey, startHour, startMin, endHour, endMin, cssKz, label]
     const ZONES = [
-      ['asia',   'kz.asia',   20, 0,  0, 0,  'asia'],
-      ['london', 'kz.london',  2, 0,  5, 0,  'london'],
-      ['sb1',    'kz.sb1',     3, 0,  4, 0,  'sb'],
-      ['nyam',   'kz.nyam',    7, 0, 10, 0,  'nyam'],
-      ['sb2',    'kz.sb2',    10, 0, 11, 0,  'sb'],
-      ['lunch',  'kz.lunch',  12, 0, 13, 0,  'lunch'],
-      ['nypm',   'kz.nypm',   13,30, 16, 0,  'nypm'],
-      ['sb3',    'kz.sb3',    14, 0, 15, 0,  'sb'],
+      ['asia',   'kz.asia',   20, 0,  0, 0,  'asia',   'ASIA'],
+      ['london', 'kz.london',  2, 0,  5, 0,  'london', 'LONDON'],
+      ['sb1',    'kz.sb1',     3, 0,  4, 0,  'sb',     'SB1'],
+      ['nyam',   'kz.nyam',    7, 0, 10, 0,  'nyam',   'NY AM'],
+      ['sb2',    'kz.sb2',    10, 0, 11, 0,  'sb',     'SB2'],
+      ['lunch',  'kz.lunch',  12, 0, 13, 0,  'lunch',  'LUNCH'],
+      ['nypm',   'kz.nypm',   13,30, 16, 0,  'nypm',   'NY PM'],
+      ['sb3',    'kz.sb3',    14, 0, 15, 0,  'sb',     'SB3'],
     ];
 
-    const TL  = document.getElementById('kz-timeline');
-    const MK  = document.getElementById('kz-now-marker');
-    const HRS = document.getElementById('kz-timeline-hours');
+    const LANE_MAIN = document.getElementById('kz-lane-main');
+    const LANE_SB   = document.getElementById('kz-lane-sb');
+    const RULER = document.getElementById('kz-ruler');
+    const MK  = document.getElementById('kz-now');
     const BN  = document.getElementById('kz-banner');
     const BN_NAME = document.getElementById('kz-active-name');
     const BN_WIN  = document.getElementById('kz-active-window');
@@ -22257,34 +22263,46 @@
     function t(k){ return (I18N[currentLang]||I18N.en)[k] || (I18N.en)[k] || k; }
     function hhmm(h,m){ var p=h>=12?'PM':'AM'; var h12=h%12||12; return h12+':'+pad2(m)+' '+p; }
 
-    // Build timeline segments
-    ZONES.forEach(function(z){
+    // Build a block on a lane. Returns the element (or first piece if it wraps).
+    function buildBlock(lane, z, showLabel){
+      var s = frac(z[2],z[3]), e = frac(z[4],z[5]);
+      var wraps = (e <= s);
       var seg = document.createElement('div');
-      seg.className = 'kz-seg';
+      seg.className = 'kz-block';
       seg.dataset.kz = z[6];
       seg.dataset.id = z[0];
-      var s = frac(z[2],z[3]), e = frac(z[4],z[5]);
-      if (e <= s) e += 1; // wraps midnight (Asia)
       seg.style.left  = (s * 100) + '%';
-      seg.style.width = ((e - s) * 100) + '%';
-      seg.textContent = z[0].toUpperCase().replace('SB','SB');
-      TL.appendChild(seg);
-      // Asia wraps — show tail at start of bar
-      if (z[4] < z[2] || (z[4]===z[2] && z[5]<z[3])){
-        var tail = seg.cloneNode(true);
+      seg.style.width = ((wraps ? 1 - s : e - s) * 100) + '%';
+      if (showLabel) seg.textContent = z[7];
+      lane.appendChild(seg);
+      if (wraps){
+        var tail = document.createElement('div');
+        tail.className = 'kz-block';
+        tail.dataset.kz = z[6];
+        tail.dataset.id = z[0];
         tail.style.left = '0%';
-        tail.style.width = (frac(z[4],z[5]) * 100) + '%';
-        TL.appendChild(tail);
-        // Fix main segment to not exceed 100%
-        seg.style.width = ((1 - s) * 100) + '%';
+        tail.style.width = (e * 100) + '%';
+        lane.appendChild(tail);
       }
+      return seg;
+    }
+
+    // Main sessions → top lane (with labels) · Silver Bullets → bottom lane
+    ZONES.forEach(function(z){
+      if (z[0].indexOf('sb') === 0) buildBlock(LANE_SB, z, true);
+      else buildBlock(LANE_MAIN, z, true);
     });
 
-    // Hour labels
-    for(var h=0;h<24;h+=3){
-      var sp = document.createElement('span');
-      sp.textContent = pad2(h);
-      HRS.appendChild(sp);
+    // Hour ruler (NY time): ticks every 3h, 00 → 24
+    for(var h=0;h<=24;h+=3){
+      var tk = document.createElement('span');
+      tk.className = 'kz-ruler-tick';
+      tk.textContent = pad2(h % 24);
+      var pct = (h/24)*100;
+      tk.style.left = pct + '%';
+      if (h === 0){ tk.style.transform = 'translateX(0)'; }
+      else if (h === 24){ tk.style.transform = 'translateX(-100%)'; }
+      RULER.appendChild(tk);
     }
 
     // Session cards
@@ -22340,10 +22358,9 @@
 
       ZONES.forEach(function(z){
         var on = inZone(z, ny);
-        // Highlight timeline segments
-        TL.querySelectorAll('.kz-seg[data-id="'+z[0]+'"]').forEach(function(seg){
+        // Highlight timeline blocks (both lanes)
+        document.querySelectorAll('.kz-block[data-id="'+z[0]+'"]').forEach(function(seg){
           seg.classList.toggle('active', on);
-          seg.classList.toggle('dim', !on);
         });
         if (z[0].startsWith('sb')){
           if (on) activeSBs.push(z);
@@ -22418,9 +22435,9 @@
             "colorTheme": isDark,
             "isTransparent": true,
             "width": "100%",
-            "height": "460",
+            "height": "600",
             "locale": currentLang === 'pt' ? 'br' : (currentLang || 'en'),
-            "importanceFilter": "-1,0,1",
+            "importanceFilter": "0,1",
             "countryFilter": "us,eu,gb,jp,au,ca,ch,cn,nz"
           });
           ecWrap.querySelector('.tradingview-widget-container').appendChild(s);
