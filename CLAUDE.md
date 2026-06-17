@@ -3,59 +3,51 @@
 
 ---
 
-> **🟢 EN CURSO (2026-06-17) — MARKET TIMING: KILL ZONES EN VIVO + CALENDARIO ECONÓMICO**
-> **(RETOMAR ESTO — el usuario tuvo que abrir sesión nueva por caídas del navegador "OH NO")**
+> **🟢 EN CURSO (2026-06-17) — MARKET TIMING: KILL ZONES "TERMINAL" + CALENDARIO ECONÓMICO**
+> **(PENDIENTE: que el usuario revise visualmente en el VPS y confirme si le gusta el estilo A)**
 >
 > **Rama de trabajo de esta línea:** `claude/intelligent-turing-94qh5i` (NO la `epic-lovelace`).
-> Working tree limpio, todo pusheado. Commits relevantes:
-> - `6386884` — 1ª versión: sección "Market Timing" debajo del analizador (Kill Zones + widget
->   de calendario de TradingView).
-> - `52a4c5a` — rediseño a dos carriles (sesiones arriba / Silver Bullets abajo) + filtro del
->   calendario a alto/medio impacto (`importanceFilter:"0,1"`).
+> Commits previos: `6386884` (1ª versión), `52a4c5a` (dos carriles + filtro alto/medio impacto).
 >
-> **QUÉ ES:** una sección nueva **dentro de la pestaña del Analizador** (NO una pestaña nueva —
-> decisión del usuario: NO crear más apartados), que aparece **al hacer scroll hacia abajo**
-> debajo del analizador de screenshots. Vive en `scalpel/templates/index.html`:
-> - HTML: `<div id="market-timing">` justo antes de `</div><!-- /analyze-container -->`.
-> - CSS: bloque "MARKET TIMING (Kill Zones + Economic Calendar)" antes de `.card {`.
-> - JS: IIFE "MARKET TIMING — Kill Zones live clock + Economic Calendar" justo antes de
->   `window.__TA_INIT_OK = true;`.
-> - i18n: `MT_I18N` (en/es/fr/pt) fusionado con `Object.keys(MT_I18N).forEach(...)`.
-> - Kill Zones implementadas (hora NY/ET, maneja DST vía Intl): Asia 20–00, London 02–05,
->   NY AM 07–10, Lunch 12–13, NY PM 13:30–16, Silver Bullets SB1 03–04 / SB2 10–11 / SB3 14–15.
-> - Calendario: widget oficial de TradingView (embed-widget-events.js), lazy-load con
->   IntersectionObserver, filtrado a rojo+naranja, países us,eu,gb,jp,au,ca,ch,cn,nz.
+> **✅ REDISEÑO APLICADO (sesión 2026-06-17, decisiones del usuario tomadas):**
+> 1. **Estilo Kill Zones = A) "Terminal de trading"** (el usuario eligió A; si no le gusta probar C
+>    "gauge/velocímetro"). Implementado como panel `.kzt` "KILL ZONE TERMINAL": barra de título con
+>    semáforo + cursor parpadeante + LED "LIVE · ET", relojes NY (Orbitron, oro) y Local (con tz
+>    real), banner de sesión activa, timeline de 2 carriles restyleado (bloques con gradiente+glow),
+>    y **filas de lectura tipo terminal** (`.kz-row`) con LED, ventana, **barra de progreso** de la
+>    sesión y stat (● restante / → próxima). Paleta on-brand grafito+oro (`--kzt-gold #f5b942`).
+> 2. **✅ HORA EXACTA EN VIVO en el marcador NOW** — `#kz-now-flag` ahora muestra `HH:MM:SS` (NY)
+>    pegado a la línea amarilla, actualizado cada segundo. Requisito cumplido.
+> 3. **Calendario = Opción A (decisión del usuario por riesgo legal):** se DEJA el widget de
+>    TradingView (no construir uno propio — sería MÁS riesgoso porque nos volvería el "publicador"
+>    de las horas). Se añadió **disclaimer educativo in-page** (`ec.disclaimer`, 4 idiomas) dejando
+>    claro que la data es de TradingView (un tercero), puede estar mal/retrasada/caída, y que
+>    **Trader Acelerator NO se responsabiliza** de errores/caídas de terceros. Además se agregó una
+>    **cláusula nueva en los T&C** (`terms.html`, Sección 11 "Disclaimers"): "Third-party data,
+>    embedded content, and economic calendar" cubriendo TradingView/datos embebidos.
+> 4. **✅ Navegación:** mini-nav **sticky** `Analyzer · Kill Zones · Calendar` (`#mt-nav`, con
+>    scroll-spy vía IntersectionObserver + scroll suave) + **chevron animado** "↓ Market Timing"
+>    (`.mt-chevron`) al final del analizador + divisores con peso (`.mt-divider`).
 >
-> **⚠️ FEEDBACK DEL USUARIO QUE FALTA APLICAR (lo más importante a retomar):**
-> 1. **Las Kill Zones todavía se ven "muy de Claude" / genéricas y confusas** — el usuario
->    quiere **MÁS originalidad y creatividad on-brand** (identidad de trading/ICT, estética
->    grafito+oro del sitio como la ruleta del Daily). Aún hay sensación de choque/poca claridad.
-> 2. **Mostrar la HORA EXACTA EN VIVO sobre la barra/indicador amarillo (NOW)** — hoy el marcador
->    NOW se mueve pero no muestra la hora exacta pegada a él. Requisito explícito.
-> 3. **Calendario estilo Forex Factory + SIN redirigir a TradingView:** el usuario quiere que al
->    hacer clic en "more events" NO se vaya a TradingView, y mostrar SOLO maletines rojos/naranjas
->    (alto/medio impacto). **REALIDAD TÉCNICA YA EXPLICADA AL USUARIO:** el widget de TradingView
->    SIEMPRE redirige a TV al hacer clic en un evento (iframe cross-origin, no se puede interceptar).
->    Para cumplir el requisito hay que **DEJAR el widget y construir un calendario PROPIO** con un
->    feed de datos público cargado server-side (más trabajo). **Decisión del usuario aún PENDIENTE.**
+> **DÓNDE VIVE (todo en `scalpel/templates/index.html`):**
+> - HTML: chevron + `<div id="market-timing">` (con `#mt-nav`, `<section id="kill-zones" class="kzt">`,
+>   `<section id="economic-calendar" class="ec-section">`) justo antes de `</div><!-- /analyze-container -->`.
+> - CSS: bloque "MARKET TIMING — KILL ZONE TERMINAL" (vars `--kzt-*`, `.kzt`, `.kz-row`, `.mt-nav`,
+>   `.mt-chevron`, etc.) antes de `/* ── CARD ── */`.
+> - JS: IIFE "MARKET TIMING — Kill Zones live clock…" antes de `window.__TA_INIT_OK = true;`
+>   (incluye el scroll-spy del mini-nav al final).
+> - i18n: `MT_I18N` (en/es/fr/pt) — claves nuevas: `mt.discover`, `mt.nav.*`, `kz.online`, `ec.disclaimer`.
+> - Kill Zones (hora NY/ET, DST vía Intl): Asia 20–00, London 02–05, NY AM 07–10, Lunch 12–13,
+>   NY PM 13:30–16, Silver Bullets SB1 03–04 / SB2 10–11 / SB3 14–15.
+> - Verificado: `node --check` OK, Jinja compila, y render real de `/app` (Flask test client) muestra
+>   todo el markup nuevo. Falta solo la revisión VISUAL del usuario en vivo.
 >
-> **ACUERDOS DE ESTRUCTURA (Claude propuso, falta implementar):** como KZ + calendario van debajo
-> del analizador en la MISMA pestaña (patrón dashboard-scroll tipo TradingView, que al usuario le
-> gusta), para que se sienta intencional y no desordenado: (1) **mini-nav sticky de anclas**
-> `Analyzer · Kill Zones · Calendar`; (2) **chevron animado "↓ Market Timing"** al final del
-> analizador como afford­ance de scroll; (3) **divisores de sección con peso visual**.
->
-> **🔢 3 DECISIONES PENDIENTES QUE EL USUARIO DEBE RESPONDER ANTES DE CONSTRUIR:**
-> 1. ¿Calendario PROPIO (sin TV, sin redirección, control total Forex-Factory) con feed de datos?
->    ¿o se queda el widget de TradingView aceptando que los clics redirigen?
-> 2. ¿Estilo visual de Kill Zones? Opciones propuestas: **A)** "Terminal de trading" (oscuro tipo
->    Bloomberg, monospace, ámbar/verde) · **B)** "Forex Factory mejorado" (tabla limpia por sesión +
->    countdown) · **C)** "Gauge/dashboard" (reloj circular tipo velocímetro, sesión activa al centro).
-> 3. ¿Confirma el mini-nav sticky + chevron de scroll?
+> **🔜 PRÓXIMO (cuando el usuario revise):** si no le gusta el estilo A "Terminal", construir el
+> estilo **C "Gauge/velocímetro"** (reloj circular 24h con sesión activa al centro + aguja NOW con
+> hora exacta). Lo demás (calendario+disclaimer+T&C, mini-nav, chevron, hora NOW) ya quedó cerrado.
 >
 > **DESPLIEGUE:** el usuario debe correr en el VPS:
 > `cd /var/www/TRADINGBOT2.0 && git pull origin claude/intelligent-turing-94qh5i && supervisorctl restart traderacelerator`
-> (Posiblemente aún NO desplegó `52a4c5a` — si reporta textos encimados, está viendo versión vieja.)
 >
 > **NOTA DE INFRAESTRUCTURA:** esta semana el usuario sufre caídas del navegador ("OH NO" + robot)
 > por conversaciones MUY largas que agotan la RAM del navegador. Solución acordada: sesiones nuevas
