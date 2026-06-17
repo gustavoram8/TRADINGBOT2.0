@@ -1578,6 +1578,8 @@ def app_view():
     demo_mode = False
     demo_label = ''
     demo_open = ''
+    demo_rank = None
+    demo_xp = None
     demo = _admin_demo()
     if demo:
         demo_mode = True
@@ -1601,12 +1603,26 @@ def app_view():
             demo_label = (demo_label + ' · ' if demo_label else '') + 'Roulette'
         if demo.get('plan') in DEMO_PLANS:
             plan_view = demo['plan']
-            # Mirror a real user of that plan: drop admin so client gating
-            # (which often reads `plan === 'premium' || isAdmin`) behaves true-to-plan.
             is_admin_view = False
             demo_label = (demo_label + ' · ' if demo_label else '') + 'View as ' + demo['plan'].capitalize()
 
-    # Consume the pass so the next entry triggers the splash again.
+        # Override rank/xp in demo: rank-up → show "arriving at" that rank;
+        # plan-only → reset to rank 1 / xp 0 so the partner sees the start.
+        demo_rank_override = demo.get('rank_up')
+        if demo_rank_override:
+            r = int(demo_rank_override)
+            demo_rank = r
+            demo_xp = RANK_THRESHOLDS[r - 1] if r <= len(RANK_THRESHOLDS) else 0
+        elif demo.get('plan'):
+            demo_rank = 1
+            demo_xp = 0
+        else:
+            demo_rank = None
+            demo_xp = None
+
+    view_rank = demo_rank if (demo_mode and demo_rank is not None) else (current_user.rank or 1)
+    view_xp = demo_xp if (demo_mode and demo_xp is not None) else (current_user.xp or 0)
+
     resp = make_response(render_template(
         'index.html',
         plan=plan_view,
@@ -1616,8 +1632,8 @@ def app_view():
         unlock_plan=unlock_plan,
         review_prompt=review_prompt,
         rank_up_to=rank_up_to,
-        user_rank=current_user.rank or 1,
-        user_xp=current_user.xp or 0,
+        user_rank=view_rank,
+        user_xp=view_xp,
         demo_mode=demo_mode,
         demo_label=demo_label,
         demo_open=demo_open,
@@ -2327,6 +2343,9 @@ def admin_demo_set():
             r = 0
         if 1 <= r <= 8:
             d['rank_up'] = r
+            prev = session.get('_admin_demo', {})
+            if prev.get('plan') in DEMO_PLANS:
+                d['plan'] = prev['plan']
     elif scenario == 'unlock':
         p = request.form.get('plan')
         if p in DEMO_PLANS:
