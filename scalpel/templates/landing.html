@@ -636,6 +636,36 @@
       .plan.featured { order: -1; }
     }
 
+    /* ── Feature comparison matrix (rows aligned by importance) ── */
+    .compare { max-width: 820px; margin: 52px auto 0; padding: 0 22px; }
+    .compare h3.cmp-h { text-align: center; font-size: clamp(19px,2.4vw,24px); font-weight: 800;
+      color: var(--pp-ink); margin: 0 0 6px; }
+    .compare .cmp-sub { text-align: center; color: var(--pp-muted); font-size: 13px; margin: 0 0 24px; }
+    .cmp-wrap { overflow-x: auto; border: 1px solid var(--pp-line); border-radius: 14px;
+      background: var(--pp-card-bg); -webkit-overflow-scrolling: touch; }
+    .cmp { width: 100%; border-collapse: collapse; min-width: 520px; }
+    .cmp th, .cmp td { padding: 13px 14px; text-align: center; border-bottom: 1px solid var(--pp-line-soft);
+      font-size: 13.5px; }
+    .cmp tbody tr:last-child td { border-bottom: none; }
+    .cmp .feat { text-align: left; white-space: nowrap; }
+    .cmp .feat .feat-lbl { color: var(--pp-ink); font-weight: 500; }
+    .cmp .feat .feat-note { display: block; font-size: 11px; color: var(--pp-muted); font-weight: 400; }
+    .cmp thead .pname { font-size: 14.5px; font-weight: 800; letter-spacing: .02em; }
+    .cmp thead .pname.free { color: var(--pp-free); }
+    .cmp thead .pname.standard { color: var(--pp-standard); }
+    .cmp thead .pname.premium { color: var(--pp-premium); }
+    .cmp .col-premium { background: rgba(184,134,11,0.06); }
+    .cmp td.val { color: var(--pp-ink-soft); font-variant-numeric: tabular-nums; }
+    .cmp td.val.on { color: var(--pp-ink); font-weight: 700; }
+    .cmp .yes { color: var(--bull); font-weight: 800; font-size: 15px; }
+    .cmp .no { color: var(--pp-muted); }
+    .cmp .soon-tag { font-size: 10px; color: var(--pp-muted); border: 1px solid var(--pp-line);
+      border-radius: 8px; padding: 1px 7px; }
+    @media (max-width: 560px) {
+      .compare { padding: 0 12px; }
+      .cmp th, .cmp td { padding: 10px 9px; font-size: 12.5px; }
+    }
+
     /* ── TESTIMONIALS (book-flip carousel) ── */
     .testi-section { display: none; } /* shown via JS once at least one testimonial loads */
     .testi-panel {
@@ -1378,6 +1408,100 @@
       </div>
 
     </div>
+
+    <!-- Feature comparison matrix (rows ordered by importance) -->
+    <div class="compare">
+      <h3 class="cmp-h" data-t="cmp_title">Compare all features</h3>
+      <p class="cmp-sub" data-t="cmp_sub">Same feature, same row — see exactly what each plan includes.</p>
+      <div class="cmp-wrap">
+        <table class="cmp">
+          <thead>
+            <tr>
+              <th class="feat">&nbsp;</th>
+              <th><span class="pname free" data-t="plan_free_name">Free</span></th>
+              <th><span class="pname standard" data-t="plan_std_name">Standard</span></th>
+              <th class="col-premium"><span class="pname premium" data-t="plan_prem_name">Premium</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="feat"><span class="feat-lbl" data-t="cmp_f_analyses">Screenshot analyses</span><span class="feat-note" data-t="cmp_f_analyses_n">AI chart review</span></td>
+              <td class="val"><span data-t="cmp_v_week">1 / week</span></td>
+              <td class="val on"><span data-t="cmp_v_day">1 / day</span></td>
+              <td class="val on col-premium"><span data-t="cmp_v_5day">5 / day</span></td>
+            </tr>
+            <tr>
+              <td class="feat"><span class="feat-lbl" data-t="cmp_f_engine">Full AI feedback engine</span></td>
+              <td class="val"><span class="yes">✓</span></td>
+              <td class="val"><span class="yes">✓</span></td>
+              <td class="val col-premium"><span class="yes">✓</span></td>
+            </tr>
+            <tr>
+              <td class="feat"><span class="feat-lbl" data-t="cmp_f_projects">Saved analysis projects</span><span class="feat-note" data-t="cmp_f_projects_n">reusable setup presets</span></td>
+              <td class="val">3</td>
+              <td class="val on">5</td>
+              <td class="val on col-premium">10</td>
+            </tr>
+            <tr>
+              <td class="feat"><span class="feat-lbl" data-t="cmp_f_preflight">Pre-Flight checklist</span><span class="feat-note" data-t="cmp_f_preflight_n">discipline trainer &amp; stats</span></td>
+              <td class="val"><span class="no">—</span></td>
+              <td class="val"><span class="no">—</span></td>
+              <td class="val col-premium"><span class="yes">✓</span></td>
+            </tr>
+            <tr>
+              <td class="feat"><span class="feat-lbl" data-t="cmp_f_forum">Trading Forum</span><span class="feat-note" data-t="cmp_f_forum_n">AI-moderated community</span></td>
+              <td class="val"><span class="no">—</span></td>
+              <td class="val"><span class="no">—</span></td>
+              <td class="val col-premium"><span class="yes">✓</span></td>
+            </tr>
+            <tr>
+              <td class="feat"><span class="feat-lbl" data-t="cmp_f_quiz">Quiz Academy</span><span class="feat-note" data-t="cmp_f_quiz_n">every methodology + Hardcore</span></td>
+              <td class="val"><span class="no">—</span></td>
+              <td class="val"><span class="no">—</span></td>
+              <td class="val col-premium"><span class="yes">✓</span></td>
+            </tr>
+            <tr>
+              <td class="feat"><span class="feat-lbl" data-t="cmp_f_daily">Daily Challenge &amp; Roulette</span></td>
+              <td class="val"><span class="no">—</span></td>
+              <td class="val"><span class="no">—</span></td>
+              <td class="val col-premium"><span class="yes">✓</span></td>
+            </tr>
+            <tr>
+              <td class="feat"><span class="feat-lbl" data-t="cmp_f_chalk">Chalkboard</span><span class="feat-note" data-t="cmp_f_chalk_n">visual study whiteboards</span></td>
+              <td class="val"><span class="no">—</span></td>
+              <td class="val"><span class="no">—</span></td>
+              <td class="val col-premium"><span class="yes">✓</span></td>
+            </tr>
+            <tr>
+              <td class="feat"><span class="feat-lbl" data-t="cmp_f_synapse">Synapse</span><span class="feat-note" data-t="cmp_f_synapse_n">3D study experience</span></td>
+              <td class="val"><span class="no">—</span></td>
+              <td class="val"><span class="no">—</span></td>
+              <td class="val col-premium"><span class="yes">✓</span></td>
+            </tr>
+            <tr>
+              <td class="feat"><span class="feat-lbl" data-t="cmp_f_indic">Indicators library</span></td>
+              <td class="val"><span class="no">—</span></td>
+              <td class="val"><span class="no">—</span></td>
+              <td class="val col-premium"><span class="soon-tag" data-t="cmp_soon">soon</span></td>
+            </tr>
+            {% if scout_enabled %}
+            <tr>
+              <td class="feat"><span class="feat-lbl" data-t="cmp_f_scout">Prop Firm Scout</span><span class="feat-note" data-t="cmp_f_scout_n">compare 25+ firms + AI advisor</span></td>
+              <td class="val"><span class="no">—</span></td>
+              <td class="val"><span class="no">—</span></td>
+              <td class="val col-premium"><span class="yes">✓</span></td>
+            </tr>
+            {% endif %}
+            <tr>
+              <td class="feat"><span class="feat-lbl" data-t="cmp_f_camos">Camos</span><span class="feat-note" data-t="cmp_f_camos_n">dashboard design themes</span></td>
+              <td class="val"><span class="no">—</span></td>
+              <td class="val on">1</td>
+              <td class="val on col-premium">3</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </section>
 
   <!-- TESTIMONIALS -->
@@ -1747,6 +1871,20 @@
         pp_chalk:'<strong>Chalkboard</strong> — draw &amp; annotate your setups on a dedicated canvas',
         pp_camos:'<strong>3 Camos included</strong> — exclusive website design themes to personalize your dashboard',
         pp4:'Everything in Standard', pp5:'Indicators library', pp_cta:'Go Premium',
+        cmp_title:'Compare all features', cmp_sub:'Same feature, same row — see exactly what each plan includes.',
+        cmp_f_analyses:'Screenshot analyses', cmp_f_analyses_n:'AI chart review',
+        cmp_f_engine:'Full AI feedback engine',
+        cmp_f_projects:'Saved analysis projects', cmp_f_projects_n:'reusable setup presets',
+        cmp_f_preflight:'Pre-Flight checklist', cmp_f_preflight_n:'discipline trainer &amp; stats',
+        cmp_f_forum:'Trading Forum', cmp_f_forum_n:'AI-moderated community',
+        cmp_f_quiz:'Quiz Academy', cmp_f_quiz_n:'every methodology + Hardcore',
+        cmp_f_daily:'Daily Challenge &amp; Roulette',
+        cmp_f_chalk:'Chalkboard', cmp_f_chalk_n:'visual study whiteboards',
+        cmp_f_synapse:'Synapse', cmp_f_synapse_n:'3D study experience',
+        cmp_f_indic:'Indicators library',
+        cmp_f_scout:'Prop Firm Scout', cmp_f_scout_n:'compare 25+ firms + AI advisor',
+        cmp_f_camos:'Camos', cmp_f_camos_n:'dashboard design themes',
+        cmp_v_week:'1 / week', cmp_v_day:'1 / day', cmp_v_5day:'5 / day', cmp_soon:'soon',
         pop_badge:'MOST POPULAR',
         cta_final:'Ready to trade with precision?',
         cta_sub:'Join traders who\'ve made Trader Acelerator their daily ritual.',
@@ -1818,6 +1956,20 @@
         pp_chalk:'<strong>Chalkboard</strong> — dibuja y anota tus setups en un lienzo dedicado',
         pp_camos:'<strong>3 Camos incluidos</strong> — temas de diseño exclusivos para personalizar tu dashboard',
         pp4:'Todo lo del plan Standard', pp5:'Biblioteca de indicadores', pp_cta:'Ir a Premium',
+        cmp_title:'Compara todas las funciones', cmp_sub:'Misma función, misma fila — mira exactamente qué incluye cada plan.',
+        cmp_f_analyses:'Análisis de capturas', cmp_f_analyses_n:'revisión del gráfico con IA',
+        cmp_f_engine:'Motor completo de feedback IA',
+        cmp_f_projects:'Proyectos de análisis guardados', cmp_f_projects_n:'plantillas de setup reutilizables',
+        cmp_f_preflight:'Checklist Pre-Flight', cmp_f_preflight_n:'entrenador de disciplina y estadísticas',
+        cmp_f_forum:'Foro de Trading', cmp_f_forum_n:'comunidad moderada por IA',
+        cmp_f_quiz:'Academia de Quiz', cmp_f_quiz_n:'todas las metodologías + Hardcore',
+        cmp_f_daily:'Daily Challenge y Ruleta',
+        cmp_f_chalk:'Pizarra', cmp_f_chalk_n:'pizarras visuales de estudio',
+        cmp_f_synapse:'Synapse', cmp_f_synapse_n:'experiencia de estudio 3D',
+        cmp_f_indic:'Biblioteca de indicadores',
+        cmp_f_scout:'Prop Firm Scout', cmp_f_scout_n:'compara 25+ firmas + asesor IA',
+        cmp_f_camos:'Camos', cmp_f_camos_n:'temas de diseño del panel',
+        cmp_v_week:'1 / semana', cmp_v_day:'1 / día', cmp_v_5day:'5 / día', cmp_soon:'pronto',
         pop_badge:'MÁS POPULAR',
         cta_final:'¿Listo para operar con precisión?',
         cta_sub:'Únete a los traders que han hecho de Trader Acelerator su ritual diario.',
@@ -1889,6 +2041,20 @@
         pp_chalk:'<strong>Chalkboard</strong> — dessinez et annotez vos setups sur un canevas dédié',
         pp_camos:'<strong>3 Camos inclus</strong> — thèmes de design exclusifs pour personnaliser votre dashboard',
         pp4:'Tout le plan Standard', pp5:'Bibliothèque d\'indicateurs', pp_cta:'Passer à Premium',
+        cmp_title:'Comparez toutes les fonctionnalités', cmp_sub:'Même fonctionnalité, même ligne — voyez exactement ce qu\'inclut chaque plan.',
+        cmp_f_analyses:'Analyses de captures', cmp_f_analyses_n:'revue du graphique par IA',
+        cmp_f_engine:'Moteur de feedback IA complet',
+        cmp_f_projects:'Projets d\'analyse enregistrés', cmp_f_projects_n:'modèles de setup réutilisables',
+        cmp_f_preflight:'Checklist Pre-Flight', cmp_f_preflight_n:'entraîneur de discipline et stats',
+        cmp_f_forum:'Forum de Trading', cmp_f_forum_n:'communauté modérée par IA',
+        cmp_f_quiz:'Académie de Quiz', cmp_f_quiz_n:'toutes les méthodologies + Hardcore',
+        cmp_f_daily:'Daily Challenge et Roulette',
+        cmp_f_chalk:'Tableau', cmp_f_chalk_n:'tableaux d\'étude visuels',
+        cmp_f_synapse:'Synapse', cmp_f_synapse_n:'expérience d\'étude 3D',
+        cmp_f_indic:'Bibliothèque d\'indicateurs',
+        cmp_f_scout:'Prop Firm Scout', cmp_f_scout_n:'comparez 25+ firmes + conseiller IA',
+        cmp_f_camos:'Camos', cmp_f_camos_n:'thèmes de design du tableau de bord',
+        cmp_v_week:'1 / semaine', cmp_v_day:'1 / jour', cmp_v_5day:'5 / jour', cmp_soon:'bientôt',
         pop_badge:'LE PLUS POPULAIRE',
         cta_final:'Prêt à trader avec précision ?',
         cta_sub:'Rejoignez les traders qui ont fait de Trader Acelerator leur rituel quotidien.',
@@ -1960,6 +2126,20 @@
         pp_chalk:'<strong>Chalkboard</strong> — desenhe e anote seus setups em um quadro dedicado',
         pp_camos:'<strong>3 Camos incluídos</strong> — temas de design exclusivos para personalizar seu dashboard',
         pp4:'Tudo do plano Standard', pp5:'Biblioteca de indicadores', pp_cta:'Ir para Premium',
+        cmp_title:'Compare todos os recursos', cmp_sub:'Mesmo recurso, mesma linha — veja exatamente o que cada plano inclui.',
+        cmp_f_analyses:'Análises de capturas', cmp_f_analyses_n:'revisão do gráfico com IA',
+        cmp_f_engine:'Motor completo de feedback IA',
+        cmp_f_projects:'Projetos de análise salvos', cmp_f_projects_n:'modelos de setup reutilizáveis',
+        cmp_f_preflight:'Checklist Pre-Flight', cmp_f_preflight_n:'treinador de disciplina e estatísticas',
+        cmp_f_forum:'Fórum de Trading', cmp_f_forum_n:'comunidade moderada por IA',
+        cmp_f_quiz:'Academia de Quiz', cmp_f_quiz_n:'todas as metodologias + Hardcore',
+        cmp_f_daily:'Daily Challenge e Roleta',
+        cmp_f_chalk:'Quadro', cmp_f_chalk_n:'quadros visuais de estudo',
+        cmp_f_synapse:'Synapse', cmp_f_synapse_n:'experiência de estudo 3D',
+        cmp_f_indic:'Biblioteca de indicadores',
+        cmp_f_scout:'Prop Firm Scout', cmp_f_scout_n:'compare 25+ firmas + consultor IA',
+        cmp_f_camos:'Camos', cmp_f_camos_n:'temas de design do painel',
+        cmp_v_week:'1 / semana', cmp_v_day:'1 / dia', cmp_v_5day:'5 / dia', cmp_soon:'em breve',
         pop_badge:'MAIS POPULAR',
         cta_final:'Pronto para operar com precisão?',
         cta_sub:'Junte-se aos traders que fizeram do Trader Acelerator seu ritual diário.',
