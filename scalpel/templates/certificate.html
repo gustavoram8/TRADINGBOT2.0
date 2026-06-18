@@ -146,6 +146,8 @@
     <div class="cert-meta">{{ cl.rank }} {{ roman }} {{ cl.of }} VIII &nbsp;·&nbsp; {{ '{:,}'.format(xp) }} XP</div>
     {% if is_legend %}<div class="cert-serial">★ Trading Legend · No. {{ '%03d'|format(cert.id) }} ★</div>{% endif %}
 
+    {% if cl.eduNote %}<div class="cert-edunote" style="font-family:'Inter',sans-serif;font-size:8.5px;line-height:1.4;color:#9aa1b4;max-width:560px;margin:10px auto 0;text-align:center">{{ cl.eduNote }}</div>{% endif %}
+
     <div class="cert-foot">
       <div class="blk"><div class="line"></div><div class="lbl">{{ cl.issued }}</div>
         <div class="val">{{ cert.issued_at.strftime('%d/%m/%Y') if cert.issued_at else '—' }}</div></div>

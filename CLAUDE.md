@@ -55,6 +55,40 @@
 
 ---
 
+> **✅ COMPLETADO (2026-06-18) — REPASO LEGAL: ELIMINAR LENGUAJE DE "ASESORÍA FINANCIERA" (PASO 1)**
+>
+> Decisión del usuario (validada también con ChatGPT): el sitio NO puede tener lenguaje confundible con
+> asesoría financiera / recomendación de inversión / promesa de ganancia / absolutismo. Todo debe sonar
+> **educativo / informativo / correctivo**. Auditoría con 5 agentes Explore en paralelo (marketing,
+> auth+legal, index.html A y B, backend). Los pilares ya estaban bien (T&C, Privacidad, login/register,
+> y el `SYSTEM_PROMPT` del analizador ya "blindado"); el riesgo estaba en copy de marketing/features.
+> Correcciones aplicadas (rama `intelligent-turing`):
+> - **Pre-Flight:** "which confluences actually pay / realmente pagan" → "performed best in your own
+>   records" (4 idiomas). "The lamp tells you GO… before you click buy or sell" → "based on your own
+>   checklist — a discipline aid, not a signal or recommendation". Disclaimer nuevo `pf.statsDisclaimer`
+>   bajo el panel de stats (win rate/profit factor se mantienen como términos estándar PERO se aclara
+>   que son del propio historial, no predicciones ni asesoría).
+> - **Quiz:** "Our Certified Accelerated Traders" → "Our Quiz Masters" + sub "completed every quiz with
+>   X%+ correct answers" (evita implicar credencial de trader). 4 idiomas.
+> - **Certificado:** modal "Official certificate / certifies your rank" → "Rank achievement / record of
+>   your learning". `certificate.html` + `CERT_I18N` (app.py): campo nuevo `eduNote` renderizado en el
+>   PDF ("Educational achievement — Not a professional, financial, or trading qualification", 4 idiomas).
+> - **Landing/pricing:** "Your edge, accelerated" → "Your learning, accelerated"; "Sharpen your edge.
+>   Prove it." → "Sharpen your skills. Test them."; "like a senior trader" → "like an experienced
+>   instructor"; "feedback infrastructure serious traders need" → "committed learners need"; "earn your
+>   place" → "prove your knowledge"; "Trading alone is the hardest way to improve" → "Learning to read
+>   charts alone…"; pricing hero "Sharpen every trade you take" → "Sharpen how you analyze every setup".
+> - **header.sub del analizador:** reforzado a "— not verdicts, signals, or financial advice" (4 idiomas).
+> - Verificado: node --check OK, Jinja OK, import app.py OK, /app render 200.
+> - **DEJADO A PROPÓSITO (no es asesoría financiera):** badge "Most Popular", "serious traders" en
+>   descriptores de comunidad del foro, nombres de stats estándar (ya con disclaimer), "earned a roulette
+>   spin" (gamificación). Synapse PDFs ya traían disclaimer educativo.
+> **⚠️ PASO 2 PENDIENTE (si el usuario lo pide):** segunda pasada fina sobre splash loading phrases,
+> store_indicators/camos sales copy, settings, y un barrido de absolutismos residuales en quiz `exp`.
+> **Deploy:** `git pull origin claude/intelligent-turing-94qh5i && supervisorctl restart traderacelerator`.
+
+---
+
 > **✅ COMPLETADO (2026-06-18) — ADMIN: ANALYTICS DE ANÁLISIS + MEDIDOR DE SALDO OPENAI**
 >
 > Nueva sección **"🤖 AI Usage & Spend"** en `/admin` (`admin.html`, ancla `#ai-spend`, link en el nav).

@@ -4495,7 +4495,7 @@
   <div id="form-view">
     <div class="page-header">
       <h1 data-i18n="header.title">Analyze Your Setup</h1>
-      <p data-i18n="header.sub">Submit a trade for ICT analysis. Trader Acelerator will identify possible setup errors and offer suggestions based on methodology — not verdicts.</p>
+      <p data-i18n="header.sub">Submit a trade for ICT analysis. Trader Acelerator highlights possible setup errors and offers educational observations based on ICT methodology — not verdicts, signals, or financial advice.</p>
     </div>
 
     <!-- ── ANALYSIS PROJECTS ── -->
@@ -5173,8 +5173,8 @@
               <span class="qc-star">★</span>
             </span>
             <div>
-              <div class="qc-title" data-i18n="quiz.certifiedTitle">Our Certified Accelerated Traders</div>
-              <div class="qc-sub" id="quiz-certified-sub" data-i18n="quiz.certifiedSub">Premium members who passed every quiz with 80%+ accuracy.</div>
+              <div class="qc-title" data-i18n="quiz.certifiedTitle">Our Quiz Masters</div>
+              <div class="qc-sub" id="quiz-certified-sub" data-i18n="quiz.certifiedSub">Premium members who completed every quiz with 80%+ correct answers.</div>
             </div>
           </div>
           <div class="qc-list" id="quiz-certified-list"><!-- populated by JS --></div>
@@ -5473,7 +5473,7 @@
         <svg class="ic-soon" style="display:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       </div>
       <div class="feature-title" data-i18n="pf.title">Pre-Flight</div>
-      <div class="feature-desc feat-main" data-i18n="pf.sub">Your discipline trainer. Define the confluences your trigger requires, run a pre-flight check before every trade, and let the data show which confluences actually pay.</div>
+      <div class="feature-desc feat-main" data-i18n="pf.sub">Your discipline trainer. Define the confluences your trigger requires, run a pre-flight check before every trade, and let the data show which confluences performed best in your own records.</div>
       <div class="feature-desc feat-state"></div>
       <a href="/?plans=1#plans" target="_blank" rel="noopener" class="feature-upgrade" data-i18n="feature.upgrade">Upgrade to Premium</a>
     </div>
@@ -5482,7 +5482,7 @@
     <div class="preflight-app" id="preflight-app" style="display:none;">
     <div class="page-header">
       <h1 data-i18n="pf.title">Pre-Flight</h1>
-      <p data-i18n="pf.sub">Your discipline trainer. Define the confluences your trigger requires, run a pre-flight check before every trade, and let the data show which confluences actually pay.</p>
+      <p data-i18n="pf.sub">Your discipline trainer. Define the confluences your trigger requires, run a pre-flight check before every trade, and let the data show which confluences performed best in your own records.</p>
     </div>
 
     <!-- Sub-tabs: Board / Per project / Compare -->
@@ -5504,11 +5504,11 @@
         </div>
         <div class="pf-onboard-step">
           <span class="pf-onboard-num">2</span>
-          <div><strong data-i18n="pf.onboard2Title">Run it before every trade</strong><p data-i18n="pf.onboard2Body">Tick what's present right now. The lamp tells you GO, CAUTION or NO-GO before you click buy or sell.</p></div>
+          <div><strong data-i18n="pf.onboard2Title">Run it before every trade</strong><p data-i18n="pf.onboard2Body">Tick what's present right now. The lamp shows GO, CAUTION or NO-GO based on your own checklist — a discipline aid, not a signal or recommendation.</p></div>
         </div>
         <div class="pf-onboard-step">
           <span class="pf-onboard-num">3</span>
-          <div><strong data-i18n="pf.onboard3Title">Log the trade and learn</strong><p data-i18n="pf.onboard3Body">Add the date, instrument, R:R and result — backtests or live papertrades. Over time the stats show which confluences actually pay.</p></div>
+          <div><strong data-i18n="pf.onboard3Title">Log the trade and learn</strong><p data-i18n="pf.onboard3Body">Add the date, instrument, R:R and result — backtests or live papertrades. Over time the stats show which confluences performed best in your own records.</p></div>
         </div>
       </div>
     </div>
@@ -5666,6 +5666,7 @@
 
     <!-- Stats strip -->
     <div class="pf-stats" id="pf-stats"></div>
+    <p class="pf-disclaimer" data-i18n="pf.statsDisclaimer" style="font-size:11px;color:var(--muted);line-height:1.45;margin:8px 2px 0;">These statistics are computed only from the trades you log here — they describe your own past records for study, and are not predictions of future results or financial advice.</p>
 
     <!-- History -->
     <div class="card" id="pf-history-card" style="--card-accent:#5b8ef0;">
@@ -6102,7 +6103,7 @@
     en: {
       'nav.tip': 'See plans →',
       'header.title': 'Analyze Your Setup',
-      'header.sub': 'Submit a trade for ICT analysis. Trader Acelerator will identify possible setup errors and offer suggestions based on methodology — not verdicts.',
+      'header.sub': 'Submit a trade for ICT analysis. Trader Acelerator highlights possible setup errors and offers educational observations based on ICT methodology — not verdicts, signals, or financial advice.',
       'card.tradeDetails': 'Trade Details',
       'card.preTrade': 'Your Pre-Trade Analysis',
       'card.confluences': 'Confluences You Identified',
@@ -6160,7 +6161,7 @@
       'tabs.quiz': 'Quiz',
       'tabs.preflight': 'Pre-Flight',
       'pf.title': 'Pre-Flight',
-      'pf.sub': 'Your discipline trainer. Define the confluences your trigger requires, run a pre-flight check before every trade, and let the data show which confluences actually pay.',
+      'pf.sub': 'Your discipline trainer. Define the confluences your trigger requires, run a pre-flight check before every trade, and let the data show which confluences performed best in your own records.',
       'pf.decksTitle': 'Your Checklists',
       'pf.decksHint': 'Save your personal trigger as a checklist preset and reuse it before every trade. Start from a built-in template or build your own.',
       'pf.count': '{used} / {limit} checklists',
@@ -6196,6 +6197,7 @@
       'pf.logged': 'Logged ✓',
       'pf.notePh': 'Optional note (pair, session…)',
       'pf.historyTitle': 'Recent Checks',
+      'pf.statsDisclaimer': 'These statistics are computed only from the trades you log here — they describe your own past records for study, and are not predictions of future results or financial advice.',
       'pf.historyEmpty': 'No checks logged yet. Run your first pre-flight above.',
       'pf.outcomeNone': 'Outcome…',
       'pf.win': 'Win',
@@ -6212,9 +6214,9 @@
       'pf.onboard1Title': 'Build your checklist',
       'pf.onboard1Body': 'List the exact confluences your entry trigger requires — your own rules, in your own words.',
       'pf.onboard2Title': 'Run it before every trade',
-      'pf.onboard2Body': "Tick what's present right now. The lamp tells you GO, CAUTION or NO-GO before you click buy or sell.",
+      'pf.onboard2Body': "Tick what's present right now. The lamp shows GO, CAUTION or NO-GO based on your own checklist — a discipline aid, not a signal or recommendation.",
       'pf.onboard3Title': 'Log the trade and learn',
-      'pf.onboard3Body': 'Add the date, instrument, R:R and result — backtests or live papertrades. Over time the stats show which confluences actually pay.',
+      'pf.onboard3Body': 'Add the date, instrument, R:R and result — backtests or live papertrades. Over time the stats show which confluences performed best in your own records.',
       'pf.stepName': 'Name this checklist',
       'pf.stepNameHint': 'This is just your own label — it never changes the confluences below.',
       'pf.stepPreset': 'Start from a preset (optional)',
@@ -6334,8 +6336,8 @@
       'quiz.passed': 'Passed ✅',
       'quiz.failed': 'Not passed ❌',
       'quiz.passRule': 'You need at least 80% correct to pass.',
-      'quiz.certifiedTitle': 'Our Certified Accelerated Traders',
-      'quiz.certifiedSub': 'Premium members who passed every quiz with {pct}%+ accuracy.',
+      'quiz.certifiedTitle': 'Our Quiz Masters',
+      'quiz.certifiedSub': 'Premium members who completed every quiz with {pct}%+ correct answers.',
       'quiz.certifiedEmpty': 'No certified traders yet — be the first to complete every quiz at 80%+.',
       'quiz.founder': 'Founder',
       'quiz.noQuestions': 'No questions available for this combination. Try different topics or level.',
@@ -6494,7 +6496,7 @@
     es: {
       'nav.tip': 'Ver planes →',
       'header.title': 'Analiza tu Setup',
-      'header.sub': 'Envía un trade para análisis ICT. Trader Acelerator identificará posibles errores del setup y ofrecerá sugerencias basadas en la metodología — no veredictos.',
+      'header.sub': 'Envía un trade para análisis ICT. Trader Acelerator señala posibles errores del setup y ofrece observaciones educativas basadas en la metodología ICT — no veredictos, señales ni asesoría financiera.',
       'card.tradeDetails': 'Detalles del Trade',
       'card.preTrade': 'Tu Análisis Previo',
       'card.confluences': 'Confluencias que Identificaste',
@@ -6552,7 +6554,7 @@
       'tabs.quiz': 'Quiz',
       'tabs.preflight': 'Pre-Flight',
       'pf.title': 'Pre-Flight',
-      'pf.sub': 'Tu entrenador de disciplina. Define las confluencias que exige tu gatillo, corre un chequeo pre-vuelo antes de cada trade, y deja que los datos muestren qué confluencias realmente pagan.',
+      'pf.sub': 'Tu entrenador de disciplina. Define las confluencias que exige tu gatillo, corre un chequeo pre-vuelo antes de cada trade, y deja que los datos muestren qué confluencias tuvieron mejor desempeño en tu propio historial.',
       'pf.decksTitle': 'Tus Checklists',
       'pf.decksHint': 'Guarda tu gatillo personal como preset de checklist y reutilízalo antes de cada trade. Parte de una plantilla incluida o crea la tuya.',
       'pf.count': '{used} / {limit} checklists',
@@ -6588,6 +6590,7 @@
       'pf.logged': 'Registrado ✓',
       'pf.notePh': 'Nota opcional (par, sesión…)',
       'pf.historyTitle': 'Chequeos Recientes',
+      'pf.statsDisclaimer': 'Estas estadísticas se calculan solo con los trades que registras aquí — describen tu propio historial con fines de estudio, y no son predicciones de resultados futuros ni asesoría financiera.',
       'pf.historyEmpty': 'Aún no hay chequeos registrados. Corre tu primer pre-vuelo arriba.',
       'pf.outcomeNone': 'Resultado…',
       'pf.win': 'Win',
@@ -6604,9 +6607,9 @@
       'pf.onboard1Title': 'Arma tu checklist',
       'pf.onboard1Body': 'Lista las confluencias exactas que exige tu gatillo de entrada — tus propias reglas, en tus propias palabras.',
       'pf.onboard2Title': 'Córrela antes de cada trade',
-      'pf.onboard2Body': 'Marca lo que está presente ahora mismo. La luz te dice GO, CAUTION o NO-GO antes de hacer clic en comprar o vender.',
+      'pf.onboard2Body': 'Marca lo que está presente ahora mismo. La luz muestra GO, CAUTION o NO-GO según tu propia checklist — una ayuda de disciplina, no una señal ni recomendación.',
       'pf.onboard3Title': 'Registra el trade y aprende',
-      'pf.onboard3Body': 'Agrega la fecha, el instrumento, el R:R y el resultado — backtests o papertrades en vivo. Con el tiempo las estadísticas muestran qué confluencias realmente pagan.',
+      'pf.onboard3Body': 'Agrega la fecha, el instrumento, el R:R y el resultado — backtests o papertrades en vivo. Con el tiempo las estadísticas muestran qué confluencias tuvieron mejor desempeño en tu propio historial.',
       'pf.stepName': 'Nombra esta checklist',
       'pf.stepNameHint': 'Es solo tu propia etiqueta — nunca cambia las confluencias de abajo.',
       'pf.stepPreset': 'Empezar desde un preset (opcional)',
@@ -6726,8 +6729,8 @@
       'quiz.passed': 'Aprobado ✅',
       'quiz.failed': 'Reprobado ❌',
       'quiz.passRule': 'Necesitas al menos 80% de aciertos para aprobar.',
-      'quiz.certifiedTitle': 'Nuestros Traders Acelerados Certificados',
-      'quiz.certifiedSub': 'Miembros Premium que aprobaron todos los quizzes con {pct}% o más de aciertos.',
+      'quiz.certifiedTitle': 'Nuestros Maestros del Quiz',
+      'quiz.certifiedSub': 'Miembros Premium que completaron todos los quizzes con {pct}% o más de aciertos.',
       'quiz.certifiedEmpty': 'Aún no hay traders certificados — sé el primero en completar todos los quizzes con 80%+.',
       'quiz.founder': 'Fundador',
       'quiz.noQuestions': 'No hay preguntas para esta combinación. Prueba con otros temas o nivel.',
@@ -6886,7 +6889,7 @@
     fr: {
       'nav.tip': 'Voir les offres →',
       'header.title': 'Analysez votre Setup',
-      'header.sub': 'Soumettez un trade pour une analyse ICT. Trader Acelerator identifiera les erreurs possibles du setup et proposera des suggestions basées sur la méthodologie — pas des verdicts.',
+      'header.sub': 'Soumettez un trade pour une analyse ICT. Trader Acelerator signale les erreurs possibles du setup et propose des observations éducatives basées sur la méthodologie ICT — pas des verdicts, signaux ou conseils financiers.',
       'card.tradeDetails': 'Détails du Trade',
       'card.preTrade': 'Votre Analyse Pré-Trade',
       'card.confluences': 'Confluences Identifiées',
@@ -6944,7 +6947,7 @@
       'tabs.quiz': 'Quiz',
       'tabs.preflight': 'Pre-Flight',
       'pf.title': 'Pre-Flight',
-      'pf.sub': "Votre entraîneur de discipline. Définissez les confluences qu’exige votre déclencheur, faites un check pré-vol avant chaque trade, et laissez les données montrer quelles confluences paient vraiment.",
+      'pf.sub': "Votre entraîneur de discipline. Définissez les confluences qu’exige votre déclencheur, faites un check pré-vol avant chaque trade, et laissez les données montrer quelles confluences ont le mieux performé dans votre propre historique.",
       'pf.decksTitle': 'Vos Checklists',
       'pf.decksHint': "Enregistrez votre déclencheur personnel comme preset de checklist et réutilisez-le avant chaque trade. Partez d’un modèle intégré ou créez le vôtre.",
       'pf.count': '{used} / {limit} checklists',
@@ -6980,6 +6983,7 @@
       'pf.logged': 'Enregistré ✓',
       'pf.notePh': 'Note facultative (paire, session…)',
       'pf.historyTitle': 'Checks Récents',
+      'pf.statsDisclaimer': "Ces statistiques sont calculées uniquement à partir des trades que vous enregistrez ici — elles décrivent votre propre historique à des fins d'étude, et ne sont ni des prédictions de résultats futurs ni un conseil financier.",
       'pf.historyEmpty': 'Aucun check enregistré. Lancez votre premier pré-vol ci-dessus.',
       'pf.outcomeNone': 'Résultat…',
       'pf.win': 'Gain',
@@ -6996,9 +7000,9 @@
       'pf.onboard1Title': 'Construisez votre checklist',
       'pf.onboard1Body': "Listez les confluences exactes qu'exige votre déclencheur d'entrée — vos propres règles, dans vos propres mots.",
       'pf.onboard2Title': 'Lancez-la avant chaque trade',
-      'pf.onboard2Body': "Cochez ce qui est présent maintenant. Le voyant indique GO, CAUTION ou NO-GO avant de cliquer sur acheter ou vendre.",
+      'pf.onboard2Body': "Cochez ce qui est présent maintenant. Le voyant affiche GO, CAUTION ou NO-GO selon votre propre checklist — une aide à la discipline, pas un signal ni une recommandation.",
       'pf.onboard3Title': 'Enregistrez le trade et apprenez',
-      'pf.onboard3Body': 'Ajoutez la date, l\'instrument, le R:R et le résultat — backtests ou papertrades en direct. Avec le temps, les statistiques montrent quelles confluences paient vraiment.',
+      'pf.onboard3Body': 'Ajoutez la date, l\'instrument, le R:R et le résultat — backtests ou papertrades en direct. Avec le temps, les statistiques montrent quelles confluences ont le mieux performé dans votre propre historique.',
       'pf.stepName': 'Nommez cette checklist',
       'pf.stepNameHint': "C'est juste votre propre étiquette — cela ne change jamais les confluences ci-dessous.",
       'pf.stepPreset': 'Partir d\'un preset (optionnel)',
@@ -7118,8 +7122,8 @@
       'quiz.passed': 'Réussi ✅',
       'quiz.failed': 'Non réussi ❌',
       'quiz.passRule': 'Vous avez besoin d\'au moins 80% de bonnes réponses pour réussir.',
-      'quiz.certifiedTitle': 'Nos Traders Accélérés Certifiés',
-      'quiz.certifiedSub': 'Membres Premium ayant réussi tous les quiz avec une précision de {pct}% ou plus.',
+      'quiz.certifiedTitle': 'Nos Maîtres du Quiz',
+      'quiz.certifiedSub': 'Membres Premium ayant complété tous les quiz avec {pct}% ou plus de bonnes réponses.',
       'quiz.certifiedEmpty': 'Aucun trader certifié pour l\'instant — soyez le premier à compléter tous les quiz avec 80%+.',
       'quiz.founder': 'Fondateur',
       'quiz.noQuestions': 'Aucune question pour cette combinaison. Essayez d\'autres thèmes ou niveaux.',
@@ -7278,7 +7282,7 @@
     pt: {
       'nav.tip': 'Ver planos →',
       'header.title': 'Analise seu Setup',
-      'header.sub': 'Envie um trade para análise ICT. O Trader Acelerator identificará possíveis erros do setup e oferecerá sugestões baseadas na metodologia — não veredictos.',
+      'header.sub': 'Envie um trade para análise ICT. O Trader Acelerator destaca possíveis erros do setup e oferece observações educativas baseadas na metodologia ICT — não veredictos, sinais ou aconselhamento financeiro.',
       'card.tradeDetails': 'Detalhes do Trade',
       'card.preTrade': 'Sua Análise Pré-Trade',
       'card.confluences': 'Confluências que Identificou',
@@ -7336,7 +7340,7 @@
       'tabs.quiz': 'Quiz',
       'tabs.preflight': 'Pre-Flight',
       'pf.title': 'Pre-Flight',
-      'pf.sub': 'Seu treinador de disciplina. Defina as confluências que seu gatilho exige, faça um check pré-voo antes de cada trade, e deixe os dados mostrarem quais confluências realmente pagam.',
+      'pf.sub': 'Seu treinador de disciplina. Defina as confluências que seu gatilho exige, faça um check pré-voo antes de cada trade, e deixe os dados mostrarem quais confluências tiveram melhor desempenho no seu próprio histórico.',
       'pf.decksTitle': 'Suas Checklists',
       'pf.decksHint': 'Salve seu gatilho pessoal como preset de checklist e reutilize antes de cada trade. Comece de um modelo incluído ou crie o seu.',
       'pf.count': '{used} / {limit} checklists',
@@ -7372,6 +7376,7 @@
       'pf.logged': 'Registrado ✓',
       'pf.notePh': 'Nota opcional (par, sessão…)',
       'pf.historyTitle': 'Checks Recentes',
+      'pf.statsDisclaimer': 'Estas estatísticas são calculadas apenas com os trades que você registra aqui — descrevem o seu próprio histórico para fins de estudo, e não são previsões de resultados futuros nem aconselhamento financeiro.',
       'pf.historyEmpty': 'Nenhum check registrado ainda. Faça seu primeiro pré-voo acima.',
       'pf.outcomeNone': 'Resultado…',
       'pf.win': 'Win',
@@ -7388,9 +7393,9 @@
       'pf.onboard1Title': 'Monte sua checklist',
       'pf.onboard1Body': 'Liste as confluências exatas que seu gatilho de entrada exige — suas próprias regras, com suas próprias palavras.',
       'pf.onboard2Title': 'Rode antes de cada trade',
-      'pf.onboard2Body': 'Marque o que está presente agora. A luz mostra GO, CAUTION ou NO-GO antes de clicar em comprar ou vender.',
+      'pf.onboard2Body': 'Marque o que está presente agora. A luz mostra GO, CAUTION ou NO-GO conforme sua própria checklist — uma ajuda de disciplina, não um sinal nem recomendação.',
       'pf.onboard3Title': 'Registre o trade e aprenda',
-      'pf.onboard3Body': 'Adicione a data, o instrumento, o R:R e o resultado — backtests ou papertrades ao vivo. Com o tempo as estatísticas mostram quais confluências realmente pagam.',
+      'pf.onboard3Body': 'Adicione a data, o instrumento, o R:R e o resultado — backtests ou papertrades ao vivo. Com o tempo as estatísticas mostram quais confluências tiveram melhor desempenho no seu próprio histórico.',
       'pf.stepName': 'Nomeie esta checklist',
       'pf.stepNameHint': 'É só sua própria etiqueta — nunca muda as confluências abaixo.',
       'pf.stepPreset': 'Começar de um preset (opcional)',
@@ -7510,8 +7515,8 @@
       'quiz.passed': 'Aprovado ✅',
       'quiz.failed': 'Reprovado ❌',
       'quiz.passRule': 'Você precisa de pelo menos 80% de acertos para passar.',
-      'quiz.certifiedTitle': 'Nossos Traders Acelerados Certificados',
-      'quiz.certifiedSub': 'Membros Premium que passaram em todos os quizzes com {pct}% ou mais de acertos.',
+      'quiz.certifiedTitle': 'Nossos Mestres do Quiz',
+      'quiz.certifiedSub': 'Membros Premium que completaram todos os quizzes com {pct}% ou mais de acertos.',
       'quiz.certifiedEmpty': 'Ainda não há traders certificados — seja o primeiro a completar todos os quizzes com 80%+.',
       'quiz.founder': 'Fundador',
       'quiz.noQuestions': 'Nenhuma pergunta para esta combinação. Tente outros temas ou nível.',
@@ -9489,25 +9494,25 @@
           badge:'{name} medal',badgeD:'Shown next to your name in the forum, testimonials and menu.',
           camo:'Exclusive camo',camoD:'A design reserved for this rank.',
           beta:'Priority beta access',betaD:'Try new sections before everyone else.',
-          cert:'Official certificate',certD:'Download the document that certifies your rank.',
+          cert:'Rank achievement',certD:'Download your rank-progression record — a memento of your learning journey on Trader Acelerator (educational, not a professional qualification).',
           certBtn:'View certificate',cont:'Continue'},
       es:{up:'Subiste de rango',rankOf:'Rango {n} de 8',max:'Rango 8 de 8 · rango máximo',xp:'{x} XP',
           badge:'Medalla de {name}',badgeD:'Visible junto a tu nombre en el foro, testimonios y el menú.',
           camo:'Camo exclusivo',camoD:'Un diseño reservado para este rango.',
           beta:'Acceso beta prioritario',betaD:'Prueba apartados nuevos antes que el resto.',
-          cert:'Certificado oficial',certD:'Descarga el documento que acredita tu rango.',
+          cert:'Logro de rango',certD:'Descarga tu registro de progresión — un recuerdo de tu aprendizaje en Trader Acelerator (educativo, no es una calificación profesional).',
           certBtn:'Ver certificado',cont:'Continuar'},
       fr:{up:'Niveau supérieur',rankOf:'Rang {n} sur 8',max:'Rang 8 sur 8 · rang maximal',xp:'{x} XP',
           badge:'Médaille {name}',badgeD:'Affichée à côté de votre nom dans le forum, les avis et le menu.',
           camo:'Camo exclusif',camoD:'Un design réservé à ce rang.',
           beta:'Accès bêta prioritaire',betaD:'Essayez les nouvelles sections avant tout le monde.',
-          cert:'Certificat officiel',certD:'Téléchargez le document qui atteste votre rang.',
+          cert:'Accomplissement de rang',certD:'Téléchargez votre relevé de progression — un souvenir de votre apprentissage sur Trader Acelerator (éducatif, pas une qualification professionnelle).',
           certBtn:'Voir le certificat',cont:'Continuer'},
       pt:{up:'Subiu de rank',rankOf:'Rank {n} de 8',max:'Rank 8 de 8 · rank máximo',xp:'{x} XP',
           badge:'Medalha de {name}',badgeD:'Visível ao lado do seu nome no fórum, depoimentos e menu.',
           camo:'Camo exclusivo',camoD:'Um design reservado para este rank.',
           beta:'Acesso beta prioritário',betaD:'Experimente novas seções antes de todos.',
-          cert:'Certificado oficial',certD:'Baixe o documento que comprova seu rank.',
+          cert:'Conquista de rank',certD:'Baixe seu registro de progressão — uma lembrança do seu aprendizado no Trader Acelerator (educativo, não é uma qualificação profissional).',
           certBtn:'Ver certificado',cont:'Continuar'}
     };
     var t = I18N[L] || I18N.en;
