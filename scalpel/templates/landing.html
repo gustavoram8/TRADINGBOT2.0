@@ -636,13 +636,21 @@
       .plan.featured { order: -1; }
     }
 
-    /* ── Feature comparison matrix (rows aligned by importance) ── */
-    .compare { max-width: 820px; margin: 52px auto 0; padding: 0 22px; }
-    .compare h3.cmp-h { text-align: center; font-size: clamp(19px,2.4vw,24px); font-weight: 800;
-      color: var(--pp-ink); margin: 0 0 6px; }
-    .compare .cmp-sub { text-align: center; color: var(--pp-muted); font-size: 13px; margin: 0 0 24px; }
+    /* ── Feature comparison matrix (collapsed by default — keeps the landing airy) ── */
+    .compare { max-width: 820px; margin: 44px auto 0; padding: 0 22px; text-align: center; }
+    .cmp-toggle { display: inline-flex; align-items: center; gap: 9px; margin: 0 auto; cursor: pointer;
+      background: var(--pp-card-bg); border: 1px solid var(--pp-line); border-radius: 999px;
+      padding: 12px 24px; color: var(--pp-ink); font-weight: 700; font-size: 14.5px;
+      font-family: inherit; transition: border-color .2s ease, background .2s ease; }
+    .cmp-toggle:hover { border-color: var(--pp-premium); }
+    .cmp-chev { width: 16px; height: 16px; transition: transform .28s ease; flex: 0 0 auto; }
+    .cmp-toggle[aria-expanded="true"] .cmp-chev { transform: rotate(180deg); }
+    .cmp-panel { max-height: 0; overflow: hidden; opacity: 0;
+      transition: max-height .42s ease, opacity .3s ease, margin-top .42s ease; }
+    .cmp-panel.open { max-height: 1400px; opacity: 1; margin-top: 22px; }
+    .compare .cmp-sub { text-align: center; color: var(--pp-muted); font-size: 13px; margin: 0 0 18px; }
     .cmp-wrap { overflow-x: auto; border: 1px solid var(--pp-line); border-radius: 14px;
-      background: var(--pp-card-bg); -webkit-overflow-scrolling: touch; }
+      background: var(--pp-card-bg); -webkit-overflow-scrolling: touch; text-align: left; }
     .cmp { width: 100%; border-collapse: collapse; min-width: 520px; }
     .cmp th, .cmp td { padding: 13px 14px; text-align: center; border-bottom: 1px solid var(--pp-line-soft);
       font-size: 13.5px; }
@@ -661,6 +669,7 @@
     .cmp .no { color: var(--pp-muted); }
     .cmp .soon-tag { font-size: 10px; color: var(--pp-muted); border: 1px solid var(--pp-line);
       border-radius: 8px; padding: 1px 7px; }
+    @media (prefers-reduced-motion: reduce) { .cmp-panel { transition: none; } .cmp-chev { transition: none; } }
     @media (max-width: 560px) {
       .compare { padding: 0 12px; }
       .cmp th, .cmp td { padding: 10px 9px; font-size: 12.5px; }
@@ -1411,7 +1420,11 @@
 
     <!-- Feature comparison matrix (rows ordered by importance) -->
     <div class="compare">
-      <h3 class="cmp-h" data-t="cmp_title">Compare all features</h3>
+      <button type="button" class="cmp-toggle" id="cmp-toggle" aria-expanded="false" aria-controls="cmp-panel">
+        <span data-t="cmp_title">Compare all features</span>
+        <svg class="cmp-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="cmp-panel" id="cmp-panel">
       <p class="cmp-sub" data-t="cmp_sub">Same feature, same row — see exactly what each plan includes.</p>
       <div class="cmp-wrap">
         <table class="cmp">
@@ -1501,6 +1514,7 @@
           </tbody>
         </table>
       </div>
+      </div><!-- /.cmp-panel -->
     </div>
   </section>
 
@@ -2263,6 +2277,17 @@
       if (sub) sub.textContent = SUBS[cycle];
     }
     opts.forEach(function (o) { o.addEventListener('click', function () { setCycle(o.dataset.cycle); }); });
+  })();
+
+  // ── Feature comparison matrix: collapse/expand toggle ──────────
+  (function () {
+    var btn = document.getElementById('cmp-toggle');
+    var panel = document.getElementById('cmp-panel');
+    if (!btn || !panel) return;
+    btn.addEventListener('click', function () {
+      var open = panel.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
   })();
 
   // ── AI TERMINAL: live-typing effect ────────────────────────────
