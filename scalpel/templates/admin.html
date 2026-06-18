@@ -229,6 +229,7 @@
       <span class="badge">Admin</span>
     </div>
     <div class="links">
+      <a href="#ai-spend">AI usage{% if ai_flagged %} ({{ ai_flagged|length }} 🚩){% endif %}</a>
       <a href="#audit">Audit log{% if audit_failed_count %} ({{ audit_failed_count }} ⚠){% endif %}</a>
       <a href="/app">Open app →</a>
       <a href="/logout">Sign out</a>
@@ -590,6 +591,111 @@
       {% else %}
       <div class="empty">No moderation flags yet.</div>
       {% endfor %}
+    </div>
+
+    <style>
+      .aip-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:18px; }
+      .aip-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px 16px; }
+      .aip-card .lab { font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); font-weight:700; }
+      .aip-card .val { font-size:22px; font-weight:800; margin-top:4px; font-family:'JetBrains Mono',monospace; }
+      .aip-card .sub { font-size:11px; color:var(--muted); margin-top:2px; }
+      .aip-gauge { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:18px 20px; margin-bottom:18px; }
+      .aip-gauge.low { border-color:#dc2626; box-shadow:0 0 0 1px rgba(220,38,38,.25); }
+      .aip-gauge-top { display:flex; flex-wrap:wrap; align-items:baseline; gap:10px 18px; margin-bottom:12px; }
+      .aip-rem { font-size:30px; font-weight:800; font-family:'JetBrains Mono',monospace; }
+      .aip-rem.low { color:#dc2626; }
+      .aip-gauge-meta { font-size:12px; color:var(--muted); }
+      .aip-bar { height:12px; border-radius:7px; background:var(--surface); border:1px solid var(--border2); overflow:hidden; }
+      .aip-bar > i { display:block; height:100%; background:linear-gradient(90deg,#16a34a,#22c55e); }
+      .aip-gauge.low .aip-bar > i { background:linear-gradient(90deg,#b91c1c,#dc2626); }
+      .aip-form { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:14px; }
+      .aip-form input { font:inherit; font-size:13px; background:var(--surface); color:var(--text);
+        border:1px solid var(--border2); border-radius:8px; padding:8px 11px; }
+      .aip-form input.amt { width:120px; font-family:'JetBrains Mono',monospace; }
+      .aip-form input.note { flex:1; min-width:140px; }
+      .aip-btn { font:inherit; font-size:13px; font-weight:700; cursor:pointer; background:var(--surface);
+        color:var(--text); border:1px solid var(--premium); padding:8px 16px; border-radius:18px; }
+      .aip-table { width:100%; border-collapse:collapse; font-size:13px; }
+      .aip-table th, .aip-table td { padding:9px 12px; text-align:left; border-bottom:1px solid var(--border); }
+      .aip-table th { font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
+      .aip-table td.num, .aip-table th.num { text-align:right; font-family:'JetBrains Mono',monospace; }
+      .aip-table tr.over td { background:rgba(220,38,38,.09); }
+      .aip-pill { font-size:11px; font-weight:700; padding:2px 8px; border-radius:11px; border:1px solid var(--border2); color:var(--muted); }
+      .aip-pill.free { color:#9aa3b8; } .aip-pill.standard { color:#5b8ef0; border-color:#5b8ef0; }
+      .aip-pill.premium { color:var(--premium); border-color:var(--premium); }
+      .aip-ok { color:#16a34a; font-weight:700; } .aip-bad { color:#dc2626; font-weight:800; }
+    </style>
+
+    <div class="section-h" id="ai-spend">🤖 AI Usage &amp; Spend — screenshot analyses, per-user metrics &amp; prepaid fuel</div>
+    <div class="section-d">
+      Every screenshot analysis is metered (tokens → estimated USD cost at ${{ '%.2f'|format(ai_price_in) }}/1M in,
+      ${{ '%.2f'|format(ai_price_out) }}/1M out). The 🚩 rows below are users who made <em>more</em> analyses than
+      their plan allows inside the plan's own window (Free 1/7d · Standard 1/24h · Premium 5/24h) — a sign of a bug
+      or abuse to investigate. The fuel gauge estimates how much of your prepaid OpenAI balance is left.
+    </div>
+
+    <!-- Fuel gauge -->
+    <div class="aip-gauge {{ 'low' if ai_gauge.has and ai_gauge.low else '' }}">
+      {% if ai_gauge.has %}
+      <div class="aip-gauge-top">
+        <span class="aip-rem {{ 'low' if ai_gauge.low else '' }}">${{ '%.2f'|format(ai_gauge.remaining) }}</span>
+        <span class="aip-gauge-meta">left of ${{ '%.2f'|format(ai_gauge.balance) }} · spent ${{ '%.4f'|format(ai_gauge.spent) }}
+          since {{ ai_gauge.set_at.strftime('%Y-%m-%d %H:%M') if ai_gauge.set_at else '' }}{% if ai_gauge.note %} · {{ ai_gauge.note }}{% endif %}</span>
+      </div>
+      <div class="aip-bar"><i style="width: {{ ai_gauge.pct }}%"></i></div>
+      <div class="aip-gauge-meta" style="margin-top:6px">{{ ai_gauge.pct }}% remaining (estimated){% if ai_gauge.low %} — ⚠️ running low, consider topping up{% endif %}</div>
+      {% else %}
+      <div class="aip-gauge-meta">No balance set yet. Enter how much you loaded into OpenAI to start tracking the remaining fuel.</div>
+      {% endif %}
+      <form class="aip-form" method="POST" action="/admin/ai-credit/set">
+        <input class="amt" type="number" step="0.01" min="0" name="balance" placeholder="e.g. 50.00" required />
+        <input class="note" type="text" name="note" placeholder="note (optional, e.g. 'topped up via card')" />
+        <button class="aip-btn" type="submit">{{ 'Reconcile balance' if ai_gauge.has else 'Set balance' }}</button>
+      </form>
+    </div>
+
+    <!-- Aggregate metric cards -->
+    <div class="aip-cards">
+      <div class="aip-card"><div class="lab">Analyses today</div><div class="val">{{ ai_analyses.today }}</div><div class="sub">≈ ${{ '%.3f'|format(ai_cost.today) }}</div></div>
+      <div class="aip-card"><div class="lab">Last 7 days</div><div class="val">{{ ai_analyses.d7 }}</div><div class="sub">≈ ${{ '%.3f'|format(ai_cost.d7) }}</div></div>
+      <div class="aip-card"><div class="lab">Last 30 days</div><div class="val">{{ ai_analyses.d30 }}</div><div class="sub">≈ ${{ '%.2f'|format(ai_cost.d30) }}</div></div>
+      <div class="aip-card"><div class="lab">Avg cost / analysis</div><div class="val">${{ '%.4f'|format(ai_avg_cost) }}</div><div class="sub">last 30d</div></div>
+      <div class="aip-card"><div class="lab">Projected / month</div><div class="val">${{ '%.2f'|format(ai_projected_monthly) }}</div><div class="sub">trailing 30d</div></div>
+    </div>
+
+    <!-- Per-plan averages -->
+    <div class="table-card" style="margin-bottom:18px">
+      <table class="aip-table">
+        <thead><tr><th>Plan</th><th class="num">Active users (30d)</th><th class="num">Analyses (30d)</th><th class="num">Avg / user / day</th></tr></thead>
+        <tbody>
+          {% for plan, m in ai_plan_avg.items() %}
+          <tr><td><span class="aip-pill {{ plan }}">{{ plan }}</span></td><td class="num">{{ m.users }}</td><td class="num">{{ m.analyses_30d }}</td><td class="num">{{ '%.2f'|format(m.avg_per_user_day) }}</td></tr>
+          {% else %}
+          <tr><td colspan="4"><div class="empty">No analyses recorded in the last 30 days yet.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Per-user table -->
+    <div class="table-card" style="margin-bottom:30px">
+      <table class="aip-table">
+        <thead><tr><th>User</th><th>Plan</th><th class="num">Today</th><th class="num">7d</th><th class="num">30d</th><th class="num">Within limit</th></tr></thead>
+        <tbody>
+          {% for r in ai_rows %}
+          <tr class="{{ 'over' if r.over_limit else '' }}">
+            <td>{% if r.over_limit %}🚩 {% endif %}{{ r.username }}</td>
+            <td><span class="aip-pill {{ r.plan }}">{{ r.plan }}</span></td>
+            <td class="num">{{ r.today }}</td>
+            <td class="num">{{ r.d7 }}</td>
+            <td class="num">{{ r.d30 }}</td>
+            <td class="num"><span class="{{ 'aip-bad' if r.over_limit else 'aip-ok' }}">{{ r.window_count }}/{{ r.window_max }} <span style="color:var(--muted);font-weight:400">/{{ r.window_label }}</span></span></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6"><div class="empty">No screenshot analyses recorded in the last 30 days yet.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
 
     <div class="section-h" id="audit">📋 Audit Log — payments, plan grants, PDF deliveries &amp; emails</div>

@@ -172,6 +172,13 @@ client = OpenAI(
     api_key=GITHUB_TOKEN,
 )
 
+# GPT-4o token pricing (USD per 1M tokens) — used only to ESTIMATE AI spend for the
+# admin Analytics & AI-spend dashboard. Override via env if OpenAI changes prices.
+AI_PRICE_IN_PER_1M  = float(os.environ.get("AI_PRICE_IN_PER_1M",  "2.50"))
+AI_PRICE_OUT_PER_1M = float(os.environ.get("AI_PRICE_OUT_PER_1M", "10.0"))
+AI_PRICE_IN  = AI_PRICE_IN_PER_1M  / 1_000_000
+AI_PRICE_OUT = AI_PRICE_OUT_PER_1M / 1_000_000
+
 
 # ── Expose feature flags to every template ──
 @app.context_processor
@@ -247,6 +254,31 @@ class UsageLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
     anon_id = db.Column(db.String(64), nullable=True, index=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+
+
+class AICostLog(db.Model):
+    """One row per AI API call (analyze / validate / forum moderation). Records token
+    usage and the estimated USD cost. Powers the admin Analytics & AI-spend panel and
+    the prepaid 'fuel gauge'. Kept separate from UsageLog so it never affects rate limits."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    plan = db.Column(db.String(20), nullable=True)
+    kind = db.Column(db.String(20), nullable=False, default='analyze', index=True)
+    model = db.Column(db.String(60), nullable=True)
+    prompt_tokens = db.Column(db.Integer, default=0)
+    completion_tokens = db.Column(db.Integer, default=0)
+    cost_usd = db.Column(db.Float, default=0.0)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+
+
+class AICreditCheckpoint(db.Model):
+    """Admin-entered snapshot of the real OpenAI prepaid balance at a moment in time.
+    Remaining fuel = balance_usd − sum(AICostLog.cost_usd recorded since created_at).
+    Re-entering the real balance (reconciliation) just adds a newer checkpoint."""
+    id = db.Column(db.Integer, primary_key=True)
+    balance_usd = db.Column(db.Float, nullable=False)
+    note = db.Column(db.String(200), nullable=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
 
 
@@ -989,6 +1021,26 @@ def log_usage():
     )
     db.session.add(entry)
     db.session.commit()
+
+
+def record_ai_cost(kind, response, user_id=None, plan=None):
+    """Best-effort telemetry: log token usage + estimated USD cost of one AI call.
+    Never raises — billing analytics must not break the user-facing request."""
+    try:
+        usage = getattr(response, 'usage', None)
+        pt = int(getattr(usage, 'prompt_tokens', 0) or 0)
+        ct = int(getattr(usage, 'completion_tokens', 0) or 0)
+        cost = pt * AI_PRICE_IN + ct * AI_PRICE_OUT
+        db.session.add(AICostLog(
+            user_id=user_id, plan=plan, kind=kind, model=MODEL,
+            prompt_tokens=pt, completion_tokens=ct, cost_usd=round(cost, 6),
+        ))
+        db.session.commit()
+    except Exception:
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
 
 
 def send_reset_email(to_email, reset_url):
@@ -1865,6 +1917,101 @@ def reset_password(token):
 # ──────────────────────────────────────────────────────────────────────────
 # ADMIN
 # ──────────────────────────────────────────────────────────────────────────
+def _build_ai_analytics_context():
+    """Screenshot-analysis usage + AI-spend telemetry for the admin dashboard:
+      - per-user analysis counts (today / 7d / 30d) with an abuse/bug flag when a
+        user exceeds their plan's cap inside the plan's own window,
+      - aggregate analyses + estimated USD cost (today / 7d / 30d) and a monthly
+        projection, broken down per plan,
+      - the prepaid 'fuel gauge' (latest admin checkpoint − spend since)."""
+    now = datetime.now(timezone.utc)
+    today0 = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    d7 = now - timedelta(days=7)
+    d30 = now - timedelta(days=30)
+
+    users = User.query.all()
+    uname = {u.id: u.username for u in users}
+    uplan = {u.id: u.plan for u in users}
+
+    # Per-user analysis timestamps over the last 30 days (UsageLog = 1 row / analysis)
+    logs30 = UsageLog.query.filter(UsageLog.created_at >= d30).all()
+    per_user_ts = {}
+    for l in logs30:
+        uid = l.user_id if l.user_id is not None else ('anon:' + (l.anon_id or '?'))
+        per_user_ts.setdefault(uid, []).append(_as_utc(l.created_at))
+
+    rows, flagged = [], []
+    active_by_plan = {}
+    for uid, ts in per_user_ts.items():
+        is_anon = isinstance(uid, str) and str(uid).startswith('anon:')
+        plan = 'free' if is_anon else uplan.get(uid, 'free')
+        cfg = PLAN_LIMITS.get(plan, PLAN_LIMITS['free'])
+        wstart = now - cfg['window']
+        cnt_today = sum(1 for x in ts if x and x >= today0)
+        cnt_7 = sum(1 for x in ts if x and x >= d7)
+        cnt_30 = len(ts)
+        cnt_window = sum(1 for x in ts if x and x >= wstart)
+        over = cnt_window > cfg['max']
+        row = {
+            'username': 'anon' if is_anon else uname.get(uid, '—'),
+            'plan': plan, 'today': cnt_today, 'd7': cnt_7, 'd30': cnt_30,
+            'window_count': cnt_window, 'window_max': cfg['max'],
+            'window_label': '7d' if plan == 'free' else '24h',
+            'over_limit': over,
+        }
+        rows.append(row)
+        if over:
+            flagged.append(row)
+        slot = active_by_plan.setdefault(plan, {'users': 0, 'analyses': 0})
+        slot['users'] += 1
+        slot['analyses'] += cnt_30
+    rows.sort(key=lambda r: (not r['over_limit'], -r['d30']))
+
+    def _count_since(since):
+        return UsageLog.query.filter(UsageLog.created_at >= since).count()
+
+    def _cost_since(since):
+        v = (db.session.query(db.func.coalesce(db.func.sum(AICostLog.cost_usd), 0.0))
+             .filter(AICostLog.created_at >= since).scalar())
+        return float(v or 0.0)
+
+    analyses = {'today': _count_since(today0), 'd7': _count_since(d7), 'd30': _count_since(d30)}
+    cost = {'today': round(_cost_since(today0), 4), 'd7': round(_cost_since(d7), 4),
+            'd30': round(_cost_since(d30), 4)}
+
+    plan_avg = {}
+    for plan, s in active_by_plan.items():
+        plan_avg[plan] = {
+            'users': s['users'], 'analyses_30d': s['analyses'],
+            'avg_per_user_day': round(s['analyses'] / s['users'] / 30.0, 2) if s['users'] else 0.0,
+        }
+
+    avg_cost = round(cost['d30'] / analyses['d30'], 4) if analyses['d30'] else 0.0
+    projected_monthly = round(cost['d30'], 2)  # trailing 30 days ≈ a month
+
+    cp = AICreditCheckpoint.query.order_by(AICreditCheckpoint.created_at.desc()).first()
+    if cp:
+        spent = _cost_since(_as_utc(cp.created_at))
+        remaining = cp.balance_usd - spent
+        gauge = {
+            'has': True, 'balance': round(cp.balance_usd, 2), 'spent': round(spent, 4),
+            'remaining': round(remaining, 4),
+            'pct': max(0.0, min(100.0, round(remaining / cp.balance_usd * 100, 1))) if cp.balance_usd else 0.0,
+            'low': bool(cp.balance_usd) and remaining / cp.balance_usd < 0.15,
+            'set_at': cp.created_at, 'note': cp.note,
+        }
+    else:
+        gauge = {'has': False}
+
+    return {
+        'ai_rows': rows[:120], 'ai_flagged': flagged,
+        'ai_analyses': analyses, 'ai_cost': cost, 'ai_plan_avg': plan_avg,
+        'ai_avg_cost': avg_cost, 'ai_projected_monthly': projected_monthly,
+        'ai_gauge': gauge,
+        'ai_price_in': AI_PRICE_IN_PER_1M, 'ai_price_out': AI_PRICE_OUT_PER_1M,
+    }
+
+
 @app.route('/admin')
 @login_required
 def admin():
@@ -1932,11 +2079,14 @@ def admin():
     } for a in audit_rows]
     audit_failed_count = sum(1 for a in audit_rows if not a.success)
 
+    ai_ctx = _build_ai_analytics_context()
+
     return render_template(
         'admin.html', users=users, counts=counts,
         audit_events=audit_events, audit_failed_count=audit_failed_count,
         warn_counts=warn_counts, recent_warnings=recent_warnings, flagged=flagged,
-        ban_queue=ban_queue, demo_active=_admin_demo() is not None, **revenue,
+        ban_queue=ban_queue, demo_active=_admin_demo() is not None,
+        **ai_ctx, **revenue,
     )
 
 
@@ -2170,6 +2320,24 @@ def checkout_create():
                                + (f' promo={promo.code}' if promo else ''))
     return render_template('checkout_done.html', order=order,
                            plan_label=PLAN_LABELS.get(plan, plan), duplicate=False)
+
+
+@app.route('/admin/ai-credit/set', methods=['POST'])
+@login_required
+def admin_ai_credit_set():
+    """Record the real OpenAI prepaid balance (reconciliation point) for the fuel gauge."""
+    if not current_user.is_admin:
+        abort(403)
+    try:
+        balance = float((request.form.get('balance') or '').strip())
+    except (TypeError, ValueError):
+        return redirect(url_for('admin') + '#ai-spend')
+    if balance < 0:
+        return redirect(url_for('admin') + '#ai-spend')
+    note = (request.form.get('note') or '').strip()[:200]
+    db.session.add(AICreditCheckpoint(balance_usd=round(balance, 2), note=note or None))
+    db.session.commit()
+    return redirect(url_for('admin') + '#ai-spend')
 
 
 @app.route('/admin/order/mark-paid', methods=['POST'])
@@ -3030,6 +3198,9 @@ def validate():
             max_tokens=150,
             temperature=0
         )
+        record_ai_cost('validate', response,
+                       user_id=current_user.id if current_user.is_authenticated else None,
+                       plan=current_plan())
         return jsonify(parse_validation(response.choices[0].message.content))
 
     except Exception:
@@ -3124,6 +3295,9 @@ LANGUAGE: Write your entire response in {language}. Keep ICT-specific terms and 
 
         analysis = response.choices[0].message.content
         log_usage()  # record only on a successful analysis
+        record_ai_cost('analyze', response,
+                       user_id=current_user.id if current_user.is_authenticated else None,
+                       plan=current_plan())
         if current_user.is_authenticated:
             add_xp(current_user, 'analysis')
         return jsonify({'analysis': analysis})

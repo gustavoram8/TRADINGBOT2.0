@@ -55,6 +55,39 @@
 
 ---
 
+> **✅ COMPLETADO (2026-06-18) — ADMIN: ANALYTICS DE ANÁLISIS + MEDIDOR DE SALDO OPENAI**
+>
+> Nueva sección **"🤖 AI Usage & Spend"** en `/admin` (`admin.html`, ancla `#ai-spend`, link en el nav).
+> Rama `claude/intelligent-turing-94qh5i`. Tres cosas pedidas por el usuario:
+> 1. **Tabla de análisis por usuario** (today / 7d / 30d) con **bandera roja 🚩** cuando alguien
+>    supera el cupo de su plan dentro de la ventana del plan (Free 1/7d · Standard 1/24h · Premium
+>    5/24h) → detecta bug o abuso. Datos de `UsageLog` (ya existía, 1 fila por análisis exitoso).
+> 2. **Métricas + proyección mensual** (análisis y costo estimado today/7d/30d, avg costo/análisis,
+>    proyección 30d, promedio por plan).
+> 3. **Medidor de "combustible" OpenAI** (decisión del usuario: **medidor propio**, NO API oficial —
+>    OpenAI no expone el saldo restante con la API key normal). El admin ingresa el saldo real
+>    (`AICreditCheckpoint`); restante = saldo − gasto estimado desde ese checkpoint. Reconciliar =
+>    re-ingresar el saldo real (nuevo checkpoint). Endpoint `POST /admin/ai-credit/set`.
+>
+> **Piezas (todo en `scalpel/app.py` salvo la UI):**
+> - Modelos nuevos `AICostLog` (1 fila por llamada IA: tokens + costo estimado) y `AICreditCheckpoint`
+>   (snapshot de saldo). Tablas creadas por `db.create_all()` (no necesitan migración ALTER).
+> - `record_ai_cost(kind, response, user_id, plan)` — best-effort, **nunca lanza**; lee
+>   `response.usage` y estima costo con `AI_PRICE_IN/OUT` (GPT-4o $2.50/$10 por 1M, override por env
+>   `AI_PRICE_IN_PER_1M`/`AI_PRICE_OUT_PER_1M`). Cableado en `/analyze` (kind='analyze') y `/validate`
+>   (kind='validate'). (Moderación del foro aún NO instrumentada — costo despreciable.)
+> - `_build_ai_analytics_context()` arma todo el contexto; `admin()` lo pasa con `**ai_ctx`.
+> - ⚠️ `UsageLog` NO se tocó (sigue contando el rate-limit); el costo vive en `AICostLog` aparte.
+> - Verificado: import OK, `/admin` render 200 con la sección, 🚩 en usuario que excede, medidor
+>   funciona (set $50 → "$50.00 left", baja con gasto posterior al checkpoint).
+> - **NOTA:** hoy aún se usa el token gratis de GitHub Models (no OpenAI pago), así que el costo es
+>   un **estimado** ($0 real por ahora) pero ya sirve para la proyección. Cuando migren a OpenAI pago,
+>   el medidor refleja el gasto real. GitHub Models puede no devolver `usage` → el helper degrada a 0
+>   sin romper nada.
+> **Deploy:** `git pull origin claude/intelligent-turing-94qh5i && supervisorctl restart traderacelerator`.
+
+---
+
 > **🥇 PRIORIDAD #1 — LO PRIMERO QUE CLAUDE DEBE ENTENDER EN CADA SESIÓN NUEVA**
 > **(ANTI-TRAMPA QUIZ/DAILY — LLAVE DE RESPUESTAS SERVER-SIDE, 2026-06-13):**
 >
