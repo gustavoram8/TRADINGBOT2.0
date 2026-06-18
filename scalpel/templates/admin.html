@@ -663,6 +663,36 @@
       <div class="aip-card"><div class="lab">Projected / month</div><div class="val">${{ '%.2f'|format(ai_projected_monthly) }}</div><div class="sub">trailing 30d</div></div>
     </div>
 
+    <!-- Cost breakdown by category -->
+    <div class="table-card" style="margin-bottom:18px">
+      <table class="aip-table">
+        <thead><tr><th>Cost by category</th><th class="num">Today</th><th class="num">7 days</th><th class="num">30 days</th><th class="num">Calls (30d)</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>🔬 Analyzer <span style="color:var(--muted)">(analyze + validate)</span></td>
+            <td class="num">${{ '%.4f'|format(ai_cost_cat.today.analyzer) }}</td>
+            <td class="num">${{ '%.4f'|format(ai_cost_cat.d7.analyzer) }}</td>
+            <td class="num">${{ '%.3f'|format(ai_cost_cat.d30.analyzer) }}</td>
+            <td class="num">{{ ai_calls_cat.d30.analyzer }}</td>
+          </tr>
+          <tr>
+            <td>🛡️ Forum moderation <span style="color:var(--muted)">(text + image)</span></td>
+            <td class="num">${{ '%.4f'|format(ai_cost_cat.today.moderation) }}</td>
+            <td class="num">${{ '%.4f'|format(ai_cost_cat.d7.moderation) }}</td>
+            <td class="num">${{ '%.3f'|format(ai_cost_cat.d30.moderation) }}</td>
+            <td class="num">{{ ai_calls_cat.d30.moderation }}</td>
+          </tr>
+          <tr>
+            <td>🧭 Prop Firm Scout <span style="color:var(--muted)">(advisor — disabled)</span></td>
+            <td class="num">${{ '%.4f'|format(ai_cost_cat.today.scout) }}</td>
+            <td class="num">${{ '%.4f'|format(ai_cost_cat.d7.scout) }}</td>
+            <td class="num">${{ '%.3f'|format(ai_cost_cat.d30.scout) }}</td>
+            <td class="num">{{ ai_calls_cat.d30.scout }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
     <!-- Per-plan averages -->
     <div class="table-card" style="margin-bottom:18px">
       <table class="aip-table">

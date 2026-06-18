@@ -74,8 +74,13 @@
 >   (snapshot de saldo). Tablas creadas por `db.create_all()` (no necesitan migración ALTER).
 > - `record_ai_cost(kind, response, user_id, plan)` — best-effort, **nunca lanza**; lee
 >   `response.usage` y estima costo con `AI_PRICE_IN/OUT` (GPT-4o $2.50/$10 por 1M, override por env
->   `AI_PRICE_IN_PER_1M`/`AI_PRICE_OUT_PER_1M`). Cableado en `/analyze` (kind='analyze') y `/validate`
->   (kind='validate'). (Moderación del foro aún NO instrumentada — costo despreciable.)
+>   `AI_PRICE_IN_PER_1M`/`AI_PRICE_OUT_PER_1M`).
+> - **(2026-06-18, 2ª iteración) Cableado en las 5 llamadas IA del sitio:** `/analyze` (kind=`analyze`),
+>   `/validate` (kind=`validate`), `moderate_forum_text` (kind=`forum_text`), `moderate_forum_image`
+>   (kind=`forum_image`) y `scout_chat` (kind=`scout`, hoy DESACTIVADO por `SCOUT_ENABLED=False` pero
+>   ya queda medido para cuando se reactive). NO hay más llamadas IA en el código (auditado).
+> - **Desglose por categoría en el admin:** Analyzer (analyze+validate) · Forum moderation
+>   (forum_text+forum_image) · Scout. `ai_cost_cat`/`ai_calls_cat` (today/7d/30d) → tabla "Cost by category".
 > - `_build_ai_analytics_context()` arma todo el contexto; `admin()` lo pasa con `**ai_ctx`.
 > - ⚠️ `UsageLog` NO se tocó (sigue contando el rate-limit); el costo vive en `AICostLog` aparte.
 > - Verificado: import OK, `/admin` render 200 con la sección, 🚩 en usuario que excede, medidor
@@ -84,6 +89,15 @@
 >   un **estimado** ($0 real por ahora) pero ya sirve para la proyección. Cuando migren a OpenAI pago,
 >   el medidor refleja el gasto real. GitHub Models puede no devolver `usage` → el helper degrada a 0
 >   sin romper nada.
+>
+> **🔔 RECORDATORIO PARA EL USUARIO (cuando cargue plata REAL en la API de OpenAI):** debe **PROBAR
+> LAS DOS COSAS por separado** para ver el costo final real de cada una, ya que ahora están divididas
+> en el admin (tabla "Cost by category"):
+>   1. **Análisis de screenshots** (Analyzer = analyze + validate) — hacer 5-10 análisis reales y mirar
+>      el costo en el panel vs `platform.openai.com/usage`. Estimado: ~$0.02/análisis.
+>   2. **Moderación del foro** (text + image) — publicar 5-10 posts/comentarios (algunos con imagen) y
+>      ver el costo. Estimado: ~$0.003/publicación (centavos).
+>   Objetivo: confirmar los estimados contra el gasto real de OpenAI y ajustar `AI_PRICE_*` si hiciera falta.
 > **Deploy:** `git pull origin claude/intelligent-turing-94qh5i && supervisorctl restart traderacelerator`.
 
 ---

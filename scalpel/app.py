@@ -1424,6 +1424,9 @@ def moderate_forum_text(text, kind='post'):
             max_tokens=120,
             temperature=0,
         )
+        record_ai_cost('forum_text', resp,
+                       user_id=current_user.id if current_user.is_authenticated else None,
+                       plan=current_plan())
         return _parse_mod_json(resp.choices[0].message.content)
     except Exception as exc:
         app.logger.warning('Forum text moderation failed (allowing): %s', exc)
@@ -1448,6 +1451,9 @@ def moderate_forum_image(image_data_b64, content_type):
             max_tokens=80,
             temperature=0,
         )
+        record_ai_cost('forum_image', resp,
+                       user_id=current_user.id if current_user.is_authenticated else None,
+                       plan=current_plan())
         d = _parse_mod_json(resp.choices[0].message.content)
         return {'ok': d['ok'], 'reason': d['reason']}
     except Exception as exc:
@@ -1979,6 +1985,30 @@ def _build_ai_analytics_context():
     cost = {'today': round(_cost_since(today0), 4), 'd7': round(_cost_since(d7), 4),
             'd30': round(_cost_since(d30), 4)}
 
+    # ── Cost split by category (Analyzer = analyze+validate · Moderation =
+    #    forum text+image · Scout = prop-firm advisor) ──
+    KIND_CAT = {'analyze': 'analyzer', 'validate': 'analyzer',
+                'forum_text': 'moderation', 'forum_image': 'moderation', 'scout': 'scout'}
+
+    def _cat_costs(since):
+        out = {'analyzer': 0.0, 'moderation': 0.0, 'scout': 0.0}
+        rows_ = (db.session.query(AICostLog.kind, db.func.coalesce(db.func.sum(AICostLog.cost_usd), 0.0))
+                 .filter(AICostLog.created_at >= since).group_by(AICostLog.kind).all())
+        for kind, val in rows_:
+            out[KIND_CAT.get(kind, 'analyzer')] += float(val or 0.0)
+        return {k: round(v, 4) for k, v in out.items()}
+
+    def _cat_calls(since):
+        out = {'analyzer': 0, 'moderation': 0, 'scout': 0}
+        rows_ = (db.session.query(AICostLog.kind, db.func.count(AICostLog.id))
+                 .filter(AICostLog.created_at >= since).group_by(AICostLog.kind).all())
+        for kind, n in rows_:
+            out[KIND_CAT.get(kind, 'analyzer')] += int(n or 0)
+        return out
+
+    cost_cat = {'today': _cat_costs(today0), 'd7': _cat_costs(d7), 'd30': _cat_costs(d30)}
+    calls_cat = {'today': _cat_calls(today0), 'd7': _cat_calls(d7), 'd30': _cat_calls(d30)}
+
     plan_avg = {}
     for plan, s in active_by_plan.items():
         plan_avg[plan] = {
@@ -2006,6 +2036,7 @@ def _build_ai_analytics_context():
     return {
         'ai_rows': rows[:120], 'ai_flagged': flagged,
         'ai_analyses': analyses, 'ai_cost': cost, 'ai_plan_avg': plan_avg,
+        'ai_cost_cat': cost_cat, 'ai_calls_cat': calls_cat,
         'ai_avg_cost': avg_cost, 'ai_projected_monthly': projected_monthly,
         'ai_gauge': gauge,
         'ai_price_in': AI_PRICE_IN_PER_1M, 'ai_price_out': AI_PRICE_OUT_PER_1M,
@@ -4163,6 +4194,9 @@ def scout_chat():
             ],
             max_tokens=700, temperature=0.4,
         )
+        record_ai_cost('scout', resp,
+                       user_id=current_user.id if current_user.is_authenticated else None,
+                       plan=current_plan())
         return jsonify({'answer': resp.choices[0].message.content})
     except Exception as exc:
         app.logger.error('Scout chat failed: %s', exc)
