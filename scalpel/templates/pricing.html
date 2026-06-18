@@ -417,6 +417,35 @@
       .hero { padding: 40px 20px 28px; }
       .hero h1 { font-size: 28px; }
     }
+
+    /* ── Feature comparison matrix (aligned by importance) ── */
+    .compare { max-width: 780px; margin: 60px auto 0; padding: 0 20px; }
+    .compare h2 { text-align: center; font-size: 22px; font-weight: 800; color: var(--ink); margin: 0 0 6px; }
+    .compare .compare-sub { text-align: center; color: var(--muted); font-size: 13px; margin: 0 0 24px; }
+    .cmp-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--card-bg);
+      -webkit-overflow-scrolling: touch; }
+    .cmp { width: 100%; border-collapse: collapse; min-width: 520px; }
+    .cmp th, .cmp td { padding: 13px 14px; text-align: center; border-bottom: 1px solid var(--line-soft);
+      font-size: 13.5px; }
+    .cmp tbody tr:last-child td { border-bottom: none; }
+    .cmp .feat { text-align: left; color: var(--ink); font-weight: 500; white-space: nowrap; }
+    .cmp .feat .feat-note { display: block; font-size: 11px; color: var(--muted); font-weight: 400; }
+    .cmp thead .pname { font-size: 14.5px; font-weight: 800; letter-spacing: .02em; }
+    .cmp thead .pname.free { color: var(--free); }
+    .cmp thead .pname.standard { color: var(--standard); }
+    .cmp thead .pname.premium { color: var(--premium); }
+    .cmp .col-premium { background: rgba(184,134,11,0.06); }
+    .cmp thead .col-premium { border-top-right-radius: 14px; }
+    .cmp td.val { color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+    .cmp td.val.on { color: var(--ink); font-weight: 700; }
+    .cmp .yes { color: #16a34a; font-weight: 800; font-size: 15px; }
+    .cmp .no { color: var(--muted); }
+    .cmp .soon-tag { font-size: 10px; color: var(--muted); border: 1px solid var(--line);
+      border-radius: 8px; padding: 1px 7px; }
+    @media (max-width: 560px) {
+      .compare { padding: 0 12px; }
+      .cmp th, .cmp td { padding: 10px 9px; font-size: 12.5px; }
+    }
   </style>
 </head>
 <body>
@@ -593,6 +622,100 @@
   </div>
 
 </div>
+
+<!-- ── Feature comparison matrix (rows ordered by importance) ── -->
+<section class="compare">
+  <h2>Compare all features</h2>
+  <p class="compare-sub">Same feature, same row — see exactly what each plan includes.</p>
+  <div class="cmp-wrap">
+    <table class="cmp">
+      <thead>
+        <tr>
+          <th class="feat">&nbsp;</th>
+          <th><span class="pname free">Free</span></th>
+          <th><span class="pname standard">Standard</span></th>
+          <th class="col-premium"><span class="pname premium">Premium</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="feat">Screenshot analyses<span class="feat-note">AI chart review</span></td>
+          <td class="val">1 / week</td>
+          <td class="val on">1 / day</td>
+          <td class="val on col-premium">5 / day</td>
+        </tr>
+        <tr>
+          <td class="feat">Full AI feedback engine</td>
+          <td class="val"><span class="yes">✓</span></td>
+          <td class="val"><span class="yes">✓</span></td>
+          <td class="val col-premium"><span class="yes">✓</span></td>
+        </tr>
+        <tr>
+          <td class="feat">Saved analysis projects<span class="feat-note">reusable setup presets</span></td>
+          <td class="val">3</td>
+          <td class="val on">5</td>
+          <td class="val on col-premium">10</td>
+        </tr>
+        <tr>
+          <td class="feat">Pre-Flight checklist<span class="feat-note">discipline trainer &amp; stats</span></td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val col-premium"><span class="yes">✓</span></td>
+        </tr>
+        <tr>
+          <td class="feat">Trading Forum<span class="feat-note">AI-moderated community</span></td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val col-premium"><span class="yes">✓</span></td>
+        </tr>
+        <tr>
+          <td class="feat">Quiz Academy<span class="feat-note">every methodology + Hardcore</span></td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val col-premium"><span class="yes">✓</span></td>
+        </tr>
+        <tr>
+          <td class="feat">Daily Challenge &amp; Roulette</td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val col-premium"><span class="yes">✓</span></td>
+        </tr>
+        <tr>
+          <td class="feat">Chalkboard<span class="feat-note">visual study whiteboards</span></td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val col-premium"><span class="yes">✓</span></td>
+        </tr>
+        <tr>
+          <td class="feat">Synapse<span class="feat-note">3D study experience</span></td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val col-premium"><span class="yes">✓</span></td>
+        </tr>
+        <tr>
+          <td class="feat">Indicators library</td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val col-premium"><span class="soon-tag">soon</span></td>
+        </tr>
+        {% if scout_enabled %}
+        <tr>
+          <td class="feat">Prop Firm Scout<span class="feat-note">compare 25+ firms + AI advisor</span></td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val col-premium"><span class="yes">✓</span></td>
+        </tr>
+        {% endif %}
+        <tr>
+          <td class="feat">Camos<span class="feat-note">dashboard design themes</span></td>
+          <td class="val"><span class="no">—</span></td>
+          <td class="val on">1</td>
+          <td class="val on col-premium">3</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
 
 <p class="foot-note">
   Plans shown are introductory. Billing is not active yet — these tiers preview what Trader Acelerator will offer. For educational purposes only; not financial advice.
