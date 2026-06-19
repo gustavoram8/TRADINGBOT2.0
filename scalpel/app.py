@@ -874,7 +874,7 @@ PLAN_LIMITS = {
 }
 
 # Max number of saved Analysis Projects per plan.
-PROJECT_LIMITS = {'free': 3, 'standard': 5, 'premium': 10}
+PROJECT_LIMITS = {'free': 1, 'standard': 5, 'premium': 10}
 
 
 def project_limit():
