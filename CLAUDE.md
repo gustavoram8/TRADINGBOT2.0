@@ -721,6 +721,41 @@
 
 ---
 
+> **🥇 PRIORIDAD — TOKENS Y "RAMAS" DEL ANALIZADOR (leer SIEMPRE que se toque OpenAI API o**
+> **construir los otros modelos/metodologías del Analizador de screenshots — 2026-06-19):**
+>
+> **1. 128k NO es un precio, es ESPACIO.** OpenAI cobra **por token usado**, no por la capacidad
+> del contexto. Los 128k son el **techo** (cuánto CABE por petición), no algo que se paga. Analogía
+> del vaso: 128k = tamaño del vaso · tokens enviados = agua que sirves · **pagas el agua, no el
+> vaso**. Mandar 10k tokens cuesta lo mismo tenga el techo 8k o 128k. El tier gratis (techo 8k) no
+> es "más barato" — es que **literalmente no deja** pasar de 8k (de ahí el error 413). **Resumen:
+> 128k no es un precio, es espacio. Solo pagas los tokens reales de cada análisis.**
+>
+> **2. LAS "RAMAS" (branching por metodología) — el diseño correcto NO crece el costo por análisis:**
+> La IA estará "dividida en ramas" (ICT + OTE + Wyckoff + STDV + patterns…), cada una con su lógica
+> y análisis distinto según la metodología elegida. La duda del usuario: ¿crece el uso de tokens al
+> agregar ramas? **Respuesta: depende de cómo se construya.**
+> - **❌ Forma mala (todo junto):** meter TODAS las metodologías en UN solo prompt gigante y mandarlo
+>   entero siempre → cada análisis paga por TODAS las ramas aunque use una sola. Crece feo:
+>   `core 3,000 + 10 metodologías × 2,500 = ~28,000 tok/llamada` → caro e imposible en gratis.
+> - **✅ Forma correcta (ROUTER — la intuición del usuario, que es la CORRECTA):** armar el prompt
+>   **dinámicamente** = **núcleo ICT compartido + SOLO la rama seleccionada**. Si elige OTE → núcleo
+>   + módulo OTE. Si elige Wyckoff → núcleo + módulo Wyckoff. **Nunca todas a la vez.**
+>   `core 3,000 + 1 módulo 2,500 + imagen 1,500 + tesis 500 = ~7,500 tok/llamada`, y eso se mantiene
+>   **casi constante** tengas 5, 20 o 50 metodologías en total.
+> - **Conclusión exacta:** **NO crece por análisis** si se diseña como ramas que se cargan **una a la
+>   vez**. La **biblioteca total** de metodologías puede crecer enorme, pero cada análisis solo carga
+>   **[núcleo + 1 rama]** → el costo por análisis se queda plano. ("Se desvía a una rama distinta, no
+>   todas a la vez" = precisamente el diseño correcto.)
+>
+> **3. POR QUÉ ESTO REFUERZA IR A PAGO:** justo porque habrá branching, cada rama (con su lógica
+> detallada, escenarios, lectura de chart) puede ser rica y pesada **por sí sola**. En el tier gratis,
+> **una sola rama + la imagen ya rompe los 8k**. Con los 128k del pago, cada rama puede ser todo lo
+> detallada que se quiera sin chocar techo. Y el **núcleo compartido** (que se repite en cada llamada)
+> lo agarra el **cache de OpenAI a mitad de precio** → el branching sale aún más eficiente.
+
+---
+
 > **💰 CONTEXTO — COSTOS REALES DE LA API DE IA (revisión 2026-06-13)**
 >
 > **Modelo usado:** `gpt-4o` (GPT-4o), vía `OpenAI` SDK apuntando hoy al endpoint gratuito de
