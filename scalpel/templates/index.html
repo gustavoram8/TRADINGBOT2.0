@@ -6392,6 +6392,8 @@
       'forum.block.generic': 'Your content was blocked by moderation.',
       'forum.block.detail': 'Reason: ',
       'forum.block.spamRate': 'Slow down — you are posting too fast.',
+      'forum.block.rateLimited': 'Slow down — too many attempts. Try again in about {min} min.',
+      'forum.block.muted': 'You are temporarily muted for repeated inappropriate content. Try again in about {min} min.',
       'forum.img.blocked': 'Image blocked — only trading charts and platform screenshots are allowed.',
       'forum.img.format': 'Please upload a JPG, PNG or WebP image.',
       'forum.img.large': 'Image too large (max 8 MB).',
@@ -6785,6 +6787,8 @@
       'forum.block.generic': 'Tu contenido fue bloqueado por la moderación.',
       'forum.block.detail': 'Razón: ',
       'forum.block.spamRate': 'Más despacio — estás publicando demasiado rápido.',
+      'forum.block.rateLimited': 'Más despacio — demasiados intentos. Inténtalo de nuevo en unos {min} min.',
+      'forum.block.muted': 'Estás silenciado temporalmente por contenido inapropiado repetido. Inténtalo de nuevo en unos {min} min.',
       'forum.img.blocked': 'Imagen bloqueada — solo se permiten gráficos de trading y capturas de plataformas.',
       'forum.img.format': 'Sube una imagen JPG, PNG o WebP.',
       'forum.img.large': 'Imagen demasiado grande (máx. 8 MB).',
@@ -7178,6 +7182,8 @@
       'forum.block.generic': 'Votre contenu a été bloqué par la modération.',
       'forum.block.detail': 'Raison : ',
       'forum.block.spamRate': 'Doucement — vous publiez trop vite.',
+      'forum.block.rateLimited': 'Doucement — trop de tentatives. Réessayez dans environ {min} min.',
+      'forum.block.muted': 'Vous êtes temporairement réduit au silence pour contenu inapproprié répété. Réessayez dans environ {min} min.',
       'forum.img.blocked': 'Image bloquée — seuls les graphiques de trading et captures de plateformes sont autorisés.',
       'forum.img.format': 'Veuillez importer une image JPG, PNG ou WebP.',
       'forum.img.large': 'Image trop volumineuse (max 8 Mo).',
@@ -7571,6 +7577,8 @@
       'forum.block.generic': 'Seu conteúdo foi bloqueado pela moderação.',
       'forum.block.detail': 'Motivo: ',
       'forum.block.spamRate': 'Mais devagar — você está publicando rápido demais.',
+      'forum.block.rateLimited': 'Mais devagar — tentativas demais. Tente novamente em cerca de {min} min.',
+      'forum.block.muted': 'Você está temporariamente silenciado por conteúdo inapropriado repetido. Tente novamente em cerca de {min} min.',
       'forum.img.blocked': 'Imagem bloqueada — apenas gráficos de trading e capturas de plataformas são permitidos.',
       'forum.img.format': 'Envie uma imagem JPG, PNG ou WebP.',
       'forum.img.large': 'Imagem muito grande (máx. 8 MB).',
@@ -10016,6 +10024,14 @@
       }
       if (data.error === 'daily_limit') return { msg: T('forum.noPostsLeft'), detail: '', warn: false };
       if (data.error === 'too_short')   return { msg: T('forum.error'), detail: '', warn: false };
+      if (data.error === 'rate_limited') {
+        const mins = Math.max(1, Math.round((data.retry_after || 300) / 60));
+        return { msg: T('forum.block.rateLimited').replace('{min}', mins), detail: '', warn: true };
+      }
+      if (data.error === 'muted') {
+        const mins = Math.max(1, Math.round((data.retry_after || 0) / 60));
+        return { msg: T('forum.block.muted').replace('{min}', mins), detail: '', warn: true };
+      }
       return { msg: T('forum.error'), detail: '', warn: false };
     }
 

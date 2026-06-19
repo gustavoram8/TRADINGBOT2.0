@@ -215,6 +215,11 @@ class User(UserMixin, db.Model):
     is_banned = db.Column(db.Boolean, default=False, nullable=False)
     banned_at = db.Column(db.DateTime, nullable=True)
     ban_reason = db.Column(db.String(300), nullable=True)
+    # ── Forum auto-mute (TEMPORARY + reversible; NOT a ban) ──
+    # Set automatically when a user trips repeated moderation blocks in a short
+    # window, so a profanity spammer stops costing AI moderation calls without
+    # waiting for an admin. It expires on its own; only admins ever *ban*.
+    muted_until = db.Column(db.DateTime, nullable=True)
     # ── Terms & Conditions acceptance (clickwrap evidence) ──
     terms_accepted_at = db.Column(db.DateTime, nullable=True)
     terms_version = db.Column(db.String(20), nullable=True)  # e.g. "2026-06-05"
@@ -3355,6 +3360,141 @@ FORUM_FEED_PAGE = 10
 
 CONDUCT_BAN_THRESHOLD = 3   # warnings that trigger a ban *suggestion* (not a ban)
 
+# ── Forum cost / abuse guards (defense-in-depth, BEFORE any AI moderation call) ──
+# The forum is premium-only, but a malicious or automated premium account could
+# spam blocked content forever: blocked content is never saved, so the saved-row
+# limits (daily posts, comment spam heuristics) never trip, and *every* attempt
+# would otherwise cost one AI moderation call. These cheap checks run first so
+# obvious abuse never reaches — or pays for — the AI moderator. None of this ever
+# BANS a user (only admins ban); the strongest action here is a temporary,
+# self-expiring mute.
+MOD_ATTEMPT_WINDOW_MIN = 5    # sliding window for the per-user attempt rate-limit
+MOD_ATTEMPT_CAP        = 8    # max forum write attempts (saved + blocked) per window
+AUTOMUTE_WINDOW_MIN    = 10   # window for counting recent moderation blocks
+AUTOMUTE_TRIGGER       = 4    # blocks within that window that trigger an auto-mute
+AUTOMUTE_MINUTES       = 45   # how long a temporary auto-mute lasts (reversible)
+
+# Obvious profanity / slurs across EN/ES/FR/PT — only the unambiguous stuff, so a
+# legitimate trading discussion is never blocked here. Anything borderline or
+# subtle still goes to the AI moderator. Word-boundary matched, accent/leet
+# tolerant on a few common evasions.
+_PROFANITY_RE = re.compile(
+    r'\b('
+    r'fuck\w*|sh[i1]t\w*|b[i1]tch\w*|asshole\w*|cunt\w*|dickhead\w*|motherfuck\w*|'
+    r'faggot\w*|n[i1]gg[ae]r\w*|whore\w*|slut\w*|'                                 # EN
+    r'mierda\w*|put[oa]s?\b|cabr[oó]n\w*|pendej[oa]\w*|coño\w*|verga\w*|'
+    r'maric[oó]n\w*|gilipollas\w*|cojones\w*|polla\w*|joder\w*|'                   # ES
+    r'merde\w*|salope\w*|connard\w*|encul[ée]\w*|putain\w*|conn?asse\w*|'          # FR
+    r'porra\w*|caralho\w*|buceta\w*|fdp\b|vadia\w*|piroca\w*'                      # PT
+    r')',
+    re.IGNORECASE,
+)
+
+
+def local_text_pretrip(text):
+    """Cheap LOCAL pre-check that runs BEFORE the AI moderator. Returns a short
+    reason string when the content is obviously abusive or garbage, else None.
+    Deliberately conservative — its only job is to catch the blatant cases for
+    free so a spammer can't rack up AI moderation charges."""
+    t = text or ''
+    if _PROFANITY_RE.search(t):
+        return 'profanity'
+    compact = re.sub(r'\s+', '', t)
+    # keyboard mashing / gibberish: a long run with almost no distinct characters
+    if len(compact) >= 12 and len(set(compact.lower())) <= 2:
+        return 'gibberish'
+    # the same character repeated many times in a row (e.g. "aaaaaaaaaa", "!!!!!!")
+    if re.search(r'(.)\1{9,}', t):
+        return 'spam'
+    return None
+
+
+def recent_forum_attempts(user_id, minutes):
+    """Count ALL forum write attempts in the window — saved posts + saved
+    comments + blocked attempts (warnings). Counting blocked attempts is the
+    whole point: it's what lets us rate-limit a spammer whose content never gets
+    saved (and would otherwise dodge every saved-row limit)."""
+    now = datetime.now(timezone.utc)
+    horizon = minutes * 60
+    total = 0
+    for Model in (ForumPost, ForumComment, ModWarning):
+        rows = (Model.query.filter_by(user_id=user_id)
+                .order_by(Model.created_at.desc()).limit(40).all())
+        total += sum(1 for r in rows
+                     if (now - _as_utc(r.created_at)).total_seconds() <= horizon)
+    return total
+
+
+def forum_mute_remaining(user):
+    """Seconds left on a temporary auto-mute, or 0 if not muted."""
+    mu = getattr(user, 'muted_until', None)
+    if not mu:
+        return 0
+    rem = (_as_utc(mu) - datetime.now(timezone.utc)).total_seconds()
+    return max(0, int(rem))
+
+
+def _alert_admin_forum_mute(user, block_count):
+    """Fire-and-forget email so the admins know a user was just auto-muted and
+    can review them (and ban manually if warranted — autom-mute never bans)."""
+    if not app.config.get('MAIL_PASSWORD'):
+        app.logger.warning('Auto-mute alert skipped — MAIL_APP_PASSWORD not configured.')
+        return
+    admin_inbox = app.config.get('MAIL_USERNAME', 'mauroramirezmij@gmail.com')
+    uname = getattr(user, 'username', None) or f'user#{user.id}'
+    subject = f'[Trader Acelerator] Forum auto-mute — {uname}'
+    body = (
+        f"User      : {uname} (id {user.id})\n"
+        f"Reason    : {block_count} moderation blocks within {AUTOMUTE_WINDOW_MIN} min\n"
+        f"Action    : temporarily muted for {AUTOMUTE_MINUTES} min (auto-expires; NOT a ban)\n"
+        f"Time      : {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}\n\n"
+        f"This is a reversible cost/abuse guard. Review them in the admin panel; "
+        f"only you can issue an actual ban."
+    )
+    msg = Message(subject, recipients=[admin_inbox])
+    msg.body = body
+
+    def _send():
+        prev_timeout = socket.getdefaulttimeout()
+        socket.setdefaulttimeout(15)
+        try:
+            with app.app_context():
+                mail.send(msg)
+        except Exception as e:
+            app.logger.error('Auto-mute alert email failed: %s', e)
+        finally:
+            socket.setdefaulttimeout(prev_timeout)
+
+    threading.Thread(target=_send, daemon=True).start()
+
+
+def maybe_auto_mute(user_id):
+    """If a user just tripped too many moderation blocks in a short window, apply
+    a TEMPORARY, self-expiring mute (never a ban). Best-effort; never raises."""
+    try:
+        now = datetime.now(timezone.utc)
+        warns = (ModWarning.query.filter_by(user_id=user_id)
+                 .order_by(ModWarning.created_at.desc()).limit(20).all())
+        recent = sum(1 for w in warns
+                     if (now - _as_utc(w.created_at)).total_seconds() <= AUTOMUTE_WINDOW_MIN * 60)
+        if recent < AUTOMUTE_TRIGGER:
+            return
+        u = User.query.get(user_id)
+        if not u or u.is_admin:
+            return
+        already_muted = forum_mute_remaining(u) > 0
+        new_until = now + timedelta(minutes=AUTOMUTE_MINUTES)
+        if u.muted_until and _as_utc(u.muted_until) >= new_until:
+            return  # already muted at least this long
+        u.muted_until = new_until
+        db.session.commit()
+        record_audit_event('forum_automute', user_id=user_id,
+                            detail=f'{recent} blocks in {AUTOMUTE_WINDOW_MIN}m → muted {AUTOMUTE_MINUTES}m')
+        if not already_muted:               # email only on the transition into mute
+            _alert_admin_forum_mute(u, recent)
+    except Exception as e:
+        app.logger.error('maybe_auto_mute failed: %s', e)
+
 
 def record_warning(user_id, category, detail, excerpt):
     w = ModWarning(
@@ -3376,6 +3516,10 @@ def record_warning(user_id, category, detail, excerpt):
             f'(latest: {category or "other"} — {(detail or "").strip()}).',
             evidence=(excerpt or '')[:400] or None,
         )
+
+    # Reversible cost/abuse guard: if blocks are clustering, temporarily mute
+    # the user so they stop costing AI calls before an admin can step in.
+    maybe_auto_mute(user_id)
 
 
 def todays_post_count(user_id):
@@ -3520,6 +3664,13 @@ def forum_post_detail(pid):
 @app.route('/forum/post', methods=['POST'])
 @premium_required
 def forum_create_post():
+    # Cost/abuse guards run BEFORE any AI call (see the forum guards section).
+    muted = forum_mute_remaining(current_user)
+    if muted:
+        return jsonify({'error': 'muted', 'retry_after': muted}), 403
+    if recent_forum_attempts(current_user.id, MOD_ATTEMPT_WINDOW_MIN) >= MOD_ATTEMPT_CAP:
+        return jsonify({'error': 'rate_limited', 'retry_after': MOD_ATTEMPT_WINDOW_MIN * 60}), 429
+
     if todays_post_count(current_user.id) >= DAILY_POST_LIMIT:
         return jsonify({'error': 'daily_limit', 'limit': DAILY_POST_LIMIT}), 429
 
@@ -3529,6 +3680,12 @@ def forum_create_post():
         return jsonify({'error': 'too_short'}), 400
     title = title[:160]
     body = body[:8000]
+
+    # Free local pre-filter: block blatant profanity/garbage without paying the AI.
+    trip = local_text_pretrip(f"{title}\n{body}")
+    if trip:
+        record_warning(current_user.id, trip, 'Blocked by local pre-filter', f"{title} — {body}")
+        return jsonify({'error': 'blocked', 'category': trip, 'reason': 'inappropriate'}), 422
 
     mod = moderate_forum_text(f"TITLE: {title}\n\nBODY: {body}", 'post')
     if not mod['ok']:
@@ -3559,6 +3716,13 @@ def forum_create_post():
 @app.route('/forum/post/<int:pid>/comment', methods=['POST'])
 @premium_required
 def forum_add_comment(pid):
+    # Cost/abuse guards run BEFORE any AI call (see the forum guards section).
+    muted = forum_mute_remaining(current_user)
+    if muted:
+        return jsonify({'error': 'muted', 'retry_after': muted}), 403
+    if recent_forum_attempts(current_user.id, MOD_ATTEMPT_WINDOW_MIN) >= MOD_ATTEMPT_CAP:
+        return jsonify({'error': 'rate_limited', 'retry_after': MOD_ATTEMPT_WINDOW_MIN * 60}), 429
+
     post = ForumPost.query.filter_by(id=pid, is_deleted=False).first()
     if not post:
         return jsonify({'error': 'not_found'}), 404
@@ -3579,6 +3743,12 @@ def forum_add_comment(pid):
     if spam:
         record_warning(current_user.id, 'spam', spam, body)
         return jsonify({'error': 'spam', 'reason': spam}), 429
+
+    # Free local pre-filter: block blatant profanity/garbage without paying the AI.
+    trip = local_text_pretrip(body)
+    if trip:
+        record_warning(current_user.id, trip, 'Blocked by local pre-filter', body)
+        return jsonify({'error': 'blocked', 'category': trip, 'reason': 'inappropriate'}), 422
 
     mod = moderate_forum_text(body, 'comment')
     if not mod['ok']:
@@ -5891,6 +6061,17 @@ def _migrate_user_xp_columns():
         app.logger.info('Migrated user table: added XP/Rank columns (%d).', len(stmts))
 
 
+def _migrate_user_mute_column():
+    """Add `muted_until` (temporary forum auto-mute) to an existing user table."""
+    from sqlalchemy import inspect, text
+    insp = inspect(db.engine)
+    cols = {c['name'] for c in insp.get_columns('user')}
+    if 'muted_until' not in cols:
+        with db.engine.begin() as conn:
+            conn.execute(text('ALTER TABLE "user" ADD COLUMN muted_until TIMESTAMP'))
+        app.logger.info('Migrated user table: added muted_until column.')
+
+
 def init_db():
     with app.app_context():
         db.create_all()
@@ -5900,6 +6081,7 @@ def init_db():
         # so any column the model knows about must already exist.
         _migrate_user_review_column()
         _migrate_user_xp_columns()
+        _migrate_user_mute_column()
         _migrate_user_alt_id_column()
         _migrate_order_columns()
         _migrate_promo_code_columns()
