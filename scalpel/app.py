@@ -3374,10 +3374,16 @@ LANGUAGE: Write your entire response in {language}. Keep ICT-specific terms and 
         record_audit_event('analysis_error',
                             user_id=current_user.id if current_user.is_authenticated else None,
                             detail=error_msg[:300], success=False)
-        if 'token' in error_msg.lower() or 'auth' in error_msg.lower() or '401' in error_msg:
+        el = error_msg.lower()
+        # Rate limit FIRST: the free GitHub Models tier throttles by tokens-per-minute
+        # and its error text contains the word "token" — which must NOT be misread as
+        # an authentication failure. (That false "Authentication failed" message made
+        # it look like the API key had broken when it was simply the per-minute cap.)
+        if '429' in error_msg or 'rate limit' in el or 'rate_limit' in el or 'quota' in el or 'too many requests' in el:
+            return jsonify({'error': 'The AI engine is busy right now (rate limit). Please wait a minute and try again.'}), 429
+        # Real authentication problems only — be specific, never trigger on the bare word "token".
+        if '401' in error_msg or 'unauthorized' in el or 'invalid api key' in el or 'invalid token' in el or 'bad credentials' in el or 'authentication' in el:
             return jsonify({'error': 'Authentication failed. Check your GITHUB_TOKEN in the .env file.'}), 401
-        if '429' in error_msg:
-            return jsonify({'error': 'Rate limit reached. Please wait a moment and try again.'}), 429
         return jsonify({'error': f'Analysis failed: {error_msg}'}), 500
 
 
