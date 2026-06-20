@@ -246,7 +246,8 @@
 
     /* Scroll hint */
     .scroll-hint {
-      position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
+      position: absolute; bottom: 28px; left: 0; right: 0;
+      margin-inline: auto; width: max-content; max-width: 90vw; grid-column: 1 / -1;
       display: flex; flex-direction: column; align-items: center; gap: 7px;
       color: var(--subtle); font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
       opacity: 0; animation: fadeUp .5s ease 2.4s forwards; transition: opacity .4s;
