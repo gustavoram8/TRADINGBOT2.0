@@ -477,8 +477,8 @@ class PropFirm(db.Model):
 # Monthly = price charged each month. Annual = total charged once per year
 # (already discounted ~20% vs paying monthly). Mirrors pricing.html.
 PLAN_PRICING = {
-    'standard': {'monthly': 10.0, 'annual': 96.0},
-    'premium':  {'monthly': 30.0, 'annual': 288.0},
+    'standard': {'monthly': 25.0, 'annual': 240.0},
+    'premium':  {'monthly': 50.0, 'annual': 480.0},
 }
 PLAN_LABELS = {'standard': 'Standard', 'premium': 'Premium'}
 
