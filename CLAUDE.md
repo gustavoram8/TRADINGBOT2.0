@@ -3,6 +3,25 @@
 
 ---
 
+> **✅ COMPLETADO (2026-06-20) — RENOMBRE DE MARCA: "Trader Acelerator" → "Trader Accelerator"**
+>
+> El nombre estaba MAL ESCRITO ("Acelerator" con una sola 'c'). Se corrigió a **"Trader Accelerator"**
+> en TODO el sitio (401 ocurrencias, 36 archivos): landing, /app, T&C, Privacy, login/register/verify,
+> pricing, checkout, certificados, Synapse, watermarks/footers de los PDFs (vía `synapse_translations.py`
+> y `CERT_I18N` en `app.py`), banner animado de la landing (`W2='ACCELERATOR'`), nombre de archivo del
+> PDF de certificado (`trader-accelerator-CODE.pdf`), notas internas (este CLAUDE.md + los LEGAL_REVIEW/
+> CHATGPT_*.md) y scripts (monitor.py, backup_db.py, etc.). Reemplazo case-preserving
+> (`acelerator/Acelerator/ACELERATOR` → `accelerator/Accelerator/ACCELERATOR`). Verificado: `py_compile`
+> OK en todos los .py, `node --check` OK en auth.js, 0 ocurrencias viejas restantes.
+>
+> **⚠️ PENDIENTE LIGADO A ESTO — EMAIL/DOMINIO REAL EN LOS T&C:** el dominio del sitio **AÚN NO está
+> definido** (no se sabe si será `.com`, `.net`, `.academy`, etc.). Por ahora el email en Privacy y T&C
+> quedó como **`support@traderaccelerator.com`** (4 ocurrencias: `privacy.html:403`, `terms.html:153/810/852`).
+> **Cuando el usuario compre/defina el dominio real, hay que cambiar ese email al correo REAL** (el que
+> de verdad se cree, con el TLD que se escoja). Auditar de nuevo con: `git grep -in "traderaccelerator"`.
+
+---
+
 > **🟢 EN CURSO (2026-06-17) — MARKET TIMING: KILL ZONES "TERMINAL" + CALENDARIO ECONÓMICO**
 > **(PENDIENTE: que el usuario revise visualmente en el VPS y confirme si le gusta el estilo A)**
 >
@@ -22,7 +41,7 @@
 >    TradingView (no construir uno propio — sería MÁS riesgoso porque nos volvería el "publicador"
 >    de las horas). Se añadió **disclaimer educativo in-page** (`ec.disclaimer`, 4 idiomas) dejando
 >    claro que la data es de TradingView (un tercero), puede estar mal/retrasada/caída, y que
->    **Trader Acelerator NO se responsabiliza** de errores/caídas de terceros. Además se agregó una
+>    **Trader Accelerator NO se responsabiliza** de errores/caídas de terceros. Además se agregó una
 >    **cláusula nueva en los T&C** (`terms.html`, Sección 11 "Disclaimers"): "Third-party data,
 >    embedded content, and economic calendar" cubriendo TradingView/datos embebidos.
 > 4. **✅ Navegación:** mini-nav **sticky** `Analyzer · Kill Zones · Calendar` (`#mt-nav`, con
@@ -47,7 +66,7 @@
 > hora exacta). Lo demás (calendario+disclaimer+T&C, mini-nav, chevron, hora NOW) ya quedó cerrado.
 >
 > **DESPLIEGUE:** el usuario debe correr en el VPS:
-> `cd /var/www/TRADINGBOT2.0 && git pull origin claude/intelligent-turing-94qh5i && supervisorctl restart traderacelerator`
+> `cd /var/www/TRADINGBOT2.0 && git pull origin claude/intelligent-turing-94qh5i && supervisorctl restart traderaccelerator`
 >
 > **NOTA DE INFRAESTRUCTURA:** esta semana el usuario sufre caídas del navegador ("OH NO" + robot)
 > por conversaciones MUY largas que agotan la RAM del navegador. Solución acordada: sesiones nuevas
@@ -85,7 +104,7 @@
 >   spin" (gamificación). Synapse PDFs ya traían disclaimer educativo.
 > **⚠️ PASO 2 PENDIENTE (si el usuario lo pide):** segunda pasada fina sobre splash loading phrases,
 > store_indicators/camos sales copy, settings, y un barrido de absolutismos residuales en quiz `exp`.
-> **Deploy:** `git pull origin claude/intelligent-turing-94qh5i && supervisorctl restart traderacelerator`.
+> **Deploy:** `git pull origin claude/intelligent-turing-94qh5i && supervisorctl restart traderaccelerator`.
 
 ---
 
@@ -132,7 +151,7 @@
 >   2. **Moderación del foro** (text + image) — publicar 5-10 posts/comentarios (algunos con imagen) y
 >      ver el costo. Estimado: ~$0.003/publicación (centavos).
 >   Objetivo: confirmar los estimados contra el gasto real de OpenAI y ajustar `AI_PRICE_*` si hiciera falta.
-> **Deploy:** `git pull origin claude/intelligent-turing-94qh5i && supervisorctl restart traderacelerator`.
+> **Deploy:** `git pull origin claude/intelligent-turing-94qh5i && supervisorctl restart traderaccelerator`.
 
 ---
 
@@ -162,7 +181,7 @@
 >
 > **🚀 DEPLOY (este cambio es backend + necesita el JSON nuevo). En el VPS:**
 > ```
-> cd /var/www/TRADINGBOT2.0 && git pull origin claude/epic-lovelace-GsOuo && supervisorctl restart traderacelerator
+> cd /var/www/TRADINGBOT2.0 && git pull origin claude/epic-lovelace-GsOuo && supervisorctl restart traderaccelerator
 > ```
 > (Si el VPS tiene `node`, la llave se regenera sola al arrancar; si no, usa el JSON commiteado.)
 
@@ -316,7 +335,7 @@
 > 4. **Acceso beta prioritario (rangos 6-8):** es una política, no hay código aún — se cablea
 >    cuando salga una feature nueva (mostrarla antes a rangos altos).
 > 5. **Desplegar la Etapa 2 en el VPS y verificar visualmente** (el usuario aún no la había
->    desplegado al irse a dormir): `git pull` + `supervisorctl restart traderacelerator`, luego
+>    desplegado al irse a dormir): `git pull` + `supervisorctl restart traderaccelerator`, luego
 >    abrir el menú de cuenta → ver la medalla + "My rank progress".
 > 6. **Verificar/pulir en vivo:** medallas en foro (lag con muchos posts), look en light/dark,
 >    el panel "My Rank Progress" con datos reales, y que el rango se vea en testimonials/landing.
@@ -487,14 +506,14 @@
 > - Bloque opcional en `app.py` (tras `app = Flask(...)`) que solo se activa si existe la env var
 >   `SENTRY_DSN`. `sentry-sdk==2.20.0` instalado en el **venv** del VPS. Para activarlo: cuenta
 >   gratis en sentry.io → copiar DSN → agregar `SENTRY_DSN="..."` al `environment=` del supervisor
->   conf → `supervisorctl reread && update && restart traderacelerator`. Capturaría TODA excepción
+>   conf → `supervisorctl reread && update && restart traderaccelerator`. Capturaría TODA excepción
 >   no controlada (dashboard en sentry.io, no en el panel admin).
 >
 > **6. Datos clave del VPS descubiertos/cambiados en esta sesión:**
 > - La app corre con **venv**: `command=/var/www/TRADINGBOT2.0/venv/bin/gunicorn -w 4 -b 0.0.0.0:5001 scalpel.app:app`.
 >   El `python3` del sistema NO tiene Flask (y pip del sistema es externally-managed; usar
 >   `venv/bin/pip` o `--break-system-packages`).
-> - Env vars de producción viven en `environment=` de `/etc/supervisor/conf.d/traderacelerator.conf`
+> - Env vars de producción viven en `environment=` de `/etc/supervisor/conf.d/traderaccelerator.conf`
 >   (6 vars: DATABASE_URL, WA_PHONE, WA_APIKEY, GITHUB_TOKEN, SECRET_KEY, MAIL_APP_PASSWORD).
 >   Ahora también hay un **`scalpel/.env`** (gitignored, chmod 600) con las mismas vars entre
 >   comillas, para que los scripts cron las vean vía `load_dotenv()`. **⚠️ Si se cambia una env var
@@ -574,7 +593,7 @@
 > 4. **Validar SIEMPRE** tras editar: extraer el `<script>` que contiene `QUESTION_BANK`
 >    y correr `node --check`. Verificar que `\\'` aparezca 0 veces.
 > 5. **Commit por nivel** (beginner, luego intermediate) y push a `claude/epic-lovelace-GsOuo`.
->    Recordar al usuario el `git pull` + `supervisorctl restart traderacelerator` en el VPS.
+>    Recordar al usuario el `git pull` + `supervisorctl restart traderaccelerator` en el VPS.
 > 6. Se pueden usar agentes Opus en **secuencia** (no paralelo — editan el mismo archivo y
 >    colisionan), uno por metodología, dándoles los strings exactos a reemplazar.
 >
@@ -616,12 +635,12 @@
 > ║                                                                  ║
 > ║  1. 🌐 COMPRAR EL DOMINIO en Cloudflare Registrar               ║
 > ║     → cloudflare.com/registrar → "Register Domains"             ║
-> ║     → Objetivo: traderacelerator.com (~$10.46 USD/año)          ║
+> ║     → Objetivo: traderaccelerator.com (~$10.46 USD/año)          ║
 > ║     → Usar el correo empresarial nuevo (NO el personal)         ║
 > ║                                                                  ║
 > ║  2. 📧 CREAR EL CORREO EMPRESARIAL (antes de comprar dominio)   ║
-> ║     → Crear Gmail: traderacelerator.hq@gmail.com                ║
-> ║     → Crear Gmail: support.traderacelerator@gmail.com           ║
+> ║     → Crear Gmail: traderaccelerator.hq@gmail.com                ║
+> ║     → Crear Gmail: support.traderaccelerator@gmail.com           ║
 > ║     → Activar verificación en 2 pasos en ambos                  ║
 > ║     → Compartir contraseñas con el socio (Bitwarden/1Password)  ║
 > ║                                                                  ║
@@ -629,10 +648,10 @@
 > ║     → En Cloudflare DNS: A record → 62.171.180.22              ║
 > ║     → Configurar nginx + SSL (Let's Encrypt) en el VPS          ║
 > ║     → Actualizar MAIL_USERNAME en supervisor al nuevo correo    ║
-> ║     → Objetivo final: https://traderacelerator.com              ║
+> ║     → Objetivo final: https://traderaccelerator.com              ║
 > ║                                                                  ║
 > ║  SIN ESTO: el sitio sigue en IP cruda, sin HTTPS, sin email     ║
-> ║  empresarial, y los T&C dicen support@traderacelerator.com      ║
+> ║  empresarial, y los T&C dicen support@traderaccelerator.com      ║
 > ║  que aún no existe. ¡HAZLO HOY!                                 ║
 > ╚══════════════════════════════════════════════════════════════════╝
 >
@@ -643,18 +662,18 @@
 ---
 
 > **INSTRUCCIÓN PERMANENTE — DEPLOY EN VPS:**
-> El sitio Trader Acelerator está desplegado en el VPS de Contabo (IP: `62.171.180.22`,
+> El sitio Trader Accelerator está desplegado en el VPS de Contabo (IP: `62.171.180.22`,
 > puerto `5001`) gestionado por **supervisor**.
 >
 > **REGLA OBLIGATORIA:** Después de CADA push de cambios al repo, recordar siempre
 > al usuario que debe ejecutar en el VPS:
 > ```
-> supervisorctl restart traderacelerator
+> supervisorctl restart traderaccelerator
 > ```
 > Sin este comando, los cambios pusheados NO se reflejan en el sitio en vivo.
 > El flujo completo para aplicar cambios en producción es:
 > 1. `git pull origin claude/epic-lovelace-GsOuo` (en el VPS)
-> 2. `supervisorctl restart traderacelerator`
+> 2. `supervisorctl restart traderaccelerator`
 >
 > El VPS corre Ubuntu con supervisor — el proceso arranca automáticamente al reiniciar
 > el servidor, sin necesidad de intervención manual.
@@ -856,7 +875,7 @@
          # PAGO: client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
          ```
          Agregar `OPENAI_API_KEY` al `environment=` del supervisor conf **y** a `scalpel/.env`,
-         luego `supervisorctl restart traderacelerator`. El `SYSTEM_PROMPT` ICT, validate→analyze,
+         luego `supervisorctl restart traderaccelerator`. El `SYSTEM_PROMPT` ICT, validate→analyze,
          `max_tokens` (validate=150, analyze=900) y todo lo demás queda IDÉNTICO.
       3. **Probar cuánto gasta de verdad:** hacer 5-10 análisis de screenshots reales y mirar
          (a) el dashboard `platform.openai.com/usage` — costo real $ por request — y/o
@@ -873,19 +892,19 @@
       con supervisor (autostart + autorestart). Falta dominio propio (ver tarea abajo).
 - [ ] **Comprar dominio en Cloudflare Registrar** — costo ~$10.46 USD/año para `.com`.
       URL: cloudflare.com/registrar → "Domain Registration" → "Register Domains".
-      Dominio objetivo: `traderacelerator.com` (verificar disponibilidad al momento de comprar).
+      Dominio objetivo: `traderaccelerator.com` (verificar disponibilidad al momento de comprar).
       Una vez comprado: apuntar DNS a IP del VPS `62.171.180.22` y configurar nginx + SSL
-      (HTTPS gratis via Let's Encrypt) para que el sitio corra en `https://traderacelerator.com`
+      (HTTPS gratis via Let's Encrypt) para que el sitio corra en `https://traderaccelerator.com`
       en vez de `http://62.171.180.22:5001`.
 - [ ] **Migrar email de envío a cuenta dedicada** — actualmente los emails de verificación
       OTP y recuperación de contraseña salen desde el Gmail personal `mauroramirezmij@gmail.com`.
       Pasos una vez comprado el dominio:
-      1. Crear Gmail dedicado (ej. `noreply.traderacelerator@gmail.com` o configurar
-         `hola@traderacelerator.com` con Google Workspace ~$6/mes).
+      1. Crear Gmail dedicado (ej. `noreply.traderaccelerator@gmail.com` o configurar
+         `hola@traderaccelerator.com` con Google Workspace ~$6/mes).
       2. Activar 2FA en esa cuenta → generar nuevo App Password.
-      3. En el VPS actualizar `/etc/supervisor/conf.d/traderacelerator.conf`:
+      3. En el VPS actualizar `/etc/supervisor/conf.d/traderaccelerator.conf`:
          cambiar `MAIL_USERNAME` a la nueva dirección y `MAIL_APP_PASSWORD` a la nueva clave.
-      4. `supervisorctl reread && supervisorctl restart traderacelerator`
+      4. `supervisorctl reread && supervisorctl restart traderaccelerator`
 - [ ] **Páginas legales** — redactar Términos y Condiciones + Política de
       Privacidad. Actualmente el footer solo tiene un disclaimer básico.
 - [ ] **Revisión legal con Claude** — una vez terminado el sitio y redactados
@@ -951,7 +970,7 @@
 - [x] **Registro obligatorio + verificación por email (OTP)** — eliminado el acceso de invitado (`/start-free` ahora redirige a `/register`, sin cookie anónima). Todo usuario debe crear cuenta con email + contraseña y verificar un código de 6 dígitos antes de entrar. Columnas nuevas en `User`: `email_verified`, `verification_code`, `verification_expires` (migración automática SQLite en `_migrate_user_verification_columns()` que marca verificados los usuarios previos). Falta solo conectar credenciales de email (ver tareas 🟡).
 - [x] **"Recordar este dispositivo"** — checkbox en login/register. Si se activa: `login_user(remember=True)` con `REMEMBER_COOKIE_DURATION = 3650 días` (indefinido) → próximas visitas saltan landing + login. Si no: cookie de sesión (se borra al cerrar el navegador) → siempre se muestra landing + login.
 - [x] **Nuevo flujo de entrada en 4 pasos** — Landing (`/`) → Login/Register → Welcome splash (`/welcome`, logo + candle orbitando) → App (`/app`). La `splash.html` (antes en `/`) ahora es la SEGUNDA pantalla post-login y redirige a `/app` en vez de `/login`.
-- [x] **Fix texto "Scalpel" → "Trader Acelerator"** en login/register — estaba en `static/auth.js` (i18n EN/ES/FR/PT), no en las plantillas.
+- [x] **Fix texto "Scalpel" → "Trader Accelerator"** en login/register — estaba en `static/auth.js` (i18n EN/ES/FR/PT), no en las plantillas.
 - [x] **Landing placeholder** (`landing.html`) — primera pantalla al entrar; pendiente diseño final en un paso posterior.
 
 ---

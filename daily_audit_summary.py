@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Trader Acelerator — Daily Audit Summary
+Trader Accelerator — Daily Audit Summary
 Runs once a day via cron. Sends an email digest of the last 24h of
 AuditEvent rows (orders, plan grants/expirations, promo codes, Synapse PDF
 issuance/downloads, and outbound emails), highlighting any failures.
@@ -39,7 +39,7 @@ def build_summary():
         if not r.success:
             failures.append(r)
 
-    lines = [f"Trader Acelerator — Daily Audit Summary",
+    lines = [f"Trader Accelerator — Daily Audit Summary",
              f"Period: last 24h (since {since.strftime('%Y-%m-%d %H:%M UTC')})",
              "", f"Total events: {len(rows)}", ""]
 
@@ -81,7 +81,7 @@ def main():
             print(body)
             return
 
-        subject = "Trader Acelerator — Daily Audit Summary"
+        subject = "Trader Accelerator — Daily Audit Summary"
         if fail_count:
             subject += f" ({fail_count} failures)"
 

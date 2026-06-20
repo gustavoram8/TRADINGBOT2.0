@@ -1,4 +1,4 @@
-# Trader Acelerator — T&C: Round 2 review request
+# Trader Accelerator — T&C: Round 2 review request
 
 **Context for ChatGPT:** You previously reviewed our Terms & Conditions for a small
 digital educational platform (trading education, not financial advice; operated by
@@ -25,14 +25,14 @@ launch-blocking.
 
 ## FIX #1 — Legal entity / counterparty disclosure (was: implied a company that doesn't exist)
 
-**Your original concern:** The document referred to "Trader Acelerator" as
+**Your original concern:** The document referred to "Trader Accelerator" as
 "Company" without any legal form (LLC/Corp) or physical address, leaving the
 counterparty undefined — a real "who am I contracting with?" risk.
 
 **What we added (new paragraph at the end of Section 1, "Acceptance of Terms"):**
 
-> Trader Acelerator is, as of the date of these Terms, an unincorporated business
-> operated by its founders. References in these Terms to "Trader Acelerator,"
+> Trader Accelerator is, as of the date of these Terms, an unincorporated business
+> operated by its founders. References in these Terms to "Trader Accelerator,"
 > "Company," "we," "us," or "our" refer to that operating business and the
 > individuals operating it. We will update this section to reflect any future
 > change in legal/corporate structure.
@@ -60,11 +60,11 @@ a postal address — an internal inconsistency.
 
 > You may opt out of this arbitration agreement by sending written notice to the
 > email address listed in Section 17 within thirty (30) days of first accepting
-> these Terms. If you opt out, you and Trader Acelerator each agree to submit to
+> these Terms. If you opt out, you and Trader Accelerator each agree to submit to
 > the exclusive jurisdiction of the courts specified in Section 15.
 
 (Section 17 — now Section 18 after Fix #4 — still provides
-`support@traderacelerator.com` as the contact.)
+`support@traderaccelerator.com` as the contact.)
 
 **Question:** Is allowing the arbitration opt-out and informal-resolution notice to be
 delivered **by email only** (no postal address) enforceable and consumer-fair under the
@@ -105,7 +105,7 @@ that changes aren't applied retroactively to already-paid periods.
 
 > **Entire Agreement:** These Terms, together with our Privacy Policy and any other
 > policies referenced herein, constitute the entire agreement between you and Trader
-> Acelerator regarding the Service and supersede any prior or contemporaneous
+> Accelerator regarding the Service and supersede any prior or contemporaneous
 > agreements, communications, or proposals, whether oral or written.
 >
 > **Severability:** If any provision of these Terms is found by a court or arbitrator

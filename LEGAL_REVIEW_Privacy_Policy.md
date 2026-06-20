@@ -1,7 +1,7 @@
 PRIVACY POLICY
 ==============
 
-Trader Acelerator — documento para revisión legal
+Trader Accelerator — documento para revisión legal
 Versión vigente publicada en el sitio (Products → Privacy Policy).
 Extraído tal cual del sitio el 2026-06-13.
 
@@ -29,7 +29,7 @@ Controlling Language: The controlling language of this Policy is English. Any tr
 
 ## 1. Who We Are & Scope
 
-Trader Acelerator is a digital educational platform for financial-markets and technical-analysis education. We are the data controller responsible for the personal information processed through the Service. This Policy applies to information we collect through the Service and through communications with us. It does not apply to third-party websites or services we do not control.
+Trader Accelerator is a digital educational platform for financial-markets and technical-analysis education. We are the data controller responsible for the personal information processed through the Service. This Policy applies to information we collect through the Service and through communications with us. It does not apply to third-party websites or services we do not control.
 
 
 ## 2. Information We Collect
@@ -93,7 +93,7 @@ We do not sell your personal information. We share it only as needed to run the 
 
 Public content: forum posts, comments, and any testimonial you submit with consent to publish are visible to other users or the public, along with the username (or display name) and rank shown with them. Do not post anything you wish to keep private.
 
-We may also disclose information if required by law, to enforce our Terms, to protect the rights, safety, or property of Trader Acelerator or others, or in connection with a business transfer (such as a merger or acquisition).
+We may also disclose information if required by law, to enforce our Terms, to protect the rights, safety, or property of Trader Accelerator or others, or in connection with a business transfer (such as a merger or acquisition).
 
 
 ## 8. Data Retention
@@ -117,7 +117,7 @@ To exercise any of these rights, contact us using the details in Section 15. We 
 
 ## 11. International Data Transfers
 
-Trader Acelerator is operated from, and relies on service providers located in, various countries, which may include the United States, the European Union, and others. If you access the Service from outside those locations, your information may be transferred to and processed in countries whose data-protection laws differ from those of your country. Where required, we take steps to ensure such transfers are subject to appropriate safeguards.
+Trader Accelerator is operated from, and relies on service providers located in, various countries, which may include the United States, the European Union, and others. If you access the Service from outside those locations, your information may be transferred to and processed in countries whose data-protection laws differ from those of your country. Where required, we take steps to ensure such transfers are subject to appropriate safeguards.
 
 
 ## 12. Children's Privacy
@@ -139,6 +139,6 @@ We may update this Privacy Policy from time to time. When we make material chang
 
 For privacy questions, requests, or to exercise your rights, contact us at:
 
-Trader Acelerator Email: support@traderacelerator.com
+Trader Accelerator Email: support@traderaccelerator.com
 
 Please include your registered email address and a description of your request so we can respond efficiently.

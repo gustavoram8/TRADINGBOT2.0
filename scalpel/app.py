@@ -801,7 +801,7 @@ def _send_audit_alert_email(event_type, user_id, detail):
         app.logger.warning('Audit alert (%s) skipped — MAIL_APP_PASSWORD not configured.', event_type)
         return
     admin_inbox = app.config.get('MAIL_USERNAME', 'mauroramirezmij@gmail.com')
-    subject = f'[Trader Acelerator] Action needed — {event_type} failed'
+    subject = f'[Trader Accelerator] Action needed — {event_type} failed'
     body = (
         f"Event   : {event_type}\n"
         f"User ID : {user_id if user_id is not None else '(none)'}\n"
@@ -1086,9 +1086,9 @@ def send_verification_email(to_email, code):
             to_email, code,
         )
         return False
-    msg = Message('Trader Acelerator — Verify your email', recipients=[to_email])
+    msg = Message('Trader Accelerator — Verify your email', recipients=[to_email])
     msg.body = (
-        "Welcome to Trader Acelerator!\n\n"
+        "Welcome to Trader Accelerator!\n\n"
         f"Your verification code is: {code}\n\n"
         "Enter it on the verification screen to activate your account. "
         "This code expires in 15 minutes.\n\n"
@@ -1115,7 +1115,7 @@ def _send_contact_email(sender_name, sender_email, category, message):
             sender_name, sender_email, message[:200],
         )
         return False
-    subject = f'[Trader Acelerator Contact] {category} — {sender_name}'
+    subject = f'[Trader Accelerator Contact] {category} — {sender_name}'
     body = (
         f"Category : {category}\n"
         f"Name     : {sender_name}\n"
@@ -3090,7 +3090,7 @@ def _build_synapse_pdf(buyer_name: str, buyer_email: str, order_id: str,
 
 <!-- Cover -->
 <div class="cover">
-  <div class="cv-brand">Trader Acelerator</div>
+  <div class="cv-brand">Trader Accelerator</div>
   <div class="cv-title">Synapse Library</div>
   <div class="cv-sub">{esc(CH['cover_sub'])}</div>
   <div class="cv-divider"></div>
@@ -3479,7 +3479,7 @@ def _alert_admin_forum_mute(user, block_count):
         return
     admin_inbox = app.config.get('MAIL_USERNAME', 'mauroramirezmij@gmail.com')
     uname = getattr(user, 'username', None) or f'user#{user.id}'
-    subject = f'[Trader Acelerator] Forum auto-mute — {uname}'
+    subject = f'[Trader Accelerator] Forum auto-mute — {uname}'
     body = (
         f"User      : {uname} (id {user.id})\n"
         f"Reason    : {block_count} moderation blocks within {AUTOMUTE_WINDOW_MIN} min\n"
@@ -5312,48 +5312,48 @@ CERT_I18N = {
            'presented': 'This certificate is awarded to',
            'attained': 'for having attained, through practice and dedication, the rank of',
            'rank': 'Rank', 'of': 'of', 'issued': 'Issue date', 'issuedBy': 'Issued by',
-           'eduNote': 'Educational achievement — recognizes progress in the Trader Acelerator learning program. Not a professional, financial, or trading qualification.',
+           'eduNote': 'Educational achievement — recognizes progress in the Trader Accelerator learning program. Not a professional, financial, or trading qualification.',
            'download': 'Download PDF', 'back': 'Back'},
     'es': {'kicker': 'Certificate of Achievement', 'title': 'Certificado de Rango',
            'presented': 'Se otorga el presente certificado a',
            'attained': 'por haber alcanzado, mediante práctica y dedicación, el rango de',
            'rank': 'Rango', 'of': 'de', 'issued': 'Fecha de emisión', 'issuedBy': 'Emitido por',
-           'eduNote': 'Logro educativo — reconoce el progreso en el programa de aprendizaje de Trader Acelerator. No es una calificación profesional, financiera ni de trading.',
+           'eduNote': 'Logro educativo — reconoce el progreso en el programa de aprendizaje de Trader Accelerator. No es una calificación profesional, financiera ni de trading.',
            'download': 'Descargar PDF', 'back': 'Volver'},
     'fr': {'kicker': 'Certificate of Achievement', 'title': 'Certificat de Rang',
            'presented': 'Le présent certificat est décerné à',
            'attained': 'pour avoir atteint, par la pratique et la persévérance, le rang de',
            'rank': 'Rang', 'of': 'sur', 'issued': "Date d'émission", 'issuedBy': 'Émis par',
-           'eduNote': "Accomplissement éducatif — reconnaît la progression dans le programme d'apprentissage Trader Acelerator. Pas une qualification professionnelle, financière ou de trading.",
+           'eduNote': "Accomplissement éducatif — reconnaît la progression dans le programme d'apprentissage Trader Accelerator. Pas une qualification professionnelle, financière ou de trading.",
            'download': 'Télécharger le PDF', 'back': 'Retour'},
     'pt': {'kicker': 'Certificate of Achievement', 'title': 'Certificado de Rank',
            'presented': 'O presente certificado é concedido a',
            'attained': 'por ter alcançado, com prática e dedicação, o rank de',
            'rank': 'Rank', 'of': 'de', 'issued': 'Data de emissão', 'issuedBy': 'Emitido por',
-           'eduNote': 'Conquista educativa — reconhece o progresso no programa de aprendizado da Trader Acelerator. Não é uma qualificação profissional, financeira ou de trading.',
+           'eduNote': 'Conquista educativa — reconhece o progresso no programa de aprendizado da Trader Accelerator. Não é uma qualificação profissional, financeira ou de trading.',
            'download': 'Baixar PDF', 'back': 'Voltar'},
 }
 VERIFY_I18N = {
     'en': {'okStatus': 'Certificate verified', 'okTitle': 'Authentic document',
            'attained': 'attained the rank of', 'rank': 'Rank', 'issued': 'Issued', 'code': 'Code',
-           'note': 'Issued by Trader Acelerator. This certificate is genuine and on record.',
+           'note': 'Issued by Trader Accelerator. This certificate is genuine and on record.',
            'noStatus': 'Not verified', 'noTitle': 'Certificate not found',
-           'noDesc': 'does not match any certificate issued by Trader Acelerator. It may be mistyped or forged.'},
+           'noDesc': 'does not match any certificate issued by Trader Accelerator. It may be mistyped or forged.'},
     'es': {'okStatus': 'Certificado verificado', 'okTitle': 'Documento auténtico',
            'attained': 'alcanzó el rango de', 'rank': 'Rango', 'issued': 'Emitido', 'code': 'Código',
-           'note': 'Emitido por Trader Acelerator. Este certificado es genuino y consta en nuestros registros.',
+           'note': 'Emitido por Trader Accelerator. Este certificado es genuino y consta en nuestros registros.',
            'noStatus': 'No verificado', 'noTitle': 'Certificado no encontrado',
-           'noDesc': 'no corresponde a ningún certificado emitido por Trader Acelerator. Podría estar mal escrito o ser falso.'},
+           'noDesc': 'no corresponde a ningún certificado emitido por Trader Accelerator. Podría estar mal escrito o ser falso.'},
     'fr': {'okStatus': 'Certificat vérifié', 'okTitle': 'Document authentique',
            'attained': 'a atteint le rang de', 'rank': 'Rang', 'issued': 'Émis', 'code': 'Code',
-           'note': 'Émis par Trader Acelerator. Ce certificat est authentique et enregistré.',
+           'note': 'Émis par Trader Accelerator. Ce certificat est authentique et enregistré.',
            'noStatus': 'Non vérifié', 'noTitle': 'Certificat introuvable',
-           'noDesc': "ne correspond à aucun certificat émis par Trader Acelerator. Il peut être mal saisi ou falsifié."},
+           'noDesc': "ne correspond à aucun certificat émis par Trader Accelerator. Il peut être mal saisi ou falsifié."},
     'pt': {'okStatus': 'Certificado verificado', 'okTitle': 'Documento autêntico',
            'attained': 'alcançou o rank de', 'rank': 'Rank', 'issued': 'Emitido', 'code': 'Código',
-           'note': 'Emitido por Trader Acelerator. Este certificado é genuíno e consta nos registros.',
+           'note': 'Emitido por Trader Accelerator. Este certificado é genuíno e consta nos registros.',
            'noStatus': 'Não verificado', 'noTitle': 'Certificado não encontrado',
-           'noDesc': 'não corresponde a nenhum certificado emitido por Trader Acelerator. Pode estar incorreto ou ser falso.'},
+           'noDesc': 'não corresponde a nenhum certificado emitido por Trader Accelerator. Pode estar incorreto ou ser falso.'},
 }
 
 
@@ -5447,7 +5447,7 @@ def certificate_pdf(rank):
     resp = make_response(pdf_bytes)
     resp.headers['Content-Type'] = 'application/pdf'
     resp.headers['Content-Disposition'] = (
-        'attachment; filename="trader-acelerator-%s.pdf"' % cert.code)
+        'attachment; filename="trader-accelerator-%s.pdf"' % cert.code)
     return resp
 
 
@@ -6175,7 +6175,7 @@ def health_check():
 # ── Global error handler — sends WhatsApp alert on 500s ───────────────────
 @app.errorhandler(500)
 def handle_500(e):
-    msg = (f"🚨 *Trader Acelerator — ERROR 500*\n"
+    msg = (f"🚨 *Trader Accelerator — ERROR 500*\n"
            f"URL: {request.url}\n"
            f"Error: {str(e)[:200]}\n"
            f"Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}")

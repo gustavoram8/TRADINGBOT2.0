@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Trader Acelerator — Health Monitor
+Trader Accelerator — Health Monitor
 Runs every hour via cron. Checks site health and sends WhatsApp alerts
 if any threshold is exceeded.
 
@@ -89,7 +89,7 @@ def check_site():
 
     # ── Send alerts if any ──
     if alerts:
-        msg = f"🚨 *Trader Acelerator Monitor*\n{now}\n\n" + "\n".join(alerts)
+        msg = f"🚨 *Trader Accelerator Monitor*\n{now}\n\n" + "\n".join(alerts)
         print(f"ALERT: {msg}")
         send_whatsapp(msg)
     else:

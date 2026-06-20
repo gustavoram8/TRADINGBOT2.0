@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Trader Acelerator — One-off Daily Challenge reset (manual testing helper).
+Trader Accelerator — One-off Daily Challenge reset (manual testing helper).
 
 Clears a single user's DailyQuizState gate so they can play today's Daily
 Challenge again. It does NOT alter any game logic, grant spins, or touch the

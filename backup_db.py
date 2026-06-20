@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Trader Acelerator — Database Backup
+Trader Accelerator — Database Backup
 Runs once a day via cron. Detects the production database from DATABASE_URL
 (in scalpel/.env or the environment):
 
@@ -17,9 +17,9 @@ Restoring a PostgreSQL backup:
   pg_restore --clean --if-exists -d "$DATABASE_URL" backups/scalpel_YYYY-MM-DD.dump
 
 Restoring a SQLite backup (stop the app first):
-  supervisorctl stop traderacelerator
+  supervisorctl stop traderaccelerator
   cp backups/scalpel_YYYY-MM-DD.db scalpel/scalpel.db
-  supervisorctl start traderacelerator
+  supervisorctl start traderaccelerator
 """
 
 import os

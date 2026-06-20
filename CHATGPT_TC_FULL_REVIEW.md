@@ -1,4 +1,4 @@
-# Trader Acelerator — Terms & Conditions (FULL CURRENT TEXT)
+# Trader Accelerator — Terms & Conditions (FULL CURRENT TEXT)
 
 _Last updated: June 13, 2026. This is the complete document with all Round-2 fixes applied. Please do a full pass and flag anything missing, inconsistent, or risky for a pre-incorporation US-LLC-pending digital education business (operators: one US-resident partner who will form the Delaware/Wyoming LLC, one Venezuela-resident partner). Format per item: frase problemática → riesgo → redacción sugerida._
 
@@ -32,7 +32,7 @@ Controlling Language: The controlling language of these Terms
 ## 1. Acceptance of Terms
 
 These Terms and Conditions ("Terms") constitute a legally binding agreement between
- you ("User," "you," or "your") and Trader Acelerator ("Company," "we," "us," or "our"),
+ you ("User," "you," or "your") and Trader Accelerator ("Company," "we," "us," or "our"),
  governing your access to and use of the website, platform, tools, digital content,
  and any related services (collectively, the "Service").
 
@@ -44,20 +44,20 @@ By registering an account, clicking "I Agree," making a payment, or otherwise
 If you are using the Service on behalf of a third party or organization, you
  represent that you have authority to bind that party to these Terms.
 
-Trader Acelerator is, as of the date of these Terms, an independently operated
+Trader Accelerator is, as of the date of these Terms, an independently operated
  business. A legal entity is in the process of being formed and, upon its
  formation, will become the contracting party under these Terms, at which point
  this section will be updated to state that entity's name and registered address.
- References in these Terms to "Trader Acelerator," "Company," "we," "us," or "our"
+ References in these Terms to "Trader Accelerator," "Company," "we," "us," or "our"
  refer to that business and the persons operating it. For any notice, question, or
  legal contact regarding these Terms or the Service, you may reach us at
- support@traderacelerator.com
+ support@traderaccelerator.com
  (see Section 18).
 
 
 ## 2. Description of Service — Educational Disclaimer
 
-Trader Acelerator is a digital educational platform designed to provide general
+Trader Accelerator is a digital educational platform designed to provide general
  educational content about financial markets, trading concepts, technical analysis
  methodologies, and related topics. The Service includes, without limitation,
  interactive and AI-assisted tools and features such as AI-generated screenshot/chart
@@ -73,7 +73,7 @@ Self-logged data & tools: Any trade details, notes, checklists,
  self-reported by you, are not verified by us, and are not connected to any brokerage,
  exchange, or live trading account. Such tools are organizational and educational aids
  only — they do not place, manage, or execute trades, and nothing they display
- constitutes financial advice or a performance record certified by Trader Acelerator.
+ constitutes financial advice or a performance record certified by Trader Accelerator.
 
 Important — Not Financial Advice: All content provided through
  the Service, including but not limited to articles, tutorials, PDF documents,
@@ -90,7 +90,7 @@ We are not registered as investment advisors, broker-dealers, financial planners
  described within the Service do not guarantee or predict future results.
 
 You acknowledge that any trading or investment decisions you make are solely your
- own responsibility. Trader Acelerator shall not be liable for any financial losses,
+ own responsibility. Trader Accelerator shall not be liable for any financial losses,
  damages, or consequences arising from your interpretation or application of any
  content provided through the Service.
 
@@ -108,7 +108,7 @@ To access or use the Service, you must meet all of the following requirements:
  European Union, or any other applicable sanctions authority that would
  prohibit your access to or use of the Service.
 - You must not have been previously suspended or permanently banned from the
- Service by Trader Acelerator.
+ Service by Trader Accelerator.
 By creating an account, you represent and warrant that you meet all of the above
  eligibility requirements. If you do not meet these requirements, you must not
  access or use the Service. We reserve the right to suspend or terminate any
@@ -133,13 +133,13 @@ Account sharing is strictly prohibited. Each account is personal and
  Accounts found to be shared, transferred, sold, or duplicated may be suspended
  or permanently terminated without notice and without refund.
 
-Trader Acelerator reserves the right to refuse registration, cancel accounts,
+Trader Accelerator reserves the right to refuse registration, cancel accounts,
  or remove or edit content at its sole discretion.
 
 
 ## 5. Plans, Payments & Billing
 
-Trader Acelerator offers the following subscription tiers: Free, Standard, and
+Trader Accelerator offers the following subscription tiers: Free, Standard, and
  Premium. Each plan provides access to specific features as described on the
  pricing page, which may be updated from time to time at our sole discretion.
 
@@ -153,7 +153,7 @@ All prices are displayed in United States Dollars (USD) and are exclusive of
 
 Your subscription will automatically renew at the end of each billing period
  unless you cancel it prior to the renewal date. By providing your payment
- information, you authorize Trader Acelerator or its designated payment processor
+ information, you authorize Trader Accelerator or its designated payment processor
  to charge the applicable subscription fee on each renewal date.
 
 We reserve the right to modify subscription prices at any time. For existing
@@ -215,7 +215,7 @@ Rewards Features do not change the educational nature of the Service, are not an
 
 ## 7. Refund Policy
 
-No Refunds: All payments made to Trader Acelerator for any
+No Refunds: All payments made to Trader Accelerator for any
  subscription plan, digital content, or downloadable material are
  final and non-refundable, except as expressly stated below.
 
@@ -226,10 +226,10 @@ You acknowledge and accept that, given the immediate digital nature of the
 
 Sole Exception — Verified Technical Failure: A refund or
  account credit may be considered solely in cases of a documented technical failure
- exclusively attributable to Trader Acelerator's infrastructure that completely
+ exclusively attributable to Trader Accelerator's infrastructure that completely
  prevents access to the subscribed Service for a continuous period exceeding
  seventy-two (72) hours, and only upon timely written request submitted to our
- support contact. Trader Acelerator retains sole discretion to determine whether
+ support contact. Trader Accelerator retains sole discretion to determine whether
  the reported failure qualifies and whether to issue a refund or an equivalent
  account credit.
 
@@ -246,17 +246,17 @@ All content, materials, features, and functionality available through the Servic
  including but not limited to text, graphics, diagrams, SVG illustrations, PDF
  documents, educational guides, software, audio, video, logos, trademarks, and
  the overall look and feel of the platform — are the exclusive intellectual property
- of Trader Acelerator and are protected by applicable copyright, trademark, and
+ of Trader Accelerator and are protected by applicable copyright, trademark, and
  other intellectual property laws.
 
 Limited Personal License: Subject to your compliance with these
- Terms and timely payment of applicable fees, Trader Acelerator grants you a
+ Terms and timely payment of applicable fees, Trader Accelerator grants you a
  limited, non-exclusive, non-transferable, non-sublicensable, revocable license
  to access and use the Service and its content solely for your own personal,
  non-commercial educational purposes.
 
 Strictly Prohibited: You may not, under any circumstances
- and without the prior written authorization of Trader Acelerator:
+ and without the prior written authorization of Trader Accelerator:
  (a) reproduce, copy, distribute, publish, transmit, or broadcast any content
  from the Service; (b) sell, resell, rent, lease, sublicense, or otherwise
  commercially exploit any content or any portion thereof; (c) share, forward,
@@ -266,21 +266,21 @@ Strictly Prohibited: You may not, under any circumstances
  Service's content; or (e) use any content for any public display, commercial
  presentation, or any purpose other than personal educational use.
 
-Any unauthorized use, reproduction, or distribution of Trader Acelerator's
+Any unauthorized use, reproduction, or distribution of Trader Accelerator's
  intellectual property constitutes both an infringement of copyright under
  applicable law and a material breach of these Terms, and may result in
  immediate account termination, civil liability, and/or criminal prosecution
  to the fullest extent permitted by law.
 
 By submitting content to public areas of the Service (such as forum posts or
- comments), you grant Trader Acelerator a perpetual, irrevocable, worldwide,
+ comments), you grant Trader Accelerator a perpetual, irrevocable, worldwide,
  royalty-free license to use, display, and moderate such content in connection
  with the operation of the Service.
 
 
 ## 9. Prohibited Conduct
 
-You agree not to engage in any conduct that Trader Acelerator, in its sole
+You agree not to engage in any conduct that Trader Accelerator, in its sole
  discretion, determines to be harmful, abusive, fraudulent, or otherwise
  inconsistent with the spirit and purpose of the Service. Prohibited conduct
  includes, but is not limited to, the following:
@@ -295,7 +295,7 @@ You agree not to engage in any conduct that Trader Acelerator, in its sole
  the trading forum.
 - Engaging in harassment, threats, intimidation, hate speech, or any form
  of abusive, discriminatory, or offensive behavior toward other users or
- members of the Trader Acelerator team.
+ members of the Trader Accelerator team.
 - Uploading, posting, or transmitting any content that is unlawful, obscene,
  defamatory, pornographic, or otherwise objectionable.
 - Attempting to gain unauthorized access to any portion of the Service,
@@ -313,14 +313,14 @@ You agree not to engage in any conduct that Trader Acelerator, in its sole
  tampering with requests between your device and our servers, submitting
  results you did not legitimately achieve, altering your device's date or
  time, or using automation or multiple accounts to obtain rewards or codes.
-This list is illustrative and not exhaustive. Trader Acelerator reserves the
+This list is illustrative and not exhaustive. Trader Accelerator reserves the
  right to determine, at its sole discretion, whether any conduct violates these
  Terms and to take appropriate action accordingly.
 
 
 ## 10. Termination & Suspension
 
-Trader Acelerator reserves the right to suspend, restrict, or permanently
+Trader Accelerator reserves the right to suspend, restrict, or permanently
  terminate your account and access to the Service at any time, with or without
  prior notice, for any reason it deems appropriate in its sole discretion,
  including but not limited to a violation of these Terms, prohibited conduct,
@@ -351,7 +351,7 @@ Upon termination of your account for any reason, all licenses granted to you
 ## 11. Disclaimers
 
 THE SERVICE IS PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS, WITHOUT ANY
- WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED. TRADER ACELERATOR EXPRESSLY
+ WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED. TRADER ACCELERATOR EXPRESSLY
  DISCLAIMS ALL WARRANTIES, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF
  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, ACCURACY, NON-INFRINGEMENT,
  AND UNINTERRUPTED OR ERROR-FREE OPERATION.
@@ -368,18 +368,18 @@ The Service may be temporarily unavailable due to scheduled maintenance,
  or resolution period. No compensation, credit, or refund will be issued for
  any period of unavailability.
 
-No guaranteed response or resolution times. Trader Acelerator
+No guaranteed response or resolution times. Trader Accelerator
  is operated by a small team. While we are committed to resolving bugs, errors,
  and service disruptions as quickly as possible, we do not guarantee any specific
  response time, fix timeline, or resolution deadline for any reported or
  discovered issue. Resolution times may vary depending on the complexity of the
  issue, team availability, and third-party dependencies. By using the Service,
  you acknowledge and accept that technical issues may take time to investigate
- and resolve, and you agree not to hold Trader Acelerator liable for any
+ and resolve, and you agree not to hold Trader Accelerator liable for any
  inconvenience, loss of access, or damages arising from the time required to
  address such issues.
 
-Trader Acelerator makes no representations or warranties regarding the
+Trader Accelerator makes no representations or warranties regarding the
  suitability of any educational content for your specific circumstances,
  trading style, risk tolerance, or financial situation.
 
@@ -387,16 +387,16 @@ Trader Acelerator makes no representations or warranties regarding the
 ## 12. Limitation of Liability
 
 TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL TRADER
- ACELERATOR, ITS OPERATORS, AFFILIATES, LICENSORS, OR SERVICE PROVIDERS BE
+ ACCELERATOR, ITS OPERATORS, AFFILIATES, LICENSORS, OR SERVICE PROVIDERS BE
  LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, PUNITIVE, OR
  EXEMPLARY DAMAGES OF ANY KIND, INCLUDING BUT NOT LIMITED TO LOST PROFITS,
  LOSS OF DATA, LOSS OF GOODWILL, BUSINESS INTERRUPTION, OR ANY FINANCIAL LOSS,
  ARISING OUT OF OR RELATED TO YOUR USE OF OR INABILITY TO USE THE SERVICE,
  EVEN IF WE HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 
-IN NO EVENT SHALL THE TOTAL AGGREGATE LIABILITY OF TRADER ACELERATOR TO YOU
+IN NO EVENT SHALL THE TOTAL AGGREGATE LIABILITY OF TRADER ACCELERATOR TO YOU
  FOR ALL CLAIMS ARISING OUT OF OR RELATED TO THESE TERMS OR THE SERVICE EXCEED
- THE GREATER OF: (A) THE TOTAL AMOUNT YOU PAID TO TRADER ACELERATOR IN THE
+ THE GREATER OF: (A) THE TOTAL AMOUNT YOU PAID TO TRADER ACCELERATOR IN THE
  TWELVE (12) MONTHS IMMEDIATELY PRECEDING THE EVENT GIVING RISE TO THE CLAIM,
  OR (B) ONE HUNDRED UNITED STATES DOLLARS (USD $100.00).
 
@@ -407,7 +407,7 @@ Some jurisdictions do not allow the exclusion or limitation of certain damages.
 
 ## 13. Indemnification
 
-You agree to defend, indemnify, and hold harmless Trader Acelerator and its
+You agree to defend, indemnify, and hold harmless Trader Accelerator and its
  operators, affiliates, and licensors from and against any and all claims,
  damages, losses, liabilities, costs, and expenses (including reasonable
  attorneys' fees) arising out of or related to: (a) your use of or access to
@@ -424,7 +424,7 @@ We reserve the right, at your expense, to assume exclusive control over the
 ## 14. Dispute Resolution — Binding Arbitration
 
 Please read this section carefully. It requires you to resolve
- most disputes with Trader Acelerator through binding individual arbitration
+ most disputes with Trader Accelerator through binding individual arbitration
  rather than in court, and waives your right to participate in class actions.
 
 Informal Resolution First: Before initiating any formal
@@ -433,7 +433,7 @@ Informal Resolution First: Before initiating any formal
  the dispute informally.
 
 Binding Arbitration: If the dispute cannot be resolved
- informally, you and Trader Acelerator agree that any dispute, claim, or
+ informally, you and Trader Accelerator agree that any dispute, claim, or
  controversy arising out of or relating to these Terms or the Service —
  including questions about the validity, interpretation, or enforceability
  of these Terms — shall be resolved exclusively through binding individual
@@ -441,7 +441,7 @@ Binding Arbitration: If the dispute cannot be resolved
  accordance with its Consumer Arbitration Rules, as modified by these Terms.
  Arbitration shall be conducted in English.
 
-Waiver of Class Actions: You and Trader Acelerator each
+Waiver of Class Actions: You and Trader Accelerator each
  waive any right to participate in a class action, class-wide arbitration,
  private attorney general action, or any other representative proceeding.
  All claims must be brought on an individual basis only.
@@ -454,7 +454,7 @@ Exceptions: Either party may seek emergency injunctive or
 Opt-Out: You may opt out of this arbitration agreement by
  sending written notice to the email address listed in Section 17 within
  thirty (30) days of first accepting these Terms. If you opt out, you and
- Trader Acelerator each agree to submit to the exclusive jurisdiction of the
+ Trader Accelerator each agree to submit to the exclusive jurisdiction of the
  courts specified in Section 15.
 
 
@@ -472,13 +472,13 @@ To the extent any dispute is not subject to arbitration under Section 14,
 
 If you are accessing the Service from outside the United States, you do so
  on your own initiative and are solely responsible for compliance with local
- laws applicable to your jurisdiction. Trader Acelerator makes no representation
+ laws applicable to your jurisdiction. Trader Accelerator makes no representation
  that the Service is appropriate or available in any particular location.
 
 
 ## 16. Modifications to These Terms
 
-Trader Acelerator reserves the right to modify these Terms at any time.
+Trader Accelerator reserves the right to modify these Terms at any time.
  When we make material changes, we will update the "Last updated" date at the
  top of this page and, where appropriate, notify you via email or an in-platform
  notice.
@@ -493,7 +493,7 @@ Your continued use of the Service after any such modification constitutes
 
 Entire Agreement: These Terms, together with our Privacy
  Policy and any other policies referenced herein, constitute the entire
- agreement between you and Trader Acelerator regarding the Service and
+ agreement between you and Trader Accelerator regarding the Service and
  supersede any prior or contemporaneous agreements, communications, or
  proposals, whether oral or written.
 
@@ -513,7 +513,7 @@ Notices; Electronic Communications. You agree that we may send
  satisfy any legal requirement that the communication be in writing, to the
  extent permitted by applicable law. You are responsible for keeping your contact
  information current. Any notice you send to us is effective when received at
- support@traderacelerator.com.
+ support@traderaccelerator.com.
 
 Assignment: You may not assign or transfer these Terms, or
  any rights or obligations under them, without our prior written consent.
@@ -546,8 +546,8 @@ Survival: Sections of these Terms that by their nature
 For questions, concerns, legal notices, or support requests related to these
  Terms or the Service, please contact us at:
 
-Trader Acelerator
- Email: support@traderacelerator.com
+Trader Accelerator
+ Email: support@traderaccelerator.com
 
 Response times may vary. For account-related issues, please include your
  registered email address and a description of your request.
