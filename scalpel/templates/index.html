@@ -1838,24 +1838,25 @@
     }
     .feature-upgrade:hover { background: var(--accent-h); }
 
-    @media (max-width: 480px) {
-      nav { padding: 14px 16px; gap: 10px; }
+    @media (max-width: 600px) {
+      nav { padding: 14px 16px; gap: 8px; }
       .tabs { padding: 0 12px; }
       .tab { padding: 13px 13px; font-size: 13px; }
       .container { padding: 24px 16px 60px; }
       .card { padding: 18px; }
-      /* Free up room so the account button never clips off the right edge */
-      .logo-img { height: 56px; }
+
+      /* Keep the whole top bar on ONE line on phones so nothing clips off the
+         right edge. The account button keeps the rank medal + plan chip (the
+         username moves into the dropdown). The language picker collapses to its
+         globe icon but still opens the native language menu when tapped. */
+      .logo-img { height: 50px; }
       .logo-sub { display: none; }
       .logo-text { font-size: 15px; letter-spacing: 0.04em; }
-      .nav-controls { gap: 7px; }
-      .account-btn { padding: 0 8px 0 9px; }
-      .account-btn .uname { max-width: 72px; }
-    }
-
-    /* Tightest phones (iPhone SE, Galaxy S8): drop the username text — the full
-       name still shows inside the account dropdown — keeping plan chip + chevron. */
-    @media (max-width: 360px) {
+      .nav-controls { gap: 6px; }
+      .lang-select { width: 34px; height: 34px; padding: 0; justify-content: center; gap: 0; }
+      .lang-select .caret { display: none; }
+      .lang-select select { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; opacity: 0; cursor: pointer; }
+      .account-btn { gap: 5px; padding: 0 9px; }
       .account-btn .uname { display: none; }
     }
 
