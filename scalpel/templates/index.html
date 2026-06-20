@@ -93,12 +93,7 @@
       font-size: 14px;
       line-height: 1.6;
       min-height: 100vh;
-      overflow-x: hidden;            /* mobile safety net: never scroll sideways */
     }
-
-    /* Responsive safety net — keep media from forcing horizontal overflow on
-       phones/tablets. Inner scrollers (tabs, tables) set their own overflow. */
-    img { max-width: 100%; height: auto; }
 
     /* ── NAV ── */
     nav {
@@ -1844,11 +1839,24 @@
     .feature-upgrade:hover { background: var(--accent-h); }
 
     @media (max-width: 480px) {
-      nav { padding: 14px 16px; }
+      nav { padding: 14px 16px; gap: 10px; }
       .tabs { padding: 0 12px; }
       .tab { padding: 13px 13px; font-size: 13px; }
       .container { padding: 24px 16px 60px; }
       .card { padding: 18px; }
+      /* Free up room so the account button never clips off the right edge */
+      .logo-img { height: 56px; }
+      .logo-sub { display: none; }
+      .logo-text { font-size: 15px; letter-spacing: 0.04em; }
+      .nav-controls { gap: 7px; }
+      .account-btn { padding: 0 8px 0 9px; }
+      .account-btn .uname { max-width: 72px; }
+    }
+
+    /* Tightest phones (iPhone SE, Galaxy S8): drop the username text — the full
+       name still shows inside the account dropdown — keeping plan chip + chevron. */
+    @media (max-width: 360px) {
+      .account-btn .uname { display: none; }
     }
 
     /* ══════════════════════════════════════════════════════════
