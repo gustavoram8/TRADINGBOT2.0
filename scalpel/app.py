@@ -2164,7 +2164,8 @@ def admin_device_preview():
     tablet frames so we can catch mobile/iPad layout issues from a desktop."""
     if not current_user.is_admin:
         return redirect(url_for('app_view'))
-    return render_template('device_preview.html')
+    d = _admin_demo() or {}
+    return render_template('device_preview.html', demo_plan=d.get('plan') or 'normal')
 
 
 def _build_revenue_context():
