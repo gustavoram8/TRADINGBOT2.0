@@ -93,7 +93,12 @@
       font-size: 14px;
       line-height: 1.6;
       min-height: 100vh;
+      overflow-x: hidden;            /* mobile safety net: never scroll sideways */
     }
+
+    /* Responsive safety net — keep media from forcing horizontal overflow on
+       phones/tablets. Inner scrollers (tabs, tables) set their own overflow. */
+    img { max-width: 100%; height: auto; }
 
     /* ── NAV ── */
     nav {

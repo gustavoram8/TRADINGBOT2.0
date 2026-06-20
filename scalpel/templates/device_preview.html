@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trader Accelerator — Device Preview</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/auth.css" />
+  <style>
+    body { display: block; padding: 0; min-height: 100vh; overflow: hidden; }
+
+    /* ── Top toolbar ── */
+    .dp-nav {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      padding: 12px 22px; border-bottom: 1px solid var(--border);
+      background: var(--surface); position: sticky; top: 0; z-index: 20; flex-wrap: wrap;
+    }
+    .dp-nav .left { display: flex; align-items: center; gap: 14px; }
+    .dp-title { font-size: 15px; font-weight: 800; display: flex; align-items: center; gap: 9px; }
+    .dp-title .badge {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--premium); border: 1px solid var(--premium); padding: 2px 9px; border-radius: 12px;
+    }
+    .dp-back { font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none;
+      border: 1px solid var(--border2); padding: 6px 13px; border-radius: 18px; }
+    .dp-back:hover { color: var(--text); border-color: var(--accent); }
+
+    .dp-controls { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+    .dp-group { display: flex; align-items: center; gap: 8px; }
+    .dp-glabel { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--muted); font-weight: 700; }
+    .dp-seg { display: flex; gap: 4px; background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 3px; }
+    .dp-seg button { font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer;
+      background: transparent; color: var(--muted); border: none; padding: 6px 12px; border-radius: 16px;
+      transition: all 0.15s; white-space: nowrap; }
+    .dp-seg button:hover { color: var(--text); }
+    .dp-seg button.active { background: var(--premium); color: #1a1205; }
+
+    select.dp-select, .dp-url {
+      font: inherit; font-size: 13px; font-weight: 600; color: var(--text);
+      background: var(--card); border: 1px solid var(--border2); border-radius: 18px;
+      padding: 7px 13px; cursor: pointer; }
+    .dp-url { cursor: text; min-width: 230px; }
+    .dp-iconbtn { font: inherit; font-size: 14px; cursor: pointer; background: var(--card);
+      color: var(--text); border: 1px solid var(--border2); border-radius: 50%;
+      width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center;
+      transition: all 0.15s; }
+    .dp-iconbtn:hover { border-color: var(--premium); color: var(--premium); }
+
+    /* ── Stage ── */
+    .dp-stage {
+      position: relative; height: calc(100vh - 62px); width: 100%;
+      display: flex; align-items: center; justify-content: center; overflow: auto;
+      background:
+        radial-gradient(circle at 50% 40%, rgba(224,168,61,0.06), transparent 60%),
+        repeating-linear-gradient(0deg, transparent, transparent 23px, rgba(125,125,125,0.05) 24px),
+        repeating-linear-gradient(90deg, transparent, transparent 23px, rgba(125,125,125,0.05) 24px);
+    }
+    .dp-scaler { transform-origin: center center; transition: transform 0.18s ease; }
+
+    /* ── Device frame ── */
+    .dp-device { position: relative; background: #0c0d10; border-radius: 52px;
+      box-shadow: 0 30px 70px rgba(0,0,0,0.45), 0 0 0 2px rgba(255,255,255,0.04) inset;
+      padding: 14px; }
+    .dp-device.tablet { border-radius: 34px; padding: 18px; }
+    .dp-screen { position: relative; overflow: hidden; background: #fff; border-radius: 40px; }
+    .dp-device.tablet .dp-screen { border-radius: 16px; }
+    .dp-screen iframe { display: block; border: 0; width: 100%; height: 100%; background: #fff; }
+
+    /* phone notch / pill */
+    .dp-notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 46%; height: 26px; background: #0c0d10; border-bottom-left-radius: 16px;
+      border-bottom-right-radius: 16px; z-index: 3; }
+    .dp-device.tablet .dp-notch { display: none; }
+    .dp-cam { position: absolute; z-index: 4; background: #1c1e24; border-radius: 50%;
+      width: 9px; height: 9px; top: 8px; left: 50%; transform: translateX(-50%);
+      box-shadow: 0 0 0 2px rgba(255,255,255,0.05); }
+    .dp-device.tablet .dp-cam { top: 8px; left: 50%; }
+    /* home indicator */
+    .dp-home { position: absolute; bottom: 7px; left: 50%; transform: translateX(-50%);
+      width: 36%; height: 5px; background: rgba(255,255,255,0.55); border-radius: 4px; z-index: 4; }
+
+    .dp-meta { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
+      font-size: 12px; font-weight: 700; color: var(--muted); white-space: nowrap;
+      background: var(--surface); border: 1px solid var(--border); padding: 4px 12px; border-radius: 14px; }
+
+    @media (max-width: 760px) {
+      .dp-controls { gap: 10px; }
+      .dp-url { min-width: 150px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="dp-nav">
+    <div class="left">
+      <div class="dp-title">📱 Device Preview <span class="badge">Admin</span></div>
+      <a href="/admin" class="dp-back">← Admin</a>
+    </div>
+    <div class="dp-controls">
+      <div class="dp-group">
+        <span class="dp-glabel">Page</span>
+        <select class="dp-select" id="dp-page"></select>
+      </div>
+      <div class="dp-group">
+        <input class="dp-url" id="dp-url" placeholder="/custom-path" />
+        <button class="dp-iconbtn" id="dp-go" title="Load URL">↵</button>
+      </div>
+      <div class="dp-group">
+        <span class="dp-glabel">Device</span>
+        <select class="dp-select" id="dp-device"></select>
+      </div>
+      <div class="dp-group">
+        <div class="dp-seg" id="dp-orient">
+          <button data-o="portrait" class="active">Portrait</button>
+          <button data-o="landscape">Landscape</button>
+        </div>
+      </div>
+      <button class="dp-iconbtn" id="dp-rotate" title="Rotate">⟳</button>
+      <button class="dp-iconbtn" id="dp-reload" title="Reload">⟲</button>
+      <button class="dp-iconbtn" id="dp-newtab" title="Open in new tab">↗</button>
+    </div>
+  </div>
+
+  <div class="dp-stage" id="dp-stage">
+    <div class="dp-scaler" id="dp-scaler">
+      <div class="dp-device" id="dp-frame">
+        <div class="dp-notch"></div>
+        <div class="dp-cam"></div>
+        <div class="dp-screen" id="dp-screen">
+          <iframe id="dp-iframe" src="/" title="preview"></iframe>
+        </div>
+        <div class="dp-home"></div>
+      </div>
+    </div>
+    <div class="dp-meta" id="dp-meta"></div>
+  </div>
+
+  <script>
+  (function () {
+    // Keep the admin's theme choice consistent with the rest of the panel.
+    try {
+      var t = localStorage.getItem('ta_theme') || localStorage.getItem('theme');
+      if (t === 'light') document.body.classList.add('light');
+    } catch (e) {}
+
+    var DEVICES = [
+      { id: 'iphone-se',     name: 'iPhone SE',          w: 375,  h: 667,  type: 'phone'  },
+      { id: 'iphone-13',     name: 'iPhone 13 / 14',     w: 390,  h: 844,  type: 'phone'  },
+      { id: 'iphone-pmax',   name: 'iPhone 15 Pro Max',  w: 430,  h: 932,  type: 'phone'  },
+      { id: 'pixel-7',       name: 'Pixel 7',            w: 412,  h: 915,  type: 'phone'  },
+      { id: 'galaxy-s8',     name: 'Galaxy S8 (small)',  w: 360,  h: 740,  type: 'phone'  },
+      { id: 'ipad-mini',     name: 'iPad mini',          w: 768,  h: 1024, type: 'tablet' },
+      { id: 'ipad-air',      name: 'iPad Air',           w: 820,  h: 1180, type: 'tablet' },
+      { id: 'ipad-pro-11',   name: 'iPad Pro 11"',       w: 834,  h: 1194, type: 'tablet' },
+      { id: 'ipad-pro-13',   name: 'iPad Pro 12.9"',     w: 1024, h: 1366, type: 'tablet' }
+    ];
+
+    var PAGES = [
+      ['Landing (/)',            '/'],
+      ['App (/app)',             '/app'],
+      ['Pricing',                '/pricing'],
+      ['Login',                  '/login'],
+      ['Register',               '/register'],
+      ['Checkout',               '/checkout?plan=premium&cycle=monthly'],
+      ['Settings',               '/settings'],
+      ['Camos',                  '/camos'],
+      ['Store · Indicators',     '/store/indicators'],
+      ['Contact',                '/contact'],
+      ['Terms',                  '/terms'],
+      ['Privacy',                '/privacy']
+    ];
+
+    var state = { device: DEVICES[1], orient: 'portrait', url: '/' };
+
+    var $ = function (id) { return document.getElementById(id); };
+    var pageSel = $('dp-page'), devSel = $('dp-device'), urlIn = $('dp-url');
+    var frame = $('dp-frame'), screen = $('dp-screen'), iframe = $('dp-iframe');
+    var scaler = $('dp-scaler'), stage = $('dp-stage'), meta = $('dp-meta');
+
+    PAGES.forEach(function (p) {
+      var o = document.createElement('option'); o.value = p[1]; o.textContent = p[0];
+      pageSel.appendChild(o);
+    });
+    DEVICES.forEach(function (d) {
+      var o = document.createElement('option'); o.value = d.id;
+      o.textContent = d.name + '  ·  ' + d.w + '×' + d.h;
+      devSel.appendChild(o);
+    });
+    devSel.value = state.device.id;
+
+    function render() {
+      var d = state.device;
+      var landscape = state.orient === 'landscape';
+      var w = landscape ? d.h : d.w;
+      var h = landscape ? d.w : d.h;
+
+      frame.classList.toggle('tablet', d.type === 'tablet');
+      screen.style.width = w + 'px';
+      screen.style.height = h + 'px';
+
+      // Scale the whole device down so even an iPad Pro fits the stage.
+      var availW = stage.clientWidth - 60;
+      var availH = stage.clientHeight - 80;
+      // include bezel padding (~28px phone / 36px tablet) in the frame size estimate
+      var bez = d.type === 'tablet' ? 36 : 28;
+      var scale = Math.min(1, availW / (w + bez), availH / (h + bez));
+      scaler.style.transform = 'scale(' + scale + ')';
+
+      meta.textContent = d.name + ' · ' + w + '×' + h + ' · ' + Math.round(scale * 100) + '%';
+    }
+
+    function load(url) {
+      state.url = url;
+      if (iframe.getAttribute('src') !== url) iframe.setAttribute('src', url);
+      urlIn.value = url;
+      // sync the dropdown if it matches a known page
+      var match = PAGES.filter(function (p) { return p[1] === url; });
+      pageSel.value = match.length ? url : '';
+    }
+
+    pageSel.addEventListener('change', function () { if (pageSel.value) load(pageSel.value); });
+    $('dp-go').addEventListener('click', function () {
+      var v = urlIn.value.trim(); if (v) { if (v[0] !== '/') v = '/' + v; load(v); }
+    });
+    urlIn.addEventListener('keydown', function (e) { if (e.key === 'Enter') $('dp-go').click(); });
+
+    devSel.addEventListener('change', function () {
+      state.device = DEVICES.filter(function (d) { return d.id === devSel.value; })[0];
+      render();
+    });
+
+    $('dp-orient').addEventListener('click', function (e) {
+      var b = e.target.closest('button'); if (!b) return;
+      state.orient = b.getAttribute('data-o');
+      [].forEach.call(this.children, function (c) { c.classList.toggle('active', c === b); });
+      render();
+    });
+    $('dp-rotate').addEventListener('click', function () {
+      state.orient = state.orient === 'portrait' ? 'landscape' : 'portrait';
+      [].forEach.call($('dp-orient').children, function (c) {
+        c.classList.toggle('active', c.getAttribute('data-o') === state.orient);
+      });
+      render();
+    });
+
+    $('dp-reload').addEventListener('click', function () {
+      try { iframe.contentWindow.location.reload(); }
+      catch (e) { iframe.src = iframe.src; }
+    });
+    $('dp-newtab').addEventListener('click', function () { window.open(state.url, '_blank'); });
+
+    window.addEventListener('resize', render);
+    load('/');
+    render();
+  })();
+  </script>
+</body>
+</html>

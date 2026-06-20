@@ -2157,6 +2157,16 @@ def admin():
     )
 
 
+@app.route('/admin/device-preview')
+@login_required
+def admin_device_preview():
+    """Admin-only responsive preview: renders the live site inside phone and
+    tablet frames so we can catch mobile/iPad layout issues from a desktop."""
+    if not current_user.is_admin:
+        return redirect(url_for('app_view'))
+    return render_template('device_preview.html')
+
+
 def _build_revenue_context():
     """Assemble all the financial data the admin dashboard renders:
     pending orders, this-month revenue per plan, promo codes, expenses, P&L."""
