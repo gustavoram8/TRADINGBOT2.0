@@ -22,6 +22,81 @@
 
 ---
 
+> **💡 EN STAND-BY (2026-06-21) — IDEA DE APARTADO NUEVO: "REPLAY LAB" (reconstrucción histórica de trades)**
+> **ESENCIAL si algún día se quiere SUMAR un apartado nuevo.** Esta es la mejor idea que salió tras
+> descartar MUCHAS (indicadores TradingView, journal, drills, mentor IA, Oracle/Co-Pilot/Hive, etc.).
+> Cumple TODOS los requisitos del usuario: NO requiere entrenar IA por metodología (es DETERMINISTA),
+> es legal-safe (educativo), distinto de todo lo existente, y de economía excelente.
+>
+> **NOMBRES tentativos:** Replay Lab · Trade Replay Engine · Backtest Lab (nombre irrelevante por ahora).
+>
+> **QUÉ ES:** el trader escribe SOLO los datos básicos de un trade (activo, fecha, hora de entrada,
+> entry, exit, SL, TP, long/short, notas opcionales, y **cuánto ganó/perdió lo escribe él**) y la
+> plataforma **reconstruye el gráfico REAL de ese momento histórico** (data de mercado grabada, NO
+> inventada), dibuja entry/exit/SL/TP encima, y permite **cambiar de timeframe** (1m/5m/15m/1H…) y
+> revisar el trade meses/años después **sin guardar screenshots a mano**.
+>
+> **QUÉ NO ES (límites claros del usuario):** NO datos en tiempo real · NO paper trading · NO ejecución
+> de órdenes · NO copy trading · NO señales · NO asesoría financiera · NO es un journal tradicional.
+> Solo **revisión histórica educativa.**
+>
+> **ARQUITECTURA GANADORA (clave de la economía):** NO llamar a una API por cada request. Se
+> **pre-descarga y ALMACENA** la data histórica (velas 1-min) de los instrumentos, se **resamplea** a
+> TFs mayores al vuelo, y cada reconstrucción es **una query a la DB** → costo marginal por usuario ≈ 0.
+> - Almacén: **TimescaleDB** (extensión de PostgreSQL que ya usa producción) o tablas particionadas.
+> - Render: **Lightweight Charts** (TradingView, MIT/Apache-2.0, GRATIS) — **YA está vendorizado** en
+>   `index.html` (se trajo para el Hardcore Quiz). Es el motor correcto; le das OHLCV y dibuja. La
+>   Charting Library avanzada NO se necesita (cuesta ~$1.500-3.000/mes white-label).
+>
+> **DATOS — costo y licencia (EL punto crítico, depende del activo):**
+> | Activo | Fuente | Conseguir data | Licencia para MOSTRARLA |
+> |---|---|---|---|
+> | **Forex** (EURUSD…) | **Dukascopy** (libre, vía `dukascopy-node`) | **GRATIS** | Libre/ligera ✅ |
+> | **Gold SPOT (XAUUSD)** | Dukascopy | **GRATIS** | Libre/ligera ✅ (usar SPOT, no el futuro) |
+> | **NQ / MES (futuros CME)** | FirstRate (pago único ~$300-400, incl. contratos individuales) o Databento (PAYG, $125 créditos gratis) | **PAGO** | ⚠️ **Licencia CME = comodín** |
+> - **El lío del $30k/año y los fees de CME es EXCLUSIVO de productos CME** (NQ, MES, Gold-FUTUROS COMEX).
+>   **Forex y Gold-spot NO pasan por ahí** (mercado OTC descentralizado). Referencias CME: delayed ~$304/mes;
+>   redistribución histórica pesada hasta ~$30.000/año (distribuidores grandes). El número exacto para
+>   display histórico/educativo **CME no lo publica → hay que cotizarlo en marketdata@cmegroup.com.**
+> - **Rollover de futuros (solo NQ/MES):** "NQ" son contratos trimestrales distintos (NQH5/NQM5/NQU5…)
+>   que expiran (3er viernes mar/jun/sep/dic) y cotizan a precios distintos. Hay que cargar **el contrato
+>   correcto de esa fecha** para que los precios cuadren con la entrada del trader. **Forex/Gold-spot NO
+>   tienen esto** (son continuos). FirstRate ya incluye contratos individuales → resuelto.
+>
+> **COSTOS estimados:** MVP Forex+Gold-spot ≈ **$0** (data gratis + Lightweight Charts gratis + VPS actual).
+> 100→10.000 usuarios ≈ ~$20 a ~$500/mes (solo infra/storage; la data es pre-comprada, NO escala con
+> usuarios). Sumar NQ/MES = ~$300-400 una vez + licencia CME por cotizar.
+>
+> **COMPLEJIDAD / TAMAÑO REAL (importante — el usuario temía "cientos de miles de líneas"):**
+> Es **~1.000-1.500 líneas de código nuevo**, NO cientos de miles (confundía volumen de DATOS —millones
+> de filas— con volumen de CÓDIGO). Desglose: descarga ~100-150 (usa `dukascopy-node` ya hecho) ·
+> tabla+inserción ~100-200 · endpoint+resampleo ~200-300 · página replay (Lightweight Charts) ~500-900.
+> Dificultad: **MVP 4/10 · comercial 6/10 · avanzado 7-8/10**. El tiempo NO se va en codear (eso es rápido)
+> sino en: (1) descargar/limpiar data (timezones GMT, huecos, fines de semana), (2) que la hora de entrada
+> caiga en la vela correcta, y (3) **el loop de iteración con Claude porque NO ve el render** (mismo riesgo
+> que hundió los indicadores — exige feedback PRECISO: error exacto + screenshot).
+>
+> **TIMELINE honesto:** MVP (1-2 activos, replay + marcadores + cambio de TF) = **días a ~1 semana** de
+> ida y vuelta. Pulido/comercial = **~2 semanas**. NO 3+ semanas salvo snags.
+>
+> **PLAN POR FASES (recomendado para no arriesgar):**
+> - **Fase 1 = Forex + Gold-spot** (data GRATIS de Dukascopy, CERO licencia) → construir y validar TODO
+>   el motor de replay sin gastar ni arriesgar. Cubre 2 de los 4 mercados prioritarios.
+> - **Fase 2 = NQ/MES** SOLO después de: (a) cotizar la licencia CME por escrito y (b) tener demanda
+>   probada con Forex/Gold. Aquí entra el manejo de rollover de contratos.
+> - **De-risk previo:** hacer un **"proof" mínimo de 1 sesión** (EURUSD, 1 trade, 1 TF, velas reales +
+>   los 4 marcadores) para que el usuario lo VEA con sus ojos antes de comprometer 1-2 semanas.
+>
+> **VALUE-ADDS que lo hacen premium (vs. carpeta de screenshots / journal):** cambio de TF · "play
+> forward" (ver cómo se resolvió) · dibujar/anotar sobre el chart · tags + librería filtrable · overlays
+> de Kill Zones/sesiones (sinergia con lo que ya existe) · botón **"enviar al Analyzer"** (sinergia con
+> la IA) · exportar el chart a imagen/PDF (reusa el generador de PDFs).
+>
+> **MONETIZACIÓN (modelo del usuario):** consumible con cupo → Premium incluye X reconstrucciones/slots;
+> más uso o más instrumentos = pagar; Free/Standard pueden comprar acceso. Costo marginal ≈ 0 → margen altísimo.
+
+---
+
 > **🟢 EN CURSO (2026-06-17) — MARKET TIMING: KILL ZONES "TERMINAL" + CALENDARIO ECONÓMICO**
 > **(PENDIENTE: que el usuario revise visualmente en el VPS y confirme si le gusta el estilo A)**
 >
