@@ -856,6 +856,19 @@
 
 ### 🔴 Crítico — antes del lanzamiento
 
+- [ ] **💸 GASTO URGENTE — Registrar el COPYRIGHT en copyright.gov (~$135–260 una vez):**
+      Es el ÚNICO paso que convierte la evidencia (git + fechas) en el **derecho real a
+      demandar** por plagio de contenido. En EE.UU. **NO se puede demandar por copyright
+      sin registrarlo antes** (Corte Suprema, *Fourth Estate* 2019). **Registrar ANTES de
+      publicar o dentro de los 3 meses** del lanzamiento → desbloquea daños estatutarios +
+      honorarios de abogado (lo que hace la demanda rentable). Registrar ~3-4 obras:
+      (1) código fuente —con prompts/secretos tachados en el depósito—, (2) contenido+diseño
+      del sitio, (3) PDFs/guías, (4) gráficos (opcional; el logo va por MARCA). A nombre de
+      **la empresa** (no personal). **Guía completa paso a paso:** `COPYRIGHT_REGISTRATION_GUIDE.md`.
+      OJO: esto es SEPARADO del registro de MARCA (nombre/logo, USPTO) que espera a decidir el nombre.
+      Ya hecho dentro del sitio: cláusula "No Competing or Derivative Products" en T&C (Sección 8)
+      + aviso `© 2026 ... All rights reserved` en todos los footers (commit `c0e1fb6`).
+
 - [ ] **Pagos — plan de monetización decidido:**
       - **Fase 1 (ahora):** cobrar en USDT via Binance manualmente mientras se valida que la gente paga.
       - **Fase 2 (con 10–20 clientes pagando):** constituir LLC en EE.UU. (Wyoming/Delaware via Stripe Atlas,
