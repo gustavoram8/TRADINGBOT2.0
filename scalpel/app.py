@@ -138,6 +138,13 @@ SCOUT_ENABLED = os.environ.get("SCOUT_ENABLED", "0") in ("1", "true", "True")
 # the draft is iterated. Set PREFLIGHT_ENABLED=0 to hide the tab and its APIs.
 PREFLIGHT_ENABLED = os.environ.get("PREFLIGHT_ENABLED", "1") in ("1", "true", "True")
 
+# Indicators store/library — fully built but HIDDEN until a viable delivery model
+# exists (TradingView invite-only needs a Premium author + Pro customers, which
+# kills it). Flip to True / set INDICATORS_ENABLED=1 to bring back the in-app tab,
+# the /store/indicators route, the products-dropdown item and every pricing/landing
+# mention instantly. Nothing was deleted.
+INDICATORS_ENABLED = os.environ.get("INDICATORS_ENABLED", "0") in ("1", "true", "True")
+
 # Bump this date every time the Terms & Conditions are materially updated.
 # It is stored on each user record at the moment of acceptance so there is
 # a permanent audit trail of which version they agreed to.
@@ -185,6 +192,7 @@ AI_PRICE_OUT = AI_PRICE_OUT_PER_1M / 1_000_000
 def inject_feature_flags():
     return {
         'scout_enabled': SCOUT_ENABLED,
+        'indicators_enabled': INDICATORS_ENABLED,
         'preflight_enabled': PREFLIGHT_ENABLED,
         'has_beta_access': has_beta_access(),
         'beta_min_rank': BETA_MIN_RANK,
@@ -1544,6 +1552,8 @@ def pricing():
 
 @app.route('/store/indicators')
 def store_indicators():
+    if not INDICATORS_ENABLED:
+        abort(404)
     return render_template('store_indicators.html')
 
 

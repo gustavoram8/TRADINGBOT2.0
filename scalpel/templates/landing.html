@@ -898,7 +898,7 @@
         <div class="stat-sub">ICT · SMC · Wyckoff · Price Action</div>
       </div>
       <div class="stat-col rv d1">
-        <div class="stat-num">7</div>
+        <div class="stat-num">{% if indicators_enabled %}7{% else %}6{% endif %}</div>
         <div class="stat-label" data-t="stat_tools">Tools</div>
         <div class="stat-sub">Analysis · Education · Community</div>
       </div>
@@ -1019,7 +1019,7 @@
   <section class="section">
     <div class="tc">
       <div class="eyebrow rv" data-t="brow_toolkit">YOUR TOOLKIT</div>
-      <h2 class="h2 rv d1" data-t="s4_title">Seven instruments. One platform.</h2>
+      <h2 class="h2 rv d1" data-t="s4_title">{% if indicators_enabled %}Seven{% else %}Six{% endif %} instruments. One platform.</h2>
       <p class="lead rv d2" data-t="s4_body">Every tool was built around a specific gap in how traders learn, review, and improve. Nothing generic. Nothing filler.</p>
     </div>
     <div class="tools-grid">
@@ -1089,6 +1089,7 @@
         <p data-t="tc5_b">A digital canvas for pre-session bias mapping, key level marking, and trade idea sketching — your structured ritual before every open.</p>
       </div>
 
+      {% if indicators_enabled %}
       <!-- Indicator Library -->
       <div class="tool-card rv d5" style="--tc-accent:#e05a1a">
         <span class="plan-chip pc-prem" data-t="chip_prem">Premium</span>
@@ -1100,6 +1101,7 @@
         <h3 data-t="tc6_t">Indicator Library</h3>
         <p data-t="tc6_b">Curated custom indicators for TradingView, built for multiple trading methodologies — no repaint, no lag, plug in from day one.</p>
       </div>
+      {% endif %}
 
       <!-- Pre-Flight -->
       <div class="tool-card rv d6" style="--tc-accent:#2563eb">
@@ -1400,10 +1402,12 @@
             <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
             <span data-t="pp4">Everything in Standard</span>
           </li>
+          {% if indicators_enabled %}
           <li>
             <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
             <span data-t="pp5">Indicators library</span>
           </li>
+          {% endif %}
         </ul>
         {% if current_user.is_authenticated %}
           {% if current_user.plan == 'premium' %}
@@ -1491,12 +1495,14 @@
               <td class="val"><span class="no">—</span></td>
               <td class="val col-premium"><span class="yes">✓</span></td>
             </tr>
+            {% if indicators_enabled %}
             <tr>
               <td class="feat"><span class="feat-lbl" data-t="cmp_f_indic">Indicators library</span></td>
               <td class="val"><span class="no">—</span></td>
               <td class="val"><span class="no">—</span></td>
               <td class="val col-premium"><span class="soon-tag" data-t="cmp_soon">soon</span></td>
             </tr>
+            {% endif %}
             {% if scout_enabled %}
             <tr>
               <td class="feat"><span class="feat-lbl" data-t="cmp_f_scout">Prop Firm Scout</span><span class="feat-note" data-t="cmp_f_scout_n">compare 25+ firms + AI advisor</span></td>
@@ -1845,7 +1851,7 @@
         
         s3_title:'Upload a screenshot. Get a diagnosis.',
         s3_body:'The AI reviews your chart like an experienced instructor would — identifying structure, liquidity, session timing, and methodology alignment. Written in your language, grounded in institutional concepts.',
-        s4_title:'Seven instruments. One platform.',
+        s4_title:'{% if indicators_enabled %}Seven{% else %}Six{% endif %} instruments. One platform.',
         s4_body:'Every tool was built around a specific gap in how traders learn, review, and improve. Nothing generic. Nothing filler.',
         chip_all:'All plans', chip_prem:'Premium',
         tc1_t:'AI Screenshot Analysis', tc1_b:'Upload any chart. The AI identifies structure, liquidity, and methodology — giving you a detailed text diagnosis in your language.',
@@ -1930,7 +1936,7 @@
         
         s3_title:'Sube una captura. Obtén un diagnóstico.',
         s3_body:'La IA revisa tu gráfico como lo haría un instructor experimentado — identificando estructura, liquidez, sesión y alineación metodológica. Escrito en tu idioma, basado en conceptos institucionales.',
-        s4_title:'Siete instrumentos. Una plataforma.',
+        s4_title:'{% if indicators_enabled %}Siete{% else %}Seis{% endif %} instrumentos. Una plataforma.',
         s4_body:'Cada herramienta fue construida alrededor de una brecha específica en cómo los traders aprenden, revisan y mejoran.',
         chip_all:'Todos los planes', chip_prem:'Premium',
         tc1_t:'Análisis de capturas por IA', tc1_b:'Sube cualquier gráfico. La IA identifica estructura, liquidez y metodología — entregándote un diagnóstico escrito en tu idioma.',
@@ -2015,7 +2021,7 @@
         
         s3_title:'Téléversez une capture. Obtenez un diagnostic.',
         s3_body:'L\'IA examine votre graphique comme un instructeur expérimenté — identifiant structure, liquidité, timing de session et alignement méthodologique. Rédigé dans votre langue.',
-        s4_title:'Sept instruments. Une plateforme.',
+        s4_title:'{% if indicators_enabled %}Sept{% else %}Six{% endif %} instruments. Une plateforme.',
         s4_body:'Chaque outil a été conçu autour d\'une lacune spécifique dans la façon dont les traders apprennent, révisent et progressent.',
         chip_all:'Tous les plans', chip_prem:'Premium',
         tc1_t:'Analyse IA de captures', tc1_b:'Téléversez n\'importe quel graphique. L\'IA identifie structure, liquidité et méthodologie — diagnostic écrit dans votre langue.',
@@ -2100,7 +2106,7 @@
         
         s3_title:'Envie uma captura. Receba um diagnóstico.',
         s3_body:'A IA revisa seu gráfico como um instrutor experiente — identificando estrutura, liquidez, timing de sessão e alinhamento metodológico. Escrito no seu idioma.',
-        s4_title:'Sete instrumentos. Uma plataforma.',
+        s4_title:'{% if indicators_enabled %}Sete{% else %}Seis{% endif %} instrumentos. Uma plataforma.',
         s4_body:'Cada ferramenta foi construída em torno de uma lacuna específica em como traders aprendem, revisam e melhoram.',
         chip_all:'Todos os planos', chip_prem:'Premium',
         tc1_t:'Análise de capturas por IA', tc1_b:'Envie qualquer gráfico. A IA identifica estrutura, liquidez e metodologia — entregando um diagnóstico escrito no seu idioma.',
