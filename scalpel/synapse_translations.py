@@ -373,7 +373,7 @@ _LEGAL = {
     },
     'es': {
         'id_title': 'Identificación del documento',
-        'id_licensed': 'Licenciado a',
+        'id_licensed': 'Con licencia para',
         'id_order': 'Referencia de orden',
         'id_date': 'Fecha de emisión',
         'id_publisher': 'Editor',

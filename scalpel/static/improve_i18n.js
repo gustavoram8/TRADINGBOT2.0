@@ -73,7 +73,7 @@
       'p3.cta': 'Muéstrame',
       'p4.eyebrow': 'Una forma distinta de aprender',
       'p4.title': 'Dos formas de <span class="accent">ir más profundo.</span>',
-      'p4.lead': 'Sin volcados de teoría. Sin ruido. Solo una mirada más cercana a cómo piensa realmente alguien que vive en los mercados — y la opción de traer tu propio pensamiento a la sala.',
+      'p4.lead': 'Sin atiborrarte de teoría. Sin ruido. Solo una mirada más cercana a cómo piensa de verdad alguien que vive en los mercados — y la opción de traer tu propio criterio a la mesa.',
       'p4.way1label': 'A tu propio ritmo',
       'p4.way1title': 'Análisis grabados',
       'p4.way1body': 'Una biblioteca en crecimiento que desarma el análisis real de principio a fin — la lectura, el razonamiento, los errores, el porqué. Mira, pausa y vuelve cuando haga clic.',
