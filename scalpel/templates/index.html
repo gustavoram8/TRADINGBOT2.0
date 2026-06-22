@@ -4518,12 +4518,12 @@
         transition:transform .3s ease, box-shadow .3s ease; }
       /* glossy light band sweeping across the glass — translucent so the text underneath stays readable */
       .door::before{ content:''; position:absolute; top:-12%; bottom:-12%; left:-55%; width:48%; z-index:1; pointer-events:none;
-        transform:skewX(-14deg);
-        background:linear-gradient(100deg, transparent 0%, rgba(245,196,99,.08) 52%, rgba(255,247,222,.55) 78%, #fff9ec 86%, rgba(255,247,222,.35) 90%, transparent 100%);
+        transform:skewX(-16deg);
+        background:linear-gradient(100deg, transparent 0%, rgba(245,196,99,.10) 50%, rgba(245,196,99,.5) 76%, #f5c463 86%, rgba(248,219,144,.4) 90%, transparent 100%);
         opacity:0; animation:door-scan 60s ease-in-out infinite; will-change:left,opacity; }
-      /* edge bloom: bright at the frame, clear in the middle where the words live */
+      /* edge bloom: soft gold at the frame, clear in the middle where the words live */
       .door::after{ content:''; position:absolute; inset:0; z-index:1; opacity:0; pointer-events:none;
-        background:radial-gradient(ellipse 100% 100% at 50% 50%, transparent 40%, rgba(245,196,99,.34) 73%, rgba(255,245,220,.6) 100%);
+        background:radial-gradient(ellipse 100% 100% at 50% 50%, transparent 40%, rgba(224,168,61,.3) 73%, rgba(245,196,99,.55) 100%);
         animation:door-bloom 60s ease-in-out infinite; }
       .door:hover{ transform:translateY(-3px);
         box-shadow:0 30px 76px rgba(0,0,0,.6), 0 0 0 1px rgba(224,168,61,.18); }
