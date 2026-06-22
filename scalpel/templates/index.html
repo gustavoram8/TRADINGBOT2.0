@@ -654,7 +654,21 @@
     .ec-section{margin-bottom:24px}
     .ec-header{display:flex;align-items:center;gap:14px;margin-bottom:6px}
     .ec-powered{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-left:auto;letter-spacing:.06em}
-    .ec-hint{font-size:12px;color:var(--muted);margin:0 0 14px;line-height:1.45}
+    .ec-hint{font-size:12px;color:var(--muted);margin:0 0 12px;line-height:1.45}
+    /* Instrument filter chips */
+    .ec-filter{display:flex;align-items:center;gap:10px;margin:0 0 14px;flex-wrap:wrap}
+    .ec-filter-lab{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.16em;
+      text-transform:uppercase;color:var(--muted);flex-shrink:0}
+    .ec-chips{display:flex;gap:7px;flex-wrap:wrap}
+    .ec-chip{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.03em;
+      color:var(--muted);background:rgba(127,127,127,.06);border:1px solid var(--border);
+      padding:5px 11px;border-radius:8px;cursor:pointer;transition:color .18s,background .18s,border-color .18s;white-space:nowrap}
+    .ec-chip:hover{color:var(--text);border-color:var(--border2)}
+    .ec-chip.active{color:#1a1205;background:linear-gradient(180deg,#f5c463,#e0a83d);border-color:transparent;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 2px 8px rgba(224,168,61,.25)}
+    body.light .ec-chip.active{color:#1c1407}
+    .ec-chip-sub{opacity:.62;font-weight:500;margin-left:5px}
+    .ec-chip.active .ec-chip-sub{opacity:.78}
     .ec-widget-wrap{border-radius:12px;overflow:hidden;border:1px solid var(--border);min-height:600px;
       background:var(--surface);position:relative}
     .ec-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:600px}
@@ -4956,6 +4970,10 @@
         <span class="ec-powered" data-i18n="ec.powered">Powered by TradingView</span>
       </div>
       <p class="ec-hint" data-i18n="ec.hint">High &amp; medium impact only. Use the tabs inside to browse today, this week and next week.</p>
+      <div class="ec-filter" id="ec-filter" role="group" aria-label="Filter economic events by instrument">
+        <span class="ec-filter-lab" data-i18n="ec.filter">Relevant to</span>
+        <div class="ec-chips" id="ec-chips"><!-- instrument chips injected by JS --></div>
+      </div>
       <div class="ec-widget-wrap" id="ec-widget-wrap">
         <!-- TradingView widget injected on scroll (IntersectionObserver) -->
         <div class="ec-placeholder" id="ec-placeholder">
@@ -7952,7 +7970,8 @@
       'ec.powered': 'Powered by TradingView',
       'ec.hint': 'High & medium impact only. Use the tabs inside to browse today, this week and next week.',
       'ec.loading': 'Loading calendar…',
-      'ec.disclaimer': 'Educational reference only — not financial advice. This calendar is provided by TradingView, a third party; its event times and data may be delayed, inaccurate, rescheduled or unavailable, and Trader Accelerator is not responsible for any third-party errors or outages. Always confirm against official sources before trading.',
+      'ec.filter': 'Relevant to',
+      'ec.disclaimer': 'Educational reference only — not financial advice. The instrument filter simply indicates which economies are generally relevant to a given market for study — it is not a trade signal or recommendation. This calendar is provided by TradingView, a third party; its event times and data may be delayed, inaccurate, rescheduled or unavailable, and Trader Accelerator is not responsible for any third-party errors or outages. Always confirm against official sources before trading.',
     },
     es: {
       'mt.divider': 'Horarios de Mercado',
@@ -7981,7 +8000,8 @@
       'ec.powered': 'Desarrollado por TradingView',
       'ec.hint': 'Solo alto y medio impacto. Usa las pestañas internas para ver hoy, esta semana y la próxima.',
       'ec.loading': 'Cargando calendario…',
-      'ec.disclaimer': 'Solo referencia educativa — no es asesoría financiera. Este calendario lo provee TradingView, un tercero; sus horarios y datos pueden estar retrasados, ser inexactos, reprogramarse o no estar disponibles, y Trader Accelerator no se hace responsable de errores o caídas de terceros. Confirma siempre en fuentes oficiales antes de operar.',
+      'ec.filter': 'Relevante para',
+      'ec.disclaimer': 'Solo referencia educativa — no es asesoría financiera. El filtro por instrumento solo indica qué economías son generalmente relevantes para un mercado, con fines de estudio — no es una señal ni una recomendación para operar. Este calendario lo provee TradingView, un tercero; sus horarios y datos pueden estar retrasados, ser inexactos, reprogramarse o no estar disponibles, y Trader Accelerator no se hace responsable de errores o caídas de terceros. Confirma siempre en fuentes oficiales antes de operar.',
     },
     fr: {
       'mt.divider': 'Horaires de Marché',
@@ -8010,7 +8030,8 @@
       'ec.powered': 'Propulsé par TradingView',
       'ec.hint': 'Impact élevé et moyen uniquement. Utilisez les onglets internes pour voir aujourd\'hui, cette semaine et la suivante.',
       'ec.loading': 'Chargement du calendrier…',
-      'ec.disclaimer': 'Référence éducative uniquement — pas un conseil financier. Ce calendrier est fourni par TradingView, un tiers ; ses horaires et données peuvent être retardés, inexacts, reprogrammés ou indisponibles, et Trader Accelerator n\'est pas responsable des erreurs ou pannes de tiers. Vérifiez toujours auprès de sources officielles avant de trader.',
+      'ec.filter': 'Pertinent pour',
+      'ec.disclaimer': 'Référence éducative uniquement — pas un conseil financier. Le filtre par instrument indique simplement quelles économies sont généralement pertinentes pour un marché, à des fins d\'étude — ce n\'est pas un signal ni une recommandation de trading. Ce calendrier est fourni par TradingView, un tiers ; ses horaires et données peuvent être retardés, inexacts, reprogrammés ou indisponibles, et Trader Accelerator n\'est pas responsable des erreurs ou pannes de tiers. Vérifiez toujours auprès de sources officielles avant de trader.',
     },
     pt: {
       'mt.divider': 'Horários de Mercado',
@@ -8039,7 +8060,8 @@
       'ec.powered': 'Desenvolvido por TradingView',
       'ec.hint': 'Apenas alto e médio impacto. Use as abas internas para ver hoje, esta semana e a próxima.',
       'ec.loading': 'Carregando calendário…',
-      'ec.disclaimer': 'Apenas referência educativa — não é aconselhamento financeiro. Este calendário é fornecido pela TradingView, um terceiro; os seus horários e dados podem estar atrasados, incorretos, ser reagendados ou indisponíveis, e a Trader Accelerator não se responsabiliza por erros ou quedas de terceiros. Confirme sempre em fontes oficiais antes de operar.',
+      'ec.filter': 'Relevante para',
+      'ec.disclaimer': 'Apenas referência educativa — não é aconselhamento financeiro. O filtro por instrumento apenas indica quais economias são geralmente relevantes para um mercado, para fins de estudo — não é um sinal nem uma recomendação para operar. Este calendário é fornecido pela TradingView, um terceiro; os seus horários e dados podem estar atrasados, incorretos, ser reagendados ou indisponíveis, e a Trader Accelerator não se responsabiliza por erros ou quedas de terceiros. Confirme sempre em fontes oficiais antes de operar.',
     }
   };
   Object.keys(MT_I18N).forEach(l => { if (I18N[l]) Object.assign(I18N[l], MT_I18N[l]); });
@@ -22713,6 +22735,50 @@
     // ── Economic Calendar — TradingView widget (lazy load on scroll) ──
     var ecWrap = document.getElementById('ec-widget-wrap');
     var ecLoaded = false;
+
+    // Instrument → relevant economies. Educational mapping only (which economies
+    // generally move a given market); NOT a trade signal or recommendation.
+    var EC_INSTRUMENTS = [
+      {id:'nq',     lab:'NQ',      sub:'Nasdaq',  cf:'us'},
+      {id:'es',     lab:'ES/MES',  sub:'S&P 500', cf:'us'},
+      {id:'ym',     lab:'YM',      sub:'Dow',     cf:'us'},
+      {id:'xau',    lab:'XAU/USD', sub:'Gold',    cf:'us'},
+      {id:'eurusd', lab:'EUR/USD', sub:'',        cf:'us,eu'},
+      {id:'gbpusd', lab:'GBP/USD', sub:'',        cf:'us,gb'},
+      {id:'usdjpy', lab:'USD/JPY', sub:'',        cf:'us,jp'},
+      {id:'audusd', lab:'AUD/USD', sub:'',        cf:'us,au'},
+      {id:'usdcad', lab:'USD/CAD', sub:'',        cf:'us,ca'},
+      {id:'usdchf', lab:'USD/CHF', sub:'',        cf:'us,ch'},
+      {id:'all',    lab:'All',     sub:'',        cf:'us,eu,gb,jp,au,ca,ch,cn,nz'}
+    ];
+    var ecCountryFilter = 'us';
+    (function(){
+      var chipsWrap = document.getElementById('ec-chips');
+      if (!chipsWrap) return;
+      var saved = null;
+      try { saved = localStorage.getItem('ta_ec_instrument'); } catch(e){}
+      var initial = null;
+      for (var i=0;i<EC_INSTRUMENTS.length;i++){ if (EC_INSTRUMENTS[i].id === saved){ initial = EC_INSTRUMENTS[i]; break; } }
+      if (!initial) initial = EC_INSTRUMENTS[0];
+      ecCountryFilter = initial.cf;
+      EC_INSTRUMENTS.forEach(function(inst){
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'ec-chip' + (inst.id === initial.id ? ' active' : '');
+        b.dataset.id = inst.id;
+        b.innerHTML = inst.lab + (inst.sub ? '<span class="ec-chip-sub">'+inst.sub+'</span>' : '');
+        b.addEventListener('click', function(){
+          if (b.classList.contains('active')) return;
+          ecCountryFilter = inst.cf;
+          try { localStorage.setItem('ta_ec_instrument', inst.id); } catch(e){}
+          chipsWrap.querySelectorAll('.ec-chip').forEach(function(c){ c.classList.remove('active'); });
+          b.classList.add('active');
+          if (ecLoaded) renderEcWidget();
+        });
+        chipsWrap.appendChild(b);
+      });
+    })();
+
     function renderEcWidget(){
       if (!ecWrap) return;
       var theme = document.body.classList.contains('light') ? 'light' : 'dark';
@@ -22729,7 +22795,7 @@
         "height": "600",
         "locale": currentLang === 'pt' ? 'br' : (currentLang || 'en'),
         "importanceFilter": "0,1",
-        "countryFilter": "us"
+        "countryFilter": ecCountryFilter
       });
       ecWrap.querySelector('.tradingview-widget-container').appendChild(s);
     }
