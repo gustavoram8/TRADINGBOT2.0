@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Find New Ways to Improve</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0a0b10; --bg2:#0d0f16;
+      --ink:#e7e9f2; --muted:#9298ad; --faint:#5b6178;
+      --gold:#e0a83d; --gold-bright:#f5c463; --gold-deep:#b8860b;
+      --line:rgba(255,255,255,.07);
+    }
+    html{scroll-behavior:smooth}
+    body{
+      background:var(--bg); color:var(--ink);
+      font-family:'Inter',sans-serif; line-height:1.6;
+      min-height:100vh; min-height:100dvh; overflow-x:hidden;
+      -webkit-font-smoothing:antialiased;
+      display:flex; flex-direction:column;
+    }
+
+    /* ── Ambient backdrop ── */
+    .amb{position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden}
+    .amb::before{
+      content:''; position:absolute; left:50%; top:18%; width:120vw; height:120vw;
+      max-width:1100px; max-height:1100px; transform:translate(-50%,-50%);
+      background:radial-gradient(circle, rgba(224,168,61,.16), rgba(224,168,61,.05) 38%, transparent 64%);
+      animation:glow 11s ease-in-out infinite;
+    }
+    .amb::after{
+      content:''; position:absolute; inset:0;
+      background:
+        repeating-linear-gradient(0deg, transparent, transparent 38px, rgba(255,255,255,.018) 39px),
+        repeating-linear-gradient(90deg, transparent, transparent 38px, rgba(255,255,255,.018) 39px);
+      mask-image:radial-gradient(circle at 50% 30%, #000 0%, transparent 70%);
+      -webkit-mask-image:radial-gradient(circle at 50% 30%, #000 0%, transparent 70%);
+    }
+    @keyframes glow{0%,100%{opacity:.85;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}}
+
+    /* ── Top bar ── */
+    .top{
+      position:relative; z-index:3; display:flex; align-items:center; justify-content:space-between;
+      padding:20px 28px;
+    }
+    .top .brand{display:inline-flex; align-items:center; gap:9px; text-decoration:none; opacity:.9}
+    .top .brand img{height:30px; width:auto; filter:invert(1); mix-blend-mode:lighten; opacity:.85}
+    .top .brand span{font-size:12px; font-weight:700; letter-spacing:.16em; color:var(--muted); text-transform:uppercase}
+    .top .close{
+      font-size:13px; font-weight:600; color:var(--muted); text-decoration:none;
+      border:1px solid var(--line); padding:7px 15px; border-radius:20px; transition:all .18s;
+    }
+    .top .close:hover{color:var(--ink); border-color:rgba(224,168,61,.5)}
+
+    /* ── Hero ── */
+    .stage{
+      position:relative; z-index:2; flex:1;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      text-align:center; padding:24px 22px 40px;
+    }
+    .eyebrow{
+      font-size:12px; font-weight:700; letter-spacing:.34em; text-transform:uppercase;
+      color:var(--gold); opacity:0; animation:rise .8s ease .15s forwards;
+    }
+    .eyebrow .dot{display:inline-block; width:5px; height:5px; border-radius:50%; background:var(--gold); margin:0 10px 2px; vertical-align:middle}
+
+    h1{
+      font-family:'Fraunces',Georgia,serif; font-weight:500;
+      font-size:clamp(40px, 8vw, 78px); line-height:1.04; letter-spacing:-.01em;
+      margin:22px 0 0; max-width:14ch;
+      background:linear-gradient(180deg, #fff 0%, #e7e9f2 55%, #b9bdce 100%);
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+      opacity:0; animation:rise .9s ease .3s forwards;
+    }
+    h1 .accent{
+      font-style:italic;
+      background:linear-gradient(180deg, var(--gold-bright), var(--gold) 60%, var(--gold-deep));
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+
+    .sub{
+      margin:26px auto 0; max-width:46ch; font-size:clamp(15px,2.4vw,18px);
+      color:var(--muted); line-height:1.7;
+      opacity:0; animation:rise .9s ease .5s forwards;
+    }
+
+    .cta{
+      margin-top:40px; display:inline-flex; align-items:center; gap:11px;
+      font-size:15px; font-weight:600; color:#1a1205; text-decoration:none;
+      background:linear-gradient(180deg, var(--gold-bright), var(--gold));
+      padding:15px 30px; border-radius:30px;
+      box-shadow:0 10px 30px rgba(224,168,61,.22), inset 0 1px 0 rgba(255,255,255,.4);
+      opacity:0; animation:rise .9s ease .7s forwards; transition:transform .18s, box-shadow .18s;
+    }
+    .cta:hover{transform:translateY(-2px); box-shadow:0 14px 38px rgba(224,168,61,.32), inset 0 1px 0 rgba(255,255,255,.4)}
+    .cta svg{width:17px; height:17px; transition:transform .2s}
+    .cta:hover svg{transform:translateX(4px)}
+
+    .reassure{
+      margin-top:18px; font-size:12.5px; color:var(--faint);
+      opacity:0; animation:rise .9s ease .85s forwards;
+    }
+
+    /* ── Footer disclaimer ── */
+    .legal{
+      position:relative; z-index:2; text-align:center; padding:18px 22px 26px;
+      font-size:11px; line-height:1.6; color:var(--faint); max-width:760px; margin:0 auto;
+    }
+
+    @keyframes rise{from{opacity:0; transform:translateY(14px)}to{opacity:1; transform:translateY(0)}}
+
+    @media (max-width:560px){
+      .top{padding:16px 18px}
+      .stage{padding:12px 18px 30px}
+      .cta{padding:14px 26px}
+    }
+    @media (prefers-reduced-motion:reduce){
+      .amb::before{animation:none}
+      .eyebrow,h1,.sub,.cta,.reassure{animation:none; opacity:1; transform:none}
+      html{scroll-behavior:auto}
+    }
+  </style>
+</head>
+<body>
+  <div class="amb" aria-hidden="true"></div>
+
+  <header class="top">
+    <a class="brand" href="/app">
+      <img src="/static/logo.png" alt="" onerror="this.style.display='none'" />
+      <span>Trader Accelerator</span>
+    </a>
+    <a class="close" href="/app">← Back to app</a>
+  </header>
+
+  <main class="stage">
+    <div class="eyebrow">Beyond the tools<span class="dot"></span>A different path</div>
+
+    <h1>Find new ways to <span class="accent">improve</span>.</h1>
+
+    <p class="sub">
+      Most traders hit a ceiling that more screen time won't break. When studying on
+      your own stops moving the needle, there's another way to keep growing — quieter,
+      closer, and built for the part nobody really teaches.
+    </p>
+
+    <a class="cta" href="/improve/mindset">
+      Keep going
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </a>
+
+    <p class="reassure">Takes two minutes. No pressure, no commitment.</p>
+  </main>
+
+  <footer class="legal">
+    Educational content only. Nothing here is financial advice, a recommendation, a signal,
+    or a guarantee of results. Trading involves substantial risk of loss. Any progress depends
+    entirely on your own effort, decisions and circumstances.
+  </footer>
+</body>
+</html>

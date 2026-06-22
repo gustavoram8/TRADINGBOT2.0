@@ -145,6 +145,11 @@ PREFLIGHT_ENABLED = os.environ.get("PREFLIGHT_ENABLED", "1") in ("1", "true", "T
 # mention instantly. Nothing was deleted.
 INDICATORS_ENABLED = os.environ.get("INDICATORS_ENABLED", "0") in ("1", "true", "True")
 
+# Mentorship funnel ("Find New Ways to Improve") — under construction. Hidden from
+# the public while we build it: the funnel routes 404 for everyone EXCEPT admins
+# (so we can preview by URL). Flip to True / set MENTORSHIP_ENABLED=1 to open it.
+MENTORSHIP_ENABLED = os.environ.get("MENTORSHIP_ENABLED", "0") in ("1", "true", "True")
+
 # Bump this date every time the Terms & Conditions are materially updated.
 # It is stored on each user record at the moment of acceptance so there is
 # a permanent audit trail of which version they agreed to.
@@ -193,6 +198,7 @@ def inject_feature_flags():
     return {
         'scout_enabled': SCOUT_ENABLED,
         'indicators_enabled': INDICATORS_ENABLED,
+        'mentorship_enabled': MENTORSHIP_ENABLED,
         'preflight_enabled': PREFLIGHT_ENABLED,
         'has_beta_access': has_beta_access(),
         'beta_min_rank': BETA_MIN_RANK,
@@ -1555,6 +1561,24 @@ def store_indicators():
     if not INDICATORS_ENABLED:
         abort(404)
     return render_template('store_indicators.html')
+
+
+def _mentorship_gate():
+    """The mentorship funnel is hidden while under construction: 404 for everyone
+    except admins (who can preview by URL). Once MENTORSHIP_ENABLED is on it's
+    open to all visitors."""
+    if MENTORSHIP_ENABLED:
+        return
+    if current_user.is_authenticated and getattr(current_user, 'is_admin', False):
+        return
+    abort(404)
+
+
+# ── Mentorship funnel ("Find New Ways to Improve") — step 1: the hook ──
+@app.route('/improve')
+def improve_intro():
+    _mentorship_gate()
+    return render_template('improve.html')
 
 
 @app.route('/camos')
