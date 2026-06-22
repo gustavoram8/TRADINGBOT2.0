@@ -301,6 +301,7 @@ def legal_page_html(lang, wm_name, wm_email, wm_order, wm_date):
   <div class="legal-edu">
     <div class="legal-edu-title">{L['edu_title']}</div>
     {edu_paras}
+    <p style="margin-top:8pt;font-style:italic;opacity:.85;">{L['lang_note']}</p>
   </div>
 
   <div class="legal-footer-note">
@@ -370,6 +371,9 @@ _LEGAL = {
         'footer_note': 'All rights reserved. Unauthorized reproduction or distribution of this document, or any portion '
                        'of it, may result in severe civil and criminal penalties, and will be prosecuted to the maximum '
                        'extent permitted by law.',
+        'lang_note': 'This notice is provided in English, the controlling language of this document. Any translation is '
+                     'offered for convenience only and has no legal effect; in case of any discrepancy, the English '
+                     'version prevails.',
     },
     'es': {
         'id_title': 'Identificación del documento',
@@ -383,7 +387,7 @@ _LEGAL = {
         'warn_intro1': 'Este documento es propiedad exclusiva y confidencial de Trader Accelerator. Se concede en licencia, '
                        'de forma única y personal, a la persona identificada anteriormente para su estudio privado. Esta '
                        'licencia no otorga ningún otro derecho.',
-        'warn_intro2': 'Las siguientes acciones quedan <strong>terminantemente prohibidas</strong> conforme a los términos '
+        'warn_intro2': 'Las siguientes acciones quedan <strong>estrictamente prohibidas</strong> conforme a los términos '
                        'y condiciones aceptados en el momento de la compra, y pueden constituir una infracción de la '
                        'legislación aplicable en materia de propiedad intelectual y derechos de autor:',
         'prohibited': [
@@ -404,7 +408,7 @@ _LEGAL = {
                         'todas ellas, contra cualquier persona que infrinja los términos de esta licencia:',
         'consequences': [
             '<strong>Suspensión inmediata y permanente</strong> de la cuenta del usuario en la plataforma Trader '
-            'Accelerator, sin reembolso de las sumas abonadas.',
+            'Accelerator, sin reembolso de las sumas pagadas.',
             '<strong>Acciones legales por la vía civil</strong> por infracción de derechos de autor e incumplimiento de '
             'contrato, incluidas reclamaciones por daños y perjuicios, lucro cesante y, cuando proceda según la ley '
             'aplicable, indemnizaciones legales y costas judiciales.',
@@ -416,11 +420,11 @@ _LEGAL = {
         'conseq_monitor': 'Trader Accelerator supervisa activamente canales públicos y privados en busca de copias no '
                           'autorizadas de sus materiales protegidos. Nos tomamos muy en serio las infracciones de '
                           'propiedad intelectual y emprenderemos todas las acciones legales a nuestro alcance sin previo aviso.',
-        'edu_title': 'Uso exclusivamente educativo — No es asesoramiento financiero',
+        'edu_title': 'Uso exclusivamente educativo — No es asesoría financiera',
         'edu_body': [
             'Todo el contenido de este documento se ofrece únicamente con fines educativos e informativos. '
-            'Nada de lo aquí expuesto constituye asesoramiento financiero, asesoramiento de inversión, recomendaciones '
-            'de trading ni ninguna otra forma de asesoramiento regulado.',
+            'Nada de lo aquí expuesto constituye asesoría financiera, asesoría de inversión, recomendaciones '
+            'de trading ni ninguna otra forma de asesoría regulada.',
             'Operar con instrumentos financieros —incluidos, entre otros, forex, futuros, índices y materias primas— '
             'conlleva un riesgo sustancial de pérdida y no resulta adecuado para todos los inversores. Los resultados '
             'pasados, los resultados simulados y los escenarios hipotéticos no garantizan resultados futuros. Tú eres el '
@@ -432,6 +436,8 @@ _LEGAL = {
         'footer_note': 'Todos los derechos reservados. La reproducción o distribución no autorizada de este documento, '
                        'o de cualquier parte del mismo, puede acarrear graves sanciones civiles y penales, y se '
                        'perseguirá en la máxima medida que permita la ley.',
+        'lang_note': 'La versión en inglés de este aviso es la única con valor legal. Cualquier traducción se ofrece '
+                     'únicamente por cortesía y, en caso de discrepancia, prevalece la versión en inglés.',
     },
     'fr': {
         'id_title': 'Identification du document',
@@ -494,6 +500,8 @@ _LEGAL = {
         'footer_note': 'Tous droits réservés. La reproduction ou la distribution non autorisée de ce document, ou de '
                        'toute partie de celui-ci, peut entraîner de lourdes sanctions civiles et pénales, et sera '
                        'poursuivie dans toute la mesure permise par la loi.',
+        'lang_note': "Seule la version anglaise de cet avis a valeur juridique. Toute traduction est fournie à titre "
+                     "indicatif uniquement et, en cas de divergence, la version anglaise prévaut.",
     },
     'pt': {
         'id_title': 'Identificação do documento',
@@ -556,5 +564,7 @@ _LEGAL = {
         'footer_note': 'Todos os direitos reservados. A reprodução ou distribuição não autorizada deste documento, ou '
                        'de qualquer parte do mesmo, pode resultar em severas sanções civis e criminais, e será '
                        'processada na máxima extensão permitida por lei.',
+        'lang_note': 'A versão em inglês deste aviso é a única com valor legal. Qualquer tradução é fornecida apenas '
+                     'por cortesia e, em caso de divergência, prevalece a versão em inglês.',
     },
 }
