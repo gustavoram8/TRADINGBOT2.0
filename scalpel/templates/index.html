@@ -539,11 +539,11 @@
     .mt-nav a.active{color:var(--kzt-gold);background:rgba(224,168,61,.1)}
 
     /* ── KILL ZONE TERMINAL panel ── */
-    .kzt{position:relative;border:1px solid var(--border2);border-radius:14px;overflow:hidden;margin-bottom:34px;
-      background:linear-gradient(var(--kzt-grid) 1px,transparent 1px) 0 0/100% 30px,linear-gradient(180deg,#0e1018,#08090e);
-      box-shadow:0 1px 0 rgba(224,168,61,.07) inset,0 14px 40px rgba(0,0,0,.3)}
-    body.light .kzt{background:linear-gradient(var(--kzt-grid) 1px,transparent 1px) 0 0/100% 30px,linear-gradient(180deg,#fff,#f7f8fb);
-      box-shadow:0 10px 30px rgba(20,30,60,.08)}
+    .kzt{position:relative;border:1px solid transparent;border-radius:14px;overflow:hidden;margin-bottom:34px;
+      background:linear-gradient(var(--kzt-grid) 1px,transparent 1px) 0 0/100% 30px padding-box,linear-gradient(180deg,#0e1018,#08090e) padding-box,linear-gradient(120deg, rgba(245,196,99,.5), rgba(224,168,61,.1) 45%, rgba(224,168,61,.05) 63%, rgba(245,196,99,.4)) border-box;
+      box-shadow:0 1px 0 rgba(224,168,61,.07) inset,0 18px 46px rgba(0,0,0,.34)}
+    body.light .kzt{border:1px solid transparent;background:linear-gradient(var(--kzt-grid) 1px,transparent 1px) 0 0/100% 30px padding-box,linear-gradient(180deg,#ffffff,#fcf7ec) padding-box,linear-gradient(120deg, rgba(190,135,38,.72), rgba(190,135,38,.22) 45%, rgba(190,135,38,.16) 63%, rgba(190,135,38,.6)) border-box;
+      box-shadow:0 8px 24px rgba(150,110,30,.12)}
     .kzt-top{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--border);
       background:linear-gradient(180deg,rgba(224,168,61,.08),transparent)}
     .kzt-dots{display:flex;gap:6px}
