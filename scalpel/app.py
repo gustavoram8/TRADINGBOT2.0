@@ -5381,7 +5381,7 @@ CERT_I18N = {
            'presented': 'Se otorga el presente certificado a',
            'attained': 'por haber alcanzado, con práctica y dedicación, el rango de',
            'rank': 'Rango', 'of': 'de', 'issued': 'Fecha de emisión', 'issuedBy': 'Emitido por',
-           'eduNote': 'Logro educativo — reconoce el avance en el programa de aprendizaje de Trader Accelerator. No constituye una cualificación profesional, financiera ni de trading.',
+           'eduNote': 'Logro educativo — reconoce el avance en el programa de aprendizaje de Trader Accelerator. No constituye una calificación profesional, financiera ni de trading.',
            'download': 'Descargar PDF', 'back': 'Volver'},
     'fr': {'kicker': 'Certificate of Achievement', 'title': 'Certificat de Rang',
            'presented': 'Le présent certificat est décerné à',
