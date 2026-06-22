@@ -4516,15 +4516,18 @@
           linear-gradient(150deg, rgba(245,196,99,.65), rgba(224,168,61,.12) 40%, rgba(224,168,61,.05) 66%, rgba(245,196,99,.45)) border-box;
         box-shadow:0 20px 60px rgba(0,0,0,.5);
         transition:transform .3s ease, box-shadow .3s ease; }
-      .door::before{ content:''; position:absolute; top:-12%; left:50%; width:3px; height:124%;
-        background:linear-gradient(180deg, transparent, rgba(245,196,99,.95), rgba(224,168,61,.5), transparent);
-        box-shadow:0 0 46px 14px rgba(224,168,61,.16);
-        animation:door-sweep 7s ease-in-out infinite; will-change:transform,opacity; }
-      .door::after{ content:''; position:absolute; inset:0;
-        background:radial-gradient(60% 90% at 50% 50%, rgba(224,168,61,.10), transparent 65%); }
+      .door::before{ content:''; position:absolute; top:-12%; left:-6%; width:4px; height:124%;
+        background:linear-gradient(180deg, transparent, rgba(248,214,140,1), rgba(245,196,99,.65), transparent);
+        box-shadow:0 0 34px 12px rgba(245,196,99,.6);
+        opacity:0; animation:door-scan 4.5s linear infinite; will-change:left,opacity; }
+      .door::after{ content:''; position:absolute; inset:0; opacity:0; pointer-events:none;
+        background:
+          radial-gradient(90% 130% at 50% 50%, rgba(245,196,99,.18), transparent 72%),
+          linear-gradient(180deg, rgba(245,196,99,.05), transparent);
+        animation:door-flash 4.5s linear infinite; }
       .door:hover{ transform:translateY(-3px);
         box-shadow:0 30px 76px rgba(0,0,0,.6), 0 0 0 1px rgba(224,168,61,.18); }
-      .door:hover::before{ width:4px; }
+      .door:hover::before{ width:6px; }
       .door-in{ position:relative; z-index:2; max-width:560px; }
       .door-eyebrow{ font-size:11.5px; font-weight:700; letter-spacing:.36em; text-transform:uppercase; color:#e0a83d; }
       .door-title{ font-size:clamp(24px,4.2vw,38px); font-weight:700; line-height:1.12; letter-spacing:-.01em;
@@ -4537,14 +4540,20 @@
         box-shadow:inset 0 1px 0 rgba(255,255,255,.4); }
       .door-go svg{ width:16px; height:16px; transition:transform .2s; }
       .door:hover .door-go svg{ transform:translateX(4px); }
-      @keyframes door-sweep{
-        0%,100%{ transform:translateX(calc(-50% - var(--sweep))); opacity:.4; box-shadow:0 0 44px 13px rgba(224,168,61,.14); }
-        25%    { opacity:1; box-shadow:0 0 92px 34px rgba(224,168,61,.46); }
-        50%    { transform:translateX(calc(-50% + var(--sweep))); opacity:.4; box-shadow:0 0 44px 13px rgba(224,168,61,.14); }
-        75%    { opacity:1; box-shadow:0 0 92px 34px rgba(224,168,61,.46); }
+      @keyframes door-scan{
+        0%   { left:-6%;  opacity:0; }
+        2%   { opacity:1; }
+        13%  { left:106%; opacity:1; }
+        16%  { left:106%; opacity:0; }
+        100% { left:106%; opacity:0; }
       }
-      @media (max-width:560px){ .door{ --sweep:130px; min-height:180px; padding:36px 20px; margin-bottom:20px; } }
-      @media (prefers-reduced-motion:reduce){ .door::before{animation:none; left:50%; transform:translateX(-50%)} .door,.door:hover{transform:none} }
+      @keyframes door-flash{
+        0%,100%{ opacity:0; }
+        4%   { opacity:1; }
+        17%  { opacity:0; }
+      }
+      @media (max-width:560px){ .door{ min-height:180px; padding:36px 20px; margin-bottom:20px; } }
+      @media (prefers-reduced-motion:reduce){ .door::before,.door::after{animation:none; opacity:0} .door,.door:hover{transform:none} }
     </style>
     <a class="door" href="/improve" aria-label="Find new ways to improve">
       <div class="door-in">
