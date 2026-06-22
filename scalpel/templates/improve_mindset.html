@@ -17,23 +17,31 @@
       <img src="/static/logo.png" alt="" onerror="this.style.display='none'" />
       <span>Trader Accelerator</span>
     </a>
-    <a class="close" href="/improve">← Back</a>
+    <div class="top-right">
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="es">ES</button>
+        <button type="button" data-lang="fr">FR</button>
+        <button type="button" data-lang="pt">PT</button>
+      </div>
+      <a class="close" href="/improve" data-i18n="nav.back">← Back</a>
+    </div>
   </header>
 
   <main class="stage">
     <div class="chapter">
-      <div class="eyebrow"><span class="num">01</span>The part nobody teaches</div>
+      <div class="eyebrow"><span class="num">01</span><span data-i18n="p2.eyebrow">The part nobody teaches</span></div>
 
-      <h2 class="ch-title">You can know everything — <span class="accent">and still freeze.</span></h2>
+      <h2 class="ch-title" data-i18n-html="p2.title">You can know everything — <span class="accent">and still freeze.</span></h2>
 
       <div class="prose">
-        <p class="lead">Trading is two skills wearing one name. The first — structure, levels, timing — you can study. The second can't be taught from a slide.</p>
-        <p>Patience while a trade breathes. Taking the loss without flinching. Not chasing, not revenging, not abandoning the plan the moment it gets uncomfortable. That second skill is the <strong>mind</strong> — and almost nobody teaches it, so most traders leave it to chance.</p>
-        <p>Then they wonder why they know exactly what to do… and do the opposite when it's live. The hardest part is that you usually can't see your own blind spot. The one thing self-study can never give you is someone who already walked through it — and can see it for you.</p>
+        <p class="lead" data-i18n="p2.lead">Trading is two skills wearing one name. The first — structure, levels, timing — you can study. The second can't be taught from a slide.</p>
+        <p data-i18n-html="p2.p1">Patience while a trade breathes. Taking the loss without flinching. Not chasing, not revenging, not abandoning the plan the moment it gets uncomfortable. That second skill is the <strong>mind</strong> — and almost nobody teaches it, so most traders leave it to chance.</p>
+        <p data-i18n="p2.p2">Then they wonder why they know exactly what to do… and do the opposite when it's live. The hardest part is that you usually can't see your own blind spot. The one thing self-study can never give you is someone who already walked through it — and can see it for you.</p>
       </div>
 
       <a class="cta" href="/improve/gap">
-        There's more
+        <span data-i18n="p2.cta">There's more</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
       </a>
 
@@ -41,10 +49,12 @@
     </div>
   </main>
 
-  <footer class="legal">
+  <footer class="legal" data-i18n="legal">
     Educational content only. Nothing here is financial advice, a recommendation, a signal,
     or a guarantee of results. Trading involves substantial risk of loss. Any progress depends
     entirely on your own effort, decisions and circumstances.
   </footer>
+
+  <script src="/static/improve_i18n.js" defer></script>
 </body>
 </html>

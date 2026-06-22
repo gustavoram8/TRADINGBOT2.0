@@ -17,38 +17,46 @@
       <img src="/static/logo.png" alt="" onerror="this.style.display='none'" />
       <span>Trader Accelerator</span>
     </a>
-    <a class="close" href="/improve/gap">← Back</a>
+    <div class="top-right">
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="es">ES</button>
+        <button type="button" data-lang="fr">FR</button>
+        <button type="button" data-lang="pt">PT</button>
+      </div>
+      <a class="close" href="/improve/gap" data-i18n="nav.back">← Back</a>
+    </div>
   </header>
 
   <main class="stage">
     <div class="chapter">
-      <div class="eyebrow"><span class="num">03</span>A different way to learn</div>
+      <div class="eyebrow"><span class="num">03</span><span data-i18n="p4.eyebrow">A different way to learn</span></div>
 
-      <h2 class="ch-title">Two ways to <span class="accent">go deeper.</span></h2>
+      <h2 class="ch-title" data-i18n-html="p4.title">Two ways to <span class="accent">go deeper.</span></h2>
 
       <div class="prose">
-        <p class="lead">No theory dumps. No noise. Just a closer look at how someone who lives in the markets actually thinks — and the option to bring your own thinking into the room.</p>
+        <p class="lead" data-i18n="p4.lead">No theory dumps. No noise. Just a closer look at how someone who lives in the markets actually thinks — and the option to bring your own thinking into the room.</p>
       </div>
 
       <div class="duo">
         <div class="way">
-          <div class="wlabel">On your own time</div>
-          <h3>Recorded walkthroughs</h3>
-          <p>A growing library that takes real analysis apart from start to finish — the read, the reasoning, the mistakes, the why. Watch, pause, and revisit whenever it clicks.</p>
+          <div class="wlabel" data-i18n="p4.way1label">On your own time</div>
+          <h3 data-i18n="p4.way1title">Recorded walkthroughs</h3>
+          <p data-i18n="p4.way1body">A growing library that takes real analysis apart from start to finish — the read, the reasoning, the mistakes, the why. Watch, pause, and revisit whenever it clicks.</p>
         </div>
         <div class="way">
-          <div class="wlabel">Up close</div>
-          <h3>One-to-one time</h3>
-          <p>Direct, private time with someone who's in the markets every day. Bring your own charts, your own decisions, your own blind spots — and work through them together.</p>
+          <div class="wlabel" data-i18n="p4.way2label">Up close</div>
+          <h3 data-i18n="p4.way2title">One-to-one time</h3>
+          <p data-i18n="p4.way2body">Direct, private time with someone who's in the markets every day. Bring your own charts, your own decisions, your own blind spots — and work through them together.</p>
         </div>
       </div>
 
       <div class="prose">
-        <p>No signals. No one telling you what to buy or sell. Just a guide — for your understanding, your discipline, and your craft.</p>
+        <p data-i18n="p4.closing">No signals. No one telling you what to buy or sell. Just a guide — for your understanding, your discipline, and your craft.</p>
       </div>
 
       <a class="cta" href="/improve/apply">
-        See if it's for you
+        <span data-i18n="p4.cta">See if it's for you</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
       </a>
 
@@ -56,10 +64,12 @@
     </div>
   </main>
 
-  <footer class="legal">
+  <footer class="legal" data-i18n="legal">
     Educational content only. Nothing here is financial advice, a recommendation, a signal,
     or a guarantee of results. Trading involves substantial risk of loss. Any progress depends
     entirely on your own effort, decisions and circumstances.
   </footer>
+
+  <script src="/static/improve_i18n.js" defer></script>
 </body>
 </html>
