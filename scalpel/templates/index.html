@@ -617,6 +617,19 @@
       padding:2px 6px;border-radius:4px;white-space:nowrap;box-shadow:0 2px 7px rgba(224,168,61,.5);font-variant-numeric:tabular-nums}
     .kz-now-flag::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);
       border:4px solid transparent;border-top-color:var(--kzt-gold)}
+    /* Hover scrubber — shows the exact time under the cursor */
+    .kz-hover{position:absolute;top:18px;bottom:0;left:0;width:0;z-index:6;pointer-events:none;opacity:0;transition:opacity .12s}
+    .kz-timeline-wrap:hover .kz-hover{opacity:1}
+    .kz-hover-line{position:absolute;top:0;bottom:0;left:0;width:1px;transform:translateX(-.5px);
+      background:rgba(255,255,255,.4);border-left:1px dashed rgba(245,196,99,.55)}
+    body.light .kz-hover-line{background:rgba(20,30,60,.18);border-left-color:rgba(176,125,34,.6)}
+    .kz-hover-tip{position:absolute;top:-20px;left:0;transform:translateX(-50%);white-space:nowrap;
+      font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:700;letter-spacing:.02em;
+      color:#f4f5fa;background:rgba(14,16,24,.95);border:1px solid rgba(245,196,99,.35);
+      padding:3px 7px;border-radius:5px;font-variant-numeric:tabular-nums;box-shadow:0 3px 10px rgba(0,0,0,.45)}
+    .kz-hover-tip b{color:var(--kzt-gold);font-weight:700}
+    .kz-hover-tip .loc{color:var(--muted);font-weight:500;margin-left:5px}
+    body.light .kz-hover-tip{color:#1c1a14;background:rgba(255,253,247,.97);border-color:rgba(176,125,34,.4);box-shadow:0 3px 10px rgba(150,110,30,.18)}
 
     /* Session readout rows (terminal table) */
     .kz-sessions{display:flex;flex-direction:column;border:1px solid var(--border);border-radius:9px;overflow:hidden;
@@ -4911,7 +4924,7 @@
         </div>
 
         <!-- 24h timeline (NY time) — two lanes -->
-        <div class="kz-timeline-wrap">
+        <div class="kz-timeline-wrap" id="kz-timeline">
           <div class="kz-ruler" id="kz-ruler"></div>
           <div class="kz-lane kz-lane-main" id="kz-lane-main"></div>
           <div class="kz-lane kz-lane-sb" id="kz-lane-sb">
@@ -4920,6 +4933,11 @@
           <div class="kz-now" id="kz-now">
             <div class="kz-now-line"></div>
             <div class="kz-now-flag" id="kz-now-flag">--:--:--</div>
+          </div>
+          <!-- Hover scrubber: exact time under the cursor -->
+          <div class="kz-hover" id="kz-hover" aria-hidden="true">
+            <div class="kz-hover-line"></div>
+            <div class="kz-hover-tip" id="kz-hover-tip"></div>
           </div>
         </div>
 
@@ -22562,6 +22580,26 @@
     // NOW marker flag (live exact time)
     var NOW_FLAG = document.getElementById('kz-now-flag');
 
+    // Hover scrubber: exact ET time (+ the viewer's local equivalent) under the cursor
+    var KZ_LOC_OFFSET = 0;
+    (function(){
+      var wrap = document.getElementById('kz-timeline');
+      var hov  = document.getElementById('kz-hover');
+      var tip  = document.getElementById('kz-hover-tip');
+      if (!wrap || !hov || !tip) return;
+      wrap.addEventListener('mousemove', function(ev){
+        var r = wrap.getBoundingClientRect();
+        if (!r.width) return;
+        var f = (ev.clientX - r.left) / r.width;
+        f = f < 0 ? 0 : (f > 1 ? 1 : f);
+        var etMin = Math.round(f * 1440); if (etMin >= 1440) etMin = 1439;
+        var lcMin = (etMin + KZ_LOC_OFFSET) % 1440;
+        hov.style.left = (f * 100) + '%';
+        tip.innerHTML = '<b>' + fmt(Math.floor(etMin/60), etMin%60) + ' ET</b>'
+          + '<span class="loc">' + fmt(Math.floor(lcMin/60), lcMin%60) + ' ' + t('kz.local') + '</span>';
+      });
+    })();
+
     // Countdown helper
     function countdown(targetH, targetM, ny){
       var nowMin = ny.h * 60 + ny.m;
@@ -22593,6 +22631,8 @@
       CLK_NY.textContent = pad2(ny.h)+':'+pad2(ny.m)+':'+pad2(ny.s);
       var loc = new Date();
       CLK_LOC.textContent = pad2(loc.getHours())+':'+pad2(loc.getMinutes())+':'+pad2(loc.getSeconds());
+      // live NY→local minute offset (DST-correct, derived from both clocks) for the hover scrubber
+      KZ_LOC_OFFSET = (((loc.getHours()*60+loc.getMinutes()) - (ny.h*60+ny.m)) % 1440 + 1440) % 1440;
 
       // NOW marker position + live exact-time flag (NY)
       MK.style.left = (ny.frac * 100) + '%';
