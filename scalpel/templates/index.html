@@ -4319,6 +4319,74 @@
   </div>
 </div>
 
+{% if mentorship_enabled or (current_user.is_authenticated and current_user.is_admin) %}
+<!-- ── IMPROVE RIBBON: a separate "world" — its own layer above the tools, like TradingView's top nav ── -->
+<style>
+  .improve-ribbon{ position:relative; overflow:hidden; box-sizing:border-box; width:100%;
+    display:flex; align-items:center; justify-content:center;
+    text-decoration:none; color:inherit; padding:13px 22px; margin:0 0 14px;
+    border-radius:13px; border:1px solid transparent;
+    background:
+      linear-gradient(180deg,#0e1018,#08090e) padding-box,
+      linear-gradient(120deg, rgba(245,196,99,.55), rgba(224,168,61,.12) 45%, rgba(224,168,61,.06) 63%, rgba(245,196,99,.42)) border-box;
+    box-shadow:0 10px 34px rgba(0,0,0,.4);
+    transition:transform .25s ease, box-shadow .25s ease; }
+  .improve-ribbon:hover{ transform:translateY(-1px);
+    box-shadow:0 16px 46px rgba(0,0,0,.5), 0 0 0 1px rgba(224,168,61,.18); }
+  /* soft-gold diagonal sweep, once per minute (cooldown) — all light sits behind the text */
+  .improve-ribbon::before{ content:''; position:absolute; top:-40%; bottom:-40%; left:-55%; width:40%; z-index:1; pointer-events:none;
+    transform:skewX(-16deg);
+    background:linear-gradient(100deg, transparent 0%, rgba(245,196,99,.10) 50%, rgba(245,196,99,.5) 76%, #f5c463 86%, rgba(248,219,144,.4) 90%, transparent 100%);
+    opacity:0; animation:improve-scan 60s ease-in-out infinite; will-change:left,opacity; }
+  .improve-ribbon::after{ content:''; position:absolute; inset:0; z-index:1; opacity:0; pointer-events:none;
+    background:radial-gradient(ellipse 100% 100% at 50% 50%, transparent 44%, rgba(224,168,61,.26) 76%, rgba(245,196,99,.5) 100%);
+    animation:improve-bloom 60s ease-in-out infinite; }
+  .improve-rb-in{ position:relative; z-index:2; display:flex; align-items:center; gap:12px;
+    flex-wrap:wrap; justify-content:center; text-align:center; }
+  .improve-rb-spark{ color:#f5c463; font-size:15px; line-height:1; }
+  .improve-rb-title{ font-size:14px; font-weight:700; letter-spacing:.01em; color:#f4f5fa; }
+  .improve-rb-title em{ font-style:italic; color:#f5c463; }
+  .improve-rb-sub{ font-size:12.5px; color:#8a90a6; }
+  .improve-rb-sub::before{ content:'—'; margin-right:9px; color:#565b6e; }
+  .improve-rb-go{ display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:700;
+    letter-spacing:.1em; text-transform:uppercase; color:#e0a83d; }
+  .improve-rb-go svg{ width:14px; height:14px; transition:transform .2s; }
+  .improve-ribbon:hover .improve-rb-go svg{ transform:translateX(4px); }
+  body.light .improve-ribbon{
+    background:
+      linear-gradient(180deg,#fffdf7,#fbf4e4) padding-box,
+      linear-gradient(120deg, rgba(196,140,40,.6), rgba(196,140,40,.12) 45%, rgba(196,140,40,.06) 63%, rgba(196,140,40,.45)) border-box;
+    box-shadow:0 10px 30px rgba(120,90,20,.12); }
+  body.light .improve-rb-title{ color:#1c1a14; }
+  body.light .improve-rb-sub{ color:#8a7d5e; }
+  @keyframes improve-scan{
+    0%   { left:-55%; opacity:0; }
+    0.4% { opacity:1; }
+    2.4% { left:108%; opacity:1; }
+    2.9% { left:108%; opacity:0; }
+    100% { left:108%; opacity:0; }
+  }
+  @keyframes improve-bloom{
+    0%,2.1%{ opacity:0; }
+    3.1%   { opacity:1; }
+    6%     { opacity:0; }
+    100%   { opacity:0; }
+  }
+  @media (max-width:560px){ .improve-rb-sub{ display:none; } .improve-ribbon{ padding:11px 16px; } }
+  @media (prefers-reduced-motion:reduce){ .improve-ribbon::before,.improve-ribbon::after{animation:none; opacity:0} .improve-ribbon:hover{transform:none} }
+</style>
+<a class="improve-ribbon" href="/improve" aria-label="Find new ways to improve — beyond the tools">
+  <span class="improve-rb-in">
+    <span class="improve-rb-spark" aria-hidden="true">✦</span>
+    <span class="improve-rb-title">Find new ways to <em>improve</em></span>
+    <span class="improve-rb-sub">beyond the tools</span>
+    <span class="improve-rb-go">Enter
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </span>
+  </span>
+</a>
+{% endif %}
+
 <div class="tabs" id="tabs">
   <button class="tab active" type="button" data-tab="analyze">
     <span data-i18n="tabs.analyze">Analyze</span>
@@ -4503,70 +4571,6 @@
 
   <!-- ── FORM VIEW ── -->
   <div id="form-view">
-
-    {% if mentorship_enabled or (current_user.is_authenticated and current_user.is_admin) %}
-    <!-- ── THE DOOR: prominent portal into the "Find New Ways to Improve" world ── -->
-    <style>
-      .door{ --sweep:220px; display:flex; align-items:center; justify-content:center; text-align:center;
-        text-decoration:none; color:inherit; position:relative; overflow:hidden;
-        border-radius:30px 7px 30px 7px; margin:0 0 26px; min-height:212px; padding:46px 28px;
-        border:1.5px solid transparent;
-        background:
-          linear-gradient(180deg,#0e1018,#08090e) padding-box,
-          linear-gradient(150deg, rgba(245,196,99,.65), rgba(224,168,61,.12) 40%, rgba(224,168,61,.05) 66%, rgba(245,196,99,.45)) border-box;
-        box-shadow:0 20px 60px rgba(0,0,0,.5);
-        transition:transform .3s ease, box-shadow .3s ease; }
-      /* glossy light band sweeping across the glass — translucent so the text underneath stays readable */
-      .door::before{ content:''; position:absolute; top:-12%; bottom:-12%; left:-55%; width:48%; z-index:1; pointer-events:none;
-        transform:skewX(-16deg);
-        background:linear-gradient(100deg, transparent 0%, rgba(245,196,99,.10) 50%, rgba(245,196,99,.5) 76%, #f5c463 86%, rgba(248,219,144,.4) 90%, transparent 100%);
-        opacity:0; animation:door-scan 60s ease-in-out infinite; will-change:left,opacity; }
-      /* edge bloom: soft gold at the frame, clear in the middle where the words live */
-      .door::after{ content:''; position:absolute; inset:0; z-index:1; opacity:0; pointer-events:none;
-        background:radial-gradient(ellipse 100% 100% at 50% 50%, transparent 40%, rgba(224,168,61,.3) 73%, rgba(245,196,99,.55) 100%);
-        animation:door-bloom 60s ease-in-out infinite; }
-      .door:hover{ transform:translateY(-3px);
-        box-shadow:0 30px 76px rgba(0,0,0,.6), 0 0 0 1px rgba(224,168,61,.18); }
-      .door-in{ position:relative; z-index:2; max-width:560px; }
-      .door-eyebrow{ font-size:11.5px; font-weight:700; letter-spacing:.36em; text-transform:uppercase; color:#e0a83d; }
-      .door-title{ font-size:clamp(24px,4.2vw,38px); font-weight:700; line-height:1.12; letter-spacing:-.01em;
-        color:#f4f5fa; margin-top:14px; }
-      .door-title em{ font-style:italic; color:#f5c463; }
-      .door-sub{ font-size:13.5px; color:#9298ad; margin-top:12px; line-height:1.6; }
-      .door-go{ margin-top:22px; display:inline-flex; align-items:center; gap:9px; font-size:13px; font-weight:700;
-        letter-spacing:.05em; text-transform:uppercase; color:#1a1205;
-        background:linear-gradient(180deg,#f5c463,#e0a83d); padding:12px 26px; border-radius:26px;
-        box-shadow:inset 0 1px 0 rgba(255,255,255,.4); }
-      .door-go svg{ width:16px; height:16px; transition:transform .2s; }
-      .door:hover .door-go svg{ transform:translateX(4px); }
-      /* one fast scan + a brief edge dazzle, once per minute (cooldown), then idle */
-      @keyframes door-scan{
-        0%   { left:-55%; opacity:0; }
-        0.4% { opacity:1; }
-        2.4% { left:108%; opacity:1; }
-        2.9% { left:108%; opacity:0; }
-        100% { left:108%; opacity:0; }
-      }
-      @keyframes door-bloom{
-        0%,2.1%{ opacity:0; }
-        3.1%   { opacity:1; }
-        6%     { opacity:0; }
-        100%   { opacity:0; }
-      }
-      @media (max-width:560px){ .door{ min-height:180px; padding:36px 20px; margin-bottom:20px; } }
-      @media (prefers-reduced-motion:reduce){ .door::before,.door::after{animation:none; opacity:0} .door,.door:hover{transform:none} }
-    </style>
-    <a class="door" href="/improve" aria-label="Find new ways to improve">
-      <div class="door-in">
-        <div class="door-eyebrow">Beyond the tools</div>
-        <div class="door-title">Find new ways to <em>improve</em></div>
-        <div class="door-sub">A different way to grow as a trader — quieter, closer, and built for the part nobody teaches.</div>
-        <div class="door-go">Step through
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-        </div>
-      </div>
-    </a>
-    {% endif %}
 
     <div class="page-header">
       <h1 data-i18n="header.title">Analyze Your Setup</h1>
