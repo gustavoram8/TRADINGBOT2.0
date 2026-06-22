@@ -1581,6 +1581,24 @@ def improve_intro():
     return render_template('improve.html')
 
 
+@app.route('/improve/mindset')
+def improve_mindset():
+    _mentorship_gate()
+    return render_template('improve_mindset.html')
+
+
+@app.route('/improve/gap')
+def improve_gap():
+    _mentorship_gate()
+    return render_template('improve_gap.html')
+
+
+@app.route('/improve/inside')
+def improve_inside():
+    _mentorship_gate()
+    return render_template('improve_inside.html')
+
+
 @app.route('/camos')
 def camos():
     return render_template('camos.html')
