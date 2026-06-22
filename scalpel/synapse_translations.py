@@ -33,19 +33,19 @@ CHROME = {
         'footer':          'CONFIDENTIAL — Licensed to: {name} · {email} · Order {order} · Unauthorized distribution is prohibited',
     },
     'es': {
-        'cover_sub':       'Base Completa de Conocimiento de Trading',
-        'cover_licensed':  'Licenciado exclusivamente a',
+        'cover_sub':       'Base de Conocimiento Completa de Trading',
+        'cover_licensed':  'Con licencia exclusiva para',
         'cover_issued':    'Emitido',
         'cover_order':     'Orden',
-        'cover_confidential': 'CONFIDENCIAL — La distribución no autorizada está estrictamente prohibida y puede dar lugar a acciones legales.',
-        'toc_title':       'Índice de Contenidos',
+        'cover_confidential': 'CONFIDENCIAL — Su distribución no autorizada está terminantemente prohibida y puede dar lugar a acciones legales.',
+        'toc_title':       'Índice',
         'methodology':     'Metodología',
         'common_mistake':  'Error común',
         'setup_cond':      'Condiciones',
         'setup_entry':     'Entrada',
         'setup_stop':      'Stop',
         'setup_target':    'Objetivo',
-        'footer':          'CONFIDENCIAL — Licenciado a: {name} · {email} · Orden {order} · Prohibida la distribución no autorizada',
+        'footer':          'CONFIDENCIAL — Con licencia para: {name} · {email} · Orden {order} · Prohibida su distribución no autorizada',
     },
     'fr': {
         'cover_sub':       'Base Complète de Connaissances en Trading',
@@ -146,9 +146,9 @@ TITLES = {
         'smc.ote': 'Entrada Óptima (OTE)',
         'smc.wyckoff-roots': 'Raíces de Wyckoff',
         'fundamental.interest-rates': 'Tasas de Interés',
-        'fundamental.macro-drivers': 'Drivers Macroeconómicos',
+        'fundamental.macro-drivers': 'Motores Macroeconómicos',
         'fundamental.news-data': 'Noticias de Alto Impacto',
-        'fundamental.news-fade': 'Desvanecimiento de Noticias',
+        'fundamental.news-fade': 'Reversión tras la Noticia',
         'fundamental.data-continuation': 'Continuación tras el Dato',
         'fundamental.intermarket': 'Análisis Intermercado',
         'quant.probability': 'Probabilidad y Ventaja',
@@ -380,58 +380,58 @@ _LEGAL = {
         'id_product': 'Producto',
         'id_edition': 'Edición Digital',
         'warn_title': 'DOCUMENTO CONFIDENCIAL — LICENCIA RESTRINGIDA',
-        'warn_intro1': 'Este documento es propiedad exclusiva y confidencial de Trader Accelerator. Se licencia única y '
-                       'personalmente a la persona identificada anteriormente para su propio estudio privado. Esta '
+        'warn_intro1': 'Este documento es propiedad exclusiva y confidencial de Trader Accelerator. Se concede en licencia, '
+                       'de forma única y personal, a la persona identificada anteriormente para su estudio privado. Esta '
                        'licencia no otorga ningún otro derecho.',
-        'warn_intro2': 'Las siguientes acciones están <strong>estrictamente prohibidas</strong> en virtud de los términos '
+        'warn_intro2': 'Las siguientes acciones quedan <strong>terminantemente prohibidas</strong> conforme a los términos '
                        'y condiciones aceptados en el momento de la compra, y pueden constituir una infracción de la '
                        'legislación aplicable en materia de propiedad intelectual y derechos de autor:',
         'prohibited': [
             'Reproducir, copiar o duplicar este documento, total o parcialmente, por cualquier medio.',
-            'Compartir, distribuir o transmitir este documento a cualquier tercero, ya sea de forma gratuita o con '
-            'fines comerciales, a través de cualquier medio (correo electrónico, plataformas de mensajería, servicios '
+            'Compartir, distribuir o transmitir este documento a terceros, ya sea de forma gratuita o con '
+            'fines comerciales, por cualquier medio (correo electrónico, plataformas de mensajería, servicios '
             'de intercambio de archivos, redes sociales u otros).',
             'Revender, sublicenciar o comercializar este documento o cualquier parte de su contenido.',
             'Eliminar, ocultar o alterar cualquier marca de agua, aviso de derechos de autor o dato de identificación '
             'incorporado en este documento.',
-            'Publicar o subir este documento, o cualquier derivado del mismo, a cualquier plataforma en línea pública o privada.',
+            'Publicar o subir este documento, o cualquier obra derivada del mismo, a plataformas en línea públicas o privadas.',
         ],
-        'warn_trace': 'Cada copia de este documento contiene datos únicos de identificación digital vinculados a la '
-                      'cuenta del usuario licenciado. Cualquier copia no autorizada que aparezca públicamente puede '
+        'warn_trace': 'Cada copia de este documento contiene datos de identificación digital únicos, vinculados a la '
+                      'cuenta del usuario con licencia. Cualquier copia no autorizada que aparezca públicamente puede '
                       'rastrearse hasta su origen.',
         'conseq_title': 'Consecuencias de la distribución no autorizada',
         'conseq_intro': 'Trader Accelerator se reserva el derecho de emprender cualquiera de las siguientes acciones, o '
-                        'todas ellas, contra cualquier persona que se determine que ha infringido los términos de esta licencia:',
+                        'todas ellas, contra cualquier persona que infrinja los términos de esta licencia:',
         'consequences': [
             '<strong>Suspensión inmediata y permanente</strong> de la cuenta del usuario en la plataforma Trader '
-            'Accelerator, sin reembolso de las tarifas pagadas.',
-            '<strong>Acciones legales civiles</strong> por infracción de derechos de autor e incumplimiento de '
-            'contrato, incluyendo reclamaciones por daños y perjuicios, lucro cesante y, cuando proceda según la ley '
+            'Accelerator, sin reembolso de las sumas abonadas.',
+            '<strong>Acciones legales por la vía civil</strong> por infracción de derechos de autor e incumplimiento de '
+            'contrato, incluidas reclamaciones por daños y perjuicios, lucro cesante y, cuando proceda según la ley '
             'aplicable, indemnizaciones legales y costas judiciales.',
             '<strong>Denuncia penal</strong> cuando la distribución no autorizada constituya un delito conforme a la '
             'legislación nacional o internacional aplicable en materia de propiedad intelectual.',
-            'Notificación a los organismos profesionales, brokers o prop firms pertinentes cuando se conozca la '
+            'Notificación a los organismos profesionales, brokers o prop firms que corresponda cuando se conozca la '
             'identidad del infractor y dicha divulgación esté legalmente permitida.',
         ],
-        'conseq_monitor': 'Trader Accelerator monitorea activamente canales públicos y privados en busca de copias no '
-                          'autorizadas de sus materiales propietarios. Tomamos en serio las infracciones de propiedad '
-                          'intelectual y ejerceremos todos los recursos legales disponibles sin previo aviso.',
+        'conseq_monitor': 'Trader Accelerator supervisa activamente canales públicos y privados en busca de copias no '
+                          'autorizadas de sus materiales protegidos. Nos tomamos muy en serio las infracciones de '
+                          'propiedad intelectual y emprenderemos todas las acciones legales a nuestro alcance sin previo aviso.',
         'edu_title': 'Uso exclusivamente educativo — No es asesoramiento financiero',
         'edu_body': [
-            'Todo el contenido de este documento se proporciona exclusivamente con fines educativos e informativos. '
+            'Todo el contenido de este documento se ofrece únicamente con fines educativos e informativos. '
             'Nada de lo aquí expuesto constituye asesoramiento financiero, asesoramiento de inversión, recomendaciones '
             'de trading ni ninguna otra forma de asesoramiento regulado.',
-            'Operar instrumentos financieros, incluidos, entre otros, forex, futuros, índices y materias primas, '
-            'implica un riesgo sustancial de pérdida y no es adecuado para todos los inversores. El rendimiento pasado, '
-            'los resultados simulados y los escenarios hipotéticos no son indicativos de resultados futuros. Usted es el '
-            'único responsable de todas las decisiones de trading que tome.',
+            'Operar con instrumentos financieros —incluidos, entre otros, forex, futuros, índices y materias primas— '
+            'conlleva un riesgo sustancial de pérdida y no resulta adecuado para todos los inversores. Los resultados '
+            'pasados, los resultados simulados y los escenarios hipotéticos no garantizan resultados futuros. Tú eres el '
+            'único responsable de todas las decisiones de trading que tomes.',
             'Trader Accelerator, sus fundadores, empleados y afiliados no se responsabilizan de ninguna pérdida '
             'financiera derivada de la aplicación, directa o indirecta, de cualquier concepto, estrategia o información '
-            'presentada en este documento.',
+            'contenidos en este documento.',
         ],
         'footer_note': 'Todos los derechos reservados. La reproducción o distribución no autorizada de este documento, '
-                       'o de cualquier parte del mismo, puede acarrear severas sanciones civiles y penales, y será '
-                       'perseguida en la máxima medida permitida por la ley.',
+                       'o de cualquier parte del mismo, puede acarrear graves sanciones civiles y penales, y se '
+                       'perseguirá en la máxima medida que permita la ley.',
     },
     'fr': {
         'id_title': 'Identification du document',
