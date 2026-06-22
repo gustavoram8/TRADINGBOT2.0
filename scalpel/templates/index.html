@@ -4354,11 +4354,19 @@
   .improve-ribbon:hover .improve-rb-go svg{ transform:translateX(4px); }
   body.light .improve-ribbon{
     background:
-      linear-gradient(180deg,#fffdf7,#fbf4e4) padding-box,
-      linear-gradient(120deg, rgba(196,140,40,.6), rgba(196,140,40,.12) 45%, rgba(196,140,40,.06) 63%, rgba(196,140,40,.45)) border-box;
-    box-shadow:0 10px 30px rgba(120,90,20,.12); }
+      linear-gradient(180deg,#ffffff,#fcf7ec) padding-box,
+      linear-gradient(120deg, rgba(190,135,38,.85), rgba(190,135,38,.3) 45%, rgba(190,135,38,.22) 63%, rgba(190,135,38,.7)) border-box;
+    box-shadow:0 8px 24px rgba(150,110,30,.14); }
+  body.light .improve-ribbon::before{
+    background:linear-gradient(100deg, transparent 0%, rgba(190,135,38,.10) 50%, rgba(205,150,45,.4) 76%, rgba(214,162,55,.72) 86%, rgba(205,150,45,.34) 90%, transparent 100%); }
+  body.light .improve-ribbon::after{
+    background:radial-gradient(ellipse 100% 100% at 50% 50%, transparent 44%, rgba(190,135,38,.16) 76%, rgba(205,150,45,.34) 100%); }
+  body.light .improve-rb-spark{ color:#b9842a; }
   body.light .improve-rb-title{ color:#1c1a14; }
-  body.light .improve-rb-sub{ color:#8a7d5e; }
+  body.light .improve-rb-title em{ color:#b07d22; }
+  body.light .improve-rb-sub{ color:#9a8c66; }
+  body.light .improve-rb-sub::before{ color:#cbb98e; }
+  body.light .improve-rb-go{ color:#a9781f; }
   @keyframes improve-scan{
     0%   { left:-55%; opacity:0; }
     0.4% { opacity:1; }
