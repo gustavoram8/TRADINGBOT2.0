@@ -3,6 +3,43 @@
 
 ---
 
+> **🔔🔔 MOSTRAR APENAS EL USUARIO ESCRIBA (recordatorio dejado 2026-06-22 para el día siguiente) 🔔🔔**
+> Dos tareas en cola, en este orden:
+>
+> **#1 — FIXEAR EL APARTADO KILL ZONES (KZ) para que combine con la estética del sitio.**
+> Hoy el KZ "Terminal" rompe visualmente con el resto del website. Rediseñarlo para que su
+> look se parezca al **panel/listón de Mentorías** que se construyó (grafito #0e1018→#08090e +
+> dorado suave #e0a83d/#f5c463, bordes con gradiente padding-box/border-box, barrido diagonal
+> dorado, variante light mode). Referencia de estilo: la clase `.improve-ribbon` en
+> `scalpel/templates/index.html` y el design system de `scalpel/static/improve.css`. El KZ vive
+> en `scalpel/templates/index.html` (bloque "MARKET TIMING — KILL ZONE TERMINAL", clases `.kzt`,
+> `.kz-row`, vars `--kzt-*`). Objetivo: armonizar colores/tipografía/bordes con la marca, NO
+> reescribir la lógica del reloj/sesiones.
+>
+> **#2 — TERMINAR EL APARTADO DE MENTORÍAS ("Find New Ways to Improve").**
+> Estado actual: páginas 1-4 hechas (`/improve`, `/improve/mindset`, `/improve/gap`,
+> `/improve/inside`) + entrada vía listón dorado `.improve-ribbon` arriba de los tabs (admin-only
+> por `_mentorship_gate()`, flag `MENTORSHIP_ENABLED`). FALTA:
+> - **Página 5 — EL GRAN FILTRO** (`/improve/apply`): formulario de aplicación/calificación +
+>   waiver educativo. (El CTA "See if it's for you" de la pág. 4 hoy cae en 404 — esta ruta aún no existe.)
+> - **Página 6 — costos/disponibilidad**: 3 paquetes de llamadas (5/10/20 reuniones/mes, 30min) +
+>   llamadas individuales + acceso a videos, tabla de disponibilidad, # de estudiantes, prueba social.
+> - **Página 7 — área de miembros** (post-pago): biblioteca de videos (tipo YouTube, sube el trader),
+>   reserva 1/1 con cupo/créditos, Q&A por video (reusar moderación IA), progreso, certificados.
+> - **Reveal del mentor (foto/identidad) va AL FINAL**, después del filtro — nunca antes.
+> - Más adelante: cablear Bunny Stream (video), Calendly/Cal.com (reservas), sistema de
+>   cupos/créditos, pagos. Luego: i18n del funnel (hoy solo inglés).
+>
+> **Rama de trabajo:** `claude/gallant-volta-i7cqmf`. **Proceso supervisor del VPS:** `traderacelerator`
+> (¡una sola 'c', typo viejo!). Deploy: `cd /var/www/TRADINGBOT2.0 && git pull origin
+> claude/gallant-volta-i7cqmf && supervisorctl restart traderacelerator`.
+>
+> **💸 NOTA DE TOKENS:** el usuario nota que se le acaban rápido. La causa principal es que ESTE
+> `CLAUDE.md` es enorme y se carga COMPLETO en cada mensaje. Ofrecer podarlo (archivar el historial
+> ya completado en `CLAUDE_ARCHIVE.md` y dejar aquí solo lo activo) al iniciar — es el mayor ahorro.
+
+---
+
 > **✅ COMPLETADO (2026-06-20) — RENOMBRE DE MARCA: "Trader Acelerator" → "Trader Accelerator"**
 >
 > El nombre estaba MAL ESCRITO ("Acelerator" con una sola 'c'). Se corrigió a **"Trader Accelerator"**
