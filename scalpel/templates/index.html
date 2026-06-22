@@ -4881,6 +4881,58 @@
 
   </div><!-- /market-timing -->
 
+  {% if mentorship_enabled or (current_user.is_authenticated and current_user.is_admin) %}
+  <!-- ── THRESHOLD: discreet portal into the "Find New Ways to Improve" funnel ── -->
+  <style>
+    .threshold{
+      display:block; text-decoration:none; color:inherit;
+      position:relative; overflow:hidden; isolation:isolate;
+      margin:52px auto 8px; max-width:920px; border-radius:18px;
+      padding:46px 30px 44px; text-align:center;
+      background:
+        radial-gradient(120% 140% at 50% -20%, rgba(224,168,61,.14), transparent 60%),
+        linear-gradient(180deg, #11131c, #0a0b10);
+      border:1px solid rgba(224,168,61,.16);
+      box-shadow:0 18px 50px rgba(0,0,0,.45);
+      transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+    }
+    .threshold::before{ /* gold horizon line */
+      content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
+      width:62%; height:1px;
+      background:linear-gradient(90deg, transparent, rgba(245,196,99,.85), transparent);
+    }
+    .threshold::after{ /* sweep of light on hover */
+      content:''; position:absolute; inset:0; z-index:-1; opacity:0;
+      background:radial-gradient(60% 80% at 50% 0%, rgba(224,168,61,.18), transparent 70%);
+      transition:opacity .3s ease;
+    }
+    .threshold:hover{ transform:translateY(-3px); border-color:rgba(224,168,61,.4);
+      box-shadow:0 26px 64px rgba(0,0,0,.5), 0 0 0 1px rgba(224,168,61,.12); }
+    .threshold:hover::after{ opacity:1; }
+    .thr-eyebrow{ font-size:11.5px; font-weight:700; letter-spacing:.34em; text-transform:uppercase;
+      color:#e0a83d; }
+    .thr-line{ margin-top:16px; font-size:clamp(26px,4.4vw,40px); font-weight:700; line-height:1.12;
+      letter-spacing:-.01em; color:#f1f2f7; }
+    .thr-accent{ font-style:italic; color:#f5c463; }
+    .thr-go{ margin-top:22px; display:inline-flex; align-items:center; gap:9px;
+      font-size:13.5px; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+      color:#1a1205; background:linear-gradient(180deg,#f5c463,#e0a83d);
+      padding:12px 24px; border-radius:24px; box-shadow:inset 0 1px 0 rgba(255,255,255,.4); }
+    .thr-go svg{ width:16px; height:16px; transition:transform .2s; }
+    .threshold:hover .thr-go svg{ transform:translateX(4px); }
+    @media (max-width:560px){ .threshold{ margin:40px 12px 8px; padding:38px 22px 36px; } }
+    @media (prefers-reduced-motion:reduce){ .threshold,.threshold:hover{ transform:none; } }
+  </style>
+  <a class="threshold" href="/improve" aria-label="Find new ways to improve">
+    <div class="thr-eyebrow">Beyond the tools</div>
+    <div class="thr-line">Find new ways to <span class="thr-accent">improve</span></div>
+    <div class="thr-go">
+      Step beyond
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </div>
+  </a>
+  {% endif %}
+
   </div><!-- /analyze-container -->
 
   <!-- ── FORUM TRADING (Premium) ── -->
