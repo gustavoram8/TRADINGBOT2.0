@@ -1066,7 +1066,7 @@ def record_ai_cost(kind, response, user_id=None, plan=None):
 # Emails are sent from the server, but the chosen UI language lives in the
 # browser (localStorage `scalpel_lang`). The client mirrors that choice into a
 # `scalpel_lang` cookie, which we read here to pick the email language.
-# EN/ES/FR are filled; PT falls back to EN until it's audited.
+# EN/ES/FR/PT are all filled.
 EMAIL_I18N = {
     'reset': {
         'en': {
@@ -1091,6 +1091,14 @@ EMAIL_I18N = {
                 "Nous avons reçu une demande de réinitialisation de votre mot de passe Trader Accelerator.\n\n"
                 "Réinitialisez-le ici (lien valable 1 heure) :\n{reset_url}\n\n"
                 "Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet e-mail."
+            ),
+        },
+        'pt': {
+            'subject': 'Trader Accelerator — Redefinição de senha',
+            'body': (
+                "Recebemos uma solicitação para redefinir sua senha do Trader Accelerator.\n\n"
+                "Redefina-a aqui (o link é válido por 1 hora):\n{reset_url}\n\n"
+                "Se você não solicitou isto, pode ignorar este e-mail com segurança."
             ),
         },
     },
@@ -1125,16 +1133,26 @@ EMAIL_I18N = {
                 "Si vous n'êtes pas à l'origine de ce compte, vous pouvez ignorer cet e-mail."
             ),
         },
+        'pt': {
+            'subject': 'Trader Accelerator — Verifique seu e-mail',
+            'body': (
+                "Bem-vindo ao Trader Accelerator!\n\n"
+                "Seu código de verificação é: {code}\n\n"
+                "Digite-o na tela de verificação para ativar sua conta. "
+                "Este código expira em 15 minutos.\n\n"
+                "Se você não criou esta conta, pode ignorar este e-mail com segurança."
+            ),
+        },
     },
 }
 
 
 def _email_lang():
-    """Pick the email language from the `scalpel_lang` cookie. Falls back to
-    English (also for PT until those emails are translated)."""
+    """Pick the email language from the `scalpel_lang` cookie. EN/ES/FR/PT are
+    all available; anything else falls back to English."""
     if has_request_context():
         lang = request.cookies.get('scalpel_lang', 'en')
-        if lang in ('en', 'es', 'fr'):
+        if lang in ('en', 'es', 'fr', 'pt'):
             return lang
     return 'en'
 
