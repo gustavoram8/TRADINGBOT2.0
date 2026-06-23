@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Trader Accelerator — Checkout</title>
+  <title data-i18n-title="checkout.doctitle">Trader Accelerator — Checkout</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
@@ -85,34 +85,34 @@
 
   <nav>
     <a href="/"><img src="/static/logo.png" alt="Trader Accelerator" class="logo-img" onerror="this.style.display='none';" /></a>
-    <a href="/pricing" class="back-link">← Back to plans</a>
+    <a href="/pricing" class="back-link" data-i18n="nav.backPlans">← Back to plans</a>
   </nav>
 
   <div class="wrap">
-    <div class="eyebrow">Checkout</div>
-    <h1>Review your order</h1>
+    <div class="eyebrow" data-i18n="checkout.eyebrow">Checkout</div>
+    <h1 data-i18n="checkout.title">Review your order</h1>
 
     <div class="card">
       <div class="summary-row">
         <span class="plan-name {{ plan }}">{{ plan_label }}</span>
-        <span class="cycle-tag">{{ 'Annual' if cycle == 'annual' else 'Monthly' }}</span>
+        <span class="cycle-tag" data-i18n="{{ 'common.annual' if cycle == 'annual' else 'common.monthly' }}">{{ 'Annual' if cycle == 'annual' else 'Monthly' }}</span>
       </div>
 
       <div class="divider"></div>
 
       <div class="summary-row">
-        <span class="label">{{ plan_label }} plan ({{ 'billed yearly' if cycle == 'annual' else 'billed monthly' }})</span>
+        <span class="label">{{ plan_label }} <span data-i18n="{{ 'checkout.planBilledYearly' if cycle == 'annual' else 'checkout.planBilledMonthly' }}">{{ 'plan (billed yearly)' if cycle == 'annual' else 'plan (billed monthly)' }}</span></span>
         <span class="val">$<span id="base-price">{{ '%.2f'|format(quote.base_price) }}</span></span>
       </div>
 
       <div class="discount-row" id="discount-row" style="display:none;">
-        <span id="discount-label">Discount</span>
+        <span id="discount-label" data-i18n="checkout.discount">Discount</span>
         <span>−$<span id="discount-amount">0.00</span></span>
       </div>
 
       <div class="total-row">
-        <span class="t-label">Total
-          <span class="t-cycle">{{ '/ year' if cycle == 'annual' else '/ month' }}</span>
+        <span class="t-label"><span data-i18n="checkout.total">Total</span>
+          <span class="t-cycle" data-i18n="{{ 'checkout.perYear' if cycle == 'annual' else 'checkout.perMonth' }}">{{ '/ year' if cycle == 'annual' else '/ month' }}</span>
         </span>
         <span class="t-val">$<span id="final-price">{{ '%.2f'|format(quote.final_price) }}</span></span>
       </div>
@@ -121,13 +121,13 @@
     <!-- PROMO (monthly only, per product decision) -->
     {% if cycle == 'monthly' %}
     <div class="card">
-      <label class="promo-label" for="promo-input">Have a discount or creator code?</label>
+      <label class="promo-label" for="promo-input" data-i18n="checkout.promoLabel">Have a discount or creator code?</label>
       <div class="promo-box">
-        <input type="text" id="promo-input" placeholder="Enter code" maxlength="40" autocomplete="off" />
-        <button type="button" id="promo-apply">Apply</button>
+        <input type="text" id="promo-input" placeholder="Enter code" data-i18n-ph="checkout.promoPlaceholder" maxlength="40" autocomplete="off" />
+        <button type="button" id="promo-apply" data-i18n="checkout.promoApply">Apply</button>
       </div>
       <div class="promo-msg" id="promo-msg"></div>
-      <div class="promo-note">Creator codes support the trader who referred you and may unlock a discount.</div>
+      <div class="promo-note" data-i18n="checkout.promoNote">Creator codes support the trader who referred you and may unlock a discount.</div>
     </div>
     {% endif %}
 
@@ -136,13 +136,13 @@
       <input type="hidden" name="plan" value="{{ plan }}" />
       <input type="hidden" name="cycle" value="{{ cycle }}" />
       <input type="hidden" name="promo_code" id="promo-hidden" value="" />
-      <button type="submit" class="pay-btn">Continue to payment →</button>
+      <button type="submit" class="pay-btn" data-i18n="checkout.continue">Continue to payment →</button>
     </form>
 
     <p class="info">
-      You'll receive payment instructions on the next step. Your plan activates
-      once payment is confirmed by our team.<br />
-      By continuing you agree to our <a href="/terms" target="_blank">Terms &amp; Conditions</a>.
+      <span data-i18n="checkout.infoLine">You'll receive payment instructions on the next step. Your plan activates
+      once payment is confirmed by our team.</span><br />
+      <span data-i18n="checkout.agreePre">By continuing you agree to our</span> <a href="/terms" target="_blank" data-i18n="checkout.terms">Terms &amp; Conditions</a>.
     </p>
   </div>
 
@@ -161,14 +161,7 @@
     var discAmt  = document.getElementById('discount-amount');
     var finalEl  = document.getElementById('final-price');
 
-    var ERRORS = {
-      not_found: 'That code does not exist.',
-      expired:   'That code has expired.',
-      maxed:     'That code has reached its usage limit.',
-      inactive:  'That code is no longer active.',
-      cycle:     'That code is not valid for this billing cycle.',
-      empty:     'Please enter a code.'
-    };
+    var KNOWN_ERR = { not_found:1, expired:1, maxed:1, inactive:1, cycle:1, empty:1 };
 
     if (!applyBtn) return;
 
@@ -185,19 +178,19 @@
       .then(function (r) { return r.json(); })
       .then(function (d) {
         applyBtn.disabled = false;
-        applyBtn.textContent = 'Apply';
+        applyBtn.textContent = PagesI18n.t('checkout.promoApply');
         if (d.ok) {
           var saved = (basePrice - d.final_price).toFixed(2);
           discRow.style.display = 'flex';
-          discLbl.textContent = 'Discount (' + d.discount_pct + '%' +
+          discLbl.textContent = PagesI18n.t('checkout.discountLabel') + ' (' + d.discount_pct + '%' +
             (d.creator ? ' · ' + d.creator : '') + ')';
           discAmt.textContent = saved;
           finalEl.textContent = d.final_price.toFixed(2);
           hidden.value = code;
           msg.className = 'promo-msg ok';
-          msg.textContent = '✓ Code applied — you save $' + saved + '.';
+          msg.textContent = PagesI18n.t('checkout.codeApplied', { saved: saved });
           input.disabled = true;
-          applyBtn.textContent = 'Applied';
+          applyBtn.textContent = PagesI18n.t('checkout.promoApplied');
           applyBtn.disabled = true;
         } else {
           showErr(d.error);
@@ -205,7 +198,7 @@
       })
       .catch(function () {
         applyBtn.disabled = false;
-        applyBtn.textContent = 'Apply';
+        applyBtn.textContent = PagesI18n.t('checkout.promoApply');
         showErr('not_found');
       });
     });
@@ -216,9 +209,10 @@
       finalEl.textContent = basePrice.toFixed(2);
       hidden.value = '';
       msg.className = 'promo-msg err';
-      msg.textContent = ERRORS[code] || 'That code could not be applied.';
+      msg.textContent = KNOWN_ERR[code] ? PagesI18n.t('checkout.err.' + code) : PagesI18n.t('checkout.err.generic');
     }
   })();
   </script>
+  <script src="/static/pages_i18n.js"></script>
 </body>
 </html>

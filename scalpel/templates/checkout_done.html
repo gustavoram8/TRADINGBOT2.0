@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Trader Accelerator — Order received</title>
+  <title data-i18n-title="cdone.doctitle">Trader Accelerator — Order received</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
@@ -64,13 +64,13 @@
 <body>
   <nav>
     <a href="/"><img src="/static/logo.png" alt="Trader Accelerator" class="logo-img" onerror="this.style.display='none';" /></a>
-    <a href="/app" class="back-link">← Back to app</a>
+    <a href="/app" class="back-link" data-i18n="nav.backApp">← Back to app</a>
   </nav>
 
   <div class="wrap">
 
     {% if duplicate %}
-    <div class="dup-banner">
+    <div class="dup-banner" data-i18n-html="cdone.dup">
       You already have a pending order awaiting payment confirmation. Complete that
       one first — here are its details. If you think this is a mistake,
       <a href="/contact">contact support</a>.
@@ -78,45 +78,46 @@
     {% endif %}
 
     <div class="icon">🧾</div>
-    <h1>Order received</h1>
-    <p class="sub">Your order is reserved. Complete payment to activate your plan.</p>
+    <h1 data-i18n="cdone.title">Order received</h1>
+    <p class="sub" data-i18n="cdone.sub">Your order is reserved. Complete payment to activate your plan.</p>
 
     <div class="card">
       <div class="order-row">
-        <span class="label">Order ID</span>
+        <span class="label" data-i18n="cdone.orderId">Order ID</span>
         <span class="val mono">#{{ '%05d'|format(order.id) }}</span>
       </div>
       <div class="order-row">
-        <span class="label">Plan</span>
-        <span class="val">{{ plan_label }} · {{ 'Annual' if order.billing_cycle == 'annual' else 'Monthly' }}</span>
+        <span class="label" data-i18n="cdone.plan">Plan</span>
+        <span class="val">{{ plan_label }} · <span data-i18n="{{ 'common.annual' if order.billing_cycle == 'annual' else 'common.monthly' }}">{{ 'Annual' if order.billing_cycle == 'annual' else 'Monthly' }}</span></span>
       </div>
       {% if order.promo_code %}
       <div class="order-row">
-        <span class="label">Promo code</span>
+        <span class="label" data-i18n="cdone.promoCode">Promo code</span>
         <span class="val">{{ order.promo_code }} (−{{ order.discount_pct }}%)</span>
       </div>
       {% endif %}
       <div class="divider"></div>
       <div class="total">
-        <span class="t-label">Amount due</span>
+        <span class="t-label" data-i18n="cdone.amountDue">Amount due</span>
         <span class="t-val">${{ '%.2f'|format(order.final_price) }}</span>
       </div>
     </div>
 
     <div class="card pay-card">
-      <h2>⏳ Payment instructions</h2>
+      <h2 data-i18n="cdone.payTitle">⏳ Payment instructions</h2>
       <ol class="pay-steps">
-        <li>Send <strong>${{ '%.2f'|format(order.final_price) }} USD</strong> in USDT to our Binance account.</li>
-        <li>Include your <strong>Order ID #{{ '%05d'|format(order.id) }}</strong> in the payment note.</li>
-        <li>Send the payment proof through our <a href="/contact" style="color:var(--accent);">contact form</a>, selecting "Billing".</li>
-        <li>Our team verifies and activates your plan — usually within a few hours.</li>
+        <li><span data-i18n="cdone.step1a">Send</span> <strong>${{ '%.2f'|format(order.final_price) }} USD</strong> <span data-i18n="cdone.step1b">in USDT to our Binance account.</span></li>
+        <li><span data-i18n="cdone.step2a">Include your</span> <strong><span data-i18n="cdone.orderIdInline">Order ID</span> #{{ '%05d'|format(order.id) }}</strong> <span data-i18n="cdone.step2b">in the payment note.</span></li>
+        <li><span data-i18n="cdone.step3a">Send the payment proof through our</span> <a href="/contact" style="color:var(--accent);" data-i18n="cdone.contactForm">contact form</a><span data-i18n="cdone.step3b">, selecting "Billing".</span></li>
+        <li data-i18n="cdone.step4">Our team verifies and activates your plan — usually within a few hours.</li>
       </ol>
     </div>
 
     <div class="btn-row">
-      <a href="/app" class="btn btn-ghost">Back to app</a>
-      <a href="/contact" class="btn btn-primary">Send payment proof →</a>
+      <a href="/app" class="btn btn-ghost" data-i18n="cdone.backApp">Back to app</a>
+      <a href="/contact" class="btn btn-primary" data-i18n="cdone.sendProof">Send payment proof →</a>
     </div>
   </div>
+<script src="/static/pages_i18n.js"></script>
 </body>
 </html>
