@@ -14,7 +14,13 @@
   cd /var/www/TRADINGBOT2.0 && git pull origin claude/gallant-volta-i7cqmf && supervisorctl restart traderacelerator
   ```
   Sin el restart, lo pusheado NO se refleja en producción. **Recordar el deploy tras cada push.**
-- Producción usa **PostgreSQL** + gunicorn -w 4 (venv). Env vars en supervisor conf y `scalpel/.env` (gitignored, mantener ambos en sync). ⚠️ `user`/`order` son reservadas en PG → quotear `"user"`/`"order"` en SQL crudo.
+- Producción usa **PostgreSQL** + gunicorn (venv). **Config gunicorn actual (2026-06-23):** `--max-requests 300 --max-requests-jitter 50 -w 4 --threads 4 -k gthread` (4 workers × 4 hilos = 16 concurrentes; reciclaje de workers anti-fuga). Editar en `/etc/supervisor/conf.d/*trader*.conf`. Env vars en supervisor conf y `scalpel/.env` (gitignored, mantener ambos en sync). ⚠️ `user`/`order` son reservadas en PG → quotear `"user"`/`"order"` en SQL crudo.
+
+### 🖥️ Infra / escalado (medido 2026-06-23)
+- **VPS Contabo: 7.8 GB RAM** (NO es chico). + **swap 2 GB** agregado (`/swapfile`, en `/etc/fstab`).
+- **Bug OOM resuelto:** el ERROR 500 en `/register` reportado era un worker muerto por OOM (fuga de memoria lenta sin reciclar workers), NO un bug de código (el registro funciona: probado, da 302). **Fix aplicado:** swap + `--max-requests` (reciclaje) + threads. Causa real NO era falta de RAM (sobra), era fuga sin reciclar.
+- **Prueba de carga:** `ab -n 3000 -c 200 /login` → **432 req/s, 0 fallidas**. Spin-up de **500 usuarios concurrentes (locust)** NO tumbó la app ni causó OOM (RAM se quedó en 1.6/7.8 GB, app siguió RUNNING). **Evidencia fuerte de que aguanta 500 usuarios sin romperse.** Pendiente: tabla de latencias completa de locust (gevent no compiló en el Mac del usuario; correr locust desde una máquina con binario o `--host http://62.171.180.22:5001`). NO load-testear `/analyze` (IA: cuesta dinero + ya gateada por límites de plan). Usuarios de prueba se siembran con prefijo `loadtest` y se borran luego.
+- **🔴 TAREA INFRA CLAVE — nginx + dominio + SSL** delante de gunicorn: hoy se sirve en IP cruda `:5001` sin nginx ni HTTPS. nginx = sirve estáticos sin ocupar workers, amortigua clientes lentos (el mayor multiplicador de capacidad real), maneja miles de conexiones, da SSL Let's Encrypt. **Es EL salto necesario para 500 usuarios reales.** (DNS A → 62.171.180.22 + nginx reverse proxy a 127.0.0.1:5001 + certbot.)
 - **Confidencialidad IA:** en el front público NUNCA decir "GPT-4o"/"OpenAI" → "our proprietary AI engine".
 - **Calidad:** validar antes de pushear (Jinja parse, `node --check` del JS tocado, i18n con claves parejas en EN/ES/FR/PT).
 
