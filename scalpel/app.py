@@ -14,7 +14,7 @@ from datetime import datetime, timedelta, timezone
 
 from flask import (
     Flask, render_template, request, jsonify,
-    redirect, url_for, abort, make_response, session
+    redirect, url_for, abort, make_response, session, has_request_context
 )
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import (
@@ -1062,16 +1062,72 @@ def record_ai_cost(kind, response, user_id=None, plan=None):
             pass
 
 
+# ── Email i18n ──────────────────────────────────────────────────────────────
+# Emails are sent from the server, but the chosen UI language lives in the
+# browser (localStorage `scalpel_lang`). The client mirrors that choice into a
+# `scalpel_lang` cookie, which we read here to pick the email language.
+# Only EN/ES are filled for now; FR/PT fall back to EN until they're audited.
+EMAIL_I18N = {
+    'reset': {
+        'en': {
+            'subject': 'Trader Accelerator — Password Reset',
+            'body': (
+                "We received a request to reset your Trader Accelerator password.\n\n"
+                "Reset it here (link valid for 1 hour):\n{reset_url}\n\n"
+                "If you didn't request this, you can safely ignore this email."
+            ),
+        },
+        'es': {
+            'subject': 'Trader Accelerator — Restablecer contraseña',
+            'body': (
+                "Recibimos una solicitud para restablecer tu contraseña de Trader Accelerator.\n\n"
+                "Restablécela aquí (el enlace es válido por 1 hora):\n{reset_url}\n\n"
+                "Si no solicitaste esto, puedes ignorar este correo sin problema."
+            ),
+        },
+    },
+    'verify': {
+        'en': {
+            'subject': 'Trader Accelerator — Verify your email',
+            'body': (
+                "Welcome to Trader Accelerator!\n\n"
+                "Your verification code is: {code}\n\n"
+                "Enter it on the verification screen to activate your account. "
+                "This code expires in 15 minutes.\n\n"
+                "If you didn't create this account, you can safely ignore this email."
+            ),
+        },
+        'es': {
+            'subject': 'Trader Accelerator — Verifica tu correo',
+            'body': (
+                "¡Bienvenido a Trader Accelerator!\n\n"
+                "Tu código de verificación es: {code}\n\n"
+                "Ingrésalo en la pantalla de verificación para activar tu cuenta. "
+                "Este código expira en 15 minutos.\n\n"
+                "Si no creaste esta cuenta, puedes ignorar este correo sin problema."
+            ),
+        },
+    },
+}
+
+
+def _email_lang():
+    """Pick the email language from the `scalpel_lang` cookie. Falls back to
+    English (also for FR/PT until those emails are translated)."""
+    if has_request_context():
+        lang = request.cookies.get('scalpel_lang', 'en')
+        if lang in ('en', 'es'):
+            return lang
+    return 'en'
+
+
 def send_reset_email(to_email, reset_url):
     if not app.config.get('MAIL_PASSWORD'):
         app.logger.warning('MAIL_APP_PASSWORD not configured — cannot send reset email.')
         return False
-    msg = Message('Scalpel — Password Reset', recipients=[to_email])
-    msg.body = (
-        "We received a request to reset your Scalpel password.\n\n"
-        f"Reset it here (link valid for 1 hour):\n{reset_url}\n\n"
-        "If you didn't request this, you can safely ignore this email."
-    )
+    strings = EMAIL_I18N['reset'][_email_lang()]
+    msg = Message(strings['subject'], recipients=[to_email])
+    msg.body = strings['body'].format(reset_url=reset_url)
     # Bound the SMTP attempt so an unreachable mail server can't hang the request.
     prev_timeout = socket.getdefaulttimeout()
     socket.setdefaulttimeout(15)
@@ -1100,14 +1156,9 @@ def send_verification_email(to_email, code):
             to_email, code,
         )
         return False
-    msg = Message('Trader Accelerator — Verify your email', recipients=[to_email])
-    msg.body = (
-        "Welcome to Trader Accelerator!\n\n"
-        f"Your verification code is: {code}\n\n"
-        "Enter it on the verification screen to activate your account. "
-        "This code expires in 15 minutes.\n\n"
-        "If you didn't create this account, you can safely ignore this email."
-    )
+    strings = EMAIL_I18N['verify'][_email_lang()]
+    msg = Message(strings['subject'], recipients=[to_email])
+    msg.body = strings['body'].format(code=code)
     prev_timeout = socket.getdefaulttimeout()
     socket.setdefaulttimeout(15)
     try:

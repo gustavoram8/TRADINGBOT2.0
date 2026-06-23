@@ -179,6 +179,8 @@
       b.classList.toggle('active', b.getAttribute('data-lang') === lang);
     });
     try { localStorage.setItem('scalpel_lang', lang); } catch (e) {}
+    // Mirror the choice into a cookie so the server can localize emails.
+    try { document.cookie = 'scalpel_lang=' + lang + ';path=/;max-age=31536000;samesite=Lax'; } catch (e) {}
   }
 
   function init() {

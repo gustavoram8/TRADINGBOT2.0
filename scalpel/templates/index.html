@@ -8094,6 +8094,8 @@
     if (!I18N[lang]) lang = 'en';
     currentLang = lang;
     try { localStorage.setItem('scalpel_lang', lang); } catch (e) {}
+    // Mirror the choice into a cookie so the server can localize emails.
+    try { document.cookie = 'scalpel_lang=' + lang + ';path=/;max-age=31536000;samesite=Lax'; } catch (e) {}
     document.documentElement.lang = lang;
 
     document.querySelectorAll('[data-i18n]').forEach(el => {
