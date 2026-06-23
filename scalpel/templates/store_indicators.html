@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Trader Accelerator — Indicators</title>
+  <title data-i18n-title="store.doctitle">Trader Accelerator — Indicators</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -25,20 +25,21 @@
 <body>
 <nav>
   <a href="/" class="logo"><img src="/static/logo.png" alt="Trader Accelerator" class="logo-img" onerror="this.style.display='none';" /></a>
-  <a href="/app" class="back-link">← Back to app</a>
+  <a href="/app" class="back-link" data-i18n="nav.backApp">← Back to app</a>
 </nav>
 <section class="hero">
-  <div class="eyebrow">Store</div>
-  <h1>Indicators</h1>
-  <p>A dedicated storefront for premium trading indicators — separate from the
+  <div class="eyebrow" data-i18n="store.eyebrow">Store</div>
+  <h1 data-i18n="store.title">Indicators</h1>
+  <p data-i18n="store.hero">A dedicated storefront for premium trading indicators — separate from the
      in-app Indicators section. Browse, preview and purchase indicators here.</p>
 </section>
 <div class="wrap">
-  <div class="placeholder">
+  <div class="placeholder" data-i18n-html="store.ph">
     <strong>Indicators store — coming soon.</strong><br />
     This is a standalone page (distinct from the in-app Indicators tab) where the
     indicator catalog, pricing and checkout will live.
   </div>
 </div>
+<script src="/static/pages_i18n.js"></script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Trader Accelerator — Camos</title>
+  <title data-i18n-title="camos.doctitle">Trader Accelerator — Camos</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -35,39 +35,40 @@
 <body>
 <nav>
   <a href="/" class="logo"><img src="/static/logo.png" alt="Trader Accelerator" class="logo-img" onerror="this.style.display='none';" /></a>
-  <a href="/app" class="back-link">← Back to app</a>
+  <a href="/app" class="back-link" data-i18n="nav.backApp">← Back to app</a>
 </nav>
 <section class="hero">
-  <div class="eyebrow">Website Skins</div>
-  <h1>Camos</h1>
-  <p>Custom visual themes for your Trader Accelerator workspace. Unlock a skin and
+  <div class="eyebrow" data-i18n="camos.eyebrow">Website Skins</div>
+  <h1 data-i18n="camos.title">Camos</h1>
+  <p data-i18n="camos.hero">Custom visual themes for your Trader Accelerator workspace. Unlock a skin and
      restyle the entire website to match your style. More designs coming soon.</p>
 </section>
 <div class="grid">
   <div class="camo-card">
-    <div class="camo-swatch navy"><span class="soon-pill">Coming soon</span></div>
+    <div class="camo-swatch navy"><span class="soon-pill" data-i18n="common.soon">Coming soon</span></div>
     <div class="camo-body">
       <div class="camo-name">The Navy Trader</div>
-      <div class="camo-desc">A disciplined, military-grade navy theme across the whole platform.</div>
-      <a href="#" class="camo-cta">Get this skin</a>
+      <div class="camo-desc" data-i18n="camos.navyDesc">A disciplined, military-grade navy theme across the whole platform.</div>
+      <a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a>
     </div>
   </div>
   <div class="camo-card">
-    <div class="camo-swatch desert"><span class="soon-pill">Coming soon</span></div>
+    <div class="camo-swatch desert"><span class="soon-pill" data-i18n="common.soon">Coming soon</span></div>
     <div class="camo-body">
       <div class="camo-name">Desert Ops</div>
-      <div class="camo-desc">Warm tactical desert tones for a focused trading session.</div>
-      <a href="#" class="camo-cta">Get this skin</a>
+      <div class="camo-desc" data-i18n="camos.desertDesc">Warm tactical desert tones for a focused trading session.</div>
+      <a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a>
     </div>
   </div>
   <div class="camo-card">
-    <div class="camo-swatch forest"><span class="soon-pill">Coming soon</span></div>
+    <div class="camo-swatch forest"><span class="soon-pill" data-i18n="common.soon">Coming soon</span></div>
     <div class="camo-body">
       <div class="camo-name">Forest Recon</div>
-      <div class="camo-desc">Deep woodland green camo for a calm, grounded interface.</div>
-      <a href="#" class="camo-cta">Get this skin</a>
+      <div class="camo-desc" data-i18n="camos.forestDesc">Deep woodland green camo for a calm, grounded interface.</div>
+      <a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a>
     </div>
   </div>
 </div>
+<script src="/static/pages_i18n.js"></script>
 </body>
 </html>

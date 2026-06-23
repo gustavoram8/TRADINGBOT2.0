@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Trader Accelerator — Settings</title>
+  <title data-i18n-title="settings.doctitle">Trader Accelerator — Settings</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -74,69 +74,70 @@
 <body>
 <nav>
   <a href="/" class="logo"><img src="/static/logo.png" alt="Trader Accelerator" class="logo-img" onerror="this.style.display='none';" /></a>
-  <a href="/app" class="back-link">← Back to app</a>
+  <a href="/app" class="back-link" data-i18n="nav.backApp">← Back to app</a>
 </nav>
 <div class="wrap">
-  <div class="page-title">Settings</div>
+  <div class="page-title" data-i18n="settings.title">Settings</div>
 
   {% if request.args.get('cancelled') %}
-  <div class="flash ok">Plan cancellation scheduled — you'll keep access until your billing period ends.</div>
+  <div class="flash ok" data-i18n="settings.flashCancelled">Plan cancellation scheduled — you'll keep access until your billing period ends.</div>
   {% endif %}
   {% if request.args.get('reactivated') %}
-  <div class="flash info">Plan reactivated — your subscription will continue normally.</div>
+  <div class="flash info" data-i18n="settings.flashReactivated">Plan reactivated — your subscription will continue normally.</div>
   {% endif %}
 
   <div class="section">
-    <div class="section-head">Account</div>
+    <div class="section-head" data-i18n="settings.secAccount">Account</div>
     <div class="setting-row">
       <div class="setting-info">
-        <div class="setting-label">Email</div>
+        <div class="setting-label" data-i18n="settings.email">Email</div>
         <div class="setting-desc">{{ user.email }}</div>
       </div>
-      <div class="setting-control"><span class="pill-soon">Coming soon</span></div>
+      <div class="setting-control"><span class="pill-soon" data-i18n="common.soon">Coming soon</span></div>
     </div>
     <div class="setting-row">
       <div class="setting-info">
-        <div class="setting-label">Password</div>
-        <div class="setting-desc">Change your password.</div>
+        <div class="setting-label" data-i18n="settings.password">Password</div>
+        <div class="setting-desc" data-i18n="settings.passwordDesc">Change your password.</div>
       </div>
-      <div class="setting-control"><span class="pill-soon">Coming soon</span></div>
+      <div class="setting-control"><span class="pill-soon" data-i18n="common.soon">Coming soon</span></div>
     </div>
     <div class="setting-row">
       <div class="setting-info">
         <div class="setting-label">
-          Subscription
+          <span data-i18n="settings.subscription">Subscription</span>
           {% if user.plan == 'free' %}
             <span class="plan-badge free">Free</span>
           {% elif user.plan == 'standard' %}
             <span class="plan-badge {% if user.cancel_at_period_end %}cancelling{% else %}standard{% endif %}">
-              Standard{% if user.cancel_at_period_end %} · Cancelling{% endif %}
+              Standard{% if user.cancel_at_period_end %} · <span data-i18n="settings.cancelling">Cancelling</span>{% endif %}
             </span>
           {% elif user.plan == 'premium' %}
             <span class="plan-badge {% if user.cancel_at_period_end %}cancelling{% else %}premium{% endif %}">
-              Premium{% if user.cancel_at_period_end %} · Cancelling{% endif %}
+              Premium{% if user.cancel_at_period_end %} · <span data-i18n="settings.cancelling">Cancelling</span>{% endif %}
             </span>
           {% endif %}
         </div>
         {% if user.plan != 'free' and user.plan_expires_at %}
           {% if user.cancel_at_period_end %}
-            <div class="expires-note warn">⚠ Access ends {{ user.plan_expires_at.strftime('%b %d, %Y') }}</div>
+            <div class="expires-note warn"><span data-i18n="settings.accessEnds">⚠ Access ends</span> {{ user.plan_expires_at.strftime('%b %d, %Y') }}</div>
           {% else %}
-            <div class="expires-note">Renews {{ user.plan_expires_at.strftime('%b %d, %Y') }}</div>
+            <div class="expires-note"><span data-i18n="settings.renews">Renews</span> {{ user.plan_expires_at.strftime('%b %d, %Y') }}</div>
           {% endif %}
         {% endif %}
       </div>
       <div class="setting-control" style="display:flex;gap:10px;align-items:center;">
         {% if user.plan == 'free' %}
-          <a href="/pricing" style="font-size:13px;font-weight:700;color:var(--accent);text-decoration:none;">Upgrade →</a>
+          <a href="/pricing" style="font-size:13px;font-weight:700;color:var(--accent);text-decoration:none;" data-i18n="settings.upgrade">Upgrade →</a>
         {% elif user.cancel_at_period_end %}
           <form method="POST" action="/account/reactivate-plan">
-            <button type="submit" class="btn-reactivate">Reactivate</button>
+            <button type="submit" class="btn-reactivate" data-i18n="settings.reactivate">Reactivate</button>
           </form>
         {% else %}
-          <form method="POST" action="/account/cancel-plan"
-                onsubmit="return confirm('Cancel your plan? You keep access until {{ user.plan_expires_at.strftime('%b %d, %Y') if user.plan_expires_at else 'the end of your period' }}. No refund will be issued.');">
-            <button type="submit" class="btn-cancel">Cancel plan</button>
+          <form method="POST" action="/account/cancel-plan" class="js-cancel-form"
+                data-cancel-date="{{ user.plan_expires_at.strftime('%b %d, %Y') if user.plan_expires_at else '' }}"
+                onsubmit="return cancelPlanConfirm(this);">
+            <button type="submit" class="btn-cancel" data-i18n="settings.cancelPlan">Cancel plan</button>
           </form>
         {% endif %}
       </div>
@@ -144,51 +145,62 @@
   </div>
 
   <div class="section">
-    <div class="section-head">Preferences</div>
+    <div class="section-head" data-i18n="settings.secPrefs">Preferences</div>
     <div class="setting-row">
       <div class="setting-info">
-        <div class="setting-label">Language</div>
-        <div class="setting-desc">Interface language (EN / ES / FR / PT).</div>
+        <div class="setting-label" data-i18n="settings.language">Language</div>
+        <div class="setting-desc" data-i18n="settings.languageDesc">Interface language (EN / ES / FR / PT).</div>
       </div>
-      <div class="setting-control"><span class="pill-soon">Coming soon</span></div>
+      <div class="setting-control"><span class="pill-soon" data-i18n="common.soon">Coming soon</span></div>
     </div>
     <div class="setting-row">
       <div class="setting-info">
-        <div class="setting-label">Theme</div>
-        <div class="setting-desc">Dark or light mode (toggle available in-app).</div>
+        <div class="setting-label" data-i18n="settings.theme">Theme</div>
+        <div class="setting-desc" data-i18n="settings.themeDesc">Dark or light mode (toggle available in-app).</div>
       </div>
-      <div class="setting-control"><span class="pill-soon">Coming soon</span></div>
+      <div class="setting-control"><span class="pill-soon" data-i18n="common.soon">Coming soon</span></div>
     </div>
     <div class="setting-row">
       <div class="setting-info">
-        <div class="setting-label">Active Camo</div>
-        <div class="setting-desc">Choose a purchased website skin.</div>
+        <div class="setting-label" data-i18n="settings.activeCamo">Active Camo</div>
+        <div class="setting-desc" data-i18n="settings.activeCamoDesc">Choose a purchased website skin.</div>
       </div>
-      <div class="setting-control"><a href="/camos" style="font-size:13px;font-weight:700;color:var(--accent);text-decoration:none;">Browse Camos →</a></div>
+      <div class="setting-control"><a href="/camos" style="font-size:13px;font-weight:700;color:var(--accent);text-decoration:none;" data-i18n="settings.browseCamos">Browse Camos →</a></div>
     </div>
   </div>
 
   <div class="section">
-    <div class="section-head">Notifications</div>
+    <div class="section-head" data-i18n="settings.secNotif">Notifications</div>
     <div class="setting-row">
       <div class="setting-info">
-        <div class="setting-label">Email notifications</div>
-        <div class="setting-desc">Analysis results and important updates.</div>
+        <div class="setting-label" data-i18n="settings.emailNotif">Email notifications</div>
+        <div class="setting-desc" data-i18n="settings.emailNotifDesc">Analysis results and important updates.</div>
       </div>
       <div class="setting-control toggle-wrap"><input type="checkbox" class="toggle" disabled /></div>
     </div>
   </div>
 
   <div class="section">
-    <div class="section-head">Danger zone</div>
+    <div class="section-head" data-i18n="settings.secDanger">Danger zone</div>
     <div class="setting-row">
       <div class="setting-info">
-        <div class="setting-label">Delete account</div>
-        <div class="setting-desc">Permanently remove your account and all data.</div>
+        <div class="setting-label" data-i18n="settings.deleteAccount">Delete account</div>
+        <div class="setting-desc" data-i18n="settings.deleteAccountDesc">Permanently remove your account and all data.</div>
       </div>
-      <div class="setting-control"><span class="pill-soon">Coming soon</span></div>
+      <div class="setting-control"><span class="pill-soon" data-i18n="common.soon">Coming soon</span></div>
     </div>
   </div>
 </div>
+<script src="/static/pages_i18n.js"></script>
+<script>
+  // Localized cancel-plan confirmation (date stays as server-rendered).
+  function cancelPlanConfirm(form) {
+    var d = form.getAttribute('data-cancel-date');
+    var msg = d
+      ? PagesI18n.t('settings.cancelConfirm', { date: d })
+      : PagesI18n.t('settings.cancelConfirmNoDate');
+    return confirm(msg);
+  }
+</script>
 </body>
 </html>
