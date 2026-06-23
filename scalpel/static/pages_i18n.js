@@ -9,9 +9,9 @@
    Keys are namespaced per page (pricing.*, checkout.*, cdone.*, settings.*,
    camos.*, store.*) plus shared common.* / nav.*.
 
-   Only EN + ES are filled. FR/PT are intentionally left as empty stubs: any
-   missing key falls back to the element's English default, so a FR/PT visitor
-   sees English until those languages are audited (Task #2).
+   EN + ES + FR are filled. PT is intentionally left as an empty stub: any
+   missing key falls back to the element's English default, so a PT visitor
+   sees English until Portuguese is audited.
    ────────────────────────────────────────────────────────────────────────── */
 (function () {
   var T = {
@@ -363,9 +363,181 @@
       'cdone.sendProof': 'Enviar comprobante de pago →'
     },
 
-    // ── Task #2: fill these by auditing every surface in French / Portuguese.
-    //    Empty stubs → missing keys fall back to the English default text.
-    fr: {},
+    // ── Task #2: French audit (filled). Portuguese still pending → empty stub
+    //    means missing keys fall back to the English default text.
+    fr: {
+      // shared
+      'nav.backApp': '← Retour à l’app',
+      'nav.backPlans': '← Retour aux formules',
+      'common.soon': 'Bientôt disponible',
+      'common.annual': 'Annuel',
+      'common.monthly': 'Mensuel',
+      'plan.free': 'Gratuit',
+
+      // ── pricing.html ──
+      'pricing.doctitle': 'Trader Accelerator — Formules et tarifs',
+      'pricing.tagline': 'Plateforme d’analyse de trading',
+      'pricing.eyebrow': 'Formules et tarifs',
+      'pricing.h1': 'Affinez votre manière d’analyser chaque setup',
+      'pricing.heroSub': 'Commencez gratuitement. Passez à une formule supérieure quand vous voulez une analyse éducative plus poussée et quotidienne de vos setups.',
+      'pricing.save20': 'Économisez 20 %',
+      'pricing.subMonthly': 'Payez mois par mois, annulez à tout moment.',
+      'pricing.subAnnual': 'Payez une fois par an et économisez 20 % — soit 2 mois offerts sur chaque formule payante.',
+      'pricing.perMonth': '/ mois',
+      'pricing.fFullEngine': 'Moteur complet de feedback IA',
+      'pricing.currentPlan': '✓ Formule actuelle',
+      // Free
+      'pricing.freeTag': 'Pour les traders qui débutent leur journal de trading.',
+      'pricing.freeF1': '<strong>1</strong> analyse de capture par semaine',
+      'pricing.startFree': 'Commencer gratuitement',
+      // Standard
+      'pricing.stdTag': 'Pour les traders actifs qui revoient leurs setups chaque jour.',
+      'pricing.stdBilled': '<s>$300</s> &nbsp;$240 facturés par an',
+      'pricing.stdSave': '↓ 20 % — vous économisez 60 $/an',
+      'pricing.stdF1': '<strong>1</strong> analyse de capture par jour',
+      'pricing.everythingFree': 'Tout ce qui est inclus dans Gratuit',
+      'pricing.chooseStandard': 'Choisir Standard',
+      // Premium
+      'pricing.mostPopular': 'Le plus populaire',
+      'pricing.premTag': 'Pour les traders sérieux qui veulent une revue quotidienne approfondie.',
+      'pricing.premBilled': '<s>$600</s> &nbsp;$480 facturés par an',
+      'pricing.premSave': '↓ 20 % — vous économisez 120 $/an',
+      'pricing.premF1': 'Jusqu’à <strong>5 analyses de capture par jour</strong>',
+      'pricing.premForum': '<strong>Forum de Trading</strong> — communauté modérée par IA pour partager setups et idées',
+      'pricing.premScout': '<strong>Prop Firm Scout</strong> — filtrez et comparez plus de 25 prop firms avec un chat conseiller IA',
+      'pricing.everythingStandard': 'Tout ce qui est inclus dans Standard',
+      'pricing.premIndicators': 'Bibliothèque d’indicateurs <span class="label-soon">bientôt</span>',
+      'pricing.goPremium': 'Passer à Premium',
+      // Compare table
+      'pricing.compareTitle': 'Comparez toutes les fonctionnalités',
+      'pricing.compareSub': 'Même fonctionnalité, même ligne — voyez exactement ce que chaque formule inclut.',
+      'pricing.soon': 'bientôt',
+      'pricing.val1week': '1 / semaine',
+      'pricing.val1day': '1 / jour',
+      'pricing.val5day': '5 / jour',
+      'pricing.cmpAnalyses': 'Analyses de captures',
+      'pricing.cmpAnalysesNote': 'revue de graphiques par IA',
+      'pricing.cmpProjects': 'Projets d’analyse enregistrés',
+      'pricing.cmpProjectsNote': 'presets de setup réutilisables',
+      'pricing.cmpPreflight': 'Checklist Pre-Flight',
+      'pricing.cmpPreflightNote': 'entraîneur de discipline et statistiques',
+      'pricing.cmpForum': 'Forum de Trading',
+      'pricing.cmpForumNote': 'communauté modérée par IA',
+      'pricing.cmpQuiz': 'Quiz Academy',
+      'pricing.cmpQuizNote': 'toutes les méthodologies + Hardcore',
+      'pricing.cmpDaily': 'Défi quotidien et Roulette',
+      'pricing.cmpChalkboard': 'Tableau',
+      'pricing.cmpChalkboardNote': 'tableaux blancs d’étude visuelle',
+      'pricing.cmpSynapseNote': 'expérience d’étude en 3D',
+      'pricing.cmpIndicators': 'Bibliothèque d’indicateurs',
+      'pricing.cmpScout': 'Prop Firm Scout',
+      'pricing.cmpScoutNote': 'comparez plus de 25 firms + conseiller IA',
+      'pricing.cmpCamosNote': 'thèmes de design du tableau de bord',
+      'pricing.footNote': 'Les formules présentées sont introductives. La facturation n’est pas encore active — ces niveaux donnent un aperçu de ce que proposera Trader Accelerator. À des fins éducatives uniquement ; pas un conseil financier.',
+      'pricing.footer': 'TRADER ACCELERATOR · Plateforme d’analyse de trading · À des fins éducatives uniquement · Pas un conseil financier<br><span style="opacity:.65">&copy; 2026 Trader Accelerator. Tous droits réservés.</span>',
+
+      // ── store_indicators.html ──
+      'store.doctitle': 'Trader Accelerator — Indicateurs',
+      'store.eyebrow': 'Boutique',
+      'store.title': 'Indicateurs',
+      'store.hero': 'Une boutique dédiée aux indicateurs de trading premium, distincte de la section Indicateurs dans l’app. Parcourez, prévisualisez et achetez des indicateurs ici.',
+      'store.ph': '<strong>Boutique d’indicateurs — bientôt disponible.</strong><br />Ceci est une page indépendante (distincte de l’onglet Indicateurs dans l’app) où se trouveront le catalogue d’indicateurs, les tarifs et le paiement.',
+
+      // ── camos.html ──
+      'camos.doctitle': 'Trader Accelerator — Camos',
+      'camos.eyebrow': 'Skins du site',
+      'camos.title': 'Camos',
+      'camos.hero': 'Des thèmes visuels personnalisés pour votre espace Trader Accelerator. Débloquez un skin et restylez tout le site à votre image. D’autres designs arrivent bientôt.',
+      'camos.navyDesc': 'Un thème bleu marine, discipliné et de qualité militaire, sur toute la plateforme.',
+      'camos.desertDesc': 'Des tons désertiques chauds et tactiques pour une séance de trading concentrée.',
+      'camos.forestDesc': 'Un camouflage vert forêt profond pour une interface calme et posée.',
+      'camos.getSkin': 'Obtenir ce skin',
+
+      // ── settings.html ──
+      'settings.doctitle': 'Trader Accelerator — Paramètres',
+      'settings.title': 'Paramètres',
+      'settings.flashCancelled': 'Annulation de la formule programmée — vous conservez l’accès jusqu’à la fin de votre période de facturation.',
+      'settings.flashReactivated': 'Formule réactivée — votre abonnement continuera normalement.',
+      'settings.secAccount': 'Compte',
+      'settings.email': 'E-mail',
+      'settings.password': 'Mot de passe',
+      'settings.passwordDesc': 'Changez votre mot de passe.',
+      'settings.subscription': 'Abonnement',
+      'settings.cancelling': 'En cours d’annulation',
+      'settings.accessEnds': '⚠ L’accès se termine le',
+      'settings.renews': 'Se renouvelle le',
+      'settings.upgrade': 'Améliorer la formule →',
+      'settings.reactivate': 'Réactiver',
+      'settings.cancelPlan': 'Annuler la formule',
+      'settings.cancelConfirm': 'Annuler votre formule ? Vous conservez l’accès jusqu’au {date}. Aucun remboursement ne sera effectué.',
+      'settings.cancelConfirmNoDate': 'Annuler votre formule ? Vous conservez l’accès jusqu’à la fin de votre période. Aucun remboursement ne sera effectué.',
+      'settings.secPrefs': 'Préférences',
+      'settings.language': 'Langue',
+      'settings.languageDesc': 'Langue de l’interface (EN / ES / FR / PT).',
+      'settings.theme': 'Thème',
+      'settings.themeDesc': 'Mode clair ou sombre (le bouton est disponible dans l’app).',
+      'settings.activeCamo': 'Camo actif',
+      'settings.activeCamoDesc': 'Choisissez un skin du site que vous avez acheté.',
+      'settings.browseCamos': 'Voir les Camos →',
+      'settings.secNotif': 'Notifications',
+      'settings.emailNotif': 'Notifications par e-mail',
+      'settings.emailNotifDesc': 'Résultats d’analyse et nouveautés importantes.',
+      'settings.secDanger': 'Zone de danger',
+      'settings.deleteAccount': 'Supprimer le compte',
+      'settings.deleteAccountDesc': 'Supprimez définitivement votre compte et toutes vos données.',
+
+      // ── checkout.html ──
+      'checkout.doctitle': 'Trader Accelerator — Paiement',
+      'checkout.eyebrow': 'Paiement',
+      'checkout.title': 'Vérifiez votre commande',
+      'checkout.planBilledYearly': 'formule (facturation annuelle)',
+      'checkout.planBilledMonthly': 'formule (facturation mensuelle)',
+      'checkout.discount': 'Remise',
+      'checkout.total': 'Total',
+      'checkout.perYear': '/ an',
+      'checkout.perMonth': '/ mois',
+      'checkout.promoLabel': 'Vous avez un code de réduction ou de créateur ?',
+      'checkout.promoPlaceholder': 'Saisissez le code',
+      'checkout.promoApply': 'Appliquer',
+      'checkout.promoApplied': 'Appliqué',
+      'checkout.promoNote': 'Les codes de créateur soutiennent le trader qui vous a recommandé et peuvent débloquer une réduction.',
+      'checkout.continue': 'Continuer vers le paiement →',
+      'checkout.infoLine': 'Vous recevrez les instructions de paiement à l’étape suivante. Votre formule s’active dès que notre équipe confirme le paiement.',
+      'checkout.agreePre': 'En continuant, vous acceptez nos',
+      'checkout.terms': 'Conditions générales',
+      // promo JS feedback
+      'checkout.discountLabel': 'Remise',
+      'checkout.codeApplied': '✓ Code appliqué — vous économisez ${saved}.',
+      'checkout.err.not_found': 'Ce code n’existe pas.',
+      'checkout.err.expired': 'Ce code a expiré.',
+      'checkout.err.maxed': 'Ce code a atteint sa limite d’utilisation.',
+      'checkout.err.inactive': 'Ce code n’est plus actif.',
+      'checkout.err.cycle': 'Ce code n’est pas valable pour ce cycle de facturation.',
+      'checkout.err.empty': 'Veuillez saisir un code.',
+      'checkout.err.generic': 'Ce code n’a pas pu être appliqué.',
+
+      // ── checkout_done.html ──
+      'cdone.doctitle': 'Trader Accelerator — Commande reçue',
+      'cdone.dup': 'Vous avez déjà une commande en attente de confirmation de paiement. Terminez celle-ci d’abord — voici ses détails. Si vous pensez qu’il s’agit d’une erreur, <a href="/contact">contactez le support</a>.',
+      'cdone.title': 'Commande reçue',
+      'cdone.sub': 'Votre commande est réservée. Effectuez le paiement pour activer votre formule.',
+      'cdone.orderId': 'N° de commande',
+      'cdone.plan': 'Formule',
+      'cdone.promoCode': 'Code promo',
+      'cdone.amountDue': 'Montant à payer',
+      'cdone.payTitle': '⏳ Instructions de paiement',
+      'cdone.step1a': 'Envoyez',
+      'cdone.step1b': 'en USDT vers notre compte Binance.',
+      'cdone.step2a': 'Indiquez votre',
+      'cdone.step2b': 'dans la note de paiement.',
+      'cdone.orderIdInline': 'N° de commande',
+      'cdone.step3a': 'Envoyez la preuve de paiement via notre',
+      'cdone.contactForm': 'formulaire de contact',
+      'cdone.step3b': ', en sélectionnant « Facturation ».',
+      'cdone.step4': 'Notre équipe vérifie et active votre formule — généralement en quelques heures.',
+      'cdone.backApp': 'Retour à l’app',
+      'cdone.sendProof': 'Envoyer la preuve de paiement →'
+    },
     pt: {}
   };
 
