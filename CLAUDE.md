@@ -23,7 +23,32 @@ Mostrar "📋 TAREAS PENDIENTES" la **primera vez que el usuario escriba cada d�
 
 ---
 
-## 🟢 EN CURSO — Mentorías + Kill Zones (rama actual)
+## 🟢 EN CURSO — Auditoría de copy ES + pendientes (rama actual)
+
+**Auditoría de español (calidad): ✅ COMPLETA** en todo lo traducido. Pusheada en 8 partes
+(commits "ES copy audit part 1..8"): landing, UI (`index.html` todos los dicts: base I18N,
+MT_I18N, UNLOCK/reveal planes, REVIEW/testimonios, RANK, TOPIC, DAILY, mapa Synapse, explainer),
+PDFs, certificado/verify, Mentorías (`improve_i18n.js`), Synapse (`synapse_translations.py`),
+quiz banks completos (QUESTION_BANK 398 q + HARDCORE_SCENARIOS), auth.js, contact, splash.
+Decisiones del usuario: **Legal (T&C/Privacy) se queda en INGLÉS**; registro ES **LatAm neutro**
+(asesoría, no asesoramiento); en el PDF legal de Synapse se añadió **nota "el inglés prevalece"**
+en los 4 idiomas; **"pierna"** (=leg, 66 casos en quiz) se DEJA tal cual; **kicker** del
+certificado en inglés. Pocos errores reales hallados (todo estaba muy bien hecho).
+
+**⚠️ PENDIENTE de traducción (gap, NO calidad):** estas páginas están **100% en inglés, sin
+ES/FR/PT**: `pricing.html` (planes), `checkout_done.html` (pago Binance), `settings.html`,
+`camos.html`, `store_indicators.html`. Traducir desde cero. FR y PT del resto del sitio NUNCA
+se auditaron (solo ES).
+
+**🚨 BUG ABIERTO — ERROR 500 en `/register`** (reportado 2026-06-23, prod IP cruda). Sin
+investigar a fondo (sin acceso a logs). Sospechas: (1) `send_verification_email` lanza excepción
+(SMTP/Gmail OTP); o (2) esquema PostgreSQL de prod desactualizado (faltan columnas
+`terms_version`/`terms_accepted_at` o tabla fingerprints — falta migrar). Ver causa real con
+`supervisorctl tail -f traderacelerator stderr` en el VPS y reproducir. **Bloquea registros.**
+
+---
+
+## 🟢 Mentorías + Kill Zones (rama actual)
 
 **Kill Zones (KZ): ✅ TERMINADO.** Estética armonizada con la marca (grafito+dorado, borde con
 gradiente como el listón de Mentorías). Horarios según indicador del usuario: NY AM 9:30–11:00,
