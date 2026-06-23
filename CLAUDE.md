@@ -41,10 +41,13 @@ Decisiones del usuario: **Legal (T&C/Privacy) se queda en INGLÉS**; registro ES
 en los 4 idiomas; **"pierna"** (=leg, 66 casos en quiz) se DEJA tal cual; **kicker** del
 certificado en inglés. Pocos errores reales hallados (todo estaba muy bien hecho).
 
-**⚠️ PENDIENTE de traducción (gap, NO calidad):** estas páginas están **100% en inglés, sin
+**⚠️ PENDIENTE de traducción (gap, NO calidad):** estas superficies están **100% en inglés, sin
 ES/FR/PT**: `pricing.html` (planes), `checkout_done.html` (pago Binance), `settings.html`,
-`camos.html`, `store_indicators.html`. Traducir desde cero. FR y PT del resto del sitio NUNCA
-se auditaron (solo ES).
+`camos.html`, `store_indicators.html`, **y los EMAILS** (`send_reset_email`/`send_verification_email`
+en `app.py` ~1065/1088 — hardcoded en inglés). ⚠️ Los emails además **todavía dicen "Scalpel"**
+(marca vieja), no "Trader Accelerator" → corregir marca + traducir. Traducir todo esto desde cero.
+FR y PT del resto del sitio NUNCA se auditaron (solo ES). Quiz: caza de errores por patrones +
+lectura de muestras, no lectura literal de las 7.600 líneas.
 
 **🚨 BUG ABIERTO — ERROR 500 en `/register`** (reportado 2026-06-23, prod IP cruda). Sin
 investigar a fondo (sin acceso a logs). Sospechas: (1) `send_verification_email` lanza excepción
