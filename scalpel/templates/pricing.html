@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Trader Accelerator — Plans & Pricing</title>
+  <title data-i18n-title="pricing.doctitle">Trader Accelerator — Plans & Pricing</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -465,160 +465,160 @@
     <div id="logo-fallback" class="logo-fallback">
       <div>
         <div class="logo-text">TRADER ACCELERATOR</div>
-        <div class="logo-sub">Trade Analysis Platform</div>
+        <div class="logo-sub" data-i18n="pricing.tagline">Trade Analysis Platform</div>
       </div>
     </div>
   </a>
-  <a href="/" class="back-link">← Back to app</a>
+  <a href="/" class="back-link" data-i18n="nav.backApp">← Back to app</a>
 </nav>
 
 <section class="hero">
-  <div class="eyebrow">Plans &amp; Pricing</div>
-  <h1>Sharpen how you analyze every setup</h1>
-  <p>Start free. Upgrade when you want deeper, daily educational analysis of your setups.</p>
+  <div class="eyebrow" data-i18n="pricing.eyebrow">Plans &amp; Pricing</div>
+  <h1 data-i18n="pricing.h1">Sharpen how you analyze every setup</h1>
+  <p data-i18n="pricing.heroSub">Start free. Upgrade when you want deeper, daily educational analysis of your setups.</p>
 </section>
 
 <div class="billing-wrap">
   <div class="billing-toggle" role="tablist" aria-label="Billing cycle">
-    <button type="button" class="bt-opt active" data-cycle="monthly" role="tab" aria-selected="true">Monthly</button>
+    <button type="button" class="bt-opt active" data-cycle="monthly" role="tab" aria-selected="true" data-i18n="common.monthly">Monthly</button>
     <button type="button" class="bt-opt" data-cycle="annual" role="tab" aria-selected="false">
-      Annual <span class="bt-save">Save 20%</span>
+      <span data-i18n="common.annual">Annual</span> <span class="bt-save" data-i18n="pricing.save20">Save 20%</span>
     </button>
   </div>
-  <div class="billing-sub" id="billing-sub">Pay month to month, cancel anytime.</div>
+  <div class="billing-sub" id="billing-sub" data-i18n="pricing.subMonthly">Pay month to month, cancel anytime.</div>
 </div>
 
 <div class="pricing-grid">
 
   <!-- ── FREE ── -->
   <div class="plan free">
-    <div class="plan-name">Free</div>
-    <div class="plan-tagline">For traders just getting started with journaling.</div>
+    <div class="plan-name" data-i18n="plan.free">Free</div>
+    <div class="plan-tagline" data-i18n="pricing.freeTag">For traders just getting started with journaling.</div>
     <div class="price">
       <span class="currency">$</span>
       <span class="amount">0</span>
-      <span class="period">/ month</span>
+      <span class="period" data-i18n="pricing.perMonth">/ month</span>
     </div>
     <div class="plan-divider"></div>
     <ul class="features">
       <li>
         <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-        <span><strong>1</strong> screenshot analysis per week</span>
+        <span data-i18n-html="pricing.freeF1"><strong>1</strong> screenshot analysis per week</span>
       </li>
       <li>
         <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-        <span>Full AI feedback engine</span>
+        <span data-i18n="pricing.fFullEngine">Full AI feedback engine</span>
       </li>
     </ul>
     {% if not current_user.is_authenticated %}
-    <a href="/" class="cta">Start free</a>
+    <a href="/" class="cta" data-i18n="pricing.startFree">Start free</a>
     {% endif %}
   </div>
 
   <!-- ── STANDARD ── -->
   <div class="plan standard">
     <div class="plan-name">Standard</div>
-    <div class="plan-tagline">For active traders reviewing setups daily.</div>
+    <div class="plan-tagline" data-i18n="pricing.stdTag">For active traders reviewing setups daily.</div>
     <div class="price-monthly">
       <div class="price">
         <span class="currency">$</span>
         <span class="amount">25</span>
-        <span class="period">/ month</span>
+        <span class="period" data-i18n="pricing.perMonth">/ month</span>
       </div>
     </div>
     <div class="price-annual hidden">
       <div class="price">
         <span class="currency">$</span>
         <span class="amount">20</span>
-        <span class="period">/ month</span>
+        <span class="period" data-i18n="pricing.perMonth">/ month</span>
       </div>
       <div class="annual-detail">
-        <span class="annual-billed"><s>$300</s> &nbsp;$240 billed yearly</span>
-        <span class="annual-save">↓ 20% — you save $60/yr</span>
+        <span class="annual-billed" data-i18n-html="pricing.stdBilled"><s>$300</s> &nbsp;$240 billed yearly</span>
+        <span class="annual-save" data-i18n="pricing.stdSave">↓ 20% — you save $60/yr</span>
       </div>
     </div>
     <div class="plan-divider"></div>
     <ul class="features">
       <li>
         <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-        <span><strong>1</strong> screenshot analysis per day</span>
+        <span data-i18n-html="pricing.stdF1"><strong>1</strong> screenshot analysis per day</span>
       </li>
       <li>
         <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-        <span>Full AI feedback engine</span>
+        <span data-i18n="pricing.fFullEngine">Full AI feedback engine</span>
       </li>
       <li>
         <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-        <span>Everything in Free</span>
+        <span data-i18n="pricing.everythingFree">Everything in Free</span>
       </li>
     </ul>
     {% if user_plan == 'standard' %}
-    <span class="cta cta-current">✓ Current Plan</span>
+    <span class="cta cta-current" data-i18n="pricing.currentPlan">✓ Current Plan</span>
     {% elif user_plan == 'premium' %}
     <span class="cta cta-current">—</span>
     {% else %}
-    <a href="/checkout?plan=standard&cycle=monthly" class="cta cta-buy" data-plan="standard">Choose Standard</a>
+    <a href="/checkout?plan=standard&cycle=monthly" class="cta cta-buy" data-plan="standard" data-i18n="pricing.chooseStandard">Choose Standard</a>
     {% endif %}
   </div>
 
   <!-- ── PREMIUM ── -->
   <div class="plan premium featured">
-    <div class="badge-pop">Most Popular</div>
+    <div class="badge-pop" data-i18n="pricing.mostPopular">Most Popular</div>
     <div class="plan-name">Premium</div>
-    <div class="plan-tagline">For serious traders who want deep daily review.</div>
+    <div class="plan-tagline" data-i18n="pricing.premTag">For serious traders who want deep daily review.</div>
     <div class="price-monthly">
       <div class="price">
         <span class="currency">$</span>
         <span class="amount">50</span>
-        <span class="period">/ month</span>
+        <span class="period" data-i18n="pricing.perMonth">/ month</span>
       </div>
     </div>
     <div class="price-annual hidden">
       <div class="price">
         <span class="currency">$</span>
         <span class="amount">40</span>
-        <span class="period">/ month</span>
+        <span class="period" data-i18n="pricing.perMonth">/ month</span>
       </div>
       <div class="annual-detail">
-        <span class="annual-billed"><s>$600</s> &nbsp;$480 billed yearly</span>
-        <span class="annual-save">↓ 20% — you save $120/yr</span>
+        <span class="annual-billed" data-i18n-html="pricing.premBilled"><s>$600</s> &nbsp;$480 billed yearly</span>
+        <span class="annual-save" data-i18n="pricing.premSave">↓ 20% — you save $120/yr</span>
       </div>
     </div>
     <div class="plan-divider"></div>
     <ul class="features">
       <li>
         <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-        <span>Up to <strong>5 screenshot analyses per day</strong></span>
+        <span data-i18n-html="pricing.premF1">Up to <strong>5 screenshot analyses per day</strong></span>
       </li>
       <li>
         <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-        <span>Full AI feedback engine</span>
+        <span data-i18n="pricing.fFullEngine">Full AI feedback engine</span>
       </li>
       <li>
         <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-        <span><strong>Trading Forum</strong> — AI-moderated community to share setups &amp; ideas</span>
+        <span data-i18n-html="pricing.premForum"><strong>Trading Forum</strong> — AI-moderated community to share setups &amp; ideas</span>
       </li>
       {% if scout_enabled %}
       <li>
         <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-        <span><strong>Prop Firm Scout</strong> — filter &amp; compare 25+ prop firms with AI advisor chat</span>
+        <span data-i18n-html="pricing.premScout"><strong>Prop Firm Scout</strong> — filter &amp; compare 25+ prop firms with AI advisor chat</span>
       </li>
       {% endif %}
       <li>
         <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-        <span>Everything in Standard</span>
+        <span data-i18n="pricing.everythingStandard">Everything in Standard</span>
       </li>
       {% if indicators_enabled %}
       <li class="soon">
         <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-        <span>Indicators library <span class="label-soon">soon</span></span>
+        <span data-i18n-html="pricing.premIndicators">Indicators library <span class="label-soon">soon</span></span>
       </li>
       {% endif %}
     </ul>
     {% if user_plan == 'premium' %}
-    <span class="cta cta-current">✓ Current Plan</span>
+    <span class="cta cta-current" data-i18n="pricing.currentPlan">✓ Current Plan</span>
     {% else %}
-    <a href="/checkout?plan=premium&cycle=monthly" class="cta cta-buy" data-plan="premium">Go Premium</a>
+    <a href="/checkout?plan=premium&cycle=monthly" class="cta cta-buy" data-plan="premium" data-i18n="pricing.goPremium">Go Premium</a>
     {% endif %}
   </div>
 
@@ -626,91 +626,91 @@
 
 <!-- ── Feature comparison matrix (rows ordered by importance) ── -->
 <section class="compare">
-  <h2>Compare all features</h2>
-  <p class="compare-sub">Same feature, same row — see exactly what each plan includes.</p>
+  <h2 data-i18n="pricing.compareTitle">Compare all features</h2>
+  <p class="compare-sub" data-i18n="pricing.compareSub">Same feature, same row — see exactly what each plan includes.</p>
   <div class="cmp-wrap">
     <table class="cmp">
       <thead>
         <tr>
           <th class="feat">&nbsp;</th>
-          <th><span class="pname free">Free</span></th>
+          <th><span class="pname free" data-i18n="plan.free">Free</span></th>
           <th><span class="pname standard">Standard</span></th>
           <th class="col-premium"><span class="pname premium">Premium</span></th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td class="feat">Screenshot analyses<span class="feat-note">AI chart review</span></td>
-          <td class="val">1 / week</td>
-          <td class="val on">1 / day</td>
-          <td class="val on col-premium">5 / day</td>
+          <td class="feat"><span data-i18n="pricing.cmpAnalyses">Screenshot analyses</span><span class="feat-note" data-i18n="pricing.cmpAnalysesNote">AI chart review</span></td>
+          <td class="val" data-i18n="pricing.val1week">1 / week</td>
+          <td class="val on" data-i18n="pricing.val1day">1 / day</td>
+          <td class="val on col-premium" data-i18n="pricing.val5day">5 / day</td>
         </tr>
         <tr>
-          <td class="feat">Full AI feedback engine</td>
+          <td class="feat" data-i18n="pricing.fFullEngine">Full AI feedback engine</td>
           <td class="val"><span class="yes">✓</span></td>
           <td class="val"><span class="yes">✓</span></td>
           <td class="val col-premium"><span class="yes">✓</span></td>
         </tr>
         <tr>
-          <td class="feat">Saved analysis projects<span class="feat-note">reusable setup presets</span></td>
+          <td class="feat"><span data-i18n="pricing.cmpProjects">Saved analysis projects</span><span class="feat-note" data-i18n="pricing.cmpProjectsNote">reusable setup presets</span></td>
           <td class="val">1</td>
           <td class="val on">5</td>
           <td class="val on col-premium">10</td>
         </tr>
         <tr>
-          <td class="feat">Pre-Flight checklist<span class="feat-note">discipline trainer &amp; stats</span></td>
+          <td class="feat"><span data-i18n="pricing.cmpPreflight">Pre-Flight checklist</span><span class="feat-note" data-i18n="pricing.cmpPreflightNote">discipline trainer &amp; stats</span></td>
           <td class="val"><span class="no">—</span></td>
           <td class="val"><span class="no">—</span></td>
           <td class="val col-premium"><span class="yes">✓</span></td>
         </tr>
         <tr>
-          <td class="feat">Trading Forum<span class="feat-note">AI-moderated community</span></td>
+          <td class="feat"><span data-i18n="pricing.cmpForum">Trading Forum</span><span class="feat-note" data-i18n="pricing.cmpForumNote">AI-moderated community</span></td>
           <td class="val"><span class="no">—</span></td>
           <td class="val"><span class="no">—</span></td>
           <td class="val col-premium"><span class="yes">✓</span></td>
         </tr>
         <tr>
-          <td class="feat">Quiz Academy<span class="feat-note">every methodology + Hardcore</span></td>
+          <td class="feat"><span data-i18n="pricing.cmpQuiz">Quiz Academy</span><span class="feat-note" data-i18n="pricing.cmpQuizNote">every methodology + Hardcore</span></td>
           <td class="val"><span class="no">—</span></td>
           <td class="val"><span class="no">—</span></td>
           <td class="val col-premium"><span class="yes">✓</span></td>
         </tr>
         <tr>
-          <td class="feat">Daily Challenge &amp; Roulette</td>
+          <td class="feat" data-i18n="pricing.cmpDaily">Daily Challenge &amp; Roulette</td>
           <td class="val"><span class="no">—</span></td>
           <td class="val"><span class="no">—</span></td>
           <td class="val col-premium"><span class="yes">✓</span></td>
         </tr>
         <tr>
-          <td class="feat">Chalkboard<span class="feat-note">visual study whiteboards</span></td>
+          <td class="feat"><span data-i18n="pricing.cmpChalkboard">Chalkboard</span><span class="feat-note" data-i18n="pricing.cmpChalkboardNote">visual study whiteboards</span></td>
           <td class="val"><span class="no">—</span></td>
           <td class="val"><span class="no">—</span></td>
           <td class="val col-premium"><span class="yes">✓</span></td>
         </tr>
         <tr>
-          <td class="feat">Synapse<span class="feat-note">3D study experience</span></td>
+          <td class="feat">Synapse<span class="feat-note" data-i18n="pricing.cmpSynapseNote">3D study experience</span></td>
           <td class="val"><span class="no">—</span></td>
           <td class="val"><span class="no">—</span></td>
           <td class="val col-premium"><span class="yes">✓</span></td>
         </tr>
         {% if indicators_enabled %}
         <tr>
-          <td class="feat">Indicators library</td>
+          <td class="feat" data-i18n="pricing.cmpIndicators">Indicators library</td>
           <td class="val"><span class="no">—</span></td>
           <td class="val"><span class="no">—</span></td>
-          <td class="val col-premium"><span class="soon-tag">soon</span></td>
+          <td class="val col-premium"><span class="soon-tag" data-i18n="pricing.soon">soon</span></td>
         </tr>
         {% endif %}
         {% if scout_enabled %}
         <tr>
-          <td class="feat">Prop Firm Scout<span class="feat-note">compare 25+ firms + AI advisor</span></td>
+          <td class="feat"><span data-i18n="pricing.cmpScout">Prop Firm Scout</span><span class="feat-note" data-i18n="pricing.cmpScoutNote">compare 25+ firms + AI advisor</span></td>
           <td class="val"><span class="no">—</span></td>
           <td class="val"><span class="no">—</span></td>
           <td class="val col-premium"><span class="yes">✓</span></td>
         </tr>
         {% endif %}
         <tr>
-          <td class="feat">Camos<span class="feat-note">dashboard design themes</span></td>
+          <td class="feat">Camos<span class="feat-note" data-i18n="pricing.cmpCamosNote">dashboard design themes</span></td>
           <td class="val"><span class="no">—</span></td>
           <td class="val on">1</td>
           <td class="val on col-premium">3</td>
@@ -720,20 +720,20 @@
   </div>
 </section>
 
-<p class="foot-note">
+<p class="foot-note" data-i18n="pricing.footNote">
   Plans shown are introductory. Billing is not active yet — these tiers preview what Trader Accelerator will offer. For educational purposes only; not financial advice.
 </p>
 
-<footer>TRADER ACCELERATOR · Trade Analysis Platform · For educational purposes only · Not financial advice<br><span style="opacity:.65">&copy; 2026 Trader Accelerator. All rights reserved.</span></footer>
+<footer data-i18n-html="pricing.footer">TRADER ACCELERATOR · Trade Analysis Platform · For educational purposes only · Not financial advice<br><span style="opacity:.65">&copy; 2026 Trader Accelerator. All rights reserved.</span></footer>
 
+<script src="/static/pages_i18n.js"></script>
 <script>
   (function () {
     var opts = document.querySelectorAll('.bt-opt');
     var sub  = document.getElementById('billing-sub');
-    var SUBS = {
-      monthly: 'Pay month to month, cancel anytime.',
-      annual:  'Pay once a year and save 20% — that’s 2 months free on every paid plan.'
-    };
+    function SUBS(cycle) {
+      return PagesI18n.t(cycle === 'annual' ? 'pricing.subAnnual' : 'pricing.subMonthly');
+    }
 
     function setCycle(cycle) {
       opts.forEach(function (o) {
@@ -751,7 +751,7 @@
       document.querySelectorAll('.cta-buy').forEach(function (a) {
         a.href = '/checkout?plan=' + a.dataset.plan + '&cycle=' + cycle;
       });
-      if (sub) sub.textContent = SUBS[cycle];
+      if (sub) sub.textContent = SUBS(cycle);
     }
 
     opts.forEach(function (o) {
