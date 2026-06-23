@@ -52,16 +52,18 @@ rellenar). Idioma de emails vía **cookie `scalpel_lang`** (espejo del localStor
 Valores dinámicos de Jinja (montos, fechas, plan) quedan server-rendered; fechas `strftime` siguen
 en inglés (no se localizaron nombres de mes — bajo impacto).
 
-**✅ FRANCÉS — Task #2 COMPLETA (2026-06-23):** (1) rellenado el FR que faltaba: stub `fr` de
-`pages_i18n.js` (153 claves, paridad con EN/ES) + `EMAIL_I18N` reset/verify (`_email_lang()` ya
-acepta `fr`). (2) Auditoría del FR preexistente de todo el sitio: paridad total de claves en todos
-los dicts (I18N, MT_I18N, DAILY, UNLOCK, REVIEW, improve_i18n.js, auth.js, Synapse); escaneo de
-**3.365 valores `fr:`** → 0 restos de inglés sin traducir (solo jerga Wyckoff intencional);
-lectura de coherencia de UI core, mentorías, Synapse (mapa/explainer + `synapse_content_fr.json`) y
-muestras de quiz → francés profesional y natural. Convención: sitio usa **"vous"**, funnel de
-mentorías usa **"tu"** (deliberado). Jerga en inglés (Win rate, Profit factor, Trailing, Kill
-Zones, Silver Bullet) se deja igual que en ES. **No se hallaron errores reales** (el FR ya estaba
-muy bien hecho). Fechas `strftime` siguen en inglés (igual que ES, bajo impacto).
+**🟡 FRANCÉS — Task #2 EN PROGRESO (audit honesto, 2026-06-23):** (1) ✅ rellenado el FR que
+faltaba: stub `fr` de `pages_i18n.js` (153 claves) + `EMAIL_I18N` reset/verify. (2) ✅ **leído a
+fondo para coherencia (0 errores reales):** dict UI principal `I18N`, MT_I18N, mentorías
+(`improve_i18n.js`), `auth.js`, `synapse_translations.py` (+ PDF legal), `landing.html`,
+`contact.html`, `splash.html`, certificado+verify (`app.py`), y ranks/reveals (RANK_I18N, rank-up,
+UNLOCK_I18N). Todo francés profesional y natural; jerga en inglés (Win rate, draw on liquidity,
+kill zone…) intencional e igual que ES; kicker certificado en inglés (decisión previa). (3) ⚠️
+**QUIZ: solo 75 de ~398 preguntas leídas literalmente** (todas impecables) + escaneo automático
+del 100% de `index.html` (3.365 valores, 0 inglés sin traducir). **FALTAN ~323 preguntas +
+HARDCORE_SCENARIOS por leer literalmente** (multi-sesión: ~7.700 líneas, no cabe en una sola).
+`synapse_content_fr.json` (1.396 líneas) muestreado, no leído completo. Convención: sitio **"vous"**,
+mentorías **"tu"**. Fechas `strftime` en inglés (igual que ES).
 
 **⚠️ PENDIENTE — PORTUGUÉS (Task #3):** PT nunca se auditó. Las 6 páginas nuevas + emails tienen
 el stub `pt` vacío en `pages_i18n.js` (cae a inglés) y `EMAIL_I18N` sin `pt`. El resto del sitio
