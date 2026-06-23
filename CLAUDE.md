@@ -41,13 +41,21 @@ Decisiones del usuario: **Legal (T&C/Privacy) se queda en INGLÉS**; registro ES
 en los 4 idiomas; **"pierna"** (=leg, 66 casos en quiz) se DEJA tal cual; **kicker** del
 certificado en inglés. Pocos errores reales hallados (todo estaba muy bien hecho).
 
-**⚠️ PENDIENTE de traducción (gap, NO calidad):** estas superficies están **100% en inglés, sin
-ES/FR/PT**: `pricing.html` (planes), `checkout_done.html` (pago Binance), `settings.html`,
-`camos.html`, `store_indicators.html`, **y los EMAILS** (`send_reset_email`/`send_verification_email`
-en `app.py` ~1065/1088 — hardcoded en inglés). ⚠️ Los emails además **todavía dicen "Scalpel"**
-(marca vieja), no "Trader Accelerator" → corregir marca + traducir. Traducir todo esto desde cero.
-FR y PT del resto del sitio NUNCA se auditaron (solo ES). Quiz: caza de errores por patrones +
-lectura de muestras, no lectura literal de las 7.600 líneas.
+**✅ ESPAÑOL — gap de traducción CERRADO (2026-06-23):** las superficies que estaban 100% en
+inglés ya están traducidas a ES: `pricing.html`, `checkout.html`, `checkout_done.html`,
+`settings.html`, `camos.html`, `store_indicators.html` + los **EMAILS** (`send_reset_email`/
+`send_verification_email`, marca corregida **"Scalpel" → "Trader Accelerator"**). Infra nueva:
+`scalpel/static/pages_i18n.js` (motor client-side data-i18n, mismo patrón que `improve_i18n.js`,
+lee `scalpel_lang`; dicts EN+ES a paridad de 153 claves, stubs `fr`/`pt` vacíos listos para
+rellenar). Idioma de emails vía **cookie `scalpel_lang`** (espejo del localStorage, escrita en
+`index.html` + `improve_i18n.js`); el server la lee en `_email_lang()` (`app.py`), fallback EN.
+Valores dinámicos de Jinja (montos, fechas, plan) quedan server-rendered; fechas `strftime` siguen
+en inglés (no se localizaron nombres de mes — bajo impacto).
+
+**⚠️ PENDIENTE — FR / PT (Task #2):** FR y PT del sitio NUNCA se auditaron (solo ES). Para las 6
+páginas nuevas + emails: rellenar los stubs `fr`/`pt` de `pages_i18n.js` y `EMAIL_I18N` (hoy caen
+a inglés). Quiz: caza de errores por patrones + lectura de muestras, no lectura literal de las
+7.600 líneas.
 
 **🚨 BUG ABIERTO — ERROR 500 en `/register`** (reportado 2026-06-23, prod IP cruda). Sin
 investigar a fondo (sin acceso a logs). Sospechas: (1) `send_verification_email` lanza excepción
