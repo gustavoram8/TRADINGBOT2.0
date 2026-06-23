@@ -170,6 +170,9 @@
       font-weight: 700; padding: 1px 7px; border-radius: 12px; }
     .unban-btn { background: transparent; border: 1px solid rgba(224,90,70,0.4); color: #e05a46;
       font-size: 11px; padding: 3px 9px; border-radius: 6px; cursor: pointer; font-family: inherit; }
+    .admin-rank-btn { background: transparent; border: 1px solid rgba(184,134,11,0.5); color: #b8860b;
+      font-size: 11px; padding: 3px 9px; border-radius: 6px; cursor: pointer; font-family: inherit; }
+    .admin-rank-btn.revoke { border-color: rgba(138,143,158,0.4); color: var(--muted); }
     @media (max-width: 640px) { .stats { grid-template-columns: repeat(2,1fr); } .u-email { display:none; } }
 
     /* ── Finance dashboard ── */
@@ -311,6 +314,14 @@
                     onsubmit="return confirm('Lift the ban on {{ u.username }}?');">
                 <input type="hidden" name="user_id" value="{{ u.id }}" />
                 <button type="submit" class="unban-btn">Unban</button>
+              </form>
+              {% endif %}
+              {% if u.id != current_user.id %}
+              <form method="POST" action="/admin/set-admin" style="margin-top:6px;"
+                    onsubmit="return confirm('{{ 'Revoke admin rank from' if u.is_admin else 'Grant ADMIN rank to' }} {{ u.username }}?');">
+                <input type="hidden" name="user_id" value="{{ u.id }}" />
+                <input type="hidden" name="action" value="{{ 'revoke' if u.is_admin else 'grant' }}" />
+                <button type="submit" class="admin-rank-btn{% if u.is_admin %} revoke{% endif %}">{{ 'Revoke admin' if u.is_admin else 'Make admin' }}</button>
               </form>
               {% endif %}
             </td>

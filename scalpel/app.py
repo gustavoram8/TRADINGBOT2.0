@@ -2672,6 +2672,32 @@ def admin_set_plan():
     return redirect(url_for('admin'))
 
 
+@app.route('/admin/set-admin', methods=['POST'])
+@login_required
+def admin_set_admin():
+    """Grant or revoke admin rank for another user. Admin-gated and audited.
+    An admin can never change their OWN rank here (prevents self-lockout)."""
+    if not current_user.is_admin:
+        abort(403)
+    user_id = request.form.get('user_id')
+    action = request.form.get('action')
+    if action not in ('grant', 'revoke'):
+        abort(400)
+    user = db.session.get(User, int(user_id)) if user_id else None
+    if not user:
+        abort(404)
+    if user.id == current_user.id:
+        # Don't let an admin grant/revoke their own rank from the panel.
+        return redirect(url_for('admin'))
+    user.is_admin = (action == 'grant')
+    db.session.commit()
+    record_audit_event(
+        'admin_rank_change', user_id=user.id,
+        detail=f"{action} admin for {user.username} ({user.email}) by {current_user.username}",
+    )
+    return redirect(url_for('admin'))
+
+
 @app.route('/admin/demo/set', methods=['POST'])
 @login_required
 def admin_demo_set():
