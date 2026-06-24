@@ -515,7 +515,7 @@ _LEGAL = {
         'warn_intro1': 'Este documento é propriedade exclusiva e confidencial da Trader Accelerator. É licenciado única e '
                        'pessoalmente à pessoa identificada acima para o seu próprio estudo privado. Esta licença não '
                        'concede quaisquer outros direitos.',
-        'warn_intro2': 'As seguintes ações são <strong>estritamente proibidas</strong> nos termos e condições aceites no '
+        'warn_intro2': 'As seguintes ações são <strong>estritamente proibidas</strong> nos termos e condições aceitos no '
                        'momento da compra, e podem constituir uma violação da legislação aplicável em matéria de '
                        'propriedade intelectual e direitos autorais:',
         'prohibited': [
@@ -530,7 +530,7 @@ _LEGAL = {
         ],
         'warn_trace': 'Cada cópia deste documento contém dados únicos de identificação digital associados à conta do '
                       'usuário licenciado. Qualquer cópia não autorizada que surja publicamente pode ser rastreada '
-                      'até à sua origem.',
+                      'até a sua origem.',
         'conseq_title': 'Consequências da distribuição não autorizada',
         'conseq_intro': 'A Trader Accelerator reserva-se o direito de tomar qualquer uma das seguintes ações, ou todas '
                         'elas, contra qualquer pessoa que se verifique ter violado os termos desta licença:',
