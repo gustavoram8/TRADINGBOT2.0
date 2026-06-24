@@ -68,7 +68,7 @@ CHROME = {
         'cover_issued':    'Emitido em',
         'cover_order':     'Pedido',
         'cover_confidential': 'CONFIDENCIAL — A distribuição não autorizada é estritamente proibida e pode resultar em ações legais.',
-        'toc_title':       'Índice de Conteúdos',
+        'toc_title':       'Sumário',
         'methodology':     'Metodologia',
         'common_mistake':  'Erro comum',
         'setup_cond':      'Condições',
@@ -206,11 +206,11 @@ TITLES = {
         'price.trend-structure': 'Tendência e Estrutura',
         'price.candles': 'Leitura de Velas',
         'price.chart-patterns': 'Padrões Gráficos',
-        'price.supply-demand': 'Oferta e Procura',
+        'price.supply-demand': 'Oferta e Demanda',
         'price.pin-bar': 'Rejeição em Pin Bar',
         'price.engulfing': 'Confirmação por Engolfo',
         'price.breakout-retest': 'Reteste de Rompimento',
-        'price.harmonic': 'Padrões Harmónicos',
+        'price.harmonic': 'Padrões Harmônicos',
         'technical.moving-averages': 'Médias Móveis',
         'technical.rsi': 'RSI',
         'technical.rsi-divergence': 'Divergência de RSI',
@@ -226,13 +226,13 @@ TITLES = {
         'smc.fvg-fill': 'Preenchimento de FVG',
         'smc.market-structure': 'Estrutura de Mercado (BOS/ChoCH)',
         'smc.liquidity': 'Liquidez',
-        'smc.liquidity-sweep': 'Varrimento de Liquidez',
+        'smc.liquidity-sweep': 'Varredura de Liquidez',
         'smc.kill-zones': 'Kill Zones',
         'smc.pd-arrays': 'Premium / Desconto',
         'smc.ote': 'Entrada Ótima (OTE)',
         'smc.wyckoff-roots': 'Raízes de Wyckoff',
-        'fundamental.interest-rates': 'Taxas de Juro',
-        'fundamental.macro-drivers': 'Fatores Macroeconómicos',
+        'fundamental.interest-rates': 'Taxas de Juros',
+        'fundamental.macro-drivers': 'Fatores Macroeconômicos',
         'fundamental.news-data': 'Notícias de Alto Impacto',
         'fundamental.news-fade': 'Desvanecimento de Notícias',
         'fundamental.data-continuation': 'Continuação após o Dado',
@@ -517,35 +517,35 @@ _LEGAL = {
                        'concede quaisquer outros direitos.',
         'warn_intro2': 'As seguintes ações são <strong>estritamente proibidas</strong> nos termos e condições aceites no '
                        'momento da compra, e podem constituir uma violação da legislação aplicável em matéria de '
-                       'propriedade intelectual e direitos de autor:',
+                       'propriedade intelectual e direitos autorais:',
         'prohibited': [
             'Reproduzir, copiar ou duplicar este documento, no todo ou em parte, por qualquer meio.',
-            'Partilhar, distribuir ou transmitir este documento a qualquer terceiro, seja gratuitamente ou para fins '
-            'comerciais, através de qualquer meio (e-mail, plataformas de mensagens, serviços de partilha de ficheiros, '
+            'Compartilhar, distribuir ou transmitir este documento a qualquer terceiro, seja gratuitamente ou para fins '
+            'comerciais, através de qualquer meio (e-mail, plataformas de mensagens, serviços de compartilhamento de arquivos, '
             'redes sociais ou outros).',
             'Revender, sublicenciar ou comercializar este documento ou qualquer parte do seu conteúdo.',
-            'Remover, ocultar ou alterar qualquer marca de água, aviso de direitos de autor ou dado de identificação '
+            'Remover, ocultar ou alterar qualquer marca de água, aviso de direitos autorais ou dado de identificação '
             'incorporado neste documento.',
             'Publicar ou carregar este documento, ou qualquer derivado do mesmo, em qualquer plataforma online pública ou privada.',
         ],
         'warn_trace': 'Cada cópia deste documento contém dados únicos de identificação digital associados à conta do '
-                      'utilizador licenciado. Qualquer cópia não autorizada que surja publicamente pode ser rastreada '
+                      'usuário licenciado. Qualquer cópia não autorizada que surja publicamente pode ser rastreada '
                       'até à sua origem.',
         'conseq_title': 'Consequências da distribuição não autorizada',
         'conseq_intro': 'A Trader Accelerator reserva-se o direito de tomar qualquer uma das seguintes ações, ou todas '
                         'elas, contra qualquer pessoa que se verifique ter violado os termos desta licença:',
         'consequences': [
-            '<strong>Suspensão imediata e permanente</strong> da conta do utilizador na plataforma Trader Accelerator, '
+            '<strong>Suspensão imediata e permanente</strong> da conta do usuário na plataforma Trader Accelerator, '
             'sem reembolso de quaisquer taxas pagas.',
-            '<strong>Ação legal civil</strong> por violação de direitos de autor e quebra de contrato, incluindo '
-            'pedidos de indemnização por danos, perda de receitas e, quando aplicável nos termos da lei, indemnizações '
+            '<strong>Ação legal civil</strong> por violação de direitos autorais e quebra de contrato, incluindo '
+            'pedidos de indenização por danos, perda de receitas e, quando aplicável nos termos da lei, indenizações '
             'legais e custas judiciais.',
             '<strong>Participação criminal</strong> quando a distribuição não autorizada constitua um crime nos termos '
             'da legislação nacional ou internacional aplicável em matéria de propriedade intelectual.',
             'Notificação aos organismos profissionais, corretoras ou prop firms relevantes quando a identidade do '
             'infrator for conhecida e tal divulgação for legalmente permitida.',
         ],
-        'conseq_monitor': 'A Trader Accelerator monitoriza ativamente canais públicos e privados em busca de cópias não '
+        'conseq_monitor': 'A Trader Accelerator monitora ativamente canais públicos e privados em busca de cópias não '
                           'autorizadas dos seus materiais proprietários. Levamos as violações de propriedade '
                           'intelectual a sério e exerceremos todos os recursos legais disponíveis sem aviso prévio.',
         'edu_title': 'Uso exclusivamente educativo — Não é aconselhamento financeiro',
@@ -555,7 +555,7 @@ _LEGAL = {
             'ou qualquer outra forma de aconselhamento regulado.',
             'Negociar instrumentos financeiros, incluindo, entre outros, forex, futuros, índices e matérias-primas, '
             'envolve um risco substancial de perda e não é adequado para todos os investidores. O desempenho passado, '
-            'os resultados simulados e os cenários hipotéticos não são indicativos de resultados futuros. O utilizador é '
+            'os resultados simulados e os cenários hipotéticos não são indicativos de resultados futuros. O usuário é '
             'o único responsável por todas as decisões de trading que tomar.',
             'A Trader Accelerator, os seus fundadores, funcionários e afiliados não serão responsabilizados por '
             'quaisquer perdas financeiras incorridas em resultado da aplicação, direta ou indireta, de qualquer '
