@@ -65,9 +65,20 @@ HARDCORE_SCENARIOS por leer literalmente** (multi-sesión: ~7.700 líneas, no ca
 `synapse_content_fr.json` (1.396 líneas) muestreado, no leído completo. Convención: sitio **"vous"**,
 mentorías **"tu"**. Fechas `strftime` en inglés (igual que ES).
 
-**⚠️ PENDIENTE — PORTUGUÉS (Task #3):** PT nunca se auditó. Las 6 páginas nuevas + emails tienen
-el stub `pt` vacío en `pages_i18n.js` (cae a inglés) y `EMAIL_I18N` sin `pt`. El resto del sitio
-tiene PT preexistente sin auditar.
+**🟢 PORTUGUÉS — Task #3 (audit honesto, 2026-06-24):** (1) ✅ rellenado el hueco: stub `pt` de
+`pages_i18n.js` (153 claves, paridad EN/ES/FR/PT) + `EMAIL_I18N` reset/verify (`_email_lang()` ya
+acepta `pt`). (2) ✅ **2 hallazgos reales corregidos:** (a) `synapse_translations.py` estaba en
+**portugués de PORTUGAL** (utilizador, ficheiros, partilha, indemnização, direitos de autor,
+monitoriza, Procura, Varrimento, Harmónicos, Juro, Macroeconómicos) → convertido a **brasileño**
+(usuário, arquivos, compartilhamento, indenização, direitos autorais, monitora, Demanda, Varredura,
+Harmônicos, Juros, Macroeconômicos, Sumário); el resto del sitio ya era PT-BR (verificado: marcadores
+PT-PT solo vivían en ese archivo). (b) `checkout_done` decía "Faturamento" pero la categoría del form
+de contacto es "Cobrança" → corregido. (3) ✅ **leído a fondo (PT-BR, 0 incoherencias):** dict UI
+principal (gran parte), MT_I18N (kill zones), mentorías, auth.js, contact.html, splash.html, landing,
+certificado+verify, y **quiz** (26 muestras ES/FR-equivalentes leídas en PT + 125 inline). Automático:
+paridad total + 0 inglés sin traducir en 3.365 valores + 0 marcadores europeos restantes en todo el
+sitio. Convención: **"você"** (informal) en todo PT, jerga en inglés igual que ES/FR. **NO** leído
+literal el 100% del quiz PT ni cada línea del dict principal (igual criterio que ES/FR).
 
 **🚨 BUG ABIERTO — ERROR 500 en `/register`** (reportado 2026-06-23, prod IP cruda). Sin
 investigar a fondo (sin acceso a logs). Sospechas: (1) `send_verification_email` lanza excepción
