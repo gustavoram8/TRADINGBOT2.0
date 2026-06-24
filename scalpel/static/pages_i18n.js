@@ -705,7 +705,7 @@
       'cdone.orderIdInline': 'Nº do pedido',
       'cdone.step3a': 'Envie o comprovante de pagamento pelo nosso',
       'cdone.contactForm': 'formulário de contato',
-      'cdone.step3b': ', selecionando "Faturamento".',
+      'cdone.step3b': ', selecionando "Cobrança".',
       'cdone.step4': 'Nossa equipe verifica e ativa seu plano — normalmente em poucas horas.',
       'cdone.backApp': 'Voltar ao app',
       'cdone.sendProof': 'Enviar comprovante de pagamento →'
