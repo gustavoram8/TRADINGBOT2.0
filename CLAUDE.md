@@ -80,6 +80,17 @@ paridad total + 0 inglés sin traducir en 3.365 valores + 0 marcadores europeos 
 sitio. Convención: **"você"** (informal) en todo PT, jerga en inglés igual que ES/FR. **NO** leído
 literal el 100% del quiz PT ni cada línea del dict principal (igual criterio que ES/FR).
 
+**🟡 LEGAL — Traducir T&C + Privacy (EN PROGRESO, decisión NUEVA 2026-06).** ⚠️ **CAMBIO de regla:**
+antes T&C/Privacy se quedaban SOLO en inglés; tras discusión legal, el usuario decidió **traducirlos
+a ES/FR/PT** con la **cláusula "el inglés prevalece"** (controlling-language) que cubre malentendidos.
+Infra: `scalpel/static/legal_i18n.js` (motor que **cachea el inglés original** como fuente autoritativa
+servida; solo guarda es/fr/pt; claves sin traducir caen al inglés). `terms.html` etiquetado con
+`data-i18n` (cabecera/TOC/títulos) + `data-i18n-html="terms.bN"` (cuerpos, 18 wrappers). **HECHO:
+esqueleto + banner + TOC + 18 títulos + cuerpos secciones 1–6** (de 18) en ES/FR/PT. **FALTA: cuerpos
+de `terms.html` secciones 7–18 + `privacy.html` ENTERO** (aún sin tocar, ~420 líneas). FR: apóstrofes
+tipográficos `'` (las strings con HTML doble-comilla NO pueden ir en delimitador `"`, usar `'` o `’`).
+PT brasileño. El PDF legal de Synapse YA estaba traducido (con "inglés prevalece") — eso es aparte.
+
 **🚨 BUG ABIERTO — ERROR 500 en `/register`** (reportado 2026-06-23, prod IP cruda). Sin
 investigar a fondo (sin acceso a logs). Sospechas: (1) `send_verification_email` lanza excepción
 (SMTP/Gmail OTP); o (2) esquema PostgreSQL de prod desactualizado (faltan columnas
