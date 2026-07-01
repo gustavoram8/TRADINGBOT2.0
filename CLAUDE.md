@@ -86,8 +86,8 @@ a ES/FR/PT** con la **cláusula "el inglés prevalece"** (controlling-language) 
 Infra: `scalpel/static/legal_i18n.js` (motor que **cachea el inglés original** como fuente autoritativa
 servida; solo guarda es/fr/pt; claves sin traducir caen al inglés). `terms.html` etiquetado con
 `data-i18n` (cabecera/TOC/títulos) + `data-i18n-html="terms.bN"` (cuerpos, 18 wrappers). **HECHO:
-esqueleto + banner + TOC + 18 títulos + cuerpos secciones 1–8** (de 18) en ES/FR/PT. **FALTA: cuerpos
-de `terms.html` secciones 9–18 + `privacy.html` ENTERO** (aún sin tocar, ~420 líneas). FR: apóstrofes
+esqueleto + banner + TOC + 18 títulos + cuerpos secciones 1–10** (de 18) en ES/FR/PT. **FALTA: cuerpos
+de `terms.html` secciones 11–18 + `privacy.html` ENTERO** (aún sin tocar, ~420 líneas). FR: apóstrofes
 tipográficos `'` (las strings con HTML doble-comilla NO pueden ir en delimitador `"`, usar `'` o `’`).
 PT brasileño. El PDF legal de Synapse YA estaba traducido (con "inglés prevalece") — eso es aparte.
 
