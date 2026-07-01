@@ -80,16 +80,21 @@ paridad total + 0 inglés sin traducir en 3.365 valores + 0 marcadores europeos 
 sitio. Convención: **"você"** (informal) en todo PT, jerga en inglés igual que ES/FR. **NO** leído
 literal el 100% del quiz PT ni cada línea del dict principal (igual criterio que ES/FR).
 
-**🟡 LEGAL — Traducir T&C + Privacy (EN PROGRESO, decisión NUEVA 2026-06).** ⚠️ **CAMBIO de regla:**
-antes T&C/Privacy se quedaban SOLO en inglés; tras discusión legal, el usuario decidió **traducirlos
-a ES/FR/PT** con la **cláusula "el inglés prevalece"** (controlling-language) que cubre malentendidos.
-Infra: `scalpel/static/legal_i18n.js` (motor que **cachea el inglés original** como fuente autoritativa
-servida; solo guarda es/fr/pt; claves sin traducir caen al inglés). `terms.html` etiquetado con
-`data-i18n` (cabecera/TOC/títulos) + `data-i18n-html="terms.bN"` (cuerpos, 18 wrappers). **HECHO:
-esqueleto + banner + TOC + 18 títulos + cuerpos secciones 1–10** (de 18) en ES/FR/PT. **FALTA: cuerpos
-de `terms.html` secciones 11–18 + `privacy.html` ENTERO** (aún sin tocar, ~420 líneas). FR: apóstrofes
-tipográficos `'` (las strings con HTML doble-comilla NO pueden ir en delimitador `"`, usar `'` o `’`).
-PT brasileño. El PDF legal de Synapse YA estaba traducido (con "inglés prevalece") — eso es aparte.
+**✅ LEGAL — T&C + Privacy TRADUCIDOS (COMPLETO 2026-07-01, decisión NUEVA 2026-06).** ⚠️ **CAMBIO de
+regla:** antes T&C/Privacy se quedaban SOLO en inglés; tras discusión legal, el usuario decidió
+**traducirlos a ES/FR/PT** con la **cláusula "el inglés prevalece"** (controlling-language, banner en
+cada página) que cubre malentendidos de traducción/terminología. La versión inglesa sigue siendo la
+servida, autoritativa y legalmente vinculante. Infra: `scalpel/static/legal_i18n.js` (motor genérico
+que **cachea el inglés original** `el.__en` como fuente autoritativa; solo guarda es/fr/pt; claves sin
+traducir caen al inglés cacheado; lee `scalpel_lang`, escribe localStorage+cookie). Ambas páginas
+etiquetadas con `data-i18n`/`data-i18n-html`/`data-i18n-title` + `<script src="/static/legal_i18n.js">`.
+**HECHO:** `terms.html` **18/18 secciones** (claves `terms.*`, 61/idioma) + `privacy.html` **15/15
+secciones** (claves `priv.*`, 52/idioma). Total **113 claves/idioma a paridad EN/ES/FR/PT** (verificado:
+0 faltantes, 0 dups, 0 claves HTML sin dict). FR: apóstrofes tipográficos `’` (U+2019) dentro de strings
+con delimitador `'` y comillas HTML dobles; guillemets `« »`. PT brasileño (você, "Sumário",
+"prevalecente"). El PDF legal de Synapse YA estaba traducido (con "inglés prevalece") — eso es aparte.
+**Nota:** fechas "Last updated" quedan server/estáticas en inglés (bajo impacto, igual criterio que el
+resto del sitio con `strftime`).
 
 **🚨 BUG ABIERTO — ERROR 500 en `/register`** (reportado 2026-06-23, prod IP cruda). Sin
 investigar a fondo (sin acceso a logs). Sospechas: (1) `send_verification_email` lanza excepción
