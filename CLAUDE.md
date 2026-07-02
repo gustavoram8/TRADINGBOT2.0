@@ -96,6 +96,23 @@ con delimitador `'` y comillas HTML dobles; guillemets `« »`. PT brasileño (v
 **Nota:** fechas "Last updated" quedan server/estáticas en inglés (bajo impacto, igual criterio que el
 resto del sitio con `strftime`).
 
+**🟡 DAILY CHALLENGE — reconstrucción del banco (EN PROGRESO 2026-07-02).** Hallazgos: (1) el Daily
+tomaba preguntas `lv:'advanced'` (169) del QUESTION_BANK — NO cumple el plan del usuario (200+
+ultrahardcore dedicadas); (2) 🔴 BUG anti-trampa CORREGIDO: el modal Daily mostraba opciones SIN
+barajar y 397/398 preguntas del banco tienen la correcta en posición A → pulsar siempre la primera
+farmeaba la ruleta (fix commiteado: shuffle de display, `data-i` conserva índice original, server
+intacto). Decisión del usuario: pool NUEVO dedicado **`DAILY_BANK`** (en `index.html`, justo antes
+de HARDCORE_SCENARIOS), **SIN gráficos**, talla ultrahardcore, 4 opciones TODAS coherentes (ninguna
+descartable sin saber), **longitud pareja entre opciones** (no adivinar por el largo), EN/ES/FR/PT
+con léxico natural. **NO CABLEADO aún**: el Daily sigue tirando de advanced hasta llegar a 200+;
+entonces flip en UN commit (cliente `POOL` ~línea 20380 + `_daily_correct_index()`/`_ADV_ANS` en
+app.py → `daily` del JSON + regenerar key). Infra lista: `tools/validate_daily_bank.js` (paridad de
+idiomas, exactamente 1 ok, ratio de longitud ≤1.45, distribución de posición correcta) y
+`tools/extract_quiz_key.js` extendido (emite `daily` en `quiz_answer_key.json`). **Progreso:
+10/200+** (ICT×6: OTE-vs-contexto, sweep+displacement, AMD, breaker, IFVG, kill zones/lunch; SMC×2:
+CHoCH LTF-vs-HTF, refinamiento OB; Wyckoff×2: secuencia del Spring, Upthrust/UTAD). Tras CADA lote:
+`node tools/extract_quiz_key.js && node tools/validate_daily_bank.js` y commitear también el JSON.
+
 **🚨 BUG ABIERTO — ERROR 500 en `/register`** (reportado 2026-06-23, prod IP cruda). Sin
 investigar a fondo (sin acceso a logs). Sospechas: (1) `send_verification_email` lanza excepción
 (SMTP/Gmail OTP); o (2) esquema PostgreSQL de prod desactualizado (faltan columnas
