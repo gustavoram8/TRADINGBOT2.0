@@ -20474,8 +20474,13 @@
           $('daily-timer-wrap').style.display = '';
           const opts = $('daily-opts');
           opts.style.display = '';
-          opts.innerHTML = q.opts.map((o, i) =>
-            `<div class="daily-opt" data-i="${i}">${o.t[currentLang] || o.t.en}</div>`).join('');
+          // Display in shuffled order, but data-i keeps the ORIGINAL index —
+          // the server judges by original index, and without this shuffle the
+          // correct answer's bank position would be guessable.
+          const ord = q.opts.map((_, i) => i);
+          for (let i = ord.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [ord[i], ord[j]] = [ord[j], ord[i]]; }
+          opts.innerHTML = ord.map(i =>
+            `<div class="daily-opt" data-i="${i}">${q.opts[i].t[currentLang] || q.opts[i].t.en}</div>`).join('');
           opts.querySelectorAll('.daily-opt').forEach(el => {
             el.addEventListener('click', () => submit(q, parseInt(el.dataset.i, 10), el));
           });
@@ -20506,10 +20511,11 @@
 
           // reveal right/wrong in the option list
           const opts = $('daily-opts');
-          opts.querySelectorAll('.daily-opt').forEach((o, i) => {
+          opts.querySelectorAll('.daily-opt').forEach((o) => {
+            const oi = parseInt(o.dataset.i, 10);   // original index (display is shuffled)
             o.classList.add('disabled');
-            if (q.opts[i].ok) o.classList.add('correct');
-            else if (i === optIdx && !correct) o.classList.add('wrong');
+            if (q.opts[oi].ok) o.classList.add('correct');
+            else if (oi === optIdx && !correct) o.classList.add('wrong');
           });
 
           let resp = null;
