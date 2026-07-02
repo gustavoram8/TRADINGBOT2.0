@@ -109,11 +109,13 @@ entonces flip en UN commit (cliente `POOL` ~línea 20380 + `_daily_correct_index
 app.py → `daily` del JSON + regenerar key). Infra lista: `tools/validate_daily_bank.js` (paridad de
 idiomas, exactamente 1 ok, ratio de longitud ≤1.45, distribución de posición correcta) y
 `tools/extract_quiz_key.js` extendido (emite `daily` en `quiz_answer_key.json`). **Progreso:
-20/200+** — lote 1 (ICT×6, SMC×2, Wyckoff×2) + pasada de revisión (3 fixes: "un Asia amplia",
+30/200+** — lote 1 (ICT×6, SMC×2, Wyckoff×2) + pasada de revisión (3 fixes: "un Asia amplia",
 "tout autant", calco thin→mercado delgado/mince/raso) + lotes 2-3 (liquidez interna→externa, LPS
 por esfuerzo, esfuerzo-vs-resultado, HCH-vs-demanda-HTF, PRZ-vs-displacement, PD-arrays+inducement,
-BOS-vs-grab, SMT, envolvente-vs-ubicación, independencia de confluencias). Histograma posiciones
-[5,5,5,5]. **Regla de diseño extra:** incluir correctas que sean afirmaciones FUERTES (no siempre la
+BOS-vs-grab, SMT, envolvente-vs-ubicación, independencia de confluencias) + lote 4 (breaker-vs-
+mitigation-block, Power of Three vs open diario, Fase B construye la causa, liquidez de trendline,
+consequent encroachment, SOW, objetivo-medido-vs-FVG-HTF, low-resistance run, strong-vs-weak high,
+reacumulación-vs-distribución). Histograma posiciones [8,8,7,7]. **Regla de diseño extra:** incluir correctas que sean afirmaciones FUERTES (no siempre la
 de tono moderado) para matar la heurística de examen. Tras CADA lote:
 `node tools/extract_quiz_key.js && node tools/validate_daily_bank.js` y commitear también el JSON.
 
