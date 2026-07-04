@@ -722,10 +722,9 @@
     /* Option B: the panel itself is near-invisible (blends with the page),
        defined only by a thin outline and a coloured left edge per section. */
     .card {
-      background: transparent;
+      background: var(--card);
       border: 1px solid var(--border);
-      border-left: 3px solid var(--card-accent, var(--accent));
-      border-radius: 3px var(--radius) var(--radius) 3px;
+      border-radius: var(--radius);
       padding: 22px 24px;
       margin-bottom: 14px;
     }
@@ -772,10 +771,10 @@
 
     /* Per-category colour identity (semantic groups keep their meaningful
        green/red and are handled by the .win/.loss/.bull/.bear rules instead). */
-    .pill-group[data-group="session"]     { --grp: #f59e0b; }  /* amber  */
-    .pill-group[data-group="aligned"]     { --grp: #14b8a6; }  /* teal   */
-    .pill-group[data-group="approach"]    { --grp: #8b5cf6; }  /* violet */
-    .pill-group[data-group="confluences"] { --grp: #06b6d4; }  /* cyan   */
+    .pill-group[data-group="session"]     { --grp: #E9AA3B; }  /* amber  */
+    .pill-group[data-group="aligned"]     { --grp: #46D08A; }  /* green  */
+    .pill-group[data-group="approach"]    { --grp: #A06BF0; }  /* violet */
+    .pill-group[data-group="confluences"] { --grp: #5A96F0; }  /* blue   */
 
     .pill {
       padding: 7px 16px;
@@ -794,8 +793,8 @@
     .pill.win, .pill.long   { --grp: var(--win); }
     .pill.loss, .pill.short { --grp: var(--loss); }
     .pill.be                { --grp: var(--be); }
-    .pill.bull              { --grp: #16a34a; }
-    .pill.bear              { --grp: #dc2626; }
+    .pill.bull              { --grp: #46D08A; }
+    .pill.bear              { --grp: #E8736B; }
 
     .pill:hover {
       border-color: var(--grp);
