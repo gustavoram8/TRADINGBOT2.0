@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Trader Accelerator — Trade Analysis</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js" defer></script>
   <script>
@@ -36,19 +36,20 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:       #0c0e14;
-      --surface:  #13161f;
-      --card:     #181c28;
-      --border:   #252a3a;
-      --border2:  #2e344a;
-      --text:     #d4d8ec;
-      --muted:    #636882;
-      --accent:   #5b8ef0;
-      --accent-h: #7aaaf7;
-      --win:      #22c55e;
-      --loss:     #ef4444;
-      --be:       #eab308;
-      --radius:   10px;
+      /* ── Aurora Glass v1.0 (dark, base) ── */
+      --bg:       #0A0B10;
+      --surface:  rgba(255,255,255,0.045);
+      --card:     rgba(255,255,255,0.05);
+      --border:   rgba(255,255,255,0.10);
+      --border2:  rgba(255,255,255,0.16);
+      --text:     #EEF0F4;
+      --muted:    rgba(255,255,255,0.48);
+      --accent:   #E9AA3B;
+      --accent-h: #F0B94E;
+      --win:      #46D08A;
+      --loss:     #E8736B;
+      --be:       #E9AA3B;
+      --radius:   14px;
     }
 
     /* ── LIGHT THEME ── */
@@ -63,6 +64,20 @@
       --accent:   #3f6fd6;
       --accent-h: #2f5cc0;
     }
+
+    /* ═══ AURORA GLASS v1.0 — foundation (reskin only, no logic change) ═══ */
+    /* Elevated surfaces become frosted glass; the aurora field lives on <body>. */
+    .card, .modal {
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+    body.light .card, body.light .modal {
+      box-shadow: 0 12px 30px rgba(20,30,60,0.10), inset 0 1px 0 rgba(255,255,255,0.6);
+    }
+    /* Light theme keeps a flat ground for now (aurora is a dark-theme feature). */
+    body.light { background: var(--bg) !important; }
+    /* Mono utility for data / labels (Space Mono). */
+    .ag-mono { font-family: 'Space Mono', ui-monospace, monospace; }
 
     body, nav, .card, .pill, .shot-guide, textarea, .analysis-body,
     .meta-tag, .nav-badge, .modal, .btn-new {
@@ -87,9 +102,15 @@
     html { scroll-behavior: smooth; }
 
     body {
-      background: var(--bg);
+      background:
+        radial-gradient(rgba(255,255,255,0.038) 1px, transparent 1px) 0 0 / 24px 24px,
+        radial-gradient(620px 620px at 10% -8%, rgba(233,170,59,0.16), transparent 66%),
+        radial-gradient(560px 560px at 104% 20%, rgba(160,107,240,0.15), transparent 66%),
+        radial-gradient(660px 660px at 28% 112%, rgba(90,150,240,0.12), transparent 66%),
+        var(--bg);
+      background-attachment: fixed;
       color: var(--text);
-      font-family: 'Inter', sans-serif;
+      font-family: 'Space Grotesk', 'Inter', sans-serif;
       font-size: 14px;
       line-height: 1.6;
       min-height: 100vh;
