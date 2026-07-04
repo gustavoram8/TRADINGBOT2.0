@@ -54,15 +54,19 @@
 
     /* ── LIGHT THEME ── */
     body.light {
-      --bg:       #f4f5f8;
-      --surface:  #ffffff;
-      --card:     #ffffff;
-      --border:   #e3e6ee;
-      --border2:  #d2d7e3;
-      --text:     #1a1d28;
-      --muted:    #6b7186;
-      --accent:   #3f6fd6;
-      --accent-h: #2f5cc0;
+      /* ── Aurora Glass v1.0 (light) — glass over a soft light ground ── */
+      --bg:       #F3F5FA;
+      --surface:  rgba(255,255,255,0.66);
+      --card:     rgba(255,255,255,0.72);
+      --border:   rgba(16,22,40,0.10);
+      --border2:  rgba(16,22,40,0.16);
+      --text:     #171923;
+      --muted:    rgba(23,25,35,0.56);
+      --accent:   #B67C1B;
+      --accent-h: #9A6314;
+      --win:      #1FA463;
+      --loss:     #D6564C;
+      --be:       #B67C1B;
     }
 
     /* ═══ AURORA GLASS v1.0 — foundation (reskin only, no logic change) ═══ */
@@ -74,8 +78,16 @@
     body.light .card, body.light .modal {
       box-shadow: 0 12px 30px rgba(20,30,60,0.10), inset 0 1px 0 rgba(255,255,255,0.6);
     }
-    /* Light theme keeps a flat ground for now (aurora is a dark-theme feature). */
-    body.light { background: var(--bg) !important; }
+    /* Light theme: Aurora Glass adapted — soft palette tints on a light ground. */
+    body.light {
+      background:
+        radial-gradient(rgba(23,25,35,0.028) 1px, transparent 1px) 0 0 / 24px 24px,
+        radial-gradient(620px 620px at 10% -8%, rgba(233,170,59,0.10), transparent 66%),
+        radial-gradient(560px 560px at 104% 20%, rgba(160,107,240,0.09), transparent 66%),
+        radial-gradient(660px 660px at 28% 112%, rgba(90,150,240,0.08), transparent 66%),
+        var(--bg) !important;
+      background-attachment: fixed;
+    }
     /* Mono utility for data / labels (Space Mono). */
     .ag-mono { font-family: 'Space Mono', ui-monospace, monospace; }
 
