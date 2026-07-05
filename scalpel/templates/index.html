@@ -122,7 +122,7 @@
         var(--bg);
       background-attachment: fixed;
       color: var(--text);
-      font-family: 'Space Grotesk', 'Inter', sans-serif;
+      font-family: 'Inter', sans-serif;
       font-size: 14px;
       line-height: 1.6;
       min-height: 100vh;
@@ -26592,16 +26592,24 @@
     gap:12px; padding:16px 12px; background:var(--card); border:1px solid var(--border);
     border-radius:var(--radius); box-shadow:0 16px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08);
     backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px); max-height:calc(100vh - 44px); overflow:auto; }
-  .ag-sidebar .logo-wrap{ padding:4px 6px 2px; }
-  .ag-sidebar .logo-img{ height:30px; width:auto; mix-blend-mode:normal; }
+  .ag-sidebar .logo-wrap{ padding:6px 6px 4px; display:flex; justify-content:center; }
+  .ag-sidebar .logo-img{ height:66px; width:auto; mix-blend-mode:normal; }
   .ag-side-top{ display:flex; align-items:center; gap:8px; padding:0 4px; }
   .ag-side-spacer{ flex:1 1 auto; min-height:6px; }
   .ag-sidebar #tabs, .ag-sidebar .tabs{ display:flex !important; flex-direction:column; align-items:stretch;
     gap:3px; background:transparent; border:0; padding:0; overflow:visible; box-shadow:none; }
   .ag-sidebar .tab{ justify-content:flex-start; text-align:left; width:100%; padding:10px 12px; border-radius:10px; white-space:nowrap; }
   .ag-sidebar .tab .lock{ width:15px; height:15px; opacity:.6; }
-  .ag-sidebar .account{ width:100%; }
-  .ag-sidebar .account-btn{ width:100%; justify-content:flex-start; }
+  /* Account panel lives at the TOP of the right rail (identity/plan/rank),
+     so the left-sidebar Products dropdown no longer collides with it. */
+  .ag-rail .account{ width:100%; }
+  .ag-rail .account-btn{ width:100%; height:auto; padding:14px 16px; border-radius:var(--radius);
+    background:var(--card); border:1px solid var(--border);
+    box-shadow:0 16px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08);
+    backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px); justify-content:flex-start; }
+  .ag-rail .account-btn .uname{ max-width:none; flex:1 1 auto; font-size:13.5px; }
+  .ag-rail .account-btn .chev{ margin-left:auto; }
+  .ag-rail .account-menu{ top:calc(100% + 6px); }
   .ag-rail{ position:sticky; top:22px; display:flex; flex-direction:column; gap:16px; }
   .ag-rail .ag-card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
     box-shadow:0 16px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08);
@@ -26611,11 +26619,11 @@
   @keyframes agpulse{0%{box-shadow:0 0 0 0 rgba(70,208,138,.5)}70%{box-shadow:0 0 0 7px rgba(70,208,138,0)}100%{box-shadow:0 0 0 0 rgba(70,208,138,0)}}
   .ag-sum-row{ display:flex; align-items:center; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--border); font-size:13px; }
   .ag-sum-row:last-child{ border-bottom:0; }
-  .ag-sum-row .k{ color:var(--muted); font-size:11px; letter-spacing:.06em; text-transform:uppercase; font-family:'Space Mono',monospace; }
+  .ag-sum-row .k{ color:var(--muted); font-size:11px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; font-family:'Inter',sans-serif; }
   .ag-sum-row .v{ font-weight:600; color:var(--text); }
   .ag-sum-row .v.ok{ color:var(--win); } .ag-sum-row .v.no{ color:var(--loss); }
   .ag-ready-lab{ display:flex; justify-content:space-between; font-size:12px; color:var(--muted); margin-bottom:8px; }
-  .ag-ready-lab b{ color:var(--text); font-family:'Space Mono',monospace; }
+  .ag-ready-lab b{ color:var(--text); font-family:'Inter',sans-serif; font-weight:700; }
   .ag-bar{ height:8px; border-radius:99px; background:rgba(0,0,0,.28); overflow:hidden; }
   body.light .ag-bar{ background:rgba(0,0,0,.10); }
   .ag-bar > span{ display:block; height:100%; width:0; background:linear-gradient(90deg,#A06BF0,var(--accent)); transition:width .3s; }
@@ -26623,7 +26631,7 @@
      the whole screen; a floating "Menu" arrow returns to the app. */
   .ag-quiz-back{ position:fixed; top:18px; left:18px; z-index:60; display:none; align-items:center; gap:7px;
     padding:9px 15px; border-radius:999px; background:var(--card); border:1px solid var(--border); color:var(--text);
-    font:600 13px/1 'Space Grotesk',system-ui,sans-serif; cursor:pointer;
+    font:600 13px/1 'Inter',system-ui,sans-serif; cursor:pointer;
     backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); box-shadow:0 8px 24px rgba(0,0,0,.3); }
   .ag-quiz-back:hover{ border-color:var(--accent); color:var(--accent); }
   body.ag-quiz-mode .ag-sidebar{ display:none !important; }
@@ -26657,10 +26665,14 @@
     if(lang) top.appendChild(lang); if(theme) top.appendChild(theme);
     side.appendChild(top); side.appendChild(tabs);
     var sp=document.createElement('div'); sp.className='ag-side-spacer'; side.appendChild(sp);
-    if(account) side.appendChild(account);
     shell.appendChild(side); shell.appendChild(container); shell.appendChild(rail);
     nav.style.display='none';
-    rail.innerHTML =
+    /* Account (identity/plan/rank) goes to the TOP of the right rail — keeps the
+       left Products dropdown from overlapping it, and stays visible on every tab. */
+    if(account) rail.appendChild(account);
+    var cards=document.createElement('div'); cards.id='ag-analyze-cards';
+    rail.appendChild(cards);
+    cards.innerHTML =
       '<div class="ag-card">'
       +'<h3><span class="ag-live"></span>Setup summary</h3>'
       +'<div class="ag-sum-row"><span class="k">Instrument</span><span class="v" id="ag-instr">&mdash;</span></div>'
@@ -26693,7 +26705,12 @@
       set('ag-ready', n+' / 5');
       var bar=document.getElementById('ag-bar'); if(bar) bar.style.width=(n/5*100)+'%';
     }
-    function applyTab(dt){ rail.style.display=(dt==='analyze')?'':'none'; document.body.classList.toggle('ag-quiz-mode', dt==='quiz'); }
+    function applyTab(dt){
+      var quiz=(dt==='quiz');
+      document.body.classList.toggle('ag-quiz-mode', quiz);
+      rail.style.display=quiz?'none':'';               /* rail (with account) shows on every tab except immersive quiz */
+      cards.style.display=(dt==='analyze')?'':'none';  /* setup summary / quotas only make sense on Analyze */
+    }
     tabs.addEventListener('click',function(e){var b=e.target.closest('.tab'); if(b&&b.getAttribute('data-tab')) applyTab(b.getAttribute('data-tab'));});
     var back=document.createElement('button'); back.className='ag-quiz-back'; back.type='button';
     back.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Menu';
