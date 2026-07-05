@@ -10102,18 +10102,10 @@
     const menu = document.getElementById('products-menu');
     if (!btn || !menu) return;
     function place() {
+      // Inside the Aurora sidebar the menu is an inline accordion (position:static),
+      // so it needs no manual positioning — the sidebar scrolls if it overflows.
+      if (menu.closest('.ag-sidebar')) return;
       const r = btn.getBoundingClientRect();
-      const sidebar = btn.closest('.ag-sidebar');
-      if (sidebar) {
-        // In the Aurora sidebar the tabs are stacked vertically, so open the
-        // menu as a flyout to the RIGHT of the sidebar — never overlapping it.
-        const sb = sidebar.getBoundingClientRect();
-        let left = Math.min(sb.right + 10, window.innerWidth - menu.offsetWidth - 8);
-        let top  = Math.max(8, Math.min(r.top, window.innerHeight - menu.offsetHeight - 8));
-        menu.style.left = left + 'px';
-        menu.style.top  = top + 'px';
-        return;
-      }
       menu.style.top = (r.bottom + 6) + 'px';
       // align right edge of menu with right edge of the button, clamp to viewport
       let left = r.right - menu.offsetWidth;
@@ -26640,6 +26632,12 @@
   .ag-rail .account-btn .uname{ max-width:none; flex:1 1 auto; font-size:13.5px; }
   .ag-rail .account-btn .chev{ margin-left:auto; }
   .ag-rail .account-menu{ top:calc(100% + 6px); }
+  /* Products dropdown as an inline accordion inside the sidebar — never floats
+     over the sidebar tabs nor the center content. */
+  .ag-sidebar .products-menu{ position:static !important; width:100%; min-width:0; margin:2px 0 0;
+    background:transparent; border:0; box-shadow:none; backdrop-filter:none; -webkit-backdrop-filter:none;
+    padding:2px 0 0; left:auto; top:auto; }
+  .ag-sidebar .products-menu .products-item{ padding-left:10px; }
   .ag-rail{ position:sticky; top:22px; display:flex; flex-direction:column; gap:16px; }
   .ag-rail .ag-card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
     box-shadow:0 16px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08);
@@ -26704,6 +26702,10 @@
     var top=document.createElement('div'); top.className='ag-side-top';
     if(lang) top.appendChild(lang); if(theme) top.appendChild(theme);
     side.appendChild(top); side.appendChild(tabs);
+    /* Move the Products dropdown INTO the sidebar so it expands inline (accordion)
+       right under the Products tab, instead of floating over the sidebar or the
+       center content. */
+    var pmenu=document.getElementById('products-menu'); if(pmenu) side.appendChild(pmenu);
     var sp=document.createElement('div'); sp.className='ag-side-spacer'; side.appendChild(sp);
     shell.appendChild(side); shell.appendChild(container); shell.appendChild(rail);
     nav.style.display='none';
