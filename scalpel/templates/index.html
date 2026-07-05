@@ -1755,11 +1755,15 @@
     .tab-products.open { color: var(--accent); }
     .products-menu {
       position: fixed; z-index: 60; min-width: 226px;
-      background: var(--surface); border: 1px solid var(--border);
+      /* Opaque surface so the flyout never lets the page content bleed through
+         (Aurora's --surface/--card are translucent by design). */
+      background: #141620; border: 1px solid var(--border);
       border-radius: 14px; padding: 8px;
       box-shadow: 0 16px 40px rgba(0,0,0,0.36), 0 2px 8px rgba(0,0,0,0.18);
+      backdrop-filter: blur(26px); -webkit-backdrop-filter: blur(26px);
       display: none; flex-direction: column; gap: 1px;
     }
+    body.light .products-menu { background: #ffffff; }
     .products-menu.open { display: flex; }
     .products-group-label { font-size: 10px; font-weight: 700; text-transform: uppercase;
       letter-spacing: .1em; color: var(--muted); padding: 7px 12px 4px; }
@@ -4611,6 +4615,17 @@
     <span class="pi-label" data-i18n="products.privacy">Privacy Policy</span>
   </a>
 
+  <!-- USER GUIDE — step-by-step walkthrough of every feature -->
+  <a href="/guide" class="products-item" role="menuitem">
+    <span class="pi-badge pi-badge-guide" aria-hidden="true">
+      <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#e0a83d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="10" cy="10" r="8.5"/>
+        <path d="M13.2 6.8 L11.3 11.3 L6.8 13.2 L8.7 8.7 Z" fill="#e0a83d" fill-opacity="0.18"/>
+      </svg>
+    </span>
+    <span class="pi-label" data-i18n="products.guide">User Guide</span>
+  </a>
+
   <!-- CONTACT -->
   <a href="/contact" class="products-item" role="menuitem">
     <span class="pi-badge" aria-hidden="true">
@@ -6591,6 +6606,7 @@
       'products.camos': 'Camos',
       'products.terms': 'Terms and Conditions',
       'products.privacy': 'Privacy Policy',
+      'products.guide': 'User Guide',
       'products.contact': 'Contact & Support',
       'products.settings': 'Settings',
       'synapse.desc': 'An interactive, futuristic trading knowledge base. A holographic mind branches into every major methodology — explore them in 3D.',
@@ -6986,6 +7002,7 @@
       'products.camos': 'Camos',
       'products.terms': 'Términos y Condiciones',
       'products.privacy': 'Política de Privacidad',
+      'products.guide': 'Guía de uso',
       'products.contact': 'Contacto y Soporte',
       'products.settings': 'Ajustes',
       'synapse.desc': 'Una base de conocimiento de trading interactiva y futurista. Una mente holográfica se ramifica hacia cada metodología — explóralas en 3D.',
@@ -7381,6 +7398,7 @@
       'products.camos': 'Camos',
       'products.terms': 'Conditions Générales',
       'products.privacy': 'Politique de Confidentialité',
+      'products.guide': "Guide d'utilisation",
       'products.contact': 'Contact et Support',
       'products.settings': 'Paramètres',
       'synapse.desc': 'Une base de connaissances de trading interactive et futuriste. Un esprit holographique se ramifie vers chaque méthodologie — explorez-les en 3D.',
@@ -7776,6 +7794,7 @@
       'products.camos': 'Camos',
       'products.terms': 'Termos e Condições',
       'products.privacy': 'Política de Privacidade',
+      'products.guide': 'Guia de uso',
       'products.contact': 'Contato e Suporte',
       'products.settings': 'Configurações',
       'synapse.desc': 'Uma base de conhecimento de trading interativa e futurista. Uma mente holográfica se ramifica para cada metodologia — explore-as em 3D.',
@@ -10084,6 +10103,17 @@
     if (!btn || !menu) return;
     function place() {
       const r = btn.getBoundingClientRect();
+      const sidebar = btn.closest('.ag-sidebar');
+      if (sidebar) {
+        // In the Aurora sidebar the tabs are stacked vertically, so open the
+        // menu as a flyout to the RIGHT of the sidebar — never overlapping it.
+        const sb = sidebar.getBoundingClientRect();
+        let left = Math.min(sb.right + 10, window.innerWidth - menu.offsetWidth - 8);
+        let top  = Math.max(8, Math.min(r.top, window.innerHeight - menu.offsetHeight - 8));
+        menu.style.left = left + 'px';
+        menu.style.top  = top + 'px';
+        return;
+      }
       menu.style.top = (r.bottom + 6) + 'px';
       // align right edge of menu with right edge of the button, clamp to viewport
       let left = r.right - menu.offsetWidth;
@@ -26593,7 +26623,7 @@
     border-radius:var(--radius); box-shadow:0 16px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08);
     backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px); max-height:calc(100vh - 44px); overflow:auto; }
   .ag-sidebar .logo-wrap{ padding:6px 6px 4px; display:flex; justify-content:center; }
-  .ag-sidebar .logo-img{ height:66px; width:auto; mix-blend-mode:normal; }
+  .ag-sidebar .logo-img{ height:96px; width:auto; mix-blend-mode:normal; }
   .ag-side-top{ display:flex; align-items:center; gap:8px; padding:0 4px; }
   .ag-side-spacer{ flex:1 1 auto; min-height:6px; }
   .ag-sidebar #tabs, .ag-sidebar .tabs{ display:flex !important; flex-direction:column; align-items:stretch;

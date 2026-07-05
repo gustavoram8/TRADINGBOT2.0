@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title data-i18n-title="guide.doctitle">Trader Accelerator — User Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root{
+      --bg:#f5f6fa; --card:#ffffff; --ink:#15171f; --ink-soft:#4a4f5e; --muted:#8a8f9e;
+      --line:#e4e6ec; --accent:#b67c1b; --accent-soft:rgba(182,124,27,.12); --shadow:0 14px 34px rgba(20,23,31,.07);
+    }
+    html[data-theme="dark"]{
+      --bg:#0a0b10; --card:#14161d; --ink:#eef0f4; --ink-soft:#c4c8d4; --muted:#8a8f9e;
+      --line:#262a33; --accent:#e9aa3b; --accent-soft:rgba(233,170,59,.14); --shadow:0 16px 40px rgba(0,0,0,.4);
+    }
+    body{ background:var(--bg); color:var(--ink); font-family:'Inter',sans-serif; font-size:15px; line-height:1.65;
+      min-height:100vh; -webkit-font-smoothing:antialiased; transition:background .2s,color .2s; }
+    nav{ display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 32px;
+      border-bottom:1px solid var(--line); position:sticky; top:0; background:var(--bg); z-index:10; }
+    .nav-l{ display:flex; align-items:center; gap:18px; }
+    .logo-img{ height:72px; width:auto; display:block; }
+    html[data-theme="dark"] .logo-img{ filter:invert(1); }
+    .back-link{ font-size:13px; font-weight:600; color:var(--ink-soft); text-decoration:none; white-space:nowrap; }
+    .back-link:hover{ color:var(--accent); }
+    .nav-r{ display:flex; align-items:center; gap:10px; }
+    .lang-sel,.theme-btn{ font:600 12.5px/1 'Inter',sans-serif; color:var(--ink); background:var(--card);
+      border:1px solid var(--line); border-radius:9px; padding:8px 10px; cursor:pointer; }
+    .theme-btn{ width:34px; height:34px; display:grid; place-items:center; }
+    .hero{ text-align:center; padding:56px 24px 10px; max-width:760px; margin:0 auto; }
+    .eyebrow{ font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); margin-bottom:12px; }
+    h1{ font-size:40px; font-weight:800; letter-spacing:-.02em; margin-bottom:14px; }
+    .hero p{ color:var(--ink-soft); }
+    .wrap{ max-width:840px; margin:26px auto 0; padding:0 24px 90px; }
+    .toc{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:8px auto 34px; }
+    .toc a{ font-size:12.5px; font-weight:600; color:var(--ink-soft); text-decoration:none; background:var(--card);
+      border:1px solid var(--line); border-radius:20px; padding:7px 13px; transition:.15s; }
+    .toc a:hover{ color:var(--accent); border-color:var(--accent); }
+    .sec{ background:var(--card); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow);
+      padding:26px 28px; margin-bottom:18px; scroll-margin-top:80px; }
+    .sec-head{ display:flex; align-items:center; gap:13px; margin-bottom:6px; }
+    .sec-ico{ flex:0 0 auto; width:40px; height:40px; border-radius:11px; background:var(--accent-soft);
+      display:grid; place-items:center; color:var(--accent); }
+    .sec-ico svg{ width:21px; height:21px; }
+    .sec h2{ font-size:20px; font-weight:800; letter-spacing:-.01em; }
+    .sec .lead{ color:var(--ink-soft); margin:2px 0 15px; }
+    ol.steps{ list-style:none; counter-reset:s; display:flex; flex-direction:column; gap:11px; }
+    ol.steps li{ counter-increment:s; position:relative; padding-left:40px; color:var(--ink-soft); }
+    ol.steps li::before{ content:counter(s); position:absolute; left:0; top:-1px; width:26px; height:26px;
+      border-radius:8px; background:var(--accent); color:#fff; font-size:13px; font-weight:700;
+      display:grid; place-items:center; }
+    html[data-theme="dark"] ol.steps li::before{ color:#14161d; }
+    ol.steps li b{ color:var(--ink); font-weight:700; }
+    .help-cta{ text-align:center; background:var(--accent-soft); border:1px solid var(--accent);
+      border-radius:16px; padding:26px; margin-top:26px; }
+    .help-cta h3{ font-size:18px; font-weight:800; margin-bottom:6px; }
+    .help-cta p{ color:var(--ink-soft); margin-bottom:16px; }
+    .help-cta a{ display:inline-block; font-size:13.5px; font-weight:700; text-decoration:none;
+      background:var(--accent); color:#fff; padding:11px 22px; border-radius:10px; }
+    html[data-theme="dark"] .help-cta a{ color:#14161d; }
+    .note{ font-size:13px; color:var(--muted); margin-top:12px; }
+    @media (max-width:560px){ nav{ padding:12px 16px; } h1{ font-size:30px; } .sec{ padding:20px; } .logo-img{ height:52px; } }
+  </style>
+</head>
+<body>
+<nav>
+  <div class="nav-l">
+    <a href="/" class="logo"><img src="/static/logo_t.png" alt="Trader Accelerator" class="logo-img" onerror="this.style.display='none';" /></a>
+    <a href="/app" class="back-link" data-i18n="guide.back">← Back to app</a>
+  </div>
+  <div class="nav-r">
+    <select class="lang-sel" id="langSel" aria-label="Language">
+      <option value="en">EN</option><option value="es">ES</option><option value="fr">FR</option><option value="pt">PT</option>
+    </select>
+    <button class="theme-btn" id="themeBtn" type="button" aria-label="Toggle theme">◐</button>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="eyebrow" data-i18n="guide.eyebrow">Step-by-step</div>
+  <h1 data-i18n="guide.title">User Guide</h1>
+  <p data-i18n="guide.sub">A practical walkthrough of every tool in Trader Accelerator — what each one is for and how to use it, step by step. This guide is educational only; nothing here is financial advice.</p>
+</section>
+
+<div class="wrap">
+  <div class="toc">
+    <a href="#analyze"   data-i18n="guide.analyze.t">Analyze Your Setup</a>
+    <a href="#preflight" data-i18n="guide.preflight.t">Pre-Flight</a>
+    <a href="#quiz"      data-i18n="guide.quiz.t">Quiz &amp; Daily Challenge</a>
+    <a href="#forum"     data-i18n="guide.forum.t">Forum</a>
+    <a href="#chalk"     data-i18n="guide.chalk.t">Chalkboard</a>
+    <a href="#synapse"   data-i18n="guide.synapse.t">Synapse</a>
+    <a href="#timing"    data-i18n="guide.timing.t">Market Timing</a>
+    <a href="#plans"     data-i18n="guide.plans.t">Plans &amp; Limits</a>
+    <a href="#account"   data-i18n="guide.account.t">Account &amp; Settings</a>
+  </div>
+
+  <div class="sec" id="analyze">
+    <div class="sec-head">
+      <span class="sec-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-6"/></svg></span>
+      <h2 data-i18n="guide.analyze.t">Analyze Your Setup</h2>
+    </div>
+    <p class="lead" data-i18n="guide.analyze.d">Upload a screenshot of your chart and our AI highlights possible setup errors and educational observations to reflect on — never a verdict, signal, or recommendation.</p>
+    <ol class="steps">
+      <li data-i18n-html="guide.analyze.s1">Open the <b>Analyze</b> tab and pick your <b>instrument</b>, <b>direction</b>, <b>session</b> and any <b>confluences</b> using the buttons.</li>
+      <li data-i18n-html="guide.analyze.s2">Upload a <b>screenshot</b> of your chart. Use the summary panel on the right to confirm everything is ready.</li>
+      <li data-i18n-html="guide.analyze.s3">Press <b>Analyze</b> and read the observations. Treat them as prompts to review your own reasoning, not as instructions.</li>
+    </ol>
+  </div>
+
+  <div class="sec" id="preflight">
+    <div class="sec-head">
+      <span class="sec-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+      <h2 data-i18n="guide.preflight.t">Pre-Flight</h2>
+    </div>
+    <p class="lead" data-i18n="guide.preflight.d">A pre-trade checklist so you confirm a setup actually meets your own rules before you commit to it.</p>
+    <ol class="steps">
+      <li data-i18n-html="guide.preflight.s1">Open the <b>Pre-Flight</b> tab before you take a trade.</li>
+      <li data-i18n-html="guide.preflight.s2">Work through each <b>checklist item</b> honestly — bias, session, risk and invalidation.</li>
+      <li data-i18n-html="guide.preflight.s3">Only proceed when the checklist is clean. If something is missing, that is useful information too.</li>
+    </ol>
+  </div>
+
+  <div class="sec" id="quiz">
+    <div class="sec-head">
+      <span class="sec-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12" y2="17"/></svg></span>
+      <h2 data-i18n="guide.quiz.t">Quiz &amp; Daily Challenge</h2>
+    </div>
+    <p class="lead" data-i18n="guide.quiz.d">Test your knowledge of the methodologies with a large question bank, and take one ultra-hard question every day to keep a streak.</p>
+    <ol class="steps">
+      <li data-i18n-html="guide.quiz.s1">Open the <b>Quiz</b> tab and choose a topic or difficulty to start a session.</li>
+      <li data-i18n-html="guide.quiz.s2">Answer each question — the server checks your answer, so results are honest and never revealed early.</li>
+      <li data-i18n-html="guide.quiz.s3">Come back for the <b>Daily Challenge</b>: one hard question a day that can earn you rewards.</li>
+    </ol>
+  </div>
+
+  <div class="sec" id="forum">
+    <div class="sec-head">
+      <span class="sec-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+      <h2 data-i18n="guide.forum.t">Forum</h2>
+    </div>
+    <p class="lead" data-i18n="guide.forum.d">A Premium community space to share setups, ask questions and discuss trading. Every post is automatically moderated.</p>
+    <ol class="steps">
+      <li data-i18n-html="guide.forum.s1">Open <b>Forum Trading</b> and browse the feed, or switch to <b>Saved</b> to revisit posts.</li>
+      <li data-i18n-html="guide.forum.s2">Use <b>New post</b> to share a setup or question. Keep it respectful and on topic.</li>
+      <li data-i18n-html="guide.forum.s3">React and reply to other traders to build the discussion.</li>
+    </ol>
+  </div>
+
+  <div class="sec" id="chalk">
+    <div class="sec-head">
+      <span class="sec-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg></span>
+      <h2 data-i18n="guide.chalk.t">Chalkboard</h2>
+    </div>
+    <p class="lead" data-i18n="guide.chalk.d">A free-form drawing board to sketch setups, mark levels and annotate ideas, then save your boards for later.</p>
+    <ol class="steps">
+      <li data-i18n-html="guide.chalk.s1">Open the <b>Chalkboard</b> tab and pick a drawing tool.</li>
+      <li data-i18n-html="guide.chalk.s2">Sketch your <b>levels, zones and notes</b> directly on the board.</li>
+      <li data-i18n-html="guide.chalk.s3">Your board is <b>saved automatically</b> in this browser so you can return to it.</li>
+    </ol>
+  </div>
+
+  <div class="sec" id="synapse">
+    <div class="sec-head">
+      <span class="sec-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="6" cy="19" r="2"/><path d="M9.6 10.3L6.4 7.4M14.4 10.3l3-2.9M10.4 14L7.4 17.4"/></svg></span>
+      <h2 data-i18n="guide.synapse.t">Synapse</h2>
+    </div>
+    <p class="lead" data-i18n="guide.synapse.d">An interactive 3D knowledge hub. A holographic mind branches into every major methodology — explore them visually.</p>
+    <ol class="steps">
+      <li data-i18n-html="guide.synapse.s1">Open the <b>Synapse</b> tab and wait for the neural matrix to load.</li>
+      <li data-i18n-html="guide.synapse.s2">Click a <b>node</b> to open its methodology and read the classified dossier.</li>
+      <li data-i18n-html="guide.synapse.s3">Use the <b>Menu</b> arrow to return to the rest of the app at any time.</li>
+    </ol>
+  </div>
+
+  <div class="sec" id="timing">
+    <div class="sec-head">
+      <span class="sec-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+      <h2 data-i18n="guide.timing.t">Market Timing</h2>
+    </div>
+    <p class="lead" data-i18n="guide.timing.d">Live session clocks (kill zones) and an economic calendar so you always know which session is active and what news is ahead.</p>
+    <ol class="steps">
+      <li data-i18n-html="guide.timing.s1">On the Analyze tab, find the <b>Market Timing</b> panel with the session bands.</li>
+      <li data-i18n-html="guide.timing.s2">Hover a band to see its exact time in <b>ET and your local time</b>.</li>
+      <li data-i18n-html="guide.timing.s3">Filter the <b>economic calendar</b> by your instrument to focus on relevant news.</li>
+    </ol>
+  </div>
+
+  <div class="sec" id="plans">
+    <div class="sec-head">
+      <span class="sec-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6.5 7 .9-5 4.7 1.3 7-6.3-3.4L5.7 21l1.3-7-5-4.7 7-.9z"/></svg></span>
+      <h2 data-i18n="guide.plans.t">Plans &amp; Limits</h2>
+    </div>
+    <p class="lead" data-i18n="guide.plans.d">Each plan sets how many screenshots you can analyze and unlocks different tools. You can see your remaining analyses in the right-hand panel.</p>
+    <ol class="steps">
+      <li data-i18n-html="guide.plans.s1"><b>Free</b> — 1 analysis every 7 days, to try the core tool.</li>
+      <li data-i18n-html="guide.plans.s2"><b>Standard</b> — 1 analysis every 24 hours.</li>
+      <li data-i18n-html="guide.plans.s3"><b>Premium</b> — 5 analyses every 24 hours, plus Forum, Quiz, Synapse and more.</li>
+    </ol>
+    <p class="note" data-i18n="guide.plans.note">Open <b>Products → Plans</b> in the sidebar to compare and upgrade at any time.</p>
+  </div>
+
+  <div class="sec" id="account">
+    <div class="sec-head">
+      <span class="sec-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span>
+      <h2 data-i18n="guide.account.t">Account &amp; Settings</h2>
+    </div>
+    <p class="lead" data-i18n="guide.account.d">Manage your profile, plan, language and theme, and control your session.</p>
+    <ol class="steps">
+      <li data-i18n-html="guide.account.s1">Use the <b>account panel</b> (top of the right rail) to reach your plan, coupons and rank.</li>
+      <li data-i18n-html="guide.account.s2">Change <b>language</b> and <b>light/dark theme</b> from the sidebar controls.</li>
+      <li data-i18n-html="guide.account.s3">Open <b>Products → Settings</b> for account options.</li>
+    </ol>
+  </div>
+
+  <div class="help-cta">
+    <h3 data-i18n="guide.help.t">Still need a hand?</h3>
+    <p data-i18n="guide.help.d">This guide covers the how-to. For anything specific to your account, our support team is one message away.</p>
+    <a href="/contact" data-i18n="guide.help.cta">Contact Support</a>
+  </div>
+</div>
+
+<script>
+(function(){
+  var I18N = {
+    en: {
+      'guide.doctitle':'Trader Accelerator — User Guide',
+      'guide.back':'← Back to app',
+      'guide.eyebrow':'Step-by-step',
+      'guide.title':'User Guide',
+      'guide.sub':'A practical walkthrough of every tool in Trader Accelerator — what each one is for and how to use it, step by step. This guide is educational only; nothing here is financial advice.',
+      'guide.analyze.t':'Analyze Your Setup',
+      'guide.analyze.d':'Upload a screenshot of your chart and our AI highlights possible setup errors and educational observations to reflect on — never a verdict, signal, or recommendation.',
+      'guide.analyze.s1':'Open the <b>Analyze</b> tab and pick your <b>instrument</b>, <b>direction</b>, <b>session</b> and any <b>confluences</b> using the buttons.',
+      'guide.analyze.s2':'Upload a <b>screenshot</b> of your chart. Use the summary panel on the right to confirm everything is ready.',
+      'guide.analyze.s3':'Press <b>Analyze</b> and read the observations. Treat them as prompts to review your own reasoning, not as instructions.',
+      'guide.preflight.t':'Pre-Flight',
+      'guide.preflight.d':'A pre-trade checklist so you confirm a setup actually meets your own rules before you commit to it.',
+      'guide.preflight.s1':'Open the <b>Pre-Flight</b> tab before you take a trade.',
+      'guide.preflight.s2':'Work through each <b>checklist item</b> honestly — bias, session, risk and invalidation.',
+      'guide.preflight.s3':'Only proceed when the checklist is clean. If something is missing, that is useful information too.',
+      'guide.quiz.t':'Quiz & Daily Challenge',
+      'guide.quiz.d':'Test your knowledge of the methodologies with a large question bank, and take one ultra-hard question every day to keep a streak.',
+      'guide.quiz.s1':'Open the <b>Quiz</b> tab and choose a topic or difficulty to start a session.',
+      'guide.quiz.s2':'Answer each question — the server checks your answer, so results are honest and never revealed early.',
+      'guide.quiz.s3':'Come back for the <b>Daily Challenge</b>: one hard question a day that can earn you rewards.',
+      'guide.forum.t':'Forum',
+      'guide.forum.d':'A Premium community space to share setups, ask questions and discuss trading. Every post is automatically moderated.',
+      'guide.forum.s1':'Open <b>Forum Trading</b> and browse the feed, or switch to <b>Saved</b> to revisit posts.',
+      'guide.forum.s2':'Use <b>New post</b> to share a setup or question. Keep it respectful and on topic.',
+      'guide.forum.s3':'React and reply to other traders to build the discussion.',
+      'guide.chalk.t':'Chalkboard',
+      'guide.chalk.d':'A free-form drawing board to sketch setups, mark levels and annotate ideas, then save your boards for later.',
+      'guide.chalk.s1':'Open the <b>Chalkboard</b> tab and pick a drawing tool.',
+      'guide.chalk.s2':'Sketch your <b>levels, zones and notes</b> directly on the board.',
+      'guide.chalk.s3':'Your board is <b>saved automatically</b> in this browser so you can return to it.',
+      'guide.synapse.t':'Synapse',
+      'guide.synapse.d':'An interactive 3D knowledge hub. A holographic mind branches into every major methodology — explore them visually.',
+      'guide.synapse.s1':'Open the <b>Synapse</b> tab and wait for the neural matrix to load.',
+      'guide.synapse.s2':'Click a <b>node</b> to open its methodology and read the classified dossier.',
+      'guide.synapse.s3':'Use the <b>Menu</b> arrow to return to the rest of the app at any time.',
+      'guide.timing.t':'Market Timing',
+      'guide.timing.d':'Live session clocks (kill zones) and an economic calendar so you always know which session is active and what news is ahead.',
+      'guide.timing.s1':'On the Analyze tab, find the <b>Market Timing</b> panel with the session bands.',
+      'guide.timing.s2':'Hover a band to see its exact time in <b>ET and your local time</b>.',
+      'guide.timing.s3':'Filter the <b>economic calendar</b> by your instrument to focus on relevant news.',
+      'guide.plans.t':'Plans & Limits',
+      'guide.plans.d':'Each plan sets how many screenshots you can analyze and unlocks different tools. You can see your remaining analyses in the right-hand panel.',
+      'guide.plans.s1':'<b>Free</b> — 1 analysis every 7 days, to try the core tool.',
+      'guide.plans.s2':'<b>Standard</b> — 1 analysis every 24 hours.',
+      'guide.plans.s3':'<b>Premium</b> — 5 analyses every 24 hours, plus Forum, Quiz, Synapse and more.',
+      'guide.plans.note':'Open <b>Products → Plans</b> in the sidebar to compare and upgrade at any time.',
+      'guide.account.t':'Account & Settings',
+      'guide.account.d':'Manage your profile, plan, language and theme, and control your session.',
+      'guide.account.s1':'Use the <b>account panel</b> (top of the right rail) to reach your plan, coupons and rank.',
+      'guide.account.s2':'Change <b>language</b> and <b>light/dark theme</b> from the sidebar controls.',
+      'guide.account.s3':'Open <b>Products → Settings</b> for account options.',
+      'guide.help.t':'Still need a hand?',
+      'guide.help.d':'This guide covers the how-to. For anything specific to your account, our support team is one message away.',
+      'guide.help.cta':'Contact Support'
+    },
+    es: {
+      'guide.doctitle':'Trader Accelerator — Guía de uso',
+      'guide.back':'← Volver a la app',
+      'guide.eyebrow':'Paso a paso',
+      'guide.title':'Guía de uso',
+      'guide.sub':'Un recorrido práctico por cada herramienta de Trader Accelerator: para qué sirve y cómo usarla, paso a paso. Esta guía es solo educativa; nada de lo aquí escrito es asesoría financiera.',
+      'guide.analyze.t':'Analiza tu setup',
+      'guide.analyze.d':'Sube una captura de tu gráfico y nuestra IA señala posibles errores del setup y observaciones educativas para reflexionar — nunca un veredicto, señal ni recomendación.',
+      'guide.analyze.s1':'Abre la pestaña <b>Analyze</b> y elige tu <b>instrumento</b>, <b>dirección</b>, <b>sesión</b> y las <b>confluencias</b> con los botones.',
+      'guide.analyze.s2':'Sube una <b>captura</b> de tu gráfico. Usa el panel de resumen de la derecha para confirmar que todo está listo.',
+      'guide.analyze.s3':'Pulsa <b>Analyze</b> y lee las observaciones. Tómalas como estímulos para revisar tu propio razonamiento, no como instrucciones.',
+      'guide.preflight.t':'Pre-Flight',
+      'guide.preflight.d':'Una checklist previa a la operación para confirmar que un setup realmente cumple tus propias reglas antes de ejecutarlo.',
+      'guide.preflight.s1':'Abre la pestaña <b>Pre-Flight</b> antes de tomar una operación.',
+      'guide.preflight.s2':'Repasa con honestidad cada <b>punto de la checklist</b>: sesgo, sesión, riesgo e invalidación.',
+      'guide.preflight.s3':'Continúa solo cuando la checklist esté limpia. Si falta algo, eso también es información útil.',
+      'guide.quiz.t':'Quiz y Reto Diario',
+      'guide.quiz.d':'Pon a prueba tu conocimiento de las metodologías con un gran banco de preguntas, y responde una pregunta ultradifícil cada día para mantener tu racha.',
+      'guide.quiz.s1':'Abre la pestaña <b>Quiz</b> y elige un tema o dificultad para empezar una sesión.',
+      'guide.quiz.s2':'Responde cada pregunta — el servidor valida tu respuesta, así los resultados son honestos y nunca se revelan antes.',
+      'guide.quiz.s3':'Vuelve por el <b>Reto Diario</b>: una pregunta difícil al día que puede darte recompensas.',
+      'guide.forum.t':'Foro',
+      'guide.forum.d':'Un espacio de comunidad Premium para compartir setups, hacer preguntas y hablar de trading. Cada publicación se modera automáticamente.',
+      'guide.forum.s1':'Abre <b>Forum Trading</b> y recorre el feed, o cambia a <b>Guardados</b> para revisar publicaciones.',
+      'guide.forum.s2':'Usa <b>Nueva publicación</b> para compartir un setup o una pregunta. Mantén el respeto y el tema.',
+      'guide.forum.s3':'Reacciona y responde a otros traders para enriquecer la conversación.',
+      'guide.chalk.t':'Chalkboard',
+      'guide.chalk.d':'Un tablero de dibujo libre para bocetar setups, marcar niveles y anotar ideas, y luego guardar tus tableros.',
+      'guide.chalk.s1':'Abre la pestaña <b>Chalkboard</b> y elige una herramienta de dibujo.',
+      'guide.chalk.s2':'Dibuja tus <b>niveles, zonas y notas</b> directamente en el tablero.',
+      'guide.chalk.s3':'Tu tablero se <b>guarda automáticamente</b> en este navegador para que puedas volver a él.',
+      'guide.synapse.t':'Synapse',
+      'guide.synapse.d':'Un centro de conocimiento interactivo en 3D. Una mente holográfica se ramifica hacia cada metodología principal — explóralas visualmente.',
+      'guide.synapse.s1':'Abre la pestaña <b>Synapse</b> y espera a que cargue la matriz neuronal.',
+      'guide.synapse.s2':'Haz clic en un <b>nodo</b> para abrir su metodología y leer el dossier clasificado.',
+      'guide.synapse.s3':'Usa la flecha <b>Menú</b> para volver al resto de la app en cualquier momento.',
+      'guide.timing.t':'Timing del mercado',
+      'guide.timing.d':'Relojes de sesión en vivo (kill zones) y un calendario económico para saber siempre qué sesión está activa y qué noticias vienen.',
+      'guide.timing.s1':'En la pestaña Analyze, busca el panel de <b>Market Timing</b> con las bandas de sesión.',
+      'guide.timing.s2':'Pasa el cursor por una banda para ver su hora exacta en <b>ET y tu hora local</b>.',
+      'guide.timing.s3':'Filtra el <b>calendario económico</b> por tu instrumento para centrarte en las noticias relevantes.',
+      'guide.plans.t':'Planes y límites',
+      'guide.plans.d':'Cada plan define cuántas capturas puedes analizar y desbloquea distintas herramientas. Ves tus análisis restantes en el panel de la derecha.',
+      'guide.plans.s1':'<b>Free</b> — 1 análisis cada 7 días, para probar la herramienta principal.',
+      'guide.plans.s2':'<b>Standard</b> — 1 análisis cada 24 horas.',
+      'guide.plans.s3':'<b>Premium</b> — 5 análisis cada 24 horas, además de Foro, Quiz, Synapse y más.',
+      'guide.plans.note':'Abre <b>Products → Planes</b> en la barra lateral para comparar y mejorar tu plan cuando quieras.',
+      'guide.account.t':'Cuenta y ajustes',
+      'guide.account.d':'Gestiona tu perfil, plan, idioma y tema, y controla tu sesión.',
+      'guide.account.s1':'Usa el <b>panel de cuenta</b> (arriba en el rail derecho) para llegar a tu plan, cupones y rango.',
+      'guide.account.s2':'Cambia el <b>idioma</b> y el <b>tema claro/oscuro</b> desde los controles de la barra lateral.',
+      'guide.account.s3':'Abre <b>Products → Settings</b> para las opciones de cuenta.',
+      'guide.help.t':'¿Aún necesitas ayuda?',
+      'guide.help.d':'Esta guía cubre el cómo. Para cualquier cosa específica de tu cuenta, nuestro equipo de soporte está a un mensaje.',
+      'guide.help.cta':'Contactar soporte'
+    },
+    fr: {
+      'guide.doctitle':"Trader Accelerator — Guide d'utilisation",
+      'guide.back':"← Retour à l'app",
+      'guide.eyebrow':'Étape par étape',
+      'guide.title':"Guide d'utilisation",
+      'guide.sub':"Un parcours pratique de chaque outil de Trader Accelerator : à quoi il sert et comment l'utiliser, étape par étape. Ce guide est purement éducatif ; rien ici n'est un conseil financier.",
+      'guide.analyze.t':'Analysez votre setup',
+      'guide.analyze.d':"Téléversez une capture de votre graphique et notre IA met en évidence de possibles erreurs de setup et des observations éducatives à méditer — jamais un verdict, un signal ou une recommandation.",
+      'guide.analyze.s1':"Ouvrez l'onglet <b>Analyze</b> et choisissez votre <b>instrument</b>, votre <b>direction</b>, la <b>session</b> et les <b>confluences</b> avec les boutons.",
+      'guide.analyze.s2':'Téléversez une <b>capture</b> de votre graphique. Servez-vous du panneau de résumé à droite pour vérifier que tout est prêt.',
+      'guide.analyze.s3':"Appuyez sur <b>Analyze</b> et lisez les observations. Prenez-les comme des invitations à revoir votre propre raisonnement, pas comme des consignes.",
+      'guide.preflight.t':'Pre-Flight',
+      'guide.preflight.d':"Une checklist avant trade pour confirmer qu'un setup respecte vraiment vos propres règles avant de vous engager.",
+      'guide.preflight.s1':"Ouvrez l'onglet <b>Pre-Flight</b> avant de prendre un trade.",
+      'guide.preflight.s2':'Passez honnêtement en revue chaque <b>point de la checklist</b> : biais, session, risque et invalidation.',
+      'guide.preflight.s3':"Ne continuez que si la checklist est propre. S'il manque quelque chose, c'est aussi une information utile.",
+      'guide.quiz.t':'Quiz et Défi quotidien',
+      'guide.quiz.d':"Testez vos connaissances des méthodologies avec une vaste banque de questions, et répondez à une question ultra-difficile chaque jour pour garder votre série.",
+      'guide.quiz.s1':"Ouvrez l'onglet <b>Quiz</b> et choisissez un thème ou une difficulté pour lancer une session.",
+      'guide.quiz.s2':'Répondez à chaque question — le serveur valide votre réponse, les résultats sont donc honnêtes et jamais dévoilés à l\'avance.',
+      'guide.quiz.s3':'Revenez pour le <b>Défi quotidien</b> : une question difficile par jour qui peut vous rapporter des récompenses.',
+      'guide.forum.t':'Forum',
+      'guide.forum.d':"Un espace communautaire Premium pour partager des setups, poser des questions et discuter de trading. Chaque message est modéré automatiquement.",
+      'guide.forum.s1':'Ouvrez <b>Forum Trading</b> et parcourez le fil, ou passez à <b>Enregistrés</b> pour revoir des messages.',
+      'guide.forum.s2':'Utilisez <b>Nouveau message</b> pour partager un setup ou une question. Restez respectueux et dans le sujet.',
+      'guide.forum.s3':'Réagissez et répondez aux autres traders pour nourrir la discussion.',
+      'guide.chalk.t':'Chalkboard',
+      'guide.chalk.d':"Un tableau de dessin libre pour esquisser des setups, marquer des niveaux et annoter des idées, puis enregistrer vos tableaux.",
+      'guide.chalk.s1':"Ouvrez l'onglet <b>Chalkboard</b> et choisissez un outil de dessin.",
+      'guide.chalk.s2':'Dessinez vos <b>niveaux, zones et notes</b> directement sur le tableau.',
+      'guide.chalk.s3':'Votre tableau est <b>enregistré automatiquement</b> dans ce navigateur pour que vous puissiez y revenir.',
+      'guide.synapse.t':'Synapse',
+      'guide.synapse.d':"Un hub de connaissances interactif en 3D. Un esprit holographique se ramifie vers chaque grande méthodologie — explorez-les visuellement.",
+      'guide.synapse.s1':"Ouvrez l'onglet <b>Synapse</b> et attendez le chargement de la matrice neuronale.",
+      'guide.synapse.s2':'Cliquez sur un <b>nœud</b> pour ouvrir sa méthodologie et lire le dossier classé.',
+      'guide.synapse.s3':"Utilisez la flèche <b>Menu</b> pour revenir au reste de l'app à tout moment.",
+      'guide.timing.t':'Timing du marché',
+      'guide.timing.d':"Des horloges de session en direct (kill zones) et un calendrier économique pour toujours savoir quelle session est active et quelles nouvelles arrivent.",
+      'guide.timing.s1':"Dans l'onglet Analyze, trouvez le panneau <b>Market Timing</b> avec les bandes de session.",
+      'guide.timing.s2':'Survolez une bande pour voir son heure exacte en <b>ET et votre heure locale</b>.',
+      'guide.timing.s3':'Filtrez le <b>calendrier économique</b> par votre instrument pour vous concentrer sur les nouvelles pertinentes.',
+      'guide.plans.t':'Plans et limites',
+      'guide.plans.d':"Chaque plan définit combien de captures vous pouvez analyser et déverrouille différents outils. Vos analyses restantes s'affichent dans le panneau de droite.",
+      'guide.plans.s1':"<b>Free</b> — 1 analyse tous les 7 jours, pour essayer l'outil principal.",
+      'guide.plans.s2':'<b>Standard</b> — 1 analyse toutes les 24 heures.',
+      'guide.plans.s3':'<b>Premium</b> — 5 analyses toutes les 24 heures, plus Forum, Quiz, Synapse et plus.',
+      'guide.plans.note':'Ouvrez <b>Products → Plans</b> dans la barre latérale pour comparer et passer à un niveau supérieur à tout moment.',
+      'guide.account.t':'Compte et réglages',
+      'guide.account.d':'Gérez votre profil, votre plan, votre langue et votre thème, et contrôlez votre session.',
+      'guide.account.s1':'Utilisez le <b>panneau de compte</b> (en haut du rail droit) pour accéder à votre plan, vos coupons et votre rang.',
+      'guide.account.s2':'Changez la <b>langue</b> et le <b>thème clair/sombre</b> depuis les commandes de la barre latérale.',
+      'guide.account.s3':'Ouvrez <b>Products → Settings</b> pour les options de compte.',
+      'guide.help.t':"Besoin d'un coup de main ?",
+      'guide.help.d':"Ce guide couvre le mode d'emploi. Pour tout ce qui concerne votre compte, notre équipe de support est à un message.",
+      'guide.help.cta':'Contacter le support'
+    },
+    pt: {
+      'guide.doctitle':'Trader Accelerator — Guia de uso',
+      'guide.back':'← Voltar ao app',
+      'guide.eyebrow':'Passo a passo',
+      'guide.title':'Guia de uso',
+      'guide.sub':'Um passeio prático por cada ferramenta do Trader Accelerator — para que serve e como usá-la, passo a passo. Este guia é apenas educacional; nada aqui é aconselhamento financeiro.',
+      'guide.analyze.t':'Analise seu setup',
+      'guide.analyze.d':'Envie uma captura do seu gráfico e nossa IA destaca possíveis erros do setup e observações educacionais para refletir — nunca um veredito, sinal ou recomendação.',
+      'guide.analyze.s1':'Abra a aba <b>Analyze</b> e escolha seu <b>instrumento</b>, <b>direção</b>, <b>sessão</b> e as <b>confluências</b> pelos botões.',
+      'guide.analyze.s2':'Envie uma <b>captura</b> do seu gráfico. Use o painel de resumo à direita para confirmar que está tudo pronto.',
+      'guide.analyze.s3':'Toque em <b>Analyze</b> e leia as observações. Encare-as como estímulos para revisar seu próprio raciocínio, não como instruções.',
+      'guide.preflight.t':'Pre-Flight',
+      'guide.preflight.d':'Um checklist pré-operação para confirmar que um setup realmente cumpre suas próprias regras antes de você entrar.',
+      'guide.preflight.s1':'Abra a aba <b>Pre-Flight</b> antes de fazer uma operação.',
+      'guide.preflight.s2':'Revise com honestidade cada <b>item do checklist</b>: viés, sessão, risco e invalidação.',
+      'guide.preflight.s3':'Só siga em frente quando o checklist estiver limpo. Se faltar algo, isso também é informação útil.',
+      'guide.quiz.t':'Quiz e Desafio Diário',
+      'guide.quiz.d':'Teste seu conhecimento das metodologias com um grande banco de questões, e responda uma questão ultradifícil todo dia para manter sua sequência.',
+      'guide.quiz.s1':'Abra a aba <b>Quiz</b> e escolha um tema ou dificuldade para iniciar uma sessão.',
+      'guide.quiz.s2':'Responda cada questão — o servidor valida sua resposta, então os resultados são honestos e nunca revelados antes.',
+      'guide.quiz.s3':'Volte para o <b>Desafio Diário</b>: uma questão difícil por dia que pode render recompensas.',
+      'guide.forum.t':'Fórum',
+      'guide.forum.d':'Um espaço de comunidade Premium para compartilhar setups, tirar dúvidas e discutir trading. Cada publicação é moderada automaticamente.',
+      'guide.forum.s1':'Abra o <b>Forum Trading</b> e percorra o feed, ou vá para <b>Salvos</b> para rever publicações.',
+      'guide.forum.s2':'Use <b>Nova publicação</b> para compartilhar um setup ou pergunta. Mantenha o respeito e o tema.',
+      'guide.forum.s3':'Reaja e responda a outros traders para enriquecer a conversa.',
+      'guide.chalk.t':'Chalkboard',
+      'guide.chalk.d':'Um quadro de desenho livre para esboçar setups, marcar níveis e anotar ideias, e depois salvar seus quadros.',
+      'guide.chalk.s1':'Abra a aba <b>Chalkboard</b> e escolha uma ferramenta de desenho.',
+      'guide.chalk.s2':'Desenhe seus <b>níveis, zonas e notas</b> direto no quadro.',
+      'guide.chalk.s3':'Seu quadro é <b>salvo automaticamente</b> neste navegador para você voltar a ele.',
+      'guide.synapse.t':'Synapse',
+      'guide.synapse.d':'Um hub de conhecimento interativo em 3D. Uma mente holográfica se ramifica em cada metodologia principal — explore-as visualmente.',
+      'guide.synapse.s1':'Abra a aba <b>Synapse</b> e aguarde a matriz neural carregar.',
+      'guide.synapse.s2':'Clique em um <b>nó</b> para abrir sua metodologia e ler o dossiê classificado.',
+      'guide.synapse.s3':'Use a seta <b>Menu</b> para voltar ao restante do app quando quiser.',
+      'guide.timing.t':'Timing do mercado',
+      'guide.timing.d':'Relógios de sessão ao vivo (kill zones) e um calendário econômico para você sempre saber qual sessão está ativa e quais notícias vêm por aí.',
+      'guide.timing.s1':'Na aba Analyze, encontre o painel <b>Market Timing</b> com as faixas de sessão.',
+      'guide.timing.s2':'Passe o cursor sobre uma faixa para ver o horário exato em <b>ET e no seu horário local</b>.',
+      'guide.timing.s3':'Filtre o <b>calendário econômico</b> pelo seu instrumento para focar nas notícias relevantes.',
+      'guide.plans.t':'Planos e limites',
+      'guide.plans.d':'Cada plano define quantas capturas você pode analisar e libera ferramentas diferentes. Você vê suas análises restantes no painel da direita.',
+      'guide.plans.s1':'<b>Free</b> — 1 análise a cada 7 dias, para experimentar a ferramenta principal.',
+      'guide.plans.s2':'<b>Standard</b> — 1 análise a cada 24 horas.',
+      'guide.plans.s3':'<b>Premium</b> — 5 análises a cada 24 horas, além de Fórum, Quiz, Synapse e mais.',
+      'guide.plans.note':'Abra <b>Products → Planos</b> na barra lateral para comparar e fazer upgrade quando quiser.',
+      'guide.account.t':'Conta e ajustes',
+      'guide.account.d':'Gerencie seu perfil, plano, idioma e tema, e controle sua sessão.',
+      'guide.account.s1':'Use o <b>painel de conta</b> (no topo do rail direito) para chegar ao seu plano, cupons e rank.',
+      'guide.account.s2':'Troque o <b>idioma</b> e o <b>tema claro/escuro</b> nos controles da barra lateral.',
+      'guide.account.s3':'Abra <b>Products → Settings</b> para as opções de conta.',
+      'guide.help.t':'Ainda precisa de ajuda?',
+      'guide.help.d':'Este guia cobre o como fazer. Para qualquer coisa específica da sua conta, nosso time de suporte está a uma mensagem de distância.',
+      'guide.help.cta':'Falar com o suporte'
+    }
+  };
+  function getLang(){ try{ return localStorage.getItem('scalpel_lang')||'en'; }catch(e){ return 'en'; } }
+  function apply(lang){
+    var d = I18N[lang] || I18N.en;
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-i18n]').forEach(function(el){ var v=d[el.getAttribute('data-i18n')]; if(v!=null) el.textContent=v; });
+    document.querySelectorAll('[data-i18n-html]').forEach(function(el){ var v=d[el.getAttribute('data-i18n-html')]; if(v!=null) el.innerHTML=v; });
+    document.querySelectorAll('[data-i18n-title]').forEach(function(el){ var v=d[el.getAttribute('data-i18n-title')]; if(v!=null) document.title=v; });
+    var sel=document.getElementById('langSel'); if(sel) sel.value=lang;
+  }
+  function getTheme(){ try{ return localStorage.getItem('scalpel_theme')||'light'; }catch(e){ return 'light'; } }
+  function applyTheme(t){ document.documentElement.setAttribute('data-theme', t==='dark'?'dark':'light'); }
+  // init
+  applyTheme(getTheme());
+  apply(getLang());
+  document.getElementById('langSel').addEventListener('change', function(){
+    var l=this.value; try{ localStorage.setItem('scalpel_lang', l); }catch(e){} apply(l);
+  });
+  document.getElementById('themeBtn').addEventListener('click', function(){
+    var t=(getTheme()==='dark')?'light':'dark'; try{ localStorage.setItem('scalpel_theme', t); }catch(e){} applyTheme(t);
+  });
+})();
+</script>
+</body>
+</html>
