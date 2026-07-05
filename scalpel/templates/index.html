@@ -26637,6 +26637,16 @@
   body.ag-quiz-mode .ag-sidebar{ display:none !important; }
   body.ag-quiz-mode .ag-shell{ grid-template-columns:1fr; }
   body.ag-quiz-mode .ag-quiz-back{ display:inline-flex; }
+  /* Synapse immersive mode: restore its original full-screen look — no Aurora
+     background, no sidebar/rail/ribbon bleeding through. Solid theme background
+     (dark or light) behind the 3D hologram, and a floating "Menu" arrow to exit. */
+  body.ag-synapse-mode{ background:var(--bg) !important; }
+  body.ag-synapse-mode .ag-sidebar,
+  body.ag-synapse-mode .ag-rail,
+  body.ag-synapse-mode .improve-ribbon{ display:none !important; }
+  body.ag-synapse-mode .ag-shell{ grid-template-columns:1fr; padding:0; margin:0; max-width:none; }
+  body.ag-synapse-mode #synapse-app{ position:fixed; inset:0; width:100vw; height:100vh; margin:0; z-index:30; }
+  body.ag-synapse-mode .ag-quiz-back{ display:inline-flex; }
   @media(max-width:1180px){ .ag-shell{ grid-template-columns:236px minmax(0,1fr); } .ag-rail{ display:none !important; } }
   @media(max-width:900px){ .ag-shell{ grid-template-columns:1fr; padding:14px; }
     .ag-sidebar{ position:static; max-height:none; flex-direction:row; flex-wrap:wrap; align-items:center; }
@@ -26706,15 +26716,19 @@
       var bar=document.getElementById('ag-bar'); if(bar) bar.style.width=(n/5*100)+'%';
     }
     function applyTab(dt){
-      var quiz=(dt==='quiz');
+      var quiz=(dt==='quiz'), syn=(dt==='synapse');
       document.body.classList.toggle('ag-quiz-mode', quiz);
-      rail.style.display=quiz?'none':'';               /* rail (with account) shows on every tab except immersive quiz */
+      document.body.classList.toggle('ag-synapse-mode', syn);
+      rail.style.display=(quiz||syn)?'none':''; /* rail (with account) shows on every tab except immersive quiz/synapse */
       cards.style.display=(dt==='analyze')?'':'none';  /* setup summary / quotas only make sense on Analyze */
+      /* Synapse sizes its WebGL canvas from #synapse-app's box; the layout just
+         changed under it, so nudge a resize once the new dimensions settle. */
+      if(syn) setTimeout(function(){ window.dispatchEvent(new Event('resize')); },60);
     }
     tabs.addEventListener('click',function(e){var b=e.target.closest('.tab'); if(b&&b.getAttribute('data-tab')) applyTab(b.getAttribute('data-tab'));});
     var back=document.createElement('button'); back.className='ag-quiz-back'; back.type='button';
     back.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Menu';
-    back.addEventListener('click',function(){ var at=tabs.querySelector('.tab[data-tab="analyze"]'); if(at) at.click(); document.body.classList.remove('ag-quiz-mode'); });
+    back.addEventListener('click',function(){ var at=tabs.querySelector('.tab[data-tab="analyze"]'); if(at) at.click(); document.body.classList.remove('ag-quiz-mode'); document.body.classList.remove('ag-synapse-mode'); });
     document.body.appendChild(back);
     document.addEventListener('click',function(){setTimeout(updateRail,30);},true);
     updateRail();
