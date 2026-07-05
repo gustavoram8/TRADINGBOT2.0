@@ -26682,7 +26682,8 @@
       var dir=q('.pill.long.selected')?'Long':(q('.pill.short.selected')?'Short':'');
       var sess=q('.pill-group[data-group="session"] .pill.selected');
       var conf=document.querySelectorAll('.pill-group[data-group="confluences"] .pill.selected').length;
-      var chart=q('#analyze-container img[src^="data:"], #analyze-container img[src^="blob:"], #analyze-container .preview-img');
+      var _pi=document.getElementById('preview-img'), _ps=_pi&&_pi.getAttribute('src');
+      var chart=!!(_ps && _ps.slice(0,5)==='data:');
       set('ag-instr', instr?txt(instr):'—');
       set('ag-dir', dir||'—');
       set('ag-sess', sess?txt(sess):'—');
