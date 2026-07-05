@@ -3852,6 +3852,8 @@
   // Current account context, injected server-side
   window.SCALPEL_USER = {
     plan: "{{ plan|default('free') }}",
+    analysesUsed: {{ analyses_used|default(0) }},
+    analysesMax: {{ analyses_max|default(1) }},
     unlockPlan: "{{ unlock_plan|default('') }}",
     reviewPrompt: {{ 'true' if review_prompt else 'false' }},
     isAdmin: {{ 'true' if is_admin else 'false' }},
@@ -26591,7 +26593,7 @@
     border-radius:var(--radius); box-shadow:0 16px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08);
     backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px); max-height:calc(100vh - 44px); overflow:auto; }
   .ag-sidebar .logo-wrap{ padding:4px 6px 2px; }
-  .ag-sidebar .logo-img{ height:30px; width:auto; }
+  .ag-sidebar .logo-img{ height:30px; width:auto; mix-blend-mode:normal; }
   .ag-side-top{ display:flex; align-items:center; gap:8px; padding:0 4px; }
   .ag-side-spacer{ flex:1 1 auto; min-height:6px; }
   .ag-sidebar #tabs, .ag-sidebar .tabs{ display:flex !important; flex-direction:column; align-items:stretch;
@@ -26617,6 +26619,16 @@
   .ag-bar{ height:8px; border-radius:99px; background:rgba(0,0,0,.28); overflow:hidden; }
   body.light .ag-bar{ background:rgba(0,0,0,.10); }
   .ag-bar > span{ display:block; height:100%; width:0; background:linear-gradient(90deg,#A06BF0,var(--accent)); transition:width .3s; }
+  /* Quiz immersive mode: hide the sidebar so the full-bleed welcome splash has
+     the whole screen; a floating "Menu" arrow returns to the app. */
+  .ag-quiz-back{ position:fixed; top:18px; left:18px; z-index:60; display:none; align-items:center; gap:7px;
+    padding:9px 15px; border-radius:999px; background:var(--card); border:1px solid var(--border); color:var(--text);
+    font:600 13px/1 'Space Grotesk',system-ui,sans-serif; cursor:pointer;
+    backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); box-shadow:0 8px 24px rgba(0,0,0,.3); }
+  .ag-quiz-back:hover{ border-color:var(--accent); color:var(--accent); }
+  body.ag-quiz-mode .ag-sidebar{ display:none !important; }
+  body.ag-quiz-mode .ag-shell{ grid-template-columns:1fr; }
+  body.ag-quiz-mode .ag-quiz-back{ display:inline-flex; }
   @media(max-width:1180px){ .ag-shell{ grid-template-columns:236px minmax(0,1fr); } .ag-rail{ display:none !important; } }
   @media(max-width:900px){ .ag-shell{ grid-template-columns:1fr; padding:14px; }
     .ag-sidebar{ position:static; max-height:none; flex-direction:row; flex-wrap:wrap; align-items:center; }
@@ -26638,7 +26650,9 @@
     var side=document.createElement('aside'); side.className='ag-sidebar';
     var rail=document.createElement('aside'); rail.className='ag-rail';
     container.parentNode.insertBefore(shell,container);
-    if(logoWrap) side.appendChild(logoWrap);
+    if(logoWrap){ side.appendChild(logoWrap);
+      var _lm=logoWrap.querySelector('.logo-img');
+      if(_lm&&_lm.src) _lm.src=_lm.src.replace('logo.png','logo_t.png'); } /* transparent logo, no box */
     var top=document.createElement('div'); top.className='ag-side-top';
     if(lang) top.appendChild(lang); if(theme) top.appendChild(theme);
     side.appendChild(top); side.appendChild(tabs);
@@ -26655,7 +26669,13 @@
       +'<div class="ag-sum-row"><span class="k">Confluences</span><span class="v" id="ag-conf">0</span></div>'
       +'<div class="ag-sum-row"><span class="k">Chart</span><span class="v no" id="ag-chart">Missing</span></div>'
       +'</div>'
-      +'<div class="ag-card"><div class="ag-ready-lab"><span>Ready to analyze</span><b id="ag-ready">0 / 5</b></div><div class="ag-bar"><span id="ag-bar"></span></div></div>';
+      +'<div class="ag-card"><div class="ag-ready-lab"><span>Ready to analyze</span><b id="ag-ready">0 / 5</b></div><div class="ag-bar"><span id="ag-bar"></span></div></div>'
+      +'<div class="ag-card"><div class="ag-ready-lab"><span id="ag-quota-lab">Analyses left</span><b id="ag-quota">&mdash;</b></div><div class="ag-bar"><span id="ag-quota-bar" style="background:linear-gradient(90deg,#5A96F0,#46D08A)"></span></div></div>';
+    try{ var U=window.SCALPEL_USER||{}; var mx=+U.analysesMax||1, us=+U.analysesUsed||0, left=Math.max(0,mx-us);
+      var qe=document.getElementById('ag-quota'); if(qe) qe.textContent=left+' / '+mx;
+      var qp=document.getElementById('ag-quota-lab'); if(qp&&U.plan) qp.textContent='Analyses left · '+U.plan.charAt(0).toUpperCase()+U.plan.slice(1);
+      var qb=document.getElementById('ag-quota-bar'); if(qb) qb.style.width=(mx?left/mx*100:0)+'%';
+    }catch(e){}
     function txt(e){return e?(e.textContent||'').trim():'';}
     function updateRail(){
       var instr=q('.pill-group[data-group="instrument"] .pill.selected');
@@ -26672,7 +26692,12 @@
       set('ag-ready', n+' / 5');
       var bar=document.getElementById('ag-bar'); if(bar) bar.style.width=(n/5*100)+'%';
     }
-    tabs.addEventListener('click',function(e){var b=e.target.closest('.tab'); if(b&&b.getAttribute('data-tab')) rail.style.display=(b.getAttribute('data-tab')==='analyze')?'':'none';});
+    function applyTab(dt){ rail.style.display=(dt==='analyze')?'':'none'; document.body.classList.toggle('ag-quiz-mode', dt==='quiz'); }
+    tabs.addEventListener('click',function(e){var b=e.target.closest('.tab'); if(b&&b.getAttribute('data-tab')) applyTab(b.getAttribute('data-tab'));});
+    var back=document.createElement('button'); back.className='ag-quiz-back'; back.type='button';
+    back.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Menu';
+    back.addEventListener('click',function(){ var at=tabs.querySelector('.tab[data-tab="analyze"]'); if(at) at.click(); document.body.classList.remove('ag-quiz-mode'); });
+    document.body.appendChild(back);
     document.addEventListener('click',function(){setTimeout(updateRail,30);},true);
     updateRail();
   }

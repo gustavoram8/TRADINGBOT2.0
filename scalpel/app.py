@@ -1856,9 +1856,20 @@ def app_view():
     view_rank = demo_rank if (demo_mode and demo_rank is not None) else (current_user.rank or 1)
     view_xp = demo_xp if (demo_mode and demo_xp is not None) else (current_user.xp or 0)
 
+    # Aurora Glass rail — expose the analysis quota (read-only; additive, no
+    # behaviour change). Reuses the same PLAN_LIMITS window + UsageLog count
+    # that check_rate_limit() enforces, so the rail matches the real limit.
+    _q_cfg = PLAN_LIMITS.get(plan_view, PLAN_LIMITS['free'])
+    _q_since = datetime.now(timezone.utc) - _q_cfg['window']
+    analyses_used = (UsageLog.query
+                     .filter(UsageLog.user_id == current_user.id,
+                             UsageLog.created_at >= _q_since).count())
+    analyses_max = _q_cfg['max']
     resp = make_response(render_template(
         'index.html',
         plan=plan_view,
+        analyses_used=analyses_used,
+        analyses_max=analyses_max,
         is_admin=is_admin_view,
         username=current_user.username,
         is_guest=False,
