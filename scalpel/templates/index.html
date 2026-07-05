@@ -2892,12 +2892,7 @@
     /* Full-bleed: break out of the centered 680px quiz-app column */
     #quiz-welcome { width: 100vw; position: relative; left: 50%; margin-left: -50vw; }
     .qw-stage { position: relative; min-height: 92vh; display: flex; align-items: center;
-      justify-content: flex-end; overflow: hidden; padding: 24px 11vw 24px 0;
-      /* The mascot art carries a baked-in white outline meant to sit on pure black.
-         The Aurora gradient made that outline read as a halo, so give the welcome
-         stage its own deep near-black backdrop (light theme stays light). */
-      background: radial-gradient(ellipse 92% 88% at 33% 48%, #0e1018 0%, #06070c 52%, #000 100%); }
-    body.light .qw-stage { background: #eef1f7; }
+      justify-content: flex-end; overflow: hidden; padding: 24px 11vw 24px 0; }
     /* Big tilted logo, nudged toward the centre, spilling slightly off the left */
     .quiz-welcome-logo { position: absolute; left: 4vw; top: 50%;
       height: 70vh; width: auto; max-width: none; object-fit: contain;
@@ -26674,11 +26669,6 @@
   body.ag-quiz-mode .ag-sidebar{ display:none !important; }
   body.ag-quiz-mode .ag-shell{ grid-template-columns:1fr; }
   body.ag-quiz-mode .ag-quiz-back{ display:inline-flex; }
-  /* Quiz is immersive too — kill the Aurora field (the mascot art is drawn for a
-     near-black stage) and hide the ribbon. Light theme keeps a light ground. */
-  body.ag-quiz-mode{ background:#06070c !important; }
-  body.light.ag-quiz-mode{ background:#eef1f7 !important; }
-  body.ag-quiz-mode .improve-ribbon{ display:none !important; }
   /* Synapse immersive mode: restore its original full-screen look — no Aurora
      background, no sidebar/rail/ribbon bleeding through. Solid theme background
      (dark or light) behind the 3D hologram, and a floating "Menu" arrow to exit. */
