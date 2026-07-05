@@ -26580,5 +26580,104 @@
   }, { passive: true });
 })();
 </script>
+<!-- ═══ AURORA GLASS 1b — Command Deck shell (reskin; reorganizes existing
+     nodes via appendChild so all event listeners are preserved) ═══ -->
+<style id="ag-shell-css">
+  .ag-shell{ display:grid; grid-template-columns:236px minmax(0,1fr) 322px; gap:22px;
+    max-width:1560px; margin:0 auto; padding:22px 26px 60px; align-items:start; }
+  .ag-shell > .container{ max-width:none !important; margin:0 !important; padding:0 !important; width:auto !important; }
+  .ag-sidebar{ position:sticky; top:22px; align-self:start; display:flex; flex-direction:column;
+    gap:12px; padding:16px 12px; background:var(--card); border:1px solid var(--border);
+    border-radius:var(--radius); box-shadow:0 16px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08);
+    backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px); max-height:calc(100vh - 44px); overflow:auto; }
+  .ag-sidebar .logo-wrap{ padding:4px 6px 2px; }
+  .ag-sidebar .logo-img{ height:30px; width:auto; }
+  .ag-side-top{ display:flex; align-items:center; gap:8px; padding:0 4px; }
+  .ag-side-spacer{ flex:1 1 auto; min-height:6px; }
+  .ag-sidebar #tabs, .ag-sidebar .tabs{ display:flex !important; flex-direction:column; align-items:stretch;
+    gap:3px; background:transparent; border:0; padding:0; overflow:visible; box-shadow:none; }
+  .ag-sidebar .tab{ justify-content:flex-start; text-align:left; width:100%; padding:10px 12px; border-radius:10px; white-space:nowrap; }
+  .ag-sidebar .tab .lock{ width:15px; height:15px; opacity:.6; }
+  .ag-sidebar .account{ width:100%; }
+  .ag-sidebar .account-btn{ width:100%; justify-content:flex-start; }
+  .ag-rail{ position:sticky; top:22px; display:flex; flex-direction:column; gap:16px; }
+  .ag-rail .ag-card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+    box-shadow:0 16px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08);
+    backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px); padding:18px; }
+  .ag-rail h3{ font-size:14px; font-weight:600; margin:0 0 14px; display:flex; align-items:center; gap:8px; color:var(--text); }
+  .ag-live{ width:7px; height:7px; border-radius:50%; background:var(--win); animation:agpulse 1.8s infinite; }
+  @keyframes agpulse{0%{box-shadow:0 0 0 0 rgba(70,208,138,.5)}70%{box-shadow:0 0 0 7px rgba(70,208,138,0)}100%{box-shadow:0 0 0 0 rgba(70,208,138,0)}}
+  .ag-sum-row{ display:flex; align-items:center; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--border); font-size:13px; }
+  .ag-sum-row:last-child{ border-bottom:0; }
+  .ag-sum-row .k{ color:var(--muted); font-size:11px; letter-spacing:.06em; text-transform:uppercase; font-family:'Space Mono',monospace; }
+  .ag-sum-row .v{ font-weight:600; color:var(--text); }
+  .ag-sum-row .v.ok{ color:var(--win); } .ag-sum-row .v.no{ color:var(--loss); }
+  .ag-ready-lab{ display:flex; justify-content:space-between; font-size:12px; color:var(--muted); margin-bottom:8px; }
+  .ag-ready-lab b{ color:var(--text); font-family:'Space Mono',monospace; }
+  .ag-bar{ height:8px; border-radius:99px; background:rgba(0,0,0,.28); overflow:hidden; }
+  body.light .ag-bar{ background:rgba(0,0,0,.10); }
+  .ag-bar > span{ display:block; height:100%; width:0; background:linear-gradient(90deg,#A06BF0,var(--accent)); transition:width .3s; }
+  @media(max-width:1180px){ .ag-shell{ grid-template-columns:236px minmax(0,1fr); } .ag-rail{ display:none !important; } }
+  @media(max-width:900px){ .ag-shell{ grid-template-columns:1fr; padding:14px; }
+    .ag-sidebar{ position:static; max-height:none; flex-direction:row; flex-wrap:wrap; align-items:center; }
+    .ag-sidebar #tabs, .ag-sidebar .tabs{ flex-direction:row; flex-wrap:wrap; flex:1 1 100%; }
+    .ag-sidebar .tab{ width:auto; } .ag-side-spacer{ display:none; } }
+</style>
+<script id="ag-shell-js">
+(function(){
+  function q(s,r){return (r||document).querySelector(s);}
+  function set(id,v){var e=document.getElementById(id); if(e) e.textContent=v;}
+  function build(){
+    if(document.querySelector('.ag-shell')) return;
+    var nav=q('body > nav'), tabs=document.getElementById('tabs'),
+        container=q('body > div.container')||q('.container');
+    if(!nav||!tabs||!container) return;
+    var logoWrap=q('.logo-wrap',nav), lang=q('.lang-select',nav),
+        theme=q('.theme-toggle',nav), account=q('.account',nav);
+    var shell=document.createElement('div'); shell.className='ag-shell';
+    var side=document.createElement('aside'); side.className='ag-sidebar';
+    var rail=document.createElement('aside'); rail.className='ag-rail';
+    container.parentNode.insertBefore(shell,container);
+    if(logoWrap) side.appendChild(logoWrap);
+    var top=document.createElement('div'); top.className='ag-side-top';
+    if(lang) top.appendChild(lang); if(theme) top.appendChild(theme);
+    side.appendChild(top); side.appendChild(tabs);
+    var sp=document.createElement('div'); sp.className='ag-side-spacer'; side.appendChild(sp);
+    if(account) side.appendChild(account);
+    shell.appendChild(side); shell.appendChild(container); shell.appendChild(rail);
+    nav.style.display='none';
+    rail.innerHTML =
+      '<div class="ag-card">'
+      +'<h3><span class="ag-live"></span>Setup summary</h3>'
+      +'<div class="ag-sum-row"><span class="k">Instrument</span><span class="v" id="ag-instr">&mdash;</span></div>'
+      +'<div class="ag-sum-row"><span class="k">Direction</span><span class="v" id="ag-dir">&mdash;</span></div>'
+      +'<div class="ag-sum-row"><span class="k">Session</span><span class="v" id="ag-sess">&mdash;</span></div>'
+      +'<div class="ag-sum-row"><span class="k">Confluences</span><span class="v" id="ag-conf">0</span></div>'
+      +'<div class="ag-sum-row"><span class="k">Chart</span><span class="v no" id="ag-chart">Missing</span></div>'
+      +'</div>'
+      +'<div class="ag-card"><div class="ag-ready-lab"><span>Ready to analyze</span><b id="ag-ready">0 / 5</b></div><div class="ag-bar"><span id="ag-bar"></span></div></div>';
+    function txt(e){return e?(e.textContent||'').trim():'';}
+    function updateRail(){
+      var instr=q('.pill-group[data-group="instrument"] .pill.selected');
+      var dir=q('.pill.long.selected')?'Long':(q('.pill.short.selected')?'Short':'');
+      var sess=q('.pill-group[data-group="session"] .pill.selected');
+      var conf=document.querySelectorAll('.pill-group[data-group="confluences"] .pill.selected').length;
+      var chart=q('#analyze-container img[src^="data:"], #analyze-container img[src^="blob:"], #analyze-container .preview-img');
+      set('ag-instr', instr?txt(instr):'—');
+      set('ag-dir', dir||'—');
+      set('ag-sess', sess?txt(sess):'—');
+      set('ag-conf', String(conf));
+      var ce=document.getElementById('ag-chart'); if(ce){ ce.textContent=chart?'Ready':'Missing'; ce.className='v '+(chart?'ok':'no'); }
+      var n=(instr?1:0)+(dir?1:0)+(sess?1:0)+(conf>0?1:0)+(chart?1:0);
+      set('ag-ready', n+' / 5');
+      var bar=document.getElementById('ag-bar'); if(bar) bar.style.width=(n/5*100)+'%';
+    }
+    tabs.addEventListener('click',function(e){var b=e.target.closest('.tab'); if(b&&b.getAttribute('data-tab')) rail.style.display=(b.getAttribute('data-tab')==='analyze')?'':'none';});
+    document.addEventListener('click',function(){setTimeout(updateRail,30);},true);
+    updateRail();
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',build); else build();
+})();
+</script>
 </body>
 </html>
