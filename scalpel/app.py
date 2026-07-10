@@ -4947,14 +4947,14 @@ def _daily_seed():
 # tools/extract_quiz_key.js). Validation only ever returns correct/incorrect —
 # the answer index is never sent back to a client.
 _QUIZ_KEY = []        # by bank index: [{'lv':..., 'ans':int}, ...]
-_ADV_ANS = []         # correct option indices for advanced questions, in POOL order
+_DAILY_ANS = []       # correct option indices for the Daily pool (DAILY_BANK), in bank order
 
 
 def _load_quiz_key():
     """Load (and best-effort regenerate) the server-side answer key. Regenerating
     at startup keeps it in sync whenever node is available; otherwise the
     committed JSON is used."""
-    global _QUIZ_KEY, _ADV_ANS
+    global _QUIZ_KEY, _DAILY_ANS
     base = os.path.dirname(os.path.abspath(__file__))
     repo = os.path.dirname(base)
     keypath = os.path.join(base, 'quiz_answer_key.json')
@@ -4968,12 +4968,12 @@ def _load_quiz_key():
         with open(keypath, 'r', encoding='utf-8') as f:
             data = json.load(f)
         _QUIZ_KEY = data.get('key', [])
-        _ADV_ANS = [k['ans'] for k in _QUIZ_KEY if k.get('lv') == 'advanced']
-        app.logger.info('Loaded quiz answer key: %d questions, %d advanced.',
-                        len(_QUIZ_KEY), len(_ADV_ANS))
+        _DAILY_ANS = data.get('daily', [])
+        app.logger.info('Loaded quiz answer key: %d questions, %d daily.',
+                        len(_QUIZ_KEY), len(_DAILY_ANS))
     except Exception as e:
         app.logger.error('Could not load quiz answer key: %s', e)
-        _QUIZ_KEY, _ADV_ANS = [], []
+        _QUIZ_KEY, _DAILY_ANS = [], []
 
 
 # Exact port of the client's deterministic question picker (index.html). Verified
@@ -5017,14 +5017,14 @@ def _cycle_order(cycle, n):
 def _daily_correct_index():
     """The correct option index (original order) of today's Daily Challenge
     question — computed entirely server-side. Returns None if the key is missing."""
-    n = len(_ADV_ANS)
+    n = len(_DAILY_ANS)
     if n == 0:
         return None
     seed = _daily_seed()
     cycle = seed // n
     pos = ((seed % n) + n) % n
     pool_idx = _cycle_order(cycle, n)[pos]
-    return _ADV_ANS[pool_idx]
+    return _DAILY_ANS[pool_idx]
 
 
 def _daily_status_payload(st):

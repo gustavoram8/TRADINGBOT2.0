@@ -25641,7 +25641,7 @@
       // correct answers earns a roulette spin for renewal discounts.
       // ════════════════════════════════════════════════════════════════════
       const Daily = (() => {
-        const POOL = QUESTION_BANK.filter(q => q.lv === 'advanced');
+        const POOL = DAILY_BANK;  // dedicated ultra-hard pool (was: QUESTION_BANK advanced) — server key flips with this in the same commit
         // Segment geometry must match the conic-gradient in .roulette-wheel CSS.
         const SEGMENTS = [
           { key:'d5',    from:0,   to:144 },
