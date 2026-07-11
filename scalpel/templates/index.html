@@ -855,6 +855,36 @@
       /* tight lift inside the track instead of the big halo */
       box-shadow: 0 2px 6px -1px var(--grp), 0 1px 2px rgba(0,0,0,.3);
     }
+    /* ── ICT umbrella tooltip: hover "ICT General" to see the entry models &
+       triggers it already covers (FVG entry, Silver Bullet, Midnight Open…). ── */
+    .pill.has-tip { position: relative; }
+    .pill-tip {
+      position: absolute; z-index: 40; left: 0; top: calc(100% + 10px);
+      width: min(360px, 80vw);
+      background: var(--card); color: var(--text);
+      border: 1px solid #A06BF0; border-radius: 12px; padding: 12px 13px;
+      box-shadow: 0 12px 34px rgba(0,0,0,.30);
+      opacity: 0; visibility: hidden; transform: translateY(-4px);
+      transition: opacity .14s ease, transform .14s ease, visibility .14s;
+      pointer-events: none; text-align: left; cursor: default;
+    }
+    .pill.has-tip:hover .pill-tip { opacity: 1; visibility: visible; transform: translateY(0); }
+    .pill-tip::before {
+      content: ''; position: absolute; bottom: 100%; left: 24px;
+      border: 6px solid transparent; border-bottom-color: #A06BF0;
+    }
+    .pill-tip-h { display: block; font-size: 11.5px; font-weight: 600; line-height: 1.45;
+      color: var(--muted); margin-bottom: 9px; letter-spacing: 0; text-transform: none; }
+    .pill-tip-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+    .pill-tip-grid b {
+      font-size: 11px; font-weight: 600; color: var(--text);
+      background: rgba(160,107,240,.14); border: 1px solid rgba(160,107,240,.45);
+      border-radius: 999px; padding: 3px 9px; white-space: nowrap; letter-spacing: 0;
+      text-transform: none;
+    }
+    .pill-tip-note { display: block; margin-top: 9px; font-size: 10.5px; line-height: 1.4;
+      color: var(--muted); font-style: italic; letter-spacing: 0; text-transform: none; }
+
     body.light .pill-group:not([data-group="instrument"]) .pill.selected {
       box-shadow: 0 2px 6px -2px var(--grp);
     }
@@ -4797,7 +4827,14 @@
         <div class="section-row">
           <div style="font-size:12px; color:var(--muted); margin-bottom:8px;" data-i18n="field.approach">Approach / Model</div>
           <div class="pill-group" data-group="approach" data-required="true">
-            <div class="pill" data-value="ICT General" data-i18n="pill.ictGeneral">ICT General</div>
+            <div class="pill has-tip" data-value="ICT General">
+              <span data-i18n="pill.ictGeneral">ICT General</span>
+              <span class="pill-tip" role="tooltip" aria-hidden="true">
+                <span class="pill-tip-h" data-i18n="ict.tip.intro">ICT already covers these entry models &amp; triggers — pick ICT General for any of them:</span>
+                <span class="pill-tip-grid"><b>FVG Entry</b><b>Order Block</b><b>Breaker Block</b><b>Liquidity Sweep</b><b>MSS / CHoCH</b><b>Silver Bullet</b><b>Judas Swing</b><b>Midnight Open</b><b>Turtle Soup</b><b>SMT Divergence</b><b>Unicorn (Breaker + FVG)</b><b>Power of 3 (AMD)</b></span>
+                <span class="pill-tip-note" data-i18n="ict.tip.note">(OTE / Std Dev has its own button — its fib-based entry is graded on a different checklist.)</span>
+              </span>
+            </div>
             <div class="pill" data-value="OTE / Std Dev">OTE / Std Dev</div>
           </div>
         </div>
@@ -6298,6 +6335,8 @@
       'pill.yes': 'Yes', 'pill.no': 'No', 'pill.partially': 'Partially',
       'pill.london': 'London', 'pill.nyMorning': 'NY Morning', 'pill.nyAfternoon': 'NY Afternoon', 'pill.overlap': 'Overlap',
       'pill.ictGeneral': 'ICT General',
+      'ict.tip.intro': 'ICT already covers these entry models & triggers — pick ICT General for any of them:',
+      'ict.tip.note': '(OTE / Std Dev has its own button — its fib-based entry is graded on a different checklist.)',
       'guide.title': 'Your screenshot should clearly show:',
       'guide.entry': 'Entry marker / arrow',
       'guide.exit': 'Exit marker / arrow',
@@ -6695,6 +6734,8 @@
       'pill.yes': 'Sí', 'pill.no': 'No', 'pill.partially': 'Parcialmente',
       'pill.london': 'Londres', 'pill.nyMorning': 'NY Mañana', 'pill.nyAfternoon': 'NY Tarde', 'pill.overlap': 'Solapamiento',
       'pill.ictGeneral': 'ICT General',
+      'ict.tip.intro': 'ICT ya engloba estos modelos de entrada y gatillos — elige ICT General para cualquiera de ellos:',
+      'ict.tip.note': '(OTE / Std Dev tiene su propio botón — su entrada por fib se evalúa con otra checklist.)',
       'guide.title': 'Tu captura debe mostrar claramente:',
       'guide.entry': 'Marca / flecha de entrada',
       'guide.exit': 'Marca / flecha de salida',
@@ -7092,6 +7133,8 @@
       'pill.yes': 'Oui', 'pill.no': 'Non', 'pill.partially': 'Partiellement',
       'pill.london': 'Londres', 'pill.nyMorning': 'NY Matin', 'pill.nyAfternoon': 'NY Après-midi', 'pill.overlap': 'Chevauchement',
       'pill.ictGeneral': 'ICT Général',
+      'ict.tip.intro': "ICT couvre déjà ces modèles d'entrée et déclencheurs — choisis ICT General pour n'importe lequel :",
+      'ict.tip.note': "(OTE / Std Dev a son propre bouton — son entrée par fib est évaluée sur une autre checklist.)",
       'guide.title': 'Votre capture doit montrer clairement :',
       'guide.entry': "Marqueur / flèche d'entrée",
       'guide.exit': 'Marqueur / flèche de sortie',
@@ -7489,6 +7532,8 @@
       'pill.yes': 'Sim', 'pill.no': 'Não', 'pill.partially': 'Parcialmente',
       'pill.london': 'Londres', 'pill.nyMorning': 'NY Manhã', 'pill.nyAfternoon': 'NY Tarde', 'pill.overlap': 'Sobreposição',
       'pill.ictGeneral': 'ICT Geral',
+      'ict.tip.intro': 'ICT já engloba estes modelos de entrada e gatilhos — escolha ICT General para qualquer um deles:',
+      'ict.tip.note': '(OTE / Std Dev tem seu próprio botão — sua entrada por fib é avaliada em outra checklist.)',
       'guide.title': 'Sua captura deve mostrar claramente:',
       'guide.entry': 'Marcador / seta de entrada',
       'guide.exit': 'Marcador / seta de saída',
