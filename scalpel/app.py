@@ -1,6 +1,8 @@
 import os
 import re
 import json
+import hmac
+import hashlib
 import gzip
 import base64
 import socket
@@ -4967,16 +4969,18 @@ def _daily_seed():
 # the answer index is never sent back to a client.
 _QUIZ_KEY = []        # by bank index: [{'lv':..., 'ans':int}, ...]
 _DAILY_ANS = []       # correct option indices for the Daily pool (DAILY_BANK), in bank order
+_DAILY_CONTENT = []   # daily question texts (q/opts/exp, NO answers) served via the API
 
 
 def _load_quiz_key():
     """Load (and best-effort regenerate) the server-side answer key. Regenerating
     at startup keeps it in sync whenever node is available; otherwise the
     committed JSON is used."""
-    global _QUIZ_KEY, _DAILY_ANS
+    global _QUIZ_KEY, _DAILY_ANS, _DAILY_CONTENT
     base = os.path.dirname(os.path.abspath(__file__))
     repo = os.path.dirname(base)
     keypath = os.path.join(base, 'quiz_answer_key.json')
+    contentpath = os.path.join(base, 'daily_bank_content.json')
     try:
         import subprocess
         subprocess.run(['node', os.path.join(repo, 'tools', 'extract_quiz_key.js')],
@@ -4993,6 +4997,15 @@ def _load_quiz_key():
     except Exception as e:
         app.logger.error('Could not load quiz answer key: %s', e)
         _QUIZ_KEY, _DAILY_ANS = [], []
+    # Daily question CONTENT (texts only — answers stay in the key above). The
+    # browser never receives the bank: /api/daily/start serves q+opts from here.
+    try:
+        with open(contentpath, 'r', encoding='utf-8') as f:
+            _DAILY_CONTENT = json.load(f).get('questions', [])
+        app.logger.info('Loaded daily bank content: %d questions.', len(_DAILY_CONTENT))
+    except Exception as e:
+        app.logger.error('Could not load daily bank content: %s', e)
+        _DAILY_CONTENT = []
 
 
 # Exact port of the client's deterministic question picker (index.html). Verified
@@ -5022,28 +5035,39 @@ def _mulberry32(a):
     return rng
 
 
-def _cycle_order(cycle, n):
+def _user_daily_order(user_id, cycle, n):
+    """Per-USER, per-cycle permutation of the Daily pool. Seeded with an HMAC of
+    the server SECRET_KEY, so two subscribers get different question calendars
+    and no client can derive anyone's order (the salt never leaves the server).
+    Every cycle is shuffled (including the first) and each cycle re-shuffles, so
+    within a cycle no question repeats and across cycles the order changes."""
+    key = str(app.config['SECRET_KEY']).encode()
+    digest = hmac.new(key, f'daily:{user_id}:{cycle}'.encode(), hashlib.sha256).digest()
+    rng = _mulberry32(_u32(int.from_bytes(digest[:4], 'big')))
     order = list(range(n))
-    if cycle == 0:
-        return order
-    rng = _mulberry32(_u32(cycle * 2654435761))
     for i in range(len(order) - 1, 0, -1):
         j = int(rng() * (i + 1))
         order[i], order[j] = order[j], order[i]
     return order
 
 
-def _daily_correct_index():
-    """The correct option index (original order) of today's Daily Challenge
-    question — computed entirely server-side. Returns None if the key is missing."""
+def _daily_pool_idx():
+    """Which DAILY_BANK question today is for the CURRENT user. Deterministic
+    per (user, day): same question on refresh, different across users."""
     n = len(_DAILY_ANS)
     if n == 0:
         return None
     seed = _daily_seed()
     cycle = seed // n
     pos = ((seed % n) + n) % n
-    pool_idx = _cycle_order(cycle, n)[pos]
-    return _DAILY_ANS[pool_idx]
+    return _user_daily_order(current_user.id, cycle, n)[pos]
+
+
+def _daily_correct_index():
+    """The correct option index (original order) of today's question for the
+    current user — computed entirely server-side; never sent before answering."""
+    idx = _daily_pool_idx()
+    return _DAILY_ANS[idx] if idx is not None else None
 
 
 def _daily_status_payload(st):
@@ -5089,7 +5113,14 @@ def daily_start():
     # Clamp to [0, window]: a future-dated served_at (clock/timezone skew) would
     # otherwise make `60 - negative` balloon to thousands of seconds.
     remaining = max(0, min(DAILY_ANSWER_SECONDS, DAILY_ANSWER_SECONDS - int(elapsed)))
-    return jsonify({'seed': _daily_seed(), 'seconds_left': remaining})
+    # The client gets ONLY the texts of this user's question for today. The
+    # correct-answer flag never leaves the server (see /api/daily/answer).
+    idx = _daily_pool_idx()
+    qc = _DAILY_CONTENT[idx] if idx is not None and idx < len(_DAILY_CONTENT) else None
+    if not qc:
+        return jsonify({'error': 'unavailable'}), 503
+    return jsonify({'question': {'q': qc.get('q'), 'opts': qc.get('opts')},
+                    'seconds_left': remaining})
 
 
 @app.route('/api/daily/answer', methods=['POST'])
@@ -5135,6 +5166,11 @@ def daily_answer():
 
     payload = _daily_status_payload(st)
     payload.update({'correct': correct, 'timed_out': timed_out, 'earned_spin': earned_spin})
+    # Safe to reveal now: the day is consumed for this user, and the reveal is
+    # what lets the client highlight the right option and show the explanation.
+    idx = _daily_pool_idx()
+    qc = _DAILY_CONTENT[idx] if idx is not None and idx < len(_DAILY_CONTENT) else None
+    payload.update({'correct_index': answer_idx, 'exp': (qc or {}).get('exp')})
     return jsonify(payload)
 
 

@@ -22,13 +22,18 @@ const vm = require('vm');
 
 const root = path.resolve(__dirname, '..');
 const htmlPath = path.join(root, 'scalpel', 'templates', 'index.html');
+const dailyPath = path.join(root, 'scalpel', 'daily_bank.js');
 const outPath = path.join(root, 'scalpel', 'quiz_answer_key.json');
+const contentPath = path.join(root, 'scalpel', 'daily_bank_content.json');
 
 const html = fs.readFileSync(htmlPath, 'utf8');
+// DAILY_BANK lives OUTSIDE the served page (answers must never reach browsers).
+const dailySource = fs.existsSync(dailyPath) ? fs.readFileSync(dailyPath, 'utf8') : '';
 
 // Slice out `const <name> = [ ... ];` by matching brackets from the first '['
 // after the declaration — aware of strings and comments.
-function sliceArray(name, required) {
+function sliceArray(name, required, text) {
+  const html = text;
   const decl = html.indexOf('const ' + name);
   if (decl < 0) {
     if (required) { console.error(name + ' not found'); process.exit(1); }
@@ -71,18 +76,27 @@ function correctIndex(q) {
 }
 
 // Practice quiz bank — key preserves level so the server can build pools.
-const BANK = evalArray(sliceArray('QUESTION_BANK', true), 'QUESTION_BANK');
+const BANK = evalArray(sliceArray('QUESTION_BANK', true, html), 'QUESTION_BANK');
 const key = BANK.map((q) => ({ lv: q.lv || '', ans: correctIndex(q) }));
 const missing = key.filter((k) => k.ans < 0).length;
 
-// Dedicated Daily Challenge bank (may not exist yet in older checkouts).
-const dailySrc = sliceArray('DAILY_BANK', false);
-const daily = dailySrc
-  ? evalArray(dailySrc, 'DAILY_BANK').map(correctIndex)
-  : [];
+// Dedicated Daily Challenge bank (scalpel/daily_bank.js, server-side only).
+const dailySrc = sliceArray('DAILY_BANK', false, dailySource);
+const dailyBank = dailySrc ? evalArray(dailySrc, 'DAILY_BANK') : [];
+const daily = dailyBank.map(correctIndex);
 const dailyMissing = daily.filter((a) => a < 0).length;
 
 fs.writeFileSync(outPath, JSON.stringify(
   { count: key.length, key, daily_count: daily.length, daily }, null, 0));
+
+// Client-safe content: question + option texts + explanation, NO ok flags.
+// The server serves q/opts via /api/daily/start and exp via /api/daily/answer.
+const content = dailyBank.map((q) => ({
+  q: q.q,
+  opts: (q.opts || []).map((o) => ({ t: o.t })),
+  exp: q.exp,
+}));
+fs.writeFileSync(contentPath, JSON.stringify({ count: content.length, questions: content }, null, 0));
 console.log(`Wrote ${outPath}: ${key.length} questions (${missing} with no marked answer); ` +
             `daily bank: ${daily.length} (${dailyMissing} with no marked answer).`);
+console.log(`Wrote ${contentPath}: ${content.length} daily questions (texts only, no answers).`);

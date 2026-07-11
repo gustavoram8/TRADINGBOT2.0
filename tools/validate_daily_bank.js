@@ -25,7 +25,7 @@ const LEN_RATIO_FAIL = 1.45;
 const LEN_RATIO_WARN = 1.32;
 
 const root = path.resolve(__dirname, '..');
-const html = fs.readFileSync(path.join(root, 'scalpel', 'templates', 'index.html'), 'utf8');
+const html = fs.readFileSync(path.join(root, 'scalpel', 'daily_bank.js'), 'utf8');
 
 // Bracket-matcher aware of strings AND comments.
 function sliceArray(name) {

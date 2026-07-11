@@ -211,6 +211,13 @@ Comprar dominio + crear correo empresarial + linkear dominio al VPS (DNS A → 6
   señal / promesa de ganancia / absolutismo. (Auditoría legal hecha; ver archivo.)
 - **Reseñas:** solo usuarios reales (regla FTC 2024); nada inventado.
 - **Anti-trampa quiz/daily:** validación server-side (`quiz_answer_key.json`, `/api/quiz/answer`,
-  `/api/daily/answer`); el cliente manda `selected`, el server juzga y nunca expone la respuesta.
-  Si editas el `QUESTION_BANK`: corre `node tools/extract_quiz_key.js` y commitea el JSON.
+  `/api/daily/answer`); el cliente manda `selected`, el server juzga. **Daily (2026-07-11): blindaje
+  total** — el `DAILY_BANK` vive en `scalpel/daily_bank.js` (NUNCA se sirve al navegador; página bajó
+  4.4→3.0MB); `/api/daily/start` sirve solo textos (pregunta+opciones), `/api/daily/answer` devuelve
+  veredicto+`correct_index`+explicación. Ni consola ni view-source revelan la respuesta. **Rotación
+  POR USUARIO:** permutación HMAC(SECRET_KEY, user:ciclo) — cada usuario tiene su propio calendario
+  de preguntas (no se puede soplar la respuesta a otro), sin repetir dentro de un ciclo de 200 días.
+  Si editas `DAILY_BANK` (en su archivo nuevo) o `QUESTION_BANK` (sigue en index.html): corre
+  `node tools/extract_quiz_key.js && node tools/validate_daily_bank.js` y commitea AMBOS JSON
+  (`quiz_answer_key.json` + `daily_bank_content.json`).
 - Commits/pushes siempre a la rama de trabajo de arriba. NO crear PR salvo que el usuario lo pida.
