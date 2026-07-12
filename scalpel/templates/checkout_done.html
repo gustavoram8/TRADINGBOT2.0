@@ -69,6 +69,12 @@
 
   <div class="wrap">
 
+    {% if preview %}
+    <div style="background:#fef3c7;border:1px solid #fcd34d;color:#92400e;border-radius:10px;padding:11px 14px;margin-bottom:20px;font-size:13px;font-weight:600;text-align:center;line-height:1.5;">
+      🔍 Admin preview — visual simulation only. This is the manual fallback screen (shown when Stripe is off).
+    </div>
+    {% endif %}
+
     {% if duplicate %}
     <div class="dup-banner" data-i18n-html="cdone.dup">
       You already have a pending order awaiting payment confirmation. Complete that

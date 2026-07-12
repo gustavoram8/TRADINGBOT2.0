@@ -92,6 +92,12 @@
     <div class="eyebrow" data-i18n="checkout.eyebrow">Checkout</div>
     <h1 data-i18n="checkout.title">Review your order</h1>
 
+    {% if preview %}
+    <div style="background:#fef3c7;border:1px solid #fcd34d;color:#92400e;border-radius:10px;padding:11px 14px;margin-bottom:18px;font-size:13px;font-weight:600;text-align:center;line-height:1.5;">
+      🔍 Admin preview — visual simulation only. No order is created and no card is charged.
+    </div>
+    {% endif %}
+
     <div class="card">
       <div class="summary-row">
         <span class="plan-name {{ plan }}">{{ plan_label }}</span>
@@ -132,12 +138,17 @@
     {% endif %}
 
     <!-- CONFIRM -->
+    {% if preview %}
+    <!-- Admin preview: no real order; the button walks to the next simulated screen. -->
+    <a href="{{ preview_next }}" class="pay-btn" style="display:block;text-align:center;text-decoration:none;" data-i18n="checkout.continue">Continue to payment →</a>
+    {% else %}
     <form method="POST" action="/checkout/create" id="checkout-form">
       <input type="hidden" name="plan" value="{{ plan }}" />
       <input type="hidden" name="cycle" value="{{ cycle }}" />
       <input type="hidden" name="promo_code" id="promo-hidden" value="" />
       <button type="submit" class="pay-btn" data-i18n="checkout.continue">Continue to payment →</button>
     </form>
+    {% endif %}
 
     <p class="info">
       <span data-i18n="checkout.infoLine">You'll receive payment instructions on the next step. Your plan activates

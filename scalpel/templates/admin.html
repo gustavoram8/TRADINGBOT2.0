@@ -55,6 +55,7 @@
       background: var(--surface); color: var(--text); border: 1px solid var(--border2);
       padding: 8px 14px; border-radius: 18px; transition: all 0.15s; }
     .demo-btn:hover { border-color: var(--accent); color: var(--text); }
+    a.demo-btn { display: inline-block; text-decoration: none; }
     .demo-btn.accent { border-color: var(--premium); color: var(--premium); }
     .demo-btn.warn { border-color: #dc2626; color: #dc2626; }
     .demo-exit-row { display: flex; align-items: center; gap: 12px; margin-top: 16px;
@@ -269,6 +270,17 @@
           <form method="POST" action="/admin/demo/set"><input type="hidden" name="scenario" value="unlock"><input type="hidden" name="plan" value="premium"><button class="demo-btn">Unlock Premium</button></form>
           <form method="POST" action="/admin/demo/set"><input type="hidden" name="scenario" value="review"><button class="demo-btn">Testimonial prompt</button></form>
           <form method="POST" action="/admin/demo/set"><input type="hidden" name="scenario" value="spin"><button class="demo-btn accent">Open roulette (real spin)</button></form>
+        </div>
+      </div>
+
+      <div class="demo-group">
+        <div class="demo-glabel">Checkout / payment preview <span style="font-weight:400;color:#8a8f9e;">(simulated — no order, no charge)</span></div>
+        <div class="demo-row">
+          <a href="/admin/preview/checkout?plan=standard&cycle=monthly" target="_blank" class="demo-btn">🛒 Cart · Standard/mo</a>
+          <a href="/admin/preview/checkout?plan=premium&cycle=monthly" target="_blank" class="demo-btn">🛒 Cart · Premium/mo</a>
+          <a href="/admin/preview/checkout?plan=premium&cycle=annual" target="_blank" class="demo-btn">🛒 Cart · Premium/yr</a>
+          <a href="/admin/preview/success?plan=premium&cycle=monthly" target="_blank" class="demo-btn">✅ Payment success</a>
+          <a href="/admin/preview/order?plan=premium&cycle=monthly" target="_blank" class="demo-btn">🧾 Order received (manual)</a>
         </div>
       </div>
 

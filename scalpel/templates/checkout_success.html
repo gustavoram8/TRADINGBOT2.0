@@ -62,6 +62,12 @@
 
   <div class="wrap">
 
+    {% if preview %}
+    <div style="background:#fef3c7;border:1px solid #fcd34d;color:#92400e;border-radius:10px;padding:11px 14px;margin-bottom:20px;font-size:13px;font-weight:600;text-align:center;line-height:1.5;">
+      🔍 Admin preview — visual simulation only. No payment was processed.
+    </div>
+    {% endif %}
+
     <div class="icon">✅</div>
     <h1 data-i18n="csuccess.title">Payment successful</h1>
     <p class="sub" data-i18n="csuccess.sub">Thank you — your plan is now active. Enjoy the upgrade.</p>

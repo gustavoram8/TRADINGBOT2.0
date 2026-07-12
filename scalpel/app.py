@@ -2400,6 +2400,64 @@ def admin_device_preview():
     return render_template('device_preview.html', demo_plan=d.get('plan') or 'normal')
 
 
+def _preview_order(plan='premium', cycle='monthly'):
+    """A fake, un-persisted Order for the admin checkout/payment previews.
+    Never touches the DB — pure render data so we can eyeball the screens."""
+    from types import SimpleNamespace
+    q = _quote(plan, cycle)
+    return SimpleNamespace(
+        id=99999, plan=plan, billing_cycle=cycle,
+        base_price=q['base_price'], discount_pct=0,
+        final_price=q['final_price'], promo_code=None, status='pending',
+    )
+
+
+def _preview_plan_cycle():
+    """Read + sanitize plan/cycle query args for the admin preview routes."""
+    plan = request.args.get('plan', 'premium')
+    cycle = request.args.get('cycle', 'monthly')
+    if plan not in PLAN_PRICING or cycle not in ('monthly', 'annual'):
+        return 'premium', 'monthly'
+    return plan, cycle
+
+
+@app.route('/admin/preview/checkout')
+@login_required
+def admin_preview_checkout():
+    """Admin-only: the checkout cart exactly as a buyer sees it, but read-only
+    (no order created, no charge). The pay button walks to the success preview."""
+    if not current_user.is_admin:
+        return redirect(url_for('app_view'))
+    plan, cycle = _preview_plan_cycle()
+    return render_template('checkout.html', plan=plan, cycle=cycle,
+                           plan_label=PLAN_LABELS[plan], quote=_quote(plan, cycle),
+                           preview=True,
+                           preview_next=url_for('admin_preview_success', plan=plan, cycle=cycle))
+
+
+@app.route('/admin/preview/success')
+@login_required
+def admin_preview_success():
+    """Admin-only: the post-payment success screen with sample data."""
+    if not current_user.is_admin:
+        return redirect(url_for('app_view'))
+    plan, cycle = _preview_plan_cycle()
+    return render_template('checkout_success.html', order=_preview_order(plan, cycle),
+                           plan_label=PLAN_LABELS[plan], preview=True)
+
+
+@app.route('/admin/preview/order')
+@login_required
+def admin_preview_order():
+    """Admin-only: the manual 'order received' screen (USDT/bank fallback view,
+    shown only when Stripe is off)."""
+    if not current_user.is_admin:
+        return redirect(url_for('app_view'))
+    plan, cycle = _preview_plan_cycle()
+    return render_template('checkout_done.html', order=_preview_order(plan, cycle),
+                           plan_label=PLAN_LABELS[plan], duplicate=False, preview=True)
+
+
 def _build_revenue_context():
     """Assemble all the financial data the admin dashboard renders:
     pending orders, this-month revenue per plan, promo codes, expenses, P&L."""
