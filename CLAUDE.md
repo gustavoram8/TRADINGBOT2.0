@@ -178,7 +178,10 @@ dispare dos veces.
   localhost:5001/webhook/stripe`) pero **no es necesario** para el test porque success-page también
   activa. Seguridad: success-page solo activa si `payment_status=='paid'` **y** la Order es del
   usuario logueado; el webhook verifica firma si `STRIPE_WEBHOOK_SECRET` está seteado.
-- **Para LIVE:** ver "🚨 Alerta recurrente" #2 (LLC + banco + claves live + webhook con dominio/HTTPS).
+- **Para LIVE (LLC ya hecha):** solo falta config — claves `sk_live_…`/`whsec_…` + conectar la cuenta
+  bancaria del amigo en el dashboard de Stripe (payouts) + webhook con dominio/HTTPS. Cobro USD por
+  tarjeta → payout al banco del amigo (Stripe maneja el payout; el código no necesita datos bancarios).
+  **NO se cobra USDT/Binance.** Ver "🚨 Alerta recurrente" #2.
 
 ## Stack técnico
 - Backend: Flask + SQLAlchemy + PostgreSQL (prod) / SQLite (local). Auth: Flask-Login (free/standard/premium).
@@ -202,13 +205,14 @@ dispare dos veces.
 ## 📋 TAREAS PENDIENTES
 
 ### 🔴 Crítico (antes de lanzar)
-- **🚨 CONECTAR CUENTA BANCARIA (pago por transferencia, NO Binance):** hoy `checkout_done.html`
-  dice "Send $X USD in USDT to our Binance account". Cuando llegue la data bancaria: reemplazar ese
-  texto, cambiar `payment_method='usdt-binance'` (`app.py` ~1760) a `'bank-transfer'`, y revisar
-  `grep -rn "Binance\|USDT" scalpel/`. **Bloquea poder cobrar.**
+- **🚨 EL COBRO ES POR STRIPE (USD por tarjeta → payout a la cuenta bancaria del amigo). NO se cobra
+  USDT/Binance.** Falta solo instalar Stripe LIVE (ver "🚨 Alerta recurrente" #2). ⚠️ El texto viejo
+  de `checkout_done.html` ("Send $X USD in USDT to our Binance account") es el **fallback manual** que
+  solo se muestra si Stripe está apagado — quedará obsoleto al activar Stripe LIVE. Cuando Stripe LIVE
+  esté activo, decidir si borrar ese fallback USDT del todo (`grep -rn "Binance\|USDT" scalpel/`).
 - **Registrar COPYRIGHT** en copyright.gov (~$135–260). Guía: `COPYRIGHT_REGISTRATION_GUIDE.md`. Antes de publicar o ≤3 meses del lanzamiento.
 - **Pagar OpenAI API + conectar (2 líneas) + probar con $5.** Estimado ~$0.02/análisis; `max_tokens` (validate=150, analyze=900) topa el costo.
-- **Stripe:** código LISTO y probado en modo TEST (ver "🟢 Stripe" abajo). Falta activar LIVE (LLC US + banco + claves live + webhook con dominio). Ver "🚨 Alerta recurrente" #2.
+- **Stripe:** código LISTO y probado en modo TEST (ver "🟢 Stripe" abajo). **LLC ya hecha.** Falta activar LIVE (claves live + conectar la cuenta bancaria del amigo en Stripe + webhook con dominio). Cobro en USD por tarjeta → payout al banco del amigo, NO USDT. Ver "🚨 Alerta recurrente" #2.
 - **Comprar dominio** (Cloudflare ~$10/año, objetivo `traderaccelerator.com`) → DNS A → `62.171.180.22` + nginx + SSL Let's Encrypt.
 - **Email dedicado** (migrar OTP/reset del Gmail personal a cuenta del dominio). Email en T&C/Privacy hoy: `support@traderaccelerator.com` (cambiar al real cuando se defina el dominio; auditar `git grep -in traderaccelerator`).
 - **Persistencia server-side de Scalper boards** (hoy en localStorage del navegador).
@@ -220,7 +224,7 @@ dispare dos veces.
 
 ### 🚨 Alerta recurrente (mostrar hasta que el usuario confirme que lo hizo)
 1. Comprar dominio + crear correo empresarial + linkear dominio al VPS (DNS A → 62.171.180.22, nginx+SSL). Sin esto: sitio en IP cruda, sin HTTPS, sin email empresarial.
-2. **SETEAR STRIPE REAL (modo LIVE).** La integración de código YA está lista y probada en modo TEST (ver "🟢 Stripe" abajo). Falta lo de negocio: (a) LLC US + cuenta bancaria, (b) claves `sk_live_…` + `whsec_…` en supervisor conf y `scalpel/.env`, (c) configurar el webhook `/webhook/stripe` en el dashboard de Stripe (necesita el dominio+HTTPS del punto 1). Con eso cobra tarjetas de verdad. **Mostrar este recordatorio una vez al día hasta que el usuario confirme que Stripe LIVE está activo.**
+2. **INSTALAR STRIPE REAL (modo LIVE) — es lo ÚNICO que falta para poder COBRAR cuando alguien contrata un plan.** El código ya está listo y probado en modo TEST (ver "🟢 Stripe" abajo); **la LLC YA ESTÁ hecha.** Lo pendiente es puramente de configuración: (a) poner las claves `sk_live_…` + `whsec_…` en supervisor conf y `scalpel/.env`; (b) **conectar en el dashboard de Stripe la cuenta bancaria del amigo** para recibir los payouts; (c) configurar el webhook `/webhook/stripe` en el dashboard de Stripe (necesita el dominio+HTTPS del punto 1). **El cobro es en USD por tarjeta vía Stripe → payout a la cuenta bancaria del amigo. NO se cobra USDT ni Binance.** **Mostrar este recordatorio una vez al día hasta que el usuario confirme que Stripe LIVE está activo.**
 
 ---
 
