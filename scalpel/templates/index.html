@@ -10062,7 +10062,16 @@
       // external resource can keep 'load' from ever firing. A short timeout runs
       // after top-level init completes.
       setTimeout(function () {
-        try { if (typeof switchTab === 'function') switchTab('quiz'); } catch (e) {}
+        // Click the REAL Quiz tab (don't just call switchTab): the ag-shell's
+        // applyTab handler only runs on the tab click, and it's what sets
+        // ag-quiz-mode — hiding the analyzer sidebar/rail. Without it, that
+        // chrome shows through the roulette's translucent backdrop (looks like
+        // the quiz + analyzer views merged). This mirrors how a user reaches it.
+        try {
+          var qt = document.querySelector('.tab[data-tab="quiz"]');
+          if (qt) qt.click();
+          else if (typeof switchTab === 'function') switchTab('quiz');
+        } catch (e) {}
         var ov = document.getElementById('roulette-overlay');
         if (ov) ov.style.display = '';
       }, 400);
