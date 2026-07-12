@@ -2839,6 +2839,8 @@
     .daily-played-msg { font-size: 12.5px; font-weight: 600; }
     .daily-played-msg.ok { color: #22c55e; }
     .daily-played-msg.bad { color: #ef4444; }
+    .daily-countdown { font-size: 11.5px; font-weight: 600; color: var(--muted); margin-top: 5px; }
+    .daily-countdown-time { font-variant-numeric: tabular-nums; letter-spacing: .02em; color: var(--text); }
 
     /* ── Daily / roulette modal ── */
     .daily-overlay {
@@ -5315,6 +5317,10 @@
               🎡 <span data-i18n="daily.spinReady">Spin the wheel!</span> <span id="daily-spin-count"></span>
             </button>
             <div class="daily-played-msg" id="daily-played-msg" style="display:none;"></div>
+            <div class="daily-countdown" id="daily-countdown" style="display:none;">
+              <span data-i18n="daily.nextIn">Next question in</span>
+              <span class="daily-countdown-time" id="daily-countdown-time">--:--:--</span>
+            </div>
           </div>
         </div>
         <div class="quiz-method-grid" id="quiz-method-grid">
@@ -8014,6 +8020,7 @@
       'daily.play': "Play today's question",
       'daily.playedOk': '✓ Solved today — come back tomorrow!',
       'daily.playedBad': '✗ Missed today — streak resets. Try tomorrow!',
+      'daily.nextIn': 'Next question in',
       'daily.streakLabel': 'day streak',
       'daily.correct': 'Correct! 🔥',
       'daily.wrong': 'Not this time',
@@ -8044,6 +8051,7 @@
       'daily.play': 'Jugar la pregunta de hoy',
       'daily.playedOk': '✓ Resuelta hoy — ¡vuelve mañana!',
       'daily.playedBad': '✗ Fallada hoy — la racha se reinicia. ¡Inténtalo mañana!',
+      'daily.nextIn': 'Próxima pregunta en',
       'daily.streakLabel': 'días de racha',
       'daily.correct': '¡Correcto! 🔥',
       'daily.wrong': 'Esta vez no',
@@ -8074,6 +8082,7 @@
       'daily.play': "Jouer la question du jour",
       'daily.playedOk': "✓ Résolue aujourd'hui — revenez demain !",
       'daily.playedBad': "✗ Ratée aujourd'hui — la série repart à zéro. Réessayez demain !",
+      'daily.nextIn': 'Prochaine question dans',
       'daily.streakLabel': 'jours de série',
       'daily.correct': 'Correct ! 🔥',
       'daily.wrong': 'Pas cette fois',
@@ -8104,6 +8113,7 @@
       'daily.play': 'Jogar a pergunta de hoje',
       'daily.playedOk': '✓ Resolvida hoje — volte amanhã!',
       'daily.playedBad': '✗ Errada hoje — a sequência reinicia. Tente amanhã!',
+      'daily.nextIn': 'Próxima pergunta em',
       'daily.streakLabel': 'dias de sequência',
       'daily.correct': 'Correto! 🔥',
       'daily.wrong': 'Desta vez não',
@@ -20662,6 +20672,24 @@
 
         const $ = id => document.getElementById(id);
 
+        // Countdown to the next daily reset. The question rotates on the UTC date
+        // (see _daily_seed on the server), so the reset is at 00:00 UTC — the same
+        // number of seconds away for every user regardless of local timezone.
+        let dailyCdTimer = null;
+        function tickCountdown() {
+          const el = $('daily-countdown-time');
+          if (!el) return;
+          const now = new Date();
+          const next = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0);
+          let s = Math.max(0, Math.floor((next - now.getTime()) / 1000));
+          const p = n => String(n).padStart(2, '0');
+          el.textContent = p(Math.floor(s / 3600)) + ':' + p(Math.floor((s % 3600) / 60)) + ':' + p(s % 60);
+          if (s <= 0) {                 // rolled into a new day → refresh so today's question unlocks
+            clearInterval(dailyCdTimer); dailyCdTimer = null;
+            if (typeof load === 'function') load();
+          }
+        }
+
         function renderCard() {
           const card = $('daily-card');
           if (!card || !status) return;
@@ -20679,14 +20707,22 @@
 
           const playBtn = $('daily-play-btn');
           const msg = $('daily-played-msg');
+          const cd = $('daily-countdown');
           if (status.played_today) {
             playBtn.style.display = 'none';
             msg.style.display = '';
             msg.className = 'daily-played-msg ' + (status.last_result ? 'ok' : 'bad');
             msg.textContent = T(status.last_result ? 'daily.playedOk' : 'daily.playedBad');
+            if (cd) {
+              cd.style.display = '';
+              tickCountdown();
+              if (!dailyCdTimer) dailyCdTimer = setInterval(tickCountdown, 1000);
+            }
           } else {
             playBtn.style.display = '';
             msg.style.display = 'none';
+            if (cd) cd.style.display = 'none';
+            if (dailyCdTimer) { clearInterval(dailyCdTimer); dailyCdTimer = null; }
           }
 
           const spinBtn = $('daily-spin-open-btn');
