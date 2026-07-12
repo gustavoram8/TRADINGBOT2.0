@@ -5211,6 +5211,16 @@
     .disc-cta{display:block;width:fit-content;margin:26px auto 0;background:linear-gradient(135deg,var(--accent-h),var(--accent));color:#1a1300;
       font-weight:800;font-size:15px;padding:14px 30px;border-radius:12px;text-decoration:none;box-shadow:0 12px 30px -8px rgba(224,168,61,.5);transition:transform .12s;}
     .disc-cta:hover{transform:translateY(-1px);}
+    .disc-sec{margin-top:24px;}
+    .disc-sec-head{display:flex;align-items:center;gap:10px;margin:0 0 10px 2px;flex-wrap:wrap;}
+    .disc-sec-badge{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:4px 12px;border-radius:20px;}
+    .disc-sec-badge.prem{border:1px solid var(--accent);color:var(--accent);background:rgba(224,168,61,.12);}
+    .disc-sec-badge.std{border:1px solid #5b8ef0;color:#5b8ef0;background:rgba(91,142,240,.12);}
+    .disc-sec-label{font-size:13px;color:var(--muted);font-weight:600;}
+    .disc-fp .ico{font-size:22px;line-height:1;}
+    .disc-fp .ttl{display:block;font-size:13.5px;font-weight:800;color:var(--text);margin-top:6px;}
+    .disc-fp .dsc{display:block;font-size:12px;color:var(--muted);line-height:1.45;margin-top:4px;}
+    .disc-fp .disc-pills,.disc-fp .disc-obs,.disc-fp .disc-pfrow,.disc-fp .disc-lamp,.disc-fp .disc-rankbar,.disc-fp .disc-msg{margin-top:10px;}
     @media(max-width:720px){.disc-sharp{grid-template-columns:1fr;}.disc-h1{font-size:24px;}}
   </style>
   <div class="feature-view" id="discover-view">
@@ -5219,40 +5229,79 @@
       <h1 class="disc-h1"><span data-i18n="disc.titleA">Mira lo que</span> <span class="disc-g" data-i18n="disc.titleB">incluye subir de plan</span></h1>
       <p class="disc-lede" data-i18n="disc.lede">Rasca el panel para ver una vista previa de las herramientas y funciones que incluye cada plan. Lo que reveles se queda a la vista.</p>
 
-      <div class="disc-board" id="disc-board">
-        <div class="disc-sharp">
-          <div class="disc-fp">
-            <div class="disc-cap"><span data-i18n="disc.f.analyzer">Analizador de setups</span><span class="pl">✦ Standard</span></div>
-            <div class="disc-pills"><span class="disc-pill g">NQ</span><span class="disc-pill win" data-i18n="disc.f.bull">Alcista</span><span class="disc-pill g">Liquidity Sweep</span><span class="disc-pill g">FVG</span><span class="disc-pill g">Order Block</span></div>
-            <div class="disc-obs"><span class="d">✓</span><span data-i18n="disc.f.an1">El barrido previo al FVG encaja con tu sesgo alcista HTF.</span></div>
-            <div class="disc-obs"><span class="d">✓</span><span data-i18n="disc.f.an2">Entrada en el OB en descuento — coherente con el modelo.</span></div>
-          </div>
-          <div class="disc-fp">
-            <div class="disc-cap"><span data-i18n="disc.f.preflight">Pre-Flight</span><span class="pl">✦ Standard</span></div>
-            <div class="disc-pfrow"><span class="ck">✓</span> <span data-i18n="disc.f.pf1">Liquidity sweep tomado</span></div>
-            <div class="disc-pfrow"><span class="ck">✓</span> <span data-i18n="disc.f.pf2">FVG en descuento</span></div>
-            <div class="disc-pfrow"><span class="ck">✓</span> <span data-i18n="disc.f.pf3">CHoCH alineado con HTF</span></div>
-            <div class="disc-lamp"><span data-i18n="disc.f.go">● GO · setup válido</span></div>
-          </div>
-          <div class="disc-fp">
-            <div class="disc-cap"><span data-i18n="disc.f.ranks">Rangos y progreso</span><span class="pl">✦ Premium</span></div>
-            <div class="disc-streak"><i>🔥</i><i>🔥</i><i>🔥</i><i>🔥</i><i>🔥</i><i>🔥</i><i>🔥</i></div>
-            <div class="disc-mini" data-i18n="disc.f.streak">Practica a diario y sube de rango con tu progreso.</div>
-            <div class="disc-rankbar">
-              <span class="disc-rk">🥉 Rank 3</span>
-              <div class="disc-rkbar"><span></span></div>
-              <span class="disc-rk gold">🥈 Rank 4</span>
+      <!-- ── STANDARD section ── -->
+      <div class="disc-sec">
+        <div class="disc-sec-head"><span class="disc-sec-badge std">Standard</span><span class="disc-sec-label" data-i18n="disc.sec.std">Todo lo del plan Free, y además:</span></div>
+        <div class="disc-board">
+          <div class="disc-sharp">
+            <div class="disc-fp">
+              <span class="ico">📈</span>
+              <span class="ttl" data-i18n="disc.f.analyzer">Analizador de setups · 1 al día</span>
+              <span class="dsc" data-i18n="disc.f.analyzerD">Marca instrumento, sesgo y confluencias, sube tu captura y recibe observaciones educativas. En Free es 1 por semana.</span>
+              <div class="disc-pills"><span class="disc-pill g">NQ</span><span class="disc-pill win" data-i18n="disc.f.bull">Alcista</span><span class="disc-pill g">Liquidity Sweep</span><span class="disc-pill g">FVG</span><span class="disc-pill g">Order Block</span></div>
+              <div class="disc-obs"><span class="d">✓</span><span data-i18n="disc.f.an1">El barrido previo al FVG encaja con tu sesgo alcista HTF.</span></div>
+            </div>
+            <div class="disc-fp">
+              <span class="ico">🗂️</span>
+              <span class="ttl" data-i18n="disc.f.projects">Proyectos de análisis</span>
+              <span class="dsc" data-i18n="disc.f.projectsD">Guarda hasta 5 configuraciones de tu estrategia y reúsalas en un clic (Free: 1).</span>
             </div>
           </div>
-          <div class="disc-fp">
-            <div class="disc-cap"><span data-i18n="disc.f.forum">Foro moderado por IA</span><span class="pl">✦ Premium</span></div>
-            <div class="disc-msg"><span class="u">liquidity_hunter</span><span class="disc-rank">Rank 4</span><br><span data-i18n="disc.f.forumQ">¿Alguien tomó el sweep de Londres en NQ hoy?</span></div>
-            <div class="disc-msg"><span class="u">ict_sniper</span><span class="disc-rank">Rank 6</span><br><span data-i18n="disc.f.forumA">Sí, FVG de 15m + OTE. Limpio.</span></div>
-          </div>
+          <div class="disc-pct"></div>
+          <canvas class="disc-coat"></canvas>
+          <div class="disc-lens"></div>
         </div>
-        <div class="disc-pct" id="disc-pct"></div>
-        <canvas class="disc-coat" id="disc-coat"></canvas>
-        <div class="disc-lens" id="disc-lens"></div>
+      </div>
+
+      <!-- ── PREMIUM section ── -->
+      <div class="disc-sec">
+        <div class="disc-sec-head"><span class="disc-sec-badge prem">Premium</span><span class="disc-sec-label" data-i18n="disc.sec.prem">Todo lo de Standard, y además todas las herramientas:</span></div>
+        <div class="disc-board">
+          <div class="disc-sharp">
+            <div class="disc-fp">
+              <span class="ico">⚡</span>
+              <span class="ttl" data-i18n="disc.f.more">Hasta 5 análisis al día</span>
+              <span class="dsc" data-i18n="disc.f.moreD">Revisa hasta 5 setups cada día — ideal para revisión diaria a fondo.</span>
+            </div>
+            <div class="disc-fp">
+              <span class="ico">✅</span>
+              <span class="ttl" data-i18n="disc.f.preflight">Pre-Flight</span>
+              <span class="dsc" data-i18n="disc.f.preflightD">Tu checklist de confluencias con veredicto en vivo antes de cada trade.</span>
+              <div class="disc-pfrow"><span class="ck">✓</span> <span data-i18n="disc.f.pf1">Liquidity sweep tomado</span></div>
+              <div class="disc-lamp"><span data-i18n="disc.f.go">● GO · setup válido</span></div>
+            </div>
+            <div class="disc-fp">
+              <span class="ico">🎯</span>
+              <span class="ttl" data-i18n="disc.f.quiz">Quiz &amp; Daily Challenge</span>
+              <span class="dsc" data-i18n="disc.f.quizD">Reta tu conocimiento con cientos de preguntas y una pregunta nueva cada día.</span>
+            </div>
+            <div class="disc-fp">
+              <span class="ico">🏅</span>
+              <span class="ttl" data-i18n="disc.f.ranks">Rangos y progreso</span>
+              <span class="dsc" data-i18n="disc.f.streak">Practica a diario y sube de rango con tu progreso.</span>
+              <div class="disc-rankbar"><span class="disc-rk">🥉 Rank 3</span><div class="disc-rkbar"><span></span></div><span class="disc-rk gold">🥈 Rank 4</span></div>
+            </div>
+            <div class="disc-fp">
+              <span class="ico">💬</span>
+              <span class="ttl" data-i18n="disc.f.forum">Foro moderado por IA</span>
+              <span class="dsc" data-i18n="disc.f.forumD">Comparte setups e ideas en una comunidad moderada por IA.</span>
+              <div class="disc-msg"><span class="u">liquidity_hunter</span><span class="disc-rank">Rank 4</span><br><span data-i18n="disc.f.forumQ">¿Alguien tomó el sweep de Londres en NQ hoy?</span></div>
+            </div>
+            <div class="disc-fp">
+              <span class="ico">✍️</span>
+              <span class="ttl" data-i18n="disc.f.chalk">Chalkboard</span>
+              <span class="dsc" data-i18n="disc.f.chalkD">Una pizarra para anotar, dibujar y estudiar tus gráficos.</span>
+            </div>
+            <div class="disc-fp">
+              <span class="ico">🧠</span>
+              <span class="ttl" data-i18n="disc.f.synapse">Synapse 3D</span>
+              <span class="dsc" data-i18n="disc.f.synapseD">Una base de conocimiento 3D interactiva de todas las metodologías.</span>
+            </div>
+          </div>
+          <div class="disc-pct"></div>
+          <canvas class="disc-coat"></canvas>
+          <div class="disc-lens"></div>
+        </div>
       </div>
 
       <div class="disc-barrow">
@@ -5266,59 +5315,64 @@
 
   <script>
   window.Discover = (function(){
-    var board,canvas,ctx,lens,pctEl,revealBtn,painted=false,done=false,dpr=1,R=58,W=0,H=0,last=null,lastPctCheck=0;
-    function el(id){return document.getElementById(id);}
+    var boards=[], dpr=Math.min(window.devicePixelRatio||1,2), R=58;
     function tr(k,fb){ try{ return (typeof T==='function' && T(k)) || fb; }catch(e){ return fb; } }
     function isLight(){ return document.body.classList.contains('light'); }
-    function isOpen(){ var v=el('discover-view'); return v && getComputedStyle(v).display!=='none'; }
-    function updatePct(p){ if(pctEl) pctEl.textContent = tr('disc.pct','Rascado')+' '+p+'%'; }
-    function paintCoat(){
-      if(!canvas) return; var r=board.getBoundingClientRect(); if(r.width<2) return;
-      W=r.width;H=r.height; canvas.width=W*dpr;canvas.height=H*dpr;canvas.style.width=W+'px';canvas.style.height=H+'px';
-      ctx.setTransform(dpr,0,0,dpr,0,0); ctx.globalCompositeOperation='source-over';
-      var light=isLight(); var g=ctx.createLinearGradient(0,0,W,H);
-      if(light){ g.addColorStop(0,'#e7eaf2');g.addColorStop(.5,'#dee2ec');g.addColorStop(1,'#e7eaf2'); }
-      else { g.addColorStop(0,'#14161f');g.addColorStop(.5,'#0e1019');g.addColorStop(1,'#12141c'); }
-      ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-      ctx.textAlign='center'; ctx.fillStyle=light?'rgba(20,30,60,.05)':'rgba(224,168,61,.05)'; ctx.font='20px Inter';
-      for(var y=40;y<H;y+=64){ for(var x=40;x<W;x+=90){ ctx.fillText('🔒',x,y); } }
-      ctx.fillStyle=light?'rgba(20,25,40,.85)':'rgba(240,242,246,.85)'; ctx.font='800 19px Inter';
-      ctx.fillText('🔒 '+tr('disc.locked','Contenido bloqueado'), W/2, H/2-6);
-      ctx.fillStyle='rgba(224,168,61,.95)'; ctx.font='600 13px Inter';
-      ctx.fillText('✨ '+tr('disc.scratchHere','Rasca aquí para revelar lo que trae Standard y Premium'), W/2, H/2+20);
-      painted=true; canvas.classList.remove('done'); updatePct(0);
+    function isOpen(){ var v=document.getElementById('discover-view'); return v && getComputedStyle(v).display!=='none'; }
+    function makeBoard(boardEl){
+      var canvas=boardEl.querySelector('.disc-coat'), ctx=canvas.getContext('2d'),
+          lens=boardEl.querySelector('.disc-lens'), pctEl=boardEl.querySelector('.disc-pct');
+      var painted=false, done=false, last=null, lastPctCheck=0, W=0, H=0;
+      function updatePct(p){ if(pctEl) pctEl.textContent=tr('disc.pct','Rascado')+' '+p+'%'; }
+      function paint(){
+        var r=boardEl.getBoundingClientRect(); if(r.width<2) return;
+        W=r.width;H=r.height; canvas.width=W*dpr;canvas.height=H*dpr;canvas.style.width=W+'px';canvas.style.height=H+'px';
+        ctx.setTransform(dpr,0,0,dpr,0,0); ctx.globalCompositeOperation='source-over';
+        var light=isLight(), g=ctx.createLinearGradient(0,0,W,H);
+        if(light){ g.addColorStop(0,'#e7eaf2');g.addColorStop(.5,'#dee2ec');g.addColorStop(1,'#e7eaf2'); }
+        else { g.addColorStop(0,'#14161f');g.addColorStop(.5,'#0e1019');g.addColorStop(1,'#12141c'); }
+        ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+        ctx.textAlign='center'; ctx.fillStyle=light?'rgba(20,30,60,.05)':'rgba(224,168,61,.05)'; ctx.font='20px Inter';
+        for(var y=36;y<H;y+=60){ for(var x=40;x<W;x+=90){ ctx.fillText('🔒',x,y); } }
+        ctx.fillStyle=light?'rgba(20,25,40,.85)':'rgba(240,242,246,.85)'; ctx.font='800 17px Inter';
+        ctx.fillText('🔒 '+tr('disc.locked','Funciones bloqueadas'), W/2, H/2-4);
+        ctx.fillStyle='rgba(224,168,61,.95)'; ctx.font='600 12.5px Inter';
+        ctx.fillText('✨ '+tr('disc.scratchHere','Rasca para ver las funciones'), W/2, H/2+18);
+        painted=true; canvas.classList.remove('done'); updatePct(0);
+      }
+      function erase(x,y){
+        ctx.globalCompositeOperation='destination-out';
+        if(last){ var dx=x-last.x,dy=y-last.y,dist=Math.hypot(dx,dy),steps=Math.max(1,Math.floor(dist/9));
+          for(var i=0;i<steps;i++){ var t=i/steps; ctx.beginPath(); ctx.arc(last.x+dx*t,last.y+dy*t,R,0,7); ctx.fill(); } }
+        ctx.beginPath(); ctx.arc(x,y,R,0,7); ctx.fill(); last={x:x,y:y};
+      }
+      function checkPct(){
+        var now=Date.now(); if(now-lastPctCheck<220) return; lastPctCheck=now;
+        try{ var img=ctx.getImageData(0,0,canvas.width,canvas.height).data,clear=0,total=0;
+          for(var i=3;i<img.length;i+=40){ total++; if(img[i]<40) clear++; }
+          var p=Math.round(clear/total*100); updatePct(p); if(p>=60 && !done) finish();
+        }catch(e){}
+      }
+      function finish(){ done=true; if(canvas) canvas.classList.add('done'); if(lens) lens.classList.remove('on'); if(pctEl) pctEl.textContent=tr('disc.revealed','Todo a la vista ✨'); }
+      function posOf(e){ var r=boardEl.getBoundingClientRect(); var t=e.touches?e.touches[0]:e; return {x:t.clientX-r.left,y:t.clientY-r.top}; }
+      function onMove(e){ if(done||!painted) return; var p=posOf(e); if(lens){ lens.classList.add('on'); lens.style.left=(p.x-64)+'px'; lens.style.top=(p.y-64)+'px'; } erase(p.x,p.y); checkPct(); }
+      boardEl.addEventListener('mousemove',onMove);
+      boardEl.addEventListener('mouseleave',function(){ if(lens) lens.classList.remove('on'); last=null; });
+      boardEl.addEventListener('touchmove',function(e){ e.preventDefault(); onMove(e); },{passive:false});
+      boardEl.addEventListener('touchend',function(){ last=null; });
+      return { paint:paint, finish:finish, isDone:function(){ return done; } };
     }
-    function erase(x,y){
-      ctx.globalCompositeOperation='destination-out';
-      if(last){ var dx=x-last.x,dy=y-last.y,dist=Math.hypot(dx,dy),steps=Math.max(1,Math.floor(dist/9));
-        for(var i=0;i<steps;i++){ var t=i/steps; ctx.beginPath(); ctx.arc(last.x+dx*t,last.y+dy*t,R,0,7); ctx.fill(); } }
-      ctx.beginPath(); ctx.arc(x,y,R,0,7); ctx.fill(); last={x:x,y:y};
-    }
-    function checkPct(){
-      var now=Date.now(); if(now-lastPctCheck<220) return; lastPctCheck=now;
-      try{ var img=ctx.getImageData(0,0,canvas.width,canvas.height).data,clear=0,total=0;
-        for(var i=3;i<img.length;i+=40){ total++; if(img[i]<40) clear++; }
-        var p=Math.round(clear/total*100); updatePct(p); if(p>=60 && !done) finish();
-      }catch(e){}
-    }
-    function finish(){ done=true; if(canvas) canvas.classList.add('done'); if(lens) lens.classList.remove('on'); if(pctEl) pctEl.textContent=tr('disc.revealed','¡Revelado! ✨'); }
-    function pos(e){ var r=board.getBoundingClientRect(); var t=e.touches?e.touches[0]:e; return {x:t.clientX-r.left,y:t.clientY-r.top}; }
-    function onMove(e){ if(done||!painted) return; var p=pos(e); lens.classList.add('on'); lens.style.left=(p.x-64)+'px'; lens.style.top=(p.y-64)+'px'; erase(p.x,p.y); checkPct(); }
+    function paintAll(){ boards.forEach(function(b){ if(!b.isDone()) b.paint(); }); }
     function init(){
-      board=el('disc-board'); if(!board) return;
-      canvas=el('disc-coat'); ctx=canvas.getContext('2d'); lens=el('disc-lens'); pctEl=el('disc-pct'); revealBtn=el('disc-reveal');
-      dpr=Math.min(window.devicePixelRatio||1,2);
-      board.addEventListener('mousemove',onMove);
-      board.addEventListener('mouseleave',function(){ if(lens) lens.classList.remove('on'); last=null; });
-      board.addEventListener('touchmove',function(e){ e.preventDefault(); onMove(e); },{passive:false});
-      board.addEventListener('touchend',function(){ last=null; });
-      if(revealBtn) revealBtn.addEventListener('click',finish);
-      var tt=el('theme-toggle'); if(tt) tt.addEventListener('click',function(){ setTimeout(function(){ if(isOpen() && !done) paintCoat(); },40); });
-      var ls=el('lang-select'); if(ls) ls.addEventListener('change',function(){ setTimeout(function(){ if(isOpen() && !done) paintCoat(); },0); });
-      var u=window.SCALPEL_USER||{}; if(u.plan!=='premium'){ var t=el('tab-discover'); if(t) t.style.display=''; }
+      var els=document.querySelectorAll('#discover-view .disc-board'); if(!els.length) return;
+      els.forEach(function(el){ boards.push(makeBoard(el)); });
+      var rb=document.getElementById('disc-reveal'); if(rb) rb.addEventListener('click',function(){ boards.forEach(function(b){ b.finish(); }); });
+      var tt=document.getElementById('theme-toggle'); if(tt) tt.addEventListener('click',function(){ setTimeout(function(){ if(isOpen()) paintAll(); },40); });
+      var ls=document.getElementById('lang-select'); if(ls) ls.addEventListener('change',function(){ setTimeout(function(){ if(isOpen()) paintAll(); },0); });
+      var u=window.SCALPEL_USER||{}; if(u.plan!=='premium'){ var t=document.getElementById('tab-discover'); if(t) t.style.display=''; }
     }
     init();
-    return { open:function(){ setTimeout(function(){ if(!done) paintCoat(); },40); }, relang:function(){ if(isOpen() && !done) paintCoat(); } };
+    return { open:function(){ setTimeout(paintAll,40); }, relang:function(){ if(isOpen()) paintAll(); } };
   })();
   </script>
 
@@ -6644,7 +6698,22 @@
       'disc.hint': '✨ Scratch the panel to preview the features',
       'disc.revealAll': 'Reveal all',
       'disc.cta': 'See plans & upgrade →',
-      'disc.f.analyzer': 'Setup analyzer',
+      'disc.f.analyzer': 'Setup analyzer · 1 a day',
+      'disc.f.analyzerD': "Mark instrument, bias and confluences, upload your screenshot and get educational observations. On Free it's 1 per week.",
+      'disc.f.projects': 'Analysis projects',
+      'disc.f.projectsD': 'Save up to 5 strategy presets and reuse them in one click (Free: 1).',
+      'disc.f.more': 'Up to 5 analyses a day',
+      'disc.f.moreD': 'Review up to 5 setups every day — ideal for deep daily review.',
+      'disc.f.preflightD': 'Your confluence checklist with a live verdict before every trade.',
+      'disc.f.quiz': 'Quiz & Daily Challenge',
+      'disc.f.quizD': 'Test your knowledge with hundreds of questions and a fresh one every day.',
+      'disc.f.forumD': 'Share setups and ideas in an AI-moderated community.',
+      'disc.f.chalk': 'Chalkboard',
+      'disc.f.chalkD': 'A board to annotate, draw and study your charts.',
+      'disc.f.synapse': 'Synapse 3D',
+      'disc.f.synapseD': 'An interactive 3D knowledge base of every methodology.',
+      'disc.sec.std': 'Everything in Free, plus:',
+      'disc.sec.prem': 'Everything in Standard, plus all the tools:',
       'disc.f.bull': 'Bullish',
       'disc.f.an1': 'The sweep before the FVG matches your bullish HTF bias.',
       'disc.f.an2': 'Entry at the OB sits in discount — consistent with the model.',
@@ -7096,7 +7165,22 @@
       'disc.hint': '✨ Rasca el panel para ver las funciones',
       'disc.revealAll': 'Revelar todo',
       'disc.cta': 'Ver planes y subir de plan →',
-      'disc.f.analyzer': 'Analizador de setups',
+      'disc.f.analyzer': 'Analizador de setups · 1 al día',
+      'disc.f.analyzerD': 'Marca instrumento, sesgo y confluencias, sube tu captura y recibe observaciones educativas. En Free es 1 por semana.',
+      'disc.f.projects': 'Proyectos de análisis',
+      'disc.f.projectsD': 'Guarda hasta 5 configuraciones de tu estrategia y reúsalas en un clic (Free: 1).',
+      'disc.f.more': 'Hasta 5 análisis al día',
+      'disc.f.moreD': 'Revisa hasta 5 setups cada día — ideal para revisión diaria a fondo.',
+      'disc.f.preflightD': 'Tu checklist de confluencias con veredicto en vivo antes de cada trade.',
+      'disc.f.quiz': 'Quiz y Daily Challenge',
+      'disc.f.quizD': 'Reta tu conocimiento con cientos de preguntas y una nueva cada día.',
+      'disc.f.forumD': 'Comparte setups e ideas en una comunidad moderada por IA.',
+      'disc.f.chalk': 'Chalkboard',
+      'disc.f.chalkD': 'Una pizarra para anotar, dibujar y estudiar tus gráficos.',
+      'disc.f.synapse': 'Synapse 3D',
+      'disc.f.synapseD': 'Una base de conocimiento 3D interactiva de todas las metodologías.',
+      'disc.sec.std': 'Todo lo del plan Free, y además:',
+      'disc.sec.prem': 'Todo lo de Standard, y además todas las herramientas:',
       'disc.f.bull': 'Alcista',
       'disc.f.an1': 'El barrido previo al FVG encaja con tu sesgo alcista HTF.',
       'disc.f.an2': 'Entrada en el OB en descuento — coherente con el modelo.',
@@ -7548,7 +7632,22 @@
       'disc.hint': '✨ Grattez le panneau pour voir les fonctions',
       'disc.revealAll': 'Tout révéler',
       'disc.cta': 'Voir les formules et changer de formule →',
-      'disc.f.analyzer': 'Analyseur de setups',
+      'disc.f.analyzer': 'Analyseur de setups · 1 par jour',
+      'disc.f.analyzerD': 'Marquez instrument, biais et confluences, importez votre capture et recevez des observations éducatives. En Free, c’est 1 par semaine.',
+      'disc.f.projects': 'Projets d’analyse',
+      'disc.f.projectsD': 'Enregistrez jusqu’à 5 préréglages de stratégie et réutilisez-les en un clic (Free : 1).',
+      'disc.f.more': 'Jusqu’à 5 analyses par jour',
+      'disc.f.moreD': 'Analysez jusqu’à 5 setups par jour — idéal pour une revue quotidienne approfondie.',
+      'disc.f.preflightD': 'Votre checklist de confluences avec un verdict en direct avant chaque trade.',
+      'disc.f.quiz': 'Quiz & Daily Challenge',
+      'disc.f.quizD': 'Testez vos connaissances avec des centaines de questions et une nouvelle chaque jour.',
+      'disc.f.forumD': 'Partagez setups et idées dans une communauté modérée par IA.',
+      'disc.f.chalk': 'Chalkboard',
+      'disc.f.chalkD': 'Un tableau pour annoter, dessiner et étudier vos graphiques.',
+      'disc.f.synapse': 'Synapse 3D',
+      'disc.f.synapseD': 'Une base de connaissances 3D interactive de toutes les méthodologies.',
+      'disc.sec.std': 'Tout ce qui est inclus dans Free, et en plus :',
+      'disc.sec.prem': 'Tout ce qui est inclus dans Standard, et tous les outils :',
       'disc.f.bull': 'Haussier',
       'disc.f.an1': 'Le balayage avant le FVG correspond à votre biais haussier HTF.',
       'disc.f.an2': 'Entrée à l’OB en décote — cohérent avec le modèle.',
@@ -8000,7 +8099,22 @@
       'disc.hint': '✨ Raspe o painel para ver as funções',
       'disc.revealAll': 'Revelar tudo',
       'disc.cta': 'Ver planos e fazer upgrade →',
-      'disc.f.analyzer': 'Analisador de setups',
+      'disc.f.analyzer': 'Analisador de setups · 1 por dia',
+      'disc.f.analyzerD': 'Marque instrumento, viés e confluências, envie sua captura e receba observações educativas. No Free é 1 por semana.',
+      'disc.f.projects': 'Projetos de análise',
+      'disc.f.projectsD': 'Salve até 5 configurações da sua estratégia e reutilize em um clique (Free: 1).',
+      'disc.f.more': 'Até 5 análises por dia',
+      'disc.f.moreD': 'Revise até 5 setups por dia — ideal para revisão diária a fundo.',
+      'disc.f.preflightD': 'Sua checklist de confluências com veredito ao vivo antes de cada trade.',
+      'disc.f.quiz': 'Quiz e Daily Challenge',
+      'disc.f.quizD': 'Teste seu conhecimento com centenas de perguntas e uma nova todo dia.',
+      'disc.f.forumD': 'Compartilhe setups e ideias em uma comunidade moderada por IA.',
+      'disc.f.chalk': 'Chalkboard',
+      'disc.f.chalkD': 'Um quadro para anotar, desenhar e estudar seus gráficos.',
+      'disc.f.synapse': 'Synapse 3D',
+      'disc.f.synapseD': 'Uma base de conhecimento 3D interativa de todas as metodologias.',
+      'disc.sec.std': 'Tudo do plano Free, e além disso:',
+      'disc.sec.prem': 'Tudo do Standard, e além disso todas as ferramentas:',
       'disc.f.bull': 'Altista',
       'disc.f.an1': 'A varredura antes do FVG combina com seu viés altista HTF.',
       'disc.f.an2': 'Entrada no OB em desconto — coerente com o modelo.',
