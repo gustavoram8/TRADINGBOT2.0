@@ -156,6 +156,30 @@ listón. Estilo: `scalpel/static/improve.css`.
 
 ---
 
+## 🟢 Stripe — pagos con tarjeta (código LISTO, probado en TEST 2026-07-12)
+Integración **condicional**: totalmente inerte hasta setear `STRIPE_SECRET_KEY` → sin la clave, prod
+sigue con el flujo manual USDT/Binance intacto (cero regresión). Reutiliza el `Order` model y
+`_activate_plan_from_order` (idempotente) existentes; **nada** de doble activación aunque el webhook
+dispare dos veces.
+- **Flujo:** `/checkout/create` crea la Order `pending` → si `STRIPE_ENABLED` y `final_price>0`,
+  crea Stripe Checkout Session y redirige a la página hosteada de Stripe → el pago se confirma por
+  `/webhook/stripe` (canónico, server-to-server) **y** por `/checkout/success` (verifica la sesión
+  vía API de Stripe; sirve para test local sin webhook). Ambos llaman `_activate_plan_from_order`.
+- **Piezas nuevas** (`app.py`): bloque config Stripe (~línea 195, `STRIPE_SECRET_KEY`/
+  `STRIPE_WEBHOOK_SECRET`/`STRIPE_ENABLED`, import perezoso de `stripe`), rama Stripe en
+  `checkout_create`, rutas `checkout_success` + `stripe_webhook`. Template nuevo
+  `checkout_success.html` (i18n EN/ES/FR/PT, claves `csuccess.*` en `pages_i18n.js`). `stripe>=11.0.0`
+  en `scalpel/requirements.txt`.
+- **Probar en TEST (sin LLC ni dominio, gratis):** (1) cuenta en stripe.com, copiar `sk_test_…`;
+  (2) `pip install stripe`; (3) exportar `STRIPE_SECRET_KEY=sk_test_…` y correr
+  `FLASK_DEBUG=1 python3 scalpel/app.py`; (4) ir a /pricing → elegir plan → paga con tarjeta de
+  prueba `4242 4242 4242 4242` (cualquier fecha futura/CVC) → aterriza en `/checkout/success` con el
+  plan activado. El webhook local requiere Stripe CLI (`stripe listen --forward-to
+  localhost:5001/webhook/stripe`) pero **no es necesario** para el test porque success-page también
+  activa. Seguridad: success-page solo activa si `payment_status=='paid'` **y** la Order es del
+  usuario logueado; el webhook verifica firma si `STRIPE_WEBHOOK_SECRET` está seteado.
+- **Para LIVE:** ver "🚨 Alerta recurrente" #2 (LLC + banco + claves live + webhook con dominio/HTTPS).
+
 ## Stack técnico
 - Backend: Flask + SQLAlchemy + PostgreSQL (prod) / SQLite (local). Auth: Flask-Login (free/standard/premium).
 - IA: OpenAI SDK → GitHub Models hoy (GPT-4o Vision análisis, GPT-4o moderación foro). Migrar a OpenAI pago = cambiar 2 líneas de conexión en `app.py` (mismo modelo/prompt).
@@ -184,7 +208,7 @@ listón. Estilo: `scalpel/static/improve.css`.
   `grep -rn "Binance\|USDT" scalpel/`. **Bloquea poder cobrar.**
 - **Registrar COPYRIGHT** en copyright.gov (~$135–260). Guía: `COPYRIGHT_REGISTRATION_GUIDE.md`. Antes de publicar o ≤3 meses del lanzamiento.
 - **Pagar OpenAI API + conectar (2 líneas) + probar con $5.** Estimado ~$0.02/análisis; `max_tokens` (validate=150, analyze=900) topa el costo.
-- **Configurar Stripe** (Fase 2: con 10-20 clientes pagando + LLC US).
+- **Stripe:** código LISTO y probado en modo TEST (ver "🟢 Stripe" abajo). Falta activar LIVE (LLC US + banco + claves live + webhook con dominio). Ver "🚨 Alerta recurrente" #2.
 - **Comprar dominio** (Cloudflare ~$10/año, objetivo `traderaccelerator.com`) → DNS A → `62.171.180.22` + nginx + SSL Let's Encrypt.
 - **Email dedicado** (migrar OTP/reset del Gmail personal a cuenta del dominio). Email en T&C/Privacy hoy: `support@traderaccelerator.com` (cambiar al real cuando se defina el dominio; auditar `git grep -in traderaccelerator`).
 - **Persistencia server-side de Scalper boards** (hoy en localStorage del navegador).
@@ -195,7 +219,8 @@ listón. Estilo: `scalpel/static/improve.css`.
 - Ratings del Scout con fuente verificable (Trustpilot, etc.).
 
 ### 🚨 Alerta recurrente (mostrar hasta que el usuario confirme que lo hizo)
-Comprar dominio + crear correo empresarial + linkear dominio al VPS (DNS A → 62.171.180.22, nginx+SSL). Sin esto: sitio en IP cruda, sin HTTPS, sin email empresarial.
+1. Comprar dominio + crear correo empresarial + linkear dominio al VPS (DNS A → 62.171.180.22, nginx+SSL). Sin esto: sitio en IP cruda, sin HTTPS, sin email empresarial.
+2. **SETEAR STRIPE REAL (modo LIVE).** La integración de código YA está lista y probada en modo TEST (ver "🟢 Stripe" abajo). Falta lo de negocio: (a) LLC US + cuenta bancaria, (b) claves `sk_live_…` + `whsec_…` en supervisor conf y `scalpel/.env`, (c) configurar el webhook `/webhook/stripe` en el dashboard de Stripe (necesita el dominio+HTTPS del punto 1). Con eso cobra tarjetas de verdad. **Mostrar este recordatorio una vez al día hasta que el usuario confirme que Stripe LIVE está activo.**
 
 ---
 

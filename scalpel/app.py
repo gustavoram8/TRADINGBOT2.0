@@ -194,6 +194,22 @@ AI_PRICE_IN  = AI_PRICE_IN_PER_1M  / 1_000_000
 AI_PRICE_OUT = AI_PRICE_OUT_PER_1M / 1_000_000
 
 
+# ── Stripe (optional) — card payments. Fully inert until STRIPE_SECRET_KEY is
+# set, so production keeps using the manual USDT/bank flow until you flip it on.
+# Test mode: create a free Stripe account, grab the sk_test_… key, set it here
+# (and STRIPE_WEBHOOK_SECRET if you run the webhook), then use test card
+# 4242 4242 4242 4242 to walk the whole flow without moving real money.
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
+STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+try:
+    import stripe as _stripe          # optional dependency; app runs fine without it
+except ImportError:
+    _stripe = None
+STRIPE_ENABLED = bool(STRIPE_SECRET_KEY) and _stripe is not None
+if STRIPE_ENABLED:
+    _stripe.api_key = STRIPE_SECRET_KEY
+
+
 # ── Expose feature flags to every template ──
 @app.context_processor
 def inject_feature_flags():
@@ -2612,8 +2628,110 @@ def checkout_create():
     record_audit_event('order_created', user_id=current_user.id,
                         detail=f'{plan}/{cycle} ${q["final_price"]:.2f}'
                                + (f' promo={promo.code}' if promo else ''))
+
+    # If Stripe is configured, hand the order off to Stripe Checkout (a hosted
+    # card-payment page). The plan is activated by the webhook / success page,
+    # never here. If Stripe is off (or a $0 promo order), fall through to the
+    # existing manual USDT/bank instructions — nothing changes for production.
+    if STRIPE_ENABLED and order.final_price > 0:
+        try:
+            checkout_session = _stripe.checkout.Session.create(
+                mode='payment',
+                line_items=[{
+                    'price_data': {
+                        'currency': 'usd',
+                        'product_data': {
+                            'name': f'Trader Accelerator — {PLAN_LABELS.get(plan, plan)}',
+                            'description': ('Annual' if cycle == 'annual' else 'Monthly') + ' plan',
+                        },
+                        'unit_amount': int(round(order.final_price * 100)),  # cents
+                    },
+                    'quantity': 1,
+                }],
+                success_url=url_for('checkout_success', _external=True)
+                            + '?session_id={CHECKOUT_SESSION_ID}',
+                cancel_url=url_for('pricing', _external=True),
+                client_reference_id=str(order.id),
+                customer_email=current_user.email,
+                metadata={'order_id': str(order.id)},
+            )
+            order.payment_method = 'stripe'
+            db.session.commit()
+            return redirect(checkout_session.url, code=303)
+        except Exception as e:
+            app.logger.error('Stripe session create failed: %s', e)
+            # fall through to the manual instructions rather than dead-ending
+
     return render_template('checkout_done.html', order=order,
                            plan_label=PLAN_LABELS.get(plan, plan), duplicate=False)
+
+
+@app.route('/checkout/success')
+@login_required
+def checkout_success():
+    """Where Stripe sends the buyer after a successful card payment.
+
+    Stripe's webhook is the canonical activator, but for local testing (where a
+    public webhook isn't reachable without the Stripe CLI) this page ALSO
+    verifies the session with Stripe and activates the plan. Both paths call the
+    idempotent `_activate_plan_from_order`, so a plan is never granted twice."""
+    session_id = request.args.get('session_id', '')
+    if not (STRIPE_ENABLED and session_id):
+        return redirect(url_for('pricing'))
+    try:
+        sess = _stripe.checkout.Session.retrieve(session_id)
+    except Exception as e:
+        app.logger.error('Stripe session retrieve failed: %s', e)
+        return redirect(url_for('pricing'))
+    order = db.session.get(Order, int(sess.get('client_reference_id') or 0))
+    # Only the buyer may activate their own order, and only if Stripe says paid.
+    if (order and order.user_id == current_user.id
+            and sess.get('payment_status') == 'paid'):
+        if order.status == 'pending':
+            order.status = 'paid'
+            order.paid_at = datetime.now(timezone.utc)
+            db.session.commit()
+            activated = _activate_plan_from_order(order)
+            record_audit_event('order_paid', user_id=order.user_id,
+                                detail=f'stripe order #{order.id} {order.plan}/{order.billing_cycle}',
+                                success=activated)
+        return render_template('checkout_success.html', order=order,
+                               plan_label=PLAN_LABELS.get(order.plan, order.plan))
+    return redirect(url_for('pricing'))
+
+
+@app.route('/webhook/stripe', methods=['POST'])
+def stripe_webhook():
+    """Canonical payment confirmation from Stripe (server-to-server).
+
+    Configure it in the Stripe dashboard → Webhooks with your public HTTPS URL
+    (needs the domain + nginx + SSL) and the event `checkout.session.completed`.
+    Verifies the signature when STRIPE_WEBHOOK_SECRET is set."""
+    if not STRIPE_ENABLED:
+        abort(404)
+    payload = request.data
+    sig = request.headers.get('Stripe-Signature', '')
+    try:
+        if STRIPE_WEBHOOK_SECRET:
+            event = _stripe.Webhook.construct_event(payload, sig, STRIPE_WEBHOOK_SECRET)
+        else:
+            event = json.loads(payload or b'{}')   # unsigned: local dev only
+    except Exception as e:
+        app.logger.error('Stripe webhook verify failed: %s', e)
+        abort(400)
+    if event.get('type') == 'checkout.session.completed':
+        sess = event['data']['object']
+        order = db.session.get(Order, int(sess.get('client_reference_id') or 0))
+        if (order and order.status == 'pending'
+                and sess.get('payment_status') == 'paid'):
+            order.status = 'paid'
+            order.paid_at = datetime.now(timezone.utc)
+            db.session.commit()
+            activated = _activate_plan_from_order(order)   # idempotent
+            record_audit_event('order_paid', user_id=order.user_id,
+                                detail=f'stripe webhook order #{order.id}',
+                                success=activated)
+    return '', 200
 
 
 @app.route('/admin/ai-credit/set', methods=['POST'])

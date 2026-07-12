@@ -185,7 +185,14 @@
       'cdone.step3b': ', selecting "Billing".',
       'cdone.step4': 'Our team verifies and activates your plan — usually within a few hours.',
       'cdone.backApp': 'Back to app',
-      'cdone.sendProof': 'Send payment proof →'
+      'cdone.sendProof': 'Send payment proof →',
+      // ── checkout_success.html ──
+      'csuccess.doctitle': 'Trader Accelerator — Payment successful',
+      'csuccess.title': 'Payment successful',
+      'csuccess.sub': 'Thank you — your plan is now active. Enjoy the upgrade.',
+      'csuccess.activated': 'Your plan is now active',
+      'csuccess.amountPaid': 'Amount paid',
+      'csuccess.goApp': 'Go to the app →'
     },
 
     es: {
@@ -359,7 +366,14 @@
       'cdone.step3b': ', seleccionando "Facturación".',
       'cdone.step4': 'Nuestro equipo verifica y activa tu plan — normalmente en pocas horas.',
       'cdone.backApp': 'Volver a la app',
-      'cdone.sendProof': 'Enviar comprobante de pago →'
+      'cdone.sendProof': 'Enviar comprobante de pago →',
+      // ── checkout_success.html ──
+      'csuccess.doctitle': 'Trader Accelerator — Pago exitoso',
+      'csuccess.title': 'Pago exitoso',
+      'csuccess.sub': 'Gracias — tu plan ya está activo. Disfruta la mejora.',
+      'csuccess.activated': 'Tu plan ya está activo',
+      'csuccess.amountPaid': 'Monto pagado',
+      'csuccess.goApp': 'Ir a la app →'
     },
 
     // ── Task #2: French audit (filled). Portuguese still pending → empty stub
@@ -535,7 +549,14 @@
       'cdone.step3b': ', en sélectionnant « Facturation ».',
       'cdone.step4': 'Notre équipe vérifie et active votre formule — généralement en quelques heures.',
       'cdone.backApp': 'Retour à l’app',
-      'cdone.sendProof': 'Envoyer la preuve de paiement →'
+      'cdone.sendProof': 'Envoyer la preuve de paiement →',
+      // ── checkout_success.html ──
+      'csuccess.doctitle': 'Trader Accelerator — Paiement réussi',
+      'csuccess.title': 'Paiement réussi',
+      'csuccess.sub': 'Merci — votre offre est désormais active. Profitez de la mise à niveau.',
+      'csuccess.activated': 'Votre offre est désormais active',
+      'csuccess.amountPaid': 'Montant payé',
+      'csuccess.goApp': 'Aller à l’application →'
     },
     pt: {
       // shared
@@ -708,7 +729,14 @@
       'cdone.step3b': ', selecionando "Cobrança".',
       'cdone.step4': 'Nossa equipe verifica e ativa seu plano — normalmente em poucas horas.',
       'cdone.backApp': 'Voltar ao app',
-      'cdone.sendProof': 'Enviar comprovante de pagamento →'
+      'cdone.sendProof': 'Enviar comprovante de pagamento →',
+      // ── checkout_success.html ──
+      'csuccess.doctitle': 'Trader Accelerator — Pagamento concluído',
+      'csuccess.title': 'Pagamento concluído',
+      'csuccess.sub': 'Obrigado — seu plano já está ativo. Aproveite o upgrade.',
+      'csuccess.activated': 'Seu plano já está ativo',
+      'csuccess.amountPaid': 'Valor pago',
+      'csuccess.goApp': 'Ir para o app →'
     }
   };
 
