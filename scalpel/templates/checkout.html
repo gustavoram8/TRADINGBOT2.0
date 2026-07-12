@@ -9,7 +9,7 @@
     *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
     :root {
       --ink:#15171f; --ink-soft:#4a4f5e; --muted:#8a8f9e;
-      --line:#e6e8ee; --card:rgba(255,255,255,.82); --page:#eef1f7;
+      --line:#e6e8ee; --card:rgba(255,255,255,.82); --page:#eef1f7; --nav-bg:rgba(238,241,247,.88);
       --accent:#b8860b; --accent-h:#9a6f0e; --accent-bg:rgba(184,134,11,.10);
       --gold:#b8860b; --gold-2:#d9a636;
       --premium:#b8860b; --standard:#2563eb;
@@ -21,7 +21,7 @@
     /* Dark mode — carried from the main app via localStorage (matches pricing.html) */
     body.dark {
       --ink:#e8eaf0; --ink-soft:#b0b5c2; --muted:#8a8f9e;
-      --line:rgba(255,255,255,.10); --card:rgba(22,25,34,.72); --page:#0b0d12;
+      --line:rgba(255,255,255,.10); --card:rgba(22,25,34,.72); --page:#0b0d12; --nav-bg:rgba(11,13,18,.88);
       --accent:#e0a83d; --accent-h:#f0c060; --accent-bg:rgba(224,168,61,.12);
       --gold:#e0a83d; --gold-2:#f0c060;
       --premium:#e0a83d; --standard:#5b8ef0;
@@ -48,9 +48,11 @@
 
     nav { display:flex; align-items:center; justify-content:space-between;
           padding:16px 32px; border-bottom:1px solid var(--line);
-          background:transparent; position:sticky; top:0; z-index:10; backdrop-filter:blur(10px); }
+          background:var(--nav-bg); position:sticky; top:0; z-index:10; backdrop-filter:blur(10px); }
     .logo-img { height:66px; width:auto; display:block; mix-blend-mode:multiply; }
-    body.dark .logo-img { filter:invert(1) brightness(1.6); mix-blend-mode:screen; }
+    /* Dark mode: don't invert (it would flip the blue "a" to gold). Show the logo
+       in its true colors on a light chip so it stays legible on the dark nav. */
+    body.dark .logo-img { mix-blend-mode:normal; background:#eef1f7; border-radius:10px; padding:5px 10px; }
     .back-link { font-size:13px; font-weight:600; color:var(--ink-soft); text-decoration:none;
                  padding:8px 16px; border:1px solid var(--line); border-radius:20px; transition:all .15s; }
     .back-link:hover { border-color:var(--gold); color:var(--gold); }

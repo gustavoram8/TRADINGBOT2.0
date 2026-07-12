@@ -10039,9 +10039,20 @@
     f.appendChild(btn); bar.appendChild(f);
     document.body.appendChild(bar);
     // Auto-open the roulette when staged so the partner sees the wheel instantly.
+    // The overlay lives INSIDE the Quiz tab (#quiz-view), which is display:none on
+    // other tabs — a fixed element can't render under a hidden ancestor. So switch
+    // to the Quiz tab first, then reveal. Deferred to load so switchTab and its
+    // dependencies are fully initialized (avoids a TDZ ReferenceError).
     if (U.demoOpen === 'roulette') {
-      var ov = document.getElementById('roulette-overlay');
-      if (ov) ov.style.display = '';
+      // Defer past this script's synchronous init (so switchTab and its deps are
+      // ready — avoids a TDZ error) but do NOT wait for window 'load': a stalled
+      // external resource can keep 'load' from ever firing. A short timeout runs
+      // after top-level init completes.
+      setTimeout(function () {
+        try { if (typeof switchTab === 'function') switchTab('quiz'); } catch (e) {}
+        var ov = document.getElementById('roulette-overlay');
+        if (ov) ov.style.display = '';
+      }, 400);
     }
   })();
 
@@ -10142,7 +10153,10 @@
     });
 
     function maybeShow() {
-      if (shown || usageMin < USAGE_GOAL) return;
+      if (shown) return;
+      // Admin demo bypasses the ~20-min usage gate so the prompt can be previewed
+      // on demand; real users still only see it after accumulated usage.
+      if (!U.demoMode && usageMin < USAGE_GOAL) return;
       shown = true;
       rov.style.display = '';
     }
