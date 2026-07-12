@@ -152,6 +152,9 @@
       'checkout.promoNote': 'Creator codes support the trader who referred you and may unlock a discount.',
       'checkout.continue': 'Continue to payment →',
       'checkout.infoLine': "You'll receive payment instructions on the next step. Your plan activates once payment is confirmed by our team.",
+      'checkout.lede': "You're one step away. Confirm the details below and continue to secure payment.",
+      'checkout.included': "What's included",
+      'checkout.secure': 'Secure, encrypted checkout',
       'checkout.agreePre': 'By continuing you agree to our',
       'checkout.terms': 'Terms & Conditions',
       // promo JS feedback
@@ -333,6 +336,9 @@
       'checkout.promoNote': 'Los códigos de creador apoyan al trader que te recomendó y pueden desbloquear un descuento.',
       'checkout.continue': 'Continuar al pago →',
       'checkout.infoLine': 'Recibirás las instrucciones de pago en el siguiente paso. Tu plan se activa una vez que nuestro equipo confirme el pago.',
+      'checkout.lede': 'Estás a un paso. Confirma los detalles y continúa al pago seguro.',
+      'checkout.included': 'Qué incluye',
+      'checkout.secure': 'Pago seguro y cifrado',
       'checkout.agreePre': 'Al continuar aceptas nuestros',
       'checkout.terms': 'Términos y Condiciones',
       // promo JS feedback
@@ -516,6 +522,9 @@
       'checkout.promoNote': 'Les codes de créateur soutiennent le trader qui vous a recommandé et peuvent débloquer une réduction.',
       'checkout.continue': 'Continuer vers le paiement →',
       'checkout.infoLine': 'Vous recevrez les instructions de paiement à l’étape suivante. Votre formule s’active dès que notre équipe confirme le paiement.',
+      'checkout.lede': 'Vous y êtes presque. Vérifiez les détails ci-dessous et passez au paiement sécurisé.',
+      'checkout.included': 'Ce qui est inclus',
+      'checkout.secure': 'Paiement sécurisé et chiffré',
       'checkout.agreePre': 'En continuant, vous acceptez nos',
       'checkout.terms': 'Conditions générales',
       // promo JS feedback
@@ -696,6 +705,9 @@
       'checkout.promoNote': 'Códigos de criador apoiam o trader que indicou você e podem desbloquear um desconto.',
       'checkout.continue': 'Continuar para o pagamento →',
       'checkout.infoLine': 'Você receberá as instruções de pagamento na próxima etapa. Seu plano é ativado assim que nossa equipe confirmar o pagamento.',
+      'checkout.lede': 'Você está a um passo. Confirme os detalhes abaixo e continue para o pagamento seguro.',
+      'checkout.included': 'O que está incluído',
+      'checkout.secure': 'Checkout seguro e criptografado',
       'checkout.agreePre': 'Ao continuar, você aceita nossos',
       'checkout.terms': 'Termos e Condições',
       // promo JS feedback
