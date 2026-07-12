@@ -857,6 +857,12 @@
     }
     /* ── ICT umbrella tooltip: hover "ICT General" to see the entry models &
        triggers it already covers (FVG entry, Silver Bullet, Midnight Open…). ── */
+    .approach-hint {
+      margin-top: 12px; padding: 11px 13px; border-radius: 10px;
+      background: rgba(160,107,240,.10); border: 1px solid rgba(160,107,240,.35);
+      color: var(--text); font-size: 12px; line-height: 1.55; text-align: left;
+    }
+    .approach-hint::before { content: '💡 '; }
     .pill.has-tip { position: relative; }
     .pill-tip {
       position: absolute; z-index: 40; left: 0; top: calc(100% + 10px);
@@ -4939,6 +4945,7 @@
           <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;" data-i18n="card.notesHint">(optional — describe how you built this trade)</span>
         </div>
         <textarea name="notes" id="notes" rows="5" data-i18n-ph="notes.placeholder" placeholder="e.g. I was waiting for a sweep of the equal lows at 1.0842 (SSL). Once price swept and I saw a bullish displacement on the 1m, I entered long targeting the FVG above at 1.0875. My OB was the last bearish candle before the displacement..."></textarea>
+        <div id="approach-hint" class="approach-hint" style="display:none;"></div>
       </div>
 
       <div class="error-box" id="error-box"></div>
@@ -6357,6 +6364,8 @@
       'card.required': 'required',
       'card.notes': 'Trade Construction',
       'card.notesHint': '(optional — describe how you built this trade)',
+      'hint.ta': "Heads-up: the AI can see indicators on the image but can't always read exact values or the precise candle a cross/signal landed on. In your Trade Construction above, be specific about the levels and moments your indicators mattered — e.g. 'RSI ~68 with bearish divergence at the swing high; 9/21 EMA crossed down 2 candles before entry at 1.0850' — whether as the confluence you took or the reason the trade may have failed.",
+      'hint.ew': 'Heads-up: so the AI can follow your wave count, describe it in your Trade Construction above — which wave you entered (and its degree), the key fib relationships, and the level that would invalidate the count.',
       'field.instrument': 'Instrument',
       'field.direction': 'Direction',
       'field.session': 'Session',
@@ -6765,6 +6774,8 @@
       'card.required': 'obligatorio',
       'card.notes': 'Construcción del Trade',
       'card.notesHint': '(opcional — describe cómo armaste este trade)',
+      'hint.ta': "Aviso: la IA ve los indicadores en la imagen, pero no siempre puede leer valores exactos ni la vela precisa donde ocurrió un cruce/señal. En tu Construcción del Trade de arriba, sé específico con los niveles y momentos en que tus indicadores influyeron — ej. 'RSI ~68 con divergencia bajista en el máximo; EMA 9/21 cruzó a la baja 2 velas antes de la entrada en 1.0850' — ya sea como la confluencia que tomaste o como el motivo por el que el trade pudo fallar.",
+      'hint.ew': 'Aviso: para que la IA siga tu conteo de ondas, descríbelo en tu Construcción del Trade de arriba — en qué onda entraste (y su grado), las relaciones de fib clave, y el nivel que invalidaría el conteo.',
       'field.instrument': 'Instrumento',
       'field.direction': 'Dirección',
       'field.session': 'Sesión',
@@ -7173,6 +7184,8 @@
       'card.required': 'obligatoire',
       'card.notes': 'Construction du Trade',
       'card.notesHint': '(facultatif — décrivez comment vous avez construit ce trade)',
+      'hint.ta': "Note : l'IA voit les indicateurs sur l'image mais ne peut pas toujours lire les valeurs exactes ni la bougie précise d'un croisement/signal. Dans ta Construction du Trade ci-dessus, sois précis sur les niveaux et moments où tes indicateurs ont compté — ex. 'RSI ~68 avec divergence baissière au sommet ; EMA 9/21 croisée à la baisse 2 bougies avant l'entrée à 1.0850' — que ce soit comme confluence prise ou comme raison de l'échec du trade.",
+      'hint.ew': "Note : pour que l'IA suive ton décompte de vagues, décris-le dans ta Construction du Trade ci-dessus — sur quelle vague tu es entré (et son degré), les relations de fib clés, et le niveau qui invaliderait le décompte.",
       'field.instrument': 'Instrument',
       'field.direction': 'Direction',
       'field.session': 'Session',
@@ -7581,6 +7594,8 @@
       'card.required': 'obrigatório',
       'card.notes': 'Construção do Trade',
       'card.notesHint': '(opcional — descreva como você construiu este trade)',
+      'hint.ta': "Aviso: a IA vê os indicadores na imagem, mas nem sempre consegue ler valores exatos nem a vela precisa onde ocorreu um cruzamento/sinal. Na sua Construção do Trade acima, seja específico sobre os níveis e momentos em que seus indicadores influenciaram — ex. 'RSI ~68 com divergência baixista no topo; EMA 9/21 cruzou para baixo 2 velas antes da entrada em 1.0850' — seja como a confluência que você tomou ou como o motivo pelo qual o trade pode ter falhado.",
+      'hint.ew': 'Aviso: para a IA seguir sua contagem de ondas, descreva-a na sua Construção do Trade acima — em qual onda você entrou (e seu grau), as relações de fib principais, e o nível que invalidaria a contagem.',
       'field.instrument': 'Instrumento',
       'field.direction': 'Direção',
       'field.session': 'Sessão',
@@ -8297,6 +8312,21 @@
   // ── Pill Selection Logic ──
   const selections = {};
 
+  function updateApproachHint(val) {
+    const el = document.getElementById('approach-hint');
+    if (!el) return;
+    const key = { 'Technical Analysis': 'hint.ta', 'Elliott Wave': 'hint.ew' }[val];
+    if (key) {
+      el.setAttribute('data-i18n', key);
+      el.textContent = T(key);
+      el.style.display = '';
+    } else {
+      el.removeAttribute('data-i18n');
+      el.textContent = '';
+      el.style.display = 'none';
+    }
+  }
+
   document.querySelectorAll('.pill-group').forEach(group => {
     const groupName = group.dataset.group;
     const isMulti   = group.dataset.multi === 'true';
@@ -8316,6 +8346,7 @@
           group.querySelectorAll('.pill').forEach(p => p.classList.remove('selected'));
           pill.classList.add('selected');
           selections[groupName] = val;
+          if (groupName === 'approach') updateApproachHint(val);
         }
       });
     });
