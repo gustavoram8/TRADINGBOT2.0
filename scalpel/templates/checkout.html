@@ -49,10 +49,13 @@
     nav { display:flex; align-items:center; justify-content:space-between;
           padding:16px 32px; border-bottom:1px solid var(--line);
           background:var(--nav-bg); position:sticky; top:0; z-index:10; backdrop-filter:blur(10px); }
+    /* Light: true colors (blue "a") via multiply on the neutral nav.
+       Dark: invert like the rest of the site — this is what turns the "a" its
+       intended orange and the text white. (The earlier gold tint was the gold
+       background glow bleeding through a transparent nav; the opaque --nav-bg
+       above fixes that, so the invert here is clean.) */
     .logo-img { height:66px; width:auto; display:block; mix-blend-mode:multiply; }
-    /* Dark mode: don't invert (it would flip the blue "a" to gold). Show the logo
-       in its true colors on a light chip so it stays legible on the dark nav. */
-    body.dark .logo-img { mix-blend-mode:normal; background:#eef1f7; border-radius:10px; padding:5px 10px; }
+    body.dark .logo-img { filter:invert(1); mix-blend-mode:screen; }
     .back-link { font-size:13px; font-weight:600; color:var(--ink-soft); text-decoration:none;
                  padding:8px 16px; border:1px solid var(--line); border-radius:20px; transition:all .15s; }
     .back-link:hover { border-color:var(--gold); color:var(--gold); }
