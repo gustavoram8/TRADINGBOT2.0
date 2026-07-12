@@ -667,6 +667,27 @@ class XPLog(db.Model):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
 
 
+class BugReport(db.Model):
+    """A user-submitted bug report. Kept in the DB (not just email) so nothing is
+    lost and the admin can triage with status + notes. Technical context (page,
+    browser, plan, recent console errors) is captured automatically so a real
+    bug is verifiable without trusting the description — which also makes reports
+    that just fish for a reward easy to dismiss."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    username = db.Column(db.String(40), nullable=True)              # snapshot (survives account changes)
+    kind = db.Column(db.String(20), default='other', nullable=False)  # visual/broken/data/other
+    description = db.Column(db.String(4000), nullable=False)
+    page_url = db.Column(db.String(500), nullable=True)             # auto-captured
+    user_agent = db.Column(db.String(400), nullable=True)          # auto-captured (server-side)
+    plan = db.Column(db.String(20), nullable=True)                 # auto-captured
+    console_log = db.Column(db.Text, nullable=True)                # recent client console errors
+    status = db.Column(db.String(14), default='new', nullable=False)  # new/reviewing/resolved/not_repro
+    admin_note = db.Column(db.String(600), nullable=True)
+    rewarded = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+
+
 class RankCertificate(db.Model):
     """One issued rank certificate per (user, rank). The `code` is the public
     verification id printed on the certificate (and encoded in its QR); the
@@ -1258,6 +1279,38 @@ def _send_contact_email(sender_name, sender_email, category, message):
         socket.setdefaulttimeout(prev_timeout)
 
 
+def _send_bug_email(report):
+    """Notify the admin inbox about a new bug report (best-effort). Returns True
+    if sent. The report is already saved in the DB, so email is only a heads-up."""
+    inbox = app.config.get('MAIL_USERNAME', 'mauroramirezmij@gmail.com')
+    if not app.config.get('MAIL_PASSWORD'):
+        app.logger.warning('MAIL_APP_PASSWORD not set — bug report #%s not emailed.', report.id)
+        return False
+    subject = f'[Trader Accelerator BUG] {report.kind} — #{report.id} ({report.username or "guest"})'
+    body = (
+        f"Bug #{report.id}\n"
+        f"User     : {report.username or '—'} (id {report.user_id}, plan {report.plan or '—'})\n"
+        f"Kind     : {report.kind}\n"
+        f"Page     : {report.page_url or '—'}\n"
+        f"Browser  : {report.user_agent or '—'}\n"
+        f"{'─' * 48}\n\n{report.description}\n\n"
+        f"{'─' * 48}\nRecent console errors:\n{report.console_log or '(none captured)'}\n"
+        f"{'─' * 48}\nReview & triage in the admin panel → Bug Reports."
+    )
+    msg = Message(subject, recipients=[inbox])
+    msg.body = body
+    prev_timeout = socket.getdefaulttimeout()
+    socket.setdefaulttimeout(15)
+    try:
+        mail.send(msg)
+        return True
+    except Exception as exc:
+        app.logger.warning('Failed to send bug email: %s', exc)
+        return False
+    finally:
+        socket.setdefaulttimeout(prev_timeout)
+
+
 def _new_verification_code():
     return f"{secrets.randbelow(1_000_000):06d}"
 
@@ -1837,6 +1890,68 @@ def contact():
                            prefill_email=prefill_email)
 
 
+@app.route('/api/bug/report', methods=['POST'])
+@login_required
+def api_bug_report():
+    """Accept a user bug report. Technical context (page, browser, plan, recent
+    console errors) is captured automatically so the admin can verify a real bug
+    quickly. No reward is promised here — it stays discretionary on review."""
+    data = request.get_json(silent=True) or {}
+    desc = (data.get('description') or '').strip()[:4000]
+    kind = (data.get('kind') or 'other').strip()[:20]
+    if kind not in ('visual', 'broken', 'data', 'other'):
+        kind = 'other'
+    if len(desc) < 8:
+        return jsonify({'ok': False, 'error': 'too_short'}), 200
+    # Anti-spam: cap reports per user per hour.
+    since = datetime.now(timezone.utc) - timedelta(hours=1)
+    recent = BugReport.query.filter(
+        BugReport.user_id == current_user.id,
+        BugReport.created_at >= since).count()
+    if recent >= 5:
+        return jsonify({'ok': False, 'error': 'rate_limited'}), 200
+    report = BugReport(
+        user_id=current_user.id,
+        username=current_user.username,
+        kind=kind, description=desc,
+        page_url=(data.get('url') or '')[:500] or None,
+        user_agent=(request.headers.get('User-Agent') or '')[:400] or None,
+        plan=current_user.plan,
+        console_log=(data.get('console') or '')[:6000] or None,
+        status='new',
+    )
+    db.session.add(report)
+    db.session.commit()
+    record_audit_event('bug_report', user_id=current_user.id,
+                       detail=f'{kind}: {desc[:80]}', success=True)
+    try:
+        _send_bug_email(report)
+    except Exception as e:
+        app.logger.error('bug email failed: %s', e)
+    return jsonify({'ok': True, 'id': report.id})
+
+
+@app.route('/admin/bug/update', methods=['POST'])
+@login_required
+def admin_bug_update():
+    if not current_user.is_admin:
+        abort(403)
+    report = db.session.get(BugReport, int(request.form.get('id', 0)))
+    if not report:
+        abort(404)
+    status = request.form.get('status', '')
+    if status in ('new', 'reviewing', 'resolved', 'not_repro'):
+        report.status = status
+    note = request.form.get('note')
+    if note is not None:
+        report.admin_note = note.strip()[:600] or None
+    rewarded = request.form.get('rewarded')
+    if rewarded is not None:
+        report.rewarded = rewarded == '1'
+    db.session.commit()
+    return redirect(url_for('admin') + '#bugs')
+
+
 @app.route('/app')
 @login_required
 def app_view():
@@ -2379,6 +2494,17 @@ def admin():
     } for a in audit_rows]
     audit_failed_count = sum(1 for a in audit_rows if not a.success)
 
+    # ── Bug reports: newest first, with a badge for untriaged ones ──
+    bug_rows = BugReport.query.order_by(BugReport.created_at.desc()).limit(120).all()
+    bug_reports = [{
+        'id': b.id, 'username': b.username or (uname.get(b.user_id, '—')),
+        'user_id': b.user_id, 'kind': b.kind, 'description': b.description,
+        'page_url': b.page_url, 'user_agent': b.user_agent, 'plan': b.plan,
+        'console_log': b.console_log, 'status': b.status, 'admin_note': b.admin_note,
+        'rewarded': b.rewarded, 'created_at': b.created_at,
+    } for b in bug_rows]
+    bug_new_count = sum(1 for b in bug_rows if b.status == 'new')
+
     ai_ctx = _build_ai_analytics_context()
 
     return render_template(
@@ -2386,6 +2512,7 @@ def admin():
         audit_events=audit_events, audit_failed_count=audit_failed_count,
         warn_counts=warn_counts, recent_warnings=recent_warnings, flagged=flagged,
         ban_queue=ban_queue, demo_active=_admin_demo() is not None,
+        bug_reports=bug_reports, bug_new_count=bug_new_count,
         **ai_ctx, **revenue,
     )
 

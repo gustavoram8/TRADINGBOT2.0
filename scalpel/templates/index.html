@@ -3923,6 +3923,28 @@
     demoLabel: {{ (demo_label or '')|tojson }},
     demoOpen: {{ (demo_open or '')|tojson }}
   };
+
+  // Buffer the last handful of client-side errors so a bug report can carry real
+  // technical context (page + console). Helps verify a genuine bug and makes a
+  // vague "reward-fishing" report easy to spot. No personal data is captured.
+  window.__taErrors = [];
+  (function () {
+    function push(s) {
+      try { window.__taErrors.push(String(s).slice(0, 300));
+            if (window.__taErrors.length > 15) window.__taErrors.shift(); } catch (e) {}
+    }
+    window.addEventListener('error', function (e) {
+      push('[err] ' + (e.message || '') + ' @' + (e.filename || '').split('/').pop() + ':' + (e.lineno || ''));
+    });
+    window.addEventListener('unhandledrejection', function (e) {
+      push('[promise] ' + ((e.reason && e.reason.message) || e.reason || ''));
+    });
+    var _ce = console.error;
+    console.error = function () {
+      push('[console] ' + Array.prototype.map.call(arguments, String).join(' '));
+      try { _ce.apply(console, arguments); } catch (e) {}
+    };
+  })();
 </script>
 
 <script>
@@ -6717,6 +6739,22 @@
       'products.contact': 'Contact & Support',
       'products.settings': 'Settings',
       'support.fab': 'Support',
+      'bug.fab': 'Report a bug',
+      'bug.title': 'Report a bug',
+      'bug.sub': 'Found something off? Tell us what happened. If your report helps us fix a real issue, we may thank you for it.',
+      'bug.kindVisual': 'Something looks wrong',
+      'bug.kindBroken': "Something didn't work",
+      'bug.kindData': 'Lost progress / rank',
+      'bug.kindOther': 'Other',
+      'bug.ph': 'Describe what happened, and what you expected instead…',
+      'bug.ctx': "We'll automatically include your current page and technical details (browser, recent errors) to help us fix it faster — no personal data.",
+      'bug.submit': 'Send report',
+      'bug.thanksTitle': 'Thank you!',
+      'bug.thanksSub': "Your report reached us with the technical details attached. We review every one — if it helps us fix a real issue, we'll be in touch.",
+      'bug.done': 'Done',
+      'bug.errShort': 'Please add a bit more detail (at least a sentence).',
+      'bug.errRate': "You've sent several reports recently — thanks! Please try again in a little while.",
+      'bug.errNet': 'Could not send — check your connection and try again.',
       'synapse.desc': 'An interactive, futuristic trading knowledge base. A holographic mind branches into every major methodology — explore them in 3D.',
       'synapse.sub': 'Click a node to explore its methodology',
       'synapse.loading': 'Initializing neural matrix…',
@@ -7127,6 +7165,22 @@
       'products.contact': 'Contacto y Soporte',
       'products.settings': 'Ajustes',
       'support.fab': 'Soporte',
+      'bug.fab': 'Reportar un error',
+      'bug.title': 'Reportar un error',
+      'bug.sub': '¿Viste algo raro? Cuéntanos qué pasó. Si tu reporte nos ayuda a corregir un problema real, es posible que te lo agradezcamos.',
+      'bug.kindVisual': 'Algo se ve mal',
+      'bug.kindBroken': 'Algo no funcionó',
+      'bug.kindData': 'Perdí progreso / rango',
+      'bug.kindOther': 'Otro',
+      'bug.ph': 'Describe qué pasó y qué esperabas que ocurriera…',
+      'bug.ctx': 'Incluiremos automáticamente tu página actual y detalles técnicos (navegador, errores recientes) para arreglarlo más rápido — sin datos personales.',
+      'bug.submit': 'Enviar reporte',
+      'bug.thanksTitle': '¡Gracias!',
+      'bug.thanksSub': 'Tu reporte nos llegó con los detalles técnicos adjuntos. Revisamos todos — si nos ayuda a corregir un problema real, te contactaremos.',
+      'bug.done': 'Listo',
+      'bug.errShort': 'Añade un poco más de detalle (al menos una frase).',
+      'bug.errRate': 'Enviaste varios reportes hace poco — ¡gracias! Inténtalo de nuevo en un rato.',
+      'bug.errNet': 'No se pudo enviar — revisa tu conexión e inténtalo otra vez.',
       'synapse.desc': 'Una base de conocimiento de trading interactiva y futurista. Una mente holográfica se ramifica hacia cada metodología — explóralas en 3D.',
       'synapse.sub': 'Haz clic en un nodo para explorar su metodología',
       'synapse.loading': 'Inicializando matriz neuronal…',
@@ -7537,6 +7591,22 @@
       'products.contact': 'Contact et Support',
       'products.settings': 'Paramètres',
       'support.fab': 'Support',
+      'bug.fab': 'Signaler un bug',
+      'bug.title': 'Signaler un bug',
+      'bug.sub': 'Quelque chose cloche ? Dites-nous ce qui s’est passé. Si votre signalement nous aide à corriger un vrai problème, il se peut que nous vous en remercions.',
+      'bug.kindVisual': 'Quelque chose s’affiche mal',
+      'bug.kindBroken': 'Quelque chose n’a pas fonctionné',
+      'bug.kindData': 'Progression / rang perdu',
+      'bug.kindOther': 'Autre',
+      'bug.ph': 'Décrivez ce qui s’est passé et ce que vous attendiez…',
+      'bug.ctx': 'Nous inclurons automatiquement votre page actuelle et des détails techniques (navigateur, erreurs récentes) pour corriger plus vite — aucune donnée personnelle.',
+      'bug.submit': 'Envoyer le signalement',
+      'bug.thanksTitle': 'Merci !',
+      'bug.thanksSub': 'Votre signalement nous est parvenu avec les détails techniques. Nous les examinons tous — s’il aide à corriger un vrai problème, nous vous contacterons.',
+      'bug.done': 'Terminé',
+      'bug.errShort': 'Ajoutez un peu plus de détails (au moins une phrase).',
+      'bug.errRate': 'Vous avez envoyé plusieurs signalements récemment — merci ! Réessayez dans un moment.',
+      'bug.errNet': 'Envoi impossible — vérifiez votre connexion et réessayez.',
       'synapse.desc': 'Une base de connaissances de trading interactive et futuriste. Un esprit holographique se ramifie vers chaque méthodologie — explorez-les en 3D.',
       'synapse.sub': 'Cliquez sur un nœud pour explorer sa méthodologie',
       'synapse.loading': 'Initialisation de la matrice neuronale…',
@@ -7947,6 +8017,22 @@
       'products.contact': 'Contato e Suporte',
       'products.settings': 'Configurações',
       'support.fab': 'Suporte',
+      'bug.fab': 'Relatar um erro',
+      'bug.title': 'Relatar um erro',
+      'bug.sub': 'Viu algo estranho? Conte o que aconteceu. Se o seu relato nos ajudar a corrigir um problema real, é possível que a gente agradeça.',
+      'bug.kindVisual': 'Algo está aparecendo errado',
+      'bug.kindBroken': 'Algo não funcionou',
+      'bug.kindData': 'Perdi progresso / rank',
+      'bug.kindOther': 'Outro',
+      'bug.ph': 'Descreva o que aconteceu e o que você esperava…',
+      'bug.ctx': 'Incluiremos automaticamente a sua página atual e detalhes técnicos (navegador, erros recentes) para corrigir mais rápido — sem dados pessoais.',
+      'bug.submit': 'Enviar relato',
+      'bug.thanksTitle': 'Obrigado!',
+      'bug.thanksSub': 'Seu relato chegou com os detalhes técnicos anexados. Revisamos todos — se ajudar a corrigir um problema real, entraremos em contato.',
+      'bug.done': 'Concluído',
+      'bug.errShort': 'Adicione um pouco mais de detalhe (pelo menos uma frase).',
+      'bug.errRate': 'Você enviou vários relatos recentemente — obrigado! Tente novamente daqui a pouco.',
+      'bug.errNet': 'Não foi possível enviar — verifique sua conexão e tente de novo.',
       'synapse.desc': 'Uma base de conhecimento de trading interativa e futurista. Uma mente holográfica se ramifica para cada metodologia — explore-as em 3D.',
       'synapse.sub': 'Clique em um nó para explorar sua metodologia',
       'synapse.loading': 'Inicializando matriz neural…',
@@ -23260,7 +23346,135 @@
   @media (max-width: 600px) {
     .help-fab { bottom: 20px; right: 16px; }
   }
+
+  /* ── Bug-report FAB (stacked above Support) + modal ── */
+  .bug-fab {
+    position: fixed; bottom: 84px; right: 28px; z-index: 9000;
+    display: flex; align-items: center; gap: 0; cursor: pointer; padding: 0;
+    background: var(--surface); color: var(--text); border: 1px solid var(--border2);
+    border-radius: 50px; height: 44px; width: 44px; overflow: hidden; white-space: nowrap;
+    font-family: 'Inter', sans-serif; box-shadow: 0 4px 18px rgba(0,0,0,0.28);
+    transition: width .3s cubic-bezier(.4,0,.2,1), box-shadow .2s ease, background .15s ease;
+  }
+  .bug-fab:hover { width: 168px; box-shadow: 0 6px 28px rgba(0,0,0,0.36); background: var(--surface2, var(--surface)); }
+  .bug-fab-icon { flex-shrink: 0; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .bug-fab-label { font-size: 13px; font-weight: 700; opacity: 0; max-width: 0; overflow: hidden;
+    transition: opacity .2s ease .1s, max-width .3s ease; padding-right: 0; }
+  .bug-fab:hover .bug-fab-label { opacity: 1; max-width: 130px; padding-right: 16px; }
+  .bug-fab.hidden { transform: translateY(150px); pointer-events: none; transition: transform .3s ease; }
+  @media (max-width: 600px) { .bug-fab { bottom: 74px; right: 16px; } }
+
+  .bug-overlay { position: fixed; inset: 0; z-index: 9500; background: rgba(0,0,0,0.6);
+    display: none; align-items: center; justify-content: center; padding: 20px; }
+  .bug-overlay.show { display: flex; }
+  .bug-modal { width: 100%; max-width: 460px; max-height: 90vh; overflow-y: auto; position: relative;
+    background: var(--bg); border: 1px solid var(--border2); border-radius: 16px; padding: 22px 22px 24px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.5); }
+  .bug-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .bug-modal h3 { font-size: 17px; font-weight: 800; margin: 0 0 4px; display: flex; align-items: center; gap: 8px; color: var(--text); }
+  .bug-x { background: none; border: none; color: var(--muted); font-size: 24px; line-height: 1; cursor: pointer; padding: 0 4px; }
+  .bug-sub { font-size: 12.5px; color: var(--muted); margin-bottom: 16px; line-height: 1.55; }
+  .bug-cats { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 13px; }
+  .bug-cat { font-size: 12.5px; font-weight: 600; padding: 7px 12px; border-radius: 20px;
+    border: 1px solid var(--border2); background: transparent; color: var(--text); cursor: pointer; font-family: inherit; }
+  .bug-cat.on { border-color: var(--accent); background: rgba(224,168,61,.14); color: var(--accent); }
+  .bug-ta { width: 100%; min-height: 96px; resize: vertical; padding: 11px 13px; font-family: inherit; font-size: 13.5px;
+    border: 1px solid var(--border2); border-radius: 10px; background: var(--surface); color: var(--text); outline: none; }
+  .bug-ta:focus { border-color: var(--accent); }
+  .bug-ctx { font-size: 11.5px; color: var(--muted); margin: 12px 0 16px; line-height: 1.5; display: flex; gap: 7px; align-items: flex-start; }
+  .bug-ctx svg { width: 14px; height: 14px; flex-shrink: 0; margin-top: 1px; stroke: var(--muted); }
+  .bug-submit { width: 100%; padding: 13px; border: none; border-radius: 11px; font-size: 14.5px; font-weight: 800;
+    cursor: pointer; font-family: inherit; background: var(--accent); color: #1a1300; }
+  .bug-submit:disabled { opacity: .5; cursor: not-allowed; }
+  .bug-msg { font-size: 12.5px; margin-top: 10px; text-align: center; font-weight: 600; display: none; }
+  .bug-msg.err { color: var(--loss); display: block; }
+  .bug-success { text-align: center; padding: 8px 0 4px; }
+  .bug-success .bs-ic { font-size: 42px; margin-bottom: 6px; }
+  .bug-success h3 { justify-content: center; }
 </style>
+
+<button class="bug-fab" id="bug-fab" type="button" aria-label="Report a bug">
+  <span class="bug-fab-icon">🐞</span>
+  <span class="bug-fab-label" data-i18n="bug.fab">Report a bug</span>
+</button>
+
+<div class="bug-overlay" id="bug-overlay" role="dialog" aria-modal="true">
+  <div class="bug-modal">
+    <div class="bug-head">
+      <h3>🐞 <span data-i18n="bug.title">Report a bug</span></h3>
+      <button class="bug-x" id="bug-x" type="button" aria-label="Close">&times;</button>
+    </div>
+    <div id="bug-form">
+      <p class="bug-sub" data-i18n="bug.sub">Found something off? Tell us what happened. If your report helps us fix a real issue, we may thank you for it.</p>
+      <div class="bug-cats" id="bug-cats">
+        <button type="button" class="bug-cat on" data-kind="visual" data-i18n="bug.kindVisual">Something looks wrong</button>
+        <button type="button" class="bug-cat" data-kind="broken" data-i18n="bug.kindBroken">Something didn't work</button>
+        <button type="button" class="bug-cat" data-kind="data" data-i18n="bug.kindData">Lost progress / rank</button>
+        <button type="button" class="bug-cat" data-kind="other" data-i18n="bug.kindOther">Other</button>
+      </div>
+      <textarea class="bug-ta" id="bug-ta" data-i18n-ph="bug.ph" placeholder="Describe what happened, and what you expected instead…" maxlength="4000"></textarea>
+      <div class="bug-ctx">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <span data-i18n="bug.ctx">We'll automatically include your current page and technical details (browser, recent errors) to help us fix it faster — no personal data.</span>
+      </div>
+      <button class="bug-submit" id="bug-submit" type="button" data-i18n="bug.submit">Send report</button>
+      <div class="bug-msg" id="bug-msg"></div>
+    </div>
+    <div class="bug-success" id="bug-success" style="display:none;">
+      <div class="bs-ic">✅</div>
+      <h3 data-i18n="bug.thanksTitle">Thank you!</h3>
+      <p class="bug-sub" style="text-align:center;" data-i18n="bug.thanksSub">Your report reached us with the technical details attached. We review every one — if it helps us fix a real issue, we'll be in touch.</p>
+      <button class="bug-submit" id="bug-done" type="button" style="max-width:170px;margin:8px auto 0;" data-i18n="bug.done">Done</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var fab = document.getElementById('bug-fab'), ov = document.getElementById('bug-overlay');
+    if (!fab || !ov) return;
+    var cats = document.getElementById('bug-cats'), ta = document.getElementById('bug-ta');
+    var submit = document.getElementById('bug-submit'), msg = document.getElementById('bug-msg');
+    var form = document.getElementById('bug-form'), success = document.getElementById('bug-success');
+    var kind = 'visual';
+    function tr(k, fb) { try { return (typeof T === 'function' && T(k)) || fb; } catch (e) { return fb; } }
+    function open() { ov.classList.add('show'); form.style.display = ''; success.style.display = 'none';
+      msg.style.display = 'none'; ta.value = ''; setTimeout(function () { ta.focus(); }, 50); }
+    function close() { ov.classList.remove('show'); }
+    fab.addEventListener('click', open);
+    document.getElementById('bug-x').addEventListener('click', close);
+    document.getElementById('bug-done').addEventListener('click', close);
+    ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
+    cats.addEventListener('click', function (e) {
+      var b = e.target.closest('.bug-cat'); if (!b) return;
+      cats.querySelectorAll('.bug-cat').forEach(function (c) { c.classList.remove('on'); });
+      b.classList.add('on'); kind = b.dataset.kind;
+    });
+    submit.addEventListener('click', function () {
+      var desc = (ta.value || '').trim();
+      if (desc.length < 8) { msg.className = 'bug-msg err';
+        msg.textContent = tr('bug.errShort', 'Please add a bit more detail (at least a sentence).');
+        msg.style.display = 'block'; return; }
+      submit.disabled = true; msg.style.display = 'none';
+      fetch('/api/bug/report', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ kind: kind, description: desc, url: location.href,
+          console: (window.__taErrors || []).join('\n') }) })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          submit.disabled = false;
+          if (d.ok) { form.style.display = 'none'; success.style.display = ''; }
+          else { msg.className = 'bug-msg err';
+            msg.textContent = d.error === 'rate_limited'
+              ? tr('bug.errRate', "You've sent several reports recently — thanks! Please try again in a little while.")
+              : tr('bug.errShort', 'Please add a bit more detail (at least a sentence).');
+            msg.style.display = 'block'; }
+        })
+        .catch(function () { submit.disabled = false; msg.className = 'bug-msg err';
+          msg.textContent = tr('bug.errNet', 'Could not send — check your connection and try again.');
+          msg.style.display = 'block'; });
+    });
+  })();
+</script>
 
 <a href="/contact" class="help-fab" id="help-fab" aria-label="Contact Support">
   <span class="help-fab-icon">

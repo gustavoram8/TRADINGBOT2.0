@@ -765,6 +765,68 @@
       <div class="empty">No audit events yet.</div>
       {% endfor %}
     </div>
+
+    <style>
+      .bug-adm { border:1px solid var(--border2); border-radius:12px; padding:14px 16px; margin-bottom:12px; background:var(--surface); }
+      .bug-adm.new { border-color:#e0a83d; }
+      .bbadge { display:inline-block; font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:.04em;
+                padding:2px 8px; border-radius:10px; margin-right:5px; border:1px solid var(--border2); color:var(--muted); }
+      .bbadge.st-new { color:#e0a83d; border-color:#e0a83d; }
+      .bbadge.st-reviewing { color:#5b8ef0; border-color:#5b8ef0; }
+      .bbadge.st-resolved { color:#46d08a; border-color:#46d08a; }
+      .bbadge.st-not_repro { color:#8a8f9e; }
+      .bbadge.rew { color:#46d08a; border-color:#46d08a; }
+      .bug-adm pre { background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:8px 10px; margin-top:6px; overflow-x:auto; }
+      .bug-adm select, .bug-adm input[type=text] { background:var(--bg); color:var(--text); border:1px solid var(--border2); border-radius:8px; padding:7px 10px; font-family:inherit; font-size:13px; }
+      .bug-adm form { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; align-items:center; }
+    </style>
+
+    <div class="section-h" id="bugs">🐞 Bug Reports{% if bug_new_count %} <span class="bbadge st-new">{{ bug_new_count }} new</span>{% endif %}</div>
+    <div class="section-d">
+      User-submitted reports with auto-captured technical context (page, browser, plan, recent console
+      errors). Verify a genuine bug from the console log / page before acting — vague reports with no
+      technical trace are easy to set <em>not reproducible</em>. Rewards are discretionary: tick
+      "rewarded" only after you actually grant a coupon / spin / XP. Nothing is promised to the user, so
+      a non-reproducible report never needs a refusal.
+    </div>
+
+    <div class="table-card">
+      {% for b in bug_reports %}
+      <div class="bug-adm {{ 'new' if b.status == 'new' else '' }}">
+        <div style="display:flex; justify-content:space-between; gap:10px; align-items:baseline;">
+          <div>
+            <span class="bbadge">{{ b.kind }}</span>
+            <span class="bbadge st-{{ b.status }}">{{ b.status.replace('_',' ') }}</span>
+            {% if b.rewarded %}<span class="bbadge rew">rewarded</span>{% endif %}
+            <strong>{{ b.username }}</strong> <span style="color:var(--muted);">· {{ b.plan or '—' }}</span>
+          </div>
+          <span class="warn-time">{{ b.created_at.strftime('%Y-%m-%d %H:%M') if b.created_at else '' }}</span>
+        </div>
+        <div style="margin:8px 0; white-space:pre-wrap;">{{ b.description }}</div>
+        <div style="font-size:12px; color:var(--muted); line-height:1.6;">
+          {% if b.page_url %}<div>Page: {{ b.page_url }}</div>{% endif %}
+          {% if b.user_agent %}<div>Browser: {{ b.user_agent }}</div>{% endif %}
+          {% if b.console_log %}<details><summary style="cursor:pointer;">Console errors</summary><pre>{{ b.console_log }}</pre></details>{% endif %}
+        </div>
+        <form method="POST" action="/admin/bug/update">
+          <input type="hidden" name="id" value="{{ b.id }}">
+          <select name="status">
+            <option value="new"       {{ 'selected' if b.status == 'new' else '' }}>new</option>
+            <option value="reviewing" {{ 'selected' if b.status == 'reviewing' else '' }}>reviewing</option>
+            <option value="resolved"  {{ 'selected' if b.status == 'resolved' else '' }}>resolved</option>
+            <option value="not_repro" {{ 'selected' if b.status == 'not_repro' else '' }}>not reproducible</option>
+          </select>
+          <label style="font-size:12px; display:flex; align-items:center; gap:5px;">
+            <input type="checkbox" name="rewarded" value="1" {{ 'checked' if b.rewarded else '' }}> rewarded
+          </label>
+          <input type="text" name="note" value="{{ b.admin_note or '' }}" placeholder="internal note" style="flex:1; min-width:150px;">
+          <button class="demo-btn" type="submit">Save</button>
+        </form>
+      </div>
+      {% else %}
+      <div class="empty">No bug reports yet.</div>
+      {% endfor %}
+    </div>
   </div>
 </body>
 </html>
