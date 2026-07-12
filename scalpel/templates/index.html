@@ -5216,6 +5216,9 @@
     .disc-sec-badge{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:4px 12px;border-radius:20px;}
     .disc-sec-badge.prem{border:1px solid var(--accent);color:var(--accent);background:rgba(224,168,61,.12);}
     .disc-sec-badge.std{border:1px solid #5b8ef0;color:#5b8ef0;background:rgba(91,142,240,.12);}
+    .disc-sec-badge.extras{border:1px solid var(--border2);color:var(--muted);background:var(--surface);}
+    .disc-soon{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+      padding:1px 6px;border-radius:8px;border:1px solid var(--border2);color:var(--muted);margin-left:5px;vertical-align:middle;}
     .disc-sec-label{font-size:13px;color:var(--muted);font-weight:600;}
     .disc-fp .ico{font-size:22px;line-height:1;}
     .disc-fp .ttl{display:block;font-size:13.5px;font-weight:800;color:var(--text);margin-top:6px;}
@@ -5229,8 +5232,8 @@
       <h1 class="disc-h1"><span data-i18n="disc.titleA">Mira lo que</span> <span class="disc-g" data-i18n="disc.titleB">incluye subir de plan</span></h1>
       <p class="disc-lede" data-i18n="disc.lede">Rasca el panel para ver una vista previa de las herramientas y funciones que incluye cada plan. Lo que reveles se queda a la vista.</p>
 
-      <!-- ── STANDARD section ── -->
-      <div class="disc-sec">
+      <!-- ── STANDARD section (shown only to Free users) ── -->
+      <div class="disc-sec" data-plan="std">
         <div class="disc-sec-head"><span class="disc-sec-badge std">Standard</span><span class="disc-sec-label" data-i18n="disc.sec.std">Todo lo del plan Free, y además:</span></div>
         <div class="disc-board">
           <div class="disc-sharp">
@@ -5246,6 +5249,11 @@
               <span class="ttl" data-i18n="disc.f.projects">Proyectos de análisis</span>
               <span class="dsc" data-i18n="disc.f.projectsD">Guarda hasta 5 configuraciones de tu estrategia y reúsalas en un clic (Free: 1).</span>
             </div>
+            <div class="disc-fp">
+              <span class="ico">🎨</span>
+              <span class="ttl"><span data-i18n="disc.f.camoStd">1 camo del plan Standard</span> <span class="disc-soon" data-i18n="disc.soon">Próximamente</span></span>
+              <span class="dsc" data-i18n="disc.f.camoStdD">Un skin exclusivo para personalizar tu workspace, incluido al contratar Standard.</span>
+            </div>
           </div>
           <div class="disc-pct"></div>
           <canvas class="disc-coat"></canvas>
@@ -5254,7 +5262,7 @@
       </div>
 
       <!-- ── PREMIUM section ── -->
-      <div class="disc-sec">
+      <div class="disc-sec" data-plan="prem">
         <div class="disc-sec-head"><span class="disc-sec-badge prem">Premium</span><span class="disc-sec-label" data-i18n="disc.sec.prem">Todo lo de Standard, y además todas las herramientas:</span></div>
         <div class="disc-board">
           <div class="disc-sharp">
@@ -5296,6 +5304,33 @@
               <span class="ico">🧠</span>
               <span class="ttl" data-i18n="disc.f.synapse">Synapse 3D</span>
               <span class="dsc" data-i18n="disc.f.synapseD">Una base de conocimiento 3D interactiva de todas las metodologías.</span>
+            </div>
+            <div class="disc-fp">
+              <span class="ico">🎨</span>
+              <span class="ttl"><span data-i18n="disc.f.camoPrem">1 camo del plan Premium</span> <span class="disc-soon" data-i18n="disc.soon">Próximamente</span></span>
+              <span class="dsc" data-i18n="disc.f.camoPremD">Un skin exclusivo del plan Premium para personalizar tu workspace, incluido al contratar.</span>
+            </div>
+          </div>
+          <div class="disc-pct"></div>
+          <canvas class="disc-coat"></canvas>
+          <div class="disc-lens"></div>
+        </div>
+      </div>
+
+      <!-- ── EXTRAS section (separate purchases, any plan) ── -->
+      <div class="disc-sec" data-plan="extras">
+        <div class="disc-sec-head"><span class="disc-sec-badge extras">Extras</span><span class="disc-sec-label" data-i18n="disc.sec.extras">Compras aparte, disponibles con cualquier plan:</span></div>
+        <div class="disc-board">
+          <div class="disc-sharp">
+            <div class="disc-fp">
+              <span class="ico">🎨</span>
+              <span class="ttl"><span data-i18n="disc.f.camos">Tienda de camos (skins)</span> <span class="disc-soon" data-i18n="disc.soon">Próximamente</span></span>
+              <span class="dsc" data-i18n="disc.f.camosD">Personaliza por completo el aspecto de tu workspace con skins visuales, comprables por separado.</span>
+            </div>
+            <div class="disc-fp">
+              <span class="ico">📚</span>
+              <span class="ttl" data-i18n="disc.f.spdf">PDF de la biblioteca Synapse</span>
+              <span class="dsc" data-i18n="disc.f.spdfD">Toda la biblioteca de Synapse en un PDF descargable — disponible como compra aparte.</span>
             </div>
           </div>
           <div class="disc-pct"></div>
@@ -5370,6 +5405,8 @@
       var tt=document.getElementById('theme-toggle'); if(tt) tt.addEventListener('click',function(){ setTimeout(function(){ if(isOpen()) paintAll(); },40); });
       var ls=document.getElementById('lang-select'); if(ls) ls.addEventListener('change',function(){ setTimeout(function(){ if(isOpen()) paintAll(); },0); });
       var u=window.SCALPEL_USER||{}; if(u.plan!=='premium'){ var t=document.getElementById('tab-discover'); if(t) t.style.display=''; }
+      // Standard users already have the Standard tier — only show what's still locked for them.
+      if(u.plan!=='free'){ var ss=document.querySelector('#discover-view .disc-sec[data-plan="std"]'); if(ss) ss.style.display='none'; }
     }
     init();
     return { open:function(){ setTimeout(paintAll,40); }, relang:function(){ if(isOpen()) paintAll(); } };
@@ -6692,7 +6729,7 @@
       'disc.titleB': 'upgrading unlocks',
       'disc.lede': 'Scratch the panel to preview the tools and features each plan includes. Whatever you reveal stays visible.',
       'disc.locked': 'Locked features',
-      'disc.scratchHere': 'Scratch here to preview what Standard and Premium include',
+      'disc.scratchHere': 'Scratch here to preview what this includes',
       'disc.pct': 'Scratched',
       'disc.revealed': 'All set ✨',
       'disc.hint': '✨ Scratch the panel to preview the features',
@@ -6714,6 +6751,16 @@
       'disc.f.synapseD': 'An interactive 3D knowledge base of every methodology.',
       'disc.sec.std': 'Everything in Free, plus:',
       'disc.sec.prem': 'Everything in Standard, plus all the tools:',
+      'disc.sec.extras': 'Separate purchases, available on any plan:',
+      'disc.soon': 'Coming soon',
+      'disc.f.camoStd': '1 Standard-plan camo',
+      'disc.f.camoStdD': 'An exclusive skin to personalize your workspace, included with Standard.',
+      'disc.f.camoPrem': '1 Premium-plan camo',
+      'disc.f.camoPremD': 'An exclusive Premium skin to personalize your workspace, included when you subscribe.',
+      'disc.f.camos': 'Camo (skin) store',
+      'disc.f.camosD': 'Fully restyle your workspace with visual skins, purchased separately.',
+      'disc.f.spdf': 'Synapse library PDF',
+      'disc.f.spdfD': 'The whole Synapse library as a downloadable PDF — available as a separate purchase.',
       'disc.f.bull': 'Bullish',
       'disc.f.an1': 'The sweep before the FVG matches your bullish HTF bias.',
       'disc.f.an2': 'Entry at the OB sits in discount — consistent with the model.',
@@ -7159,7 +7206,7 @@
       'disc.titleB': 'incluye subir de plan',
       'disc.lede': 'Rasca el panel para ver una vista previa de las herramientas y funciones que incluye cada plan. Lo que reveles se queda a la vista.',
       'disc.locked': 'Funciones bloqueadas',
-      'disc.scratchHere': 'Rasca aquí para ver qué incluyen Standard y Premium',
+      'disc.scratchHere': 'Rasca aquí para ver qué incluye',
       'disc.pct': 'Rascado',
       'disc.revealed': 'Todo a la vista ✨',
       'disc.hint': '✨ Rasca el panel para ver las funciones',
@@ -7181,6 +7228,16 @@
       'disc.f.synapseD': 'Una base de conocimiento 3D interactiva de todas las metodologías.',
       'disc.sec.std': 'Todo lo del plan Free, y además:',
       'disc.sec.prem': 'Todo lo de Standard, y además todas las herramientas:',
+      'disc.sec.extras': 'Compras aparte, disponibles con cualquier plan:',
+      'disc.soon': 'Próximamente',
+      'disc.f.camoStd': '1 camo del plan Standard',
+      'disc.f.camoStdD': 'Un skin exclusivo para personalizar tu workspace, incluido al contratar Standard.',
+      'disc.f.camoPrem': '1 camo del plan Premium',
+      'disc.f.camoPremD': 'Un skin exclusivo del plan Premium para personalizar tu workspace, incluido al contratar.',
+      'disc.f.camos': 'Tienda de camos (skins)',
+      'disc.f.camosD': 'Personaliza por completo el aspecto de tu workspace con skins visuales, comprables por separado.',
+      'disc.f.spdf': 'PDF de la biblioteca Synapse',
+      'disc.f.spdfD': 'Toda la biblioteca de Synapse en un PDF descargable — disponible como compra aparte.',
       'disc.f.bull': 'Alcista',
       'disc.f.an1': 'El barrido previo al FVG encaja con tu sesgo alcista HTF.',
       'disc.f.an2': 'Entrada en el OB en descuento — coherente con el modelo.',
@@ -7626,7 +7683,7 @@
       'disc.titleB': 'débloque une mise à niveau',
       'disc.lede': 'Grattez le panneau pour prévisualiser les outils et fonctions de chaque formule. Ce que vous révélez reste visible.',
       'disc.locked': 'Fonctions verrouillées',
-      'disc.scratchHere': 'Grattez ici pour voir ce qu’incluent Standard et Premium',
+      'disc.scratchHere': 'Grattez ici pour voir ce que cela inclut',
       'disc.pct': 'Gratté',
       'disc.revealed': 'Tout est visible ✨',
       'disc.hint': '✨ Grattez le panneau pour voir les fonctions',
@@ -7648,6 +7705,16 @@
       'disc.f.synapseD': 'Une base de connaissances 3D interactive de toutes les méthodologies.',
       'disc.sec.std': 'Tout ce qui est inclus dans Free, et en plus :',
       'disc.sec.prem': 'Tout ce qui est inclus dans Standard, et tous les outils :',
+      'disc.sec.extras': 'Achats séparés, disponibles avec toute formule :',
+      'disc.soon': 'Bientôt',
+      'disc.f.camoStd': '1 camo de la formule Standard',
+      'disc.f.camoStdD': 'Un skin exclusif pour personnaliser votre espace, inclus avec Standard.',
+      'disc.f.camoPrem': '1 camo de la formule Premium',
+      'disc.f.camoPremD': 'Un skin exclusif Premium pour personnaliser votre espace, inclus à la souscription.',
+      'disc.f.camos': 'Boutique de camos (skins)',
+      'disc.f.camosD': 'Restylisez entièrement votre espace avec des skins visuels, achetés séparément.',
+      'disc.f.spdf': 'PDF de la bibliothèque Synapse',
+      'disc.f.spdfD': 'Toute la bibliothèque Synapse en PDF téléchargeable — disponible en achat séparé.',
       'disc.f.bull': 'Haussier',
       'disc.f.an1': 'Le balayage avant le FVG correspond à votre biais haussier HTF.',
       'disc.f.an2': 'Entrée à l’OB en décote — cohérent avec le modèle.',
@@ -8093,7 +8160,7 @@
       'disc.titleB': 'subir de plano libera',
       'disc.lede': 'Raspe o painel para ver uma prévia das ferramentas e funções que cada plano inclui. O que você revelar continua visível.',
       'disc.locked': 'Funções bloqueadas',
-      'disc.scratchHere': 'Raspe aqui para ver o que Standard e Premium incluem',
+      'disc.scratchHere': 'Raspe aqui para ver o que isto inclui',
       'disc.pct': 'Raspado',
       'disc.revealed': 'Tudo à vista ✨',
       'disc.hint': '✨ Raspe o painel para ver as funções',
@@ -8115,6 +8182,16 @@
       'disc.f.synapseD': 'Uma base de conhecimento 3D interativa de todas as metodologias.',
       'disc.sec.std': 'Tudo do plano Free, e além disso:',
       'disc.sec.prem': 'Tudo do Standard, e além disso todas as ferramentas:',
+      'disc.sec.extras': 'Compras à parte, disponíveis em qualquer plano:',
+      'disc.soon': 'Em breve',
+      'disc.f.camoStd': '1 camo do plano Standard',
+      'disc.f.camoStdD': 'Um skin exclusivo para personalizar seu workspace, incluído ao assinar Standard.',
+      'disc.f.camoPrem': '1 camo do plano Premium',
+      'disc.f.camoPremD': 'Um skin exclusivo do plano Premium para personalizar seu workspace, incluído ao assinar.',
+      'disc.f.camos': 'Loja de camos (skins)',
+      'disc.f.camosD': 'Personalize totalmente o visual do seu workspace com skins, comprados à parte.',
+      'disc.f.spdf': 'PDF da biblioteca Synapse',
+      'disc.f.spdfD': 'Toda a biblioteca do Synapse em um PDF para download — disponível como compra à parte.',
       'disc.f.bull': 'Altista',
       'disc.f.an1': 'A varredura antes do FVG combina com seu viés altista HTF.',
       'disc.f.an2': 'Entrada no OB em desconto — coerente com o modelo.',
