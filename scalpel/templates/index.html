@@ -424,7 +424,10 @@
       top: 42px;
       right: 0;
       min-width: 190px;
-      background: var(--card);
+      /* OPAQUE — var(--card) is only ~5% opaque in dark mode, so the Setup-summary
+         text behind it bled through ("color war"). A solid surface keeps the menu
+         readable in both themes. */
+      background: #17181F;
       border: 1px solid var(--border2);
       border-radius: 10px;
       box-shadow: 0 14px 36px rgba(0,0,0,0.35);
@@ -432,7 +435,7 @@
       display: none;
       z-index: 50;
     }
-    body.light .account-menu { box-shadow: 0 14px 36px rgba(20,23,31,0.12); }
+    body.light .account-menu { background: #FFFFFF; box-shadow: 0 14px 36px rgba(20,23,31,0.12); }
     .account-menu.show { display: block; }
     .account-menu .row {
       display: flex;
@@ -23307,7 +23310,11 @@
   .ag-sidebar .tab .lock{ width:15px; height:15px; opacity:.6; }
   /* Account panel lives at the TOP of the right rail (identity/plan/rank),
      so the left-sidebar Products dropdown no longer collides with it. */
-  .ag-rail .account{ width:100%; }
+  /* Lift the account (and its open dropdown) above the sibling .ag-card panels
+     below it — each ag-card has backdrop-filter, which makes it a stacking
+     context that would otherwise paint over the menu (collides with Setup
+     summary). A positive z-index on the positioned .account wins over them. */
+  .ag-rail .account{ width:100%; position:relative; z-index:100; }
   .ag-rail .account-btn{ width:100%; height:auto; padding:14px 16px; border-radius:var(--radius);
     background:var(--card); border:1px solid var(--border);
     box-shadow:0 16px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08);
