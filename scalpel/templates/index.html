@@ -23394,14 +23394,14 @@
 </style>
 
 <button class="bug-fab" id="bug-fab" type="button" aria-label="Report a bug">
-  <span class="bug-fab-icon">🐞</span>
+  <span class="bug-fab-icon">🛠️</span>
   <span class="bug-fab-label" data-i18n="bug.fab">Report a bug</span>
 </button>
 
 <div class="bug-overlay" id="bug-overlay" role="dialog" aria-modal="true">
   <div class="bug-modal">
     <div class="bug-head">
-      <h3>🐞 <span data-i18n="bug.title">Report a bug</span></h3>
+      <h3>🛠️ <span data-i18n="bug.title">Report a bug</span></h3>
       <button class="bug-x" id="bug-x" type="button" aria-label="Close">&times;</button>
     </div>
     <div id="bug-form">
@@ -23433,6 +23433,21 @@
   (function () {
     var fab = document.getElementById('bug-fab'), ov = document.getElementById('bug-overlay');
     if (!fab || !ov) return;
+    // This block is parsed AFTER the initial applyLanguage() ran (it's near the
+    // end of the page), so the FAB/modal missed that first pass. Translate them
+    // now, and re-translate on any later language change.
+    function localize() {
+      try {
+        if (typeof T !== 'function') return;
+        [fab, ov].forEach(function (root) {
+          root.querySelectorAll('[data-i18n]').forEach(function (el) { el.textContent = T(el.getAttribute('data-i18n')); });
+          root.querySelectorAll('[data-i18n-ph]').forEach(function (el) { el.setAttribute('placeholder', T(el.getAttribute('data-i18n-ph'))); });
+        });
+      } catch (e) {}
+    }
+    localize();
+    var langSel = document.getElementById('lang-select');
+    if (langSel) langSel.addEventListener('change', function () { setTimeout(localize, 0); });
     var cats = document.getElementById('bug-cats'), ta = document.getElementById('bug-ta');
     var submit = document.getElementById('bug-submit'), msg = document.getElementById('bug-msg');
     var form = document.getElementById('bug-form'), success = document.getElementById('bug-success');
