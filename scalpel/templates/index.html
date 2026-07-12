@@ -871,9 +871,12 @@
     .pill-tip {
       position: absolute; z-index: 40; left: 0; top: calc(100% + 10px);
       width: min(360px, 80vw);
-      background: var(--card); color: var(--text);
+      /* OPAQUE background — var(--card) is only 5% opaque in dark mode, which let
+         the bright "Confluences" heading behind bleed through and wash out the
+         softer tooltip text. A solid surface keeps the text readable in both themes. */
+      background: #17181F; color: var(--text);
       border: 1px solid #A06BF0; border-radius: 12px; padding: 12px 13px;
-      box-shadow: 0 12px 34px rgba(0,0,0,.30);
+      box-shadow: 0 12px 34px rgba(0,0,0,.45);
       opacity: 0; visibility: hidden; transform: translateY(-4px);
       transition: opacity .14s ease, transform .14s ease, visibility .14s;
       pointer-events: none; text-align: left; cursor: default;
@@ -894,6 +897,9 @@
     }
     .pill-tip-note { display: block; margin-top: 9px; font-size: 10.5px; line-height: 1.4;
       color: var(--muted); font-style: italic; letter-spacing: 0; text-transform: none; }
+
+    body.light .pill-tip { background: #FFFFFF; box-shadow: 0 12px 30px rgba(20,30,60,.20); }
+    body.light .pill-tip::before { border-bottom-color: #A06BF0; }
 
     body.light .pill-group:not([data-group="instrument"]) .pill.selected {
       box-shadow: 0 2px 6px -2px var(--grp);
@@ -8331,6 +8337,43 @@
     }
   }
 
+  // ── Confluences depend on the chosen Approach / Model ──
+  // Trading jargon stays in English site-wide (same as the original confluence
+  // pills), so these are not translated. Each set lists the confluences that
+  // actually make sense to tag for that methodology.
+  const CONFLUENCE_SETS = {
+    'ICT General':    ['Liquidity Sweep','FVG','Kill Zone','PDH/PDL','EQH/EQL','CHoCH/BOS','HTF Structure','Order Block','Breaker Block','Displacement','Inducement','Premium/Discount','SMT Divergence'],
+    'OTE / Std Dev':  ['OTE Zone (0.62–0.79)','Equilibrium (0.5)','Std Dev Projection','Manipulation Leg','Liquidity Sweep','HTF Trendline','Stacked FVGs','BOS / MSS','Fib Confluence','Premium/Discount'],
+    'Wyckoff':        ['Accumulation','Distribution','Spring','Upthrust / UTAD','Secondary Test','SOS / SOW','LPS / LPSY','Creek / Jump','Automatic Rally','Phase A–E','Effort vs Result','Volume Climax'],
+    'Chart Patterns': ['Head & Shoulders','Double Top / Bottom','Triangle','Wedge','Flag / Pennant','Cup & Handle','Channel','Rounding / Diamond','Breakout Retest','Neckline','Engulfing','Morning / Evening Star','Hammer / Doji'],
+    'Harmonic':       ['Gartley','Bat','Crab','Butterfly','Cypher','Shark','ABCD','Three Drives','PRZ','Fib Confluence','B-point Ratio'],
+    'Elliott Wave':   ['Impulse (1-5)','ABC Correction','Wave 3 Extension','Zigzag','Flat','Triangle','Diagonal','Fib Wave Ratio','Alternation','Wave 2 Retrace','Truncation'],
+    'Technical Analysis': ['RSI','MACD','Moving Average Cross','Bollinger Bands','Stochastic','VWAP','VPVR / Volume Profile','Volume Spike','Ichimoku','Divergence','Support / Resistance','Trendline'],
+  };
+
+  // Rebuild the confluences pill-group for the given approach. Selections are
+  // reset because a confluence from another methodology no longer applies.
+  function updateConfluences(approachVal) {
+    const group = document.querySelector('.pill-group[data-group="confluences"]');
+    if (!group) return;
+    const list = CONFLUENCE_SETS[approachVal] || CONFLUENCE_SETS['ICT General'];
+    group.innerHTML = '';
+    selections['confluences'] = [];
+    list.forEach(val => {
+      const pill = document.createElement('div');
+      pill.className = 'pill';
+      pill.dataset.value = val;
+      pill.textContent = val;
+      pill.addEventListener('click', () => {
+        pill.classList.toggle('selected');
+        const arr = selections['confluences'];
+        const idx = arr.indexOf(val);
+        if (idx === -1) arr.push(val); else arr.splice(idx, 1);
+      });
+      group.appendChild(pill);
+    });
+  }
+
   document.querySelectorAll('.pill-group').forEach(group => {
     const groupName = group.dataset.group;
     const isMulti   = group.dataset.multi === 'true';
@@ -8350,11 +8393,14 @@
           group.querySelectorAll('.pill').forEach(p => p.classList.remove('selected'));
           pill.classList.add('selected');
           selections[groupName] = val;
-          if (groupName === 'approach') updateApproachHint(val);
+          if (groupName === 'approach') { updateApproachHint(val); updateConfluences(val); }
         }
       });
     });
   });
+
+  // Normalize the confluences to the ICT set on load (single source of truth).
+  updateConfluences('ICT General');
 
   // ── Screenshot Upload ──
   const uploadZone   = document.getElementById('upload-zone');
@@ -8650,6 +8696,9 @@
           selections[g] = Array.from(set);
         } else {
           const val = typeof cfg[g] === 'string' ? cfg[g] : null;
+          // Approach drives the confluence set — rebuild it BEFORE the loop
+          // reaches the confluences group (approach precedes it in the DOM).
+          if (g === 'approach') { updateConfluences(val); updateApproachHint(val); }
           group.querySelectorAll('.pill').forEach(p => p.classList.toggle('selected', p.dataset.value === val));
           selections[g] = val;
         }
