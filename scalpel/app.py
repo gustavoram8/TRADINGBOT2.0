@@ -3089,6 +3089,38 @@ def admin_set_plan():
     return redirect(url_for('admin'))
 
 
+def _recompute_user_rank(user):
+    """Rebuild a user's XP + rank from the append-only XPLog ledger — the recovery
+    path when the cached user.xp/user.rank get corrupted (e.g. a bug zeroes them).
+    The ledger is the source of truth, so summing it restores the exact lifetime
+    XP, and rank is a pure function of that. Seals rank_celebrated to the restored
+    rank so the recovery doesn't replay rank-up reveals. Returns (old, new)."""
+    old = (user.xp or 0, user.rank or 1)
+    total = int(db.session.query(db.func.coalesce(db.func.sum(XPLog.amount), 0))
+                .filter(XPLog.user_id == user.id).scalar() or 0)
+    user.xp = total
+    user.rank = rank_for_xp(total)
+    user.rank_celebrated = user.rank
+    db.session.commit()
+    return old, (user.xp, user.rank)
+
+
+@app.route('/admin/user/recompute-rank', methods=['POST'])
+@login_required
+def admin_recompute_rank():
+    """Restore a user's rank/XP from the XPLog ledger (one-click recovery)."""
+    if not current_user.is_admin:
+        abort(403)
+    user = db.session.get(User, int(request.form.get('user_id', 0)))
+    if not user:
+        abort(404)
+    old, new = _recompute_user_rank(user)
+    record_audit_event('rank_recompute', user_id=user.id,
+                       detail=f'xp {old[0]}->{new[0]}, rank {old[1]}->{new[1]}',
+                       success=True)
+    return redirect(url_for('admin'))
+
+
 @app.route('/admin/demo/set', methods=['POST'])
 @login_required
 def admin_demo_set():

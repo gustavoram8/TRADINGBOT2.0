@@ -171,6 +171,10 @@
       font-weight: 700; padding: 1px 7px; border-radius: 12px; }
     .unban-btn { background: transparent; border: 1px solid rgba(224,90,70,0.4); color: #e05a46;
       font-size: 11px; padding: 3px 9px; border-radius: 6px; cursor: pointer; font-family: inherit; }
+    .recompute-btn { background: transparent; border: 1px solid var(--border2); color: var(--text);
+      font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: 7px; cursor: pointer;
+      font-family: inherit; white-space: nowrap; transition: border-color .15s, color .15s; }
+    .recompute-btn:hover { border-color: #46d08a; color: #46d08a; }
     @media (max-width: 640px) { .stats { grid-template-columns: repeat(2,1fr); } .u-email { display:none; } }
 
     /* ── Finance dashboard ── */
@@ -310,6 +314,7 @@
             <th>Plan</th>
             <th>Joined</th>
             <th>Set plan</th>
+            <th>Rank</th>
           </tr>
         </thead>
         <tbody>
@@ -344,9 +349,17 @@
                 </div>
               {% endif %}
             </td>
+            <td>
+              <div style="font-size:12px; color:var(--muted); margin-bottom:5px; white-space:nowrap;">Rank {{ u.rank }} · {{ u.xp }} XP</div>
+              <form method="POST" action="/admin/user/recompute-rank" style="display:inline;"
+                    onsubmit="return confirm('Recompute {{ u.username }}\'s rank &amp; XP from the append-only XP ledger?\n\nUse this to recover a corrupted/wiped rank — it restores the exact lifetime XP from the ledger and does not replay rank-up reveals.');">
+                <input type="hidden" name="user_id" value="{{ u.id }}" />
+                <button type="submit" class="recompute-btn" title="Restore rank/XP from the XP ledger (recovery)">↻ Recompute</button>
+              </form>
+            </td>
           </tr>
           {% else %}
-          <tr><td colspan="4" class="empty">No users yet.</td></tr>
+          <tr><td colspan="5" class="empty">No users yet.</td></tr>
           {% endfor %}
         </tbody>
       </table>
