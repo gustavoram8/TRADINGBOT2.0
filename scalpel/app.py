@@ -2014,6 +2014,11 @@ def app_view():
     demo = _admin_demo()
     if demo:
         demo_mode = True
+        # Only the explicit 'review' demo shows the testimonial prompt — otherwise
+        # a plan/rank/spin demo could leak the admin's own pending testimonial
+        # (which the client now shows immediately in demo mode).
+        if not demo.get('review'):
+            review_prompt = False
         if demo.get('rank_up'):
             rank_up_to = int(demo['rank_up'])
             unlock_plan = ''
