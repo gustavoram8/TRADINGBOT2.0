@@ -23902,6 +23902,12 @@
     56% { opacity: 0; transform: scale(.4); }
   }
   .bug-x-tools { color: var(--accent); vertical-align: -3px; }
+  /* Light mode: bug wrench + support mailbox use the logo blue (matches the blue 'a'). */
+  body.light .bug-wrench { color: #0253ec; }
+  body.light .bug-wrench .glint { fill: #0253ec; }
+  body.light .bug-x-tools { color: #0253ec; }
+  body.light .help-fab { background: #0253ec; }
+  body.light .help-fab:hover { background: #1a5cf0; }
   @media (prefers-reduced-motion: reduce) { .bug-wrench, .bug-wrench .glint { animation: none; } }
   .bug-fab-label { font-size: 13px; font-weight: 700; opacity: 0; max-width: 0; overflow: hidden;
     transition: opacity .2s ease .1s, max-width .3s ease; padding-right: 0; }
