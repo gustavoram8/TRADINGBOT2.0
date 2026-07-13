@@ -5179,8 +5179,11 @@
     .disc-pct{position:absolute;top:12px;right:14px;z-index:5;font-size:11px;font-weight:700;color:var(--accent);
       background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:4px 11px;pointer-events:none;backdrop-filter:blur(8px);}
 
-    .disc-fp{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:14px;position:relative;overflow:hidden;backdrop-filter:blur(12px);}
+    .disc-fp{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:14px;position:relative;overflow:hidden;backdrop-filter:blur(12px);cursor:pointer;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease;}
     .disc-fp::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),transparent);}
+    .disc-fp::after{content:'→';position:absolute;top:9px;right:12px;font-size:15px;font-weight:800;color:var(--accent);opacity:0;transform:translateX(-4px);transition:opacity .16s ease,transform .16s ease;pointer-events:none;}
+    .disc-fp:hover,.disc-fp:focus-visible{transform:translateY(-3px) scale(1.015);border-color:var(--accent);box-shadow:0 12px 30px rgba(0,0,0,.30);outline:none;}
+    .disc-fp:hover::after,.disc-fp:focus-visible::after{opacity:1;transform:translateX(0);}
     .disc-cap{font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:9px;display:flex;justify-content:space-between;gap:8px;}
     .disc-cap .pl{color:var(--accent);white-space:nowrap;}
     .disc-pills{display:flex;flex-wrap:wrap;gap:5px;}
@@ -5322,12 +5325,12 @@
         <div class="disc-sec-head"><span class="disc-sec-badge extras">Extras</span><span class="disc-sec-label" data-i18n="disc.sec.extras">Compras aparte, disponibles con cualquier plan:</span></div>
         <div class="disc-board">
           <div class="disc-sharp">
-            <div class="disc-fp">
+            <div class="disc-fp" data-go="camos">
               <span class="ico">🎨</span>
               <span class="ttl"><span data-i18n="disc.f.camos">Tienda de camos (skins)</span> <span class="disc-soon" data-i18n="disc.soon">Próximamente</span></span>
               <span class="dsc" data-i18n="disc.f.camosD">Personaliza por completo el aspecto de tu workspace con skins visuales, comprables por separado.</span>
             </div>
-            <div class="disc-fp">
+            <div class="disc-fp" data-go="synpdf">
               <span class="ico">📚</span>
               <span class="ttl" data-i18n="disc.f.spdf">PDF de la biblioteca Synapse</span>
               <span class="dsc" data-i18n="disc.f.spdfD">Toda la biblioteca de Synapse en un PDF descargable — disponible como compra aparte.</span>
@@ -5401,6 +5404,18 @@
     function init(){
       var els=document.querySelectorAll('#discover-view .disc-board'); if(!els.length) return;
       els.forEach(function(el){ boards.push(makeBoard(el)); });
+      // Revealed feature tiles are clickable → send the user to the right place.
+      function go(dest){
+        if(dest==='camos'){ window.location.href='/camos'; }
+        else if(dest==='synpdf'){ var pb=document.getElementById('syn-pdf-btn'); if(pb){ pb.click(); } else { window.location.href='/pricing'; } }
+        else { window.location.href='/pricing'; }
+      }
+      document.querySelectorAll('#discover-view .disc-fp').forEach(function(card){
+        var dest=card.getAttribute('data-go')||'plans';
+        card.setAttribute('role','button'); card.setAttribute('tabindex','0');
+        card.addEventListener('click',function(){ go(dest); });
+        card.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(dest); } });
+      });
       var rb=document.getElementById('disc-reveal'); if(rb) rb.addEventListener('click',function(){ boards.forEach(function(b){ b.finish(); }); });
       var tt=document.getElementById('theme-toggle'); if(tt) tt.addEventListener('click',function(){ setTimeout(function(){ if(isOpen()) paintAll(); },40); });
       var ls=document.getElementById('lang-select'); if(ls) ls.addEventListener('change',function(){ setTimeout(function(){ if(isOpen()) paintAll(); },0); });
