@@ -10757,14 +10757,20 @@
     paintStars();
 
     function close() { rov.style.display = 'none'; }
-    document.getElementById('review-close-btn').addEventListener('click', close);
-    document.getElementById('review-skip').addEventListener('click', () => {
-      fetch('/api/testimonial/submit', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rating: 0, text: '', consent: false, skipped: true }),
-      }).catch(() => {});
+    // Any dismissal (X or "Maybe later") pushes the next prompt out ~30 days so it
+    // never reappears on the next refresh. Demo mode is a preview only — don't
+    // write the real account's timestamp there.
+    function dismissLater() {
+      if (!U.demoMode) {
+        fetch('/api/testimonial/submit', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rating: 0, text: '', consent: false, skipped: true }),
+        }).catch(() => {});
+      }
       close();
-    });
+    }
+    document.getElementById('review-close-btn').addEventListener('click', dismissLater);
+    document.getElementById('review-skip').addEventListener('click', dismissLater);
     submitBtn.addEventListener('click', () => {
       if (rating === 0) return;
       submitBtn.disabled = true;
