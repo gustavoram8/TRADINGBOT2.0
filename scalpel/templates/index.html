@@ -95,6 +95,11 @@
     .meta-tag, .nav-badge, .modal, .btn-new {
       transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
     }
+    /* While toggling light/dark, kill every transition/animation for one frame so
+       the theme snaps instantly instead of animating the whole DOM at once (lag fix). */
+    body.theme-switching, body.theme-switching *, body.theme-switching *::before, body.theme-switching *::after {
+      transition: none !important;
+    }
 
     /* Logo: dark-mode variant via invert (Trader→white, a→gold, arrow→light);
        lighten blend drops the inverted black background so no white box shows */
@@ -8921,7 +8926,14 @@
   function applyTheme(theme) {
     currentTheme = theme === 'light' ? 'light' : 'dark';
     try { localStorage.setItem('scalpel_theme', currentTheme); } catch (e) {}
+    // Suppress color transitions during the switch so hundreds of elements don't
+    // all animate at once (that repaint storm is what caused the lag). The theme
+    // snaps instantly, then transitions are restored on the next frame.
+    document.body.classList.add('theme-switching');
     document.body.classList.toggle('light', currentTheme === 'light');
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { document.body.classList.remove('theme-switching'); });
+    });
   }
 
   // ── Pill Selection Logic ──
@@ -23865,8 +23877,12 @@
   }
   .bug-fab:hover { width: 168px; box-shadow: 0 6px 28px rgba(0,0,0,0.36); background: var(--surface2, var(--surface)); }
   .bug-fab-icon { flex-shrink: 0; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; position: relative; }
-  .bug-wrench { color: var(--accent); transform-origin: 68% 32%; animation: bugWrench 3.4s ease-in-out infinite; }
-  .bug-wrench .glint { fill: var(--accent); stroke: none; opacity: 0; transform-origin: center; animation: bugGlint 3.4s ease-in-out infinite; }
+  /* Animation is PAUSED at rest (no perpetual repaint / lag). It only runs while
+     the FAB is hovered/focused, so it never loops in the background across views. */
+  .bug-wrench { color: var(--accent); transform-origin: 68% 32%; animation: bugWrench 3.4s ease-in-out infinite; animation-play-state: paused; }
+  .bug-wrench .glint { fill: var(--accent); stroke: none; opacity: 0; transform-origin: center; animation: bugGlint 3.4s ease-in-out infinite; animation-play-state: paused; }
+  .bug-fab:hover .bug-wrench, .bug-fab:focus-visible .bug-wrench,
+  .bug-fab:hover .bug-wrench .glint, .bug-fab:focus-visible .bug-wrench .glint { animation-play-state: running; }
   @keyframes bugWrench {
     0%, 52%, 100% { transform: rotate(0deg); }
     60% { transform: rotate(-24deg); }
