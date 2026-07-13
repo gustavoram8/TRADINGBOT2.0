@@ -7,29 +7,64 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root { --ink:#15171f; --ink-soft:#4a4f5e; --muted:#8a8f9e; --line-soft:#e4e6ec; --accent:#2563eb; }
+    :root { --ink:#15171f; --ink-soft:#4a4f5e; --muted:#8a8f9e; --line-soft:#e4e6ec; --accent:#2563eb; --gold:#c9a227; }
     body { background:#fff; color:var(--ink); font-family:'Inter',sans-serif; font-size:15px; line-height:1.6; min-height:100vh; -webkit-font-smoothing:antialiased; }
     nav { display:flex; align-items:center; justify-content:space-between; padding:16px 32px; border-bottom:1px solid var(--line-soft); position:sticky; top:0; background:rgba(255,255,255,0.92); backdrop-filter:blur(8px); z-index:10; }
     .logo-img { height:72px; width:auto; display:block; }
     .back-link { font-size:13px; font-weight:600; color:var(--ink-soft); text-decoration:none; }
     .back-link:hover { color:var(--accent); }
-    .hero { text-align:center; padding:60px 24px 24px; }
+    .hero { text-align:center; padding:60px 24px 8px; }
     .eyebrow { font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); margin-bottom:10px; }
     h1 { font-size:42px; font-weight:800; letter-spacing:-.02em; margin-bottom:12px; }
-    .hero p { color:var(--ink-soft); max-width:620px; margin:0 auto; }
-    .grid { max-width:1040px; margin:36px auto 0; padding:0 24px 90px; display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+    .hero p { color:var(--ink-soft); max-width:640px; margin:0 auto; }
+
+    .wrap { max-width:1040px; margin:0 auto; padding:0 24px 90px; }
+    .sec-head { margin:44px 0 4px; display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; }
+    .sec-head h2 { font-size:22px; font-weight:800; letter-spacing:-.01em; }
+    .sec-head .sub { font-size:13px; color:var(--muted); }
+    .grid { margin-top:20px; display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
     @media (max-width:880px){ .grid { grid-template-columns:1fr; } }
-    .camo-card { border:1px solid var(--line-soft); border-radius:16px; overflow:hidden; background:#fff; transition:transform .15s, box-shadow .15s; }
+
+    .camo-card { border:1px solid var(--line-soft); border-radius:16px; overflow:hidden; background:#fff; transition:transform .15s, box-shadow .15s; display:flex; flex-direction:column; }
     .camo-card:hover { transform:translateY(-3px); box-shadow:0 14px 34px rgba(0,0,0,.08); }
     .camo-swatch { height:150px; position:relative; }
-    .navy { background:linear-gradient(135deg,#0b1f3a,#13315c 55%,#1c3d6e); }
-    .desert { background:linear-gradient(135deg,#6e5a32,#9c854f 55%,#c4ab6e); }
-    .forest { background:linear-gradient(135deg,#1c3b22,#2f5a34 55%,#467a47); }
-    .camo-body { padding:18px 18px 22px; }
+    .camo-body { padding:18px 18px 20px; display:flex; flex-direction:column; flex:1; }
     .camo-name { font-size:17px; font-weight:800; margin-bottom:4px; }
-    .camo-desc { font-size:13px; color:var(--muted); margin-bottom:14px; min-height:34px; }
+    .camo-desc { font-size:13px; color:var(--muted); margin-bottom:16px; min-height:52px; }
+    .camo-foot { margin-top:auto; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .camo-price { font-size:16px; font-weight:800; color:var(--ink); }
+    .camo-price small { font-size:11px; font-weight:600; color:var(--muted); }
+    .camo-incl { font-size:12px; font-weight:700; color:var(--ink-soft); display:inline-flex; align-items:center; gap:6px; }
+    .camo-incl::before { content:'✓'; color:#1a7a3f; font-weight:800; }
     .camo-cta { display:inline-block; font-size:13px; font-weight:700; padding:9px 16px; border-radius:9px; background:#15171f; color:#fff; text-decoration:none; opacity:.55; pointer-events:none; }
-    .soon-pill { position:absolute; top:12px; right:12px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; padding:4px 9px; border-radius:20px; background:rgba(255,255,255,.85); color:#15171f; }
+    .soon-pill, .plan-pill { position:absolute; top:12px; right:12px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; padding:4px 9px; border-radius:20px; background:rgba(255,255,255,.88); color:#15171f; }
+    .plan-pill.std { background:rgba(37,99,235,.92); color:#fff; }
+    .plan-pill.prem { background:linear-gradient(90deg,#c9a227,#e9c65a); color:#2a2205; }
+
+    /* ── Plan camos ── */
+    .cm-standard { background:linear-gradient(135deg,#20242e,#3a4150 52%,#5a6172); }
+    .cm-premium  { background:linear-gradient(135deg,#141007,#3a2f12 44%,#c9a227); position:relative; }
+    .cm-premium::after { content:''; position:absolute; inset:0; background:radial-gradient(60% 80% at 78% 18%,rgba(255,255,255,.35),transparent 60%); }
+    /* ── Themes ── */
+    .cm-naval    { background:linear-gradient(135deg,#0b1f3a,#13315c 55%,#1c3d6e); }
+    .cm-highnoon { background:linear-gradient(135deg,#7a3b1e,#b5722f 52%,#e0a95e); }
+    .cm-sun      { background:linear-gradient(135deg,#f6f3ee,#ece5db 46%,#c2352b); }
+    .cm-mission  { background:linear-gradient(135deg,#080b22,#1b2456 55%,#3b2f6e); }
+    .cm-blackflag{ background:linear-gradient(135deg,#0e0e10,#26262b 55%,#4a4a52); }
+    .cm-alchemist{ background:linear-gradient(135deg,#2a1a4a,#4b2e83 50%,#1f7a5a); }
+    .cm-shadow   { background:linear-gradient(135deg,#0c0c0f,#1c1c24 56%,#7a1f2b); }
+    .cm-pole     { background:linear-gradient(135deg,#c1121f,#7a0c15 46%,#111114); }
+    .cm-arcade   { background:linear-gradient(135deg,#ff2e97,#8a2be2 50%,#00e5ff); }
+    .cm-cyber    { background:linear-gradient(135deg,#0a0f1a,#ff1f8f 56%,#00e5ff); }
+    /* ── Seasonal ── */
+    .cm-santa    { background:linear-gradient(135deg,#9b1b1b,#1c5c34 55%,#c9a227); }
+    .cm-hallow   { background:linear-gradient(135deg,#0f0a14,#6a2a00 50%,#ff7518); }
+    .cm-fourth   { background:linear-gradient(135deg,#b22234,#ffffff 50%,#3c3b6e); }
+    .cm-lucky    { background:linear-gradient(135deg,#0f5132,#1a7a3f 55%,#d4af37); }
+    .cm-valentine{ background:linear-gradient(135deg,#8a1c3b,#c72c5a 50%,#f4a6c0); }
+    .cm-easter   { background:linear-gradient(135deg,#f7d6e0,#d6e8f7 46%,#dff7d6); }
+    .cm-newyear  { background:linear-gradient(135deg,#0c0c12,#2a2440 50%,#d4af37); }
+    .cm-muertos  { background:linear-gradient(135deg,#2a0f3a,#7a1f6a 45%,#ff8c1a); }
   </style>
 </head>
 <body>
@@ -40,34 +75,196 @@
 <section class="hero">
   <div class="eyebrow" data-i18n="camos.eyebrow">Website Skins</div>
   <h1 data-i18n="camos.title">Camos</h1>
-  <p data-i18n="camos.hero">Custom visual themes for your Trader Accelerator workspace. Unlock a skin and
-     restyle the entire website to match your style. More designs coming soon.</p>
+  <p data-i18n="camos.hero">Custom visual themes that restyle your entire Trader Accelerator workspace. Two ship
+     with your plan; the rest are one-time skins you can add anytime.</p>
 </section>
-<div class="grid">
-  <div class="camo-card">
-    <div class="camo-swatch navy"><span class="soon-pill" data-i18n="common.soon">Coming soon</span></div>
-    <div class="camo-body">
-      <div class="camo-name">The Navy Trader</div>
-      <div class="camo-desc" data-i18n="camos.navyDesc">A disciplined, military-grade navy theme across the whole platform.</div>
-      <a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a>
+
+<div class="wrap">
+
+  <!-- ── PLAN CAMOS ── -->
+  <div class="sec-head">
+    <h2 data-i18n="camos.secPlan">Bundled with your plan</h2>
+    <span class="sub" data-i18n="camos.secPlanSub">These skins are included the moment you subscribe.</span>
+  </div>
+  <div class="grid">
+    <div class="camo-card">
+      <div class="camo-swatch cm-standard"><span class="plan-pill std" data-i18n="camos.inclStd">Standard plan</span></div>
+      <div class="camo-body">
+        <div class="camo-name">Standard Steel</div>
+        <div class="camo-desc" data-i18n="camos.d.standard">Brushed graphite and steel — the clean, focused look bundled with Standard.</div>
+        <div class="camo-foot"><span class="camo-incl" data-i18n="camos.included">Included with your plan</span></div>
+      </div>
+    </div>
+    <div class="camo-card">
+      <div class="camo-swatch cm-premium"><span class="plan-pill prem" data-i18n="camos.inclPrem">Premium plan</span></div>
+      <div class="camo-body">
+        <div class="camo-name">The Millionaire</div>
+        <div class="camo-desc" data-i18n="camos.d.premium">Black-and-gold luxury across the whole platform — the signature Premium skin.</div>
+        <div class="camo-foot"><span class="camo-incl" data-i18n="camos.included">Included with your plan</span></div>
+      </div>
     </div>
   </div>
-  <div class="camo-card">
-    <div class="camo-swatch desert"><span class="soon-pill" data-i18n="common.soon">Coming soon</span></div>
-    <div class="camo-body">
-      <div class="camo-name">Desert Ops</div>
-      <div class="camo-desc" data-i18n="camos.desertDesc">Warm tactical desert tones for a focused trading session.</div>
-      <a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a>
+
+  <!-- ── THEMES ── -->
+  <div class="sec-head">
+    <h2 data-i18n="camos.secThemes">Themes</h2>
+    <span class="sub" data-i18n="camos.secThemesSub">One-time skins, available on any plan.</span>
+  </div>
+  <div class="grid">
+    <div class="camo-card">
+      <div class="camo-swatch cm-naval"><span class="soon-pill" data-i18n="common.soon">Coming soon</span></div>
+      <div class="camo-body">
+        <div class="camo-name">Naval Command</div>
+        <div class="camo-desc" data-i18n="camos.d.naval">Disciplined, military-grade navy across the entire workspace.</div>
+        <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+      </div>
+    </div>
+    <div class="camo-card">
+      <div class="camo-swatch cm-highnoon"><span class="soon-pill" data-i18n="common.soon">Coming soon</span></div>
+      <div class="camo-body">
+        <div class="camo-name">High Noon</div>
+        <div class="camo-desc" data-i18n="camos.d.highnoon">Dusty frontier tones — leather, sand and a slow Western draw.</div>
+        <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+      </div>
+    </div>
+    <div class="camo-card">
+      <div class="camo-swatch cm-sun"><span class="soon-pill" data-i18n="common.soon">Coming soon</span></div>
+      <div class="camo-body">
+        <div class="camo-name">Rising Sun</div>
+        <div class="camo-desc" data-i18n="camos.d.sun">Clean white with a bold red sun — minimalist Japanese calm.</div>
+        <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+      </div>
+    </div>
+    <div class="camo-card">
+      <div class="camo-swatch cm-mission"><span class="soon-pill" data-i18n="common.soon">Coming soon</span></div>
+      <div class="camo-body">
+        <div class="camo-name">Mission Control</div>
+        <div class="camo-desc" data-i18n="camos.d.mission">Deep-space blues and starlight for late-night mission focus.</div>
+        <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+      </div>
+    </div>
+    <div class="camo-card">
+      <div class="camo-swatch cm-blackflag"><span class="soon-pill" data-i18n="common.soon">Coming soon</span></div>
+      <div class="camo-body">
+        <div class="camo-name">Black Flag</div>
+        <div class="camo-desc" data-i18n="camos.d.blackflag">Charcoal, bone and a pirate's edge — hoist the colors.</div>
+        <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+      </div>
+    </div>
+    <div class="camo-card">
+      <div class="camo-swatch cm-alchemist"><span class="soon-pill" data-i18n="common.soon">Coming soon</span></div>
+      <div class="camo-body">
+        <div class="camo-name">The Alchemist</div>
+        <div class="camo-desc" data-i18n="camos.d.alchemist">Arcane purples and an emerald glow — turn charts into gold.</div>
+        <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+      </div>
+    </div>
+    <div class="camo-card">
+      <div class="camo-swatch cm-shadow"><span class="soon-pill" data-i18n="common.soon">Coming soon</span></div>
+      <div class="camo-body">
+        <div class="camo-name">Shadow Strike</div>
+        <div class="camo-desc" data-i18n="camos.d.shadow">Matte black with a crimson edge — move unseen, strike clean.</div>
+        <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+      </div>
+    </div>
+    <div class="camo-card">
+      <div class="camo-swatch cm-pole"><span class="soon-pill" data-i18n="common.soon">Coming soon</span></div>
+      <div class="camo-body">
+        <div class="camo-name">Pole Position</div>
+        <div class="camo-desc" data-i18n="camos.d.pole">Race red, carbon black and pit-lane speed. Lights out.</div>
+        <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+      </div>
+    </div>
+    <div class="camo-card">
+      <div class="camo-swatch cm-arcade"><span class="soon-pill" data-i18n="common.soon">Coming soon</span></div>
+      <div class="camo-body">
+        <div class="camo-name">Insert Coin</div>
+        <div class="camo-desc" data-i18n="camos.d.arcade">Neon magenta and cyan — 8-bit nostalgia, high-score energy.</div>
+        <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+      </div>
+    </div>
+    <div class="camo-card">
+      <div class="camo-swatch cm-cyber"><span class="soon-pill" data-i18n="common.soon">Coming soon</span></div>
+      <div class="camo-body">
+        <div class="camo-name">Neon Circuit</div>
+        <div class="camo-desc" data-i18n="camos.d.cyber">Rain-slick neon over midnight — full cyberpunk overdrive.</div>
+        <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+      </div>
     </div>
   </div>
-  <div class="camo-card">
-    <div class="camo-swatch forest"><span class="soon-pill" data-i18n="common.soon">Coming soon</span></div>
-    <div class="camo-body">
-      <div class="camo-name">Forest Recon</div>
-      <div class="camo-desc" data-i18n="camos.forestDesc">Deep woodland green camo for a calm, grounded interface.</div>
-      <a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a>
+
+  <!-- ── SEASONAL ── -->
+  <div class="sec-head">
+    <h2 data-i18n="camos.secSeasonal">Seasonal</h2>
+    <span class="sub" data-i18n="camos.secSeasonalSub">Limited holiday skins — one-time, on any plan.</span>
+  </div>
+  <div class="grid">
+    <div class="camo-card">
+      <div class="camo-swatch cm-santa"><span class="soon-pill" data-i18n="common.soon">Coming soon</span></div>
+      <div class="camo-body">
+        <div class="camo-name">Santa's Rally</div>
+        <div class="camo-desc" data-i18n="camos.d.santa">Crimson, pine and gold — ride the year-end Santa rally in style.</div>
+        <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+      </div>
+    </div>
+    <div class="camo-card">
+      <div class="camo-swatch cm-hallow"><span class="soon-pill" data-i18n="common.soon">Coming soon</span></div>
+      <div class="camo-body">
+        <div class="camo-name">Hallow's Eve</div>
+        <div class="camo-desc" data-i18n="camos.d.hallow">Pumpkin orange over haunted black and violet. Spooky season on.</div>
+        <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+      </div>
+    </div>
+    <div class="camo-card">
+      <div class="camo-swatch cm-fourth"><span class="soon-pill" data-i18n="common.soon">Coming soon</span></div>
+      <div class="camo-body">
+        <div class="camo-name">Star-Spangled</div>
+        <div class="camo-desc" data-i18n="camos.d.fourth">Red, white and blue — a star-spangled trading floor.</div>
+        <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+      </div>
+    </div>
+    <div class="camo-card">
+      <div class="camo-swatch cm-lucky"><span class="soon-pill" data-i18n="common.soon">Coming soon</span></div>
+      <div class="camo-body">
+        <div class="camo-name">Lucky Streak</div>
+        <div class="camo-desc" data-i18n="camos.d.lucky">Emerald green and gold — chase the luck of the streak.</div>
+        <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+      </div>
+    </div>
+    <div class="camo-card">
+      <div class="camo-swatch cm-valentine"><span class="soon-pill" data-i18n="common.soon">Coming soon</span></div>
+      <div class="camo-body">
+        <div class="camo-name">Bullish Hearts</div>
+        <div class="camo-desc" data-i18n="camos.d.valentine">Deep reds and soft pink — stay bullish on the ones you love.</div>
+        <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+      </div>
+    </div>
+    <div class="camo-card">
+      <div class="camo-swatch cm-easter"><span class="soon-pill" data-i18n="common.soon">Coming soon</span></div>
+      <div class="camo-body">
+        <div class="camo-name">Spring Bloom</div>
+        <div class="camo-desc" data-i18n="camos.d.easter">Soft pastels and fresh spring air — a gentle seasonal reset.</div>
+        <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+      </div>
+    </div>
+    <div class="camo-card">
+      <div class="camo-swatch cm-newyear"><span class="soon-pill" data-i18n="common.soon">Coming soon</span></div>
+      <div class="camo-body">
+        <div class="camo-name">Fresh Start</div>
+        <div class="camo-desc" data-i18n="camos.d.newyear">Midnight black, silver and gold — open the year on a clean slate.</div>
+        <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+      </div>
+    </div>
+    <div class="camo-card">
+      <div class="camo-swatch cm-muertos"><span class="soon-pill" data-i18n="common.soon">Coming soon</span></div>
+      <div class="camo-body">
+        <div class="camo-name">Marigold Night</div>
+        <div class="camo-desc" data-i18n="camos.d.muertos">Marigold, violet and candlelight — a vibrant Día de Muertos tribute.</div>
+        <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+      </div>
     </div>
   </div>
+
 </div>
 <script src="/static/pages_i18n.js"></script>
 </body>
