@@ -24,7 +24,7 @@
       'plan.free': 'Free',
 
       // ── pricing.html ──
-      'pricing.doctitle': 'Tradeable — Plans & Pricing',
+      'pricing.doctitle': 'Tradeable Academy — Plans & Pricing',
       'pricing.tagline': 'Trade Analysis Platform',
       'pricing.eyebrow': 'Plans & Pricing',
       'pricing.h1': 'Sharpen how you analyze every setup',
@@ -83,17 +83,17 @@
       'pricing.cmpScoutNote': 'compare 25+ firms + AI advisor',
       'pricing.cmpCamosNote': 'dashboard design themes',
       'pricing.footNote': 'Plans shown are introductory. Billing is not active yet — these tiers preview what Tradeable will offer. For educational purposes only; not financial advice.',
-      'pricing.footer': 'TRADEABLE · Trade Analysis Platform · For educational purposes only · Not financial advice<br><span style="opacity:.65">&copy; 2026 Tradeable. All rights reserved.</span>',
+      'pricing.footer': 'TRADEABLE ACADEMY · Trade Analysis Platform · For educational purposes only · Not financial advice<br><span style="opacity:.65">&copy; 2026 Tradeable Academy. All rights reserved.</span>',
 
       // ── store_indicators.html ──
-      'store.doctitle': 'Tradeable — Indicators',
+      'store.doctitle': 'Tradeable Academy — Indicators',
       'store.eyebrow': 'Store',
       'store.title': 'Indicators',
       'store.hero': 'A dedicated storefront for premium trading indicators — separate from the in-app Indicators section. Browse, preview and purchase indicators here.',
       'store.ph': '<strong>Indicators store — coming soon.</strong><br />This is a standalone page (distinct from the in-app Indicators tab) where the indicator catalog, pricing and checkout will live.',
 
       // ── camos.html ──
-      'camos.doctitle': 'Tradeable — Camos',
+      'camos.doctitle': 'Tradeable Academy — Camos',
       'camos.eyebrow': 'Website Skins',
       'camos.title': 'Camos',
       'camos.hero': 'Custom visual themes that restyle your entire Tradeable workspace. Two ship with your plan; the rest are one-time skins you can add anytime.',
@@ -129,7 +129,7 @@
       'camos.d.muertos': 'Marigold, violet and candlelight — a vibrant Día de Muertos tribute.',
 
       // ── settings.html ──
-      'settings.doctitle': 'Tradeable — Settings',
+      'settings.doctitle': 'Tradeable Academy — Settings',
       'settings.title': 'Settings',
       'settings.flashCancelled': "Plan cancellation scheduled — you'll keep access until your billing period ends.",
       'settings.flashReactivated': 'Plan reactivated — your subscription will continue normally.',
@@ -162,7 +162,7 @@
       'settings.deleteAccountDesc': 'Permanently remove your account and all data.',
 
       // ── checkout.html ──
-      'checkout.doctitle': 'Tradeable — Checkout',
+      'checkout.doctitle': 'Tradeable Academy — Checkout',
       'checkout.eyebrow': 'Checkout',
       'checkout.title': 'Review your order',
       'checkout.planBilledYearly': 'plan (billed yearly)',
@@ -195,7 +195,7 @@
       'checkout.err.generic': 'That code could not be applied.',
 
       // ── checkout_done.html ──
-      'cdone.doctitle': 'Tradeable — Order received',
+      'cdone.doctitle': 'Tradeable Academy — Order received',
       'cdone.dup': 'You already have a pending order awaiting payment confirmation. Complete that one first — here are its details. If you think this is a mistake, <a href="/contact">contact support</a>.',
       'cdone.title': 'Order received',
       'cdone.sub': 'Your order is reserved. Complete payment to activate your plan.',
@@ -216,7 +216,7 @@
       'cdone.backApp': 'Back to app',
       'cdone.sendProof': 'Send payment proof →',
       // ── checkout_success.html ──
-      'csuccess.doctitle': 'Tradeable — Payment successful',
+      'csuccess.doctitle': 'Tradeable Academy — Payment successful',
       'csuccess.title': 'Payment successful',
       'csuccess.sub': 'Thank you — your plan is now active. Enjoy the upgrade.',
       'csuccess.activated': 'Your plan is now active',
@@ -234,7 +234,7 @@
       'plan.free': 'Gratis',
 
       // ── pricing.html ──
-      'pricing.doctitle': 'Tradeable — Planes y precios',
+      'pricing.doctitle': 'Tradeable Academy — Planes y precios',
       'pricing.tagline': 'Plataforma de análisis de trading',
       'pricing.eyebrow': 'Planes y precios',
       'pricing.h1': 'Afina cómo analizas cada setup',
@@ -293,17 +293,17 @@
       'pricing.cmpScoutNote': 'compara más de 25 firms + asesor con IA',
       'pricing.cmpCamosNote': 'temas de diseño del panel',
       'pricing.footNote': 'Los planes mostrados son introductorios. La facturación aún no está activa — estos niveles son una vista previa de lo que ofrecerá Tradeable. Solo con fines educativos; no es asesoría financiera.',
-      'pricing.footer': 'TRADEABLE · Plataforma de análisis de trading · Solo con fines educativos · No es asesoría financiera<br><span style="opacity:.65">&copy; 2026 Tradeable. Todos los derechos reservados.</span>',
+      'pricing.footer': 'TRADEABLE ACADEMY · Plataforma de análisis de trading · Solo con fines educativos · No es asesoría financiera<br><span style="opacity:.65">&copy; 2026 Tradeable Academy. Todos los derechos reservados.</span>',
 
       // ── store_indicators.html ──
-      'store.doctitle': 'Tradeable — Indicadores',
+      'store.doctitle': 'Tradeable Academy — Indicadores',
       'store.eyebrow': 'Tienda',
       'store.title': 'Indicadores',
       'store.hero': 'Una tienda dedicada a indicadores de trading premium, separada de la sección de Indicadores dentro de la app. Explora, previsualiza y adquiere indicadores aquí.',
       'store.ph': '<strong>Tienda de indicadores — muy pronto.</strong><br />Esta es una página independiente (distinta de la pestaña de Indicadores dentro de la app) donde estarán el catálogo de indicadores, los precios y el pago.',
 
       // ── camos.html ──
-      'camos.doctitle': 'Tradeable — Camos',
+      'camos.doctitle': 'Tradeable Academy — Camos',
       'camos.eyebrow': 'Skins del sitio',
       'camos.title': 'Camos',
       'camos.hero': 'Temas visuales personalizados que le dan un nuevo estilo a todo tu espacio de Tradeable. Dos vienen incluidos con tu plan; el resto son skins de compra única que puedes añadir cuando quieras.',
@@ -339,7 +339,7 @@
       'camos.getSkin': 'Obtener este skin',
 
       // ── settings.html ──
-      'settings.doctitle': 'Tradeable — Configuración',
+      'settings.doctitle': 'Tradeable Academy — Configuración',
       'settings.title': 'Configuración',
       'settings.flashCancelled': 'Cancelación del plan programada — conservarás el acceso hasta que termine tu período de facturación.',
       'settings.flashReactivated': 'Plan reactivado — tu suscripción continuará normalmente.',
@@ -372,7 +372,7 @@
       'settings.deleteAccountDesc': 'Elimina de forma permanente tu cuenta y todos tus datos.',
 
       // ── checkout.html ──
-      'checkout.doctitle': 'Tradeable — Pago',
+      'checkout.doctitle': 'Tradeable Academy — Pago',
       'checkout.eyebrow': 'Pago',
       'checkout.title': 'Revisa tu pedido',
       'checkout.planBilledYearly': 'plan (facturación anual)',
@@ -405,7 +405,7 @@
       'checkout.err.generic': 'No se pudo aplicar ese código.',
 
       // ── checkout_done.html ──
-      'cdone.doctitle': 'Tradeable — Pedido recibido',
+      'cdone.doctitle': 'Tradeable Academy — Pedido recibido',
       'cdone.dup': 'Ya tienes un pedido pendiente a la espera de confirmación de pago. Completa ese primero — aquí están sus detalles. Si crees que es un error, <a href="/contact">contacta a soporte</a>.',
       'cdone.title': 'Pedido recibido',
       'cdone.sub': 'Tu pedido está reservado. Completa el pago para activar tu plan.',
@@ -426,7 +426,7 @@
       'cdone.backApp': 'Volver a la app',
       'cdone.sendProof': 'Enviar comprobante de pago →',
       // ── checkout_success.html ──
-      'csuccess.doctitle': 'Tradeable — Pago exitoso',
+      'csuccess.doctitle': 'Tradeable Academy — Pago exitoso',
       'csuccess.title': 'Pago exitoso',
       'csuccess.sub': 'Gracias — tu plan ya está activo. Disfruta la mejora.',
       'csuccess.activated': 'Tu plan ya está activo',
@@ -446,7 +446,7 @@
       'plan.free': 'Gratuit',
 
       // ── pricing.html ──
-      'pricing.doctitle': 'Tradeable — Formules et tarifs',
+      'pricing.doctitle': 'Tradeable Academy — Formules et tarifs',
       'pricing.tagline': 'Plateforme d’analyse de trading',
       'pricing.eyebrow': 'Formules et tarifs',
       'pricing.h1': 'Affinez votre manière d’analyser chaque setup',
@@ -505,17 +505,17 @@
       'pricing.cmpScoutNote': 'comparez plus de 25 firms + conseiller IA',
       'pricing.cmpCamosNote': 'thèmes de design du tableau de bord',
       'pricing.footNote': 'Les formules présentées sont introductives. La facturation n’est pas encore active — ces niveaux donnent un aperçu de ce que proposera Tradeable. À des fins éducatives uniquement ; pas un conseil financier.',
-      'pricing.footer': 'TRADEABLE · Plateforme d’analyse de trading · À des fins éducatives uniquement · Pas un conseil financier<br><span style="opacity:.65">&copy; 2026 Tradeable. Tous droits réservés.</span>',
+      'pricing.footer': 'TRADEABLE ACADEMY · Plateforme d’analyse de trading · À des fins éducatives uniquement · Pas un conseil financier<br><span style="opacity:.65">&copy; 2026 Tradeable Academy. Tous droits réservés.</span>',
 
       // ── store_indicators.html ──
-      'store.doctitle': 'Tradeable — Indicateurs',
+      'store.doctitle': 'Tradeable Academy — Indicateurs',
       'store.eyebrow': 'Boutique',
       'store.title': 'Indicateurs',
       'store.hero': 'Une boutique dédiée aux indicateurs de trading premium, distincte de la section Indicateurs dans l’app. Parcourez, prévisualisez et achetez des indicateurs ici.',
       'store.ph': '<strong>Boutique d’indicateurs — bientôt disponible.</strong><br />Ceci est une page indépendante (distincte de l’onglet Indicateurs dans l’app) où se trouveront le catalogue d’indicateurs, les tarifs et le paiement.',
 
       // ── camos.html ──
-      'camos.doctitle': 'Tradeable — Camos',
+      'camos.doctitle': 'Tradeable Academy — Camos',
       'camos.eyebrow': 'Skins du site',
       'camos.title': 'Camos',
       'camos.hero': 'Des thèmes visuels personnalisés qui restylent tout votre espace Tradeable. Deux sont inclus avec votre formule ; les autres sont des skins à achat unique, ajoutables à tout moment.',
@@ -551,7 +551,7 @@
       'camos.d.muertos': 'Souci, violet et lueur de bougie — un hommage vibrant au Día de Muertos.',
 
       // ── settings.html ──
-      'settings.doctitle': 'Tradeable — Paramètres',
+      'settings.doctitle': 'Tradeable Academy — Paramètres',
       'settings.title': 'Paramètres',
       'settings.flashCancelled': 'Annulation de la formule programmée — vous conservez l’accès jusqu’à la fin de votre période de facturation.',
       'settings.flashReactivated': 'Formule réactivée — votre abonnement continuera normalement.',
@@ -584,7 +584,7 @@
       'settings.deleteAccountDesc': 'Supprimez définitivement votre compte et toutes vos données.',
 
       // ── checkout.html ──
-      'checkout.doctitle': 'Tradeable — Paiement',
+      'checkout.doctitle': 'Tradeable Academy — Paiement',
       'checkout.eyebrow': 'Paiement',
       'checkout.title': 'Vérifiez votre commande',
       'checkout.planBilledYearly': 'formule (facturation annuelle)',
@@ -617,7 +617,7 @@
       'checkout.err.generic': 'Ce code n’a pas pu être appliqué.',
 
       // ── checkout_done.html ──
-      'cdone.doctitle': 'Tradeable — Commande reçue',
+      'cdone.doctitle': 'Tradeable Academy — Commande reçue',
       'cdone.dup': 'Vous avez déjà une commande en attente de confirmation de paiement. Terminez celle-ci d’abord — voici ses détails. Si vous pensez qu’il s’agit d’une erreur, <a href="/contact">contactez le support</a>.',
       'cdone.title': 'Commande reçue',
       'cdone.sub': 'Votre commande est réservée. Effectuez le paiement pour activer votre formule.',
@@ -638,7 +638,7 @@
       'cdone.backApp': 'Retour à l’app',
       'cdone.sendProof': 'Envoyer la preuve de paiement →',
       // ── checkout_success.html ──
-      'csuccess.doctitle': 'Tradeable — Paiement réussi',
+      'csuccess.doctitle': 'Tradeable Academy — Paiement réussi',
       'csuccess.title': 'Paiement réussi',
       'csuccess.sub': 'Merci — votre offre est désormais active. Profitez de la mise à niveau.',
       'csuccess.activated': 'Votre offre est désormais active',
@@ -655,7 +655,7 @@
       'plan.free': 'Grátis',
 
       // ── pricing.html ──
-      'pricing.doctitle': 'Tradeable — Planos e Preços',
+      'pricing.doctitle': 'Tradeable Academy — Planos e Preços',
       'pricing.tagline': 'Plataforma de Análise de Trading',
       'pricing.eyebrow': 'Planos e Preços',
       'pricing.h1': 'Aprimore a forma como você analisa cada setup',
@@ -714,17 +714,17 @@
       'pricing.cmpScoutNote': 'compare mais de 25 firmas + consultor IA',
       'pricing.cmpCamosNote': 'temas de design do painel',
       'pricing.footNote': 'Os planos exibidos são introdutórios. A cobrança ainda não está ativa — estes níveis são uma prévia do que o Tradeable oferecerá. Apenas para fins educativos; não é aconselhamento financeiro.',
-      'pricing.footer': 'TRADEABLE · Plataforma de Análise de Trading · Apenas para fins educativos · Não é aconselhamento financeiro<br><span style="opacity:.65">&copy; 2026 Tradeable. Todos os direitos reservados.</span>',
+      'pricing.footer': 'TRADEABLE ACADEMY · Plataforma de Análise de Trading · Apenas para fins educativos · Não é aconselhamento financeiro<br><span style="opacity:.65">&copy; 2026 Tradeable Academy. Todos os direitos reservados.</span>',
 
       // ── store_indicators.html ──
-      'store.doctitle': 'Tradeable — Indicadores',
+      'store.doctitle': 'Tradeable Academy — Indicadores',
       'store.eyebrow': 'Loja',
       'store.title': 'Indicadores',
       'store.hero': 'Uma loja dedicada a indicadores de trading premium, separada da seção de Indicadores dentro do app. Explore, visualize e adquira indicadores aqui.',
       'store.ph': '<strong>Loja de indicadores — em breve.</strong><br />Esta é uma página independente (distinta da aba de Indicadores dentro do app) onde ficarão o catálogo de indicadores, os preços e o pagamento.',
 
       // ── camos.html ──
-      'camos.doctitle': 'Tradeable — Camos',
+      'camos.doctitle': 'Tradeable Academy — Camos',
       'camos.eyebrow': 'Skins do site',
       'camos.title': 'Camos',
       'camos.hero': 'Temas visuais personalizados que dão um novo visual a todo o seu espaço Tradeable. Dois vêm incluídos no seu plano; os demais são skins de compra única que você adiciona quando quiser.',
@@ -760,7 +760,7 @@
       'camos.d.muertos': 'Cravo-de-defunto, violeta e luz de vela — um tributo vibrante ao Día de Muertos.',
 
       // ── settings.html ──
-      'settings.doctitle': 'Tradeable — Configurações',
+      'settings.doctitle': 'Tradeable Academy — Configurações',
       'settings.title': 'Configurações',
       'settings.flashCancelled': 'Cancelamento do plano agendado — você manterá o acesso até o fim do seu período de cobrança.',
       'settings.flashReactivated': 'Plano reativado — sua assinatura continuará normalmente.',
@@ -793,7 +793,7 @@
       'settings.deleteAccountDesc': 'Remova permanentemente sua conta e todos os seus dados.',
 
       // ── checkout.html ──
-      'checkout.doctitle': 'Tradeable — Pagamento',
+      'checkout.doctitle': 'Tradeable Academy — Pagamento',
       'checkout.eyebrow': 'Pagamento',
       'checkout.title': 'Revise seu pedido',
       'checkout.planBilledYearly': 'plano (cobrança anual)',
@@ -826,7 +826,7 @@
       'checkout.err.generic': 'Não foi possível aplicar esse código.',
 
       // ── checkout_done.html ──
-      'cdone.doctitle': 'Tradeable — Pedido recebido',
+      'cdone.doctitle': 'Tradeable Academy — Pedido recebido',
       'cdone.dup': 'Você já tem um pedido pendente aguardando confirmação de pagamento. Conclua esse primeiro — aqui estão os detalhes. Se você acha que isto é um erro, <a href="/contact">fale com o suporte</a>.',
       'cdone.title': 'Pedido recebido',
       'cdone.sub': 'Seu pedido está reservado. Conclua o pagamento para ativar seu plano.',
@@ -847,7 +847,7 @@
       'cdone.backApp': 'Voltar ao app',
       'cdone.sendProof': 'Enviar comprovante de pagamento →',
       // ── checkout_success.html ──
-      'csuccess.doctitle': 'Tradeable — Pagamento concluído',
+      'csuccess.doctitle': 'Tradeable Academy — Pagamento concluído',
       'csuccess.title': 'Pagamento concluído',
       'csuccess.sub': 'Obrigado — seu plano já está ativo. Aproveite o upgrade.',
       'csuccess.activated': 'Seu plano já está ativo',
