@@ -5431,6 +5431,9 @@
         var hb=document.querySelector('.disc-h1 [data-i18n="disc.titleB"]'); if(hb){ hb.setAttribute('data-i18n','disc.titlePremB'); hb.textContent=tr('disc.titlePremB','tu cuenta'); }
         var le=document.querySelector('.disc-lede'); if(le){ le.setAttribute('data-i18n','disc.ledePrem'); le.textContent=tr('disc.ledePrem','Son compras aparte — no las incluye ningún plan. Rasca para verlas.'); }
         var cta=document.querySelector('.disc-cta'); if(cta) cta.style.display='none';
+        // For Premium it's an add-ons shelf, not an upsell — move it down next to Products.
+        var pt=document.getElementById('products-tab');
+        if(pt && t && pt.parentNode===t.parentNode) pt.parentNode.insertBefore(t, pt);
       }
     }
     init();
