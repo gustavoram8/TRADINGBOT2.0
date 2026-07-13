@@ -854,7 +854,7 @@ def _send_audit_alert_email(event_type, user_id, detail):
         app.logger.warning('Audit alert (%s) skipped — MAIL_APP_PASSWORD not configured.', event_type)
         return
     admin_inbox = app.config.get('MAIL_USERNAME', 'mauroramirezmij@gmail.com')
-    subject = f'[Trader Accelerator] Action needed — {event_type} failed'
+    subject = f'[Tradeable] Action needed — {event_type} failed'
     body = (
         f"Event   : {event_type}\n"
         f"User ID : {user_id if user_id is not None else '(none)'}\n"
@@ -1109,33 +1109,33 @@ def record_ai_cost(kind, response, user_id=None, plan=None):
 EMAIL_I18N = {
     'reset': {
         'en': {
-            'subject': 'Trader Accelerator — Password Reset',
+            'subject': 'Tradeable — Password Reset',
             'body': (
-                "We received a request to reset your Trader Accelerator password.\n\n"
+                "We received a request to reset your Tradeable password.\n\n"
                 "Reset it here (link valid for 1 hour):\n{reset_url}\n\n"
                 "If you didn't request this, you can safely ignore this email."
             ),
         },
         'es': {
-            'subject': 'Trader Accelerator — Restablecer contraseña',
+            'subject': 'Tradeable — Restablecer contraseña',
             'body': (
-                "Recibimos una solicitud para restablecer tu contraseña de Trader Accelerator.\n\n"
+                "Recibimos una solicitud para restablecer tu contraseña de Tradeable.\n\n"
                 "Restablécela aquí (el enlace es válido por 1 hora):\n{reset_url}\n\n"
                 "Si no solicitaste esto, puedes ignorar este correo sin problema."
             ),
         },
         'fr': {
-            'subject': 'Trader Accelerator — Réinitialisation du mot de passe',
+            'subject': 'Tradeable — Réinitialisation du mot de passe',
             'body': (
-                "Nous avons reçu une demande de réinitialisation de votre mot de passe Trader Accelerator.\n\n"
+                "Nous avons reçu une demande de réinitialisation de votre mot de passe Tradeable.\n\n"
                 "Réinitialisez-le ici (lien valable 1 heure) :\n{reset_url}\n\n"
                 "Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet e-mail."
             ),
         },
         'pt': {
-            'subject': 'Trader Accelerator — Redefinição de senha',
+            'subject': 'Tradeable — Redefinição de senha',
             'body': (
-                "Recebemos uma solicitação para redefinir sua senha do Trader Accelerator.\n\n"
+                "Recebemos uma solicitação para redefinir sua senha do Tradeable.\n\n"
                 "Redefina-a aqui (o link é válido por 1 hora):\n{reset_url}\n\n"
                 "Se você não solicitou isto, pode ignorar este e-mail com segurança."
             ),
@@ -1143,9 +1143,9 @@ EMAIL_I18N = {
     },
     'verify': {
         'en': {
-            'subject': 'Trader Accelerator — Verify your email',
+            'subject': 'Tradeable — Verify your email',
             'body': (
-                "Welcome to Trader Accelerator!\n\n"
+                "Welcome to Tradeable!\n\n"
                 "Your verification code is: {code}\n\n"
                 "Enter it on the verification screen to activate your account. "
                 "This code expires in 15 minutes.\n\n"
@@ -1153,9 +1153,9 @@ EMAIL_I18N = {
             ),
         },
         'es': {
-            'subject': 'Trader Accelerator — Verifica tu correo',
+            'subject': 'Tradeable — Verifica tu correo',
             'body': (
-                "¡Bienvenido a Trader Accelerator!\n\n"
+                "¡Bienvenido a Tradeable!\n\n"
                 "Tu código de verificación es: {code}\n\n"
                 "Ingrésalo en la pantalla de verificación para activar tu cuenta. "
                 "Este código expira en 15 minutos.\n\n"
@@ -1163,9 +1163,9 @@ EMAIL_I18N = {
             ),
         },
         'fr': {
-            'subject': 'Trader Accelerator — Vérifiez votre e-mail',
+            'subject': 'Tradeable — Vérifiez votre e-mail',
             'body': (
-                "Bienvenue sur Trader Accelerator !\n\n"
+                "Bienvenue sur Tradeable !\n\n"
                 "Votre code de vérification est : {code}\n\n"
                 "Saisissez-le sur l'écran de vérification pour activer votre compte. "
                 "Ce code expire dans 15 minutes.\n\n"
@@ -1173,9 +1173,9 @@ EMAIL_I18N = {
             ),
         },
         'pt': {
-            'subject': 'Trader Accelerator — Verifique seu e-mail',
+            'subject': 'Tradeable — Verifique seu e-mail',
             'body': (
-                "Bem-vindo ao Trader Accelerator!\n\n"
+                "Bem-vindo ao Tradeable!\n\n"
                 "Seu código de verificação é: {code}\n\n"
                 "Digite-o na tela de verificação para ativar sua conta. "
                 "Este código expira em 15 minutos.\n\n"
@@ -1255,7 +1255,7 @@ def _send_contact_email(sender_name, sender_email, category, message):
             sender_name, sender_email, message[:200],
         )
         return False
-    subject = f'[Trader Accelerator Contact] {category} — {sender_name}'
+    subject = f'[Tradeable Contact] {category} — {sender_name}'
     body = (
         f"Category : {category}\n"
         f"Name     : {sender_name}\n"
@@ -1286,7 +1286,7 @@ def _send_bug_email(report):
     if not app.config.get('MAIL_PASSWORD'):
         app.logger.warning('MAIL_APP_PASSWORD not set — bug report #%s not emailed.', report.id)
         return False
-    subject = f'[Trader Accelerator BUG] {report.kind} — #{report.id} ({report.username or "guest"})'
+    subject = f'[Tradeable BUG] {report.kind} — #{report.id} ({report.username or "guest"})'
     body = (
         f"Bug #{report.id}\n"
         f"User     : {report.username or '—'} (id {report.user_id}, plan {report.plan or '—'})\n"
@@ -2832,7 +2832,7 @@ def checkout_create():
                     'price_data': {
                         'currency': 'usd',
                         'product_data': {
-                            'name': f'Trader Accelerator — {PLAN_LABELS.get(plan, plan)}',
+                            'name': f'Tradeable — {PLAN_LABELS.get(plan, plan)}',
                             'description': ('Annual' if cycle == 'annual' else 'Monthly') + ' plan',
                         },
                         'unit_amount': int(round(order.final_price * 100)),  # cents
@@ -3658,7 +3658,7 @@ def _build_synapse_pdf(buyer_name: str, buyer_email: str, order_id: str,
 
 <!-- Cover -->
 <div class="cover">
-  <div class="cv-brand">Trader Accelerator</div>
+  <div class="cv-brand">Tradeable</div>
   <div class="cv-title">Synapse Library</div>
   <div class="cv-sub">{esc(CH['cover_sub'])}</div>
   <div class="cv-divider"></div>
@@ -4047,7 +4047,7 @@ def _alert_admin_forum_mute(user, block_count):
         return
     admin_inbox = app.config.get('MAIL_USERNAME', 'mauroramirezmij@gmail.com')
     uname = getattr(user, 'username', None) or f'user#{user.id}'
-    subject = f'[Trader Accelerator] Forum auto-mute — {uname}'
+    subject = f'[Tradeable] Forum auto-mute — {uname}'
     body = (
         f"User      : {uname} (id {user.id})\n"
         f"Reason    : {block_count} moderation blocks within {AUTOMUTE_WINDOW_MIN} min\n"
@@ -5914,48 +5914,48 @@ CERT_I18N = {
            'presented': 'This certificate is awarded to',
            'attained': 'for having attained, through practice and dedication, the rank of',
            'rank': 'Rank', 'of': 'of', 'issued': 'Issue date', 'issuedBy': 'Issued by',
-           'eduNote': 'Educational achievement — recognizes progress in the Trader Accelerator learning program. Not a professional, financial, or trading qualification.',
+           'eduNote': 'Educational achievement — recognizes progress in the Tradeable learning program. Not a professional, financial, or trading qualification.',
            'download': 'Download PDF', 'back': 'Back'},
     'es': {'kicker': 'Certificate of Achievement', 'title': 'Certificado de Rango',
            'presented': 'Se otorga el presente certificado a',
            'attained': 'por haber alcanzado, con práctica y dedicación, el rango de',
            'rank': 'Rango', 'of': 'de', 'issued': 'Fecha de emisión', 'issuedBy': 'Emitido por',
-           'eduNote': 'Logro educativo — reconoce el avance en el programa de aprendizaje de Trader Accelerator. No constituye una calificación profesional, financiera ni de trading.',
+           'eduNote': 'Logro educativo — reconoce el avance en el programa de aprendizaje de Tradeable. No constituye una calificación profesional, financiera ni de trading.',
            'download': 'Descargar PDF', 'back': 'Volver'},
     'fr': {'kicker': 'Certificate of Achievement', 'title': 'Certificat de Rang',
            'presented': 'Le présent certificat est décerné à',
            'attained': 'pour avoir atteint, par la pratique et la persévérance, le rang de',
            'rank': 'Rang', 'of': 'sur', 'issued': "Date d'émission", 'issuedBy': 'Émis par',
-           'eduNote': "Accomplissement éducatif — reconnaît la progression dans le programme d'apprentissage Trader Accelerator. Pas une qualification professionnelle, financière ou de trading.",
+           'eduNote': "Accomplissement éducatif — reconnaît la progression dans le programme d'apprentissage Tradeable. Pas une qualification professionnelle, financière ou de trading.",
            'download': 'Télécharger le PDF', 'back': 'Retour'},
     'pt': {'kicker': 'Certificate of Achievement', 'title': 'Certificado de Rank',
            'presented': 'O presente certificado é concedido a',
            'attained': 'por ter alcançado, com prática e dedicação, o rank de',
            'rank': 'Rank', 'of': 'de', 'issued': 'Data de emissão', 'issuedBy': 'Emitido por',
-           'eduNote': 'Conquista educativa — reconhece o progresso no programa de aprendizado da Trader Accelerator. Não é uma qualificação profissional, financeira ou de trading.',
+           'eduNote': 'Conquista educativa — reconhece o progresso no programa de aprendizado da Tradeable. Não é uma qualificação profissional, financeira ou de trading.',
            'download': 'Baixar PDF', 'back': 'Voltar'},
 }
 VERIFY_I18N = {
     'en': {'okStatus': 'Certificate verified', 'okTitle': 'Authentic document',
            'attained': 'attained the rank of', 'rank': 'Rank', 'issued': 'Issued', 'code': 'Code',
-           'note': 'Issued by Trader Accelerator. This certificate is genuine and on record.',
+           'note': 'Issued by Tradeable. This certificate is genuine and on record.',
            'noStatus': 'Not verified', 'noTitle': 'Certificate not found',
-           'noDesc': 'does not match any certificate issued by Trader Accelerator. It may be mistyped or forged.'},
+           'noDesc': 'does not match any certificate issued by Tradeable. It may be mistyped or forged.'},
     'es': {'okStatus': 'Certificado verificado', 'okTitle': 'Documento auténtico',
            'attained': 'alcanzó el rango de', 'rank': 'Rango', 'issued': 'Emitido', 'code': 'Código',
-           'note': 'Emitido por Trader Accelerator. Este certificado es genuino y consta en nuestros registros.',
+           'note': 'Emitido por Tradeable. Este certificado es genuino y consta en nuestros registros.',
            'noStatus': 'No verificado', 'noTitle': 'Certificado no encontrado',
-           'noDesc': 'no corresponde a ningún certificado emitido por Trader Accelerator. Podría estar mal escrito o ser falso.'},
+           'noDesc': 'no corresponde a ningún certificado emitido por Tradeable. Podría estar mal escrito o ser falso.'},
     'fr': {'okStatus': 'Certificat vérifié', 'okTitle': 'Document authentique',
            'attained': 'a atteint le rang de', 'rank': 'Rang', 'issued': 'Émis', 'code': 'Code',
-           'note': 'Émis par Trader Accelerator. Ce certificat est authentique et enregistré.',
+           'note': 'Émis par Tradeable. Ce certificat est authentique et enregistré.',
            'noStatus': 'Non vérifié', 'noTitle': 'Certificat introuvable',
-           'noDesc': "ne correspond à aucun certificat émis par Trader Accelerator. Il peut être mal saisi ou falsifié."},
+           'noDesc': "ne correspond à aucun certificat émis par Tradeable. Il peut être mal saisi ou falsifié."},
     'pt': {'okStatus': 'Certificado verificado', 'okTitle': 'Documento autêntico',
            'attained': 'alcançou o rank de', 'rank': 'Rank', 'issued': 'Emitido', 'code': 'Código',
-           'note': 'Emitido por Trader Accelerator. Este certificado é genuíno e consta nos registros.',
+           'note': 'Emitido por Tradeable. Este certificado é genuíno e consta nos registros.',
            'noStatus': 'Não verificado', 'noTitle': 'Certificado não encontrado',
-           'noDesc': 'não corresponde a nenhum certificado emitido por Trader Accelerator. Pode estar incorreto ou ser falso.'},
+           'noDesc': 'não corresponde a nenhum certificado emitido por Tradeable. Pode estar incorreto ou ser falso.'},
 }
 
 
@@ -6777,7 +6777,7 @@ def health_check():
 # ── Global error handler — sends WhatsApp alert on 500s ───────────────────
 @app.errorhandler(500)
 def handle_500(e):
-    msg = (f"🚨 *Trader Accelerator — ERROR 500*\n"
+    msg = (f"🚨 *Tradeable — ERROR 500*\n"
            f"URL: {request.url}\n"
            f"Error: {str(e)[:200]}\n"
            f"Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}")

@@ -276,7 +276,7 @@ def legal_page_html(lang, wm_name, wm_email, wm_order, wm_date):
     <strong>{L['id_title']}</strong><br/>
     {L['id_licensed']}: <strong>{wm_name}</strong> &nbsp;·&nbsp; {wm_email}<br/>
     {L['id_order']}: <strong>{wm_order}</strong> &nbsp;·&nbsp; {L['id_date']}: {wm_date}<br/>
-    {L['id_publisher']}: <strong>Trader Accelerator</strong> &nbsp;·&nbsp; {L['id_product']}: Synapse Library ({L['id_edition']})
+    {L['id_publisher']}: <strong>Tradeable</strong> &nbsp;·&nbsp; {L['id_product']}: Synapse Library ({L['id_edition']})
   </div>
 
   <div class="legal-warn">
@@ -305,7 +305,7 @@ def legal_page_html(lang, wm_name, wm_email, wm_order, wm_date):
   </div>
 
   <div class="legal-footer-note">
-    © {year} Trader Accelerator. {L['footer_note']}
+    © {year} Tradeable. {L['footer_note']}
   </div>
 
 </div>"""
@@ -321,7 +321,7 @@ _LEGAL = {
         'id_product': 'Product',
         'id_edition': 'Digital Edition',
         'warn_title': 'CONFIDENTIAL DOCUMENT — RESTRICTED LICENSE',
-        'warn_intro1': 'This document is the exclusive and confidential property of Trader Accelerator. '
+        'warn_intro1': 'This document is the exclusive and confidential property of Tradeable. '
                        'It is licensed solely and personally to the individual identified above for their own '
                        'private study. This license grants no other rights whatsoever.',
         'warn_intro2': 'The following actions are <strong>strictly prohibited</strong> under the terms and conditions '
@@ -339,10 +339,10 @@ _LEGAL = {
         'warn_trace': 'Every copy of this document contains unique digital identification data tied to the licensed '
                       "user's account. Any unauthorized copy that surfaces publicly can be traced back to its origin.",
         'conseq_title': 'Consequences of unauthorized distribution',
-        'conseq_intro': 'Trader Accelerator reserves the right to take any or all of the following actions against any '
+        'conseq_intro': 'Tradeable reserves the right to take any or all of the following actions against any '
                         'individual found to have violated the terms of this license:',
         'consequences': [
-            '<strong>Immediate and permanent suspension</strong> of the user\'s account on the Trader Accelerator '
+            '<strong>Immediate and permanent suspension</strong> of the user\'s account on the Tradeable '
             'platform, without refund of any fees paid.',
             '<strong>Civil legal action</strong> for copyright infringement and breach of contract, including claims '
             'for compensatory damages, loss of revenue, and, where applicable under applicable law, statutory damages '
@@ -352,7 +352,7 @@ _LEGAL = {
             'Notification to relevant professional bodies, brokers, or prop firms where the infringer\'s identity is '
             'known and such disclosure is lawfully permitted.',
         ],
-        'conseq_monitor': 'Trader Accelerator actively monitors public and private channels for unauthorized copies of '
+        'conseq_monitor': 'Tradeable actively monitors public and private channels for unauthorized copies of '
                           'its proprietary materials. We take intellectual property violations seriously and will pursue '
                           'all available legal remedies without prior warning.',
         'edu_title': 'Educational use only — Not financial advice',
@@ -364,7 +364,7 @@ _LEGAL = {
             'involves a substantial risk of loss and is not suitable for every investor. Past performance, simulated '
             'results, and hypothetical scenarios are not indicative of future results. You are solely responsible for '
             'all trading decisions you make.',
-            'Trader Accelerator, its founders, employees, and affiliates shall not be held liable for any financial '
+            'Tradeable, its founders, employees, and affiliates shall not be held liable for any financial '
             'losses incurred as a result of applying, directly or indirectly, any concept, strategy, or information '
             'presented in this document.',
         ],
@@ -384,7 +384,7 @@ _LEGAL = {
         'id_product': 'Producto',
         'id_edition': 'Edición Digital',
         'warn_title': 'DOCUMENTO CONFIDENCIAL — LICENCIA RESTRINGIDA',
-        'warn_intro1': 'Este documento es propiedad exclusiva y confidencial de Trader Accelerator. Se concede en licencia, '
+        'warn_intro1': 'Este documento es propiedad exclusiva y confidencial de Tradeable. Se concede en licencia, '
                        'de forma única y personal, a la persona identificada anteriormente para su estudio privado. Esta '
                        'licencia no otorga ningún otro derecho.',
         'warn_intro2': 'Las siguientes acciones quedan <strong>estrictamente prohibidas</strong> conforme a los términos '
@@ -404,7 +404,7 @@ _LEGAL = {
                       'cuenta del usuario con licencia. Cualquier copia no autorizada que aparezca públicamente puede '
                       'rastrearse hasta su origen.',
         'conseq_title': 'Consecuencias de la distribución no autorizada',
-        'conseq_intro': 'Trader Accelerator se reserva el derecho de emprender cualquiera de las siguientes acciones, o '
+        'conseq_intro': 'Tradeable se reserva el derecho de emprender cualquiera de las siguientes acciones, o '
                         'todas ellas, contra cualquier persona que infrinja los términos de esta licencia:',
         'consequences': [
             '<strong>Suspensión inmediata y permanente</strong> de la cuenta del usuario en la plataforma Trader '
@@ -417,7 +417,7 @@ _LEGAL = {
             'Notificación a los organismos profesionales, brokers o prop firms que corresponda cuando se conozca la '
             'identidad del infractor y dicha divulgación esté legalmente permitida.',
         ],
-        'conseq_monitor': 'Trader Accelerator supervisa activamente canales públicos y privados en busca de copias no '
+        'conseq_monitor': 'Tradeable supervisa activamente canales públicos y privados en busca de copias no '
                           'autorizadas de sus materiales protegidos. Nos tomamos muy en serio las infracciones de '
                           'propiedad intelectual y emprenderemos todas las acciones legales a nuestro alcance sin previo aviso.',
         'edu_title': 'Uso exclusivamente educativo — No es asesoría financiera',
@@ -429,7 +429,7 @@ _LEGAL = {
             'conlleva un riesgo sustancial de pérdida y no resulta adecuado para todos los inversores. Los resultados '
             'pasados, los resultados simulados y los escenarios hipotéticos no garantizan resultados futuros. Tú eres el '
             'único responsable de todas las decisiones de trading que tomes.',
-            'Trader Accelerator, sus fundadores, empleados y afiliados no se responsabilizan de ninguna pérdida '
+            'Tradeable, sus fundadores, empleados y afiliados no se responsabilizan de ninguna pérdida '
             'financiera derivada de la aplicación, directa o indirecta, de cualquier concepto, estrategia o información '
             'contenidos en este documento.',
         ],
@@ -448,7 +448,7 @@ _LEGAL = {
         'id_product': 'Produit',
         'id_edition': 'Édition Numérique',
         'warn_title': 'DOCUMENT CONFIDENTIEL — LICENCE RESTREINTE',
-        'warn_intro1': 'Ce document est la propriété exclusive et confidentielle de Trader Accelerator. Il est concédé '
+        'warn_intro1': 'Ce document est la propriété exclusive et confidentielle de Tradeable. Il est concédé '
                        'sous licence uniquement et personnellement à la personne identifiée ci-dessus pour son propre '
                        "usage privé. Cette licence n'accorde aucun autre droit.",
         'warn_intro2': 'Les actions suivantes sont <strong>strictement interdites</strong> en vertu des conditions '
@@ -468,7 +468,7 @@ _LEGAL = {
                       "compte de l'utilisateur licencié. Toute copie non autorisée qui apparaîtrait publiquement peut "
                       'être retracée jusqu\'à son origine.',
         'conseq_title': 'Conséquences de la distribution non autorisée',
-        'conseq_intro': "Trader Accelerator se réserve le droit d'engager tout ou partie des actions suivantes contre "
+        'conseq_intro': "Tradeable se réserve le droit d'engager tout ou partie des actions suivantes contre "
                         'toute personne reconnue avoir enfreint les conditions de cette licence :',
         'consequences': [
             "<strong>Suspension immédiate et permanente</strong> du compte de l'utilisateur sur la plateforme Trader "
@@ -481,7 +481,7 @@ _LEGAL = {
             "Notification aux organismes professionnels, courtiers ou prop firms concernés lorsque l'identité du "
             'contrevenant est connue et que cette divulgation est légalement autorisée.',
         ],
-        'conseq_monitor': 'Trader Accelerator surveille activement les canaux publics et privés à la recherche de copies '
+        'conseq_monitor': 'Tradeable surveille activement les canaux publics et privés à la recherche de copies '
                           'non autorisées de ses documents propriétaires. Nous prenons les violations de la propriété '
                           'intellectuelle au sérieux et exercerons tous les recours juridiques disponibles sans préavis.',
         'edu_title': 'Usage éducatif uniquement — Pas un conseil financier',
@@ -493,7 +493,7 @@ _LEGAL = {
             'les matières premières, comporte un risque substantiel de perte et ne convient pas à tous les '
             'investisseurs. Les performances passées, les résultats simulés et les scénarios hypothétiques ne préjugent '
             'pas des résultats futurs. Vous êtes seul responsable de toutes les décisions de trading que vous prenez.',
-            "Trader Accelerator, ses fondateurs, employés et affiliés ne sauraient être tenus responsables des pertes "
+            "Tradeable, ses fondateurs, employés et affiliés ne sauraient être tenus responsables des pertes "
             "financières subies à la suite de l'application, directe ou indirecte, de tout concept, stratégie ou "
             'information présenté dans ce document.',
         ],
@@ -512,7 +512,7 @@ _LEGAL = {
         'id_product': 'Produto',
         'id_edition': 'Edição Digital',
         'warn_title': 'DOCUMENTO CONFIDENCIAL — LICENÇA RESTRITA',
-        'warn_intro1': 'Este documento é propriedade exclusiva e confidencial da Trader Accelerator. É licenciado única e '
+        'warn_intro1': 'Este documento é propriedade exclusiva e confidencial da Tradeable. É licenciado única e '
                        'pessoalmente à pessoa identificada acima para o seu próprio estudo privado. Esta licença não '
                        'concede quaisquer outros direitos.',
         'warn_intro2': 'As seguintes ações são <strong>estritamente proibidas</strong> nos termos e condições aceitos no '
@@ -532,10 +532,10 @@ _LEGAL = {
                       'usuário licenciado. Qualquer cópia não autorizada que surja publicamente pode ser rastreada '
                       'até a sua origem.',
         'conseq_title': 'Consequências da distribuição não autorizada',
-        'conseq_intro': 'A Trader Accelerator reserva-se o direito de tomar qualquer uma das seguintes ações, ou todas '
+        'conseq_intro': 'A Tradeable reserva-se o direito de tomar qualquer uma das seguintes ações, ou todas '
                         'elas, contra qualquer pessoa que se verifique ter violado os termos desta licença:',
         'consequences': [
-            '<strong>Suspensão imediata e permanente</strong> da conta do usuário na plataforma Trader Accelerator, '
+            '<strong>Suspensão imediata e permanente</strong> da conta do usuário na plataforma Tradeable, '
             'sem reembolso de quaisquer taxas pagas.',
             '<strong>Ação legal civil</strong> por violação de direitos autorais e quebra de contrato, incluindo '
             'pedidos de indenização por danos, perda de receitas e, quando aplicável nos termos da lei, indenizações '
@@ -545,7 +545,7 @@ _LEGAL = {
             'Notificação aos organismos profissionais, corretoras ou prop firms relevantes quando a identidade do '
             'infrator for conhecida e tal divulgação for legalmente permitida.',
         ],
-        'conseq_monitor': 'A Trader Accelerator monitora ativamente canais públicos e privados em busca de cópias não '
+        'conseq_monitor': 'A Tradeable monitora ativamente canais públicos e privados em busca de cópias não '
                           'autorizadas dos seus materiais proprietários. Levamos as violações de propriedade '
                           'intelectual a sério e exerceremos todos os recursos legais disponíveis sem aviso prévio.',
         'edu_title': 'Uso exclusivamente educativo — Não é aconselhamento financeiro',
@@ -557,7 +557,7 @@ _LEGAL = {
             'envolve um risco substancial de perda e não é adequado para todos os investidores. O desempenho passado, '
             'os resultados simulados e os cenários hipotéticos não são indicativos de resultados futuros. O usuário é '
             'o único responsável por todas as decisões de trading que tomar.',
-            'A Trader Accelerator, os seus fundadores, funcionários e afiliados não serão responsabilizados por '
+            'A Tradeable, os seus fundadores, funcionários e afiliados não serão responsabilizados por '
             'quaisquer perdas financeiras incorridas em resultado da aplicação, direta ou indireta, de qualquer '
             'conceito, estratégia ou informação apresentada neste documento.',
         ],
