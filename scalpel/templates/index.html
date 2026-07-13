@@ -5404,9 +5404,19 @@
       var rb=document.getElementById('disc-reveal'); if(rb) rb.addEventListener('click',function(){ boards.forEach(function(b){ b.finish(); }); });
       var tt=document.getElementById('theme-toggle'); if(tt) tt.addEventListener('click',function(){ setTimeout(function(){ if(isOpen()) paintAll(); },40); });
       var ls=document.getElementById('lang-select'); if(ls) ls.addEventListener('change',function(){ setTimeout(function(){ if(isOpen()) paintAll(); },0); });
-      var u=window.SCALPEL_USER||{}; if(u.plan!=='premium'){ var t=document.getElementById('tab-discover'); if(t) t.style.display=''; }
-      // Standard users already have the Standard tier — only show what's still locked for them.
+      var u=window.SCALPEL_USER||{};
+      // Everyone gets the tab: even Premium can buy the Extras (store camos + Synapse PDF).
+      var t=document.getElementById('tab-discover'); if(t) t.style.display='';
+      // Standard already has the Standard tier — hide the section they own.
       if(u.plan!=='free'){ var ss=document.querySelector('#discover-view .disc-sec[data-plan="std"]'); if(ss) ss.style.display='none'; }
+      // Premium owns every tool — only the Extras (separate purchases) are still relevant.
+      if(u.plan==='premium'){
+        var ps=document.querySelector('#discover-view .disc-sec[data-plan="prem"]'); if(ps) ps.style.display='none';
+        var ha=document.querySelector('.disc-h1 [data-i18n="disc.titleA"]'); if(ha){ ha.setAttribute('data-i18n','disc.titlePremA'); ha.textContent=tr('disc.titlePremA','Complementos para'); }
+        var hb=document.querySelector('.disc-h1 [data-i18n="disc.titleB"]'); if(hb){ hb.setAttribute('data-i18n','disc.titlePremB'); hb.textContent=tr('disc.titlePremB','tu cuenta'); }
+        var le=document.querySelector('.disc-lede'); if(le){ le.setAttribute('data-i18n','disc.ledePrem'); le.textContent=tr('disc.ledePrem','Son compras aparte — no las incluye ningún plan. Rasca para verlas.'); }
+        var cta=document.querySelector('.disc-cta'); if(cta) cta.style.display='none';
+      }
     }
     init();
     return { open:function(){ setTimeout(paintAll,40); }, relang:function(){ if(isOpen()) paintAll(); } };
@@ -6727,7 +6737,10 @@
       'disc.eyebrow': 'Discover',
       'disc.titleA': 'See what',
       'disc.titleB': 'upgrading unlocks',
+      'disc.titlePremA': 'Add-ons for',
+      'disc.titlePremB': 'your account',
       'disc.lede': 'Scratch the panel to preview the tools and features each plan includes. Whatever you reveal stays visible.',
+      'disc.ledePrem': 'These are separate purchases — not included in any plan. Scratch the panel to preview them.',
       'disc.locked': 'Locked features',
       'disc.scratchHere': 'Scratch here to preview what this includes',
       'disc.pct': 'Scratched',
@@ -7204,7 +7217,10 @@
       'disc.eyebrow': 'Descubre',
       'disc.titleA': 'Mira lo que',
       'disc.titleB': 'incluye subir de plan',
+      'disc.titlePremA': 'Complementos para',
+      'disc.titlePremB': 'tu cuenta',
       'disc.lede': 'Rasca el panel para ver una vista previa de las herramientas y funciones que incluye cada plan. Lo que reveles se queda a la vista.',
+      'disc.ledePrem': 'Son compras aparte — no las incluye ningún plan. Rasca el panel para verlas.',
       'disc.locked': 'Funciones bloqueadas',
       'disc.scratchHere': 'Rasca aquí para ver qué incluye',
       'disc.pct': 'Rascado',
@@ -7681,7 +7697,10 @@
       'disc.eyebrow': 'Découvrir',
       'disc.titleA': 'Voyez ce que',
       'disc.titleB': 'débloque une mise à niveau',
+      'disc.titlePremA': 'Compléments pour',
+      'disc.titlePremB': 'votre compte',
       'disc.lede': 'Grattez le panneau pour prévisualiser les outils et fonctions de chaque formule. Ce que vous révélez reste visible.',
+      'disc.ledePrem': 'Ce sont des achats séparés — inclus dans aucune formule. Grattez le panneau pour les découvrir.',
       'disc.locked': 'Fonctions verrouillées',
       'disc.scratchHere': 'Grattez ici pour voir ce que cela inclut',
       'disc.pct': 'Gratté',
@@ -8158,7 +8177,10 @@
       'disc.eyebrow': 'Descubra',
       'disc.titleA': 'Veja o que',
       'disc.titleB': 'subir de plano libera',
+      'disc.titlePremA': 'Complementos para',
+      'disc.titlePremB': 'sua conta',
       'disc.lede': 'Raspe o painel para ver uma prévia das ferramentas e funções que cada plano inclui. O que você revelar continua visível.',
+      'disc.ledePrem': 'São compras à parte — não incluídas em nenhum plano. Raspe o painel para vê-las.',
       'disc.locked': 'Funções bloqueadas',
       'disc.scratchHere': 'Raspe aqui para ver o que isto inclui',
       'disc.pct': 'Raspado',
