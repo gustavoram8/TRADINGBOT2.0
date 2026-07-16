@@ -178,13 +178,31 @@ def send_whatsapp_alert(message):
     threading.Thread(target=_send, daemon=True).start()
 
 # ── AI client ──
-GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "placeholder")
-MODEL = os.environ.get("SCALPEL_MODEL", "gpt-4o")
+# By default the app talks to GitHub Models (free, rate-limited) via GITHUB_TOKEN.
+# If OPENAI_API_KEY is set, it switches to the PAID OpenAI API instead — same
+# model, same prompts, only the endpoint + key change. Fully reversible: unset the
+# key and it falls back to GitHub Models on the next restart. This powers BOTH the
+# analyzer and every other AI call (validation, forum moderation) since they all
+# share this one client.
+GITHUB_TOKEN   = os.environ.get("GITHUB_TOKEN", "placeholder")
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "").strip()
+MODEL          = os.environ.get("SCALPEL_MODEL", "gpt-4o")
 
-client = OpenAI(
-    base_url="https://models.inference.ai.azure.com",
-    api_key=GITHUB_TOKEN,
-)
+if OPENAI_API_KEY:
+    # Paid OpenAI — omitting base_url uses the SDK's default OpenAI endpoint.
+    client = OpenAI(api_key=OPENAI_API_KEY)
+    AI_BACKEND = "openai"
+else:
+    # Free GitHub Models (default).
+    client = OpenAI(
+        base_url="https://models.inference.ai.azure.com",
+        api_key=GITHUB_TOKEN,
+    )
+    AI_BACKEND = "github"
+
+# Logged once at startup so the active backend is greppable in the stdout log
+# (never prints the key itself).
+print(f"[AI] backend={AI_BACKEND} model={MODEL}", flush=True)
 
 # GPT-4o token pricing (USD per 1M tokens) — used only to ESTIMATE AI spend for the
 # admin Analytics & AI-spend dashboard. Override via env if OpenAI changes prices.
