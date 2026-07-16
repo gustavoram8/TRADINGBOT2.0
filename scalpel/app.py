@@ -193,6 +193,64 @@ AI_PRICE_OUT_PER_1M = float(os.environ.get("AI_PRICE_OUT_PER_1M", "10.0"))
 AI_PRICE_IN  = AI_PRICE_IN_PER_1M  / 1_000_000
 AI_PRICE_OUT = AI_PRICE_OUT_PER_1M / 1_000_000
 
+# ── Vision image normalization ──
+# Every chart screenshot is downscaled to a fixed max long-side BEFORE it reaches
+# the vision API, so the per-analysis image cost stays bounded no matter what the
+# trader uploads (a 4K screenshot and a Full-HD one both land at the same size).
+# A trading chart stays fully legible at ~1280px, so this trims image tokens with
+# no loss of analytic detail. Small images are never upscaled (that is the cost
+# FLOOR); the fixed max is the cost CEILING. All tunable via env.
+#   ANALYZE_IMG_MAX_PX=0 disables the resize entirely (send original).
+#   ANALYZE_IMG_DETAIL: "high" (sharp, recommended) | "low" (flat min cost) | "auto".
+#   ANALYZE_IMG_HARD_PX: reject absurd dimensions before decoding (RAM guard).
+ANALYZE_IMG_MAX_PX  = int(os.environ.get("ANALYZE_IMG_MAX_PX", "1280"))
+ANALYZE_IMG_DETAIL  = os.environ.get("ANALYZE_IMG_DETAIL", "high").strip().lower()
+ANALYZE_IMG_HARD_PX = int(os.environ.get("ANALYZE_IMG_HARD_PX", "8000"))
+
+
+class ImageTooLarge(Exception):
+    """Raised when an upload's pixel dimensions exceed the hard RAM guard."""
+
+
+def normalize_chart_image(raw_bytes, content_type):
+    """Downscale a chart screenshot to ANALYZE_IMG_MAX_PX on its long side so the
+    per-analysis vision cost is bounded regardless of the uploaded resolution.
+    Never upscales (small images keep their size → cost floor). Flattens any
+    transparency onto white and re-encodes as JPEG. Raises ImageTooLarge for
+    absurd dimensions (RAM guard). On any OTHER decode/encode failure it returns
+    the original bytes unchanged, so an edge-case image never blocks an analysis."""
+    if ANALYZE_IMG_MAX_PX <= 0:
+        return raw_bytes, content_type
+    try:
+        import io
+        from PIL import Image
+        img = Image.open(io.BytesIO(raw_bytes))
+        w, h = img.size  # available without a full decode
+        if ANALYZE_IMG_HARD_PX and (w > ANALYZE_IMG_HARD_PX or h > ANALYZE_IMG_HARD_PX):
+            raise ImageTooLarge(f"{w}x{h} exceeds {ANALYZE_IMG_HARD_PX}px guard")
+        long_side = max(w, h)
+        if long_side <= ANALYZE_IMG_MAX_PX:
+            return raw_bytes, content_type  # already within the cap → cost floor
+        img.load()
+        # Flatten transparency onto white (charts are opaque) so JPEG is safe.
+        if img.mode in ('RGBA', 'LA', 'P'):
+            img = img.convert('RGBA')
+            bg = Image.new('RGB', img.size, (255, 255, 255))
+            bg.paste(img, mask=img.split()[-1])
+            img = bg
+        elif img.mode != 'RGB':
+            img = img.convert('RGB')
+        scale = ANALYZE_IMG_MAX_PX / float(long_side)
+        img = img.resize((max(1, round(w * scale)), max(1, round(h * scale))), Image.LANCZOS)
+        buf = io.BytesIO()
+        img.save(buf, format='JPEG', quality=85, optimize=True)
+        return buf.getvalue(), 'image/jpeg'
+    except ImageTooLarge:
+        raise
+    except Exception as exc:  # decode/encode edge case → never block the analysis
+        app.logger.warning('Image normalization failed (sending original): %s', exc)
+        return raw_bytes, content_type
+
 
 # ── Stripe (optional) — card payments. Fully inert until STRIPE_SECRET_KEY is
 # set, so production keeps using the manual USDT/bank flow until you flip it on.
@@ -1779,7 +1837,7 @@ def moderate_forum_image(image_data_b64, content_type):
                     "role": "user",
                     "content": [
                         {"type": "text", "text": "Is this image appropriate for a trading forum? Return only the JSON."},
-                        {"type": "image_url", "image_url": {"url": f"data:{content_type};base64,{image_data_b64}"}},
+                        {"type": "image_url", "image_url": {"url": f"data:{content_type};base64,{image_data_b64}", "detail": "low"}},
                     ],
                 },
             ],
@@ -3880,6 +3938,10 @@ def validate():
 
         content_type = screenshot.content_type or 'image/jpeg'
         image_bytes = screenshot.read()
+        try:
+            image_bytes, content_type = normalize_chart_image(image_bytes, content_type)
+        except ImageTooLarge:
+            return jsonify({'error': 'This image is too large to process. Please upload a standard chart screenshot.'}), 400
         image_data = base64.b64encode(image_bytes).decode('utf-8')
 
         response = client.chat.completions.create(
@@ -3892,7 +3954,7 @@ def validate():
                         {"type": "text", "text": "Validate this trading chart screenshot. Return only the JSON object."},
                         {
                             "type": "image_url",
-                            "image_url": {"url": f"data:{content_type};base64,{image_data}"}
+                            "image_url": {"url": f"data:{content_type};base64,{image_data}", "detail": "low"}
                         }
                     ]
                 }
@@ -3942,6 +4004,10 @@ def analyze():
             return jsonify({'error': 'Please upload a JPG, PNG, or WebP image.'}), 400
 
         image_bytes = screenshot.read()
+        try:
+            image_bytes, content_type = normalize_chart_image(image_bytes, content_type)
+        except ImageTooLarge:
+            return jsonify({'error': 'This image is too large to process. Please upload a standard chart screenshot.'}), 400
         image_data = base64.b64encode(image_bytes).decode('utf-8')
 
         confluences_str = ', '.join(confluences) if confluences else 'None specified'
@@ -3985,7 +4051,8 @@ LANGUAGE: Write your entire response in {language}. Keep ICT-specific terms and 
                         {
                             "type": "image_url",
                             "image_url": {
-                                "url": f"data:{content_type};base64,{image_data}"
+                                "url": f"data:{content_type};base64,{image_data}",
+                                "detail": ANALYZE_IMG_DETAIL
                             }
                         }
                     ]

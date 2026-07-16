@@ -17,3 +17,8 @@ segno==1.6.1
 # Optional: Stripe card payments. Only used when STRIPE_SECRET_KEY is set; the
 # app imports it lazily and falls back to the manual USDT/bank flow if absent.
 stripe>=11.0.0
+
+# Chart screenshot downscaling before the vision API (caps per-analysis image
+# cost). Imported lazily in normalize_chart_image(); if absent, the original
+# image is sent unresized — analysis still works, just without the cost cap.
+Pillow>=10.0.0
