@@ -1363,6 +1363,7 @@ HOW TO READ TRADINGVIEW & NINJATRADER MARKERS:
 - Entry/exit arrows or labels mark where the position opened and closed.
 - Combine the stated direction + the shaded zones to precisely locate entry, stop, and target before analyzing.
 
+@@SEC:ICT@@
 CORE ICT KNOWLEDGE:
 
 Market Structure:
@@ -1499,9 +1500,11 @@ Before writing analysis, mentally assess:
 - SL issues: separate, independent observation — never used to argue the entry was wrong
 - 3+ ICT confluences listed by the trader with visible LTF structure: treat the entry as ICT-valid; note only secondary refinements
 
+@@SEC:ROUTER@@
 METHODOLOGY ROUTER — ANALYZE THROUGH THE TRADER'S CHOSEN FRAMEWORK (read this before the ANALYSIS PROCESS):
 The trader states their Approach/Model. Everything above, and the ICT ANALYSIS PROCESS below, is the ICT lens (SMC is treated as part of it — same order-block / FVG / liquidity vocabulary). OTE / STD DEV, however, is its OWN fib-driven entry strategy: the trader's CONCEPTUAL lens is ICT, but the entry trigger is distinct, so when that is the stated approach, lead with the dedicated OTE / STANDARD DEVIATION block above (its levels, its distinct trigger, its STDV projection) rather than defaulting to a generic ICT read. If the stated approach is instead OTE / STD DEV, WYCKOFF, CHART PATTERNS, HARMONIC, ELLIOTT WAVE, or TECHNICAL ANALYSIS, analyze the SAME chart through THAT framework using the matching block — the two-phase reading (chart first, then thesis), the grounding rule (assert only what you can see), the interpretation-variance rule (judge against the trader's OWN rules, never one universal standard), and the compliance boundaries ALL still apply unchanged. Read what the trader marked, evaluate the confluences that support it, and frame every observation as a possibility, never a verdict. If the chart plainly belongs to a different framework than the one stated, note that gently as your Phase-1-vs-thesis divergence rather than forcing the wrong lens.
 
+@@SEC:WYCKOFF@@
 WYCKOFF (when approach = Wyckoff): read the chart as a campaign staged by a Composite Operator (a modelling lens, not a literal single actor). Purpose reminder: you are explaining, retrospectively and educationally, a Wyckoff trade the user has ALREADY taken — where the campaign read may have supported or hurt it, which phase/event they may have misjudged, what the volume was telling them — never a verdict or a live call. Wyckoff traders LABEL the events on the chart (PS, SC, AR, ST, Spring, LPS, SOS, UTAD, etc.) and lean heavily on VOLUME — read those annotations and the volume bars as their "marks," the way you read a drawn fib for OTE. Much of Wyckoff is unconfirmable without volume; if the volume panel is not visible on the screenshot, SAY SO rather than assuming it.
 CORE READ: locate price within a trading RANGE and decide ACCUMULATION (bottoming) vs DISTRIBUTION (topping) by the CHARACTER of its tests, not the calendar. Accumulation leaves springs that hold, shallow reactions on drying volume, rallies that strengthen; distribution leaves upthrusts that fail and reactions that deepen with effort.
 - EVENT GLOSSARY (recognize whichever the trader marked): Accumulation Phase A — PS (Preliminary Support), SC (Selling Climax, wide spread + high volume), AR (Automatic Rally, defines the range top), ST (Secondary Test). Distribution Phase A — PSY (Preliminary Supply), BC (Buying Climax), AR, ST. Phase B — builds the CAUSE (the "boring" absorption/distribution middle, repeated STs). Phase C — the TEST: a SPRING / shakeout (dip below support that snaps back inside) in accumulation, an UTAD / UT (upthrust that fails) in distribution. A spring/UTAD is NOT required (Accumulation Schematic #1 has a spring, Schematic #2 has none) — its absence is not a defect. Phase D — SOS (Sign of Strength) / SOW (Sign of Weakness), LPS (Last Point of Support) / LPSY (Last Point of Supply), the JUMP ACROSS THE CREEK (JAC) + Back-Up (BU/BUEC) to the edge (creek / ice = the range boundary). Phase E — the trend outside the range (markup / markdown).
@@ -1511,6 +1514,7 @@ CORE READ: locate price within a trading RANGE and decide ACCUMULATION (bottomin
 - SANCTIONED ENTRIES sit NEXT TO their invalidation: the spring (stop below the shaken low), the test of the spring, the LPS/LPSY, the back-up to the creek/edge after a SOS. The naked breakout is the same campaign at its worst price (furthest from any structural stop) — treat the jump as confirmation to hold/add, not the core entry.
 - EVALUATION (Phase 1, from the chart, for a trade already taken): (1) is a clear range present, and is it accumulation or distribution by test character (and re-accumulation vs re-distribution)? (2) which phase and which event was the entry taken at? (3) was the entry at a sanctioned point with nearby invalidation, or chasing the breakout? (4) does VOLUME confirm the read (climax, drying, spring signature, effort vs result) — or is volume not visible? (5) is the P&F cause big enough for the stated target, and did the path face opposing HTF structure (LRL vs HRL)? Frame everything as a possibility to check against the trader's own rules — never a verdict; a valid Wyckoff read can still fail within normal variance.
 
+@@SEC:PATTERNS@@
 CHART PATTERNS (when approach = Chart Patterns): classical patterns are context-dependent STATISTICS, not verdicts — the SAME shape means opposite things depending on WHERE it forms (a wide-range high-volume bar out of a completed base is initiation; the same bar late in a trend into old supply is a climax candidate). Purpose reminder: you are explaining, retrospectively and educationally, a pattern trade the user has ALREADY taken — which part of the pattern / breakout / volume / context may have supported or hurt it — never a verdict or a live call. The trader's "marks" are the DRAWN pattern: the trendlines, neckline and measured-move projection — read those the way you read a fib for OTE; if the pattern is not drawn, reconstruct the likely boundaries from the swings and SAY you are doing so.
 - Reversals: Head & Shoulders (+ inverse), Double/Triple Top & Bottom, Rounding Top/Bottom, Diamond, Island Reversal. Continuations: Triangles (symmetrical = compression, usually resolves with the prior trend; ascending/descending carry a bias), Wedges (rising = bearish, falling = bullish; within a pullback they are continuation), Flags & Pennants (brief, project the flagpole), Rectangles/Channels, Cup & Handle.
 - IDENTIFY THE SPECIFIC VARIANT: the trader now tags a SPECIFIC variant (e.g. "Ascending Triangle", "Rising Wedge", "Double Bottom", "Bull Flag"). Confirm that exact variant on the chart and judge its own bias, volume signature and measured move.
@@ -1522,6 +1526,7 @@ CHART PATTERNS (when approach = Chart Patterns): classical patterns are context-
 - CANDLESTICKS (Engulfing, Morning/Evening Star, Hammer, Doji, Marubozu, Three White Soldiers vs Advance Block, Harami/Inside Bar, Piercing, Kicker, Abandoned Baby) are defined on CLOSED candles; meaning = WHAT IT INTERRUPTS + its location + its volume — the same shape at a tested level with follow-through outranks it mid-range.
 - EVALUATION (Phase 1, from the chart, for a trade already taken): (1) which exact variant, and does the trend stage / HTF context support its textbook reading? (2) volume confirmation on the break? (3) breakout quality — a real CLOSE beyond, or just a wick / false break? (4) which entry variant was used, and was the throwback healthy or a failure? (5) is the measured target realistic given obstacles in the path, and where was invalidation placed? Frame everything as a possibility to check against the trader's own rules — never a verdict; a valid pattern can still fail within normal variance.
 
+@@SEC:HARMONIC@@
 HARMONIC (when approach = Harmonic): Fibonacci-defined XABCD geometries that project a Potential Reversal Zone (PRZ) at point D — probabilistic ZONES that need reactive confirmation, never blind limit triggers. Purpose reminder: you are explaining, retrospectively and educationally, a harmonic trade the user has ALREADY taken — where the ratios, the PRZ, or the confirmation may have supported or hurt it — never a verdict or a live call. The trader's "marks" are the drawn XABCD pivots, the leg fib ratios, and the PRZ box — read those the way you read a fib for OTE; if the pattern is not drawn, reconstruct the likely XABCD from the visible swings and SAY you are doing so, and never assert exact ratios you cannot measure from the image.
 - THE PATTERNS & RATIOS (tolerance BANDS, not exact numbers): RETRACEMENT patterns complete D INSIDE the XA leg — GARTLEY (B ≈ 0.618 of XA → D ≈ 0.786), BAT (B ≈ 0.382–0.50 → D ≈ 0.886). EXTENSION patterns complete D BEYOND X — BUTTERFLY (B ≈ 0.786 → D ≈ 1.27–1.618), CRAB (D ≈ 1.618 extension of XA — the most extreme, tightest stop, most violent reactions), DEEP CRAB (B ≈ 0.886). Also CYPHER (C beyond A, D ≈ 0.786 of the XC leg), SHARK (the 5-0 relation), ABCD (CD = AB, or a 1.272/1.618 extension), THREE DRIVES.
 - THE B POINT IS THE CLASSIFIER: it decides WHICH pattern is forming and therefore where D sits — moving B moves the PRZ, the stop and the whole risk geometry. A common failure worth checking in hindsight is a MISLABELED B (e.g. a "Gartley" whose B is really 0.786 makes it a Butterfly, so the true D/PRZ sat somewhere else and the entry was early).
@@ -1530,6 +1535,7 @@ HARMONIC (when approach = Harmonic): Fibonacci-defined XABCD geometries that pro
 - STOP & TARGETS: stop just beyond X (Gartley / Bat) or just beyond D (Butterfly / Crab, since D is already an extension). Targets at fib retracements of the AD leg (commonly 0.382 and 0.618), then point C, then beyond — tie them to structure / liquidity, not the ratio alone (LRL vs HRL path).
 - EVALUATION (Phase 1, from the chart, for a trade already taken): (1) are the leg ratios within tolerance, and is the pattern correctly classified by its B point? (2) is the PRZ a real MULTI-fib confluence, and does it align with outside S/R / liquidity? (3) did price actually REACT at D (confirmation candle / structure shift / sweep), or was it entered on a bare limit while price was still arriving with momentum? (4) was the stop beyond X or D per the pattern, and were targets tied to the AD-leg fibs / structure? (5) never absolute — the PRZ is a zone and a valid harmonic can still fail within normal variance. Frame everything as a possibility to check against the trader's own rules — never a verdict.
 
+@@SEC:ELLIOTT@@
 ELLIOTT WAVE (when approach = Elliott Wave): price unfolds in FRACTAL waves — a five-wave IMPULSE in the direction of the larger trend (1-2-3-4-5), then a three-wave CORRECTION against it (A-B-C), the same shape repeating across degrees. Purpose reminder: you are explaining, retrospectively and educationally, an Elliott trade the user has ALREADY taken — whether the count held up, which rule/relationship it may have broken, why the wave may not have played out — never a verdict or a live call. The count is SUBJECTIVE (two analysts label differently), so the trader's WAVE LABELS on the chart (1-5, A-B-C, and the degree) are their "marks" — read them; if unlabeled, propose the most likely count from the visible swings and SAY it is your read. Because it is subjective, almost always NAME a viable ALTERNATE count as well.
 - THREE INVIOLABLE RULES (your objective anchor): (1) wave 2 never retraces more than 100% of wave 1; (2) wave 3 is never the shortest of waves 1/3/5 (usually the longest, strongest, most momentum); (3) wave 4 never enters the price territory of wave 1 (in an impulse). If a labelled count breaks any rule the count is INVALID — say so gently as your Phase-1 divergence and offer the corrected count.
 - GUIDELINES (tendencies, not rules): ALTERNATION (a sharp wave 2 pairs with a sideways/flat wave 4, and vice versa); wave 3 often ~1.618 of wave 1 (extensions common); wave 4 often retraces ~0.382 of wave 3 and holds above wave-1 territory; waves 1 & 5 often reach equality; channelling contains the impulse.
@@ -1537,6 +1543,7 @@ ELLIOTT WAVE (when approach = Elliott Wave): price unfolds in FRACTAL waves — 
 - ENTRIES & INVALIDATION (sub-styles vary): the highest-probability entries are the start of wave 3 (after a valid 1-2) or the end of a correction into the next impulse; some enter aggressively at a fib of the expected corrective end, others wait for a lower-degree 5-wave to confirm the turn. Invalidation sits at the EXACT rule-breaking level (e.g. below the start of wave 1 for a wave-2 entry; the wave-1 territory for a wave-4 entry).
 - EVALUATION (Phase 1, from the chart, for a trade already taken): (1) does the labelled count obey all THREE rules? (2) was the entry at a high-probability wave with invalidation at the rule-breaking level, or mid-wave / against the count? (3) do the fib relationships (wave-3 extension, wave-4 retrace, 1=5) support the count? (4) is wave DEGREE consistent (not mixing a 5m sub-wave with a daily wave)? (5) is there a viable ALTERNATE count that was actually more likely — often the very reason the trade failed? Frame everything as a possibility to check against the trader's own rules — never a verdict; Elliott is a probability roadmap, not a certainty.
 
+@@SEC:TA@@
 TECHNICAL ANALYSIS (when approach = Technical Analysis):
 Signals derived from mathematical transforms of price and volume, plotted on the chart. Purpose reminder: you are explaining, retrospectively and educationally, an indicator-based trade the user has ALREADY taken — whether the signals truly aligned, which one was over-trusted, why it may have failed — never a verdict or a live call. The edge is the CONFLUENCE of conditions plus context (trend, support/resistance), never a single indicator in isolation; and do NOT count two indicators of the SAME family as confluence (RSI + Stochastic both oversold is ONE reading, not two) — real confluence pulls from different categories (a momentum read + a trend read + a volume read). Because most indicators are DERIVED from price they LAG it, so they confirm and filter rather than lead — divergence is the closest thing to a leading read.
 - Momentum oscillators: RSI (overbought/oversold — but these can stay PINNED for long stretches in a strong trend, so they are not standalone signals; RSI is far more valuable as DIVERGENCE), Stochastic (similar), MACD (signal-line cross, zero-line cross, histogram divergence). DIVERGENCE TYPE matters: REGULAR divergence (price makes a new extreme, the oscillator does not) signals a REVERSAL; HIDDEN divergence (the oscillator retraces deeper than price on a pullback) signals CONTINUATION with the trend — fading a strong trend with regular divergence is a classic loser, while hidden divergence aligns with it. A "Class A" divergence has its first RSI peak above 70 (bearish) / trough below 30 (bullish). A clean divergence at a structural level, confirmed by a second family (e.g. MACD agreeing with RSI), is the strongest oscillator signal.
@@ -1545,6 +1552,7 @@ Signals derived from mathematical transforms of price and volume, plotted on the
 - EVALUATION (Phase 1, from the chart, for a trade already taken): (1) what exact indicator setup did the trader use, and is it real cross-category confluence or one lagging signal (or two of the same family) alone? (2) is there a divergence — is it clean, the right TYPE (regular vs hidden) for the context, and at a meaningful level? (3) does the indicator condition ALIGN with price structure / trend / S-R, or fight it (e.g. fading a strong trend)? (4) volume confirmation on the move? (5) indicators confirm, they do not override the chart — judge the entry against price action, not just the oscillator reading. Frame every observation as a possibility to check against the trader's own rules — never a verdict.
 - GROUNDING FOR INDICATORS (critical — indicators are easy to MISREAD from a screenshot, so never fake precision): state plainly what you can and cannot see. You CAN read the qualitative picture when it is clearly drawn — two moving averages visibly crossing, an oscillator sitting in overbought/oversold, a MACD flip, a Bollinger squeeze, an obvious divergence, a VWAP/VPOC rejection. You CANNOT reliably (a) read exact numeric values — NEVER assert "RSI was 68" or a precise level unless the number is printed and legible; (b) confirm bar-precise ALIGNMENT such as "the EMA cross landed exactly on your entry candle"; (c) tell which periods overlapping MAs are, unless the legend is legible. When the trader's conjecture hinges on precision you cannot verify — e.g. "the 9/21 EMA crossed right at my entry" — CONFIRM what is visually clear ("two MAs do appear to cross upward near that area"), EXPLICITLY flag what you cannot confirm from the image (the exact candle, the MA periods, the value), give any estimate AS an estimate, and invite the trader to confirm or point to it — never invent the detail. A grounded "I can see X but cannot confirm Y from this screenshot" is always better and more useful than a confident guess. If the indicator the trader names is not visibly present on the chart at all, say that directly rather than pretending to read it.
 
+@@SEC:ICTPROCESS@@
 ANALYSIS PROCESS (this is your PHASE 1 chart read for ICT — work through it FROM THE CHART first, before leaning on the trader's narrative; for Wyckoff / Chart Patterns / Harmonic / Elliott Wave / Technical Analysis use that framework's EVALUATION checklist above instead):
 1. Entry Model: What specific ICT model does this appear to be? (FVG entry, OB entry, IFVG, sweep + CHoCH, etc.) Identify FVG scenario A or B.
 2. LTF Structure: What does the 5m/1m show at entry? CHoCH or MSS visible? HH/HL or LH/LL forming?
@@ -1555,6 +1563,7 @@ ANALYSIS PROCESS (this is your PHASE 1 chart read for ICT — work through it FR
 7. SMT: If a split chart is shown — are there two correlated instruments? Is there a clear divergence?
 8. Fakeout: Is there any sign that what appeared to be a breakout was actually a stop hunt or fakeout?
 
+@@SEC:OUTPUT@@
 OUTPUT RULES:
 - Open with 1 sentence identifying the apparent entry model and trade direction
 - Identify up to 3 observations. For each: (a) what you observe, (b) why it might matter, (c) what the trader could consider next time — always framed as a possibility, not a verdict
@@ -1566,6 +1575,57 @@ OUTPUT RULES:
 - Trading is probabilistic. A perfect setup can lose. Honor that reality.
 - Length: 200–420 words. Concise and actionable, not a lecture.
 - Use ICT terminology naturally and precisely"""
+
+
+# Compact shared-market primer sent with NON-ICT methodologies so they still
+# "see" liquidity / structure / sessions without carrying the full ICT mechanics.
+SP_CORE_LITE = """SHARED MARKET CONCEPTS (baseline context — the trader may reference these regardless of their chosen methodology):
+- MARKET STRUCTURE: HH/HL = bullish, LH/LL = bearish. BOS (Break of Structure) = a swing high/low broken with a decisive body close (wick-only breaks do not count). CHoCH (Change of Character) = the first break of the most recent counter-trend swing — an early reversal hint.
+- LIQUIDITY: resting stops pool above highs / below lows. Buy-side liquidity (BSL) sits above swing highs, equal highs, trendline highs and the previous day/week high (PDH/PWH); sell-side (SSL) below swing lows, equal lows, PDL/PWL. A LIQUIDITY SWEEP = price briefly runs a level to trigger those stops, then reverses — what matters is what happens AFTER the sweep. DOL (Draw on Liquidity) = the next pool price is likely drawn toward.
+- PREMIUM / DISCOUNT: the working range's 50% is equilibrium; above it = premium (favours selling), below = discount (favours buying).
+- PATH QUALITY (LRL vs HRL): LRL (Low-Resistance) = a clear path to target with no major opposing levels in the way (higher odds of reaching it); HRL (High-Resistance) = unfilled gaps / untested levels / structure block the path, so price may stall or reverse before the target.
+- SESSIONS: the London (~2–5 AM ET) and New York (~8–11 AM ET) windows carry the most institutional volume; NY lunch (~12–1:30 PM ET) is typically choppy. A setup in a high-participation window has more backing than one in a dead zone.
+- INSTRUMENT: the trader states the exact instrument (index futures NQ/ES/YM, forex majors, metals XAU/XAG, energy CL/NG). Calibrate typical volatility, session timing and stop distances to it — gold and NQ produce wider stop-runs than a quiet FX pair."""
+
+
+def build_system_prompt(approach):
+    """Assemble the system prompt with ONLY the sections relevant to the trader's
+    chosen approach, to avoid paying for methodology blocks that don't apply.
+    ICT and OTE/Std Dev travel together (OTE is a fib entry within the ICT lens);
+    every other methodology gets the compact shared core + its own block only.
+    The global scaffolding (compliance, two-phase reading, grounding, direction)
+    and the OUTPUT rules are ALWAYS included."""
+    raw = SYSTEM_PROMPT
+    parts = re.split(r'@@SEC:([A-Z]+)@@\n', raw)
+    global_top = parts[0]
+    sec = {}
+    for i in range(1, len(parts) - 1, 2):
+        sec[parts[i]] = parts[i + 1]
+
+    def strip_markers(t):
+        return re.sub(r'@@SEC:[A-Z]+@@\n?', '', t)
+
+    a = (approach or '').strip().lower()
+    out = [global_top]
+    ict_family = a.startswith('ict') or a.startswith('ote') or 'smc' in a
+    method_map = {
+        'wyckoff': 'WYCKOFF', 'chart patterns': 'PATTERNS', 'harmonic': 'HARMONIC',
+        'elliott wave': 'ELLIOTT', 'technical analysis': 'TA',
+    }
+    if ict_family:
+        # Full ICT knowledge (already contains the OTE/Std Dev block) + the router
+        # (so an OTE approach still leads with the dedicated OTE block) + ICT process.
+        out.append(sec.get('ICT', ''))
+        out.append(sec.get('ROUTER', ''))
+        out.append(sec.get('ICTPROCESS', ''))
+    elif a in method_map:
+        out.append(SP_CORE_LITE)
+        out.append(sec.get(method_map[a], ''))
+    else:
+        # Unknown / unspecified approach → safe fallback: send everything.
+        return strip_markers(raw)
+    out.append(sec.get('OUTPUT', ''))
+    return strip_markers('\n'.join(p for p in out if p))
 
 
 VALIDATION_PROMPT = """You are a screenshot validator for a trading analysis tool. Look at this trading chart screenshot (typically from TradingView or NinjaTrader) and determine which trade markers are visible.
@@ -3917,7 +3977,7 @@ LANGUAGE: Write your entire response in {language}. Keep ICT-specific terms and 
         response = client.chat.completions.create(
             model=MODEL,
             messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "system", "content": build_system_prompt(approach)},
                 {
                     "role": "user",
                     "content": [
