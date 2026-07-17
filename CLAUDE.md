@@ -96,6 +96,20 @@ con delimitador `'` y comillas HTML dobles; guillemets `« »`. PT brasileño (v
 **Nota:** fechas "Last updated" quedan server/estáticas en inglés (bajo impacto, igual criterio que el
 resto del sitio con `strftime`).
 
+**✅ PRODUCTS MENU — lista completa sin scroll (2026-07-17).** Bug: en `/app` (shell Aurora) el
+menú Products vive DENTRO del `.ag-sidebar` como acordeón inline; con logo(96px)+tabs+11 items el
+sidebar excede `max-height:calc(100vh-44px)` y el `overflow:auto` obligaba a scrollear → los items de
+abajo (Guide/Contact/Settings) quedaban ocultos. Trampa: el sidebar tiene `backdrop-filter` → es
+containing block y recorta hijos `position:fixed`, así que no se puede flotar en su lugar. Fix
+(IIFE Products ~línea 11024 + CSS `.products-menu.pm-floating`): en **desktop** (`innerWidth>900`) al
+abrir se hace `popOut()` → mueve el menú a `<body>` (escapa el clip), le pone base `.products-menu`
+(panel con fondo/borde/sombra) + `pm-floating` (max-height safety), y `place()` lo ancla como flyout al
+lado del sidebar (`left=sb.right+10`, `top=sb.top`, clamp al viewport). `close()` hace `popBack()`
+(restaura a `homeParent`/`homeNext` en el sidebar). **Móvil** (`≤900`) sigue inline (la página
+scrollea natural). Verificado en navegador (Playwright): 1366×768/1280×720 el sidebar SÍ desbordaba;
+tras el fix el menú queda 100% visible (último item en y=531<viewport, sin scroll interno) en desktop
+y sigue inline en 380px.
+
 **✅ SYNAPSE WEB — i18n CABLEADO (2026-07-17).** Bug reportado: el mapa/dossiers de Synapse
 salían en inglés bajo ES/FR/PT. Causa: las traducciones YA existían completas y auditadas
 (`synapse_content_{es,fr,pt}.json` 41 temas + `synapse_translations.py` TITLES/METHODS) pero **solo

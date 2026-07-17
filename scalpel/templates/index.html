@@ -1837,6 +1837,11 @@
     }
     body.light .products-menu { background: #ffffff; }
     .products-menu.open { display: flex; }
+    /* When the Aurora sidebar pops the menu out to <body> (desktop) it floats as
+       a full panel beside the sidebar so the WHOLE list shows without the
+       sidebar's own scrollbar hiding the lower items. Height is clamped only as
+       a safety on very short viewports. */
+    .products-menu.pm-floating { max-height: calc(100vh - 16px); overflow-y: auto; z-index: 200; }
     .products-group-label { font-size: 10px; font-weight: 700; text-transform: uppercase;
       letter-spacing: .1em; color: var(--muted); padding: 7px 12px 4px; }
     .products-sep { height: 1px; background: var(--border); margin: 6px 4px; }
@@ -11025,18 +11030,55 @@
     const btn  = document.getElementById('products-tab');
     const menu = document.getElementById('products-menu');
     if (!btn || !menu) return;
+
+    // On desktop the menu lives INSIDE the Aurora sidebar as an inline accordion,
+    // but the full list (11 items) plus the logo + tabs is taller than the
+    // sidebar can show without its own scrollbar — which hid the lower items
+    // (Guide / Contact / Settings) from anyone who didn't realise they had to
+    // scroll. The sidebar's backdrop-filter also traps + clips any fixed child,
+    // so we can't just float it in place. Fix: on desktop, pop the menu OUT to
+    // <body> and float it as a full panel beside the sidebar, clamped to the
+    // viewport so the whole list is visible at once. Mobile keeps the inline
+    // accordion (the page scrolls naturally there).
+    let homeParent = null, homeNext = null;
+    function popOut() {
+      if (menu.parentElement === document.body) return;
+      homeParent = menu.parentElement; homeNext = menu.nextSibling;
+      document.body.appendChild(menu);
+      menu.classList.add('pm-floating');
+    }
+    function popBack() {
+      menu.classList.remove('pm-floating');
+      if (homeParent && menu.parentElement === document.body) {
+        homeParent.insertBefore(menu, homeNext);
+      }
+    }
     function place() {
-      // Inside the Aurora sidebar the menu is an inline accordion (position:static),
-      // so it needs no manual positioning — the sidebar scrolls if it overflows.
-      if (menu.closest('.ag-sidebar')) return;
-      const r = btn.getBoundingClientRect();
-      menu.style.top = (r.bottom + 6) + 'px';
-      // align right edge of menu with right edge of the button, clamp to viewport
-      let left = r.right - menu.offsetWidth;
-      left = Math.max(8, Math.min(left, window.innerWidth - menu.offsetWidth - 8));
-      menu.style.left = left + 'px';
+      const sidebar = document.querySelector('.ag-sidebar');
+      // Mobile / no-Aurora: menu is still inline in the sidebar → nothing to do.
+      if (sidebar && menu.parentElement !== document.body) return;
+
+      const h = menu.offsetHeight, w = menu.offsetWidth;
+      let left, top;
+      if (sidebar) {
+        // Desktop Aurora: a flyout beside the sidebar, aligned to its top so the
+        // whole list has the full viewport height available.
+        const sb = sidebar.getBoundingClientRect();
+        left = sb.right + 10; top = sb.top;
+      } else {
+        // Non-Aurora fallback: drop under the Products button.
+        const r = btn.getBoundingClientRect();
+        left = r.right - w; top = r.bottom + 6;
+      }
+      // Clamp so the panel is fully on screen (lifts up if it would overflow).
+      left = Math.max(8, Math.min(left, window.innerWidth  - w - 8));
+      if (top + h > window.innerHeight - 8) top = window.innerHeight - h - 8;
+      top = Math.max(8, top);
+      menu.style.left = left + 'px'; menu.style.top = top + 'px';
     }
     function open() {
+      const sidebar = document.querySelector('.ag-sidebar');
+      if (sidebar && window.innerWidth > 900) popOut();
       menu.classList.add('open'); btn.classList.add('open');
       btn.setAttribute('aria-expanded', 'true'); menu.setAttribute('aria-hidden', 'false');
       place();
@@ -11044,15 +11086,18 @@
     function close() {
       menu.classList.remove('open'); btn.classList.remove('open');
       btn.setAttribute('aria-expanded', 'false'); menu.setAttribute('aria-hidden', 'true');
+      menu.style.left = ''; menu.style.top = '';
+      popBack();
     }
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       menu.classList.contains('open') ? close() : open();
     });
     document.addEventListener('click', (e) => {
-      if (!menu.contains(e.target) && e.target !== btn) close();
+      if (!menu.contains(e.target) && !btn.contains(e.target) && e.target !== btn) close();
     });
-    window.addEventListener('resize', () => { if (menu.classList.contains('open')) place(); });
+    // Close on resize — the desktop/mobile DOM home differs, simplest to reset.
+    window.addEventListener('resize', () => { if (menu.classList.contains('open')) close(); });
     window.addEventListener('scroll', () => { if (menu.classList.contains('open')) place(); }, true);
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
   })();
