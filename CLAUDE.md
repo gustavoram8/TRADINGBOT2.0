@@ -103,14 +103,16 @@ abajo (Guide/Contact/Settings) quedaban ocultos. Trampa: el sidebar tiene `backd
 containing block y recorta hijos `position:fixed`, así que no se puede flotar en su lugar. Fix
 (IIFE Products ~línea 11024 + CSS `.products-menu.pm-floating`): en **desktop** (`innerWidth>900`) al
 abrir se hace `popOut()` → mueve el menú a `<body>` (escapa el clip), le pone base `.products-menu`
-(panel con fondo/borde/sombra) + `pm-floating`, y `place()` lo abre como **dropdown HACIA ABAJO** desde
-la pestaña (`left=tab.left`, `top=tab.bottom+4`, clamp al viewport). **Products es la ÚLTIMA tab** (queda
-muy abajo), así que en `pm-floating` el menú se muestra en **2 COLUMNAS** (`display:grid` repeat(2),
-labels/seps con `grid-column:1/-1`) → mitad de alto, cabe entero debajo de la pestaña sin elevarse (antes,
-en 1 columna, se elevaba y TAPABA el logo/tabs de arriba). `close()` hace `popBack()` (restaura a
-`homeParent`/`homeNext`). **Móvil** (`≤900`) sigue inline 1-columna (la página scrollea natural).
-Verificado en navegador (Playwright) 1366×768/1280×720/1440×900/1536×1000 con el peor caso de 10 items:
-`belowTab:true` (cae debajo, top≈tab.bottom), 100% visible, sin scroll, sin tapar el top; inline en 380px.
+(panel con fondo/borde/sombra) + `pm-floating`, y `place()` lo abre como **dropdown HACIA ABAJO** en
+**UNA columna** desde la pestaña (`left=tab.left`, `top=tab.bottom+4`). **Products es la ÚLTIMA tab**
+(queda muy abajo) → en pantallas bajas la lista no cabe entera debajo; en vez de elevarse y tapar el
+logo/tabs, `place()` **topa `maxHeight = innerHeight − top − 8`** y el menú **scrollea internamente**
+si hace falta (pantallas altas: completo sin scroll; bajas: scroll interno). NUNCA se eleva ni tapa el
+top. `close()` hace `popBack()` + limpia left/top/maxHeight. **Móvil** (`≤900`) sigue inline (página
+scrollea natural). Verificado en navegador (Playwright) 1366×768/1280×720/1440×900/1600×1050 con 10
+items: `display:flex` 1 columna (no se parte), `belowTab:true`, alineado a la pestaña, on-screen, sin
+tapar el top; scroll interno solo en 768/720; inline en 380px. **Historia:** intentos previos (flyout
+lateral, luego 2 columnas) rechazados por el usuario → quedó esta versión simple 1-col + scroll.
 
 **✅ SYNAPSE WEB — i18n CABLEADO (2026-07-17).** Bug reportado: el mapa/dossiers de Synapse
 salían en inglés bajo ES/FR/PT. Causa: las traducciones YA existían completas y auditadas

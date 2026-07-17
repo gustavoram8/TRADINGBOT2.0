@@ -1838,20 +1838,11 @@
     body.light .products-menu { background: #ffffff; }
     .products-menu.open { display: flex; }
     /* When the Aurora sidebar pops the menu out to <body> (desktop) it floats as
-       a full panel dropping down from the Products tab. Products is the LAST
-       tab, so it sits low — a single-column list of ~10 items would be taller
-       than the space below it and would have to lift up over the tabs/logo. So
-       while floating we lay the items out in TWO columns: half the height, it
-       fits fully below the tab without covering anything or scrolling. Group
-       labels and separators span both columns. (Mobile keeps the single-column
-       inline accordion.) */
-    .products-menu.pm-floating {
-      display: grid; grid-template-columns: repeat(2, minmax(148px, 1fr));
-      gap: 1px 6px; align-content: start;
-      max-height: calc(100vh - 16px); overflow-y: auto; z-index: 200;
-    }
-    .products-menu.pm-floating .products-group-label,
-    .products-menu.pm-floating .products-sep { grid-column: 1 / -1; }
+       a single-column dropdown below the Products tab. Products is the LAST tab,
+       so on shorter screens the full list can be taller than the space below it;
+       rather than lift up over the logo/tabs, JS caps its height to the space
+       below and it simply scrolls internally. z-index keeps it above content. */
+    .products-menu.pm-floating { overflow-y: auto; z-index: 200; }
     .products-group-label { font-size: 10px; font-weight: 700; text-transform: uppercase;
       letter-spacing: .1em; color: var(--muted); padding: 7px 12px 4px; }
     .products-sep { height: 1px; background: var(--border); margin: 6px 4px; }
@@ -11068,17 +11059,16 @@
       // Mobile / no-Aurora: menu is still inline in the sidebar → nothing to do.
       if (sidebar && menu.parentElement !== document.body) return;
 
-      const h = menu.offsetHeight, w = menu.offsetWidth;
+      const w = menu.offsetWidth;
       const r = btn.getBoundingClientRect();
-      // Drop DOWN from the Products tab. Sidebar: align the menu's left edge with
-      // the tab's; fallback (top nav): right-align under the button.
+      // Drop straight DOWN from the Products tab. Sidebar: align the menu's left
+      // edge with the tab's; fallback (top nav): right-align under the button.
       let left = sidebar ? r.left : (r.right - w);
-      let top  = r.bottom + (sidebar ? 4 : 6);
-      // Clamp fully on screen — if the list would run off the bottom, lift it up
-      // just enough so the WHOLE list stays visible without an internal scroll.
-      left = Math.max(8, Math.min(left, window.innerWidth  - w - 8));
-      if (top + h > window.innerHeight - 8) top = window.innerHeight - h - 8;
-      top = Math.max(8, top);
+      const top = r.bottom + (sidebar ? 4 : 6);
+      left = Math.max(8, Math.min(left, window.innerWidth - w - 8));
+      // Cap the height to the space BELOW the tab so the panel never lifts up
+      // over the logo/tabs — if the list is taller than that, it scrolls inside.
+      menu.style.maxHeight = Math.max(140, window.innerHeight - top - 8) + 'px';
       menu.style.left = left + 'px'; menu.style.top = top + 'px';
     }
     function open() {
@@ -11091,7 +11081,7 @@
     function close() {
       menu.classList.remove('open'); btn.classList.remove('open');
       btn.setAttribute('aria-expanded', 'false'); menu.setAttribute('aria-hidden', 'true');
-      menu.style.left = ''; menu.style.top = '';
+      menu.style.left = ''; menu.style.top = ''; menu.style.maxHeight = '';
       popBack();
     }
     btn.addEventListener('click', (e) => {
