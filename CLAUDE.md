@@ -103,13 +103,14 @@ abajo (Guide/Contact/Settings) quedaban ocultos. Trampa: el sidebar tiene `backd
 containing block y recorta hijos `position:fixed`, así que no se puede flotar en su lugar. Fix
 (IIFE Products ~línea 11024 + CSS `.products-menu.pm-floating`): en **desktop** (`innerWidth>900`) al
 abrir se hace `popOut()` → mueve el menú a `<body>` (escapa el clip), le pone base `.products-menu`
-(panel con fondo/borde/sombra) + `pm-floating` (max-height safety), y `place()` lo abre como **dropdown
-HACIA ABAJO** desde la pestaña (`left=tab.left`, `top=tab.bottom+4`), con clamp al viewport: si la lista
-se saldría por abajo, se eleva lo justo para quedar 100% visible sin scroll interno (en pantallas altas
-cae recto debajo; en laptops bajas se eleva). `close()` hace `popBack()` (restaura a `homeParent`/
-`homeNext` en el sidebar). **Móvil** (`≤900`) sigue inline (la página scrollea natural). Verificado en
-navegador (Playwright) 1366×768/1280×720/1440×900/1536×1000: alineado a la pestaña, 100% visible, último
-item dentro del viewport, sin scroll; en 900px+ cae recto hacia abajo; sigue inline en 380px.
+(panel con fondo/borde/sombra) + `pm-floating`, y `place()` lo abre como **dropdown HACIA ABAJO** desde
+la pestaña (`left=tab.left`, `top=tab.bottom+4`, clamp al viewport). **Products es la ÚLTIMA tab** (queda
+muy abajo), así que en `pm-floating` el menú se muestra en **2 COLUMNAS** (`display:grid` repeat(2),
+labels/seps con `grid-column:1/-1`) → mitad de alto, cabe entero debajo de la pestaña sin elevarse (antes,
+en 1 columna, se elevaba y TAPABA el logo/tabs de arriba). `close()` hace `popBack()` (restaura a
+`homeParent`/`homeNext`). **Móvil** (`≤900`) sigue inline 1-columna (la página scrollea natural).
+Verificado en navegador (Playwright) 1366×768/1280×720/1440×900/1536×1000 con el peor caso de 10 items:
+`belowTab:true` (cae debajo, top≈tab.bottom), 100% visible, sin scroll, sin tapar el top; inline en 380px.
 
 **✅ SYNAPSE WEB — i18n CABLEADO (2026-07-17).** Bug reportado: el mapa/dossiers de Synapse
 salían en inglés bajo ES/FR/PT. Causa: las traducciones YA existían completas y auditadas

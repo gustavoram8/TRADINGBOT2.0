@@ -1838,10 +1838,20 @@
     body.light .products-menu { background: #ffffff; }
     .products-menu.open { display: flex; }
     /* When the Aurora sidebar pops the menu out to <body> (desktop) it floats as
-       a full panel beside the sidebar so the WHOLE list shows without the
-       sidebar's own scrollbar hiding the lower items. Height is clamped only as
-       a safety on very short viewports. */
-    .products-menu.pm-floating { max-height: calc(100vh - 16px); overflow-y: auto; z-index: 200; }
+       a full panel dropping down from the Products tab. Products is the LAST
+       tab, so it sits low — a single-column list of ~10 items would be taller
+       than the space below it and would have to lift up over the tabs/logo. So
+       while floating we lay the items out in TWO columns: half the height, it
+       fits fully below the tab without covering anything or scrolling. Group
+       labels and separators span both columns. (Mobile keeps the single-column
+       inline accordion.) */
+    .products-menu.pm-floating {
+      display: grid; grid-template-columns: repeat(2, minmax(148px, 1fr));
+      gap: 1px 6px; align-content: start;
+      max-height: calc(100vh - 16px); overflow-y: auto; z-index: 200;
+    }
+    .products-menu.pm-floating .products-group-label,
+    .products-menu.pm-floating .products-sep { grid-column: 1 / -1; }
     .products-group-label { font-size: 10px; font-weight: 700; text-transform: uppercase;
       letter-spacing: .1em; color: var(--muted); padding: 7px 12px 4px; }
     .products-sep { height: 1px; background: var(--border); margin: 6px 4px; }
