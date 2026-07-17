@@ -11059,18 +11059,13 @@
       if (sidebar && menu.parentElement !== document.body) return;
 
       const h = menu.offsetHeight, w = menu.offsetWidth;
-      let left, top;
-      if (sidebar) {
-        // Desktop Aurora: a flyout beside the sidebar, aligned to its top so the
-        // whole list has the full viewport height available.
-        const sb = sidebar.getBoundingClientRect();
-        left = sb.right + 10; top = sb.top;
-      } else {
-        // Non-Aurora fallback: drop under the Products button.
-        const r = btn.getBoundingClientRect();
-        left = r.right - w; top = r.bottom + 6;
-      }
-      // Clamp so the panel is fully on screen (lifts up if it would overflow).
+      const r = btn.getBoundingClientRect();
+      // Drop DOWN from the Products tab. Sidebar: align the menu's left edge with
+      // the tab's; fallback (top nav): right-align under the button.
+      let left = sidebar ? r.left : (r.right - w);
+      let top  = r.bottom + (sidebar ? 4 : 6);
+      // Clamp fully on screen — if the list would run off the bottom, lift it up
+      // just enough so the WHOLE list stays visible without an internal scroll.
       left = Math.max(8, Math.min(left, window.innerWidth  - w - 8));
       if (top + h > window.innerHeight - 8) top = window.innerHeight - h - 8;
       top = Math.max(8, top);

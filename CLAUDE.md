@@ -103,12 +103,13 @@ abajo (Guide/Contact/Settings) quedaban ocultos. Trampa: el sidebar tiene `backd
 containing block y recorta hijos `position:fixed`, así que no se puede flotar en su lugar. Fix
 (IIFE Products ~línea 11024 + CSS `.products-menu.pm-floating`): en **desktop** (`innerWidth>900`) al
 abrir se hace `popOut()` → mueve el menú a `<body>` (escapa el clip), le pone base `.products-menu`
-(panel con fondo/borde/sombra) + `pm-floating` (max-height safety), y `place()` lo ancla como flyout al
-lado del sidebar (`left=sb.right+10`, `top=sb.top`, clamp al viewport). `close()` hace `popBack()`
-(restaura a `homeParent`/`homeNext` en el sidebar). **Móvil** (`≤900`) sigue inline (la página
-scrollea natural). Verificado en navegador (Playwright): 1366×768/1280×720 el sidebar SÍ desbordaba;
-tras el fix el menú queda 100% visible (último item en y=531<viewport, sin scroll interno) en desktop
-y sigue inline en 380px.
+(panel con fondo/borde/sombra) + `pm-floating` (max-height safety), y `place()` lo abre como **dropdown
+HACIA ABAJO** desde la pestaña (`left=tab.left`, `top=tab.bottom+4`), con clamp al viewport: si la lista
+se saldría por abajo, se eleva lo justo para quedar 100% visible sin scroll interno (en pantallas altas
+cae recto debajo; en laptops bajas se eleva). `close()` hace `popBack()` (restaura a `homeParent`/
+`homeNext` en el sidebar). **Móvil** (`≤900`) sigue inline (la página scrollea natural). Verificado en
+navegador (Playwright) 1366×768/1280×720/1440×900/1536×1000: alineado a la pestaña, 100% visible, último
+item dentro del viewport, sin scroll; en 900px+ cae recto hacia abajo; sigue inline en 380px.
 
 **✅ SYNAPSE WEB — i18n CABLEADO (2026-07-17).** Bug reportado: el mapa/dossiers de Synapse
 salían en inglés bajo ES/FR/PT. Causa: las traducciones YA existían completas y auditadas
