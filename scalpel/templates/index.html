@@ -3369,7 +3369,13 @@
 
     .syn-lib-top {
       position: absolute; top: 0; left: 0; right: 0; z-index: 6;
-      display: flex; align-items: center; gap: 12px;
+      /* 3-column grid with EQUAL side columns (1fr … 1fr) so the centre column —
+         the title — is centred over the whole bar regardless of how wide the
+         back/close buttons are. A plain flex row centred the title only within
+         the space left between the buttons, so the wider back button pushed it
+         off to one side. */
+      display: grid; grid-template-columns: 1fr auto 1fr;
+      align-items: center; gap: 12px;
       padding: 16px 18px;
       background: linear-gradient(180deg, rgba(2,5,16,.85), transparent);
     }
@@ -3381,11 +3387,16 @@
       transition: background .18s ease, border-color .18s ease, transform .18s ease, opacity .25s ease;
     }
     .syn-lib-close { padding: 8px; }
+    /* Pin the buttons to the outer edges of their equal side columns so the
+       centre column stays perfectly centred. */
+    .syn-lib-back  { justify-self: start; }
+    .syn-lib-close { justify-self: end; }
     .syn-lib-back:hover, .syn-lib-close:hover { background: rgba(80,200,200,.18); border-color: rgba(80,200,200,.5); }
     .syn-lib-back[hidden] { opacity: 0; pointer-events: none; transform: translateX(-8px); }
     .syn-lib-title {
-      flex: 1; text-align: center; font-size: 14px; letter-spacing: .26em; text-transform: uppercase;
+      text-align: center; font-size: 14px; letter-spacing: .26em; text-transform: uppercase;
       color: #8fd2cf; font-weight: 600; text-shadow: 0 0 18px rgba(60,190,180,.5);
+      min-width: 0;
     }
 
     .syn-lib-stage { position: absolute; inset: 0; z-index: 4; }
