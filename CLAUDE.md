@@ -96,6 +96,21 @@ con delimitador `'` y comillas HTML dobles; guillemets `« »`. PT brasileño (v
 **Nota:** fechas "Last updated" quedan server/estáticas en inglés (bajo impacto, igual criterio que el
 resto del sitio con `strftime`).
 
+**✅ SYNAPSE WEB — i18n CABLEADO (2026-07-17).** Bug reportado: el mapa/dossiers de Synapse
+salían en inglés bajo ES/FR/PT. Causa: las traducciones YA existían completas y auditadas
+(`synapse_content_{es,fr,pt}.json` 41 temas + `synapse_translations.py` TITLES/METHODS) pero **solo
+las consumía el PDF** — el flipbook web leía únicamente el inglés de `synapse_library.js`. Fix: endpoint
+`/api/synapse/l10n/<lang>` (titles+methods+content, cache 1h; en/desconocido→pack vacío) + en el
+cliente `loadSynL10n()` (cache por idioma, fallback total a inglés si falla) con helpers
+`synMeth/synTitle/synSub` aplicados en: galaxia (nombres+subs), clúster (título barra, núcleo,
+etiquetas neuronas), píldora de progreso (clave nueva `LX.pillOf`), cabecera del dossier y
+**merge campo-a-campo en `buildPages`** (`Object.assign({}, base, override)`). El pack se espera en
+`open()` (`Promise.all`) → primer render ya traducido; wrap de `window.applyLanguage` re-renderiza si
+cambia idioma en vivo. Cerebro 3D: labels flotantes vía `METH_L10N`+`methLabel()` (SMC / ICT igual en
+todos). Subs de metodología (5 strings) traducidos inline (`SYN_SUBS`). Diagramas SVG quedan con labels
+EN (misma convención que el PDF). NO tocado: `SYNAPSE_TO_QUIZ_TOPIC` (keyed por label EN — no traducir
+el CATALOG en sí, solo en render).
+
 **🟡 DAILY CHALLENGE — reconstrucción del banco (EN PROGRESO 2026-07-02).** Hallazgos: (1) el Daily
 tomaba preguntas `lv:'advanced'` (169) del QUESTION_BANK — NO cumple el plan del usuario (200+
 ultrahardcore dedicadas); (2) 🔴 BUG anti-trampa CORREGIDO: el modal Daily mostraba opciones SIN

@@ -3571,6 +3571,31 @@ def _load_synapse_content(lang: str) -> dict:
         return {}
 
 
+@app.route('/api/synapse/l10n/<lang>')
+def synapse_l10n(lang):
+    """Language pack for the WEB Synapse map: topic titles, method names and the
+    full translated topic content. This is the exact same audited corpus the PDF
+    uses (synapse_translations.py + synapse_content_{lang}.json) — the web
+    flipbook used to read only the English synapse_library.js, which is why the
+    dossiers stayed in English for es/fr/pt users. Any missing key falls back to
+    English client-side."""
+    if lang not in ('es', 'fr', 'pt'):
+        return jsonify({'titles': {}, 'methods': {}, 'content': {}})
+    try:
+        import synapse_translations as T          # run as script (python3 scalpel/app.py)
+    except ModuleNotFoundError:
+        from scalpel import synapse_translations as T   # imported as package
+    resp = jsonify({
+        'titles': T.TITLES.get(lang, {}),
+        'methods': T.METHODS.get(lang, {}),
+        'content': _load_synapse_content(lang),
+    })
+    # Static corpus — let browsers cache it for an hour.
+    resp.cache_control.public = True
+    resp.cache_control.max_age = 3600
+    return resp
+
+
 def _build_synapse_pdf(buyer_name: str, buyer_email: str, order_id: str,
                        lang: str = 'en') -> bytes:
     """Generate a full-content, personalized, watermarked Synapse Library PDF.

@@ -21737,6 +21737,27 @@
       { id: 'fundamental', name: 'Fundamental Analysis' },
       { id: 'quant',       name: 'Quantitative' },
     ];
+    // Floating method-name labels, localized (same renderings as the PDF's
+    // METHODS table; 'SMC / ICT' is identical in every language so it falls
+    // through to the English name).
+    const METH_L10N = {
+      es: {'Price Action':'Acción del Precio','Technical Analysis':'Análisis Técnico','Fundamental Analysis':'Análisis Fundamental','Quantitative':'Cuantitativo'},
+      fr: {'Price Action':'Action des Prix','Technical Analysis':'Analyse Technique','Fundamental Analysis':'Analyse Fondamentale','Quantitative':'Quantitatif'},
+      pt: {'Price Action':'Ação do Preço','Technical Analysis':'Análise Técnica','Fundamental Analysis':'Análise Fundamental','Quantitative':'Quantitativo'},
+    };
+    const methLabel = (n) => {
+      const lg = (typeof currentLang !== 'undefined') ? currentLang : 'en';
+      return (METH_L10N[lg] && METH_L10N[lg][n]) || n;
+    };
+    // Re-text the floating labels if the language changes after the scene built.
+    (function () {
+      const orig = window.applyLanguage;
+      if (!orig) return;
+      window.applyLanguage = function (lang) {
+        orig(lang);
+        nodes.forEach(nd => { if (nd.label && nd.meth) nd.label.textContent = methLabel(nd.meth.name); });
+      };
+    })();
 
     let opening = false, started = false;
     let renderer, scene, camera, raf, clock;
@@ -22098,7 +22119,7 @@
         // crisp HTML label that tracks the node
         const label = document.createElement('div');
         label.className = 'syn-node-label';
-        label.textContent = meth.name;
+        label.textContent = methLabel(meth.name);
         label.addEventListener('click', () => { if (fired) openMethod(meth); });
         overlay.appendChild(label);
 
@@ -22834,12 +22855,40 @@
 
     // ── Light UI i18n (chrome only; dossier content stays sketch English) ──
     const LX = {
-      en:{galaxy:'Neural map', title:'Neural Map', hintG:'Tap a methodology cluster to explore it', hintC:'Tap a neuron to open its briefing', mark:'Mark as studied', studied:'Studied', concept:'CONCEPT', trigger:'ENTRY TRIGGER', keys:'Key points', note:'Field note'},
-      es:{galaxy:'Mapa neuronal', title:'Mapa Neuronal', hintG:'Toca un grupo de metodología para explorarlo', hintC:'Toca una neurona para abrir su informe', mark:'Marcar como estudiado', studied:'Estudiado', concept:'CONCEPTO', trigger:'GATILLO DE ENTRADA', keys:'Puntos clave', note:'Nota de campo'},
-      fr:{galaxy:'Carte neuronale', title:'Carte Neuronale', hintG:'Touchez un groupe de méthodologie pour l\'explorer', hintC:'Touchez un neurone pour ouvrir sa fiche', mark:'Marquer comme étudié', studied:'Étudié', concept:'CONCEPT', trigger:'DÉCLENCHEUR D\'ENTRÉE', keys:'Points clés', note:'Note de terrain'},
-      pt:{galaxy:'Mapa neural', title:'Mapa Neural', hintG:'Toque num grupo de metodologia para explorá-lo', hintC:'Toque num neurônio para abrir o informe', mark:'Marcar como estudado', studied:'Estudado', concept:'CONCEITO', trigger:'GATILHO DE ENTRADA', keys:'Pontos-chave', note:'Nota de campo'},
+      en:{galaxy:'Neural map', title:'Neural Map', hintG:'Tap a methodology cluster to explore it', hintC:'Tap a neuron to open its briefing', mark:'Mark as studied', studied:'Studied', concept:'CONCEPT', trigger:'ENTRY TRIGGER', keys:'Key points', note:'Field note', pillOf:'studied'},
+      es:{galaxy:'Mapa neuronal', title:'Mapa Neuronal', hintG:'Toca un grupo de metodología para explorarlo', hintC:'Toca una neurona para abrir su informe', mark:'Marcar como estudiado', studied:'Estudiado', concept:'CONCEPTO', trigger:'GATILLO DE ENTRADA', keys:'Puntos clave', note:'Nota de campo', pillOf:'estudiados'},
+      fr:{galaxy:'Carte neuronale', title:'Carte Neuronale', hintG:'Touchez un groupe de méthodologie pour l\'explorer', hintC:'Touchez un neurone pour ouvrir sa fiche', mark:'Marquer comme étudié', studied:'Étudié', concept:'CONCEPT', trigger:'DÉCLENCHEUR D\'ENTRÉE', keys:'Points clés', note:'Note de terrain', pillOf:'étudiés'},
+      pt:{galaxy:'Mapa neural', title:'Mapa Neural', hintG:'Toque num grupo de metodologia para explorá-lo', hintC:'Toque num neurônio para abrir o informe', mark:'Marcar como estudado', studied:'Estudado', concept:'CONCEITO', trigger:'GATILHO DE ENTRADA', keys:'Pontos-chave', note:'Nota de campo', pillOf:'estudados'},
     };
     const L = () => LX[(typeof currentLang!=='undefined'&&LX[currentLang])?currentLang:'en'];
+
+    // ── Language pack (es/fr/pt): the SAME audited corpus the PDF uses —
+    //    topic titles + method names (synapse_translations.py) and the full
+    //    translated topic content (synapse_content_{lang}.json) — served by
+    //    /api/synapse/l10n/<lang>. English needs no pack. Cached per language;
+    //    every lookup falls back to the English inline text, so a failed fetch
+    //    can never blank the map.
+    let SYNL = null;                 // active pack (null = English)
+    const SYNL_CACHE = {};
+    const synLang = () => (typeof currentLang!=='undefined'&&LX[currentLang])?currentLang:'en';
+    function loadSynL10n() {
+      const lg = synLang();
+      if (lg === 'en') { SYNL = null; return Promise.resolve(null); }
+      if (SYNL_CACHE[lg]) { SYNL = SYNL_CACHE[lg]; return Promise.resolve(SYNL); }
+      return fetch('/api/synapse/l10n/'+lg)
+        .then(r => r.ok ? r.json() : null)
+        .then(d => { if (d) { SYNL_CACHE[lg] = d; if (synLang() === lg) SYNL = d; } return SYNL; })
+        .catch(() => null);
+    }
+    const synMeth  = (m) => (SYNL && SYNL.methods && SYNL.methods[m.name]) || m.name;
+    const synTitle = (t) => (SYNL && SYNL.titles  && SYNL.titles[t.slug])  || t.label;
+    // Method sub-captions (galaxy view) — 5 tiny strings, so they live here.
+    const SYN_SUBS = {
+      es: {'Reading the naked chart':'Leer el gráfico desnudo','Indicator-driven signals':'Señales basadas en indicadores','Smart money · Wyckoff roots':'Smart money · raíces Wyckoff','Macro & the news':'Macro y noticias','Stats & systems':'Estadística y sistemas'},
+      fr: {'Reading the naked chart':'Lire le graphique nu','Indicator-driven signals':'Signaux basés sur les indicateurs','Smart money · Wyckoff roots':'Smart money · racines Wyckoff','Macro & the news':'Macro et actualités','Stats & systems':'Statistiques et systèmes'},
+      pt: {'Reading the naked chart':'Ler o gráfico nu','Indicator-driven signals':'Sinais baseados em indicadores','Smart money · Wyckoff roots':'Smart money · raízes Wyckoff','Macro & the news':'Macro e notícias','Stats & systems':'Estatística e sistemas'},
+    };
+    const synSub = (m) => { const d = SYN_SUBS[synLang()]; return (d && d[m.sub]) || m.sub; };
 
     // ── Catalog. Slugs MUST mirror app.py SYNAPSE_TOPICS for check-off to work.
     //    type: 'c' concept · 't' entry trigger. lead/points/note are sketch text.
@@ -23105,11 +23154,11 @@
         // name + progress
         const done = m.topics.filter(t=>checked(t.slug)).length;
         const lt = isLight();
-        g.appendChild(svgText(m.name, m.cx, m.cy - 90, {
+        g.appendChild(svgText(synMeth(m), m.cx, m.cy - 90, {
           fill: lt?'#0f1f40':'#e9f3ff', 'font-size':'14.5', 'font-weight':'700', 'letter-spacing':'2',
           'paint-order':'stroke', stroke: lt?'rgba(230,240,255,.85)':'rgba(2,8,14,.85)', 'stroke-width':'3.5', 'stroke-linejoin':'round',
         }));
-        g.appendChild(svgText(done+' / '+m.topics.length+' · '+(m.sub||''), m.cx, m.cy - 73, {
+        g.appendChild(svgText(done+' / '+m.topics.length+' · '+(synSub(m)||''), m.cx, m.cy - 73, {
           fill: lt?'#3a6a90':'#7fb6c0', 'font-size':'10', 'letter-spacing':'.5',
           'paint-order':'stroke', stroke: lt?'rgba(230,240,255,.7)':'rgba(2,8,14,.7)', 'stroke-width':'2.5', 'stroke-linejoin':'round',
         }));
@@ -23123,7 +23172,7 @@
       const m = METH_BY_ID[mid]; if (!m) return;
       mode = 'cluster'; activeMethod = mid;
       clearMap();
-      titleEl.textContent = m.name;
+      titleEl.textContent = synMeth(m);
       backBtn.hidden = false; backLbl.textContent = L().galaxy;
       hintEl.textContent = L().hintC; hintEl.style.display = '';
       svg.parentElement.style.setProperty('--syn-accent', m.accent);
@@ -23155,7 +23204,7 @@
       // Label above the nucleus — sits in the reserved top-centre gap. Letter
       // spacing tightened so long names ("Fundamental Analysis") stay compact.
       const lt2 = isLight();
-      svg.appendChild(svgText(m.name, CX, CY - 50, {
+      svg.appendChild(svgText(synMeth(m), CX, CY - 50, {
         fill: lt2?'#0d1e40':'#f0f6ff', 'font-size':'17', 'font-weight':'800', 'letter-spacing':'.6',
         'paint-order':'stroke', stroke: lt2?'rgba(235,243,255,.95)':'rgba(2,8,14,.95)', 'stroke-width':'5', 'stroke-linejoin':'round',
         'pointer-events':'none',
@@ -23178,7 +23227,7 @@
         const labelFill = isCk
           ? (lt3?'#8a6000':'#ffd86b')
           : (isTrig ? (lt3?'#9a5500':'#f5c060') : (lt3?'#1a3a80':'#cdddf6'));
-        g.appendChild(svgText(t.label, p.x, p.y+24, {
+        g.appendChild(svgText(synTitle(t), p.x, p.y+24, {
           fill: labelFill, 'font-size':'11.5', 'font-weight': isTrig?'700':'500',
           'font-style': isTrig?'italic':'normal',
           'paint-order':'stroke', stroke: lt3?'rgba(235,243,255,.9)':'rgba(2,8,14,.9)', 'stroke-width':'3.2', 'stroke-linejoin':'round',
@@ -23201,7 +23250,7 @@
       if (!pillEl || !m) return;
       const total   = m.topics.length;
       const done    = m.topics.filter(t => checked(t.slug)).length;
-      pillLbl.textContent = done + ' / ' + total + ' studied';
+      pillLbl.textContent = done + ' / ' + total + ' ' + (L().pillOf || 'studied');
       pillEl.style.display = 'flex';
       pillEl.classList.remove('open');
 
@@ -23209,7 +23258,7 @@
       pillList.innerHTML = m.topics.map(t => {
         const ck = checked(t.slug);
         return '<div class="syn-prog-pill-list-item' + (ck ? ' done' : '') + '">' +
-               '<span class="spi-dot"></span>' + t.label + '</div>';
+               '<span class="spi-dot"></span>' + synTitle(t) + '</div>';
       }).join('');
     }
 
@@ -23312,7 +23361,12 @@
 
     function buildPages(slug) {
       const t = TOPIC_BY_SLUG[slug], p = P(), isTrig = t.type === 't';
-      const c = (window.SynapseContent && window.SynapseContent[slug]) || null;
+      // English base from synapse_library.js, overlaid with the translated
+      // fields from the language pack (es/fr/pt). Field-level merge: anything
+      // the pack lacks falls back to the English base.
+      const cBase = (window.SynapseContent && window.SynapseContent[slug]) || null;
+      const cOv   = SYNL && SYNL.content && SYNL.content[slug];
+      const c     = cOv ? Object.assign({}, cBase || {}, cOv) : cBase;
       const pages = [];
 
       // 01 — the idea (lead with drop cap + optional body paragraphs)
@@ -23378,9 +23432,9 @@
       dossierSlug = slug;
       const m = METH_BY_ID[t._mid];
       book.style.setProperty('--syn-accent', m.accent);
-      bMethod.textContent = m.name;
+      bMethod.textContent = synMeth(m);
       bType.textContent   = t.type==='t' ? L().trigger : L().concept;
-      bTitle.textContent  = t.label;
+      bTitle.textContent  = synTitle(t);
       const pages = buildPages(slug);
       bookPageCount = pages.length;
       bTrack.innerHTML = pages.join('');
@@ -23465,7 +23519,9 @@
       const p = window.SynapseProgress ? window.SynapseProgress.ensureLoaded() : Promise.resolve();
       // draw the map baseline first so the fire has something to fire from
       if (!svg.childNodes.length) renderGalaxy();
-      p.then(render);
+      // wait for BOTH progress and the language pack, so the first real render
+      // already comes out translated (the pack is a small cached local fetch)
+      Promise.all([p, loadSynL10n()]).then(render);
     }
     function close() {
       lib.classList.remove('open'); lib.setAttribute('aria-hidden','true');
@@ -23476,6 +23532,22 @@
 
     backBtn.addEventListener('click', () => renderGalaxy());
     closeBtn.addEventListener('click', close);
+
+    // Language switched while the map is open → reload the pack and re-render
+    // whatever is on screen (same wrap pattern as the market-timing section).
+    (function () {
+      const origApply = window.applyLanguage;
+      if (!origApply) return;
+      window.applyLanguage = function (lang) {
+        origApply(lang);
+        loadSynL10n().then(() => {
+          if (!lib.classList.contains('open')) return;
+          if (mode === 'cluster' && activeMethod) renderConstellation(activeMethod);
+          else renderGalaxy();
+          if (dossierSlug) openTopic(dossierSlug);
+        });
+      };
+    })();
     document.addEventListener('keydown', (e) => {
       if (!lib.classList.contains('open')) return;
       // when the book is open, arrows flip pages; Escape closes it
