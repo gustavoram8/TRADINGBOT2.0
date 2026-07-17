@@ -211,6 +211,19 @@ AI_PRICE_OUT_PER_1M = float(os.environ.get("AI_PRICE_OUT_PER_1M", "10.0"))
 AI_PRICE_IN  = AI_PRICE_IN_PER_1M  / 1_000_000
 AI_PRICE_OUT = AI_PRICE_OUT_PER_1M / 1_000_000
 
+# Per-model price table (USD per token) so the spend panel stays accurate when a
+# call uses a cheaper model than the default (e.g. translations on gpt-4o-mini).
+# Unknown models fall back to the default gpt-4o pricing above.
+AI_PRICES = {
+    'gpt-4o':      (AI_PRICE_IN, AI_PRICE_OUT),
+    'gpt-4o-mini': (0.15 / 1_000_000, 0.60 / 1_000_000),
+}
+
+# Model used for on-demand translation of a finished analysis. Cheap + more than
+# capable for translation; overridable via env (e.g. if the active backend lacks
+# gpt-4o-mini, set TRANSLATE_MODEL=gpt-4o).
+TRANSLATE_MODEL = os.environ.get("TRANSLATE_MODEL", "gpt-4o-mini")
+
 # ── Vision image normalization ──
 # Every chart screenshot is downscaled to a fixed max long-side BEFORE it reaches
 # the vision API, so the per-analysis image cost stays bounded no matter what the
@@ -1157,16 +1170,20 @@ def log_usage():
     db.session.commit()
 
 
-def record_ai_cost(kind, response, user_id=None, plan=None):
+def record_ai_cost(kind, response, user_id=None, plan=None, model=None):
     """Best-effort telemetry: log token usage + estimated USD cost of one AI call.
-    Never raises — billing analytics must not break the user-facing request."""
+    Never raises — billing analytics must not break the user-facing request.
+    `model` lets a call that used a non-default model (e.g. a cheaper translation
+    model) be priced and labelled correctly in the spend panel."""
     try:
         usage = getattr(response, 'usage', None)
         pt = int(getattr(usage, 'prompt_tokens', 0) or 0)
         ct = int(getattr(usage, 'completion_tokens', 0) or 0)
-        cost = pt * AI_PRICE_IN + ct * AI_PRICE_OUT
+        mdl = model or MODEL
+        pin, pout = AI_PRICES.get(mdl, (AI_PRICE_IN, AI_PRICE_OUT))
+        cost = pt * pin + ct * pout
         db.session.add(AICostLog(
-            user_id=user_id, plan=plan, kind=kind, model=MODEL,
+            user_id=user_id, plan=plan, kind=kind, model=mdl,
             prompt_tokens=pt, completion_tokens=ct, cost_usd=round(cost, 6),
         ))
         db.session.commit()
@@ -2519,7 +2536,7 @@ def _build_ai_analytics_context():
 
     # ── Cost split by category (Analyzer = analyze+validate · Moderation =
     #    forum text+image · Scout = prop-firm advisor) ──
-    KIND_CAT = {'analyze': 'analyzer', 'validate': 'analyzer',
+    KIND_CAT = {'analyze': 'analyzer', 'validate': 'analyzer', 'translate': 'analyzer',
                 'forum_text': 'moderation', 'forum_image': 'moderation', 'scout': 'scout'}
 
     def _cat_costs(since):
@@ -4028,6 +4045,12 @@ def analyze():
         approach = request.form.get('approach', 'Not specified')
         confluences = request.form.getlist('confluences')
         notes = request.form.get('notes', '').strip()
+        # Cap the free-text construction at 200 words (server-side safety net —
+        # the uploader also enforces this live). Keeps prompt cost bounded and
+        # guards against a huge paste running up tokens.
+        _nw = notes.split()
+        if len(_nw) > 200:
+            notes = ' '.join(_nw[:200])
         language = request.form.get('language', 'English').strip() or 'English'
 
         screenshot = request.files.get('screenshot')
@@ -4123,6 +4146,50 @@ LANGUAGE: Write your entire response in {language}. Keep ICT-specific terms and 
         if '401' in error_msg or 'unauthorized' in el or 'invalid api key' in el or 'invalid token' in el or 'bad credentials' in el or 'authentication' in el:
             return jsonify({'error': 'Authentication failed. Check your GITHUB_TOKEN in the .env file.'}), 401
         return jsonify({'error': f'Analysis failed: {error_msg}'}), 500
+
+
+TRANSLATE_PROMPT = """You are a professional translator for trading-education content. Translate the user's analysis text into the requested target language.
+RULES:
+1. Keep ALL trading terms and acronyms in their standard English form — FVG, IFVG, OTE, CHoCH, MSS, BOS, OB, SMT, BSL, SSL, EQH, EQL, DOL, PD array, PRZ, Kill Zone, Silver Bullet, Judas swing, Power of 3, AMD; Wyckoff events (Spring, UTAD, SOS, SOW, LPS, LPSY, AR, ST, Creek, JAC); harmonic names (Gartley, Bat, Crab, Butterfly, Cypher, Shark); indicators (RSI, MACD, VWAP, ADX, Bollinger, Ichimoku). Do NOT translate these.
+2. Preserve the Markdown formatting EXACTLY (headings, bold, italics, bullet/numbered lists, line breaks).
+3. Keep the same meaning, tone and educational framing — do not add, remove, soften, or reinterpret anything, and never turn a reflective observation into a directive.
+4. Output ONLY the translated text — no preamble, no notes, no explanation, no wrapping quotes."""
+
+
+@app.route('/translate', methods=['POST'])
+def translate_analysis():
+    """Translate an already-generated analysis into another language on demand.
+    Text-only (no image), so it is far cheaper than re-running the analysis, and
+    it returns the SAME analysis rather than a fresh (different) one. Gated to
+    users with analyzer access; the client caches results so each language is
+    translated at most once per analysis."""
+    if not has_access():
+        return jsonify({'error': 'unauthorized'}), 401
+    data = request.get_json(silent=True) or {}
+    text = (data.get('text') or '').strip()
+    lang = (data.get('lang') or '').strip() or 'English'
+    if not text:
+        return jsonify({'error': 'Nothing to translate.'}), 400
+    if len(text) > 12000:
+        return jsonify({'error': 'Text too long to translate.'}), 400
+    try:
+        resp = client.chat.completions.create(
+            model=TRANSLATE_MODEL,
+            messages=[
+                {"role": "system", "content": TRANSLATE_PROMPT},
+                {"role": "user", "content": f"Target language: {lang}\n\n---\n{text}"},
+            ],
+            max_tokens=1200,
+            temperature=0.1,
+        )
+        out = resp.choices[0].message.content
+        record_ai_cost('translate', resp,
+                       user_id=current_user.id if current_user.is_authenticated else None,
+                       plan=current_plan(), model=TRANSLATE_MODEL)
+        return jsonify({'text': out})
+    except Exception as exc:
+        app.logger.warning('Translation failed: %s', exc)
+        return jsonify({'error': 'translation_failed'}), 502
 
 
 # ──────────────────────────────────────────────────────────────────────────

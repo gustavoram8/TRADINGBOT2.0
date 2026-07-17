@@ -1678,6 +1678,50 @@
     .meta-tag.loss { border-color: var(--loss); color: var(--loss); }
     .meta-tag.be   { border-color: var(--be);   color: var(--be); }
 
+    /* Trade Construction word counter */
+    .notes-counter {
+      margin-top: 6px;
+      text-align: right;
+      font-size: 11.5px;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .notes-counter.near { color: var(--loss); font-weight: 700; }
+
+    /* Analysis language switcher */
+    .result-lang {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 14px 0 4px;
+    }
+    .rl-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    .rl-chips { display: flex; gap: 6px; }
+    .rl-chip {
+      font: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      background: var(--surface);
+      color: var(--muted);
+      border: 1px solid var(--border2);
+      padding: 5px 12px;
+      border-radius: 16px;
+      transition: all 0.15s;
+    }
+    .rl-chip:hover:not(:disabled) { color: var(--text); border-color: var(--accent); }
+    .rl-chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .rl-chip:disabled { opacity: 0.5; cursor: default; }
+    .rl-status { font-size: 12px; color: var(--muted); font-style: italic; }
+
     .analysis-body {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -4999,6 +5043,7 @@
           <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;" data-i18n="card.notesHint">(optional — describe how you built this trade)</span>
         </div>
         <textarea name="notes" id="notes" rows="5" data-i18n-ph="notes.placeholder" placeholder="e.g. I was waiting for a sweep of the equal lows at 1.0842 (SSL). Once price swept and I saw a bullish displacement on the 1m, I entered long targeting the FVG above at 1.0875. My OB was the last bearish candle before the displacement..."></textarea>
+        <div class="notes-counter" id="notes-counter"><span id="notes-count">0</span> / 200 <span data-i18n="notes.words">words</span></div>
         <div id="approach-hint" class="approach-hint" style="display:none;"></div>
       </div>
 
@@ -5025,6 +5070,16 @@
     <div class="result-header">
       <div class="result-title" data-i18n="result.title">Setup Analysis</div>
       <div class="result-meta" id="result-meta"></div>
+    </div>
+    <div class="result-lang" id="result-lang">
+      <span class="rl-label" data-i18n="result.langLabel">Language</span>
+      <div class="rl-chips">
+        <button type="button" class="rl-chip" data-lang="en">EN</button>
+        <button type="button" class="rl-chip" data-lang="es">ES</button>
+        <button type="button" class="rl-chip" data-lang="fr">FR</button>
+        <button type="button" class="rl-chip" data-lang="pt">PT</button>
+      </div>
+      <span class="rl-status" id="rl-status"></span>
     </div>
     <div class="analysis-body" id="analysis-body"></div>
     <div class="analysis-disclaimer" id="analysis-disclaimer" data-i18n="result.disclaimer">This AI-generated analysis is educational and illustrative only. It reviews a trade you have already taken — it is not financial advice and not a recommendation to buy, sell, or hold any instrument. Trading involves substantial risk of loss; all decisions are your own.</div>
@@ -6753,6 +6808,10 @@
       'loading.analyzeTitle': 'Analyzing your setup...',
       'loading.analyzeSub': 'Tradeable is reading the chart and applying technical analysis. This takes 10–20 seconds.',
       'result.title': 'Setup Analysis',
+      'result.langLabel': 'Language',
+      'result.translating': 'Translating…',
+      'result.translateErr': 'Translation failed — tap a language to retry',
+      'notes.words': 'words',
       'result.disclaimer': 'This AI-generated analysis is educational and illustrative only. It reviews a trade you have already taken — it is not financial advice and not a recommendation to buy, sell, or hold any instrument. Trading involves substantial risk of loss; all decisions are your own.',
       'modal.noEntryTitle': 'No trade markers detected',
       'modal.noEntryBody': "Tradeable couldn't clearly find an entry marker in your screenshot. The analysis will be general about the setup context rather than your specific entry.<br><br>You can analyze anyway, or upload a screenshot that shows your entry and exit.",
@@ -7234,6 +7293,10 @@
       'loading.analyzeTitle': 'Analizando tu setup...',
       'loading.analyzeSub': 'Tradeable está leyendo el gráfico y aplicando análisis técnico. Esto tarda 10–20 segundos.',
       'result.title': 'Análisis del Setup',
+      'result.langLabel': 'Idioma',
+      'result.translating': 'Traduciendo…',
+      'result.translateErr': 'Falló la traducción — tocá un idioma para reintentar',
+      'notes.words': 'palabras',
       'result.disclaimer': 'Este análisis generado por IA es solo educativo e ilustrativo. Revisa una operación que ya realizaste — no es asesoría financiera ni una recomendación de compra, venta o mantenimiento de ningún instrumento. Operar implica un riesgo sustancial de pérdida; todas las decisiones son tuyas.',
       'modal.noEntryTitle': 'No se detectaron marcas del trade',
       'modal.noEntryBody': 'Tradeable no pudo encontrar claramente una marca de entrada en tu captura. El análisis será general sobre el contexto del setup en vez de tu entrada específica.<br><br>Puedes analizar de todos modos, o subir una captura que muestre tu entrada y salida.',
@@ -7715,6 +7778,10 @@
       'loading.analyzeTitle': 'Analyse de votre setup...',
       'loading.analyzeSub': "Tradeable lit le graphique et applique l'analyse technique. Cela prend 10–20 secondes.",
       'result.title': 'Analyse du Setup',
+      'result.langLabel': 'Langue',
+      'result.translating': 'Traduction…',
+      'result.translateErr': 'Échec de la traduction — touchez une langue pour réessayer',
+      'notes.words': 'mots',
       'result.disclaimer': "Cette analyse générée par IA est uniquement éducative et illustrative. Elle examine une transaction que vous avez déjà effectuée — ce n'est pas un conseil financier ni une recommandation d'acheter, de vendre ou de conserver un quelconque instrument. Le trading comporte un risque substantiel de perte ; toutes les décisions vous appartiennent.",
       'modal.noEntryTitle': 'Aucun marqueur de trade détecté',
       'modal.noEntryBody': "Tradeable n'a pas pu trouver clairement un marqueur d'entrée dans votre capture. L'analyse portera sur le contexte général du setup plutôt que sur votre entrée précise.<br><br>Vous pouvez analyser quand même, ou télécharger une capture montrant votre entrée et votre sortie.",
@@ -8196,6 +8263,10 @@
       'loading.analyzeTitle': 'Analisando seu setup...',
       'loading.analyzeSub': 'O Tradeable está lendo o gráfico e aplicando análise técnica. Isso leva de 10 a 20 segundos.',
       'result.title': 'Análise do Setup',
+      'result.langLabel': 'Idioma',
+      'result.translating': 'Traduzindo…',
+      'result.translateErr': 'Falha na tradução — toque em um idioma para tentar de novo',
+      'notes.words': 'palavras',
       'result.disclaimer': 'Esta análise gerada por IA é apenas educativa e ilustrativa. Ela revisa uma operação que você já realizou — não é aconselhamento financeiro nem uma recomendação de compra, venda ou manutenção de qualquer instrumento. Operar envolve risco substancial de perda; todas as decisões são suas.',
       'modal.noEntryTitle': 'Nenhum marcador de trade detectado',
       'modal.noEntryBody': 'O Tradeable não conseguiu encontrar claramente um marcador de entrada na sua captura. A análise será geral sobre o contexto do setup em vez da sua entrada específica.<br><br>Você pode analisar mesmo assim, ou enviar uma captura que mostre sua entrada e saída.',
@@ -9240,13 +9311,10 @@
       meta.innerHTML += `<span class="meta-tag">${selections.session}</span>`;
       meta.innerHTML += `<span class="meta-tag">${selections.approach}</span>`;
 
-      // The AI response is rendered as HTML via marked — sanitize it first so
-      // any markup the model emits (intentionally or via prompt injection from
-      // an uploaded image) can't execute scripts in the user's session.
-      const analysisHtml = window.marked ? marked.parse(data.analysis) : data.analysis;
-      document.getElementById('analysis-body').innerHTML = window.DOMPurify
-        ? DOMPurify.sanitize(analysisHtml)
-        : analysisHtml;
+      // Hand the result to the Analysis module: it renders it (sanitized) and
+      // wires the on-demand language switch, caching the original under the
+      // current UI language.
+      Analysis.set(data.analysis, currentLang);
 
       showView('result');
       resultView.classList.add('fade-in');
@@ -9258,6 +9326,78 @@
       resetButton();
     }
   }
+
+  // ── Analysis result + on-demand language switch ──
+  const Analysis = (function () {
+    let baseText = '';       // the analysis exactly as generated
+    let cache = {};          // lang code -> text in that language
+    let active = 'en';
+    let busy = false;
+    function bodyEl()   { return document.getElementById('analysis-body'); }
+    function statusEl() { return document.getElementById('rl-status'); }
+    function renderMd(md) {
+      const html = window.marked ? marked.parse(md || '') : (md || '');
+      bodyEl().innerHTML = window.DOMPurify ? DOMPurify.sanitize(html) : html;
+    }
+    function paintChips() {
+      document.querySelectorAll('.rl-chip').forEach(function (c) {
+        c.classList.toggle('active', c.dataset.lang === active);
+        c.disabled = busy;
+      });
+    }
+    function show(lang) { active = lang; renderMd(cache[lang]); paintChips(); }
+    function set(text, lang) {
+      baseText = text; cache = {}; cache[lang] = text; busy = false;
+      if (statusEl()) statusEl().textContent = '';
+      show(lang);
+    }
+    async function switchTo(lang) {
+      if (busy || lang === active) return;
+      if (cache[lang]) { show(lang); return; }
+      busy = true; paintChips();
+      if (statusEl()) statusEl().textContent = T('result.translating');
+      try {
+        const res = await fetch('/translate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: baseText, lang: LANG_NAMES[lang] || 'English' }),
+        });
+        const data = await res.json();
+        if (!res.ok || data.error || !data.text) throw new Error('translate');
+        cache[lang] = data.text;
+        busy = false;
+        if (statusEl()) statusEl().textContent = '';
+        show(lang);
+      } catch (e) {
+        busy = false;
+        if (statusEl()) statusEl().textContent = T('result.translateErr');
+        paintChips();
+      }
+    }
+    return { set: set, switchTo: switchTo };
+  })();
+
+  document.querySelectorAll('.rl-chip').forEach(function (c) {
+    c.addEventListener('click', function () { Analysis.switchTo(c.dataset.lang); });
+  });
+
+  // ── Trade Construction word limit (200 words) ──
+  (function () {
+    const ta = document.getElementById('notes');
+    const cnt = document.getElementById('notes-count');
+    const box = document.getElementById('notes-counter');
+    if (!ta || !cnt || !box) return;
+    const MAX = 200;
+    function words(s) { const t = s.trim(); return t ? t.split(/\s+/) : []; }
+    function update() {
+      let w = words(ta.value);
+      if (w.length > MAX) { w = w.slice(0, MAX); ta.value = w.join(' '); }
+      cnt.textContent = w.length;
+      box.classList.toggle('near', w.length >= MAX);
+    }
+    ta.addEventListener('input', update);
+    update();
+  })();
 
   // ── Modal buttons ──
   modalProceed.addEventListener('click', () => {
