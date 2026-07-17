@@ -2565,8 +2565,26 @@ def _build_ai_analytics_context():
     else:
         gauge = {'has': False}
 
+    # ── Individual AI calls (most recent) — per-call cost breakdown, not just the
+    #    daily total, so each analysis can be inspected on its own. ──
+    recent_calls = (AICostLog.query
+                    .order_by(AICostLog.created_at.desc())
+                    .limit(100).all())
+    ai_calls_recent = [{
+        'time': c.created_at,
+        'user': (uname.get(c.user_id) if c.user_id is not None else 'anon') or '—',
+        'plan': c.plan or '—',
+        'kind': c.kind,
+        'cat': KIND_CAT.get(c.kind, 'analyzer'),
+        'model': c.model or '—',
+        'pt': int(c.prompt_tokens or 0),
+        'ct': int(c.completion_tokens or 0),
+        'cost': float(c.cost_usd or 0.0),
+    } for c in recent_calls]
+
     return {
         'ai_rows': rows[:120], 'ai_flagged': flagged,
+        'ai_calls_recent': ai_calls_recent,
         'ai_analyses': analyses, 'ai_cost': cost, 'ai_plan_avg': plan_avg,
         'ai_cost_cat': cost_cat, 'ai_calls_cat': calls_cat,
         'ai_avg_cost': avg_cost, 'ai_projected_monthly': projected_monthly,

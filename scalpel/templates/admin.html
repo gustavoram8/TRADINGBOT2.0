@@ -35,6 +35,25 @@
     }
     .admin-nav a:hover { color: var(--text); border-color: var(--accent); }
 
+    /* ── Section tabs ── */
+    .admin-tabs {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      position: sticky; top: 0; z-index: 9;
+      background: var(--bg); padding: 14px 0 12px; margin-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .atab {
+      font: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+      background: var(--surface); color: var(--muted);
+      border: 1px solid var(--border2); padding: 8px 16px; border-radius: 20px;
+      transition: all 0.15s; white-space: nowrap;
+    }
+    .atab:hover { color: var(--text); border-color: var(--accent); }
+    .atab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .tabpane { display: none; }
+    .tabpane.active { display: block; animation: paneIn 0.18s ease; }
+    @keyframes paneIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
     .admin-wrap { max-width: 980px; margin: 0 auto; padding: 32px 24px 80px; }
     .admin-h1 { font-size: 24px; font-weight: 800; margin-bottom: 4px; }
     .admin-desc { color: var(--muted); font-size: 14px; margin-bottom: 26px; }
@@ -243,6 +262,16 @@
   </nav>
 
   <div class="admin-wrap">
+    <div class="admin-tabs">
+      <button class="atab" data-pane="users">👥 Users</button>
+      <button class="atab" data-pane="revenue">💰 Revenue</button>
+      <button class="atab" data-pane="moderation">🛡️ Moderation</button>
+      <button class="atab" data-pane="ai">🤖 AI Spend</button>
+      <button class="atab" data-pane="audit">📋 Audit</button>
+      <button class="atab" data-pane="bugs">🛠️ Bugs</button>
+    </div>
+
+    <div class="tabpane" data-pane="users">
     <div class="demo-panel">
       <div class="demo-head">
         <div class="demo-title">🎬 Demo / Preview <span class="demo-badge">admin only</span></div>
@@ -365,6 +394,9 @@
       </table>
     </div>
 
+    </div><!-- /users pane -->
+
+    <div class="tabpane" data-pane="revenue">
     <!-- ════════════════════ FINANCE DASHBOARD ════════════════════ -->
     <div class="section-h" id="revenue">💰 Revenue &amp; Finances — {{ month_name }}</div>
     <div class="section-d">Live business overview. Revenue counts only orders marked as paid this calendar month.</div>
@@ -525,6 +557,9 @@
       </table>
     </div>
 
+    </div><!-- /revenue pane -->
+
+    <div class="tabpane" data-pane="moderation">
     <div class="section-h">Ban Suggestions</div>
     <div class="section-d">Flagged accounts proposed for a ban — by conduct (repeated warnings) or content leak (a watermarked PDF found shared publicly). <strong>Nothing is banned automatically.</strong> Review the evidence, then confirm or dismiss.</div>
 
@@ -652,6 +687,9 @@
       .aip-ok { color:#16a34a; font-weight:700; } .aip-bad { color:#dc2626; font-weight:800; }
     </style>
 
+    </div><!-- /moderation pane -->
+
+    <div class="tabpane" data-pane="ai">
     <div class="section-h" id="ai-spend">🤖 AI Usage &amp; Spend — screenshot analyses, per-user metrics &amp; prepaid fuel</div>
     <div class="section-d">
       Every screenshot analysis is metered (tokens → estimated USD cost at ${{ '%.2f'|format(ai_price_in) }}/1M in,
@@ -754,6 +792,61 @@
       </table>
     </div>
 
+    <!-- Individual AI calls (per-call cost, not just the daily total) -->
+    <div class="section-h" style="font-size:16px;">Individual AI calls — per-call cost</div>
+    <div class="section-d">
+      Every single call, newest first (last 100). Each screenshot analysis is normally <strong>2 calls</strong>:
+      one <code>validate</code> (pre-flight marker check, cheap) + one <code>analyze</code> (the full read). This is the
+      exact token count and estimated cost of each one on its own — not the daily sum.
+      <span style="color:var(--muted)">Filter by user, kind (analyze / validate / forum), plan or model.</span>
+    </div>
+    <div style="margin-bottom:10px;">
+      <input id="aicallFilter" type="text" placeholder="🔎 Filter these calls (e.g. analyze, premium, a username…)"
+             style="width:100%; max-width:420px; background:var(--bg); color:var(--text); border:1px solid var(--border2);
+                    border-radius:9px; padding:9px 12px; font-family:inherit; font-size:13px;" />
+    </div>
+    <div class="table-card" style="margin-bottom:30px">
+      <table class="aip-table" id="aicallTable">
+        <thead><tr>
+          <th>When</th><th>User</th><th>Plan</th><th>Kind</th><th>Model</th>
+          <th class="num">In</th><th class="num">Out</th><th class="num">Cost</th>
+        </tr></thead>
+        <tbody>
+          {% for c in ai_calls_recent %}
+          <tr data-search="{{ (c.user ~ ' ' ~ c.plan ~ ' ' ~ c.kind ~ ' ' ~ c.cat ~ ' ' ~ c.model)|lower }}">
+            <td style="white-space:nowrap; color:var(--muted); font-family:'JetBrains Mono',monospace; font-size:12px;">{{ c.time.strftime('%m-%d %H:%M:%S') if c.time else '—' }}</td>
+            <td>{{ c.user }}</td>
+            <td><span class="aip-pill {{ c.plan }}">{{ c.plan }}</span></td>
+            <td><span class="aip-pill">{{ c.kind }}</span></td>
+            <td style="color:var(--muted); font-size:12px;">{{ c.model }}</td>
+            <td class="num">{{ '{:,}'.format(c.pt) }}</td>
+            <td class="num">{{ '{:,}'.format(c.ct) }}</td>
+            <td class="num"><strong>${{ '%.4f'|format(c.cost) }}</strong></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="8"><div class="empty">No AI calls recorded yet.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <script>
+      (function(){
+        var f = document.getElementById('aicallFilter');
+        if (!f) return;
+        f.addEventListener('input', function(){
+          var q = this.value.trim().toLowerCase();
+          var rows = document.querySelectorAll('#aicallTable tbody tr');
+          rows.forEach(function(r){
+            var hay = r.getAttribute('data-search') || '';
+            r.style.display = (!q || hay.indexOf(q) !== -1) ? '' : 'none';
+          });
+        });
+      })();
+    </script>
+
+    </div><!-- /ai pane -->
+
+    <div class="tabpane" data-pane="audit">
     <div class="section-h" id="audit">📋 Audit Log — payments, plan grants, PDF deliveries &amp; emails</div>
     <div class="section-d">
       Every order, plan grant/expiration, promo creation, Synapse PDF issue/download, and outbound
@@ -794,6 +887,9 @@
       .bug-adm form { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; align-items:center; }
     </style>
 
+    </div><!-- /audit pane -->
+
+    <div class="tabpane" data-pane="bugs">
     <div class="section-h" id="bugs">🛠️ Bug Reports{% if bug_new_count %} <span class="bbadge st-new">{{ bug_new_count }} new</span>{% endif %}</div>
     <div class="section-d">
       User-submitted reports with auto-captured technical context (page, browser, plan, recent console
@@ -840,6 +936,50 @@
       <div class="empty">No bug reports yet.</div>
       {% endfor %}
     </div>
+    </div><!-- /bugs pane -->
   </div>
+
+  <script>
+    (function(){
+      var nav = document.querySelector('.admin-nav');
+      var tabs = document.querySelector('.admin-tabs');
+      if (tabs && nav) tabs.style.top = nav.offsetHeight + 'px';
+      var btns = Array.prototype.slice.call(document.querySelectorAll('.atab'));
+      var panes = Array.prototype.slice.call(document.querySelectorAll('.tabpane'));
+      function activate(name, toTop){
+        btns.forEach(function(b){ b.classList.toggle('active', b.dataset.pane === name); });
+        panes.forEach(function(p){ p.classList.toggle('active', p.dataset.pane === name); });
+        try { localStorage.setItem('admin_tab', name); } catch(e){}
+        if (toTop) window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      btns.forEach(function(b){
+        b.addEventListener('click', function(){ activate(b.dataset.pane, true); });
+      });
+      function paneOfHash(){
+        if (!location.hash) return null;
+        var el = document.getElementById(location.hash.slice(1));
+        var pane = el && el.closest ? el.closest('.tabpane') : null;
+        return pane ? pane.dataset.pane : null;
+      }
+      var initial = paneOfHash();
+      if (!initial) { try { initial = localStorage.getItem('admin_tab'); } catch(e){} }
+      if (!initial || !document.querySelector('.tabpane[data-pane="' + initial + '"]')) {
+        initial = panes.length ? panes[0].dataset.pane : null;
+      }
+      if (initial) activate(initial, false);
+      if (location.hash) {
+        var el = document.getElementById(location.hash.slice(1));
+        if (el) setTimeout(function(){ el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 80);
+      }
+      window.addEventListener('hashchange', function(){
+        var p = paneOfHash();
+        if (p) {
+          activate(p, false);
+          var el = document.getElementById(location.hash.slice(1));
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
