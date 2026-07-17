@@ -5008,7 +5008,7 @@
           <span data-i18n="card.notes">Trade Construction</span>
           <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;" data-i18n="card.notesHint">(optional — describe how you built this trade)</span>
         </div>
-        <textarea name="notes" id="notes" rows="5" data-i18n-ph="notes.placeholder" placeholder="e.g. I was waiting for a sweep of the equal lows at 1.0842 (SSL). Once price swept and I saw a bullish displacement on the 1m, I entered long targeting the FVG above at 1.0875. My OB was the last bearish candle before the displacement..."></textarea>
+        <textarea name="notes" id="notes" rows="5" maxlength="2000" data-i18n-ph="notes.placeholder" placeholder="e.g. I was waiting for a sweep of the equal lows at 1.0842 (SSL). Once price swept and I saw a bullish displacement on the 1m, I entered long targeting the FVG above at 1.0875. My OB was the last bearish candle before the displacement..."></textarea>
         <div class="notes-counter" id="notes-counter"><span id="notes-count">0</span> / 200 <span data-i18n="notes.words">words</span></div>
         <div id="approach-hint" class="approach-hint" style="display:none;"></div>
       </div>
@@ -9267,11 +9267,31 @@
       resultView.classList.add('fade-in');
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
+      // The server just logged this analysis — refresh the quota display from
+      // the server so "X / Y left" reflects reality immediately (it used to
+      // stay at the page-load value until a full reload).
+      refreshQuota();
+
     } catch (err) {
       showView('form');
       showError(T('err.network'));
       resetButton();
     }
+  }
+
+  // Pull the live analysis quota from the server and repaint the account rail.
+  function refreshQuota() {
+    fetch('/api/usage', { headers: { 'Accept': 'application/json' } })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d || typeof d.max === 'undefined') return;
+        var U = window.SCALPEL_USER || (window.SCALPEL_USER = {});
+        U.analysesMax = d.max; U.analysesUsed = d.used;
+        var mx = +d.max || 1, left = Math.max(0, mx - (+d.used || 0));
+        var qe = document.getElementById('ag-quota');     if (qe) qe.textContent = left + ' / ' + mx;
+        var qb = document.getElementById('ag-quota-bar');  if (qb) qb.style.width = (mx ? left / mx * 100 : 0) + '%';
+      })
+      .catch(function () {});
   }
 
   // ── Trade Construction word limit (200 words) ──

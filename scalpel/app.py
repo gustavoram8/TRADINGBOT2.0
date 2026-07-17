@@ -1007,6 +1007,11 @@ PLAN_LIMITS = {
     'premium':  {'window': timedelta(days=1), 'max': 5},
 }
 
+# Hard character ceiling for the analyzer's free-text Trade Construction. ~200
+# real words fit well under this; the cap exists to stop a space-less spam blob
+# (which a word count reads as one "word") from inflating the token bill.
+NOTES_MAX_CHARS = 2000
+
 # Max number of saved Analysis Projects per plan.
 PROJECT_LIMITS = {'free': 1, 'standard': 5, 'premium': 10}
 
@@ -3953,11 +3958,30 @@ def synapse_pdf_admin_download():
 def usage_status():
     if not has_access():
         return jsonify({'error': 'unauthorized'}), 401
-    info = check_rate_limit()
     plan = current_plan()
+    cfg = PLAN_LIMITS.get(plan, PLAN_LIMITS['free'])
+    since = datetime.now(timezone.utc) - cfg['window']
+    if current_user.is_authenticated:
+        used = UsageLog.query.filter(UsageLog.user_id == current_user.id,
+                                     UsageLog.created_at >= since).count()
+    else:
+        anon = get_anon_id()
+        used = (UsageLog.query.filter(UsageLog.anon_id == anon,
+                                      UsageLog.created_at >= since).count()
+                if anon else 0)
+    info = check_rate_limit()
+    # Always report the live count so the client can keep its quota display in
+    # sync after each analysis (used to only return counts when blocked).
+    resp = {
+        'allowed': info is None,
+        'plan': plan,
+        'used': used,
+        'max': cfg['max'],
+        'remaining': max(0, cfg['max'] - used),
+    }
     if info:
-        return jsonify({'allowed': False, **info})
-    return jsonify({'allowed': True, 'plan': plan})
+        resp.update(info)
+    return jsonify(resp)
 
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -4028,9 +4052,14 @@ def analyze():
         approach = request.form.get('approach', 'Not specified')
         confluences = request.form.getlist('confluences')
         notes = request.form.get('notes', '').strip()
-        # Cap the free-text construction at 200 words (server-side safety net —
-        # the uploader also enforces this live). Keeps prompt cost bounded and
-        # guards against a huge paste running up tokens.
+        # Cap the free-text construction (server-side safety net — the uploader
+        # also enforces this live). HARD CHAR CEILING FIRST: a word count alone
+        # can be gamed with one giant space-less blob ("11111…") that reads as a
+        # single "word" but explodes the token bill, so clamp raw length before
+        # anything else. Then cap at 200 words. Keeps prompt cost bounded no
+        # matter what is pasted.
+        if len(notes) > NOTES_MAX_CHARS:
+            notes = notes[:NOTES_MAX_CHARS]
         _nw = notes.split()
         if len(_nw) > 200:
             notes = ' '.join(_nw[:200])
