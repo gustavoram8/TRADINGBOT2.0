@@ -25,7 +25,33 @@
 - **Calidad:** validar antes de pushear (Jinja parse, `node --check` del JS tocado, i18n con claves parejas en EN/ES/FR/PT).
 
 ## 📅 Recordatorio diario
-Mostrar "📋 TAREAS PENDIENTES" la **primera vez que el usuario escriba cada día calendario** (`currentDate`). Si ya se mostró hoy, no repetir.
+La **primera vez que el usuario escriba cada día calendario** (`currentDate`), mostrar (si ya se mostró
+hoy, no repetir):
+1. "📋 TAREAS PENDIENTES" (la lista de abajo).
+2. "🎯 QUIZ GAPS — temas sin quiz" (ver sección abajo): las metodologías/gatillos que NO tienen quiz
+   (beginner/intermediate/advanced/hardcore/daily). Recordatorio pedido por el usuario el 2026-07-18.
+
+## 🎯 QUIZ GAPS — metodologías/gatillos SIN quiz (auditado 2026-07-18)
+> Universo de quizzes actual = solo 4 metodologías (`ict`, `smc`, `wyckoff`, `patterns`). Existe en
+> Synapse y/o el analizador de screenshots pero **no tiene ninguna pregunta de quiz**:
+- **🔴 Technical Analysis / Indicadores** — está en Synapse (9 temas) **Y** es un botón del analizador,
+  pero CERO quizzes: Moving Averages, RSI, MACD, Bollinger, Volume, MA Cross, RSI Divergence,
+  MACD Cross, Squeeze Break. *(máxima prioridad — es el gap más flagrante.)*
+- **🔴 Elliott Wave** — es un approach del analizador pero no hay ni quiz ni contenido en Synapse
+  (Impulso 1-5, corrección ABC, Wave 3 extension, Zigzag, Flat, Diagonal…).
+- **🟡 Fundamental Analysis** — Synapse (6 temas): Macro Drivers, Interest Rates, News/Data,
+  Intermarket, News Fade, Data Continuation.
+- **🟡 Quantitative** — Synapse (6 temas): Probability, Backtesting, Risk of Ruin, Algo Systems,
+  Mean Reversion, Momentum.
+- **🟡 Price Action básico** (Synapse `price`, parcial) — SIN quiz dedicado: Support & Resistance,
+  Trend & Structure, Supply & Demand, Breakout-Retest, Pin Bar, Engulfing. *(Sí hay: Candlestick,
+  Chart Patterns, Harmonic.)*
+- **🟡 OTE / Std Dev** — approach propio del analizador, sin topic de quiz dedicado (solo se roza vía
+  "Premium/Discount" en el Daily y dentro de las preguntas ICT).
+> **SÍ tienen quiz (completo, 3 niveles + hardcore + daily):** ICT (Order Blocks, FVG, Market Structure,
+> Kill Zones, Liquidity, AMD, PD Arrays), Wyckoff (Accumulation, Distribution, Market Phases), SMC
+> (Structure, Confluences, Liquidity), Patterns (Candlestick, Chart, Harmonic). **Wyckoff SÍ tiene.**
+> *(Nota: `daily_bank.js` tiene 200 preguntas pero solo 136 con tag `m:`/`topic:`.)*
 
 ---
 
