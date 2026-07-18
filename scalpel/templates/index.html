@@ -132,14 +132,14 @@
       background: linear-gradient(135deg, #c0142e, #a11026);
       clip-path: polygon(0 0, 44% 0, 0 84%);
     }
-    /* The camo ground is cream (a light surface), so the logo uses the light
-       treatment (dark ink) — otherwise dark mode's inverted WHITE logo washes
-       out on the cream. In DARK mode we additionally hue-rotate so the accent
-       "a" keeps its orange dark-mode tone: black text has no hue, so hue-rotate
-       leaves it black, while the blue "a" swings to orange. Neither the cream
-       theme nor the logo's own colours are changed — only the blend/hue. */
-    body[class*="camo-"] .logo-img          { filter: none; mix-blend-mode: multiply; }
-    body[class*="camo-"]:not(.light) .logo-img { filter: hue-rotate(180deg); mix-blend-mode: multiply; }
+    /* The camo ground is cream, so the logo shows dark ink (never dark mode's
+       inverted white, which washes out on cream). Light camo keeps the blue "a"
+       (logo_t.png); dark camo swaps to logo_t_cream.png — a copy whose blue "a"
+       is inverted to the exact original dark-mode orange (#004feb → #ffb014)
+       with the wordmark left black. Same look as the mascot: blue in light,
+       orange in dark, always readable on cream. */
+    body[class*="camo-"] .logo-img          { filter: none; mix-blend-mode: normal; }
+    body[class*="camo-"]:not(.light) .logo-img { content: url('/static/logo_t_cream.png'); }
 
     /* Synapse keeps its DEFAULT light/dark palette regardless of the active camo —
        its immersive world (3D brain, neural map) has its own tuned colours, and
