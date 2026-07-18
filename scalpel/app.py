@@ -7016,6 +7016,29 @@ def _migrate_user_mute_column():
         app.logger.info('Migrated user table: added muted_until column.')
 
 
+def _migrate_user_camo_columns():
+    """Add camo-skin columns (active_camo, owned_camos) to an existing user table.
+    Each ALTER runs in its own transaction with a guard so that a concurrent
+    gunicorn worker adding the same column first (a "duplicate column" error)
+    can never crash startup — the column just ends up present either way."""
+    from sqlalchemy import inspect, text
+    insp = inspect(db.engine)
+    cols = {c['name'] for c in insp.get_columns('user')}
+    stmts = []
+    if 'active_camo' not in cols:
+        stmts.append('ALTER TABLE "user" ADD COLUMN active_camo VARCHAR(40)')
+    if 'owned_camos' not in cols:
+        stmts.append('ALTER TABLE "user" ADD COLUMN owned_camos TEXT')
+    for s in stmts:
+        try:
+            with db.engine.begin() as conn:
+                conn.execute(text(s))
+        except Exception as e:
+            app.logger.info('camo migration note (ignored): %s', e)
+    if stmts:
+        app.logger.info('Migrated user table: camo columns ensured.')
+
+
 def init_db():
     with app.app_context():
         db.create_all()
@@ -7030,6 +7053,7 @@ def init_db():
         _migrate_order_columns()
         _migrate_promo_code_columns()
         _migrate_preflight_check_columns()
+        _migrate_user_camo_columns()
         admin_email = os.environ.get('ADMIN_EMAIL', 'mauroramirezmij@gmail.com').lower()
         admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
         admin_password = os.environ.get('ADMIN_PASSWORD', 'Codica2310$')
