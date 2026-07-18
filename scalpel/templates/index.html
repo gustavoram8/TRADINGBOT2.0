@@ -132,6 +132,12 @@
       background: linear-gradient(135deg, #c0142e, #a11026);
       clip-path: polygon(0 0, 44% 0, 0 84%);
     }
+    /* The camo ground is cream (a light surface) in BOTH modes, so the logo must
+       use the light treatment (dark ink) even in dark mode — otherwise dark
+       mode's inverted WHITE logo washes out on the cream. This changes neither
+       the cream theme nor the logo's own colours, only which blend it uses. */
+    body[class*="camo-"] .logo-img { filter: none; mix-blend-mode: multiply; }
+
     /* Synapse keeps its DEFAULT light/dark palette regardless of the active camo —
        its immersive world (3D brain, neural map) has its own tuned colours, and
        the cream skin would break it. Works for ANY camo via [class*="camo-"]. */
