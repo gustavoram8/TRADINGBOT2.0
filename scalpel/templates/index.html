@@ -158,14 +158,17 @@
     }
     body[class*="camo-"].ag-synapse-mode::before,
     body[class*="camo-"].ag-synapse-mode::after { display: none !important; }
-    /* Themed Quiz mascot (one image per light/dark, matching the default
-       blue-light / orange-dark convention). Drop the PNGs then uncomment:
-    body.camo-rising-sun.light      .quiz-welcome-logo       { content: url('/static/camo/rising-sun/welcome-light.png'); }
-    body.camo-rising-sun:not(.light) .quiz-welcome-logo      { content: url('/static/camo/rising-sun/welcome-dark.png'); }
-    body.camo-rising-sun.light      .quiz-result-mascot.pass { content: url('/static/camo/rising-sun/pass-light.png'); }
-    body.camo-rising-sun:not(.light) .quiz-result-mascot.pass { content: url('/static/camo/rising-sun/pass-dark.png'); }
-    body.camo-rising-sun.light      .quiz-result-mascot.fail { content: url('/static/camo/rising-sun/fail-light.png'); }
-    body.camo-rising-sun:not(.light) .quiz-result-mascot.fail { content: url('/static/camo/rising-sun/fail-dark.png'); }
+    /* Rising Sun themed Quiz mascot — swaps ONLY the big Quiz welcome mascot
+       while the camo is active (deactivating the camo reverts to the default).
+       content:url() keeps the exact same size / position / rotation as the
+       default. One image is used for both light and dark. ⚠️ Requires the file
+       scalpel/static/logo2_rising_sun.png — upload it before deploying or the
+       mascot will 404 under the camo. */
+    body.camo-rising-sun .quiz-welcome-logo { content: url('/static/logo2_rising_sun.png'); }
+    /* Later, if desired: a dark-mode variant + the pass/fail result mascots:
+    body.camo-rising-sun:not(.light) .quiz-welcome-logo   { content: url('/static/logo2_rising_sun_dark.png'); }
+    body.camo-rising-sun .quiz-result-mascot.pass { content: url('/static/logo3_rising_sun.png'); }
+    body.camo-rising-sun .quiz-result-mascot.fail { content: url('/static/logo4_rising_sun.png'); }
     */
 
     /* Mono utility for data / labels (Space Mono). */
