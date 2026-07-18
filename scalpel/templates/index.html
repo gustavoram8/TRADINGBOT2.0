@@ -160,13 +160,16 @@
     body[class*="camo-"].ag-synapse-mode::after { display: none !important; }
     /* Rising Sun themed Quiz mascot — swaps ONLY the big Quiz welcome mascot
        while the camo is active (deactivating the camo reverts to the default).
-       content:url() keeps the exact same size / position / rotation as the
-       default. One image is used for both light and dark. ⚠️ Requires the file
-       scalpel/static/logo2_rising_sun.png — upload it before deploying or the
-       mascot will 404 under the camo. */
-    body.camo-rising-sun .quiz-welcome-logo { content: url('/static/logo2_rising_sun.png'); }
-    /* Later, if desired: a dark-mode variant + the pass/fail result mascots:
-    body.camo-rising-sun:not(.light) .quiz-welcome-logo   { content: url('/static/logo2_rising_sun_dark.png'); }
+       Two images: blue-arrow for light mode, orange-arrow (same tone as the
+       default dark mascot) for dark mode. Selectors carry 3 classes so they beat
+       the default `body.light .quiz-welcome-logo` rule in BOTH modes. The artwork
+       is a straight-on enso ring, so it is shown UPRIGHT (rotate 0) instead of the
+       default 13deg tilt. ⚠️ Requires logo2_rising_sun.png + logo2_rising_sun_dark.png
+       in scalpel/static/ or the mascot 404s under the camo. */
+    body.camo-rising-sun.light      .quiz-welcome-logo { content: url('/static/logo2_rising_sun.png'); }
+    body.camo-rising-sun:not(.light) .quiz-welcome-logo { content: url('/static/logo2_rising_sun_dark.png'); }
+    body.camo-rising-sun .quiz-welcome-logo { transform: translateY(-50%) rotate(0deg); }
+    /* Later, if desired: the pass/fail result mascots:
     body.camo-rising-sun .quiz-result-mascot.pass { content: url('/static/logo3_rising_sun.png'); }
     body.camo-rising-sun .quiz-result-mascot.fail { content: url('/static/logo4_rising_sun.png'); }
     */
@@ -3085,6 +3088,7 @@
       .quiz-welcome-logo { position: relative; left: auto; top: auto;
         height: auto; width: 70vw; max-width: 320px;
         transform: rotate(9deg); margin: 4px auto 22px; }
+      body.camo-rising-sun .quiz-welcome-logo { transform: rotate(0deg); }
       .qw-content { max-width: 540px; margin: 0 auto; text-align: center; }
       .quiz-welcome-title { font-size: 30px; }
       .quiz-welcome-opts { margin: 0 auto; text-align: left; }
