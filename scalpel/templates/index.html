@@ -113,26 +113,24 @@
       --loss:     #c0392b;
       --be:       #c0142e;
       background:
-        radial-gradient(circle 190px at 100% -2%, #c8182e 0 60%, rgba(200,24,46,0) 61%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='210' height='84'%3E%3Ctext x='0' y='66' font-family='sans-serif' font-size='58' font-weight='700' fill='%232b201a' fill-opacity='0.06'%3E%E6%97%A5%E3%81%AE%E5%87%BA%3C/text%3E%3C/svg%3E") left 24px bottom 8px / 210px 84px no-repeat,
         radial-gradient(rgba(60,45,38,0.05) 1px, transparent 1px) 0 0 / 22px 22px,
         linear-gradient(165deg, #f7f1e5, #efe6d5) !important;
       background-attachment: fixed !important;
       color: var(--text);
     }
-    /* soft diagonal band, top-left, behind the sidebar */
+    /* rising-sun disc, top-right — restored to its original size/position (unchanged) */
     body.camo-rising-sun::before {
+      content: ""; position: fixed; top: -90px; right: -60px;
+      width: 380px; height: 380px; border-radius: 50%; z-index: -1; pointer-events: none;
+      background: radial-gradient(circle, #c8182e 0 60%, rgba(200,24,46,0) 61%); opacity: 0.9;
+    }
+    /* soft diagonal band, top-left, behind the sidebar (unchanged) */
+    body.camo-rising-sun::after {
       content: ""; position: fixed; top: 0; left: 0; width: 46%; height: 100%;
       z-index: -1; pointer-events: none; opacity: 0.13;
       background: linear-gradient(135deg, #c0142e, #a11026);
       clip-path: polygon(0 0, 44% 0, 0 84%);
-    }
-    /* kanji watermark 日の出 ("hinode" = sunrise), bottom-left */
-    body.camo-rising-sun::after {
-      content: "日の出"; position: fixed; left: 26px; bottom: 12px;
-      z-index: -1; pointer-events: none; line-height: 1;
-      font-size: 60px; font-weight: 800; letter-spacing: .04em;
-      color: rgba(43,32,26,0.06);
-      font-family: 'Hiragino Sans', 'Yu Gothic', 'Noto Sans JP', sans-serif;
     }
     /* Synapse keeps its DEFAULT light/dark palette regardless of the active camo —
        its immersive world (3D brain, neural map) has its own tuned colours, and
