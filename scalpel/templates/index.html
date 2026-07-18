@@ -88,6 +88,56 @@
         var(--bg) !important;
       background-attachment: fixed;
     }
+    /* ═══════════════════════════════════════════════════════════════════════
+       CAMOS — purchasable website skins. Option 1: an active camo replaces the
+       light/dark theme entirely (the <body> gets .camo-<slug> instead of
+       .light, set server-side before paint). Each camo only re-tokens the look
+       and repaints the background — layout, panel shapes and positions never
+       change. Add a new camo below and its slug to CAMO_READY in app.py.
+       ═══════════════════════════════════════════════════════════════════════ */
+    /* Rising Sun — cream washi, rising-sun disc + a diagonal band, vermilion/gold. */
+    body.camo-rising-sun {
+      --bg:       #f2e9d8;
+      --surface:  rgba(255,253,247,0.66);
+      --card:     rgba(255,253,247,0.80);
+      --border:   rgba(60,45,38,0.15);
+      --border2:  rgba(60,45,38,0.24);
+      --text:     #26201c;
+      --muted:    rgba(42,34,29,0.60);
+      --accent:   #c0142e;
+      --accent-h: #a51126;
+      --win:      #2f8f6a;
+      --loss:     #c0392b;
+      --be:       #c0142e;
+      background:
+        radial-gradient(rgba(60,45,38,0.05) 1px, transparent 1px) 0 0 / 22px 22px,
+        linear-gradient(165deg, #f7f1e5, #efe6d5) !important;
+      background-attachment: fixed !important;
+      color: var(--text);
+    }
+    /* Rising-sun disc (top-right) + soft diagonal band (top-left, behind the
+       sidebar). Fixed and behind all content so they read only in the margins. */
+    body.camo-rising-sun::before {
+      content: ""; position: fixed; top: -90px; right: -60px;
+      width: 380px; height: 380px; border-radius: 50%; z-index: -1; pointer-events: none;
+      background: radial-gradient(circle, #c8182e 0 60%, rgba(200,24,46,0) 61%); opacity: 0.9;
+    }
+    body.camo-rising-sun::after {
+      content: ""; position: fixed; top: 0; left: 0; width: 46%; height: 100%;
+      z-index: -1; pointer-events: none; opacity: 0.13;
+      background: linear-gradient(135deg, #c0142e, #a11026);
+      clip-path: polygon(0 0, 44% 0, 0 84%);
+    }
+    /* A camo owns the whole look, so the light/dark toggle is meaningless — hide it. */
+    body[class*="camo-"] .theme-toggle { display: none; }
+    /* Themed mascot swap (Quiz welcome + pass/fail). Drop the edited PNGs at the
+       paths below, then uncomment — until the files exist this stays default so
+       nothing 404s.
+    body.camo-rising-sun .quiz-welcome-logo   { content: url('/static/camo/rising-sun/welcome.png'); }
+    body.camo-rising-sun .quiz-result-mascot.pass { content: url('/static/camo/rising-sun/pass.png'); }
+    body.camo-rising-sun .quiz-result-mascot.fail { content: url('/static/camo/rising-sun/fail.png'); }
+    */
+
     /* Mono utility for data / labels (Space Mono). */
     .ag-mono { font-family: 'Space Mono', ui-monospace, monospace; }
 
@@ -3931,9 +3981,13 @@
 </head>
 <body>
 <script>
-  // Apply saved theme before paint to avoid a flash
+  // Apply saved theme (or an active camo) before paint to avoid a flash.
   (function () {
-    // Default is LIGHT; switch to dark only if the user previously saved dark.
+    // A purchased+activated camo skin takes over the whole look (Option 1):
+    // it replaces the light/dark theme entirely while it's active.
+    var camo = "{{ active_camo|default('') }}";
+    if (camo) { document.body.classList.add('camo-' + camo); return; }
+    // Otherwise: default is LIGHT; switch to dark only if the user saved dark.
     try { if (localStorage.getItem('scalpel_theme') !== 'dark') document.body.classList.add('light'); }
     catch (e) { document.body.classList.add('light'); }
   })();

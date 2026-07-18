@@ -353,6 +353,35 @@ class User(UserMixin, db.Model):
     # replay it) — same one-time pattern as the plan-purchase unlock reveal.
     rank_celebrated = db.Column(db.Integer, default=1, nullable=False)
 
+    # ── Camos (purchasable website skins) ──
+    # active_camo: slug of the currently applied skin ('' / None = default theme).
+    # owned_camos: JSON list of purchased skin slugs. Plan camos are owned via the
+    # plan (not stored here); admins own everything (see owns_camo()).
+    active_camo = db.Column(db.String(40), nullable=True, default='')
+    owned_camos = db.Column(db.Text, nullable=True, default='')
+
+    def camos_owned(self):
+        try:
+            return set(json.loads(self.owned_camos or '[]'))
+        except Exception:
+            return set()
+
+    def add_camo(self, slug):
+        owned = self.camos_owned()
+        owned.add(slug)
+        self.owned_camos = json.dumps(sorted(owned))
+
+    def owns_camo(self, slug):
+        """True if this user may activate the given camo. Admins own all;
+        plan camos come with the plan; the rest must be purchased."""
+        if self.is_admin:
+            return True
+        if slug == 'standard':
+            return self.plan in ('standard', 'premium')
+        if slug == 'premium':
+            return self.plan == 'premium'
+        return slug in self.camos_owned()
+
     def set_password(self, raw):
         self.password_hash = generate_password_hash(raw)
 
@@ -1011,6 +1040,20 @@ PLAN_LIMITS = {
 # real words fit well under this; the cap exists to stop a space-less spam blob
 # (which a word count reads as one "word") from inflating the token bill.
 NOTES_MAX_CHARS = 2000
+
+# ── Camos (purchasable website skins) ──
+# Every camo slug the store knows about (mirrors the cards in camos.html; the
+# client maps each card's cm-<x> swatch class to one of these slugs).
+CAMO_SLUGS = {
+    'standard', 'premium',                                   # bundled with plan
+    'naval', 'highnoon', 'rising-sun', 'mission', 'blackflag',
+    'alchemist', 'shadow', 'pole', 'arcade', 'cyber',        # themes
+    'santa', 'hallow', 'fourth', 'lucky', 'valentine',
+    'easter', 'newyear', 'muertos',                          # seasonal
+}
+# Camos that actually have a theme built and can be activated today. The rest
+# still render as "Coming soon" in the store. Add a slug here once its CSS ships.
+CAMO_READY = {'rising-sun'}
 
 # Max number of saved Analysis Projects per plan.
 PROJECT_LIMITS = {'free': 1, 'standard': 5, 'premium': 10}
@@ -1967,7 +2010,38 @@ def improve_inside():
 
 @app.route('/camos')
 def camos():
-    return render_template('camos.html')
+    if current_user.is_authenticated:
+        owned = sorted(s for s in CAMO_SLUGS if current_user.owns_camo(s))
+        active = current_user.active_camo or ''
+        authed = True
+    else:
+        owned, active, authed = [], '', False
+    return render_template('camos.html',
+                           camo_owned=owned, camo_active=active,
+                           camo_ready=sorted(CAMO_READY), camo_authed=authed)
+
+
+@app.route('/api/camo/activate', methods=['POST'])
+@login_required
+def camo_activate():
+    """Activate an owned, ready camo as the user's website skin."""
+    slug = ((request.get_json(silent=True) or {}).get('slug') or '').strip()
+    if slug not in CAMO_READY:
+        return jsonify({'error': 'not_available'}), 400
+    if not current_user.owns_camo(slug):
+        return jsonify({'error': 'not_owned'}), 403
+    current_user.active_camo = slug
+    db.session.commit()
+    return jsonify({'ok': True, 'active': slug})
+
+
+@app.route('/api/camo/deactivate', methods=['POST'])
+@login_required
+def camo_deactivate():
+    """Revert to the default (light/dark) theme."""
+    current_user.active_camo = ''
+    db.session.commit()
+    return jsonify({'ok': True, 'active': ''})
 
 
 @app.route('/terms')
@@ -2232,6 +2306,7 @@ def app_view():
         demo_mode=demo_mode,
         demo_label=demo_label,
         demo_open=demo_open,
+        active_camo=(current_user.active_camo or ''),
     ))
     resp.delete_cookie('scalpel_splash_ts')
     # Never let a cache serve a stale /app (which could hide a fresh rank-up

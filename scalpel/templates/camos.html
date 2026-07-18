@@ -65,6 +65,19 @@
     .cm-easter   { background:linear-gradient(135deg,#f7d6e0,#d6e8f7 46%,#dff7d6); }
     .cm-newyear  { background:linear-gradient(135deg,#0c0c12,#2a2440 50%,#d4af37); }
     .cm-muertos  { background:linear-gradient(135deg,#2a0f3a,#7a1f6a 45%,#ff8c1a); }
+    /* ── camo ownership / activation controls ── */
+    .camo-owned-tag { font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:#1a7a3f; }
+    .camo-cta.on { opacity:1; pointer-events:auto; cursor:pointer; border:none; }
+    .camo-cta.act { background:#c0142e; }
+    .camo-cta.act:hover { background:#a51126; }
+    .camo-cta.isactive { background:#1a7a3f; cursor:default; }
+    .camo-deact { font-size:12.5px; font-weight:700; color:#6b7280; background:none; border:none; cursor:pointer; text-decoration:underline; padding:4px 2px; }
+    .camo-deact:hover { color:#15171f; }
+    .camo-toast { position:fixed; left:50%; bottom:24px; transform:translateX(-50%); background:#15171f; color:#fff;
+      font-size:13px; font-weight:600; padding:11px 18px; border-radius:11px; box-shadow:0 12px 30px rgba(0,0,0,.25);
+      display:flex; gap:14px; align-items:center; opacity:0; transition:opacity .2s; z-index:50; pointer-events:none; }
+    .camo-toast.show { opacity:1; pointer-events:auto; }
+    .camo-toast a { color:#ffd86b; text-decoration:none; font-weight:700; }
   </style>
 </head>
 <body>
@@ -267,5 +280,90 @@
 
 </div>
 <script src="/static/pages_i18n.js"></script>
+<script>
+  // Ownership / active state, injected server-side.
+  window.CAMO_STATE = {
+    owned:  {{ camo_owned|default([])|tojson }},
+    active: {{ (camo_active or '')|tojson }},
+    ready:  {{ camo_ready|default([])|tojson }},
+    authed: {{ camo_authed|default(false)|tojson }}
+  };
+  (function () {
+    var S = window.CAMO_STATE;
+    // Map each card's swatch class (cm-<x>) to its server-side slug.
+    var CM2SLUG = { 'cm-standard':'standard','cm-premium':'premium','cm-naval':'naval',
+      'cm-highnoon':'highnoon','cm-sun':'rising-sun','cm-mission':'mission','cm-blackflag':'blackflag',
+      'cm-alchemist':'alchemist','cm-shadow':'shadow','cm-pole':'pole','cm-arcade':'arcade','cm-cyber':'cyber',
+      'cm-santa':'santa','cm-hallow':'hallow','cm-fourth':'fourth','cm-lucky':'lucky','cm-valentine':'valentine',
+      'cm-easter':'easter','cm-newyear':'newyear','cm-muertos':'muertos' };
+    var lang = 'en';
+    try { var l = localStorage.getItem('scalpel_lang'); if (['en','es','fr','pt'].indexOf(l) >= 0) lang = l; } catch (e) {}
+    var T = {
+      en:{activate:'Activate',active:'Active ✓',owned:'Owned',deactivate:'Use default',get:'Get this skin',soon:'Card payments coming soon',on:'Activated — ',go:'see it in the app →',off:'Reverted to the default theme'},
+      es:{activate:'Activar',active:'Activo ✓',owned:'Adquirido',deactivate:'Usar default',get:'Obtener skin',soon:'El pago con tarjeta llega pronto',on:'Activado — ',go:'velo en la app →',off:'Volviste al tema por defecto'},
+      fr:{activate:'Activer',active:'Actif ✓',owned:'Acquis',deactivate:'Défaut',get:'Obtenir ce skin',soon:'Le paiement par carte arrive bientôt',on:'Activé — ',go:'à voir dans l\'app →',off:'Retour au thème par défaut'},
+      pt:{activate:'Ativar',active:'Ativo ✓',owned:'Adquirido',deactivate:'Usar padrão',get:'Obter skin',soon:'Pagamento com cartão em breve',on:'Ativado — ',go:'veja no app →',off:'Voltou ao tema padrão'}
+    }[lang];
+
+    function slugOf(card){
+      var sw = card.querySelector('.camo-swatch'); if (!sw) return null;
+      for (var i=0;i<sw.classList.length;i++){ if (CM2SLUG[sw.classList[i]]) return CM2SLUG[sw.classList[i]]; }
+      return null;
+    }
+    function toast(html){
+      var t = document.getElementById('camo-toast');
+      if (!t){ t = document.createElement('div'); t.id='camo-toast'; t.className='camo-toast'; document.body.appendChild(t); }
+      t.innerHTML = html; t.classList.add('show');
+      clearTimeout(t._h); t._h = setTimeout(function(){ t.classList.remove('show'); }, 4200);
+    }
+
+    function post(url, body){
+      return fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body||{})})
+        .then(function(r){ return r.json().then(function(j){ return {ok:r.ok, j:j}; }); });
+    }
+
+    function renderCard(card){
+      var slug = slugOf(card); if (!slug) return;
+      var ready = S.ready.indexOf(slug) >= 0;
+      // Plan camos + not-ready camos keep their existing footer ("Included" / "Coming soon").
+      if (!ready || slug==='standard' || slug==='premium') return;
+      // Ready camo: drop the "Coming soon" pill.
+      var pill = card.querySelector('.soon-pill'); if (pill) pill.remove();
+      var foot = card.querySelector('.camo-foot'); if (!foot) return;
+      var owned = S.owned.indexOf(slug) >= 0;
+      var active = S.active === slug;
+      var price = (card.querySelector('.camo-price') || {}).textContent || '';
+
+      if (!owned){
+        foot.innerHTML = '<span class="camo-price">'+price+'</span>'
+          + '<button type="button" class="camo-cta on act" data-buy="1">'+T.get+'</button>';
+        foot.querySelector('[data-buy]').addEventListener('click', function(){
+          if (!S.authed){ location.href='/login'; return; }
+          toast(T.soon);   // Stripe checkout wires in here later
+        });
+        return;
+      }
+      if (active){
+        foot.innerHTML = '<span class="camo-owned-tag">'+T.active+'</span>'
+          + '<button type="button" class="camo-deact" data-off="1">'+T.deactivate+'</button>';
+        foot.querySelector('[data-off]').addEventListener('click', function(){
+          post('/api/camo/deactivate').then(function(res){
+            if (res.ok){ S.active=''; renderAll(); toast(T.off); }
+          });
+        });
+      } else {
+        foot.innerHTML = '<span class="camo-owned-tag">'+T.owned+'</span>'
+          + '<button type="button" class="camo-cta on act" data-on="1">'+T.activate+'</button>';
+        foot.querySelector('[data-on]').addEventListener('click', function(){
+          post('/api/camo/activate', {slug:slug}).then(function(res){
+            if (res.ok){ S.active=slug; renderAll(); toast(T.on+'<a href="/app">'+T.go+'</a>'); }
+          });
+        });
+      }
+    }
+    function renderAll(){ document.querySelectorAll('.camo-card').forEach(renderCard); }
+    renderAll();
+  })();
+</script>
 </body>
 </html>

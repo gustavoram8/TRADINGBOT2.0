@@ -122,6 +122,29 @@ con delimitador `'` y comillas HTML dobles; guillemets `« »`. PT brasileño (v
 **Nota:** fechas "Last updated" quedan server/estáticas en inglés (bajo impacto, igual criterio que el
 resto del sitio con `strftime`).
 
+**🟢 CAMOS — sistema de skins comprables (EN CURSO, base cableada 2026-07-18).** Un camo = un *theme*
+que reskinea SOLO el fondo/colores del sitio (layout/paneles/posiciones NO cambian) + swap de la mascota
+en el Quiz. **Opción 1 (decidida):** un camo activo REEMPLAZA el tema claro/oscuro por completo (las
+versiones opuestas se harán después). **Infra hecha:** (1) `User.active_camo` (slug activo, ''=default) +
+`User.owned_camos` (JSON list de comprados) + helpers `camos_owned()/add_camo()/owns_camo()` — admin
+posee TODO, plan camos (standard/premium) vía plan, el resto por compra. (2) Constantes `CAMO_SLUGS`
+(20) y `CAMO_READY` (solo `rising-sun` por ahora) en app.py. (3) Endpoints `POST /api/camo/activate`
+{slug} (valida ready+ownership) y `/api/camo/deactivate`. (4) `/app` pasa `active_camo` al template; el
+script temprano de `index.html` pinta `body.camo-<slug>` antes del paint (sin FOUC) en vez de `light`;
+el toggle claro/oscuro se oculta con un camo activo. (5) Tienda `/camos`: el server pasa
+owned/active/ready/authed; un JS mapea cada `.camo-swatch cm-<x>`→slug y reescribe el footer (Comprar /
+Adquirido+Activar / Activo+Usar-default) con toast, i18n EN/ES/FR/PT inline. (6) Theme **Rising Sun**
+(`body.camo-rising-sun` en index.html): crema washi + disco de sol (`::before`) + banda diagonal izq
+(`::after`) + paleta bermellón/oro. Aprobado por el usuario en preview. **⚠️ MIGRACIÓN PROD:** las 2
+columnas nuevas en `user` NO las crea `db.create_all()` (solo crea tablas) → correr en PostgreSQL:
+`ALTER TABLE "user" ADD COLUMN active_camo VARCHAR(40) DEFAULT ''; ALTER TABLE "user" ADD COLUMN owned_camos TEXT DEFAULT '';`
+**FALTA:** (a) imágenes de mascota temáticas en `/static/camo/rising-sun/{welcome,pass,fail}.png` (hooks
+CSS comentados listos); (b) Stripe checkout real en el botón "Get this skin" (hoy toast "pago pronto");
+(c) más themes (naval, cyber, etc.) + sus versiones opuestas claro/oscuro; (d) aplicar el camo a más
+páginas si se quiere (hoy solo `/app`). Verificado con test_client: ownership, activate/deactivate,
+403/400, `/app` lleva la clase + CSS. NO se pudo screenshot del `/app` real (server de prueba flojo en
+el contenedor) pero el look está aprobado en preview.
+
 **✅ PRODUCTS MENU — acordeón inline en el sidebar (2026-07-18, RESUELTO).** En `/app` (shell Aurora)
 el menú Products vive DENTRO del `.ag-sidebar` como **acordeón inline** (`position:static`) que se expande
 debajo de la pestaña Products (que es la ÚLTIMA tab). Con logo(96px)+tabs+~10 items el sidebar supera
