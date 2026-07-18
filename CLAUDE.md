@@ -96,23 +96,20 @@ con delimitador `'` y comillas HTML dobles; guillemets `« »`. PT brasileño (v
 **Nota:** fechas "Last updated" quedan server/estáticas en inglés (bajo impacto, igual criterio que el
 resto del sitio con `strftime`).
 
-**✅ PRODUCTS MENU — lista completa sin scroll (2026-07-17).** Bug: en `/app` (shell Aurora) el
-menú Products vive DENTRO del `.ag-sidebar` como acordeón inline; con logo(96px)+tabs+11 items el
-sidebar excede `max-height:calc(100vh-44px)` y el `overflow:auto` obligaba a scrollear → los items de
-abajo (Guide/Contact/Settings) quedaban ocultos. Trampa: el sidebar tiene `backdrop-filter` → es
-containing block y recorta hijos `position:fixed`, así que no se puede flotar en su lugar. Fix
-(IIFE Products ~línea 11024 + CSS `.products-menu.pm-floating`): en **desktop** (`innerWidth>900`) al
-abrir se hace `popOut()` → mueve el menú a `<body>` (escapa el clip), le pone base `.products-menu`
-(panel con fondo/borde/sombra) + `pm-floating`, y `place()` lo abre como **dropdown HACIA ABAJO** en
-**UNA columna** desde la pestaña (`left=tab.left`, `top=tab.bottom+4`). **Products es la ÚLTIMA tab**
-(queda muy abajo) → en pantallas bajas la lista no cabe entera debajo; en vez de elevarse y tapar el
-logo/tabs, `place()` **topa `maxHeight = innerHeight − top − 8`** y el menú **scrollea internamente**
-si hace falta (pantallas altas: completo sin scroll; bajas: scroll interno). NUNCA se eleva ni tapa el
-top. `close()` hace `popBack()` + limpia left/top/maxHeight. **Móvil** (`≤900`) sigue inline (página
-scrollea natural). Verificado en navegador (Playwright) 1366×768/1280×720/1440×900/1600×1050 con 10
-items: `display:flex` 1 columna (no se parte), `belowTab:true`, alineado a la pestaña, on-screen, sin
-tapar el top; scroll interno solo en 768/720; inline en 380px. **Historia:** intentos previos (flyout
-lateral, luego 2 columnas) rechazados por el usuario → quedó esta versión simple 1-col + scroll.
+**✅ PRODUCTS MENU — acordeón inline en el sidebar (2026-07-18, RESUELTO).** En `/app` (shell Aurora)
+el menú Products vive DENTRO del `.ag-sidebar` como **acordeón inline** (`position:static`) que se expande
+debajo de la pestaña Products (que es la ÚLTIMA tab). Con logo(96px)+tabs+~10 items el sidebar supera
+`max-height:calc(100vh-44px)` y muestra su **propio scrollbar** en pantallas bajas → los items de abajo
+(Camos/Terms/Privacy/Guide/Contact/Settings) se ven scrolleando el sidebar. **Esto es lo aceptado por el
+usuario.** ⚠️ **NO reintentar flotar el menú:** hubo 4 intentos rechazados — (1) `position:fixed` en su
+lugar (el `backdrop-filter` del sidebar lo atrapa/recorta), (2) pop-out a `<body>` como flyout AL LADO
+("debe abrir hacia abajo, no a la derecha"), (3) dropdown abajo con lift-up (tapaba logo/tabs de arriba),
+(4) 2 columnas (se partía, feo). El pop-out SIEMPRE terminaba como panel blanco flotante que **se
+superponía** al panel del sidebar (Products es la última tab → el menú caía sobre la cola del sidebar).
+Solución final = **inline original** (IIFE ~línea 11029: `place()` hace `return` si
+`menu.closest('.ag-sidebar')`; solo posiciona fixed en el fallback sin-Aurora). Agregado:
+`btn.scrollIntoView({block:'nearest'})` al abrir. Verificado en navegador real (Playwright + app logueada):
+`inSidebar:true`, `withinSidebar:true` (0 overlap), sidebar scrollea y revela todos los items. Móvil igual.
 
 **✅ SYNAPSE WEB — i18n CABLEADO (2026-07-17).** Bug reportado: el mapa/dossiers de Synapse
 salían en inglés bajo ES/FR/PT. Causa: las traducciones YA existían completas y auditadas
