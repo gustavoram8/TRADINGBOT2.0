@@ -122,28 +122,49 @@ con delimitador `'` y comillas HTML dobles; guillemets `« »`. PT brasileño (v
 **Nota:** fechas "Last updated" quedan server/estáticas en inglés (bajo impacto, igual criterio que el
 resto del sitio con `strftime`).
 
-**🟢 CAMOS — sistema de skins comprables (EN CURSO, base cableada 2026-07-18).** Un camo = un *theme*
-que reskinea SOLO el fondo/colores del sitio (layout/paneles/posiciones NO cambian) + swap de la mascota
-en el Quiz. **Opción 1 (decidida):** un camo activo REEMPLAZA el tema claro/oscuro por completo (las
-versiones opuestas se harán después). **Infra hecha:** (1) `User.active_camo` (slug activo, ''=default) +
-`User.owned_camos` (JSON list de comprados) + helpers `camos_owned()/add_camo()/owns_camo()` — admin
-posee TODO, plan camos (standard/premium) vía plan, el resto por compra. (2) Constantes `CAMO_SLUGS`
-(20) y `CAMO_READY` (solo `rising-sun` por ahora) en app.py. (3) Endpoints `POST /api/camo/activate`
-{slug} (valida ready+ownership) y `/api/camo/deactivate`. (4) `/app` pasa `active_camo` al template; el
-script temprano de `index.html` pinta `body.camo-<slug>` antes del paint (sin FOUC) en vez de `light`;
-el toggle claro/oscuro se oculta con un camo activo. (5) Tienda `/camos`: el server pasa
-owned/active/ready/authed; un JS mapea cada `.camo-swatch cm-<x>`→slug y reescribe el footer (Comprar /
-Adquirido+Activar / Activo+Usar-default) con toast, i18n EN/ES/FR/PT inline. (6) Theme **Rising Sun**
-(`body.camo-rising-sun` en index.html): crema washi + disco de sol (`::before`) + banda diagonal izq
-(`::after`) + paleta bermellón/oro. Aprobado por el usuario en preview. **⚠️ MIGRACIÓN PROD:** las 2
-columnas nuevas en `user` NO las crea `db.create_all()` (solo crea tablas) → correr en PostgreSQL:
-`ALTER TABLE "user" ADD COLUMN active_camo VARCHAR(40) DEFAULT ''; ALTER TABLE "user" ADD COLUMN owned_camos TEXT DEFAULT '';`
-**FALTA:** (a) imágenes de mascota temáticas en `/static/camo/rising-sun/{welcome,pass,fail}.png` (hooks
-CSS comentados listos); (b) Stripe checkout real en el botón "Get this skin" (hoy toast "pago pronto");
-(c) más themes (naval, cyber, etc.) + sus versiones opuestas claro/oscuro; (d) aplicar el camo a más
-páginas si se quiere (hoy solo `/app`). Verificado con test_client: ownership, activate/deactivate,
-403/400, `/app` lleva la clase + CSS. NO se pudo screenshot del `/app` real (server de prueba flojo en
-el contenedor) pero el look está aprobado en preview.
+**🟢 CAMOS — sistema de skins comprables (EN CURSO, actualizado 2026-07-19).** Un camo = un *theme* que
+reskinea SOLO el fondo/colores del sitio (layout/paneles/posiciones NO cambian) + swap de la mascota en
+el Quiz (welcome + pass/fail). **Infra base (cableada, estable):** `User.active_camo`/`owned_camos` +
+helpers `camos_owned()/add_camo()/owns_camo()` (admin posee TODO); `CAMO_SLUGS` (20 slugs) y
+`CAMO_READY` en app.py — **hoy `{'rising-sun','pole','premium'}`**, el resto pendiente; endpoints
+`/api/camo/activate` `/api/camo/deactivate`; `/app` pinta `body.camo-<slug>` pre-paint (sin FOUC);
+tienda `/camos` con ownership/compra (Stripe real AÚN pendiente, hoy toast "pago pronto"). Migración
+prod ya aplicada (columnas `active_camo`/`owned_camos` en `user` + auto-heal `_migrate_user_camo_columns()`
+en `init_db()` — futuras columnas nuevas: SIEMPRE auto-migración, nunca pedirle al usuario SQL a mano).
+**Mascotas (welcome/pass/fail, light+dark) — 7 de 7 camos LISTAS y con cutout limpio:** rising-sun, naval,
+mission, pole, blackflag, premium (Obsidian Gold), fourth (USA, solo welcome — faltan pass/fail, el
+usuario las subirá después). Proceso de cutout: `scalpel/tools_camo_cut.py` (semi-automático: detecta
+huecos blancos ENCERRADOS por el contorno —axilas, entre piernas, barandillas— los numera sobre el arte,
+un humano decide cuáles son fondo vs. feature blanco real —guantes/ojos/dientes—, aplica con bordes
+suavizados). Dark = recolor de flecha azul→naranja `#dd9100` (mismo tono que la mascota default dark,
+sampleado con precisión de píxel); camos con arte que NO debe recolorearse (ej. bandera USA) usan
+`recolor=False`. **Themes (fondo) — 2 de 20 LISTOS:**
+- **Rising Sun** ✅ — un solo look para light/dark (cream washi + disco de sol + banda diagonal + kanji).
+- **Pole** ✅ (F1 blueprint) — **dos** looks, uno por modo: ☀️ light = papel de taller (grafito + acento
+  rojo), 🌙 dark = cianotipo azul (líneas blancas + acento azul); ambos con grid, plano técnico del F1,
+  mapa de circuito, corte de neumático, textura+viñeta. Precedente de que un camo SÍ puede tener
+  variantes light/dark propias (no todos son "un solo look" como Rising Sun).
+- **Obsidian Gold (Premium)** ✅ — un solo look (obsidiana negra + arcos Art Déco dorados concéntricos +
+  zigurat, esquina inf-izq). Pasó por 3 rondas de iteración de diseño (geométrico→telaraña rechazado→
+  conceptual "La Bóveda/Reservas de oro/Bull dorado" ofrecido→usuario eligió volver a un Art Déco pulido
+  sin líneas finas = "A3 arcos+zigurat"). Lección: el usuario rechaza patrones que parezcan "telaraña"
+  (líneas finas radiando) — para dorado/lujo usar formas MACIZAS/rellenas o vetas orgánicas, no líneas.
+- **Pendientes de theme:** naval, mission, blackflag, fourth (USA) + 13 slugs más sin arte de mascota
+  aún. Antes de diseñar cada uno: preguntar 1ª idea/temática al usuario (así arrancó Pole: "plano de
+  construcción de F1"), ofrecer 3 variantes, iterar sobre la elegida, cablear igual que Pole/Premium
+  (bloque CSS con vars `--bg/--surface/--card/--border/--border2/--text/--muted/--accent/--accent-h/
+  --win/--loss/--be`, sección insertada en `index.html` tras el bloque del camo anterior, slug agregado a
+  `CAMO_READY` en app.py). Validar con: parse Python + Jinja + UN screenshot real (no artifact — no le
+  carga en el iPad) del CSS ya insertado antes de pushear.
+- **⚠️ REGLA DE TOKENS para previews visuales (pedida por el usuario 2026-07-19):** un solo prompt de
+  "mostrame 3 variantes" puede consumir ~80% del límite de 5h si la conversación ya viene cargada de
+  imágenes previas — el costo de cada turno escala con TODO el historial, no solo lo nuevo. Mitigar
+  con: (1) screenshots a resolución reducida por default (~900-1000px ancho, density_factor=1, NO 2000px+
+  a doble densidad — eso ya se usó de más en esta sesión); (2) preferir iterar sobre 1 variante a la vez
+  en vez de tirar 3 de entrada, salvo pedido explícito de "3 opciones"; (3) al cerrar un camo (theme+
+  mascota cableados y pusheados), sugerir activamente arrancar SESIÓN NUEVA para el siguiente — todo lo
+  hecho ya vive en el código y en este archivo, no se pierde nada, solo se evita re-arrastrar imágenes
+  viejas en el contexto de cada turno futuro.
 
 **✅ PRODUCTS MENU — acordeón inline en el sidebar (2026-07-18, RESUELTO).** En `/app` (shell Aurora)
 el menú Products vive DENTRO del `.ag-sidebar` como **acordeón inline** (`position:static`) que se expande
