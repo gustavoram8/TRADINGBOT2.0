@@ -325,8 +325,9 @@
     function renderCard(card){
       var slug = slugOf(card); if (!slug) return;
       var ready = S.ready.indexOf(slug) >= 0;
-      // Plan camos + not-ready camos keep their existing footer ("Included" / "Coming soon").
-      if (!ready || slug==='standard' || slug==='premium') return;
+      var isPlanCamo = (slug === 'standard' || slug === 'premium');
+      // Not-ready camos (theme not built yet) keep their "Coming soon" footer.
+      if (!ready) return;
       // Ready camo: drop the "Coming soon" pill.
       var pill = card.querySelector('.soon-pill'); if (pill) pill.remove();
       var foot = card.querySelector('.camo-foot'); if (!foot) return;
@@ -335,6 +336,11 @@
       var price = (card.querySelector('.camo-price') || {}).textContent || '';
 
       if (!owned){
+        // Plan camos (Standard/Premium) aren't purchasable on their own — they
+        // come bundled with the plan. If the user's current plan doesn't include
+        // it, leave the static "Included with your plan" footer as-is (no buy
+        // button to click, nothing to wire to Stripe here).
+        if (isPlanCamo) return;
         foot.innerHTML = '<span class="camo-price">'+price+'</span>'
           + '<button type="button" class="camo-cta on act" data-buy="1">'+T.get+'</button>';
         foot.querySelector('[data-buy]').addEventListener('click', function(){
