@@ -1053,7 +1053,7 @@ CAMO_SLUGS = {
 }
 # Camos that actually have a theme built and can be activated today. The rest
 # still render as "Coming soon" in the store. Add a slug here once its CSS ships.
-CAMO_READY = {'rising-sun', 'pole'}
+CAMO_READY = {'rising-sun', 'pole', 'premium'}
 
 # Max number of saved Analysis Projects per plan.
 PROJECT_LIMITS = {'free': 1, 'standard': 5, 'premium': 10}

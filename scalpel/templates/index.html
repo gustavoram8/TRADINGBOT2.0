@@ -204,6 +204,40 @@
     body.camo-pole:not(.light) .logo-img {
       content: url('/static/logo_t.png'); filter: brightness(0) invert(1); mix-blend-mode: normal;
     }
+    /* ═══ Obsidian Gold (Premium) — obsidian-black ground with concentric Art
+       Déco gold arches + a ziggurat step ornament, bottom-left (same artwork the
+       user approved as "A3"). ONE ground for both light and dark, like Rising
+       Sun — it's the plan/premium camo, so it should read the same regardless
+       of the toggle; only the mascot + Synapse still respond to light/dark. */
+    body.camo-premium {
+      --bg:       #0d0b08;
+      --surface:  rgba(255,255,255,0.045);
+      --card:     rgba(255,255,255,0.05);
+      --border:   rgba(212,175,55,0.20);
+      --border2:  rgba(212,175,55,0.28);
+      --text:     #f3ead6;
+      --muted:    rgba(243,234,214,0.58);
+      --accent:   #d4af37;
+      --accent-h: #c19a28;
+      --win:      #46d08a;
+      --loss:     #e8736b;
+      --be:       #d4af37;
+      background:
+        url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27500%27%20height%3D%27760%27%20viewBox%3D%270%200%20500%20760%27%3E%3Cpath%20d%3D%27M40%20580%20A150%20150%200%200%201%20190%20730%27%20fill%3D%27none%27%20stroke%3D%27%23d4af37%27%20stroke-width%3D%2716%27%20opacity%3D%270.22%27%2F%3E%3Cpath%20d%3D%27M40%20490%20A240%20240%200%200%201%20280%20730%27%20fill%3D%27none%27%20stroke%3D%27%23d4af37%27%20stroke-width%3D%2716%27%20opacity%3D%270.1%27%2F%3E%3Cpath%20d%3D%27M40%20400%20A330%20330%200%200%201%20370%20730%27%20fill%3D%27none%27%20stroke%3D%27%23d4af37%27%20stroke-width%3D%2716%27%20opacity%3D%270.22%27%2F%3E%3Cpath%20d%3D%27M40%20310%20A420%20420%200%200%201%20460%20730%27%20fill%3D%27none%27%20stroke%3D%27%23d4af37%27%20stroke-width%3D%2716%27%20opacity%3D%270.1%27%2F%3E%3Cpath%20d%3D%27M40%20220%20A510%20510%200%200%201%20550%20730%27%20fill%3D%27none%27%20stroke%3D%27%23d4af37%27%20stroke-width%3D%2716%27%20opacity%3D%270.22%27%2F%3E%3Cpath%20d%3D%27M430%2010%20L430%2040%20L490%2040%27%20fill%3D%27none%27%20stroke%3D%27%23d4af37%27%20stroke-width%3D%273%27%20opacity%3D%270.7%27%2F%3E%3Cpath%20d%3D%27M404%2010%20L404%2066%20L490%2066%27%20fill%3D%27none%27%20stroke%3D%27%23d4af37%27%20stroke-width%3D%273%27%20opacity%3D%270.7%27%2F%3E%3Cpath%20d%3D%27M378%2010%20L378%2092%20L490%2092%27%20fill%3D%27none%27%20stroke%3D%27%23d4af37%27%20stroke-width%3D%273%27%20opacity%3D%270.7%27%2F%3E%3Cpath%20d%3D%27M352%2010%20L352%20118%20L490%20118%27%20fill%3D%27none%27%20stroke%3D%27%23d4af37%27%20stroke-width%3D%273%27%20opacity%3D%270.7%27%2F%3E%3Cpath%20d%3D%27M326%2010%20L326%20144%20L490%20144%27%20fill%3D%27none%27%20stroke%3D%27%23d4af37%27%20stroke-width%3D%273%27%20opacity%3D%270.7%27%2F%3E%3C%2Fsvg%3E") left bottom / 360px auto no-repeat,
+        radial-gradient(rgba(212,175,55,.05) 1px, transparent 1px) 0 0 / 26px 26px,
+        linear-gradient(160deg, #151310, #0a0908) !important;
+      background-attachment: fixed !important;
+      color: var(--text);
+    }
+    body.camo-premium::after {
+      content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+      background: radial-gradient(ellipse 90% 80% at 50% 40%, transparent 55%, rgba(0,0,0,.45) 100%);
+    }
+    /* Obsidian ground is black in BOTH toggle states, so force the light/cream
+       logo in both — the generic camo rule only swaps it for dark mode. */
+    body.camo-premium .logo-img {
+      content: url('/static/logo_t.png'); filter: brightness(0) invert(1); mix-blend-mode: normal;
+    }
     /* ===== Themed Quiz mascots per camo =====
        Each active camo swaps the big Quiz WELCOME mascot and the pass/fail
        RESULT mascots for its themed art. Light mode uses the blue-arrow art;
