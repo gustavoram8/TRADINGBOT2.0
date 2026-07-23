@@ -150,7 +150,8 @@
       --text:#EEF0F4; --muted:rgba(255,255,255,0.48);
       --accent:#E9AA3B; --accent-h:#F0B94E; --win:#46D08A; --loss:#E8736B; --be:#E9AA3B;
     }
-    body[class*="camo-"].ag-synapse-mode.light {
+    body[class*="camo-"].ag-synapse-mode.light,
+    body[class*="camo-"].ag-synapse-mode.camo-day {
       --bg:#F3F5FA; --surface:rgba(255,255,255,0.66); --card:rgba(255,255,255,0.72);
       --border:rgba(16,22,40,0.10); --border2:rgba(16,22,40,0.16);
       --text:#171923; --muted:rgba(23,25,35,0.56);
@@ -577,6 +578,11 @@
     .theme-toggle .icon-moon { display: block; }
     body.light .theme-toggle .icon-sun  { display: block; }
     body.light .theme-toggle .icon-moon { display: none; }
+    /* Dark-always camos (obsidian) use .camo-day instead of .light for "light
+       mode", so the toggle icon must key off it too — otherwise it's stuck on the
+       moon. camo-day = light preference → show the sun. */
+    body.camo-day .theme-toggle .icon-sun  { display: block; }
+    body.camo-day .theme-toggle .icon-moon { display: none; }
 
     /* ── ACCOUNT MENU ── */
     .account { position: relative; }
@@ -5647,7 +5653,7 @@
   window.Discover = (function(){
     var boards=[], dpr=Math.min(window.devicePixelRatio||1,2), R=58;
     function tr(k,fb){ try{ return (typeof T==='function' && T(k)) || fb; }catch(e){ return fb; } }
-    function isLight(){ return document.body.classList.contains('light'); }
+    function isLight(){ return document.body.classList.contains('light') || document.body.classList.contains('camo-day'); }
     function isOpen(){ var v=document.getElementById('discover-view'); return v && getComputedStyle(v).display!=='none'; }
     function makeBoard(boardEl){
       var canvas=boardEl.querySelector('.disc-coat'), ctx=canvas.getContext('2d'),
@@ -20909,7 +20915,7 @@
           const legendEl = box.querySelector('.quiz-hc-legend');
           if(!chartEl||!overlay) return;
           overlay.innerHTML = '';
-          const dark = !document.body.classList.contains('light');
+          const dark = !(document.body.classList.contains('light') || document.body.classList.contains('camo-day'));
           const candles = spec.candles || [];
           const chart = LightweightCharts.createChart(chartEl, {
             width: chartEl.clientWidth || 320,
@@ -22068,7 +22074,7 @@
     const BRAIN_Y = 13.8;                                  // brain floats clear above the head
     const BRAIN_C = { x: 0, y: BRAIN_Y, z: 0 };
 
-    function isLight() { return document.body.classList.contains('light'); }
+    function isLight() { return document.body.classList.contains('light') || document.body.classList.contains('camo-day'); }
     function colDim()    { return isLight() ? 0x7aaed4 : 0x9c8240; }
     function colBright() { return isLight() ? 0x5592c8 : 0xc6a04e; }
     // Constellation backdrop has its own colour so it can read clearly on the
@@ -23305,7 +23311,7 @@
         (grid[key] || (grid[key]=[])).push(i);
       }
       // palette: dark=golden net / light=deep-navy net
-      const isLt = document.body.classList.contains('light');
+      const isLt = document.body.classList.contains('light') || document.body.classList.contains('camo-day');
       const threadR = isLt ? '45,80,170'  : '196,162,82';
       const nodeR   = isLt ? '35,70,160'  : '206,168,80';
       const haloR   = isLt ? '40,80,180'  : '206,168,80';
@@ -23355,7 +23361,7 @@
     function clearMap() { while (svg.firstChild) svg.removeChild(svg.firstChild); }
 
     function checked(slug) { return window.SynapseProgress && window.SynapseProgress.isChecked(slug); }
-    function isLight() { return document.body.classList.contains('light'); }
+    function isLight() { return document.body.classList.contains('light') || document.body.classList.contains('camo-day'); }
 
     // SVG text helper — labels live inside the SVG (viewBox units, no conversion)
     function svgText(txt, x, y, attrs) {
