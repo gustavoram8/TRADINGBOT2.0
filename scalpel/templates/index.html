@@ -771,7 +771,7 @@
     :root{ --kzt-gold:#e0a83d; --kzt-gold-d:#c6904e; --kzt-green:#f5c463; --kzt-grid:rgba(224,168,61,.05); }
     body.light{ --kzt-gold:#b07d22; --kzt-gold-d:#9a6e16; --kzt-green:#c08a1e; --kzt-grid:rgba(20,30,60,.03); }
     /* Camo ground is cream → Kill Zones uses its LIGHT palette in both modes. */
-    body[class*="camo-"]{ --kzt-gold:#b07d22; --kzt-gold-d:#9a6e16; --kzt-green:#c08a1e; --kzt-grid:rgba(20,30,60,.03); }
+    body[class*="camo-"]:not(.camo-premium){ --kzt-gold:#b07d22; --kzt-gold-d:#9a6e16; --kzt-green:#c08a1e; --kzt-grid:rgba(20,30,60,.03); }
 
     /* Chevron scroll affordance at the end of the analyzer */
     .mt-chevron{display:flex;justify-content:center;margin:44px 0 4px}
@@ -792,7 +792,7 @@
     .mt-nav{position:sticky;top:10px;z-index:30;display:flex;gap:4px;margin:0 auto 22px;width:fit-content;
       max-width:100%;padding:5px;border-radius:11px;border:1px solid var(--border);background:rgba(19,22,31,.82);
       backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 6px 22px rgba(0,0,0,.28)}
-    body.light .mt-nav, body[class*="camo-"] .mt-nav{background:rgba(255,255,255,.86);box-shadow:0 6px 22px rgba(20,30,60,.1)}
+    body.light .mt-nav, body[class*="camo-"]:not(.camo-premium) .mt-nav{background:rgba(255,255,255,.86);box-shadow:0 6px 22px rgba(20,30,60,.1)}
     .mt-nav a{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:.1em;
       text-transform:uppercase;color:var(--muted);padding:6px 13px;border-radius:8px;text-decoration:none;
       transition:color .2s,background .2s;cursor:pointer;white-space:nowrap}
@@ -803,7 +803,7 @@
     .kzt{position:relative;border:1px solid transparent;border-radius:14px;overflow:hidden;margin-bottom:34px;
       background:linear-gradient(var(--kzt-grid) 1px,transparent 1px) 0 0/100% 30px padding-box,linear-gradient(180deg,#0e1018,#08090e) padding-box,linear-gradient(120deg, rgba(245,196,99,.5), rgba(224,168,61,.1) 45%, rgba(224,168,61,.05) 63%, rgba(245,196,99,.4)) border-box;
       box-shadow:0 1px 0 rgba(224,168,61,.07) inset,0 18px 46px rgba(0,0,0,.34)}
-    body.light .kzt, body[class*="camo-"] .kzt{border:1px solid transparent;background:linear-gradient(var(--kzt-grid) 1px,transparent 1px) 0 0/100% 30px padding-box,linear-gradient(180deg,#ffffff,#fcf7ec) padding-box,linear-gradient(120deg, rgba(190,135,38,.72), rgba(190,135,38,.22) 45%, rgba(190,135,38,.16) 63%, rgba(190,135,38,.6)) border-box;
+    body.light .kzt, body[class*="camo-"]:not(.camo-premium) .kzt{border:1px solid transparent;background:linear-gradient(var(--kzt-grid) 1px,transparent 1px) 0 0/100% 30px padding-box,linear-gradient(180deg,#ffffff,#fcf7ec) padding-box,linear-gradient(120deg, rgba(190,135,38,.72), rgba(190,135,38,.22) 45%, rgba(190,135,38,.16) 63%, rgba(190,135,38,.6)) border-box;
       box-shadow:0 8px 24px rgba(150,110,30,.12)}
     .kzt-top{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--border);
       background:linear-gradient(180deg,rgba(224,168,61,.08),transparent)}
@@ -862,7 +862,7 @@
       color:rgba(255,255,255,.92);overflow:hidden;white-space:nowrap;opacity:.42;transition:opacity .3s,filter .3s,box-shadow .3s}
     .kz-block.active{opacity:1;filter:saturate(.92) brightness(1.06);
       box-shadow:0 0 14px rgba(224,168,61,.35),0 0 0 1px rgba(255,255,255,.12) inset}
-    body.light .kz-block, body[class*="camo-"] .kz-block{color:rgba(255,255,255,.96)}
+    body.light .kz-block, body[class*="camo-"]:not(.camo-premium) .kz-block{color:rgba(255,255,255,.96)}
     .kz-block[data-kz="asia"]{background:linear-gradient(180deg,#6f63a0,#4a3f73)}
     .kz-block[data-kz="london"]{background:linear-gradient(180deg,#4a6da6,#33507e)}
     .kz-block[data-kz="nyam"]{background:linear-gradient(180deg,#d6a24a,#a9781f)}
@@ -883,14 +883,14 @@
     .kz-timeline-wrap:hover .kz-hover{opacity:1}
     .kz-hover-line{position:absolute;top:0;bottom:0;left:0;width:1px;transform:translateX(-.5px);
       background:rgba(255,255,255,.4);border-left:1px dashed rgba(245,196,99,.55)}
-    body.light .kz-hover-line, body[class*="camo-"] .kz-hover-line{background:rgba(20,30,60,.18);border-left-color:rgba(176,125,34,.6)}
+    body.light .kz-hover-line, body[class*="camo-"]:not(.camo-premium) .kz-hover-line{background:rgba(20,30,60,.18);border-left-color:rgba(176,125,34,.6)}
     .kz-hover-tip{position:absolute;top:-20px;left:0;transform:translateX(-50%);white-space:nowrap;
       font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:700;letter-spacing:.02em;
       color:#f4f5fa;background:rgba(14,16,24,.95);border:1px solid rgba(245,196,99,.35);
       padding:3px 7px;border-radius:5px;font-variant-numeric:tabular-nums;box-shadow:0 3px 10px rgba(0,0,0,.45)}
     .kz-hover-tip b{color:var(--kzt-gold);font-weight:700}
     .kz-hover-tip .loc{color:var(--muted);font-weight:500;margin-left:5px}
-    body.light .kz-hover-tip, body[class*="camo-"] .kz-hover-tip{color:#1c1a14;background:rgba(255,253,247,.97);border-color:rgba(176,125,34,.4);box-shadow:0 3px 10px rgba(150,110,30,.18)}
+    body.light .kz-hover-tip, body[class*="camo-"]:not(.camo-premium) .kz-hover-tip{color:#1c1a14;background:rgba(255,253,247,.97);border-color:rgba(176,125,34,.4);box-shadow:0 3px 10px rgba(150,110,30,.18)}
 
     /* Session readout rows (terminal table) */
     .kz-sessions{display:flex;flex-direction:column;border:1px solid var(--border);border-radius:9px;overflow:hidden;
@@ -927,7 +927,7 @@
     .ec-chip:hover{color:var(--text);border-color:var(--border2)}
     .ec-chip.active{color:#1a1205;background:linear-gradient(180deg,#f5c463,#e0a83d);border-color:transparent;
       box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 2px 8px rgba(224,168,61,.25)}
-    body.light .ec-chip.active, body[class*="camo-"] .ec-chip.active{color:#1c1407}
+    body.light .ec-chip.active, body[class*="camo-"]:not(.camo-premium) .ec-chip.active{color:#1c1407}
     .ec-chip-sub{opacity:.62;font-weight:500;margin-left:5px}
     .ec-chip.active .ec-chip-sub{opacity:.78}
     .ec-widget-wrap{border-radius:12px;overflow:hidden;border:1px solid var(--border);min-height:600px;
