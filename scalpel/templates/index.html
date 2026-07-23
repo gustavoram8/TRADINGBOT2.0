@@ -150,7 +150,7 @@
       --text:#EEF0F4; --muted:rgba(255,255,255,0.48);
       --accent:#E9AA3B; --accent-h:#F0B94E; --win:#46D08A; --loss:#E8736B; --be:#E9AA3B;
     }
-    body[class*="camo-"].ag-synapse-mode.light,
+    body[class*="camo-"].ag-synapse-mode.light:not(.camo-night),
     body[class*="camo-"].ag-synapse-mode.camo-day {
       --bg:#F3F5FA; --surface:rgba(255,255,255,0.66); --card:rgba(255,255,255,0.72);
       --border:rgba(16,22,40,0.10); --border2:rgba(16,22,40,0.16);
@@ -262,13 +262,13 @@
        default body.light rules in BOTH modes; welcome art is shown UPRIGHT
        (rotate 0) instead of the default 13deg tilt. Sources live in
        scalpel/static/logo{2,3,4}_<slug>[_dark].png. */
-    body.camo-rising-sun.light      .quiz-welcome-logo { content: url('/static/logo2_rising_sun.png'); }
-    body.camo-rising-sun:not(.light) .quiz-welcome-logo { content: url('/static/logo2_rising_sun_dark.png'); }
+    body.camo-rising-sun:not(.camo-night) .quiz-welcome-logo { content: url('/static/logo2_rising_sun.png'); }
+    body.camo-rising-sun.camo-night     .quiz-welcome-logo { content: url('/static/logo2_rising_sun_dark.png'); }
     body.camo-rising-sun .quiz-welcome-logo { transform: translateY(-50%) rotate(0deg); }
-    body.camo-rising-sun.light      .quiz-result-mascot.pass { content: url('/static/logo3_rising_sun.png'); }
-    body.camo-rising-sun:not(.light) .quiz-result-mascot.pass { content: url('/static/logo3_rising_sun_dark.png'); }
-    body.camo-rising-sun.light      .quiz-result-mascot.fail { content: url('/static/logo4_rising_sun.png'); }
-    body.camo-rising-sun:not(.light) .quiz-result-mascot.fail { content: url('/static/logo4_rising_sun_dark.png'); }
+    body.camo-rising-sun:not(.camo-night) .quiz-result-mascot.pass { content: url('/static/logo3_rising_sun.png'); }
+    body.camo-rising-sun.camo-night     .quiz-result-mascot.pass { content: url('/static/logo3_rising_sun_dark.png'); }
+    body.camo-rising-sun:not(.camo-night) .quiz-result-mascot.fail { content: url('/static/logo4_rising_sun.png'); }
+    body.camo-rising-sun.camo-night     .quiz-result-mascot.fail { content: url('/static/logo4_rising_sun_dark.png'); }
     body.camo-naval.light      .quiz-welcome-logo { content: url('/static/logo2_naval.png'); }
     body.camo-naval:not(.light) .quiz-welcome-logo { content: url('/static/logo2_naval_dark.png'); }
     body.camo-naval .quiz-welcome-logo { transform: translateY(-50%) rotate(0deg); }
@@ -584,6 +584,10 @@
        moon. camo-day = light preference → show the sun. */
     body.camo-day .theme-toggle .icon-sun  { display: block; }
     body.camo-day .theme-toggle .icon-moon { display: none; }
+    /* Light-always camos (Rising Sun) keep .light, so the sun would show even in
+       the dark preference. camo-night marks dark preference → force the moon. */
+    body.camo-night .theme-toggle .icon-sun  { display: none; }
+    body.camo-night .theme-toggle .icon-moon { display: block; }
 
     /* ── ACCOUNT MENU ── */
     .account { position: relative; }
@@ -4185,7 +4189,8 @@
     var wantLight = true;
     try { wantLight = localStorage.getItem('scalpel_theme') !== 'dark'; } catch (e) {}
     if (camo && LIGHT_ALWAYS[camo]) {
-      document.body.classList.add('light');
+      document.body.classList.add('light');                     // cream ground → always light components
+      if (!wantLight) document.body.classList.add('camo-night'); // but dark pref still flips mascot + icon
     } else if (wantLight) {
       document.body.classList.add((camo && DARK_ALWAYS[camo]) ? 'camo-day' : 'light');
     }
@@ -5663,7 +5668,7 @@
   window.Discover = (function(){
     var boards=[], dpr=Math.min(window.devicePixelRatio||1,2), R=58;
     function tr(k,fb){ try{ return (typeof T==='function' && T(k)) || fb; }catch(e){ return fb; } }
-    function isLight(){ return document.body.classList.contains('light') || document.body.classList.contains('camo-day'); }
+    function isLight(){ return (document.body.classList.contains('light') || document.body.classList.contains('camo-day')) && !document.body.classList.contains('camo-night'); }
     function isOpen(){ var v=document.getElementById('discover-view'); return v && getComputedStyle(v).display!=='none'; }
     function makeBoard(boardEl){
       var canvas=boardEl.querySelector('.disc-coat'), ctx=canvas.getContext('2d'),
@@ -9255,12 +9260,15 @@
     });
     if (isDarkCamo_T) {
       document.body.classList.remove('light');
+      document.body.classList.remove('camo-night');
       document.body.classList.toggle('camo-day', wantLight_T);
     } else if (isLightCamo_T) {
-      document.body.classList.add('light');       // cream single-look → always light
+      document.body.classList.add('light');       // cream ground → always light components
       document.body.classList.remove('camo-day');
+      document.body.classList.toggle('camo-night', !wantLight_T);  // dark pref → flip mascot + icon
     } else {
       document.body.classList.remove('camo-day');
+      document.body.classList.remove('camo-night');
       document.body.classList.toggle('light', wantLight_T);
     }
     requestAnimationFrame(function () {
@@ -20932,7 +20940,7 @@
           const legendEl = box.querySelector('.quiz-hc-legend');
           if(!chartEl||!overlay) return;
           overlay.innerHTML = '';
-          const dark = !(document.body.classList.contains('light') || document.body.classList.contains('camo-day'));
+          const dark = !((document.body.classList.contains('light') || document.body.classList.contains('camo-day')) && !document.body.classList.contains('camo-night'));
           const candles = spec.candles || [];
           const chart = LightweightCharts.createChart(chartEl, {
             width: chartEl.clientWidth || 320,
@@ -22091,7 +22099,7 @@
     const BRAIN_Y = 13.8;                                  // brain floats clear above the head
     const BRAIN_C = { x: 0, y: BRAIN_Y, z: 0 };
 
-    function isLight() { return document.body.classList.contains('light') || document.body.classList.contains('camo-day'); }
+    function isLight() { return (document.body.classList.contains('light') || document.body.classList.contains('camo-day')) && !document.body.classList.contains('camo-night'); }
     function colDim()    { return isLight() ? 0x7aaed4 : 0x9c8240; }
     function colBright() { return isLight() ? 0x5592c8 : 0xc6a04e; }
     // Constellation backdrop has its own colour so it can read clearly on the
@@ -23328,7 +23336,7 @@
         (grid[key] || (grid[key]=[])).push(i);
       }
       // palette: dark=golden net / light=deep-navy net
-      const isLt = document.body.classList.contains('light') || document.body.classList.contains('camo-day');
+      const isLt = (document.body.classList.contains('light') || document.body.classList.contains('camo-day')) && !document.body.classList.contains('camo-night');
       const threadR = isLt ? '45,80,170'  : '196,162,82';
       const nodeR   = isLt ? '35,70,160'  : '206,168,80';
       const haloR   = isLt ? '40,80,180'  : '206,168,80';
@@ -23378,7 +23386,7 @@
     function clearMap() { while (svg.firstChild) svg.removeChild(svg.firstChild); }
 
     function checked(slug) { return window.SynapseProgress && window.SynapseProgress.isChecked(slug); }
-    function isLight() { return document.body.classList.contains('light') || document.body.classList.contains('camo-day'); }
+    function isLight() { return (document.body.classList.contains('light') || document.body.classList.contains('camo-day')) && !document.body.classList.contains('camo-night'); }
 
     // SVG text helper — labels live inside the SVG (viewBox units, no conversion)
     function svgText(txt, x, y, attrs) {
