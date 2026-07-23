@@ -224,10 +224,11 @@
       --loss:     #e8736b;
       --be:       #d4af37;
       /* Background lives in a position:fixed ::before (NOT background-attachment:
-         fixed — iOS Safari breaks that, leaving white below the fold showing
-         through the translucent panels). Solid dark body colour is the fallback
-         so there is never any white. */
-      background: #0d0b08 !important;
+         fixed — iOS Safari breaks that). The body MUST stay transparent: a solid
+         body colour would hide the negative-z-index ::before on iOS (that's what
+         made the gold arches vanish). The dark <html> canvas (set in the early
+         script) is what prevents any white below the fold. */
+      background: transparent !important;
       color: var(--text);
     }
     body.camo-premium::before {
