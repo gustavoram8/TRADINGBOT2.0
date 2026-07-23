@@ -222,8 +222,9 @@
       --win:      #46d08a;
       --loss:     #e8736b;
       --be:       #d4af37;
+      /* Gold-arch decoration removed — the sidebar panel covered it, so it read
+         as nothing. Obsidian keeps a clean black ground + faint gold grain. */
       background:
-        url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27500%27%20height%3D%27760%27%20viewBox%3D%270%200%20500%20760%27%3E%3Cpath%20d%3D%27M40%20580%20A150%20150%200%200%201%20190%20730%27%20fill%3D%27none%27%20stroke%3D%27%23d4af37%27%20stroke-width%3D%2716%27%20opacity%3D%270.22%27%2F%3E%3Cpath%20d%3D%27M40%20490%20A240%20240%200%200%201%20280%20730%27%20fill%3D%27none%27%20stroke%3D%27%23d4af37%27%20stroke-width%3D%2716%27%20opacity%3D%270.1%27%2F%3E%3Cpath%20d%3D%27M40%20400%20A330%20330%200%200%201%20370%20730%27%20fill%3D%27none%27%20stroke%3D%27%23d4af37%27%20stroke-width%3D%2716%27%20opacity%3D%270.22%27%2F%3E%3Cpath%20d%3D%27M40%20310%20A420%20420%200%200%201%20460%20730%27%20fill%3D%27none%27%20stroke%3D%27%23d4af37%27%20stroke-width%3D%2716%27%20opacity%3D%270.1%27%2F%3E%3Cpath%20d%3D%27M40%20220%20A510%20510%200%200%201%20550%20730%27%20fill%3D%27none%27%20stroke%3D%27%23d4af37%27%20stroke-width%3D%2716%27%20opacity%3D%270.22%27%2F%3E%3Cpath%20d%3D%27M430%2010%20L430%2040%20L490%2040%27%20fill%3D%27none%27%20stroke%3D%27%23d4af37%27%20stroke-width%3D%273%27%20opacity%3D%270.7%27%2F%3E%3Cpath%20d%3D%27M404%2010%20L404%2066%20L490%2066%27%20fill%3D%27none%27%20stroke%3D%27%23d4af37%27%20stroke-width%3D%273%27%20opacity%3D%270.7%27%2F%3E%3Cpath%20d%3D%27M378%2010%20L378%2092%20L490%2092%27%20fill%3D%27none%27%20stroke%3D%27%23d4af37%27%20stroke-width%3D%273%27%20opacity%3D%270.7%27%2F%3E%3Cpath%20d%3D%27M352%2010%20L352%20118%20L490%20118%27%20fill%3D%27none%27%20stroke%3D%27%23d4af37%27%20stroke-width%3D%273%27%20opacity%3D%270.7%27%2F%3E%3Cpath%20d%3D%27M326%2010%20L326%20144%20L490%20144%27%20fill%3D%27none%27%20stroke%3D%27%23d4af37%27%20stroke-width%3D%273%27%20opacity%3D%270.7%27%2F%3E%3C%2Fsvg%3E") left bottom / 360px auto no-repeat,
         radial-gradient(rgba(212,175,55,.05) 1px, transparent 1px) 0 0 / 26px 26px,
         linear-gradient(160deg, #151310, #0a0908) !important;
       background-attachment: fixed !important;
@@ -233,10 +234,16 @@
       content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
       background: radial-gradient(ellipse 90% 80% at 50% 40%, transparent 55%, rgba(0,0,0,.45) 100%);
     }
-    /* Obsidian ground is black in BOTH toggle states, so force the light/cream
-       logo in both — the generic camo rule only swaps it for dark mode. */
-    body.camo-premium .logo-img {
-      content: url('/static/logo_t.png'); filter: brightness(0) invert(1); mix-blend-mode: normal;
+    /* Obsidian ground is black in BOTH toggle states, so the logo wordmark must
+       be WHITE (the default black/cream logos vanish on black). The accent "a"
+       keeps the brand colours: blue (#004feb) in light, gold-orange (#ffb014) in
+       dark — matching the default light/dark logo behaviour. Custom transparent
+       PNGs, no invert filter. Higher specificity than the generic camo logo rule. */
+    body.camo-premium.light      .logo-img {
+      content: url('/static/logo_t_obsidian_light.png'); filter: none; mix-blend-mode: normal;
+    }
+    body.camo-premium:not(.light) .logo-img {
+      content: url('/static/logo_t_obsidian_dark.png'); filter: none; mix-blend-mode: normal;
     }
     /* ===== Themed Quiz mascots per camo =====
        Each active camo swaps the big Quiz WELCOME mascot and the pass/fail
@@ -2043,6 +2050,11 @@
       display: none; flex-direction: column; gap: 1px;
     }
     body.light .products-menu { background: #ffffff; }
+    /* Obsidian camo ground is black with cream text in BOTH toggle states, so a
+       white flyout (from body.light above) makes the cream text unreadable.
+       Force a dark obsidian panel under the premium camo, either mode. */
+    body.camo-premium .products-menu,
+    body.camo-premium.light .products-menu { background: #17140f; border-color: rgba(212,175,55,0.28); }
     .products-menu.open { display: flex; }
     .products-group-label { font-size: 10px; font-weight: 700; text-transform: uppercase;
       letter-spacing: .1em; color: var(--muted); padding: 7px 12px 4px; }
@@ -4755,6 +4767,20 @@
   body.light .improve-rb-sub{ color:#9a8c66; }
   body.light .improve-rb-sub::before{ color:#cbb98e; }
   body.light .improve-rb-go{ color:#a9781f; }
+  /* Obsidian camo: the light ribbon is white, which clashes on the black
+     obsidian ground. Re-apply the dark ribbon look (gold on near-black) in both
+     toggle states so the Mentorías ribbon matches the theme. */
+  body.camo-premium.light .improve-ribbon{
+    background:
+      linear-gradient(180deg,#17140f,#0d0b08) padding-box,
+      linear-gradient(120deg, rgba(245,196,99,.55), rgba(224,168,61,.12) 45%, rgba(224,168,61,.06) 63%, rgba(245,196,99,.42)) border-box;
+    box-shadow:0 10px 34px rgba(0,0,0,.5); }
+  body.camo-premium.light .improve-rb-spark{ color:#f5c463; }
+  body.camo-premium.light .improve-rb-title{ color:#f4efe0; }
+  body.camo-premium.light .improve-rb-title em{ color:#f5c463; }
+  body.camo-premium.light .improve-rb-sub{ color:#a89a76; }
+  body.camo-premium.light .improve-rb-sub::before{ color:#6b5f3e; }
+  body.camo-premium.light .improve-rb-go{ color:#e0a83d; }
   @keyframes improve-scan{
     0%   { left:-55%; opacity:0; }
     0.4% { opacity:1; }
