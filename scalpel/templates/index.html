@@ -140,6 +140,11 @@
        orange in dark, always readable on cream. */
     body[class*="camo-"] .logo-img          { filter: none; mix-blend-mode: normal; }
     body[class*="camo-"]:not(.light) .logo-img { content: url('/static/logo_t_cream.png'); }
+    /* Rising Sun is a light-always camo (keeps the .light class even in dark
+       preference), so the rule above never fires for it. In its dark mode
+       (camo-night) swap to the orange-"a" cream logo — the same #ffb014 orange
+       used by the splash/loading screen — instead of the blue-"a" logo_t.png. */
+    body.camo-rising-sun.camo-night .logo-img { content: url('/static/logo_t_cream.png'); }
 
     /* Synapse keeps its DEFAULT light/dark palette regardless of the active camo —
        its immersive world (3D brain, neural map) has its own tuned colours, and
