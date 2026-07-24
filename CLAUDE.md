@@ -244,18 +244,24 @@ TIMING", clases `.kzt`/`.kz-row`, vars `--kzt-*`, JS IIFE "Kill Zones live clock
 `MENTORSHIP_ENABLED`). i18n: `scalpel/static/improve_i18n.js` (4 idiomas, lee `scalpel_lang`, con
 selector EN/ES/FR/PT en el header de cada página) + claves `improve.rb.*` en `MT_I18N` para el
 listón. Estilo: `scalpel/static/improve.css`.
-**✅ Pág 5 — EL GRAN FILTRO (`/improve/apply`) HECHA (2026-07-24):** formulario de calificación
-(experiencia, situación, mayor lucha, por qué ahora, horas/semana) + waiver educativo obligatorio.
-Modelo nuevo `MentorshipApplication` (tabla via `db.create_all()`; 1 pending por email — resubmit
-actualiza, no duplica; `status` pending/accepted/rejected para revisión manual). POST
-`/api/improve/apply` valida enums server-side. i18n 4 idiomas a paridad (64 claves/idioma) +
-soporte nuevo `data-i18n-ph` (placeholders) en `improve_i18n.js`. Probado end-to-end con
-test_client. El 404 del CTA de pág. 4 quedó cerrado. Sigue tras `_mentorship_gate`.
+**✅ Pág 5 — CÓMO FUNCIONA + GRAN FILTRO (`/improve/apply`) HECHA (2026-07-24, v2):** página
+detallada completa — cómo funciona cada programa y su pago (**biblioteca grabada = suscripción
+mensual**; **calls 1-1 = paquetes mensuales 5/10/20 de 30min + sueltas** — decisiones del usuario
+2026-07-24), perfil del mentor SIN identidad (reveal sigue siendo post-filtro, confirmado), y el
+formulario del Gran Filtro fusionado con la pregunta **"¿qué te interesa?"** (rec/calls/both →
+columna `program` en `MentorshipApplication` + auto-migración guarded). Al enviar → redirect a:
+**✅ Pág 6 — LA OFERTA (`/improve/plans`) HECHA (2026-07-24):** gated por sesión
+(`improve_applied`; admin previewea directo) — filtro primero, precios después. Estructura: bloque
+reveal del mentor (**PENDIENTE bio real del usuario — nunca inventar**), tarjetas con viñetas por
+rama (borrador razonable, confirmar con el usuario), tiers 5/10/20/suelta, tarjeta combo ambos, y
+**precios "$—" placeholder — PENDIENTE que el usuario dé los montos y el detalle exacto de cada
+plan**. i18n 4 idiomas a paridad (108 claves/idioma, 0 claves de template sin dict). Probado
+end-to-end con test_client (form+enum 400, redirect, gate 302→apply, migración re-agrega columna).
 **FALTA:**
+- **Datos del usuario para pág 6:** bio real del mentor (nombre, quién es, qué opera, años) +
+  precios reales + detalle definitivo de qué trae cada plan (viñetas actuales = borrador).
 - **Revisión de aplicaciones**: pestaña/lista en `/admin` para ver `MentorshipApplication` y marcar
   accepted/rejected (+ email al aplicante). Hoy solo se guardan en DB.
-- **Pág 6 — costos/disponibilidad:** 3 paquetes de llamadas (5/10/20 reuniones/mes, 30min) +
-  llamadas sueltas + acceso a videos, tabla de disponibilidad, # estudiantes, prueba social.
 - **Pág 7 — área de miembros** (post-pago): biblioteca de videos (sube el trader), reserva 1/1
   con cupo/créditos, Q&A por video (reusar moderación IA), progreso, certificados.
 - **Reveal del mentor (foto/identidad) va AL FINAL**, después del filtro — nunca antes.
