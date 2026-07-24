@@ -126,7 +126,7 @@ resto del sitio con `strftime`).
 reskinea SOLO el fondo/colores del sitio (layout/paneles/posiciones NO cambian) + swap de la mascota en
 el Quiz (welcome + pass/fail). **Infra base (cableada, estable):** `User.active_camo`/`owned_camos` +
 helpers `camos_owned()/add_camo()/owns_camo()` (admin posee TODO); `CAMO_SLUGS` (20 slugs) y
-`CAMO_READY` en app.py — **hoy `{'rising-sun','pole','premium','fourth'}`**, el resto pendiente; endpoints
+`CAMO_READY` en app.py — **hoy `{'rising-sun','pole','premium','fourth','naval'}`**, el resto pendiente; endpoints
 `/api/camo/activate` `/api/camo/deactivate`; `/app` pinta `body.camo-<slug>` pre-paint (sin FOUC);
 tienda `/camos` con ownership/compra (Stripe real AÚN pendiente, hoy toast "pago pronto"). Migración
 prod ya aplicada (columnas `active_camo`/`owned_camos` en `user` + auto-heal `_migrate_user_camo_columns()`
@@ -138,7 +138,7 @@ huecos blancos ENCERRADOS por el contorno —axilas, entre piernas, barandillas�
 un humano decide cuáles son fondo vs. feature blanco real —guantes/ojos/dientes—, aplica con bordes
 suavizados). Dark = recolor de flecha azul→naranja `#dd9100` (mismo tono que la mascota default dark,
 sampleado con precisión de píxel); camos con arte que NO debe recolorearse (ej. bandera USA) usan
-`recolor=False`. **Themes (fondo) — 4 de 20 LISTOS:**
+`recolor=False`. **Themes (fondo) — 5 de 20 LISTOS:**
 - **Rising Sun** ✅ — un solo look para light/dark (cream washi + disco de sol + banda diagonal + kanji).
 - **Pole** ✅ (F1 blueprint) — **dos** looks, uno por modo: ☀️ light = papel de taller (grafito + acento
   rojo), 🌙 dark = cianotipo azul (líneas blancas + acento azul); ambos con grid, plano técnico del F1,
@@ -161,7 +161,14 @@ sampleado con precisión de píxel); camos con arte que NO debe recolorearse (ej
   `<script>` DENTRO del `<style>` (el `.replace('</body>')` pegó en la 1ª aparición) → CSS pintaba pero el JS no
   corría. Fix: nunca poner el texto del anchor dentro del contenido insertado + insertar en el ÚLTIMO `</body>`
   (`rpartition`) + assert de `<script>` count. Verificado end-to-end en `/app` real (layer creado, fuegos vivos).
-- **Pendientes de theme:** naval, mission, blackflag + 13 slugs más sin arte de mascota
+- **Naval (militar/táctico)** ✅ **(2026-07-24).** ⚠️ El mascota `naval` NO es náutico: es un **soldado de
+  combate** (casco, chaleco táctico, lentes de aviador, fusil disparando velas verdes) → el theme es
+  **militar**. Elegido de 3 variantes (A camuflaje / B HUD-radar / C honor olive+oro): el usuario eligió
+  **A = camuflaje de campo** (blobs orgánicos olive/khaki/verde-oscuro/tan, acento ámbar `#e0872f` que pega
+  con el equipo del mascota). Un solo look; iOS-safe (body transparent + `::before` fijo); logo blanco
+  (invert de `logo_t`). Mascotas welcome/pass/fail ya estaban. **Las condecoraciones de general (ribbon
+  rack + medallas) NO van en el theme** — el usuario las hará con Gemini y las sumará aparte.
+- **Pendientes de theme:** mission, blackflag + 13 slugs más sin arte de mascota
   aún. Antes de diseñar cada uno: preguntar 1ª idea/temática al usuario (así arrancó Pole: "plano de
   construcción de F1"), ofrecer 3 variantes, iterar sobre la elegida, cablear igual que Pole/Premium
   (bloque CSS con vars `--bg/--surface/--card/--border/--border2/--text/--muted/--accent/--accent-h/
