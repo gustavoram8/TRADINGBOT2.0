@@ -49,6 +49,10 @@ body{
   border:1px solid var(--line); padding:7px 15px; border-radius:20px; transition:all .18s;
 }
 .top .close:hover{color:var(--ink); border-color:rgba(224,168,61,.5)}
+/* Direct "back to app" — gold accent so it reads as the exit, distinct from the
+   subtle step-back "← Back". */
+.top .close.app-home{color:var(--gold); border-color:rgba(224,168,61,.42); background:rgba(224,168,61,.07)}
+.top .close.app-home:hover{color:var(--gold-bright); border-color:rgba(224,168,61,.75); background:rgba(224,168,61,.14)}
 .top-right{display:inline-flex; align-items:center; gap:12px}
 .lang-switch{display:inline-flex; gap:2px; padding:3px; border:1px solid var(--line); border-radius:20px}
 .lang-switch button{
