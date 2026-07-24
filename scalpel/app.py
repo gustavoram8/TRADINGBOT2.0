@@ -831,7 +831,7 @@ class MentorshipApplication(db.Model):
     goals = db.Column(db.String(200), nullable=True)          # CSV of goal keys
     strength = db.Column(db.String(20), nullable=True)        # strongest area
     weakness = db.Column(db.String(20), nullable=True)        # weakest area
-    assets = db.Column(db.String(120), nullable=True)         # CSV: futures/forex/crypto/stocks/mixed
+    assets = db.Column(db.String(120), nullable=True)         # CSV: futures/forex
     country = db.Column(db.String(80), nullable=True)
     tzname = db.Column(db.String(60), nullable=True)          # browser IANA timezone (auto-captured)
     call_lang = db.Column(db.String(10), nullable=True)       # es / en / both (programs are ES/EN only)
@@ -2050,7 +2050,7 @@ _APPLY_HOURS = {'lt5', 'h5_10', 'h10p'}
 _APPLY_PROGRAM = {'rec', 'calls', 'both'}
 _APPLY_GOALS = {'study', 'errors', 'consistency', 'plan', 'psych', 'validate'}
 _APPLY_SKILL = {'strategy', 'ta', 'psych', 'risk', 'theory', 'discipline'}
-_APPLY_ASSETS = {'futures', 'forex', 'crypto', 'stocks', 'mixed'}
+_APPLY_ASSETS = {'futures', 'forex'}
 _APPLY_CLANG = {'es', 'en', 'both'}
 _APPLY_SLOT = {'morning', 'afternoon', 'evening'}
 _APPLY_SOURCE = {'tiktok', 'youtube', 'x', 'friend', 'google', 'other'}
@@ -2179,7 +2179,7 @@ def improve_apply_submit():
     goals = _csv('goals', _APPLY_GOALS, 6)
     strength = _s('strength', 20)
     weakness = _s('weakness', 20)
-    assets = _csv('assets', _APPLY_ASSETS, 5)
+    assets = _csv('assets', _APPLY_ASSETS, 2)
     country = _s('country', 80)
     tzname = _s('tz', 60) or None            # auto-captured, best-effort
     call_lang = _s('call_lang', 10)
