@@ -306,9 +306,20 @@ columna `program` en `MentorshipApplication` + auto-migración guarded). Al envi
 (`improve_applied`; admin previewea directo) — filtro primero, precios después. Estructura: bloque
 reveal del mentor (**PENDIENTE bio real del usuario — nunca inventar**), tarjetas con viñetas por
 rama (borrador razonable, confirmar con el usuario), tiers 5/10/20/suelta, tarjeta combo ambos, y
-**precios "$—" placeholder — PENDIENTE que el usuario dé los montos y el detalle exacto de cada
-plan**. i18n 4 idiomas a paridad (108 claves/idioma, 0 claves de template sin dict). Probado
-end-to-end con test_client (form+enum 400, redirect, gate 302→apply, migración re-agrega columna).
+precios reales ($350/mes, tiers 5/10/20/suelta, combo Desde $500). i18n 4 idiomas a paridad, 0
+claves de template sin dict. Probado end-to-end con test_client (form+enum 400, redirect, gate
+302→apply, migración re-agrega columna).
+**✅ CARDS estilo landing (2026-07-24):** las 3 tarjetas de `/improve/plans` adoptaron el diseño de
+las cards Standard/Premium del landing (`.pcard` en `improve.css`: nombre mayúsc. dorado + tagline +
+precio grande + divisor + features con check-circles + botón full-width; "Ambos" = featured con
+badge "Más elegido" + borde/botón dorado; grilla 3-col → 1-col en móvil, paleta oscura de mentorías).
+**Contenido REAL del Programa 01 cargado** (viñetas a1-a6, ya no genéricas): curso completo cero→real
+(teoría/metodologías/psicotrading), operativas reales grabadas con desglose de cada decisión de
+Gabriel, backtests propios, sesiones en vivo ocasionales, **comunidad privada Tradeable Academy (hub
+Discord + en el sitio)**, acceso 24/7. ES reescrito natural (LatAm, "tú"). ⚠️ Fix a11y: `.pcard`/`.hw`/
+`.af` arrancaban `opacity:0` sin estar en la regla `prefers-reduced-motion` → invisibles para ese
+usuario; agregados. **PENDIENTE:** label sigue "Programa 01 · La biblioteca grabada" (infravalora el
+contenido real — ofrecer renombrar); bio real de Gabriel; revisar redacción ES del resto de mentorías.
 **✅ FORMULARIO REHECHO — FAQ de perfil (2026-07-24, decisiones del usuario):** el form dejó de
 ser filtro pasa/no-pasa → es FAQ para conocer al trader; al enviar (a) guarda en DB, (b) **manda
 email a la empresa** (`send_mentorship_application_email`, `ADMIN_EMAIL` env default Gmail actual,
