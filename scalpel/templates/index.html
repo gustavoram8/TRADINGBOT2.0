@@ -164,6 +164,18 @@
     }
     body[class*="camo-"].ag-synapse-mode::before,
     body[class*="camo-"].ag-synapse-mode::after { display: none !important; }
+    /* A camo paints the body `background` itself with !important (e.g. Pole's
+       blue blueprint), which the var-only reset above does NOT clear — so the
+       camo ground bled through and tinted Synapse. Reset the actual background
+       here; the doubled `.ag-synapse-mode` beats the camo's (0,2,1) specificity
+       and the shorthand also wipes the camo's background-image/attachment. */
+    body[class*="camo-"].ag-synapse-mode.ag-synapse-mode {
+      background: #0A0B10 !important;
+    }
+    body[class*="camo-"].ag-synapse-mode.ag-synapse-mode.light:not(.camo-night),
+    body[class*="camo-"].ag-synapse-mode.ag-synapse-mode.camo-day {
+      background: #F3F5FA !important;
+    }
     /* ═══ Pole — F1 blueprint. TWO grounds: light = drafting paper (graphite
        lines, red accent); dark = cyanotype (white lines, blue accent). The camo
        adapts to the light/dark toggle. Panels/layout unchanged; only the ground,
