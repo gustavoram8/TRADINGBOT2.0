@@ -667,13 +667,15 @@
       top: 42px;
       right: 0;
       min-width: 190px;
-      /* OPAQUE — var(--card) is only ~5% opaque in dark mode, so the Setup-summary
-         text behind it bled through ("color war"). A solid surface keeps the menu
-         readable in both themes. */
-      background: #17181F;
+      /* OPAQUE but panel-matching: paint the translucent --card over an opaque
+         --bg base, so the menu renders the SAME colour as the sidebar/cards in
+         every theme and camo (neutral dark, blue Pole dark, warm Obsidian…),
+         instead of a fixed near-black that clashes. --bg is opaque, so no
+         bleed-through of the Setup-summary text behind it. */
+      background: linear-gradient(var(--card), var(--card)), var(--bg);
       border: 1px solid var(--border2);
       border-radius: 10px;
-      box-shadow: 0 14px 36px rgba(0,0,0,0.35);
+      box-shadow: 0 14px 36px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
       padding: 6px;
       display: none;
       z-index: 50;
