@@ -306,12 +306,16 @@ columna `program` en `MentorshipApplication` + auto-migración guarded). Al envi
 (`improve_applied`; admin previewea directo) — filtro primero, precios después. Estructura: bloque
 reveal del mentor (**PENDIENTE bio real del usuario — nunca inventar**), tarjetas con viñetas por
 rama (borrador razonable, confirmar con el usuario), tiers 5/10/20/suelta, tarjeta combo ambos, y
-precios reales ($350/mes; reuniones online 1-1 con descuento por volumen: suelta $30, 5=$140/$28c-u,
-10=$250/$25c-u, 20=$400/$20c-u; **combo "Ambos" = 3 sub-tiers seleccionables** biblioteca(−25%,
-$350→$263) + paquete de reuniones: 5=$403(~$500~, ahorras $97), 10=$513(~$650~, $137), 20=$663(~$950~,
-$287)). Tiers muestran total + tachadura `.ptwas` del precio sin descuento + pastilla verde `.ptsave`
-"Ahorras $X" (`p6.save`). ⚠️ 25% de $350=$262.50 redondeado a $263 (confirmar con usuario si prefiere
-$262.50 exacto o standalone). i18n 4 idiomas a paridad, 0 claves de template sin dict. Probado
+precios reales **(reajustados 2026-07-24 tras research de mercado + capacidad)**: biblioteca $350/mes;
+**reunión online 1-1 (30 min) = $100 suelta** ($200/h, alineado al piso premium de la industria; Fede
+Esses ~$1000/mes, 1-1 industria $100-500/h). Paquetes: **3/mes=$270 ($90 c-u, ahorras $30)**, **6/mes=
+$480 ($80 c-u, ahorras $120)** — se ELIMINARON 5/10/20 porque la capacidad real de Gabriel es ~36
+reuniones/mes TOTAL (~9/sem) y un 20-pack se comía media agenda; 6 es el tope por persona (~6 mentees
+llenan las 36). **combo "Ambos" = 2 sub-tiers** biblioteca(−25%, $350→$263) + paquete: +3=$533(~$650~,
+ahorras $117), +6=$743(~$950~, $207). Tiers = total + tachadura `.ptwas` + pastilla verde `.ptsave`
+"Ahorras $X" (`p6.save`). ⚠️ 25% de $350=$262.50 redondeado a $263. **PENDIENTE (pedido usuario): hacer
+los paneles de paquetes SELECCIONABLES (hover+click estilo projects del analizador) → setea precio →
+carrito/checkout.** i18n 4 idiomas a paridad, 0 claves de template sin dict. Probado
 end-to-end con test_client (form+enum 400, redirect, gate 302→apply, migración re-agrega columna).
 **✅ CARDS estilo landing (2026-07-24):** las 3 tarjetas de `/improve/plans` adoptaron el diseño de
 las cards Standard/Premium del landing (`.pcard` en `improve.css`: nombre mayúsc. dorado + tagline +
@@ -347,13 +351,15 @@ de Gabriel con disclaimer, nunca promesa de resultados del alumno.
 
 **Datos del mentor + precios CARGADOS (2026-07-24, base):** mentor **Gabriel Celis**, ~6 años (⚠️
 años TENTATIVOS — el usuario confirma y reeditamos), ex-Forex, hoy futuros **S&P 500 + Nasdaq**.
-Precios base (actualizados 2026-07-24): biblioteca **$350/mes**; **reuniones online 1-1** (antes
-"calls" — renombradas por decisión del usuario) con **descuento por volumen**: suelta **$30** ($30 c/u),
-5/mes **$140** ($28 c/u), 10/mes **$250** ($25 c/u), 20/mes **$400** ($20 c/u) — más reuniones = más
-barata cada una; **combo "Ambos" con 25% OFF a la biblioteca** ($350→$263) + paquete de reuniones:
-Biblioteca+5=$403, +10=$513, +20=$663 (3 sub-tiers seleccionables con tachadura + "ahorras") (sin descuento de
-combo definido aún). Los tiers muestran total + precio por reunión (`.ptunit` dorado, clave `p6.each`).
-**TODO tentativo — el usuario confirma años de Gabriel y precios definitivos.**
+Precios DEFINIDOS (2026-07-24, tras research de mercado + límite de capacidad de Gabriel): biblioteca
+**$350/mes** (se queda; rango industria $299-500); **reunión online 1-1 (30 min) = $100 suelta**
+(decisión usuario: subir el 1-1 porque estaba muy barato vs industria $100-500/h y vs Fede Esses
+~$1000/mes). Paquetes chicos por **capacidad real ~36 reuniones/mes TOTAL** (Gabriel estimado ~9/sem,
+tope 6/mes por persona): **3/mes=$270 ($90 c-u, ahorras $30)**, **6/mes=$480 ($80 c-u, ahorras $120)**.
+Se ELIMINARON los paquetes de 10 y 20 (no caben en la agenda). **combo "Ambos" con 25% OFF a biblioteca**
+($350→$263) + paquete: **+3=$533** (~$650~, ahorras $117), **+6=$743** (~$950~, ahorras $207). Tiers
+muestran total + `.ptunit` ($/reunión) + tachadura `.ptwas` + pastilla verde "ahorras". **⚠️ El estimado
+de 9 reuniones/sem de Gabriel NO está confirmado por él — validar su disponibilidad real.**
 **FALTA:**
 - **Confirmar del usuario:** años exactos de Gabriel, precios definitivos de calls, si hay descuento
   de combo, y detalle final de las viñetas de cada plan (las actuales = borrador razonable).

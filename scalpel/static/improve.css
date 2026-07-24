@@ -247,9 +247,9 @@ h2.ch-title{
   text-transform:uppercase; padding:2px 8px; border-radius:11px; background:rgba(52,211,153,.14); color:#34d399}
 .pcard .pnote{font-size:12px; color:var(--faint); line-height:1.5; margin:0 0 20px}
 .pcard .pnote-top{margin:2px 0 14px}
-/* Combo sub-tiers in the "Both" card: single column, library(-25%) + meetings pack */
-.pcard .ptiers-combo{grid-template-columns:1fr; gap:8px}
-.pcard .ptiers-combo .ptier{gap:2px}
+/* Single-column tier lists (meetings packages & the "Both" combos) */
+.pcard .ptiers.stacked{grid-template-columns:1fr; gap:8px}
+.pcard .ptiers.stacked .ptier{gap:2px}
 .pcard .buy{
   display:block; width:100%; text-align:center; padding:12px; font-size:13.5px; font-weight:700;
   border-radius:11px; text-decoration:none; cursor:pointer; border:1.5px solid var(--line);
