@@ -309,6 +309,27 @@ rama (borrador razonable, confirmar con el usuario), tiers 5/10/20/suelta, tarje
 **precios "$—" placeholder — PENDIENTE que el usuario dé los montos y el detalle exacto de cada
 plan**. i18n 4 idiomas a paridad (108 claves/idioma, 0 claves de template sin dict). Probado
 end-to-end con test_client (form+enum 400, redirect, gate 302→apply, migración re-agrega columna).
+**✅ FORMULARIO REHECHO — FAQ de perfil (2026-07-24, decisiones del usuario):** el form dejó de
+ser filtro pasa/no-pasa → es FAQ para conocer al trader; al enviar (a) guarda en DB, (b) **manda
+email a la empresa** (`send_mentorship_application_email`, `ADMIN_EMAIL` env default Gmail actual,
+best-effort) y (c) desbloquea `/improve/plans` al instante. **TODOS los campos obligatorios**,
+casi todo clickeable: se mantienen nombre/email/programa/experiencia/etapa/horas + NUEVOS: objetivos
+(chips multi), fortaleza+debilidad (6 áreas; reemplazan los textos libres struggle/why — columnas
+legacy quedan ''), activos (chips: futuros/forex/cripto/acciones/varios), país + **tz del navegador
+auto**, idioma de clases/calls (**ES/EN only — nota visible en apply y plans en 4 idiomas**), franja
+para calls, cómo-nos-conociste, rango de edad + check 18+. 10 columnas nuevas + auto-migración +
+validación enum/CSV server-side. i18n 143 claves/idioma a paridad. E2E probado (cada campo faltante
+→ 400). **PRÓXIMO (ya discutido, PENDIENTE de armar):** (1) **agenda custom** de calls (opción A:
+/admin marca disponibilidad, la página de planes muestra ocupado/libre; reserva real después con
+Stripe); (2) **rediseño de /improve/plans**: bio desglosada de Gabriel + planes nuevos — el plan
+mensual de biblioteca incluirá: curso completo de cero a operativa real, teoría/metodologías/
+psicotrading, backtests de Celis, operativas live pregrabadas, directos ocasionales, **comunidad
+ultra-privada Discord + sección en el sitio**, acceso 24/7; value-adds propuestos por Claude
+(certificado del curso, quizzes por módulo, Q&A grupal mensual, plantillas de Celis, camo exclusivo
+de miembro, prioridad de agenda) — usuario aún no confirmó cuáles; **falta discutir los planes 1-1**
+(costos ya definidos). ⚠️ Legal: "demostración de rentabilidad" SIEMPRE como track record personal
+de Gabriel con disclaimer, nunca promesa de resultados del alumno.
+
 **Datos del mentor + precios CARGADOS (2026-07-24, base):** mentor **Gabriel Celis**, ~6 años (⚠️
 años TENTATIVOS — el usuario confirma y reeditamos), ex-Forex, hoy futuros **S&P 500 + Nasdaq**.
 Precios base: biblioteca **$350/mes**; calls **$150/$300/$600** (5/10/20 al mes), **suelta $30**
