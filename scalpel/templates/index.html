@@ -210,6 +210,11 @@
     body.camo-pole:not(.light) .logo-img {
       content: url('/static/logo_t.png'); filter: brightness(0) invert(1); mix-blend-mode: normal;
     }
+    /* Pole light is a pale blueprint paper — use the orange-"a" cream logo (black
+       wordmark + #ffb014 "a"), not the plain blue-"a"/washed-out default. */
+    body.camo-pole.light .logo-img {
+      content: url('/static/logo_t_cream.png'); filter: none; mix-blend-mode: normal;
+    }
     /* ═══ Obsidian Gold (Premium) — obsidian-black ground with concentric Art
        Déco gold arches + a ziggurat step ornament, bottom-left (same artwork the
        user approved as "A3"). ONE ground for both light and dark, like Rising
@@ -2081,6 +2086,9 @@
        body.light above pops out as a stark white box. Match the cream panels of
        the rest of the sidebar (opaque, so no bleed-through) in both modes. */
     body.camo-rising-sun .products-menu { background: #fcf9f1; border-color: var(--border); }
+    /* Pole light: match the near-white the pale blueprint panels render as,
+       instead of the stark #fff flyout. (Dark pole keeps the dark flyout.) */
+    body.camo-pole.light .products-menu { background: #f9fbfc; border-color: var(--border); }
     .products-menu.open { display: flex; }
     .products-group-label { font-size: 10px; font-weight: 700; text-transform: uppercase;
       letter-spacing: .1em; color: var(--muted); padding: 7px 12px 4px; }
