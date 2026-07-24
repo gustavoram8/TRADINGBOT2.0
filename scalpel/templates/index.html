@@ -2077,6 +2077,10 @@
        Force a dark obsidian panel under the premium camo, either mode. */
     body.camo-premium .products-menu,
     body.camo-premium.camo-day .products-menu { background: #17140f; border-color: rgba(212,175,55,0.28); }
+    /* Rising Sun ground is cream in BOTH toggle states, so the white flyout from
+       body.light above pops out as a stark white box. Match the cream panels of
+       the rest of the sidebar (opaque, so no bleed-through) in both modes. */
+    body.camo-rising-sun .products-menu { background: #f8f1e0; border-color: var(--border); }
     .products-menu.open { display: flex; }
     .products-group-label { font-size: 10px; font-weight: 700; text-transform: uppercase;
       letter-spacing: .1em; color: var(--muted); padding: 7px 12px 4px; }
