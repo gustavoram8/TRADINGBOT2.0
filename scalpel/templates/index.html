@@ -956,6 +956,11 @@
     .ec-chip.active{color:#1a1205;background:linear-gradient(180deg,#f5c463,#e0a83d);border-color:transparent;
       box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 2px 8px rgba(224,168,61,.25)}
     body.light .ec-chip.active, body[class*="camo-"]:not(.camo-premium).light .ec-chip.active{color:#1c1407}
+    /* Pole DARK: active instrument chip in the camo's blueprint blue (matches the
+       Kill Zones dark blue). The TradingView widget itself only supports
+       light/dark, and already renders dark here. */
+    body.camo-pole:not(.light) .ec-chip.active{color:#04203f;background:linear-gradient(180deg,#7dbcff,#5fa8ff);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 2px 8px rgba(95,168,255,.3)}
     .ec-chip-sub{opacity:.62;font-weight:500;margin-left:5px}
     .ec-chip.active .ec-chip-sub{opacity:.78}
     .ec-widget-wrap{border-radius:12px;overflow:hidden;border:1px solid var(--border);min-height:600px;
