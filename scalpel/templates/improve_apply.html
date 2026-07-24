@@ -30,13 +30,49 @@
 
   <main class="stage">
     <div class="chapter" id="apply-chapter">
-      <div class="eyebrow"><span class="num">04</span><span data-i18n="p5.eyebrow">The filter</span></div>
+      <div class="eyebrow"><span class="num">04</span><span data-i18n="p5.eyebrow">How it works</span></div>
 
-      <h2 class="ch-title" data-i18n-html="p5.title">This isn't for <span class="accent">everyone.</span></h2>
+      <h2 class="ch-title" data-i18n-html="p5.title">The full picture — <span class="accent">before you decide.</span></h2>
 
       <div class="prose">
-        <p class="lead" data-i18n="p5.lead">Seats are few and attention is expensive. A short application keeps the room serious — tell us where you are, and we'll tell you honestly whether this can help.</p>
+        <p class="lead" data-i18n="p5.lead">No surprises and no fine print. This is how each program works, how each one is paid, and what we ask of you before the door opens.</p>
       </div>
+
+      <!-- Program 01 — recorded library -->
+      <section class="hw">
+        <div class="wlabel" data-i18n="p5.prog1label">Program 01 · On your own time</div>
+        <h3 data-i18n="p5.prog1title">The recorded library</h3>
+        <p data-i18n="p5.prog1body">A private, growing library of recorded sessions where real analysis is taken apart from start to finish — the read, the reasoning, the mistakes, the why. New sessions are added regularly, and everything stays available for as long as you're a member.</p>
+        <div class="hw-pay">
+          <span class="hw-pay-label" data-i18n="p5.payLabel">How it's paid</span>
+          <p data-i18n="p5.prog1pay">A simple monthly subscription. While it's active you have the complete library — everything already recorded and everything new that gets added. Cancel whenever you want: your access simply runs to the end of the period you already paid. No contracts, no lock-in.</p>
+        </div>
+      </section>
+
+      <!-- Program 02 — one-to-one calls -->
+      <section class="hw">
+        <div class="wlabel" data-i18n="p5.prog2label">Program 02 · Up close</div>
+        <h3 data-i18n="p5.prog2title">One-to-one calls</h3>
+        <p data-i18n="p5.prog2body">Private 30-minute sessions, one on one. You bring your charts, your decisions and your doubts; the time is spent on your trading, not on generic theory. It's the fastest way to find the thing you can't see on your own.</p>
+        <div class="hw-pay">
+          <span class="hw-pay-label" data-i18n="p5.payLabel">How it's paid</span>
+          <p data-i18n="p5.prog2pay">Monthly packages of 5, 10 or 20 calls — or a single call whenever you need one. Calendar time is finite, so seats are limited: a package is what reserves yours.</p>
+        </div>
+      </section>
+
+      <!-- The mentor — deliberately unnamed until after the filter -->
+      <section class="hw">
+        <div class="wlabel" data-i18n="p5.mentorlabel">Who's behind it</div>
+        <h3 data-i18n="p5.mentortitle">A working trader — not a content creator.</h3>
+        <p data-i18n="p5.mentorbody">The person on the other side is in the markets every single day, and teaches only what he actually does with his own capital. No borrowed strategies, no recycled courses. His name, his story and his full presentation are shared once your application is reviewed — attention is the scarcest resource in this room, and it's reserved for people who are serious.</p>
+      </section>
+
+      <!-- The application -->
+      <section class="hw">
+        <div class="wlabel" data-i18n="p5.formlabel">The application</div>
+        <h3 data-i18n="p5.formtitle">Tell us where you are.</h3>
+        <p data-i18n="p5.formlead">Seats are few and attention is expensive. A short application keeps the room serious — answer honestly, and you'll get an honest answer back.</p>
+      </section>
 
       <form class="af" id="apply-form" novalidate>
         <div class="af-grid">
@@ -47,6 +83,15 @@
           <label class="af-field">
             <span data-i18n="p5.femail">Email</span>
             <input type="email" name="email" maxlength="255" required value="{{ prefill_email }}" autocomplete="email" />
+          </label>
+          <label class="af-field">
+            <span data-i18n="p5.fprog">What are you interested in?</span>
+            <select name="program" required>
+              <option value="" data-i18n="p5.select">Select…</option>
+              <option value="rec" data-i18n="p5.progRec">The recorded library</option>
+              <option value="calls" data-i18n="p5.progCalls">One-to-one calls</option>
+              <option value="both" data-i18n="p5.progBoth">Both</option>
+            </select>
           </label>
           <label class="af-field">
             <span data-i18n="p5.fexp">Time trading</span>
@@ -67,14 +112,6 @@
               <option value="inconsistent" data-i18n="p5.sitInc">Live but inconsistent</option>
             </select>
           </label>
-          <label class="af-field af-wide">
-            <span data-i18n="p5.fstruggle">Your biggest struggle right now</span>
-            <textarea name="struggle" maxlength="600" rows="3" required data-i18n-ph="p5.phStruggle" placeholder="Be specific — what actually keeps costing you?"></textarea>
-          </label>
-          <label class="af-field af-wide">
-            <span data-i18n="p5.fwhy">Why mentorship, and why now</span>
-            <textarea name="why" maxlength="600" rows="3" required data-i18n-ph="p5.phWhy" placeholder="What do you expect to change by working with someone?"></textarea>
-          </label>
           <label class="af-field">
             <span data-i18n="p5.fhours">Time you can commit weekly</span>
             <select name="hours" required>
@@ -83,6 +120,14 @@
               <option value="h5_10" data-i18n="p5.h510">5–10 hours</option>
               <option value="h10p" data-i18n="p5.h10p">10+ hours</option>
             </select>
+          </label>
+          <label class="af-field af-wide">
+            <span data-i18n="p5.fstruggle">Your biggest struggle right now</span>
+            <textarea name="struggle" maxlength="600" rows="3" required data-i18n-ph="p5.phStruggle" placeholder="Be specific — what actually keeps costing you?"></textarea>
+          </label>
+          <label class="af-field af-wide">
+            <span data-i18n="p5.fwhy">Why mentorship, and why now</span>
+            <textarea name="why" maxlength="600" rows="3" required data-i18n-ph="p5.phWhy" placeholder="What do you expect to change by working with someone?"></textarea>
           </label>
         </div>
 
@@ -99,15 +144,6 @@
         </button>
         <p class="reassure" data-i18n="p5.reassure">Applications are reviewed personally. If it's not a fit, you'll hear that too — no hard feelings.</p>
       </form>
-
-      <div class="af-done" id="apply-done" hidden>
-        <h3 data-i18n="p5.doneTitle">Application received.</h3>
-        <p data-i18n="p5.doneBody">It will be reviewed personally — every single one is. If the room fits where you are, you'll hear from us by email with the next step.</p>
-        <a class="cta" href="/app">
-          <span data-i18n="p5.doneCta">Back to the app</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-        </a>
-      </div>
 
       <div class="dots"><i></i><i></i><i></i><i class="on"></i></div>
     </div>
@@ -132,14 +168,14 @@
         var f = form.elements;
         var payload = {
           name: f.name.value.trim(), email: f.email.value.trim(),
-          experience: f.experience.value, situation: f.situation.value,
-          struggle: f.struggle.value.trim(), why: f.why.value.trim(),
-          hours: f.hours.value, waiver: f.waiver.checked,
+          program: f.program.value, experience: f.experience.value,
+          situation: f.situation.value, struggle: f.struggle.value.trim(),
+          why: f.why.value.trim(), hours: f.hours.value, waiver: f.waiver.checked,
           lang: (function(){ try { return localStorage.getItem('scalpel_lang') || 'en'; } catch(_) { return 'en'; } })()
         };
         if (!payload.name || !payload.email || payload.email.indexOf('@') < 0 ||
-            !payload.experience || !payload.situation || !payload.struggle ||
-            !payload.why || !payload.hours || !payload.waiver){
+            !payload.program || !payload.experience || !payload.situation ||
+            !payload.struggle || !payload.why || !payload.hours || !payload.waiver){
           err.hidden = false; return;
         }
         var btn = form.querySelector('.af-submit');
@@ -147,13 +183,11 @@
         fetch('/api/improve/apply', {
           method: 'POST', headers: {'Content-Type': 'application/json'},
           body: JSON.stringify(payload)
-        }).then(function(r){ return r.json().then(function(j){ return {ok: r.ok && j.ok}; }); })
+        }).then(function(r){ return r.json().then(function(j){ return {ok: r.ok && j.ok, next: j.next}; }); })
           .catch(function(){ return {ok:false}; })
           .then(function(res){
             if (res.ok){
-              form.hidden = true;
-              document.getElementById('apply-done').hidden = false;
-              try { window.scrollTo({top:0, behavior:'smooth'}); } catch(_) { window.scrollTo(0,0); }
+              window.location.href = res.next || '/improve/plans';
             } else {
               btn.disabled = false;
               err.hidden = false;

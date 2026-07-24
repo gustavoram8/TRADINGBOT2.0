@@ -168,6 +168,37 @@ h2.ch-title{
 .dots i{width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,.16); transition:.2s}
 .dots i.on{background:var(--gold); box-shadow:0 0 10px rgba(224,168,61,.5)}
 
+/* ── "How it works" sections (page 5) ── */
+.hw{margin-top:34px; opacity:0; animation:imp-rise .9s ease .4s forwards}
+.hw .wlabel{font-size:11px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--gold)}
+.hw h3{font-family:'Fraunces',serif; font-weight:500; font-size:23px; margin:9px 0 9px; color:#f1f2f7}
+.hw > p{font-size:14.5px; color:var(--muted); line-height:1.7; max-width:640px}
+.hw-pay{margin-top:14px; padding:14px 17px; border:1px solid var(--line); border-left:2px solid rgba(224,168,61,.55);
+  border-radius:12px; background:rgba(255,255,255,.03); max-width:640px}
+.hw-pay-label{display:block; font-size:10.5px; font-weight:700; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--gold); margin-bottom:6px}
+.hw-pay p{font-size:13.5px; color:var(--muted); line-height:1.65}
+
+/* ── Offer cards (page 6 — /improve/plans) ── */
+.pl-mentor .pl-pending-name{font-family:'Fraunces',serif; font-weight:500; font-size:23px; margin:9px 0 7px; color:#f1f2f7; opacity:.55}
+.pl-pending{font-size:13.5px; color:var(--faint); line-height:1.65; max-width:620px; font-style:italic}
+.pl-card{margin-top:26px; padding:22px 24px; border:1px solid var(--line); border-radius:16px;
+  background:rgba(255,255,255,.03); max-width:640px; opacity:0; animation:imp-rise .9s ease .5s forwards}
+.pl-card.pl-both{border-color:rgba(224,168,61,.4); background:rgba(224,168,61,.05)}
+.pl-list{margin:13px 0 0; padding:0; list-style:none}
+.pl-list li{position:relative; padding:5px 0 5px 24px; font-size:14px; color:var(--muted); line-height:1.55}
+.pl-list li::before{content:''; position:absolute; left:2px; top:12px; width:6px; height:6px;
+  border-radius:50%; background:var(--gold); box-shadow:0 0 8px rgba(224,168,61,.4)}
+.pl-price{margin-top:16px; display:flex; align-items:baseline; gap:7px}
+.pl-amount{font-family:'Fraunces',serif; font-size:30px; font-weight:600; color:#f1f2f7}
+.pl-per{font-size:13px; color:var(--faint)}
+.pl-tiers{margin-top:16px; display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.pl-tier{display:flex; flex-direction:column; gap:2px; padding:11px 14px; border:1px solid var(--line);
+  border-radius:11px; background:rgba(255,255,255,.025)}
+.pl-tier b{font-size:12px; font-weight:600; color:var(--muted); letter-spacing:.02em}
+.pl-tier .pl-amount{font-size:21px}
+@media (max-width:560px){.pl-tiers{grid-template-columns:1fr}}
+
 /* ── Application form (page 5 — "The Great Filter") ── */
 .af{margin-top:26px; opacity:0; animation:imp-rise .9s ease .5s forwards}
 .af-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px 18px}

@@ -823,6 +823,7 @@ class MentorshipApplication(db.Model):
     email = db.Column(db.String(255), nullable=False, index=True)
     experience = db.Column(db.String(20), nullable=False)     # lt1 / y1_3 / y3p
     situation = db.Column(db.String(20), nullable=False)      # demo / live / funded / inconsistent
+    program = db.Column(db.String(12), nullable=True)         # rec / calls / both
     struggle = db.Column(db.String(600), nullable=False)      # biggest struggle (free text)
     why = db.Column(db.String(600), nullable=False)           # why mentorship, why now
     hours_week = db.Column(db.String(20), nullable=False)     # lt5 / h5_10 / h10p
@@ -2031,10 +2032,11 @@ def improve_inside():
     return render_template('improve_inside.html')
 
 
-# ── Mentorship funnel — step 5: "The Great Filter" (application + waiver) ──
+# ── Mentorship funnel — step 5: how it works + "The Great Filter" (application) ──
 _APPLY_EXPERIENCE = {'lt1', 'y1_3', 'y3p'}
 _APPLY_SITUATION = {'demo', 'live', 'funded', 'inconsistent'}
 _APPLY_HOURS = {'lt5', 'h5_10', 'h10p'}
+_APPLY_PROGRAM = {'rec', 'calls', 'both'}
 
 
 @app.route('/improve/apply')
@@ -2044,6 +2046,18 @@ def improve_apply():
     prefill_name = (current_user.username or '') if current_user.is_authenticated else ''
     return render_template('improve_apply.html',
                            prefill_email=prefill_email, prefill_name=prefill_name)
+
+
+@app.route('/improve/plans')
+def improve_plans():
+    """Step 6 — the offer. Only reachable after submitting the application
+    (session flag), so the funnel order holds: filter first, then the mentor
+    reveal + prices. Admins can always preview directly."""
+    _mentorship_gate()
+    is_admin = current_user.is_authenticated and getattr(current_user, 'is_admin', False)
+    if not session.get('improve_applied') and not is_admin:
+        return redirect(url_for('improve_apply'))
+    return render_template('improve_plans.html')
 
 
 @app.route('/api/improve/apply', methods=['POST'])
@@ -2059,6 +2073,7 @@ def improve_apply_submit():
     email = _s('email', 255).lower()
     experience = _s('experience', 20)
     situation = _s('situation', 20)
+    program = _s('program', 12)
     struggle = _s('struggle', 600)
     why = _s('why', 600)
     hours_week = _s('hours', 20)
@@ -2067,7 +2082,7 @@ def improve_apply_submit():
 
     if not (name and email and '@' in email and struggle and why and waiver
             and experience in _APPLY_EXPERIENCE and situation in _APPLY_SITUATION
-            and hours_week in _APPLY_HOURS):
+            and program in _APPLY_PROGRAM and hours_week in _APPLY_HOURS):
         return jsonify({'ok': False, 'error': 'invalid'}), 400
 
     # One pending application per email — resubmits just refresh the existing
@@ -2077,17 +2092,19 @@ def improve_apply_submit():
     if existing:
         existing.name, existing.experience, existing.situation = name, experience, situation
         existing.struggle, existing.why, existing.hours_week = struggle, why, hours_week
-        existing.waiver_accepted_at, existing.lang = now, lang
+        existing.program, existing.waiver_accepted_at, existing.lang = program, now, lang
         if current_user.is_authenticated:
             existing.user_id = current_user.id
     else:
         db.session.add(MentorshipApplication(
             user_id=current_user.id if current_user.is_authenticated else None,
             name=name, email=email, experience=experience, situation=situation,
-            struggle=struggle, why=why, hours_week=hours_week,
+            program=program, struggle=struggle, why=why, hours_week=hours_week,
             waiver_accepted_at=now, lang=lang))
     db.session.commit()
-    return jsonify({'ok': True})
+    # Unlocks /improve/plans (the offer) for this visitor — filter first, then prices.
+    session['improve_applied'] = True
+    return jsonify({'ok': True, 'next': url_for('improve_plans')})
 
 
 @app.route('/camos')
@@ -7121,6 +7138,24 @@ def _migrate_user_camo_columns():
         app.logger.info('Migrated user table: camo columns ensured.')
 
 
+def _migrate_mentorship_application_columns():
+    """Add columns introduced after the mentorship_application table first
+    shipped (`program`). Same guard pattern as the camo migration: a concurrent
+    worker adding the column first can never crash startup."""
+    from sqlalchemy import inspect, text
+    insp = inspect(db.engine)
+    if not insp.has_table('mentorship_application'):
+        return  # create_all already made it with every column
+    cols = {c['name'] for c in insp.get_columns('mentorship_application')}
+    if 'program' not in cols:
+        try:
+            with db.engine.begin() as conn:
+                conn.execute(text('ALTER TABLE mentorship_application ADD COLUMN program VARCHAR(12)'))
+            app.logger.info('Migrated mentorship_application: program column added.')
+        except Exception as e:
+            app.logger.info('mentorship migration note (ignored): %s', e)
+
+
 def init_db():
     with app.app_context():
         db.create_all()
@@ -7136,6 +7171,7 @@ def init_db():
         _migrate_promo_code_columns()
         _migrate_preflight_check_columns()
         _migrate_user_camo_columns()
+        _migrate_mentorship_application_columns()
         admin_email = os.environ.get('ADMIN_EMAIL', 'mauroramirezmij@gmail.com').lower()
         admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
         admin_password = os.environ.get('ADMIN_PASSWORD', 'Codica2310$')

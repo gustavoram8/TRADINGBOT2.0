@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Find New Ways to Improve</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/improve.css" />
+</head>
+<body>
+  <div class="amb" aria-hidden="true"></div>
+
+  <header class="top">
+    <a class="brand" href="/app">
+      <img src="/static/logo.png" alt="" onerror="this.style.display='none'" />
+      <span>Tradeable</span>
+    </a>
+    <div class="top-right">
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="es">ES</button>
+        <button type="button" data-lang="fr">FR</button>
+        <button type="button" data-lang="pt">PT</button>
+      </div>
+      <a class="close" href="/improve/apply" data-i18n="nav.back">← Back</a>
+    </div>
+  </header>
+
+  <main class="stage">
+    <div class="chapter">
+      <div class="eyebrow"><span class="num">05</span><span data-i18n="p6.eyebrow">The offer</span></div>
+
+      <h2 class="ch-title" data-i18n-html="p6.title">Choose your <span class="accent">room.</span></h2>
+
+      <div class="prose">
+        <p class="lead" data-i18n="p6.lead">You've told us where you are. This is what each door opens — and what it costs to walk through it.</p>
+      </div>
+
+      <!-- Mentor reveal — REAL identity/bio pending from the owner; never invented.
+           Structure is ready: name, who he is, what he does, years of experience. -->
+      <section class="hw pl-mentor">
+        <div class="wlabel" data-i18n="p6.mentorlabel">Your mentor</div>
+        <h3 class="pl-pending-name">[MENTOR NAME]</h3>
+        <p class="pl-pending" data-i18n="p6.mentorpending">His full presentation goes here — who he is, what he trades, and his years of experience. It's added by the team, never invented.</p>
+      </section>
+
+      <!-- Branch A — the library -->
+      <section class="pl-card">
+        <div class="wlabel" data-i18n="p6.aLabel">Program 01 · The recorded library</div>
+        <ul class="pl-list">
+          <li data-i18n="p6.a1">Full access to every recorded session — past and future</li>
+          <li data-i18n="p6.a2">New sessions added regularly</li>
+          <li data-i18n="p6.a3">Real analysis taken apart from start to finish — the read, the reasoning, the mistakes, the why</li>
+          <li data-i18n="p6.a4">Watch, pause and revisit at your own pace</li>
+          <li data-i18n="p6.a5">Access for as long as your subscription is active</li>
+        </ul>
+        <div class="pl-price"><span class="pl-amount">$—</span><span class="pl-per" data-i18n="p6.perMonth">/ month</span></div>
+      </section>
+
+      <!-- Branch B — one-to-one calls -->
+      <section class="pl-card">
+        <div class="wlabel" data-i18n="p6.bLabel">Program 02 · One-to-one calls</div>
+        <ul class="pl-list">
+          <li data-i18n="p6.b1">Private 30-minute sessions, one on one</li>
+          <li data-i18n="p6.b2">Your charts, your decisions, your blind spots — worked through together</li>
+          <li data-i18n="p6.b3">Monthly packages that reserve your seat</li>
+          <li data-i18n="p6.b4">Single calls available when you need one</li>
+          <li data-i18n="p6.b5">Seats are limited — calendar time is finite</li>
+        </ul>
+        <div class="pl-tiers">
+          <div class="pl-tier"><b data-i18n="p6.t5">5 calls / month</b><span class="pl-amount">$—</span></div>
+          <div class="pl-tier"><b data-i18n="p6.t10">10 calls / month</b><span class="pl-amount">$—</span></div>
+          <div class="pl-tier"><b data-i18n="p6.t20">20 calls / month</b><span class="pl-amount">$—</span></div>
+          <div class="pl-tier"><b data-i18n="p6.t1">Single call</b><span class="pl-amount">$—</span></div>
+        </div>
+      </section>
+
+      <!-- Both -->
+      <section class="pl-card pl-both">
+        <div class="wlabel" data-i18n="p6.cLabel">Both programs</div>
+        <ul class="pl-list">
+          <li data-i18n="p6.c1">Everything in the recorded library</li>
+          <li data-i18n="p6.c2">Plus your monthly package of one-to-one calls</li>
+          <li data-i18n="p6.c3">One combined price — both doors open</li>
+        </ul>
+        <div class="pl-price"><span class="pl-amount">$—</span><span class="pl-per" data-i18n="p6.perMonth">/ month</span></div>
+      </section>
+
+      <a class="cta" href="/contact">
+        <span data-i18n="p6.cta">Request your seat</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+      <p class="reassure" data-i18n="p6.reassure">Applications come first. If your application was approved, this is where your seat gets reserved.</p>
+
+      <div class="dots"><i></i><i></i><i></i><i></i><i class="on"></i></div>
+    </div>
+  </main>
+
+  <footer class="legal" data-i18n="legal">
+    Educational content only. Nothing here is financial advice, a recommendation, a signal,
+    or a guarantee of results. Trading involves substantial risk of loss. Any progress depends
+    entirely on your own effort, decisions and circumstances.
+  </footer>
+
+  <script src="/static/improve_i18n.js" defer></script>
+</body>
+</html>
