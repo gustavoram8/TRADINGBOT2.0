@@ -307,9 +307,12 @@ columna `program` en `MentorshipApplication` + auto-migración guarded). Al envi
 reveal del mentor (**PENDIENTE bio real del usuario — nunca inventar**), tarjetas con viñetas por
 rama (borrador razonable, confirmar con el usuario), tiers 5/10/20/suelta, tarjeta combo ambos, y
 precios reales ($350/mes; reuniones online 1-1 con descuento por volumen: suelta $30, 5=$140/$28c-u,
-10=$250/$25c-u, 20=$400/$20c-u; combo Desde $490). i18n 4 idiomas a paridad, 0
-claves de template sin dict. Probado end-to-end con test_client (form+enum 400, redirect, gate
-302→apply, migración re-agrega columna).
+10=$250/$25c-u, 20=$400/$20c-u; **combo "Ambos" = 3 sub-tiers seleccionables** biblioteca(−25%,
+$350→$263) + paquete de reuniones: 5=$403(~$500~, ahorras $97), 10=$513(~$650~, $137), 20=$663(~$950~,
+$287)). Tiers muestran total + tachadura `.ptwas` del precio sin descuento + pastilla verde `.ptsave`
+"Ahorras $X" (`p6.save`). ⚠️ 25% de $350=$262.50 redondeado a $263 (confirmar con usuario si prefiere
+$262.50 exacto o standalone). i18n 4 idiomas a paridad, 0 claves de template sin dict. Probado
+end-to-end con test_client (form+enum 400, redirect, gate 302→apply, migración re-agrega columna).
 **✅ CARDS estilo landing (2026-07-24):** las 3 tarjetas de `/improve/plans` adoptaron el diseño de
 las cards Standard/Premium del landing (`.pcard` en `improve.css`: nombre mayúsc. dorado + tagline +
 precio grande + divisor + features con check-circles + botón full-width; "Ambos" = featured con
@@ -347,7 +350,8 @@ años TENTATIVOS — el usuario confirma y reeditamos), ex-Forex, hoy futuros **
 Precios base (actualizados 2026-07-24): biblioteca **$350/mes**; **reuniones online 1-1** (antes
 "calls" — renombradas por decisión del usuario) con **descuento por volumen**: suelta **$30** ($30 c/u),
 5/mes **$140** ($28 c/u), 10/mes **$250** ($25 c/u), 20/mes **$400** ($20 c/u) — más reuniones = más
-barata cada una; combo **"Desde $490/mes"** = biblioteca $350 + paquete de 5 ($140) (sin descuento de
+barata cada una; **combo "Ambos" con 25% OFF a la biblioteca** ($350→$263) + paquete de reuniones:
+Biblioteca+5=$403, +10=$513, +20=$663 (3 sub-tiers seleccionables con tachadura + "ahorras") (sin descuento de
 combo definido aún). Los tiers muestran total + precio por reunión (`.ptunit` dorado, clave `p6.each`).
 **TODO tentativo — el usuario confirma años de Gabriel y precios definitivos.**
 **FALTA:**

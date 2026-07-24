@@ -218,8 +218,10 @@ h2.ch-title{
   color:#1a1205; font-size:10.5px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
   padding:5px 15px; border-radius:20px; white-space:nowrap; box-shadow:0 6px 18px rgba(224,168,61,.3);
 }
-.pcard .pname{font-size:12.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:var(--gold); margin-bottom:7px; line-height:1.35}
-.pcard .ptag{font-size:13px; color:var(--muted); line-height:1.55; margin-bottom:18px; min-height:36px}
+/* Title + subtitle mirror the landing Premium card (.plan-name / .plan-tagline):
+   15px/700/.04em uppercase gold title, 13px muted subtitle. */
+.pcard .pname{font-size:15px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--gold); margin-bottom:6px; line-height:1.35}
+.pcard .ptag{font-size:13px; color:var(--muted); line-height:1.55; margin-bottom:22px; min-height:38px}
 .pcard .pprice{display:flex; align-items:baseline; gap:5px; margin-bottom:2px}
 .pcard .pfrom{font-size:12.5px; color:var(--faint); font-weight:600; align-self:center; margin-right:2px}
 .pcard .pcur{font-size:20px; font-weight:700; color:var(--muted)}
@@ -236,9 +238,18 @@ h2.ch-title{
 .pcard .ptier{display:flex; flex-direction:column; gap:3px; padding:10px 12px; border:1px solid var(--line);
   border-radius:10px; background:rgba(255,255,255,.025)}
 .pcard .ptier b{font-size:11.5px; font-weight:600; color:var(--muted); letter-spacing:.01em}
+.pcard .ptrow{display:flex; align-items:baseline; gap:7px; flex-wrap:wrap}
 .pcard .ptier .pamt{font-size:19px}
+.pcard .ptwas{font-size:12px; color:var(--faint); text-decoration:line-through; opacity:.85}
 .pcard .ptunit{font-size:11px; font-weight:700; color:var(--gold)}
+/* "You save $X" pill — same green treatment as the landing discount badge */
+.pcard .ptsave{align-self:flex-start; margin-top:3px; font-size:9.5px; font-weight:800; letter-spacing:.03em;
+  text-transform:uppercase; padding:2px 8px; border-radius:11px; background:rgba(52,211,153,.14); color:#34d399}
 .pcard .pnote{font-size:12px; color:var(--faint); line-height:1.5; margin:0 0 20px}
+.pcard .pnote-top{margin:2px 0 14px}
+/* Combo sub-tiers in the "Both" card: single column, library(-25%) + meetings pack */
+.pcard .ptiers-combo{grid-template-columns:1fr; gap:8px}
+.pcard .ptiers-combo .ptier{gap:2px}
 .pcard .buy{
   display:block; width:100%; text-align:center; padding:12px; font-size:13.5px; font-weight:700;
   border-radius:11px; text-decoration:none; cursor:pointer; border:1.5px solid var(--line);
