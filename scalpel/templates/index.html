@@ -207,13 +207,12 @@
       content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
       background: radial-gradient(ellipse 90% 80% at 50% 42%, transparent 52%, rgba(0,10,30,0.34) 100%);
     }
+    /* Dark pole: plain invert(1) of logo_t.png gives a WHITE wordmark + ORANGE
+       "a" (#004feb -> #ffb014), the site's standard dark look. (Not brightness(0)
+       invert(1), which flattens the blue to black first and washes the "a" to
+       white.) Light pole falls through to the default blue-"a" treatment. */
     body.camo-pole:not(.light) .logo-img {
-      content: url('/static/logo_t.png'); filter: brightness(0) invert(1); mix-blend-mode: normal;
-    }
-    /* Pole light is a pale blueprint paper — use the orange-"a" cream logo (black
-       wordmark + #ffb014 "a"), not the plain blue-"a"/washed-out default. */
-    body.camo-pole.light .logo-img {
-      content: url('/static/logo_t_cream.png'); filter: none; mix-blend-mode: normal;
+      content: url('/static/logo_t.png'); filter: invert(1); mix-blend-mode: normal;
     }
     /* ═══ Obsidian Gold (Premium) — obsidian-black ground with concentric Art
        Déco gold arches + a ziggurat step ornament, bottom-left (same artwork the
