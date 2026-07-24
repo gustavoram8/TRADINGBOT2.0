@@ -30,7 +30,7 @@
   </header>
 
   <main class="stage">
-    <div class="chapter">
+    <div class="chapter plans-chapter">
       <div class="eyebrow"><span class="num">05</span><span data-i18n="p6.eyebrow">The offer</span></div>
 
       <h2 class="ch-title" data-i18n-html="p6.title">Choose your <span class="accent">room.</span></h2>
@@ -41,59 +41,68 @@
       </div>
 
       <!-- Mentor reveal. Years of experience (~6) tentative — confirm with owner. -->
-      <section class="hw pl-mentor">
+      <section class="pl-mentor">
         <div class="wlabel" data-i18n="p6.mentorlabel">Your mentor</div>
         <h3 class="pl-name">Gabriel Celis</h3>
         <p class="pl-bio" data-i18n="p6.mentorbio">Around six years in the markets. He cut his teeth in Forex and now trades index futures every session — the S&amp;P 500 and the Nasdaq. What he teaches is exactly what he does with his own capital: nothing borrowed, nothing recycled.</p>
       </section>
 
-      <!-- Branch A — the library -->
-      <section class="pl-card">
-        <div class="wlabel" data-i18n="p6.aLabel">Program 01 · The recorded library</div>
-        <ul class="pl-list">
-          <li data-i18n="p6.a1">Full access to every recorded session — past and future</li>
-          <li data-i18n="p6.a2">New sessions added regularly</li>
-          <li data-i18n="p6.a3">Real analysis taken apart from start to finish — the read, the reasoning, the mistakes, the why</li>
-          <li data-i18n="p6.a4">Watch, pause and revisit at your own pace</li>
-          <li data-i18n="p6.a5">Access for as long as your subscription is active</li>
-        </ul>
-        <div class="pl-price"><span class="pl-amount">$350</span><span class="pl-per" data-i18n="p6.perMonth">/ month</span></div>
-      </section>
+      <!-- Plan cards — same design as the landing Standard/Premium cards -->
+      <div class="plans">
 
-      <!-- Branch B — one-to-one calls -->
-      <section class="pl-card">
-        <div class="wlabel" data-i18n="p6.bLabel">Program 02 · One-to-one calls</div>
-        <ul class="pl-list">
-          <li data-i18n="p6.b1">Private 30-minute sessions, one on one</li>
-          <li data-i18n="p6.b2">Your charts, your decisions, your blind spots — worked through together</li>
-          <li data-i18n="p6.b3">Monthly packages that reserve your seat</li>
-          <li data-i18n="p6.b4">Single calls available when you need one</li>
-          <li data-i18n="p6.b5">Seats are limited — calendar time is finite</li>
-        </ul>
-        <div class="pl-tiers">
-          <div class="pl-tier"><b data-i18n="p6.t5">5 calls / month</b><span class="pl-amount">$150</span></div>
-          <div class="pl-tier"><b data-i18n="p6.t10">10 calls / month</b><span class="pl-amount">$300</span></div>
-          <div class="pl-tier"><b data-i18n="p6.t20">20 calls / month</b><span class="pl-amount">$600</span></div>
-          <div class="pl-tier"><b data-i18n="p6.t1">Single call</b><span class="pl-amount">$30</span></div>
-        </div>
-      </section>
+        <!-- Program 01 — the library -->
+        <section class="pcard">
+          <div class="pname" data-i18n="p6.aLabel">Program 01 · The recorded library</div>
+          <div class="ptag" data-i18n="p6.aTag">Learn on your own time, at your own pace.</div>
+          <div class="pprice"><span class="pcur">$</span><span class="pamt">350</span><span class="pper" data-i18n="p6.perMonth">/ month</span></div>
+          <div class="pdivider"></div>
+          <ul class="pfeat">
+            <li><span class="pcheck"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span><span data-i18n="p6.a1">Full access to every recorded session — past and future</span></li>
+            <li><span class="pcheck"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span><span data-i18n="p6.a2">New sessions added regularly</span></li>
+            <li><span class="pcheck"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span><span data-i18n="p6.a3">Real analysis taken apart from start to finish — the read, the reasoning, the mistakes, the why</span></li>
+            <li><span class="pcheck"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span><span data-i18n="p6.a4">Watch, pause and revisit at your own pace</span></li>
+            <li><span class="pcheck"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span><span data-i18n="p6.a5">Access for as long as your subscription is active</span></li>
+          </ul>
+          <a class="buy" href="/contact" data-i18n="p6.cta">Request your seat</a>
+        </section>
 
-      <!-- Both -->
-      <section class="pl-card pl-both">
-        <div class="wlabel" data-i18n="p6.cLabel">Both programs</div>
-        <ul class="pl-list">
-          <li data-i18n="p6.c1">Everything in the recorded library</li>
-          <li data-i18n="p6.c2">Plus your monthly package of one-to-one calls</li>
-          <li data-i18n="p6.c3">One combined price — both doors open</li>
-        </ul>
-        <div class="pl-price"><span class="pl-from" data-i18n="p6.from">From</span><span class="pl-amount">$500</span><span class="pl-per" data-i18n="p6.perMonth">/ month</span></div>
-        <p class="pl-note" data-i18n="p6.bothNote">The library ($350/mo) plus your chosen calls package — shown here with the 5-call package.</p>
-      </section>
+        <!-- Program 02 — one-to-one calls -->
+        <section class="pcard">
+          <div class="pname" data-i18n="p6.bLabel">Program 02 · One-to-one calls</div>
+          <div class="ptag" data-i18n="p6.bTag">Your charts, worked through one on one.</div>
+          <div class="ptiers">
+            <div class="ptier"><b data-i18n="p6.t5">5 calls / month</b><span class="pamt">$150</span></div>
+            <div class="ptier"><b data-i18n="p6.t10">10 calls / month</b><span class="pamt">$300</span></div>
+            <div class="ptier"><b data-i18n="p6.t20">20 calls / month</b><span class="pamt">$600</span></div>
+            <div class="ptier"><b data-i18n="p6.t1">Single call</b><span class="pamt">$30</span></div>
+          </div>
+          <div class="pdivider"></div>
+          <ul class="pfeat">
+            <li><span class="pcheck"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span><span data-i18n="p6.b1">Private 30-minute sessions, one on one</span></li>
+            <li><span class="pcheck"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span><span data-i18n="p6.b2">Your charts, your decisions, your blind spots — worked through together</span></li>
+            <li><span class="pcheck"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span><span data-i18n="p6.b5">Seats are limited — calendar time is finite</span></li>
+          </ul>
+          <a class="buy" href="/contact" data-i18n="p6.cta">Request your seat</a>
+        </section>
 
-      <a class="cta" href="/contact">
-        <span data-i18n="p6.cta">Request your seat</span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </a>
+        <!-- Both — featured -->
+        <section class="pcard featured">
+          <div class="badge-pop" data-i18n="p6.mostPopular">Most popular</div>
+          <div class="pname" data-i18n="p6.cLabel">Both programs</div>
+          <div class="ptag" data-i18n="p6.cTag">Both doors open — the full experience.</div>
+          <div class="pprice"><span class="pfrom" data-i18n="p6.from">From</span><span class="pcur">$</span><span class="pamt">500</span><span class="pper" data-i18n="p6.perMonth">/ month</span></div>
+          <div class="pdivider"></div>
+          <ul class="pfeat">
+            <li><span class="pcheck"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span><span data-i18n="p6.c1">Everything in the recorded library</span></li>
+            <li><span class="pcheck"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span><span data-i18n="p6.c2">Plus your monthly package of one-to-one calls</span></li>
+            <li><span class="pcheck"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span><span data-i18n="p6.c3">One combined price — both doors open</span></li>
+          </ul>
+          <p class="pnote" data-i18n="p6.bothNote">The library ($350/mo) plus your chosen calls package — shown here with the 5-call package.</p>
+          <a class="buy" href="/contact" data-i18n="p6.cta">Request your seat</a>
+        </section>
+
+      </div>
+
       <p class="reassure" data-i18n="p6.reassure">Applications come first. If your application was approved, this is where your seat gets reserved.</p>
 
       <div class="dots"><i></i><i></i><i></i><i></i><i class="on"></i></div>
