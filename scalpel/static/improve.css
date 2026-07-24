@@ -168,6 +168,39 @@ h2.ch-title{
 .dots i{width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,.16); transition:.2s}
 .dots i.on{background:var(--gold); box-shadow:0 0 10px rgba(224,168,61,.5)}
 
+/* ── Application form (page 5 — "The Great Filter") ── */
+.af{margin-top:26px; opacity:0; animation:imp-rise .9s ease .5s forwards}
+.af-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px 18px}
+.af-field{display:flex; flex-direction:column; gap:7px}
+.af-field.af-wide{grid-column:1 / -1}
+.af-field > span{font-size:11px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--gold)}
+.af-field input,.af-field select,.af-field textarea{
+  font-family:'Inter',sans-serif; font-size:14.5px; color:var(--ink);
+  background:rgba(255,255,255,.045); border:1px solid var(--line); border-radius:10px;
+  padding:11px 13px; outline:none; transition:border-color .18s, background .18s;
+}
+.af-field textarea{resize:vertical; min-height:76px; line-height:1.55}
+.af-field select{appearance:none; -webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%239298ad' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 13px center; padding-right:32px}
+.af-field select option{background:var(--bg2); color:var(--ink)}
+.af-field input:focus,.af-field select:focus,.af-field textarea:focus{
+  border-color:rgba(224,168,61,.55); background:rgba(255,255,255,.06)}
+.af-waiver{display:flex; gap:11px; align-items:flex-start; margin-top:22px;
+  padding:14px 16px; border:1px solid var(--line); border-radius:12px;
+  background:rgba(255,255,255,.03); cursor:pointer}
+.af-waiver input{margin-top:3px; width:15px; height:15px; flex-shrink:0; accent-color:var(--gold); cursor:pointer}
+.af-waiver span{font-size:12.5px; line-height:1.6; color:var(--muted)}
+.af-error{margin-top:16px; font-size:13px; color:#e8736b}
+.af-submit{border:0; cursor:pointer; font-family:inherit}
+.af-submit:disabled{opacity:.55; cursor:default; transform:none}
+.af .reassure{margin-top:16px}
+.af-done{margin-top:34px; opacity:0; animation:imp-rise .9s ease .1s forwards}
+.af-done h3{font-family:'Fraunces',serif; font-weight:500; font-size:26px; color:#f1f2f7; margin-bottom:10px}
+.af-done p{font-size:15px; color:var(--muted); line-height:1.7; max-width:560px}
+.af-done[hidden],.af[hidden]{display:none}
+@media (max-width:560px){.af-grid{grid-template-columns:1fr}}
+
 /* ── Footer disclaimer ── */
 .legal{
   position:relative; z-index:2; text-align:center; padding:18px 22px 26px;

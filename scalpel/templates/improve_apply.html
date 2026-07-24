@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Find New Ways to Improve</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/improve.css" />
+</head>
+<body>
+  <div class="amb" aria-hidden="true"></div>
+
+  <header class="top">
+    <a class="brand" href="/app">
+      <img src="/static/logo.png" alt="" onerror="this.style.display='none'" />
+      <span>Tradeable</span>
+    </a>
+    <div class="top-right">
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="es">ES</button>
+        <button type="button" data-lang="fr">FR</button>
+        <button type="button" data-lang="pt">PT</button>
+      </div>
+      <a class="close" href="/improve/inside" data-i18n="nav.back">← Back</a>
+    </div>
+  </header>
+
+  <main class="stage">
+    <div class="chapter" id="apply-chapter">
+      <div class="eyebrow"><span class="num">04</span><span data-i18n="p5.eyebrow">The filter</span></div>
+
+      <h2 class="ch-title" data-i18n-html="p5.title">This isn't for <span class="accent">everyone.</span></h2>
+
+      <div class="prose">
+        <p class="lead" data-i18n="p5.lead">Seats are few and attention is expensive. A short application keeps the room serious — tell us where you are, and we'll tell you honestly whether this can help.</p>
+      </div>
+
+      <form class="af" id="apply-form" novalidate>
+        <div class="af-grid">
+          <label class="af-field">
+            <span data-i18n="p5.fname">Name</span>
+            <input type="text" name="name" maxlength="80" required value="{{ prefill_name }}" autocomplete="name" />
+          </label>
+          <label class="af-field">
+            <span data-i18n="p5.femail">Email</span>
+            <input type="email" name="email" maxlength="255" required value="{{ prefill_email }}" autocomplete="email" />
+          </label>
+          <label class="af-field">
+            <span data-i18n="p5.fexp">Time trading</span>
+            <select name="experience" required>
+              <option value="" data-i18n="p5.select">Select…</option>
+              <option value="lt1" data-i18n="p5.expLt1">Less than a year</option>
+              <option value="y1_3" data-i18n="p5.exp13">1–3 years</option>
+              <option value="y3p" data-i18n="p5.exp3p">3+ years</option>
+            </select>
+          </label>
+          <label class="af-field">
+            <span data-i18n="p5.fsit">Where you are now</span>
+            <select name="situation" required>
+              <option value="" data-i18n="p5.select">Select…</option>
+              <option value="demo" data-i18n="p5.sitDemo">Demo / paper only</option>
+              <option value="live" data-i18n="p5.sitLive">Live, small size</option>
+              <option value="funded" data-i18n="p5.sitFunded">Funded / prop account</option>
+              <option value="inconsistent" data-i18n="p5.sitInc">Live but inconsistent</option>
+            </select>
+          </label>
+          <label class="af-field af-wide">
+            <span data-i18n="p5.fstruggle">Your biggest struggle right now</span>
+            <textarea name="struggle" maxlength="600" rows="3" required data-i18n-ph="p5.phStruggle" placeholder="Be specific — what actually keeps costing you?"></textarea>
+          </label>
+          <label class="af-field af-wide">
+            <span data-i18n="p5.fwhy">Why mentorship, and why now</span>
+            <textarea name="why" maxlength="600" rows="3" required data-i18n-ph="p5.phWhy" placeholder="What do you expect to change by working with someone?"></textarea>
+          </label>
+          <label class="af-field">
+            <span data-i18n="p5.fhours">Time you can commit weekly</span>
+            <select name="hours" required>
+              <option value="" data-i18n="p5.select">Select…</option>
+              <option value="lt5" data-i18n="p5.hLt5">Under 5 hours</option>
+              <option value="h5_10" data-i18n="p5.h510">5–10 hours</option>
+              <option value="h10p" data-i18n="p5.h10p">10+ hours</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="af-waiver">
+          <input type="checkbox" name="waiver" required />
+          <span data-i18n="p5.waiver">I understand this is an educational program. Nothing in it is financial advice, a signal service, or a promise of profit. Any results depend entirely on my own decisions, effort and circumstances, and trading involves substantial risk of loss.</span>
+        </label>
+
+        <div class="af-error" id="af-error" hidden data-i18n="p5.error">Please complete every field and accept the acknowledgement.</div>
+
+        <button class="cta af-submit" type="submit">
+          <span data-i18n="p5.cta">Submit application</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+        <p class="reassure" data-i18n="p5.reassure">Applications are reviewed personally. If it's not a fit, you'll hear that too — no hard feelings.</p>
+      </form>
+
+      <div class="af-done" id="apply-done" hidden>
+        <h3 data-i18n="p5.doneTitle">Application received.</h3>
+        <p data-i18n="p5.doneBody">It will be reviewed personally — every single one is. If the room fits where you are, you'll hear from us by email with the next step.</p>
+        <a class="cta" href="/app">
+          <span data-i18n="p5.doneCta">Back to the app</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+      </div>
+
+      <div class="dots"><i></i><i></i><i></i><i class="on"></i></div>
+    </div>
+  </main>
+
+  <footer class="legal" data-i18n="legal">
+    Educational content only. Nothing here is financial advice, a recommendation, a signal,
+    or a guarantee of results. Trading involves substantial risk of loss. Any progress depends
+    entirely on your own effort, decisions and circumstances.
+  </footer>
+
+  <script src="/static/improve_i18n.js" defer></script>
+  <script>
+  (function(){
+    function init(){
+      var form = document.getElementById('apply-form');
+      if (!form) return;
+      form.addEventListener('submit', function(e){
+        e.preventDefault();
+        var err = document.getElementById('af-error');
+        err.hidden = true;
+        var f = form.elements;
+        var payload = {
+          name: f.name.value.trim(), email: f.email.value.trim(),
+          experience: f.experience.value, situation: f.situation.value,
+          struggle: f.struggle.value.trim(), why: f.why.value.trim(),
+          hours: f.hours.value, waiver: f.waiver.checked,
+          lang: (function(){ try { return localStorage.getItem('scalpel_lang') || 'en'; } catch(_) { return 'en'; } })()
+        };
+        if (!payload.name || !payload.email || payload.email.indexOf('@') < 0 ||
+            !payload.experience || !payload.situation || !payload.struggle ||
+            !payload.why || !payload.hours || !payload.waiver){
+          err.hidden = false; return;
+        }
+        var btn = form.querySelector('.af-submit');
+        btn.disabled = true;
+        fetch('/api/improve/apply', {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload)
+        }).then(function(r){ return r.json().then(function(j){ return {ok: r.ok && j.ok}; }); })
+          .catch(function(){ return {ok:false}; })
+          .then(function(res){
+            if (res.ok){
+              form.hidden = true;
+              document.getElementById('apply-done').hidden = false;
+              try { window.scrollTo({top:0, behavior:'smooth'}); } catch(_) { window.scrollTo(0,0); }
+            } else {
+              btn.disabled = false;
+              err.hidden = false;
+            }
+          });
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+  })();
+  </script>
+</body>
+</html>

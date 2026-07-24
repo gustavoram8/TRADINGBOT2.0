@@ -810,6 +810,29 @@ class RankCertificate(db.Model):
     __table_args__ = (db.UniqueConstraint('user_id', 'rank', name='uq_rankcert_user_rank'),)
 
 
+class MentorshipApplication(db.Model):
+    """One mentorship application ("The Great Filter", /improve/apply). Stored
+    for manual review — nothing is auto-accepted; the mentor reveal and the
+    pricing pages only come AFTER a human reviews the application. `user_id` is
+    optional: the funnel is public, so visitors can apply with just an email.
+    The waiver flags snapshot that the applicant explicitly acknowledged the
+    educational nature of the program at submit time."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    name = db.Column(db.String(80), nullable=False)
+    email = db.Column(db.String(255), nullable=False, index=True)
+    experience = db.Column(db.String(20), nullable=False)     # lt1 / y1_3 / y3p
+    situation = db.Column(db.String(20), nullable=False)      # demo / live / funded / inconsistent
+    struggle = db.Column(db.String(600), nullable=False)      # biggest struggle (free text)
+    why = db.Column(db.String(600), nullable=False)           # why mentorship, why now
+    hours_week = db.Column(db.String(20), nullable=False)     # lt5 / h5_10 / h10p
+    waiver_accepted_at = db.Column(db.DateTime, nullable=False)
+    lang = db.Column(db.String(5), nullable=True)             # UI language at submit time
+    status = db.Column(db.String(20), default='pending', nullable=False)  # pending/accepted/rejected
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    user = db.relationship('User', backref='mentorship_applications')
+
+
 # ──────────────────────────────────────────────────────────────────────────
 # XP / RANK CONFIG  (spec frozen 2026-06-13 — see CLAUDE.md)
 # No per-plan multiplier: the gap comes from access (premium-only sources) +
@@ -2006,6 +2029,65 @@ def improve_gap():
 def improve_inside():
     _mentorship_gate()
     return render_template('improve_inside.html')
+
+
+# ── Mentorship funnel — step 5: "The Great Filter" (application + waiver) ──
+_APPLY_EXPERIENCE = {'lt1', 'y1_3', 'y3p'}
+_APPLY_SITUATION = {'demo', 'live', 'funded', 'inconsistent'}
+_APPLY_HOURS = {'lt5', 'h5_10', 'h10p'}
+
+
+@app.route('/improve/apply')
+def improve_apply():
+    _mentorship_gate()
+    prefill_email = current_user.email if current_user.is_authenticated else ''
+    prefill_name = (current_user.username or '') if current_user.is_authenticated else ''
+    return render_template('improve_apply.html',
+                           prefill_email=prefill_email, prefill_name=prefill_name)
+
+
+@app.route('/api/improve/apply', methods=['POST'])
+def improve_apply_submit():
+    _mentorship_gate()
+    data = request.get_json(silent=True) or {}
+
+    def _s(key, maxlen):
+        v = data.get(key)
+        return v.strip()[:maxlen] if isinstance(v, str) else ''
+
+    name = _s('name', 80)
+    email = _s('email', 255).lower()
+    experience = _s('experience', 20)
+    situation = _s('situation', 20)
+    struggle = _s('struggle', 600)
+    why = _s('why', 600)
+    hours_week = _s('hours', 20)
+    waiver = bool(data.get('waiver'))
+    lang = _s('lang', 5) or None
+
+    if not (name and email and '@' in email and struggle and why and waiver
+            and experience in _APPLY_EXPERIENCE and situation in _APPLY_SITUATION
+            and hours_week in _APPLY_HOURS):
+        return jsonify({'ok': False, 'error': 'invalid'}), 400
+
+    # One pending application per email — resubmits just refresh the existing
+    # one instead of piling up duplicates for review.
+    existing = MentorshipApplication.query.filter_by(email=email, status='pending').first()
+    now = datetime.now(timezone.utc)
+    if existing:
+        existing.name, existing.experience, existing.situation = name, experience, situation
+        existing.struggle, existing.why, existing.hours_week = struggle, why, hours_week
+        existing.waiver_accepted_at, existing.lang = now, lang
+        if current_user.is_authenticated:
+            existing.user_id = current_user.id
+    else:
+        db.session.add(MentorshipApplication(
+            user_id=current_user.id if current_user.is_authenticated else None,
+            name=name, email=email, experience=experience, situation=situation,
+            struggle=struggle, why=why, hours_week=hours_week,
+            waiver_accepted_at=now, lang=lang))
+    db.session.commit()
+    return jsonify({'ok': True})
 
 
 @app.route('/camos')
