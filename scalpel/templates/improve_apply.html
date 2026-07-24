@@ -79,7 +79,11 @@
       <form class="af" id="apply-form" novalidate>
         <div class="af-grid">
           <label class="af-field">
-            <span data-i18n="p5.fname">Name</span>
+            <span data-i18n="p5.fusername">Username</span>
+            <input type="text" name="username" maxlength="40" required value="{{ prefill_username }}" autocomplete="username" />
+          </label>
+          <label class="af-field">
+            <span data-i18n="p5.fname">Full name</span>
             <input type="text" name="name" maxlength="80" required value="{{ prefill_name }}" autocomplete="name" />
           </label>
           <label class="af-field">
@@ -180,7 +184,7 @@
             </select>
           </label>
           <label class="af-field">
-            <span data-i18n="p5.fclang">Language for classes & calls</span>
+            <span id="clang-label" data-i18n="p5.fclang">Language for classes &amp; calls</span>
             <select name="call_lang" required>
               <option value="" data-i18n="p5.select">Select…</option>
               <option value="es">Español</option>
@@ -257,6 +261,24 @@
           b.classList.toggle('on');
         });
       });
+      // "Language for…" label follows the program chosen:
+      //   calls only → calls · library only → classes · both → classes & calls.
+      var clangLabel = document.getElementById('clang-label');
+      function refreshClangLabel(){
+        if (!clangLabel) return;
+        var p = form.program.value;
+        var key = p === 'calls' ? 'p5.fclangCalls'
+                : p === 'rec'   ? 'p5.fclangRec'
+                :                 'p5.fclang';
+        clangLabel.setAttribute('data-i18n', key);
+        // Re-render via the i18n engine so the label picks up the new key in
+        // the active language (falls back to whatever text is already there).
+        if (window.ImproveI18N && window.ImproveI18N.apply) {
+          window.ImproveI18N.apply(window.ImproveI18N.current());
+        }
+      }
+      form.program.addEventListener('change', refreshClangLabel);
+      refreshClangLabel();
       form.addEventListener('submit', function(e){
         e.preventDefault();
         var err = document.getElementById('af-error');
@@ -265,7 +287,8 @@
         var tz = '';
         try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch(_) {}
         var payload = {
-          name: f.name.value.trim(), email: f.email.value.trim(),
+          name: f.name.value.trim(), username: f.username.value.trim(),
+          email: f.email.value.trim(),
           program: f.program.value, experience: f.experience.value,
           situation: f.situation.value, hours: f.hours.value,
           goals: chipValues('chips-goals'),
@@ -278,7 +301,7 @@
           lang: (function(){ try { return localStorage.getItem('scalpel_lang') || 'en'; } catch(_) { return 'en'; } })()
         };
         // every field is required
-        if (!payload.name || !payload.email || payload.email.indexOf('@') < 0 ||
+        if (!payload.name || !payload.username || !payload.email || payload.email.indexOf('@') < 0 ||
             !payload.program || !payload.experience || !payload.situation ||
             !payload.hours || !payload.goals.length || !payload.strength ||
             !payload.weakness || !payload.assets.length || !payload.country ||

@@ -69,7 +69,8 @@
       'p5.progRec': 'Pre-recorded classes & live trading',
       'p5.progCalls': 'One-to-one calls',
       'p5.progBoth': 'Both',
-      'p5.fname': 'Name',
+      'p5.fusername': 'Username',
+      'p5.fname': 'Full name',
       'p5.femail': 'Email',
       'p5.fexp': 'Time trading',
       'p5.select': 'Select…',
@@ -104,6 +105,8 @@
       'p5.phCountry': 'e.g. Venezuela',
       'p5.fage': 'Age range',
       'p5.fclang': 'Language for classes & calls',
+      'p5.fclangCalls': 'Language for one-to-one calls',
+      'p5.fclangRec': 'Language for pre-recorded classes',
       'p5.clBoth': 'Both',
       'p5.fslot': 'Best time of day for calls',
       'p5.sl1': 'Morning',
@@ -213,7 +216,8 @@
       'p5.progRec': 'Clases pregrabadas y operativas en vivo',
       'p5.progCalls': 'Llamadas uno a uno',
       'p5.progBoth': 'Ambos',
-      'p5.fname': 'Nombre',
+      'p5.fusername': 'Nombre de usuario',
+      'p5.fname': 'Nombre completo',
       'p5.femail': 'Correo',
       'p5.fexp': 'Tiempo operando',
       'p5.select': 'Selecciona…',
@@ -248,6 +252,8 @@
       'p5.phCountry': 'ej. Venezuela',
       'p5.fage': 'Rango de edad',
       'p5.fclang': 'Idioma para clases y calls',
+      'p5.fclangCalls': 'Idioma para calls 1/1',
+      'p5.fclangRec': 'Idioma para clases pregrabadas',
       'p5.clBoth': 'Ambos',
       'p5.fslot': 'Mejor franja para las calls',
       'p5.sl1': 'Mañana',
@@ -357,7 +363,8 @@
       'p5.progRec': 'Cours préenregistrés et trading en direct',
       'p5.progCalls': 'Les appels en tête-à-tête',
       'p5.progBoth': 'Les deux',
-      'p5.fname': 'Nom',
+      'p5.fusername': 'Nom d’utilisateur',
+      'p5.fname': 'Nom complet',
       'p5.femail': 'E-mail',
       'p5.fexp': 'Temps de trading',
       'p5.select': 'Sélectionne…',
@@ -392,6 +399,8 @@
       'p5.phCountry': 'ex. Venezuela',
       'p5.fage': 'Tranche d’âge',
       'p5.fclang': 'Langue des cours et des appels',
+      'p5.fclangCalls': 'Langue des appels en tête-à-tête',
+      'p5.fclangRec': 'Langue des cours préenregistrés',
       'p5.clBoth': 'Les deux',
       'p5.fslot': 'Meilleur moment pour les appels',
       'p5.sl1': 'Matin',
@@ -501,7 +510,8 @@
       'p5.progRec': 'Aulas pré-gravadas e operações ao vivo',
       'p5.progCalls': 'Calls um a um',
       'p5.progBoth': 'Os dois',
-      'p5.fname': 'Nome',
+      'p5.fusername': 'Nome de usuário',
+      'p5.fname': 'Nome completo',
       'p5.femail': 'E-mail',
       'p5.fexp': 'Tempo operando',
       'p5.select': 'Selecione…',
@@ -536,6 +546,8 @@
       'p5.phCountry': 'ex. Venezuela',
       'p5.fage': 'Faixa etária',
       'p5.fclang': 'Idioma das aulas e calls',
+      'p5.fclangCalls': 'Idioma das calls 1/1',
+      'p5.fclangRec': 'Idioma das aulas pré-gravadas',
       'p5.clBoth': 'Os dois',
       'p5.fslot': 'Melhor horário para as calls',
       'p5.sl1': 'Manhã',
@@ -625,6 +637,10 @@
       b.addEventListener('click', function () { apply(b.getAttribute('data-lang')); });
     });
   }
+
+  // Minimal API for pages that need to re-render after a dynamic change
+  // (e.g. the application form's conditional "language for…" label).
+  window.ImproveI18N = { apply: apply, current: getLang, dict: T };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

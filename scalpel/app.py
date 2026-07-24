@@ -819,7 +819,8 @@ class MentorshipApplication(db.Model):
     educational nature of the program at submit time."""
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
-    name = db.Column(db.String(80), nullable=False)
+    name = db.Column(db.String(80), nullable=False)               # full legal name
+    username = db.Column(db.String(40), nullable=True)            # account username (separate from full name)
     email = db.Column(db.String(255), nullable=False, index=True)
     experience = db.Column(db.String(20), nullable=False)     # lt1 / y1_3 / y3p
     situation = db.Column(db.String(20), nullable=False)      # demo / live / funded / inconsistent
@@ -2091,7 +2092,8 @@ def send_mentorship_application_email(a):
     body = (
         'Nueva aplicación de mentoría — Tradeable Academy\n'
         '================================================\n\n'
-        f'Nombre:               {a.name}\n'
+        f'Nombre completo:      {a.name}\n'
+        f'Usuario:              {a.username or "—"}\n'
         f'Email:                {a.email}\n'
         f'Programa de interés:  {lab(a.program)}\n\n'
         f'Tiempo operando:      {lab(a.experience)}\n'
@@ -2129,9 +2131,10 @@ def send_mentorship_application_email(a):
 def improve_apply():
     _mentorship_gate()
     prefill_email = current_user.email if current_user.is_authenticated else ''
-    prefill_name = (current_user.username or '') if current_user.is_authenticated else ''
+    prefill_username = (current_user.username or '') if current_user.is_authenticated else ''
     return render_template('improve_apply.html',
-                           prefill_email=prefill_email, prefill_name=prefill_name)
+                           prefill_email=prefill_email,
+                           prefill_username=prefill_username, prefill_name='')
 
 
 @app.route('/improve/plans')
@@ -2171,6 +2174,7 @@ def improve_apply_submit():
         return ','.join(seen) if seen else None
 
     name = _s('name', 80)
+    username = _s('username', 40)
     email = _s('email', 255).lower()
     experience = _s('experience', 20)
     situation = _s('situation', 20)
@@ -2191,7 +2195,7 @@ def improve_apply_submit():
     lang = _s('lang', 5) or None
 
     # Every field is required (the form is a get-to-know-the-trader FAQ).
-    if not (name and email and '@' in email and adult and waiver
+    if not (name and username and email and '@' in email and adult and waiver
             and experience in _APPLY_EXPERIENCE and situation in _APPLY_SITUATION
             and program in _APPLY_PROGRAM and hours_week in _APPLY_HOURS
             and goals and strength in _APPLY_SKILL and weakness in _APPLY_SKILL
@@ -2205,7 +2209,8 @@ def improve_apply_submit():
     existing = MentorshipApplication.query.filter_by(email=email, status='pending').first()
     now = datetime.now(timezone.utc)
     if existing:
-        existing.name, existing.experience, existing.situation = name, experience, situation
+        existing.name, existing.username = name, username
+        existing.experience, existing.situation = experience, situation
         existing.hours_week, existing.program = hours_week, program
         existing.goals, existing.strength, existing.weakness = goals, strength, weakness
         existing.assets, existing.country, existing.tzname = assets, country, tzname
@@ -2218,7 +2223,8 @@ def improve_apply_submit():
     else:
         application = MentorshipApplication(
             user_id=current_user.id if current_user.is_authenticated else None,
-            name=name, email=email, experience=experience, situation=situation,
+            name=name, username=username, email=email,
+            experience=experience, situation=situation,
             program=program, struggle='', why='', hours_week=hours_week,
             goals=goals, strength=strength, weakness=weakness, assets=assets,
             country=country, tzname=tzname, call_lang=call_lang, call_slot=call_slot,
@@ -7279,6 +7285,7 @@ def _migrate_mentorship_application_columns():
     cols = {c['name'] for c in insp.get_columns('mentorship_application')}
     wanted = [
         ('program', 'VARCHAR(12)'),
+        ('username', 'VARCHAR(40)'),
         ('goals', 'VARCHAR(200)'),
         ('strength', 'VARCHAR(20)'),
         ('weakness', 'VARCHAR(20)'),
