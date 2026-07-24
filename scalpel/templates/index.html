@@ -5031,27 +5031,9 @@
     <span class="pi-label" data-i18n="products.privacy">Privacy Policy</span>
   </a>
 
-  <!-- USER GUIDE — step-by-step walkthrough of every feature -->
-  <a href="/guide" class="products-item" role="menuitem">
-    <span class="pi-badge pi-badge-guide" aria-hidden="true">
-      <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#e0a83d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="10" cy="10" r="8.5"/>
-        <path d="M13.2 6.8 L11.3 11.3 L6.8 13.2 L8.7 8.7 Z" fill="#e0a83d" fill-opacity="0.18"/>
-      </svg>
-    </span>
-    <span class="pi-label" data-i18n="products.guide">User Guide</span>
-  </a>
-
-  <!-- CONTACT -->
-  <a href="/contact" class="products-item" role="menuitem">
-    <span class="pi-badge" aria-hidden="true">
-      <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="2" y="4" width="16" height="12" rx="2" stroke="#94a3b8" stroke-width="1.4"/>
-        <path d="M2 6l8 5 8-5" stroke="#94a3b8" stroke-width="1.4" stroke-linecap="round"/>
-      </svg>
-    </span>
-    <span class="pi-label" data-i18n="products.contact">Contact &amp; Support</span>
-  </a>
+  <!-- User Guide, Contact & Support and Tessera moved OUT of Products: they are
+       help features, not products. They now live inside the anchored Tessera
+       hub (The Map / Human Help / Report a bug). -->
 
   <div class="products-sep"></div>
 
@@ -24773,6 +24755,7 @@
   var NX_T = {
     en: { open:'Open ' + NX_NAME, pin:'Keep it always visible', roam:'Let it wander', hide:'Hide it',
       unhide:'Bring the cube back', contact:'Contact support',
+      bubble:'Need a hand?',
       sub:'A chamber of tools. Pick a door.',
       oracleT:'The Oracle', oracleD:'An AI guide that answers simple questions about the site — plans, tools, quizzes, camos.', oracleB:'Awakening soon',
       riskT:'Risk Chamber', riskD:'Account, risk % and stop distance — it returns your position size.',
@@ -24787,6 +24770,7 @@
       mode:'The cube:', mRoam:'Wanders', mPin:'Always visible', mHide:'Hidden', back:'← Back', close:'Close' },
     es: { open:'Abrir ' + NX_NAME, pin:'Mantenerlo siempre visible', roam:'Dejarlo viajar', hide:'Ocultarlo',
       unhide:'Traer el cubo de vuelta', contact:'Contactar soporte',
+      bubble:'¿Te echo una mano?',
       sub:'Una cámara de herramientas. Elige una puerta.',
       oracleT:'El Oráculo', oracleD:'Una IA guía que responde preguntas simples del sitio — planes, herramientas, quizzes, camos.', oracleB:'Despierta pronto',
       riskT:'Cámara de Riesgo', riskD:'Cuenta, % de riesgo y distancia del stop — te devuelve el tamaño de tu posición.',
@@ -24801,6 +24785,7 @@
       mode:'El cubo:', mRoam:'Viaja', mPin:'Siempre visible', mHide:'Oculto', back:'← Volver', close:'Cerrar' },
     fr: { open:'Ouvrir ' + NX_NAME, pin:'Le garder toujours visible', roam:'Le laisser vagabonder', hide:'Le masquer',
       unhide:'Faire revenir le cube', contact:'Contacter le support',
+      bubble:'Un coup de main ?',
       sub:'Une chambre à outils. Choisis une porte.',
       oracleT:'L’Oracle', oracleD:'Une IA guide qui répond aux questions simples du site — plans, outils, quiz, camos.', oracleB:'Bientôt éveillé',
       riskT:'Chambre du Risque', riskD:'Compte, % de risque et distance du stop — il te rend la taille de ta position.',
@@ -24815,6 +24800,7 @@
       mode:'Le cube :', mRoam:'Vagabonde', mPin:'Toujours visible', mHide:'Masqué', back:'← Retour', close:'Fermer' },
     pt: { open:'Abrir ' + NX_NAME, pin:'Mantê-lo sempre visível', roam:'Deixá-lo vagar', hide:'Ocultá-lo',
       unhide:'Trazer o cubo de volta', contact:'Falar com o suporte',
+      bubble:'Precisa de uma mãozinha?',
       sub:'Uma câmara de ferramentas. Escolha uma porta.',
       oracleT:'O Oráculo', oracleD:'Uma IA guia que responde perguntas simples do site — planos, ferramentas, quizzes, camos.', oracleB:'Desperta em breve',
       riskT:'Câmara de Risco', riskD:'Conta, % de risco e distância do stop — ele devolve o tamanho da sua posição.',
@@ -24839,7 +24825,7 @@
      style-invalidation quirk, found via Playwright bisection) — direct inline
      style mutations are the only mechanism that painted reliably. */
   /* Only the roaming tesseract itself is RUBY; the Chamber stays gold. */
-  + '#nx-cube{ position:fixed; width:56px; height:56px; z-index:39; cursor:pointer; display:none;'
+  + '#nx-cube{ position:fixed; width:44px; height:44px; z-index:39; cursor:pointer; display:none;'
   + '  opacity:0; pointer-events:none; }'
   + '#nx-cube.on{ pointer-events:auto; }'
   /* Tessera is now the single anchored help hub — the old standalone support
@@ -24850,13 +24836,24 @@
   + '#nx-cube .nx-glow{ position:absolute; inset:-16px; border-radius:50%; pointer-events:none;'
   + '  background:radial-gradient(circle, rgba(224,36,74,.55), transparent 65%); filter:blur(4px);'
   + '  animation:nxPulse 3.2s ease-in-out infinite; }'
+  /* comic thought bubble anchored above the cube (signals where help lives) */
+  + '.nx-bubble{ position:absolute; bottom:calc(100% + 15px); right:-4px; white-space:nowrap;'
+  + '  background:#fffdf7; color:#1c1a14; border:1.5px solid rgba(224,36,74,.4); padding:8px 13px;'
+  + '  border-radius:15px; font:700 12.5px Inter,sans-serif; box-shadow:0 8px 22px rgba(0,0,0,.22);'
+  + '  pointer-events:auto; cursor:pointer; animation:nxFloat 3.6s ease-in-out infinite; }'
+  + '.nx-bubble i{ position:absolute; right:14px; border-radius:50%; background:#fffdf7; border:1.5px solid rgba(224,36,74,.4); }'
+  + '.nx-bubble .nx-bd1{ width:9px; height:9px; bottom:-6px; right:15px; }'
+  + '.nx-bubble .nx-bd2{ width:5px; height:5px; bottom:-13px; right:11px; }'
+  + '@keyframes nxFloat{ 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(-3px);} }'
+  + '@media (max-width:420px){ .nx-bubble{ display:none; } }'
+  + '@media (prefers-reduced-motion: reduce){ .nx-bubble{ animation:none; } }'
   + '#nx-cube .nx-trail{ position:absolute; left:50%; top:50%; width:88px; height:10px; pointer-events:none;'
   + '  transform:translate(-95%,-50%) rotate(24deg); border-radius:6px; filter:blur(5px); opacity:.5;'
   + '  background:linear-gradient(90deg, transparent, rgba(255,92,120,.6)); animation:nxTrail 3.2s ease-in-out infinite; }'
   + '#nx-t3d{ position:absolute; inset:6px; transform-style:preserve-3d; animation:nxSpin 14s linear infinite; }'
   + '.nx-f{ position:absolute; inset:0; border:2px solid rgba(240,90,120,.95); background:rgba(224,36,74,.18);'
   + '  box-shadow:0 0 8px rgba(224,36,74,.5) inset; }'
-  + '.nx-ci{ position:absolute; left:50%; top:50%; width:20px; height:20px; margin:-10px 0 0 -10px; transform-style:preserve-3d; }'
+  + '.nx-ci{ position:absolute; left:50%; top:50%; width:14px; height:14px; margin:-7px 0 0 -7px; transform-style:preserve-3d; }'
   + '.nx-ci .nx-f{ border-color:rgba(255,120,150,1); background:rgba(255,92,120,.24); }'
   + 'body.light .nx-f{ border-color:rgba(155,14,42,.95); background:rgba(180,20,55,.16); }'
   + 'body.light #nx-cube{ filter:drop-shadow(0 0 8px rgba(155,14,42,.6)); }'
@@ -24982,9 +24979,14 @@
   var glow = document.createElement('div'); glow.className = 'nx-glow'; cube.appendChild(glow);
   /* no comet trail now that the cube is anchored (it implied motion) */
   var t3d = document.createElement('div'); t3d.id = 'nx-t3d'; cube.appendChild(t3d);
-  buildCubeInto(t3d, 22);
+  buildCubeInto(t3d, 16);
   var inner = document.createElement('div'); inner.className = 'nx-ci'; t3d.appendChild(inner);
-  buildCubeInto(inner, 10);
+  buildCubeInto(inner, 7);
+  /* comic thought bubble anchored above the cube — "Need a hand?" */
+  var bubble = document.createElement('div'); bubble.className = 'nx-bubble';
+  bubble.innerHTML = '<span class="nx-bubble-txt"></span><i class="nx-bd1"></i><i class="nx-bd2"></i>';
+  cube.appendChild(bubble);
+  function setBubble(){ var txt = bubble.querySelector('.nx-bubble-txt'); if (txt) txt.textContent = t('bubble'); }
   /* NOT appended here — attaching this early (before the Aurora shell reshuffles
      the DOM) leaves the subtree permanently unpainted in Chromium even though
      hit-testing and computed styles stay correct. Both the cube and the overlay
@@ -25022,7 +25024,7 @@
   }
   function appear(){
     cube.style.display = 'block'; cube.classList.add('on');
-    trailBurst();
+    setBubble(); trailBurst();
     if (reduced){ cube.style.opacity = '1'; cube.style.transform = 'none'; return; }
     tween(650, function(k){
       cube.style.opacity = String(k);
@@ -25194,23 +25196,13 @@
   ov.querySelectorAll('.nx-back').forEach(function(b){ b.addEventListener('click', function(){ showPanel('nx-home'); }); });
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && ov.classList.contains('show')) closeOv(); });
 
-  /* ── entry in the Products menu (support-adjacent, works even when hidden) ── */
-  function addMenuItem(){
-    var menu = document.getElementById('products-menu'); if (!menu || document.getElementById('nx-mi')) return;
-    var a = document.createElement('a'); a.id = 'nx-mi'; a.href = '#'; a.className = 'products-item'; a.setAttribute('role','menuitem');
-    a.innerHTML = '<span class="pi-badge" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" stroke="#e0a83d" stroke-width="1.4">'
-      + '<rect x="3" y="3" width="14" height="14" rx="1"/><rect x="7" y="7" width="6" height="6" rx="1"/>'
-      + '<path d="M3 3l4 4M17 3l-4 4M3 17l4-4M17 17l-4-4"/></svg></span>'
-      + '<span class="pi-label">' + NX_NAME + '</span>';
-    a.addEventListener('click', function(e){ e.preventDefault(); menu.classList.remove('open'); openOv(); });
-    var contact = menu.querySelector('a[href="/contact"]');
-    if (contact) menu.insertBefore(a, contact); else menu.appendChild(a);
-  }
+  /* Tessera is anchored and visible on its own, so it is NOT added to the
+     Products menu — that menu is for actual products/plans, not help features. */
 
   function init(){
     document.body.appendChild(cube);
     document.body.appendChild(ov);
-    addMenuItem(); applyMode();
+    applyMode();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
