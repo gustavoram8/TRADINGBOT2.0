@@ -25043,17 +25043,31 @@
   }
   function closeOv(){
     ov.style.display = 'none'; ov.classList.remove('show','go'); document.body.classList.remove('nx-lock');
-    park();
+    syncVisibility();
   }
   ov.querySelector('.nx-x').addEventListener('click', closeOv);
   ov.querySelector('.nx-bkd').addEventListener('click', closeOv);
   ov.querySelectorAll('.nx-back').forEach(function(b){ b.addEventListener('click', function(){ showPanel('nx-home'); }); });
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && ov.classList.contains('show')) closeOv(); });
 
+  /* Hide Tessera inside Synapse (immersive mode) — restore it on the way out.
+     Synapse toggles body.ag-synapse-mode; watch that class. */
+  function syncVisibility(){
+    if (ov.classList.contains('show')) return;                 // chamber open: cube already hidden
+    if (document.body.classList.contains('ag-synapse-mode')){
+      fadeId++; cube.classList.remove('on'); cube.style.display = 'none'; cube.style.opacity = '0';
+    } else if (cube.style.display === 'none' || !cube.classList.contains('on')){
+      park();
+    }
+  }
+
   function init(){
     document.body.appendChild(cube);
     document.body.appendChild(ov);
-    park();
+    syncVisibility();
+    try {
+      new MutationObserver(syncVisibility).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    } catch (e) { park(); }
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
