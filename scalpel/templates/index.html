@@ -24509,6 +24509,7 @@
     function open() { ov.classList.add('show'); form.style.display = ''; success.style.display = 'none';
       msg.style.display = 'none'; ta.value = ''; setTimeout(function () { ta.focus(); }, 50); }
     function close() { ov.classList.remove('show'); }
+    window.__nxOpenBug = open;   // Tessera's "Report a bug" card triggers this
     fab.addEventListener('click', open);
     document.getElementById('bug-x').addEventListener('click', close);
     document.getElementById('bug-done').addEventListener('click', close);
@@ -24778,6 +24779,7 @@
       navT:'Teleporter', navD:'Jump to any corner of the site in one click.',
       guideT:'The Map', guideD:'The user guide: everything the site can do, explained.',
       helpT:'Human Help', helpD:'A human on the other side, when you need one.',
+      bugT:'Report a bug', bugD:'Something broken or off? Tell us and we\'ll fix it.',
       acct:'Account size ($)', rpct:'Risk per trade (%)', stop:'Stop distance (points)', instr:'Instrument', ppp:'$ per point',
       rAmt:'Money at risk', rPer:'Risk per contract', rSize:'Position size', rCts:'contracts',
       rZero:'With this stop, the size is below 1 contract. Tighten the stop or lower the risk.',
@@ -24791,6 +24793,7 @@
       navT:'Teletransportador', navD:'Salta a cualquier rincón del sitio en un clic.',
       guideT:'El Mapa', guideD:'La guía de uso: todo lo que el sitio puede hacer, explicado.',
       helpT:'Ayuda Humana', helpD:'Un humano del otro lado, cuando lo necesitas.',
+      bugT:'Reportar un bug', bugD:'¿Algo roto o raro? Cuéntanos y lo arreglamos.',
       acct:'Tamaño de cuenta ($)', rpct:'Riesgo por trade (%)', stop:'Distancia del stop (puntos)', instr:'Instrumento', ppp:'$ por punto',
       rAmt:'Dinero en riesgo', rPer:'Riesgo por contrato', rSize:'Tamaño de posición', rCts:'contratos',
       rZero:'Con este stop, el tamaño queda por debajo de 1 contrato. Ajusta el stop o baja el riesgo.',
@@ -24804,6 +24807,7 @@
       navT:'Téléporteur', navD:'Saute vers n’importe quel coin du site en un clic.',
       guideT:'La Carte', guideD:'Le guide d’utilisation : tout ce que le site sait faire, expliqué.',
       helpT:'Aide Humaine', helpD:'Un humain de l’autre côté, quand tu en as besoin.',
+      bugT:'Signaler un bug', bugD:'Quelque chose de cassé ou d’étrange ? Dis-le-nous, on corrige.',
       acct:'Taille du compte ($)', rpct:'Risque par trade (%)', stop:'Distance du stop (points)', instr:'Instrument', ppp:'$ par point',
       rAmt:'Montant risqué', rPer:'Risque par contrat', rSize:'Taille de position', rCts:'contrats',
       rZero:'Avec ce stop, la taille passe sous 1 contrat. Resserre le stop ou baisse le risque.',
@@ -24817,6 +24821,7 @@
       navT:'Teletransportador', navD:'Pule para qualquer canto do site em um clique.',
       guideT:'O Mapa', guideD:'O guia de uso: tudo o que o site pode fazer, explicado.',
       helpT:'Ajuda Humana', helpD:'Um humano do outro lado, quando você precisar.',
+      bugT:'Reportar um bug', bugD:'Algo quebrado ou estranho? Conte pra gente que a gente conserta.',
       acct:'Tamanho da conta ($)', rpct:'Risco por trade (%)', stop:'Distância do stop (pontos)', instr:'Instrumento', ppp:'$ por ponto',
       rAmt:'Dinheiro em risco', rPer:'Risco por contrato', rSize:'Tamanho da posição', rCts:'contratos',
       rZero:'Com esse stop, o tamanho fica abaixo de 1 contrato. Ajuste o stop ou reduza o risco.',
@@ -24837,6 +24842,10 @@
   + '#nx-cube{ position:fixed; width:56px; height:56px; z-index:39; cursor:pointer; display:none;'
   + '  opacity:0; pointer-events:none; }'
   + '#nx-cube.on{ pointer-events:auto; }'
+  /* Tessera is now the single anchored help hub — the old standalone support
+     and bug FABs are folded into its Chamber and hidden (their JS stays intact,
+     just inert; the bug modal is triggered from inside Tessera). */
+  + '.help-fab,.bug-fab{ display:none !important; }'
   + '#nx-cube{ filter:drop-shadow(0 0 9px rgba(224,36,74,.8)); }'
   + '#nx-cube .nx-glow{ position:absolute; inset:-16px; border-radius:50%; pointer-events:none;'
   + '  background:radial-gradient(circle, rgba(224,36,74,.55), transparent 65%); filter:blur(4px);'
@@ -24971,7 +24980,7 @@
   var cube = document.createElement('div'); cube.id = 'nx-cube'; cube.setAttribute('role','button');
   cube.setAttribute('aria-label', NX_NAME);
   var glow = document.createElement('div'); glow.className = 'nx-glow'; cube.appendChild(glow);
-  var trail = document.createElement('div'); trail.className = 'nx-trail'; cube.appendChild(trail);
+  /* no comet trail now that the cube is anchored (it implied motion) */
   var t3d = document.createElement('div'); t3d.id = 'nx-t3d'; cube.appendChild(t3d);
   buildCubeInto(t3d, 22);
   var inner = document.createElement('div'); inner.className = 'nx-ci'; t3d.appendChild(inner);
@@ -25046,56 +25055,20 @@
       roamTimer = setTimeout(roamCycle, 11000 + Math.random()*17000);
     }, 7500);
   }
+  /* Tessera is ANCHORED (no roaming): applyMode just parks the cube bottom-right
+     and shows it. It's now the single, always-present help hub, so the old
+     roam/pin/hidden modes and the help-FAB fallback are gone. */
   function applyMode(){
-    clearTimeout(roamTimer); fadeId++;
-    var m = mode();
-    if (m === 'hidden'){ cube.classList.remove('on'); cube.style.display = 'none'; cube.style.opacity = '0'; return; }
-    if (m === 'pin' || reduced){
-      cube.style.left = ''; cube.style.top = ''; cube.style.right = '22px'; cube.style.bottom = '96px';
-      appear(); return;
-    }
-    cube.classList.remove('on'); cube.style.display = 'none'; cube.style.opacity = '0';
-    roamTimer = setTimeout(roamCycle, 2500);
+    fadeId++;
+    cube.style.left = ''; cube.style.top = '';
+    cube.style.right = '24px'; cube.style.bottom = '24px';
+    appear();
   }
 
-  /* ── click popover on the cube ── */
   var popEl = null;
   function closePop(){ if (popEl){ popEl.remove(); popEl = null; } }
-  function popItem(label, fn){
-    var b = document.createElement('button'); b.type = 'button'; b.textContent = label;
-    b.addEventListener('click', function(){ closePop(); fn(); }); return b;
-  }
-  cube.addEventListener('click', function(e){
-    e.stopPropagation();
-    if (popEl) return closePop();
-    popEl = document.createElement('div'); popEl.id = 'nx-pop'; popEl.classList.add('nx-dark');
-    popEl.appendChild(popItem('◆ ' + t('open'), openOv));
-    var m = mode();
-    popEl.appendChild(popItem(m === 'pin' ? t('roam') : t('pin'), function(){ setMode(m === 'pin' ? 'roam' : 'pin'); }));
-    popEl.appendChild(popItem(t('hide'), function(){ setMode('hidden'); }));
-    document.body.appendChild(popEl);
-    var r = cube.getBoundingClientRect();
-    var px = Math.min(r.left, window.innerWidth - 230), py = r.bottom + 8;
-    if (py + 140 > window.innerHeight) py = r.top - 140;
-    popEl.style.left = Math.max(8, px) + 'px'; popEl.style.top = Math.max(8, py) + 'px';
-  });
-  document.addEventListener('click', closePop);
-
-  /* ── support FAB: when the cube is hidden, offer the way back in ── */
-  var fab = document.getElementById('help-fab');
-  if (fab) fab.addEventListener('click', function(e){
-    if (mode() !== 'hidden') return; // normal support behaviour
-    e.preventDefault(); e.stopPropagation();
-    closePop();
-    popEl = document.createElement('div'); popEl.id = 'nx-pop'; popEl.classList.add('nx-dark');
-    popEl.appendChild(popItem('◆ ' + t('open'), openOv));
-    popEl.appendChild(popItem(t('unhide'), function(){ setMode('roam'); }));
-    popEl.appendChild(popItem(t('contact'), function(){ window.location.href = '/contact'; }));
-    document.body.appendChild(popEl);
-    var r = fab.getBoundingClientRect();
-    popEl.style.left = Math.max(8, Math.min(r.left, window.innerWidth - 230)) + 'px';
-    popEl.style.top = Math.max(8, r.top - popEl.offsetHeight - 10) + 'px';
-  }, true);
+  /* click the cube -> open the Chamber directly */
+  cube.addEventListener('click', function(e){ e.stopPropagation(); openOv(); });
 
   /* ── the Chamber (overlay) ── */
   var ov = document.createElement('div'); ov.id = 'nx-ov';
@@ -25109,10 +25082,7 @@
     + '    <button class="nx-x" type="button">✕</button>'
     + '    <div class="nx-head"><div class="nx-title">' + NX_NAME + '</div></div>'
     + '    <div class="nx-sub" data-nx="sub"></div>'
-    + '    <div class="nx-panel nx-home on"><div class="nx-grid"></div>'
-    + '      <div class="nx-set"><span data-nx="mode"></span>'
-    + '        <button type="button" data-m="roam"></button><button type="button" data-m="pin"></button><button type="button" data-m="hidden"></button>'
-    + '      </div></div>'
+    + '    <div class="nx-panel nx-home on"><div class="nx-grid"></div></div>'
     + '    <div class="nx-panel nx-risk">'
     + '      <button class="nx-back" type="button" data-nx="back"></button>'
     + '      <div class="nx-form">'
@@ -25150,7 +25120,8 @@
     risk:'<svg class="nx-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 12h3M8 16h3M14 12h2M14 16h2"/></svg>',
     nav:'<svg class="nx-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5 13 13l-4.5 2.5L11 11z"/></svg>',
     guide:'<svg class="nx-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5.5 9 3l6 2.5L21 3v15.5L15 21l-6-2.5L3 21zM9 3v15.5M15 5.5V21"/></svg>',
-    help:'<svg class="nx-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>'
+    help:'<svg class="nx-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+    bug:'<svg class="nx-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="8" y="6" width="8" height="12" rx="4"/><path d="M12 6V3M9 4l1.5 2M15 4l-1.5 2M8 10H4M8 14H4M8 12H3M16 10h4M16 14h4M16 12h5"/></svg>'
   };
   function card(icon, title, desc, badge, fn){
     var c = document.createElement('button'); c.type = 'button'; c.className = 'nx-card';
@@ -25169,6 +25140,11 @@
     grid.appendChild(card('nav', t('navT'), t('navD'), null, function(){ showPanel('nx-nav'); }));
     grid.appendChild(card('guide', t('guideT'), t('guideD'), null, function(){ window.location.href = '/guide'; }));
     grid.appendChild(card('help', t('helpT'), t('helpD'), null, function(){ window.location.href = '/contact'; }));
+    grid.appendChild(card('bug', t('bugT'), t('bugD'), null, function(){
+      closeOv();
+      if (typeof window.__nxOpenBug === 'function') window.__nxOpenBug();
+      else window.location.href = '/contact';
+    }));
     var ng = ov.querySelector('.nx-navgrid'); ng.innerHTML = '';
     [['analyze','Analyzer'],['quiz','Quiz'],['preflight','Pre-Flight'],['synapse','Synapse'],['discover','Discover'],['forum','Forum']]
       .forEach(function(pair){
@@ -25182,13 +25158,6 @@
       .forEach(function(pair){
         var a = document.createElement('a'); a.href = pair[0]; a.textContent = pair[1]; ng.appendChild(a);
       });
-    var m = mode();
-    ov.querySelectorAll('.nx-set button').forEach(function(b){
-      var v = b.getAttribute('data-m');
-      b.textContent = v === 'roam' ? t('mRoam') : v === 'pin' ? t('mPin') : t('mHide');
-      b.classList.toggle('act', v === m);
-      b.onclick = function(){ setMode(v); fill(); };
-    });
   }
   function calc(){
     var acct = parseFloat(document.getElementById('nx-acct').value) || 0;
