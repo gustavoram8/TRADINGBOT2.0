@@ -619,6 +619,22 @@ PLAN_PRICING = {
 }
 PLAN_LABELS = {'standard': 'Standard', 'premium': 'Premium'}
 
+# ── Mentorship price book (SERVER-SIDE SOURCE OF TRUTH) ────────────────────
+# The mentorship offer (/improve/plans) is a SEPARATE product line from the
+# site subscription plans. The browser only ever sends a SKU key; the price is
+# looked up HERE, never trusted from the client — so a package can never be
+# charged the wrong amount, and a mentorship purchase can never touch
+# `user.plan` (they go through their own MentorshipOrder + activation path).
+# `kind` groups the SKU; `meetings` = number of 30-min 1-on-1 meetings bundled.
+MENTORSHIP_SKUS = {
+    'meet_single': {'label': 'Single meeting',        'price': 100.0, 'kind': 'meetings', 'meetings': 1},
+    'meet3':       {'label': '3 meetings / month',    'price': 270.0, 'kind': 'meetings', 'meetings': 3},
+    'meet6':       {'label': '6 meetings / month',    'price': 480.0, 'kind': 'meetings', 'meetings': 6},
+    'library':     {'label': 'Recorded library',      'price': 350.0, 'kind': 'library',  'meetings': 0},
+    'combo3':      {'label': 'Library + 3 meetings',  'price': 533.0, 'kind': 'combo',    'meetings': 3},
+    'combo6':      {'label': 'Library + 6 meetings',  'price': 743.0, 'kind': 'combo',    'meetings': 6},
+}
+
 
 def _plan_base_price(plan, cycle):
     """Return the list price for a plan+cycle, or None if invalid."""
@@ -649,6 +665,31 @@ class Order(db.Model):
     celebrated_at = db.Column(db.DateTime, nullable=True)      # unlock reveal shown to the user
     note = db.Column(db.String(300), nullable=True)
     user = db.relationship('User', backref='orders')
+
+
+class MentorshipOrder(db.Model):
+    """A purchase from the mentorship offer (/improve/plans).
+
+    Deliberately a SEPARATE table from `Order`: a mentorship purchase must never
+    be able to touch `user.plan` (site subscription), and a plan purchase must
+    never grant mentorship. `price`/`label` are SNAPSHOTS taken server-side from
+    MENTORSHIP_SKUS at creation, so the amount is fixed by the SKU, never the
+    client. `applied_at` is the idempotency guard for fulfilment (notify once),
+    mirroring Order — marking paid twice can never double-fire."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    sku = db.Column(db.String(20), nullable=False)            # meet3 / meet6 / combo6 / library / meet_single
+    kind = db.Column(db.String(12), nullable=False)           # meetings / library / combo
+    label = db.Column(db.String(80), nullable=False)          # snapshot at purchase
+    price = db.Column(db.Float, nullable=False)               # snapshot (from SKU table, server-side)
+    currency = db.Column(db.String(3), default='usd', nullable=False)
+    status = db.Column(db.String(12), default='pending', nullable=False)  # pending/paid/cancelled
+    payment_method = db.Column(db.String(30), nullable=True)  # 'stripe' / 'manual'
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    paid_at = db.Column(db.DateTime, nullable=True)
+    applied_at = db.Column(db.DateTime, nullable=True)        # fulfilment/notify ran (idempotency)
+    note = db.Column(db.String(300), nullable=True)
+    user = db.relationship('User', backref='mentorship_orders')
 
 
 class PromoCode(db.Model):
@@ -2127,6 +2168,53 @@ def send_mentorship_application_email(a):
         socket.setdefaulttimeout(prev_timeout)
 
 
+def send_mentorship_order_email(order):
+    """Notify the company inbox of a PAID mentorship purchase. Best-effort —
+    the MentorshipOrder row is the source of truth."""
+    if not app.config.get('MAIL_PASSWORD'):
+        app.logger.warning('MAIL_APP_PASSWORD not configured — mentorship order email not sent.')
+        return False
+    to_addr = os.environ.get('ADMIN_EMAIL', 'mauroramirezmij@gmail.com')
+    u = db.session.get(User, order.user_id)
+    body = (
+        'Nueva COMPRA de mentoría — Tradeable Academy\n'
+        '============================================\n\n'
+        f'Paquete:   {order.label} ({order.sku})\n'
+        f'Monto:     ${order.price:.2f} {order.currency.upper()}\n'
+        f'Pago:      {order.payment_method or "—"}\n'
+        f'Usuario:   {(u.username if u else "?")} / {(u.email if u else "?")} (id {order.user_id})\n'
+        f'Pagada:    {order.paid_at:%Y-%m-%d %H:%M} UTC\n' if order.paid_at else ''
+    )
+    msg = Message('Nueva compra de mentoría — ' + order.label, recipients=[to_addr])
+    msg.body = body
+    prev_timeout = socket.getdefaulttimeout()
+    socket.setdefaulttimeout(15)
+    try:
+        mail.send(msg)
+        return True
+    except Exception as exc:
+        app.logger.warning('Failed to send mentorship order email: %s', exc)
+        return False
+    finally:
+        socket.setdefaulttimeout(prev_timeout)
+
+
+def _activate_mentorship_order(order):
+    """Fulfil a PAID mentorship order exactly once. Deliberately does NOT touch
+    `user.plan` — mentorship is a separate product line. For now fulfilment =
+    record + notify the company; granting actual access (library / booking) is a
+    later task once the member area exists. Idempotent via `applied_at`."""
+    if order.status != 'paid' or order.applied_at is not None:
+        return False
+    order.applied_at = datetime.now(timezone.utc)
+    db.session.commit()
+    try:
+        send_mentorship_order_email(order)
+    except Exception as exc:
+        app.logger.warning('mentorship order email raised: %s', exc)
+    return True
+
+
 @app.route('/improve/apply')
 def improve_apply():
     _mentorship_gate()
@@ -2146,7 +2234,102 @@ def improve_plans():
     is_admin = current_user.is_authenticated and getattr(current_user, 'is_admin', False)
     if not session.get('improve_applied') and not is_admin:
         return redirect(url_for('improve_apply'))
-    return render_template('improve_plans.html')
+    return render_template('improve_plans.html',
+                           authed=current_user.is_authenticated)
+
+
+@app.route('/mentorship/checkout/create', methods=['POST'])
+@login_required
+def mentorship_checkout_create():
+    """Start a mentorship purchase for a chosen SKU. The price is taken from
+    MENTORSHIP_SKUS server-side (never from the client). Mirrors the plan
+    checkout: with Stripe on it hands off to Stripe Checkout (mode=payment);
+    with Stripe off (or price 0) it falls through to a manual/pending page.
+    This flow NEVER touches `user.plan`."""
+    sku = (request.form.get('sku') or '').strip()
+    spec = MENTORSHIP_SKUS.get(sku)
+    if not spec:
+        return redirect(url_for('improve_plans'))
+
+    # One pending mentorship order at a time — don't let them pile up.
+    existing = MentorshipOrder.query.filter_by(
+        user_id=current_user.id, status='pending').first()
+    if existing and existing.sku != sku:
+        existing.status = 'cancelled'  # replace the stale selection
+    if existing and existing.sku == sku:
+        order = existing
+    else:
+        order = MentorshipOrder(
+            user_id=current_user.id, sku=sku, kind=spec['kind'],
+            label=spec['label'], price=float(spec['price']),
+            status='pending', payment_method='manual')
+        db.session.add(order)
+    db.session.commit()
+    record_audit_event('mentorship_order_created', user_id=current_user.id,
+                        detail=f'{sku} ${order.price:.2f}')
+
+    if STRIPE_ENABLED and order.price > 0:
+        try:
+            checkout_session = _stripe.checkout.Session.create(
+                mode='payment',
+                line_items=[{
+                    'price_data': {
+                        'currency': 'usd',
+                        'product_data': {
+                            'name': f'Tradeable Mentorship — {spec["label"]}',
+                            'description': 'Mentorship purchase',
+                        },
+                        'unit_amount': int(round(order.price * 100)),  # cents
+                    },
+                    'quantity': 1,
+                }],
+                success_url=url_for('mentorship_checkout_success', _external=True)
+                            + '?session_id={CHECKOUT_SESSION_ID}',
+                cancel_url=url_for('improve_plans', _external=True),
+                client_reference_id=str(order.id),
+                customer_email=current_user.email,
+                # `kind` lets the shared webhook route this to the mentorship
+                # path instead of the plan path — the two never cross.
+                metadata={'kind': 'mentorship', 'mentorship_order_id': str(order.id)},
+            )
+            order.payment_method = 'stripe'
+            db.session.commit()
+            return redirect(checkout_session.url, code=303)
+        except Exception as e:
+            app.logger.error('Stripe mentorship session create failed: %s', e)
+            # fall through to the manual/pending page
+
+    return render_template('mentorship_checkout_done.html', order=order)
+
+
+@app.route('/mentorship/checkout/success')
+@login_required
+def mentorship_checkout_success():
+    """Where Stripe returns the buyer after a successful mentorship payment.
+    Verifies the session and fulfils via the idempotent activator (which never
+    touches `user.plan`). The webhook is the canonical path; this covers local
+    testing without a public webhook."""
+    session_id = request.args.get('session_id', '')
+    if not (STRIPE_ENABLED and session_id):
+        return redirect(url_for('improve_plans'))
+    try:
+        sess = _stripe.checkout.Session.retrieve(session_id)
+    except Exception as e:
+        app.logger.error('Stripe mentorship session retrieve failed: %s', e)
+        return redirect(url_for('improve_plans'))
+    order = db.session.get(MentorshipOrder, int(sess.get('client_reference_id') or 0))
+    if (order and order.user_id == current_user.id
+            and sess.get('payment_status') == 'paid'):
+        if order.status == 'pending':
+            order.status = 'paid'
+            order.paid_at = datetime.now(timezone.utc)
+            db.session.commit()
+            activated = _activate_mentorship_order(order)
+            record_audit_event('mentorship_order_paid', user_id=order.user_id,
+                                detail=f'stripe mentorship #{order.id} {order.sku} ${order.price:.2f}',
+                                success=activated)
+        return render_template('mentorship_checkout_success.html', order=order)
+    return redirect(url_for('improve_plans'))
 
 
 @app.route('/api/improve/apply', methods=['POST'])
@@ -3387,16 +3570,31 @@ def stripe_webhook():
         abort(400)
     if event.get('type') == 'checkout.session.completed':
         sess = event['data']['object']
-        order = db.session.get(Order, int(sess.get('client_reference_id') or 0))
-        if (order and order.status == 'pending'
-                and sess.get('payment_status') == 'paid'):
-            order.status = 'paid'
-            order.paid_at = datetime.now(timezone.utc)
-            db.session.commit()
-            activated = _activate_plan_from_order(order)   # idempotent
-            record_audit_event('order_paid', user_id=order.user_id,
-                                detail=f'stripe webhook order #{order.id}',
-                                success=activated)
+        meta = sess.get('metadata') or {}
+        paid = sess.get('payment_status') == 'paid'
+        ref = int(sess.get('client_reference_id') or 0)
+        if meta.get('kind') == 'mentorship':
+            # Mentorship path — a separate table; never touches user.plan.
+            m_order = db.session.get(MentorshipOrder, ref)
+            if m_order and m_order.status == 'pending' and paid:
+                m_order.status = 'paid'
+                m_order.paid_at = datetime.now(timezone.utc)
+                db.session.commit()
+                activated = _activate_mentorship_order(m_order)   # idempotent
+                record_audit_event('mentorship_order_paid', user_id=m_order.user_id,
+                                    detail=f'stripe webhook mentorship #{m_order.id} {m_order.sku}',
+                                    success=activated)
+        else:
+            # Plan path (unchanged).
+            order = db.session.get(Order, ref)
+            if order and order.status == 'pending' and paid:
+                order.status = 'paid'
+                order.paid_at = datetime.now(timezone.utc)
+                db.session.commit()
+                activated = _activate_plan_from_order(order)   # idempotent
+                record_audit_event('order_paid', user_id=order.user_id,
+                                    detail=f'stripe webhook order #{order.id}',
+                                    success=activated)
     return '', 200
 
 

@@ -185,7 +185,7 @@ h2.ch-title{
 
 /* ── Offer cards (page 6 — /improve/plans) — landing-style plan cards ── */
 /* Mentor reveal (centered, above the grid) */
-.plans-chapter{max-width:1040px; text-align:center}
+.plans-chapter{max-width:1040px; text-align:center; padding-bottom:84px}
 .plans-chapter .eyebrow{display:block}
 .plans-chapter .prose{max-width:620px; margin-inline:auto}
 .plans-chapter .dots{justify-content:center}
@@ -258,6 +258,43 @@ h2.ch-title{
 .pcard .buy:hover{border-color:rgba(224,168,61,.5); color:#fff}
 .pcard.featured .buy{background:linear-gradient(180deg,var(--gold-bright),var(--gold)); color:#1a1205; border-color:transparent}
 .pcard.featured .buy:hover{filter:brightness(1.06)}
+
+/* ── Selectable purchase panels (hover+click, like the analyzer project tiles) ── */
+.pcard .selectable{cursor:pointer; position:relative; outline:none}
+.pcard .ptier.selectable{transition:border-color .16s, background .16s, transform .12s, box-shadow .16s}
+.pcard .ptier.selectable:hover{border-color:rgba(224,168,61,.55); background:rgba(224,168,61,.06); transform:translateY(-1px)}
+.pcard .ptier.selectable.sel{border-color:var(--gold); background:rgba(224,168,61,.12); box-shadow:0 0 0 1px var(--gold) inset}
+.pcard .ptier.selectable.sel::after{content:'✓'; position:absolute; top:8px; right:11px; color:var(--gold); font-weight:800; font-size:13px}
+.pcard .ptier.selectable:focus-visible{border-color:var(--gold)}
+.pcard .buy.selectable{font-family:inherit}
+.pcard .buy.selectable.sel{background:linear-gradient(180deg,var(--gold-bright),var(--gold)); color:#1a1205; border-color:transparent}
+.ptier-hint{margin-top:12px; font-size:11.5px; color:var(--faint); text-align:center; font-style:italic}
+
+/* ── Fixed checkout cart bar (appears when a package is selected) ── */
+.mcart{position:fixed; left:0; right:0; bottom:0; z-index:40; transform:translateY(115%);
+  transition:transform .3s cubic-bezier(.2,.8,.2,1); background:rgba(12,14,20,.97);
+  border-top:1px solid rgba(224,168,61,.35); backdrop-filter:blur(10px); box-shadow:0 -12px 44px rgba(0,0,0,.55)}
+.mcart.show{transform:translateY(0)}
+.mcart-in{max-width:1000px; margin:0 auto; padding:13px 22px; display:flex; align-items:center; gap:16px; flex-wrap:wrap}
+.mcart-info{display:flex; flex-direction:column; gap:2px; flex:1; min-width:170px}
+.mcart-lbl{font-size:10.5px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--gold)}
+.mcart-item{font-size:15px; color:var(--ink); font-weight:600}
+.mcart-item b{font-family:'Fraunces',serif; font-weight:600; color:var(--gold-bright); margin-left:8px}
+.mcart-pay{border:0; cursor:pointer; font-family:inherit; font-size:14px; font-weight:700; color:#1a1205;
+  background:linear-gradient(180deg,var(--gold-bright),var(--gold)); padding:13px 26px; border-radius:26px;
+  box-shadow:0 8px 24px rgba(224,168,61,.28); text-decoration:none; display:inline-flex; align-items:center; gap:8px;
+  transition:transform .15s}
+.mcart-pay:hover{transform:translateY(-1px)}
+@media (max-width:560px){.mcart-in{padding:11px 16px; gap:10px} .mcart-pay{padding:11px 20px; font-size:13px}}
+
+/* ── Mentorship checkout result pages ── */
+.mco-chapter{max-width:540px; text-align:center; margin:0 auto}
+.mco-chapter .eyebrow{display:block}
+.mco-chapter .prose{max-width:470px; margin-inline:auto}
+.mco-summary{margin:26px auto 0; max-width:360px; display:flex; align-items:center; justify-content:space-between;
+  gap:14px; padding:16px 20px; border:1px solid rgba(224,168,61,.4); border-radius:14px; background:rgba(224,168,61,.05)}
+.mco-label{font-size:14px; color:var(--ink); font-weight:600; text-align:left}
+.mco-price{font-family:'Fraunces',serif; font-size:24px; font-weight:600; color:var(--gold)}
 
 /* ── Application form (page 5 — "The Great Filter") ── */
 .af{margin-top:26px; opacity:0; animation:imp-rise .9s ease .5s forwards}

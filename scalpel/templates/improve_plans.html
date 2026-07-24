@@ -64,7 +64,7 @@
             <li><span class="pcheck"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span><span data-i18n="p6.a5">A private Tradeable Academy community — a trading hub on Discord and inside the site to share ideas, ask questions and grow alongside other traders.</span></li>
             <li><span class="pcheck"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span><span data-i18n="p6.a6">24/7 access at your own pace, with new content added regularly — yours for as long as you’re a member.</span></li>
           </ul>
-          <a class="buy" href="/contact" data-i18n="p6.cta">Request your seat</a>
+          <button type="button" class="buy selectable" data-sku="library" data-name-key="p6.aName" data-price="$350" data-i18n="mcart.choose">Choose</button>
         </section>
 
         <!-- Program 02 — one-to-one online meetings (tiered, volume discount) -->
@@ -72,9 +72,9 @@
           <div class="pname" data-i18n="p6.bLabel">Program 02 · One-to-one online meetings</div>
           <div class="ptag" data-i18n="p6.bTag">Your charts, live and one on one.</div>
           <div class="ptiers stacked">
-            <div class="ptier"><b data-i18n="p6.t3">3 meetings / month</b><div class="ptrow"><span class="pamt">$270</span><s class="ptwas">$300</s></div><span class="ptunit">$90 <span data-i18n="p6.each">ea.</span></span><span class="ptsave"><span data-i18n="p6.save">You save</span> $30</span></div>
-            <div class="ptier"><b data-i18n="p6.t6">6 meetings / month</b><div class="ptrow"><span class="pamt">$480</span><s class="ptwas">$600</s></div><span class="ptunit">$80 <span data-i18n="p6.each">ea.</span></span><span class="ptsave"><span data-i18n="p6.save">You save</span> $120</span></div>
-            <div class="ptier"><b data-i18n="p6.t1">Single meeting</b><div class="ptrow"><span class="pamt">$100</span></div><span class="ptunit">$100 <span data-i18n="p6.each">ea.</span></span></div>
+            <div class="ptier selectable" data-sku="meet3"><b data-i18n="p6.t3">3 meetings / month</b><div class="ptrow"><span class="pamt">$270</span><s class="ptwas">$300</s></div><span class="ptunit">$90 <span data-i18n="p6.each">ea.</span></span><span class="ptsave"><span data-i18n="p6.save">You save</span> $30</span></div>
+            <div class="ptier selectable" data-sku="meet6"><b data-i18n="p6.t6">6 meetings / month</b><div class="ptrow"><span class="pamt">$480</span><s class="ptwas">$600</s></div><span class="ptunit">$80 <span data-i18n="p6.each">ea.</span></span><span class="ptsave"><span data-i18n="p6.save">You save</span> $120</span></div>
+            <div class="ptier selectable" data-sku="meet_single"><b data-i18n="p6.t1">Single meeting</b><div class="ptrow"><span class="pamt">$100</span></div><span class="ptunit">$100 <span data-i18n="p6.each">ea.</span></span></div>
           </div>
           <div class="pdivider"></div>
           <ul class="pfeat">
@@ -83,7 +83,7 @@
             <li><span class="pcheck"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span><span data-i18n="p6.b3">Monthly packages: the more meetings, the lower the price of each</span></li>
             <li><span class="pcheck"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span><span data-i18n="p6.b5">Seats are limited — calendar time is finite</span></li>
           </ul>
-          <a class="buy" href="/contact" data-i18n="p6.cta">Request your seat</a>
+          <p class="ptier-hint" data-i18n="mcart.hint">Tap a package to choose it.</p>
         </section>
 
         <!-- Both — featured -->
@@ -93,8 +93,8 @@
           <div class="ptag" data-i18n="p6.cTag">Both doors open — the full experience.</div>
           <p class="pnote pnote-top" data-i18n="p6.comboNote">The library at 25% off, plus the meetings package you choose.</p>
           <div class="ptiers stacked">
-            <div class="ptier"><b data-i18n="p6.combo3">Library + 3 meetings</b><div class="ptrow"><span class="pamt">$533</span><s class="ptwas">$650</s></div><span class="ptsave"><span data-i18n="p6.save">You save</span> $117</span></div>
-            <div class="ptier"><b data-i18n="p6.combo6">Library + 6 meetings</b><div class="ptrow"><span class="pamt">$743</span><s class="ptwas">$950</s></div><span class="ptsave"><span data-i18n="p6.save">You save</span> $207</span></div>
+            <div class="ptier selectable" data-sku="combo3"><b data-i18n="p6.combo3">Library + 3 meetings</b><div class="ptrow"><span class="pamt">$533</span><s class="ptwas">$650</s></div><span class="ptsave"><span data-i18n="p6.save">You save</span> $117</span></div>
+            <div class="ptier selectable" data-sku="combo6"><b data-i18n="p6.combo6">Library + 6 meetings</b><div class="ptrow"><span class="pamt">$743</span><s class="ptwas">$950</s></div><span class="ptsave"><span data-i18n="p6.save">You save</span> $207</span></div>
           </div>
           <div class="pdivider"></div>
           <ul class="pfeat">
@@ -102,7 +102,7 @@
             <li><span class="pcheck"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span><span data-i18n="p6.c2">Plus your chosen meetings package, at its volume price</span></li>
             <li><span class="pcheck"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span><span data-i18n="p6.c3">Choose 3 or 6 meetings a month</span></li>
           </ul>
-          <a class="buy" href="/contact" data-i18n="p6.cta">Request your seat</a>
+          <p class="ptier-hint" data-i18n="mcart.hint">Tap a package to choose it.</p>
         </section>
 
       </div>
@@ -119,6 +119,55 @@
     entirely on your own effort, decisions and circumstances.
   </footer>
 
+  <!-- Checkout cart: slides up when a package is selected. The price is display
+       only — the server re-derives the amount from the SKU on submit. -->
+  <form class="mcart" id="mcart" method="post" action="/mentorship/checkout/create">
+    <input type="hidden" name="sku" id="mcart-sku" value="" />
+    <div class="mcart-in">
+      <div class="mcart-info">
+        <span class="mcart-lbl" data-i18n="mcart.selected">Selected</span>
+        <span class="mcart-item"><span id="mcart-name">—</span><b id="mcart-price"></b></span>
+      </div>
+      {% if authed %}
+      <button type="submit" class="mcart-pay"><span data-i18n="mcart.pay">Go to checkout</span> →</button>
+      {% else %}
+      <a class="mcart-pay" href="/login"><span data-i18n="mcart.login">Log in to pay</span> →</a>
+      {% endif %}
+    </div>
+  </form>
+
   <script src="/static/improve_i18n.js" defer></script>
+  <script>
+  (function(){
+    function init(){
+      var cart = document.getElementById('mcart'); if(!cart) return;
+      var skuInput = document.getElementById('mcart-sku');
+      var nameEl = document.getElementById('mcart-name');
+      var priceEl = document.getElementById('mcart-price');
+      var sels = Array.prototype.slice.call(document.querySelectorAll('.selectable[data-sku]'));
+      function nameOf(el){
+        var b = el.querySelector('b'); if(b) return b.textContent.trim();
+        var k = el.getAttribute('data-name-key');
+        try{ if(k && window.ImproveI18N){ var d = window.ImproveI18N.dict[window.ImproveI18N.current()]; if(d && d[k]) return d[k]; } }catch(e){}
+        return el.getAttribute('data-name') || '';
+      }
+      function priceOf(el){ var a = el.querySelector('.pamt'); return a ? a.textContent.trim() : (el.getAttribute('data-price') || ''); }
+      function pick(el){
+        sels.forEach(function(s){ s.classList.remove('sel'); });
+        el.classList.add('sel');
+        skuInput.value = el.getAttribute('data-sku');
+        nameEl.textContent = nameOf(el);
+        priceEl.textContent = priceOf(el);
+        cart.classList.add('show');
+      }
+      sels.forEach(function(el){
+        el.setAttribute('tabindex','0'); el.setAttribute('role','button');
+        el.addEventListener('click', function(ev){ ev.preventDefault(); pick(el); });
+        el.addEventListener('keydown', function(ev){ if(ev.key==='Enter'||ev.key===' '){ ev.preventDefault(); pick(el); } });
+      });
+    }
+    if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
+  })();
+  </script>
 </body>
 </html>

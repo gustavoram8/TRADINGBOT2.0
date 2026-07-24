@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tradeable — Mentorship</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/improve.css" />
+</head>
+<body>
+  <div class="amb" aria-hidden="true"></div>
+
+  <header class="top">
+    <a class="brand" href="/app">
+      <img src="/static/logo.png" alt="" onerror="this.style.display='none'" />
+      <span>Tradeable</span>
+    </a>
+    <div class="top-right">
+      <a class="close app-home" href="/app" data-i18n="nav.backApp">← Back to app</a>
+    </div>
+  </header>
+
+  <main class="stage">
+    <div class="chapter mco-chapter">
+      <div class="eyebrow"><span data-i18n="mco.eyebrow">Mentorship</span></div>
+      <h2 class="ch-title" data-i18n="mco.successTitle">You're in.</h2>
+      <div class="prose">
+        <p class="lead" data-i18n="mco.successBody">We received your payment. We'll reach out shortly with your next steps.</p>
+      </div>
+      <div class="mco-summary">
+        <span class="mco-label">{{ order.label }}</span>
+        <span class="mco-price">${{ '%.2f'|format(order.price) }}</span>
+      </div>
+      <a class="cta" href="/app"><span data-i18n="nav.backApp">← Back to app</span></a>
+    </div>
+  </main>
+
+  <footer class="legal" data-i18n="legal">
+    Educational content only. Nothing here is financial advice, a recommendation, a signal,
+    or a guarantee of results. Trading involves substantial risk of loss.
+  </footer>
+
+  <script src="/static/improve_i18n.js" defer></script>
+</body>
+</html>

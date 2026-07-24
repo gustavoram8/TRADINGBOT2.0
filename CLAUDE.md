@@ -313,10 +313,22 @@ $480 ($80 c-u, ahorras $120)** — se ELIMINARON 5/10/20 porque la capacidad rea
 reuniones/mes TOTAL (~9/sem) y un 20-pack se comía media agenda; 6 es el tope por persona (~6 mentees
 llenan las 36). **combo "Ambos" = 2 sub-tiers** biblioteca(−25%, $350→$263) + paquete: +3=$533(~$650~,
 ahorras $117), +6=$743(~$950~, $207). Tiers = total + tachadura `.ptwas` + pastilla verde `.ptsave`
-"Ahorras $X" (`p6.save`). ⚠️ 25% de $350=$262.50 redondeado a $263. **PENDIENTE (pedido usuario): hacer
-los paneles de paquetes SELECCIONABLES (hover+click estilo projects del analizador) → setea precio →
-carrito/checkout.** i18n 4 idiomas a paridad, 0 claves de template sin dict. Probado
-end-to-end con test_client (form+enum 400, redirect, gate 302→apply, migración re-agrega columna).
+"Ahorras $X" (`p6.save`). ⚠️ 25% de $350=$262.50 redondeado a $263. i18n 4 idiomas a paridad, 0 claves
+de template sin dict. Probado end-to-end con test_client (form+enum 400, redirect, gate 302→apply,
+migración re-agrega columna).
+**✅ CHECKOUT DE MENTORÍA — paneles seleccionables + Stripe AISLADO (2026-07-24).** Los tiers/combos de
+`/improve/plans` son **seleccionables** (`.ptier.selectable`/`.buy.selectable`, hover+click, 1 a la vez,
+✓ dorado) → barra de carrito fija `.mcart` sube con nombre+precio+"Ir a pagar" (i18n `mcart.*`). **Aislamiento
+TOTAL vs planes del sitio** (miedo del usuario a cobros cruzados): tabla **separada `MentorshipOrder`** (auto-
+creada por `create_all`, no toca `user.plan` JAMÁS); **precio SIEMPRE server-side** desde `MENTORSHIP_SKUS`
+(el browser solo manda el SKU: library/meet3/meet6/meet_single/combo3/combo6 — nunca el monto); rutas
+`/mentorship/checkout/create|success`; **mismo `mode='payment'` (pago único, sin auto-renovación sorpresa)**;
+el webhook `/webhook/stripe` **despacha por `metadata.kind=='mentorship'`** → `_activate_mentorship_order`
+(idempotente, solo registra+email a la empresa; fulfillment real = tarea futura con área de miembros), y las
+sesiones de plan (sin `kind`) siguen su camino intacto. Templates `mentorship_checkout_{done,success}.html`.
+**Test de aislamiento pasó**: pago de mentoría NO cambia `user.plan`; webhook de plan SÍ; evento mentoría
+apuntando a un Order de plan no lo activa; idempotencia OK; precio siempre del SKU. Stripe sigue inerte sin
+`STRIPE_SECRET_KEY` (cae a la página `done` manual).
 **✅ CARDS estilo landing (2026-07-24):** las 3 tarjetas de `/improve/plans` adoptaron el diseño de
 las cards Standard/Premium del landing (`.pcard` en `improve.css`: nombre mayúsc. dorado + tagline +
 precio grande + divisor + features con check-circles + botón full-width; "Ambos" = featured con
