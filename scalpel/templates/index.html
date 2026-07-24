@@ -149,14 +149,18 @@
     /* Synapse keeps its DEFAULT light/dark palette regardless of the active camo —
        its immersive world (3D brain, neural map) has its own tuned colours, and
        the cream skin would break it. Works for ANY camo via [class*="camo-"]. */
-    body[class*="camo-"].ag-synapse-mode {
+    /* Doubled `.ag-synapse-mode` → specificity (0,3,1), so these var resets beat
+       the camo palettes (`body.camo-x:not(.light)` = 0,2,1) that are defined
+       LATER in the file. Without this the camo's --bg (e.g. Pole's #0f2f5c blue)
+       won cascade order and tinted .synapse-app (which is background:var(--bg)). */
+    body[class*="camo-"].ag-synapse-mode.ag-synapse-mode {
       --bg:#0A0B10; --surface:rgba(255,255,255,0.045); --card:rgba(255,255,255,0.05);
       --border:rgba(255,255,255,0.10); --border2:rgba(255,255,255,0.16);
       --text:#EEF0F4; --muted:rgba(255,255,255,0.48);
       --accent:#E9AA3B; --accent-h:#F0B94E; --win:#46D08A; --loss:#E8736B; --be:#E9AA3B;
     }
-    body[class*="camo-"].ag-synapse-mode.light:not(.camo-night),
-    body[class*="camo-"].ag-synapse-mode.camo-day {
+    body[class*="camo-"].ag-synapse-mode.ag-synapse-mode.light:not(.camo-night),
+    body[class*="camo-"].ag-synapse-mode.ag-synapse-mode.camo-day {
       --bg:#F3F5FA; --surface:rgba(255,255,255,0.66); --card:rgba(255,255,255,0.72);
       --border:rgba(16,22,40,0.10); --border2:rgba(16,22,40,0.16);
       --text:#171923; --muted:rgba(23,25,35,0.56);
