@@ -824,9 +824,20 @@ class MentorshipApplication(db.Model):
     experience = db.Column(db.String(20), nullable=False)     # lt1 / y1_3 / y3p
     situation = db.Column(db.String(20), nullable=False)      # demo / live / funded / inconsistent
     program = db.Column(db.String(12), nullable=True)         # rec / calls / both
-    struggle = db.Column(db.String(600), nullable=False)      # biggest struggle (free text)
-    why = db.Column(db.String(600), nullable=False)           # why mentorship, why now
+    struggle = db.Column(db.String(600), nullable=False)      # legacy free text (now unused, '')
+    why = db.Column(db.String(600), nullable=False)           # legacy free text (now unused, '')
     hours_week = db.Column(db.String(20), nullable=False)     # lt5 / h5_10 / h10p
+    # FAQ-style profile (2026-07 form rework — all click-based, all required):
+    goals = db.Column(db.String(200), nullable=True)          # CSV of goal keys
+    strength = db.Column(db.String(20), nullable=True)        # strongest area
+    weakness = db.Column(db.String(20), nullable=True)        # weakest area
+    assets = db.Column(db.String(120), nullable=True)         # CSV: futures/forex/crypto/stocks/mixed
+    country = db.Column(db.String(80), nullable=True)
+    tzname = db.Column(db.String(60), nullable=True)          # browser IANA timezone (auto-captured)
+    call_lang = db.Column(db.String(10), nullable=True)       # es / en / both (programs are ES/EN only)
+    call_slot = db.Column(db.String(12), nullable=True)       # morning / afternoon / evening
+    source = db.Column(db.String(20), nullable=True)          # how they found us
+    age_range = db.Column(db.String(10), nullable=True)       # 18_24 / 25_34 / 35_44 / 45p
     waiver_accepted_at = db.Column(db.DateTime, nullable=False)
     lang = db.Column(db.String(5), nullable=True)             # UI language at submit time
     status = db.Column(db.String(20), default='pending', nullable=False)  # pending/accepted/rejected
@@ -2037,6 +2048,81 @@ _APPLY_EXPERIENCE = {'lt1', 'y1_3', 'y3p'}
 _APPLY_SITUATION = {'demo', 'live', 'funded', 'inconsistent'}
 _APPLY_HOURS = {'lt5', 'h5_10', 'h10p'}
 _APPLY_PROGRAM = {'rec', 'calls', 'both'}
+_APPLY_GOALS = {'study', 'errors', 'consistency', 'plan', 'psych', 'validate'}
+_APPLY_SKILL = {'strategy', 'ta', 'psych', 'risk', 'theory', 'discipline'}
+_APPLY_ASSETS = {'futures', 'forex', 'crypto', 'stocks', 'mixed'}
+_APPLY_CLANG = {'es', 'en', 'both'}
+_APPLY_SLOT = {'morning', 'afternoon', 'evening'}
+_APPLY_SOURCE = {'tiktok', 'youtube', 'x', 'friend', 'google', 'other'}
+_APPLY_AGE = {'18_24', '25_34', '35_44', '45p'}
+
+
+def send_mentorship_application_email(a):
+    """Email the freshly submitted mentorship application to the company inbox
+    (current Gmail until the business domain mail exists). Non-fatal: the
+    application is already stored in DB, so a mail hiccup only logs a warning."""
+    if not app.config.get('MAIL_PASSWORD'):
+        app.logger.warning('MAIL_APP_PASSWORD not configured — mentorship application email not sent.')
+        return False
+    to_addr = os.environ.get('ADMIN_EMAIL', 'mauroramirezmij@gmail.com')
+    label = {
+        'rec': 'Biblioteca grabada', 'calls': 'Calls 1-1', 'both': 'Ambos programas',
+        'lt1': 'Menos de 1 año', 'y1_3': '1–3 años', 'y3p': '3+ años',
+        'demo': 'Demo / paper', 'live': 'Real, tamaño chico', 'funded': 'Fondeo / prop', 'inconsistent': 'Real pero inconsistente',
+        'lt5': '<5 h/semana', 'h5_10': '5–10 h/semana', 'h10p': '10+ h/semana',
+        'study': 'Estudiar con estructura', 'errors': 'Corregir errores recurrentes',
+        'consistency': 'Acercarse a la consistencia', 'plan': 'Construir plan de trading',
+        'psych': 'Psicotrading', 'validate': 'Validar su estrategia',
+        'strategy': 'Estrategia', 'ta': 'Análisis técnico', 'risk': 'Gestión de riesgo',
+        'theory': 'Teoría', 'discipline': 'Disciplina/consistencia',
+        'futures': 'Futuros', 'forex': 'Forex', 'crypto': 'Cripto', 'stocks': 'Acciones/otros', 'mixed': 'Varios/definiendo',
+        'es': 'Español', 'en': 'English', 'both': 'Ambos programas',
+        'morning': 'Mañana', 'afternoon': 'Tarde', 'evening': 'Noche',
+        'tiktok': 'TikTok/Instagram', 'youtube': 'YouTube', 'x': 'X (Twitter)',
+        'friend': 'Amigo/referido', 'google': 'Google', 'other': 'Otro',
+        '18_24': '18–24', '25_34': '25–34', '35_44': '35–44', '45p': '45+',
+    }
+    def lab(v):
+        return label.get(v, v or '—')
+    def labs(csv):
+        return ', '.join(lab(x) for x in (csv or '').split(',') if x) or '—'
+    # 'both' collides between program and call_lang labels — resolve per-field:
+    call_lang_lab = {'es': 'Español', 'en': 'English', 'both': 'Español e inglés'}.get(a.call_lang, '—')
+    body = (
+        'Nueva aplicación de mentoría — Tradeable Academy\n'
+        '================================================\n\n'
+        f'Nombre:               {a.name}\n'
+        f'Email:                {a.email}\n'
+        f'Programa de interés:  {lab(a.program)}\n\n'
+        f'Tiempo operando:      {lab(a.experience)}\n'
+        f'Etapa actual:         {lab(a.situation)}\n'
+        f'Horas por semana:     {lab(a.hours_week)}\n'
+        f'Objetivos:            {labs(a.goals)}\n'
+        f'Fortaleza:            {lab(a.strength)}\n'
+        f'Debilidad:            {lab(a.weakness)}\n'
+        f'Activos que opera:    {labs(a.assets)}\n\n'
+        f'País:                 {a.country or "—"}\n'
+        f'Zona horaria (auto):  {a.tzname or "—"}\n'
+        f'Idioma para calls:    {call_lang_lab}\n'
+        f'Franja para calls:    {lab(a.call_slot)}\n'
+        f'Nos conoció por:      {lab(a.source)}\n'
+        f'Rango de edad:        {lab(a.age_range)}\n\n'
+        f'Idioma de la web:     {a.lang or "—"}\n'
+        f'Usuario registrado:   {"sí (id %s)" % a.user_id if a.user_id else "no"}\n'
+        f'Waiver aceptado:      {a.waiver_accepted_at:%Y-%m-%d %H:%M} UTC\n'
+    )
+    msg = Message('Nueva aplicación de mentoría — ' + a.name, recipients=[to_addr])
+    msg.body = body
+    prev_timeout = socket.getdefaulttimeout()
+    socket.setdefaulttimeout(15)
+    try:
+        mail.send(msg)
+        return True
+    except Exception as exc:
+        app.logger.warning('Failed to send mentorship application email: %s', exc)
+        return False
+    finally:
+        socket.setdefaulttimeout(prev_timeout)
 
 
 @app.route('/improve/apply')
@@ -2069,20 +2155,49 @@ def improve_apply_submit():
         v = data.get(key)
         return v.strip()[:maxlen] if isinstance(v, str) else ''
 
+    def _csv(key, allowed, maxn):
+        """Multi-select: accept a list (or CSV string) of keys, all in `allowed`."""
+        v = data.get(key)
+        if isinstance(v, str):
+            v = [x.strip() for x in v.split(',')]
+        if not isinstance(v, list):
+            return None
+        seen = []
+        for x in v[:maxn]:
+            if not isinstance(x, str) or x not in allowed:
+                return None
+            if x not in seen:
+                seen.append(x)
+        return ','.join(seen) if seen else None
+
     name = _s('name', 80)
     email = _s('email', 255).lower()
     experience = _s('experience', 20)
     situation = _s('situation', 20)
     program = _s('program', 12)
-    struggle = _s('struggle', 600)
-    why = _s('why', 600)
     hours_week = _s('hours', 20)
+    goals = _csv('goals', _APPLY_GOALS, 6)
+    strength = _s('strength', 20)
+    weakness = _s('weakness', 20)
+    assets = _csv('assets', _APPLY_ASSETS, 5)
+    country = _s('country', 80)
+    tzname = _s('tz', 60) or None            # auto-captured, best-effort
+    call_lang = _s('call_lang', 10)
+    call_slot = _s('call_slot', 12)
+    source = _s('source', 20)
+    age_range = _s('age', 10)
+    adult = bool(data.get('adult'))
     waiver = bool(data.get('waiver'))
     lang = _s('lang', 5) or None
 
-    if not (name and email and '@' in email and struggle and why and waiver
+    # Every field is required (the form is a get-to-know-the-trader FAQ).
+    if not (name and email and '@' in email and adult and waiver
             and experience in _APPLY_EXPERIENCE and situation in _APPLY_SITUATION
-            and program in _APPLY_PROGRAM and hours_week in _APPLY_HOURS):
+            and program in _APPLY_PROGRAM and hours_week in _APPLY_HOURS
+            and goals and strength in _APPLY_SKILL and weakness in _APPLY_SKILL
+            and assets and country and call_lang in _APPLY_CLANG
+            and call_slot in _APPLY_SLOT and source in _APPLY_SOURCE
+            and age_range in _APPLY_AGE):
         return jsonify({'ok': False, 'error': 'invalid'}), 400
 
     # One pending application per email — resubmits just refresh the existing
@@ -2091,17 +2206,31 @@ def improve_apply_submit():
     now = datetime.now(timezone.utc)
     if existing:
         existing.name, existing.experience, existing.situation = name, experience, situation
-        existing.struggle, existing.why, existing.hours_week = struggle, why, hours_week
-        existing.program, existing.waiver_accepted_at, existing.lang = program, now, lang
+        existing.hours_week, existing.program = hours_week, program
+        existing.goals, existing.strength, existing.weakness = goals, strength, weakness
+        existing.assets, existing.country, existing.tzname = assets, country, tzname
+        existing.call_lang, existing.call_slot = call_lang, call_slot
+        existing.source, existing.age_range = source, age_range
+        existing.waiver_accepted_at, existing.lang = now, lang
         if current_user.is_authenticated:
             existing.user_id = current_user.id
+        application = existing
     else:
-        db.session.add(MentorshipApplication(
+        application = MentorshipApplication(
             user_id=current_user.id if current_user.is_authenticated else None,
             name=name, email=email, experience=experience, situation=situation,
-            program=program, struggle=struggle, why=why, hours_week=hours_week,
-            waiver_accepted_at=now, lang=lang))
+            program=program, struggle='', why='', hours_week=hours_week,
+            goals=goals, strength=strength, weakness=weakness, assets=assets,
+            country=country, tzname=tzname, call_lang=call_lang, call_slot=call_slot,
+            source=source, age_range=age_range,
+            waiver_accepted_at=now, lang=lang)
+        db.session.add(application)
     db.session.commit()
+    # Company inbox copy (best-effort; the DB row is the source of truth).
+    try:
+        send_mentorship_application_email(application)
+    except Exception as exc:
+        app.logger.warning('mentorship application email raised: %s', exc)
     # Unlocks /improve/plans (the offer) for this visitor — filter first, then prices.
     session['improve_applied'] = True
     return jsonify({'ok': True, 'next': url_for('improve_plans')})
@@ -7140,20 +7269,39 @@ def _migrate_user_camo_columns():
 
 def _migrate_mentorship_application_columns():
     """Add columns introduced after the mentorship_application table first
-    shipped (`program`). Same guard pattern as the camo migration: a concurrent
-    worker adding the column first can never crash startup."""
+    shipped (program, then the 2026-07 FAQ-profile fields). Same guard pattern
+    as the camo migration: a concurrent worker adding the column first can
+    never crash startup."""
     from sqlalchemy import inspect, text
     insp = inspect(db.engine)
     if not insp.has_table('mentorship_application'):
         return  # create_all already made it with every column
     cols = {c['name'] for c in insp.get_columns('mentorship_application')}
-    if 'program' not in cols:
+    wanted = [
+        ('program', 'VARCHAR(12)'),
+        ('goals', 'VARCHAR(200)'),
+        ('strength', 'VARCHAR(20)'),
+        ('weakness', 'VARCHAR(20)'),
+        ('assets', 'VARCHAR(120)'),
+        ('country', 'VARCHAR(80)'),
+        ('tzname', 'VARCHAR(60)'),
+        ('call_lang', 'VARCHAR(10)'),
+        ('call_slot', 'VARCHAR(12)'),
+        ('source', 'VARCHAR(20)'),
+        ('age_range', 'VARCHAR(10)'),
+    ]
+    added = []
+    for cname, ctype in wanted:
+        if cname in cols:
+            continue
         try:
             with db.engine.begin() as conn:
-                conn.execute(text('ALTER TABLE mentorship_application ADD COLUMN program VARCHAR(12)'))
-            app.logger.info('Migrated mentorship_application: program column added.')
+                conn.execute(text('ALTER TABLE mentorship_application ADD COLUMN %s %s' % (cname, ctype)))
+            added.append(cname)
         except Exception as e:
             app.logger.info('mentorship migration note (ignored): %s', e)
+    if added:
+        app.logger.info('Migrated mentorship_application: added %s.', ', '.join(added))
 
 
 def init_db():

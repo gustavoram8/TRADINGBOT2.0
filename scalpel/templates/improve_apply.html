@@ -73,6 +73,7 @@
         <div class="wlabel" data-i18n="p5.formlabel">The application</div>
         <h3 data-i18n="p5.formtitle">Tell us where you are.</h3>
         <p data-i18n="p5.formlead">Seats are few and attention is expensive. A short application keeps the room serious — answer honestly, and you'll get an honest answer back.</p>
+        <p class="af-note" data-i18n="p5.langNote">All classes, content and one-to-one calls are delivered in Spanish and English only.</p>
       </section>
 
       <form class="af" id="apply-form" novalidate>
@@ -122,16 +123,101 @@
               <option value="h10p" data-i18n="p5.h10p">10+ hours</option>
             </select>
           </label>
-          <label class="af-field af-wide">
-            <span data-i18n="p5.fstruggle">Your biggest struggle right now</span>
-            <textarea name="struggle" maxlength="600" rows="3" required data-i18n-ph="p5.phStruggle" placeholder="Be specific — what actually keeps costing you?"></textarea>
+          <div class="af-field af-wide">
+            <span data-i18n="p5.fgoals">What do you want to achieve? (pick all that apply)</span>
+            <div class="af-chips" id="chips-goals">
+              <button type="button" data-v="study" data-i18n="p5.g1">Study with real structure</button>
+              <button type="button" data-v="errors" data-i18n="p5.g2">Fix recurring mistakes</button>
+              <button type="button" data-v="consistency" data-i18n="p5.g3">Get closer to consistency</button>
+              <button type="button" data-v="plan" data-i18n="p5.g4">Build my trading plan</button>
+              <button type="button" data-v="psych" data-i18n="p5.g5">Master trading psychology</button>
+              <button type="button" data-v="validate" data-i18n="p5.g6">Validate my strategy</button>
+            </div>
+          </div>
+          <label class="af-field">
+            <span data-i18n="p5.fstrength">Your biggest strength</span>
+            <select name="strength" required>
+              <option value="" data-i18n="p5.select">Select…</option>
+              <option value="strategy" data-i18n="p5.sk1">Strategy</option>
+              <option value="ta" data-i18n="p5.sk2">Technical analysis</option>
+              <option value="psych" data-i18n="p5.sk3">Trading psychology</option>
+              <option value="risk" data-i18n="p5.sk4">Risk management</option>
+              <option value="theory" data-i18n="p5.sk5">Theory & concepts</option>
+              <option value="discipline" data-i18n="p5.sk6">Discipline & consistency</option>
+            </select>
           </label>
-          <label class="af-field af-wide">
-            <span data-i18n="p5.fwhy">Why mentorship, and why now</span>
-            <textarea name="why" maxlength="600" rows="3" required data-i18n-ph="p5.phWhy" placeholder="What do you expect to change by working with someone?"></textarea>
+          <label class="af-field">
+            <span data-i18n="p5.fweak">Your biggest weakness</span>
+            <select name="weakness" required>
+              <option value="" data-i18n="p5.select">Select…</option>
+              <option value="strategy" data-i18n="p5.sk1">Strategy</option>
+              <option value="ta" data-i18n="p5.sk2">Technical analysis</option>
+              <option value="psych" data-i18n="p5.sk3">Trading psychology</option>
+              <option value="risk" data-i18n="p5.sk4">Risk management</option>
+              <option value="theory" data-i18n="p5.sk5">Theory & concepts</option>
+              <option value="discipline" data-i18n="p5.sk6">Discipline & consistency</option>
+            </select>
+          </label>
+          <div class="af-field af-wide">
+            <span data-i18n="p5.fassets">What do you trade? (pick all that apply)</span>
+            <div class="af-chips" id="chips-assets">
+              <button type="button" data-v="futures" data-i18n="p5.as1">Futures (indices)</button>
+              <button type="button" data-v="forex" data-i18n="p5.as2">Forex</button>
+              <button type="button" data-v="crypto" data-i18n="p5.as3">Crypto</button>
+              <button type="button" data-v="stocks" data-i18n="p5.as4">Stocks / other</button>
+              <button type="button" data-v="mixed" data-i18n="p5.as5">Several / still deciding</button>
+            </div>
+          </div>
+          <label class="af-field">
+            <span data-i18n="p5.fcountry">Country</span>
+            <input type="text" name="country" maxlength="80" required data-i18n-ph="p5.phCountry" placeholder="e.g. Venezuela" />
+          </label>
+          <label class="af-field">
+            <span data-i18n="p5.fage">Age range</span>
+            <select name="age" required>
+              <option value="" data-i18n="p5.select">Select…</option>
+              <option value="18_24">18–24</option>
+              <option value="25_34">25–34</option>
+              <option value="35_44">35–44</option>
+              <option value="45p">45+</option>
+            </select>
+          </label>
+          <label class="af-field">
+            <span data-i18n="p5.fclang">Language for classes & calls</span>
+            <select name="call_lang" required>
+              <option value="" data-i18n="p5.select">Select…</option>
+              <option value="es">Español</option>
+              <option value="en">English</option>
+              <option value="both" data-i18n="p5.clBoth">Both</option>
+            </select>
+          </label>
+          <label class="af-field">
+            <span data-i18n="p5.fslot">Best time of day for calls</span>
+            <select name="call_slot" required>
+              <option value="" data-i18n="p5.select">Select…</option>
+              <option value="morning" data-i18n="p5.sl1">Morning</option>
+              <option value="afternoon" data-i18n="p5.sl2">Afternoon</option>
+              <option value="evening" data-i18n="p5.sl3">Evening</option>
+            </select>
+          </label>
+          <label class="af-field">
+            <span data-i18n="p5.fsource">How did you find us?</span>
+            <select name="source" required>
+              <option value="" data-i18n="p5.select">Select…</option>
+              <option value="tiktok">TikTok / Instagram</option>
+              <option value="youtube">YouTube</option>
+              <option value="x">X (Twitter)</option>
+              <option value="friend" data-i18n="p5.soFriend">A friend / referral</option>
+              <option value="google" data-i18n="p5.soGoogle">Google search</option>
+              <option value="other" data-i18n="p5.soOther">Other</option>
+            </select>
           </label>
         </div>
 
+        <label class="af-waiver">
+          <input type="checkbox" name="adult" required />
+          <span data-i18n="p5.adult">I confirm that I am 18 years of age or older.</span>
+        </label>
         <label class="af-waiver">
           <input type="checkbox" name="waiver" required />
           <span data-i18n="p5.waiver">I understand this is an educational program. Nothing in it is financial advice, a signal service, or a promise of profit. Any results depend entirely on my own decisions, effort and circumstances, and trading involves substantial risk of loss.</span>
@@ -159,24 +245,48 @@
   <script src="/static/improve_i18n.js" defer></script>
   <script>
   (function(){
+    function chipValues(id){
+      return Array.prototype.map.call(
+        document.querySelectorAll('#' + id + ' button.on'),
+        function(b){ return b.getAttribute('data-v'); });
+    }
     function init(){
       var form = document.getElementById('apply-form');
       if (!form) return;
+      // multi-select chips toggle
+      document.querySelectorAll('.af-chips').forEach(function(box){
+        box.addEventListener('click', function(e){
+          var b = e.target.closest('button'); if (!b) return;
+          b.classList.toggle('on');
+        });
+      });
       form.addEventListener('submit', function(e){
         e.preventDefault();
         var err = document.getElementById('af-error');
         err.hidden = true;
         var f = form.elements;
+        var tz = '';
+        try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch(_) {}
         var payload = {
           name: f.name.value.trim(), email: f.email.value.trim(),
           program: f.program.value, experience: f.experience.value,
-          situation: f.situation.value, struggle: f.struggle.value.trim(),
-          why: f.why.value.trim(), hours: f.hours.value, waiver: f.waiver.checked,
+          situation: f.situation.value, hours: f.hours.value,
+          goals: chipValues('chips-goals'),
+          strength: f.strength.value, weakness: f.weakness.value,
+          assets: chipValues('chips-assets'),
+          country: f.country.value.trim(), age: f.age.value,
+          call_lang: f.call_lang.value, call_slot: f.call_slot.value,
+          source: f.source.value, tz: tz,
+          adult: f.adult.checked, waiver: f.waiver.checked,
           lang: (function(){ try { return localStorage.getItem('scalpel_lang') || 'en'; } catch(_) { return 'en'; } })()
         };
+        // every field is required
         if (!payload.name || !payload.email || payload.email.indexOf('@') < 0 ||
             !payload.program || !payload.experience || !payload.situation ||
-            !payload.struggle || !payload.why || !payload.hours || !payload.waiver){
+            !payload.hours || !payload.goals.length || !payload.strength ||
+            !payload.weakness || !payload.assets.length || !payload.country ||
+            !payload.age || !payload.call_lang || !payload.call_slot ||
+            !payload.source || !payload.adult || !payload.waiver){
           err.hidden = false; return;
         }
         var btn = form.querySelector('.af-submit');
