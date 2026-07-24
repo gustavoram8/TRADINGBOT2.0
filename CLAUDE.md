@@ -306,7 +306,8 @@ columna `program` en `MentorshipApplication` + auto-migración guarded). Al envi
 (`improve_applied`; admin previewea directo) — filtro primero, precios después. Estructura: bloque
 reveal del mentor (**PENDIENTE bio real del usuario — nunca inventar**), tarjetas con viñetas por
 rama (borrador razonable, confirmar con el usuario), tiers 5/10/20/suelta, tarjeta combo ambos, y
-precios reales ($350/mes, tiers 5/10/20/suelta, combo Desde $500). i18n 4 idiomas a paridad, 0
+precios reales ($350/mes; reuniones online 1-1 con descuento por volumen: suelta $30, 5=$140/$28c-u,
+10=$250/$25c-u, 20=$400/$20c-u; combo Desde $490). i18n 4 idiomas a paridad, 0
 claves de template sin dict. Probado end-to-end con test_client (form+enum 400, redirect, gate
 302→apply, migración re-agrega columna).
 **✅ CARDS estilo landing (2026-07-24):** las 3 tarjetas de `/improve/plans` adoptaron el diseño de
@@ -343,9 +344,12 @@ de Gabriel con disclaimer, nunca promesa de resultados del alumno.
 
 **Datos del mentor + precios CARGADOS (2026-07-24, base):** mentor **Gabriel Celis**, ~6 años (⚠️
 años TENTATIVOS — el usuario confirma y reeditamos), ex-Forex, hoy futuros **S&P 500 + Nasdaq**.
-Precios base: biblioteca **$350/mes**; calls **$150/$300/$600** (5/10/20 al mes), **suelta $30**
-(30min); combo **"Desde $500/mes"** = biblioteca + paquete de 5 (con nota aclaratoria; sin descuento
-de combo definido aún). **TODO tentativo — el usuario revisa mañana y avisa cambios.**
+Precios base (actualizados 2026-07-24): biblioteca **$350/mes**; **reuniones online 1-1** (antes
+"calls" — renombradas por decisión del usuario) con **descuento por volumen**: suelta **$30** ($30 c/u),
+5/mes **$140** ($28 c/u), 10/mes **$250** ($25 c/u), 20/mes **$400** ($20 c/u) — más reuniones = más
+barata cada una; combo **"Desde $490/mes"** = biblioteca $350 + paquete de 5 ($140) (sin descuento de
+combo definido aún). Los tiers muestran total + precio por reunión (`.ptunit` dorado, clave `p6.each`).
+**TODO tentativo — el usuario confirma años de Gabriel y precios definitivos.**
 **FALTA:**
 - **Confirmar del usuario:** años exactos de Gabriel, precios definitivos de calls, si hay descuento
   de combo, y detalle final de las viñetas de cada plan (las actuales = borrador razonable).
