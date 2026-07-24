@@ -391,6 +391,33 @@
       content: url('/static/logo_t.png'); filter: invert(1); mix-blend-mode: normal;
     }
 
+
+    /* ═══ Blackflag (pirate) — aged treasure-map parchment: compass rose, dashed
+       route to an X, faint island coastlines. LIGHT_ALWAYS (see the camo script)
+       so the parchment layout holds in dark preference too; only the mascot flips
+       via .camo-night. iOS-safe: transparent body + position:fixed ::before. */
+    body.camo-blackflag {
+      --bg:#e7d9b8;--surface:rgba(255,250,238,0.66);--card:rgba(255,250,238,0.80);
+      --border:rgba(70,50,26,0.18);--border2:rgba(70,50,26,0.28);
+      --text:#3a2c17;--muted:rgba(58,44,23,0.60);
+      --accent:#a5401f;--accent-h:#8a3417;--win:#2f8f6a;--loss:#b5402e;--be:#a5401f;
+      background: transparent !important; color: var(--text);
+    }
+    body.camo-blackflag::before {
+      content:""; position:fixed; inset:0; z-index:-2; pointer-events:none;
+      background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='-120 -120 240 240'%3E%3Ccircle r='112' fill='none' stroke='%237a5a2e' stroke-width='2.5' opacity='0.5'/%3E%3Ccircle r='92' fill='none' stroke='%237a5a2e' stroke-width='1.4' opacity='0.4'/%3E%3Cg transform='rotate(0)'%3E%3Cpath d='M0,-104 L15,0 L0,26 L-15,0 Z' fill='%236a4a22' opacity='0.5'/%3E%3Cpath d='M0,-104 L0,26 L-15,0 Z' fill='%233a2810' opacity='0.55'/%3E%3C/g%3E%3Cg transform='rotate(90)'%3E%3Cpath d='M0,-104 L15,0 L0,26 L-15,0 Z' fill='%236a4a22' opacity='0.5'/%3E%3Cpath d='M0,-104 L0,26 L-15,0 Z' fill='%233a2810' opacity='0.55'/%3E%3C/g%3E%3Cg transform='rotate(180)'%3E%3Cpath d='M0,-104 L15,0 L0,26 L-15,0 Z' fill='%236a4a22' opacity='0.5'/%3E%3Cpath d='M0,-104 L0,26 L-15,0 Z' fill='%233a2810' opacity='0.55'/%3E%3C/g%3E%3Cg transform='rotate(270)'%3E%3Cpath d='M0,-104 L15,0 L0,26 L-15,0 Z' fill='%236a4a22' opacity='0.5'/%3E%3Cpath d='M0,-104 L0,26 L-15,0 Z' fill='%233a2810' opacity='0.55'/%3E%3C/g%3E%3Cg transform='rotate(45)'%3E%3Cpath d='M0,-72 L10,0 L0,18 L-10,0 Z' fill='%238a6a3a' opacity='0.4'/%3E%3C/g%3E%3Cg transform='rotate(135)'%3E%3Cpath d='M0,-72 L10,0 L0,18 L-10,0 Z' fill='%238a6a3a' opacity='0.4'/%3E%3C/g%3E%3Cg transform='rotate(225)'%3E%3Cpath d='M0,-72 L10,0 L0,18 L-10,0 Z' fill='%238a6a3a' opacity='0.4'/%3E%3C/g%3E%3Cg transform='rotate(315)'%3E%3Cpath d='M0,-72 L10,0 L0,18 L-10,0 Z' fill='%238a6a3a' opacity='0.4'/%3E%3C/g%3E%3Ccircle r='7' fill='%233a2810' opacity='0.6'/%3E%3C/svg%3E") right 5% bottom 6% / 190px auto no-repeat,
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='760' viewBox='0 0 1200 760'%3E%3Cpath d='M150,650 C340,560 300,430 470,410 C650,388 590,250 800,236' fill='none' stroke='%239a3a2a' stroke-width='3.4' stroke-dasharray='2 13' opacity='0.55'/%3E%3Cg stroke='%23a5271b' stroke-width='7' opacity='0.7' stroke-linecap='round'%3E%3Cline x1='784' y1='220' x2='816' y2='252'/%3E%3Cline x1='816' y1='220' x2='784' y2='252'/%3E%3C/g%3E%3C/svg%3E") center / cover no-repeat,
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='760' viewBox='0 0 1200 760'%3E%3Cpath d='M291,216 Q324,240 310,280 Q296,320 260,350 Q225,380 174,377 Q123,373 125,320 Q126,267 114,235 Q101,204 129,185 Q157,166 186,163 Q214,160 236,176 Q257,192 291,216 Z' fill='none' stroke='%238a6a3a' stroke-width='2.2' opacity='0.35'/%3E%3Cpath d='M682,535 Q701,600 684,667 Q667,734 601,719 Q536,705 504,673 Q472,642 431,580 Q389,518 458,487 Q527,456 595,463 Q663,471 682,535 Z' fill='none' stroke='%238a6a3a' stroke-width='2.2' opacity='0.35'/%3E%3Cpath d='M1095,427 Q1143,470 1090,507 Q1038,543 993,576 Q948,609 918,561 Q888,514 897,474 Q905,434 933,411 Q961,388 1005,386 Q1048,385 1095,427 Z' fill='none' stroke='%238a6a3a' stroke-width='2.2' opacity='0.35'/%3E%3C/svg%3E") center / cover no-repeat,
+        radial-gradient(rgba(120,90,50,0.06) 1.2px, transparent 1.4px) 0 0 / 20px 20px,
+        radial-gradient(ellipse 70% 60% at 30% 30%, rgba(150,120,70,0.10), transparent 70%),
+        linear-gradient(160deg,#ecdfc0,#ddcda6);
+    }
+    body.camo-blackflag::after {
+      content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+      background: radial-gradient(ellipse 96% 92% at 50% 44%, transparent 58%, rgba(90,66,30,0.20) 100%);
+    }
+
     /* ===== Themed Quiz mascots per camo =====
        Each active camo swaps the big Quiz WELCOME mascot and the pass/fail
        RESULT mascots for its themed art. Light mode uses the blue-arrow art;
@@ -428,13 +455,15 @@
     body.camo-pole:not(.light) .quiz-result-mascot.pass { content: url('/static/logo3_pole_dark.png'); }
     body.camo-pole.light      .quiz-result-mascot.fail { content: url('/static/logo4_pole.png'); }
     body.camo-pole:not(.light) .quiz-result-mascot.fail { content: url('/static/logo4_pole_dark.png'); }
-    body.camo-blackflag.light      .quiz-welcome-logo { content: url('/static/logo2_blackflag.png'); }
-    body.camo-blackflag:not(.light) .quiz-welcome-logo { content: url('/static/logo2_blackflag_dark.png'); }
+    /* blackflag is LIGHT_ALWAYS (parchment) → body keeps .light even in dark
+       preference; the dark marker is .camo-night, so the mascot keys off that. */
+    body.camo-blackflag:not(.camo-night) .quiz-welcome-logo { content: url('/static/logo2_blackflag.png'); }
+    body.camo-blackflag.camo-night      .quiz-welcome-logo { content: url('/static/logo2_blackflag_dark.png'); }
     body.camo-blackflag .quiz-welcome-logo { transform: translateY(-50%) rotate(0deg); }
-    body.camo-blackflag.light      .quiz-result-mascot.pass { content: url('/static/logo3_blackflag.png'); }
-    body.camo-blackflag:not(.light) .quiz-result-mascot.pass { content: url('/static/logo3_blackflag_dark.png'); }
-    body.camo-blackflag.light      .quiz-result-mascot.fail { content: url('/static/logo4_blackflag.png'); }
-    body.camo-blackflag:not(.light) .quiz-result-mascot.fail { content: url('/static/logo4_blackflag_dark.png'); }
+    body.camo-blackflag:not(.camo-night) .quiz-result-mascot.pass { content: url('/static/logo3_blackflag.png'); }
+    body.camo-blackflag.camo-night      .quiz-result-mascot.pass { content: url('/static/logo3_blackflag_dark.png'); }
+    body.camo-blackflag:not(.camo-night) .quiz-result-mascot.fail { content: url('/static/logo4_blackflag.png'); }
+    body.camo-blackflag.camo-night      .quiz-result-mascot.fail { content: url('/static/logo4_blackflag_dark.png'); }
     body.camo-premium.camo-day      .quiz-welcome-logo { content: url('/static/logo2_premium.png'); }
     body.camo-premium:not(.camo-day) .quiz-welcome-logo { content: url('/static/logo2_premium_dark.png'); }
     body.camo-premium .quiz-welcome-logo { transform: translateY(-50%) rotate(0deg); }
@@ -4343,7 +4372,7 @@
     // (user panel, product icons, menus) renders dark on the cream ground. It's a
     // single-look light theme, so the toggle only sets the stored preference.
     var DARK_ALWAYS = { premium: 1 };
-    var LIGHT_ALWAYS = { 'rising-sun': 1 };
+    var LIGHT_ALWAYS = { 'rising-sun': 1, 'blackflag': 1 };
     var wantLight = true;
     try { wantLight = localStorage.getItem('scalpel_theme') !== 'dark'; } catch (e) {}
     if (camo && LIGHT_ALWAYS[camo]) {
@@ -9390,7 +9419,7 @@
     // toggle only flips the mascot/logo accent, leaving every other component in
     // its dark styling (keeps the skin identical in both modes).
     var DARK_ALWAYS_T = { premium: 1 };
-    var LIGHT_ALWAYS_T = { 'rising-sun': 1 };
+    var LIGHT_ALWAYS_T = { 'rising-sun': 1, 'blackflag': 1 };
     var wantLight_T = currentTheme === 'light';
     var isDarkCamo_T = Object.keys(DARK_ALWAYS_T).some(function (c) {
       return document.body.classList.contains('camo-' + c);
