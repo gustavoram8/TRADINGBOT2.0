@@ -24862,13 +24862,13 @@
   + '.nx-wL{ --nxr:rotateY(55deg); } .nx-wR{ --nxr:rotateY(-55deg); } .nx-wC{ --nxr:rotateX(60deg); }'
   + '@keyframes nxCeil{ from{ opacity:0; transform:rotateX(60deg) scaleY(0); clip-path:inset(0 0 100% 0);} to{ opacity:1; transform:rotateX(60deg) scaleY(1); clip-path:inset(0 0 0 0);} }'
   + '@keyframes nxIn{ from{ opacity:0;} to{ opacity:1;} }'
-  + '.nx-hub{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%) translateZ(-238px); width:min(760px,86vw);'
-  + '  max-height:min(540px,78vh); overflow:auto; padding:34px 40px 28px; opacity:0; }'
+  + '.nx-hub{ position:absolute; left:50%; top:50%; z-index:3; transform:translate(-50%,-50%); width:min(700px,72vw);'
+  + '  max-height:min(460px,62vh); overflow:auto; padding:32px 38px 26px; opacity:0; }'
   + '#nx-ov.go .nx-hub{ animation:nxHub .5s ease 1.7s forwards; }'
-  + '@keyframes nxHub{ from{ opacity:0; transform:translate(-50%,-46%) translateZ(-238px);} to{ opacity:1; transform:translate(-50%,-50%) translateZ(-238px);} }'
+  + '@keyframes nxHub{ from{ opacity:0; transform:translate(-50%,-46%);} to{ opacity:1; transform:translate(-50%,-50%);} }'
   /* Editorial header — the mentorship pages' language: serif title, soft gold */
   + '.nx-head{ margin-bottom:8px; }'
-  + '.nx-title{ font:500 34px Fraunces,Georgia,serif; color:#f1f2f7; letter-spacing:.01em; }'
+  + '.nx-title{ font:700 30px Inter,system-ui,sans-serif; color:#f1f2f7; letter-spacing:-.01em; }'
   + '.nx-title::after{ content:""; display:block; width:52px; height:2px; margin-top:12px;'
   + '  background:linear-gradient(90deg, #e0a83d, rgba(224,168,61,.15)); border-radius:2px; }'
   + '.nx-sub{ font:400 13.5px Inter,sans-serif; color:rgba(240,235,220,.55); margin:12px 0 6px; }'
@@ -24878,12 +24878,12 @@
   /* Doors as an elegant menu — hairline rows, serif titles, sliding arrow */
   + '.nx-grid{ display:block; }'
   + '.nx-card{ position:relative; display:flex; align-items:flex-start; gap:15px; width:100%; text-align:left;'
-  + '  padding:17px 6px; background:transparent; border:0; border-bottom:1px solid rgba(224,168,61,.14);'
+  + '  padding:13px 6px; background:transparent; border:0; border-bottom:1px solid rgba(224,168,61,.14);'
   + '  color:inherit; cursor:pointer; transition:background .25s, padding-left .25s; }'
   + '.nx-card:hover{ background:rgba(224,168,61,.05); padding-left:14px; }'
   + '.nx-dm{ flex:none; margin-top:7px; color:#e0a83d; font-size:10px; text-shadow:0 0 9px rgba(224,168,61,.55); }'
   + '.nx-cw{ flex:1 1 auto; min-width:0; }'
-  + '.nx-card h4{ margin:0 0 4px; font:500 18px Fraunces,Georgia,serif; color:#f1f2f7;'
+  + '.nx-card h4{ margin:0 0 4px; font:600 15.5px Inter,system-ui,sans-serif; color:#f1f2f7;'
   + '  display:flex; align-items:center; gap:10px; flex-wrap:wrap; }'
   + '.nx-card p{ margin:0; font:400 13px/1.55 Inter,sans-serif; color:rgba(240,235,220,.52); }'
   + '.nx-arr{ flex:none; margin:6px 4px 0 0; color:#e0a83d; font-size:15px; opacity:0;'
@@ -24982,7 +24982,8 @@
     + '  <div class="nx-floor"></div>'
     + '  <div class="nx-wall nx-wB"></div><div class="nx-wall nx-wL"></div>'
     + '  <div class="nx-wall nx-wR"></div><div class="nx-wall nx-wC"></div>'
-    + '  <div class="nx-hub">'
+    + '</div>'
+    + '<div class="nx-hub">'
     + '    <button class="nx-x" type="button">✕</button>'
     + '    <div class="nx-head"><div class="nx-title">' + NX_NAME + '</div>'
     + '      <div class="nx-sub" data-nx="sub"></div></div>'
@@ -24991,7 +24992,6 @@
     + '      <button class="nx-back" type="button" data-nx="back"></button>'
     + '      <div class="nx-navgrid"></div>'
     + '    </div>'
-    + '  </div>'
     + '</div>';
   /* attached in init() — see the paint-quirk note up top */
 
@@ -25051,11 +25051,6 @@
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && ov.classList.contains('show')) closeOv(); });
 
   function init(){
-    if (!document.querySelector('link[href*="Fraunces"]')){
-      var fl = document.createElement('link'); fl.rel = 'stylesheet';
-      fl.href = 'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap';
-      document.head.appendChild(fl);
-    }
     document.body.appendChild(cube);
     document.body.appendChild(ov);
     park();
