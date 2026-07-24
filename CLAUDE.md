@@ -219,6 +219,17 @@ reacumulación-vs-distribución) + lote 5 (Judas swing, ranking de OBs, ST-vs-Sp
 de tono moderado) para matar la heurística de examen. Tras CADA lote:
 `node tools/extract_quiz_key.js && node tools/validate_daily_bank.js` y commitear también el JSON.
 
+**🟢 TESSERA — hub ANCLADO de ayuda + tools (2026-07-24, decisión de producto).** Tras evaluar
+honestamente si Tessera aportaba: se **quitó el roaming** (riesgo de verse gimmicky/distraer en una
+herramienta de foco) y se convirtió en **el hub ÚNICO de ayuda**, reemplazando los puntos dispersos.
+Ahora: teseracto **anclado abajo-derecha** (spin+glow, sin viajar ni estela), click abre la Cámara
+directo (sin popover de modos). Los **FABs de Soporte y Reportar-Bug se fusionaron adentro y se
+ocultan** (`.help-fab,.bug-fab{display:none}`; su JS queda intacto/inerte; el modal de bug se expone
+como `window.__nxOpenBug` y lo dispara una tarjeta nueva "Report a bug" que cierra la Cámara y abre
+el flujo de bug existente). Se eliminó el selector roam/pin/hidden. Verificado por HTTP en navegador
+real (cubo rubí anclado, FABs display:none, 6 tools sin selector de modo, bug abre desde la tarjeta).
+La base histórica (roaming, etc.) queda documentada abajo por si se quiere revertir.
+
 **🟢 TESSERA — asistente nativo del sitio (BASE HECHA 2026-07-24).** Idea del usuario: un "Toodles
 de Mickey Mouse" para el website — teseracto dorado semi-animado que aparece/desaparece por el /app
 (no invasivo, con estela) y al abrirlo forma una cámara 3D (paredes cerrándose una a una) con tools
