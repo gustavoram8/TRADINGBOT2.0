@@ -180,8 +180,10 @@ h2.ch-title{
 .hw-pay p{font-size:13.5px; color:var(--muted); line-height:1.65}
 
 /* ── Offer cards (page 6 — /improve/plans) ── */
-.pl-mentor .pl-pending-name{font-family:'Fraunces',serif; font-weight:500; font-size:23px; margin:9px 0 7px; color:#f1f2f7; opacity:.55}
-.pl-pending{font-size:13.5px; color:var(--faint); line-height:1.65; max-width:620px; font-style:italic}
+.pl-mentor .pl-name{font-family:'Fraunces',serif; font-weight:600; font-size:26px; margin:9px 0 8px; color:#f4f5fa}
+.pl-bio{font-size:14.5px; color:var(--muted); line-height:1.7; max-width:640px}
+.pl-from{font-size:13px; color:var(--faint); font-weight:600; letter-spacing:.02em; align-self:center}
+.pl-note{margin-top:9px; font-size:12.5px; color:var(--faint); line-height:1.55; max-width:560px}
 .pl-card{margin-top:26px; padding:22px 24px; border:1px solid var(--line); border-radius:16px;
   background:rgba(255,255,255,.03); max-width:640px; opacity:0; animation:imp-rise .9s ease .5s forwards}
 .pl-card.pl-both{border-color:rgba(224,168,61,.4); background:rgba(224,168,61,.05)}
