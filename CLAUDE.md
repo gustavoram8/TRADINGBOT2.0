@@ -238,14 +238,16 @@ FUNCIONAL: cuenta/riesgo%/stop + presets NQ $20, MNQ $2, ES $50, MES $5, YM $5, 
 custom, disclaimer educativo), **Teletransportador** (saltos a tabs del app + páginas),
 **El Mapa** (/guide), **Ayuda Humana** (/contact) + selector de modo del cubo. i18n propio
 EN/ES/FR/PT (`NX_T`, lee `scalpel_lang`), reduced-motion y mobile fallbacks.
-**Pulido 2026-07-24 (v2):** (1) hub **coplanar** con la pared trasera (mismo `translateZ`, más
-angosto/bajo en unidades equivalentes) → la perspectiva encoge ambos igual y el panel NUNCA se
-sale de las paredes en ningún viewport (antes el hub en z=0 salía más grande que la pared en
-z negativo). (2) Paredes se revelan con **`clip-path` inset wipe** (mismo efecto del título
-"TRADEABLE ACADEMY" de la landing: revela de abajo→arriba; techo arriba→abajo) en vez de scaleY.
-(3) Teseracto + cámara ahora **RUBÍ** (`#e0244a`/`#ff5c78`/deep `#b10e34`) en vez de dorado.
-(4) **Estela de estrellas**: `trailBurst()` lanza ~7 estrellas rubí al aparecer el cubo (respeta
-reduced-motion).
+**Pulido 2026-07-24 (v3, tras corrección):** (1) hub **coplanar** con la pared trasera (mismo
+`translateZ(-238px)`, más angosto/bajo) → la perspectiva encoge ambos igual y el panel NUNCA se sale
+de las paredes en ningún viewport. (2) Paredes = efecto original (**scaleY rise** desde el piso) **+**
+el wipe del título "TRADEABLE ACADEMY" de la landing (**`clip-path` inset**), **COMBINADOS** en
+`nxWall`/`nxCeil` (no reemplazados). Geometría original de las paredes laterales/techo (rotateY 55°,
+sin translateZ) — se ven las 4. (3) **SOLO el cubo es RUBÍ** (`#e0244a`/`#ff5c78`; faces, glow, trail,
+drop-shadow); **la Cámara sigue DORADA** intacta (paredes, paneles, tipografías). ⚠️ Error corregido:
+un commit previo pintó TODA la cámara de rubí y reemplazó (en vez de combinar) el efecto de paredes —
+el usuario NO pidió eso; solo el cubo rubí y COMBINAR efectos. (4) **Estela de estrellas**:
+`trailBurst()` lanza ~7 estrellas rubí al aparecer el cubo (reduced-motion respetado).
 ⚠️ **Lección técnica (costó horas):** en esta página cargada de capas, cambios de opacity/display
 vía CLASE/stylesheet sobre el root fixed NUNCA repintaban (quirk de Chromium; los estilos computados
 y el hit-testing decían "visible" pero 0 píxeles) → la visibilidad se maneja con **fades rAF mutando
