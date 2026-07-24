@@ -24831,16 +24831,16 @@
   + '#nx-ov.show{ display:block; }'
   + 'body.nx-lock{ overflow:hidden; }'
   + '.nx-bkd{ position:absolute; inset:0; background:'
-  + '  radial-gradient(ellipse 70% 55% at 50% 46%, rgba(224,36,74,.07), transparent 70%),'
-  + '  rgba(4,3,6,.9); backdrop-filter:blur(7px); -webkit-backdrop-filter:blur(7px); }'
+  + '  radial-gradient(ellipse 65% 50% at 50% 44%, rgba(224,168,61,.06), transparent 70%),'
+  + '  rgba(8,8,12,.88); backdrop-filter:blur(7px); -webkit-backdrop-filter:blur(7px); }'
   + '.nx-scene{ position:absolute; inset:0; perspective:1100px; overflow:hidden; }'
-  /* Walls: original rise (scaleY) COMBINED with the landing-title clip wipe. */
-  + '.nx-wall{ position:absolute; border:1px solid rgba(224,36,74,.32);'
+  /* Walls: original rise (scaleY) COMBINED with the landing-title clip wipe.
+     Warm graphite + faint gold grid — the site's own premium language. */
+  + '.nx-wall{ position:absolute; border:1px solid rgba(224,168,61,.3);'
   + '  background:'
-  + '    radial-gradient(circle at 1px 1px, rgba(255,159,178,.14) 1px, transparent 1.5px) 0 0/64px 64px,'
-  + '    linear-gradient(rgba(224,36,74,.07) 1px, transparent 1px) 0 0/100% 44px,'
-  + '    linear-gradient(90deg, rgba(224,36,74,.07) 1px, transparent 1px) 0 0/44px 100%,'
-  + '    linear-gradient(180deg, rgba(13,6,10,.95), rgba(5,2,4,.97));'
+  + '    linear-gradient(rgba(224,168,61,.08) 1px, transparent 1px) 0 0/100% 46px,'
+  + '    linear-gradient(90deg, rgba(224,168,61,.08) 1px, transparent 1px) 0 0/46px 100%,'
+  + '    linear-gradient(180deg, rgba(16,15,12,.94), rgba(9,8,7,.96));'
   + '  opacity:0; transform:scaleY(0); transform-origin:bottom center; clip-path:inset(100% 0 0 0); }'
   + '.nx-wB{ left:50%; top:50%; width:min(940px,94vw); height:min(600px,82vh); margin:calc(min(600px,82vh)/-2) 0 0 calc(min(940px,94vw)/-2);'
   + '  transform:translateZ(-240px) scaleY(0); }'
@@ -24852,7 +24852,7 @@
   + '  transform-origin:top center; transform:rotateX(60deg) scaleY(0); }'
   + '.nx-floor{ position:absolute; left:50%; top:calc(50% + min(300px,41vh) - 30px); width:min(1000px,96vw); height:130px;'
   + '  margin-left:calc(min(1000px,96vw)/-2); border-radius:50%; opacity:0; filter:blur(14px);'
-  + '  background:radial-gradient(ellipse, rgba(224,36,74,.32), transparent 70%); }'
+  + '  background:radial-gradient(ellipse, rgba(224,168,61,.26), transparent 70%); }'
   + '#nx-ov.go .nx-floor{ animation:nxIn .5s ease .05s forwards; }'
   + '#nx-ov.go .nx-wB{ animation:nxWall .5s cubic-bezier(.2,.8,.3,1) .25s forwards; }'
   + '#nx-ov.go .nx-wL{ animation:nxWall .5s cubic-bezier(.2,.8,.3,1) .65s forwards; }'
@@ -24862,51 +24862,43 @@
   + '.nx-wL{ --nxr:rotateY(55deg); } .nx-wR{ --nxr:rotateY(-55deg); } .nx-wC{ --nxr:rotateX(60deg); }'
   + '@keyframes nxCeil{ from{ opacity:0; transform:rotateX(60deg) scaleY(0); clip-path:inset(0 0 100% 0);} to{ opacity:1; transform:rotateX(60deg) scaleY(1); clip-path:inset(0 0 0 0);} }'
   + '@keyframes nxIn{ from{ opacity:0;} to{ opacity:1;} }'
-  /* Hub coplanar with the back wall so it can never spill past it. */
-  + '.nx-hub{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%) translateZ(-238px); width:min(850px,88vw);'
-  + '  max-height:min(540px,78vh); overflow:auto; padding:30px 30px 24px; opacity:0; }'
+  + '.nx-hub{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%) translateZ(-238px); width:min(760px,86vw);'
+  + '  max-height:min(540px,78vh); overflow:auto; padding:34px 40px 28px; opacity:0; }'
   + '#nx-ov.go .nx-hub{ animation:nxHub .5s ease 1.7s forwards; }'
   + '@keyframes nxHub{ from{ opacity:0; transform:translate(-50%,-46%) translateZ(-238px);} to{ opacity:1; transform:translate(-50%,-50%) translateZ(-238px);} }'
-  /* header: hot-white core with ruby halo + mono HUD tag */
-  + '.nx-head{ display:flex; flex-direction:column; gap:3px; margin-bottom:20px; }'
-  + '.nx-title{ font:700 24px Orbitron,Inter,sans-serif; letter-spacing:.34em; text-transform:uppercase;'
-  + '  color:#fff0f3; text-shadow:0 0 10px rgba(255,92,120,.8), 0 0 34px rgba(224,36,74,.5); }'
-  + '.nx-sub{ font:500 10.5px "JetBrains Mono",monospace; letter-spacing:.3em; text-transform:uppercase;'
-  + '  color:rgba(255,159,178,.56); }'
-  + '.nx-rule{ height:1px; margin-top:13px;'
-  + '  background:linear-gradient(90deg, rgba(224,36,74,.75), rgba(224,36,74,.12) 55%, transparent); }'
-  + '.nx-x{ position:absolute; top:16px; right:18px; width:32px; height:32px; border-radius:3px; border:1px solid rgba(224,36,74,.45);'
-  + '  background:rgba(224,36,74,.08); color:#ff5c78; font:700 14px Inter; cursor:pointer; }'
-  + '.nx-x:hover{ background:rgba(224,36,74,.22); }'
-  /* door-cards: HUD panels with corner brackets + mono index */
-  + '.nx-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(236px,1fr)); gap:13px; }'
-  + '.nx-card{ position:relative; text-align:left; padding:16px 16px 14px; border-radius:2px;'
-  + '  border:1px solid rgba(224,36,74,.24); background:rgba(20,8,13,.6); color:inherit; cursor:pointer;'
-  + '  transition:border-color .2s, background .2s, transform .15s, box-shadow .2s; }'
-  + '.nx-card::before,.nx-card::after{ content:""; position:absolute; width:13px; height:13px; pointer-events:none;'
-  + '  border:2px solid rgba(255,92,120,.85); transition:border-color .2s; }'
-  + '.nx-card::before{ top:-2px; left:-2px; border-right:0; border-bottom:0; }'
-  + '.nx-card::after{ bottom:-2px; right:-2px; border-left:0; border-top:0; }'
-  + '.nx-card:hover{ border-color:rgba(255,92,120,.65); background:rgba(224,36,74,.13); transform:translateY(-2px);'
-  + '  box-shadow:0 8px 26px rgba(224,36,74,.2); }'
-  + '.nx-card:hover::before,.nx-card:hover::after{ border-color:#ff9fb2; }'
-  + '.nx-num{ position:absolute; top:9px; right:11px; font:700 10px "JetBrains Mono",monospace;'
-  + '  color:rgba(255,159,178,.42); letter-spacing:.12em; }'
-  + '.nx-card h4{ margin:0 0 6px; font:700 12px "JetBrains Mono",monospace; letter-spacing:.14em; text-transform:uppercase;'
-  + '  color:#ffe9ee; display:flex; align-items:center; gap:9px; padding-right:30px; }'
-  + '.nx-card p{ margin:0; font:400 12.5px/1.55 Inter,sans-serif; color:rgba(248,225,232,.6); }'
-  + '.nx-badge{ font:700 8.5px "JetBrains Mono",monospace; letter-spacing:.1em; text-transform:uppercase; color:#ffd7de;'
-  + '  border:1px solid rgba(255,92,120,.5); background:rgba(224,36,74,.16); padding:3px 7px; border-radius:2px; white-space:nowrap; }'
-  + '.nx-ico{ width:17px; height:17px; flex:none; color:#ff5c78; }'
+  /* Editorial header — the mentorship pages' language: serif title, soft gold */
+  + '.nx-head{ margin-bottom:8px; }'
+  + '.nx-title{ font:500 34px Fraunces,Georgia,serif; color:#f1f2f7; letter-spacing:.01em; }'
+  + '.nx-title::after{ content:""; display:block; width:52px; height:2px; margin-top:12px;'
+  + '  background:linear-gradient(90deg, #e0a83d, rgba(224,168,61,.15)); border-radius:2px; }'
+  + '.nx-sub{ font:400 13.5px Inter,sans-serif; color:rgba(240,235,220,.55); margin:12px 0 6px; }'
+  + '.nx-x{ position:absolute; top:18px; right:20px; width:34px; height:34px; border-radius:50%; border:1px solid rgba(224,168,61,.3);'
+  + '  background:transparent; color:#e0a83d; font:600 13px Inter; cursor:pointer; transition:background .2s; }'
+  + '.nx-x:hover{ background:rgba(224,168,61,.12); }'
+  /* Doors as an elegant menu — hairline rows, serif titles, sliding arrow */
+  + '.nx-grid{ display:block; }'
+  + '.nx-card{ position:relative; display:flex; align-items:flex-start; gap:15px; width:100%; text-align:left;'
+  + '  padding:17px 6px; background:transparent; border:0; border-bottom:1px solid rgba(224,168,61,.14);'
+  + '  color:inherit; cursor:pointer; transition:background .25s, padding-left .25s; }'
+  + '.nx-card:hover{ background:rgba(224,168,61,.05); padding-left:14px; }'
+  + '.nx-dm{ flex:none; margin-top:7px; color:#e0a83d; font-size:10px; text-shadow:0 0 9px rgba(224,168,61,.55); }'
+  + '.nx-cw{ flex:1 1 auto; min-width:0; }'
+  + '.nx-card h4{ margin:0 0 4px; font:500 18px Fraunces,Georgia,serif; color:#f1f2f7;'
+  + '  display:flex; align-items:center; gap:10px; flex-wrap:wrap; }'
+  + '.nx-card p{ margin:0; font:400 13px/1.55 Inter,sans-serif; color:rgba(240,235,220,.52); }'
+  + '.nx-arr{ flex:none; margin:6px 4px 0 0; color:#e0a83d; font-size:15px; opacity:0;'
+  + '  transform:translateX(-7px); transition:opacity .25s, transform .25s; }'
+  + '.nx-card:hover .nx-arr{ opacity:1; transform:none; }'
+  + '.nx-badge{ font:600 10px Inter,sans-serif; letter-spacing:.06em; text-transform:uppercase; color:#e8c06a;'
+  + '  background:rgba(224,168,61,.12); border:1px solid rgba(224,168,61,.3); padding:3px 10px; border-radius:20px; white-space:nowrap; }'
   + '.nx-panel{ display:none; } .nx-panel.on{ display:block; }'
-  + '.nx-back{ margin-bottom:15px; background:transparent; border:0; color:#ff5c78; cursor:pointer; padding:0;'
-  + '  font:700 11px "JetBrains Mono",monospace; letter-spacing:.14em; text-transform:uppercase; }'
-  + '.nx-navgrid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(148px,1fr)); gap:10px; }'
-  + '.nx-navgrid a,.nx-navgrid button{ display:block; width:100%; padding:12px; border-radius:2px; text-align:center;'
-  + '  border:1px solid rgba(224,36,74,.26); background:rgba(20,8,13,.6); color:#ffe9ee; text-decoration:none;'
-  + '  font:600 11px "JetBrains Mono",monospace; letter-spacing:.1em; text-transform:uppercase; cursor:pointer;'
-  + '  transition:border-color .2s, background .2s; }'
-  + '.nx-navgrid a:hover,.nx-navgrid button:hover{ border-color:rgba(255,92,120,.65); background:rgba(224,36,74,.14); }'
+  + '.nx-back{ margin-bottom:16px; background:transparent; border:0; color:#e0a83d; cursor:pointer; padding:0;'
+  + '  font:700 11px Inter,sans-serif; letter-spacing:.06em; text-transform:uppercase; }'
+  + '.nx-navgrid{ display:flex; flex-wrap:wrap; gap:10px; }'
+  + '.nx-navgrid a,.nx-navgrid button{ display:inline-block; padding:9px 18px; border-radius:999px; text-align:center;'
+  + '  border:1px solid rgba(224,168,61,.28); background:rgba(255,255,255,.03); color:#efe9db; text-decoration:none;'
+  + '  font:500 12.5px Inter,sans-serif; cursor:pointer; transition:border-color .2s, background .2s; }'
+  + '.nx-navgrid a:hover,.nx-navgrid button:hover{ border-color:rgba(232,192,106,.6); background:rgba(224,168,61,.1); }'
   + '@media (max-width:720px){ .nx-wL,.nx-wR{ display:none; } .nx-hub{ padding:22px 18px 16px; } }'
   + '@media (prefers-reduced-motion: reduce){'
   + '  #nx-t3d,#nx-cube .nx-glow,.nx-bubble{ animation:none; }'
@@ -24993,7 +24985,7 @@
     + '  <div class="nx-hub">'
     + '    <button class="nx-x" type="button">✕</button>'
     + '    <div class="nx-head"><div class="nx-title">' + NX_NAME + '</div>'
-    + '      <div class="nx-sub" data-nx="sub"></div><div class="nx-rule"></div></div>'
+    + '      <div class="nx-sub" data-nx="sub"></div></div>'
     + '    <div class="nx-panel nx-home on"><div class="nx-grid"></div></div>'
     + '    <div class="nx-panel nx-nav">'
     + '      <button class="nx-back" type="button" data-nx="back"></button>'
@@ -25006,17 +24998,10 @@
   function showPanel(cls){
     ov.querySelectorAll('.nx-panel').forEach(function(p){ p.classList.toggle('on', p.classList.contains(cls)); });
   }
-  var ICONS = {
-    ai:'<svg class="nx-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="7" width="14" height="12" rx="3"/><path d="M12 7V4M8 4h8M9.5 12h.01M14.5 12h.01M9.5 15.5a3.5 2 0 0 0 5 0"/></svg>',
-    guide:'<svg class="nx-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5.5 9 3l6 2.5L21 3v15.5L15 21l-6-2.5L3 21zM9 3v15.5M15 5.5V21"/></svg>',
-    nav:'<svg class="nx-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5 13 13l-4.5 2.5L11 11z"/></svg>',
-    help:'<svg class="nx-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
-    bug:'<svg class="nx-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="8" y="6" width="8" height="12" rx="4"/><path d="M12 6V3M9 4l1.5 2M15 4l-1.5 2M8 10H4M8 14H4M8 12H3M16 10h4M16 14h4M16 12h5"/></svg>'
-  };
-  function card(icon, num, title, desc, badge, fn){
+  function card(title, desc, badge, fn){
     var c = document.createElement('button'); c.type = 'button'; c.className = 'nx-card';
-    c.innerHTML = '<b class="nx-num">' + num + '</b><h4>' + ICONS[icon] + '<span></span>'
-      + (badge ? '<span class="nx-badge"></span>' : '') + '</h4><p></p>';
+    c.innerHTML = '<span class="nx-dm">\u25c6</span><div class="nx-cw"><h4><span></span>'
+      + (badge ? '<span class="nx-badge"></span>' : '') + '</h4><p></p></div><span class="nx-arr">\u2192</span>';
     c.querySelector('h4 span').textContent = title;
     if (badge) c.querySelector('.nx-badge').textContent = badge;
     c.querySelector('p').textContent = desc;
@@ -25026,11 +25011,11 @@
   function fill(){
     ov.querySelectorAll('[data-nx]').forEach(function(el){ el.textContent = t(el.getAttribute('data-nx')); });
     var grid = ov.querySelector('.nx-grid'); grid.innerHTML = '';
-    grid.appendChild(card('ai', '01', t('aiT'), t('aiD'), t('aiB'), null));
-    grid.appendChild(card('guide', '02', t('guideT'), t('guideD'), null, function(){ window.location.href = '/guide'; }));
-    grid.appendChild(card('nav', '03', t('navT'), t('navD'), null, function(){ showPanel('nx-nav'); }));
-    grid.appendChild(card('help', '04', t('helpT'), t('helpD'), null, function(){ window.location.href = '/contact'; }));
-    grid.appendChild(card('bug', '05', t('bugT'), t('bugD'), null, function(){
+    grid.appendChild(card(t('aiT'), t('aiD'), t('aiB'), null));
+    grid.appendChild(card(t('guideT'), t('guideD'), null, function(){ window.location.href = '/guide'; }));
+    grid.appendChild(card(t('navT'), t('navD'), null, function(){ showPanel('nx-nav'); }));
+    grid.appendChild(card(t('helpT'), t('helpD'), null, function(){ window.location.href = '/contact'; }));
+    grid.appendChild(card(t('bugT'), t('bugD'), null, function(){
       closeOv();
       if (typeof window.__nxOpenBug === 'function') window.__nxOpenBug();
       else window.location.href = '/contact';
@@ -25066,6 +25051,11 @@
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && ov.classList.contains('show')) closeOv(); });
 
   function init(){
+    if (!document.querySelector('link[href*="Fraunces"]')){
+      var fl = document.createElement('link'); fl.rel = 'stylesheet';
+      fl.href = 'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap';
+      document.head.appendChild(fl);
+    }
     document.body.appendChild(cube);
     document.body.appendChild(ov);
     park();
