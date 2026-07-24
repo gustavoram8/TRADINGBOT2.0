@@ -122,11 +122,11 @@
     .theme-btn:hover { transform: scale(1.12); border-color: var(--chip-bd); }
     .theme-btn svg { width: 15px; height: 15px; }
     .theme-sep { width: 1px; align-self: stretch; margin: 3px 4px; background: var(--chip-bd); opacity: .5; }
-    /* default (light) → show moon (click to go dark); dark → show sun */
-    .theme-btn .icon-sun  { display: none; }
-    .theme-btn .icon-moon { display: block; }
-    body.dark .theme-btn .icon-sun  { display: block; }
-    body.dark .theme-btn .icon-moon { display: none; }
+    /* Icon = CURRENT state (matches /app): light → sun, dark → moon. */
+    .theme-btn .icon-sun  { display: block; }
+    .theme-btn .icon-moon { display: none; }
+    body.dark .theme-btn .icon-sun  { display: none; }
+    body.dark .theme-btn .icon-moon { display: block; }
 
     /* ── HERO ── */
     .hero {
