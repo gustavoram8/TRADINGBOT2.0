@@ -219,16 +219,20 @@ reacumulación-vs-distribución) + lote 5 (Judas swing, ranking de OBs, ST-vs-Sp
 de tono moderado) para matar la heurística de examen. Tras CADA lote:
 `node tools/extract_quiz_key.js && node tools/validate_daily_bank.js` y commitear también el JSON.
 
-**🟢 TESSERA — hub ANCLADO de ayuda + tools (2026-07-24, decisión de producto).** Tras evaluar
-honestamente si Tessera aportaba: se **quitó el roaming** (riesgo de verse gimmicky/distraer en una
-herramienta de foco) y se convirtió en **el hub ÚNICO de ayuda**, reemplazando los puntos dispersos.
-Ahora: teseracto **anclado abajo-derecha** (spin+glow, sin viajar ni estela), click abre la Cámara
-directo (sin popover de modos). Los **FABs de Soporte y Reportar-Bug se fusionaron adentro y se
-ocultan** (`.help-fab,.bug-fab{display:none}`; su JS queda intacto/inerte; el modal de bug se expone
-como `window.__nxOpenBug` y lo dispara una tarjeta nueva "Report a bug" que cierra la Cámara y abre
-el flujo de bug existente). Se eliminó el selector roam/pin/hidden. Verificado por HTTP en navegador
-real (cubo rubí anclado, FABs display:none, 6 tools sin selector de modo, bug abre desde la tarjeta).
-La base histórica (roaming, etc.) queda documentada abajo por si se quiere revertir.
+**🟢 TESSERA — hub ANCLADO de ayuda (2026-07-24, v4 rediseño).** Teseracto RUBÍ pequeño (44px)
+anclado abajo-derecha con nube de pensamiento comic ("¿Te echo una mano?" i18n×4, clickeable,
+oculta <420px). Reemplazó a los FABs de soporte y bug (ocultos vía CSS, JS inerte;
+`window.__nxOpenBug` dispara el modal de bug desde adentro) y a las entradas Guía/Contacto/Tessera
+del menú Products (Products = solo productos/planes/legal/settings). **La Cámara tiene identidad
+visual PROPIA y FIJA** (igual bajo cualquier camo/tema, como Synapse): bóveda dimensional oscura,
+paredes grid rubí con puntitos-estrella, título Orbitron blanco-caliente con halo rubí, labels
+JetBrains Mono HUD, tarjetas-puerta numeradas 01-05 con brackets en esquinas (cero variables del
+tema del sitio). **5 tools:** 01 Tessera AI Chatbot (dormida "Despierta pronto" hasta pagar
+backend IA), 02 Guía de uso (/guide), 03 Teletransportador (tabs+páginas), 04 Soporte (/contact),
+05 Reportar bug (modal real). La calculadora de riesgo se ELIMINÓ (decisión usuario). Módulo
+reescrito limpio (sin código muerto del roaming); mecanismos anti-quirk de pintado INTACTOS
+(fades rAF sobre element.style, attach en init()). Verificado por HTTP en navegador real.
+**PENDIENTE:** cablear el chatbot cuando se pague la IA; valorar auto-ocultar la nube tras ~8s.
 
 **🟢 TESSERA — asistente nativo del sitio (BASE HECHA 2026-07-24).** Idea del usuario: un "Toodles
 de Mickey Mouse" para el website — teseracto dorado semi-animado que aparece/desaparece por el /app
