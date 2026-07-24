@@ -219,6 +219,33 @@ reacumulación-vs-distribución) + lote 5 (Judas swing, ranking de OBs, ST-vs-Sp
 de tono moderado) para matar la heurística de examen. Tras CADA lote:
 `node tools/extract_quiz_key.js && node tools/validate_daily_bank.js` y commitear también el JSON.
 
+**🟢 TESSERA — asistente nativo del sitio (BASE HECHA 2026-07-24).** Idea del usuario: un "Toodles
+de Mickey Mouse" para el website — teseracto dorado semi-animado que aparece/desaparece por el /app
+(no invasivo, con estela) y al abrirlo forma una cámara 3D (paredes cerrándose una a una) con tools
+dentro. **Nombre elegido: "Tessera"** (propuesto por Claude, estilo Ouroboros: teseracto + la ficha
+de entrada de la antigüedad; alternativas descartadas: Nexus, Ouro). **TODO vive en UN solo bloque
+`<script>` autocontenido al final de `index.html`** (inyecta su propio CSS `#nx-css`; borrar el
+bloque = quitar la feature; `NX_NAME`/`NX_ENABLED` al tope). Base construida: (1) cubo viajero
+(2 cubos wireframe anidados girando, glow+estela, 5 slots por bordes de pantalla, ciclo ~7.5s
+visible + 11-28s oculto, pausa en quiz/synapse/overlay); (2) click → popover: Abrir / Fijarlo /
+Dejarlo viajar / Ocultarlo (modo en localStorage `nx_mode`: roam|pin|hidden); (3) oculto → el FAB
+de soporte (`#help-fab`) intercepta su click y ofrece: abrir Tessera / traer el cubo de vuelta /
+contactar soporte; + entrada "Tessera" insertada en el menú Products; (4) overlay "cámara":
+paredes de grid dorado suben secuencialmente (fondo→izq→der→techo) + glow de piso + hub con 5
+tools: **El Oráculo** (chatbot IA de preguntas del sitio — tarjeta dormida "Despierta pronto"
+hasta que el usuario pague/instale el backend), **Cámara de Riesgo** (calculadora de position size
+FUNCIONAL: cuenta/riesgo%/stop + presets NQ $20, MNQ $2, ES $50, MES $5, YM $5, GC $100 + $/pt
+custom, disclaimer educativo), **Teletransportador** (saltos a tabs del app + páginas),
+**El Mapa** (/guide), **Ayuda Humana** (/contact) + selector de modo del cubo. i18n propio
+EN/ES/FR/PT (`NX_T`, lee `scalpel_lang`), reduced-motion y mobile fallbacks.
+⚠️ **Lección técnica (costó horas):** en esta página cargada de capas, cambios de opacity/display
+vía CLASE/stylesheet sobre el root fixed NUNCA repintaban (quirk de Chromium; los estilos computados
+y el hit-testing decían "visible" pero 0 píxeles) → la visibilidad se maneja con **fades rAF mutando
+`element.style` directamente** y el attach va en `init()` post-DOMContentLoaded. Verificado
+end-to-end con Playwright contra Flask real por HTTP (los tests file:// engañan). **PENDIENTE:**
+cablear el chatbot del Oráculo cuando el usuario pague el servicio de IA; más tools (ideas
+bienvenidas); persistencia server-side del modo; pulir slots en mobile.
+
 **🚨 BUG ABIERTO — ERROR 500 en `/register`** (reportado 2026-06-23, prod IP cruda). Sin
 investigar a fondo (sin acceso a logs). Sospechas: (1) `send_verification_email` lanza excepción
 (SMTP/Gmail OTP); o (2) esquema PostgreSQL de prod desactualizado (faltan columnas
