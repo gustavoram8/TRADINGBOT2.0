@@ -257,9 +257,14 @@ rama (borrador razonable, confirmar con el usuario), tiers 5/10/20/suelta, tarje
 **precios "$—" placeholder — PENDIENTE que el usuario dé los montos y el detalle exacto de cada
 plan**. i18n 4 idiomas a paridad (108 claves/idioma, 0 claves de template sin dict). Probado
 end-to-end con test_client (form+enum 400, redirect, gate 302→apply, migración re-agrega columna).
+**Datos del mentor + precios CARGADOS (2026-07-24, base):** mentor **Gabriel Celis**, ~6 años (⚠️
+años TENTATIVOS — el usuario confirma y reeditamos), ex-Forex, hoy futuros **S&P 500 + Nasdaq**.
+Precios base: biblioteca **$350/mes**; calls **$150/$300/$600** (5/10/20 al mes), **suelta $30**
+(30min); combo **"Desde $500/mes"** = biblioteca + paquete de 5 (con nota aclaratoria; sin descuento
+de combo definido aún). **TODO tentativo — el usuario revisa mañana y avisa cambios.**
 **FALTA:**
-- **Datos del usuario para pág 6:** bio real del mentor (nombre, quién es, qué opera, años) +
-  precios reales + detalle definitivo de qué trae cada plan (viñetas actuales = borrador).
+- **Confirmar del usuario:** años exactos de Gabriel, precios definitivos de calls, si hay descuento
+  de combo, y detalle final de las viñetas de cada plan (las actuales = borrador razonable).
 - **Revisión de aplicaciones**: pestaña/lista en `/admin` para ver `MentorshipApplication` y marcar
   accepted/rejected (+ email al aplicante). Hoy solo se guardan en DB.
 - **Pág 7 — área de miembros** (post-pago): biblioteca de videos (sube el trader), reserva 1/1
