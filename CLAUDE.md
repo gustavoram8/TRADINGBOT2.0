@@ -244,9 +244,16 @@ TIMING", clases `.kzt`/`.kz-row`, vars `--kzt-*`, JS IIFE "Kill Zones live clock
 `MENTORSHIP_ENABLED`). i18n: `scalpel/static/improve_i18n.js` (4 idiomas, lee `scalpel_lang`, con
 selector EN/ES/FR/PT en el header de cada página) + claves `improve.rb.*` en `MT_I18N` para el
 listón. Estilo: `scalpel/static/improve.css`.
+**✅ Pág 5 — EL GRAN FILTRO (`/improve/apply`) HECHA (2026-07-24):** formulario de calificación
+(experiencia, situación, mayor lucha, por qué ahora, horas/semana) + waiver educativo obligatorio.
+Modelo nuevo `MentorshipApplication` (tabla via `db.create_all()`; 1 pending por email — resubmit
+actualiza, no duplica; `status` pending/accepted/rejected para revisión manual). POST
+`/api/improve/apply` valida enums server-side. i18n 4 idiomas a paridad (64 claves/idioma) +
+soporte nuevo `data-i18n-ph` (placeholders) en `improve_i18n.js`. Probado end-to-end con
+test_client. El 404 del CTA de pág. 4 quedó cerrado. Sigue tras `_mentorship_gate`.
 **FALTA:**
-- **Pág 5 — EL GRAN FILTRO** (`/improve/apply`): formulario de aplicación/calificación + waiver
-  educativo. (Hoy el CTA "See if it's for you" de la pág. 4 cae en 404 — la ruta no existe aún.)
+- **Revisión de aplicaciones**: pestaña/lista en `/admin` para ver `MentorshipApplication` y marcar
+  accepted/rejected (+ email al aplicante). Hoy solo se guardan en DB.
 - **Pág 6 — costos/disponibilidad:** 3 paquetes de llamadas (5/10/20 reuniones/mes, 30min) +
   llamadas sueltas + acceso a videos, tabla de disponibilidad, # estudiantes, prueba social.
 - **Pág 7 — área de miembros** (post-pago): biblioteca de videos (sube el trader), reserva 1/1
