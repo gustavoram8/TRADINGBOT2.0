@@ -24749,5 +24749,470 @@
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',build); else build();
 })();
 </script>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════
+   TESSERA — the site's roaming problem-solver (base build).
+   A small golden tesseract that wanders the /app, appearing and vanishing
+   with a comet trail. Click it → open the Chamber (walls rise one by one)
+   with tools inside: the Oracle (AI chat, dormant until wired), a Risk
+   Chamber (position-size calculator), a Teleporter (quick nav), the Map
+   (user guide) and Human Help. Modes: roam / pinned / hidden (localStorage
+   `nx_mode`). When hidden, the support FAB offers a way back in.
+   Self-contained: injects its own CSS; safe to remove as one block.
+   ═══════════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  var NX_ENABLED = true;
+  if (!NX_ENABLED || document.getElementById('nx-css')) return;
+  var NX_NAME = 'Tessera';
+  var LS = 'nx_mode'; // roam | pin | hidden
+
+  /* ── i18n (reads scalpel_lang, same convention as the rest of the site) ── */
+  var NX_T = {
+    en: { open:'Open ' + NX_NAME, pin:'Keep it always visible', roam:'Let it wander', hide:'Hide it',
+      unhide:'Bring the cube back', contact:'Contact support',
+      sub:'A chamber of tools. Pick a door.',
+      oracleT:'The Oracle', oracleD:'An AI guide that answers simple questions about the site — plans, tools, quizzes, camos.', oracleB:'Awakening soon',
+      riskT:'Risk Chamber', riskD:'Account, risk % and stop distance — it returns your position size.',
+      navT:'Teleporter', navD:'Jump to any corner of the site in one click.',
+      guideT:'The Map', guideD:'The user guide: everything the site can do, explained.',
+      helpT:'Human Help', helpD:'A human on the other side, when you need one.',
+      acct:'Account size ($)', rpct:'Risk per trade (%)', stop:'Stop distance (points)', instr:'Instrument', ppp:'$ per point',
+      rAmt:'Money at risk', rPer:'Risk per contract', rSize:'Position size', rCts:'contracts',
+      rZero:'With this stop, the size is below 1 contract. Tighten the stop or lower the risk.',
+      rDisc:'Educational tool only — not financial advice. Always verify with your broker.',
+      mode:'The cube:', mRoam:'Wanders', mPin:'Always visible', mHide:'Hidden', back:'← Back', close:'Close' },
+    es: { open:'Abrir ' + NX_NAME, pin:'Mantenerlo siempre visible', roam:'Dejarlo viajar', hide:'Ocultarlo',
+      unhide:'Traer el cubo de vuelta', contact:'Contactar soporte',
+      sub:'Una cámara de herramientas. Elige una puerta.',
+      oracleT:'El Oráculo', oracleD:'Una IA guía que responde preguntas simples del sitio — planes, herramientas, quizzes, camos.', oracleB:'Despierta pronto',
+      riskT:'Cámara de Riesgo', riskD:'Cuenta, % de riesgo y distancia del stop — te devuelve el tamaño de tu posición.',
+      navT:'Teletransportador', navD:'Salta a cualquier rincón del sitio en un clic.',
+      guideT:'El Mapa', guideD:'La guía de uso: todo lo que el sitio puede hacer, explicado.',
+      helpT:'Ayuda Humana', helpD:'Un humano del otro lado, cuando lo necesitas.',
+      acct:'Tamaño de cuenta ($)', rpct:'Riesgo por trade (%)', stop:'Distancia del stop (puntos)', instr:'Instrumento', ppp:'$ por punto',
+      rAmt:'Dinero en riesgo', rPer:'Riesgo por contrato', rSize:'Tamaño de posición', rCts:'contratos',
+      rZero:'Con este stop, el tamaño queda por debajo de 1 contrato. Ajusta el stop o baja el riesgo.',
+      rDisc:'Herramienta educativa — no es asesoría financiera. Verifica siempre con tu bróker.',
+      mode:'El cubo:', mRoam:'Viaja', mPin:'Siempre visible', mHide:'Oculto', back:'← Volver', close:'Cerrar' },
+    fr: { open:'Ouvrir ' + NX_NAME, pin:'Le garder toujours visible', roam:'Le laisser vagabonder', hide:'Le masquer',
+      unhide:'Faire revenir le cube', contact:'Contacter le support',
+      sub:'Une chambre à outils. Choisis une porte.',
+      oracleT:'L’Oracle', oracleD:'Une IA guide qui répond aux questions simples du site — plans, outils, quiz, camos.', oracleB:'Bientôt éveillé',
+      riskT:'Chambre du Risque', riskD:'Compte, % de risque et distance du stop — il te rend la taille de ta position.',
+      navT:'Téléporteur', navD:'Saute vers n’importe quel coin du site en un clic.',
+      guideT:'La Carte', guideD:'Le guide d’utilisation : tout ce que le site sait faire, expliqué.',
+      helpT:'Aide Humaine', helpD:'Un humain de l’autre côté, quand tu en as besoin.',
+      acct:'Taille du compte ($)', rpct:'Risque par trade (%)', stop:'Distance du stop (points)', instr:'Instrument', ppp:'$ par point',
+      rAmt:'Montant risqué', rPer:'Risque par contrat', rSize:'Taille de position', rCts:'contrats',
+      rZero:'Avec ce stop, la taille passe sous 1 contrat. Resserre le stop ou baisse le risque.',
+      rDisc:'Outil éducatif — pas un conseil financier. Vérifie toujours auprès de ton courtier.',
+      mode:'Le cube :', mRoam:'Vagabonde', mPin:'Toujours visible', mHide:'Masqué', back:'← Retour', close:'Fermer' },
+    pt: { open:'Abrir ' + NX_NAME, pin:'Mantê-lo sempre visível', roam:'Deixá-lo vagar', hide:'Ocultá-lo',
+      unhide:'Trazer o cubo de volta', contact:'Falar com o suporte',
+      sub:'Uma câmara de ferramentas. Escolha uma porta.',
+      oracleT:'O Oráculo', oracleD:'Uma IA guia que responde perguntas simples do site — planos, ferramentas, quizzes, camos.', oracleB:'Desperta em breve',
+      riskT:'Câmara de Risco', riskD:'Conta, % de risco e distância do stop — ele devolve o tamanho da sua posição.',
+      navT:'Teletransportador', navD:'Pule para qualquer canto do site em um clique.',
+      guideT:'O Mapa', guideD:'O guia de uso: tudo o que o site pode fazer, explicado.',
+      helpT:'Ajuda Humana', helpD:'Um humano do outro lado, quando você precisar.',
+      acct:'Tamanho da conta ($)', rpct:'Risco por trade (%)', stop:'Distância do stop (pontos)', instr:'Instrumento', ppp:'$ por ponto',
+      rAmt:'Dinheiro em risco', rPer:'Risco por contrato', rSize:'Tamanho da posição', rCts:'contratos',
+      rZero:'Com esse stop, o tamanho fica abaixo de 1 contrato. Ajuste o stop ou reduza o risco.',
+      rDisc:'Ferramenta educacional — não é aconselhamento financeiro. Sempre confira com a sua corretora.',
+      mode:'O cubo:', mRoam:'Vaga', mPin:'Sempre visível', mHide:'Oculto', back:'← Voltar', close:'Fechar' }
+  };
+  function lang(){ try { var l = localStorage.getItem('scalpel_lang'); return NX_T[l] ? l : 'en'; } catch(e){ return 'en'; } }
+  function t(k){ return (NX_T[lang()] || NX_T.en)[k] || NX_T.en[k] || k; }
+
+  /* ── CSS (injected so the whole feature stays one removable block) ── */
+  var css = ''
+  /* NOTE: the cube's show/hide opacity is driven by JS rAF fades mutating
+     element.style directly. Class- or stylesheet-driven opacity/display changes
+     on this fixed root never repainted on the layer-heavy app page (Chromium
+     style-invalidation quirk, found via Playwright bisection) — direct inline
+     style mutations are the only mechanism that painted reliably. */
+  + '#nx-cube{ position:fixed; width:56px; height:56px; z-index:39; cursor:pointer; display:none;'
+  + '  opacity:0; pointer-events:none; }'
+  + '#nx-cube.on{ pointer-events:auto; }'
+  + '#nx-cube{ filter:drop-shadow(0 0 9px rgba(224,168,61,.75)); }'
+  + '#nx-cube .nx-glow{ position:absolute; inset:-16px; border-radius:50%; pointer-events:none;'
+  + '  background:radial-gradient(circle, rgba(224,168,61,.5), transparent 65%); filter:blur(4px);'
+  + '  animation:nxPulse 3.2s ease-in-out infinite; }'
+  + '#nx-cube .nx-trail{ position:absolute; left:50%; top:50%; width:88px; height:10px; pointer-events:none;'
+  + '  transform:translate(-95%,-50%) rotate(24deg); border-radius:6px; filter:blur(5px); opacity:.5;'
+  + '  background:linear-gradient(90deg, transparent, rgba(245,196,99,.55)); animation:nxTrail 3.2s ease-in-out infinite; }'
+  + '#nx-t3d{ position:absolute; inset:6px; transform-style:preserve-3d; animation:nxSpin 14s linear infinite; }'
+  + '.nx-f{ position:absolute; inset:0; border:2px solid rgba(240,185,80,.95); background:rgba(224,168,61,.16);'
+  + '  box-shadow:0 0 8px rgba(224,168,61,.45) inset; }'
+  + '.nx-ci{ position:absolute; left:50%; top:50%; width:20px; height:20px; margin:-10px 0 0 -10px; transform-style:preserve-3d; }'
+  + '.nx-ci .nx-f{ border-color:rgba(250,210,120,1); background:rgba(245,196,99,.22); }'
+  + 'body.light .nx-f{ border-color:rgba(150,104,20,.95); background:rgba(176,125,34,.14); }'
+  + 'body.light #nx-cube{ filter:drop-shadow(0 0 8px rgba(176,125,34,.55)); }'
+  + '@keyframes nxSpin{ 0%{ transform:rotateX(-18deg) rotateY(0deg);} 100%{ transform:rotateX(-18deg) rotateY(360deg);} }'
+  + '@keyframes nxPulse{ 0%,100%{ opacity:.55;} 50%{ opacity:1;} }'
+  + '@keyframes nxTrail{ 0%,100%{ opacity:.25; width:64px;} 50%{ opacity:.6; width:96px;} }'
+  + '#nx-pop{ position:fixed; z-index:3100; min-width:210px; padding:6px; border-radius:12px;'
+  + '  background:#141620; border:1px solid rgba(224,168,61,.35); box-shadow:0 16px 40px rgba(0,0,0,.4); }'
+  + 'body.light #nx-pop:not(.nx-dark){ background:#fffdf7; }'
+  + '#nx-pop button{ display:flex; align-items:center; gap:8px; width:100%; padding:9px 11px; border:0; border-radius:8px;'
+  + '  background:transparent; color:inherit; font:600 12.5px Inter,sans-serif; cursor:pointer; text-align:left; }'
+  + '#nx-pop button:hover{ background:rgba(224,168,61,.12); }'
+  + '#nx-ov{ position:fixed; inset:0; z-index:3000; display:none; }'
+  + '#nx-ov.show{ display:block; }'
+  + 'body.nx-lock{ overflow:hidden; }'
+  + '.nx-bkd{ position:absolute; inset:0; background:rgba(7,8,12,.86); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); }'
+  + '.nx-scene{ position:absolute; inset:0; perspective:1100px; overflow:hidden; }'
+  + '.nx-wall{ position:absolute; border:1px solid rgba(224,168,61,.4);'
+  + '  background:'
+  + '    linear-gradient(rgba(224,168,61,.10) 1px, transparent 1px) 0 0/100% 44px,'
+  + '    linear-gradient(90deg, rgba(224,168,61,.10) 1px, transparent 1px) 0 0/44px 100%,'
+  + '    linear-gradient(180deg, rgba(20,18,12,.92), rgba(10,9,6,.95));'
+  + '  opacity:0; transform:scaleY(0); transform-origin:bottom center; }'
+  + '.nx-wB{ left:50%; top:50%; width:min(940px,94vw); height:min(600px,82vh); margin:calc(min(600px,82vh)/-2) 0 0 calc(min(940px,94vw)/-2);'
+  + '  transform:translateZ(-240px) scaleY(0); }'
+  + '.nx-wL{ left:calc(50% - min(470px,47vw) - 150px); top:50%; width:220px; height:min(600px,82vh); margin-top:calc(min(600px,82vh)/-2);'
+  + '  transform:rotateY(55deg) scaleY(0); }'
+  + '.nx-wR{ right:calc(50% - min(470px,47vw) - 150px); top:50%; width:220px; height:min(600px,82vh); margin-top:calc(min(600px,82vh)/-2);'
+  + '  transform:rotateY(-55deg) scaleY(0); }'
+  + '.nx-wC{ left:50%; top:calc(50% - min(300px,41vh) - 40px); width:min(940px,94vw); height:80px; margin-left:calc(min(940px,94vw)/-2);'
+  + '  transform-origin:top center; transform:rotateX(60deg) scaleY(0); }'
+  + '.nx-floor{ position:absolute; left:50%; top:calc(50% + min(300px,41vh) - 30px); width:min(1000px,96vw); height:130px;'
+  + '  margin-left:calc(min(1000px,96vw)/-2); border-radius:50%; opacity:0; filter:blur(14px);'
+  + '  background:radial-gradient(ellipse, rgba(224,168,61,.28), transparent 70%); }'
+  + '#nx-ov.go .nx-floor{ animation:nxIn .5s ease .05s forwards; }'
+  + '#nx-ov.go .nx-wB{ animation:nxWall .5s cubic-bezier(.2,.8,.3,1) .25s forwards; }'
+  + '#nx-ov.go .nx-wL{ animation:nxWall .5s cubic-bezier(.2,.8,.3,1) .65s forwards; }'
+  + '#nx-ov.go .nx-wR{ animation:nxWall .5s cubic-bezier(.2,.8,.3,1) 1.05s forwards; }'
+  + '#nx-ov.go .nx-wC{ animation:nxCeil .45s cubic-bezier(.2,.8,.3,1) 1.45s forwards; }'
+  + '@keyframes nxWall{ from{ opacity:0; transform:var(--nxr,translateZ(-240px)) scaleY(0);} to{ opacity:1; transform:var(--nxr,translateZ(-240px)) scaleY(1);} }'
+  + '.nx-wL{ --nxr:rotateY(55deg); } .nx-wR{ --nxr:rotateY(-55deg); } .nx-wC{ --nxr:rotateX(60deg); }'
+  + '@keyframes nxCeil{ from{ opacity:0; transform:rotateX(60deg) scaleY(0);} to{ opacity:1; transform:rotateX(60deg) scaleY(1);} }'
+  + '@keyframes nxIn{ from{ opacity:0;} to{ opacity:1;} }'
+  + '.nx-hub{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:min(880px,92vw);'
+  + '  max-height:80vh; overflow:auto; padding:26px 26px 20px; opacity:0; }'
+  + '#nx-ov.go .nx-hub{ animation:nxHub .5s ease 1.7s forwards; }'
+  + '@keyframes nxHub{ from{ opacity:0; transform:translate(-50%,-46%);} to{ opacity:1; transform:translate(-50%,-50%);} }'
+  + '.nx-head{ display:flex; align-items:baseline; gap:12px; margin-bottom:4px; }'
+  + '.nx-title{ font:700 22px Orbitron,Inter,sans-serif; letter-spacing:.28em; color:#f5c463; text-transform:uppercase;'
+  + '  text-shadow:0 0 18px rgba(224,168,61,.45); }'
+  + '.nx-sub{ font:500 13px Inter,sans-serif; color:rgba(240,235,220,.65); margin-bottom:18px; }'
+  + '.nx-x{ position:absolute; top:14px; right:16px; width:32px; height:32px; border-radius:9px; border:1px solid rgba(224,168,61,.35);'
+  + '  background:transparent; color:#e0a83d; font:700 15px Inter; cursor:pointer; }'
+  + '.nx-x:hover{ background:rgba(224,168,61,.14); }'
+  + '.nx-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:12px; }'
+  + '.nx-card{ position:relative; text-align:left; padding:15px 16px; border-radius:13px; border:1px solid rgba(224,168,61,.28);'
+  + '  background:rgba(224,168,61,.05); color:inherit; cursor:pointer; transition:border-color .2s, background .2s, transform .15s; }'
+  + '.nx-card:hover{ border-color:rgba(245,196,99,.6); background:rgba(224,168,61,.1); transform:translateY(-2px); }'
+  + '.nx-card h4{ margin:0 0 5px; font:700 14px Inter,sans-serif; color:#f3ead6; display:flex; align-items:center; gap:8px; }'
+  + '.nx-card p{ margin:0; font:400 12.5px/1.55 Inter,sans-serif; color:rgba(240,235,220,.62); }'
+  + '.nx-badge{ margin-left:auto; font:700 9px Inter; letter-spacing:.08em; text-transform:uppercase; color:#0c0e14;'
+  + '  background:linear-gradient(180deg,#f5c463,#e0a83d); padding:3px 7px; border-radius:20px; white-space:nowrap; }'
+  + '.nx-ico{ width:17px; height:17px; flex:none; color:#e0a83d; }'
+  + '.nx-set{ display:flex; align-items:center; gap:9px; flex-wrap:wrap; margin-top:18px; padding-top:14px;'
+  + '  border-top:1px solid rgba(224,168,61,.18); font:600 12px Inter,sans-serif; color:rgba(240,235,220,.6); }'
+  + '.nx-set button{ padding:6px 12px; border-radius:18px; border:1px solid rgba(224,168,61,.3); background:transparent;'
+  + '  color:rgba(240,235,220,.75); font:600 11.5px Inter; cursor:pointer; }'
+  + '.nx-set button.act{ background:linear-gradient(180deg,#f5c463,#e0a83d); color:#0c0e14; border-color:transparent; }'
+  + '.nx-legal{ margin-top:12px; font:400 10.5px/1.5 Inter,sans-serif; color:rgba(240,235,220,.38); }'
+  + '.nx-panel{ display:none; } .nx-panel.on{ display:block; }'
+  + '.nx-back{ margin-bottom:14px; background:transparent; border:0; color:#e0a83d; font:700 12px Inter; cursor:pointer; padding:0; }'
+  + '.nx-form{ display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; margin-bottom:16px; }'
+  + '.nx-form label{ display:flex; flex-direction:column; gap:5px; font:600 11px Inter; letter-spacing:.06em;'
+  + '  text-transform:uppercase; color:rgba(240,235,220,.55); }'
+  + '.nx-form input,.nx-form select{ padding:9px 11px; border-radius:9px; border:1px solid rgba(224,168,61,.3);'
+  + '  background:rgba(255,255,255,.05); color:#f3ead6; font:600 14px Inter; outline:none; }'
+  + '.nx-form input:focus,.nx-form select:focus{ border-color:rgba(245,196,99,.65); }'
+  + '.nx-form select option{ background:#141620; }'
+  + '.nx-out{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; }'
+  + '.nx-stat{ padding:12px 14px; border-radius:11px; border:1px solid rgba(224,168,61,.25); background:rgba(224,168,61,.06); }'
+  + '.nx-stat b{ display:block; font:600 10px Inter; letter-spacing:.09em; text-transform:uppercase; color:rgba(240,235,220,.5); margin-bottom:4px; }'
+  + '.nx-stat span{ font:700 19px Orbitron,Inter,sans-serif; color:#f5c463; }'
+  + '.nx-warn{ margin-top:10px; font:600 12px Inter; color:#e8736b; display:none; }'
+  + '.nx-navgrid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:9px; }'
+  + '.nx-navgrid a,.nx-navgrid button{ display:block; width:100%; padding:11px 12px; border-radius:10px; text-align:center;'
+  + '  border:1px solid rgba(224,168,61,.28); background:rgba(224,168,61,.05); color:#f3ead6; text-decoration:none;'
+  + '  font:600 12.5px Inter; cursor:pointer; }'
+  + '.nx-navgrid a:hover,.nx-navgrid button:hover{ border-color:rgba(245,196,99,.6); background:rgba(224,168,61,.12); }'
+  + '@media (max-width:720px){ .nx-wL,.nx-wR{ display:none; } .nx-hub{ padding:20px 16px 16px; } }'
+  + '@media (prefers-reduced-motion: reduce){'
+  + '  #nx-t3d,#nx-cube .nx-glow,#nx-cube .nx-trail,#nx-cube.on{ animation:none; }'
+  + '  #nx-cube.on.bye{ animation:none; opacity:0; }'
+  + '  #nx-ov.go .nx-wall,#nx-ov.go .nx-floor,#nx-ov.go .nx-hub{ animation:none; opacity:1; }'
+  + '  #nx-ov.go .nx-wB{ transform:translateZ(-240px) scaleY(1);} #nx-ov.go .nx-wL{ transform:rotateY(55deg) scaleY(1);}'
+  + '  #nx-ov.go .nx-wR{ transform:rotateY(-55deg) scaleY(1);} #nx-ov.go .nx-wC{ transform:rotateX(60deg) scaleY(1);} }';
+  var st = document.createElement('style'); st.id = 'nx-css'; st.textContent = css; document.head.appendChild(st);
+
+  /* ── state ── */
+  function mode(){ try { var m = localStorage.getItem(LS); return (m==='pin'||m==='hidden') ? m : 'roam'; } catch(e){ return 'roam'; } }
+  function setMode(m){ try { localStorage.setItem(LS, m); } catch(e){} applyMode(); }
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ── the little tesseract ── */
+  function face(tf){ var d = document.createElement('div'); d.className = 'nx-f'; d.style.transform = tf; return d; }
+  function buildCubeInto(host, half){
+    ['rotateY(0deg)','rotateY(90deg)','rotateY(180deg)','rotateY(270deg)','rotateX(90deg)','rotateX(-90deg)']
+      .forEach(function(r){ host.appendChild(face(r + ' translateZ(' + half + 'px)')); });
+  }
+  var cube = document.createElement('div'); cube.id = 'nx-cube'; cube.setAttribute('role','button');
+  cube.setAttribute('aria-label', NX_NAME);
+  var glow = document.createElement('div'); glow.className = 'nx-glow'; cube.appendChild(glow);
+  var trail = document.createElement('div'); trail.className = 'nx-trail'; cube.appendChild(trail);
+  var t3d = document.createElement('div'); t3d.id = 'nx-t3d'; cube.appendChild(t3d);
+  buildCubeInto(t3d, 22);
+  var inner = document.createElement('div'); inner.className = 'nx-ci'; t3d.appendChild(inner);
+  buildCubeInto(inner, 10);
+  /* NOT appended here — attaching this early (before the Aurora shell reshuffles
+     the DOM) leaves the subtree permanently unpainted in Chromium even though
+     hit-testing and computed styles stay correct. Both the cube and the overlay
+     are attached in init(), after DOMContentLoaded. */
+
+  var SLOTS = [ {left:'87%',top:'16%'}, {left:'91%',top:'46%'}, {left:'85%',top:'74%'},
+                {left:'46%',top:'86%'}, {left:'56%',top:'7%'} ];
+  var lastSlot = -1, roamTimer = null, fadeId = 0;
+  function tween(ms, step, done){
+    var my = ++fadeId, t0 = performance.now();
+    (function fr(now){
+      if (my !== fadeId) return;                 // superseded by a newer fade
+      var k = Math.min(1, (now - t0) / ms); k = k * (2 - k); // ease-out
+      step(k);
+      if (k < 1) requestAnimationFrame(fr); else if (done) done();
+    })(t0);
+  }
+  function appear(){
+    cube.style.display = 'block'; cube.classList.add('on');
+    if (reduced){ cube.style.opacity = '1'; cube.style.transform = 'none'; return; }
+    tween(650, function(k){
+      cube.style.opacity = String(k);
+      cube.style.transform = k >= 1 ? 'none' : 'scale(' + (0.6 + 0.4 * k) + ')';
+    });
+  }
+  function vanish(cb){
+    if (cube.style.display === 'none'){ if (cb) cb(); return; }
+    cube.classList.remove('on');
+    if (reduced){ cube.style.display = 'none'; cube.style.opacity = '0'; if (cb) cb(); return; }
+    tween(600, function(k){
+      cube.style.opacity = String(1 - k);
+      cube.style.transform = 'scale(' + (1 - 0.4 * k) + ')';
+    }, function(){ cube.style.display = 'none'; if (cb) cb(); });
+  }
+  function place(s){ cube.style.left = s.left; cube.style.top = s.top; cube.style.right = ''; cube.style.bottom = ''; }
+  function busy(){ var b = document.body.classList; return b.contains('ag-quiz-mode') || b.contains('ag-synapse-mode') || ov.classList.contains('show'); }
+  function roamCycle(){
+    clearTimeout(roamTimer);
+    if (mode() !== 'roam' || reduced) return;
+    if (document.hidden || busy()){ roamTimer = setTimeout(roamCycle, 8000); return; }
+    var i; do { i = Math.floor(Math.random()*SLOTS.length); } while (SLOTS.length > 1 && i === lastSlot);
+    lastSlot = i;
+    var isMobile = window.innerWidth < 720;
+    place(isMobile ? {left:'76%',top:'78%'} : SLOTS[i]);
+    appear();
+    roamTimer = setTimeout(function(){
+      if (popEl) return (roamTimer = setTimeout(roamCycle, 6000)); // don't vanish under an open menu
+      vanish();
+      roamTimer = setTimeout(roamCycle, 11000 + Math.random()*17000);
+    }, 7500);
+  }
+  function applyMode(){
+    clearTimeout(roamTimer); fadeId++;
+    var m = mode();
+    if (m === 'hidden'){ cube.classList.remove('on'); cube.style.display = 'none'; cube.style.opacity = '0'; return; }
+    if (m === 'pin' || reduced){
+      cube.style.left = ''; cube.style.top = ''; cube.style.right = '22px'; cube.style.bottom = '96px';
+      appear(); return;
+    }
+    cube.classList.remove('on'); cube.style.display = 'none'; cube.style.opacity = '0';
+    roamTimer = setTimeout(roamCycle, 2500);
+  }
+
+  /* ── click popover on the cube ── */
+  var popEl = null;
+  function closePop(){ if (popEl){ popEl.remove(); popEl = null; } }
+  function popItem(label, fn){
+    var b = document.createElement('button'); b.type = 'button'; b.textContent = label;
+    b.addEventListener('click', function(){ closePop(); fn(); }); return b;
+  }
+  cube.addEventListener('click', function(e){
+    e.stopPropagation();
+    if (popEl) return closePop();
+    popEl = document.createElement('div'); popEl.id = 'nx-pop'; popEl.classList.add('nx-dark');
+    popEl.appendChild(popItem('◆ ' + t('open'), openOv));
+    var m = mode();
+    popEl.appendChild(popItem(m === 'pin' ? t('roam') : t('pin'), function(){ setMode(m === 'pin' ? 'roam' : 'pin'); }));
+    popEl.appendChild(popItem(t('hide'), function(){ setMode('hidden'); }));
+    document.body.appendChild(popEl);
+    var r = cube.getBoundingClientRect();
+    var px = Math.min(r.left, window.innerWidth - 230), py = r.bottom + 8;
+    if (py + 140 > window.innerHeight) py = r.top - 140;
+    popEl.style.left = Math.max(8, px) + 'px'; popEl.style.top = Math.max(8, py) + 'px';
+  });
+  document.addEventListener('click', closePop);
+
+  /* ── support FAB: when the cube is hidden, offer the way back in ── */
+  var fab = document.getElementById('help-fab');
+  if (fab) fab.addEventListener('click', function(e){
+    if (mode() !== 'hidden') return; // normal support behaviour
+    e.preventDefault(); e.stopPropagation();
+    closePop();
+    popEl = document.createElement('div'); popEl.id = 'nx-pop'; popEl.classList.add('nx-dark');
+    popEl.appendChild(popItem('◆ ' + t('open'), openOv));
+    popEl.appendChild(popItem(t('unhide'), function(){ setMode('roam'); }));
+    popEl.appendChild(popItem(t('contact'), function(){ window.location.href = '/contact'; }));
+    document.body.appendChild(popEl);
+    var r = fab.getBoundingClientRect();
+    popEl.style.left = Math.max(8, Math.min(r.left, window.innerWidth - 230)) + 'px';
+    popEl.style.top = Math.max(8, r.top - popEl.offsetHeight - 10) + 'px';
+  }, true);
+
+  /* ── the Chamber (overlay) ── */
+  var ov = document.createElement('div'); ov.id = 'nx-ov';
+  ov.innerHTML = ''
+    + '<div class="nx-bkd"></div>'
+    + '<div class="nx-scene">'
+    + '  <div class="nx-floor"></div>'
+    + '  <div class="nx-wall nx-wB"></div><div class="nx-wall nx-wL"></div>'
+    + '  <div class="nx-wall nx-wR"></div><div class="nx-wall nx-wC"></div>'
+    + '  <div class="nx-hub">'
+    + '    <button class="nx-x" type="button">✕</button>'
+    + '    <div class="nx-head"><div class="nx-title">' + NX_NAME + '</div></div>'
+    + '    <div class="nx-sub" data-nx="sub"></div>'
+    + '    <div class="nx-panel nx-home on"><div class="nx-grid"></div>'
+    + '      <div class="nx-set"><span data-nx="mode"></span>'
+    + '        <button type="button" data-m="roam"></button><button type="button" data-m="pin"></button><button type="button" data-m="hidden"></button>'
+    + '      </div></div>'
+    + '    <div class="nx-panel nx-risk">'
+    + '      <button class="nx-back" type="button" data-nx="back"></button>'
+    + '      <div class="nx-form">'
+    + '        <label><span data-nx="acct"></span><input type="number" min="0" step="100" value="10000" id="nx-acct"/></label>'
+    + '        <label><span data-nx="rpct"></span><input type="number" min="0" max="100" step="0.25" value="1" id="nx-rpct"/></label>'
+    + '        <label><span data-nx="stop"></span><input type="number" min="0" step="0.25" value="20" id="nx-stop"/></label>'
+    + '        <label><span data-nx="instr"></span><select id="nx-instr">'
+    + '          <option value="20">NQ — $20/pt</option><option value="2">MNQ — $2/pt</option>'
+    + '          <option value="50">ES — $50/pt</option><option value="5" selected>MES — $5/pt</option>'
+    + '          <option value="5.0">YM — $5/pt</option><option value="100">GC — $100/pt</option>'
+    + '          <option value="custom">···</option></select></label>'
+    + '        <label id="nx-ppp-wrap" style="display:none"><span data-nx="ppp"></span><input type="number" min="0" step="0.5" value="5" id="nx-ppp"/></label>'
+    + '      </div>'
+    + '      <div class="nx-out">'
+    + '        <div class="nx-stat"><b data-nx="rAmt"></b><span id="nx-o-amt">—</span></div>'
+    + '        <div class="nx-stat"><b data-nx="rPer"></b><span id="nx-o-per">—</span></div>'
+    + '        <div class="nx-stat"><b data-nx="rSize"></b><span id="nx-o-size">—</span></div>'
+    + '      </div>'
+    + '      <div class="nx-warn" id="nx-warn"></div>'
+    + '      <div class="nx-legal" data-nx="rDisc"></div>'
+    + '    </div>'
+    + '    <div class="nx-panel nx-nav">'
+    + '      <button class="nx-back" type="button" data-nx="back"></button>'
+    + '      <div class="nx-navgrid"></div>'
+    + '    </div>'
+    + '  </div>'
+    + '</div>';
+  /* attached in init() — see note above the cube */
+
+  function showPanel(cls){
+    ov.querySelectorAll('.nx-panel').forEach(function(p){ p.classList.toggle('on', p.classList.contains(cls)); });
+  }
+  var ICONS = {
+    oracle:'<svg class="nx-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9 10h.01M15 10h.01M8.5 15a4.5 4.5 0 0 0 7 0"/></svg>',
+    risk:'<svg class="nx-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 12h3M8 16h3M14 12h2M14 16h2"/></svg>',
+    nav:'<svg class="nx-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5 13 13l-4.5 2.5L11 11z"/></svg>',
+    guide:'<svg class="nx-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5.5 9 3l6 2.5L21 3v15.5L15 21l-6-2.5L3 21zM9 3v15.5M15 5.5V21"/></svg>',
+    help:'<svg class="nx-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>'
+  };
+  function card(icon, title, desc, badge, fn){
+    var c = document.createElement('button'); c.type = 'button'; c.className = 'nx-card';
+    c.innerHTML = '<h4>' + ICONS[icon] + '<span></span>' + (badge ? '<span class="nx-badge"></span>' : '') + '</h4><p></p>';
+    c.querySelector('h4 span').textContent = title;
+    if (badge) c.querySelector('.nx-badge').textContent = badge;
+    c.querySelector('p').textContent = desc;
+    if (fn) c.addEventListener('click', fn);
+    return c;
+  }
+  function fill(){
+    ov.querySelectorAll('[data-nx]').forEach(function(el){ el.textContent = t(el.getAttribute('data-nx')); });
+    var grid = ov.querySelector('.nx-grid'); grid.innerHTML = '';
+    grid.appendChild(card('oracle', t('oracleT'), t('oracleD'), t('oracleB'), null));
+    grid.appendChild(card('risk', t('riskT'), t('riskD'), null, function(){ showPanel('nx-risk'); calc(); }));
+    grid.appendChild(card('nav', t('navT'), t('navD'), null, function(){ showPanel('nx-nav'); }));
+    grid.appendChild(card('guide', t('guideT'), t('guideD'), null, function(){ window.location.href = '/guide'; }));
+    grid.appendChild(card('help', t('helpT'), t('helpD'), null, function(){ window.location.href = '/contact'; }));
+    var ng = ov.querySelector('.nx-navgrid'); ng.innerHTML = '';
+    [['analyze','Analyzer'],['quiz','Quiz'],['preflight','Pre-Flight'],['synapse','Synapse'],['discover','Discover'],['forum','Forum']]
+      .forEach(function(pair){
+        var tb = document.querySelector('.tab[data-tab="' + pair[0] + '"]');
+        if (!tb) return;
+        var b = document.createElement('button'); b.type = 'button'; b.textContent = pair[1];
+        b.addEventListener('click', function(){ closeOv(); tb.click(); });
+        ng.appendChild(b);
+      });
+    [['/guide', t('guideT')],['/camos','Camos'],['/pricing','Plans'],['/settings','Settings'],['/contact', t('helpT')]]
+      .forEach(function(pair){
+        var a = document.createElement('a'); a.href = pair[0]; a.textContent = pair[1]; ng.appendChild(a);
+      });
+    var m = mode();
+    ov.querySelectorAll('.nx-set button').forEach(function(b){
+      var v = b.getAttribute('data-m');
+      b.textContent = v === 'roam' ? t('mRoam') : v === 'pin' ? t('mPin') : t('mHide');
+      b.classList.toggle('act', v === m);
+      b.onclick = function(){ setMode(v); fill(); };
+    });
+  }
+  function calc(){
+    var acct = parseFloat(document.getElementById('nx-acct').value) || 0;
+    var rp = parseFloat(document.getElementById('nx-rpct').value) || 0;
+    var stop = parseFloat(document.getElementById('nx-stop').value) || 0;
+    var sel = document.getElementById('nx-instr').value;
+    var ppp = sel === 'custom' ? (parseFloat(document.getElementById('nx-ppp').value) || 0) : parseFloat(sel);
+    document.getElementById('nx-ppp-wrap').style.display = sel === 'custom' ? '' : 'none';
+    var riskAmt = acct * rp / 100, per = stop * ppp;
+    var n = per > 0 ? Math.floor(riskAmt / per) : 0;
+    document.getElementById('nx-o-amt').textContent = riskAmt > 0 ? '$' + riskAmt.toFixed(2) : '—';
+    document.getElementById('nx-o-per').textContent = per > 0 ? '$' + per.toFixed(2) : '—';
+    document.getElementById('nx-o-size').textContent = (per > 0 && riskAmt > 0) ? n + ' ' + t('rCts') : '—';
+    var w = document.getElementById('nx-warn');
+    w.style.display = (per > 0 && riskAmt > 0 && n < 1) ? 'block' : 'none';
+    w.textContent = t('rZero');
+  }
+  ['nx-acct','nx-rpct','nx-stop','nx-instr','nx-ppp'].forEach(function(id){
+    ov.addEventListener('input', function(e){ if (e.target && e.target.id === id) calc(); });
+  });
+  function openOv(){
+    closePop(); fill(); showPanel('nx-home');
+    /* inline display drives visibility (same paint quirk as the cube) */
+    ov.style.display = 'block'; ov.classList.add('show'); document.body.classList.add('nx-lock');
+    ov.classList.remove('go'); void ov.offsetWidth; ov.classList.add('go');
+    fadeId++; cube.classList.remove('on'); cube.style.display = 'none'; cube.style.opacity = '0';
+  }
+  function closeOv(){
+    ov.style.display = 'none'; ov.classList.remove('show','go'); document.body.classList.remove('nx-lock');
+    applyMode();
+  }
+  ov.querySelector('.nx-x').addEventListener('click', closeOv);
+  ov.querySelector('.nx-bkd').addEventListener('click', closeOv);
+  ov.querySelectorAll('.nx-back').forEach(function(b){ b.addEventListener('click', function(){ showPanel('nx-home'); }); });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && ov.classList.contains('show')) closeOv(); });
+
+  /* ── entry in the Products menu (support-adjacent, works even when hidden) ── */
+  function addMenuItem(){
+    var menu = document.getElementById('products-menu'); if (!menu || document.getElementById('nx-mi')) return;
+    var a = document.createElement('a'); a.id = 'nx-mi'; a.href = '#'; a.className = 'products-item'; a.setAttribute('role','menuitem');
+    a.innerHTML = '<span class="pi-badge" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" stroke="#e0a83d" stroke-width="1.4">'
+      + '<rect x="3" y="3" width="14" height="14" rx="1"/><rect x="7" y="7" width="6" height="6" rx="1"/>'
+      + '<path d="M3 3l4 4M17 3l-4 4M3 17l4-4M17 17l-4-4"/></svg></span>'
+      + '<span class="pi-label">' + NX_NAME + '</span>';
+    a.addEventListener('click', function(e){ e.preventDefault(); menu.classList.remove('open'); openOv(); });
+    var contact = menu.querySelector('a[href="/contact"]');
+    if (contact) menu.insertBefore(a, contact); else menu.appendChild(a);
+  }
+
+  function init(){
+    document.body.appendChild(cube);
+    document.body.appendChild(ov);
+    addMenuItem(); applyMode();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
 </body>
 </html>
