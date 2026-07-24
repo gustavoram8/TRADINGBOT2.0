@@ -357,6 +357,40 @@
       content: url('/static/logo_t.png'); filter: invert(1); mix-blend-mode: normal;
     }
 
+
+    /* ═══ Mission (space / NASA) — deep-space cosmos: nebula clouds, star field
+       and a ringed planet (matches the astronaut mascot with the NASDAQ rocket).
+       iOS-safe: transparent body + position:fixed ::before, like Premium/Fourth/
+       Naval. One space ground for both toggle states; mascot still responds to
+       light/dark. */
+    body.camo-mission {
+      --bg:#0e1038;--surface:rgba(255,255,255,0.06);--card:rgba(255,255,255,0.07);
+      --border:rgba(180,190,255,0.16);--border2:rgba(180,190,255,0.26);
+      --text:#eaf0ff;--muted:rgba(234,240,255,0.62);
+      --accent:#5fd0ff;--accent-h:#45b8ea;--win:#46d08a;--loss:#e8736b;--be:#5fd0ff;
+      background: transparent !important; color: var(--text);
+    }
+    body.camo-mission::before {
+      content:""; position:fixed; inset:0; z-index:-2; pointer-events:none;
+      background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='340' height='300' viewBox='-170 -150 340 300'%3E%3Cdefs%3E%3CradialGradient id='pg' cx='38%' cy='34%' r='70%'%3E%3Cstop offset='0' stop-color='%238a7cff'/%3E%3Cstop offset='0.6' stop-color='%234a44b0'/%3E%3Cstop offset='1' stop-color='%23241a5c'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cg transform='rotate(-20)'%3E%3Cellipse rx='150' ry='40' fill='none' stroke='%239a8cff' stroke-width='9' opacity='0.45'/%3E%3Ccircle r='92' fill='url(%23pg)'/%3E%3Cpath d='M-150,0 A150,40 0 0 0 150,0' fill='none' stroke='%23b7acff' stroke-width='9' opacity='0.7'/%3E%3C/g%3E%3C/svg%3E") right -10px top 30px / 300px auto no-repeat,
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='600' viewBox='0 0 900 600'%3E%3Ccircle cx='335' cy='158' r='1.4' fill='%23ffd9f0' opacity='0.33'/%3E%3Ccircle cx='844' cy='552' r='0.8' fill='%23cfe0ff' opacity='0.65'/%3E%3Ccircle cx='523' cy='223' r='0.8' fill='%23ffffff' opacity='0.56'/%3E%3Ccircle cx='75' cy='250' r='0.8' fill='%23ffd9f0' opacity='0.55'/%3E%3Ccircle cx='850' cy='583' r='0.8' fill='%23ffffff' opacity='0.68'/%3E%3Ccircle cx='600' cy='67' r='1.9' fill='%23ffd9f0' opacity='0.54'/%3E%3Ccircle cx='230' cy='51' r='1.9' fill='%23ffffff' opacity='0.47'/%3E%3Ccircle cx='151' cy='557' r='0.8' fill='%23ffd9f0' opacity='0.49'/%3E%3Ccircle cx='839' cy='189' r='0.8' fill='%23ffd9f0' opacity='0.64'/%3E%3Ccircle cx='196' cy='385' r='0.8' fill='%23ffd9f0' opacity='0.73'/%3E%3Ccircle cx='581' cy='65' r='1.9' fill='%23ffffff' opacity='0.60'/%3E%3Ccircle cx='548' cy='441' r='1' fill='%23cfe0ff' opacity='0.65'/%3E%3Ccircle cx='468' cy='374' r='1' fill='%23ffffff' opacity='0.78'/%3E%3Ccircle cx='719' cy='253' r='0.8' fill='%23ffd9f0' opacity='0.48'/%3E%3Ccircle cx='510' cy='355' r='1.4' fill='%23cfe0ff' opacity='0.67'/%3E%3Ccircle cx='78' cy='124' r='1.9' fill='%23cfe0ff' opacity='0.40'/%3E%3Ccircle cx='354' cy='159' r='1.4' fill='%23cfe0ff' opacity='0.32'/%3E%3Ccircle cx='688' cy='83' r='1.9' fill='%23ffd9f0' opacity='0.77'/%3E%3Ccircle cx='841' cy='325' r='1' fill='%23ffd9f0' opacity='0.51'/%3E%3Ccircle cx='512' cy='597' r='1.4' fill='%23ffffff' opacity='0.80'/%3E%3Ccircle cx='280' cy='489' r='0.8' fill='%23ffffff' opacity='0.74'/%3E%3Ccircle cx='321' cy='595' r='1.4' fill='%23cfe0ff' opacity='0.73'/%3E%3Ccircle cx='688' cy='359' r='0.8' fill='%23cfe0ff' opacity='0.51'/%3E%3Ccircle cx='629' cy='123' r='1.4' fill='%23ffffff' opacity='0.43'/%3E%3Ccircle cx='298' cy='136' r='1' fill='%23cfe0ff' opacity='0.53'/%3E%3Ccircle cx='896' cy='512' r='0.8' fill='%23ffffff' opacity='0.57'/%3E%3Ccircle cx='566' cy='288' r='1' fill='%23cfe0ff' opacity='0.82'/%3E%3Ccircle cx='289' cy='429' r='1' fill='%23ffd9f0' opacity='0.83'/%3E%3Ccircle cx='240' cy='158' r='0.8' fill='%23ffffff' opacity='0.39'/%3E%3Ccircle cx='678' cy='242' r='0.8' fill='%23cfe0ff' opacity='0.80'/%3E%3Ccircle cx='190' cy='273' r='1' fill='%23ffffff' opacity='0.39'/%3E%3Ccircle cx='551' cy='382' r='1.9' fill='%23ffd9f0' opacity='0.49'/%3E%3Ccircle cx='132' cy='531' r='1.9' fill='%23ffd9f0' opacity='0.71'/%3E%3Ccircle cx='59' cy='471' r='1.9' fill='%23cfe0ff' opacity='0.54'/%3E%3Ccircle cx='407' cy='110' r='1.4' fill='%23ffd9f0' opacity='0.54'/%3E%3Ccircle cx='199' cy='72' r='1' fill='%23cfe0ff' opacity='0.40'/%3E%3Ccircle cx='352' cy='57' r='0.8' fill='%23ffffff' opacity='0.64'/%3E%3Ccircle cx='553' cy='107' r='1' fill='%23ffd9f0' opacity='0.32'/%3E%3Ccircle cx='216' cy='389' r='1' fill='%23ffd9f0' opacity='0.45'/%3E%3Ccircle cx='359' cy='376' r='1.4' fill='%23ffffff' opacity='0.37'/%3E%3Ccircle cx='503' cy='481' r='1.4' fill='%23cfe0ff' opacity='0.49'/%3E%3Ccircle cx='151' cy='108' r='1' fill='%23ffd9f0' opacity='0.46'/%3E%3Ccircle cx='852' cy='169' r='1.9' fill='%23ffffff' opacity='0.42'/%3E%3Ccircle cx='544' cy='374' r='1' fill='%23ffd9f0' opacity='0.63'/%3E%3Ccircle cx='31' cy='544' r='1' fill='%23ffd9f0' opacity='0.82'/%3E%3Ccircle cx='716' cy='271' r='1.9' fill='%23cfe0ff' opacity='0.84'/%3E%3Ccircle cx='368' cy='232' r='1.9' fill='%23ffd9f0' opacity='0.77'/%3E%3Ccircle cx='341' cy='232' r='1.9' fill='%23ffffff' opacity='0.78'/%3E%3Ccircle cx='841' cy='414' r='1' fill='%23ffffff' opacity='0.61'/%3E%3Ccircle cx='368' cy='33' r='0.8' fill='%23cfe0ff' opacity='0.58'/%3E%3Ccircle cx='202' cy='356' r='1.4' fill='%23ffd9f0' opacity='0.89'/%3E%3Ccircle cx='377' cy='86' r='1' fill='%23ffffff' opacity='0.44'/%3E%3Ccircle cx='205' cy='349' r='1' fill='%23cfe0ff' opacity='0.67'/%3E%3Ccircle cx='628' cy='5' r='1.4' fill='%23ffd9f0' opacity='0.51'/%3E%3Ccircle cx='662' cy='90' r='0.8' fill='%23cfe0ff' opacity='0.77'/%3E%3Ccircle cx='772' cy='208' r='1.4' fill='%23ffffff' opacity='0.56'/%3E%3Ccircle cx='655' cy='344' r='0.8' fill='%23ffd9f0' opacity='0.54'/%3E%3Ccircle cx='415' cy='90' r='1' fill='%23ffffff' opacity='0.90'/%3E%3Ccircle cx='32' cy='158' r='1.9' fill='%23cfe0ff' opacity='0.78'/%3E%3Ccircle cx='153' cy='489' r='1' fill='%23ffffff' opacity='0.63'/%3E%3Ccircle cx='138' cy='25' r='0.8' fill='%23ffd9f0' opacity='0.69'/%3E%3Ccircle cx='543' cy='146' r='1.4' fill='%23ffffff' opacity='0.80'/%3E%3Ccircle cx='220' cy='32' r='1' fill='%23ffffff' opacity='0.48'/%3E%3Ccircle cx='250' cy='337' r='1' fill='%23ffd9f0' opacity='0.55'/%3E%3Ccircle cx='138' cy='66' r='1' fill='%23cfe0ff' opacity='0.70'/%3E%3Ccircle cx='838' cy='533' r='1.4' fill='%23ffd9f0' opacity='0.38'/%3E%3Ccircle cx='159' cy='540' r='1.9' fill='%23ffffff' opacity='0.82'/%3E%3Ccircle cx='799' cy='191' r='1.9' fill='%23ffffff' opacity='0.77'/%3E%3Ccircle cx='157' cy='180' r='1' fill='%23cfe0ff' opacity='0.67'/%3E%3Ccircle cx='127' cy='573' r='0.8' fill='%23cfe0ff' opacity='0.71'/%3E%3C/svg%3E") center 24% / 100% auto no-repeat,
+        radial-gradient(ellipse 40% 34% at 18% 22%, rgba(122,60,192,0.28), transparent 60%),
+        radial-gradient(ellipse 46% 40% at 80% 74%, rgba(192,64,122,0.20), transparent 62%),
+        radial-gradient(ellipse 50% 44% at 46% 50%, rgba(58,92,255,0.16), transparent 64%),
+        linear-gradient(160deg,#131146,#0a0a26);
+    }
+    body.camo-mission::after {
+      content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+      background: radial-gradient(ellipse 96% 90% at 50% 40%, transparent 58%, rgba(4,4,20,0.44) 100%);
+    }
+    /* Deep-space ground → white wordmark + orange "a" (invert of logo_t). Two
+       selectors (0,3,1) beat the generic camo cream-logo rule. */
+    body.camo-mission.light .logo-img,
+    body.camo-mission:not(.light) .logo-img {
+      content: url('/static/logo_t.png'); filter: invert(1); mix-blend-mode: normal;
+    }
+
     /* ===== Themed Quiz mascots per camo =====
        Each active camo swaps the big Quiz WELCOME mascot and the pass/fail
        RESULT mascots for its themed art. Light mode uses the blue-arrow art;
