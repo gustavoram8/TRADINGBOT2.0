@@ -73,24 +73,26 @@
           <div class="pname" data-i18n="p6.bLabel">Program 02 · One-to-one online meetings</div>
           <div class="ptag" data-i18n="p6.bTag">Your charts, live and one on one.</div>
           <div class="ptabs" role="tablist">
-            <button type="button" class="ptab on" data-pane="meet_single" role="tab" data-i18n="p6.tab1">Single</button>
-            <button type="button" class="ptab" data-pane="meet3" role="tab" data-i18n="p6.tab3">3 / month</button>
-            <button type="button" class="ptab" data-pane="meet6" role="tab" data-i18n="p6.tab6">6 / month</button>
-          </div>
-          <div class="ppane" data-pane="meet3">
-            <div class="pprice"><span class="pcur">$</span><span class="pamt">270</span><span class="pper" data-i18n="p6.perMonth">/ month</span><s class="ptwas">$300</s></div>
-            <div class="pmeta"><span class="ptunit">$90 <span data-i18n="p6.each">ea.</span></span><span class="ptsave"><span data-i18n="p6.save">You save</span> $30</span></div>
-            <button type="button" class="buy selectable" data-sku="meet3" data-name-key="p6.t3" data-price="$270" data-i18n="mcart.choose">Choose</button>
-          </div>
-          <div class="ppane" data-pane="meet6">
-            <div class="pprice"><span class="pcur">$</span><span class="pamt">480</span><span class="pper" data-i18n="p6.perMonth">/ month</span><s class="ptwas">$600</s></div>
-            <div class="pmeta"><span class="ptunit">$80 <span data-i18n="p6.each">ea.</span></span><span class="ptsave"><span data-i18n="p6.save">You save</span> $120</span></div>
-            <button type="button" class="buy selectable" data-sku="meet6" data-name-key="p6.t6" data-price="$480" data-i18n="mcart.choose">Choose</button>
+            <button type="button" class="ptab on" data-pane="meet_single" role="tab"
+                    data-sku="meet_single" data-name-key="p6.t1" data-price="$100" data-i18n="p6.tab1">1 meeting</button>
+            <button type="button" class="ptab" data-pane="meet3" role="tab"
+                    data-sku="meet3" data-name-key="p6.t3" data-price="$270" data-i18n="p6.tab3">3 meetings</button>
+            <button type="button" class="ptab" data-pane="meet6" role="tab"
+                    data-sku="meet6" data-name-key="p6.t6" data-price="$480" data-i18n="p6.tab6">6 meetings</button>
           </div>
           <div class="ppane on" data-pane="meet_single">
             <div class="pprice"><span class="pcur">$</span><span class="pamt">100</span></div>
-            <div class="pmeta"><span class="ptunit">$100 <span data-i18n="p6.each">ea.</span></span></div>
-            <button type="button" class="buy selectable" data-sku="meet_single" data-name-key="p6.t1" data-price="$100" data-i18n="mcart.choose">Choose</button>
+            <div class="pqty" data-i18n="p6.q1">One single meeting — paid once, no subscription.</div>
+          </div>
+          <div class="ppane" data-pane="meet3">
+            <div class="pprice"><span class="pcur">$</span><span class="pamt">270</span><span class="pper" data-i18n="p6.perMonth">/ month</span><s class="ptwas">$300</s></div>
+            <div class="pqty" data-i18n="p6.q3">3 meetings every month — $90 each.</div>
+            <div class="pmeta"><span class="ptsave"><span data-i18n="p6.save">You save</span> $30</span></div>
+          </div>
+          <div class="ppane" data-pane="meet6">
+            <div class="pprice"><span class="pcur">$</span><span class="pamt">480</span><span class="pper" data-i18n="p6.perMonth">/ month</span><s class="ptwas">$600</s></div>
+            <div class="pqty" data-i18n="p6.q6">6 meetings every month — $80 each.</div>
+            <div class="pmeta"><span class="ptsave"><span data-i18n="p6.save">You save</span> $120</span></div>
           </div>
           <div class="pdivider"></div>
           <ul class="pfeat">
@@ -99,6 +101,7 @@
             <li><span class="pcheck"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span><span data-i18n="p6.b3">Monthly packages: the more meetings, the lower the price of each</span></li>
             <li><span class="pcheck"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span><span data-i18n="p6.b5">Seats are limited — calendar time is finite</span></li>
           </ul>
+          <button type="button" class="buy selectable" data-sku="meet_single" data-name-key="p6.t1" data-price="$100" data-i18n="mcart.choose">Choose</button>
         </section>
 
         <!-- Both — featured -->
@@ -108,18 +111,20 @@
           <div class="ptag" data-i18n="p6.cTag">Both programs together — the full experience.</div>
           <p class="pnote pnote-top" data-i18n="p6.comboNote">The classes program at 25% off, plus the meetings package you choose.</p>
           <div class="ptabs" role="tablist">
-            <button type="button" class="ptab on" data-pane="combo3" role="tab" data-i18n="p6.tabc3">Classes + 3</button>
-            <button type="button" class="ptab" data-pane="combo6" role="tab" data-i18n="p6.tabc6">Classes + 6</button>
+            <button type="button" class="ptab on" data-pane="combo3" role="tab"
+                    data-sku="combo3" data-name-key="p6.combo3" data-price="$533" data-i18n="p6.tabc3">Classes + 3</button>
+            <button type="button" class="ptab" data-pane="combo6" role="tab"
+                    data-sku="combo6" data-name-key="p6.combo6" data-price="$743" data-i18n="p6.tabc6">Classes + 6</button>
           </div>
           <div class="ppane on" data-pane="combo3">
             <div class="pprice"><span class="pcur">$</span><span class="pamt">533</span><span class="pper" data-i18n="p6.perMonth">/ month</span><s class="ptwas">$650</s></div>
+            <div class="pqty" data-i18n="p6.qc3">All the classes + 3 meetings every month.</div>
             <div class="pmeta"><span class="ptsave"><span data-i18n="p6.save">You save</span> $117</span></div>
-            <button type="button" class="buy selectable" data-sku="combo3" data-name-key="p6.combo3" data-price="$533" data-i18n="mcart.choose">Choose</button>
           </div>
           <div class="ppane" data-pane="combo6">
             <div class="pprice"><span class="pcur">$</span><span class="pamt">743</span><span class="pper" data-i18n="p6.perMonth">/ month</span><s class="ptwas">$950</s></div>
+            <div class="pqty" data-i18n="p6.qc6">All the classes + 6 meetings every month.</div>
             <div class="pmeta"><span class="ptsave"><span data-i18n="p6.save">You save</span> $207</span></div>
-            <button type="button" class="buy selectable" data-sku="combo6" data-name-key="p6.combo6" data-price="$743" data-i18n="mcart.choose">Choose</button>
           </div>
           <div class="pdivider"></div>
           <ul class="pfeat">
@@ -127,6 +132,7 @@
             <li><span class="pcheck"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span><span data-i18n="p6.c2">Plus your chosen meetings package, at its volume price</span></li>
             <li><span class="pcheck"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span><span data-i18n="p6.c3">Choose 3 or 6 meetings a month</span></li>
           </ul>
+          <button type="button" class="buy selectable" data-sku="combo3" data-name-key="p6.combo3" data-price="$533" data-i18n="mcart.choose">Choose</button>
         </section>
 
       </div>
@@ -189,14 +195,25 @@
         el.addEventListener('click', function(ev){ ev.preventDefault(); pick(el); });
         el.addEventListener('keydown', function(ev){ if(ev.key==='Enter'||ev.key===' '){ ev.preventDefault(); pick(el); } });
       });
-      // Package tabs: each card's tab strip switches which package pane shows.
+      // Package tabs: switching a tab swaps the visible price pane AND retargets
+      // that card's single bottom "Choose" button to the tab's package, so the
+      // button sits at the card's foot like card 1's. If the card was already
+      // the selection, the cart follows the new package.
       document.querySelectorAll('.pcard .ptabs').forEach(function(strip){
         var card = strip.closest('.pcard');
+        var btn  = card.querySelector('.buy.selectable');
         strip.querySelectorAll('.ptab').forEach(function(tb){
           tb.addEventListener('click', function(){
             var id = tb.getAttribute('data-pane');
             strip.querySelectorAll('.ptab').forEach(function(t){ t.classList.toggle('on', t===tb); });
             card.querySelectorAll('.ppane').forEach(function(p){ p.classList.toggle('on', p.getAttribute('data-pane')===id); });
+            if (!btn) return;
+            var wasPicked = btn.classList.contains('sel');
+            ['sku','name-key','price'].forEach(function(a){
+              var v = tb.getAttribute('data-' + a);
+              if (v !== null) btn.setAttribute('data-' + a, v);
+            });
+            if (wasPicked) pick(btn);   // keep the cart in sync with the new tab
           });
         });
       });
