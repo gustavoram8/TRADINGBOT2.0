@@ -431,6 +431,25 @@ sesiones de plan (sin `kind`) siguen su camino intacto. Templates `mentorship_ch
 **Test de aislamiento pasó**: pago de mentoría NO cambia `user.plan`; webhook de plan SÍ; evento mentoría
 apuntando a un Order de plan no lo activa; idempotencia OK; precio siempre del SKU. Stripe sigue inerte sin
 `STRIPE_SECRET_KEY` (cae a la página `done` manual).
+**✅ SESIÓN 2026-07-25 (5 tareas Fable):** (1) **Página-carrito de revisión** `GET /mentorship/checkout?sku=`
+(template `mentorship_checkout.html`, estilo mentorías, espejo del "Review your order" del landing): programa +
+qué-incluye (reusa claves p6.a*/b*/c*) + total server-side + "Continuar al pago" → POST create. El mcart ahora
+es GET a esa página (ya no POST directo). Claves `mco2.*` ×4 idiomas. CSS `.mco2-*` en improve.css. (2) **Cards
+con PESTAÑAS**: cards 2 (meetings) y 3 (Ambos) ya NO apilan tiers — cada una tiene tab-strip (`.ptabs`/`.ptab`/
+`.ppane`, JS en improve_plans.html) con UNA pestaña por paquete mostrando SU precio grande + tachado + ahorro +
+botón Elegir (mismo layout que card 1). Labels `p6.tab*` ×4. (3) **Renombres + ES natural** (×4 idiomas):
+"biblioteca grabada"→**"Clases pregrabadas y operativas en vivo"** y "llamadas/calls"→**"reuniones online"**
+en TODO el funnel (labels, tabs "Clases + 3/6", nombres de carrito, form); bio del mentor SIN mención de
+capital propio ("enseña exactamente lo que opera, sesión tras sesión"); 5/10/20 calls desactualizado→3/6;
+"aplicación"→"solicitud"; "Elige tu sala"→"Elige tu programa"; lead de puertas reescrito; país ejemplo
+Venezuela→Estados Unidos/United States. (4) **Barrido de botargas COMPLETO** (41 archivos logo2/3/4 ×
+light/dark): detector de bolsas blancas encerradas en 2 escalas + verificación visual — CERO defectos nuevos
+(todos los blancos son features: ojos/guantes/botas/humo/pizarra); los únicos reales eran fourth+blackflag
+welcome, ya corregidos. (5) **Menús Products/User por camo**: se ELIMINARON los hardcodes por-camo del
+`.products-menu` y el blanco forzado de `body.light` en ambos menús → regla genérica
+`body[class*="camo-"] { background: linear-gradient(var(--card),var(--card)), var(--bg) }` (mismo color que
+los paneles del camo, presente y futuros) + acordeón del sidebar SIEMPRE transparente (`!important`).
+Verificado en fourth/naval/mission-Marte/blackflag/premium.
 **✅ CARDS estilo landing (2026-07-24):** las 3 tarjetas de `/improve/plans` adoptaron el diseño de
 las cards Standard/Premium del landing (`.pcard` en `improve.css`: nombre mayúsc. dorado + tagline +
 precio grande + divisor + features con check-circles + botón full-width; "Ambos" = featured con
