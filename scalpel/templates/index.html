@@ -863,6 +863,14 @@
       z-index: 50;
     }
     body.light .account-menu { background: #FFFFFF; box-shadow: 0 14px 36px rgba(20,23,31,0.12); }
+    /* Any camo: same panel-matching composite as the sidebar/cards (translucent
+       --card painted over opaque --bg), instead of the stark white/near-black
+       boxes that clashed on navy/olive/parchment/Mars camos. */
+    body[class*="camo-"] .account-menu {
+      background: linear-gradient(var(--card), var(--card)), var(--bg);
+      border-color: var(--border2);
+      box-shadow: 0 14px 36px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.06);
+    }
     .account-menu.show { display: block; }
     .account-menu .row {
       display: flex;
@@ -2271,18 +2279,14 @@
       display: none; flex-direction: column; gap: 1px;
     }
     body.light .products-menu { background: #ffffff; }
-    /* Obsidian camo ground is black with cream text in BOTH toggle states, so a
-       white flyout (from body.light above) makes the cream text unreadable.
-       Force a dark obsidian panel under the premium camo, either mode. */
-    body.camo-premium .products-menu,
-    body.camo-premium.camo-day .products-menu { background: #17140f; border-color: rgba(212,175,55,0.28); }
-    /* Rising Sun ground is cream in BOTH toggle states, so the white flyout from
-       body.light above pops out as a stark white box. Match the cream panels of
-       the rest of the sidebar (opaque, so no bleed-through) in both modes. */
-    body.camo-rising-sun .products-menu { background: #fcf9f1; border-color: var(--border); }
-    /* Pole light: match the near-white the pale blueprint panels render as,
-       instead of the stark #fff flyout. (Dark pole keeps the dark flyout.) */
-    body.camo-pole.light .products-menu { background: #f9fbfc; border-color: var(--border); }
+    /* Any camo, any toggle state: paint the translucent --card over the opaque
+       --bg, so the flyout renders the SAME colour as the camo's own panels.
+       One rule replaces the old per-camo hardcodes (premium/rising-sun/pole) and
+       automatically covers every new camo (fourth, naval, mission, blackflag…). */
+    body[class*="camo-"] .products-menu {
+      background: linear-gradient(var(--card), var(--card)), var(--bg);
+      border-color: var(--border2);
+    }
     .products-menu.open { display: flex; }
     .products-group-label { font-size: 10px; font-weight: 700; text-transform: uppercase;
       letter-spacing: .1em; color: var(--muted); padding: 7px 12px 4px; }
@@ -24781,7 +24785,8 @@
   /* Products dropdown as an inline accordion inside the sidebar — never floats
      over the sidebar tabs nor the center content. */
   .ag-sidebar .products-menu{ position:static !important; width:100%; min-width:0; margin:2px 0 0;
-    background:transparent; border:0; box-shadow:none; backdrop-filter:none; -webkit-backdrop-filter:none;
+    background:transparent !important; border:0 !important; box-shadow:none !important;
+    backdrop-filter:none !important; -webkit-backdrop-filter:none !important;
     padding:2px 0 0; left:auto; top:auto; }
   .ag-sidebar .products-menu .products-item{ padding-left:10px; }
   .ag-rail{ position:sticky; top:22px; display:flex; flex-direction:column; gap:16px; }
