@@ -328,24 +328,6 @@
     }
     @keyframes nxfw{0%{transform:translate(-50%,-50%) scale(.12);opacity:0}10%{opacity:1}70%{opacity:.85}100%{transform:translate(-50%,-50%) scale(7.5);opacity:0}}
     @media (prefers-reduced-motion: reduce){ #nx-fw-layer{ display:none !important; } }
-    /* Statue-of-Liberty torch flame — a tiny GPU-only flicker (transform/opacity
-       only → no layout, no jank), pinned by JS to the torch in the scene. */
-    #nx-torch { position:fixed; z-index:-1; pointer-events:none; }
-    #nx-torch .fl, #nx-torch .glow { position:absolute; left:50%; top:0; width:100%; height:100%; }
-    #nx-torch .fl {
-      background:radial-gradient(46% 56% at 50% 72%, #fff3b0 0%, #ffd24d 34%, #ff9422 66%, rgba(255,120,20,0) 72%);
-      border-radius:50% 50% 46% 46% / 66% 66% 40% 40%;
-      transform-origin:50% 100%;
-      animation:nxtorch 820ms ease-in-out infinite alternate;
-    }
-    #nx-torch .glow {
-      background:radial-gradient(50% 50% at 50% 60%, rgba(255,185,80,0.55), rgba(255,150,40,0) 70%);
-      transform-origin:50% 70%;
-      animation:nxtorchG 1500ms ease-in-out infinite alternate;
-    }
-    @keyframes nxtorch{0%{transform:translateX(-50%) scaleY(.86) scaleX(1.02);opacity:.9}50%{transform:translateX(-52%) scaleY(1.14) scaleX(.92);opacity:1}100%{transform:translateX(-48%) scaleY(.96) scaleX(1.05);opacity:.94}}
-    @keyframes nxtorchG{0%{transform:translateX(-50%) scale(.9);opacity:.45}100%{transform:translateX(-50%) scale(1.15);opacity:.8}}
-    @media (prefers-reduced-motion: reduce){ #nx-torch{ display:none !important; } }
 
 
     /* ═══ Naval (military / tactical) — field-camouflage ground (olive/khaki/
@@ -25312,35 +25294,6 @@
     }
     function stop(){ if(timer){ clearTimeout(timer); timer=null; } if(layer){ layer.innerHTML=''; } }
     function sync(){ if(active()) start(); else stop(); }
-    if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', sync); else sync();
-    try{ new MutationObserver(sync).observe(document.body,{attributes:true,attributeFilter:['class']}); }catch(e){}
-  })();
-
-  /* Fourth-of-July torch flame: a small flickering flame pinned to the Statue of
-     Liberty's torch in the background scene. Position tracks viewport width (the
-     scene is `100% auto center bottom`); animation is GPU-only. Reduced-motion
-     users keep just the static SVG flame. */
-  (function(){
-    var el=null, CX=183, CY=48, CW=1240, CH=300;   // torch point in scene canvas
-    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    function active(){ var c=document.body.classList; return c.contains('camo-fourth') && !c.contains('ag-synapse-mode'); }
-    function place(){
-      if(!el) return;
-      var W=innerWidth, H=innerHeight, s=W/CW;
-      var w=Math.max(13,24*s), h=Math.max(18,36*s);
-      var x=CX*s, y=(H-CH*s)+CY*s;
-      el.style.width=w+'px'; el.style.height=h+'px';
-      el.style.left=(x-w/2)+'px'; el.style.top=(y-h*0.62)+'px';
-    }
-    function show(){
-      if(reduce) return;
-      if(!el){ el=document.createElement('div'); el.id='nx-torch';
-        el.innerHTML="<div class='glow'></div><div class='fl'></div>"; document.body.appendChild(el); }
-      el.style.display='block'; place();
-    }
-    function hide(){ if(el) el.style.display='none'; }
-    function sync(){ if(active()) show(); else hide(); }
-    addEventListener('resize', function(){ if(el && el.style.display!=='none') place(); });
     if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', sync); else sync();
     try{ new MutationObserver(sync).observe(document.body,{attributes:true,attributeFilter:['class']}); }catch(e){}
   })();

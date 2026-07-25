@@ -156,15 +156,14 @@ sampleado con precisión de píxel); camos con arte que NO debe recolorearse (ej
   Estatua de la Libertad "parecía dibujo de niño" → rehecha en SVG procedural (`scratchpad/build_fourth_scene.py`):
   pedestal escalonado, túnica esbelta con pliegues, corona de 7 picos, tablilla pegada al costado, brazo en alto
   (acortado a pedido) con antorcha. Monumentos DC limpios (obelisco, cúpula del Capitolio con columnas, Lincoln con
-  columnata). Capa `center bottom / 100% auto`. **Camo ESPECIAL con DOS animaciones:** (1) fuegos artificiales
-  (`#nx-fw-layer`, `<script>` propio gateado a `body.camo-fourth`) — **reposicionados (2026-07-25) más arriba y
-  hacia los lados** (~56% en las columnas laterales altas, resto en la franja superior central) para que los
-  paneles —dibujados por encima de la capa de fuegos— NO los tapen; (2) **llama de la antorcha** (`#nx-torch`,
-  IIFE propio): mini fuego parpadeante (2 capas radial-gradient + `border-radius` de gota) anclado por JS al
-  punto de la antorcha en el canvas de la escena (`CX=183,CY=48` de 1240×300; posición recalculada con el ancho
-  del viewport porque la escena es `100% auto`; se reubica en `resize`). **Animación SOLO transform/opacity → GPU,
-  sin lag/layout**; bajo `prefers-reduced-motion` no se crea el elemento (queda la llama estática del SVG). Ambas
-  pausadas/ocultas fuera de `camo-fourth` o en Synapse. ⚠️ La estatua queda parcialmente detrás del sidebar en
+  columnata). La antorcha lleva una **llama estática dorada** en el SVG. Capa `center bottom / 100% auto`.
+  **Camo ESPECIAL con animación:** fuegos artificiales (`#nx-fw-layer`, `<script>` propio gateado a
+  `body.camo-fourth`) — **reposicionados (2026-07-25) más arriba y hacia los lados** (~56% en las columnas
+  laterales altas, resto en la franja superior central) para que los paneles —dibujados por encima de la capa
+  de fuegos— NO los tapen; pausados/ocultos fuera de `camo-fourth` o en Synapse, off bajo `prefers-reduced-motion`.
+  ⚠️ **Se PROBÓ y se DESCARTÓ una llama animada de la antorcha** (`#nx-torch`, radial-gradients parpadeantes): al
+  usuario le pareció fea ("bola de Dragon Ball") → eliminada. NO re-agregar. La llama estática del SVG se queda.
+  ⚠️ La estatua queda parcialmente detrás del sidebar en
   `/app` (translúcido, se ve tenue); plena en welcome/móvil. Patrón iOS-safe (body transparent +
   `::before` fixed, como Premium — NO `background-attachment:fixed`). Logo blanco (invert de `logo_t`) en ambos
   modos. Un solo look navy; mascota welcome ya está (dark+light), **pass/fail las sube el usuario**. ⚠️ **Lección
