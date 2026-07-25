@@ -577,6 +577,13 @@ dispare dos veces.
 ### 🚨 Alerta recurrente (mostrar hasta que el usuario confirme que lo hizo)
 1. Comprar dominio + crear correo empresarial + linkear dominio al VPS (DNS A → 62.171.180.22, nginx+SSL). Sin esto: sitio en IP cruda, sin HTTPS, sin email empresarial.
 2. **INSTALAR STRIPE REAL (modo LIVE) — es lo ÚNICO que falta para poder COBRAR cuando alguien contrata un plan.** El código ya está listo y probado en modo TEST (ver "🟢 Stripe" abajo); **la LLC YA ESTÁ hecha.** Lo pendiente es puramente de configuración: (a) poner las claves `sk_live_…` + `whsec_…` en supervisor conf y `scalpel/.env`; (b) **conectar en el dashboard de Stripe la cuenta bancaria del amigo** para recibir los payouts; (c) configurar el webhook `/webhook/stripe` en el dashboard de Stripe (necesita el dominio+HTTPS del punto 1). **El cobro es en USD por tarjeta vía Stripe → payout a la cuenta bancaria del amigo. NO se cobra USDT ni Binance.** **Mostrar este recordatorio una vez al día hasta que el usuario confirme que Stripe LIVE está activo.**
+   ⚠️ **RECORDATORIO OBLIGATORIO AL TOCAR STRIPE (pedido explícito del usuario 2026-07-25 — repetir SIN
+   EXCEPCIONES cada vez que se trabaje en Stripe):** al activar Stripe LIVE hay que **actualizar la Sección 5
+   de los T&C** (`terms.html`, "Plans, Payments & Billing"): hoy dice *"Payments are currently processed
+   manually (e.g., by bank transfer…)"* — con Stripe activo debe decir que los pagos se procesan por tarjeta
+   vía nuestro procesador de pagos (Stripe), **manteniendo** el "no auto-renovación" (decisión firme del
+   usuario: TODO el sitio sin renovación automática; el cliente re-paga manualmente cada período). Actualizar
+   también las traducciones ES/FR/PT de esa sección en `legal_i18n.js`.
 
 ---
 
