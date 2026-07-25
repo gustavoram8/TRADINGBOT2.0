@@ -83,6 +83,12 @@
 
       <form method="post" action="/mentorship/checkout/create" class="mco2-payform">
         <input type="hidden" name="sku" value="{{ sku }}" />
+        <!-- Purchase-time T&C acceptance: the checkbox is required client-side
+             (native validation) AND enforced server-side in checkout/create. -->
+        <label class="mco2-terms">
+          <input type="checkbox" name="terms_ok" value="1" required />
+          <span data-i18n-html="mco2.terms">I have read and accept the <a href="/terms" target="_blank" rel="noopener">Terms &amp; Conditions</a>, including the Mentorship Program terms.</span>
+        </label>
         <button type="submit" class="cta"><span data-i18n="mco2.pay">Continue to payment</span>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </button>

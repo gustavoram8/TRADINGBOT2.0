@@ -122,6 +122,29 @@ con delimitador `'` y comillas HTML dobles; guillemets `« »`. PT brasileño (v
 **Nota:** fechas "Last updated" quedan server/estáticas en inglés (bajo impacto, igual criterio que el
 resto del sitio con `strftime`).
 
+**✅ T&C — SECCIÓN 19 MENTORÍA + límites de planes (2026-07-25, luz verde del usuario).** `terms.html`
+pasó de 18 a **19 secciones**: nueva **"19. Mentorship Program — Additional Terms"** (claves nuevas
+`terms.toc19/t19/b19`, SIN renumerar nada — Contact sigue siendo 18; cero refs rotas). Contenido 19:
+dos productos (Programa de Clases / Reuniones 1-1), mentores=educadores no asesores (callout),
+en-vivos ocasionales sin frecuencia garantizada, acceso termina con la membresía + streaming-only/no
+descargas (breach de Secc 8 → terminación Secc 10), reuniones 30min (tarde/no-show del cliente =
+entregada; cierre anticipado de mutuo acuerdo = entregada; extensión = cortesía del mentor sin cargo),
+compra solo con disponibilidad de calendario, cancelación del mentor → reprogramar 14 días o reembolso
+prorrateado, idiomas ES/EN only, plataformas de terceros (Discord/video), pago único sin auto-renovación,
+18+. **Secc 5 ampliada:** límites por plan (Free 1/7d+1proj; Standard 1/24h+5proj+Foro; Premium
+5/24h+10proj+Foro+features) + remisión al card al momento de compra + **camos/PDF = compra única solo
+decorativa/solo contenido** + camos permanentes anclados al User ID (se pierden si terminación por
+violación). **Secc 7:** "Sole Exception"→"Exception" + excepción nueva (reunión cancelada por mentor,
+prorrateo de lo pagado) + **plazo de procesamiento 15 días hábiles**. Traducciones ES/FR/PT completas en
+`legal_i18n.js` (paridad 64 claves/idioma verificada; FR con apóstrofes tipográficos). **Checkbox de
+aceptación** en el carrito de mentoría (`mco2.terms` ×4): required nativo + backstop server en
+`/mentorship/checkout/create` (sin `terms_ok=1` → redirect a review, no crea orden) + audit detail.
+E2E probado + navegador ES. **Decisiones registradas:** reembolso SOLO (a) falla técnica 72h (ya existía)
+y (b) reunión cancelada por mentor no reprogramada en 14 días, prorrateado a lo pagado; nada más es
+reembolsable. Pre-Flight queda premium-only. **PENDIENTE legal aparte:** contrato privado con Gabriel
+(contratista independiente: IP de las clases grabadas, reparto, obligaciones, no-cobro-extra) — NO va
+en los T&C públicos.
+
 **🟢 CAMOS — sistema de skins comprables (EN CURSO, actualizado 2026-07-19).** Un camo = un *theme* que
 reskinea SOLO el fondo/colores del sitio (layout/paneles/posiciones NO cambian) + swap de la mascota en
 el Quiz (welcome + pass/fail). **Infra base (cableada, estable):** `User.active_camo`/`owned_camos` +

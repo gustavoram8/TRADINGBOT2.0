@@ -194,6 +194,7 @@
       'mco2.oneTime': 'one-time payment',
       'mco2.pay': 'Continue to payment',
       'mco2.change': '← Change selection',
+      'mco2.terms': 'I have read and accept the <a href="/terms" target="_blank" rel="noopener">Terms &amp; Conditions</a>, including the Mentorship Program terms.',
       'p6.cta': 'Request your seat',
       'p6.reassure': 'Applications come first. If your application was approved, this is where your seat gets reserved.'
     },
@@ -380,6 +381,7 @@
       'mco2.oneTime': 'pago único',
       'mco2.pay': 'Continuar al pago',
       'mco2.change': '← Cambiar selección',
+      'mco2.terms': 'He leído y acepto los <a href="/terms" target="_blank" rel="noopener">Términos y Condiciones</a>, incluidos los términos del Programa de Mentoría.',
       'p6.cta': 'Solicita tu cupo',
       'p6.reassure': 'Primero la solicitud. Si la tuya fue aprobada, aquí es donde reservas tu cupo.'
     },
@@ -566,6 +568,7 @@
       'mco2.oneTime': 'paiement unique',
       'mco2.pay': 'Continuer vers le paiement',
       'mco2.change': '← Modifier la sélection',
+      'mco2.terms': 'J’ai lu et j’accepte les <a href="/terms" target="_blank" rel="noopener">Conditions Générales</a>, y compris les conditions du Programme de Mentorat.',
       'p6.cta': 'Demande ta place',
       'p6.reassure': 'La candidature passe d’abord. Si ta candidature a été approuvée, c’est ici que ta place se réserve.'
     },
@@ -752,6 +755,7 @@
       'mco2.oneTime': 'pagamento único',
       'mco2.pay': 'Continuar para o pagamento',
       'mco2.change': '← Trocar a seleção',
+      'mco2.terms': 'Li e aceito os <a href="/terms" target="_blank" rel="noopener">Termos e Condições</a>, incluindo os termos do Programa de Mentoria.',
       'p6.cta': 'Solicite a sua vaga',
       'p6.reassure': 'A inscrição vem primeiro. Se a sua inscrição foi aprovada, é aqui que a sua vaga é reservada.'
     }

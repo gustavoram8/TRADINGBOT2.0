@@ -2285,6 +2285,11 @@ def mentorship_checkout_create():
     if not spec:
         return redirect(url_for('improve_plans'))
 
+    # Purchase-time T&C acceptance (the review page carries a required checkbox;
+    # this is the server-side backstop). Send them back to review if missing.
+    if request.form.get('terms_ok') != '1':
+        return redirect(url_for('mentorship_checkout_review', sku=sku))
+
     # One pending mentorship order at a time — don't let them pile up.
     existing = MentorshipOrder.query.filter_by(
         user_id=current_user.id, status='pending').first()
@@ -2300,7 +2305,7 @@ def mentorship_checkout_create():
         db.session.add(order)
     db.session.commit()
     record_audit_event('mentorship_order_created', user_id=current_user.id,
-                        detail=f'{sku} ${order.price:.2f}')
+                        detail=f'{sku} ${order.price:.2f} (T&C accepted at checkout)')
 
     if STRIPE_ENABLED and order.price > 0:
         try:
