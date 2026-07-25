@@ -539,11 +539,20 @@ dispare dos veces.
 - App: `scalpel/app.py`. Local: `FLASK_DEBUG=1 python3 scalpel/app.py`.
 
 ## Límites de plan
-| Plan | Screenshots | Ventana |
-|---|---|---|
-| Free | 1 | 7 días |
-| Standard | 1 | 24 h |
-| Premium | 5 | 24 h |
+| Plan | Screenshots | Ventana | Proyectos analizador | Foro | Pre-Flight |
+|---|---|---|---|---|---|
+| Free | 1 | 7 días | 1 | ✗ | ✗ |
+| Standard | 1 | 24 h | 5 | ✓ (desde 2026-07-25) | ✗ |
+| Premium | 5 | 24 h | 10 | ✓ | ✓ (10 checklists, mismo `project_limit()`) |
+
+- **Foro = Standard + Premium (2026-07-25):** gate nuevo `standard_required`/`is_standard_up()` en app.py
+  (8 endpoints /forum/*); cliente: `isPaid` en `setupFeaturePanels()` (forum-view keyea isPaid, resto isPremium),
+  candado del tab forum, `switchTab` forum abre con standard, `forum.intro` ya no dice "Premium traders" (×4).
+  Cards actualizadas: landing Standard (+`ps_forum` ×4), pricing.html standard card + tabla, checkout.html
+  standard included. **Premium camos: la card decía "3 Camos included" → corregido a 1 camo especial** (pp_camos
+  ×4, tabla comparativa 3→1, camos.hero "two ship with your plan"→"cada plan de pago incluye su propio skin" ×4).
+  ⚠️ `add_camo()` existe pero NADA lo llama aún — el otorgamiento automático del camo de plan al primer pago
+  es cableado pendiente (cuando Stripe LIVE activo).
 
 ## Feature flags
 - **Prop Firm Scout:** construido pero DESACTIVADO (`SCOUT_ENABLED=False` en `app.py`). Reactivar solo si el usuario lo pide.

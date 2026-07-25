@@ -1221,13 +1221,32 @@ def beta_required(fn):
 
 
 def premium_required(fn):
-    """JSON guard for premium-only API endpoints (Trading Forum, Prop Firm Scout)."""
+    """JSON guard for premium-only API endpoints (Daily Challenge, Prop Firm Scout)."""
     @wraps(fn)
     def wrapper(*args, **kwargs):
         if not current_user.is_authenticated:
             return jsonify({'error': 'unauthorized'}), 401
         if not is_premium():
             return jsonify({'error': 'premium_required'}), 403
+        return fn(*args, **kwargs)
+    return wrapper
+
+
+def is_standard_up():
+    """True for any PAID plan (standard or premium) or admin."""
+    return current_user.is_authenticated and (
+        current_user.plan in ('standard', 'premium') or current_user.is_admin)
+
+
+def standard_required(fn):
+    """JSON guard for paid-plan API endpoints (Trading Forum: Standard + Premium
+    since 2026-07-25 — it was premium-only before)."""
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return jsonify({'error': 'unauthorized'}), 401
+        if not is_standard_up():
+            return jsonify({'error': 'standard_required'}), 403
         return fn(*args, **kwargs)
     return wrapper
 
@@ -4981,7 +5000,7 @@ def save_forum_image(file):
 
 
 @app.route('/forum/feed')
-@premium_required
+@standard_required
 def forum_feed():
     try:
         page = max(1, int(request.args.get('page', 1)))
@@ -5004,7 +5023,7 @@ def forum_feed():
 
 
 @app.route('/forum/post/<int:pid>')
-@premium_required
+@standard_required
 def forum_post_detail(pid):
     post = ForumPost.query.filter_by(id=pid, is_deleted=False).first()
     if not post:
@@ -5019,7 +5038,7 @@ def forum_post_detail(pid):
 
 
 @app.route('/forum/post', methods=['POST'])
-@premium_required
+@standard_required
 def forum_create_post():
     # Cost/abuse guards run BEFORE any AI call (see the forum guards section).
     muted = forum_mute_remaining(current_user)
@@ -5071,7 +5090,7 @@ def forum_create_post():
 
 
 @app.route('/forum/post/<int:pid>/comment', methods=['POST'])
-@premium_required
+@standard_required
 def forum_add_comment(pid):
     # Cost/abuse guards run BEFORE any AI call (see the forum guards section).
     muted = forum_mute_remaining(current_user)
@@ -5120,7 +5139,7 @@ def forum_add_comment(pid):
 
 
 @app.route('/forum/react', methods=['POST'])
-@premium_required
+@standard_required
 def forum_react():
     emoji = request.form.get('emoji')
     if emoji not in EMOJI_SET:
@@ -5157,7 +5176,7 @@ def forum_react():
 
 
 @app.route('/forum/save', methods=['POST'])
-@premium_required
+@standard_required
 def forum_save():
     raw_pid = request.form.get('post_id')
     if not (raw_pid and raw_pid.isdigit()):
@@ -5175,7 +5194,7 @@ def forum_save():
 
 
 @app.route('/forum/post/<int:pid>/delete', methods=['POST'])
-@premium_required
+@standard_required
 def forum_delete_post(pid):
     post = db.session.get(ForumPost, pid)
     if not post:
@@ -5188,7 +5207,7 @@ def forum_delete_post(pid):
 
 
 @app.route('/forum/comment/<int:cid>/delete', methods=['POST'])
-@premium_required
+@standard_required
 def forum_delete_comment(cid):
     c = db.session.get(ForumComment, cid)
     if not c:

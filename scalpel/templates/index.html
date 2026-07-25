@@ -7510,7 +7510,7 @@
       'feature.upgrade': 'Upgrade to Premium',
       'forum.title': 'Forum Trading',
       'forum.desc': 'Connect with other traders, share setups, and discuss trading concepts in a dedicated community space.',
-      'forum.intro': 'Share setups, ask questions and discuss trading with other Premium traders. Be respectful and stay on topic — every post is auto-moderated.',
+      'forum.intro': 'Share setups, ask questions and discuss trading with other members. Be respectful and stay on topic — every post is auto-moderated.',
       'forum.new': 'New post',
       'forum.feed': 'Feed',
       'forum.savedTab': 'Saved',
@@ -7992,7 +7992,7 @@
       'feature.upgrade': 'Pasar a Premium',
       'forum.title': 'Foro Trading',
       'forum.desc': 'Conecta con otros traders, comparte setups y discute conceptos de trading en un espacio comunitario dedicado.',
-      'forum.intro': 'Comparte setups, haz preguntas y discute sobre trading con otros traders Premium. Sé respetuoso y mantente en tema — cada publicación se modera automáticamente.',
+      'forum.intro': 'Comparte setups, haz preguntas y discute sobre trading con otros miembros. Sé respetuoso y mantente en tema — cada publicación se modera automáticamente.',
       'forum.new': 'Nueva publicación',
       'forum.feed': 'Feed',
       'forum.savedTab': 'Guardados',
@@ -8474,7 +8474,7 @@
       'feature.upgrade': 'Passer à Premium',
       'forum.title': 'Forum Trading',
       'forum.desc': "Connectez-vous avec d'autres traders, partagez vos setups et discutez des concepts de trading dans un espace communautaire dédié.",
-      'forum.intro': "Partagez vos setups, posez des questions et discutez de trading avec d'autres traders Premium. Restez respectueux et dans le sujet — chaque publication est modérée automatiquement.",
+      'forum.intro': "Partagez vos setups, posez des questions et discutez de trading avec d'autres membres. Restez respectueux et dans le sujet — chaque publication est modérée automatiquement.",
       'forum.new': 'Nouvelle publication',
       'forum.feed': 'Fil',
       'forum.savedTab': 'Enregistrés',
@@ -8956,7 +8956,7 @@
       'feature.upgrade': 'Fazer upgrade para Premium',
       'forum.title': 'Fórum Trading',
       'forum.desc': 'Conecte-se com outros traders, compartilhe setups e discuta conceitos de trading em um espaço comunitário dedicado.',
-      'forum.intro': 'Compartilhe setups, faça perguntas e discuta sobre trading com outros traders Premium. Seja respeitoso e mantenha o foco — cada publicação é moderada automaticamente.',
+      'forum.intro': 'Compartilhe setups, faça perguntas e discuta sobre trading com outros membros. Seja respeitoso e mantenha o foco — cada publicação é moderada automaticamente.',
       'forum.new': 'Nova publicação',
       'forum.feed': 'Feed',
       'forum.savedTab': 'Salvos',
@@ -11439,6 +11439,9 @@
   // and keeps it in sync on language change.
   function setupFeaturePanels() {
     const isPremium = U.plan === 'premium';
+    // The Trading Forum is available to ALL paid plans (Standard + Premium);
+    // every other gated feature stays Premium-only.
+    const isPaid = isPremium || U.plan === 'standard';
     document.querySelectorAll('.feature-view').forEach(view => {
       const panel   = view.querySelector('.feature-panel');
       const realApp = view.querySelector('.forum-app, .scout-app, .scalper-app, .synapse-app, .quiz-app, .preflight-app');  // built features
@@ -11453,15 +11456,17 @@
       // own content — skip them so the badge/lock wiring below can't throw.
       if (!badge || !circle || !state) return;
 
-      // Premium members get the real feature where it exists (Forum). The
-      // locked/coming-soon panel is only shown when there is no real app.
-      if (isPremium && realApp) {
+      // Members with the required plan get the real feature where it exists
+      // (Forum unlocks at Standard; the rest at Premium). The locked /
+      // coming-soon panel is only shown when there is no real app.
+      const unlocked = (view.id === 'forum-view') ? isPaid : isPremium;
+      if (unlocked && realApp) {
         if (panel) panel.style.display = 'none';
         realApp.style.display = 'block';
       } else {
         if (panel) panel.style.display = '';
         if (realApp) realApp.style.display = 'none';
-        if (isPremium) {
+        if (unlocked) {
           badge.className = 'feature-badge soon';
           badge.setAttribute('data-i18n', 'feature.soon');
           circle.className = 'feature-circle soon';
@@ -11480,9 +11485,13 @@
         }
       }
     });
-    // Hide tab lock icons for Premium users
-    document.querySelectorAll('.tab .lock').forEach(l => {
-      l.style.display = isPremium ? 'none' : 'block';
+    // Hide tab lock icons where the user's plan unlocks the tab
+    // (Forum unlocks at Standard; everything else at Premium).
+    document.querySelectorAll('.tab').forEach(t => {
+      const l = t.querySelector('.lock');
+      if (!l) return;
+      const open = (t.dataset.tab === 'forum') ? isPaid : isPremium;
+      l.style.display = open ? 'none' : 'block';
     });
   }
 
@@ -11497,7 +11506,7 @@
     // Widen container for Scout marketplace and Scalpe® studio, restore for other tabs
     document.querySelector('.container').classList.toggle('scout-active', tab === 'scout' || tab === 'scalper' || tab === 'synapse');
     if (tab === 'discover' && window.Discover) window.Discover.open();
-    if (tab === 'forum' && U.plan === 'premium' && window.Forum) window.Forum.open();
+    if (tab === 'forum' && (U.plan === 'premium' || U.plan === 'standard') && window.Forum) window.Forum.open();
     if (tab === 'scout' && U.plan === 'premium' && window.Scout) window.Scout.open();
     if (tab === 'quiz'    && U.plan === 'premium' && window.Quiz)    window.Quiz.open();
     if (tab === 'preflight' && U.plan === 'premium' && window.Preflight) window.Preflight.open();
