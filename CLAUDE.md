@@ -235,6 +235,13 @@ sampleado con precisión de píxel); camos con arte que NO debe recolorearse (ej
   terminando arriba-derecha → la X quedaba "solitaria sin sentido". Rediseñada: el rastro sale de la brújula
   (abajo-der), serpentea por el mapa y **termina justo en la X** (canvas ~128,650) + 3 dotscillos que entran a
   la X. Dasharray `0.5 15` con `stroke-linecap=round` = puntitos de mapa del tesoro.
+  ⚠️ **Fix definitivo X (2026-07-25):** la X era un elemento SEPARADO anclado a la esquina con tamaño FIJO
+  (`left 4% bottom 9% / 104px`) mientras la ruta usaba `100% 100%` (porcentajes) → en pantallas grandes la
+  ruta (que escala) se alejaba de la X (fija) y "no llegaba ni cerca". Solución: **la X ahora se dibuja
+  DENTRO del mismo SVG de la ruta** (canvas ~125,665), así ambas escalan juntas con `100% 100%` y el rastro
+  termina SIEMPRE en la X en cualquier pantalla (verificado 1440 y 1920). Se eliminó la capa X de esquina.
+  Regla: elementos que DEBEN tocarse van en el MISMO sistema de coordenadas (mismo SVG), nunca uno con
+  `100% 100%` y otro con px fijo anclado a la esquina.
 - **Pendientes de theme:** 13 slugs más sin arte de mascota
   aún. Antes de diseñar cada uno: preguntar 1ª idea/temática al usuario (así arrancó Pole: "plano de
   construcción de F1"), ofrecer 3 variantes, iterar sobre la elegida, cablear igual que Pole/Premium
