@@ -189,6 +189,18 @@ sampleado con precisión de píxel); camos con arte que NO debe recolorearse (ej
   ⚠️ **Fix Capitolio (2026-07-25):** el 3er monumento (cúpula) tenía el domo muy PLANO (arco rx=70 vs
   media-cuerda 52 → apex ~y189) mientras el tambor/estatuita estaban en y140-176 → parecían un "rectángulo
   flotando". Fix: domo alto (rx=52=media-cuerda, ry=60 → apex ~y138) + base-tambor, todo conectado.
+  ⚠️ **🔴 LECCIÓN CRÍTICA — el recorte del 18-jul DESTRUYÓ arte (descubierto y revertido 2026-07-25):** el
+  commit `e86ff8f` ("clear enclosed background pockets") borró **bolsas blancas encerradas** de forma
+  automática y se comió **arte legítimo en CASI TODAS las botargas**: interiores de llamas, relleno de humo,
+  blancos de velas. Medido: `logo3_blackflag` −39.305px, `logo4_blackflag` −27.307px (el barco en llamas
+  perdió el relleno de casi todas las llamas —incluidas las tablas flotando— quedando solo contornos naranjas
+  sobre el pergamino), `logo4_pole` −27.197, `logo3_naval` −26.436, `logo3_mission` −22.206, `logo4_naval`
+  −22.142, `logo4_premium` −20.202, y −4.000/−9.000 en todos los welcome. **Fix:** restaurados los 32 PNG
+  desde `5b1c773` (revisión previa al recorte) y re-aplicados SOLO los arreglos verificados por el usuario
+  (fourth: punta+axila+estrella; blackflag welcome: axila; blackflag pass: 3 bolsas reales entre piernas y
+  bajo brazos). **REGLA: NUNCA correr un borrado automático de "blancos encerrados" sobre estas botargas** —
+  el personaje y su escenario tienen blancos legítimos por todos lados (llamas, humo, velas, arroz, guantes,
+  ojos). Cualquier recorte debe ser por semilla puntual + verificación visual del antes/después.
   ⚠️ **Fix botargas welcome (recorte viejo, 2026-07-25):** el cutout del 18-jul dejó defectos en las
   botargas del "muñeco-flecha": (a) la **punta inferior de la flecha** transparente (se veía el fondo) y
   (b) la **axila izquierda** rellena de BLANCO (debía ser transparente). Corregido en **fourth** (punta

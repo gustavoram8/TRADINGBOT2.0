@@ -386,6 +386,14 @@ h2.ch-title{
 .af-waiver input{margin-top:3px; width:15px; height:15px; flex-shrink:0; accent-color:var(--gold); cursor:pointer}
 .af-waiver span{font-size:12.5px; line-height:1.6; color:var(--muted)}
 .af-error{margin-top:16px; font-size:13px; color:#e8736b}
+/* The one field still missing on submit — the form scrolls to it and marks it,
+   so an incomplete form never reads as "the button doesn't work". */
+.af-bad > span{color:#e8736b}
+.af-bad input,.af-bad select,.af-bad textarea{
+  border-color:#e8736b !important; box-shadow:0 0 0 3px rgba(232,115,107,.18)}
+.af-bad .af-chips{border-radius:10px; box-shadow:0 0 0 3px rgba(232,115,107,.18); padding:3px}
+.af-waiver.af-bad{border-radius:10px; box-shadow:0 0 0 3px rgba(232,115,107,.18)}
+.af-waiver.af-bad span{color:#e8736b}
 .af-submit{border:0; cursor:pointer; font-family:inherit}
 .af-submit:disabled{opacity:.55; cursor:default; transform:none}
 .af .reassure{margin-top:16px}

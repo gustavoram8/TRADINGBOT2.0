@@ -251,6 +251,18 @@
         document.querySelectorAll('#' + id + ' button.on'),
         function(b){ return b.getAttribute('data-v'); });
     }
+    function chipsBox(id){ return document.getElementById(id); }
+    // Highlight the field the user still has to fill (see the submit handler).
+    function fieldOf(el){
+      return (el && el.closest) ? (el.closest('.af-field') || el.closest('.af-waiver') || el) : el;
+    }
+    function markBad(el){
+      var box = fieldOf(el);
+      if (box && box.classList) box.classList.add('af-bad');
+    }
+    function clearBad(){
+      document.querySelectorAll('.af-bad').forEach(function(n){ n.classList.remove('af-bad'); });
+    }
     function init(){
       var form = document.getElementById('apply-form');
       if (!form) return;
@@ -259,7 +271,20 @@
         box.addEventListener('click', function(e){
           var b = e.target.closest('button'); if (!b) return;
           b.classList.toggle('on');
+          var fld = box.closest('.af-field') || box;
+          if (fld.classList) fld.classList.remove('af-bad');
         });
+      });
+      // Any edit clears the "missing field" highlight and the error banner.
+      form.addEventListener('input', function(e){
+        var box = fieldOf(e.target);
+        if (box && box.classList) box.classList.remove('af-bad');
+        var err = document.getElementById('af-error');
+        if (err && !err.hidden && !form.querySelector('.af-bad')) err.hidden = true;
+      });
+      form.addEventListener('change', function(e){
+        var box = fieldOf(e.target);
+        if (box && box.classList) box.classList.remove('af-bad');
       });
       // "Language for…" label follows the program chosen:
       //   calls only → calls · library only → classes · both → classes & calls.
@@ -300,14 +325,41 @@
           adult: f.adult.checked, waiver: f.waiver.checked,
           lang: (function(){ try { return localStorage.getItem('scalpel_lang') || 'en'; } catch(_) { return 'en'; } })()
         };
-        // every field is required
-        if (!payload.name || !payload.username || !payload.email || payload.email.indexOf('@') < 0 ||
-            !payload.program || !payload.experience || !payload.situation ||
-            !payload.hours || !payload.goals.length || !payload.strength ||
-            !payload.weakness || !payload.assets.length || !payload.country ||
-            !payload.age || !payload.call_lang || !payload.call_slot ||
-            !payload.source || !payload.adult || !payload.waiver){
-          err.hidden = false; return;
+        // Every field is required. The form is `novalidate`, so we own the
+        // validation — and we point the user AT the missing field instead of
+        // just showing a generic error they have to hunt for (which read as
+        // "the button doesn't work, click it again").
+        var checks = [
+          [f.username,            !!payload.username],
+          [f.name,                !!payload.name],
+          [f.email,               !!payload.email && payload.email.indexOf('@') > 0],
+          [f.program,             !!payload.program],
+          [f.experience,          !!payload.experience],
+          [f.situation,           !!payload.situation],
+          [f.hours,               !!payload.hours],
+          [chipsBox('chips-goals'),  payload.goals.length > 0],
+          [f.strength,            !!payload.strength],
+          [f.weakness,            !!payload.weakness],
+          [chipsBox('chips-assets'), payload.assets.length > 0],
+          [f.country,             !!payload.country],
+          [f.age,                 !!payload.age],
+          [f.call_lang,           !!payload.call_lang],
+          [f.call_slot,           !!payload.call_slot],
+          [f.source,              !!payload.source],
+          [f.adult,               !!payload.adult],
+          [f.waiver,              !!payload.waiver]
+        ];
+        clearBad();
+        var firstBad = null;
+        for (var i = 0; i < checks.length; i++){
+          if (!checks[i][1]){ firstBad = checks[i][0]; break; }
+        }
+        if (firstBad){
+          markBad(firstBad);
+          err.hidden = false;
+          try { firstBad.scrollIntoView({behavior:'smooth', block:'center'}); } catch(_) { firstBad.scrollIntoView(); }
+          try { (firstBad.focus ? firstBad : firstBad.querySelector('button')).focus({preventScroll:true}); } catch(_) {}
+          return;
         }
         var btn = form.querySelector('.af-submit');
         btn.disabled = true;
