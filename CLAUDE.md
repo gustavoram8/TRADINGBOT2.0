@@ -261,10 +261,14 @@ sampleado con precisión de píxel); camos con arte que NO debe recolorearse (ej
 
 **✅ PRODUCTS MENU — acordeón inline en el sidebar (2026-07-18, RESUELTO).** En `/app` (shell Aurora)
 el menú Products vive DENTRO del `.ag-sidebar` como **acordeón inline** (`position:static`) que se expande
-debajo de la pestaña Products (que es la ÚLTIMA tab). Con logo(96px)+tabs+~10 items el sidebar supera
-`max-height:calc(100vh-44px)` y muestra su **propio scrollbar** en pantallas bajas → los items de abajo
-(Camos/Terms/Privacy/Guide/Contact/Settings) se ven scrolleando el sidebar. **Esto es lo aceptado por el
-usuario.** ⚠️ **NO reintentar flotar el menú:** hubo 4 intentos rechazados — (1) `position:fixed` en su
+debajo de la pestaña Products (que es la ÚLTIMA tab). ⚠️ **SCROLL INTERNO ELIMINADO (2026-07-25):** al
+achicarse Products (Guía/Contacto/Tessera se movieron a la Cámara de Tessera → hoy 8 items: Free/Standard/
+Premium, Store, Camos, Terms, Privacy, Settings), el sidebar ya no necesita su scrollbar propio. Se quitó
+`max-height:calc(100vh-44px)` + `overflow:auto` de `.ag-sidebar` (~línea 24758) → `overflow:visible`, sin
+alto máximo. Ahora el sidebar **deploya completo** (medido 912px de contenido con Products abierto): en
+pantallas altas (≥~960px, monitor/iPad vertical) se ve TODO sin scroll; en laptops bajitos (768–900px) el
+menú expandido es más alto que la ventana y se scrollea la PÁGINA (no un scrollbar interno feo). Cambio
+GENERAL del sitio (no por camo). Verificado: `innerScroll:false`, todo visible sin recorte. ⚠️ **NO reintentar flotar el menú:** hubo 4 intentos rechazados — (1) `position:fixed` en su
 lugar (el `backdrop-filter` del sidebar lo atrapa/recorta), (2) pop-out a `<body>` como flyout AL LADO
 ("debe abrir hacia abajo, no a la derecha"), (3) dropdown abajo con lift-up (tapaba logo/tabs de arriba),
 (4) 2 columnas (se partía, feo). El pop-out SIEMPRE terminaba como panel blanco flotante que **se
