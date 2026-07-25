@@ -186,6 +186,16 @@ sampleado con precisión de píxel); camos con arte que NO debe recolorearse (ej
   paneles frosted `rgba(253,247,240,0.56/0.66)` (translúcidos para que se vea la escena), `--text:#3a2113`,
   `--accent:#c8542a`. Logo **por defecto (oscuro)** en Marte, blanco solo en cosmos. Verificado en `/app` real:
   light→`camo-mission light` (Marte, filtro logo none), dark→`camo-mission` (cosmos, logo invert).
+  ⚠️ **LECCIÓN DE ESCALADO (2026-07-25):** la 1ª versión de Marte usaba UN solo SVG (cielo+montañas)
+  con `center bottom / cover` → en monitores de otra relación de aspecto el `cover` escalaba la escena y
+  el **horizonte flotaba a media pantalla** ("montañas muy hacia arriba"). Fix ROBUSTO = **separar en capas
+  ancladas**: montañas en su propio SVG (solo cordilleras+niebla, fondo transparente) sized `center bottom /
+  100% auto` (la altura depende SOLO del ancho, nunca del alto de la ventana → horizonte siempre pegado al
+  fondo en cualquier aspect ratio); estrellas en otro SVG `center top / 100% auto`; sol + glow del horizonte
+  como radiales CSS; cielo `linear-gradient(#fff→#f0cdb2)` de fallback. Estrellas también ADELGAZADAS a ~16
+  con rechazo por distancia mínima (150px) — antes 78, se veían apiñadas/poco creíbles. Verificado en 1680×780
+  (ancho/bajo) y 1200×1000 (alto): montañas siempre abajo. **Regla general: nunca uses `cover` para una
+  escena con horizonte; anclá la tierra con `100% auto center bottom`.**
 - **Blackflag (pirata)** ✅ **(2026-07-25).** Mascota = pirata (tricornio con calavera, parche, loro).
   Elegido de 3 variantes (A mapa del tesoro / B Jolly Roger / C galeón): el usuario eligió **A = mapa del
   tesoro** — pergamino cálido + rosa de los vientos (abajo-der) + ruta punteada + islas + **X roja
@@ -195,6 +205,11 @@ sampleado con precisión de píxel); camos con arte que NO debe recolorearse (ej
   (`LIGHT_ALWAYS` ~línea 4375) **y** la función apply-theme (`LIGHT_ALWAYS_T` ~línea 9422); si solo tocás
   una, el modo oscuro pierde la clase `light` y los paneles salen oscuros sobre el pergamino. Mascotas
   cambiadas a keyear por `:not(.camo-night)`/`.camo-night` (no `.light`) por ser LIGHT_ALWAYS.
+  ⚠️ **Fix de escalado (2026-07-25, mismo problema que Marte):** la ruta punteada y las islas usaban
+  `center / cover` → se agrandaban/recortaban distinto según el aspect ratio del monitor. Cambiadas a
+  `center / 100% 100%` → composición del mapa idéntica en cualquier pantalla (la leve distorsión es
+  imperceptible en trazos abstractos). La X (104px) y la brújula (190px) ya eran px fijos anclados a la
+  esquina → robustas, no se tocaron. Verificado 1680×780 y 1200×1000.
 - **Pendientes de theme:** 13 slugs más sin arte de mascota
   aún. Antes de diseñar cada uno: preguntar 1ª idea/temática al usuario (así arrancó Pole: "plano de
   construcción de F1"), ofrecer 3 variantes, iterar sobre la elegida, cablear igual que Pole/Premium
