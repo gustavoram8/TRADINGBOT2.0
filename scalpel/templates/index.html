@@ -25233,6 +25233,21 @@
   ov.querySelectorAll('.nx-back').forEach(function(b){ b.addEventListener('click', function(){ showPanel('nx-home'); }); });
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && ov.classList.contains('show')) closeOv(); });
 
+  /* Re-translate on language change: the thought bubble is persistent (it isn't
+     rebuilt like the Chamber, which re-fills on open), so without this hook it
+     kept its old-language text. Wrap applyLanguage (same pattern the rest of the
+     site uses) to refresh the bubble always, and the Chamber live if it's open. */
+  (function(){
+    var origAL = window.applyLanguage;
+    if (typeof origAL === 'function') {
+      window.applyLanguage = function(){
+        var r = origAL.apply(this, arguments);
+        try { setBubble(); if (ov.classList.contains('show')) fill(); } catch(e){}
+        return r;
+      };
+    }
+  })();
+
   /* Hide Tessera inside Synapse (immersive mode) — restore it on the way out.
      Synapse toggles body.ag-synapse-mode; watch that class. */
   function syncVisibility(){
