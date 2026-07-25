@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tradeable — Mentorship Checkout</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/improve.css" />
+</head>
+<body>
+  <div class="amb" aria-hidden="true"></div>
+
+  <header class="top">
+    <a class="brand" href="/app">
+      <img src="/static/logo.png" alt="" onerror="this.style.display='none'" />
+      <span>Tradeable</span>
+    </a>
+    <div class="top-right">
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="es">ES</button>
+        <button type="button" data-lang="fr">FR</button>
+        <button type="button" data-lang="pt">PT</button>
+      </div>
+      <a class="close" href="/improve/plans" data-i18n="mco2.change">← Change selection</a>
+      <a class="close app-home" href="/app" data-i18n="nav.backApp">← Back to app</a>
+    </div>
+  </header>
+
+  <main class="stage">
+    <div class="chapter mco-chapter">
+      <div class="eyebrow"><span data-i18n="mco2.eyebrow">Checkout</span></div>
+      <h2 class="ch-title" data-i18n="mco2.title">Review your order</h2>
+      <div class="prose">
+        <p class="lead" data-i18n="mco2.lede">One step left. Check the details below and continue to secure payment.</p>
+      </div>
+
+      <!-- Order card — the mentorship version of the landing checkout cart.
+           The price is server-rendered from the SKU; the label is localized
+           client-side with the same keys the plans page uses. -->
+      <section class="mco2-order">
+        <div class="mco2-row mco2-head">
+          <span class="mco2-name" data-i18n="{{ {
+            'library':'p6.aName', 'meet3':'p6.t3', 'meet6':'p6.t6',
+            'meet_single':'p6.t1', 'combo3':'p6.combo3', 'combo6':'p6.combo6'
+          }[sku] }}">{{ spec.label }}</span>
+          <span class="mco2-cycle">
+            {% if sku == 'meet_single' %}<span data-i18n="mco2.oneTime">one-time payment</span>
+            {% else %}<span data-i18n="p6.perMonth">/ month</span>{% endif %}
+          </span>
+        </div>
+
+        <div class="mco2-divider"></div>
+
+        <div class="mco2-incl-title" data-i18n="mco2.included">What's included</div>
+        <ul class="mco2-incl">
+          {% if spec.kind == 'library' %}
+          <li><span class="ic">✓</span><span data-i18n="p6.a1">A complete path, from the ground up to trading a real account.</span></li>
+          <li><span class="ic">✓</span><span data-i18n="p6.a2">Real trades on video, with every decision broken down.</span></li>
+          <li><span class="ic">✓</span><span data-i18n="p6.a3">Real backtests behind each strategy.</span></li>
+          <li><span class="ic">✓</span><span data-i18n="p6.a5">A private Tradeable Academy community.</span></li>
+          <li><span class="ic">✓</span><span data-i18n="p6.a6">24/7 access at your own pace.</span></li>
+          {% elif spec.kind == 'meetings' %}
+          <li><span class="ic">✓</span><span data-i18n="p6.b1">Private 30-minute online meetings, one on one.</span></li>
+          <li><span class="ic">✓</span><span data-i18n="p6.b2">Your charts, your decisions, your blind spots — worked through together.</span></li>
+          {% if spec.meetings > 1 %}<li><span class="ic">✓</span><span data-i18n="p6.b3">Monthly packages: the more meetings, the lower the price of each.</span></li>{% endif %}
+          {% else %}
+          <li><span class="ic">✓</span><span data-i18n="p6.c1">Everything in the library — 25% off.</span></li>
+          <li><span class="ic">✓</span><span data-i18n="p6.c2">Plus your chosen meetings package, at its volume price.</span></li>
+          <li><span class="ic">✓</span><span data-i18n="p6.b1">Private 30-minute online meetings, one on one.</span></li>
+          {% endif %}
+        </ul>
+
+        <div class="mco2-divider"></div>
+
+        <div class="mco2-row mco2-total">
+          <span data-i18n="mco2.total">Total</span>
+          <span class="mco2-amt">${{ '%.2f'|format(spec.price) }}</span>
+        </div>
+      </section>
+
+      <form method="post" action="/mentorship/checkout/create" class="mco2-payform">
+        <input type="hidden" name="sku" value="{{ sku }}" />
+        <button type="submit" class="cta"><span data-i18n="mco2.pay">Continue to payment</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </form>
+      <a class="cta ghost mco2-back" href="/improve/plans"><span data-i18n="mco2.change">← Change selection</span></a>
+    </div>
+  </main>
+
+  <footer class="legal" data-i18n="legal">
+    Educational content only. Nothing here is financial advice, a recommendation, a signal,
+    or a guarantee of results. Trading involves substantial risk of loss.
+  </footer>
+
+  <script src="/static/improve_i18n.js" defer></script>
+</body>
+</html>

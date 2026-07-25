@@ -119,9 +119,9 @@
     entirely on your own effort, decisions and circumstances.
   </footer>
 
-  <!-- Checkout cart: slides up when a package is selected. The price is display
-       only — the server re-derives the amount from the SKU on submit. -->
-  <form class="mcart" id="mcart" method="post" action="/mentorship/checkout/create">
+  <!-- Checkout cart: slides up when a package is selected. Leads to the review
+       (cart) page; the server re-derives the amount from the SKU there. -->
+  <form class="mcart" id="mcart" method="get" action="/mentorship/checkout">
     <input type="hidden" name="sku" id="mcart-sku" value="" />
     <div class="mcart-in">
       <div class="mcart-info">

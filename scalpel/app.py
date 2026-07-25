@@ -2238,6 +2238,21 @@ def improve_plans():
                            authed=current_user.is_authenticated)
 
 
+@app.route('/mentorship/checkout')
+@login_required
+def mentorship_checkout_review():
+    """Cart / review page between picking a package on /improve/plans and
+    creating the order — mirrors the site-plan checkout ("Review your order"):
+    the chosen program, what's included, and the total. Price and label come
+    from MENTORSHIP_SKUS server-side; the sku only selects which one."""
+    _mentorship_gate()
+    sku = (request.args.get('sku') or '').strip()
+    spec = MENTORSHIP_SKUS.get(sku)
+    if not spec:
+        return redirect(url_for('improve_plans'))
+    return render_template('mentorship_checkout.html', sku=sku, spec=spec)
+
+
 @app.route('/mentorship/checkout/create', methods=['POST'])
 @login_required
 def mentorship_checkout_create():

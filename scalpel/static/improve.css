@@ -296,6 +296,27 @@ h2.ch-title{
 .mco-label{font-size:14px; color:var(--ink); font-weight:600; text-align:left}
 .mco-price{font-family:'Fraunces',serif; font-size:24px; font-weight:600; color:var(--gold)}
 
+/* ── Mentorship checkout REVIEW (cart) page — the mentorship version of the
+   landing "Review your order" card ── */
+.mco2-order{margin:30px auto 0; max-width:460px; text-align:left; padding:22px 24px;
+  border:1px solid rgba(224,168,61,.35); border-radius:16px; background:rgba(255,255,255,.03);
+  box-shadow:0 18px 50px rgba(0,0,0,.35)}
+.mco2-row{display:flex; align-items:center; justify-content:space-between; gap:12px}
+.mco2-name{font-size:16px; font-weight:700; color:var(--ink)}
+.mco2-cycle{font-size:11.5px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--gold); background:rgba(224,168,61,.1); border:1px solid rgba(224,168,61,.35);
+  padding:4px 10px; border-radius:999px; white-space:nowrap}
+.mco2-divider{height:1px; background:var(--line); margin:16px 0}
+.mco2-incl-title{font-size:10.5px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); margin-bottom:10px}
+.mco2-incl{list-style:none; display:flex; flex-direction:column; gap:8px}
+.mco2-incl li{display:flex; gap:10px; align-items:flex-start; font-size:13.5px; color:var(--muted); line-height:1.55}
+.mco2-incl .ic{color:var(--gold); font-weight:700; flex:0 0 auto}
+.mco2-total{font-size:14px; font-weight:700; color:var(--ink)}
+.mco2-amt{font-family:'Fraunces',serif; font-size:28px; font-weight:600; color:var(--gold-bright)}
+.mco2-payform{margin-top:26px}
+.mco2-payform .cta{animation:none; opacity:1}
+.mco2-back{margin-top:12px; animation:none; opacity:1}
+
 /* ── Application form (page 5 — "The Great Filter") ── */
 .af{margin-top:26px; opacity:0; animation:imp-rise .9s ease .5s forwards}
 .af-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px 18px}
