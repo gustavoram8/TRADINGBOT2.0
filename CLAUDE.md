@@ -126,7 +126,7 @@ resto del sitio con `strftime`).
 reskinea SOLO el fondo/colores del sitio (layout/paneles/posiciones NO cambian) + swap de la mascota en
 el Quiz (welcome + pass/fail). **Infra base (cableada, estable):** `User.active_camo`/`owned_camos` +
 helpers `camos_owned()/add_camo()/owns_camo()` (admin posee TODO); `CAMO_SLUGS` (20 slugs) y
-`CAMO_READY` en app.py — **hoy `{'rising-sun','pole','premium','fourth','naval','mission'}`**, el resto pendiente; endpoints
+`CAMO_READY` en app.py — **hoy `{'rising-sun','pole','premium','fourth','naval','mission','blackflag'}`**, el resto pendiente; endpoints
 `/api/camo/activate` `/api/camo/deactivate`; `/app` pinta `body.camo-<slug>` pre-paint (sin FOUC);
 tienda `/camos` con ownership/compra (Stripe real AÚN pendiente, hoy toast "pago pronto"). Migración
 prod ya aplicada (columnas `active_camo`/`owned_camos` en `user` + auto-heal `_migrate_user_camo_columns()`
@@ -138,7 +138,7 @@ huecos blancos ENCERRADOS por el contorno —axilas, entre piernas, barandillas�
 un humano decide cuáles son fondo vs. feature blanco real —guantes/ojos/dientes—, aplica con bordes
 suavizados). Dark = recolor de flecha azul→naranja `#dd9100` (mismo tono que la mascota default dark,
 sampleado con precisión de píxel); camos con arte que NO debe recolorearse (ej. bandera USA) usan
-`recolor=False`. **Themes (fondo) — 6 de 20 LISTOS:**
+`recolor=False`. **Themes (fondo) — 7 de 20 LISTOS:**
 - **Rising Sun** ✅ — un solo look para light/dark (cream washi + disco de sol + banda diagonal + kanji).
 - **Pole** ✅ (F1 blueprint) — **dos** looks, uno por modo: ☀️ light = papel de taller (grafito + acento
   rojo), 🌙 dark = cianotipo azul (líneas blancas + acento azul); ambos con grid, plano técnico del F1,
@@ -166,15 +166,29 @@ sampleado con precisión de píxel); camos con arte que NO debe recolorearse (ej
   **militar**. Elegido de 3 variantes (A camuflaje / B HUD-radar / C honor olive+oro): el usuario eligió
   **A = camuflaje de campo** (blobs orgánicos olive/khaki/verde-oscuro/tan, acento ámbar `#e0872f` que pega
   con el equipo del mascota). Un solo look; iOS-safe (body transparent + `::before` fijo); logo blanco
-  (invert de `logo_t`). Mascotas welcome/pass/fail ya estaban. **Las condecoraciones de general (ribbon
-  rack + medallas) NO van en el theme** — el usuario las hará con Gemini y las sumará aparte.
+  (invert de `logo_t`). Mascotas welcome/pass/fail ya estaban. **Condecoraciones de general AGREGADAS
+  (2026-07-25):** el usuario probó con Gemini pero prefirió evitar la watermark → se armó un cluster de
+  medallas **en SVG procedural** (código, `scratchpad/medals.py`) con oro degradado (radialGradient),
+  brillos y **sombras (`feDropShadow`)** — 4 estrellas de rango + ribbon rack + 3 medallas (estrella con
+  rayos, cruz patée, estrella con corona). Se cableó como capa del `::before` del naval (`right 1% bottom
+  1% / 250px`). **Aprendizaje: los filtros/gradientes SVG SÍ renderizan cuando el SVG va como
+  `background-image` data-URI** (verificado en `/app` real). No hace falta Gemini para arte así.
 - **Mission (espacial/NASA)** ✅ **(2026-07-24).** Mascota = **astronauta** con cohete "NASDAQ BULLISH"
   → theme espacial. Elegido de 3 variantes (A cosmos/nebulosa / B control de misión HUD / C to-the-moon):
   el usuario eligió **A = cosmos** — espacio profundo navy-púrpura + nubes de nebulosa (radiales púrpura/
   magenta/azul) + campo de estrellas + **planeta con anillo** (arriba-der), acento cian `#5fd0ff`. Un solo
   look; iOS-safe (body transparent + `::before` fijo); logo blanco (invert de `logo_t`). Mascotas ya
   estaban. Sin animación.
-- **Pendientes de theme:** blackflag + 13 slugs más sin arte de mascota
+- **Blackflag (pirata)** ✅ **(2026-07-25).** Mascota = pirata (tricornio con calavera, parche, loro).
+  Elegido de 3 variantes (A mapa del tesoro / B Jolly Roger / C galeón): el usuario eligió **A = mapa del
+  tesoro** — pergamino cálido + rosa de los vientos (abajo-der) + ruta punteada + islas + **X roja
+  "marks the spot" abajo-izq** (agregada a pedido). Acento rojo `#a5401f`. **LIGHT_ALWAYS** como rising-sun
+  (pergamino claro en ambos modos; solo la mascota flipea vía `.camo-night`). ⚠️ **Ojo:** LIGHT_ALWAYS/
+  DARK_ALWAYS están **DUPLICADOS** en index.html — hay que agregar el slug en LAS DOS copias: el pre-paint
+  (`LIGHT_ALWAYS` ~línea 4375) **y** la función apply-theme (`LIGHT_ALWAYS_T` ~línea 9422); si solo tocás
+  una, el modo oscuro pierde la clase `light` y los paneles salen oscuros sobre el pergamino. Mascotas
+  cambiadas a keyear por `:not(.camo-night)`/`.camo-night` (no `.light`) por ser LIGHT_ALWAYS.
+- **Pendientes de theme:** 13 slugs más sin arte de mascota
   aún. Antes de diseñar cada uno: preguntar 1ª idea/temática al usuario (así arrancó Pole: "plano de
   construcción de F1"), ofrecer 3 variantes, iterar sobre la elegida, cablear igual que Pole/Premium
   (bloque CSS con vars `--bg/--surface/--card/--border/--border2/--text/--muted/--accent/--accent-h/
