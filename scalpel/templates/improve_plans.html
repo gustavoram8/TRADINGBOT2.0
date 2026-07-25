@@ -67,14 +67,30 @@
           <button type="button" class="buy selectable" data-sku="library" data-name-key="p6.aName" data-price="$350" data-i18n="mcart.choose">Choose</button>
         </section>
 
-        <!-- Program 02 — one-to-one online meetings (tiered, volume discount) -->
+        <!-- Program 02 — one-to-one online meetings. One card, one TAB per
+             package: the active tab shows that package's own price block. -->
         <section class="pcard">
           <div class="pname" data-i18n="p6.bLabel">Program 02 · One-to-one online meetings</div>
           <div class="ptag" data-i18n="p6.bTag">Your charts, live and one on one.</div>
-          <div class="ptiers stacked">
-            <div class="ptier selectable" data-sku="meet3"><b data-i18n="p6.t3">3 meetings / month</b><div class="ptrow"><span class="pamt">$270</span><s class="ptwas">$300</s></div><span class="ptunit">$90 <span data-i18n="p6.each">ea.</span></span><span class="ptsave"><span data-i18n="p6.save">You save</span> $30</span></div>
-            <div class="ptier selectable" data-sku="meet6"><b data-i18n="p6.t6">6 meetings / month</b><div class="ptrow"><span class="pamt">$480</span><s class="ptwas">$600</s></div><span class="ptunit">$80 <span data-i18n="p6.each">ea.</span></span><span class="ptsave"><span data-i18n="p6.save">You save</span> $120</span></div>
-            <div class="ptier selectable" data-sku="meet_single"><b data-i18n="p6.t1">Single meeting</b><div class="ptrow"><span class="pamt">$100</span></div><span class="ptunit">$100 <span data-i18n="p6.each">ea.</span></span></div>
+          <div class="ptabs" role="tablist">
+            <button type="button" class="ptab on" data-pane="meet3" role="tab" data-i18n="p6.tab3">3 / month</button>
+            <button type="button" class="ptab" data-pane="meet6" role="tab" data-i18n="p6.tab6">6 / month</button>
+            <button type="button" class="ptab" data-pane="meet_single" role="tab" data-i18n="p6.tab1">Single</button>
+          </div>
+          <div class="ppane on" data-pane="meet3">
+            <div class="pprice"><span class="pcur">$</span><span class="pamt">270</span><span class="pper" data-i18n="p6.perMonth">/ month</span><s class="ptwas">$300</s></div>
+            <div class="pmeta"><span class="ptunit">$90 <span data-i18n="p6.each">ea.</span></span><span class="ptsave"><span data-i18n="p6.save">You save</span> $30</span></div>
+            <button type="button" class="buy selectable" data-sku="meet3" data-name-key="p6.t3" data-price="$270" data-i18n="mcart.choose">Choose</button>
+          </div>
+          <div class="ppane" data-pane="meet6">
+            <div class="pprice"><span class="pcur">$</span><span class="pamt">480</span><span class="pper" data-i18n="p6.perMonth">/ month</span><s class="ptwas">$600</s></div>
+            <div class="pmeta"><span class="ptunit">$80 <span data-i18n="p6.each">ea.</span></span><span class="ptsave"><span data-i18n="p6.save">You save</span> $120</span></div>
+            <button type="button" class="buy selectable" data-sku="meet6" data-name-key="p6.t6" data-price="$480" data-i18n="mcart.choose">Choose</button>
+          </div>
+          <div class="ppane" data-pane="meet_single">
+            <div class="pprice"><span class="pcur">$</span><span class="pamt">100</span></div>
+            <div class="pmeta"><span class="ptunit">$100 <span data-i18n="p6.each">ea.</span></span></div>
+            <button type="button" class="buy selectable" data-sku="meet_single" data-name-key="p6.t1" data-price="$100" data-i18n="mcart.choose">Choose</button>
           </div>
           <div class="pdivider"></div>
           <ul class="pfeat">
@@ -83,7 +99,6 @@
             <li><span class="pcheck"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span><span data-i18n="p6.b3">Monthly packages: the more meetings, the lower the price of each</span></li>
             <li><span class="pcheck"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span><span data-i18n="p6.b5">Seats are limited — calendar time is finite</span></li>
           </ul>
-          <p class="ptier-hint" data-i18n="mcart.hint">Tap a package to choose it.</p>
         </section>
 
         <!-- Both — featured -->
@@ -92,9 +107,19 @@
           <div class="pname" data-i18n="p6.cLabel">Both programs</div>
           <div class="ptag" data-i18n="p6.cTag">Both doors open — the full experience.</div>
           <p class="pnote pnote-top" data-i18n="p6.comboNote">The library at 25% off, plus the meetings package you choose.</p>
-          <div class="ptiers stacked">
-            <div class="ptier selectable" data-sku="combo3"><b data-i18n="p6.combo3">Library + 3 meetings</b><div class="ptrow"><span class="pamt">$533</span><s class="ptwas">$650</s></div><span class="ptsave"><span data-i18n="p6.save">You save</span> $117</span></div>
-            <div class="ptier selectable" data-sku="combo6"><b data-i18n="p6.combo6">Library + 6 meetings</b><div class="ptrow"><span class="pamt">$743</span><s class="ptwas">$950</s></div><span class="ptsave"><span data-i18n="p6.save">You save</span> $207</span></div>
+          <div class="ptabs" role="tablist">
+            <button type="button" class="ptab on" data-pane="combo3" role="tab" data-i18n="p6.tabc3">Library + 3</button>
+            <button type="button" class="ptab" data-pane="combo6" role="tab" data-i18n="p6.tabc6">Library + 6</button>
+          </div>
+          <div class="ppane on" data-pane="combo3">
+            <div class="pprice"><span class="pcur">$</span><span class="pamt">533</span><span class="pper" data-i18n="p6.perMonth">/ month</span><s class="ptwas">$650</s></div>
+            <div class="pmeta"><span class="ptsave"><span data-i18n="p6.save">You save</span> $117</span></div>
+            <button type="button" class="buy selectable" data-sku="combo3" data-name-key="p6.combo3" data-price="$533" data-i18n="mcart.choose">Choose</button>
+          </div>
+          <div class="ppane" data-pane="combo6">
+            <div class="pprice"><span class="pcur">$</span><span class="pamt">743</span><span class="pper" data-i18n="p6.perMonth">/ month</span><s class="ptwas">$950</s></div>
+            <div class="pmeta"><span class="ptsave"><span data-i18n="p6.save">You save</span> $207</span></div>
+            <button type="button" class="buy selectable" data-sku="combo6" data-name-key="p6.combo6" data-price="$743" data-i18n="mcart.choose">Choose</button>
           </div>
           <div class="pdivider"></div>
           <ul class="pfeat">
@@ -102,7 +127,6 @@
             <li><span class="pcheck"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span><span data-i18n="p6.c2">Plus your chosen meetings package, at its volume price</span></li>
             <li><span class="pcheck"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span><span data-i18n="p6.c3">Choose 3 or 6 meetings a month</span></li>
           </ul>
-          <p class="ptier-hint" data-i18n="mcart.hint">Tap a package to choose it.</p>
         </section>
 
       </div>
@@ -164,6 +188,17 @@
         el.setAttribute('tabindex','0'); el.setAttribute('role','button');
         el.addEventListener('click', function(ev){ ev.preventDefault(); pick(el); });
         el.addEventListener('keydown', function(ev){ if(ev.key==='Enter'||ev.key===' '){ ev.preventDefault(); pick(el); } });
+      });
+      // Package tabs: each card's tab strip switches which package pane shows.
+      document.querySelectorAll('.pcard .ptabs').forEach(function(strip){
+        var card = strip.closest('.pcard');
+        strip.querySelectorAll('.ptab').forEach(function(tb){
+          tb.addEventListener('click', function(){
+            var id = tb.getAttribute('data-pane');
+            strip.querySelectorAll('.ptab').forEach(function(t){ t.classList.toggle('on', t===tb); });
+            card.querySelectorAll('.ppane').forEach(function(p){ p.classList.toggle('on', p.getAttribute('data-pane')===id); });
+          });
+        });
       });
     }
     if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
