@@ -152,9 +152,20 @@ sampleado con precisión de píxel); camos con arte que NO debe recolorearse (ej
 - **Fourth of July (USA Special)** ✅ **(theme aprobado como dirección, 2026-07-24 — falta retoque fino
   en la PC del usuario + mascotas pass/fail).** Escena navy al atardecer: **Estatua de la Libertad** (antorcha
   dorada) abajo-izq + **horizonte de monumentos DC** (Monumento a Washington, Capitolio, Lincoln/Casa Blanca,
-  retroiluminado) + estrellas + estrella-emblema. **Camo ESPECIAL con animación:** fuegos artificiales que
-  estallan cada tanto en el cielo (`#nx-fw-layer` creado por un `<script>` propio gateado a `body.camo-fourth`,
-  pausado en tab oculto/Synapse, off bajo `prefers-reduced-motion`). Patrón iOS-safe (body transparent +
+  retroiluminado) + estrellas + estrella-emblema. **Monumentos REDIBUJADOS (2026-07-25):** la 1ª versión de la
+  Estatua de la Libertad "parecía dibujo de niño" → rehecha en SVG procedural (`scratchpad/build_fourth_scene.py`):
+  pedestal escalonado, túnica esbelta con pliegues, corona de 7 picos, tablilla pegada al costado, brazo en alto
+  (acortado a pedido) con antorcha. Monumentos DC limpios (obelisco, cúpula del Capitolio con columnas, Lincoln con
+  columnata). Capa `center bottom / 100% auto`. **Camo ESPECIAL con DOS animaciones:** (1) fuegos artificiales
+  (`#nx-fw-layer`, `<script>` propio gateado a `body.camo-fourth`) — **reposicionados (2026-07-25) más arriba y
+  hacia los lados** (~56% en las columnas laterales altas, resto en la franja superior central) para que los
+  paneles —dibujados por encima de la capa de fuegos— NO los tapen; (2) **llama de la antorcha** (`#nx-torch`,
+  IIFE propio): mini fuego parpadeante (2 capas radial-gradient + `border-radius` de gota) anclado por JS al
+  punto de la antorcha en el canvas de la escena (`CX=183,CY=48` de 1240×300; posición recalculada con el ancho
+  del viewport porque la escena es `100% auto`; se reubica en `resize`). **Animación SOLO transform/opacity → GPU,
+  sin lag/layout**; bajo `prefers-reduced-motion` no se crea el elemento (queda la llama estática del SVG). Ambas
+  pausadas/ocultas fuera de `camo-fourth` o en Synapse. ⚠️ La estatua queda parcialmente detrás del sidebar en
+  `/app` (translúcido, se ve tenue); plena en welcome/móvil. Patrón iOS-safe (body transparent +
   `::before` fixed, como Premium — NO `background-attachment:fixed`). Logo blanco (invert de `logo_t`) en ambos
   modos. Un solo look navy; mascota welcome ya está (dark+light), **pass/fail las sube el usuario**. ⚠️ **Lección
   de cableado:** un comentario en el CSS que contenía literalmente `</body>` hizo que el patcher insertara el
@@ -210,6 +221,10 @@ sampleado con precisión de píxel); camos con arte que NO debe recolorearse (ej
   `center / 100% 100%` → composición del mapa idéntica en cualquier pantalla (la leve distorsión es
   imperceptible en trazos abstractos). La X (104px) y la brújula (190px) ya eran px fijos anclados a la
   esquina → robustas, no se tocaron. Verificado 1680×780 y 1200×1000.
+  ⚠️ **Fix ruta→X (2026-07-25):** al mover la X a su propia capa de esquina abajo-izq, la ruta punteada seguía
+  terminando arriba-derecha → la X quedaba "solitaria sin sentido". Rediseñada: el rastro sale de la brújula
+  (abajo-der), serpentea por el mapa y **termina justo en la X** (canvas ~128,650) + 3 dotscillos que entran a
+  la X. Dasharray `0.5 15` con `stroke-linecap=round` = puntitos de mapa del tesoro.
 - **Pendientes de theme:** 13 slugs más sin arte de mascota
   aún. Antes de diseñar cada uno: preguntar 1ª idea/temática al usuario (así arrancó Pole: "plano de
   construcción de F1"), ofrecer 3 variantes, iterar sobre la elegida, cablear igual que Pole/Premium
