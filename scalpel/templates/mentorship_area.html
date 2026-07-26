@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tradeable — Mentorship Members Area</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/improve.css" />
+  <style>
+    /* ── Members area layout (on top of the improve.css design system) ── */
+    .stage{align-items:flex-start}
+    .ma-wrap{width:100%;max-width:1080px;margin:0 auto;padding:12px 18px 60px;position:relative;z-index:2}
+    .ma-live{display:none;align-items:center;gap:12px;margin:6px 0 18px;padding:13px 18px;border-radius:14px;
+      background:linear-gradient(90deg,rgba(224,36,74,.16),rgba(224,36,74,.05));border:1px solid rgba(224,36,74,.5)}
+    .ma-live.on{display:flex}
+    .ma-live .dot{width:10px;height:10px;border-radius:50%;background:#ff4560;animation:maPulse 1.4s infinite}
+    @keyframes maPulse{0%{box-shadow:0 0 0 0 rgba(255,69,96,.55)}70%{box-shadow:0 0 0 9px rgba(255,69,96,0)}100%{box-shadow:0 0 0 0 rgba(255,69,96,0)}}
+    .ma-live b{color:#ff8296;font-size:12px;letter-spacing:.14em}
+    .ma-live span{color:var(--ink);font-size:13.5px}
+    .ma-live a{margin-left:auto;color:#1a1205;background:linear-gradient(180deg,#ff7a90,#e0244a);
+      padding:8px 16px;border-radius:10px;font-weight:700;font-size:12.5px;text-decoration:none;white-space:nowrap}
+    .ma-tabs{display:flex;gap:6px;margin:4px 0 22px;padding:5px;border:1px solid var(--line);border-radius:13px;
+      background:rgba(255,255,255,.03);flex-wrap:wrap}
+    .ma-tab{flex:1;min-width:110px;padding:10px 8px;font:700 12px Inter,sans-serif;letter-spacing:.04em;color:var(--muted);
+      background:transparent;border:0;border-radius:9px;cursor:pointer;transition:all .15s;white-space:nowrap}
+    .ma-tab.on{color:#1a1205;background:linear-gradient(180deg,var(--gold-bright),var(--gold))}
+    .ma-view{display:none}.ma-view.on{display:block;animation:imp-fade .25s ease}
+    @keyframes imp-fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+    .ma-sec{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin:20px 0 10px}
+    .ma-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+    .ma-card{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:14px;padding:15px 16px;
+      cursor:pointer;transition:border-color .15s, transform .12s;text-align:left}
+    .ma-card:hover{border-color:rgba(224,168,61,.5);transform:translateY(-1px)}
+    .ma-card h4{font-size:14px;color:var(--ink);margin:0 0 4px;display:flex;gap:8px;align-items:center}
+    .ma-card p{font-size:12px;color:var(--muted);line-height:1.5;margin:0}
+    .ma-prog{margin-top:9px;height:5px;border-radius:4px;background:rgba(255,255,255,.07);overflow:hidden}
+    .ma-prog i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-bright))}
+    .ma-vrow{display:flex;align-items:center;gap:12px;padding:11px 13px;border:1px solid var(--line);border-radius:12px;
+      background:rgba(255,255,255,.025);margin-bottom:8px;cursor:pointer;transition:border-color .15s}
+    .ma-vrow:hover{border-color:rgba(224,168,61,.5)}
+    .ma-vrow .tk{width:22px;height:22px;border-radius:50%;border:2px solid var(--faint);flex:0 0 auto;display:flex;
+      align-items:center;justify-content:center;font-size:12px;color:#1a1205}
+    .ma-vrow.done .tk{background:var(--gold);border-color:var(--gold)}
+    .ma-vrow .tt{flex:1;min-width:0}
+    .ma-vrow .tt b{display:block;font-size:13.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .ma-vrow .tt span{font-size:11.5px;color:var(--muted)}
+    .ma-kind{font-size:9.5px;font-weight:800;letter-spacing:.06em;padding:3px 8px;border-radius:9px;text-transform:uppercase}
+    .ma-kind.class{background:rgba(224,168,61,.15);color:var(--gold-bright)}
+    .ma-kind.live{background:rgba(224,36,74,.18);color:#ff8296}
+    .ma-kind.backtest{background:rgba(95,208,255,.14);color:#7fd8ff}
+    /* video modal */
+    .ma-ov{display:none;position:fixed;inset:0;z-index:60;background:rgba(5,6,10,.82);backdrop-filter:blur(6px);
+      overflow-y:auto;padding:34px 16px}
+    .ma-ov.on{display:block}
+    .ma-box{max-width:860px;margin:0 auto;background:#101219;border:1px solid rgba(224,168,61,.35);border-radius:16px;padding:18px}
+    .ma-player{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden}
+    .ma-player iframe,.ma-player video{position:absolute;inset:0;width:100%;height:100%;border:0}
+    .ma-box h3{color:var(--ink);font-size:17px;margin:14px 0 2px}
+    .ma-meta{font-size:12px;color:var(--muted);margin-bottom:8px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .ma-desc{font-size:13.5px;color:var(--muted);line-height:1.6;white-space:pre-wrap}
+    .ma-btn{border:0;cursor:pointer;font:700 12.5px Inter,sans-serif;padding:9px 16px;border-radius:10px;
+      background:linear-gradient(180deg,var(--gold-bright),var(--gold));color:#1a1205}
+    .ma-btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--muted)}
+    .ma-btn.ghost:hover{border-color:rgba(224,168,61,.5);color:var(--ink)}
+    .ma-cmt{border-top:1px solid var(--line);margin-top:16px;padding-top:12px}
+    .ma-cmt .row{padding:8px 0;border-bottom:1px dashed rgba(255,255,255,.06);font-size:13px;color:var(--muted)}
+    .ma-cmt .row b{color:var(--gold-bright);font-size:12.5px}
+    .ma-cmt .row.mentor b{color:#ff8296}
+    .ma-input{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:10px;
+      color:var(--ink);font:500 13px Inter,sans-serif;padding:10px 12px;outline:none}
+    .ma-input:focus{border-color:rgba(224,168,61,.55)}
+    textarea.ma-input{resize:vertical;min-height:64px}
+    /* community chat */
+    .ma-chat{display:grid;grid-template-columns:230px 1fr;gap:14px;min-height:480px}
+    @media(max-width:760px){.ma-chat{grid-template-columns:1fr}}
+    .ma-chls{display:flex;flex-direction:column;gap:6px}
+    .ma-chl{display:flex;gap:9px;align-items:center;padding:10px 12px;border-radius:11px;border:1px solid var(--line);
+      background:rgba(255,255,255,.02);cursor:pointer;color:var(--muted);font:600 13px Inter,sans-serif;text-align:left}
+    .ma-chl.on{border-color:var(--gold);color:var(--ink);background:rgba(224,168,61,.08)}
+    .ma-chl .lk{margin-left:auto;font-size:11px;opacity:.7}
+    .ma-pane{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.02);display:flex;
+      flex-direction:column;min-height:480px;max-height:66vh}
+    .ma-pin{padding:8px 14px;border-bottom:1px solid var(--line);font-size:12px;color:var(--gold-bright);display:none}
+    .ma-pin.on{display:block}
+    .ma-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+    .ma-msg{max-width:82%;align-self:flex-start}
+    .ma-msg.mine{align-self:flex-end}
+    .ma-msg .bub{background:rgba(255,255,255,.055);border:1px solid var(--line);border-radius:12px;padding:8px 12px;
+      font-size:13px;color:var(--ink);line-height:1.5;word-break:break-word}
+    .ma-msg.mine .bub{background:rgba(224,168,61,.13);border-color:rgba(224,168,61,.4)}
+    .ma-msg.mentor .bub{border-color:rgba(224,36,74,.5)}
+    .ma-msg .who{font-size:10.5px;color:var(--faint);margin:0 4px 3px}
+    .ma-msg .who b{color:var(--gold-bright)} .ma-msg.mentor .who b{color:#ff8296}
+    .ma-msg .rep{font-size:11px;color:var(--faint);border-left:2px solid var(--gold);padding-left:7px;margin-bottom:4px}
+    .ma-msg .acts{display:flex;gap:6px;margin:3px 4px 0;opacity:0;transition:opacity .15s;font-size:11px}
+    .ma-msg:hover .acts{opacity:1}
+    .ma-msg .acts button{background:none;border:0;cursor:pointer;color:var(--faint);font-size:12px;padding:1px 3px}
+    .ma-msg .acts button:hover{color:var(--ink)}
+    .ma-rx{display:flex;gap:5px;margin:4px 4px 0;flex-wrap:wrap}
+    .ma-rx span{font-size:11px;background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:9px;padding:1px 7px;cursor:pointer}
+    .ma-rx span.mine{border-color:var(--gold)}
+    .ma-send{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line)}
+    .ma-reply-tag{display:none;padding:6px 14px;font-size:11.5px;color:var(--gold-bright);border-top:1px solid var(--line)}
+    .ma-reply-tag.on{display:block}
+    /* questions */
+    .ma-q{border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:10px;background:rgba(255,255,255,.025)}
+    .ma-q .qq{font-size:13.5px;color:var(--ink)}
+    .ma-q .who{font-size:11px;color:var(--faint);margin-bottom:5px}
+    .ma-q .aa{margin-top:9px;border-left:2px solid var(--gold);padding-left:10px;font-size:13px;color:var(--muted);white-space:pre-wrap}
+    .ma-q .aa b{color:var(--gold-bright);font-size:11px;letter-spacing:.08em}
+    .ma-q .wait{margin-top:8px;font-size:11.5px;color:var(--faint);font-style:italic}
+    /* mentor panel */
+    .ma-mrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px;margin-bottom:9px}
+    .ma-panel{border:1px dashed rgba(224,36,74,.45);border-radius:14px;padding:15px;margin-bottom:20px}
+    .ma-panel h5{color:#ff8296;font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 10px}
+    .ma-note{font-size:12px;color:var(--faint);margin-top:6px;line-height:1.5}
+    .ma-empty{color:var(--faint);font-size:13px;padding:18px 4px}
+    .ma-back{background:none;border:0;color:var(--gold);font:700 12px Inter,sans-serif;cursor:pointer;padding:0 0 12px}
+  </style>
+</head>
+<body>
+  <div class="amb" aria-hidden="true"></div>
+  <header class="top">
+    <a class="brand" href="/app"><img src="/static/logo.png" alt="" onerror="this.style.display='none'"/><span>Tradeable</span></a>
+    <div class="top-right">
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button type="button" data-lang="en">EN</button><button type="button" data-lang="es">ES</button>
+        <button type="button" data-lang="fr">FR</button><button type="button" data-lang="pt">PT</button>
+      </div>
+      <a class="close app-home" href="/app" data-i18n="nav.backApp">← Back to app</a>
+    </div>
+  </header>
+
+  <main class="stage"><div class="ma-wrap">
+    <div class="eyebrow"><span data-i18n="ma.eyebrow">Members area</span></div>
+    <h2 class="ch-title" style="animation:none;opacity:1" data-i18n-html="ma.title">Your <span class="accent">academy.</span></h2>
+
+    <div class="ma-live" id="ma-live">
+      <span class="dot"></span><b>ON AIR</b>
+      <span id="ma-live-title"></span>
+      <a id="ma-live-link" target="_blank" rel="noopener" data-i18n="ma.watchLive">Watch live →</a>
+    </div>
+
+    <div class="ma-tabs" id="ma-tabs">
+      <button class="ma-tab on" data-v="home" data-i18n="ma.tabHome">Home</button>
+      <button class="ma-tab" data-v="classes" data-i18n="ma.tabClasses">Classes</button>
+      <button class="ma-tab" data-v="community" data-i18n="ma.tabCommunity">Community</button>
+      <button class="ma-tab" data-v="questions" data-i18n="ma.tabQuestions">Ask the mentor</button>
+      {% if is_mentor %}<button class="ma-tab" data-v="mentor">🛠 Mentor</button>{% endif %}
+    </div>
+
+    <!-- HOME -->
+    <section class="ma-view on" id="v-home">
+      <div id="ma-continue"></div>
+      <div class="ma-sec" data-i18n="ma.latest">Latest uploads</div>
+      <div class="ma-grid" id="ma-latest"></div>
+      <div class="ma-sec" data-i18n="ma.modules">Modules</div>
+      <div class="ma-grid" id="ma-folders-home"></div>
+    </section>
+
+    <!-- CLASSES -->
+    <section class="ma-view" id="v-classes">
+      <div id="ma-classes-root"></div>
+    </section>
+
+    <!-- COMMUNITY -->
+    <section class="ma-view" id="v-community">
+      <div class="ma-chat">
+        <div>
+          <div class="ma-sec" style="margin-top:0" data-i18n="ma.channels">Channels</div>
+          <div class="ma-chls" id="ma-chls"></div>
+        </div>
+        <div class="ma-pane">
+          <div class="ma-pin" id="ma-pin"></div>
+          <div class="ma-msgs" id="ma-msgs"><div class="ma-empty" data-i18n="ma.pickChannel">Pick a channel to start chatting.</div></div>
+          <div class="ma-reply-tag" id="ma-reply-tag"></div>
+          <div class="ma-send">
+            <input class="ma-input" id="ma-msg-in" maxlength="2000" data-i18n-ph="ma.msgPh" placeholder="Write a message…" disabled />
+            <button class="ma-btn" id="ma-msg-send" disabled data-i18n="ma.send">Send</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUESTIONS -->
+    <section class="ma-view" id="v-questions">
+      <div class="ma-sec" style="margin-top:0" data-i18n="ma.askTitle">Question box</div>
+      <textarea class="ma-input" id="ma-q-in" maxlength="1000" data-i18n-ph="ma.qPh" placeholder="Ask the mentor anything about the material…"></textarea>
+      <div style="margin-top:9px"><button class="ma-btn" id="ma-q-send" data-i18n="ma.qSend">Submit question</button></div>
+      <div class="ma-sec" data-i18n="ma.qList">Questions & answers</div>
+      <div id="ma-q-list"></div>
+    </section>
+
+    {% if is_mentor %}
+    <!-- MENTOR TOOLS -->
+    <section class="ma-view" id="v-mentor">
+      <div class="ma-panel">
+        <h5>Live</h5>
+        <div class="ma-mrow">
+          <input class="ma-input" id="mt-live-title" placeholder="Session title" maxlength="160"/>
+          <input class="ma-input" id="mt-live-url" placeholder="Stream URL (https://…)" maxlength="500"/>
+        </div>
+        <button class="ma-btn" id="mt-live-on">Go LIVE</button>
+        <button class="ma-btn ghost" id="mt-live-off">End live</button>
+        <div class="ma-note">ON AIR muestra el banner a todos los miembros al instante.</div>
+      </div>
+      <div class="ma-panel">
+        <h5>New folder / module</h5>
+        <div class="ma-mrow">
+          <input class="ma-input" id="mt-f-name" placeholder="Name" maxlength="80"/>
+          <input class="ma-input" id="mt-f-emoji" placeholder="Emoji (📚)" maxlength="8"/>
+          <input class="ma-input" id="mt-f-desc" placeholder="Description" maxlength="300"/>
+        </div>
+        <button class="ma-btn" id="mt-f-add">Create folder</button>
+      </div>
+      <div class="ma-panel">
+        <h5>New video</h5>
+        <div class="ma-mrow">
+          <select class="ma-input" id="mt-v-folder"></select>
+          <select class="ma-input" id="mt-v-kind">
+            <option value="class">Clase</option><option value="live">Operativa en vivo (grabada)</option>
+            <option value="backtest">Backtest</option>
+          </select>
+          <input class="ma-input" id="mt-v-dur" type="number" min="1" placeholder="Duración (min)"/>
+        </div>
+        <div class="ma-mrow">
+          <input class="ma-input" id="mt-v-title" placeholder="Title" maxlength="160"/>
+          <input class="ma-input" id="mt-v-url" placeholder="Video URL (Bunny / YouTube unlisted / .mp4)" maxlength="500"/>
+        </div>
+        <textarea class="ma-input" id="mt-v-desc" placeholder="Description" maxlength="4000"></textarea>
+        <div style="margin-top:9px"><button class="ma-btn" id="mt-v-add">Publish video</button></div>
+        <div class="ma-note">Los videos tipo "Operativa en vivo" aparecen destacados en Home como novedades.</div>
+      </div>
+      <div class="ma-panel">
+        <h5>New chat channel</h5>
+        <div class="ma-mrow">
+          <input class="ma-input" id="mt-c-name" placeholder="Name" maxlength="60"/>
+          <input class="ma-input" id="mt-c-emoji" placeholder="Emoji (💬)" maxlength="8"/>
+          <label style="display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12.5px">
+            <input type="checkbox" id="mt-c-locked"/> Solo el mentor publica (anuncios)</label>
+        </div>
+        <button class="ma-btn" id="mt-c-add">Create channel</button>
+      </div>
+    </section>
+    {% endif %}
+  </div></main>
+
+  <!-- VIDEO MODAL -->
+  <div class="ma-ov" id="ma-ov">
+    <div class="ma-box">
+      <button class="ma-back" id="ma-ov-close">← <span data-i18n="ma.close">Close</span></button>
+      <div class="ma-player" id="ma-player"></div>
+      <h3 id="ma-v-title"></h3>
+      <div class="ma-meta">
+        <span id="ma-v-kind" class="ma-kind class"></span>
+        <span id="ma-v-dur"></span>
+        <button class="ma-btn ghost" id="ma-v-done"></button>
+        {% if is_mentor %}<button class="ma-btn ghost" id="ma-v-del">🗑</button>{% endif %}
+      </div>
+      <div class="ma-desc" id="ma-v-desc"></div>
+      <div class="ma-cmt">
+        <div class="ma-sec" style="margin-top:0" data-i18n="ma.comments">Comments</div>
+        <div id="ma-v-comments"></div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <input class="ma-input" id="ma-cmt-in" maxlength="1000" data-i18n-ph="ma.cmtPh" placeholder="Add a comment…"/>
+          <button class="ma-btn" id="ma-cmt-send" data-i18n="ma.send">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/improve_i18n.js" defer></script>
+  <script>
+  (function(){
+    'use strict';
+    var IS_MENTOR = {{ 'true' if is_mentor else 'false' }};
+    var J = function(u,opts){ return fetch(u,opts).then(function(r){ return r.json(); }); };
+    var P = function(u,data){ return J(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data||{})}); };
+    function el(id){ return document.getElementById(id); }
+    function esc(s){ var d=document.createElement('div'); d.textContent=s==null?'':String(s); return d.innerHTML; }
+    var state={folders:[],channel:null,lastMsgId:0,poll:null,replyTo:null,video:null,openFolder:null};
+
+    /* tabs */
+    document.querySelectorAll('.ma-tab').forEach(function(t){
+      t.addEventListener('click',function(){
+        document.querySelectorAll('.ma-tab').forEach(function(x){x.classList.toggle('on',x===t);});
+        document.querySelectorAll('.ma-view').forEach(function(v){v.classList.toggle('on',v.id==='v-'+t.dataset.v);});
+        if(t.dataset.v==='community') loadChannels();
+        if(t.dataset.v==='questions') loadQuestions();
+        if(t.dataset.v==='classes') renderClassesRoot();
+      });
+    });
+
+    /* video url → player node */
+    function playerFor(url){
+      var u=url||'';
+      var m=u.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{6,})/);
+      if(m) return '<iframe src="https://www.youtube.com/embed/'+m[1]+'" allow="autoplay; fullscreen" allowfullscreen></iframe>';
+      if(/\.(mp4|webm|m3u8)(\?|$)/i.test(u)) return '<video controls controlsList="nodownload" src="'+esc(u)+'"></video>';
+      return '<iframe src="'+esc(u)+'" allow="autoplay; fullscreen" allowfullscreen></iframe>';
+    }
+    function kindLabel(k){ return k==='live'?'LIVE REC':(k==='backtest'?'BACKTEST':'CLASS'); }
+    function vRow(v){
+      return '<div class="ma-vrow'+(v.done?' done':'')+'" data-vid="'+v.id+'">'
+        +'<span class="tk">'+(v.done?'✓':'')+'</span>'
+        +'<span class="tt"><b>'+esc(v.title)+'</b><span>'+(v.duration_min?v.duration_min+' min · ':'')+v.comment_count+' 💬</span></span>'
+        +'<span class="ma-kind '+v.kind+'">'+kindLabel(v.kind)+'</span></div>';
+    }
+    function vCard(v){
+      return '<div class="ma-card" data-vid="'+v.id+'"><h4>'+(v.kind==='live'?'🔴':'🎬')+' '+esc(v.title)+'</h4>'
+        +'<p>'+(v.duration_min?v.duration_min+' min · ':'')+v.comment_count+' 💬'+(v.done?' · ✓':'')+'</p></div>';
+    }
+
+    /* summary / home */
+    function loadSummary(){
+      J('/api/ment/summary').then(function(d){
+        if(d.error) return;
+        state.folders=d.folders||[];
+        var lv=el('ma-live');
+        if(d.live && d.live.is_live){ lv.classList.add('on');
+          el('ma-live-title').textContent=d.live.title||'';
+          var a=el('ma-live-link'); if(d.live.url){a.style.display='';a.href=d.live.url;} else a.style.display='none';
+        } else lv.classList.remove('on');
+        el('ma-continue').innerHTML = d['continue']
+          ? '<div class="ma-sec" style="margin-top:0" data-i18n="ma.continue">Continue watching</div><div class="ma-grid">'+vCard(d['continue'])+'</div>'
+          : '';
+        el('ma-latest').innerHTML=(d.latest||[]).map(vCard).join('')||'<div class="ma-empty" data-i18n="ma.noVideos">No videos yet — the first classes are on their way.</div>';
+        el('ma-folders-home').innerHTML=state.folders.map(function(f){
+          var pct=f.videos?Math.round(100*f.done/f.videos):0;
+          return '<div class="ma-card" data-fid="'+f.id+'"><h4>'+esc(f.emoji)+' '+esc(f.name)+'</h4>'
+            +'<p>'+esc(f.description||'')+'</p><p style="margin-top:6px">'+f.done+' / '+f.videos+'</p>'
+            +'<div class="ma-prog"><i style="width:'+pct+'%"></i></div></div>';
+        }).join('')||'<div class="ma-empty" data-i18n="ma.noModules">Modules will appear here.</div>';
+        if(IS_MENTOR){ fillFolderSelect(); }
+        if(window.ImproveI18N&&window.ImproveI18N.apply) window.ImproveI18N.apply(window.ImproveI18N.current());
+      });
+    }
+    /* classes tab */
+    function renderClassesRoot(){
+      var root=el('ma-classes-root');
+      if(state.openFolder){ return openFolder(state.openFolder); }
+      root.innerHTML='<div class="ma-grid">'+state.folders.map(function(f){
+        var pct=f.videos?Math.round(100*f.done/f.videos):0;
+        return '<div class="ma-card" data-fid="'+f.id+'"><h4>'+esc(f.emoji)+' '+esc(f.name)+'</h4><p>'+esc(f.description||'')+'</p>'
+          +'<p style="margin-top:6px">'+f.done+' / '+f.videos+'</p><div class="ma-prog"><i style="width:'+pct+'%"></i></div></div>';
+      }).join('')+'</div>';
+    }
+    function openFolder(fid){
+      state.openFolder=fid;
+      J('/api/ment/folder/'+fid).then(function(d){
+        if(d.error) return;
+        el('ma-classes-root').innerHTML='<button class="ma-back" id="ma-fback">← '+esc(d.folder.name)+'</button>'
+          +((d.videos||[]).map(vRow).join('')||'<div class="ma-empty">—</div>');
+        el('ma-fback').addEventListener('click',function(){state.openFolder=null;renderClassesRoot();});
+      });
+    }
+    /* video modal */
+    function openVideo(vid){
+      J('/api/ment/video/'+vid).then(function(d){
+        if(d.error) return;
+        var v=d.video; state.video=v;
+        el('ma-player').innerHTML=playerFor(v.video_url);
+        el('ma-v-title').textContent=v.title;
+        el('ma-v-kind').textContent=kindLabel(v.kind); el('ma-v-kind').className='ma-kind '+v.kind;
+        el('ma-v-dur').textContent=v.duration_min?(v.duration_min+' min'):'';
+        el('ma-v-desc').textContent=v.description||'';
+        setDoneBtn(v.done);
+        el('ma-v-comments').innerHTML=(d.comments||[]).map(function(c){
+          return '<div class="row'+(c.is_mentor?' mentor':'')+'"><b>'+esc(c.author)+(c.is_mentor?' · MENTOR':'')+'</b> — '+esc(c.body)+'</div>';
+        }).join('')||'<div class="ma-empty" data-i18n="ma.firstComment">Be the first to comment.</div>';
+        el('ma-ov').classList.add('on');
+      });
+    }
+    function setDoneBtn(done){
+      state.video.done=done;
+      el('ma-v-done').textContent=done?'✓ Completada':'Marcar completada';
+    }
+    el('ma-v-done').addEventListener('click',function(){
+      P('/api/ment/video/'+state.video.id+'/progress',{done:!state.video.done}).then(function(d){ if(d.ok){setDoneBtn(d.done); loadSummary();} });
+    });
+    if(IS_MENTOR && el('ma-v-del')) el('ma-v-del').addEventListener('click',function(){
+      if(!confirm('¿Eliminar este video?')) return;
+      P('/api/ment/admin/video/'+state.video.id+'/delete').then(function(){ el('ma-ov').classList.remove('on'); loadSummary(); });
+    });
+    el('ma-ov-close').addEventListener('click',function(){ el('ma-ov').classList.remove('on'); el('ma-player').innerHTML=''; });
+    el('ma-cmt-send').addEventListener('click',function(){
+      var t=el('ma-cmt-in').value.trim(); if(t.length<2) return;
+      P('/api/ment/video/'+state.video.id+'/comment',{body:t}).then(function(d){ if(d.ok){ el('ma-cmt-in').value=''; openVideo(state.video.id);} });
+    });
+    /* delegate clicks on cards/rows */
+    document.addEventListener('click',function(e){
+      var vc=e.target.closest('[data-vid]'); if(vc && !e.target.closest('.ma-ov')){ openVideo(parseInt(vc.dataset.vid,10)); return; }
+      var fc=e.target.closest('[data-fid]');
+      if(fc){ document.querySelector('.ma-tab[data-v=classes]').click(); openFolder(parseInt(fc.dataset.fid,10)); }
+    });
+
+    /* ── community chat ── */
+    function loadChannels(){
+      J('/api/ment/channels').then(function(d){
+        el('ma-chls').innerHTML=(d.channels||[]).map(function(c){
+          return '<button class="ma-chl'+(state.channel===c.id?' on':'')+'" data-cid="'+c.id+'">'+esc(c.emoji)+' '+esc(c.name)
+            +(c.locked?'<span class="lk">🔒</span>':'')+'</button>';
+        }).join('')||'<div class="ma-empty" data-i18n="ma.noChannels">The mentor hasn’t opened channels yet.</div>';
+        document.querySelectorAll('.ma-chl').forEach(function(b){
+          b.addEventListener('click',function(){ pickChannel(parseInt(b.dataset.cid,10)); });
+        });
+      });
+    }
+    function pickChannel(cid){
+      state.channel=cid; state.lastMsgId=0; state.replyTo=null; el('ma-reply-tag').classList.remove('on');
+      el('ma-msgs').innerHTML='';
+      document.querySelectorAll('.ma-chl').forEach(function(b){b.classList.toggle('on',parseInt(b.dataset.cid,10)===cid);});
+      el('ma-msg-in').disabled=false; el('ma-msg-send').disabled=false;
+      fetchMsgs(true);
+      if(state.poll) clearInterval(state.poll);
+      state.poll=setInterval(function(){ if(document.hidden) return; fetchMsgs(false); },8000);
+    }
+    function msgNode(m){
+      var cls='ma-msg'+(m.is_mine?' mine':'')+(m.is_mentor?' mentor':'');
+      var rx=Object.keys(m.reactions||{}).map(function(k){
+        return '<span data-e="'+k+'" class="'+(m.my_reaction===k?'mine':'')+'">'+k+' '+m.reactions[k]+'</span>';
+      }).join('');
+      return '<div class="'+cls+'" data-mid="'+m.id+'">'
+        +'<div class="who"><b>'+esc(m.author)+(m.is_mentor?' · MENTOR':'')+'</b>'+(m.pinned?' 📌':'')+'</div>'
+        +(m.reply_to?'<div class="rep">↩ '+esc(m.reply_to.author)+': '+esc(m.reply_to.body)+'</div>':'')
+        +'<div class="bub">'+esc(m.body)+'</div>'
+        +(rx?'<div class="ma-rx">'+rx+'</div>':'<div class="ma-rx"></div>')
+        +'<div class="acts">'
+        +'<button data-act="reply">↩</button>'
+        +'👍🔥📈❤️🤝'.match(/../g).map(function(){return '';}).join('')
+        +['👍','🔥','📈','❤️','🤝'].map(function(e){return '<button data-act="react" data-e="'+e+'">'+e+'</button>';}).join('')
+        +(IS_MENTOR?'<button data-act="pin">📌</button><button data-act="del">🗑</button>':'')
+        +'</div></div>';
+    }
+    function fetchMsgs(initial){
+      if(!state.channel) return;
+      J('/api/ment/channel/'+state.channel+'/messages'+(state.lastMsgId?('?after='+state.lastMsgId):'')).then(function(d){
+        if(d.error) return;
+        var box=el('ma-msgs');
+        if(initial) box.innerHTML='';
+        (d.messages||[]).forEach(function(m){
+          box.insertAdjacentHTML('beforeend', msgNode(m));
+          state.lastMsgId=Math.max(state.lastMsgId,m.id);
+        });
+        if((d.messages||[]).length) box.scrollTop=box.scrollHeight;
+        var pin=el('ma-pin');
+        if((d.pinned||[]).length){ pin.classList.add('on'); pin.innerHTML='📌 '+d.pinned.map(function(m){return '<b>'+esc(m.author)+':</b> '+esc(m.body.slice(0,80));}).join(' · '); }
+        else pin.classList.remove('on');
+        var locked=d.locked && !IS_MENTOR;
+        el('ma-msg-in').disabled=locked; el('ma-msg-send').disabled=locked;
+        if(locked) el('ma-msg-in').placeholder='🔒';
+      });
+    }
+    el('ma-msg-send').addEventListener('click',sendMsg);
+    el('ma-msg-in').addEventListener('keydown',function(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();} });
+    function sendMsg(){
+      var t=el('ma-msg-in').value.trim(); if(!t||!state.channel) return;
+      P('/api/ment/channel/'+state.channel+'/message',{body:t,reply_to:state.replyTo}).then(function(d){
+        if(d.ok){ el('ma-msg-in').value=''; state.replyTo=null; el('ma-reply-tag').classList.remove('on'); fetchMsgs(false); }
+      });
+    }
+    el('ma-msgs').addEventListener('click',function(e){
+      var b=e.target.closest('button[data-act]'); var node=e.target.closest('.ma-msg');
+      var rxs=e.target.closest('.ma-rx span');
+      if(rxs && node){ P('/api/ment/message/'+node.dataset.mid+'/react',{emoji:rxs.dataset.e}).then(function(){state.lastMsgId=0;fetchMsgs(true);}); return; }
+      if(!b||!node) return;
+      var mid=node.dataset.mid;
+      if(b.dataset.act==='react') P('/api/ment/message/'+mid+'/react',{emoji:b.dataset.e}).then(function(){state.lastMsgId=0;fetchMsgs(true);});
+      if(b.dataset.act==='reply'){ state.replyTo=parseInt(mid,10);
+        el('ma-reply-tag').textContent='↩ '+node.querySelector('.who b').textContent;
+        el('ma-reply-tag').classList.add('on'); el('ma-msg-in').focus(); }
+      if(b.dataset.act==='pin') P('/api/ment/admin/message/'+mid+'/pin').then(function(){state.lastMsgId=0;fetchMsgs(true);});
+      if(b.dataset.act==='del') P('/api/ment/admin/message/'+mid+'/delete').then(function(){state.lastMsgId=0;fetchMsgs(true);});
+    });
+
+    /* ── questions ── */
+    function loadQuestions(){
+      J('/api/ment/questions').then(function(d){
+        el('ma-q-list').innerHTML=(d.questions||[]).map(function(q){
+          var ans=q.answer
+            ?'<div class="aa"><b data-i18n="ma.mentorAnswer">MENTOR</b><br>'+esc(q.answer)+'</div>'
+            :(IS_MENTOR
+              ?'<div style="margin-top:8px;display:flex;gap:7px"><input class="ma-input" data-qin="'+q.id+'" placeholder="Answer…"/><button class="ma-btn" data-qans="'+q.id+'">↳</button></div>'
+              :'<div class="wait" data-i18n="ma.waiting">Waiting for the mentor…</div>');
+          return '<div class="ma-q"><div class="who">'+esc(q.author)+'</div><div class="qq">'+esc(q.body)+'</div>'+ans+'</div>';
+        }).join('')||'<div class="ma-empty" data-i18n="ma.noQuestions">No questions yet.</div>';
+        if(window.ImproveI18N&&window.ImproveI18N.apply) window.ImproveI18N.apply(window.ImproveI18N.current());
+      });
+    }
+    el('ma-q-send').addEventListener('click',function(){
+      var t=el('ma-q-in').value.trim(); if(t.length<5) return;
+      P('/api/ment/questions',{body:t}).then(function(d){ if(d.ok){ el('ma-q-in').value=''; loadQuestions(); } });
+    });
+    el('ma-q-list').addEventListener('click',function(e){
+      var b=e.target.closest('[data-qans]'); if(!b) return;
+      var inp=document.querySelector('[data-qin="'+b.dataset.qans+'"]');
+      var t=(inp.value||'').trim(); if(t.length<2) return;
+      P('/api/ment/admin/question/'+b.dataset.qans+'/answer',{answer:t}).then(function(){ loadQuestions(); });
+    });
+
+    /* ── mentor tools ── */
+    if(IS_MENTOR){
+      function fillFolderSelectInner(){
+        var s=el('mt-v-folder'); if(!s) return;
+        s.innerHTML='<option value="">(sin carpeta)</option>'+state.folders.map(function(f){
+          return '<option value="'+f.id+'">'+esc(f.emoji)+' '+esc(f.name)+'</option>';}).join('');
+      }
+      window.fillFolderSelect=fillFolderSelectInner;
+      el('mt-live-on').addEventListener('click',function(){
+        P('/api/ment/admin/live',{is_live:true,title:el('mt-live-title').value,url:el('mt-live-url').value}).then(loadSummary);
+      });
+      el('mt-live-off').addEventListener('click',function(){ P('/api/ment/admin/live',{is_live:false}).then(loadSummary); });
+      el('mt-f-add').addEventListener('click',function(){
+        P('/api/ment/admin/folder',{name:el('mt-f-name').value,emoji:el('mt-f-emoji').value,description:el('mt-f-desc').value})
+          .then(function(d){ if(d.ok){ el('mt-f-name').value=''; loadSummary(); } });
+      });
+      el('mt-v-add').addEventListener('click',function(){
+        P('/api/ment/admin/video',{folder_id:el('mt-v-folder').value||null,kind:el('mt-v-kind').value,
+          duration_min:el('mt-v-dur').value||null,title:el('mt-v-title').value,video_url:el('mt-v-url').value,
+          description:el('mt-v-desc').value}).then(function(d){ if(d.ok){ el('mt-v-title').value=''; el('mt-v-url').value=''; el('mt-v-desc').value=''; loadSummary(); } else alert(d.error||'error'); });
+      });
+      el('mt-c-add').addEventListener('click',function(){
+        P('/api/ment/admin/channel',{name:el('mt-c-name').value,emoji:el('mt-c-emoji').value,locked:el('mt-c-locked').checked})
+          .then(function(d){ if(d.ok){ el('mt-c-name').value=''; loadChannels(); } });
+      });
+    } else { window.fillFolderSelect=function(){}; }
+    function fillFolderSelect(){ if(window.fillFolderSelect) window.fillFolderSelect(); }
+
+    loadSummary();
+    setInterval(function(){ if(!document.hidden) loadSummary(); }, 60000);   /* live banner refresh */
+  })();
+  </script>
+</body>
+</html>

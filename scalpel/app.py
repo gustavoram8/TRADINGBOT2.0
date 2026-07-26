@@ -487,9 +487,11 @@ class ForumPost(db.Model):
     title = db.Column(db.String(160), nullable=False)
     body = db.Column(db.Text, nullable=False)
     image_path = db.Column(db.String(255), nullable=True)  # relative to /static/
+    community_id = db.Column(db.Integer, db.ForeignKey('forum_community.id'), nullable=True, index=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     is_deleted = db.Column(db.Boolean, default=False, nullable=False)
     user = db.relationship('User', backref='forum_posts')
+    community = db.relationship('ForumCommunity', foreign_keys=[community_id])
 
 
 class ForumComment(db.Model):
@@ -517,6 +519,45 @@ class SavedPost(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
     post_id = db.Column(db.Integer, db.ForeignKey('forum_post.id'), nullable=False, index=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class ForumCommunity(db.Model):
+    """A user-created trading community (group) inside the forum. Posts can be
+    published into a community; members browse it as a filtered feed."""
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(60), nullable=False)
+    description = db.Column(db.String(240), nullable=True)
+    emoji = db.Column(db.String(8), nullable=True)
+    creator_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    creator = db.relationship('User')
+
+
+class ForumCommunityMember(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    community_id = db.Column(db.Integer, db.ForeignKey('forum_community.id'), nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    joined_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class ForumFollow(db.Model):
+    """follower_id follows followed_id (trader-to-trader, Instagram-style)."""
+    id = db.Column(db.Integer, primary_key=True)
+    follower_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    followed_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class ForumDM(db.Model):
+    """Private 1-to-1 message between forum members (Standard+)."""
+    id = db.Column(db.Integer, primary_key=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    recipient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    body = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    read_at = db.Column(db.DateTime, nullable=True)
+    sender = db.relationship('User', foreign_keys=[sender_id])
+    recipient = db.relationship('User', foreign_keys=[recipient_id])
 
 
 class ModWarning(db.Model):
@@ -690,6 +731,103 @@ class MentorshipOrder(db.Model):
     applied_at = db.Column(db.DateTime, nullable=True)        # fulfilment/notify ran (idempotency)
     note = db.Column(db.String(300), nullable=True)
     user = db.relationship('User', backref='mentorship_orders')
+
+
+# ═══ Mentorship MEMBERS AREA (post-purchase) ═══════════════════════════════
+class MentorshipFolder(db.Model):
+    """A module/folder of the members video library."""
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), nullable=False)
+    description = db.Column(db.String(300), nullable=True)
+    emoji = db.Column(db.String(8), nullable=True)
+    position = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class MentorshipVideo(db.Model):
+    """Library video metadata. The stream itself is hosted externally
+    (Bunny / unlisted embed / direct mp4) — we store only the URL."""
+    id = db.Column(db.Integer, primary_key=True)
+    folder_id = db.Column(db.Integer, db.ForeignKey('mentorship_folder.id'), nullable=True, index=True)
+    title = db.Column(db.String(160), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    video_url = db.Column(db.String(500), nullable=False)
+    duration_min = db.Column(db.Integer, nullable=True)
+    kind = db.Column(db.String(12), default='class', nullable=False)  # class / live / backtest
+    position = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+
+
+class MentorshipVideoComment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    video_id = db.Column(db.Integer, db.ForeignKey('mentorship_video.id'), nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    body = db.Column(db.String(1000), nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    user = db.relationship('User')
+
+
+class MentorshipQuestion(db.Model):
+    """Question box to the mentor; the mentor answers from the same page."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    body = db.Column(db.String(1000), nullable=False)
+    answer = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    answered_at = db.Column(db.DateTime, nullable=True)
+    user = db.relationship('User')
+
+
+class MentorshipChannel(db.Model):
+    """A chat channel of the private members community. locked=True means an
+    announcement channel where only the mentor/admin can post."""
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(60), nullable=False)
+    emoji = db.Column(db.String(8), nullable=True)
+    description = db.Column(db.String(200), nullable=True)
+    locked = db.Column(db.Boolean, default=False, nullable=False)
+    position = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class MentorshipMessage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    channel_id = db.Column(db.Integer, db.ForeignKey('mentorship_channel.id'), nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    body = db.Column(db.String(2000), nullable=False)
+    reply_to_id = db.Column(db.Integer, db.ForeignKey('mentorship_message.id'), nullable=True)
+    pinned = db.Column(db.Boolean, default=False, nullable=False)
+    is_deleted = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    user = db.relationship('User')
+
+
+class MentorshipMsgReaction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    message_id = db.Column(db.Integer, db.ForeignKey('mentorship_message.id'), nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    emoji = db.Column(db.String(16), nullable=False)
+
+
+class MentorshipProgress(db.Model):
+    """Per-user watch progress: lets the area show 'continue watching' and a
+    completion ring per folder."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    video_id = db.Column(db.Integer, db.ForeignKey('mentorship_video.id'), nullable=False, index=True)
+    completed = db.Column(db.Boolean, default=False, nullable=False)
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class MentorshipLiveState(db.Model):
+    """Single-row switch the mentor flips when streaming live (plus the link),
+    so the area shows the ON AIR banner instantly."""
+    id = db.Column(db.Integer, primary_key=True)
+    is_live = db.Column(db.Boolean, default=False, nullable=False)
+    title = db.Column(db.String(160), nullable=True)
+    url = db.Column(db.String(500), nullable=True)
+    note = db.Column(db.String(300), nullable=True)
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
 
 class PromoCode(db.Model):
@@ -1247,6 +1385,30 @@ def standard_required(fn):
             return jsonify({'error': 'unauthorized'}), 401
         if not is_standard_up():
             return jsonify({'error': 'standard_required'}), 403
+        return fn(*args, **kwargs)
+    return wrapper
+
+
+def is_mentorship_member():
+    """Members area access: the mentor/admin, or any user with a PAID mentorship
+    order that includes the Classes Program (library / combo SKUs)."""
+    if not current_user.is_authenticated:
+        return False
+    if getattr(current_user, 'is_admin', False):
+        return True
+    return MentorshipOrder.query.filter(
+        MentorshipOrder.user_id == current_user.id,
+        MentorshipOrder.status == 'paid',
+        MentorshipOrder.kind.in_(('library', 'combo'))).first() is not None
+
+
+def mentorship_member_required(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return jsonify({'error': 'unauthorized'}), 401
+        if not is_mentorship_member():
+            return jsonify({'error': 'membership_required'}), 403
         return fn(*args, **kwargs)
     return wrapper
 
@@ -2255,6 +2417,403 @@ def improve_plans():
         return redirect(url_for('improve_apply'))
     return render_template('improve_plans.html',
                            authed=current_user.is_authenticated)
+
+
+# ═══ Mentorship MEMBERS AREA — page + JSON APIs ════════════════════════════
+MENT_REACTIONS = ('👍', '🔥', '📈', '❤️', '🤝')
+
+
+def _ment_live_state():
+    row = db.session.get(MentorshipLiveState, 1)
+    if not row:
+        row = MentorshipLiveState(id=1, is_live=False)
+        db.session.add(row)
+        db.session.commit()
+    return row
+
+
+def _ment_live_dict(row):
+    return {'is_live': bool(row.is_live), 'title': row.title or '', 'url': row.url or '',
+            'note': row.note or '', 'updated_at': _as_utc(row.updated_at).isoformat() if row.updated_at else None}
+
+
+def _ment_video_dict(v, with_desc=False):
+    done = MentorshipProgress.query.filter_by(user_id=current_user.id, video_id=v.id, completed=True).first() is not None
+    d = {'id': v.id, 'title': v.title, 'kind': v.kind, 'duration_min': v.duration_min,
+         'folder_id': v.folder_id, 'done': done,
+         'comment_count': MentorshipVideoComment.query.filter_by(video_id=v.id).count(),
+         'created_at': _as_utc(v.created_at).isoformat()}
+    if with_desc:
+        d['description'] = v.description or ''
+        d['video_url'] = v.video_url
+    return d
+
+
+def _ment_msg_dict(m):
+    counts = {}
+    mine = None
+    for r in MentorshipMsgReaction.query.filter_by(message_id=m.id).all():
+        counts[r.emoji] = counts.get(r.emoji, 0) + 1
+        if r.user_id == current_user.id:
+            mine = r.emoji
+    reply = None
+    if m.reply_to_id:
+        rm = db.session.get(MentorshipMessage, m.reply_to_id)
+        if rm and not rm.is_deleted:
+            reply = {'author': rm.user.username if rm.user else '—', 'body': (rm.body or '')[:90]}
+    return {'id': m.id, 'body': m.body, 'author': m.user.username if m.user else '—',
+            'is_mentor': bool(m.user and m.user.is_admin), 'is_mine': m.user_id == current_user.id,
+            'pinned': bool(m.pinned), 'reply_to': reply,
+            'reactions': counts, 'my_reaction': mine,
+            'created_at': _as_utc(m.created_at).isoformat()}
+
+
+@app.route('/mentorship/area')
+@login_required
+def mentorship_area():
+    if not is_mentorship_member():
+        return redirect(url_for('improve_plans'))
+    return render_template('mentorship_area.html', is_mentor=bool(current_user.is_admin),
+                           username=current_user.username)
+
+
+@app.route('/api/ment/summary')
+@mentorship_member_required
+def ment_summary():
+    folders = MentorshipFolder.query.order_by(MentorshipFolder.position, MentorshipFolder.id).all()
+    fl = []
+    for f in folders:
+        vids = MentorshipVideo.query.filter_by(folder_id=f.id).count()
+        done = (db.session.query(MentorshipProgress)
+                .join(MentorshipVideo, MentorshipVideo.id == MentorshipProgress.video_id)
+                .filter(MentorshipProgress.user_id == current_user.id,
+                        MentorshipProgress.completed.is_(True),
+                        MentorshipVideo.folder_id == f.id).count())
+        fl.append({'id': f.id, 'name': f.name, 'emoji': f.emoji or '📁',
+                   'description': f.description or '', 'videos': vids, 'done': done})
+    latest = (MentorshipVideo.query.order_by(MentorshipVideo.created_at.desc()).limit(6).all())
+    # continue watching: most recent incomplete-progress video, else first unwatched
+    cont = (db.session.query(MentorshipVideo)
+            .join(MentorshipProgress, MentorshipProgress.video_id == MentorshipVideo.id)
+            .filter(MentorshipProgress.user_id == current_user.id,
+                    MentorshipProgress.completed.is_(False))
+            .order_by(MentorshipProgress.updated_at.desc()).first())
+    return jsonify({
+        'live': _ment_live_dict(_ment_live_state()),
+        'folders': fl,
+        'latest': [_ment_video_dict(v) for v in latest],
+        'continue': _ment_video_dict(cont) if cont else None,
+        'is_mentor': bool(current_user.is_admin),
+        'open_questions': (MentorshipQuestion.query.filter(MentorshipQuestion.answer.is_(None)).count()
+                           if current_user.is_admin else None),
+    })
+
+
+@app.route('/api/ment/folder/<int:fid>')
+@mentorship_member_required
+def ment_folder(fid):
+    f = db.session.get(MentorshipFolder, fid)
+    if not f:
+        return jsonify({'error': 'not_found'}), 404
+    vids = (MentorshipVideo.query.filter_by(folder_id=fid)
+            .order_by(MentorshipVideo.position, MentorshipVideo.id).all())
+    return jsonify({'folder': {'id': f.id, 'name': f.name, 'emoji': f.emoji or '📁',
+                               'description': f.description or ''},
+                    'videos': [_ment_video_dict(v) for v in vids]})
+
+
+@app.route('/api/ment/video/<int:vid>')
+@mentorship_member_required
+def ment_video(vid):
+    v = db.session.get(MentorshipVideo, vid)
+    if not v:
+        return jsonify({'error': 'not_found'}), 404
+    comments = (MentorshipVideoComment.query.filter_by(video_id=vid)
+                .order_by(MentorshipVideoComment.created_at.asc()).limit(200).all())
+    return jsonify({'video': _ment_video_dict(v, with_desc=True),
+                    'comments': [{'id': c.id, 'author': c.user.username if c.user else '—',
+                                  'is_mentor': bool(c.user and c.user.is_admin),
+                                  'body': c.body, 'created_at': _as_utc(c.created_at).isoformat()}
+                                 for c in comments]})
+
+
+@app.route('/api/ment/video/<int:vid>/comment', methods=['POST'])
+@mentorship_member_required
+def ment_video_comment(vid):
+    if not db.session.get(MentorshipVideo, vid):
+        return jsonify({'error': 'not_found'}), 404
+    body = (request.json.get('body') or '').strip()[:1000] if request.is_json else ''
+    if len(body) < 2:
+        return jsonify({'error': 'too_short'}), 400
+    db.session.add(MentorshipVideoComment(video_id=vid, user_id=current_user.id, body=body))
+    db.session.commit()
+    return jsonify({'ok': True})
+
+
+@app.route('/api/ment/video/<int:vid>/progress', methods=['POST'])
+@mentorship_member_required
+def ment_video_progress(vid):
+    if not db.session.get(MentorshipVideo, vid):
+        return jsonify({'error': 'not_found'}), 404
+    done = bool(request.json.get('done')) if request.is_json else False
+    row = MentorshipProgress.query.filter_by(user_id=current_user.id, video_id=vid).first()
+    if not row:
+        row = MentorshipProgress(user_id=current_user.id, video_id=vid)
+        db.session.add(row)
+    row.completed = done
+    row.updated_at = datetime.now(timezone.utc)
+    db.session.commit()
+    return jsonify({'ok': True, 'done': done})
+
+
+@app.route('/api/ment/questions', methods=['GET', 'POST'])
+@mentorship_member_required
+def ment_questions():
+    if request.method == 'POST':
+        body = (request.json.get('body') or '').strip()[:1000] if request.is_json else ''
+        if len(body) < 5:
+            return jsonify({'error': 'too_short'}), 400
+        pending = MentorshipQuestion.query.filter_by(user_id=current_user.id).filter(
+            MentorshipQuestion.answer.is_(None)).count()
+        if pending >= 5 and not current_user.is_admin:
+            return jsonify({'error': 'too_many_open'}), 429
+        db.session.add(MentorshipQuestion(user_id=current_user.id, body=body))
+        db.session.commit()
+        return jsonify({'ok': True})
+    q = MentorshipQuestion.query
+    if not current_user.is_admin:
+        q = q.filter_by(user_id=current_user.id)
+    rows = q.order_by(MentorshipQuestion.created_at.desc()).limit(100).all()
+    return jsonify({'questions': [
+        {'id': r.id, 'body': r.body, 'answer': r.answer,
+         'author': r.user.username if r.user else '—',
+         'created_at': _as_utc(r.created_at).isoformat(),
+         'answered_at': _as_utc(r.answered_at).isoformat() if r.answered_at else None}
+        for r in rows]})
+
+
+@app.route('/api/ment/channels')
+@mentorship_member_required
+def ment_channels():
+    rows = MentorshipChannel.query.order_by(MentorshipChannel.position, MentorshipChannel.id).all()
+    return jsonify({'channels': [
+        {'id': c.id, 'name': c.name, 'emoji': c.emoji or '💬',
+         'description': c.description or '', 'locked': bool(c.locked)} for c in rows]})
+
+
+@app.route('/api/ment/channel/<int:cid>/messages')
+@mentorship_member_required
+def ment_channel_messages(cid):
+    ch = db.session.get(MentorshipChannel, cid)
+    if not ch:
+        return jsonify({'error': 'not_found'}), 404
+    try:
+        after = int(request.args.get('after', 0))
+    except (TypeError, ValueError):
+        after = 0
+    q = MentorshipMessage.query.filter_by(channel_id=cid, is_deleted=False)
+    if after:
+        rows = q.filter(MentorshipMessage.id > after).order_by(MentorshipMessage.id.asc()).limit(80).all()
+    else:
+        rows = q.order_by(MentorshipMessage.id.desc()).limit(60).all()[::-1]
+    pinned = (MentorshipMessage.query.filter_by(channel_id=cid, is_deleted=False, pinned=True)
+              .order_by(MentorshipMessage.id.desc()).limit(3).all())
+    return jsonify({'messages': [_ment_msg_dict(m) for m in rows],
+                    'pinned': [_ment_msg_dict(m) for m in pinned],
+                    'locked': bool(ch.locked)})
+
+
+@app.route('/api/ment/channel/<int:cid>/message', methods=['POST'])
+@mentorship_member_required
+def ment_channel_post(cid):
+    ch = db.session.get(MentorshipChannel, cid)
+    if not ch:
+        return jsonify({'error': 'not_found'}), 404
+    if ch.locked and not current_user.is_admin:
+        return jsonify({'error': 'locked'}), 403
+    data = request.json if request.is_json else {}
+    body = (data.get('body') or '').strip()[:2000]
+    if len(body) < 1:
+        return jsonify({'error': 'too_short'}), 400
+    # cheap flood guard: max 20 messages per minute per user
+    cutoff = datetime.now(timezone.utc) - timedelta(minutes=1)
+    recent = MentorshipMessage.query.filter(MentorshipMessage.user_id == current_user.id,
+                                            MentorshipMessage.created_at >= cutoff).count()
+    if recent >= 20:
+        return jsonify({'error': 'rate_limited'}), 429
+    reply_to = data.get('reply_to')
+    if reply_to:
+        rm = db.session.get(MentorshipMessage, int(reply_to))
+        if not rm or rm.channel_id != cid:
+            reply_to = None
+    m = MentorshipMessage(channel_id=cid, user_id=current_user.id, body=body,
+                          reply_to_id=int(reply_to) if reply_to else None)
+    db.session.add(m)
+    db.session.commit()
+    return jsonify({'ok': True, 'message': _ment_msg_dict(m)})
+
+
+@app.route('/api/ment/message/<int:mid>/react', methods=['POST'])
+@mentorship_member_required
+def ment_message_react(mid):
+    m = db.session.get(MentorshipMessage, mid)
+    if not m or m.is_deleted:
+        return jsonify({'error': 'not_found'}), 404
+    emoji = (request.json.get('emoji') or '') if request.is_json else ''
+    if emoji not in MENT_REACTIONS:
+        return jsonify({'error': 'bad_emoji'}), 400
+    row = MentorshipMsgReaction.query.filter_by(message_id=mid, user_id=current_user.id).first()
+    if row and row.emoji == emoji:
+        db.session.delete(row)          # toggle off
+    elif row:
+        row.emoji = emoji
+    else:
+        db.session.add(MentorshipMsgReaction(message_id=mid, user_id=current_user.id, emoji=emoji))
+    db.session.commit()
+    return jsonify({'ok': True})
+
+
+# ── Mentor (admin) tools for the area ──────────────────────────────────────
+def _mentor_only():
+    if not (current_user.is_authenticated and current_user.is_admin):
+        return jsonify({'error': 'forbidden'}), 403
+    return None
+
+
+@app.route('/api/ment/admin/folder', methods=['POST'])
+@login_required
+def ment_admin_folder():
+    guard = _mentor_only()
+    if guard: return guard
+    d = request.json if request.is_json else {}
+    name = (d.get('name') or '').strip()[:80]
+    if len(name) < 2:
+        return jsonify({'error': 'too_short'}), 400
+    f = MentorshipFolder(name=name, description=(d.get('description') or '').strip()[:300] or None,
+                         emoji=(d.get('emoji') or '').strip()[:8] or None,
+                         position=int(d.get('position') or 0))
+    db.session.add(f); db.session.commit()
+    return jsonify({'ok': True, 'id': f.id})
+
+
+@app.route('/api/ment/admin/folder/<int:fid>/delete', methods=['POST'])
+@login_required
+def ment_admin_folder_delete(fid):
+    guard = _mentor_only()
+    if guard: return guard
+    f = db.session.get(MentorshipFolder, fid)
+    if f:
+        MentorshipVideo.query.filter_by(folder_id=fid).update({'folder_id': None})
+        db.session.delete(f); db.session.commit()
+    return jsonify({'ok': True})
+
+
+@app.route('/api/ment/admin/video', methods=['POST'])
+@login_required
+def ment_admin_video():
+    guard = _mentor_only()
+    if guard: return guard
+    d = request.json if request.is_json else {}
+    title = (d.get('title') or '').strip()[:160]
+    url_ = (d.get('video_url') or '').strip()[:500]
+    if len(title) < 2 or not (url_.startswith('http://') or url_.startswith('https://')):
+        return jsonify({'error': 'invalid'}), 400
+    kind = d.get('kind') if d.get('kind') in ('class', 'live', 'backtest') else 'class'
+    fid = d.get('folder_id')
+    v = MentorshipVideo(folder_id=int(fid) if fid else None, title=title,
+                        description=(d.get('description') or '').strip()[:4000] or None,
+                        video_url=url_,
+                        duration_min=int(d.get('duration_min')) if d.get('duration_min') else None,
+                        kind=kind, position=int(d.get('position') or 0))
+    db.session.add(v); db.session.commit()
+    return jsonify({'ok': True, 'id': v.id})
+
+
+@app.route('/api/ment/admin/video/<int:vid>/delete', methods=['POST'])
+@login_required
+def ment_admin_video_delete(vid):
+    guard = _mentor_only()
+    if guard: return guard
+    v = db.session.get(MentorshipVideo, vid)
+    if v:
+        MentorshipVideoComment.query.filter_by(video_id=vid).delete()
+        MentorshipProgress.query.filter_by(video_id=vid).delete()
+        db.session.delete(v); db.session.commit()
+    return jsonify({'ok': True})
+
+
+@app.route('/api/ment/admin/live', methods=['POST'])
+@login_required
+def ment_admin_live():
+    guard = _mentor_only()
+    if guard: return guard
+    d = request.json if request.is_json else {}
+    row = _ment_live_state()
+    row.is_live = bool(d.get('is_live'))
+    row.title = (d.get('title') or '').strip()[:160] or None
+    row.url = (d.get('url') or '').strip()[:500] or None
+    row.note = (d.get('note') or '').strip()[:300] or None
+    row.updated_at = datetime.now(timezone.utc)
+    db.session.commit()
+    return jsonify({'ok': True, 'live': _ment_live_dict(row)})
+
+
+@app.route('/api/ment/admin/question/<int:qid>/answer', methods=['POST'])
+@login_required
+def ment_admin_answer(qid):
+    guard = _mentor_only()
+    if guard: return guard
+    q = db.session.get(MentorshipQuestion, qid)
+    if not q:
+        return jsonify({'error': 'not_found'}), 404
+    ans = (request.json.get('answer') or '').strip()[:4000] if request.is_json else ''
+    if len(ans) < 2:
+        return jsonify({'error': 'too_short'}), 400
+    q.answer = ans
+    q.answered_at = datetime.now(timezone.utc)
+    db.session.commit()
+    return jsonify({'ok': True})
+
+
+@app.route('/api/ment/admin/channel', methods=['POST'])
+@login_required
+def ment_admin_channel():
+    guard = _mentor_only()
+    if guard: return guard
+    d = request.json if request.is_json else {}
+    name = (d.get('name') or '').strip()[:60]
+    if len(name) < 2:
+        return jsonify({'error': 'too_short'}), 400
+    c = MentorshipChannel(name=name, emoji=(d.get('emoji') or '').strip()[:8] or None,
+                          description=(d.get('description') or '').strip()[:200] or None,
+                          locked=bool(d.get('locked')), position=int(d.get('position') or 0))
+    db.session.add(c); db.session.commit()
+    return jsonify({'ok': True, 'id': c.id})
+
+
+@app.route('/api/ment/admin/message/<int:mid>/pin', methods=['POST'])
+@login_required
+def ment_admin_pin(mid):
+    guard = _mentor_only()
+    if guard: return guard
+    m = db.session.get(MentorshipMessage, mid)
+    if not m:
+        return jsonify({'error': 'not_found'}), 404
+    m.pinned = not m.pinned
+    db.session.commit()
+    return jsonify({'ok': True, 'pinned': m.pinned})
+
+
+@app.route('/api/ment/admin/message/<int:mid>/delete', methods=['POST'])
+@login_required
+def ment_admin_msg_delete(mid):
+    guard = _mentor_only()
+    if guard: return guard
+    m = db.session.get(MentorshipMessage, mid)
+    if m:
+        m.is_deleted = True
+        db.session.commit()
+    return jsonify({'ok': True})
 
 
 @app.route('/mentorship/checkout')
@@ -4960,6 +5519,12 @@ def serialize_post(p, body=True):
         'reactions': rs['counts'],
         'my_reaction': rs['mine'],
         'saved': SavedPost.query.filter_by(user_id=current_user.id, post_id=p.id).first() is not None,
+        'community': ({'id': p.community.id, 'name': p.community.name,
+                       'emoji': p.community.emoji or '👥'}
+                      if getattr(p, 'community_id', None) and p.community else None),
+        'following_author': (p.user_id != current_user.id and
+                             ForumFollow.query.filter_by(follower_id=current_user.id,
+                                                         followed_id=p.user_id).first() is not None),
     }
 
 
@@ -5004,6 +5569,162 @@ def save_forum_image(file):
     return True, f"uploads/forum/{basename}", None
 
 
+# ═══ Forum BOOST — communities, follows, DMs (Standard+) ═══════════════════
+MAX_COMMUNITIES_PER_USER = 3
+DM_PAGE = 40
+
+
+def _community_dict(c):
+    return {'id': c.id, 'name': c.name, 'emoji': c.emoji or '👥',
+            'description': c.description or '',
+            'members': ForumCommunityMember.query.filter_by(community_id=c.id).count(),
+            'posts': ForumPost.query.filter_by(community_id=c.id, is_deleted=False).count(),
+            'creator': c.creator.username if c.creator else '—',
+            'is_mine': c.creator_id == current_user.id,
+            'joined': ForumCommunityMember.query.filter_by(
+                community_id=c.id, user_id=current_user.id).first() is not None}
+
+
+@app.route('/forum/communities', methods=['GET', 'POST'])
+@standard_required
+def forum_communities():
+    if request.method == 'POST':
+        muted = forum_mute_remaining(current_user)
+        if muted:
+            return jsonify({'error': 'muted', 'retry_after': muted}), 403
+        d = request.json if request.is_json else {}
+        name = (d.get('name') or '').strip()[:60]
+        desc = (d.get('description') or '').strip()[:240]
+        emoji = (d.get('emoji') or '').strip()[:8]
+        if len(name) < 3:
+            return jsonify({'error': 'too_short'}), 400
+        if ForumCommunity.query.filter_by(creator_id=current_user.id).count() >= MAX_COMMUNITIES_PER_USER:
+            return jsonify({'error': 'limit', 'max': MAX_COMMUNITIES_PER_USER}), 429
+        if ForumCommunity.query.filter(db.func.lower(ForumCommunity.name) == name.lower()).first():
+            return jsonify({'error': 'name_taken'}), 409
+        trip = local_text_pretrip(f"{name}\n{desc}")
+        if trip:
+            record_warning(current_user.id, trip, 'Community text blocked by pre-filter', name)
+            return jsonify({'error': 'blocked', 'category': trip}), 422
+        c = ForumCommunity(name=name, description=desc or None, emoji=emoji or None,
+                           creator_id=current_user.id)
+        db.session.add(c)
+        db.session.flush()
+        db.session.add(ForumCommunityMember(community_id=c.id, user_id=current_user.id))
+        db.session.commit()
+        return jsonify({'ok': True, 'community': _community_dict(c)})
+    rows = ForumCommunity.query.order_by(ForumCommunity.created_at.desc()).limit(100).all()
+    return jsonify({'communities': [_community_dict(c) for c in rows]})
+
+
+@app.route('/forum/community/<int:cid>/membership', methods=['POST'])
+@standard_required
+def forum_community_membership(cid):
+    c = db.session.get(ForumCommunity, cid)
+    if not c:
+        return jsonify({'error': 'not_found'}), 404
+    join = bool(request.json.get('join')) if request.is_json else False
+    row = ForumCommunityMember.query.filter_by(community_id=cid, user_id=current_user.id).first()
+    if join and not row:
+        db.session.add(ForumCommunityMember(community_id=cid, user_id=current_user.id))
+    elif not join and row:
+        if c.creator_id == current_user.id:
+            return jsonify({'error': 'creator_cannot_leave'}), 400
+        db.session.delete(row)
+    db.session.commit()
+    return jsonify({'ok': True, 'community': _community_dict(c)})
+
+
+@app.route('/forum/follow', methods=['POST'])
+@standard_required
+def forum_follow():
+    d = request.json if request.is_json else {}
+    uname = (d.get('username') or '').strip()
+    target = User.query.filter(db.func.lower(User.username) == uname.lower()).first()
+    if not target or target.id == current_user.id:
+        return jsonify({'error': 'not_found'}), 404
+    row = ForumFollow.query.filter_by(follower_id=current_user.id, followed_id=target.id).first()
+    on = bool(d.get('on'))
+    if on and not row:
+        db.session.add(ForumFollow(follower_id=current_user.id, followed_id=target.id))
+    elif not on and row:
+        db.session.delete(row)
+    db.session.commit()
+    return jsonify({'ok': True, 'following': on,
+                    'followers': ForumFollow.query.filter_by(followed_id=target.id).count()})
+
+
+def _dm_dict(m):
+    return {'id': m.id, 'body': m.body, 'is_mine': m.sender_id == current_user.id,
+            'created_at': _as_utc(m.created_at).isoformat()}
+
+
+@app.route('/forum/dm/threads')
+@standard_required
+def forum_dm_threads():
+    """One row per counterpart, newest conversation first, with unread counts."""
+    msgs = (ForumDM.query.filter(db.or_(ForumDM.sender_id == current_user.id,
+                                        ForumDM.recipient_id == current_user.id))
+            .order_by(ForumDM.created_at.desc()).limit(400).all())
+    seen = {}
+    for m in msgs:
+        other = m.recipient if m.sender_id == current_user.id else m.sender
+        if not other or other.id in seen:
+            continue
+        unread = ForumDM.query.filter_by(sender_id=other.id, recipient_id=current_user.id,
+                                         read_at=None).count()
+        seen[other.id] = {'username': other.username, 'rank': other.rank or 1,
+                          'last': (m.body or '')[:70], 'unread': unread,
+                          'at': _as_utc(m.created_at).isoformat()}
+    return jsonify({'threads': list(seen.values()),
+                    'unread_total': ForumDM.query.filter_by(recipient_id=current_user.id,
+                                                            read_at=None).count()})
+
+
+@app.route('/forum/dm/with/<username>', methods=['GET', 'POST'])
+@standard_required
+def forum_dm_with(username):
+    other = User.query.filter(db.func.lower(User.username) == username.lower()).first()
+    if not other or other.id == current_user.id:
+        return jsonify({'error': 'not_found'}), 404
+    if request.method == 'POST':
+        muted = forum_mute_remaining(current_user)
+        if muted:
+            return jsonify({'error': 'muted', 'retry_after': muted}), 403
+        body = (request.json.get('body') or '').strip()[:2000] if request.is_json else ''
+        if len(body) < 1:
+            return jsonify({'error': 'too_short'}), 400
+        cutoff = datetime.now(timezone.utc) - timedelta(minutes=1)
+        if ForumDM.query.filter(ForumDM.sender_id == current_user.id,
+                                ForumDM.created_at >= cutoff).count() >= 30:
+            return jsonify({'error': 'rate_limited'}), 429
+        trip = local_text_pretrip(body)
+        if trip:
+            record_warning(current_user.id, trip, 'DM blocked by pre-filter', body[:80])
+            return jsonify({'error': 'blocked', 'category': trip}), 422
+        m = ForumDM(sender_id=current_user.id, recipient_id=other.id, body=body)
+        db.session.add(m)
+        db.session.commit()
+        return jsonify({'ok': True, 'message': _dm_dict(m)})
+    try:
+        after = int(request.args.get('after', 0))
+    except (TypeError, ValueError):
+        after = 0
+    pair = db.or_(db.and_(ForumDM.sender_id == current_user.id, ForumDM.recipient_id == other.id),
+                  db.and_(ForumDM.sender_id == other.id, ForumDM.recipient_id == current_user.id))
+    q = ForumDM.query.filter(pair)
+    if after:
+        rows = q.filter(ForumDM.id > after).order_by(ForumDM.id.asc()).limit(DM_PAGE).all()
+    else:
+        rows = q.order_by(ForumDM.id.desc()).limit(DM_PAGE).all()[::-1]
+    # opening the thread marks their messages read
+    ForumDM.query.filter_by(sender_id=other.id, recipient_id=current_user.id,
+                            read_at=None).update({'read_at': datetime.now(timezone.utc)})
+    db.session.commit()
+    return jsonify({'messages': [_dm_dict(m) for m in rows],
+                    'with': {'username': other.username, 'rank': other.rank or 1}})
+
+
 @app.route('/forum/feed')
 @standard_required
 def forum_feed():
@@ -5016,6 +5737,17 @@ def forum_feed():
     if saved_only:
         saved_ids = [s.post_id for s in SavedPost.query.filter_by(user_id=current_user.id).all()]
         q = q.filter(ForumPost.id.in_(saved_ids or [-1]))
+    # Communities boost: ?community=<id> narrows to one community's posts;
+    # ?feed=following narrows to authors the viewer follows.
+    comm = request.args.get('community')
+    if comm:
+        try:
+            q = q.filter(ForumPost.community_id == int(comm))
+        except (TypeError, ValueError):
+            pass
+    if request.args.get('feed') == 'following':
+        fids = [f.followed_id for f in ForumFollow.query.filter_by(follower_id=current_user.id).all()]
+        q = q.filter(ForumPost.user_id.in_(fids or [-1]))
     q = q.order_by(ForumPost.created_at.desc())
     rows = q.offset((page - 1) * FORUM_FEED_PAGE).limit(FORUM_FEED_PAGE + 1).all()
     has_more = len(rows) > FORUM_FEED_PAGE
@@ -5083,7 +5815,21 @@ def forum_create_post():
             return jsonify({'error': 'image_blocked', 'reason': err}), 422
         image_path = rel
 
-    post = ForumPost(user_id=current_user.id, title=title, body=body, image_path=image_path)
+    community_id = None
+    craw = (request.form.get('community_id') or '').strip()
+    if craw:
+        try:
+            cid = int(craw)
+        except (TypeError, ValueError):
+            cid = None
+        if cid:
+            if not ForumCommunityMember.query.filter_by(community_id=cid,
+                                                        user_id=current_user.id).first():
+                return jsonify({'error': 'not_a_member'}), 403
+            community_id = cid
+
+    post = ForumPost(user_id=current_user.id, title=title, body=body, image_path=image_path,
+                     community_id=community_id)
     db.session.add(post)
     db.session.commit()
     add_xp(current_user, 'forum_post', ref=f'post:{post.id}')
@@ -7548,6 +8294,23 @@ def _migrate_mentorship_application_columns():
         app.logger.info('Migrated mentorship_application: added %s.', ', '.join(added))
 
 
+def _migrate_forum_post_community_column():
+    """Add community_id to an existing forum_post table (prod PG / local sqlite)."""
+    from sqlalchemy import inspect, text
+    insp = inspect(db.engine)
+    try:
+        cols = {c['name'] for c in insp.get_columns('forum_post')}
+    except Exception:
+        return
+    if 'community_id' not in cols:
+        try:
+            with db.engine.begin() as conn:
+                conn.execute(text('ALTER TABLE forum_post ADD COLUMN community_id INTEGER'))
+            app.logger.info('Migrated forum_post: community_id added.')
+        except Exception as e:
+            app.logger.info('forum community migration note (ignored): %s', e)
+
+
 def init_db():
     with app.app_context():
         db.create_all()
@@ -7564,6 +8327,7 @@ def init_db():
         _migrate_preflight_check_columns()
         _migrate_user_camo_columns()
         _migrate_mentorship_application_columns()
+        _migrate_forum_post_community_column()
         admin_email = os.environ.get('ADMIN_EMAIL', 'mauroramirezmij@gmail.com').lower()
         admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
         admin_password = os.environ.get('ADMIN_PASSWORD', 'Codica2310$')
