@@ -96,8 +96,11 @@ app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME', 'mauroramirezmij@gmail.com')
 app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_APP_PASSWORD', '')
+# Display name on every outbound email. Was still the old "Scalpel" brand;
+# env-driven so a domain mailbox only needs MAIL_* variables, no code change.
 app.config['MAIL_DEFAULT_SENDER'] = (
-    'Scalpel', os.environ.get('MAIL_USERNAME', 'mauroramirezmij@gmail.com')
+    os.environ.get('MAIL_SENDER_NAME', 'Tradeable Academy'),
+    os.environ.get('MAIL_USERNAME', 'mauroramirezmij@gmail.com')
 )
 
 db = SQLAlchemy(app)
