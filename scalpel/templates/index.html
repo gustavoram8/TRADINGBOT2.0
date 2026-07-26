@@ -5024,8 +5024,11 @@
   </div>
 </div>
 
-{% if mentorship_enabled or (current_user.is_authenticated and current_user.is_admin) %}
-<!-- ── IMPROVE RIBBON: a separate "world" — its own layer above the tools, like TradingView's top nav ── -->
+{% if mentorship_enabled %}
+<!-- ── IMPROVE RIBBON: a separate "world" — its own layer above the tools, like TradingView's top nav ──
+     Tied to the feature flag ALONE, deliberately: while the programme is shelved
+     the owner should see the same app a customer sees. Admin preview still works
+     by typing /improve directly — the door is open, the sign is down. -->
 <style>
   .improve-ribbon{ position:relative; overflow:hidden; box-sizing:border-box; width:100%;
     display:flex; align-items:center; justify-content:center;
