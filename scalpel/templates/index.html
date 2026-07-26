@@ -2476,6 +2476,58 @@
     .forum-left b { color: var(--accent); }
 
     /* Composer */
+    .forum-dm-btn { display:inline-flex; align-items:center; gap:6px; border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:999px; padding:6px 14px; font-size:12.5px; font-weight:600; cursor:pointer; position:relative; }
+    .forum-dm-btn svg { width:15px; height:15px; }
+    .forum-dm-btn:hover { border-color: var(--accent); }
+    .dm-badge { background:#e0244a; color:#fff; border-radius:999px; font-size:10.5px; font-weight:700; min-width:17px; height:17px; line-height:17px; text-align:center; padding:0 4px; }
+    .forum-commbar { display:flex; align-items:center; gap:10px; margin:0 0 14px; padding:10px 14px; border:1px solid var(--border); border-radius:12px; background:var(--card); font-size:13px; }
+    .forum-commbar .cb-back { background:none; border:none; color:var(--accent); cursor:pointer; font-size:13px; font-weight:600; padding:0; }
+    .forum-commbar .cb-name { font-weight:700; }
+    .forum-commbar .cb-meta { color:var(--muted); font-size:12px; margin-left:auto; }
+    .comm-create { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:14px; margin-bottom:14px; display:flex; flex-wrap:wrap; gap:8px; }
+    .comm-create input { background:var(--surface); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:8px 10px; font-size:13px; }
+    .comm-create .cc-emoji { width:58px; text-align:center; }
+    .comm-create .cc-name { flex:1; min-width:140px; }
+    .comm-create .cc-desc { flex:2; min-width:180px; }
+    .comm-create-err { flex-basis:100%; color:#e0244a; font-size:12.5px; display:none; }
+    .comm-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:12px; }
+    .comm-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:14px; display:flex; flex-direction:column; gap:6px; }
+    .comm-card .cm-top { display:flex; align-items:center; gap:8px; }
+    .comm-card .cm-emoji { font-size:20px; }
+    .comm-card .cm-name { font-weight:700; font-size:14.5px; }
+    .comm-card .cm-desc { color:var(--muted); font-size:12.5px; min-height:16px; }
+    .comm-card .cm-meta { color:var(--muted); font-size:11.5px; }
+    .comm-card .cm-actions { display:flex; gap:8px; margin-top:4px; }
+    .comm-card .cm-actions .forum-btn { padding:6px 12px; font-size:12px; }
+    .post-chip { display:inline-flex; align-items:center; gap:5px; border:1px solid var(--border); background:var(--surface); color:var(--muted); border-radius:999px; padding:3px 10px; font-size:11.5px; font-weight:600; cursor:pointer; margin:6px 0 2px; }
+    .post-chip:hover { border-color:var(--accent); color:var(--text); }
+    .post-social { margin-left:auto; display:flex; align-items:center; gap:6px; }
+    .follow-btn { border:1px solid var(--border); background:transparent; color:var(--accent); border-radius:999px; padding:3px 11px; font-size:11.5px; font-weight:700; cursor:pointer; }
+    .follow-btn.on { color:var(--muted); border-style:dashed; }
+    .dmto-btn { border:1px solid var(--border); background:transparent; color:var(--muted); border-radius:999px; width:26px; height:26px; cursor:pointer; font-size:12px; line-height:1; }
+    .dmto-btn:hover { color:var(--text); border-color:var(--accent); }
+    .dm-drawer { position:fixed; top:0; right:0; bottom:0; width:min(400px,100vw); z-index:1200; background:var(--card); border-left:1px solid var(--border); box-shadow:-12px 0 34px rgba(0,0,0,.25); display:flex; flex-direction:column; }
+    .dm-head { display:flex; align-items:center; gap:10px; padding:14px 16px; border-bottom:1px solid var(--border); }
+    .dm-title { font-weight:700; font-size:14.5px; flex:1; }
+    .dm-close, .dm-back { background:none; border:none; color:var(--muted); font-size:16px; cursor:pointer; padding:2px 6px; }
+    .dm-close:hover, .dm-back:hover { color:var(--text); }
+    .dm-threads { flex:1; overflow-y:auto; padding:8px; }
+    .dm-thread { display:flex; align-items:center; gap:10px; width:100%; text-align:left; background:none; border:none; border-bottom:1px solid var(--border); padding:11px 8px; cursor:pointer; color:var(--text); }
+    .dm-thread:hover { background:var(--surface); }
+    .dm-thread .th-av { width:34px; height:34px; border-radius:50%; background:var(--surface); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-weight:700; }
+    .dm-thread .th-mid { flex:1; min-width:0; }
+    .dm-thread .th-name { font-weight:700; font-size:13.5px; }
+    .dm-thread .th-last { color:var(--muted); font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .dm-empty { color:var(--muted); font-size:13px; text-align:center; padding:34px 22px; }
+    .dm-convo { flex:1; display:flex; flex-direction:column; min-height:0; }
+    .dm-msgs { flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:8px; }
+    .dm-msg { max-width:82%; padding:8px 12px; border-radius:14px; font-size:13px; line-height:1.45; background:var(--surface); border:1px solid var(--border); align-self:flex-start; word-wrap:break-word; }
+    .dm-msg.mine { align-self:flex-end; background:var(--accent); color:#1a1205; border-color:transparent; }
+    .dm-msg .dm-t { display:block; font-size:10px; opacity:.65; margin-top:3px; }
+    .dm-inputrow { display:flex; gap:8px; padding:10px 12px; border-top:1px solid var(--border); }
+    .dm-inputrow input { flex:1; background:var(--surface); border:1px solid var(--border); border-radius:999px; color:var(--text); padding:9px 14px; font-size:13px; }
+    .dm-err { color:#e0244a; font-size:12px; padding:0 14px 10px; }
+    @media (max-width:640px){ .comm-grid{grid-template-columns:1fr;} }
     .forum-composer { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-bottom: 18px; }
     .composer-field { margin-bottom: 12px; }
     .composer-field label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
@@ -5984,7 +6036,13 @@
           <div class="forum-tabs">
             <button class="forum-tab active" type="button" data-feed="all" data-i18n="forum.feed">Feed</button>
             <button class="forum-tab" type="button" data-feed="saved" data-i18n="forum.savedTab">Saved</button>
+            <button class="forum-tab" type="button" data-feed="following" data-i18n="forum.followingTab">Following</button>
+            <button class="forum-tab" type="button" data-feed="communities" data-i18n="forum.commTab">Communities</button>
           </div>
+          <button class="forum-dm-btn" id="forum-dm-btn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <span data-i18n="forum.dm.btn">Messages</span><span class="dm-badge" id="dm-badge" style="display:none;"></span>
+          </button>
           <div class="forum-left" id="forum-left"></div>
         </div>
 
@@ -5993,6 +6051,10 @@
           <div class="composer-field">
             <label data-i18n="forum.titleLabel">Title</label>
             <input type="text" id="post-title" maxlength="160" data-i18n-ph="forum.titlePh" />
+          </div>
+          <div class="composer-field" id="composer-comm-wrap" style="display:none;">
+            <label data-i18n="forum.commPostIn">Post in</label>
+            <select id="post-community"></select>
           </div>
           <div class="composer-field">
             <label data-i18n="forum.bodyLabel">Message</label>
@@ -6015,9 +6077,29 @@
           </div>
         </div>
 
+        <div class="forum-commbar" id="forum-commbar" style="display:none;"></div>
+        <div id="forum-communities" style="display:none;"></div>
         <div class="forum-feed" id="forum-feed"></div>
         <div class="forum-empty" id="forum-empty" style="display:none;"></div>
         <button class="forum-btn ghost forum-loadmore" id="forum-loadmore" type="button" style="display:none;" data-i18n="forum.loadMore">Load more</button>
+      </div>
+
+      <!-- DM DRAWER -->
+      <div class="dm-drawer" id="dm-drawer" style="display:none;">
+        <div class="dm-head">
+          <button class="dm-back" id="dm-back" type="button" style="display:none;">←</button>
+          <div class="dm-title" id="dm-title" data-i18n="forum.dm.title">Private messages</div>
+          <button class="dm-close" id="dm-close" type="button">✕</button>
+        </div>
+        <div class="dm-threads" id="dm-threads"></div>
+        <div class="dm-convo" id="dm-convo" style="display:none;">
+          <div class="dm-msgs" id="dm-msgs"></div>
+          <div class="dm-inputrow">
+            <input type="text" id="dm-input" maxlength="2000" data-i18n-ph="forum.dm.ph" placeholder="Write a message…" />
+            <button class="forum-btn primary" id="dm-send" type="button" data-i18n="forum.dm.send">Send</button>
+          </div>
+          <div class="dm-err" id="dm-err" style="display:none;"></div>
+        </div>
       </div>
 
       <!-- DETAIL VIEW -->
@@ -7514,6 +7596,32 @@
       'forum.new': 'New post',
       'forum.feed': 'Feed',
       'forum.savedTab': 'Saved',
+      'forum.followingTab': 'Following',
+      'forum.commTab': 'Communities',
+      'forum.commPostIn': 'Post in',
+      'forum.comm.general': 'General feed',
+      'forum.comm.back': 'All communities',
+      'forum.comm.members': 'members',
+      'forum.comm.posts': 'posts',
+      'forum.comm.mine': 'Yours',
+      'forum.comm.open': 'Open',
+      'forum.comm.join': 'Join',
+      'forum.comm.leave': 'Leave',
+      'forum.comm.create': 'Create community',
+      'forum.comm.namePh': 'Community name',
+      'forum.comm.descPh': 'What is it about?',
+      'forum.comm.empty': 'No communities yet — create the first one.',
+      'forum.comm.limit': 'You can create up to 3 communities.',
+      'forum.comm.nameTaken': 'That name is already taken.',
+      'forum.follow': 'Follow',
+      'forum.following': 'Following',
+      'forum.emptyFollowing': 'No posts from traders you follow yet. Tap Follow on any post to build your feed.',
+      'forum.dm.btn': 'Messages',
+      'forum.dm.title': 'Private messages',
+      'forum.dm.empty': 'No conversations yet. Open one from any post with the ✉ button.',
+      'forum.dm.ph': 'Write a message…',
+      'forum.dm.send': 'Send',
+      'forum.dm.msgAuthor': 'Send a private message',
       'forum.empty': 'No posts yet. Be the first to share a setup.',
       'forum.emptySaved': "You haven't saved any posts yet.",
       'forum.titleLabel': 'Title',
@@ -7996,6 +8104,32 @@
       'forum.new': 'Nueva publicación',
       'forum.feed': 'Feed',
       'forum.savedTab': 'Guardados',
+      'forum.followingTab': 'Siguiendo',
+      'forum.commTab': 'Comunidades',
+      'forum.commPostIn': 'Publicar en',
+      'forum.comm.general': 'Feed general',
+      'forum.comm.back': 'Todas las comunidades',
+      'forum.comm.members': 'miembros',
+      'forum.comm.posts': 'posts',
+      'forum.comm.mine': 'Tuya',
+      'forum.comm.open': 'Abrir',
+      'forum.comm.join': 'Unirme',
+      'forum.comm.leave': 'Salir',
+      'forum.comm.create': 'Crear comunidad',
+      'forum.comm.namePh': 'Nombre de la comunidad',
+      'forum.comm.descPh': '¿De qué trata?',
+      'forum.comm.empty': 'Aún no hay comunidades — crea la primera.',
+      'forum.comm.limit': 'Puedes crear hasta 3 comunidades.',
+      'forum.comm.nameTaken': 'Ese nombre ya está tomado.',
+      'forum.follow': 'Seguir',
+      'forum.following': 'Siguiendo',
+      'forum.emptyFollowing': 'Aún no hay posts de traders que sigas. Toca Seguir en cualquier post para armar tu feed.',
+      'forum.dm.btn': 'Mensajes',
+      'forum.dm.title': 'Mensajes privados',
+      'forum.dm.empty': 'Aún no tienes conversaciones. Abre una desde cualquier post con el botón ✉.',
+      'forum.dm.ph': 'Escribe un mensaje…',
+      'forum.dm.send': 'Enviar',
+      'forum.dm.msgAuthor': 'Enviar mensaje privado',
       'forum.empty': 'Aún no hay publicaciones. Sé el primero en compartir un setup.',
       'forum.emptySaved': 'Todavía no has guardado ninguna publicación.',
       'forum.titleLabel': 'Título',
@@ -8478,6 +8612,32 @@
       'forum.new': 'Nouvelle publication',
       'forum.feed': 'Fil',
       'forum.savedTab': 'Enregistrés',
+      'forum.followingTab': 'Abonnements',
+      'forum.commTab': 'Communautés',
+      'forum.commPostIn': 'Publier dans',
+      'forum.comm.general': 'Fil général',
+      'forum.comm.back': 'Toutes les communautés',
+      'forum.comm.members': 'membres',
+      'forum.comm.posts': 'posts',
+      'forum.comm.mine': 'À vous',
+      'forum.comm.open': 'Ouvrir',
+      'forum.comm.join': 'Rejoindre',
+      'forum.comm.leave': 'Quitter',
+      'forum.comm.create': 'Créer une communauté',
+      'forum.comm.namePh': 'Nom de la communauté',
+      'forum.comm.descPh': 'De quoi parle-t-elle ?',
+      'forum.comm.empty': 'Pas encore de communautés — créez la première.',
+      'forum.comm.limit': 'Vous pouvez créer jusqu’à 3 communautés.',
+      'forum.comm.nameTaken': 'Ce nom est déjà pris.',
+      'forum.follow': 'Suivre',
+      'forum.following': 'Abonné',
+      'forum.emptyFollowing': 'Aucun post des traders que vous suivez pour l’instant. Touchez Suivre sur un post pour bâtir votre fil.',
+      'forum.dm.btn': 'Messages',
+      'forum.dm.title': 'Messages privés',
+      'forum.dm.empty': 'Pas encore de conversations. Ouvrez-en une depuis n’importe quel post avec le bouton ✉.',
+      'forum.dm.ph': 'Écrivez un message…',
+      'forum.dm.send': 'Envoyer',
+      'forum.dm.msgAuthor': 'Envoyer un message privé',
       'forum.empty': 'Aucune publication pour le moment. Soyez le premier à partager un setup.',
       'forum.emptySaved': "Vous n'avez encore rien enregistré.",
       'forum.titleLabel': 'Titre',
@@ -8960,6 +9120,32 @@
       'forum.new': 'Nova publicação',
       'forum.feed': 'Feed',
       'forum.savedTab': 'Salvos',
+      'forum.followingTab': 'Seguindo',
+      'forum.commTab': 'Comunidades',
+      'forum.commPostIn': 'Publicar em',
+      'forum.comm.general': 'Feed geral',
+      'forum.comm.back': 'Todas as comunidades',
+      'forum.comm.members': 'membros',
+      'forum.comm.posts': 'posts',
+      'forum.comm.mine': 'Sua',
+      'forum.comm.open': 'Abrir',
+      'forum.comm.join': 'Entrar',
+      'forum.comm.leave': 'Sair',
+      'forum.comm.create': 'Criar comunidade',
+      'forum.comm.namePh': 'Nome da comunidade',
+      'forum.comm.descPh': 'Sobre o que ela é?',
+      'forum.comm.empty': 'Ainda não há comunidades — crie a primeira.',
+      'forum.comm.limit': 'Você pode criar até 3 comunidades.',
+      'forum.comm.nameTaken': 'Esse nome já está em uso.',
+      'forum.follow': 'Seguir',
+      'forum.following': 'Seguindo',
+      'forum.emptyFollowing': 'Ainda não há posts de traders que você segue. Toque em Seguir em qualquer post para montar seu feed.',
+      'forum.dm.btn': 'Mensagens',
+      'forum.dm.title': 'Mensagens privadas',
+      'forum.dm.empty': 'Ainda não há conversas. Abra uma a partir de qualquer post com o botão ✉.',
+      'forum.dm.ph': 'Escreva uma mensagem…',
+      'forum.dm.send': 'Enviar',
+      'forum.dm.msgAuthor': 'Enviar mensagem privada',
       'forum.empty': 'Ainda não há publicações. Seja o primeiro a compartilhar um setup.',
       'forum.emptySaved': 'Você ainda não salvou nenhuma publicação.',
       'forum.titleLabel': 'Título',
@@ -11619,7 +11805,7 @@
     const rootSend   = document.getElementById('root-comment-send');
     const commentErr = document.getElementById('comment-error');
 
-    const state = { feed: 'all', page: 1, hasMore: false, loading: false, loaded: false };
+    const state = { feed: 'all', page: 1, hasMore: false, loading: false, loaded: false, community: null, myComms: [] };
     let currentPostId = null;
 
     // ── Helpers ──
@@ -11627,6 +11813,7 @@
       opts = opts || {};
       const init = { method: opts.method || 'GET' };
       if (opts.form) init.body = opts.form;
+      if (opts.json) { init.method = opts.method || 'POST'; init.headers = { 'Content-Type': 'application/json' }; init.body = JSON.stringify(opts.json); }
       try {
         const res = await fetch(url, init);
         const data = await res.json().catch(() => ({}));
@@ -11857,12 +12044,37 @@
       }
       const t = document.createElement('div'); t.className = 'post-time'; t.textContent = fmtTime(p.created_at);
       meta.appendChild(a); meta.appendChild(t); top.appendChild(meta);
+      if (!p.is_mine && p.author) {
+        const soc = document.createElement('div'); soc.className = 'post-social';
+        const fb = document.createElement('button'); fb.type = 'button';
+        fb.className = 'follow-btn' + (p.following_author ? ' on' : '');
+        fb.textContent = p.following_author ? T('forum.following') : T('forum.follow');
+        fb.addEventListener('click', e => {
+          e.stopPropagation();
+          const on = !fb.classList.contains('on');
+          api('/forum/follow', { json: { username: p.author, on } }).then(r => {
+            if (!r.ok) return;
+            fb.classList.toggle('on', on);
+            fb.textContent = on ? T('forum.following') : T('forum.follow');
+          });
+        });
+        const db = document.createElement('button'); db.type = 'button';
+        db.className = 'dmto-btn'; db.textContent = '✉'; db.title = T('forum.dm.msgAuthor');
+        db.addEventListener('click', e => { e.stopPropagation(); DM.openWith(p.author); });
+        soc.appendChild(fb); soc.appendChild(db); top.appendChild(soc);
+      }
       return top;
     }
 
     function renderPostCard(p) {
       const card = document.createElement('div'); card.className = 'post-card';
       card.appendChild(postHeader(p));
+      if (p.community && !(state.feed === 'community' && state.community && state.community.id === p.community.id)) {
+        const chip = document.createElement('button'); chip.type = 'button'; chip.className = 'post-chip';
+        chip.textContent = (p.community.emoji || '👥') + ' ' + p.community.name;
+        chip.addEventListener('click', e => { e.stopPropagation(); openCommunity(p.community); });
+        card.appendChild(chip);
+      }
       const title = document.createElement('div'); title.className = 'post-title'; title.textContent = p.title; card.appendChild(title);
       const body = document.createElement('div'); body.className = 'post-body preview';
       body.textContent = (p.body || '') + (p.truncated ? '…' : ''); card.appendChild(body);
@@ -11979,6 +12191,9 @@
       if (title.length < 4 || body.length < 10) { showErr(composerErr, { error: 'too_short' }); return; }
       const form = new FormData();
       form.append('title', title); form.append('body', body);
+      const commChoice = (commWrap.style.display !== 'none' && commSel.value) ? commSel.value
+                       : (state.feed === 'community' && state.community ? state.community.id : '');
+      if (commChoice) form.append('community_id', commChoice);
       if (imageInput.files[0]) form.append('image', imageInput.files[0]);
       publishBtn.disabled = true;
       const orig = publishBtn.textContent; publishBtn.textContent = T('forum.publishing');
@@ -11987,7 +12202,8 @@
       if (ok) {
         titleInput.value = ''; bodyInput.value = ''; clearImage();
         composer.style.display = 'none';
-        if (state.feed !== 'all') setFeed('all'); else loadFeed(true);
+        if (state.feed === 'community') loadFeed(true);
+        else if (state.feed !== 'all') setFeed('all'); else loadFeed(true);
         updatePostsLeft(data.posts_left_today);
       } else {
         showErr(composerErr, data);
@@ -12008,13 +12224,16 @@
       if (state.loading) return;
       if (reset) { state.page = 1; feedEl.innerHTML = ''; }
       state.loading = true;
-      const url = '/forum/feed?page=' + state.page + (state.feed === 'saved' ? '&saved=1' : '');
+      let url = '/forum/feed?page=' + state.page;
+      if (state.feed === 'saved') url += '&saved=1';
+      else if (state.feed === 'following') url += '&feed=following';
+      else if (state.feed === 'community' && state.community) url += '&community=' + state.community.id;
       const { ok, data } = await api(url);
       state.loading = false;
       if (!ok) return;
       updatePostsLeft(data.posts_left_today);
       if (reset && (!data.posts || !data.posts.length)) {
-        emptyEl.textContent = state.feed === 'saved' ? T('forum.emptySaved') : T('forum.empty');
+        emptyEl.textContent = state.feed === 'saved' ? T('forum.emptySaved') : (state.feed === 'following' ? T('forum.emptyFollowing') : T('forum.empty'));
         emptyEl.style.display = 'block';
         loadMore.style.display = 'none';
         return;
@@ -12043,11 +12262,229 @@
       listView.style.display = 'block';
     }
 
+    const commPanel = document.getElementById('forum-communities');
+    const commBar   = document.getElementById('forum-commbar');
+    const commWrap  = document.getElementById('composer-comm-wrap');
+    const commSel   = document.getElementById('post-community');
+
     function setFeed(feed) {
       state.feed = feed;
-      document.querySelectorAll('.forum-tab').forEach(t => t.classList.toggle('active', t.dataset.feed === feed));
+      if (feed !== 'community') state.community = null;
+      const tabKey = feed === 'community' ? 'communities' : feed;
+      document.querySelectorAll('.forum-tab').forEach(t => t.classList.toggle('active', t.dataset.feed === tabKey));
+      const inComms = feed === 'communities';
+      commPanel.style.display = inComms ? 'block' : 'none';
+      feedEl.style.display = inComms ? 'none' : '';
+      commBar.style.display = state.community ? 'flex' : 'none';
+      if (inComms) {
+        emptyEl.style.display = 'none'; loadMore.style.display = 'none';
+        composer.style.display = 'none';
+        loadCommunities();
+        return;
+      }
+      if (state.community) renderCommBar();
       loadFeed(true);
     }
+
+    // ── Communities ──
+    function renderCommBar() {
+      commBar.innerHTML = '';
+      const back = document.createElement('button'); back.type = 'button'; back.className = 'cb-back';
+      back.textContent = '← ' + T('forum.comm.back');
+      back.addEventListener('click', () => setFeed('communities'));
+      const name = document.createElement('span'); name.className = 'cb-name';
+      name.textContent = (state.community.emoji || '👥') + ' ' + state.community.name;
+      commBar.appendChild(back); commBar.appendChild(name);
+      if (state.community.members) {
+        const meta = document.createElement('span'); meta.className = 'cb-meta';
+        meta.textContent = state.community.members + ' ' + T('forum.comm.members') + ' · ' + (state.community.posts || 0) + ' ' + T('forum.comm.posts');
+        commBar.appendChild(meta);
+      }
+    }
+
+    function openCommunity(c) {
+      state.community = c;
+      setFeed('community');
+    }
+
+    function fillComposerSelect() {
+      const joined = state.myComms.filter(c => c.joined);
+      commWrap.style.display = joined.length ? 'block' : 'none';
+      commSel.innerHTML = '';
+      const g = document.createElement('option'); g.value = ''; g.textContent = T('forum.comm.general');
+      commSel.appendChild(g);
+      joined.forEach(c => {
+        const o = document.createElement('option'); o.value = c.id;
+        o.textContent = (c.emoji || '👥') + ' ' + c.name;
+        if (state.community && state.community.id === c.id) o.selected = true;
+        commSel.appendChild(o);
+      });
+    }
+
+    function commCard(c) {
+      const card = document.createElement('div'); card.className = 'comm-card';
+      const top = document.createElement('div'); top.className = 'cm-top';
+      const em = document.createElement('span'); em.className = 'cm-emoji'; em.textContent = c.emoji || '👥';
+      const nm = document.createElement('span'); nm.className = 'cm-name'; nm.textContent = c.name;
+      top.appendChild(em); top.appendChild(nm); card.appendChild(top);
+      const de = document.createElement('div'); de.className = 'cm-desc'; de.textContent = c.description || ''; card.appendChild(de);
+      const mt = document.createElement('div'); mt.className = 'cm-meta';
+      mt.textContent = c.members + ' ' + T('forum.comm.members') + ' · ' + c.posts + ' ' + T('forum.comm.posts') + (c.is_mine ? ' · ' + T('forum.comm.mine') : '');
+      card.appendChild(mt);
+      const act = document.createElement('div'); act.className = 'cm-actions';
+      const open = document.createElement('button'); open.type = 'button'; open.className = 'forum-btn primary';
+      open.textContent = T('forum.comm.open');
+      open.addEventListener('click', () => openCommunity(c));
+      act.appendChild(open);
+      if (!c.is_mine) {
+        const j = document.createElement('button'); j.type = 'button'; j.className = 'forum-btn ghost';
+        j.textContent = c.joined ? T('forum.comm.leave') : T('forum.comm.join');
+        j.addEventListener('click', () => {
+          api('/forum/community/' + c.id + '/membership', { json: { join: !c.joined } }).then(r => {
+            if (r.ok) loadCommunities();
+          });
+        });
+        act.appendChild(j);
+      }
+      card.appendChild(act);
+      return card;
+    }
+
+    async function loadCommunities() {
+      const { ok, data } = await api('/forum/communities');
+      if (!ok) return;
+      state.myComms = data.communities || [];
+      fillComposerSelect();
+      commPanel.innerHTML = '';
+      const create = document.createElement('div'); create.className = 'comm-create';
+      const ce = document.createElement('input'); ce.className = 'cc-emoji'; ce.maxLength = 4; ce.placeholder = '👥';
+      const cn = document.createElement('input'); cn.className = 'cc-name'; cn.maxLength = 60; cn.placeholder = T('forum.comm.namePh');
+      const cd = document.createElement('input'); cd.className = 'cc-desc'; cd.maxLength = 240; cd.placeholder = T('forum.comm.descPh');
+      const cb = document.createElement('button'); cb.type = 'button'; cb.className = 'forum-btn primary';
+      cb.textContent = T('forum.comm.create');
+      const err = document.createElement('div'); err.className = 'comm-create-err';
+      cb.addEventListener('click', async () => {
+        err.style.display = 'none';
+        const r = await api('/forum/communities', { json: { name: cn.value.trim(), description: cd.value.trim(), emoji: ce.value.trim() } });
+        if (r.ok) { cn.value = ''; cd.value = ''; ce.value = ''; loadCommunities(); return; }
+        err.textContent = r.data.error === 'name_taken' ? T('forum.comm.nameTaken')
+                        : r.data.error === 'limit' ? T('forum.comm.limit')
+                        : blockReason(r.data).msg;
+        err.style.display = 'block';
+      });
+      create.appendChild(ce); create.appendChild(cn); create.appendChild(cd); create.appendChild(cb); create.appendChild(err);
+      commPanel.appendChild(create);
+      if (!state.myComms.length) {
+        const e = document.createElement('div'); e.className = 'dm-empty'; e.textContent = T('forum.comm.empty');
+        commPanel.appendChild(e);
+        return;
+      }
+      const grid = document.createElement('div'); grid.className = 'comm-grid';
+      state.myComms.forEach(c => grid.appendChild(commCard(c)));
+      commPanel.appendChild(grid);
+    }
+
+    // ── Private messages (DM drawer) ──
+    const DM = (() => {
+      const drawer  = document.getElementById('dm-drawer');
+      const threads = document.getElementById('dm-threads');
+      const convo   = document.getElementById('dm-convo');
+      const msgsEl  = document.getElementById('dm-msgs');
+      const input   = document.getElementById('dm-input');
+      const sendBtn = document.getElementById('dm-send');
+      const errEl   = document.getElementById('dm-err');
+      const titleEl = document.getElementById('dm-title');
+      const backBtn = document.getElementById('dm-back');
+      const badge   = document.getElementById('dm-badge');
+      let withUser = null, lastId = 0, timer = null;
+
+      function setBadge(n) {
+        badge.style.display = n > 0 ? '' : 'none';
+        badge.textContent = n > 99 ? '99+' : n;
+      }
+      async function refreshBadge() {
+        const { ok, data } = await api('/forum/dm/threads');
+        if (ok) setBadge(data.unread_total || 0);
+      }
+      function msgNode(m) {
+        const d = document.createElement('div');
+        d.className = 'dm-msg' + (m.is_mine ? ' mine' : '');
+        d.textContent = m.body;
+        const t = document.createElement('span'); t.className = 'dm-t'; t.textContent = fmtTime(m.created_at);
+        d.appendChild(t);
+        return d;
+      }
+      async function loadThreads() {
+        withUser = null; lastId = 0;
+        convo.style.display = 'none'; threads.style.display = '';
+        backBtn.style.display = 'none';
+        titleEl.textContent = T('forum.dm.title');
+        const { ok, data } = await api('/forum/dm/threads');
+        if (!ok) return;
+        setBadge(data.unread_total || 0);
+        threads.innerHTML = '';
+        if (!data.threads || !data.threads.length) {
+          const e = document.createElement('div'); e.className = 'dm-empty'; e.textContent = T('forum.dm.empty');
+          threads.appendChild(e);
+          return;
+        }
+        data.threads.forEach(th => {
+          const b = document.createElement('button'); b.type = 'button'; b.className = 'dm-thread';
+          const av = document.createElement('span'); av.className = 'th-av'; av.textContent = (th.username || '?').charAt(0);
+          const mid = document.createElement('span'); mid.className = 'th-mid';
+          const nm = document.createElement('span'); nm.className = 'th-name'; nm.textContent = th.username;
+          const la = document.createElement('span'); la.className = 'th-last'; la.textContent = th.last || '';
+          mid.appendChild(nm); mid.appendChild(la);
+          b.appendChild(av); b.appendChild(mid);
+          if (th.unread) { const u = document.createElement('span'); u.className = 'dm-badge'; u.textContent = th.unread; b.appendChild(u); }
+          b.addEventListener('click', () => openThread(th.username));
+          threads.appendChild(b);
+        });
+      }
+      async function openThread(username) {
+        withUser = username; lastId = 0;
+        threads.style.display = 'none'; convo.style.display = 'flex';
+        backBtn.style.display = ''; errEl.style.display = 'none';
+        titleEl.textContent = username;
+        msgsEl.innerHTML = '';
+        await pollThread(true);
+        refreshBadge();
+        input.focus();
+      }
+      async function pollThread(scroll) {
+        if (!withUser) return;
+        const { ok, data } = await api('/forum/dm/with/' + encodeURIComponent(withUser) + (lastId ? '?after=' + lastId : ''));
+        if (!ok || !withUser) return;
+        (data.messages || []).forEach(m => { msgsEl.appendChild(msgNode(m)); lastId = Math.max(lastId, m.id); });
+        if ((data.messages || []).length || scroll) msgsEl.scrollTop = msgsEl.scrollHeight;
+      }
+      async function send() {
+        const body = input.value.trim();
+        if (!body || !withUser) return;
+        errEl.style.display = 'none';
+        sendBtn.disabled = true;
+        const r = await api('/forum/dm/with/' + encodeURIComponent(withUser), { json: { body } });
+        sendBtn.disabled = false;
+        if (r.ok) { input.value = ''; if (r.data.message) { msgsEl.appendChild(msgNode(r.data.message)); lastId = Math.max(lastId, r.data.message.id); msgsEl.scrollTop = msgsEl.scrollHeight; } }
+        else { errEl.textContent = blockReason(r.data).msg; errEl.style.display = 'block'; }
+      }
+      function open() {
+        drawer.style.display = 'flex';
+        loadThreads();
+        if (!timer) timer = setInterval(() => { if (document.hidden || drawer.style.display === 'none') return; if (withUser) pollThread(false); }, 8000);
+      }
+      function close() {
+        drawer.style.display = 'none';
+        withUser = null;
+        refreshBadge();
+      }
+      document.getElementById('forum-dm-btn').addEventListener('click', open);
+      document.getElementById('dm-close').addEventListener('click', close);
+      backBtn.addEventListener('click', loadThreads);
+      sendBtn.addEventListener('click', send);
+      input.addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
+      return { openWith: function (u) { open(); openThread(u); }, refreshBadge };
+    })();
 
     function clearImage() {
       imageInput.value = '';
@@ -12057,6 +12494,7 @@
 
     // ── Wiring ──
     newBtn.addEventListener('click', () => {
+      if (state.feed === 'communities') setFeed('all');
       const open = composer.style.display !== 'none';
       composer.style.display = open ? 'none' : 'block';
       composerErr.style.display = 'none';
@@ -12092,7 +12530,12 @@
     window.Forum = {
       open: function () {
         backToList();
-        if (!state.loaded) { state.loaded = true; loadFeed(true); }
+        if (!state.loaded) {
+          state.loaded = true;
+          loadFeed(true);
+          api('/forum/communities').then(r => { if (r.ok) { state.myComms = r.data.communities || []; fillComposerSelect(); } });
+          DM.refreshBadge();
+        }
       }
     };
   })();
