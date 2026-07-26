@@ -24991,7 +24991,14 @@
   + '#nx-cube.on{ pointer-events:auto; }'
   /* Tessera replaced the standalone support/bug FABs (their JS stays inert). */
   + '.help-fab,.bug-fab{ display:none !important; }'
-  + '#nx-cube{ filter:drop-shadow(0 0 9px rgba(224,36,74,.8)); }'
+  /* The glow filter lives on an INNER wrapper, never on #nx-cube itself: a
+     filter rasterises its whole subtree into one layer, and the preserve-3d
+     cube pushes that layer into a 3D context — any text inside then renders at
+     layer resolution instead of device resolution, i.e. blurry. Keeping the
+     bubble a sibling of .nx-fx (not a descendant) keeps its text crisp under
+     every camo, theme and language. */
+  + '#nx-cube .nx-fx{ position:absolute; inset:0;'
+  + '  filter:drop-shadow(0 0 9px rgba(224,36,74,.8)); }'
   + '#nx-cube .nx-glow{ position:absolute; inset:-16px; border-radius:50%; pointer-events:none;'
   + '  background:radial-gradient(circle, rgba(224,36,74,.55), transparent 65%); filter:blur(4px);'
   + '  animation:nxPulse 3.2s ease-in-out infinite; }'
@@ -25011,7 +25018,7 @@
   + '.nx-ci{ position:absolute; left:50%; top:50%; width:14px; height:14px; margin:-7px 0 0 -7px; transform-style:preserve-3d; }'
   + '.nx-ci .nx-f{ border-color:rgba(255,120,150,1); background:rgba(255,92,120,.24); }'
   + 'body.light .nx-f{ border-color:rgba(155,14,42,.95); background:rgba(180,20,55,.16); }'
-  + 'body.light #nx-cube{ filter:drop-shadow(0 0 8px rgba(155,14,42,.6)); }'
+  + 'body.light #nx-cube .nx-fx{ filter:drop-shadow(0 0 8px rgba(155,14,42,.6)); }'
   /* star burst when the cube appears */
   + '.nx-star{ position:fixed; z-index:38; pointer-events:none; opacity:0;'
   + '  background:radial-gradient(circle, #ff9fb2, #e0244a 58%, transparent 72%);'
@@ -25113,8 +25120,12 @@
   }
   var cube = document.createElement('div'); cube.id = 'nx-cube'; cube.setAttribute('role','button');
   cube.setAttribute('aria-label', NX_NAME);
-  var glow = document.createElement('div'); glow.className = 'nx-glow'; cube.appendChild(glow);
-  var t3d = document.createElement('div'); t3d.id = 'nx-t3d'; cube.appendChild(t3d);
+  /* .nx-fx carries the glow filter and the spinning 3D cube; the bubble is
+     appended to #nx-cube directly so its text never sits inside a filtered or
+     3D-rasterised layer (that is what made it render blurry). */
+  var fx = document.createElement('div'); fx.className = 'nx-fx'; cube.appendChild(fx);
+  var glow = document.createElement('div'); glow.className = 'nx-glow'; fx.appendChild(glow);
+  var t3d = document.createElement('div'); t3d.id = 'nx-t3d'; fx.appendChild(t3d);
   buildCubeInto(t3d, 16);
   var inner = document.createElement('div'); inner.className = 'nx-ci'; t3d.appendChild(inner);
   buildCubeInto(inner, 7);
