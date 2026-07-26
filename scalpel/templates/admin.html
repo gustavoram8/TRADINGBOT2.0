@@ -417,7 +417,8 @@
       <tbody>
       {% for row in pay_attention %}
       <tr>
-        <td class="u-name">#{{ row.order.id }}<br><span class="u-email">{{ row.order.created_at.strftime('%d/%m %H:%M') }}</span></td>
+        <td class="u-name">#{{ row.order.id }}<br><span class="u-email">{{ row.order.created_at.strftime('%d/%m %H:%M') }}
+            · {{ row.order.payment_method or '—' }}</span></td>
         <td class="u-name">{{ row.username }}<br><span class="u-email">{{ row.email }}</span></td>
         <td>{{ row.order.plan }} / {{ row.order.billing_cycle }}</td>
         <td>${{ '%.2f'|format(row.order.final_price) }}</td>
@@ -427,6 +428,14 @@
           {% if row.why == 'paid_not_applied' %}<b style="color:#e0244a">Pagó y NO se activó</b>
           {% elif row.why == 'partially_paid' %}<b style="color:#d9a636">Pagó de menos</b>
           {% elif row.why == 'awaiting_payment' %}Sin confirmar hace +{{ sla_hours }} h
+          {% elif row.why == 'disputed' %}<b style="color:#e0244a">Disputa abierta</b><br>
+            <span class="u-email">Respondé con el rastro</span>
+          {% elif row.why == 'reversed' %}<b style="color:#e0244a">Pago revertido</b>
+          {% elif row.why == 'refunded' %}<b style="color:#d9a636">Reembolsado</b>
+          {% elif row.why in ('denied', 'declined', 'failed') %}<b style="color:#d9a636">Pago rechazado</b>
+          {% elif row.why == 'pending_review' %}<b style="color:#d9a636">En revisión del procesador</b>
+          {% elif row.why == 'voided' %}Anulado
+          {% elif row.why == 'expired' %}Factura vencida
           {% else %}{{ row.why }}{% endif %}
         </td>
         <td>

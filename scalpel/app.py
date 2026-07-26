@@ -11,6 +11,7 @@ import time
 import threading
 import urllib.request
 import urllib.parse
+import urllib.error
 from functools import wraps
 from datetime import datetime, timedelta, timezone
 
@@ -304,6 +305,28 @@ CRYPTO_PAY_CURRENCY = os.environ.get("CRYPTO_PAY_CURRENCY", "usdttrc20")
 CRYPTO_ENABLED = bool(CRYPTO_API_KEY)
 # What we promise publicly when the automatic path fails (hours).
 CRYPTO_SLA_HOURS = 24
+
+
+# ── PayPal (optional) — the card/PayPal-balance rail ──────────────────────
+# Reaches the buyers USDT cannot: the United States, Canada and Europe, where
+# almost nobody holds crypto. Same conditional pattern as everything else —
+# without the keys nothing about production changes.
+#   PAYPAL_CLIENT_ID / PAYPAL_SECRET — REST app credentials
+#   PAYPAL_ENV       — 'sandbox' to rehearse with fake money, 'live' to charge
+#   PAYPAL_WEBHOOK_ID— id of the webhook created in the PayPal dashboard; it is
+#                      what lets us verify a notification really came from them
+# Prices are always in USD here — PayPal settles in USD directly.
+PAYPAL_CLIENT_ID = os.environ.get("PAYPAL_CLIENT_ID", "")
+PAYPAL_SECRET = os.environ.get("PAYPAL_SECRET", "")
+PAYPAL_ENV = os.environ.get("PAYPAL_ENV", "live").strip().lower()
+PAYPAL_WEBHOOK_ID = os.environ.get("PAYPAL_WEBHOOK_ID", "")
+PAYPAL_API_BASE = ("https://api-m.sandbox.paypal.com" if PAYPAL_ENV == "sandbox"
+                   else "https://api-m.paypal.com")
+PAYPAL_ENABLED = bool(PAYPAL_CLIENT_ID and PAYPAL_SECRET)
+# Shown to the buyer on PayPal's own page and on their receipt. Keeping it equal
+# to the trade name in the Terms is what stops "I don't recognise this charge"
+# disputes when the receiving account is held under a different name.
+PAYPAL_BRAND_NAME = os.environ.get("PAYPAL_BRAND_NAME", "Tradeable Academy")
 
 
 # ── Expose feature flags to every template ──
@@ -4241,7 +4264,7 @@ def admin():
     # Opening the panel re-checks every recent unpaid order with the processor.
     # This is what makes a lost notification impossible to miss: the owner does
     # not have to wait for the buyer to come back and reload their page.
-    swept, recovered = crypto_sweep()
+    swept, recovered = payments_sweep()
     attention = orders_needing_attention()
 
     return render_template(
@@ -4251,7 +4274,7 @@ def admin():
         ban_queue=ban_queue, demo_active=_admin_demo() is not None,
         bug_reports=bug_reports, bug_new_count=bug_new_count,
         pay_attention=attention, pay_swept=swept, pay_recovered=recovered,
-        crypto_on=CRYPTO_ENABLED, sla_hours=CRYPTO_SLA_HOURS,
+        crypto_on=bool(available_payment_rails()), sla_hours=CRYPTO_SLA_HOURS,
         **ai_ctx, **revenue,
     )
 
@@ -4592,8 +4615,8 @@ def _crypto_apply_status(order, info):
     return activated
 
 
-def crypto_sweep(max_orders=25):
-    """Re-check every recent unpaid order against the processor.
+def payments_sweep(max_orders=25):
+    """Re-check every recent unpaid order against its processor.
 
     The customer's own page already reconciles their order — but a buyer who
     pays and never comes back would go unnoticed. This runs when the owner opens
@@ -4602,7 +4625,7 @@ def crypto_sweep(max_orders=25):
 
     Returns (checked, recovered).
     """
-    if not CRYPTO_ENABLED:
+    if not available_payment_rails():
         return 0, 0
     cutoff = datetime.now(timezone.utc) - timedelta(days=14)
     pending = (Order.query
@@ -4614,7 +4637,7 @@ def crypto_sweep(max_orders=25):
     recovered = 0
     for o in pending:
         try:
-            if _crypto_reconcile(o):
+            if _reconcile_order(o):
                 recovered += 1
         except Exception as exc:            # one bad order must not stop the sweep
             app.logger.warning('sweep failed on order %s: %s', o.id, exc)
@@ -4738,10 +4761,11 @@ def orders_needing_attention():
     more than the promised window.
     """
     stale = datetime.now(timezone.utc) - timedelta(hours=CRYPTO_SLA_HOURS)
+    problem_states = tuple(CRYPTO_PROBLEM_STATES) + tuple(PAYPAL_PROBLEM_STATES)
     rows = (Order.query
             .filter(db.or_(
                 db.and_(Order.status == 'paid', Order.applied_at.is_(None)),
-                Order.pay_status.in_(CRYPTO_PROBLEM_STATES),
+                Order.pay_status.in_(problem_states),
                 db.and_(Order.status == 'pending',
                         Order.provider_ref.isnot(None),
                         Order.created_at < stale)))
@@ -4750,7 +4774,7 @@ def orders_needing_attention():
     for o in rows:
         if o.status == 'paid' and o.applied_at is None:
             why = 'paid_not_applied'
-        elif (o.pay_status or '') in CRYPTO_PROBLEM_STATES:
+        elif (o.pay_status or '') in problem_states:
             why = o.pay_status
         else:
             why = 'awaiting_payment'
@@ -4781,6 +4805,229 @@ def _crypto_reconcile(order):
             return _crypto_apply_status(order, item)
         _crypto_apply_status(order, item)      # keep the visible status fresh
     return False
+
+
+# ═══ PayPal payments ══════════════════════════════════════════════════════
+# Access tokens last hours; asking for a new one on every call would be a
+# needless round trip on the critical path of a purchase.
+_PP_TOKEN = {'value': '', 'expires': 0.0}
+
+
+def _paypal_token():
+    """OAuth token for the REST API, cached until shortly before it expires."""
+    now = time.time()
+    if _PP_TOKEN['value'] and _PP_TOKEN['expires'] > now:
+        return _PP_TOKEN['value']
+    creds = base64.b64encode(
+        ('%s:%s' % (PAYPAL_CLIENT_ID, PAYPAL_SECRET)).encode()).decode()
+    req = urllib.request.Request(
+        PAYPAL_API_BASE + '/v1/oauth2/token',
+        data=b'grant_type=client_credentials', method='POST')
+    req.add_header('Authorization', 'Basic ' + creds)
+    req.add_header('Content-Type', 'application/x-www-form-urlencoded')
+    with urllib.request.urlopen(req, timeout=20) as resp:
+        data = json.loads(resp.read().decode())
+    _PP_TOKEN['value'] = data.get('access_token', '')
+    # Renew a minute early rather than discovering expiry mid-checkout.
+    _PP_TOKEN['expires'] = now + max(60.0, float(data.get('expires_in', 300)) - 60.0)
+    return _PP_TOKEN['value']
+
+
+def _paypal_api(method, path, payload=None, request_id=None):
+    """JSON client for PayPal. Every provider-specific detail lives here.
+
+    Raises on transport failure; returns (status_code, parsed_body) otherwise,
+    because PayPal answers some perfectly normal situations (an order that was
+    already captured) with an error status we want to inspect, not swallow.
+    """
+    req = urllib.request.Request(
+        PAYPAL_API_BASE + path,
+        data=json.dumps(payload).encode() if payload is not None else None,
+        method=method)
+    req.add_header('Authorization', 'Bearer ' + _paypal_token())
+    req.add_header('Content-Type', 'application/json')
+    if request_id:
+        # Idempotency: replaying the same request id cannot charge twice.
+        req.add_header('PayPal-Request-Id', request_id)
+    try:
+        with urllib.request.urlopen(req, timeout=25) as resp:
+            body = resp.read().decode() or '{}'
+            return resp.status, json.loads(body)
+    except urllib.error.HTTPError as exc:
+        try:
+            return exc.code, json.loads(exc.read().decode() or '{}')
+        except ValueError:
+            return exc.code, {}
+
+
+# PayPal capture statuses that mean the money is ours.
+PAYPAL_PAID_STATES = ('completed',)
+# ...and the ones a human needs to look at. A dispute or a reversal lands here
+# too, so the owner finds out from the panel and not from a shrinking balance.
+PAYPAL_PROBLEM_STATES = ('declined', 'failed', 'denied', 'voided',
+                         'pending_review', 'reversed', 'refunded', 'disputed')
+
+
+def _paypal_create_order(order, kind='plan'):
+    """Create a PayPal order and return the URL where the buyer approves it."""
+    price = order.final_price if kind == 'plan' else order.price
+    label = ('Tradeable — %s' % PLAN_LABELS.get(order.plan, order.plan)) if kind == 'plan' \
+            else ('Tradeable — %s' % getattr(order, 'label', 'Order'))
+    ref = '%s-%d' % (kind, order.id)
+    try:
+        code, data = _paypal_api('POST', '/v2/checkout/orders', {
+            'intent': 'CAPTURE',
+            'purchase_units': [{
+                'reference_id': ref,
+                'custom_id': ref,
+                'description': label[:127],
+                'amount': {'currency_code': 'USD', 'value': '%.2f' % float(price)},
+            }],
+            'payment_source': {'paypal': {'experience_context': {
+                'brand_name': PAYPAL_BRAND_NAME,
+                'user_action': 'PAY_NOW',
+                'shipping_preference': 'NO_SHIPPING',
+                'return_url': url_for('paypal_return', order_id=order.id, _external=True),
+                'cancel_url': url_for('checkout_status', order_id=order.id, _external=True),
+            }}},
+        }, request_id='create-%s' % ref)
+    except Exception as exc:
+        app.logger.error('paypal order create failed (order %s): %s', order.id, exc)
+        return None
+    if code >= 300 or not data.get('id'):
+        app.logger.error('paypal order create rejected (order %s): %s %s',
+                         order.id, code, data)
+        return None
+    order.provider_ref = str(data['id'])
+    order.payment_method = 'paypal'
+    order.pay_status = 'created'
+    order.pay_currency = 'usd'
+    db.session.commit()
+    for link in data.get('links') or []:
+        if link.get('rel') in ('payer-action', 'approve'):
+            return link.get('href')
+    return None
+
+
+def _paypal_read_status(data):
+    """Boil a PayPal order payload down to (status, amount, capture_id)."""
+    units = data.get('purchase_units') or [{}]
+    caps = ((units[0].get('payments') or {}).get('captures')) or []
+    if caps:
+        cap = caps[0]
+        amount = (cap.get('amount') or {}).get('value')
+        return (cap.get('status') or '').lower(), amount, cap.get('id')
+    # No capture yet: the order-level status is all we know.
+    amount = (units[0].get('amount') or {}).get('value')
+    return (data.get('status') or '').lower(), amount, None
+
+
+def _paypal_apply_status(order, status, amount=None, capture_id=None):
+    """Fold a PayPal result into the order and activate when it is paid.
+
+    Reached from the return URL, from the webhook and from reconciliation — so,
+    like its crypto twin, it must be safe to run any number of times.
+    `_activate_plan_from_order` is the guard that makes that true.
+    """
+    if status:
+        order.pay_status = status
+    if amount is not None:
+        try:
+            order.paid_amount = float(amount)
+        except (TypeError, ValueError):
+            pass
+    if capture_id:
+        order.tx_hash = str(capture_id)[:120]
+    order.pay_currency = order.pay_currency or 'usd'
+    if status in PAYPAL_PAID_STATES and order.status != 'paid':
+        order.status = 'paid'
+        order.paid_at = datetime.now(timezone.utc)
+    db.session.commit()
+    activated = False
+    problem = status in PAYPAL_PROBLEM_STATES
+    if order.status == 'paid' and not problem:
+        activated = _activate_plan_from_order(order)
+        if activated:
+            send_payment_alert_email(order, 'sale')
+        elif order.applied_at is None:
+            send_payment_alert_email(order, 'stuck')
+    # Checked independently of the branch above: a dispute or a reversal lands
+    # on an order that is already paid and delivered, and that is exactly the
+    # one the owner must hear about — it never revokes the plan on its own.
+    if problem and not order.alerted_at:
+        order.alerted_at = datetime.now(timezone.utc)
+        db.session.commit()
+        send_payment_alert_email(order, 'problem')
+    return activated
+
+
+def _paypal_capture(order):
+    """Take the money for an order the buyer has approved.
+
+    PayPal answers a second capture attempt with an error naming the situation
+    ("already captured"), which is not a failure for us: it means the payment
+    exists, so we read it instead of giving up."""
+    if not (PAYPAL_ENABLED and order.provider_ref):
+        return False
+    try:
+        code, data = _paypal_api(
+            'POST', '/v2/checkout/orders/%s/capture' % order.provider_ref, {},
+            request_id='capture-plan-%d' % order.id)
+    except Exception as exc:
+        app.logger.warning('paypal capture failed (order %s): %s', order.id, exc)
+        return False
+    if code >= 300:
+        issues = [str(d.get('issue', '')).upper() for d in (data.get('details') or [])]
+        if 'ORDER_ALREADY_CAPTURED' in issues:
+            return _paypal_reconcile(order)
+        app.logger.warning('paypal capture rejected (order %s): %s %s',
+                           order.id, code, issues or data)
+        # An order the buyer never approved simply stays pending.
+        return False
+    status, amount, cap_id = _paypal_read_status(data)
+    return _paypal_apply_status(order, status, amount, cap_id)
+
+
+def _paypal_reconcile(order):
+    """Ask PayPal what happened to an order we believe is still unpaid.
+
+    The net that catches an approval whose notification never arrived: it runs
+    when the buyer opens their order page and when the owner opens the panel."""
+    if not (PAYPAL_ENABLED and order.provider_ref) or order.status == 'paid':
+        return False
+    try:
+        code, data = _paypal_api('GET', '/v2/checkout/orders/%s' % order.provider_ref)
+    except Exception as exc:
+        app.logger.warning('paypal reconcile failed (order %s): %s', order.id, exc)
+        return False
+    if code >= 300:
+        return False
+    status, amount, cap_id = _paypal_read_status(data)
+    # Approved but never captured: the buyer clicked pay and we dropped the
+    # ball. Capturing here is precisely how that purchase is rescued.
+    if (data.get('status') or '').upper() == 'APPROVED' and not cap_id:
+        return _paypal_capture(order)
+    return _paypal_apply_status(order, status, amount, cap_id)
+
+
+# ═══ Payment rails — the shared front door ════════════════════════════════
+def available_payment_rails():
+    """Which ways of paying are switched on right now, in the order shown."""
+    rails = []
+    if PAYPAL_ENABLED:
+        rails.append('paypal')
+    if CRYPTO_ENABLED:
+        rails.append('crypto')
+    if STRIPE_ENABLED:
+        rails.append('stripe')
+    return rails
+
+
+def _reconcile_order(order):
+    """Re-check one order with whichever processor it belongs to."""
+    if order.payment_method == 'paypal':
+        return _paypal_reconcile(order)
+    return _crypto_reconcile(order)
 
 
 def _activate_plan_from_order(order):
@@ -4888,6 +5135,11 @@ def checkout_create():
     existing = Order.query.filter_by(
         user_id=current_user.id, status='pending').first()
     if existing:
+        # With rails on, an abandoned attempt must not lock the buyer out of
+        # paying: send them back to their open order so they can finish it —
+        # or switch method, which is exactly what happens when one rail fails.
+        if available_payment_rails():
+            return redirect(url_for('checkout_pay', order_id=existing.id))
         return render_template('checkout_done.html', order=existing,
                                plan_label=PLAN_LABELS.get(existing.plan, existing.plan),
                                duplicate=True)
@@ -4910,11 +5162,153 @@ def checkout_create():
                         detail=f'{plan}/{cycle} ${q["final_price"]:.2f}'
                                + (f' promo={promo.code}' if promo else ''))
 
-    # If Stripe is configured, hand the order off to Stripe Checkout (a hosted
-    # card-payment page). The plan is activated by the webhook / success page,
-    # never here. If Stripe is off (or a $0 promo order), fall through to the
-    # existing manual USDT/bank instructions — nothing changes for production.
-    if STRIPE_ENABLED and order.final_price > 0:
+    # Hand the buyer to a payment rail. With one rail on, they go straight
+    # there — the same single-click flow as before. With several, they choose,
+    # which is the whole point of adding PayPal next to USDT rather than
+    # replacing it. With none (or a $0 promo order), the manual instructions.
+    rails = available_payment_rails()
+    if order.final_price > 0 and rails:
+        if len(rails) > 1:
+            return redirect(url_for('checkout_pay', order_id=order.id))
+        dest = _start_payment(order, rails[0])
+        if dest:
+            return redirect(dest, code=303)
+        # falls through to the manual instructions rather than dead-ending
+
+    return render_template('checkout_done.html', order=order,
+                           plan_label=PLAN_LABELS.get(plan, plan), duplicate=False)
+
+
+def _start_payment(order, method):
+    """Send an order down one rail; returns where to send the buyer, or None.
+
+    None is never a dead end: every caller falls back to the manual payment
+    instructions, and the order survives either way so it can still be settled.
+    """
+    if method == 'stripe' and STRIPE_ENABLED:
+        return _stripe_checkout_url(order)
+    if method == 'paypal' and PAYPAL_ENABLED:
+        return _paypal_create_order(order, 'plan')
+    if method == 'crypto' and CRYPTO_ENABLED:
+        return _crypto_create_invoice(order, 'plan')
+    return None
+
+
+@app.route('/checkout/pay/<int:order_id>', methods=['GET', 'POST'])
+@login_required
+def checkout_pay(order_id):
+    """Pick how to pay. Only ever seen when more than one rail is enabled."""
+    order = db.session.get(Order, order_id)
+    if not order or order.user_id != current_user.id:
+        abort(404)
+    if order.status == 'paid':
+        return redirect(url_for('checkout_status', order_id=order.id))
+    rails = available_payment_rails()
+    if request.method == 'POST':
+        method = request.form.get('method', '')
+        if method in rails:
+            dest = _start_payment(order, method)
+            if dest:
+                return redirect(dest, code=303)
+        # Could not reach the processor: show the manual instructions rather
+        # than leaving the buyer staring at a button that does nothing.
+        return render_template('checkout_done.html', order=order,
+                               plan_label=PLAN_LABELS.get(order.plan, order.plan),
+                               duplicate=False)
+    return render_template('checkout_method.html', order=order, rails=rails,
+                           plan_label=PLAN_LABELS.get(order.plan, order.plan),
+                           sla_hours=CRYPTO_SLA_HOURS)
+
+
+@app.route('/checkout/paypal/return/<int:order_id>')
+@login_required
+def paypal_return(order_id):
+    """Where PayPal sends the buyer after they approve the payment.
+
+    The capture happens here, but the plan is granted by the shared activator —
+    so a buyer who closes this tab too early loses nothing: the webhook and the
+    reconciliation on their order page both finish the job."""
+    order = db.session.get(Order, order_id)
+    if not order or order.user_id != current_user.id:
+        abort(404)
+    if order.status != 'paid':
+        try:
+            _paypal_capture(order)
+        except Exception as exc:                # never dead-end on the way back
+            app.logger.error('paypal return failed (order %s): %s', order.id, exc)
+    return redirect(url_for('checkout_status', order_id=order.id))
+
+
+@app.route('/webhook/paypal', methods=['POST'])
+def paypal_webhook():
+    """Payment notification from PayPal.
+
+    Verified by asking PayPal itself whether the signature on the message is
+    theirs — an unverified notification is refused, otherwise anyone could POST
+    "order 7 is paid"."""
+    if not (PAYPAL_ENABLED and PAYPAL_WEBHOOK_ID):
+        app.logger.warning('paypal webhook received but PAYPAL_WEBHOOK_ID is not set — ignoring')
+        return jsonify({'error': 'not_configured'}), 400
+    try:
+        event = json.loads(request.get_data().decode() or '{}')
+    except ValueError:
+        return jsonify({'error': 'bad_json'}), 400
+    try:
+        code, verdict = _paypal_api('POST', '/v1/notifications/verify-webhook-signature', {
+            'transmission_id': request.headers.get('paypal-transmission-id', ''),
+            'transmission_time': request.headers.get('paypal-transmission-time', ''),
+            'cert_url': request.headers.get('paypal-cert-url', ''),
+            'auth_algo': request.headers.get('paypal-auth-algo', ''),
+            'transmission_sig': request.headers.get('paypal-transmission-sig', ''),
+            'webhook_id': PAYPAL_WEBHOOK_ID,
+            'webhook_event': event,
+        })
+    except Exception as exc:
+        app.logger.warning('paypal webhook verification error: %s', exc)
+        return jsonify({'error': 'verify_failed'}), 400
+    if code >= 300 or (verdict.get('verification_status') or '') != 'SUCCESS':
+        app.logger.warning('paypal webhook: bad signature')
+        return jsonify({'error': 'bad_signature'}), 400
+
+    res = event.get('resource') or {}
+    ref = str(res.get('custom_id') or '')
+    if not ref:
+        units = res.get('purchase_units') or []
+        ref = str((units[0].get('custom_id') if units else '') or '')
+    kind, _, oid = ref.partition('-')
+    try:
+        oid = int(oid)
+    except (TypeError, ValueError):
+        return jsonify({'ok': True, 'ignored': 'no_order_ref'})
+    if kind != 'plan':
+        return jsonify({'ok': True, 'ignored': kind})
+    order = db.session.get(Order, oid)
+    if not order:
+        return jsonify({'error': 'not_found'}), 404
+
+    etype = (event.get('event_type') or '').upper()
+    if etype == 'CHECKOUT.ORDER.APPROVED':
+        # Approved but not captured — taking the money is on us.
+        _paypal_capture(order)
+        return jsonify({'ok': True})
+    amount = (res.get('amount') or {}).get('value')
+    if etype in ('PAYMENT.CAPTURE.REVERSED', 'PAYMENT.CAPTURE.REFUNDED'):
+        status = 'reversed' if 'REVERSED' in etype else 'refunded'
+    elif etype.startswith('CUSTOMER.DISPUTE'):
+        status = 'disputed'
+        amount = None
+    elif etype in ('PAYMENT.CAPTURE.COMPLETED', 'PAYMENT.CAPTURE.DENIED',
+                   'PAYMENT.CAPTURE.PENDING'):
+        status = (res.get('status') or '').lower()
+    else:
+        return jsonify({'ok': True, 'ignored': etype})
+    _paypal_apply_status(order, status, amount, res.get('id'))
+    return jsonify({'ok': True})
+
+
+def _stripe_checkout_url(order):
+    """Create a Stripe Checkout session and return its URL, or None."""
+    if STRIPE_ENABLED:
         try:
             checkout_session = _stripe.checkout.Session.create(
                 mode='payment',
@@ -4922,8 +5316,9 @@ def checkout_create():
                     'price_data': {
                         'currency': 'usd',
                         'product_data': {
-                            'name': f'Tradeable — {PLAN_LABELS.get(plan, plan)}',
-                            'description': ('Annual' if cycle == 'annual' else 'Monthly') + ' plan',
+                            'name': f'Tradeable — {PLAN_LABELS.get(order.plan, order.plan)}',
+                            'description': ('Annual' if order.billing_cycle == 'annual'
+                                            else 'Monthly') + ' plan',
                         },
                         'unit_amount': int(round(order.final_price * 100)),  # cents
                     },
@@ -4938,22 +5333,10 @@ def checkout_create():
             )
             order.payment_method = 'stripe'
             db.session.commit()
-            return redirect(checkout_session.url, code=303)
+            return checkout_session.url
         except Exception as e:
             app.logger.error('Stripe session create failed: %s', e)
-            # fall through to the manual instructions rather than dead-ending
-
-    # Crypto rail: hand the buyer a hosted invoice (amount, address, QR and a
-    # live status). The plan is granted by the notification or by reconciliation,
-    # never here — so closing the tab mid-payment cannot lose the purchase.
-    if CRYPTO_ENABLED and order.final_price > 0:
-        invoice_url = _crypto_create_invoice(order, 'plan')
-        if invoice_url:
-            return redirect(invoice_url, code=303)
-        # falls through to the manual instructions rather than dead-ending
-
-    return render_template('checkout_done.html', order=order,
-                           plan_label=PLAN_LABELS.get(plan, plan), duplicate=False)
+            return None
 
 
 @app.route('/webhook/crypto', methods=['POST'])
@@ -5015,7 +5398,7 @@ def checkout_status(order_id):
     if not order or order.user_id != current_user.id:
         abort(404)
     if order.status != 'paid':
-        _crypto_reconcile(order)
+        _reconcile_order(order)
     return render_template('checkout_status.html', order=order,
                            plan_label=PLAN_LABELS.get(order.plan, order.plan),
                            sla_hours=CRYPTO_SLA_HOURS)
@@ -5028,7 +5411,7 @@ def checkout_status_api(order_id):
     if not order or order.user_id != current_user.id:
         return jsonify({'error': 'not_found'}), 404
     if order.status != 'paid':
-        _crypto_reconcile(order)
+        _reconcile_order(order)
     return jsonify({'id': order.id, 'status': order.status,
                     'pay_status': order.pay_status or '',
                     'applied': order.applied_at is not None,

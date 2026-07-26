@@ -156,15 +156,19 @@
     <h3>2.2 Payment information</h3>
     <p>
       For paid plans we create an order record containing the plan, billing cycle, amount,
-      payment status, and — for crypto payments — the payment platform's invoice reference
-      and the transaction ID (hash). Payments are made in USDT through a
-      <strong>third-party cryptocurrency payment platform</strong>; the transaction itself
-      happens on that platform and on the blockchain, under their own terms and privacy
-      policies. We do <strong>not</strong> collect or store card numbers or banking
-      credentials on our servers — we only receive confirmation of the payment and its
-      reference data. If we add card payments through an automated processor in the future,
-      your payment-card data would be handled directly by that processor under its own
-      privacy terms, not stored by us.
+      payment status, and the payment provider's reference for the transaction — for a
+      crypto payment, the platform's invoice reference and the transaction ID (hash); for a
+      card or PayPal payment, the provider's transaction identifier. Payments are made
+      through <strong>third-party payment providers</strong>: PayPal for card and
+      PayPal-balance payments, and a cryptocurrency payment platform for USDT payments. The
+      transaction itself happens on those platforms (and, for crypto, on the blockchain),
+      under their own terms and privacy policies. We do <strong>not</strong> collect or
+      store card numbers or banking credentials on our servers — we only receive
+      confirmation of the payment and its reference data. Where you pay by card or PayPal,
+      the data you enter on the provider's page (card details, PayPal account) is handled
+      directly by that provider under its own privacy terms and is never stored by us; the
+      provider does share with us the email address and name associated with the payment,
+      so that we can match the payment to your order.
     </p>
 
     <h3>2.3 Content and self-logged data you provide</h3>
@@ -301,6 +305,7 @@
       <tr><td>AI processing provider</td><td>Generates analysis/moderation from content you submit.</td></tr>
       <tr><td>Email delivery provider</td><td>Sends verification, password-reset, and support emails.</td></tr>
       <tr><td>Crypto payment platform</td><td>Generates the payment invoice and confirms your USDT transaction. We receive the payment status and transaction reference — never card or bank credentials.</td></tr>
+      <tr><td>Card / PayPal payment provider</td><td>Processes card and PayPal-balance payments. We receive the payment status, its transaction identifier, and the name and email associated with the payment — never your full card number or banking credentials.</td></tr>
       <tr><td>Content-delivery networks (CDNs)</td><td>Serve fonts and front-end libraries; may receive your IP to deliver those assets.</td></tr>
     </table>
     <p>

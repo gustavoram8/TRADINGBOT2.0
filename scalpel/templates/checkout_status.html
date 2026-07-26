@@ -119,8 +119,13 @@
         <span class="ic">⏳</span>
         <div>
           <h2><span class="dot"></span><span data-i18n="cstat.waitTitle">Waiting for your payment</span></h2>
+          {% if order.payment_method in ('paypal', 'stripe') %}
+          <p data-i18n="cstat.waitCard">As soon as the payment is confirmed, your plan activates on its own —
+             usually in seconds. You can close this page: nothing is lost.</p>
+          {% else %}
           <p data-i18n="cstat.waitBody">As soon as the payment confirms on the network, your plan activates
              on its own — usually in a couple of minutes. You can close this page: nothing is lost.</p>
+          {% endif %}
         </div>
       {% endif %}
     </div>
@@ -145,12 +150,18 @@
         <span class="t-label" data-i18n="cstat.total">Total</span>
         <span>
           <span class="t-val">${{ '%.2f'|format(order.final_price) }} USD</span>
+          {% if order.payment_method in ('paypal', 'stripe') %}
+          <span class="t-sub" data-i18n="cstat.paidCard">paid by card / PayPal</span>
+          {% else %}
           <span class="t-sub" data-i18n="cstat.paidIn">paid in USDT (1 USDT ≈ 1 USD)</span>
+          {% endif %}
         </span>
       </div>
     </div>
 
-    {% if not order.applied_at %}
+    {# The transaction id only exists on the crypto rail: a card payment has no
+       hash for the buyer to paste, so asking for one would only confuse them. #}
+    {% if not order.applied_at and order.payment_method not in ('paypal', 'stripe') %}
     <div class="card">
       <div style="font-size:14px;font-weight:700;margin-bottom:4px" data-i18n="cstat.txTitle">Already paid?</div>
       <div style="font-size:13.5px;color:var(--ink-soft)" data-i18n="cstat.txBody">

@@ -624,14 +624,57 @@ de 9 reuniones/sem de Gabriel NO está confirmado por él — validar su disponi
    de Venezuela** + carve-out consumidor. Privacy 2.2 + tabla de terceros: plataforma cripto, nunca
    datos de tarjeta. ⚠️ **Validar Secc. 14/15 con abogado antes del lanzamiento** (elección de foro).
    ⚠️ `checkout_done.html` (instrucciones manuales Binance) queda como fallback sin claves cripto.
-4. **PayPal del papá: DESCARTADO como método principal** (riesgo de congelamiento en cuenta personal).
-   Mercados alcanzables con USDT: Venezuela/Argentina naturales; Colombia/Brasil/Perú muy buenos;
-   México/Chile/España con fricción; USA/Canadá perdidos hasta tener Stripe.
+4. **PayPal: CABLEADO como 2º método (2026-07-26, decisión del usuario tras consultarlo con su hermano).**
+   Se había desaconsejado (contracargos de bienes digitales sin protección al vendedor, ventana de
+   disputa de 180 días, riesgo de revisión/retención en cuenta personal); el usuario reafirmó el pedido
+   → construido. Mercados: USDT cubre Venezuela/Argentina/Colombia/Brasil/Perú; **PayPal recupera
+   USA/Canadá/Europa**, que era el objetivo. Ver "🟣 PayPal" abajo.
 **Para ENCENDER el cobro:** cuenta en nowpayments.io → API key + IPN secret → `CRYPTO_API_KEY` y
 `CRYPTO_IPN_SECRET` en supervisor conf + `scalpel/.env` (NUNCA en el repo/chat) → restart. El webhook
 se registra al crear cada factura (`ipn_callback_url`); **sin dominio/HTTPS el webhook puede fallar,
 pero la reconciliación del success_url + el barrido de /admin cubren la activación igual**. Dominio
 sigue siendo el desbloqueo para que el aviso instantáneo sea fiable.
+
+## 🟣 PayPal — 2º riel de cobro (código LISTO 2026-07-26, falta encender)
+Mismo patrón condicional que cripto/Stripe: **inerte sin claves** (`PAYPAL_CLIENT_ID`/`PAYPAL_SECRET`,
++ `PAYPAL_ENV=sandbox|live`, `PAYPAL_WEBHOOK_ID`, `PAYPAL_BRAND_NAME`). Convive con USDT, no lo
+reemplaza.
+- **Elección de método:** `available_payment_rails()` → si hay **>1 riel**, `/checkout/create` manda a
+  **`/checkout/pay/<order_id>`** (plantilla nueva `checkout_method.html`, i18n `cpay.*` ×4, un `<form>`
+  por riel, sin JS decidiendo el destino). Con **1 solo riel** el flujo es idéntico al de antes (directo).
+  Bonus: un pedido pendiente abandonado ya **no encierra** al comprador — lo devuelve a elegir método.
+- **Ciclo PayPal (Orders v2):** `_paypal_create_order` (guarda `provider_ref`=id de PayPal) → el
+  comprador aprueba → `/checkout/paypal/return/<id>` **captura** → `_paypal_apply_status` →
+  `_activate_plan_from_order` (el MISMO activador idempotente de siempre). 3 redes de seguridad iguales
+  a cripto: webhook `/webhook/paypal` (verificado contra la API de PayPal con `PAYPAL_WEBHOOK_ID`),
+  reconciliación al abrir `/checkout/status/<id>`, y el barrido al abrir /admin (`payments_sweep`, ex
+  `crypto_sweep`, ahora despacha por `payment_method` vía `_reconcile_order`). `PayPal-Request-Id` en
+  create/capture = idempotencia del lado de PayPal; un `ORDER_ALREADY_CAPTURED` se resuelve leyendo el
+  pedido, no fallando.
+- **Disputas/contracargos:** eventos `CUSTOMER.DISPUTE.*`, `PAYMENT.CAPTURE.REVERSED/REFUNDED` marcan
+  `pay_status` y **avisan por correo al dueño** (arreglado: antes el aviso no salía en pedidos ya
+  pagados) + salen en la bandeja "Pagos que necesitan atención" de /admin con etiqueta propia. **NUNCA
+  revocan el plan solos** — la decisión es del dueño, con `/admin/trace` como prueba de entrega.
+- **T&C/Privacy actualizados** (EN + ES/FR/PT en `legal_i18n.js`, paridad 115 claves verificada):
+  Secc. 5 pasó de "pagos en USDT" a **"Métodos de pago" (a) tarjeta/PayPal (b) USDT**, + párrafo nuevo
+  **"Quién recibe el pago"** (el titular que muestra el proveedor puede diferir del nombre comercial;
+  la contraparte sigue siendo el negocio de la Secc. 1) — **esto cierra la incoherencia** de que el
+  contrato nombre a un vendedor y el recibo muestre otro —, + párrafo **"Pagos con tarjeta y PayPal"**
+  (reembolso por el mismo método, registro de entrega presentable ante una disputa, contracargo por un
+  plan sí entregado = incumplimiento, suspensión mientras se resuelve). El párrafo cripto quedó acotado
+  a "cuando pagas en criptomonedas". Privacy 2.2 + tabla de terceros: fila de PayPal.
+- **Para ENCENDER:** cuenta PayPal Business → REST app → Client ID + Secret → **poner el nombre
+  comercial "Tradeable Academy" en la cuenta** (para que el recibo coincida con los T&C) → webhook
+  apuntando a `/webhook/paypal` con los eventos CHECKOUT.ORDER.APPROVED, PAYMENT.CAPTURE.COMPLETED/
+  DENIED/REFUNDED/REVERSED y CUSTOMER.DISPUTE.CREATED → copiar el **Webhook ID** → las 4 variables en
+  supervisor conf + `scalpel/.env` (NUNCA en el repo/chat) → restart. Probar antes con `PAYPAL_ENV=sandbox`.
+  ⚠️ El webhook necesita dominio+HTTPS; sin eso la captura del return-url y el barrido de /admin cubren
+  igual la activación.
+- **Probado (46 checks, PayPal simulado):** compra completa, aviso repetido no estira la vigencia, firma
+  inválida y falta de WEBHOOK_ID rechazadas, comprador que aprueba y no vuelve (rescatado por
+  reconciliación / página de pedido / barrido), pago rechazado a la bandeja sin entregar plan, disputa
+  que avisa y no quita el plan, elección de riel con los dos encendidos, precio siempre server-side,
+  aislamiento entre compradores, y con las claves apagadas todo vuelve al flujo manual.
 
 ## 🟢 Stripe — pagos con tarjeta (código LISTO, probado en TEST 2026-07-12)
 Integración **condicional**: totalmente inerte hasta setear `STRIPE_SECRET_KEY` → sin la clave, prod
