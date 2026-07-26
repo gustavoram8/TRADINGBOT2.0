@@ -340,6 +340,36 @@
       made in USDT by the same means, for the USD value of the original purchase.
     </p>
     <p>
+      <strong>Payment issues and claims.</strong> The record of a cryptocurrency
+      payment is the transaction on the blockchain together with the payment
+      platform's confirmation; that record constitutes the evidence of payment
+      for the purposes of these Terms. If you completed a payment and your plan
+      is not active within twenty-four (24) hours, write to our support contact
+      with your order number and the transaction ID (hash): we will locate the
+      payment and activate your plan or refund you in full. Where the payment
+      platform confirms that your payment was completed, we honour it and
+      activate your plan even if the funds have not yet reached us; any issue
+      with the platform is ours to pursue, not yours. Any claim relating to a
+      payment that was not credited must be raised within ninety (90) days of
+      the transaction date; after that period the transaction is considered
+      settled. If you send more than the invoiced amount, or pay the same
+      invoice twice, the excess is applied to your account as credit toward your
+      next renewal (or refunded in USDT where mandatory law so requires).
+      Cryptocurrency payments are final by design and are not subject to
+      chargeback or reversal through any card network or bank.
+    </p>
+    <p>
+      <strong>Lawful source of funds.</strong> By paying for the Service you
+      represent that the funds you use are of lawful origin, that you own the
+      wallet or account from which they are sent (or are authorized to use it),
+      and that you are not subject to sanctions nor making the payment on behalf
+      of a sanctioned person. We may reject, hold, or return a payment — and
+      suspend or terminate the associated account — where we reasonably suspect
+      the payment breaches this representation or applicable anti-money-laundering
+      rules, refunding lawfully received amounts to the originating address
+      unless the law prevents us from doing so.
+    </p>
+    <p>
       If we add other payment methods in the future (for example, card payments
       through an automated payment processor), this section will be updated
       accordingly, and any change to how renewals work will be notified to you in
@@ -486,8 +516,25 @@
       or inability to access the Service due to the User's own device, connection,
       or jurisdictional restrictions.
     </p>
-    {% if mentorship_enabled %}
     <p>
+      <strong>Exception — Payment Not Credited:</strong> As described in Section 5,
+      if you completed a payment and your plan was neither activated within
+      twenty-four (24) hours nor resolved manually after contacting support, the
+      payment is refunded in full.
+    </p>
+    <p>
+      Refunds approved under this Section are processed within fifteen (15) business days
+      to the original payment method, subject to any additional processing times of your
+      bank or payment provider.
+    </p>
+  </div>
+  {% if mentorship_enabled %}
+  <!-- Shelved with the mentorship programme. Lives OUTSIDE the translated b7
+       body on purpose: the ES/FR/PT strings replace that body wholesale, so a
+       clause gated only in the English HTML would leak back in other
+       languages. As its own keyed block, the switch rules all four. -->
+  <div data-i18n-html="terms.b7m">
+  <p>
       <strong>Exception — Meetings Cancelled by the Mentor:</strong> As described in
       Section 19, if a scheduled one-to-one mentorship Meeting is cancelled by the mentor
       and is not rescheduled by mutual agreement within fourteen (14) days of the
@@ -497,13 +544,8 @@
       Meetings cancelled by the mentor, never to Meetings missed, cancelled, or left
       unused by the User.
     </p>
-    {% endif %}
-    <p>
-      Refunds approved under this Section are processed within fifteen (15) business days
-      to the original payment method, subject to any additional processing times of your
-      bank or payment provider.
-    </p>
   </div>
+  {% endif %}
   </div>
 
   <!-- SECTION 8 -->
