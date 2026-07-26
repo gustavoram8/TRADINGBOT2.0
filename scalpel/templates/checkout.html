@@ -1,3 +1,4 @@
+{% import '_pay_marks.html' as marks %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -54,8 +55,8 @@
        intended orange and the text white. (The earlier gold tint was the gold
        background glow bleeding through a transparent nav; the opaque --nav-bg
        above fixes that, so the invert here is clean.) */
-    .logo-img { height:66px; width:auto; display:block; mix-blend-mode:multiply; }
-    body.dark .logo-img { filter:invert(1); mix-blend-mode:screen; }
+    .logo-img { height:60px; width:auto; display:block; }
+    body.dark .logo-img { filter:invert(1); }
     .back-link { font-size:13px; font-weight:600; color:var(--ink-soft); text-decoration:none;
                  padding:8px 16px; border:1px solid var(--line); border-radius:20px; transition:all .15s; }
     .back-link:hover { border-color:var(--gold); color:var(--gold); }
@@ -142,8 +143,28 @@
     .info { font-size:12.5px; color:var(--muted); text-align:center; margin-top:12px; line-height:1.6; }
     .info a { color:var(--gold); }
 
-    @media(max-width:540px){ h1{font-size:24px;} .card{padding:20px;} nav{padding:14px 18px;} }
+    /* ── where you are in the purchase ── */
+    .steps { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:24px; }
+    .step { display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:700; color:var(--muted); }
+    .step .n { width:22px; height:22px; border-radius:50%; display:grid; place-items:center;
+               font-size:11px; font-weight:800; border:1px solid var(--line); color:var(--muted); }
+    .step.now .n { background:linear-gradient(135deg, var(--gold-2), var(--gold)); border-color:transparent;
+                   color:#1a1300; box-shadow:0 4px 12px -3px var(--glow-gold); }
+    .step.now { color:var(--ink); }
+    .step-line { width:34px; height:2px; border-radius:2px; background:var(--line); }
+
+    /* Accepted payment methods, so nobody has to click "continue" to find out
+       whether their card works here. */
+    .methods { margin-top:18px; text-align:center; }
+    .methods .ml { font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+                   color:var(--muted); margin-bottom:9px; }
+    .methods .chiprow { justify-content:center; }
+    .methods .paymark { margin:0 4px; vertical-align:middle; }
+
+    @media(max-width:540px){ h1{font-size:24px;} .card{padding:20px;} nav{padding:14px 18px;}
+      .steps{gap:6px;} .step-line{width:20px;} .step span:not(.n){display:none;} }
   </style>
+  {{ marks.styles() }}
 </head>
 <body>
   <script>
@@ -155,11 +176,17 @@
   </script>
 
   <nav>
-    <a href="/"><img src="/static/logo.png" alt="Tradeable" class="logo-img" onerror="this.style.display='none';" /></a>
+    <a href="/"><img src="/static/logo_t.png" alt="Tradeable Academy" class="logo-img" onerror="this.style.display='none';" /></a>
     <a href="/pricing" class="back-link" data-i18n="nav.backPlans">← Back to plans</a>
   </nav>
 
   <div class="wrap">
+    <div class="steps">
+      <span class="step now"><span class="n">1</span><span data-i18n="pay.step1">Your order</span></span>
+      <span class="step-line"></span>
+      <span class="step"><span class="n">2</span><span data-i18n="pay.step2">Payment</span></span>
+    </div>
+
     <div class="eyebrow" data-i18n="checkout.eyebrow">Checkout</div>
     <h1 data-i18n="checkout.title">Review your order</h1>
     <p class="lede" data-i18n="checkout.lede">You're one step away. Confirm the details below and continue to secure payment.</p>
@@ -173,7 +200,15 @@
     <div class="card order">
       <div class="summary-row">
         <span class="plan-head">
-          <span class="plan-badge">{{ '👑' if plan == 'premium' else '⚡' }}</span>
+          <span class="plan-badge">
+            {% if plan == 'premium' %}
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"
+                 style="color:var(--premium)"><path d="M3 18h18l1.4-9.6a.6.6 0 0 0-.95-.56L17 11.4 12.8 4.3a.9.9 0 0 0-1.6 0L7 11.4 2.55 7.84A.6.6 0 0 0 1.6 8.4L3 18Zm0 2.2h18v1.4a.6.6 0 0 1-.6.6H3.6a.6.6 0 0 1-.6-.6v-1.4Z"/></svg>
+            {% else %}
+            <svg viewBox="0 0 24 24" width="21" height="21" fill="currentColor" aria-hidden="true"
+                 style="color:var(--standard)"><path d="M13.4 2 4 13.3a.7.7 0 0 0 .54 1.15h5.3l-1.3 7.4a.7.7 0 0 0 1.24.55L20 11.1a.7.7 0 0 0-.54-1.15h-5.4l1.6-7.35A.7.7 0 0 0 13.4 2Z"/></svg>
+            {% endif %}
+          </span>
           <span class="plan-name {{ plan }}">{{ plan_label }}</span>
         </span>
         <span class="cycle-tag" data-i18n="{{ 'common.annual' if cycle == 'annual' else 'common.monthly' }}">{{ 'Annual' if cycle == 'annual' else 'Monthly' }}</span>
@@ -241,13 +276,20 @@
     </form>
     {% endif %}
 
+    <div class="methods">
+      <div class="ml" data-i18n="pay.methods">Secure payment with</div>
+      <div class="chiprow">
+        {{ marks.paypal(26) }}{{ marks.visa() }}{{ marks.mastercard() }}{{ marks.amex() }}{{ marks.usdt(26) }}
+      </div>
+    </div>
+
     <div class="trust">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+      {{ marks.lock(14) }}
       <span data-i18n="checkout.secure">Secure, encrypted checkout</span>
     </div>
     <p class="info">
-      <span data-i18n="checkout.infoLine">You'll receive payment instructions on the next step. Your plan activates
-      once payment is confirmed by our team.</span><br />
+      <span data-i18n="checkout.infoLine">You'll choose how to pay on the next step. Your plan activates
+      automatically as soon as the payment is confirmed.</span><br />
       <span data-i18n="checkout.agreePre">By continuing you agree to our</span> <a href="/terms" target="_blank" data-i18n="checkout.terms">Terms &amp; Conditions</a>.
     </p>
   </div>

@@ -1,0 +1,109 @@
+{#
+  Payment brand marks, drawn inline.
+
+  Two reasons they are SVG in the page instead of image files: a checkout that
+  waits on a network request to show its payment logos looks broken on a slow
+  connection, and these stay sharp at any size in both themes. Each mark sits on
+  a white tile, which is how the brands are meant to appear on a dark background.
+
+  When the PayPal account is live you can drop the official assets from PayPal's
+  logo centre into /static and swap the body of paypal() for an <img> — nothing
+  else in the checkout needs to change.
+#}
+
+{# ── PayPal: the two-tone P, then the wordmark in its two blues ── #}
+{% macro paypal(size=34) %}
+<span class="paymark" style="--pm-size:{{ size }}px">
+  <svg viewBox="0 0 32 32" width="{{ size }}" height="{{ size }}" role="img" aria-label="PayPal">
+    <rect width="32" height="32" rx="8" fill="#fff"/>
+    <path fill="#003087" d="M9.6 25.4H6.4l3-18.8h6.9c3.9 0 6.4 2 6 5.7-.5 4.3-3.8 6.6-8 6.6h-3.4l-1.3 6.5Zm2-9.3h2.6c2.2 0 3.8-1.1 4.1-3.2.2-1.8-.9-2.7-3-2.7h-2.5l-1.2 5.9Z"/>
+    <path fill="#009cde" d="M16.4 27.4h-3.2l.6-3.6 1-6.2h3.3c2.2 0 3.8-1.1 4.1-3.2.05-.4.05-.75 0-1.06 1.85.72 2.8 2.3 2.5 4.56-.5 4.3-3.8 6.6-8 6.6h-.9l-.4 2.9Z"/>
+  </svg>
+  <span class="pm-word"><b style="color:#003087">Pay</b><b style="color:#009cde">Pal</b></span>
+</span>
+{% endmacro %}
+
+{# ── Tether: the token most people actually hold ── #}
+{% macro usdt(size=34) %}
+<span class="paymark" style="--pm-size:{{ size }}px">
+  <svg viewBox="0 0 32 32" width="{{ size }}" height="{{ size }}" role="img" aria-label="USDT">
+    <rect width="32" height="32" rx="8" fill="#fff"/>
+    <circle cx="16" cy="16" r="11" fill="#26a17b"/>
+    <path fill="#fff" d="M17.5 15.1v-1.8h4.1v-2.7H10.4v2.7h4.1v1.8c-3.3.15-5.8.8-5.8 1.58 0 .78 2.5 1.43 5.8 1.58v5.1h3v-5.1c3.3-.15 5.8-.8 5.8-1.58 0-.78-2.5-1.43-5.8-1.58Zm0 2.67v0c-.08 0-.5.03-1.46.03-.77 0-1.31-.02-1.5-.03v0c-3-.13-5.24-.65-5.24-1.27 0-.62 2.24-1.14 5.24-1.27v2.03c.19.01.75.04 1.51.04.92 0 1.37-.03 1.45-.04v-2.03c3 .13 5.23.65 5.23 1.27 0 .62-2.23 1.14-5.23 1.27Z"/>
+  </svg>
+  <span class="pm-word"><b style="color:#26a17b">USDT</b></span>
+</span>
+{% endmacro %}
+
+{# ── Small "accepted here" chips shown inside each method ── #}
+{% macro visa() %}
+<span class="paychip" aria-label="Visa">
+  <svg viewBox="0 0 40 24" width="34" height="21"><rect width="40" height="24" rx="4" fill="#fff"/>
+    <text x="20" y="16.5" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="10.5"
+          font-weight="800" font-style="italic" letter-spacing=".6" fill="#1434cb">VISA</text></svg>
+</span>
+{% endmacro %}
+
+{% macro mastercard() %}
+<span class="paychip" aria-label="Mastercard">
+  <svg viewBox="0 0 40 24" width="34" height="21"><rect width="40" height="24" rx="4" fill="#fff"/>
+    <circle cx="16.4" cy="12" r="6.4" fill="#eb001b"/><circle cx="23.6" cy="12" r="6.4" fill="#f79e1b"/>
+    <path fill="#ff5f00" d="M20 7.1a6.38 6.38 0 0 0 0 9.8 6.38 6.38 0 0 0 0-9.8Z"/></svg>
+</span>
+{% endmacro %}
+
+{% macro amex() %}
+<span class="paychip" aria-label="American Express">
+  <svg viewBox="0 0 40 24" width="34" height="21"><rect width="40" height="24" rx="4" fill="#fff"/>
+    <rect x="3" y="4" width="34" height="16" rx="2" fill="#2e77bc"/>
+    <text x="20" y="15" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="7"
+          font-weight="800" letter-spacing=".3" fill="#fff">AMEX</text></svg>
+</span>
+{% endmacro %}
+
+{% macro binance() %}
+<span class="paychip" aria-label="Binance">
+  <svg viewBox="0 0 40 24" width="34" height="21"><rect width="40" height="24" rx="4" fill="#fff"/>
+    <g transform="rotate(45 20 12)" fill="#f0b90b">
+      <rect x="17.6" y="9.6" width="4.8" height="4.8" rx=".7"/>
+      <rect x="17.6" y="3.1" width="4.8" height="4.8" rx=".7"/>
+      <rect x="17.6" y="16.1" width="4.8" height="4.8" rx=".7"/>
+      <rect x="11.1" y="9.6" width="4.8" height="4.8" rx=".7"/>
+      <rect x="24.1" y="9.6" width="4.8" height="4.8" rx=".7"/>
+    </g></svg>
+</span>
+{% endmacro %}
+
+{% macro trust_wallet() %}
+<span class="paychip" aria-label="Trust Wallet">
+  <svg viewBox="0 0 40 24" width="34" height="21"><rect width="40" height="24" rx="4" fill="#fff"/>
+    <path fill="#0500ff" d="M20 3.6c2.4 1.9 5.2 2.9 8.3 2.8 0 0 .7 10.8-8.3 14.9-9-4.1-8.3-14.9-8.3-14.9 3.1.1 5.9-.9 8.3-2.8Z"/>
+    <path fill="#fff" opacity=".9" d="M20 6.4v11.7c6.2-3.2 6-10.7 6-10.7-2.1 0-4.2-.4-6-1Z"/></svg>
+</span>
+{% endmacro %}
+
+{# ── The padlock used by the trust line ── #}
+{% macro lock(size=13) %}
+<svg viewBox="0 0 24 24" width="{{ size }}" height="{{ size }}" fill="none" stroke="currentColor"
+     stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+</svg>
+{% endmacro %}
+
+{# ── Shared styles for everything above ── #}
+{% macro styles() %}
+<style>
+  .paymark { display:inline-flex; align-items:center; gap:9px; }
+  .paymark svg { display:block; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,.16); flex:none; }
+  .pm-word { font-size:calc(var(--pm-size, 34px) * .5); font-weight:800; letter-spacing:-.02em;
+             line-height:1; white-space:nowrap; }
+  /* The brand blues go muddy on a dark page; lift them just enough to stay legible
+     while keeping each brand recognisably its own colour. */
+  body.dark .pm-word b[style*="003087"] { color:#8fb4ff !important; }
+  body.dark .pm-word b[style*="009cde"] { color:#4cc3f5 !important; }
+  body.dark .pm-word b[style*="26a17b"] { color:#4ecfa3 !important; }
+  .paychip { display:inline-flex; }
+  .paychip svg { display:block; border-radius:4px; box-shadow:0 1px 2px rgba(0,0,0,.18); }
+  .chiprow { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+</style>
+{% endmacro %}

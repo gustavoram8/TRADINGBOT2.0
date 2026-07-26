@@ -40,8 +40,10 @@
 
     nav { display:flex; align-items:center; justify-content:space-between; padding:16px 32px;
           border-bottom:1px solid var(--line); background:var(--nav-bg); position:sticky; top:0; z-index:10; backdrop-filter:blur(10px); }
-    .logo-img { height:66px; width:auto; display:block; mix-blend-mode:multiply; }
-    body.dark .logo-img { filter:invert(1); mix-blend-mode:screen; }
+    /* The transparent cut of the logo: the flat one carries a white plate that
+       shows as a pale box on the dark page. */
+    .logo-img { height:60px; width:auto; display:block; }
+    body.dark .logo-img { filter:invert(1); }
     .back-link { font-size:13px; font-weight:600; color:var(--ink-soft); text-decoration:none;
                  padding:8px 16px; border:1px solid var(--line); border-radius:20px; transition:all .15s; }
     .back-link:hover { border-color:var(--gold); color:var(--gold); }
@@ -97,7 +99,7 @@
   </script>
 
   <nav>
-    <a href="/"><img src="/static/logo.png" alt="Tradeable" class="logo-img" onerror="this.style.display='none';" /></a>
+    <a href="/"><img src="/static/logo_t.png" alt="Tradeable Academy" class="logo-img" onerror="this.style.display='none';" /></a>
     <a href="/app" class="back-link" data-i18n="nav.backApp">← Back to app</a>
   </nav>
 

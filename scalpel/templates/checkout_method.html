@@ -1,3 +1,4 @@
+{% import '_pay_marks.html' as marks %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,9 +11,8 @@
     :root {
       --ink:#15171f; --ink-soft:#4a4f5e; --muted:#8a8f9e;
       --line:#e6e8ee; --card:rgba(255,255,255,.82); --page:#eef1f7; --nav-bg:rgba(238,241,247,.88);
-      --gold:#b8860b; --gold-2:#d9a636;
-      --accent:#2563eb; --accent-bg:rgba(37,99,235,.10);
-      --ok:#15803d; --ok-bg:rgba(21,128,61,.10); --ok-border:rgba(21,128,61,.28);
+      --gold:#b8860b; --gold-2:#d9a636; --accent-bg:rgba(184,134,11,.10);
+      --ok:#166534; --ok-bg:#f0fdf4; --ok-border:#bbf7d0;
       --radius:16px;
       --glow-gold:rgba(224,168,61,.20); --glow-graphite:rgba(90,110,150,.16);
       --shadow:0 18px 50px rgba(20,25,45,.10);
@@ -20,62 +20,110 @@
     body.dark {
       --ink:#e8eaf0; --ink-soft:#b0b5c2; --muted:#8a8f9e;
       --line:rgba(255,255,255,.10); --card:rgba(22,25,34,.72); --page:#0b0d12; --nav-bg:rgba(11,13,18,.88);
-      --gold:#e0a83d; --gold-2:#f0c060;
-      --accent:#5b8ef0; --accent-bg:rgba(91,142,240,.14);
-      --ok:#6ee7a0; --ok-bg:rgba(34,160,90,.14); --ok-border:rgba(34,160,90,.34);
+      --gold:#e0a83d; --gold-2:#f0c060; --accent-bg:rgba(224,168,61,.12);
+      --ok:#4ade80; --ok-bg:rgba(34,80,50,.30); --ok-border:rgba(74,222,128,.35);
       --shadow:0 22px 60px rgba(0,0,0,.45);
       --glow-gold:rgba(224,168,61,.16); --glow-graphite:rgba(70,95,150,.22);
     }
     body { background:var(--page); color:var(--ink); font-family:'Inter',sans-serif; font-size:15px;
-           line-height:1.65; min-height:100vh; -webkit-font-smoothing:antialiased; }
+           line-height:1.65; min-height:100vh; position:relative; overflow-x:hidden;
+           -webkit-font-smoothing:antialiased; }
+    body::before { content:''; position:fixed; inset:0; z-index:-2; pointer-events:none;
+      background:
+        radial-gradient(70% 55% at 50% -8%, var(--glow-gold), transparent 68%),
+        radial-gradient(50% 45% at 110% 8%, var(--glow-graphite), transparent 70%),
+        radial-gradient(55% 50% at -10% 100%, var(--glow-graphite), transparent 70%); }
+    body::after { content:''; position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:.5;
+      background-image:linear-gradient(var(--line) 1px, transparent 1px),
+                       linear-gradient(90deg, var(--line) 1px, transparent 1px);
+      background-size:44px 44px; -webkit-mask-image:radial-gradient(75% 60% at 50% 0%, #000, transparent 75%);
+      mask-image:radial-gradient(75% 60% at 50% 0%, #000, transparent 75%); }
+
     nav { display:flex; align-items:center; justify-content:space-between; padding:16px 32px;
-          border-bottom:1px solid var(--line); background:var(--nav-bg); position:sticky; top:0; z-index:10; }
-    .logo-img { height:66px; width:auto; display:block; mix-blend-mode:multiply; }
-    body.dark .logo-img { filter:invert(1); mix-blend-mode:screen; }
+          border-bottom:1px solid var(--line); background:var(--nav-bg); position:sticky; top:0;
+          z-index:10; backdrop-filter:blur(10px); }
+    /* The transparent cut of the logo: the flat one carries a white plate that
+       shows as a pale box on the dark page. */
+    .logo-img { height:60px; width:auto; display:block; }
+    body.dark .logo-img { filter:invert(1); }
     .back-link { font-size:13px; font-weight:600; color:var(--ink-soft); text-decoration:none;
-                 padding:8px 16px; border:1px solid var(--line); border-radius:20px; }
+                 padding:8px 16px; border:1px solid var(--line); border-radius:20px; transition:all .15s; }
     .back-link:hover { border-color:var(--gold); color:var(--gold); }
 
-    .wrap { max-width:560px; margin:0 auto; padding:40px 24px 90px; }
-    .badge-hero { width:82px; height:82px; margin:6px auto 18px; border-radius:22px; display:grid; place-items:center;
-                  font-size:40px; background:linear-gradient(135deg, var(--accent-bg), transparent);
-                  border:1px solid var(--line); box-shadow:var(--shadow); }
-    h1 { font-size:28px; font-weight:800; letter-spacing:-.02em; margin-bottom:8px; text-align:center; }
-    .sub { color:var(--ink-soft); text-align:center; margin-bottom:28px; }
+    .wrap { max-width:580px; margin:0 auto; padding:38px 24px 90px; }
+
+    /* ── where you are in the purchase ── */
+    .steps { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:26px; }
+    .step { display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:700; color:var(--muted); }
+    .step .n { width:22px; height:22px; border-radius:50%; display:grid; place-items:center;
+               font-size:11px; font-weight:800; border:1px solid var(--line); color:var(--muted); }
+    .step.done .n { background:var(--ok-bg); border-color:var(--ok-border); color:var(--ok); }
+    .step.done { color:var(--ink-soft); }
+    .step.now .n { background:linear-gradient(135deg, var(--gold-2), var(--gold)); border-color:transparent;
+                   color:#1a1300; box-shadow:0 4px 12px -3px var(--glow-gold); }
+    .step.now { color:var(--ink); }
+    .step-line { width:34px; height:2px; border-radius:2px; background:var(--line); }
+
+    .eyebrow { font-size:11px; font-weight:700; letter-spacing:.16em; text-transform:uppercase;
+               color:var(--gold); margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+    .eyebrow::before { content:''; width:22px; height:2px; border-radius:2px;
+               background:linear-gradient(90deg, var(--gold), transparent); }
+    h1 { font-size:29px; font-weight:800; letter-spacing:-.02em; margin-bottom:6px; }
+    .lede { color:var(--ink-soft); font-size:14.5px; margin-bottom:24px; }
+
     .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
-            padding:22px 24px; margin-bottom:18px; box-shadow:var(--shadow); }
-    .order-row { display:flex; justify-content:space-between; padding:8px 0; font-size:14.5px; }
+            padding:22px 26px; margin-bottom:20px; box-shadow:var(--shadow);
+            backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+            position:relative; overflow:hidden; }
+    .card.order::before { content:''; position:absolute; top:0; left:0; right:0; height:3px;
+            background:linear-gradient(90deg, var(--gold), var(--gold-2), transparent); }
+    .order-row { display:flex; justify-content:space-between; align-items:center; padding:7px 0; font-size:14.5px; }
     .order-row .label { color:var(--ink-soft); }
     .order-row .val { font-weight:700; }
     .total { display:flex; justify-content:space-between; align-items:baseline;
-             padding-top:13px; margin-top:5px; border-top:2px solid var(--line); }
-    .total .t-label { font-size:15px; font-weight:700; }
-    .total .t-val { font-size:24px; font-weight:800; font-variant-numeric:tabular-nums; }
+             padding-top:13px; margin-top:6px; border-top:2px solid var(--line); }
+    .total .t-label { font-size:15.5px; font-weight:700; }
+    .total .t-val { font-size:29px; font-weight:800; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+    .total .t-cur { font-size:14px; color:var(--muted); font-weight:600; }
 
     /* ── one button per way of paying ── */
-    .rail { width:100%; display:flex; gap:14px; align-items:flex-start; text-align:left; cursor:pointer;
-            background:var(--card); border:1px solid var(--line); border-radius:14px;
-            padding:18px 20px; margin-bottom:12px; color:inherit; font-family:inherit;
-            box-shadow:var(--shadow); transition:border-color .15s, transform .15s; }
-    .rail:hover { border-color:var(--gold); transform:translateY(-1px); }
-    .rail .ic { font-size:26px; line-height:1.1; }
-    .rail .rt { font-size:15.5px; font-weight:800; margin-bottom:2px; }
-    .rail .rd { font-size:13.5px; color:var(--ink-soft); line-height:1.5; }
-    .rail .tag { display:inline-block; font-size:11px; font-weight:800; letter-spacing:.04em;
-                 text-transform:uppercase; color:var(--ok); background:var(--ok-bg);
-                 border:1px solid var(--ok-border); border-radius:20px; padding:1px 9px; margin-left:7px;
-                 vertical-align:2px; }
-    .rail .go { margin-left:auto; align-self:center; font-size:19px; color:var(--muted); }
+    .rail-title { font-size:11px; font-weight:800; letter-spacing:.12em; text-transform:uppercase;
+                  color:var(--muted); margin:0 2px 11px; }
+    .rail { display:block; width:100%; text-align:left; cursor:pointer; font-family:inherit; color:inherit;
+            background:var(--card); border:1.5px solid var(--line); border-radius:14px;
+            padding:18px 20px; margin-bottom:12px; box-shadow:var(--shadow);
+            transition:border-color .15s, transform .15s, box-shadow .15s; }
+    .rail:hover, .rail:focus-visible { border-color:var(--gold); transform:translateY(-2px);
+            box-shadow:0 16px 34px -12px var(--glow-gold); outline:none; }
+    .rail-head { display:flex; align-items:center; gap:12px; margin-bottom:9px; }
+    .rail-head .go { margin-left:auto; font-size:19px; color:var(--muted); transition:transform .15s, color .15s; }
+    .rail:hover .go { color:var(--gold); transform:translateX(3px); }
+    .tag { font-size:10px; font-weight:800; letter-spacing:.05em; text-transform:uppercase;
+           color:var(--ok); background:var(--ok-bg); border:1px solid var(--ok-border);
+           border-radius:20px; padding:2px 9px; white-space:nowrap; }
+    .rail-body { font-size:13.5px; color:var(--ink-soft); line-height:1.55; margin-bottom:11px; }
+    .rail-foot { display:flex; align-items:center; gap:9px; flex-wrap:wrap;
+                 padding-top:11px; border-top:1px solid var(--line); }
+    .rail-foot .fl { font-size:11.5px; font-weight:600; color:var(--muted); }
 
     .promise { font-size:13px; color:var(--ink-soft); background:var(--accent-bg);
-               border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin:18px 0; }
+               border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin:20px 0 14px;
+               display:flex; gap:11px; align-items:flex-start; }
     .promise b { color:var(--ink); }
-    .foot { text-align:center; margin-top:14px; }
-    .foot a { font-size:13px; color:var(--ink-soft); text-decoration:none; border-bottom:1px solid var(--line); }
-    .foot a:hover { color:var(--gold); }
-    @media(max-width:540px){ h1{font-size:23px;} .card,.rail{padding:18px;} nav{padding:14px 18px;} }
-    @media (prefers-reduced-motion:reduce){ .rail:hover{transform:none;} }
+    .promise .sh { font-size:17px; line-height:1.2; flex:none; }
+    .trust { display:flex; align-items:center; justify-content:center; gap:7px; margin-top:14px;
+             font-size:12.5px; color:var(--muted); font-weight:600; text-align:center; }
+    .foot { text-align:center; margin-top:14px; font-size:12.5px; color:var(--muted); }
+    .foot a { color:var(--gold); text-decoration:none; }
+    .foot a:hover { text-decoration:underline; }
+
+    @media(max-width:540px){
+      h1{font-size:23px;} .card,.rail{padding:17px;} nav{padding:14px 18px;}
+      .steps{gap:6px;} .step-line{width:20px;} .step span:not(.n){display:none;}
+    }
+    @media (prefers-reduced-motion:reduce){ .rail:hover{transform:none;} .rail:hover .go{transform:none;} }
   </style>
+  {{ marks.styles() }}
 </head>
 <body>
   <script>
@@ -84,24 +132,32 @@
   </script>
 
   <nav>
-    <a href="/"><img src="/static/logo.png" alt="Tradeable" class="logo-img" onerror="this.style.display='none';" /></a>
+    <a href="/"><img src="/static/logo_t.png" alt="Tradeable Academy" class="logo-img" onerror="this.style.display='none';" /></a>
     <a href="/pricing" class="back-link" data-i18n="cpay.back">← Plans</a>
   </nav>
 
   <div class="wrap">
-    <div class="badge-hero">💳</div>
-    <h1 data-i18n="cpay.title">How would you like to pay?</h1>
-    <p class="sub" data-i18n="cpay.sub">Same price either way. Pick whichever is easiest for you.</p>
+    <div class="steps">
+      <span class="step done"><span class="n">✓</span><span data-i18n="pay.step1">Your order</span></span>
+      <span class="step-line"></span>
+      <span class="step now"><span class="n">2</span><span data-i18n="pay.step2">Payment</span></span>
+    </div>
 
-    <div class="card">
+    <div class="eyebrow" data-i18n="cpay.eyebrow">Payment</div>
+    <h1 data-i18n="cpay.title">How would you like to pay?</h1>
+    <p class="lede" data-i18n="cpay.sub">Same price either way. Pick whichever is easiest for you.</p>
+
+    <div class="card order">
       <div class="order-row"><span class="label" data-i18n="cpay.plan">Plan</span><span class="val">{{ plan_label }}</span></div>
       <div class="order-row"><span class="label" data-i18n="cpay.cycle">Billing</span>
         <span class="val">{% if order.billing_cycle == 'annual' %}<span data-i18n="cpay.annual">Annual</span>{% else %}<span data-i18n="cpay.monthly">Monthly</span>{% endif %}</span></div>
       <div class="total">
         <span class="t-label" data-i18n="cpay.total">Total</span>
-        <span class="t-val">${{ '%.2f'|format(order.final_price) }} USD</span>
+        <span><span class="t-val">${{ '%.2f'|format(order.final_price) }}</span> <span class="t-cur">USD</span></span>
       </div>
     </div>
+
+    <div class="rail-title" data-i18n="cpay.choose">Choose a payment method</div>
 
     <!-- One form per rail: no JavaScript decides where the money goes. -->
     {% for rail in rails %}
@@ -109,36 +165,42 @@
       <input type="hidden" name="method" value="{{ rail }}" />
       <button type="submit" class="rail">
         {% if rail == 'paypal' %}
-          <span class="ic">💳</span>
-          <span>
-            <span class="rt" data-i18n="cpay.ppTitle">Card or PayPal</span><span class="tag" data-i18n="cpay.instant">Instant</span>
-            <span class="rd" data-i18n="cpay.ppBody">Pay with a debit or credit card, or with your PayPal balance.
-              You don't need a PayPal account to pay by card. Your plan activates as soon as the payment goes through.</span>
+          <span class="rail-head">{{ marks.paypal() }}<span class="tag" data-i18n="cpay.instant">Instant</span><span class="go">→</span></span>
+          <span class="rail-body" data-i18n="cpay.ppBody">Pay with a debit or credit card, or with your PayPal balance.
+            You don't need a PayPal account to pay by card. Your plan activates as soon as the payment goes through.</span>
+          <span class="rail-foot">
+            <span class="fl" data-i18n="pay.accepted">Accepted:</span>
+            <span class="chiprow">{{ marks.visa() }}{{ marks.mastercard() }}{{ marks.amex() }}</span>
           </span>
         {% elif rail == 'crypto' %}
-          <span class="ic">🪙</span>
-          <span>
-            <span class="rt" data-i18n="cpay.cryptoTitle">USDT (crypto)</span>
-            <span class="rd" data-i18n="cpay.cryptoBody">Send USDT from Binance or any wallet. We show you the exact amount,
-              the network and the address; your plan activates on its own once the network confirms it.</span>
+          <span class="rail-head">{{ marks.usdt() }}<span class="go">→</span></span>
+          <span class="rail-body" data-i18n="cpay.cryptoBody">Send USDT from Binance or any wallet. We show you the exact amount,
+            the network and the address; your plan activates on its own once the network confirms it.</span>
+          <span class="rail-foot">
+            <span class="fl" data-i18n="cpay.sendFrom">Send from:</span>
+            <span class="chiprow">{{ marks.binance() }}{{ marks.trust_wallet() }}</span>
           </span>
         {% else %}
-          <span class="ic">💳</span>
-          <span>
-            <span class="rt" data-i18n="cpay.cardTitle">Debit or credit card</span><span class="tag" data-i18n="cpay.instant">Instant</span>
-            <span class="rd" data-i18n="cpay.cardBody">Pay by card on a secure page. We never see or store your card number.</span>
+          <span class="rail-head">
+            <span class="chiprow">{{ marks.visa() }}{{ marks.mastercard() }}</span>
+            <span class="tag" data-i18n="cpay.instant">Instant</span><span class="go">→</span>
           </span>
+          <span class="rail-body" data-i18n="cpay.cardBody">Pay by card on a secure page. We never see or store your card number.</span>
         {% endif %}
-        <span class="go">→</span>
       </button>
     </form>
     {% endfor %}
 
     <div class="promise">
-      <b data-i18n="cpay.promiseTitle">Our commitment:</b>
-      <span data-i18n="cpay.promiseBody">if you pay and your plan is not active within {h} hours, we activate it
-        manually or refund you in full. Prices are always in USD, whichever method you choose.</span>
+      <span class="sh">🛡️</span>
+      <span>
+        <b data-i18n="cpay.promiseTitle">Our commitment:</b>
+        <span data-i18n="cpay.promiseBody">if you pay and your plan is not active within {h} hours, we activate it
+          manually or refund you in full. Prices are always in USD, whichever method you choose.</span>
+      </span>
     </div>
+
+    <div class="trust">{{ marks.lock() }}<span data-i18n="pay.noCard">We never see or store your card details</span></div>
 
     <div class="foot">
       <a href="/checkout/status/{{ order.id }}" data-i18n="cpay.later">I'll pay later — show me my order</a>
