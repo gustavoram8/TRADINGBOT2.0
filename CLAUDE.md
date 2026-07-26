@@ -532,8 +532,28 @@ canales creados por el mentor (lockeables = solo-mentor/anuncios), chat con repl
 carpetas/videos/canales, responder, pin/delete. Modelos: MentorshipFolder/Video/VideoComment/Question/
 Channel/Message/MsgReaction/Progress/LiveState (create_all los crea). CTA "Entrar al área" en
 checkout success (solo library/combo). E2E test_client: 44 checks verdes (gates, CRUD, cascade
-delete, lock, pin, rate-limits). **PENDIENTE:** hosting real de video (Bunny Stream — hoy el mentor
-pega URLs), subida de archivos, notificaciones email de respuestas.
+delete, lock, pin, rate-limits).
+
+**🔴 PENDIENTE DECIDIDO — BUNNY STREAM (decisión tomada 2026-07-26, ejecución DIFERIDA por el
+usuario).** El hosting de video definitivo **es Bunny**, no YouTube: el usuario confirmó que puede
+pagarlo sin problema (~$1-3/mes al arranque, ~$13 con 20 alumnos; sin cuota fija, saldo prepago que
+se consume como la API de OpenAI). **Motivos de la decisión:** (1) YouTube **modera** — educación
+financiera con operativas puede recibir strike y se caen TODAS las clases a la vez; Bunny no mira el
+contenido; (2) el link "no listado" es público e irrevocable (un alumno lo filtra y el curso de $350
+queda gratis); en Bunny el acceso se firma por usuario y vence; (3) marca/publicidad de YouTube dentro
+de una academia premium. **Orden pedido por el usuario:** primero Fases A→B→C→D del área, y **recién
+al final se conecta Bunny**. Mientras tanto el mentor carga links de YouTube **solo para probar** —
+⚠️ **NO subir las clases reales de Gabriel a YouTube**, habría que resubir todo a mano al migrar.
+**Ya está preparado:** `MentorshipVideo.source` (`youtube`/`file`/`embed`) + `provider_id` + `thumb_url`
+se clasifican server-side en `_video_meta_from_url()`; agregar Bunny = un valor más + una rama en
+`playerFor()`. Lo específico de YouTube son ~8 líneas. **Falta:** cuenta Bunny + Stream Library +
+claves por env var (patrón OpenAI/Stripe, NUNCA en el repo) + subida arrastrar-y-soltar directa del
+navegador a Bunny (TUS/direct upload, no pasa por el VPS) + duración/miniatura automáticas + URLs
+firmadas. ⚠️ **Al conectarlo hay que corregir los T&C Secc. 19**: hoy promete "solo streaming, sin
+descargas", lo cual con YouTube/mp4 es técnicamente falso — reformular como obligación del alumno
+(prohibido descargar/redistribuir/compartir enlaces), no como promesa técnica.
+
+**PENDIENTE (resto):** subida de archivos, notificaciones email de respuestas.
 
 **✅ FORO "RAYGUN MARK II" — Communities + Follows + DMs (2026-07-26).** Boost estilo Instagram
 para el foro (Standard+Premium). **Backend:** `ForumCommunity/Member/Follow/DM` + `ForumPost.

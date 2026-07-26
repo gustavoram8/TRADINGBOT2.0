@@ -164,6 +164,62 @@
     .ma-ok{font-size:12px;color:#8ee6a8;margin-top:7px;display:none}
     .ma-ok.on{display:block}
     .ma-back{background:none;border:0;color:var(--gold);font:700 12px Inter,sans-serif;cursor:pointer;padding:0 0 12px}
+    /* ── campus header ── */
+    .ma-hero{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center;
+      border:1px solid var(--line);border-radius:18px;padding:20px 22px;margin-bottom:8px;
+      background:linear-gradient(120deg,rgba(224,168,61,.10),rgba(255,255,255,.02))}
+    @media(max-width:640px){.ma-hero{grid-template-columns:1fr;text-align:center;justify-items:center}}
+    .ma-ring{width:94px;height:94px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto}
+    .ma-ring b{font:800 21px Inter,sans-serif;color:var(--ink)}
+    .ma-ring span{display:block;font-size:9.5px;letter-spacing:.14em;color:var(--faint);text-align:center}
+    .ma-hey{font:600 20px/1.25 Fraunces,serif;color:var(--ink);margin:0 0 4px}
+    .ma-hey em{color:var(--gold-bright);font-style:italic}
+    .ma-hsub{font-size:12.5px;color:var(--muted);margin:0 0 12px}
+    .ma-stats{display:flex;gap:9px;flex-wrap:wrap}
+    .ma-stat{border:1px solid var(--line);border-radius:11px;padding:7px 13px;background:rgba(255,255,255,.03)}
+    .ma-stat b{display:block;font:800 15px Inter,sans-serif;color:var(--gold-bright)}
+    .ma-stat span{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+    .ma-answer{border:1px solid rgba(224,168,61,.35);border-radius:13px;padding:12px 15px;margin:14px 0 0;
+      background:rgba(224,168,61,.05)}
+    .ma-answer .q{font-size:12px;color:var(--faint);margin-bottom:4px}
+    .ma-answer .a{font-size:13px;color:var(--ink);line-height:1.55}
+    /* ── learning path ── */
+    .ma-path{position:relative;margin-top:6px;padding-left:30px}
+    .ma-path::before{content:'';position:absolute;left:11px;top:8px;bottom:8px;width:2px;
+      background:linear-gradient(180deg,var(--gold),rgba(224,168,61,.12))}
+    .ma-step{position:relative;margin-bottom:11px}
+    .ma-step::before{content:attr(data-n);position:absolute;left:-30px;top:14px;width:24px;height:24px;
+      border-radius:50%;display:grid;place-items:center;font:800 11px Inter,sans-serif;
+      background:#161a22;border:2px solid var(--line);color:var(--faint)}
+    .ma-step.started::before{border-color:var(--gold);color:var(--gold-bright)}
+    .ma-step.full::before{content:'✓';background:var(--gold);border-color:var(--gold);color:#1a1205}
+    /* ── chapters ── */
+    .ma-chaps{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 2px}
+    .ma-chap{border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--muted);
+      border-radius:999px;padding:5px 11px;font:600 11.5px Inter,sans-serif;cursor:pointer}
+    .ma-chap:hover{border-color:var(--gold);color:var(--ink)}
+    .ma-chap b{color:var(--gold-bright);font-weight:800;margin-right:5px}
+    /* ── attachments ── */
+    .ma-att{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:11px;
+      padding:9px 12px;margin-bottom:7px;background:rgba(255,255,255,.025);font-size:13px;color:var(--ink)}
+    .ma-att .ic{font-size:16px}
+    .ma-att .nm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .ma-att .sz{font-size:11px;color:var(--faint)}
+    .ma-att a,.ma-att button{font:700 11.5px Inter,sans-serif;text-decoration:none;cursor:pointer;
+      border:1px solid var(--line);background:transparent;color:var(--gold-bright);border-radius:8px;padding:5px 10px}
+    .ma-att a:hover,.ma-att button:hover{border-color:var(--gold)}
+    .ma-att .del{color:#ff8296}
+    /* ── notes + comment timestamp ── */
+    .ma-subtabs{display:flex;gap:6px;margin:16px 0 10px;border-bottom:1px solid var(--line)}
+    .ma-subtab{background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);
+      font:700 11.5px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:8px 10px;cursor:pointer}
+    .ma-subtab.on{color:var(--gold-bright);border-bottom-color:var(--gold)}
+    .ma-sub{display:none}.ma-sub.on{display:block}
+    .ma-atbox{display:flex;align-items:center;gap:7px;margin-bottom:8px;font-size:12px;color:var(--muted)}
+    .ma-atbox input{width:74px;text-align:center;padding:7px 8px}
+    .ma-atbox button{padding:6px 10px;font-size:11.5px}
+    .ma-cmt .row .at{color:var(--gold-bright);font-weight:800;font-size:11.5px;cursor:pointer;margin-right:6px}
+    .ma-note-save{font-size:11.5px;color:var(--faint);margin-top:6px;min-height:15px}
   </style>
 </head>
 <body>
@@ -199,10 +255,12 @@
 
     <!-- HOME -->
     <section class="ma-view on" id="v-home">
+      <div id="ma-hero"></div>
+      <div id="ma-answer"></div>
       <div id="ma-continue"></div>
       <div class="ma-sec" data-i18n="ma.latest">Latest uploads</div>
       <div id="ma-latest"></div>
-      <div class="ma-sec" data-i18n="ma.modules">Modules</div>
+      <div class="ma-sec" data-i18n="ma.path">Your path</div>
       <div id="ma-folders-home"></div>
     </section>
 
@@ -374,14 +432,74 @@
         <button class="ma-btn ghost" id="ma-v-done"></button>
         {% if is_mentor %}<button class="ma-btn ghost" id="ma-v-del">🗑</button>{% endif %}
       </div>
+      <div class="ma-chaps" id="ma-v-chaps"></div>
       <div class="ma-desc" id="ma-v-desc"></div>
-      <div class="ma-cmt">
-        <div class="ma-sec" style="margin-top:0" data-i18n="ma.comments">Comments</div>
-        <div id="ma-v-comments"></div>
-        <div style="display:flex;gap:8px;margin-top:10px">
-          <input class="ma-input" id="ma-cmt-in" maxlength="1000" data-i18n-ph="ma.cmtPh" placeholder="Add a comment…"/>
-          <button class="ma-btn" id="ma-cmt-send" data-i18n="ma.send">Send</button>
+
+      <div class="ma-subtabs">
+        <button class="ma-subtab on" data-sub="cmt" data-i18n="ma.comments">Comments</button>
+        <button class="ma-subtab" data-sub="note" data-i18n="ma.notes">My notes</button>
+        <button class="ma-subtab" data-sub="mat" data-i18n="ma.material">Material</button>
+      </div>
+
+      <div class="ma-sub on" id="sub-cmt">
+        <div class="ma-cmt" style="border:0;margin:0;padding:0">
+          <div id="ma-v-comments"></div>
+          <div class="ma-atbox">
+            <span data-i18n="ma.atMin">Minute</span>
+            <input class="ma-input" id="ma-cmt-at" maxlength="8" placeholder="12:30"/>
+            <button class="ma-btn ghost" id="ma-cmt-now" data-i18n="ma.useNow">Use current</button>
+          </div>
+          <div style="display:flex;gap:8px">
+            <input class="ma-input" id="ma-cmt-in" maxlength="1000" data-i18n-ph="ma.cmtPh" placeholder="Add a comment…"/>
+            <button class="ma-btn" id="ma-cmt-send" data-i18n="ma.send">Send</button>
+          </div>
         </div>
+      </div>
+
+      <div class="ma-sub" id="sub-note">
+        <div class="ma-note" style="font-size:12px;color:var(--faint);margin:0 0 8px" data-i18n="ma.notesHelp">
+          Private to you — the mentor never sees them.</div>
+        <textarea class="ma-input" id="ma-note-in" rows="7" data-i18n-ph="ma.notesPh"
+                  placeholder="Your notes on this class…"></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+          <button class="ma-btn" id="ma-note-save" data-i18n="ma.save">Save</button>
+          <button class="ma-btn ghost" id="ma-note-stamp" data-i18n="ma.stamp">Insert minute</button>
+          <span class="ma-note-save" id="ma-note-msg"></span>
+        </div>
+      </div>
+
+      <div class="ma-sub" id="sub-mat">
+        <div id="ma-v-atts"></div>
+        {% if is_mentor %}
+        <div class="ma-panel" style="margin-top:12px">
+          <h5>Agregar material a esta clase</h5>
+          <div class="ma-mrow">
+            <div>
+              <input class="ma-input" id="mt-a-title" placeholder="Nombre del material" maxlength="160"/>
+              <span class="ma-fh">Cómo lo va a ver el alumno.</span>
+            </div>
+            <div>
+              <input class="ma-input" id="mt-a-file" type="file" accept=".pdf,image/png,image/jpeg,image/webp"/>
+              <span class="ma-fh">PDF o imagen, hasta 10 MB.</span>
+            </div>
+            <div>
+              <input class="ma-input" id="mt-a-url" placeholder="…o pegá un enlace" maxlength="500"/>
+              <span class="ma-fh">Alternativa al archivo.</span>
+            </div>
+          </div>
+          <button class="ma-btn" id="mt-a-add">Adjuntar</button>
+          <button class="ma-btn ghost" id="mt-a-board">📐 Adjuntar mi pizarrón actual</button>
+          <h5 style="margin-top:18px">Capítulos de esta clase</h5>
+          <textarea class="ma-input" id="mt-a-chaps" rows="4"
+            placeholder="0:00 Contexto&#10;4:12 La entrada&#10;9:30 Gestión"></textarea>
+          <span class="ma-fh">Un capítulo por línea: <b>minuto</b> y después el nombre. El alumno los
+            ve como botones y salta directo a ese punto del video.</span>
+          <div><button class="ma-btn" id="mt-a-chaps-save">Guardar capítulos</button></div>
+          <div class="ma-note">El pizarrón se toma del Chalkboard de esta misma cuenta (lo último que
+            dibujaste). El alumno va a poder copiarlo a su propio Chalkboard para practicar encima.</div>
+          <div class="ma-ok" id="mt-a-ok">✓ Material agregado</div>
+        </div>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -461,6 +579,31 @@
       });
     });
 
+    function fmtTs(sec){
+      sec=Math.max(0,Math.floor(sec||0));
+      var h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60), x=sec%60;
+      return h? (h+':'+String(m).padStart(2,'0')+':'+String(x).padStart(2,'0'))
+              : (m+':'+String(x).padStart(2,'0'));
+    }
+    function parseTs(t){
+      t=(t||'').trim(); if(!t) return null;
+      var p=t.split(':'), n=0;
+      for(var i=0;i<p.length;i++){ var v=parseInt(p[i],10); if(isNaN(v)||v<0) return null; n=n*60+v; }
+      return (p.length<=3 && n<86400)? n : null;
+    }
+    /* Current position: a real <video> tells us; a third-party iframe cannot, so
+       there the member types the minute (and with Bunny this becomes automatic). */
+    function playerTime(){
+      var v=document.querySelector('#ma-player video');
+      return v? Math.floor(v.currentTime||0) : null;
+    }
+    function seekTo(sec){
+      var v=document.querySelector('#ma-player video');
+      if(v){ v.currentTime=sec; v.play&&v.play().catch(function(){}); return; }
+      /* iframe: remount at the requested second */
+      if(state.video){ el('ma-player').innerHTML=playerFor(state.video.video_url,true,sec); startWm(); }
+    }
+
     /* Watermark: floats the viewer's username over the player and hops around
        every few seconds so it can't be cropped or covered by one sticker. */
     function stopWm(){ if(state.wmTimer){ clearInterval(state.wmTimer); state.wmTimer=null; } }
@@ -492,15 +635,16 @@
     }
 
     /* video url → player node */
-    function playerFor(url,autoplay){
+    function playerFor(url,autoplay,startAt){
       var u=url||'';
       var m=u.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|live\/)|youtu\.be\/)([\w-]{6,})/);
       /* youtube-nocookie + minimal chrome; related videos limited to the channel */
       if(m) return '<iframe src="https://www.youtube-nocookie.com/embed/'+m[1]
         +'?rel=0&modestbranding=1&playsinline=1'+(autoplay?'&autoplay=1':'')
+        +(startAt?'&start='+startAt:'')
         +'" allow="autoplay; fullscreen" allowfullscreen></iframe>';
       if(/\.(mp4|webm|m3u8)(\?|$)/i.test(u)) return '<video controls controlsList="nodownload"'
-        +(autoplay?' autoplay':'')+' src="'+esc(u)+'"></video>';
+        +(autoplay?' autoplay':'')+' src="'+esc(u)+(startAt?'#t='+startAt:'')+'"></video>';
       return '<iframe src="'+esc(u)+'" allow="autoplay; fullscreen" allowfullscreen></iframe>';
     }
     function kindLabel(k){ return k==='live'?'LIVE REC':(k==='backtest'?'BACKTEST':'CLASS'); }
@@ -513,6 +657,39 @@
     function vCard(v){
       return '<div class="ma-card" data-vid="'+v.id+'"><h4>'+(v.kind==='live'?'🔴':'🎬')+' '+esc(v.title)+'</h4>'
         +'<p>'+(v.duration_min?v.duration_min+' min · ':'')+v.comment_count+' 💬'+(v.done?' · ✓':'')+'</p></div>';
+    }
+
+    /* The four things that justify a monthly membership, on one screen: how far
+       along you are, what is new, what is coming, and the mentor's last answer. */
+    function renderHero(d){
+      var st=d.stats||{videos:0,done:0,new_week:0,minutes:0,modules:0};
+      var pct=st.videos?Math.round(100*st.done/st.videos):0;
+      var deg=Math.round(pct*3.6);
+      var hours=Math.round((st.minutes||0)/60);
+      el('ma-hero').innerHTML=
+        '<div class="ma-hero"><div class="ma-ring" style="background:conic-gradient(var(--gold) '+deg+'deg,rgba(255,255,255,.07) 0)">'
+        +'<div style="width:78px;height:78px;border-radius:50%;background:#12141b;display:grid;place-items:center">'
+        +'<div><b>'+pct+'%</b><span>'+esc(T('ma.progress','progress'))+'</span></div></div></div>'
+        +'<div><h3 class="ma-hey">'+esc(T('ma.hi','Hi'))+' <em>'+esc(ME)+'</em></h3>'
+        +'<p class="ma-hsub">'+esc(
+            st.videos ? (st.done+' / '+st.videos+' '+T('ma.classesDone','classes completed'))
+                      : T('ma.noneYet','Your material will show up here.'))+'</p>'
+        +'<div class="ma-stats">'
+        +'<div class="ma-stat"><b>'+st.modules+'</b><span>'+esc(T('ma.stModules','modules'))+'</span></div>'
+        +'<div class="ma-stat"><b>'+st.videos+'</b><span>'+esc(T('ma.stClasses','classes'))+'</span></div>'
+        +'<div class="ma-stat"><b>'+hours+' h</b><span>'+esc(T('ma.stHours','material'))+'</span></div>'
+        +(st.new_week?'<div class="ma-stat"><b>'+st.new_week+'</b><span>'+esc(T('ma.stNew','new this week'))+'</span></div>':'')
+        +'</div></div></div>';
+      el('ma-answer').innerHTML = d.last_answer
+        ? '<div class="ma-answer"><div class="q">'+esc(T('ma.yourQ','Your question'))+': '+esc(d.last_answer.body)+'</div>'
+          +'<div class="a"><b style="color:#ff8296;font-size:11px;letter-spacing:.08em">MENTOR</b> — '+esc(d.last_answer.answer)+'</div></div>'
+        : '';
+    }
+    function pathHtml(folders){
+      return '<div class="ma-path">'+folders.map(function(f,i){
+        var cls=f.videos&&f.done>=f.videos?'full':(f.done>0?'started':'');
+        return '<div class="ma-step '+cls+'" data-n="'+(i+1)+'">'+folderCard(f)+'</div>';
+      }).join('')+'</div>';
     }
 
     /* An empty screen must say what is missing and — for the mentor — how to
@@ -554,9 +731,9 @@
                     IS_MENTOR?'Creá un módulo y publicale la primera clase — al alumno le aparece acá como novedad.'
                              :T('ma.voidNewB','As soon as the mentor uploads the first class it will appear here.'),
                     'Ir a publicar →');
+        renderHero(d);
         el('ma-folders-home').innerHTML=state.folders.length
-          ? '<div class="ma-grid">'+state.folders.map(folderCard).join('')+'</div>'
-          : modulesVoid();
+          ? pathHtml(state.folders) : modulesVoid();
         if(IS_MENTOR){ fillFolderSelect(); }
         if(window.ImproveI18N&&window.ImproveI18N.apply) window.ImproveI18N.apply(window.ImproveI18N.current());
       });
@@ -572,9 +749,7 @@
     function renderClassesRoot(){
       var root=el('ma-classes-root');
       if(state.openFolder){ return openFolder(state.openFolder); }
-      root.innerHTML=state.folders.length
-        ? '<div class="ma-grid">'+state.folders.map(folderCard).join('')+'</div>'
-        : modulesVoid();
+      root.innerHTML=state.folders.length ? pathHtml(state.folders) : modulesVoid();
     }
     function openFolder(fid){
       state.openFolder=fid;
@@ -590,6 +765,58 @@
         el('ma-fback').addEventListener('click',function(){state.openFolder=null;renderClassesRoot();});
       });
     }
+    /* ── support material ── */
+    function attIcon(a){ return a.kind==='board'?'📐':(a.kind==='image'?'🖼️':(a.kind==='link'?'🔗':'📄')); }
+    function attHtml(list){
+      if(!list||!list.length) return '<div class="ma-empty">'+esc(T('ma.noMaterial','No support material for this class.'))+'</div>';
+      return list.map(function(a){
+        var act = a.kind==='link'
+          ? '<a href="'+esc(a.url)+'" target="_blank" rel="noopener">'+esc(T('ma.open','Open'))+'</a>'
+          : (a.kind==='board'
+              ? '<button data-board="'+a.id+'">'+esc(T('ma.toBoard','Copy to my Chalkboard'))+'</button>'
+              : '<a href="/api/ment/attachment/'+a.id+'/download" target="_blank">'+esc(T('ma.get','Download'))+'</a>');
+        var sz = a.size? '<span class="sz">'+Math.max(1,Math.round(a.size/1024))+' KB</span>' : '';
+        return '<div class="ma-att"><span class="ic">'+attIcon(a)+'</span>'
+          +'<span class="nm">'+esc(a.title)+'</span>'+sz+act
+          +(IS_MENTOR?'<button class="del" data-attdel="'+a.id+'">🗑</button>':'')+'</div>';
+      }).join('');
+    }
+    /* Chalkboard lives in /app but shares this origin, so its localStorage is
+       reachable from here: the mentor captures his board, the member gets a COPY
+       appended to theirs (never overwriting what they already drew). */
+    var BOARD_KEY='scalperBoard';
+    function readBoard(){
+      try { var raw=localStorage.getItem(BOARD_KEY); if(!raw) return null;
+            var d=JSON.parse(raw); return (d&&d.slides&&d.slides.length)?d:null; } catch(e){ return null; }
+    }
+    function appendBoard(board){
+      var mine=readBoard()||{slides:[],cur:0};
+      var at=mine.slides.length;
+      mine.slides=mine.slides.concat(board.slides||[]);
+      mine.cur=at;
+      try { localStorage.setItem(BOARD_KEY,JSON.stringify(mine)); return true; } catch(e){ return false; }
+    }
+    document.addEventListener('click',function(e){
+      var b=e.target.closest('[data-board]');
+      if(b){
+        J('/api/ment/attachment/'+b.dataset.board+'/board').then(function(d){
+          if(!d.ok||!d.board){ alert(T('ma.boardFail','The board could not be loaded.')); return; }
+          if(appendBoard(d.board)){
+            if(confirm(T('ma.boardOk','Copied to your Chalkboard as new slides. Open it now?')))
+              window.location.href='/app#scalper';
+          } else alert(T('ma.boardFull','There is no space left in this browser to copy the board.'));
+        });
+        return;
+      }
+      var dl=e.target.closest('[data-attdel]');
+      if(dl && IS_MENTOR){
+        if(!confirm('¿Eliminar este material?')) return;
+        P('/api/ment/admin/attachment/'+dl.dataset.attdel+'/delete').then(function(){
+          if(state.video) openVideo(state.video.id);
+        });
+      }
+    });
+
     /* video modal */
     function openVideo(vid){
       J('/api/ment/video/'+vid).then(function(d){
@@ -602,8 +829,21 @@
         el('ma-v-desc').textContent=v.description||'';
         setDoneBtn(v.done);
         el('ma-v-comments').innerHTML=(d.comments||[]).map(function(c){
-          return '<div class="row'+(c.is_mentor?' mentor':'')+'"><b>'+esc(c.author)+(c.is_mentor?' · MENTOR':'')+'</b> — '+esc(c.body)+'</div>';
+          var at=c.at_sec!=null?'<span class="at" data-seek="'+c.at_sec+'">'+esc(c.at)+'</span>':'';
+          return '<div class="row'+(c.is_mentor?' mentor':'')+'">'+at+'<b>'+esc(c.author)+(c.is_mentor?' · MENTOR':'')+'</b> — '+esc(c.body)+'</div>';
         }).join('')||'<div class="ma-empty" data-i18n="ma.firstComment">Be the first to comment.</div>';
+        /* chapters */
+        el('ma-v-chaps').innerHTML=(v.chapters||[]).map(function(c){
+          return '<button class="ma-chap" data-seek="'+c.t+'"><b>'+esc(c.ts)+'</b>'+esc(c.label)+'</button>';
+        }).join('');
+        /* material + private notes */
+        el('ma-v-atts').innerHTML=attHtml(v.attachments);
+        el('ma-cmt-at').value=''; el('ma-note-msg').textContent='';
+        el('ma-note-in').value='';
+        J('/api/ment/video/'+vid+'/note').then(function(n){ el('ma-note-in').value=n.body||''; });
+        showSub('cmt');
+        if(IS_MENTOR && el('mt-a-chaps'))
+          el('mt-a-chaps').value=(v.chapters||[]).map(function(c){return c.ts+' '+c.label;}).join('\n');
         el('ma-ov').classList.add('on');
       });
     }
@@ -620,9 +860,44 @@
     });
     el('ma-ov-close').addEventListener('click',function(){
       stopWm(); el('ma-ov').classList.remove('on'); el('ma-player').innerHTML=''; });
+    el('ma-ov').addEventListener('click',function(e){
+      var sk=e.target.closest('[data-seek]');
+      if(sk){ seekTo(parseInt(sk.dataset.seek,10)||0); }
+    });
+    /* modal sub-tabs */
+    function showSub(name){
+      document.querySelectorAll('.ma-subtab').forEach(function(b){ b.classList.toggle('on',b.dataset.sub===name); });
+      document.querySelectorAll('.ma-sub').forEach(function(p){ p.classList.toggle('on',p.id==='sub-'+name); });
+    }
+    document.querySelectorAll('.ma-subtab').forEach(function(b){
+      b.addEventListener('click',function(){ showSub(b.dataset.sub); });
+    });
+    /* comment timestamp helpers */
+    el('ma-cmt-now').addEventListener('click',function(){
+      var t=playerTime();
+      if(t===null){ alert(T('ma.noAuto','Type the minute by hand — the external player does not report its position.')); return; }
+      el('ma-cmt-at').value=fmtTs(t);
+    });
+    /* private notes */
+    el('ma-note-save').addEventListener('click',function(){
+      if(!state.video) return;
+      P('/api/ment/video/'+state.video.id+'/note',{body:el('ma-note-in').value}).then(function(d){
+        el('ma-note-msg').textContent = d.ok? T('ma.saved','Saved') : '';
+        setTimeout(function(){ el('ma-note-msg').textContent=''; },2500);
+      });
+    });
+    el('ma-note-stamp').addEventListener('click',function(){
+      var t=playerTime();
+      var stamp=(t===null?'':fmtTs(t)+' — ');
+      var ta=el('ma-note-in');
+      ta.value += (ta.value && !/\n$/.test(ta.value) ? '\n' : '') + stamp;
+      ta.focus();
+    });
     el('ma-cmt-send').addEventListener('click',function(){
       var t=el('ma-cmt-in').value.trim(); if(t.length<2) return;
-      P('/api/ment/video/'+state.video.id+'/comment',{body:t}).then(function(d){ if(d.ok){ el('ma-cmt-in').value=''; openVideo(state.video.id);} });
+      var at=parseTs(el('ma-cmt-at').value);
+      P('/api/ment/video/'+state.video.id+'/comment',{body:t,at:at}).then(function(d){
+        if(d.ok){ el('ma-cmt-in').value=''; el('ma-cmt-at').value=''; openVideo(state.video.id);} });
     });
     /* delegate clicks on cards/rows */
     document.addEventListener('click',function(e){
@@ -792,6 +1067,40 @@
         P('/api/ment/admin/channel',{name:el('mt-c-name').value,emoji:el('mt-c-emoji').value,locked:el('mt-c-locked').checked})
           .then(function(d){ if(d.ok){ el('mt-c-name').value=''; flash('mt-c-ok'); loadChannels(); }
                              else warn(d,'No se pudo crear el canal.'); });
+      });
+      /* material for the class open in the modal */
+      el('mt-a-add').addEventListener('click',function(){
+        if(!state.video) return;
+        var title=el('mt-a-title').value.trim();
+        var f=el('mt-a-file').files[0];
+        var url=el('mt-a-url').value.trim();
+        var done=function(d){
+          if(d.ok){ el('mt-a-title').value=''; el('mt-a-file').value=''; el('mt-a-url').value='';
+                    flash('mt-a-ok'); openVideo(state.video.id); }
+          else alert({too_large:'El archivo pasa los 10 MB.',format:'Solo PDF o imagen (PNG/JPG/WebP).',
+                      invalid:'Revisá el nombre y el enlace.'}[d.error]||'No se pudo adjuntar.');
+        };
+        if(f){
+          var fd=new FormData();
+          fd.append('video_id',state.video.id); fd.append('title',title); fd.append('file',f);
+          fetch('/api/ment/admin/attachment',{method:'POST',body:fd}).then(function(r){return r.json();}).then(done);
+        } else if(url){
+          P('/api/ment/admin/attachment',{video_id:state.video.id,kind:'link',title:title,url:url}).then(done);
+        } else alert('Elegí un archivo o pegá un enlace.');
+      });
+      el('mt-a-chaps-save').addEventListener('click',function(){
+        if(!state.video) return;
+        P('/api/ment/admin/video/'+state.video.id+'/chapters',{raw:el('mt-a-chaps').value})
+          .then(function(d){ if(d.ok){ flash('mt-a-ok'); openVideo(state.video.id); } });
+      });
+      el('mt-a-board').addEventListener('click',function(){
+        if(!state.video) return;
+        var b=readBoard();
+        if(!b){ alert('No hay nada dibujado en tu Chalkboard todavía. Abrí /app → Chalkboard, dibujá y volvé.'); return; }
+        var title=el('mt-a-title').value.trim()||('Pizarrón — '+state.video.title);
+        P('/api/ment/admin/attachment',{video_id:state.video.id,kind:'board',title:title,board:b})
+          .then(function(d){ if(d.ok){ el('mt-a-title').value=''; flash('mt-a-ok'); openVideo(state.video.id); }
+                             else alert(d.error==='bad_board'?'El pizarrón está vacío o es demasiado grande.':'No se pudo adjuntar.'); });
       });
       el('mt-wm').addEventListener('change',function(){
         P('/api/ment/admin/settings',{watermark:el('mt-wm').checked}).then(function(d){

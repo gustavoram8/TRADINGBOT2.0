@@ -37,3 +37,6 @@ Thumbs.db
 # Reports output
 reports/*.txt
 reports/*.pdf
+
+# Mentorship support material (member-only files, served through a gated route)
+scalpel/private_uploads/

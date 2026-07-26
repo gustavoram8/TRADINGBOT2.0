@@ -15,7 +15,7 @@ from functools import wraps
 from datetime import datetime, timedelta, timezone
 
 from flask import (
-    Flask, render_template, request, jsonify,
+    Flask, render_template, request, jsonify, send_file,
     redirect, url_for, abort, make_response, session, has_request_context
 )
 from flask_sqlalchemy import SQLAlchemy
@@ -762,6 +762,9 @@ class MentorshipVideo(db.Model):
     source = db.Column(db.String(12), default='embed', nullable=True)
     thumb_url = db.Column(db.String(500), nullable=True)     # cover shown before play
     provider_id = db.Column(db.String(120), nullable=True)   # youtube id / future bunny guid
+    # JSON list of {"t": seconds, "label": "..."} — makes a 90-minute recording
+    # navigable instead of a wall of video.
+    chapters = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
 
 
@@ -770,8 +773,39 @@ class MentorshipVideoComment(db.Model):
     video_id = db.Column(db.Integer, db.ForeignKey('mentorship_video.id'), nullable=False, index=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
     body = db.Column(db.String(1000), nullable=False)
+    # Second of the video this comment is about. The whole point of the feature:
+    # "why did you exit at 12:30?" is answerable, "why did you exit?" is not.
+    at_sec = db.Column(db.Integer, nullable=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     user = db.relationship('User')
+
+
+class MentorshipNote(db.Model):
+    """One private notebook per member per class. Never shown to anyone else,
+    not even the mentor — it is the student's own scratchpad."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    video_id = db.Column(db.Integer, db.ForeignKey('mentorship_video.id'), nullable=False, index=True)
+    body = db.Column(db.Text, nullable=True)
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class MentorshipAttachment(db.Model):
+    """Support material hanging off a class or a whole module: a PDF, an image,
+    an external link, or a Chalkboard project the student can copy into their own
+    board. Files are stored OUTSIDE /static and served through a member-gated
+    route, so a leaked path is not a public download."""
+    id = db.Column(db.Integer, primary_key=True)
+    video_id = db.Column(db.Integer, db.ForeignKey('mentorship_video.id'), nullable=True, index=True)
+    folder_id = db.Column(db.Integer, db.ForeignKey('mentorship_folder.id'), nullable=True, index=True)
+    kind = db.Column(db.String(10), nullable=False)          # file / image / link / board
+    title = db.Column(db.String(160), nullable=False)
+    filename = db.Column(db.String(200), nullable=True)      # stored name (file/image)
+    mime = db.Column(db.String(80), nullable=True)
+    size = db.Column(db.Integer, nullable=True)
+    url = db.Column(db.String(500), nullable=True)           # kind=link
+    payload = db.Column(db.Text, nullable=True)              # kind=board: the board JSON
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
 
 
 class MentorshipQuestion(db.Model):
@@ -2476,6 +2510,78 @@ def _video_meta_from_url(url):
     return 'embed', None, None
 
 
+MENT_ATTACH_DIR = os.path.join(BASE_DIR, 'private_uploads', 'mentorship')
+MENT_ATTACH_MIME = {'application/pdf': ('file', 'pdf'), 'image/png': ('image', 'png'),
+                    'image/jpeg': ('image', 'jpg'), 'image/jpg': ('image', 'jpg'),
+                    'image/webp': ('image', 'webp')}
+MENT_ATTACH_MAX = 10 * 1024 * 1024
+MENT_BOARD_MAX = 2 * 1024 * 1024          # a Chalkboard project as JSON
+
+
+def _fmt_ts(sec):
+    sec = max(0, int(sec or 0))
+    h, rem = divmod(sec, 3600)
+    m, sc = divmod(rem, 60)
+    return ('%d:%02d:%02d' % (h, m, sc)) if h else ('%d:%02d' % (m, sc))
+
+
+def _parse_ts(txt):
+    """'4:12' / '1:04:12' / '92' -> seconds, or None."""
+    txt = (txt or '').strip()
+    if not txt:
+        return None
+    parts = txt.split(':')
+    try:
+        nums = [int(p) for p in parts]
+    except ValueError:
+        return None
+    if any(n < 0 for n in nums) or len(nums) > 3:
+        return None
+    total = 0
+    for n in nums:
+        total = total * 60 + n
+    return total if total < 24 * 3600 else None
+
+
+def _parse_chapters(raw):
+    """Free text, one chapter per line: '4:12 Entrada'. Anything unparseable is
+    skipped rather than rejected, so a stray blank line can't lose the lot."""
+    out = []
+    for line in (raw or '').splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        bits = line.split(None, 1)
+        t = _parse_ts(bits[0])
+        if t is None:
+            continue
+        label = (bits[1].strip() if len(bits) > 1 else '')[:80]
+        out.append({'t': t, 'label': label})
+    out.sort(key=lambda c: c['t'])
+    return out[:80]
+
+
+def _ment_chapters(v):
+    try:
+        data = json.loads(v.chapters) if v.chapters else []
+    except (ValueError, TypeError):
+        return []
+    return [{'t': int(c['t']), 'label': c.get('label') or '', 'ts': _fmt_ts(c['t'])}
+            for c in data if isinstance(c, dict) and 't' in c]
+
+
+def _attach_dict(a):
+    return {'id': a.id, 'kind': a.kind, 'title': a.title, 'mime': a.mime or '',
+            'size': a.size or 0, 'url': a.url or '',
+            'created_at': _as_utc(a.created_at).isoformat() if a.created_at else None}
+
+
+def _ment_attachments(video_id=None, folder_id=None):
+    q = MentorshipAttachment.query
+    q = q.filter_by(video_id=video_id) if video_id else q.filter_by(folder_id=folder_id)
+    return [_attach_dict(a) for a in q.order_by(MentorshipAttachment.id.asc()).all()]
+
+
 def _ment_video_dict(v, with_desc=False):
     done = MentorshipProgress.query.filter_by(user_id=current_user.id, video_id=v.id, completed=True).first() is not None
     d = {'id': v.id, 'title': v.title, 'kind': v.kind, 'duration_min': v.duration_min,
@@ -2487,6 +2593,8 @@ def _ment_video_dict(v, with_desc=False):
         d['video_url'] = v.video_url
         d['source'] = v.source or 'embed'
         d['provider_id'] = v.provider_id or ''
+        d['chapters'] = _ment_chapters(v)
+        d['attachments'] = _ment_attachments(video_id=v.id)
     return d
 
 
@@ -2539,11 +2647,29 @@ def ment_summary():
             .filter(MentorshipProgress.user_id == current_user.id,
                     MentorshipProgress.completed.is_(False))
             .order_by(MentorshipProgress.updated_at.desc()).first())
+    # Campus header numbers: the four things that tell a member the membership is
+    # alive — how far along they are, what is new, and what is coming.
+    total_v = MentorshipVideo.query.count()
+    done_v = (db.session.query(MentorshipProgress)
+              .filter(MentorshipProgress.user_id == current_user.id,
+                      MentorshipProgress.completed.is_(True)).count())
+    week_ago = datetime.now(timezone.utc) - timedelta(days=7)
+    fresh = MentorshipVideo.query.filter(MentorshipVideo.created_at >= week_ago).count()
+    mins = db.session.query(db.func.sum(MentorshipVideo.duration_min)).scalar() or 0
+    answered = (MentorshipQuestion.query
+                .filter(MentorshipQuestion.user_id == current_user.id,
+                        MentorshipQuestion.answer.isnot(None))
+                .order_by(MentorshipQuestion.answered_at.desc()).first())
     return jsonify({
         'live': _ment_live_dict(_ment_live_state()),
         'folders': fl,
         'latest': [_ment_video_dict(v) for v in latest],
         'continue': _ment_video_dict(cont) if cont else None,
+        'stats': {'videos': total_v, 'done': done_v, 'new_week': fresh,
+                  'minutes': int(mins), 'modules': len(fl)},
+        'last_answer': ({'body': answered.body, 'answer': answered.answer,
+                         'at': _as_utc(answered.answered_at).isoformat() if answered.answered_at else None}
+                        if answered else None),
         'is_mentor': bool(current_user.is_admin),
         'open_questions': (MentorshipQuestion.query.filter(MentorshipQuestion.answer.is_(None)).count()
                            if current_user.is_admin else None),
@@ -2560,6 +2686,7 @@ def ment_folder(fid):
             .order_by(MentorshipVideo.position, MentorshipVideo.id).all())
     return jsonify({'folder': {'id': f.id, 'name': f.name, 'emoji': f.emoji or '📁',
                                'description': f.description or ''},
+                    'attachments': _ment_attachments(folder_id=f.id),
                     'videos': [_ment_video_dict(v) for v in vids]})
 
 
@@ -2574,6 +2701,7 @@ def ment_video(vid):
     return jsonify({'video': _ment_video_dict(v, with_desc=True),
                     'comments': [{'id': c.id, 'author': c.user.username if c.user else '—',
                                   'is_mentor': bool(c.user and c.user.is_admin),
+                                  'at_sec': c.at_sec, 'at': _fmt_ts(c.at_sec) if c.at_sec is not None else '',
                                   'body': c.body, 'created_at': _as_utc(c.created_at).isoformat()}
                                  for c in comments]})
 
@@ -2583,12 +2711,64 @@ def ment_video(vid):
 def ment_video_comment(vid):
     if not db.session.get(MentorshipVideo, vid):
         return jsonify({'error': 'not_found'}), 404
-    body = (request.json.get('body') or '').strip()[:1000] if request.is_json else ''
+    data = request.json if request.is_json else {}
+    body = (data.get('body') or '').strip()[:1000]
     if len(body) < 2:
         return jsonify({'error': 'too_short'}), 400
-    db.session.add(MentorshipVideoComment(video_id=vid, user_id=current_user.id, body=body))
+    at = data.get('at')
+    at = int(at) if isinstance(at, (int, float)) and 0 <= at < 24 * 3600 else None
+    db.session.add(MentorshipVideoComment(video_id=vid, user_id=current_user.id,
+                                          body=body, at_sec=at))
     db.session.commit()
     return jsonify({'ok': True})
+
+
+@app.route('/api/ment/video/<int:vid>/note', methods=['GET', 'POST'])
+@mentorship_member_required
+def ment_video_note(vid):
+    """The member's private notebook for one class."""
+    if not db.session.get(MentorshipVideo, vid):
+        return jsonify({'error': 'not_found'}), 404
+    row = MentorshipNote.query.filter_by(user_id=current_user.id, video_id=vid).first()
+    if request.method == 'POST':
+        body = (request.json.get('body') or '') if request.is_json else ''
+        body = body[:20000]
+        if not row:
+            row = MentorshipNote(user_id=current_user.id, video_id=vid)
+            db.session.add(row)
+        row.body = body
+        row.updated_at = datetime.now(timezone.utc)
+        db.session.commit()
+        return jsonify({'ok': True, 'saved_at': _as_utc(row.updated_at).isoformat()})
+    return jsonify({'body': (row.body if row else '') or '',
+                    'saved_at': _as_utc(row.updated_at).isoformat() if row and row.updated_at else None})
+
+
+@app.route('/api/ment/attachment/<int:aid>/board')
+@mentorship_member_required
+def ment_attachment_board(aid):
+    a = db.session.get(MentorshipAttachment, aid)
+    if not a or a.kind != 'board':
+        return jsonify({'error': 'not_found'}), 404
+    try:
+        return jsonify({'ok': True, 'title': a.title, 'board': json.loads(a.payload or '{}')})
+    except (ValueError, TypeError):
+        return jsonify({'error': 'corrupt'}), 500
+
+
+@app.route('/api/ment/attachment/<int:aid>/download')
+@mentorship_member_required
+def ment_attachment_download(aid):
+    """Support files never live under /static: they are served here so a copied
+    path is useless to someone who is not a member."""
+    a = db.session.get(MentorshipAttachment, aid)
+    if not a or a.kind not in ('file', 'image') or not a.filename:
+        return jsonify({'error': 'not_found'}), 404
+    path = os.path.join(MENT_ATTACH_DIR, a.filename)
+    if not os.path.exists(path):
+        return jsonify({'error': 'gone'}), 404
+    return send_file(path, mimetype=a.mime or 'application/octet-stream',
+                     as_attachment=(a.kind == 'file'), download_name=a.title)
 
 
 @app.route('/api/ment/video/<int:vid>/progress', methods=['POST'])
@@ -2782,6 +2962,14 @@ def ment_admin_video_delete(vid):
     if v:
         MentorshipVideoComment.query.filter_by(video_id=vid).delete()
         MentorshipProgress.query.filter_by(video_id=vid).delete()
+        MentorshipNote.query.filter_by(video_id=vid).delete()
+        for a in MentorshipAttachment.query.filter_by(video_id=vid).all():
+            if a.filename:
+                try:
+                    os.remove(os.path.join(MENT_ATTACH_DIR, a.filename))
+                except OSError:
+                    pass
+            db.session.delete(a)
         db.session.delete(v); db.session.commit()
     return jsonify({'ok': True})
 
@@ -2800,6 +2988,101 @@ def ment_admin_live():
     row.updated_at = datetime.now(timezone.utc)
     db.session.commit()
     return jsonify({'ok': True, 'live': _ment_live_dict(row)})
+
+
+@app.route('/api/ment/admin/video/<int:vid>/chapters', methods=['POST'])
+@login_required
+def ment_admin_chapters(vid):
+    guard = _mentor_only()
+    if guard: return guard
+    v = db.session.get(MentorshipVideo, vid)
+    if not v:
+        return jsonify({'error': 'not_found'}), 404
+    chapters = _parse_chapters((request.json or {}).get('raw') if request.is_json else '')
+    v.chapters = json.dumps(chapters) if chapters else None
+    db.session.commit()
+    return jsonify({'ok': True, 'chapters': _ment_chapters(v)})
+
+
+@app.route('/api/ment/admin/attachment', methods=['POST'])
+@login_required
+def ment_admin_attachment():
+    """Attach support material to a class or a module. Three shapes share this
+    endpoint: an uploaded file (multipart), an external link, or a Chalkboard
+    project captured from the mentor's own board (JSON)."""
+    guard = _mentor_only()
+    if guard: return guard
+    is_json = request.is_json
+    d = request.json if is_json else request.form
+    title = (d.get('title') or '').strip()[:160]
+    vid = d.get('video_id') or None
+    fid = d.get('folder_id') or None
+    try:
+        vid = int(vid) if vid else None
+        fid = int(fid) if fid else None
+    except (TypeError, ValueError):
+        return jsonify({'error': 'invalid'}), 400
+    if not vid and not fid:
+        return jsonify({'error': 'no_target'}), 400
+    if vid and not db.session.get(MentorshipVideo, vid):
+        return jsonify({'error': 'not_found'}), 404
+    if fid and not db.session.get(MentorshipFolder, fid):
+        return jsonify({'error': 'not_found'}), 404
+
+    kind = d.get('kind')
+    if kind == 'link':
+        url_ = (d.get('url') or '').strip()[:500]
+        if not (url_.startswith('http://') or url_.startswith('https://')) or len(title) < 2:
+            return jsonify({'error': 'invalid'}), 400
+        a = MentorshipAttachment(video_id=vid, folder_id=fid, kind='link',
+                                 title=title, url=url_)
+    elif kind == 'board':
+        board = d.get('board')
+        raw = json.dumps(board) if board is not None else ''
+        if not raw or len(raw) > MENT_BOARD_MAX or not isinstance(board, dict) or not board.get('slides'):
+            return jsonify({'error': 'bad_board'}), 400
+        a = MentorshipAttachment(video_id=vid, folder_id=fid, kind='board',
+                                 title=title or 'Pizarrón', payload=raw, size=len(raw))
+    else:
+        f = request.files.get('file')
+        if not f:
+            return jsonify({'error': 'no_file'}), 400
+        mime = (f.content_type or '').lower().split(';')[0]
+        if mime not in MENT_ATTACH_MIME:
+            return jsonify({'error': 'format'}), 400
+        data = f.read()
+        if not data:
+            return jsonify({'error': 'empty'}), 400
+        if len(data) > MENT_ATTACH_MAX:
+            return jsonify({'error': 'too_large'}), 400
+        akind, ext = MENT_ATTACH_MIME[mime]
+        os.makedirs(MENT_ATTACH_DIR, exist_ok=True)
+        stored = '%s.%s' % (secrets.token_urlsafe(16), ext)
+        with open(os.path.join(MENT_ATTACH_DIR, stored), 'wb') as fh:
+            fh.write(data)
+        a = MentorshipAttachment(video_id=vid, folder_id=fid, kind=akind,
+                                 title=title or f.filename[:160] or 'Material',
+                                 filename=stored, mime=mime, size=len(data))
+    db.session.add(a)
+    db.session.commit()
+    return jsonify({'ok': True, 'attachment': _attach_dict(a)})
+
+
+@app.route('/api/ment/admin/attachment/<int:aid>/delete', methods=['POST'])
+@login_required
+def ment_admin_attachment_delete(aid):
+    guard = _mentor_only()
+    if guard: return guard
+    a = db.session.get(MentorshipAttachment, aid)
+    if a:
+        if a.filename:
+            try:
+                os.remove(os.path.join(MENT_ATTACH_DIR, a.filename))
+            except OSError:
+                pass        # the row is the record; a missing file must not 500
+        db.session.delete(a)
+        db.session.commit()
+    return jsonify({'ok': True})
 
 
 @app.route('/api/ment/admin/settings', methods=['POST'])
@@ -8435,7 +8718,8 @@ def _migrate_mentorship_area_columns():
     insp = inspect(db.engine)
     wanted = {
         'mentorship_video': [('source', 'VARCHAR(12)'), ('thumb_url', 'VARCHAR(500)'),
-                             ('provider_id', 'VARCHAR(120)')],
+                             ('provider_id', 'VARCHAR(120)'), ('chapters', 'TEXT')],
+        'mentorship_video_comment': [('at_sec', 'INTEGER')],
         'mentorship_live_state': [('watermark_on', 'BOOLEAN')],
     }
     for table, cols in wanted.items():
