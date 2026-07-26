@@ -754,6 +754,18 @@ dispare dos veces.
 - Verificar prop firms que aceptan Venezuela (hoy solo OneUp Trader).
 - Ratings del Scout con fuente verificable (Trustpilot, etc.).
 
+### 📌 PENDIENTE INMEDIATO — encender PayPal (pedido para el 2026-07-27)
+El usuario NO entiende todavía qué son Client ID / Secret / Webhook ID → **explicárselo paso a paso
+con capturas de dónde hace clic**, no solo nombrarlos. Orden: (1) **subir la cuenta personal del papá
+a PayPal Business** (es un upgrade gratis, misma cuenta/saldo/correo — NO se crea una cuenta nueva;
+hace falta sí o sí porque las credenciales LIVE de API solo se emiten a cuentas Business);
+(2) poner **"Tradeable Academy"** como nombre comercial (opcional pero recomendado: es lo que ve el
+comprador en el recibo); (3) developer.paypal.com → Apps & Credentials → crear app → copiar
+**Client ID** y **Secret**; (4) Webhooks → agregar `https://<dominio>/webhook/paypal` con los 6
+eventos → copiar el **Webhook ID**; (5) las 4 variables en supervisor conf + `scalpel/.env` → restart.
+Probar primero con `PAYPAL_ENV=sandbox`. ⚠️ Sin dominio+HTTPS el webhook no llega — igual activa por
+el return-url y el barrido de /admin, así que se puede dejar el Webhook ID para cuando haya dominio.
+
 ### 🚨 Alerta recurrente (mostrar hasta que el usuario confirme que lo hizo)
 1. Comprar dominio + crear correo empresarial + linkear dominio al VPS (DNS A → 62.171.180.22, nginx+SSL). Sin esto: sitio en IP cruda, sin HTTPS, sin email empresarial.
 2. **INSTALAR STRIPE REAL (modo LIVE) — es lo ÚNICO que falta para poder COBRAR cuando alguien contrata un plan.** El código ya está listo y probado en modo TEST (ver "🟢 Stripe" abajo); **la LLC YA ESTÁ hecha.** Lo pendiente es puramente de configuración: (a) poner las claves `sk_live_…` + `whsec_…` en supervisor conf y `scalpel/.env`; (b) **conectar en el dashboard de Stripe la cuenta bancaria del amigo** para recibir los payouts; (c) configurar el webhook `/webhook/stripe` en el dashboard de Stripe (necesita el dominio+HTTPS del punto 1). **El cobro es en USD por tarjeta vía Stripe → payout a la cuenta bancaria del amigo. NO se cobra USDT ni Binance.** **Mostrar este recordatorio una vez al día hasta que el usuario confirme que Stripe LIVE está activo.**
