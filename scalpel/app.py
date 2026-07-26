@@ -286,6 +286,23 @@ if STRIPE_ENABLED:
     _stripe.api_key = STRIPE_SECRET_KEY
 
 
+# ── Crypto checkout (USDT) — the live rail while there is no company bank ──
+# Same conditional pattern as Stripe and OpenAI: entirely inert until the keys
+# are set, so nothing changes in production until you flip it on.
+#   CRYPTO_API_KEY      — processor API key
+#   CRYPTO_IPN_SECRET   — shared secret used to sign the payment notification
+#   CRYPTO_PAY_CURRENCY — what the buyer sends (default USDT on TRON: cheap fees,
+#                         the most widely used rail in Latin America)
+# Prices are ALWAYS quoted in USD; the crypto is only the rail.
+CRYPTO_API_KEY = os.environ.get("CRYPTO_API_KEY", "")
+CRYPTO_IPN_SECRET = os.environ.get("CRYPTO_IPN_SECRET", "")
+CRYPTO_API_BASE = os.environ.get("CRYPTO_API_BASE", "https://api.nowpayments.io/v1")
+CRYPTO_PAY_CURRENCY = os.environ.get("CRYPTO_PAY_CURRENCY", "usdttrc20")
+CRYPTO_ENABLED = bool(CRYPTO_API_KEY)
+# What we promise publicly when the automatic path fails (hours).
+CRYPTO_SLA_HOURS = 24
+
+
 # ── Expose feature flags to every template ──
 @app.before_request
 def _mentorship_kill_switch():
@@ -724,6 +741,15 @@ class Order(db.Model):
     applied_at = db.Column(db.DateTime, nullable=True)         # when the plan was granted
     celebrated_at = db.Column(db.DateTime, nullable=True)      # unlock reveal shown to the user
     note = db.Column(db.String(300), nullable=True)
+    # ── crypto rail ──────────────────────────────────────────────────────
+    # `provider_ref` is the processor's invoice id: it is what lets us ASK the
+    # processor about this order later, which is how a lost notification is
+    # recovered without the buyer having to do anything.
+    provider_ref = db.Column(db.String(80), nullable=True, index=True)
+    pay_status = db.Column(db.String(24), nullable=True)       # waiting/confirming/finished/partial…
+    paid_amount = db.Column(db.Float, nullable=True)           # what actually arrived (in pay currency)
+    pay_currency = db.Column(db.String(20), nullable=True)
+    tx_hash = db.Column(db.String(120), nullable=True)         # buyer-supplied or processor-reported
     user = db.relationship('User', backref='orders')
 
 
@@ -4389,6 +4415,106 @@ def suggest_ban(user_id, category, detail, evidence=None):
 # ──────────────────────────────────────────────────────────────────────────
 # ORDERS / CHECKOUT — plan purchases (manual fulfilment today, Stripe-ready)
 # ──────────────────────────────────────────────────────────────────────────
+# ═══ Crypto payments ══════════════════════════════════════════════════════
+def _crypto_api(method, path, payload=None):
+    """Small JSON client for the payment processor.
+
+    Deliberately tiny and isolated: every provider-specific detail (base URL,
+    auth header, field names) lives here, so switching processors later is a
+    change in this file section, not across the app."""
+    url = CRYPTO_API_BASE.rstrip('/') + path
+    data = json.dumps(payload).encode() if payload is not None else None
+    req = urllib.request.Request(url, data=data, method=method)
+    req.add_header('x-api-key', CRYPTO_API_KEY)
+    req.add_header('Content-Type', 'application/json')
+    with urllib.request.urlopen(req, timeout=20) as resp:
+        return json.loads(resp.read().decode())
+
+
+# Processor statuses that mean "the money is in".
+CRYPTO_PAID_STATES = ('finished', 'confirmed')
+CRYPTO_FAILED_STATES = ('failed', 'refunded', 'expired')
+
+
+def _crypto_create_invoice(order, kind='plan'):
+    """Create a hosted invoice and return its URL, or None on failure.
+
+    A failure here must never dead-end the buyer: the caller falls back to the
+    manual instructions, and the order still exists so it can be settled later."""
+    label = ('Tradeable — %s' % PLAN_LABELS.get(order.plan, order.plan)) if kind == 'plan' \
+            else ('Tradeable — %s' % getattr(order, 'label', 'Order'))
+    price = order.final_price if kind == 'plan' else order.price
+    try:
+        inv = _crypto_api('POST', '/invoice', {
+            'price_amount': round(float(price), 2),
+            'price_currency': 'usd',
+            'pay_currency': CRYPTO_PAY_CURRENCY,
+            'order_id': '%s-%d' % (kind, order.id),
+            'order_description': label,
+            'ipn_callback_url': url_for('crypto_webhook', _external=True),
+            'success_url': url_for('checkout_status', order_id=order.id, _external=True),
+            'cancel_url': url_for('checkout_status', order_id=order.id, _external=True),
+        })
+    except Exception as exc:
+        app.logger.error('crypto invoice create failed (order %s): %s', order.id, exc)
+        return None
+    order.provider_ref = str(inv.get('id') or '')
+    order.payment_method = 'crypto'
+    order.pay_status = 'waiting'
+    db.session.commit()
+    return inv.get('invoice_url')
+
+
+def _crypto_apply_status(order, info):
+    """Fold a processor payload into the order and activate when it is paid.
+
+    Called from BOTH the webhook and the reconciliation path, which is why it
+    must be safe to run repeatedly — `_activate_plan_from_order` is the
+    idempotency guard."""
+    status = (info.get('payment_status') or info.get('invoice_status') or '').lower()
+    if status:
+        order.pay_status = status
+    if info.get('actually_paid') is not None:
+        try:
+            order.paid_amount = float(info['actually_paid'])
+        except (TypeError, ValueError):
+            pass
+    if info.get('pay_currency'):
+        order.pay_currency = str(info['pay_currency'])[:20]
+    if info.get('payin_hash') or info.get('outcome_hash'):
+        order.tx_hash = str(info.get('payin_hash') or info.get('outcome_hash'))[:120]
+    activated = False
+    if status in CRYPTO_PAID_STATES and order.status != 'paid':
+        order.status = 'paid'
+        order.paid_at = datetime.now(timezone.utc)
+    db.session.commit()
+    if order.status == 'paid':
+        activated = _activate_plan_from_order(order)
+    return activated
+
+
+def _crypto_reconcile(order):
+    """Ask the processor about an order we believe is still unpaid.
+
+    This is the net that catches a lost notification: it runs whenever the buyer
+    opens their order page, so in practice the payment settles itself without
+    anyone noticing there was a problem."""
+    if not (CRYPTO_ENABLED and order.provider_ref) or order.status == 'paid':
+        return False
+    try:
+        # An invoice can have several payments; ask for the ones attached to it.
+        data = _crypto_api('GET', '/payment/?invoiceId=%s&limit=10' % order.provider_ref)
+    except Exception as exc:
+        app.logger.warning('crypto reconcile failed (order %s): %s', order.id, exc)
+        return False
+    items = data.get('data') if isinstance(data, dict) else None
+    for item in (items or []):
+        if (item.get('payment_status') or '').lower() in CRYPTO_PAID_STATES:
+            return _crypto_apply_status(order, item)
+        _crypto_apply_status(order, item)      # keep the visible status fresh
+    return False
+
+
 def _activate_plan_from_order(order):
     """Grant the purchased plan to the user, exactly once per order.
 
@@ -4549,8 +4675,114 @@ def checkout_create():
             app.logger.error('Stripe session create failed: %s', e)
             # fall through to the manual instructions rather than dead-ending
 
+    # Crypto rail: hand the buyer a hosted invoice (amount, address, QR and a
+    # live status). The plan is granted by the notification or by reconciliation,
+    # never here — so closing the tab mid-payment cannot lose the purchase.
+    if CRYPTO_ENABLED and order.final_price > 0:
+        invoice_url = _crypto_create_invoice(order, 'plan')
+        if invoice_url:
+            return redirect(invoice_url, code=303)
+        # falls through to the manual instructions rather than dead-ending
+
     return render_template('checkout_done.html', order=order,
                            plan_label=PLAN_LABELS.get(plan, plan), duplicate=False)
+
+
+@app.route('/webhook/crypto', methods=['POST'])
+def crypto_webhook():
+    """Payment notification from the processor.
+
+    Signed with a shared secret: the body is HMAC-SHA512'd over its JSON with
+    keys sorted, exactly as the sender does it. An unsigned or badly signed
+    notification is rejected — otherwise anyone could POST "order 7 is paid"."""
+    raw = request.get_data()
+    if CRYPTO_IPN_SECRET:
+        sig = request.headers.get('x-nowpayments-sig', '')
+        try:
+            payload = json.loads(raw.decode() or '{}')
+        except ValueError:
+            return jsonify({'error': 'bad_json'}), 400
+        expected = hmac.new(CRYPTO_IPN_SECRET.encode(),
+                            json.dumps(payload, sort_keys=True, separators=(',', ':')).encode(),
+                            hashlib.sha512).hexdigest()
+        if not hmac.compare_digest(expected, sig):
+            app.logger.warning('crypto webhook: bad signature')
+            return jsonify({'error': 'bad_signature'}), 400
+    else:
+        app.logger.warning('crypto webhook received but CRYPTO_IPN_SECRET is not set — ignoring')
+        return jsonify({'error': 'not_configured'}), 400
+
+    ref = str(payload.get('order_id') or '')
+    kind, _, oid = ref.partition('-')
+    try:
+        oid = int(oid)
+    except (TypeError, ValueError):
+        return jsonify({'error': 'bad_order'}), 400
+
+    if kind == 'mentorship':
+        order = db.session.get(MentorshipOrder, oid)
+        if order and (payload.get('payment_status') or '').lower() in CRYPTO_PAID_STATES:
+            if order.status != 'paid':
+                order.status = 'paid'
+                order.paid_at = datetime.now(timezone.utc)
+                db.session.commit()
+            _activate_mentorship_order(order)
+        return jsonify({'ok': True})
+
+    order = db.session.get(Order, oid)
+    if not order:
+        return jsonify({'error': 'not_found'}), 404
+    _crypto_apply_status(order, payload)
+    return jsonify({'ok': True})
+
+
+@app.route('/checkout/status/<int:order_id>')
+@login_required
+def checkout_status(order_id):
+    """The buyer's permanent home for an order.
+
+    Opening it reconciles against the processor, so a notification that never
+    arrived is picked up here without the buyer having to ask for anything."""
+    order = db.session.get(Order, order_id)
+    if not order or order.user_id != current_user.id:
+        abort(404)
+    if order.status != 'paid':
+        _crypto_reconcile(order)
+    return render_template('checkout_status.html', order=order,
+                           plan_label=PLAN_LABELS.get(order.plan, order.plan),
+                           sla_hours=CRYPTO_SLA_HOURS)
+
+
+@app.route('/api/checkout/status/<int:order_id>')
+@login_required
+def checkout_status_api(order_id):
+    order = db.session.get(Order, order_id)
+    if not order or order.user_id != current_user.id:
+        return jsonify({'error': 'not_found'}), 404
+    if order.status != 'paid':
+        _crypto_reconcile(order)
+    return jsonify({'id': order.id, 'status': order.status,
+                    'pay_status': order.pay_status or '',
+                    'applied': order.applied_at is not None,
+                    'amount': order.final_price, 'plan': order.plan})
+
+
+@app.route('/api/checkout/txid/<int:order_id>', methods=['POST'])
+@login_required
+def checkout_txid(order_id):
+    """The buyer can hand us the transaction id. It settles nothing by itself —
+    it just lets a human find the payment in seconds instead of hunting."""
+    order = db.session.get(Order, order_id)
+    if not order or order.user_id != current_user.id:
+        return jsonify({'error': 'not_found'}), 404
+    txid = ((request.json or {}).get('tx') or '').strip()[:120] if request.is_json else ''
+    if len(txid) < 6:
+        return jsonify({'error': 'too_short'}), 400
+    order.tx_hash = txid
+    db.session.commit()
+    record_audit_event('order_txid', user_id=current_user.id,
+                       detail='order %d tx %s' % (order.id, txid[:24]))
+    return jsonify({'ok': True})
 
 
 @app.route('/checkout/success')
@@ -8747,6 +8979,9 @@ def _migrate_mentorship_area_columns():
         'mentorship_video': [('source', 'VARCHAR(12)'), ('thumb_url', 'VARCHAR(500)'),
                              ('provider_id', 'VARCHAR(120)'), ('chapters', 'TEXT')],
         'mentorship_video_comment': [('at_sec', 'INTEGER')],
+        'order': [('provider_ref', 'VARCHAR(80)'), ('pay_status', 'VARCHAR(24)'),
+                  ('paid_amount', 'FLOAT'), ('pay_currency', 'VARCHAR(20)'),
+                  ('tx_hash', 'VARCHAR(120)')],
         'mentorship_live_state': [('watermark_on', 'BOOLEAN')],
     }
     for table, cols in wanted.items():
@@ -8758,7 +8993,9 @@ def _migrate_mentorship_area_columns():
                 continue
             try:
                 with db.engine.begin() as conn:
-                    conn.execute(text('ALTER TABLE %s ADD COLUMN %s %s' % (table, cname, ctype)))
+                    # `order` is a reserved word in PostgreSQL — quote the name.
+                    tbl = '"%s"' % table if table in ('order', 'user') else table
+                    conn.execute(text('ALTER TABLE %s ADD COLUMN %s %s' % (tbl, cname, ctype)))
                 app.logger.info('Migrated %s: %s added.', table, cname)
             except Exception as exc:
                 app.logger.warning('Could not add %s.%s: %s', table, cname, exc)
