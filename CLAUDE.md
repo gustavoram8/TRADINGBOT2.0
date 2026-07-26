@@ -517,6 +517,40 @@ de miembro, prioridad de agenda) — usuario aún no confirmó cuáles; **falta 
 (costos ya definidos). ⚠️ Legal: "demostración de rentabilidad" SIEMPRE como track record personal
 de Gabriel con disclaimer, nunca promesa de resultados del alumno.
 
+**✅ ÁREA DE MIEMBROS (`/mentorship/area`) CONSTRUIDA (2026-07-26, la "Pág 7" pendiente).** Gate:
+`is_mentorship_member()` = admin O `MentorshipOrder` paid con kind `library`/`combo` (compra combo
+también desbloquea; probado). No-miembro → redirect a `/improve/plans`; APIs → 403. Template
+standalone `mentorship_area.html` (base improve.css + CSS `.ma-*` inline, i18n `ma.*` 28 claves ×4
+en `improve_i18n.js`). **4 tabs miembro + 1 mentor (admin):** (1) **Inicio** — banner ON-AIR (el
+mentor lo prende/apaga con título+URL; poll 60s), últimas subidas, seguir-viendo; (2) **Clases** —
+carpetas/módulos (nombre+emoji+descr) con progreso done/total por usuario, videos con título/descr/
+duración/kind (CLASS/LIVE REC/BACKTEST), modal player (`playerFor()`: YouTube→embed, mp4/webm/m3u8→
+`<video nodownload>`, resto iframe), marcar-completada, comentarios por video; (3) **Comunidad** —
+canales creados por el mentor (lockeables = solo-mentor/anuncios), chat con replies, 5 reacciones
+(👍🔥📈❤️🤝 toggle), pins (top-3 arriba), poll 8s, flood 20/min; (4) **Preguntas** — buzón al mentor
+(máx 5 abiertas), el mentor responde inline y el alumno ve Q&A. **Panel mentor:** live on/off, CRUD
+carpetas/videos/canales, responder, pin/delete. Modelos: MentorshipFolder/Video/VideoComment/Question/
+Channel/Message/MsgReaction/Progress/LiveState (create_all los crea). CTA "Entrar al área" en
+checkout success (solo library/combo). E2E test_client: 44 checks verdes (gates, CRUD, cascade
+delete, lock, pin, rate-limits). **PENDIENTE:** hosting real de video (Bunny Stream — hoy el mentor
+pega URLs), subida de archivos, notificaciones email de respuestas.
+
+**✅ FORO "RAYGUN MARK II" — Communities + Follows + DMs (2026-07-26).** Boost estilo Instagram
+para el foro (Standard+Premium). **Backend:** `ForumCommunity/Member/Follow/DM` + `ForumPost.
+community_id` (auto-migración guarded `_migrate_forum_post_community_column()`); `/forum/communities`
+GET/POST (máx 3 por usuario, nombre único case-insens, pretrip, creador auto-join y no puede salir);
+`/forum/community/<id>/membership`; postear en comunidad = solo miembros (403 `not_a_member` si no);
+`/forum/feed?community=<id>` y `?feed=following`; `/forum/follow` (toggle por username);
+`/forum/dm/threads` (unread por hilo + total) y `/forum/dm/with/<username>` (abrir marca leído,
+`?after=` polling, 30/min, pretrip). `serialize_post` suma `community` + `following_author`.
+**Cliente (index.html):** tabs nuevos **Following** y **Communities** (panel: crear con emoji/nombre/
+descr, cards con join/leave/abrir, feed de comunidad con barra ←); chip de comunidad en los posts
+(clic entra); selector "Publicar en" en el composer (general o comunidad unida; publicar dentro de
+una comunidad te deja ahí); botón **Seguir/Siguiendo** + **✉** en el header de posts ajenos;
+**drawer de DMs** (botón Mensajes con badge de no-leídos, hilos, burbujas, Enter-envía, poll 8s
+abierto). i18n 26 claves `forum.*` ×4 a paridad. E2E test_client backend verde + render de /app
+verificado (sin screenshots, modo ahorro).
+
 **Datos del mentor + precios CARGADOS (2026-07-24, base):** mentor **Gabriel Celis**, ~6 años (⚠️
 años TENTATIVOS — el usuario confirma y reeditamos), ex-Forex, hoy futuros **S&P 500 + Nasdaq**.
 Precios DEFINIDOS (2026-07-24, tras research de mercado + límite de capacidad de Gabriel): biblioteca
