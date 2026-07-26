@@ -117,6 +117,52 @@
     .ma-panel h5{color:#ff8296;font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 10px}
     .ma-note{font-size:12px;color:var(--faint);margin-top:6px;line-height:1.5}
     .ma-empty{color:var(--faint);font-size:13px;padding:18px 4px}
+    /* teaching empty state: says what's missing AND how to fix it */
+    .ma-void{border:1px dashed var(--line);border-radius:14px;padding:26px 22px;text-align:center}
+    .ma-void h4{color:var(--ink);font-size:15px;margin:0 0 6px}
+    .ma-void p{color:var(--muted);font-size:13px;line-height:1.6;margin:0 auto;max-width:430px}
+    .ma-void .ma-btn{margin-top:14px}
+    /* emoji picker */
+    .ma-emo{position:relative}
+    .ma-emo>input{cursor:pointer;text-align:center}
+    .ma-emopop{position:absolute;z-index:70;top:calc(100% + 6px);left:0;width:288px;padding:10px;
+      background:#141720;border:1px solid rgba(224,168,61,.4);border-radius:13px;
+      box-shadow:0 16px 40px rgba(0,0,0,.5);display:none}
+    .ma-emopop.on{display:block}
+    .ma-emopop.up{top:auto;bottom:calc(100% + 6px)}
+    .ma-emopop.right{left:auto;right:0}
+    .ma-send .ma-input{flex:1;min-width:0}
+    .ma-emopop .grp{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin:6px 2px 4px}
+    .ma-emopop .row{display:grid;grid-template-columns:repeat(8,1fr);gap:2px}
+    .ma-emopop button{background:none;border:0;cursor:pointer;font-size:19px;line-height:1;padding:5px 0;border-radius:7px}
+    .ma-emopop button:hover{background:rgba(224,168,61,.18)}
+    .ma-emobtn{background:none;border:0;cursor:pointer;font-size:16px;padding:0 6px;color:var(--muted)}
+    .ma-emobtn:hover{color:var(--ink)}
+    /* player: our own cover first, the host's iframe only after Play */
+    .ma-poster{position:absolute;inset:0;background:#0b0d12 center/cover no-repeat;display:flex;
+      align-items:center;justify-content:center;cursor:pointer}
+    .ma-poster.noart{background:radial-gradient(120% 90% at 50% 0%,#20242f,#0b0d12 70%)}
+    .ma-poster.noart::before{content:attr(data-t);position:absolute;left:0;right:0;bottom:16px;z-index:2;
+      text-align:center;padding:0 22px;font:600 13px Inter,sans-serif;color:rgba(255,255,255,.5)}
+    .ma-poster::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,9,13,.25),rgba(8,9,13,.72))}
+    .ma-play{position:relative;z-index:2;width:66px;height:66px;border-radius:50%;border:0;cursor:pointer;
+      background:linear-gradient(180deg,var(--gold-bright),var(--gold));color:#1a1205;font-size:23px;
+      box-shadow:0 10px 30px rgba(0,0,0,.45);transition:transform .14s}
+    .ma-poster:hover .ma-play{transform:scale(1.08)}
+    .ma-wm{position:absolute;z-index:3;pointer-events:none;font:600 11px Inter,sans-serif;color:rgba(255,255,255,.42);
+      text-shadow:0 1px 3px rgba(0,0,0,.7);letter-spacing:.05em;transition:top .8s ease,left .8s ease;
+      top:8%;left:6%;white-space:nowrap}
+    /* guided mentor panel */
+    .ma-mhead{display:flex;align-items:center;gap:11px;margin:0 0 16px}
+    .ma-mhead .mb{font:800 10px Inter,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#ff8296;
+      border:1px solid rgba(224,36,74,.5);border-radius:999px;padding:5px 11px}
+    .ma-mhead p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.5}
+    .ma-panel h5 .step{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;
+      border-radius:50%;background:rgba(224,36,74,.22);color:#ff8296;font-size:10.5px;margin-right:8px}
+    .ma-fh{display:block;font-size:11px;color:var(--faint);margin:-3px 0 7px;line-height:1.5}
+    .ma-sw{display:flex;align-items:center;gap:9px;color:var(--muted);font-size:12.5px;cursor:pointer}
+    .ma-ok{font-size:12px;color:#8ee6a8;margin-top:7px;display:none}
+    .ma-ok.on{display:block}
     .ma-back{background:none;border:0;color:var(--gold);font:700 12px Inter,sans-serif;cursor:pointer;padding:0 0 12px}
   </style>
 </head>
@@ -155,9 +201,9 @@
     <section class="ma-view on" id="v-home">
       <div id="ma-continue"></div>
       <div class="ma-sec" data-i18n="ma.latest">Latest uploads</div>
-      <div class="ma-grid" id="ma-latest"></div>
+      <div id="ma-latest"></div>
       <div class="ma-sec" data-i18n="ma.modules">Modules</div>
-      <div class="ma-grid" id="ma-folders-home"></div>
+      <div id="ma-folders-home"></div>
     </section>
 
     <!-- CLASSES -->
@@ -177,6 +223,7 @@
           <div class="ma-msgs" id="ma-msgs"><div class="ma-empty" data-i18n="ma.pickChannel">Pick a channel to start chatting.</div></div>
           <div class="ma-reply-tag" id="ma-reply-tag"></div>
           <div class="ma-send">
+            <span class="ma-emo" id="ma-emo-host"><button type="button" class="ma-emobtn" id="ma-emo-btn">😊</button></span>
             <input class="ma-input" id="ma-msg-in" maxlength="2000" data-i18n-ph="ma.msgPh" placeholder="Write a message…" disabled />
             <button class="ma-btn" id="ma-msg-send" disabled data-i18n="ma.send">Send</button>
           </div>
@@ -194,54 +241,121 @@
     </section>
 
     {% if is_mentor %}
-    <!-- MENTOR TOOLS -->
+    <!-- MENTOR TOOLS — admin-only: this whole block is never sent to a member -->
     <section class="ma-view" id="v-mentor">
-      <div class="ma-panel">
-        <h5>Live</h5>
-        <div class="ma-mrow">
-          <input class="ma-input" id="mt-live-title" placeholder="Session title" maxlength="160"/>
-          <input class="ma-input" id="mt-live-url" placeholder="Stream URL (https://…)" maxlength="500"/>
+      <div class="ma-mhead">
+        <span class="mb">Solo vos</span>
+        <p>Estás viendo las herramientas del mentor. Tus alumnos <b>no ven esta pestaña</b>:
+           ellos solo tienen Inicio, Clases, Comunidad y Preguntas.</p>
+      </div>
+      <div class="ma-panel" style="border-style:solid;border-color:rgba(224,168,61,.35)">
+        <h5 style="color:var(--gold-bright)">Cómo se carga el contenido</h5>
+        <div class="ma-note" style="margin-top:0">
+          <b>1.</b> Creá un <b>módulo</b> (es la carpeta donde se agrupan las clases: “Módulo 1 — Fundamentos”).<br>
+          <b>2.</b> Publicá <b>videos</b> dentro de ese módulo. Recién ahí la pestaña <b>Clases</b> deja de estar vacía.<br>
+          <b>3.</b> Abrí los <b>canales</b> de chat que quieras para la comunidad.<br>
+          Cuando estés transmitiendo, prendé <b>ON AIR</b> y a todos les aparece el aviso al instante.
         </div>
-        <button class="ma-btn" id="mt-live-on">Go LIVE</button>
-        <button class="ma-btn ghost" id="mt-live-off">End live</button>
-        <div class="ma-note">ON AIR muestra el banner a todos los miembros al instante.</div>
       </div>
       <div class="ma-panel">
-        <h5>New folder / module</h5>
+        <h5><span class="step">●</span>Transmisión en vivo</h5>
         <div class="ma-mrow">
-          <input class="ma-input" id="mt-f-name" placeholder="Name" maxlength="80"/>
-          <input class="ma-input" id="mt-f-emoji" placeholder="Emoji (📚)" maxlength="8"/>
-          <input class="ma-input" id="mt-f-desc" placeholder="Description" maxlength="300"/>
+          <div>
+            <input class="ma-input" id="mt-live-title" placeholder="Ej: Operando la apertura de NY" maxlength="160"/>
+            <span class="ma-fh">Título que van a leer los alumnos en el aviso.</span>
+          </div>
+          <div>
+            <input class="ma-input" id="mt-live-url" placeholder="https://… (link de la transmisión)" maxlength="500"/>
+            <span class="ma-fh">Link de YouTube en vivo, Zoom, Meet o lo que uses.</span>
+          </div>
         </div>
-        <button class="ma-btn" id="mt-f-add">Create folder</button>
+        <button class="ma-btn" id="mt-live-on">🔴 Salir al aire</button>
+        <button class="ma-btn ghost" id="mt-live-off">Terminar</button>
+        <div class="ma-note">Al salir al aire aparece una barra roja “ON AIR” arriba de todo, para
+          todos los miembros conectados, con el botón para entrar. Acordate de apagarlo al terminar.</div>
+        <div class="ma-ok" id="mt-live-ok">✓ Listo</div>
       </div>
       <div class="ma-panel">
-        <h5>New video</h5>
+        <h5><span class="step">1</span>Crear un módulo</h5>
         <div class="ma-mrow">
-          <select class="ma-input" id="mt-v-folder"></select>
-          <select class="ma-input" id="mt-v-kind">
-            <option value="class">Clase</option><option value="live">Operativa en vivo (grabada)</option>
-            <option value="backtest">Backtest</option>
-          </select>
-          <input class="ma-input" id="mt-v-dur" type="number" min="1" placeholder="Duración (min)"/>
+          <div>
+            <input class="ma-input" id="mt-f-name" placeholder="Ej: Módulo 1 — Fundamentos" maxlength="80"/>
+            <span class="ma-fh">Es la carpeta que agrupa varias clases.</span>
+          </div>
+          <div class="ma-emo" data-emo="mt-f-emoji">
+            <input class="ma-input" id="mt-f-emoji" placeholder="📚" maxlength="8" readonly/>
+            <span class="ma-fh">Clic para elegir un ícono.</span>
+          </div>
+          <div>
+            <input class="ma-input" id="mt-f-desc" placeholder="De qué trata el módulo" maxlength="300"/>
+            <span class="ma-fh">Una línea, opcional.</span>
+          </div>
         </div>
-        <div class="ma-mrow">
-          <input class="ma-input" id="mt-v-title" placeholder="Title" maxlength="160"/>
-          <input class="ma-input" id="mt-v-url" placeholder="Video URL (Bunny / YouTube unlisted / .mp4)" maxlength="500"/>
-        </div>
-        <textarea class="ma-input" id="mt-v-desc" placeholder="Description" maxlength="4000"></textarea>
-        <div style="margin-top:9px"><button class="ma-btn" id="mt-v-add">Publish video</button></div>
-        <div class="ma-note">Los videos tipo "Operativa en vivo" aparecen destacados en Home como novedades.</div>
+        <button class="ma-btn" id="mt-f-add">Crear módulo</button>
+        <div class="ma-ok" id="mt-f-ok">✓ Módulo creado — ya podés publicarle videos abajo</div>
       </div>
       <div class="ma-panel">
-        <h5>New chat channel</h5>
+        <h5><span class="step">2</span>Publicar un video</h5>
         <div class="ma-mrow">
-          <input class="ma-input" id="mt-c-name" placeholder="Name" maxlength="60"/>
-          <input class="ma-input" id="mt-c-emoji" placeholder="Emoji (💬)" maxlength="8"/>
-          <label style="display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12.5px">
-            <input type="checkbox" id="mt-c-locked"/> Solo el mentor publica (anuncios)</label>
+          <div>
+            <select class="ma-input" id="mt-v-folder"></select>
+            <span class="ma-fh">En qué módulo entra. Sin módulo queda suelto y <b>no</b> aparece en Clases.</span>
+          </div>
+          <div>
+            <select class="ma-input" id="mt-v-kind">
+              <option value="class">Clase</option><option value="live">Operativa en vivo (grabada)</option>
+              <option value="backtest">Backtest</option>
+            </select>
+            <span class="ma-fh">Solo cambia la etiqueta de color que ve el alumno.</span>
+          </div>
+          <div>
+            <input class="ma-input" id="mt-v-dur" type="number" min="1" placeholder="45"/>
+            <span class="ma-fh">Duración en minutos (opcional).</span>
+          </div>
         </div>
-        <button class="ma-btn" id="mt-c-add">Create channel</button>
+        <div class="ma-mrow">
+          <div>
+            <input class="ma-input" id="mt-v-title" placeholder="Ej: Clase 1 — Estructura de mercado" maxlength="160"/>
+            <span class="ma-fh">Título que se ve en la lista.</span>
+          </div>
+          <div>
+            <input class="ma-input" id="mt-v-url" placeholder="https://youtu.be/…" maxlength="500"/>
+            <span class="ma-fh"><b>Es un enlace, no un archivo.</b> Pegá el link de un video de
+              YouTube <b>no listado</b> (o un .mp4 alojado). Todavía no se suben archivos desde la PC.</span>
+          </div>
+        </div>
+        <textarea class="ma-input" id="mt-v-desc" placeholder="Qué se explica en esta clase (opcional)" maxlength="4000"></textarea>
+        <div style="margin-top:9px"><button class="ma-btn" id="mt-v-add">Publicar video</button></div>
+        <div class="ma-note">De YouTube tomamos la carátula automáticamente. Los videos marcados como
+          “Operativa en vivo” salen destacados en Inicio como novedad.</div>
+        <div class="ma-ok" id="mt-v-ok">✓ Video publicado — miralo en la pestaña Clases</div>
+      </div>
+      <div class="ma-panel">
+        <h5><span class="step">3</span>Abrir un canal de chat</h5>
+        <div class="ma-mrow">
+          <div>
+            <input class="ma-input" id="mt-c-name" placeholder="Ej: general" maxlength="60"/>
+            <span class="ma-fh">Nombre del canal, como en Discord.</span>
+          </div>
+          <div class="ma-emo" data-emo="mt-c-emoji">
+            <input class="ma-input" id="mt-c-emoji" placeholder="💬" maxlength="8" readonly/>
+            <span class="ma-fh">Clic para elegir un ícono.</span>
+          </div>
+          <div>
+            <label class="ma-sw"><input type="checkbox" id="mt-c-locked"/> Solo escribo yo</label>
+            <span class="ma-fh">Para anuncios: los alumnos leen y reaccionan, pero no escriben.</span>
+          </div>
+        </div>
+        <button class="ma-btn" id="mt-c-add">Crear canal</button>
+        <div class="ma-ok" id="mt-c-ok">✓ Canal creado</div>
+      </div>
+
+      <div class="ma-panel">
+        <h5><span class="step">●</span>Protección del contenido</h5>
+        <label class="ma-sw"><input type="checkbox" id="mt-wm"/> Mostrar el usuario del alumno sobre el video</label>
+        <div class="ma-note">Sobre cada clase flota, semitransparente y cambiando de lugar, el usuario
+          de quien la está mirando. No impide descargar, pero deja marcado a quien grabe la pantalla
+          para revender el curso. Podés apagarlo cuando quieras.</div>
       </div>
     </section>
     {% endif %}
@@ -252,6 +366,7 @@
     <div class="ma-box">
       <button class="ma-back" id="ma-ov-close">← <span data-i18n="ma.close">Close</span></button>
       <div class="ma-player" id="ma-player"></div>
+      <div class="ma-note" id="ma-wm-note" style="display:none"></div>
       <h3 id="ma-v-title"></h3>
       <div class="ma-meta">
         <span id="ma-v-kind" class="ma-kind class"></span>
@@ -280,7 +395,60 @@
     var P = function(u,data){ return J(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data||{})}); };
     function el(id){ return document.getElementById(id); }
     function esc(s){ var d=document.createElement('div'); d.textContent=s==null?'':String(s); return d.innerHTML; }
-    var state={folders:[],channel:null,lastMsgId:0,poll:null,replyTo:null,video:null,openFolder:null};
+    /* Member-facing strings go through the shared dictionary; the mentor panel
+       stays in Spanish on purpose (admin-only surface). */
+    function T(k,fb){
+      var D=(window.ImproveI18N&&window.ImproveI18N.dict)||{};
+      var lg=(window.ImproveI18N&&window.ImproveI18N.current)?window.ImproveI18N.current():'en';
+      return (D[lg]&&D[lg][k])||(D.en&&D.en[k])||fb;
+    }
+    var ME = {{ username|tojson }};
+    var state={folders:[],channel:null,lastMsgId:0,poll:null,replyTo:null,video:null,openFolder:null,
+               watermark:true,wmTimer:null};
+
+    /* ── emoji picker ──────────────────────────────────────────────────
+       A plain text input is useless on a desktop (nobody knows Win+.), so any
+       field that wants an emoji opens this grid instead. Also feeds the chat. */
+    /* Deliberately conservative set: no variation-selector sequences, nothing
+       newer than Unicode 6, so every emoji renders on Windows, macOS and mobile. */
+    var EMO=[
+      ['Trading','📈📉📊💹💵💰🎯🏦⚡🔔🕐🌐'],
+      ['Estudio','📚📐📝🎬🎥🧠💡🔍📁📌✅🚀'],
+      ['Señales','🔴🟢🟡🔵⭐🔥👍🙌👀🤝💬❗'],
+      ['Otros','🏆🥇🛡🧩⚙🔒🌙☀🌎🍀🎉🎓']
+    ];
+    var openPop=null;
+    function closePop(){ if(openPop){ openPop.classList.remove('on'); openPop=null; } }
+    document.addEventListener('click',function(e){ if(openPop && !e.target.closest('.ma-emo,.ma-emopop')) closePop(); });
+    function buildPop(onPick){
+      var pop=document.createElement('div'); pop.className='ma-emopop';
+      EMO.forEach(function(g){
+        var h=document.createElement('div'); h.className='grp'; h.textContent=g[0]; pop.appendChild(h);
+        var row=document.createElement('div'); row.className='row';
+        Array.from(g[1]).forEach(function(ch){
+          if(!ch.trim()) return;
+          var b=document.createElement('button'); b.type='button'; b.textContent=ch;
+          b.addEventListener('click',function(ev){ ev.stopPropagation(); onPick(ch); closePop(); });
+          row.appendChild(b);
+        });
+        pop.appendChild(row);
+      });
+      return pop;
+    }
+    function attachEmoji(host,onPick){
+      var pop=buildPop(onPick); host.appendChild(pop);
+      return function(ev){
+        ev.stopPropagation();
+        if(openPop===pop){ closePop(); return; }
+        closePop(); pop.classList.add('on'); openPop=pop;
+      };
+    }
+    /* wire every [data-emo] field: clicking the input opens the grid */
+    document.querySelectorAll('.ma-emo[data-emo]').forEach(function(host){
+      var inp=el(host.dataset.emo); if(!inp) return;
+      var toggle=attachEmoji(host,function(ch){ inp.value=ch; });
+      inp.addEventListener('click',toggle);
+    });
 
     /* tabs */
     document.querySelectorAll('.ma-tab').forEach(function(t){
@@ -293,12 +461,46 @@
       });
     });
 
+    /* Watermark: floats the viewer's username over the player and hops around
+       every few seconds so it can't be cropped or covered by one sticker. */
+    function stopWm(){ if(state.wmTimer){ clearInterval(state.wmTimer); state.wmTimer=null; } }
+    function startWm(){
+      stopWm();
+      if(!state.watermark) return;
+      var box=el('ma-player');
+      var w=document.createElement('div'); w.className='ma-wm'; w.textContent=ME+' · #'+(state.video?state.video.id:'');
+      box.appendChild(w);
+      var spots=[['8%','6%'],['8%','58%'],['78%','8%'],['78%','56%'],['45%','34%']],i=0;
+      state.wmTimer=setInterval(function(){
+        if(!document.body.contains(w)){ stopWm(); return; }
+        i=(i+1)%spots.length; w.style.top=spots[i][0]; w.style.left=spots[i][1];
+      },9000);
+    }
+    /* Cover → real player. Two reasons for the extra click: the alumno sees OUR
+       artwork instead of the host's chrome, and nothing loads from a third party
+       until they actually press play. */
+    function mountPoster(v){
+      var box=el('ma-player'); box.innerHTML='';
+      var p=document.createElement('div'); p.className='ma-poster';
+      if(v.thumb) p.style.backgroundImage='url("'+v.thumb.replace(/"/g,'')+'")';
+      else { p.classList.add('noart'); p.setAttribute('data-t',v.title||''); }
+      var b=document.createElement('button'); b.className='ma-play'; b.type='button';
+      b.setAttribute('aria-label','Play'); b.textContent='▶';
+      p.appendChild(b);
+      p.addEventListener('click',function(){ box.innerHTML=playerFor(v.video_url,true); startWm(); });
+      box.appendChild(p);
+    }
+
     /* video url → player node */
-    function playerFor(url){
+    function playerFor(url,autoplay){
       var u=url||'';
-      var m=u.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{6,})/);
-      if(m) return '<iframe src="https://www.youtube.com/embed/'+m[1]+'" allow="autoplay; fullscreen" allowfullscreen></iframe>';
-      if(/\.(mp4|webm|m3u8)(\?|$)/i.test(u)) return '<video controls controlsList="nodownload" src="'+esc(u)+'"></video>';
+      var m=u.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|live\/)|youtu\.be\/)([\w-]{6,})/);
+      /* youtube-nocookie + minimal chrome; related videos limited to the channel */
+      if(m) return '<iframe src="https://www.youtube-nocookie.com/embed/'+m[1]
+        +'?rel=0&modestbranding=1&playsinline=1'+(autoplay?'&autoplay=1':'')
+        +'" allow="autoplay; fullscreen" allowfullscreen></iframe>';
+      if(/\.(mp4|webm|m3u8)(\?|$)/i.test(u)) return '<video controls controlsList="nodownload"'
+        +(autoplay?' autoplay':'')+' src="'+esc(u)+'"></video>';
       return '<iframe src="'+esc(u)+'" allow="autoplay; fullscreen" allowfullscreen></iframe>';
     }
     function kindLabel(k){ return k==='live'?'LIVE REC':(k==='backtest'?'BACKTEST':'CLASS'); }
@@ -313,6 +515,22 @@
         +'<p>'+(v.duration_min?v.duration_min+' min · ':'')+v.comment_count+' 💬'+(v.done?' · ✓':'')+'</p></div>';
     }
 
+    /* An empty screen must say what is missing and — for the mentor — how to
+       fix it in one click, instead of rendering nothing at all. */
+    function voidBox(title,body,cta){
+      var h='<div class="ma-void"><h4>'+esc(title)+'</h4><p>'+body+'</p>';
+      if(IS_MENTOR && cta) h+='<button class="ma-btn" data-goto-mentor="1">'+esc(cta)+'</button>';
+      return h+'</div>';
+    }
+    function modulesVoid(){
+      return voidBox(
+        IS_MENTOR?'Todavía no hay módulos':T('ma.voidModT','No modules yet'),
+        IS_MENTOR
+          ? 'Un módulo es la carpeta donde se agrupan las clases. Creá el primero y después publicale videos adentro.'
+          : T('ma.voidModB','The mentor hasn\u2019t published the material yet. The first class will show up here.'),
+        'Crear el primer módulo →');
+    }
+
     /* summary / home */
     function loadSummary(){
       J('/api/ment/summary').then(function(d){
@@ -323,36 +541,52 @@
           el('ma-live-title').textContent=d.live.title||'';
           var a=el('ma-live-link'); if(d.live.url){a.style.display='';a.href=d.live.url;} else a.style.display='none';
         } else lv.classList.remove('on');
+        if(d.live){
+          state.watermark = d.live.watermark !== false;
+          if(window.__maMentorSync) window.__maMentorSync(d.live);
+        }
         el('ma-continue').innerHTML = d['continue']
           ? '<div class="ma-sec" style="margin-top:0" data-i18n="ma.continue">Continue watching</div><div class="ma-grid">'+vCard(d['continue'])+'</div>'
           : '';
-        el('ma-latest').innerHTML=(d.latest||[]).map(vCard).join('')||'<div class="ma-empty" data-i18n="ma.noVideos">No videos yet — the first classes are on their way.</div>';
-        el('ma-folders-home').innerHTML=state.folders.map(function(f){
-          var pct=f.videos?Math.round(100*f.done/f.videos):0;
-          return '<div class="ma-card" data-fid="'+f.id+'"><h4>'+esc(f.emoji)+' '+esc(f.name)+'</h4>'
-            +'<p>'+esc(f.description||'')+'</p><p style="margin-top:6px">'+f.done+' / '+f.videos+'</p>'
-            +'<div class="ma-prog"><i style="width:'+pct+'%"></i></div></div>';
-        }).join('')||'<div class="ma-empty" data-i18n="ma.noModules">Modules will appear here.</div>';
+        el('ma-latest').innerHTML=(d.latest||[]).length
+          ? '<div class="ma-grid">'+(d.latest||[]).map(vCard).join('')+'</div>'
+          : voidBox(IS_MENTOR?'Todavía no publicaste ningún video':T('ma.voidNewT','No classes published yet'),
+                    IS_MENTOR?'Creá un módulo y publicale la primera clase — al alumno le aparece acá como novedad.'
+                             :T('ma.voidNewB','As soon as the mentor uploads the first class it will appear here.'),
+                    'Ir a publicar →');
+        el('ma-folders-home').innerHTML=state.folders.length
+          ? '<div class="ma-grid">'+state.folders.map(folderCard).join('')+'</div>'
+          : modulesVoid();
         if(IS_MENTOR){ fillFolderSelect(); }
         if(window.ImproveI18N&&window.ImproveI18N.apply) window.ImproveI18N.apply(window.ImproveI18N.current());
       });
     }
     /* classes tab */
+    function folderCard(f){
+      var pct=f.videos?Math.round(100*f.done/f.videos):0;
+      return '<div class="ma-card" data-fid="'+f.id+'"><h4>'+esc(f.emoji)+' '+esc(f.name)+'</h4>'
+        +'<p>'+esc(f.description||'')+'</p>'
+        +'<p style="margin-top:6px">'+f.done+' / '+f.videos+' '+T('ma.classesWord','classes')+'</p>'
+        +'<div class="ma-prog"><i style="width:'+pct+'%"></i></div></div>';
+    }
     function renderClassesRoot(){
       var root=el('ma-classes-root');
       if(state.openFolder){ return openFolder(state.openFolder); }
-      root.innerHTML='<div class="ma-grid">'+state.folders.map(function(f){
-        var pct=f.videos?Math.round(100*f.done/f.videos):0;
-        return '<div class="ma-card" data-fid="'+f.id+'"><h4>'+esc(f.emoji)+' '+esc(f.name)+'</h4><p>'+esc(f.description||'')+'</p>'
-          +'<p style="margin-top:6px">'+f.done+' / '+f.videos+'</p><div class="ma-prog"><i style="width:'+pct+'%"></i></div></div>';
-      }).join('')+'</div>';
+      root.innerHTML=state.folders.length
+        ? '<div class="ma-grid">'+state.folders.map(folderCard).join('')+'</div>'
+        : modulesVoid();
     }
     function openFolder(fid){
       state.openFolder=fid;
       J('/api/ment/folder/'+fid).then(function(d){
         if(d.error) return;
-        el('ma-classes-root').innerHTML='<button class="ma-back" id="ma-fback">← '+esc(d.folder.name)+'</button>'
-          +((d.videos||[]).map(vRow).join('')||'<div class="ma-empty">—</div>');
+        el('ma-classes-root').innerHTML='<button class="ma-back" id="ma-fback">← '+esc(T('ma.allModules','All modules'))+'</button>'
+          +'<div class="ma-sec" style="margin-top:0">'+esc(d.folder.emoji||'')+' '+esc(d.folder.name)+'</div>'
+          +((d.videos||[]).map(vRow).join('')||voidBox(
+              IS_MENTOR?'Este módulo está vacío':T('ma.voidFoldT','This module is empty'),
+              IS_MENTOR?'Publicá el primer video eligiendo este módulo en el formulario del panel.'
+                       :T('ma.voidFoldB','The mentor hasn\u2019t added classes to this module yet.'),
+              'Publicar un video →'));
         el('ma-fback').addEventListener('click',function(){state.openFolder=null;renderClassesRoot();});
       });
     }
@@ -361,7 +595,7 @@
       J('/api/ment/video/'+vid).then(function(d){
         if(d.error) return;
         var v=d.video; state.video=v;
-        el('ma-player').innerHTML=playerFor(v.video_url);
+        stopWm(); mountPoster(v);
         el('ma-v-title').textContent=v.title;
         el('ma-v-kind').textContent=kindLabel(v.kind); el('ma-v-kind').className='ma-kind '+v.kind;
         el('ma-v-dur').textContent=v.duration_min?(v.duration_min+' min'):'';
@@ -384,13 +618,18 @@
       if(!confirm('¿Eliminar este video?')) return;
       P('/api/ment/admin/video/'+state.video.id+'/delete').then(function(){ el('ma-ov').classList.remove('on'); loadSummary(); });
     });
-    el('ma-ov-close').addEventListener('click',function(){ el('ma-ov').classList.remove('on'); el('ma-player').innerHTML=''; });
+    el('ma-ov-close').addEventListener('click',function(){
+      stopWm(); el('ma-ov').classList.remove('on'); el('ma-player').innerHTML=''; });
     el('ma-cmt-send').addEventListener('click',function(){
       var t=el('ma-cmt-in').value.trim(); if(t.length<2) return;
       P('/api/ment/video/'+state.video.id+'/comment',{body:t}).then(function(d){ if(d.ok){ el('ma-cmt-in').value=''; openVideo(state.video.id);} });
     });
     /* delegate clicks on cards/rows */
     document.addEventListener('click',function(e){
+      if(e.target.closest('[data-goto-mentor]')){
+        var mt=document.querySelector('.ma-tab[data-v=mentor]'); if(mt) mt.click();
+        window.scrollTo({top:0,behavior:'smooth'}); return;
+      }
       var vc=e.target.closest('[data-vid]'); if(vc && !e.target.closest('.ma-ov')){ openVideo(parseInt(vc.dataset.vid,10)); return; }
       var fc=e.target.closest('[data-fid]');
       if(fc){ document.querySelector('.ma-tab[data-v=classes]').click(); openFolder(parseInt(fc.dataset.fid,10)); }
@@ -399,6 +638,13 @@
     /* ── community chat ── */
     function loadChannels(){
       J('/api/ment/channels').then(function(d){
+        if(!(d.channels||[]).length){
+          el('ma-chls').innerHTML='<div class="ma-empty" style="padding:8px 2px">—</div>';
+          el('ma-msgs').innerHTML=voidBox(IS_MENTOR?'No abriste ningún canal':T('ma.voidChT','No channels yet'),
+            IS_MENTOR?'Abrí una sala general (como en Discord) para que la comunidad empiece a hablar.'
+                     :T('ma.voidChB','The mentor hasn\u2019t opened the community channels yet.'),'Abrir un canal →');
+          return;
+        }
         el('ma-chls').innerHTML=(d.channels||[]).map(function(c){
           return '<button class="ma-chl'+(state.channel===c.id?' on':'')+'" data-cid="'+c.id+'">'+esc(c.emoji)+' '+esc(c.name)
             +(c.locked?'<span class="lk">🔒</span>':'')+'</button>';
@@ -500,33 +746,73 @@
       P('/api/ment/admin/question/'+b.dataset.qans+'/answer',{answer:t}).then(function(){ loadQuestions(); });
     });
 
-    /* ── mentor tools ── */
+    /* ── mentor tools — admin only: this JS is not even sent to a member ── */
+    {% if is_mentor %}
     if(IS_MENTOR){
+      window.__maMentorSync=function(live){
+        var w=el('mt-wm'); if(w) w.checked = live.watermark !== false;
+      };
       function fillFolderSelectInner(){
         var s=el('mt-v-folder'); if(!s) return;
-        s.innerHTML='<option value="">(sin carpeta)</option>'+state.folders.map(function(f){
+        var prev=s.value;
+        s.innerHTML='<option value="">— Sin módulo (no sale en Clases) —</option>'+state.folders.map(function(f){
           return '<option value="'+f.id+'">'+esc(f.emoji)+' '+esc(f.name)+'</option>';}).join('');
+        /* default to a real module so nobody publishes an orphan class by accident */
+        s.value = (prev && s.querySelector('option[value="'+prev+'"]')) ? prev
+                : (state.folders.length ? String(state.folders[0].id) : '');
       }
       window.fillFolderSelect=fillFolderSelectInner;
+      function flash(id){ var o=el(id); if(!o) return; o.classList.add('on'); setTimeout(function(){o.classList.remove('on');},4000); }
+      function warn(d,fallback){
+        var m={too_short:'Falta el nombre (mínimo 2 letras).',
+               invalid:'Revisá el título y que la URL empiece con https://'}[d&&d.error];
+        alert(m||fallback);
+      }
       el('mt-live-on').addEventListener('click',function(){
-        P('/api/ment/admin/live',{is_live:true,title:el('mt-live-title').value,url:el('mt-live-url').value}).then(loadSummary);
+        if(!el('mt-live-url').value.trim()){ alert('Pegá el link de la transmisión antes de salir al aire.'); return; }
+        P('/api/ment/admin/live',{is_live:true,title:el('mt-live-title').value,url:el('mt-live-url').value})
+          .then(function(){ flash('mt-live-ok'); loadSummary(); });
       });
       el('mt-live-off').addEventListener('click',function(){ P('/api/ment/admin/live',{is_live:false}).then(loadSummary); });
       el('mt-f-add').addEventListener('click',function(){
         P('/api/ment/admin/folder',{name:el('mt-f-name').value,emoji:el('mt-f-emoji').value,description:el('mt-f-desc').value})
-          .then(function(d){ if(d.ok){ el('mt-f-name').value=''; loadSummary(); } });
+          .then(function(d){ if(d.ok){ el('mt-f-name').value=''; el('mt-f-desc').value=''; flash('mt-f-ok'); loadSummary(); }
+                             else warn(d,'No se pudo crear el módulo.'); });
       });
       el('mt-v-add').addEventListener('click',function(){
+        if(!el('mt-v-folder').value && !confirm('Este video no va a ningún módulo, así que NO va a aparecer en Clases (solo en Inicio). ¿Publicarlo igual?')) return;
         P('/api/ment/admin/video',{folder_id:el('mt-v-folder').value||null,kind:el('mt-v-kind').value,
           duration_min:el('mt-v-dur').value||null,title:el('mt-v-title').value,video_url:el('mt-v-url').value,
-          description:el('mt-v-desc').value}).then(function(d){ if(d.ok){ el('mt-v-title').value=''; el('mt-v-url').value=''; el('mt-v-desc').value=''; loadSummary(); } else alert(d.error||'error'); });
+          description:el('mt-v-desc').value}).then(function(d){
+            if(d.ok){ el('mt-v-title').value=''; el('mt-v-url').value=''; el('mt-v-desc').value=''; el('mt-v-dur').value='';
+                      flash('mt-v-ok'); loadSummary(); }
+            else warn(d,'No se pudo publicar el video.'); });
       });
       el('mt-c-add').addEventListener('click',function(){
         P('/api/ment/admin/channel',{name:el('mt-c-name').value,emoji:el('mt-c-emoji').value,locked:el('mt-c-locked').checked})
-          .then(function(d){ if(d.ok){ el('mt-c-name').value=''; loadChannels(); } });
+          .then(function(d){ if(d.ok){ el('mt-c-name').value=''; flash('mt-c-ok'); loadChannels(); }
+                             else warn(d,'No se pudo crear el canal.'); });
       });
-    } else { window.fillFolderSelect=function(){}; }
-    function fillFolderSelect(){ if(window.fillFolderSelect) window.fillFolderSelect(); }
+      el('mt-wm').addEventListener('change',function(){
+        P('/api/ment/admin/settings',{watermark:el('mt-wm').checked}).then(function(d){
+          if(d.live) state.watermark=!!d.live.watermark;
+        });
+      });
+    }
+    {% endif %}
+    if(!window.fillFolderSelect) window.fillFolderSelect=function(){};
+    function fillFolderSelect(){ window.fillFolderSelect(); }
+
+    (function(){
+      var host=el('ma-emo-host'), inp=el('ma-msg-in');
+      if(!host||!inp) return;
+      var toggle=attachEmoji(host,function(ch){
+        if(inp.disabled) return;
+        inp.value+=ch; inp.focus();
+      });
+      host.querySelector('.ma-emopop').classList.add('up');
+      el('ma-emo-btn').addEventListener('click',toggle);
+    })();
 
     loadSummary();
     setInterval(function(){ if(!document.hidden) loadSummary(); }, 60000);   /* live banner refresh */

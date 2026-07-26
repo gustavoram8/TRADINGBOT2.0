@@ -755,6 +755,13 @@ class MentorshipVideo(db.Model):
     duration_min = db.Column(db.Integer, nullable=True)
     kind = db.Column(db.String(12), default='class', nullable=False)  # class / live / backtest
     position = db.Column(db.Integer, default=0)
+    # Where the stream lives. Derived from the URL on save, never typed by hand.
+    # Today: youtube (unlisted embed) / file (direct mp4-webm-m3u8) / embed (other
+    # iframe). Adding 'bunny' later only means a new value here + a branch in the
+    # player — the rest of the library keeps working untouched.
+    source = db.Column(db.String(12), default='embed', nullable=True)
+    thumb_url = db.Column(db.String(500), nullable=True)     # cover shown before play
+    provider_id = db.Column(db.String(120), nullable=True)   # youtube id / future bunny guid
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
 
 
@@ -827,6 +834,11 @@ class MentorshipLiveState(db.Model):
     title = db.Column(db.String(160), nullable=True)
     url = db.Column(db.String(500), nullable=True)
     note = db.Column(db.String(300), nullable=True)
+    # Area-wide settings live on this same singleton row (id=1) so we don't need
+    # a second one-row table. `watermark_on` floats the viewer's username over
+    # every video: it doesn't stop a determined ripper, it stops the casual
+    # screen-recorder from reselling it anonymously. NULL (legacy row) = on.
+    watermark_on = db.Column(db.Boolean, nullable=True, default=True)
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
 
@@ -2441,18 +2453,40 @@ def _ment_live_state():
 
 def _ment_live_dict(row):
     return {'is_live': bool(row.is_live), 'title': row.title or '', 'url': row.url or '',
-            'note': row.note or '', 'updated_at': _as_utc(row.updated_at).isoformat() if row.updated_at else None}
+            'note': row.note or '', 'watermark': row.watermark_on is not False,
+            'updated_at': _as_utc(row.updated_at).isoformat() if row.updated_at else None}
+
+
+_YT_RE = re.compile(r'(?:youtube\.com/(?:watch\?v=|embed/|live/)|youtu\.be/)([\w-]{6,})')
+
+
+def _video_meta_from_url(url):
+    """Classify a pasted video URL once, at save time.
+
+    Returns (source, provider_id, auto_thumb). Keeping this server-side means the
+    player never has to guess, and swapping in a new host later is a change here
+    plus one branch in the client — not a rewrite of every stored row."""
+    u = (url or '').strip()
+    m = _YT_RE.search(u)
+    if m:
+        vid = m.group(1)
+        return 'youtube', vid, 'https://i.ytimg.com/vi/%s/hqdefault.jpg' % vid
+    if re.search(r'\.(mp4|webm|m3u8)(\?|$)', u, re.I):
+        return 'file', None, None
+    return 'embed', None, None
 
 
 def _ment_video_dict(v, with_desc=False):
     done = MentorshipProgress.query.filter_by(user_id=current_user.id, video_id=v.id, completed=True).first() is not None
     d = {'id': v.id, 'title': v.title, 'kind': v.kind, 'duration_min': v.duration_min,
-         'folder_id': v.folder_id, 'done': done,
+         'folder_id': v.folder_id, 'done': done, 'thumb': v.thumb_url or '',
          'comment_count': MentorshipVideoComment.query.filter_by(video_id=v.id).count(),
          'created_at': _as_utc(v.created_at).isoformat()}
     if with_desc:
         d['description'] = v.description or ''
         d['video_url'] = v.video_url
+        d['source'] = v.source or 'embed'
+        d['provider_id'] = v.provider_id or ''
     return d
 
 
@@ -2727,9 +2761,12 @@ def ment_admin_video():
         return jsonify({'error': 'invalid'}), 400
     kind = d.get('kind') if d.get('kind') in ('class', 'live', 'backtest') else 'class'
     fid = d.get('folder_id')
+    source, provider_id, auto_thumb = _video_meta_from_url(url_)
+    thumb = (d.get('thumb_url') or '').strip()[:500] or auto_thumb
     v = MentorshipVideo(folder_id=int(fid) if fid else None, title=title,
                         description=(d.get('description') or '').strip()[:4000] or None,
-                        video_url=url_,
+                        video_url=url_, source=source, provider_id=provider_id,
+                        thumb_url=thumb,
                         duration_min=int(d.get('duration_min')) if d.get('duration_min') else None,
                         kind=kind, position=int(d.get('position') or 0))
     db.session.add(v); db.session.commit()
@@ -2761,6 +2798,20 @@ def ment_admin_live():
     row.url = (d.get('url') or '').strip()[:500] or None
     row.note = (d.get('note') or '').strip()[:300] or None
     row.updated_at = datetime.now(timezone.utc)
+    db.session.commit()
+    return jsonify({'ok': True, 'live': _ment_live_dict(row)})
+
+
+@app.route('/api/ment/admin/settings', methods=['POST'])
+@login_required
+def ment_admin_settings():
+    """Area-wide switches. Stored on the singleton live-state row."""
+    guard = _mentor_only()
+    if guard: return guard
+    d = request.json if request.is_json else {}
+    row = _ment_live_state()
+    if 'watermark' in d:
+        row.watermark_on = bool(d.get('watermark'))
     db.session.commit()
     return jsonify({'ok': True, 'live': _ment_live_dict(row)})
 
@@ -8376,6 +8427,32 @@ def _migrate_mentorship_application_columns():
         app.logger.info('Migrated mentorship_application: added %s.', ', '.join(added))
 
 
+def _migrate_mentorship_area_columns():
+    """Columns added to the members-area tables after they first shipped
+    (video source/cover, area watermark switch). Same guarded pattern as the
+    other migrations: a concurrent worker winning the race can't crash boot."""
+    from sqlalchemy import inspect, text
+    insp = inspect(db.engine)
+    wanted = {
+        'mentorship_video': [('source', 'VARCHAR(12)'), ('thumb_url', 'VARCHAR(500)'),
+                             ('provider_id', 'VARCHAR(120)')],
+        'mentorship_live_state': [('watermark_on', 'BOOLEAN')],
+    }
+    for table, cols in wanted.items():
+        if not insp.has_table(table):
+            continue        # create_all already made it with every column
+        have = {c['name'] for c in insp.get_columns(table)}
+        for cname, ctype in cols:
+            if cname in have:
+                continue
+            try:
+                with db.engine.begin() as conn:
+                    conn.execute(text('ALTER TABLE %s ADD COLUMN %s %s' % (table, cname, ctype)))
+                app.logger.info('Migrated %s: %s added.', table, cname)
+            except Exception as exc:
+                app.logger.warning('Could not add %s.%s: %s', table, cname, exc)
+
+
 def _migrate_forum_post_community_column():
     """Add community_id to an existing forum_post table (prod PG / local sqlite)."""
     from sqlalchemy import inspect, text
@@ -8410,6 +8487,7 @@ def init_db():
         _migrate_user_camo_columns()
         _migrate_mentorship_application_columns()
         _migrate_forum_post_community_column()
+        _migrate_mentorship_area_columns()
         admin_email = os.environ.get('ADMIN_EMAIL', 'mauroramirezmij@gmail.com').lower()
         admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
         admin_password = os.environ.get('ADMIN_PASSWORD', 'Codica2310$')
