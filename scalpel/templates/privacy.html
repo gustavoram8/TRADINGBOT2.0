@@ -156,11 +156,15 @@
     <h3>2.2 Payment information</h3>
     <p>
       For paid plans we create an order record containing the plan, billing cycle, amount,
-      and payment status. Payments are currently processed <strong>outside the platform</strong>
-      (e.g., bank or other transfer confirmed manually), and we do <strong>not</strong> collect
-      or store your card numbers or banking credentials on our servers. If we introduce an
-      automated payment processor in the future, your payment-card data would be handled
-      directly by that processor under its own privacy terms, not stored by us.
+      payment status, and — for crypto payments — the payment platform's invoice reference
+      and the transaction ID (hash). Payments are made in USDT through a
+      <strong>third-party cryptocurrency payment platform</strong>; the transaction itself
+      happens on that platform and on the blockchain, under their own terms and privacy
+      policies. We do <strong>not</strong> collect or store card numbers or banking
+      credentials on our servers — we only receive confirmation of the payment and its
+      reference data. If we add card payments through an automated processor in the future,
+      your payment-card data would be handled directly by that processor under its own
+      privacy terms, not stored by us.
     </p>
 
     <h3>2.3 Content and self-logged data you provide</h3>
@@ -296,7 +300,7 @@
       <tr><td>Hosting / infrastructure provider</td><td>Runs our servers and database.</td></tr>
       <tr><td>AI processing provider</td><td>Generates analysis/moderation from content you submit.</td></tr>
       <tr><td>Email delivery provider</td><td>Sends verification, password-reset, and support emails.</td></tr>
-      <tr><td>Payment processor (when enabled)</td><td>Processes subscription payments. Today payments are confirmed manually and no card data is stored by us.</td></tr>
+      <tr><td>Crypto payment platform</td><td>Generates the payment invoice and confirms your USDT transaction. We receive the payment status and transaction reference — never card or bank credentials.</td></tr>
       <tr><td>Content-delivery networks (CDNs)</td><td>Serve fonts and front-end libraries; may receive your IP to deliver those assets.</td></tr>
     </table>
     <p>

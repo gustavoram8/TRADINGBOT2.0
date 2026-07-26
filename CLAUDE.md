@@ -594,6 +594,45 @@ de 9 reuniones/sem de Gabriel NO está confirmado por él — validar su disponi
 
 ---
 
+## 🔴 PIVOT 2026-07-26 — Socio fuera, cobro por CRIPTO, ley Venezuela
+**Gabriel Celis NO se suma por ahora** (quizás más adelante). Consecuencias ejecutadas:
+1. **Mentorías OCULTAS, no borradas**: kill switch `before_request` (corre ANTES del login → 404
+   plano para todos menos admin) sobre `/improve*`, `/mentorship*`, `/api/ment/*`, `/api/improve*`
+   + Secc. 19 de T&C + excepción de la Secc. 7 + índice, todo envuelto en `{% if mentorship_enabled %}`.
+   **Volver = `MENTORSHIP_ENABLED=1` + restart**: vuelve TODO idéntico (verificado: T&C recuperan
+   exactamente 7.886 chars). Las 3 fases del área de miembros quedan intactas.
+2. **Sin banco USA** → cobro por **USDT vía procesador cripto (NOWPayments, patrón condicional)**:
+   `CRYPTO_API_KEY`/`CRYPTO_IPN_SECRET`/`CRYPTO_PAY_CURRENCY` (default usdttrc20) en env — sin claves,
+   producción sigue con el flujo manual USDT intacto. Flujo: order pending → factura hosteada
+   (redirect 303) → webhook firmado HMAC-SHA512 `/webhook/crypto` activa (idempotente, reusa
+   `_activate_plan_from_order`). **3 redes de seguridad**: (a) `/checkout/status/<id>` reconcilia
+   contra el procesador al abrirse (+ poll 10s, + `/api/checkout/txid` para pegar el hash);
+   (b) **barrido al abrir /admin** (`crypto_sweep`) — recupera pagos cuyo aviso se perdió aunque el
+   cliente nunca vuelva; (c) bandeja "Pagos que necesitan atención" en Revenue (pagó-sin-activar /
+   pago parcial / pendiente >24h) + botón activar a mano. **Correos al dueño**: venta confirmada,
+   pago con problema (1 sola vez, `alerted_at`), y "pagó pero NO se activó" (ACCIÓN REQUERIDA).
+   ⚠️ Sin `MAIL_APP_PASSWORD` los avisos solo van al log. Precios SIEMPRE en USD; USDT es el riel.
+   Promesa pública: activación <24h o reembolso 100% (`CRYPTO_SLA_HOURS`).
+3. **T&C/Privacy re-anclados a VENEZUELA** (2026-07-26, EN+ES/FR/PT en legal_i18n.js):
+   Secc. 1 sin "LLC en formación" ni "Tradeable LLC" (negocio independiente de un operador individual
+   + mecanismo de cesión futura a una sociedad — la LLC de Celis entraría por ahí, sin nombrarla aún);
+   Secc. 5 = pagos USDT vía plataforma de terceros + cláusulas cripto (irreversibilidad, monto/red
+   exactos, comisiones de red, reembolsos en USDT al valor USD, SLA 24h) + sigue el NO auto-renew;
+   Secc. 14 arbitraje AAA → **tribunales competentes de Venezuela** (informal 30 días primero,
+   reclamos individuales, carve-out de derechos irrenunciables del consumidor en su país, cláusula de
+   "cesión futura" para volver a jurisdicción de la LLC); Secc. 15 Delaware → **República Bolivariana
+   de Venezuela** + carve-out consumidor. Privacy 2.2 + tabla de terceros: plataforma cripto, nunca
+   datos de tarjeta. ⚠️ **Validar Secc. 14/15 con abogado antes del lanzamiento** (elección de foro).
+   ⚠️ `checkout_done.html` (instrucciones manuales Binance) queda como fallback sin claves cripto.
+4. **PayPal del papá: DESCARTADO como método principal** (riesgo de congelamiento en cuenta personal).
+   Mercados alcanzables con USDT: Venezuela/Argentina naturales; Colombia/Brasil/Perú muy buenos;
+   México/Chile/España con fricción; USA/Canadá perdidos hasta tener Stripe.
+**Para ENCENDER el cobro:** cuenta en nowpayments.io → API key + IPN secret → `CRYPTO_API_KEY` y
+`CRYPTO_IPN_SECRET` en supervisor conf + `scalpel/.env` (NUNCA en el repo/chat) → restart. El webhook
+se registra al crear cada factura (`ipn_callback_url`); **sin dominio/HTTPS el webhook puede fallar,
+pero la reconciliación del success_url + el barrido de /admin cubren la activación igual**. Dominio
+sigue siendo el desbloqueo para que el aviso instantáneo sea fiable.
+
 ## 🟢 Stripe — pagos con tarjeta (código LISTO, probado en TEST 2026-07-12)
 Integración **condicional**: totalmente inerte hasta setear `STRIPE_SECRET_KEY` → sin la clave, prod
 sigue con el flujo manual USDT/Binance intacto (cero regresión). Reutiliza el `Order` model y
