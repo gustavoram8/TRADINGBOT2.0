@@ -54,5 +54,11 @@
   </footer>
 
   <script src="/static/improve_i18n.js" defer></script>
+
+  {# TEMPORARY — owner-only shortcut into the members area. Rendered server-side
+     only for the admin; regular visitors never receive this markup. #}
+  {% if current_user.is_authenticated and current_user.is_admin %}
+  <a class="adminpeek" href="/mentorship/area"><span class="ap-tag">admin</span> Members area →</a>
+  {% endif %}
 </body>
 </html>

@@ -366,15 +366,36 @@
         fetch('/api/improve/apply', {
           method: 'POST', headers: {'Content-Type': 'application/json'},
           body: JSON.stringify(payload)
-        }).then(function(r){ return r.json().then(function(j){ return {ok: r.ok && j.ok, next: j.next}; }); })
+        }).then(function(r){ return r.json().then(function(j){
+            return {ok: r.ok && j.ok, next: j.next, error: j.error, retry_after: j.retry_after};
+          }); })
           .catch(function(){ return {ok:false}; })
           .then(function(res){
             if (res.ok){
               window.location.href = res.next || '/improve/plans';
-            } else {
-              btn.disabled = false;
-              err.hidden = false;
+              return;
             }
+            btn.disabled = false;
+            if (res.error === 'throttled'){
+              // Dynamic string (carries an hour count), so it can't be driven by
+              // the generic [data-i18n] engine — swap the attribute out while the
+              // throttle notice is up and restore it for the generic error.
+              var hours = Math.max(1, Math.ceil((res.retry_after || 0) / 3600));
+              var d = (window.ImproveI18N && window.ImproveI18N.dict) || {};
+              var lang = (window.ImproveI18N && window.ImproveI18N.current) ? window.ImproveI18N.current() : 'en';
+              var tpl = ((d[lang] || d.en || {})['p5.throttled']) ||
+                        'You have already sent an application. You can send another one in {h} h.';
+              err.removeAttribute('data-i18n');
+              err.textContent = tpl.replace('{h}', hours);
+            } else {
+              err.setAttribute('data-i18n', 'p5.error');
+              var dd = (window.ImproveI18N && window.ImproveI18N.dict) || {};
+              var lg = (window.ImproveI18N && window.ImproveI18N.current) ? window.ImproveI18N.current() : 'en';
+              var msg = ((dd[lg] || dd.en || {})['p5.error']);
+              if (msg) err.textContent = msg;
+            }
+            err.hidden = false;
+            try { err.scrollIntoView({behavior:'smooth', block:'center'}); } catch(_) {}
           });
       });
     }
@@ -382,5 +403,11 @@
     else init();
   })();
   </script>
+
+  {# TEMPORARY — owner-only shortcut into the members area. Rendered server-side
+     only for the admin; regular visitors never receive this markup. #}
+  {% if current_user.is_authenticated and current_user.is_admin %}
+  <a class="adminpeek" href="/mentorship/area"><span class="ap-tag">admin</span> Members area →</a>
+  {% endif %}
 </body>
 </html>

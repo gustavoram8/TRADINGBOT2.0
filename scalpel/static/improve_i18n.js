@@ -123,6 +123,7 @@
       'p5.h10p': '10+ hours',
       'p5.waiver': 'I understand this is an educational program. Nothing in it is financial advice, a signal service, or a promise of profit. Any results depend entirely on my own decisions, effort and circumstances, and trading involves substantial risk of loss.',
       'p5.error': 'Please complete every field and accept the acknowledgement.',
+      'p5.throttled': 'You have already sent an application. To keep the queue clean, each person can send one every 24 hours — you can try again in about {h} h. If it is urgent, write to us from the contact page.',
       'p5.cta': 'Submit application',
       'p5.reassure': 'Applications are reviewed personally. If it’s not a fit, you’ll hear that too — no hard feelings.',
       // Page 6 — the offer (/improve/plans)
@@ -340,6 +341,7 @@
       'p5.h10p': 'Más de 10 horas',
       'p5.waiver': 'Entiendo que este es un programa educativo. Nada en él es asesoría financiera, un servicio de señales ni una promesa de ganancias. Cualquier resultado depende por completo de mis propias decisiones, esfuerzo y circunstancias, y el trading implica un riesgo sustancial de pérdida.',
       'p5.error': 'Completa todos los campos y acepta la declaración.',
+      'p5.throttled': 'Ya enviaste una solicitud. Para mantener la fila limpia, cada persona puede enviar una cada 24 horas — puedes volver a intentarlo en unas {h} h. Si es urgente, escríbenos desde la página de contacto.',
       'p5.cta': 'Enviar solicitud',
       'p5.reassure': 'Cada solicitud se revisa personalmente. Si no encaja, también te lo diremos — sin rodeos.',
       // Página 6 — la oferta (/improve/plans)
@@ -557,6 +559,7 @@
       'p5.h10p': 'Plus de 10 heures',
       'p5.waiver': 'Je comprends qu’il s’agit d’un programme éducatif. Rien ici n’est un conseil financier, un service de signaux ou une promesse de profit. Tout résultat dépend entièrement de mes propres décisions, efforts et circonstances, et le trading comporte un risque substantiel de perte.',
       'p5.error': 'Merci de remplir tous les champs et d’accepter la déclaration.',
+      'p5.throttled': 'Vous avez déjà envoyé une demande. Pour garder la file propre, chaque personne peut en envoyer une toutes les 24 heures — vous pourrez réessayer dans environ {h} h. En cas d’urgence, écrivez-nous depuis la page de contact.',
       'p5.cta': 'Envoyer ma candidature',
       'p5.reassure': 'Chaque candidature est lue personnellement. Si ce n’est pas le bon fit, on te le dira aussi — sans rancune.',
       // Page 6 — l’offre (/improve/plans)
@@ -774,6 +777,7 @@
       'p5.h10p': 'Mais de 10 horas',
       'p5.waiver': 'Entendo que este é um programa educativo. Nada nele é aconselhamento financeiro, serviço de sinais ou promessa de lucro. Qualquer resultado depende inteiramente das minhas próprias decisões, esforço e circunstâncias, e operar envolve risco substancial de perda.',
       'p5.error': 'Preencha todos os campos e aceite a declaração.',
+      'p5.throttled': 'Você já enviou uma solicitação. Para manter a fila organizada, cada pessoa pode enviar uma a cada 24 horas — você pode tentar de novo em cerca de {h} h. Se for urgente, escreva para nós pela página de contato.',
       'p5.cta': 'Enviar inscrição',
       'p5.reassure': 'As inscrições são lidas pessoalmente. Se não for o encaixe certo, você também vai ouvir isso — sem ressentimentos.',
       // Página 6 — a oferta (/improve/plans)

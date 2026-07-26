@@ -1022,6 +1022,13 @@ class MentorshipApplication(db.Model):
     lang = db.Column(db.String(5), nullable=True)             # UI language at submit time
     status = db.Column(db.String(20), default='pending', nullable=False)  # pending/accepted/rejected
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    # Anti-spam bookkeeping (2026-07-26): a resubmit UPDATES the pending row, so
+    # `created_at` alone can't throttle. `last_submit_at` is the real clock for
+    # the 1-per-24h rule; `submit_ip` backs the per-device cap; `submit_count`
+    # is audit only (how many times this profile was re-sent).
+    last_submit_at = db.Column(db.DateTime, nullable=True, index=True)
+    submit_ip = db.Column(db.String(45), nullable=True, index=True)   # IPv6-safe length
+    submit_count = db.Column(db.Integer, default=1, nullable=True)
     user = db.relationship('User', backref='mentorship_applications')
 
 
@@ -2930,6 +2937,67 @@ def mentorship_checkout_success():
     return redirect(url_for('improve_plans'))
 
 
+# ── Application anti-spam throttle ────────────────────────────────────────
+# The apply form is PUBLIC (no login required), so a joker could hammer it and
+# flood both the DB and the company inbox. Rule: one submission per person per
+# 24 h — for everyone, admin included. "Person" is matched three ways because
+# an anonymous spammer can rotate any single one of them:
+#   · account   — the logged-in user id
+#   · email     — the address typed into the form
+#   · device/IP — capped a bit looser (a household or office can share one NAT,
+#                 so 1/24h per IP would block a legitimate second applicant)
+MENTORSHIP_APPLY_WINDOW = timedelta(hours=24)
+MENTORSHIP_APPLY_IP_MAX = 3
+
+
+def _client_ip():
+    """Best-effort client IP. Honours X-Forwarded-For (first hop) so the value
+    stays correct once nginx sits in front of gunicorn."""
+    fwd = request.headers.get('X-Forwarded-For', '')
+    if fwd:
+        return fwd.split(',')[0].strip()[:45]
+    return (request.remote_addr or '')[:45]
+
+
+def _apply_throttle_retry_after(email, ip):
+    """Seconds the visitor must wait before applying again, or 0 if they may
+    submit now. Counts only accepted submissions, so a blocked attempt never
+    pushes the window further out."""
+    now = datetime.now(timezone.utc)
+    cutoff = now - MENTORSHIP_APPLY_WINDOW
+    stamp = db.func.coalesce(MentorshipApplication.last_submit_at,
+                             MentorshipApplication.created_at)
+
+    def _wait(row):
+        last = _aware(row.last_submit_at or row.created_at)
+        if not last:
+            return 0
+        return max(1, int((last + MENTORSHIP_APPLY_WINDOW - now).total_seconds()))
+
+    # 1) same account
+    if current_user.is_authenticated:
+        row = (MentorshipApplication.query
+               .filter(MentorshipApplication.user_id == current_user.id, stamp >= cutoff)
+               .order_by(stamp.desc()).first())
+        if row:
+            return _wait(row)
+    # 2) same email
+    if email:
+        row = (MentorshipApplication.query
+               .filter(db.func.lower(MentorshipApplication.email) == email, stamp >= cutoff)
+               .order_by(stamp.desc()).first())
+        if row:
+            return _wait(row)
+    # 3) same device/IP — looser cap so shared connections aren't punished
+    if ip:
+        rows = (MentorshipApplication.query
+                .filter(MentorshipApplication.submit_ip == ip, stamp >= cutoff)
+                .order_by(stamp.asc()).all())
+        if len(rows) >= MENTORSHIP_APPLY_IP_MAX:
+            return _wait(rows[0])   # freed when the OLDEST of them ages out
+    return 0
+
+
 @app.route('/api/improve/apply', methods=['POST'])
 def improve_apply_submit():
     _mentorship_gate()
@@ -2985,6 +3053,14 @@ def improve_apply_submit():
             and age_range in _APPLY_AGE):
         return jsonify({'ok': False, 'error': 'invalid'}), 400
 
+    # Anti-spam: one submission per person per 24 h (see the throttle helper).
+    # Checked AFTER validation so a malformed payload can't burn someone's slot.
+    ip = _client_ip()
+    retry_after = _apply_throttle_retry_after(email, ip)
+    if retry_after:
+        return jsonify({'ok': False, 'error': 'throttled',
+                        'retry_after': retry_after}), 429
+
     # One pending application per email — resubmits just refresh the existing
     # one instead of piling up duplicates for review.
     existing = MentorshipApplication.query.filter_by(email=email, status='pending').first()
@@ -2998,6 +3074,8 @@ def improve_apply_submit():
         existing.call_lang, existing.call_slot = call_lang, call_slot
         existing.source, existing.age_range = source, age_range
         existing.waiver_accepted_at, existing.lang = now, lang
+        existing.last_submit_at, existing.submit_ip = now, ip or None
+        existing.submit_count = (existing.submit_count or 1) + 1
         if current_user.is_authenticated:
             existing.user_id = current_user.id
         application = existing
@@ -3010,7 +3088,8 @@ def improve_apply_submit():
             goals=goals, strength=strength, weakness=weakness, assets=assets,
             country=country, tzname=tzname, call_lang=call_lang, call_slot=call_slot,
             source=source, age_range=age_range,
-            waiver_accepted_at=now, lang=lang)
+            waiver_accepted_at=now, lang=lang,
+            last_submit_at=now, submit_ip=ip or None, submit_count=1)
         db.session.add(application)
     db.session.commit()
     # Company inbox copy (best-effort; the DB row is the source of truth).
@@ -8279,6 +8358,9 @@ def _migrate_mentorship_application_columns():
         ('call_slot', 'VARCHAR(12)'),
         ('source', 'VARCHAR(20)'),
         ('age_range', 'VARCHAR(10)'),
+        ('last_submit_at', 'TIMESTAMP'),
+        ('submit_ip', 'VARCHAR(45)'),
+        ('submit_count', 'INTEGER'),
     ]
     added = []
     for cname, ctype in wanted:
