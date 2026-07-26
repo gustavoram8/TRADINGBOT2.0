@@ -750,6 +750,7 @@ class Order(db.Model):
     paid_amount = db.Column(db.Float, nullable=True)           # what actually arrived (in pay currency)
     pay_currency = db.Column(db.String(20), nullable=True)
     tx_hash = db.Column(db.String(120), nullable=True)         # buyer-supplied or processor-reported
+    alerted_at = db.Column(db.DateTime, nullable=True)         # problem alert already emailed
     user = db.relationship('User', backref='orders')
 
 
@@ -4234,12 +4235,20 @@ def admin():
 
     ai_ctx = _build_ai_analytics_context()
 
+    # Opening the panel re-checks every recent unpaid order with the processor.
+    # This is what makes a lost notification impossible to miss: the owner does
+    # not have to wait for the buyer to come back and reload their page.
+    swept, recovered = crypto_sweep()
+    attention = orders_needing_attention()
+
     return render_template(
         'admin.html', users=users, counts=counts,
         audit_events=audit_events, audit_failed_count=audit_failed_count,
         warn_counts=warn_counts, recent_warnings=recent_warnings, flagged=flagged,
         ban_queue=ban_queue, demo_active=_admin_demo() is not None,
         bug_reports=bug_reports, bug_new_count=bug_new_count,
+        pay_attention=attention, pay_swept=swept, pay_recovered=recovered,
+        crypto_on=CRYPTO_ENABLED, sla_hours=CRYPTO_SLA_HOURS,
         **ai_ctx, **revenue,
     )
 
@@ -4465,6 +4474,60 @@ def _crypto_create_invoice(order, kind='plan'):
     return inv.get('invoice_url')
 
 
+def send_payment_alert_email(order, kind):
+    """Tell the owner what just happened with a payment.
+
+    `kind` is 'sale' (money in, plan granted), 'problem' (the processor reports
+    a partial/failed/expired payment) or 'stuck' (paid but the plan was not
+    granted). Best-effort: the order row is always the source of truth, so a
+    mail failure can never affect the customer.
+    """
+    if not app.config.get('MAIL_PASSWORD'):
+        app.logger.warning('MAIL_APP_PASSWORD not set — payment alert (%s) not sent.', kind)
+        return False
+    to_addr = os.environ.get('ADMIN_EMAIL', 'mauroramirezmij@gmail.com')
+    u = db.session.get(User, order.user_id)
+    head = {'sale': '💰 VENTA confirmada',
+            'problem': '⚠️ PAGO con problema',
+            'stuck': '🚨 PAGO recibido pero el plan NO se activó'}.get(kind, 'Pago')
+    action = {
+        'sale': 'No hay nada que hacer: el plan ya está activo.',
+        'problem': ('Revisá el pedido en /admin. Si el monto que llegó alcanza, '
+                    'podés activarlo a mano con "Marcar pagado".'),
+        'stuck': ('ACCIÓN REQUERIDA: entrá a /admin y activá el pedido a mano. '
+                  'El cliente ya pagó.'),
+    }.get(kind, '')
+    body = (
+        f'{head} — Tradeable Academy\n'
+        f'{"=" * 46}\n\n'
+        f'Pedido:    #{order.id}\n'
+        f'Plan:      {PLAN_LABELS.get(order.plan, order.plan)} / {order.billing_cycle}\n'
+        f'Monto:     ${order.final_price:.2f} USD\n'
+        f'Recibido:  {order.paid_amount if order.paid_amount is not None else "—"} '
+        f'{(order.pay_currency or "").upper()}\n'
+        f'Estado:    {order.status} / {order.pay_status or "—"}\n'
+        f'Usuario:   {(u.username if u else "?")} / {(u.email if u else "?")}\n'
+        f'Tx:        {order.tx_hash or "—"}\n\n'
+        f'{action}\n'
+    )
+    msg = Message(f'{head} — pedido #{order.id}', recipients=[to_addr])
+    msg.body = body
+    prev_timeout = socket.getdefaulttimeout()
+    socket.setdefaulttimeout(15)
+    try:
+        mail.send(msg)
+        return True
+    except Exception as exc:
+        app.logger.warning('Failed to send payment alert: %s', exc)
+        return False
+    finally:
+        socket.setdefaulttimeout(prev_timeout)
+
+
+# Statuses that mean the buyer's money did NOT arrive cleanly.
+CRYPTO_PROBLEM_STATES = ('partially_paid', 'failed', 'expired', 'refunded')
+
+
 def _crypto_apply_status(order, info):
     """Fold a processor payload into the order and activate when it is paid.
 
@@ -4490,7 +4553,79 @@ def _crypto_apply_status(order, info):
     db.session.commit()
     if order.status == 'paid':
         activated = _activate_plan_from_order(order)
+        # Only alert the first time the plan is granted: a repeated notification
+        # must not spam the inbox (same idempotency guard as the activation).
+        if activated:
+            send_payment_alert_email(order, 'sale')
+        elif order.applied_at is None:
+            # Money in but the plan did not land — this is the one that needs a
+            # human, so it must never depend on the buyer coming back.
+            send_payment_alert_email(order, 'stuck')
+    elif status in CRYPTO_PROBLEM_STATES and not order.alerted_at:
+        order.alerted_at = datetime.now(timezone.utc)
+        db.session.commit()
+        send_payment_alert_email(order, 'problem')
     return activated
+
+
+def crypto_sweep(max_orders=25):
+    """Re-check every recent unpaid order against the processor.
+
+    The customer's own page already reconciles their order — but a buyer who
+    pays and never comes back would go unnoticed. This runs when the owner opens
+    the admin panel, so the panel itself is the trigger: no scheduler, no cron,
+    and the answer is always fresh when you are looking at it.
+
+    Returns (checked, recovered).
+    """
+    if not CRYPTO_ENABLED:
+        return 0, 0
+    cutoff = datetime.now(timezone.utc) - timedelta(days=14)
+    pending = (Order.query
+               .filter(Order.status == 'pending',
+                       Order.provider_ref.isnot(None),
+                       Order.created_at >= cutoff)
+               .order_by(Order.created_at.desc())
+               .limit(max_orders).all())
+    recovered = 0
+    for o in pending:
+        try:
+            if _crypto_reconcile(o):
+                recovered += 1
+        except Exception as exc:            # one bad order must not stop the sweep
+            app.logger.warning('sweep failed on order %s: %s', o.id, exc)
+    return len(pending), recovered
+
+
+def orders_needing_attention():
+    """Orders a human should look at, newest first.
+
+    Three kinds: money arrived but the plan is not active, the processor
+    reported a problem, and payments that have been sitting unconfirmed for
+    more than the promised window.
+    """
+    stale = datetime.now(timezone.utc) - timedelta(hours=CRYPTO_SLA_HOURS)
+    rows = (Order.query
+            .filter(db.or_(
+                db.and_(Order.status == 'paid', Order.applied_at.is_(None)),
+                Order.pay_status.in_(CRYPTO_PROBLEM_STATES),
+                db.and_(Order.status == 'pending',
+                        Order.provider_ref.isnot(None),
+                        Order.created_at < stale)))
+            .order_by(Order.created_at.desc()).limit(50).all())
+    out = []
+    for o in rows:
+        if o.status == 'paid' and o.applied_at is None:
+            why = 'paid_not_applied'
+        elif (o.pay_status or '') in CRYPTO_PROBLEM_STATES:
+            why = o.pay_status
+        else:
+            why = 'awaiting_payment'
+        u = db.session.get(User, o.user_id)
+        out.append({'order': o, 'why': why,
+                    'username': u.username if u else '—',
+                    'email': u.email if u else '—'})
+    return out
 
 
 def _crypto_reconcile(order):
@@ -8981,7 +9116,7 @@ def _migrate_mentorship_area_columns():
         'mentorship_video_comment': [('at_sec', 'INTEGER')],
         'order': [('provider_ref', 'VARCHAR(80)'), ('pay_status', 'VARCHAR(24)'),
                   ('paid_amount', 'FLOAT'), ('pay_currency', 'VARCHAR(20)'),
-                  ('tx_hash', 'VARCHAR(120)')],
+                  ('tx_hash', 'VARCHAR(120)'), ('alerted_at', 'TIMESTAMP')],
         'mentorship_live_state': [('watermark_on', 'BOOLEAN')],
     }
     for table, cols in wanted.items():

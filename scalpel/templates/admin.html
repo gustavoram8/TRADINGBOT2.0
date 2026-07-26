@@ -397,6 +397,54 @@
     </div><!-- /users pane -->
 
     <div class="tabpane" data-pane="revenue">
+    <!-- ═══════════ PAYMENTS NEEDING A HUMAN ═══════════
+         Opening this panel already re-checked every recent unpaid order with
+         the processor, so this list is the leftovers: money that arrived but
+         did not land, problem payments, and orders past the promised window. -->
+    <div class="section-h" id="payments">🔔 Pagos que necesitan atención
+      {% if pay_attention %}<span style="color:#e0244a">({{ pay_attention|length }})</span>{% endif %}</div>
+    <div class="section-d">
+      {% if crypto_on %}Al abrir este panel se revisaron <b>{{ pay_swept }}</b> pedidos pendientes con el
+        procesador{% if pay_recovered %} y se recuperaron <b>{{ pay_recovered }}</b> pago(s) cuyo aviso no había llegado{% endif %}.
+      {% else %}El cobro automático está apagado (falta configurar las claves del procesador).{% endif %}
+      Plazo prometido al cliente: {{ sla_hours }} h.
+    </div>
+    {% if pay_attention %}
+    <div class="table-card">
+    <table>
+      <thead><tr><th>Pedido</th><th>Usuario</th><th>Plan</th><th>Monto</th><th>Recibido</th><th>Motivo</th><th></th></tr></thead>
+      <tbody>
+      {% for row in pay_attention %}
+      <tr>
+        <td class="u-name">#{{ row.order.id }}<br><span class="u-email">{{ row.order.created_at.strftime('%d/%m %H:%M') }}</span></td>
+        <td class="u-name">{{ row.username }}<br><span class="u-email">{{ row.email }}</span></td>
+        <td>{{ row.order.plan }} / {{ row.order.billing_cycle }}</td>
+        <td>${{ '%.2f'|format(row.order.final_price) }}</td>
+        <td>{% if row.order.paid_amount is not none %}{{ row.order.paid_amount }} {{ (row.order.pay_currency or '')|upper }}{% else %}—{% endif %}
+            {% if row.order.tx_hash %}<br><span class="u-email">{{ row.order.tx_hash[:22] }}…</span>{% endif %}</td>
+        <td>
+          {% if row.why == 'paid_not_applied' %}<b style="color:#e0244a">Pagó y NO se activó</b>
+          {% elif row.why == 'partially_paid' %}<b style="color:#d9a636">Pagó de menos</b>
+          {% elif row.why == 'awaiting_payment' %}Sin confirmar hace +{{ sla_hours }} h
+          {% else %}{{ row.why }}{% endif %}
+        </td>
+        <td>
+          {% if row.order.status != 'paid' or row.order.applied_at is none %}
+          <form method="post" action="/admin/order/mark-paid" style="display:inline">
+            <input type="hidden" name="order_id" value="{{ row.order.id }}" />
+            <button class="plan-btn" type="submit">Activar a mano</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% else %}
+    <div class="section-d" style="opacity:.75">✅ Nada pendiente. Todos los pagos se resolvieron solos.</div>
+    {% endif %}
+
     <!-- ════════════════════ FINANCE DASHBOARD ════════════════════ -->
     <div class="section-h" id="revenue">💰 Revenue &amp; Finances — {{ month_name }}</div>
     <div class="section-d">Live business overview. Revenue counts only orders marked as paid this calendar month.</div>
