@@ -800,4 +800,12 @@ el return-url y el barrido de /admin, así que se puede dejar el Webhook ID para
   Si editas `DAILY_BANK` (en su archivo nuevo) o `QUESTION_BANK` (sigue en index.html): corre
   `node tools/extract_quiz_key.js && node tools/validate_daily_bank.js` y commitea AMBOS JSON
   (`quiz_answer_key.json` + `daily_bank_content.json`).
+- **Textos legales:** al tocar `terms.html`, `privacy.html` o `legal_i18n.js`, correr
+  `python3 tools/audit_legal_translations.py` — compara cláusula por cláusula el inglés contra ES/FR/PT
+  (números, plazos, montos y tamaño). Importa porque los T&C ahora dicen que si la ley del comprador
+  exige que mande **su** idioma, manda su idioma: un error de traducción en una cláusula de dinero es
+  exigible. Auditoría completa hecha 2026-07-26 (141 cláusulas ✅; lectura íntegra del ES de las
+  Secciones 2, 7, 11, 12, 14 y 15 — fieles). Único hallazgo: la Secc. 12 EN protegía a
+  "TRADER ACCELERATOR" mientras el resto del contrato y las 3 traducciones decían "Tradeable" →
+  unificado, y la Secc. 1 ahora define los tres nombres comerciales.
 - Commits/pushes siempre a la rama de trabajo de arriba. NO crear PR salvo que el usuario lo pida.
