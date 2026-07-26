@@ -287,6 +287,25 @@ if STRIPE_ENABLED:
 
 
 # ── Expose feature flags to every template ──
+@app.before_request
+def _mentorship_kill_switch():
+    """One switch that darkens the whole programme.
+
+    It runs BEFORE authentication, so a logged-out visitor gets a plain 404
+    instead of being bounced to the login page — from the outside the feature
+    simply does not exist. Nothing is deleted: flip MENTORSHIP_ENABLED back on
+    and every route, page and legal clause returns exactly as it was."""
+    if MENTORSHIP_ENABLED:
+        return
+    p = request.path
+    if not (p.startswith('/improve') or p.startswith('/mentorship')
+            or p.startswith('/api/ment/') or p.startswith('/api/improve')):
+        return
+    if current_user.is_authenticated and getattr(current_user, 'is_admin', False):
+        return          # the owner keeps the preview
+    abort(404)
+
+
 @app.context_processor
 def inject_feature_flags():
     return {
@@ -1458,6 +1477,11 @@ def is_mentorship_member():
 def mentorship_member_required(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
+        # While the programme is shelved the whole surface is dark for everyone
+        # but the admin — the data stays, only the door closes.
+        if not MENTORSHIP_ENABLED and not (current_user.is_authenticated
+                                           and getattr(current_user, 'is_admin', False)):
+            return jsonify({'error': 'unavailable'}), 404
         if not current_user.is_authenticated:
             return jsonify({'error': 'unauthorized'}), 401
         if not is_mentorship_member():
@@ -2620,6 +2644,7 @@ def _ment_msg_dict(m):
 @app.route('/mentorship/area')
 @login_required
 def mentorship_area():
+    _mentorship_gate()
     if not is_mentorship_member():
         return redirect(url_for('improve_plans'))
     return render_template('mentorship_area.html', is_mentor=bool(current_user.is_admin),
@@ -3180,6 +3205,7 @@ def mentorship_checkout_create():
     checkout: with Stripe on it hands off to Stripe Checkout (mode=payment);
     with Stripe off (or price 0) it falls through to a manual/pending page.
     This flow NEVER touches `user.plan`."""
+    _mentorship_gate()
     sku = (request.form.get('sku') or '').strip()
     spec = MENTORSHIP_SKUS.get(sku)
     if not spec:
@@ -3248,6 +3274,7 @@ def mentorship_checkout_success():
     Verifies the session and fulfils via the idempotent activator (which never
     touches `user.plan`). The webhook is the canonical path; this covers local
     testing without a public webhook."""
+    _mentorship_gate()
     session_id = request.args.get('session_id', '')
     if not (STRIPE_ENABLED and session_id):
         return redirect(url_for('improve_plans'))

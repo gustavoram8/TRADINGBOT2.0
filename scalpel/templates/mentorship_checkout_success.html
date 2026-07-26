@@ -33,7 +33,7 @@
         <span class="mco-label">{{ order.label }}</span>
         <span class="mco-price">${{ '%.2f'|format(order.price) }}</span>
       </div>
-      {% if order.kind in ('library', 'combo') %}
+      {% if mentorship_enabled and order.kind in ('library', 'combo') %}
       <a class="cta" href="/mentorship/area"><span data-i18n="mco.enterArea">Enter the members area →</span></a>
       <a class="cta ghost" href="/app"><span data-i18n="nav.backApp">← Back to app</span></a>
       {% else %}

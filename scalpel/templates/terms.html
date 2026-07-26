@@ -120,7 +120,7 @@
       <li><a href="#s16" data-i18n="terms.toc16">Modifications</a></li>
       <li><a href="#s17" data-i18n="terms.toc17">General Provisions</a></li>
       <li><a href="#s18" data-i18n="terms.toc18">Contact</a></li>
-      <li><a href="#s19" data-i18n="terms.toc19">Mentorship Program — Additional Terms</a></li>
+      {% if mentorship_enabled %}<li><a href="#s19" data-i18n="terms.toc19">Mentorship Program — Additional Terms</a></li>{% endif %}
     </ol>
   </div>
 
@@ -468,6 +468,7 @@
       or inability to access the Service due to the User's own device, connection,
       or jurisdictional restrictions.
     </p>
+    {% if mentorship_enabled %}
     <p>
       <strong>Exception — Meetings Cancelled by the Mentor:</strong> As described in
       Section 19, if a scheduled one-to-one mentorship Meeting is cancelled by the mentor
@@ -478,6 +479,7 @@
       Meetings cancelled by the mentor, never to Meetings missed, cancelled, or left
       unused by the User.
     </p>
+    {% endif %}
     <p>
       Refunds approved under this Section are processed within fifteen (15) business days
       to the original payment method, subject to any additional processing times of your
@@ -955,7 +957,9 @@
   </div>
   </div>
 
-  <!-- SECTION 19 -->
+  {% if mentorship_enabled %}
+  <!-- SECTION 19 — shelved with the programme; the wording is preserved intact so
+       flipping MENTORSHIP_ENABLED back on restores it word for word. -->
   <div class="section" id="s19">
     <h2 data-i18n-html="terms.t19"><span class="sec-num">19.</span> Mentorship Program — Additional Terms</h2>
     <div data-i18n-html="terms.b19">
@@ -1064,6 +1068,7 @@
     </p>
   </div>
   </div>
+  {% endif %}
 
   <div class="terms-footer">
     &copy; 2026 Tradeable Academy. All rights reserved. &nbsp;|&nbsp;
