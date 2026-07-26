@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tradeable Academy — Rastro de pedido</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/auth.css" />
+  <style>
+    body { display:block; padding:0; min-height:100vh; }
+    .admin-nav { display:flex; align-items:center; justify-content:space-between;
+      padding:16px 28px; border-bottom:1px solid var(--border); }
+    .admin-nav img { height:34px; }
+    .admin-nav .left { display:flex; align-items:center; gap:12px; }
+    .admin-nav .badge { font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+      color:var(--accent); border:1px solid var(--border2); border-radius:14px; padding:3px 10px; }
+    .admin-nav a { font-size:12.5px; font-weight:600; color:var(--muted); text-decoration:none;
+      border:1px solid var(--border2); padding:7px 15px; border-radius:18px; margin-left:8px; }
+    .admin-nav a:hover { color:var(--text); border-color:var(--accent); }
+    .admin-wrap { max-width:1000px; margin:0 auto; padding:26px 24px 80px; }
+    h1 { font-size:22px; font-weight:800; margin-bottom:4px; }
+    .lede { color:var(--muted); font-size:13.5px; margin-bottom:20px; }
+
+    .searchbar { display:flex; gap:9px; margin-bottom:24px; }
+    .searchbar input { flex:1; background:var(--surface); border:1px solid var(--border2);
+      border-radius:10px; color:var(--text); font:inherit; font-size:14px; padding:12px 15px; }
+    .searchbar input:focus { outline:none; border-color:var(--accent); }
+    .searchbar button { font:inherit; font-size:13.5px; font-weight:700; cursor:pointer;
+      background:var(--accent); color:#fff; border:0; border-radius:10px; padding:12px 22px; }
+
+    .card { background:var(--card); border:1px solid var(--border); border-radius:12px;
+      padding:20px 22px; margin-bottom:16px; }
+    .card h2 { font-size:13px; font-weight:800; letter-spacing:.07em; text-transform:uppercase;
+      color:var(--muted); margin-bottom:14px; }
+
+    .verdict { display:flex; gap:14px; align-items:flex-start; border-radius:12px;
+      padding:16px 20px; margin-bottom:18px; border:1px solid var(--border); }
+    .verdict.ok { background:rgba(34,160,90,.10); border-color:rgba(34,160,90,.35); }
+    .verdict.bad { background:rgba(224,36,74,.10); border-color:rgba(224,36,74,.35); }
+    .verdict .ic { font-size:24px; line-height:1; }
+    .verdict b { display:block; font-size:15px; margin-bottom:3px; }
+    .verdict p { font-size:13.5px; color:var(--muted); margin:0; }
+
+    /* timeline */
+    .tl { position:relative; padding-left:28px; }
+    .tl::before { content:''; position:absolute; left:8px; top:6px; bottom:6px; width:2px; background:var(--border2); }
+    .tl .row { position:relative; padding:9px 0; }
+    .tl .row::before { content:''; position:absolute; left:-25px; top:14px; width:12px; height:12px;
+      border-radius:50%; background:var(--surface); border:2px solid var(--border2); }
+    .tl .row.done::before { background:var(--accent); border-color:var(--accent); }
+    .tl .row .lbl { font-size:13.5px; font-weight:700; }
+    .tl .row .dt { font-size:12.5px; color:var(--muted); font-family:'JetBrains Mono',monospace; }
+    .tl .row.miss .lbl { color:var(--muted); }
+
+    .kv { display:grid; grid-template-columns:180px 1fr; gap:7px 14px; font-size:13.5px; }
+    .kv .k { color:var(--muted); }
+    .kv .v { font-weight:600; word-break:break-all; }
+    .mono { font-family:'JetBrains Mono',monospace; font-size:12.5px; }
+
+    .stats { display:flex; gap:12px; flex-wrap:wrap; }
+    .stat { border:1px solid var(--border2); border-radius:10px; padding:12px 18px; min-width:120px; }
+    .stat .n { font-size:22px; font-weight:800; }
+    .stat .l { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+
+    table { width:100%; border-collapse:collapse; }
+    th { text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.06em;
+      color:var(--muted); font-weight:700; padding:9px 10px; border-bottom:1px solid var(--border); }
+    td { padding:9px 10px; border-bottom:1px solid var(--border); font-size:13px; }
+    tr:last-child td { border-bottom:none; }
+    .ev-ok { color:#2e9e63; font-weight:700; }
+    .ev-bad { color:#e0244a; font-weight:700; }
+
+    .copybox { position:relative; }
+    .copybox textarea { width:100%; min-height:230px; background:var(--surface);
+      border:1px solid var(--border2); border-radius:10px; color:var(--text);
+      font-family:'JetBrains Mono',monospace; font-size:12.5px; line-height:1.6; padding:14px; resize:vertical; }
+    .copybtn { font:inherit; font-size:12.5px; font-weight:700; cursor:pointer; margin-top:9px;
+      background:var(--surface); color:var(--text); border:1px solid var(--border2);
+      border-radius:9px; padding:9px 16px; }
+    .copybtn:hover { border-color:var(--accent); color:var(--accent); }
+    .empty { color:var(--muted); font-size:13.5px; padding:26px 4px; text-align:center; }
+    a.result { display:block; padding:12px 14px; border:1px solid var(--border2); border-radius:10px;
+      margin-bottom:8px; text-decoration:none; color:var(--text); font-size:13.5px; }
+    a.result:hover { border-color:var(--accent); }
+    a.result span { color:var(--muted); }
+  </style>
+</head>
+<body>
+  <script>
+    (function(){ try { if (localStorage.getItem('scalpel_theme') !== 'dark') document.body.classList.add('light'); }
+      catch(e) { document.body.classList.add('light'); } })();
+  </script>
+
+  <nav class="admin-nav">
+    <div class="left">
+      <img src="/static/logo.png" alt="Tradeable" onerror="this.style.display='none';" />
+      <span class="badge">Rastro</span>
+    </div>
+    <div class="links">
+      <a href="/admin">← Panel</a>
+      <a href="/app">Abrir app →</a>
+    </div>
+  </nav>
+
+  <div class="admin-wrap">
+    <h1>🧾 Rastro de pedido</h1>
+    <p class="lede">Toda la evidencia de una compra en un solo lugar: cuándo pagó, en qué momento exacto
+      se le entregó el plan, cuánto duró y cuánto lo usó. Al final, un texto listo para responderle.</p>
+
+    <form class="searchbar" method="get" action="/admin/trace">
+      <input name="q" value="{{ q }}" autofocus
+             placeholder="Número de pedido, usuario, email o hash de transacción…" />
+      <button type="submit">Buscar</button>
+    </form>
+
+    {% if results %}
+      <div class="card">
+        <h2>{{ results|length }} pedidos encontrados</h2>
+        {% for o in results %}
+        <a class="result" href="/admin/trace?order={{ o.id }}">
+          <b>#{{ o.id }}</b> — {{ plan_labels.get(o.plan, o.plan) }} / {{ o.billing_cycle }}
+          · ${{ '%.2f'|format(o.final_price) }}
+          <span>· {{ o.created_at.strftime('%d/%m/%Y') }} · {{ o.status }}{% if o.applied_at %} · entregado{% endif %}</span>
+        </a>
+        {% endfor %}
+      </div>
+    {% elif q and not trace %}
+      <div class="card"><div class="empty">Sin resultados para “{{ q }}”.</div></div>
+    {% endif %}
+
+    {% if trace %}
+    {% set o = trace.order %}
+    {% set u = trace.user %}
+
+    <!-- El veredicto primero: es lo que se necesita saber en un reclamo. -->
+    <div class="verdict {{ 'ok' if trace.delivered else 'bad' }}">
+      <span class="ic">{{ '✅' if trace.delivered else '⚠️' }}</span>
+      <div>
+        {% if trace.delivered %}
+          <b>El plan SÍ fue entregado</b>
+          <p>Se activó el {{ o.applied_at.strftime('%d/%m/%Y a las %H:%M UTC') }}.
+             {% if trace.logins or trace.usage %}La cuenta inició sesión {{ trace.logins }}
+             {{ 'vez' if trace.logins == 1 else 'veces' }} y usó el analizador {{ trace.usage }}
+             {{ 'vez' if trace.usage == 1 else 'veces' }} después del pago.{% endif %}</p>
+        {% else %}
+          <b>El plan NO fue entregado</b>
+          <p>{% if o.status == 'paid' %}El pago está confirmado pero la activación nunca corrió —
+             corresponde activarlo a mano o reembolsar.{% else %}Este pedido nunca llegó a pagarse
+             (estado: {{ o.status }}).{% endif %}</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Línea de tiempo</h2>
+      <div class="tl">
+        {% for label, when, done in trace.steps %}
+        <div class="row {{ 'done' if when else 'miss' }}">
+          <div class="lbl">{{ label }}</div>
+          <div class="dt">{{ when.strftime('%d/%m/%Y %H:%M UTC') if when else '— nunca ocurrió —' }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Pedido y pago</h2>
+      <div class="kv">
+        <div class="k">Pedido</div><div class="v">#{{ o.id }}</div>
+        <div class="k">Plan</div><div class="v">{{ plan_labels.get(o.plan, o.plan) }} / {{ o.billing_cycle }}</div>
+        <div class="k">Importe</div><div class="v">${{ '%.2f'|format(o.final_price) }} USD{% if o.discount_pct %} (−{{ o.discount_pct }}%, código {{ o.promo_code }}){% endif %}</div>
+        <div class="k">Estado</div><div class="v">{{ o.status }}{% if o.pay_status %} / {{ o.pay_status }}{% endif %}</div>
+        <div class="k">Método</div><div class="v">{{ o.payment_method or '—' }}</div>
+        {% if o.paid_amount is not none %}
+        <div class="k">Recibido</div><div class="v">{{ o.paid_amount }} {{ (o.pay_currency or '')|upper }}</div>
+        {% endif %}
+        {% if o.provider_ref %}
+        <div class="k">Factura del procesador</div><div class="v mono">{{ o.provider_ref }}</div>
+        {% endif %}
+        {% if o.tx_hash %}
+        <div class="k">Transacción (blockchain)</div><div class="v mono">{{ o.tx_hash }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if u %}
+    <div class="card">
+      <h2>Cuenta y vigencia</h2>
+      <div class="kv">
+        <div class="k">Usuario</div><div class="v">{{ u.username }} (id {{ u.id }})</div>
+        <div class="k">Email</div><div class="v">{{ u.email }}</div>
+        <div class="k">Plan actual</div><div class="v">{{ u.plan }}</div>
+        <div class="k">Plan desde</div><div class="v">{{ u.plan_started_at.strftime('%d/%m/%Y %H:%M UTC') if u.plan_started_at else '—' }}</div>
+        <div class="k">Plan hasta</div><div class="v">{{ u.plan_expires_at.strftime('%d/%m/%Y %H:%M UTC') if u.plan_expires_at else '— sin vencimiento —' }}</div>
+        <div class="k">Cuenta creada</div><div class="v">{{ u.created_at.strftime('%d/%m/%Y') if u.created_at else '—' }}</div>
+        <div class="k">Aceptó los T&amp;C</div><div class="v">{{ u.terms_accepted_at.strftime('%d/%m/%Y %H:%M UTC') if u.terms_accepted_at else '—' }}{% if u.terms_version %} (versión {{ u.terms_version }}){% endif %}</div>
+        <div class="k">Última actividad</div><div class="v">{{ trace.last_seen.strftime('%d/%m/%Y %H:%M UTC') if trace.last_seen else '— nunca —' }}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Uso real después del pago</h2>
+      <div class="stats">
+        <div class="stat"><div class="n">{{ trace.logins }}</div><div class="l">inicios de sesión</div></div>
+        <div class="stat"><div class="n">{{ trace.usage }}</div><div class="l">análisis con IA</div></div>
+      </div>
+      <p class="lede" style="margin:14px 0 0">Contados desde la confirmación del pago. Es la prueba de que
+        la cuenta no solo recibió el plan, sino que lo utilizó.</p>
+    </div>
+    {% endif %}
+
+    {% if trace.other_orders %}
+    <div class="card">
+      <h2>Otros pedidos de esta cuenta</h2>
+      <table>
+        <thead><tr><th>Pedido</th><th>Plan</th><th>Importe</th><th>Fecha</th><th>Estado</th><th></th></tr></thead>
+        <tbody>
+        {% for x in trace.other_orders %}
+        <tr>
+          <td>#{{ x.id }}</td>
+          <td>{{ plan_labels.get(x.plan, x.plan) }}</td>
+          <td>${{ '%.2f'|format(x.final_price) }}</td>
+          <td>{{ x.created_at.strftime('%d/%m/%Y') }}</td>
+          <td>{{ x.status }}{% if x.applied_at %} · entregado{% endif %}</td>
+          <td><a href="/admin/trace?order={{ x.id }}">ver</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+    {% if trace.events %}
+    <div class="card">
+      <h2>Registro de auditoría (solo-agregar)</h2>
+      <table>
+        <thead><tr><th>Cuándo</th><th>Evento</th><th>Resultado</th><th>Detalle</th></tr></thead>
+        <tbody>
+        {% for e in trace.events %}
+        <tr>
+          <td class="mono">{{ e.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+          <td>{{ e.event_type }}</td>
+          <td class="{{ 'ev-ok' if e.success else 'ev-bad' }}">{{ 'ok' if e.success else 'falló' }}</td>
+          <td>{{ e.detail or '' }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+    <div class="card">
+      <h2>Resumen para responderle al cliente</h2>
+      <div class="copybox">
+        <textarea id="sum" readonly>{{ trace.summary }}</textarea>
+        <button class="copybtn" id="copy" type="button">📋 Copiar</button>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+<script>
+  (function(){
+    var b = document.getElementById('copy');
+    if (!b) return;
+    b.addEventListener('click', function(){
+      var t = document.getElementById('sum');
+      t.select(); t.setSelectionRange(0, 99999);
+      try { document.execCommand('copy'); b.textContent = '✓ Copiado'; }
+      catch (e) { b.textContent = 'Copialo a mano'; }
+      setTimeout(function(){ b.textContent = '📋 Copiar'; }, 2500);
+    });
+  })();
+</script>
+</body>
+</html>

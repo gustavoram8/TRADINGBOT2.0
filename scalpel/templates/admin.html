@@ -253,6 +253,7 @@
       <span class="badge">Admin</span>
     </div>
     <div class="links">
+      <a href="/admin/trace">🧾 Rastro de pedido</a>
       <a href="/admin/device-preview">📱 Device preview</a>
       <a href="#ai-spend">AI usage{% if ai_flagged %} ({{ ai_flagged|length }} 🚩){% endif %}</a>
       <a href="#audit">Audit log{% if audit_failed_count %} ({{ audit_failed_count }} ⚠){% endif %}</a>
@@ -435,6 +436,8 @@
             <button class="plan-btn" type="submit">Activar a mano</button>
           </form>
           {% endif %}
+          <a class="plan-btn" href="/admin/trace?order={{ row.order.id }}"
+             style="text-decoration:none;display:inline-block">🧾 Rastro</a>
         </td>
       </tr>
       {% endfor %}

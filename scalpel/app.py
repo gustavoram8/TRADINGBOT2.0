@@ -4253,6 +4253,27 @@ def admin():
     )
 
 
+@app.route('/admin/trace')
+@login_required
+def admin_trace():
+    """Evidence sheet for one purchase (or the search results to pick one)."""
+    if not current_user.is_admin:
+        return redirect(url_for('app_view'))
+    q = (request.args.get('q') or '').strip()
+    oid = request.args.get('order', type=int)
+    trace, results = None, []
+    if oid:
+        o = db.session.get(Order, oid)
+        if o:
+            trace = order_trace(o)
+    elif q:
+        results = find_orders(q)
+        if len(results) == 1:
+            trace, results = order_trace(results[0]), []
+    return render_template('admin_trace.html', q=q, trace=trace, results=results,
+                           plan_labels=PLAN_LABELS)
+
+
 @app.route('/admin/device-preview')
 @login_required
 def admin_device_preview():
@@ -4595,6 +4616,115 @@ def crypto_sweep(max_orders=25):
         except Exception as exc:            # one bad order must not stop the sweep
             app.logger.warning('sweep failed on order %s: %s', o.id, exc)
     return len(pending), recovered
+
+
+def order_trace(order):
+    """Everything that proves what happened with one purchase.
+
+    Answering "I paid in January and never got anything" should not require
+    stitching four tables together by hand. This assembles the whole story:
+    when they paid, the exact moment the plan was granted, how long it ran, how
+    many times they logged in and how much of the product they actually used.
+    """
+    u = db.session.get(User, order.user_id)
+    start = _aware(order.paid_at) or _aware(order.created_at)
+    # The window we measure activity over: from payment to expiry (or to now if
+    # the plan is still running / never expired).
+    end = _aware(u.plan_expires_at) if u else None
+    if not end or end > datetime.now(timezone.utc):
+        end = datetime.now(timezone.utc)
+
+    logins = usage = 0
+    last_seen = None
+    if u and start:
+        logins = XPLog.query.filter(XPLog.user_id == u.id, XPLog.source == 'login',
+                                    XPLog.created_at >= start,
+                                    XPLog.created_at <= end).count()
+        usage = UsageLog.query.filter(UsageLog.user_id == u.id,
+                                      UsageLog.created_at >= start,
+                                      UsageLog.created_at <= end).count()
+        row = (XPLog.query.filter(XPLog.user_id == u.id)
+               .order_by(XPLog.created_at.desc()).first())
+        last_seen = _aware(row.created_at) if row else None
+
+    events = []
+    if u:
+        events = (AuditEvent.query
+                  .filter(AuditEvent.user_id == u.id)
+                  .order_by(AuditEvent.created_at.desc()).limit(40).all())
+
+    # The timeline, in the order a human reads it.
+    steps = [('Pedido creado', _aware(order.created_at), True)]
+    steps.append(('Pago confirmado', _aware(order.paid_at), order.status == 'paid'))
+    steps.append(('Plan ENTREGADO', _aware(order.applied_at), order.applied_at is not None))
+    if u and u.plan_expires_at:
+        exp = _aware(u.plan_expires_at)
+        steps.append(('Vence el plan', exp, True if exp else False))
+
+    delivered = order.applied_at is not None
+    return {
+        'order': order, 'user': u, 'steps': steps, 'events': events,
+        'logins': logins, 'usage': usage, 'last_seen': last_seen,
+        'delivered': delivered,
+        'other_orders': (Order.query.filter(Order.user_id == order.user_id,
+                                            Order.id != order.id)
+                         .order_by(Order.created_at.desc()).limit(10).all()) if u else [],
+        'summary': _trace_summary(order, u, logins, usage, delivered),
+    }
+
+
+def _trace_summary(order, u, logins, usage, delivered):
+    """Plain-text version, ready to paste into a reply to the customer."""
+    def when(dt):
+        dt = _aware(dt)
+        return dt.strftime('%d/%m/%Y %H:%M UTC') if dt else '—'
+    lines = [
+        'PEDIDO #%d — %s (%s)' % (order.id, PLAN_LABELS.get(order.plan, order.plan),
+                                  order.billing_cycle),
+        'Cuenta: %s <%s>' % (u.username if u else '?', u.email if u else '?'),
+        'Importe: $%.2f USD' % order.final_price,
+        '',
+        'Pedido creado:    %s' % when(order.created_at),
+        'Pago confirmado:  %s' % when(order.paid_at),
+        'PLAN ENTREGADO:   %s' % when(order.applied_at),
+    ]
+    if u and u.plan_expires_at:
+        lines.append('Vigencia hasta:   %s' % when(u.plan_expires_at))
+    if order.tx_hash:
+        lines.append('Transaccion:      %s' % order.tx_hash)
+    if order.provider_ref:
+        lines.append('Factura:          %s' % order.provider_ref)
+    lines += ['',
+              'Inicios de sesion tras el pago: %d' % logins,
+              'Analisis con IA utilizados:     %d' % usage,
+              '',
+              ('CONCLUSION: el plan fue entregado y la cuenta lo utilizo.'
+               if delivered and (logins or usage) else
+               ('CONCLUSION: el plan fue entregado.' if delivered else
+                'CONCLUSION: el plan NO fue entregado — corresponde activar o reembolsar.'))]
+    return '\n'.join(lines)
+
+
+def find_orders(query):
+    """Look up orders by number, username or email — however the complaint
+    arrives, you can search with what you have."""
+    q = (query or '').strip()
+    if not q:
+        return []
+    if q.startswith('#'):
+        q = q[1:]
+    if q.isdigit():
+        o = db.session.get(Order, int(q))
+        if o:
+            return [o]
+    like = '%%%s%%' % q.lower()
+    users = User.query.filter(db.or_(db.func.lower(User.username).like(like),
+                                     db.func.lower(User.email).like(like))).limit(10).all()
+    if users:
+        return (Order.query.filter(Order.user_id.in_([u.id for u in users]))
+                .order_by(Order.created_at.desc()).limit(25).all())
+    return (Order.query.filter(db.or_(Order.tx_hash == q, Order.provider_ref == q))
+            .order_by(Order.created_at.desc()).limit(25).all())
 
 
 def orders_needing_attention():
