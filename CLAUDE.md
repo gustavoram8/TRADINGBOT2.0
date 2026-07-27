@@ -722,8 +722,13 @@ dispare dos veces.
   Cards actualizadas: landing Standard (+`ps_forum` ×4), pricing.html standard card + tabla, checkout.html
   standard included. **Premium camos: la card decía "3 Camos included" → corregido a 1 camo especial** (pp_camos
   ×4, tabla comparativa 3→1, camos.hero "two ship with your plan"→"cada plan de pago incluye su propio skin" ×4).
-  ⚠️ `add_camo()` existe pero NADA lo llama aún — el otorgamiento automático del camo de plan al primer pago
-  es cableado pendiente (cuando Stripe LIVE activo).
+  ✅ **Camo de plan CABLEADO (2026-07-27):** `PLAN_CAMOS = {'standard':'standard','premium':'premium'}` +
+  `grant_plan_camo(user, plan, switch_on)` llamado desde `_activate_plan_from_order`. Al comprar: escribe el
+  slug en `owned_camos` (**permanente**, como prometen los T&C Secc. 5) y lo **enciende solo** si (a) es un
+  plan nuevo para el usuario —no una renovación— y (b) no tiene otro camo activo, para no pisar su elección.
+  `owns_camo()` ahora mira `camos_owned()` PRIMERO → el camo sobrevive al vencimiento del plan (antes se lo
+  quitaba, contradiciendo los T&C). ⚠️ El camo **`standard` NO tiene tema construido** (no está en
+  `CAMO_READY`): se otorga pero no se enciende; el día que se construya su CSS empieza a encenderse solo.
 
 ## Feature flags
 - **Prop Firm Scout:** construido pero DESACTIVADO (`SCOUT_ENABLED=False` en `app.py`). Reactivar solo si el usuario lo pide.

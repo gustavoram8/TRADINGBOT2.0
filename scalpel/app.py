@@ -434,15 +434,23 @@ class User(UserMixin, db.Model):
         self.owned_camos = json.dumps(sorted(owned))
 
     def owns_camo(self, slug):
-        """True if this user may activate the given camo. Admins own all;
-        plan camos come with the plan; the rest must be purchased."""
+        """True if this user may activate the given camo.
+
+        Admins own everything. Anything recorded in `owned_camos` is theirs for
+        good — that covers both purchases and the camo granted with a plan,
+        which the Terms promise stays with the account even if the plan later
+        lapses. The plan checks below are what keep an active subscriber's camo
+        working on accounts that predate that grant.
+        """
         if self.is_admin:
+            return True
+        if slug in self.camos_owned():
             return True
         if slug == 'standard':
             return self.plan in ('standard', 'premium')
         if slug == 'premium':
             return self.plan == 'premium'
-        return slug in self.camos_owned()
+        return False
 
     def set_password(self, raw):
         self.password_hash = generate_password_hash(raw)
@@ -1394,6 +1402,10 @@ CAMO_SLUGS = {
 # Camos that actually have a theme built and can be activated today. The rest
 # still render as "Coming soon" in the store. Add a slug here once its CSS ships.
 CAMO_READY = {'rising-sun', 'pole', 'premium', 'fourth', 'naval', 'mission', 'blackflag'}
+
+# The camo that ships with each paid plan. Granting it is part of what the
+# buyer paid for, so it is written into the account (see grant_plan_camo).
+PLAN_CAMOS = {'standard': 'standard', 'premium': 'premium'}
 
 # Max number of saved Analysis Projects per plan.
 PROJECT_LIMITS = {'free': 1, 'standard': 5, 'premium': 10}
@@ -5030,6 +5042,25 @@ def _reconcile_order(order):
     return _crypto_reconcile(order)
 
 
+def grant_plan_camo(user, plan, switch_on=False):
+    """Give the user the camo that comes with their plan.
+
+    Recorded in `owned_camos` rather than derived from the plan, because the
+    Terms promise it survives the subscription. `switch_on` turns it on for
+    them — worth doing the first time they buy, since a skin nobody discovers
+    is a feature that was never delivered — but only when they are still on the
+    default theme, so it can never overwrite a camo they chose themselves. A
+    camo whose theme has not shipped yet is granted but not switched on.
+    """
+    slug = PLAN_CAMOS.get(plan)
+    if not slug:
+        return None
+    user.add_camo(slug)
+    if switch_on and slug in CAMO_READY and not (user.active_camo or ''):
+        user.active_camo = slug
+    return slug
+
+
 def _activate_plan_from_order(order):
     """Grant the purchased plan to the user, exactly once per order.
 
@@ -5050,8 +5081,12 @@ def _activate_plan_from_order(order):
     days = 365 if order.billing_cycle == 'annual' else 30
     base = now
     cur_exp = _aware(user.plan_expires_at)
-    if user.plan == order.plan and cur_exp and cur_exp > now:
+    renewal = user.plan == order.plan and cur_exp and cur_exp > now
+    if renewal:
         base = cur_exp  # renewal → stack onto remaining time
+    # The camo is part of the purchase. Switch it on only when this is a new
+    # plan for them, so renewing never yanks someone off the skin they picked.
+    grant_plan_camo(user, order.plan, switch_on=not renewal)
     user.plan = order.plan
     user.plan_cycle = order.billing_cycle
     if not user.plan_started_at:
