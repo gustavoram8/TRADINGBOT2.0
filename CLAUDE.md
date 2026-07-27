@@ -729,6 +729,9 @@ dispare dos veces.
   `owns_camo()` ahora mira `camos_owned()` PRIMERO → el camo sobrevive al vencimiento del plan (antes se lo
   quitaba, contradiciendo los T&C). ⚠️ El camo **`standard` NO tiene tema construido** (no está en
   `CAMO_READY`): se otorga pero no se enciende; el día que se construya su CSS empieza a encenderse solo.
+  **REGLA (usuario, 2026-07-27): NINGÚN camo se revoca jamás** — ni comprado ni obtenido con un plan. Por eso
+  `_backfill_plan_camos()` corre en `init_db()` y registra el camo en las cuentas que YA tenían plan pagado
+  antes de este cambio (solo agrega, nunca quita).
 
 ## Feature flags
 - **Prop Firm Scout:** construido pero DESACTIVADO (`SCOUT_ENABLED=False` en `app.py`). Reactivar solo si el usuario lo pide.

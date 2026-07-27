@@ -9704,6 +9704,30 @@ def _migrate_forum_post_community_column():
             app.logger.info('forum community migration note (ignored): %s', e)
 
 
+def _backfill_plan_camos():
+    """Write the plan camo into every account that already pays for one.
+
+    Ownership used to be read off the current plan, so these accounts would
+    have lost their camo the day their subscription lapsed. Recording it makes
+    the guarantee real for people who bought before the grant existed. Runs
+    once per boot, touches only accounts that are missing it, and never removes
+    anything.
+    """
+    changed = 0
+    try:
+        for user in User.query.filter(User.plan.in_(tuple(PLAN_CAMOS))).all():
+            slug = PLAN_CAMOS.get(user.plan)
+            if slug and slug not in user.camos_owned():
+                user.add_camo(slug)
+                changed += 1
+        if changed:
+            db.session.commit()
+            app.logger.info('Backfilled the plan camo on %d account(s).', changed)
+    except Exception as exc:
+        db.session.rollback()
+        app.logger.warning('Plan-camo backfill skipped: %s', exc)
+
+
 def init_db():
     with app.app_context():
         db.create_all()
@@ -9722,6 +9746,7 @@ def init_db():
         _migrate_mentorship_application_columns()
         _migrate_forum_post_community_column()
         _migrate_mentorship_area_columns()
+        _backfill_plan_camos()
         admin_email = os.environ.get('ADMIN_EMAIL', 'mauroramirezmij@gmail.com').lower()
         admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
         admin_password = os.environ.get('ADMIN_PASSWORD', 'Codica2310$')
