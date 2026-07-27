@@ -9711,6 +9711,51 @@ def _migrate_forum_post_community_column():
             app.logger.info('forum community migration note (ignored): %s', e)
 
 
+def _resync_postgres_sequences():
+    """Point every id counter back at the rows that already exist.
+
+    PostgreSQL hands out primary keys from a sequence, and that sequence only
+    advances when *it* generates the id. Rows imported with their ids already
+    set — a restored dump, a move from SQLite — land in the table without ever
+    touching it, so the counter stays behind. The table then looks fine until
+    the next insert, which asks for id 1, finds id 1 taken, and fails with a
+    duplicate-key error. That is what broke adding an expense: the rows were
+    never lost, the counter was simply still at the beginning.
+
+    Runs at boot, only on PostgreSQL, and only ever moves a counter forward —
+    never backward, which could hand out an id that is already in use.
+    """
+    if not db.engine.dialect.name.startswith('postgres'):
+        return 0
+    from sqlalchemy import inspect, text
+    insp = inspect(db.engine)
+    fixed = []
+    for table in insp.get_table_names():
+        try:
+            pk = (insp.get_pk_constraint(table) or {}).get('constrained_columns') or []
+            if len(pk) != 1:
+                continue            # composite or no primary key: nothing to advance
+            col = pk[0]
+            quoted = '"%s"' % table
+            with db.engine.begin() as conn:
+                seq = conn.execute(
+                    text("SELECT pg_get_serial_sequence(:t, :c)"),
+                    {'t': quoted, 'c': col}).scalar()
+                if not seq:
+                    continue        # id is not sequence-backed
+                max_id = conn.execute(
+                    text('SELECT COALESCE(MAX(%s), 0) FROM %s' % (col, quoted))).scalar() or 0
+                last = conn.execute(text('SELECT last_value FROM %s' % seq)).scalar() or 0
+                if max_id > last:
+                    conn.execute(text('SELECT setval(:s, :v)'), {'s': seq, 'v': int(max_id)})
+                    fixed.append('%s→%d' % (table, max_id))
+        except Exception as exc:
+            app.logger.warning('Could not resync the id counter for %s: %s', table, exc)
+    if fixed:
+        app.logger.info('Resynced id counters: %s', ', '.join(fixed))
+    return len(fixed)
+
+
 def _backfill_plan_camos():
     """Write the plan camo into every account that already pays for one.
 
@@ -9753,6 +9798,7 @@ def init_db():
         _migrate_mentorship_application_columns()
         _migrate_forum_post_community_column()
         _migrate_mentorship_area_columns()
+        _resync_postgres_sequences()
         _backfill_plan_camos()
         admin_email = os.environ.get('ADMIN_EMAIL', 'mauroramirezmij@gmail.com').lower()
         admin_username = os.environ.get('ADMIN_USERNAME', 'admin')

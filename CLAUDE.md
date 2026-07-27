@@ -703,6 +703,20 @@ dispare dos veces.
   tarjeta → payout al banco del amigo (Stripe maneja el payout; el código no necesita datos bancarios).
   **NO se cobra USDT/Binance.** Ver "🚨 Alerta recurrente" #2.
 
+## 🔴 Bug de PRODUCCIÓN resuelto (2026-07-27) — secuencias de PostgreSQL desincronizadas
+**Síntoma:** al agregar un gasto en /admin → 500 `UniqueViolation: duplicate key ... expense_pkey,
+Key (id)=(1) already exists`. **Causa raíz:** la base de prod tiene filas importadas con `id`
+explícito (dump restaurado / migración desde SQLite); esas inserciones NO avanzan la secuencia de
+PostgreSQL, así que el contador quedó en 1 mientras las filas iban por id 2, 7, etc. El siguiente
+INSERT pide id=1 → choque. **NO era pérdida de datos.** **Fix:** `_resync_postgres_sequences()` en
+`init_db()` — recorre todas las tablas, y si `max(id) > last_value` de su secuencia, la adelanta con
+`setval`. Solo en PostgreSQL, solo hacia adelante (nunca atrás), guarded por tabla. Reproducido en un
+PostgreSQL real y verificado el antes/después. ⚠️ **Afectaba a TODAS las tablas, no solo `expense`** —
+`order`, `user`, foro, etc. habrían fallado igual en la primera venta real.
+⚠️ **Aparte (UX, no bug):** el panel de gastos filtra `incurred_on >= inicio del mes actual`, así que
+los gastos de meses anteriores existen en la base pero NO se ven. Se siente como si se hubieran
+borrado. PENDIENTE: agregar selector de mes / historial.
+
 ## Stack técnico
 - Backend: Flask + SQLAlchemy + PostgreSQL (prod) / SQLite (local). Auth: Flask-Login (free/standard/premium).
 - IA: OpenAI SDK → GitHub Models hoy (GPT-4o Vision análisis, GPT-4o moderación foro). **Migrar a OpenAI pago = setear env var `OPENAI_API_KEY` (NO se toca código)** — el cliente en `app.py` (~línea 180) es condicional: con la clave usa OpenAI pago (sin `base_url`), sin la clave cae a GitHub Models. Log de arranque `[AI] backend=openai|github model=…` en `trader.out.log`. Reversible: quitar la env var y reiniciar. Mismo modelo/prompt para ambos.
