@@ -153,12 +153,28 @@
 
     /* ── the plan, presented as a product and not as a receipt line ── */
     .card.order { padding:0; overflow:hidden; border:1.5px solid var(--line);
-            border-color:color-mix(in srgb, var(--pa) 34%, var(--line)); }
+            border-color:color-mix(in srgb, var(--pa) 34%, var(--line));
+            transition:transform .24s cubic-bezier(.2,.7,.3,1), box-shadow .24s ease,
+                       border-color .24s ease; }
+    /* The same lift the plan cards use on /pricing, a touch softer: the card
+       should feel picked up, not clickable — it is a summary, not a button. */
+    .card.order:hover {
+      transform:translateY(-5px) scale(1.012);
+      border-color:color-mix(in srgb, var(--pa) 62%, var(--line));
+      box-shadow:0 28px 62px -20px var(--pa-glow), var(--shadow);
+    }
+    /* The plan's glow and its emblem come up with it. */
+    .oemblem { transition:transform .24s cubic-bezier(.2,.7,.3,1); }
+    .card.order:hover .oemblem { transform:translateY(-1px) scale(1.06); }
+    .card.order:hover .ocycle { border-color:color-mix(in srgb, var(--pa) 45%, transparent); }
     /* The frosted wash the rest of the site uses, tinted by the plan. */
-    .card.order::before { height:2px;
+    .card.order::before { height:2px; transition:opacity .24s ease; opacity:.9;
             background:linear-gradient(90deg, var(--pa), transparent 78%); }
+    .card.order:hover::before { opacity:1; }
     .card.order::after { content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
+            opacity:.85; transition:opacity .24s ease;
             background:radial-gradient(90% 70% at 0% 0%, var(--pa-soft), transparent 60%); }
+    .card.order:hover::after { opacity:1; }
     .card.order > * { position:relative; z-index:1; }
 
     .ohead { padding:26px 28px 22px; }
@@ -216,6 +232,15 @@
                    color:var(--muted); margin-bottom:9px; }
     .methods .chiprow { justify-content:center; }
     .methods .paymark { margin:0 4px; vertical-align:middle; }
+
+    /* Someone who asked their system to stop moving things gets a still card. */
+    @media (prefers-reduced-motion:reduce){
+      .card.order, .card.order:hover, .oemblem, .card.order:hover .oemblem {
+        transition:none; transform:none; }
+    }
+    /* On touch there is no cursor to hover with, and a sticky :hover left over
+       from a tap looks like a bug. */
+    @media (hover:none){ .card.order:hover { transform:none; } }
 
     @media(max-width:540px){ h1{font-size:24px;} .card{padding:20px;} nav{padding:14px 18px;}
       .steps{gap:6px;} .step-line{width:20px;} .step span:not(.n){display:none;} }
