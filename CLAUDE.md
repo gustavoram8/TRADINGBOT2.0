@@ -710,7 +710,12 @@ explícito (dump restaurado / migración desde SQLite); esas inserciones NO avan
 PostgreSQL, así que el contador quedó en 1 mientras las filas iban por id 2, 7, etc. El siguiente
 INSERT pide id=1 → choque. **NO era pérdida de datos.** **Fix:** `_resync_postgres_sequences()` en
 `init_db()` — recorre todas las tablas, y si `max(id) > last_value` de su secuencia, la adelanta con
-`setval`. Solo en PostgreSQL, solo hacia adelante (nunca atrás), guarded por tabla. Reproducido en un
+`setval`. Solo en PostgreSQL, solo hacia adelante (nunca atrás), guarded por tabla.
+⚠️ **Ojo con `is_called`:** una secuencia recién creada tiene `last_value=1, is_called=false` y entrega
+el 1 en la próxima llamada. La 1ª versión del fix comparaba `max_id > last_value`, así que una tabla con
+UNA fila en id=1 (caso `mentorship_live_state`) quedaba sin reparar y seguía chocando. La condición
+correcta —ya aplicada— es: `next_id = last+1 if is_called else last`; si `next_id <= max_id`, `setval(seq,
+max_id, true)`. Verificar siempre con `tools/check_pg_sequences.sql` (esa consulta SÍ lo detectaba). Reproducido en un
 PostgreSQL real y verificado el antes/después. ⚠️ **Afectaba a TODAS las tablas, no solo `expense`** —
 `order`, `user`, foro, etc. habrían fallado igual en la primera venta real.
 ⚠️ **Aparte (UX, no bug):** el panel de gastos filtra `incurred_on >= inicio del mes actual`, así que

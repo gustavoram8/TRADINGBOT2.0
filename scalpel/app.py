@@ -9784,9 +9784,19 @@ def _resync_postgres_sequences():
                     continue        # id is not sequence-backed
                 max_id = conn.execute(
                     text('SELECT COALESCE(MAX(%s), 0) FROM %s' % (col, quoted))).scalar() or 0
-                last = conn.execute(text('SELECT last_value FROM %s' % seq)).scalar() or 0
-                if max_id > last:
-                    conn.execute(text('SELECT setval(:s, :v)'), {'s': seq, 'v': int(max_id)})
+                if not max_id:
+                    continue                # empty table: the counter is already right
+                # A counter also records whether it has ever been read. Until it
+                # has, it hands out `last_value` itself rather than the next one
+                # — so a table holding a single row at id 1, with the counter
+                # parked at 1 and never read, still collides on the next insert.
+                row = conn.execute(
+                    text('SELECT last_value, is_called FROM %s' % seq)).first()
+                last, is_called = (row[0] or 0), bool(row[1])
+                next_id = last + 1 if is_called else last
+                if next_id <= max_id:
+                    conn.execute(text('SELECT setval(:s, :v, true)'),
+                                 {'s': seq, 'v': int(max_id)})
                     fixed.append('%s→%d' % (table, max_id))
         except Exception as exc:
             app.logger.warning('Could not resync the id counter for %s: %s', table, exc)
