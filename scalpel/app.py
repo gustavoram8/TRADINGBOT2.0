@@ -4423,16 +4423,49 @@ def _build_revenue_context():
         o.final_price or 0.0
         for o in Order.query.filter_by(status='paid').all()), 2)
 
-    # Expenses this month
-    exp_month = Expense.query.filter(
-        Expense.incurred_on >= month_start.date()).order_by(
-        Expense.incurred_on.desc()).all()
-    expenses_total = round(sum(e.amount for e in exp_month), 2)
+    # Expenses. The whole ledger is read at once — this table stays small, and
+    # it lets the panel offer any month without another round trip.
+    all_expenses = Expense.query.order_by(Expense.incurred_on.desc(),
+                                          Expense.id.desc()).all()
+
+    def _key(d):
+        return '%04d-%02d' % (d.year, d.month) if d else ''
+
+    this_key = _key(month_start.date())
+    # Every month that has something recorded, newest first, plus the current
+    # one so it is always selectable even before the first expense is logged.
+    months = {}
+    for e in all_expenses:
+        k = _key(e.incurred_on)
+        if k:
+            slot = months.setdefault(k, {'key': k, 'total': 0.0, 'count': 0})
+            slot['total'] += e.amount or 0.0
+            slot['count'] += 1
+    months.setdefault(this_key, {'key': this_key, 'total': 0.0, 'count': 0})
+    for k, m in months.items():
+        y, mo = int(k[:4]), int(k[5:])
+        m['label'] = datetime(y, mo, 1).strftime('%B %Y')
+        m['total'] = round(m['total'], 2)
+        m['is_current'] = (k == this_key)
+    expense_months = sorted(months.values(), key=lambda m: m['key'], reverse=True)
+
+    # The month being browsed. Defaults to the current one; an unknown value
+    # falls back to it rather than showing an empty table for no clear reason.
+    view_key = (request.args.get('exp_month') or '').strip()
+    if view_key not in months:
+        view_key = this_key
+
+    # The KPI cards and net profit always describe the CURRENT month — browsing
+    # the history must not silently change what "profit this month" means.
+    expenses_total = round(sum(e.amount for e in all_expenses
+                               if _key(e.incurred_on) == this_key), 2)
+    view_expenses = [e for e in all_expenses if _key(e.incurred_on) == view_key]
     expense_rows = [{
         'id': e.id, 'label': e.label, 'category': e.category,
         'amount': e.amount, 'incurred_on': e.incurred_on,
         'recurring': e.recurring, 'note': e.note,
-    } for e in exp_month]
+    } for e in view_expenses]
+    expense_view_total = round(sum(e.amount for e in view_expenses), 2)
 
     net_profit = round(revenue_total - expenses_total, 2)
 
@@ -4456,6 +4489,12 @@ def _build_revenue_context():
         'promos': promos,
         'plan_labels': PLAN_LABELS,
         'month_name': now.strftime('%B %Y'),
+        'expense_months': expense_months,
+        'expense_view_key': view_key,
+        'expense_view_total': expense_view_total,
+        'expense_view_is_current': view_key == this_key,
+        'expense_view_label': months[view_key]['label'],
+        'expenses_lifetime': round(sum(e.amount for e in all_expenses), 2),
     }
 
 

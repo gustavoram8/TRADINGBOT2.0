@@ -124,6 +124,21 @@
     /* ── Moderation ── */
     .section-h { font-size: 18px; font-weight: 800; margin: 36px 0 6px; }
     .section-d { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
+
+    /* Month chips for the expense ledger */
+    .exp-months { display: flex; gap: 8px; flex-wrap: wrap; margin: -6px 0 16px; }
+    .exp-chip { display: flex; flex-direction: column; gap: 1px; text-decoration: none;
+                padding: 7px 13px; border-radius: 10px; border: 1px solid var(--border);
+                background: var(--card); transition: border-color .15s, transform .15s; }
+    .exp-chip:hover { border-color: var(--accent); transform: translateY(-1px); }
+    .exp-chip.on { border-color: var(--accent); background: var(--accent-bg, rgba(224,168,61,.10)); }
+    .exp-chip .em-name { font-size: 12px; font-weight: 700; color: var(--text); white-space: nowrap; }
+    .exp-chip .em-amt { font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+    .exp-chip.on .em-amt { color: var(--accent); font-weight: 700; }
+    .exp-past { padding: 11px 16px; font-size: 12.5px; color: var(--muted);
+                border-bottom: 1px solid var(--border); background: rgba(127,127,127,.05); }
+    .exp-past b { color: var(--text); }
+    .exp-past a { color: var(--accent); }
     .warn-badge {
       display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700;
       background: rgba(239,68,68,0.14); color: var(--loss); border: 1px solid rgba(239,68,68,0.3);
@@ -573,9 +588,26 @@
     </div>
 
     <!-- EXPENSES -->
-    <div class="section-h" id="expenses" style="font-size:16px;">Monthly Expenses</div>
-    <div class="section-d">Track business costs to compare against revenue. Net profit above updates automatically.</div>
+    <div class="section-h" id="expenses" style="font-size:16px;">Expenses</div>
+    <div class="section-d">Track business costs to compare against revenue. The cards above always describe the
+      current month; use the months below to look back. Recorded to date: <b>${{ '%.2f'|format(expenses_lifetime) }}</b>.</div>
+
+    <!-- One chip per month that has something recorded. Nothing is ever hidden:
+         if a month is not listed, it truly has no expenses. -->
+    <div class="exp-months">
+      {% for m in expense_months %}
+      <a class="exp-chip{{ ' on' if m.key == expense_view_key }}"
+         href="/admin?exp_month={{ m.key }}#expenses">
+        <span class="em-name">{{ m.label }}{% if m.is_current %} · now{% endif %}</span>
+        <span class="em-amt">${{ '%.2f'|format(m.total) }}</span>
+      </a>
+      {% endfor %}
+    </div>
     <div class="table-card" style="margin-bottom:22px;">
+      {% if not expense_view_is_current %}
+      <div class="exp-past">Viewing <b>{{ expense_view_label }}</b>. A new expense is always recorded with
+        today's date — <a href="/admin#expenses">back to the current month</a>.</div>
+      {% endif %}
       <form method="POST" action="/admin/expense/add" class="mini-form" style="border-bottom:1px solid var(--border);">
         <div class="fld"><label>Label</label><input type="text" name="label" placeholder="Contabo VPS" required /></div>
         <div class="fld"><label>Amount $</label><input type="number" name="amount" min="0.01" step="0.01" placeholder="12.00" required /></div>
@@ -608,10 +640,11 @@
             </td>
           </tr>
           {% else %}
-          <tr><td colspan="5" class="empty">No expenses logged this month.</td></tr>
+          <tr><td colspan="5" class="empty">Nothing recorded in {{ expense_view_label }}.</td></tr>
           {% endfor %}
           {% if expense_rows %}
-          <tr class="sum-row"><td>TOTAL</td><td></td><td>${{ '%.2f'|format(expenses_total) }}</td><td colspan="2"></td></tr>
+          <tr class="sum-row"><td>TOTAL · {{ expense_view_label }}</td><td></td>
+              <td>${{ '%.2f'|format(expense_view_total) }}</td><td colspan="2"></td></tr>
           {% endif %}
         </tbody>
       </table>
