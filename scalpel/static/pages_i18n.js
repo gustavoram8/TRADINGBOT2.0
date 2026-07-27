@@ -164,6 +164,8 @@
       // ── checkout.html ──
       'checkout.doctitle': 'Tradeable Academy — Checkout',
       'co.included': 'Everything included',
+      'co.save': 'You save',
+      'co.perYear': 'a year',
       'co.tagStd': 'One deep review a day, every day.',
       'co.tagPrem': 'For serious traders who want deep daily review.',
       'co.f.analysesStd': '<strong>1</strong> AI screenshot analysis per day',
@@ -441,6 +443,8 @@
       // ── checkout.html ──
       'checkout.doctitle': 'Tradeable Academy — Pago',
       'co.included': 'Todo lo que incluye',
+      'co.save': 'Ahorras',
+      'co.perYear': 'al año',
       'co.tagStd': 'Una revisión a fondo por día, todos los días.',
       'co.tagPrem': 'Para traders serios que revisan en profundidad cada día.',
       'co.f.analysesStd': '<strong>1</strong> análisis de captura con IA por día',
@@ -720,6 +724,8 @@
       // ── checkout.html ──
       'checkout.doctitle': 'Tradeable Academy — Paiement',
       'co.included': 'Tout ce qui est inclus',
+      'co.save': 'Vous économisez',
+      'co.perYear': 'par an',
       'co.tagStd': 'Une analyse en profondeur par jour, tous les jours.',
       'co.tagPrem': 'Pour les traders sérieux qui veulent une revue quotidienne approfondie.',
       'co.f.analysesStd': '<strong>1</strong> analyse de capture par IA et par jour',
@@ -996,6 +1002,8 @@
       // ── checkout.html ──
       'checkout.doctitle': 'Tradeable Academy — Pagamento',
       'co.included': 'Tudo o que está incluído',
+      'co.save': 'Você economiza',
+      'co.perYear': 'por ano',
       'co.tagStd': 'Uma análise a fundo por dia, todos os dias.',
       'co.tagPrem': 'Para traders sérios que querem revisão diária aprofundada.',
       'co.f.analysesStd': '<strong>1</strong> análise de captura com IA por dia',

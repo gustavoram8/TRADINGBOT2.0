@@ -177,6 +177,9 @@
     .oprice .amt { font-size:50px; font-weight:600; letter-spacing:-.025em; line-height:1;
               font-variant-numeric:tabular-nums; }
     .oprice .per { font-family:'Inter',sans-serif; font-size:14px; font-weight:500; color:var(--muted); }
+    .osave { display:inline-flex; align-items:center; gap:6px; margin-top:12px;
+             font-size:12.5px; font-weight:800; letter-spacing:.01em; padding:4px 12px;
+             border-radius:14px; background:rgba(16,185,129,.14); color:#10b981; }
 
     .odiv { height:1px; background:var(--line); margin:0 28px; }
 
@@ -281,6 +284,11 @@
           <span class="amt">{{ quote.base_price|int if quote.base_price == quote.base_price|int else '%.2f'|format(quote.base_price) }}</span>
           <span class="per" data-i18n="{{ 'checkout.perYear' if cycle == 'annual' else 'checkout.perMonth' }}">{{ '/ year' if cycle == 'annual' else '/ month' }}</span>
         </div>
+        {% if annual_saving %}
+        <div class="osave">↓ <span data-i18n="co.save">You save</span>
+          <span>${{ '%.0f'|format(annual_saving) }}</span>
+          <span data-i18n="co.perYear">a year</span></div>
+        {% endif %}
       </div>
 
       <div class="odiv"></div>

@@ -5136,8 +5136,15 @@ def checkout():
     if PLAN_RANK.get(plan, 0) <= PLAN_RANK.get(current_user.plan, 0):
         return redirect(url_for('pricing'))
     q = _quote(plan, cycle)
+    # What twelve monthly payments would have cost, minus the annual price:
+    # the pricing page promises this saving, so the cart has to show it too.
+    saving = 0.0
+    if cycle == 'annual':
+        prices = PLAN_PRICING.get(plan, {})
+        saving = max(0.0, prices.get('monthly', 0) * 12 - prices.get('annual', 0))
     return render_template('checkout.html', plan=plan, cycle=cycle,
-                           plan_label=PLAN_LABELS[plan], quote=q)
+                           plan_label=PLAN_LABELS[plan], quote=q,
+                           annual_saving=saving)
 
 
 @app.route('/api/checkout/validate-code', methods=['POST'])
