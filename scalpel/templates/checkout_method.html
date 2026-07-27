@@ -169,20 +169,18 @@
           <span class="rail-body" data-i18n="cpay.ppBody">Pay with a debit or credit card, or with your PayPal balance.
             You don't need a PayPal account to pay by card. Your plan activates as soon as the payment goes through.</span>
           <span class="rail-foot">
-            <span class="fl" data-i18n="pay.accepted">Accepted:</span>
-            <span class="chiprow">{{ marks.visa() }}{{ marks.mastercard() }}{{ marks.amex() }}</span>
+            <span class="fl" data-i18n="cpay.ppFoot">Card payments are handled by PayPal — we never see your card number.</span>
           </span>
         {% elif rail == 'crypto' %}
           <span class="rail-head">{{ marks.usdt() }}<span class="go">→</span></span>
           <span class="rail-body" data-i18n="cpay.cryptoBody">Send USDT from Binance or any wallet. We show you the exact amount,
             the network and the address; your plan activates on its own once the network confirms it.</span>
           <span class="rail-foot">
-            <span class="fl" data-i18n="cpay.sendFrom">Send from:</span>
-            <span class="chiprow">{{ marks.binance() }}{{ marks.trust_wallet() }}</span>
+            <span class="fl" data-i18n="cpay.sendFrom">Send from Binance, Trust Wallet or any wallet you already use.</span>
           </span>
         {% else %}
           <span class="rail-head">
-            <span class="chiprow">{{ marks.visa() }}{{ marks.mastercard() }}</span>
+            <span class="paymark" style="--pm-size:34px">{{ marks.lock(20) }}<span class="pm-word" data-i18n="cpay.cardTitle">Debit or credit card</span></span>
             <span class="tag" data-i18n="cpay.instant">Instant</span><span class="go">→</span>
           </span>
           <span class="rail-body" data-i18n="cpay.cardBody">Pay by card on a secure page. We never see or store your card number.</span>
