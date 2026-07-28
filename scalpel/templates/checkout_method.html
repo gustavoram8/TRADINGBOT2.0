@@ -106,6 +106,24 @@
                  padding-top:11px; border-top:1px solid var(--line); }
     .rail-foot .fl { font-size:11.5px; font-weight:600; color:var(--muted); }
 
+    /* ── what crypto does differently ──
+       Sits OUTSIDE the rail button (a button may not nest interactive or block
+       content) and only renders when the crypto rail is offered. Wording is
+       aligned clause-by-clause with Terms §5: a transfer sent to the wrong
+       address or over the wrong network is lost for good, so this is the one
+       warning that has to be read before the money moves, not after. */
+    .cwarn { border:1px solid var(--line); border-left:3px solid var(--gold);
+             border-radius:12px; padding:14px 16px; margin:-4px 0 18px;
+             background:var(--accent-bg); }
+    .cwarn-h { font-size:11.5px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+               color:var(--gold); margin-bottom:9px; display:flex; align-items:center; gap:7px; }
+    .cwarn ul { list-style:none; display:flex; flex-direction:column; gap:7px; }
+    .cwarn li { font-size:12.8px; line-height:1.5; color:var(--ink-soft);
+                display:flex; gap:8px; align-items:flex-start; }
+    .cwarn li::before { content:''; flex:none; width:5px; height:5px; margin-top:7px;
+                        border-radius:50%; background:var(--gold); opacity:.7; }
+    .cwarn b { color:var(--ink); font-weight:700; }
+
     .promise { font-size:13px; color:var(--ink-soft); background:var(--accent-bg);
                border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin:20px 0 14px;
                display:flex; gap:11px; align-items:flex-start; }
@@ -187,6 +205,25 @@
         {% endif %}
       </button>
     </form>
+    {% if rail == 'crypto' %}
+    <div class="cwarn">
+      <div class="cwarn-h">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        <span data-i18n="cpay.wTitle">Before you send crypto</span>
+      </div>
+      <ul>
+        <li data-i18n-html="cpay.wNetwork"><b>Use the exact network shown on the invoice.</b> A transfer sent over the wrong network, or to a different address, is lost permanently and cannot be recovered by anyone.</li>
+        <li data-i18n-html="cpay.wAddress"><b>The only valid address is the one on your invoice</b>, generated here on this site. We never send payment addresses by email, chat or social media — if someone gives you a different address, it is not us.</li>
+        <li data-i18n-html="cpay.wAmount"><b>Send the exact amount</b> stated on the invoice. Sending less does not activate your plan automatically and has to be sorted out by hand.</li>
+        <li data-i18n-html="cpay.wFees"><b>Network fees are yours.</b> Your wallet charges them on top of the amount, so make sure what arrives is the full figure.</li>
+        <li data-i18n-html="cpay.wFinal"><b>A crypto payment is final.</b> Unlike a card, it cannot be reversed or charged back — any claim is settled with us directly. Confirmation usually takes a few minutes.</li>
+      </ul>
+    </div>
+    {% endif %}
     {% endfor %}
 
     <div class="promise">
