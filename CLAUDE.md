@@ -772,12 +772,30 @@ borrado. PENDIENTE: agregar selector de mes / historial.
 - **✅ Analizador — extras (2026-07-17):** **límite Trade Construction** = 200 palabras + **tope duro de 2000 chars** (`NOTES_MAX_CHARS`). El char-cap es clave anti-abuso: un word-count solo se burla con un blob sin espacios ("1111…" ×1M = "1 palabra") que dispararía el costo → se clampa longitud cruda ANTES del word-cap. Cliente: `maxlength=2000` en el textarea + contador `#notes-counter`/`#notes-count` (rojo + recorta paste, clave i18n `notes.words`); server: recorte en `/analyze` (chars→words). Techo real de un análisis ≈ $0.03-0.04 pase lo que pase (prompt fijo + imagen 1280px + notas capadas). **✅ Fix contador de cuota (2026-07-17):** `/api/usage` ahora devuelve SIEMPRE `used/max/remaining` (antes solo si estabas bloqueado); el cliente llama `refreshQuota()` tras cada análisis → el "X / Y disponibles" (`#ag-quota`) se actualiza al instante en vez de quedar pegado al valor del page-load hasta recargar. El gate del server (`check_rate_limit` cuenta filas `UsageLog` committeadas en cada `/analyze`) SIEMPRE fue correcto — el bug era solo cosmético. **NOTA:** un switch de idioma del análisis arrojado (endpoint `/translate` + chips EN/ES/FR/PT) se construyó y luego se **RETIRÓ por decisión del usuario** (evitar cobros de más; el trader ya tiene su idioma preseteado antes de analizar) — no re-agregar salvo pedido explícito.
 - **✅ Admin panel (2026-07-17):** reorganizado en **6 pestañas** (Users/Revenue/Moderation/AI Spend/Audit/Bugs, `.tabpane`/`.atab`, deep-link por hash preservado) + tabla **"Individual AI calls"** en AI Spend (costo/tokens por llamada, no solo total del día; `ai_calls_recent` en `_build_ai_analytics_context`) con filtro de texto.
 - **Stripe:** código LISTO y probado en modo TEST (ver "🟢 Stripe" abajo). **LLC ya hecha.** Falta activar LIVE (claves live + conectar la cuenta bancaria del amigo en Stripe + webhook con dominio). Cobro en USD por tarjeta → payout al banco del amigo, NO USDT. Ver "🚨 Alerta recurrente" #2.
-- **Comprar dominio** (Cloudflare ~$10/año, objetivo `traderaccelerator.com`) → DNS A → `62.171.180.22` + nginx + SSL Let's Encrypt.
+- **Comprar dominio — DECIDIDO (2026-07-28): `tradeable.academy`** (disponible y confirmado en
+  Cloudflare; se compra cuando haya presupuesto). ⚠️ **`traderaccelerator.com` quedó DESCARTADO** —
+  el dominio DEBE coincidir con el `support@tradeable.academy` ya publicado en T&C/Privacy en los 4
+  idiomas. Ojo: `.academy` NO cuesta ~$10 como un `.com` (rango real ~$20-35/año). Luego: DNS A →
+  `62.171.180.22` + nginx + SSL Let's Encrypt.
 - **Email dedicado** (migrar OTP/reset del Gmail personal a cuenta del dominio). Email en T&C/Privacy
   hoy: `support@tradeable.academy`. ⚠️ **Nombre oficial = "Tradeable Academy"** (empresa y dominio);
   "Tradeable" es solo la abreviatura. "Trader Accelerator" quedó ELIMINADO de T&C/Privacy en los 4
   idiomas (decisión del usuario 2026-07-26) — no reintroducirlo; el proceso `traderacelerator` de
   supervisor es aparte y se queda como está.
+  **Plan de correo (definido 2026-07-28):** Google Workspace ~$7-8.40/**usuario**/mes, donde "usuario"
+  = casilla del equipo, **NO** los usuarios registrados del sitio (Google no los cuenta). Hoy = **1
+  usuario** + **alias gratis** (hasta 30: support@, hola@, billing@, legal@, noreply@) → una sola
+  cuota cubre todas las direcciones. Alternativa gratis si falta caja: **Zoho Mail free** (5 casillas
+  reales, dominio propio, solo webmail/app, sin IMAP). Cloudflare Email Routing es **gratis pero solo
+  RECIBE** (reenvía a otra casilla; no se puede responder desde la dirección) — sirve de complemento,
+  no de reemplazo. ⚠️ **NO usar Workspace como motor de los correos automáticos de la app** (OTP/reset):
+  límite ~2.000 envíos/día y si se supera, Google bloquea 24h y **nadie puede registrarse** → usar un
+  proveedor transaccional (Brevo/Resend, plan gratis) separado de la casilla humana. Configurar
+  **SPF + DKIM + DMARC** sí o sí, o los correos caen en spam.
+- **Redes sociales (2026-07-28):** crear un **Gmail NUEVO dedicado** a nombre de la empresa (nunca el
+  personal) como identidad raíz de Instagram/TikTok/X/YouTube/Threads + 2FA + códigos de respaldo
+  guardados. **Reservar los handles `@tradeableacademy` YA**, aunque los perfiles queden vacíos. El
+  correo asociado se puede migrar después a `@tradeable.academy` sin perder cuentas ni seguidores.
 - **Persistencia server-side de Scalper boards** (hoy en localStorage del navegador).
 
 ### 🟡 Importante (post-lanzamiento)
