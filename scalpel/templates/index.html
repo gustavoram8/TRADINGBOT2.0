@@ -920,11 +920,19 @@
     }
     .limit-icon svg { width: 26px; height: 26px; }
     .limit-title { font-size: 19px; font-weight: 700; margin-bottom: 10px; }
-    .limit-msg { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+    .limit-msg { color: var(--muted); font-size: 14px; margin-bottom: 18px; }
+    /* Caption + footnote spell out the rolling window: analyses come back one
+       by one, 24 h (or 7 d) after each was used — never all at once, and never
+       stacked up from days you didn't analyze. */
+    .limit-cap {
+      font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--muted); margin-bottom: 8px;
+    }
+    .limit-foot { font-size: 12px; color: var(--muted); opacity: .8; margin-bottom: 22px; }
     .countdown {
       display: inline-flex;
       gap: 10px;
-      margin-bottom: 24px;
+      margin-bottom: 14px;
     }
     .cd-unit {
       background: var(--surface);
@@ -5591,13 +5599,15 @@
         </svg>
       </div>
       <div class="limit-title" id="limit-title" data-i18n="limit.title">You've reached your plan limit</div>
-      <div class="limit-msg" id="limit-msg" data-i18n="limit.msgFree">You've used your free analysis for this week. Please wait or upgrade your plan to keep going.</div>
+      <div class="limit-msg" id="limit-msg" data-i18n="limit.msgFree">You've used your free analysis. Analyses don't reset on a fixed day — each one comes back 7 days after you use it.</div>
+      <div class="limit-cap" id="limit-cap" data-i18n="limit.nextIn">Next analysis available in</div>
       <div class="countdown" id="countdown">
         <div class="cd-unit"><div class="num" id="cd-d">0</div><div class="lab" data-i18n="limit.days">days</div></div>
         <div class="cd-unit"><div class="num" id="cd-h">00</div><div class="lab" data-i18n="limit.hours">hrs</div></div>
         <div class="cd-unit"><div class="num" id="cd-m">00</div><div class="lab" data-i18n="limit.mins">min</div></div>
         <div class="cd-unit"><div class="num" id="cd-s">00</div><div class="lab" data-i18n="limit.secs">sec</div></div>
       </div>
+      <div class="limit-foot" id="limit-foot" data-i18n="limit.noRoll">Unused analyses don't stack up — the limit is a cap, not a balance.</div>
       <div class="limit-cta">
         <a href="/?plans=1#plans" target="_blank" rel="noopener" class="upgrade" data-i18n="limit.upgrade">Upgrade plan</a>
         <a href="#" class="secondary" id="limit-back" data-i18n="limit.back">Back</a>
@@ -7752,9 +7762,11 @@
       'plan.free': 'Free', 'plan.standard': 'Standard', 'plan.premium': 'Premium',
       'plan.freeLabel': 'Free plan', 'plan.standardLabel': 'Standard plan', 'plan.premiumLabel': 'Premium plan',
       'limit.title': "You've reached your plan limit",
-      'limit.msgFree': "You've used your free analysis for this week. Please wait 7 days or upgrade your plan to keep going.",
-      'limit.msgStandard': "You've used your daily analysis on the Standard plan. Please wait until tomorrow or upgrade to Premium for up to 5 analyses per day.",
-      'limit.msgPremium': "You've reached your 5 analyses for today. Your limit resets in 24 hours — come back tomorrow.",
+      'limit.msgFree': "You've used your free analysis. Analyses don't reset on a fixed day — each one comes back 7 days after you use it. Upgrade to get one every 24 hours.",
+      'limit.msgStandard': "You've used your daily analysis on the Standard plan. Analyses don't reset on a fixed day — each one comes back 24 hours after you use it. Upgrade to Premium for 5 at a time.",
+      'limit.msgPremium': "You've used all 5 of your analyses. They don't come back all at once: each one is released 24 hours after the exact moment you used it.",
+      'limit.nextIn': 'Next analysis available in',
+      'limit.noRoll': "Unused analyses don't stack up — the limit is a cap, not a balance.",
       'limit.days': 'days', 'limit.hours': 'hrs', 'limit.mins': 'min', 'limit.secs': 'sec',
       'limit.upgrade': 'Upgrade plan',
       'limit.back': 'Back',
@@ -8260,9 +8272,11 @@
       'plan.free': 'Gratis', 'plan.standard': 'Standard', 'plan.premium': 'Premium',
       'plan.freeLabel': 'Plan gratis', 'plan.standardLabel': 'Plan Standard', 'plan.premiumLabel': 'Plan Premium',
       'limit.title': 'Has alcanzado el límite de tu plan',
-      'limit.msgFree': 'Ya usaste tu análisis gratis de esta semana. Espera 7 días o cambia de plan para seguir.',
-      'limit.msgStandard': 'Ya usaste tu análisis diario del plan Standard. Espera hasta mañana o pasa a Premium para tener hasta 5 análisis al día.',
-      'limit.msgPremium': 'Has alcanzado tus 5 análisis de hoy. Tu límite se reinicia en 24 horas — vuelve mañana.',
+      'limit.msgFree': 'Ya usaste tu análisis gratis. Los análisis no se reinician un día fijo: cada uno vuelve 7 días después de haberlo usado. Cambia de plan para tener uno cada 24 horas.',
+      'limit.msgStandard': 'Ya usaste tu análisis diario del plan Standard. Los análisis no se reinician un día fijo: cada uno vuelve 24 horas después de haberlo usado. Pasa a Premium para tener 5.',
+      'limit.msgPremium': 'Ya usaste tus 5 análisis. No vuelven todos de golpe: cada uno se libera 24 horas después del momento exacto en que lo usaste.',
+      'limit.nextIn': 'Próximo análisis disponible en',
+      'limit.noRoll': 'Los análisis que no uses no se acumulan: el límite es un tope, no un saldo.',
       'limit.days': 'días', 'limit.hours': 'hrs', 'limit.mins': 'min', 'limit.secs': 'seg',
       'limit.upgrade': 'Subir de plan',
       'limit.back': 'Volver',
@@ -8768,9 +8782,11 @@
       'plan.free': 'Gratuit', 'plan.standard': 'Standard', 'plan.premium': 'Premium',
       'plan.freeLabel': 'Offre gratuite', 'plan.standardLabel': 'Offre Standard', 'plan.premiumLabel': 'Offre Premium',
       'limit.title': 'Vous avez atteint la limite de votre offre',
-      'limit.msgFree': "Vous avez utilisé votre analyse gratuite de la semaine. Veuillez patienter 7 jours ou changer d'offre pour continuer.",
-      'limit.msgStandard': "Vous avez utilisé votre analyse quotidienne Standard. Attendez demain ou passez à Premium pour jusqu'à 5 analyses par jour.",
-      'limit.msgPremium': "Vous avez atteint vos 5 analyses du jour. Votre quota se renouvelle dans 24 heures.",
+      'limit.msgFree': "Vous avez utilisé votre analyse gratuite. Les analyses ne se réinitialisent pas à un jour fixe : chacune revient 7 jours après son utilisation. Changez d'offre pour en avoir une toutes les 24 heures.",
+      'limit.msgStandard': "Vous avez utilisé votre analyse quotidienne Standard. Les analyses ne se réinitialisent pas à un jour fixe : chacune revient 24 heures après son utilisation. Passez à Premium pour en avoir 5.",
+      'limit.msgPremium': "Vous avez utilisé vos 5 analyses. Elles ne reviennent pas toutes en même temps : chacune se libère 24 heures après le moment précis où vous l'avez utilisée.",
+      'limit.nextIn': 'Prochaine analyse disponible dans',
+      'limit.noRoll': "Les analyses non utilisées ne se cumulent pas : la limite est un plafond, pas un solde.",
       'limit.days': 'jours', 'limit.hours': 'h', 'limit.mins': 'min', 'limit.secs': 'sec',
       'limit.upgrade': "Changer d'offre",
       'limit.back': 'Retour',
@@ -9276,9 +9292,11 @@
       'plan.free': 'Grátis', 'plan.standard': 'Standard', 'plan.premium': 'Premium',
       'plan.freeLabel': 'Plano grátis', 'plan.standardLabel': 'Plano Standard', 'plan.premiumLabel': 'Plano Premium',
       'limit.title': 'Você atingiu o limite do seu plano',
-      'limit.msgFree': 'Você usou sua análise grátis desta semana. Por favor aguarde 7 dias ou mude de plano para continuar.',
-      'limit.msgStandard': 'Você usou sua análise diária do plano Standard. Aguarde até amanhã ou mude para o Premium para até 5 análises por dia.',
-      'limit.msgPremium': 'Você atingiu suas 5 análises de hoje. Seu limite renova em 24 horas — volte amanhã.',
+      'limit.msgFree': 'Você usou sua análise grátis. As análises não zeram em um dia fixo: cada uma volta 7 dias depois de ter sido usada. Mude de plano para ter uma a cada 24 horas.',
+      'limit.msgStandard': 'Você usou sua análise diária do plano Standard. As análises não zeram em um dia fixo: cada uma volta 24 horas depois de ter sido usada. Mude para o Premium para ter 5.',
+      'limit.msgPremium': 'Você usou suas 5 análises. Elas não voltam todas de uma vez: cada uma é liberada 24 horas depois do momento exato em que você a usou.',
+      'limit.nextIn': 'Próxima análise disponível em',
+      'limit.noRoll': 'As análises não usadas não se acumulam: o limite é um teto, não um saldo.',
       'limit.days': 'dias', 'limit.hours': 'hrs', 'limit.mins': 'min', 'limit.secs': 'seg',
       'limit.upgrade': 'Mudar de plano',
       'limit.back': 'Voltar',
@@ -11583,6 +11601,15 @@
     document.getElementById('cd-s').textContent = pad(s);
   }
 
+  // Shows/hides the clock together with its caption, so neither is ever left
+  // on screen once the slot has actually opened up.
+  function setCountdownVisible(on) {
+    ['limit-cap', 'countdown'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = on ? '' : 'none';
+    });
+  }
+
   function showLimit(data, keepTimer) {
     lastLimitData = data;
     const plan = data.plan || U.plan || 'free';
@@ -11597,6 +11624,9 @@
     // Anchor to an absolute end time so the countdown stays accurate.
     const endAt = Date.now() + remaining * 1000;
 
+    // The clock and its caption only make sense while there is time left; once
+    // a slot opens they'd read "next analysis in 00:00:00", so they step aside.
+    setCountdownVisible(true);
     renderCountdown(remaining);
     showView('limit');
 
@@ -11607,6 +11637,7 @@
       if (left <= 0) {
         clearInterval(countdownTimer); countdownTimer = null;
         renderCountdown(0);
+        setCountdownVisible(false);
         document.getElementById('limit-msg').textContent = T('limit.available');
         return;
       }
