@@ -730,20 +730,20 @@ PLAN_PRICING = {
 }
 PLAN_LABELS = {'standard': 'Standard', 'premium': 'Premium'}
 
-# ── Welcome offer ──────────────────────────────────────────────────────────
-# A discount on a buyer's FIRST paid month. Deliberately open-ended: it stays
-# up until switched off by hand (LAUNCH_DISCOUNT_PCT=0 + restart), so nothing
-# expires on its own and surprises someone mid-purchase.
+# ── Welcome offer — OFF by default ─────────────────────────────────────────
+# Switched off deliberately, not abandoned. A public discount competes with the
+# only real leverage the partner programme has: a creator's code being THE way
+# to get a better price. With a 15% public welcome next to a 20% partner code,
+# the difference a follower actually sees is five points — not enough to feel
+# like a privilege, and it quietly spends margin on organic traffic that does
+# not exist yet.
 #
-# First payment only, not a standing price cut. A discount that also applied to
-# renewals would mean every monthly subscriber pays it forever — and switching
-# it off later would hand every existing customer a price RISE, which is how
-# you lose the people you already convinced.
-#
-# Monthly only, on purpose. The annual plan already costs ~20% less than twelve
-# monthly payments, and taking 15% off its list price would land ABOVE what the
-# annual already costs — an "offer" that made the plan dearer.
-LAUNCH_DISCOUNT_PCT = int(os.environ.get("LAUNCH_DISCOUNT_PCT", "15"))
+# The mechanism stays wired so it can be switched back on in one variable the
+# day there IS organic traffic worth converting: LAUNCH_DISCOUNT_PCT=15 and
+# restart. When on, it applies to a buyer's FIRST paid month only, monthly
+# plans only — never to renewals, because retiring a standing discount later
+# would hand every existing customer a price RISE.
+LAUNCH_DISCOUNT_PCT = int(os.environ.get("LAUNCH_DISCOUNT_PCT", "0"))
 LAUNCH_DISCOUNT_CYCLES = ('monthly',)
 
 
