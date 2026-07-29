@@ -522,9 +522,15 @@
     <div class="price-monthly">
       <div class="price">
         <span class="currency">$</span>
-        <span class="amount">25</span>
+        <span class="amount">{% set m = LAUNCH_PRICE['standard'] if LAUNCH_PCT else PLAN_PRICING['standard']['monthly'] %}{{ m|int if m == m|int else '%.2f'|format(m) }}</span>
         <span class="period" data-i18n="pricing.perMonth">/ month</span>
       </div>
+      {% if LAUNCH_PCT %}
+      <div class="annual-detail">
+        <span class="annual-billed"><s>${{ '%g'|format(PLAN_PRICING['standard']['monthly']) }}</s></span>
+        <span class="annual-save" data-i18n="pricing.launchSave">↓ {{ LAUNCH_PCT }}% launch offer</span>
+      </div>
+      {% endif %}
     </div>
     <div class="price-annual hidden">
       <div class="price">
@@ -533,8 +539,8 @@
         <span class="period" data-i18n="pricing.perMonth">/ month</span>
       </div>
       <div class="annual-detail">
-        <span class="annual-billed" data-i18n-html="pricing.stdBilled"><s>$300</s> &nbsp;$240 billed yearly</span>
-        <span class="annual-save" data-i18n="pricing.stdSave">↓ 20% — you save $60/yr</span>
+        <span class="annual-billed" data-i18n-html="pricing.stdBilled">$240 billed yearly</span>
+        <span class="annual-save" data-i18n="pricing.stdSave">↓ Save $60 vs paying monthly</span>
       </div>
     </div>
     <div class="plan-divider"></div>
@@ -573,9 +579,15 @@
     <div class="price-monthly">
       <div class="price">
         <span class="currency">$</span>
-        <span class="amount">50</span>
+        <span class="amount">{% set m = LAUNCH_PRICE['premium'] if LAUNCH_PCT else PLAN_PRICING['premium']['monthly'] %}{{ m|int if m == m|int else '%.2f'|format(m) }}</span>
         <span class="period" data-i18n="pricing.perMonth">/ month</span>
       </div>
+      {% if LAUNCH_PCT %}
+      <div class="annual-detail">
+        <span class="annual-billed"><s>${{ '%g'|format(PLAN_PRICING['premium']['monthly']) }}</s></span>
+        <span class="annual-save" data-i18n="pricing.launchSave">↓ {{ LAUNCH_PCT }}% launch offer</span>
+      </div>
+      {% endif %}
     </div>
     <div class="price-annual hidden">
       <div class="price">
@@ -584,8 +596,8 @@
         <span class="period" data-i18n="pricing.perMonth">/ month</span>
       </div>
       <div class="annual-detail">
-        <span class="annual-billed" data-i18n-html="pricing.premBilled"><s>$600</s> &nbsp;$480 billed yearly</span>
-        <span class="annual-save" data-i18n="pricing.premSave">↓ 20% — you save $120/yr</span>
+        <span class="annual-billed" data-i18n-html="pricing.premBilled">$480 billed yearly</span>
+        <span class="annual-save" data-i18n="pricing.premSave">↓ Save $120 vs paying monthly</span>
       </div>
     </div>
     <div class="plan-divider"></div>
@@ -717,7 +729,7 @@
           <td class="feat">Camos<span class="feat-note" data-i18n="pricing.cmpCamosNote">dashboard design themes</span></td>
           <td class="val"><span class="no">—</span></td>
           <td class="val on">1</td>
-          <td class="val on col-premium">3</td>
+          <td class="val on col-premium">1</td>
         </tr>
       </tbody>
     </table>

@@ -197,6 +197,10 @@
     .oprice .amt { font-size:52px; font-weight:800; letter-spacing:-.035em; line-height:1;
               font-variant-numeric:tabular-nums; font-feature-settings:'tnum' 1, 'ss01' 1; }
     .oprice .per { font-family:'Inter',sans-serif; font-size:14px; font-weight:500; color:var(--muted); }
+    /* List price, struck through, next to what they actually pay today. */
+    .oprice .owas { font-size:17px; font-weight:600; color:var(--muted);
+                    text-decoration:line-through; margin-left:6px;
+                    font-variant-numeric:tabular-nums; }
     .osave { display:inline-flex; align-items:center; gap:6px; margin-top:12px;
              font-size:12.5px; font-weight:800; letter-spacing:.01em; padding:4px 12px;
              border-radius:14px; background:rgba(16,185,129,.14); color:#10b981; }
@@ -309,10 +313,14 @@
           <span class="ocycle" data-i18n="{{ 'common.annual' if cycle == 'annual' else 'common.monthly' }}">{{ 'Annual' if cycle == 'annual' else 'Monthly' }}</span>
         </div>
         <div class="otag" data-i18n="{{ 'co.tagPrem' if plan == 'premium' else 'co.tagStd' }}">{{ 'For serious traders who want deep daily review.' if plan == 'premium' else 'One deep review a day, every day.' }}</div>
+        {% set shown = quote.final_price if quote.discount_pct else quote.base_price %}
         <div class="oprice">
           <span class="cur">$</span>
-          <span class="amt">{{ quote.base_price|int if quote.base_price == quote.base_price|int else '%.2f'|format(quote.base_price) }}</span>
+          <span class="amt">{{ shown|int if shown == shown|int else '%.2f'|format(shown) }}</span>
           <span class="per" data-i18n="{{ 'checkout.perYear' if cycle == 'annual' else 'checkout.perMonth' }}">{{ '/ year' if cycle == 'annual' else '/ month' }}</span>
+          {% if quote.discount_pct %}
+          <span class="owas">${{ quote.base_price|int if quote.base_price == quote.base_price|int else '%.2f'|format(quote.base_price) }}</span>
+          {% endif %}
         </div>
         {% if annual_saving %}
         <div class="osave">↓ <span data-i18n="co.save">You save</span>
@@ -356,9 +364,14 @@
           <span class="val">$<span id="base-price">{{ '%.2f'|format(quote.base_price) }}</span></span>
         </div>
 
-        <div class="discount-row" id="discount-row" style="display:none;">
-          <span id="discount-label" data-i18n="checkout.discount">Discount</span>
-          <span>−$<span id="discount-amount">0.00</span></span>
+        {# The launch offer is already priced in by the server, so it has to be
+           spelled out here — otherwise the total sits below the plan price with
+           nothing explaining the gap. A promo code replaces this row (they never
+           stack), which the JS below handles. #}
+        <div class="discount-row" id="discount-row"
+             style="display:{{ 'flex' if quote.discount_pct else 'none' }};">
+          <span id="discount-label" data-i18n="{{ 'checkout.launchOffer' if quote.launch_pct and quote.discount_pct == quote.launch_pct else 'checkout.discount' }}">{{ 'Launch offer' if quote.launch_pct and quote.discount_pct == quote.launch_pct else 'Discount' }}</span>
+          <span>−$<span id="discount-amount">{{ '%.2f'|format(quote.base_price - quote.final_price) }}</span></span>
         </div>
 
         <div class="total-row">

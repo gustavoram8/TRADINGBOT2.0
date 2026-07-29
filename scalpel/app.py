@@ -730,6 +730,24 @@ PLAN_PRICING = {
 }
 PLAN_LABELS = {'standard': 'Standard', 'premium': 'Premium'}
 
+# ── Launch offer ───────────────────────────────────────────────────────────
+# A standing discount on MONTHLY plans. Deliberately open-ended: it stays up
+# until it is switched off by hand (set LAUNCH_DISCOUNT_PCT=0 and restart), so
+# nothing expires on its own and surprises a buyer mid-purchase.
+#
+# Monthly only, on purpose. The annual plan already carries its own permanent
+# ~20% saving, and 15% off the annual list price would land ABOVE what the
+# annual already costs — an "offer" that made the plan dearer.
+LAUNCH_DISCOUNT_PCT = int(os.environ.get("LAUNCH_DISCOUNT_PCT", "15"))
+LAUNCH_DISCOUNT_CYCLES = ('monthly',)
+
+
+def launch_discount_for(cycle):
+    """Percentage the launch offer takes off this cycle (0 = no offer)."""
+    if cycle not in LAUNCH_DISCOUNT_CYCLES:
+        return 0
+    return max(0, min(100, LAUNCH_DISCOUNT_PCT))
+
 # ── Mentorship price book (SERVER-SIDE SOURCE OF TRUTH) ────────────────────
 # The mentorship offer (/improve/plans) is a SEPARATE product line from the
 # site subscription plans. The browser only ever sends a SKU key; the price is
@@ -5156,11 +5174,34 @@ def _validate_promo(code_str, cycle):
 
 def _quote(plan, cycle, promo=None):
     """Compute pricing for a plan+cycle with an optional validated promo.
-    Returns a dict with base_price, discount_pct, final_price."""
+
+    Discounts NEVER stack: the buyer gets whichever single one is better, the
+    standing launch offer or their code. Stacking them is how a plan ends up
+    sold below cost, and it is also what a buyer would call a bait price.
+
+    A code that loses to the launch offer is still recorded on the order —
+    the partner earns their commission either way, since the attribution is
+    what they were promised, not the size of the discount.
+    """
     base = _plan_base_price(plan, cycle) or 0.0
-    discount = promo.discount_pct if promo else 0
+    launch = launch_discount_for(cycle)
+    promo_pct = promo.discount_pct if promo else 0
+    discount = max(launch, promo_pct)
     final = round(base * (1 - discount / 100.0), 2)
-    return {'base_price': base, 'discount_pct': discount, 'final_price': final}
+    return {'base_price': base, 'discount_pct': discount, 'final_price': final,
+            'launch_pct': launch, 'promo_pct': promo_pct}
+
+
+@app.context_processor
+def _inject_launch_offer():
+    """Let every plan card price itself off the same numbers the server charges."""
+    pct = launch_discount_for('monthly')
+    return {
+        'LAUNCH_PCT': pct,
+        'LAUNCH_PRICE': {p: round(v['monthly'] * (1 - pct / 100.0), 2)
+                         for p, v in PLAN_PRICING.items()},
+        'PLAN_PRICING': PLAN_PRICING,
+    }
 
 
 @app.route('/checkout')
