@@ -42,8 +42,8 @@
       // Standard
       'pricing.stdTag': 'For active traders reviewing setups daily.',
       'pricing.stdBilled': '$240 billed yearly',
-      'pricing.launchSave': '↓ 15% launch offer',
-      'checkout.launchOffer': 'Launch offer',
+      'pricing.launchSave': '↓ 15% off your first month',
+      'checkout.launchOffer': 'Welcome offer (first month)',
       'pricing.stdSave': '↓ Save $60 vs paying monthly',
       'pricing.stdF1': '<strong>1</strong> screenshot analysis per day',
       'pricing.everythingFree': 'Everything in Free',
@@ -328,8 +328,8 @@
       // Standard
       'pricing.stdTag': 'Para traders activos que revisan setups a diario.',
       'pricing.stdBilled': '$240 al año',
-      'pricing.launchSave': '↓ 15% de lanzamiento',
-      'checkout.launchOffer': 'Oferta de lanzamiento',
+      'pricing.launchSave': '↓ 15% en tu primer mes',
+      'checkout.launchOffer': 'Oferta de bienvenida (primer mes)',
       'pricing.stdSave': '↓ Ahorras $60 frente a pagar mes a mes',
       'pricing.stdF1': '<strong>1</strong> análisis de captura por día',
       'pricing.everythingFree': 'Todo lo de Gratis',
@@ -616,8 +616,8 @@
       // Standard
       'pricing.stdTag': 'Pour les traders actifs qui revoient leurs setups chaque jour.',
       'pricing.stdBilled': '240 $ par an',
-      'pricing.launchSave': '↓ 15 % de lancement',
-      'checkout.launchOffer': 'Offre de lancement',
+      'pricing.launchSave': '↓ 15 % sur votre premier mois',
+      'checkout.launchOffer': 'Offre de bienvenue (premier mois)',
       'pricing.stdSave': '↓ Économisez 60 $ par rapport au mensuel',
       'pricing.stdF1': '<strong>1</strong> analyse de capture par jour',
       'pricing.everythingFree': 'Tout ce qui est inclus dans Gratuit',
@@ -901,8 +901,8 @@
       // Standard
       'pricing.stdTag': 'Para traders ativos que revisam setups diariamente.',
       'pricing.stdBilled': '$240 por ano',
-      'pricing.launchSave': '↓ 15% de lançamento',
-      'checkout.launchOffer': 'Oferta de lançamento',
+      'pricing.launchSave': '↓ 15% no seu primeiro mês',
+      'checkout.launchOffer': 'Oferta de boas-vindas (primeiro mês)',
       'pricing.stdSave': '↓ Economize $60 em vez de pagar mês a mês',
       'pricing.stdF1': '<strong>1</strong> análise de captura por dia',
       'pricing.everythingFree': 'Tudo do plano Grátis',

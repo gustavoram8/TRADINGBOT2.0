@@ -730,21 +730,47 @@ PLAN_PRICING = {
 }
 PLAN_LABELS = {'standard': 'Standard', 'premium': 'Premium'}
 
-# ── Launch offer ───────────────────────────────────────────────────────────
-# A standing discount on MONTHLY plans. Deliberately open-ended: it stays up
-# until it is switched off by hand (set LAUNCH_DISCOUNT_PCT=0 and restart), so
-# nothing expires on its own and surprises a buyer mid-purchase.
+# ── Welcome offer ──────────────────────────────────────────────────────────
+# A discount on a buyer's FIRST paid month. Deliberately open-ended: it stays
+# up until switched off by hand (LAUNCH_DISCOUNT_PCT=0 + restart), so nothing
+# expires on its own and surprises someone mid-purchase.
 #
-# Monthly only, on purpose. The annual plan already carries its own permanent
-# ~20% saving, and 15% off the annual list price would land ABOVE what the
+# First payment only, not a standing price cut. A discount that also applied to
+# renewals would mean every monthly subscriber pays it forever — and switching
+# it off later would hand every existing customer a price RISE, which is how
+# you lose the people you already convinced.
+#
+# Monthly only, on purpose. The annual plan already costs ~20% less than twelve
+# monthly payments, and taking 15% off its list price would land ABOVE what the
 # annual already costs — an "offer" that made the plan dearer.
 LAUNCH_DISCOUNT_PCT = int(os.environ.get("LAUNCH_DISCOUNT_PCT", "15"))
 LAUNCH_DISCOUNT_CYCLES = ('monthly',)
 
 
-def launch_discount_for(cycle):
-    """Percentage the launch offer takes off this cycle (0 = no offer)."""
-    if cycle not in LAUNCH_DISCOUNT_CYCLES:
+def has_paid_before(user=None):
+    """Whether this account has ever completed a purchase.
+
+    Tied to the account, not to a cookie or a device: the welcome price is a
+    property of the customer, so it survives a new browser and cannot be
+    re-claimed by clearing storage.
+    """
+    u = user
+    if u is None:
+        u = current_user if current_user and current_user.is_authenticated else None
+    if u is None or not getattr(u, 'is_authenticated', False):
+        return False          # anonymous visitor — quote them the newcomer price
+    try:
+        return db.session.query(Order.id).filter(
+            Order.user_id == u.id, Order.status == 'paid').first() is not None
+    except Exception:
+        return False
+
+
+def launch_discount_for(cycle, user=None):
+    """Percentage the welcome offer takes off this cycle (0 = none)."""
+    if cycle not in LAUNCH_DISCOUNT_CYCLES or LAUNCH_DISCOUNT_PCT <= 0:
+        return 0
+    if has_paid_before(user):
         return 0
     return max(0, min(100, LAUNCH_DISCOUNT_PCT))
 
