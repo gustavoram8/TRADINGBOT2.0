@@ -20,7 +20,26 @@
 - **VPS Contabo: 7.8 GB RAM** (NO es chico). + **swap 2 GB** agregado (`/swapfile`, en `/etc/fstab`).
 - **Bug OOM resuelto:** el ERROR 500 en `/register` reportado era un worker muerto por OOM (fuga de memoria lenta sin reciclar workers), NO un bug de código (el registro funciona: probado, da 302). **Fix aplicado:** swap + `--max-requests` (reciclaje) + threads. Causa real NO era falta de RAM (sobra), era fuga sin reciclar.
 - **Prueba de carga (PARCIAL, leer con cuidado):** `ab -n 3000 -c 200 /login` → **432 req/s, 0 fallidas** (válido). Locust lanzó **500 conexiones concurrentes** y el servidor **NO se cayó, NO hizo OOM, siguió RUNNING** (RAM 1.6/7.8 GB) → probado que **no se rompe bajo 500 conexiones**. PERO: la siembra de los 500 usuarios `loadtest` **falló** (DB quedó en `encontrados: 0`), así que los logins fallaban y las peticiones eran **más ligeras que un usuario autenticado real**; además locust murió con el SSH → **NO tenemos tabla de latencias ni prueba de la experiencia logueada real**. **Conclusión honesta: NO está probado del todo que aguante 500 usuarios reales usando todo el sitio; solo que no se cae/OOM bajo 500 conexiones.** PENDIENTE hacerlo bien: (1) sembrar usuarios y verificar que imprima `sembrados 500`; (2) correr locust desde una máquina estable o en el VPS con `tmux`/`nohup` para que sobreviva; (3) capturar la tabla `Aggregated` (median/p95/req-s/% fails). NO load-testear `/analyze` (IA: cuesta dinero + ya gateada por límites de plan).
-- **🔴 TAREA INFRA CLAVE — nginx + dominio + SSL** delante de gunicorn: hoy se sirve en IP cruda `:5001` sin nginx ni HTTPS. nginx = sirve estáticos sin ocupar workers, amortigua clientes lentos (el mayor multiplicador de capacidad real), maneja miles de conexiones, da SSL Let's Encrypt. **Es EL salto necesario para 500 usuarios reales.** (DNS A → 62.171.180.22 + nginx reverse proxy a 127.0.0.1:5001 + certbot.)
+- **🟡 nginx + dominio + SSL — HECHO A MEDIAS (2026-07-30).** ✅ Ya existe: dominio `tradeable.academy`
+  comprado, DNS en Cloudflare (A `@` y `www` → 62.171.180.22, **proxy naranja ON**, modo SSL **Full
+  (strict)** fijo — no "Automatic"), nginx instalado, certificado **Let's Encrypt** emitido para ambos
+  nombres con `certbot.timer` renovando solo. ⚠️ **PERO nginx hoy sirve SOLO la página estática de
+  "en construcción"** (`deploy/coming_soon/`, config en `deploy/nginx/tradeable.academy.conf`) — **NO
+  hay reverse proxy a gunicorn todavía**, así que el multiplicador de capacidad (estáticos sin ocupar
+  workers, amortiguar clientes lentos) **aún NO está activo**. La app real sigue expuesta directo en
+  `0.0.0.0:5001` por IP cruda sin HTTPS (el usuario lo sabe y lo eligió así por ahora; ahí previsualiza
+  sus cambios). **Falta para el día del lanzamiento:** cambiar el `location /` por
+  `proxy_pass http://127.0.0.1:5001` con los headers `X-Forwarded-*`, y considerar cerrar el 5001 al
+  exterior. Se ofreció un `preview.tradeable.academy` con contraseña y el usuario dijo que no por ahora.
+- **⛔ El bot de trading viejo (`/opt/tradingbot`) — APAGADO, no borrado (2026-07-30).** Dos capas: (1)
+  su sitio nginx `/etc/nginx/sites-enabled/tradingbot` **no tenía `server_name`** → era catch-all y
+  respondía en el dominio nuevo; se quitó el symlink (el archivo sigue en `sites-available`). (2) Lo
+  mantenía vivo **PM2** (no systemd, por eso no salía en `systemctl`): `tradingbot-next` (ocupaba el
+  puerto 3000, expuesto a internet) y `tradingbot-frontend` **en bucle de +1.800 reinicios** chocando
+  contra ese puerto ocupado, quemando CPU 24/7. Se hizo `pm2 stop all && pm2 save && pm2 kill` +
+  `systemctl disable pm2-root`, con respaldo en `/root/.pm2/dump.pm2.backup-2026-07-30`. **NADA se
+  borró.** Revivir = `systemctl enable --now pm2-root && pm2 resurrect && pm2 start all`.
+  🔴 **REGLA PERMANENTE: ese proyecto es del usuario y NO se toca ni se borra jamás.**
 - **Confidencialidad IA:** en el front público NUNCA decir "GPT-4o"/"OpenAI" → "our proprietary AI engine".
 - **Calidad:** validar antes de pushear (Jinja parse, `node --check` del JS tocado, i18n con claves parejas en EN/ES/FR/PT).
 
@@ -772,11 +791,12 @@ borrado. PENDIENTE: agregar selector de mes / historial.
 - **✅ Analizador — extras (2026-07-17):** **límite Trade Construction** = 200 palabras + **tope duro de 2000 chars** (`NOTES_MAX_CHARS`). El char-cap es clave anti-abuso: un word-count solo se burla con un blob sin espacios ("1111…" ×1M = "1 palabra") que dispararía el costo → se clampa longitud cruda ANTES del word-cap. Cliente: `maxlength=2000` en el textarea + contador `#notes-counter`/`#notes-count` (rojo + recorta paste, clave i18n `notes.words`); server: recorte en `/analyze` (chars→words). Techo real de un análisis ≈ $0.03-0.04 pase lo que pase (prompt fijo + imagen 1280px + notas capadas). **✅ Fix contador de cuota (2026-07-17):** `/api/usage` ahora devuelve SIEMPRE `used/max/remaining` (antes solo si estabas bloqueado); el cliente llama `refreshQuota()` tras cada análisis → el "X / Y disponibles" (`#ag-quota`) se actualiza al instante en vez de quedar pegado al valor del page-load hasta recargar. El gate del server (`check_rate_limit` cuenta filas `UsageLog` committeadas en cada `/analyze`) SIEMPRE fue correcto — el bug era solo cosmético. **NOTA:** un switch de idioma del análisis arrojado (endpoint `/translate` + chips EN/ES/FR/PT) se construyó y luego se **RETIRÓ por decisión del usuario** (evitar cobros de más; el trader ya tiene su idioma preseteado antes de analizar) — no re-agregar salvo pedido explícito.
 - **✅ Admin panel (2026-07-17):** reorganizado en **6 pestañas** (Users/Revenue/Moderation/AI Spend/Audit/Bugs, `.tabpane`/`.atab`, deep-link por hash preservado) + tabla **"Individual AI calls"** en AI Spend (costo/tokens por llamada, no solo total del día; `ai_calls_recent` en `_build_ai_analytics_context`) con filtro de texto.
 - **Stripe:** código LISTO y probado en modo TEST (ver "🟢 Stripe" abajo). **LLC ya hecha.** Falta activar LIVE (claves live + conectar la cuenta bancaria del amigo en Stripe + webhook con dominio). Cobro en USD por tarjeta → payout al banco del amigo, NO USDT. Ver "🚨 Alerta recurrente" #2.
-- **Comprar dominio — DECIDIDO (2026-07-28): `tradeable.academy`** (disponible y confirmado en
-  Cloudflare; se compra cuando haya presupuesto). ⚠️ **`traderaccelerator.com` quedó DESCARTADO** —
-  el dominio DEBE coincidir con el `support@tradeable.academy` ya publicado en T&C/Privacy en los 4
-  idiomas. Ojo: `.academy` NO cuesta ~$10 como un `.com` (rango real ~$20-35/año). Luego: DNS A →
-  `62.171.180.22` + nginx + SSL Let's Encrypt.
+- **✅ Dominio COMPRADO Y EN LÍNEA (2026-07-30): `tradeable.academy`** — DNS en Cloudflare, HTTPS con
+  Let's Encrypt, sirviendo la página de "en construcción". Ver el detalle en "🖥️ Infra / escalado".
+  ⚠️ **`traderaccelerator.com` quedó DESCARTADO** — el dominio debía coincidir con el
+  `support@tradeable.academy` ya publicado en T&C/Privacy en los 4 idiomas.
+  **PENDIENTE del lanzamiento:** apuntar nginx a gunicorn (hoy sirve la página estática) y actualizar
+  el webhook de Stripe/PayPal/cripto ahora que ya hay dominio con HTTPS.
 - **Email dedicado** (migrar OTP/reset del Gmail personal a cuenta del dominio). Email en T&C/Privacy
   hoy: `support@tradeable.academy`. ⚠️ **Nombre oficial = "Tradeable Academy"** (empresa y dominio);
   "Tradeable" es solo la abreviatura. "Trader Accelerator" quedó ELIMINADO de T&C/Privacy en los 4
@@ -816,7 +836,10 @@ Probar primero con `PAYPAL_ENV=sandbox`. ⚠️ Sin dominio+HTTPS el webhook no 
 el return-url y el barrido de /admin, así que se puede dejar el Webhook ID para cuando haya dominio.
 
 ### 🚨 Alerta recurrente (mostrar hasta que el usuario confirme que lo hizo)
-1. Comprar dominio + crear correo empresarial + linkear dominio al VPS (DNS A → 62.171.180.22, nginx+SSL). Sin esto: sitio en IP cruda, sin HTTPS, sin email empresarial.
+1. ✅ Dominio comprado y linkeado al VPS con HTTPS (2026-07-30). **Sigue faltando el CORREO
+   EMPRESARIAL** (`support@tradeable.academy`): hoy los OTP/reset salen de un Gmail personal y el
+   correo publicado en T&C/Privacy no existe todavía. Ver el "Plan de correo" arriba (Workspace 1
+   usuario + alias, o Zoho free; transaccional aparte; SPF+DKIM+DMARC en Cloudflare).
 2. **INSTALAR STRIPE REAL (modo LIVE) — es lo ÚNICO que falta para poder COBRAR cuando alguien contrata un plan.** El código ya está listo y probado en modo TEST (ver "🟢 Stripe" abajo); **la LLC YA ESTÁ hecha.** Lo pendiente es puramente de configuración: (a) poner las claves `sk_live_…` + `whsec_…` en supervisor conf y `scalpel/.env`; (b) **conectar en el dashboard de Stripe la cuenta bancaria del amigo** para recibir los payouts; (c) configurar el webhook `/webhook/stripe` en el dashboard de Stripe (necesita el dominio+HTTPS del punto 1). **El cobro es en USD por tarjeta vía Stripe → payout a la cuenta bancaria del amigo. NO se cobra USDT ni Binance.** **Mostrar este recordatorio una vez al día hasta que el usuario confirme que Stripe LIVE está activo.**
    ⚠️ **RECORDATORIO OBLIGATORIO AL TOCAR STRIPE (pedido explícito del usuario 2026-07-25 — repetir SIN
    EXCEPCIONES cada vez que se trabaje en Stripe):** al activar Stripe LIVE hay que **actualizar la Sección 5
