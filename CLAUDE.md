@@ -185,8 +185,17 @@ un humano decide cuáles son fondo vs. feature blanco real —guantes/ojos/dient
 suavizados). Dark = recolor de flecha azul→naranja `#dd9100` (mismo tono que la mascota default dark,
 sampleado con precisión de píxel); camos con arte que NO debe recolorearse (ej. bandera USA) usan
 `recolor=False`. **Themes (fondo) — 8 de 20 LISTOS:**
-- **Standard Steel** ✅ **(2026-07-30, el camo del plan Standard).** Un solo look (patrón Naval: vars
-  incondicionales, sin variante light). Placa de acero mecanizado = **veta diagonal cepillada**
+- **Standard Steel** ✅ **(2026-07-30, el camo del plan Standard).** **DOS looks** (patrón Pole/Mission).
+  🌙 **dark** = placa de grafito + histograma de volumen (abajo). ☀️ **light** = placa de acero pálido
+  (`--bg:#dfe3ea`, acento `#3d6d9c`, **logo por defecto**, sin invert) + una **FIGURA DE CHLADNI en
+  arena** abajo-derecha: al vibrar una placa metálica espolvoreada, los granos huyen de los vientres y
+  se amontonan en las líneas nodales — el dibujo lo hace la vibración, no un lápiz. Modo (3,7) de placa
+  cuadrada. ⚠️ **Truco de peso:** la 1ª versión pintaba ~2.600 `<circle>` = **175 KB de CSS en cada
+  carga**; se cambió a **marching squares** (se extrae el contorno donde la función nodal ≈ 0) y cada
+  segmento se vuelve UN grano en su punto medio con dispersión perpendicular, en 3 capas
+  (grueso escaso / medio / fino) → **31 KB, mismo resultado visual**. Ojo: un `stroke-dasharray` sobre
+  los segmentos NO sirve (cada subtrazo reinicia la fase y se ve como línea continua) — hay que emitir
+  puntos (`M x,y h.01` + `stroke-linecap:round`). Placa de acero mecanizado = **veta diagonal cepillada**
   (`repeating-linear-gradient` 112°) sobre degradado grafito; abajo-derecha, un **histograma de
   VOLUMEN en relieve** (relleno `#0f1218` más oscuro que la placa → se lee como sombra tallada, filo
   de luz arriba-izq, canto oscuro a la derecha) con **línea cero** y **media móvil de 5 barras**.
