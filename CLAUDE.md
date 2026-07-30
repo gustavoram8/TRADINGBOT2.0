@@ -172,7 +172,7 @@ en los T&C públicos.
 reskinea SOLO el fondo/colores del sitio (layout/paneles/posiciones NO cambian) + swap de la mascota en
 el Quiz (welcome + pass/fail). **Infra base (cableada, estable):** `User.active_camo`/`owned_camos` +
 helpers `camos_owned()/add_camo()/owns_camo()` (admin posee TODO); `CAMO_SLUGS` (20 slugs) y
-`CAMO_READY` en app.py — **hoy `{'rising-sun','pole','premium','fourth','naval','mission','blackflag'}`**, el resto pendiente; endpoints
+`CAMO_READY` en app.py — **hoy `{'rising-sun','pole','premium','fourth','naval','mission','blackflag','standard'}`**, el resto pendiente; endpoints
 `/api/camo/activate` `/api/camo/deactivate`; `/app` pinta `body.camo-<slug>` pre-paint (sin FOUC);
 tienda `/camos` con ownership/compra (Stripe real AÚN pendiente, hoy toast "pago pronto"). Migración
 prod ya aplicada (columnas `active_camo`/`owned_camos` en `user` + auto-heal `_migrate_user_camo_columns()`
@@ -184,7 +184,24 @@ huecos blancos ENCERRADOS por el contorno —axilas, entre piernas, barandillas�
 un humano decide cuáles son fondo vs. feature blanco real —guantes/ojos/dientes—, aplica con bordes
 suavizados). Dark = recolor de flecha azul→naranja `#dd9100` (mismo tono que la mascota default dark,
 sampleado con precisión de píxel); camos con arte que NO debe recolorearse (ej. bandera USA) usan
-`recolor=False`. **Themes (fondo) — 7 de 20 LISTOS:**
+`recolor=False`. **Themes (fondo) — 8 de 20 LISTOS:**
+- **Standard Steel** ✅ **(2026-07-30, el camo del plan Standard).** Un solo look (patrón Naval: vars
+  incondicionales, sin variante light). Placa de acero mecanizado = **veta diagonal cepillada**
+  (`repeating-linear-gradient` 112°) sobre degradado grafito; abajo-derecha, un **histograma de
+  VOLUMEN en relieve** (relleno `#0f1218` más oscuro que la placa → se lee como sombra tallada, filo
+  de luz arriba-izq, canto oscuro a la derecha) con **línea cero** y **media móvil de 5 barras**.
+  ⚠️ **Las alturas NO son decorativas:** se derivan de una serie de precio simulada (`series()` en
+  `scratchpad/build_standard_camo.py`), así los picos caen en los movimientos grandes — es lo que hace
+  que se lea como volumen y no como un gráfico de barras creciente. Proceso de decisión: 3 temas
+  (acero / parqué-teletipo / skyline) → eligió acero → 3 derivados (mosaico treemap / bóveda / acero
+  templado) → **rechazó los tres**, la bóveda "horrible", y pidió el fondo original + *un relieve de
+  esquina en sombra* → 3 relieves (mosaico escalonado / barras / monedas) → eligió barras → 3 formas
+  de que se lean como volumen (precio arriba / media móvil / tinte direccional) → eligió media móvil.
+  **Lecciones:** (a) el usuario quiere el fondo SOBRIO y el adorno CONTENIDO en una esquina, no
+  patrones a pantalla completa; (b) nada de objetos grandes tipo bóveda; (c) un relieve de esquina
+  **sólo se ve en pantallas ≥~1300px** — a 1000px los paneles lo tapan entero (aceptado por él);
+  (d) el cubo de Tessera vive en esa misma esquina y se le monta encima (aceptado). **Mascotas: NO
+  tiene arte propio** — usa el muñeco-flecha por defecto, igual que arrancó `fourth`.
 - **Rising Sun** ✅ — un solo look para light/dark (cream washi + disco de sol + banda diagonal + kanji).
 - **Pole** ✅ (F1 blueprint) — **dos** looks, uno por modo: ☀️ light = papel de taller (grafito + acento
   rojo), 🌙 dark = cianotipo azul (líneas blancas + acento azul); ambos con grid, plano técnico del F1,
@@ -769,8 +786,8 @@ borrado. PENDIENTE: agregar selector de mes / historial.
   slug en `owned_camos` (**permanente**, como prometen los T&C Secc. 5) y lo **enciende solo** si (a) es un
   plan nuevo para el usuario —no una renovación— y (b) no tiene otro camo activo, para no pisar su elección.
   `owns_camo()` ahora mira `camos_owned()` PRIMERO → el camo sobrevive al vencimiento del plan (antes se lo
-  quitaba, contradiciendo los T&C). ⚠️ El camo **`standard` NO tiene tema construido** (no está en
-  `CAMO_READY`): se otorga pero no se enciende; el día que se construya su CSS empieza a encenderse solo.
+  quitaba, contradiciendo los T&C). ✅ **El camo `standard` YA tiene tema (2026-07-30) y está en
+  `CAMO_READY`** → al comprar Standard se otorga **y se enciende solo** (antes se otorgaba inerte).
   **REGLA (usuario, 2026-07-27): NINGÚN camo se revoca jamás** — ni comprado ni obtenido con un plan. Por eso
   `_backfill_plan_camos()` corre en `init_db()` y registra el camo en las cuentas que YA tenían plan pagado
   antes de este cambio (solo agrega, nunca quita).

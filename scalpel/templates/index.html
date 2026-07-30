@@ -442,6 +442,48 @@
       background: radial-gradient(ellipse 96% 92% at 50% 44%, transparent 58%, rgba(90,66,30,0.20) 100%);
     }
 
+
+    /* ═══ Standard Steel (ships with the Standard plan) — brushed graphite.
+       The ground is a machined steel plate: a diagonal brushed grain over a
+       graphite gradient. Bottom-right, a VOLUME histogram sits in relief —
+       filled darker than the plate so it reads as a shadow cut into the metal,
+       with a lit edge top-left and a dark lip on the right. The bar heights are
+       not decorative: they are derived from a simulated price series, so the
+       tall bars land on the big moves, and a 5-bar moving average rides over
+       them (a curve that only ever appears on a volume panel). One look for
+       both toggle states, like Naval. iOS-safe: transparent body + fixed
+       ::before. Mascots are not themed yet — the default arrow art is used. */
+    body.camo-standard {
+      --bg:#191d25;--surface:rgba(255,255,255,0.055);--card:rgba(255,255,255,0.07);
+      --border:rgba(176,190,210,0.16);--border2:rgba(176,190,210,0.28);
+      --text:#e4e9f0;--muted:rgba(228,233,240,0.58);
+      --accent:#7fa6cc;--accent-h:#6690b8;--win:#5ec98d;--loss:#e0736b;--be:#7fa6cc;
+      background: transparent !important; color: var(--text);
+    }
+    body.camo-standard::before {
+      content:""; position:fixed; inset:0; z-index:-2; pointer-events:none;
+      background:
+        url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='620'%20height='470'%20viewBox='0%200%20620%20470'%3E%3Cline%20x1='60'%20y1='444'%20x2='614'%20y2='444'%20stroke='rgba(0,0,0,.55)'%20stroke-width='2.5'/%3E%3Cline%20x1='60'%20y1='446'%20x2='614'%20y2='446'%20stroke='rgba(203,218,240,.13)'%20stroke-width='1.4'/%3E%3Crect%20x='34.0'%20y='379.3'%20width='26'%20height='64.7'%20rx='2'%20fill='%230f1218'/%3E%3Cpath%20d='M34.0,444.0%20L34.0,379.3%20L60.0,379.3'%20fill='none'%20stroke='rgba(203,218,240,.13)'%20stroke-width='1.8'/%3E%3Cpath%20d='M60.0,379.3%20L60.0,444.0'%20fill='none'%20stroke='rgba(0,0,0,.55)'%20stroke-width='1.8'/%3E%3Crect%20x='69.0'%20y='375.1'%20width='26'%20height='68.9'%20rx='2'%20fill='%230f1218'/%3E%3Cpath%20d='M69.0,444.0%20L69.0,375.1%20L95.0,375.1'%20fill='none'%20stroke='rgba(203,218,240,.13)'%20stroke-width='1.8'/%3E%3Cpath%20d='M95.0,375.1%20L95.0,444.0'%20fill='none'%20stroke='rgba(0,0,0,.55)'%20stroke-width='1.8'/%3E%3Crect%20x='104.0'%20y='432.2'%20width='26'%20height='11.8'%20rx='2'%20fill='%230f1218'/%3E%3Cpath%20d='M104.0,444.0%20L104.0,432.2%20L130.0,432.2'%20fill='none'%20stroke='rgba(203,218,240,.13)'%20stroke-width='1.8'/%3E%3Cpath%20d='M130.0,432.2%20L130.0,444.0'%20fill='none'%20stroke='rgba(0,0,0,.55)'%20stroke-width='1.8'/%3E%3Crect%20x='139.0'%20y='359.2'%20width='26'%20height='84.8'%20rx='2'%20fill='%230f1218'/%3E%3Cpath%20d='M139.0,444.0%20L139.0,359.2%20L165.0,359.2'%20fill='none'%20stroke='rgba(203,218,240,.13)'%20stroke-width='1.8'/%3E%3Cpath%20d='M165.0,359.2%20L165.0,444.0'%20fill='none'%20stroke='rgba(0,0,0,.55)'%20stroke-width='1.8'/%3E%3Crect%20x='174.0'%20y='357.9'%20width='26'%20height='86.1'%20rx='2'%20fill='%230f1218'/%3E%3Cpath%20d='M174.0,444.0%20L174.0,357.9%20L200.0,357.9'%20fill='none'%20stroke='rgba(203,218,240,.13)'%20stroke-width='1.8'/%3E%3Cpath%20d='M200.0,357.9%20L200.0,444.0'%20fill='none'%20stroke='rgba(0,0,0,.55)'%20stroke-width='1.8'/%3E%3Crect%20x='209.0'%20y='431.1'%20width='26'%20height='12.9'%20rx='2'%20fill='%230f1218'/%3E%3Cpath%20d='M209.0,444.0%20L209.0,431.1%20L235.0,431.1'%20fill='none'%20stroke='rgba(203,218,240,.13)'%20stroke-width='1.8'/%3E%3Cpath%20d='M235.0,431.1%20L235.0,444.0'%20fill='none'%20stroke='rgba(0,0,0,.55)'%20stroke-width='1.8'/%3E%3Crect%20x='244.0'%20y='403.1'%20width='26'%20height='40.9'%20rx='2'%20fill='%230f1218'/%3E%3Cpath%20d='M244.0,444.0%20L244.0,403.1%20L270.0,403.1'%20fill='none'%20stroke='rgba(203,218,240,.13)'%20stroke-width='1.8'/%3E%3Cpath%20d='M270.0,403.1%20L270.0,444.0'%20fill='none'%20stroke='rgba(0,0,0,.55)'%20stroke-width='1.8'/%3E%3Crect%20x='279.0'%20y='377.6'%20width='26'%20height='66.4'%20rx='2'%20fill='%230f1218'/%3E%3Cpath%20d='M279.0,444.0%20L279.0,377.6%20L305.0,377.6'%20fill='none'%20stroke='rgba(203,218,240,.13)'%20stroke-width='1.8'/%3E%3Cpath%20d='M305.0,377.6%20L305.0,444.0'%20fill='none'%20stroke='rgba(0,0,0,.55)'%20stroke-width='1.8'/%3E%3Crect%20x='314.0'%20y='356.2'%20width='26'%20height='87.8'%20rx='2'%20fill='%230f1218'/%3E%3Cpath%20d='M314.0,444.0%20L314.0,356.2%20L340.0,356.2'%20fill='none'%20stroke='rgba(203,218,240,.13)'%20stroke-width='1.8'/%3E%3Cpath%20d='M340.0,356.2%20L340.0,444.0'%20fill='none'%20stroke='rgba(0,0,0,.55)'%20stroke-width='1.8'/%3E%3Crect%20x='349.0'%20y='370.7'%20width='26'%20height='73.3'%20rx='2'%20fill='%230f1218'/%3E%3Cpath%20d='M349.0,444.0%20L349.0,370.7%20L375.0,370.7'%20fill='none'%20stroke='rgba(203,218,240,.13)'%20stroke-width='1.8'/%3E%3Cpath%20d='M375.0,370.7%20L375.0,444.0'%20fill='none'%20stroke='rgba(0,0,0,.55)'%20stroke-width='1.8'/%3E%3Crect%20x='384.0'%20y='374.8'%20width='26'%20height='69.2'%20rx='2'%20fill='%230f1218'/%3E%3Cpath%20d='M384.0,444.0%20L384.0,374.8%20L410.0,374.8'%20fill='none'%20stroke='rgba(203,218,240,.13)'%20stroke-width='1.8'/%3E%3Cpath%20d='M410.0,374.8%20L410.0,444.0'%20fill='none'%20stroke='rgba(0,0,0,.55)'%20stroke-width='1.8'/%3E%3Crect%20x='419.0'%20y='426.0'%20width='26'%20height='18.0'%20rx='2'%20fill='%230f1218'/%3E%3Cpath%20d='M419.0,444.0%20L419.0,426.0%20L445.0,426.0'%20fill='none'%20stroke='rgba(203,218,240,.13)'%20stroke-width='1.8'/%3E%3Cpath%20d='M445.0,426.0%20L445.0,444.0'%20fill='none'%20stroke='rgba(0,0,0,.55)'%20stroke-width='1.8'/%3E%3Crect%20x='454.0'%20y='294.0'%20width='26'%20height='150.0'%20rx='2'%20fill='%230f1218'/%3E%3Cpath%20d='M454.0,444.0%20L454.0,294.0%20L480.0,294.0'%20fill='none'%20stroke='rgba(203,218,240,.13)'%20stroke-width='1.8'/%3E%3Cpath%20d='M480.0,294.0%20L480.0,444.0'%20fill='none'%20stroke='rgba(0,0,0,.55)'%20stroke-width='1.8'/%3E%3Crect%20x='489.0'%20y='400.9'%20width='26'%20height='43.1'%20rx='2'%20fill='%230f1218'/%3E%3Cpath%20d='M489.0,444.0%20L489.0,400.9%20L515.0,400.9'%20fill='none'%20stroke='rgba(203,218,240,.13)'%20stroke-width='1.8'/%3E%3Cpath%20d='M515.0,400.9%20L515.0,444.0'%20fill='none'%20stroke='rgba(0,0,0,.55)'%20stroke-width='1.8'/%3E%3Crect%20x='524.0'%20y='389.6'%20width='26'%20height='54.4'%20rx='2'%20fill='%230f1218'/%3E%3Cpath%20d='M524.0,444.0%20L524.0,389.6%20L550.0,389.6'%20fill='none'%20stroke='rgba(203,218,240,.13)'%20stroke-width='1.8'/%3E%3Cpath%20d='M550.0,389.6%20L550.0,444.0'%20fill='none'%20stroke='rgba(0,0,0,.55)'%20stroke-width='1.8'/%3E%3Crect%20x='559.0'%20y='378.8'%20width='26'%20height='65.2'%20rx='2'%20fill='%230f1218'/%3E%3Cpath%20d='M559.0,444.0%20L559.0,378.8%20L585.0,378.8'%20fill='none'%20stroke='rgba(203,218,240,.13)'%20stroke-width='1.8'/%3E%3Cpath%20d='M585.0,378.8%20L585.0,444.0'%20fill='none'%20stroke='rgba(0,0,0,.55)'%20stroke-width='1.8'/%3E%3Crect%20x='594.0'%20y='404.5'%20width='26'%20height='39.5'%20rx='2'%20fill='%230f1218'/%3E%3Cpath%20d='M594.0,444.0%20L594.0,404.5%20L620.0,404.5'%20fill='none'%20stroke='rgba(203,218,240,.13)'%20stroke-width='1.8'/%3E%3Cpath%20d='M620.0,404.5%20L620.0,444.0'%20fill='none'%20stroke='rgba(0,0,0,.55)'%20stroke-width='1.8'/%3E%3Cpath%20d='M47.0,379.3%20L82.0,377.2%20L117.0,395.5%20L152.0,386.5%20L187.0,380.7%20L222.0,391.1%20L257.0,396.7%20L292.0,385.8%20L327.0,385.2%20L362.0,387.7%20L397.0,376.5%20L432.0,381.1%20L467.0,364.3%20L502.0,373.3%20L537.0,377.1%20L572.0,377.9%20L607.0,373.6'%20fill='none'%20stroke='rgba(0,0,0,.55)'%20stroke-width='5'%20stroke-linejoin='round'%20stroke-linecap='round'/%3E%3Cpath%20d='M47.0,379.3%20L82.0,377.2%20L117.0,395.5%20L152.0,386.5%20L187.0,380.7%20L222.0,391.1%20L257.0,396.7%20L292.0,385.8%20L327.0,385.2%20L362.0,387.7%20L397.0,376.5%20L432.0,381.1%20L467.0,364.3%20L502.0,373.3%20L537.0,377.1%20L572.0,377.9%20L607.0,373.6'%20transform='translate(-1,-2)'%20fill='none'%20stroke='rgba(203,218,240,.22)'%20stroke-width='2.6'%20stroke-linejoin='round'%20stroke-linecap='round'/%3E%3C/svg%3E") right 0 bottom 0 / 470px auto no-repeat,
+        repeating-linear-gradient(112deg,
+          rgba(255,255,255,.035) 0 1px, rgba(0,0,0,.05) 1px 2px,
+          transparent 2px 5px),
+        repeating-linear-gradient(112deg,
+          rgba(255,255,255,.02) 0 2px, transparent 2px 9px),
+        linear-gradient(150deg,#2a303b 0%,#1d222b 46%,#14171e 100%);
+    }
+    body.camo-standard::after {
+      content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+      background:
+        radial-gradient(ellipse 60% 45% at 22% 4%, rgba(150,180,215,.10), transparent 66%),
+        radial-gradient(ellipse 92% 86% at 50% 44%, transparent 56%, rgba(6,8,12,.52) 100%);
+    }
+    /* Graphite ground in both modes → white wordmark + orange "a" (invert of
+       logo_t). Two selectors (0,3,1) beat the generic camo cream-logo rule. */
+    body.camo-standard.light .logo-img,
+    body.camo-standard:not(.light) .logo-img {
+      content: url('/static/logo_t.png'); filter: invert(1); mix-blend-mode: normal;
+    }
+
     /* ===== Themed Quiz mascots per camo =====
        Each active camo swaps the big Quiz WELCOME mascot and the pass/fail
        RESULT mascots for its themed art. Light mode uses the blue-arrow art;

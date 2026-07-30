@@ -1445,7 +1445,8 @@ CAMO_SLUGS = {
 }
 # Camos that actually have a theme built and can be activated today. The rest
 # still render as "Coming soon" in the store. Add a slug here once its CSS ships.
-CAMO_READY = {'rising-sun', 'pole', 'premium', 'fourth', 'naval', 'mission', 'blackflag'}
+CAMO_READY = {'rising-sun', 'pole', 'premium', 'fourth', 'naval', 'mission',
+              'blackflag', 'standard'}
 
 # The camo that ships with each paid plan. Granting it is part of what the
 # buyer paid for, so it is written into the account (see grant_plan_camo).
