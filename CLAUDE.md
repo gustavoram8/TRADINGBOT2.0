@@ -215,7 +215,27 @@ sampleado con precisión de píxel); camos con arte que NO debe recolorearse (ej
   patrones a pantalla completa; (b) nada de objetos grandes tipo bóveda; (c) un relieve de esquina
   **sólo se ve en pantallas ≥~1300px** — a 1000px los paneles lo tapan entero (aceptado por él);
   (d) el cubo de Tessera vive en esa misma esquina y se le monta encima (aceptado). **Mascotas: NO
-  tiene arte propio** — usa el muñeco-flecha por defecto, igual que arrancó `fourth`.
+  tiene arte propio TODAVÍA** — usa el muñeco-flecha por defecto, igual que arrancó `fourth`.
+  🎨 **TEMÁTICA DE BOTARGA APROBADA (2026-07-30): EL HERRERO.** Razón: el camo es una placa de acero y
+  el herrero es quien la hizo — no es un disfraz pegado, es el origen del material; además mete **fuego
+  naranja contra el gris frío**, así la botarga resalta sin tocar el fondo. Lectura de marca: el acero
+  no se encuentra, se forja (encaja con un plan de entrada). **Las 3 poses:**
+  · **welcome (`logo2_standard`)** — junto al yunque, delantal de cuero, gafas de soldador subidas en
+    la frente, martillo al hombro; con las tenazas sostiene **una vela japonesa al rojo vivo** (el
+    lingote ES una vela — ese es el guiño) + un par de chispas. Postura relajada y confiada.
+  · **pass (`logo3_standard`)** — levanta la pieza terminada: la misma vela, ahora **acero pulido y
+    frío, perfecta**, reflejando la luz; sonrisa de lado, martillo colgando. Orgullo tranquilo, no
+    celebración exagerada.
+  · **fail (`logo4_standard`)** — la pieza **partida sobre el yunque** (dos mitades + una esquirla
+    saliendo), él con mueca de "otra vez será", martillo aún en alto. **Sin drama ni humillación** —
+    el herrero rompe piezas todos los días.
+  ⚠️ **Requisitos para el ilustrador:** (1) el personaje debe **conservar su flecha AZUL** — la
+  variante de modo oscuro se genera recoloreando ese azul a naranja `#dd9100`; si cambia el color de la
+  flecha hay que hacer el dark a mano (`recolor=False`). (2) **Nada de zonas blancas cerradas que sean
+  fondo** (axilas, huecos entre brazos) — ver la lección del recorte del 18-jul; los blancos legítimos
+  (ojos, dientes, chispas, humo) sí se quedan. (3) Fondo transparente, 6 archivos:
+  `logo{2,3,4}_standard[_dark].png`. **Alternativas descartadas:** el maquinista de precisión (más frío)
+  y el afinador de la placa (demasiado críptico).
 - **Rising Sun** ✅ — un solo look para light/dark (cream washi + disco de sol + banda diagonal + kanji).
 - **Pole** ✅ (F1 blueprint) — **dos** looks, uno por modo: ☀️ light = papel de taller (grafito + acento
   rojo), 🌙 dark = cianotipo azul (líneas blancas + acento azul); ambos con grid, plano técnico del F1,
