@@ -5,6 +5,10 @@
 > que **NO** se carga en cada mensaje. Mantener este archivo CORTO para ahorrar tokens; al
 > terminar una tarea, mover su detalle al archivo en vez de dejarlo aquí.
 
+> 🚀 **`LANZAMIENTO.md`** = la checklist para abrir el sitio al público (bloqueantes, arreglos de
+> código previos, el cambio de nginx, verificación y plan de reversa). **Leerlo cuando el usuario
+> diga que quiere abrir el sitio, o al tocar nginx / pagos / correo / dominio.** Tampoco se carga solo.
+
 ---
 
 ## 🔧 Operativa (LEER SIEMPRE)
