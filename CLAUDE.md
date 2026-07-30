@@ -187,15 +187,20 @@ sampleado con precisión de píxel); camos con arte que NO debe recolorearse (ej
 `recolor=False`. **Themes (fondo) — 8 de 20 LISTOS:**
 - **Standard Steel** ✅ **(2026-07-30, el camo del plan Standard).** **DOS looks** (patrón Pole/Mission).
   🌙 **dark** = placa de grafito + histograma de volumen (abajo). ☀️ **light** = placa de acero pálido
-  (`--bg:#dfe3ea`, acento `#3d6d9c`, **logo por defecto**, sin invert) + una **FIGURA DE CHLADNI en
-  arena** abajo-derecha: al vibrar una placa metálica espolvoreada, los granos huyen de los vientres y
-  se amontonan en las líneas nodales — el dibujo lo hace la vibración, no un lápiz. Modo (3,7) de placa
-  cuadrada. ⚠️ **Truco de peso:** la 1ª versión pintaba ~2.600 `<circle>` = **175 KB de CSS en cada
-  carga**; se cambió a **marching squares** (se extrae el contorno donde la función nodal ≈ 0) y cada
-  segmento se vuelve UN grano en su punto medio con dispersión perpendicular, en 3 capas
-  (grueso escaso / medio / fino) → **31 KB, mismo resultado visual**. Ojo: un `stroke-dasharray` sobre
-  los segmentos NO sirve (cada subtrazo reinicia la fase y se ve como línea continua) — hay que emitir
-  puntos (`M x,y h.01` + `stroke-linecap:round`). Placa de acero mecanizado = **veta diagonal cepillada**
+  (`--bg:#dfe3ea`, acento `#3d6d9c`, **logo por defecto**, sin invert) + la **FICHA TÉCNICA de una
+  vela** abajo-derecha: la vela dibujada como pieza de taller (cotas RANGE/BODY con flechas, líneas
+  auxiliares punteadas, rótulos HIGH/CLOSE/OPEN/LOW y cajetín "FIG. 1 — CANDLE"). Truco del grabado:
+  todo el dibujo va en `<defs>` y se pinta con DOS `<use>` — uno blanco desplazado 1.6px debajo y uno
+  oscuro encima (`currentColor` + `color` en el `<use>`) → se lee como surco en el metal, no como
+  impresión. Rótulos en inglés (misma convención que los diagramas de Synapse).
+  ⚠️ **Se PROBÓ y se DESCARTÓ una FIGURA DE CHLADNI en arena** (granos sobre las líneas nodales de una
+  placa vibrando): al usuario le pareció "un mandala" y **no se entendía qué era**. NO re-proponerla.
+  🔴 **Lección general: en este sitio el adorno tiene que RECONOCERSE a la primera** — lo abstracto
+  bonito no vale, aunque sea original. (Del intento quedó un truco reutilizable: para dibujar miles de
+  puntos sin inflar el CSS, extraer el contorno con marching squares y emitir `M x,y h.01` con
+  `stroke-linecap:round` — 2.600 `<circle>` costaban 175 KB, así 31 KB. Un `stroke-dasharray` NO sirve:
+  cada subtrazo reinicia la fase y se ve como línea continua.)
+  Placa de acero mecanizado = **veta diagonal cepillada**
   (`repeating-linear-gradient` 112°) sobre degradado grafito; abajo-derecha, un **histograma de
   VOLUMEN en relieve** (relleno `#0f1218` más oscuro que la placa → se lee como sombra tallada, filo
   de luz arriba-izq, canto oscuro a la derecha) con **línea cero** y **media móvil de 5 barras**.
