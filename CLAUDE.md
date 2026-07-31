@@ -992,6 +992,21 @@ y pulir cada punto primero para luego pasar al otro"*. Estado:
 **Además, sueltos de la misma sesión:** faltan por cablear los `(?)` de Synapse, Kill Zones,
 Rangos/XP, Notas y Subida; y encender PayPal (ver "PENDIENTE INMEDIATO" más abajo).
 
+### 📊 FINANCIAL HUB — Excel entregado (2026-07-31, fuera del repo)
+El usuario pidió por PDF un **modelo financiero de 14 hojas** para el acuerdo comercial →
+entregado `Tradeable_Academy_Financial_Hub.xlsx` (14 hojas exactas del PDF, 832 fórmulas puras
+sin macros, recalc 0 errores + 52 checks numéricos independientes verdes). Todo parametrizado
+desde la hoja Configuración. **Decisiones aplicadas** (de la transcripción de la propuesta, el
+usuario confirmó que ya estaban definidas): comisión RECURRENTE en cada re-pago; "ventas
+válidas" = subs activos netos de chargebacks; el % del tramo (30/35/40 desde 1/25/75) aplica a
+TODA la facturación comisionable; comisión siempre sobre lo pagado; descuento del código
+perpetuo (20% mensual); anual = Modelo A 15% vs Modelo B 35% extra (ambos editables — el 20%
+acordado antes se puede probar escribiéndolo); 15 cuentas Premium ×3 meses al llegar a 75
+(única vez); Premium propio del influencer si ≥15 subs; comisiones anuales en 12 cuotas;
+PayPal % + fijo configurables; costos fijos VPS/Workspace/IA incluidos. Un influencer hoy,
+tabla lista para 10. ⚠️ Si piden regenerarlo: script en scratchpad de la sesión
+(`hub/build_hub.py`) — NO está commiteado (deliberado: números del negocio fuera del repo).
+
 ### 🔴 Crítico (antes de lanzar)
 - **🚨 EL COBRO ES POR STRIPE (USD por tarjeta → payout a la cuenta bancaria del amigo). NO se cobra
   USDT/Binance.** Falta solo instalar Stripe LIVE (ver "🚨 Alerta recurrente" #2). ⚠️ El texto viejo
