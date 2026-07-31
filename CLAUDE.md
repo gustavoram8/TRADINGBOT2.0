@@ -54,13 +54,27 @@ inyecta su CSS, arma su drawer, dict propio EN/ES/FR/PT, envuelve `window.applyL
 **Cablear un panel nuevo = 2 pasos:** (1) `data-help="<topic>"` en el heading, (2) el topic en
 `HELP_CONTENT`. El `(?)` se inyecta solo. Cada drawer cierra con un enlace a `/guide#<seccion>` —
 eso es lo que evita que esto se vuelva un TERCER manual que se desincroniza.
-- **HECHO:** solo **Pre-Flight** (piloto, a revisar por el usuario). El drawer trae 3 secciones que
-  espejan los sub-tabs (Chequeo / Por proyecto / Comparar) y **abre en la sección del sub-tab activo**
-  (salvo si es la primera, para no tapar la introducción con el auto-scroll).
+- **HECHO (5 paneles):** **Pre-Flight** (piloto, aprobado: *"está perfecto"*), **Analizador**,
+  **Chalkboard**, **Foro** y **Quiz**. Los drawers de Pre-Flight y Foro **abren en la sección del
+  sub-tab activo** (`activeSection()`; en el foro Communities→`comm`, Saved/Following→`feeds`);
+  nunca hacen auto-scroll si toca la primera sección, para no tapar la introducción.
+  · Quiz = **UN solo drawer con 3 secciones** (por tema / Daily / Hardcore) en vez de 3 botones
+    pisándose en el mismo panel — decisión tomada con el usuario.
+  · Chalkboard incluye el **aviso honesto** de que la pizarra vive en `localStorage` de ESE navegador
+    y que la exportación es el guardado de verdad (mientras no exista persistencia server-side).
+- ⚠️ **Dos trampas cazadas al probarlo en navegador real** (no se ven leyendo el código):
+  1. **El Quiz abre en la pantalla de bienvenida**, no en el home → el `(?)` del home quedaba invisible
+     justo para quien llega por primera vez. Solución: **segundo host con el MISMO topic** en la
+     bienvenida (el módulo pinta un chip por cada `[data-help]`, así que dos hosts funcionan solos).
+  2. Los enlaces al manual apuntaban a `#analyzer` y `#chalkboard`, que **NO existen**: los anclajes
+     reales de `guide.html` son **`#analyze`** y **`#chalk`**. Al cablear un panel nuevo, verificar el
+     ancla contra los `id=` de `guide.html` — un ancla muerta no da error, solo cae al tope de la página.
+- ⚠️ Sin `FLASK_DEBUG` Jinja **cachea las plantillas**: tras editar `index.html` hay que reiniciar o
+  la prueba en navegador mide la versión vieja (pasó: el 2º chip del quiz "no aparecía").
 - **PENDIENTE:** (a) el usuario dijo que **`/guide` está muy pobre** ("síntesis de la síntesis") y hay
-  que ampliarla; (b) replicar el (?) al resto de paneles (Proyectos, Armado del trade, Subida, Notas,
-  Quiz, Daily, Chalkboard, Synapse, Foro, Kill Zones, Rangos/XP); (c) se propuso además un
-  **recorrido de primera vez** por apartado (una sola vez, saltable) — el usuario aún no lo pidió.
+  que ampliarla; (b) faltan paneles por cablear (Synapse, Kill Zones, Rangos/XP, Notas, Subida);
+  (c) se propuso además un **recorrido de primera vez** por apartado (una sola vez, saltable) — el
+  usuario aún no lo pidió.
 - ⚠️ **Trampa Jinja:** el CSS del bloque tenía `@media (...){#nxh,...}` y la secuencia **`{#` abre un
   comentario en Jinja** → `TemplateSyntaxError`. Se separa con un espacio: `{ #nxh`. Revisar `{#`,
   `{%` y `{{` en cualquier CSS/JS que se inserte en un template.
