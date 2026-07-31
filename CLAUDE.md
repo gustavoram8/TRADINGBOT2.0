@@ -101,13 +101,17 @@ legal explícita (**logro educativo, NO título profesional ni licencia**). Clav
 tira de pips, color del rango) + meta OG/Twitter → al pegar el enlace en WhatsApp/LinkedIn/X sale
 tarjeta rica en vez de un enlace pelado.
 
-## 🟢 COMUNIDAD `/community` — redes oficiales + próximo sorteo (2026-07-31)
+## 🟢 SOCIALS `/socials` — redes oficiales + próximo sorteo (2026-07-31)
 **Contexto:** se evaluaron y DESCARTARON un plan de referidos (más descuentos = choca con el acuerdo
 comercial) y un **sistema de sorteos automático** — el usuario lo rechazó explícitamente por carga
 operativa para una sola persona: *"Prefiero yo hacerlo a mano cuando salga con el instagram"*. Lo que
 sí se construyó es el **escaparate**: una página donde viven las cuentas oficiales y un tablero de
 "próximo sorteo" **que el dueño llena a mano desde /admin**.
-- **`/community`** (`community.html`): hero + tablero del sorteo (card oscura con acento dorado,
+- ⚠️ **Se llamaba `/community` y se RENOMBRÓ a `/socials`** (pedido del usuario): chocaba con la
+  pestaña **Communities** del foro. Dos cosas con el mismo nombre en un mismo producto confunden.
+  Las claves i18n siguen siendo `comm.*` (internas); lo que cambió son las etiquetas visibles:
+  Socials / Redes oficiales / Réseaux officiels / Redes oficiais.
+- **`/socials`** (`socials.html`): hero + tablero del sorteo (card oscura con acento dorado,
   **cuenta regresiva en vivo**, expander "Cómo participar" con los pasos, línea legal, bloque de
   ganador) + cards de las cuentas oficiales con SVGs de marca inline.
 - **Modelo `Giveaway`** (title, prize, ends_at, how_to, link, winner, active) + `_current_giveaway()`.
@@ -118,8 +122,12 @@ sí se construyó es el **escaparate**: una página donde viven las cuentas ofic
 - i18n: **20 claves `comm.*` ×4 idiomas** en `pages_i18n.js` (paridad verificada).
 - Verificado en navegador real con datos sembrados: cuenta regresiva viva, 4 cards, título ES,
   pasos que despliegan, **sin desbordamiento horizontal en móvil**, 0 errores de JS.
-- **PENDIENTE:** crear las cuentas y setear sus env vars (ver "Redes sociales" en tareas pendientes);
-  enlazar `/community` desde el menú Products / footer cuando las cuentas existan.
+- ✅ **YA ENLAZADA** (el usuario pidió que fuera visible aunque no haya sorteos ni cuentas todavía):
+  menú **Products** (clave `products.socials` ×4) + **footer de la landing**. Los estados vacíos
+  están cubiertos, así que la página nunca se ve rota: sin cuentas creadas el aviso del sorteo usa
+  `comm.gwNoneSoon` en vez de `comm.gwNone` (que mandaba a "seguir las cuentas de abajo" cuando
+  abajo no había ninguna). 21 claves `comm.*` ×4 a paridad.
+- **PENDIENTE:** crear las cuentas y setear sus env vars (ver "Redes sociales" en tareas pendientes).
 
 ## 📅 Recordatorio diario
 La **primera vez que el usuario escriba cada día calendario** (`currentDate`), mostrar (si ya se mostró
