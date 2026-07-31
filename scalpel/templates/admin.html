@@ -1042,16 +1042,30 @@
       mano</b> abajo y ver cómo se comporta — misma matemática, mismo código que una venta real.
     </div>
 
+    <!-- ── TU GANANCIA — el número que importa, imposible de no ver ── -->
+    {% set v = ledger_view %}{% set t = ledger_total %}
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+      <div style="flex:2;min-width:250px;background:linear-gradient(135deg,#123c26,#1a5c38);border-radius:12px;padding:14px 18px;color:#fff;">
+        <div style="font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.75;">💰 Tu ganancia neta — histórico</div>
+        <div style="font-size:30px;font-weight:800;line-height:1.1;margin-top:3px;">${{ '%.2f'|format(t.profit) }}</div>
+        <div style="font-size:11.5px;opacity:.8;margin-top:2px;">después de descuentos, comisiones, fees y costos · {{ t.count }} venta(s) válida(s)</div>
+      </div>
+      <div style="flex:1;min-width:170px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 18px;">
+        <div style="font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);">Ganancia del mes en pantalla</div>
+        <div style="font-size:24px;font-weight:800;margin-top:5px;">${{ '%.2f'|format(v.profit) }}</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">{{ v.count }} venta(s) · margen {{ '%.1f'|format(v.profit / v.net * 100 if v.net else 0) }}%</div>
+      </div>
+    </div>
+
     <!-- ── Totales ── -->
     <div class="stat-row" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
-      {% set v = ledger_view %}{% set t = ledger_total %}
       {% for lbl, mes, tot in [
         ('Ventas válidas', v.count, t.count),
-        ('Revertidas', v.reversed, t.reversed),
         ('Neto cobrado', '$%.2f'|format(v.net), '$%.2f'|format(t.net)),
         ('Fees procesador', '$%.2f'|format(v.fees), '$%.2f'|format(t.fees)),
         ('Comisión socio', '$%.2f'|format(v.commission), '$%.2f'|format(t.commission)),
-        ('UTILIDAD', '$%.2f'|format(v.profit), '$%.2f'|format(t.profit)),
+        ('Costos operativos', '$%.2f'|format(v.op), '$%.2f'|format(t.op)),
+        ('Revertidas', v.reversed, t.reversed),
       ] %}
       <div style="flex:1;min-width:130px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;">
         <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);">{{ lbl }}</div>

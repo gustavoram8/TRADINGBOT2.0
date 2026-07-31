@@ -5660,7 +5660,12 @@ def _build_ledger_context():
 
     view_key = (request.args.get('ledger_month') or '').strip()
     if view_key not in months:
-        view_key = this_key
+        # Default to the newest month that actually HAS sales. A clock that is
+        # a few hours ahead (or a sale logged just past midnight UTC) can land
+        # rows in "next month" — opening on the server's empty current month
+        # then shows $0 everywhere and reads like the panel is broken.
+        non_empty = [k for k in sorted(months, reverse=True) if months[k]]
+        view_key = non_empty[0] if non_empty else this_key
     view_rows = months[view_key]
 
     def _tally(rows):
