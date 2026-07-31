@@ -6746,7 +6746,7 @@
     <!-- Real Pre-Flight trainer — shown only for Premium members -->
     <div class="preflight-app" id="preflight-app" style="display:none;">
     <div class="page-header">
-      <h1 data-i18n="pf.title">Pre-Flight</h1>
+      <h1 data-i18n="pf.title" data-help="preflight">Pre-Flight</h1>
       <p data-i18n="pf.sub">Your discipline trainer. Define the confluences your trigger requires, run a pre-flight check before every trade, and let the data show which confluences performed best in your own records.</p>
     </div>
 
@@ -25892,5 +25892,358 @@
     try{ new MutationObserver(sync).observe(document.body,{attributes:true,attributeFilter:['class']}); }catch(e){}
   })();
   </script>
+<!-- ══════════════════════════════════════════════════════════════════════════
+     CONTEXTUAL HELP — a "(?)" beside a panel heading opens a sliding drawer
+     explaining that panel.
+
+     Self-contained on purpose (same shape as the Tessera block): it injects
+     its own CSS, builds its own drawer and keeps its own dictionary, so
+     wiring a new panel is two steps and nothing else in the page has to know:
+
+       1. put  data-help="<topic>"  on the heading element
+       2. add that topic to HELP_CONTENT below (en/es/fr/pt)
+
+     The drawer is the ONLY place this copy lives in the app; anything longer
+     than a drawer belongs in /guide, which every drawer links to. That link
+     is what stops this from becoming a third, silently diverging manual.
+     ══════════════════════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  'use strict';
+
+  // ── Copy ────────────────────────────────────────────────────────────────
+  // `sections` mirror the sub-tabs of the panel, so the drawer can open
+  // straight at whichever one the trader is looking at.
+  var HELP_CONTENT = {
+    preflight: {
+      en: {
+        title: 'Pre-Flight',
+        lede: 'A discipline trainer. You write down the conditions your entry requires, and before every trade you check them off honestly. Over time it shows which of your own conditions actually preceded good trades.',
+        guide: '/guide#preflight',
+        sections: [
+          { id: 'board', title: 'Check — the checklist you run before entering',
+            steps: [
+              'Create a checklist and give it the name of your setup (for example "NY open — FVG retest").',
+              'Add one line per condition your entry demands. Your rules, your words — nobody else\'s.',
+              'Before a trade, tick only what is genuinely present right now. The lamp turns GO, CAUTION or NO-GO by counting your own ticks.',
+              'Log the trade afterwards: date, instrument, R:R and how it ended.'
+            ],
+            note: 'The lamp is arithmetic on your own rules — it is not a signal, a recommendation, or an opinion about the market.' },
+          { id: 'projects', title: 'By project — one checklist per strategy',
+            steps: [
+              'Link a checklist to one of your Analyzer projects so each strategy keeps its own rules and its own history.',
+              'Switch project to see only the trades logged under it.',
+              'This is what keeps a scalping setup from polluting the statistics of a swing setup.'
+            ] },
+          { id: 'compare', title: 'Compare — which conditions were actually worth it',
+            steps: [
+              'Once you have logged trades, this tab ranks each condition by how the trades that had it turned out.',
+              'A condition that appears in most of your good trades is doing work. One that appears everywhere, win or lose, is telling you nothing.',
+              'Read it as a mirror of your own record, not as a prediction. Small samples lie.'
+            ] }
+        ],
+        tips: [
+          'Fewer, sharper conditions beat a long list nobody honestly ticks.',
+          'Backtests and papertrades count — you do not need real money to build the record.'
+        ]
+      },
+      es: {
+        title: 'Pre-Flight',
+        lede: 'Un entrenador de disciplina. Escribes las condiciones que exige tu entrada y, antes de cada trade, las marcas con honestidad. Con el tiempo te muestra cuáles de tus propias condiciones vinieron antes de tus buenos trades.',
+        guide: '/guide#preflight',
+        sections: [
+          { id: 'board', title: 'Chequeo — la lista que corres antes de entrar',
+            steps: [
+              'Crea una checklist y ponle el nombre de tu setup (por ejemplo "NY open — retest de FVG").',
+              'Agrega una línea por cada condición que exige tu entrada. Tus reglas, con tus palabras, no las de nadie más.',
+              'Antes de un trade, marca solo lo que está presente de verdad en ese momento. La luz se pone en GO, CAUTION o NO-GO contando tus propias marcas.',
+              'Después registra el trade: fecha, instrumento, R:R y cómo terminó.'
+            ],
+            note: 'La luz es aritmética sobre tus propias reglas — no es una señal, ni una recomendación, ni una opinión sobre el mercado.' },
+          { id: 'projects', title: 'Por proyecto — una checklist por estrategia',
+            steps: [
+              'Vincula una checklist a uno de tus proyectos del analizador, así cada estrategia guarda sus reglas y su propio historial.',
+              'Cambia de proyecto para ver solo los trades registrados en él.',
+              'Esto es lo que evita que un setup de scalping te ensucie las estadísticas de uno de swing.'
+            ] },
+          { id: 'compare', title: 'Comparar — qué condiciones valieron la pena',
+            steps: [
+              'Cuando ya tengas trades registrados, esta pestaña ordena cada condición según cómo terminaron los trades que la tenían.',
+              'Una condición que aparece en la mayoría de tus buenos trades está haciendo trabajo. Una que aparece siempre, ganes o pierdas, no te está diciendo nada.',
+              'Léelo como un espejo de tu propio historial, no como una predicción. Las muestras pequeñas mienten.'
+            ] }
+        ],
+        tips: [
+          'Pocas condiciones y afiladas rinden más que una lista larga que nadie marca con honestidad.',
+          'Los backtests y los papertrades cuentan — no necesitas dinero real para construir el historial.'
+        ]
+      },
+      fr: {
+        title: 'Pre-Flight',
+        lede: 'Un entraîneur de discipline. Vous notez les conditions qu’exige votre entrée et, avant chaque trade, vous les cochez honnêtement. Avec le temps, il montre lesquelles de vos propres conditions ont précédé vos bons trades.',
+        guide: '/guide#preflight',
+        sections: [
+          { id: 'board', title: 'Vérification — la liste avant d’entrer',
+            steps: [
+              'Créez une checklist et donnez-lui le nom de votre setup (par exemple « ouverture NY — retest de FVG »).',
+              'Ajoutez une ligne par condition qu’exige votre entrée. Vos règles, vos mots, pas ceux d’un autre.',
+              'Avant un trade, cochez uniquement ce qui est réellement présent à cet instant. Le voyant passe à GO, CAUTION ou NO-GO en comptant vos propres coches.',
+              'Enregistrez ensuite le trade : date, instrument, R:R et issue.'
+            ],
+            note: 'Le voyant est une arithmétique sur vos propres règles — ce n’est ni un signal, ni une recommandation, ni un avis sur le marché.' },
+          { id: 'projects', title: 'Par projet — une checklist par stratégie',
+            steps: [
+              'Reliez une checklist à l’un de vos projets d’analyse : chaque stratégie garde ses règles et son propre historique.',
+              'Changez de projet pour ne voir que les trades qui y sont enregistrés.',
+              'C’est ce qui empêche un setup de scalping de polluer les statistiques d’un setup de swing.'
+            ] },
+          { id: 'compare', title: 'Comparer — quelles conditions ont vraiment servi',
+            steps: [
+              'Une fois des trades enregistrés, cet onglet classe chaque condition selon l’issue des trades qui la contenaient.',
+              'Une condition présente dans la plupart de vos bons trades travaille pour vous. Une condition présente partout, gain ou perte, ne vous dit rien.',
+              'Lisez-le comme un miroir de votre historique, pas comme une prédiction. Les petits échantillons mentent.'
+            ] }
+        ],
+        tips: [
+          'Peu de conditions, mais nettes, valent mieux qu’une longue liste que personne ne coche honnêtement.',
+          'Les backtests et le papertrading comptent — pas besoin d’argent réel pour bâtir l’historique.'
+        ]
+      },
+      pt: {
+        title: 'Pre-Flight',
+        lede: 'Um treinador de disciplina. Você escreve as condições que a sua entrada exige e, antes de cada trade, marca com honestidade. Com o tempo ele mostra quais das suas próprias condições vieram antes dos seus bons trades.',
+        guide: '/guide#preflight',
+        sections: [
+          { id: 'board', title: 'Checagem — a lista que você roda antes de entrar',
+            steps: [
+              'Crie uma checklist e dê a ela o nome do seu setup (por exemplo "abertura de NY — reteste de FVG").',
+              'Adicione uma linha por condição que a sua entrada exige. Suas regras, com as suas palavras, não as de outra pessoa.',
+              'Antes de um trade, marque só o que está realmente presente naquele momento. A luz vai para GO, CAUTION ou NO-GO contando as suas próprias marcações.',
+              'Depois registre o trade: data, instrumento, R:R e como terminou.'
+            ],
+            note: 'A luz é aritmética sobre as suas próprias regras — não é um sinal, nem uma recomendação, nem uma opinião sobre o mercado.' },
+          { id: 'projects', title: 'Por projeto — uma checklist por estratégia',
+            steps: [
+              'Vincule uma checklist a um dos seus projetos do analisador, assim cada estratégia guarda as suas regras e o seu próprio histórico.',
+              'Troque de projeto para ver só os trades registrados nele.',
+              'É isso que evita que um setup de scalping suje as estatísticas de um de swing.'
+            ] },
+          { id: 'compare', title: 'Comparar — quais condições valeram a pena',
+            steps: [
+              'Quando já houver trades registrados, esta aba ordena cada condição pelo desfecho dos trades que a continham.',
+              'Uma condição que aparece na maioria dos seus bons trades está trabalhando. Uma que aparece sempre, ganhando ou perdendo, não está dizendo nada.',
+              'Leia como um espelho do seu histórico, não como previsão. Amostras pequenas mentem.'
+            ] }
+        ],
+        tips: [
+          'Poucas condições e afiadas rendem mais do que uma lista longa que ninguém marca com honestidade.',
+          'Backtests e papertrades contam — você não precisa de dinheiro real para construir o histórico.'
+        ]
+      }
+    }
+  };
+
+  var UI = {
+    en: { help: 'Help', close: 'Close', full: 'Read the full guide →', tips: 'Worth knowing' },
+    es: { help: 'Ayuda', close: 'Cerrar', full: 'Ver la guía completa →', tips: 'Vale la pena saber' },
+    fr: { help: 'Aide', close: 'Fermer', full: 'Voir le guide complet →', tips: 'Bon à savoir' },
+    pt: { help: 'Ajuda', close: 'Fechar', full: 'Ver o guia completo →', tips: 'Vale saber' }
+  };
+
+  function lang() {
+    try {
+      var l = localStorage.getItem('scalpel_lang');
+      if (['en', 'es', 'fr', 'pt'].indexOf(l) >= 0) return l;
+    } catch (e) {}
+    return 'en';
+  }
+
+  // ── Styles ──────────────────────────────────────────────────────────────
+  var CSS = ''
+    + '.help-q{display:inline-grid;place-items:center;width:22px;height:22px;margin-left:10px;'
+    + 'border-radius:50%;border:1.5px solid var(--border2);background:transparent;color:var(--muted);'
+    + 'font:700 13px/1 Inter,sans-serif;cursor:pointer;vertical-align:middle;flex:0 0 auto;'
+    + 'transition:color .15s,border-color .15s,background .15s;padding:0}'
+    + '.help-q:hover{color:var(--accent);border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent)}'
+    + '.help-q:focus-visible{outline:2px solid var(--accent);outline-offset:2px}'
+    + '#nxh-scrim{position:fixed;inset:0;z-index:1200;background:rgba(6,8,12,.5);backdrop-filter:blur(2px);'
+    + 'opacity:0;transition:opacity .22s;pointer-events:none}'
+    + '#nxh-scrim.on{opacity:1;pointer-events:auto}'
+    + '#nxh{position:fixed;top:0;right:0;bottom:0;width:min(430px,92vw);z-index:1201;display:flex;flex-direction:column;'
+    + 'background:var(--bg);border-left:1px solid var(--border2);box-shadow:-24px 0 60px rgba(0,0,0,.35);'
+    + 'transform:translateX(102%);transition:transform .26s cubic-bezier(.22,.9,.3,1)}'
+    + '#nxh.on{transform:none}'
+    + '#nxh .h{display:flex;align-items:center;gap:12px;padding:20px 22px 14px;border-bottom:1px solid var(--border)}'
+    + '#nxh .h .eyebrow{font:700 10.5px/1 Inter,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:var(--accent)}'
+    + '#nxh .h h3{font:800 19px/1.25 Inter,sans-serif;color:var(--text);margin:4px 0 0}'
+    + '#nxh .x{margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:22px;'
+    + 'line-height:1;padding:4px 6px;border-radius:8px}'
+    + '#nxh .x:hover{color:var(--text);background:var(--surface)}'
+    + '#nxh .b{flex:1;overflow-y:auto;padding:18px 22px 26px}'
+    + '#nxh .lede{font:400 13.5px/1.65 Inter,sans-serif;color:var(--muted);margin-bottom:20px}'
+    + '#nxh .sec{margin-bottom:22px}'
+    + '#nxh .sec h4{font:800 13px/1.35 Inter,sans-serif;color:var(--text);margin-bottom:10px}'
+    + '#nxh ol{list-style:none;counter-reset:s;padding:0;margin:0}'
+    + '#nxh ol li{counter-increment:s;position:relative;padding-left:30px;margin-bottom:9px;'
+    + 'font:400 13px/1.6 Inter,sans-serif;color:var(--text);opacity:.9}'
+    + '#nxh ol li::before{content:counter(s);position:absolute;left:0;top:1px;width:20px;height:20px;'
+    + 'border-radius:50%;background:var(--surface);border:1px solid var(--border2);color:var(--accent);'
+    + 'font:700 11px/20px Inter,sans-serif;text-align:center}'
+    + '#nxh .note{margin-top:10px;padding:10px 12px;border-left:2px solid var(--accent);background:var(--surface);'
+    + 'border-radius:0 8px 8px 0;font:400 12.5px/1.55 Inter,sans-serif;color:var(--muted)}'
+    + '#nxh .tips{border-top:1px solid var(--border);padding-top:16px}'
+    + '#nxh .tips .lbl{font:700 10.5px/1 Inter,sans-serif;letter-spacing:.16em;text-transform:uppercase;'
+    + 'color:var(--muted);margin-bottom:10px}'
+    + '#nxh .tips p{font:400 12.5px/1.6 Inter,sans-serif;color:var(--text);opacity:.85;margin-bottom:8px;'
+    + 'padding-left:16px;position:relative}'
+    + '#nxh .tips p::before{content:"•";position:absolute;left:2px;color:var(--accent)}'
+    + '#nxh .f{padding:14px 22px;border-top:1px solid var(--border)}'
+    + '#nxh .f a{font:700 13px/1 Inter,sans-serif;color:var(--accent);text-decoration:none}'
+    + '#nxh .f a:hover{text-decoration:underline}'
+    + '@media (prefers-reduced-motion:reduce){ #nxh,#nxh-scrim{transition:none} }';
+
+  var scrim, panel, current = null;
+
+  function build() {
+    var st = document.createElement('style');
+    st.id = 'nxh-css';
+    st.textContent = CSS;
+    document.head.appendChild(st);
+
+    scrim = document.createElement('div');
+    scrim.id = 'nxh-scrim';
+    scrim.addEventListener('click', close);
+
+    panel = document.createElement('aside');
+    panel.id = 'nxh';
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-modal', 'false');
+    panel.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(scrim);
+    document.body.appendChild(panel);
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
+  function render(topic) {
+    var pack = (HELP_CONTENT[topic] || {})[lang()] || (HELP_CONTENT[topic] || {}).en;
+    if (!pack) return false;
+    var t = UI[lang()] || UI.en;
+    var html = ''
+      + '<div class="h"><div><div class="eyebrow">' + esc(t.help) + '</div>'
+      + '<h3>' + esc(pack.title) + '</h3></div>'
+      + '<button type="button" class="x" aria-label="' + esc(t.close) + '">&times;</button></div>'
+      + '<div class="b"><p class="lede">' + esc(pack.lede) + '</p>';
+    (pack.sections || []).forEach(function (s) {
+      html += '<div class="sec" data-sec="' + esc(s.id || '') + '"><h4>' + esc(s.title) + '</h4><ol>';
+      (s.steps || []).forEach(function (st) { html += '<li>' + esc(st) + '</li>'; });
+      html += '</ol>';
+      if (s.note) html += '<div class="note">' + esc(s.note) + '</div>';
+      html += '</div>';
+    });
+    if (pack.tips && pack.tips.length) {
+      html += '<div class="tips"><div class="lbl">' + esc(t.tips) + '</div>';
+      pack.tips.forEach(function (p) { html += '<p>' + esc(p) + '</p>'; });
+      html += '</div>';
+    }
+    html += '</div>';
+    if (pack.guide) {
+      html += '<div class="f"><a href="' + esc(pack.guide) + '">' + esc(t.full) + '</a></div>';
+    }
+    panel.innerHTML = html;
+    panel.querySelector('.x').addEventListener('click', close);
+    return true;
+  }
+
+  function open(topic, focusSection) {
+    if (!render(topic)) return;
+    current = topic;
+    scrim.classList.add('on');
+    panel.classList.add('on');
+    panel.setAttribute('aria-hidden', 'false');
+    document.addEventListener('keydown', onKey);
+    // Land on the sub-tab the trader is actually looking at — but never scroll
+    // for the first section, or the intro paragraph would be pushed out of
+    // sight the moment the drawer opens.
+    if (focusSection) {
+      var secs = panel.querySelectorAll('[data-sec]');
+      var el = panel.querySelector('[data-sec="' + focusSection + '"]');
+      if (el && secs.length && el !== secs[0]) {
+        setTimeout(function () { el.scrollIntoView({ block: 'start' }); }, 280);
+      }
+    }
+    setTimeout(function () { panel.querySelector('.x').focus(); }, 300);
+  }
+
+  function close() {
+    scrim.classList.remove('on');
+    panel.classList.remove('on');
+    panel.setAttribute('aria-hidden', 'true');
+    document.removeEventListener('keydown', onKey);
+    current = null;
+  }
+
+  function onKey(e) { if (e.key === 'Escape') close(); }
+
+  // Which sub-tab is active right now, so the drawer opens there.
+  function activeSection(topic) {
+    if (topic === 'preflight') {
+      var t = document.querySelector('.pf-tab.active');
+      return t ? t.getAttribute('data-pftab') : null;
+    }
+    return null;
+  }
+
+  // ── Wiring: any element carrying data-help gets a (?) after it ──────────
+  function attach() {
+    document.querySelectorAll('[data-help]').forEach(function (host) {
+      if (host.__helpWired) return;
+      host.__helpWired = true;
+      var topic = host.getAttribute('data-help');
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'help-q';
+      b.textContent = '?';
+      b.setAttribute('aria-label', (UI[lang()] || UI.en).help);
+      b.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        open(topic, activeSection(topic));
+      });
+      host.appendChild(b);
+    });
+  }
+
+  function init() {
+    build();
+    attach();
+    // Language can change without a reload — same pattern the rest of the
+    // page uses. Re-label the buttons and redraw an open drawer.
+    var prev = window.applyLanguage;
+    window.applyLanguage = function () {
+      var r = prev ? prev.apply(this, arguments) : undefined;
+      try {
+        var t = UI[lang()] || UI.en;
+        document.querySelectorAll('.help-q').forEach(function (b) {
+          b.setAttribute('aria-label', t.help);
+        });
+        if (current) render(current);
+      } catch (e) {}
+      return r;
+    };
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+
 </body>
 </html>

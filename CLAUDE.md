@@ -47,6 +47,51 @@
 - **Confidencialidad IA:** en el front público NUNCA decir "GPT-4o"/"OpenAI" → "our proprietary AI engine".
 - **Calidad:** validar antes de pushear (Jinja parse, `node --check` del JS tocado, i18n con claves parejas en EN/ES/FR/PT).
 
+## 🟢 AYUDA CONTEXTUAL — los "(?)" por panel (PILOTO 2026-07-31)
+Pedido del papá del usuario: *"la gente no adivina"*. Decisión: **(?) por panel** (no por campo) que
+abre un **panel lateral deslizante**. Módulo autocontenido al final de `index.html` (patrón Tessera:
+inyecta su CSS, arma su drawer, dict propio EN/ES/FR/PT, envuelve `window.applyLanguage`).
+**Cablear un panel nuevo = 2 pasos:** (1) `data-help="<topic>"` en el heading, (2) el topic en
+`HELP_CONTENT`. El `(?)` se inyecta solo. Cada drawer cierra con un enlace a `/guide#<seccion>` —
+eso es lo que evita que esto se vuelva un TERCER manual que se desincroniza.
+- **HECHO:** solo **Pre-Flight** (piloto, a revisar por el usuario). El drawer trae 3 secciones que
+  espejan los sub-tabs (Chequeo / Por proyecto / Comparar) y **abre en la sección del sub-tab activo**
+  (salvo si es la primera, para no tapar la introducción con el auto-scroll).
+- **PENDIENTE:** (a) el usuario dijo que **`/guide` está muy pobre** ("síntesis de la síntesis") y hay
+  que ampliarla; (b) replicar el (?) al resto de paneles (Proyectos, Armado del trade, Subida, Notas,
+  Quiz, Daily, Chalkboard, Synapse, Foro, Kill Zones, Rangos/XP); (c) se propuso además un
+  **recorrido de primera vez** por apartado (una sola vez, saltable) — el usuario aún no lo pidió.
+- ⚠️ **Trampa Jinja:** el CSS del bloque tenía `@media (...){#nxh,...}` y la secuencia **`{#` abre un
+  comentario en Jinja** → `TemplateSyntaxError`. Se separa con un espacio: `{ #nxh`. Revisar `{#`,
+  `{%` y `{{` en cualquier CSS/JS que se inserte en un template.
+
+## 🔴 QR de certificados — ESTABAN ROTOS, arreglado (2026-07-31)
+El usuario reportó que no podía escanearlos. **Eran DOS bugs, y el gordo no era el tamaño:**
+1. 🔴 **El SVG de segno sale con `width`/`height` fijos y SIN `viewBox`.** El certificado lo dimensiona
+   con `width:100%;height:100%`, y **un SVG sin viewBox no remapea coordenadas al redimensionarse: el
+   dibujo conserva su tamaño intrínseco y se RECORTA.** Se perdía un cuadro localizador de esquina →
+   ningún lector podía engancharlo. Fix en `_cert_qr_svg()`: cambiar el `width/height` por
+   `viewBox="0 0 W H" preserveAspectRatio="xMidYMid meet"`.
+2. **Tamaño:** estaba a **58px** = 1,4px por módulo. Una cámara necesita ~3. Ahora `.cert-qr` es
+   **150px** (≈132px renderizados = 3,5px/módulo) y el QR apunta a la ruta CORTA **`/v/<code>`**
+   (alias de `/verify/<code>`), que baja el símbolo de v4/41 módulos a v3/37 — menos módulos = módulos
+   más grandes en el mismo espacio.
+**Verificado decodificando de verdad** (OpenCV sobre la captura del certificado renderizado): lee el
+URL correcto y **sigue leyendo al 70% del tamaño**, o sea que hay margen, no que apenas pasa.
+⚠️ Al probar QRs: NO basta con mirarlos; hay que decodificarlos.
+
+**✅ La página `/verify/<code>` pasó de sosa a CREDENCIAL PÚBLICA (2026-07-31).** Razón: cada
+certificado compartido trae tráfico externo y antes aterrizaba en una página en blanco. Ahora lleva:
+tira de 8 pips con el rango alcanzado, bloque **"qué costó este rango"** (XP real, derivado de
+`RANK_THRESHOLDS`, nunca escrito a mano), botón **copiar enlace**, botón **añadir a LinkedIn**
+(`startTask=CERTIFICATION_NAME`, rellena el perfil del alumno), CTA "consigue el tuyo", y una línea
+legal explícita (**logro educativo, NO título profesional ni licencia**). Claves nuevas en
+`VERIFY_I18N` ×4 idiomas. ⚠️ **Trampa Jinja:** una clave llamada `copy` colisiona con `dict.copy` y
+`{{ vl.copy }}` renderiza el método → renombrada a `copyLink`; hay un guard que revisa colisiones.
+**Tarjeta social:** `/verify/<code>/og.png` genera con Pillow una imagen 1200×630 (nombre, rango,
+tira de pips, color del rango) + meta OG/Twitter → al pegar el enlace en WhatsApp/LinkedIn/X sale
+tarjeta rica en vez de un enlace pelado.
+
 ## 📅 Recordatorio diario
 La **primera vez que el usuario escriba cada día calendario** (`currentDate`), mostrar (si ya se mostró
 hoy, no repetir):

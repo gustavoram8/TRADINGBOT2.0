@@ -1,16 +1,35 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="{{ lang|default('es') }}">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Verificación de certificado · Tradeable Academy</title>
+{% if valid %}
+<title>{{ cert.display_name }} — {{ rank_name }} · Tradeable Academy</title>
+<meta name="description" content="{{ cert.display_name }} {{ vl.attained }} {{ rank_name }} — {{ vl.progress.replace('{n}', rank_idx|string).replace('{t}', rank_total|string) }}. {{ vl.okStatus }}." />
+{# A shared credential is only worth sharing if the link unfurls into something.
+   These are what turn a pasted URL into a card in WhatsApp, LinkedIn or X. #}
+<meta property="og:type" content="profile" />
+<meta property="og:site_name" content="Tradeable Academy" />
+<meta property="og:title" content="{{ cert.display_name }} — {{ rank_name }}" />
+<meta property="og:description" content="{{ vl.progress.replace('{n}', rank_idx|string).replace('{t}', rank_total|string) }} · {{ vl.okStatus }} — Tradeable Academy" />
+<meta property="og:url" content="{{ page_url }}" />
+<meta property="og:image" content="{{ og_url }}" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="{{ cert.display_name }} — {{ rank_name }}" />
+<meta name="twitter:image" content="{{ og_url }}" />
+{% else %}
+<title>{{ vl.noTitle }} · Tradeable Academy</title>
+<meta name="robots" content="noindex" />
+{% endif %}
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@600&display=swap" rel="stylesheet" />
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   body{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
     background:radial-gradient(ellipse 70% 50% at 50% 0%,#15171f,#0a0b10 70%);
     font-family:'Inter',sans-serif;color:#eef0f6}
-  .card{width:100%;max-width:440px;background:#14161f;border:1px solid #252834;border-radius:18px;
+  .card{width:100%;max-width:460px;background:#14161f;border:1px solid #252834;border-radius:18px;
     padding:36px 32px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.45)}
   .badge{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;margin:0 auto 18px}
   .badge.ok{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.4);color:#22c55e}
@@ -22,13 +41,39 @@
   .medal{margin:6px auto 14px;display:inline-block}
   .holder{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:600;color:#fff;line-height:1.2}
   .rank{font-size:13px;color:#8b93a7;margin-top:2px}
+  /* Rank strip — eight pips, filled up to the rank earned. Says "there is a
+     ladder and this person climbed part of it" faster than any sentence. */
+  .pips{display:flex;gap:5px;justify-content:center;margin:16px 0 4px}
+  .pips i{height:6px;flex:1;max-width:34px;border-radius:3px;background:#252834}
+  .pips i.on{background:#e0a83d}
+  .pips-lbl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8b93a7}
   .meta{margin-top:18px;border-top:1px solid #252834;padding-top:16px;display:grid;gap:8px;font-size:12.5px}
   .meta .row{display:flex;justify-content:space-between;gap:12px}
   .meta .row .k{color:#8b93a7}.meta .row .v{color:#eef0f6;font-weight:600}
   .muted{font-size:12.5px;color:#8b93a7;line-height:1.55;margin-top:6px}
-  .home{display:inline-block;margin-top:22px;font-size:13px;font-weight:700;color:#e0a83d;text-decoration:none}
-  .home:hover{text-decoration:underline}
+  .earned{margin-top:18px;text-align:left;background:#181b25;border:1px solid #252834;border-radius:12px;padding:14px 16px}
+  .earned h2{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#e0a83d;margin-bottom:7px}
+  .earned p{font-size:12.5px;line-height:1.6;color:#a8b0c2}
+  .acts{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap;justify-content:center}
+  .acts button,.acts a{font:700 12.5px/1 Inter,sans-serif;padding:10px 15px;border-radius:9px;
+    border:1px solid #2f3342;background:#1b1e29;color:#eef0f6;cursor:pointer;text-decoration:none;
+    display:inline-flex;align-items:center;gap:7px}
+  .acts button:hover,.acts a:hover{border-color:#e0a83d;color:#e0a83d}
+  .acts svg{width:14px;height:14px}
+  .cta{margin-top:20px;border-top:1px solid #252834;padding-top:18px}
+  .cta h3{font-size:14px;font-weight:800;margin-bottom:5px}
+  .cta p{font-size:12.5px;color:#8b93a7;line-height:1.55;margin-bottom:12px}
+  .cta a{display:inline-block;font-size:13px;font-weight:800;color:#0a0b10;background:#e0a83d;
+    padding:10px 20px;border-radius:9px;text-decoration:none}
+  .cta a:hover{background:#f0bb55}
+  .legal{margin-top:16px;font-size:10.5px;line-height:1.5;color:#5f6575}
+  .home{display:inline-block;margin-top:16px;font-size:13px;font-weight:700;color:#8b93a7;text-decoration:none}
+  .home:hover{color:#e0a83d}
   .code{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#8b93a7;word-break:break-all}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#eef0f6;color:#14161f;
+    font-size:12.5px;font-weight:700;padding:10px 18px;border-radius:10px;opacity:0;transition:opacity .2s;
+    pointer-events:none}
+  .toast.on{opacity:1}
 </style>
 </head>
 <body>
@@ -42,12 +87,45 @@
     <div class="medal">{{ medal_svg|safe }}</div>
     <div class="holder">{{ cert.display_name }}</div>
     <div class="rank">{{ vl.attained }} <strong style="color:#eef0f6">{{ rank_name }}</strong></div>
+
+    <div class="pips">
+      {% for i in range(rank_total) %}<i class="{{ 'on' if i < rank_idx else '' }}"></i>{% endfor %}
+    </div>
+    <div class="pips-lbl">{{ vl.progress.replace('{n}', rank_idx|string).replace('{t}', rank_total|string) }}</div>
+
+    <div class="earned">
+      <h2>{{ vl.earnedT }}</h2>
+      <p>{{ vl.earnedD.replace('{xp}', '{:,}'.format(xp_needed)).replace('{n}', rank_idx|string).replace('{t}', rank_total|string) }}</p>
+    </div>
+
     <div class="meta">
       <div class="row"><span class="k">{{ vl.rank }}</span><span class="v">{{ rank_name }} (#{{ cert.rank }})</span></div>
       <div class="row"><span class="k">{{ vl.issued }}</span><span class="v">{{ cert.issued_at.strftime('%d/%m/%Y') if cert.issued_at else '—' }}</span></div>
       <div class="row"><span class="k">{{ vl.code }}</span><span class="v code">{{ cert.code }}</span></div>
     </div>
+
+    <div class="acts">
+      <button type="button" id="copy">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        {{ vl.copyLink }}
+      </button>
+      {# LinkedIn's standard "add a certification" entry point. The holder lands
+         on their own profile with the fields pre-filled from these params. #}
+      <a target="_blank" rel="noopener"
+         href="https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name={{ (rank_name ~ ' — Tradeable Academy')|urlencode }}&organizationName=Tradeable%20Academy&issueYear={{ cert.issued_at.year if cert.issued_at else '' }}&issueMonth={{ cert.issued_at.month if cert.issued_at else '' }}&certUrl={{ page_url|urlencode }}&certId={{ cert.code|urlencode }}">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM2.4 21h5.2V9.5H2.4V21zM9.5 9.5H14v1.6h.1c.6-1.1 2.1-2.2 4.3-2.2 4.6 0 5.5 3 5.5 6.9V21h-5.2v-4.7c0-1.1 0-2.6-1.6-2.6s-1.8 1.2-1.8 2.5V21H9.5V9.5z"/></svg>
+        {{ vl.linkedin }}
+      </a>
+    </div>
+
+    <div class="cta">
+      <h3>{{ vl.ctaT }}</h3>
+      <p>{{ vl.ctaD }}</p>
+      <a href="/">{{ vl.ctaB }}</a>
+    </div>
+
     <div class="muted" style="margin-top:14px">{{ vl.note }}</div>
+    <div class="legal">{{ vl.legal }}</div>
   {% else %}
     <div class="badge no">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
@@ -58,5 +136,27 @@
   {% endif %}
   <a class="home" href="/">← Tradeable</a>
 </div>
+{% if valid %}
+<div class="toast" id="toast">{{ vl.copied }}</div>
+<script>
+  document.getElementById('copy').addEventListener('click', function () {
+    var url = {{ page_url|tojson }};
+    var done = function () {
+      var t = document.getElementById('toast');
+      t.classList.add('on');
+      setTimeout(function () { t.classList.remove('on'); }, 1800);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(done, done);
+    } else {
+      // Older iOS Safari has no clipboard API on non-secure origins.
+      var i = document.createElement('input');
+      i.value = url; document.body.appendChild(i); i.select();
+      try { document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(i); done();
+    }
+  });
+</script>
+{% endif %}
 </body>
 </html>

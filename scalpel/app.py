@@ -1,5 +1,6 @@
 import os
 import re
+import io
 import json
 import hmac
 import hashlib
@@ -9048,7 +9049,19 @@ def _cert_qr_svg(url):
     verification code + URL as text, which verifies the same way)."""
     try:
         import segno
-        return segno.make(url, error='m').svg_inline(scale=3, dark='#000', light='#fff')
+        svg = segno.make(url, error='m').svg_inline(scale=6, dark='#000', light='#fff')
+        # segno emits fixed width/height and NO viewBox. The certificate sizes
+        # the QR with width:100%;height:100%, and an SVG without a viewBox does
+        # not remap its coordinates when it is resized — the drawing keeps its
+        # intrinsic size and gets CLIPPED. That is what made every certificate
+        # QR unscannable: a corner finder pattern was cut off, so no reader
+        # could lock on. Swapping the fixed size for a viewBox is the fix.
+        m = re.match(r'<svg width="(\d+)" height="(\d+)"', svg)
+        if m:
+            svg = svg.replace(m.group(0),
+                              '<svg viewBox="0 0 %s %s" preserveAspectRatio="xMidYMid meet"'
+                              % (m.group(1), m.group(2)), 1)
+        return svg
     except Exception:
         return None
 
@@ -9106,23 +9119,136 @@ VERIFY_I18N = {
            'attained': 'attained the rank of', 'rank': 'Rank', 'issued': 'Issued', 'code': 'Code',
            'note': 'Issued by Tradeable. This certificate is genuine and on record.',
            'noStatus': 'Not verified', 'noTitle': 'Certificate not found',
-           'noDesc': 'does not match any certificate issued by Tradeable. It may be mistyped or forged.'},
+           'noDesc': 'does not match any certificate issued by Tradeable. It may be mistyped or forged.',
+           'earnedT': 'What this rank took',
+           'earnedD': 'Ranks on Tradeable are earned by using the platform — analysing your own '
+                      'setups, passing quizzes, keeping streaks and taking part. This holder '
+                      'accumulated {xp} experience points to reach rank {n} of {t}.',
+           'progress': 'Rank {n} of {t}',
+           'share': 'Share', 'copyLink': 'Copy link', 'copied': 'Link copied',
+           'linkedin': 'Add to LinkedIn profile',
+           'ctaT': 'Earn your own', 'ctaD': 'Tradeable is a learning platform for traders. Ranks are '
+                   'earned by studying and practising — not bought.',
+           'ctaB': 'See how it works →',
+           'legal': 'An educational achievement inside the Tradeable platform. It is not a '
+                    'professional qualification, an accreditation, or a licence to trade or advise.'},
     'es': {'okStatus': 'Certificado verificado', 'okTitle': 'Documento auténtico',
            'attained': 'alcanzó el rango de', 'rank': 'Rango', 'issued': 'Emitido', 'code': 'Código',
            'note': 'Emitido por Tradeable. Este certificado es genuino y consta en nuestros registros.',
            'noStatus': 'No verificado', 'noTitle': 'Certificado no encontrado',
-           'noDesc': 'no corresponde a ningún certificado emitido por Tradeable. Podría estar mal escrito o ser falso.'},
+           'noDesc': 'no corresponde a ningún certificado emitido por Tradeable. Podría estar mal escrito o ser falso.',
+           'earnedT': 'Qué costó este rango',
+           'earnedD': 'Los rangos en Tradeable se ganan usando la plataforma: analizando tus propios '
+                      'setups, aprobando quizzes, sosteniendo rachas y participando. Esta persona '
+                      'acumuló {xp} puntos de experiencia para llegar al rango {n} de {t}.',
+           'progress': 'Rango {n} de {t}',
+           'share': 'Compartir', 'copyLink': 'Copiar enlace', 'copied': 'Enlace copiado',
+           'linkedin': 'Añadir al perfil de LinkedIn',
+           'ctaT': 'Consigue el tuyo', 'ctaD': 'Tradeable es una plataforma de formación para traders. '
+                   'Los rangos se ganan estudiando y practicando — no se compran.',
+           'ctaB': 'Ver cómo funciona →',
+           'legal': 'Es un logro educativo dentro de la plataforma Tradeable. No es un título '
+                    'profesional, ni una acreditación, ni una licencia para operar o asesorar.'},
     'fr': {'okStatus': 'Certificat vérifié', 'okTitle': 'Document authentique',
            'attained': 'a atteint le rang de', 'rank': 'Rang', 'issued': 'Émis', 'code': 'Code',
            'note': 'Émis par Tradeable. Ce certificat est authentique et enregistré.',
            'noStatus': 'Non vérifié', 'noTitle': 'Certificat introuvable',
-           'noDesc': "ne correspond à aucun certificat émis par Tradeable. Il peut être mal saisi ou falsifié."},
+           'noDesc': "ne correspond à aucun certificat émis par Tradeable. Il peut être mal saisi ou falsifié.",
+           'earnedT': 'Ce que ce rang a exigé',
+           'earnedD': 'Les rangs sur Tradeable se gagnent en utilisant la plateforme : analyser ses '
+                      'propres setups, réussir des quiz, tenir des séries et participer. Ce titulaire '
+                      'a accumulé {xp} points d’expérience pour atteindre le rang {n} sur {t}.',
+           'progress': 'Rang {n} sur {t}',
+           'share': 'Partager', 'copyLink': 'Copier le lien', 'copied': 'Lien copié',
+           'linkedin': 'Ajouter au profil LinkedIn',
+           'ctaT': 'Obtenez le vôtre', 'ctaD': 'Tradeable est une plateforme de formation pour traders. '
+                   'Les rangs se gagnent en étudiant et en pratiquant — ils ne s’achètent pas.',
+           'ctaB': 'Voir comment ça marche →',
+           'legal': 'Il s’agit d’une réussite pédagogique au sein de la plateforme Tradeable. Ce n’est '
+                    'ni un diplôme professionnel, ni une accréditation, ni une licence pour trader ou conseiller.'},
     'pt': {'okStatus': 'Certificado verificado', 'okTitle': 'Documento autêntico',
            'attained': 'alcançou o rank de', 'rank': 'Rank', 'issued': 'Emitido', 'code': 'Código',
            'note': 'Emitido por Tradeable. Este certificado é genuíno e consta nos registros.',
            'noStatus': 'Não verificado', 'noTitle': 'Certificado não encontrado',
-           'noDesc': 'não corresponde a nenhum certificado emitido por Tradeable. Pode estar incorreto ou ser falso.'},
+           'noDesc': 'não corresponde a nenhum certificado emitido por Tradeable. Pode estar incorreto ou ser falso.',
+           'earnedT': 'O que este rank exigiu',
+           'earnedD': 'Os ranks na Tradeable são conquistados usando a plataforma: analisando os '
+                      'próprios setups, passando em quizzes, mantendo sequências e participando. Esta '
+                      'pessoa acumulou {xp} pontos de experiência para chegar ao rank {n} de {t}.',
+           'progress': 'Rank {n} de {t}',
+           'share': 'Compartilhar', 'copyLink': 'Copiar link', 'copied': 'Link copiado',
+           'linkedin': 'Adicionar ao perfil do LinkedIn',
+           'ctaT': 'Conquiste o seu', 'ctaD': 'A Tradeable é uma plataforma de formação para traders. '
+                   'Os ranks se conquistam estudando e praticando — não se compram.',
+           'ctaB': 'Ver como funciona →',
+           'legal': 'É uma conquista educacional dentro da plataforma Tradeable. Não é um título '
+                    'profissional, nem uma acreditação, nem uma licença para operar ou assessorar.'},
 }
+
+
+# What each rank actually took, so the public credential page can say why the
+# document means something. Derived from RANK_THRESHOLDS, never hand-typed.
+def _rank_requirement(rank):
+    """(xp_needed, rank_number, total_ranks) for the verification page."""
+    idx = max(1, min(int(rank or 1), len(RANK_THRESHOLDS)))
+    return RANK_THRESHOLDS[idx - 1], idx, len(RANK_THRESHOLDS)
+
+
+def _cert_og_png(cert, rank_name):
+    """Social preview card for a shared certificate.
+
+    A link pasted into WhatsApp or LinkedIn is a link; a link with one of these
+    is a credential someone actually looks at. Drawn with Pillow (already a
+    dependency for the analyser's image handling) rather than shipping 8 static
+    images that would drift from the rank names.
+    """
+    from PIL import Image, ImageDraw
+    W, H = 1200, 630
+    acc = _CERT_THEME.get(cert.rank, ('#e0a83d', '#e07a3d', '#f3c768'))
+    img = Image.new('RGB', (W, H), '#0a0b10')
+    d = ImageDraw.Draw(img)
+    # A soft bloom in the rank's own colour, cheap radial by concentric ellipses.
+    r0, g0, b0 = (int(acc[0].lstrip('#')[i:i + 2], 16) for i in (0, 2, 4))
+    for i in range(28, 0, -1):
+        k = i / 28.0
+        rad = int(520 * k)
+        d.ellipse([W // 2 - rad, -220, W // 2 + rad, -220 + rad * 2],
+                  fill=(int(10 + r0 * .10 * (1 - k)), int(11 + g0 * .10 * (1 - k)),
+                        int(16 + b0 * .10 * (1 - k))))
+
+    def fit(text, size, bold=True):
+        """Best available font at `size`; falls back to Pillow's bitmap font."""
+        for path in ('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
+                     if bold else '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',):
+            try:
+                from PIL import ImageFont
+                return ImageFont.truetype(path, size)
+            except Exception:
+                pass
+        from PIL import ImageFont
+        return ImageFont.load_default()
+
+    def centre(text, y, size, fill, bold=True):
+        f = fit(text, size, bold)
+        w = d.textbbox((0, 0), text, font=f)[2]
+        d.text(((W - w) // 2, y), text, font=f, fill=fill)
+
+    centre('TRADEABLE ACADEMY', 74, 26, '#8b93a7')
+    centre(cert.display_name, 200, 76, '#ffffff')
+    centre(rank_name.upper(), 310, 44, acc[0])
+    _, idx, total = _rank_requirement(cert.rank)
+    centre('RANK %d / %d' % (idx, total), 392, 28, '#8b93a7')
+    # A rank strip: filled pips up to the rank earned.
+    pw, gap = 92, 14
+    x0 = (W - (total * pw + (total - 1) * gap)) // 2
+    for i in range(total):
+        x = x0 + i * (pw + gap)
+        d.rounded_rectangle([x, 470, x + pw, 480], radius=5,
+                            fill=acc[0] if i < idx else '#252834')
+    centre('Verified credential  ·  tradeable.academy', 540, 24, '#6b7280')
+    buf = io.BytesIO()
+    img.save(buf, 'PNG', optimize=True)
+    return buf.getvalue()
 
 
 def _cert_lang(req):
@@ -9177,11 +9303,12 @@ def certificate_view(rank):
     cert = _issue_or_get_certificate(current_user, rank)
     lang = _cert_lang(request)
     verify_url = url_for('verify_certificate', code=cert.code, _external=True)
+    qr_url = url_for('verify_short', code=cert.code, _external=True)
     return render_template(
         'certificate.html', rank=rank, rank_name=RANK_CERT_NAMES_ES[rank - 1],
         roman=_ROMAN[rank - 1], xp=RANK_THRESHOLDS[rank - 1], cert=cert,
         medal_svg=rank_medal_svg(rank, 132), verify_url=verify_url,
-        qr_svg=_cert_qr_svg(verify_url), is_legend=(rank == 8), for_pdf=False,
+        qr_svg=_cert_qr_svg(qr_url), is_legend=(rank == 8), for_pdf=False,
         theme=_cert_theme(rank), cl=CERT_I18N[lang], lang=lang)
 
 
@@ -9196,11 +9323,12 @@ def certificate_pdf(rank):
     cert = _issue_or_get_certificate(current_user, rank)
     lang = _cert_lang(request)
     verify_url = url_for('verify_certificate', code=cert.code, _external=True)
+    qr_url = url_for('verify_short', code=cert.code, _external=True)
     html_content = render_template(
         'certificate.html', rank=rank, rank_name=RANK_CERT_NAMES_ES[rank - 1],
         roman=_ROMAN[rank - 1], xp=RANK_THRESHOLDS[rank - 1], cert=cert,
         medal_svg=rank_medal_svg(rank, 132), verify_url=verify_url,
-        qr_svg=_cert_qr_svg(verify_url), is_legend=(rank == 8), for_pdf=True,
+        qr_svg=_cert_qr_svg(qr_url), is_legend=(rank == 8), for_pdf=True,
         theme=_cert_theme(rank), cl=CERT_I18N[lang], lang=lang)
     try:
         from weasyprint import HTML as WP_HTML
@@ -9226,11 +9354,49 @@ def verify_certificate(code):
     cert = RankCertificate.query.filter_by(code=(code or '').strip()).first()
     valid = cert is not None
     lang = _cert_lang(request)
+    xp_needed = idx = total = None
+    if valid:
+        xp_needed, idx, total = _rank_requirement(cert.rank)
     return render_template(
         'verify_certificate.html', valid=valid, cert=cert,
         rank_name=(RANK_CERT_NAMES_ES[cert.rank - 1] if valid else None),
         medal_svg=(rank_medal_svg(cert.rank, 96) if valid else None),
-        code=code, vl=VERIFY_I18N[lang])
+        code=code, vl=VERIFY_I18N[lang], lang=lang,
+        xp_needed=xp_needed, rank_idx=idx, rank_total=total,
+        page_url=(url_for('verify_certificate', code=cert.code, _external=True)
+                  if valid else None),
+        og_url=(url_for('verify_certificate_og', code=cert.code, _external=True)
+                if valid else None))
+
+
+@app.route('/v/<code>')
+def verify_short(code):
+    """Short alias for the verification page — this is what the certificate QR
+    encodes. Nine characters saved is one QR version fewer (37 modules instead
+    of 41), which at the size the code is printed is the difference between a
+    camera locking on and not."""
+    return verify_certificate(code)
+
+
+@app.route('/verify/<code>/og.png')
+def verify_certificate_og(code):
+    """Social preview image for a shared certificate.
+
+    Public on purpose: it is the picture that appears when the holder pastes
+    their credential link anywhere, and it only ever shows what the
+    verification page already shows."""
+    cert = RankCertificate.query.filter_by(code=(code or '').strip()).first()
+    if not cert:
+        abort(404)
+    try:
+        png = _cert_og_png(cert, RANK_CERT_NAMES_ES[cert.rank - 1])
+    except Exception as exc:                 # a missing font must not 500
+        app.logger.warning('cert og image failed (%s): %s', code, exc)
+        abort(404)
+    resp = make_response(png)
+    resp.headers['Content-Type'] = 'image/png'
+    resp.headers['Cache-Control'] = 'public, max-age=86400'
+    return resp
 
 
 # ──────────────────────────────────────────────────────────────────────────
