@@ -992,6 +992,21 @@ y pulir cada punto primero para luego pasar al otro"*. Estado:
 **Además, sueltos de la misma sesión:** faltan por cablear los `(?)` de Synapse, Kill Zones,
 Rangos/XP, Notas y Subida; y encender PayPal (ver "PENDIENTE INMEDIATO" más abajo).
 
+### 📒 LIBRO DE VENTAS — desglose por pago en /admin (2026-07-31, CABLEADO)
+Pedido del usuario: que cada pago se desmenuce solo (bruto → desc. código → comisión socio →
+fee → costo op → utilidad) y poder **cargar ventas a mano** para ver el comportamiento antes de
+encender PayPal. **Misma matemática del Financial Hub.** Piezas: modelo `SaleBreakdown` (fila
+única por venta, escrita al activarse y CONGELADA — posición/tramo/fee del momento; `order_id`
+nullable = manuales), `record_sale_breakdown()` colgado de `_activate_plan_from_order`
+(best-effort + idempotente), `PARTNER_TIERS` 30/35/40 **marginales por cliente** desde 1/25/75
+(env-overridable), posición contada sobre ventas VIVAS (un chargeback la libera),
+`_paypal_read_fee()` extrae la **fee real** de la captura (`seller_receivable_breakdown`) y sin
+dato se estima 5.4%+$0.30 marcada "estim.". Reversa: fila tachada, comisión pendiente→cancelada
+/ pagada→**clawback**. Panel: pestaña **"📒 Ventas"** (totales mes+histórico, selector de mes,
+socios con "Día 15: marcar pagadas", tabla con la cadena completa, carga manual; manuales se
+borran, reales solo se revierten). Rutas `/admin/ledger/*` auditadas. E2E 22 checks verdes.
+**Al encender PayPal no hay nada más que cablear: el desglose ya corre en la activación.**
+
 ### 📊 FINANCIAL HUB — Excel entregado (2026-07-31, fuera del repo)
 El usuario pidió por PDF un **modelo financiero de 14 hojas** para el acuerdo comercial →
 entregado `Tradeable_Academy_Financial_Hub.xlsx` (14 hojas exactas del PDF, 832 fórmulas puras
