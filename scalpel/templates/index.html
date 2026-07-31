@@ -6746,7 +6746,7 @@
     <!-- Real Pre-Flight trainer — shown only for Premium members -->
     <div class="preflight-app" id="preflight-app" style="display:none;">
     <div class="page-header">
-      <h1 data-i18n="pf.title" data-help="preflight">Pre-Flight</h1>
+      <h1 data-i18n="pf.title">Pre-Flight</h1>
       <p data-i18n="pf.sub">Your discipline trainer. Define the confluences your trigger requires, run a pre-flight check before every trade, and let the data show which confluences performed best in your own records.</p>
     </div>
 
@@ -6755,6 +6755,7 @@
       <button type="button" class="pf-tab active" data-pftab="board"    data-i18n="pf.tabBoard">Check</button>
       <button type="button" class="pf-tab"        data-pftab="projects" data-i18n="pf.tabProjects">By project</button>
       <button type="button" class="pf-tab"        data-pftab="compare"  data-i18n="pf.tabCompare">Compare</button>
+      <span class="help-slot" data-help="preflight"></span>
     </div>
 
     <div id="pf-pane-board">
@@ -26044,10 +26045,14 @@
   };
 
   var UI = {
-    en: { help: 'Help', close: 'Close', full: 'Read the full guide →', tips: 'Worth knowing' },
-    es: { help: 'Ayuda', close: 'Cerrar', full: 'Ver la guía completa →', tips: 'Vale la pena saber' },
-    fr: { help: 'Aide', close: 'Fermer', full: 'Voir le guide complet →', tips: 'Bon à savoir' },
-    pt: { help: 'Ajuda', close: 'Fechar', full: 'Ver o guia completo →', tips: 'Vale saber' }
+    en: { help: 'Help', how: 'How it works', close: 'Close',
+          full: 'Read the full guide →', tips: 'Worth knowing' },
+    es: { help: 'Ayuda', how: 'Cómo funciona', close: 'Cerrar',
+          full: 'Ver la guía completa →', tips: 'Vale la pena saber' },
+    fr: { help: 'Aide', how: 'Comment ça marche', close: 'Fermer',
+          full: 'Voir le guide complet →', tips: 'Bon à savoir' },
+    pt: { help: 'Ajuda', how: 'Como funciona', close: 'Fechar',
+          full: 'Ver o guia completo →', tips: 'Vale saber' }
   };
 
   function lang() {
@@ -26060,12 +26065,16 @@
 
   // ── Styles ──────────────────────────────────────────────────────────────
   var CSS = ''
-    + '.help-q{display:inline-grid;place-items:center;width:22px;height:22px;margin-left:10px;'
-    + 'border-radius:50%;border:1.5px solid var(--border2);background:transparent;color:var(--muted);'
-    + 'font:700 13px/1 Inter,sans-serif;cursor:pointer;vertical-align:middle;flex:0 0 auto;'
-    + 'transition:color .15s,border-color .15s,background .15s;padding:0}'
-    + '.help-q:hover{color:var(--accent);border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent)}'
+    + '.help-q{display:inline-flex;align-items:center;gap:7px;padding:7px 13px 7px 8px;'
+    + 'border-radius:999px;border:1px solid var(--border2);background:var(--surface);color:var(--muted);'
+    + 'font:700 12.5px/1 Inter,sans-serif;cursor:pointer;vertical-align:middle;flex:0 0 auto;'
+    + 'transition:color .15s,border-color .15s,background .15s}'
+    + '.help-q i{display:grid;place-items:center;width:19px;height:19px;border-radius:50%;'
+    + 'background:var(--accent);color:var(--bg);font:800 12px/1 Inter,sans-serif;font-style:normal}'
+    + '.help-q:hover{color:var(--text);border-color:var(--accent)}'
     + '.help-q:focus-visible{outline:2px solid var(--accent);outline-offset:2px}'
+    + '.help-slot{margin-left:auto;display:inline-flex}'
+    + '@media (max-width:640px){ .help-q span{display:none} .help-q{padding:7px 8px} }'
     + '#nxh-scrim{position:fixed;inset:0;z-index:1200;background:rgba(6,8,12,.5);backdrop-filter:blur(2px);'
     + 'opacity:0;transition:opacity .22s;pointer-events:none}'
     + '#nxh-scrim.on{opacity:1;pointer-events:auto}'
@@ -26204,11 +26213,13 @@
       if (host.__helpWired) return;
       host.__helpWired = true;
       var topic = host.getAttribute('data-help');
+      var t0 = UI[lang()] || UI.en;
       var b = document.createElement('button');
       b.type = 'button';
       b.className = 'help-q';
-      b.textContent = '?';
-      b.setAttribute('aria-label', (UI[lang()] || UI.en).help);
+      b.innerHTML = '<i>?</i><span></span>';
+      b.querySelector('span').textContent = t0.how;
+      b.setAttribute('aria-label', t0.how);
       b.addEventListener('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -26229,7 +26240,9 @@
       try {
         var t = UI[lang()] || UI.en;
         document.querySelectorAll('.help-q').forEach(function (b) {
-          b.setAttribute('aria-label', t.help);
+          var sp = b.querySelector('span');
+          if (sp) sp.textContent = t.how;
+          b.setAttribute('aria-label', t.how);
         });
         if (current) render(current);
       } catch (e) {}
