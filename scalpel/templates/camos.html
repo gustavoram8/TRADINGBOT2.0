@@ -65,6 +65,33 @@
     .cm-easter   { background:linear-gradient(135deg,#f7d6e0,#d6e8f7 46%,#dff7d6); }
     .cm-newyear  { background:linear-gradient(135deg,#0c0c12,#2a2440 50%,#d4af37); }
     .cm-muertos  { background:linear-gradient(135deg,#2a0f3a,#7a1f6a 45%,#ff8c1a); }
+    /* ── Ready camos: the swatch is a REAL screenshot of the app wearing the
+       skin (generated from /app, not an artist's impression). These override
+       the gradient placeholders above; not-ready camos keep their gradient. ── */
+    .cm-standard  { background:url('/static/camo_prev_standard.jpg') center/cover; }
+    .cm-premium   { background:url('/static/camo_prev_premium.jpg') center/cover; }
+    .cm-premium::after { content:none; }
+    .cm-naval     { background:url('/static/camo_prev_naval.jpg') center/cover; }
+    .cm-sun       { background:url('/static/camo_prev_rising-sun.jpg') center/cover; }
+    .cm-mission   { background:url('/static/camo_prev_mission.jpg') center/cover; }
+    .cm-blackflag { background:url('/static/camo_prev_blackflag.jpg') center/cover; }
+    .cm-pole      { background:url('/static/camo_prev_pole.jpg') center/cover; }
+    .cm-fourth    { background:url('/static/camo_prev_fourth.jpg') center/cover; }
+    /* ── Preview button + lightbox ── */
+    .camo-prev-btn { position:absolute; left:10px; bottom:10px; font-size:11px; font-weight:700;
+      padding:5px 11px; border-radius:16px; border:none; cursor:pointer;
+      background:rgba(12,14,20,.72); color:#fff; backdrop-filter:blur(3px); }
+    .camo-prev-btn:hover { background:rgba(12,14,20,.9); }
+    .camo-modal { position:fixed; inset:0; z-index:80; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:14px; padding:26px;
+      background:rgba(8,10,14,.82); backdrop-filter:blur(4px); cursor:zoom-out; }
+    .camo-modal img { max-width:min(920px,94vw); max-height:70vh; border-radius:12px;
+      box-shadow:0 24px 70px rgba(0,0,0,.5); display:block; }
+    .camo-modal .cm-title { color:#fff; font-weight:800; font-size:16px; }
+    .camo-modal .cm-hint { color:rgba(255,255,255,.55); font-size:12px; }
+    .camo-modal .cm-flip { font-size:12.5px; font-weight:700; padding:8px 16px; border-radius:9px;
+      border:1px solid rgba(255,255,255,.35); background:none; color:#fff; cursor:pointer; }
+    .camo-modal .cm-flip:hover { background:rgba(255,255,255,.12); }
     /* ── camo ownership / activation controls ── */
     .camo-owned-tag { font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:#1a7a3f; }
     .camo-cta.on { opacity:1; pointer-events:auto; cursor:pointer; border:none; }
@@ -104,7 +131,7 @@
       <div class="camo-swatch cm-standard"><span class="plan-pill std" data-i18n="camos.inclStd">Standard plan</span></div>
       <div class="camo-body">
         <div class="camo-name">Standard Steel</div>
-        <div class="camo-desc" data-i18n="camos.d.standard">Brushed graphite and steel — the clean, focused look bundled with Standard.</div>
+        <div class="camo-desc" data-i18n="camos.d.standard">A machined steel plate — volume carved in relief by night, a candle blueprint by day.</div>
         <div class="camo-foot"><span class="camo-incl" data-i18n="camos.included">Included with your plan</span></div>
       </div>
     </div>
@@ -112,7 +139,7 @@
       <div class="camo-swatch cm-premium"><span class="plan-pill prem" data-i18n="camos.inclPrem">Premium plan</span></div>
       <div class="camo-body">
         <div class="camo-name">Obsidian Gold</div>
-        <div class="camo-desc" data-i18n="camos.d.premium">Black-and-gold luxury across the whole platform — the signature Premium skin.</div>
+        <div class="camo-desc" data-i18n="camos.d.premium">Obsidian black and Art Déco gold — the signature Premium skin.</div>
         <div class="camo-foot"><span class="camo-incl" data-i18n="camos.included">Included with your plan</span></div>
       </div>
     </div>
@@ -128,7 +155,7 @@
       <div class="camo-swatch cm-naval"><span class="soon-pill" data-i18n="common.soon">Coming soon</span></div>
       <div class="camo-body">
         <div class="camo-name">Naval Command</div>
-        <div class="camo-desc" data-i18n="camos.d.naval">Disciplined, military-grade navy across the entire workspace.</div>
+        <div class="camo-desc" data-i18n="camos.d.naval">Olive field camouflage and a general's gold decorations — battlefield discipline.</div>
         <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
       </div>
     </div>
@@ -144,7 +171,7 @@
       <div class="camo-swatch cm-sun"><span class="soon-pill" data-i18n="common.soon">Coming soon</span></div>
       <div class="camo-body">
         <div class="camo-name">Rising Sun</div>
-        <div class="camo-desc" data-i18n="camos.d.sun">Clean white with a bold red sun — minimalist Japanese calm.</div>
+        <div class="camo-desc" data-i18n="camos.d.sun">Warm washi paper, a bold sun disc and brushed kanji — minimalist Japanese calm.</div>
         <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
       </div>
     </div>
@@ -152,7 +179,7 @@
       <div class="camo-swatch cm-mission"><span class="soon-pill" data-i18n="common.soon">Coming soon</span></div>
       <div class="camo-body">
         <div class="camo-name">Mission Control</div>
-        <div class="camo-desc" data-i18n="camos.d.mission">Deep-space blues and starlight for late-night mission focus.</div>
+        <div class="camo-desc" data-i18n="camos.d.mission">Deep-space nebulas by night, a Martian valley by day — two looks, one mission.</div>
         <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
       </div>
     </div>
@@ -160,7 +187,7 @@
       <div class="camo-swatch cm-blackflag"><span class="soon-pill" data-i18n="common.soon">Coming soon</span></div>
       <div class="camo-body">
         <div class="camo-name">Black Flag</div>
-        <div class="camo-desc" data-i18n="camos.d.blackflag">Charcoal, bone and a pirate's edge — hoist the colors.</div>
+        <div class="camo-desc" data-i18n="camos.d.blackflag">An old treasure map — parchment, a compass rose and an X that marks the spot.</div>
         <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
       </div>
     </div>
@@ -184,7 +211,7 @@
       <div class="camo-swatch cm-pole"><span class="soon-pill" data-i18n="common.soon">Coming soon</span></div>
       <div class="camo-body">
         <div class="camo-name">Pole Position</div>
-        <div class="camo-desc" data-i18n="camos.d.pole">Race red, carbon black and pit-lane speed. Lights out.</div>
+        <div class="camo-desc" data-i18n="camos.d.pole">The engineer's F1 blueprint — workshop paper by day, cyanotype blue by night.</div>
         <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
       </div>
     </div>
@@ -232,7 +259,7 @@
       <div class="camo-swatch cm-fourth"><span class="soon-pill" data-i18n="common.soon">Coming soon</span></div>
       <div class="camo-body">
         <div class="camo-name">Star-Spangled</div>
-        <div class="camo-desc" data-i18n="camos.d.fourth">Red, white and blue — a star-spangled trading floor.</div>
+        <div class="camo-desc" data-i18n="camos.d.fourth">Lady Liberty, the DC monuments and live fireworks over a navy dusk.</div>
         <div class="camo-foot"><span class="camo-price">$4.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
       </div>
     </div>
@@ -299,11 +326,13 @@
     var lang = 'en';
     try { var l = localStorage.getItem('scalpel_lang'); if (['en','es','fr','pt'].indexOf(l) >= 0) lang = l; } catch (e) {}
     var T = {
-      en:{activate:'Activate',active:'Active ✓',owned:'Owned',deactivate:'Use default',get:'Get this skin',soon:'Card payments coming soon',on:'Activated — ',go:'see it in the app →',off:'Reverted to the default theme'},
-      es:{activate:'Activar',active:'Activo ✓',owned:'Adquirido',deactivate:'Usar default',get:'Obtener skin',soon:'El pago con tarjeta llega pronto',on:'Activado — ',go:'velo en la app →',off:'Volviste al tema por defecto'},
-      fr:{activate:'Activer',active:'Actif ✓',owned:'Acquis',deactivate:'Défaut',get:'Obtenir ce skin',soon:'Le paiement par carte arrive bientôt',on:'Activé — ',go:'à voir dans l\'app →',off:'Retour au thème par défaut'},
-      pt:{activate:'Ativar',active:'Ativo ✓',owned:'Adquirido',deactivate:'Usar padrão',get:'Obter skin',soon:'Pagamento com cartão em breve',on:'Ativado — ',go:'veja no app →',off:'Voltou ao tema padrão'}
+      en:{activate:'Activate',active:'Active ✓',owned:'Owned',deactivate:'Use default',get:'Get this skin',soon:'Payments are coming very soon',on:'Activated — ',go:'see it in the app →',off:'Reverted to the default theme',prev:'👁 Preview',hint:'Click anywhere to close',flip:'See the other look',bought:'The skin is yours! ',err:'Could not reach PayPal — please try again'},
+      es:{activate:'Activar',active:'Activo ✓',owned:'Adquirido',deactivate:'Usar default',get:'Obtener skin',soon:'Los pagos llegan muy pronto',on:'Activado — ',go:'velo en la app →',off:'Volviste al tema por defecto',prev:'👁 Vista previa',hint:'Haz clic en cualquier parte para cerrar',flip:'Ver el otro look',bought:'¡La skin es tuya! ',err:'No pudimos conectar con PayPal — intenta de nuevo'},
+      fr:{activate:'Activer',active:'Actif ✓',owned:'Acquis',deactivate:'Défaut',get:'Obtenir ce skin',soon:'Les paiements arrivent très bientôt',on:'Activé — ',go:'à voir dans l\'app →',off:'Retour au thème par défaut',prev:'👁 Aperçu',hint:'Cliquez n\'importe où pour fermer',flip:'Voir l\'autre look',bought:'Le skin est à vous ! ',err:'Impossible de joindre PayPal — réessayez'},
+      pt:{activate:'Ativar',active:'Ativo ✓',owned:'Adquirido',deactivate:'Usar padrão',get:'Obter skin',soon:'Os pagamentos chegam em breve',on:'Ativado — ',go:'veja no app →',off:'Voltou ao tema padrão',prev:'👁 Prévia',hint:'Clique em qualquer lugar para fechar',flip:'Ver o outro visual',bought:'A skin é sua! ',err:'Não foi possível conectar ao PayPal — tente de novo'}
     }[lang];
+    // Camos whose theme has a second look (light/dark) worth flipping to.
+    var PREV_ALT = { standard:1, mission:1, pole:1 };
 
     function slugOf(card){
       var sw = card.querySelector('.camo-swatch'); if (!sw) return null;
@@ -322,14 +351,41 @@
         .then(function(r){ return r.json().then(function(j){ return {ok:r.ok, j:j}; }); });
     }
 
+    function openPreview(slug, name){
+      var m = document.createElement('div');
+      m.className = 'camo-modal';
+      var src = '/static/camo_prev_' + slug + '.jpg', alt = false;
+      m.innerHTML = '<div class="cm-title">' + name + '</div>'
+        + '<img src="' + src + '" alt="' + name + '" />'
+        + (PREV_ALT[slug] ? '<button type="button" class="cm-flip">' + T.flip + '</button>' : '')
+        + '<div class="cm-hint">' + T.hint + '</div>';
+      m.addEventListener('click', function(e){
+        if (e.target.classList.contains('cm-flip')){
+          alt = !alt;
+          m.querySelector('img').src = '/static/camo_prev_' + slug + (alt ? '_alt' : '') + '.jpg';
+          e.stopPropagation(); return;
+        }
+        m.remove();
+      });
+      document.body.appendChild(m);
+    }
+
     function renderCard(card){
       var slug = slugOf(card); if (!slug) return;
       var ready = S.ready.indexOf(slug) >= 0;
       var isPlanCamo = (slug === 'standard' || slug === 'premium');
       // Not-ready camos (theme not built yet) keep their "Coming soon" footer.
       if (!ready) return;
-      // Ready camo: drop the "Coming soon" pill.
+      // Ready camo: drop the "Coming soon" pill, add the live preview button.
       var pill = card.querySelector('.soon-pill'); if (pill) pill.remove();
+      var sw = card.querySelector('.camo-swatch');
+      if (sw && !sw.querySelector('.camo-prev-btn')){
+        var name = (card.querySelector('.camo-name') || {}).textContent || slug;
+        var pb = document.createElement('button');
+        pb.type = 'button'; pb.className = 'camo-prev-btn'; pb.textContent = T.prev;
+        pb.addEventListener('click', function(){ openPreview(slug, name); });
+        sw.appendChild(pb);
+      }
       var foot = card.querySelector('.camo-foot'); if (!foot) return;
       var owned = S.owned.indexOf(slug) >= 0;
       var active = S.active === slug;
@@ -337,15 +393,18 @@
 
       if (!owned){
         // Plan camos (Standard/Premium) aren't purchasable on their own — they
-        // come bundled with the plan. If the user's current plan doesn't include
-        // it, leave the static "Included with your plan" footer as-is (no buy
-        // button to click, nothing to wire to Stripe here).
+        // come bundled with the plan, so their footer stays informational.
         if (isPlanCamo) return;
         foot.innerHTML = '<span class="camo-price">'+price+'</span>'
           + '<button type="button" class="camo-cta on act" data-buy="1">'+T.get+'</button>';
         foot.querySelector('[data-buy]').addEventListener('click', function(){
           if (!S.authed){ location.href='/login'; return; }
-          toast(T.soon);   // Stripe checkout wires in here later
+          var btn = this; btn.disabled = true;
+          post('/api/camo/buy', {slug:slug}).then(function(res){
+            if (res.ok && res.j.url){ location.href = res.j.url; return; }
+            btn.disabled = false;
+            toast(res.j && res.j.error === 'paypal_unreachable' ? T.err : T.soon);
+          }).catch(function(){ btn.disabled = false; toast(T.err); });
         });
         return;
       }
@@ -369,6 +428,15 @@
     }
     function renderAll(){ document.querySelectorAll('.camo-card').forEach(renderCard); }
     renderAll();
+    // Fresh from PayPal: celebrate the purchase (ownership already re-rendered
+    // from the server state above).
+    try {
+      var bought = new URLSearchParams(location.search).get('bought');
+      if (bought && S.owned.indexOf(bought) >= 0){
+        toast(T.bought + '<a href="/app">' + T.go + '</a>');
+        history.replaceState(null, '', '/camos');
+      }
+    } catch (e) {}
   })();
 </script>
 </body>

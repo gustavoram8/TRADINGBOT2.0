@@ -857,6 +857,36 @@ class MentorshipOrder(db.Model):
     user = db.relationship('User', backref='mentorship_orders')
 
 
+class CamoOrder(db.Model):
+    """A one-time camo purchase from the store (/camos). PayPal only.
+
+    A separate table from `Order` for the same reason MentorshipOrder is: a
+    camo purchase must never be able to touch `user.plan`, and the two flows
+    stay independently auditable. `price`/`label` are snapshots taken
+    server-side from the camo catalog at creation — the browser only ever sends
+    a slug, never an amount. `applied_at` is the idempotency guard: the camo is
+    granted exactly once no matter how many times the webhook fires."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    slug = db.Column(db.String(20), nullable=False)
+    label = db.Column(db.String(80), nullable=False)          # snapshot at purchase
+    price = db.Column(db.Float, nullable=False)               # snapshot (server-side)
+    currency = db.Column(db.String(3), default='usd', nullable=False)
+    status = db.Column(db.String(12), default='pending', nullable=False)  # pending/paid/cancelled
+    payment_method = db.Column(db.String(30), nullable=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    paid_at = db.Column(db.DateTime, nullable=True)
+    applied_at = db.Column(db.DateTime, nullable=True)        # camo granted (idempotency)
+    note = db.Column(db.String(300), nullable=True)
+    provider_ref = db.Column(db.String(80), nullable=True, index=True)
+    pay_status = db.Column(db.String(24), nullable=True)
+    paid_amount = db.Column(db.Float, nullable=True)
+    pay_currency = db.Column(db.String(20), nullable=True)
+    tx_hash = db.Column(db.String(120), nullable=True)
+    alerted_at = db.Column(db.DateTime, nullable=True)
+    user = db.relationship('User', backref='camo_orders')
+
+
 # ═══ Mentorship MEMBERS AREA (post-purchase) ═══════════════════════════════
 class MentorshipFolder(db.Model):
     """A module/folder of the members video library."""
@@ -1451,6 +1481,39 @@ CAMO_READY = {'rising-sun', 'pole', 'premium', 'fourth', 'naval', 'mission',
 # The camo that ships with each paid plan. Granting it is part of what the
 # buyer paid for, so it is written into the account (see grant_plan_camo).
 PLAN_CAMOS = {'standard': 'standard', 'premium': 'premium'}
+
+# ── Camo STORE (one-time purchases, PayPal only — user decision 2026-07-30:
+# the fixed card fee on a $1.99 item is accepted; crypto is not offered for
+# camos because the network fee can exceed the price of the skin itself). ──
+# Prices are the single server-side truth: the browser only ever sends a slug.
+CAMO_SEASONAL = {'santa', 'hallow', 'fourth', 'lucky', 'valentine',
+                 'easter', 'newyear', 'muertos'}
+CAMO_PRICE_THEME = 1.99
+CAMO_PRICE_SEASONAL = 4.99
+# Display names, mirrored from the store cards (used on PayPal receipts).
+CAMO_NAMES = {
+    'naval': 'Naval Command', 'highnoon': 'High Noon', 'rising-sun': 'Rising Sun',
+    'mission': 'Mission Control', 'blackflag': 'Black Flag',
+    'alchemist': 'The Alchemist', 'shadow': 'Shadow Strike',
+    'pole': 'Pole Position', 'arcade': 'Insert Coin', 'cyber': 'Neon Circuit',
+    'santa': "Santa's Rally", 'hallow': "Hallow's Eve", 'fourth': 'Star-Spangled',
+    'lucky': 'Lucky Streak', 'valentine': 'Bullish Hearts',
+    'easter': 'Spring Bloom', 'newyear': 'Fresh Start', 'muertos': 'Marigold Night',
+}
+
+
+def camo_store_price(slug):
+    """Price of a camo in the store, or None if it is not sold on its own.
+
+    Plan camos are never sold separately (they come with the subscription), and
+    a camo whose theme has not shipped cannot be bought — selling a skin that
+    does not render yet would be charging for nothing.
+    """
+    if slug not in CAMO_SLUGS or slug in set(PLAN_CAMOS.values()):
+        return None
+    if slug not in CAMO_READY:
+        return None
+    return CAMO_PRICE_SEASONAL if slug in CAMO_SEASONAL else CAMO_PRICE_THEME
 
 # Max number of saved Analysis Projects per plan.
 PROJECT_LIMITS = {'free': 1, 'standard': 5, 'premium': 10}
@@ -3583,7 +3646,8 @@ def camos():
         owned, active, authed = [], '', False
     return render_template('camos.html',
                            camo_owned=owned, camo_active=active,
-                           camo_ready=sorted(CAMO_READY), camo_authed=authed)
+                           camo_ready=sorted(CAMO_READY), camo_authed=authed,
+                           camo_paypal=PAYPAL_ENABLED)
 
 
 @app.route('/api/camo/activate', methods=['POST'])
@@ -3607,6 +3671,59 @@ def camo_deactivate():
     current_user.active_camo = ''
     db.session.commit()
     return jsonify({'ok': True, 'active': ''})
+
+
+@app.route('/api/camo/buy', methods=['POST'])
+@login_required
+def camo_buy():
+    """Start a PayPal checkout for a store camo.
+
+    The browser sends a slug and nothing else; the price is looked up
+    server-side. Without PayPal keys the store keeps its 'coming soon' toast —
+    same conditional pattern as every other rail.
+    """
+    slug = ((request.get_json(silent=True) or {}).get('slug') or '').strip()
+    price = camo_store_price(slug)
+    if price is None:
+        return jsonify({'error': 'not_available'}), 400
+    if current_user.owns_camo(slug):
+        return jsonify({'error': 'already_owned'}), 400
+    if not PAYPAL_ENABLED:
+        return jsonify({'error': 'soon'}), 503
+    order = (CamoOrder.query
+             .filter_by(user_id=current_user.id, slug=slug, status='pending')
+             .order_by(CamoOrder.created_at.desc()).first())
+    if not order:
+        order = CamoOrder(user_id=current_user.id, slug=slug,
+                          label=CAMO_NAMES.get(slug, slug), price=price)
+        db.session.add(order)
+        db.session.commit()
+    url = _paypal_create_order(order, 'camo')
+    if not url:
+        return jsonify({'error': 'paypal_unreachable'}), 502
+    return jsonify({'url': url})
+
+
+@app.route('/camos/paypal/return/<int:order_id>')
+@login_required
+def camo_paypal_return(order_id):
+    """Where PayPal sends the buyer back after approving a camo purchase.
+
+    The capture happens here; the webhook and the admin sweep are the nets for
+    a buyer who closes the tab early. Either way the buyer lands back on the
+    store, which re-renders from the server's ownership state."""
+    order = db.session.get(CamoOrder, order_id)
+    if not order or order.user_id != current_user.id:
+        abort(404)
+    if order.status != 'paid':
+        try:
+            _paypal_capture(order, 'camo')
+        except Exception as exc:            # never dead-end on the way back
+            app.logger.error('camo paypal return failed (order %s): %s', order.id, exc)
+    dest = url_for('camos')
+    if order.status == 'paid':
+        dest += '?bought=' + order.slug
+    return redirect(dest)
 
 
 @app.route('/terms')
@@ -4640,12 +4757,19 @@ def send_payment_alert_email(order, kind):
         'stuck': ('ACCIÓN REQUERIDA: entrá a /admin y activá el pedido a mano. '
                   'El cliente ya pagó.'),
     }.get(kind, '')
+    # Works for both plan Orders and CamoOrders — the fields differ slightly.
+    if hasattr(order, 'plan'):
+        item = f'{PLAN_LABELS.get(order.plan, order.plan)} / {order.billing_cycle}'
+        amount = order.final_price
+    else:
+        item = f'Camo: {getattr(order, "label", getattr(order, "slug", "?"))}'
+        amount = order.price
     body = (
         f'{head} — Tradeable Academy\n'
         f'{"=" * 46}\n\n'
         f'Pedido:    #{order.id}\n'
-        f'Plan:      {PLAN_LABELS.get(order.plan, order.plan)} / {order.billing_cycle}\n'
-        f'Monto:     ${order.final_price:.2f} USD\n'
+        f'Compra:    {item}\n'
+        f'Monto:     ${amount:.2f} USD\n'
         f'Recibido:  {order.paid_amount if order.paid_amount is not None else "—"} '
         f'{(order.pay_currency or "").upper()}\n'
         f'Estado:    {order.status} / {order.pay_status or "—"}\n'
@@ -4737,7 +4861,21 @@ def payments_sweep(max_orders=25):
                 recovered += 1
         except Exception as exc:            # one bad order must not stop the sweep
             app.logger.warning('sweep failed on order %s: %s', o.id, exc)
-    return len(pending), recovered
+    # Camo store orders ride the same net. They are PayPal-only, so they go
+    # straight to the PayPal reconciler instead of through the method dispatch.
+    camo_pending = (CamoOrder.query
+                    .filter(CamoOrder.status == 'pending',
+                            CamoOrder.provider_ref.isnot(None),
+                            CamoOrder.created_at >= cutoff)
+                    .order_by(CamoOrder.created_at.desc())
+                    .limit(max_orders).all())
+    for o in camo_pending:
+        try:
+            if _paypal_reconcile(o, 'camo'):
+                recovered += 1
+        except Exception as exc:
+            app.logger.warning('sweep failed on camo order %s: %s', o.id, exc)
+    return len(pending) + len(camo_pending), recovered
 
 
 def order_trace(order):
@@ -4983,8 +5121,12 @@ def _paypal_create_order(order, kind='plan'):
                 'brand_name': PAYPAL_BRAND_NAME,
                 'user_action': 'PAY_NOW',
                 'shipping_preference': 'NO_SHIPPING',
-                'return_url': url_for('paypal_return', order_id=order.id, _external=True),
-                'cancel_url': url_for('checkout_status', order_id=order.id, _external=True),
+                'return_url': (url_for('camo_paypal_return', order_id=order.id, _external=True)
+                               if kind == 'camo' else
+                               url_for('paypal_return', order_id=order.id, _external=True)),
+                'cancel_url': (url_for('camos', _external=True)
+                               if kind == 'camo' else
+                               url_for('checkout_status', order_id=order.id, _external=True)),
             }}},
         }, request_id='create-%s' % ref)
     except Exception as exc:
@@ -5018,13 +5160,16 @@ def _paypal_read_status(data):
     return (data.get('status') or '').lower(), amount, None
 
 
-def _paypal_apply_status(order, status, amount=None, capture_id=None):
+def _paypal_apply_status(order, status, amount=None, capture_id=None, kind='plan'):
     """Fold a PayPal result into the order and activate when it is paid.
 
     Reached from the return URL, from the webhook and from reconciliation — so,
-    like its crypto twin, it must be safe to run any number of times.
-    `_activate_plan_from_order` is the guard that makes that true.
+    like its crypto twin, it must be safe to run any number of times. The
+    per-kind activator (`_activate_plan_from_order` / `_activate_camo_from_order`)
+    is the guard that makes that true.
     """
+    activate = (_activate_camo_from_order if kind == 'camo'
+                else _activate_plan_from_order)
     if status:
         order.pay_status = status
     if amount is not None:
@@ -5042,7 +5187,7 @@ def _paypal_apply_status(order, status, amount=None, capture_id=None):
     activated = False
     problem = status in PAYPAL_PROBLEM_STATES
     if order.status == 'paid' and not problem:
-        activated = _activate_plan_from_order(order)
+        activated = activate(order)
         if activated:
             send_payment_alert_email(order, 'sale')
         elif order.applied_at is None:
@@ -5057,7 +5202,7 @@ def _paypal_apply_status(order, status, amount=None, capture_id=None):
     return activated
 
 
-def _paypal_capture(order):
+def _paypal_capture(order, kind='plan'):
     """Take the money for an order the buyer has approved.
 
     PayPal answers a second capture attempt with an error naming the situation
@@ -5068,23 +5213,23 @@ def _paypal_capture(order):
     try:
         code, data = _paypal_api(
             'POST', '/v2/checkout/orders/%s/capture' % order.provider_ref, {},
-            request_id='capture-plan-%d' % order.id)
+            request_id='capture-%s-%d' % (kind, order.id))
     except Exception as exc:
         app.logger.warning('paypal capture failed (order %s): %s', order.id, exc)
         return False
     if code >= 300:
         issues = [str(d.get('issue', '')).upper() for d in (data.get('details') or [])]
         if 'ORDER_ALREADY_CAPTURED' in issues:
-            return _paypal_reconcile(order)
+            return _paypal_reconcile(order, kind)
         app.logger.warning('paypal capture rejected (order %s): %s %s',
                            order.id, code, issues or data)
         # An order the buyer never approved simply stays pending.
         return False
     status, amount, cap_id = _paypal_read_status(data)
-    return _paypal_apply_status(order, status, amount, cap_id)
+    return _paypal_apply_status(order, status, amount, cap_id, kind)
 
 
-def _paypal_reconcile(order):
+def _paypal_reconcile(order, kind='plan'):
     """Ask PayPal what happened to an order we believe is still unpaid.
 
     The net that catches an approval whose notification never arrived: it runs
@@ -5102,8 +5247,8 @@ def _paypal_reconcile(order):
     # Approved but never captured: the buyer clicked pay and we dropped the
     # ball. Capturing here is precisely how that purchase is rescued.
     if (data.get('status') or '').upper() == 'APPROVED' and not cap_id:
-        return _paypal_capture(order)
-    return _paypal_apply_status(order, status, amount, cap_id)
+        return _paypal_capture(order, kind)
+    return _paypal_apply_status(order, status, amount, cap_id, kind)
 
 
 # ═══ Payment rails — the shared front door ════════════════════════════════
@@ -5178,6 +5323,30 @@ def _activate_plan_from_order(order):
     user.plan_expires_at = base + timedelta(days=days)
     order.applied_at = now
     db.session.commit()
+    return True
+
+
+def _activate_camo_from_order(order):
+    """Grant the purchased camo to the user, exactly once per order.
+
+    Mirror of `_activate_plan_from_order` for the camo store: the `applied_at`
+    guard makes a replayed webhook harmless. The skin is also switched on when
+    the buyer is still on the default theme — they just paid for it, and a skin
+    nobody sees is a purchase that never arrived — but a camo they already
+    chose is never overwritten.
+    """
+    if order.status != 'paid' or order.applied_at is not None:
+        return False
+    user = db.session.get(User, order.user_id)
+    if not user:
+        return False
+    user.add_camo(order.slug)
+    if order.slug in CAMO_READY and not (user.active_camo or ''):
+        user.active_camo = order.slug
+    order.applied_at = datetime.now(timezone.utc)
+    db.session.commit()
+    record_audit_event('camo_purchase', user_id=user.id,
+                       detail=f'{order.slug} (${order.price:.2f}, order #{order.id})')
     return True
 
 
@@ -5429,16 +5598,19 @@ def paypal_webhook():
         oid = int(oid)
     except (TypeError, ValueError):
         return jsonify({'ok': True, 'ignored': 'no_order_ref'})
-    if kind != 'plan':
+    if kind == 'plan':
+        order = db.session.get(Order, oid)
+    elif kind == 'camo':
+        order = db.session.get(CamoOrder, oid)
+    else:
         return jsonify({'ok': True, 'ignored': kind})
-    order = db.session.get(Order, oid)
     if not order:
         return jsonify({'error': 'not_found'}), 404
 
     etype = (event.get('event_type') or '').upper()
     if etype == 'CHECKOUT.ORDER.APPROVED':
         # Approved but not captured — taking the money is on us.
-        _paypal_capture(order)
+        _paypal_capture(order, kind)
         return jsonify({'ok': True})
     amount = (res.get('amount') or {}).get('value')
     if etype in ('PAYMENT.CAPTURE.REVERSED', 'PAYMENT.CAPTURE.REFUNDED'):
@@ -5451,7 +5623,7 @@ def paypal_webhook():
         status = (res.get('status') or '').lower()
     else:
         return jsonify({'ok': True, 'ignored': etype})
-    _paypal_apply_status(order, status, amount, res.get('id'))
+    _paypal_apply_status(order, status, amount, res.get('id'), kind)
     return jsonify({'ok': True})
 
 

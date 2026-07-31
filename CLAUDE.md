@@ -174,7 +174,28 @@ el Quiz (welcome + pass/fail). **Infra base (cableada, estable):** `User.active_
 helpers `camos_owned()/add_camo()/owns_camo()` (admin posee TODO); `CAMO_SLUGS` (20 slugs) y
 `CAMO_READY` en app.py — **hoy `{'rising-sun','pole','premium','fourth','naval','mission','blackflag','standard'}`**, el resto pendiente; endpoints
 `/api/camo/activate` `/api/camo/deactivate`; `/app` pinta `body.camo-<slug>` pre-paint (sin FOUC);
-tienda `/camos` con ownership/compra (Stripe real AÚN pendiente, hoy toast "pago pronto"). Migración
+tienda `/camos` con ownership/compra. ✅ **TIENDA CABLEADA A PAYPAL (2026-07-30, inerte sin claves):**
+decisión del usuario = camos SOLO por PayPal ($1.99 themes / $4.99 seasonal, asume la comisión fija;
+cripto descartado porque la fee de red supera el precio). Piezas: `CamoOrder` (tabla separada, patrón
+MentorshipOrder, precio/label snapshot server-side — el browser solo manda slug), catálogo
+`camo_store_price()` + `CAMO_SEASONAL`/`CAMO_NAMES`, `POST /api/camo/buy` (valida: listo, no-plan,
+no-poseído; sin claves → 503 `soon` y la tienda muestra su toast), `GET /camos/paypal/return/<id>`,
+webhook `/webhook/paypal` despacha por `custom_id` `camo-<id>` (los helpers `_paypal_*` ahora llevan
+`kind`), activador idempotente `_activate_camo_from_order` (enciende el camo solo si no hay otro
+activo), barrido de /admin extendido a CamoOrders, y `send_payment_alert_email` tolera ambos tipos de
+pedido. **E2E 18 checks verdes** (PayPal simulado): precio server-side aunque el cliente mande otro,
+webhook repetido no re-activa, barrido rescata compra abandonada. **Al encender PayPal no hay nada más
+que hacer para camos** — mismas 4 env vars.
+✅ **PREVIEWS REALES en la tienda (2026-07-30):** los swatches de los camos LISTOS ya no son
+degradados — son **screenshots reales de /app** con el camo puesto (`static/camo_prev_<slug>.jpg`,
+640px ~25KB, generados con `scratchpad/gen_previews.py`; regenerar al agregar un camo nuevo) + botón
+**"👁 Preview"** que abre un lightbox (los de 2 looks —standard/mission/pole— tienen botón "ver el
+otro look" → `_alt.jpg`). Los no-listos conservan su degradado + "Coming soon". **Bios corregidas ×4
+idiomas** (camos.html EN + los 4 dicts de pages_i18n.js — ojo: el dict EN PISA el HTML al cargar, hay
+que editar ambos): naval ya no dice "azul marino" (es camuflaje oliva + condecoraciones), blackflag =
+mapa del tesoro (no "carbón y hueso"), pole = plano de ingeniería (no "rojo de carrera"), mission =
+dos looks (cosmos/Marte), fourth = Estatua de la Libertad + monumentos + fuegos, sun = washi/kanji,
+standard/premium enriquecidas. Migración
 prod ya aplicada (columnas `active_camo`/`owned_camos` en `user` + auto-heal `_migrate_user_camo_columns()`
 en `init_db()` — futuras columnas nuevas: SIEMPRE auto-migración, nunca pedirle al usuario SQL a mano).
 **Mascotas (welcome/pass/fail, light+dark) — 7 de 7 camos LISTAS y con cutout limpio:** rising-sun, naval,

@@ -66,23 +66,14 @@ procesan manualmente) **y sus traducciones ES/FR/PT en `legal_i18n.js`.** Ver `C
 que si fallara no se guardaría nada, el pedido quedaría sin aplicar, y eso ya lo cazan el barrido de
 `/admin` y el aviso de "pagó pero no se activó". Está cubierto por construcción.
 
-**(b) La TIENDA DE CAMOS no cobra nada todavía.** Estado real de `/camos` (verificado 2026-07-30):
-las tarjetas muestran precios (**$1.99** los normales, **$4.99** los estacionales) pero el botón
-"Get this skin" **no llama a ningún endpoint** — solo muestra un aviso *"Card payments coming soon"*
-(`camos.html`, clave i18n `soon`). **No existe** ni ruta de compra, ni registro de pedido, ni SKU
-server-side. Lo único que funciona es activar/desactivar un camo que YA se posee
-(`/api/camo/activate`), y hoy solo los posee el admin o quien compró un plan.
-
-Falta construir: catálogo de precios **server-side** (el navegador manda el slug, nunca el monto,
-igual que `MENTORSHIP_SKUS`), tabla de pedidos propia o `kind` en `Order`, ruta de compra, activación
-idempotente vía webhook que llame a `add_camo()`, y la tienda leyendo la propiedad real.
-**Se puede escribir TODO ahora y dejarlo inerte sin claves** (mismo patrón condicional que Stripe/
-PayPal/cripto); lo único que exige el riel vivo es el cobro en sí y la prueba de punta a punta.
-
-⚠️ **Decisión económica pendiente ANTES de construirlo:** a $1.99, la comisión de tarjeta (~$0.30 fijos
-+ ~2,9%) se lleva **~18% de la venta**, y en cripto la comisión de red puede superar el precio del
-camo. Opciones a valorar con el usuario: subir el precio, vender **packs** de varios camos, o un
-sistema de **créditos** que se recargan de una vez. No construir la tienda sin cerrar esto.
+**(b) ✅ La TIENDA DE CAMOS ya está CABLEADA a PayPal (2026-07-30) — solo falta encender las claves.**
+Decisión del usuario: camos se cobran **SOLO por PayPal**, precios se quedan en $1.99/$4.99 y la
+comisión fija la asume él (cripto descartado: la fee de red supera el precio del skin). El flujo
+completo está construido e inerte sin claves (detalle en `CLAUDE.md`, sección camos): `CamoOrder` +
+precio server-side + `/api/camo/buy` + return + webhook por `custom_id` + barrido + activador
+idempotente. E2E 18 checks verdes con PayPal simulado. **El día que se pongan las 4 env vars de
+PayPal, los camos se venden solos — cero código pendiente.** Probar una compra real con
+`PAYPAL_ENV=sandbox` antes de live.
 
 ### 2. `support@tradeable.academy` no existe
 
