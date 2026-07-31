@@ -775,6 +775,14 @@ PLAN_OP_COST = {
 PAYPAL_FEE_PCT = float(os.environ.get('PAYPAL_FEE_PCT', '5.4'))
 PAYPAL_FEE_FIXED = float(os.environ.get('PAYPAL_FEE_FIXED', '0.30'))
 
+# ── Reserva anti-chargeback ───────────────────────────────────────────────
+# Fracción de CADA venta que se aparta y no se cuenta como disponible. Un
+# chargeback obliga a devolver el 100% de lo cobrado, mientras la fee del
+# procesador no vuelve nunca: sin un colchón, un reembolso llega justo cuando
+# el dinero ya se gastó. Se aparta sobre lo PAGADO por el cliente (no sobre la
+# utilidad), porque lo que hay que poder devolver es el pago entero.
+CHARGEBACK_RESERVE_PCT = float(os.environ.get('CHARGEBACK_RESERVE_PCT', '25'))
+
 
 def partner_tier_pct(position):
     """Commission % earned by a partner's Nth referral (1-based).
@@ -1170,6 +1178,12 @@ class SaleBreakdown(db.Model):
 
     op_cost = db.Column(db.Float, default=0.0)
     net_profit = db.Column(db.Float, default=0.0)
+    # Apartado de esta venta contra un posible chargeback, y la utilidad que
+    # queda REALMENTE disponible una vez apartado. Ambos se congelan con el
+    # resto: cambiar el % después no debe reescribir lo ya reservado.
+    reserve_amt = db.Column(db.Float, default=0.0)
+    reserve_pct = db.Column(db.Float, default=0.0)
+    available_profit = db.Column(db.Float, default=0.0)
 
     is_manual = db.Column(db.Boolean, default=False, nullable=False)
     reversed_at = db.Column(db.DateTime, nullable=True)    # chargeback / refund
@@ -3850,6 +3864,8 @@ def admin_ledger_manual():
     pct = partner_tier_pct(position) if partner else 0.0
     commission = round(net * pct / 100.0, 2)
     op = PLAN_OP_COST.get(plan, {}).get(cycle, 0.0)
+    profit = round(net - fee - commission - op, 2)
+    reserve = round(net * CHARGEBACK_RESERVE_PCT / 100.0, 2)
     row = SaleBreakdown(
         order_id=None, user_id=None, username=buyer,
         plan=plan, billing_cycle=cycle,
@@ -3857,7 +3873,9 @@ def admin_ledger_manual():
         net_paid=net, processor='manual', processor_fee=fee,
         fee_is_real=fee_real, promo_code=code, partner=partner,
         position=position, commission_pct=pct, commission_amt=commission,
-        op_cost=op, net_profit=round(net - fee - commission - op, 2),
+        op_cost=op, net_profit=profit,
+        reserve_pct=CHARGEBACK_RESERVE_PCT, reserve_amt=reserve,
+        available_profit=round(profit - reserve, 2),
         is_manual=True, note=note)
     db.session.add(row)
     db.session.commit()
@@ -5680,6 +5698,8 @@ def _build_ledger_context():
             'commission': sum(r.commission_amt or 0 for r in live),
             'op': sum(r.op_cost or 0 for r in live),
             'profit': sum(r.net_profit or 0 for r in live),
+            'reserve': sum(r.reserve_amt or 0 for r in live),
+            'available': sum(r.available_profit or 0 for r in live),
             'com_pending': sum(r.commission_amt or 0 for r in live
                                if r.commission_status == 'pending'),
             'com_paid': sum(r.commission_amt or 0 for r in live
@@ -5734,6 +5754,7 @@ def _build_ledger_context():
         'ledger_partners': sorted(partners.values(),
                                   key=lambda p: -p['valid']),
         'ledger_plans': sorted(PLAN_PRICING),
+        'reserve_pct': CHARGEBACK_RESERVE_PCT,
     }
 
 
@@ -5783,6 +5804,10 @@ def record_sale_breakdown(order, processor_fee=None, fee_is_real=False):
     pct = partner_tier_pct(position) if partner else 0.0
     commission = round(net * pct / 100.0, 2)
     op = PLAN_OP_COST.get(order.plan, {}).get(order.billing_cycle, 0.0)
+    profit = round(net - fee - commission - op, 2)
+    # Apartado sobre lo PAGADO: un chargeback devuelve el pago entero, no la
+    # utilidad, así que reservar un % de la utilidad protegería de menos.
+    reserve = round(net * CHARGEBACK_RESERVE_PCT / 100.0, 2)
     user = db.session.get(User, order.user_id)
 
     row = SaleBreakdown(
@@ -5795,7 +5820,9 @@ def record_sale_breakdown(order, processor_fee=None, fee_is_real=False):
         processor_fee=fee, fee_is_real=bool(fee_is_real),
         promo_code=order.promo_code, partner=partner, position=position,
         commission_pct=pct, commission_amt=commission,
-        op_cost=op, net_profit=round(net - fee - commission - op, 2),
+        op_cost=op, net_profit=profit,
+        reserve_pct=CHARGEBACK_RESERVE_PCT, reserve_amt=reserve,
+        available_profit=round(profit - reserve, 2),
         sold_at=_aware(order.paid_at) or datetime.now(timezone.utc))
     db.session.add(row)
     db.session.commit()
@@ -10583,6 +10610,34 @@ def _migrate_user_mute_column():
         app.logger.info('Migrated user table: added muted_until column.')
 
 
+def _migrate_sale_reserve_columns():
+    """Add the chargeback-reserve columns to an existing sale_breakdown table.
+
+    Rows written before the reserve existed keep reserve_amt = 0, which is
+    honest: nothing was actually held back for them. Backfilling would invent a
+    reserve that never left the account."""
+    from sqlalchemy import inspect, text
+    insp = inspect(db.engine)
+    if 'sale_breakdown' not in insp.get_table_names():
+        return
+    cols = {c['name'] for c in insp.get_columns('sale_breakdown')}
+    stmts = []
+    if 'reserve_amt' not in cols:
+        stmts.append('ALTER TABLE sale_breakdown ADD COLUMN reserve_amt FLOAT DEFAULT 0')
+    if 'reserve_pct' not in cols:
+        stmts.append('ALTER TABLE sale_breakdown ADD COLUMN reserve_pct FLOAT DEFAULT 0')
+    if 'available_profit' not in cols:
+        stmts.append('ALTER TABLE sale_breakdown ADD COLUMN available_profit FLOAT DEFAULT 0')
+    for st in stmts:
+        try:
+            with db.engine.begin() as conn:
+                conn.execute(text(st))
+        except Exception as e:
+            app.logger.info('reserve migration note (ignored): %s', e)
+    if stmts:
+        app.logger.info('Migrated sale_breakdown: reserve columns ensured.')
+
+
 def _migrate_user_camo_columns():
     """Add camo-skin columns (active_camo, owned_camos) to an existing user table.
     Each ALTER runs in its own transaction with a guard so that a concurrent
@@ -10790,6 +10845,7 @@ def init_db():
         _migrate_promo_code_columns()
         _migrate_preflight_check_columns()
         _migrate_user_camo_columns()
+        _migrate_sale_reserve_columns()
         _migrate_mentorship_application_columns()
         _migrate_forum_post_community_column()
         _migrate_mentorship_area_columns()

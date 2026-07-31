@@ -1042,18 +1042,31 @@
       mano</b> abajo y ver cómo se comporta — misma matemática, mismo código que una venta real.
     </div>
 
+    <div class="section-d" style="border-left:3px solid #c9a227;padding-left:10px;margin-bottom:12px;">
+      🔒 <b>Reserva anti-chargeback: {{ '%.0f'|format(reserve_pct) }}% de cada venta.</b> Se aparta sobre lo que
+      <i>pagó el cliente</i> (no sobre la utilidad), porque un chargeback obliga a devolver el pago entero.
+      Lo que ves como <b>disponible</b> ya tiene la reserva descontada: es plata que puedes tocar sin quedar
+      expuesto. Si una venta se revierte, su reserva sale del total junto con ella — que es justo para lo
+      que estaba guardada.
+    </div>
+
     <!-- ── TU GANANCIA — el número que importa, imposible de no ver ── -->
     {% set v = ledger_view %}{% set t = ledger_total %}
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
-      <div style="flex:2;min-width:250px;background:linear-gradient(135deg,#123c26,#1a5c38);border-radius:12px;padding:14px 18px;color:#fff;">
-        <div style="font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.75;">💰 Tu ganancia neta — histórico</div>
-        <div style="font-size:30px;font-weight:800;line-height:1.1;margin-top:3px;">${{ '%.2f'|format(t.profit) }}</div>
-        <div style="font-size:11.5px;opacity:.8;margin-top:2px;">después de descuentos, comisiones, fees y costos · {{ t.count }} venta(s) válida(s)</div>
+      <div style="flex:2;min-width:260px;background:linear-gradient(135deg,#123c26,#1a5c38);border-radius:12px;padding:14px 18px;color:#fff;">
+        <div style="font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.75;">💰 Tuyo y disponible — histórico</div>
+        <div style="font-size:30px;font-weight:800;line-height:1.1;margin-top:3px;">${{ '%.2f'|format(t.available) }}</div>
+        <div style="font-size:11.5px;opacity:.8;margin-top:2px;">ganancia ${{ '%.2f'|format(t.profit) }} − reserva ${{ '%.2f'|format(t.reserve) }} · {{ t.count }} venta(s)</div>
+      </div>
+      <div style="flex:1;min-width:200px;background:linear-gradient(135deg,#3a2f10,#5c4a1a);border-radius:12px;padding:14px 18px;color:#fff;">
+        <div style="font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.8;">🔒 Reserva intocable</div>
+        <div style="font-size:26px;font-weight:800;margin-top:4px;">${{ '%.2f'|format(t.reserve) }}</div>
+        <div style="font-size:11.5px;opacity:.8;margin-top:2px;">{{ '%.0f'|format(reserve_pct) }}% de cada venta · para chargebacks</div>
       </div>
       <div style="flex:1;min-width:170px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 18px;">
-        <div style="font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);">Ganancia del mes en pantalla</div>
-        <div style="font-size:24px;font-weight:800;margin-top:5px;">${{ '%.2f'|format(v.profit) }}</div>
-        <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">{{ v.count }} venta(s) · margen {{ '%.1f'|format(v.profit / v.net * 100 if v.net else 0) }}%</div>
+        <div style="font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);">Disponible del mes en pantalla</div>
+        <div style="font-size:24px;font-weight:800;margin-top:5px;">${{ '%.2f'|format(v.available) }}</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">de ${{ '%.2f'|format(v.profit) }} de ganancia · margen {{ '%.1f'|format(v.profit / v.net * 100 if v.net else 0) }}%</div>
       </div>
     </div>
 
@@ -1065,6 +1078,7 @@
         ('Fees procesador', '$%.2f'|format(v.fees), '$%.2f'|format(t.fees)),
         ('Comisión socio', '$%.2f'|format(v.commission), '$%.2f'|format(t.commission)),
         ('Costos operativos', '$%.2f'|format(v.op), '$%.2f'|format(t.op)),
+        ('Reserva apartada', '$%.2f'|format(v.reserve), '$%.2f'|format(t.reserve)),
         ('Revertidas', v.reversed, t.reversed),
       ] %}
       <div style="flex:1;min-width:130px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;">
@@ -1125,7 +1139,7 @@
     <table>
       <thead><tr><th>Fecha</th><th>Comprador</th><th>Plan</th><th>Bruto</th><th>Desc.</th>
         <th>Pagado</th><th>Fee</th><th>Socio · pos.</th><th>Comisión</th><th>Costo</th>
-        <th>UTILIDAD</th><th></th></tr></thead>
+        <th>Utilidad</th><th>🔒 Reserva</th><th>DISPONIBLE</th><th></th></tr></thead>
       <tbody>
       {% for r in ledger_rows %}
       <tr{% if r.reversed_at %} style="opacity:.45;text-decoration:line-through;"{% endif %}>
@@ -1142,7 +1156,9 @@
         <td>{% if r.partner %}${{ '%.2f'|format(r.commission_amt) }} ({{ '%.0f'|format(r.commission_pct) }}%)<br>
           <span class="u-email">{{ {'pending':'pendiente','paid':'pagada','clawback':'A RECUPERAR','cancelled':'cancelada'}.get(r.commission_status, r.commission_status) }}</span>{% else %}—{% endif %}</td>
         <td>${{ '%.2f'|format(r.op_cost) }}</td>
-        <td><b>${{ '%.2f'|format(r.net_profit) }}</b></td>
+        <td>${{ '%.2f'|format(r.net_profit) }}</td>
+        <td style="color:#8a6d1f;">${{ '%.2f'|format(r.reserve_amt or 0) }}</td>
+        <td><b>${{ '%.2f'|format(r.available_profit or r.net_profit) }}</b></td>
         <td>
           {% if not r.reversed_at %}
           <form method="post" action="/admin/ledger/reverse" style="display:inline"
@@ -1161,7 +1177,7 @@
         </td>
       </tr>
       {% else %}
-      <tr><td colspan="12" style="color:var(--muted);">Sin ventas este mes. Carga una manual abajo para probar el mecanismo.</td></tr>
+      <tr><td colspan="14" style="color:var(--muted);">Sin ventas este mes. Carga una manual abajo para probar el mecanismo.</td></tr>
       {% endfor %}
       </tbody>
     </table>
