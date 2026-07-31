@@ -858,6 +858,26 @@ class MentorshipOrder(db.Model):
     user = db.relationship('User', backref='mentorship_orders')
 
 
+class Giveaway(db.Model):
+    """A giveaway the owner runs BY HAND on social media.
+
+    Deliberately dumb: the platform does not pick winners, count entries or
+    verify tasks — that machinery would be a second business to maintain, and
+    the owner explicitly chose to run draws manually from Instagram. All this
+    stores is what to announce: the prize, when it closes, how to enter, and
+    who won once it is over. The site's only job is the countdown and the link.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(120), nullable=False)
+    prize = db.Column(db.String(120), nullable=False)
+    ends_at = db.Column(db.DateTime, nullable=False)
+    how_to = db.Column(db.Text, nullable=True)          # steps, one per line
+    link = db.Column(db.String(300), nullable=True)     # the post to enter on
+    winner = db.Column(db.String(80), nullable=True)    # filled in afterwards
+    active = db.Column(db.Boolean, default=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+
 class CamoOrder(db.Model):
     """A one-time camo purchase from the store (/camos). PayPal only.
 
@@ -3635,6 +3655,84 @@ def improve_apply_submit():
     # Unlocks /improve/plans (the offer) for this visitor — filter first, then prices.
     session['improve_applied'] = True
     return jsonify({'ok': True, 'next': url_for('improve_plans')})
+
+
+def _current_giveaway():
+    """The draw to announce: the soonest active one that has not closed yet,
+    else the most recent closed one (so a winner stays on show for a while)."""
+    now = datetime.now(timezone.utc)
+    try:
+        upcoming = (Giveaway.query
+                    .filter(Giveaway.active.is_(True), Giveaway.ends_at > now.replace(tzinfo=None))
+                    .order_by(Giveaway.ends_at.asc()).first())
+        if upcoming:
+            return upcoming, False
+        past = (Giveaway.query.filter(Giveaway.active.is_(True))
+                .order_by(Giveaway.ends_at.desc()).first())
+        return past, True
+    except Exception as exc:                 # a missing table must not 500 the page
+        app.logger.warning('giveaway lookup failed: %s', exc)
+        return None, False
+
+
+# Official social accounts. Env-configured because they are set once and never
+# again; anything unset simply does not render, so the page never shows a dead
+# link to an account that does not exist yet.
+SOCIAL_LINKS = [
+    ('instagram', 'Instagram', os.environ.get('SOCIAL_INSTAGRAM', '')),
+    ('tiktok', 'TikTok', os.environ.get('SOCIAL_TIKTOK', '')),
+    ('x', 'X', os.environ.get('SOCIAL_X', '')),
+    ('youtube', 'YouTube', os.environ.get('SOCIAL_YOUTUBE', '')),
+    ('discord', 'Discord', os.environ.get('SOCIAL_DISCORD', '')),
+    ('telegram', 'Telegram', os.environ.get('SOCIAL_TELEGRAM', '')),
+]
+
+
+@app.route('/community')
+def community():
+    """Official accounts + the next giveaway. The draw itself runs on social
+    media by hand; this page is the shop window and the countdown."""
+    gw, closed = _current_giveaway()
+    return render_template(
+        'community.html',
+        socials=[(k, n, u) for k, n, u in SOCIAL_LINKS if u.strip()],
+        gw=gw, gw_closed=closed,
+        gw_ends_iso=(gw.ends_at.replace(tzinfo=timezone.utc).isoformat()
+                     if gw and gw.ends_at else None),
+        gw_steps=[s.strip() for s in (gw.how_to or '').splitlines() if s.strip()] if gw else [])
+
+
+@app.route('/admin/giveaway', methods=['POST'])
+@login_required
+def admin_giveaway():
+    """Create or update the announced giveaway. Admin only."""
+    if not current_user.is_admin:
+        abort(403)
+    gid = (request.form.get('id') or '').strip()
+    gw = db.session.get(Giveaway, int(gid)) if gid.isdigit() else None
+    if request.form.get('delete') and gw:
+        db.session.delete(gw)
+        db.session.commit()
+        return redirect(url_for('admin_panel') + '#giveaway')
+    title = (request.form.get('title') or '').strip()[:120]
+    prize = (request.form.get('prize') or '').strip()[:120]
+    ends = (request.form.get('ends_at') or '').strip()
+    if not (title and prize and ends):
+        return redirect(url_for('admin_panel') + '#giveaway')
+    try:
+        ends_dt = datetime.strptime(ends, '%Y-%m-%dT%H:%M')
+    except ValueError:
+        return redirect(url_for('admin_panel') + '#giveaway')
+    if gw is None:
+        gw = Giveaway(title=title, prize=prize, ends_at=ends_dt)
+        db.session.add(gw)
+    gw.title, gw.prize, gw.ends_at = title, prize, ends_dt
+    gw.how_to = (request.form.get('how_to') or '').strip()[:2000]
+    gw.link = (request.form.get('link') or '').strip()[:300]
+    gw.winner = (request.form.get('winner') or '').strip()[:80]
+    gw.active = bool(request.form.get('active'))
+    db.session.commit()
+    return redirect(url_for('admin_panel') + '#giveaway')
 
 
 @app.route('/camos')
@@ -9043,29 +9141,6 @@ def rank_medal_svg(rank, size_px=64):
     )
 
 
-def _cert_qr_svg(url):
-    """Real scannable QR pointing at the verification URL, if `segno` is
-    installed; otherwise None (the certificate falls back to printing the
-    verification code + URL as text, which verifies the same way)."""
-    try:
-        import segno
-        svg = segno.make(url, error='m').svg_inline(scale=6, dark='#000', light='#fff')
-        # segno emits fixed width/height and NO viewBox. The certificate sizes
-        # the QR with width:100%;height:100%, and an SVG without a viewBox does
-        # not remap its coordinates when it is resized — the drawing keeps its
-        # intrinsic size and gets CLIPPED. That is what made every certificate
-        # QR unscannable: a corner finder pattern was cut off, so no reader
-        # could lock on. Swapping the fixed size for a viewBox is the fix.
-        m = re.match(r'<svg width="(\d+)" height="(\d+)"', svg)
-        if m:
-            svg = svg.replace(m.group(0),
-                              '<svg viewBox="0 0 %s %s" preserveAspectRatio="xMidYMid meet"'
-                              % (m.group(1), m.group(2)), 1)
-        return svg
-    except Exception:
-        return None
-
-
 # Display copy per rank (Spanish primary; the on-screen panel handles full i18n).
 RANK_CERT_NAMES_ES = ['Paper Trader', 'Retail Trader', 'Chart Technician', 'Liquidity Hunter',
                       'Swing Strategist', 'Order Flow Sniper', 'Market Maker', 'Trading Legend']
@@ -9094,24 +9169,40 @@ CERT_I18N = {
            'attained': 'for having attained, through practice and dedication, the rank of',
            'rank': 'Rank', 'of': 'of', 'issued': 'Issue date', 'issuedBy': 'Issued by',
            'eduNote': 'Educational achievement — recognizes progress in the Tradeable learning program. Not a professional, financial, or trading qualification.',
+           'verifyLbl': 'Verification code', 'share': 'Share', 'shareCopy': 'Copy link',
+           'shareCopied': 'Link copied', 'shareMore': 'More…',
+           'shareText': 'I reached the rank of {rank} at Tradeable Academy.',
+           'shareHint': 'Instagram and TikTok have no web share link — use More… on your phone, or copy the link and paste it in your story.',
            'download': 'Download PDF', 'back': 'Back'},
     'es': {'kicker': 'Certificate of Achievement', 'title': 'Certificado de Rango',
            'presented': 'Se otorga el presente certificado a',
            'attained': 'por haber alcanzado, con práctica y dedicación, el rango de',
            'rank': 'Rango', 'of': 'de', 'issued': 'Fecha de emisión', 'issuedBy': 'Emitido por',
            'eduNote': 'Logro educativo — reconoce el avance en el programa de aprendizaje de Tradeable. No constituye una calificación profesional, financiera ni de trading.',
+           'verifyLbl': 'Código de verificación', 'share': 'Compartir', 'shareCopy': 'Copiar enlace',
+           'shareCopied': 'Enlace copiado', 'shareMore': 'Más…',
+           'shareText': 'Alcancé el rango de {rank} en Tradeable Academy.',
+           'shareHint': 'Instagram y TikTok no tienen enlace de compartir web — usa Más… desde el móvil, o copia el enlace y pégalo en tu historia.',
            'download': 'Descargar PDF', 'back': 'Volver'},
     'fr': {'kicker': 'Certificate of Achievement', 'title': 'Certificat de Rang',
            'presented': 'Le présent certificat est décerné à',
            'attained': 'pour avoir atteint, par la pratique et la persévérance, le rang de',
            'rank': 'Rang', 'of': 'sur', 'issued': "Date d'émission", 'issuedBy': 'Émis par',
            'eduNote': "Accomplissement éducatif — reconnaît la progression dans le programme d'apprentissage Tradeable. Pas une qualification professionnelle, financière ou de trading.",
+           'verifyLbl': 'Code de vérification', 'share': 'Partager', 'shareCopy': 'Copier le lien',
+           'shareCopied': 'Lien copié', 'shareMore': 'Plus…',
+           'shareText': "J'ai atteint le rang de {rank} sur Tradeable Academy.",
+           'shareHint': "Instagram et TikTok n'ont pas de lien de partage web — utilisez Plus… sur mobile, ou copiez le lien et collez-le dans votre story.",
            'download': 'Télécharger le PDF', 'back': 'Retour'},
     'pt': {'kicker': 'Certificate of Achievement', 'title': 'Certificado de Rank',
            'presented': 'O presente certificado é concedido a',
            'attained': 'por ter alcançado, com prática e dedicação, o rank de',
            'rank': 'Rank', 'of': 'de', 'issued': 'Data de emissão', 'issuedBy': 'Emitido por',
            'eduNote': 'Conquista educativa — reconhece o progresso no programa de aprendizado da Tradeable. Não é uma qualificação profissional, financeira ou de trading.',
+           'verifyLbl': 'Código de verificação', 'share': 'Compartilhar', 'shareCopy': 'Copiar link',
+           'shareCopied': 'Link copiado', 'shareMore': 'Mais…',
+           'shareText': 'Alcancei o rank de {rank} na Tradeable Academy.',
+           'shareHint': 'Instagram e TikTok não têm link de compartilhamento web — use Mais… no celular, ou copie o link e cole no seu story.',
            'download': 'Baixar PDF', 'back': 'Voltar'},
 }
 VERIFY_I18N = {
@@ -9303,12 +9394,15 @@ def certificate_view(rank):
     cert = _issue_or_get_certificate(current_user, rank)
     lang = _cert_lang(request)
     verify_url = url_for('verify_certificate', code=cert.code, _external=True)
-    qr_url = url_for('verify_short', code=cert.code, _external=True)
     return render_template(
         'certificate.html', rank=rank, rank_name=RANK_CERT_NAMES_ES[rank - 1],
         roman=_ROMAN[rank - 1], xp=RANK_THRESHOLDS[rank - 1], cert=cert,
         medal_svg=rank_medal_svg(rank, 132), verify_url=verify_url,
-        qr_svg=_cert_qr_svg(qr_url), is_legend=(rank == 8), for_pdf=False,
+        is_legend=(rank == 8), for_pdf=False,
+        # The short alias is what gets shared: fewer characters left over for
+        # the message on X, and it is the same page either way.
+        share_url=url_for('verify_short', code=cert.code, _external=True),
+        share_text=CERT_I18N[lang]['shareText'].replace('{rank}', RANK_CERT_NAMES_ES[rank - 1]),
         theme=_cert_theme(rank), cl=CERT_I18N[lang], lang=lang)
 
 
@@ -9323,12 +9417,11 @@ def certificate_pdf(rank):
     cert = _issue_or_get_certificate(current_user, rank)
     lang = _cert_lang(request)
     verify_url = url_for('verify_certificate', code=cert.code, _external=True)
-    qr_url = url_for('verify_short', code=cert.code, _external=True)
     html_content = render_template(
         'certificate.html', rank=rank, rank_name=RANK_CERT_NAMES_ES[rank - 1],
         roman=_ROMAN[rank - 1], xp=RANK_THRESHOLDS[rank - 1], cert=cert,
         medal_svg=rank_medal_svg(rank, 132), verify_url=verify_url,
-        qr_svg=_cert_qr_svg(qr_url), is_legend=(rank == 8), for_pdf=True,
+        is_legend=(rank == 8), for_pdf=True,
         theme=_cert_theme(rank), cl=CERT_I18N[lang], lang=lang)
     try:
         from weasyprint import HTML as WP_HTML

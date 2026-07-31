@@ -12,7 +12,6 @@ sentry-sdk[flask]==2.20.0
 
 # Optional: scannable QR on rank certificates. Pure-python, no deps. If absent,
 # the certificate falls back to printing the verification code + URL as text.
-segno==1.6.1
 
 # Optional: Stripe card payments. Only used when STRIPE_SECRET_KEY is set; the
 # app imports it lazily and falls back to the manual USDT/bank flow if absent.

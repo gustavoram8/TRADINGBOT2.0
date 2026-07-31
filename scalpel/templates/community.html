@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title data-i18n-title="comm.doctitle">Tradeable Academy — Community</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--ink:#15171f;--ink-soft:#4a4f5e;--muted:#8a8f9e;--line-soft:#e4e6ec;--accent:#2563eb;--gold:#c9a227}
+    body{background:#fff;color:var(--ink);font-family:'Inter',sans-serif;font-size:15px;line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased}
+    nav{display:flex;align-items:center;justify-content:space-between;padding:16px 32px;border-bottom:1px solid var(--line-soft);position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);z-index:10}
+    .logo-img{height:72px;width:auto;display:block}
+    .back-link{font-size:13px;font-weight:600;color:var(--ink-soft);text-decoration:none}
+    .back-link:hover{color:var(--accent)}
+    .hero{text-align:center;padding:60px 24px 8px}
+    .eyebrow{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+    h1{font-size:42px;font-weight:800;letter-spacing:-.02em;margin-bottom:12px}
+    .hero p{color:var(--ink-soft);max-width:640px;margin:0 auto}
+    .wrap{max-width:900px;margin:0 auto;padding:0 24px 90px}
+    .sec-head{margin:44px 0 4px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+    .sec-head h2{font-size:22px;font-weight:800;letter-spacing:-.01em}
+    .sec-head .sub{font-size:13px;color:var(--muted)}
+
+    /* ── Giveaway board ── */
+    .gw{margin-top:22px;border-radius:18px;overflow:hidden;color:#eef0f6;
+      background:radial-gradient(ellipse 70% 90% at 12% 0%,rgba(201,162,39,.24),transparent 62%),
+                 linear-gradient(150deg,#191c26,#111319 62%,#0c0e14);
+      border:1px solid #262a36;box-shadow:0 22px 60px rgba(0,0,0,.22)}
+    .gw-in{padding:30px 30px 28px}
+    .gw-tag{display:inline-flex;align-items:center;gap:8px;font-size:10.5px;font-weight:800;
+      letter-spacing:.18em;text-transform:uppercase;color:var(--gold);
+      border:1px solid rgba(201,162,39,.36);border-radius:20px;padding:5px 13px}
+    .gw-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 2.4s ease-out infinite}
+    @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(201,162,39,.6)}70%{box-shadow:0 0 0 8px rgba(201,162,39,0)}100%{box-shadow:0 0 0 0 rgba(201,162,39,0)}}
+    .gw h3{font-size:25px;font-weight:800;letter-spacing:-.015em;margin:14px 0 4px;color:#fff}
+    .gw .prize{font-size:14px;color:#a8b0c2}
+    .clock{display:flex;gap:10px;margin:22px 0 4px;flex-wrap:wrap}
+    .clock .u{flex:1;min-width:74px;text-align:center;border:1px solid #2c3040;border-radius:12px;
+      padding:12px 6px;background:rgba(255,255,255,.03)}
+    .clock .n{font-size:27px;font-weight:800;line-height:1;color:#fff;font-variant-numeric:tabular-nums}
+    .clock .l{font-size:9.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#7f879b;margin-top:6px}
+    .gw-acts{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;align-items:center}
+    .gw-btn{font-size:13px;font-weight:800;padding:11px 20px;border-radius:10px;text-decoration:none;
+      border:none;cursor:pointer;background:linear-gradient(180deg,#e9c65a,#c9a227);color:#241c02}
+    .gw-btn:hover{filter:brightness(1.06)}
+    .gw-ghost{font-size:13px;font-weight:700;padding:11px 16px;border-radius:10px;cursor:pointer;
+      background:none;border:1px solid #343949;color:#c8cddb}
+    .gw-ghost:hover{border-color:var(--gold);color:var(--gold)}
+    .gw-how{margin-top:20px;border-top:1px solid #262a36;padding-top:18px;display:none}
+    .gw-how.on{display:block}
+    .gw-how ol{list-style:none;counter-reset:s;padding:0}
+    .gw-how li{counter-increment:s;position:relative;padding-left:30px;margin-bottom:9px;font-size:13.5px;color:#c8cddb}
+    .gw-how li::before{content:counter(s);position:absolute;left:0;top:0;width:20px;height:20px;border-radius:50%;
+      background:rgba(201,162,39,.16);color:var(--gold);font-size:11px;font-weight:800;text-align:center;line-height:20px}
+    .gw-legal{margin-top:16px;font-size:11px;line-height:1.55;color:#6b7285}
+    .gw-won{margin-top:18px;border:1px solid rgba(201,162,39,.3);background:rgba(201,162,39,.08);
+      border-radius:12px;padding:14px 16px}
+    .gw-won .l{font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+    .gw-won .w{font-size:19px;font-weight:800;color:#fff;margin-top:4px}
+    .gw-empty{border:1px dashed var(--line-soft);border-radius:16px;padding:34px 26px;text-align:center;
+      color:var(--muted);font-size:14px;margin-top:22px}
+
+    /* ── Socials ── */
+    .soc{margin-top:22px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    @media (max-width:760px){.soc{grid-template-columns:1fr 1fr}}
+    @media (max-width:460px){.soc{grid-template-columns:1fr}}
+    .soc a{display:flex;align-items:center;gap:12px;border:1px solid var(--line-soft);border-radius:14px;
+      padding:16px 18px;text-decoration:none;color:var(--ink);font-weight:700;font-size:14px;
+      transition:transform .15s,box-shadow .15s,border-color .15s;background:#fff}
+    .soc a:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(0,0,0,.08);border-color:var(--ink)}
+    .soc .ic{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;flex:0 0 auto;color:#fff}
+    .soc .ic svg{width:20px;height:20px}
+    .ic.instagram{background:linear-gradient(135deg,#f9ce34,#ee2a7b 55%,#6228d7)}
+    .ic.tiktok{background:#010101}.ic.x{background:#0f1419}
+    .ic.youtube{background:#ff0033}.ic.discord{background:#5865f2}.ic.telegram{background:#28a8e9}
+    .soc small{display:block;font-weight:500;color:var(--muted);font-size:12px;margin-top:1px}
+  </style>
+</head>
+<body>
+<nav>
+  <a href="/" class="logo"><img src="/static/logo.png" alt="Tradeable" class="logo-img" onerror="this.style.display='none';" /></a>
+  <a href="/app" class="back-link" data-i18n="nav.backApp">← Back to app</a>
+</nav>
+
+<section class="hero">
+  <div class="eyebrow" data-i18n="comm.eyebrow">Community</div>
+  <h1 data-i18n="comm.title">Where we hang out</h1>
+  <p data-i18n="comm.hero">Our official accounts, and whatever we are giving away next. Everything else you
+     see using our name somewhere else is not us.</p>
+</section>
+
+<div class="wrap">
+
+  <div class="sec-head">
+    <h2 data-i18n="comm.gwTitle">Next giveaway</h2>
+    <span class="sub" data-i18n="comm.gwSub">Announced and drawn on our social accounts.</span>
+  </div>
+
+  {% if gw %}
+  <div class="gw">
+    <div class="gw-in">
+      {% if not gw_closed %}
+        <span class="gw-tag"><span class="gw-dot"></span><span data-i18n="comm.gwOpen">Open now</span></span>
+      {% else %}
+        <span class="gw-tag"><span data-i18n="comm.gwClosed">Closed</span></span>
+      {% endif %}
+      <h3>{{ gw.title }}</h3>
+      <div class="prize">{{ gw.prize }}</div>
+
+      {% if not gw_closed %}
+      <div class="clock" id="clock">
+        <div class="u"><div class="n" id="cd-d">–</div><div class="l" data-i18n="comm.days">Days</div></div>
+        <div class="u"><div class="n" id="cd-h">–</div><div class="l" data-i18n="comm.hours">Hours</div></div>
+        <div class="u"><div class="n" id="cd-m">–</div><div class="l" data-i18n="comm.mins">Min</div></div>
+        <div class="u"><div class="n" id="cd-s">–</div><div class="l" data-i18n="comm.secs">Sec</div></div>
+      </div>
+      {% endif %}
+
+      {% if gw.winner %}
+      <div class="gw-won">
+        <div class="l" data-i18n="comm.winner">Winner</div>
+        <div class="w">{{ gw.winner }}</div>
+      </div>
+      {% endif %}
+
+      <div class="gw-acts">
+        {% if gw_steps %}
+        <button type="button" class="gw-ghost" id="how-btn" data-i18n="comm.howBtn">How to enter</button>
+        {% endif %}
+        {% if gw.link and not gw_closed %}
+        <a class="gw-btn" href="{{ gw.link }}" target="_blank" rel="noopener" data-i18n="comm.enter">Go to the post</a>
+        {% endif %}
+      </div>
+
+      {% if gw_steps %}
+      <div class="gw-how" id="how">
+        <ol>{% for s in gw_steps %}<li>{{ s }}</li>{% endfor %}</ol>
+        <div class="gw-legal" data-i18n="comm.legal">No purchase is necessary to take part. The draw is run
+          manually by Tradeable Academy on the account listed above and is not affiliated with, sponsored
+          or endorsed by any social network. We may change or cancel it at any time.</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% else %}
+  <div class="gw-empty" data-i18n="comm.gwNone">No giveaway running right now. Follow the accounts below —
+    that is where we announce them.</div>
+  {% endif %}
+
+  <div class="sec-head">
+    <h2 data-i18n="comm.socTitle">Official accounts</h2>
+    <span class="sub" data-i18n="comm.socSub">These are the only ones we run.</span>
+  </div>
+
+  {% if socials %}
+  <div class="soc">
+    {% for key, name, url in socials %}
+    <a href="{{ url }}" target="_blank" rel="noopener">
+      <span class="ic {{ key }}">
+        {% if key == 'instagram' %}<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 1.8.2 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.4.4 1 .4 2.2.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.2 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.2-1 .4-2.2.4-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-1.8-.2-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.4-.4-1-.4-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.9c.1-1.2.2-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.2 1-.4 2.2-.4C8.4 2.2 8.8 2.2 12 2.2zm0 3.4a6.4 6.4 0 1 0 0 12.8 6.4 6.4 0 0 0 0-12.8zm0 10.6a4.2 4.2 0 1 1 0-8.4 4.2 4.2 0 0 1 0 8.4zm6.6-10.9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/></svg>
+        {% elif key == 'tiktok' %}<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 5.8a4.8 4.8 0 0 1-1.1-2.8h-3v12.2a2.5 2.5 0 1 1-2.5-2.5c.26 0 .5.04.74.11v-3.1a5.6 5.6 0 1 0 4.76 5.5V9.1a7.8 7.8 0 0 0 4.5 1.44V7.5a4.8 4.8 0 0 1-3.4-1.7z"/></svg>
+        {% elif key == 'x' %}<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 3h3.2l-7 8 8.2 10h-6.4l-5-6.1L4.7 21H1.5l7.5-8.6L1.2 3h6.6l4.5 5.6L17.5 3zm-1.1 16.1h1.8L7.7 4.8H5.8l10.6 14.3z"/></svg>
+        {% elif key == 'youtube' %}<svg viewBox="0 0 24 24" fill="currentColor"><path d="M23 12s0-3.4-.4-5c-.3-1-1-1.7-2-2C18.9 4.6 12 4.6 12 4.6s-6.9 0-8.6.4c-1 .3-1.7 1-2 2C1 8.6 1 12 1 12s0 3.4.4 5c.3 1 1 1.7 2 2 1.7.4 8.6.4 8.6.4s6.9 0 8.6-.4c1-.3 1.7-1 2-2 .4-1.6.4-5 .4-5zM9.8 15.3V8.7l5.7 3.3-5.7 3.3z"/></svg>
+        {% elif key == 'discord' %}<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.3 4.9A16.6 16.6 0 0 0 16.2 3.6l-.2.4a15.4 15.4 0 0 1 3.6 1.6 15.9 15.9 0 0 0-11.2 0 15.6 15.6 0 0 1 3.6-1.6l-.2-.4A16.6 16.6 0 0 0 7.7 4.9 17.7 17.7 0 0 0 4.5 17a16.6 16.6 0 0 0 5 2.5l.7-1.1a11 11 0 0 1-1.7-.8l.4-.3a11.8 11.8 0 0 0 10.2 0l.4.3a11 11 0 0 1-1.7.8l.7 1.1a16.6 16.6 0 0 0 5-2.5 17.7 17.7 0 0 0-3.2-12.1zM9.7 14.5c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2zm4.6 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2z"/></svg>
+        {% else %}<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.3 18.9 19c-.2 1-.8 1.2-1.7.8l-4.6-3.4-2.2 2.1c-.2.2-.5.5-1 .5l.3-4.7 8.5-7.7c.4-.3-.1-.5-.6-.2L7.2 13.1 2.6 11.7c-1-.3-1-1 .2-1.5l18-6.9c.8-.3 1.5.2 1.1 1z"/></svg>
+        {% endif %}
+      </span>
+      <span>{{ name }}<small>{{ url.replace('https://','').replace('http://','')[:36] }}</small></span>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="gw-empty" data-i18n="comm.socNone">Our accounts are being set up. They will show here as soon
+    as they are live.</div>
+  {% endif %}
+
+</div>
+
+<script src="/static/pages_i18n.js"></script>
+{% if gw and not gw_closed and gw_ends_iso %}
+<script>
+  (function () {
+    var end = new Date({{ gw_ends_iso|tojson }}).getTime();
+    var el = {d:'cd-d',h:'cd-h',m:'cd-m',s:'cd-s'};
+    function pad(n){ return n < 10 ? '0' + n : String(n); }
+    function tick(){
+      var left = end - Date.now();
+      if (left <= 0){ location.reload(); return; }
+      var s = Math.floor(left / 1000);
+      document.getElementById(el.d).textContent = Math.floor(s / 86400);
+      document.getElementById(el.h).textContent = pad(Math.floor(s % 86400 / 3600));
+      document.getElementById(el.m).textContent = pad(Math.floor(s % 3600 / 60));
+      document.getElementById(el.s).textContent = pad(s % 60);
+    }
+    tick(); setInterval(tick, 1000);
+  })();
+</script>
+{% endif %}
+{% if gw_steps %}
+<script>
+  document.getElementById('how-btn').addEventListener('click', function () {
+    document.getElementById('how').classList.toggle('on');
+  });
+</script>
+{% endif %}
+</body>
+</html>
