@@ -282,11 +282,25 @@ activo), barrido de /admin extendido a CamoOrders, y `send_payment_alert_email` 
 pedido. **E2E 18 checks verdes** (PayPal simulado): precio server-side aunque el cliente mande otro,
 webhook repetido no re-activa, barrido rescata compra abandonada. **Al encender PayPal no hay nada más
 que hacer para camos** — mismas 4 env vars.
-✅ **PREVIEWS REALES en la tienda (2026-07-30):** los swatches de los camos LISTOS ya no son
-degradados — son **screenshots reales de /app** con el camo puesto (`static/camo_prev_<slug>.jpg`,
-640px ~25KB, generados con `scratchpad/gen_previews.py`; regenerar al agregar un camo nuevo) + botón
-**"👁 Preview"** que abre un lightbox (los de 2 looks —standard/mission/pole— tienen botón "ver el
-otro look" → `_alt.jpg`). Los no-listos conservan su degradado + "Coming soon". **Bios corregidas ×4
+✅ **PREVIEWS EN LA TIENDA — el card muestra la PIEL, el preview el interior (v2, 2026-07-31).**
+El usuario pidió el cambio: *"en ese card como tal esté el grafito o piel del camo, y que luego al
+hacer preview sí se vea desde dentro"* — la app encogida en un card de 150px no dice nada del skin.
+- **Card** = `static/camo_skin_<slug>[_alt].jpg` (900×450, 2:1 igual que el swatch → sin recorte;
+  11 archivos, 315 KB en total). Generador **`tools/gen_camo_skins.py`** (ya no vive en un scratchpad).
+- **Lightbox** = vista desde dentro (`camo_prev_<slug>.jpg`, los screenshots de /app que ya existían)
+  + la piel debajo anclada abajo (`object-position:center bottom`, porque casi todo el arte va en una
+  esquina inferior). En los camos de 2 looks (standard/mission/pole) el botón **cambia AMBAS imágenes**
+  → se comparan los dos grafitos sin salir del preview.
+- ⚠️ **Dos trampas al generar las pieles** (están documentadas dentro del script):
+  1. **Tessera se re-asigna su `element.style` en un bucle rAF** → ocultarla con display/visibility NO
+     pega, y el cubito rojo quedó incrustado en las 11 pieles. Hay que **QUITAR** la interfaz del DOM.
+  2. El arte del camo vive en `body::before/::after` con **z-index negativo**, y con la página desnuda
+     Chromium lo pinta **o no, al azar** (mismo quirk de compositing que costó horas con Tessera; los
+     estilos computados y la clase están correctos igual). Copiar los fondos a divs reales es
+     determinista pero **deforma los fondos multicapa** (rising-sun salía rojo plano) → se mantienen
+     los pseudo-elementos y se **REINTENTA hasta verificar** (~50% de acierto por intento).
+  3. **Regla:** nunca escribir una imagen sin medirla (stddev) — una página en blanco se captura sin
+     dar ningún error y termina publicada como un rectángulo blanco en la tienda. Los no-listos conservan su degradado + "Coming soon". **Bios corregidas ×4
 idiomas** (camos.html EN + los 4 dicts de pages_i18n.js — ojo: el dict EN PISA el HTML al cargar, hay
 que editar ambos): naval ya no dice "azul marino" (es camuflaje oliva + condecoraciones), blackflag =
 mapa del tesoro (no "carbón y hueso"), pole = plano de ingeniería (no "rojo de carrera"), mission =
