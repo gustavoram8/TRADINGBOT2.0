@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title data-i18n-title="comm.doctitle">Tradeable Academy — Community</title>
+  <title data-i18n-title="comm.doctitle">Tradeable Academy — Socials</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -84,7 +84,7 @@
 </nav>
 
 <section class="hero">
-  <div class="eyebrow" data-i18n="comm.eyebrow">Community</div>
+  <div class="eyebrow" data-i18n="comm.eyebrow">Socials</div>
   <h1 data-i18n="comm.title">Where we hang out</h1>
   <p data-i18n="comm.hero">Our official accounts, and whatever we are giving away next. Everything else you
      see using our name somewhere else is not us.</p>
@@ -144,8 +144,15 @@
     </div>
   </div>
   {% else %}
+  {# Until the accounts exist there is nothing "below" to follow, so the empty
+     state must not point at them. #}
+  {% if socials %}
   <div class="gw-empty" data-i18n="comm.gwNone">No giveaway running right now. Follow the accounts below —
     that is where we announce them.</div>
+  {% else %}
+  <div class="gw-empty" data-i18n="comm.gwNoneSoon">No giveaway running right now. Our official accounts go
+    live shortly — that is where we will announce them.</div>
+  {% endif %}
   {% endif %}
 
   <div class="sec-head">

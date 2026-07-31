@@ -1035,7 +1035,7 @@
     <div class="tabpane" data-pane="giveaway">
     <div class="section-h" id="giveaway">🎁 Giveaway board</div>
     <div class="section-d">
-      What <code>/community</code> announces. The platform does <strong>not</strong> run the draw:
+      What <code>/socials</code> announces. The platform does <strong>not</strong> run the draw:
       it does not count entries, verify tasks or pick a winner — you do that by hand on Instagram.
       All this does is show the prize, a live countdown and how to enter, so people know a draw
       exists. Fill in the winner once you have drawn it and it stays on show; untick "visible" to
@@ -1070,7 +1070,7 @@
         </label>
         <label style="display:flex; align-items:center; gap:8px;">
           <input type="checkbox" name="active" {{ 'checked' if (giveaway.active if giveaway else True) else '' }} />
-          Visible on /community
+          Visible on /socials
         </label>
         <div style="display:flex; gap:10px;">
           <button type="submit" class="btn">Save</button>
@@ -1081,7 +1081,7 @@
         </div>
       </form>
       <div style="margin-top:14px; font-size:13px;">
-        <a href="/community" target="_blank" rel="noopener">Open /community →</a>
+        <a href="/socials" target="_blank" rel="noopener">Open /socials →</a>
       </div>
     </div>
     </div><!-- /giveaway pane -->

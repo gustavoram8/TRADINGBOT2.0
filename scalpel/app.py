@@ -3688,13 +3688,16 @@ SOCIAL_LINKS = [
 ]
 
 
-@app.route('/community')
-def community():
+@app.route('/socials')
+def socials():
     """Official accounts + the next giveaway. The draw itself runs on social
-    media by hand; this page is the shop window and the countdown."""
+    media by hand; this page is the shop window and the countdown.
+
+    Named "socials", not "community": the forum already has Communities, and two
+    things called the same in one product is one thing too many."""
     gw, closed = _current_giveaway()
     return render_template(
-        'community.html',
+        'socials.html',
         socials=[(k, n, u) for k, n, u in SOCIAL_LINKS if u.strip()],
         gw=gw, gw_closed=closed,
         gw_ends_iso=(gw.ends_at.replace(tzinfo=timezone.utc).isoformat()
