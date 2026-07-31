@@ -9355,12 +9355,22 @@ def verify_certificate(code):
     valid = cert is not None
     lang = _cert_lang(request)
     xp_needed = idx = total = None
+    theme = roman = None
     if valid:
         xp_needed, idx, total = _rank_requirement(cert.rank)
+        # The page dresses itself in the same palette as the certificate it is
+        # verifying: rank 4 verifies blue, rank 8 verifies molten gold. That is
+        # what makes it read as the document's own record instead of a form.
+        acc, acc2, bright = _CERT_THEME.get(cert.rank, ('#e0a83d', '#e07a3d', '#f3c768'))
+        theme = {'acc': acc, 'acc2': acc2, 'bright': bright,
+                 'glow': _hexa(acc, '0.22'), 'glow2': _hexa(acc2, '0.16'),
+                 'soft': _hexa(acc, '0.12'), 'line': _hexa(bright, '0.28')}
+        roman = _ROMAN[cert.rank - 1]
     return render_template(
         'verify_certificate.html', valid=valid, cert=cert,
         rank_name=(RANK_CERT_NAMES_ES[cert.rank - 1] if valid else None),
-        medal_svg=(rank_medal_svg(cert.rank, 96) if valid else None),
+        medal_svg=(rank_medal_svg(cert.rank, 108) if valid else None),
+        theme=theme, roman=roman,
         code=code, vl=VERIFY_I18N[lang], lang=lang,
         xp_needed=xp_needed, rank_idx=idx, rank_total=total,
         page_url=(url_for('verify_certificate', code=cert.code, _external=True)

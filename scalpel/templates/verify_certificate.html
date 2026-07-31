@@ -23,119 +23,216 @@
 <title>{{ vl.noTitle }} · Tradeable Academy</title>
 <meta name="robots" content="noindex" />
 {% endif %}
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600&family=Cinzel:wght@500;600;700&display=swap" rel="stylesheet" />
 <style>
+  {% if valid %}
+  :root{ --acc:{{ theme.acc }}; --acc2:{{ theme.acc2 }}; --bright:{{ theme.bright }};
+         --glow:{{ theme.glow }}; --glow2:{{ theme.glow2 }}; --soft:{{ theme.soft }};
+         --line:{{ theme.line }}; }
+  {% else %}
+  :root{ --acc:#8b93a7; --acc2:#8b93a7; --bright:#b9c0d4;
+         --glow:rgba(139,147,167,.18); --glow2:rgba(139,147,167,.12);
+         --soft:rgba(139,147,167,.10); --line:rgba(185,192,212,.24); }
+  {% endif %}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
-    background:radial-gradient(ellipse 70% 50% at 50% 0%,#15171f,#0a0b10 70%);
-    font-family:'Inter',sans-serif;color:#eef0f6}
-  .card{width:100%;max-width:460px;background:#14161f;border:1px solid #252834;border-radius:18px;
-    padding:36px 32px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.45)}
-  .badge{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;margin:0 auto 18px}
-  .badge.ok{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.4);color:#22c55e}
-  .badge.no{background:rgba(220,38,38,.12);border:1px solid rgba(220,38,38,.4);color:#dc2626}
-  .badge svg{width:30px;height:30px}
-  .status{font-size:12px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;margin-bottom:6px}
-  .status.ok{color:#22c55e}.status.no{color:#dc2626}
-  h1{font-size:20px;font-weight:800;margin-bottom:18px}
-  .medal{margin:6px auto 14px;display:inline-block}
-  .holder{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:600;color:#fff;line-height:1.2}
-  .rank{font-size:13px;color:#8b93a7;margin-top:2px}
-  /* Rank strip — eight pips, filled up to the rank earned. Says "there is a
-     ladder and this person climbed part of it" faster than any sentence. */
-  .pips{display:flex;gap:5px;justify-content:center;margin:16px 0 4px}
-  .pips i{height:6px;flex:1;max-width:34px;border-radius:3px;background:#252834}
-  .pips i.on{background:#e0a83d}
-  .pips-lbl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8b93a7}
-  .meta{margin-top:18px;border-top:1px solid #252834;padding-top:16px;display:grid;gap:8px;font-size:12.5px}
-  .meta .row{display:flex;justify-content:space-between;gap:12px}
-  .meta .row .k{color:#8b93a7}.meta .row .v{color:#eef0f6;font-weight:600}
-  .muted{font-size:12.5px;color:#8b93a7;line-height:1.55;margin-top:6px}
-  .earned{margin-top:18px;text-align:left;background:#181b25;border:1px solid #252834;border-radius:12px;padding:14px 16px}
-  .earned h2{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#e0a83d;margin-bottom:7px}
-  .earned p{font-size:12.5px;line-height:1.6;color:#a8b0c2}
-  .acts{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap;justify-content:center}
-  .acts button,.acts a{font:700 12.5px/1 Inter,sans-serif;padding:10px 15px;border-radius:9px;
-    border:1px solid #2f3342;background:#1b1e29;color:#eef0f6;cursor:pointer;text-decoration:none;
-    display:inline-flex;align-items:center;gap:7px}
-  .acts button:hover,.acts a:hover{border-color:#e0a83d;color:#e0a83d}
-  .acts svg{width:14px;height:14px}
-  .cta{margin-top:20px;border-top:1px solid #252834;padding-top:18px}
+  body{min-height:100vh;background:#07080c;font-family:'Inter',sans-serif;color:#eef0f6;
+    -webkit-font-smoothing:antialiased;display:flex;flex-direction:column}
+  /* The rank's own colour bleeds in from the top, exactly as it does on the
+     certificate — rank 4 verifies blue, rank 8 verifies molten gold. */
+  body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:
+      radial-gradient(ellipse 70% 45% at 20% -8%, var(--glow), transparent 62%),
+      radial-gradient(ellipse 60% 40% at 92% 8%, var(--glow2), transparent 66%),
+      linear-gradient(#0b0d13,#07080c 60%)}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:16px 26px;border-bottom:1px solid rgba(255,255,255,.06)}
+  .topbar img{height:54px;width:auto;display:block;filter:invert(1)}
+  .topbar .tag{font-size:10.5px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--acc);border:1px solid var(--line);border-radius:20px;padding:5px 12px;white-space:nowrap}
+
+  .stage{flex:1;display:flex;align-items:center;justify-content:center;padding:38px 22px 56px}
+  .sheet{width:100%;max-width:940px;display:grid;grid-template-columns:1.05fr .95fr;
+    border:1px solid rgba(255,255,255,.09);border-radius:20px;overflow:hidden;
+    background:rgba(14,16,22,.72);box-shadow:0 40px 110px rgba(0,0,0,.6)}
+  @media (max-width:820px){ .sheet{grid-template-columns:1fr} }
+
+  /* ── LEFT: the document itself ─────────────────────────────────────── */
+  .doc{position:relative;padding:44px 38px 34px;text-align:center;
+    display:flex;flex-direction:column;
+    background:linear-gradient(165deg,#14161f,#101219 60%,#0d0f16);
+    border-right:1px solid rgba(255,255,255,.07)}
+  @media (max-width:820px){ .doc{border-right:none;border-bottom:1px solid rgba(255,255,255,.07)} }
+  /* Guilloché — the same engine-turned security pattern the certificate uses,
+     which is what makes this page read as the document's own record. */
+  .doc::before{content:'';position:absolute;inset:0;opacity:.09;pointer-events:none;
+    background-image:radial-gradient(circle at 1px 1px, var(--bright) 1px, transparent 0);
+    background-size:22px 22px;
+    -webkit-mask-image:radial-gradient(ellipse 80% 70% at 50% 40%, #000, transparent 78%);
+            mask-image:radial-gradient(ellipse 80% 70% at 50% 40%, #000, transparent 78%)}
+  .doc::after{content:'';position:absolute;inset:16px;border:1px solid var(--line);
+    border-radius:10px;pointer-events:none;opacity:.5}
+  .doc > *{position:relative;z-index:2}
+  .kicker{font-size:10px;font-weight:700;letter-spacing:.34em;text-transform:uppercase;color:#8b93a7}
+  .medal{margin:16px auto 6px;display:inline-block;filter:drop-shadow(0 6px 22px var(--glow))}
+  .holder{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:600;color:#fff;
+    line-height:1.15;margin-top:8px}
+  .rule{width:70%;height:1px;margin:14px auto 12px;
+    background:linear-gradient(90deg,transparent,var(--line),transparent)}
+  .rankname{font-family:'Cinzel',serif;font-size:23px;font-weight:600;letter-spacing:.07em;
+    text-transform:uppercase;color:var(--bright);line-height:1.25}
+  .rankno{font-size:10.5px;font-weight:700;letter-spacing:.28em;text-transform:uppercase;
+    color:var(--acc);margin-top:9px}
+  .pips{display:flex;gap:5px;justify-content:center;margin-top:16px}
+  .pips i{height:5px;flex:1;max-width:30px;border-radius:3px;background:rgba(255,255,255,.09)}
+  .pips i.on{background:var(--acc)}
+  .docfoot{margin-top:auto;padding-top:26px}
+  .docfoot .ln{height:1px;margin-bottom:10px;
+    background:linear-gradient(90deg,transparent,var(--line),transparent)}
+  .docfoot .lbl{font-size:9px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;
+    color:#6b7285;margin-bottom:4px}
+  .docfoot .sn{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;letter-spacing:.1em;
+    color:var(--acc);font-weight:600}
+
+  /* ── RIGHT: the verification record ────────────────────────────────── */
+  .rec{padding:38px 34px 34px;display:flex;flex-direction:column}
+  .seal{display:inline-flex;align-items:center;gap:9px;align-self:flex-start;
+    border:1px solid rgba(34,197,94,.4);background:rgba(34,197,94,.10);color:#2fd06f;
+    border-radius:24px;padding:7px 14px 7px 9px;font-size:11px;font-weight:800;
+    letter-spacing:.14em;text-transform:uppercase}
+  .seal.no{border-color:rgba(220,38,38,.4);background:rgba(220,38,38,.10);color:#f2635b}
+  .seal svg{width:16px;height:16px}
+  .rec h1{font-size:21px;font-weight:800;letter-spacing:-.01em;margin:16px 0 6px}
+  .rec .sub{font-size:13px;line-height:1.6;color:#8b93a7}
+
+  .earned{margin-top:20px;border-left:2px solid var(--acc);padding:2px 0 2px 14px}
+  .earned h2{font-size:10.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--acc);margin-bottom:6px}
+  .earned p{font-size:12.5px;line-height:1.65;color:#a8b0c2}
+
+  .rows{margin-top:22px;display:grid;gap:0;border-top:1px solid rgba(255,255,255,.07)}
+  .rows .r{display:flex;justify-content:space-between;align-items:center;gap:14px;
+    padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12.5px}
+  .rows .k{color:#7f879b}
+  .rows .v{color:#eef0f6;font-weight:600;text-align:right}
+  .mono{font-family:ui-monospace,Menlo,monospace;font-size:12px;letter-spacing:.04em}
+
+  .acts{display:flex;gap:9px;margin-top:20px;flex-wrap:wrap}
+  .acts button,.acts a.btn{font:700 12.5px/1 Inter,sans-serif;padding:11px 15px;border-radius:10px;
+    border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);color:#eef0f6;
+    cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px;
+    transition:border-color .15s,background .15s}
+  .acts button:hover,.acts a.btn:hover{border-color:var(--acc);background:var(--soft)}
+  .acts svg{width:15px;height:15px}
+
+  .cta{margin-top:auto;padding-top:24px}
+  .cta .box{border:1px solid var(--line);border-radius:14px;padding:16px 18px;background:var(--soft)}
   .cta h3{font-size:14px;font-weight:800;margin-bottom:5px}
-  .cta p{font-size:12.5px;color:#8b93a7;line-height:1.55;margin-bottom:12px}
-  .cta a{display:inline-block;font-size:13px;font-weight:800;color:#0a0b10;background:#e0a83d;
-    padding:10px 20px;border-radius:9px;text-decoration:none}
-  .cta a:hover{background:#f0bb55}
-  .legal{margin-top:16px;font-size:10.5px;line-height:1.5;color:#5f6575}
-  .home{display:inline-block;margin-top:16px;font-size:13px;font-weight:700;color:#8b93a7;text-decoration:none}
-  .home:hover{color:#e0a83d}
-  .code{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#8b93a7;word-break:break-all}
-  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#eef0f6;color:#14161f;
-    font-size:12.5px;font-weight:700;padding:10px 18px;border-radius:10px;opacity:0;transition:opacity .2s;
-    pointer-events:none}
-  .toast.on{opacity:1}
+  .cta p{font-size:12.5px;color:#a8b0c2;line-height:1.6;margin-bottom:13px}
+  .cta a{display:inline-block;font-size:12.5px;font-weight:800;color:#0a0b10;
+    background:linear-gradient(180deg,var(--bright),var(--acc));padding:10px 18px;
+    border-radius:9px;text-decoration:none}
+  .legal{margin-top:16px;font-size:10.5px;line-height:1.55;color:#5c6274}
+
+  .miss{max-width:520px;margin:0 auto;text-align:center;padding:20px}
+  .miss h1{font-size:22px;font-weight:800;margin:18px 0 10px}
+  .miss p{font-size:13.5px;line-height:1.65;color:#8b93a7}
+  .miss .mono{display:inline-block;margin-top:4px;color:#eef0f6}
+  .miss a{display:inline-block;margin-top:22px;font-size:13px;font-weight:800;color:var(--acc);
+    text-decoration:none}
+
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(8px);
+    background:#eef0f6;color:#14161f;font-size:12.5px;font-weight:700;padding:11px 19px;
+    border-radius:11px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:9}
+  .toast.on{opacity:1;transform:translateX(-50%)}
+  @media (prefers-reduced-motion:reduce){ .toast{transition:none} }
 </style>
 </head>
 <body>
-<div class="card">
-  {% if valid %}
-    <div class="badge ok">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-    </div>
-    <div class="status ok">{{ vl.okStatus }}</div>
-    <h1>{{ vl.okTitle }}</h1>
-    <div class="medal">{{ medal_svg|safe }}</div>
-    <div class="holder">{{ cert.display_name }}</div>
-    <div class="rank">{{ vl.attained }} <strong style="color:#eef0f6">{{ rank_name }}</strong></div>
 
-    <div class="pips">
-      {% for i in range(rank_total) %}<i class="{{ 'on' if i < rank_idx else '' }}"></i>{% endfor %}
-    </div>
-    <div class="pips-lbl">{{ vl.progress.replace('{n}', rank_idx|string).replace('{t}', rank_total|string) }}</div>
-
-    <div class="earned">
-      <h2>{{ vl.earnedT }}</h2>
-      <p>{{ vl.earnedD.replace('{xp}', '{:,}'.format(xp_needed)).replace('{n}', rank_idx|string).replace('{t}', rank_total|string) }}</p>
-    </div>
-
-    <div class="meta">
-      <div class="row"><span class="k">{{ vl.rank }}</span><span class="v">{{ rank_name }} (#{{ cert.rank }})</span></div>
-      <div class="row"><span class="k">{{ vl.issued }}</span><span class="v">{{ cert.issued_at.strftime('%d/%m/%Y') if cert.issued_at else '—' }}</span></div>
-      <div class="row"><span class="k">{{ vl.code }}</span><span class="v code">{{ cert.code }}</span></div>
-    </div>
-
-    <div class="acts">
-      <button type="button" id="copy">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-        {{ vl.copyLink }}
-      </button>
-      {# LinkedIn's standard "add a certification" entry point. The holder lands
-         on their own profile with the fields pre-filled from these params. #}
-      <a target="_blank" rel="noopener"
-         href="https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name={{ (rank_name ~ ' — Tradeable Academy')|urlencode }}&organizationName=Tradeable%20Academy&issueYear={{ cert.issued_at.year if cert.issued_at else '' }}&issueMonth={{ cert.issued_at.month if cert.issued_at else '' }}&certUrl={{ page_url|urlencode }}&certId={{ cert.code|urlencode }}">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM2.4 21h5.2V9.5H2.4V21zM9.5 9.5H14v1.6h.1c.6-1.1 2.1-2.2 4.3-2.2 4.6 0 5.5 3 5.5 6.9V21h-5.2v-4.7c0-1.1 0-2.6-1.6-2.6s-1.8 1.2-1.8 2.5V21H9.5V9.5z"/></svg>
-        {{ vl.linkedin }}
-      </a>
-    </div>
-
-    <div class="cta">
-      <h3>{{ vl.ctaT }}</h3>
-      <p>{{ vl.ctaD }}</p>
-      <a href="/">{{ vl.ctaB }}</a>
-    </div>
-
-    <div class="muted" style="margin-top:14px">{{ vl.note }}</div>
-    <div class="legal">{{ vl.legal }}</div>
-  {% else %}
-    <div class="badge no">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-    </div>
-    <div class="status no">{{ vl.noStatus }}</div>
-    <h1>{{ vl.noTitle }}</h1>
-    <div class="muted"><span class="code">{{ code }}</span> {{ vl.noDesc }}</div>
-  {% endif %}
-  <a class="home" href="/">← Tradeable</a>
+<div class="topbar">
+  <a href="/"><img src="/static/logo_t.png" alt="Tradeable Academy" onerror="this.style.display='none'" /></a>
+  <span class="tag">{{ vl.okStatus if valid else vl.noStatus }}</span>
 </div>
+
+<div class="stage">
+{% if valid %}
+  <div class="sheet">
+
+    <div class="doc">
+      <div class="kicker">Tradeable Academy</div>
+      <div class="medal">{{ medal_svg|safe }}</div>
+      <div class="holder">{{ cert.display_name }}</div>
+      <div class="rule"></div>
+      <div class="kicker" style="letter-spacing:.2em">{{ vl.attained }}</div>
+      <div class="rankname">{{ rank_name }}</div>
+      <div class="rankno">{{ vl.rank }} {{ roman }} · {{ rank_idx }}/{{ rank_total }}</div>
+      <div class="pips">
+        {% for i in range(rank_total) %}<i class="{{ 'on' if i < rank_idx else '' }}"></i>{% endfor %}
+      </div>
+      <div class="docfoot">
+        <div class="ln"></div>
+        <div class="lbl">{{ vl.code }}</div>
+        <div class="sn">{{ cert.code }}</div>
+      </div>
+    </div>
+
+    <div class="rec">
+      <span class="seal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        {{ vl.okStatus }}
+      </span>
+      <h1>{{ vl.okTitle }}</h1>
+      <p class="sub">{{ vl.note }}</p>
+
+      <div class="earned">
+        <h2>{{ vl.earnedT }}</h2>
+        <p>{{ vl.earnedD.replace('{xp}', '{:,}'.format(xp_needed)).replace('{n}', rank_idx|string).replace('{t}', rank_total|string) }}</p>
+      </div>
+
+      <div class="rows">
+        <div class="r"><span class="k">{{ vl.rank }}</span><span class="v">{{ rank_name }}</span></div>
+        <div class="r"><span class="k">{{ vl.issued }}</span><span class="v">{{ cert.issued_at.strftime('%d/%m/%Y') if cert.issued_at else '—' }}</span></div>
+      </div>
+
+      <div class="acts">
+        <button type="button" id="copy">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          {{ vl.copyLink }}
+        </button>
+        {# LinkedIn's standard "add a certification" entry point. The holder lands
+           on their own profile with the fields pre-filled from these params. #}
+        <a class="btn" target="_blank" rel="noopener"
+           href="https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name={{ (rank_name ~ ' — Tradeable Academy')|urlencode }}&organizationName=Tradeable%20Academy&issueYear={{ cert.issued_at.year if cert.issued_at else '' }}&issueMonth={{ cert.issued_at.month if cert.issued_at else '' }}&certUrl={{ page_url|urlencode }}&certId={{ cert.code|urlencode }}">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM2.4 21h5.2V9.5H2.4V21zM9.5 9.5H14v1.6h.1c.6-1.1 2.1-2.2 4.3-2.2 4.6 0 5.5 3 5.5 6.9V21h-5.2v-4.7c0-1.1 0-2.6-1.6-2.6s-1.8 1.2-1.8 2.5V21H9.5V9.5z"/></svg>
+          {{ vl.linkedin }}
+        </a>
+      </div>
+
+      <div class="cta">
+        <div class="box">
+          <h3>{{ vl.ctaT }}</h3>
+          <p>{{ vl.ctaD }}</p>
+          <a href="/">{{ vl.ctaB }}</a>
+        </div>
+        <div class="legal">{{ vl.legal }}</div>
+      </div>
+    </div>
+
+  </div>
+{% else %}
+  <div class="miss">
+    <span class="seal no">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      {{ vl.noStatus }}
+    </span>
+    <h1>{{ vl.noTitle }}</h1>
+    <p><span class="mono">{{ code }}</span><br />{{ vl.noDesc }}</p>
+    <a href="/">← Tradeable Academy</a>
+  </div>
+{% endif %}
+</div>
+
 {% if valid %}
 <div class="toast" id="toast">{{ vl.copied }}</div>
 <script>
