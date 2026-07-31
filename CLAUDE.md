@@ -998,8 +998,10 @@ entregado `Tradeable_Academy_Financial_Hub.xlsx` (14 hojas exactas del PDF, 832 
 sin macros, recalc 0 errores + 52 checks numéricos independientes verdes). Todo parametrizado
 desde la hoja Configuración. **Decisiones aplicadas** (de la transcripción de la propuesta, el
 usuario confirmó que ya estaban definidas): comisión RECURRENTE en cada re-pago; "ventas
-válidas" = subs activos netos de chargebacks; el % del tramo (30/35/40 desde 1/25/75) aplica a
-TODA la facturación comisionable; comisión siempre sobre lo pagado; descuento del código
+válidas" = subs activos netos de chargebacks; tramos 30/35/40 **MARGINALES por cliente**
+(1-24 → 30%, 25-74 → 35%, 75+ → 40%; corregido por el usuario — la 1ª versión aplicaba el %
+del tramo a toda la facturación y INFLABA la comisión); comisión siempre sobre lo pagado;
+descuento del código
 perpetuo (20% mensual); anual = Modelo A 15% vs Modelo B 35% extra (ambos editables — el 20%
 acordado antes se puede probar escribiéndolo); 15 cuentas Premium ×3 meses al llegar a 75
 (única vez); Premium propio del influencer si ≥15 subs; comisiones anuales en 12 cuotas;
