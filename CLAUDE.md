@@ -65,20 +65,29 @@ eso es lo que evita que esto se vuelva un TERCER manual que se desincroniza.
   comentario en Jinja** → `TemplateSyntaxError`. Se separa con un espacio: `{ #nxh`. Revisar `{#`,
   `{%` y `{{` en cualquier CSS/JS que se inserte en un template.
 
-## 🔴 QR de certificados — ESTABAN ROTOS, arreglado (2026-07-31)
-El usuario reportó que no podía escanearlos. **Eran DOS bugs, y el gordo no era el tamaño:**
-1. 🔴 **El SVG de segno sale con `width`/`height` fijos y SIN `viewBox`.** El certificado lo dimensiona
-   con `width:100%;height:100%`, y **un SVG sin viewBox no remapea coordenadas al redimensionarse: el
-   dibujo conserva su tamaño intrínseco y se RECORTA.** Se perdía un cuadro localizador de esquina →
-   ningún lector podía engancharlo. Fix en `_cert_qr_svg()`: cambiar el `width/height` por
-   `viewBox="0 0 W H" preserveAspectRatio="xMidYMid meet"`.
-2. **Tamaño:** estaba a **58px** = 1,4px por módulo. Una cámara necesita ~3. Ahora `.cert-qr` es
-   **150px** (≈132px renderizados = 3,5px/módulo) y el QR apunta a la ruta CORTA **`/v/<code>`**
-   (alias de `/verify/<code>`), que baja el símbolo de v4/41 módulos a v3/37 — menos módulos = módulos
-   más grandes en el mismo espacio.
-**Verificado decodificando de verdad** (OpenCV sobre la captura del certificado renderizado): lee el
-URL correcto y **sigue leyendo al 70% del tamaño**, o sea que hay margen, no que apenas pasa.
-⚠️ Al probar QRs: NO basta con mirarlos; hay que decodificarlos.
+## 🔴 QR de certificados — ELIMINADOS, reemplazados por botones de compartir (2026-07-31)
+**Decisión FINAL del usuario:** *"Quiero que te elimines los QR de los certificados. Simplemente
+reemplaza los QR por algún botón para poder compartir el certificado en redes sociales."* → fuera
+`_cert_qr_svg()`, `qr_svg`, `qr_url`, `.cert-qr` y `segno` de `requirements.txt`. **NO re-agregar QRs.**
+- **En su lugar, el SELLO:** el código de verificación pasó a ser la pieza gráfica del certificado
+  (`.cert-seal` = etiqueta + `cert.code` + `verify_url`), y **debajo del certificado** (solo si
+  `not for_pdf`) una barra `.cert-share`: **X, Facebook, WhatsApp** (URLs de compartir directas),
+  **"Más…"** (`navigator.share`, hoja del sistema) y **copiar enlace**.
+- ⚠️ **Instagram y TikTok NO publican URL web de compartir** — la única vía es la hoja del sistema
+  (`navigator.share`, solo móvil) con copiar-enlace de respaldo en escritorio. Eso lo explica la
+  clave `cl.shareHint` (×4 idiomas), para que no parezca que faltan botones.
+- Claves nuevas en `CERT_I18N`: `verifyLbl/share/shareCopy/shareCopied/shareMore/shareText/shareHint` ×4.
+> **Historial (por qué se murieron):** estaban ROTOS y el usuario no pudo escanearlos. Dos bugs, y el
+> gordo no era el tamaño: (1) 🔴 **el SVG de segno sale con `width`/`height` fijos y SIN `viewBox`**, y
+> el certificado lo dimensionaba con `width:100%;height:100%` → **un SVG sin viewBox no remapea
+> coordenadas al redimensionarse: conserva su tamaño intrínseco y se RECORTA**, perdiendo un cuadro
+> localizador de esquina; (2) estaba a 58px = 1,4px por módulo cuando una cámara necesita ~3. Se
+> arreglaron (viewBox + 150px + ruta corta `/v/<code>`, que baja el símbolo de v4/41 módulos a v3/37) y
+> se verificó **decodificando de verdad** con OpenCV — y aun así el usuario decidió quitarlos porque no
+> le daban ningún uso real. **Lecciones que se quedan:** un SVG escalado por CSS SIEMPRE necesita
+> `viewBox`; y al probar QRs no basta con mirarlos, hay que decodificarlos.
+> La ruta corta **`/v/<code>`** (alias de `/verify/<code>`) **SIGUE EXISTIENDO** y ahora la usan los
+> botones de compartir.
 
 **✅ La página `/verify/<code>` pasó de sosa a CREDENCIAL PÚBLICA (2026-07-31).** Razón: cada
 certificado compartido trae tráfico externo y antes aterrizaba en una página en blanco. Ahora lleva:
@@ -91,6 +100,26 @@ legal explícita (**logro educativo, NO título profesional ni licencia**). Clav
 **Tarjeta social:** `/verify/<code>/og.png` genera con Pillow una imagen 1200×630 (nombre, rango,
 tira de pips, color del rango) + meta OG/Twitter → al pegar el enlace en WhatsApp/LinkedIn/X sale
 tarjeta rica en vez de un enlace pelado.
+
+## 🟢 COMUNIDAD `/community` — redes oficiales + próximo sorteo (2026-07-31)
+**Contexto:** se evaluaron y DESCARTARON un plan de referidos (más descuentos = choca con el acuerdo
+comercial) y un **sistema de sorteos automático** — el usuario lo rechazó explícitamente por carga
+operativa para una sola persona: *"Prefiero yo hacerlo a mano cuando salga con el instagram"*. Lo que
+sí se construyó es el **escaparate**: una página donde viven las cuentas oficiales y un tablero de
+"próximo sorteo" **que el dueño llena a mano desde /admin**.
+- **`/community`** (`community.html`): hero + tablero del sorteo (card oscura con acento dorado,
+  **cuenta regresiva en vivo**, expander "Cómo participar" con los pasos, línea legal, bloque de
+  ganador) + cards de las cuentas oficiales con SVGs de marca inline.
+- **Modelo `Giveaway`** (title, prize, ends_at, how_to, link, winner, active) + `_current_giveaway()`.
+  **Pestaña "🎁 Giveaway" en `/admin`** con el formulario → `POST /admin/giveaway`. Sin sorteo activo
+  la página se sirve igual, solo sin tablero.
+- **`SOCIAL_LINKS`** sale de env vars (patrón condicional de siempre): **una cuenta sin variable
+  simplemente no se pinta**, así que la página ya funciona hoy con las redes que todavía no existen.
+- i18n: **20 claves `comm.*` ×4 idiomas** en `pages_i18n.js` (paridad verificada).
+- Verificado en navegador real con datos sembrados: cuenta regresiva viva, 4 cards, título ES,
+  pasos que despliegan, **sin desbordamiento horizontal en móvil**, 0 errores de JS.
+- **PENDIENTE:** crear las cuentas y setear sus env vars (ver "Redes sociales" en tareas pendientes);
+  enlazar `/community` desde el menú Products / footer cuando las cuentas existan.
 
 ## 📅 Recordatorio diario
 La **primera vez que el usuario escriba cada día calendario** (`currentDate`), mostrar (si ya se mostró
