@@ -41,6 +41,49 @@ justo cuando ya decidió pagar. **Y no vuelve.**
 ⚠️ **Al activar Stripe LIVE hay que actualizar la Sección 5 de los T&C** (hoy dice que los pagos se
 procesan manualmente) **y sus traducciones ES/FR/PT en `legal_i18n.js`.** Ver `CLAUDE.md`.
 
+### 📌 Al tocar la pasarela, hacer TAMBIÉN estas dos cosas
+
+> Ambas quedaron pedidas el 2026-07-30 y esperan a que haya un riel de cobro vivo.
+
+**(a) Disparadores nuevos de CallMeBot (WhatsApp).** Hoy `send_whatsapp_alert()` (`app.py:168`) tiene
+**un solo disparador: el manejador de errores 500**. Añadir uno es una línea. Orden acordado:
+
+1. 🔴 **PRIMERO el cortafuegos anti-inundación.** Sin él, un bug en una página muy visitada dispara un
+   WhatsApp *por cada* petición fallida → cientos de mensajes en minutos, CallMeBot corta por abuso y
+   el día que pase algo de verdad **no llega nada**. Hace falta agrupar: misma firma de error dentro de
+   una ventana (p. ej. 15 min) = un solo aviso, con contador. Esto protege también la alerta que ya existe.
+2. Avisos que SÍ merecen interrumpir: **pagó y no se activó** (dinero cobrado, producto no entregado);
+   **fallo del sistema de correo** ⚠️ *(punto ciego real de hoy: si el correo se rompe, el aviso de que
+   el correo está roto se manda POR CORREO y nunca llega — WhatsApp es el canal correcto)*;
+   **disputa/contracargo de PayPal** (tiene plazo para responder); **firma de webhook inválida repetida**
+   (ataque o mala configuración).
+3. Opcional, a gusto del usuario: **venta confirmada** (no es urgente, pero es el mensaje que quiere
+   recibir). Como interruptor aparte para poder apagarlo cuando haya volumen.
+4. Se quedan SOLO en correo: PDFs de Synapse, mensajes de contacto, un análisis suelto fallido.
+
+⚠️ **No confundir con esto:** un camo o plan que "nunca se activó" **no puede fallar en silencio hoy**.
+`grant_plan_camo()` corre dentro de la MISMA transacción que el plan (`_activate_plan_from_order`), así
+que si fallara no se guardaría nada, el pedido quedaría sin aplicar, y eso ya lo cazan el barrido de
+`/admin` y el aviso de "pagó pero no se activó". Está cubierto por construcción.
+
+**(b) La TIENDA DE CAMOS no cobra nada todavía.** Estado real de `/camos` (verificado 2026-07-30):
+las tarjetas muestran precios (**$1.99** los normales, **$4.99** los estacionales) pero el botón
+"Get this skin" **no llama a ningún endpoint** — solo muestra un aviso *"Card payments coming soon"*
+(`camos.html`, clave i18n `soon`). **No existe** ni ruta de compra, ni registro de pedido, ni SKU
+server-side. Lo único que funciona es activar/desactivar un camo que YA se posee
+(`/api/camo/activate`), y hoy solo los posee el admin o quien compró un plan.
+
+Falta construir: catálogo de precios **server-side** (el navegador manda el slug, nunca el monto,
+igual que `MENTORSHIP_SKUS`), tabla de pedidos propia o `kind` en `Order`, ruta de compra, activación
+idempotente vía webhook que llame a `add_camo()`, y la tienda leyendo la propiedad real.
+**Se puede escribir TODO ahora y dejarlo inerte sin claves** (mismo patrón condicional que Stripe/
+PayPal/cripto); lo único que exige el riel vivo es el cobro en sí y la prueba de punta a punta.
+
+⚠️ **Decisión económica pendiente ANTES de construirlo:** a $1.99, la comisión de tarjeta (~$0.30 fijos
++ ~2,9%) se lleva **~18% de la venta**, y en cripto la comisión de red puede superar el precio del
+camo. Opciones a valorar con el usuario: subir el precio, vender **packs** de varios camos, o un
+sistema de **créditos** que se recargan de una vez. No construir la tienda sin cerrar esto.
+
 ### 2. `support@tradeable.academy` no existe
 
 Los T&C y la Política de Privacidad lo publican **en cuatro idiomas** como canal de contacto oficial.
