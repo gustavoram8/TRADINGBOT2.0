@@ -65,18 +65,21 @@
     .cm-easter   { background:linear-gradient(135deg,#f7d6e0,#d6e8f7 46%,#dff7d6); }
     .cm-newyear  { background:linear-gradient(135deg,#0c0c12,#2a2440 50%,#d4af37); }
     .cm-muertos  { background:linear-gradient(135deg,#2a0f3a,#7a1f6a 45%,#ff8c1a); }
-    /* ── Ready camos: the swatch is a REAL screenshot of the app wearing the
-       skin (generated from /app, not an artist's impression). These override
+    /* ── Ready camos: the swatch shows the SKIN — the camo's own background with
+       the whole app UI hidden, rendered from /app at the swatch's 2:1 ratio so
+       corner art survives the crop. Seeing the app's panels shrunk into a
+       150px card told you nothing about the skin you were buying; the inside
+       view belongs in the preview, which is where it now lives. These override
        the gradient placeholders above; not-ready camos keep their gradient. ── */
-    .cm-standard  { background:url('/static/camo_prev_standard.jpg') center/cover; }
-    .cm-premium   { background:url('/static/camo_prev_premium.jpg') center/cover; }
+    .cm-standard  { background:url('/static/camo_skin_standard.jpg') center/cover; }
+    .cm-premium   { background:url('/static/camo_skin_premium.jpg') center/cover; }
     .cm-premium::after { content:none; }
-    .cm-naval     { background:url('/static/camo_prev_naval.jpg') center/cover; }
-    .cm-sun       { background:url('/static/camo_prev_rising-sun.jpg') center/cover; }
-    .cm-mission   { background:url('/static/camo_prev_mission.jpg') center/cover; }
-    .cm-blackflag { background:url('/static/camo_prev_blackflag.jpg') center/cover; }
-    .cm-pole      { background:url('/static/camo_prev_pole.jpg') center/cover; }
-    .cm-fourth    { background:url('/static/camo_prev_fourth.jpg') center/cover; }
+    .cm-naval     { background:url('/static/camo_skin_naval.jpg') center/cover; }
+    .cm-sun       { background:url('/static/camo_skin_rising-sun.jpg') center/cover; }
+    .cm-mission   { background:url('/static/camo_skin_mission.jpg') center/cover; }
+    .cm-blackflag { background:url('/static/camo_skin_blackflag.jpg') center/cover; }
+    .cm-pole      { background:url('/static/camo_skin_pole.jpg') center/cover; }
+    .cm-fourth    { background:url('/static/camo_skin_fourth.jpg') center/cover; }
     /* ── Preview button + lightbox ── */
     .camo-prev-btn { position:absolute; left:10px; bottom:10px; font-size:11px; font-weight:700;
       padding:5px 11px; border-radius:16px; border:none; cursor:pointer;
@@ -85,8 +88,17 @@
     .camo-modal { position:fixed; inset:0; z-index:80; display:flex; flex-direction:column;
       align-items:center; justify-content:center; gap:14px; padding:26px;
       background:rgba(8,10,14,.82); backdrop-filter:blur(4px); cursor:zoom-out; }
-    .camo-modal img { max-width:min(920px,94vw); max-height:70vh; border-radius:12px;
+    .camo-modal img { max-width:min(920px,94vw); max-height:56vh; border-radius:12px;
       box-shadow:0 24px 70px rgba(0,0,0,.5); display:block; }
+    /* The skin strip under the inside view: same camo, no interface on top. */
+    .camo-modal .cm-skinwrap { width:min(920px,94vw); }
+    /* Anchored to the bottom on purpose: nearly every camo puts its art in a
+       bottom corner (the volume bars, the medals, the compass, the statue), so
+       a centre crop would hide the one thing worth showing. */
+    .camo-modal .cm-skin { width:100%; height:124px; object-fit:cover; object-position:center bottom;
+      border-radius:9px; box-shadow:0 10px 26px rgba(0,0,0,.4); }
+    .camo-modal .cm-lbl { color:rgba(255,255,255,.6); font-size:11px; font-weight:700;
+      letter-spacing:.14em; text-transform:uppercase; margin-bottom:6px; }
     .camo-modal .cm-title { color:#fff; font-weight:800; font-size:16px; }
     .camo-modal .cm-hint { color:rgba(255,255,255,.55); font-size:12px; }
     .camo-modal .cm-flip { font-size:12.5px; font-weight:700; padding:8px 16px; border-radius:9px;
@@ -326,10 +338,10 @@
     var lang = 'en';
     try { var l = localStorage.getItem('scalpel_lang'); if (['en','es','fr','pt'].indexOf(l) >= 0) lang = l; } catch (e) {}
     var T = {
-      en:{activate:'Activate',active:'Active ✓',owned:'Owned',deactivate:'Use default',get:'Get this skin',soon:'Payments are coming very soon',on:'Activated — ',go:'see it in the app →',off:'Reverted to the default theme',prev:'👁 Preview',hint:'Click anywhere to close',flip:'See the other look',bought:'The skin is yours! ',err:'Could not reach PayPal — please try again'},
-      es:{activate:'Activar',active:'Activo ✓',owned:'Adquirido',deactivate:'Usar default',get:'Obtener skin',soon:'Los pagos llegan muy pronto',on:'Activado — ',go:'velo en la app →',off:'Volviste al tema por defecto',prev:'👁 Vista previa',hint:'Haz clic en cualquier parte para cerrar',flip:'Ver el otro look',bought:'¡La skin es tuya! ',err:'No pudimos conectar con PayPal — intenta de nuevo'},
-      fr:{activate:'Activer',active:'Actif ✓',owned:'Acquis',deactivate:'Défaut',get:'Obtenir ce skin',soon:'Les paiements arrivent très bientôt',on:'Activé — ',go:'à voir dans l\'app →',off:'Retour au thème par défaut',prev:'👁 Aperçu',hint:'Cliquez n\'importe où pour fermer',flip:'Voir l\'autre look',bought:'Le skin est à vous ! ',err:'Impossible de joindre PayPal — réessayez'},
-      pt:{activate:'Ativar',active:'Ativo ✓',owned:'Adquirido',deactivate:'Usar padrão',get:'Obter skin',soon:'Os pagamentos chegam em breve',on:'Ativado — ',go:'veja no app →',off:'Voltou ao tema padrão',prev:'👁 Prévia',hint:'Clique em qualquer lugar para fechar',flip:'Ver o outro visual',bought:'A skin é sua! ',err:'Não foi possível conectar ao PayPal — tente de novo'}
+      en:{activate:'Activate',active:'Active ✓',owned:'Owned',deactivate:'Use default',get:'Get this skin',soon:'Payments are coming very soon',on:'Activated — ',go:'see it in the app →',off:'Reverted to the default theme',prev:'👁 Preview',hint:'Click anywhere to close',flip:'See the other look',inside:'The app wearing it',skin:'The skin itself',bought:'The skin is yours! ',err:'Could not reach PayPal — please try again'},
+      es:{activate:'Activar',active:'Activo ✓',owned:'Adquirido',deactivate:'Usar default',get:'Obtener skin',soon:'Los pagos llegan muy pronto',on:'Activado — ',go:'velo en la app →',off:'Volviste al tema por defecto',prev:'👁 Vista previa',hint:'Haz clic en cualquier parte para cerrar',flip:'Ver el otro look',inside:'La app con el camo puesto',skin:'La piel del camo',bought:'¡La skin es tuya! ',err:'No pudimos conectar con PayPal — intenta de nuevo'},
+      fr:{activate:'Activer',active:'Actif ✓',owned:'Acquis',deactivate:'Défaut',get:'Obtenir ce skin',soon:'Les paiements arrivent très bientôt',on:'Activé — ',go:'à voir dans l\'app →',off:'Retour au thème par défaut',prev:'👁 Aperçu',hint:'Cliquez n\'importe où pour fermer',flip:'Voir l\'autre look',inside:'L\'app avec le camo',skin:'La peau du camo',bought:'Le skin est à vous ! ',err:'Impossible de joindre PayPal — réessayez'},
+      pt:{activate:'Ativar',active:'Ativo ✓',owned:'Adquirido',deactivate:'Usar padrão',get:'Obter skin',soon:'Os pagamentos chegam em breve',on:'Ativado — ',go:'veja no app →',off:'Voltou ao tema padrão',prev:'👁 Prévia',hint:'Clique em qualquer lugar para fechar',flip:'Ver o outro visual',inside:'O app com o camo',skin:'A pele do camo',bought:'A skin é sua! ',err:'Não foi possível conectar ao PayPal — tente de novo'}
     }[lang];
     // Camos whose theme has a second look (light/dark) worth flipping to.
     var PREV_ALT = { standard:1, mission:1, pole:1 };
@@ -351,18 +363,33 @@
         .then(function(r){ return r.json().then(function(j){ return {ok:r.ok, j:j}; }); });
     }
 
+    // The card sells the skin; the preview shows both halves of the truth —
+    // the app actually wearing it, and the bare skin underneath. Camos with two
+    // looks flip BOTH images together, so you can compare the light and dark
+    // skins without leaving the modal.
     function openPreview(slug, name){
       var m = document.createElement('div');
       m.className = 'camo-modal';
-      var src = '/static/camo_prev_' + slug + '.jpg', alt = false;
+      var alt = false;
+      function srcs(){
+        var sfx = alt ? '_alt' : '';
+        return { inside: '/static/camo_prev_' + slug + sfx + '.jpg',
+                 skin:   '/static/camo_skin_' + slug + sfx + '.jpg' };
+      }
+      var s0 = srcs();
       m.innerHTML = '<div class="cm-title">' + name + '</div>'
-        + '<img src="' + src + '" alt="' + name + '" />'
+        + '<div class="cm-lbl">' + T.inside + '</div>'
+        + '<img class="cm-inside" src="' + s0.inside + '" alt="' + name + '" />'
+        + '<div class="cm-skinwrap"><div class="cm-lbl">' + T.skin + '</div>'
+        + '<img class="cm-skin" src="' + s0.skin + '" alt="' + name + '" /></div>'
         + (PREV_ALT[slug] ? '<button type="button" class="cm-flip">' + T.flip + '</button>' : '')
         + '<div class="cm-hint">' + T.hint + '</div>';
       m.addEventListener('click', function(e){
         if (e.target.classList.contains('cm-flip')){
           alt = !alt;
-          m.querySelector('img').src = '/static/camo_prev_' + slug + (alt ? '_alt' : '') + '.jpg';
+          var s = srcs();
+          m.querySelector('.cm-inside').src = s.inside;
+          m.querySelector('.cm-skin').src = s.skin;
           e.stopPropagation(); return;
         }
         m.remove();
