@@ -85,6 +85,17 @@
       padding:5px 11px; border-radius:16px; border:none; cursor:pointer;
       background:rgba(12,14,20,.72); color:#fff; backdrop-filter:blur(3px); }
     .camo-prev-btn:hover { background:rgba(12,14,20,.9); }
+    /* Two-look camos get an arrow on the card itself: you can compare both
+       skins without opening the preview at all. Only shown where there IS a
+       second look, so the arrow always means something. */
+    .camo-flip-btn { position:absolute; right:10px; bottom:10px; width:28px; height:28px;
+      display:grid; place-items:center; border-radius:50%; border:none; cursor:pointer;
+      background:rgba(12,14,20,.72); color:#fff; backdrop-filter:blur(3px);
+      font-size:13px; line-height:1; padding:0; }
+    .camo-flip-btn:hover { background:rgba(12,14,20,.92); }
+    .camo-flip-dots { position:absolute; right:44px; bottom:17px; display:flex; gap:4px; }
+    .camo-flip-dots i { width:5px; height:5px; border-radius:50%; background:rgba(255,255,255,.42); }
+    .camo-flip-dots i.on { background:#fff; }
     .camo-modal { position:fixed; inset:0; z-index:80; display:flex; flex-direction:column;
       align-items:center; justify-content:center; gap:14px; padding:26px;
       background:rgba(8,10,14,.82); backdrop-filter:blur(4px); cursor:zoom-out; }
@@ -412,6 +423,29 @@
         pb.type = 'button'; pb.className = 'camo-prev-btn'; pb.textContent = T.prev;
         pb.addEventListener('click', function(){ openPreview(slug, name); });
         sw.appendChild(pb);
+
+        // Camos with a second look flip right on the card.
+        if (PREV_ALT[slug]){
+          var alt = false;
+          var dots = document.createElement('span');
+          dots.className = 'camo-flip-dots';
+          dots.innerHTML = '<i class="on"></i><i></i>';
+          var fb = document.createElement('button');
+          fb.type = 'button'; fb.className = 'camo-flip-btn';
+          fb.innerHTML = '&#8646;';                 // ⇆
+          fb.title = T.flip; fb.setAttribute('aria-label', T.flip);
+          fb.addEventListener('click', function(e){
+            e.stopPropagation();
+            alt = !alt;
+            sw.style.backgroundImage =
+              "url('/static/camo_skin_" + slug + (alt ? '_alt' : '') + ".jpg')";
+            var d = dots.querySelectorAll('i');
+            d[0].classList.toggle('on', !alt);
+            d[1].classList.toggle('on', alt);
+          });
+          sw.appendChild(dots);
+          sw.appendChild(fb);
+        }
       }
       var foot = card.querySelector('.camo-foot'); if (!foot) return;
       var owned = S.owned.indexOf(slug) >= 0;
