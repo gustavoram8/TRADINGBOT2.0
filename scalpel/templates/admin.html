@@ -285,6 +285,7 @@
       <button class="atab" data-pane="ai">🤖 AI Spend</button>
       <button class="atab" data-pane="audit">📋 Audit</button>
       <button class="atab" data-pane="bugs">🛠️ Bugs</button>
+      <button class="atab" data-pane="giveaway">🎁 Giveaway</button>
     </div>
 
     <div class="tabpane" data-pane="users">
@@ -1030,6 +1031,60 @@
       {% endfor %}
     </div>
     </div><!-- /bugs pane -->
+
+    <div class="tabpane" data-pane="giveaway">
+    <div class="section-h" id="giveaway">🎁 Giveaway board</div>
+    <div class="section-d">
+      What <code>/community</code> announces. The platform does <strong>not</strong> run the draw:
+      it does not count entries, verify tasks or pick a winner — you do that by hand on Instagram.
+      All this does is show the prize, a live countdown and how to enter, so people know a draw
+      exists. Fill in the winner once you have drawn it and it stays on show; untick "visible" to
+      hide the board completely.
+    </div>
+
+    <div class="table-card" style="padding:18px;">
+      <form method="post" action="/admin/giveaway" style="display:grid; gap:12px; max-width:640px;">
+        <input type="hidden" name="id" value="{{ giveaway.id if giveaway else '' }}" />
+        <label>Title
+          <input name="title" required maxlength="120" placeholder="Sorteo de agosto"
+                 value="{{ giveaway.title if giveaway else '' }}" style="width:100%;" />
+        </label>
+        <label>Prize
+          <input name="prize" required maxlength="120" placeholder="1 mes de Premium gratis"
+                 value="{{ giveaway.prize if giveaway else '' }}" style="width:100%;" />
+        </label>
+        <label>Closes at (your server time)
+          <input type="datetime-local" name="ends_at" required
+                 value="{{ giveaway.ends_at.strftime('%Y-%m-%dT%H:%M') if giveaway and giveaway.ends_at else '' }}" />
+        </label>
+        <label>How to enter — one step per line
+          <textarea name="how_to" rows="4" style="width:100%;"
+            placeholder="Sigue @tradeableacademy&#10;Dale like al post del sorteo&#10;Comenta con tu usuario de Tradeable">{{ giveaway.how_to if giveaway else '' }}</textarea>
+        </label>
+        <label>Link to the post
+          <input name="link" maxlength="300" placeholder="https://instagram.com/p/..."
+                 value="{{ giveaway.link if giveaway else '' }}" style="width:100%;" />
+        </label>
+        <label>Winner (leave empty until drawn)
+          <input name="winner" maxlength="80" value="{{ giveaway.winner if giveaway else '' }}" style="width:100%;" />
+        </label>
+        <label style="display:flex; align-items:center; gap:8px;">
+          <input type="checkbox" name="active" {{ 'checked' if (giveaway.active if giveaway else True) else '' }} />
+          Visible on /community
+        </label>
+        <div style="display:flex; gap:10px;">
+          <button type="submit" class="btn">Save</button>
+          {% if giveaway %}
+          <button type="submit" name="delete" value="1" class="btn"
+                  onclick="return confirm('Delete this giveaway?')">Delete</button>
+          {% endif %}
+        </div>
+      </form>
+      <div style="margin-top:14px; font-size:13px;">
+        <a href="/community" target="_blank" rel="noopener">Open /community →</a>
+      </div>
+    </div>
+    </div><!-- /giveaway pane -->
   </div>
 
   <script>

@@ -4548,6 +4548,7 @@ def admin():
         bug_reports=bug_reports, bug_new_count=bug_new_count,
         pay_attention=attention, pay_swept=swept, pay_recovered=recovered,
         crypto_on=bool(available_payment_rails()), sla_hours=CRYPTO_SLA_HOURS,
+        giveaway=_current_giveaway()[0],
         **ai_ctx, **revenue,
     )
 
