@@ -1005,6 +1005,19 @@ dato se estima 5.4%+$0.30 marcada "estim.". Reversa: fila tachada, comisión pen
 / pagada→**clawback**. Panel: pestaña **"📒 Ventas"** (totales mes+histórico, selector de mes,
 socios con "Día 15: marcar pagadas", tabla con la cadena completa, carga manual; manuales se
 borran, reales solo se revierten). Rutas `/admin/ledger/*` auditadas. E2E 22 checks verdes.
+**🔒 RESERVA ANTI-CHARGEBACK (2026-07-31):** `CHARGEBACK_RESERVE_PCT` (default 25, env-overridable)
+aparta un % de **CADA venta** (mensual y anual). ⚠️ Se calcula **sobre lo PAGADO por el cliente, NO
+sobre la utilidad** — un chargeback obliga a devolver el pago entero ($10 sobre $40, no $5 sobre
+$20.54). Columnas `reserve_amt/reserve_pct/available_profit` congeladas por fila (auto-migración
+`_migrate_sale_reserve_columns()`; filas viejas quedan en 0, backfillear inventaría una reserva que
+nunca salió de la cuenta). El panel muestra **"TUYO Y DISPONIBLE"** como número grande y la reserva
+en dorado; al revertir una venta su reserva sale del total con ella.
+**Análisis que motivó esto (números medidos):** el 25% **sobra** para mensuales (un CB de $40 se
+cubre con 5 clientes desde el 1er mes) pero **ningún % <100 cubre un CB anual** — cobras $408 y
+devuelves $408. Con 3 mensuales + 1 anual, un CB anual deja en **−$126**; a partir de **10
+mensuales** aguanta. Recomendación dada: no vender anuales hasta ~10 mensuales activos, y no
+retirar como ganancia el dinero de un anual durante sus primeros 6 meses (ventana de disputa de
+PayPal = 180 días). **El usuario decidirá luego si arriesga o si no publica planes anuales.**
 **Al encender PayPal no hay nada más que cablear: el desglose ya corre en la activación.**
 
 ### 📊 FINANCIAL HUB — Excel entregado (2026-07-31, fuera del repo)
