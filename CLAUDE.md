@@ -965,6 +965,33 @@ borrado. PENDIENTE: agregar selector de mes / historial.
 
 ## 📋 TAREAS PENDIENTES
 
+### 📌 COLA ACORDADA CON EL USUARIO (2026-07-31) — ir de a UNO, pulir y recién pasar al siguiente
+El usuario listó 6 puntos y pidió expresamente no hacerlos de golpe: *"la idea es ir punto por punto
+y pulir cada punto primero para luego pasar al otro"*. Estado:
+1. ✅ **`/socials`** — hecha, renombrada (chocaba con Communities del foro) y **enlazada** (menú
+   Products + footer de la landing). Falta solo que él cree las cuentas y setear las env vars.
+2. ✅ **`(?)` de ayuda contextual** — cableados Analizador, Chalkboard, Foro y Quiz (+ Pre-Flight,
+   que ya estaba). Español reescrito tras su observación de que sonaba a traducción literal.
+3. ✅ **Previews de camos v2** — el card muestra la PIEL, el preview el interior, y los camos de dos
+   looks llevan una **flechita ⇆ en el propio card** para alternar los dos grafitos.
+4. ⏳ **¿Hay que quitar el testimonio del usuario de la landing?** — duda legal SUYA. Revisar contra
+   la **regla FTC de reseñas (2024)**, que es concreta sobre testimonios de personas con vínculo con
+   la empresa (dueño/fundador): el problema no suele ser publicarlo, sino publicarlo **sin revelar el
+   vínculo**. Revisar también qué dicen los T&C propios sobre reseñas. NO borrar nada sin decidirlo
+   con él.
+5. ⏳ **Sorteos en los T&C** — hoy la línea legal vive solo en `/socials` (`comm.legal`). Falta
+   evaluar si se agrega una sección/cláusula propia (sin compra, sorteo manual del dueño, no
+   afiliado a ninguna red social, se puede cancelar, quién puede participar, 18+). Si se toca
+   `terms.html` → traducir a ES/FR/PT en `legal_i18n.js` y correr
+   `python3 tools/audit_legal_translations.py`.
+6. ⏳ **Enriquecer `/guide`** — dijo que está *"muy pobre... como si fuera una síntesis de la
+   síntesis"*. Ahora importa más que antes: **los 5 drawers de ayuda enlazan a `/guide#…`**, así que
+   la guía es el destino del "ver la guía completa". Anclas reales: `analyze`, `chalk`, `forum`,
+   `quiz`, `preflight`, `synapse`, `timing`, `plans`, `account`.
+
+**Además, sueltos de la misma sesión:** faltan por cablear los `(?)` de Synapse, Kill Zones,
+Rangos/XP, Notas y Subida; y encender PayPal (ver "PENDIENTE INMEDIATO" más abajo).
+
 ### 🔴 Crítico (antes de lanzar)
 - **🚨 EL COBRO ES POR STRIPE (USD por tarjeta → payout a la cuenta bancaria del amigo). NO se cobra
   USDT/Binance.** Falta solo instalar Stripe LIVE (ver "🚨 Alerta recurrente" #2). ⚠️ El texto viejo
