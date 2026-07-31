@@ -286,6 +286,7 @@
       <button class="atab" data-pane="audit">📋 Audit</button>
       <button class="atab" data-pane="bugs">🛠️ Bugs</button>
       <button class="atab" data-pane="giveaway">🎁 Giveaway</button>
+      <button class="atab" data-pane="ledger">📒 Ventas</button>
     </div>
 
     <div class="tabpane" data-pane="users">
@@ -1031,6 +1032,152 @@
       {% endfor %}
     </div>
     </div><!-- /bugs pane -->
+
+    <div class="tabpane" data-pane="ledger">
+    <div class="section-h" id="ledger">📒 Libro de ventas — cada pago, desmenuzado</div>
+    <div class="section-d">
+      Cada venta pagada se abre en sus piezas <b>en el momento del pago</b> y queda congelada:
+      posición del socio, tramo (30/35/40 marginal), fee del procesador (la REAL de PayPal cuando
+      exista) y costo operativo. Mientras las pasarelas están apagadas puedes <b>cargar ventas a
+      mano</b> abajo y ver cómo se comporta — misma matemática, mismo código que una venta real.
+    </div>
+
+    <!-- ── Totales ── -->
+    <div class="stat-row" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+      {% set v = ledger_view %}{% set t = ledger_total %}
+      {% for lbl, mes, tot in [
+        ('Ventas válidas', v.count, t.count),
+        ('Revertidas', v.reversed, t.reversed),
+        ('Neto cobrado', '$%.2f'|format(v.net), '$%.2f'|format(t.net)),
+        ('Fees procesador', '$%.2f'|format(v.fees), '$%.2f'|format(t.fees)),
+        ('Comisión socio', '$%.2f'|format(v.commission), '$%.2f'|format(t.commission)),
+        ('UTILIDAD', '$%.2f'|format(v.profit), '$%.2f'|format(t.profit)),
+      ] %}
+      <div style="flex:1;min-width:130px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);">{{ lbl }}</div>
+        <div style="font-size:17px;font-weight:800;margin-top:2px;">{{ mes }}</div>
+        <div style="font-size:11px;color:var(--muted);">hist.: {{ tot }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="section-d" style="margin-bottom:8px;">
+      Mes:
+      {% for m in ledger_months %}
+        {% if m.is_view %}<b>{{ m.label }} ({{ m.count }})</b>{% else %}
+        <a href="/admin?ledger_month={{ m.key }}#ledger">{{ m.label }} ({{ m.count }})</a>{% endif %}
+        {%- if not loop.last %} · {% endif %}
+      {% endfor %}
+      &nbsp;—&nbsp; comisión del mes: <b>pendiente ${{ '%.2f'|format(ledger_view.com_pending) }}</b>
+      · pagada ${{ '%.2f'|format(ledger_view.com_paid) }}
+      {% if ledger_view.clawback %} · <span style="color:#e0244a">a recuperar ${{ '%.2f'|format(ledger_view.clawback) }}</span>{% endif %}
+    </div>
+
+    <!-- ── Socios ── -->
+    {% if ledger_partners %}
+    <div class="section-h" style="font-size:15px;">🤝 Socios (acumulado histórico)</div>
+    <div class="table-card">
+    <table>
+      <thead><tr><th>Socio</th><th>Válidas</th><th>Próx. venta cobra</th><th>Facturación</th>
+        <th>Comisión pendiente</th><th>Pagada</th><th>A recuperar</th><th></th></tr></thead>
+      <tbody>
+      {% for p in ledger_partners %}
+      <tr>
+        <td class="u-name">{{ p.name }}{% if p.reversed %}<br><span class="u-email">{{ p.reversed }} revertida(s)</span>{% endif %}</td>
+        <td><b>{{ p.valid }}</b></td>
+        <td>{{ '%.0f'|format(p.next_pct) }}%</td>
+        <td>${{ '%.2f'|format(p.revenue) }}</td>
+        <td><b>${{ '%.2f'|format(p.com_pending) }}</b></td>
+        <td>${{ '%.2f'|format(p.com_paid) }}</td>
+        <td>{% if p.clawback %}<span style="color:#e0244a">${{ '%.2f'|format(p.clawback) }}</span>{% else %}—{% endif %}</td>
+        <td>
+          {% if p.com_pending %}
+          <form method="post" action="/admin/ledger/pay-commissions" style="display:inline"
+                onsubmit="return confirm('¿Marcar TODAS las comisiones pendientes de {{ p.name }} como pagadas (corrida del día 15)?');">
+            <input type="hidden" name="partner" value="{{ p.name }}" />
+            <button class="plan-btn" type="submit">💸 Día 15: marcar pagadas</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% endif %}
+
+    <!-- ── Ventas del mes ── -->
+    <div class="section-h" style="font-size:15px;">🧾 Ventas de {{ ledger_months|selectattr('is_view')|map(attribute='label')|first }}</div>
+    <div class="table-card">
+    <table>
+      <thead><tr><th>Fecha</th><th>Comprador</th><th>Plan</th><th>Bruto</th><th>Desc.</th>
+        <th>Pagado</th><th>Fee</th><th>Socio · pos.</th><th>Comisión</th><th>Costo</th>
+        <th>UTILIDAD</th><th></th></tr></thead>
+      <tbody>
+      {% for r in ledger_rows %}
+      <tr{% if r.reversed_at %} style="opacity:.45;text-decoration:line-through;"{% endif %}>
+        <td class="u-name">{{ r.sold_at.strftime('%d/%m %H:%M') }}<br>
+          <span class="u-email">{% if r.is_manual %}MANUAL{% elif r.order_id %}#{{ r.order_id }} · {{ r.processor }}{% else %}{{ r.processor }}{% endif %}</span></td>
+        <td class="u-name">{{ r.username or '—' }}</td>
+        <td>{{ r.plan }}<br><span class="u-email">{{ r.billing_cycle }}</span></td>
+        <td>${{ '%.2f'|format(r.gross) }}</td>
+        <td>{% if r.discount_pct %}−{{ '%.0f'|format(r.discount_pct) }}%{% else %}—{% endif %}</td>
+        <td><b>${{ '%.2f'|format(r.net_paid) }}</b></td>
+        <td>${{ '%.2f'|format(r.processor_fee) }}<br>
+          <span class="u-email">{{ 'real' if r.fee_is_real else 'estim.' }}</span></td>
+        <td>{% if r.partner %}{{ r.partner }}<br><span class="u-email">venta #{{ r.position }}</span>{% else %}—{% endif %}</td>
+        <td>{% if r.partner %}${{ '%.2f'|format(r.commission_amt) }} ({{ '%.0f'|format(r.commission_pct) }}%)<br>
+          <span class="u-email">{{ {'pending':'pendiente','paid':'pagada','clawback':'A RECUPERAR','cancelled':'cancelada'}.get(r.commission_status, r.commission_status) }}</span>{% else %}—{% endif %}</td>
+        <td>${{ '%.2f'|format(r.op_cost) }}</td>
+        <td><b>${{ '%.2f'|format(r.net_profit) }}</b></td>
+        <td>
+          {% if not r.reversed_at %}
+          <form method="post" action="/admin/ledger/reverse" style="display:inline"
+                onsubmit="return confirm('¿Marcar esta venta como chargeback/reembolso? Deja de contar para el tramo y su comisión pasa a recuperarse.');">
+            <input type="hidden" name="sale_id" value="{{ r.id }}" />
+            <button class="plan-btn" type="submit" style="background:#8a2c2c;">↩ CB</button>
+          </form>
+          {% endif %}
+          {% if r.is_manual %}
+          <form method="post" action="/admin/ledger/delete" style="display:inline"
+                onsubmit="return confirm('¿Eliminar esta fila manual?');">
+            <input type="hidden" name="sale_id" value="{{ r.id }}" />
+            <button class="plan-btn" type="submit">🗑</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="12" style="color:var(--muted);">Sin ventas este mes. Carga una manual abajo para probar el mecanismo.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+
+    <!-- ── Carga manual ── -->
+    <div class="section-h" style="font-size:15px;">➕ Cargar venta manual (simulación)</div>
+    <div class="section-d">Con código de socio la posición y el tramo se calculan solos.
+      Si dejas la fee vacía se estima ({{ '%.1f'|format(5.4) }}% + $0.30); al conectar PayPal las
+      ventas reales traerán la fee exacta. Las filas manuales se pueden eliminar; las reales no
+      (se revierten con ↩ CB, como en la vida real).</div>
+    <div class="table-card" style="padding:16px;">
+      <form method="post" action="/admin/ledger/manual"
+            style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+        <label style="display:flex;flex-direction:column;gap:4px;">Plan
+          <select name="plan">{% for p in ledger_plans %}<option value="{{ p }}">{{ p }}</option>{% endfor %}</select></label>
+        <label style="display:flex;flex-direction:column;gap:4px;">Ciclo
+          <select name="cycle"><option value="monthly">mensual</option><option value="annual">anual</option></select></label>
+        <label style="display:flex;flex-direction:column;gap:4px;">Código (opcional)
+          <input type="text" name="promo_code" placeholder="GABO" style="width:110px;" /></label>
+        <label style="display:flex;flex-direction:column;gap:4px;">Comprador (opcional)
+          <input type="text" name="buyer" placeholder="trader_23" style="width:120px;" /></label>
+        <label style="display:flex;flex-direction:column;gap:4px;">Fee real (opcional)
+          <input type="text" name="fee" placeholder="auto" style="width:70px;" /></label>
+        <label style="display:flex;flex-direction:column;gap:4px;">Nota
+          <input type="text" name="note" style="width:150px;" /></label>
+        <button class="plan-btn" type="submit">Añadir venta</button>
+      </form>
+    </div>
+    </div>
 
     <div class="tabpane" data-pane="giveaway">
     <div class="section-h" id="giveaway">🎁 Giveaway board</div>

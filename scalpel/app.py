@@ -747,6 +747,52 @@ PLAN_LABELS = {'standard': 'Standard', 'premium': 'Premium'}
 LAUNCH_DISCOUNT_PCT = int(os.environ.get("LAUNCH_DISCOUNT_PCT", "0"))
 LAUNCH_DISCOUNT_CYCLES = ('monthly',)
 
+# ── Partner economics — what every sale is actually worth ─────────────────
+# These mirror the Financial Hub exactly, so the panel and the spreadsheet can
+# never drift apart. All of them are env-overridable: the day a number changes
+# it changes here, not in a formula buried somewhere.
+#
+# Commission tiers are MARGINAL PER CUSTOMER, which is the part everybody gets
+# wrong: a partner's 25th referral earns 35% — it does NOT retroactively lift
+# the first 24 to 35%. So each sale carries its own percentage, decided by the
+# position it holds in that partner's ledger.
+PARTNER_TIERS = [
+    (1,  float(os.environ.get('PARTNER_TIER1_PCT', '30'))),
+    (25, float(os.environ.get('PARTNER_TIER2_PCT', '35'))),
+    (75, float(os.environ.get('PARTNER_TIER3_PCT', '40'))),
+]
+# Imputed cost of serving one subscriber for one billing period (AI analysis,
+# storage, moderation). Annual figures are for the WHOLE year.
+PLAN_OP_COST = {
+    'standard': {'monthly': float(os.environ.get('OPCOST_STD_M', '1')),
+                 'annual':  float(os.environ.get('OPCOST_STD_A', '12'))},
+    'premium':  {'monthly': float(os.environ.get('OPCOST_PREM_M', '5')),
+                 'annual':  float(os.environ.get('OPCOST_PREM_A', '60'))},
+}
+# Fallback only. PayPal reports the EXACT fee it took on every capture, and
+# that real number is what gets stored; this estimate is used for manual
+# entries and for rails that do not report a fee.
+PAYPAL_FEE_PCT = float(os.environ.get('PAYPAL_FEE_PCT', '5.4'))
+PAYPAL_FEE_FIXED = float(os.environ.get('PAYPAL_FEE_FIXED', '0.30'))
+
+
+def partner_tier_pct(position):
+    """Commission % earned by a partner's Nth referral (1-based).
+
+    Marginal, not retroactive: position 24 earns tier 1, position 25 earns
+    tier 2. Returns the highest tier whose threshold the position reaches.
+    """
+    pct = PARTNER_TIERS[0][1]
+    for threshold, value in PARTNER_TIERS:
+        if position >= threshold:
+            pct = value
+    return pct
+
+
+def estimated_processor_fee(amount):
+    """What a processor would take on `amount`, when it does not tell us."""
+    return round(amount * PAYPAL_FEE_PCT / 100.0 + PAYPAL_FEE_FIXED, 2)
+
 
 def has_paid_before(user=None):
     """Whether this account has ever completed a purchase.
@@ -1080,6 +1126,63 @@ class PromoCode(db.Model):
         if self.valid_for != 'both' and self.valid_for != cycle:
             return False, 'cycle'
         return True, 'ok'
+
+
+class SaleBreakdown(db.Model):
+    """One paid sale, taken apart into every piece of money it moves.
+
+    Written once, when the payment lands, and then never recomputed — because
+    the numbers it holds are the ones that were true AT THAT MOMENT: the
+    partner's position in the ledger, the tier that position earned, the fee
+    the processor actually charged. Recomputing later would silently rewrite
+    what a partner is owed for a sale made months ago.
+
+    Everything downstream (what to pay on the 15th, what to claw back after a
+    chargeback, what the business really kept) is a sum over these rows.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    # NULL for manual/simulated rows, which is what makes them possible at all.
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), unique=True,
+                         nullable=True, index=True)
+    user_id = db.Column(db.Integer, nullable=True, index=True)
+    username = db.Column(db.String(80), nullable=True)     # snapshot
+    plan = db.Column(db.String(20), nullable=False)
+    billing_cycle = db.Column(db.String(10), nullable=False)
+
+    gross = db.Column(db.Float, nullable=False)            # list price
+    discount_pct = db.Column(db.Float, default=0.0)
+    discount_amt = db.Column(db.Float, default=0.0)
+    net_paid = db.Column(db.Float, nullable=False)         # what the buyer paid
+
+    processor = db.Column(db.String(20), nullable=True)    # paypal / crypto / stripe / manual
+    processor_fee = db.Column(db.Float, default=0.0)
+    # True when the processor reported the fee, False when we estimated it.
+    fee_is_real = db.Column(db.Boolean, default=False)
+
+    promo_code = db.Column(db.String(40), nullable=True, index=True)
+    partner = db.Column(db.String(120), nullable=True, index=True)   # creator_name
+    position = db.Column(db.Integer, nullable=True)        # this partner's Nth valid sale
+    commission_pct = db.Column(db.Float, default=0.0)
+    commission_amt = db.Column(db.Float, default=0.0)
+    # pending → owed to the partner · paid → settled · clawback → to recover
+    commission_status = db.Column(db.String(12), default='pending', nullable=False)
+    commission_paid_at = db.Column(db.DateTime, nullable=True)
+
+    op_cost = db.Column(db.Float, default=0.0)
+    net_profit = db.Column(db.Float, default=0.0)
+
+    is_manual = db.Column(db.Boolean, default=False, nullable=False)
+    reversed_at = db.Column(db.DateTime, nullable=True)    # chargeback / refund
+    reverse_reason = db.Column(db.String(120), nullable=True)
+    note = db.Column(db.String(300), nullable=True)
+    sold_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc),
+                        index=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    @property
+    def is_live(self):
+        """A reversed sale still exists — it just stopped counting."""
+        return self.reversed_at is None
 
 
 class Expense(db.Model):
@@ -3705,6 +3808,124 @@ def socials():
         gw_steps=[s.strip() for s in (gw.how_to or '').splitlines() if s.strip()] if gw else [])
 
 
+@app.route('/admin/ledger/manual', methods=['POST'])
+@login_required
+def admin_ledger_manual():
+    """Add a simulated/manual sale to the ledger. Admin only.
+
+    This is how the panel gets used BEFORE payments are live: type sales in by
+    hand and watch positions, tiers and profit move exactly as they will with
+    real money. Same math, same code path as a real sale."""
+    if not current_user.is_admin:
+        abort(403)
+    plan = (request.form.get('plan') or '').strip()
+    cycle = (request.form.get('cycle') or 'monthly').strip()
+    if plan not in PLAN_PRICING or cycle not in ('monthly', 'annual'):
+        return redirect(url_for('admin') + '#ledger')
+    code = (request.form.get('promo_code') or '').strip().upper() or None
+    buyer = (request.form.get('buyer') or '').strip()[:80] or None
+    note = (request.form.get('note') or '').strip()[:300] or None
+
+    gross = PLAN_PRICING[plan][cycle]
+    disc = 0.0
+    partner = None
+    if code:
+        pc = PromoCode.query.filter_by(code=code).first()
+        if pc:
+            disc = float(pc.discount_pct or 0)
+            partner = (pc.creator_name or '').strip() or None
+        else:
+            # A code the store does not know still simulates: default discount.
+            disc = float(request.form.get('discount_pct') or 20)
+            partner = code.title()
+    net = round(gross * (1 - disc / 100.0), 2)
+    fee_raw = (request.form.get('fee') or '').strip()
+    try:
+        fee = round(float(fee_raw), 2)
+        fee_real = True
+    except ValueError:
+        fee = estimated_processor_fee(net)
+        fee_real = False
+    position = _next_partner_position(partner)
+    pct = partner_tier_pct(position) if partner else 0.0
+    commission = round(net * pct / 100.0, 2)
+    op = PLAN_OP_COST.get(plan, {}).get(cycle, 0.0)
+    row = SaleBreakdown(
+        order_id=None, user_id=None, username=buyer,
+        plan=plan, billing_cycle=cycle,
+        gross=gross, discount_pct=disc, discount_amt=round(gross - net, 2),
+        net_paid=net, processor='manual', processor_fee=fee,
+        fee_is_real=fee_real, promo_code=code, partner=partner,
+        position=position, commission_pct=pct, commission_amt=commission,
+        op_cost=op, net_profit=round(net - fee - commission - op, 2),
+        is_manual=True, note=note)
+    db.session.add(row)
+    db.session.commit()
+    record_audit_event('ledger_manual_add', user_id=current_user.id,
+                       detail=f'sale:{row.id} {plan}/{cycle} net=${net} '
+                              f'partner={partner or "-"}')
+    return redirect(url_for('admin') + '#ledger')
+
+
+@app.route('/admin/ledger/reverse', methods=['POST'])
+@login_required
+def admin_ledger_reverse():
+    """Mark a sale as charged-back / refunded. Admin only."""
+    if not current_user.is_admin:
+        abort(403)
+    rid = (request.form.get('sale_id') or '').strip()
+    row = db.session.get(SaleBreakdown, int(rid)) if rid.isdigit() else None
+    if row:
+        reverse_sale_breakdown(
+            row, reason=(request.form.get('reason') or 'chargeback').strip())
+        record_audit_event('ledger_reverse', user_id=current_user.id,
+                           detail=f'sale:{row.id}')
+    return redirect(url_for('admin') + '#ledger')
+
+
+@app.route('/admin/ledger/delete', methods=['POST'])
+@login_required
+def admin_ledger_delete():
+    """Delete a MANUAL row (cleaning up experiments). Real sales are history
+    and cannot be deleted — reverse them instead."""
+    if not current_user.is_admin:
+        abort(403)
+    rid = (request.form.get('sale_id') or '').strip()
+    row = db.session.get(SaleBreakdown, int(rid)) if rid.isdigit() else None
+    if row and row.is_manual:
+        db.session.delete(row)
+        db.session.commit()
+        record_audit_event('ledger_manual_delete', user_id=current_user.id,
+                           detail=f'sale:{rid}')
+    return redirect(url_for('admin') + '#ledger')
+
+
+@app.route('/admin/ledger/pay-commissions', methods=['POST'])
+@login_required
+def admin_ledger_pay_commissions():
+    """Settle a partner's pending commissions (the 15th-of-the-month run).
+
+    Marks every live pending row for that partner as paid, and stamps when.
+    The clawback rows stay put: they are settled by deducting from what was
+    just paid, and the audit trail is exactly these rows."""
+    if not current_user.is_admin:
+        abort(403)
+    partner = (request.form.get('partner') or '').strip()
+    if partner:
+        now = datetime.now(timezone.utc)
+        rows = SaleBreakdown.query.filter_by(
+            partner=partner, commission_status='pending').filter(
+            SaleBreakdown.reversed_at.is_(None)).all()
+        total = round(sum(r.commission_amt or 0 for r in rows), 2)
+        for r in rows:
+            r.commission_status = 'paid'
+            r.commission_paid_at = now
+        db.session.commit()
+        record_audit_event('ledger_pay_commissions', user_id=current_user.id,
+                           detail=f'{partner}: {len(rows)} ventas · ${total}')
+    return redirect(url_for('admin') + '#ledger')
+
+
 @app.route('/admin/giveaway', methods=['POST'])
 @login_required
 def admin_giveaway():
@@ -4552,6 +4773,7 @@ def admin():
         pay_attention=attention, pay_swept=swept, pay_recovered=recovered,
         crypto_on=bool(available_payment_rails()), sla_hours=CRYPTO_SLA_HOURS,
         giveaway=_current_giveaway()[0],
+        **_build_ledger_context(),
         **ai_ctx, **revenue,
     )
 
@@ -5250,6 +5472,25 @@ def _paypal_create_order(order, kind='plan'):
     return None
 
 
+def _paypal_read_fee(data):
+    """The exact fee PayPal charged on this capture, when it says so.
+
+    Worth digging out rather than estimating: this is the difference between
+    an accounting row that reconciles with the PayPal statement and one that
+    is merely close. Returns None when there is no capture to read.
+    """
+    units = data.get('purchase_units') or [{}]
+    caps = ((units[0].get('payments') or {}).get('captures')) or []
+    if not caps:
+        return None
+    brk = (caps[0].get('seller_receivable_breakdown') or {})
+    val = (brk.get('paypal_fee') or {}).get('value')
+    try:
+        return float(val)
+    except (TypeError, ValueError):
+        return None
+
+
 def _paypal_read_status(data):
     """Boil a PayPal order payload down to (status, amount, capture_id)."""
     units = data.get('purchase_units') or [{}]
@@ -5329,6 +5570,9 @@ def _paypal_capture(order, kind='plan'):
         # An order the buyer never approved simply stays pending.
         return False
     status, amount, cap_id = _paypal_read_status(data)
+    # Carry PayPal's own fee through to the accounting row, so the breakdown
+    # records what was really charged instead of an estimate.
+    order._pp_fee = _paypal_read_fee(data)
     return _paypal_apply_status(order, status, amount, cap_id, kind)
 
 
@@ -5351,6 +5595,7 @@ def _paypal_reconcile(order, kind='plan'):
     # ball. Capturing here is precisely how that purchase is rescued.
     if (data.get('status') or '').upper() == 'APPROVED' and not cap_id:
         return _paypal_capture(order, kind)
+    order._pp_fee = _paypal_read_fee(data)
     return _paypal_apply_status(order, status, amount, cap_id, kind)
 
 
@@ -5393,6 +5638,180 @@ def grant_plan_camo(user, plan, switch_on=False):
     return slug
 
 
+def _build_ledger_context():
+    """Everything the 'Ventas' admin pane shows: the requested month's sales
+    broken apart, per-partner standings, and the all-time totals.
+
+    Reversed sales stay visible in their month (struck through) but count in
+    nothing except the chargeback tally — history without contamination.
+    """
+    now = datetime.now(timezone.utc)
+    rows_all = SaleBreakdown.query.order_by(SaleBreakdown.sold_at.desc()).all()
+
+    def _key(dt):
+        d = _aware(dt) or now
+        return '%04d-%02d' % (d.year, d.month)
+
+    this_key = _key(now)
+    months = {}
+    for r in rows_all:
+        months.setdefault(_key(r.sold_at), []).append(r)
+    months.setdefault(this_key, [])
+
+    view_key = (request.args.get('ledger_month') or '').strip()
+    if view_key not in months:
+        view_key = this_key
+    view_rows = months[view_key]
+
+    def _tally(rows):
+        live = [r for r in rows if r.reversed_at is None]
+        t = {
+            'count': len(live),
+            'reversed': sum(1 for r in rows if r.reversed_at is not None),
+            'gross': sum(r.gross or 0 for r in live),
+            'discount': sum(r.discount_amt or 0 for r in live),
+            'net': sum(r.net_paid or 0 for r in live),
+            'fees': sum(r.processor_fee or 0 for r in live),
+            'commission': sum(r.commission_amt or 0 for r in live),
+            'op': sum(r.op_cost or 0 for r in live),
+            'profit': sum(r.net_profit or 0 for r in live),
+            'com_pending': sum(r.commission_amt or 0 for r in live
+                               if r.commission_status == 'pending'),
+            'com_paid': sum(r.commission_amt or 0 for r in live
+                            if r.commission_status == 'paid'),
+            'clawback': sum(r.commission_amt or 0 for r in rows
+                            if r.commission_status == 'clawback'),
+        }
+        return {k: (round(v, 2) if isinstance(v, float) else v)
+                for k, v in t.items()}
+
+    # Per-partner standings (all-time — the tier lives on the whole ledger).
+    partners = {}
+    for r in rows_all:
+        if not r.partner:
+            continue
+        p = partners.setdefault(r.partner, {
+            'name': r.partner, 'valid': 0, 'reversed': 0,
+            'commission_total': 0.0, 'com_pending': 0.0, 'com_paid': 0.0,
+            'clawback': 0.0, 'revenue': 0.0})
+        if r.reversed_at is None:
+            p['valid'] += 1
+            p['revenue'] += r.net_paid or 0
+            p['commission_total'] += r.commission_amt or 0
+            if r.commission_status == 'pending':
+                p['com_pending'] += r.commission_amt or 0
+            elif r.commission_status == 'paid':
+                p['com_paid'] += r.commission_amt or 0
+        else:
+            p['reversed'] += 1
+            if r.commission_status == 'clawback':
+                p['clawback'] += r.commission_amt or 0
+    for p in partners.values():
+        p['next_pct'] = partner_tier_pct(p['valid'] + 1)
+        for k in ('commission_total', 'com_pending', 'com_paid',
+                  'clawback', 'revenue'):
+            p[k] = round(p[k], 2)
+
+    month_list = []
+    for k in sorted(months, reverse=True):
+        y, mo = int(k[:4]), int(k[5:])
+        month_list.append({'key': k, 'label': datetime(y, mo, 1).strftime('%B %Y'),
+                           'count': sum(1 for r in months[k]
+                                        if r.reversed_at is None),
+                           'is_view': k == view_key})
+
+    return {
+        'ledger_rows': view_rows,
+        'ledger_month': view_key,
+        'ledger_months': month_list,
+        'ledger_view': _tally(view_rows),
+        'ledger_total': _tally(rows_all),
+        'ledger_partners': sorted(partners.values(),
+                                  key=lambda p: -p['valid']),
+        'ledger_plans': sorted(PLAN_PRICING),
+    }
+
+
+def _partner_for_code(code):
+    """The creator behind a promo code, or None if it is not a partner code."""
+    if not code:
+        return None
+    pc = PromoCode.query.filter_by(code=(code or '').strip().upper()).first()
+    if not pc:
+        return None
+    return (pc.creator_name or '').strip() or None
+
+
+def _next_partner_position(partner):
+    """Which number this partner's next VALID sale takes.
+
+    Counts live rows only, so a reversed sale frees its position back up —
+    which is exactly the behaviour the agreement describes: a chargeback stops
+    counting towards the tier.
+    """
+    if not partner:
+        return None
+    n = SaleBreakdown.query.filter_by(partner=partner).filter(
+        SaleBreakdown.reversed_at.is_(None)).count()
+    return n + 1
+
+
+def record_sale_breakdown(order, processor_fee=None, fee_is_real=False):
+    """Take a paid order apart and file the result. Runs once per order.
+
+    Called at activation time so the pieces are captured while they are still
+    true. `processor_fee` is the REAL fee when the processor reported one;
+    without it the fee is estimated and flagged as such, so nobody mistakes an
+    estimate for a receipt.
+    """
+    if order is None or order.status != 'paid':
+        return None
+    if SaleBreakdown.query.filter_by(order_id=order.id).first():
+        return None                                  # already broken down
+
+    gross = float(order.base_price or 0.0)
+    net = float(order.final_price or 0.0)
+    fee = (round(float(processor_fee), 2) if processor_fee is not None
+           else estimated_processor_fee(net))
+    partner = _partner_for_code(order.promo_code)
+    position = _next_partner_position(partner)
+    pct = partner_tier_pct(position) if partner else 0.0
+    commission = round(net * pct / 100.0, 2)
+    op = PLAN_OP_COST.get(order.plan, {}).get(order.billing_cycle, 0.0)
+    user = db.session.get(User, order.user_id)
+
+    row = SaleBreakdown(
+        order_id=order.id, user_id=order.user_id,
+        username=(user.username if user else None),
+        plan=order.plan, billing_cycle=order.billing_cycle,
+        gross=gross, discount_pct=float(order.discount_pct or 0),
+        discount_amt=round(gross - net, 2), net_paid=net,
+        processor=order.payment_method or 'manual',
+        processor_fee=fee, fee_is_real=bool(fee_is_real),
+        promo_code=order.promo_code, partner=partner, position=position,
+        commission_pct=pct, commission_amt=commission,
+        op_cost=op, net_profit=round(net - fee - commission - op, 2),
+        sold_at=_aware(order.paid_at) or datetime.now(timezone.utc))
+    db.session.add(row)
+    db.session.commit()
+    return row
+
+
+def reverse_sale_breakdown(row, reason='chargeback'):
+    """Void a sale: it stops counting for the tier and its commission is owed
+    back. The row is kept — the history of what happened is the point."""
+    if row is None or row.reversed_at is not None:
+        return False
+    row.reversed_at = datetime.now(timezone.utc)
+    row.reverse_reason = reason[:120]
+    # Commission already handed over has to come back; commission not yet paid
+    # simply never gets paid.
+    row.commission_status = ('clawback' if row.commission_status == 'paid'
+                             else 'cancelled')
+    db.session.commit()
+    return True
+
+
 def _activate_plan_from_order(order):
     """Grant the purchased plan to the user, exactly once per order.
 
@@ -5426,6 +5845,15 @@ def _activate_plan_from_order(order):
     user.plan_expires_at = base + timedelta(days=days)
     order.applied_at = now
     db.session.commit()
+    # File the money breakdown for this sale. Best-effort on purpose: an
+    # accounting row that fails to write must never cost the buyer the plan
+    # they just paid for.
+    try:
+        record_sale_breakdown(order, processor_fee=getattr(order, '_pp_fee', None),
+                              fee_is_real=getattr(order, '_pp_fee', None) is not None)
+    except Exception:
+        db.session.rollback()
+        app.logger.exception('sale breakdown failed for order %s', order.id)
     return True
 
 
