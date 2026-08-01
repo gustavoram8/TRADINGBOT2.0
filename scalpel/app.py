@@ -357,6 +357,7 @@ def inject_feature_flags():
         'indicators_enabled': INDICATORS_ENABLED,
         'mentorship_enabled': MENTORSHIP_ENABLED,
         'preflight_enabled': PREFLIGHT_ENABLED,
+        'annual_plans_enabled': ANNUAL_PLANS_ENABLED,
         'has_beta_access': has_beta_access(),
         'beta_min_rank': BETA_MIN_RANK,
     }
@@ -730,6 +731,32 @@ PLAN_PRICING = {
     'premium':  {'monthly': 50.0, 'annual': 480.0},
 }
 PLAN_LABELS = {'standard': 'Standard', 'premium': 'Premium'}
+
+# ── Annual plans — OFF while there is no cushion for an annual chargeback ──
+# Not abandoned, switched off. The arithmetic is the whole reason: a $390
+# annual that gets charged back costs $390 back + $20 bank penalty + the
+# processor fee already paid, and NO reserve percentage below 100% covers
+# that — you refund the entire payment, not the margin. The same chargeback
+# on a monthly plan leaves a $40 hole. Until there is a base of monthly
+# subscribers whose reserve can absorb one annual going sour, selling annuals
+# is borrowing against a year of service you have not delivered yet. PayPal's
+# dispute window is 180 days, so that money is not really earned for six
+# months either.
+#
+# Turn back on with ANNUAL_PLANS_ENABLED=1 and restart. Nothing is deleted:
+# prices, cart, checkout and the 365-day activation all stay wired, and any
+# annual subscription sold BEFORE the switch keeps running to its end date —
+# the flag only blocks new annual purchases and hides the billing toggle.
+ANNUAL_PLANS_ENABLED = os.environ.get('ANNUAL_PLANS_ENABLED', '0') == '1'
+
+
+def allowed_cycles():
+    """Billing cycles a BUYER may choose right now.
+
+    Deliberately not used by _plan_base_price, the admin ledger or the admin
+    previews: those have to keep pricing annual orders that already exist.
+    """
+    return ('monthly', 'annual') if ANNUAL_PLANS_ENABLED else ('monthly',)
 
 # ── Welcome offer — OFF by default ─────────────────────────────────────────
 # Switched off deliberately, not abandoned. A public discount competes with the
@@ -6024,7 +6051,7 @@ def _inject_launch_offer():
 def checkout():
     plan = request.args.get('plan', '')
     cycle = request.args.get('cycle', 'monthly')
-    if plan not in PLAN_PRICING or cycle not in ('monthly', 'annual'):
+    if plan not in PLAN_PRICING or cycle not in allowed_cycles():
         return redirect(url_for('pricing'))
     # Block same-plan or downgrade purchases
     PLAN_RANK = {'free': 0, 'standard': 1, 'premium': 2}
@@ -6049,7 +6076,7 @@ def api_validate_code():
     plan = data.get('plan', '')
     cycle = data.get('cycle', 'monthly')
     code = (data.get('code') or '').strip()
-    if plan not in PLAN_PRICING or cycle not in ('monthly', 'annual'):
+    if plan not in PLAN_PRICING or cycle not in allowed_cycles():
         return jsonify({'ok': False, 'error': 'invalid_plan'}), 400
     promo, reason = _validate_promo(code, cycle)
     if not promo:
@@ -6065,7 +6092,7 @@ def checkout_create():
     plan = request.form.get('plan', '')
     cycle = request.form.get('cycle', 'monthly')
     code = (request.form.get('promo_code') or '').strip()
-    if plan not in PLAN_PRICING or cycle not in ('monthly', 'annual'):
+    if plan not in PLAN_PRICING or cycle not in allowed_cycles():
         return redirect(url_for('pricing'))
 
     # Guard: don't let a user stack multiple pending orders.

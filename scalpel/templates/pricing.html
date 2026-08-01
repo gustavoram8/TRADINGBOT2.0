@@ -478,13 +478,18 @@
   <p data-i18n="pricing.heroSub">Start free. Upgrade when you want deeper, daily educational analysis of your setups.</p>
 </section>
 
+{# Annual plans are switched off (ANNUAL_PLANS_ENABLED). With only one cycle to
+   choose from, a toggle with a single button reads as broken — so the whole
+   control goes and the cards just price themselves monthly. #}
 <div class="billing-wrap">
+  {% if annual_plans_enabled %}
   <div class="billing-toggle" role="tablist" aria-label="Billing cycle">
     <button type="button" class="bt-opt active" data-cycle="monthly" role="tab" aria-selected="true" data-i18n="common.monthly">Monthly</button>
     <button type="button" class="bt-opt" data-cycle="annual" role="tab" aria-selected="false">
       <span data-i18n="common.annual">Annual</span> <span class="bt-save" data-i18n="pricing.save20">Save 20%</span>
     </button>
   </div>
+  {% endif %}
   <div class="billing-sub" id="billing-sub" data-i18n="pricing.subMonthly">Pay month to month, cancel anytime.</div>
 </div>
 

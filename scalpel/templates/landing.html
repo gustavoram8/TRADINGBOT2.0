@@ -1269,13 +1269,16 @@
     <h2 class="h2 rv d1" data-t="s7_title">Start free. Scale when you're ready.</h2>
     <p class="lead rv d2" data-t="s7_body">Every plan includes the AI analysis engine. Upgrade when you want more.</p>
 
+    {# Annual plans switched off (ANNUAL_PLANS_ENABLED) — see app.py. #}
     <div class="billing-wrap">
+      {% if annual_plans_enabled %}
       <div class="billing-toggle" role="tablist">
         <button type="button" class="bt-opt active" data-cycle="monthly">Monthly</button>
         <button type="button" class="bt-opt" data-cycle="annual">
           Annual <span class="bt-save">Save 20%</span>
         </button>
       </div>
+      {% endif %}
       <div class="billing-sub" id="landing-billing-sub">Pay month to month, cancel anytime.</div>
     </div>
 
