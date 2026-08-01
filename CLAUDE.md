@@ -1004,11 +1004,20 @@ y pulir cada punto primero para luego pasar al otro"*. Estado:
    ⚠️ Trampa del test: Flask-Login cachea el usuario en `g` (contexto de APP), así que con un
    `app_context()` abierto todo el script, la 2ª petición corre como el 1er usuario. Hay que hacer
    `g.pop('_login_user', None)` antes de cada petición.
-5. ⏳ **Sorteos en los T&C** — hoy la línea legal vive solo en `/socials` (`comm.legal`). Falta
-   evaluar si se agrega una sección/cláusula propia (sin compra, sorteo manual del dueño, no
-   afiliado a ninguna red social, se puede cancelar, quién puede participar, 18+). Si se toca
-   `terms.html` → traducir a ES/FR/PT en `legal_i18n.js` y correr
-   `python3 tools/audit_legal_translations.py`.
+5. ✅ **Sorteos en los T&C (2026-08-01).** Decisión: **sí, hacía falta** — la línea de 3 frases de
+   `/socials` no es un reglamento, y un sorteo es figura regulada (compra+premio+azar = lotería en
+   muchas jurisdicciones; las plataformas exigen declarar que no patrocinan). **Sección 19 nueva**:
+   sin compra, 18+ o mayoría local, excluye al operador y su familia directa, nulo donde la ley lo
+   prohíba, sorteo **manual** (lo del sitio es informativo), premios personales/no transferibles/sin
+   canje, premio-plan no crea suscripción ni renueva, ganador alternativo, **sin afiliación a
+   ninguna red social + liberación de la plataforma**, y modificación/cancelación sin compensación
+   (porque participar no cuesta nada). Las reglas de cada sorteo prevalecen sobre la sección.
+   ⚠️ **Mentoría se RENUMERÓ 19 → 20** (contra la nota vieja de "no renumerar"): los sorteos se ven
+   siempre y mentoría está gateada por el flag, así que dejarla en 19 hacía saltar el índice de 18 a
+   20 con el programa apagado. Se movieron `terms.toc19/t19/b19` → `…20` ×4 idiomas, **el número
+   visible dentro de cada título traducido** (esto lo cazó el auditor, no yo) y la referencia
+   cruzada desde la Secc. 7. Verificado 1..19 apagada / 1..20 encendida. `/socials` enlaza al
+   reglamento (`comm.legalFull` ×4). Auditor: 144 cláusulas OK. `test_terms_gw.py` 20/20.
 6. ⏳ **Enriquecer `/guide`** — dijo que está *"muy pobre... como si fuera una síntesis de la
    síntesis"*. Ahora importa más que antes: **los 5 drawers de ayuda enlazan a `/guide#…`**, así que
    la guía es el destino del "ver la guía completa". Anclas reales: `analyze`, `chalk`, `forum`,
