@@ -1018,10 +1018,20 @@ y pulir cada punto primero para luego pasar al otro"*. Estado:
    visible dentro de cada título traducido** (esto lo cazó el auditor, no yo) y la referencia
    cruzada desde la Secc. 7. Verificado 1..19 apagada / 1..20 encendida. `/socials` enlaza al
    reglamento (`comm.legalFull` ×4). Auditor: 144 cláusulas OK. `test_terms_gw.py` 20/20.
-6. ⏳ **Enriquecer `/guide`** — dijo que está *"muy pobre... como si fuera una síntesis de la
-   síntesis"*. Ahora importa más que antes: **los 5 drawers de ayuda enlazan a `/guide#…`**, así que
-   la guía es el destino del "ver la guía completa". Anclas reales: `analyze`, `chalk`, `forum`,
-   `quiz`, `preflight`, `synapse`, `timing`, `plans`, `account`.
+6. ✅ **`/guide` ampliada (2026-08-01).** De 1 frase + 3 pasos por sección a: intro que explica para
+   qué sirve, 4-6 pasos con el porqué, y un **aviso `.tip`** con lo no obvio (la pizarra vive en el
+   navegador y exportar es el guardado real; el daily rota por cuenta; un reloj de sesión no promete
+   que pase algo). **2 errores de fondo cazados:** (a) el foro figuraba como "Premium" cuando es
+   Standard+Premium desde julio, y la sección de planes tampoco lo listaba en Standard; (b) los
+   pasos mandaban a pestañas con nombres traducidos **que no existen** — la pestaña es
+   **"Chalkboard" en los 4 idiomas** y el foro es "Foro Trading" (verificar siempre contra las
+   claves `tabs.*` de `index.html`). ⚠️ Los leads pasaron a `data-i18n-html`: llevan `<b>` y con
+   `data-i18n` el applier usa `textContent` → las etiquetas salían literales.
+   **El contenido vive en `tools/gen_guide/`** (`guide_en/es/frpt.py` + `build_guide.py`, se corre
+   desde la raíz) y la plantilla se REGENERA desde ahí — editar 4 diccionarios a mano es como se
+   desincronizan. 80 claves ×4 a paridad. Verificado en navegador real (claro, oscuro y ES).
+   ⚠️ El bloque `fr` del dict usa **comillas dobles** (apóstrofes) → el patcher trabaja por líneas,
+   no con regex sobre comillas.
 
 **Además, sueltos de la misma sesión:** faltan por cablear los `(?)` de Synapse, Kill Zones,
 Rangos/XP, Notas y Subida; y encender PayPal (ver "PENDIENTE INMEDIATO" más abajo).
