@@ -1036,6 +1036,36 @@ y pulir cada punto primero para luego pasar al otro"*. Estado:
 **Además, sueltos de la misma sesión:** faltan por cablear los `(?)` de Synapse, Kill Zones,
 Rangos/XP, Notas y Subida; y encender PayPal (ver "PENDIENTE INMEDIATO" más abajo).
 
+### 🔐 SEGURIDAD DE CUENTAS — paquete completo (2026-08-01, luz verde del usuario)
+**Contexto:** el papá sugirió pedir documentos de identidad en el registro. Se le explicó por qué NO
+(KYC = custodiar datos sensibles + borra la línea "no somos bróker" + mata conversión + un menor
+subiendo su cédula te deja con datos de un menor guardados) y eligió el paquete alternativo:
+- **Fecha de nacimiento en el registro** (`User.birth_date`, server-side 18+, `_parse_birth_date`).
+  El clickwrap 18+ + T&C se mantiene — evidencian cosas distintas. SIN backfill (cuentas viejas
+  quedan sin fecha; inventarla sería peor). Errores nuevos `underage`/`weak_password` en register.
+- **Contraseñas:** `_weak_password()` = lista común (~30, "password1" pasaba la regla vieja) + no
+  contener usuario/correo. Aplica en registro, cambio y reset.
+- **Cambio de contraseña REAL en Settings** (`POST /account/password`; la fila era un "Coming soon"
+  sin ruta) + **"Cerrar las demás sesiones"** (`/account/sessions/close`). Mecanismo de revocación:
+  **rotar `alt_id`** — todas las demás sesiones/remember-cookies dejan de resolver (la indirección
+  ya existía; cero almacén de sesiones). El reset por correo también rota.
+- **2FA TOTP opcional** (RFC 6238 con stdlib — hmac/struct, sin pyotp): alta `POST /account/2fa/start`
+  → QR (segno de vuelta en requirements **SOLO para esto**; PNG a propósito — sin el viewBox de los
+  SVG; **QR decodificado de verdad con OpenCV** antes de pushear) + clave manual; el secreto vive en
+  la SESIÓN hasta confirmar un código (alta abandonada = cero efecto); 8 códigos de respaldo one-shot
+  (hash sha256, mostrados UNA vez, `twofa_codes.html`); login = staging `pre2fa_*` 5 min / 5 intentos
+  → `/login/2fa`; baja exige contraseña Y código. Plantillas `twofa_setup/twofa_codes/login_2fa`.
+- **Aviso "dispositivo nuevo"** por correo: cookie aleatoria httponly `nx_dev` + tabla `KnownDevice`
+  (NO usa el fingerprint: eso es anti-evasión de bans). ⚠️ El PRIMER dispositivo se registra en
+  silencio — alertar sobre él habría mandado correo a todos los usuarios existentes en su siguiente
+  login el día del deploy. `EMAIL_I18N['sec']` + `send_security_email()` best-effort ×4 idiomas.
+- **Privacy 2.1** declara fecha de nacimiento, secreto TOTP y cookie de dispositivo (EN+ES/FR/PT,
+  auditor 144 OK). i18n UI ×4 en `auth.js` (reg.dob, twofa.*) y `pages_i18n.js` (settings.*, sec2fa.*).
+- Migración `_migrate_user_security_columns()` en `init_db()`. `test_secpack.py` **37/37**.
+⚠️ **Trampa cazada:** pasarle el PROXY `current_user` a `login_user()` lo guarda como usuario de
+sesión → `current_user` se resuelve a sí mismo → recursión infinita. Desenvolver con
+`_get_current_object()` (hecho en `_kill_other_sessions`).
+
 ### 📒 LIBRO DE VENTAS — desglose por pago en /admin (2026-07-31, CABLEADO)
 Pedido del usuario: que cada pago se desmenuce solo (bruto → desc. código → comisión socio →
 fee → costo op → utilidad) y poder **cargar ventas a mano** para ver el comportamiento antes de
