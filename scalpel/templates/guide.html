@@ -59,6 +59,10 @@
     .help-cta a{ display:inline-block; font-size:13.5px; font-weight:700; text-decoration:none;
       background:var(--accent); color:#fff; padding:11px 22px; border-radius:10px; }
     html[data-theme="dark"] .help-cta a{ color:#14161d; }
+    .tip{ font-size:13.6px; line-height:1.72; color:var(--ink-soft);
+      margin-top:16px; padding:13px 17px; border-left:3px solid var(--accent);
+      background:var(--accent-soft); border-radius:0 8px 8px 0; }
+    .tip b{ color:var(--ink); font-weight:700; }
     .note{ font-size:13px; color:var(--muted); margin-top:12px; }
     @media (max-width:560px){ nav{ padding:12px 16px; } h1{ font-size:30px; } .sec{ padding:20px; } .logo-img{ height:52px; } }
   </style>
@@ -101,12 +105,16 @@
       <span class="sec-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-6"/></svg></span>
       <h2 data-i18n="guide.analyze.t">Analyze Your Setup</h2>
     </div>
-    <p class="lead" data-i18n="guide.analyze.d">Upload a screenshot of your chart and our AI highlights possible setup errors and educational observations to reflect on — never a verdict, signal, or recommendation.</p>
+    <p class="lead" data-i18n-html="guide.analyze.d">Upload a screenshot of your chart and the AI walks through it the way an instructor would: what structure it can see, whether the timing and the confluences you claimed line up, and where the reasoning has holes. It never tells you to take the trade — it gives you things to check.</p>
     <ol class="steps">
-      <li data-i18n-html="guide.analyze.s1">Open the <b>Analyze</b> tab and pick your <b>instrument</b>, <b>direction</b>, <b>session</b> and any <b>confluences</b> using the buttons.</li>
-      <li data-i18n-html="guide.analyze.s2">Upload a <b>screenshot</b> of your chart. Use the summary panel on the right to confirm everything is ready.</li>
-      <li data-i18n-html="guide.analyze.s3">Press <b>Analyze</b> and read the observations. Treat them as prompts to review your own reasoning, not as instructions.</li>
+      <li data-i18n-html="guide.analyze.s1">Open the <b>Analyze</b> tab and set the context first: <b>instrument</b>, <b>direction</b>, <b>session</b>, and the <b>confluences</b> you believe are present. The AI reads a chart very differently depending on what you claim to be seeing, so this is not a formality.</li>
+      <li data-i18n-html="guide.analyze.s2">Pick the <b>methodology</b> you are trading. Each one has its own reading of the same candles — an order block matters under ICT and means nothing under Wyckoff — so choosing the wrong one produces an answer about a method you are not using.</li>
+      <li data-i18n-html="guide.analyze.s3">Upload a <b>screenshot</b>. Include enough chart to show where price came from: a zoomed-in image of the entry alone hides the context the analysis depends on. Marking your levels before the screenshot helps.</li>
+      <li data-i18n-html="guide.analyze.s4">Optionally write your <b>Trade Construction</b> — your reasoning in your own words, up to about 200 words. This is the part most people skip and it is the part that turns the answer from generic into specific to your idea.</li>
+      <li data-i18n-html="guide.analyze.s5">Press <b>Analyze</b>, then read it as a second opinion, not a verdict. The useful question is not "does it agree with me" but "did it see something I did not".</li>
+      <li data-i18n-html="guide.analyze.s6">Save the analysis to a <b>project</b> to keep a record. Reading three of your own old analyses side by side shows patterns in your mistakes that no single analysis can.</li>
     </ol>
+    <p class="tip" data-i18n-html="guide.analyze.tip">The counter on the right shows how many analyses you have left in the current window. It updates the moment an analysis finishes, so you never have to guess — and a failed upload does not consume one.</p>
   </div>
 
   <div class="sec" id="preflight">
@@ -114,12 +122,15 @@
       <span class="sec-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
       <h2 data-i18n="guide.preflight.t">Pre-Flight</h2>
     </div>
-    <p class="lead" data-i18n="guide.preflight.d">A pre-trade checklist so you confirm a setup actually meets your own rules before you commit to it.</p>
+    <p class="lead" data-i18n-html="guide.preflight.d">A checklist you fill in <b>before</b> you enter, not after. Its whole purpose is to make you state your rules while you still have nothing at risk, because the moment money is on the line your reasoning changes without asking permission.</p>
     <ol class="steps">
-      <li data-i18n-html="guide.preflight.s1">Open the <b>Pre-Flight</b> tab before you take a trade.</li>
-      <li data-i18n-html="guide.preflight.s2">Work through each <b>checklist item</b> honestly — bias, session, risk and invalidation.</li>
-      <li data-i18n-html="guide.preflight.s3">Only proceed when the checklist is clean. If something is missing, that is useful information too.</li>
+      <li data-i18n-html="guide.preflight.s1">Open <b>Pre-Flight</b> and create a checklist for the setup you are looking at. Do it before you click buy or sell — a checklist filled in after entry is a diary, not a filter.</li>
+      <li data-i18n-html="guide.preflight.s2">Work through each item honestly: <b>bias</b>, <b>session</b>, <b>risk</b> and <b>invalidation</b>. Invalidation is the one that matters most: if you cannot say what would prove you wrong, you do not have a trade, you have an opinion.</li>
+      <li data-i18n-html="guide.preflight.s3">Answer with what is actually on the chart, not with what you hope. The checklist only works if it can tell you no.</li>
+      <li data-i18n-html="guide.preflight.s4">If an item does not pass, that is a result, not a failure. A setup that fails your own rules is information you paid nothing for.</li>
+      <li data-i18n-html="guide.preflight.s5">Keep your checklists. Going back over the ones you overrode is the fastest way to find out which rule you keep breaking.</li>
     </ol>
+    <p class="tip" data-i18n-html="guide.preflight.tip">Pre-Flight is a Premium tool, and you can keep up to ten checklists — enough to cover the setups you actually trade rather than every idea you look at.</p>
   </div>
 
   <div class="sec" id="quiz">
@@ -127,12 +138,15 @@
       <span class="sec-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12" y2="17"/></svg></span>
       <h2 data-i18n="guide.quiz.t">Quiz &amp; Daily Challenge</h2>
     </div>
-    <p class="lead" data-i18n="guide.quiz.d">Test your knowledge of the methodologies with a large question bank, and take one ultra-hard question every day to keep a streak.</p>
+    <p class="lead" data-i18n-html="guide.quiz.d">A question bank across the methodologies the platform teaches, in rising levels of difficulty, plus one very hard question a day. It is designed to find the gaps you did not know you had — not to make you feel good about what you already know.</p>
     <ol class="steps">
-      <li data-i18n-html="guide.quiz.s1">Open the <b>Quiz</b> tab and choose a topic or difficulty to start a session.</li>
-      <li data-i18n-html="guide.quiz.s2">Answer each question — the server checks your answer, so results are honest and never revealed early.</li>
-      <li data-i18n-html="guide.quiz.s3">Come back for the <b>Daily Challenge</b>: one hard question a day that can earn you rewards.</li>
+      <li data-i18n-html="guide.quiz.s1">Open the <b>Quiz</b> tab and pick a methodology and a topic — order blocks, market structure, accumulation, chart patterns and so on.</li>
+      <li data-i18n-html="guide.quiz.s2">Choose a level. <b>Beginner</b> checks definitions, <b>intermediate</b> checks whether you can apply them, and <b>advanced</b> puts two rules in conflict so you have to know which one wins.</li>
+      <li data-i18n-html="guide.quiz.s3">Answer, then read the explanation even when you got it right — a lucky guess and real knowledge look identical on the score.</li>
+      <li data-i18n-html="guide.quiz.s4">Try a <b>hardcore scenario</b> when a topic feels easy: full situations with several plausible readings and only one that survives scrutiny.</li>
+      <li data-i18n-html="guide.quiz.s5">Come back for the <b>Daily Challenge</b>: one hard question every day, and a streak that only grows if you keep showing up.</li>
     </ol>
+    <p class="tip" data-i18n-html="guide.quiz.tip">Your answers are checked on the server and the options are shuffled, so the answer key is never in the page and there is no pattern to exploit. Your daily question is also rotated per account — nobody can pass you the answer, because theirs is a different one.</p>
   </div>
 
   <div class="sec" id="forum">
@@ -140,12 +154,15 @@
       <span class="sec-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
       <h2 data-i18n="guide.forum.t">Forum</h2>
     </div>
-    <p class="lead" data-i18n="guide.forum.d">A Premium community space to share setups, ask questions and discuss trading. Every post is automatically moderated.</p>
+    <p class="lead" data-i18n-html="guide.forum.d">A space to post setups, ask what you got wrong and follow traders whose reasoning you want to learn from. Available on <b>Standard and Premium</b>. Every post and image passes automatic moderation before it is published.</p>
     <ol class="steps">
-      <li data-i18n-html="guide.forum.s1">Open <b>Forum Trading</b> and browse the feed, or switch to <b>Saved</b> to revisit posts.</li>
-      <li data-i18n-html="guide.forum.s2">Use <b>New post</b> to share a setup or question. Keep it respectful and on topic.</li>
-      <li data-i18n-html="guide.forum.s3">React and reply to other traders to build the discussion.</li>
+      <li data-i18n-html="guide.forum.s1">Open <b>Forum</b> and read the general feed, or the <b>Following</b> tab to see only the traders you follow.</li>
+      <li data-i18n-html="guide.forum.s2">Use <b>New post</b> to share a setup or a question. Posting the chart with your reasoning gets you far better answers than posting the chart alone.</li>
+      <li data-i18n-html="guide.forum.s3">Join or create a <b>community</b> for a methodology or a market, and post there when the topic is narrow enough that the general feed would bury it.</li>
+      <li data-i18n-html="guide.forum.s4">React and reply to other traders. Answering someone else forces you to put your own reasoning into words, which is where the gaps show up.</li>
+      <li data-i18n-html="guide.forum.s5">Use <b>Saved</b> to keep posts worth rereading, and <b>Messages</b> for a private conversation with another trader.</li>
     </ol>
+    <p class="tip" data-i18n-html="guide.forum.tip">Moderation runs before publishing, not after complaints, and it covers text and images. It is there so nobody has to scroll past insults or signal-selling to reach the useful discussion.</p>
   </div>
 
   <div class="sec" id="chalk">
@@ -153,12 +170,14 @@
       <span class="sec-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg></span>
       <h2 data-i18n="guide.chalk.t">Chalkboard</h2>
     </div>
-    <p class="lead" data-i18n="guide.chalk.d">A free-form drawing board to sketch setups, mark levels and annotate ideas, then save your boards for later.</p>
+    <p class="lead" data-i18n-html="guide.chalk.d">A free drawing board for thinking with your hands: sketch the structure, mark the levels, write the plan next to it. Useful precisely because it is not a chart — nothing moves while you think.</p>
     <ol class="steps">
-      <li data-i18n-html="guide.chalk.s1">Open the <b>Chalkboard</b> tab and pick a drawing tool.</li>
-      <li data-i18n-html="guide.chalk.s2">Sketch your <b>levels, zones and notes</b> directly on the board.</li>
-      <li data-i18n-html="guide.chalk.s3">Your board is <b>saved automatically</b> in this browser so you can return to it.</li>
+      <li data-i18n-html="guide.chalk.s1">Open the <b>Chalkboard</b> tab and pick a tool from the toolbar.</li>
+      <li data-i18n-html="guide.chalk.s2">Sketch the <b>structure, zones and levels</b> you are watching, and write the reasoning next to the drawing instead of keeping it in your head.</li>
+      <li data-i18n-html="guide.chalk.s3">Use several boards to separate ideas — one per instrument, or one per session — rather than piling everything onto one.</li>
+      <li data-i18n-html="guide.chalk.s4"><b>Export the board</b> when it is worth keeping. That exported file is the real save.</li>
     </ol>
+    <p class="tip" data-i18n-html="guide.chalk.tip">Your boards live in <b>this browser</b>, not in your account. They survive closing the tab, but they do not travel to your phone and they disappear if you clear site data. If a board matters, export it — that is the only copy that is genuinely yours.</p>
   </div>
 
   <div class="sec" id="synapse">
@@ -166,12 +185,15 @@
       <span class="sec-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="6" cy="19" r="2"/><path d="M9.6 10.3L6.4 7.4M14.4 10.3l3-2.9M10.4 14L7.4 17.4"/></svg></span>
       <h2 data-i18n="guide.synapse.t">Synapse</h2>
     </div>
-    <p class="lead" data-i18n="guide.synapse.d">An interactive 3D knowledge hub. A holographic mind branches into every major methodology — explore them visually.</p>
+    <p class="lead" data-i18n-html="guide.synapse.d">An interactive map of every methodology the platform covers, built as a 3D brain: each branch is a method, each node a concept, and each node opens a full dossier. It is for exploring how ideas connect, which a list of lessons cannot show you.</p>
     <ol class="steps">
-      <li data-i18n-html="guide.synapse.s1">Open the <b>Synapse</b> tab and wait for the neural matrix to load.</li>
-      <li data-i18n-html="guide.synapse.s2">Click a <b>node</b> to open its methodology and read the classified dossier.</li>
-      <li data-i18n-html="guide.synapse.s3">Use the <b>Menu</b> arrow to return to the rest of the app at any time.</li>
+      <li data-i18n-html="guide.synapse.s1">Open <b>Synapse</b> and let the map load, then click a branch to open a methodology.</li>
+      <li data-i18n-html="guide.synapse.s2">Click a <b>node</b> to read its dossier: what the concept is, how it is identified, and how it relates to the concepts next to it.</li>
+      <li data-i18n-html="guide.synapse.s3">Follow the connections rather than reading in order. Seeing that two methods describe the same behaviour with different names is the point of the map.</li>
+      <li data-i18n-html="guide.synapse.s4">Everything is available in your language — the map, the names and the dossiers all follow the language you picked.</li>
+      <li data-i18n-html="guide.synapse.s5">Use the <b>Menu</b> arrow to return to the rest of the app whenever you want.</li>
     </ol>
+    <p class="tip" data-i18n-html="guide.synapse.tip">If you prefer to read away from the screen, the complete library is available as a PDF from the store. It is the same content, laid out for reading start to finish.</p>
   </div>
 
   <div class="sec" id="timing">
@@ -179,12 +201,15 @@
       <span class="sec-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
       <h2 data-i18n="guide.timing.t">Market Timing</h2>
     </div>
-    <p class="lead" data-i18n="guide.timing.d">Live session clocks (kill zones) and an economic calendar so you always know which session is active and what news is ahead.</p>
+    <p class="lead" data-i18n-html="guide.timing.d">Live clocks for the sessions that actually move the instruments you trade, plus the economic calendar. Most avoidable losses are not bad analysis — they are good analysis at the wrong hour.</p>
     <ol class="steps">
-      <li data-i18n-html="guide.timing.s1">On the Analyze tab, find the <b>Market Timing</b> panel with the session bands.</li>
-      <li data-i18n-html="guide.timing.s2">Hover a band to see its exact time in <b>ET and your local time</b>.</li>
-      <li data-i18n-html="guide.timing.s3">Filter the <b>economic calendar</b> by your instrument to focus on relevant news.</li>
+      <li data-i18n-html="guide.timing.s1">On the Analyze tab, open the <b>Market Timing</b> panel to see which session is running right now.</li>
+      <li data-i18n-html="guide.timing.s2">Hover any band to read its exact time in <b>New York time and your own local time</b>. The bands are the same for everyone; only the clock is yours.</li>
+      <li data-i18n-html="guide.timing.s3">Learn the character of each window: the London and New York opens tend to expand, the lunch hours tend to chop, and the ranges built overnight are what the day session reaches for.</li>
+      <li data-i18n-html="guide.timing.s4">Filter the <b>economic calendar</b> by your instrument so you only see the releases that can move it.</li>
+      <li data-i18n-html="guide.timing.s5">Check what is scheduled <b>before</b> you plan an entry, not after price has already jumped.</li>
     </ol>
+    <p class="tip" data-i18n-html="guide.timing.tip">A session clock tells you when participation usually shows up, not that something will happen. Holiday weeks keep the same clock with almost none of the volume behind it.</p>
   </div>
 
   <div class="sec" id="plans">
@@ -192,12 +217,14 @@
       <span class="sec-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6.5 7 .9-5 4.7 1.3 7-6.3-3.4L5.7 21l1.3-7-5-4.7 7-.9z"/></svg></span>
       <h2 data-i18n="guide.plans.t">Plans &amp; Limits</h2>
     </div>
-    <p class="lead" data-i18n="guide.plans.d">Each plan sets how many screenshots you can analyze and unlocks different tools. You can see your remaining analyses in the right-hand panel.</p>
+    <p class="lead" data-i18n-html="guide.plans.d">Your plan sets how often you can run an analysis, how many projects you can keep, and which tools are unlocked. Everything else — the guide, the map, your rank — is the same for everyone.</p>
     <ol class="steps">
-      <li data-i18n-html="guide.plans.s1"><b>Free</b> — 1 analysis every 7 days, to try the core tool.</li>
-      <li data-i18n-html="guide.plans.s2"><b>Standard</b> — 1 analysis every 24 hours.</li>
-      <li data-i18n-html="guide.plans.s3"><b>Premium</b> — 5 analyses every 24 hours, plus Forum, Quiz, Synapse and more.</li>
+      <li data-i18n-html="guide.plans.s1"><b>Free</b> — one analysis every 7 days and one saved project. Enough to see exactly what the tool does before paying anything.</li>
+      <li data-i18n-html="guide.plans.s2"><b>Standard</b> — one analysis every 24 hours, five projects, and full access to the Forum.</li>
+      <li data-i18n-html="guide.plans.s3"><b>Premium</b> — five analyses every 24 hours, ten projects, the Forum, <b>Pre-Flight</b>, and its own visual theme.</li>
+      <li data-i18n-html="guide.plans.s4">Your remaining analyses are always shown in the right-hand panel, so you never have to count them yourself.</li>
     </ol>
+    <p class="tip" data-i18n-html="guide.plans.tip">Open <b>Products → Plans</b> in the sidebar to compare them or change plan. A paid plan is paid period by period and never renews on its own: nothing is charged unless you decide to pay again.</p>
     <p class="note" data-i18n="guide.plans.note">Open <b>Products → Plans</b> in the sidebar to compare and upgrade at any time.</p>
   </div>
 
@@ -206,12 +233,15 @@
       <span class="sec-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span>
       <h2 data-i18n="guide.account.t">Account &amp; Settings</h2>
     </div>
-    <p class="lead" data-i18n="guide.account.d">Manage your profile, plan, language and theme, and control your session.</p>
+    <p class="lead" data-i18n-html="guide.account.d">Your profile, your plan, your rank and how the platform looks and speaks to you. All of it changes instantly and none of it affects your saved work.</p>
     <ol class="steps">
-      <li data-i18n-html="guide.account.s1">Use the <b>account panel</b> (top of the right rail) to reach your plan, coupons and rank.</li>
-      <li data-i18n-html="guide.account.s2">Change <b>language</b> and <b>light/dark theme</b> from the sidebar controls.</li>
-      <li data-i18n-html="guide.account.s3">Open <b>Products → Settings</b> for account options.</li>
+      <li data-i18n-html="guide.account.s1">Open the <b>account panel</b> at the top of the right rail to see your plan, your rank and your codes.</li>
+      <li data-i18n-html="guide.account.s2">Switch <b>language</b> at any time between English, Spanish, French and Portuguese — the whole platform follows, including the analyses.</li>
+      <li data-i18n-html="guide.account.s3">Switch between <b>light and dark</b> from the sidebar, and change your <b>theme</b> if you own one: themes restyle the platform without moving anything around.</li>
+      <li data-i18n-html="guide.account.s4">Watch your <b>rank</b> climb as you earn experience by analyzing, answering quizzes and taking part in the forum. Rank only ever goes up.</li>
+      <li data-i18n-html="guide.account.s5">Open <b>Products → Settings</b> for your account details, your password and your session.</li>
     </ol>
+    <p class="tip" data-i18n-html="guide.account.tip">Reaching a new rank issues a certificate with a public verification page, so it can be shared and checked by anyone. It certifies study on this platform — it is not a professional qualification or a licence.</p>
   </div>
 
   <div class="help-cta">
@@ -231,51 +261,77 @@
       'guide.title':'User Guide',
       'guide.sub':'A practical walkthrough of every tool in Tradeable — what each one is for and how to use it, step by step. This guide is educational only; nothing here is financial advice.',
       'guide.analyze.t':'Analyze Your Setup',
-      'guide.analyze.d':'Upload a screenshot of your chart and our AI highlights possible setup errors and educational observations to reflect on — never a verdict, signal, or recommendation.',
-      'guide.analyze.s1':'Open the <b>Analyze</b> tab and pick your <b>instrument</b>, <b>direction</b>, <b>session</b> and any <b>confluences</b> using the buttons.',
-      'guide.analyze.s2':'Upload a <b>screenshot</b> of your chart. Use the summary panel on the right to confirm everything is ready.',
-      'guide.analyze.s3':'Press <b>Analyze</b> and read the observations. Treat them as prompts to review your own reasoning, not as instructions.',
+      'guide.analyze.d':'Upload a screenshot of your chart and the AI walks through it the way an instructor would: what structure it can see, whether the timing and the confluences you claimed line up, and where the reasoning has holes. It never tells you to take the trade — it gives you things to check.',
+      'guide.analyze.s1':'Open the <b>Analyze</b> tab and set the context first: <b>instrument</b>, <b>direction</b>, <b>session</b>, and the <b>confluences</b> you believe are present. The AI reads a chart very differently depending on what you claim to be seeing, so this is not a formality.',
+      'guide.analyze.s2':'Pick the <b>methodology</b> you are trading. Each one has its own reading of the same candles — an order block matters under ICT and means nothing under Wyckoff — so choosing the wrong one produces an answer about a method you are not using.',
+      'guide.analyze.s3':'Upload a <b>screenshot</b>. Include enough chart to show where price came from: a zoomed-in image of the entry alone hides the context the analysis depends on. Marking your levels before the screenshot helps.',
+      'guide.analyze.s4':'Optionally write your <b>Trade Construction</b> — your reasoning in your own words, up to about 200 words. This is the part most people skip and it is the part that turns the answer from generic into specific to your idea.',
+      'guide.analyze.s5':'Press <b>Analyze</b>, then read it as a second opinion, not a verdict. The useful question is not "does it agree with me" but "did it see something I did not".',
+      'guide.analyze.s6':'Save the analysis to a <b>project</b> to keep a record. Reading three of your own old analyses side by side shows patterns in your mistakes that no single analysis can.',
+      'guide.analyze.tip':'The counter on the right shows how many analyses you have left in the current window. It updates the moment an analysis finishes, so you never have to guess — and a failed upload does not consume one.',
       'guide.preflight.t':'Pre-Flight',
-      'guide.preflight.d':'A pre-trade checklist so you confirm a setup actually meets your own rules before you commit to it.',
-      'guide.preflight.s1':'Open the <b>Pre-Flight</b> tab before you take a trade.',
-      'guide.preflight.s2':'Work through each <b>checklist item</b> honestly — bias, session, risk and invalidation.',
-      'guide.preflight.s3':'Only proceed when the checklist is clean. If something is missing, that is useful information too.',
+      'guide.preflight.d':'A checklist you fill in <b>before</b> you enter, not after. Its whole purpose is to make you state your rules while you still have nothing at risk, because the moment money is on the line your reasoning changes without asking permission.',
+      'guide.preflight.s1':'Open <b>Pre-Flight</b> and create a checklist for the setup you are looking at. Do it before you click buy or sell — a checklist filled in after entry is a diary, not a filter.',
+      'guide.preflight.s2':'Work through each item honestly: <b>bias</b>, <b>session</b>, <b>risk</b> and <b>invalidation</b>. Invalidation is the one that matters most: if you cannot say what would prove you wrong, you do not have a trade, you have an opinion.',
+      'guide.preflight.s3':'Answer with what is actually on the chart, not with what you hope. The checklist only works if it can tell you no.',
+      'guide.preflight.s4':'If an item does not pass, that is a result, not a failure. A setup that fails your own rules is information you paid nothing for.',
+      'guide.preflight.s5':'Keep your checklists. Going back over the ones you overrode is the fastest way to find out which rule you keep breaking.',
+      'guide.preflight.tip':'Pre-Flight is a Premium tool, and you can keep up to ten checklists — enough to cover the setups you actually trade rather than every idea you look at.',
       'guide.quiz.t':'Quiz & Daily Challenge',
-      'guide.quiz.d':'Test your knowledge of the methodologies with a large question bank, and take one ultra-hard question every day to keep a streak.',
-      'guide.quiz.s1':'Open the <b>Quiz</b> tab and choose a topic or difficulty to start a session.',
-      'guide.quiz.s2':'Answer each question — the server checks your answer, so results are honest and never revealed early.',
-      'guide.quiz.s3':'Come back for the <b>Daily Challenge</b>: one hard question a day that can earn you rewards.',
+      'guide.quiz.d':'A question bank across the methodologies the platform teaches, in rising levels of difficulty, plus one very hard question a day. It is designed to find the gaps you did not know you had — not to make you feel good about what you already know.',
+      'guide.quiz.s1':'Open the <b>Quiz</b> tab and pick a methodology and a topic — order blocks, market structure, accumulation, chart patterns and so on.',
+      'guide.quiz.s2':'Choose a level. <b>Beginner</b> checks definitions, <b>intermediate</b> checks whether you can apply them, and <b>advanced</b> puts two rules in conflict so you have to know which one wins.',
+      'guide.quiz.s3':'Answer, then read the explanation even when you got it right — a lucky guess and real knowledge look identical on the score.',
+      'guide.quiz.s4':'Try a <b>hardcore scenario</b> when a topic feels easy: full situations with several plausible readings and only one that survives scrutiny.',
+      'guide.quiz.s5':'Come back for the <b>Daily Challenge</b>: one hard question every day, and a streak that only grows if you keep showing up.',
+      'guide.quiz.tip':'Your answers are checked on the server and the options are shuffled, so the answer key is never in the page and there is no pattern to exploit. Your daily question is also rotated per account — nobody can pass you the answer, because theirs is a different one.',
       'guide.forum.t':'Forum',
-      'guide.forum.d':'A Premium community space to share setups, ask questions and discuss trading. Every post is automatically moderated.',
-      'guide.forum.s1':'Open <b>Forum Trading</b> and browse the feed, or switch to <b>Saved</b> to revisit posts.',
-      'guide.forum.s2':'Use <b>New post</b> to share a setup or question. Keep it respectful and on topic.',
-      'guide.forum.s3':'React and reply to other traders to build the discussion.',
+      'guide.forum.d':'A space to post setups, ask what you got wrong and follow traders whose reasoning you want to learn from. Available on <b>Standard and Premium</b>. Every post and image passes automatic moderation before it is published.',
+      'guide.forum.s1':'Open <b>Forum</b> and read the general feed, or the <b>Following</b> tab to see only the traders you follow.',
+      'guide.forum.s2':'Use <b>New post</b> to share a setup or a question. Posting the chart with your reasoning gets you far better answers than posting the chart alone.',
+      'guide.forum.s3':'Join or create a <b>community</b> for a methodology or a market, and post there when the topic is narrow enough that the general feed would bury it.',
+      'guide.forum.s4':'React and reply to other traders. Answering someone else forces you to put your own reasoning into words, which is where the gaps show up.',
+      'guide.forum.s5':'Use <b>Saved</b> to keep posts worth rereading, and <b>Messages</b> for a private conversation with another trader.',
+      'guide.forum.tip':'Moderation runs before publishing, not after complaints, and it covers text and images. It is there so nobody has to scroll past insults or signal-selling to reach the useful discussion.',
       'guide.chalk.t':'Chalkboard',
-      'guide.chalk.d':'A free-form drawing board to sketch setups, mark levels and annotate ideas, then save your boards for later.',
-      'guide.chalk.s1':'Open the <b>Chalkboard</b> tab and pick a drawing tool.',
-      'guide.chalk.s2':'Sketch your <b>levels, zones and notes</b> directly on the board.',
-      'guide.chalk.s3':'Your board is <b>saved automatically</b> in this browser so you can return to it.',
+      'guide.chalk.d':'A free drawing board for thinking with your hands: sketch the structure, mark the levels, write the plan next to it. Useful precisely because it is not a chart — nothing moves while you think.',
+      'guide.chalk.s1':'Open the <b>Chalkboard</b> tab and pick a tool from the toolbar.',
+      'guide.chalk.s2':'Sketch the <b>structure, zones and levels</b> you are watching, and write the reasoning next to the drawing instead of keeping it in your head.',
+      'guide.chalk.s3':'Use several boards to separate ideas — one per instrument, or one per session — rather than piling everything onto one.',
+      'guide.chalk.s4':'<b>Export the board</b> when it is worth keeping. That exported file is the real save.',
+      'guide.chalk.tip':'Your boards live in <b>this browser</b>, not in your account. They survive closing the tab, but they do not travel to your phone and they disappear if you clear site data. If a board matters, export it — that is the only copy that is genuinely yours.',
       'guide.synapse.t':'Synapse',
-      'guide.synapse.d':'An interactive 3D knowledge hub. A holographic mind branches into every major methodology — explore them visually.',
-      'guide.synapse.s1':'Open the <b>Synapse</b> tab and wait for the neural matrix to load.',
-      'guide.synapse.s2':'Click a <b>node</b> to open its methodology and read the classified dossier.',
-      'guide.synapse.s3':'Use the <b>Menu</b> arrow to return to the rest of the app at any time.',
+      'guide.synapse.d':'An interactive map of every methodology the platform covers, built as a 3D brain: each branch is a method, each node a concept, and each node opens a full dossier. It is for exploring how ideas connect, which a list of lessons cannot show you.',
+      'guide.synapse.s1':'Open <b>Synapse</b> and let the map load, then click a branch to open a methodology.',
+      'guide.synapse.s2':'Click a <b>node</b> to read its dossier: what the concept is, how it is identified, and how it relates to the concepts next to it.',
+      'guide.synapse.s3':'Follow the connections rather than reading in order. Seeing that two methods describe the same behaviour with different names is the point of the map.',
+      'guide.synapse.s4':'Everything is available in your language — the map, the names and the dossiers all follow the language you picked.',
+      'guide.synapse.s5':'Use the <b>Menu</b> arrow to return to the rest of the app whenever you want.',
+      'guide.synapse.tip':'If you prefer to read away from the screen, the complete library is available as a PDF from the store. It is the same content, laid out for reading start to finish.',
       'guide.timing.t':'Market Timing',
-      'guide.timing.d':'Live session clocks (kill zones) and an economic calendar so you always know which session is active and what news is ahead.',
-      'guide.timing.s1':'On the Analyze tab, find the <b>Market Timing</b> panel with the session bands.',
-      'guide.timing.s2':'Hover a band to see its exact time in <b>ET and your local time</b>.',
-      'guide.timing.s3':'Filter the <b>economic calendar</b> by your instrument to focus on relevant news.',
+      'guide.timing.d':'Live clocks for the sessions that actually move the instruments you trade, plus the economic calendar. Most avoidable losses are not bad analysis — they are good analysis at the wrong hour.',
+      'guide.timing.s1':'On the Analyze tab, open the <b>Market Timing</b> panel to see which session is running right now.',
+      'guide.timing.s2':'Hover any band to read its exact time in <b>New York time and your own local time</b>. The bands are the same for everyone; only the clock is yours.',
+      'guide.timing.s3':'Learn the character of each window: the London and New York opens tend to expand, the lunch hours tend to chop, and the ranges built overnight are what the day session reaches for.',
+      'guide.timing.s4':'Filter the <b>economic calendar</b> by your instrument so you only see the releases that can move it.',
+      'guide.timing.s5':'Check what is scheduled <b>before</b> you plan an entry, not after price has already jumped.',
+      'guide.timing.tip':'A session clock tells you when participation usually shows up, not that something will happen. Holiday weeks keep the same clock with almost none of the volume behind it.',
       'guide.plans.t':'Plans & Limits',
-      'guide.plans.d':'Each plan sets how many screenshots you can analyze and unlocks different tools. You can see your remaining analyses in the right-hand panel.',
-      'guide.plans.s1':'<b>Free</b> — 1 analysis every 7 days, to try the core tool.',
-      'guide.plans.s2':'<b>Standard</b> — 1 analysis every 24 hours.',
-      'guide.plans.s3':'<b>Premium</b> — 5 analyses every 24 hours, plus Forum, Quiz, Synapse and more.',
+      'guide.plans.d':'Your plan sets how often you can run an analysis, how many projects you can keep, and which tools are unlocked. Everything else — the guide, the map, your rank — is the same for everyone.',
+      'guide.plans.s1':'<b>Free</b> — one analysis every 7 days and one saved project. Enough to see exactly what the tool does before paying anything.',
+      'guide.plans.s2':'<b>Standard</b> — one analysis every 24 hours, five projects, and full access to the Forum.',
+      'guide.plans.s3':'<b>Premium</b> — five analyses every 24 hours, ten projects, the Forum, <b>Pre-Flight</b>, and its own visual theme.',
+      'guide.plans.s4':'Your remaining analyses are always shown in the right-hand panel, so you never have to count them yourself.',
+      'guide.plans.tip':'Open <b>Products → Plans</b> in the sidebar to compare them or change plan. A paid plan is paid period by period and never renews on its own: nothing is charged unless you decide to pay again.',
       'guide.plans.note':'Open <b>Products → Plans</b> in the sidebar to compare and upgrade at any time.',
       'guide.account.t':'Account & Settings',
-      'guide.account.d':'Manage your profile, plan, language and theme, and control your session.',
-      'guide.account.s1':'Use the <b>account panel</b> (top of the right rail) to reach your plan, coupons and rank.',
-      'guide.account.s2':'Change <b>language</b> and <b>light/dark theme</b> from the sidebar controls.',
-      'guide.account.s3':'Open <b>Products → Settings</b> for account options.',
+      'guide.account.d':'Your profile, your plan, your rank and how the platform looks and speaks to you. All of it changes instantly and none of it affects your saved work.',
+      'guide.account.s1':'Open the <b>account panel</b> at the top of the right rail to see your plan, your rank and your codes.',
+      'guide.account.s2':'Switch <b>language</b> at any time between English, Spanish, French and Portuguese — the whole platform follows, including the analyses.',
+      'guide.account.s3':'Switch between <b>light and dark</b> from the sidebar, and change your <b>theme</b> if you own one: themes restyle the platform without moving anything around.',
+      'guide.account.s4':'Watch your <b>rank</b> climb as you earn experience by analyzing, answering quizzes and taking part in the forum. Rank only ever goes up.',
+      'guide.account.s5':'Open <b>Products → Settings</b> for your account details, your password and your session.',
+      'guide.account.tip':'Reaching a new rank issues a certificate with a public verification page, so it can be shared and checked by anyone. It certifies study on this platform — it is not a professional qualification or a licence.',
       'guide.help.t':'Still need a hand?',
       'guide.help.d':'This guide covers the how-to. For anything specific to your account, our support team is one message away.',
       'guide.help.cta':'Contact Support'
@@ -287,51 +343,77 @@
       'guide.title':'Guía de uso',
       'guide.sub':'Un recorrido práctico por cada herramienta de Tradeable: para qué sirve y cómo usarla, paso a paso. Esta guía es solo educativa; nada de lo aquí escrito es asesoría financiera.',
       'guide.analyze.t':'Analiza tu setup',
-      'guide.analyze.d':'Sube una captura de tu gráfico y nuestra IA señala posibles errores del setup y observaciones educativas para reflexionar — nunca un veredicto, señal ni recomendación.',
-      'guide.analyze.s1':'Abre la pestaña <b>Analyze</b> y elige tu <b>instrumento</b>, <b>dirección</b>, <b>sesión</b> y las <b>confluencias</b> con los botones.',
-      'guide.analyze.s2':'Sube una <b>captura</b> de tu gráfico. Usa el panel de resumen de la derecha para confirmar que todo está listo.',
-      'guide.analyze.s3':'Pulsa <b>Analyze</b> y lee las observaciones. Tómalas como estímulos para revisar tu propio razonamiento, no como instrucciones.',
+      'guide.analyze.d':'Subes la captura de tu gráfico y la IA lo recorre como lo haría un instructor: qué estructura alcanza a ver, si el horario y las confluencias que declaraste cuadran entre sí, y dónde tu razonamiento tiene huecos. Nunca te dice que entres — te da cosas que revisar.',
+      'guide.analyze.s1':'Abre la pestaña <b>Analizar</b> y arranca por el contexto: <b>instrumento</b>, <b>dirección</b>, <b>sesión</b> y las <b>confluencias</b> que crees que están presentes. La IA lee un mismo gráfico de forma muy distinta según lo que digas que estás viendo, así que esto no es un trámite.',
+      'guide.analyze.s2':'Elige la <b>metodología</b> con la que estás operando. Cada una lee las mismas velas a su manera — un order block importa en ICT y no significa nada en Wyckoff—, así que equivocarte aquí te devuelve una respuesta sobre un método que no estás usando.',
+      'guide.analyze.s3':'Sube la <b>captura</b>. Que se vea de dónde viene el precio: una imagen pegada a la entrada esconde justo el contexto del que depende el análisis. Marcar tus niveles antes de capturar ayuda bastante.',
+      'guide.analyze.s4':'Si quieres, escribe tu <b>Construcción del trade</b>: tu razonamiento con tus palabras, hasta unas 200. Es la parte que casi todos se saltan y es la que convierte una respuesta genérica en una respuesta sobre tu idea.',
+      'guide.analyze.s5':'Pulsa <b>Analizar</b> y léelo como una segunda opinión, no como un veredicto. La pregunta útil no es «¿me da la razón?» sino «¿vio algo que yo no vi?».',
+      'guide.analyze.s6':'Guarda el análisis en un <b>proyecto</b>. Poner tres análisis tuyos uno al lado del otro muestra patrones en tus errores que ninguno enseña por separado.',
+      'guide.analyze.tip':'El contador de la derecha te dice cuántos análisis te quedan en la ventana actual. Se actualiza en cuanto termina uno, así que no tienes que llevar la cuenta — y una subida fallida no te gasta ninguno.',
       'guide.preflight.t':'Pre-Flight',
-      'guide.preflight.d':'Una checklist previa a la operación para confirmar que un setup realmente cumple tus propias reglas antes de ejecutarlo.',
-      'guide.preflight.s1':'Abre la pestaña <b>Pre-Flight</b> antes de tomar una operación.',
-      'guide.preflight.s2':'Repasa con honestidad cada <b>punto de la checklist</b>: sesgo, sesión, riesgo e invalidación.',
-      'guide.preflight.s3':'Continúa solo cuando la checklist esté limpia. Si falta algo, eso también es información útil.',
+      'guide.preflight.d':'Una lista de control que llenas <b>antes</b> de entrar, no después. Su razón de ser es que dejes tus reglas por escrito mientras todavía no tienes nada en riesgo, porque en cuanto hay dinero de por medio tu razonamiento cambia sin pedirte permiso.',
+      'guide.preflight.s1':'Abre <b>Pre-Flight</b> y crea una lista para el setup que estás mirando. Hazlo antes de darle a comprar o vender: una lista llenada después de entrar es un diario, no un filtro.',
+      'guide.preflight.s2':'Responde cada punto con honestidad: <b>sesgo</b>, <b>sesión</b>, <b>riesgo</b> e <b>invalidación</b>. La invalidación es la que más pesa: si no sabes decir qué te dejaría en evidencia, no tienes un trade, tienes una opinión.',
+      'guide.preflight.s3':'Responde con lo que hay en el gráfico, no con lo que te gustaría. La lista solo sirve si puede decirte que no.',
+      'guide.preflight.s4':'Que un punto no pase es un resultado, no un fracaso. Un setup que no cumple tus propias reglas es información que te salió gratis.',
+      'guide.preflight.s5':'Guarda tus listas. Repasar las que te saltaste es la forma más rápida de descubrir qué regla estás rompiendo siempre.',
+      'guide.preflight.tip':'Pre-Flight es una herramienta Premium y puedes tener hasta diez listas — suficiente para cubrir los setups que de verdad operas, no cada idea que te cruza por delante.',
       'guide.quiz.t':'Quiz y Reto Diario',
-      'guide.quiz.d':'Pon a prueba tu conocimiento de las metodologías con un gran banco de preguntas, y responde una pregunta ultradifícil cada día para mantener tu racha.',
-      'guide.quiz.s1':'Abre la pestaña <b>Quiz</b> y elige un tema o dificultad para empezar una sesión.',
-      'guide.quiz.s2':'Responde cada pregunta — el servidor valida tu respuesta, así los resultados son honestos y nunca se revelan antes.',
-      'guide.quiz.s3':'Vuelve por el <b>Reto Diario</b>: una pregunta difícil al día que puede darte recompensas.',
+      'guide.quiz.d':'Un banco de preguntas de todas las metodologías que enseña la plataforma, con dificultad creciente, más una pregunta muy dura cada día. Está hecho para encontrar los huecos que no sabías que tenías, no para que te sientas bien con lo que ya sabes.',
+      'guide.quiz.s1':'Abre la pestaña <b>Quiz</b> y elige metodología y tema: order blocks, estructura de mercado, acumulación, patrones de gráfico y demás.',
+      'guide.quiz.s2':'Elige el nivel. <b>Principiante</b> revisa definiciones, <b>intermedio</b> revisa si sabes aplicarlas, y <b>avanzado</b> pone dos reglas en conflicto para que tengas que saber cuál manda.',
+      'guide.quiz.s3':'Responde y lee la explicación aunque hayas acertado: en el marcador, una corazonada acertada y saber de verdad se ven exactamente igual.',
+      'guide.quiz.s4':'Prueba un <b>escenario hardcore</b> cuando un tema se te haga fácil: situaciones completas con varias lecturas creíbles y una sola que aguanta.',
+      'guide.quiz.s5':'Vuelve por el <b>Reto diario</b>: una pregunta difícil al día y una racha que solo crece si apareces.',
+      'guide.quiz.tip':'Tus respuestas se verifican en el servidor y las opciones se barajan, así que la respuesta correcta nunca viaja en la página ni hay un patrón que aprovechar. Además el reto diario rota por cuenta: nadie puede soplarte la respuesta, porque a él le tocó otra pregunta.',
       'guide.forum.t':'Foro',
-      'guide.forum.d':'Un espacio de comunidad Premium para compartir setups, hacer preguntas y hablar de trading. Cada publicación se modera automáticamente.',
-      'guide.forum.s1':'Abre <b>Forum Trading</b> y recorre el feed, o cambia a <b>Guardados</b> para revisar publicaciones.',
-      'guide.forum.s2':'Usa <b>Nueva publicación</b> para compartir un setup o una pregunta. Mantén el respeto y el tema.',
-      'guide.forum.s3':'Reacciona y responde a otros traders para enriquecer la conversación.',
+      'guide.forum.d':'Un espacio para publicar setups, preguntar en qué te equivocaste y seguir a traders cuyo razonamiento quieras aprender. Disponible en <b>Standard y Premium</b>. Cada publicación e imagen pasa por moderación automática antes de verse.',
+      'guide.forum.s1':'Abre <b>Foro Trading</b> y lee el feed general, o la pestaña <b>Siguiendo</b> para ver solo a los traders que sigues.',
+      'guide.forum.s2':'Usa <b>Nueva publicación</b> para compartir un setup o una duda. Publicar el gráfico junto a tu razonamiento consigue respuestas muchísimo mejores que publicar el gráfico solo.',
+      'guide.forum.s3':'Únete o crea una <b>comunidad</b> para una metodología o un mercado, y publica ahí cuando el tema sea tan específico que en el feed general se perdería.',
+      'guide.forum.s4':'Reacciona y responde a otros. Contestarle a alguien te obliga a poner tu propio razonamiento en palabras, que es justo donde aparecen los huecos.',
+      'guide.forum.s5':'Usa <b>Guardados</b> para lo que valga la pena releer, y <b>Mensajes</b> para hablar en privado con otro trader.',
+      'guide.forum.tip':'La moderación actúa antes de publicar, no después de que alguien se queje, y revisa texto e imágenes. Está para que nadie tenga que pasar por encima de insultos ni de gente vendiendo señales para llegar a la conversación que sirve.',
       'guide.chalk.t':'Chalkboard',
-      'guide.chalk.d':'Un tablero de dibujo libre para bocetar setups, marcar niveles y anotar ideas, y luego guardar tus tableros.',
-      'guide.chalk.s1':'Abre la pestaña <b>Chalkboard</b> y elige una herramienta de dibujo.',
-      'guide.chalk.s2':'Dibuja tus <b>niveles, zonas y notas</b> directamente en el tablero.',
-      'guide.chalk.s3':'Tu tablero se <b>guarda automáticamente</b> en este navegador para que puedas volver a él.',
+      'guide.chalk.d':'Una pizarra libre para pensar con las manos: dibuja la estructura, marca los niveles, escribe el plan al lado. Sirve precisamente porque no es un gráfico — aquí nada se mueve mientras piensas.',
+      'guide.chalk.s1':'Abre la pestaña <b>Chalkboard</b> y elige una herramienta de la barra. (La pestaña se llama así en todos los idiomas.)',
+      'guide.chalk.s2':'Dibuja la <b>estructura, las zonas y los niveles</b> que estás vigilando, y escribe el razonamiento al lado del dibujo en vez de dejarlo en la cabeza.',
+      'guide.chalk.s3':'Usa varias pizarras para separar ideas — una por instrumento, o una por sesión — en lugar de amontonarlo todo en una.',
+      'guide.chalk.s4':'<b>Exporta la pizarra</b> cuando valga la pena conservarla. Ese archivo exportado es el guardado de verdad.',
+      'guide.chalk.tip':'Tus pizarras viven en <b>este navegador</b>, no en tu cuenta. Sobreviven a cerrar la pestaña, pero no viajan a tu teléfono y desaparecen si borras los datos del sitio. Si una pizarra te importa, expórtala: esa es la única copia realmente tuya.',
       'guide.synapse.t':'Synapse',
-      'guide.synapse.d':'Un centro de conocimiento interactivo en 3D. Una mente holográfica se ramifica hacia cada metodología principal — explóralas visualmente.',
-      'guide.synapse.s1':'Abre la pestaña <b>Synapse</b> y espera a que cargue la matriz neuronal.',
-      'guide.synapse.s2':'Haz clic en un <b>nodo</b> para abrir su metodología y leer el dossier clasificado.',
-      'guide.synapse.s3':'Usa la flecha <b>Menú</b> para volver al resto de la app en cualquier momento.',
+      'guide.synapse.d':'Un mapa interactivo de todas las metodologías, montado como un cerebro en 3D: cada rama es un método, cada nodo un concepto, y cada nodo abre un dossier completo. Está para explorar cómo se conectan las ideas, que es justo lo que una lista de lecciones no puede enseñarte.',
+      'guide.synapse.s1':'Abre <b>Synapse</b>, espera a que cargue el mapa y pulsa una rama para entrar en una metodología.',
+      'guide.synapse.s2':'Pulsa un <b>nodo</b> para leer su dossier: qué es el concepto, cómo se identifica y cómo se relaciona con los que tiene al lado.',
+      'guide.synapse.s3':'Sigue las conexiones en vez de leer en orden. Ver que dos métodos describen el mismo comportamiento con nombres distintos es el sentido del mapa.',
+      'guide.synapse.s4':'Está todo en tu idioma: el mapa, los nombres y los dossiers siguen el idioma que hayas elegido.',
+      'guide.synapse.s5':'Usa la flecha de <b>Menú</b> para volver al resto de la aplicación cuando quieras.',
+      'guide.synapse.tip':'Si prefieres leer fuera de la pantalla, la biblioteca completa está disponible en PDF en la tienda. Es el mismo contenido, maquetado para leerse de principio a fin.',
       'guide.timing.t':'Timing del mercado',
-      'guide.timing.d':'Relojes de sesión en vivo (kill zones) y un calendario económico para saber siempre qué sesión está activa y qué noticias vienen.',
-      'guide.timing.s1':'En la pestaña Analyze, busca el panel de <b>Market Timing</b> con las bandas de sesión.',
-      'guide.timing.s2':'Pasa el cursor por una banda para ver su hora exacta en <b>ET y tu hora local</b>.',
-      'guide.timing.s3':'Filtra el <b>calendario económico</b> por tu instrumento para centrarte en las noticias relevantes.',
+      'guide.timing.d':'Relojes en vivo de las sesiones que de verdad mueven los instrumentos que operas, más el calendario económico. La mayoría de las pérdidas evitables no son análisis malos: son análisis buenos a la hora equivocada.',
+      'guide.timing.s1':'En la pestaña Analizar, abre el panel de <b>Market Timing</b> para ver qué sesión está corriendo ahora mismo.',
+      'guide.timing.s2':'Pasa el cursor por cualquier banda para ver su horario exacto en <b>hora de Nueva York y en la tuya</b>. Las bandas son iguales para todos; lo único tuyo es el reloj.',
+      'guide.timing.s3':'Aprende el carácter de cada ventana: las aperturas de Londres y Nueva York tienden a expandir, las horas de almuerzo a lateralizar, y los rangos que se construyen de madrugada son a los que va la sesión del día.',
+      'guide.timing.s4':'Filtra el <b>calendario económico</b> por tu instrumento para ver solo las publicaciones que pueden moverlo.',
+      'guide.timing.s5':'Mira qué hay programado <b>antes</b> de planear una entrada, no después de que el precio ya pegó el salto.',
+      'guide.timing.tip':'Un reloj de sesión te dice cuándo suele aparecer la participación, no que vaya a pasar algo. Una semana de feriados mantiene el mismo horario sin casi nada de volumen detrás.',
       'guide.plans.t':'Planes y límites',
-      'guide.plans.d':'Cada plan define cuántas capturas puedes analizar y desbloquea distintas herramientas. Ves tus análisis restantes en el panel de la derecha.',
-      'guide.plans.s1':'<b>Free</b> — 1 análisis cada 7 días, para probar la herramienta principal.',
-      'guide.plans.s2':'<b>Standard</b> — 1 análisis cada 24 horas.',
-      'guide.plans.s3':'<b>Premium</b> — 5 análisis cada 24 horas, además de Foro, Quiz, Synapse y más.',
+      'guide.plans.d':'Tu plan define cada cuánto puedes analizar, cuántos proyectos guardas y qué herramientas tienes desbloqueadas. Todo lo demás —la guía, el mapa, tu rango— es igual para todos.',
+      'guide.plans.s1':'<b>Free</b> — un análisis cada 7 días y un proyecto guardado. Suficiente para ver exactamente qué hace la herramienta antes de pagar nada.',
+      'guide.plans.s2':'<b>Standard</b> — un análisis cada 24 horas, cinco proyectos y acceso completo al Foro.',
+      'guide.plans.s3':'<b>Premium</b> — cinco análisis cada 24 horas, diez proyectos, el Foro, <b>Pre-Flight</b> y un tema visual propio.',
+      'guide.plans.s4':'Los análisis que te quedan salen siempre en el panel de la derecha, así que no tienes que llevar tú la cuenta.',
+      'guide.plans.tip':'Entra en <b>Products → Planes</b> desde la barra lateral para compararlos o cambiar de plan. Un plan de pago se paga período a período y nunca se renueva solo: no se te cobra nada si tú no decides volver a pagar.',
       'guide.plans.note':'Abre <b>Products → Planes</b> en la barra lateral para comparar y mejorar tu plan cuando quieras.',
       'guide.account.t':'Cuenta y ajustes',
-      'guide.account.d':'Gestiona tu perfil, plan, idioma y tema, y controla tu sesión.',
-      'guide.account.s1':'Usa el <b>panel de cuenta</b> (arriba en el rail derecho) para llegar a tu plan, cupones y rango.',
-      'guide.account.s2':'Cambia el <b>idioma</b> y el <b>tema claro/oscuro</b> desde los controles de la barra lateral.',
-      'guide.account.s3':'Abre <b>Products → Settings</b> para las opciones de cuenta.',
+      'guide.account.d':'Tu perfil, tu plan, tu rango y cómo se ve y te habla la plataforma. Todo cambia al instante y nada de esto toca el trabajo que ya guardaste.',
+      'guide.account.s1':'Abre el <b>panel de cuenta</b> arriba de la columna derecha para ver tu plan, tu rango y tus códigos.',
+      'guide.account.s2':'Cambia de <b>idioma</b> cuando quieras entre español, inglés, francés y portugués — la plataforma entera te sigue, análisis incluidos.',
+      'guide.account.s3':'Alterna entre <b>claro y oscuro</b> desde la barra lateral, y cambia de <b>camo</b> si tienes alguno: los camos reestilizan la plataforma sin mover nada de sitio.',
+      'guide.account.s4':'Mira subir tu <b>rango</b> a medida que ganas experiencia analizando, respondiendo quizzes y participando en el foro. El rango solo sube, nunca baja.',
+      'guide.account.s5':'Entra en <b>Products → Settings</b> para los datos de tu cuenta, tu contraseña y tu sesión.',
+      'guide.account.tip':'Llegar a un rango nuevo emite un certificado con página pública de verificación, así que se puede compartir y cualquiera puede comprobarlo. Acredita estudio en esta plataforma: no es un título profesional ni una licencia.',
       'guide.help.t':'¿Aún necesitas ayuda?',
       'guide.help.d':'Esta guía cubre el cómo. Para cualquier cosa específica de tu cuenta, nuestro equipo de soporte está a un mensaje.',
       'guide.help.cta':'Contactar soporte'
@@ -343,51 +425,77 @@
       'guide.title':"Guide d'utilisation",
       'guide.sub':"Un parcours pratique de chaque outil de Tradeable : à quoi il sert et comment l'utiliser, étape par étape. Ce guide est purement éducatif ; rien ici n'est un conseil financier.",
       'guide.analyze.t':'Analysez votre setup',
-      'guide.analyze.d':"Téléversez une capture de votre graphique et notre IA met en évidence de possibles erreurs de setup et des observations éducatives à méditer — jamais un verdict, un signal ou une recommandation.",
-      'guide.analyze.s1':"Ouvrez l'onglet <b>Analyze</b> et choisissez votre <b>instrument</b>, votre <b>direction</b>, la <b>session</b> et les <b>confluences</b> avec les boutons.",
-      'guide.analyze.s2':'Téléversez une <b>capture</b> de votre graphique. Servez-vous du panneau de résumé à droite pour vérifier que tout est prêt.',
-      'guide.analyze.s3':"Appuyez sur <b>Analyze</b> et lisez les observations. Prenez-les comme des invitations à revoir votre propre raisonnement, pas comme des consignes.",
+      'guide.analyze.d':'Vous téléversez la capture de votre graphique et l’IA la parcourt comme le ferait un instructeur : quelle structure elle distingue, si l’horaire et les confluences que vous avez déclarés concordent, et où votre raisonnement a des trous. Elle ne vous dit jamais d’entrer — elle vous donne des choses à vérifier.',
+      'guide.analyze.s1':'Ouvrez l’onglet <b>Analyser</b> et commencez par le contexte : <b>instrument</b>, <b>direction</b>, <b>session</b> et les <b>confluences</b> que vous pensez présentes. L’IA lit un même graphique très différemment selon ce que vous dites y voir : ce n’est pas une formalité.',
+      'guide.analyze.s2':'Choisissez la <b>méthodologie</b> que vous tradez. Chacune lit les mêmes bougies à sa manière — un order block compte en ICT et ne signifie rien en Wyckoff — donc vous tromper ici vous renvoie une réponse sur une méthode que vous n’utilisez pas.',
+      'guide.analyze.s3':'Téléversez la <b>capture</b>. Montrez d’où vient le prix : une image collée à l’entrée cache justement le contexte dont dépend l’analyse. Marquer vos niveaux avant la capture aide beaucoup.',
+      'guide.analyze.s4':'Si vous le souhaitez, rédigez votre <b>Construction du trade</b> : votre raisonnement avec vos mots, jusqu’à environ 200. C’est la partie que presque tout le monde saute, et c’est celle qui transforme une réponse générique en une réponse sur votre idée.',
+      'guide.analyze.s5':'Appuyez sur <b>Analyser</b> et lisez-la comme un second avis, pas comme un verdict. La bonne question n’est pas « est-ce qu’elle me donne raison ? » mais « a-t-elle vu quelque chose que je n’ai pas vu ? ».',
+      'guide.analyze.s6':'Enregistrez l’analyse dans un <b>projet</b>. Mettre trois de vos analyses côte à côte révèle dans vos erreurs des schémas qu’aucune ne montre seule.',
+      'guide.analyze.tip':'Le compteur de droite indique combien d’analyses il vous reste dans la fenêtre en cours. Il se met à jour dès qu’une analyse se termine, vous n’avez donc rien à compter — et un envoi échoué n’en consomme aucune.',
       'guide.preflight.t':'Pre-Flight',
-      'guide.preflight.d':"Une checklist avant trade pour confirmer qu'un setup respecte vraiment vos propres règles avant de vous engager.",
-      'guide.preflight.s1':"Ouvrez l'onglet <b>Pre-Flight</b> avant de prendre un trade.",
-      'guide.preflight.s2':'Passez honnêtement en revue chaque <b>point de la checklist</b> : biais, session, risque et invalidation.',
-      'guide.preflight.s3':"Ne continuez que si la checklist est propre. S'il manque quelque chose, c'est aussi une information utile.",
+      'guide.preflight.d':'Une check-list que vous remplissez <b>avant</b> d’entrer, pas après. Son but est de vous faire écrire vos règles pendant que vous n’avez encore rien en risque, car dès qu’il y a de l’argent en jeu votre raisonnement change sans vous demander la permission.',
+      'guide.preflight.s1':'Ouvrez <b>Pre-Flight</b> et créez une check-list pour le setup que vous regardez. Faites-le avant de cliquer sur acheter ou vendre : une check-list remplie après l’entrée est un journal, pas un filtre.',
+      'guide.preflight.s2':'Traitez chaque point honnêtement : <b>biais</b>, <b>session</b>, <b>risque</b> et <b>invalidation</b>. L’invalidation est la plus importante : si vous ne savez pas dire ce qui vous donnerait tort, vous n’avez pas un trade, vous avez un avis.',
+      'guide.preflight.s3':'Répondez avec ce qui est réellement sur le graphique, pas avec ce que vous espérez. La liste ne sert que si elle peut vous dire non.',
+      'guide.preflight.s4':'Qu’un point ne passe pas est un résultat, pas un échec. Un setup qui ne respecte pas vos propres règles est une information qui ne vous a rien coûté.',
+      'guide.preflight.s5':'Conservez vos check-lists. Revoir celles que vous avez outrepassées est le moyen le plus rapide de découvrir quelle règle vous enfreignez toujours.',
+      'guide.preflight.tip':'Pre-Flight est un outil Premium et vous pouvez conserver jusqu’à dix check-lists — de quoi couvrir les setups que vous tradez vraiment, pas chaque idée qui passe.',
       'guide.quiz.t':'Quiz et Défi quotidien',
-      'guide.quiz.d':"Testez vos connaissances des méthodologies avec une vaste banque de questions, et répondez à une question ultra-difficile chaque jour pour garder votre série.",
-      'guide.quiz.s1':"Ouvrez l'onglet <b>Quiz</b> et choisissez un thème ou une difficulté pour lancer une session.",
-      'guide.quiz.s2':'Répondez à chaque question — le serveur valide votre réponse, les résultats sont donc honnêtes et jamais dévoilés à l\'avance.',
-      'guide.quiz.s3':'Revenez pour le <b>Défi quotidien</b> : une question difficile par jour qui peut vous rapporter des récompenses.',
+      'guide.quiz.d':'Une banque de questions sur toutes les méthodologies enseignées par la plateforme, avec une difficulté croissante, plus une question très dure chaque jour. Elle est conçue pour trouver les lacunes que vous ne vous connaissiez pas, pas pour vous rassurer sur ce que vous savez déjà.',
+      'guide.quiz.s1':'Ouvrez l’onglet <b>Quiz</b> et choisissez une méthodologie et un thème : order blocks, structure de marché, accumulation, figures graphiques, etc.',
+      'guide.quiz.s2':'Choisissez le niveau. <b>Débutant</b> vérifie les définitions, <b>intermédiaire</b> vérifie si vous savez les appliquer, et <b>avancé</b> met deux règles en conflit pour que vous sachiez laquelle l’emporte.',
+      'guide.quiz.s3':'Répondez, puis lisez l’explication même quand vous avez juste : au score, une intuition heureuse et une vraie connaissance se ressemblent exactement.',
+      'guide.quiz.s4':'Essayez un <b>scénario hardcore</b> quand un thème vous paraît facile : des situations complètes avec plusieurs lectures crédibles et une seule qui tient.',
+      'guide.quiz.s5':'Revenez pour le <b>Défi quotidien</b> : une question difficile par jour, et une série qui ne grandit que si vous êtes là.',
+      'guide.quiz.tip':'Vos réponses sont vérifiées sur le serveur et les options sont mélangées : la bonne réponse ne circule jamais dans la page et il n’y a aucun schéma à exploiter. Le défi quotidien tourne aussi par compte — personne ne peut vous souffler la réponse, la sienne est une autre question.',
       'guide.forum.t':'Forum',
-      'guide.forum.d':"Un espace communautaire Premium pour partager des setups, poser des questions et discuter de trading. Chaque message est modéré automatiquement.",
-      'guide.forum.s1':'Ouvrez <b>Forum Trading</b> et parcourez le fil, ou passez à <b>Enregistrés</b> pour revoir des messages.',
-      'guide.forum.s2':'Utilisez <b>Nouveau message</b> pour partager un setup ou une question. Restez respectueux et dans le sujet.',
-      'guide.forum.s3':'Réagissez et répondez aux autres traders pour nourrir la discussion.',
+      'guide.forum.d':'Un espace pour publier des setups, demander où vous vous êtes trompé et suivre les traders dont vous voulez apprendre le raisonnement. Disponible en <b>Standard et Premium</b>. Chaque publication et chaque image passe par une modération automatique avant d’être visible.',
+      'guide.forum.s1':'Ouvrez <b>Forum Trading</b> et lisez le fil général, ou l’onglet <b>Abonnements</b> pour ne voir que les traders que vous suivez.',
+      'guide.forum.s2':'Utilisez <b>Nouvelle publication</b> pour partager un setup ou une question. Publier le graphique avec votre raisonnement vous vaut de bien meilleures réponses que le graphique seul.',
+      'guide.forum.s3':'Rejoignez ou créez une <b>communauté</b> pour une méthodologie ou un marché, et publiez-y quand le sujet est trop précis pour le fil général.',
+      'guide.forum.s4':'Réagissez et répondez aux autres. Répondre à quelqu’un vous oblige à mettre votre propre raisonnement en mots, et c’est là que les trous apparaissent.',
+      'guide.forum.s5':'Utilisez <b>Enregistrés</b> pour ce qui mérite d’être relu, et <b>Messages</b> pour échanger en privé avec un autre trader.',
+      'guide.forum.tip':'La modération intervient avant publication, pas après une plainte, et elle couvre le texte et les images. Elle est là pour que personne n’ait à passer par-dessus des insultes ou de la vente de signaux pour atteindre la discussion utile.',
       'guide.chalk.t':'Chalkboard',
-      'guide.chalk.d':"Un tableau de dessin libre pour esquisser des setups, marquer des niveaux et annoter des idées, puis enregistrer vos tableaux.",
-      'guide.chalk.s1':"Ouvrez l'onglet <b>Chalkboard</b> et choisissez un outil de dessin.",
-      'guide.chalk.s2':'Dessinez vos <b>niveaux, zones et notes</b> directement sur le tableau.',
-      'guide.chalk.s3':'Votre tableau est <b>enregistré automatiquement</b> dans ce navigateur pour que vous puissiez y revenir.',
+      'guide.chalk.d':'Un tableau libre pour penser avec les mains : dessinez la structure, marquez les niveaux, écrivez le plan à côté. Il est utile précisément parce que ce n’est pas un graphique — ici rien ne bouge pendant que vous réfléchissez.',
+      'guide.chalk.s1':'Ouvrez l’onglet <b>Chalkboard</b> et choisissez un outil dans la barre. (L’onglet porte ce nom dans toutes les langues.)',
+      'guide.chalk.s2':'Dessinez la <b>structure, les zones et les niveaux</b> que vous surveillez, et écrivez le raisonnement à côté du dessin plutôt que de le garder en tête.',
+      'guide.chalk.s3':'Utilisez plusieurs tableaux pour séparer les idées — un par instrument, ou un par session — au lieu de tout empiler sur un seul.',
+      'guide.chalk.s4':'<b>Exportez le tableau</b> quand il mérite d’être conservé. Ce fichier exporté est la vraie sauvegarde.',
+      'guide.chalk.tip':'Vos tableaux vivent dans <b>ce navigateur</b>, pas dans votre compte. Ils survivent à la fermeture de l’onglet, mais ils ne voyagent pas jusqu’à votre téléphone et disparaissent si vous effacez les données du site. Si un tableau compte, exportez-le : c’est la seule copie qui vous appartient vraiment.',
       'guide.synapse.t':'Synapse',
-      'guide.synapse.d':"Un hub de connaissances interactif en 3D. Un esprit holographique se ramifie vers chaque grande méthodologie — explorez-les visuellement.",
-      'guide.synapse.s1':"Ouvrez l'onglet <b>Synapse</b> et attendez le chargement de la matrice neuronale.",
-      'guide.synapse.s2':'Cliquez sur un <b>nœud</b> pour ouvrir sa méthodologie et lire le dossier classé.',
-      'guide.synapse.s3':"Utilisez la flèche <b>Menu</b> pour revenir au reste de l'app à tout moment.",
+      'guide.synapse.d':'Une carte interactive de toutes les méthodologies, construite comme un cerveau en 3D : chaque branche est une méthode, chaque nœud un concept, et chaque nœud ouvre un dossier complet. Elle sert à explorer comment les idées se relient, ce qu’une liste de leçons ne peut pas montrer.',
+      'guide.synapse.s1':'Ouvrez <b>Synapse</b>, laissez la carte se charger, puis cliquez sur une branche pour entrer dans une méthodologie.',
+      'guide.synapse.s2':'Cliquez sur un <b>nœud</b> pour lire son dossier : ce qu’est le concept, comment on l’identifie et comment il se relie à ceux qui l’entourent.',
+      'guide.synapse.s3':'Suivez les connexions plutôt que de lire dans l’ordre. Voir que deux méthodes décrivent le même comportement sous des noms différents, c’est tout l’intérêt de la carte.',
+      'guide.synapse.s4':'Tout est dans votre langue : la carte, les noms et les dossiers suivent la langue que vous avez choisie.',
+      'guide.synapse.s5':'Utilisez la flèche <b>Menu</b> pour revenir au reste de l’application quand vous voulez.',
+      'guide.synapse.tip':'Si vous préférez lire loin de l’écran, la bibliothèque complète est disponible en PDF dans la boutique. C’est le même contenu, mis en page pour être lu du début à la fin.',
       'guide.timing.t':'Timing du marché',
-      'guide.timing.d':"Des horloges de session en direct (kill zones) et un calendrier économique pour toujours savoir quelle session est active et quelles nouvelles arrivent.",
-      'guide.timing.s1':"Dans l'onglet Analyze, trouvez le panneau <b>Market Timing</b> avec les bandes de session.",
-      'guide.timing.s2':'Survolez une bande pour voir son heure exacte en <b>ET et votre heure locale</b>.',
-      'guide.timing.s3':'Filtrez le <b>calendrier économique</b> par votre instrument pour vous concentrer sur les nouvelles pertinentes.',
+      'guide.timing.d':'Des horloges en direct pour les sessions qui font réellement bouger vos instruments, plus le calendrier économique. La plupart des pertes évitables ne sont pas de mauvaises analyses : ce sont de bonnes analyses à la mauvaise heure.',
+      'guide.timing.s1':'Dans l’onglet Analyser, ouvrez le panneau <b>Market Timing</b> pour voir quelle session est en cours.',
+      'guide.timing.s2':'Survolez une bande pour lire son horaire exact à l’<b>heure de New York et à la vôtre</b>. Les bandes sont les mêmes pour tout le monde ; seule l’horloge est la vôtre.',
+      'guide.timing.s3':'Apprenez le caractère de chaque fenêtre : les ouvertures de Londres et de New York tendent à étendre, les heures du déjeuner à hacher, et les ranges construits la nuit sont ce que la session du jour va chercher.',
+      'guide.timing.s4':'Filtrez le <b>calendrier économique</b> par votre instrument pour ne voir que les publications capables de le déplacer.',
+      'guide.timing.s5':'Regardez ce qui est prévu <b>avant</b> de planifier une entrée, pas après que le prix a déjà sauté.',
+      'guide.timing.tip':'Une horloge de session vous dit quand la participation arrive habituellement, pas qu’il va se passer quelque chose. Une semaine de jours fériés garde le même horaire avec presque aucun volume derrière.',
       'guide.plans.t':'Plans et limites',
-      'guide.plans.d':"Chaque plan définit combien de captures vous pouvez analyser et déverrouille différents outils. Vos analyses restantes s'affichent dans le panneau de droite.",
-      'guide.plans.s1':"<b>Free</b> — 1 analyse tous les 7 jours, pour essayer l'outil principal.",
-      'guide.plans.s2':'<b>Standard</b> — 1 analyse toutes les 24 heures.',
-      'guide.plans.s3':'<b>Premium</b> — 5 analyses toutes les 24 heures, plus Forum, Quiz, Synapse et plus.',
+      'guide.plans.d':'Votre offre détermine à quelle fréquence vous pouvez analyser, combien de projets vous conservez et quels outils sont débloqués. Tout le reste — le guide, la carte, votre rang — est identique pour tout le monde.',
+      'guide.plans.s1':'<b>Free</b> — une analyse tous les 7 jours et un projet enregistré. De quoi voir exactement ce que fait l’outil avant de payer quoi que ce soit.',
+      'guide.plans.s2':'<b>Standard</b> — une analyse toutes les 24 heures, cinq projets et un accès complet au Forum.',
+      'guide.plans.s3':'<b>Premium</b> — cinq analyses toutes les 24 heures, dix projets, le Forum, <b>Pre-Flight</b> et son propre thème visuel.',
+      'guide.plans.s4':'Les analyses qu’il vous reste s’affichent toujours dans le panneau de droite, vous n’avez donc rien à compter.',
+      'guide.plans.tip':'Ouvrez <b>Products → Offres</b> dans la barre latérale pour les comparer ou changer. Une offre payante se règle période par période et ne se renouvelle jamais toute seule : rien ne vous est prélevé si vous ne décidez pas de payer à nouveau.',
       'guide.plans.note':'Ouvrez <b>Products → Plans</b> dans la barre latérale pour comparer et passer à un niveau supérieur à tout moment.',
       'guide.account.t':'Compte et réglages',
-      'guide.account.d':'Gérez votre profil, votre plan, votre langue et votre thème, et contrôlez votre session.',
-      'guide.account.s1':'Utilisez le <b>panneau de compte</b> (en haut du rail droit) pour accéder à votre plan, vos coupons et votre rang.',
-      'guide.account.s2':'Changez la <b>langue</b> et le <b>thème clair/sombre</b> depuis les commandes de la barre latérale.',
-      'guide.account.s3':'Ouvrez <b>Products → Settings</b> pour les options de compte.',
+      'guide.account.d':'Votre profil, votre offre, votre rang et la façon dont la plateforme vous apparaît et vous parle. Tout change instantanément et rien de tout cela ne touche au travail que vous avez enregistré.',
+      'guide.account.s1':'Ouvrez le <b>panneau de compte</b> en haut de la colonne de droite pour voir votre offre, votre rang et vos codes.',
+      'guide.account.s2':'Changez de <b>langue</b> quand vous voulez entre français, anglais, espagnol et portugais — toute la plateforme suit, analyses comprises.',
+      'guide.account.s3':'Basculez entre <b>clair et sombre</b> depuis la barre latérale, et changez de <b>thème</b> si vous en possédez un : les thèmes restylent la plateforme sans rien déplacer.',
+      'guide.account.s4':'Regardez votre <b>rang</b> monter à mesure que vous gagnez de l’expérience en analysant, en répondant aux quiz et en participant au forum. Le rang ne fait que monter.',
+      'guide.account.s5':'Ouvrez <b>Products → Settings</b> pour les données de votre compte, votre mot de passe et votre session.',
+      'guide.account.tip':'Atteindre un nouveau rang délivre un certificat avec une page de vérification publique : il peut donc être partagé et vérifié par n’importe qui. Il atteste d’une étude sur cette plateforme — ce n’est ni un diplôme professionnel ni une licence.',
       'guide.help.t':"Besoin d'un coup de main ?",
       'guide.help.d':"Ce guide couvre le mode d'emploi. Pour tout ce qui concerne votre compte, notre équipe de support est à un message.",
       'guide.help.cta':'Contacter le support'
@@ -399,51 +507,77 @@
       'guide.title':'Guia de uso',
       'guide.sub':'Um passeio prático por cada ferramenta do Tradeable — para que serve e como usá-la, passo a passo. Este guia é apenas educacional; nada aqui é aconselhamento financeiro.',
       'guide.analyze.t':'Analise seu setup',
-      'guide.analyze.d':'Envie uma captura do seu gráfico e nossa IA destaca possíveis erros do setup e observações educacionais para refletir — nunca um veredito, sinal ou recomendação.',
-      'guide.analyze.s1':'Abra a aba <b>Analyze</b> e escolha seu <b>instrumento</b>, <b>direção</b>, <b>sessão</b> e as <b>confluências</b> pelos botões.',
-      'guide.analyze.s2':'Envie uma <b>captura</b> do seu gráfico. Use o painel de resumo à direita para confirmar que está tudo pronto.',
-      'guide.analyze.s3':'Toque em <b>Analyze</b> e leia as observações. Encare-as como estímulos para revisar seu próprio raciocínio, não como instruções.',
+      'guide.analyze.d':'Você envia o print do seu gráfico e a IA percorre ele como faria um instrutor: que estrutura consegue ver, se o horário e as confluências que você declarou combinam, e onde o seu raciocínio tem buracos. Ela nunca manda você entrar — ela te dá coisas para conferir.',
+      'guide.analyze.s1':'Abra a aba <b>Analisar</b> e comece pelo contexto: <b>instrumento</b>, <b>direção</b>, <b>sessão</b> e as <b>confluências</b> que você acredita estarem presentes. A IA lê o mesmo gráfico de um jeito bem diferente conforme o que você diz estar vendo, então isso não é burocracia.',
+      'guide.analyze.s2':'Escolha a <b>metodologia</b> que você está operando. Cada uma lê os mesmos candles do seu jeito — um order block importa no ICT e não significa nada em Wyckoff —, então errar aqui devolve uma resposta sobre um método que você não usa.',
+      'guide.analyze.s3':'Envie o <b>print</b>. Mostre de onde o preço veio: uma imagem colada na entrada esconde justamente o contexto de que a análise depende. Marcar seus níveis antes de printar ajuda bastante.',
+      'guide.analyze.s4':'Se quiser, escreva a sua <b>Construção do trade</b>: o seu raciocínio com as suas palavras, até umas 200. É a parte que quase todo mundo pula e é a que transforma uma resposta genérica em uma resposta sobre a sua ideia.',
+      'guide.analyze.s5':'Aperte <b>Analisar</b> e leia como uma segunda opinião, não como um veredito. A pergunta útil não é “ela concorda comigo?” e sim “ela viu algo que eu não vi?”.',
+      'guide.analyze.s6':'Salve a análise em um <b>projeto</b>. Colocar três análises suas lado a lado mostra padrões nos seus erros que nenhuma delas mostra sozinha.',
+      'guide.analyze.tip':'O contador da direita mostra quantas análises sobraram na janela atual. Ele atualiza assim que uma análise termina, então você não precisa contar — e um envio que falhou não gasta nenhuma.',
       'guide.preflight.t':'Pre-Flight',
-      'guide.preflight.d':'Um checklist pré-operação para confirmar que um setup realmente cumpre suas próprias regras antes de você entrar.',
-      'guide.preflight.s1':'Abra a aba <b>Pre-Flight</b> antes de fazer uma operação.',
-      'guide.preflight.s2':'Revise com honestidade cada <b>item do checklist</b>: viés, sessão, risco e invalidação.',
-      'guide.preflight.s3':'Só siga em frente quando o checklist estiver limpo. Se faltar algo, isso também é informação útil.',
+      'guide.preflight.d':'Uma checklist que você preenche <b>antes</b> de entrar, não depois. O objetivo é fazer você deixar as suas regras por escrito enquanto ainda não tem nada em risco, porque no instante em que há dinheiro em jogo o seu raciocínio muda sem pedir licença.',
+      'guide.preflight.s1':'Abra o <b>Pre-Flight</b> e crie uma checklist para o setup que você está olhando. Faça isso antes de clicar em comprar ou vender: uma checklist preenchida depois da entrada é um diário, não um filtro.',
+      'guide.preflight.s2':'Responda cada item com honestidade: <b>viés</b>, <b>sessão</b>, <b>risco</b> e <b>invalidação</b>. A invalidação é a que mais pesa: se você não sabe dizer o que provaria que está errado, você não tem um trade, tem uma opinião.',
+      'guide.preflight.s3':'Responda com o que está no gráfico, não com o que você gostaria. A checklist só serve se puder dizer não.',
+      'guide.preflight.s4':'Um item não passar é um resultado, não um fracasso. Um setup que não cumpre as suas próprias regras é informação que saiu de graça.',
+      'guide.preflight.s5':'Guarde as suas checklists. Revisar as que você ignorou é o jeito mais rápido de descobrir qual regra você quebra sempre.',
+      'guide.preflight.tip':'O Pre-Flight é uma ferramenta Premium e você pode manter até dez checklists — o suficiente para cobrir os setups que você realmente opera, não toda ideia que aparece.',
       'guide.quiz.t':'Quiz e Desafio Diário',
-      'guide.quiz.d':'Teste seu conhecimento das metodologias com um grande banco de questões, e responda uma questão ultradifícil todo dia para manter sua sequência.',
-      'guide.quiz.s1':'Abra a aba <b>Quiz</b> e escolha um tema ou dificuldade para iniciar uma sessão.',
-      'guide.quiz.s2':'Responda cada questão — o servidor valida sua resposta, então os resultados são honestos e nunca revelados antes.',
-      'guide.quiz.s3':'Volte para o <b>Desafio Diário</b>: uma questão difícil por dia que pode render recompensas.',
+      'guide.quiz.d':'Um banco de questões de todas as metodologias que a plataforma ensina, com dificuldade crescente, mais uma questão bem difícil por dia. Foi feito para achar as lacunas que você não sabia que tinha, não para você se sentir bem com o que já sabe.',
+      'guide.quiz.s1':'Abra a aba <b>Quiz</b> e escolha metodologia e tema: order blocks, estrutura de mercado, acumulação, padrões gráficos e por aí vai.',
+      'guide.quiz.s2':'Escolha o nível. <b>Iniciante</b> checa definições, <b>intermediário</b> checa se você sabe aplicá-las, e <b>avançado</b> coloca duas regras em conflito para você ter que saber qual manda.',
+      'guide.quiz.s3':'Responda e leia a explicação mesmo quando acertar: no placar, um palpite certeiro e conhecimento de verdade são idênticos.',
+      'guide.quiz.s4':'Tente um <b>cenário hardcore</b> quando um tema ficar fácil: situações completas com várias leituras plausíveis e só uma que se sustenta.',
+      'guide.quiz.s5':'Volte para o <b>Desafio diário</b>: uma questão difícil por dia e uma sequência que só cresce se você aparecer.',
+      'guide.quiz.tip':'Suas respostas são verificadas no servidor e as alternativas são embaralhadas, então o gabarito nunca viaja na página e não há padrão para explorar. O desafio diário também gira por conta: ninguém pode te passar a resposta, porque a dele é outra questão.',
       'guide.forum.t':'Fórum',
-      'guide.forum.d':'Um espaço de comunidade Premium para compartilhar setups, tirar dúvidas e discutir trading. Cada publicação é moderada automaticamente.',
-      'guide.forum.s1':'Abra o <b>Forum Trading</b> e percorra o feed, ou vá para <b>Salvos</b> para rever publicações.',
-      'guide.forum.s2':'Use <b>Nova publicação</b> para compartilhar um setup ou pergunta. Mantenha o respeito e o tema.',
-      'guide.forum.s3':'Reaja e responda a outros traders para enriquecer a conversa.',
+      'guide.forum.d':'Um espaço para publicar setups, perguntar onde você errou e seguir traders cujo raciocínio você quer aprender. Disponível no <b>Standard e no Premium</b>. Cada publicação e imagem passa por moderação automática antes de aparecer.',
+      'guide.forum.s1':'Abra <b>Fórum Trading</b> e leia o feed geral, ou a aba <b>Seguindo</b> para ver só os traders que você segue.',
+      'guide.forum.s2':'Use <b>Nova publicação</b> para compartilhar um setup ou uma dúvida. Publicar o gráfico junto com o seu raciocínio rende respostas muito melhores do que publicar só o gráfico.',
+      'guide.forum.s3':'Entre ou crie uma <b>comunidade</b> para uma metodologia ou um mercado, e publique lá quando o tema for específico demais para o feed geral.',
+      'guide.forum.s4':'Reaja e responda aos outros. Responder alguém obriga você a colocar o seu próprio raciocínio em palavras, que é onde as lacunas aparecem.',
+      'guide.forum.s5':'Use <b>Salvos</b> para o que vale reler, e <b>Mensagens</b> para conversar em particular com outro trader.',
+      'guide.forum.tip':'A moderação age antes de publicar, não depois que alguém reclama, e cobre texto e imagens. Ela existe para que ninguém precise passar por cima de ofensas ou de gente vendendo sinais para chegar à conversa que presta.',
       'guide.chalk.t':'Chalkboard',
-      'guide.chalk.d':'Um quadro de desenho livre para esboçar setups, marcar níveis e anotar ideias, e depois salvar seus quadros.',
-      'guide.chalk.s1':'Abra a aba <b>Chalkboard</b> e escolha uma ferramenta de desenho.',
-      'guide.chalk.s2':'Desenhe seus <b>níveis, zonas e notas</b> direto no quadro.',
-      'guide.chalk.s3':'Seu quadro é <b>salvo automaticamente</b> neste navegador para você voltar a ele.',
+      'guide.chalk.d':'Uma lousa livre para pensar com as mãos: desenhe a estrutura, marque os níveis, escreva o plano ao lado. Serve justamente porque não é um gráfico — aqui nada se mexe enquanto você pensa.',
+      'guide.chalk.s1':'Abra a aba <b>Chalkboard</b> e escolha uma ferramenta na barra. (A aba tem esse nome em todos os idiomas.)',
+      'guide.chalk.s2':'Desenhe a <b>estrutura, as zonas e os níveis</b> que você está acompanhando, e escreva o raciocínio ao lado do desenho em vez de deixar na cabeça.',
+      'guide.chalk.s3':'Use várias lousas para separar ideias — uma por instrumento, ou uma por sessão — em vez de empilhar tudo em uma só.',
+      'guide.chalk.s4':'<b>Exporte a lousa</b> quando ela valer a pena. Esse arquivo exportado é o salvamento de verdade.',
+      'guide.chalk.tip':'Suas lousas ficam <b>neste navegador</b>, não na sua conta. Elas sobrevivem a fechar a aba, mas não viajam para o seu celular e somem se você limpar os dados do site. Se uma lousa importa, exporte: essa é a única cópia realmente sua.',
       'guide.synapse.t':'Synapse',
-      'guide.synapse.d':'Um hub de conhecimento interativo em 3D. Uma mente holográfica se ramifica em cada metodologia principal — explore-as visualmente.',
-      'guide.synapse.s1':'Abra a aba <b>Synapse</b> e aguarde a matriz neural carregar.',
-      'guide.synapse.s2':'Clique em um <b>nó</b> para abrir sua metodologia e ler o dossiê classificado.',
-      'guide.synapse.s3':'Use a seta <b>Menu</b> para voltar ao restante do app quando quiser.',
+      'guide.synapse.d':'Um mapa interativo de todas as metodologias, montado como um cérebro em 3D: cada ramo é um método, cada nó um conceito, e cada nó abre um dossiê completo. Serve para explorar como as ideias se conectam, que é o que uma lista de aulas não consegue mostrar.',
+      'guide.synapse.s1':'Abra o <b>Synapse</b>, espere o mapa carregar e clique em um ramo para entrar em uma metodologia.',
+      'guide.synapse.s2':'Clique em um <b>nó</b> para ler o dossiê: o que é o conceito, como se identifica e como ele se relaciona com os vizinhos.',
+      'guide.synapse.s3':'Siga as conexões em vez de ler em ordem. Ver que dois métodos descrevem o mesmo comportamento com nomes diferentes é o sentido do mapa.',
+      'guide.synapse.s4':'Está tudo no seu idioma: o mapa, os nomes e os dossiês seguem o idioma que você escolheu.',
+      'guide.synapse.s5':'Use a seta <b>Menu</b> para voltar ao resto do aplicativo quando quiser.',
+      'guide.synapse.tip':'Se você prefere ler longe da tela, a biblioteca completa está disponível em PDF na loja. É o mesmo conteúdo, diagramado para ser lido do começo ao fim.',
       'guide.timing.t':'Timing do mercado',
-      'guide.timing.d':'Relógios de sessão ao vivo (kill zones) e um calendário econômico para você sempre saber qual sessão está ativa e quais notícias vêm por aí.',
-      'guide.timing.s1':'Na aba Analyze, encontre o painel <b>Market Timing</b> com as faixas de sessão.',
-      'guide.timing.s2':'Passe o cursor sobre uma faixa para ver o horário exato em <b>ET e no seu horário local</b>.',
-      'guide.timing.s3':'Filtre o <b>calendário econômico</b> pelo seu instrumento para focar nas notícias relevantes.',
+      'guide.timing.d':'Relógios ao vivo das sessões que de fato movem os instrumentos que você opera, mais o calendário econômico. A maior parte das perdas evitáveis não é análise ruim: é análise boa na hora errada.',
+      'guide.timing.s1':'Na aba Analisar, abra o painel <b>Market Timing</b> para ver qual sessão está rodando agora.',
+      'guide.timing.s2':'Passe o cursor por qualquer faixa para ver o horário exato no <b>horário de Nova York e no seu</b>. As faixas são iguais para todo mundo; só o relógio é seu.',
+      'guide.timing.s3':'Aprenda o caráter de cada janela: as aberturas de Londres e Nova York tendem a expandir, os horários de almoço a lateralizar, e as máximas e mínimas da madrugada são o que a sessão do dia vai buscar.',
+      'guide.timing.s4':'Filtre o <b>calendário econômico</b> pelo seu instrumento para ver só o que pode mexer com ele.',
+      'guide.timing.s5':'Veja o que está agendado <b>antes</b> de planejar uma entrada, não depois que o preço já pulou.',
+      'guide.timing.tip':'Um relógio de sessão diz quando a participação costuma aparecer, não que algo vai acontecer. Uma semana de feriados mantém o mesmo horário com quase nenhum volume atrás.',
       'guide.plans.t':'Planos e limites',
-      'guide.plans.d':'Cada plano define quantas capturas você pode analisar e libera ferramentas diferentes. Você vê suas análises restantes no painel da direita.',
-      'guide.plans.s1':'<b>Free</b> — 1 análise a cada 7 dias, para experimentar a ferramenta principal.',
-      'guide.plans.s2':'<b>Standard</b> — 1 análise a cada 24 horas.',
-      'guide.plans.s3':'<b>Premium</b> — 5 análises a cada 24 horas, além de Fórum, Quiz, Synapse e mais.',
+      'guide.plans.d':'O seu plano define de quanto em quanto tempo você pode analisar, quantos projetos guarda e quais ferramentas estão liberadas. Todo o resto — o guia, o mapa, o seu rank — é igual para todo mundo.',
+      'guide.plans.s1':'<b>Free</b> — uma análise a cada 7 dias e um projeto salvo. O suficiente para ver exatamente o que a ferramenta faz antes de pagar qualquer coisa.',
+      'guide.plans.s2':'<b>Standard</b> — uma análise a cada 24 horas, cinco projetos e acesso completo ao Fórum.',
+      'guide.plans.s3':'<b>Premium</b> — cinco análises a cada 24 horas, dez projetos, o Fórum, o <b>Pre-Flight</b> e um tema visual próprio.',
+      'guide.plans.s4':'As análises que sobraram aparecem sempre no painel da direita, então você não precisa contar.',
+      'guide.plans.tip':'Abra <b>Products → Planos</b> na barra lateral para comparar ou mudar de plano. Um plano pago é pago período a período e nunca se renova sozinho: nada é cobrado se você não decidir pagar de novo.',
       'guide.plans.note':'Abra <b>Products → Planos</b> na barra lateral para comparar e fazer upgrade quando quiser.',
       'guide.account.t':'Conta e ajustes',
-      'guide.account.d':'Gerencie seu perfil, plano, idioma e tema, e controle sua sessão.',
-      'guide.account.s1':'Use o <b>painel de conta</b> (no topo do rail direito) para chegar ao seu plano, cupons e rank.',
-      'guide.account.s2':'Troque o <b>idioma</b> e o <b>tema claro/escuro</b> nos controles da barra lateral.',
-      'guide.account.s3':'Abra <b>Products → Settings</b> para as opções de conta.',
+      'guide.account.d':'Seu perfil, seu plano, seu rank e como a plataforma aparece e fala com você. Tudo muda na hora e nada disso mexe no trabalho que você já salvou.',
+      'guide.account.s1':'Abra o <b>painel da conta</b> no topo da coluna da direita para ver seu plano, seu rank e seus códigos.',
+      'guide.account.s2':'Troque de <b>idioma</b> quando quiser entre português, inglês, espanhol e francês — a plataforma inteira acompanha, análises incluídas.',
+      'guide.account.s3':'Alterne entre <b>claro e escuro</b> pela barra lateral, e troque de <b>tema</b> se você tiver algum: os temas mudam o visual da plataforma sem mover nada de lugar.',
+      'guide.account.s4':'Veja seu <b>rank</b> subir conforme ganha experiência analisando, respondendo quizzes e participando do fórum. O rank só sobe, nunca desce.',
+      'guide.account.s5':'Abra <b>Products → Settings</b> para os dados da sua conta, sua senha e sua sessão.',
+      'guide.account.tip':'Chegar a um rank novo emite um certificado com página pública de verificação, então dá para compartilhar e qualquer um pode conferir. Ele atesta estudo nesta plataforma — não é um título profissional nem uma licença.',
       'guide.help.t':'Ainda precisa de ajuda?',
       'guide.help.d':'Este guia cobre o como fazer. Para qualquer coisa específica da sua conta, nosso time de suporte está a uma mensagem de distância.',
       'guide.help.cta':'Falar com o suporte'
