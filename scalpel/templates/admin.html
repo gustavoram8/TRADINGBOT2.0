@@ -121,6 +121,14 @@
     .admin-tag { font-size: 11px; color: var(--premium); font-weight: 700; }
     .empty { text-align: center; color: var(--muted); padding: 40px; }
 
+    /* ── Reseñas ── */
+    .rv-insider, .rv-on {
+      display:inline-block; padding:2px 7px; border-radius:999px; font-size:10px;
+      font-weight:800; letter-spacing:.06em; text-transform:uppercase;
+    }
+    .rv-insider { color:#8a6d1f; background:rgba(232,198,106,.18); border:1px solid rgba(232,198,106,.5); }
+    .rv-on { color:#166534; background:rgba(22,101,52,.12); border:1px solid rgba(22,101,52,.35); }
+
     /* ── Moderation ── */
     .section-h { font-size: 18px; font-weight: 800; margin: 36px 0 6px; }
     .section-d { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
@@ -287,6 +295,7 @@
       <button class="atab" data-pane="bugs">🛠️ Bugs</button>
       <button class="atab" data-pane="giveaway">🎁 Giveaway</button>
       <button class="atab" data-pane="ledger">📒 Ventas</button>
+      <button class="atab" data-pane="reviews">⭐ Reseñas</button>
     </div>
 
     <div class="tabpane" data-pane="users">
@@ -1221,6 +1230,55 @@
           <input type="text" name="note" style="width:150px;" /></label>
         <button class="plan-btn" type="submit">Añadir venta</button>
       </form>
+    </div>
+    </div>
+
+    <div class="tabpane" data-pane="reviews">
+    <div class="section-h" id="reviews">⭐ Reseñas de la landing</div>
+    <div class="section-d">
+      Todo lo que llega por el aviso de valoración del app. Solo se publican las de
+      <b>4-5 estrellas cuyo autor dio permiso</b>; el resto queda aquí como feedback privado.
+      Desde acá puedes <b>publicar o retirar cualquiera</b> — es lo que decide qué se ve en la
+      landing.
+    </div>
+    <div class="section-d" style="border-left:3px solid var(--accent); padding-left:12px;">
+      <b>Regla FTC de reseñas (16 CFR 465.5), lo importante:</b> una reseña escrita por alguien
+      que dirige el negocio <b>puede publicarse</b>, pero <b>tiene que decir que esa persona
+      trabaja aquí</b>. Publicarla sin esa aclaración es infracción, con multa de hasta
+      <b>$51.744 por cada una</b>. Las de cuentas admin salen marcadas
+      <span class="rv-insider">interna</span> y la landing les pinta la etiqueta sola. Aun así,
+      la recomendación es <b>no publicar la tuya</b>: una reseña de cinco estrellas firmada por
+      el dueño no convence a nadie y resta credibilidad al resto.
+    </div>
+
+    <div class="table-card">
+    <table>
+      <thead><tr><th>Fecha</th><th>Autor</th><th>Nota</th><th>Reseña</th><th>Estado</th>
+        <th></th></tr></thead>
+      <tbody>
+      {% for t in reviews %}
+      <tr>
+        <td class="u-email">{{ t.created_at.strftime('%Y-%m-%d') if t.created_at else '' }}</td>
+        <td class="u-name">{{ t.display_name }}
+          {% if t.insider %}<br><span class="rv-insider">interna</span>{% endif %}
+          {% if t.plan %}<br><span class="u-email">{{ t.plan }}</span>{% endif %}</td>
+        <td><b>{{ t.rating }}/5</b></td>
+        <td style="max-width:420px;">{{ t.text or '—' }}</td>
+        <td>{% if t.published %}<span class="rv-on">en la landing</span>
+            {% else %}<span class="u-email">privada</span>{% endif %}</td>
+        <td>
+          <form method="post" action="/admin/review/toggle">
+            <input type="hidden" name="id" value="{{ t.id }}" />
+            <button type="submit" class="demo-btn">
+              {{ 'Retirar' if t.published else 'Publicar' }}</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="empty">Todavía no hay reseñas.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
     </div>
     </div>
 

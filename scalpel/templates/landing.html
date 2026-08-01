@@ -716,6 +716,21 @@
     }
     .testi-name { font-size: 12.5px; font-weight: 700; color: #e8c66a; letter-spacing: .04em; display:flex; align-items:center; justify-content:center; gap:6px; }
     .testi-plan { font-size: 10px; color: #a89d88; text-transform: uppercase; letter-spacing: .12em; }
+    /* Disclosure badge for a review written by someone who runs the business.
+       Required by 16 CFR 465.5 — it must be readable, not a faint footnote,
+       so it carries a border and sits directly under the author's name. */
+    .testi-insider {
+      display: inline-block; margin-top: 7px; padding: 3px 9px; border-radius: 999px;
+      font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+      color: #f0d9a4; background: rgba(232,198,106,.12); border: 1px solid rgba(232,198,106,.45);
+    }
+    body:not(.dark) .testi-insider {
+      color: #6b5a2e; background: rgba(143,179,245,.10); border-color: rgba(107,90,46,.35);
+    }
+    .testi-note {
+      margin-top: 16px; font-size: 11.5px; line-height: 1.6; color: var(--pp-ink-soft);
+      opacity: .8; max-width: 620px; margin-left: auto; margin-right: auto;
+    }
     /* ── Rank medals (shared with the app, design v3) ── */
     .medal{position:relative;display:inline-grid;place-items:center;flex:0 0 auto;vertical-align:middle;width:var(--sz,18px);height:var(--sz,18px)}
     .medal svg{width:100%;height:100%;overflow:visible;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))}
@@ -1554,6 +1569,10 @@
       <div class="testi-stage" id="testi-stage"></div>
       <div class="testi-dots" id="testi-dots"></div>
     </div>
+    <p class="testi-note rv d3" data-t="testi_note">Reviews come from real Tradeable Academy
+      account holders, who are invited in-app to rate the platform and receive experience points
+      for answering, whatever score they give. We show reviews the author agreed to publish.
+      Anyone who works on Tradeable Academy is labelled as such.</p>
   </section>
 
   <!-- FINAL CTA -->
@@ -1889,6 +1908,8 @@
         s5_body:'Every screenshot is analyzed against your chosen methodology — ICT, SMC, Wyckoff, classical patterns, STDV or Price Action — delivering structured, expert-level feedback in seconds.',
         brow_core:'CORE FEATURE', brow_toolkit:'YOUR TOOLKIT', brow_airead:'WHAT THE AI READS', brow_community:'COMMUNITY', brow_pricing:'PRICING', brow_testi:'FROM OUR TRADERS',
         testi_title:'What traders are saying',
+        testi_insider:'Works at Tradeable Academy',
+        testi_note:'Reviews come from real Tradeable Academy account holders, who are invited in-app to rate the platform and receive experience points for answering, whatever score they give. We show reviews the author agreed to publish. Anyone who works on Tradeable Academy is labelled as such.',
         cap_ict_t:'Inner Circle Trader', cap_ict_b:'Fair Value Gaps, Order Blocks, Liquidity Sweeps, AMD cycles, Optimal Trade Entry — the full institutional toolkit.',
         cap_smc_t:'Smart Money Concepts', cap_smc_b:'Break of Structure, Change of Character, Supply &amp; Demand zones, and institutional order flow analysis.',
         cap_wyc_t:'Wyckoff Method', cap_wyc_b:'Accumulation and distribution schematics, Springs, Upthrusts, and the Composite Man logic applied to modern markets.',
@@ -1977,6 +1998,8 @@
         s5_body:'Cada captura se analiza según la metodología que elijas — ICT, SMC, Wyckoff, patrones clásicos, STDV o Price Action — y te devuelve feedback estructurado y de nivel experto en segundos.',
         brow_core:'FUNCIÓN PRINCIPAL', brow_toolkit:'TUS HERRAMIENTAS', brow_airead:'LO QUE LEE LA IA', brow_community:'COMUNIDAD', brow_pricing:'PRECIOS', brow_testi:'NUESTROS TRADERS',
         testi_title:'Lo que dicen los traders',
+        testi_insider:'Trabaja en Tradeable Academy',
+        testi_note:'Las reseñas vienen de personas con cuenta real en Tradeable Academy, a quienes se les invita desde la app a puntuar la plataforma y reciben puntos de experiencia por responder, sea cual sea la nota que pongan. Mostramos las reseñas que su autor aceptó publicar. Si alguien trabaja en Tradeable Academy, aparece señalado.',
         cap_ict_t:'Inner Circle Trader', cap_ict_b:'Fair Value Gaps, Order Blocks, barridos de liquidez, ciclos AMD y Optimal Trade Entry — el kit institucional completo.',
         cap_smc_t:'Smart Money Concepts', cap_smc_b:'Break of Structure, Change of Character, zonas de oferta y demanda, y análisis del order flow institucional.',
         cap_wyc_t:'Método Wyckoff', cap_wyc_b:'Esquemas de acumulación y distribución, Springs, Upthrusts y la lógica del Composite Man aplicada a los mercados actuales.',
@@ -2065,6 +2088,8 @@
         s5_body:'Chaque capture est analysée selon la méthodologie que vous choisissez — ICT, SMC, Wyckoff, patterns classiques, STDV ou Price Action — pour un feedback structuré de niveau expert en quelques secondes.',
         brow_core:'FONCTION CLÉ', brow_toolkit:'VOS OUTILS', brow_airead:'CE QUE LIT L\'IA', brow_community:'COMMUNAUTÉ', brow_pricing:'TARIFS', brow_testi:'NOS TRADERS',
         testi_title:'Ce que disent les traders',
+        testi_insider:'Travaille chez Tradeable Academy',
+        testi_note:'Les avis proviennent de personnes possédant un compte réel sur Tradeable Academy, invitées depuis l’application à noter la plateforme et qui reçoivent des points d’expérience pour avoir répondu, quelle que soit la note donnée. Nous affichons les avis que leur auteur a accepté de publier. Toute personne travaillant chez Tradeable Academy est signalée comme telle.',
         cap_ict_t:'Inner Circle Trader', cap_ict_b:'Fair Value Gaps, Order Blocks, balayages de liquidité, cycles AMD, Optimal Trade Entry — la boîte à outils institutionnelle complète.',
         cap_smc_t:'Smart Money Concepts', cap_smc_b:'Break of Structure, Change of Character, zones d\'offre et de demande, et analyse de l\'order flow institutionnel.',
         cap_wyc_t:'Méthode Wyckoff', cap_wyc_b:'Schémas d\'accumulation et de distribution, Springs, Upthrusts et la logique du Composite Man appliquée aux marchés modernes.',
@@ -2153,6 +2178,8 @@
         s5_body:'Cada captura é analisada de acordo com a metodologia que você escolher — ICT, SMC, Wyckoff, padrões clássicos, STDV ou Price Action — entregando feedback estruturado de nível especialista em segundos.',
         brow_core:'RECURSO PRINCIPAL', brow_toolkit:'SUAS FERRAMENTAS', brow_airead:'O QUE A IA LÊ', brow_community:'COMUNIDADE', brow_pricing:'PREÇOS', brow_testi:'NOSSOS TRADERS',
         testi_title:'O que dizem os traders',
+        testi_insider:'Trabalha na Tradeable Academy',
+        testi_note:'As avaliações vêm de pessoas com conta real na Tradeable Academy, que são convidadas dentro do app a avaliar a plataforma e recebem pontos de experiência por responder, qualquer que seja a nota dada. Mostramos as avaliações que o autor concordou em publicar. Quem trabalha na Tradeable Academy aparece identificado.',
         cap_ict_t:'Inner Circle Trader', cap_ict_b:'Fair Value Gaps, Order Blocks, varreduras de liquidez, ciclos AMD, Optimal Trade Entry — o kit institucional completo.',
         cap_smc_t:'Smart Money Concepts', cap_smc_b:'Break of Structure, Change of Character, zonas de oferta e demanda, e análise do order flow institucional.',
         cap_wyc_t:'Método Wyckoff', cap_wyc_b:'Esquemas de acumulação e distribuição, Springs, Upthrusts e a lógica do Composite Man aplicada aos mercados modernos.',
@@ -2210,6 +2237,9 @@
     document.documentElement.lang = code;
     document.getElementById('legal-note').textContent = C.legal;
     const dict = C.t || {};
+    // Testimonials load async in their own IIFE, after this has already run —
+    // so the active dict has to be reachable from outside this closure.
+    window.__landingT = dict;
     document.querySelectorAll('[data-t]').forEach(el => {
       const k = el.getAttribute('data-t');
       if (dict[k] !== undefined) el.innerHTML = dict[k];   // trusted strings; allows <strong> in plan features
@@ -2427,7 +2457,15 @@
           + '<div class="testi-stars">' + stars + '</div>'
           + '<p class="testi-quote">“' + item.text.replace(/</g, '&lt;') + '”</p>'
           + '<div class="testi-name">' + medalHTML(item.rank || 1, 18) + '<span>' + item.name.replace(/</g, '&lt;') + '</span></div>'
-          + (plan ? '<div class="testi-plan">' + plan + ' plan</div>' : '');
+          + (plan ? '<div class="testi-plan">' + plan + ' plan</div>' : '')
+          // Insider disclosure (16 CFR 465.5). Rendered from the server flag,
+          // never inferred client-side, so it cannot be dropped by accident.
+          // data-t keeps it translated when the visitor switches language.
+          + (item.insider
+              ? '<div class="testi-insider" data-t="testi_insider">'
+                + ((window.__landingT || {}).testi_insider
+                   || 'Works at Tradeable Academy') + '</div>'
+              : '');
       }
 
       // Rank medal generator (string form, mirrors the app's renderRankBadge v3)

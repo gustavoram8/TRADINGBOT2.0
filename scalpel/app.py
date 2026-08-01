@@ -1252,6 +1252,14 @@ class Testimonial(db.Model):
     display_name = db.Column(db.String(80), nullable=False)     # snapshot at submit time
     plan = db.Column(db.String(20), nullable=True)
     published = db.Column(db.Boolean, default=False, nullable=False)
+    # Written by someone who runs the business (today: any admin account).
+    # The FTC's Consumer Reviews and Testimonials rule (16 CFR 465.5) makes it
+    # a violation to publish a testimonial by an officer or manager without a
+    # clear and conspicuous disclosure of that relationship — so the flag is
+    # captured at submit time and the landing page is required to show it.
+    # Snapshotted, not derived: if the account later loses admin, the review
+    # was still written by an insider on the day it was written.
+    insider = db.Column(db.Boolean, default=False, nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
 
 
@@ -3974,6 +3982,29 @@ def admin_ledger_pay_commissions():
     return redirect(url_for('admin') + '#ledger')
 
 
+@app.route('/admin/review/toggle', methods=['POST'])
+@login_required
+def admin_review_toggle():
+    """Publish or pull a testimonial from the landing page. Admin only.
+
+    Until this existed there was no way to unpublish a review short of editing
+    the database by hand, which meant the publish decision — the one the FTC
+    rule actually cares about — could not be revisited.
+    """
+    if not current_user.is_admin:
+        abort(403)
+    t = db.session.get(Testimonial, int(request.form.get('id') or 0))
+    if t:
+        t.published = not t.published
+        db.session.commit()
+        record_audit_event(
+            'testimonial_published' if t.published else 'testimonial_unpublished',
+            user_id=t.user_id,
+            detail=f'#{t.id} by {t.display_name} ({t.rating}/5)'
+                   f'{" [insider]" if t.insider else ""}')
+    return redirect(url_for('admin') + '#reviews')
+
+
 @app.route('/admin/giveaway', methods=['POST'])
 @login_required
 def admin_giveaway():
@@ -4821,6 +4852,8 @@ def admin():
         pay_attention=attention, pay_swept=swept, pay_recovered=recovered,
         crypto_on=bool(available_payment_rails()), sla_hours=CRYPTO_SLA_HOURS,
         giveaway=_current_giveaway()[0],
+        reviews=(Testimonial.query
+                 .order_by(Testimonial.created_at.desc()).limit(200).all()),
         **_build_ledger_context(),
         **ai_ctx, **revenue,
     )
@@ -9504,7 +9537,7 @@ def testimonial_submit():
     t = Testimonial(
         user_id=current_user.id, rating=rating, text=text,
         display_name=current_user.username, plan=current_user.plan,
-        published=published,
+        published=published, insider=bool(current_user.is_admin),
     )
     current_user.last_review_prompt_at = datetime.now(timezone.utc)
     db.session.add(t)
@@ -9523,9 +9556,13 @@ def testimonials_public():
             .outerjoin(User, User.id == Testimonial.user_id)
             .filter(Testimonial.published == True)  # noqa: E712
             .order_by(Testimonial.created_at.desc()).limit(24).all())
+    # `insider` is not decoration: 16 CFR 465.5 makes it a violation to publish
+    # a testimonial by someone who runs the business without disclosing that
+    # relationship, so the flag travels with the review and the landing page
+    # turns it into a visible badge.
     return jsonify({'testimonials': [
         {'name': r.display_name, 'rating': r.rating, 'text': r.text,
-         'plan': r.plan, 'rank': rank or 1}
+         'plan': r.plan, 'rank': rank or 1, 'insider': bool(r.insider)}
         for r, rank in rows
     ]})
 
@@ -10746,6 +10783,36 @@ def _migrate_sale_reserve_columns():
         app.logger.info('Migrated sale_breakdown: reserve columns ensured.')
 
 
+def _migrate_testimonial_insider_column():
+    """Add `insider` to an existing testimonial table, and backfill it.
+
+    Backfilling here IS correct, unlike the reserve columns: whether the author
+    runs the business is a fact about the past that we can still read off the
+    account. Leaving old rows at False would publish an owner's review with no
+    disclosure, which is the exact thing the column exists to prevent.
+    """
+    from sqlalchemy import inspect, text
+    insp = inspect(db.engine)
+    if 'testimonial' not in insp.get_table_names():
+        return
+    cols = {c['name'] for c in insp.get_columns('testimonial')}
+    if 'insider' in cols:
+        return
+    try:
+        with db.engine.begin() as conn:
+            conn.execute(text(
+                'ALTER TABLE testimonial ADD COLUMN insider BOOLEAN DEFAULT FALSE'))
+            conn.execute(text(
+                'UPDATE testimonial SET insider = TRUE WHERE user_id IN '
+                '(SELECT id FROM "user" WHERE is_admin = TRUE)'
+                if db.engine.dialect.name == 'postgresql' else
+                'UPDATE testimonial SET insider = 1 WHERE user_id IN '
+                '(SELECT id FROM user WHERE is_admin = 1)'))
+        app.logger.info('Migrated testimonial: insider column added and backfilled.')
+    except Exception as e:
+        app.logger.info('testimonial insider migration note (ignored): %s', e)
+
+
 def _migrate_user_camo_columns():
     """Add camo-skin columns (active_camo, owned_camos) to an existing user table.
     Each ALTER runs in its own transaction with a guard so that a concurrent
@@ -10954,6 +11021,7 @@ def init_db():
         _migrate_preflight_check_columns()
         _migrate_user_camo_columns()
         _migrate_sale_reserve_columns()
+        _migrate_testimonial_insider_column()
         _migrate_mentorship_application_columns()
         _migrate_forum_post_community_column()
         _migrate_mentorship_area_columns()
