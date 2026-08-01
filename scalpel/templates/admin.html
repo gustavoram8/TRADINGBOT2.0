@@ -562,19 +562,30 @@
         <div class="fld"><label>Code</label><input type="text" name="code" placeholder="TRADER20" required style="text-transform:uppercase;" /></div>
         <div class="fld"><label>Discount %</label><input type="number" name="discount_pct" min="1" max="100" placeholder="20" required /></div>
         <div class="fld"><label>Creator</label><input type="text" name="creator_name" placeholder="@influencer" /></div>
+        <div class="fld"><label>Owner (username)</label><input type="text" name="owner" placeholder="cuenta del socio" /></div>
         <div class="fld"><label>Type</label><select name="kind"><option value="creator">Creator</option><option value="discount">Discount</option></select></div>
         <div class="fld"><label>Valid for</label><select name="valid_for"><option value="monthly">Monthly</option><option value="both">Both</option><option value="annual">Annual</option></select></div>
         <div class="fld"><label>Max uses</label><input type="number" name="max_uses" min="1" placeholder="∞" /></div>
         <button type="submit" class="mini-btn">Create code</button>
       </form>
       <table>
-        <thead><tr><th>Code</th><th>Discount</th><th>Creator</th><th>Valid</th><th>Uses</th><th>Status</th><th></th></tr></thead>
+        <thead><tr><th>Code</th><th>Discount</th><th>Creator</th><th>Owner</th><th>Valid</th><th>Uses</th><th>Status</th><th></th></tr></thead>
         <tbody>
           {% for p in promos %}
           <tr class="{{ '' if p.active else 'inactive-row' }}">
             <td><span class="code-mono">{{ p.code }}</span></td>
             <td>{{ p.discount_pct }}%</td>
             <td>{{ p.creator_name or '—' }}</td>
+            <td>
+              {# El "owner" es la CUENTA del socio: le abre /partner, su panel de
+                 números. Vacío = sin panel. #}
+              <form method="POST" action="/admin/promo/owner" style="display:flex;gap:4px;">
+                <input type="hidden" name="id" value="{{ p.id }}" />
+                <input type="text" name="owner" value="{{ p.owner_username or '' }}"
+                       placeholder="—" style="width:110px;font-size:12px;padding:3px 6px;" />
+                <button type="submit" class="row-btn toggle">Set</button>
+              </form>
+            </td>
             <td><span class="pill-tag {{ p.valid_for if p.valid_for != 'both' else 'monthly' }}">{{ p.valid_for }}</span></td>
             <td>{{ p.uses_count }}{% if p.max_uses %} / {{ p.max_uses }}{% endif %}</td>
             <td><span class="pill-tag {{ 'paid' if p.active else 'cancelled' }}">{{ 'active' if p.active else 'off' }}</span></td>
@@ -592,7 +603,7 @@
             </td>
           </tr>
           {% else %}
-          <tr><td colspan="7" class="empty">No promo codes yet.</td></tr>
+          <tr><td colspan="8" class="empty">No promo codes yet.</td></tr>
           {% endfor %}
         </tbody>
       </table>

@@ -384,7 +384,17 @@
     </div>
 
     <!-- PROMO (monthly only, per product decision) -->
-    {% if cycle == 'monthly' %}
+    {% if locked_code %}
+    {# The account is bound to its creator code: the price above already has
+       the discount in, forever, so the code box would only invite confusion.
+       Server decides this — no JS can talk the page into another code. #}
+    <div class="card" style="border-color:#ecd9a8; background:#fdf8ec;">
+      <div class="promo-msg ok" style="display:block; margin:0;">
+        <span data-i18n="checkout.lockedNote">Your permanent discount is already applied — it comes with your account and you never need to type the code again.</span>
+        <b style="font-family:ui-monospace,Menlo,Consolas,monospace;">{{ locked_code }}</b>{% if locked_creator %} · {{ locked_creator }}{% endif %}
+      </div>
+    </div>
+    {% elif cycle == 'monthly' %}
     <div class="card">
       <label class="promo-label" for="promo-input" data-i18n="checkout.promoLabel">Have a discount or creator code?</label>
       <div class="promo-box">
@@ -442,7 +452,7 @@
     var discAmt  = document.getElementById('discount-amount');
     var finalEl  = document.getElementById('final-price');
 
-    var KNOWN_ERR = { not_found:1, expired:1, maxed:1, inactive:1, cycle:1, empty:1 };
+    var KNOWN_ERR = { not_found:1, expired:1, maxed:1, inactive:1, cycle:1, empty:1, locked:1 };
 
     if (!applyBtn) return;
 

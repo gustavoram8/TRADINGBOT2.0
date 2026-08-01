@@ -413,6 +413,13 @@ class User(UserMixin, db.Model):
     totp_secret = db.Column(db.String(64), nullable=True)
     totp_confirmed_at = db.Column(db.DateTime, nullable=True)
     totp_backup = db.Column(db.Text, nullable=True)   # JSON: sha256 of unused backup codes
+    # ── Referral binding (the partner program's core promise) ──
+    # Set ONCE, on the first PAID order that carried a creator code. From then
+    # on the discount auto-applies at every checkout (no retyping) and every
+    # payment attributes to that partner — a different code typed later can
+    # neither steal the attribution nor be needed to keep the price.
+    referred_by_code = db.Column(db.String(40), nullable=True, index=True)
+    referred_at = db.Column(db.DateTime, nullable=True)
     # ── Periodic testimonial prompt (all plans, free included) ──
     last_review_prompt_at = db.Column(db.DateTime, nullable=True)
     # ── XP / Rank system (retention loop) ──
@@ -1168,6 +1175,9 @@ class PromoCode(db.Model):
     discount_pct = db.Column(db.Integer, nullable=False)       # 1–100
     creator_name = db.Column(db.String(120), nullable=True)    # influencer / partner
     kind = db.Column(db.String(20), default='discount')        # 'discount' or 'creator'
+    # The PARTNER's own user account, so /partner can show them their numbers
+    # without going through the admin. Set from /admin; NULL = no panel access.
+    owner_user_id = db.Column(db.Integer, nullable=True, index=True)
     valid_for = db.Column(db.String(10), default='monthly')    # monthly / annual / both / store
     max_uses = db.Column(db.Integer, nullable=True)            # NULL = unlimited
     # Personal codes (e.g. roulette prizes) are bound to their winner:
@@ -5513,12 +5523,17 @@ def _build_revenue_context():
 
     net_profit = round(revenue_total - expenses_total, 2)
 
+    _uname = {u.id: u.username for u in User.query.with_entities(
+        User.id, User.username).filter(User.id.in_(
+            [p.owner_user_id for p in PromoCode.query.all()
+             if p.owner_user_id]))} if PromoCode.query.count() else {}
     promos = [{
         'id': p.id, 'code': p.code, 'discount_pct': p.discount_pct,
         'creator_name': p.creator_name, 'kind': p.kind,
         'valid_for': p.valid_for, 'max_uses': p.max_uses,
         'uses_count': p.uses_count, 'active': p.active,
         'expires_at': p.expires_at,
+        'owner_username': _uname.get(p.owner_user_id),
     } for p in PromoCode.query.order_by(PromoCode.created_at.desc()).all()]
 
     return {
@@ -6417,6 +6432,14 @@ def record_sale_breakdown(order, processor_fee=None, fee_is_real=False):
     fee = (round(float(processor_fee), 2) if processor_fee is not None
            else estimated_processor_fee(net))
     partner = _partner_for_code(order.promo_code)
+    if not partner:
+        # Attribution belt-and-braces: even if an order somehow reaches here
+        # without the code on it (manual admin order, an older client), a
+        # bound customer's payment still credits their partner. The binding
+        # is the source of truth, the order code is just its carrier.
+        buyer = db.session.get(User, order.user_id)
+        if buyer and buyer.referred_by_code:
+            partner = _partner_for_code(buyer.referred_by_code)
     position = _next_partner_position(partner, user_id=order.user_id)
     pct = partner_tier_pct(position) if partner else 0.0
     commission = round(net * pct / 100.0, 2)
@@ -6493,6 +6516,12 @@ def _activate_plan_from_order(order):
         user.plan_started_at = now
     user.plan_expires_at = base + timedelta(days=days)
     order.applied_at = now
+    # First PAID order with a creator code welds the account to that partner:
+    # binding on payment (not at checkout) so an abandoned cart binds nothing.
+    if order.promo_code and not user.referred_by_code:
+        pc = PromoCode.query.filter(
+            db.func.lower(PromoCode.code) == order.promo_code.lower()).first()
+        _bind_referral(user, pc)
     db.session.commit()
     # File the money breakdown for this sale. Best-effort on purpose: an
     # accounting row that fails to write must never cost the buyer the plan
@@ -6527,6 +6556,41 @@ def _activate_camo_from_order(order):
     db.session.commit()
     record_audit_event('camo_purchase', user_id=user.id,
                        detail=f'{order.slug} (${order.price:.2f}, order #{order.id})')
+    return True
+
+
+def _stored_promo(user):
+    """The creator code permanently bound to this account, or None.
+
+    Deliberately does NOT run is_redeemable(): active/max_uses/expires_at are
+    gates for NEW redemptions. An existing customer keeps their price and the
+    partner keeps the attribution — deactivating a code stops new sign-ups,
+    it does not break the promises already made. That is exactly what the
+    proposal sells: "paga menos siempre" y "nadie te quita la atribución".
+    """
+    code = getattr(user, 'referred_by_code', None)
+    if not code:
+        return None
+    return PromoCode.query.filter(
+        db.func.lower(PromoCode.code) == code.strip().lower()).first()
+
+
+def _bind_referral(user, promo):
+    """Attach a creator code to the account, exactly once, at first payment.
+
+    Only creator codes bind (a roulette prize or a one-off discount is a
+    coupon, not a relationship), and only public ones — a personal code
+    restricted to one account is not a partner channel. First code wins for
+    good: re-binding is what stealing an attribution would look like."""
+    if user.referred_by_code or not promo:
+        return False
+    if promo.kind != 'creator' or not (promo.creator_name or '').strip() \
+            or promo.restrict_user_id:
+        return False
+    user.referred_by_code = promo.code
+    user.referred_at = datetime.now(timezone.utc)
+    record_audit_event('referral_bound', user_id=user.id,
+                       detail=f'{promo.code} -> {promo.creator_name}')
     return True
 
 
@@ -6591,7 +6655,12 @@ def checkout():
     PLAN_RANK = {'free': 0, 'standard': 1, 'premium': 2}
     if PLAN_RANK.get(plan, 0) <= PLAN_RANK.get(current_user.plan, 0):
         return redirect(url_for('pricing'))
-    q = _quote(plan, cycle)
+    # A bound account's discount applies BY ITSELF: the renewal must cost $40
+    # without anyone remembering to retype anything. The stored code only
+    # discounts cycles it is valid for, but the binding itself never expires.
+    stored = _stored_promo(current_user)
+    stored_ok = stored and (stored.valid_for == 'both' or stored.valid_for == cycle)
+    q = _quote(plan, cycle, stored if stored_ok else None)
     # What twelve monthly payments would have cost, minus the annual price:
     # the pricing page promises this saving, so the cart has to show it too.
     saving = 0.0
@@ -6600,7 +6669,9 @@ def checkout():
         saving = max(0.0, prices.get('monthly', 0) * 12 - prices.get('annual', 0))
     return render_template('checkout.html', plan=plan, cycle=cycle,
                            plan_label=PLAN_LABELS[plan], quote=q,
-                           annual_saving=saving)
+                           annual_saving=saving,
+                           locked_code=(stored.code if stored_ok else None),
+                           locked_creator=(stored.creator_name if stored_ok else None))
 
 
 @app.route('/api/checkout/validate-code', methods=['POST'])
@@ -6612,6 +6683,16 @@ def api_validate_code():
     code = (data.get('code') or '').strip()
     if plan not in PLAN_PRICING or cycle not in allowed_cycles():
         return jsonify({'ok': False, 'error': 'invalid_plan'}), 400
+    # A bound account is spoken for: its own code is already applied, and a
+    # DIFFERENT code can neither replace the price nor take the attribution.
+    stored = _stored_promo(current_user)
+    if stored:
+        if code.strip().lower() == stored.code.strip().lower():
+            q = _quote(plan, cycle, stored)
+            return jsonify({'ok': True, 'locked': True,
+                            'discount_pct': stored.discount_pct,
+                            'creator': stored.creator_name, **q})
+        return jsonify({'ok': False, 'error': 'locked'}), 200
     promo, reason = _validate_promo(code, cycle)
     if not promo:
         return jsonify({'ok': False, 'error': reason}), 200
@@ -6642,7 +6723,18 @@ def checkout_create():
                                plan_label=PLAN_LABELS.get(existing.plan, existing.plan),
                                duplicate=True)
 
-    promo, _reason = _validate_promo(code, cycle) if code else (None, '')
+    # Resolution order: the code bound to the account wins over anything typed
+    # (that is the anti-theft rule), then whatever the form carried. The bound
+    # code does NOT bump uses_count — a renewal is the same conversion, not a
+    # new one, and the counter is the partner's conversions metric.
+    stored = _stored_promo(current_user)
+    stored_ok = stored and (stored.valid_for == 'both' or stored.valid_for == cycle)
+    fresh_use = False
+    if stored_ok:
+        promo = stored
+    else:
+        promo, _reason = _validate_promo(code, cycle) if code else (None, '')
+        fresh_use = promo is not None
     q = _quote(plan, cycle, promo)
     order = Order(
         user_id=current_user.id, plan=plan, billing_cycle=cycle,
@@ -6653,7 +6745,7 @@ def checkout_create():
     )
     db.session.add(order)
     # Reserve the promo use optimistically; released if the order is cancelled.
-    if promo:
+    if fresh_use:
         promo.uses_count = (promo.uses_count or 0) + 1
     db.session.commit()
     record_audit_event('order_created', user_id=current_user.id,
@@ -7079,6 +7171,96 @@ def admin_order_cancel():
     return redirect(url_for('admin') + '#revenue')
 
 
+# ── Partner panel (the influencer's own numbers) ──────────────────────────
+@app.route('/partner')
+@login_required
+def partner_panel():
+    """The panel the proposal promises the partner: their subscribers, their
+    tier and what they are owed — without asking, without trusting anyone's
+    word, and without seeing any customer's personal data. Access = owning a
+    code (PromoCode.owner_user_id), which the admin sets once."""
+    codes = PromoCode.query.filter_by(owner_user_id=current_user.id).all()
+    partners = sorted({(c.creator_name or '').strip()
+                       for c in codes if (c.creator_name or '').strip()})
+    if not partners:
+        abort(404)
+
+    now = datetime.now(timezone.utc)
+    month_key = now.strftime('%Y-%m')
+    blocks = []
+    for name in partners:
+        rows = (SaleBreakdown.query.filter_by(partner=name)
+                .order_by(SaleBreakdown.id.desc()).all())
+        live = [r for r in rows if r.reversed_at is None]
+        clients = partner_active_customers(name)
+        t1 = min(clients, PARTNER_TIERS[1][0] - 1)
+        t2 = max(0, min(clients, PARTNER_TIERS[2][0] - 1) - (PARTNER_TIERS[1][0] - 1))
+        t3 = max(0, clients - (PARTNER_TIERS[2][0] - 1))
+        eff = (round((t1 * PARTNER_TIERS[0][1] + t2 * PARTNER_TIERS[1][1]
+                      + t3 * PARTNER_TIERS[2][1]) / clients, 1) if clients else 0.0)
+
+        def _month(r):
+            return (r.sold_at or now).strftime('%Y-%m')
+        month_com = round(sum(r.commission_amt or 0 for r in live
+                              if _month(r) == month_key), 2)
+        # Recent activity WITHOUT buyer identity: the partner sees that a sale
+        # happened and what it pays them, never who the customer is.
+        recent = [{
+            'when': (r.sold_at or now).strftime('%Y-%m-%d'),
+            'plan': (r.plan or '').capitalize(),
+            'net': round(r.net_paid or 0, 2),
+            'pct': int(r.commission_pct or 0),
+            'commission': round(r.commission_amt or 0, 2),
+            'status': ('reversed' if r.reversed_at is not None
+                       else (r.commission_status or 'pending')),
+        } for r in rows[:15]]
+
+        blocks.append({
+            'name': name,
+            'codes': [c.code for c in codes
+                      if (c.creator_name or '').strip() == name],
+            'clients': clients,
+            'sales': len(live),
+            'revenue': round(sum(r.net_paid or 0 for r in live), 2),
+            'com_pending': round(sum(r.commission_amt or 0 for r in live
+                                     if r.commission_status == 'pending'), 2),
+            'com_paid': round(sum(r.commission_amt or 0 for r in live
+                                  if r.commission_status == 'paid'), 2),
+            'clawback': round(sum(r.commission_amt or 0 for r in rows
+                                  if r.reversed_at is not None
+                                  and r.commission_status == 'clawback'), 2),
+            'month_com': month_com,
+            't1': t1, 't2': t2, 't3': t3, 'eff': eff,
+            'next_pct': int(partner_tier_pct(clients + 1)),
+            'recent': recent,
+        })
+    return render_template('partner.html', blocks=blocks,
+                           tiers=PARTNER_TIERS, month=month_key)
+
+
+@app.route('/admin/promo/owner', methods=['POST'])
+@login_required
+def admin_promo_owner():
+    """Point a code at its partner's user account (grants /partner access).
+    Empty username disconnects it."""
+    if not current_user.is_admin:
+        abort(403)
+    promo = db.session.get(PromoCode, int(request.form.get('id') or 0))
+    if promo:
+        uname = (request.form.get('owner') or '').strip()
+        if not uname:
+            promo.owner_user_id = None
+        else:
+            u = User.query.filter_by(username=uname).first()
+            if not u:
+                return redirect(url_for('admin') + '#promos')
+            promo.owner_user_id = u.id
+        db.session.commit()
+        record_audit_event('promo_owner_set', user_id=current_user.id,
+                           detail=f'{promo.code} -> {uname or "(none)"}')
+    return redirect(url_for('admin') + '#promos')
+
+
 # ── Promo codes ──
 @app.route('/admin/promo/create', methods=['POST'])
 @login_required
@@ -7099,12 +7281,17 @@ def admin_promo_create():
         max_uses = int(max_uses) if max_uses else None
     except ValueError:
         max_uses = None
+    owner = None
+    owner_name = (request.form.get('owner') or '').strip()
+    if owner_name:
+        ou = User.query.filter_by(username=owner_name).first()
+        owner = ou.id if ou else None
     promo = PromoCode(
         code=code, discount_pct=discount,
         creator_name=(request.form.get('creator_name') or '').strip() or None,
         kind=request.form.get('kind', 'discount'),
         valid_for=request.form.get('valid_for', 'monthly'),
-        max_uses=max_uses, active=True,
+        max_uses=max_uses, active=True, owner_user_id=owner,
     )
     db.session.add(promo)
     db.session.commit()
@@ -11259,6 +11446,38 @@ def _migrate_sale_reserve_columns():
         app.logger.info('Migrated sale_breakdown: reserve columns ensured.')
 
 
+def _migrate_referral_columns():
+    """Referral binding on user + partner-panel owner on promo_code.
+
+    No backfill for referred_by_code: past orders carried their code per-order
+    and the ledger already attributed them; inventing bindings from history
+    could weld someone to a code they typed once and regretted. Binding starts
+    counting from the first payment AFTER this ships."""
+    from sqlalchemy import inspect, text
+    insp = inspect(db.engine)
+    is_pg = db.engine.dialect.name == 'postgresql'
+    stmts = []
+    if 'user' in insp.get_table_names():
+        cols = {c['name'] for c in insp.get_columns('user')}
+        table = '"user"' if is_pg else 'user'
+        if 'referred_by_code' not in cols:
+            stmts.append('ALTER TABLE %s ADD COLUMN referred_by_code VARCHAR(40)' % table)
+        if 'referred_at' not in cols:
+            stmts.append('ALTER TABLE %s ADD COLUMN referred_at TIMESTAMP' % table)
+    if 'promo_code' in insp.get_table_names():
+        cols = {c['name'] for c in insp.get_columns('promo_code')}
+        if 'owner_user_id' not in cols:
+            stmts.append('ALTER TABLE promo_code ADD COLUMN owner_user_id INTEGER')
+    for st in stmts:
+        try:
+            with db.engine.begin() as conn:
+                conn.execute(text(st))
+        except Exception as e:
+            app.logger.info('referral migration note (ignored): %s', e)
+    if stmts:
+        app.logger.info('Migrated: referral columns ensured.')
+
+
 def _migrate_user_security_columns():
     """Add the account-security columns (birth date, TOTP) to an existing user
     table. No backfill: existing accounts simply have no birth date on file —
@@ -11529,6 +11748,7 @@ def init_db():
         _migrate_user_camo_columns()
         _migrate_sale_reserve_columns()
         _migrate_user_security_columns()
+        _migrate_referral_columns()
         _migrate_testimonial_insider_column()
         _migrate_mentorship_application_columns()
         _migrate_forum_post_community_column()
