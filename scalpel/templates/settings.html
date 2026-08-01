@@ -17,6 +17,18 @@
     .page-title { font-size:30px; font-weight:800; letter-spacing:-.02em; margin-bottom:32px; }
     .section { background:#fff; border:1px solid var(--line); border-radius:var(--radius); margin-bottom:20px; overflow:hidden; }
     .section-head { padding:16px 22px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); border-bottom:1px solid var(--line); }
+    /* Security controls */
+    .sec-input { font-family:inherit; font-size:13px; padding:8px 12px; border:1px solid var(--line);
+                 border-radius:8px; flex:1; min-width:150px; }
+    .sec-input:focus { outline:none; border-color:var(--accent); }
+    .btn-sec { font-size:13px; font-weight:600; color:var(--accent); background:transparent;
+               border:1px solid #bfdbfe; border-radius:8px; padding:8px 16px; cursor:pointer;
+               font-family:inherit; transition:background .15s; }
+    .btn-sec:hover { background:#eff4ff; }
+    .badge-on  { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.06em;
+                 padding:3px 9px; border-radius:20px; background:#f0fdf4; color:#166534; }
+    .badge-off { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.06em;
+                 padding:3px 9px; border-radius:20px; background:#f1f5f9; color:var(--muted); }
     .setting-row { display:flex; align-items:center; justify-content:space-between; padding:16px 22px; border-bottom:1px solid var(--line); gap:20px; }
     .setting-row:last-child { border-bottom:none; }
     .setting-info { flex:1; }
@@ -79,6 +91,20 @@
 <div class="wrap">
   <div class="page-title" data-i18n="settings.title">Settings</div>
 
+  {% if sec == 'pw_ok' %}
+    <div class="flash ok" data-i18n="settings.flashPwOk">Password changed. Every other device has been signed out.</div>
+  {% elif sec == 'pw_wrong' %}
+    <div class="flash info" data-i18n="settings.flashPwWrong">Your current password did not match. Nothing was changed.</div>
+  {% elif sec == 'pw_weak' %}
+    <div class="flash info" data-i18n="settings.flashPwWeak">That new password is too weak or too easy to guess. Use 8+ characters with a letter and a number, and avoid common passwords or your own username.</div>
+  {% elif sec == 'sessions_ok' %}
+    <div class="flash ok" data-i18n="settings.flashSessions">Done — every device except this one has been signed out.</div>
+  {% elif sec == '2fa_wrong' %}
+    <div class="flash info" data-i18n="settings.flash2faWrong">The password or code did not match. Two-factor authentication is still on.</div>
+  {% elif sec == '2fa_off' %}
+    <div class="flash ok" data-i18n="settings.flash2faOff">Two-factor authentication has been turned off.</div>
+  {% endif %}
+
   {% if request.args.get('cancelled') %}
   <div class="flash ok" data-i18n="settings.flashCancelled">Plan cancellation scheduled — you'll keep access until your billing period ends.</div>
   {% endif %}
@@ -95,12 +121,19 @@
       </div>
       <div class="setting-control"><span class="pill-soon" data-i18n="common.soon">Coming soon</span></div>
     </div>
-    <div class="setting-row">
-      <div class="setting-info">
+    <div class="setting-row" style="flex-wrap:wrap;">
+      <div class="setting-info" style="flex-basis:100%;">
         <div class="setting-label" data-i18n="settings.password">Password</div>
         <div class="setting-desc" data-i18n="settings.passwordDesc">Change your password.</div>
       </div>
-      <div class="setting-control"><span class="pill-soon" data-i18n="common.soon">Coming soon</span></div>
+      <form method="POST" action="/account/password"
+            style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; width:100%;">
+        <input type="password" name="current_password" autocomplete="current-password" required
+               data-i18n-ph="settings.pwCurrent" placeholder="Current password" class="sec-input" />
+        <input type="password" name="new_password" autocomplete="new-password" minlength="8" required
+               data-i18n-ph="settings.pwNew" placeholder="New password" class="sec-input" />
+        <button type="submit" class="btn-sec" data-i18n="settings.pwChange">Change</button>
+      </form>
     </div>
     <div class="setting-row">
       <div class="setting-info">
@@ -140,6 +173,50 @@
             <button type="submit" class="btn-cancel" data-i18n="settings.cancelPlan">Cancel plan</button>
           </form>
         {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head" data-i18n="settings.secSecurity">Security</div>
+    <div class="setting-row" style="flex-wrap:wrap;">
+      <div class="setting-info">
+        <div class="setting-label">
+          <span data-i18n="settings.twofa">Two-factor authentication</span>
+          {% if user.totp_confirmed_at %}
+            <span class="badge-on" data-i18n="settings.twofaOn">On</span>
+          {% else %}
+            <span class="badge-off" data-i18n="settings.twofaOff">Off</span>
+          {% endif %}
+        </div>
+        <div class="setting-desc" data-i18n="settings.twofaDesc">A 6-digit code from your phone's authenticator app is asked for at every sign-in. Even someone who knows your password cannot get in without it.</div>
+      </div>
+      {% if not user.totp_confirmed_at %}
+      <div class="setting-control">
+        <form method="POST" action="/account/2fa/start">
+          <button type="submit" class="btn-sec" data-i18n="settings.twofaEnable">Turn on</button>
+        </form>
+      </div>
+      {% else %}
+      <form method="POST" action="/account/2fa/disable"
+            style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; width:100%; margin-top:8px;">
+        <input type="password" name="password" autocomplete="current-password" required
+               data-i18n-ph="settings.pwCurrent" placeholder="Current password" class="sec-input" />
+        <input type="text" name="code" inputmode="numeric" autocomplete="one-time-code" required
+               data-i18n-ph="settings.twofaCode" placeholder="6-digit or backup code" class="sec-input" />
+        <button type="submit" class="btn-cancel" data-i18n="settings.twofaDisable">Turn off</button>
+      </form>
+      {% endif %}
+    </div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-label" data-i18n="settings.sessions">Sign out other devices</div>
+        <div class="setting-desc" data-i18n="settings.sessionsDesc">Closes your session on every device and browser except this one. Use it if you signed in on a shared computer or think someone else has access.</div>
+      </div>
+      <div class="setting-control">
+        <form method="POST" action="/account/sessions/close">
+          <button type="submit" class="btn-sec" data-i18n="settings.sessionsBtn">Sign out others</button>
+        </form>
       </div>
     </div>
   </div>

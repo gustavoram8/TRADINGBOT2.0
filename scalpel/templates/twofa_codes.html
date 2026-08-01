@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title data-i18n-title="sec2fa.codesTitle">Tradeable Academy — Backup codes</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root { --ink:#15171f; --ink-soft:#4a4f5e; --muted:#8a8f9e; --line:#e4e6ec; --accent:#2563eb; --radius:14px; }
+    body { background:#f8f9fc; color:var(--ink); font-family:'Inter',sans-serif; font-size:15px; line-height:1.65; min-height:100vh; }
+    nav { display:flex; align-items:center; justify-content:space-between; padding:16px 32px; border-bottom:1px solid var(--line); }
+    .logo-img { height:64px; display:block; }
+    .back-link { font-size:13px; font-weight:600; color:var(--muted); text-decoration:none; }
+    .wrap { max-width:560px; margin:0 auto; padding:44px 24px 90px; }
+    h1 { font-size:26px; font-weight:800; letter-spacing:-.02em; margin-bottom:10px; }
+    p  { color:var(--ink-soft); margin-bottom:14px; font-size:14px; }
+    .ok { background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; border-radius:10px;
+          padding:10px 14px; font-size:13px; font-weight:600; margin-bottom:18px; }
+    .card { background:#fff; border:1px solid var(--line); border-radius:var(--radius); padding:26px; margin-bottom:18px; }
+    .codes { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:6px 0 4px;
+             font-family:ui-monospace,Menlo,Consolas,monospace; font-size:15px; letter-spacing:1px; }
+    .codes div { background:#f1f5f9; border:1px dashed var(--line); border-radius:8px;
+                 padding:9px 12px; text-align:center; user-select:all; }
+    .warn { background:#fffbeb; color:#92400e; border:1px solid #fde68a; border-radius:10px;
+            padding:12px 15px; font-size:13px; margin-top:14px; }
+    .btn { display:block; text-align:center; margin-top:18px; font-size:15px; font-weight:700; color:#fff;
+           background:var(--accent); border:none; border-radius:10px; padding:12px; text-decoration:none; }
+  </style>
+</head>
+<body>
+<nav>
+  <a href="/"><img src="/static/logo.png" alt="Tradeable" class="logo-img" onerror="this.style.display='none';" /></a>
+  <a href="/settings" class="back-link" data-i18n="sec2fa.back">← Back to settings</a>
+</nav>
+
+<div class="wrap">
+  <div class="ok" data-i18n="sec2fa.enabled">Two-factor authentication is now ON for your account.</div>
+  <h1 data-i18n="sec2fa.codesH1">Save your backup codes</h1>
+  <p data-i18n="sec2fa.codesLead">If you ever lose your phone, any ONE of these codes signs you in instead of the app. Each code works exactly once.</p>
+
+  <div class="card">
+    <div class="codes">
+      {% for c in codes %}<div>{{ c }}</div>{% endfor %}
+    </div>
+    <div class="warn" data-i18n="sec2fa.codesWarn">This is the only time these codes will be shown. Save them somewhere safe — a password manager, or printed and kept at home. Without your phone and without these codes, we cannot open the account for you.</div>
+  </div>
+
+  <a href="/settings" class="btn" data-i18n="sec2fa.codesDone">I saved them — back to settings</a>
+</div>
+
+<script src="/static/pages_i18n.js"></script>
+</body>
+</html>

@@ -21,3 +21,5 @@ stripe>=11.0.0
 # cost). Imported lazily in normalize_chart_image(); if absent, the original
 # image is sent unresized — analysis still works, just without the cost cap.
 Pillow>=10.0.0
+# QR for two-factor-auth enrollment ONLY (the certificate QRs stay dead)
+segno>=1.6

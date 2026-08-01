@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tradeable Academy — Two-step verification</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/auth.css" />
+</head>
+<body>
+  <script>
+    (function () {
+      try { if (localStorage.getItem('scalpel_theme') !== 'dark') document.body.classList.add('light'); }
+      catch (e) { document.body.classList.add('light'); }
+    })();
+  </script>
+
+  <a href="/login" class="back-home" data-i18n="twofa.back">← Back to sign in</a>
+
+  <img src="/static/logo.png" alt="Tradeable" class="auth-logo"
+       onerror="this.style.display='none'; document.getElementById('lf').style.display='block';" />
+  <div id="lf" class="auth-logo-fallback">TRADEABLE</div>
+
+  <div class="auth-card">
+    <div class="auth-title" data-i18n="twofa.title">Two-step verification</div>
+    <div class="auth-sub" data-i18n="twofa.sub">Enter the 6-digit code from your authenticator app.</div>
+
+    {% if error == 'bad_code' %}
+      <div class="alert alert-error" data-i18n="twofa.errCode">That code is not valid. Codes change every 30 seconds — check your app and try again.</div>
+    {% endif %}
+
+    <form method="POST" action="/login/2fa">
+      <div class="field">
+        <label for="code" data-i18n="twofa.code">Verification code</label>
+        <input type="text" id="code" name="code" inputmode="numeric" autocomplete="one-time-code"
+               autofocus maxlength="16" required
+               style="letter-spacing:4px; font-size:20px; text-align:center;" />
+        <div class="consent-note" style="margin-top:6px;" data-i18n="twofa.hint">Or enter one of your backup codes.</div>
+      </div>
+      <button type="submit" class="btn btn-primary" data-i18n="twofa.submit">Verify</button>
+    </form>
+  </div>
+
+  <div class="legal" data-i18n="common.legal">For educational purposes only · Not financial advice</div>
+
+  <script src="/static/auth.js"></script>
+</body>
+</html>

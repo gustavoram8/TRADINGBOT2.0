@@ -3,6 +3,7 @@ import re
 import io
 import json
 import hmac
+import struct
 import hashlib
 import gzip
 import base64
@@ -401,6 +402,17 @@ class User(UserMixin, db.Model):
     # shift) can never resolve to a different account.
     alt_id = db.Column(db.String(40), unique=True, nullable=True, index=True,
                        default=lambda: secrets.token_hex(20))
+    # ── Account security ──
+    # birth_date: the 18+ affirmation as a concrete statement instead of a bare
+    # checkbox. Deliberately NOT an ID document: collecting government IDs would
+    # turn an education site into a KYC data custodian. The date is the evidence.
+    birth_date = db.Column(db.Date, nullable=True)
+    # Optional TOTP two-factor auth (RFC 6238, standard authenticator apps).
+    # The secret is only persisted once the user has proven they enrolled it
+    # (totp_confirmed_at set) — an abandoned setup never half-locks an account.
+    totp_secret = db.Column(db.String(64), nullable=True)
+    totp_confirmed_at = db.Column(db.DateTime, nullable=True)
+    totp_backup = db.Column(db.Text, nullable=True)   # JSON: sha256 of unused backup codes
     # ── Periodic testimonial prompt (all plans, free included) ──
     last_review_prompt_at = db.Column(db.DateTime, nullable=True)
     # ── XP / Rank system (retention loop) ──
@@ -675,6 +687,22 @@ class BannedFingerprint(db.Model):
     banned_uid = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     source_user = db.relationship('User', backref='banned_fingerprints')
+
+
+class KnownDevice(db.Model):
+    """A browser this user has signed in from before, keyed by a long-lived
+    random cookie (not by fingerprint: the fingerprint is a ban-evasion tool,
+    this is a courtesy signal). Logging in from a browser whose cookie we have
+    never seen for this account triggers a security email — the standard
+    "new sign-in to your account" alert. The cookie is random, httponly and
+    says nothing about the person; it only means "this browser, seen before"."""
+    id           = db.Column(db.Integer, primary_key=True)
+    user_id      = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    token_hash   = db.Column(db.String(64), nullable=False, index=True)
+    ua           = db.Column(db.String(200), nullable=True)
+    created_at   = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    last_seen_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    user         = db.relationship('User', backref='known_devices')
 
 
 class SynapseDownloadToken(db.Model):
@@ -1989,6 +2017,91 @@ EMAIL_I18N = {
         },
     },
 }
+
+
+# One generic security-alert email; only the event line changes. The body
+# deliberately says WHAT to do if it wasn't you, because that is the only
+# reason this email exists.
+EMAIL_I18N['sec'] = {
+    'en': {'subject': 'Tradeable — Security alert: {event}',
+           'body': ("There was a security event on your Tradeable account:\n\n"
+                    "  {event}\n  {when} (UTC)\n  {detail}\n\n"
+                    "If this was you, no action is needed.\n\n"
+                    "If it was NOT you: sign in, change your password from "
+                    "Settings, and use \"Sign out other devices\". If you cannot "
+                    "sign in, use \"Forgot your password?\" on the login page "
+                    "immediately.")},
+    'es': {'subject': 'Tradeable — Alerta de seguridad: {event}',
+           'body': ("Hubo un evento de seguridad en tu cuenta de Tradeable:\n\n"
+                    "  {event}\n  {when} (UTC)\n  {detail}\n\n"
+                    "Si fuiste tú, no hace falta hacer nada.\n\n"
+                    "Si NO fuiste tú: inicia sesión, cambia tu contraseña desde "
+                    "Configuración y usa \"Cerrar sesión en los demás "
+                    "dispositivos\". Si no puedes entrar, usa \"¿Olvidaste tu "
+                    "contraseña?\" en la página de inicio de sesión de inmediato.")},
+    'fr': {'subject': 'Tradeable — Alerte de sécurité : {event}',
+           'body': ("Un événement de sécurité a eu lieu sur votre compte Tradeable :\n\n"
+                    "  {event}\n  {when} (UTC)\n  {detail}\n\n"
+                    "Si c'était vous, aucune action n'est nécessaire.\n\n"
+                    "Si ce n'était PAS vous : connectez-vous, changez votre mot de "
+                    "passe depuis les Paramètres et utilisez « Déconnecter les "
+                    "autres appareils ». Si vous ne pouvez pas vous connecter, "
+                    "utilisez immédiatement « Mot de passe oublié ? » sur la page "
+                    "de connexion.")},
+    'pt': {'subject': 'Tradeable — Alerta de segurança: {event}',
+           'body': ("Houve um evento de segurança na sua conta do Tradeable:\n\n"
+                    "  {event}\n  {when} (UTC)\n  {detail}\n\n"
+                    "Se foi você, não precisa fazer nada.\n\n"
+                    "Se NÃO foi você: entre na conta, troque sua senha em "
+                    "Configurações e use \"Sair dos outros dispositivos\". Se não "
+                    "conseguir entrar, use \"Esqueceu sua senha?\" na página de "
+                    "login imediatamente.")},
+}
+
+_SEC_EVENT_LINES = {
+    'new_device': {'en': 'Sign-in from a new device or browser',
+                   'es': 'Inicio de sesión desde un dispositivo o navegador nuevo',
+                   'fr': 'Connexion depuis un nouvel appareil ou navigateur',
+                   'pt': 'Login a partir de um novo dispositivo ou navegador'},
+    'pw_changed': {'en': 'Your password was changed',
+                   'es': 'Tu contraseña fue cambiada',
+                   'fr': 'Votre mot de passe a été modifié',
+                   'pt': 'Sua senha foi alterada'},
+    '2fa_on':     {'en': 'Two-factor authentication was enabled',
+                   'es': 'Se activó la verificación en dos pasos',
+                   'fr': 'La validation en deux étapes a été activée',
+                   'pt': 'A verificação em duas etapas foi ativada'},
+    '2fa_off':    {'en': 'Two-factor authentication was disabled',
+                   'es': 'Se desactivó la verificación en dos pasos',
+                   'fr': 'La validation en deux étapes a été désactivée',
+                   'pt': 'A verificação em duas etapas foi desativada'},
+}
+
+
+def send_security_email(user, event):
+    """Best-effort security notice. Never raises: a mail outage must not turn
+    into a login or password-change failure."""
+    try:
+        if not app.config.get('MAIL_PASSWORD'):
+            app.logger.info('security email (%s) for %s skipped: mail not configured',
+                            event, user.email)
+            return False
+        lang = _email_lang()
+        strings = EMAIL_I18N['sec'][lang]
+        line = _SEC_EVENT_LINES.get(event, {}).get(lang, event)
+        ua = (request.headers.get('User-Agent') or '')[:120] \
+            if has_request_context() else ''
+        msg = Message(strings['subject'].format(event=line),
+                      recipients=[user.email])
+        msg.body = strings['body'].format(
+            event=line,
+            when=datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M'),
+            detail=ua)
+        mail.send(msg)
+        return True
+    except Exception as e:
+        app.logger.warning('security email (%s) failed: %s', event, e)
+        return False
 
 
 def _email_lang():
@@ -4146,7 +4259,123 @@ def guide():
 @app.route('/settings')
 @login_required
 def settings():
-    return render_template('settings.html', user=current_user)
+    return render_template('settings.html', user=current_user,
+                           sec=request.args.get('sec'))
+
+
+@app.route('/account/password', methods=['POST'])
+@login_required
+def account_change_password():
+    """Change password from Settings. Requires the CURRENT password (a stolen
+    session must not be enough to lock the owner out), enforces the same
+    strength rules as registration, and kills every other session so whoever
+    knew the old password is holding nothing."""
+    current = request.form.get('current_password', '')
+    new = request.form.get('new_password', '')
+    if not current_user.check_password(current):
+        return redirect(url_for('settings', sec='pw_wrong'))
+    if not _valid_password(new) or _weak_password(
+            new, current_user.username, current_user.email):
+        return redirect(url_for('settings', sec='pw_weak'))
+    current_user.set_password(new)
+    db.session.commit()
+    _kill_other_sessions(current_user)
+    send_security_email(current_user, 'pw_changed')
+    record_audit_event('password_changed', user_id=current_user.id)
+    return redirect(url_for('settings', sec='pw_ok'))
+
+
+@app.route('/account/sessions/close', methods=['POST'])
+@login_required
+def account_close_sessions():
+    """Sign out every device except this one (alt_id rotation — the cookies on
+    the other devices simply stop resolving to an account)."""
+    _kill_other_sessions(current_user)
+    record_audit_event('sessions_closed', user_id=current_user.id)
+    return redirect(url_for('settings', sec='sessions_ok'))
+
+
+# ── Two-factor auth: enroll / confirm / disable ──
+
+def _totp_qr_data_uri(uri):
+    """QR for the authenticator app, as a PNG data URI. PNG on purpose: the
+    SVG route needs viewBox care (learned the hard way with the certificate
+    QRs); a PNG at a fixed scale has nothing to get wrong. Lazy import so a
+    missing segno degrades to manual secret entry instead of a 500."""
+    try:
+        import segno
+        buf = io.BytesIO()
+        segno.make(uri).save(buf, kind='png', scale=6, border=2)
+        return 'data:image/png;base64,' + base64.b64encode(buf.getvalue()).decode()
+    except Exception as e:
+        app.logger.warning('2FA QR unavailable: %s', e)
+        return None
+
+
+@app.route('/account/2fa/start', methods=['POST'])
+@login_required
+def twofa_start():
+    """Begin enrollment: mint a secret and show the QR. The secret lives ONLY
+    in the session until the user proves their app generates valid codes —
+    abandoning this page changes nothing about how they log in."""
+    if current_user.totp_confirmed_at:
+        return redirect(url_for('settings'))
+    secret = session.get('totp_setup') or _new_totp_secret()
+    session['totp_setup'] = secret
+    uri = ('otpauth://totp/Tradeable%20Academy:{u}?secret={s}'
+           '&issuer=Tradeable%20Academy&digits=6&period=30').format(
+        u=urllib.parse.quote(current_user.username), s=secret)
+    return render_template('twofa_setup.html', secret=secret,
+                           qr=_totp_qr_data_uri(uri))
+
+
+@app.route('/account/2fa/confirm', methods=['POST'])
+@login_required
+def twofa_confirm():
+    secret = session.get('totp_setup')
+    if not secret or current_user.totp_confirmed_at:
+        return redirect(url_for('settings'))
+    if not _totp_verify(secret, request.form.get('code')):
+        uri = ('otpauth://totp/Tradeable%20Academy:{u}?secret={s}'
+               '&issuer=Tradeable%20Academy&digits=6&period=30').format(
+            u=urllib.parse.quote(current_user.username), s=secret)
+        return render_template('twofa_setup.html', secret=secret,
+                               qr=_totp_qr_data_uri(uri), error='bad_code')
+    plain_codes, hashes = _new_backup_codes()
+    current_user.totp_secret = secret
+    current_user.totp_confirmed_at = datetime.now(timezone.utc)
+    current_user.totp_backup = hashes
+    db.session.commit()
+    session.pop('totp_setup', None)
+    send_security_email(current_user, '2fa_on')
+    record_audit_event('2fa_enabled', user_id=current_user.id)
+    # The backup codes render exactly once, from this response. They are not
+    # stored in plain anywhere, so there is no page to come back to.
+    return render_template('twofa_codes.html', codes=plain_codes)
+
+
+@app.route('/account/2fa/disable', methods=['POST'])
+@login_required
+def twofa_disable():
+    """Turning 2FA off asks for the password AND a current code (or a backup
+    code): a hijacked session alone cannot strip the account's protection."""
+    if not current_user.totp_confirmed_at:
+        return redirect(url_for('settings'))
+    if not current_user.check_password(request.form.get('password', '')):
+        return redirect(url_for('settings', sec='2fa_wrong'))
+    code = (request.form.get('code') or '').strip()
+    ok = _totp_verify(current_user.totp_secret, code)
+    if not ok and len(re.sub(r'[\s-]', '', code)) >= 10:
+        ok = _use_backup_code(current_user, code)
+    if not ok:
+        return redirect(url_for('settings', sec='2fa_wrong'))
+    current_user.totp_secret = None
+    current_user.totp_confirmed_at = None
+    current_user.totp_backup = None
+    db.session.commit()
+    send_security_email(current_user, '2fa_off')
+    record_audit_event('2fa_disabled', user_id=current_user.id)
+    return redirect(url_for('settings', sec='2fa_off'))
 
 
 @app.route('/account/cancel-plan', methods=['POST'])
@@ -4434,12 +4663,80 @@ def login():
                 user.terms_accepted_at = datetime.now(timezone.utc)
                 user.terms_version = TERMS_VERSION
                 db.session.commit()
+            # 2FA: the password alone is only half the login now. Nothing is
+            # granted yet — the user id is staged in the session and the code
+            # screen finishes the job (or the attempt dies in 5 minutes).
+            if user.totp_confirmed_at:
+                session['pre2fa_uid'] = user.id
+                session['pre2fa_remember'] = remember
+                session['pre2fa_at'] = datetime.now(timezone.utc).isoformat()
+                session['pre2fa_tries'] = 0
+                return redirect(url_for('login_2fa'))
             login_user(user, remember=remember)
-            return redirect(url_for('welcome'))
+            return _register_device_and_alert(user, redirect(url_for('welcome')))
         return render_template('login.html', error='invalid')
 
     return render_template('login.html', reset=request.args.get('reset'),
                            error='banned' if request.args.get('banned') else None)
+
+
+def _pre2fa_user():
+    """The account mid-way through a 2FA login, or None if the staging is
+    missing, expired (5 min) or burned out (5 failed codes)."""
+    uid = session.get('pre2fa_uid')
+    at = session.get('pre2fa_at')
+    if not uid or not at:
+        return None
+    try:
+        started = datetime.fromisoformat(at)
+    except ValueError:
+        return None
+    if datetime.now(timezone.utc) - started > timedelta(minutes=5):
+        return None
+    if session.get('pre2fa_tries', 0) >= 5:
+        return None
+    return db.session.get(User, uid)
+
+
+def _clear_pre2fa():
+    for k in ('pre2fa_uid', 'pre2fa_remember', 'pre2fa_at', 'pre2fa_tries'):
+        session.pop(k, None)
+
+
+@app.route('/login/2fa', methods=['GET', 'POST'])
+def login_2fa():
+    """Second step of a 2FA login. Accepts the 6-digit app code or one of the
+    single-use backup codes. Attempts are counted server-side in the session:
+    five misses invalidate the staging and send the visitor back to start."""
+    if current_user.is_authenticated:
+        return redirect(url_for('welcome'))
+    user = _pre2fa_user()
+    if not user:
+        _clear_pre2fa()
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        code = (request.form.get('code') or '').strip()
+        ok = _totp_verify(user.totp_secret, code)
+        used_backup = False
+        if not ok and len(re.sub(r'[\s-]', '', code)) >= 10:
+            ok = used_backup = _use_backup_code(user, code)
+        if ok:
+            remember = bool(session.get('pre2fa_remember'))
+            _clear_pre2fa()
+            db.session.commit()          # persists the consumed backup code
+            login_user(user, remember=remember)
+            record_audit_event('login_2fa', user_id=user.id,
+                               detail='backup code' if used_backup else 'totp')
+            return _register_device_and_alert(user, redirect(url_for('welcome')))
+        session['pre2fa_tries'] = session.get('pre2fa_tries', 0) + 1
+        record_audit_event('login_2fa_failed', user_id=user.id, success=False)
+        if session['pre2fa_tries'] >= 5:
+            _clear_pre2fa()
+            return redirect(url_for('login'))
+        return render_template('login_2fa.html', error='bad_code')
+
+    return render_template('login_2fa.html')
 
 
 # ── Credential rules ──
@@ -4453,6 +4750,164 @@ def _valid_password(pw):
     return (len(pw) >= 8
             and re.search(r'[A-Za-z]', pw) is not None
             and re.search(r'\d', pw) is not None)
+
+
+# The point of this list is not to be exhaustive — it is to stop the passwords
+# that satisfy the letter+digit rule while being the first guesses any attacker
+# tries. "password1" passed the old policy.
+_COMMON_PASSWORDS = {
+    'password1', 'password123', 'passw0rd', 'p4ssword', 'qwerty123',
+    'qwerty12', 'abc12345', 'abcd1234', 'a1234567', '12345678a',
+    'iloveyou1', 'welcome1', 'letmein1', 'monkey123', 'dragon123',
+    'football1', 'baseball1', 'sunshine1', 'princess1', 'master123',
+    'trading123', 'trader123', 'bitcoin1', 'admin123', 'test1234',
+    '1q2w3e4r', '1qaz2wsx', 'zaq12wsx', 'q1w2e3r4', 'asdf1234',
+}
+
+
+def _weak_password(pw, username='', email=''):
+    """True when the password passes the shape rule but is still a bad idea:
+    a top-list password, or the user's own name/mailbox with digits around it."""
+    low = pw.lower()
+    if low in _COMMON_PASSWORDS:
+        return True
+    if username and len(username) >= 4 and username.lower() in low:
+        return True
+    local = (email.split('@')[0] if email else '')
+    if local and len(local) >= 4 and local.lower() in low:
+        return True
+    return False
+
+
+MIN_ACCOUNT_AGE = 18
+
+
+def _parse_birth_date(raw):
+    """Parse the registration birth date. Returns (date, error) where error is
+    None, 'invalid' or 'underage'. The date is the 18+ evidence that a bare
+    checkbox is not: it is a concrete factual statement, dated and stored."""
+    from datetime import date as _date
+    try:
+        bd = datetime.strptime((raw or '').strip(), '%Y-%m-%d').date()
+    except ValueError:
+        return None, 'invalid'
+    today = _date.today()
+    age = today.year - bd.year - ((today.month, today.day) < (bd.month, bd.day))
+    if age > 120 or bd > today:
+        return None, 'invalid'
+    if age < MIN_ACCOUNT_AGE:
+        return None, 'underage'
+    return bd, None
+
+
+# ── TOTP two-factor auth (RFC 6238) ──
+# Implemented on the stdlib on purpose: the algorithm is 15 lines of hmac and
+# a dependency would be the only thing pyotp added. Compatible with Google
+# Authenticator, Authy, 1Password, Aegis — anything that scans otpauth:// URIs.
+
+def _new_totp_secret():
+    return base64.b32encode(secrets.token_bytes(20)).decode('ascii')
+
+
+def _totp_code(secret_b32, counter):
+    key = base64.b32decode(secret_b32, casefold=True)
+    digest = hmac.new(key, struct.pack('>Q', counter), hashlib.sha1).digest()
+    offset = digest[-1] & 0x0F
+    value = struct.unpack('>I', digest[offset:offset + 4])[0] & 0x7FFFFFFF
+    return '%06d' % (value % 1_000_000)
+
+def _totp_verify(secret_b32, code, window=1):
+    """Accept the current 30s step ± `window` steps (clock skew on phones)."""
+    code = re.sub(r'\s+', '', code or '')
+    if not re.fullmatch(r'\d{6}', code):
+        return False
+    now_step = int(datetime.now(timezone.utc).timestamp()) // 30
+    try:
+        return any(hmac.compare_digest(_totp_code(secret_b32, now_step + off), code)
+                   for off in range(-window, window + 1))
+    except Exception:
+        return False
+
+
+def _hash_backup_code(code):
+    return hashlib.sha256(code.strip().lower().replace('-', '').encode()).hexdigest()
+
+
+def _new_backup_codes(n=8):
+    """(plain_codes, json_of_hashes). Plain codes are shown exactly once."""
+    plain = ['-'.join((secrets.token_hex(5)[i:i + 5] for i in (0, 5)))
+             for _ in range(n)]
+    return plain, json.dumps([_hash_backup_code(c) for c in plain])
+
+
+def _use_backup_code(user, code):
+    """Consume a backup code. Each one works exactly once."""
+    try:
+        hashes = json.loads(user.totp_backup or '[]')
+    except ValueError:
+        hashes = []
+    h = _hash_backup_code(code or '')
+    if h in hashes:
+        hashes.remove(h)
+        user.totp_backup = json.dumps(hashes)
+        return True
+    return False
+
+
+def _register_device_and_alert(user, response):
+    """Recognise the browser via a long-lived random cookie; email the user
+    when the account signs in from a browser we have never seen for it.
+
+    Best-effort by design: a failure here must never block a login. The very
+    first device of an account is recorded silently — alerting on it would
+    email every existing user on their next login the day this ships.
+    """
+    try:
+        token = (request.cookies.get('nx_dev') or '').strip()
+        if not re.fullmatch(r'[0-9a-f]{32,64}', token or ''):
+            token = ''
+        fresh = not token
+        if fresh:
+            token = secrets.token_hex(16)
+        th = hashlib.sha256(token.encode()).hexdigest()
+        dev = KnownDevice.query.filter_by(user_id=user.id, token_hash=th).first()
+        if dev:
+            dev.last_seen_at = datetime.now(timezone.utc)
+            db.session.commit()
+        else:
+            first_ever = KnownDevice.query.filter_by(user_id=user.id).count() == 0
+            db.session.add(KnownDevice(
+                user_id=user.id, token_hash=th,
+                ua=(request.headers.get('User-Agent') or '')[:200]))
+            db.session.commit()
+            if not first_ever:
+                send_security_email(user, 'new_device')
+                record_audit_event('login_new_device', user_id=user.id,
+                                   detail=(request.headers.get('User-Agent') or '')[:120])
+        if fresh:
+            # secure=request.is_secure: set the flag once the site is behind
+            # HTTPS without breaking the current plain-HTTP preview by IP.
+            response.set_cookie('nx_dev', token, max_age=60 * 60 * 24 * 365,
+                                httponly=True, samesite='Lax',
+                                secure=request.is_secure)
+    except Exception as e:
+        app.logger.warning('device alert skipped: %s', e)
+    return response
+
+
+def _kill_other_sessions(user, remember=False):
+    """Rotate the login identifier so every OTHER session and remember-me
+    cookie stops resolving to this account, then re-establish the current one.
+    This is the same alt_id indirection the cookies already use — no session
+    store needed.
+
+    Unwraps the current_user proxy before login_user: storing the proxy itself
+    as the session user makes current_user resolve to itself, which recurses
+    forever on the next attribute access."""
+    user = getattr(user, '_get_current_object', lambda: user)()
+    user.alt_id = secrets.token_hex(20)
+    db.session.commit()
+    login_user(user, remember=remember)
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -4477,6 +4932,16 @@ def register():
             return render_template('register.html', error='invalid_username', username=username, email=email)
         if not _valid_password(password):
             return render_template('register.html', error='invalid_password', username=username, email=email)
+        if _weak_password(password, username, email):
+            return render_template('register.html', error='weak_password', username=username, email=email)
+        # Age: a concrete birth date, not just a checkbox. The clickwrap below
+        # still runs — the two are evidence of different things (a fact vs. an
+        # agreement) and together they are the under-18 defence.
+        birth_date, bd_err = _parse_birth_date(request.form.get('birth_date'))
+        if bd_err == 'underage':
+            return render_template('register.html', error='underage', username=username, email=email)
+        if bd_err:
+            return render_template('register.html', error='invalid', username=username, email=email)
         # Clickwrap: the account cannot be created without explicit T&C consent.
         if not accepted_terms:
             return render_template('register.html', error='terms_required', username=username, email=email)
@@ -4497,6 +4962,7 @@ def register():
         user.verification_expires = datetime.now(timezone.utc) + timedelta(minutes=15)
         user.terms_accepted_at = datetime.now(timezone.utc)
         user.terms_version = TERMS_VERSION
+        user.birth_date = birth_date
         db.session.add(user)
         db.session.commit()
 
@@ -4546,7 +5012,9 @@ def verify_email():
         remember = session.pop('pending_remember', False)
         session.pop('pending_user_id', None)
         login_user(user, remember=remember)
-        return redirect(url_for('welcome'))
+        # Silently records this browser as the account's first known device,
+        # so their NEXT sign-in from somewhere new is the one that alerts.
+        return _register_device_and_alert(user, redirect(url_for('welcome')))
 
     return render_template('verify_email.html', email=user.email)
 
@@ -4605,12 +5073,20 @@ def reset_password(token):
 
     if request.method == 'POST':
         password = request.form.get('password', '')
-        if not _valid_password(password):
-            return render_template('reset_password.html', token=token, error='short')
         user = User.query.filter_by(email=email).first()
+        if not _valid_password(password) or _weak_password(
+                password, user.username if user else '', email):
+            return render_template('reset_password.html', token=token, error='short')
         if user:
             user.set_password(password)
+            # A reset is exactly when you want every other session gone: if
+            # the reason was "someone else is in my account", this closes the
+            # door behind the new password. The resetter isn't logged in here,
+            # so a plain rotation logs out everyone, attacker included.
+            user.alt_id = secrets.token_hex(20)
             db.session.commit()
+            send_security_email(user, 'pw_changed')
+            record_audit_event('password_reset', user_id=user.id)
         return redirect(url_for('login', reset='success'))
 
     return render_template('reset_password.html', token=token)
@@ -10783,6 +11259,37 @@ def _migrate_sale_reserve_columns():
         app.logger.info('Migrated sale_breakdown: reserve columns ensured.')
 
 
+def _migrate_user_security_columns():
+    """Add the account-security columns (birth date, TOTP) to an existing user
+    table. No backfill: existing accounts simply have no birth date on file —
+    inventing one would be worse than the blank — and 2FA starts disabled for
+    everyone by definition."""
+    from sqlalchemy import inspect, text
+    insp = inspect(db.engine)
+    if 'user' not in insp.get_table_names():
+        return
+    cols = {c['name'] for c in insp.get_columns('user')}
+    is_pg = db.engine.dialect.name == 'postgresql'
+    table = '"user"' if is_pg else 'user'
+    stmts = []
+    if 'birth_date' not in cols:
+        stmts.append('ALTER TABLE %s ADD COLUMN birth_date DATE' % table)
+    if 'totp_secret' not in cols:
+        stmts.append('ALTER TABLE %s ADD COLUMN totp_secret VARCHAR(64)' % table)
+    if 'totp_confirmed_at' not in cols:
+        stmts.append('ALTER TABLE %s ADD COLUMN totp_confirmed_at TIMESTAMP' % table)
+    if 'totp_backup' not in cols:
+        stmts.append('ALTER TABLE %s ADD COLUMN totp_backup TEXT' % table)
+    for st in stmts:
+        try:
+            with db.engine.begin() as conn:
+                conn.execute(text(st))
+        except Exception as e:
+            app.logger.info('security migration note (ignored): %s', e)
+    if stmts:
+        app.logger.info('Migrated user: security columns ensured.')
+
+
 def _migrate_testimonial_insider_column():
     """Add `insider` to an existing testimonial table, and backfill it.
 
@@ -11021,6 +11528,7 @@ def init_db():
         _migrate_preflight_check_columns()
         _migrate_user_camo_columns()
         _migrate_sale_reserve_columns()
+        _migrate_user_security_columns()
         _migrate_testimonial_insider_column()
         _migrate_mentorship_application_columns()
         _migrate_forum_post_community_column()

@@ -40,6 +40,10 @@
       <div class="alert alert-error" data-i18n="reg.errDeviceBanned">Account creation is not available from this device. Contact support if you believe this is a mistake.</div>
     {% elif error == 'terms_required' %}
       <div class="alert alert-error" data-i18n="reg.errTerms">You must be 18 or older and accept the Terms &amp; Conditions to create an account.</div>
+    {% elif error == 'underage' %}
+      <div class="alert alert-error" data-i18n="reg.errUnderage">You must be at least 18 years old to use Tradeable Academy.</div>
+    {% elif error == 'weak_password' %}
+      <div class="alert alert-error" data-i18n="reg.errWeak">That password is too easy to guess. Avoid common passwords and your own username or email.</div>
     {% endif %}
 
     <form method="POST" action="/register" id="reg-form">
@@ -57,6 +61,14 @@
         <label for="password" data-i18n="reg.password">Password</label>
         <input type="password" id="password" name="password" autocomplete="new-password" minlength="8"
                data-i18n-ph="reg.passwordHint" placeholder="8+ characters, with a letter and a number" required />
+      </div>
+      <div class="field">
+        <label for="birth_date" data-i18n="reg.dob">Date of birth</label>
+        {# min/max are only browser-side niceties; the server does the real
+           18+ check, so a static min and no max is fine here. #}
+        <input type="date" id="birth_date" name="birth_date" autocomplete="bday" required
+               min="1906-01-01" />
+        <div class="consent-note" style="margin-top:6px;" data-i18n="reg.dobHint">You must be 18 or older to create an account.</div>
       </div>
       <label class="remember-row">
         <input type="checkbox" name="remember" value="1" />

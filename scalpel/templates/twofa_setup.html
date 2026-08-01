@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title data-i18n-title="sec2fa.doctitle">Tradeable Academy — Two-factor setup</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root { --ink:#15171f; --ink-soft:#4a4f5e; --muted:#8a8f9e; --line:#e4e6ec; --accent:#2563eb; --radius:14px; }
+    body { background:#f8f9fc; color:var(--ink); font-family:'Inter',sans-serif; font-size:15px; line-height:1.65; min-height:100vh; }
+    nav { display:flex; align-items:center; justify-content:space-between; padding:16px 32px; border-bottom:1px solid var(--line); }
+    .logo-img { height:64px; display:block; }
+    .back-link { font-size:13px; font-weight:600; color:var(--muted); text-decoration:none; }
+    .wrap { max-width:560px; margin:0 auto; padding:44px 24px 90px; }
+    h1 { font-size:26px; font-weight:800; letter-spacing:-.02em; margin-bottom:10px; }
+    p  { color:var(--ink-soft); margin-bottom:14px; font-size:14px; }
+    .card { background:#fff; border:1px solid var(--line); border-radius:var(--radius); padding:26px; margin-bottom:18px; }
+    .qr { display:block; margin:14px auto; width:210px; height:210px; image-rendering:pixelated;
+          border:1px solid var(--line); border-radius:10px; }
+    .secret { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:14px; letter-spacing:2px;
+              background:#f1f5f9; border:1px dashed var(--line); border-radius:8px; padding:10px 14px;
+              text-align:center; word-break:break-all; user-select:all; margin:10px 0 4px; }
+    .steps { padding-left:20px; margin-bottom:8px; }
+    .steps li { color:var(--ink-soft); font-size:14px; margin-bottom:8px; }
+    .field label { display:block; font-size:13px; font-weight:600; margin-bottom:6px; }
+    .field input { width:100%; font-family:inherit; font-size:20px; letter-spacing:6px; text-align:center;
+                   padding:10px 14px; border:1px solid var(--line); border-radius:10px; }
+    .field input:focus { outline:none; border-color:var(--accent); }
+    .btn { width:100%; margin-top:14px; font-size:15px; font-weight:700; color:#fff; background:var(--accent);
+           border:none; border-radius:10px; padding:12px; cursor:pointer; font-family:inherit; }
+    .alert-error { background:#fef2f2; color:#991b1b; border:1px solid #fecaca; border-radius:10px;
+                   padding:10px 14px; font-size:13px; font-weight:600; margin-bottom:14px; }
+    .note { font-size:12.5px; color:var(--muted); }
+  </style>
+</head>
+<body>
+<nav>
+  <a href="/"><img src="/static/logo.png" alt="Tradeable" class="logo-img" onerror="this.style.display='none';" /></a>
+  <a href="/settings" class="back-link" data-i18n="sec2fa.back">← Back to settings</a>
+</nav>
+
+<div class="wrap">
+  <h1 data-i18n="sec2fa.title">Turn on two-factor authentication</h1>
+  <p data-i18n="sec2fa.lead">From now on, signing in will ask for your password AND a 6-digit code from your phone. Nothing changes until you confirm a code below.</p>
+
+  <div class="card">
+    <ol class="steps">
+      <li data-i18n-html="sec2fa.s1">Install an authenticator app if you don't have one — <b>Google Authenticator</b>, <b>Authy</b>, <b>Microsoft Authenticator</b> or any other.</li>
+      <li data-i18n="sec2fa.s2">Scan this QR code with the app:</li>
+    </ol>
+    {% if qr %}<img class="qr" src="{{ qr }}" alt="QR code" />{% endif %}
+    <p class="note" data-i18n="sec2fa.manual">If you can't scan it, add the account manually with this key:</p>
+    <div class="secret">{{ secret }}</div>
+  </div>
+
+  <div class="card">
+    {% if error == 'bad_code' %}
+      <div class="alert-error" data-i18n="sec2fa.errCode">That code didn't match. Codes change every 30 seconds — check the app shows "Tradeable Academy" and try the current one.</div>
+    {% endif %}
+    <form method="POST" action="/account/2fa/confirm">
+      <div class="field">
+        <label for="code" data-i18n="sec2fa.confirm">Enter the 6-digit code the app shows now</label>
+        <input type="text" id="code" name="code" inputmode="numeric" autocomplete="one-time-code"
+               maxlength="6" pattern="\d{6}" required autofocus />
+      </div>
+      <button type="submit" class="btn" data-i18n="sec2fa.activate">Confirm and turn on</button>
+    </form>
+  </div>
+</div>
+
+<script src="/static/pages_i18n.js"></script>
+</body>
+</html>
