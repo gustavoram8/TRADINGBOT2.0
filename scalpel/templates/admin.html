@@ -1039,10 +1039,13 @@
       Cada venta pagada se abre en sus piezas <b>en el momento del pago</b> y queda congelada:
       posición del socio, tramo, fee del procesador (la REAL de PayPal cuando exista) y costo
       operativo. <b>La escalera 30/35/40 ordena CLIENTES, no pagos:</b> los primeros 24 clientes de
-      un socio siempre pagan 30%, los del 25 al 74 el 35% y del 75 en adelante el 40%. Una
-      <i>renovación</i> conserva el lugar de ese cliente — no lo sube de tramo — y si alguien se da
-      de baja, los de abajo suben un puesto. Mientras las pasarelas están apagadas puedes <b>cargar ventas a
-      mano</b> abajo y ver cómo se comporta — misma matemática, mismo código que una venta real.
+      un socio pagan 30%, los del 25 al 74 el 35% y del 75 en adelante el 40%. El puesto <b>se
+      recalcula en cada pago</b> según la antigüedad entre los clientes vivos de ese socio: una
+      renovación conserva su lugar, y cuando alguien se da de baja los de abajo suben un puesto
+      — con lo cual un cliente que se cobraba al 40% puede pasar a 35%, porque el porcentaje
+      refleja el tamaño de la cartera de hoy. Mientras las pasarelas están apagadas puedes
+      <b>cargar ventas a mano</b> abajo y ver cómo se comporta — misma matemática, mismo código
+      que una venta real. Escribir el mismo nombre de comprador simula una renovación.
     </div>
 
     <div class="section-d" style="border-left:3px solid #c9a227;padding-left:10px;margin-bottom:12px;">
@@ -1105,10 +1108,16 @@
 
     <!-- ── Socios ── -->
     {% if ledger_partners %}
-    <div class="section-h" style="font-size:15px;">🤝 Socios (acumulado histórico)</div>
+    <div class="section-h" style="font-size:15px;">🤝 Socios</div>
+    <div class="section-d" style="margin-top:-6px;">
+      Las columnas <b>azules son de HOY</b> — el reparto por tramos y el % efectivo salen de los
+      clientes que ese socio tiene vivos en este momento, así que son lo que costará el
+      <b>próximo</b> cobro. Las columnas de dinero son <b>acumulado histórico</b>: cada pago quedó
+      congelado con el tramo que tenía el día que se cobró, y eso no se reescribe.
+    </div>
     <div class="table-card">
     <table>
-      <thead><tr><th>Socio</th><th>Clientes</th><th>Reparto por tramos</th><th>% efectivo</th>
+      <thead><tr><th>Socio</th><th>Clientes hoy</th><th>Reparto hoy</th><th>% efectivo hoy</th>
         <th>Próx. cliente</th><th>Facturación</th><th>Comisión pendiente</th><th>Pagada</th>
         <th>A recuperar</th><th></th></tr></thead>
       <tbody>

@@ -3880,12 +3880,6 @@ def admin_ledger_manual():
             disc = float(request.form.get('discount_pct') or 20)
             partner = code.title()
     net = round(gross * (1 - disc / 100.0), 2)
-    # A manual row can name an existing buyer to simulate a RENEWAL: same
-    # username under the same partner keeps that customer's rung.
-    prior = (SaleBreakdown.query.filter_by(partner=partner, username=buyer)
-             .filter(SaleBreakdown.reversed_at.is_(None))
-             .order_by(SaleBreakdown.position.asc()).first()
-             if (partner and buyer) else None)
     fee_raw = (request.form.get('fee') or '').strip()
     try:
         fee = round(float(fee_raw), 2)
@@ -3893,8 +3887,10 @@ def admin_ledger_manual():
     except ValueError:
         fee = estimated_processor_fee(net)
         fee_real = False
-    position = (prior.position if (prior and prior.position)
-                else _next_partner_position(partner))
+    # Typing a buyer name that already exists under this partner simulates a
+    # RENEWAL: the roster recognises the name and returns that customer's
+    # place instead of opening a new one.
+    position = _next_partner_position(partner, username=buyer)
     pct = partner_tier_pct(position) if partner else 0.0
     commission = round(net * pct / 100.0, 2)
     op = PLAN_OP_COST.get(plan, {}).get(cycle, 0.0)
@@ -5818,6 +5814,42 @@ def _partner_for_code(code):
     return (pc.creator_name or '').strip() or None
 
 
+def _customer_key(user_id=None, username=None, row_id=None):
+    """One stable identity per customer inside a partner's roster.
+
+    Real sales key on the account. Manual ledger rows have no account, so they
+    key on the buyer name typed in — that is what lets you simulate the same
+    person renewing. A manual row with no name at all is its own customer,
+    since there is nothing to deduplicate it against.
+    """
+    if user_id is not None:
+        return ('u', user_id)
+    if username and username.strip():
+        return ('n', username.strip().lower())
+    return ('r', row_id)
+
+
+def partner_roster(partner):
+    """This partner's LIVE customers, oldest first.
+
+    Seniority is the id of the customer's first sale that is still standing,
+    so the order is the order in which they were actually closed. A reversed
+    sale drops its customer out of the roster entirely, which is what makes
+    the places below shift up.
+    """
+    if not partner:
+        return []
+    rows = SaleBreakdown.query.filter_by(partner=partner).filter(
+        SaleBreakdown.reversed_at.is_(None)).order_by(
+        SaleBreakdown.id.asc()).all()
+    first_seen = {}
+    for r in rows:
+        k = _customer_key(r.user_id, r.username, r.id)
+        if k not in first_seen:
+            first_seen[k] = r.id
+    return [k for k, _ in sorted(first_seen.items(), key=lambda kv: kv[1])]
+
+
 def partner_active_customers(partner):
     """How many DISTINCT customers this partner currently has alive.
 
@@ -5826,43 +5858,36 @@ def partner_active_customers(partner):
     paying again — it must not push the partner up a tier. Counting rows would
     hand a partner with 10 clients the 40% band by month eight purely for
     having been around a while.
-
-    Rows with no user_id (manual/simulated entries) each count as their own
-    customer, since there is nobody to deduplicate them against.
     """
-    if not partner:
-        return 0
-    rows = SaleBreakdown.query.filter_by(partner=partner).filter(
-        SaleBreakdown.reversed_at.is_(None)).all()
-    seen = set()
-    anon = 0
-    for r in rows:
-        if r.user_id is None:
-            anon += 1
-        else:
-            seen.add(r.user_id)
-    return len(seen) + anon
+    return len(partner_roster(partner))
 
 
-def _next_partner_position(partner, user_id=None):
+def _next_partner_position(partner, user_id=None, username=None):
     """The tier position this sale takes in the partner's ledger.
 
-    RULE B (chosen with the owner): the ladder is a live ranking, not a
-    permanent badge. A partner with 75 customers is paid as 24 at 30% + 50 at
-    35% + 1 at 40% — the first 24 places always pay 30%, whoever occupies them.
-    So a RENEWAL keeps the client's existing place instead of taking a new one,
-    and when somebody leaves the places below simply shift up.
+    LIVE RE-RANKING (chosen with the owner): the place is not a badge somebody
+    keeps for good, it is where that customer stands in the partner's roster
+    RIGHT NOW, by seniority. Recomputed on every payment, which gives three
+    properties that the frozen-place version did not have:
+
+      · a renewal keeps its place, as long as nobody senior left;
+      · when a customer leaves, everyone below shifts up a place — so a
+        customer being paid at 40% can move down to 35%. That is deliberate:
+        the percentage is meant to reflect how big the partner's book is
+        today, and a smaller book means a smaller percentage;
+      · places stay 1..N with no gaps and no duplicates, so the ladder the
+        admin panel draws is exactly the one being paid. The old version freed
+        the COUNT without freeing the PLACE, so a new customer could land on a
+        place a live customer still held and both were paid the top band.
     """
     if not partner:
         return None
-    if user_id is not None:
-        prior = SaleBreakdown.query.filter_by(
-            partner=partner, user_id=user_id).filter(
-            SaleBreakdown.reversed_at.is_(None)).order_by(
-            SaleBreakdown.position.asc()).first()
-        if prior and prior.position:
-            return prior.position          # renewal → same rung of the ladder
-    return partner_active_customers(partner) + 1
+    roster = partner_roster(partner)
+    if user_id is not None or username:
+        key = _customer_key(user_id, username, None)
+        if key in roster:
+            return roster.index(key) + 1     # renewal → its place today
+    return len(roster) + 1                   # new customer → last place
 
 
 def record_sale_breakdown(order, processor_fee=None, fee_is_real=False):
