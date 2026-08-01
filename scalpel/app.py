@@ -6329,11 +6329,17 @@ def _build_ledger_context():
 
 
 def _partner_for_code(code):
-    """The creator behind a promo code, or None if it is not a partner code."""
+    """The creator behind a promo code, or None if it is not a partner code.
+
+    kind == 'creator' is the filter that keeps phantom partners out of the
+    ledger: roulette prizes carry creator_name='roulette:<user>' as a label,
+    and without this check a purchase made with one would file a commission
+    owed to a "partner" that does not exist."""
     if not code:
         return None
-    pc = PromoCode.query.filter_by(code=(code or '').strip().upper()).first()
-    if not pc:
+    pc = PromoCode.query.filter(
+        db.func.lower(PromoCode.code) == (code or '').strip().lower()).first()
+    if not pc or pc.kind != 'creator':
         return None
     return (pc.creator_name or '').strip() or None
 
