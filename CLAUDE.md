@@ -1020,6 +1020,24 @@ retirar como ganancia el dinero de un anual durante sus primeros 6 meses (ventan
 PayPal = 180 días). **El usuario decidirá luego si arriesga o si no publica planes anuales.**
 **Al encender PayPal no hay nada más que cablear: el desglose ya corre en la activación.**
 
+**🪜 REGLA B — la escalera 30/35/40 ordena CLIENTES, no pagos (2026-08-01, decisión del usuario).**
+🔴 **Bug encontrado y corregido:** `_next_partner_position()` contaba **filas de venta**, así que cada
+**renovación** empujaba al socio un puesto arriba — un socio con 10 clientes fieles llegaba al 40% en
+el mes 8 sin haber cerrado un cliente nuevo (~$284/año de comisión de más en un caso chico). El
+acuerdo dice "los primeros 24 **clientes** que cierre". Fix: `partner_active_customers(partner)`
+cuenta `user_id` distintos vivos (las filas manuales sin `user_id` cuentan una cada una, no hay
+contra qué deduplicar) y `_next_partner_position(partner, user_id=…)` **devuelve el puesto que ese
+cliente ya tenía** si renueva. La escalera es un **ranking vivo, no una medalla**: si alguien se da de
+baja, los de abajo suben un puesto (una reversión libera su posición). Carga manual: mismo
+`username` + mismo socio = renovación (conserva puesto).
+**Panel:** la tabla de socios muestra **Clientes** (lo que fija el tramo) con "N pago(s)" debajo,
+**Reparto por tramos** ("24 al 30% · 50 al 35% · 1 al 40%"), **% efectivo** y **Próx. cliente**.
+E2E `test_reglaB.py` 15/15 verde: renovación del cliente 1 sigue en puesto 1 al 30% y no crea cliente
+nuevo (75 clientes / 76 pagos), reparto 24/50/1 = 33.5% efectivo, dos socios con pasteles separados
+(Lucía arranca en su propio puesto 1), y una baja devuelve el puesto 75 al siguiente.
+**Multi-influencer confirmado:** todo se calcula **por `partner`** — el socio B nunca ve ni cobra por
+los clientes del A. Se puede negociar con varios en paralelo sin tocar código.
+
 ### 📊 FINANCIAL HUB — Excel entregado (2026-07-31, fuera del repo)
 El usuario pidió por PDF un **modelo financiero de 14 hojas** para el acuerdo comercial →
 entregado `Tradeable_Academy_Financial_Hub.xlsx` (14 hojas exactas del PDF, 832 fórmulas puras

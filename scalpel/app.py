@@ -3853,6 +3853,12 @@ def admin_ledger_manual():
             disc = float(request.form.get('discount_pct') or 20)
             partner = code.title()
     net = round(gross * (1 - disc / 100.0), 2)
+    # A manual row can name an existing buyer to simulate a RENEWAL: same
+    # username under the same partner keeps that customer's rung.
+    prior = (SaleBreakdown.query.filter_by(partner=partner, username=buyer)
+             .filter(SaleBreakdown.reversed_at.is_(None))
+             .order_by(SaleBreakdown.position.asc()).first()
+             if (partner and buyer) else None)
     fee_raw = (request.form.get('fee') or '').strip()
     try:
         fee = round(float(fee_raw), 2)
@@ -3860,7 +3866,8 @@ def admin_ledger_manual():
     except ValueError:
         fee = estimated_processor_fee(net)
         fee_real = False
-    position = _next_partner_position(partner)
+    position = (prior.position if (prior and prior.position)
+                else _next_partner_position(partner))
     pct = partner_tier_pct(position) if partner else 0.0
     commission = round(net * pct / 100.0, 2)
     op = PLAN_OP_COST.get(plan, {}).get(cycle, 0.0)
@@ -5710,17 +5717,23 @@ def _build_ledger_context():
         return {k: (round(v, 2) if isinstance(v, float) else v)
                 for k, v in t.items()}
 
-    # Per-partner standings (all-time — the tier lives on the whole ledger).
+    # Per-partner standings. `clients` is what decides the tier (rule B: the
+    # ladder ranks CUSTOMERS, so renewals do not climb it); `sales` is how many
+    # payments those customers have made.
     partners = {}
     for r in rows_all:
         if not r.partner:
             continue
         p = partners.setdefault(r.partner, {
-            'name': r.partner, 'valid': 0, 'reversed': 0,
-            'commission_total': 0.0, 'com_pending': 0.0, 'com_paid': 0.0,
-            'clawback': 0.0, 'revenue': 0.0})
+            'name': r.partner, 'sales': 0, 'reversed': 0, '_ids': set(),
+            '_anon': 0, 'commission_total': 0.0, 'com_pending': 0.0,
+            'com_paid': 0.0, 'clawback': 0.0, 'revenue': 0.0})
         if r.reversed_at is None:
-            p['valid'] += 1
+            p['sales'] += 1
+            if r.user_id is None:
+                p['_anon'] += 1
+            else:
+                p['_ids'].add(r.user_id)
             p['revenue'] += r.net_paid or 0
             p['commission_total'] += r.commission_amt or 0
             if r.commission_status == 'pending':
@@ -5732,7 +5745,17 @@ def _build_ledger_context():
             if r.commission_status == 'clawback':
                 p['clawback'] += r.commission_amt or 0
     for p in partners.values():
-        p['next_pct'] = partner_tier_pct(p['valid'] + 1)
+        p['clients'] = len(p.pop('_ids')) + p.pop('_anon')
+        p['next_pct'] = partner_tier_pct(p['clients'] + 1)
+        # How this partner's customers sit across the three bands right now.
+        c = p['clients']
+        p['t1'] = min(c, PARTNER_TIERS[1][0] - 1)
+        p['t2'] = max(0, min(c, PARTNER_TIERS[2][0] - 1) - (PARTNER_TIERS[1][0] - 1))
+        p['t3'] = max(0, c - (PARTNER_TIERS[2][0] - 1))
+        p['eff_pct'] = (round((p['t1'] * PARTNER_TIERS[0][1]
+                               + p['t2'] * PARTNER_TIERS[1][1]
+                               + p['t3'] * PARTNER_TIERS[2][1]) / c, 1)
+                        if c else 0.0)
         for k in ('commission_total', 'com_pending', 'com_paid',
                   'clawback', 'revenue'):
             p[k] = round(p[k], 2)
@@ -5752,7 +5775,7 @@ def _build_ledger_context():
         'ledger_view': _tally(view_rows),
         'ledger_total': _tally(rows_all),
         'ledger_partners': sorted(partners.values(),
-                                  key=lambda p: -p['valid']),
+                                  key=lambda p: -p['clients']),
         'ledger_plans': sorted(PLAN_PRICING),
         'reserve_pct': CHARGEBACK_RESERVE_PCT,
     }
@@ -5768,18 +5791,51 @@ def _partner_for_code(code):
     return (pc.creator_name or '').strip() or None
 
 
-def _next_partner_position(partner):
-    """Which number this partner's next VALID sale takes.
+def partner_active_customers(partner):
+    """How many DISTINCT customers this partner currently has alive.
 
-    Counts live rows only, so a reversed sale frees its position back up —
-    which is exactly the behaviour the agreement describes: a chargeback stops
-    counting towards the tier.
+    Counting customers, not payments, is the whole point: the agreement grants
+    30% on "the first 24 CLIENTS he closes". A renewal is the same client
+    paying again — it must not push the partner up a tier. Counting rows would
+    hand a partner with 10 clients the 40% band by month eight purely for
+    having been around a while.
+
+    Rows with no user_id (manual/simulated entries) each count as their own
+    customer, since there is nobody to deduplicate them against.
+    """
+    if not partner:
+        return 0
+    rows = SaleBreakdown.query.filter_by(partner=partner).filter(
+        SaleBreakdown.reversed_at.is_(None)).all()
+    seen = set()
+    anon = 0
+    for r in rows:
+        if r.user_id is None:
+            anon += 1
+        else:
+            seen.add(r.user_id)
+    return len(seen) + anon
+
+
+def _next_partner_position(partner, user_id=None):
+    """The tier position this sale takes in the partner's ledger.
+
+    RULE B (chosen with the owner): the ladder is a live ranking, not a
+    permanent badge. A partner with 75 customers is paid as 24 at 30% + 50 at
+    35% + 1 at 40% — the first 24 places always pay 30%, whoever occupies them.
+    So a RENEWAL keeps the client's existing place instead of taking a new one,
+    and when somebody leaves the places below simply shift up.
     """
     if not partner:
         return None
-    n = SaleBreakdown.query.filter_by(partner=partner).filter(
-        SaleBreakdown.reversed_at.is_(None)).count()
-    return n + 1
+    if user_id is not None:
+        prior = SaleBreakdown.query.filter_by(
+            partner=partner, user_id=user_id).filter(
+            SaleBreakdown.reversed_at.is_(None)).order_by(
+            SaleBreakdown.position.asc()).first()
+        if prior and prior.position:
+            return prior.position          # renewal → same rung of the ladder
+    return partner_active_customers(partner) + 1
 
 
 def record_sale_breakdown(order, processor_fee=None, fee_is_real=False):
@@ -5800,7 +5856,7 @@ def record_sale_breakdown(order, processor_fee=None, fee_is_real=False):
     fee = (round(float(processor_fee), 2) if processor_fee is not None
            else estimated_processor_fee(net))
     partner = _partner_for_code(order.promo_code)
-    position = _next_partner_position(partner)
+    position = _next_partner_position(partner, user_id=order.user_id)
     pct = partner_tier_pct(position) if partner else 0.0
     commission = round(net * pct / 100.0, 2)
     op = PLAN_OP_COST.get(order.plan, {}).get(order.billing_cycle, 0.0)

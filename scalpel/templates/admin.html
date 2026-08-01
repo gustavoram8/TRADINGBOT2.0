@@ -1037,8 +1037,11 @@
     <div class="section-h" id="ledger">📒 Libro de ventas — cada pago, desmenuzado</div>
     <div class="section-d">
       Cada venta pagada se abre en sus piezas <b>en el momento del pago</b> y queda congelada:
-      posición del socio, tramo (30/35/40 marginal), fee del procesador (la REAL de PayPal cuando
-      exista) y costo operativo. Mientras las pasarelas están apagadas puedes <b>cargar ventas a
+      posición del socio, tramo, fee del procesador (la REAL de PayPal cuando exista) y costo
+      operativo. <b>La escalera 30/35/40 ordena CLIENTES, no pagos:</b> los primeros 24 clientes de
+      un socio siempre pagan 30%, los del 25 al 74 el 35% y del 75 en adelante el 40%. Una
+      <i>renovación</i> conserva el lugar de ese cliente — no lo sube de tramo — y si alguien se da
+      de baja, los de abajo suben un puesto. Mientras las pasarelas están apagadas puedes <b>cargar ventas a
       mano</b> abajo y ver cómo se comporta — misma matemática, mismo código que una venta real.
     </div>
 
@@ -1105,13 +1108,16 @@
     <div class="section-h" style="font-size:15px;">🤝 Socios (acumulado histórico)</div>
     <div class="table-card">
     <table>
-      <thead><tr><th>Socio</th><th>Válidas</th><th>Próx. venta cobra</th><th>Facturación</th>
-        <th>Comisión pendiente</th><th>Pagada</th><th>A recuperar</th><th></th></tr></thead>
+      <thead><tr><th>Socio</th><th>Clientes</th><th>Reparto por tramos</th><th>% efectivo</th>
+        <th>Próx. cliente</th><th>Facturación</th><th>Comisión pendiente</th><th>Pagada</th>
+        <th>A recuperar</th><th></th></tr></thead>
       <tbody>
       {% for p in ledger_partners %}
       <tr>
         <td class="u-name">{{ p.name }}{% if p.reversed %}<br><span class="u-email">{{ p.reversed }} revertida(s)</span>{% endif %}</td>
-        <td><b>{{ p.valid }}</b></td>
+        <td><b>{{ p.clients }}</b><br><span class="u-email">{{ p.sales }} pago(s)</span></td>
+        <td><span class="u-email">{{ p.t1 }} al 30% · {{ p.t2 }} al 35% · {{ p.t3 }} al 40%</span></td>
+        <td><b>{{ '%.1f'|format(p.eff_pct) }}%</b></td>
         <td>{{ '%.0f'|format(p.next_pct) }}%</td>
         <td>${{ '%.2f'|format(p.revenue) }}</td>
         <td><b>${{ '%.2f'|format(p.com_pending) }}</b></td>
