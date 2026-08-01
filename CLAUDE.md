@@ -1066,6 +1066,34 @@ subiendo su cédula te deja con datos de un menor guardados) y eligió el paquet
 sesión → `current_user` se resuelve a sí mismo → recursión infinita. Desenvolver con
 `_get_current_object()` (hecho en `_kill_other_sessions`).
 
+### 🔗 REFERIDOS — ATRIBUCIÓN PERPETUA + PANEL DEL SOCIO (2026-08-01, CABLEADO)
+**Contexto:** auditoría ejecutando el flujo real dio 22/25 — la 1ª venta con código funcionaba
+entera, pero descuento+atribución vivían EN EL PEDIDO: la renovación sin reescribir el código
+volvía a $50 y el socio cobraba $0 (lo contrario de la propuesta comercial). Cableado:
+- **`User.referred_by_code`/`referred_at`**: se fija UNA vez, en el primer pedido **PAGADO** con
+  código `kind='creator'` público (carrito abandonado no ata; ruleta/personales no atan;
+  re-atar es imposible — "primer código gana"). `_bind_referral()` en `_activate_plan_from_order`.
+- **Checkout auto-aplica** el código guardado (`_stored_promo`): renovación a $40 sola, pedido con
+  el código pegado → la comisión fluye por el camino normal. `uses_count` NO se infla con
+  renovaciones. **Anti-robo:** cuenta atada → validate-code responde `locked` a otro código;
+  checkout_create ignora el form y usa el de la cuenta; el carrito muestra aviso de descuento
+  permanente en lugar del cajón (server-rendered). **Desactivar el código corta a NUEVOS, el
+  cliente atado conserva precio y atribución** (decisión: la desactivación detiene altas, no rompe
+  promesas). Cinturón extra: `record_sale_breakdown` cae al vínculo de la cuenta si el pedido llega
+  sin código.
+- **`/partner`** (`partner.html`, i18n ×4): el panel prometido al socio — suscriptores activos, %
+  actual, reparto por tramos, comisión pendiente/pagada/mes, clawback, últimas ventas **SIN
+  identidad del cliente**. Acceso = `PromoCode.owner_user_id` (campo **Owner** en /admin, ruta
+  `/admin/promo/owner`); sin código propio → 404.
+- Migración `_migrate_referral_columns()` (sin backfill, deliberado). `test_atrib.py` **23/23** +
+  auditoría por el flujo real **26/26**. Panel verificado en navegador (ES).
+⚠️ **El contenedor remoto se recicló esta sesión**: checkout quedó en otra rama (la del bot) y sin
+deps de Python — la rama de trabajo vive en el remoto, recuperar con `git fetch origin
+claude/gallant-volta-i7cqmf && git checkout …` + `pip install --ignore-installed blinker -r
+scalpel/requirements.txt` (el blinker de debian rompe el install normal). Los tests del scratchpad
+anteriores se PERDIERON (test_rerank/reglaB/ledger/reserva…) — los vigentes de esta tanda son
+`test_atrib.py` y `audit_referidos.py`.
+
 ### 📒 LIBRO DE VENTAS — desglose por pago en /admin (2026-07-31, CABLEADO)
 Pedido del usuario: que cada pago se desmenuce solo (bruto → desc. código → comisión socio →
 fee → costo op → utilidad) y poder **cargar ventas a mano** para ver el comportamiento antes de
