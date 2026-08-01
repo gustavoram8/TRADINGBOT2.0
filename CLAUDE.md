@@ -936,6 +936,21 @@ borrado. PENDIENTE: agregar selector de mes / historial.
 ## Límites de plan
 | Plan | Screenshots | Ventana | Proyectos analizador | Foro | Pre-Flight |
 |---|---|---|---|---|---|
+> ⛔ **PLANES ANUALES APAGADOS (2026-08-01)** — `ANNUAL_PLANS_ENABLED` (env, default 0). Motivo: un
+> anual de $390 con contracargo cuesta $390 + $20 de multa + la fee ya pagada = **$314 de tu
+> bolsillo**, y la reserva del 25% sobre esa venta solo apartó $97,50 → faltan **$217**, que a $10
+> por suscriptor mensual son **22 meses-cliente**. El mismo contracargo en un mensual deja $40. Y la
+> ventana de disputa de PayPal son 180 días. **Apagado, no borrado:** `allowed_cycles()` filtra solo
+> las 3 puertas del COMPRADOR (`/checkout`, `/checkout/create`, `validate-code`); el precio base, el
+> libro de ventas y las previews siguen aceptando anual para no romper pedidos existentes, y **una
+> suscripción anual vendida antes del cambio corre hasta su vencimiento**. En las plantillas se
+> oculta el **selector entero** (un toggle de un solo botón se lee como roto). **T&C Secc. 5**
+> reescrita para remitir a "los ciclos ofrecidos al finalizar la compra" (mismo patrón que el párrafo
+> de métodos de pago) → correcta con anuales apagados y con anuales encendidos, sin reeditar el
+> contrato; de paso se quitó "los mensuales se cobran de forma recurrente", que contradecía el
+> no-auto-renew. ES/FR/PT traducidos, `audit_legal_translations.py` 141 cláusulas OK.
+> `test_annual_off.py` 13/13.
+
 | Free | 1 | 7 días | 1 | ✗ | ✗ |
 | Standard | 1 | 24 h | 5 | ✓ (desde 2026-07-25) | ✗ |
 | Premium | 5 | 24 h | 10 | ✓ | ✓ (10 checklists, mismo `project_limit()`) |
@@ -974,11 +989,21 @@ y pulir cada punto primero para luego pasar al otro"*. Estado:
    que ya estaba). Español reescrito tras su observación de que sonaba a traducción literal.
 3. ✅ **Previews de camos v2** — el card muestra la PIEL, el preview el interior, y los camos de dos
    looks llevan una **flechita ⇆ en el propio card** para alternar los dos grafitos.
-4. ⏳ **¿Hay que quitar el testimonio del usuario de la landing?** — duda legal SUYA. Revisar contra
-   la **regla FTC de reseñas (2024)**, que es concreta sobre testimonios de personas con vínculo con
-   la empresa (dueño/fundador): el problema no suele ser publicarlo, sino publicarlo **sin revelar el
-   vínculo**. Revisar también qué dicen los T&C propios sobre reseñas. NO borrar nada sin decidirlo
-   con él.
+4. ✅ **Testimonio del dueño / regla FTC (2026-08-01).** Respuesta: **no hay que quitarlo, hay que
+   etiquetarlo.** 16 CFR 465.5 no prohíbe el testimonio de un directivo — prohíbe publicarlo **sin
+   divulgar el vínculo** (multa hasta **$51.744 por infracción**). Cableado: columna
+   `Testimonial.insider` (foto al enviar, hoy = cualquier admin; auto-migración **con backfill**,
+   que acá SÍ corresponde) → viaja en `/api/testimonials` → la landing pinta una **etiqueta con
+   borde** bajo el nombre (`.testi-insider`, sale del flag del servidor, `data-t` para que siga
+   traducida) + **nota de cómo se recogen las reseñas** bajo el carrusel (cuentas reales, invitación
+   in-app, XP por responder sea cual sea la nota). 4 claves ×4 idiomas.
+   **Hallazgo aparte:** no existía NINGUNA forma de despublicar un testimonio sin tocar la base a
+   mano → pestaña **"⭐ Reseñas"** en /admin con publicar/retirar auditado. Recomendación dada al
+   usuario: **no publicar la suya** (5 estrellas firmadas por el dueño no convencen y restan
+   credibilidad al resto) — él decide con el botón. `test_reviews.py` 18/18.
+   ⚠️ Trampa del test: Flask-Login cachea el usuario en `g` (contexto de APP), así que con un
+   `app_context()` abierto todo el script, la 2ª petición corre como el 1er usuario. Hay que hacer
+   `g.pop('_login_user', None)` antes de cada petición.
 5. ⏳ **Sorteos en los T&C** — hoy la línea legal vive solo en `/socials` (`comm.legal`). Falta
    evaluar si se agrega una sección/cláusula propia (sin compra, sorteo manual del dueño, no
    afiliado a ninguna red social, se puede cancelar, quién puede participar, 18+). Si se toca
@@ -1037,6 +1062,21 @@ nuevo (75 clientes / 76 pagos), reparto 24/50/1 = 33.5% efectivo, dos socios con
 (Lucía arranca en su propio puesto 1), y una baja devuelve el puesto 75 al siguiente.
 **Multi-influencer confirmado:** todo se calcula **por `partner`** — el socio B nunca ve ni cobra por
 los clientes del A. Se puede negociar con varios en paralelo sin tocar código.
+
+**🔁 RE-RANKING VIVO — el puesto se recalcula en CADA pago (2026-08-01, elegido por el usuario).**
+🔴 **2º bug del mismo sistema:** al revertir una venta bajaba el CONTADOR de clientes pero no los
+PUESTOS. Con 100 clientes y 3 bajas entre los primeros 24, el cliente nuevo tomaba el puesto 98 —que
+un cliente vivo ya ocupaba— y ambos cobraban el tramo alto. Medido: panel 24/50/24 vs pago real
+21/50/27, **$1.384 contra $1.372**, y la brecha crecía con cada baja.
+**Fix:** `partner_roster(partner)` = clientes vivos ordenados por antigüedad (clave por `user_id`, o
+por `username` en las filas manuales); `_next_partner_position()` devuelve el índice actual.
+Propiedades: renovación conserva su lugar mientras no se vaya nadie más antiguo; **una baja hace
+subir un puesto a los de abajo, así que alguien al 40% puede pasar a 35%** (decisión explícita del
+usuario: el % refleja el tamaño de la cartera de HOY); puestos vigentes 1..N sin huecos ni repetidos.
+**Las filas ya cobradas conservan su puesto y %** — un pago hecho no se reescribe; por eso el panel
+separa columnas de **HOY** (clientes/reparto/% efectivo = próximo cobro) de las de dinero
+(histórico). `test_rerank.py` 18/18. Alternativa descartada: congelar el % de por vida (con rotación
+el reparto se despega del acuerdo y el panel deja de coincidir con lo que se liquida).
 
 ### 📊 FINANCIAL HUB — Excel entregado (2026-07-31, fuera del repo)
 El usuario pidió por PDF un **modelo financiero de 14 hojas** para el acuerdo comercial →
