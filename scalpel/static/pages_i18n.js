@@ -107,6 +107,7 @@
       'camos.frWear': 'Wear it',
       'camos.stLocked': 'Opens on',
       'camos.frGet': 'Buy it',
+      'camos.stLockedTip': 'Opens at 00:00 Venezuela time and stays open for 24 hours.',
       'camos.frUnwear': 'Take it off',
       'camos.stRoulette': 'Roulette only — this month',
       'camos.stChampion': 'Monthly champion only',
@@ -500,6 +501,7 @@
       'camos.frWear': 'Ponértelo',
       'camos.stLocked': 'Se abre el',
       'camos.frGet': 'Comprar',
+      'camos.stLockedTip': 'Se abre a las 00:00 (hora de Venezuela) y dura 24 horas.',
       'camos.frUnwear': 'Quitártelo',
       'camos.stRoulette': 'Solo en la ruleta — este mes',
       'camos.stChampion': 'Solo el campeón del mes',
@@ -895,6 +897,7 @@
       'camos.frWear': 'Le porter',
       'camos.stLocked': 'Ouvre le',
       'camos.frGet': 'Acheter',
+      'camos.stLockedTip': 'Ouvre à 00h00 (heure du Venezuela) et reste ouvert 24 heures.',
       'camos.frUnwear': 'Le retirer',
       'camos.stRoulette': 'Roulette uniquement — ce mois-ci',
       'camos.stChampion': 'Champion du mois uniquement',
@@ -1287,6 +1290,7 @@
       'camos.frWear': 'Usar',
       'camos.stLocked': 'Abre em',
       'camos.frGet': 'Comprar',
+      'camos.stLockedTip': 'Abre às 00:00 (horário da Venezuela) e fica aberto por 24 horas.',
       'camos.frUnwear': 'Tirar',
       'camos.stRoulette': 'Só na roleta — este mês',
       'camos.stChampion': 'Só o campeão do mês',
@@ -1615,6 +1619,12 @@
     document.querySelectorAll('[data-i18n]').forEach(function (el) {
       var v = str(lang, el.getAttribute('data-i18n'));
       if (v != null) el.textContent = v;
+    });
+    // Hover tooltips. NOT data-i18n-title: that one is reserved above for the
+    // document <title>, and reusing it here would fight over the same key.
+    document.querySelectorAll('[data-i18n-tip]').forEach(function (el) {
+      var v = str(lang, el.getAttribute('data-i18n-tip'));
+      if (v != null) el.setAttribute('title', v);
     });
     document.querySelectorAll('[data-i18n-html]').forEach(function (el) {
       var v = str(lang, el.getAttribute('data-i18n-html'));

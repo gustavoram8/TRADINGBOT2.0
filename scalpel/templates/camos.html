@@ -400,7 +400,9 @@
                       data-i18n="camos.frGet">Buy it</button>
             </span>
           {% elif it.state == 'locked' %}<span class="camo-price">${{ '%.2f'|format(it.price) }}</span>
-            <span class="cos-state lk"><span data-i18n="camos.stLocked">Opens on</span> {{ it.opens }}</span>
+            <span class="cos-state lk" data-i18n-tip="camos.stLockedTip"
+                  title="Opens at 00:00 Venezuela time and stays open for 24 hours."><span
+                  data-i18n="camos.stLocked">Opens on</span> {{ it.opens }}</span>
           {% elif it.state == 'roulette' %}<span class="cos-state rl" data-i18n="camos.stRoulette">Roulette only — this month</span>
           {% elif it.state == 'champion' %}<span class="cos-state ch" data-i18n="camos.stChampion">Monthly champion only</span>
           {% else %}<span class="cos-season"><span data-i18n="camos.stEnded">Season ended</span> — {{ it.season }}</span>{% endif %}
@@ -435,7 +437,9 @@
                       data-i18n="camos.frGet">Buy it</button>
             </span>
           {% elif it.state == 'locked' %}<span class="camo-price">${{ '%.2f'|format(it.price) }}</span>
-            <span class="cos-state lk"><span data-i18n="camos.stLocked">Opens on</span> {{ it.opens }}</span>
+            <span class="cos-state lk" data-i18n-tip="camos.stLockedTip"
+                  title="Opens at 00:00 Venezuela time and stays open for 24 hours."><span
+                  data-i18n="camos.stLocked">Opens on</span> {{ it.opens }}</span>
           {% elif it.state == 'roulette' %}<span class="cos-state rl" data-i18n="camos.stRoulette">Roulette only — this month</span>
           {% elif it.state == 'champion' %}<span class="cos-state ch" data-i18n="camos.stChampion">Monthly champion only</span>
           {% else %}<span class="cos-season"><span data-i18n="camos.stEnded">Season ended</span> — {{ it.season }}</span>{% endif %}
@@ -479,10 +483,10 @@
     var lang = 'en';
     try { var l = localStorage.getItem('scalpel_lang'); if (['en','es','fr','pt'].indexOf(l) >= 0) lang = l; } catch (e) {}
     var T = {
-      en:{activate:'Activate',active:'Active ✓',owned:'Owned',deactivate:'Use default',get:'Get this skin',soon:'Payments are coming very soon',on:'Activated — ',go:'see it in the app →',off:'Reverted to the default theme',prev:'👁 Preview',hint:'Click anywhere to close',flip:'See the other look',inside:'The app wearing it',skin:'The skin itself',bought:'The skin is yours! ',err:'Could not reach PayPal — please try again',cartAdd:'Add to cart',cartIn:'In the cart ✓',cartBought:'The whole cart is yours! ',cartErr:'Something in the cart is no longer available',locked:'Opens on'},
-      es:{activate:'Activar',active:'Activo ✓',owned:'Adquirido',deactivate:'Usar default',get:'Obtener skin',soon:'Los pagos llegan muy pronto',on:'Activado — ',go:'velo en la app →',off:'Volviste al tema por defecto',prev:'👁 Vista previa',hint:'Haz clic en cualquier parte para cerrar',flip:'Ver el otro look',inside:'La app con el camo puesto',skin:'La piel del camo',bought:'¡La skin es tuya! ',err:'No pudimos conectar con PayPal — intenta de nuevo',cartAdd:'Añadir al carrito',cartIn:'En el carrito ✓',cartBought:'¡Todo el carrito es tuyo! ',cartErr:'Algo del carrito ya no está disponible',locked:'Se abre el'},
-      fr:{activate:'Activer',active:'Actif ✓',owned:'Acquis',deactivate:'Défaut',get:'Obtenir ce skin',soon:'Les paiements arrivent très bientôt',on:'Activé — ',go:'à voir dans l\'app →',off:'Retour au thème par défaut',prev:'👁 Aperçu',hint:'Cliquez n\'importe où pour fermer',flip:'Voir l\'autre look',inside:'L\'app avec le camo',skin:'La peau du camo',bought:'Le skin est à vous ! ',err:'Impossible de joindre PayPal — réessayez',cartAdd:'Ajouter au panier',cartIn:'Dans le panier ✓',cartBought:'Tout le panier est à vous ! ',cartErr:'Un article du panier n\'est plus disponible',locked:'Ouvre le'},
-      pt:{activate:'Ativar',active:'Ativo ✓',owned:'Adquirido',deactivate:'Usar padrão',get:'Obter skin',soon:'Os pagamentos chegam em breve',on:'Ativado — ',go:'veja no app →',off:'Voltou ao tema padrão',prev:'👁 Prévia',hint:'Clique em qualquer lugar para fechar',flip:'Ver o outro visual',inside:'O app com o camo',skin:'A pele do camo',bought:'A skin é sua! ',err:'Não foi possível conectar ao PayPal — tente de novo',cartAdd:'Adicionar ao carrinho',cartIn:'No carrinho ✓',cartBought:'O carrinho inteiro é seu! ',cartErr:'Algo do carrinho não está mais disponível',locked:'Abre em'}
+      en:{activate:'Activate',active:'Active ✓',owned:'Owned',deactivate:'Use default',get:'Get this skin',soon:'Payments are coming very soon',on:'Activated — ',go:'see it in the app →',off:'Reverted to the default theme',prev:'👁 Preview',hint:'Click anywhere to close',flip:'See the other look',inside:'The app wearing it',skin:'The skin itself',bought:'The skin is yours! ',err:'Could not reach PayPal — please try again',cartAdd:'Add to cart',cartIn:'In the cart ✓',cartBought:'The whole cart is yours! ',cartErr:'Something in the cart is no longer available',locked:'Opens on',lockedTip:'Opens at 00:00 Venezuela time and stays open for 24 hours.'},
+      es:{activate:'Activar',active:'Activo ✓',owned:'Adquirido',deactivate:'Usar default',get:'Obtener skin',soon:'Los pagos llegan muy pronto',on:'Activado — ',go:'velo en la app →',off:'Volviste al tema por defecto',prev:'👁 Vista previa',hint:'Haz clic en cualquier parte para cerrar',flip:'Ver el otro look',inside:'La app con el camo puesto',skin:'La piel del camo',bought:'¡La skin es tuya! ',err:'No pudimos conectar con PayPal — intenta de nuevo',cartAdd:'Añadir al carrito',cartIn:'En el carrito ✓',cartBought:'¡Todo el carrito es tuyo! ',cartErr:'Algo del carrito ya no está disponible',locked:'Se abre el',lockedTip:'Se abre a las 00:00 (hora de Venezuela) y dura 24 horas.'},
+      fr:{activate:'Activer',active:'Actif ✓',owned:'Acquis',deactivate:'Défaut',get:'Obtenir ce skin',soon:'Les paiements arrivent très bientôt',on:'Activé — ',go:'à voir dans l\'app →',off:'Retour au thème par défaut',prev:'👁 Aperçu',hint:'Cliquez n\'importe où pour fermer',flip:'Voir l\'autre look',inside:'L\'app avec le camo',skin:'La peau du camo',bought:'Le skin est à vous ! ',err:'Impossible de joindre PayPal — réessayez',cartAdd:'Ajouter au panier',cartIn:'Dans le panier ✓',cartBought:'Tout le panier est à vous ! ',cartErr:'Un article du panier n\'est plus disponible',locked:'Ouvre le',lockedTip:'Ouvre à 00h00 (heure du Venezuela) et reste ouvert 24 heures.'},
+      pt:{activate:'Ativar',active:'Ativo ✓',owned:'Adquirido',deactivate:'Usar padrão',get:'Obter skin',soon:'Os pagamentos chegam em breve',on:'Ativado — ',go:'veja no app →',off:'Voltou ao tema padrão',prev:'👁 Prévia',hint:'Clique em qualquer lugar para fechar',flip:'Ver o outro visual',inside:'O app com o camo',skin:'A pele do camo',bought:'A skin é sua! ',err:'Não foi possível conectar ao PayPal — tente de novo',cartAdd:'Adicionar ao carrinho',cartIn:'No carrinho ✓',cartBought:'O carrinho inteiro é seu! ',cartErr:'Algo do carrinho não está mais disponível',locked:'Abre em',lockedTip:'Abre às 00:00 (horário da Venezuela) e fica aberto por 24 horas.'}
     }[lang];
     // Camos whose theme has a second look (light/dark) worth flipping to.
     var PREV_ALT = { standard:1, mission:1, pole:1 };
@@ -590,7 +594,8 @@
         var lockedOn = S.locked && S.locked[slug];
         if (lockedOn !== undefined){
           foot.innerHTML = '<span class="camo-price">'+price+'</span>'
-            + '<span class="cos-state lk">'+T.locked+' '+lockedOn+'</span>';
+            + '<span class="cos-state lk" title="'+T.lockedTip+'">'
+            + T.locked+' '+lockedOn+'</span>';
           return;
         }
         var ref = 'camo:' + slug;

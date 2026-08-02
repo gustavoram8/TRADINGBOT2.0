@@ -1810,9 +1810,16 @@ FRAME_PRICE_FESTIVE = 3.99
 # is locked the rest of the year. Keyed by FESTIVITY, not by product: the camo,
 # the frame and the cursor of the same festivity share one window, and a piece
 # that does not exist yet inherits the rule the day it is created.
-# ⚠️ Dates are PROVISIONAL until the owner confirms them one by one.
+# Confirmed with the owner 2026-08-02, including Christmas on the 25th.
 # Easter is a movable feast: computed below (Anonymous Gregorian algorithm),
 # overridable per year via EASTER_OVERRIDE if the owner wants another day.
+#
+# MIDNIGHT OF WHERE (owner's decision 2026-08-02): Venezuela. Caracas is
+# UTC-4 all year — it has no daylight saving — while New York swings between
+# -5 and -4, so the two only line up in summer. A fixed -4 offset means every
+# festivity opens at the same real hour, every year, with no seasonal drift,
+# and it needs no tzdata on the server.
+FESTIVE_TZ = timezone(timedelta(hours=-4))      # Venezuela (VET), fixed
 FESTIVE_WINDOWS = {
     'newyear':   (1, 1),
     'valentine': (2, 14),
@@ -1846,20 +1853,24 @@ def _easter_md(year):
 
 
 def _festive_start(slug, year):
-    """UTC datetime when this festivity's window opens in `year`, or None."""
+    """When this festivity's window opens in `year` — 00:00 Venezuela time —
+    or None if the slug is not festive."""
     rule = FESTIVE_WINDOWS.get(slug)
     if rule is None:
         return None
     month, day = _easter_md(year) if rule == 'easter' else rule
-    return datetime(year, month, day, tzinfo=timezone.utc)
+    return datetime(year, month, day, tzinfo=FESTIVE_TZ)
 
 
 def festive_window(slug, now=None):
     """(open_now, next_or_current_start) for a festive slug.
 
-    Windows are evaluated in UTC and last FESTIVE_WINDOW_HOURS from midnight of
-    the date. Non-festive slugs come back as (True, None) — they are always for
-    sale, so callers can use one code path for everything."""
+    The window opens at 00:00 Venezuela time on its date and lasts
+    FESTIVE_WINDOW_HOURS. The same date comes back every year, so the search
+    below always lands on the NEXT occurrence: on 2026-08-02, the 4th of July
+    points at 2027 (this year's already passed) while Halloween points at 2026.
+    Non-festive slugs come back as (True, None) — they are always for sale, so
+    callers can use one code path for everything."""
     if slug not in FESTIVE_WINDOWS:
         return True, None
     now = now or datetime.now(timezone.utc)
