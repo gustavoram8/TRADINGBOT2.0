@@ -252,9 +252,25 @@ cada mes, si un mes no hay tanda el sistema se ve muerto).
   MARCAS (nombres/escudos de equipos, logos NFL/MLB, "Super Bowl") y la imagen de jugadores reales.
   Botarga genérica = sin problema. Instrucción al ilustrador: cero logos, cero nombres de equipo,
   cero parecidos a un jugador identificable.
-· **FALTA del paso 5:** las 11 placas temáticas (una por mes, se diseñan junto a su camo), **los
-  cursores — todavía sin empezar** (32×32, flecha+manito, sin animar, solo escritorio), y publicar
-  las piezas insertando `CosmeticItem`.
+· ✅ **Las 12 placas temáticas DIBUJADAS y aprobadas (2026-08-02)** — el usuario solo pidió un fix:
+  la pirámide de Quetzalcóatl tenía la "sombra del equinoccio" en un costado y parecía derruida →
+  alfardas simétricas. **Y LA RULETA QUEDÓ CABLEADA DE VERDAD (mismo día):**
+  `tools/build_plates.py` publica el catálogo como `scalpel/static/plates/<slug>.svg` + `plates.json`
+  ({slug:{name,ink}}) — regenerar y commitear tras CUALQUIER cambio en `plates_preview.py`;
+  `ROULETTE_FRAME_CALENDAR` en app.py (24 marcos = temático+libre por mes, pareja con contraste
+  claro/oscuro) + `_publish_roulette_frames()` idempotente en `init_db()`; la tienda **oculta
+  temporadas futuras** (no spoilear) y muestra el arte real como tira + botón Ponértelo/Quitártelo;
+  columnas `User.active_frame`/`active_cursor` (migración `_migrate_user_cosmetic_wear_columns()`,
+  `test_boot_migracion.py` 6/6); `POST /api/cosmetics/equip` (kind=frame; cursor da 400 hasta que
+  exista su lado cliente; admin viste todo); `serialize_post/comment` llevan `author_frame`
+  {slug,ink} gratis (el User ya viene cargado) y el foro pinta la placa detrás del bloque del autor
+  (`mountPlate()`, CSS `.fplate-host`/`.fink-light|dark`, ESTÁTICA — solo la medalla se anima);
+  al ganar un marco el modal muestra la placa + "Usarlo ahora". E2E 27/27
+  (`scratchpad/test_marcos.py`) + navegador real (feed, comentario, tienda; 0 errores JS).
+  ⚠️ El "2 min" del comentario era invisible sobre placa oscura → tinta con text-shadow ×2 modos.
+· **FALTA del paso 5:** **los cursores — todavía sin empezar** (32×32, flecha+manito, sin animar,
+  solo escritorio; `active_cursor` y el 400 del equip ya los esperan), y las tandas de camos
+  (arte mensual que encarga el usuario; se publican insertando `CosmeticItem` kind='camo').
 
 ## 📅 Recordatorio diario
 > 🔔 **PARA EL 2026-08-03 (pedido explícito del usuario):** re-revisar juntos los TONOS del
