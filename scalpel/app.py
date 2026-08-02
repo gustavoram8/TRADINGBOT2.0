@@ -1777,11 +1777,16 @@ CAMO_SLUGS = {
     'alchemist', 'shadow', 'pole', 'arcade', 'cyber',        # themes
     'santa', 'hallow', 'fourth', 'lucky', 'valentine',
     'easter', 'newyear', 'muertos',                          # seasonal
+    'chronicles',                                            # roulette seasons
 }
 # Camos that actually have a theme built and can be activated today. The rest
 # still render as "Coming soon" in the store. Add a slug here once its CSS ships.
 CAMO_READY = {'rising-sun', 'pole', 'premium', 'fourth', 'naval', 'mission',
-              'blackflag', 'standard'}
+              'blackflag', 'standard', 'chronicles'}
+# Camos that are ONLY ever won on the roulette — never for sale, at any price.
+# Same channel wall the frames and cursors live behind: a piece belongs to one
+# channel forever, so the store must never quote a price for these.
+ROULETTE_CAMOS = {'chronicles'}
 
 # The camo that ships with each paid plan. Granting it is part of what the
 # buyer paid for, so it is written into the account (see grant_plan_camo).
@@ -1815,8 +1820,11 @@ def festivity_of(slug):
     the frames/camos of their theme (chronicles, santa...). Stripping the
     prefix here is what makes a festive CURSOR inherit the exact same 24h
     window as its camo and frame pair — one rule per festivity, three
-    products."""
-    return slug[4:] if slug.startswith('cur-') else slug
+    products. Roulette camos carry `camo-` for the same reason."""
+    for pre in ('cur-', 'camo-'):
+        if slug.startswith(pre):
+            return slug[len(pre):]
+    return slug
 
 # ── FESTIVE WINDOWS ───────────────────────────────────────────────────────
 # A festive cosmetic can only be BOUGHT during a 24h window on its date, and
@@ -1906,6 +1914,13 @@ CAMO_NAMES = {
     'santa': "Santa's Rally", 'hallow': "Hallow's Eve", 'fourth': 'Star-Spangled',
     'lucky': 'Lucky Streak', 'valentine': 'Bullish Hearts',
     'easter': 'Spring Bloom', 'newyear': 'Fresh Start', 'muertos': 'Marigold Night',
+    'chronicles': 'Chronicles',
+}
+# One-line pitch for each roulette camo card (English fallback; the client
+# translates it by `camos.d.<slug>` like every other camo).
+CAMO_WHEEL_DESCS = {
+    'chronicles': 'A medieval kingdom, two looks: the walled city lit up at '
+                  'night, and the same kingdom by day among green hills.',
 }
 
 
@@ -1914,9 +1929,12 @@ def camo_store_price(slug):
 
     Plan camos are never sold separately (they come with the subscription), and
     a camo whose theme has not shipped cannot be bought — selling a skin that
-    does not render yet would be charging for nothing.
+    does not render yet would be charging for nothing. Roulette camos have no
+    price at all: they can only ever be won.
     """
     if slug not in CAMO_SLUGS or slug in set(PLAN_CAMOS.values()):
+        return None
+    if slug in ROULETTE_CAMOS:
         return None
     if slug not in CAMO_READY:
         return None
@@ -4497,6 +4515,24 @@ def camos():
         return festive, common, wheel
     # Cart prices are keyed by REFERENCE, never by bare slug: 'santa' is both a
     # camo and a frame, so a bare-slug price map would total the wrong cart.
+    # Roulette camos get their own shelf: they are never for sale, so they
+    # can't live among the purchasable themes. Same rule as the frames — hide
+    # a season that hasn't opened yet, and grey out the ones already gone.
+    camos_wheel = []
+    for i in (CosmeticItem.query.filter_by(kind='camo', channel='roulette')
+              .order_by(CosmeticItem.season.asc()).all()):
+        if i.season and i.season > season_now:
+            continue
+        bare = camo_slug_of(i.slug)
+        camos_wheel.append({
+            'slug': bare, 'name': i.name, 'season': i.season or '',
+            'art': '/static/camo_skin_%s.jpg' % bare,
+            # English fallback; the client dict translates by `camos.d.<slug>`
+            # like every other camo card.
+            'desc': CAMO_WHEEL_DESCS.get(bare, ''),
+            'state': ('roulette' if i.season == season_now and i.active
+                      else 'ended'),
+        })
     frames_all = _pack('frame')
     fr_festive, fr_common, fr_wheel = _split_frames(frames_all)
     cursors_all = _pack('cursor')
@@ -4520,6 +4556,7 @@ def camos():
                            camo_paypal=PAYPAL_ENABLED,
                            camo_prices=prices,
                            camo_locked=camo_locked,
+                           cos_camos_wheel=camos_wheel,
                            cos_frames=frames_all,
                            cos_frames_festive=fr_festive,
                            cos_frames_common=fr_common,
@@ -10613,6 +10650,54 @@ def _publish_roulette_frames():
             db.session.rollback()   # concurrent worker won the race — fine
 
 
+# ── The monthly roulette CAMO — the sixth piece of the batch (1 camo + 2
+# frames + 3 cursors). One per season, sharing the theme's slug, so August is
+# the chronicles camo next to the chronicles frame and cursor.
+#
+# Published with a `camo-` PREFIX because CosmeticItem.slug is unique and the
+# frame of the same theme already owns the bare slug (same reason cursors carry
+# `cur-`). The prefix never leaves the ledger: what the roulette grants and
+# what the theme engine reads is always the bare slug.
+ROULETTE_CAMO_CALENDAR = [(season, themed)
+                          for season, themed, _free in ROULETTE_FRAME_CALENDAR]
+CAMO_ITEM_PREFIX = 'camo-'
+
+
+def camo_slug_of(item_slug):
+    """Bare camo slug behind a published cosmetic row."""
+    return (item_slug[len(CAMO_ITEM_PREFIX):]
+            if item_slug.startswith(CAMO_ITEM_PREFIX) else item_slug)
+
+
+def _publish_roulette_camos():
+    """Publish the month's camo as a CosmeticItem, but ONLY once its theme
+    actually ships (slug in CAMO_READY).
+
+    That gate is the whole point: a camo whose CSS does not exist yet would be
+    a prize that grants nothing visible, and the roulette has no way to take a
+    prize back. Art is commissioned month by month, so most seasons simply have
+    no camo row until their theme lands — the batch is smaller that month and
+    Regla B splits the odds among whatever is published."""
+    added = 0
+    for season, slug in ROULETTE_CAMO_CALENDAR:
+        if slug not in CAMO_READY:
+            continue
+        ref = CAMO_ITEM_PREFIX + slug
+        if CosmeticItem.query.filter_by(slug=ref).first():
+            continue
+        db.session.add(CosmeticItem(slug=ref,
+                                    name=CAMO_NAMES.get(slug, slug.title()),
+                                    kind='camo', channel='roulette',
+                                    season=season, active=True))
+        added += 1
+    if added:
+        try:
+            db.session.commit()
+            app.logger.info('Published %d roulette camos.', added)
+        except Exception:
+            db.session.rollback()   # concurrent worker won the race — fine
+
+
 def _current_season():
     return datetime.now(timezone.utc).strftime('%Y-%m')
 
@@ -10995,7 +11080,11 @@ def daily_tanda():
     owned = _owned_cosmetic_ids(current_user.id) if items else set()
     return jsonify({
         'season': _current_season(),
-        'items': [{'slug': i.slug, 'name': i.name, 'kind': i.kind,
+        # Bare slug for camos: the `camo-` prefix exists only to keep
+        # CosmeticItem.slug unique, and the wheel matches the spin result by
+        # slug — the two endpoints must agree.
+        'items': [{'slug': camo_slug_of(i.slug) if i.kind == 'camo' else i.slug,
+                   'name': i.name, 'kind': i.kind,
                    'owned': i.id in owned} for i in items],
         'spins_available': st.spins_available,
         'next_tanda': None if items else _next_season_start(),
@@ -11042,6 +11131,14 @@ def daily_spin():
         st.spins_available -= 1
     db.session.add(UserCosmetic(user_id=current_user.id, item_id=prize.id,
                                 source='roulette'))
+    camo_won = camo_slug_of(prize.slug) if prize.kind == 'camo' else None
+    if camo_won:
+        # The ledger records WHAT was won; the theme engine reads owned_camos.
+        # Without this bridge a camo won here would sit in the ledger and never
+        # paint the site (`/api/camo/activate` checks owns_camo()).
+        current_user.add_camo(camo_won)
+        if not (current_user.active_camo or '') and camo_won in CAMO_READY:
+            current_user.active_camo = camo_won     # never overwrite their pick
     db.session.add(RouletteSpin(user_id=current_user.id, prize_key=prize.kind,
                                 label=prize.name, promo_code=None))
     db.session.commit()
@@ -11051,7 +11148,10 @@ def daily_spin():
     remaining = [i for i in tanda
                  if i.id not in owned and i.id != prize.id]
     return jsonify({
-        'prize_key': prize.kind, 'label': prize.name, 'slug': prize.slug,
+        # The client dresses the prize by kind; for a camo it needs the BARE
+        # slug (that is what /api/camo/activate and the body class use).
+        'prize_key': prize.kind, 'label': prize.name,
+        'slug': camo_won or prize.slug,
         'spins_available': st.spins_available,
         'remaining': len(remaining),
     })
@@ -12736,6 +12836,7 @@ def init_db():
         _publish_roulette_frames()
         _publish_store_frames()
         _publish_cursors()
+        _publish_roulette_camos()
         admin_email = os.environ.get('ADMIN_EMAIL', 'mauroramirezmij@gmail.com').lower()
         admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
         admin_password = os.environ.get('ADMIN_PASSWORD', 'Codica2310$')

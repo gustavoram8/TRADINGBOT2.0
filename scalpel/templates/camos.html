@@ -208,6 +208,10 @@
                       background-size:100% 100%; background-repeat:no-repeat;
                       box-shadow:0 2px 10px rgba(0,0,0,.4); }
     .cm-cursor { background:linear-gradient(135deg,#10131b,#232838 55%,#3b4358); }
+    /* Roulette camo: the skin art fills the swatch, same as the bought camos
+       (their background lives in a per-slug cm-<slug> rule; these come from the
+       server so a camo shipped next month needs no new CSS). */
+    .cm-wheel { background-size:cover; background-position:center; background-color:#1a0a0e; }
     /* ── Cart ── */
     .camo-cart-btn { font-size:12.5px; font-weight:700; padding:8px 12px; border-radius:9px;
       border:1px solid var(--line-soft); background:#fff; color:var(--ink); cursor:pointer; }
@@ -427,6 +431,36 @@
     </div>
   </div>
 
+  <!-- ── ROULETTE CAMOS ── the sixth piece of the monthly batch. Its own
+       shelf because it is NOT for sale at any price: mixing it in with the
+       purchasable themes would read as "coming soon" instead of "unwinnable
+       after this month". Same channel wall as the frames and cursors. -->
+  {% if cos_camos_wheel %}
+  <div class="sec-head">
+    <h2 data-i18n="camos.secWheelCamos">Roulette camos</h2>
+    <span class="sub" data-i18n="camos.secWheelCamosSub">One brand-new skin every month, only on the Daily Challenge wheel. When the month ends it can never be won again.</span>
+  </div>
+  <div class="grid">
+    {% for it in cos_camos_wheel %}
+    <div class="camo-card{% if it.state == 'ended' %} ended{% endif %}"
+         data-slug="{{ it.slug }}" data-wheel="1">
+      <div class="camo-swatch cm-wheel" style="background-image:url('{{ it.art }}')"></div>
+      <div class="camo-body">
+        <div class="camo-name">{{ it.name }}</div>
+        <div class="camo-desc" data-i18n="camos.d.{{ it.slug }}">{{ it.desc }}</div>
+        <div class="camo-foot">
+          {% if it.state == 'roulette' %}
+            <span class="cos-state rl" data-i18n="camos.stRouletteCamo">Roulette only — this month</span>
+          {% else %}
+            <span class="cos-season"><span data-i18n="camos.stEnded">Season ended</span> — {{ it.season }}</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
   <!-- ── AVATAR FRAMES ── -->
   {% macro frame_card(it) %}
     <div class="camo-card{% if it.state == 'ended' %} ended{% endif %}">
@@ -618,9 +652,12 @@
       pt:{activate:'Ativar',active:'Ativo ✓',owned:'Adquirido',deactivate:'Usar padrão',get:'Obter skin',soon:'Os pagamentos chegam em breve',on:'Ativado — ',go:'veja no app →',off:'Voltou ao tema padrão',prev:'👁 Prévia',hint:'Clique em qualquer lugar para fechar',flip:'Ver o outro visual',inside:'O app com o camo',skin:'A pele do camo',bought:'A skin é sua! ',err:'Não foi possível conectar ao PayPal — tente de novo',cartAdd:'Adicionar ao carrinho',cartIn:'No carrinho ✓',cartBought:'O carrinho inteiro é seu! ',cartErr:'Algo do carrinho não está mais disponível',locked:'Abre em',lockedTip:'Abre às 00:00 (horário da Venezuela) e fica aberto por 24 horas.',lockedWhen:'00:00 UTC−4 (horário da Venezuela)',prevFrameLbl:'Como fica no fórum',prevFrameTitle:'Sweep do PDL e reclaim na abertura',prevFrameBody:'A mínima de ontem foi varrida e o reclaim veio limpo.',curNormal:'Normal',curHot:'Sobre um link'}
     }[lang];
     // Camos whose theme has a second look (light/dark) worth flipping to.
-    var PREV_ALT = { standard:1, mission:1, pole:1 };
+    var PREV_ALT = { standard:1, mission:1, pole:1, chronicles:1 };
 
     function slugOf(card){
+      // Server-rendered cards (roulette camos) carry their slug directly, so a
+      // camo shipped next month needs no new entry in CM2SLUG.
+      if (card.dataset && card.dataset.slug) return card.dataset.slug;
       var sw = card.querySelector('.camo-swatch'); if (!sw) return null;
       for (var i=0;i<sw.classList.length;i++){ if (CM2SLUG[sw.classList[i]]) return CM2SLUG[sw.classList[i]]; }
       return null;
@@ -716,6 +753,10 @@
       var price = (card.querySelector('.camo-price') || {}).textContent || '';
 
       if (!owned){
+        // Roulette camo not won: the server already rendered the right footer
+        // ("roulette only this month" / "season ended"). It has no price and no
+        // cart button by construction — it was never for sale.
+        if (card.dataset && card.dataset.wheel) return;
         // Plan camos (Standard/Premium) aren't purchasable on their own — they
         // come bundled with the plan, so their footer stays informational.
         if (isPlanCamo) return;

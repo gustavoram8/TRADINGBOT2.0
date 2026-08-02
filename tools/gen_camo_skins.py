@@ -35,6 +35,7 @@ CAMOS = [
     ('pole',       '',     ''),   ('pole',     '_alt', 'light'),
     ('mission',    '',     ''),   ('mission',  '_alt', 'light'),
     ('standard',   '',     ''),   ('standard', '_alt', 'light'),
+    ('chronicles', '',     ''),
 ]
 
 STRIP = "()=>{ while (document.body.firstChild) document.body.removeChild(document.body.firstChild); }"
