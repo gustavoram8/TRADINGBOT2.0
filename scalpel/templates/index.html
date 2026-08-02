@@ -647,6 +647,42 @@
     body.camo-fourth:not(.light) .quiz-welcome-logo { content: url('/static/logo2_fourth_dark.png'); }
     body.camo-fourth .quiz-welcome-logo { transform: translateY(-50%) rotate(0deg); }
 
+    /* Chronicles — el caballero de la flecha. Camo de DOS looks, así que las
+       botargas keyean por .light igual que naval/mission/pole (no por
+       .camo-night, que es para los LIGHT_ALWAYS). El pass es la espada clavada
+       con la corona; el fail, el montón de cenizas humeante. */
+    body.camo-chronicles.light      .quiz-welcome-logo { content: url('/static/logo2_chronicles.png'); }
+    body.camo-chronicles:not(.light) .quiz-welcome-logo { content: url('/static/logo2_chronicles_dark.png'); }
+    body.camo-chronicles .quiz-welcome-logo { transform: translateY(-50%) rotate(0deg); }
+    body.camo-chronicles.light      .quiz-result-mascot.pass { content: url('/static/logo3_chronicles.png'); }
+    body.camo-chronicles:not(.light) .quiz-result-mascot.pass { content: url('/static/logo3_chronicles_dark.png'); }
+    body.camo-chronicles.light      .quiz-result-mascot.fail { content: url('/static/logo4_chronicles.png'); }
+    body.camo-chronicles:not(.light) .quiz-result-mascot.fail { content: url('/static/logo4_chronicles_dark.png'); }
+
+    /* EL DRAGÓN — cuarto slot, que ningún otro camo tiene: vuela arriba a la
+       derecha de la bienvenida y le escupe fuego al caballero (su llama sale
+       hacia la izquierda, que es donde vive la botarga).
+       Va como background-image de un div vacío, NO como <img src>: así el
+       navegador solo descarga el dragón cuando el camo está puesto. */
+    .qw-dragon { display: none; }
+    body.camo-chronicles .qw-dragon {
+      display: block; position: absolute; right: 2.5vw; top: 4vh;
+      width: min(40vw, 560px); aspect-ratio: 1182 / 487;
+      background: url('/static/logo5_chronicles.png') center / contain no-repeat;
+      transform: rotate(7deg); transform-origin: right center;
+      pointer-events: none; z-index: 0;
+      animation: qwDragon 5.5s ease-in-out infinite;
+    }
+    @keyframes qwDragon {
+      0%, 100% { transform: rotate(7deg) translate(0, 0); }
+      50%      { transform: rotate(5deg) translate(-10px, 12px); }
+    }
+    /* En pantallas angostas el dragón se le montaría al texto: se retira. */
+    @media (max-width: 1000px) { body.camo-chronicles .qw-dragon { display: none; } }
+    @media (prefers-reduced-motion: reduce) {
+      body.camo-chronicles .qw-dragon { animation: none; }
+    }
+
     /* Mono utility for data / labels (Space Mono). */
     .ag-mono { font-family: 'Space Mono', ui-monospace, monospace; }
 
@@ -6452,6 +6488,7 @@
         <div class="qw-stage">
           <img src="/static/logo2.png" alt="Tradeable" class="quiz-welcome-logo"
                onerror="this.style.display='none';" />
+          <div class="qw-dragon" aria-hidden="true"></div>
           <div class="qw-content">
             <div class="quiz-welcome-title" data-i18n="quiz.welcomeTitle">Welcome to Tradeable</div>
             <div class="quiz-welcome-tag" data-i18n="quiz.welcomeTag">Quiz</div>
