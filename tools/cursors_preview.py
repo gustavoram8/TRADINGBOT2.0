@@ -98,31 +98,34 @@ CURSORS = [
   '<path d="M22.6 21.4 L26.6 25.4 L25 27 L21 23 Z" fill="#2f5fa8"'
   ' stroke="#173a6c" stroke-width=".9" stroke-linejoin="round"/>', None),
 
- ('colosseum', 'Colosseum · tridente', '2026-11',
-  '<linearGradient id="a4" x1="0" y1="0" x2="1" y2="1">'
-  '<stop offset="0" stop-color="#d7dde6"/><stop offset="1" stop-color="#6b7480"/></linearGradient>',
-  '<path d="M12.6 12.6 L26.4 26.4" fill="none" stroke="#7a5326" stroke-width="3.2"'
-  ' stroke-linecap="round"/>'
-  '<path d="M8.9 15.1 L15.1 8.9 L16.5 10.3 L10.3 16.5 Z" fill="url(#a4)"'
-  ' stroke="#3d4650" stroke-width=".95" stroke-linejoin="round"/>'
-  '<path d="M2.2 2.2 L13.2 11 L11 13.2 Z" fill="url(#a4)" stroke="#3d4650"'
-  ' stroke-width=".95" stroke-linejoin="round"/>'
-  '<path d="M8.6 3.2 L14.6 11.4 L12.4 12.6 Z" fill="url(#a4)" stroke="#3d4650"'
-  ' stroke-width=".95" stroke-linejoin="round"/>'
-  '<path d="M3.2 8.6 L11.4 14.6 L12.6 12.4 Z" fill="url(#a4)" stroke="#3d4650"'
-  ' stroke-width=".95" stroke-linejoin="round"/>', None),
+ ('colosseum', 'Colosseum · casco', '2026-11',
+  '',
+  '<path d="M6 13 C6 6.4 11.4 2.6 16 2.6 C20.6 2.6 26 6.4 26 13 L26 19'
+  ' C26 24 22 27.4 16 27.4 C10 27.4 6 24 6 19 Z" fill="#c9a227"'
+  ' stroke="#2a1f08" stroke-width="1.8" stroke-linejoin="round"/>'
+  '<path d="M6 13 C10 15 22 15 26 13 L26 15.4 C22 17.4 10 17.4 6 15.4 Z"'
+  ' fill="#8a6a14" stroke="#2a1f08" stroke-width="1.5"/>'
+  '<path d="M14.6 15.6 L17.4 15.6 L17.4 27 L14.6 27 Z" fill="#2a1f08"/>'
+  '<path d="M9.4 19.4 L12.6 19.4 L12.6 24.6 L9.4 24.6 Z" fill="#2a1f08"/>'
+  '<path d="M19.4 19.4 L22.6 19.4 L22.6 24.6 L19.4 24.6 Z" fill="#2a1f08"/>'
+  '<path d="M13 2.8 C13 0.6 19 0.6 19 2.8 L19 6 C19 7.4 13 7.4 13 6 Z"'
+  ' fill="#b8332e" stroke="#2a1f08" stroke-width="1.6" stroke-linejoin="round"/>',
+  None),
 
- ('summit', 'Summit · piolet', '2026-12',
-  '<linearGradient id="a5" x1="0" y1="0" x2="1" y2="1">'
-  '<stop offset="0" stop-color="#dfe9f4"/><stop offset="1" stop-color="#7e8b9b"/></linearGradient>',
-  '<path d="M13.4 13.4 L26 26" fill="none" stroke="#2f3b48" stroke-width="3"'
-  ' stroke-linecap="round"/>'
-  '<path d="M2.2 2.2 C7.4 5.4 11 8.4 14.6 12.6 L11.4 15.4 C8.6 10.6 5.6 6.4 2.2 2.2 Z"'
-  ' fill="url(#a5)" stroke="#2f3b48" stroke-width="1.05" stroke-linejoin="round"/>'
-  '<path d="M13.2 11 L20.8 7.4 L22.6 11.6 L15.6 14.6 Z" fill="url(#a5)"'
-  ' stroke="#2f3b48" stroke-width="1.05" stroke-linejoin="round"/>'
-  '<path d="M25.4 24.2 L28 26.8" fill="none" stroke="#c8402f" stroke-width="2.4"'
-  ' stroke-linecap="round"/>', None),
+ ('summit', 'Summit · bota', '2026-12',
+  '',
+  '<path d="M4.6 3 L13.4 3 C14.6 3 15.4 3.8 15.4 5 L15.4 13.4'
+  ' C15.4 15.4 17 16.2 19.4 17 L25.6 19.2 C27.4 19.8 28 21 28 22.6 L28 24.6'
+  ' L4.6 24.6 Z" fill="#c8402f" stroke="#3a1108" stroke-width="1.8"'
+  ' stroke-linejoin="round"/>'
+  '<path d="M4.6 19.6 L28 19.6 L28 24.6 L4.6 24.6 Z" fill="#2f3b48"'
+  ' stroke="#141c26" stroke-width="1.6" stroke-linejoin="round"/>'
+  '<path d="M6.6 24.6 L6.6 28 M11.4 24.6 L11.4 28 M16.2 24.6 L16.2 28'
+  ' M21 24.6 L21 28 M25.8 24.6 L25.8 28" fill="none" stroke="#8d99a8"'
+  ' stroke-width="2" stroke-linecap="round"/>'
+  '<path d="M6.6 6.6 L13.4 6.6 M6.6 10.4 L13.4 10.4 M6.6 14.2 L13.4 14.2"'
+  ' fill="none" stroke="#f2e2d8" stroke-width="1.4" stroke-linecap="round"/>',
+  None),
 
  ('bengal', 'Bengal · garra', '2027-01',
   '<linearGradient id="a6" x1="0" y1="0" x2="1" y2="1">'
@@ -179,25 +182,19 @@ CURSORS = [
   '<circle cx="26.4" cy="26.4" r="2.3" fill="url(#a9)" stroke="#4e3717" stroke-width="1"/>',
   None),
 
- ('apiarist', 'Apiarist · ahumador', '2027-05',
-  '<linearGradient id="a10" x1="0" y1="0" x2="1" y2="1">'
-  '<stop offset="0" stop-color="#e8c76a"/><stop offset="1" stop-color="#9a6f22"/></linearGradient>',
-  # pico + tapa cónica + cuerpo cilíndrico + fuelle: las cuatro piezas que
-  # hacen que se lea AHUMADOR y no un adorno redondo
-  '<path d="M2.2 2.2 L9 6 L6 9 Z" fill="#c9a24a" stroke="#4e3712"'
-  ' stroke-width="1.05" stroke-linejoin="round"/>'
-  '<path d="M6.2 9.2 L9.2 6.2 L14.8 10.4 L10.4 14.8 Z" fill="url(#a10)"'
-  ' stroke="#4e3712" stroke-width="1.05" stroke-linejoin="round"/>'
-  '<path d="M10.8 15.2 L15.2 10.8 L22.4 18 C24.6 20.2 20.2 24.6 18 22.4 Z"'
-  ' fill="url(#a10)" stroke="#4e3712" stroke-width="1.05" stroke-linejoin="round"/>'
-  '<path d="M13.4 17.8 L17.8 13.4 M16 20.4 L20.4 16" fill="none" stroke="#5c4318"'
-  ' stroke-width=".95" opacity=".75"/>'
-  '<path d="M20.4 13.4 C24.8 11.6 28.2 15 26.4 19.4 C24 17.4 22.4 15.8 20.4 13.4 Z"'
-  ' fill="#8a5a2a" stroke="#4e3712" stroke-width="1" stroke-linejoin="round"/>',
-  # activo: sale el humo por el pico
-  '<circle cx="6.4" cy="3.4" r="1.6" fill="#e8e2d4" opacity=".9"/>'
-  '<circle cx="9.6" cy="1.8" r="1.2" fill="#e8e2d4" opacity=".75"/>'
-  '<circle cx="3.4" cy="6.6" r="1.3" fill="#e8e2d4" opacity=".8"/>'),
+ ('apiarist', 'Apiarist · tarro de miel', '2027-05',
+  '',
+  '<path d="M8.6 11.4 L23.4 11.4 L24.6 24.6 C24.8 26.6 23.4 28 21.6 28'
+  ' L10.4 28 C8.6 28 7.2 26.6 7.4 24.6 Z" fill="#e8a92c" stroke="#4a2f06"'
+  ' stroke-width="1.8" stroke-linejoin="round"/>'
+  '<path d="M7.4 7.4 L24.6 7.4 L24.6 11.4 L7.4 11.4 Z" fill="#c98a1c"'
+  ' stroke="#4a2f06" stroke-width="1.8" stroke-linejoin="round"/>'
+  '<path d="M9.6 16.6 C13 19 19 19 22.4 16.6 L22.9 22 C19 24.4 13 24.4 9.1 22 Z"'
+  ' fill="#fff0c2" stroke="#4a2f06" stroke-width="1.5" stroke-linejoin="round"/>'
+  '<path d="M2.6 2.6 L9 9" fill="none" stroke="#8a5a1a" stroke-width="2.8"'
+  ' stroke-linecap="round"/>'
+  '<circle cx="10.4" cy="10.4" r="2.6" fill="#8a5a1a" stroke="#4a2f06" stroke-width="1.4"/>',
+  None),
 
  ('welder', 'Welder · soplete', '2027-06',
   '<linearGradient id="a11" x1="0" y1="0" x2="1" y2="1">'
