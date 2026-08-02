@@ -32,44 +32,64 @@ OUT = os.environ.get('PLATES_OUT', '/tmp/plates_preview.png')
 PLATES = [
  ('chronicles', 'Chronicles', 'épica', 'light', """
   <defs><linearGradient id="ch-sky" x1="0" y1="0" x2="1" y2="0">
-    <stop offset="0" stop-color="#140508"/><stop offset=".55" stop-color="#2c0910"/>
-    <stop offset="1" stop-color="#5e1410"/></linearGradient></defs>
+    <stop offset="0" stop-color="#140508"/><stop offset=".5" stop-color="#2c0910"/>
+    <stop offset="1" stop-color="#611510"/></linearGradient></defs>
   <rect width="420" height="56" fill="url(#ch-sky)"/>
+
+  <!-- CASTILLO: muralla almenada + dos torres con techo cónico + portón.
+       Antes eran tres rectángulos y se leían como edificios de oficina. -->
+  <g fill="#0b0305">
+    <path d="M318 56 V40 h5 v-4 h5 v4 h5 v-4 h5 v4 h5 v-4 h5 v4 h5 v-4 h5 v4 h5 v-4 h5 v4 h5 V56 Z"/>
+    <rect x="312" y="30" width="18" height="26"/>
+    <path d="M311 30 L321 16 L331 30 Z"/>
+    <rect x="378" y="26" width="20" height="30"/>
+    <path d="M377 26 L388 10 L399 26 Z"/>
+    <path d="M348 56 V46 a7 7 0 0 1 14 0 V56 Z"/>
+  </g>
+  <g fill="#ff8a3c" opacity=".9">
+    <rect x="318" y="36" width="4" height="5"/><rect x="384" y="32" width="5" height="6"/>
+    <rect x="352" y="49" width="6" height="7"/>
+  </g>
+
+  <!-- CABEZA DE DRAGÓN saliendo de la penumbra. Un dragón entero a 56px de
+       alto no se lee (se leía como un pájaro): la cabeza sí, porque el hocico,
+       el cuerno y las fauces son siluetas inconfundibles a cualquier tamaño. -->
+  <g fill="#1e0709" stroke="#ff7a2e" stroke-width="1.2" stroke-linejoin="round">
+    <path d="M214 30 C224 22 244 16 266 16 C288 16 306 20 318 26
+             C324 29 330 30 336 29 L340 36 C330 40 316 42 300 42
+             C280 42 246 40 214 30 Z"/>
+    <path d="M226 36 C240 42 262 47 286 48 C300 48.5 312 47 320 45
+             L318 39 C306 41 292 42 278 41 C258 40 240 38 226 36 Z"/>
+    <path d="M300 20 C312 8 330 2 350 2 C338 8 330 14 326 22 Z"/>
+    <path d="M282 15 C292 6 306 2 318 2 C308 7 300 12 296 18 Z" opacity=".85"/>
+    <path d="M240 30 L236 24 L246 27 Z M256 33 L252 27 L262 30 Z
+             M272 35 L268 29 L278 32 Z"/>
+    <path d="M244 38 L248 44 L238 41 Z M262 41 L266 47 L256 44 Z"/>
+  </g>
+  <circle cx="300" cy="27" r="3.4" fill="#ffb347"/>
+  <ellipse cx="300" cy="27" rx="1.1" ry="3" fill="#1e0709"/>
+  <ellipse cx="234" cy="28" rx="2.6" ry="1.8" fill="#ff7a2e" opacity=".8"/>
+  <!-- aliento de fuego saliendo del hocico hacia la izquierda -->
+  <g fill="#ff5a1e" opacity=".8">
+    <path d="M212 32 C198 28 182 30 168 36 C182 34 196 34 210 37 Z"/>
+    <path d="M204 27 C190 22 172 22 158 26 C174 26 190 28 202 32 Z" opacity=".6"/>
+  </g>
+
   <!-- grietas de lava a lo ancho -->
   <g stroke="#ff5a1e" stroke-linecap="round" fill="none">
-    <path d="M0 47 L38 42 L64 49 L104 40 L150 47 L196 38 L244 46 L292 37 L340 45 L386 36 L420 43"
+    <path d="M0 48 L34 43 L60 50 L100 41 L146 48 L190 39 L238 47 L286 38 L332 46 L380 37 L420 44"
           stroke-width="2.6" opacity=".95"/>
-    <path d="M64 49 L72 56 M150 47 L142 56 M244 46 L252 56 M340 45 L332 56"
+    <path d="M60 50 L68 56 M146 48 L138 56 M238 47 L246 56"
           stroke-width="1.8" opacity=".8"/>
-    <path d="M104 40 L112 30 M196 38 L188 28 M292 37 L300 27"
-          stroke-width="1.4" opacity=".55"/>
   </g>
   <g stroke="#ffd08a" stroke-width="1" fill="none" opacity=".5">
-    <path d="M0 47 L38 42 L64 49 L104 40 L150 47 L196 38 L244 46 L292 37 L340 45 L386 36 L420 43"/>
+    <path d="M0 48 L34 43 L60 50 L100 41 L146 48 L190 39 L238 47 L286 38 L332 46 L380 37 L420 44"/>
   </g>
-  <!-- torres de castillo al fondo -->
-  <g fill="#0d0407" opacity=".85">
-    <path d="M300 34 h10 v-6 h4 v6 h10 v-4 h4 v4 h8 V56 H300 Z"/>
-    <path d="M356 38 h8 v-5 h3 v5 h9 V56 H356 Z"/>
-  </g>
-  <!-- dragón volando, cruzando la escena -->
-  <g fill="#f3b9a4">
-    <path d="M196 22 C210 16 222 20 232 14 C240 9 242 4 250 2
-             C248 8 246 12 242 15 C248 16 254 14 259 10
-             C256 18 249 22 241 22 C236 27 226 30 214 30
-             C208 30 200 27 196 22 Z" opacity=".95"/>
-    <path d="M243 12 L250 1 L247 12 Z"/>
-    <path d="M198 24 C210 32 228 32 240 24 C230 36 208 36 198 24 Z" opacity=".55"/>
-  </g>
-  <circle cx="244" cy="12.5" r="1.4" fill="#140508"/>
-  <!-- brasas -->
-  <g fill="#ff8a3c" opacity=".7">
-    <circle cx="120" cy="24" r="1.3"/><circle cx="168" cy="16" r="1"/>
-    <circle cx="272" cy="26" r="1.2"/><circle cx="330" cy="18" r="1"/>
-    <circle cx="392" cy="24" r="1.3"/>
+  <g fill="#ff8a3c" opacity=".65">
+    <circle cx="112" cy="26" r="1.3"/><circle cx="160" cy="18" r="1"/>
+    <circle cx="200" cy="28" r="1.2"/><circle cx="86" cy="34" r="1"/>
   </g>
  """),
-
  ('arcade', 'Insert Coin', 'retro', 'light', """
   <defs><linearGradient id="ar-bg" x1="0" y1="0" x2="1" y2="0">
     <stop offset="0" stop-color="#100425"/><stop offset=".5" stop-color="#2a0846"/>
