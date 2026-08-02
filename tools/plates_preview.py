@@ -57,60 +57,17 @@ PLATES = [
     <circle cx="300" cy="27" r="1"/>
   </g>
 
-  <!-- Dragón + aliento, arriba a la derecha. Van juntos en un grupo para poder
-       moverlos y escalarlos sin volver a trazar cada curva. -->
-  <g transform="translate(228,0) scale(0.92)">
-    <!-- ALIENTO: centro azul cascada, bordes azul eléctrico -->
-    <path d="M296 22 C280 14 262 12 244 15 C252 10 250 6 244 3
-             C240 10 232 12 224 11 C228 16 226 20 220 22
-             C210 20 200 22 192 27 C202 26 210 28 214 32
-             C208 34 204 38 202 43 C210 37 220 35 230 36
-             C226 40 226 44 229 48 C233 42 240 38 248 37
-             C258 36 270 33 280 30 C288 28 293 25 296 22 Z"
-          fill="#2b7fff" stroke="#1746d8" stroke-width="1.1" stroke-linejoin="round"/>
-    <path d="M294 23 C280 17 266 16 252 19 C258 15 257 11 253 8
-             C250 14 244 16 238 15 C241 19 239 22 234 24
-             C226 23 218 25 212 29 C220 28 226 30 229 33
-             C224 35 221 38 219 42 C226 37 234 36 242 37
-             C252 35 262 32 271 29 C280 26 290 25 294 23 Z"
-          fill="#8fe3f5"/>
-    <path d="M291 23 C280 19 270 19 260 21 C266 17 264 14 261 12
-             C258 16 253 18 248 18 C250 21 248 23 244 25
-             C238 25 232 27 228 30 C234 30 238 31 240 34
-             C245 33 252 31 260 29 C272 26 285 25 291 23 Z"
-          fill="#e6fbff" opacity=".92"/>
-
-    <!-- DRAGÓN morado -->
-    <g stroke="#25113f" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round">
-      <path d="M382 30 C396 27 404 25 410 22 L406 16 L419 21 L410 29 L408 25
-               C402 30 392 34 384 35 Z" fill="#7b4fc4"/>
-      <path d="M372 36 C374 42 373 46 370 49 C374 50 379 49 381 46
-               C383 42 382 38 380 35 Z" fill="#6c43b0"/>
-      <path d="M386 33 C389 38 389 42 387 45 C391 46 395 44 396 41
-               C397 37 395 34 393 32 Z" fill="#6c43b0"/>
-      <path d="M316 20 C328 14 346 13 362 16 C378 19 390 24 396 31
-               C390 38 376 41 358 41 C340 41 324 37 314 31 Z" fill="#7b4fc4"/>
-      <path d="M324 32 C336 38 352 40 368 39 C362 41 348 42 336 40
-               C330 39 326 36 324 32 Z" fill="url(#ch-belly)"/>
-      <path d="M334 36 C335 42 334 46 331 49 C335 50 340 49 342 46
-               C344 42 343 38 341 35 Z" fill="#6c43b0"/>
-      <path d="M346 17 C350 5 362 -3 378 -4 C375 3 375 8 377 13
-               C382 7 389 3 396 2 C391 9 389 15 389 21
-               C379 18 361 16 346 17 Z" fill="url(#ch-wing)"/>
-      <path d="M378 -3 L379 13 M396 3 L389 20" stroke="#8a5fd0" stroke-width="1" fill="none"/>
-      <path d="M296 20 C296 12 304 6 314 6 C324 6 331 12 331 20
-               C331 27 324 32 314 32 C304 32 296 27 296 20 Z" fill="#7b4fc4"/>
-      <path d="M296 17 C291 17 288 19 288 21 C288 23 291 25 296 25
-               C299 25 301 23 301 21 C301 19 299 17 296 17 Z" fill="#7b4fc4"/>
-      <path d="M289 23 C292 26 298 28 304 28 C300 30 292 29 288 26 Z" fill="#3a1f5e"/>
-      <path d="M307 7 C305 2 306 -2 309 -3 C312 1 312 5 311 8 Z" fill="#e8d9a8"/>
-      <path d="M321 7 C321 2 323 -2 327 -2 C328 2 327 6 324 8 Z" fill="#e8d9a8"/>
-      <path d="M338 14 L342 8 L347 15 Z M354 15 L358 9 L363 16 Z" fill="#5d38a0"/>
-    </g>
-    <ellipse cx="316" cy="16" rx="5" ry="5.6" fill="#ffffff" stroke="#25113f" stroke-width="1.2"/>
-    <circle cx="317.5" cy="16.5" r="2.4" fill="#25113f"/>
-    <circle cx="318.4" cy="15.4" r="0.9" fill="#ffffff"/>
-    <circle cx="298" cy="14.5" r="1.1" fill="#3a1f5e"/>
+  <!-- Sin criatura a propósito: dibujar un dragón a mano en SVG no salió, y
+       cuatro intentos fallidos ya fueron suficientes. La escena se sostiene
+       sola con la lava. Lo figurativo (dragones, personajes) entra después
+       como imagen del ilustrador, igual que las botargas de los camos. -->
+  <g opacity=".5">
+    <path d="M0 41 L52 37 L92 43 L152 35 L222 41 L290 33 L362 40 L436 32 L506 39 L580 31 L640 38
+             L640 48 L0 48 Z" fill="#ff5a1e" opacity=".12"/>
+  </g>
+  <g fill="#ff8a3c" opacity=".5">
+    <circle cx="396" cy="22" r="1.1"/><circle cx="470" cy="16" r=".9"/>
+    <circle cx="536" cy="24" r="1"/><circle cx="600" cy="18" r="1.2"/>
   </g>
  """),
  ('arcade', 'Insert Coin', 'retro', 'light', """
