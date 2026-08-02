@@ -4439,19 +4439,41 @@ def camos():
                 state = 'roulette'
             else:
                 state = 'ended'
+            meta = plates_meta().get(i.slug) or {}
             out.append({'slug': i.slug, 'name': i.name, 'state': state,
                         'season': i.season or '',
+                        'channel': i.channel,
                         'ref': 'item:%s' % i.slug,
                         'art': ('/static/plates/%s.svg' % i.slug
-                                if kind == 'frame' and i.slug in plates_meta()
-                                else None),
+                                if kind == 'frame' and meta else None),
+                        # ink drives the preview's text color; it travels with
+                        # the piece so a frame published NEXT year previews
+                        # correctly without anyone touching this code.
+                        'ink': meta.get('ink', 'light'),
                         'wearing': kind == 'frame' and i.slug == active_frame,
                         'opens': when.strftime('%Y-%m-%d') if when else '',
                         'price': (cosmetic_item_price(i)
                                   if state in ('buy', 'locked') else None)})
         return out
+
+    def _split_frames(items):
+        """Three shelves, split by HOW you get the piece — the question a
+        buyer actually has. Split by CHANNEL, not by state: a roulette frame
+        the user already won reads as 'owned', and it must still sit on the
+        roulette shelf, because it was never for sale."""
+        festive, common, wheel = [], [], []
+        for it in items:
+            if it['channel'] != 'store':
+                wheel.append(it)          # roulette + champion: not for sale
+            elif it['slug'] in FESTIVE_WINDOWS:
+                festive.append(it)
+            else:
+                common.append(it)
+        return festive, common, wheel
     # Cart prices are keyed by REFERENCE, never by bare slug: 'santa' is both a
     # camo and a frame, so a bare-slug price map would total the wrong cart.
+    frames_all = _pack('frame')
+    fr_festive, fr_common, fr_wheel = _split_frames(frames_all)
     prices = {'camo:%s' % s: camo_store_price(s) for s in CAMO_SLUGS
               if camo_store_price(s) is not None}
     for i in CosmeticItem.query.filter_by(channel='store', active=True).all():
@@ -4471,7 +4493,10 @@ def camos():
                            camo_paypal=PAYPAL_ENABLED,
                            camo_prices=prices,
                            camo_locked=camo_locked,
-                           cos_frames=_pack('frame'),
+                           cos_frames=frames_all,
+                           cos_frames_festive=fr_festive,
+                           cos_frames_common=fr_common,
+                           cos_frames_wheel=fr_wheel,
                            cos_cursors=_pack('cursor'))
 
 
