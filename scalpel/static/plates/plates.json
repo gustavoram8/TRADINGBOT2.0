@@ -11,6 +11,10 @@
   "ink": "light",
   "name": "Insert Coin"
  },
+ "archive": {
+  "ink": "light",
+  "name": "The Archive"
+ },
  "aurora": {
   "ink": "light",
   "name": "Aurora"
@@ -18,6 +22,14 @@
  "baseball": {
   "ink": "dark",
   "name": "Baseball"
+ },
+ "bazaar": {
+  "ink": "light",
+  "name": "Night Bazaar"
+ },
+ "beacon": {
+  "ink": "light",
+  "name": "Beacon"
  },
  "bearcave": {
   "ink": "light",
@@ -51,6 +63,10 @@
   "ink": "dark",
   "name": "Cartography"
  },
+ "cascade": {
+  "ink": "light",
+  "name": "Cascade"
+ },
  "cathedral": {
   "ink": "light",
   "name": "Cathedral"
@@ -62,6 +78,10 @@
  "circuit": {
   "ink": "light",
   "name": "Circuit"
+ },
+ "clockwork": {
+  "ink": "light",
+  "name": "Clockwork"
  },
  "colosseum": {
   "ink": "light",
@@ -79,9 +99,29 @@
   "ink": "light",
   "name": "Desert Night"
  },
+ "easter": {
+  "ink": "dark",
+  "name": "Egg Hunt"
+ },
+ "express": {
+  "ink": "light",
+  "name": "Night Express"
+ },
+ "fireflies": {
+  "ink": "light",
+  "name": "Fireflies"
+ },
+ "fourth": {
+  "ink": "light",
+  "name": "Stars and Stripes"
+ },
  "frost": {
   "ink": "dark",
   "name": "Winter Frost"
+ },
+ "gambit": {
+  "ink": "light",
+  "name": "Gambit"
  },
  "glacier": {
   "ink": "dark",
@@ -90,6 +130,14 @@
  "gridiron": {
   "ink": "light",
   "name": "American Football"
+ },
+ "hallow": {
+  "ink": "light",
+  "name": "All Hallows"
+ },
+ "harvest": {
+  "ink": "dark",
+  "name": "Golden Harvest"
  },
  "jungle": {
   "ink": "light",
@@ -102,6 +150,10 @@
  "liquidity": {
   "ink": "light",
   "name": "Liquidity Pool"
+ },
+ "lucky": {
+  "ink": "light",
+  "name": "Pot of Gold"
  },
  "marble": {
   "ink": "dark",
@@ -118,6 +170,10 @@
  "nebula": {
   "ink": "light",
   "name": "Nebula"
+ },
+ "newyear": {
+  "ink": "light",
+  "name": "Midnight Toast"
  },
  "nile": {
   "ink": "dark",
@@ -151,6 +207,14 @@
   "ink": "dark",
   "name": "Sakura"
  },
+ "salar": {
+  "ink": "dark",
+  "name": "Salt Mirror"
+ },
+ "santa": {
+  "ink": "light",
+  "name": "Nochebuena"
+ },
  "storm": {
   "ink": "light",
   "name": "Storm"
@@ -167,6 +231,14 @@
   "ink": "light",
   "name": "Terminal"
  },
+ "valentine": {
+  "ink": "dark",
+  "name": "Sweetheart"
+ },
+ "vineyard": {
+  "ink": "dark",
+  "name": "Vineyard"
+ },
  "volcano": {
   "ink": "light",
   "name": "Ashfall"
@@ -182,6 +254,10 @@
  "welder": {
   "ink": "light",
   "name": "Welder"
+ },
+ "windmill": {
+  "ink": "dark",
+  "name": "Windmill"
  },
  "zeppelin": {
   "ink": "dark",
