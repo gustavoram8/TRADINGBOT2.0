@@ -324,9 +324,38 @@ cada mes, si un mes no hay tanda el sistema se ve muerto).
   ⚠️ **Trampa:** meter `JSON.stringify(url)` dentro de `style="background-image:url(...)"` parte el
   atributo (comilla doble dentro de comilla doble) y la placa sale en blanco → la URL se asigna por
   **propiedad** (`el.style.backgroundImage`), nunca por string de HTML.
-· **FALTA del paso 5:** **los cursores — todavía sin empezar** (32×32, flecha+manito, sin
-  animar, solo escritorio; `active_cursor` y el 400 del equip ya los esperan), y las tandas de camos
-  (arte mensual que encarga el usuario; se publican insertando `CosmeticItem` kind='camo').
+· ✅ **CURSORES — DIBUJADOS Y CABLEADOS END-TO-END (2026-08-02, aprobados por el usuario).**
+  **Son FIGURAS, no la flecha recoloreada** (decisión del usuario tras rechazar 2 enfoques; el
+  criterio ganador: figura MACIZA, color plano, contorno grueso 1.8, objeto SIMPLE — media derrota
+  fue elegir objetos de 4 piezas que no caben en 32px). Catálogo de **55** en
+  `tools/cursors_preview.py`: 12 temáticos (uno por camo mensual: escudo/balón/pirámide/casco/bota/
+  huella/ánfora/disco solar/pelota/tarro miel/careta/dirigible) + 24 libres de ruleta + 9 festivos +
+  10 comunes de tienda. Cada cursor = 2 estados: normal y **_hot** (la misma figura encendida, para
+  lo clickeable); estado activo = cuerpo + extra (CHISPAS por defecto). Hotspot fijo (2,2).
+  **Publicación:** `tools/build_cursors.py` rasteriza (Chromium 128px→LANCZOS→32px, fondo
+  transparente) a `scalpel/static/cursors/cur-<slug>[_hot].png` + `cursors.json` — regenerar y
+  commitear tras cambiar el catálogo. **Chrome solo acepta PNG en `cursor:url()`** (SVG no).
+  🔑 **Slug con prefijo `cur-`**: `CosmeticItem.slug` es único y los cursores comparten nombre con
+  marcos/camos (chronicles, santa…) → `festivity_of()` quita el prefijo, y así el cursor festivo
+  **hereda EXACTAMENTE la misma ventana de 24h (VET)** que su par camo y marco.
+  **Ruleta:** `ROULETTE_CURSOR_CALENDAR` = 3/mes (1 temático con la MISMA season que su marco/camo
+  + 2 libres barajados sin repetirse en el año; agosto = cur-chronicles + cur-candle + cur-rocket).
+  `_publish_cursors()` idempotente en `init_db()`. Probabilidades: las de siempre (Regla B, cursor
+  pesa 21.667 vs marco 15 → con tanda completa 2+3+1: camo 5%, marcos 30%, cursores 65%). El modal
+  de premio muestra la figura + "Usarlo ahora".
+  **Tienda:** $1.99 común / **$2.99 festivo** (`CURSOR_PRICE_FESTIVE`), mismos 3 estantes que
+  marcos, carrito multi-rama (`item:cur-*` — probado carrito camo+marco+cursor), preview propio
+  (2 estados zoom + tamaño real en chip claro/oscuro), candado festivo con fecha+zona.
+  **Equipar/aplicar:** `/api/cosmetics/equip` kind=cursor → `User.active_cursor`; `/app` inyecta
+  CSS `@media (pointer:fine)` (solo escritorio): figura en todo, `_hot` sobre clickeables, I-beam
+  intacto en campos de texto. ⚠️ **`!important` obligatorio**: las reglas de clase del sitio
+  (`.tab-btn{cursor:pointer}`) le ganan a selectores de elemento. ⚠️ `/app` exige el cookie
+  `scalpel_splash_ts` (302 a /welcome sin él — pega en tests). E2E `scratchpad/test_cursores.py`
+  **44/44** + regresión completa verde + navegador real (body/botón/textarea con los 3 cursores
+  correctos, tienda y preview sin errores JS).
+· **FALTA del paso 5:** solo las tandas de camos (arte mensual que encarga el usuario; se publican
+  insertando `CosmeticItem` kind='camo'). **Con eso la tanda mensual queda completa: 1 camo + 2
+  marcos + 3 cursores.**
 
 ## 📅 Recordatorio diario
 > 🔔 **PARA EL 2026-08-03 (pedido explícito del usuario):** re-revisar juntos los TONOS del
