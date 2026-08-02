@@ -277,10 +277,34 @@ cada mes, si un mes no hay tanda el sistema se ve muerto).
   beacon/faro, vineyard, archive/biblioteca, clockwork, windmill/tulipanes, fireflies, harvest,
   cascade, bazaar, salar, express/tren nocturno). El usuario asumió la coincidencia mars↔Mission y
   arcade↔camo arcade ("se deja así"). Catálogo total: 66 placas.
-· **FALTA del paso 5:** publicar los marcos de tienda como `CosmeticItem` channel='store' — bloqueado
-  por DOS decisiones del usuario: (a) **precio de marcos de tienda** (propuesta: $2.99, sin fijar) y
-  (b) aprobar el arte de los 19; además cablear la **ventana de 24h** de los festivos (hoy la tienda
-  no tiene mecanismo de ventana). **Los cursores — todavía sin empezar** (32×32, flecha+manito, sin
+· ✅ **MARCOS DE TIENDA CABLEADOS (2026-08-02).** Arte aprobado y **precios fijados por el usuario:
+  $2.99 libre / $3.99 festivo** (`FRAME_PRICE_COMMON`/`FRAME_PRICE_FESTIVE`). `_publish_store_frames()`
+  en `init_db()` publica los 21 (9 festivos + 12 libres) como `CosmeticItem` channel='store',
+  season=NULL (no rotan); idempotente por slug, jamás pisa una fila existente.
+  🔴 **BUG DE FONDO CAZADO AL CABLEAR — los slugs CHOCAN:** el camo `santa` y el marco `santa` son
+  la misma cadena, y el carrito guardaba slugs pelados → un carrito con ambos cobraba y entregaba
+  mal. Arreglado con **referencias con prefijo** `camo:<slug>` / `item:<slug>`
+  (`parse_cosmetic_ref`/`resolve_cosmetic_ref`); **un slug pelado se sigue leyendo como camo**, así
+  los carritos en sessionStorage y los pedidos pendientes de antes del cambio siguen funcionando.
+  `S.prices` pasó a estar keyeado por referencia (con slugs pelados el total salía mal).
+  `_activate_cosmetics_from_order` reparte camos por `add_camo` y marcos/cursores por `UserCosmetic`,
+  y se pone UNO solo si no hay nada puesto. Compra individual de marco = carrito de 1 (mismo riel
+  PayPal, no se duplicó plumbing). Cursores: la sección ya quedó con los mismos botones para cuando
+  existan. E2E `scratchpad/test_tienda.py` **38/38** + navegador ES (carrito mixto $10.97 = 2 marcos
+  + 1 camo, 0 errores JS).
+· ⏰ **VENTANA DE 24h — mecanismo hecho, FECHAS PROVISIONALES (pendiente confirmarlas con el usuario).**
+  `FESTIVE_WINDOWS` **keyea por FESTIVIDAD, no por producto** (respuesta a su pregunta: el candado va
+  por el nombre de la festividad, así el camo, el marco y el cursor de esa fecha comparten ventana y
+  una pieza que aún no existe hereda la regla el día que se cree). Abre a las **00:00 UTC** de la
+  fecha y dura `FESTIVE_WINDOW_HOURS=24`. Pascua se **calcula** (algoritmo gregoriano anónimo,
+  verificado 2026→5-abr y 2027→28-mar) con `EASTER_OVERRIDE` por si el dueño quiere pinchar un año.
+  Fechas hoy: newyear 01-01 · valentine 02-14 · lucky 03-17 · easter (calculada) · fourth 07-04 ·
+  hallow 10-31 · muertos 11-02 · frost 12-21 · santa 12-25. Se aplica a **marcos Y camos** (la regla
+  ya era la de los camos): estado `locked` en la tarjeta con la fecha de apertura, y rechazo
+  server-side en `/api/camo/buy` y en el checkout del carrito (`window_closed`) para que no se pueda
+  saltar llamando al endpoint. ⚠️ **PENDIENTE de decidir con el usuario: (a) confirmar cada fecha,
+  (b) si la medianoche es UTC o una zona fija.**
+· **FALTA del paso 5:** **los cursores — todavía sin empezar** (32×32, flecha+manito, sin
   animar, solo escritorio; `active_cursor` y el 400 del equip ya los esperan), y las tandas de camos
   (arte mensual que encarga el usuario; se publican insertando `CosmeticItem` kind='camo').
 
