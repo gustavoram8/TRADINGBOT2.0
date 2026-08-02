@@ -56,40 +56,48 @@ RULETA_LIBRES = ['candlegrid', 'volume', 'terminal', 'orderflow', 'mars',
 # de eso. Regla para el ilustrador: cero logos, cero nombres de equipo, cero
 # parecidos a un jugador identificable.
 #
-# CALENDARIO (2026-08-02). Ordena los 12 meses con tres criterios:
-#   · paletas: ningún mes repite la familia de color del anterior;
-#   · costo de ilustración: las botargas caras (velo translúcido del
-#     apicultor, góndola del dirigible, armadura y gradas del coliseo,
-#     serpiente emplumada) caen en meses alternos, nunca seguidas;
-#   · estacionalidad donde existe: alpinismo en invierno, béisbol en el
-#     opening day, la NFL arrancando en septiembre, Chronicles en octubre.
-# La temporada ARRANCA en octubre porque Chronicles es el único camo que ya
-# existe; los dos siguientes (Welder y Nile) son a propósito los más baratos
-# de producir, para que el colchón de 3 meses se arme rápido.
-TEMPORADAS = [
-    ('10', 'chronicles', 'Chronicles',        'basalto + lava'),
-    ('11', 'welder',     'Welder',            'acero + arco azul'),
-    ('12', 'nile',       'Nile',              'arena + lapislázuli'),
-    ('01', 'summit',     'Summit',            'hielo + granito'),
-    ('02', 'bengal',     'Bengal',            'bambú nocturno + brasa'),
-    ('03', 'baseball',   'Baseball',          'arcilla + cal, a pleno día'),
-    ('04', 'quetzal',    'Quetzalcóatl',      'jade + oro + terracota'),
-    ('05', 'olympus',    'Olympus',           'mármol + oro pálido'),
-    ('06', 'apiarist',   'Apiarist',          'miel + velo blanco'),
-    ('07', 'colosseum',  'Colosseum',         'ocre oscuro + antorcha'),
-    ('08', 'zeppelin',   'Zeppelin',          'latón + cielo gris frío'),
-    ('09', 'gridiron',   'American Football', 'noche de estadio + focos'),
-]
-# ⚠️ Único empalme flojo del calendario: julio (ocre del coliseo) contra
-# agosto (latón del dirigible), dos cálidos seguidos. Se resuelve en el
-# DISEÑO, no reordenando: el cielo del Zeppelin va gris azulado frío y el
-# latón queda solo como acento; por eso la paleta de agosto dice "cielo gris
-# frío" y no "sepia".
+# CALENDARIO (fijado 2026-08-02, reordenado el mismo día). La TEMPORADA 1 es
+# **agosto de 2026**: el dueño abre la plataforma esta semana o la siguiente y
+# Chronicles es el único camo que ya existe, así que ocupa el mes en curso y
+# los 11 restantes se reparten de septiembre en adelante.
 #
-# ⚠️ Bengal: el tigre es una CRIATURA, así que vive en la botarga (la dibuja
-# el ilustrador), nunca en el marco. El marco es el bosque de bambú de noche
-# con el resplandor de las brasas — eso sí es procedimental y entra en lo que
-# se puede dibujar acá. Misma división que con el dragón de Chronicles.
+# Tres criterios ordenan la rueda:
+#   · COSTO: septiembre y octubre son a propósito las dos botargas más
+#     baratas, porque ahí se arma el colchón de 3 meses antes de encender la
+#     rotación. De noviembre en adelante alterna caro/barato sin excepción:
+#     las 5 caras (armadura y gradas del coliseo, tigre, serpiente emplumada,
+#     velo translúcido del apicultor, góndola del dirigible) nunca caen
+#     seguidas.
+#   · PALETA: ningún mes repite la familia de color del anterior.
+#   · ESTACIÓN, donde existe: la NFL arranca en septiembre, el alpinismo cae
+#     en diciembre, la serpiente emplumada en marzo —el equinoccio de Chichén
+#     Itzá, cuando la sombra de la serpiente baja la pirámide—, el béisbol en
+#     el opening day de abril y la floración del apicultor en mayo.
+TEMPORADAS = [
+    ('2026-08', 'chronicles', 'Chronicles',        'basalto + lava'),
+    ('2026-09', 'gridiron',   'American Football', 'noche de estadio + focos'),
+    ('2026-10', 'nile',       'Nile',              'arena + lapislázuli'),
+    ('2026-11', 'colosseum',  'Colosseum',         'ocre oscuro + antorcha'),
+    ('2026-12', 'summit',     'Summit',            'hielo + granito'),
+    ('2027-01', 'bengal',     'Bengal',            'bambú de noche + brasa'),
+    ('2027-02', 'olympus',    'Olympus',           'mármol + oro pálido'),
+    ('2027-03', 'quetzal',    'Quetzalcóatl',      'jade + oro + terracota'),
+    ('2027-04', 'baseball',   'Baseball',          'césped + cal, a pleno día'),
+    ('2027-05', 'apiarist',   'Apiarist',          'ámbar + velo blanco'),
+    ('2027-06', 'welder',     'Welder',            'acero + arco azul'),
+    ('2027-07', 'zeppelin',   'Zeppelin',          'latón + sepia cálido'),
+]
+# ⚠️ Único empalme flojo: abril (arcilla del béisbol) contra mayo (ámbar del
+# apicultor). Se resuelve en el DISEÑO, no reordenando: la placa de béisbol
+# manda con el VERDE del césped y la cal, dejando la arcilla de acento, y la
+# del apicultor se queda en ámbar sobre crema sin verde. Por eso las paletas
+# de arriba dicen "césped + cal" y "ámbar + velo".
+#
+# ⚠️ Bengal = tigre de Bengala sobre bosque de bambú de la INDIA (confirmado
+# por el dueño). El tigre es una CRIATURA, así que vive en la botarga (la
+# dibuja el ilustrador), nunca en el marco. El marco es el bambú de noche con
+# el resplandor de las brasas — eso sí es procedimental y entra en lo que se
+# puede dibujar acá. Misma división que con el dragón de Chronicles.
 RULETA_TEMATICOS = [s for _, s, _, _ in TEMPORADAS]             # 12 de 12
 # Festivos: NO entran a la ruleta. Se venden en la tienda con ventana de 24h
 # el día de la festividad, misma regla que los camos festivos.

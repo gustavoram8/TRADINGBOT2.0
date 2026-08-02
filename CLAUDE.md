@@ -234,12 +234,15 @@ cada mes, si un mes no hay tanda el sistema se ve muerto).
   caen el avatar y el nombre. Reparto: **13 a la ruleta** (12 libres + Chronicles), 23 a la tienda,
   los 2 festivos con ventana de 24h el día de la festividad.
 · **Las 12 temáticas mensuales están CERRADAS** con su calendario (constante `TEMPORADAS` en el mismo
-  archivo): Oct Chronicles · Nov Welder · Dic Nile · Ene Summit · Feb Bengal · Mar Baseball ·
-  Abr Quetzalcóatl · May Olympus · Jun Apiarist · Jul Colosseum · Ago Zeppelin · Sep American Football.
-  Ordenadas para que ningún mes repita la paleta del anterior y las botargas caras caigan alternas;
-  arranca en octubre porque Chronicles es el único camo que ya existe, y le siguen los dos más
-  baratos de producir. Criterio del dueño: temáticas **poco transitadas** (nada de piratas, ninjas,
-  vaqueros, astronautas, safaris) y **cerrado el cupo de deportes y de oficios**.
+  archivo). **Temporada 1 = AGOSTO 2026** (el dueño abre la plataforma esta semana o la siguiente):
+  2026-08 Chronicles · 09 American Football · 10 Nile · 11 Colosseum · 12 Summit · 2027-01 Bengal ·
+  02 Olympus · 03 Quetzalcóatl · 04 Baseball · 05 Apiarist · 06 Welder · 07 Zeppelin.
+  Sep y Oct son a propósito las botargas más baratas (ahí se arma el colchón de 3 meses); de Nov en
+  adelante alterna caro/barato, ningún mes repite la paleta del anterior, y la estación manda donde
+  existe (NFL en septiembre, alpinismo en diciembre, Quetzalcóatl en el equinoccio de marzo, béisbol
+  en el opening day de abril, floración del apicultor en mayo). Criterio del dueño para las
+  temáticas: **poco transitadas** (nada de piratas, ninjas, vaqueros, astronautas, safaris) y
+  **cerrado el cupo de deportes y de oficios**.
 · 🔴 **División de trabajo del arte:** lo procedimental (paisajes, lava, rejillas, vitrales, montañas,
   terminales) se dibuja acá; **las criaturas y personajes NO** — el dragón de Chronicles se intentó 4
   veces y el usuario lo cortó (*"es como si te hubiese enviado una foto de un iPhone y tú me hubieses
