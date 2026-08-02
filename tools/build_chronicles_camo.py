@@ -179,20 +179,55 @@ def scene_svg(mode='dark'):
         p.append(hill(392, 16, 3, 'url(#kHillA)'))
         p.append(hill(428, 12, 5, 'url(#kHillB)'))
     else:
-        # ── NOCHE: resplandor del horizonte + sierra + un volcán chico a lo
-        #    lejos (la lava se queda, pero MANDA el reino) ──
+        # ── NOCHE: resplandor del horizonte, sierra y el VOLCÁN ──
         p.append("<rect x='0' y='236' width='%d' height='264' fill='url(#kSky)'/>" % W)
-        far = jagged(rng, -20, 1460, 46, 384, 16, sharp=0.20)
-        p.append(ridge(far, H, BASALT_FAR, '0.45'))
-        vx, vtop, vbase = 1246, 356, 420
-        p.append("<ellipse cx='%d' cy='%d' rx='30' ry='22' fill='url(#kCrater)' "
-                 "opacity='0.7'/>" % (vx, vtop - 4))
+
+        # El volcán se dibuja ANTES de la sierra y con su propia falda: la
+        # primera versión era un cono chico suelto en el aire y el dueño lo
+        # cazó — «se entiende que es un volcán si lo rebuscas… está como
+        # flotando». Lo que lo arregla no es agrandarlo, es DARLE ENTORNO:
+        # la falda que se funde con el terreno y la sierra por delante, que le
+        # come la base y lo deja plantado en el paisaje en vez de pegado encima.
+        # ⚠️ Se PROBÓ un penacho de ceniza (bocanadas desenfocadas subiendo del
+        # cráter) y el dueño lo rechazó — "sácale ese humo, no queda bien". NO
+        # re-agregarlo: lo que hace legible al volcán es la falda + el corte de
+        # la sierra, no el humo.
+        vx, vtop, vbase, vhalf = 1244, 330, 452, 122
+        p.append("<path d='M%d,%d C%d,%d %d,%d %d,%d C%d,%d %d,%d %d,%d "
+                 "L%d,%d C%d,%d %d,%d %d,%d Z' fill='%s' opacity='0.5'/>"
+                 % (vx - vhalf - 120, vbase, vx - vhalf - 40, vbase - 14,
+                    vx - vhalf, vbase - 26, vx - vhalf + 30, vbase - 30,
+                    vx - 60, vtop + 96, vx - 40, vtop + 40, vx - 22, vtop + 8,
+                    vx + 22, vtop + 8, vx + 44, vtop + 44, vx + 78, vtop + 110,
+                    vx + vhalf + 130, vbase, '#2a1018'))
+        # el cono
         p.append("<path d='M%d,%d Q%d,%d %d,%d L%d,%d Q%d,%d %d,%d Z' fill='%s'/>"
-                 % (vx - 70, vbase, vx - 42, vbase - 18, vx - 10, vtop,
-                    vx + 10, vtop, vx + 46, vbase - 16, vx + 70, vbase, '#200c12'))
-        p.append("<path d='M%d,%d Q%d,%d %d,%d Q%d,%d %d,%d Z' fill='%s' opacity='0.8'/>"
-                 % (vx - 10, vtop, vx, vtop - 2, vx + 10, vtop,
-                    vx, vtop + 4, vx - 10, vtop, LAVA))
+                 % (vx - vhalf, vbase, vx - 96, vbase - 62, vx - 20, vtop,
+                    vx + 15, vtop, vx + 74, vbase - 40, vx + vhalf, vbase,
+                    '#170609'))
+        # la ladera que mira al cráter, apenas encendida
+        p.append("<path d='M%d,%d Q%d,%d %d,%d L%d,%d Z' fill='%s' opacity='0.13'/>"
+                 % (vx + 15, vtop, vx + 74, vbase - 40, vx + vhalf, vbase,
+                    vx + 20, vbase, LAVA))
+        # boca + resplandor
+        p.append("<ellipse cx='%d' cy='%d' rx='40' ry='30' fill='url(#kCrater)'/>"
+                 % (vx, vtop - 10))
+        p.append("<path d='M%d,%d Q%d,%d %d,%d Q%d,%d %d,%d Z' fill='%s'/>"
+                 % (vx - 15, vtop, vx, vtop - 4, vx + 15, vtop,
+                    vx, vtop + 5, vx - 15, vtop, LAVA))
+        # PENACHO de ceniza: sube y se tuerce con el viento. Es la pieza que
+        # más hace por la lectura, más que el tamaño del cono.
+        # una colada corta por el flanco
+        d = ("M%d,%d Q%d,%d %d,%d" % (vx + 9, vtop + 8, vx + 30, vtop + 42,
+                                      vx + 26, vtop + 74))
+        p.append("<path d='%s' fill='none' stroke='#c9330a' stroke-width='6' "
+                 "stroke-linecap='round' opacity='0.30'/>" % d)
+        p.append("<path d='%s' fill='none' stroke='%s' stroke-width='2' "
+                 "stroke-linecap='round' opacity='0.9'/>" % (d, LAVA))
+        # la sierra pasa POR DELANTE y le come el pie: sin esto el cono
+        # termina en una línea recta suspendida sobre la nada
+        far = jagged(rng, -20, 1460, 46, 428, 16, sharp=0.20)
+        p.append(ridge(far, H, BASALT_FAR, '0.55'))
 
     # ── piezas del reino ──────────────────────────────────────────────────
     def merlons(x0, x1, y, mw=13, gap=11, h=11, fill=STONE):
