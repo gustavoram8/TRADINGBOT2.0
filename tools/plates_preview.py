@@ -40,13 +40,57 @@ OUT = os.environ.get('PLATES_OUT', '/tmp/plates_preview.png')
 RULETA_LIBRES = ['candlegrid', 'volume', 'terminal', 'orderflow', 'mars',
                  'dunes', 'sakura', 'volcano', 'circuit', 'obsidian',
                  'cartography', 'arcade']                       # 12
-# Atados a la temática del camo mensual: 12 en total. Solo existe el primero;
-# los otros 11 se diseñan junto con sus camos.
-# Temáticas mensuales aprobadas por el dueño. Criterio fijado 2026-08-02:
-# épocas y OFICIOS POCO TRANSITADOS — nada de piratas, ninjas, vaqueros,
-# astronautas ni safaris. Aprobadas: medieval (Chronicles), alpinismo
-# (Summit) y Egipto (Nile). Faltan 9.
-RULETA_TEMATICOS = ['chronicles', 'summit', 'nile']             # 3 de 12
+# Atados a la temática del camo mensual: 12 en total. Solo existe el primero
+# (Chronicles, cuyo camo ya encargó el dueño); los otros 11 se diseñan junto
+# con sus camos.
+#
+# Criterio fijado 2026-08-02 por el dueño: épocas y actividades POCO
+# TRANSITADAS — nada de piratas, ninjas, vaqueros, astronautas ni safaris —
+# y, tras aprobar béisbol y fútbol americano, nada MÁS de deportes ni de
+# oficios, que ya quedaron cubiertos.
+#
+# Legalidad del deporte (consultado 2026-08-02): un deporte no se registra.
+# Lo protegido son las MARCAS —nombres/escudos de equipos, el logo de la NFL
+# o la MLB, el término "Super Bowl"— y la imagen de jugadores reales. Una
+# botarga genérica con casco y hombreras, o con bate y guante, no toca nada
+# de eso. Regla para el ilustrador: cero logos, cero nombres de equipo, cero
+# parecidos a un jugador identificable.
+#
+# CALENDARIO (2026-08-02). Ordena los 12 meses con tres criterios:
+#   · paletas: ningún mes repite la familia de color del anterior;
+#   · costo de ilustración: las botargas caras (velo translúcido del
+#     apicultor, góndola del dirigible, armadura y gradas del coliseo,
+#     serpiente emplumada) caen en meses alternos, nunca seguidas;
+#   · estacionalidad donde existe: alpinismo en invierno, béisbol en el
+#     opening day, la NFL arrancando en septiembre, Chronicles en octubre.
+# La temporada ARRANCA en octubre porque Chronicles es el único camo que ya
+# existe; los dos siguientes (Welder y Nile) son a propósito los más baratos
+# de producir, para que el colchón de 3 meses se arme rápido.
+TEMPORADAS = [
+    ('10', 'chronicles', 'Chronicles',        'basalto + lava'),
+    ('11', 'welder',     'Welder',            'acero + arco azul'),
+    ('12', 'nile',       'Nile',              'arena + lapislázuli'),
+    ('01', 'summit',     'Summit',            'hielo + granito'),
+    ('02', 'bengal',     'Bengal',            'bambú nocturno + brasa'),
+    ('03', 'baseball',   'Baseball',          'arcilla + cal, a pleno día'),
+    ('04', 'quetzal',    'Quetzalcóatl',      'jade + oro + terracota'),
+    ('05', 'olympus',    'Olympus',           'mármol + oro pálido'),
+    ('06', 'apiarist',   'Apiarist',          'miel + velo blanco'),
+    ('07', 'colosseum',  'Colosseum',         'ocre oscuro + antorcha'),
+    ('08', 'zeppelin',   'Zeppelin',          'latón + cielo gris frío'),
+    ('09', 'gridiron',   'American Football', 'noche de estadio + focos'),
+]
+# ⚠️ Único empalme flojo del calendario: julio (ocre del coliseo) contra
+# agosto (latón del dirigible), dos cálidos seguidos. Se resuelve en el
+# DISEÑO, no reordenando: el cielo del Zeppelin va gris azulado frío y el
+# latón queda solo como acento; por eso la paleta de agosto dice "cielo gris
+# frío" y no "sepia".
+#
+# ⚠️ Bengal: el tigre es una CRIATURA, así que vive en la botarga (la dibuja
+# el ilustrador), nunca en el marco. El marco es el bosque de bambú de noche
+# con el resplandor de las brasas — eso sí es procedimental y entra en lo que
+# se puede dibujar acá. Misma división que con el dragón de Chronicles.
+RULETA_TEMATICOS = [s for _, s, _, _ in TEMPORADAS]             # 12 de 12
 # Festivos: NO entran a la ruleta. Se venden en la tienda con ventana de 24h
 # el día de la festividad, misma regla que los camos festivos.
 FESTIVOS = ['frost', 'muertos']

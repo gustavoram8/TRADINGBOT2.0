@@ -223,9 +223,35 @@ sola comisión"). 18 claves `camos.*` nuevas/renombradas ×4 (paridad OK). E2E 2
 (`scratchpad/test_carrito.py`) + navegador ES real (carrito $9.98, toast soon, 4 estados
 pintados). ⚠️ Al probar la tienda como ADMIN no hay botones de compra: el admin posee TODO.
 **PENDIENTE del paso 4:** precio de los marcos de tienda (el usuario aún no lo fijó — hoy ningún
-`CosmeticItem` de tienda es frame, solo cursores a $1.99).** (5) primeras piezas (colchón de 3 meses de
-tandas ANTES de encender la rotación — compromiso operativo: 6 piezas nuevas cada mes, si un mes
-no hay tanda el sistema se ve muerto).
+`CosmeticItem` de tienda es frame, solo cursores a $1.99).** (5) 🟡 **EN CURSO — primeras piezas**
+(colchón de 3 meses de tandas ANTES de encender la rotación — compromiso operativo: 6 piezas nuevas
+cada mes, si un mes no hay tanda el sistema se ve muerto).
+· **Marcos = PLACA del bloque de autor del foro** (avatar+medalla+nombre+chip+pastilla), NO un anillo
+  alrededor del avatar (*"nadie pagará un dólar por decorar el borde de un círculo"*). Catálogo de
+  **36 placas en `tools/plates_preview.py`**, lienzo real **640×48**. Reglas aprendidas a los golpes:
+  la escena ocupa TODO el ancho (un motivo en la esquina se ve como sticker), los fondos NO son todos
+  oscuros (cada placa declara el `ink` de su texto) y el **tercio izquierdo va tranquilo** porque ahí
+  caen el avatar y el nombre. Reparto: **13 a la ruleta** (12 libres + Chronicles), 23 a la tienda,
+  los 2 festivos con ventana de 24h el día de la festividad.
+· **Las 12 temáticas mensuales están CERRADAS** con su calendario (constante `TEMPORADAS` en el mismo
+  archivo): Oct Chronicles · Nov Welder · Dic Nile · Ene Summit · Feb Bengal · Mar Baseball ·
+  Abr Quetzalcóatl · May Olympus · Jun Apiarist · Jul Colosseum · Ago Zeppelin · Sep American Football.
+  Ordenadas para que ningún mes repita la paleta del anterior y las botargas caras caigan alternas;
+  arranca en octubre porque Chronicles es el único camo que ya existe, y le siguen los dos más
+  baratos de producir. Criterio del dueño: temáticas **poco transitadas** (nada de piratas, ninjas,
+  vaqueros, astronautas, safaris) y **cerrado el cupo de deportes y de oficios**.
+· 🔴 **División de trabajo del arte:** lo procedimental (paisajes, lava, rejillas, vitrales, montañas,
+  terminales) se dibuja acá; **las criaturas y personajes NO** — el dragón de Chronicles se intentó 4
+  veces y el usuario lo cortó (*"es como si te hubiese enviado una foto de un iPhone y tú me hubieses
+  devuelto un tronco de madera"*). El tigre de Bengal, como el dragón, vive en la **botarga** (la
+  encarga el usuario); el marco es solo el bosque de bambú de noche con las brasas.
+· **Deportes y legalidad** (respondido al usuario): un deporte no se registra; lo protegido son las
+  MARCAS (nombres/escudos de equipos, logos NFL/MLB, "Super Bowl") y la imagen de jugadores reales.
+  Botarga genérica = sin problema. Instrucción al ilustrador: cero logos, cero nombres de equipo,
+  cero parecidos a un jugador identificable.
+· **FALTA del paso 5:** las 11 placas temáticas (una por mes, se diseñan junto a su camo), **los
+  cursores — todavía sin empezar** (32×32, flecha+manito, sin animar, solo escritorio), y publicar
+  las piezas insertando `CosmeticItem`.
 
 ## 📅 Recordatorio diario
 > 🔔 **PARA EL 2026-08-03 (pedido explícito del usuario):** re-revisar juntos los TONOS del
