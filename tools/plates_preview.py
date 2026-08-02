@@ -787,6 +787,437 @@ PLATES = [
     <circle cx="323" cy="24" r="3"/><circle cx="464" cy="28" r="2.6"/><circle cx="600" cy="27" r="2.8"/>
   </g>
  """),
+
+ # ══ TEMPORADAS ════════════════════════════════════════════════════════════
+ # Una por mes, hermana del camo de ese mes (ver TEMPORADAS arriba). Chronicles
+ # —la de agosto— vive con las épicas porque nació antes que el calendario.
+ # Ninguna dibuja criaturas ni personajes: eso vive en la botarga del camo.
+ ('gridiron', 'American Football', 'temporada', 'light', """
+  <defs>
+    <linearGradient id="gi-sky" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#050a12"/><stop offset="1" stop-color="#0e2136"/></linearGradient>
+    <radialGradient id="gi-lamp">
+      <stop offset="0" stop-color="#dcecff" stop-opacity=".8"/>
+      <stop offset="1" stop-color="#dcecff" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="640" height="48" fill="url(#gi-sky)"/>
+  <ellipse cx="339" cy="14" rx="40" ry="17" fill="url(#gi-lamp)"/>
+  <ellipse cx="479" cy="12" rx="40" ry="17" fill="url(#gi-lamp)"/>
+  <ellipse cx="614" cy="14" rx="34" ry="15" fill="url(#gi-lamp)"/>
+  <g fill="#1b2c3d">
+    <rect x="326" y="6" width="26" height="6" rx="1.5"/><rect x="337" y="12" width="4" height="16"/>
+    <rect x="466" y="4" width="26" height="6" rx="1.5"/><rect x="477" y="10" width="4" height="18"/>
+    <rect x="602" y="6" width="24" height="6" rx="1.5"/><rect x="612" y="12" width="4" height="16"/>
+  </g>
+  <g fill="#eaf4ff" opacity=".9">
+    <rect x="329" y="7" width="5" height="4"/><rect x="337" y="7" width="5" height="4"/>
+    <rect x="345" y="7" width="5" height="4"/>
+    <rect x="469" y="5" width="5" height="4"/><rect x="477" y="5" width="5" height="4"/>
+    <rect x="485" y="5" width="5" height="4"/>
+    <rect x="605" y="7" width="5" height="4"/><rect x="614" y="7" width="5" height="4"/>
+  </g>
+  <rect y="26" width="640" height="22" fill="#11331f"/>
+  <g fill="#164a29">
+    <rect x="256" y="26" width="34" height="22"/><rect x="324" y="26" width="34" height="22"/>
+    <rect x="392" y="26" width="34" height="22"/><rect x="460" y="26" width="34" height="22"/>
+    <rect x="528" y="26" width="34" height="22"/><rect x="596" y="26" width="34" height="22"/>
+  </g>
+  <g stroke="#e8f1ea" stroke-width="1.3" opacity=".8">
+    <path d="M300 26 L292 48 M360 26 L354 48 M420 26 L418 48 M480 26 L482 48
+             M540 26 L546 48 M600 26 L610 48"/>
+  </g>
+  <g stroke="#e8f1ea" stroke-width=".9" opacity=".4">
+    <path d="M268 34 H640 M262 42 H640"/>
+  </g>
+  <g stroke="#f2c53d" stroke-width="2.6" stroke-linecap="round" fill="none">
+    <path d="M566 46 V32 M552 32 H580 M552 32 V12 M580 32 V12"/>
+  </g>
+ """),
+ ('nile', 'Nile', 'temporada', 'dark', """
+  <defs>
+    <linearGradient id="nl-sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fcefd3"/><stop offset="1" stop-color="#efce97"/></linearGradient>
+    <linearGradient id="nl-riv" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2b66ad"/><stop offset="1" stop-color="#103a70"/></linearGradient>
+  </defs>
+  <rect width="640" height="48" fill="url(#nl-sky)"/>
+  <circle cx="600" cy="14" r="10" fill="#e5952f" opacity=".45"/>
+  <path d="M292 36 L336 8 L380 36 Z" fill="#d5a55f"/>
+  <path d="M336 8 L380 36 L336 36 Z" fill="#b4803c"/>
+  <path d="M386 36 L416 17 L446 36 Z" fill="#ddb16c"/>
+  <path d="M416 17 L446 36 L416 36 Z" fill="#bd8a44"/>
+  <path d="M452 36 L472 24 L492 36 Z" fill="#e4bd80"/>
+  <path d="M472 24 L492 36 L472 36 Z" fill="#c79750"/>
+  <g><rect x="536" y="14" width="9" height="22" fill="#cfa059"/>
+     <path d="M536 14 L540.5 5 L545 14 Z" fill="#ead0a0"/>
+     <g fill="#8a6a34" opacity=".8"><rect x="538" y="19" width="5" height="1.6"/>
+       <rect x="538" y="24" width="5" height="1.6"/><rect x="538" y="29" width="5" height="1.6"/></g>
+  </g>
+  <g stroke="#4d7c3c" stroke-width="1.6" stroke-linecap="round">
+    <path d="M508 36 V26 M514 36 V30 M520 36 V24 M526 36 V29"/>
+  </g>
+  <rect y="36" width="640" height="12" fill="url(#nl-riv)"/>
+  <g stroke="#84baea" stroke-width="1" opacity=".6" fill="none">
+    <path d="M262 40 H358 M378 40 H468 M492 40 H602 M298 44 H418 M446 44 H556 M580 44 H636"/>
+  </g>
+ """),
+ ('colosseum', 'Colosseum', 'temporada', 'light', """
+  <defs>
+    <linearGradient id="co-bg" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#140d05"/><stop offset="1" stop-color="#35210c"/></linearGradient>
+    <radialGradient id="co-fire">
+      <stop offset="0" stop-color="#ffb347" stop-opacity=".75"/>
+      <stop offset="1" stop-color="#ffb347" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="640" height="48" fill="url(#co-bg)"/>
+  <rect x="256" y="0" width="384" height="44" fill="#6b4a22"/>
+  <rect x="256" y="0" width="384" height="6" fill="#3d2810"/>
+  <g fill="#59401b">
+    <rect x="264" y="1" width="8" height="4"/><rect x="292" y="1" width="8" height="4"/>
+    <rect x="320" y="1" width="8" height="4"/><rect x="348" y="1" width="8" height="4"/>
+    <rect x="376" y="1" width="8" height="4"/><rect x="404" y="1" width="8" height="4"/>
+    <rect x="432" y="1" width="8" height="4"/><rect x="460" y="1" width="8" height="4"/>
+    <rect x="488" y="1" width="8" height="4"/><rect x="516" y="1" width="8" height="4"/>
+    <rect x="544" y="1" width="8" height="4"/><rect x="572" y="1" width="8" height="4"/>
+    <rect x="600" y="1" width="8" height="4"/><rect x="628" y="1" width="8" height="4"/>
+  </g>
+  <rect x="256" y="6" width="384" height="3" fill="#8a6229"/>
+  <g fill="#120b04">
+    <path d="M280 40 V26 A20 14 0 0 1 320 26 V40 Z"/>
+    <path d="M338 40 V26 A20 14 0 0 1 378 26 V40 Z"/>
+    <path d="M396 40 V26 A20 14 0 0 1 436 26 V40 Z"/>
+    <path d="M454 40 V26 A20 14 0 0 1 494 26 V40 Z"/>
+    <path d="M512 40 V26 A20 14 0 0 1 552 26 V40 Z"/>
+    <path d="M570 40 V26 A20 14 0 0 1 610 26 V40 Z"/>
+  </g>
+  <g fill="none" stroke="#8a6229" stroke-width="1.6">
+    <path d="M280 40 V26 A20 14 0 0 1 320 26 V40"/>
+    <path d="M338 40 V26 A20 14 0 0 1 378 26 V40"/>
+    <path d="M396 40 V26 A20 14 0 0 1 436 26 V40"/>
+    <path d="M454 40 V26 A20 14 0 0 1 494 26 V40"/>
+    <path d="M512 40 V26 A20 14 0 0 1 552 26 V40"/>
+    <path d="M570 40 V26 A20 14 0 0 1 610 26 V40"/>
+  </g>
+  <g fill="#a37a35">
+    <rect x="296" y="10" width="8" height="4"/><rect x="354" y="10" width="8" height="4"/>
+    <rect x="412" y="10" width="8" height="4"/><rect x="470" y="10" width="8" height="4"/>
+    <rect x="528" y="10" width="8" height="4"/><rect x="586" y="10" width="8" height="4"/>
+  </g>
+  <rect x="256" y="40" width="384" height="3" fill="#8a6229"/>
+  <rect y="43" width="640" height="5" fill="#7a5c2a"/>
+  <g><ellipse cx="329" cy="30" rx="20" ry="15" fill="url(#co-fire)"/>
+     <ellipse cx="445" cy="30" rx="20" ry="15" fill="url(#co-fire)"/>
+     <ellipse cx="561" cy="30" rx="20" ry="15" fill="url(#co-fire)"/></g>
+  <g fill="#4d3512"><rect x="327" y="28" width="4" height="12"/>
+    <rect x="443" y="28" width="4" height="12"/><rect x="559" y="28" width="4" height="12"/></g>
+  <g fill="#ff9e2c"><path d="M329 17 C335 24 333 28 329 30 C325 28 323 24 329 17 Z"/>
+    <path d="M445 17 C451 24 449 28 445 30 C441 28 439 24 445 17 Z"/>
+    <path d="M561 17 C567 24 565 28 561 30 C557 28 555 24 561 17 Z"/></g>
+  <g fill="#ffe9b5"><path d="M329 23 C332 27 331 29 329 30 C327 29 326 27 329 23 Z"/>
+    <path d="M445 23 C448 27 447 29 445 30 C443 29 442 27 445 23 Z"/>
+    <path d="M561 23 C564 27 563 29 561 30 C559 29 558 27 561 23 Z"/></g>
+ """),
+ ('summit', 'Summit', 'temporada', 'dark', """
+  <defs><linearGradient id="su-sky" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#d8e9f8"/><stop offset="1" stop-color="#f6fafd"/></linearGradient></defs>
+  <rect width="640" height="48" fill="url(#su-sky)"/>
+  <circle cx="300" cy="12" r="8" fill="#ffffff" opacity=".75"/>
+  <path d="M256 48 L318 20 L358 33 L410 12 L470 31 L522 17 L580 33 L640 21 L640 48 Z"
+        fill="#b6cbdf"/>
+  <g fill="#ffffff" opacity=".9">
+    <path d="M318 20 L328 27 L322 27 L312 28 Z"/>
+    <path d="M410 12 L422 21 L414 21 L402 23 Z"/>
+    <path d="M522 17 L533 25 L526 25 L514 26 Z"/>
+  </g>
+  <path d="M256 48 L302 32 L342 41 L396 22 L444 38 L502 27 L558 40 L612 29 L640 36 L640 48 Z"
+        fill="#8ba7c2"/>
+  <g fill="#ffffff">
+    <path d="M396 22 L408 30 L400 30 L388 32 Z"/>
+    <path d="M502 27 L512 34 L505 34 L494 35 Z"/>
+    <path d="M302 32 L310 38 L304 38 L295 39 Z"/>
+  </g>
+  <g stroke="#6d8aa8" stroke-width="1" opacity=".7" fill="none">
+    <path d="M396 22 L392 34 L398 44 M502 27 L498 36 L504 46 M302 32 L300 40 L305 48"/>
+  </g>
+  <g><rect x="395" y="8" width="1.6" height="14" fill="#5c728a"/>
+     <path d="M397 8 L412 12 L397 16 Z" fill="#c8402f"/></g>
+ """),
+ ('bengal', 'Bengal', 'temporada', 'light', """
+  <defs>
+    <linearGradient id="be-bg" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#04100a"/><stop offset=".55" stop-color="#0a1d13"/>
+      <stop offset="1" stop-color="#12301c"/></linearGradient>
+    <radialGradient id="be-ember">
+      <stop offset="0" stop-color="#ff8f33" stop-opacity=".6"/>
+      <stop offset="1" stop-color="#ff8f33" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="640" height="48" fill="url(#be-bg)"/>
+  <ellipse cx="512" cy="46" rx="128" ry="22" fill="url(#be-ember)"/>
+  <g fill="#1d4127">
+    <rect x="272" y="0" width="7" height="48"/><rect x="300" y="0" width="5" height="48"/>
+    <rect x="344" y="0" width="8" height="48"/><rect x="376" y="0" width="5" height="48"/>
+    <rect x="416" y="0" width="7" height="48"/><rect x="452" y="0" width="6" height="48"/>
+    <rect x="492" y="0" width="8" height="48"/><rect x="528" y="0" width="5" height="48"/>
+    <rect x="566" y="0" width="7" height="48"/><rect x="606" y="0" width="6" height="48"/>
+  </g>
+  <g fill="#2f6b3c" opacity=".9">
+    <rect x="272" y="0" width="2" height="48"/><rect x="344" y="0" width="2" height="48"/>
+    <rect x="416" y="0" width="2" height="48"/><rect x="492" y="0" width="2" height="48"/>
+    <rect x="566" y="0" width="2" height="48"/>
+  </g>
+  <g fill="#c96a26" opacity=".75">
+    <rect x="497" y="0" width="3" height="48"/><rect x="571" y="0" width="2" height="48"/>
+    <rect x="421" y="0" width="2" height="48"/><rect x="610" y="0" width="2" height="48"/>
+  </g>
+  <g fill="#0a1a10" opacity=".85">
+    <rect x="271" y="14" width="9" height="2"/><rect x="271" y="33" width="9" height="2"/>
+    <rect x="343" y="9" width="10" height="2"/><rect x="343" y="29" width="10" height="2"/>
+    <rect x="415" y="18" width="9" height="2"/><rect x="415" y="37" width="9" height="2"/>
+    <rect x="491" y="12" width="10" height="2"/><rect x="491" y="31" width="10" height="2"/>
+    <rect x="565" y="21" width="9" height="2"/><rect x="565" y="40" width="9" height="2"/>
+  </g>
+  <g stroke="#2a6238" stroke-width="1.8" fill="none" stroke-linecap="round" opacity=".9">
+    <path d="M280 12 C296 8 306 12 314 18 M352 26 C368 22 378 26 386 32
+             M424 8 C440 4 450 8 458 14 M500 30 C516 26 526 30 534 36
+             M574 16 C590 12 600 16 608 22"/>
+  </g>
+  <g fill="#ffab4d">
+    <circle cx="470" cy="34" r="1.3"/><circle cx="540" cy="26" r="1"/>
+    <circle cx="596" cy="36" r="1.2"/><circle cx="440" cy="42" r="1"/>
+    <circle cx="512" cy="18" r=".9"/>
+  </g>
+ """),
+ ('olympus', 'Olympus', 'temporada', 'dark', """
+  <defs><linearGradient id="ol-bg" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#f8f5ec"/><stop offset="1" stop-color="#e3dccb"/></linearGradient></defs>
+  <rect width="640" height="48" fill="url(#ol-bg)"/>
+  <g stroke="#d9d1bd" stroke-width="1" fill="none" opacity=".8">
+    <path d="M0 30 C40 26 70 34 110 30 C150 26 180 34 220 30"/>
+    <path d="M0 40 C50 36 90 42 140 38 C190 34 220 40 250 37"/>
+  </g>
+  <rect x="256" y="13" width="384" height="29" fill="#8b7b5b"/>
+  <rect x="256" y="4" width="384" height="9" fill="#f4efe1"/>
+  <rect x="256" y="13" width="384" height="2.6" fill="#9c927a"/>
+  <g fill="#cdc3a9">
+    <rect x="262" y="5" width="3" height="7"/><rect x="286" y="5" width="3" height="7"/>
+    <rect x="310" y="5" width="3" height="7"/><rect x="334" y="5" width="3" height="7"/>
+    <rect x="358" y="5" width="3" height="7"/><rect x="382" y="5" width="3" height="7"/>
+    <rect x="406" y="5" width="3" height="7"/><rect x="430" y="5" width="3" height="7"/>
+    <rect x="454" y="5" width="3" height="7"/><rect x="478" y="5" width="3" height="7"/>
+    <rect x="502" y="5" width="3" height="7"/><rect x="526" y="5" width="3" height="7"/>
+    <rect x="550" y="5" width="3" height="7"/><rect x="574" y="5" width="3" height="7"/>
+    <rect x="598" y="5" width="3" height="7"/><rect x="622" y="5" width="3" height="7"/>
+  </g>
+  <rect x="256" y="2" width="384" height="2.4" fill="#c9a227"/>
+  <g>
+    <g fill="#fdfaf2"><rect x="284" y="16" width="17" height="26"/><rect x="336" y="16" width="17" height="26"/>
+      <rect x="388" y="16" width="17" height="26"/><rect x="440" y="16" width="17" height="26"/>
+      <rect x="492" y="16" width="17" height="26"/><rect x="544" y="16" width="17" height="26"/>
+      <rect x="596" y="16" width="17" height="26"/></g>
+    <g fill="#efe8d6"><rect x="280" y="15" width="25" height="4"/><rect x="332" y="15" width="25" height="4"/>
+      <rect x="384" y="15" width="25" height="4"/><rect x="436" y="15" width="25" height="4"/>
+      <rect x="488" y="15" width="25" height="4"/><rect x="540" y="15" width="25" height="4"/>
+      <rect x="592" y="15" width="25" height="4"/></g>
+    <g stroke="#b7ad92" stroke-width="1.1">
+      <path d="M288 20 V42 M293 20 V42 M298 20 V42 M340 20 V42 M345 20 V42 M350 20 V42
+               M392 20 V42 M397 20 V42 M402 20 V42 M444 20 V42 M449 20 V42 M454 20 V42
+               M496 20 V42 M501 20 V42 M506 20 V42 M548 20 V42 M553 20 V42 M558 20 V42
+               M600 20 V42 M605 20 V42 M610 20 V42"/></g>
+    <g fill="#a1977e"><rect x="299" y="16" width="4" height="26"/>
+      <rect x="351" y="16" width="4" height="26"/><rect x="403" y="16" width="4" height="26"/>
+      <rect x="455" y="16" width="4" height="26"/><rect x="507" y="16" width="4" height="26"/>
+      <rect x="559" y="16" width="4" height="26"/><rect x="611" y="16" width="4" height="26"/></g>
+  </g>
+  <rect y="42" width="640" height="3" fill="#efe8d6"/>
+  <rect y="45" width="640" height="3" fill="#d3c9b0"/>
+ """),
+ ('quetzal', 'Quetzalcóatl', 'temporada', 'light', """
+  <defs>
+    <linearGradient id="qz-bg" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#042f2d"/><stop offset="1" stop-color="#0a6053"/></linearGradient>
+    <radialGradient id="qz-sun">
+      <stop offset="0" stop-color="#ffe6a0" stop-opacity=".95"/>
+      <stop offset=".45" stop-color="#f2c04a" stop-opacity=".5"/>
+      <stop offset="1" stop-color="#f2c04a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="640" height="48" fill="url(#qz-bg)"/>
+  <circle cx="336" cy="22" r="26" fill="url(#qz-sun)"/>
+  <circle cx="336" cy="22" r="7.5" fill="#f7d271"/>
+  <g fill="#0b4a42"><rect x="256" y="0" width="384" height="7"/></g>
+  <g stroke="#e0b64a" stroke-width="1.6" fill="none" opacity=".85">
+    <path d="M262 6 V2 H272 V6 H282 V2 H292 V6 H302 V2 H312 V6 H322 V2 H332 V6 H342 V2 H352 V6
+             H362 V2 H372 V6 H382 V2 H392 V6 H402 V2 H412 V6 H422 V2 H432 V6 H442 V2 H452 V6
+             H462 V2 H472 V6 H482 V2 H492 V6 H502 V2 H512 V6 H522 V2 H532 V6 H542 V2 H552 V6
+             H562 V2 H572 V6 H582 V2 H592 V6 H602 V2 H612 V6 H622 V2 H632 V6"/>
+  </g>
+  <g>
+    <path d="M398 44 H606 L594 37 H410 Z" fill="#a44e2b"/>
+    <path d="M410 37 H594 L584 30 H420 Z" fill="#b45932"/>
+    <path d="M420 30 H584 L574 23 H430 Z" fill="#c26439"/>
+    <path d="M430 23 H574 L564 16 H440 Z" fill="#cf7043"/>
+    <rect x="470" y="6" width="64" height="10" fill="#b45932"/>
+    <rect x="470" y="4" width="64" height="3" fill="#d98c52"/>
+  </g>
+  <g fill="#d98c52"><rect x="486" y="16" width="32" height="28"/></g>
+  <g stroke="#8f3f21" stroke-width="1" opacity=".8">
+    <path d="M486 21 H518 M486 26 H518 M486 31 H518 M486 36 H518 M486 41 H518"/>
+  </g>
+  <path d="M484 44 V16 L474 23 V29 L464 35 V41 L454 44 Z" fill="#1a0c06"/>
+  <path d="M484 16 L474 23 V29 L464 35 V41 L454 44" fill="none" stroke="#f2c04a"
+        stroke-width="1.2" opacity=".8"/>
+  <path d="M520 44 V16 L530 23 V29 L540 35 V41 L550 44 Z" fill="#7a3a1e" opacity=".8"/>
+  <g fill="#e8b93f" opacity=".9">
+    <rect x="470" y="14" width="64" height="2"/><rect x="484" y="14" width="4" height="30"/>
+    <rect x="516" y="14" width="4" height="30"/>
+  </g>
+ """),
+ ('baseball', 'Baseball', 'temporada', 'dark', """
+  <defs>
+    <linearGradient id="bb-turf" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#8fc97c"/><stop offset=".55" stop-color="#67ae59"/>
+      <stop offset="1" stop-color="#4f9a48"/></linearGradient>
+  </defs>
+  <rect width="640" height="48" fill="#cfe7f6"/>
+  <rect y="13" width="640" height="35" fill="url(#bb-turf)"/>
+  <g fill="#ffffff" opacity=".14">
+    <rect x="256" y="13" width="30" height="35"/><rect x="316" y="13" width="30" height="35"/>
+    <rect x="376" y="13" width="30" height="35"/><rect x="436" y="13" width="30" height="35"/>
+    <rect x="496" y="13" width="30" height="35"/><rect x="556" y="13" width="30" height="35"/>
+    <rect x="616" y="13" width="24" height="35"/>
+  </g>
+  <rect y="9" width="640" height="5" fill="#2f6b39"/>
+  <rect y="8" width="640" height="1.6" fill="#f0d84e"/>
+  <g fill="#c9884b"><path d="M516 16 L608 29 L516 42 L424 29 Z"/></g>
+  <g fill="#63ab55"><path d="M516 21 L596 29 L516 37 L436 29 Z"/></g>
+  <g fill="#ffffff">
+    <path d="M516 15 L521 18 L516 21 L511 18 Z"/>
+    <path d="M602 26 L608 29 L602 32 L596 29 Z"/>
+    <path d="M516 37 L521 40 L516 43 L511 40 Z"/>
+    <path d="M430 26 L436 29 L430 32 L424 29 Z"/>
+  </g>
+  <ellipse cx="516" cy="29" rx="8" ry="4" fill="#c9884b"/>
+  <ellipse cx="516" cy="29" rx="3.4" ry="1.8" fill="#d99a5d"/>
+  <g stroke="#ffffff" stroke-width="1.8" opacity=".9">
+    <path d="M522 41 L572 47 M510 41 L460 47"/>
+  </g>
+  <g fill="#e6503f" opacity=".85">
+    <path d="M300 9 L308 6 L300 3 Z"/><path d="M340 9 L348 6 L340 3 Z"/>
+    <path d="M380 9 L388 6 L380 3 Z"/><path d="M420 9 L428 6 L420 3 Z"/>
+    <path d="M460 9 L468 6 L460 3 Z"/><path d="M500 9 L508 6 L500 3 Z"/>
+    <path d="M540 9 L548 6 L540 3 Z"/><path d="M580 9 L588 6 L580 3 Z"/>
+  </g>
+ """),
+ ('apiarist', 'Apiarist', 'temporada', 'dark', """
+  <defs>
+    <linearGradient id="ap-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fdf6e4"/><stop offset="1" stop-color="#f3e2bc"/></linearGradient>
+    <path id="ap-h" d="M0 -9 L7.8 -4.5 L7.8 4.5 L0 9 L-7.8 4.5 L-7.8 -4.5 Z"/>
+  </defs>
+  <rect width="640" height="48" fill="url(#ap-bg)"/>
+  <g fill="#f2c85c" fill-opacity=".55" stroke="#d9a03a" stroke-width="1.2">
+    <use href="#ap-h" x="290" y="8"/><use href="#ap-h" x="306" y="8"/><use href="#ap-h" x="322" y="8"/>
+    <use href="#ap-h" x="338" y="8"/><use href="#ap-h" x="354" y="8"/><use href="#ap-h" x="370" y="8"/>
+    <use href="#ap-h" x="386" y="8"/><use href="#ap-h" x="402" y="8"/><use href="#ap-h" x="418" y="8"/>
+    <use href="#ap-h" x="434" y="8"/><use href="#ap-h" x="450" y="8"/><use href="#ap-h" x="466" y="8"/>
+    <use href="#ap-h" x="482" y="8"/><use href="#ap-h" x="498" y="8"/>
+    <use href="#ap-h" x="298" y="22"/><use href="#ap-h" x="314" y="22"/><use href="#ap-h" x="330" y="22"/>
+    <use href="#ap-h" x="346" y="22"/><use href="#ap-h" x="362" y="22"/><use href="#ap-h" x="378" y="22"/>
+    <use href="#ap-h" x="394" y="22"/><use href="#ap-h" x="410" y="22"/><use href="#ap-h" x="426" y="22"/>
+    <use href="#ap-h" x="442" y="22"/><use href="#ap-h" x="458" y="22"/><use href="#ap-h" x="474" y="22"/>
+    <use href="#ap-h" x="490" y="22"/>
+    <use href="#ap-h" x="290" y="36"/><use href="#ap-h" x="306" y="36"/><use href="#ap-h" x="322" y="36"/>
+    <use href="#ap-h" x="338" y="36"/><use href="#ap-h" x="354" y="36"/><use href="#ap-h" x="370" y="36"/>
+    <use href="#ap-h" x="386" y="36"/><use href="#ap-h" x="402" y="36"/><use href="#ap-h" x="418" y="36"/>
+    <use href="#ap-h" x="434" y="36"/><use href="#ap-h" x="450" y="36"/><use href="#ap-h" x="466" y="36"/>
+    <use href="#ap-h" x="482" y="36"/><use href="#ap-h" x="498" y="36"/>
+  </g>
+  <g>
+    <rect x="556" y="18" width="52" height="9" fill="#e8dcc0" stroke="#b9a473" stroke-width="1"/>
+    <rect x="556" y="27" width="52" height="9" fill="#f2e8d0" stroke="#b9a473" stroke-width="1"/>
+    <rect x="556" y="36" width="52" height="9" fill="#e8dcc0" stroke="#b9a473" stroke-width="1"/>
+    <path d="M550 18 H614 L606 12 H558 Z" fill="#c9a55f"/>
+    <rect x="570" y="41" width="24" height="2.4" fill="#8a7038"/>
+  </g>
+  <g stroke="#c08b2c" stroke-width="1" fill="none" stroke-dasharray="2 4" opacity=".85">
+    <path d="M508 20 C528 12 540 26 552 20 M512 34 C532 40 542 28 554 32"/>
+  </g>
+ """),
+ ('welder', 'Welder', 'temporada', 'light', """
+  <defs>
+    <linearGradient id="we-bg" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#12161c"/><stop offset="1" stop-color="#242c36"/></linearGradient>
+    <radialGradient id="we-arc">
+      <stop offset="0" stop-color="#f2fbff" stop-opacity=".95"/>
+      <stop offset=".38" stop-color="#7fc7ff" stop-opacity=".5"/>
+      <stop offset="1" stop-color="#3a7fd5" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="640" height="48" fill="url(#we-bg)"/>
+  <g stroke="#2b333e" stroke-width="2.4" opacity=".8">
+    <path d="M256 48 L292 0 M286 48 L322 0 M316 48 L352 0 M346 48 L382 0 M376 48 L412 0
+             M406 48 L442 0 M436 48 L472 0 M466 48 L502 0 M496 48 L532 0 M526 48 L562 0
+             M556 48 L592 0 M586 48 L622 0 M616 48 L652 0"/>
+  </g>
+  <rect x="256" y="22" width="384" height="1.6" fill="#0b0e13"/>
+  <rect x="256" y="34" width="384" height="1.6" fill="#0b0e13"/>
+  <path fill="none" stroke="#8d97a2" stroke-width="7" stroke-linecap="round"
+        d="M262 29 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0
+           q7 -5 14 0 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0
+           q7 -5 14 0 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0
+           q7 -5 14 0 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0"/>
+  <path fill="none" stroke="#c8d2dc" stroke-width="2" stroke-linecap="round" opacity=".75"
+        d="M262 27.5 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0
+           q7 -5 14 0 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0
+           q7 -5 14 0 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0
+           q7 -5 14 0 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0 q7 -5 14 0"/>
+  <ellipse cx="546" cy="29" rx="46" ry="22" fill="url(#we-arc)"/>
+  <circle cx="546" cy="29" r="4" fill="#ffffff"/>
+  <g stroke="#ffc46b" stroke-width="1.3" stroke-linecap="round" opacity=".9">
+    <path d="M546 29 L522 14 M546 29 L560 10 M546 29 L578 18 M546 29 L590 30
+             M546 29 L570 44 M546 29 L520 42 M546 29 L504 22"/>
+  </g>
+  <g fill="#ffe3a8">
+    <circle cx="520" cy="13" r="1.2"/><circle cx="562" cy="8" r="1"/><circle cx="582" cy="16" r="1.1"/>
+    <circle cx="594" cy="31" r="1"/><circle cx="572" cy="46" r="1.1"/><circle cx="502" cy="20" r="1"/>
+  </g>
+ """),
+ ('zeppelin', 'Zeppelin', 'temporada', 'dark', """
+  <defs>
+    <linearGradient id="ze-sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f8ead0"/><stop offset="1" stop-color="#e2c79c"/></linearGradient>
+    <linearGradient id="ze-hull" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e6c184"/><stop offset=".45" stop-color="#b8863f"/>
+      <stop offset="1" stop-color="#8a5f28"/></linearGradient>
+  </defs>
+  <rect width="640" height="48" fill="url(#ze-sky)"/>
+  <circle cx="296" cy="12" r="11" fill="#f6d99b" opacity=".8"/>
+  <g fill="#fbf2df" opacity=".75">
+    <ellipse cx="300" cy="40" rx="64" ry="7"/><ellipse cx="430" cy="44" rx="70" ry="7"/>
+    <ellipse cx="576" cy="38" rx="56" ry="6"/>
+  </g>
+  <g transform="translate(468,21)">
+    <ellipse rx="84" ry="13" fill="url(#ze-hull)"/>
+    <ellipse rx="84" ry="13" fill="none" stroke="#79521f" stroke-width="1"/>
+    <g stroke="#8a6229" stroke-width="1" fill="none" opacity=".85">
+      <path d="M-56 -11.5 C-50 0 -50 0 -56 11.5 M-28 -12.8 C-22 0 -22 0 -28 12.8
+               M0 -13 C6 0 6 0 0 13 M28 -12.8 C34 0 34 0 28 12.8 M56 -11.5 C62 0 62 0 56 11.5"/>
+      <path d="M-84 0 H84"/>
+    </g>
+    <path d="M-84 0 L-98 -7 L-94 0 L-98 7 Z" fill="#9a6c2c"/>
+    <path d="M-80 -4 L-96 -12 L-78 -9 Z" fill="#8a5f28"/>
+    <path d="M-80 4 L-96 12 L-78 9 Z" fill="#8a5f28"/>
+    <rect x="-12" y="13" width="24" height="7" rx="2.4" fill="#6d4a1e"/>
+    <g stroke="#6d4a1e" stroke-width="1"><path d="M-8 13 V10 M8 13 V10"/></g>
+    <g fill="#f6e3bb"><rect x="-8" y="15" width="4" height="3"/><rect x="-1" y="15" width="4" height="3"/>
+      <rect x="6" y="15" width="4" height="3"/></g>
+  </g>
+  <rect y="44" width="640" height="4" fill="#c39a53"/>
+  <g fill="#8a6229" opacity=".8">
+    <circle cx="270" cy="46" r="1.2"/><circle cx="310" cy="46" r="1.2"/><circle cx="350" cy="46" r="1.2"/>
+    <circle cx="390" cy="46" r="1.2"/><circle cx="430" cy="46" r="1.2"/><circle cx="470" cy="46" r="1.2"/>
+    <circle cx="510" cy="46" r="1.2"/><circle cx="550" cy="46" r="1.2"/><circle cx="590" cy="46" r="1.2"/>
+    <circle cx="630" cy="46" r="1.2"/>
+  </g>
+ """),
 ]
 
 PAGE = """<!doctype html><meta charset="utf-8">
