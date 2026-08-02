@@ -1360,6 +1360,34 @@ class DailyAnswerLog(db.Model):
     __table_args__ = (db.UniqueConstraint('user_id', 'day', name='uq_daily_answer_user_day'),)
 
 
+class CosmeticItem(db.Model):
+    """One cosmetic piece (avatar frame, cursor or camo) and the single channel
+    it belongs to. Channel is a hard wall, decided with the owner: a store
+    piece can never be won, a roulette piece can never be bought, the monthly
+    champion frame only ever goes to the month's #1. `season` ('YYYY-MM') is
+    what rotates the roulette batches: a piece whose season has passed is gone
+    for good and only remains visible in the store as 'season ended'."""
+    id = db.Column(db.Integer, primary_key=True)
+    slug = db.Column(db.String(60), unique=True, nullable=False)
+    name = db.Column(db.String(80), nullable=False)
+    kind = db.Column(db.String(10), nullable=False)      # frame / cursor / camo
+    channel = db.Column(db.String(10), nullable=False)   # roulette / store / champion
+    season = db.Column(db.String(7), nullable=True, index=True)  # 'YYYY-MM' or None
+    active = db.Column(db.Boolean, default=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class UserCosmetic(db.Model):
+    """Ownership ledger for cosmetics. Append-only by rule: NOTHING cosmetic is
+    ever revoked (owner's permanent rule, same as camos)."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    item_id = db.Column(db.Integer, db.ForeignKey('cosmetic_item.id'), nullable=False)
+    source = db.Column(db.String(10), nullable=False)    # roulette / store / champion
+    won_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    __table_args__ = (db.UniqueConstraint('user_id', 'item_id', name='uq_user_cosmetic'),)
+
+
 class RouletteSpin(db.Model):
     """A redeemed roulette spin and the prize it landed on. `promo_code` links
     to the single-use PromoCode generated for discount prizes."""
@@ -9891,21 +9919,46 @@ def quiz_certified():
 # ──────────────────────────────────────────────────────────────────────────
 # DAILY CHALLENGE + ROULETTE (premium-only retention loop)
 # One timed question per UTC day; a 7-day streak of correct answers earns a
-# roulette spin. Prizes: renewal discounts (single-use promo codes) or a free
-# month of Premium (direct plan extension).
+# roulette spin. Prizes: COSMETICS from the month's batch (2 frames +
+# 3 cursors + 1 camo, decided 2026-08-02). Discounts were removed on purpose:
+# they cost ~$7.38 a spin, were dead prizes for partner-code customers locked
+# to their perpetual 20%, and the free month silently took the partner's $12
+# commission. Won discount codes stay valid — nothing is ever revoked.
 # ──────────────────────────────────────────────────────────────────────────
 DAILY_STREAK_TARGET = 7
 DAILY_ANSWER_SECONDS = 60
 DAILY_ANSWER_GRACE = 5          # network latency allowance on top of the 60s
 
-# (key, discount_pct or None for free month, probability weight, label)
-ROULETTE_PRIZES = [
-    ('d5',    5,    40, '5% off your next renewal'),
-    ('d10',   10,   30, '10% off your next renewal'),
-    ('d15',   15,   15, '15% off your next renewal'),
-    ('d25',   25,   10, '25% off your next renewal'),
-    ('month', None,  5, '1 month of Premium — free'),
-]
+# Regla B (simulated in scratchpad/ruleta_prob.py, decided with the owner):
+# the camo rides APART with a fixed 5% on every spin — it never fattens as the
+# batch empties, so a perfect month (4 spins) still only sees it 18.5% of the
+# time. Frames/cursors split the rest among the NOT-yet-won pieces (no
+# repeats). A spin never comes up empty; a cleaned batch SAVES the spin.
+ROULETTE_CAMO_ODDS = 0.05
+ROULETTE_KIND_WEIGHTS = {'frame': 15.0, 'cursor': 21.667}
+
+
+def _current_season():
+    return datetime.now(timezone.utc).strftime('%Y-%m')
+
+
+def _next_season_start():
+    """First day of next month, ISO — the 'next batch opens on…' date."""
+    now = datetime.now(timezone.utc)
+    y, m = (now.year + 1, 1) if now.month == 12 else (now.year, now.month + 1)
+    return '%04d-%02d-01' % (y, m)
+
+
+def _roulette_tanda(season=None):
+    return (CosmeticItem.query
+            .filter_by(channel='roulette', active=True,
+                       season=season or _current_season())
+            .order_by(CosmeticItem.id.asc()).all())
+
+
+def _owned_cosmetic_ids(user_id):
+    return {r.item_id for r in
+            UserCosmetic.query.filter_by(user_id=user_id).all()}
 
 
 def _utc_today():
@@ -10256,6 +10309,24 @@ def daily_answer():
     return jsonify(payload)
 
 
+@app.route('/api/daily/tanda')
+@premium_required
+def daily_tanda():
+    """The month's roulette batch as THIS user sees it: which pieces exist,
+    which they already won, and the announcement date when there is no batch
+    yet (the state the wheel opens in until the first pieces ship)."""
+    st = _daily_state()
+    items = _roulette_tanda()
+    owned = _owned_cosmetic_ids(current_user.id) if items else set()
+    return jsonify({
+        'season': _current_season(),
+        'items': [{'slug': i.slug, 'name': i.name, 'kind': i.kind,
+                   'owned': i.id in owned} for i in items],
+        'spins_available': st.spins_available,
+        'next_tanda': None if items else _next_season_start(),
+    })
+
+
 @app.route('/api/daily/spin', methods=['POST'])
 @premium_required
 def daily_spin():
@@ -10264,52 +10335,50 @@ def daily_spin():
     if st.spins_available <= 0 and not demo_spin:
         return jsonify({'error': 'no_spins'}), 409
 
-    import random as _random
-    keys = [p[0] for p in ROULETTE_PRIZES]
-    weights = [p[2] for p in ROULETTE_PRIZES]
-    prize_key = _random.choices(keys, weights=weights, k=1)[0]
-    _, discount, _, label = next(p for p in ROULETTE_PRIZES if p[0] == prize_key)
+    # No batch published this month → the spin is NOT consumed. The wheel
+    # stays visible and announces the date; spins keep accumulating (owner's
+    # decision: don't turn the roulette off, just stop the discounts).
+    tanda = _roulette_tanda()
+    if not tanda:
+        return jsonify({'error': 'no_tanda', 'next_tanda': _next_season_start(),
+                        'spins_available': st.spins_available}), 409
 
-    promo_code = None
-    code_scope = None
-    if discount:
-        # Annual subscribers can't redeem a code on their next monthly renewal
-        # (there isn't one), so their prize is a store discount (indicators /
-        # camos) instead — longer expiry since the store launches later.
-        code_scope = 'store' if current_user.plan_cycle == 'annual' else 'monthly'
-        # Guaranteed-unique code: regenerate on the (rare) collision instead of
-        # relying solely on the DB unique constraint to abort the spin.
-        while True:
-            promo_code = f'SPIN-{secrets.token_hex(3).upper()}'
-            if not PromoCode.query.filter_by(code=promo_code).first():
-                break
-        db.session.add(PromoCode(
-            code=promo_code, discount_pct=discount, kind='discount',
-            creator_name=f'roulette:{current_user.username}',
-            valid_for=code_scope, max_uses=1,
-            restrict_user_id=current_user.id,
-            expires_at=datetime.now(timezone.utc)
-                + timedelta(days=365 if code_scope == 'store' else 90),
-        ))
+    import random as _random
+    owned = _owned_cosmetic_ids(current_user.id)
+    camo = next((i for i in tanda if i.kind == 'camo' and i.id not in owned), None)
+    rest = [i for i in tanda if i.kind != 'camo' and i.id not in owned]
+
+    # Regla B: the camo's 5% runs apart and never fattens; everything else
+    # splits the remaining odds among unwon pieces only.
+    if camo and _random.random() < ROULETTE_CAMO_ODDS:
+        prize = camo
+    elif rest:
+        prize = _random.choices(
+            rest, weights=[ROULETTE_KIND_WEIGHTS.get(i.kind, 15.0) for i in rest])[0]
+    elif camo:
+        prize = camo         # only the camo is left — a spin never comes up empty
     else:
-        # Free month: extend the active plan directly — no code to redeem.
-        cur = _aware(current_user.plan_expires_at)
-        base = cur if cur and cur > datetime.now(timezone.utc) else datetime.now(timezone.utc)
-        current_user.plan_expires_at = base + timedelta(days=30)
+        # Batch fully cleaned: the spin is SAVED for next month's batch.
+        return jsonify({'error': 'tanda_cleared',
+                        'next_tanda': _next_season_start(),
+                        'spins_available': st.spins_available}), 409
 
     if st.spins_available > 0:   # guard: a demo spin must never go negative
         st.spins_available -= 1
-    db.session.add(RouletteSpin(user_id=current_user.id, prize_key=prize_key,
-                                label=label, promo_code=promo_code))
+    db.session.add(UserCosmetic(user_id=current_user.id, item_id=prize.id,
+                                source='roulette'))
+    db.session.add(RouletteSpin(user_id=current_user.id, prize_key=prize.kind,
+                                label=prize.name, promo_code=None))
     db.session.commit()
     record_audit_event('roulette_prize', user_id=current_user.id,
-                        detail=f'{prize_key} ({label})' + (f' code={promo_code}' if promo_code else ''))
+                        detail=f'{prize.kind}:{prize.slug} ({prize.name})')
 
+    remaining = [i for i in tanda
+                 if i.id not in owned and i.id != prize.id]
     return jsonify({
-        'prize_key': prize_key, 'label': label, 'promo_code': promo_code,
-        'code_scope': code_scope,
+        'prize_key': prize.kind, 'label': prize.name, 'slug': prize.slug,
         'spins_available': st.spins_available,
-        'segments': [{'key': p[0], 'label': p[3]} for p in ROULETTE_PRIZES],
+        'remaining': len(remaining),
     })
 
 

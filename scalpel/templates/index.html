@@ -3605,6 +3605,14 @@
       background: var(--surface);
     }
     .roulette-prize-note { font-size: 12px; color: var(--muted); line-height: 1.5; }
+    /* Roulette announcement (no batch published yet) */
+    .roulette-notanda { text-align: center; padding: 18px 8px 6px; }
+    .rnt-icon { font-size: 40px; margin-bottom: 8px; }
+    .rnt-title { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+    .rnt-text { font-size: 12.5px; color: var(--muted); line-height: 1.55; max-width: 340px; margin: 0 auto 14px; }
+    .rnt-date { font-size: 13px; margin-bottom: 6px; }
+    .rnt-spins { font-size: 13px; color: var(--muted); }
+    .rnt-spins b { color: var(--text); }
 
     .quiz-header { text-align: center; margin-bottom: 32px; }
     .quiz-h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
@@ -6685,6 +6693,15 @@
               </svg>
             </div>
           </div>
+          <!-- Announcement state: no batch published this month. The wheel and
+               its old discount labels stay hidden; spins accumulate. -->
+          <div class="roulette-notanda" id="roulette-notanda" style="display:none;">
+            <div class="rnt-icon">🎁</div>
+            <div class="rnt-title" data-i18n="daily.tanda.title">The roulette is being reloaded</div>
+            <div class="rnt-text" data-i18n="daily.tanda.none">Discounts are out — exclusive cosmetics are coming: avatar frames, cursors and a camo, in a fresh batch every month. Anything you don't win before a batch rotates is gone for good.</div>
+            <div class="rnt-date"><span data-i18n="daily.tanda.opens">Next batch opens on</span> <b id="rnt-date-val">—</b></div>
+            <div class="rnt-spins"><span data-i18n="daily.tanda.saved">Your spins are safe — you have</span> <b id="rnt-spins-val">0</b> 🎡</div>
+          </div>
           <button class="daily-play-btn" id="roulette-spin-btn" data-i18n="daily.spin">SPIN</button>
           <div class="roulette-prize" id="roulette-prize" style="display:none;">
             <div class="roulette-prize-label" id="roulette-prize-label"></div>
@@ -9555,7 +9572,7 @@
       'daily.coupons': 'My coupons', 'daily.couponsTitle': 'My coupons',
       'daily.cpActive': 'Active', 'daily.cpUsed': 'Used', 'daily.cpExpired': 'Expired',
       'daily.cpMonthly': 'Monthly renewal', 'daily.cpStore': 'Store (indicators/camos)',
-      'daily.cpExpires': 'Expires', 'daily.cpEmpty': 'No coupons yet — win them on the roulette with a 7-day streak!',
+      'daily.cpExpires': 'Expires', 'daily.cpEmpty': 'No coupons here. Codes won on the roulette in the past stay valid; the roulette now awards cosmetics.',
       'daily.lb.open': 'Season & records',
       'daily.lb.title': 'Daily Challenge — Season',
       'daily.lb.month': 'This month',
@@ -9570,6 +9587,13 @@
       'daily.lb.you': 'you',
       'daily.lb.chipTip': 'Daily Challenge streak — consecutive correct answers',
       'daily.lb.error': "Couldn't load the season board. Try again in a moment.",
+      'daily.tanda.title': 'The roulette is being reloaded',
+      'daily.tanda.none': "Discounts are out — exclusive cosmetics are coming: avatar frames, cursors and a camo, in a fresh batch every month. Anything you don't win before a batch rotates is gone for good.",
+      'daily.tanda.opens': 'Next batch opens on',
+      'daily.tanda.saved': 'Your spins are safe — you have',
+      'daily.tanda.won.frame': 'Avatar frame unlocked — it will show on your profile when frames go live.',
+      'daily.tanda.won.cursor': 'Cursor unlocked — equip it from the cosmetics store.',
+      'daily.tanda.won.camo': 'Camo unlocked — equip it from the cosmetics store.',
       'daily.monthNote': 'Your Premium plan was just extended by 30 days. Enjoy!',
       'daily.prize.d5': '5% off your next renewal',
       'daily.prize.d10': '10% off your next renewal',
@@ -9600,7 +9624,7 @@
       'daily.coupons': 'Mis cupones', 'daily.couponsTitle': 'Mis cupones',
       'daily.cpActive': 'Activo', 'daily.cpUsed': 'Usado', 'daily.cpExpired': 'Vencido',
       'daily.cpMonthly': 'Renovación mensual', 'daily.cpStore': 'Tienda (indicadores/camos)',
-      'daily.cpExpires': 'Vence', 'daily.cpEmpty': '¡Aún no tienes cupones — gánalos en la ruleta con una racha de 7 días!',
+      'daily.cpExpires': 'Vence', 'daily.cpEmpty': 'No tienes cupones. Los códigos ganados en la ruleta antes siguen siendo válidos; la ruleta ahora premia con cosméticos.',
       'daily.lb.open': 'Temporada y récords',
       'daily.lb.title': 'Daily Challenge — Temporada',
       'daily.lb.month': 'Este mes',
@@ -9615,6 +9639,13 @@
       'daily.lb.you': 'tú',
       'daily.lb.chipTip': 'Racha del Daily Challenge — respuestas correctas seguidas',
       'daily.lb.error': 'No se pudo cargar la tabla de la temporada. Probá de nuevo en un momento.',
+      'daily.tanda.title': 'La ruleta se está recargando',
+      'daily.tanda.none': 'Los descuentos se van — vienen cosméticos exclusivos: marcos de avatar, cursores y un camo, con una tanda nueva cada mes. Lo que no ganes antes de que la tanda rote, se pierde para siempre.',
+      'daily.tanda.opens': 'La próxima tanda abre el',
+      'daily.tanda.saved': 'Tus giros están a salvo — tienes',
+      'daily.tanda.won.frame': 'Marco de avatar desbloqueado — se verá en tu perfil cuando los marcos salgan en vivo.',
+      'daily.tanda.won.cursor': 'Cursor desbloqueado — actívalo desde la tienda de cosméticos.',
+      'daily.tanda.won.camo': 'Camo desbloqueado — actívalo desde la tienda de cosméticos.',
       'daily.monthNote': 'Tu plan Premium acaba de extenderse 30 días. ¡Disfrútalo!',
       'daily.prize.d5': '5% de descuento en tu próxima renovación',
       'daily.prize.d10': '10% de descuento en tu próxima renovación',
@@ -9645,7 +9676,7 @@
       'daily.coupons': 'Mes coupons', 'daily.couponsTitle': 'Mes coupons',
       'daily.cpActive': 'Actif', 'daily.cpUsed': 'Utilisé', 'daily.cpExpired': 'Expiré',
       'daily.cpMonthly': 'Renouvellement mensuel', 'daily.cpStore': 'Boutique (indicateurs/camos)',
-      'daily.cpExpires': 'Expire', 'daily.cpEmpty': 'Pas encore de coupons — gagnez-les à la roulette avec une série de 7 jours !',
+      'daily.cpExpires': 'Expire', 'daily.cpEmpty': 'Aucun coupon ici. Les codes gagnés à la roulette auparavant restent valables ; la roulette récompense désormais avec des cosmétiques.',
       'daily.lb.open': 'Saison et records',
       'daily.lb.title': 'Daily Challenge — Saison',
       'daily.lb.month': 'Ce mois-ci',
@@ -9660,6 +9691,13 @@
       'daily.lb.you': 'vous',
       'daily.lb.chipTip': 'Série du Daily Challenge — bonnes réponses consécutives',
       'daily.lb.error': "Impossible de charger le tableau de la saison. Réessayez dans un instant.",
+      'daily.tanda.title': 'La roulette se recharge',
+      'daily.tanda.none': 'Les réductions disparaissent — place aux cosmétiques exclusifs : cadres d’avatar, curseurs et un camo, avec un lot neuf chaque mois. Ce que vous ne gagnez pas avant la rotation du lot est perdu pour toujours.',
+      'daily.tanda.opens': 'Le prochain lot ouvre le',
+      'daily.tanda.saved': 'Vos tours sont en sécurité — vous en avez',
+      'daily.tanda.won.frame': 'Cadre d’avatar débloqué — il apparaîtra sur votre profil quand les cadres seront en ligne.',
+      'daily.tanda.won.cursor': 'Curseur débloqué — équipez-le depuis la boutique de cosmétiques.',
+      'daily.tanda.won.camo': 'Camo débloqué — équipez-le depuis la boutique de cosmétiques.',
       'daily.monthNote': 'Votre plan Premium vient d\'être prolongé de 30 jours. Profitez-en !',
       'daily.prize.d5': '5% de réduction sur votre prochain renouvellement',
       'daily.prize.d10': '10% de réduction sur votre prochain renouvellement',
@@ -9690,7 +9728,7 @@
       'daily.coupons': 'Meus cupons', 'daily.couponsTitle': 'Meus cupons',
       'daily.cpActive': 'Ativo', 'daily.cpUsed': 'Usado', 'daily.cpExpired': 'Expirado',
       'daily.cpMonthly': 'Renovação mensal', 'daily.cpStore': 'Loja (indicadores/camos)',
-      'daily.cpExpires': 'Expira', 'daily.cpEmpty': 'Ainda sem cupons — ganhe na roleta com uma sequência de 7 dias!',
+      'daily.cpExpires': 'Expira', 'daily.cpEmpty': 'Nenhum cupom aqui. Códigos ganhos na roleta antes continuam válidos; a roleta agora premia com cosméticos.',
       'daily.lb.open': 'Temporada e recordes',
       'daily.lb.title': 'Daily Challenge — Temporada',
       'daily.lb.month': 'Este mês',
@@ -9705,6 +9743,13 @@
       'daily.lb.you': 'você',
       'daily.lb.chipTip': 'Sequência do Daily Challenge — respostas corretas seguidas',
       'daily.lb.error': 'Não foi possível carregar a tabela da temporada. Tente de novo em um instante.',
+      'daily.tanda.title': 'A roleta está recarregando',
+      'daily.tanda.none': 'Os descontos estão de saída — vêm aí cosméticos exclusivos: molduras de avatar, cursores e um camo, com um lote novo a cada mês. O que você não ganhar antes do lote girar, se perde para sempre.',
+      'daily.tanda.opens': 'O próximo lote abre em',
+      'daily.tanda.saved': 'Seus giros estão a salvo — você tem',
+      'daily.tanda.won.frame': 'Moldura de avatar desbloqueada — vai aparecer no seu perfil quando as molduras entrarem no ar.',
+      'daily.tanda.won.cursor': 'Cursor desbloqueado — ative na loja de cosméticos.',
+      'daily.tanda.won.camo': 'Camo desbloqueado — ative na loja de cosméticos.',
       'daily.monthNote': 'Seu plano Premium acaba de ser estendido por 30 dias. Aproveite!',
       'daily.prize.d5': '5% de desconto na sua próxima renovação',
       'daily.prize.d10': '10% de desconto na sua próxima renovação',
@@ -11366,7 +11411,7 @@
         'unlock.f.quiz.n': 'Quiz Academy',
         'unlock.f.quiz.d': 'Full access to every methodology and the Hardcore mode: 160 chart scenarios that put your read to the test.',
         'unlock.f.daily.n': 'Daily Challenge & Roulette',
-        'unlock.f.daily.d': 'One timed question a day. Build a 7-day streak and spin the roulette for renewal discounts and free months.',
+        'unlock.f.daily.d': 'One timed question a day. Build a 7-day streak and spin the roulette for exclusive cosmetic rewards.',
         'unlock.f.scalper.n': 'Chalkboard',
         'unlock.f.scalper.d': 'Your visual trading whiteboards — build slides, annotate charts and keep your playbook in one place.',
         'unlock.f.synapse.n': 'Synapse',
@@ -11394,7 +11439,7 @@
         'unlock.f.quiz.n': 'Quiz Academy',
         'unlock.f.quiz.d': 'Acceso total a todas las metodologías y al modo Hardcore: 160 escenarios de gráficos que ponen a prueba tu lectura.',
         'unlock.f.daily.n': 'Reto Diario y Ruleta',
-        'unlock.f.daily.d': 'Una pregunta cronometrada al día. Logra una racha de 7 días y gira la ruleta por descuentos y meses gratis.',
+        'unlock.f.daily.d': 'Una pregunta cronometrada al día. Logra una racha de 7 días y gira la ruleta por recompensas cosméticas exclusivas.',
         'unlock.f.scalper.n': 'Chalkboard',
         'unlock.f.scalper.d': 'Tus pizarras visuales de trading — crea slides, anota gráficos y guarda tu playbook en un solo lugar.',
         'unlock.f.synapse.n': 'Synapse',
@@ -11422,7 +11467,7 @@
         'unlock.f.quiz.n': 'Quiz Academy',
         'unlock.f.quiz.d': 'Accès complet à toutes les méthodologies et au mode Hardcore : 160 scénarios graphiques pour tester votre lecture.',
         'unlock.f.daily.n': 'Défi Quotidien et Roulette',
-        'unlock.f.daily.d': 'Une question chronométrée par jour. Tenez 7 jours d’affilée et tournez la roulette : réductions et mois gratuits.',
+        'unlock.f.daily.d': 'Une question chronométrée par jour. Tenez 7 jours d’affilée et tournez la roulette : des récompenses cosmétiques exclusives.',
         'unlock.f.scalper.n': 'Chalkboard',
         'unlock.f.scalper.d': 'Vos tableaux visuels de trading — créez des slides, annotez vos graphiques, gardez votre playbook au même endroit.',
         'unlock.f.synapse.n': 'Synapse',
@@ -11450,7 +11495,7 @@
         'unlock.f.quiz.n': 'Quiz Academy',
         'unlock.f.quiz.d': 'Acesso total a todas as metodologias e ao modo Hardcore: 160 cenários de gráficos que testam sua leitura.',
         'unlock.f.daily.n': 'Desafio Diário e Roleta',
-        'unlock.f.daily.d': 'Uma pergunta cronometrada por dia. Faça uma sequência de 7 dias e gire a roleta por descontos e meses grátis.',
+        'unlock.f.daily.d': 'Uma pergunta cronometrada por dia. Faça uma sequência de 7 dias e gire a roleta por recompensas cosméticas exclusivas.',
         'unlock.f.scalper.n': 'Chalkboard',
         'unlock.f.scalper.d': 'Seus quadros visuais de trading — crie slides, anote gráficos e mantenha seu playbook em um só lugar.',
         'unlock.f.synapse.n': 'Synapse',
@@ -22618,7 +22663,7 @@
       // ════════════════════════════════════════════════════════════════════
       // DAILY CHALLENGE + ROULETTE
       // One timed question per UTC day (server-enforced). 7-day streak of
-      // correct answers earns a roulette spin for renewal discounts.
+      // correct answers earns a roulette spin for cosmetic prizes.
       // ════════════════════════════════════════════════════════════════════
       const Daily = (() => {
         // The question bank does NOT exist in the browser: /api/daily/start
@@ -22811,11 +22856,30 @@
           $('daily-overlay').style.display = 'none';
         }
 
-        // ── Roulette (labels live in the SVG; angles match SEGMENTS) ──
-        function openRoulette() {
+        // ── Roulette ──
+        // The wheel graphic (and its old discount labels) only shows when the
+        // month has a published batch; until then the modal announces the next
+        // batch date and how many spins the user has banked. Asking the server
+        // on every open keeps the modal honest the day a batch goes live.
+        async function openRoulette() {
           $('roulette-prize').style.display = 'none';
-          $('roulette-spin-btn').style.display = '';
+          let t = null;
+          try {
+            const res = await fetch('/api/daily/tanda');
+            if (res.ok) t = await res.json();
+          } catch (e) {}
+          const hasTanda = !!(t && t.items && t.items.length);
+          $('roulette-stage').style.display = hasTanda ? '' : 'none';
+          $('roulette-spin-btn').style.display = hasTanda ? '' : 'none';
           $('roulette-spin-btn').disabled = false;
+          const nt = $('roulette-notanda');
+          nt.style.display = hasTanda ? 'none' : '';
+          if (!hasTanda && t) {
+            const [y, m, d] = (t.next_tanda || '').split('-').map(Number);
+            $('rnt-date-val').textContent = y ? new Date(Date.UTC(y, m - 1, d))
+              .toLocaleDateString(currentLang, { day: 'numeric', month: 'long', timeZone: 'UTC' }) : '—';
+            $('rnt-spins-val').textContent = t.spins_available ?? 0;
+          }
           $('roulette-overlay').style.display = '';
           $('daily-overlay').style.display = 'none';
         }
@@ -22826,7 +22890,15 @@
           let data;
           try {
             const res = await fetch('/api/daily/spin', { method:'POST' });
-            if (!res.ok) { btn.disabled = false; return; }
+            if (!res.ok) {
+              btn.disabled = false;
+              let err = null;
+              try { err = await res.json(); } catch(_) {}
+              // Batch missing or fully cleaned: the spin was NOT consumed —
+              // flip the modal to the announcement instead of doing nothing.
+              if (err && (err.error === 'no_tanda' || err.error === 'tanda_cleared')) openRoulette();
+              return;
+            }
             data = await res.json();
           } catch(e) { btn.disabled = false; return; }
 
@@ -22841,16 +22913,13 @@
 
           setTimeout(() => {
             $('roulette-stage').classList.remove('spinning');
-            $('roulette-prize-label').textContent = T('daily.prize.' + data.prize_key);
-            const codeWrap = $('roulette-prize-code-wrap');
-            if (data.promo_code) {
-              codeWrap.style.display = '';
-              $('roulette-prize-code').textContent = data.promo_code;
-              $('roulette-prize-note').textContent = T(data.code_scope === 'store' ? 'daily.codeNoteStore' : 'daily.codeNote');
-            } else {
-              codeWrap.style.display = 'none';
-              $('roulette-prize-note').textContent = T('daily.monthNote');
-            }
+            // Cosmetic prizes carry their own name from the server; the old
+            // daily.prize.* keys only existed for the retired discount tiers.
+            $('roulette-prize-label').textContent =
+              data.label || T('daily.prize.' + data.prize_key);
+            $('roulette-prize-code-wrap').style.display = 'none';
+            $('roulette-prize-note').textContent = T('daily.tanda.won.' + data.prize_key) !== ('daily.tanda.won.' + data.prize_key)
+              ? T('daily.tanda.won.' + data.prize_key) : '';
             $('roulette-prize').style.display = '';
             btn.style.display = 'none';
             status && (status.spins_available = data.spins_available);

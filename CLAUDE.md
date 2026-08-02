@@ -193,13 +193,31 @@ probar hay que clickear un intent primero. (1) ✅ **registro de respuestas con 
 actual; `tools/test_boot_migracion.py` ahora cubre columnas de otras tablas, 6/6). E2E 17/17
 (`scratchpad/test_daily_log.py`): unicidad diaria, timeout registrado, best_streak sobrevive al
 fallo, consulta del ranking con desempate. **Va ANTES de abrir la temporada 1 — sin esto no hay
-desempate reconstruible.** (2) panel racha + tabla mes + salón de la fama; (3) quitar descuentos
-de la ruleta (NO apagarla) + motor de tandas Regla B + anuncio "próxima tanda"; (4) tienda
+desempate reconstruible.** (2) panel racha + tabla mes + salón de la fama; (3) ✅ **ruleta → cosméticos (2026-08-02):** fuera
+`ROULETTE_PRIZES`/descuentos/mes-gratis (los códigos SPIN viejos siguen válidos — nada se revoca;
+`cpEmpty` y `unlock.f.daily.d` reescritos ×4). Modelos nuevos `CosmeticItem` (slug/kind/channel/
+season 'YYYY-MM'/active — canal = muro duro ruleta≠tienda≠campeón) y `UserCosmetic` (ledger
+append-only, unique user+item); tablas nuevas via create_all, sin ALTER. Motor: `_roulette_tanda()`
++ `/api/daily/tanda` (piezas del mes + owned + `next_tanda`) + `/api/daily/spin` reescrito con
+Regla B (`ROULETTE_CAMO_ODDS=0.05`, `ROULETTE_KIND_WEIGHTS` frame 15/cursor 21.667; sin tanda →
+409 `no_tanda` SIN quemar giro; tanda limpiada → 409 `tanda_cleared` SIN quemar giro; nunca vacío).
+Cliente: modal muestra la RUEDA solo si hay tanda; si no, anuncio `#roulette-notanda` (fecha
+próxima tanda + giros guardados, 7 claves `daily.tanda.*` ×4). E2E 20/20
+(`scratchpad/test_tanda.py`): 6 giros sin repetidos, pieza de tienda jamás sale, Regla B medida
+(4.7% 1er giro / 18.6% mes perfecto), cupón viejo sigue activo. Verificado en navegador (ES).
+**La tanda se publica insertando `CosmeticItem` channel='roulette' season='YYYY-MM' — todavía no
+hay piezas: la rueda anuncia hasta el paso 5.** (4) tienda
 cosméticos + marcos/cursores + 4 estados + carrito; (5) primeras piezas (colchón de 3 meses de
 tandas ANTES de encender la rotación — compromiso operativo: 6 piezas nuevas cada mes, si un mes
 no hay tanda el sistema se ve muerto).
 
 ## 📅 Recordatorio diario
+> 🔔 **PARA EL 2026-08-03 (pedido explícito del usuario):** re-revisar juntos los TONOS del
+> 1º/2º/3º del salón de la fama (commit `eb50f46`: f1 = blanco incandescente + movimiento + halo,
+> f2 = degradado quieto, f3 = brasa plana `#c9603a`) y repasar lo hecho el 2026-08-02 (panel
+> temporada + fama + chips del foro). Mostrar este aviso al primer mensaje de ese día y luego
+> borrar esta nota.
+
 La **primera vez que el usuario escriba cada día calendario** (`currentDate`), mostrar (si ya se mostró
 hoy, no repetir):
 1. "📋 TAREAS PENDIENTES" (la lista de abajo).
