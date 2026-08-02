@@ -1,0 +1,190 @@
+{
+ "abyss": {
+  "ink": "light",
+  "name": "Abyss"
+ },
+ "apiarist": {
+  "ink": "dark",
+  "name": "Apiarist"
+ },
+ "arcade": {
+  "ink": "light",
+  "name": "Insert Coin"
+ },
+ "aurora": {
+  "ink": "light",
+  "name": "Aurora"
+ },
+ "baseball": {
+  "ink": "dark",
+  "name": "Baseball"
+ },
+ "bearcave": {
+  "ink": "light",
+  "name": "Bear Cave"
+ },
+ "bengal": {
+  "ink": "light",
+  "name": "Bengal"
+ },
+ "blueprint": {
+  "ink": "light",
+  "name": "Blueprint"
+ },
+ "brutalist": {
+  "ink": "dark",
+  "name": "Brutalist"
+ },
+ "bullrun": {
+  "ink": "dark",
+  "name": "Bull Run"
+ },
+ "candlegrid": {
+  "ink": "light",
+  "name": "Candle Grid"
+ },
+ "carbon": {
+  "ink": "light",
+  "name": "Carbon Fiber"
+ },
+ "cartography": {
+  "ink": "dark",
+  "name": "Cartography"
+ },
+ "cathedral": {
+  "ink": "light",
+  "name": "Cathedral"
+ },
+ "chronicles": {
+  "ink": "light",
+  "name": "Chronicles"
+ },
+ "circuit": {
+  "ink": "light",
+  "name": "Circuit"
+ },
+ "colosseum": {
+  "ink": "light",
+  "name": "Colosseum"
+ },
+ "copper": {
+  "ink": "light",
+  "name": "Copper Patina"
+ },
+ "damascus": {
+  "ink": "light",
+  "name": "Damascus"
+ },
+ "dunes": {
+  "ink": "light",
+  "name": "Desert Night"
+ },
+ "frost": {
+  "ink": "dark",
+  "name": "Winter Frost"
+ },
+ "glacier": {
+  "ink": "dark",
+  "name": "Glacier"
+ },
+ "gridiron": {
+  "ink": "light",
+  "name": "American Football"
+ },
+ "jungle": {
+  "ink": "light",
+  "name": "Jungle"
+ },
+ "killzone": {
+  "ink": "light",
+  "name": "Kill Zone"
+ },
+ "liquidity": {
+  "ink": "light",
+  "name": "Liquidity Pool"
+ },
+ "marble": {
+  "ink": "dark",
+  "name": "Marble"
+ },
+ "mars": {
+  "ink": "dark",
+  "name": "Red Planet"
+ },
+ "muertos": {
+  "ink": "light",
+  "name": "Marigold Night"
+ },
+ "nebula": {
+  "ink": "light",
+  "name": "Nebula"
+ },
+ "nile": {
+  "ink": "dark",
+  "name": "Nile"
+ },
+ "obsidian": {
+  "ink": "light",
+  "name": "Obsidian"
+ },
+ "olympus": {
+  "ink": "dark",
+  "name": "Olympus"
+ },
+ "orderflow": {
+  "ink": "light",
+  "name": "Order Flow"
+ },
+ "pagoda": {
+  "ink": "light",
+  "name": "Pagoda Night"
+ },
+ "quetzal": {
+  "ink": "light",
+  "name": "Quetzalc\u00f3atl"
+ },
+ "runes": {
+  "ink": "light",
+  "name": "Runestone"
+ },
+ "sakura": {
+  "ink": "dark",
+  "name": "Sakura"
+ },
+ "storm": {
+  "ink": "light",
+  "name": "Storm"
+ },
+ "summit": {
+  "ink": "dark",
+  "name": "Summit"
+ },
+ "tape": {
+  "ink": "light",
+  "name": "Tape Reader"
+ },
+ "terminal": {
+  "ink": "light",
+  "name": "Terminal"
+ },
+ "volcano": {
+  "ink": "light",
+  "name": "Ashfall"
+ },
+ "volume": {
+  "ink": "light",
+  "name": "Volume Profile"
+ },
+ "washi": {
+  "ink": "dark",
+  "name": "Rising Sun"
+ },
+ "welder": {
+  "ink": "light",
+  "name": "Welder"
+ },
+ "zeppelin": {
+  "ink": "dark",
+  "name": "Zeppelin"
+ }
+}

@@ -10,7 +10,8 @@ import os, sys, sqlite3, subprocess, textwrap
 SCRATCH = os.path.dirname(os.path.abspath(__file__))
 DB = os.path.join(SCRATCH, 'boot.db')
 NUEVAS = ['birth_date', 'totp_secret', 'totp_confirmed_at', 'totp_backup',
-          'referred_by_code', 'referred_at', 'active_camo', 'owned_camos']
+          'referred_by_code', 'referred_at', 'active_camo', 'owned_camos',
+          'active_frame', 'active_cursor']
 # Columnas nuevas en OTRAS tablas: (tabla, columna, valor_de_backfill_esperado)
 NUEVAS_OTRAS = [('daily_quiz_state', 'best_streak', None)]
 

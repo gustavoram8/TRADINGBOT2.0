@@ -2997,6 +2997,31 @@
     }
     .post-card:hover { border-color: var(--accent); }
     .post-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    /* ── Avatar frame = the PLATE behind the whole author block. Art is a
+       static SVG from /static/plates/ (640x48, drawn with the left third calm
+       so avatar + name always sit on quiet ground). STATIC on purpose: in the
+       forum only the rank medal may animate (owner's harmony rule). ── */
+    .fplate-host { position: relative; border-radius: 10px; padding: 6px 10px 6px 6px; }
+    .fplate-host > * { position: relative; z-index: 1; }
+    .fplate { position: absolute; inset: 0; z-index: 0 !important; border-radius: 10px;
+              background-size: 100% 100%; background-repeat: no-repeat; pointer-events: none; }
+    /* ink-light = light text over a dark plate; ink-dark = the opposite. The
+       fame palette (top-3 names) wins over the plate ink — it self-carries. */
+    .fplate-host.fink-light .post-author > span:not(.fame-name):not(.rank-tag):not(.streak-chip),
+    .fplate-host.fink-light .comment-author > span:not(.fame-name):not(.rank-tag):not(.streak-chip)
+      { color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.8); }
+    .fplate-host.fink-dark .post-author > span:not(.fame-name):not(.rank-tag):not(.streak-chip),
+    .fplate-host.fink-dark .comment-author > span:not(.fame-name):not(.rank-tag):not(.streak-chip)
+      { color: #14161c; text-shadow: 0 1px 2px rgba(255,255,255,.75); }
+    .fplate-host .post-time { color: #fff; opacity: .85; text-shadow: 0 1px 3px rgba(0,0,0,.8); }
+    .fplate-host.fink-dark .post-time { color: #14161c; text-shadow: 0 1px 2px rgba(255,255,255,.75); }
+    /* rank pill + streak chip get a small backdrop so they read on ANY art */
+    .fplate-host .rank-tag { background: rgba(10,12,18,.5); }
+    .fplate-host.fink-dark .rank-tag { background: rgba(255,255,255,.68); }
+    .fplate-host .streak-chip { background: rgba(10,12,18,.5); border-radius: 8px; padding: 1px 4px; }
+    .fplate-host.fink-dark .streak-chip { background: rgba(255,255,255,.68); }
+    .fplate-host .comment-time { color: #fff; opacity: .85; text-shadow: 0 1px 3px rgba(0,0,0,.8); }
+    .fplate-host.fink-dark .comment-time { color: #14161c; text-shadow: 0 1px 2px rgba(255,255,255,.75); }
     .post-avatar {
       width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
       background: linear-gradient(135deg, var(--accent), var(--accent-h)); color: #fff; font-weight: 800; font-size: 14px; text-transform: uppercase;
@@ -9564,7 +9589,9 @@
       'daily.tanda.none': "Discounts are out — exclusive cosmetics are coming: avatar frames, cursors and a camo, in a fresh batch every month. Anything you don't win before a batch rotates is gone for good.",
       'daily.tanda.opens': 'Next batch opens on',
       'daily.tanda.saved': 'Your spins are safe — you have',
-      'daily.tanda.won.frame': 'Avatar frame unlocked — it will show on your profile when frames go live.',
+      'daily.tanda.won.frame': 'Avatar frame unlocked — wear it and the whole forum sees it.',
+      'daily.tanda.use': 'Wear it now',
+      'daily.tanda.using': 'Wearing it ✓',
       'daily.tanda.won.cursor': 'Cursor unlocked — equip it from the cosmetics store.',
       'daily.tanda.won.camo': 'Camo unlocked — equip it from the cosmetics store.',
       'daily.monthNote': 'Your Premium plan was just extended by 30 days. Enjoy!',
@@ -9616,7 +9643,9 @@
       'daily.tanda.none': 'Los descuentos se van — vienen cosméticos exclusivos: marcos de avatar, cursores y un camo, con una tanda nueva cada mes. Lo que no ganes antes de que la tanda rote, se pierde para siempre.',
       'daily.tanda.opens': 'La próxima tanda abre el',
       'daily.tanda.saved': 'Tus giros están a salvo — tienes',
-      'daily.tanda.won.frame': 'Marco de avatar desbloqueado — se verá en tu perfil cuando los marcos salgan en vivo.',
+      'daily.tanda.won.frame': 'Marco de avatar desbloqueado — póntelo y todo el foro lo ve.',
+      'daily.tanda.use': 'Usarlo ahora',
+      'daily.tanda.using': 'En uso ✓',
       'daily.tanda.won.cursor': 'Cursor desbloqueado — actívalo desde la tienda de cosméticos.',
       'daily.tanda.won.camo': 'Camo desbloqueado — actívalo desde la tienda de cosméticos.',
       'daily.monthNote': 'Tu plan Premium acaba de extenderse 30 días. ¡Disfrútalo!',
@@ -9668,7 +9697,9 @@
       'daily.tanda.none': 'Les réductions disparaissent — place aux cosmétiques exclusifs : cadres d’avatar, curseurs et un camo, avec un lot neuf chaque mois. Ce que vous ne gagnez pas avant la rotation du lot est perdu pour toujours.',
       'daily.tanda.opens': 'Le prochain lot ouvre le',
       'daily.tanda.saved': 'Vos tours sont en sécurité — vous en avez',
-      'daily.tanda.won.frame': 'Cadre d’avatar débloqué — il apparaîtra sur votre profil quand les cadres seront en ligne.',
+      'daily.tanda.won.frame': 'Cadre d’avatar débloqué — portez-le et tout le forum le voit.',
+      'daily.tanda.use': 'Le porter maintenant',
+      'daily.tanda.using': 'Porté ✓',
       'daily.tanda.won.cursor': 'Curseur débloqué — équipez-le depuis la boutique de cosmétiques.',
       'daily.tanda.won.camo': 'Camo débloqué — équipez-le depuis la boutique de cosmétiques.',
       'daily.monthNote': 'Votre plan Premium vient d\'être prolongé de 30 jours. Profitez-en !',
@@ -9720,7 +9751,9 @@
       'daily.tanda.none': 'Os descontos estão de saída — vêm aí cosméticos exclusivos: molduras de avatar, cursores e um camo, com um lote novo a cada mês. O que você não ganhar antes do lote girar, se perde para sempre.',
       'daily.tanda.opens': 'O próximo lote abre em',
       'daily.tanda.saved': 'Seus giros estão a salvo — você tem',
-      'daily.tanda.won.frame': 'Moldura de avatar desbloqueada — vai aparecer no seu perfil quando as molduras entrarem no ar.',
+      'daily.tanda.won.frame': 'Moldura de avatar desbloqueada — use e o fórum inteiro vê.',
+      'daily.tanda.use': 'Usar agora',
+      'daily.tanda.using': 'Em uso ✓',
       'daily.tanda.won.cursor': 'Cursor desbloqueado — ative na loja de cosméticos.',
       'daily.tanda.won.camo': 'Camo desbloqueado — ative na loja de cosméticos.',
       'daily.monthNote': 'Seu plano Premium acaba de ser estendido por 30 dias. Aproveite!',
@@ -12346,8 +12379,20 @@
       return foot;
     }
 
+    // The author's plate (avatar frame): a static art strip behind the whole
+    // author block. host gets the ink class; the SVG comes from /static/plates.
+    function mountPlate(host, frame) {
+      if (!frame || !frame.slug) return;
+      host.classList.add('fplate-host', frame.ink === 'dark' ? 'fink-dark' : 'fink-light');
+      const pl = document.createElement('div'); pl.className = 'fplate';
+      pl.style.backgroundImage = "url('/static/plates/" +
+        encodeURIComponent(frame.slug) + ".svg')";
+      host.insertBefore(pl, host.firstChild);
+    }
+
     function postHeader(p, avatarCls) {
       const top = document.createElement('div'); top.className = 'post-top';
+      mountPlate(top, p.author_frame);
       top.appendChild(avatar(p.author, avatarCls || 'post-avatar'));
       const meta = document.createElement('div');
       const a = document.createElement('div'); a.className = 'post-author';
@@ -12424,6 +12469,7 @@
     function renderComment(c) {
       const wrap = document.createElement('div'); wrap.className = 'comment';
       const head = document.createElement('div'); head.className = 'comment-head';
+      if (!c.deleted) mountPlate(head, c.author_frame);
       if (!c.deleted) head.appendChild(avatar(c.author, 'comment-avatar'));
       const au = document.createElement('span'); au.className = 'comment-author';
       if (!c.deleted && window.renderRankBadge && c.author_rank) { au.appendChild(window.renderRankBadge(c.author_rank, 15)); }
@@ -22948,7 +22994,31 @@
             $('roulette-prize-code-wrap').style.display = 'none';
             $('roulette-prize-note').textContent = T('daily.tanda.won.' + data.prize_key) !== ('daily.tanda.won.' + data.prize_key)
               ? T('daily.tanda.won.' + data.prize_key) : '';
-            $('roulette-prize').style.display = '';
+            const prize = $('roulette-prize');
+            prize.querySelectorAll('.rl-won-extra').forEach(el => el.remove());
+            if (data.prize_key === 'frame' && data.slug) {
+              // Show the plate itself + a one-tap equip. Equipping is
+              // reversible any time from the cosmetics store.
+              const art = document.createElement('div');
+              art.className = 'rl-won-extra';
+              art.style.cssText = 'margin:10px auto 0;max-width:340px;height:36px;' +
+                'border-radius:8px;background:url(/static/plates/' +
+                encodeURIComponent(data.slug) + '.svg) center/100% 100% no-repeat;' +
+                'box-shadow:0 2px 10px rgba(0,0,0,.35);';
+              const use = document.createElement('button');
+              use.type = 'button';
+              use.className = 'rl-won-extra daily-play-btn';
+              use.style.cssText = 'margin:10px auto 0;display:block;';
+              use.textContent = T('daily.tanda.use');
+              use.addEventListener('click', () => {
+                fetch('/api/cosmetics/equip', { method:'POST',
+                  headers:{'Content-Type':'application/json'},
+                  body: JSON.stringify({ kind:'frame', slug: data.slug })
+                }).then(r => { if (r.ok) { use.textContent = T('daily.tanda.using'); use.disabled = true; } });
+              });
+              prize.appendChild(art); prize.appendChild(use);
+            }
+            prize.style.display = '';
             btn.style.display = 'none';
             status && (status.spins_available = data.spins_available);
             renderCard();

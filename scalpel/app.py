@@ -443,6 +443,13 @@ class User(UserMixin, db.Model):
     active_camo = db.Column(db.String(40), nullable=True, default='')
     owned_camos = db.Column(db.Text, nullable=True, default='')
 
+    # ── Cosmetics being WORN (frames / cursors, the CosmeticItem world) ──
+    # Ownership lives in the UserCosmetic ledger; these only say which owned
+    # piece is currently on. '' / None = none. active_cursor ships in the same
+    # migration as active_frame so cursors don't need a second prod ALTER.
+    active_frame = db.Column(db.String(60), nullable=True, default='')
+    active_cursor = db.Column(db.String(60), nullable=True, default='')
+
     def camos_owned(self):
         try:
             return set(json.loads(self.owned_camos or '[]'))
@@ -4268,12 +4275,18 @@ def camos():
     # show as their own non-buyable state.
     season_now = _current_season()
     owned_ids = _owned_cosmetic_ids(current_user.id) if authed else set()
+    active_frame = (current_user.active_frame or '') if authed else ''
     def _pack(kind):
         out = []
         for i in (CosmeticItem.query.filter_by(kind=kind)
                   .order_by(CosmeticItem.created_at.desc()).all()):
-            if i.id in owned_ids:
-                state = 'owned'
+            # A future season is a surprise, not a spoiler: its pieces stay
+            # invisible until their month opens (the whole calendar is
+            # pre-published at boot).
+            if i.season and i.season > season_now:
+                continue
+            if i.id in owned_ids or (authed and current_user.is_admin):
+                state = 'owned'   # the admin owns the catalog (same as camos)
             elif i.channel == 'store' and i.active:
                 state = 'buy'
             elif i.channel == 'champion':
@@ -4284,6 +4297,10 @@ def camos():
                 state = 'ended'
             out.append({'slug': i.slug, 'name': i.name, 'state': state,
                         'season': i.season or '',
+                        'art': ('/static/plates/%s.svg' % i.slug
+                                if kind == 'frame' and i.slug in plates_meta()
+                                else None),
+                        'wearing': kind == 'frame' and i.slug == active_frame,
                         'price': (COSMETIC_PRICE_CURSOR if kind == 'cursor'
                                   and state == 'buy' else None)})
         return out
@@ -4325,6 +4342,31 @@ def camo_deactivate():
     current_user.active_camo = ''
     db.session.commit()
     return jsonify({'ok': True, 'active': ''})
+
+
+@app.route('/api/cosmetics/equip', methods=['POST'])
+@login_required
+def cosmetics_equip():
+    """Put on / take off an owned cosmetic (frames today; cursors reuse this
+    endpoint when their client side exists). The browser sends kind + slug;
+    slug '' means take it off. Ownership comes from the UserCosmetic ledger;
+    admins can wear anything (same rule as camos: the admin owns the whole
+    catalog for previewing)."""
+    data = request.get_json(silent=True) or {}
+    kind = (data.get('kind') or 'frame').strip()
+    slug = (data.get('slug') or '').strip()
+    if kind != 'frame':
+        return jsonify({'error': 'not_available'}), 400
+    if slug:
+        item = CosmeticItem.query.filter_by(slug=slug, kind=kind).first()
+        if not item or (kind == 'frame' and slug not in plates_meta()):
+            return jsonify({'error': 'not_available'}), 400
+        if not current_user.is_admin and not UserCosmetic.query.filter_by(
+                user_id=current_user.id, item_id=item.id).first():
+            return jsonify({'error': 'not_owned'}), 403
+    current_user.active_frame = slug
+    db.session.commit()
+    return jsonify({'ok': True, 'active': slug})
 
 
 @app.route('/api/camo/buy', methods=['POST'])
@@ -8776,6 +8818,15 @@ def _streak_badge(user_id):
     return cache[user_id]
 
 
+def _author_frame(user):
+    """{'slug', 'ink'} for the plate a forum author is wearing, or None. Free:
+    the User row is already loaded on every post/comment, and the ink lives in
+    the plates manifest — no extra query."""
+    slug = (getattr(user, 'active_frame', '') or '') if user else ''
+    meta = plates_meta().get(slug)
+    return {'slug': slug, 'ink': meta['ink']} if meta else None
+
+
 def serialize_post(p, body=True):
     rs = reaction_summary('post', p.id)
     streak, fame = _streak_badge(p.user_id) if p.user_id else (0, None)
@@ -8790,6 +8841,7 @@ def serialize_post(p, body=True):
         'author_rank': (p.user.rank or 1) if p.user else 1,
         'author_streak': streak,
         'author_fame': fame,
+        'author_frame': _author_frame(p.user),
         'is_mine': p.user_id == current_user.id,
         'created_at': _as_utc(p.created_at).isoformat(),
         'comment_count': ForumComment.query.filter_by(post_id=p.id, is_deleted=False).count(),
@@ -8818,6 +8870,7 @@ def serialize_comment(c):
         'author_rank': 1 if c.is_deleted else ((c.user.rank or 1) if c.user else 1),
         'author_streak': streak,
         'author_fame': fame,
+        'author_frame': None if c.is_deleted else _author_frame(c.user),
         'is_mine': (c.user_id == current_user.id) and not c.is_deleted,
         'created_at': _as_utc(c.created_at).isoformat(),
         'reactions': rs['counts'],
@@ -10126,6 +10179,76 @@ DAILY_ANSWER_GRACE = 5          # network latency allowance on top of the 60s
 # repeats). A spin never comes up empty; a cleaned batch SAVES the spin.
 ROULETTE_CAMO_ODDS = 0.05
 ROULETTE_KIND_WEIGHTS = {'frame': 15.0, 'cursor': 21.667}
+
+
+_PLATES_META = None
+
+
+def plates_meta():
+    """{slug: {'name', 'ink'}} for every published avatar frame. Generated by
+    tools/build_plates.py from the catalog in tools/plates_preview.py — the
+    server never draws plates, it only knows which exist and what ink (text
+    color) each demands."""
+    global _PLATES_META
+    if _PLATES_META is None:
+        try:
+            with open(os.path.join(app.static_folder, 'plates', 'plates.json')) as fh:
+                _PLATES_META = json.load(fh)
+        except Exception:
+            _PLATES_META = {}
+    return _PLATES_META
+
+
+# ── The 24 roulette frames, two per season (owner's plan, closed 2026-08-02):
+# one frame THEMED like the month's camo + one FREE frame from the pre-approved
+# dozen (see RULETA_LIBRES in tools/plates_preview.py). Pairing criterion:
+# light/dark contrast inside the month wherever the palettes allow it.
+# Publishing is idempotent and runs at boot; a season only becomes visible
+# (wheel + store) when its month arrives — _roulette_tanda filters by season
+# and the store hides unreleased seasons, so pre-inserting a year is safe.
+ROULETTE_FRAME_CALENDAR = [
+    # (season,   themed slug,   free slug)
+    ('2026-08', 'chronicles', 'mars'),
+    ('2026-09', 'gridiron',   'sakura'),
+    ('2026-10', 'nile',       'terminal'),
+    ('2026-11', 'colosseum',  'cartography'),
+    ('2026-12', 'summit',     'obsidian'),
+    ('2027-01', 'bengal',     'candlegrid'),
+    ('2027-02', 'olympus',    'circuit'),
+    ('2027-03', 'quetzal',    'volcano'),
+    ('2027-04', 'baseball',   'orderflow'),
+    ('2027-05', 'apiarist',   'volume'),
+    ('2027-06', 'welder',     'dunes'),
+    ('2027-07', 'zeppelin',   'arcade'),
+]
+
+
+def _publish_roulette_frames():
+    """Insert the 24 roulette frames as CosmeticItem rows (kind='frame',
+    channel='roulette'). Idempotent by slug; never updates existing rows, so a
+    hand-edit in the DB (deactivating a piece, renaming) is never overwritten.
+    Cursors and camos are NOT seeded here — cursors don't exist yet and camo
+    art is commissioned month by month."""
+    meta = plates_meta()
+    added = 0
+    for season, themed, free in ROULETTE_FRAME_CALENDAR:
+        for slug in (themed, free):
+            if slug not in meta:
+                app.logger.warning('roulette frame %s missing from plates.json '
+                                   '— run tools/build_plates.py', slug)
+                continue
+            if CosmeticItem.query.filter_by(slug=slug).first():
+                continue
+            db.session.add(CosmeticItem(slug=slug, name=meta[slug]['name'],
+                                        kind='frame', channel='roulette',
+                                        season=season, active=True))
+            added += 1
+    if added:
+        try:
+            db.session.commit()
+            app.logger.info('Published %d roulette frames.', added)
+        except Exception:
+            db.session.rollback()   # concurrent worker won the race — fine
 
 
 def _current_season():
@@ -12029,6 +12152,28 @@ def _migrate_user_camo_columns():
         app.logger.info('Migrated user table: camo columns ensured.')
 
 
+def _migrate_user_cosmetic_wear_columns():
+    """Add the worn-cosmetic columns (active_frame, active_cursor) to an
+    existing user table. Same guard pattern as the camo migration; raw SQL
+    only (permanent rule: migrations never touch the ORM)."""
+    from sqlalchemy import inspect, text
+    insp = inspect(db.engine)
+    cols = {c['name'] for c in insp.get_columns('user')}
+    stmts = []
+    if 'active_frame' not in cols:
+        stmts.append('ALTER TABLE "user" ADD COLUMN active_frame VARCHAR(60)')
+    if 'active_cursor' not in cols:
+        stmts.append('ALTER TABLE "user" ADD COLUMN active_cursor VARCHAR(60)')
+    for s in stmts:
+        try:
+            with db.engine.begin() as conn:
+                conn.execute(text(s))
+        except Exception as e:
+            app.logger.info('cosmetic wear migration note (ignored): %s', e)
+    if stmts:
+        app.logger.info('Migrated user table: cosmetic wear columns ensured.')
+
+
 def _migrate_mentorship_application_columns():
     """Add columns introduced after the mentorship_application table first
     shipped (program, then the 2026-07 FAQ-profile fields). Same guard pattern
@@ -12211,6 +12356,7 @@ def init_db():
         _migrate_user_xp_columns()
         _migrate_user_mute_column()
         _migrate_user_camo_columns()
+        _migrate_user_cosmetic_wear_columns()
         _migrate_user_security_columns()
         _migrate_referral_columns()
         _migrate_user_alt_id_column()
@@ -12225,6 +12371,7 @@ def init_db():
         _migrate_mentorship_area_columns()
         _resync_postgres_sequences()
         _backfill_plan_camos()
+        _publish_roulette_frames()
         admin_email = os.environ.get('ADMIN_EMAIL', 'mauroramirezmij@gmail.com').lower()
         admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
         admin_password = os.environ.get('ADMIN_PASSWORD', 'Codica2310$')

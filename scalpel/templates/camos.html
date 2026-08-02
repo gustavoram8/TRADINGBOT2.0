@@ -139,6 +139,12 @@
     .camo-card.ended:hover { transform:none; box-shadow:none; }
     .cos-season { font-size:11px; font-weight:700; color:var(--muted); }
     .cm-frame  { background:linear-gradient(135deg,#1a1d26,#2c3140 55%,#4a5164); }
+    /* Frame cards show the plate at its REAL aspect (640x48): a strip across
+       the middle of the swatch, not a stretched fill. */
+    .cm-plate { display:flex; align-items:center; padding:0 10px; }
+    .cm-plate-strip { width:100%; aspect-ratio:640/48; border-radius:7px;
+                      background-size:100% 100%; background-repeat:no-repeat;
+                      box-shadow:0 2px 10px rgba(0,0,0,.4); }
     .cm-cursor { background:linear-gradient(135deg,#10131b,#232838 55%,#3b4358); }
     /* ── Cart ── */
     .camo-cart-btn { font-size:12.5px; font-weight:700; padding:8px 12px; border-radius:9px;
@@ -362,17 +368,26 @@
   <!-- ── AVATAR FRAMES ── -->
   <div class="sec-head">
     <h2 data-i18n="camos.secFrames">Avatar frames</h2>
-    <span class="sub" data-i18n="camos.secFramesSub">The ring around your avatar — everyone in the forum sees it.</span>
+    <span class="sub" data-i18n="camos.secFramesSub">The art plate behind your name in the forum — everyone sees it.</span>
   </div>
   {% if cos_frames %}
   <div class="grid">
     {% for it in cos_frames %}
     <div class="camo-card{% if it.state == 'ended' %} ended{% endif %}">
+      {% if it.art %}
+      <!-- The plate itself, at its real aspect: a strip across the swatch. -->
+      <div class="camo-swatch cm-frame cm-plate"><div class="cm-plate-strip" style="background-image:url('{{ it.art }}')"></div></div>
+      {% else %}
       <div class="camo-swatch cm-frame"></div>
+      {% endif %}
       <div class="camo-body">
         <div class="camo-name">{{ it.name }}</div>
         <div class="camo-foot">
           {% if it.state == 'owned' %}<span class="cos-state ow" data-i18n="camos.stOwned">Yours</span>
+            {% if it.wearing %}<button type="button" class="camo-deact fr-unwear" data-frslug="">
+              <span data-i18n="camos.frUnwear">Take it off</span></button>
+            {% else %}<button type="button" class="camo-cta on act fr-wear" data-frslug="{{ it.slug }}">
+              <span data-i18n="camos.frWear">Wear it</span></button>{% endif %}
           {% elif it.state == 'buy' %}<span class="camo-price">${{ '%.2f'|format(it.price) }}</span>
           {% elif it.state == 'roulette' %}<span class="cos-state rl" data-i18n="camos.stRoulette">Roulette only — this month</span>
           {% elif it.state == 'champion' %}<span class="cos-state ch" data-i18n="camos.stChampion">Monthly champion only</span>
@@ -645,6 +660,17 @@
     function renderAll(){ document.querySelectorAll('.camo-card').forEach(renderCard); }
     renderAll();
     Cart.bar();
+    // ── Wear / take off an avatar frame. Server-rendered buttons (ownership
+    //    and current wear come with the page); a click just flips it and
+    //    reloads so every card reflects the single active frame.
+    document.querySelectorAll('.fr-wear, .fr-unwear').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        btn.disabled = true;
+        post('/api/cosmetics/equip', {kind:'frame', slug: btn.getAttribute('data-frslug') || ''})
+          .then(function(res){ if (res.ok) location.reload(); else btn.disabled = false; })
+          .catch(function(){ btn.disabled = false; });
+      });
+    });
     // Fresh from PayPal: celebrate the purchase (ownership already re-rendered
     // from the server state above).
     try {
