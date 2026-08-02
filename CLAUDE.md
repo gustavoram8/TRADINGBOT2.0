@@ -177,7 +177,17 @@ sitio; marcos y cursores son cómo TE VEN los demás* (foro/tabla/panel).
 - **Descartados:** XP en ruleta, títulos por hazaña ("Liquidity Hunter, Roulette Pro Max" = choque
   con rangos), sello del certificado, escudo de racha, análisis extra, nombres con efecto como
   premio (quedan SOLO para el salón de la fama).
-**Plan (ir de a uno):** (1) ✅ **registro de respuestas con tiempo** — `DailyAnswerLog` (fila
+**Plan (ir de a uno):** (2) ✅ **panel temporada (2026-08-02):** botón 🏆 en el daily card → modal
+`#daily-lb-overlay` (mis números / tabla del mes top-20+mi-fila-siempre con ⋯ de salto / salón de
+la fama top-10) + API `/api/daily/leaderboard` (premium; mes = `_month_ranking` sobre el log,
+desempate segundos ASC solo-correctas) + `DailyQuizState.best_streak_at` (empate de fama = quien
+llegó PRIMERO; sin backfill, fecha desconocida pierde) + foro: `serialize_post/comment` llevan
+`author_streak` (chip 🔥N desde racha ≥2, `_live_streak` aplica la regla del día saltado) y
+`author_fame` (top-3 `_fame_top` cacheado 60s → `.fame-name.f1/f2/f3`, paleta FUEGO no dorada,
+f1 animado con reduced-motion off). 17 claves `daily.lb.*` ×4. Verificado en navegador real
+(EN claro + ES oscuro + foro): empate 19-19 resuelto por tiempo, fila propia fuera del top,
+0 errores JS. ⚠️ Trampa: el botón vive en quiz-HOME y el quiz abre en la BIENVENIDA — para
+probar hay que clickear un intent primero. (1) ✅ **registro de respuestas con tiempo** — `DailyAnswerLog` (fila
 única user+día: correct/timed_out/seconds server-side/streak_after) escrito en `/api/daily/answer`,
 + `DailyQuizState.best_streak` (migración `_migrate_daily_best_streak_column`, backfill=streak
 actual; `tools/test_boot_migracion.py` ahora cubre columnas de otras tablas, 6/6). E2E 17/17

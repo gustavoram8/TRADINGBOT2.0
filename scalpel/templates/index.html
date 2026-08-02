@@ -3264,6 +3264,50 @@
     }
     .daily-dot.lit { border-color: #f59e0b; background: rgba(245,158,11,0.15); }
     .daily-streak-label { font-size: 11.5px; color: var(--muted); margin-left: 4px; font-weight: 600; }
+    /* ── Season leaderboard (month board + hall of fame) ── */
+    .daily-lb-open { margin-top: 10px; background: none; border: 1px solid var(--border);
+      border-radius: 8px; padding: 5px 12px; font-size: 12px; font-weight: 700; cursor: pointer;
+      color: var(--text); font-family: inherit; transition: border-color .15s; }
+    .daily-lb-open:hover { border-color: var(--accent); }
+    .daily-lb-modal { max-width: 560px; width: min(560px, 94vw); max-height: 86vh; overflow-y: auto; }
+    .dlb-me { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 14px 0 4px; }
+    .dlb-me-cell { background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+      padding: 8px 10px; text-align: center; }
+    .dlb-me-num { font-size: 20px; font-weight: 800; line-height: 1.1; }
+    .dlb-me-lbl { font-size: 9.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+      color: var(--muted); margin-top: 2px; }
+    .dlb-section { margin-top: 16px; }
+    .dlb-section-title { font-size: 13px; font-weight: 800; letter-spacing: .02em; }
+    .dlb-month-label { color: var(--muted); font-weight: 700; }
+    .dlb-hint { font-size: 11px; color: var(--muted); margin: 3px 0 8px; }
+    .dlb-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+    .dlb-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    .dlb-table th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: .05em;
+      color: var(--muted); padding: 7px 10px; border-bottom: 1px solid var(--border); }
+    .dlb-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); }
+    .dlb-table tr:last-child td { border-bottom: none; }
+    .dlb-table tr.dlb-mine td { background: color-mix(in srgb, var(--accent) 12%, transparent);
+      font-weight: 700; }
+    .dlb-table td.dlb-num { font-variant-numeric: tabular-nums; }
+    .dlb-gap-row td { text-align: center; color: var(--muted); font-size: 11px; padding: 3px 0; }
+    .dlb-empty { font-size: 12px; color: var(--muted); padding: 10px 2px; }
+    /* Hall-of-fame podium: the 'lit name'. FIRE palette on purpose — the golden
+       metal look belongs to ranks 7-8 (permanent rule: frames/effects never
+       borrow a rank's palette). Distinct per position, #1 the strongest. */
+    .fame-name { font-weight: 800; }
+    .fame-name.f1 { background: linear-gradient(90deg,#ff4d00,#ffb300,#ff4d00,#ffb300);
+      background-size: 220% 100%; -webkit-background-clip: text; background-clip: text;
+      color: transparent; animation: fameFire 2.6s linear infinite; }
+    .fame-name.f2 { background: linear-gradient(90deg,#ff8a3c,#ffc46b);
+      -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .fame-name.f3 { color: #e0752f; }
+    @keyframes fameFire { to { background-position: 220% 0; } }
+    @media (prefers-reduced-motion: reduce) { .fame-name.f1 { animation: none; } }
+    /* Live-streak chip next to a forum author's name (shows from streak >= 2) */
+    .streak-chip { display: inline-flex; align-items: center; gap: 1px; font-size: 10px;
+      font-weight: 800; color: #e0752f; background: rgba(224,117,47,.12);
+      border: 1px solid rgba(224,117,47,.35); border-radius: 9px; padding: 1px 6px 1px 4px;
+      line-height: 1.5; white-space: nowrap; }
     .daily-card-right { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
     .daily-play-btn {
       padding: 11px 20px; border-radius: 9px; border: none; cursor: pointer;
@@ -6329,6 +6373,7 @@
             </div>
             <div class="daily-card-sub" id="daily-card-sub" data-i18n="daily.sub">One question. 60 seconds. 7-day streak = roulette spin.</div>
             <div class="daily-streak-row" id="daily-streak-row"><!-- dots populated by JS --></div>
+            <button class="daily-lb-open" id="daily-lb-open" type="button">🏆 <span data-i18n="daily.lb.open">Season &amp; records</span></button>
           </div>
           <div class="daily-card-right">
             <button class="daily-play-btn" id="daily-play-btn" data-i18n="daily.play">Play today's question</button>
@@ -6490,6 +6535,39 @@
               🎡 <span data-i18n="daily.spinReady">Spin the wheel!</span>
             </button>
             <button class="quiz-action-btn secondary" id="daily-result-close" style="margin-top:14px;width:auto;padding:10px 22px;" data-i18n="daily.close">Close</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Season leaderboard modal (month board + hall of fame) ── -->
+      <div class="daily-overlay" id="daily-lb-overlay" style="display:none;">
+        <div class="daily-modal daily-lb-modal">
+          <div class="daily-modal-head">
+            🏆 <span data-i18n="daily.lb.title">Daily Challenge — Season</span>
+            <button class="daily-close" id="daily-lb-close" aria-label="Close">×</button>
+          </div>
+          <div class="dlb-me" id="dlb-me"><!-- your numbers, painted by JS --></div>
+          <div class="dlb-section">
+            <div class="dlb-section-title"><span data-i18n="daily.lb.month">This month</span> <span id="dlb-month-label" class="dlb-month-label"></span></div>
+            <div class="dlb-hint" data-i18n="daily.lb.tieHint">Most correct answers wins. Ties: lowest total time on correct answers.</div>
+            <div class="dlb-table-wrap"><table class="dlb-table" id="dlb-table">
+              <thead><tr>
+                <th>#</th>
+                <th data-i18n="daily.lb.user">Trader</th>
+                <th data-i18n="daily.lb.correct">Correct</th>
+                <th data-i18n="daily.lb.time">Time</th>
+              </tr></thead>
+              <tbody id="dlb-rows"></tbody>
+            </table></div>
+            <div class="dlb-empty" id="dlb-empty" style="display:none;" data-i18n="daily.lb.empty">Nobody has played this month yet — today's question could put you at #1.</div>
+          </div>
+          <div class="dlb-section">
+            <div class="dlb-section-title" data-i18n="daily.lb.fame">Hall of fame — longest streaks ever</div>
+            <div class="dlb-hint" data-i18n="daily.lb.fameHint">One miss or one skipped day breaks a streak. The top 3 wear the flame on their name across the site — until someone takes it from them.</div>
+            <div class="dlb-table-wrap"><table class="dlb-table" id="dlb-fame-table">
+              <tbody id="dlb-fame-rows"></tbody>
+            </table></div>
+            <div class="dlb-empty" id="dlb-fame-empty" style="display:none;" data-i18n="daily.lb.fameEmpty">No streaks on record yet. The first streak of 2 starts the book.</div>
           </div>
         </div>
       </div>
@@ -9463,6 +9541,19 @@
       'daily.cpActive': 'Active', 'daily.cpUsed': 'Used', 'daily.cpExpired': 'Expired',
       'daily.cpMonthly': 'Monthly renewal', 'daily.cpStore': 'Store (indicators/camos)',
       'daily.cpExpires': 'Expires', 'daily.cpEmpty': 'No coupons yet — win them on the roulette with a 7-day streak!',
+      'daily.lb.open': 'Season & records',
+      'daily.lb.title': 'Daily Challenge — Season',
+      'daily.lb.month': 'This month',
+      'daily.lb.tieHint': 'Most correct answers wins the month. Ties: lowest total time across correct answers.',
+      'daily.lb.user': 'Trader', 'daily.lb.correct': 'Correct', 'daily.lb.time': 'Time',
+      'daily.lb.empty': "Nobody has scored this month yet — today's question could put you at #1.",
+      'daily.lb.fame': 'Hall of fame — longest streaks ever',
+      'daily.lb.fameHint': 'One miss or one skipped day breaks a streak. The top 3 wear the flame on their name across the site — until someone takes it from them.',
+      'daily.lb.fameEmpty': 'No streaks on record yet. The first streak of 2 starts the book.',
+      'daily.lb.meStreak': 'Current streak', 'daily.lb.meBest': 'Personal best',
+      'daily.lb.meCorrect': 'Correct this month', 'daily.lb.mePos': 'Your position',
+      'daily.lb.you': 'you',
+      'daily.lb.chipTip': 'Daily Challenge streak — consecutive correct answers',
       'daily.monthNote': 'Your Premium plan was just extended by 30 days. Enjoy!',
       'daily.prize.d5': '5% off your next renewal',
       'daily.prize.d10': '10% off your next renewal',
@@ -9494,6 +9585,19 @@
       'daily.cpActive': 'Activo', 'daily.cpUsed': 'Usado', 'daily.cpExpired': 'Vencido',
       'daily.cpMonthly': 'Renovación mensual', 'daily.cpStore': 'Tienda (indicadores/camos)',
       'daily.cpExpires': 'Vence', 'daily.cpEmpty': '¡Aún no tienes cupones — gánalos en la ruleta con una racha de 7 días!',
+      'daily.lb.open': 'Temporada y récords',
+      'daily.lb.title': 'Daily Challenge — Temporada',
+      'daily.lb.month': 'Este mes',
+      'daily.lb.tieHint': 'Gana el mes quien más respuestas correctas sume. Empate: menor tiempo total en las correctas.',
+      'daily.lb.user': 'Trader', 'daily.lb.correct': 'Correctas', 'daily.lb.time': 'Tiempo',
+      'daily.lb.empty': 'Nadie ha puntuado este mes todavía — la pregunta de hoy puede ponerte de #1.',
+      'daily.lb.fame': 'Salón de la fama — las mejores rachas de la historia',
+      'daily.lb.fameHint': 'Un fallo o un día saltado rompe la racha. El top 3 lleva la llama en su nombre por todo el sitio — hasta que alguien se la quite.',
+      'daily.lb.fameEmpty': 'Aún no hay rachas registradas. La primera racha de 2 abre el libro.',
+      'daily.lb.meStreak': 'Racha actual', 'daily.lb.meBest': 'Récord personal',
+      'daily.lb.meCorrect': 'Correctas del mes', 'daily.lb.mePos': 'Tu posición',
+      'daily.lb.you': 'tú',
+      'daily.lb.chipTip': 'Racha del Daily Challenge — respuestas correctas seguidas',
       'daily.monthNote': 'Tu plan Premium acaba de extenderse 30 días. ¡Disfrútalo!',
       'daily.prize.d5': '5% de descuento en tu próxima renovación',
       'daily.prize.d10': '10% de descuento en tu próxima renovación',
@@ -9525,6 +9629,19 @@
       'daily.cpActive': 'Actif', 'daily.cpUsed': 'Utilisé', 'daily.cpExpired': 'Expiré',
       'daily.cpMonthly': 'Renouvellement mensuel', 'daily.cpStore': 'Boutique (indicateurs/camos)',
       'daily.cpExpires': 'Expire', 'daily.cpEmpty': 'Pas encore de coupons — gagnez-les à la roulette avec une série de 7 jours !',
+      'daily.lb.open': 'Saison et records',
+      'daily.lb.title': 'Daily Challenge — Saison',
+      'daily.lb.month': 'Ce mois-ci',
+      'daily.lb.tieHint': 'Le mois se gagne au plus grand nombre de bonnes réponses. Égalité : temps total le plus bas sur les bonnes réponses.',
+      'daily.lb.user': 'Trader', 'daily.lb.correct': 'Bonnes', 'daily.lb.time': 'Temps',
+      'daily.lb.empty': "Personne n'a encore marqué ce mois-ci — la question du jour peut vous placer n°1.",
+      'daily.lb.fame': 'Panthéon — les plus longues séries de l’histoire',
+      'daily.lb.fameHint': 'Une erreur ou un jour manqué brise la série. Le top 3 porte la flamme sur son nom partout sur le site — jusqu’à ce qu’on la lui prenne.',
+      'daily.lb.fameEmpty': 'Aucune série enregistrée pour le moment. La première série de 2 ouvre le livre.',
+      'daily.lb.meStreak': 'Série en cours', 'daily.lb.meBest': 'Record personnel',
+      'daily.lb.meCorrect': 'Bonnes du mois', 'daily.lb.mePos': 'Votre position',
+      'daily.lb.you': 'vous',
+      'daily.lb.chipTip': 'Série du Daily Challenge — bonnes réponses consécutives',
       'daily.monthNote': 'Votre plan Premium vient d\'être prolongé de 30 jours. Profitez-en !',
       'daily.prize.d5': '5% de réduction sur votre prochain renouvellement',
       'daily.prize.d10': '10% de réduction sur votre prochain renouvellement',
@@ -9556,6 +9673,19 @@
       'daily.cpActive': 'Ativo', 'daily.cpUsed': 'Usado', 'daily.cpExpired': 'Expirado',
       'daily.cpMonthly': 'Renovação mensal', 'daily.cpStore': 'Loja (indicadores/camos)',
       'daily.cpExpires': 'Expira', 'daily.cpEmpty': 'Ainda sem cupons — ganhe na roleta com uma sequência de 7 dias!',
+      'daily.lb.open': 'Temporada e recordes',
+      'daily.lb.title': 'Daily Challenge — Temporada',
+      'daily.lb.month': 'Este mês',
+      'daily.lb.tieHint': 'Ganha o mês quem somar mais respostas corretas. Empate: menor tempo total nas corretas.',
+      'daily.lb.user': 'Trader', 'daily.lb.correct': 'Corretas', 'daily.lb.time': 'Tempo',
+      'daily.lb.empty': 'Ninguém pontuou este mês ainda — a pergunta de hoje pode te colocar em #1.',
+      'daily.lb.fame': 'Hall da fama — as maiores sequências da história',
+      'daily.lb.fameHint': 'Um erro ou um dia pulado quebra a sequência. O top 3 carrega a chama no nome pelo site inteiro — até alguém tomá-la.',
+      'daily.lb.fameEmpty': 'Ainda não há sequências registradas. A primeira sequência de 2 abre o livro.',
+      'daily.lb.meStreak': 'Sequência atual', 'daily.lb.meBest': 'Recorde pessoal',
+      'daily.lb.meCorrect': 'Corretas do mês', 'daily.lb.mePos': 'Sua posição',
+      'daily.lb.you': 'você',
+      'daily.lb.chipTip': 'Sequência do Daily Challenge — respostas corretas seguidas',
       'daily.monthNote': 'Seu plano Premium acaba de ser estendido por 30 dias. Aproveite!',
       'daily.prize.d5': '5% de desconto na sua próxima renovação',
       'daily.prize.d10': '10% de desconto na sua próxima renovação',
@@ -12175,7 +12305,16 @@
       const meta = document.createElement('div');
       const a = document.createElement('div'); a.className = 'post-author';
       if (window.renderRankBadge && p.author_rank) { a.appendChild(window.renderRankBadge(p.author_rank, 17)); }
-      a.appendChild(document.createTextNode(p.author));
+      const nameSp = document.createElement('span');
+      nameSp.textContent = p.author;
+      if (p.author_fame >= 1 && p.author_fame <= 3) nameSp.className = 'fame-name f' + p.author_fame;
+      a.appendChild(nameSp);
+      if (p.author_streak >= 2) {
+        const sc = document.createElement('span'); sc.className = 'streak-chip';
+        sc.textContent = '🔥' + p.author_streak;
+        sc.title = T('daily.lb.chipTip');
+        a.appendChild(sc);
+      }
       if (window.RANK_NAMES && p.author_rank) {
         const tag = document.createElement('span'); tag.className = 'rank-tag';
         tag.textContent = window.RANK_NAMES[p.author_rank - 1] || '';
@@ -12241,7 +12380,16 @@
       if (!c.deleted) head.appendChild(avatar(c.author, 'comment-avatar'));
       const au = document.createElement('span'); au.className = 'comment-author';
       if (!c.deleted && window.renderRankBadge && c.author_rank) { au.appendChild(window.renderRankBadge(c.author_rank, 15)); }
-      au.appendChild(document.createTextNode(c.deleted ? '' : c.author));
+      const cName = document.createElement('span');
+      cName.textContent = c.deleted ? '' : c.author;
+      if (!c.deleted && c.author_fame >= 1 && c.author_fame <= 3) cName.className = 'fame-name f' + c.author_fame;
+      au.appendChild(cName);
+      if (!c.deleted && c.author_streak >= 2) {
+        const csc = document.createElement('span'); csc.className = 'streak-chip';
+        csc.textContent = '🔥' + c.author_streak;
+        csc.title = T('daily.lb.chipTip');
+        au.appendChild(csc);
+      }
       if (!c.deleted && window.RANK_NAMES && c.author_rank) {
         const tag = document.createElement('span'); tag.className = 'rank-tag';
         tag.textContent = window.RANK_NAMES[c.author_rank - 1] || '';
@@ -22731,8 +22879,93 @@
           });
         }
 
+        // ── Season leaderboard (month board + hall of fame) ──
+        function lbTime(s) {
+          s = Math.round(s || 0);
+          const m = Math.floor(s / 60);
+          return m + ':' + String(s % 60).padStart(2, '0');
+        }
+        function fameSpan(name, famePos) {
+          const sp = document.createElement('span');
+          sp.textContent = name;
+          if (famePos >= 1 && famePos <= 3) sp.className = 'fame-name f' + famePos;
+          return sp;
+        }
+        async function openLeaderboard() {
+          let d;
+          try {
+            const res = await fetch('/api/daily/leaderboard');
+            if (!res.ok) return;
+            d = await res.json();
+          } catch (e) { return; }
+          const famePos = {};
+          (d.fame || []).forEach(f => { famePos[f.username] = f.pos; });
+          // your numbers
+          const me = d.me || {};
+          const cells = [
+            [me.streak ?? 0, T('daily.lb.meStreak')],
+            [me.best_streak ?? 0, T('daily.lb.meBest')],
+            [me.correct ?? 0, T('daily.lb.meCorrect')],
+            [me.pos ? '#' + me.pos : '—', T('daily.lb.mePos')],
+          ];
+          const meBox = $('dlb-me'); meBox.innerHTML = '';
+          cells.forEach(([n, l]) => {
+            const c = document.createElement('div'); c.className = 'dlb-me-cell';
+            const a = document.createElement('div'); a.className = 'dlb-me-num'; a.textContent = n;
+            const b = document.createElement('div'); b.className = 'dlb-me-lbl'; b.textContent = l;
+            c.appendChild(a); c.appendChild(b); meBox.appendChild(c);
+          });
+          // month label 'YYYY-MM' → localized month name
+          const [yy, mm] = (d.month || '').split('-').map(Number);
+          $('dlb-month-label').textContent = '· ' + new Date(Date.UTC(yy, mm - 1, 1))
+            .toLocaleDateString(currentLang, { month: 'long', year: 'numeric', timeZone: 'UTC' });
+          // the board
+          const body = $('dlb-rows'); body.innerHTML = '';
+          const rows = d.rows || [];
+          $('dlb-empty').style.display = rows.length ? 'none' : '';
+          $('dlb-table').style.display = rows.length ? '' : 'none';
+          let prevPos = 0;
+          rows.forEach(r => {
+            if (prevPos && r.pos > prevPos + 1) {     // gap before your far-away row
+              const g = document.createElement('tr'); g.className = 'dlb-gap-row';
+              g.innerHTML = '<td colspan="4">⋯</td>'; body.appendChild(g);
+            }
+            prevPos = r.pos;
+            const tr = document.createElement('tr');
+            if (r.me) tr.className = 'dlb-mine';
+            const td1 = document.createElement('td'); td1.className = 'dlb-num';
+            td1.textContent = r.pos <= 3 ? ['🥇', '🥈', '🥉'][r.pos - 1] : r.pos;
+            const td2 = document.createElement('td');
+            td2.appendChild(fameSpan(r.username, famePos[r.username]));
+            if (r.me) td2.appendChild(document.createTextNode(' · ' + T('daily.lb.you')));
+            const td3 = document.createElement('td'); td3.className = 'dlb-num'; td3.textContent = r.correct;
+            const td4 = document.createElement('td'); td4.className = 'dlb-num'; td4.textContent = lbTime(r.seconds);
+            tr.append(td1, td2, td3, td4); body.appendChild(tr);
+          });
+          // hall of fame
+          const fbody = $('dlb-fame-rows'); fbody.innerHTML = '';
+          const fame = d.fame || [];
+          $('dlb-fame-empty').style.display = fame.length ? 'none' : '';
+          $('dlb-fame-table').style.display = fame.length ? '' : 'none';
+          fame.forEach(f => {
+            const tr = document.createElement('tr');
+            if (f.me) tr.className = 'dlb-mine';
+            const td1 = document.createElement('td'); td1.className = 'dlb-num';
+            td1.textContent = f.pos <= 3 ? ['🥇', '🥈', '🥉'][f.pos - 1] : f.pos;
+            const td2 = document.createElement('td');
+            td2.appendChild(fameSpan(f.username, f.pos));
+            if (f.me) td2.appendChild(document.createTextNode(' · ' + T('daily.lb.you')));
+            const td3 = document.createElement('td'); td3.className = 'dlb-num';
+            td3.textContent = '🔥 ' + f.best_streak;
+            tr.append(td1, td2, td3); fbody.appendChild(tr);
+          });
+          $('daily-lb-overlay').style.display = 'flex';
+        }
+
         // ── Wire up ──
         window.openMyCoupons = openCoupons;   // opened from the account menu in the nav
+        $('daily-lb-open')?.addEventListener('click', openLeaderboard);
+        $('daily-lb-close')?.addEventListener('click', () => { $('daily-lb-overlay').style.display = 'none'; });
         $('coupons-close-btn')?.addEventListener('click', () => { $('coupons-overlay').style.display = 'none'; });
         $('daily-play-btn')?.addEventListener('click', play);
         $('daily-close-btn')?.addEventListener('click', closeModal);

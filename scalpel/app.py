@@ -19,7 +19,7 @@ from datetime import datetime, timedelta, timezone
 
 from flask import (
     Flask, render_template, request, jsonify, send_file,
-    redirect, url_for, abort, make_response, session, has_request_context
+    redirect, url_for, abort, make_response, session, has_request_context, g
 )
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import (
@@ -1332,8 +1332,10 @@ class DailyQuizState(db.Model):
     total_correct = db.Column(db.Integer, default=0, nullable=False)
     # Highest streak this user has EVER reached — the hall-of-fame number.
     # Updated at the moment the streak grows, so the later reset (a miss or a
-    # skipped day) can never erase the record.
+    # skipped day) can never erase the record. `best_streak_at` is when that
+    # record was set: hall-of-fame ties go to whoever reached the number FIRST.
     best_streak = db.Column(db.Integer, default=0, nullable=False)
+    best_streak_at = db.Column(db.DateTime, nullable=True)
     served_for = db.Column(db.String(10), nullable=True)        # date the open question belongs to
     question_served_at = db.Column(db.DateTime, nullable=True)  # starts the 60s window
 
@@ -8543,8 +8545,22 @@ def reaction_summary(kind, obj_id):
     return {'counts': counts, 'mine': mine}
 
 
+def _streak_badge(user_id):
+    """(live_streak, fame_rank) for a forum author, cached per request.
+    The chip only shows from a streak of 2 — '🔥 1' is noise, not a streak."""
+    cache = getattr(g, '_streak_badges', None)
+    if cache is None:
+        cache = g._streak_badges = {}
+    if user_id not in cache:
+        st = DailyQuizState.query.filter_by(user_id=user_id).first()
+        live = _live_streak(st)
+        cache[user_id] = (live if live >= 2 else 0, _fame_rank_of(user_id))
+    return cache[user_id]
+
+
 def serialize_post(p, body=True):
     rs = reaction_summary('post', p.id)
+    streak, fame = _streak_badge(p.user_id) if p.user_id else (0, None)
     full = p.body or ''
     return {
         'id': p.id,
@@ -8554,6 +8570,8 @@ def serialize_post(p, body=True):
         'image': url_for('static', filename=p.image_path) if p.image_path else None,
         'author': p.user.username if p.user else 'Unknown',
         'author_rank': (p.user.rank or 1) if p.user else 1,
+        'author_streak': streak,
+        'author_fame': fame,
         'is_mine': p.user_id == current_user.id,
         'created_at': _as_utc(p.created_at).isoformat(),
         'comment_count': ForumComment.query.filter_by(post_id=p.id, is_deleted=False).count(),
@@ -8571,6 +8589,8 @@ def serialize_post(p, body=True):
 
 def serialize_comment(c):
     rs = reaction_summary('comment', c.id)
+    streak, fame = (0, None) if c.is_deleted or not c.user_id \
+        else _streak_badge(c.user_id)
     return {
         'id': c.id,
         'parent_id': c.parent_id,
@@ -8578,6 +8598,8 @@ def serialize_comment(c):
         'deleted': c.is_deleted,
         'author': '' if c.is_deleted else (c.user.username if c.user else 'Unknown'),
         'author_rank': 1 if c.is_deleted else ((c.user.rank or 1) if c.user else 1),
+        'author_streak': streak,
+        'author_fame': fame,
         'is_mine': (c.user_id == current_user.id) and not c.is_deleted,
         'created_at': _as_utc(c.created_at).isoformat(),
         'reactions': rs['counts'],
@@ -10027,6 +10049,112 @@ def _daily_status_payload(st):
     }
 
 
+# ── Seasons: monthly leaderboard + hall of fame ────────────────────────────
+def _live_streak(st):
+    """The streak as the rules see it RIGHT NOW: a skipped day counts as a
+    fail, so a streak whose last answer is older than yesterday is already
+    dead even if the row still says otherwise (the row is only rewritten
+    when the user next touches the daily)."""
+    if not st or not st.streak or not st.last_played:
+        return 0
+    try:
+        last = datetime.strptime(st.last_played, '%Y-%m-%d').date()
+    except ValueError:
+        return 0
+    return st.streak if (datetime.now(timezone.utc).date() - last).days <= 1 else 0
+
+
+_FAME_CACHE = {'at': 0.0, 'top': []}
+
+
+def _fame_top(n=10):
+    """Hall of fame: highest best_streak ever, ties to whoever set it FIRST
+    (unknown date = later, so a fresh record never loses to a backfill).
+    Cached 60s: the forum asks for this on every feed render."""
+    now = time.time()
+    if now - _FAME_CACHE['at'] > 60 or len(_FAME_CACHE['top']) < n:
+        rows = (db.session.query(DailyQuizState, User.username)
+                .join(User, User.id == DailyQuizState.user_id)
+                .filter(DailyQuizState.best_streak > 0)
+                .order_by(DailyQuizState.best_streak.desc(),
+                          db.func.coalesce(DailyQuizState.best_streak_at,
+                                           datetime.max).asc(),
+                          DailyQuizState.user_id.asc())
+                .limit(n).all())
+        _FAME_CACHE['top'] = [{'user_id': st.user_id, 'username': uname,
+                               'best_streak': st.best_streak}
+                              for st, uname in rows]
+        _FAME_CACHE['at'] = now
+    return _FAME_CACHE['top'][:n]
+
+
+def _fame_rank_of(user_id):
+    """1..3 if this user is on the hall-of-fame podium, else None. This is the
+    'nombre encendido' — the only cosmetic on the site that can be LOST."""
+    for i, row in enumerate(_fame_top(3)):
+        if row['user_id'] == user_id:
+            return i + 1
+    return None
+
+
+def _month_ranking(month_prefix, limit=20):
+    """The month's board from the answer log: most correct answers wins, ties
+    broken by the LOWEST sum of seconds across the correct answers (failed
+    answers' seconds don't count — you can't be punished on time for a
+    question you already lost)."""
+    return (db.session.query(
+                DailyAnswerLog.user_id,
+                db.func.count().label('correct'),
+                db.func.sum(DailyAnswerLog.seconds).label('seconds'))
+            .filter(DailyAnswerLog.correct.is_(True),
+                    DailyAnswerLog.day.like(month_prefix + '-%'))
+            .group_by(DailyAnswerLog.user_id)
+            .order_by(db.text('correct DESC, seconds ASC'))
+            .limit(limit).all())
+
+
+@app.route('/api/daily/leaderboard')
+@premium_required
+def daily_leaderboard():
+    month = datetime.now(timezone.utc).strftime('%Y-%m')
+    full = _month_ranking(month, limit=1000)
+    names = dict(db.session.query(User.id, User.username).filter(
+        User.id.in_([r.user_id for r in full[:200]] + [current_user.id])).all()) \
+        if full else {}
+    rows = []
+    me_row = None
+    for i, r in enumerate(full):
+        entry = {'pos': i + 1,
+                 'username': names.get(r.user_id, '—'),
+                 'correct': int(r.correct),
+                 'seconds': round(float(r.seconds or 0), 1),
+                 'me': r.user_id == current_user.id}
+        if entry['me']:
+            me_row = entry
+        if i < 20:
+            rows.append(entry)
+    # Your own row is ALWAYS visible: '38th, 2 correct from 30th' motivates;
+    # an invisible position expels. If you're outside the top 20 you get
+    # appended; if you haven't played this month you're simply not ranked.
+    if me_row and me_row['pos'] > 20:
+        rows.append(me_row)
+
+    st = _daily_state()
+    return jsonify({
+        'month': month,
+        'rows': rows,
+        'me': {'pos': me_row['pos'] if me_row else None,
+               'correct': me_row['correct'] if me_row else 0,
+               'seconds': me_row['seconds'] if me_row else 0,
+               'streak': _live_streak(st),
+               'best_streak': st.best_streak or 0},
+        'fame': [{'pos': i + 1, 'username': f['username'],
+                  'best_streak': f['best_streak'],
+                  'me': f['user_id'] == current_user.id}
+                 for i, f in enumerate(_fame_top(10))],
+    })
+
+
 @app.route('/api/daily/status')
 @premium_required
 def daily_status():
@@ -10097,6 +10225,7 @@ def daily_answer():
         st.total_correct += 1
         if st.streak > (st.best_streak or 0):
             st.best_streak = st.streak
+            st.best_streak_at = datetime.now(timezone.utc)
         if st.streak % DAILY_STREAK_TARGET == 0:
             st.spins_available += 1
             earned_spin = True
@@ -11569,14 +11698,23 @@ def _migrate_daily_best_streak_column():
     if 'daily_quiz_state' not in insp.get_table_names():
         return
     cols = {c['name'] for c in insp.get_columns('daily_quiz_state')}
-    if 'best_streak' in cols:
-        return
+    added = []
     with db.engine.begin() as conn:
-        conn.execute(text('ALTER TABLE daily_quiz_state '
-                          'ADD COLUMN best_streak INTEGER DEFAULT 0'))
-        conn.execute(text('UPDATE daily_quiz_state SET best_streak = streak '
-                          'WHERE streak > COALESCE(best_streak, 0)'))
-    app.logger.info('Migrated daily_quiz_state: added best_streak (backfilled from streak).')
+        if 'best_streak' not in cols:
+            conn.execute(text('ALTER TABLE daily_quiz_state '
+                              'ADD COLUMN best_streak INTEGER DEFAULT 0'))
+            conn.execute(text('UPDATE daily_quiz_state SET best_streak = streak '
+                              'WHERE streak > COALESCE(best_streak, 0)'))
+            added.append('best_streak')
+        if 'best_streak_at' not in cols:
+            # No backfill: we don't know WHEN old records were set, and the
+            # hall-of-fame tiebreak treats an unknown date as "later" on
+            # purpose — a freshly earned record must never lose to a guess.
+            conn.execute(text('ALTER TABLE daily_quiz_state '
+                              'ADD COLUMN best_streak_at TIMESTAMP'))
+            added.append('best_streak_at')
+    if added:
+        app.logger.info('Migrated daily_quiz_state: added %s.', ', '.join(added))
 
 
 def _migrate_testimonial_insider_column():
