@@ -758,9 +758,12 @@ CANVAS_VIEWBOX = '0 0 640 48'
 
 def build(slugs):
     body = []
+    n = 0
     for slug, name, family, ink, art in PLATES:
         if slug not in slugs:
             continue
+        n += 1
+        name = '%02d. %s' % (n, name)
         body.append(
             '<div><div class="cap">%s <span>· %s · fondo %s</span></div>'
             '<div class="post"><div class="top ink-%s">'
