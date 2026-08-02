@@ -312,6 +312,18 @@ cada mes, si un mes no hay tanda el sistema se ve muerto).
   de año, Pascua ×4 años) + prueba de viaje en el tiempo del cobro real 7/7.
   ⚠️ **Trampa cazada:** `data-i18n-title` **está reservado para el `<title>` del documento** en
   `pages_i18n.js` (usa `querySelector`, el primero gana) → para tooltips se agregó `data-i18n-tip`.
+· ✅ **TIENDA — 3 ESTANTES + PREVIEW (2026-08-02).** Los marcos se separan por **CÓMO se consiguen**
+  (no por estado): "Siempre disponibles" (12 libres) · "Festivos" (9, ventana de 24h) · "Solo por
+  ruleta" (los 24 del calendario, jamás a la venta). ⚠️ El agrupador va por **canal**, no por estado:
+  un marco de ruleta ya ganado se lee `owned` y con `state` habría caído en el estante de comprables.
+  **Preview** = un botón 👁 en cada tarjeta que abre una **fila de foro simulada** con la placa detrás
+  (avatar+medalla+nombre+chip+pastilla), armada desde el `art` + `ink` que el server manda en cada
+  pieza → **cualquier marco futuro trae su preview gratis**, sin dibujar nada por pieza. Todo se pinta
+  con un macro Jinja `frame_card()`, así los 2 marcos que entran cada mes heredan tarjeta, estados,
+  estante y preview solos (probado viajando a septiembre: 7/7). 9 claves nuevas ×4 idiomas.
+  ⚠️ **Trampa:** meter `JSON.stringify(url)` dentro de `style="background-image:url(...)"` parte el
+  atributo (comilla doble dentro de comilla doble) y la placa sale en blanco → la URL se asigna por
+  **propiedad** (`el.style.backgroundImage`), nunca por string de HTML.
 · **FALTA del paso 5:** **los cursores — todavía sin empezar** (32×32, flecha+manito, sin
   animar, solo escritorio; `active_cursor` y el 400 del equip ya los esperan), y las tandas de camos
   (arte mensual que encarga el usuario; se publican insertando `CosmeticItem` kind='camo').
