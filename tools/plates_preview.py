@@ -31,63 +31,86 @@ OUT = os.environ.get('PLATES_OUT', '/tmp/plates_preview.png')
 # (slug, nombre, familia, ink 'light'|'dark', escena SVG)
 PLATES = [
  ('chronicles', 'Chronicles', 'épica', 'light', """
-  <defs><linearGradient id="ch-sky" x1="0" y1="0" x2="1" y2="0">
-    <stop offset="0" stop-color="#140508"/><stop offset=".5" stop-color="#2c0910"/>
-    <stop offset="1" stop-color="#611510"/></linearGradient></defs>
-  <rect width="420" height="56" fill="url(#ch-sky)"/>
+  <defs>
+    <linearGradient id="ch-sky" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#120409"/><stop offset=".5" stop-color="#2a0810"/>
+      <stop offset="1" stop-color="#5c1210"/></linearGradient>
+    <linearGradient id="ch-wing" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#c9a6f0"/><stop offset="1" stop-color="#9b6fd8"/></linearGradient>
+    <linearGradient id="ch-belly" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d9c2f7"/><stop offset="1" stop-color="#b795e8"/></linearGradient>
+  </defs>
+  <rect width="640" height="48" fill="url(#ch-sky)"/>
 
-  <!-- CASTILLO: muralla almenada + dos torres con techo cónico + portón.
-       Antes eran tres rectángulos y se leían como edificios de oficina. -->
-  <g fill="#0b0305">
-    <path d="M318 56 V40 h5 v-4 h5 v4 h5 v-4 h5 v4 h5 v-4 h5 v4 h5 v-4 h5 v4 h5 v-4 h5 v4 h5 V56 Z"/>
-    <rect x="312" y="30" width="18" height="26"/>
-    <path d="M311 30 L321 16 L331 30 Z"/>
-    <rect x="378" y="26" width="20" height="30"/>
-    <path d="M377 26 L388 10 L399 26 Z"/>
-    <path d="M348 56 V46 a7 7 0 0 1 14 0 V56 Z"/>
-  </g>
-  <g fill="#ff8a3c" opacity=".9">
-    <rect x="318" y="36" width="4" height="5"/><rect x="384" y="32" width="5" height="6"/>
-    <rect x="352" y="49" width="6" height="7"/>
-  </g>
-
-  <!-- CABEZA DE DRAGÓN saliendo de la penumbra. Un dragón entero a 56px de
-       alto no se lee (se leía como un pájaro): la cabeza sí, porque el hocico,
-       el cuerno y las fauces son siluetas inconfundibles a cualquier tamaño. -->
-  <g fill="#1e0709" stroke="#ff7a2e" stroke-width="1.2" stroke-linejoin="round">
-    <path d="M214 30 C224 22 244 16 266 16 C288 16 306 20 318 26
-             C324 29 330 30 336 29 L340 36 C330 40 316 42 300 42
-             C280 42 246 40 214 30 Z"/>
-    <path d="M226 36 C240 42 262 47 286 48 C300 48.5 312 47 320 45
-             L318 39 C306 41 292 42 278 41 C258 40 240 38 226 36 Z"/>
-    <path d="M300 20 C312 8 330 2 350 2 C338 8 330 14 326 22 Z"/>
-    <path d="M282 15 C292 6 306 2 318 2 C308 7 300 12 296 18 Z" opacity=".85"/>
-    <path d="M240 30 L236 24 L246 27 Z M256 33 L252 27 L262 30 Z
-             M272 35 L268 29 L278 32 Z"/>
-    <path d="M244 38 L248 44 L238 41 Z M262 41 L266 47 L256 44 Z"/>
-  </g>
-  <circle cx="300" cy="27" r="3.4" fill="#ffb347"/>
-  <ellipse cx="300" cy="27" rx="1.1" ry="3" fill="#1e0709"/>
-  <ellipse cx="234" cy="28" rx="2.6" ry="1.8" fill="#ff7a2e" opacity=".8"/>
-  <!-- aliento de fuego saliendo del hocico hacia la izquierda -->
-  <g fill="#ff5a1e" opacity=".8">
-    <path d="M212 32 C198 28 182 30 168 36 C182 34 196 34 210 37 Z"/>
-    <path d="M204 27 C190 22 172 22 158 26 C174 26 190 28 202 32 Z" opacity=".6"/>
-  </g>
-
-  <!-- grietas de lava a lo ancho -->
+  <!-- grietas de lava a lo ancho del lienzo real -->
   <g stroke="#ff5a1e" stroke-linecap="round" fill="none">
-    <path d="M0 48 L34 43 L60 50 L100 41 L146 48 L190 39 L238 47 L286 38 L332 46 L380 37 L420 44"
-          stroke-width="2.6" opacity=".95"/>
-    <path d="M60 50 L68 56 M146 48 L138 56 M238 47 L246 56"
-          stroke-width="1.8" opacity=".8"/>
+    <path d="M0 41 L52 37 L92 43 L152 35 L222 41 L290 33 L362 40 L436 32 L506 39 L580 31 L640 38"
+          stroke-width="2.4" opacity=".95"/>
+    <path d="M92 43 L100 48 M222 41 L214 48 M362 40 L370 48 M506 39 L500 48"
+          stroke-width="1.6" opacity=".8"/>
   </g>
-  <g stroke="#ffd08a" stroke-width="1" fill="none" opacity=".5">
-    <path d="M0 48 L34 43 L60 50 L100 41 L146 48 L190 39 L238 47 L286 38 L332 46 L380 37 L420 44"/>
+  <g stroke="#ffd08a" stroke-width=".9" fill="none" opacity=".5">
+    <path d="M0 41 L52 37 L92 43 L152 35 L222 41 L290 33 L362 40 L436 32 L506 39 L580 31 L640 38"/>
   </g>
-  <g fill="#ff8a3c" opacity=".65">
-    <circle cx="112" cy="26" r="1.3"/><circle cx="160" cy="18" r="1"/>
-    <circle cx="200" cy="28" r="1.2"/><circle cx="86" cy="34" r="1"/>
+  <g fill="#ff8a3c" opacity=".6">
+    <circle cx="146" cy="26" r="1.1"/><circle cx="228" cy="19" r=".9"/>
+    <circle cx="300" cy="27" r="1"/>
+  </g>
+
+  <!-- Dragón + aliento, arriba a la derecha. Van juntos en un grupo para poder
+       moverlos y escalarlos sin volver a trazar cada curva. -->
+  <g transform="translate(228,0) scale(0.92)">
+    <!-- ALIENTO: centro azul cascada, bordes azul eléctrico -->
+    <path d="M296 22 C280 14 262 12 244 15 C252 10 250 6 244 3
+             C240 10 232 12 224 11 C228 16 226 20 220 22
+             C210 20 200 22 192 27 C202 26 210 28 214 32
+             C208 34 204 38 202 43 C210 37 220 35 230 36
+             C226 40 226 44 229 48 C233 42 240 38 248 37
+             C258 36 270 33 280 30 C288 28 293 25 296 22 Z"
+          fill="#2b7fff" stroke="#1746d8" stroke-width="1.1" stroke-linejoin="round"/>
+    <path d="M294 23 C280 17 266 16 252 19 C258 15 257 11 253 8
+             C250 14 244 16 238 15 C241 19 239 22 234 24
+             C226 23 218 25 212 29 C220 28 226 30 229 33
+             C224 35 221 38 219 42 C226 37 234 36 242 37
+             C252 35 262 32 271 29 C280 26 290 25 294 23 Z"
+          fill="#8fe3f5"/>
+    <path d="M291 23 C280 19 270 19 260 21 C266 17 264 14 261 12
+             C258 16 253 18 248 18 C250 21 248 23 244 25
+             C238 25 232 27 228 30 C234 30 238 31 240 34
+             C245 33 252 31 260 29 C272 26 285 25 291 23 Z"
+          fill="#e6fbff" opacity=".92"/>
+
+    <!-- DRAGÓN morado -->
+    <g stroke="#25113f" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M382 30 C396 27 404 25 410 22 L406 16 L419 21 L410 29 L408 25
+               C402 30 392 34 384 35 Z" fill="#7b4fc4"/>
+      <path d="M372 36 C374 42 373 46 370 49 C374 50 379 49 381 46
+               C383 42 382 38 380 35 Z" fill="#6c43b0"/>
+      <path d="M386 33 C389 38 389 42 387 45 C391 46 395 44 396 41
+               C397 37 395 34 393 32 Z" fill="#6c43b0"/>
+      <path d="M316 20 C328 14 346 13 362 16 C378 19 390 24 396 31
+               C390 38 376 41 358 41 C340 41 324 37 314 31 Z" fill="#7b4fc4"/>
+      <path d="M324 32 C336 38 352 40 368 39 C362 41 348 42 336 40
+               C330 39 326 36 324 32 Z" fill="url(#ch-belly)"/>
+      <path d="M334 36 C335 42 334 46 331 49 C335 50 340 49 342 46
+               C344 42 343 38 341 35 Z" fill="#6c43b0"/>
+      <path d="M346 17 C350 5 362 -3 378 -4 C375 3 375 8 377 13
+               C382 7 389 3 396 2 C391 9 389 15 389 21
+               C379 18 361 16 346 17 Z" fill="url(#ch-wing)"/>
+      <path d="M378 -3 L379 13 M396 3 L389 20" stroke="#8a5fd0" stroke-width="1" fill="none"/>
+      <path d="M296 20 C296 12 304 6 314 6 C324 6 331 12 331 20
+               C331 27 324 32 314 32 C304 32 296 27 296 20 Z" fill="#7b4fc4"/>
+      <path d="M296 17 C291 17 288 19 288 21 C288 23 291 25 296 25
+               C299 25 301 23 301 21 C301 19 299 17 296 17 Z" fill="#7b4fc4"/>
+      <path d="M289 23 C292 26 298 28 304 28 C300 30 292 29 288 26 Z" fill="#3a1f5e"/>
+      <path d="M307 7 C305 2 306 -2 309 -3 C312 1 312 5 311 8 Z" fill="#e8d9a8"/>
+      <path d="M321 7 C321 2 323 -2 327 -2 C328 2 327 6 324 8 Z" fill="#e8d9a8"/>
+      <path d="M338 14 L342 8 L347 15 Z M354 15 L358 9 L363 16 Z" fill="#5d38a0"/>
+    </g>
+    <ellipse cx="316" cy="16" rx="5" ry="5.6" fill="#ffffff" stroke="#25113f" stroke-width="1.2"/>
+    <circle cx="317.5" cy="16.5" r="2.4" fill="#25113f"/>
+    <circle cx="318.4" cy="15.4" r="0.9" fill="#ffffff"/>
+    <circle cx="298" cy="14.5" r="1.1" fill="#3a1f5e"/>
   </g>
  """),
  ('arcade', 'Insert Coin', 'retro', 'light', """
@@ -324,7 +347,7 @@ PAGE = """<!doctype html><meta charset="utf-8">
  .cap{font-size:11.5px;font-weight:800;color:#5a6172;margin-bottom:5px;letter-spacing:.03em;}
  .cap span{font-weight:600;opacity:.7;}
  .post{background:#fff;border:1px solid #e4e6ec;border-radius:12px;padding:11px 13px;
-       margin-bottom:14px;}
+       margin-bottom:14px;max-width:660px;}
  .top{display:flex;align-items:center;gap:8px;position:relative;}
  .plate{position:absolute;left:-8px;top:-6px;bottom:-6px;right:-8px;border-radius:9px;
         z-index:1;overflow:hidden;}
@@ -354,6 +377,12 @@ __BODY__
 """
 
 
+# Lienzo real de la placa: MUY ancho y bajo. Autorar en 420x56 y estirar a
+# 624x48 deformaba el doble en horizontal — por eso el dragón salía aplastado.
+CANVAS = {'chronicles': '0 0 640 48'}
+DEFAULT_CANVAS = '0 0 420 56'
+
+
 def build(slugs):
     body = []
     for slug, name, family, ink, art in PLATES:
@@ -362,12 +391,13 @@ def build(slugs):
         body.append(
             '<div><div class="cap">%s <span>· %s · fondo %s</span></div>'
             '<div class="post"><div class="top ink-%s">'
-            '<div class="plate"><svg viewBox="0 0 420 56" preserveAspectRatio="none">%s</svg></div>'
+            '<div class="plate"><svg viewBox="%s" preserveAspectRatio="none">%s</svg></div>'
             '<div class="av">M</div><span class="medal"></span>'
             '<span class="nm">marcus_dw</span><span class="chip">🔥12</span>'
             '<span class="pill">Trading Legend</span></div>'
             '<div class="ttl">Sweep del PDL y reclaim</div></div></div>'
-            % (name, family, 'oscuro' if ink == 'light' else 'claro', ink, art))
+            % (name, family, 'oscuro' if ink == 'light' else 'claro', ink,
+               CANVAS.get(slug, DEFAULT_CANVAS), art))
     return PAGE.replace('__BODY__', '\n'.join(body))
 
 
