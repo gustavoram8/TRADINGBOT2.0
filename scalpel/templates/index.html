@@ -6643,39 +6643,12 @@
                 <circle cx="140" cy="140" r="136" fill="url(#rl-bezel)"/>
                 <circle cx="140" cy="140" r="129" fill="none" stroke="#10131c"
                         stroke-width="6" stroke-dasharray="2.2 31.6" opacity="0.55"/>
-                <!-- prize sectors (angles must match Daily.SEGMENTS in JS) -->
-                <path d="M140 140 L140 18 A122 122 0 0 1 211.7 238.7 Z" fill="url(#rl-s1)" stroke="rgba(232,198,106,0.45)" stroke-width="1"/>
-                <path d="M140 140 L211.7 238.7 A122 122 0 0 1 24 177.7 Z" fill="url(#rl-s2)" stroke="rgba(232,198,106,0.45)" stroke-width="1"/>
-                <path d="M140 140 L24 177.7 A122 122 0 0 1 41.3 68.3 Z" fill="url(#rl-s3)" stroke="rgba(232,198,106,0.45)" stroke-width="1"/>
-                <path d="M140 140 L41.3 68.3 A122 122 0 0 1 102.3 24 Z" fill="url(#rl-s4)" stroke="rgba(232,198,106,0.45)" stroke-width="1"/>
-                <path d="M140 140 L102.3 24 A122 122 0 0 1 140 18 Z" fill="url(#rl-s5)" stroke="rgba(232,198,106,0.7)" stroke-width="1.4"/>
-                <!-- labels + candlestick motifs -->
-                <g font-family="inherit" font-weight="700" fill="#e8c66a" text-anchor="middle"
-                   style="letter-spacing:0.06em">
-                  <g transform="rotate(72 140 140)">
-                    <text x="140" y="58" font-size="15">5%</text>
-                    <g fill="#e8c66a" opacity="0.3">
-                      <rect x="128" y="70" width="6" height="11" rx="1"/><rect x="130.6" y="64" width="1" height="22"/>
-                      <rect x="143" y="66" width="6" height="11" rx="1"/><rect x="145.6" y="61" width="1" height="22"/>
-                    </g>
-                  </g>
-                  <g transform="rotate(198 140 140)">
-                    <text x="140" y="58" font-size="15" transform="rotate(180 140 53)">10%</text>
-                    <g fill="#e8c66a" opacity="0.3" transform="rotate(180 140 75)">
-                      <rect x="128" y="70" width="6" height="11" rx="1"/><rect x="130.6" y="64" width="1" height="22"/>
-                      <rect x="143" y="66" width="6" height="11" rx="1"/><rect x="145.6" y="61" width="1" height="22"/>
-                    </g>
-                  </g>
-                  <g transform="rotate(279 140 140)">
-                    <text x="140" y="58" font-size="14">15%</text>
-                  </g>
-                  <g transform="rotate(324 140 140)">
-                    <text x="140" y="56" font-size="12.5" fill="#f3d57c">25%</text>
-                  </g>
-                  <g transform="rotate(351 140 140)">
-                    <text x="140" y="54" font-size="10.5" fill="#10131c" font-weight="800">1M ★</text>
-                  </g>
-                </g>
+                <!-- Sectors are built by JS from the month's batch (buildWheel).
+                     They used to be five hardcoded discount slices — the wheel
+                     kept promising "25% OFF" long after the engine stopped
+                     handing discounts out. Now the graphic can only ever show
+                     what the server actually has to give. -->
+                <g id="rl-sectors"></g>
               </svg>
             </div>
             <!-- fixed hub: stays still while the wheel spins around it -->
@@ -11757,6 +11730,16 @@
           var qt = document.querySelector('.tab[data-tab="quiz"]');
           if (qt) qt.click();
           else if (typeof switchTab === 'function') switchTab('quiz');
+        } catch (e) {}
+        // Go through the real opener, never straight to the overlay: the
+        // opener is what asks the server for the batch and decides between
+        // the wheel and the announcement. Bypassing it is exactly how the
+        // demo kept showing the retired discount wheel.
+        try {
+          if (window.Quiz && typeof window.Quiz.openRoulette === 'function') {
+            window.Quiz.openRoulette();
+            return;
+          }
         } catch (e) {}
         var ov = document.getElementById('roulette-overlay');
         if (ov) ov.style.display = '';
@@ -22669,14 +22652,10 @@
         // The question bank does NOT exist in the browser: /api/daily/start
         // returns today's question (texts only, per-user rotation) and
         // /api/daily/answer returns the verdict + correct index + explanation.
-        // Segment geometry must match the conic-gradient in .roulette-wheel CSS.
-        const SEGMENTS = [
-          { key:'d5',    from:0,   to:144 },
-          { key:'d10',   from:144, to:252 },
-          { key:'d15',   from:252, to:306 },
-          { key:'d25',   from:306, to:342 },
-          { key:'month', from:342, to:360 },
-        ];
+        // Wheel sectors, rebuilt from the month's batch every time the modal
+        // opens (see buildWheel). Angles are degrees CLOCKWISE from 12 o'clock,
+        // which is where the pointer sits.
+        let SEGMENTS = [];
         let status = null;
         let timerId = null;
         let answered = false;
@@ -22861,6 +22840,53 @@
         // month has a published batch; until then the modal announces the next
         // batch date and how many spins the user has banked. Asking the server
         // on every open keeps the modal honest the day a batch goes live.
+        // Draw one sector per piece of the batch. A piece already won is dimmed
+        // and ticked: the wheel doubles as the batch's checklist, and it can
+        // never advertise something the engine will not hand out.
+        const KIND_FILL = { camo:'url(#rl-s5)', frame:'url(#rl-s3)', cursor:'url(#rl-s1)' };
+        function buildWheel(items) {
+          const g = $('rl-sectors');
+          if (!g) return;
+          g.innerHTML = '';
+          SEGMENTS = [];
+          const n = items.length;
+          if (!n) return;
+          const NS = 'http://www.w3.org/2000/svg';
+          const step = 360 / n;
+          const pt = a => {
+            const r = (a - 90) * Math.PI / 180;
+            return [140 + 122 * Math.cos(r), 140 + 122 * Math.sin(r)];
+          };
+          items.forEach((it, i) => {
+            const from = i * step, to = (i + 1) * step;
+            SEGMENTS.push({ slug: it.slug, from, to });
+            const [x1, y1] = pt(from), [x2, y2] = pt(to);
+            const path = document.createElementNS(NS, 'path');
+            path.setAttribute('d', `M140 140 L${x1.toFixed(1)} ${y1.toFixed(1)} `
+              + `A122 122 0 ${step > 180 ? 1 : 0} 1 ${x2.toFixed(1)} ${y2.toFixed(1)} Z`);
+            path.setAttribute('fill', KIND_FILL[it.kind] || 'url(#rl-s2)');
+            path.setAttribute('stroke', it.kind === 'camo'
+              ? 'rgba(232,198,106,0.75)' : 'rgba(232,198,106,0.4)');
+            path.setAttribute('stroke-width', it.kind === 'camo' ? '1.4' : '1');
+            if (it.owned) path.setAttribute('opacity', '0.4');
+            g.appendChild(path);
+
+            const lab = document.createElementNS(NS, 'g');
+            lab.setAttribute('transform', `rotate(${(from + to) / 2} 140 140)`);
+            const txt = document.createElementNS(NS, 'text');
+            txt.setAttribute('x', '140'); txt.setAttribute('y', '62');
+            txt.setAttribute('text-anchor', 'middle');
+            txt.setAttribute('font-size', '10.5');
+            txt.setAttribute('font-weight', '800');
+            txt.setAttribute('fill', it.kind === 'camo' ? '#10131c' : '#e8c66a');
+            if (it.owned) txt.setAttribute('opacity', '0.75');
+            const name = it.name.length > 15 ? it.name.slice(0, 14) + '…' : it.name;
+            txt.textContent = (it.owned ? '✓ ' : '') + name;
+            lab.appendChild(txt);
+            g.appendChild(lab);
+          });
+        }
+
         async function openRoulette() {
           $('roulette-prize').style.display = 'none';
           let t = null;
@@ -22869,6 +22895,7 @@
             if (res.ok) t = await res.json();
           } catch (e) {}
           const hasTanda = !!(t && t.items && t.items.length);
+          buildWheel(hasTanda ? t.items : []);
           $('roulette-stage').style.display = hasTanda ? '' : 'none';
           $('roulette-spin-btn').style.display = hasTanda ? '' : 'none';
           $('roulette-spin-btn').disabled = false;
@@ -22902,7 +22929,8 @@
             data = await res.json();
           } catch(e) { btn.disabled = false; return; }
 
-          const seg = SEGMENTS.find(s => s.key === data.prize_key) || SEGMENTS[0];
+          const seg = SEGMENTS.find(s => s.slug === data.slug) || SEGMENTS[0];
+          if (!seg) { btn.disabled = false; return; }
           // land at a random point inside the winning segment (pointer is at 0°/top)
           const margin = (seg.to - seg.from) * 0.18;
           const landAt = seg.from + margin + Math.random() * (seg.to - seg.from - margin * 2);
@@ -23087,7 +23115,7 @@
           });
         });
 
-        return { load, renderCard };
+        return { load, renderCard, openRoulette };
       })();
 
       renderMethods();
@@ -23095,6 +23123,7 @@
 
       window.Quiz = {
         open() { loadProgress().then(()=>{ renderMethods(); showScreen('welcome'); }); Daily.load(); },
+        openRoulette() { Daily.openRoulette(); },
         relang() {
           renderMethods();
           Daily.renderCard();
