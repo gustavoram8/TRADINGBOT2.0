@@ -22922,8 +22922,11 @@
           // the board
           const body = $('dlb-rows'); body.innerHTML = '';
           const rows = d.rows || [];
+          // Hide the WRAPPER, not just the table: the wrapper carries the
+          // border, so hiding only the table leaves a stray 2px line floating
+          // above the empty-state message.
           $('dlb-empty').style.display = rows.length ? 'none' : '';
-          $('dlb-table').style.display = rows.length ? '' : 'none';
+          $('dlb-table').closest('.dlb-table-wrap').style.display = rows.length ? '' : 'none';
           let prevPos = 0;
           rows.forEach(r => {
             if (prevPos && r.pos > prevPos + 1) {     // gap before your far-away row
@@ -22946,7 +22949,7 @@
           const fbody = $('dlb-fame-rows'); fbody.innerHTML = '';
           const fame = d.fame || [];
           $('dlb-fame-empty').style.display = fame.length ? 'none' : '';
-          $('dlb-fame-table').style.display = fame.length ? '' : 'none';
+          $('dlb-fame-table').closest('.dlb-table-wrap').style.display = fame.length ? '' : 'none';
           fame.forEach(f => {
             const tr = document.createElement('tr');
             if (f.me) tr.className = 'dlb-mine';
