@@ -135,6 +135,10 @@
     .cos-state.rl { color:#b3541e; }
     .cos-state.ch { color:#8a6d1d; }
     .cos-state.ow { color:#1a7a3f; }
+    /* Festive piece outside its 24h window: visible and priced, but not
+       buyable — the date is the whole point of the card. */
+    .cos-state.lk { color:#6b7280; display:inline-flex; align-items:center; gap:5px; }
+    .cos-state.lk::before { content:'🔒'; font-size:12px; }
     .camo-card.ended { filter:grayscale(1); opacity:.62; }
     .camo-card.ended:hover { transform:none; box-shadow:none; }
     .cos-season { font-size:11px; font-weight:700; color:var(--muted); }
@@ -389,6 +393,14 @@
             {% else %}<button type="button" class="camo-cta on act fr-wear" data-frslug="{{ it.slug }}">
               <span data-i18n="camos.frWear">Wear it</span></button>{% endif %}
           {% elif it.state == 'buy' %}<span class="camo-price">${{ '%.2f'|format(it.price) }}</span>
+            <span style="display:flex;gap:8px;">
+              <button type="button" class="camo-cart-btn cos-cart" data-ref="{{ it.ref }}"
+                      data-i18n="camos.cartAdd">Add to cart</button>
+              <button type="button" class="camo-cta on act cos-buy" data-ref="{{ it.ref }}"
+                      data-i18n="camos.frGet">Buy it</button>
+            </span>
+          {% elif it.state == 'locked' %}<span class="camo-price">${{ '%.2f'|format(it.price) }}</span>
+            <span class="cos-state lk"><span data-i18n="camos.stLocked">Opens on</span> {{ it.opens }}</span>
           {% elif it.state == 'roulette' %}<span class="cos-state rl" data-i18n="camos.stRoulette">Roulette only — this month</span>
           {% elif it.state == 'champion' %}<span class="cos-state ch" data-i18n="camos.stChampion">Monthly champion only</span>
           {% else %}<span class="cos-season"><span data-i18n="camos.stEnded">Season ended</span> — {{ it.season }}</span>{% endif %}
@@ -416,6 +428,14 @@
         <div class="camo-foot">
           {% if it.state == 'owned' %}<span class="cos-state ow" data-i18n="camos.stOwned">Yours</span>
           {% elif it.state == 'buy' %}<span class="camo-price">${{ '%.2f'|format(it.price) }}</span>
+            <span style="display:flex;gap:8px;">
+              <button type="button" class="camo-cart-btn cos-cart" data-ref="{{ it.ref }}"
+                      data-i18n="camos.cartAdd">Add to cart</button>
+              <button type="button" class="camo-cta on act cos-buy" data-ref="{{ it.ref }}"
+                      data-i18n="camos.frGet">Buy it</button>
+            </span>
+          {% elif it.state == 'locked' %}<span class="camo-price">${{ '%.2f'|format(it.price) }}</span>
+            <span class="cos-state lk"><span data-i18n="camos.stLocked">Opens on</span> {{ it.opens }}</span>
           {% elif it.state == 'roulette' %}<span class="cos-state rl" data-i18n="camos.stRoulette">Roulette only — this month</span>
           {% elif it.state == 'champion' %}<span class="cos-state ch" data-i18n="camos.stChampion">Monthly champion only</span>
           {% else %}<span class="cos-season"><span data-i18n="camos.stEnded">Season ended</span> — {{ it.season }}</span>{% endif %}
@@ -445,7 +465,8 @@
     active: {{ (camo_active or '')|tojson }},
     ready:  {{ camo_ready|default([])|tojson }},
     authed: {{ camo_authed|default(false)|tojson }},
-    prices: {{ camo_prices|default({})|tojson }}
+    prices: {{ camo_prices|default({})|tojson }},
+    locked: {{ camo_locked|default({})|tojson }}
   };
   (function () {
     var S = window.CAMO_STATE;
@@ -458,10 +479,10 @@
     var lang = 'en';
     try { var l = localStorage.getItem('scalpel_lang'); if (['en','es','fr','pt'].indexOf(l) >= 0) lang = l; } catch (e) {}
     var T = {
-      en:{activate:'Activate',active:'Active ✓',owned:'Owned',deactivate:'Use default',get:'Get this skin',soon:'Payments are coming very soon',on:'Activated — ',go:'see it in the app →',off:'Reverted to the default theme',prev:'👁 Preview',hint:'Click anywhere to close',flip:'See the other look',inside:'The app wearing it',skin:'The skin itself',bought:'The skin is yours! ',err:'Could not reach PayPal — please try again',cartAdd:'Add to cart',cartIn:'In the cart ✓',cartBought:'The whole cart is yours! ',cartErr:'Something in the cart is no longer available'},
-      es:{activate:'Activar',active:'Activo ✓',owned:'Adquirido',deactivate:'Usar default',get:'Obtener skin',soon:'Los pagos llegan muy pronto',on:'Activado — ',go:'velo en la app →',off:'Volviste al tema por defecto',prev:'👁 Vista previa',hint:'Haz clic en cualquier parte para cerrar',flip:'Ver el otro look',inside:'La app con el camo puesto',skin:'La piel del camo',bought:'¡La skin es tuya! ',err:'No pudimos conectar con PayPal — intenta de nuevo',cartAdd:'Añadir al carrito',cartIn:'En el carrito ✓',cartBought:'¡Todo el carrito es tuyo! ',cartErr:'Algo del carrito ya no está disponible'},
-      fr:{activate:'Activer',active:'Actif ✓',owned:'Acquis',deactivate:'Défaut',get:'Obtenir ce skin',soon:'Les paiements arrivent très bientôt',on:'Activé — ',go:'à voir dans l\'app →',off:'Retour au thème par défaut',prev:'👁 Aperçu',hint:'Cliquez n\'importe où pour fermer',flip:'Voir l\'autre look',inside:'L\'app avec le camo',skin:'La peau du camo',bought:'Le skin est à vous ! ',err:'Impossible de joindre PayPal — réessayez',cartAdd:'Ajouter au panier',cartIn:'Dans le panier ✓',cartBought:'Tout le panier est à vous ! ',cartErr:'Un article du panier n\'est plus disponible'},
-      pt:{activate:'Ativar',active:'Ativo ✓',owned:'Adquirido',deactivate:'Usar padrão',get:'Obter skin',soon:'Os pagamentos chegam em breve',on:'Ativado — ',go:'veja no app →',off:'Voltou ao tema padrão',prev:'👁 Prévia',hint:'Clique em qualquer lugar para fechar',flip:'Ver o outro visual',inside:'O app com o camo',skin:'A pele do camo',bought:'A skin é sua! ',err:'Não foi possível conectar ao PayPal — tente de novo',cartAdd:'Adicionar ao carrinho',cartIn:'No carrinho ✓',cartBought:'O carrinho inteiro é seu! ',cartErr:'Algo do carrinho não está mais disponível'}
+      en:{activate:'Activate',active:'Active ✓',owned:'Owned',deactivate:'Use default',get:'Get this skin',soon:'Payments are coming very soon',on:'Activated — ',go:'see it in the app →',off:'Reverted to the default theme',prev:'👁 Preview',hint:'Click anywhere to close',flip:'See the other look',inside:'The app wearing it',skin:'The skin itself',bought:'The skin is yours! ',err:'Could not reach PayPal — please try again',cartAdd:'Add to cart',cartIn:'In the cart ✓',cartBought:'The whole cart is yours! ',cartErr:'Something in the cart is no longer available',locked:'Opens on'},
+      es:{activate:'Activar',active:'Activo ✓',owned:'Adquirido',deactivate:'Usar default',get:'Obtener skin',soon:'Los pagos llegan muy pronto',on:'Activado — ',go:'velo en la app →',off:'Volviste al tema por defecto',prev:'👁 Vista previa',hint:'Haz clic en cualquier parte para cerrar',flip:'Ver el otro look',inside:'La app con el camo puesto',skin:'La piel del camo',bought:'¡La skin es tuya! ',err:'No pudimos conectar con PayPal — intenta de nuevo',cartAdd:'Añadir al carrito',cartIn:'En el carrito ✓',cartBought:'¡Todo el carrito es tuyo! ',cartErr:'Algo del carrito ya no está disponible',locked:'Se abre el'},
+      fr:{activate:'Activer',active:'Actif ✓',owned:'Acquis',deactivate:'Défaut',get:'Obtenir ce skin',soon:'Les paiements arrivent très bientôt',on:'Activé — ',go:'à voir dans l\'app →',off:'Retour au thème par défaut',prev:'👁 Aperçu',hint:'Cliquez n\'importe où pour fermer',flip:'Voir l\'autre look',inside:'L\'app avec le camo',skin:'La peau du camo',bought:'Le skin est à vous ! ',err:'Impossible de joindre PayPal — réessayez',cartAdd:'Ajouter au panier',cartIn:'Dans le panier ✓',cartBought:'Tout le panier est à vous ! ',cartErr:'Un article du panier n\'est plus disponible',locked:'Ouvre le'},
+      pt:{activate:'Ativar',active:'Ativo ✓',owned:'Adquirido',deactivate:'Usar padrão',get:'Obter skin',soon:'Os pagamentos chegam em breve',on:'Ativado — ',go:'veja no app →',off:'Voltou ao tema padrão',prev:'👁 Prévia',hint:'Clique em qualquer lugar para fechar',flip:'Ver o outro visual',inside:'O app com o camo',skin:'A pele do camo',bought:'A skin é sua! ',err:'Não foi possível conectar ao PayPal — tente de novo',cartAdd:'Adicionar ao carrinho',cartIn:'No carrinho ✓',cartBought:'O carrinho inteiro é seu! ',cartErr:'Algo do carrinho não está mais disponível',locked:'Abre em'}
     }[lang];
     // Camos whose theme has a second look (light/dark) worth flipping to.
     var PREV_ALT = { standard:1, mission:1, pole:1 };
@@ -565,7 +586,15 @@
         // Plan camos (Standard/Premium) aren't purchasable on their own — they
         // come bundled with the plan, so their footer stays informational.
         if (isPlanCamo) return;
-        var inCart = Cart.has(slug);
+        // Festive camo outside its 24h window: priced, visible, not buyable.
+        var lockedOn = S.locked && S.locked[slug];
+        if (lockedOn !== undefined){
+          foot.innerHTML = '<span class="camo-price">'+price+'</span>'
+            + '<span class="cos-state lk">'+T.locked+' '+lockedOn+'</span>';
+          return;
+        }
+        var ref = 'camo:' + slug;
+        var inCart = Cart.has(ref);
         foot.innerHTML = '<span class="camo-price">'+price+'</span>'
           + '<span style="display:flex;gap:8px;">'
           + '<button type="button" class="camo-cart-btn'+(inCart?' in':'')+'" data-cart="1">'
@@ -574,7 +603,7 @@
           + '</span>';
         foot.querySelector('[data-cart]').addEventListener('click', function(){
           if (!S.authed){ location.href='/login'; return; }
-          Cart.toggle(slug);
+          Cart.toggle(ref);
           renderAll();
         });
         foot.querySelector('[data-buy]').addEventListener('click', function(){
@@ -660,6 +689,40 @@
     function renderAll(){ document.querySelectorAll('.camo-card').forEach(renderCard); }
     renderAll();
     Cart.bar();
+    // ── Frames & cursors: cart + individual purchase. The footers are
+    //    server-rendered (price and window state are server truth), so here we
+    //    only wire the two buttons. A single-item purchase goes through the
+    //    SAME cart endpoint — one item is just a cart of one, and that keeps
+    //    one PayPal path instead of two.
+    function paintCosCart(){
+      document.querySelectorAll('.cos-cart').forEach(function(b){
+        var inC = Cart.has(b.getAttribute('data-ref'));
+        b.classList.toggle('in', inC);
+        b.textContent = inC ? T.cartIn : T.cartAdd;
+      });
+    }
+    document.querySelectorAll('.cos-cart').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        if (!S.authed){ location.href='/login'; return; }
+        Cart.toggle(btn.getAttribute('data-ref'));
+        paintCosCart();
+      });
+    });
+    document.querySelectorAll('.cos-buy').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        if (!S.authed){ location.href='/login'; return; }
+        btn.disabled = true;
+        post('/api/cosmetics/checkout', {slugs: [btn.getAttribute('data-ref')]})
+          .then(function(res){
+            if (res.ok && res.j.url){ location.href = res.j.url; return; }
+            btn.disabled = false;
+            var e = res.j && res.j.error;
+            toast(e === 'paypal_unreachable' ? T.err
+                  : e === 'window_closed' ? T.cartErr : T.soon);
+          }).catch(function(){ btn.disabled = false; toast(T.soon); });
+      });
+    });
+    paintCosCart();
     // ── Wear / take off an avatar frame. Server-rendered buttons (ownership
     //    and current wear come with the page); a click just flips it and
     //    reloads so every card reflects the single active frame.

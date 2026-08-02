@@ -1799,6 +1799,79 @@ CAMO_SEASONAL = {'santa', 'hallow', 'fourth', 'lucky', 'valentine',
 CAMO_PRICE_THEME = 4.99
 CAMO_PRICE_SEASONAL = 7.99
 COSMETIC_PRICE_CURSOR = 1.99
+# Store frames (owner's pricing, 2026-08-02): a frame sits between the cursor
+# and the camo — it is seen by everyone in the forum, but it does not reskin
+# the whole site.
+FRAME_PRICE_COMMON = 2.99
+FRAME_PRICE_FESTIVE = 3.99
+
+# ── FESTIVE WINDOWS ───────────────────────────────────────────────────────
+# A festive cosmetic can only be BOUGHT during a 24h window on its date, and
+# is locked the rest of the year. Keyed by FESTIVITY, not by product: the camo,
+# the frame and the cursor of the same festivity share one window, and a piece
+# that does not exist yet inherits the rule the day it is created.
+# ⚠️ Dates are PROVISIONAL until the owner confirms them one by one.
+# Easter is a movable feast: computed below (Anonymous Gregorian algorithm),
+# overridable per year via EASTER_OVERRIDE if the owner wants another day.
+FESTIVE_WINDOWS = {
+    'newyear':   (1, 1),
+    'valentine': (2, 14),
+    'lucky':     (3, 17),
+    'easter':    'easter',      # movable — resolved per year
+    'fourth':    (7, 4),
+    'hallow':    (10, 31),
+    'muertos':   (11, 2),
+    'frost':     (12, 21),
+    'santa':     (12, 25),
+}
+FESTIVE_WINDOW_HOURS = 24
+EASTER_OVERRIDE = {}            # {2027: (3, 28)} to pin a year by hand
+
+
+def _easter_md(year):
+    """(month, day) of Easter Sunday — Anonymous Gregorian algorithm."""
+    if year in EASTER_OVERRIDE:
+        return EASTER_OVERRIDE[year]
+    a, b, c = year % 19, year // 100, year % 100
+    d, e = b // 4, b % 4
+    f, g = (b + 8) // 25, 0
+    g = (b - f + 1) // 3
+    h = (19 * a + b - d - g + 15) % 30
+    i, k = c // 4, c % 4
+    l = (32 + 2 * e + 2 * i - h - k) % 7
+    m = (a + 11 * h + 22 * l) // 451
+    month = (h + l - 7 * m + 114) // 31
+    day = ((h + l - 7 * m + 114) % 31) + 1
+    return (month, day)
+
+
+def _festive_start(slug, year):
+    """UTC datetime when this festivity's window opens in `year`, or None."""
+    rule = FESTIVE_WINDOWS.get(slug)
+    if rule is None:
+        return None
+    month, day = _easter_md(year) if rule == 'easter' else rule
+    return datetime(year, month, day, tzinfo=timezone.utc)
+
+
+def festive_window(slug, now=None):
+    """(open_now, next_or_current_start) for a festive slug.
+
+    Windows are evaluated in UTC and last FESTIVE_WINDOW_HOURS from midnight of
+    the date. Non-festive slugs come back as (True, None) — they are always for
+    sale, so callers can use one code path for everything."""
+    if slug not in FESTIVE_WINDOWS:
+        return True, None
+    now = now or datetime.now(timezone.utc)
+    span = timedelta(hours=FESTIVE_WINDOW_HOURS)
+    # last year covers a window that started on Dec 31 and runs into January
+    for year in (now.year - 1, now.year, now.year + 1):
+        start = _festive_start(slug, year)
+        if start and start <= now < start + span:
+            return True, start
+    upcoming = [s for s in (_festive_start(slug, y) for y in (now.year, now.year + 1))
+                if s and s > now]
+    return False, (min(upcoming) if upcoming else None)
 # Display names, mirrored from the store cards (used on PayPal receipts).
 CAMO_NAMES = {
     'naval': 'Naval Command', 'highnoon': 'High Noon', 'rising-sun': 'Rising Sun',
@@ -1823,6 +1896,63 @@ def camo_store_price(slug):
     if slug not in CAMO_READY:
         return None
     return CAMO_PRICE_SEASONAL if slug in CAMO_SEASONAL else CAMO_PRICE_THEME
+
+
+def cosmetic_item_price(item):
+    """Store price of a CosmeticItem (frame / cursor), or None if it is not
+    on sale — a roulette or champion piece has no price by construction."""
+    if not item or item.channel != 'store' or not item.active:
+        return None
+    if item.kind == 'cursor':
+        return COSMETIC_PRICE_CURSOR
+    if item.kind == 'frame':
+        return (FRAME_PRICE_FESTIVE if item.slug in FESTIVE_WINDOWS
+                else FRAME_PRICE_COMMON)
+    return None
+
+
+# ── Cart references ───────────────────────────────────────────────────────
+# A cart entry is 'camo:<slug>' or 'item:<slug>'. The prefix is NOT decoration:
+# camos and cosmetic items share slugs on purpose ('santa' is both a camo and a
+# frame), so a bare slug cannot say which product it means. A bare slug is
+# still read as a camo, which keeps carts and pending orders from before this
+# change working exactly as they did.
+def parse_cosmetic_ref(ref):
+    """('camo'|'item', slug) from a cart reference."""
+    ref = str(ref or '').strip()
+    if ref.startswith('camo:'):
+        return 'camo', ref[5:]
+    if ref.startswith('item:'):
+        return 'item', ref[5:]
+    return 'camo', ref
+
+
+def resolve_cosmetic_ref(ref, user=None):
+    """(kind, slug, price, label, error) for one cart reference.
+
+    `error` is None when the reference can be bought right now; otherwise it is
+    the reason ('not_available', 'already_owned', 'window_closed') so the caller
+    can tell the buyer which item is the problem."""
+    kind, slug = parse_cosmetic_ref(ref)
+    if kind == 'camo':
+        price = camo_store_price(slug)
+        if price is None:
+            return kind, slug, None, '', 'not_available'
+        label = CAMO_NAMES.get(slug, slug)
+        owned = bool(user and user.owns_camo(slug))
+    else:
+        item = CosmeticItem.query.filter_by(slug=slug).first()
+        price = cosmetic_item_price(item)
+        if price is None:
+            return kind, slug, None, '', 'not_available'
+        label = item.name
+        owned = bool(user and UserCosmetic.query.filter_by(
+            user_id=user.id, item_id=item.id).first())
+    if owned:
+        return kind, slug, price, label, 'already_owned'
+    if not festive_window(slug)[0]:
+        return kind, slug, price, label, 'window_closed'
+    return kind, slug, price, label, None
 
 # Max number of saved Analysis Projects per plan.
 PROJECT_LIMITS = {'free': 1, 'standard': 5, 'premium': 10}
@@ -4285,8 +4415,11 @@ def camos():
             # pre-published at boot).
             if i.season and i.season > season_now:
                 continue
+            open_now, when = festive_window(i.slug)
             if i.id in owned_ids or (authed and current_user.is_admin):
                 state = 'owned'   # the admin owns the catalog (same as camos)
+            elif i.channel == 'store' and i.active and not open_now:
+                state = 'locked'  # festive piece outside its 24h window
             elif i.channel == 'store' and i.active:
                 state = 'buy'
             elif i.channel == 'champion':
@@ -4297,19 +4430,36 @@ def camos():
                 state = 'ended'
             out.append({'slug': i.slug, 'name': i.name, 'state': state,
                         'season': i.season or '',
+                        'ref': 'item:%s' % i.slug,
                         'art': ('/static/plates/%s.svg' % i.slug
                                 if kind == 'frame' and i.slug in plates_meta()
                                 else None),
                         'wearing': kind == 'frame' and i.slug == active_frame,
-                        'price': (COSMETIC_PRICE_CURSOR if kind == 'cursor'
-                                  and state == 'buy' else None)})
+                        'opens': when.strftime('%Y-%m-%d') if when else '',
+                        'price': (cosmetic_item_price(i)
+                                  if state in ('buy', 'locked') else None)})
         return out
-    prices = {s: camo_store_price(s) for s in CAMO_SLUGS}
+    # Cart prices are keyed by REFERENCE, never by bare slug: 'santa' is both a
+    # camo and a frame, so a bare-slug price map would total the wrong cart.
+    prices = {'camo:%s' % s: camo_store_price(s) for s in CAMO_SLUGS
+              if camo_store_price(s) is not None}
+    for i in CosmeticItem.query.filter_by(channel='store', active=True).all():
+        p = cosmetic_item_price(i)
+        if p is not None:
+            prices['item:%s' % i.slug] = p
+    # Festive camos follow the same 24h window as the festive frames: the rule
+    # belongs to the FESTIVITY, so every product of that festivity shares it.
+    camo_locked = {}
+    for s in CAMO_SLUGS:
+        open_now, when = festive_window(s)
+        if not open_now:
+            camo_locked[s] = when.strftime('%Y-%m-%d') if when else ''
     return render_template('camos.html',
                            camo_owned=owned, camo_active=active,
                            camo_ready=sorted(CAMO_READY), camo_authed=authed,
                            camo_paypal=PAYPAL_ENABLED,
                            camo_prices=prices,
+                           camo_locked=camo_locked,
                            cos_frames=_pack('frame'),
                            cos_cursors=_pack('cursor'))
 
@@ -4384,6 +4534,11 @@ def camo_buy():
         return jsonify({'error': 'not_available'}), 400
     if current_user.owns_camo(slug):
         return jsonify({'error': 'already_owned'}), 400
+    # Festive camos are only for sale inside their 24h window — the same gate
+    # the store card shows, enforced here so the rule cannot be skipped by
+    # calling the endpoint directly.
+    if not festive_window(slug)[0]:
+        return jsonify({'error': 'window_closed'}), 400
     if not PAYPAL_ENABLED:
         return jsonify({'error': 'soon'}), 503
     order = (CamoOrder.query
@@ -4437,18 +4592,19 @@ def cosmetics_checkout():
     slugs, seen = [], set()
     for s in raw[:24]:
         s = str(s).strip()
-        if s and s not in seen:
-            seen.add(s)
-            slugs.append(s)
+        # normalise so 'santa' and 'camo:santa' can never be charged twice
+        kind, bare = parse_cosmetic_ref(s)
+        ref = '%s:%s' % (kind, bare)
+        if bare and ref not in seen:
+            seen.add(ref)
+            slugs.append(ref)
     if not slugs:
         return jsonify({'error': 'empty_cart'}), 400
     total = 0.0
-    for s in slugs:
-        price = camo_store_price(s)
-        if price is None:
-            return jsonify({'error': 'not_available', 'slug': s}), 400
-        if current_user.owns_camo(s):
-            return jsonify({'error': 'already_owned', 'slug': s}), 400
+    for ref in slugs:
+        _kind, _slug, price, _label, err = resolve_cosmetic_ref(ref, current_user)
+        if err:
+            return jsonify({'error': err, 'slug': ref}), 400
         total += price
     if not PAYPAL_ENABLED:
         return jsonify({'error': 'soon'}), 503
@@ -6833,13 +6989,30 @@ def _activate_cosmetics_from_order(order):
     user = db.session.get(User, order.user_id)
     if not user:
         return False
-    for slug in order.slug_list():
-        user.add_camo(slug)
+    camo_slugs = []
+    for ref in order.slug_list():
+        kind, slug = parse_cosmetic_ref(ref)
+        if kind == 'camo':
+            user.add_camo(slug)
+            camo_slugs.append(slug)
+            continue
+        item = CosmeticItem.query.filter_by(slug=slug).first()
+        if not item:
+            app.logger.error('paid cart %s references unknown item %s',
+                             order.id, slug)
+            continue
+        if not UserCosmetic.query.filter_by(user_id=user.id,
+                                            item_id=item.id).first():
+            db.session.add(UserCosmetic(user_id=user.id, item_id=item.id,
+                                        source='store'))
+        # Wear it only if nothing is on — never overwrite their own choice.
+        if item.kind == 'frame' and not (user.active_frame or ''):
+            user.active_frame = item.slug
     # Switch one on only if they are still on the default theme — a skin
     # nobody sees is a purchase that never arrived, but a camo they already
     # chose is never overwritten.
     if not (user.active_camo or ''):
-        first_ready = next((s for s in order.slug_list() if s in CAMO_READY), None)
+        first_ready = next((s for s in camo_slugs if s in CAMO_READY), None)
         if first_ready:
             user.active_camo = first_ready
     order.applied_at = datetime.now(timezone.utc)
@@ -10223,6 +10396,42 @@ ROULETTE_FRAME_CALENDAR = [
 ]
 
 
+# ── The STORE frames (owner approved the art 2026-08-02) ──────────────────
+# Festive ones mirror the festive camos and are only buyable inside their 24h
+# window; the free ones are on sale all year. Slugs match the plate catalog in
+# tools/plates_preview.py, so the art ships with the item.
+STORE_FRAMES_FESTIVE = ['newyear', 'valentine', 'lucky', 'easter', 'fourth',
+                        'hallow', 'muertos', 'frost', 'santa']
+STORE_FRAMES_COMMON = ['gambit', 'beacon', 'vineyard', 'archive', 'clockwork',
+                       'windmill', 'fireflies', 'harvest', 'cascade', 'bazaar',
+                       'salar', 'express']
+
+
+def _publish_store_frames():
+    """Insert the store frames as CosmeticItem rows (channel='store', no
+    season — they do not rotate). Idempotent by slug, same as the roulette
+    publisher, and it never touches a row that already exists."""
+    meta = plates_meta()
+    added = 0
+    for slug in STORE_FRAMES_FESTIVE + STORE_FRAMES_COMMON:
+        if slug not in meta:
+            app.logger.warning('store frame %s missing from plates.json — run '
+                               'tools/build_plates.py', slug)
+            continue
+        if CosmeticItem.query.filter_by(slug=slug).first():
+            continue
+        db.session.add(CosmeticItem(slug=slug, name=meta[slug]['name'],
+                                    kind='frame', channel='store',
+                                    season=None, active=True))
+        added += 1
+    if added:
+        try:
+            db.session.commit()
+            app.logger.info('Published %d store frames.', added)
+        except Exception:
+            db.session.rollback()   # concurrent worker won the race — fine
+
+
 def _publish_roulette_frames():
     """Insert the 24 roulette frames as CosmeticItem rows (kind='frame',
     channel='roulette'). Idempotent by slug; never updates existing rows, so a
@@ -12372,6 +12581,7 @@ def init_db():
         _resync_postgres_sequences()
         _backfill_plan_camos()
         _publish_roulette_frames()
+        _publish_store_frames()
         admin_email = os.environ.get('ADMIN_EMAIL', 'mauroramirezmij@gmail.com').lower()
         admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
         admin_password = os.environ.get('ADMIN_PASSWORD', 'Codica2310$')
