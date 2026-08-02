@@ -90,7 +90,12 @@
     .stat.premium .n { color: var(--premium); }
     .stat.standard .n { color: var(--accent); }
 
-    .table-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    /* overflow-x:auto, NOT hidden: the ledger tables are wider than the card
+       (the sales one by ~300px), and `hidden` did not just crop them — it made
+       those columns unreachable, with no scrollbar to get to them. `auto` still
+       clips to the border-radius, so the rounded corners survive. */
+    .table-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+                  overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
     table { width: 100%; border-collapse: collapse; }
     thead th {
       text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
@@ -1097,7 +1102,9 @@
     </div>
 
     <!-- ── Totales ── -->
-    <div class="stat-row" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+    <!-- grid en vez de flex-wrap: con 7 tarjetas, la última quedaba sola
+         estirada a todo el ancho y se leía como un panel roto. -->
+    <div class="stat-row" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:14px;">
       {% for lbl, mes, tot in [
         ('Ventas válidas', v.count, t.count),
         ('Neto cobrado', '$%.2f'|format(v.net), '$%.2f'|format(t.net)),
