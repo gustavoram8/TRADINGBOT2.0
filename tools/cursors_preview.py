@@ -42,7 +42,9 @@ HOTSPOT = (2, 2)          # la punta, en píxeles del lienzo de 32x32
 
 def cursor_svg(body, defs=''):
     return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" '
-            'width="32" height="32"><defs>%s</defs>%s</svg>' % (defs, body))
+            'width="32" height="32"><defs>%s</defs>'
+            '<g stroke-width="1.8" stroke-linejoin="round" '
+            'stroke-linecap="round">%s</g></svg>' % (defs, body))
 
 
 # El estado ACTIVO es el cuerpo normal + un extra encima (chispa, brillo,
@@ -207,6 +209,183 @@ CURSORS = [
   ' fill="#5c4018" stroke="#33230f" stroke-width="1.7" stroke-linejoin="round"/>'
   '<path d="M13.6 22.4 L14.8 22.4 M15.4 22.4 L16.6 22.4 M17.2 22.4 L18.4 22.4"'
   ' fill="none" stroke="#ffd98f" stroke-width="1.6" stroke-linecap="round"/>', None),
+
+ # ══ LIBRES DE RULETA (2 por mes) ══════════════════════════════════════════
+ ('candle', 'Vela alcista', 'libre', '',
+  '<path d="M16 2 L16 9 M16 23 L16 30" fill="none" stroke="#06341f"/>'
+  '<path d="M9.6 9 L22.4 9 L22.4 23 L9.6 23 Z" fill="#39d98a" stroke="#06341f"/>', None),
+
+ ('coin', 'Moneda', 'libre', '',
+  '<circle cx="16" cy="16" r="12.6" fill="#e8b93f" stroke="#7a4a10"/>'
+  '<circle cx="16" cy="16" r="8.4" fill="none" stroke="#7a4a10" stroke-width="1.4"/>'
+  '<path d="M16 10.4 L16 21.6 M12.8 13 L19.2 13 M12.8 19 L19.2 19" fill="none"'
+  ' stroke="#7a4a10" stroke-width="1.6"/>', None),
+
+ ('chart', 'Barras', 'libre', '',
+  '<path d="M4.4 18 L10 18 L10 27.6 L4.4 27.6 Z" fill="#5fa8e8" stroke="#123a5c"/>'
+  '<path d="M13.2 11 L18.8 11 L18.8 27.6 L13.2 27.6 Z" fill="#39d98a" stroke="#06341f"/>'
+  '<path d="M22 5 L27.6 5 L27.6 27.6 L22 27.6 Z" fill="#e8b93f" stroke="#7a4a10"/>', None),
+
+ ('bell', 'Campana', 'libre', '',
+  '<path d="M16 3.4 C21.6 3.4 24.4 8 24.4 13.4 L24.4 21.6 L7.6 21.6 L7.6 13.4'
+  ' C7.6 8 10.4 3.4 16 3.4 Z" fill="#e8b93f" stroke="#7a4a10"/>'
+  '<path d="M5.4 21.6 L26.6 21.6 L26.6 24.6 L5.4 24.6 Z" fill="#c99a1c" stroke="#7a4a10"/>'
+  '<circle cx="16" cy="27" r="2.6" fill="#c99a1c" stroke="#7a4a10"/>', None),
+
+ ('diamond', 'Diamante', 'libre', '',
+  '<path d="M8 5.4 L24 5.4 L29 12.4 L16 28.6 L3 12.4 Z" fill="#7fc7ff" stroke="#12446e"/>'
+  '<path d="M8 5.4 L11.4 12.4 L3 12.4 Z M24 5.4 L20.6 12.4 L29 12.4 Z"'
+  ' fill="#bfe4ff" stroke="#12446e" stroke-width="1.3"/>'
+  '<path d="M11.4 12.4 L20.6 12.4 L16 28.6 Z" fill="#a8d8ff" stroke="#12446e"'
+  ' stroke-width="1.3"/>', None),
+
+ ('rocket', 'Cohete', 'libre', '',
+  '<path d="M16 2.4 C20.4 6.4 22.4 12 22.4 17.6 L22.4 22 L9.6 22 L9.6 17.6'
+  ' C9.6 12 11.6 6.4 16 2.4 Z" fill="#e8eef6" stroke="#2a3038"/>'
+  '<path d="M9.6 15 L4.6 21.6 L9.6 21.6 Z M22.4 15 L27.4 21.6 L22.4 21.6 Z"'
+  ' fill="#c8402f" stroke="#5c1613"/>'
+  '<circle cx="16" cy="11.4" r="3.2" fill="#5fa8e8" stroke="#2a3038" stroke-width="1.5"/>'
+  '<path d="M12.6 22 C13.6 26.6 18.4 26.6 19.4 22 Z" fill="#f2a03d" stroke="#a8541a"/>',
+  None),
+
+ ('target', 'Diana', 'libre', '',
+  '<circle cx="16" cy="16" r="12.6" fill="#f4efe6" stroke="#3a3028"/>'
+  '<circle cx="16" cy="16" r="8.4" fill="#c8402f" stroke="#5c1613" stroke-width="1.5"/>'
+  '<circle cx="16" cy="16" r="4.2" fill="#f4efe6" stroke="#5c1613" stroke-width="1.5"/>'
+  '<circle cx="16" cy="16" r="1.6" fill="#c8402f"/>', None),
+
+ ('clock', 'Reloj', 'libre', '',
+  '<circle cx="16" cy="17" r="12" fill="#f2ead6" stroke="#3a2f1c"/>'
+  '<path d="M11.4 3.4 L20.6 3.4 M16 3.4 L16 5.4" fill="none" stroke="#3a2f1c"/>'
+  '<path d="M16 17 L16 10.4 M16 17 L21 20" fill="none" stroke="#2a2114" stroke-width="2.2"/>'
+  '<circle cx="16" cy="17" r="1.5" fill="#c8402f"/>', None),
+
+ ('key', 'Llave', 'libre', '',
+  '<circle cx="10" cy="10" r="6.6" fill="#e8b93f" stroke="#7a4a10"/>'
+  '<circle cx="10" cy="10" r="2.4" fill="none" stroke="#7a4a10" stroke-width="1.5"/>'
+  '<path d="M13.6 14.4 L26 26.8" fill="none" stroke="#e8b93f" stroke-width="4.4"/>'
+  '<path d="M13.6 14.4 L26 26.8" fill="none" stroke="#7a4a10" stroke-width="1.4"/>'
+  '<path d="M20 21 L23.4 17.6 M23 24 L26.4 20.6" fill="none" stroke="#e8b93f"'
+  ' stroke-width="3.6"/>', None),
+
+ ('lock', 'Candado', 'libre', '',
+  '<path d="M10.4 13.4 L10.4 9.4 C10.4 5.6 21.6 5.6 21.6 9.4 L21.6 13.4"'
+  ' fill="none" stroke="#8d99a8" stroke-width="3.4"/>'
+  '<path d="M6.6 13.4 L25.4 13.4 C26.6 13.4 27.4 14.2 27.4 15.4 L27.4 26'
+  ' C27.4 27.2 26.6 28 25.4 28 L6.6 28 C5.4 28 4.6 27.2 4.6 26 L4.6 15.4'
+  ' C4.6 14.2 5.4 13.4 6.6 13.4 Z" fill="#e8b93f" stroke="#7a4a10"/>'
+  '<circle cx="16" cy="19.4" r="2.6" fill="#7a4a10"/>'
+  '<path d="M16 21.4 L16 24.4" fill="none" stroke="#7a4a10" stroke-width="2.2"/>', None),
+
+ ('crown', 'Corona', 'libre', '',
+  '<path d="M4 22 L4 8.4 L10.6 14.4 L16 5.4 L21.4 14.4 L28 8.4 L28 22 Z"'
+  ' fill="#e8b93f" stroke="#7a4a10"/>'
+  '<path d="M4 22 L28 22 L28 26.6 L4 26.6 Z" fill="#c99a1c" stroke="#7a4a10"/>'
+  '<circle cx="16" cy="17.6" r="1.8" fill="#c8402f"/>', None),
+
+ ('anchor', 'Ancla', 'libre', '',
+  '<circle cx="16" cy="5.6" r="3.4" fill="none" stroke="#2f3b48" stroke-width="2.4"/>'
+  '<path d="M16 9 L16 27.4" fill="none" stroke="#2f3b48" stroke-width="3"/>'
+  '<path d="M9.4 12.4 L22.6 12.4" fill="none" stroke="#2f3b48" stroke-width="2.6"/>'
+  '<path d="M5 18.4 C5 25 10.6 28.6 16 28.6 C21.4 28.6 27 25 27 18.4"'
+  ' fill="none" stroke="#2f3b48" stroke-width="3"/>', None),
+
+ ('compass', 'Brújula', 'libre', '',
+  '<circle cx="16" cy="16" r="12.6" fill="#e8dcc4" stroke="#3a2f1c"/>'
+  '<path d="M22 10 L18 18 L10 22 L14 14 Z" fill="#c8402f" stroke="#5c1613"'
+  ' stroke-width="1.4"/>'
+  '<circle cx="16" cy="16" r="1.5" fill="#3a2f1c"/>', None),
+
+ ('hourglass', 'Reloj de arena', 'libre', '',
+  '<path d="M6.6 3.4 L25.4 3.4 M6.6 28.6 L25.4 28.6" fill="none" stroke="#6b4a24"'
+  ' stroke-width="2.6"/>'
+  '<path d="M9.4 3.4 L22.6 3.4 L16 16 L22.6 28.6 L9.4 28.6 L16 16 Z"'
+  ' fill="#f2ead6" stroke="#6b4a24"/>'
+  '<path d="M11.4 6 L20.6 6 L16 14.6 Z" fill="#e8b93f"/>'
+  '<path d="M12.6 26 L19.4 26 L16 20 Z" fill="#e8b93f"/>', None),
+
+ ('bulb', 'Bombilla', 'libre', '',
+  '<path d="M16 2.6 C22 2.6 26 7 26 12.4 C26 16.4 23.4 18.6 22 21.4 L10 21.4'
+  ' C8.6 18.6 6 16.4 6 12.4 C6 7 10 2.6 16 2.6 Z" fill="#ffe066" stroke="#8a6a14"/>'
+  '<path d="M10.6 22.6 L21.4 22.6 M11.4 26 L20.6 26" fill="none" stroke="#8d99a8"'
+  ' stroke-width="2.6"/>'
+  '<path d="M13.4 29 L18.6 29" fill="none" stroke="#8d99a8" stroke-width="2.4"/>', None),
+
+ ('flame', 'Llama', 'libre', '',
+  '<path d="M16 2 C23.4 9.4 25.4 16 25.4 20 C25.4 25.4 21.4 29.4 16 29.4'
+  ' C10.6 29.4 6.6 25.4 6.6 20 C6.6 16 8.6 9.4 16 2 Z" fill="#ff5a1e"'
+  ' stroke="#7a2708"/>'
+  '<path d="M16 13.4 C19.4 17.4 20.6 20.4 20.6 22.4 C20.6 25 18.6 26.6 16 26.6'
+  ' C13.4 26.6 11.4 25 11.4 22.4 C11.4 20.4 12.6 17.4 16 13.4 Z" fill="#ffd76a"/>',
+  None),
+
+ ('star', 'Estrella', 'libre', '',
+  '<path d="M16 2 L20.2 11.4 L30.4 12.6 L22.8 19.4 L24.8 29.4 L16 24.4'
+  ' L7.2 29.4 L9.2 19.4 L1.6 12.6 L11.8 11.4 Z" fill="#ffd76a" stroke="#8a6a14"/>',
+  None),
+
+ ('dice', 'Dado', 'libre', '',
+  '<path d="M6 6 L26 6 C27.2 6 28 6.8 28 8 L28 26 C28 27.2 27.2 28 26 28'
+  ' L6 28 C4.8 28 4 27.2 4 26 L4 8 C4 6.8 4.8 6 6 6 Z" fill="#f4efe6"'
+  ' stroke="#3a3028"/>'
+  '<circle cx="10.4" cy="12.4" r="2.2" fill="#3a3028"/>'
+  '<circle cx="21.6" cy="12.4" r="2.2" fill="#3a3028"/>'
+  '<circle cx="16" cy="17" r="2.2" fill="#c8402f"/>'
+  '<circle cx="10.4" cy="21.6" r="2.2" fill="#3a3028"/>'
+  '<circle cx="21.6" cy="21.6" r="2.2" fill="#3a3028"/>', None),
+
+ ('magnet', 'Imán', 'libre', '',
+  '<path d="M6.6 24 L6.6 14 C6.6 8.6 11 4.6 16 4.6 C21 4.6 25.4 8.6 25.4 14'
+  ' L25.4 24" fill="none" stroke="#8d99a8" stroke-width="6.6"/>'
+  '<path d="M6.6 24 L6.6 14 C6.6 8.6 11 4.6 16 4.6 C21 4.6 25.4 8.6 25.4 14'
+  ' L25.4 24" fill="none" stroke="#2f3b48" stroke-width="1.6"/>'
+  '<path d="M3.4 24 L10 24 L10 28.6 L3.4 28.6 Z" fill="#c8402f" stroke="#5c1613"/>'
+  '<path d="M22 24 L28.6 24 L28.6 28.6 L22 28.6 Z" fill="#5fa8e8" stroke="#123a5c"/>',
+  None),
+
+ ('umbrella', 'Paraguas', 'libre', '',
+  '<path d="M2.6 16.4 C2.6 8.6 8.6 3.4 16 3.4 C23.4 3.4 29.4 8.6 29.4 16.4 Z"'
+  ' fill="#c8402f" stroke="#5c1613"/>'
+  '<path d="M10.4 16.4 C10.4 9.6 12.6 3.4 16 3.4 C19.4 3.4 21.6 9.6 21.6 16.4"'
+  ' fill="none" stroke="#5c1613" stroke-width="1.4"/>'
+  '<path d="M16 16.4 L16 25 C16 28.4 21 28.4 21 25" fill="none" stroke="#6b4a24"'
+  ' stroke-width="2.6"/>', None),
+
+ ('mug', 'Taza', 'libre', '',
+  '<path d="M5.4 10.6 L21.4 10.6 L21.4 23 C21.4 26 19 28 16 28 L10.8 28'
+  ' C7.8 28 5.4 26 5.4 23 Z" fill="#f4efe6" stroke="#3a3028"/>'
+  '<path d="M21.4 13.4 C26.6 13.4 26.6 21.4 21.4 21.4" fill="none" stroke="#3a3028"'
+  ' stroke-width="2.4"/>'
+  '<path d="M5.4 14.6 L21.4 14.6" fill="none" stroke="#c8402f" stroke-width="2.4"/>'
+  '<path d="M10 6.6 C10 4.6 12 4.6 12 2.6 M16 6.6 C16 4.6 18 4.6 18 2.6"'
+  ' fill="none" stroke="#b8c2cc" stroke-width="1.6"/>', None),
+
+ ('cactus', 'Cactus', 'libre', '',
+  '<path d="M13 6 C13 3.4 19 3.4 19 6 L19 24 L13 24 Z" fill="#4d8a3d"'
+  ' stroke="#22431a"/>'
+  '<path d="M13 12.4 L9 12.4 C6.6 12.4 6.6 8.4 9 8.4 C10.4 8.4 10.4 10 10.4 11"'
+  ' fill="none" stroke="#4d8a3d" stroke-width="4"/>'
+  '<path d="M19 16 L23 16 C25.4 16 25.4 11.4 23 11.4 C21.6 11.4 21.6 13 21.6 14"'
+  ' fill="none" stroke="#4d8a3d" stroke-width="4"/>'
+  '<path d="M8.4 24 L23.6 24 L22.4 28.6 L9.6 28.6 Z" fill="#c96a3c" stroke="#5c2b12"/>',
+  None),
+
+ ('balloon', 'Globo', 'libre', '',
+  '<path d="M16 2.6 C21.6 2.6 25.4 7 25.4 12.4 C25.4 17.6 20.4 21.4 16 23.4'
+  ' C11.6 21.4 6.6 17.6 6.6 12.4 C6.6 7 10.4 2.6 16 2.6 Z" fill="#e8547a"'
+  ' stroke="#7a1f38"/>'
+  '<path d="M13.6 23.4 L18.4 23.4 L16 26 Z" fill="#e8547a" stroke="#7a1f38"'
+  ' stroke-width="1.4"/>'
+  '<path d="M16 26 C13.4 28 18.6 28.6 16 30.4" fill="none" stroke="#7a1f38"'
+  ' stroke-width="1.4"/>', None),
+
+ ('moon', 'Luna', 'libre', '',
+  '<path d="M20 2.6 C13 4.4 8 10.6 8 18 C8 21.6 9.2 25 11.4 27.6'
+  ' C5.4 24.4 1.6 18 1.6 11.4 C1.6 5.4 9.4 0.6 20 2.6 Z" fill="#0000" opacity="0"/>'
+  '<path d="M24.6 20.6 C22.6 21.6 20.4 22.2 18 22.2 C10.6 22.2 4.6 16.2 4.6 8.8'
+  ' C4.6 6.4 5.2 4.2 6.2 2.2 C-0.4 6 -0.4 24.6 10.4 29 C18.6 32.4 25.4 27.4'
+  ' 24.6 20.6 Z" fill="#ffe9a8" stroke="#8a6a14" transform="translate(4,0)"/>',
+  None),
 ]
 
 
