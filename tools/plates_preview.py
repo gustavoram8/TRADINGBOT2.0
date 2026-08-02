@@ -1055,20 +1055,24 @@ PLATES = [
     <path d="M410 37 H594 L584 30 H420 Z" fill="#b45932"/>
     <path d="M420 30 H584 L574 23 H430 Z" fill="#c26439"/>
     <path d="M430 23 H574 L564 16 H440 Z" fill="#cf7043"/>
-    <rect x="470" y="6" width="64" height="10" fill="#b45932"/>
-    <rect x="470" y="4" width="64" height="3" fill="#d98c52"/>
+    <rect x="470" y="7" width="64" height="9" fill="#c26439"/>
+    <rect x="468" y="4" width="68" height="3" fill="#cf7043"/>
+    <rect x="494" y="10" width="16" height="6" fill="#3d1a0e"/>
   </g>
   <g fill="#d98c52"><rect x="486" y="16" width="32" height="28"/></g>
-  <g stroke="#8f3f21" stroke-width="1" opacity=".8">
+  <g stroke="#a04829" stroke-width="1" opacity=".85">
     <path d="M486 21 H518 M486 26 H518 M486 31 H518 M486 36 H518 M486 41 H518"/>
   </g>
-  <path d="M484 44 V16 L474 23 V29 L464 35 V41 L454 44 Z" fill="#1a0c06"/>
-  <path d="M484 16 L474 23 V29 L464 35 V41 L454 44" fill="none" stroke="#f2c04a"
-        stroke-width="1.2" opacity=".8"/>
-  <path d="M520 44 V16 L530 23 V29 L540 35 V41 L550 44 Z" fill="#7a3a1e" opacity=".8"/>
+  <g fill="#a04829">
+    <path d="M486 44 V16 L478 22 V28 L470 34 V40 L462 44 Z"/>
+    <path d="M518 44 V16 L526 22 V28 L534 34 V40 L542 44 Z"/>
+  </g>
+  <g fill="none" stroke="#e0955c" stroke-width="1" opacity=".8">
+    <path d="M486 16 L478 22 V28 L470 34 V40 L462 44"/>
+    <path d="M518 16 L526 22 V28 L534 34 V40 L542 44"/>
+  </g>
   <g fill="#e8b93f" opacity=".9">
-    <rect x="470" y="14" width="64" height="2"/><rect x="484" y="14" width="4" height="30"/>
-    <rect x="516" y="14" width="4" height="30"/>
+    <rect x="468" y="15" width="68" height="2"/>
   </g>
  """),
  ('baseball', 'Baseball', 'temporada', 'dark', """
