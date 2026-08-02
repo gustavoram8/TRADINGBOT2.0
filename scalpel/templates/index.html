@@ -3293,16 +3293,31 @@
     .dlb-empty { font-size: 12px; color: var(--muted); padding: 10px 2px; }
     /* Hall-of-fame podium: the 'lit name'. FIRE palette on purpose — the golden
        metal look belongs to ranks 7-8 (permanent rule: frames/effects never
-       borrow a rank's palette). Distinct per position, #1 the strongest. */
+       borrow a rank's palette).
+       The three tiers differ in THREE ways at once — movement, halo and
+       brightness — never by hue alone: at 13px a hue shift between two oranges
+       is invisible, which is exactly how the first version failed. */
     .fame-name { font-weight: 800; }
-    .fame-name.f1 { background: linear-gradient(90deg,#ff4d00,#ffb300,#ff4d00,#ffb300);
-      background-size: 220% 100%; -webkit-background-clip: text; background-clip: text;
-      color: transparent; animation: fameFire 2.6s linear infinite; }
-    .fame-name.f2 { background: linear-gradient(90deg,#ff8a3c,#ffc46b);
-      -webkit-background-clip: text; background-clip: text; color: transparent; }
-    .fame-name.f3 { color: #e0752f; }
-    @keyframes fameFire { to { background-position: 220% 0; } }
-    @media (prefers-reduced-motion: reduce) { .fame-name.f1 { animation: none; } }
+    /* 1st — white-hot core, travelling, haloed. Unmistakable. */
+    .fame-name.f1 {
+      background: linear-gradient(90deg,#ff3300,#ffb01f,#fff4d6,#ffb01f,#ff3300);
+      background-size: 260% 100%; -webkit-background-clip: text; background-clip: text;
+      color: transparent; animation: fameFire 2.8s linear infinite;
+      filter: drop-shadow(0 0 5px rgba(255,110,10,.85));
+    }
+    /* 2nd — live ember: still has the two-tone gradient, but does not move
+       and carries no halo. */
+    .fame-name.f2 {
+      background: linear-gradient(90deg,#ff7a00,#ffcf85);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    /* 3rd — cooled ember: flat, no gradient, visibly dimmer than the other two
+       yet still readable on both themes. */
+    .fame-name.f3 { color: #c9603a; }
+    @keyframes fameFire { to { background-position: 260% 0; } }
+    @media (prefers-reduced-motion: reduce) {
+      .fame-name.f1 { animation: none; background-position: 50% 0; }
+    }
     /* Live-streak chip next to a forum author's name (shows from streak >= 2) */
     .streak-chip { display: inline-flex; align-items: center; gap: 1px; font-size: 10px;
       font-weight: 800; color: #e0752f; background: rgba(224,117,47,.12);
