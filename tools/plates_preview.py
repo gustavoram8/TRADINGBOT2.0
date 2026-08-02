@@ -42,7 +42,11 @@ RULETA_LIBRES = ['candlegrid', 'volume', 'terminal', 'orderflow', 'mars',
                  'cartography', 'arcade']                       # 12
 # Atados a la temática del camo mensual: 12 en total. Solo existe el primero;
 # los otros 11 se diseñan junto con sus camos.
-RULETA_TEMATICOS = ['chronicles']                               # 1 de 12
+# Temáticas mensuales aprobadas por el dueño. Criterio fijado 2026-08-02:
+# épocas y OFICIOS POCO TRANSITADOS — nada de piratas, ninjas, vaqueros,
+# astronautas ni safaris. Aprobadas: medieval (Chronicles), alpinismo
+# (Summit) y Egipto (Nile). Faltan 9.
+RULETA_TEMATICOS = ['chronicles', 'summit', 'nile']             # 3 de 12
 # Festivos: NO entran a la ruleta. Se venden en la tienda con ventana de 24h
 # el día de la festividad, misma regla que los camos festivos.
 FESTIVOS = ['frost', 'muertos']
