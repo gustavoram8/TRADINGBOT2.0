@@ -908,6 +908,23 @@ dispare dos veces.
   tarjeta → payout al banco del amigo (Stripe maneja el payout; el código no necesita datos bancarios).
   **NO se cobra USDT/Binance.** Ver "🚨 Alerta recurrente" #2.
 
+## 🔴 Bug de PRODUCCIÓN resuelto (2026-08-02) — la app no arrancaba tras el deploy
+**Síntoma:** supervisor eternamente en `STARTING`, puerto 5001 sin escuchar, `Worker failed to
+boot`, RAM/disco/CPU perfectos. **Causa:** `_migrate_user_alt_id_column()` hacía el backfill con
+una consulta **del ORM**, que SELECTea TODAS las columnas del modelo `User`; en `init_db()` corría
+ANTES de `_migrate_user_security_columns()`/`_migrate_referral_columns()`, así que en prod (tabla
+`user` ya existente, sin esas columnas) reventaba con `UndefinedColumn: user.birth_date` y **morían
+los 4 workers al arrancar**. En local NUNCA se ve: `create_all()` nace con todas las columnas.
+**Fix en dos capas:** (1) el backfill pasa a **SQL crudo** tocando solo `id`/`alt_id` → inmune a
+cualquier columna futura del modelo; (2) todas las migraciones de la tabla `user` se agrupan ARRIBA
+del `alt_id`. ⚠️ **REGLA PERMANENTE: ninguna migración puede usar el ORM.** El ORM pide el modelo
+COMPLETO; una migración corre justamente cuando la base todavía NO lo está. (Había un comentario en
+el código advirtiendo esto desde hacía meses y aun así se violó al agregar el paquete de seguridad.)
+⚠️ **Y una lección de proceso:** el paquete de seguridad se probó con 37 checks sobre SQLite
+**creada desde cero** — eso no prueba NADA sobre un deploy. Toda columna nueva se prueba con
+`scratchpad/test_boot_migracion.py`, que borra las columnas de una base ya creada y vuelve a
+arrancar la app (con el código viejo da 1/5, con el arreglo 5/5).
+
 ## 🔴 Bug de PRODUCCIÓN resuelto (2026-07-27) — secuencias de PostgreSQL desincronizadas
 **Síntoma:** al agregar un gasto en /admin → 500 `UniqueViolation: duplicate key ... expense_pkey,
 Key (id)=(1) already exists`. **Causa raíz:** la base de prod tiene filas importadas con `id`

@@ -11300,14 +11300,22 @@ def _migrate_user_alt_id_column():
             conn.execute(text('CREATE UNIQUE INDEX ix_user_alt_id ON "user" (alt_id)'))
         app.logger.info('Migrated user table: added alt_id column + index.')
 
-    users_without_alt_id = User.query.filter(
-        (User.alt_id.is_(None)) | (User.alt_id == '')
-    ).all()
-    if users_without_alt_id:
-        for u in users_without_alt_id:
-            u.alt_id = secrets.token_hex(20)
-        db.session.commit()
-        app.logger.info('Backfilled alt_id for %d existing user(s).', len(users_without_alt_id))
+    # Raw SQL on purpose, and it is not a style choice: an ORM query SELECTs
+    # *every* column the User model declares, so a column added in the same
+    # release but migrated a few lines further down turns this backfill into
+    # an UndefinedColumn error. That error kills every gunicorn worker during
+    # boot, so production stays down in a restart loop until someone reads the
+    # traceback (it happened on 2026-08-02 with birth_date). Touching only
+    # id/alt_id makes this immune to whatever the model grows next.
+    table = '"user"' if db.engine.dialect.name == 'postgresql' else 'user'
+    with db.engine.begin() as conn:
+        pending = [r[0] for r in conn.execute(text(
+            "SELECT id FROM %s WHERE alt_id IS NULL OR alt_id = ''" % table))]
+        for uid in pending:
+            conn.execute(text('UPDATE %s SET alt_id = :a WHERE id = :i' % table),
+                         {'a': secrets.token_hex(20), 'i': uid})
+    if pending:
+        app.logger.info('Backfilled alt_id for %d existing user(s).', len(pending))
 
 
 def _migrate_order_columns():
@@ -11740,21 +11748,23 @@ def _backfill_plan_camos():
 def init_db():
     with app.app_context():
         db.create_all()
+        # EVERY migration that adds a column to `user` goes in this block, and
+        # the block stays ABOVE _migrate_user_alt_id_column(). The backfill in
+        # there no longer depends on the ORM (so this is belt and braces now),
+        # but the ordering is still the honest expression of the dependency:
+        # the user table must be whole before anything reads from it.
         _migrate_user_verification_columns()
-        # NOTE: these column migrations must run BEFORE the alt_id one — the
-        # alt_id backfill issues an ORM query that SELECTs every User column,
-        # so any column the model knows about must already exist.
         _migrate_user_review_column()
         _migrate_user_xp_columns()
         _migrate_user_mute_column()
+        _migrate_user_camo_columns()
+        _migrate_user_security_columns()
+        _migrate_referral_columns()
         _migrate_user_alt_id_column()
         _migrate_order_columns()
         _migrate_promo_code_columns()
         _migrate_preflight_check_columns()
-        _migrate_user_camo_columns()
         _migrate_sale_reserve_columns()
-        _migrate_user_security_columns()
-        _migrate_referral_columns()
         _migrate_testimonial_insider_column()
         _migrate_mentorship_application_columns()
         _migrate_forum_post_community_column()
