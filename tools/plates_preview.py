@@ -33,12 +33,16 @@ OUT = os.environ.get('PLATES_OUT', '/tmp/plates_preview.png')
 # ── SELECCIÓN CONFIRMADA (2026-08-02) ────────────────────────────────────────
 # Los 24 marcos de ruleta se reparten 2 por mes durante un año, y UNO de cada
 # mes comparte temática con el camo mensual. Como de esas 12 temáticas solo
-# existe Chronicles, se congelaron por ahora los 13 marcos LIBRES —los que no
-# dependen de ninguna temática mensual— y los 11 restantes se diseñan junto a
-# sus camos.
-RULETA_LIBRES = ['tape', 'candlegrid', 'volume', 'terminal', 'orderflow',
-                 'mars', 'dunes', 'sakura', 'volcano', 'circuit', 'obsidian',
-                 'cartography', 'arcade']
+# existe Chronicles, se congelaron los 12 marcos LIBRES —los que no dependen
+# de ninguna temática mensual— y los 11 restantes se diseñan junto a sus camos.
+# Del catálogo de 36: 13 van a la ruleta (12 libres + Chronicles) y los otros
+# 23 quedan para la tienda.
+RULETA_LIBRES = ['candlegrid', 'volume', 'terminal', 'orderflow', 'mars',
+                 'dunes', 'sakura', 'volcano', 'circuit', 'obsidian',
+                 'cartography', 'arcade']                       # 12
+# Atados a la temática del camo mensual: 12 en total. Solo existe el primero;
+# los otros 11 se diseñan junto con sus camos.
+RULETA_TEMATICOS = ['chronicles']                               # 1 de 12
 # Festivos: NO entran a la ruleta. Se venden en la tienda con ventana de 24h
 # el día de la festividad, misma regla que los camos festivos.
 FESTIVOS = ['frost', 'muertos']
