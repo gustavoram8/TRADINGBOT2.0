@@ -1,0 +1,387 @@
+{
+ "cur-anchor": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Ancla"
+ },
+ "cur-apiarist": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Apiarist \u00b7 tarro de miel"
+ },
+ "cur-balloon": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Globo"
+ },
+ "cur-baseball": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Baseball \u00b7 pelota"
+ },
+ "cur-bell": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Campana"
+ },
+ "cur-bengal": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Bengal \u00b7 huella"
+ },
+ "cur-book": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Libro"
+ },
+ "cur-bulb": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Bombilla"
+ },
+ "cur-cactus": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Cactus"
+ },
+ "cur-candle": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Vela alcista"
+ },
+ "cur-chart": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Barras"
+ },
+ "cur-chronicles": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Chronicles \u00b7 escudo"
+ },
+ "cur-clock": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Reloj"
+ },
+ "cur-coin": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Moneda"
+ },
+ "cur-colosseum": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Colosseum \u00b7 casco"
+ },
+ "cur-compass": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Br\u00fajula"
+ },
+ "cur-crown": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Corona"
+ },
+ "cur-diamond": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Diamante"
+ },
+ "cur-dice": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Dado"
+ },
+ "cur-droplet": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Gota"
+ },
+ "cur-easter": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Pascua \u00b7 huevo"
+ },
+ "cur-flame": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Llama"
+ },
+ "cur-fourth": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "4 de Julio \u00b7 sombrero"
+ },
+ "cur-frost": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Solsticio \u00b7 copo"
+ },
+ "cur-gear": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Engranaje"
+ },
+ "cur-grapes": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Uvas"
+ },
+ "cur-gridiron": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "American Football \u00b7 bal\u00f3n"
+ },
+ "cur-hallow": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Halloween \u00b7 calabaza"
+ },
+ "cur-hourglass": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Reloj de arena"
+ },
+ "cur-key": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Llave"
+ },
+ "cur-knight": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Caballo de ajedrez"
+ },
+ "cur-lantern": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Farolillo"
+ },
+ "cur-lighthouse": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Faro"
+ },
+ "cur-lock": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Candado"
+ },
+ "cur-lucky": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "San Patricio \u00b7 tr\u00e9bol"
+ },
+ "cur-magnet": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Im\u00e1n"
+ },
+ "cur-moon": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Luna"
+ },
+ "cur-muertos": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Muertos \u00b7 calavera"
+ },
+ "cur-mug": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Taza"
+ },
+ "cur-newyear": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "A\u00f1o Nuevo \u00b7 copa"
+ },
+ "cur-nile": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Nile \u00b7 pir\u00e1mide"
+ },
+ "cur-olympus": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Olympus \u00b7 \u00e1nfora"
+ },
+ "cur-palette": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Paleta"
+ },
+ "cur-quetzal": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Quetzalc\u00f3atl \u00b7 disco solar"
+ },
+ "cur-rocket": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Cohete"
+ },
+ "cur-santa": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Nochebuena \u00b7 gorro"
+ },
+ "cur-star": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Estrella"
+ },
+ "cur-summit": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Summit \u00b7 bota"
+ },
+ "cur-target": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Diana"
+ },
+ "cur-tulip": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Tulip\u00e1n"
+ },
+ "cur-umbrella": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Paraguas"
+ },
+ "cur-valentine": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "San Valent\u00edn \u00b7 coraz\u00f3n"
+ },
+ "cur-welder": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Welder \u00b7 careta"
+ },
+ "cur-wheat": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Espiga"
+ },
+ "cur-zeppelin": {
+  "hot": [
+   2,
+   2
+  ],
+  "name": "Zeppelin \u00b7 dirigible"
+ }
+}

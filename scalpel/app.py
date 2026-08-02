@@ -1804,6 +1804,19 @@ COSMETIC_PRICE_CURSOR = 1.99
 # the whole site.
 FRAME_PRICE_COMMON = 2.99
 FRAME_PRICE_FESTIVE = 3.99
+# Cursors (owner's pricing, 2026-08-02): the cheap collectible; festive ones
+# carry the same premium step as festive frames.
+CURSOR_PRICE_FESTIVE = 2.99
+
+
+def festivity_of(slug):
+    """The festivity a cosmetic slug belongs to. Cursors are published as
+    `cur-<slug>` because CosmeticItem.slug is unique and they share names with
+    the frames/camos of their theme (chronicles, santa...). Stripping the
+    prefix here is what makes a festive CURSOR inherit the exact same 24h
+    window as its camo and frame pair — one rule per festivity, three
+    products."""
+    return slug[4:] if slug.startswith('cur-') else slug
 
 # ── FESTIVE WINDOWS ───────────────────────────────────────────────────────
 # A festive cosmetic can only be BOUGHT during a 24h window on its date, and
@@ -1871,6 +1884,7 @@ def festive_window(slug, now=None):
     points at 2027 (this year's already passed) while Halloween points at 2026.
     Non-festive slugs come back as (True, None) — they are always for sale, so
     callers can use one code path for everything."""
+    slug = festivity_of(slug)
     if slug not in FESTIVE_WINDOWS:
         return True, None
     now = now or datetime.now(timezone.utc)
@@ -1915,7 +1929,8 @@ def cosmetic_item_price(item):
     if not item or item.channel != 'store' or not item.active:
         return None
     if item.kind == 'cursor':
-        return COSMETIC_PRICE_CURSOR
+        return (CURSOR_PRICE_FESTIVE if festivity_of(item.slug) in FESTIVE_WINDOWS
+                else COSMETIC_PRICE_CURSOR)
     if item.kind == 'frame':
         return (FRAME_PRICE_FESTIVE if item.slug in FESTIVE_WINDOWS
                 else FRAME_PRICE_COMMON)
@@ -4417,6 +4432,7 @@ def camos():
     season_now = _current_season()
     owned_ids = _owned_cosmetic_ids(current_user.id) if authed else set()
     active_frame = (current_user.active_frame or '') if authed else ''
+    active_cursor = (current_user.active_cursor or '') if authed else ''
     def _pack(kind):
         out = []
         for i in (CosmeticItem.query.filter_by(kind=kind)
@@ -4440,17 +4456,26 @@ def camos():
             else:
                 state = 'ended'
             meta = plates_meta().get(i.slug) or {}
+            if kind == 'frame':
+                art = '/static/plates/%s.svg' % i.slug if meta else None
+                art_hot = None
+                wearing = i.slug == active_frame
+            else:
+                art = ('/static/cursors/%s.png' % i.slug
+                       if i.slug in cursors_meta() else None)
+                art_hot = art and art.replace('.png', '_hot.png')
+                wearing = i.slug == active_cursor
             out.append({'slug': i.slug, 'name': i.name, 'state': state,
                         'season': i.season or '',
                         'channel': i.channel,
                         'ref': 'item:%s' % i.slug,
-                        'art': ('/static/plates/%s.svg' % i.slug
-                                if kind == 'frame' and meta else None),
+                        'art': art,
+                        'art_hot': art_hot,
                         # ink drives the preview's text color; it travels with
                         # the piece so a frame published NEXT year previews
                         # correctly without anyone touching this code.
                         'ink': meta.get('ink', 'light'),
-                        'wearing': kind == 'frame' and i.slug == active_frame,
+                        'wearing': wearing,
                         'opens': when.strftime('%Y-%m-%d') if when else '',
                         'price': (cosmetic_item_price(i)
                                   if state in ('buy', 'locked') else None)})
@@ -4465,7 +4490,7 @@ def camos():
         for it in items:
             if it['channel'] != 'store':
                 wheel.append(it)          # roulette + champion: not for sale
-            elif it['slug'] in FESTIVE_WINDOWS:
+            elif festivity_of(it['slug']) in FESTIVE_WINDOWS:
                 festive.append(it)
             else:
                 common.append(it)
@@ -4474,6 +4499,8 @@ def camos():
     # camo and a frame, so a bare-slug price map would total the wrong cart.
     frames_all = _pack('frame')
     fr_festive, fr_common, fr_wheel = _split_frames(frames_all)
+    cursors_all = _pack('cursor')
+    cu_festive, cu_common, cu_wheel = _split_frames(cursors_all)
     prices = {'camo:%s' % s: camo_store_price(s) for s in CAMO_SLUGS
               if camo_store_price(s) is not None}
     for i in CosmeticItem.query.filter_by(channel='store', active=True).all():
@@ -4497,7 +4524,11 @@ def camos():
                            cos_frames_festive=fr_festive,
                            cos_frames_common=fr_common,
                            cos_frames_wheel=fr_wheel,
-                           cos_cursors=_pack('cursor'))
+                           cos_cursors=cursors_all,
+                           cos_cursors_festive=cu_festive,
+                           cos_cursors_common=cu_common,
+                           cos_cursors_wheel=cu_wheel,
+                           active_cursor=active_cursor)
 
 
 @app.route('/camos')
@@ -4541,16 +4572,21 @@ def cosmetics_equip():
     data = request.get_json(silent=True) or {}
     kind = (data.get('kind') or 'frame').strip()
     slug = (data.get('slug') or '').strip()
-    if kind != 'frame':
+    if kind not in ('frame', 'cursor'):
         return jsonify({'error': 'not_available'}), 400
     if slug:
         item = CosmeticItem.query.filter_by(slug=slug, kind=kind).first()
-        if not item or (kind == 'frame' and slug not in plates_meta()):
+        has_art = (slug in plates_meta() if kind == 'frame'
+                   else slug in cursors_meta())
+        if not item or not has_art:
             return jsonify({'error': 'not_available'}), 400
         if not current_user.is_admin and not UserCosmetic.query.filter_by(
                 user_id=current_user.id, item_id=item.id).first():
             return jsonify({'error': 'not_owned'}), 403
-    current_user.active_frame = slug
+    if kind == 'frame':
+        current_user.active_frame = slug
+    else:
+        current_user.active_cursor = slug
     db.session.commit()
     return jsonify({'ok': True, 'active': slug})
 
@@ -5058,6 +5094,9 @@ def app_view():
         demo_label=demo_label,
         demo_open=demo_open,
         active_camo=(current_user.active_camo or ''),
+        active_cursor=((current_user.active_cursor or '')
+                       if (current_user.active_cursor or '') in cursors_meta()
+                       else ''),
     ))
     resp.delete_cookie('scalpel_splash_ts')
     # Never let a cache serve a stale /app (which could hide a fresh rank-up
@@ -7044,6 +7083,8 @@ def _activate_cosmetics_from_order(order):
         # Wear it only if nothing is on — never overwrite their own choice.
         if item.kind == 'frame' and not (user.active_frame or ''):
             user.active_frame = item.slug
+        elif item.kind == 'cursor' and not (user.active_cursor or ''):
+            user.active_cursor = item.slug
     # Switch one on only if they are still on the default theme — a skin
     # nobody sees is a purchase that never arrived, but a camo they already
     # chose is never overwritten.
@@ -10390,6 +10431,23 @@ ROULETTE_CAMO_ODDS = 0.05
 ROULETTE_KIND_WEIGHTS = {'frame': 15.0, 'cursor': 21.667}
 
 
+_CURSORS_META = None
+
+
+def cursors_meta():
+    """{slug: {'name', 'hot'}} for every published cursor (slugs carry the
+    `cur-` prefix). Generated by tools/build_cursors.py from the catalog in
+    tools/cursors_preview.py; the PNGs live in static/cursors/."""
+    global _CURSORS_META
+    if _CURSORS_META is None:
+        try:
+            with open(os.path.join(app.static_folder, 'cursors', 'cursors.json')) as fh:
+                _CURSORS_META = json.load(fh)
+        except Exception:
+            _CURSORS_META = {}
+    return _CURSORS_META
+
+
 _PLATES_META = None
 
 
@@ -10430,6 +10488,65 @@ ROULETTE_FRAME_CALENDAR = [
     ('2027-06', 'welder',     'dunes'),
     ('2027-07', 'zeppelin',   'arcade'),
 ]
+
+
+# ── The 36 roulette cursors, three per season (owner's plan 2026-08-02):
+# one CURSOR THEMED like the month's camo (same slug as the theme, so August
+# is cur-chronicles next to the chronicles frame and camo) + two free ones.
+# The free pairs mix one trading-flavored piece with one playful piece, and
+# no cursor ever repeats across the year.
+ROULETTE_CURSOR_CALENDAR = [
+    # (season,   themed,        free 1,      free 2)
+    ('2026-08', 'chronicles', 'candle',    'rocket'),
+    ('2026-09', 'gridiron',   'coin',      'anchor'),
+    ('2026-10', 'nile',       'chart',     'compass'),
+    ('2026-11', 'colosseum',  'bell',      'bulb'),
+    ('2026-12', 'summit',     'diamond',   'flame'),
+    ('2027-01', 'bengal',     'target',    'star'),
+    ('2027-02', 'olympus',    'clock',     'dice'),
+    ('2027-03', 'quetzal',    'key',       'umbrella'),
+    ('2027-04', 'baseball',   'lock',      'mug'),
+    ('2027-05', 'apiarist',   'crown',     'cactus'),
+    ('2027-06', 'welder',     'magnet',    'balloon'),
+    ('2027-07', 'zeppelin',   'hourglass', 'moon'),
+]
+# Store cursors: festive ones mirror the festive camos/frames (same festivity,
+# same 24h window — festivity_of() strips the cur- prefix), commons sell all
+# year at CURSOR_PRICE ($1.99 / $2.99 festive).
+STORE_CURSORS_FESTIVE = ['santa', 'hallow', 'fourth', 'lucky', 'valentine',
+                         'easter', 'newyear', 'frost', 'muertos']
+STORE_CURSORS_COMMON = ['knight', 'lighthouse', 'grapes', 'book', 'gear',
+                        'tulip', 'wheat', 'droplet', 'lantern', 'palette']
+
+
+def _publish_cursors():
+    """Insert the 55 cursors as CosmeticItem rows: 36 on the roulette (3 per
+    season) and 19 in the store. Same contract as the frame publishers:
+    idempotent by slug, never touches an existing row."""
+    meta = cursors_meta()
+    added = 0
+    wanted = [('cur-%s' % s, 'roulette', season)
+              for season, a, b, c in ROULETTE_CURSOR_CALENDAR
+              for s in (a, b, c)]
+    wanted += [('cur-%s' % s, 'store', None)
+               for s in STORE_CURSORS_FESTIVE + STORE_CURSORS_COMMON]
+    for slug, channel, season in wanted:
+        if slug not in meta:
+            app.logger.warning('cursor %s missing from cursors.json — run '
+                               'tools/build_cursors.py', slug)
+            continue
+        if CosmeticItem.query.filter_by(slug=slug).first():
+            continue
+        db.session.add(CosmeticItem(slug=slug, name=meta[slug]['name'],
+                                    kind='cursor', channel=channel,
+                                    season=season, active=True))
+        added += 1
+    if added:
+        try:
+            db.session.commit()
+            app.logger.info('Published %d cursors.', added)
+        except Exception:
+            db.session.rollback()   # concurrent worker won the race — fine
 
 
 # ── The STORE frames (owner approved the art 2026-08-02) ──────────────────
@@ -12618,6 +12735,7 @@ def init_db():
         _backfill_plan_camos()
         _publish_roulette_frames()
         _publish_store_frames()
+        _publish_cursors()
         admin_email = os.environ.get('ADMIN_EMAIL', 'mauroramirezmij@gmail.com').lower()
         admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
         admin_password = os.environ.get('ADMIN_PASSWORD', 'Codica2310$')

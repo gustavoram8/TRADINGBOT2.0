@@ -4610,6 +4610,26 @@
     }
     /* (Book dossier light-mode handled in its own block above) */
   </style>
+{% if active_cursor %}
+<!-- Cosmetic cursor (desktop only — coarse pointers don't have one). The
+     figure replaces the arrow everywhere and its "lit" state replaces the
+     hand over anything clickable. Text fields keep the I-beam: replacing the
+     caret cursor hurts usability for zero cosmetic gain. Hotspot 2 2. -->
+<style>
+@media (pointer: fine) {
+  /* !important on purpose: the site sets cursor:pointer via CLASS rules
+     (.tab-btn etc.), which outrank these element selectors. Order matters —
+     later !important rules win ties, so hand beats arrow and text beats both. */
+  body, body * { cursor: url('/static/cursors/{{ active_cursor }}.png') 2 2, auto !important; }
+  a, a *, button, button *, [role="button"], [onclick], select, summary,
+  input[type="submit"], input[type="button"], input[type="checkbox"],
+  input[type="radio"], input[type="range"], label
+    { cursor: url('/static/cursors/{{ active_cursor }}_hot.png') 2 2, pointer !important; }
+  input[type="text"], input[type="email"], input[type="password"],
+  input[type="number"], input[type="search"], textarea { cursor: text !important; }
+}
+</style>
+{% endif %}
 </head>
 <body>
 <script>
@@ -22996,6 +23016,28 @@
               ? T('daily.tanda.won.' + data.prize_key) : '';
             const prize = $('roulette-prize');
             prize.querySelectorAll('.rl-won-extra').forEach(el => el.remove());
+            if (data.prize_key === 'cursor' && data.slug) {
+              // Show the figure big (32px real is too shy for a prize) + a
+              // one-tap equip, same contract as frames.
+              const art = document.createElement('div');
+              art.className = 'rl-won-extra';
+              art.style.cssText = 'margin:10px auto 0;width:72px;height:72px;' +
+                'border-radius:12px;background:rgba(232,198,106,.08) url(/static/cursors/' +
+                encodeURIComponent(data.slug) + '.png) center/48px no-repeat;' +
+                'image-rendering:pixelated;box-shadow:0 2px 10px rgba(0,0,0,.35);';
+              const use = document.createElement('button');
+              use.type = 'button';
+              use.className = 'rl-won-extra daily-play-btn';
+              use.style.cssText = 'margin:10px auto 0;display:block;';
+              use.textContent = T('daily.tanda.use');
+              use.addEventListener('click', () => {
+                fetch('/api/cosmetics/equip', { method:'POST',
+                  headers:{'Content-Type':'application/json'},
+                  body: JSON.stringify({ kind:'cursor', slug: data.slug })
+                }).then(r => { if (r.ok) { use.textContent = T('daily.tanda.using'); use.disabled = true; } });
+              });
+              prize.appendChild(art); prize.appendChild(use);
+            }
             if (data.prize_key === 'frame' && data.slug) {
               // Show the plate itself + a one-tap equip. Equipping is
               // reversible any time from the cosmetics store.

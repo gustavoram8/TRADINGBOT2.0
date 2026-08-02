@@ -147,6 +147,27 @@
     .fp-ink-dark .fp-name { color:#14161c; text-shadow:0 1px 2px rgba(255,255,255,.75); }
     .fp-ink-dark .fp-chip { color:#a8410f; background:rgba(255,255,255,.72); border:1px solid rgba(168,65,15,.45); }
     .fp-ink-dark .fp-pill { color:#6b5310; background:rgba(255,255,255,.72); border:1px solid rgba(107,83,16,.5); }
+    /* ── Cursor cards: the figure at 2x (crisp), centered on a checker so
+       the transparent edges read as "this is a pointer, not an icon". ── */
+    .cm-cursor-live { display:grid; place-items:center;
+      background:
+        linear-gradient(45deg,#f3f4f7 25%,transparent 25%,transparent 75%,#f3f4f7 75%),
+        linear-gradient(45deg,#f3f4f7 25%,transparent 25%,transparent 75%,#f3f4f7 75%),
+        #fbfcfe;
+      background-size:16px 16px; background-position:0 0,8px 8px; }
+    .cm-cursor-img { width:64px; height:64px; image-rendering:pixelated; }
+    /* Cursor preview: both states side by side, zoomed + real size. */
+    .cup-wrap { display:flex; gap:26px; }
+    .cup-cell { background:#fff; border-radius:14px; padding:16px 18px; text-align:center;
+      box-shadow:0 24px 70px rgba(0,0,0,.5); }
+    .cup-cell .cap { font-size:10px; font-weight:800; letter-spacing:.1em;
+      text-transform:uppercase; color:#8a8f9e; margin-bottom:8px; }
+    .cup-zoom { width:96px; height:96px; image-rendering:pixelated; display:block; margin:0 auto; }
+    .cup-real { display:flex; gap:8px; justify-content:center; margin-top:10px; }
+    .cup-chip { width:40px; height:40px; display:grid; place-items:center; border-radius:9px; }
+    .cup-chip.lt { background:#f4f6fa; border:1px solid #e4e6ec; }
+    .cup-chip.dk { background:#12151c; }
+    .cup-chip img { width:32px; height:32px; }
     /* ── camo ownership / activation controls ── */
     .camo-owned-tag { font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:#1a7a3f; }
     .camo-cta.on { opacity:1; pointer-events:auto; cursor:pointer; border:none; }
@@ -484,20 +505,29 @@
   <div class="grid">{% for it in cos_frames_wheel %}{{ frame_card(it) }}{% endfor %}</div>
   {% endif %}
 
-  <!-- ── CURSORS ── -->
-  <div class="sec-head">
-    <h2 data-i18n="camos.secCursors">Cursors</h2>
-    <span class="sub" data-i18n="camos.secCursorsSub">Your pointer, your style — some are store pieces, some only the roulette gives.</span>
-  </div>
-  {% if cos_cursors %}
-  <div class="grid">
-    {% for it in cos_cursors %}
+  <!-- ── CURSORS, same three shelves as the frames ── -->
+  {% macro cursor_card(it) %}
     <div class="camo-card{% if it.state == 'ended' %} ended{% endif %}">
+      {% if it.art %}
+      <div class="camo-swatch cm-cursor cm-cursor-live">
+        <img class="cm-cursor-img" src="{{ it.art }}" alt="">
+        <button type="button" class="camo-prev-btn cur-prev" data-art="{{ it.art }}"
+                data-hot="{{ it.art_hot }}" data-name="{{ it.name }}"
+                data-i18n="camos.prev">&#128065; Preview</button>
+      </div>
+      {% else %}
       <div class="camo-swatch cm-cursor"></div>
+      {% endif %}
       <div class="camo-body">
         <div class="camo-name">{{ it.name }}</div>
         <div class="camo-foot">
           {% if it.state == 'owned' %}<span class="cos-state ow" data-i18n="camos.stOwned">Yours</span>
+            {% if it.wearing %}<button type="button" class="camo-deact fr-unwear"
+                data-kind="cursor" data-frslug="">
+              <span data-i18n="camos.frUnwear">Take it off</span></button>
+            {% else %}<button type="button" class="camo-cta on act fr-wear"
+                data-kind="cursor" data-frslug="{{ it.slug }}">
+              <span data-i18n="camos.frWear">Wear it</span></button>{% endif %}
           {% elif it.state == 'buy' %}<span class="camo-price">${{ '%.2f'|format(it.price) }}</span>
             <span style="display:flex;gap:8px;">
               <button type="button" class="camo-cart-btn cos-cart" data-ref="{{ it.ref }}"
@@ -517,10 +547,38 @@
         </div>
       </div>
     </div>
-    {% endfor %}
+  {% endmacro %}
+
+  <div class="sec-head">
+    <h2 data-i18n="camos.secCursors">Cursors</h2>
+    <span class="sub" data-i18n="camos.secCursorsSub">Your pointer, your style — some are store pieces, some only the roulette gives.</span>
   </div>
-  {% else %}
+  {% if not cos_cursors %}
   <div class="cos-empty" data-i18n="camos.emptyCursors">Cursors land together with the frames — a few in the store, the rest only on the roulette.</div>
+  {% endif %}
+
+  {% if cos_cursors_common %}
+  <div class="sec-head sub-head">
+    <h3 data-i18n="camos.frCommon">Always available</h3>
+    <span class="sub" data-i18n="camos.frCommonSub">On sale all year — buy them whenever you like.</span>
+  </div>
+  <div class="grid">{% for it in cos_cursors_common %}{{ cursor_card(it) }}{% endfor %}</div>
+  {% endif %}
+
+  {% if cos_cursors_festive %}
+  <div class="sec-head sub-head">
+    <h3 data-i18n="camos.frFestive">Festive</h3>
+    <span class="sub" data-i18n="camos.frFestiveSub">Each one unlocks for 24 hours on its date, then locks again until next year.</span>
+  </div>
+  <div class="grid">{% for it in cos_cursors_festive %}{{ cursor_card(it) }}{% endfor %}</div>
+  {% endif %}
+
+  {% if cos_cursors_wheel %}
+  <div class="sec-head sub-head">
+    <h3 data-i18n="camos.frWheel">Roulette only</h3>
+    <span class="sub" data-i18n="camos.curWheelSub">Never for sale — the wheel gives three each month: one matching the month's camo and two free ones.</span>
+  </div>
+  <div class="grid">{% for it in cos_cursors_wheel %}{{ cursor_card(it) }}{% endfor %}</div>
   {% endif %}
 
 </div>
@@ -554,10 +612,10 @@
     var lang = 'en';
     try { var l = localStorage.getItem('scalpel_lang'); if (['en','es','fr','pt'].indexOf(l) >= 0) lang = l; } catch (e) {}
     var T = {
-      en:{activate:'Activate',active:'Active ✓',owned:'Owned',deactivate:'Use default',get:'Get this skin',soon:'Payments are coming very soon',on:'Activated — ',go:'see it in the app →',off:'Reverted to the default theme',prev:'👁 Preview',hint:'Click anywhere to close',flip:'See the other look',inside:'The app wearing it',skin:'The skin itself',bought:'The skin is yours! ',err:'Could not reach PayPal — please try again',cartAdd:'Add to cart',cartIn:'In the cart ✓',cartBought:'The whole cart is yours! ',cartErr:'Something in the cart is no longer available',locked:'Opens on',lockedTip:'Opens at 00:00 Venezuela time and stays open for 24 hours.',lockedWhen:'00:00 UTC−4 (Venezuela)',prevFrameLbl:'How it looks in the forum',prevFrameTitle:'Sweep of the PDL and reclaim at the open',prevFrameBody:'Yesterday\'s low got swept and the reclaim was clean.'},
-      es:{activate:'Activar',active:'Activo ✓',owned:'Adquirido',deactivate:'Usar default',get:'Obtener skin',soon:'Los pagos llegan muy pronto',on:'Activado — ',go:'velo en la app →',off:'Volviste al tema por defecto',prev:'👁 Vista previa',hint:'Haz clic en cualquier parte para cerrar',flip:'Ver el otro look',inside:'La app con el camo puesto',skin:'La piel del camo',bought:'¡La skin es tuya! ',err:'No pudimos conectar con PayPal — intenta de nuevo',cartAdd:'Añadir al carrito',cartIn:'En el carrito ✓',cartBought:'¡Todo el carrito es tuyo! ',cartErr:'Algo del carrito ya no está disponible',locked:'Se abre el',lockedTip:'Se abre a las 00:00 (hora de Venezuela) y dura 24 horas.',lockedWhen:'00:00 UTC−4 (hora de Venezuela)',prevFrameLbl:'Cómo se ve en el foro',prevFrameTitle:'Sweep del PDL y reclaim en la apertura',prevFrameBody:'El low de ayer quedó barrido y el reclaim fue limpio.'},
-      fr:{activate:'Activer',active:'Actif ✓',owned:'Acquis',deactivate:'Défaut',get:'Obtenir ce skin',soon:'Les paiements arrivent très bientôt',on:'Activé — ',go:'à voir dans l\'app →',off:'Retour au thème par défaut',prev:'👁 Aperçu',hint:'Cliquez n\'importe où pour fermer',flip:'Voir l\'autre look',inside:'L\'app avec le camo',skin:'La peau du camo',bought:'Le skin est à vous ! ',err:'Impossible de joindre PayPal — réessayez',cartAdd:'Ajouter au panier',cartIn:'Dans le panier ✓',cartBought:'Tout le panier est à vous ! ',cartErr:'Un article du panier n\'est plus disponible',locked:'Ouvre le',lockedTip:'Ouvre à 00h00 (heure du Venezuela) et reste ouvert 24 heures.',lockedWhen:'00h00 UTC−4 (heure du Venezuela)',prevFrameLbl:'Son rendu sur le forum',prevFrameTitle:'Sweep du PDL et reclaim à l\'ouverture',prevFrameBody:'Le low d\'hier a été balayé et le reclaim a été net.'},
-      pt:{activate:'Ativar',active:'Ativo ✓',owned:'Adquirido',deactivate:'Usar padrão',get:'Obter skin',soon:'Os pagamentos chegam em breve',on:'Ativado — ',go:'veja no app →',off:'Voltou ao tema padrão',prev:'👁 Prévia',hint:'Clique em qualquer lugar para fechar',flip:'Ver o outro visual',inside:'O app com o camo',skin:'A pele do camo',bought:'A skin é sua! ',err:'Não foi possível conectar ao PayPal — tente de novo',cartAdd:'Adicionar ao carrinho',cartIn:'No carrinho ✓',cartBought:'O carrinho inteiro é seu! ',cartErr:'Algo do carrinho não está mais disponível',locked:'Abre em',lockedTip:'Abre às 00:00 (horário da Venezuela) e fica aberto por 24 horas.',lockedWhen:'00:00 UTC−4 (horário da Venezuela)',prevFrameLbl:'Como fica no fórum',prevFrameTitle:'Sweep do PDL e reclaim na abertura',prevFrameBody:'A mínima de ontem foi varrida e o reclaim veio limpo.'}
+      en:{activate:'Activate',active:'Active ✓',owned:'Owned',deactivate:'Use default',get:'Get this skin',soon:'Payments are coming very soon',on:'Activated — ',go:'see it in the app →',off:'Reverted to the default theme',prev:'👁 Preview',hint:'Click anywhere to close',flip:'See the other look',inside:'The app wearing it',skin:'The skin itself',bought:'The skin is yours! ',err:'Could not reach PayPal — please try again',cartAdd:'Add to cart',cartIn:'In the cart ✓',cartBought:'The whole cart is yours! ',cartErr:'Something in the cart is no longer available',locked:'Opens on',lockedTip:'Opens at 00:00 Venezuela time and stays open for 24 hours.',lockedWhen:'00:00 UTC−4 (Venezuela)',prevFrameLbl:'How it looks in the forum',prevFrameTitle:'Sweep of the PDL and reclaim at the open',prevFrameBody:'Yesterday\'s low got swept and the reclaim was clean.',curNormal:'Normal',curHot:'Over a link'},
+      es:{activate:'Activar',active:'Activo ✓',owned:'Adquirido',deactivate:'Usar default',get:'Obtener skin',soon:'Los pagos llegan muy pronto',on:'Activado — ',go:'velo en la app →',off:'Volviste al tema por defecto',prev:'👁 Vista previa',hint:'Haz clic en cualquier parte para cerrar',flip:'Ver el otro look',inside:'La app con el camo puesto',skin:'La piel del camo',bought:'¡La skin es tuya! ',err:'No pudimos conectar con PayPal — intenta de nuevo',cartAdd:'Añadir al carrito',cartIn:'En el carrito ✓',cartBought:'¡Todo el carrito es tuyo! ',cartErr:'Algo del carrito ya no está disponible',locked:'Se abre el',lockedTip:'Se abre a las 00:00 (hora de Venezuela) y dura 24 horas.',lockedWhen:'00:00 UTC−4 (hora de Venezuela)',prevFrameLbl:'Cómo se ve en el foro',prevFrameTitle:'Sweep del PDL y reclaim en la apertura',prevFrameBody:'El low de ayer quedó barrido y el reclaim fue limpio.',curNormal:'Normal',curHot:'Sobre un enlace'},
+      fr:{activate:'Activer',active:'Actif ✓',owned:'Acquis',deactivate:'Défaut',get:'Obtenir ce skin',soon:'Les paiements arrivent très bientôt',on:'Activé — ',go:'à voir dans l\'app →',off:'Retour au thème par défaut',prev:'👁 Aperçu',hint:'Cliquez n\'importe où pour fermer',flip:'Voir l\'autre look',inside:'L\'app avec le camo',skin:'La peau du camo',bought:'Le skin est à vous ! ',err:'Impossible de joindre PayPal — réessayez',cartAdd:'Ajouter au panier',cartIn:'Dans le panier ✓',cartBought:'Tout le panier est à vous ! ',cartErr:'Un article du panier n\'est plus disponible',locked:'Ouvre le',lockedTip:'Ouvre à 00h00 (heure du Venezuela) et reste ouvert 24 heures.',lockedWhen:'00h00 UTC−4 (heure du Venezuela)',prevFrameLbl:'Son rendu sur le forum',prevFrameTitle:'Sweep du PDL et reclaim à l\'ouverture',prevFrameBody:'Le low d\'hier a été balayé et le reclaim a été net.',curNormal:'Normal',curHot:'Sur un lien'},
+      pt:{activate:'Ativar',active:'Ativo ✓',owned:'Adquirido',deactivate:'Usar padrão',get:'Obter skin',soon:'Os pagamentos chegam em breve',on:'Ativado — ',go:'veja no app →',off:'Voltou ao tema padrão',prev:'👁 Prévia',hint:'Clique em qualquer lugar para fechar',flip:'Ver o outro visual',inside:'O app com o camo',skin:'A pele do camo',bought:'A skin é sua! ',err:'Não foi possível conectar ao PayPal — tente de novo',cartAdd:'Adicionar ao carrinho',cartIn:'No carrinho ✓',cartBought:'O carrinho inteiro é seu! ',cartErr:'Algo do carrinho não está mais disponível',locked:'Abre em',lockedTip:'Abre às 00:00 (horário da Venezuela) e fica aberto por 24 horas.',lockedWhen:'00:00 UTC−4 (horário da Venezuela)',prevFrameLbl:'Como fica no fórum',prevFrameTitle:'Sweep do PDL e reclaim na abertura',prevFrameBody:'A mínima de ontem foi varrida e o reclaim veio limpo.',curNormal:'Normal',curHot:'Sobre um link'}
     }[lang];
     // Camos whose theme has a second look (light/dark) worth flipping to.
     var PREV_ALT = { standard:1, mission:1, pole:1 };
@@ -845,9 +903,37 @@
     document.querySelectorAll('.fr-wear, .fr-unwear').forEach(function(btn){
       btn.addEventListener('click', function(){
         btn.disabled = true;
-        post('/api/cosmetics/equip', {kind:'frame', slug: btn.getAttribute('data-frslug') || ''})
+        post('/api/cosmetics/equip', {kind: btn.getAttribute('data-kind') || 'frame',
+                                      slug: btn.getAttribute('data-frslug') || ''})
           .then(function(res){ if (res.ok) location.reload(); else btn.disabled = false; })
           .catch(function(){ btn.disabled = false; });
+      });
+    });
+    // Cursor preview: the two states (normal / lit over a link) zoomed 3x and
+    // at real size on light and dark chips — same info as the design bench.
+    function openCursorPreview(art, hot, name){
+      var m = document.createElement('div');
+      m.className = 'camo-modal';
+      function cell(cap, src){
+        return '<div class="cup-cell"><div class="cap">' + esc(cap) + '</div>'
+          + '<img class="cup-zoom" src="' + esc(src) + '">'
+          + '<div class="cup-real">'
+          + '<span class="cup-chip lt"><img src="' + esc(src) + '"></span>'
+          + '<span class="cup-chip dk"><img src="' + esc(src) + '"></span>'
+          + '</div></div>';
+      }
+      m.innerHTML =
+        '<div class="cup-wrap">' + cell(T.curNormal, art) + cell(T.curHot, hot) + '</div>'
+        + '<div class="cm-title">' + esc(name) + '</div>'
+        + '<div class="cm-hint">' + esc(T.hint) + '</div>';
+      m.addEventListener('click', function(){ m.remove(); });
+      document.body.appendChild(m);
+    }
+    document.querySelectorAll('.cur-prev').forEach(function(btn){
+      btn.addEventListener('click', function(e){
+        e.stopPropagation();
+        openCursorPreview(btn.getAttribute('data-art'), btn.getAttribute('data-hot'),
+                          btn.getAttribute('data-name'));
       });
     });
     // Fresh from PayPal: celebrate the purchase (ownership already re-rendered
