@@ -268,8 +268,20 @@ cada mes, si un mes no hay tanda el sistema se ve muerto).
   al ganar un marco el modal muestra la placa + "Usarlo ahora". E2E 27/27
   (`scratchpad/test_marcos.py`) + navegador real (feed, comentario, tienda; 0 errores JS).
   ⚠️ El "2 min" del comentario era invisible sobre placa oscura → tinta con text-shadow ×2 modos.
-· **FALTA del paso 5:** **los cursores — todavía sin empezar** (32×32, flecha+manito, sin animar,
-  solo escritorio; `active_cursor` y el 400 del equip ya los esperan), y las tandas de camos
+· ✅ **19 marcos de TIENDA dibujados (2026-08-02, pendientes de aprobación del usuario):**
+  **7 festivos** espejo de los camos festivos (santa/hallow/fourth/lucky/valentine/easter/newyear;
+  con frost y muertos ya son 9) — regla: compra SOLO en ventana de 24h en la fecha estipulada
+  (newyear 01-01 · valentine 02-14 · lucky 03-17 · easter móvil, la fija el dueño · fourth 07-04 ·
+  hallow 10-31 · muertos 11-02 · frost 12-21 · santa 12-25; anotado en `FESTIVOS`); y **12 libres**
+  con temáticas deliberadamente LEJOS de los camos comunes y de las 12 temporadas (gambit/ajedrez,
+  beacon/faro, vineyard, archive/biblioteca, clockwork, windmill/tulipanes, fireflies, harvest,
+  cascade, bazaar, salar, express/tren nocturno). El usuario asumió la coincidencia mars↔Mission y
+  arcade↔camo arcade ("se deja así"). Catálogo total: 66 placas.
+· **FALTA del paso 5:** publicar los marcos de tienda como `CosmeticItem` channel='store' — bloqueado
+  por DOS decisiones del usuario: (a) **precio de marcos de tienda** (propuesta: $2.99, sin fijar) y
+  (b) aprobar el arte de los 19; además cablear la **ventana de 24h** de los festivos (hoy la tienda
+  no tiene mecanismo de ventana). **Los cursores — todavía sin empezar** (32×32, flecha+manito, sin
+  animar, solo escritorio; `active_cursor` y el 400 del equip ya los esperan), y las tandas de camos
   (arte mensual que encarga el usuario; se publican insertando `CosmeticItem` kind='camo').
 
 ## 📅 Recordatorio diario
