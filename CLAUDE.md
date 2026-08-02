@@ -143,6 +143,52 @@ sí se construyó es el **escaparate**: una página donde viven las cuentas ofic
   abajo no había ninguna). 21 claves `comm.*` ×4 a paridad.
 - **PENDIENTE:** crear las cuentas y setear sus env vars (ver "Redes sociales" en tareas pendientes).
 
+## 🎡 RULETA → COSMÉTICOS + TEMPORADAS (decidido 2026-08-02, EN CONSTRUCCIÓN)
+**Decisión de fondo:** la ruleta deja de repartir DESCUENTOS (costaban ~$7.38/giro, eran premios
+muertos para clientes atados al 20% del socio, y el mes gratis le robaba $12 de comisión al
+influencer) y pasa a repartir **cosméticos**. Principio rector: *los camos son cómo TÚ ves el
+sitio; marcos y cursores son cómo TE VEN los demás* (foro/tabla/panel).
+**Decisiones CERRADAS con el usuario (no reabrir):**
+- **Tanda mensual de ruleta = 2 marcos + 3 cursores + 1 camo** (camo CON botarga — el usuario
+  asume producir 12/año). Rotación MENSUAL: lo no ganado **se pierde para siempre** y queda en la
+  tienda en gris "temporada terminada — <mes año>". Piezas jamás cruzan de canal (ruleta ≠ tienda
+  ≠ campeón); **nada se revoca nunca**.
+- **Regla B de probabilidades:** el camo corre APARTE con su 5% fijo en cada giro (nunca engorda);
+  marcos/cursores se reparten lo restante SIN repetidos; un giro nunca sale vacío; tanda limpiada
+  → el giro se guarda (spins se acumulan, ya funciona así). Simulado: mes perfecto (4 giros) =
+  18.5% de sacar el camo. Script `scratchpad/ruleta_prob.py`.
+- **Ranking mensual:** más aciertos gana; empate → MENOR suma de segundos de las correctas
+  (criterio del usuario, ej. Juan vs Gabriel). Tabla = top 20 + tu propia fila siempre. Nombres
+  públicos. El #1 del mes gana un **marco de campeón** único e irrepetible (solo el #1, sin podio).
+- **Racha** (estilo killstreak): correctas seguidas hasta fallar O saltarse un día; NO se reinicia
+  por mes. **Salón de la fama** = mejores rachas históricas; el top 3 lleva el **nombre encendido**
+  (único cosmético que SE PIERDE si te superan; efectos distintos, #1 el mejor). Chip `🔥 N` en el
+  foro desde racha ≥2.
+- **Armonía con rangos (condición del usuario):** rango = texto+metal (medalla+pastilla, dorado
+  SOLO rangos 7-8); marco = forma+material, SIN texto, SIN paleta de rangos (excepción: marco del
+  campeón puede competir con el dorado). En el foro el marco es ESTÁTICO (solo la medalla se
+  anima); la animación del marco vive en tabla/panel a 72-96px. Avatar del foro sube a ~40px.
+- **Tienda → "cosméticos"** (`/camos` redirige, columnas DB no se renombran): 4 estados de card
+  (comprable / lo tienes / solo-ruleta con bio / temporada terminada). **Precios: $4.99 camo común,
+  $7.99 de temporada, $1.99 cursor** (repricing aprobado; hoy no hay clientes = sin migración).
+  **Carrito multi-ítem SÍ** (una sola comisión PayPal), compra individual se mantiene, **packs NO**
+  (rechazados: abaratan la percepción). Cursores: 32×32, flecha+manito (2 archivos), sin animar,
+  solo desktop; unos de ruleta y otros de tienda, jamás cruzan.
+- **Descartados:** XP en ruleta, títulos por hazaña ("Liquidity Hunter, Roulette Pro Max" = choque
+  con rangos), sello del certificado, escudo de racha, análisis extra, nombres con efecto como
+  premio (quedan SOLO para el salón de la fama).
+**Plan (ir de a uno):** (1) ✅ **registro de respuestas con tiempo** — `DailyAnswerLog` (fila
+única user+día: correct/timed_out/seconds server-side/streak_after) escrito en `/api/daily/answer`,
++ `DailyQuizState.best_streak` (migración `_migrate_daily_best_streak_column`, backfill=streak
+actual; `tools/test_boot_migracion.py` ahora cubre columnas de otras tablas, 6/6). E2E 17/17
+(`scratchpad/test_daily_log.py`): unicidad diaria, timeout registrado, best_streak sobrevive al
+fallo, consulta del ranking con desempate. **Va ANTES de abrir la temporada 1 — sin esto no hay
+desempate reconstruible.** (2) panel racha + tabla mes + salón de la fama; (3) quitar descuentos
+de la ruleta (NO apagarla) + motor de tandas Regla B + anuncio "próxima tanda"; (4) tienda
+cosméticos + marcos/cursores + 4 estados + carrito; (5) primeras piezas (colchón de 3 meses de
+tandas ANTES de encender la rotación — compromiso operativo: 6 piezas nuevas cada mes, si un mes
+no hay tanda el sistema se ve muerto).
+
 ## 📅 Recordatorio diario
 La **primera vez que el usuario escriba cada día calendario** (`currentDate`), mostrar (si ya se mostró
 hoy, no repetir):

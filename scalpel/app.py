@@ -1330,8 +1330,32 @@ class DailyQuizState(db.Model):
     last_result = db.Column(db.Boolean, nullable=True)
     spins_available = db.Column(db.Integer, default=0, nullable=False)
     total_correct = db.Column(db.Integer, default=0, nullable=False)
+    # Highest streak this user has EVER reached — the hall-of-fame number.
+    # Updated at the moment the streak grows, so the later reset (a miss or a
+    # skipped day) can never erase the record.
+    best_streak = db.Column(db.Integer, default=0, nullable=False)
     served_for = db.Column(db.String(10), nullable=True)        # date the open question belongs to
     question_served_at = db.Column(db.DateTime, nullable=True)  # starts the 60s window
+
+
+class DailyAnswerLog(db.Model):
+    """One row per user per UTC day: what the daily attempt scored and how long
+    it took. This is the raw material of the monthly leaderboard — most correct
+    answers wins the month, and a tie is broken by the LOWEST sum of seconds
+    across the tied users' correct answers. Seconds are measured server-side
+    (question served -> answer received), so network latency counts against the
+    player; acceptable because time is only ever the tiebreaker, never the
+    ranking itself. Rows are append-only and never rewritten: the month must be
+    reconstructible long after streaks and states have moved on."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    day = db.Column(db.String(10), nullable=False, index=True)  # 'YYYY-MM-DD' UTC
+    correct = db.Column(db.Boolean, nullable=False)
+    timed_out = db.Column(db.Boolean, default=False, nullable=False)
+    seconds = db.Column(db.Float, nullable=False)               # server-measured
+    streak_after = db.Column(db.Integer, default=0, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    __table_args__ = (db.UniqueConstraint('user_id', 'day', name='uq_daily_answer_user_day'),)
 
 
 class RouletteSpin(db.Model):
@@ -10071,11 +10095,20 @@ def daily_answer():
     if correct:
         st.streak += 1
         st.total_correct += 1
+        if st.streak > (st.best_streak or 0):
+            st.best_streak = st.streak
         if st.streak % DAILY_STREAK_TARGET == 0:
             st.spins_available += 1
             earned_spin = True
     else:
         st.streak = 0
+    # The permanent answer log: one row per user per day, written exactly once
+    # (the already_played gate above guarantees it). This is what the monthly
+    # leaderboard and its time tiebreak are computed from.
+    db.session.add(DailyAnswerLog(
+        user_id=current_user.id, day=today, correct=correct,
+        timed_out=timed_out, seconds=round(elapsed, 2),
+        streak_after=st.streak))
     db.session.commit()
 
     if correct:
@@ -11523,6 +11556,29 @@ def _migrate_user_security_columns():
         app.logger.info('Migrated user: security columns ensured.')
 
 
+def _migrate_daily_best_streak_column():
+    """Add `best_streak` to an existing daily_quiz_state table.
+
+    Backfill = the CURRENT streak: it is the only streak we can still see, and
+    it is provably a streak the user reached. Historic streaks that were
+    already broken before this ships are gone — inventing them would put fake
+    numbers in the hall of fame. Raw SQL only (permanent rule: the ORM asks
+    for the full model, a migration runs precisely when the DB isn't there yet)."""
+    from sqlalchemy import inspect, text
+    insp = inspect(db.engine)
+    if 'daily_quiz_state' not in insp.get_table_names():
+        return
+    cols = {c['name'] for c in insp.get_columns('daily_quiz_state')}
+    if 'best_streak' in cols:
+        return
+    with db.engine.begin() as conn:
+        conn.execute(text('ALTER TABLE daily_quiz_state '
+                          'ADD COLUMN best_streak INTEGER DEFAULT 0'))
+        conn.execute(text('UPDATE daily_quiz_state SET best_streak = streak '
+                          'WHERE streak > COALESCE(best_streak, 0)'))
+    app.logger.info('Migrated daily_quiz_state: added best_streak (backfilled from streak).')
+
+
 def _migrate_testimonial_insider_column():
     """Add `insider` to an existing testimonial table, and backfill it.
 
@@ -11766,6 +11822,7 @@ def init_db():
         _migrate_preflight_check_columns()
         _migrate_sale_reserve_columns()
         _migrate_testimonial_insider_column()
+        _migrate_daily_best_streak_column()
         _migrate_mentorship_application_columns()
         _migrate_forum_post_community_column()
         _migrate_mentorship_area_columns()
