@@ -353,9 +353,39 @@ cada mes, si un mes no hay tanda el sistema se ve muerto).
   `scalpel_splash_ts` (302 a /welcome sin él — pega en tests). E2E `scratchpad/test_cursores.py`
   **44/44** + regresión completa verde + navegador real (body/botón/textarea con los 3 cursores
   correctos, tienda y preview sin errores JS).
-· **FALTA del paso 5:** solo las tandas de camos (arte mensual que encarga el usuario; se publican
-  insertando `CosmeticItem` kind='camo'). **Con eso la tanda mensual queda completa: 1 camo + 2
-  marcos + 3 cursores.**
+· ✅ **CAMO CHRONICLES — la 6ª pieza, y la tanda de agosto quedó COMPLETA (2026-08-02).**
+  🔴 **Agujero real cazado al cablearlo:** ganar un camo en la ruleta solo escribía `UserCosmetic`,
+  pero el motor de temas lee `User.owned_camos` (`owns_camo()` gatea `/api/camo/activate`) → el
+  premio no habría pintado NADA. `daily_spin` ahora hace de puente (`add_camo` + se enciende solo
+  si no hay otro camo activo, misma regla que `_activate_cosmetics_from_order`).
+  **Arte — DOS correcciones del dueño, en este orden:** (1) *"Chronicles no se trata de volcanes,
+  se trata de MEDIEVAL; lo que tiene que predominar de fondo es una especie de Reino"* → se tiraron
+  dos escenas volcánicas (capas de montañas y llanura de basalto agrietado) y quedó un **reino
+  amurallado**: almenas de borde a borde, puerta iluminada, torres de techo cónico con estandartes,
+  torre del homenaje, aguja de catedral, caserío y ventanas encendidas; la lava sobrevive como
+  cielo/horizonte + un volcán chico al fondo. (2) *"para light mode… un reino rodeado de colinas de
+  montañas, un sol, cielo azul y despejado"* → **DOS looks** (patrón Pole/Mission/Standard): 🌙 la
+  ciudad de noche, ☀️ el MISMO reino de día (sol, nubes, sierra nevada, colinas verdes, piedra
+  clara, tejas de terracota, arboleda, camino a la puerta). Por eso **NO es DARK_ALWAYS** — el
+  toggle elige escena. Generador reproducible: **`tools/build_chronicles_camo.py`** (una geometría,
+  dos paletas en `PALETTE`; re-correrlo reinserta el bloque en `index.html`, es idempotente).
+  **Cableado:** publicado como **`camo-chronicles`** — `CosmeticItem.slug` es único y el MARCO
+  homónimo ya ocupaba el slug pelado (mismo motivo que `cur-`); el prefijo **nunca sale del
+  ledger** (`camo_slug_of()`; `/api/daily/tanda` y `/api/daily/spin` sirven el pelado o la rueda no
+  acierta el sector). `_publish_roulette_camos()` publica **solo el camo cuyo tema YA existe**
+  (`CAMO_READY`) — un premio sin CSS no entrega nada y la ruleta no sabe devolver. `ROULETTE_CAMOS`
+  + `camo_store_price()` → **jamás tiene precio** (muro de canal; `/api/camo/buy` también lo
+  rechaza). Estante propio **"Camos de ruleta"** en `/cosmetics` (server-rendered, `data-wheel="1"`
+  → `renderCard` devuelve temprano y respeta el pie del server; `slugOf()` ahora lee `data-slug`,
+  así **un camo de otro mes no necesita tocar `CM2SLUG`**), ⇆ en la tarjeta y en el lightbox
+  (`PREV_ALT`), y rama de camo en el modal del premio con "Usarlo ahora".
+  E2E `scratchpad/test_camo_chronicles.py` **42/42** + regresión verde (marcos 32, cursores 45,
+  tienda 38, ventanas 26, boot 6/6) + navegador real (claro y oscuro, tienda en ES, 0 errores JS).
+  ⚠️ La **botarga del dragón la encarga el usuario** — mientras no exista, Chronicles usa el
+  muñeco-flecha por defecto (igual que arrancó `standard`).
+· **FALTA del paso 5:** los camos de los 11 meses siguientes (arte mensual que encarga el usuario).
+  Cada uno = tema CSS + slug en `CAMO_SLUGS`/`CAMO_READY`/`CAMO_NAMES` + una línea en
+  `CAMO_WHEEL_DESCS` ×4 idiomas; `_publish_roulette_camos()` lo publica solo al arrancar.
 
 ## 📅 Recordatorio diario
 > 🔔 **PARA EL 2026-08-03 (pedido explícito del usuario):** re-revisar juntos los TONOS del
