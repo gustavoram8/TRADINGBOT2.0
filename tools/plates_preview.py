@@ -2,18 +2,19 @@
 """Catálogo de MARCOS (placas del bloque de autor).
 
 Un marco es una placa rectangular que va DETRÁS del bloque del autor en el
-foro: avatar + medalla del rango + nombre + chip de racha + pastilla. Se eligió
-esta forma sobre el aro alrededor del avatar porque el aro no se puede
-presumir: nadie paga por decorar el borde de un círculo de 40px.
+foro: avatar + medalla del rango + nombre + chip de racha + pastilla.
 
-DOS REGLAS ESTRUCTURALES:
+TRES REGLAS, todas aprendidas a los golpes:
 
-1. Cada placa lleva un DIBUJO, no solo textura. La primera tanda se hizo solo
-   con degradados CSS y salieron todas iguales — "fondo oscuro con difuminado"
-   ×32 — porque un degradado no puede dibujar. El motivo va en SVG.
-2. El arte vive a la IZQUIERDA y la placa se apaga hacia la DERECHA (ver
-   .plate::after). Así la medalla y la pastilla del rango caen siempre sobre
-   fondo calmado y la placa nunca se come al rango.
+1. La placa es una ESCENA QUE OCUPA TODO EL ANCHO, no un ícono pegado a un
+   lado. La segunda tanda dibujaba un motivo de 64×64 en una esquina y se
+   veía como un sticker; el lienzo real es 420×56 y hay que usarlo entero.
+2. Los fondos NO son todos oscuros. Cada temática trae su propia paleta, y
+   varias son claras. Cada placa declara el color de su TEXTO (`ink`) porque
+   sobre una placa clara el nombre tiene que ser oscuro.
+3. La composición deja el TERCIO IZQUIERDO tranquilo — cielo, arena, vacío —
+   en vez de taparlo con un degradado. Ahí caen el avatar y el nombre. Así el
+   arte se ve entero y el rango nunca pelea contra el fondo.
 
     python3 tools/plates_preview.py               # todas
     python3 tools/plates_preview.py chronicles    # algunas
@@ -26,272 +27,328 @@ import tempfile
 CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome'
 OUT = os.environ.get('PLATES_OUT', '/tmp/plates_preview.png')
 
-# El motivo se dibuja en un lienzo 64×64 y se repite/ancla a la izquierda.
-# Siluetas gruesas a propósito: tienen que leerse a 48px de alto.
+# Lienzo de la escena: 420 × 56. Se dibuja completa y se escala a la placa.
+# (slug, nombre, familia, ink 'light'|'dark', escena SVG)
 PLATES = [
- # ── ÉPICA ───────────────────────────────────────────────────────────────
- ('chronicles', 'Chronicles', 'épica',
-  "background:#14060b;background-image:linear-gradient(100deg,#1e070e,#5c1120 62%,#12060a);",
-  '#f0b8b0', """
-   <path d="M6 44 C14 40 16 30 24 27 C30 25 34 28 40 24 C44 21 45 15 52 13
-            C50 19 47 22 44 25 C48 26 52 25 56 22 C54 29 48 33 42 33
-            C38 39 30 43 22 44 Z" fill="currentColor" opacity=".92"/>
-   <path d="M44 20 L50 9 L47 20 Z" fill="currentColor"/>
-   <circle cx="45.5" cy="20.5" r="1.6" fill="#14060b"/>
-   <path d="M8 46 C18 52 34 52 46 45 C36 56 16 56 8 46 Z"
-         fill="currentColor" opacity=".5"/>
-  """),
- ('samurai', 'Samurai', 'épica',
-  "background:#0c1330;background-image:linear-gradient(100deg,#0a1029,#1f3068 60%,#090e24);",
-  '#c9d8ff', """
-   <circle cx="46" cy="18" r="10" fill="#d84a4a" opacity=".85"/>
-   <path d="M14 40 C14 26 22 19 32 19 C42 19 50 26 50 40 L44 40
-            C44 30 39 25 32 25 C25 25 20 30 20 40 Z" fill="currentColor"/>
-   <path d="M20 22 C24 12 40 12 44 22 C38 17 26 17 20 22 Z" fill="currentColor"/>
-   <rect x="12" y="40" width="40" height="5" rx="2.5" fill="currentColor" opacity=".8"/>
-   <rect x="14" y="47" width="36" height="4" rx="2" fill="currentColor" opacity=".55"/>
-  """),
- ('cathedral', 'Cathedral', 'épica',
-  "background:#080c26;background-image:linear-gradient(100deg,#070a22,#1b2668 60%,#060919);",
-  '#9db6ff', """
-   <circle cx="32" cy="32" r="21" fill="none" stroke="currentColor" stroke-width="2.4"/>
-   <circle cx="32" cy="32" r="7" fill="currentColor" opacity=".9"/>
-   <g stroke="currentColor" stroke-width="1.8">
-     <path d="M32 11 V53 M11 32 H53 M17 17 L47 47 M47 17 L17 47"/>
-   </g>
-   <g fill="currentColor" opacity=".75">
-     <circle cx="32" cy="16" r="3.4"/><circle cx="32" cy="48" r="3.4"/>
-     <circle cx="16" cy="32" r="3.4"/><circle cx="48" cy="32" r="3.4"/>
-   </g>
-  """),
- ('runes', 'Runestone', 'épica',
-  "background:#101216;background-image:linear-gradient(100deg,#0d0f13,#2b3138 60%,#0c0e12);",
-  '#63dcff', """
-   <g fill="#5a6470">
-     <path d="M8 52 V26 C8 21 12 18 15 18 C18 18 22 21 22 26 V52 Z"/>
-     <path d="M26 52 V16 C26 10 30 7 34 7 C38 7 42 10 42 16 V52 Z"/>
-     <path d="M46 52 V30 C46 25 49 22 52 22 C55 22 58 25 58 30 V52 Z"/>
-   </g>
-   <g stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none">
-     <path d="M15 26 V38 M11 30 L15 34 L19 30"/>
-     <path d="M34 16 V40 M28 22 L34 28 L40 22 M28 34 L34 28"/>
-     <path d="M52 30 V42 M48 36 H56"/>
-   </g>
-  """),
+ ('chronicles', 'Chronicles', 'épica', 'light', """
+  <defs><linearGradient id="ch-sky" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#140508"/><stop offset=".55" stop-color="#2c0910"/>
+    <stop offset="1" stop-color="#5e1410"/></linearGradient></defs>
+  <rect width="420" height="56" fill="url(#ch-sky)"/>
+  <!-- grietas de lava a lo ancho -->
+  <g stroke="#ff5a1e" stroke-linecap="round" fill="none">
+    <path d="M0 47 L38 42 L64 49 L104 40 L150 47 L196 38 L244 46 L292 37 L340 45 L386 36 L420 43"
+          stroke-width="2.6" opacity=".95"/>
+    <path d="M64 49 L72 56 M150 47 L142 56 M244 46 L252 56 M340 45 L332 56"
+          stroke-width="1.8" opacity=".8"/>
+    <path d="M104 40 L112 30 M196 38 L188 28 M292 37 L300 27"
+          stroke-width="1.4" opacity=".55"/>
+  </g>
+  <g stroke="#ffd08a" stroke-width="1" fill="none" opacity=".5">
+    <path d="M0 47 L38 42 L64 49 L104 40 L150 47 L196 38 L244 46 L292 37 L340 45 L386 36 L420 43"/>
+  </g>
+  <!-- torres de castillo al fondo -->
+  <g fill="#0d0407" opacity=".85">
+    <path d="M300 34 h10 v-6 h4 v6 h10 v-4 h4 v4 h8 V56 H300 Z"/>
+    <path d="M356 38 h8 v-5 h3 v5 h9 V56 H356 Z"/>
+  </g>
+  <!-- dragón volando, cruzando la escena -->
+  <g fill="#f3b9a4">
+    <path d="M196 22 C210 16 222 20 232 14 C240 9 242 4 250 2
+             C248 8 246 12 242 15 C248 16 254 14 259 10
+             C256 18 249 22 241 22 C236 27 226 30 214 30
+             C208 30 200 27 196 22 Z" opacity=".95"/>
+    <path d="M243 12 L250 1 L247 12 Z"/>
+    <path d="M198 24 C210 32 228 32 240 24 C230 36 208 36 198 24 Z" opacity=".55"/>
+  </g>
+  <circle cx="244" cy="12.5" r="1.4" fill="#140508"/>
+  <!-- brasas -->
+  <g fill="#ff8a3c" opacity=".7">
+    <circle cx="120" cy="24" r="1.3"/><circle cx="168" cy="16" r="1"/>
+    <circle cx="272" cy="26" r="1.2"/><circle cx="330" cy="18" r="1"/>
+    <circle cx="392" cy="24" r="1.3"/>
+  </g>
+ """),
 
- # ── MERCADO ─────────────────────────────────────────────────────────────
- ('bullrun', 'Bull Run', 'mercado',
-  "background:#04170f;background-image:linear-gradient(100deg,#04150e,#0d5636 60%,#03120c);",
-  '#5cf0a8', """
-   <path d="M12 20 C6 16 5 9 8 6 C13 11 18 14 22 15 L22 22 Z" fill="currentColor"/>
-   <path d="M52 20 C58 16 59 9 56 6 C51 11 46 14 42 15 L42 22 Z" fill="currentColor"/>
-   <path d="M22 14 C22 14 26 12 32 12 C38 12 42 14 42 14 L42 30
-            C42 42 37 50 32 50 C27 50 22 42 22 30 Z" fill="currentColor"/>
-   <g fill="#04170f"><circle cx="26.5" cy="26" r="2.4"/><circle cx="37.5" cy="26" r="2.4"/></g>
-   <path d="M28 39 C30 41 34 41 36 39" stroke="#04170f" stroke-width="2"
-         fill="none" stroke-linecap="round"/>
-  """),
- ('bearcave', 'Bear Cave', 'mercado',
-  "background:#180810;background-image:linear-gradient(100deg,#160710,#571426 60%,#140610);",
-  '#ff8fa8', """
-   <circle cx="15" cy="17" r="8" fill="currentColor"/>
-   <circle cx="49" cy="17" r="8" fill="currentColor"/>
-   <circle cx="15" cy="17" r="4" fill="#180810" opacity=".55"/>
-   <circle cx="49" cy="17" r="4" fill="#180810" opacity=".55"/>
-   <path d="M32 12 C44 12 52 22 52 33 C52 45 43 52 32 52
-            C21 52 12 45 12 33 C12 22 20 12 32 12 Z" fill="currentColor"/>
-   <g fill="#180810"><circle cx="25" cy="30" r="2.6"/><circle cx="39" cy="30" r="2.6"/></g>
-   <ellipse cx="32" cy="40" rx="7" ry="5.5" fill="#180810" opacity=".45"/>
-   <ellipse cx="32" cy="37" rx="3.4" ry="2.6" fill="#180810"/>
-  """),
- ('session', 'Kill Zone', 'mercado',
-  "background:#08111f;background-image:linear-gradient(100deg,#070f1c,#173257 60%,#060d18);",
-  '#7fb6ff', """
-   <circle cx="32" cy="32" r="23" fill="none" stroke="currentColor" stroke-width="2.4"/>
-   <path d="M32 32 L32 9 A23 23 0 0 1 51.9 43.5 Z" fill="currentColor" opacity=".33"/>
-   <g stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-     <path d="M32 14 V32 L45 39"/>
-   </g>
-   <g stroke="currentColor" stroke-width="2.4" stroke-linecap="round" opacity=".8">
-     <path d="M32 6 V11 M32 53 V58 M6 32 H11 M53 32 H58"/>
-   </g>
-  """),
- ('terminal', 'Terminal', 'mercado',
-  "background:#02100a;background-image:linear-gradient(100deg,#020e08,#0a4023 60%,#010c07);",
-  '#4dff9b', """
-   <rect x="6" y="12" width="52" height="36" rx="4" fill="none"
-         stroke="currentColor" stroke-width="2.4"/>
-   <g stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-     <path d="M13 22 L18 27 L13 32"/>
-     <path d="M22 33 H34"/>
-   </g>
-   <rect x="38" y="20" width="4" height="9" fill="currentColor" opacity=".9"/>
-   <g stroke="currentColor" stroke-width="1.8" opacity=".55">
-     <path d="M13 39 H30 M35 39 H50 M44 27 H52"/>
-   </g>
-   <path d="M24 48 H40 L38 54 H26 Z" fill="currentColor" opacity=".7"/>
-  """),
- ('liquidity', 'Liquidity Pool', 'mercado',
-  "background:#031620;background-image:linear-gradient(100deg,#02121b,#0a4a63 60%,#02101a);",
-  '#6fe0ff', """
-   <path d="M32 8 C34 20 44 24 44 34 C44 42 39 48 32 48
-            C25 48 20 42 20 34 C20 24 30 20 32 8 Z" fill="currentColor" opacity=".9"/>
-   <path d="M30 26 C27 31 27 37 30 41" stroke="#031620" stroke-width="2"
-         fill="none" stroke-linecap="round" opacity=".7"/>
-   <g stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" opacity=".65">
-     <path d="M4 52 C10 48 14 56 20 52 C26 48 30 56 36 52 C42 48 46 56 52 52 C56 49 58 52 60 53"/>
-     <path d="M4 58 C10 54 14 62 20 58 C26 54 30 62 36 58" opacity=".6"/>
-   </g>
-  """),
+ ('arcade', 'Insert Coin', 'retro', 'light', """
+  <defs><linearGradient id="ar-bg" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#100425"/><stop offset=".5" stop-color="#2a0846"/>
+    <stop offset="1" stop-color="#4a0d5e"/></linearGradient></defs>
+  <rect width="420" height="56" fill="url(#ar-bg)"/>
+  <!-- rejilla en perspectiva -->
+  <g stroke="#ff2e97" stroke-width="1" opacity=".45">
+    <path d="M0 44 H420 M0 50 H420"/>
+    <path d="M20 44 L0 56 M80 44 L64 56 M140 44 L130 56 M200 44 L196 56
+             M260 44 L262 56 M320 44 L328 56 M380 44 L394 56"/>
+  </g>
+  <!-- maquinita de arcade, al centro -->
+  <g transform="translate(196,4)">
+    <rect x="0" y="4" width="34" height="48" rx="4" fill="#1a0730"
+          stroke="#00e5ff" stroke-width="1.6"/>
+    <rect x="4" y="9" width="26" height="15" rx="2" fill="#03121c"
+          stroke="#00e5ff" stroke-width="1"/>
+    <g fill="#ffe066"><rect x="8" y="19" width="3" height="3"/>
+      <rect x="14" y="16" width="3" height="3"/><rect x="22" y="13" width="3" height="3"/></g>
+    <rect x="6" y="28" width="22" height="7" rx="2" fill="#2b0d4a"/>
+    <circle cx="12" cy="31.5" r="2.2" fill="#ff2e97"/>
+    <circle cx="20" cy="31.5" r="1.8" fill="#00e5ff"/>
+    <rect x="8" y="39" width="18" height="9" rx="1.5" fill="#12052a"/>
+  </g>
+  <!-- píxeles / naves invasoras a los lados -->
+  <g fill="#00e5ff" opacity=".85">
+    <path d="M96 14 h4 v4 h-4 Z M104 10 h4 v4 h-4 Z M112 14 h4 v4 h-4 Z M104 18 h4 v4 h-4 Z"/>
+    <path d="M300 20 h4 v4 h-4 Z M308 16 h4 v4 h-4 Z M316 20 h4 v4 h-4 Z M308 24 h4 v4 h-4 Z"/>
+  </g>
+  <g fill="#ffe066" opacity=".8">
+    <rect x="352" y="12" width="5" height="5"/><rect x="364" y="20" width="4" height="4"/>
+    <rect x="380" y="10" width="4" height="4"/><rect x="392" y="24" width="5" height="5"/>
+  </g>
+ """),
 
- # ── NATURAL ─────────────────────────────────────────────────────────────
- ('storm', 'Storm', 'natural',
-  "background:#0d1219;background-image:linear-gradient(100deg,#0b1017,#2b3543 60%,#0a0e15);",
-  '#cfe6ff', """
-   <path d="M16 34 C9 34 5 29 5 24 C5 19 9 15 14 15 C16 8 23 4 30 4
-            C39 4 46 11 46 20 C53 20 58 25 58 31 C58 37 53 41 47 41 L16 41 Z"
-         fill="currentColor" opacity=".92"/>
-   <path d="M34 38 L24 54 L31 54 L26 62 L40 44 L32 44 Z" fill="#ffe066"/>
-  """),
- ('abyss', 'Abyss', 'natural',
-  "background:#020a14;background-image:linear-gradient(100deg,#01080f,#093050 60%,#010710);",
-  '#7cc9ff', """
-   <path d="M4 44 C14 38 24 38 32 42 C34 34 40 26 50 20
-            C48 30 46 38 46 44 C46 50 48 56 50 62 C40 56 34 50 32 44
-            C24 50 14 50 4 44 Z" fill="currentColor" opacity=".9"/>
-   <g fill="currentColor" opacity=".55">
-     <circle cx="12" cy="18" r="3"/><circle cx="20" cy="9" r="2"/>
-     <circle cx="26" cy="20" r="1.6"/><circle cx="8" cy="30" r="1.8"/>
-   </g>
-  """),
- ('dunes', 'Desert Night', 'natural',
-  "background:#070a1c;background-image:linear-gradient(100deg,#06081a,#1d2352 60%,#05071a);",
-  '#b9a6ff', """
-   <circle cx="46" cy="16" r="9" fill="#e8e2ff" opacity=".92"/>
-   <circle cx="42" cy="13" r="8" fill="#070a1c"/>
-   <g fill="#ffffff" opacity=".85">
-     <circle cx="12" cy="10" r="1.4"/><circle cx="24" cy="18" r="1"/>
-     <circle cx="8" cy="24" r="1.1"/><circle cx="56" cy="30" r="1.2"/>
-   </g>
-   <path d="M0 52 C10 42 20 50 30 44 C40 38 50 46 64 40 L64 64 L0 64 Z"
-         fill="currentColor" opacity=".55"/>
-   <path d="M0 60 C12 52 24 60 36 54 C48 48 56 56 64 52 L64 64 L0 64 Z"
-         fill="currentColor" opacity=".85"/>
-  """),
- ('jungle', 'Jungle', 'natural',
-  "background:#04170c;background-image:linear-gradient(100deg,#03140a,#0d5424 60%,#031209);",
-  '#63e07a', """
-   <g stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round">
-     <path d="M6 60 C6 40 14 24 30 14"/>
-     <path d="M30 14 C22 16 16 22 13 30 M30 14 C24 20 20 28 18 38
-              M30 14 C36 18 40 24 41 32 M30 14 C34 22 35 32 33 42"/>
-   </g>
-   <g stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" opacity=".65">
-     <path d="M56 60 C56 44 50 32 40 24"/>
-     <path d="M40 24 C46 27 50 32 52 38 M40 24 C44 31 45 39 44 46"/>
-   </g>
-  """),
+ ('mars', 'Red Planet', 'natural', 'dark', """
+  <defs>
+    <linearGradient id="ma-sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f0cdb2"/>
+    </linearGradient>
+  </defs>
+  <rect width="420" height="56" fill="url(#ma-sky)"/>
+  <!-- destellos de 4 puntas, como en el camo Mission -->
+  <g fill="#ffffff" opacity=".9">
+    <path d="M64 12 l1.4 4 4 1.4 -4 1.4 -1.4 4 -1.4-4 -4-1.4 4-1.4 Z"/>
+    <path d="M188 8 l1 3 3 1 -3 1 -1 3 -1-3 -3-1 3-1 Z"/>
+    <path d="M330 14 l1.2 3.5 3.5 1.2 -3.5 1.2 -1.2 3.5 -1.2-3.5 -3.5-1.2 3.5-1.2 Z"/>
+  </g>
+  <circle cx="286" cy="16" r="9" fill="#f6a97a" opacity=".55"/>
+  <!-- cordilleras superpuestas, como el camo de Marte -->
+  <path d="M0 40 L46 26 L84 38 L128 22 L176 36 L226 24 L272 37 L320 25 L366 38 L420 28 L420 56 L0 56 Z"
+        fill="#c96a4a" opacity=".55"/>
+  <path d="M0 46 L40 34 L88 45 L138 32 L186 44 L236 33 L288 45 L338 34 L390 45 L420 38 L420 56 L0 56 Z"
+        fill="#a64f30" opacity=".8"/>
+  <path d="M0 52 L54 43 L110 52 L166 42 L222 52 L280 43 L338 52 L396 44 L420 48 L420 56 L0 56 Z"
+        fill="#7d3520"/>
+  <!-- cañón en primer plano -->
+  <path d="M0 56 L0 50 L34 56 Z M420 56 L420 48 L382 56 Z" fill="#5e2415"/>
+ """),
 
- # ── MATERIAL ────────────────────────────────────────────────────────────
- ('circuit', 'Circuit', 'material',
-  "background:#040e0c;background-image:linear-gradient(100deg,#030c0a,#0b3a30 60%,#020a08);",
-  '#54e8bd', """
-   <g stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round">
-     <path d="M4 20 H18 V34 H32"/>
-     <path d="M4 44 H24 V52 H44"/>
-     <path d="M32 34 V12 H52"/>
-     <path d="M44 52 V40 H58"/>
-   </g>
-   <g fill="currentColor">
-     <circle cx="18" cy="20" r="3"/><circle cx="32" cy="34" r="3.4"/>
-     <circle cx="24" cy="44" r="3"/><circle cx="52" cy="12" r="3"/>
-     <circle cx="44" cy="52" r="3"/>
-   </g>
-   <rect x="26" y="24" width="14" height="14" rx="2.5" fill="none"
-         stroke="currentColor" stroke-width="2" opacity=".7"/>
-  """),
- ('obsidian', 'Obsidian', 'material',
-  "background:#06040e;background-image:linear-gradient(100deg,#05030c,#1e1240 60%,#050310);",
-  '#b18cff', """
-   <path d="M32 4 L52 26 L32 60 L12 26 Z" fill="currentColor" opacity=".85"/>
-   <path d="M32 4 L32 60 L12 26 Z" fill="#06040e" opacity=".45"/>
-   <path d="M32 4 L52 26 L32 34 Z" fill="#ffffff" opacity=".25"/>
-   <g stroke="#ffffff" stroke-width="1.4" opacity=".35" fill="none">
-     <path d="M12 26 H52 M32 34 L52 26"/>
-   </g>
-  """),
- ('cartography', 'Cartography', 'épica',
-  "background:#0d1820;background-image:linear-gradient(100deg,#0b151c,#24414f 60%,#0a1319);",
-  '#8fd4e8', """
-   <circle cx="32" cy="32" r="22" fill="none" stroke="currentColor"
-           stroke-width="2" opacity=".7"/>
-   <path d="M32 4 L37 27 L60 32 L37 37 L32 60 L27 37 L4 32 L27 27 Z"
-         fill="currentColor" opacity=".9"/>
-   <path d="M32 12 L35 29 L52 32 L35 35 L32 52 L29 35 L12 32 L29 29 Z"
-         fill="#0d1820" opacity=".55"/>
-   <circle cx="32" cy="32" r="3.6" fill="currentColor"/>
-  """),
+ ('washi', 'Rising Sun', 'épica', 'dark', """
+  <rect width="420" height="56" fill="#f7f2e7"/>
+  <rect width="420" height="56" fill="none"/>
+  <g opacity=".5" stroke="#d8cdb6" stroke-width="1">
+    <path d="M0 14 H420 M0 30 H420 M0 46 H420"/>
+  </g>
+  <circle cx="268" cy="26" r="19" fill="#c2352b" opacity=".9"/>
+  <!-- montañas de tinta -->
+  <path d="M300 56 L340 24 L368 44 L392 30 L420 56 Z" fill="#2f3640" opacity=".8"/>
+  <path d="M180 56 L214 30 L242 48 L262 38 L286 56 Z" fill="#4a5462" opacity=".6"/>
+  <!-- bambú -->
+  <g stroke="#3f5a44" stroke-width="3" stroke-linecap="round" opacity=".75">
+    <path d="M126 56 V18 M138 56 V28"/>
+  </g>
+  <g stroke="#3f5a44" stroke-width="2" fill="none" opacity=".7">
+    <path d="M126 24 C118 20 112 22 108 26 M126 34 C134 30 140 32 144 36
+             M138 34 C146 31 150 33 153 37"/>
+  </g>
+  <g stroke="#a8a08c" stroke-width="1" opacity=".55">
+    <path d="M126 22 H127 M126 32 H127 M126 42 H127"/>
+  </g>
+ """),
+
+ ('glacier', 'Glacier', 'natural', 'dark', """
+  <defs><linearGradient id="gl-sky" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#eaf7ff"/><stop offset="1" stop-color="#b9e2f4"/>
+  </linearGradient></defs>
+  <rect width="420" height="56" fill="url(#gl-sky)"/>
+  <!-- picos de hielo cruzando -->
+  <path d="M0 56 L38 30 L64 44 L104 18 L146 42 L190 26 L232 46 L276 22 L318 44 L362 28 L400 46 L420 36 L420 56 Z"
+        fill="#7fc4e0" opacity=".75"/>
+  <path d="M0 56 L44 40 L92 52 L140 34 L188 50 L238 36 L288 52 L336 38 L386 52 L420 46 L420 56 Z"
+        fill="#4d9cc0"/>
+  <!-- grietas -->
+  <g stroke="#ffffff" stroke-width="1.4" opacity=".8" fill="none">
+    <path d="M104 18 L112 34 L106 44 M276 22 L284 36 L278 48 M190 26 L196 40"/>
+  </g>
+  <g fill="#ffffff" opacity=".75">
+    <circle cx="150" cy="12" r="1.6"/><circle cx="248" cy="9" r="1.2"/>
+    <circle cx="344" cy="14" r="1.4"/>
+  </g>
+ """),
+
+ ('abyss', 'Abyss', 'natural', 'light', """
+  <defs><linearGradient id="ab-w" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#0a3355"/><stop offset="1" stop-color="#010810"/>
+  </linearGradient></defs>
+  <rect width="420" height="56" fill="url(#ab-w)"/>
+  <!-- haces de luz desde arriba -->
+  <g fill="#9fd8ff" opacity=".16">
+    <path d="M60 0 L86 0 L58 56 L38 56 Z"/><path d="M150 0 L168 0 L146 56 L132 56 Z"/>
+    <path d="M300 0 L322 0 L298 56 L280 56 Z"/>
+  </g>
+  <!-- ballena cruzando la escena -->
+  <g fill="#6fb6e8" opacity=".92">
+    <path d="M150 34 C176 20 224 18 268 26 C286 29 300 34 312 40
+             C296 44 268 46 236 44 C202 42 170 40 150 34 Z"/>
+    <path d="M312 40 C322 34 332 26 340 16 C342 28 340 38 336 46
+             C332 44 320 43 312 40 Z"/>
+    <path d="M212 42 C216 50 224 54 232 55 C222 55 210 50 204 44 Z"/>
+    <path d="M168 28 C166 20 170 14 176 10 C176 18 174 24 172 29 Z" opacity=".8"/>
+  </g>
+  <circle cx="166" cy="31" r="1.8" fill="#021018"/>
+  <g fill="#bfe6ff" opacity=".7">
+    <circle cx="120" cy="18" r="2.4"/><circle cx="106" cy="10" r="1.6"/>
+    <circle cx="132" cy="8" r="1.2"/><circle cx="372" cy="22" r="2"/>
+    <circle cx="388" cy="14" r="1.4"/>
+  </g>
+ """),
+
+ ('bullrun', 'Bull Run', 'mercado', 'dark', """
+  <rect width="420" height="56" fill="#eef8f1"/>
+  <g stroke="#c9e4d2" stroke-width="1">
+    <path d="M0 14 H420 M0 28 H420 M0 42 H420"/>
+  </g>
+  <!-- velas verdes subiendo a lo ancho -->
+  <g fill="#1f9d55">
+    <g><rect x="112" y="34" width="7" height="12" rx="1"/><rect x="114.6" y="28" width="1.8" height="24"/></g>
+    <g><rect x="132" y="28" width="7" height="14" rx="1"/><rect x="134.6" y="22" width="1.8" height="26"/></g>
+    <g><rect x="152" y="24" width="7" height="12" rx="1"/><rect x="154.6" y="18" width="1.8" height="24"/></g>
+    <g><rect x="172" y="18" width="7" height="14" rx="1"/><rect x="174.6" y="12" width="1.8" height="26"/></g>
+    <g><rect x="192" y="14" width="7" height="11" rx="1"/><rect x="194.6" y="8" width="1.8" height="23"/></g>
+  </g>
+  <!-- línea de tendencia -->
+  <path d="M100 48 L140 38 L180 28 L220 16 L250 10" stroke="#1f9d55"
+        stroke-width="2" fill="none" stroke-linecap="round" opacity=".55"/>
+  <!-- toro embistiendo, a la derecha -->
+  <g fill="#134e33">
+    <path d="M300 22 C290 17 288 8 292 4 C300 11 310 15 316 16 L316 24 Z"/>
+    <path d="M368 22 C378 17 380 8 376 4 C368 11 358 15 352 16 L352 24 Z"/>
+    <path d="M316 15 C316 15 324 12 334 12 C344 12 352 15 352 15 L352 32
+             C352 46 344 54 334 54 C324 54 316 46 316 32 Z"/>
+    <path d="M400 46 C392 42 386 44 382 48" stroke="#134e33" stroke-width="3"
+          fill="none" stroke-linecap="round"/>
+  </g>
+  <g fill="#eef8f1"><circle cx="326" cy="28" r="2.6"/><circle cx="342" cy="28" r="2.6"/></g>
+ """),
+
+ ('terminal', 'Terminal', 'mercado', 'light', """
+  <rect width="420" height="56" fill="#04120b"/>
+  <g stroke="#0d3a22" stroke-width="1" opacity=".9">
+    <path d="M0 8 H420 M0 16 H420 M0 24 H420 M0 32 H420 M0 40 H420 M0 48 H420"/>
+  </g>
+  <g font-family="monospace" font-size="9" fill="#3ef58e" opacity=".85">
+    <text x="150" y="14">&gt; scan --session=london</text>
+    <text x="150" y="26">  sweep detected @ PDL</text>
+    <text x="150" y="38">  displacement: TRUE</text>
+    <text x="150" y="50">&gt; _</text>
+  </g>
+  <rect x="196" y="43" width="6" height="9" fill="#3ef58e" opacity=".9"/>
+  <g stroke="#3ef58e" stroke-width="1.6" fill="none" opacity=".55">
+    <path d="M330 44 L346 30 L358 36 L374 18 L390 26 L406 12"/>
+  </g>
+  <g fill="#3ef58e" opacity=".5">
+    <circle cx="346" cy="30" r="2"/><circle cx="374" cy="18" r="2"/><circle cx="406" cy="12" r="2"/>
+  </g>
+ """),
+
+ ('dunes', 'Desert Night', 'natural', 'light', """
+  <defs><linearGradient id="du-sky" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#0a0c22"/><stop offset="1" stop-color="#2a2050"/>
+  </linearGradient></defs>
+  <rect width="420" height="56" fill="url(#du-sky)"/>
+  <circle cx="300" cy="16" r="10" fill="#f0ead8"/>
+  <circle cx="295" cy="13" r="9" fill="#0d0f26"/>
+  <g fill="#ffffff" opacity=".85">
+    <circle cx="120" cy="10" r="1.3"/><circle cx="168" cy="18" r="1"/>
+    <circle cx="212" cy="8" r="1.2"/><circle cx="352" cy="12" r="1.1"/>
+    <circle cx="386" cy="22" r="1.3"/><circle cx="252" cy="20" r="0.9"/>
+  </g>
+  <path d="M0 56 C60 38 120 50 180 40 C240 30 300 46 360 36 C390 31 406 34 420 32 L420 56 Z"
+        fill="#5b4a86" opacity=".65"/>
+  <path d="M0 56 C70 46 140 56 210 46 C280 36 340 52 420 42 L420 56 Z"
+        fill="#3b2f60"/>
+  <!-- caravana -->
+  <g fill="#181233">
+    <path d="M236 44 C238 40 242 39 244 41 C246 38 250 38 251 42 L253 48 L249 48 L248 45 L242 45 L241 48 L237 48 Z"/>
+    <path d="M262 45 C263 42 266 41 268 43 C270 41 273 41 274 44 L275 48 L272 48 L271 46 L266 46 L265 48 L262 48 Z"/>
+  </g>
+ """),
+
+ ('cathedral', 'Cathedral', 'épica', 'light', """
+  <rect width="420" height="56" fill="#0a0e2a"/>
+  <!-- vitrales a lo ancho -->
+  <g opacity=".92">
+    <path d="M96 56 V24 C96 14 104 8 112 8 C120 8 128 14 128 24 V56 Z" fill="#3b5bd6"/>
+    <path d="M136 56 V18 C136 6 146 0 156 0 C166 0 176 6 176 18 V56 Z" fill="#8f3bc9"/>
+    <path d="M184 56 V24 C184 14 192 8 200 8 C208 8 216 14 216 24 V56 Z" fill="#2c8fb8"/>
+    <path d="M224 56 V18 C224 6 234 0 244 0 C254 0 264 6 264 18 V56 Z" fill="#c93b6e"/>
+    <path d="M272 56 V24 C272 14 280 8 288 8 C296 8 304 14 304 24 V56 Z" fill="#3b8f5e"/>
+    <path d="M312 56 V18 C312 6 322 0 332 0 C342 0 352 6 352 18 V56 Z" fill="#5b3bc9"/>
+  </g>
+  <!-- plomos -->
+  <g stroke="#05061a" stroke-width="3" fill="none" opacity=".85">
+    <path d="M112 8 V56 M156 0 V56 M200 8 V56 M244 0 V56 M288 8 V56 M332 0 V56"/>
+    <path d="M96 30 H128 M136 24 H176 M184 30 H216 M224 24 H264 M272 30 H304 M312 24 H352"/>
+  </g>
+  <g stroke="#05061a" stroke-width="4" fill="none">
+    <path d="M96 56 V24 C96 14 104 8 112 8 C120 8 128 14 128 24 V56"/>
+    <path d="M136 56 V18 C136 6 146 0 156 0 C166 0 176 6 176 18 V56"/>
+    <path d="M184 56 V24 C184 14 192 8 200 8 C208 8 216 14 216 24 V56"/>
+    <path d="M224 56 V18 C224 6 234 0 244 0 C254 0 264 6 264 18 V56"/>
+    <path d="M272 56 V24 C272 14 280 8 288 8 C296 8 304 14 304 24 V56"/>
+    <path d="M312 56 V18 C312 6 322 0 332 0 C342 0 352 6 352 18 V56"/>
+  </g>
+ """),
 ]
 
 PAGE = """<!doctype html><meta charset="utf-8">
 <style>
  body{margin:0;font-family:'Inter',system-ui,sans-serif;background:#eef1f6;padding:22px 26px;}
- h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#5a6172;
-    margin:20px 0 10px;grid-column:1/-1;}
- h2:first-child{margin-top:0;}
- .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 26px;}
- .cap{font-size:11px;font-weight:800;color:#5a6172;margin-bottom:5px;letter-spacing:.03em;}
- .post{background:#fff;border:1px solid #e4e6ec;border-radius:12px;padding:11px 13px;}
+ .cap{font-size:11.5px;font-weight:800;color:#5a6172;margin-bottom:5px;letter-spacing:.03em;}
+ .cap span{font-weight:600;opacity:.7;}
+ .post{background:#fff;border:1px solid #e4e6ec;border-radius:12px;padding:11px 13px;
+       margin-bottom:14px;}
  .top{display:flex;align-items:center;gap:8px;position:relative;}
  .plate{position:absolute;left:-8px;top:-6px;bottom:-6px;right:-8px;border-radius:9px;
         z-index:1;overflow:hidden;}
- /* El dibujo va a la DERECHA, en el espacio que queda libre después de la
-    pastilla del rango. Primero lo puse a la izquierda y el avatar lo tapaba
-    entero: ahí es donde está el contenido, no donde hay lugar. */
- .plate svg{position:absolute;right:4px;top:50%;transform:translateY(-50%);
-            height:190%;width:auto;opacity:.92;}
- /* Y la calma va a la IZQUIERDA, encima del arte, que es donde vive el texto:
-    avatar, nombre, chip y pastilla del rango siempre sobre fondo tranquilo. */
- .plate::after{content:'';position:absolute;inset:0;z-index:2;
-   background:linear-gradient(90deg,rgba(6,8,13,.90) 0 46%,rgba(6,8,13,.45) 66%,transparent 92%);}
+ .plate svg{width:100%;height:100%;display:block;}
  .av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:#fff;
      font-weight:800;font-size:15px;background:linear-gradient(135deg,#2563eb,#1e40af);
-     flex:0 0 auto;position:relative;z-index:3;box-shadow:0 0 0 2px rgba(255,255,255,.25);}
+     flex:0 0 auto;position:relative;z-index:3;box-shadow:0 0 0 2px rgba(255,255,255,.3);}
  .medal{width:17px;height:17px;border-radius:4px;flex:0 0 auto;position:relative;z-index:3;
-        background:linear-gradient(135deg,#f3c768,#a87f1f);}
- .nm{font-weight:800;font-size:13px;position:relative;z-index:3;color:#fff;
-     text-shadow:0 1px 3px rgba(0,0,0,.7);}
- .chip{font-size:9.5px;font-weight:800;color:#ffb27a;background:rgba(224,117,47,.22);
-       border:1px solid rgba(255,160,100,.5);border-radius:9px;padding:1px 5px;
+        background:linear-gradient(135deg,#f3c768,#a87f1f);
+        box-shadow:0 0 0 1.5px rgba(0,0,0,.25);}
+ .nm{font-weight:800;font-size:13px;position:relative;z-index:3;}
+ .chip{font-size:9.5px;font-weight:800;border-radius:9px;padding:1px 5px;
        position:relative;z-index:3;}
  .pill{font-size:8.5px;font-weight:700;padding:2px 5px;border-radius:3px;white-space:nowrap;
-       border:1px solid rgba(243,199,104,.55);color:#f3c768;position:relative;z-index:3;}
+       position:relative;z-index:3;}
+ /* Texto claro sobre placa oscura */
+ .ink-light .nm{color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.8);}
+ .ink-light .chip{color:#ffc79a;background:rgba(0,0,0,.42);border:1px solid rgba(255,170,110,.6);}
+ .ink-light .pill{color:#f6d489;border:1px solid rgba(246,212,137,.6);background:rgba(0,0,0,.42);}
+ /* Texto oscuro sobre placa clara */
+ .ink-dark .nm{color:#14161c;text-shadow:0 1px 2px rgba(255,255,255,.75);}
+ .ink-dark .chip{color:#a8410f;background:rgba(255,255,255,.72);border:1px solid rgba(168,65,15,.45);}
+ .ink-dark .pill{color:#6b5310;border:1px solid rgba(107,83,16,.5);background:rgba(255,255,255,.72);}
  .ttl{font-weight:800;font-size:13px;margin-top:9px;}
-__PLATECSS__
 </style>
-<div class="grid">__BODY__</div>
+__BODY__
 """
 
 
 def build(slugs):
-    sel = [p for p in PLATES if p[0] in slugs]
-    css = '\n'.join('.pl-%s{%s}\n.pl-%s svg{color:%s}' % (s, bg, s, ink)
-                    for s, _n, _f, bg, ink, _a in sel)
-    body, fam = [], None
-    for slug, name, family, _bg, _ink, art in sel:
-        if family != fam:
-            fam = family
-            body.append('<h2>%s</h2>' % family)
+    body = []
+    for slug, name, family, ink, art in PLATES:
+        if slug not in slugs:
+            continue
         body.append(
-            '<div><div class="cap">%s</div>'
-            '<div class="post"><div class="top">'
-            '<div class="plate pl-%s"><svg viewBox="0 0 64 64">%s</svg></div>'
+            '<div><div class="cap">%s <span>· %s · fondo %s</span></div>'
+            '<div class="post"><div class="top ink-%s">'
+            '<div class="plate"><svg viewBox="0 0 420 56" preserveAspectRatio="none">%s</svg></div>'
             '<div class="av">M</div><span class="medal"></span>'
             '<span class="nm">marcus_dw</span><span class="chip">🔥12</span>'
             '<span class="pill">Trading Legend</span></div>'
             '<div class="ttl">Sweep del PDL y reclaim</div></div></div>'
-            % (name, slug, art))
-    return PAGE.replace('__PLATECSS__', css).replace('__BODY__', '\n'.join(body))
+            % (name, family, 'oscuro' if ink == 'light' else 'claro', ink, art))
+    return PAGE.replace('__BODY__', '\n'.join(body))
 
 
 def shoot(slugs):
@@ -302,7 +359,7 @@ def shoot(slugs):
 from playwright.sync_api import sync_playwright
 with sync_playwright() as p:
     b = p.chromium.launch(executable_path={CHROME!r})
-    pg = b.new_page(viewport={{'width': 1180, 'height': 500}}, device_scale_factor=1.6)
+    pg = b.new_page(viewport={{'width': 760, 'height': 500}}, device_scale_factor=2)
     pg.goto('file://{path}')
     pg.wait_for_timeout(500)
     pg.screenshot(path={OUT!r}, full_page=True)
