@@ -1024,6 +1024,39 @@ class CamoOrder(db.Model):
     user = db.relationship('User', backref='camo_orders')
 
 
+class CosmeticOrder(db.Model):
+    """A multi-item cosmetics CART paid in ONE PayPal transaction.
+
+    The whole point of its existence: PayPal's fixed fee is charged per
+    transaction, so three $1.99 items bought one by one lose ~30% to fees
+    while the same three in one cart lose ~10%. Single-item buys keep using
+    CamoOrder untouched — the cart is a second door, not a replacement.
+    Field names mirror CamoOrder so the shared PayPal helpers (create /
+    capture / reconcile / alert email) work on both without branching."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    slugs = db.Column(db.Text, nullable=False)                # CSV, server-validated
+    label = db.Column(db.String(80), nullable=False)          # snapshot ("3 cosmetics")
+    price = db.Column(db.Float, nullable=False)               # TOTAL, server-side
+    currency = db.Column(db.String(3), default='usd', nullable=False)
+    status = db.Column(db.String(12), default='pending', nullable=False)
+    payment_method = db.Column(db.String(30), nullable=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    paid_at = db.Column(db.DateTime, nullable=True)
+    applied_at = db.Column(db.DateTime, nullable=True)        # granted (idempotency)
+    note = db.Column(db.String(300), nullable=True)
+    provider_ref = db.Column(db.String(80), nullable=True, index=True)
+    pay_status = db.Column(db.String(24), nullable=True)
+    paid_amount = db.Column(db.Float, nullable=True)
+    pay_currency = db.Column(db.String(20), nullable=True)
+    tx_hash = db.Column(db.String(120), nullable=True)
+    alerted_at = db.Column(db.DateTime, nullable=True)
+    user = db.relationship('User', backref='cosmetic_orders')
+
+    def slug_list(self):
+        return [s for s in (self.slugs or '').split(',') if s]
+
+
 # ═══ Mentorship MEMBERS AREA (post-purchase) ═══════════════════════════════
 class MentorshipFolder(db.Model):
     """A module/folder of the members video library."""
@@ -1753,8 +1786,12 @@ PLAN_CAMOS = {'standard': 'standard', 'premium': 'premium'}
 # Prices are the single server-side truth: the browser only ever sends a slug.
 CAMO_SEASONAL = {'santa', 'hallow', 'fourth', 'lucky', 'valentine',
                  'easter', 'newyear', 'muertos'}
-CAMO_PRICE_THEME = 1.99
-CAMO_PRICE_SEASONAL = 4.99
+# Repricing approved 2026-08-02 (no live customers yet = no migration): $2 said
+# "trinket", and PayPal's fixed fee ate 30% of it — at $4.99 the kept margin
+# goes from 70% to 85%. Cursors are the deliberately cheap collectible.
+CAMO_PRICE_THEME = 4.99
+CAMO_PRICE_SEASONAL = 7.99
+COSMETIC_PRICE_CURSOR = 1.99
 # Display names, mirrored from the store cards (used on PayPal receipts).
 CAMO_NAMES = {
     'naval': 'Naval Command', 'highnoon': 'High Noon', 'rising-sun': 'Rising Sun',
@@ -4215,18 +4252,56 @@ def admin_giveaway():
     return redirect(url_for('admin_panel') + '#giveaway')
 
 
-@app.route('/camos')
+@app.route('/cosmetics')
 def camos():
+    """The cosmetics store (renamed from 'camo store' 2026-08-02 — the page now
+    also lists avatar frames and cursors). The route function keeps its name so
+    every url_for('camos') in the codebase follows the move automatically."""
     if current_user.is_authenticated:
         owned = sorted(s for s in CAMO_SLUGS if current_user.owns_camo(s))
         active = current_user.active_camo or ''
         authed = True
     else:
         owned, active, authed = [], '', False
+    # Frames and cursors come from CosmeticItem, each card in one of four
+    # states: buyable / owned / roulette-only / season ended. Champion frames
+    # show as their own non-buyable state.
+    season_now = _current_season()
+    owned_ids = _owned_cosmetic_ids(current_user.id) if authed else set()
+    def _pack(kind):
+        out = []
+        for i in (CosmeticItem.query.filter_by(kind=kind)
+                  .order_by(CosmeticItem.created_at.desc()).all()):
+            if i.id in owned_ids:
+                state = 'owned'
+            elif i.channel == 'store' and i.active:
+                state = 'buy'
+            elif i.channel == 'champion':
+                state = 'champion'
+            elif i.channel == 'roulette' and i.season == season_now and i.active:
+                state = 'roulette'
+            else:
+                state = 'ended'
+            out.append({'slug': i.slug, 'name': i.name, 'state': state,
+                        'season': i.season or '',
+                        'price': (COSMETIC_PRICE_CURSOR if kind == 'cursor'
+                                  and state == 'buy' else None)})
+        return out
+    prices = {s: camo_store_price(s) for s in CAMO_SLUGS}
     return render_template('camos.html',
                            camo_owned=owned, camo_active=active,
                            camo_ready=sorted(CAMO_READY), camo_authed=authed,
-                           camo_paypal=PAYPAL_ENABLED)
+                           camo_paypal=PAYPAL_ENABLED,
+                           camo_prices=prices,
+                           cos_frames=_pack('frame'),
+                           cos_cursors=_pack('cursor'))
+
+
+@app.route('/camos')
+def camos_legacy():
+    """The old address, kept alive forever: bookmarks and shared links must
+    not break because the store grew beyond camos."""
+    return redirect(url_for('camos'), code=301)
 
 
 @app.route('/api/camo/activate', methods=['POST'])
@@ -4302,6 +4377,71 @@ def camo_paypal_return(order_id):
     dest = url_for('camos')
     if order.status == 'paid':
         dest += '?bought=' + order.slug
+    return redirect(dest)
+
+
+@app.route('/api/cosmetics/checkout', methods=['POST'])
+@login_required
+def cosmetics_checkout():
+    """Start ONE PayPal checkout for a whole cart of cosmetics.
+
+    The browser sends slugs and nothing else; every price is looked up
+    server-side and the total is computed here. Individual purchase stays
+    available on each card — the cart is the option to pay one fixed fee
+    instead of N, never an obligation."""
+    raw = (request.get_json(silent=True) or {}).get('slugs') or []
+    if not isinstance(raw, list):
+        return jsonify({'error': 'bad_request'}), 400
+    slugs, seen = [], set()
+    for s in raw[:24]:
+        s = str(s).strip()
+        if s and s not in seen:
+            seen.add(s)
+            slugs.append(s)
+    if not slugs:
+        return jsonify({'error': 'empty_cart'}), 400
+    total = 0.0
+    for s in slugs:
+        price = camo_store_price(s)
+        if price is None:
+            return jsonify({'error': 'not_available', 'slug': s}), 400
+        if current_user.owns_camo(s):
+            return jsonify({'error': 'already_owned', 'slug': s}), 400
+        total += price
+    if not PAYPAL_ENABLED:
+        return jsonify({'error': 'soon'}), 503
+    csv = ','.join(sorted(slugs))
+    order = (CosmeticOrder.query
+             .filter_by(user_id=current_user.id, slugs=csv, status='pending')
+             .order_by(CosmeticOrder.created_at.desc()).first())
+    if not order:
+        order = CosmeticOrder(user_id=current_user.id, slugs=csv,
+                              label='%d cosmetics' % len(slugs),
+                              price=round(total, 2))
+        db.session.add(order)
+        db.session.commit()
+    url = _paypal_create_order(order, 'cosm')
+    if not url:
+        return jsonify({'error': 'paypal_unreachable'}), 502
+    return jsonify({'url': url, 'total': order.price})
+
+
+@app.route('/cosmetics/paypal/return/<int:order_id>')
+@login_required
+def cosmetics_paypal_return(order_id):
+    """PayPal's way back for a cart purchase — mirror of the camo return."""
+    order = db.session.get(CosmeticOrder, order_id)
+    if not order or order.user_id != current_user.id:
+        abort(404)
+    if order.status != 'paid':
+        try:
+            _paypal_capture(order, 'cosm')
+        except Exception as exc:            # never dead-end on the way back
+            app.logger.error('cosmetics paypal return failed (cart %s): %s',
+                             order.id, exc)
+    dest = url_for('camos')
+    if order.status == 'paid':
+        dest += '?bought=cart'
     return redirect(dest)
 
 
@@ -5712,6 +5852,9 @@ def send_payment_alert_email(order, kind):
     if hasattr(order, 'plan'):
         item = f'{PLAN_LABELS.get(order.plan, order.plan)} / {order.billing_cycle}'
         amount = order.final_price
+    elif hasattr(order, 'slugs'):
+        item = f'Carrito de cosméticos: {order.slugs}'
+        amount = order.price
     else:
         item = f'Camo: {getattr(order, "label", getattr(order, "slug", "?"))}'
         amount = order.price
@@ -5826,7 +5969,20 @@ def payments_sweep(max_orders=25):
                 recovered += 1
         except Exception as exc:
             app.logger.warning('sweep failed on camo order %s: %s', o.id, exc)
-    return len(pending) + len(camo_pending), recovered
+    # Cosmetics carts: same net, same reasoning.
+    cosm_pending = (CosmeticOrder.query
+                    .filter(CosmeticOrder.status == 'pending',
+                            CosmeticOrder.provider_ref.isnot(None),
+                            CosmeticOrder.created_at >= cutoff)
+                    .order_by(CosmeticOrder.created_at.desc())
+                    .limit(max_orders).all())
+    for o in cosm_pending:
+        try:
+            if _paypal_reconcile(o, 'cosm'):
+                recovered += 1
+        except Exception as exc:
+            app.logger.warning('sweep failed on cosmetics cart %s: %s', o.id, exc)
+    return len(pending) + len(camo_pending) + len(cosm_pending), recovered
 
 
 def order_trace(order):
@@ -6074,9 +6230,11 @@ def _paypal_create_order(order, kind='plan'):
                 'shipping_preference': 'NO_SHIPPING',
                 'return_url': (url_for('camo_paypal_return', order_id=order.id, _external=True)
                                if kind == 'camo' else
+                               url_for('cosmetics_paypal_return', order_id=order.id, _external=True)
+                               if kind == 'cosm' else
                                url_for('paypal_return', order_id=order.id, _external=True)),
                 'cancel_url': (url_for('camos', _external=True)
-                               if kind == 'camo' else
+                               if kind in ('camo', 'cosm') else
                                url_for('checkout_status', order_id=order.id, _external=True)),
             }}},
         }, request_id='create-%s' % ref)
@@ -6138,8 +6296,9 @@ def _paypal_apply_status(order, status, amount=None, capture_id=None, kind='plan
     per-kind activator (`_activate_plan_from_order` / `_activate_camo_from_order`)
     is the guard that makes that true.
     """
-    activate = (_activate_camo_from_order if kind == 'camo'
-                else _activate_plan_from_order)
+    activate = {'camo': _activate_camo_from_order,
+                'cosm': _activate_cosmetics_from_order}.get(
+                    kind, _activate_plan_from_order)
     if status:
         order.pay_status = status
     if amount is not None:
@@ -6619,6 +6778,35 @@ def _activate_camo_from_order(order):
     return True
 
 
+def _activate_cosmetics_from_order(order):
+    """Grant every item of a paid cosmetics cart, exactly once per order.
+
+    Same contract as the other activators: `applied_at` is the idempotency
+    guard, so the webhook, the return URL and the sweep can all fire on the
+    same order without double-granting. Granting is per-slug idempotent too
+    (add_camo ignores duplicates), so a cart that overlaps something the user
+    already owns just fills in the gaps."""
+    if order.status != 'paid' or order.applied_at is not None:
+        return False
+    user = db.session.get(User, order.user_id)
+    if not user:
+        return False
+    for slug in order.slug_list():
+        user.add_camo(slug)
+    # Switch one on only if they are still on the default theme — a skin
+    # nobody sees is a purchase that never arrived, but a camo they already
+    # chose is never overwritten.
+    if not (user.active_camo or ''):
+        first_ready = next((s for s in order.slug_list() if s in CAMO_READY), None)
+        if first_ready:
+            user.active_camo = first_ready
+    order.applied_at = datetime.now(timezone.utc)
+    db.session.commit()
+    record_audit_event('cosmetics_purchase', user_id=user.id,
+                       detail=f'{order.slugs} (${order.price:.2f}, cart #{order.id})')
+    return True
+
+
 def _stored_promo(user):
     """The creator code permanently bound to this account, or None.
 
@@ -6934,6 +7122,8 @@ def paypal_webhook():
         order = db.session.get(Order, oid)
     elif kind == 'camo':
         order = db.session.get(CamoOrder, oid)
+    elif kind == 'cosm':
+        order = db.session.get(CosmeticOrder, oid)
     else:
         return jsonify({'ok': True, 'ignored': kind})
     if not order:

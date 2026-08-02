@@ -206,8 +206,24 @@ próxima tanda + giros guardados, 7 claves `daily.tanda.*` ×4). E2E 20/20
 (`scratchpad/test_tanda.py`): 6 giros sin repetidos, pieza de tienda jamás sale, Regla B medida
 (4.7% 1er giro / 18.6% mes perfecto), cupón viejo sigue activo. Verificado en navegador (ES).
 **La tanda se publica insertando `CosmeticItem` channel='roulette' season='YYYY-MM' — todavía no
-hay piezas: la rueda anuncia hasta el paso 5.** (4) tienda
-cosméticos + marcos/cursores + 4 estados + carrito; (5) primeras piezas (colchón de 3 meses de
+hay piezas: la rueda anuncia hasta el paso 5.** (4) ✅ **tienda de cosméticos (2026-08-02):** `/camos`→301→`/cosmetics`
+(la función de ruta sigue llamándose `camos` → todos los url_for siguen; enlaces de menú
+Products/Tessera/teleport actualizados). **Repricing aplicado: $4.99 común / $7.99 temporada /
+$1.99 cursor** (`CAMO_PRICE_THEME/SEASONAL`, `COSMETIC_PRICE_CURSOR`). Página renombrada ×4 +
+secciones nuevas Marcos/Cursores server-rendered desde `CosmeticItem` con los **4 estados de
+card** (comprable/$ · Tuyo · Solo-ruleta-este-mes · Temporada terminada—YYYY-MM en gris; +
+estado campeón); vacías muestran aviso honesto de la Temporada 1. **Carrito multi-ítem:**
+`CosmeticOrder` (slugs CSV + total server-side, espejo de CamoOrder → helpers PayPal comunes),
+`POST /api/cosmetics/checkout` (valida no-plan/no-poseído/dedupe ANTES de cobrar; sin claves →
+503 soon), return `/cosmetics/paypal/return/<id>`, webhook despacha `cosm-<id>`, sweep de /admin
+cubre carritos, `_activate_cosmetics_from_order` (idempotente, enciende UNO solo si no hay activo,
+jamás pisa el elegido). Compra individual intacta (`/api/camo/buy`). Packs NO (decisión). Cliente:
+botón "Añadir al carrito" + barra `#cart-bar` (sessionStorage `nx_cosm_cart`, "un solo pago, una
+sola comisión"). 18 claves `camos.*` nuevas/renombradas ×4 (paridad OK). E2E 25/25
+(`scratchpad/test_carrito.py`) + navegador ES real (carrito $9.98, toast soon, 4 estados
+pintados). ⚠️ Al probar la tienda como ADMIN no hay botones de compra: el admin posee TODO.
+**PENDIENTE del paso 4:** precio de los marcos de tienda (el usuario aún no lo fijó — hoy ningún
+`CosmeticItem` de tienda es frame, solo cursores a $1.99).** (5) primeras piezas (colchón de 3 meses de
 tandas ANTES de encender la rotación — compromiso operativo: 6 piezas nuevas cada mes, si un mes
 no hay tanda el sistema se ve muerto).
 

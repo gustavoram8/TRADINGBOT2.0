@@ -5386,7 +5386,7 @@
   {% endif %}
 
   <!-- CAMOS -->
-  <a href="/camos" class="products-item" role="menuitem">
+  <a href="/cosmetics" class="products-item" role="menuitem">
     <span class="pi-badge pi-badge-camo" aria-hidden="true">
       <svg class="pi-camo-svg" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" stroke-linecap="round">
         <!-- diagonal parallel bars (matches the reference image) -->
@@ -5398,7 +5398,7 @@
         </g>
       </svg>
     </span>
-    <span class="pi-label" data-i18n="products.camos">Camos</span>
+    <span class="pi-label" data-i18n="products.camos">Cosmetics</span>
   </a>
 
   <!-- SOCIALS — official accounts + the announced giveaway. Deliberately NOT
@@ -6142,7 +6142,7 @@
       els.forEach(function(el){ boards.push(makeBoard(el)); });
       // Revealed feature tiles are clickable → send the user to the right place.
       function go(dest){
-        if(dest==='camos'){ window.location.href='/camos'; }
+        if(dest==='camos'){ window.location.href='/cosmetics'; }
         else if(dest==='synpdf'){ var pb=document.getElementById('syn-pdf-btn'); if(pb){ pb.click(); } else { window.location.href='/pricing'; } }
         else { window.location.href='/pricing'; }
       }
@@ -7920,7 +7920,7 @@
       'tabs.synapse': 'Synapse',
       'tabs.products': 'Products',
       'products.plans': 'Plans',
-      'products.camos': 'Camos',
+      'products.camos': 'Cosmetics',
       'products.socials': 'Socials',
       'products.terms': 'Terms and Conditions',
       'products.privacy': 'Privacy Policy',
@@ -8431,7 +8431,7 @@
       'tabs.synapse': 'Synapse',
       'tabs.products': 'Productos',
       'products.plans': 'Planes',
-      'products.camos': 'Camos',
+      'products.camos': 'Cosméticos',
       'products.socials': 'Redes oficiales',
       'products.terms': 'Términos y Condiciones',
       'products.privacy': 'Política de Privacidad',
@@ -8942,7 +8942,7 @@
       'tabs.synapse': 'Synapse',
       'tabs.products': 'Produits',
       'products.plans': 'Forfaits',
-      'products.camos': 'Camos',
+      'products.camos': 'Cosmétiques',
       'products.socials': 'Réseaux officiels',
       'products.terms': 'Conditions Générales',
       'products.privacy': 'Politique de Confidentialité',
@@ -9453,7 +9453,7 @@
       'tabs.synapse': 'Synapse',
       'tabs.products': 'Produtos',
       'products.plans': 'Planos',
-      'products.camos': 'Camos',
+      'products.camos': 'Cosméticos',
       'products.socials': 'Redes oficiais',
       'products.terms': 'Termos e Condições',
       'products.privacy': 'Política de Privacidade',
@@ -26157,7 +26157,7 @@
         b.addEventListener('click', function(){ closeOv(); tb.click(); });
         ng.appendChild(b);
       });
-    [['/guide', t('guideT')],['/camos','Camos'],['/pricing','Plans'],['/settings','Settings'],['/contact', t('helpT')]]
+    [['/guide', t('guideT')],['/cosmetics','Cosmetics'],['/pricing','Plans'],['/settings','Settings'],['/contact', t('helpT')]]
       .forEach(function(pair){
         var a = document.createElement('a'); a.href = pair[0]; a.textContent = pair[1]; ng.appendChild(a);
       });

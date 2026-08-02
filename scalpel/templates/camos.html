@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title data-i18n-title="camos.doctitle">Tradeable Academy — Camos</title>
+  <title data-i18n-title="camos.doctitle">Tradeable Academy — Cosmetics</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -128,6 +128,36 @@
       display:flex; gap:14px; align-items:center; opacity:0; transition:opacity .2s; z-index:50; pointer-events:none; }
     .camo-toast.show { opacity:1; pointer-events:auto; }
     .camo-toast a { color:#ffd86b; text-decoration:none; font-weight:700; }
+    /* ── Cosmetic item cards (frames & cursors): the four states ── */
+    .cos-empty { border:1px dashed var(--line-soft); border-radius:14px; padding:26px 22px;
+      text-align:center; color:var(--muted); font-size:13.5px; margin-top:20px; }
+    .cos-state { font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; }
+    .cos-state.rl { color:#b3541e; }
+    .cos-state.ch { color:#8a6d1d; }
+    .cos-state.ow { color:#1a7a3f; }
+    .camo-card.ended { filter:grayscale(1); opacity:.62; }
+    .camo-card.ended:hover { transform:none; box-shadow:none; }
+    .cos-season { font-size:11px; font-weight:700; color:var(--muted); }
+    .cm-frame  { background:linear-gradient(135deg,#1a1d26,#2c3140 55%,#4a5164); }
+    .cm-cursor { background:linear-gradient(135deg,#10131b,#232838 55%,#3b4358); }
+    /* ── Cart ── */
+    .camo-cart-btn { font-size:12.5px; font-weight:700; padding:8px 12px; border-radius:9px;
+      border:1px solid var(--line-soft); background:#fff; color:var(--ink); cursor:pointer; }
+    .camo-cart-btn:hover { border-color:var(--accent); color:var(--accent); }
+    .camo-cart-btn.in { background:#eefaf1; border-color:#1a7a3f; color:#1a7a3f; }
+    .cart-bar { position:fixed; left:50%; bottom:18px; transform:translateX(-50%) translateY(140%);
+      background:#15171f; color:#fff; border-radius:14px; padding:12px 18px;
+      display:flex; align-items:center; gap:16px; box-shadow:0 16px 40px rgba(0,0,0,.3);
+      z-index:60; transition:transform .25s; max-width:94vw; }
+    .cart-bar.show { transform:translateX(-50%) translateY(0); }
+    .cart-bar .cb-info { font-size:13.5px; font-weight:700; white-space:nowrap; }
+    .cart-bar .cb-info small { display:block; font-size:11px; font-weight:600; color:#aab; }
+    .cart-bar .cb-go { font-size:13px; font-weight:800; padding:10px 18px; border-radius:10px;
+      border:none; cursor:pointer; background:#c9a227; color:#241d04; white-space:nowrap; }
+    .cart-bar .cb-go:hover { filter:brightness(1.08); }
+    .cart-bar .cb-go:disabled { opacity:.6; cursor:default; }
+    .cart-bar .cb-clear { font-size:12px; font-weight:600; color:#99a; background:none;
+      border:none; cursor:pointer; text-decoration:underline; }
   </style>
 </head>
 <body>
@@ -136,10 +166,11 @@
   <a href="/app" class="back-link" data-i18n="nav.backApp">← Back to app</a>
 </nav>
 <section class="hero">
-  <div class="eyebrow" data-i18n="camos.eyebrow">Website Skins</div>
-  <h1 data-i18n="camos.title">Camos</h1>
-  <p data-i18n="camos.hero">Custom visual themes that restyle your entire Tradeable workspace. Two ship
-     with your plan; the rest are one-time skins you can add anytime.</p>
+  <div class="eyebrow" data-i18n="camos.eyebrow">Cosmetics Store</div>
+  <h1 data-i18n="camos.title">Cosmetics</h1>
+  <p data-i18n="camos.hero">Camos restyle your whole workspace; frames and cursors are on their way. Every
+     paid plan ships with its own skin; the rest are one-time purchases — and some
+     pieces can only ever be won on the roulette.</p>
 </section>
 
 <div class="wrap">
@@ -179,7 +210,7 @@
       <div class="camo-body">
         <div class="camo-name">Naval Command</div>
         <div class="camo-desc" data-i18n="camos.d.naval">Olive field camouflage and a general's gold decorations — battlefield discipline.</div>
-        <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+        <div class="camo-foot"><span class="camo-price">$4.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
       </div>
     </div>
     <div class="camo-card">
@@ -187,7 +218,7 @@
       <div class="camo-body">
         <div class="camo-name">High Noon</div>
         <div class="camo-desc" data-i18n="camos.d.highnoon">Dusty frontier tones — leather, sand and a slow Western draw.</div>
-        <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+        <div class="camo-foot"><span class="camo-price">$4.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
       </div>
     </div>
     <div class="camo-card">
@@ -195,7 +226,7 @@
       <div class="camo-body">
         <div class="camo-name">Rising Sun</div>
         <div class="camo-desc" data-i18n="camos.d.sun">Warm washi paper, a bold sun disc and brushed kanji — minimalist Japanese calm.</div>
-        <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+        <div class="camo-foot"><span class="camo-price">$4.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
       </div>
     </div>
     <div class="camo-card">
@@ -203,7 +234,7 @@
       <div class="camo-body">
         <div class="camo-name">Mission Control</div>
         <div class="camo-desc" data-i18n="camos.d.mission">Deep-space nebulas by night, a Martian valley by day — two looks, one mission.</div>
-        <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+        <div class="camo-foot"><span class="camo-price">$4.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
       </div>
     </div>
     <div class="camo-card">
@@ -211,7 +242,7 @@
       <div class="camo-body">
         <div class="camo-name">Black Flag</div>
         <div class="camo-desc" data-i18n="camos.d.blackflag">An old treasure map — parchment, a compass rose and an X that marks the spot.</div>
-        <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+        <div class="camo-foot"><span class="camo-price">$4.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
       </div>
     </div>
     <div class="camo-card">
@@ -219,7 +250,7 @@
       <div class="camo-body">
         <div class="camo-name">The Alchemist</div>
         <div class="camo-desc" data-i18n="camos.d.alchemist">Arcane purples and an emerald glow — turn charts into gold.</div>
-        <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+        <div class="camo-foot"><span class="camo-price">$4.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
       </div>
     </div>
     <div class="camo-card">
@@ -227,7 +258,7 @@
       <div class="camo-body">
         <div class="camo-name">Shadow Strike</div>
         <div class="camo-desc" data-i18n="camos.d.shadow">Matte black with a crimson edge — move unseen, strike clean.</div>
-        <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+        <div class="camo-foot"><span class="camo-price">$4.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
       </div>
     </div>
     <div class="camo-card">
@@ -235,7 +266,7 @@
       <div class="camo-body">
         <div class="camo-name">Pole Position</div>
         <div class="camo-desc" data-i18n="camos.d.pole">The engineer's F1 blueprint — workshop paper by day, cyanotype blue by night.</div>
-        <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+        <div class="camo-foot"><span class="camo-price">$4.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
       </div>
     </div>
     <div class="camo-card">
@@ -243,7 +274,7 @@
       <div class="camo-body">
         <div class="camo-name">Insert Coin</div>
         <div class="camo-desc" data-i18n="camos.d.arcade">Neon magenta and cyan — 8-bit nostalgia, high-score energy.</div>
-        <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+        <div class="camo-foot"><span class="camo-price">$4.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
       </div>
     </div>
     <div class="camo-card">
@@ -251,7 +282,7 @@
       <div class="camo-body">
         <div class="camo-name">Neon Circuit</div>
         <div class="camo-desc" data-i18n="camos.d.cyber">Rain-slick neon over midnight — full cyberpunk overdrive.</div>
-        <div class="camo-foot"><span class="camo-price">$1.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+        <div class="camo-foot"><span class="camo-price">$4.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
       </div>
     </div>
   </div>
@@ -267,7 +298,7 @@
       <div class="camo-body">
         <div class="camo-name">Santa's Rally</div>
         <div class="camo-desc" data-i18n="camos.d.santa">Crimson, pine and gold — ride the year-end Santa rally in style.</div>
-        <div class="camo-foot"><span class="camo-price">$4.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+        <div class="camo-foot"><span class="camo-price">$7.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
       </div>
     </div>
     <div class="camo-card">
@@ -275,7 +306,7 @@
       <div class="camo-body">
         <div class="camo-name">Hallow's Eve</div>
         <div class="camo-desc" data-i18n="camos.d.hallow">Pumpkin orange over haunted black and violet. Spooky season on.</div>
-        <div class="camo-foot"><span class="camo-price">$4.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+        <div class="camo-foot"><span class="camo-price">$7.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
       </div>
     </div>
     <div class="camo-card">
@@ -283,7 +314,7 @@
       <div class="camo-body">
         <div class="camo-name">Star-Spangled</div>
         <div class="camo-desc" data-i18n="camos.d.fourth">Lady Liberty, the DC monuments and live fireworks over a navy dusk.</div>
-        <div class="camo-foot"><span class="camo-price">$4.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+        <div class="camo-foot"><span class="camo-price">$7.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
       </div>
     </div>
     <div class="camo-card">
@@ -291,7 +322,7 @@
       <div class="camo-body">
         <div class="camo-name">Lucky Streak</div>
         <div class="camo-desc" data-i18n="camos.d.lucky">Emerald green and gold — chase the luck of the streak.</div>
-        <div class="camo-foot"><span class="camo-price">$4.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+        <div class="camo-foot"><span class="camo-price">$7.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
       </div>
     </div>
     <div class="camo-card">
@@ -299,7 +330,7 @@
       <div class="camo-body">
         <div class="camo-name">Bullish Hearts</div>
         <div class="camo-desc" data-i18n="camos.d.valentine">Deep reds and soft pink — stay bullish on the ones you love.</div>
-        <div class="camo-foot"><span class="camo-price">$4.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+        <div class="camo-foot"><span class="camo-price">$7.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
       </div>
     </div>
     <div class="camo-card">
@@ -307,7 +338,7 @@
       <div class="camo-body">
         <div class="camo-name">Spring Bloom</div>
         <div class="camo-desc" data-i18n="camos.d.easter">Soft pastels and fresh spring air — a gentle seasonal reset.</div>
-        <div class="camo-foot"><span class="camo-price">$4.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+        <div class="camo-foot"><span class="camo-price">$7.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
       </div>
     </div>
     <div class="camo-card">
@@ -315,7 +346,7 @@
       <div class="camo-body">
         <div class="camo-name">Fresh Start</div>
         <div class="camo-desc" data-i18n="camos.d.newyear">Midnight black, silver and gold — open the year on a clean slate.</div>
-        <div class="camo-foot"><span class="camo-price">$4.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+        <div class="camo-foot"><span class="camo-price">$7.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
       </div>
     </div>
     <div class="camo-card">
@@ -323,11 +354,73 @@
       <div class="camo-body">
         <div class="camo-name">Marigold Night</div>
         <div class="camo-desc" data-i18n="camos.d.muertos">Marigold, violet and candlelight — a vibrant Día de Muertos tribute.</div>
-        <div class="camo-foot"><span class="camo-price">$4.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
+        <div class="camo-foot"><span class="camo-price">$7.99</span><a href="#" class="camo-cta" data-i18n="camos.getSkin">Get this skin</a></div>
       </div>
     </div>
   </div>
 
+  <!-- ── AVATAR FRAMES ── -->
+  <div class="sec-head">
+    <h2 data-i18n="camos.secFrames">Avatar frames</h2>
+    <span class="sub" data-i18n="camos.secFramesSub">The ring around your avatar — everyone in the forum sees it.</span>
+  </div>
+  {% if cos_frames %}
+  <div class="grid">
+    {% for it in cos_frames %}
+    <div class="camo-card{% if it.state == 'ended' %} ended{% endif %}">
+      <div class="camo-swatch cm-frame"></div>
+      <div class="camo-body">
+        <div class="camo-name">{{ it.name }}</div>
+        <div class="camo-foot">
+          {% if it.state == 'owned' %}<span class="cos-state ow" data-i18n="camos.stOwned">Yours</span>
+          {% elif it.state == 'buy' %}<span class="camo-price">${{ '%.2f'|format(it.price) }}</span>
+          {% elif it.state == 'roulette' %}<span class="cos-state rl" data-i18n="camos.stRoulette">Roulette only — this month</span>
+          {% elif it.state == 'champion' %}<span class="cos-state ch" data-i18n="camos.stChampion">Monthly champion only</span>
+          {% else %}<span class="cos-season"><span data-i18n="camos.stEnded">Season ended</span> — {{ it.season }}</span>{% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="cos-empty" data-i18n="camos.emptyFrames">The first frames arrive with Season 1 of the roulette — two per month, plus one only the month's #1 can earn. What nobody wins is gone forever.</div>
+  {% endif %}
+
+  <!-- ── CURSORS ── -->
+  <div class="sec-head">
+    <h2 data-i18n="camos.secCursors">Cursors</h2>
+    <span class="sub" data-i18n="camos.secCursorsSub">Your pointer, your style — some are store pieces, some only the roulette gives.</span>
+  </div>
+  {% if cos_cursors %}
+  <div class="grid">
+    {% for it in cos_cursors %}
+    <div class="camo-card{% if it.state == 'ended' %} ended{% endif %}">
+      <div class="camo-swatch cm-cursor"></div>
+      <div class="camo-body">
+        <div class="camo-name">{{ it.name }}</div>
+        <div class="camo-foot">
+          {% if it.state == 'owned' %}<span class="cos-state ow" data-i18n="camos.stOwned">Yours</span>
+          {% elif it.state == 'buy' %}<span class="camo-price">${{ '%.2f'|format(it.price) }}</span>
+          {% elif it.state == 'roulette' %}<span class="cos-state rl" data-i18n="camos.stRoulette">Roulette only — this month</span>
+          {% elif it.state == 'champion' %}<span class="cos-state ch" data-i18n="camos.stChampion">Monthly champion only</span>
+          {% else %}<span class="cos-season"><span data-i18n="camos.stEnded">Season ended</span> — {{ it.season }}</span>{% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="cos-empty" data-i18n="camos.emptyCursors">Cursors land together with the frames — a few in the store, the rest only on the roulette.</div>
+  {% endif %}
+
+</div>
+
+<!-- ── Cart bar (slides up when something is in the cart) ── -->
+<div class="cart-bar" id="cart-bar">
+  <div class="cb-info"><span id="cb-count">0</span> <span data-i18n="camos.cartItems">items</span> · $<span id="cb-total">0.00</span>
+    <small data-i18n="camos.cartOneFee">One checkout, one processing fee</small></div>
+  <button type="button" class="cb-go" id="cb-go" data-i18n="camos.cartPay">Pay together</button>
+  <button type="button" class="cb-clear" id="cb-clear" data-i18n="camos.cartClear">Empty</button>
 </div>
 <script src="/static/pages_i18n.js"></script>
 <script>
@@ -336,7 +429,8 @@
     owned:  {{ camo_owned|default([])|tojson }},
     active: {{ (camo_active or '')|tojson }},
     ready:  {{ camo_ready|default([])|tojson }},
-    authed: {{ camo_authed|default(false)|tojson }}
+    authed: {{ camo_authed|default(false)|tojson }},
+    prices: {{ camo_prices|default({})|tojson }}
   };
   (function () {
     var S = window.CAMO_STATE;
@@ -349,10 +443,10 @@
     var lang = 'en';
     try { var l = localStorage.getItem('scalpel_lang'); if (['en','es','fr','pt'].indexOf(l) >= 0) lang = l; } catch (e) {}
     var T = {
-      en:{activate:'Activate',active:'Active ✓',owned:'Owned',deactivate:'Use default',get:'Get this skin',soon:'Payments are coming very soon',on:'Activated — ',go:'see it in the app →',off:'Reverted to the default theme',prev:'👁 Preview',hint:'Click anywhere to close',flip:'See the other look',inside:'The app wearing it',skin:'The skin itself',bought:'The skin is yours! ',err:'Could not reach PayPal — please try again'},
-      es:{activate:'Activar',active:'Activo ✓',owned:'Adquirido',deactivate:'Usar default',get:'Obtener skin',soon:'Los pagos llegan muy pronto',on:'Activado — ',go:'velo en la app →',off:'Volviste al tema por defecto',prev:'👁 Vista previa',hint:'Haz clic en cualquier parte para cerrar',flip:'Ver el otro look',inside:'La app con el camo puesto',skin:'La piel del camo',bought:'¡La skin es tuya! ',err:'No pudimos conectar con PayPal — intenta de nuevo'},
-      fr:{activate:'Activer',active:'Actif ✓',owned:'Acquis',deactivate:'Défaut',get:'Obtenir ce skin',soon:'Les paiements arrivent très bientôt',on:'Activé — ',go:'à voir dans l\'app →',off:'Retour au thème par défaut',prev:'👁 Aperçu',hint:'Cliquez n\'importe où pour fermer',flip:'Voir l\'autre look',inside:'L\'app avec le camo',skin:'La peau du camo',bought:'Le skin est à vous ! ',err:'Impossible de joindre PayPal — réessayez'},
-      pt:{activate:'Ativar',active:'Ativo ✓',owned:'Adquirido',deactivate:'Usar padrão',get:'Obter skin',soon:'Os pagamentos chegam em breve',on:'Ativado — ',go:'veja no app →',off:'Voltou ao tema padrão',prev:'👁 Prévia',hint:'Clique em qualquer lugar para fechar',flip:'Ver o outro visual',inside:'O app com o camo',skin:'A pele do camo',bought:'A skin é sua! ',err:'Não foi possível conectar ao PayPal — tente de novo'}
+      en:{activate:'Activate',active:'Active ✓',owned:'Owned',deactivate:'Use default',get:'Get this skin',soon:'Payments are coming very soon',on:'Activated — ',go:'see it in the app →',off:'Reverted to the default theme',prev:'👁 Preview',hint:'Click anywhere to close',flip:'See the other look',inside:'The app wearing it',skin:'The skin itself',bought:'The skin is yours! ',err:'Could not reach PayPal — please try again',cartAdd:'Add to cart',cartIn:'In the cart ✓',cartBought:'The whole cart is yours! ',cartErr:'Something in the cart is no longer available'},
+      es:{activate:'Activar',active:'Activo ✓',owned:'Adquirido',deactivate:'Usar default',get:'Obtener skin',soon:'Los pagos llegan muy pronto',on:'Activado — ',go:'velo en la app →',off:'Volviste al tema por defecto',prev:'👁 Vista previa',hint:'Haz clic en cualquier parte para cerrar',flip:'Ver el otro look',inside:'La app con el camo puesto',skin:'La piel del camo',bought:'¡La skin es tuya! ',err:'No pudimos conectar con PayPal — intenta de nuevo',cartAdd:'Añadir al carrito',cartIn:'En el carrito ✓',cartBought:'¡Todo el carrito es tuyo! ',cartErr:'Algo del carrito ya no está disponible'},
+      fr:{activate:'Activer',active:'Actif ✓',owned:'Acquis',deactivate:'Défaut',get:'Obtenir ce skin',soon:'Les paiements arrivent très bientôt',on:'Activé — ',go:'à voir dans l\'app →',off:'Retour au thème par défaut',prev:'👁 Aperçu',hint:'Cliquez n\'importe où pour fermer',flip:'Voir l\'autre look',inside:'L\'app avec le camo',skin:'La peau du camo',bought:'Le skin est à vous ! ',err:'Impossible de joindre PayPal — réessayez',cartAdd:'Ajouter au panier',cartIn:'Dans le panier ✓',cartBought:'Tout le panier est à vous ! ',cartErr:'Un article du panier n\'est plus disponible'},
+      pt:{activate:'Ativar',active:'Ativo ✓',owned:'Adquirido',deactivate:'Usar padrão',get:'Obter skin',soon:'Os pagamentos chegam em breve',on:'Ativado — ',go:'veja no app →',off:'Voltou ao tema padrão',prev:'👁 Prévia',hint:'Clique em qualquer lugar para fechar',flip:'Ver o outro visual',inside:'O app com o camo',skin:'A pele do camo',bought:'A skin é sua! ',err:'Não foi possível conectar ao PayPal — tente de novo',cartAdd:'Adicionar ao carrinho',cartIn:'No carrinho ✓',cartBought:'O carrinho inteiro é seu! ',cartErr:'Algo do carrinho não está mais disponível'}
     }[lang];
     // Camos whose theme has a second look (light/dark) worth flipping to.
     var PREV_ALT = { standard:1, mission:1, pole:1 };
@@ -456,8 +550,18 @@
         // Plan camos (Standard/Premium) aren't purchasable on their own — they
         // come bundled with the plan, so their footer stays informational.
         if (isPlanCamo) return;
+        var inCart = Cart.has(slug);
         foot.innerHTML = '<span class="camo-price">'+price+'</span>'
-          + '<button type="button" class="camo-cta on act" data-buy="1">'+T.get+'</button>';
+          + '<span style="display:flex;gap:8px;">'
+          + '<button type="button" class="camo-cart-btn'+(inCart?' in':'')+'" data-cart="1">'
+          + (inCart ? T.cartIn : T.cartAdd) + '</button>'
+          + '<button type="button" class="camo-cta on act" data-buy="1">'+T.get+'</button>'
+          + '</span>';
+        foot.querySelector('[data-cart]').addEventListener('click', function(){
+          if (!S.authed){ location.href='/login'; return; }
+          Cart.toggle(slug);
+          renderAll();
+        });
         foot.querySelector('[data-buy]').addEventListener('click', function(){
           if (!S.authed){ location.href='/login'; return; }
           var btn = this; btn.disabled = true;
@@ -465,7 +569,7 @@
             if (res.ok && res.j.url){ location.href = res.j.url; return; }
             btn.disabled = false;
             toast(res.j && res.j.error === 'paypal_unreachable' ? T.err : T.soon);
-          }).catch(function(){ btn.disabled = false; toast(T.err); });
+          }).catch(function(){ btn.disabled = false; toast(T.soon); });
         });
         return;
       }
@@ -487,15 +591,71 @@
         });
       }
     }
+    // ── The cart: several cosmetics, ONE PayPal transaction (one fixed fee
+    //    instead of one per item). sessionStorage so it survives the trip to
+    //    the login page but not forever — an abandoned cart shouldn't greet
+    //    the buyer weeks later.
+    var Cart = {
+      _k: 'nx_cosm_cart',
+      list: function(){
+        try { return JSON.parse(sessionStorage.getItem(this._k) || '[]'); }
+        catch(e){ return []; }
+      },
+      has: function(slug){ return this.list().indexOf(slug) >= 0; },
+      toggle: function(slug){
+        var l = this.list();
+        var i = l.indexOf(slug);
+        if (i >= 0) l.splice(i, 1); else l.push(slug);
+        try { sessionStorage.setItem(this._k, JSON.stringify(l)); } catch(e){}
+        this.bar();
+      },
+      clear: function(){
+        try { sessionStorage.removeItem(this._k); } catch(e){}
+        this.bar();
+      },
+      total: function(){
+        var t = 0;
+        this.list().forEach(function(s){ t += (S.prices && S.prices[s]) || 0; });
+        return t;
+      },
+      bar: function(){
+        var bar = document.getElementById('cart-bar');
+        if (!bar) return;
+        var l = this.list();
+        document.getElementById('cb-count').textContent = l.length;
+        document.getElementById('cb-total').textContent = this.total().toFixed(2);
+        bar.classList.toggle('show', l.length > 0);
+      }
+    };
+    document.getElementById('cb-clear').addEventListener('click', function(){
+      Cart.clear(); renderAll();
+    });
+    document.getElementById('cb-go').addEventListener('click', function(){
+      if (!S.authed){ location.href='/login'; return; }
+      var btn = this; btn.disabled = true;
+      post('/api/cosmetics/checkout', {slugs: Cart.list()}).then(function(res){
+        if (res.ok && res.j.url){ location.href = res.j.url; return; }
+        btn.disabled = false;
+        var e = res.j && res.j.error;
+        toast(e === 'paypal_unreachable' ? T.err
+              : (e === 'not_available' || e === 'already_owned') ? T.cartErr : T.soon);
+      }).catch(function(){ btn.disabled = false; toast(T.soon); });
+    });
+
     function renderAll(){ document.querySelectorAll('.camo-card').forEach(renderCard); }
     renderAll();
+    Cart.bar();
     // Fresh from PayPal: celebrate the purchase (ownership already re-rendered
     // from the server state above).
     try {
       var bought = new URLSearchParams(location.search).get('bought');
-      if (bought && S.owned.indexOf(bought) >= 0){
+      if (bought === 'cart'){
+        Cart.clear(); renderAll();
+        toast(T.cartBought + '<a href="/app">' + T.go + '</a>');
+        history.replaceState(null, '', '/cosmetics');
+      } else if (bought && S.owned.indexOf(bought) >= 0){
         toast(T.bought + '<a href="/app">' + T.go + '</a>');
-        history.replaceState(null, '', '/camos');
+        history.replaceState(null, '', '/cosmetics');
       }
     } catch (e) {}
   })();
