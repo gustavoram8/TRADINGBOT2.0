@@ -386,6 +386,186 @@ CURSORS = [
   ' C4.6 6.4 5.2 4.2 6.2 2.2 C-0.4 6 -0.4 24.6 10.4 29 C18.6 32.4 25.4 27.4'
   ' 24.6 20.6 Z" fill="#ffe9a8" stroke="#8a6a14" transform="translate(4,0)"/>',
   None),
+
+ # ══ TIENDA · FESTIVOS (ventana de 24h por festividad) ═════════════════════
+ ('santa', 'Nochebuena · gorro', 'festivo', '',
+  '<path d="M5.4 22 C5.4 12 10 4.6 18 4.6 C24 4.6 27.4 9 27.4 13.4'
+  ' C27.4 17.4 24.6 20 21.4 21.4 L5.4 22 Z" fill="#c8402f" stroke="#5c1613"/>'
+  '<path d="M3.4 21.4 L24.6 21.4 C26 21.4 26.6 22.4 26.6 23.6 C26.6 25 26 26'
+  ' 24.6 26 L3.4 26 C2 26 1.4 25 1.4 23.6 C1.4 22.4 2 21.4 3.4 21.4 Z"'
+  ' fill="#f4efe6" stroke="#3a3028"/>'
+  '<circle cx="27.4" cy="8.6" r="4" fill="#f4efe6" stroke="#3a3028"/>', None),
+
+ ('hallow', 'Halloween · calabaza', 'festivo', '',
+  '<path d="M16 7.4 C10.6 7.4 4.6 11 4.6 18 C4.6 24.6 10 28.6 16 28.6'
+  ' C22 28.6 27.4 24.6 27.4 18 C27.4 11 21.4 7.4 16 7.4 Z" fill="#e8760f"'
+  ' stroke="#6b2f04"/>'
+  '<path d="M16 7.4 L16 28.6" fill="none" stroke="#a8500a" stroke-width="1.4"/>'
+  '<path d="M14.6 3 C14.6 5.4 16.6 5.4 17.4 7.4" fill="none" stroke="#3f5a2a"'
+  ' stroke-width="2.6"/>'
+  '<path d="M9.4 15.4 L13.4 18 L8 18 Z M22.6 15.4 L24 18 L18.6 18 Z"'
+  ' fill="#ffd76a" stroke="none"/>'
+  '<path d="M9.6 22 L12.6 24.4 L16 22 L19.4 24.4 L22.4 22 L20.6 25.4 L11.4 25.4 Z"'
+  ' fill="#ffd76a" stroke="none"/>', None),
+
+ ('fourth', '4 de Julio · sombrero', 'festivo', '',
+  '<path d="M8.6 3.4 L23.4 3.4 L23.4 20.6 L8.6 20.6 Z" fill="#2f4d9c"'
+  ' stroke="#12224d"/>'
+  '<path d="M8.6 12 L23.4 12 L23.4 16.6 L8.6 16.6 Z" fill="#c8402f" stroke="#12224d"'
+  ' stroke-width="1.4"/>'
+  '<path d="M8.6 6.6 L23.4 6.6 M8.6 9.4 L23.4 9.4" fill="none" stroke="#f4efe6"'
+  ' stroke-width="1.6"/>'
+  '<path d="M3.4 20.6 L28.6 20.6 C29.6 20.6 30 21.4 30 22.6 L30 25'
+  ' C30 26.2 29.6 27 28.6 27 L3.4 27 C2.4 27 2 26.2 2 25 L2 22.6'
+  ' C2 21.4 2.4 20.6 3.4 20.6 Z" fill="#2f4d9c" stroke="#12224d"/>', None),
+
+ ('lucky', 'San Patricio · trébol', 'festivo', '',
+  '<circle cx="11" cy="11" r="5.6" fill="#2f8a4e" stroke="#14421f"/>'
+  '<circle cx="21" cy="11" r="5.6" fill="#2f8a4e" stroke="#14421f"/>'
+  '<circle cx="11" cy="20" r="5.6" fill="#2f8a4e" stroke="#14421f"/>'
+  '<circle cx="21" cy="20" r="5.6" fill="#2f8a4e" stroke="#14421f"/>'
+  '<path d="M16 20 C18.6 24 19.4 27 19 30" fill="none" stroke="#14421f"'
+  ' stroke-width="2.2"/>', None),
+
+ ('valentine', 'San Valentín · corazón', 'festivo', '',
+  '<path d="M16 28.4 C6 21.4 2.6 16.6 2.6 11.4 C2.6 6.6 6.4 3.4 10.4 3.4'
+  ' C13 3.4 15 4.8 16 6.8 C17 4.8 19 3.4 21.6 3.4 C25.6 3.4 29.4 6.6 29.4 11.4'
+  ' C29.4 16.6 26 21.4 16 28.4 Z" fill="#d94f6e" stroke="#7a1f38"/>'
+  '<path d="M9 9.4 C7.4 10.6 7 12.4 7.4 14" fill="none" stroke="#f6c2ce"'
+  ' stroke-width="2"/>', None),
+
+ ('easter', 'Pascua · huevo', 'festivo', '',
+  '<path d="M16 2.6 C21.6 6.6 25.4 13.4 25.4 19 C25.4 25 21.4 29.4 16 29.4'
+  ' C10.6 29.4 6.6 25 6.6 19 C6.6 13.4 10.4 6.6 16 2.6 Z" fill="#8fc7e8"'
+  ' stroke="#2a5c7a"/>'
+  '<path d="M7.6 14.6 C11 12 21 12 24.4 14.6" fill="none" stroke="#f4efe6"'
+  ' stroke-width="2.2"/>'
+  '<path d="M6.8 21.4 C10.4 19 21.6 19 25.2 21.4" fill="none" stroke="#f2c85c"'
+  ' stroke-width="2.2"/>'
+  '<path d="M9.4 26 L12 23.4 L14.6 26 L17.2 23.4 L19.8 26" fill="none"'
+  ' stroke="#d9a8d4" stroke-width="1.8"/>', None),
+
+ ('newyear', 'Año Nuevo · copa', 'festivo', '',
+  '<path d="M8.6 3.4 L23.4 3.4 C23.4 12 20 15.4 16 15.4 C12 15.4 8.6 12 8.6 3.4 Z"'
+  ' fill="#e8dcc4" stroke="#4a3f28"/>'
+  '<path d="M9.4 6.6 L22.6 6.6" fill="none" stroke="#e8b93f" stroke-width="2.4"/>'
+  '<path d="M16 15.4 L16 25" fill="none" stroke="#4a3f28" stroke-width="2.6"/>'
+  '<path d="M9.4 27.6 L22.6 27.6" fill="none" stroke="#4a3f28" stroke-width="3"/>'
+  '<circle cx="6.6" cy="6.6" r="1.6" fill="#e8b93f"/>'
+  '<circle cx="25.4" cy="9.4" r="1.4" fill="#e8b93f"/>', None),
+
+ ('frost', 'Solsticio · copo', 'festivo', '',
+  '<path d="M16 2 L16 30 M4 9 L28 23 M4 23 L28 9" fill="none" stroke="#7fc7ff"'
+  ' stroke-width="3"/>'
+  '<path d="M16 7.4 L12.4 4.4 M16 7.4 L19.6 4.4 M16 24.6 L12.4 27.6'
+  ' M16 24.6 L19.6 27.6" fill="none" stroke="#7fc7ff" stroke-width="2.4"/>'
+  '<path d="M9.4 12.4 L5 12 M22.6 19.6 L27 20 M9.4 19.6 L5 20 M22.6 12.4 L27 12"'
+  ' fill="none" stroke="#7fc7ff" stroke-width="2.4"/>'
+  '<circle cx="16" cy="16" r="3" fill="#eaf7ff" stroke="#2a6ea8" stroke-width="1.6"/>',
+  None),
+
+ ('muertos', 'Muertos · calavera', 'festivo', '',
+  '<path d="M16 2.6 C23 2.6 28.4 8 28.4 15 C28.4 19 26.6 21.6 24.4 23.4'
+  ' L24.4 27 C24.4 28.6 23 29.4 21.4 29.4 L10.6 29.4 C9 29.4 7.6 28.6 7.6 27'
+  ' L7.6 23.4 C5.4 21.6 3.6 19 3.6 15 C3.6 8 9 2.6 16 2.6 Z" fill="#f4efe6"'
+  ' stroke="#3a3028"/>'
+  '<circle cx="11" cy="14.4" r="3.4" fill="#7a3bb8" stroke="#3a1a5c" stroke-width="1.5"/>'
+  '<circle cx="21" cy="14.4" r="3.4" fill="#7a3bb8" stroke="#3a1a5c" stroke-width="1.5"/>'
+  '<path d="M16 18 L13.6 22 L18.4 22 Z" fill="#e8760f" stroke="#3a3028"'
+  ' stroke-width="1.3"/>'
+  '<path d="M11.4 25.4 L11.4 29.4 M16 25.4 L16 29.4 M20.6 25.4 L20.6 29.4"'
+  ' fill="none" stroke="#3a3028" stroke-width="1.5"/>', None),
+
+ # ══ TIENDA · COMUNES ══════════════════════════════════════════════════════
+ ('knight', 'Caballo de ajedrez', 'comun', '',
+  '<path d="M11.4 29 L24.6 29 L24.6 25.4 L11.4 25.4 Z" fill="#2b1c10"'
+  ' stroke="#0e0906"/>'
+  '<path d="M13 25.4 C13 19.4 15.4 16.6 19 14.6 L15.4 12.4 L10.6 16'
+  ' C8.6 17.4 6.6 15 8.2 13 L14.6 5.4 C16.6 3 20.6 2.6 22.6 6.6'
+  ' C24.6 10.6 25.4 17.4 22.6 25.4 Z" fill="#3a2a1c" stroke="#0e0906"/>'
+  '<circle cx="18.6" cy="9.4" r="1.5" fill="#f2ead6"/>', None),
+
+ ('lighthouse', 'Faro', 'comun', '',
+  '<path d="M10.6 29 L21.4 29 L19.4 12.6 L12.6 12.6 Z" fill="#f4efe6"'
+  ' stroke="#2a3038"/>'
+  '<path d="M12.2 17 L19.8 17 M11.6 22.6 L20.4 22.6" fill="none" stroke="#c8402f"'
+  ' stroke-width="3"/>'
+  '<path d="M11.4 8.6 L20.6 8.6 L20.6 12.6 L11.4 12.6 Z" fill="#2f3b48"'
+  ' stroke="#141c26"/>'
+  '<path d="M13 9.4 L19 9.4 L19 11.8 L13 11.8 Z" fill="#ffe066"/>'
+  '<path d="M11.4 8.6 L16 4 L20.6 8.6 Z" fill="#2f3b48" stroke="#141c26"/>', None),
+
+ ('grapes', 'Uvas', 'comun', '',
+  '<circle cx="16" cy="12.6" r="4.2" fill="#7a3b8a" stroke="#3a1a44"/>'
+  '<circle cx="10.6" cy="18" r="4.2" fill="#7a3b8a" stroke="#3a1a44"/>'
+  '<circle cx="21.4" cy="18" r="4.2" fill="#7a3b8a" stroke="#3a1a44"/>'
+  '<circle cx="16" cy="23.4" r="4.2" fill="#7a3b8a" stroke="#3a1a44"/>'
+  '<path d="M16 8.4 C16 5 18.6 3.4 21.4 3.4" fill="none" stroke="#4d8a3d"'
+  ' stroke-width="2.4"/>'
+  '<path d="M21.4 3.4 C24.6 3.4 26 5.4 26.6 7.4 C24 8 21.6 6.6 21.4 3.4 Z"'
+  ' fill="#4d8a3d" stroke="#22431a" stroke-width="1.4"/>', None),
+
+ ('book', 'Libro', 'comun', '',
+  '<path d="M5.4 5 L14.6 5 C15.4 5 16 5.6 16 6.4 L16 27 L5.4 27 Z"'
+  ' fill="#8a3b2a" stroke="#3a1108"/>'
+  '<path d="M26.6 5 L17.4 5 C16.6 5 16 5.6 16 6.4 L16 27 L26.6 27 Z"'
+  ' fill="#a8452e" stroke="#3a1108"/>'
+  '<path d="M16 6.4 L16 27" fill="none" stroke="#3a1108" stroke-width="1.6"/>'
+  '<path d="M7.6 10 L13.4 10 M7.6 14 L13.4 14 M18.6 10 L24.4 10 M18.6 14 L24.4 14"'
+  ' fill="none" stroke="#f2e0d0" stroke-width="1.5"/>', None),
+
+ ('gear', 'Engranaje', 'comun', '',
+  '<path d="M13.4 2.6 L18.6 2.6 L19.4 7 L23 8.6 L26.6 6 L29.4 10.6 L26 13.4'
+  ' L26 16.6 L29.4 19.4 L26.6 24 L23 21.4 L19.4 23 L18.6 27.4 L13.4 27.4'
+  ' L12.6 23 L9 21.4 L5.4 24 L2.6 19.4 L6 16.6 L6 13.4 L2.6 10.6 L5.4 6'
+  ' L9 8.6 L12.6 7 Z" fill="#a8813d" stroke="#4a3315"/>'
+  '<circle cx="16" cy="15" r="5" fill="#141210" stroke="#4a3315"/>', None),
+
+ ('tulip', 'Tulipán', 'comun', '',
+  '<path d="M8.6 8.6 C8.6 15.4 11.4 19.4 16 19.4 C20.6 19.4 23.4 15.4 23.4 8.6'
+  ' L20 12 L16 6.6 L12 12 Z" fill="#d94f6e" stroke="#7a1f38"/>'
+  '<path d="M16 19.4 L16 29.4" fill="none" stroke="#4d8a3d" stroke-width="2.6"/>'
+  '<path d="M16 23.4 C12.6 22 10 23.4 8.6 26 C12 27.4 14.6 26 16 23.4 Z"'
+  ' fill="#4d8a3d" stroke="#22431a" stroke-width="1.4"/>', None),
+
+ ('wheat', 'Espiga', 'comun', '',
+  '<path d="M16 29 L16 12" fill="none" stroke="#8a6018" stroke-width="2.4"/>'
+  '<path d="M16 12 C13 12 11.4 9.4 12.6 6.6 C15.4 6.6 17 9.4 16 12 Z'
+  ' M16 12 C19 12 20.6 9.4 19.4 6.6 C16.6 6.6 15 9.4 16 12 Z"'
+  ' fill="#e8c66a" stroke="#8a6018"/>'
+  '<path d="M16 18 C13 18 11.4 15.4 12.6 12.6 C15.4 12.6 17 15.4 16 18 Z'
+  ' M16 18 C19 18 20.6 15.4 19.4 12.6 C16.6 12.6 15 15.4 16 18 Z"'
+  ' fill="#e8c66a" stroke="#8a6018"/>'
+  '<path d="M16 24 C13 24 11.4 21.4 12.6 18.6 C15.4 18.6 17 21.4 16 24 Z'
+  ' M16 24 C19 24 20.6 21.4 19.4 18.6 C16.6 18.6 15 21.4 16 24 Z"'
+  ' fill="#e8c66a" stroke="#8a6018"/>', None),
+
+ ('droplet', 'Gota', 'comun', '',
+  '<path d="M16 2.6 C21.4 9.4 25.4 14.6 25.4 19.4 C25.4 25 21.4 29.4 16 29.4'
+  ' C10.6 29.4 6.6 25 6.6 19.4 C6.6 14.6 10.6 9.4 16 2.6 Z" fill="#5fa8e8"'
+  ' stroke="#12446e"/>'
+  '<path d="M11 20 C11 23.4 12.6 25.4 15 26" fill="none" stroke="#cfe8fb"'
+  ' stroke-width="2.2"/>', None),
+
+ ('lantern', 'Farolillo', 'comun', '',
+  '<path d="M16 2.6 L16 5.4 M11 5.4 L21 5.4" fill="none" stroke="#5c4318"'
+  ' stroke-width="2.2"/>'
+  '<path d="M8.6 5.4 L23.4 5.4 L23.4 8.6 L8.6 8.6 Z" fill="#8a5a2a" stroke="#4a2f06"/>'
+  '<path d="M9.4 8.6 C5.4 14 5.4 20 9.4 25.4 L22.6 25.4 C26.6 20 26.6 14 22.6 8.6 Z"'
+  ' fill="#e8760f" stroke="#6b2f04"/>'
+  '<path d="M8.6 25.4 L23.4 25.4 L23.4 28.6 L8.6 28.6 Z" fill="#8a5a2a"'
+  ' stroke="#4a2f06"/>'
+  '<path d="M12.6 11 L12.6 23 M19.4 11 L19.4 23" fill="none" stroke="#a8500a"'
+  ' stroke-width="1.5"/>', None),
+
+ ('palette', 'Paleta', 'comun', '',
+  '<path d="M16 3.4 C24 3.4 29.4 8.6 29.4 15 C29.4 20 25.4 21.4 22.6 21.4'
+  ' C20 21.4 19 23 19.4 25 C19.8 27.4 18.4 28.6 16 28.6 C9 28.6 2.6 22.6 2.6 15'
+  ' C2.6 8.6 8 3.4 16 3.4 Z" fill="#e8dcc4" stroke="#4a3f28"/>'
+  '<circle cx="10.4" cy="11" r="2.4" fill="#c8402f"/>'
+  '<circle cx="16.6" cy="8.6" r="2.4" fill="#2f8a4e"/>'
+  '<circle cx="22.6" cy="11.6" r="2.4" fill="#2f4d9c"/>'
+  '<circle cx="9.4" cy="18.6" r="2.4" fill="#e8b93f"/>', None),
 ]
 
 
