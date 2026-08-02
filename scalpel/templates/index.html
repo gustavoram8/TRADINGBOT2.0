@@ -9554,6 +9554,7 @@
       'daily.lb.meCorrect': 'Correct this month', 'daily.lb.mePos': 'Your position',
       'daily.lb.you': 'you',
       'daily.lb.chipTip': 'Daily Challenge streak — consecutive correct answers',
+      'daily.lb.error': "Couldn't load the season board. Try again in a moment.",
       'daily.monthNote': 'Your Premium plan was just extended by 30 days. Enjoy!',
       'daily.prize.d5': '5% off your next renewal',
       'daily.prize.d10': '10% off your next renewal',
@@ -9598,6 +9599,7 @@
       'daily.lb.meCorrect': 'Correctas del mes', 'daily.lb.mePos': 'Tu posición',
       'daily.lb.you': 'tú',
       'daily.lb.chipTip': 'Racha del Daily Challenge — respuestas correctas seguidas',
+      'daily.lb.error': 'No se pudo cargar la tabla de la temporada. Probá de nuevo en un momento.',
       'daily.monthNote': 'Tu plan Premium acaba de extenderse 30 días. ¡Disfrútalo!',
       'daily.prize.d5': '5% de descuento en tu próxima renovación',
       'daily.prize.d10': '10% de descuento en tu próxima renovación',
@@ -9642,6 +9644,7 @@
       'daily.lb.meCorrect': 'Bonnes du mois', 'daily.lb.mePos': 'Votre position',
       'daily.lb.you': 'vous',
       'daily.lb.chipTip': 'Série du Daily Challenge — bonnes réponses consécutives',
+      'daily.lb.error': "Impossible de charger le tableau de la saison. Réessayez dans un instant.",
       'daily.monthNote': 'Votre plan Premium vient d\'être prolongé de 30 jours. Profitez-en !',
       'daily.prize.d5': '5% de réduction sur votre prochain renouvellement',
       'daily.prize.d10': '10% de réduction sur votre prochain renouvellement',
@@ -9686,6 +9689,7 @@
       'daily.lb.meCorrect': 'Corretas do mês', 'daily.lb.mePos': 'Sua posição',
       'daily.lb.you': 'você',
       'daily.lb.chipTip': 'Sequência do Daily Challenge — respostas corretas seguidas',
+      'daily.lb.error': 'Não foi possível carregar a tabela da temporada. Tente de novo em um instante.',
       'daily.monthNote': 'Seu plano Premium acaba de ser estendido por 30 dias. Aproveite!',
       'daily.prize.d5': '5% de desconto na sua próxima renovação',
       'daily.prize.d10': '10% de desconto na sua próxima renovação',
@@ -22891,13 +22895,27 @@
           if (famePos >= 1 && famePos <= 3) sp.className = 'fame-name f' + famePos;
           return sp;
         }
+        function lbFail(detail) {
+          // Never fail silently: a button that does NOTHING when clicked is
+          // indistinguishable from a broken page, and it hides the real cause.
+          const box = $('dlb-me');
+          if (box) box.innerHTML = '';
+          $('dlb-table').closest('.dlb-table-wrap').style.display = 'none';
+          $('dlb-fame-table').closest('.dlb-table-wrap').style.display = 'none';
+          $('dlb-fame-empty').style.display = 'none';
+          const e = $('dlb-empty');
+          e.style.display = '';
+          e.textContent = T('daily.lb.error') + (detail ? ' (' + detail + ')' : '');
+          $('daily-lb-overlay').style.display = 'flex';
+        }
+
         async function openLeaderboard() {
           let d;
           try {
             const res = await fetch('/api/daily/leaderboard');
-            if (!res.ok) return;
+            if (!res.ok) { lbFail('HTTP ' + res.status); return; }
             d = await res.json();
-          } catch (e) { return; }
+          } catch (e) { lbFail('network'); return; }
           const famePos = {};
           (d.fame || []).forEach(f => { famePos[f.username] = f.pos; });
           // your numbers
