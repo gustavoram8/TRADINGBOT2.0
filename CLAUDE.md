@@ -292,18 +292,26 @@ cada mes, si un mes no hay tanda el sistema se ve muerto).
   PayPal, no se duplicó plumbing). Cursores: la sección ya quedó con los mismos botones para cuando
   existan. E2E `scratchpad/test_tienda.py` **38/38** + navegador ES (carrito mixto $10.97 = 2 marcos
   + 1 camo, 0 errores JS).
-· ⏰ **VENTANA DE 24h — mecanismo hecho, FECHAS PROVISIONALES (pendiente confirmarlas con el usuario).**
+· ✅ **VENTANA DE 24h — CERRADA Y CABLEADA (2026-08-02, fechas y zona confirmadas por el usuario).**
   `FESTIVE_WINDOWS` **keyea por FESTIVIDAD, no por producto** (respuesta a su pregunta: el candado va
   por el nombre de la festividad, así el camo, el marco y el cursor de esa fecha comparten ventana y
-  una pieza que aún no existe hereda la regla el día que se cree). Abre a las **00:00 UTC** de la
-  fecha y dura `FESTIVE_WINDOW_HOURS=24`. Pascua se **calcula** (algoritmo gregoriano anónimo,
-  verificado 2026→5-abr y 2027→28-mar) con `EASTER_OVERRIDE` por si el dueño quiere pinchar un año.
-  Fechas hoy: newyear 01-01 · valentine 02-14 · lucky 03-17 · easter (calculada) · fourth 07-04 ·
-  hallow 10-31 · muertos 11-02 · frost 12-21 · santa 12-25. Se aplica a **marcos Y camos** (la regla
-  ya era la de los camos): estado `locked` en la tarjeta con la fecha de apertura, y rechazo
-  server-side en `/api/camo/buy` y en el checkout del carrito (`window_closed`) para que no se pueda
-  saltar llamando al endpoint. ⚠️ **PENDIENTE de decidir con el usuario: (a) confirmar cada fecha,
-  (b) si la medianoche es UTC o una zona fija.**
+  **una pieza que aún no existe hereda la regla el día que se cree**). Fechas: newyear 01-01 ·
+  valentine 02-14 · lucky 03-17 · easter (calculada) · fourth 07-04 · hallow 10-31 · muertos 11-02 ·
+  frost 12-21 · **santa 12-25**. Pascua se **calcula** (algoritmo gregoriano anónimo; verificado
+  2026→5-abr, 2027→28-mar, 2028→16-abr, 2029→1-abr) con `EASTER_OVERRIDE` por si quiere pinchar un año.
+  🕛 **La medianoche es la de VENEZUELA** (`FESTIVE_TZ = UTC-4` fijo, `FESTIVE_WINDOW_HOURS=24`).
+  Se eligió Caracas y NO Nueva York porque **Venezuela no tiene horario de verano** (UTC-4 todo el
+  año) mientras NY oscila −5/−4 y solo coinciden en verano: con offset fijo toda festividad abre a la
+  misma hora real siempre, y no hace falta tzdata en el VPS.
+  **La ventana busca siempre la PRÓXIMA ocurrencia**, así que desde el 2-ago-2026 el 4 de julio
+  apunta a 2027 (el de 2026 ya pasó) y Halloween a 2026 — y cada año se repite sola sin tocar código.
+  Se aplica a **marcos Y camos**: estado `locked` en la tarjeta con la fecha + tooltip de la zona
+  horaria ×4 idiomas, y rechazo server-side en `/api/camo/buy` y en el checkout del carrito
+  (`window_closed`) para que no se pueda saltar llamando al endpoint.
+  `tools/test_ventanas_festivas.py` **26/26** (calendario exacto, bordes de la ventana en VET, salto
+  de año, Pascua ×4 años) + prueba de viaje en el tiempo del cobro real 7/7.
+  ⚠️ **Trampa cazada:** `data-i18n-title` **está reservado para el `<title>` del documento** en
+  `pages_i18n.js` (usa `querySelector`, el primero gana) → para tooltips se agregó `data-i18n-tip`.
 · **FALTA del paso 5:** **los cursores — todavía sin empezar** (32×32, flecha+manito, sin
   animar, solo escritorio; `active_cursor` y el 400 del equip ya los esperan), y las tandas de camos
   (arte mensual que encarga el usuario; se publican insertando `CosmeticItem` kind='camo').
