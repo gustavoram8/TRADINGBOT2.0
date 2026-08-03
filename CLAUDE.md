@@ -1315,8 +1315,14 @@ borrado. PENDIENTE: agregar selector de mes / historial.
   medalla + certificado (+ beta desde el rango 6). Borradas también las 4 claves `camo/camoD` de
   `RANK_I18N` para que nadie las reviva. ⚠️ NO se tocó `co.f.camo` de `checkout.html` ni
   `camo1`/`camos3` del reveal de plan: ese camo SÍ viene con el plan pago (`PLAN_CAMOS`).
-- [ ] **24. Brillos que se apagan** al cambiar de camo o de modo: el rayo del Quick Analysis y las
-  iniciales de los proyectos deben brillar SIEMPRE, como en el tema original.
+- [x] ✅ **24. Brillos que se apagan (2026-08-03).** No era aleatorio ni cosa de camos concretos: el
+  modo CLARO apagaba la marca a propósito (`body.light .tile-mark { opacity:.16; text-shadow:none }`,
+  con el comentario "impact is intentionally softer here"). Por eso brillaba en oscuro y no en claro,
+  en cualquier camo. El rayo del Quick Analysis y la inicial de cada proyecto son el MISMO elemento
+  (`.tile-mark`), así que una sola regla arregla los dos. Ahora el claro también brilla: opacidad
+  .26/.38/.44 (base/hover/activo) y halo **más cerrado** que en oscuro — sobre fondo claro un
+  resplandor ancho y tenue no se ve, se ensucia; lo que lo hace legible es concentrarlo. Verificado
+  en navegador: sin camo (oscuro y claro), Chronicles claro y Mission claro.
 - [x] ✅ **25. Foro para Standard (2026-08-03).** Tenías razón y era el peor sitio posible: el
   **reveal "UNLOCKED" que se ve justo DESPUÉS de pagar** (`FEATURES.standard` en index.html) listaba
   solo analizador, proyectos y camo — el foro no aparecía, así que quien compraba Standard no se

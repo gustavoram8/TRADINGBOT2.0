@@ -1627,10 +1627,24 @@
       opacity: .6;
       text-shadow: 0 0 20px var(--tile-accent), 0 0 48px var(--tile-accent);
     }
-    /* Light mode — subtler, no glow (impact is intentionally softer here). */
-    body.light .proj-tile .tile-mark { opacity: .16; text-shadow: none; }
-    body.light .proj-tile:hover .tile-mark { opacity: .24; transform: scale(1.04); text-shadow: none; }
-    body.light .proj-tile.active .tile-mark { opacity: .28; text-shadow: none; }
+    /* Modo claro — el rayo y la inicial TAMBIÉN brillan (pedido del dueño
+       2026-08-03: "que brillen siempre, como en el modo original"). Antes el
+       modo claro los apagaba con `text-shadow: none`, y con un camo puesto la
+       marca desaparecía del todo. El halo va más CERRADO y la opacidad más
+       alta que en oscuro: sobre un fondo claro un resplandor ancho y tenue no
+       se ve, se ensucia — lo que lo hace legible es concentrarlo. */
+    body.light .proj-tile .tile-mark {
+      opacity: .26;
+      text-shadow: 0 0 8px var(--tile-accent), 0 0 18px var(--tile-accent);
+    }
+    body.light .proj-tile:hover .tile-mark {
+      opacity: .38; transform: scale(1.04);
+      text-shadow: 0 0 11px var(--tile-accent), 0 0 24px var(--tile-accent);
+    }
+    body.light .proj-tile.active .tile-mark {
+      opacity: .44;
+      text-shadow: 0 0 12px var(--tile-accent), 0 0 28px var(--tile-accent);
+    }
 
     .proj-tile .tile-bar {
       width: 26px; height: 4px; border-radius: 4px;
