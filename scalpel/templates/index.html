@@ -3321,24 +3321,27 @@
        entera (100vh menos la barra), así que el pie queda por debajo del scroll
        justo mientras se están mostrando los modelos, y una atribución que no se
        ve no cumple la licencia (CC BY pide que sea "razonable al medio").
-       Colores FIJOS y pastilla casi opaca, no los tokens del tema, por dos
-       razones: (1) Synapse ya impone su propia paleta pase el camo que pase
-       (ver el reset de `.ag-synapse-mode` arriba), igual que hace `.syn-toast`;
-       (2) detrás hay un canvas WebGL que puede pintar CUALQUIER color justo ahí
-       — con una pastilla translúcida la legibilidad dependería de dónde quedara
-       el cerebro en ese instante. Con este fondo el texto se lee tanto si la
-       escena está en negro como en blanco (medido sobre píxeles reales: 14.6 y
-       8.7 en modo oscuro, 10.2 y 12.3 en claro; el mínimo exigible es 4.5). */
+       Centrado abajo y SIN caja: el rectángulo de fondo no lo pide ninguna
+       licencia (era solución mía) y molestaba visualmente. Lo que sostiene la
+       legibilidad es el HALO, porque detrás hay un canvas WebGL que puede pintar
+       CUALQUIER color justo ahí — un color de texto fijo dependería de dónde
+       quedara el cerebro en ese instante, y la negrita sola no arregla nada (más
+       píxeles del mismo color). Los tonos son fijos, no los tokens del tema,
+       porque Synapse ya impone su propia paleta pase el camo que pase (ver el
+       reset de `.ag-synapse-mode` arriba), igual que hace `.syn-toast`. */
     .syn-credit {
-      position: absolute; left: 14px; bottom: 12px; z-index: 4; max-width: min(560px, 62vw);
-      font-family: 'Inter', sans-serif; font-size: 10.5px; line-height: 1.45;
-      color: rgba(255,255,255,.86); background: rgba(10,11,16,.80);
-      border: 1px solid rgba(255,255,255,.16); border-radius: 8px; padding: 6px 10px;
-      pointer-events: auto;
+      position: absolute; left: 50%; transform: translateX(-50%); bottom: 12px;
+      z-index: 4; width: max-content; max-width: min(680px, 92vw); text-align: center;
+      font-family: 'Inter', sans-serif; font-size: 10.5px; font-weight: 700;
+      line-height: 1.45; pointer-events: auto;
+      color: #f2f4f8;
+      text-shadow: 0 0 3px rgba(8,10,16,.95), 0 0 6px rgba(8,10,16,.85),
+                   0 1px 2px rgba(8,10,16,.9);
     }
     body.light:not(.camo-night) .syn-credit, body.camo-day .syn-credit {
-      color: rgba(23,25,35,.88); background: rgba(255,255,255,.90);
-      border-color: rgba(16,22,40,.16);
+      color: #14161e;
+      text-shadow: 0 0 3px rgba(255,255,255,.95), 0 0 6px rgba(255,255,255,.9),
+                   0 1px 2px rgba(255,255,255,.9);
     }
     .syn-credit a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
     .syn-credit a:hover { color: var(--text); }
@@ -7702,16 +7705,27 @@
      que contraste con su propio fondo— y una opacidad suave se lee en todos sin
      gritar. Ojo: esto mismo le pasa a más textos sueltos del sitio; es el punto
      10 de la checklist. */
+  /* Sin caja: al usuario le molestaba el rectángulo. El problema real es que
+     esta línea va SUELTA sobre el fondo del camo y en varios camos cae encima
+     del dibujo (las montañas de Marte en mission, el reino en chronicles), donde
+     ningún color de texto sobrevive — medido, 8 de 10 camos quedaban ilegibles y
+     mission claro daba 1.02 sobre un mínimo de 4.5.
+     La negrita SOLA no arregla nada (más píxeles del mismo color), así que lo
+     que sostiene la legibilidad es el HALO: un contorno del tono contrario
+     pegado a la letra, la misma técnica de las placas del foro. La negrita sí
+     suma aquí, porque le da más superficie donde agarrarse. */
   .model-credits { text-align:center; padding:0 16px 16px; }
   .model-credits span { display:inline-block; max-width:min(680px,92vw);
-    font-size:11.5px; line-height:1.5; letter-spacing:.01em;
-    color:rgba(255,255,255,.86); background:rgba(12,14,20,.72);
-    border:1px solid rgba(255,255,255,.14); border-radius:8px; padding:5px 12px; }
+    font-size:11.5px; font-weight:700; line-height:1.5; letter-spacing:.01em;
+    color:#f2f4f8;
+    text-shadow:0 0 3px rgba(8,10,16,.95), 0 0 6px rgba(8,10,16,.85),
+                0 1px 2px rgba(8,10,16,.9); }
   body.light:not(.camo-night) .model-credits span, body.camo-day .model-credits span {
-    color:rgba(20,22,30,.88); background:rgba(255,255,255,.86);
-    border-color:rgba(16,22,40,.14); }
+    color:#14161e;
+    text-shadow:0 0 3px rgba(255,255,255,.95), 0 0 6px rgba(255,255,255,.9),
+                0 1px 2px rgba(255,255,255,.9); }
   .model-credits a { color:inherit; text-decoration:underline; text-underline-offset:2px; }
-  .model-credits a:hover { color:var(--text); }
+  .model-credits a:hover { opacity:.75; }
 </style>
 <div class="model-credits"><span>
   Synapse 3D models: head scan by

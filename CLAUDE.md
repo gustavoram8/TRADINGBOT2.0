@@ -1291,14 +1291,20 @@ borrado. PENDIENTE: agregar selector de mes / historial.
   `index.html` (o sea **solo en `/app`**), y **dentro de Synapse no aparecía**: `.synapse-app` mide
   `100vh - 108px`, así que el pie queda debajo del scroll justo mientras los modelos están en
   pantalla. CC BY pide atribución "razonable al medio" y eso no lo era.
-  **Hecho:** crédito nuevo **`.syn-credit` DENTRO de Synapse** (abajo-izquierda) + el del pie a
+  **Hecho:** crédito nuevo **`.syn-credit` DENTRO de Synapse** (centrado abajo) + el del pie a
   11.5px, ambos con **enlaces al autor y a la licencia** (la licencia también los pide).
-  🔑 **Los dos van sobre fondo propio, no texto suelto,** por el mismo motivo en cada caso: en
-  Synapse hay un **canvas WebGL** que puede pintar cualquier color justo debajo, y en el pie el
-  texto **cae literalmente encima del dibujo del camo** (las montañas de Marte, el reino de
-  Chronicles). Medido por píxeles: antes **8 de 10 camos** dejaban el pie ilegible (mission claro
-  = **1.02**); ahora el peor de las 20 combinaciones da **6.96** (umbral 4.5), y dentro de Synapse,
-  con la escena forzada a negro y a blanco, entre **8.64 y 14.59**.
+  🔑 **Los dos en NEGRITA + HALO (`text-shadow` ×3 capas), sin caja de fondo.** El problema es que
+  el texto va suelto sobre fondo impredecible: en el pie **cae literalmente encima del dibujo del
+  camo** (las montañas de Marte, el reino de Chronicles) y en Synapse hay un **canvas WebGL** que
+  puede pintar cualquier color justo debajo. Medido: antes **8 de 10 camos** dejaban el pie
+  ilegible (mission claro = **1.02** sobre un umbral de 4.5).
+  ⚠️ **Se probó primero con una pastilla opaca detrás y el usuario la RECHAZÓ** (*"me molesta
+  visualmente el rectángulo blanco"*) — y tenía razón en lo de fondo: **ninguna licencia pide un
+  recuadro**, CC BY solo pide que la atribución sea perceptible. También preguntó si bastaba con
+  **negrita**: no, la negrita sola no cambia el color, solo pone más píxeles del mismo tono (1.02
+  seguiría siendo 1.02); lo que sostiene la legibilidad es el halo, y la negrita ayuda porque le da
+  más superficie. Verificado VISUALMENTE sobre el arte real de los camos y, en Synapse, con la
+  escena forzada a negro / blanco / degradado claro / degradado cálido.
   `scratchpad/verifica_credito.py`. ⚠️ **Tres trampas del entorno, anotadas para no repetirlas:**
   (1) **three.js viene de un CDN inalcanzable en el contenedor** → el motor 3D NUNCA arranca aquí y
   Synapse se queda en su pantalla de carga, que **tapa** el crédito; para medir hay que ocultar
