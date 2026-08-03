@@ -190,6 +190,16 @@
           <span class="rail-foot">
             <span class="fl" data-i18n="cpay.ppFoot">Card payments are handled by PayPal — we never see your card number.</span>
           </span>
+          {% if paypal_receipt_name %}
+          <!-- El titular de la cuenta receptora puede no llamarse igual que la
+               marca. Decírselo ANTES de pagar es la mejor defensa contra el
+               contracargo "no reconozco este cargo" — y es coherente con la
+               Secc. 5 de los T&C ("Quién recibe el pago"). -->
+          <span class="rail-foot">
+            <span class="fl"><span data-i18n="cpay.ppWho">The charge will appear as</span>
+              <b>{{ paypal_receipt_name }}</b></span>
+          </span>
+          {% endif %}
         {% elif rail == 'crypto' %}
           <span class="rail-head">{{ marks.usdt() }}<span class="go">→</span></span>
           <span class="rail-body" data-i18n="cpay.cryptoBody">Send USDT from Binance or any wallet. We show you the exact amount,

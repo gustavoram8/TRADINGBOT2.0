@@ -329,6 +329,13 @@ PAYPAL_ENABLED = bool(PAYPAL_CLIENT_ID and PAYPAL_SECRET)
 # to the trade name in the Terms is what stops "I don't recognise this charge"
 # disputes when the receiving account is held under a different name.
 PAYPAL_BRAND_NAME = os.environ.get("PAYPAL_BRAND_NAME", "Tradeable Academy")
+# Titular REAL de la cuenta que recibe el dinero, cuando no coincide con el
+# nombre comercial (caso normal si la cuenta se usa también para otros cobros:
+# PayPal no deja renombrarla sin afectar el resto). Se le enseña al comprador
+# ANTES de pagar: un cargo con un nombre que no reconoce es la causa nº1 de los
+# contracargos "no reconozco esto", y avisarlo de antemano los desactiva.
+# Va por env var y NUNCA al repositorio — es el nombre de una persona real.
+PAYPAL_RECEIPT_NAME = os.environ.get("PAYPAL_RECEIPT_NAME", "").strip()
 # Boot line so the owner can confirm from the log that the keys actually took
 # effect (supervisor's `environment=` is easy to edit and forget to reload).
 # NEVER prints the values: only whether each one is present, and which API it
@@ -7395,6 +7402,7 @@ def checkout_pay(order_id):
                                duplicate=False)
     return render_template('checkout_method.html', order=order, rails=rails,
                            plan_label=PLAN_LABELS.get(order.plan, order.plan),
+                           paypal_receipt_name=PAYPAL_RECEIPT_NAME,
                            sla_hours=CRYPTO_SLA_HOURS)
 
 
