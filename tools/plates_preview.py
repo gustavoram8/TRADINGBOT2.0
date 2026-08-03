@@ -1230,7 +1230,7 @@ PLATES = [
  # ══ FESTIVAS de TIENDA (2026-08-02): una por cada festividad que ya tiene
  #    camo. Ventana de compra de 24h en la fecha estipulada (ver FESTIVOS).
  #    Sin personajes ni criaturas: objetos y escenografía solamente. ═════════
- ('santa', 'Nochebuena', 'festiva', 'light', """
+ ('santa', 'Christmas Eve', 'festiva', 'light', """
   <defs><linearGradient id="sa-sky" x1="0" y1="0" x2="0" y2="1">
     <stop offset="0" stop-color="#0a1428"/><stop offset="1" stop-color="#152a4d"/></linearGradient></defs>
   <rect width="640" height="48" fill="url(#sa-sky)"/>

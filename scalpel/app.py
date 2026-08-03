@@ -10698,6 +10698,37 @@ def _publish_roulette_camos():
             db.session.rollback()   # concurrent worker won the race — fine
 
 
+def _sync_cosmetic_names():
+    """Alinear el NOMBRE de cada pieza publicada con su catálogo.
+
+    Los publicadores son idempotentes por slug y nunca tocan una fila
+    existente, lo cual es correcto para `active`/`season` (decisiones que el
+    dueño puede querer editar a mano). Pero el nombre es dato DERIVADO del
+    catálogo, y sin este paso una corrección de nombre no llegaría nunca a una
+    base ya poblada — que es justo lo que pasó al descubrir que los cursores
+    estaban nombrados en español mientras marcos y camos van en inglés.
+    """
+    fixed = 0
+    fuentes = [(plates_meta(), 'frame'), (cursors_meta(), 'cursor')]
+    for meta, kind in fuentes:
+        for it in CosmeticItem.query.filter_by(kind=kind).all():
+            nombre = (meta.get(it.slug) or {}).get('name')
+            if nombre and it.name != nombre:
+                it.name = nombre
+                fixed += 1
+    for it in CosmeticItem.query.filter_by(kind='camo').all():
+        nombre = CAMO_NAMES.get(camo_slug_of(it.slug))
+        if nombre and it.name != nombre:
+            it.name = nombre
+            fixed += 1
+    if fixed:
+        try:
+            db.session.commit()
+            app.logger.info('Synced %d cosmetic names with the catalog.', fixed)
+        except Exception:
+            db.session.rollback()
+
+
 def _current_season():
     return datetime.now(timezone.utc).strftime('%Y-%m')
 
@@ -12837,6 +12868,7 @@ def init_db():
         _publish_store_frames()
         _publish_cursors()
         _publish_roulette_camos()
+        _sync_cosmetic_names()
         admin_email = os.environ.get('ADMIN_EMAIL', 'mauroramirezmij@gmail.com').lower()
         admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
         admin_password = os.environ.get('ADMIN_PASSWORD', 'Codica2310$')

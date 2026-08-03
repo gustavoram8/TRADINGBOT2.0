@@ -56,7 +56,7 @@ CHISPAS = ('<circle cx="9.6" cy="4.6" r="1.3" fill="#fff3c4"/>'
 
 # (slug, nombre, temporada, defs, cuerpo, extra del estado activo)
 CURSORS = [
- ('chronicles', 'Chronicles · escudo', '2026-08', '',
+ ('chronicles', 'Chronicles · Shield', '2026-08', '',
   '<path d="M4.6 4 L27.4 4 L27.4 15.4 C27.4 22.4 22.4 27 16 29.4'
   ' C9.6 27 4.6 22.4 4.6 15.4 Z" fill="#4a5462" stroke="#171c23"'
   ' stroke-width="1.8" stroke-linejoin="round"/>'
@@ -68,7 +68,7 @@ CURSORS = [
   '<circle cx="16" cy="13" r="7.6" fill="#ff5a1e" opacity=".3"/>'
   '<circle cx="9" cy="6.4" r="1.4" fill="#ffd08a"/>'),
 
- ('gridiron', 'American Football · balón', '2026-09', '',
+ ('gridiron', 'American Football · Ball', '2026-09', '',
   '<path d="M2.4 16 C5.8 9.4 10.6 6.2 16 6.2 C21.4 6.2 26.2 9.4 29.6 16'
   ' C26.2 22.6 21.4 25.8 16 25.8 C10.6 25.8 5.8 22.6 2.4 16 Z" fill="#7d3a17"'
   ' stroke="#2b1408" stroke-width="1.8" stroke-linejoin="round"/>'
@@ -83,7 +83,7 @@ CURSORS = [
   '<path d="M13.6 13.8 L13.6 18.2 M16 13.4 L16 18.6 M18.4 13.8 L18.4 18.2"'
   ' fill="none" stroke="#f3ece0" stroke-width="1.6" stroke-linecap="round"/>', None),
 
- ('nile', 'Nile · pirámide', '2026-10', '',
+ ('nile', 'Nile · Pyramid', '2026-10', '',
   '<circle cx="25" cy="7.4" r="4" fill="#f2b33d" stroke="#8a5a12" stroke-width="1.4"/>'
   '<path d="M16 3 L29.4 26.6 L2.6 26.6 Z" fill="#e8c076" stroke="#5c421a"'
   ' stroke-width="1.8" stroke-linejoin="round"/>'
@@ -91,7 +91,7 @@ CURSORS = [
   '<path d="M9.6 14.4 L22.4 14.4 M6.4 20.4 L25.6 20.4" fill="none"'
   ' stroke="#8a6a2a" stroke-width="1.3" opacity=".8"/>', None),
 
- ('colosseum', 'Colosseum · casco', '2026-11', '',
+ ('colosseum', 'Colosseum · Helmet', '2026-11', '',
   '<path d="M6 13 C6 6.4 11.4 2.6 16 2.6 C20.6 2.6 26 6.4 26 13 L26 19'
   ' C26 24 22 27.4 16 27.4 C10 27.4 6 24 6 19 Z" fill="#c9a227"'
   ' stroke="#2a1f08" stroke-width="1.8" stroke-linejoin="round"/>'
@@ -104,7 +104,7 @@ CURSORS = [
   ' fill="#b8332e" stroke="#2a1f08" stroke-width="1.6" stroke-linejoin="round"/>',
   None),
 
- ('summit', 'Summit · bota', '2026-12', '',
+ ('summit', 'Summit · Boot', '2026-12', '',
   '<path d="M4.6 3 L13.4 3 C14.6 3 15.4 3.8 15.4 5 L15.4 13.4'
   ' C15.4 15.4 17 16.2 19.4 17 L25.6 19.2 C27.4 19.8 28 21 28 22.6 L28 24.6'
   ' L4.6 24.6 Z" fill="#c8402f" stroke="#3a1108" stroke-width="1.8"'
@@ -118,7 +118,7 @@ CURSORS = [
   ' fill="none" stroke="#f2e2d8" stroke-width="1.4" stroke-linecap="round"/>',
   None),
 
- ('bengal', 'Bengal · huella', '2027-01', '',
+ ('bengal', 'Bengal · Paw', '2027-01', '',
   '<path d="M16 15 C21.6 15 25.4 18.4 25.4 22 C25.4 25.8 21.6 28.4 16 28.4'
   ' C10.4 28.4 6.6 25.8 6.6 22 C6.6 18.4 10.4 15 16 15 Z" fill="#e0752f"'
   ' stroke="#3a2415" stroke-width="1.8" stroke-linejoin="round"/>'
@@ -131,7 +131,7 @@ CURSORS = [
   '<ellipse cx="24.6" cy="13.4" rx="3" ry="3.8" fill="#e0752f" stroke="#3a2415"'
   ' stroke-width="1.7"/>', None),
 
- ('olympus', 'Olympus · ánfora', '2027-02', '',
+ ('olympus', 'Olympus · Amphora', '2027-02', '',
   '<path d="M11.6 3.2 L20.4 3.2 L20.4 5.8 L18.6 5.8 L18.6 9.4 L13.4 9.4'
   ' L13.4 5.8 L11.6 5.8 Z" fill="#e8dcc4" stroke="#3a2f1c" stroke-width="1.6"'
   ' stroke-linejoin="round"/>'
@@ -147,7 +147,7 @@ CURSORS = [
   '<path d="M12.6 25.2 L19.4 25.2 L18.6 28.4 L13.4 28.4 Z" fill="#c96a3c"'
   ' stroke="#4a1f0c" stroke-width="1.6" stroke-linejoin="round"/>', None),
 
- ('quetzal', 'Quetzalcóatl · disco solar', '2027-03', '',
+ ('quetzal', 'Quetzalcóatl · Sun Disc', '2027-03', '',
   '<path d="M16 1.4 L18.8 5.6 L23.6 4 L23.6 9 L28.4 10.4 L25.4 14.4 L28.4 18.4'
   ' L23.6 19.8 L23.6 24.8 L18.8 23.2 L16 27.4 L13.2 23.2 L8.4 24.8 L8.4 19.8'
   ' L3.6 18.4 L6.6 14.4 L3.6 10.4 L8.4 9 L8.4 4 L13.2 5.6 Z" fill="#e8b93f"'
@@ -157,7 +157,7 @@ CURSORS = [
   ' stroke="#7a4a10" stroke-width="1.3"/>'
   '<circle cx="16" cy="14.4" r="2" fill="#b8332e"/>', None),
 
- ('baseball', 'Baseball · pelota', '2027-04', '',
+ ('baseball', 'Baseball · Ball', '2027-04', '',
   '<circle cx="16" cy="16" r="12.4" fill="#f4efe6" stroke="#3a3028" stroke-width="1.8"/>'
   '<path d="M8.6 6.6 C12 10.6 12 21.4 8.6 25.4" fill="none" stroke="#c8402f"'
   ' stroke-width="1.8" stroke-linecap="round"/>'
@@ -167,7 +167,7 @@ CURSORS = [
   ' M22.6 11 L20 12 M22.8 15 L20.2 15.4 M22.6 19.4 L20 18.6" fill="none"'
   ' stroke="#c8402f" stroke-width="1.4" stroke-linecap="round"/>', None),
 
- ('apiarist', 'Apiarist · tarro de miel', '2027-05', '',
+ ('apiarist', 'Apiarist · Honey Jar', '2027-05', '',
   '<path d="M8.6 11.4 L23.4 11.4 L24.6 24.6 C24.8 26.6 23.4 28 21.6 28'
   ' L10.4 28 C8.6 28 7.2 26.6 7.4 24.6 Z" fill="#e8a92c" stroke="#4a2f06"'
   ' stroke-width="1.8" stroke-linejoin="round"/>'
@@ -180,7 +180,7 @@ CURSORS = [
   '<circle cx="10.4" cy="10.4" r="2.6" fill="#8a5a1a" stroke="#4a2f06" stroke-width="1.4"/>',
   None),
 
- ('welder', 'Welder · careta', '2027-06', '',
+ ('welder', 'Welder · Mask', '2027-06', '',
   '<path d="M6 4.6 L26 4.6 C27.2 4.6 27.8 5.4 27.8 6.6 L27.8 18.6'
   ' C27.8 24.6 23.4 28.6 16 28.6 C8.6 28.6 4.2 24.6 4.2 18.6 L4.2 6.6'
   ' C4.2 5.4 4.8 4.6 6 4.6 Z" fill="#33404e" stroke="#111820" stroke-width="1.8"'
@@ -193,7 +193,7 @@ CURSORS = [
   '<path d="M11 23 L21 23" fill="none" stroke="#e0752f" stroke-width="2"'
   ' stroke-linecap="round"/>', None),
 
- ('zeppelin', 'Zeppelin · dirigible', '2027-07', '',
+ ('zeppelin', 'Zeppelin · Airship', '2027-07', '',
   '<path d="M2.2 13.6 C4.2 9.6 9.6 6.8 16 6.8 C22.4 6.8 27.8 9.6 29.8 13.6'
   ' C27.8 17.6 22.4 20.4 16 20.4 C9.6 20.4 4.2 17.6 2.2 13.6 Z" fill="#b8863f"'
   ' stroke="#4a3315" stroke-width="1.8" stroke-linejoin="round"/>'
@@ -211,35 +211,35 @@ CURSORS = [
   ' fill="none" stroke="#ffd98f" stroke-width="1.6" stroke-linecap="round"/>', None),
 
  # ══ LIBRES DE RULETA (2 por mes) ══════════════════════════════════════════
- ('candle', 'Vela alcista', 'libre', '',
+ ('candle', 'Bullish Candle', 'libre', '',
   '<path d="M16 2 L16 9 M16 23 L16 30" fill="none" stroke="#06341f"/>'
   '<path d="M9.6 9 L22.4 9 L22.4 23 L9.6 23 Z" fill="#39d98a" stroke="#06341f"/>', None),
 
- ('coin', 'Moneda', 'libre', '',
+ ('coin', 'Coin', 'libre', '',
   '<circle cx="16" cy="16" r="12.6" fill="#e8b93f" stroke="#7a4a10"/>'
   '<circle cx="16" cy="16" r="8.4" fill="none" stroke="#7a4a10" stroke-width="1.4"/>'
   '<path d="M16 10.4 L16 21.6 M12.8 13 L19.2 13 M12.8 19 L19.2 19" fill="none"'
   ' stroke="#7a4a10" stroke-width="1.6"/>', None),
 
- ('chart', 'Barras', 'libre', '',
+ ('chart', 'Bars', 'libre', '',
   '<path d="M4.4 18 L10 18 L10 27.6 L4.4 27.6 Z" fill="#5fa8e8" stroke="#123a5c"/>'
   '<path d="M13.2 11 L18.8 11 L18.8 27.6 L13.2 27.6 Z" fill="#39d98a" stroke="#06341f"/>'
   '<path d="M22 5 L27.6 5 L27.6 27.6 L22 27.6 Z" fill="#e8b93f" stroke="#7a4a10"/>', None),
 
- ('bell', 'Campana', 'libre', '',
+ ('bell', 'Bell', 'libre', '',
   '<path d="M16 3.4 C21.6 3.4 24.4 8 24.4 13.4 L24.4 21.6 L7.6 21.6 L7.6 13.4'
   ' C7.6 8 10.4 3.4 16 3.4 Z" fill="#e8b93f" stroke="#7a4a10"/>'
   '<path d="M5.4 21.6 L26.6 21.6 L26.6 24.6 L5.4 24.6 Z" fill="#c99a1c" stroke="#7a4a10"/>'
   '<circle cx="16" cy="27" r="2.6" fill="#c99a1c" stroke="#7a4a10"/>', None),
 
- ('diamond', 'Diamante', 'libre', '',
+ ('diamond', 'Diamond', 'libre', '',
   '<path d="M8 5.4 L24 5.4 L29 12.4 L16 28.6 L3 12.4 Z" fill="#7fc7ff" stroke="#12446e"/>'
   '<path d="M8 5.4 L11.4 12.4 L3 12.4 Z M24 5.4 L20.6 12.4 L29 12.4 Z"'
   ' fill="#bfe4ff" stroke="#12446e" stroke-width="1.3"/>'
   '<path d="M11.4 12.4 L20.6 12.4 L16 28.6 Z" fill="#a8d8ff" stroke="#12446e"'
   ' stroke-width="1.3"/>', None),
 
- ('rocket', 'Cohete', 'libre', '',
+ ('rocket', 'Rocket', 'libre', '',
   '<path d="M16 2.4 C20.4 6.4 22.4 12 22.4 17.6 L22.4 22 L9.6 22 L9.6 17.6'
   ' C9.6 12 11.6 6.4 16 2.4 Z" fill="#e8eef6" stroke="#2a3038"/>'
   '<path d="M9.6 15 L4.6 21.6 L9.6 21.6 Z M22.4 15 L27.4 21.6 L22.4 21.6 Z"'
@@ -248,19 +248,19 @@ CURSORS = [
   '<path d="M12.6 22 C13.6 26.6 18.4 26.6 19.4 22 Z" fill="#f2a03d" stroke="#a8541a"/>',
   None),
 
- ('target', 'Diana', 'libre', '',
+ ('target', 'Bullseye', 'libre', '',
   '<circle cx="16" cy="16" r="12.6" fill="#f4efe6" stroke="#3a3028"/>'
   '<circle cx="16" cy="16" r="8.4" fill="#c8402f" stroke="#5c1613" stroke-width="1.5"/>'
   '<circle cx="16" cy="16" r="4.2" fill="#f4efe6" stroke="#5c1613" stroke-width="1.5"/>'
   '<circle cx="16" cy="16" r="1.6" fill="#c8402f"/>', None),
 
- ('clock', 'Reloj', 'libre', '',
+ ('clock', 'Clock', 'libre', '',
   '<circle cx="16" cy="17" r="12" fill="#f2ead6" stroke="#3a2f1c"/>'
   '<path d="M11.4 3.4 L20.6 3.4 M16 3.4 L16 5.4" fill="none" stroke="#3a2f1c"/>'
   '<path d="M16 17 L16 10.4 M16 17 L21 20" fill="none" stroke="#2a2114" stroke-width="2.2"/>'
   '<circle cx="16" cy="17" r="1.5" fill="#c8402f"/>', None),
 
- ('key', 'Llave', 'libre', '',
+ ('key', 'Key', 'libre', '',
   '<circle cx="10" cy="10" r="6.6" fill="#e8b93f" stroke="#7a4a10"/>'
   '<circle cx="10" cy="10" r="2.4" fill="none" stroke="#7a4a10" stroke-width="1.5"/>'
   '<path d="M13.6 14.4 L26 26.8" fill="none" stroke="#e8b93f" stroke-width="4.4"/>'
@@ -268,7 +268,7 @@ CURSORS = [
   '<path d="M20 21 L23.4 17.6 M23 24 L26.4 20.6" fill="none" stroke="#e8b93f"'
   ' stroke-width="3.6"/>', None),
 
- ('lock', 'Candado', 'libre', '',
+ ('lock', 'Padlock', 'libre', '',
   '<path d="M10.4 13.4 L10.4 9.4 C10.4 5.6 21.6 5.6 21.6 9.4 L21.6 13.4"'
   ' fill="none" stroke="#8d99a8" stroke-width="3.4"/>'
   '<path d="M6.6 13.4 L25.4 13.4 C26.6 13.4 27.4 14.2 27.4 15.4 L27.4 26'
@@ -277,26 +277,26 @@ CURSORS = [
   '<circle cx="16" cy="19.4" r="2.6" fill="#7a4a10"/>'
   '<path d="M16 21.4 L16 24.4" fill="none" stroke="#7a4a10" stroke-width="2.2"/>', None),
 
- ('crown', 'Corona', 'libre', '',
+ ('crown', 'Crown', 'libre', '',
   '<path d="M4 22 L4 8.4 L10.6 14.4 L16 5.4 L21.4 14.4 L28 8.4 L28 22 Z"'
   ' fill="#e8b93f" stroke="#7a4a10"/>'
   '<path d="M4 22 L28 22 L28 26.6 L4 26.6 Z" fill="#c99a1c" stroke="#7a4a10"/>'
   '<circle cx="16" cy="17.6" r="1.8" fill="#c8402f"/>', None),
 
- ('anchor', 'Ancla', 'libre', '',
+ ('anchor', 'Anchor', 'libre', '',
   '<circle cx="16" cy="5.6" r="3.4" fill="none" stroke="#2f3b48" stroke-width="2.4"/>'
   '<path d="M16 9 L16 27.4" fill="none" stroke="#2f3b48" stroke-width="3"/>'
   '<path d="M9.4 12.4 L22.6 12.4" fill="none" stroke="#2f3b48" stroke-width="2.6"/>'
   '<path d="M5 18.4 C5 25 10.6 28.6 16 28.6 C21.4 28.6 27 25 27 18.4"'
   ' fill="none" stroke="#2f3b48" stroke-width="3"/>', None),
 
- ('compass', 'Brújula', 'libre', '',
+ ('compass', 'Compass', 'libre', '',
   '<circle cx="16" cy="16" r="12.6" fill="#e8dcc4" stroke="#3a2f1c"/>'
   '<path d="M22 10 L18 18 L10 22 L14 14 Z" fill="#c8402f" stroke="#5c1613"'
   ' stroke-width="1.4"/>'
   '<circle cx="16" cy="16" r="1.5" fill="#3a2f1c"/>', None),
 
- ('hourglass', 'Reloj de arena', 'libre', '',
+ ('hourglass', 'Hourglass', 'libre', '',
   '<path d="M6.6 3.4 L25.4 3.4 M6.6 28.6 L25.4 28.6" fill="none" stroke="#6b4a24"'
   ' stroke-width="2.6"/>'
   '<path d="M9.4 3.4 L22.6 3.4 L16 16 L22.6 28.6 L9.4 28.6 L16 16 Z"'
@@ -304,14 +304,14 @@ CURSORS = [
   '<path d="M11.4 6 L20.6 6 L16 14.6 Z" fill="#e8b93f"/>'
   '<path d="M12.6 26 L19.4 26 L16 20 Z" fill="#e8b93f"/>', None),
 
- ('bulb', 'Bombilla', 'libre', '',
+ ('bulb', 'Light Bulb', 'libre', '',
   '<path d="M16 2.6 C22 2.6 26 7 26 12.4 C26 16.4 23.4 18.6 22 21.4 L10 21.4'
   ' C8.6 18.6 6 16.4 6 12.4 C6 7 10 2.6 16 2.6 Z" fill="#ffe066" stroke="#8a6a14"/>'
   '<path d="M10.6 22.6 L21.4 22.6 M11.4 26 L20.6 26" fill="none" stroke="#8d99a8"'
   ' stroke-width="2.6"/>'
   '<path d="M13.4 29 L18.6 29" fill="none" stroke="#8d99a8" stroke-width="2.4"/>', None),
 
- ('flame', 'Llama', 'libre', '',
+ ('flame', 'Flame', 'libre', '',
   '<path d="M16 2 C23.4 9.4 25.4 16 25.4 20 C25.4 25.4 21.4 29.4 16 29.4'
   ' C10.6 29.4 6.6 25.4 6.6 20 C6.6 16 8.6 9.4 16 2 Z" fill="#ff5a1e"'
   ' stroke="#7a2708"/>'
@@ -319,12 +319,12 @@ CURSORS = [
   ' C13.4 26.6 11.4 25 11.4 22.4 C11.4 20.4 12.6 17.4 16 13.4 Z" fill="#ffd76a"/>',
   None),
 
- ('star', 'Estrella', 'libre', '',
+ ('star', 'Star', 'libre', '',
   '<path d="M16 2 L20.2 11.4 L30.4 12.6 L22.8 19.4 L24.8 29.4 L16 24.4'
   ' L7.2 29.4 L9.2 19.4 L1.6 12.6 L11.8 11.4 Z" fill="#ffd76a" stroke="#8a6a14"/>',
   None),
 
- ('dice', 'Dado', 'libre', '',
+ ('dice', 'Die', 'libre', '',
   '<path d="M6 6 L26 6 C27.2 6 28 6.8 28 8 L28 26 C28 27.2 27.2 28 26 28'
   ' L6 28 C4.8 28 4 27.2 4 26 L4 8 C4 6.8 4.8 6 6 6 Z" fill="#f4efe6"'
   ' stroke="#3a3028"/>'
@@ -334,7 +334,7 @@ CURSORS = [
   '<circle cx="10.4" cy="21.6" r="2.2" fill="#3a3028"/>'
   '<circle cx="21.6" cy="21.6" r="2.2" fill="#3a3028"/>', None),
 
- ('magnet', 'Imán', 'libre', '',
+ ('magnet', 'Magnet', 'libre', '',
   '<path d="M6.6 24 L6.6 14 C6.6 8.6 11 4.6 16 4.6 C21 4.6 25.4 8.6 25.4 14'
   ' L25.4 24" fill="none" stroke="#8d99a8" stroke-width="6.6"/>'
   '<path d="M6.6 24 L6.6 14 C6.6 8.6 11 4.6 16 4.6 C21 4.6 25.4 8.6 25.4 14'
@@ -343,7 +343,7 @@ CURSORS = [
   '<path d="M22 24 L28.6 24 L28.6 28.6 L22 28.6 Z" fill="#5fa8e8" stroke="#123a5c"/>',
   None),
 
- ('umbrella', 'Paraguas', 'libre', '',
+ ('umbrella', 'Umbrella', 'libre', '',
   '<path d="M2.6 16.4 C2.6 8.6 8.6 3.4 16 3.4 C23.4 3.4 29.4 8.6 29.4 16.4 Z"'
   ' fill="#c8402f" stroke="#5c1613"/>'
   '<path d="M10.4 16.4 C10.4 9.6 12.6 3.4 16 3.4 C19.4 3.4 21.6 9.6 21.6 16.4"'
@@ -351,7 +351,7 @@ CURSORS = [
   '<path d="M16 16.4 L16 25 C16 28.4 21 28.4 21 25" fill="none" stroke="#6b4a24"'
   ' stroke-width="2.6"/>', None),
 
- ('mug', 'Taza', 'libre', '',
+ ('mug', 'Mug', 'libre', '',
   '<path d="M5.4 10.6 L21.4 10.6 L21.4 23 C21.4 26 19 28 16 28 L10.8 28'
   ' C7.8 28 5.4 26 5.4 23 Z" fill="#f4efe6" stroke="#3a3028"/>'
   '<path d="M21.4 13.4 C26.6 13.4 26.6 21.4 21.4 21.4" fill="none" stroke="#3a3028"'
@@ -370,7 +370,7 @@ CURSORS = [
   '<path d="M8.4 24 L23.6 24 L22.4 28.6 L9.6 28.6 Z" fill="#c96a3c" stroke="#5c2b12"/>',
   None),
 
- ('balloon', 'Globo', 'libre', '',
+ ('balloon', 'Balloon', 'libre', '',
   '<path d="M16 2.6 C21.6 2.6 25.4 7 25.4 12.4 C25.4 17.6 20.4 21.4 16 23.4'
   ' C11.6 21.4 6.6 17.6 6.6 12.4 C6.6 7 10.4 2.6 16 2.6 Z" fill="#e8547a"'
   ' stroke="#7a1f38"/>'
@@ -379,7 +379,7 @@ CURSORS = [
   '<path d="M16 26 C13.4 28 18.6 28.6 16 30.4" fill="none" stroke="#7a1f38"'
   ' stroke-width="1.4"/>', None),
 
- ('moon', 'Luna', 'libre', '',
+ ('moon', 'Moon', 'libre', '',
   '<path d="M20 2.6 C13 4.4 8 10.6 8 18 C8 21.6 9.2 25 11.4 27.6'
   ' C5.4 24.4 1.6 18 1.6 11.4 C1.6 5.4 9.4 0.6 20 2.6 Z" fill="#0000" opacity="0"/>'
   '<path d="M24.6 20.6 C22.6 21.6 20.4 22.2 18 22.2 C10.6 22.2 4.6 16.2 4.6 8.8'
@@ -388,7 +388,7 @@ CURSORS = [
   None),
 
  # ══ TIENDA · FESTIVOS (ventana de 24h por festividad) ═════════════════════
- ('santa', 'Nochebuena · gorro', 'festivo', '',
+ ('santa', 'Christmas · Hat', 'festivo', '',
   '<path d="M5.4 22 C5.4 12 10 4.6 18 4.6 C24 4.6 27.4 9 27.4 13.4'
   ' C27.4 17.4 24.6 20 21.4 21.4 L5.4 22 Z" fill="#c8402f" stroke="#5c1613"/>'
   '<path d="M3.4 21.4 L24.6 21.4 C26 21.4 26.6 22.4 26.6 23.6 C26.6 25 26 26'
@@ -396,7 +396,7 @@ CURSORS = [
   ' fill="#f4efe6" stroke="#3a3028"/>'
   '<circle cx="27.4" cy="8.6" r="4" fill="#f4efe6" stroke="#3a3028"/>', None),
 
- ('hallow', 'Halloween · calabaza', 'festivo', '',
+ ('hallow', 'Halloween · Pumpkin', 'festivo', '',
   '<path d="M16 7.4 C10.6 7.4 4.6 11 4.6 18 C4.6 24.6 10 28.6 16 28.6'
   ' C22 28.6 27.4 24.6 27.4 18 C27.4 11 21.4 7.4 16 7.4 Z" fill="#e8760f"'
   ' stroke="#6b2f04"/>'
@@ -408,7 +408,7 @@ CURSORS = [
   '<path d="M9.6 22 L12.6 24.4 L16 22 L19.4 24.4 L22.4 22 L20.6 25.4 L11.4 25.4 Z"'
   ' fill="#ffd76a" stroke="none"/>', None),
 
- ('fourth', '4 de Julio · sombrero', 'festivo', '',
+ ('fourth', 'Fourth of July · Hat', 'festivo', '',
   '<path d="M8.6 3.4 L23.4 3.4 L23.4 20.6 L8.6 20.6 Z" fill="#2f4d9c"'
   ' stroke="#12224d"/>'
   '<path d="M8.6 12 L23.4 12 L23.4 16.6 L8.6 16.6 Z" fill="#c8402f" stroke="#12224d"'
@@ -419,7 +419,7 @@ CURSORS = [
   ' C30 26.2 29.6 27 28.6 27 L3.4 27 C2.4 27 2 26.2 2 25 L2 22.6'
   ' C2 21.4 2.4 20.6 3.4 20.6 Z" fill="#2f4d9c" stroke="#12224d"/>', None),
 
- ('lucky', 'San Patricio · trébol', 'festivo', '',
+ ('lucky', "St Patrick's · Clover", 'festivo', '',
   '<circle cx="11" cy="11" r="5.6" fill="#2f8a4e" stroke="#14421f"/>'
   '<circle cx="21" cy="11" r="5.6" fill="#2f8a4e" stroke="#14421f"/>'
   '<circle cx="11" cy="20" r="5.6" fill="#2f8a4e" stroke="#14421f"/>'
@@ -427,14 +427,14 @@ CURSORS = [
   '<path d="M16 20 C18.6 24 19.4 27 19 30" fill="none" stroke="#14421f"'
   ' stroke-width="2.2"/>', None),
 
- ('valentine', 'San Valentín · corazón', 'festivo', '',
+ ('valentine', "Valentine's · Heart", 'festivo', '',
   '<path d="M16 28.4 C6 21.4 2.6 16.6 2.6 11.4 C2.6 6.6 6.4 3.4 10.4 3.4'
   ' C13 3.4 15 4.8 16 6.8 C17 4.8 19 3.4 21.6 3.4 C25.6 3.4 29.4 6.6 29.4 11.4'
   ' C29.4 16.6 26 21.4 16 28.4 Z" fill="#d94f6e" stroke="#7a1f38"/>'
   '<path d="M9 9.4 C7.4 10.6 7 12.4 7.4 14" fill="none" stroke="#f6c2ce"'
   ' stroke-width="2"/>', None),
 
- ('easter', 'Pascua · huevo', 'festivo', '',
+ ('easter', 'Easter · Egg', 'festivo', '',
   '<path d="M16 2.6 C21.6 6.6 25.4 13.4 25.4 19 C25.4 25 21.4 29.4 16 29.4'
   ' C10.6 29.4 6.6 25 6.6 19 C6.6 13.4 10.4 6.6 16 2.6 Z" fill="#8fc7e8"'
   ' stroke="#2a5c7a"/>'
@@ -445,7 +445,7 @@ CURSORS = [
   '<path d="M9.4 26 L12 23.4 L14.6 26 L17.2 23.4 L19.8 26" fill="none"'
   ' stroke="#d9a8d4" stroke-width="1.8"/>', None),
 
- ('newyear', 'Año Nuevo · copa', 'festivo', '',
+ ('newyear', 'New Year · Flute', 'festivo', '',
   '<path d="M8.6 3.4 L23.4 3.4 C23.4 12 20 15.4 16 15.4 C12 15.4 8.6 12 8.6 3.4 Z"'
   ' fill="#e8dcc4" stroke="#4a3f28"/>'
   '<path d="M9.4 6.6 L22.6 6.6" fill="none" stroke="#e8b93f" stroke-width="2.4"/>'
@@ -454,7 +454,7 @@ CURSORS = [
   '<circle cx="6.6" cy="6.6" r="1.6" fill="#e8b93f"/>'
   '<circle cx="25.4" cy="9.4" r="1.4" fill="#e8b93f"/>', None),
 
- ('frost', 'Solsticio · copo', 'festivo', '',
+ ('frost', 'Solstice · Snowflake', 'festivo', '',
   '<path d="M16 2 L16 30 M4 9 L28 23 M4 23 L28 9" fill="none" stroke="#7fc7ff"'
   ' stroke-width="3"/>'
   '<path d="M16 7.4 L12.4 4.4 M16 7.4 L19.6 4.4 M16 24.6 L12.4 27.6'
@@ -464,7 +464,7 @@ CURSORS = [
   '<circle cx="16" cy="16" r="3" fill="#eaf7ff" stroke="#2a6ea8" stroke-width="1.6"/>',
   None),
 
- ('muertos', 'Muertos · calavera', 'festivo', '',
+ ('muertos', 'Day of the Dead · Skull', 'festivo', '',
   '<path d="M16 2.6 C23 2.6 28.4 8 28.4 15 C28.4 19 26.6 21.6 24.4 23.4'
   ' L24.4 27 C24.4 28.6 23 29.4 21.4 29.4 L10.6 29.4 C9 29.4 7.6 28.6 7.6 27'
   ' L7.6 23.4 C5.4 21.6 3.6 19 3.6 15 C3.6 8 9 2.6 16 2.6 Z" fill="#f4efe6"'
@@ -477,7 +477,7 @@ CURSORS = [
   ' fill="none" stroke="#3a3028" stroke-width="1.5"/>', None),
 
  # ══ TIENDA · COMUNES ══════════════════════════════════════════════════════
- ('knight', 'Caballo de ajedrez', 'comun', '',
+ ('knight', 'Chess Knight', 'comun', '',
   '<path d="M11.4 29 L24.6 29 L24.6 25.4 L11.4 25.4 Z" fill="#2b1c10"'
   ' stroke="#0e0906"/>'
   '<path d="M13 25.4 C13 19.4 15.4 16.6 19 14.6 L15.4 12.4 L10.6 16'
@@ -485,7 +485,7 @@ CURSORS = [
   ' C24.6 10.6 25.4 17.4 22.6 25.4 Z" fill="#3a2a1c" stroke="#0e0906"/>'
   '<circle cx="18.6" cy="9.4" r="1.5" fill="#f2ead6"/>', None),
 
- ('lighthouse', 'Faro', 'comun', '',
+ ('lighthouse', 'Lighthouse', 'comun', '',
   '<path d="M10.6 29 L21.4 29 L19.4 12.6 L12.6 12.6 Z" fill="#f4efe6"'
   ' stroke="#2a3038"/>'
   '<path d="M12.2 17 L19.8 17 M11.6 22.6 L20.4 22.6" fill="none" stroke="#c8402f"'
@@ -495,7 +495,7 @@ CURSORS = [
   '<path d="M13 9.4 L19 9.4 L19 11.8 L13 11.8 Z" fill="#ffe066"/>'
   '<path d="M11.4 8.6 L16 4 L20.6 8.6 Z" fill="#2f3b48" stroke="#141c26"/>', None),
 
- ('grapes', 'Uvas', 'comun', '',
+ ('grapes', 'Grapes', 'comun', '',
   '<circle cx="16" cy="12.6" r="4.2" fill="#7a3b8a" stroke="#3a1a44"/>'
   '<circle cx="10.6" cy="18" r="4.2" fill="#7a3b8a" stroke="#3a1a44"/>'
   '<circle cx="21.4" cy="18" r="4.2" fill="#7a3b8a" stroke="#3a1a44"/>'
@@ -505,7 +505,7 @@ CURSORS = [
   '<path d="M21.4 3.4 C24.6 3.4 26 5.4 26.6 7.4 C24 8 21.6 6.6 21.4 3.4 Z"'
   ' fill="#4d8a3d" stroke="#22431a" stroke-width="1.4"/>', None),
 
- ('book', 'Libro', 'comun', '',
+ ('book', 'Book', 'comun', '',
   '<path d="M5.4 5 L14.6 5 C15.4 5 16 5.6 16 6.4 L16 27 L5.4 27 Z"'
   ' fill="#8a3b2a" stroke="#3a1108"/>'
   '<path d="M26.6 5 L17.4 5 C16.6 5 16 5.6 16 6.4 L16 27 L26.6 27 Z"'
@@ -514,21 +514,21 @@ CURSORS = [
   '<path d="M7.6 10 L13.4 10 M7.6 14 L13.4 14 M18.6 10 L24.4 10 M18.6 14 L24.4 14"'
   ' fill="none" stroke="#f2e0d0" stroke-width="1.5"/>', None),
 
- ('gear', 'Engranaje', 'comun', '',
+ ('gear', 'Gear', 'comun', '',
   '<path d="M13.4 2.6 L18.6 2.6 L19.4 7 L23 8.6 L26.6 6 L29.4 10.6 L26 13.4'
   ' L26 16.6 L29.4 19.4 L26.6 24 L23 21.4 L19.4 23 L18.6 27.4 L13.4 27.4'
   ' L12.6 23 L9 21.4 L5.4 24 L2.6 19.4 L6 16.6 L6 13.4 L2.6 10.6 L5.4 6'
   ' L9 8.6 L12.6 7 Z" fill="#a8813d" stroke="#4a3315"/>'
   '<circle cx="16" cy="15" r="5" fill="#141210" stroke="#4a3315"/>', None),
 
- ('tulip', 'Tulipán', 'comun', '',
+ ('tulip', 'Tulip', 'comun', '',
   '<path d="M8.6 8.6 C8.6 15.4 11.4 19.4 16 19.4 C20.6 19.4 23.4 15.4 23.4 8.6'
   ' L20 12 L16 6.6 L12 12 Z" fill="#d94f6e" stroke="#7a1f38"/>'
   '<path d="M16 19.4 L16 29.4" fill="none" stroke="#4d8a3d" stroke-width="2.6"/>'
   '<path d="M16 23.4 C12.6 22 10 23.4 8.6 26 C12 27.4 14.6 26 16 23.4 Z"'
   ' fill="#4d8a3d" stroke="#22431a" stroke-width="1.4"/>', None),
 
- ('wheat', 'Espiga', 'comun', '',
+ ('wheat', 'Wheat', 'comun', '',
   '<path d="M16 29 L16 12" fill="none" stroke="#8a6018" stroke-width="2.4"/>'
   '<path d="M16 12 C13 12 11.4 9.4 12.6 6.6 C15.4 6.6 17 9.4 16 12 Z'
   ' M16 12 C19 12 20.6 9.4 19.4 6.6 C16.6 6.6 15 9.4 16 12 Z"'
@@ -540,14 +540,14 @@ CURSORS = [
   ' M16 24 C19 24 20.6 21.4 19.4 18.6 C16.6 18.6 15 21.4 16 24 Z"'
   ' fill="#e8c66a" stroke="#8a6018"/>', None),
 
- ('droplet', 'Gota', 'comun', '',
+ ('droplet', 'Droplet', 'comun', '',
   '<path d="M16 2.6 C21.4 9.4 25.4 14.6 25.4 19.4 C25.4 25 21.4 29.4 16 29.4'
   ' C10.6 29.4 6.6 25 6.6 19.4 C6.6 14.6 10.6 9.4 16 2.6 Z" fill="#5fa8e8"'
   ' stroke="#12446e"/>'
   '<path d="M11 20 C11 23.4 12.6 25.4 15 26" fill="none" stroke="#cfe8fb"'
   ' stroke-width="2.2"/>', None),
 
- ('lantern', 'Farolillo', 'comun', '',
+ ('lantern', 'Lantern', 'comun', '',
   '<path d="M16 2.6 L16 5.4 M11 5.4 L21 5.4" fill="none" stroke="#5c4318"'
   ' stroke-width="2.2"/>'
   '<path d="M8.6 5.4 L23.4 5.4 L23.4 8.6 L8.6 8.6 Z" fill="#8a5a2a" stroke="#4a2f06"/>'
@@ -558,7 +558,7 @@ CURSORS = [
   '<path d="M12.6 11 L12.6 23 M19.4 11 L19.4 23" fill="none" stroke="#a8500a"'
   ' stroke-width="1.5"/>', None),
 
- ('palette', 'Paleta', 'comun', '',
+ ('palette', 'Palette', 'comun', '',
   '<path d="M16 3.4 C24 3.4 29.4 8.6 29.4 15 C29.4 20 25.4 21.4 22.6 21.4'
   ' C20 21.4 19 23 19.4 25 C19.8 27.4 18.4 28.6 16 28.6 C9 28.6 2.6 22.6 2.6 15'
   ' C2.6 8.6 8 3.4 16 3.4 Z" fill="#e8dcc4" stroke="#4a3f28"/>'

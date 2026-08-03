@@ -9722,6 +9722,9 @@
       'daily.tanda.using': 'Wearing it ✓',
       'daily.tanda.won.cursor': 'Cursor unlocked — equip it from the cosmetics store.',
       'daily.tanda.won.camo': 'Camo unlocked — equip it from the cosmetics store.',
+      'daily.tanda.k.camo': 'camo',
+      'daily.tanda.k.frame': 'frame',
+      'daily.tanda.k.cursor': 'cursor',
       'daily.monthNote': 'Your Premium plan was just extended by 30 days. Enjoy!',
       'daily.prize.d5': '5% off your next renewal',
       'daily.prize.d10': '10% off your next renewal',
@@ -9776,6 +9779,9 @@
       'daily.tanda.using': 'En uso ✓',
       'daily.tanda.won.cursor': 'Cursor desbloqueado — actívalo desde la tienda de cosméticos.',
       'daily.tanda.won.camo': 'Camo desbloqueado — actívalo desde la tienda de cosméticos.',
+      'daily.tanda.k.camo': 'camo',
+      'daily.tanda.k.frame': 'marco',
+      'daily.tanda.k.cursor': 'cursor',
       'daily.monthNote': 'Tu plan Premium acaba de extenderse 30 días. ¡Disfrútalo!',
       'daily.prize.d5': '5% de descuento en tu próxima renovación',
       'daily.prize.d10': '10% de descuento en tu próxima renovación',
@@ -9830,6 +9836,9 @@
       'daily.tanda.using': 'Porté ✓',
       'daily.tanda.won.cursor': 'Curseur débloqué — équipez-le depuis la boutique de cosmétiques.',
       'daily.tanda.won.camo': 'Camo débloqué — équipez-le depuis la boutique de cosmétiques.',
+      'daily.tanda.k.camo': 'camo',
+      'daily.tanda.k.frame': 'cadre',
+      'daily.tanda.k.cursor': 'curseur',
       'daily.monthNote': 'Votre plan Premium vient d\'être prolongé de 30 jours. Profitez-en !',
       'daily.prize.d5': '5% de réduction sur votre prochain renouvellement',
       'daily.prize.d10': '10% de réduction sur votre prochain renouvellement',
@@ -9884,6 +9893,9 @@
       'daily.tanda.using': 'Em uso ✓',
       'daily.tanda.won.cursor': 'Cursor desbloqueado — ative na loja de cosméticos.',
       'daily.tanda.won.camo': 'Camo desbloqueado — ative na loja de cosméticos.',
+      'daily.tanda.k.camo': 'camo',
+      'daily.tanda.k.frame': 'moldura',
+      'daily.tanda.k.cursor': 'cursor',
       'daily.monthNote': 'Seu plano Premium acaba de ser estendido por 30 dias. Aproveite!',
       'daily.prize.d5': '5% de desconto na sua próxima renovação',
       'daily.prize.d10': '10% de desconto na sua próxima renovação',
@@ -23033,7 +23045,10 @@
           };
           items.forEach((it, i) => {
             const from = i * step, to = (i + 1) * step;
-            SEGMENTS.push({ slug: it.slug, from, to });
+            // El KIND viaja con el sector: el camo y el marco de un mismo mes
+            // comparten el slug pelado (chronicles), así que buscar el sector
+            // ganador solo por slug caía en el equivocado la mitad de las veces.
+            SEGMENTS.push({ slug: it.slug, kind: it.kind, from, to });
             const [x1, y1] = pt(from), [x2, y2] = pt(to);
             const path = document.createElementNS(NS, 'path');
             path.setAttribute('d', `M140 140 L${x1.toFixed(1)} ${y1.toFixed(1)} `
@@ -23054,9 +23069,26 @@
             txt.setAttribute('font-weight', '800');
             txt.setAttribute('fill', it.kind === 'camo' ? '#10131c' : '#e8c66a');
             if (it.owned) txt.setAttribute('opacity', '0.75');
-            const name = it.name.length > 15 ? it.name.slice(0, 14) + '…' : it.name;
+            // Nombre arriba y TIPO debajo: en un mes temático las tres piezas
+            // se llaman igual (Chronicles ×3) y la rueda parecía repetida.
+            // El nombre es propio y no se traduce; el tipo sí, ×4 idiomas.
+            // Los cursores temáticos se llaman "Chronicles · Shield": en la
+            // rueda basta el tema, porque el TIPO ya va en la línea de abajo
+            // (si no, quedaba cortado como "Chronicles · S…").
+            const base = it.name.split(' · ')[0];
+            const name = base.length > 15 ? base.slice(0, 14) + '…' : base;
             txt.textContent = (it.owned ? '✓ ' : '') + name;
             lab.appendChild(txt);
+            const sub = document.createElementNS(NS, 'text');
+            sub.setAttribute('x', '140'); sub.setAttribute('y', '74');
+            sub.setAttribute('text-anchor', 'middle');
+            sub.setAttribute('font-size', '8');
+            sub.setAttribute('font-weight', '700');
+            sub.setAttribute('letter-spacing', '.04em');
+            sub.setAttribute('fill', it.kind === 'camo' ? '#10131c' : '#e8c66a');
+            sub.setAttribute('opacity', it.owned ? '0.55' : '0.78');
+            sub.textContent = '(' + T('daily.tanda.k.' + it.kind) + ')';
+            lab.appendChild(sub);
             g.appendChild(lab);
           });
         }
@@ -23103,7 +23135,8 @@
             data = await res.json();
           } catch(e) { btn.disabled = false; return; }
 
-          const seg = SEGMENTS.find(s => s.slug === data.slug) || SEGMENTS[0];
+          const seg = SEGMENTS.find(s => s.slug === data.slug
+                                        && s.kind === data.prize_key) || SEGMENTS[0];
           if (!seg) { btn.disabled = false; return; }
           // land at a random point inside the winning segment (pointer is at 0°/top)
           const margin = (seg.to - seg.from) * 0.18;
@@ -23118,7 +23151,8 @@
             // Cosmetic prizes carry their own name from the server; the old
             // daily.prize.* keys only existed for the retired discount tiers.
             $('roulette-prize-label').textContent =
-              data.label || T('daily.prize.' + data.prize_key);
+              (data.label ? data.label + ' (' + T('daily.tanda.k.' + data.prize_key) + ')'
+                          : T('daily.prize.' + data.prize_key));
             $('roulette-prize-code-wrap').style.display = 'none';
             $('roulette-prize-note').textContent = T('daily.tanda.won.' + data.prize_key) !== ('daily.tanda.won.' + data.prize_key)
               ? T('daily.tanda.won.' + data.prize_key) : '';
