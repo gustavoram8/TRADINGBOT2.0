@@ -5171,13 +5171,20 @@
       tr.appendChild(d);
     });
     // actions
-    var s=p.today.sources, caps=p.today.daily_caps, prem=(p.plan==='premium'), rows='';
+    // The forum unlocked for Standard in July, and Standard DOES earn XP there
+    // (the endpoints gate at standard, add_xp never looks at the plan). Keeping
+    // these rows premium-only left a Standard user watching their XP rise with
+    // no row explaining where it came from.
+    var s=p.today.sources, caps=p.today.daily_caps, prem=(p.plan==='premium'),
+        paid=(prem || p.plan==='standard'), rows='';
     rows+=act(t('a.login','First visit today'), s.login>0?('✓ '+t('a.done','done')):t('a.open','available'), s.login>0);
     rows+=act(t('a.analysis','AI analysis'), s.analysis>0?('✓ +'+s.analysis+' XP'):t('a.open','available'), s.analysis>0);
     if(prem){
       rows+=act(t('a.daily','Daily Challenge'), s.daily_correct>0?('✓ +'+s.daily_correct+' XP'):t('a.open','available'), s.daily_correct>0);
       rows+=act(t('a.quiz','Quiz'), s.quiz+'/'+caps.quiz+' XP', s.quiz>=caps.quiz);
       rows+=act(t('a.preflight','Pre-Flight checks'), s.preflight_check+'/'+caps.preflight_check+' XP', s.preflight_check>=caps.preflight_check);
+    }
+    if(paid){
       rows+=act(t('a.post','Forum posts'), s.forum_post+'/'+caps.forum_post+' XP', s.forum_post>=caps.forum_post);
       rows+=act(t('a.comment','Forum comments'), s.forum_comment+'/'+caps.forum_comment+' XP', s.forum_comment>=caps.forum_comment);
     }
@@ -6163,6 +6170,12 @@
               <span class="dsc" data-i18n="disc.f.projectsD">Guarda hasta 5 configuraciones de tu estrategia y reúsalas en un clic (Free: 1).</span>
             </div>
             <div class="disc-fp">
+              <span class="ico">💬</span>
+              <span class="ttl" data-i18n="disc.f.forum">Foro moderado por IA</span>
+              <span class="dsc" data-i18n="disc.f.forumD">Comparte setups e ideas en una comunidad moderada por IA.</span>
+              <div class="disc-msg"><span class="u">liquidity_hunter</span><span class="disc-rank">Rank 4</span><br><span data-i18n="disc.f.forumQ">¿Alguien tomó el sweep de Londres en NQ hoy?</span></div>
+            </div>
+            <div class="disc-fp">
               <span class="ico">🎨</span>
               <span class="ttl" data-i18n="disc.f.camoStd">1 camo del plan Standard</span>
               <span class="dsc" data-i18n="disc.f.camoStdD">Un skin exclusivo para personalizar tu workspace, incluido al contratar Standard.</span>
@@ -6198,15 +6211,9 @@
             </div>
             <div class="disc-fp">
               <span class="ico">🏅</span>
-              <span class="ttl" data-i18n="disc.f.ranks">Rangos y progreso</span>
-              <span class="dsc" data-i18n="disc.f.streak">Practica a diario y sube de rango con tu progreso.</span>
+              <span class="ttl" data-i18n="disc.f.ranks">Más formas de sumar XP</span>
+              <span class="dsc" data-i18n="disc.f.streak">Los rangos son de todos los planes, pero Premium abre los atajos: el quiz, el reto diario y Pre-Flight suman XP además de tus visitas y análisis.</span>
               <div class="disc-rankbar"><span class="disc-rk">🥉 Rank 3</span><div class="disc-rkbar"><span></span></div><span class="disc-rk gold">🥈 Rank 4</span></div>
-            </div>
-            <div class="disc-fp">
-              <span class="ico">💬</span>
-              <span class="ttl" data-i18n="disc.f.forum">Foro moderado por IA</span>
-              <span class="dsc" data-i18n="disc.f.forumD">Comparte setups e ideas en una comunidad moderada por IA.</span>
-              <div class="disc-msg"><span class="u">liquidity_hunter</span><span class="disc-rank">Rank 4</span><br><span data-i18n="disc.f.forumQ">¿Alguien tomó el sweep de Londres en NQ hoy?</span></div>
             </div>
             <div class="disc-fp">
               <span class="ico">✍️</span>
@@ -7779,8 +7786,8 @@
       'disc.f.pf2': 'FVG in discount',
       'disc.f.pf3': 'CHoCH aligned with HTF',
       'disc.f.go': '● GO · valid setup',
-      'disc.f.ranks': 'Ranks & progress',
-      'disc.f.streak': 'Practice daily and climb the ranks with your progress.',
+      'disc.f.ranks': 'More ways to earn XP',
+      'disc.f.streak': 'Ranks belong to every plan, but Premium opens the shortcuts: the quiz, the daily challenge and Pre-Flight all pay XP on top of your visits and analyses.',
       'disc.f.forum': 'AI-moderated forum',
       'disc.f.forumQ': 'Anyone took the London sweep on NQ today?',
       'disc.f.forumA': 'Yeah, 15m FVG + OTE. Clean.',
@@ -8295,8 +8302,8 @@
       'disc.f.pf2': 'FVG en descuento',
       'disc.f.pf3': 'CHoCH alineado con HTF',
       'disc.f.go': '● GO · setup válido',
-      'disc.f.ranks': 'Rangos y progreso',
-      'disc.f.streak': 'Practica a diario y sube de rango con tu progreso.',
+      'disc.f.ranks': 'Más formas de sumar XP',
+      'disc.f.streak': 'Los rangos son de todos los planes, pero Premium abre los atajos: el quiz, el reto diario y Pre-Flight suman XP además de tus visitas y análisis.',
       'disc.f.forum': 'Foro moderado por IA',
       'disc.f.forumQ': '¿Alguien tomó el sweep de Londres en NQ hoy?',
       'disc.f.forumA': 'Sí, FVG de 15m + OTE. Limpio.',
@@ -8811,8 +8818,8 @@
       'disc.f.pf2': 'FVG en décote',
       'disc.f.pf3': 'CHoCH aligné avec le HTF',
       'disc.f.go': '● GO · setup valide',
-      'disc.f.ranks': 'Rangs et progression',
-      'disc.f.streak': 'Pratiquez chaque jour et montez en rang avec votre progression.',
+      'disc.f.ranks': "Plus de façons de gagner de l'XP",
+      'disc.f.streak': "Les rangs existent dans toutes les formules, mais Premium ouvre les raccourcis : le quiz, le défi quotidien et Pre-Flight rapportent de l'XP en plus de vos visites et de vos analyses.",
       'disc.f.forum': 'Forum modéré par IA',
       'disc.f.forumQ': 'Quelqu’un a pris le sweep de Londres sur NQ aujourd’hui ?',
       'disc.f.forumA': 'Oui, FVG 15m + OTE. Propre.',
@@ -9327,8 +9334,8 @@
       'disc.f.pf2': 'FVG em desconto',
       'disc.f.pf3': 'CHoCH alinhado com HTF',
       'disc.f.go': '● GO · setup válido',
-      'disc.f.ranks': 'Ranks e progresso',
-      'disc.f.streak': 'Pratique todo dia e suba de rank com seu progresso.',
+      'disc.f.ranks': 'Mais formas de ganhar XP',
+      'disc.f.streak': 'Os ranks valem para todos os planos, mas o Premium abre os atalhos: o quiz, o desafio diário e o Pre-Flight rendem XP além dos seus acessos e análises.',
       'disc.f.forum': 'Fórum moderado por IA',
       'disc.f.forumQ': 'Alguém pegou o sweep de Londres no NQ hoje?',
       'disc.f.forumA': 'Sim, FVG de 15m + OTE. Limpo.',
