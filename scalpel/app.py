@@ -134,6 +134,33 @@ reset_serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 
 
 @app.after_request
+def _security_headers(response):
+    """Cabeceras de seguridad basicas — no habia NINGUNA.
+
+    Deliberadamente NO se pone Content-Security-Policy aqui: la app usa scripts
+    y estilos en linea por todas partes y una CSP estricta la romperia entera.
+    Eso es un trabajo aparte, con pruebas. Lo de abajo, en cambio, no puede
+    romper nada y tapa tres cosas concretas:
+      · nosniff      — el navegador deja de adivinar el tipo de un archivo
+                       subido y ejecutarlo como si fuera script.
+      · DENY         — nadie puede meter el sitio en un <iframe> invisible
+                       encima de otra pagina para robar clics (clickjacking).
+      · Referrer     — al salir hacia otro dominio no se filtra la URL completa
+                       de donde venia el usuario, solo el dominio.
+      · Permissions  — se apagan camara, microfono y geolocalizacion, que el
+                       sitio no usa.
+    HSTS NO se pone todavia: obligaria a HTTPS y hoy la app se sirve tambien
+    por IP cruda sin TLS; activarlo antes de tiempo dejaria el sitio inaccesible.
+    """
+    h = response.headers
+    h.setdefault('X-Content-Type-Options', 'nosniff')
+    h.setdefault('X-Frame-Options', 'DENY')
+    h.setdefault('Referrer-Policy', 'strict-origin-when-cross-origin')
+    h.setdefault('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+    return response
+
+
+@app.after_request
 def _gzip_response(response):
     """Compress large text responses so the 2.8 MB app page transfers in ~300 KB."""
     if (response.status_code < 200 or response.status_code >= 300
@@ -2058,8 +2085,20 @@ def get_anon_id():
 
 
 def has_access():
-    """A request is allowed into the app if logged in OR carrying a free-tier anon cookie."""
-    return current_user.is_authenticated or bool(get_anon_id())
+    """Un request entra solo si hay SESION INICIADA.
+
+    🔴 Antes esto aceptaba tambien un cookie `scalpel_anon` cualquiera, resto de
+    la epoca en que existia el acceso de invitado (retirado: ver /start-free,
+    que ya solo redirige a registro). El problema: NADIE escribe ese cookie —
+    ni el servidor ni el cliente — pero el candado seguia aceptandolo, asi que
+    `curl -H 'Cookie: scalpel_anon=loquesea'` pasaba /analyze y /validate sin
+    cuenta. Y el limite de uso se cuenta CONTRA ESE MISMO VALOR, elegido por
+    quien llama, de modo que rotandolo salian analisis de IA ilimitados a costa
+    del dueno (~$0.03 cada uno, con la API de pago ya conectada).
+    Comprobado con una peticion real: sin cookie daba 401, con el cookie
+    inventado pasaba a 400 "falta la captura", o sea que la puerta estaba abierta.
+    """
+    return current_user.is_authenticated
 
 
 def current_plan():
