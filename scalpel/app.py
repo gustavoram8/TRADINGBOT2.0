@@ -6823,6 +6823,15 @@ def _paypal_reconcile(order, kind='plan'):
 
 
 # ═══ Payment rails — the shared front door ════════════════════════════════
+# El cobro a mano (mandar USDT a nuestra cuenta y esperar a que alguien mire el
+# comprobante) queda APAGADO por defecto. Decisión del dueño: tanto PayPal como
+# USDT van a ir por procesador automático — se paga y el plan se enciende solo,
+# igual que los cosméticos. Esta vía es de la época en que no había pasarela; se
+# deja encendible con MANUAL_USDT_ENABLED=1 por si algún día hace falta cobrar a
+# alguien a mano, pero no se le ofrece a nadie por defecto.
+MANUAL_USDT_ENABLED = os.environ.get('MANUAL_USDT_ENABLED', '0') == '1'
+
+
 def available_payment_rails():
     """Como se puede pagar ahora mismo, en el orden en que se muestran.
 
@@ -6840,7 +6849,8 @@ def available_payment_rails():
         rails.append('crypto')
     if STRIPE_ENABLED:
         rails.append('stripe')
-    rails.append('manual')
+    if MANUAL_USDT_ENABLED:
+        rails.append('manual')
     return rails
 
 
@@ -7469,6 +7479,15 @@ def checkout_create():
         promo, _reason = _validate_promo(code, cycle) if code else (None, '')
         fresh_use = promo is not None
     q = _quote(plan, cycle, promo)
+    # Sin ninguna forma de cobrar, crear el pedido es mentirle al comprador: se
+    # queda con un pendiente que nadie puede pagar y que además le bloquea
+    # cualquier compra posterior. Es exactamente la trampa en la que cayó el
+    # dueño probando. Los pedidos de $0 (cupón del 100%) NO pasan por aquí:
+    # no necesitan pasarela y se entregan solos más abajo.
+    if q['final_price'] > 0 and not available_payment_rails():
+        return render_template('checkout_soon.html',
+                               plan_label=PLAN_LABELS.get(plan, plan),
+                               price=q['final_price'], cycle=cycle)
     order = Order(
         user_id=current_user.id, plan=plan, billing_cycle=cycle,
         base_price=q['base_price'], discount_pct=q['discount_pct'],
@@ -7506,10 +7525,17 @@ def checkout_create():
         return redirect(url_for('checkout_status', order_id=order.id))
 
     rails = available_payment_rails()
-    if order.final_price > 0 and len(rails) > 1:
-        return redirect(url_for('checkout_pay', order_id=order.id))
-    # Sin ninguna pasarela encendida solo queda la via manual: se va directo a
-    # sus instrucciones, sin hacerle "elegir" entre una sola cosa.
+    if order.final_price > 0:
+        if len(rails) > 1:
+            return redirect(url_for('checkout_pay', order_id=order.id))
+        # Con UNA sola pasarela no se le hace "elegir" entre una sola cosa: va
+        # directo. 'manual' no es pasarela — su destino son las instrucciones.
+        if rails and rails[0] != 'manual':
+            dest = _start_payment(order, rails[0])
+            if dest:
+                return redirect(dest, code=303)
+            # Si la pasarela no responde, mejor las instrucciones que un
+            # callejon sin salida: el pedido sigue vivo y se puede liquidar.
 
     return render_template('checkout_done.html', order=order,
                            plan_label=PLAN_LABELS.get(plan, plan), duplicate=False)

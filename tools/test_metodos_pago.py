@@ -13,10 +13,11 @@ def arranca(paypal):
     for m in [m for m in list(sys.modules) if m == 'app' or m.startswith('app.')]:
         del sys.modules[m]
     os.environ['DATABASE_URL'] = 'sqlite:///' + os.path.join(tempfile.mkdtemp(), 'r.db')
+    for k in ('PAYPAL_CLIENT_ID', 'PAYPAL_SECRET', 'CRYPTO_API_KEY'):
+        os.environ.pop(k, None)
     if paypal:
-        os.environ.update(PAYPAL_CLIENT_ID='x', PAYPAL_SECRET='y', PAYPAL_ENV='live')
-    else:
-        os.environ.pop('PAYPAL_CLIENT_ID', None); os.environ.pop('PAYPAL_SECRET', None)
+        os.environ.update(PAYPAL_CLIENT_ID='x', PAYPAL_SECRET='y', PAYPAL_ENV='live',
+                          CRYPTO_API_KEY='z')
     sys.path.insert(0, '/home/user/TRADINGBOT2.0/scalpel')
     A = importlib.import_module('app')
     with A.app.app_context():
@@ -32,14 +33,14 @@ with A.app.test_client() as c:
     c.post('/login', data={'identifier': 'a@demo.invalid', 'password': 'Xk9!mQ2#pL5v'})
     r = c.post('/checkout/create', data={'plan': 'standard', 'cycle': 'monthly'})
     cuerpo = r.get_data(as_text=True)
-    check('va directo a las instrucciones (no le hace elegir entre una sola cosa)',
-          r.status_code == 200 and 'cdone' in cuerpo or 'USDT' in cuerpo, r.status_code)
+    check('avisa que el cobro abre pronto y no crea pedido',
+          r.status_code == 200 and 'csoon.title' in cuerpo, r.status_code)
 
-print('\n── CON PAYPAL ENCENDIDO')
+print('\n── CON PAYPAL Y NOWPAYMENTS ENCENDIDOS')
 A = arranca(True)
 print('   vias:', A.available_payment_rails())
-check('PayPal y la via manual conviven',
-      A.available_payment_rails() == ['paypal', 'manual'], A.available_payment_rails())
+check('PayPal y USDT automatico conviven',
+      A.available_payment_rails() == ['paypal', 'crypto'], A.available_payment_rails())
 with A.app.test_client() as c:
     c.post('/login', data={'identifier': 'a@demo.invalid', 'password': 'Xk9!mQ2#pL5v'})
     r = c.post('/checkout/create', data={'plan': 'standard', 'cycle': 'monthly'})
@@ -48,12 +49,8 @@ with A.app.test_client() as c:
     r = c.get(r.headers.get('Location'))
     cuerpo = r.get_data(as_text=True)
     check('la pantalla ofrece PayPal', 'value="paypal"' in cuerpo)
-    check('y ofrece USDT a mano', 'value="manual"' in cuerpo)
-    check('con su texto propio', 'cpay.manualBody' in cuerpo)
-    with A.app.app_context():
-        oid = A.Order.query.first().id
-    r = c.post('/checkout/pay/%d' % oid, data={'method': 'manual'})
-    check('elegir USDT lleva a las instrucciones', r.status_code == 200, r.status_code)
+    check('y ofrece USDT (NOWPayments)', 'value="crypto"' in cuerpo)
+    check('sin ofrecer el cobro a mano', 'value="manual"' not in cuerpo)
 
 print('\nRESULTADO: %d ok, %d fallas' % (PASS, FAIL))
 sys.exit(1 if FAIL else 0)

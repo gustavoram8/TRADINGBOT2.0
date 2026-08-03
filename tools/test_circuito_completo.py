@@ -15,6 +15,10 @@ from datetime import datetime, timedelta, timezone
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'scalpel'))
 os.environ.setdefault('DATABASE_URL', 'sqlite:///' + os.path.join(tempfile.mkdtemp(), 'c.db'))
+# Hace falta ALGUNA forma de cobrar, o el checkout responde "el cobro abre
+# pronto" y no crea pedido — que es justo lo que debe hacer en produccion
+# hoy. Aqui se enciende la via manual para poder recorrer la compra entera.
+os.environ['MANUAL_USDT_ENABLED'] = '1'
 import app as A                                                  # noqa: E402
 from flask import g                                              # noqa: E402
 

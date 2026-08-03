@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title data-i18n-title="csoon.doctitle">Tradeable Academy — Payments open shortly</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{--ink:#15171f;--muted:#8a8f9e;--line:#e6e8ee;--card:#fff;--page:#eef1f7;--gold:#b8860b;}
+    body.dark{--ink:#e8eaf0;--muted:#8a8f9e;--line:rgba(255,255,255,.10);--card:#161922;--page:#0b0d12;--gold:#e0a83d;}
+    body{background:var(--page);color:var(--ink);font-family:'Inter',sans-serif;font-size:15px;
+         line-height:1.65;min-height:100vh;display:grid;place-items:center;padding:28px;}
+    .card{width:100%;max-width:440px;background:var(--card);border:1px solid var(--line);
+          border-radius:18px;padding:32px 28px;text-align:center;
+          box-shadow:0 18px 50px rgba(20,25,45,.10);}
+    .ico{font-size:34px;line-height:1;margin-bottom:14px;}
+    h1{font-size:22px;font-weight:800;letter-spacing:-.01em;margin-bottom:10px;}
+    p{font-size:14px;color:var(--muted);margin-bottom:16px;}
+    .pick{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:18px;
+          display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;}
+    .pick b{font-weight:800;}
+    .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:11px 20px;
+         border-radius:11px;font-size:14px;font-weight:700;text-decoration:none;cursor:pointer;
+         border:1px solid var(--line);color:inherit;background:transparent;font-family:inherit;}
+    .btn-primary{background:var(--gold);border-color:var(--gold);color:#1a1205;}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="ico">🔔</div>
+    <h1 data-i18n="csoon.title">Payments open in a few days</h1>
+    <p data-i18n="csoon.body">We're finishing the last checks on the payment provider. Nothing was charged
+      and no order was created — so nothing of yours is left half-done.</p>
+    <div class="pick">
+      <span data-i18n="csoon.picked">The plan you picked</span>
+      <span><b>{{ plan_label }}</b> · ${{ '%.2f'|format(price) }}</span>
+    </div>
+    <p data-i18n="csoon.tell">Write to us and we'll let you know the day it opens — or come back and buy it
+      then, at this same price.</p>
+    <div class="row">
+      <a href="/app" class="btn" data-i18n="csoon.back">← Back to app</a>
+      <a href="/contact" class="btn btn-primary" data-i18n="csoon.notify">Let me know →</a>
+    </div>
+  </div>
+<script src="/static/pages_i18n.js"></script>
+</body>
+</html>
