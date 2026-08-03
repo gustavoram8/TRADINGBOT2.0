@@ -3316,6 +3316,36 @@
     }
     .synapse-canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; display: block; }
 
+    /* Crédito CC BY de las dos esculturas 3D — DENTRO de Synapse.
+       Por qué existe además del pie de página: .synapse-app ocupa la pantalla
+       entera (100vh menos la barra), así que el pie queda por debajo del scroll
+       justo mientras se están mostrando los modelos, y una atribución que no se
+       ve no cumple la licencia (CC BY pide que sea "razonable al medio").
+       Colores FIJOS y pastilla casi opaca, no los tokens del tema, por dos
+       razones: (1) Synapse ya impone su propia paleta pase el camo que pase
+       (ver el reset de `.ag-synapse-mode` arriba), igual que hace `.syn-toast`;
+       (2) detrás hay un canvas WebGL que puede pintar CUALQUIER color justo ahí
+       — con una pastilla translúcida la legibilidad dependería de dónde quedara
+       el cerebro en ese instante. Con este fondo el texto se lee tanto si la
+       escena está en negro como en blanco (medido sobre píxeles reales: 14.6 y
+       8.7 en modo oscuro, 10.2 y 12.3 en claro; el mínimo exigible es 4.5). */
+    .syn-credit {
+      position: absolute; left: 14px; bottom: 12px; z-index: 4; max-width: min(560px, 62vw);
+      font-family: 'Inter', sans-serif; font-size: 10.5px; line-height: 1.45;
+      color: rgba(255,255,255,.86); background: rgba(10,11,16,.80);
+      border: 1px solid rgba(255,255,255,.16); border-radius: 8px; padding: 6px 10px;
+      pointer-events: auto;
+    }
+    body.light:not(.camo-night) .syn-credit, body.camo-day .syn-credit {
+      color: rgba(23,25,35,.88); background: rgba(255,255,255,.90);
+      border-color: rgba(16,22,40,.16);
+    }
+    .syn-credit a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+    .syn-credit a:hover { color: var(--text); }
+    @media (max-width: 768px) {
+      .syn-credit { left: 8px; right: 8px; bottom: 8px; max-width: none; font-size: 9.5px; }
+    }
+
     .syn-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
     .syn-title-wrap { position: absolute; top: 24px; left: 0; right: 0; text-align: center; }
     .syn-title {
@@ -7484,6 +7514,16 @@
         </div>
         <div class="syn-fire-prompt" id="syn-fire-prompt" data-i18n="synapse.fire" style="display:none;">Click to fire a synapse</div>
       </div>
+      <div class="syn-credit">
+        Synapse 3D models: head scan by
+        <a href="https://github.com/mrdoob/three.js/tree/dev/examples/models/gltf/LeePerrySmith"
+           target="_blank" rel="noopener">Lee Perry-Smith / Infinite Realities</a>
+        (<a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener">CC BY 3.0</a>)
+        · brain model by
+        <a href="https://sketchfab.com/3d-models/brain-cadd2bde67404c43b2359a6a3281d84a"
+           target="_blank" rel="noopener">dgallichan</a>
+        (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>, Sketchfab)
+      </div>
       <div class="syn-toast" id="syn-toast"></div>
       <div class="syn-loading" id="syn-loading">
         <div class="syn-load-bg">
@@ -7648,10 +7688,41 @@
 </div>
 
 <footer><span data-i18n="footer.text">TRADEABLE ACADEMY · Trade Analysis · For educational purposes only · Not financial advice</span><br><span style="opacity:.65">&copy; 2026 Tradeable Academy. All rights reserved.</span></footer>
-<!-- CC-BY attribution for the Synapse hologram models (required by their licenses) -->
-<div class="model-credits" style="text-align:center; font-size:9.5px; color:var(--muted); opacity:0.62; padding:0 16px 14px; letter-spacing:0.01em;">
-  Synapse 3D models: head scan by Lee Perry-Smith / Infinite Realities (CC BY 3.0) · brain model by dgallichan (CC BY 4.0, Sketchfab)
-</div>
+<!-- CC-BY attribution for the Synapse hologram models (required by their licenses).
+     Estaba a 9.5px con opacity .62 — legalmente presente y humanamente invisible.
+     Sin el opacity encima del --muted (que ya está atenuado por definición) y a
+     11.5px se lee sin robarle protagonismo al pie. El crédito que de verdad
+     cuenta es el de DENTRO de Synapse (.syn-credit): aquí abajo queda tapado por
+     el overlay a pantalla completa mientras los modelos están en pantalla. -->
+<style>
+  /* Con --muted esta línea NO se leía bajo casi ningún camo: medido, 8 de 10
+     camos quedaban por debajo del mínimo (mission claro daba 1.02, chronicles
+     1.84). --muted está pensado para texto DENTRO de un panel, y esto va suelto
+     sobre el fondo del camo. Con --text —que cada camo define justamente para
+     que contraste con su propio fondo— y una opacidad suave se lee en todos sin
+     gritar. Ojo: esto mismo le pasa a más textos sueltos del sitio; es el punto
+     10 de la checklist. */
+  .model-credits { text-align:center; padding:0 16px 16px; }
+  .model-credits span { display:inline-block; max-width:min(680px,92vw);
+    font-size:11.5px; line-height:1.5; letter-spacing:.01em;
+    color:rgba(255,255,255,.86); background:rgba(12,14,20,.72);
+    border:1px solid rgba(255,255,255,.14); border-radius:8px; padding:5px 12px; }
+  body.light:not(.camo-night) .model-credits span, body.camo-day .model-credits span {
+    color:rgba(20,22,30,.88); background:rgba(255,255,255,.86);
+    border-color:rgba(16,22,40,.14); }
+  .model-credits a { color:inherit; text-decoration:underline; text-underline-offset:2px; }
+  .model-credits a:hover { color:var(--text); }
+</style>
+<div class="model-credits"><span>
+  Synapse 3D models: head scan by
+  <a href="https://github.com/mrdoob/three.js/tree/dev/examples/models/gltf/LeePerrySmith"
+     target="_blank" rel="noopener">Lee Perry-Smith / Infinite Realities</a>
+  (<a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener">CC BY 3.0</a>)
+  · brain model by
+  <a href="https://sketchfab.com/3d-models/brain-cadd2bde67404c43b2359a6a3281d84a"
+     target="_blank" rel="noopener">dgallichan</a>
+  (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>, Sketchfab)
+</span></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 <!-- Synapse Library: real content + textbook SVG diagrams for the 41 topics -->
