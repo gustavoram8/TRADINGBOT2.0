@@ -6347,7 +6347,7 @@
       <a href="/?plans=1#plans" target="_blank" rel="noopener" class="feature-upgrade" data-i18n="feature.upgrade">Upgrade to Premium</a>
     </div>
 
-    <!-- Real forum app — shown only for Premium members -->
+    <!-- Real forum app — Standard and Premium (see is_standard_up) -->
     <div class="forum-app" id="forum-app" style="display:none;">
       <!-- LIST VIEW -->
       <div id="forum-list-view">
@@ -11682,6 +11682,9 @@
       standard: [
         { icon: 'clock',    key: 'analyzer24' },
         { icon: 'projects', key: 'projects5' },
+        // El foro es de Standard+Premium desde 2026-07-25, pero este reveal
+        // —lo primero que ve alguien que ACABA de pagar— seguía sin nombrarlo.
+        { icon: 'forum',    key: 'forum' },
         { icon: 'camo',     key: 'camo1' },
       ],
       premium: [

@@ -1314,8 +1314,13 @@ borrado. PENDIENTE: agregar selector de mes / historial.
   con el plan (`PLAN_CAMOS`), y sigue siendo verdad.
 - [ ] **24. Brillos que se apagan** al cambiar de camo o de modo: el rayo del Quick Analysis y las
   iniciales de los proyectos deben brillar SIEMPRE, como en el tema original.
-- [ ] **25. Foro para Standard:** quedó algún sitio sin reflejarlo (cableado del plan, comparativa
-  de la landing, T&C o cards). Buscar y corregir.
+- [x] ✅ **25. Foro para Standard (2026-08-03).** Tenías razón y era el peor sitio posible: el
+  **reveal "UNLOCKED" que se ve justo DESPUÉS de pagar** (`FEATURES.standard` en index.html) listaba
+  solo analizador, proyectos y camo — el foro no aparecía, así que quien compraba Standard no se
+  enteraba de que lo tenía. Agregado. Barridas las 8 superficies que anuncian el foro (tarjetas y
+  tabla de la landing, tarjetas y tabla de pricing, checkout, T&C Secc. 5, el reveal y la guía):
+  las otras 7 ya estaban bien. De paso, un comentario del código seguía diciendo "shown only for
+  Premium members".
 
 
 ### 📌 COLA ACORDADA CON EL USUARIO (2026-07-31) — ir de a UNO, pulir y recién pasar al siguiente
