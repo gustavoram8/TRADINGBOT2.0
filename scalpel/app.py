@@ -5669,18 +5669,40 @@ def logout():
     return resp
 
 
+# Un reenvío por minuto y 5 por hora, por sesión. Sin esto, el botón de
+# "enviar otra vez" se convierte en una herramienta para inundarle el buzón a
+# cualquiera: basta con saber su correo y pulsar sin parar.
+RESET_MIN_GAP = timedelta(seconds=60)
+RESET_MAX_HOUR = 5
+
+
 @app.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
         email = request.form.get('email', '').strip().lower()
+        ahora = datetime.now(timezone.utc)
+        intentos = [datetime.fromisoformat(t) for t in session.get('reset_tries', [])]
+        intentos = [t for t in intentos if ahora - t < timedelta(hours=1)]
+        if intentos and ahora - intentos[-1] < RESET_MIN_GAP:
+            espera = int((RESET_MIN_GAP - (ahora - intentos[-1])).total_seconds())
+            return render_template('forgot_password.html', sent=True, email=email,
+                                   wait=max(1, espera))
+        if len(intentos) >= RESET_MAX_HOUR:
+            return render_template('forgot_password.html', sent=True, email=email,
+                                   throttled=True)
         user = User.query.filter_by(email=email).first()
         if user:
             token = reset_serializer.dumps(email, salt='password-reset')
             reset_url = url_for('reset_password', token=token, _external=True)
             sent = send_reset_email(email, reset_url)
             record_audit_event('email_reset', user_id=user.id, detail=email, success=sent)
-        # Always report success — never reveal which emails are registered.
-        return render_template('forgot_password.html', sent=True)
+        intentos.append(ahora)
+        session['reset_tries'] = [t.isoformat() for t in intentos]
+        # Se responde SIEMPRE lo mismo, exista o no la cuenta: decir "ese correo
+        # no está registrado" le regala a cualquiera una forma de averiguar
+        # quién tiene cuenta aquí. Por eso el aviso invita a revisar el spam y
+        # deja reenviar, en vez de prometer que el correo salió.
+        return render_template('forgot_password.html', sent=True, email=email)
     return render_template('forgot_password.html')
 
 
