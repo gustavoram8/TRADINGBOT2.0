@@ -212,6 +212,34 @@
        (their background lives in a per-slug cm-<slug> rule; these come from the
        server so a camo shipped next month needs no new CSS). */
     .cm-wheel { background-size:cover; background-position:center; background-color:#1a0a0e; }
+
+    /* ── Cart detail panel ── */
+    .cart-bar .cb-info{background:none;border:0;font:inherit;color:inherit;cursor:pointer;text-align:left;}
+    .cart-panel{position:fixed;inset:0;z-index:120;display:none;align-items:flex-end;justify-content:center;
+      background:rgba(8,10,16,.55);backdrop-filter:blur(2px);padding:0 14px 92px;}
+    .cart-panel.show{display:flex;}
+    .cp-card{width:100%;max-width:460px;background:var(--card,#fff);border:1px solid var(--line,#e6e8ee);
+      border-radius:16px;box-shadow:0 24px 60px rgba(10,15,30,.35);overflow:hidden;}
+    .cp-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;
+      border-bottom:1px solid var(--line,#e6e8ee);font-weight:800;font-size:15px;}
+    .cp-x{background:none;border:0;font:inherit;font-size:22px;line-height:1;cursor:pointer;color:inherit;opacity:.6;}
+    .cp-x:hover{opacity:1;}
+    .cp-list{max-height:46vh;overflow-y:auto;}
+    .cp-row{display:flex;align-items:center;gap:11px;padding:11px 16px;border-bottom:1px solid var(--line,#e6e8ee);}
+    .cp-row:last-child{border-bottom:0;}
+    .cp-art{width:44px;height:30px;border-radius:6px;flex:0 0 auto;background-size:cover;
+      background-position:center;border:1px solid var(--line,#e6e8ee);}
+    .cp-tx{min-width:0;flex:1;}
+    .cp-tx{display:flex;flex-direction:column;gap:1px;}
+    .cp-nm{font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .cp-kd{font-size:11px;opacity:.6;}
+    .cp-pr{font-size:13.5px;font-weight:800;}
+    .cp-rm{background:none;border:0;font:inherit;font-size:17px;line-height:1;cursor:pointer;opacity:.5;padding:4px;}
+    .cp-rm:hover{opacity:1;color:#d6564c;}
+    .cp-foot{padding:14px 16px;display:grid;gap:8px;border-top:1px solid var(--line,#e6e8ee);}
+    .cp-sum{display:flex;justify-content:space-between;align-items:baseline;font-size:14px;}
+    .cp-note{opacity:.6;font-size:11.5px;}
+    .cp-empty{padding:26px 16px;text-align:center;opacity:.6;font-size:13.5px;}
     /* ── Cart ── */
     .camo-cart-btn { font-size:12.5px; font-weight:700; padding:8px 12px; border-radius:9px;
       border:1px solid var(--line-soft); background:#fff; color:var(--ink); cursor:pointer; }
@@ -619,10 +647,33 @@
 
 <!-- ── Cart bar (slides up when something is in the cart) ── -->
 <div class="cart-bar" id="cart-bar">
-  <div class="cb-info"><span id="cb-count">0</span> <span data-i18n="camos.cartItems">items</span> · $<span id="cb-total">0.00</span>
-    <small data-i18n="camos.cartOneFee">One checkout, one processing fee</small></div>
+  <button type="button" class="cb-info" id="cb-open" aria-expanded="false">
+    <span id="cb-count">0</span> <span data-i18n="camos.cartItems">items</span> · $<span id="cb-total">0.00</span>
+    <small data-i18n="camos.cartSee">See what's in it ▸</small>
+  </button>
   <button type="button" class="cb-go" id="cb-go" data-i18n="camos.cartPay">Pay together</button>
   <button type="button" class="cb-clear" id="cb-clear" data-i18n="camos.cartClear">Empty</button>
+</div>
+
+<!-- Detalle del carrito: hasta ahora solo se veia un numero y un total, asi que
+     no habia forma de saber QUE llevabas ni de quitar una sola cosa. -->
+<div class="cart-panel" id="cart-panel" role="dialog" aria-modal="true">
+  <div class="cp-card">
+    <div class="cp-head">
+      <span data-i18n="camos.cartTitle">Your cart</span>
+      <button type="button" class="cp-x" id="cp-close" aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="cp-list" id="cp-list"></div>
+    <div class="cp-foot">
+      <div class="cp-sum"><span data-i18n="camos.cartTotal">Total</span>
+        <b>$<span id="cp-total">0.00</span></b></div>
+      <small class="cp-note" data-i18n="camos.cartOneFee">One checkout, one processing fee</small>
+      <button type="button" class="cb-go" id="cp-go" data-i18n="camos.cartPay">Pay together</button>
+      <!-- El panel tapa la barra, asi que "Vaciar" tiene que existir tambien aqui
+           o se queda fuera de alcance con el carrito abierto. -->
+      <button type="button" class="cb-clear" id="cp-clear" data-i18n="camos.cartClear">Empty</button>
+    </div>
+  </div>
 </div>
 <script src="/static/pages_i18n.js"></script>
 <script>
@@ -646,10 +697,10 @@
     var lang = 'en';
     try { var l = localStorage.getItem('scalpel_lang'); if (['en','es','fr','pt'].indexOf(l) >= 0) lang = l; } catch (e) {}
     var T = {
-      en:{activate:'Activate',active:'Active ✓',owned:'Owned',deactivate:'Use default',get:'Get this skin',soon:'Payments are coming very soon',on:'Activated — ',go:'see it in the app →',off:'Reverted to the default theme',prev:'👁 Preview',hint:'Click anywhere to close',flip:'See the other look',inside:'The app wearing it',skin:'The skin itself',bought:'The skin is yours! ',err:'Could not reach PayPal — please try again',cartAdd:'Add to cart',cartIn:'In the cart ✓',cartBought:'The whole cart is yours! ',cartErr:'Something in the cart is no longer available',locked:'Opens on',lockedTip:'Opens at 00:00 Venezuela time and stays open for 24 hours.',lockedWhen:'00:00 UTC−4 (Venezuela)',prevFrameLbl:'How it looks in the forum',prevFrameTitle:'Sweep of the PDL and reclaim at the open',prevFrameBody:'Yesterday\'s low got swept and the reclaim was clean.',curNormal:'Normal',curHot:'Over a link',notReady:'Coming soon — art in progress'},
-      es:{activate:'Activar',active:'Activo ✓',owned:'Adquirido',deactivate:'Usar default',get:'Obtener skin',soon:'Los pagos llegan muy pronto',on:'Activado — ',go:'velo en la app →',off:'Volviste al tema por defecto',prev:'👁 Vista previa',hint:'Haz clic en cualquier parte para cerrar',flip:'Ver el otro look',inside:'La app con el camo puesto',skin:'La piel del camo',bought:'¡La skin es tuya! ',err:'No pudimos conectar con PayPal — intenta de nuevo',cartAdd:'Añadir al carrito',cartIn:'En el carrito ✓',cartBought:'¡Todo el carrito es tuyo! ',cartErr:'Algo del carrito ya no está disponible',locked:'Se abre el',lockedTip:'Se abre a las 00:00 (hora de Venezuela) y dura 24 horas.',lockedWhen:'00:00 UTC−4 (hora de Venezuela)',prevFrameLbl:'Cómo se ve en el foro',prevFrameTitle:'Sweep del PDL y reclaim en la apertura',prevFrameBody:'El low de ayer quedó barrido y el reclaim fue limpio.',curNormal:'Normal',curHot:'Sobre un enlace',notReady:'Próximamente — el arte está en camino'},
-      fr:{activate:'Activer',active:'Actif ✓',owned:'Acquis',deactivate:'Défaut',get:'Obtenir ce skin',soon:'Les paiements arrivent très bientôt',on:'Activé — ',go:'à voir dans l\'app →',off:'Retour au thème par défaut',prev:'👁 Aperçu',hint:'Cliquez n\'importe où pour fermer',flip:'Voir l\'autre look',inside:'L\'app avec le camo',skin:'La peau du camo',bought:'Le skin est à vous ! ',err:'Impossible de joindre PayPal — réessayez',cartAdd:'Ajouter au panier',cartIn:'Dans le panier ✓',cartBought:'Tout le panier est à vous ! ',cartErr:'Un article du panier n\'est plus disponible',locked:'Ouvre le',lockedTip:'Ouvre à 00h00 (heure du Venezuela) et reste ouvert 24 heures.',lockedWhen:'00h00 UTC−4 (heure du Venezuela)',prevFrameLbl:'Son rendu sur le forum',prevFrameTitle:'Sweep du PDL et reclaim à l\'ouverture',prevFrameBody:'Le low d\'hier a été balayé et le reclaim a été net.',curNormal:'Normal',curHot:'Sur un lien',notReady:'Bientôt — le dessin est en cours'},
-      pt:{activate:'Ativar',active:'Ativo ✓',owned:'Adquirido',deactivate:'Usar padrão',get:'Obter skin',soon:'Os pagamentos chegam em breve',on:'Ativado — ',go:'veja no app →',off:'Voltou ao tema padrão',prev:'👁 Prévia',hint:'Clique em qualquer lugar para fechar',flip:'Ver o outro visual',inside:'O app com o camo',skin:'A pele do camo',bought:'A skin é sua! ',err:'Não foi possível conectar ao PayPal — tente de novo',cartAdd:'Adicionar ao carrinho',cartIn:'No carrinho ✓',cartBought:'O carrinho inteiro é seu! ',cartErr:'Algo do carrinho não está mais disponível',locked:'Abre em',lockedTip:'Abre às 00:00 (horário da Venezuela) e fica aberto por 24 horas.',lockedWhen:'00:00 UTC−4 (horário da Venezuela)',prevFrameLbl:'Como fica no fórum',prevFrameTitle:'Sweep do PDL e reclaim na abertura',prevFrameBody:'A mínima de ontem foi varrida e o reclaim veio limpo.',curNormal:'Normal',curHot:'Sobre um link',notReady:'Em breve — a arte está a caminho'}
+      en:{activate:'Activate',active:'Active ✓',owned:'Owned',deactivate:'Use default',get:'Get this skin',soon:'Payments are coming very soon',on:'Activated — ',go:'see it in the app →',off:'Reverted to the default theme',prev:'👁 Preview',hint:'Click anywhere to close',flip:'See the other look',inside:'The app wearing it',skin:'The skin itself',bought:'The skin is yours! ',err:'Could not reach PayPal — please try again',cartAdd:'Add to cart',cartIn:'In the cart ✓',cartBought:'The whole cart is yours! ',cartErr:'Something in the cart is no longer available',locked:'Opens on',lockedTip:'Opens at 00:00 Venezuela time and stays open for 24 hours.',lockedWhen:'00:00 UTC−4 (Venezuela)',prevFrameLbl:'How it looks in the forum',prevFrameTitle:'Sweep of the PDL and reclaim at the open',prevFrameBody:'Yesterday\'s low got swept and the reclaim was clean.',curNormal:'Normal',curHot:'Over a link',notReady:'Coming soon — art in progress',cartTitle:'Your cart',cartSee:"See what's in it \u25B8",cartTotal:'Total',cartEmpty:'Nothing here yet.',cartRemove:'Remove',cartQty:'Qty 1',kCamo:'Camo',kFrame:'Forum plate',kCursor:'Cursor'},
+      es:{activate:'Activar',active:'Activo ✓',owned:'Adquirido',deactivate:'Usar default',get:'Obtener skin',soon:'Los pagos llegan muy pronto',on:'Activado — ',go:'velo en la app →',off:'Volviste al tema por defecto',prev:'👁 Vista previa',hint:'Haz clic en cualquier parte para cerrar',flip:'Ver el otro look',inside:'La app con el camo puesto',skin:'La piel del camo',bought:'¡La skin es tuya! ',err:'No pudimos conectar con PayPal — intenta de nuevo',cartAdd:'Añadir al carrito',cartIn:'En el carrito ✓',cartBought:'¡Todo el carrito es tuyo! ',cartErr:'Algo del carrito ya no está disponible',locked:'Se abre el',lockedTip:'Se abre a las 00:00 (hora de Venezuela) y dura 24 horas.',lockedWhen:'00:00 UTC−4 (hora de Venezuela)',prevFrameLbl:'Cómo se ve en el foro',prevFrameTitle:'Sweep del PDL y reclaim en la apertura',prevFrameBody:'El low de ayer quedó barrido y el reclaim fue limpio.',curNormal:'Normal',curHot:'Sobre un enlace',notReady:'Próximamente — el arte está en camino',cartTitle:'Tu carrito',cartSee:'Ver qué llevas \u25B8',cartTotal:'Total',cartEmpty:'Todavía no hay nada.',cartRemove:'Quitar',cartQty:'Cantidad 1',kCamo:'Camo',kFrame:'Placa de foro',kCursor:'Cursor'},
+      fr:{activate:'Activer',active:'Actif ✓',owned:'Acquis',deactivate:'Défaut',get:'Obtenir ce skin',soon:'Les paiements arrivent très bientôt',on:'Activé — ',go:'à voir dans l\'app →',off:'Retour au thème par défaut',prev:'👁 Aperçu',hint:'Cliquez n\'importe où pour fermer',flip:'Voir l\'autre look',inside:'L\'app avec le camo',skin:'La peau du camo',bought:'Le skin est à vous ! ',err:'Impossible de joindre PayPal — réessayez',cartAdd:'Ajouter au panier',cartIn:'Dans le panier ✓',cartBought:'Tout le panier est à vous ! ',cartErr:'Un article du panier n\'est plus disponible',locked:'Ouvre le',lockedTip:'Ouvre à 00h00 (heure du Venezuela) et reste ouvert 24 heures.',lockedWhen:'00h00 UTC−4 (heure du Venezuela)',prevFrameLbl:'Son rendu sur le forum',prevFrameTitle:'Sweep du PDL et reclaim à l\'ouverture',prevFrameBody:'Le low d\'hier a été balayé et le reclaim a été net.',curNormal:'Normal',curHot:'Sur un lien',notReady:'Bientôt — le dessin est en cours',cartTitle:'Votre panier',cartSee:'Voir le contenu \u25B8',cartTotal:'Total',cartEmpty:"Rien pour l'instant.",cartRemove:'Retirer',cartQty:'Quantité 1',kCamo:'Camo',kFrame:'Plaque de forum',kCursor:'Curseur'},
+      pt:{activate:'Ativar',active:'Ativo ✓',owned:'Adquirido',deactivate:'Usar padrão',get:'Obter skin',soon:'Os pagamentos chegam em breve',on:'Ativado — ',go:'veja no app →',off:'Voltou ao tema padrão',prev:'👁 Prévia',hint:'Clique em qualquer lugar para fechar',flip:'Ver o outro visual',inside:'O app com o camo',skin:'A pele do camo',bought:'A skin é sua! ',err:'Não foi possível conectar ao PayPal — tente de novo',cartAdd:'Adicionar ao carrinho',cartIn:'No carrinho ✓',cartBought:'O carrinho inteiro é seu! ',cartErr:'Algo do carrinho não está mais disponível',locked:'Abre em',lockedTip:'Abre às 00:00 (horário da Venezuela) e fica aberto por 24 horas.',lockedWhen:'00:00 UTC−4 (horário da Venezuela)',prevFrameLbl:'Como fica no fórum',prevFrameTitle:'Sweep do PDL e reclaim na abertura',prevFrameBody:'A mínima de ontem foi varrida e o reclaim veio limpo.',curNormal:'Normal',curHot:'Sobre um link',notReady:'Em breve — a arte está a caminho',cartTitle:'Seu carrinho',cartSee:'Ver o que tem \u25B8',cartTotal:'Total',cartEmpty:'Ainda não tem nada.',cartRemove:'Remover',cartQty:'Quantidade 1',kCamo:'Camo',kFrame:'Placa do fórum',kCursor:'Cursor'}
     }[lang];
     // Camos whose theme has a second look (light/dark) worth flipping to.
     var PREV_ALT = { standard:1, mission:1, pole:1, chronicles:1 };
@@ -792,7 +843,7 @@
         foot.querySelector('[data-cart]').addEventListener('click', function(){
           if (!S.authed){ location.href='/login'; return; }
           Cart.toggle(ref);
-          renderAll();
+          repaint();
         });
         foot.querySelector('[data-buy]').addEventListener('click', function(){
           if (!S.authed){ location.href='/login'; return; }
@@ -856,11 +907,100 @@
         var l = this.list();
         document.getElementById('cb-count').textContent = l.length;
         document.getElementById('cb-total').textContent = this.total().toFixed(2);
+        document.getElementById('cp-total').textContent = this.total().toFixed(2);
         bar.classList.toggle('show', l.length > 0);
+        if (!l.length) closeCart();
+        paintCartPanel();
       }
     };
+
+    // ── Detalle del carrito ────────────────────────────────────────────────
+    // Que hay dentro se deduce de las PROPIAS tarjetas de la pagina (nombre,
+    // precio y arte), en vez de pedirle al servidor otra lista: asi cualquier
+    // cosmetico futuro aparece en el carrito sin cablear nada.
+    function cartIndex(){
+      var ix = {};
+      document.querySelectorAll('[data-ref]').forEach(function(b){
+        var ref = b.getAttribute('data-ref');
+        if (!ref || ix[ref]) return;
+        var card = b.closest('.camo-card') || b.closest('.cos-card');
+        if (!card) return;
+        var nm = card.querySelector('.camo-name');
+        var art = card.querySelector('.cos-art, .camo-swatch');
+        ix[ref] = {
+          name: nm ? nm.textContent.trim() : ref,
+          kind: ref.indexOf('camo:') === 0 ? (T.kCamo || 'Camo')
+              : ref.indexOf('item:cur-') === 0 ? (T.kCursor || 'Cursor')
+              : (T.kFrame || 'Frame'),
+          art: art ? getComputedStyle(art).backgroundImage : ''
+        };
+      });
+      // Los camos no llevan data-ref en su tarjeta: se arma desde el slug.
+      document.querySelectorAll('.camo-card').forEach(function(card){
+        var slug = slugOf(card); if (!slug) return;
+        var ref = 'camo:' + slug;
+        if (ix[ref]) return;
+        var nm = card.querySelector('.camo-name');
+        var sw = card.querySelector('.camo-swatch');
+        ix[ref] = { name: nm ? nm.textContent.trim() : slug,
+                    kind: T.kCamo || 'Camo',
+                    art: sw ? getComputedStyle(sw).backgroundImage : '' };
+      });
+      return ix;
+    }
+
+    function paintCartPanel(){
+      var box = document.getElementById('cp-list'); if (!box) return;
+      var l = Cart.list(), ix = cartIndex();
+      if (!l.length){
+        box.innerHTML = '<div class="cp-empty">' + (T.cartEmpty || 'Nothing here yet.') + '</div>';
+        return;
+      }
+      box.innerHTML = l.map(function(ref){
+        var it = ix[ref] || {name: ref, kind: '', art: ''};
+        var pr = (S.prices && S.prices[ref]) || 0;
+        return '<div class="cp-row">'
+          + '<span class="cp-art" style="background-image:' + (it.art || 'none') + '"></span>'
+          + '<span class="cp-tx"><span class="cp-nm">' + it.name + '</span>'
+          +   '<span class="cp-kd">' + it.kind + ' · ' + (T.cartQty || 'Qty 1') + '</span></span>'
+          + '<span class="cp-pr">$' + pr.toFixed(2) + '</span>'
+          + '<button type="button" class="cp-rm" data-rm="' + ref + '" '
+          +   'aria-label="' + (T.cartRemove || 'Remove') + '">&times;</button>'
+          + '</div>';
+      }).join('');
+      box.querySelectorAll('[data-rm]').forEach(function(b){
+        b.addEventListener('click', function(){
+          Cart.toggle(b.getAttribute('data-rm'));
+          repaint();
+        });
+      });
+    }
+
+    function openCart(){
+      var p = document.getElementById('cart-panel'); if (!p) return;
+      paintCartPanel(); p.classList.add('show');
+      document.getElementById('cb-open').setAttribute('aria-expanded', 'true');
+    }
+    function closeCart(){
+      var p = document.getElementById('cart-panel'); if (!p) return;
+      p.classList.remove('show');
+      var o = document.getElementById('cb-open');
+      if (o) o.setAttribute('aria-expanded', 'false');
+    }
     document.getElementById('cb-clear').addEventListener('click', function(){
-      Cart.clear(); renderAll();
+      Cart.clear(); repaint();
+    });
+    document.getElementById('cb-open').addEventListener('click', openCart);
+    document.getElementById('cp-close').addEventListener('click', closeCart);
+    document.getElementById('cart-panel').addEventListener('click', function(e){
+      if (e.target === this) closeCart();
+    });
+    document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeCart(); });
+    document.getElementById('cp-go').addEventListener('click', function(){
+      document.getElementById('cb-go').click();
+    });
+    document.getElementById('cp-clear').addEventListener('click', function(){
+      Cart.clear(); repaint(); closeCart();
     });
     document.getElementById('cb-go').addEventListener('click', function(){
       if (!S.authed){ location.href='/login'; return; }
@@ -913,6 +1053,12 @@
     });
 
     function renderAll(){ document.querySelectorAll('.camo-card').forEach(renderCard); }
+    // Un solo repintado para TODO. Antes habia dos independientes
+    // (renderAll para camos, paintCosCart para marcos y cursores) y cada
+    // boton llamaba solo al suyo: al meter un camo, los marcos que ya
+    // estaban en el carrito volvian a decir "Anadir al carrito". Nunca
+    // salieron del carrito — mentia el boton.
+    function repaint(){ renderAll(); paintCosCart(); Cart.bar(); }
     renderAll();
     Cart.bar();
     // ── Frames & cursors: cart + individual purchase. The footers are
@@ -931,7 +1077,7 @@
       btn.addEventListener('click', function(){
         if (!S.authed){ location.href='/login'; return; }
         Cart.toggle(btn.getAttribute('data-ref'));
-        paintCosCart();
+        repaint();
       });
     });
     document.querySelectorAll('.cos-buy').forEach(function(btn){
@@ -993,7 +1139,7 @@
     try {
       var bought = new URLSearchParams(location.search).get('bought');
       if (bought === 'cart'){
-        Cart.clear(); renderAll();
+        Cart.clear(); repaint();
         toast(T.cartBought + '<a href="/app">' + T.go + '</a>');
         history.replaceState(null, '', '/cosmetics');
       } else if (bought && S.owned.indexOf(bought) >= 0){
