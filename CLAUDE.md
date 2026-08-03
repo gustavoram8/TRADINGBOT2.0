@@ -1286,9 +1286,16 @@ borrado. PENDIENTE: agregar selector de mes / historial.
   zona del influencer. ¿Qué valor legal tiene el documento? ¿Firmarlo le da marco legal?
 - [ ] **8. Tessera:** el interior y los efectos le gustan, pero el **diseño se siente pobre** —
   sospecha de la tipografía, que no le pega a la marca.
-- [ ] **9. Atribución de las 2 esculturas 3D de Synapse.** Antes salían al pie y **se quitaron**.
-  Deben volver, **en Synapse y en todo el sitio**, legibles bajo **cualquier camo**, sin ocupar
-  media pantalla. (Derechos de autor / uso comercial.)
+- [ ] **9. Atribución de las 2 esculturas 3D de Synapse.** ⚠️ **Diagnóstico hecho (2026-08-03), NO
+  arreglado.** Corrección de mi nota anterior: **no está borrada**, pero es como si lo estuviera.
+  Vive en `.model-credits` en `index.html` (justo bajo el `<footer>`), o sea **solo en `/app`**, a
+  **9.5px con `opacity:.62` sobre `var(--muted)`** — el usuario tiene razón en que es diminuta.
+  Y **dentro de Synapse NO se ve**: `.synapse-app` mide `calc(100vh - 108px)` con márgenes
+  negativos, así que ocupa la pantalla entera y el crédito queda debajo del fondo del scroll,
+  justo mientras se están mostrando los modelos. 🔴 **Eso es el problema legal**: CC BY exige la
+  atribución "de forma razonable al medio", y esconderla tras un overlay a pantalla completa no lo
+  es. Al arreglarlo: subir tamaño/opacidad, meterla DENTRO del overlay de Synapse (una línea o un
+  ⓘ), y comprobar contraste bajo los 9 camos × 2 modos como se hizo con el punto 22.
 - [ ] **10. Legibilidad bajo camos:** hay muchísimas frases chicas, títulos y subtítulos que se
   pierden con el camo puesto — sobre todo texto FUERA de paneles. Hay que barrer camo por camo,
   página por página.
