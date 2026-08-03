@@ -134,7 +134,11 @@
 
     @media(max-width:540px){ h1{font-size:23px;} .card{padding:20px;} .card.order,.pay-card{padding:0;}
       nav{padding:14px 18px;} }
-  </style>
+      .lnk-cancel{background:none;border:0;font:inherit;font-size:12.5px;color:var(--muted);
+      text-decoration:underline;cursor:pointer;padding:6px;}
+    .lnk-cancel:hover{color:var(--ink);}
+    .dup-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:11px;}
+</style>
   {{ marks.styles() }}
 </head>
 <body>
@@ -157,10 +161,19 @@
     {% endif %}
 
     {% if duplicate %}
-    <div class="dup-banner" data-i18n-html="cdone.dup">
-      You already have a pending order awaiting payment confirmation. Complete that
-      one first — here are its details. If you think this is a mistake,
-      <a href="/contact">contact support</a>.
+    <div class="dup-banner">
+      <span data-i18n="cdone.dup2">You already have this order open, waiting to be paid. You can finish
+        paying it, or cancel it and choose a different plan.</span>
+      {% if not preview %}
+      <div class="dup-actions">
+        {% if rails and rails|length > 1 %}
+        <a href="/checkout/pay/{{ order.id }}" class="btn btn-primary" data-i18n="cdone.keepPaying">Continue paying</a>
+        {% endif %}
+        <form method="post" action="/checkout/cancel/{{ order.id }}">
+          <button type="submit" class="btn btn-ghost" data-i18n="cdone.cancel">Cancel this order</button>
+        </form>
+      </div>
+      {% endif %}
     </div>
     {% endif %}
 
@@ -228,6 +241,11 @@
       <a href="/app" class="btn btn-ghost" data-i18n="cdone.backApp">Back to app</a>
       <a href="/contact" class="btn btn-primary" data-i18n="cdone.sendProof">Send payment proof →</a>
     </div>
+    {% if not preview and not duplicate %}
+    <form method="post" action="/checkout/cancel/{{ order.id }}" style="margin-top:14px;text-align:center;">
+      <button type="submit" class="lnk-cancel" data-i18n="cdone.cancel2">I changed my mind — cancel this order</button>
+    </form>
+    {% endif %}
   </div>
 <script src="/static/pages_i18n.js"></script>
 </body>

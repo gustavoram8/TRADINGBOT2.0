@@ -7447,14 +7447,14 @@ def checkout_create():
     existing = Order.query.filter_by(
         user_id=current_user.id, status='pending').first()
     if existing:
-        # With rails on, an abandoned attempt must not lock the buyer out of
-        # paying: send them back to their open order so they can finish it —
-        # or switch method, which is exactly what happens when one rail fails.
-        if available_payment_rails():
-            return redirect(url_for('checkout_pay', order_id=existing.id))
+        # Un intento abandonado NO puede encerrar al comprador. Se le enseña su
+        # pedido tal cual, con dos salidas claras: terminar de pagarlo o
+        # cancelarlo y elegir otra cosa. Antes solo veía el aviso y un enlace a
+        # soporte, así que quien se equivocaba de plan —o quería aplicar un
+        # cupón después— se quedaba atascado sin poder comprar nada más.
         return render_template('checkout_done.html', order=existing,
                                plan_label=PLAN_LABELS.get(existing.plan, existing.plan),
-                               duplicate=True)
+                               rails=available_payment_rails(), duplicate=True)
 
     # Resolution order: the code bound to the account wins over anything typed
     # (that is the anti-theft rule), then whatever the form carried. The bound
@@ -7923,6 +7923,40 @@ def admin_order_cancel():
         record_audit_event('order_cancelled', user_id=order.user_id,
                             detail=f'order #{order.id} {order.plan}/{order.billing_cycle} ${order.final_price:.2f}')
     return redirect(url_for('admin') + '#revenue')
+
+
+@app.route('/checkout/cancel/<int:order_id>', methods=['POST'])
+@login_required
+def checkout_cancel(order_id):
+    """Que el COMPRADOR pueda soltar su propio pedido pendiente.
+
+    Hasta ahora solo podía cancelarlo un admin, y eso dejaba al cliente
+    encerrado: un pedido a medias bloquea cualquier compra nueva
+    (checkout_create devuelve el pendiente en vez de crear otro), así que quien
+    se equivocaba de plan — o quería aplicar un cupón después — se quedaba sin
+    salida y sin nadie a quien pedírselo salvo soporte. Es exactamente la
+    situación que reportó el dueño probando con una cuenta real.
+
+    Solo toca pedidos PROPIOS y PENDIENTES: uno pagado no se cancela desde aquí
+    (eso es un reembolso, y lo decide una persona).
+    """
+    order = db.session.get(Order, order_id)
+    if not order or order.user_id != current_user.id:
+        abort(404)
+    if order.status == 'pending':
+        order.status = 'cancelled'
+        # Devolver el uso reservado del código, o el cupón se gastaría por un
+        # pedido que nunca existió.
+        if order.promo_code:
+            promo = PromoCode.query.filter(
+                db.func.lower(PromoCode.code) == order.promo_code.lower()).first()
+            if promo and (promo.uses_count or 0) > 0:
+                promo.uses_count -= 1
+        db.session.commit()
+        record_audit_event('order_cancelled', user_id=order.user_id,
+                           detail=f'#{order.id} {order.plan}/{order.billing_cycle} '
+                                  f'${order.final_price:.2f} (cancelado por el comprador)')
+    return redirect(url_for('pricing'))
 
 
 # ── Partner panel (the influencer's own numbers) ──────────────────────────
