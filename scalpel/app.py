@@ -93,18 +93,32 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 # "Remember this device" — when opted in, keep the user logged in indefinitely.
 app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=3650)
 
-# ── Email (Gmail SMTP) — used only for password recovery ──
+# ── Correo saliente (SMTP) ────────────────────────────────────────────────
+# Todo va por variables de entorno: mudarse de un Gmail personal a la casilla
+# del dominio (support@tradeable.academy en Google Workspace) NO toca código,
+# solo MAIL_USERNAME + MAIL_APP_PASSWORD.
+#
+# MAIL_ACCOUNT es a la vez la cuenta con la que se autentica el envío Y el
+# remitente: si el From no coincide con la cuenta autenticada, Gmail/Workspace
+# reescriben la cabecera o rechazan el mensaje. Un solo sitio donde cambiarlo
+# — antes esta dirección estaba repetida a mano en diez lugares del archivo.
+MAIL_ACCOUNT = os.environ.get('MAIL_USERNAME', 'mauroramirezmij@gmail.com')
+# Buzón humano de los avisos internos (venta confirmada, pago con problema,
+# formulario de contacto, alertas de auditoría). Por defecto, el mismo: así al
+# poner la casilla del dominio se mudan solos.
+ADMIN_INBOX = os.environ.get('ADMIN_EMAIL', MAIL_ACCOUNT)
+
 app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
 app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME', 'mauroramirezmij@gmail.com')
+app.config['MAIL_USERNAME'] = MAIL_ACCOUNT
 app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_APP_PASSWORD', '')
-# Display name on every outbound email. Was still the old "Scalpel" brand;
-# env-driven so a domain mailbox only needs MAIL_* variables, no code change.
 app.config['MAIL_DEFAULT_SENDER'] = (
-    os.environ.get('MAIL_SENDER_NAME', 'Tradeable Academy'),
-    os.environ.get('MAIL_USERNAME', 'mauroramirezmij@gmail.com')
-)
+    os.environ.get('MAIL_SENDER_NAME', 'Tradeable Academy'), MAIL_ACCOUNT)
+print("[Mail] servidor=%s remitente=%s avisos=%s password=%s"
+      % (app.config['MAIL_SERVER'], MAIL_ACCOUNT, ADMIN_INBOX,
+         "set" if app.config['MAIL_PASSWORD'] else "MISSING (no se envía nada)"),
+      flush=True)
 
 db = SQLAlchemy(app)
 mail = Mail(app)
@@ -1703,7 +1717,7 @@ def _send_audit_alert_email(event_type, user_id, detail):
     if not app.config.get('MAIL_PASSWORD'):
         app.logger.warning('Audit alert (%s) skipped — MAIL_APP_PASSWORD not configured.', event_type)
         return
-    admin_inbox = app.config.get('MAIL_USERNAME', 'mauroramirezmij@gmail.com')
+    admin_inbox = ADMIN_INBOX
     subject = f'[Tradeable] Action needed — {event_type} failed'
     body = (
         f"Event   : {event_type}\n"
@@ -2466,7 +2480,7 @@ def send_verification_email(to_email, code):
 
 def _send_contact_email(sender_name, sender_email, category, message):
     """Forward a contact-form submission to the support inbox. Returns True if sent."""
-    support_inbox = app.config.get('MAIL_USERNAME', 'mauroramirezmij@gmail.com')
+    support_inbox = ADMIN_INBOX
     if not app.config.get('MAIL_PASSWORD'):
         app.logger.warning(
             'MAIL_APP_PASSWORD not configured — contact form submission from %s (%s): %s',
@@ -2500,7 +2514,7 @@ def _send_contact_email(sender_name, sender_email, category, message):
 def _send_bug_email(report):
     """Notify the admin inbox about a new bug report (best-effort). Returns True
     if sent. The report is already saved in the DB, so email is only a heads-up."""
-    inbox = app.config.get('MAIL_USERNAME', 'mauroramirezmij@gmail.com')
+    inbox = ADMIN_INBOX
     if not app.config.get('MAIL_PASSWORD'):
         app.logger.warning('MAIL_APP_PASSWORD not set — bug report #%s not emailed.', report.id)
         return False
@@ -3123,7 +3137,7 @@ def send_mentorship_application_email(a):
     if not app.config.get('MAIL_PASSWORD'):
         app.logger.warning('MAIL_APP_PASSWORD not configured — mentorship application email not sent.')
         return False
-    to_addr = os.environ.get('ADMIN_EMAIL', 'mauroramirezmij@gmail.com')
+    to_addr = ADMIN_INBOX
     label = {
         'rec': 'Biblioteca grabada', 'calls': 'Calls 1-1', 'both': 'Ambos programas',
         'lt1': 'Menos de 1 año', 'y1_3': '1–3 años', 'y3p': '3+ años',
@@ -3191,7 +3205,7 @@ def send_mentorship_order_email(order):
     if not app.config.get('MAIL_PASSWORD'):
         app.logger.warning('MAIL_APP_PASSWORD not configured — mentorship order email not sent.')
         return False
-    to_addr = os.environ.get('ADMIN_EMAIL', 'mauroramirezmij@gmail.com')
+    to_addr = ADMIN_INBOX
     u = db.session.get(User, order.user_id)
     body = (
         'Nueva COMPRA de mentoría — Tradeable Academy\n'
@@ -6164,7 +6178,7 @@ def send_payment_alert_email(order, kind):
     if not app.config.get('MAIL_PASSWORD'):
         app.logger.warning('MAIL_APP_PASSWORD not set — payment alert (%s) not sent.', kind)
         return False
-    to_addr = os.environ.get('ADMIN_EMAIL', 'mauroramirezmij@gmail.com')
+    to_addr = ADMIN_INBOX
     u = db.session.get(User, order.user_id)
     head = {'sale': '💰 VENTA confirmada',
             'problem': '⚠️ PAGO con problema',
@@ -8998,7 +9012,7 @@ def _alert_admin_forum_mute(user, block_count):
     if not app.config.get('MAIL_PASSWORD'):
         app.logger.warning('Auto-mute alert skipped — MAIL_APP_PASSWORD not configured.')
         return
-    admin_inbox = app.config.get('MAIL_USERNAME', 'mauroramirezmij@gmail.com')
+    admin_inbox = ADMIN_INBOX
     uname = getattr(user, 'username', None) or f'user#{user.id}'
     subject = f'[Tradeable] Forum auto-mute — {uname}'
     body = (
@@ -12897,7 +12911,7 @@ def init_db():
         _publish_cursors()
         _publish_roulette_camos()
         _sync_cosmetic_names()
-        admin_email = os.environ.get('ADMIN_EMAIL', 'mauroramirezmij@gmail.com').lower()
+        admin_email = ADMIN_INBOX.lower()
         admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
         admin_password = os.environ.get('ADMIN_PASSWORD', 'Codica2310$')
         if not User.query.filter_by(email=admin_email).first():
