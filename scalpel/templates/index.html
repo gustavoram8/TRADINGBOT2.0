@@ -6164,7 +6164,7 @@
             </div>
             <div class="disc-fp">
               <span class="ico">🎨</span>
-              <span class="ttl"><span data-i18n="disc.f.camoStd">1 camo del plan Standard</span> <span class="disc-soon" data-i18n="disc.soon">Próximamente</span></span>
+              <span class="ttl" data-i18n="disc.f.camoStd">1 camo del plan Standard</span>
               <span class="dsc" data-i18n="disc.f.camoStdD">Un skin exclusivo para personalizar tu workspace, incluido al contratar Standard.</span>
             </div>
           </div>
@@ -6220,8 +6220,14 @@
             </div>
             <div class="disc-fp">
               <span class="ico">🎨</span>
-              <span class="ttl"><span data-i18n="disc.f.camoPrem">1 camo del plan Premium</span> <span class="disc-soon" data-i18n="disc.soon">Próximamente</span></span>
+              <span class="ttl" data-i18n="disc.f.camoPrem">1 camo del plan Premium</span>
               <span class="dsc" data-i18n="disc.f.camoPremD">Un skin exclusivo del plan Premium para personalizar tu workspace, incluido al contratar.</span>
+            </div>
+            <div class="disc-fp">
+              <span class="ico">🎡</span>
+              <span class="ttl" data-i18n="disc.f.wheel">Ruleta de cosméticos del mes</span>
+              <span class="dsc" data-i18n="disc.f.wheelD">Tu racha en el reto diario te da giros. Cada mes entra una tanda nueva —un camo, dos placas y tres cursores— y cuando el mes se acaba, esa tanda no vuelve nunca.</span>
+              <div class="disc-pills"><span class="disc-pill g" data-i18n="disc.f.kCamo">Camos</span><span class="disc-pill g" data-i18n="disc.f.kFrame">Placas de foro</span><span class="disc-pill g" data-i18n="disc.f.kCursor">Cursores</span></div>
             </div>
           </div>
           <div class="disc-pct"></div>
@@ -6237,8 +6243,9 @@
           <div class="disc-sharp">
             <div class="disc-fp" data-go="camos">
               <span class="ico">🎨</span>
-              <span class="ttl"><span data-i18n="disc.f.camos">Tienda de camos (skins)</span> <span class="disc-soon" data-i18n="disc.soon">Próximamente</span></span>
-              <span class="dsc" data-i18n="disc.f.camosD">Personaliza por completo el aspecto de tu workspace con skins visuales, comprables por separado.</span>
+              <span class="ttl" data-i18n="disc.f.camos">Tienda de cosméticos</span>
+              <span class="dsc" data-i18n="disc.f.camosD">Camos que le cambian la piel a todo el sitio, placas que van detrás de tu nombre en el foro y cursores que te acompañan por el sitio en computadora. Eliges los que quieras y pagas todo el carrito de una sola vez.</span>
+              <div class="disc-pills"><span class="disc-pill g" data-i18n="disc.f.kCamo">Camos</span><span class="disc-pill g" data-i18n="disc.f.kFrame">Placas de foro</span><span class="disc-pill g" data-i18n="disc.f.kCursor">Cursores</span></div>
             </div>
             <div class="disc-fp" data-go="synpdf">
               <span class="ico">📚</span>
@@ -6330,7 +6337,7 @@
       var tt=document.getElementById('theme-toggle'); if(tt) tt.addEventListener('click',function(){ setTimeout(function(){ if(isOpen()) paintAll(); },40); });
       var ls=document.getElementById('lang-select'); if(ls) ls.addEventListener('change',function(){ setTimeout(function(){ if(isOpen()) paintAll(); },0); });
       var u=window.SCALPEL_USER||{};
-      // Everyone gets the tab: even Premium can buy the Extras (store camos + Synapse PDF).
+      // Everyone gets the tab: even Premium can buy the Extras (cosmetics store + Synapse PDF).
       var t=document.getElementById('tab-discover'); if(t) t.style.display='';
       // Standard already has the Standard tier — hide the section they own.
       if(u.plan!=='free'){ var ss=document.querySelector('#discover-view .disc-sec[data-plan="std"]'); if(ss) ss.style.display='none'; }
@@ -7755,8 +7762,13 @@
       'disc.f.camoStdD': 'An exclusive skin to personalize your workspace, included with Standard.',
       'disc.f.camoPrem': '1 Premium-plan camo',
       'disc.f.camoPremD': 'An exclusive Premium skin to personalize your workspace, included when you subscribe.',
-      'disc.f.camos': 'Camo (skin) store',
-      'disc.f.camosD': 'Fully restyle your workspace with visual skins, purchased separately.',
+      'disc.f.wheel': 'Monthly cosmetics wheel',
+      'disc.f.wheelD': 'Your daily-challenge streak earns spins. Each month brings a new batch — one camo, two plates and three cursors — and once the month is over, that batch never comes back.',
+      'disc.f.kCamo': 'Camos',
+      'disc.f.kFrame': 'Forum plates',
+      'disc.f.kCursor': 'Cursors',
+      'disc.f.camos': 'Cosmetics store',
+      'disc.f.camosD': 'Camos that restyle the whole site, plates that sit behind your name in the forum, and cursors that follow you around the site on desktop. Pick what you like and pay for the whole cart at once.',
       'disc.f.spdf': 'Synapse library PDF',
       'disc.f.spdfD': 'The whole Synapse library as a downloadable PDF — available as a separate purchase.',
       'disc.f.bull': 'Bullish',
@@ -8266,8 +8278,13 @@
       'disc.f.camoStdD': 'Un skin exclusivo para personalizar tu workspace, incluido al contratar Standard.',
       'disc.f.camoPrem': '1 camo del plan Premium',
       'disc.f.camoPremD': 'Un skin exclusivo del plan Premium para personalizar tu workspace, incluido al contratar.',
-      'disc.f.camos': 'Tienda de camos (skins)',
-      'disc.f.camosD': 'Personaliza por completo el aspecto de tu workspace con skins visuales, comprables por separado.',
+      'disc.f.wheel': 'Ruleta de cosméticos del mes',
+      'disc.f.wheelD': 'Tu racha en el reto diario te da giros. Cada mes entra una tanda nueva —un camo, dos placas y tres cursores— y cuando el mes se acaba, esa tanda no vuelve nunca.',
+      'disc.f.kCamo': 'Camos',
+      'disc.f.kFrame': 'Placas de foro',
+      'disc.f.kCursor': 'Cursores',
+      'disc.f.camos': 'Tienda de cosméticos',
+      'disc.f.camosD': 'Camos que le cambian la piel a todo el sitio, placas que van detrás de tu nombre en el foro y cursores que te acompañan por el sitio en computadora. Eliges los que quieras y pagas todo el carrito de una sola vez.',
       'disc.f.spdf': 'PDF de la biblioteca Synapse',
       'disc.f.spdfD': 'Toda la biblioteca de Synapse en un PDF descargable — disponible como compra aparte.',
       'disc.f.bull': 'Alcista',
@@ -8777,8 +8794,13 @@
       'disc.f.camoStdD': 'Un skin exclusif pour personnaliser votre espace, inclus avec Standard.',
       'disc.f.camoPrem': '1 camo de la formule Premium',
       'disc.f.camoPremD': 'Un skin exclusif Premium pour personnaliser votre espace, inclus à la souscription.',
-      'disc.f.camos': 'Boutique de camos (skins)',
-      'disc.f.camosD': 'Restylisez entièrement votre espace avec des skins visuels, achetés séparément.',
+      'disc.f.wheel': 'Roue des cosmétiques du mois',
+      'disc.f.wheelD': 'Votre série au défi quotidien vous rapporte des tours. Chaque mois amène un nouveau lot — un camo, deux plaques et trois curseurs — et une fois le mois terminé, ce lot ne revient plus.',
+      'disc.f.kCamo': 'Camos',
+      'disc.f.kFrame': 'Plaques de forum',
+      'disc.f.kCursor': 'Curseurs',
+      'disc.f.camos': 'Boutique de cosmétiques',
+      'disc.f.camosD': "Des camos qui rhabillent tout le site, des plaques qui se glissent derrière votre nom sur le forum et des curseurs qui vous suivent sur le site, sur ordinateur. Choisissez ce qui vous plaît et réglez tout le panier en une fois.",
       'disc.f.spdf': 'PDF de la bibliothèque Synapse',
       'disc.f.spdfD': 'Toute la bibliothèque Synapse en PDF téléchargeable — disponible en achat séparé.',
       'disc.f.bull': 'Haussier',
@@ -9288,8 +9310,13 @@
       'disc.f.camoStdD': 'Um skin exclusivo para personalizar seu workspace, incluído ao assinar Standard.',
       'disc.f.camoPrem': '1 camo do plano Premium',
       'disc.f.camoPremD': 'Um skin exclusivo do plano Premium para personalizar seu workspace, incluído ao assinar.',
-      'disc.f.camos': 'Loja de camos (skins)',
-      'disc.f.camosD': 'Personalize totalmente o visual do seu workspace com skins, comprados à parte.',
+      'disc.f.wheel': 'Roleta de cosméticos do mês',
+      'disc.f.wheelD': 'Sua sequência no desafio diário rende giros. Todo mês entra um lote novo — um camo, duas placas e três cursores — e quando o mês acaba, aquele lote não volta mais.',
+      'disc.f.kCamo': 'Camos',
+      'disc.f.kFrame': 'Placas do fórum',
+      'disc.f.kCursor': 'Cursores',
+      'disc.f.camos': 'Loja de cosméticos',
+      'disc.f.camosD': 'Camos que mudam a cara do site inteiro, placas que ficam atrás do seu nome no fórum e cursores que acompanham você pelo site no computador. Escolha os que quiser e pague o carrinho inteiro de uma vez só.',
       'disc.f.spdf': 'PDF da biblioteca Synapse',
       'disc.f.spdfD': 'Toda a biblioteca do Synapse em um PDF para download — disponível como compra à parte.',
       'disc.f.bull': 'Altista',

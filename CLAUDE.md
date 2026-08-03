@@ -1267,8 +1267,18 @@ borrado. PENDIENTE: agregar selector de mes / historial.
   días y opción de renovación por otros 3 si se cumplen expectativas de cualquiera de las partes.
 - [ ] **3. "My coupons":** ya no hay cupones de descuento. ¿Se quita, o se deja solo para mostrar el
   cupón de referido activo de cara a la próxima renovación?
-- [ ] **4. Discover:** agregar los cosméticos nuevos (**cursores y marcos**) para Free, Standard y
-  Premium, redactado **natural en los 4 idiomas** (nada de traducción literal).
+- [x] ✅ **4. Discover — cosméticos nuevos (2026-08-03).** Dos tarjetas: en **Extras** (la sección
+  que ven Free, Standard **y** Premium, porque son compras aparte) la vieja "Tienda de camos"
+  pasó a ser **"Tienda de cosméticos"** — camos + placas de foro + cursores, con la línea honesta
+  de que el cursor solo se ve en computadora y que el carrito se paga de una sola vez; y en
+  **Premium** una tarjeta nueva **"Ruleta de cosméticos del mes"** (la racha da giros; cada mes
+  una tanda de 1 camo + 2 placas + 3 cursores; al acabar el mes esa tanda no vuelve). Ambas con
+  pastillas Camos/Placas/Cursores. Redactado por idioma, no traducido: ES tú-LatAm, FR vous, PT-BR
+  você. **De paso, 3 etiquetas "Próximamente" MENTIROSAS borradas** — colgaban del camo de
+  Standard, del de Premium y de la tienda, y las tres cosas ya existen y se entregan (lo que falta
+  es el riel de cobro, que tampoco lleva etiqueta en los planes). 5 claves nuevas ×4 a paridad
+  (58/58/58/58, 0 claves de plantilla sin dict). Verificado en navegador con un usuario **Free**
+  real en los 4 idiomas, 0 errores JS.
 - [ ] **5. T&C:** ¿hay que delimitar los dos productos nuevos (cursores y marcos)?
 - [ ] **6. T&C:** revisar si dice algo de la **ruleta y cupones de descuento** — hoy los premios son
   SOLO cosméticos.
