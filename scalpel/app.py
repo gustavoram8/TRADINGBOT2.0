@@ -6824,7 +6824,15 @@ def _paypal_reconcile(order, kind='plan'):
 
 # ═══ Payment rails — the shared front door ════════════════════════════════
 def available_payment_rails():
-    """Which ways of paying are switched on right now, in the order shown."""
+    """Como se puede pagar ahora mismo, en el orden en que se muestran.
+
+    'manual' (transferencia USDT a nuestra cuenta, con comprobante) va SIEMPRE
+    al final y no depende de ninguna clave: es una persona revisando, no una
+    pasarela. Cuenta como opcion de pleno derecho, y eso no es un detalle —
+    antes no estaba en esta lista, asi que el dia que se encendiera PayPal
+    habria quedado como UNICA via y el USDT habria desaparecido del sitio sin
+    que nadie lo decidiera. El comprador tiene que poder elegir entre las dos.
+    """
     rails = []
     if PAYPAL_ENABLED:
         rails.append('paypal')
@@ -6832,6 +6840,7 @@ def available_payment_rails():
         rails.append('crypto')
     if STRIPE_ENABLED:
         rails.append('stripe')
+    rails.append('manual')
     return rails
 
 
@@ -7497,13 +7506,10 @@ def checkout_create():
         return redirect(url_for('checkout_status', order_id=order.id))
 
     rails = available_payment_rails()
-    if order.final_price > 0 and rails:
-        if len(rails) > 1:
-            return redirect(url_for('checkout_pay', order_id=order.id))
-        dest = _start_payment(order, rails[0])
-        if dest:
-            return redirect(dest, code=303)
-        # falls through to the manual instructions rather than dead-ending
+    if order.final_price > 0 and len(rails) > 1:
+        return redirect(url_for('checkout_pay', order_id=order.id))
+    # Sin ninguna pasarela encendida solo queda la via manual: se va directo a
+    # sus instrucciones, sin hacerle "elegir" entre una sola cosa.
 
     return render_template('checkout_done.html', order=order,
                            plan_label=PLAN_LABELS.get(plan, plan), duplicate=False)
@@ -7521,7 +7527,7 @@ def _start_payment(order, method):
         return _paypal_create_order(order, 'plan')
     if method == 'crypto' and CRYPTO_ENABLED:
         return _crypto_create_invoice(order, 'plan')
-    return None
+    return None      # 'manual' incluido: su "destino" son las instrucciones
 
 
 @app.route('/checkout/pay/<int:order_id>', methods=['GET', 'POST'])
@@ -7534,6 +7540,11 @@ def checkout_pay(order_id):
     if order.status == 'paid':
         return redirect(url_for('checkout_status', order_id=order.id))
     rails = available_payment_rails()
+    # Vista previa para el dueno: sin claves solo existe la via manual, asi que
+    # el selector no se puede ver. Con ?preview=1 un admin lo ve entero para
+    # revisar textos y disposicion. Solo pinta: no habilita ningun cobro.
+    if request.method == 'GET' and current_user.is_admin and request.args.get('preview'):
+        rails = ['paypal', 'crypto', 'manual']
     if request.method == 'POST':
         method = request.form.get('method', '')
         if method in rails:

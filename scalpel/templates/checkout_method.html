@@ -207,6 +207,13 @@
           <span class="rail-foot">
             <span class="fl" data-i18n="cpay.sendFrom">Send from Binance, Trust Wallet or any wallet you already use.</span>
           </span>
+        {% elif rail == 'manual' %}
+          <span class="rail-head">{{ marks.usdt() }}<span class="tag" data-i18n="cpay.manualTag">By hand</span><span class="go">→</span></span>
+          <span class="rail-body" data-i18n="cpay.manualBody">Send the USDT yourself to our account and attach the receipt. We check it
+            and switch your plan on — normally within a few hours, and never more than 24.</span>
+          <span class="rail-foot">
+            <span class="fl" data-i18n="cpay.manualFoot">Choose this one if you'd rather transfer from your own exchange.</span>
+          </span>
         {% else %}
           <span class="rail-head">
             <span class="paymark" style="--pm-size:34px">{{ marks.lock(20) }}<span class="pm-word" data-i18n="cpay.cardTitle">Debit or credit card</span></span>
