@@ -643,8 +643,12 @@
     body.camo-premium:not(.camo-day) .quiz-result-mascot.pass { content: url('/static/logo3_premium_dark.png'); }
     body.camo-premium.camo-day      .quiz-result-mascot.fail { content: url('/static/logo4_premium.png'); }
     body.camo-premium:not(.camo-day) .quiz-result-mascot.fail { content: url('/static/logo4_premium_dark.png'); }
-    body.camo-fourth.light      .quiz-welcome-logo { content: url('/static/logo2_fourth.png'); }
-    body.camo-fourth:not(.light) .quiz-welcome-logo { content: url('/static/logo2_fourth_dark.png'); }
+    /* ?v=2 — el arte se corrigió el 2026-08-03 (la bandera estaba espejada y
+       dos estrellas se pisaban). Al reemplazar un archivo con el MISMO nombre,
+       el navegador de quien ya lo tenía en caché seguiría mostrando el viejo:
+       el parámetro fuerza la descarga. */
+    body.camo-fourth.light      .quiz-welcome-logo { content: url('/static/logo2_fourth.png?v=2'); }
+    body.camo-fourth:not(.light) .quiz-welcome-logo { content: url('/static/logo2_fourth_dark.png?v=2'); }
     body.camo-fourth .quiz-welcome-logo { transform: translateY(-50%) rotate(0deg); }
 
     /* Chronicles — el caballero de la flecha. Camo de DOS looks, así que las
