@@ -1330,6 +1330,27 @@ borrado. PENDIENTE: agregar selector de mes / historial.
   de la fila en **los 9 camos × 2 modos**: mínimo 8.70 (naval), máximo 17.23; el umbral AA es 4.5.
   Ninguno queda por debajo. El reveal de PLAN no tenía el problema: va sobre un velo oscuro fijo,
   sin overrides de `body.light`.
+  🔴 **2ª PARTE (el usuario preguntó "¿puedes prometer que está al 100%?" y la respuesta era NO).**
+  Aquella medición cubría 9 camos × 2 modos **pero no los 8 RANGOS**, y el rango cambia el color de
+  acento del modal (`TH[rank]`). Re-auditado por **píxeles reales** (se recorta cada texto del
+  screenshot y se compara con el color que de verdad quedó detrás — varios camos tienen paneles
+  translúcidos y el cálculo teórico miente), con un usuario **NO admin** por el camino real:
+  **1.380 lecturas**. Resultado: 1.240 bien (peor 6.83) y **87 fallando, todas el mismo elemento —
+  el "RANK UP" pequeño de arriba** (`.ru-eyebrow`, `color:var(--ru-acc)`), en TODOS los rangos.
+  Peor caso: dorado del rango 8 sobre el pergamino de blackflag = **1.39**.
+  **Fix:** nada de tabla por camo (se rompería con el camo del mes siguiente) — `_legible()` acerca
+  el acento al negro o al blanco hasta llegar a 5.0 contra el fondo REAL (`_fondo()` compone los
+  `--surface` translúcidos hacia arriba hasta dar con algo opaco), y **devuelve el color intacto
+  cuando ya contrasta**, así el look aprobado no cambia donde ya se leía. Var nueva `--ru-acc-tx`
+  (NO se toca `--ru-acc`: lo usan el degradado del botón, los glows y los bordes).
+  Verificado con `scratchpad/verifica_peores.py`: los 12 casos extremos pasan (1.39→5.81, 1.86→5.40,
+  2.56→5.09; premium 11.44).
+  ⚠️ **Dos lecciones de método:** (1) la 1ª versión del test cambiaba la clase del camo en el DOM
+  **después** de que el modal ya había elegido su color → medía un color contra otro fondo y daba
+  fallos falsos; hay que **recargar** con el camo guardado en la cuenta. (2) `pg.goto()` esperaba el
+  `load` completo y la página pide un script a **cdnjs**, bloqueado en el contenedor → **~30s por
+  carga** (70 min de reloj). Siempre `wait_until='domcontentloaded'` + `pg.route` abortando todo lo
+  que no sea 127.0.0.1.
 - [x] ✅ **23. Quitar "exclusive camo" de los unlocks de rango (2026-08-03).** Estaba en DOS sitios,
   y el segundo lo señaló él tras un primer arreglo incompleto: (a) la línea de progreso
   `rank.rewards` ×4 ("un nuevo badge, **un camo exclusivo** y un certificado PDF") y (b) 🔴 **el
