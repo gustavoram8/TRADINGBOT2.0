@@ -6973,6 +6973,15 @@ def record_sale_breakdown(order, processor_fee=None, fee_is_real=False):
         return None
     if SaleBreakdown.query.filter_by(order_id=order.id).first():
         return None                                  # already broken down
+    # Un ensayo en SANDBOX no es una venta: no entró un dólar. Si se anotara,
+    # ensuciaría el libro para siempre — una fila con `order_id` no se puede
+    # borrar (solo revertir, y queda tachada a la vista), habría consumido un
+    # puesto de la escalera del socio y habría apartado reserva de un dinero
+    # inexistente. El plan SÍ se activa: lo que se ensaya es el circuito.
+    if order.payment_method == 'paypal' and PAYPAL_ENV != 'live':
+        app.logger.info('Order %s pagada en PayPal SANDBOX: se activa el plan '
+                        'pero NO se anota en el libro de ventas.', order.id)
+        return None
 
     gross = float(order.base_price or 0.0)
     net = float(order.final_price or 0.0)
