@@ -1305,8 +1305,14 @@ borrado. PENDIENTE: agregar selector de mes / historial.
 - [ ] **20. "My account"** en el panel de arriba a la derecha (bajo my coupons / my rank), con lo de
   Settings y algo más.
 - [ ] **21. Simular tráfico farmeando XP** y desbloqueando rangos, para cazar bugs del cableado.
-- [ ] **22. Descripciones de los unlock de rango ilegibles bajo camos** (verificado en fourth:
-  fondo blanco que rompe el texto). Revisar todos los camos y ambos modos.
+- [x] ✅ **22. Unlocks de rango ilegibles bajo camos (2026-08-03).** Una sola línea lo causaba:
+  `body.light .ru-rwd{background:#f8f9fc}` — un blanco FIJO. Con un camo puesto el texto es claro
+  (lo fija `--text` del camo) y caía sobre ese blanco: ilegible. En el tema claro por defecto
+  `var(--bg)` vale `#F3F5FA`, prácticamente el mismo color, así que borrar la línea no cambia nada
+  ahí y lo arregla en todos los camos de golpe. Medido el CONTRASTE real del título contra el fondo
+  de la fila en **los 9 camos × 2 modos**: mínimo 8.70 (naval), máximo 17.23; el umbral AA es 4.5.
+  Ninguno queda por debajo. El reveal de PLAN no tenía el problema: va sobre un velo oscuro fijo,
+  sin overrides de `body.light`.
 - [x] ✅ **23. Quitar "exclusive camo" de los unlocks de rango (2026-08-03).** Estaba en DOS sitios,
   y el segundo lo señaló él tras un primer arreglo incompleto: (a) la línea de progreso
   `rank.rewards` ×4 ("un nuevo badge, **un camo exclusivo** y un certificado PDF") y (b) 🔴 **el

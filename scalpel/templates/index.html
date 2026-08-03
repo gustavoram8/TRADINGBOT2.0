@@ -5270,8 +5270,12 @@
   .ru-xp{font-size:12.5px;color:var(--muted);margin-top:3px;font-variant-numeric:tabular-nums}
   .ru-xp b{color:var(--ru-acc);font-weight:700}
   .ru-rewards{display:flex;flex-direction:column;gap:1px;border-radius:14px;overflow:hidden;border:1px solid var(--border);margin-bottom:22px}
+  /* El fondo de cada recompensa sigue al TEMA. Antes el modo claro lo forzaba
+     a #f8f9fc (casi blanco) y con un camo puesto el texto —que es claro— caía
+     sobre blanco y se volvía ilegible. En el tema claro por defecto var(--bg)
+     vale #F3F5FA, o sea prácticamente el mismo color: no se pierde nada y se
+     arregla en todos los camos de golpe. */
   .ru-rwd{display:flex;align-items:center;gap:14px;padding:13px 15px;background:var(--bg)}
-  body.light .ru-rwd{background:#f8f9fc}
   .ru-rwd + .ru-rwd{border-top:1px solid var(--border)}
   .ru-overlay.reveal .ru-rwd{animation:ruUp .5s both}
   .ru-overlay.reveal .ru-rwd:nth-child(1){animation-delay:.40s}.ru-overlay.reveal .ru-rwd:nth-child(2){animation-delay:.49s}
