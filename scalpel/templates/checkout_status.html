@@ -152,7 +152,9 @@
         <span class="t-label" data-i18n="cstat.total">Total</span>
         <span>
           <span class="t-val">${{ '%.2f'|format(order.final_price) }} USD</span>
-          {% if order.payment_method in ('paypal', 'stripe') %}
+          {% if order.payment_method == 'free' %}
+          <span class="t-sub" data-i18n="cstat.paidFree">no charge — plan granted</span>
+          {% elif order.payment_method in ('paypal', 'stripe') %}
           <span class="t-sub" data-i18n="cstat.paidCard">paid by card / PayPal</span>
           {% else %}
           <span class="t-sub" data-i18n="cstat.paidIn">paid in USDT (1 USDT ≈ 1 USD)</span>

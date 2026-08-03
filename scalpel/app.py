@@ -7041,6 +7041,13 @@ def record_sale_breakdown(order, processor_fee=None, fee_is_real=False):
         app.logger.info('Order %s pagada en PayPal SANDBOX: se activa el plan '
                         'pero NO se anota en el libro de ventas.', order.id)
         return None
+    # Y un pedido de $0 tampoco: un plan regalado o una prueba interna no mueve
+    # dinero, así que no hay nada que repartir — pero SÍ consumiría un puesto de
+    # la escalera del socio (que ordena CLIENTES) y apartaría reserva sobre cero.
+    if float(order.final_price or 0.0) <= 0:
+        app.logger.info('Order %s de $0: se activa el plan pero NO se anota '
+                        'en el libro de ventas.', order.id)
+        return None
 
     gross = float(order.base_price or 0.0)
     net = float(order.final_price or 0.0)
@@ -7133,7 +7140,10 @@ def _activate_plan_from_order(order):
     order.applied_at = now
     # First PAID order with a creator code welds the account to that partner:
     # binding on payment (not at checkout) so an abandoned cart binds nothing.
-    if order.promo_code and not user.referred_by_code:
+    # Solo una compra CON DINERO ata la cuenta a un socio. Un pedido de $0
+    # (regalo, prueba, código del 100%) no es una conversión: atarlo le daría
+    # al socio comisión de por vida sobre alguien que nunca le compró nada.
+    if order.promo_code and not user.referred_by_code and (order.final_price or 0) > 0:
         pc = PromoCode.query.filter(
             db.func.lower(PromoCode.code) == order.promo_code.lower()).first()
         _bind_referral(user, pc)
@@ -7419,6 +7429,22 @@ def checkout_create():
     # there — the same single-click flow as before. With several, they choose,
     # which is the whole point of adding PayPal next to USDT rather than
     # replacing it. With none (or a $0 promo order), the manual instructions.
+    # Un pedido de $0 (código del 100%, plan regalado, prueba interna) no tiene
+    # nada que cobrar: se entrega en el acto. Antes caía en la página de
+    # instrucciones manuales — o sea que al ganador de un sorteo se le pedía
+    # pagar $0.00 por transferencia y el plan se quedaba sin entregar hasta que
+    # alguien lo activara a mano en /admin.
+    if order.final_price <= 0:
+        order.payment_method = 'free'   # no heredar 'usdt-binance': no se pagó nada
+        order.status = 'paid'
+        order.paid_at = datetime.now(timezone.utc)
+        db.session.commit()
+        _activate_plan_from_order(order)
+        record_audit_event('order_free_activated', user_id=current_user.id,
+                           detail=f'#{order.id} {plan}/{cycle}'
+                                  + (f' promo={promo.code}' if promo else ''))
+        return redirect(url_for('checkout_status', order_id=order.id))
+
     rails = available_payment_rails()
     if order.final_price > 0 and rails:
         if len(rails) > 1:
