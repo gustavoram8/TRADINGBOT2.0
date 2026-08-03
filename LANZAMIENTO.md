@@ -13,6 +13,32 @@
 
 ---
 
+## 🔐 DEUDA DE SEGURIDAD YA ARREGLADA EN CÓDIGO — falta desplegarla (2026-08-03)
+
+El dueño decidió **no desplegar todavía** y arreglarlo el día que se abra el sitio. Anotado aquí
+para que no se pierda; **el `git pull` + restart de la sección de deploy ya lo lleva dentro**, no
+hay nada extra que hacer, solo desplegar.
+
+1. **Bypass de `/analyze` y `/validate` — CERRADO en el repo, ABIERTO en producción.**
+   `has_access()` aceptaba cualquier valor del cookie `scalpel_anon` (resto del acceso de invitado,
+   retirado hace tiempo). Nadie escribe ese cookie, pero el candado lo honraba: con
+   `curl -H 'Cookie: scalpel_anon=loquesea'` se entraba sin cuenta. Y el límite de uso se cuenta
+   contra ese mismo valor, elegido por quien llama → **rotándolo, análisis de IA ilimitados a costa
+   del dueño** (~$0.03 cada uno). ⚠️ **Mientras el puerto 5001 siga público y la clave de OpenAI de
+   pago siga conectada, esto es dinero real en riesgo cada día que pasa sin desplegar.**
+2. **Cabeceras de seguridad** (nosniff, X-Frame-Options, Referrer-Policy, Permissions-Policy): no
+   había ninguna. Añadidas en el mismo commit. CSP se dejó fuera a propósito (la app usa scripts en
+   línea por todas partes; es trabajo aparte con pruebas) y HSTS también, porque obligaría a HTTPS
+   y hoy se sirve por IP cruda.
+3. **`proxy_pass` a gunicorn: NO está hecho.** Verificado el 2026-08-03 con
+   `grep -n "proxy_pass" /etc/nginx/sites-enabled/*` en el VPS → **cero coincidencias**. nginx sigue
+   sirviendo solo la página estática. El procedimiento está en la sección C de este archivo, y
+   cerrar el 5001 en la D. ⚠️ Cablear el proxy **no** cierra el puerto: son dos pasos distintos.
+
+`tools/test_seguridad.py` (10/10) comprueba las dos primeras cosas; correrlo tras el deploy.
+
+---
+
 ## 🧭 Resumen en una frase
 
 Conectar el dominio a la aplicación **no es una obra, es un interruptor** (unas 10 líneas de nginx).
