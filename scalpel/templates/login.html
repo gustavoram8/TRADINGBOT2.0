@@ -37,6 +37,7 @@
     {% endif %}
 
     <form method="POST" action="/login">
+      {% if next %}<input type="hidden" name="next" value="{{ next }}" />{% endif %}
       <div class="field">
         <label for="identifier" data-i18n="login.identifier">Email or username</label>
         <input type="text" id="identifier" name="identifier" autocomplete="username" required />
@@ -57,7 +58,7 @@
 
     <div class="auth-links">
       <span data-i18n="login.noAccount">Don't have an account yet?</span>
-      <a href="/register" data-i18n="login.register">Create an account</a>
+      <a href="/register{% if next %}?next={{ next|urlencode }}{% endif %}" data-i18n="login.register">Create an account</a>
     </div>
   </div>
 

@@ -5222,10 +5222,31 @@ def app_view():
 # ──────────────────────────────────────────────────────────────────────────
 # AUTH ROUTES
 # ──────────────────────────────────────────────────────────────────────────
+def _safe_next(raw=None):
+    """La pagina a la que volver despues de entrar o registrarse.
+
+    Solo se aceptan rutas RELATIVAS del propio sitio. Si se admitiera una URL
+    completa, cualquiera podria mandar a alguien a
+    /login?next=https://sitio-falso.com: veria el dominio de verdad en el
+    enlace y acabaria en una copia pidiendole la contrasena. Es el clasico
+    redirect abierto. Por eso se rechaza todo lo que no empiece por una sola
+    barra, y tambien "//host", que el navegador lee como dominio externo.
+    """
+    raw = (raw if raw is not None else
+           (request.args.get('next') or request.form.get('next') or '')).strip()
+    if not raw.startswith('/') or raw.startswith('//') or '\\' in raw:
+        return ''
+    return raw[:300]
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('welcome'))
+    # Adonde queria ir antes de que le pidieran identificarse (p. ej. el
+    # checkout de un plan concreto). Sin esto, quien pulsaba "Pasar a Premium"
+    # teniendo ya cuenta perdia por el camino QUE plan queria.
+    destino = _safe_next()
 
     if request.method == 'POST':
         identifier = request.form.get('identifier', '').strip()
@@ -5247,6 +5268,7 @@ def login():
                 record_audit_event('email_verification', user_id=user.id, detail=user.email, success=sent)
                 session['pending_user_id'] = user.id
                 session['pending_remember'] = remember
+                session['post_login_next'] = destino
                 return redirect(url_for('verify_email'))
             # Passive consent: existing accounts predating the T&C accept them
             # by signing in (the login page shows the notice beneath the button).
@@ -5262,12 +5284,14 @@ def login():
                 session['pre2fa_remember'] = remember
                 session['pre2fa_at'] = datetime.now(timezone.utc).isoformat()
                 session['pre2fa_tries'] = 0
+                session['post_login_next'] = destino
                 return redirect(url_for('login_2fa'))
             login_user(user, remember=remember)
-            return _register_device_and_alert(user, redirect(url_for('welcome')))
-        return render_template('login.html', error='invalid')
+            return _register_device_and_alert(
+                user, redirect(destino or url_for('welcome')))
+        return render_template('login.html', error='invalid', next=destino)
 
-    return render_template('login.html', reset=request.args.get('reset'),
+    return render_template('login.html', reset=request.args.get('reset'), next=destino,
                            error='banned' if request.args.get('banned') else None)
 
 
@@ -5319,7 +5343,9 @@ def login_2fa():
             login_user(user, remember=remember)
             record_audit_event('login_2fa', user_id=user.id,
                                detail='backup code' if used_backup else 'totp')
-            return _register_device_and_alert(user, redirect(url_for('welcome')))
+            destino = _safe_next(session.pop('post_login_next', ''))
+            return _register_device_and_alert(
+                user, redirect(destino or url_for('welcome')))
         session['pre2fa_tries'] = session.get('pre2fa_tries', 0) + 1
         record_audit_event('login_2fa_failed', user_id=user.id, success=False)
         if session['pre2fa_tries'] >= 5:
@@ -5518,32 +5544,32 @@ def register():
         fp_hash = (request.form.get('_fp') or '').strip()[:64]
 
         if len(email) < 5:
-            return render_template('register.html', error='invalid', username=username, email=email)
+            return render_template('register.html', next=_safe_next(), error='invalid', username=username, email=email)
         if not USERNAME_RE.match(username):
-            return render_template('register.html', error='invalid_username', username=username, email=email)
+            return render_template('register.html', next=_safe_next(), error='invalid_username', username=username, email=email)
         if not _valid_password(password):
-            return render_template('register.html', error='invalid_password', username=username, email=email)
+            return render_template('register.html', next=_safe_next(), error='invalid_password', username=username, email=email)
         if _weak_password(password, username, email):
-            return render_template('register.html', error='weak_password', username=username, email=email)
+            return render_template('register.html', next=_safe_next(), error='weak_password', username=username, email=email)
         # Age: a concrete birth date, not just a checkbox. The clickwrap below
         # still runs — the two are evidence of different things (a fact vs. an
         # agreement) and together they are the under-18 defence.
         birth_date, bd_err = _parse_birth_date(request.form.get('birth_date'))
         if bd_err == 'underage':
-            return render_template('register.html', error='underage', username=username, email=email)
+            return render_template('register.html', next=_safe_next(), error='underage', username=username, email=email)
         if bd_err:
-            return render_template('register.html', error='invalid', username=username, email=email)
+            return render_template('register.html', next=_safe_next(), error='invalid', username=username, email=email)
         # Clickwrap: the account cannot be created without explicit T&C consent.
         if not accepted_terms:
-            return render_template('register.html', error='terms_required', username=username, email=email)
+            return render_template('register.html', next=_safe_next(), error='terms_required', username=username, email=email)
         if User.query.filter_by(username=username).first():
-            return render_template('register.html', error='username_taken', username=username, email=email)
+            return render_template('register.html', next=_safe_next(), error='username_taken', username=username, email=email)
         if User.query.filter_by(email=email).first():
-            return render_template('register.html', error='email_taken', username=username, email=email)
+            return render_template('register.html', next=_safe_next(), error='email_taken', username=username, email=email)
 
         # Block registrations from known-banned devices
         if fp_hash and BannedFingerprint.query.filter_by(fp_hash=fp_hash).first():
-            return render_template('register.html', error='device_banned', username=username, email=email)
+            return render_template('register.html', next=_safe_next(), error='device_banned', username=username, email=email)
 
         # Create the account unverified; activation happens after the email code.
         code = _new_verification_code()
@@ -5566,9 +5592,10 @@ def register():
         record_audit_event('email_verification', user_id=user.id, detail=email, success=sent)
         session['pending_user_id'] = user.id
         session['pending_remember'] = remember
+        session['post_login_next'] = _safe_next()
         return redirect(url_for('verify_email'))
 
-    return render_template('register.html')
+    return render_template('register.html', next=_safe_next())
 
 
 @app.route('/verify-email', methods=['GET', 'POST'])
@@ -5602,10 +5629,12 @@ def verify_email():
         db.session.commit()
         remember = session.pop('pending_remember', False)
         session.pop('pending_user_id', None)
+        destino = _safe_next(session.pop('post_login_next', ''))
         login_user(user, remember=remember)
         # Silently records this browser as the account's first known device,
         # so their NEXT sign-in from somewhere new is the one that alerts.
-        return _register_device_and_alert(user, redirect(url_for('welcome')))
+        return _register_device_and_alert(
+            user, redirect(destino or url_for('welcome')))
 
     return render_template('verify_email.html', email=user.email)
 
