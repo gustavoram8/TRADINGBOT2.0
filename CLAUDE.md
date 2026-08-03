@@ -1475,6 +1475,29 @@ tabla lista para 10. ⚠️ Si piden regenerarlo: script en scratchpad de la ses
   límite ~2.000 envíos/día y si se supera, Google bloquea 24h y **nadie puede registrarse** → usar un
   proveedor transaccional (Brevo/Resend, plan gratis) separado de la casilla humana. Configurar
   **SPF + DKIM + DMARC** sí o sí, o los correos caen en spam.
+  🔴 **EL ALTA DE WORKSPACE SE TRABÓ (2026-08-03).** El usuario llegó hasta la verificación por
+  teléfono y saltó *"actividad inusual"* sin recibir código (puso región **USA** con número
+  **venezolano** — el antifraude lee la incoherencia). Al reintentar desde cero: *"el dominio ya
+  está tomado"*, que **NO es un bug**: el primer intento ya creó una cuenta pendiente atada a
+  `tradeable.academy`, así que choca consigo mismo. Salidas: entrar a la cuenta pendiente en
+  admin.google.com, o el flujo de Google "el dominio ya está en uso" (se libera verificando la
+  propiedad con un TXT). **Concepto clave que se le explicó: lo que evita el spam NO es el
+  proveedor, es SPF+DKIM+DMARC + reputación** → no está atado a Workspace.
+  **Plan alternativo propuesto:** (1) **Cloudflare Email Routing** hoy y gratis para RECIBIR en
+  `support@` (el DNS ya está ahí; la dirección publicada en T&C pasa a existir de verdad);
+  (2) **Resend/Brevo** para que la app ENVÍE con el dominio autenticado; (3) el buzón real
+  (Workspace reintentado, o **Zoho Mail Lite ~$1/usuario/mes**, que sí trae SMTP — el Zoho *free*
+  NO tiene IMAP/SMTP) sin apuro. ⚠️ Los MX de Email Routing **chocan** con los de Workspace/Zoho:
+  al poner buzón real hay que desactivar el routing.
+  ✅ **Código YA preparado (2026-08-03):** el remitente estaba repetido a mano en **10 sitios** →
+  ahora `MAIL_ACCOUNT` (usuario SMTP), **`MAIL_FROM`** (remitente visible) y `ADMIN_INBOX` (buzón
+  de avisos, cae en el remitente). 🔴 Separar usuario y remitente era **obligatorio** para los
+  transaccionales: el usuario SMTP de Resend es literalmente la palabra `resend`, así que unidos
+  el correo habría salido *"de: resend"* y rebotado. Línea de arranque `[Mail] …` y
+  **`tools/check_mail.py`** (MX/SPF/DKIM/DMARC + conecta + autentica + `--enviar` manda uno de
+  prueba; distingue "el registro no existe" de "no pude consultar DNS"). Existe porque **un SMTP
+  mal configurado NO tumba la app**: deja un warning y sigue, o sea que el registro "funciona"
+  mientras nadie recibe su código.
 - **Redes sociales (2026-07-28):** crear un **Gmail NUEVO dedicado** a nombre de la empresa (nunca el
   personal) como identidad raíz de Instagram/TikTok/X/YouTube/Threads + 2FA + códigos de respaldo
   guardados. **Reservar los handles `@tradeableacademy` YA**, aunque los perfiles queden vacíos. El
@@ -1486,7 +1509,27 @@ tabla lista para 10. ⚠️ Si piden regenerarlo: script en scratchpad de la ses
 - Verificar prop firms que aceptan Venezuela (hoy solo OneUp Trader).
 - Ratings del Scout con fuente verificable (Trustpilot, etc.).
 
-### 📌 PENDIENTE INMEDIATO — encender PayPal (pedido para el 2026-07-27)
+### 📌 PENDIENTE INMEDIATO — encender PayPal (EN PAUSA por el usuario 2026-08-03)
+🟡 **Estado al 2026-08-03:** la cuenta del papá **YA ES BUSINESS**, pero las credenciales que pasó
+son de **SANDBOX** (dinero de mentira; se le explicó que en sandbox nunca llega un dólar y que las
+de cobrar están en la pestaña **Live**, con Client ID y Secret distintos). **El usuario decidió
+pausarlo** para atender primero el correo del dominio. ⚠️ **NO pegar el Secret en el chat** — va del
+panel de PayPal directo a supervisor + `scalpel/.env`.
+Piezas nuevas listas para cuando se retome: **`tools/check_paypal.py`** (pide un token y dice si el
+par autentica y **a qué entorno pertenece**, sin imprimir valores; detecta el desajuste con
+`PAYPAL_ENV`, que **cae en `live` por defecto** — sandbox contra el host de producción da un 401 sin
+explicación); línea de arranque `[PayPal] enabled=… env=…`; y **`PAYPAL_RECEIPT_NAME`**, porque la
+cuenta receptora **no se puede renombrar** a "Tradeable Academy" (se usa para otros cobros): si se
+setea, el checkout avisa *"El cargo aparecerá a nombre de X"* (×4 idiomas) — la mejor defensa contra
+el contracargo "no reconozco esto", y coherente con la Secc. 5 de los T&C ("Quién recibe el pago").
+`PAYPAL_BRAND_NAME` se queda: es un campo por-orden de la página de aprobación, no un ajuste de la
+cuenta. 🔴 **Y un agujero tapado antes de que lo pisara:** una compra en sandbox se habría anotado
+como VENTA REAL en el libro (una fila con `order_id` no se puede borrar, solo revertir y queda
+tachada; habría consumido puesto en la escalera del socio y apartado reserva de dinero inexistente)
+→ `record_sale_breakdown` ahora salta los pedidos de PayPal cuando `PAYPAL_ENV != 'live'`: el plan
+se activa igual (se ensaya el circuito), los libros no se tocan. `test_sandbox.py` 4/4.
+
+Detalle original del procedimiento (sigue vigente):
 El usuario NO entiende todavía qué son Client ID / Secret / Webhook ID → **explicárselo paso a paso
 con capturas de dónde hace clic**, no solo nombrarlos. Orden: (1) **subir la cuenta personal del papá
 a PayPal Business** (es un upgrade gratis, misma cuenta/saldo/correo — NO se crea una cuenta nueva;
