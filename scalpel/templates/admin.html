@@ -560,21 +560,32 @@
     </div>
 
     <!-- PROMO CODES -->
-    <div class="section-h" id="promos" style="font-size:16px;">Promo &amp; Creator Codes</div>
-    <div class="section-d">Discount codes for partnerships. Monthly plans only (per current policy). Track usage per creator.</div>
+    <div class="section-h" id="promos" style="font-size:16px;">🎟️ Códigos de descuento y de socio</div>
+    <div class="section-d">
+      Atajo directo: <span class="code-mono">/admin#promos</span>.
+      <b>Creator</b> = el código de un socio: ata la cuenta del cliente a ese socio para
+      siempre y le paga comisión en cada renovación. <b>Discount</b> = un cupón suelto,
+      sin socio detrás ni comisión.
+    </div>
+    <div class="section-d" style="border-left:3px solid var(--accent); padding-left:12px;">
+      <b>Para regalar un plan o probar la entrega:</b> crea uno de tipo <b>Discount</b> con
+      <b>100 %</b> y <b>Valid for: Both</b>. Al usarlo, el plan se entrega <b>en el acto</b> —
+      no pasa por ninguna pantalla de pago. Un pedido de $0 no se anota en el libro de
+      ventas ni ata la cuenta a ningún socio, así que se puede usar sin ensuciar los números.
+    </div>
     <div class="table-card" style="margin-bottom:14px;">
       <form method="POST" action="/admin/promo/create" class="mini-form" style="border-bottom:1px solid var(--border);">
-        <div class="fld"><label>Code</label><input type="text" name="code" placeholder="TRADER20" required style="text-transform:uppercase;" /></div>
-        <div class="fld"><label>Discount %</label><input type="number" name="discount_pct" min="1" max="100" placeholder="20" required /></div>
-        <div class="fld"><label>Creator</label><input type="text" name="creator_name" placeholder="@influencer" /></div>
-        <div class="fld"><label>Owner (username)</label><input type="text" name="owner" placeholder="cuenta del socio" /></div>
-        <div class="fld"><label>Type</label><select name="kind"><option value="creator">Creator</option><option value="discount">Discount</option></select></div>
-        <div class="fld"><label>Valid for</label><select name="valid_for"><option value="monthly">Monthly</option><option value="both">Both</option><option value="annual">Annual</option></select></div>
-        <div class="fld"><label>Max uses</label><input type="number" name="max_uses" min="1" placeholder="∞" /></div>
-        <button type="submit" class="mini-btn">Create code</button>
+        <div class="fld"><label>Código</label><input type="text" name="code" placeholder="TRADER20" required style="text-transform:uppercase;" /></div>
+        <div class="fld"><label>Descuento %</label><input type="number" name="discount_pct" min="1" max="100" placeholder="20" required /></div>
+        <div class="fld"><label>Socio</label><input type="text" name="creator_name" placeholder="@influencer" /></div>
+        <div class="fld"><label>Dueño (usuario)</label><input type="text" name="owner" placeholder="cuenta del socio" /></div>
+        <div class="fld"><label>Tipo</label><select name="kind"><option value="creator">Creator</option><option value="discount">Discount</option></select></div>
+        <div class="fld"><label>Vale para</label><select name="valid_for"><option value="both">Mensual y anual</option><option value="monthly">Solo mensual</option><option value="annual">Solo anual</option></select></div>
+        <div class="fld"><label>Usos máx.</label><input type="number" name="max_uses" min="1" placeholder="∞" /></div>
+        <button type="submit" class="mini-btn">Crear código</button>
       </form>
       <table>
-        <thead><tr><th>Code</th><th>Discount</th><th>Creator</th><th>Owner</th><th>Valid</th><th>Uses</th><th>Status</th><th></th></tr></thead>
+        <thead><tr><th>Código</th><th>Desc.</th><th>Socio</th><th>Dueño</th><th>Vale para</th><th>Usos</th><th>Estado</th><th></th></tr></thead>
         <tbody>
           {% for p in promos %}
           <tr class="{{ '' if p.active else 'inactive-row' }}">
@@ -608,7 +619,7 @@
             </td>
           </tr>
           {% else %}
-          <tr><td colspan="8" class="empty">No promo codes yet.</td></tr>
+          <tr><td colspan="8" class="empty">Todavía no hay códigos.</td></tr>
           {% endfor %}
         </tbody>
       </table>
