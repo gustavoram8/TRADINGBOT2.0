@@ -65,7 +65,7 @@ def dig(nombre, tipo):
     return None
 
 
-def _smtp(passwd, cuenta, servidor, puerto, avisos, problemas):
+def _smtp(passwd, cuenta, remitente, servidor, puerto, avisos, problemas):
     """Conecta, autentica y (con --enviar) manda un correo de prueba."""
     print('\n── SMTP ──')
     if not passwd:
@@ -81,12 +81,12 @@ def _smtp(passwd, cuenta, servidor, puerto, avisos, problemas):
             if '--enviar' in sys.argv:
                 m = EmailMessage()
                 m['Subject'] = 'Prueba de correo — Tradeable Academy'
-                m['From'] = cuenta
+                m['From'] = remitente
                 m['To'] = avisos
                 m.set_content(
                     'Si estás leyendo esto, el correo saliente del sitio '
-                    'funciona.\n\nRemitente: %s\nSMTP: %s:%d\n'
-                    % (cuenta, servidor, puerto))
+                    'funciona.\n\nRemitente: %s\nSMTP: %s:%d (usuario %s)\n'
+                    % (remitente, servidor, puerto, cuenta))
                 s.send_message(m)
                 print('  ✅ correo de prueba enviado a %s' % avisos)
                 print('     (si no llega en 2 minutos, mirá la carpeta de spam '
@@ -117,19 +117,24 @@ def main():
         return (os.environ.get(k) or env.get(k, d)).strip()
 
     cuenta = var('MAIL_USERNAME', 'mauroramirezmij@gmail.com')
+    # El usuario SMTP y el remitente pueden ser distintos (Resend/Brevo usan
+    # una etiqueta o una API key como usuario). El DNS se revisa contra el
+    # dominio del REMITENTE, que es lo que mira quien recibe el correo.
+    remitente = var('MAIL_FROM') or cuenta
     passwd = var('MAIL_APP_PASSWORD')
     servidor = var('MAIL_SERVER', 'smtp.gmail.com')
     puerto = int(var('MAIL_PORT', '587') or 587)
-    avisos = var('ADMIN_EMAIL') or cuenta
-    dominio = cuenta.split('@')[-1]
+    avisos = var('ADMIN_EMAIL') or remitente
+    dominio = remitente.split('@')[-1]
 
-    print('Remitente : %s' % cuenta)
+    print('Usuario   : %s' % cuenta)
+    print('Remitente : %s' % remitente)
     print('Avisos a  : %s' % avisos)
     print('SMTP      : %s:%d' % (servidor, puerto))
     print('Contraseña: %s' % ('presente (%d caracteres)' % len(passwd) if passwd
                               else 'FALTA — la app no envía nada'))
-    if '@' not in cuenta:
-        print('\n⛔ MAIL_USERNAME no parece un correo.')
+    if '@' not in remitente:
+        print('\n⛔ El remitente (MAIL_FROM / MAIL_USERNAME) no es un correo.')
         return 1
 
     problemas = []
@@ -150,7 +155,7 @@ def main():
     txt = dig(dominio, 'TXT')
     if txt is None:
         print('  SPF/DMARC/DKIM: sin comprobar')
-        return _smtp(passwd, cuenta, servidor, puerto, avisos, problemas)
+        return _smtp(passwd, cuenta, remitente, servidor, puerto, avisos, problemas)
     txt = txt or []
     spf = [t for t in txt if 'v=spf1' in t]
     print('  SPF   : %s' % (spf[0][:110] if spf else 'FALTA → tus correos caen en spam'))
@@ -173,7 +178,7 @@ def main():
     if not dkim:
         problemas.append('sin DKIM')
 
-    return _smtp(passwd, cuenta, servidor, puerto, avisos, problemas)
+    return _smtp(passwd, cuenta, remitente, servidor, puerto, avisos, problemas)
 
 
 if __name__ == '__main__':

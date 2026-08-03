@@ -103,10 +103,16 @@ app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=3650)
 # reescriben la cabecera o rechazan el mensaje. Un solo sitio donde cambiarlo
 # — antes esta dirección estaba repetida a mano en diez lugares del archivo.
 MAIL_ACCOUNT = os.environ.get('MAIL_USERNAME', 'mauroramirezmij@gmail.com')
+# Remitente visible. Con Gmail/Workspace es la misma dirección con la que te
+# autenticas, pero los servicios transaccionales (Resend, Brevo, Mailgun…) usan
+# de usuario una etiqueta o una API key —el de Resend es literalmente la
+# palabra "resend"— y el From lo eliges tú. Sin separarlos, el correo saldría
+# "de: resend" y rebotaría.
+MAIL_FROM = os.environ.get('MAIL_FROM', '') or MAIL_ACCOUNT
 # Buzón humano de los avisos internos (venta confirmada, pago con problema,
-# formulario de contacto, alertas de auditoría). Por defecto, el mismo: así al
-# poner la casilla del dominio se mudan solos.
-ADMIN_INBOX = os.environ.get('ADMIN_EMAIL', MAIL_ACCOUNT)
+# formulario de contacto, alertas de auditoría). Por defecto, el remitente: así
+# al poner la casilla del dominio se mudan solos.
+ADMIN_INBOX = os.environ.get('ADMIN_EMAIL', MAIL_FROM)
 
 app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
 app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
@@ -114,9 +120,9 @@ app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = MAIL_ACCOUNT
 app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_APP_PASSWORD', '')
 app.config['MAIL_DEFAULT_SENDER'] = (
-    os.environ.get('MAIL_SENDER_NAME', 'Tradeable Academy'), MAIL_ACCOUNT)
-print("[Mail] servidor=%s remitente=%s avisos=%s password=%s"
-      % (app.config['MAIL_SERVER'], MAIL_ACCOUNT, ADMIN_INBOX,
+    os.environ.get('MAIL_SENDER_NAME', 'Tradeable Academy'), MAIL_FROM)
+print("[Mail] servidor=%s usuario=%s remitente=%s avisos=%s password=%s"
+      % (app.config['MAIL_SERVER'], MAIL_ACCOUNT, MAIL_FROM, ADMIN_INBOX,
          "set" if app.config['MAIL_PASSWORD'] else "MISSING (no se envía nada)"),
       flush=True)
 
