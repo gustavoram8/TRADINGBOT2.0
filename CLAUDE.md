@@ -1286,16 +1286,29 @@ borrado. PENDIENTE: agregar selector de mes / historial.
   zona del influencer. ¿Qué valor legal tiene el documento? ¿Firmarlo le da marco legal?
 - [ ] **8. Tessera:** el interior y los efectos le gustan, pero el **diseño se siente pobre** —
   sospecha de la tipografía, que no le pega a la marca.
-- [ ] **9. Atribución de las 2 esculturas 3D de Synapse.** ⚠️ **Diagnóstico hecho (2026-08-03), NO
-  arreglado.** Corrección de mi nota anterior: **no está borrada**, pero es como si lo estuviera.
-  Vive en `.model-credits` en `index.html` (justo bajo el `<footer>`), o sea **solo en `/app`**, a
-  **9.5px con `opacity:.62` sobre `var(--muted)`** — el usuario tiene razón en que es diminuta.
-  Y **dentro de Synapse NO se ve**: `.synapse-app` mide `calc(100vh - 108px)` con márgenes
-  negativos, así que ocupa la pantalla entera y el crédito queda debajo del fondo del scroll,
-  justo mientras se están mostrando los modelos. 🔴 **Eso es el problema legal**: CC BY exige la
-  atribución "de forma razonable al medio", y esconderla tras un overlay a pantalla completa no lo
-  es. Al arreglarlo: subir tamaño/opacidad, meterla DENTRO del overlay de Synapse (una línea o un
-  ⓘ), y comprobar contraste bajo los 9 camos × 2 modos como se hizo con el punto 22.
+- [x] ✅ **9. Atribución de las 2 esculturas 3D de Synapse (2026-08-03).** No estaba borrada, pero
+  daba igual: `.model-credits` vivía a **9.5px con `opacity:.62`** pegada al `<footer>` de
+  `index.html` (o sea **solo en `/app`**), y **dentro de Synapse no aparecía**: `.synapse-app` mide
+  `100vh - 108px`, así que el pie queda debajo del scroll justo mientras los modelos están en
+  pantalla. CC BY pide atribución "razonable al medio" y eso no lo era.
+  **Hecho:** crédito nuevo **`.syn-credit` DENTRO de Synapse** (abajo-izquierda) + el del pie a
+  11.5px, ambos con **enlaces al autor y a la licencia** (la licencia también los pide).
+  🔑 **Los dos van sobre fondo propio, no texto suelto,** por el mismo motivo en cada caso: en
+  Synapse hay un **canvas WebGL** que puede pintar cualquier color justo debajo, y en el pie el
+  texto **cae literalmente encima del dibujo del camo** (las montañas de Marte, el reino de
+  Chronicles). Medido por píxeles: antes **8 de 10 camos** dejaban el pie ilegible (mission claro
+  = **1.02**); ahora el peor de las 20 combinaciones da **6.96** (umbral 4.5), y dentro de Synapse,
+  con la escena forzada a negro y a blanco, entre **8.64 y 14.59**.
+  `scratchpad/verifica_credito.py`. ⚠️ **Tres trampas del entorno, anotadas para no repetirlas:**
+  (1) **three.js viene de un CDN inalcanzable en el contenedor** → el motor 3D NUNCA arranca aquí y
+  Synapse se queda en su pantalla de carga, que **tapa** el crédito; para medir hay que ocultar
+  `#syn-loading`. (2) `pg.screenshot(clip=...)` usa coordenadas de **página** y
+  `getBoundingClientRect()` de **viewport** → con la página desplazada se mide otra zona (daba 1.03
+  donde el CSS daba 10); usar `locator.screenshot()`. (3) al medir contraste hay que **componer el
+  alfa del color del texto** sobre su fondo: un `rgba(23,25,35,.56)` no se ve tan oscuro como
+  `(23,25,35)` y el contraste sale inflado.
+  🔴 **Deja destapado el punto 10:** el `<footer>` que va JUSTO ENCIMA sigue con `--muted` suelto
+  sobre el camo — mismo defecto, sin arreglar.
 - [ ] **10. Legibilidad bajo camos:** hay muchísimas frases chicas, títulos y subtítulos que se
   pierden con el camo puesto — sobre todo texto FUERA de paneles. Hay que barrer camo por camo,
   página por página.
