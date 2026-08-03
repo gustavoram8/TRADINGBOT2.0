@@ -1307,11 +1307,14 @@ borrado. PENDIENTE: agregar selector de mes / historial.
 - [ ] **21. Simular tráfico farmeando XP** y desbloqueando rangos, para cazar bugs del cableado.
 - [ ] **22. Descripciones de los unlock de rango ilegibles bajo camos** (verificado en fourth:
   fondo blanco que rompe el texto). Revisar todos los camos y ambos modos.
-- [x] ✅ **23. Quitar "exclusive camo" de los unlocks de rango (2026-08-03).** Estaba en la clave
-  `rank.rewards` ×4 idiomas + el texto por defecto del render: "un nuevo badge, **un camo
-  exclusivo** y un certificado PDF" → ahora "un nuevo badge y un certificado PDF". ⚠️ NO se tocó
-  `co.f.camo` de `checkout.html` ("un camo exclusivo para tu panel"): ese es el camo que SÍ viene
-  con el plan (`PLAN_CAMOS`), y sigue siendo verdad.
+- [x] ✅ **23. Quitar "exclusive camo" de los unlocks de rango (2026-08-03).** Estaba en DOS sitios,
+  y el segundo lo señaló él tras un primer arreglo incompleto: (a) la línea de progreso
+  `rank.rewards` ×4 ("un nuevo badge, **un camo exclusivo** y un certificado PDF") y (b) 🔴 **el
+  modal de subida de rango**, que entregaba TRES recompensas —medalla, **camo "reservado para este
+  rango"** con etiqueta R1..R8, y certificado—; ese camo no existía en ninguna parte. Ahora entrega
+  medalla + certificado (+ beta desde el rango 6). Borradas también las 4 claves `camo/camoD` de
+  `RANK_I18N` para que nadie las reviva. ⚠️ NO se tocó `co.f.camo` de `checkout.html` ni
+  `camo1`/`camos3` del reveal de plan: ese camo SÍ viene con el plan pago (`PLAN_CAMOS`).
 - [ ] **24. Brillos que se apagan** al cambiar de camo o de modo: el rayo del Quick Analysis y las
   iniciales de los proyectos deben brillar SIEMPRE, como en el tema original.
 - [x] ✅ **25. Foro para Standard (2026-08-03).** Tenías razón y era el peor sitio posible: el

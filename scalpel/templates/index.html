@@ -11755,25 +11755,21 @@
     var I18N = {
       en:{up:'Rank Up',rankOf:'Rank {n} of 8',max:'Rank 8 of 8 · top rank',xp:'{x} XP',
           badge:'{name} medal',badgeD:'Shown next to your name in the forum, testimonials and menu.',
-          camo:'Exclusive camo',camoD:'A design reserved for this rank.',
           beta:'Priority beta access',betaD:'Try new sections before everyone else.',
           cert:'Rank achievement',certD:'Download your rank-progression record — a memento of your learning journey on Tradeable (educational, not a professional qualification).',
           certBtn:'View certificate',cont:'Continue'},
       es:{up:'Subiste de rango',rankOf:'Rango {n} de 8',max:'Rango 8 de 8 · rango máximo',xp:'{x} XP',
           badge:'Medalla de {name}',badgeD:'Visible junto a tu nombre en el foro, testimonios y el menú.',
-          camo:'Camo exclusivo',camoD:'Un diseño reservado para este rango.',
           beta:'Acceso beta prioritario',betaD:'Prueba secciones nuevas antes que el resto.',
           cert:'Logro de rango',certD:'Descarga tu registro de progresión — un recuerdo de tu aprendizaje en Tradeable (educativo, no es una calificación profesional).',
           certBtn:'Ver certificado',cont:'Continuar'},
       fr:{up:'Niveau supérieur',rankOf:'Rang {n} sur 8',max:'Rang 8 sur 8 · rang maximal',xp:'{x} XP',
           badge:'Médaille {name}',badgeD:'Affichée à côté de votre nom dans le forum, les avis et le menu.',
-          camo:'Camo exclusif',camoD:'Un design réservé à ce rang.',
           beta:'Accès bêta prioritaire',betaD:'Essayez les nouvelles sections avant tout le monde.',
           cert:'Accomplissement de rang',certD:'Téléchargez votre relevé de progression — un souvenir de votre apprentissage sur Tradeable (éducatif, pas une qualification professionnelle).',
           certBtn:'Voir le certificat',cont:'Continuer'},
       pt:{up:'Subiu de rank',rankOf:'Rank {n} de 8',max:'Rank 8 de 8 · rank máximo',xp:'{x} XP',
           badge:'Medalha de {name}',badgeD:'Visível ao lado do seu nome no fórum, depoimentos e menu.',
-          camo:'Camo exclusivo',camoD:'Um design reservado para este rank.',
           beta:'Acesso beta prioritário',betaD:'Experimente novas seções antes de todos.',
           cert:'Conquista de rank',certD:'Baixe seu registro de progressão — uma lembrança do seu aprendizado no Tradeable (educativo, não é uma qualificação profissional).',
           certBtn:'Ver certificado',cont:'Continuar'}
@@ -11807,9 +11803,11 @@
       (rank===8 ? t.max : fmt(t.rankOf,{n:rank})) + ' · <b>' + fmt(t.xp,{x:THRESH[rank-1].toLocaleString()}) + '</b>';
     var mw = document.getElementById('rankup-medal'); mw.innerHTML=''; mw.appendChild(window.renderRankBadge(rank,58));
 
+    // Subir de rango entrega la MEDALLA y el CERTIFICADO, nada más. El camo
+    // "reservado para este rango" nunca existió: se anunciaba aquí, en el modal
+    // que ve el usuario justo al desbloquearlo, y no se entregaba nada.
     var rewards = [
-      {ic:'badge',n:fmt(t.badge,{name:NAMES[rank-1]}),d:t.badgeD},
-      {ic:'camo',n:t.camo,d:t.camoD,tag:'R'+rank}
+      {ic:'badge',n:fmt(t.badge,{name:NAMES[rank-1]}),d:t.badgeD}
     ];
     if (rank >= (U.betaMinRank||6)) rewards.push({ic:'beta',n:t.beta,d:t.betaD});
     rewards.push({ic:'cert',n:t.cert,d:t.certD});
