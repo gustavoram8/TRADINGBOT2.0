@@ -329,6 +329,17 @@ PAYPAL_ENABLED = bool(PAYPAL_CLIENT_ID and PAYPAL_SECRET)
 # to the trade name in the Terms is what stops "I don't recognise this charge"
 # disputes when the receiving account is held under a different name.
 PAYPAL_BRAND_NAME = os.environ.get("PAYPAL_BRAND_NAME", "Tradeable Academy")
+# Boot line so the owner can confirm from the log that the keys actually took
+# effect (supervisor's `environment=` is easy to edit and forget to reload).
+# NEVER prints the values: only whether each one is present, and which API it
+# will talk to — porque `PAYPAL_ENV` cae en 'live' por defecto y unas claves de
+# sandbox contra el host de producción fallan sin decir por qué.
+print("[PayPal] enabled=%s env=%s client_id=%s secret=%s webhook_id=%s"
+      % (PAYPAL_ENABLED, PAYPAL_ENV,
+         "set" if PAYPAL_CLIENT_ID else "MISSING",
+         "set" if PAYPAL_SECRET else "MISSING",
+         "set" if PAYPAL_WEBHOOK_ID else "missing (opcional hasta tener HTTPS)"),
+      flush=True)
 
 
 # ── Expose feature flags to every template ──
