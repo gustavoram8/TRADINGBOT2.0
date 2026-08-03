@@ -145,9 +145,20 @@ def main():
         print('   Instalá `dnsutils` o corré esto en el VPS.)')
     if mx:
         print('  MX    : %s' % '; '.join(mx[:4]))
-        if not any('google' in m.lower() or 'aspmx' in m.lower() for m in mx) \
-           and 'gmail.com' not in dominio:
-            print('          ⚠️  no parecen los de Google Workspace')
+        junto = ' '.join(mx).lower()
+        # Reconocer al proveedor, no dar por hecho que es Google. Y avisar del
+        # choque clásico: los MX de Cloudflare Email Routing conviven mal con
+        # los de un buzón real — si están los dos, el correo se pierde.
+        quien = ('Google Workspace' if 'aspmx' in junto or 'google' in junto else
+                 'Zoho' if 'zoho' in junto else
+                 'Microsoft 365' if 'outlook' in junto or 'protection' in junto else
+                 'Cloudflare Email Routing' if 'mx.cloudflare.net' in junto else None)
+        if quien:
+            print('          proveedor detectado: %s' % quien)
+        if 'mx.cloudflare.net' in junto and quien != 'Cloudflare Email Routing':
+            print('          ⛔ hay MX de Cloudflare Email Routing MEZCLADOS con '
+                  'los de tu buzón: desactivá el routing o perderás correo')
+            problemas.append('MX mezclados')
     elif mx == []:
         print('  MX    : ninguno — a este dominio NO le puede llegar correo')
         problemas.append('sin MX')
@@ -171,11 +182,26 @@ def main():
     if not dmarc:
         problemas.append('sin DMARC')
 
-    dkim = dig('google._domainkey.' + dominio, 'TXT')
-    print('  DKIM  : %s' % ('publicado' if dkim else
-                            'FALTA (o usa otro selector) → firma tus correos '
-                            'desde la consola de Workspace'))
-    if not dkim:
+    # El DKIM vive bajo un "selector" que elige CADA proveedor: Google usa
+    # `google`, Zoho `zmail`, Resend `resend`… Buscar solo el de Google daba un
+    # "FALTA" mentiroso en cualquier otro proveedor, así que se prueban todos
+    # los habituales y se informa cuál está publicado.
+    SELECTORES = [('google', 'Google Workspace'), ('zmail', 'Zoho'),
+                  ('zoho', 'Zoho'), ('resend', 'Resend'), ('mail', 'Brevo'),
+                  ('s1', 'genérico'), ('k1', 'Mailchimp/Mandrill'),
+                  ('default', 'genérico')]
+    hallado = None
+    for sel, quien in SELECTORES:
+        if dig('%s._domainkey.%s' % (sel, dominio), 'TXT'):
+            hallado = (sel, quien)
+            break
+    if hallado:
+        print('  DKIM  : publicado (selector "%s" — %s)' % hallado)
+    else:
+        print('  DKIM  : no encontrado en los selectores habituales (%s).'
+              % ', '.join(s for s, _ in SELECTORES))
+        print('          Publicá el TXT que te da tu proveedor y, en su panel, '
+              'ACTIVÁ la firma: publicarlo sin activarla no sirve de nada.')
         problemas.append('sin DKIM')
 
     return _smtp(passwd, cuenta, remitente, servidor, puerto, avisos, problemas)
