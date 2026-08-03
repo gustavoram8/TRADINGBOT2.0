@@ -5108,22 +5108,22 @@
   var RI={
     en:{'rank.menu':'My rank progress','rank.title':'My rank progress','rank.today':"Today's XP opportunities",
         'rank.level':'Level','rank.tonext':'to','rank.maxed':'Max rank reached','rank.reward':'Next rank unlocks:',
-        'rank.rewards':'a new badge, an exclusive camo & a PDF certificate','rank.apex':'You\'ve reached the top rank. Legend.',
+        'rank.rewards':'a new badge & a PDF certificate','rank.apex':'You\'ve reached the top rank. Legend.',
         'a.login':'First visit today','a.analysis':'AI analysis','a.quiz':'Quiz','a.daily':'Daily Challenge',
         'a.preflight':'Pre-Flight checks','a.post':'Forum posts','a.comment':'Forum comments','a.master':'Daily XP cap','a.done':'done','a.open':'available'},
     es:{'rank.menu':'Mi progreso de rango','rank.title':'Mi progreso de rango','rank.today':'Cómo ganar XP hoy',
         'rank.level':'Nivel','rank.tonext':'para llegar a','rank.maxed':'Rango máximo alcanzado','rank.reward':'El siguiente rango desbloquea:',
-        'rank.rewards':'un nuevo badge, un camo exclusivo y un certificado PDF','rank.apex':'Llegaste al rango máximo. Leyenda.',
+        'rank.rewards':'un nuevo badge y un certificado PDF','rank.apex':'Llegaste al rango máximo. Leyenda.',
         'a.login':'Primera visita de hoy','a.analysis':'Análisis con IA','a.quiz':'Quiz','a.daily':'Daily Challenge',
         'a.preflight':'Revisiones de Pre-Flight','a.post':'Publicaciones del foro','a.comment':'Comentarios del foro','a.master':'Tope diario de XP','a.done':'hecho','a.open':'disponible'},
     fr:{'rank.menu':'Ma progression de rang','rank.title':'Ma progression de rang','rank.today':"Opportunités d'XP du jour",
         'rank.level':'Niveau','rank.tonext':'pour','rank.maxed':'Rang maximum atteint','rank.reward':'Le prochain rang débloque :',
-        'rank.rewards':'un nouveau badge, un camo exclusif et un certificat PDF','rank.apex':'Vous avez atteint le rang suprême. Légende.',
+        'rank.rewards':'un nouveau badge et un certificat PDF','rank.apex':'Vous avez atteint le rang suprême. Légende.',
         'a.login':'Première visite du jour','a.analysis':'Analyse IA','a.quiz':'Quiz','a.daily':'Daily Challenge',
         'a.preflight':'Checks Pre-Flight','a.post':'Publications forum','a.comment':'Commentaires forum','a.master':'Plafond XP journalier','a.done':'fait','a.open':'disponible'},
     pt:{'rank.menu':'Meu progresso de rank','rank.title':'Meu progresso de rank','rank.today':'Oportunidades de XP de hoje',
         'rank.level':'Nível','rank.tonext':'para','rank.maxed':'Rank máximo atingido','rank.reward':'O próximo rank desbloqueia:',
-        'rank.rewards':'um novo badge, um camo exclusivo e um certificado PDF','rank.apex':'Você atingiu o rank máximo. Lenda.',
+        'rank.rewards':'um novo badge e um certificado PDF','rank.apex':'Você atingiu o rank máximo. Lenda.',
         'a.login':'Primeira visita de hoje','a.analysis':'Análise IA','a.quiz':'Quiz','a.daily':'Daily Challenge',
         'a.preflight':'Checks de Pre-Flight','a.post':'Posts do fórum','a.comment':'Comentários do fórum','a.master':'Teto de XP diário','a.done':'feito','a.open':'disponível'}
   };
@@ -5177,7 +5177,7 @@
       rn.className='rank-next'; rn.innerHTML='';
       rn.appendChild(window.renderRankBadge(p.rank+1,40));
       var info=document.createElement('div'); info.className='rn-info';
-      info.innerHTML=t('rank.reward','Next rank unlocks:')+' <b>'+p.next_rank_name+'</b> — '+t('rank.rewards','a new badge, an exclusive camo & a PDF certificate');
+      info.innerHTML=t('rank.reward','Next rank unlocks:')+' <b>'+p.next_rank_name+'</b> — '+t('rank.rewards','a new badge & a PDF certificate');
       rn.appendChild(info);
     } else { rn.className='rank-next maxed'; rn.textContent='🏆 '+t('rank.apex','You have reached the top rank. Legend.'); }
   }

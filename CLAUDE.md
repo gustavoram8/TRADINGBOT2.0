@@ -1307,8 +1307,11 @@ borrado. PENDIENTE: agregar selector de mes / historial.
 - [ ] **21. Simular tráfico farmeando XP** y desbloqueando rangos, para cazar bugs del cableado.
 - [ ] **22. Descripciones de los unlock de rango ilegibles bajo camos** (verificado en fourth:
   fondo blanco que rompe el texto). Revisar todos los camos y ambos modos.
-- [ ] **23. Quitar "exclusive camo" de los unlocks de rango.** Ya no se gana camo al subir de rango:
-  solo el certificado y la medalla del foro.
+- [x] ✅ **23. Quitar "exclusive camo" de los unlocks de rango (2026-08-03).** Estaba en la clave
+  `rank.rewards` ×4 idiomas + el texto por defecto del render: "un nuevo badge, **un camo
+  exclusivo** y un certificado PDF" → ahora "un nuevo badge y un certificado PDF". ⚠️ NO se tocó
+  `co.f.camo` de `checkout.html` ("un camo exclusivo para tu panel"): ese es el camo que SÍ viene
+  con el plan (`PLAN_CAMOS`), y sigue siendo verdad.
 - [ ] **24. Brillos que se apagan** al cambiar de camo o de modo: el rayo del Quick Analysis y las
   iniciales de los proyectos deben brillar SIEMPRE, como en el tema original.
 - [ ] **25. Foro para Standard:** quedó algún sitio sin reflejarlo (cableado del plan, comparativa
