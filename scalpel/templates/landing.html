@@ -915,14 +915,14 @@
   <div class="stat-strip-wrap">
     <div class="stat-strip">
       <div class="stat-col rv">
-        <div class="stat-num">4</div>
+        <div class="stat-num">7</div>
         <div class="stat-label" data-t="stat_methods">Methodologies</div>
-        <div class="stat-sub">ICT · SMC · Wyckoff · Price Action</div>
+        <div class="stat-sub" data-t="stat_methods_sub">ICT · OTE · Wyckoff · Patterns · Harmonic · Elliott · Technical</div>
       </div>
       <div class="stat-col rv d1">
         <div class="stat-num">{% if indicators_enabled %}7{% else %}6{% endif %}</div>
         <div class="stat-label" data-t="stat_tools">Tools</div>
-        <div class="stat-sub">Analysis · Education · Community</div>
+        <div class="stat-sub" data-t="stat_tools_sub">Analysis · Education · Community</div>
       </div>
       <div class="stat-col rv d2">
         <div class="stat-num">4</div>
@@ -951,9 +951,9 @@
                   <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
                 </svg>
               </div>
-              <span>You screenshot your trades — then what?</span>
+              <span data-t="pain1_t">You closed the trade. Nobody told you why it went that way.</span>
             </div>
-            <div class="pain-card-body">Without structured feedback, patterns repeat. Losses compound. The screenshot sits in a folder.</div>
+            <div class="pain-card-body" data-t="pain1_b">A good trade and a mistake can look identical on the chart. With nobody reading your entry back to you, the same error survives another month.</div>
           </div>
           <div class="pain-card rv d3">
             <div class="pain-card-title">
@@ -962,9 +962,9 @@
                   <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                 </svg>
               </div>
-              <span>Generic indicators. No context.</span>
+              <span data-t="pain2_t">You enter first and check your rules afterwards.</span>
             </div>
-            <div class="pain-card-body">Most tools tell you where price is. None tell you why it moved or whether your read was institutional.</div>
+            <div class="pain-card-body" data-t="pain2_b">The plan was clear before the candle moved. In the heat of it the checklist stays in your head and never reaches the screen — so it stops counting.</div>
           </div>
           <div class="pain-card rv d4">
             <div class="pain-card-title">
@@ -973,9 +973,9 @@
                   <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
                 </svg>
               </div>
-              <span>Theory overload.</span>
+              <span data-t="pain3_t">Endless theory, no way to measure what you actually know.</span>
             </div>
-            <div class="pain-card-body">ICT, SMC, Wyckoff — thousands of hours of content, zero central hub. No way to measure actual mastery.</div>
+            <div class="pain-card-body" data-t="pain3_b">ICT, SMC, Wyckoff — thousands of hours of content scattered everywhere, and nothing that tells you which parts you have really understood.</div>
           </div>
         </div>
       </div>
@@ -1147,8 +1147,8 @@
   <section class="section">
     <div class="tc">
       <div class="eyebrow rv" data-t="brow_airead">WHAT THE AI READS</div>
-      <h2 class="h2 rv d1" data-t="s5_title">Institutional-grade pattern recognition.</h2>
-      <p class="lead rv d2" data-t="s5_body">Every screenshot is analyzed against your chosen methodology — ICT, SMC, Wyckoff, classical patterns, STDV or Price Action — delivering structured, expert-level feedback in seconds.</p>
+      <h2 class="h2 rv d1" data-t="s5_title">It doesn't spot patterns. It applies your methodology.</h2>
+      <p class="lead rv d2" data-t="s5_body">You pick the framework you trade, and the analysis is written inside it — its vocabulary, its logic, reading the marks you left on the chart. It explains the trade you already took so the next one starts from a better read. It never tells you what to trade.</p>
     </div>
     <div class="capabilities">
       <div class="cap-item rv">
@@ -1180,10 +1180,24 @@
         </div>
       </div>
       <div class="cap-item rv d4">
-        <div class="cap-letter">STDV</div>
+        <div class="cap-letter">OTE</div>
         <div>
-          <h4 data-t="cap_stdv_t">Standard Deviation</h4>
-          <p data-t="cap_stdv_b">Statistical range analysis, volatility expansions, and mean-reversion setups grounded in quantitative theory.</p>
+          <h4 data-t="cap_stdv_t">OTE / Standard Deviation</h4>
+          <p data-t="cap_stdv_b">The fib-driven entry model: optimal trade entry, standard-deviation projections, premium and discount — its own trigger, not ICT with a fib drawn on top.</p>
+        </div>
+      </div>
+      <div class="cap-item rv d5">
+        <div class="cap-letter">HAR</div>
+        <div>
+          <h4 data-t="cap_har_t">Harmonic</h4>
+          <p data-t="cap_har_b">XABCD geometries defined by Fibonacci ratios and the reversal zone they project at point D — a zone to watch, never a trigger by itself.</p>
+        </div>
+      </div>
+      <div class="cap-item rv d6">
+        <div class="cap-letter">EW</div>
+        <div>
+          <h4 data-t="cap_ew_t">Elliott Wave</h4>
+          <p data-t="cap_ew_b">Five-wave impulses and ABC corrections across degrees — always with the alternate count, because the labelling is subjective by nature.</p>
         </div>
       </div>
       <div class="cap-item rv d5">
@@ -1201,10 +1215,10 @@
         </div>
       </div>
       <div class="cap-item rv">
-        <div class="cap-letter">QNT</div>
+        <div class="cap-letter">TA</div>
         <div>
-          <h4 data-t="cap_qnt_t">Quantitative &amp; Hybrid</h4>
-          <p data-t="cap_qnt_b">Fibonacci confluences, volume profile, VWAP levels, and multi-methodology overlay for high-conviction setups.</p>
+          <h4 data-t="cap_qnt_t">Technical Analysis</h4>
+          <p data-t="cap_qnt_b">Moving averages, RSI, MACD, Bollinger bands and volume — read in context, never as buy or sell arrows.</p>
         </div>
       </div>
     </div>
@@ -1229,12 +1243,12 @@
         <div class="forum-mock">
           <div class="forum-post">
             <div class="fp-meta">@xautrader · NY Morning</div>
-            <div class="fp-title">XAUUSD — AMD cycle confirmed on H1, targeting 2,031.80 SSL</div>
+            <div class="fp-title" data-t="fp1_title">XAUUSD — how would you label this Asia sweep? My read vs the H1 structure</div>
             <div class="fp-tags"><span class="fp-tag">ICT</span><span class="fp-tag">AMD</span><span class="fp-tag">XAU</span></div>
           </div>
           <div class="forum-post">
             <div class="fp-meta">@kzone_es · London</div>
-            <div class="fp-title">ES daily OB held — expecting displacement into 5,197</div>
+            <div class="fp-title" data-t="fp2_title">ES — going back over yesterday's reaction at the daily OB: what did I miss?</div>
             <div class="fp-tags"><span class="fp-tag">SMC</span><span class="fp-tag">OB</span><span class="fp-tag">ES</span></div>
           </div>
         </div>
@@ -1250,7 +1264,7 @@
         <div class="rank-list">
           <div class="rank-item">
             <div class="rank-n">1</div>
-            <div class="rank-name">M. Ramirez</div>
+            <div class="rank-name">R. Delgado</div>
             <div class="rank-score">97.4%</div>
             <div class="rank-medal">#1</div>
           </div>
@@ -1430,6 +1444,10 @@
           <li>
             <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
             <span data-t="pp_chalk"><strong>Chalkboard</strong> — draw &amp; annotate your setups on a dedicated canvas</span>
+          </li>
+          <li>
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span data-t="pp_preflight"><strong>Pre-Flight</strong> — your pre-trade checklist: validate each setup against your own rules and track your discipline</span>
           </li>
           <li>
             <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
@@ -1889,7 +1907,7 @@
         s1_sol_brow:'The solution',
         s1_sol_title:'Tradeable gives you the feedback infrastructure committed learners need.',
         ans1:'AI reads your chart screenshot and delivers a structured trade diagnosis — in your methodology',
-        ans2:'One platform: analysis, education, community, comparison',
+        ans2:'Pre-Flight puts your own rules on screen before you enter — and keeps score',
         ans3:'Track your progress across methodologies — prove your knowledge on the Quiz Ranking',
         
         s3_title:'Upload a screenshot. Get a diagnosis.',
@@ -1904,9 +1922,9 @@
         tc5_t:'Chalkboard', tc5_b:'A digital canvas for pre-session bias mapping, key level marking, and trade idea sketching — your structured ritual before every open.',
         tc6_t:'Indicator Library', tc6_b:'Curated custom indicators for TradingView, built for multiple trading methodologies — no repaint, no lag, plug in from day one.',
         tc7_t:'Pre-Flight', tc7_b:'Your pre-trade checklist: validate every setup against your own rules before entry, log the trade, and track your discipline stats over time.',
-        s5_title:'Institutional-grade pattern recognition.',
-        s5_body:'Every screenshot is analyzed against your chosen methodology — ICT, SMC, Wyckoff, classical patterns, STDV or Price Action — delivering structured, expert-level feedback in seconds.',
-        brow_core:'CORE FEATURE', brow_toolkit:'YOUR TOOLKIT', brow_airead:'WHAT THE AI READS', brow_community:'COMMUNITY', brow_pricing:'PRICING', brow_testi:'FROM OUR TRADERS',
+        s5_title:'It doesn\'t spot patterns. It applies your methodology.',
+        s5_body:'You pick the framework you trade, and the analysis is written inside it — its vocabulary, its logic, reading the marks you left on the chart. It explains the trade you already took so the next one starts from a better read. It never tells you what to trade.',
+        brow_core:'CORE FEATURE', brow_toolkit:'YOUR TOOLKIT', brow_airead:'HOW THE AI CORRECTS YOU', brow_community:'COMMUNITY', brow_pricing:'PRICING', brow_testi:'FROM OUR TRADERS',
         testi_title:'What traders are saying',
         testi_insider:'Works at Tradeable Academy',
         testi_note:'Reviews come from real Tradeable Academy account holders, who are invited in-app to rate the platform and receive experience points for answering, whatever score they give. We show reviews the author agreed to publish. Anyone who works on Tradeable Academy is labelled as such.',
@@ -1914,10 +1932,22 @@
         cap_smc_t:'Smart Money Concepts', cap_smc_b:'Break of Structure, Change of Character, Supply &amp; Demand zones, and institutional order flow analysis.',
         cap_wyc_t:'Wyckoff Method', cap_wyc_b:'Accumulation and distribution schematics, Springs, Upthrusts, and the Composite Man logic applied to modern markets.',
         cap_pat_t:'Classical Patterns', cap_pat_b:'Head &amp; Shoulders, Double Tops/Bottoms, Wedges, Flags, Pennants — timelessly validated chart formations.',
-        cap_stdv_t:'Standard Deviation', cap_stdv_b:'Statistical range analysis, volatility expansions, and mean-reversion setups grounded in quantitative theory.',
+        cap_stdv_t:'OTE / Standard Deviation', cap_stdv_b:'The fib-driven entry model: optimal trade entry, standard-deviation projections, premium and discount — its own trigger, not ICT with a fib drawn on top.',
+        cap_har_t:'Harmonic', cap_har_b:'XABCD geometries defined by Fibonacci ratios and the reversal zone they project at point D — a zone to watch, never a trigger by itself.',
+        cap_ew_t:'Elliott Wave', cap_ew_b:'Five-wave impulses and ABC corrections across degrees — always with the alternate count, because the labelling is subjective by nature.',
         cap_pa_t:'Price Action', cap_pa_b:'Candlestick structure, pin bars, engulfing sequences, and pure naked-chart reading without indicator dependence.',
         cap_ms_t:'Market Structure', cap_ms_b:'Multi-timeframe bias alignment — Higher Highs, Higher Lows, and the fractal nature of price across all timeframes.',
-        cap_qnt_t:'Quantitative &amp; Hybrid', cap_qnt_b:'Fibonacci confluences, volume profile, VWAP levels, and multi-methodology overlay for high-conviction setups.',
+        cap_qnt_t:'Technical Analysis', cap_qnt_b:'Moving averages, RSI, MACD, Bollinger bands and volume — read in context, never as buy or sell arrows.',
+        stat_methods_sub:'ICT · OTE · Wyckoff · Patterns · Harmonic · Elliott · Technical',
+        stat_tools_sub:'Analysis · Education · Community',
+        pain1_t:'You closed the trade. Nobody told you why it went that way.',
+        pain1_b:'A good trade and a mistake can look identical on the chart. With nobody reading your entry back to you, the same error survives another month.',
+        pain2_t:'You enter first and check your rules afterwards.',
+        pain2_b:'The plan was clear before the candle moved. In the heat of it the checklist stays in your head and never reaches the screen — so it stops counting.',
+        pain3_t:'Endless theory, no way to measure what you actually know.',
+        pain3_b:'ICT, SMC, Wyckoff — thousands of hours of content scattered everywhere, and nothing that tells you which parts you have really understood.',
+        fp1_title:'XAUUSD — how would you label this Asia sweep? My read vs the H1 structure',
+        fp2_title:'ES — going back over yesterday\'s reaction at the daily OB: what did I miss?',
         s6_title:'Sharpen your skills. Test them.',
         forum_t:'The Trading Forum',
         forum_b:'AI-moderated discussions. High-quality analysis enforced. No noise — just traders who take their craft seriously, regardless of methodology.',
@@ -1938,6 +1968,7 @@
         pp_synapse:'<strong>Synapse</strong> — interactive AI knowledge map to explore trading concepts',
         pp_quiz:'<strong>Quiz</strong> — test your knowledge across every methodology and level',
         pp_chalk:'<strong>Chalkboard</strong> — draw &amp; annotate your setups on a dedicated canvas',
+        pp_preflight:'<strong>Pre-Flight</strong> — your pre-trade checklist: validate each setup against your own rules and track your discipline',
         pp_camos:'<strong>1 special Camo included</strong> — an exclusive website design theme to personalize your dashboard',
         pp4:'Everything in Standard', pp5:'Indicators library', pp_cta:'Go Premium',
         cmp_title:'Compare all features', cmp_sub:'Same feature, same row — see exactly what each plan includes.',
@@ -1979,7 +2010,7 @@
         s1_sol_brow:'La solución',
         s1_sol_title:'Tradeable te da la estructura de retroalimentación que todo estudiante comprometido necesita.',
         ans1:'La IA lee la captura de tu gráfico y te devuelve un diagnóstico estructurado de tu operación — en tu metodología',
-        ans2:'Una sola plataforma: análisis, formación, comunidad y comparativas',
+        ans2:'Pre-Flight pone tus propias reglas en pantalla antes de entrar — y lleva la cuenta',
         ans3:'Sigue tu progreso en cada metodología — y demuestra lo que sabes en el Ranking del Quiz',
 
         s3_title:'Sube una captura. Recibe un diagnóstico.',
@@ -1994,9 +2025,9 @@
         tc5_t:'Chalkboard', tc5_b:'Un lienzo digital para mapear tu sesgo antes de la sesión, marcar niveles clave y bocetar ideas de trading — tu ritual ordenado antes de cada apertura.',
         tc6_t:'Biblioteca de indicadores', tc6_b:'Indicadores personalizados para TradingView, creados para varias metodologías — sin repintado, sin retraso y listos para usar desde el primer día.',
         tc7_t:'Pre-Flight', tc7_b:'Tu checklist previo a cada operación: valida cada setup con tus propias reglas antes de entrar, registra la operación y sigue tus estadísticas de disciplina con el tiempo.',
-        s5_title:'Reconocimiento de patrones a nivel institucional.',
-        s5_body:'Cada captura se analiza según la metodología que elijas — ICT, SMC, Wyckoff, patrones clásicos, STDV o Price Action — y te devuelve feedback estructurado y de nivel experto en segundos.',
-        brow_core:'FUNCIÓN PRINCIPAL', brow_toolkit:'TUS HERRAMIENTAS', brow_airead:'LO QUE LEE LA IA', brow_community:'COMUNIDAD', brow_pricing:'PRECIOS', brow_testi:'NUESTROS TRADERS',
+        s5_title:'No detecta patrones. Aplica tu metodología.',
+        s5_body:'Eliges el marco con el que operas y el análisis se escribe dentro de él: su vocabulario, su lógica y las marcas que dejaste en el gráfico. Te explica la operación que ya hiciste, para que la siguiente arranque con mejor lectura. Nunca te dice qué operar.',
+        brow_core:'FUNCIÓN PRINCIPAL', brow_toolkit:'TUS HERRAMIENTAS', brow_airead:'CÓMO TE CORRIGE LA IA', brow_community:'COMUNIDAD', brow_pricing:'PRECIOS', brow_testi:'NUESTROS TRADERS',
         testi_title:'Lo que dicen los traders',
         testi_insider:'Trabaja en Tradeable Academy',
         testi_note:'Las reseñas vienen de personas con cuenta real en Tradeable Academy, a quienes se les invita desde la app a puntuar la plataforma y reciben puntos de experiencia por responder, sea cual sea la nota que pongan. Mostramos las reseñas que su autor aceptó publicar. Si alguien trabaja en Tradeable Academy, aparece señalado.',
@@ -2004,10 +2035,22 @@
         cap_smc_t:'Smart Money Concepts', cap_smc_b:'Break of Structure, Change of Character, zonas de oferta y demanda, y análisis del order flow institucional.',
         cap_wyc_t:'Método Wyckoff', cap_wyc_b:'Esquemas de acumulación y distribución, Springs, Upthrusts y la lógica del Composite Man aplicada a los mercados actuales.',
         cap_pat_t:'Patrones clásicos', cap_pat_b:'Hombro-cabeza-hombro, dobles techos y suelos, cuñas, banderas y banderines — formaciones de siempre, validadas por el tiempo.',
-        cap_stdv_t:'Desviación estándar', cap_stdv_b:'Análisis estadístico de rangos, expansiones de volatilidad y setups de reversión a la media, fundamentados en teoría cuantitativa.',
+        cap_stdv_t:'OTE / Desviación estándar', cap_stdv_b:'El modelo de entrada guiado por fibo: optimal trade entry, proyecciones por desviación estándar, premium y discount — con gatillo propio, no ICT con un fibo encima.',
+        cap_har_t:'Armónicos', cap_har_b:'Geometrías XABCD definidas por ratios de Fibonacci y la zona de reversión que proyectan en el punto D — una zona para vigilar, nunca un gatillo por sí sola.',
+        cap_ew_t:'Ondas de Elliott', cap_ew_b:'Impulsos de cinco ondas y correcciones ABC en distintos grados — siempre con el conteo alternativo, porque etiquetar es subjetivo por naturaleza.',
         cap_pa_t:'Price Action', cap_pa_b:'Estructura de velas, pin bars, secuencias envolventes y lectura pura del gráfico, sin depender de indicadores.',
         cap_ms_t:'Estructura de mercado', cap_ms_b:'Alineación de sesgo en varias temporalidades — Higher Highs, Higher Lows y la naturaleza fractal del precio en cualquier marco temporal.',
-        cap_qnt_t:'Cuantitativo e híbrido', cap_qnt_b:'Confluencias de Fibonacci, volume profile, niveles VWAP y combinación de varias metodologías para setups de alta convicción.',
+        cap_qnt_t:'Análisis técnico', cap_qnt_b:'Medias móviles, RSI, MACD, bandas de Bollinger y volumen — leídos en contexto, nunca como flechitas de compra o venta.',
+        stat_methods_sub:'ICT · OTE · Wyckoff · Patrones · Armónicos · Elliott · Técnico',
+        stat_tools_sub:'Análisis · Formación · Comunidad',
+        pain1_t:'Cerraste la operación. Nadie te dijo por qué salió así.',
+        pain1_b:'Un acierto y un error se ven igual en el gráfico. Si nadie te devuelve la lectura de tu entrada, el mismo fallo te dura otro mes.',
+        pain2_t:'Entras primero y revisas tus reglas después.',
+        pain2_b:'El plan estaba claro antes de que se moviera la vela. En caliente la checklist se queda en tu cabeza y nunca llega a la pantalla — así deja de contar.',
+        pain3_t:'Teoría infinita y ninguna forma de medir lo que de verdad sabes.',
+        pain3_b:'ICT, SMC, Wyckoff — miles de horas de contenido repartidas por todos lados, y nada que te diga qué partes entendiste de verdad.',
+        fp1_title:'XAUUSD — ¿cómo etiquetarían este barrido de Asia? Mi lectura vs la estructura de H1',
+        fp2_title:'ES — repasando la reacción de ayer en el OB diario: ¿qué se me escapó?',
         s6_title:'Pule tus habilidades. Ponlas a prueba.',
         forum_t:'El Foro de Trading',
         forum_b:'Debates moderados por IA, con análisis de calidad garantizado. Sin ruido — solo traders que se toman su oficio en serio, sea cual sea su metodología.',
@@ -2028,6 +2071,7 @@
         pp_synapse:'<strong>Synapse</strong> — mapa interactivo de conocimiento con IA para explorar conceptos de trading',
         pp_quiz:'<strong>Quiz</strong> — pon a prueba lo que sabes en cada metodología y nivel',
         pp_chalk:'<strong>Chalkboard</strong> — dibuja y anota tus setups en un lienzo dedicado',
+        pp_preflight:'<strong>Pre-Flight</strong> — tu checklist previa a entrar: valida cada setup contra tus propias reglas y sigue tu disciplina',
         pp_camos:'<strong>1 Camo especial incluido</strong> — un tema de diseño exclusivo para personalizar tu panel',
         pp4:'Todo lo del plan Standard', pp5:'Biblioteca de indicadores', pp_cta:'Pasar a Premium',
         cmp_title:'Compara todas las funciones', cmp_sub:'Misma función, misma fila — mira exactamente qué incluye cada plan.',
@@ -2069,7 +2113,7 @@
         s1_sol_brow:'La solution',
         s1_sol_title:'Tradeable vous donne l\'infrastructure de feedback dont les apprenants engagés ont besoin.',
         ans1:'L\'IA lit votre capture et délivre un diagnostic structuré — dans votre méthodologie',
-        ans2:'Une plateforme : analyse, éducation, communauté, comparaison',
+        ans2:'Pre-Flight affiche vos propres règles avant l\'entrée — et tient le compte',
         ans3:'Suivez votre progression dans chaque méthodologie — prouvez vos connaissances au Classement des Quiz',
         
         s3_title:'Téléversez une capture. Obtenez un diagnostic.',
@@ -2084,9 +2128,9 @@
         tc5_t:'Chalkboard', tc5_b:'Un canvas numérique pour cartographier votre biais, marquer les niveaux clés et esquisser des idées avant la session.',
         tc6_t:'Bibliothèque d\'indicateurs', tc6_b:'Indicateurs personnalisés pour TradingView, pour plusieurs méthodologies de trading — sans repaint, sans lag.',
         tc7_t:'Pre-Flight', tc7_b:'Votre checklist pré-trade : validez chaque setup selon vos propres règles avant d\'entrer, consignez le trade et suivez votre discipline dans le temps.',
-        s5_title:'Reconnaissance de patterns de niveau institutionnel.',
-        s5_body:'Chaque capture est analysée selon la méthodologie que vous choisissez — ICT, SMC, Wyckoff, patterns classiques, STDV ou Price Action — pour un feedback structuré de niveau expert en quelques secondes.',
-        brow_core:'FONCTION CLÉ', brow_toolkit:'VOS OUTILS', brow_airead:'CE QUE LIT L\'IA', brow_community:'COMMUNAUTÉ', brow_pricing:'TARIFS', brow_testi:'NOS TRADERS',
+        s5_title:'Elle ne repère pas des figures. Elle applique votre méthodologie.',
+        s5_body:"Vous choisissez le cadre que vous tradez et l'analyse s'écrit dedans : son vocabulaire, sa logique, et les marques que vous avez laissées sur le graphique. Elle explique le trade que vous avez déjà pris, pour que le suivant parte d'une meilleure lecture. Elle ne vous dit jamais quoi trader.",
+        brow_core:'FONCTION CLÉ', brow_toolkit:'VOS OUTILS', brow_airead:'COMMENT L\'IA VOUS CORRIGE', brow_community:'COMMUNAUTÉ', brow_pricing:'TARIFS', brow_testi:'NOS TRADERS',
         testi_title:'Ce que disent les traders',
         testi_insider:'Travaille chez Tradeable Academy',
         testi_note:'Les avis proviennent de personnes possédant un compte réel sur Tradeable Academy, invitées depuis l’application à noter la plateforme et qui reçoivent des points d’expérience pour avoir répondu, quelle que soit la note donnée. Nous affichons les avis que leur auteur a accepté de publier. Toute personne travaillant chez Tradeable Academy est signalée comme telle.',
@@ -2094,10 +2138,22 @@
         cap_smc_t:'Smart Money Concepts', cap_smc_b:'Break of Structure, Change of Character, zones d\'offre et de demande, et analyse de l\'order flow institutionnel.',
         cap_wyc_t:'Méthode Wyckoff', cap_wyc_b:'Schémas d\'accumulation et de distribution, Springs, Upthrusts et la logique du Composite Man appliquée aux marchés modernes.',
         cap_pat_t:'Patterns Classiques', cap_pat_b:'Tête-Épaules, doubles sommets/creux, biseaux, drapeaux, fanions — des formations graphiques validées par le temps.',
-        cap_stdv_t:'Écart-Type', cap_stdv_b:'Analyse de plages statistiques, expansions de volatilité et setups de retour à la moyenne fondés sur la théorie quantitative.',
+        cap_stdv_t:'OTE / Écart-type', cap_stdv_b:"Le modèle d'entrée piloté par les fibos : optimal trade entry, projections en écart-type, premium et discount — avec son propre déclencheur, pas de l'ICT avec un fibo par-dessus.",
+        cap_har_t:'Harmoniques', cap_har_b:'Géométries XABCD définies par les ratios de Fibonacci et la zone de retournement projetée au point D — une zone à surveiller, jamais un déclencheur à elle seule.',
+        cap_ew_t:'Vagues d\'Elliott', cap_ew_b:'Impulsions en cinq vagues et corrections ABC selon les degrés — toujours avec le décompte alternatif, car l\'étiquetage est subjectif par nature.',
         cap_pa_t:'Price Action', cap_pa_b:'Structure des chandeliers, pin bars, séquences englobantes et lecture pure du graphique sans dépendre d\'indicateurs.',
         cap_ms_t:'Structure de Marché', cap_ms_b:'Alignement du biais multi-temporel — Higher Highs, Higher Lows et la nature fractale du prix sur toutes les unités de temps.',
-        cap_qnt_t:'Quantitatif et Hybride', cap_qnt_b:'Confluences de Fibonacci, volume profile, niveaux VWAP et superposition multi-méthodologie pour des setups à forte conviction.',
+        cap_qnt_t:'Analyse technique', cap_qnt_b:'Moyennes mobiles, RSI, MACD, bandes de Bollinger et volume — lus en contexte, jamais comme des flèches d\'achat ou de vente.',
+        stat_methods_sub:'ICT · OTE · Wyckoff · Figures · Harmoniques · Elliott · Technique',
+        stat_tools_sub:'Analyse · Formation · Communauté',
+        pain1_t:'Vous avez clôturé le trade. Personne ne vous a dit pourquoi.',
+        pain1_b:"Un bon trade et une erreur se ressemblent sur le graphique. Sans personne pour vous relire votre entrée, la même erreur vous suit encore un mois.",
+        pain2_t:"Vous entrez d'abord, vous vérifiez vos règles ensuite.",
+        pain2_b:"Le plan était clair avant que la bougie ne bouge. Dans le feu de l'action la checklist reste dans votre tête et n'arrive jamais à l'écran — elle ne compte plus.",
+        pain3_t:'Trop de théorie, aucun moyen de mesurer ce que vous savez vraiment.',
+        pain3_b:"ICT, SMC, Wyckoff — des milliers d'heures de contenu éparpillées partout, et rien qui vous dise ce que vous avez réellement compris.",
+        fp1_title:'XAUUSD — comment étiqueter ce sweep asiatique ? Ma lecture face à la structure H1',
+        fp2_title:"ES — je reprends la réaction d'hier sur l'OB journalier : qu'est-ce que j'ai raté ?",
         s6_title:'Affûtez vos compétences. Testez-les.',
         forum_t:'Le Forum de Trading',
         forum_b:'Discussions modérées par IA. Analyse de qualité imposée. Pas de bruit — des traders sérieux, quelle que soit la méthodologie.',
@@ -2118,6 +2174,7 @@
         pp_synapse:'<strong>Synapse</strong> — carte de connaissances interactive par IA pour explorer les concepts de trading',
         pp_quiz:'<strong>Quiz</strong> — testez vos connaissances sur chaque méthodologie et niveau',
         pp_chalk:'<strong>Chalkboard</strong> — dessinez et annotez vos setups sur un canevas dédié',
+        pp_preflight:"<strong>Pre-Flight</strong> — votre checklist avant trade : validez chaque setup selon vos propres règles et suivez votre discipline",
         pp_camos:'<strong>1 Camo spécial inclus</strong> — un thème de design exclusif pour personnaliser votre dashboard',
         pp4:'Tout le plan Standard', pp5:'Bibliothèque d\'indicateurs', pp_cta:'Passer à Premium',
         cmp_title:'Comparez toutes les fonctionnalités', cmp_sub:'Même fonctionnalité, même ligne — voyez exactement ce qu\'inclut chaque plan.',
@@ -2159,7 +2216,7 @@
         s1_sol_brow:'A solução',
         s1_sol_title:'O Tradeable dá a você a infraestrutura de feedback que estudantes comprometidos precisam.',
         ans1:'A IA lê sua captura e entrega um diagnóstico estruturado — na sua metodologia',
-        ans2:'Uma plataforma: análise, educação, comunidade, comparação',
+        ans2:'O Pre-Flight coloca suas próprias regras na tela antes da entrada — e mantém o placar',
         ans3:'Acompanhe seu progresso em cada metodologia — comprove seu conhecimento no Ranking de Quizzes',
         
         s3_title:'Envie uma captura. Receba um diagnóstico.',
@@ -2174,9 +2231,9 @@
         tc5_t:'Chalkboard', tc5_b:'Um canvas digital para mapear seu viés antes da sessão, marcar níveis-chave e esboçar ideias de trading.',
         tc6_t:'Biblioteca de Indicadores', tc6_b:'Indicadores personalizados para TradingView, para múltiplas metodologias de trading — sem repintura, sem lag.',
         tc7_t:'Pre-Flight', tc7_b:'Seu checklist pré-trade: valide cada setup contra suas próprias regras antes de entrar, registre o trade e acompanhe sua disciplina ao longo do tempo.',
-        s5_title:'Reconhecimento de padrões de nível institucional.',
-        s5_body:'Cada captura é analisada de acordo com a metodologia que você escolher — ICT, SMC, Wyckoff, padrões clássicos, STDV ou Price Action — entregando feedback estruturado de nível especialista em segundos.',
-        brow_core:'RECURSO PRINCIPAL', brow_toolkit:'SUAS FERRAMENTAS', brow_airead:'O QUE A IA LÊ', brow_community:'COMUNIDADE', brow_pricing:'PREÇOS', brow_testi:'NOSSOS TRADERS',
+        s5_title:'Ela não detecta padrões. Aplica sua metodologia.',
+        s5_body:'Você escolhe o framework com que opera e a análise é escrita dentro dele: o vocabulário dele, a lógica dele e as marcas que você deixou no gráfico. Ela explica a operação que você já fez, para que a próxima comece de uma leitura melhor. Nunca diz o que operar.',
+        brow_core:'RECURSO PRINCIPAL', brow_toolkit:'SUAS FERRAMENTAS', brow_airead:'COMO A IA TE CORRIGE', brow_community:'COMUNIDADE', brow_pricing:'PREÇOS', brow_testi:'NOSSOS TRADERS',
         testi_title:'O que dizem os traders',
         testi_insider:'Trabalha na Tradeable Academy',
         testi_note:'As avaliações vêm de pessoas com conta real na Tradeable Academy, que são convidadas dentro do app a avaliar a plataforma e recebem pontos de experiência por responder, qualquer que seja a nota dada. Mostramos as avaliações que o autor concordou em publicar. Quem trabalha na Tradeable Academy aparece identificado.',
@@ -2184,10 +2241,22 @@
         cap_smc_t:'Smart Money Concepts', cap_smc_b:'Break of Structure, Change of Character, zonas de oferta e demanda, e análise do order flow institucional.',
         cap_wyc_t:'Método Wyckoff', cap_wyc_b:'Esquemas de acumulação e distribuição, Springs, Upthrusts e a lógica do Composite Man aplicada aos mercados modernos.',
         cap_pat_t:'Padrões Clássicos', cap_pat_b:'Ombro-Cabeça-Ombro, topos/fundos duplos, cunhas, bandeiras, flâmulas — formações de gráfico validadas pelo tempo.',
-        cap_stdv_t:'Desvio Padrão', cap_stdv_b:'Análise de ranges estatísticos, expansões de volatilidade e setups de reversão à média baseados em teoria quantitativa.',
+        cap_stdv_t:'OTE / Desvio padrão', cap_stdv_b:'O modelo de entrada guiado por fibo: optimal trade entry, projeções por desvio padrão, premium e discount — com gatilho próprio, não ICT com um fibo por cima.',
+        cap_har_t:'Harmônicos', cap_har_b:'Geometrias XABCD definidas por razões de Fibonacci e a zona de reversão que projetam no ponto D — uma zona para observar, nunca um gatilho sozinha.',
+        cap_ew_t:'Ondas de Elliott', cap_ew_b:'Impulsos de cinco ondas e correções ABC em vários graus — sempre com a contagem alternativa, porque rotular é subjetivo por natureza.',
         cap_pa_t:'Price Action', cap_pa_b:'Estrutura de candles, pin bars, sequências de engolfo e leitura pura do gráfico sem depender de indicadores.',
         cap_ms_t:'Estrutura de Mercado', cap_ms_b:'Alinhamento de viés multi-timeframe — Higher Highs, Higher Lows e a natureza fractal do preço em todos os timeframes.',
-        cap_qnt_t:'Quantitativo e Híbrido', cap_qnt_b:'Confluências de Fibonacci, volume profile, níveis VWAP e sobreposição multi-metodologia para setups de alta convicção.',
+        cap_qnt_t:'Análise técnica', cap_qnt_b:'Médias móveis, RSI, MACD, bandas de Bollinger e volume — lidos no contexto, nunca como setinhas de compra ou venda.',
+        stat_methods_sub:'ICT · OTE · Wyckoff · Padrões · Harmônicos · Elliott · Técnica',
+        stat_tools_sub:'Análise · Formação · Comunidade',
+        pain1_t:'Você fechou a operação. Ninguém te disse por que saiu assim.',
+        pain1_b:'Um acerto e um erro parecem iguais no gráfico. Sem alguém relendo sua entrada, o mesmo erro dura mais um mês.',
+        pain2_t:'Você entra primeiro e confere suas regras depois.',
+        pain2_b:'O plano estava claro antes do candle se mexer. No calor da hora o checklist fica na sua cabeça e nunca chega à tela — aí deixa de valer.',
+        pain3_t:'Teoria sem fim e nenhum jeito de medir o que você realmente sabe.',
+        pain3_b:'ICT, SMC, Wyckoff — milhares de horas de conteúdo espalhadas por todo lado, e nada que diga o que você entendeu de verdade.',
+        fp1_title:'XAUUSD — como vocês rotulariam essa varredura da Ásia? Minha leitura vs a estrutura de H1',
+        fp2_title:'ES — revendo a reação de ontem no OB diário: o que passou batido?',
         s6_title:'Afie suas habilidades. Teste-as.',
         forum_t:'O Fórum de Trading',
         forum_b:'Discussões moderadas por IA. Análise de qualidade reforçada. Sem ruído — apenas traders sérios, independente da metodologia.',
@@ -2208,6 +2277,7 @@
         pp_synapse:'<strong>Synapse</strong> — mapa interativo de conhecimento com IA para explorar conceitos de trading',
         pp_quiz:'<strong>Quiz</strong> — teste seus conhecimentos em cada metodologia e nível',
         pp_chalk:'<strong>Chalkboard</strong> — desenhe e anote seus setups em um quadro dedicado',
+        pp_preflight:'<strong>Pre-Flight</strong> — seu checklist pré-trade: valide cada setup contra suas próprias regras e acompanhe sua disciplina',
         pp_camos:'<strong>1 Camo especial incluído</strong> — um tema de design exclusivo para personalizar seu dashboard',
         pp4:'Tudo do plano Standard', pp5:'Biblioteca de indicadores', pp_cta:'Ir para Premium',
         cmp_title:'Compare todos os recursos', cmp_sub:'Mesmo recurso, mesma linha — veja exatamente o que cada plano inclui.',
