@@ -1247,6 +1247,74 @@ borrado. PENDIENTE: agregar selector de mes / historial.
 
 ## 📋 TAREAS PENDIENTES
 
+### ✅ CHECKLIST DEL DUEÑO — 25 puntos (dictada 2026-08-03)
+> 🔴 **Esta lista NO se toca ni se borra hasta que él lo diga.** La dictó de memoria porque **se le
+> murió la pantalla del teléfono** y perdió sus notas. Instrucción explícita: *"No es para hacerlo
+> todo de golpe, es para ir uno por uno como si fuese una checklist y resolviendo cada problema con
+> Calidad, no con apuro."* Marcar ✅ al cerrar cada punto, con una línea de qué se hizo.
+> (Renumerada 1-25: su lista traía dos #6 y saltaba el #8 y el #16.)
+
+- [ ] **1. Landing page desactualizada.** (a) Pre-Flight no aparece en la descripción del plan
+  Premium; (b) ¿precios $50 o $49,99? (decidir, mismo criterio para Standard); (c) dice **4
+  metodologías** cuando hoy hay más; (d) el bloque *"You screenshot your trades — then what?"* ya no
+  describe lo que el sitio hace; (e) **"LO QUE LEE LA IA"** — el dueño rechaza decir que la IA
+  *"lee patrones"*: la IA **entiende y aplica** cada metodología para corregir de forma educativa;
+  ahí también **faltan metodologías/gatillos**; (f) la descripción del **foro** con los mensajes de
+  ejemplo (`XAUUSD — AMD cycle confirmed… targeting 2,031.80`) **suena a asesoría financiera**;
+  (g) **sacar su nombre del ranking del quiz** ("M. Ramirez") y poner otro; (h) decidir si su
+  testimonio se queda o se borra (ver el punto FTC de 2026-08-01).
+- [ ] **2. Propuesta comercial:** cambiar el acuerdo a **3 meses iniciales**, con revisión a los 30
+  días y opción de renovación por otros 3 si se cumplen expectativas de cualquiera de las partes.
+- [ ] **3. "My coupons":** ya no hay cupones de descuento. ¿Se quita, o se deja solo para mostrar el
+  cupón de referido activo de cara a la próxima renovación?
+- [ ] **4. Discover:** agregar los cosméticos nuevos (**cursores y marcos**) para Free, Standard y
+  Premium, redactado **natural en los 4 idiomas** (nada de traducción literal).
+- [ ] **5. T&C:** ¿hay que delimitar los dos productos nuevos (cursores y marcos)?
+- [ ] **6. T&C:** revisar si dice algo de la **ruleta y cupones de descuento** — hoy los premios son
+  SOLO cosméticos.
+- [ ] **7. Validez jurídica de la propuesta comercial.** No tiene empresa constituida ni vive en la
+  zona del influencer. ¿Qué valor legal tiene el documento? ¿Firmarlo le da marco legal?
+- [ ] **8. Tessera:** el interior y los efectos le gustan, pero el **diseño se siente pobre** —
+  sospecha de la tipografía, que no le pega a la marca.
+- [ ] **9. Atribución de las 2 esculturas 3D de Synapse.** Antes salían al pie y **se quitaron**.
+  Deben volver, **en Synapse y en todo el sitio**, legibles bajo **cualquier camo**, sin ocupar
+  media pantalla. (Derechos de autor / uso comercial.)
+- [ ] **10. Legibilidad bajo camos:** hay muchísimas frases chicas, títulos y subtítulos que se
+  pierden con el camo puesto — sobre todo texto FUERA de paneles. Hay que barrer camo por camo,
+  página por página.
+- [ ] **11. PDF de Synapse interactivo:** que el índice inicial sea clicable y salte al contenido
+  de cada metodología.
+- [ ] **12. PDF de Synapse — más sustancia.** Está bien logrado pero **demasiado sintetizado**;
+  va a costar ~$20 y hoy duda de que los valga. Nutrirlo sin rellenar por rellenar.
+- [ ] **13. Chalkboard funcional:** hoy es pobre, hay interacciones tediosas. Añadir herramientas
+  propias de cada metodología (ej.: arrastrar una **secuencia de velas** ya dibujada).
+- [ ] **14. Chalkboard visual:** el panel de la pizarra se ve **estrecho** frente al fondo del
+  sitio, como una diapositiva encogida.
+- [ ] **15. Pre-Flight:** revisar las "estadísticas" — hay comparaciones que no aportan.
+- [ ] **16. Intranet del influencer:** que vea SUS clientes, sus comisiones y nada más. Propone un
+  rol tipo admin, "Commercial Ally". ⚠️ Ojo: `/partner` ya existe (2026-08-01) — revisar qué falta
+  en vez de rehacerlo.
+- [ ] **17. Foro — simulacro de tráfico real:** cuentas falsas publicando, comentando, siguiéndose,
+  mandándose DMs y **tratando de romper las reglas**. Reportar bugs encontrados, qué falta, y si
+  alguna regla es evadible o algo prometido no se puede hacer.
+- [ ] **18. Subidas al foro:** permitir capturas **del propio sitio** (landing, camos, etc.) y
+  bloquear drogas, desnudos, armas y asesoría financiera — **sin censurar de más**.
+- [ ] **19. 🔴 Calidad del analizador fuera de ICT/STDV.** No sabe operar armónicos ni otras
+  metodologías y **no puede juzgar si el análisis es correcto**. Hay que encontrarle una forma de
+  validarlo. (El punto más difícil de la lista.)
+- [ ] **20. "My account"** en el panel de arriba a la derecha (bajo my coupons / my rank), con lo de
+  Settings y algo más.
+- [ ] **21. Simular tráfico farmeando XP** y desbloqueando rangos, para cazar bugs del cableado.
+- [ ] **22. Descripciones de los unlock de rango ilegibles bajo camos** (verificado en fourth:
+  fondo blanco que rompe el texto). Revisar todos los camos y ambos modos.
+- [ ] **23. Quitar "exclusive camo" de los unlocks de rango.** Ya no se gana camo al subir de rango:
+  solo el certificado y la medalla del foro.
+- [ ] **24. Brillos que se apagan** al cambiar de camo o de modo: el rayo del Quick Analysis y las
+  iniciales de los proyectos deben brillar SIEMPRE, como en el tema original.
+- [ ] **25. Foro para Standard:** quedó algún sitio sin reflejarlo (cableado del plan, comparativa
+  de la landing, T&C o cards). Buscar y corregir.
+
+
 ### 📌 COLA ACORDADA CON EL USUARIO (2026-07-31) — ir de a UNO, pulir y recién pasar al siguiente
 El usuario listó 6 puntos y pidió expresamente no hacerlos de golpe: *"la idea es ir punto por punto
 y pulir cada punto primero para luego pasar al otro"*. Estado:
