@@ -14,11 +14,55 @@ en el servidor y no toca nada sin confirmación.
     python3 tools/limpiar_pruebas.py --borrar 3,7    # borra esas ventas
     python3 tools/limpiar_pruebas.py --borrar-todo   # vacía ventas y pedidos
 """
+import glob
 import os
+import re
 import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'scalpel'))
-import app as A                                                    # noqa: E402
+RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(RAIZ, 'scalpel'))
+
+
+def _reintentar_con_el_venv():
+    """La app vive en un entorno virtual; el python3 del sistema no tiene Flask.
+
+    En vez de obligar a recordar la ruta del venv, se busca y el script se
+    vuelve a lanzar con ese intérprete. Se mira primero el `command=` de
+    supervisor, que es la verdad sobre con qué python corre la app de verdad.
+    """
+    if os.environ.get('_YA_REINTENTADO'):
+        return False
+    candidatos = []
+    for conf in glob.glob('/etc/supervisor/conf.d/*trader*.conf'):
+        try:
+            with open(conf, encoding='utf-8') as f:
+                m = re.search(r'^\s*command\s*=\s*(\S+)', f.read(), re.M)
+            if m:
+                candidatos.append(os.path.join(os.path.dirname(m.group(1)), 'python'))
+        except OSError:
+            pass
+    candidatos += [os.path.join(RAIZ, v, 'bin', 'python')
+                   for v in ('venv', '.venv', 'env')]
+    for py in candidatos:
+        if os.path.isfile(py) and os.access(py, os.X_OK):
+            print('(usando el intérprete de la app: %s)\n' % py)
+            os.environ['_YA_REINTENTADO'] = '1'
+            os.execv(py, [py] + sys.argv)
+    return False
+
+
+try:
+    import app as A                                                # noqa: E402
+except ModuleNotFoundError as e:
+    if 'flask' not in str(e).lower() and 'sqlalchemy' not in str(e).lower():
+        raise
+    _reintentar_con_el_venv()
+    print('⛔ No encontré el entorno virtual de la aplicación, así que no puedo\n'
+          '   leer la base de datos. Mirá con qué python arranca la app:\n'
+          '     grep -n "^command=" /etc/supervisor/conf.d/*trader*.conf\n'
+          '   y usá ese mismo, por ejemplo:\n'
+          '     /ruta/al/venv/bin/python tools/limpiar_pruebas.py')
+    sys.exit(1)
 
 
 def linea(c='─'):
