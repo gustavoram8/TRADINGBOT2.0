@@ -10,9 +10,8 @@ escalera del socio. Esta herramienta es la excepción explícita, se corre a man
 en el servidor y no toca nada sin confirmación.
 
     cd /var/www/TRADINGBOT2.0
-    python3 tools/limpiar_pruebas.py                 # solo mira y lista
-    python3 tools/limpiar_pruebas.py --borrar 3,7    # borra esas ventas
-    python3 tools/limpiar_pruebas.py --borrar-todo   # vacía ventas y pedidos
+    python3 tools/limpiar_pruebas.py              # solo mira y lista
+    python3 tools/limpiar_pruebas.py --limpiar    # lo pregunta todo, paso a paso
 """
 import glob
 import os
@@ -91,8 +90,23 @@ def listar():
         print('  #%-3s %-9s %-9s $%-8.2f %-14s %s'
               % (o.id, o.plan, o.status, o.final_price or 0,
                  o.payment_method or '—', u.username if u else '?'))
+    codigos = A.PromoCode.query.order_by(A.PromoCode.id).all()
+    print('\n\033[1mCÓDIGOS DE DESCUENTO\033[0m')
+    linea()
+    if not codigos:
+        print('  (ninguno)')
+    for c in codigos:
+        print('  %-14s %3s%%  %-12s usos: %-4s %s'
+              % (c.code, c.discount_pct, (c.creator_name or '—')[:12],
+                 c.uses_count or 0, 'activo' if c.active else 'apagado'))
+    usuarios = A.User.query.order_by(A.User.id).all()
+    print('\n\033[1mCUENTAS\033[0m')
+    linea()
+    for u in usuarios:
+        print('  #%-3s %-16s %-26s %-9s%s'
+              % (u.id, u.username, u.email, u.plan, '  ← ADMIN' if u.is_admin else ''))
     print()
-    return ventas, pedidos
+    return ventas, pedidos, codigos, usuarios
 
 
 def borrar(ids):
@@ -114,13 +128,121 @@ def borrar_todo():
     no = A.Order.query.delete()
     A.db.session.commit()
     print('\n✅ Libro vaciado: %d ventas y %d pedidos borrados.' % (nv, no))
-    print('   Los PLANES de los usuarios NO se han tocado: si alguien quedó con\n'
-          '   premium de una prueba, se le quita desde /admin → Users.')
+
+
+def borrar_codigos(codigos):
+    n = 0
+    for c in codigos:
+        pc = A.PromoCode.query.filter(
+            A.db.func.lower(A.PromoCode.code) == c.strip().lower()).first()
+        if not pc:
+            print('  · "%s" no existe' % c)
+            continue
+        print('  · borrando código %s (%s%%)' % (pc.code, pc.discount_pct))
+        A.db.session.delete(pc)
+        n += 1
+    A.db.session.commit()
+    print('✅ %d código(s) borrados.' % n)
+
+
+def _columnas_de_usuario():
+    """Toda tabla que guarde algo colgando de un usuario.
+
+    Se descubren solas recorriendo los modelos en vez de escribir una lista a
+    mano: una tabla nueva que se añada mañana queda cubierta sin acordarse de
+    esto, y borrar un usuario dejando filas huérfanas apuntando a su id es
+    justo lo que rompe la base con una clave foránea.
+    """
+    fuera = []
+    for mapper in A.db.Model.registry.mappers:
+        cls = mapper.class_
+        if cls is A.User:
+            continue
+        for col in mapper.columns:
+            if col.key.endswith('user_id'):
+                fuera.append((cls, col.key))
+    return fuera
+
+
+def borrar_usuarios(nombres):
+    n = 0
+    for nom in nombres:
+        u = A.User.query.filter(
+            (A.db.func.lower(A.User.username) == nom.strip().lower())
+            | (A.db.func.lower(A.User.email) == nom.strip().lower())).first()
+        if not u:
+            print('  · "%s" no existe' % nom)
+            continue
+        if u.is_admin:
+            print('  · "%s" es ADMIN — no se toca' % u.username)
+            continue
+        borradas = 0
+        for cls, col in _columnas_de_usuario():
+            borradas += cls.query.filter(getattr(cls, col) == u.id).delete(
+                synchronize_session=False)
+        print('  · borrando %s (%s) y %d fila(s) suyas' % (u.username, u.email, borradas))
+        A.db.session.delete(u)
+        n += 1
+    A.db.session.commit()
+    print('✅ %d cuenta(s) borradas.' % n)
+
+
+def _si(pregunta, palabra='SI'):
+    return input('   %s Escribe %s para confirmar: ' % (pregunta, palabra)).strip().upper() \
+        == palabra
 
 
 def main():
     with A.app.app_context():
-        ventas, pedidos = listar()
+        ventas, pedidos, codigos, usuarios = listar()
+
+        # Un solo comando que deja la casa limpia, preguntando por cada cosa
+        # POR SEPARADO: borrar el libro no tiene por qué llevarse el código del
+        # socio ni una cuenta que sí quieras conservar.
+        if '--limpiar' in sys.argv:
+            print('\033[1m⚠️  Limpieza previa al lanzamiento.\033[0m Se pregunta por cada '
+                  'grupo; puedes decir que no a cualquiera.\n')
+            if ventas or pedidos:
+                print('1) VENTAS Y PEDIDOS — %d y %d' % (len(ventas), len(pedidos)))
+                if _si('¿Borrar TODO el libro de ventas y los pedidos?', 'BORRAR'):
+                    borrar_todo()
+                else:
+                    print('   · se quedan como están')
+            else:
+                print('1) VENTAS Y PEDIDOS — ya está vacío')
+
+            if codigos:
+                print('\n2) CÓDIGOS — %s' % ', '.join(c.code for c in codigos))
+                cual = input('   Escribe los que quieras borrar separados por coma\n'
+                             '   (o TODOS, o Enter para no borrar ninguno): ').strip()
+                if cual.upper() == 'TODOS':
+                    borrar_codigos([c.code for c in codigos])
+                elif cual:
+                    borrar_codigos(cual.split(','))
+                else:
+                    print('   · se quedan todos')
+            else:
+                print('\n2) CÓDIGOS — no hay ninguno')
+
+            noadmin = [u for u in usuarios if not u.is_admin]
+            if noadmin:
+                print('\n3) CUENTAS DE PRUEBA — %s' % ', '.join(u.username for u in noadmin))
+                print('   (las cuentas ADMIN nunca se borran, aunque las escribas)')
+                cual = input('   Escribe las que quieras borrar separadas por coma\n'
+                             '   (o Enter para no borrar ninguna): ').strip()
+                if cual:
+                    print('   Se borrarán esas cuentas y TODO lo suyo: análisis, XP,\n'
+                          '   mensajes del foro, cosméticos. No se puede deshacer.')
+                    if _si('¿Seguro?', 'BORRAR'):
+                        borrar_usuarios(cual.split(','))
+                    else:
+                        print('   · cancelado, no se borró ninguna cuenta')
+                else:
+                    print('   · se quedan todas')
+            else:
+                print('\n3) CUENTAS — solo hay administradores')
+            print('\n\033[1mListo.\033[0m')
+            return 0
 
         if '--borrar-todo' in sys.argv:
             if not ventas and not pedidos:
@@ -150,11 +272,11 @@ def main():
             borrar(ids)
             return 0
 
-        print('Nada se ha tocado. Para borrar:')
-        print('   python3 tools/limpiar_pruebas.py --borrar 3,7')
-        print('   python3 tools/limpiar_pruebas.py --borrar-todo')
-        print('\nLos códigos de descuento se borran desde /admin → Revenue → '
-              'sección de códigos (botón Delete).')
+        print('Nada se ha tocado. Para limpiarlo todo de una vez:')
+        print('   \033[1mpython3 tools/limpiar_pruebas.py --limpiar\033[0m')
+        print('\nY si prefieres ir a lo concreto:')
+        print('   python3 tools/limpiar_pruebas.py --borrar 3,7        (ventas sueltas)')
+        print('   python3 tools/limpiar_pruebas.py --borrar-todo       (libro entero)')
         return 0
 
 
