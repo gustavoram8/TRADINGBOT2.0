@@ -1752,7 +1752,57 @@ tabla lista para 10. ⚠️ Si piden regenerarlo: script en scratchpad de la ses
 - Verificar prop firms que aceptan Venezuela (hoy solo OneUp Trader).
 - Ratings del Scout con fuente verificable (Trustpilot, etc.).
 
-### 📌 PENDIENTE INMEDIATO — encender PayPal (EN PAUSA por el usuario 2026-08-03)
+### ▶️ RETOMAR PAYPAL — la receta exacta (pausado 2026-08-04: el papá salió)
+> Cuando el usuario diga **"sigamos con PayPal"**, es ESTO, sin volver a discutirlo. Ya está todo
+> construido y probado; lo único que falta es que su papá le pase dos cadenas de texto.
+- **Lo que le pide a su papá (4 clics, nada más):** developer.paypal.com → **Apps & Credentials** →
+  interruptor arriba a la derecha en **Sandbox** → abrir la app (*Default Application*) → copiar
+  **Client ID** y **Secret** (el Secret está tras un botón *Show*). **NO** tiene que crear productos,
+  ni planes, ni webhooks — todo eso lo hacen los comandos. ⚠️ Puede que ya las tenga: el 2026-08-03
+  el papá le pasó unas y resultaron ser justo las de sandbox.
+- **Lo que corre él en el VPS**, en este orden:
+  1. `cd /var/www/TRADINGBOT2.0 && git pull origin claude/gallant-volta-i7cqmf`
+  2. `python3 tools/set_paypal.py` → pide las credenciales, las valida, dice a qué entorno
+     pertenecen y **crea el producto + los 2 planes de suscripción** solo.
+  3. `python3 tools/paypal_setup_webhook.py` → crea el webhook a `SITE_URL/webhook/paypal` con los
+     **15 eventos** y deja `PAYPAL_WEBHOOK_ID` puesto. Idempotente; repara uno incompleto.
+  4. `supervisorctl reread && supervisorctl update && supervisorctl restart traderacelerator`
+  5. Comprobar: `tail -20 /var/log/*trader*.log | grep -i paypal` → deben salir
+     `subs=True planes=premium:set, standard:set` y `enabled=True env=sandbox … webhook_id=set`.
+- **La compra de prueba: con una cuenta NUEVA, no la de admin** (el sitio bloquea comprar un plan
+  igual o inferior al que ya tienes, y así se prueba el recorrido real). Comprador sandbox desde
+  *Testing Tools → Sandbox accounts*. Lo que hay que ver: el plan se enciende Y **Ajustes dice "Se
+  renueva sola el …" con el importe** — eso es la prueba de que quedó suscripción y no cobro suelto.
+- ⚠️ **Nunca pegar el Secret en el chat.** Va del panel de PayPal directo al VPS.
+- ⚠️ En sandbox no puede salir un cargo real, y además `record_sale_breakdown` **ignora los pedidos
+  de PayPal cuando `PAYPAL_ENV != 'live'`** → los ensayos no ensucian el libro de ventas.
+
+### 🚪 EL DOMINIO YA SIRVE LA APP, detrás de un PASE (2026-08-04)
+`tradeable.academy` **ya no es la página de "en construcción" para el dueño**: nginx sirve la
+aplicación real a quien traiga el pase, y la página de espera a todos los demás. Config viva:
+`deploy/nginx/tradeable.academy.preview.conf` (los otros dos estados del dominio son
+`…academy.conf` = solo en construcción, y `…academy.live.conf` = abierto al público).
+- El pase entra por **galleta** (`/pase/<pase>`) o por **URL** (`?pase=<pase>`, que además deja la
+  galleta puesta). El valor **NO está en el repo** — es una credencial; se regenera con
+  `openssl rand -hex 16` y el `sed` que está documentado en la cabecera del propio archivo.
+- 🔴 **Lo que costó 4 horas y no se puede olvidar:** con Cloudflare delante, **una puerta por galleta
+  NO funciona si el origen deja cachear**. Su copia no distingue galletas: guardaba la página de
+  espera en la primera visita de cualquiera y se la servía al dueño con pase puesto — y al revés,
+  podía guardar una página ya autenticada y enseñársela a un desconocido. Se arregla en el ORIGEN
+  (`Cache-Control: private, no-store` + `Vary: Cookie`), **no** vaciando la caché a mano, que se
+  vuelve a llenar sola. ⚠️ Y `add_header` **no se hereda** en un `location` que tiene los suyos:
+  hay que repetirlo dentro (le pasó al location de la puerta).
+- ⚠️ **`nginx -t` dice "el archivo es válido", NO "el archivo está activo".** Antes de mandar al
+  usuario a mirar Cloudflare o el navegador, comprobar qué config está cargada de verdad:
+  `nginx -T | grep -c ta_pase`.
+- **`SITE_URL` ya está puesta** (`https://tradeable.academy`), así que PayPal devuelve al dominio
+  entres por donde entres. **`PUBLIC_HTTPS` sigue APAGADA a propósito**: con ella encendida se
+  apaga el acceso por `http://IP:5001`, y el dueño conserva las dos puertas mientras prueba. Es
+  tarea del día del lanzamiento.
+- Verificar que los demás NO ven el sitio: ventana de incógnito NUEVA (cerrando las anteriores) o
+  el teléfono con el WiFi apagado. `/`, `/login` y `/pricing` deben dar la página de espera.
+
+### 📌 Detalle previo — encender PayPal (EN PAUSA por el usuario 2026-08-03)
 🟡 **Estado al 2026-08-03:** la cuenta del papá **YA ES BUSINESS**, pero las credenciales que pasó
 son de **SANDBOX** (dinero de mentira; se le explicó que en sandbox nunca llega un dólar y que las
 de cobrar están en la pestaña **Live**, con Client ID y Secret distintos). **El usuario decidió
