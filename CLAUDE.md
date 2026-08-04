@@ -1452,7 +1452,7 @@ borrado. PENDIENTE: agregar selector de mes / historial.
   · ⚠️ Trampa al verificar: WeasyPrint escribe destinos **con NOMBRE** (`/Dest: tema-…` + tabla
     `/Names/Dests`), no arrays de página. Un lector que espere arrays da "sin resolver" y parece
     que los enlaces están rotos cuando están perfectos.
-- [ ] 🟡 **12. PDF de Synapse — más sustancia (EN CURSO 2026-08-04, tanda 1 de 5 hecha).**
+- [x] ✅ **12. PDF de Synapse — más sustancia (COMPLETO 2026-08-04, las 5 tandas).**
   Diagnóstico medido: cada tema traía 367–962 chars (mediana ~600) — ficha de glosario, no capítulo.
   **El sistema (ya cableado, commiteado):** 4 campos nuevos y OPCIONALES por tema —
   `playbook` (la secuencia narrada, 3-6 pasos, caja verde) · `fails` (modos de fallo honestos,
@@ -1477,7 +1477,15 @@ borrado. PENDIENTE: agregar selector de mes / historial.
   carnada, mecha≠ruptura (sweep argumenta lo contrario), gaps como salud de la tendencia,
   CE, re-anclar el dealing range tras un sweep, kill zone = reloj no mecanismo, spring
   calificado por volumen, "más compradores que vendedores" es imposible.
-  **FALTAN 2 tandas:** Fundamental (6) · Quant (6).
+  **Tandas 4+5 = Fundamental (6) + Quant (6) ESCRITAS y verificadas (mismo día) → 41/41 temas
+  con su tanda.** RESULTADO FINAL: PDF **50→91 páginas** (casi el doble), **164 enlaces** internos
+  todos con destino válido en los 4 idiomas, 46 marcadores, validador en verde. Canon fundamental:
+  expectativas vs titular, el par cotiza DOS trayectorias, primer movimiento miente, fade solo de
+  segundo nivel, zonas perforadas en noticia = falla de ejecución. Canon quant: expectativa desde
+  el journal propio, rachas presupuestadas antes, Kelly como techo, martingala = disfraz de la
+  ruina, el filtro de régimen ES la estrategia, pseudocódigo como espejo de lo discrecional.
+  ⚠️ Un carácter chino se coló en un playbook EN ("每 session") — cazado por relectura antes de
+  inyectar. Releer siempre la tanda antes de correr el inyector.
   Tras cada tanda: `python3 tools/validate_synapse_content.py` + rebuild + mirar el render.
   ⚠️ El flipbook web ignora los campos nuevos sin romperse (Object.assign) — los podrá usar
   algún día, pero HOY la profundidad es exclusiva del PDF de pago, lo que justifica su precio.

@@ -1810,7 +1810,34 @@
    "Diferencial de política",
    "Hawkish / dovish"
   ],
-  "figcap": "O ciclo económico como uma onda através de expansão, pico, contração e vale."
+  "figcap": "O ciclo económico como uma onda através de expansão, pico, contração e vale.",
+  "playbook": [
+   "Situe primeiro a economia no ciclo — expansão, pico, contração, recuperação — porque o mesmo dado se lê diferente em cada fase.",
+   "Pese os quatro grandes na ordem da obsessão atual do mercado: há trimestres em que tudo é inflação; outros, emprego — o driver da moda decide quais publicações importam.",
+   "Pense em termos RELATIVOS: moedas são pares, então a pergunta nunca é \"os EUA estão fortes?\" e sim \"estão mais fortes que o outro lado do meu par?\"",
+   "Traduza o macro num viés direcional por instrumento, por escrito — e exija que os seus setups técnicos concordem com ele antes de merecerem tamanho.",
+   "Atualize o mapa mensalmente, não a cada hora: os drivers giram devagar, e a disciplina está em notar a rotação sem repintar o seu viés a cada sessão."
+  ],
+  "fails": [
+   "O macro sem calendário vira uma história que você dobra para justificar qualquer trade — o viés deve estar escrito ANTES da sessão, ou é decoração.",
+   "O ciclo não cronometra entradas: estar certo de que uma moeda deveria enfraquecer neste trimestre não diz nada sobre sobreviver ao squeeze desta tarde contra você.",
+   "Captura pelo recente: depois de três meses obcecados com inflação parece permanente — até o dado de emprego virar o novo sol e o quadro de ontem parar de funcionar em silêncio."
+  ],
+  "drill": "Uma vez por mês, escreva um mapa macro de uma página: fase do ciclo, a obsessão atual do mercado e um viés por instrumento que você opera. Date e arquive. Reler seis meses desses mapas mostra duas coisas ao mesmo tempo — como os drivers giraram, e como a sua própria narrativa os atrasou ou antecipou.",
+  "related": [
+   {
+    "slug": "fundamental.interest-rates",
+    "why": "o driver que supera os demais em moedas"
+   },
+   {
+    "slug": "fundamental.data-continuation",
+    "why": "o setup que põe um viés macro para trabalhar"
+   },
+   {
+    "slug": "fundamental.intermarket",
+    "why": "a checagem entre ativos da sua história macro"
+   }
+  ]
  },
  "fundamental.interest-rates": {
   "lead": "As taxas de juro — e as expectativas do mercado sobre as taxas futuras — são o driver mais poderoso do valor de uma divisa. O capital flui para o maior retorno ajustado ao risco.",
@@ -1841,7 +1868,34 @@
    "Rendimentos de obrigações",
    "DXY"
   ],
-  "figcap": "À medida que a taxa de política sobe, a divisa fortalece-se ao mesmo ritmo — a relação taxa/divisa."
+  "figcap": "À medida que a taxa de política sobe, a divisa fortalece-se ao mesmo ritmo — a relação taxa/divisa.",
+  "playbook": [
+   "Siga as EXPECTATIVAS, não o número anunciado: os mercados precificam a trajetória futura das taxas, então a surpresa contra o consenso é a única parte que move algo.",
+   "Mapeie o diferencial: o dinheiro migra para a moeda cujas taxas — atuais e esperadas — pagam mais; brechas alargando empurram pares direcionalmente por meses.",
+   "Leia a mudança de tom: um banco central virando hawkish ou dovish reprecifica a trajetória inteira, e uma palavra mudada num comunicado pode pesar mais que a própria decisão.",
+   "Observe a resposta do mercado, não só o evento: quando as taxas sobem e a moeda CAI, as expectativas já iam na frente — essa reação é informação sobre o posicionamento.",
+   "Use as taxas como sua bússola mensal: elas não vão cronometrar a entrada de terça, mas explicam que lado de um par merece o benefício da dúvida."
+  ],
+  "fails": [
+   "Operar a manchete como se fosse a surpresa: uma alta totalmente precificada não move nada — ou reverte — porque o mercado comprou o rumor meses atrás.",
+   "Importar a bússola para o scalp: a lógica de taxas trabalha em semanas e meses; forçá-la a justificar uma entrada de 5 minutos é emprestar uma autoridade que esse tempo gráfico não pode honrar.",
+   "Ler um banco isolado: um par precifica DUAS trajetórias — um Fed hawkish significa pouco para o EURUSD se o BCE o supera em dureza."
+  ],
+  "drill": "Escolha um par e, para oito decisões de bancos centrais, escreva ANTES de cada uma: o consenso, a sua leitura do que está precificado, e a reação esperada a uma surpresa em cada direção. Avalie-se depois. Oito ciclos disso constroem o reflexo de expectativas que separa a cultura macro da caça a manchetes.",
+  "related": [
+   {
+    "slug": "fundamental.macro-drivers",
+    "why": "o ciclo amplo do qual as taxas são uma engrenagem"
+   },
+   {
+    "slug": "fundamental.news-data",
+    "why": "os momentos agendados em que a trajetória se reprecifica"
+   },
+   {
+    "slug": "fundamental.intermarket",
+    "why": "como a história das taxas se propaga entre classes de ativos"
+   }
+  ]
  },
  "fundamental.news-data": {
   "lead": "As publicações económicas são lançamentos agendados de métricas-chave que disparam a volatilidade quando o dado se desvia do consenso. Saber o que cada um mede — e quando — é essencial quer os opere quer os evite.",
@@ -1872,7 +1926,34 @@
    "Consenso",
    "Calendário económico"
   ],
-  "figcap": "Uma publicação agendada dispara um pico de volatilidade no momento do anúncio no calendário."
+  "figcap": "Uma publicação agendada dispara um pico de volatilidade no momento do anúncio no calendário.",
+  "playbook": [
+   "Rode o calendário como pré-voo: antes de qualquer sessão, saiba o que publica, quando e o nível de impacto — um setup 3 minutos antes do CPI não é um setup.",
+   "Localize os TRÊS números em cada publicação: anterior, consenso, real — o mercado opera a brecha entre consenso e real, nada mais.",
+   "Espere que o primeiro movimento minta: o pico inicial é dominado por algoritmos e stops forçados; a estrutura que se forma DEPOIS carrega o veredicto dos humanos.",
+   "Proteja o seu risco aberto: alargue, reduza ou zere antes de eventos de nível vermelho por regra, não por humor — executar através de uma publicação é loteria mesmo com a ideia certa.",
+   "Registre a reação, não só o número: se o preço sustentou o pico ou o desvaneceu diz o quanto o mercado estava posicionado — combustível para a próxima ocasião."
+  ],
+  "fails": [
+   "Número certo, trade errado: você pode acertar a surpresa e ainda perder — spreads estouram, execuções escorregam, e o recuo cobra o seu stop antes de o movimento \"correto\" retomar.",
+   "Zonas furadas durante uma publicação são falhas de execução, não de ideia — classificar os seus níveis pelo comportamento na vela de notícia corrompe o mapa inteiro de zonas.",
+   "Um componente pode inverter a manchete: um NFP acima com salários caindo já operou no vermelho — o mercado lê as entranhas enquanto os traders de manchete leem o título."
+  ],
+  "drill": "Para as próximas seis publicações de nível vermelho, capture o gráfico em T-1 minuto, T+5 e T+30, registrando consenso contra real cada vez. Revisar as dezoito imagens lado a lado ensina a anatomia em três atos — pico, recuo, resolução — melhor que qualquer descrição.",
+  "related": [
+   {
+    "slug": "fundamental.news-fade",
+    "why": "operar a sobrerreação depois que a poeira baixa"
+   },
+   {
+    "slug": "fundamental.data-continuation",
+    "why": "operar a publicação que concorda com a tendência"
+   },
+   {
+    "slug": "smc.kill-zones",
+    "why": "o relógio que estes eventos anulam com regularidade"
+   }
+  ]
  },
  "fundamental.intermarket": {
   "lead": "A análise intermercados lê as relações entre classes de ativos — ações, obrigações, divisas, matérias-primas — porque o capital global está interligado e um movimento num mercado muitas vezes pressagia outro.",
@@ -1903,7 +1984,34 @@
    "Rendimentos de obrigações",
    "Mudança de regime"
   ],
-  "figcap": "O DXY e o ouro a moverem-se inversamente — uma correlação intermercados clássica usada como confluência."
+  "figcap": "O DXY e o ouro a moverem-se inversamente — uma correlação intermercados clássica usada como confluência.",
+  "playbook": [
+   "Parta do dial do risco: a cada sessão, pergunte se o dinheiro busca risco (ações subindo, cruzamentos de iene subindo) ou foge dele — essa única resposta colore cada gráfico que você opera.",
+   "Siga o dólar como o sol: a força do DXY pressiona ouro, commodities e moedas de risco ao mesmo tempo — uma olhada explica muitos gráficos.",
+   "Observe os rendimentos como a engrenagem adiantada: os mercados de títulos costumam reprecificar crescimento e taxas antes de ações e FX alcançarem.",
+   "Use as correlações como CONFIRMAÇÃO: a sua compra de EURUSD concorda com um DXY amolecendo; o desacordo é razão para diminuir o tamanho, não um trade por si só.",
+   "Respeite a lógica SMT onde ela se aplica: quando dois instrumentos correlacionados divergem em extremos — um faz a máxima, o outro se recusa — a recusa costuma dizer a verdade."
+  ],
+  "fails": [
+   "Correlações são sazonais, não leis: ações e títulos passaram décadas invertidos, depois anos se movendo juntos — uma regra aprendida num regime te trai no seguinte.",
+   "O atraso não é sinal: o ouro reagindo ao DXY trinta minutos atrasado num dia e instantaneamente no outro significa que cronometrar entradas A PARTIR do gráfico correlacionado é emprestar uma precisão que não existe.",
+   "O NQ e o MNQ não podem divergir — são o mesmo subjacente. O SMT precisa de índices ou instrumentos genuinamente diferentes; \"divergência\" entre um contrato e o micro dele é artefato de dados."
+  ],
+  "drill": "Toda sexta durante dois meses, plote quatro linhas lado a lado — DXY, rendimento de 10 anos, seu índice, seu par principal — e escreva três frases sobre quem liderou, quem seguiu e onde discordaram. Oito fotos depois você terá algo que nenhum indicador dá: o tato de qual engrenagem está dirigindo a máquina neste momento.",
+  "related": [
+   {
+    "slug": "fundamental.macro-drivers",
+    "why": "as forças que essas relações transmitem"
+   },
+   {
+    "slug": "fundamental.interest-rates",
+    "why": "a engrenagem dos rendimentos, examinada de perto"
+   },
+   {
+    "slug": "quant.probability",
+    "why": "por que uma posição correlacionada é uma aposta só, tenha quantos bilhetes tiver"
+   }
+  ]
  },
  "fundamental.news-fade": {
   "lead": "O fade do pico de notícias opera a sobre-reação reflexa a uma publicação: o preço dispara no título, depois reverte rumo aos níveis anteriores à medida que a resposta algorítmica inicial dá lugar a um preço racional.",
@@ -1940,7 +2048,34 @@
    "Slippage",
    "Surpresa macro"
   ],
-  "figcap": "O preço dispara na publicação, esgota-se, e reverte rumo ao nível anterior à publicação — o fade."
+  "figcap": "O preço dispara na publicação, esgota-se, e reverte rumo ao nível anterior à publicação — o fade.",
+  "playbook": [
+   "Qualifique o evento primeiro: os candidatos ao fade são surpresas de segundo escalão ou manchetes que NÃO mudam a trajetória de taxas — nunca impressões que mudam o regime.",
+   "Deixe o pico se esgotar: o sinal de entrada é o momentum morrendo — velas menores, um freio num nível marcado do tempo maior — não uma contagem regressiva desde a publicação.",
+   "Exija uma localização: um pico CONTRA uma zona de oferta diária ou um extremo anterior dá ao fade uma parede para se apoiar; um pico para o espaço aberto não dá nada.",
+   "Entre na impressão da falha — a virada no seu tempo menor contra o pico — e ponha o stop além do extremo do pico, porque passado isso a \"sobrerreação\" era o movimento.",
+   "Mire na origem: o preço pré-notícia é o ímã natural de um reflexo que não significou nada; realize em direção a ele, não através dele."
+  ],
+  "fails": [
+   "Fazer fade numa impressão que realmente mudou a história é ficar na frente de uma reprecificação — o mercado não está sobrerreagindo: está CORRIGINDO, e não vai voltar por você.",
+   "Cedo demais é simplesmente errado: o pico costuma correr em ondas, e o primeiro freio é isca — sem uma impressão de esgotamento você está adivinhando onde um foguete para.",
+   "A assimetria castiga: fades ganham pouco (de volta à origem) e perdem muito quando erram (dia de tendência contra você) — sem stops estritos, a matemática da estratégia morre numa sexta ruim."
+  ],
+  "drill": "Estude vinte gráficos pós-pico: marque onde o pico travou, se desvaneceu até a origem, e de que escalão era o evento. Separe os de segundo escalão dos de regime. A taxa de fade do primeiro grupo contra o segundo é a regra de qualificação inteira, derivada em vez de decorada.",
+  "related": [
+   {
+    "slug": "fundamental.news-data",
+    "why": "a anatomia de publicação cuja segunda metade este setup opera"
+   },
+   {
+    "slug": "smc.liquidity-sweep",
+    "why": "a mesma colheita-e-retorno, movida por uma manchete"
+   },
+   {
+    "slug": "price.support-resistance",
+    "why": "as paredes em que um fade precisa se apoiar"
+   }
+  ]
  },
  "fundamental.data-continuation": {
   "lead": "A continuação após o dado cavalga uma publicação que confirma a tendência macro existente: após o pico e um breve recuo, o preço continua na direção confirmada pelo dado.",
@@ -1977,7 +2112,34 @@
    "Pano de fundo fundamental",
    "Confluência"
   ],
-  "figcap": "Uma publicação dispara com a tendência, recua a um nível, depois continua — a entrada de continuação."
+  "figcap": "Uma publicação dispara com a tendência, recua a um nível, depois continua — a entrada de continuação.",
+  "playbook": [
+   "Cheque o alinhamento primeiro: o setup só existe quando a surpresa CONFIRMA a tendência macro vigente — dado com o vento, não contra ele.",
+   "Deixe o pico acontecer sem você: a entrada de continuação nunca é a perseguição; ela começa quando o primeiro recuo começa a se formar.",
+   "Compre o recuo num nível real: o ponto de rompimento pré-pico, o FVG que o pico deixou, um OTE da perna da notícia — a estrutura dá piso ao recuo.",
+   "Confirme a retomada: uma impressão de rechaço nesse nível na direção da publicação é a luz verde; a ausência dela é o aviso.",
+   "Cavalgue com os alvos da própria tendência: como macro e momentum concordam, o extremo anterior e a próxima piscina do tempo maior são objetivos honestos — este é o raro setup onde a paciência paga duas vezes."
+  ],
+  "fails": [
+   "Perseguir o pico É o modo de falha: as primeiras velas carregam os piores preços e os spreads mais largos, e o recuo que segue cobra os perseguidores antes da continuação real.",
+   "Um recuo que mói ATRAVÉS do seu nível em vez de repicar é o mercado votando contra a tese — fazer preço médio nele converte uma perda pequena e precoce em envenenamento por convicção.",
+   "Às vezes a publicação chegou atrasada ao movimento: quando semanas de tendência já precificaram a surpresa, a \"confirmação\" imprime como esgotamento — os últimos compradores celebrando contra o topo."
+  ],
+  "drill": "Encontre quinze publicações que confirmaram uma tendência vigente. Para cada uma registre três preços: a entrada de perseguição (primeiro minuto), a entrada do recuo na estrutura, e onde cada uma teria sido estopada. A expectativa lado a lado dessas duas colunas resolve — permanentemente — se a paciência ao redor de notícias é virtude ou slogan.",
+  "related": [
+   {
+    "slug": "fundamental.macro-drivers",
+    "why": "a tendência vigente que este setup exige"
+   },
+   {
+    "slug": "smc.fvg-fill",
+    "why": "o desequilíbrio que a perna da notícia deixa para o recuo"
+   },
+   {
+    "slug": "fundamental.news-fade",
+    "why": "a leitura oposta — e por que a qualificação as separa"
+   }
+  ]
  },
  "quant.probability": {
   "lead": "O trading quantitativo assenta no pensamento estatístico: operar é um jogo de probabilidades julgado sobre grandes amostras, não resultados isolados. A esperança diz-lhe se tem vantagem; a variância explica as séries dolorosas ao longo do caminho.",
@@ -2008,7 +2170,34 @@
    "Variância",
    "Vantagem"
   ],
-  "figcap": "Uma curva de capital de esperança positiva sobe no conjunto enquanto sofre drawdowns de variância normais."
+  "figcap": "Uma curva de capital de esperança positiva sobe no conjunto enquanto sofre drawdowns de variância normais.",
+  "playbook": [
+   "Reenquadre a unidade de julgamento: um trade não prova nada; cem trades do mesmo setup são a menor amostra que fala.",
+   "Calcule a sua expectativa com honestidade: (taxa de acerto × ganho médio) − (taxa de erro × perda média), do SEU próprio journal — não os números prometidos do curso.",
+   "Aceite a curva da troca: taxa de acerto alta costuma comprar vantagens pequenas por trade; taxa baixa com ganhadores grandes pode superá-la — nenhuma é virtude, o produto é.",
+   "Orce a variância ANTES de ela acontecer: com 50% de acerto, oito perdas seguidas aparecem rotineiramente num ano de 400 trades — decida agora o que fará na perda número cinco.",
+   "Conte bilhetes correlacionados como uma aposta: duas compras em instrumentos que se movem juntos compartilham um destino, e a sua matemática de risco precisa saber disso."
+  ],
+  "fails": [
+   "Julgar um sistema com dez trades é julgar uma moeda com três lançamentos — a maioria das estratégias \"quebradas\" foi abandonada dentro da variância normal.",
+   "Histórias de sobreviventes envenenam a intuição: os traders visíveis são a cauda sortuda; copiar o risco deles porque \"funcionou para eles\" importa a exigência de sorte deles, não a habilidade.",
+   "Expectativa calculada com preenchimentos de backtest — sem spread, sem slippage, sem entradas perdidas — descreve um mercado em que ninguém opera."
+  ],
+  "drill": "Pegue seus últimos cinquenta trades do journal e calcule os quatro números à mão: taxa de acerto, ganho médio, perda média, expectativa. Depois simule essa moeda mil vezes numa planilha e olhe as sequências perdedoras que ela produz. A pior sequência dessa planilha já está atribuída ao seu futuro — encontrá-la primeiro no papel é o exercício inteiro.",
+  "related": [
+   {
+    "slug": "quant.risk-of-ruin",
+    "why": "o que a variância faz com uma conta descapitalizada"
+   },
+   {
+    "slug": "quant.backtesting",
+    "why": "de onde os números honestos têm que vir"
+   },
+   {
+    "slug": "fundamental.intermarket",
+    "why": "por que posições correlacionadas são um bilhete só"
+   }
+  ]
  },
  "quant.backtesting": {
   "lead": "O backtesting aplica uma estratégia a dados históricos para estimar a sua vantagem antes de arriscar capital — mas está repleto de armadilhas que fabricam uma rentabilidade falsa que nunca sobrevive em real.",
@@ -2039,7 +2228,34 @@
    "Slippage",
    "Degradação de estratégia"
   ],
-  "figcap": "Divisão walk-forward: uma curva forte na amostra interna e o teste externo que expõe o sobreajuste."
+  "figcap": "Divisão walk-forward: uma curva forte na amostra interna e o teste externo que expõe o sobreajuste.",
+  "playbook": [
+   "Congele as regras ANTES de tocar nos dados: entrada, saída, tamanho, sessão — escritas com tal precisão que duas pessoas tomariam trades idênticos.",
+   "Caminhe o gráfico barra a barra com o futuro coberto — reproduza honestamente ou o teste mede o seu retrospecto, não o seu método.",
+   "Cobre de si mesmo os custos completos: spread, comissão, slippage em cada preenchimento — preenchimentos baratos no papel são onde nascem as vantagens falsas.",
+   "Divida os dados: construa num período, valide em dados que as regras nunca viram — o veredicto fora-da-amostra é o único que conta.",
+   "Registre cada trade com as etiquetas de contexto (sessão, regime, nota do setup) para que a autópsia encontre ONDE a vantagem se concentra."
+  ],
+  "fails": [
+   "Dez parâmetros ajustados até a história ficar linda descrevem o PASSADO perfeitamente e nada mais — cada botão a mais compra beleza de backtest com fragilidade ao vivo.",
+   "Zonas retroajustadas são a versão do overfitting do trader discricionário: marcar níveis com o resultado visível testa a sua memória do gráfico, não o seu método.",
+   "Sobreviver a um regime não é robustez: uma estratégia construída inteira dentro de um ano de tendência encontra o primeiro range como um barco encontra a terra."
+  ],
+  "drill": "Pegue um setup em que você acredita e rode um replay de 50 trades com as regras congeladas no papel ao lado. Cada vez que sentir o impulso de \"ajustar\" no meio do teste, marque em vez de fazer. A contagem no final — quantas vezes você quis dobrar as regras — mede a distância exata entre o sistema que você tem e a disciplina de que ele precisa.",
+  "related": [
+   {
+    "slug": "quant.probability",
+    "why": "os números que este processo existe para produzir"
+   },
+   {
+    "slug": "quant.algo-systems",
+    "why": "regras formais o bastante para rodar sem você"
+   },
+   {
+    "slug": "smc.market-structure",
+    "why": "as definições mecânicas que tornam testáveis as regras discricionárias"
+   }
+  ]
  },
  "quant.risk-of-ruin": {
   "lead": "O Risco de Ruína é a probabilidade de perder capital suficiente para ser eliminado do jogo — uma função da vantagem, do risco por trade e de quanta variância a sua conta consegue absorver. O dimensionamento importa tanto como a estratégia.",
@@ -2070,7 +2286,34 @@
    "Dimensionamento",
    "Meio Kelly"
   ],
-  "figcap": "Assimetria do drawdown: o ganho exigido para recuperar cresce de forma não linear à medida que a perda se aprofunda."
+  "figcap": "Assimetria do drawdown: o ganho exigido para recuperar cresce de forma não linear à medida que a perda se aprofunda.",
+  "playbook": [
+   "Entenda a assimetria primeiro: −20% precisa de +25% de volta, −50% precisa de +100% — o drawdown é um buraco cujas paredes ficam mais íngremes enquanto você cava.",
+   "Fixe o seu risco por trade como fração do capital ATUAL: o dimensionamento fracional-fixo encolhe as apostas em drawdown automaticamente, que é justamente quando você precisa.",
+   "Derive a sua fração dos seus números: vantagem, variância e tolerância psicológica — não de um slogan de curso como \"arrisque 1%\".",
+   "Trate o Kelly como teto, não como alvo: o Kelly completo maximiza o crescimento E produz drawdowns que nenhum humano atravessa operando — os profissionais vivem a uma fração dele.",
+   "Defina a ruína pessoalmente e pare ANTES: o número onde você já não consegue operar racionalmente chega mais cedo que o número onde a conta está vazia."
+  ],
+  "fails": [
+   "Dobrar o risco para \"recuperar mais rápido\" depois de um drawdown multiplica exatamente o número que estava te matando — o instinto martingale é o disfarce favorito da ruína.",
+   "A matemática da ruína supõe apostas independentes: posições correlacionadas, sequências de vingança e gaps de notícia tornam o risco real por dia bem maior do que o número por trade sugere.",
+   "Um sistema de expectativa positiva ainda arruína uma conta descapitalizada: a vantagem não te protege de a sequência chegar antes da média."
+  ],
+  "drill": "Construa um simulador de ruína numa planilha: sua taxa de acerto, seus múltiplos R, 1000 corridas de 200 trades em três níveis de risco — 0,5%, 1%, 2%. Conte quantas corridas tocam um drawdown de 30% em cada nível. Ver a ruína virar uma frequência que você sobe e desce é o que faz o tamanho de posição parecer o volante que é.",
+  "related": [
+   {
+    "slug": "quant.probability",
+    "why": "a expectativa e a variância que esta matemática consome"
+   },
+   {
+    "slug": "quant.backtesting",
+    "why": "onde os insumos devem ser medidos, não desejados"
+   },
+   {
+    "slug": "quant.algo-systems",
+    "why": "regras de tamanho aplicadas sem humor"
+   }
+  ]
  },
  "quant.algo-systems": {
   "lead": "Os sistemas algorítmicos executam regras predefinidas de forma automática, eliminando a emoção e permitindo testes rigorosos. Diferentes abordagens exploram diferentes ineficiências — seguimento de tendência, reversão à média, criação de mercado e arbitragem.",
@@ -2101,7 +2344,34 @@
    "Latência",
    "Sobreajuste"
   ],
-  "figcap": "Dois regimes: um trecho tendencial (território de seguimento de tendência) e um range (território de reversão à média)."
+  "figcap": "Dois regimes: um trecho tendencial (território de seguimento de tendência) e um range (território de reversão à média).",
+  "playbook": [
+   "Escreva a estratégia como algoritmo mesmo que um humano execute: entrada, saída, tamanho e sessão tão explícitos que nenhuma vela exija uma opinião.",
+   "Classifique o seu sistema com honestidade — seguidor de tendência ou reversor à média — porque esse rótulo prevê QUANDO ele vai sofrer, e o sofrimento sem aviso é o que quebra operadores.",
+   "Rode as regras no papel em paralelo antes de automatizar: um mês de execução manual revela as ambiguidades que nenhum backtest mostra.",
+   "Automatize o elo mais fraco primeiro: para a maioria são as saídas e o tamanho — os lugares onde a emoção edita o plano no meio do trade.",
+   "Monitore o sistema como sistema: acompanhe a expectativa ao vivo contra as bandas do backtest, e predefina o drawdown que o pausa — máquinas falham educadamente só se você disse como."
+  ],
+  "fails": [
+   "A automação multiplica o que receber: uma falha sutil de regra que um discricionário pegaria no terceiro trade executa quinhentas vezes antes de segunda.",
+   "Matar um sistema dentro da variância normal — porque uma semana perdedora PARECEU quebrada — substitui uma vantagem medida por humor, que é o que a automação existia para remover.",
+   "Todo sistema é uma aposta na persistência de um regime: máquinas de tendência morrem no serrote, as de reversão morrem em tendências — rodar uma sem conhecer a estação dela é rodá-la às cegas."
+  ],
+  "drill": "Pegue o seu setup mais discricionário e passe uma semana escrevendo-o como pseudocódigo — cada condição, cada exceção. Os pontos onde você não consegue escrever a regra são os pontos onde você vinha decidindo por sensação. Não precisa automatizar nada; o exercício é conhecer as partes do seu método que só existem como humor.",
+  "related": [
+   {
+    "slug": "quant.backtesting",
+    "why": "o campo de provas que todo conjunto de regras deve sobreviver"
+   },
+   {
+    "slug": "quant.risk-of-ruin",
+    "why": "as restrições de tamanho que a máquina deve impor"
+   },
+   {
+    "slug": "quant.momentum",
+    "why": "uma das duas famílias às quais todo sistema pertence"
+   }
+  ]
  },
  "quant.mean-reversion": {
   "lead": "Um sinal de reversão à média dispara quando o preço se esticou estatisticamente longe da sua média — por z-score, banda ou extremo de RSI — apostando num regresso brusco à média. Mas o regime deve estar primeiro em range.",
@@ -2138,7 +2408,34 @@
    "Cointegração",
    "Filtro ADX"
   ],
-  "figcap": "O preço estica-se à banda de +2σ num range, depois reverte à média — o trade de reversão."
+  "figcap": "O preço estica-se à banda de +2σ num range, depois reverte à média — o trade de reversão.",
+  "playbook": [
+   "Filtre por regime antes de tudo: a reversão à média se alimenta de ranges — um filtro ADX ou uma checagem de estrutura deve aprovar o trade antes mesmo de medir o esticamento.",
+   "Quantifique o esticamento: um z-score ou distância de banda transforma o \"parece esticado\" num número com limiar testável.",
+   "Espere a virada COMEÇAR: entre na primeira contração de volta à média, não no esticamento máximo — pegar a borda externa é outro trade, pior.",
+   "Mire na média, não na lua: a tese do trade é um retorno à média, então a média é a saída — estender alvos além dela empresta uma tese que você não tem.",
+   "Corte na mudança de regime, não só no preço: se o range romper enquanto você segura, a premissa morreu — a perda é a taxa pela informação, e ficar é pagar duas vezes."
+  ],
+  "fails": [
+   "\"Não dá para subir mais\" não é uma razão — em tendência, o esticado estica mais, e vender força sem filtro de regime é o funeral de livro desta estratégia.",
+   "Fazer preço médio contra um corredor converte uma perda pequena planejada num evento de conta: a vantagem da estratégia vive em muitas reversões pequenas, e uma tendência sem stop apaga cinquenta.",
+   "A própria média deriva: numa tendência lenta, o preço \"reverte\" para um alvo móvel e a sua vantagem medida vira em silêncio ruído ao redor de uma inclinação."
+  ],
+  "drill": "Backteste uma regra de reversão duas vezes sobre o mesmo ano de dados: uma com filtro de regime (só dentro de ranges diagnosticados) e outra sem. Mesmas entradas, mesmas saídas, um filtro de diferença. As duas curvas de capital — uma respirando, outra sangrando — são a imagem mais clara que você terá de por que o filtro É a estratégia.",
+  "related": [
+   {
+    "slug": "technical.bollinger",
+    "why": "a fita métrica que os traders de reversão pegam primeiro"
+   },
+   {
+    "slug": "quant.momentum",
+    "why": "a aposta oposta — e por que o regime decide qual está viva"
+   },
+   {
+    "slug": "quant.backtesting",
+    "why": "de onde o limiar e o filtro tiram seus números"
+   }
+  ]
  },
  "quant.momentum": {
   "lead": "Um sinal de momentum entra quando o preço se move com força direcional suficiente para cavalgar — capturando a persistência em vez de a desvanecer. O ADX separa o momentum real do ruído.",
@@ -2175,6 +2472,33 @@
    "Falso rompimento",
    "Stop dinâmico"
   ],
-  "figcap": "Um rompimento confirmado por ADX a entrar numa tendência sustentada, arrastado por uma média móvel crescente."
+  "figcap": "Um rompimento confirmado por ADX a entrar numa tendência sustentada, arrastado por uma média móvel crescente.",
+  "playbook": [
+   "Confirme que há uma tendência que valha montar: um ADX acima do limiar, ou uma sequência limpa de estrutura externa — o filtro vem antes do sinal.",
+   "Entre COM a força, não depois que ela descansa: a lógica de momentum compra alto para vender mais alto; a hesitação esperando \"preço melhor\" é pensamento de reversão com o uniforme errado.",
+   "Dimensione para a volatilidade que você está embarcando: pernas fortes se movem rápido para os dois lados, e o stop deve viver fora da respiração normal da perna.",
+   "Deixe os ganhadores respirarem com um trailing de estrutura: saídas em cada swing novo em vez de alvos fixos — a persistência é a vantagem, então a saída deve permitir a persistência.",
+   "Aposente o trade quando a força morrer: estratégias de momentum dependem do regime, e um ADX chapado ou uma continuação falha é a máquina avisando que a temporada dela acabou."
+  ],
+  "fails": [
+   "Entrar com força no FIM de uma perna madura compra o clímax: o momentum medido sem perguntar a IDADE do movimento confunde o último quilômetro de uma maratona com o primeiro.",
+   "Em ranges, cada arrancada de \"momentum\" é a viagem de ida e volta à outra borda — o mesmo sinal que imprime dinheiro em tendências o doa no serrote.",
+   "Stops apertados sufocam a própria persistência que você comprou: estopado por recuos normais quatro vezes, o quinto sinal — o que corre — vai embora sem você."
+  ],
+  "drill": "Etiquete trinta sinais de momentum com a idade do movimento quando dispararam: primeira perna, meio, ou tardia/estendida. Acompanhe cada um até a conclusão. A taxa de mortalidade das entradas de perna tardia — visível nos seus próprios números — instala a pergunta \"que idade tem este movimento?\" permanentemente na frente do botão de compra.",
+  "related": [
+   {
+    "slug": "quant.mean-reversion",
+    "why": "a estratégia espelho que compartilha um mesmo interruptor de regime"
+   },
+   {
+    "slug": "price.trend-structure",
+    "why": "a definição estrutural da força que está sendo comprada"
+   },
+   {
+    "slug": "technical.macd",
+    "why": "o medidor de momentum-do-momentum para o lado da saída"
+   }
+  ]
  }
 }

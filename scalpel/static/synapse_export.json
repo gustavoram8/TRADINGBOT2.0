@@ -1913,7 +1913,34 @@
     "Policy differential",
     "Hawkish / dovish"
    ],
-   "figcap": "The economic cycle as a wave through expansion, peak, contraction, and trough."
+   "figcap": "The economic cycle as a wave through expansion, peak, contraction, and trough.",
+   "playbook": [
+    "Place the economy in its cycle first — expansion, peak, contraction, recovery — because the same data point reads differently in each phase.",
+    "Weigh the big four in order of current market obsession: some quarters everything is inflation; others, jobs — the driver du jour decides which releases matter.",
+    "Think in RELATIVE terms: currencies are pairs, so the question is never \"is the US strong?\" but \"is it stronger than the other side of my pair?\"",
+    "Translate macro into a directional bias per instrument, written down — then require your technical setups to agree with it before they earn size.",
+    "Refresh the map monthly, not hourly: drivers rotate slowly, and the discipline is noticing the rotation without repainting your bias every session."
+   ],
+   "fails": [
+    "Macro without a calendar becomes a story you can bend to justify any trade — the bias must be written BEFORE the session, or it is decoration.",
+    "The cycle does not time entries: being right that a currency should weaken this quarter says nothing about surviving this afternoon's squeeze against you.",
+    "Recency capture: after three inflation-obsessed months it feels permanent — until the jobs report becomes the new sun and yesterday's framework quietly stops working."
+   ],
+   "drill": "Once a month, write a one-page macro map: cycle phase, the market's current obsession, and a bias per instrument you trade. Date it and file it. Re-reading six months of these maps shows you two things at once — how drivers rotated, and how your own narrative lagged or led them.",
+   "related": [
+    {
+     "slug": "fundamental.interest-rates",
+     "why": "the driver that outranks the others for currencies"
+    },
+    {
+     "slug": "fundamental.data-continuation",
+     "why": "the setup that puts a macro bias to work"
+    },
+    {
+     "slug": "fundamental.intermarket",
+     "why": "the cross-asset check on your macro story"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><line class=\"df-axis\" x1=\"34\" y1=\"196\" x2=\"384\" y2=\"196\"/><line class=\"df-axis\" x1=\"34\" y1=\"16\" x2=\"34\" y2=\"196\"/><line class=\"df-grid\" x1=\"40\" y1=\"120\" x2=\"372\" y2=\"120\"/><path class=\"df-line-accent\" d=\"M40 120 C90 60 130 60 170 110 C210 160 250 160 290 110 C320 72 350 80 372 100\"/><circle class=\"df-accent-f\" cx=\"150\" cy=\"66\" r=\"3\"/><text class=\"df-tag-accent\" x=\"150\" y=\"56\" text-anchor=\"middle\">peak</text><circle class=\"df-accent-f\" cx=\"230\" cy=\"158\" r=\"3\"/><text class=\"df-tag\" x=\"230\" y=\"176\" text-anchor=\"middle\">trough</text><text class=\"df-tag\" x=\"95\" y=\"150\" text-anchor=\"middle\">expansion</text><text class=\"df-tag\" x=\"270\" y=\"70\" text-anchor=\"middle\">recovery</text></svg>"
  },
@@ -1947,7 +1974,34 @@
     "Bond yields",
     "DXY"
    ],
-   "figcap": "As the policy rate rises, the currency strengthens in step — the rate/currency relationship."
+   "figcap": "As the policy rate rises, the currency strengthens in step — the rate/currency relationship.",
+   "playbook": [
+    "Track EXPECTATIONS, not the announced number: markets price the future path of rates, so the surprise against consensus is the only part that moves anything.",
+    "Map the differential: money migrates toward the currency whose rates — current and expected — pay more; widening gaps push pairs directionally for months.",
+    "Read the tone shift: a central bank turning hawkish or dovish re-prices the whole path, and one word changed in a statement can outweigh the decision itself.",
+    "Watch the market's answer, not just the event: when rates rise and the currency FALLS, expectations were already ahead — that reaction is information about positioning.",
+    "Use rates as your monthly compass: they will not time Tuesday's entry, but they explain which side of a pair deserves the benefit of the doubt."
+   ],
+   "fails": [
+    "Trading the headline as if it were the surprise: a hike fully priced in moves nothing — or reverses — because the market bought the rumor months ago.",
+    "Importing the compass into the scalp: rate logic works on weeks and months; forcing it to justify a 5-minute entry is borrowing authority the timeframe cannot honor.",
+    "Reading one bank in isolation: a pair prices TWO paths — a hawkish Fed means little for EURUSD if the ECB is out-hawking it."
+   ],
+   "drill": "Pick one pair and, for eight central-bank decisions, write down BEFORE each: the consensus, your read of what is priced in, and the expected reaction to a surprise either way. Grade yourself after. Eight cycles of this builds the expectations reflex that separates macro literacy from headline chasing.",
+   "related": [
+    {
+     "slug": "fundamental.macro-drivers",
+     "why": "the wider cycle rates are one gear of"
+    },
+    {
+     "slug": "fundamental.news-data",
+     "why": "the scheduled moments when the path re-prices"
+    },
+    {
+     "slug": "fundamental.intermarket",
+     "why": "how the rate story propagates across asset classes"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><line class=\"df-axis\" x1=\"34\" y1=\"196\" x2=\"384\" y2=\"196\"/><line class=\"df-axis\" x1=\"34\" y1=\"16\" x2=\"34\" y2=\"196\"/><path class=\"df-line-accent\" d=\"M40 170 L110 168 L160 140 L210 138 L260 100 L310 70 L372 60\"/><text class=\"df-tag-accent\" x=\"360\" y=\"56\" text-anchor=\"end\">rate</text><path class=\"df-line\" d=\"M40 176 L110 172 L160 150 L210 146 L260 112 L310 82 L372 70\"/><text class=\"df-tag\" x=\"372\" y=\"80\" text-anchor=\"end\">currency</text><line class=\"df-line-accent\" x1=\"310\" y1=\"70\" x2=\"364.10207103429883\" y2=\"61.273859510596964\"/><polygon class=\"df-accent-f\" points=\"372,60 364.81861700900964,65.71644455380388 363.385525059588,56.83127446739005\"/></svg>"
  },
@@ -1981,7 +2035,34 @@
     "Consensus",
     "Economic calendar"
    ],
-   "figcap": "A scheduled release fires a volatility spike at the announcement time on the calendar."
+   "figcap": "A scheduled release fires a volatility spike at the announcement time on the calendar.",
+   "playbook": [
+    "Run the calendar as pre-flight: before any session, know what publishes, when, and its impact tier — a setup 3 minutes ahead of CPI is not a setup.",
+    "Locate the THREE numbers on every release: previous, consensus, actual — the market trades the gap between consensus and actual, nothing else.",
+    "Expect the first move to lie: the initial spike is dominated by algorithms and forced stops; the structure that forms AFTER it carries the humans' verdict.",
+    "Protect your open risk: widen, reduce, or flatten into red-tier events by rule, not by mood — execution through a release is a lottery even when the idea is right.",
+    "Journal the reaction, not just the number: whether price held the spike or faded it tells you how positioned the market was — fuel for the next occasion."
+   ],
+   "fails": [
+    "Right number, wrong trade: you can nail the surprise and still lose — spreads blow out, fills slip, and the retrace collects your stop before the \"correct\" move resumes.",
+    "Zones pierced during a release are execution failures, not idea failures — grading your marked levels by their news-candle behavior corrupts the whole zone map.",
+    "One component can invert the headline: an NFP beat with falling wages has traded red before — the market reads the internals while headline traders read the title."
+   ],
+   "drill": "For the next six red-tier releases, screenshot the chart at T-1 minute, T+5, and T+30, logging consensus versus actual each time. Reviewing the eighteen images side by side teaches the three-act anatomy — spike, retrace, resolution — better than any description of it.",
+   "related": [
+    {
+     "slug": "fundamental.news-fade",
+     "why": "trading the overreaction after the dust settles"
+    },
+    {
+     "slug": "fundamental.data-continuation",
+     "why": "trading the release that agrees with the trend"
+    },
+    {
+     "slug": "smc.kill-zones",
+     "why": "the clock these events regularly override"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><line class=\"df-axis\" x1=\"34\" y1=\"196\" x2=\"384\" y2=\"196\"/><line class=\"df-axis\" x1=\"34\" y1=\"16\" x2=\"34\" y2=\"196\"/><line class=\"df-dash-accent\" x1=\"160\" y1=\"24\" x2=\"160\" y2=\"196\"/><text class=\"df-tag-accent\" x=\"160\" y=\"18\" text-anchor=\"middle\">release</text><path class=\"df-line\" d=\"M40 120 L70 116 L100 122 L130 118 L160 120\"/><path class=\"df-line-accent\" d=\"M160 120 L172 60 L184 150 L196 90\"/><path class=\"df-line\" d=\"M196 90 L240 96 L290 80 L340 70 L372 64\"/></svg>"
  },
@@ -2015,7 +2096,34 @@
     "Bond yields",
     "Regime shift"
    ],
-   "figcap": "DXY and gold moving inversely — a classic intermarket correlation used as confluence."
+   "figcap": "DXY and gold moving inversely — a classic intermarket correlation used as confluence.",
+   "playbook": [
+    "Start from the risk dial: every session, ask whether money is seeking risk (equities up, yen crosses up) or fleeing it — that single answer colors every chart you trade.",
+    "Track the dollar as the sun: DXY strength pressures gold, commodities and risk currencies at once — one glance explains many charts.",
+    "Watch yields as the leading gear: bond markets often re-price growth and rates before equities and FX catch up.",
+    "Use correlations as CONFIRMATION: your EURUSD long agrees with a softening DXY; disagreement is a reason to size down, not a trade by itself.",
+    "Respect SMT logic where it applies: when two correlated instruments diverge at extremes — one makes the high, the other refuses — the refusal often tells the truth."
+   ],
+   "fails": [
+    "Correlations are seasonal, not laws: stocks and bonds spent decades inverted, then years moving together — a rule learned in one regime betrays you in the next.",
+    "Lag is not signal: gold reacting to DXY thirty minutes late one day and instantly the next means timing entries OFF the correlated chart is borrowing precision that does not exist.",
+    "NQ and MNQ cannot diverge — they are the same underlying. SMT needs genuinely different indices or instruments; \"divergence\" between a contract and its micro is a data artifact."
+   ],
+   "drill": "Each Friday for two months, chart four lines side by side — DXY, 10-year yield, your index, your main pair — and write three sentences on who led, who followed, and where they disagreed. Eight snapshots later you will have something no indicator gives: a feel for which gear is currently driving the machine.",
+   "related": [
+    {
+     "slug": "fundamental.macro-drivers",
+     "why": "the forces these relationships transmit"
+    },
+    {
+     "slug": "fundamental.interest-rates",
+     "why": "the yield gear, examined up close"
+    },
+    {
+     "slug": "quant.probability",
+     "why": "why one correlated position is one bet, however many tickets"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><line class=\"df-axis\" x1=\"34\" y1=\"196\" x2=\"384\" y2=\"196\"/><line class=\"df-axis\" x1=\"34\" y1=\"16\" x2=\"34\" y2=\"196\"/><path class=\"df-line-accent\" d=\"M40 150 L90 120 L140 132 L190 90 L240 104 L290 64 L340 78 L372 50\"/><text class=\"df-tag-accent\" x=\"360\" y=\"46\" text-anchor=\"end\">DXY</text><path class=\"df-line\" d=\"M40 70 L90 100 L140 88 L190 130 L240 116 L290 156 L340 142 L372 170\"/><text class=\"df-tag\" x=\"372\" y=\"184\" text-anchor=\"end\">gold</text></svg>"
  },
@@ -2056,7 +2164,34 @@
     "Slippage",
     "Macro surprise"
    ],
-   "figcap": "Price spikes on the release, exhausts, and reverts back toward the pre-release level — the fade."
+   "figcap": "Price spikes on the release, exhausts, and reverts back toward the pre-release level — the fade.",
+   "playbook": [
+    "Qualify the event first: fade candidates are second-tier surprises or headlines that do NOT change the rate path — never regime-changing prints.",
+    "Let the spike exhaust: the entry signal is momentum dying — smaller candles, a stall at a marked HTF level — not a countdown from the release.",
+    "Demand a location: a spike INTO a daily supply zone or a prior extreme gives the fade a wall to lean on; a spike into open space gives it nothing.",
+    "Enter on the failure print — the shift on your small timeframe against the spike — and stop beyond the spike's extreme, because past it the \"overreaction\" was the move.",
+    "Target the origin: the pre-news price is the natural magnet of a knee-jerk that meant nothing; take profit into it, not through it."
+   ],
+   "fails": [
+    "Fading a print that genuinely changed the story is standing in front of a repricing — the market is not overreacting, it is CORRECTING, and it will not come back for you.",
+    "Too early is simply wrong: the spike often runs in waves, and the first stall is bait — without an exhaustion print you are guessing where a rocket stops.",
+    "The asymmetry punishes: fades win small (back to origin) and lose big when wrong (trend day against you) — without strict stops the strategy's math dies on one bad Friday."
+   ],
+   "drill": "Study twenty post-spike charts: mark where the spike stalled, whether it faded to origin, and what tier the event was. Separate second-tier from regime events. The fade rate of the first group versus the second is the entire qualification rule, derived instead of memorized.",
+   "related": [
+    {
+     "slug": "fundamental.news-data",
+     "why": "the release anatomy this setup trades the back half of"
+    },
+    {
+     "slug": "smc.liquidity-sweep",
+     "why": "the same harvest-and-return, driven by a headline"
+    },
+    {
+     "slug": "price.support-resistance",
+     "why": "the walls a fade needs to lean on"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><line class=\"df-axis\" x1=\"34\" y1=\"196\" x2=\"384\" y2=\"196\"/><line class=\"df-axis\" x1=\"34\" y1=\"16\" x2=\"34\" y2=\"196\"/><line class=\"df-dash\" x1=\"40\" y1=\"120\" x2=\"372\" y2=\"120\"/><text class=\"df-tag\" x=\"44\" y=\"114\" text-anchor=\"start\">pre-release</text><line class=\"df-dash-accent\" x1=\"150\" y1=\"24\" x2=\"150\" y2=\"196\"/><text class=\"df-tag-accent\" x=\"150\" y=\"18\" text-anchor=\"middle\">release</text><path class=\"df-line\" d=\"M40 120 L100 118 L150 120\"/><path class=\"df-line\" d=\"M150 120 L170 40 L188 96\"/><path class=\"df-line-accent\" d=\"M188 96 L240 112 L300 118 L372 120\"/><line class=\"df-line-accent\" x1=\"200\" y1=\"90\" x2=\"292.2962878422866\" y2=\"115.84296059584024\"/><polygon class=\"df-accent-f\" points=\"300,118 291.0829531774467,120.17629868455406 293.50962250712644,111.50962250712642\"/><text class=\"df-tag-accent\" x=\"290\" y=\"138\" text-anchor=\"middle\">fade</text></svg>"
  },
@@ -2097,7 +2232,34 @@
     "Fundamental backdrop",
     "Confluence"
    ],
-   "figcap": "A release spikes with the trend, pulls back to a level, then continues — the continuation entry."
+   "figcap": "A release spikes with the trend, pulls back to a level, then continues — the continuation entry.",
+   "playbook": [
+    "Check the alignment first: the setup exists only when the surprise CONFIRMS the standing macro trend — data with the wind, not against it.",
+    "Let the spike happen without you: the continuation entry is never the chase; it begins when the first pullback starts forming.",
+    "Buy the retrace at a real level: the pre-spike breakout point, the FVG the spike left, an OTE of the news leg — structure gives the pullback a floor.",
+    "Confirm the resumption: a rejection print at that level in the release's direction is the green light; its absence is the warning.",
+    "Ride with the trend's own targets: since macro and momentum agree, the prior extreme and the next HTF pool are honest objectives — this is the rare setup where patience pays twice."
+   ],
+   "fails": [
+    "Chasing the spike IS the failure mode: the first candles carry the worst prices and the widest spreads, and the pullback that follows collects the chasers before the real continuation.",
+    "A retrace that grinds THROUGH your level instead of bouncing is the market voting against the thesis — averaging into it converts a small early loss into conviction poisoning.",
+    "Sometimes the release front-ran the move: when weeks of trend already priced the surprise, \"confirmation\" prints as exhaustion — the last buyers celebrating into the top."
+   ],
+   "drill": "Find fifteen releases that confirmed a standing trend. For each, log three prices: the chase entry (first minute), the pullback entry at structure, and where each would have stopped out. The side-by-side expectancy of those two columns settles — permanently — whether patience around news is a virtue or a slogan.",
+   "related": [
+    {
+     "slug": "fundamental.macro-drivers",
+     "why": "the standing trend this setup requires"
+    },
+    {
+     "slug": "smc.fvg-fill",
+     "why": "the imbalance the news leg leaves for the pullback"
+    },
+    {
+     "slug": "fundamental.news-fade",
+     "why": "the opposite read — and why qualification separates them"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><line class=\"df-axis\" x1=\"34\" y1=\"196\" x2=\"384\" y2=\"196\"/><line class=\"df-axis\" x1=\"34\" y1=\"16\" x2=\"34\" y2=\"196\"/><line class=\"df-dash-accent\" x1=\"150\" y1=\"24\" x2=\"150\" y2=\"196\"/><text class=\"df-tag-accent\" x=\"150\" y=\"18\" text-anchor=\"middle\">release</text><line class=\"df-dash\" x1=\"40\" y1=\"124\" x2=\"372\" y2=\"124\"/><text class=\"df-tag\" x=\"44\" y=\"118\" text-anchor=\"start\">level</text><path class=\"df-line\" d=\"M40 150 L100 146 L150 148\"/><path class=\"df-line\" d=\"M150 148 L168 96 L186 112\"/><path class=\"df-line-accent\" d=\"M186 112 L210 130 L230 124 L270 86 L310 60 L350 40\"/><circle class=\"df-accent-f\" cx=\"230\" cy=\"124\" r=\"3\"/><text class=\"df-tag\" x=\"238\" y=\"138\" text-anchor=\"start\">pullback</text><line class=\"df-line-accent\" x1=\"270\" y1=\"86\" x2=\"343.06474957553974\" y2=\"43.98776899406466\"/><polygon class=\"df-accent-f\" points=\"350,40 345.3078696347011,47.888847357823565 340.8216295163784,40.08669063030575\"/></svg>"
  },
@@ -2131,7 +2293,34 @@
     "Variance",
     "Edge"
    ],
-   "figcap": "A positive-expectancy equity curve rises overall while still suffering normal variance drawdowns."
+   "figcap": "A positive-expectancy equity curve rises overall while still suffering normal variance drawdowns.",
+   "playbook": [
+    "Reframe the unit of judgment: one trade proves nothing; a hundred trades of the same setup are the smallest sample that speaks.",
+    "Compute your expectancy honestly: (win rate × average win) − (loss rate × average loss), from your OWN journal — not the course's promised numbers.",
+    "Accept the trade-off curve: high win rate usually buys small edges per trade; low win rate with big winners can out-earn it — neither is virtue, the product is.",
+    "Budget for variance BEFORE it happens: with a 50% win rate, eight losses in a row appears routinely in a 400-trade year — decide now what you will do on loss number five.",
+    "Count correlated tickets as one bet: two longs on instruments that move together share one fate, and your risk math must know it."
+   ],
+   "fails": [
+    "Judging a system on ten trades is judging a coin on three flips — most \"broken\" strategies were abandoned inside normal variance.",
+    "Survivorship stories poison intuition: the visible traders are the lucky tail; copying their risk because it \"worked for them\" imports their luck requirement, not their skill.",
+    "Expectancy computed from backtest fills — no spread, no slippage, no missed entries — describes a market nobody trades in."
+   ],
+   "drill": "Take your last fifty journaled trades and compute the four numbers by hand: win rate, average win, average loss, expectancy. Then simulate that coin a thousand times in a spreadsheet and look at the losing streaks it produces. The worst streak on that sheet has already been assigned to your future — meeting it on paper first is the whole exercise.",
+   "related": [
+    {
+     "slug": "quant.risk-of-ruin",
+     "why": "what variance does to an under-capitalized account"
+    },
+    {
+     "slug": "quant.backtesting",
+     "why": "where the honest numbers have to come from"
+    },
+    {
+     "slug": "fundamental.intermarket",
+     "why": "why correlated positions are one ticket"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><line class=\"df-axis\" x1=\"34\" y1=\"196\" x2=\"384\" y2=\"196\"/><line class=\"df-axis\" x1=\"34\" y1=\"16\" x2=\"34\" y2=\"196\"/><path class=\"df-line-accent\" d=\"M40 180 L70 150 L95 168 L130 120 L160 138 L195 96 L225 118 L265 78 L300 96 L335 54 L372 40\"/><line class=\"df-dash\" x1=\"40\" y1=\"188\" x2=\"372\" y2=\"44\"/><text class=\"df-tag-accent\" x=\"360\" y=\"56\" text-anchor=\"end\">edge</text><text class=\"df-tag\" x=\"160\" y=\"156\" text-anchor=\"middle\">variance</text><line class=\"df-line\" x1=\"160\" y1=\"150\" x2=\"190.41230124509337\" y2=\"106.55385536415233\"/><polygon class=\"df-accent-f\" points=\"195,100 194.09884488742907,109.1344359137873 186.72575760275768,103.97327481451735\"/></svg>"
  },
@@ -2165,7 +2354,34 @@
     "Slippage",
     "Strategy decay"
    ],
-   "figcap": "Walk-forward split: a strong in-sample curve and the out-of-sample test that exposes overfitting."
+   "figcap": "Walk-forward split: a strong in-sample curve and the out-of-sample test that exposes overfitting.",
+   "playbook": [
+    "Freeze the rules BEFORE touching data: entry, exit, sizing, session — written so precisely that two people would take identical trades.",
+    "Walk the chart bar by bar with the future covered — replay honestly or the test measures your hindsight, not your method.",
+    "Charge yourself the full costs: spread, commission, slippage on every fill — cheap fills on paper are where fake edges are born.",
+    "Split the data: build on one period, validate on data the rules never saw — the out-of-sample verdict is the only one that counts.",
+    "Log every trade with its context tags (session, regime, setup grade) so the post-mortem can find WHERE the edge concentrates."
+   ],
+   "fails": [
+    "Ten parameters tuned until history looks beautiful describe the PAST perfectly and nothing else — every added knob buys backtest beauty with live fragility.",
+    "Retro-fitted zones are the discretionary trader's version of overfitting: marking levels with the outcome visible tests your memory of the chart, not your method.",
+    "Surviving one regime is not robustness: a strategy built entirely inside a trending year meets its first range like a boat meeting land."
+   ],
+   "drill": "Take one setup you believe in and run a 50-trade replay with the rules frozen on paper beside you. Every time you feel the urge to \"adjust\" mid-test, tally it instead of doing it. The tally at the end — how many times you wanted to bend the rules — measures the exact gap between the system you have and the discipline it needs.",
+   "related": [
+    {
+     "slug": "quant.probability",
+     "why": "the numbers this process exists to produce"
+    },
+    {
+     "slug": "quant.algo-systems",
+     "why": "rules formal enough to run without you"
+    },
+    {
+     "slug": "smc.market-structure",
+     "why": "the mechanical definitions that make discretionary rules testable"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><line class=\"df-axis\" x1=\"34\" y1=\"196\" x2=\"384\" y2=\"196\"/><line class=\"df-axis\" x1=\"34\" y1=\"16\" x2=\"34\" y2=\"196\"/><line class=\"df-dash-accent\" x1=\"200\" y1=\"24\" x2=\"200\" y2=\"196\"/><text class=\"df-tag\" x=\"118\" y=\"40\" text-anchor=\"middle\">in-sample</text><text class=\"df-tag-accent\" x=\"290\" y=\"40\" text-anchor=\"middle\">out-of-sample</text><path class=\"df-line-accent\" d=\"M40 180 L80 150 L120 158 L160 110 L200 90\"/><path class=\"df-line\" d=\"M200 90 L240 96 L280 110 L320 104 L372 120\"/><text class=\"df-tag\" x=\"300\" y=\"140\" text-anchor=\"middle\">decay</text></svg>"
  },
@@ -2199,7 +2415,34 @@
     "Position sizing",
     "Half-Kelly"
    ],
-   "figcap": "Drawdown asymmetry: the gain required to recover grows non-linearly as the loss deepens."
+   "figcap": "Drawdown asymmetry: the gain required to recover grows non-linearly as the loss deepens.",
+   "playbook": [
+    "Understand the asymmetry first: −20% needs +25% back, −50% needs +100% — drawdown is a hole whose walls get steeper as you dig.",
+    "Fix your risk per trade as a fraction of CURRENT equity: fixed-fractional sizing shrinks bets in drawdowns automatically, which is precisely when you need it.",
+    "Derive your fraction from your numbers: edge, variance and psychological tolerance — not from a course slogan like \"risk 1%\".",
+    "Treat Kelly as a ceiling, not a target: full Kelly maximizes growth AND produces drawdowns no human trades through — professionals live at a fraction of it.",
+    "Define ruin personally and stop BEFORE it: the number where you can no longer trade rationally arrives earlier than the number where the account is empty."
+   ],
+   "fails": [
+    "Doubling risk to \"recover faster\" after a drawdown multiplies exactly the number that was killing you — the martingale instinct is ruin's favorite disguise.",
+    "Ruin mathematics assumes independent bets: correlated positions, revenge sequences and news gaps make the true risk per day far larger than the per-trade number suggests.",
+    "A positive-expectancy system still ruins an under-capitalized account: edge does not protect you from the sequence arriving before the average does."
+   ],
+   "drill": "Build a ruin simulator in a spreadsheet: your win rate, your R multiples, 1000 runs of 200 trades at three risk levels — 0.5%, 1%, 2%. Count how many runs hit a 30% drawdown at each level. Watching ruin become a frequency you can dial up and down is what makes position size feel like the steering wheel it is.",
+   "related": [
+    {
+     "slug": "quant.probability",
+     "why": "the expectancy and variance this math consumes"
+    },
+    {
+     "slug": "quant.backtesting",
+     "why": "where the inputs must be measured, not wished"
+    },
+    {
+     "slug": "quant.algo-systems",
+     "why": "sizing rules enforced without a mood"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><line class=\"df-axis\" x1=\"34\" y1=\"188\" x2=\"384\" y2=\"188\"/><rect class=\"df-down\" x=\"48\" y=\"166\" width=\"18\" height=\"22\" rx=\"2\"/><rect class=\"df-up\" x=\"72\" y=\"158\" width=\"18\" height=\"30\" rx=\"2\"/><text class=\"df-tag\" x=\"62\" y=\"202\" text-anchor=\"middle\">10%</text><rect class=\"df-down\" x=\"126\" y=\"144\" width=\"18\" height=\"44\" rx=\"2\"/><rect class=\"df-up\" x=\"150\" y=\"123\" width=\"18\" height=\"65\" rx=\"2\"/><text class=\"df-tag\" x=\"140\" y=\"202\" text-anchor=\"middle\">25%</text><rect class=\"df-down\" x=\"204\" y=\"122\" width=\"18\" height=\"66\" rx=\"2\"/><rect class=\"df-up\" x=\"228\" y=\"78\" width=\"18\" height=\"110\" rx=\"2\"/><text class=\"df-tag\" x=\"218\" y=\"202\" text-anchor=\"middle\">50%</text><rect class=\"df-down\" x=\"282\" y=\"100\" width=\"18\" height=\"88\" rx=\"2\"/><rect class=\"df-up\" x=\"306\" y=\"38\" width=\"18\" height=\"150\" rx=\"2\"/><text class=\"df-tag\" x=\"296\" y=\"202\" text-anchor=\"middle\">75%</text><text class=\"df-tag-down\" x=\"70\" y=\"40\" text-anchor=\"middle\">loss</text><text class=\"df-tag\" x=\"120\" y=\"40\" text-anchor=\"start\">gain to recover</text></svg>"
  },
@@ -2233,7 +2476,34 @@
     "Latency",
     "Overfitting"
    ],
-   "figcap": "Two regimes: a trending stretch (trend-following territory) and a range (mean-reversion territory)."
+   "figcap": "Two regimes: a trending stretch (trend-following territory) and a range (mean-reversion territory).",
+   "playbook": [
+    "Write the strategy as an algorithm even if a human executes it: entry, exit, size and session so explicit that no candle requires an opinion.",
+    "Classify your system honestly — trend-following or mean-reverting — because that label predicts WHEN it will suffer, and suffering unannounced is what breaks operators.",
+    "Paper-run the rules in parallel before automating: a month of manual execution surfaces the ambiguities no backtest shows.",
+    "Automate the weakest link first: for most traders that is exits and sizing — the places where emotion edits the plan mid-trade.",
+    "Monitor the system like a system: track its live expectancy against backtest bands, and predefine the drawdown that pauses it — machines fail politely only if you told them how."
+   ],
+   "fails": [
+    "Automation multiplies whatever it is given: a subtle rule flaw that a discretionary trader would catch on trade three executes five hundred times before Monday.",
+    "Killing a system inside normal variance — because a losing week FELT broken — replaces a measured edge with mood, which is the thing automation existed to remove.",
+    "Every system is a bet on a regime persisting: trend machines die in chop, reversion machines die in trends — running one without knowing its season is running it blind."
+   ],
+   "drill": "Take your most discretionary setup and spend a week writing it as pseudocode — every condition, every exception. The points where you cannot write the rule are the points where you have been deciding by feel. You do not have to automate anything; the exercise is meeting the parts of your method that only exist as mood.",
+   "related": [
+    {
+     "slug": "quant.backtesting",
+     "why": "the proving ground every rule set must survive"
+    },
+    {
+     "slug": "quant.risk-of-ruin",
+     "why": "the sizing constraints the machine must enforce"
+    },
+    {
+     "slug": "quant.momentum",
+     "why": "one of the two families every system belongs to"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><line class=\"df-axis\" x1=\"34\" y1=\"196\" x2=\"384\" y2=\"196\"/><line class=\"df-axis\" x1=\"34\" y1=\"16\" x2=\"34\" y2=\"196\"/><line class=\"df-dash\" x1=\"215\" y1=\"24\" x2=\"215\" y2=\"196\"/><path class=\"df-line-accent\" d=\"M40 170 L80 150 L110 158 L150 120 L185 96 L215 70\"/><path class=\"df-line\" d=\"M215 70 L245 110 L275 76 L305 112 L335 78 L372 110\"/><text class=\"df-tag-accent\" x=\"120\" y=\"40\" text-anchor=\"middle\">trend</text><text class=\"df-tag\" x=\"300\" y=\"40\" text-anchor=\"middle\">range</text></svg>"
  },
@@ -2274,7 +2544,34 @@
     "Cointegration",
     "ADX gate"
    ],
-   "figcap": "Price stretches to the +2σ band in a range, then reverts to the mean — the reversion trade."
+   "figcap": "Price stretches to the +2σ band in a range, then reverts to the mean — the reversion trade.",
+   "playbook": [
+    "Gate by regime before anything: mean reversion feeds on ranges — an ADX filter or structure check must clear the trade before the stretch is even measured.",
+    "Quantify the stretch: a z-score or band distance turns \"looks extended\" into a number with a threshold you can test.",
+    "Wait for the turn to BEGIN: enter on the first contraction back toward the mean, not at maximum stretch — catching the outside edge is a different, worse trade.",
+    "Target the mean, not the moon: the trade's thesis is a return to average, so the average is the exit — extending targets past it borrows a thesis you do not hold.",
+    "Cut on regime change, not just price: if the range breaks while you hold, the premise died — the loss is a fee for the information, and staying is paying twice."
+   ],
+   "fails": [
+    "\"It cannot go higher\" is not a reason — in a trend, stretched gets more stretched, and fading strength without a regime gate is the strategy's textbook funeral.",
+    "Averaging into a runner converts one small planned loss into an account event: the strategy's edge lives in many small reversions, and one un-stopped trend erases fifty of them.",
+    "The mean itself drifts: in a slow trend, price \"reverts\" to a moving target and your measured edge quietly becomes noise around a slope."
+   ],
+   "drill": "Backtest one reversion rule twice on the same year of data: once with a regime gate (only inside diagnosed ranges) and once without. Same entries, same exits, one filter apart. The two equity curves — one breathing, one bleeding — are the clearest picture you will ever get of why the gate IS the strategy.",
+   "related": [
+    {
+     "slug": "technical.bollinger",
+     "why": "the measuring tape reversion traders reach for first"
+    },
+    {
+     "slug": "quant.momentum",
+     "why": "the opposite bet — and why regime decides which one is live"
+    },
+    {
+     "slug": "quant.backtesting",
+     "why": "how the threshold and the gate get their numbers"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><line class=\"df-axis\" x1=\"34\" y1=\"196\" x2=\"384\" y2=\"196\"/><line class=\"df-axis\" x1=\"34\" y1=\"16\" x2=\"34\" y2=\"196\"/><line class=\"df-dash-accent\" x1=\"40\" y1=\"60\" x2=\"372\" y2=\"60\"/><text class=\"df-tag-accent\" x=\"376\" y=\"57\" text-anchor=\"end\">+2σ</text><line class=\"df-dash-accent\" x1=\"40\" y1=\"160\" x2=\"372\" y2=\"160\"/><text class=\"df-tag-accent\" x=\"376\" y=\"170\" text-anchor=\"end\">−2σ</text><line class=\"df-dash\" x1=\"40\" y1=\"110\" x2=\"372\" y2=\"110\"/><text class=\"df-tag\" x=\"376\" y=\"106\" text-anchor=\"end\">mean</text><path class=\"df-line-accent\" d=\"M40 110 L70 84 L95 64 L120 96 L150 112 L180 138 L205 156 L235 120 L265 108 L300 70 L330 100 L372 112\"/><circle class=\"df-accent-f\" cx=\"95\" cy=\"64\" r=\"3\"/><line class=\"df-line\" x1=\"95\" y1=\"70\" x2=\"115.26087639617985\" y2=\"97.55479189880461\"/><polygon class=\"df-accent-f\" points=\"120,104 111.63544683925744,100.22054892595344 118.88630595310227,94.88903487165578\"/><circle class=\"df-accent-f\" cx=\"205\" cy=\"156\" r=\"3\"/><line class=\"df-line\" x1=\"205\" y1=\"150\" x2=\"229.70702690330523\" y2=\"121.99870284292074\"/><polygon class=\"df-accent-f\" points=\"235,116 233.08129725244814,124.97600020981155 226.33275655416233,119.02140547602993\"/></svg>"
  },
@@ -2315,7 +2612,34 @@
     "Fakeout",
     "Trailing stop"
    ],
-   "figcap": "An ADX-confirmed breakout running into a sustained trend, trailed by a rising moving average."
+   "figcap": "An ADX-confirmed breakout running into a sustained trend, trailed by a rising moving average.",
+   "playbook": [
+    "Confirm there is a trend worth riding: an ADX above threshold, or a clean external-structure sequence — the gate comes before the signal.",
+    "Enter WITH strength, not after it rests: momentum logic buys high to sell higher; hesitation waiting for \"a better price\" is reversion thinking wearing the wrong uniform.",
+    "Size for the volatility you are boarding: strong legs move fast both ways, and the stop must live outside the leg's normal breathing.",
+    "Let winners breathe with a trailing structure: exits at each new swing rather than fixed targets — persistence is the edge, so the exit must allow persistence.",
+    "Retire the trade when strength dies: momentum strategies are regime-dependent, and flat ADX or failed continuation is the machine telling you its season ended."
+   ],
+   "fails": [
+    "Entering on strength at the END of a mature leg buys the climax: momentum measured without asking how OLD the move is confuses a marathon's last mile with its first.",
+    "In ranges, every burst of \"momentum\" is the round trip to the other edge — the same signal that prints money in trends donates it in chop.",
+    "Tight stops suffocate the very persistence you bought: stopped by normal pullbacks four times, the fifth signal — the one that runs — leaves without you."
+   ],
+   "drill": "Tag thirty momentum signals with the age of the move when they fired: first leg, middle, or late/extended. Track each to its conclusion. The mortality rate of late-leg entries — visible in your own numbers — installs the question \"how old is this move?\" permanently in front of the buy button.",
+   "related": [
+    {
+     "slug": "quant.mean-reversion",
+     "why": "the mirror strategy sharing one regime switch"
+    },
+    {
+     "slug": "price.trend-structure",
+     "why": "the structural definition of the strength being bought"
+    },
+    {
+     "slug": "technical.macd",
+     "why": "the momentum-of-momentum gauge for the exit side"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><line class=\"df-axis\" x1=\"34\" y1=\"196\" x2=\"384\" y2=\"196\"/><line class=\"df-axis\" x1=\"34\" y1=\"16\" x2=\"34\" y2=\"196\"/><line class=\"df-dash\" x1=\"150\" y1=\"150\" x2=\"372\" y2=\"150\"/><text class=\"df-tag\" x=\"120\" y=\"144\" text-anchor=\"end\">level</text><path class=\"df-dash-accent\" d=\"M40 184 L120 174 L200 132 L280 96 L372 60\"/><path class=\"df-line-accent\" d=\"M40 170 L75 162 L110 166 L145 150 L165 118 L195 96 L230 104 L265 70 L300 80 L335 48 L372 36\"/><line class=\"df-line-accent\" x1=\"150\" y1=\"150\" x2=\"163.8840339565798\" y2=\"126.85994340570035\"/><polygon class=\"df-accent-f\" points=\"168,120 167.74275212228625,129.17517430512422 160.02531579087335,124.54471250627648\"/><text class=\"df-tag-accent\" x=\"176\" y=\"116\" text-anchor=\"start\">breakout</text><text class=\"df-tag-accent\" x=\"330\" y=\"74\" text-anchor=\"end\">trail</text></svg>"
  }

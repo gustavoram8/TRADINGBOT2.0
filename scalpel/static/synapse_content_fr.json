@@ -1810,7 +1810,34 @@
    "Différentiel de politique",
    "Hawkish / dovish"
   ],
-  "figcap": "Le cycle économique en vague à travers expansion, pic, contraction et creux."
+  "figcap": "Le cycle économique en vague à travers expansion, pic, contraction et creux.",
+  "playbook": [
+   "Placez d'abord l'économie dans son cycle — expansion, pic, contraction, reprise — car la même donnée se lit différemment selon la phase.",
+   "Pesez les quatre grands dans l'ordre de l'obsession actuelle du marché : certains trimestres, tout est inflation ; d'autres, emploi — le driver du jour décide quelles publications comptent.",
+   "Pensez en termes RELATIFS : les devises sont des paires, la question n'est donc jamais « les États-Unis sont-ils forts ? » mais « sont-ils plus forts que l'autre côté de ma paire ? »",
+   "Traduisez le macro en biais directionnel par instrument, par écrit — puis exigez que vos setups techniques s'y accordent avant de mériter la taille.",
+   "Rafraîchissez la carte mensuellement, pas toutes les heures : les drivers tournent lentement, et la discipline consiste à voir la rotation sans repeindre votre biais chaque séance."
+  ],
+  "fails": [
+   "Le macro sans calendrier devient une histoire pliable pour justifier n'importe quel trade — le biais doit être écrit AVANT la séance, sinon c'est de la décoration.",
+   "Le cycle ne chronomètre pas les entrées : avoir raison qu'une devise devrait s'affaiblir ce trimestre ne dit rien sur survivre au squeeze de cet après-midi contre vous.",
+   "Capture par le récent : après trois mois obsédés par l'inflation, cela semble permanent — jusqu'à ce que le rapport sur l'emploi devienne le nouveau soleil et que le cadre d'hier cesse de fonctionner en silence."
+  ],
+  "drill": "Une fois par mois, écrivez une carte macro d'une page : phase du cycle, obsession actuelle du marché, et un biais par instrument tradé. Datez-la et classez-la. Relire six mois de ces cartes vous montre deux choses à la fois — comment les drivers ont tourné, et comment votre propre récit les a suivis ou devancés.",
+  "related": [
+   {
+    "slug": "fundamental.interest-rates",
+    "why": "le driver qui surclasse les autres pour les devises"
+   },
+   {
+    "slug": "fundamental.data-continuation",
+    "why": "le setup qui met un biais macro au travail"
+   },
+   {
+    "slug": "fundamental.intermarket",
+    "why": "la vérification inter-actifs de votre histoire macro"
+   }
+  ]
  },
  "fundamental.interest-rates": {
   "lead": "Les taux d'intérêt — et les anticipations du marché sur les taux futurs — sont le moteur le plus puissant de la valeur d'une devise. Le capital se dirige vers le meilleur rendement ajusté au risque.",
@@ -1841,7 +1868,34 @@
    "Rendements obligataires",
    "DXY"
   ],
-  "figcap": "À mesure que le taux directeur monte, la devise se renforce au même rythme — la relation taux/devise."
+  "figcap": "À mesure que le taux directeur monte, la devise se renforce au même rythme — la relation taux/devise.",
+  "playbook": [
+   "Suivez les ANTICIPATIONS, pas le chiffre annoncé : les marchés cotent la trajectoire future des taux, donc la surprise contre le consensus est la seule partie qui bouge quelque chose.",
+   "Cartographiez le différentiel : l'argent migre vers la devise dont les taux — actuels et attendus — paient plus ; les écarts qui s'élargissent poussent les paires directionnellement pendant des mois.",
+   "Lisez le changement de ton : une banque centrale devenant hawkish ou dovish recote toute la trajectoire, et un mot changé dans un communiqué peut peser plus que la décision elle-même.",
+   "Observez la réponse du marché, pas seulement l'événement : quand les taux montent et que la devise BAISSE, les anticipations étaient déjà en avance — cette réaction est une information sur le positionnement.",
+   "Utilisez les taux comme boussole mensuelle : ils ne chronométreront pas l'entrée de mardi, mais ils expliquent quel côté d'une paire mérite le bénéfice du doute."
+  ],
+  "fails": [
+   "Trader le titre comme si c'était la surprise : une hausse entièrement intégrée ne bouge rien — ou s'inverse — parce que le marché a acheté la rumeur il y a des mois.",
+   "Importer la boussole dans le scalp : la logique des taux travaille en semaines et en mois ; la forcer à justifier une entrée 5 minutes, c'est emprunter une autorité que ce cadre ne peut honorer.",
+   "Lire une banque isolément : une paire cote DEUX trajectoires — une Fed hawkish pèse peu pour l'EURUSD si la BCE la surpasse en fermeté."
+  ],
+  "drill": "Choisissez une paire et, pour huit décisions de banques centrales, écrivez AVANT chacune : le consensus, votre lecture de ce qui est intégré, et la réaction attendue à une surprise dans chaque sens. Notez-vous après. Huit cycles de cela bâtissent le réflexe des anticipations qui sépare la culture macro de la chasse aux titres.",
+  "related": [
+   {
+    "slug": "fundamental.macro-drivers",
+    "why": "le cycle large dont les taux sont un engrenage"
+   },
+   {
+    "slug": "fundamental.news-data",
+    "why": "les moments programmés où la trajectoire se recote"
+   },
+   {
+    "slug": "fundamental.intermarket",
+    "why": "comment l’histoire des taux se propage entre classes d’actifs"
+   }
+  ]
  },
  "fundamental.news-data": {
   "lead": "Les publications économiques sont des parutions programmées de métriques clés qui font bondir la volatilité quand la donnée s'écarte du consensus. Savoir ce que chacune mesure — et quand — est essentiel que vous les tradiez ou les évitiez.",
@@ -1872,7 +1926,34 @@
    "Consensus",
    "Calendrier économique"
   ],
-  "figcap": "Une publication programmée déclenche un pic de volatilité à l'heure de l'annonce sur le calendrier."
+  "figcap": "Une publication programmée déclenche un pic de volatilité à l'heure de l'annonce sur le calendrier.",
+  "playbook": [
+   "Traitez le calendrier comme une check-list de pré-vol : avant toute séance, sachez ce qui publie, quand, et son niveau d'impact — un setup 3 minutes avant le CPI n'est pas un setup.",
+   "Localisez les TROIS chiffres de chaque publication : précédent, consensus, réel — le marché trade l'écart entre consensus et réel, rien d'autre.",
+   "Attendez-vous à ce que le premier mouvement mente : le pic initial est dominé par les algorithmes et les stops forcés ; la structure qui se forme APRÈS porte le verdict des humains.",
+   "Protégez votre risque ouvert : élargissez, réduisez ou coupez avant les événements rouges par règle, pas par humeur — exécuter à travers une publication est une loterie même quand l'idée est bonne.",
+   "Journalisez la réaction, pas seulement le chiffre : que le prix ait tenu le pic ou l'ait effacé vous dit à quel point le marché était positionné — du carburant pour la prochaine fois."
+  ],
+  "fails": [
+   "Bon chiffre, mauvais trade : vous pouvez deviner la surprise et perdre quand même — les spreads explosent, les exécutions glissent, et le repli encaisse votre stop avant que le mouvement « correct » reprenne.",
+   "Les zones percées pendant une publication sont des échecs d'exécution, pas d'idée — noter vos niveaux selon leur comportement dans la bougie de nouvelle corrompt toute la carte des zones.",
+   "Un composant peut inverser le titre : un NFP au-dessus avec des salaires en baisse a déjà tradé rouge — le marché lit les entrailles pendant que les traders de titres lisent le titre."
+  ],
+  "drill": "Pour les six prochaines publications rouges, capturez le graphique à T-1 minute, T+5 et T+30, en notant consensus contre réel à chaque fois. Passer en revue les dix-huit images côte à côte enseigne l'anatomie en trois actes — pic, repli, résolution — mieux que toute description.",
+  "related": [
+   {
+    "slug": "fundamental.news-fade",
+    "why": "trader la surréaction une fois la poussière retombée"
+   },
+   {
+    "slug": "fundamental.data-continuation",
+    "why": "trader la publication qui s’accorde avec la tendance"
+   },
+   {
+    "slug": "smc.kill-zones",
+    "why": "l’horloge que ces événements annulent régulièrement"
+   }
+  ]
  },
  "fundamental.intermarket": {
   "lead": "L'analyse intermarchés lit les relations entre classes d'actifs — actions, obligations, devises, matières premières — car le capital mondial est interconnecté et un mouvement sur un marché en présage souvent un autre.",
@@ -1903,7 +1984,34 @@
    "Rendements obligataires",
    "Changement de régime"
   ],
-  "figcap": "Le DXY et l'or évoluant en sens inverse — une corrélation intermarchés classique utilisée comme confluence."
+  "figcap": "Le DXY et l'or évoluant en sens inverse — une corrélation intermarchés classique utilisée comme confluence.",
+  "playbook": [
+   "Partez du cadran du risque : à chaque séance, demandez si l'argent cherche le risque (actions en hausse, croisements yen en hausse) ou le fuit — cette seule réponse colore chaque graphique tradé.",
+   "Suivez le dollar comme le soleil : la force du DXY presse l'or, les matières premières et les devises à risque en même temps — un coup d'œil explique bien des graphiques.",
+   "Observez les rendements comme l'engrenage d'avance : les marchés obligataires recotent souvent la croissance et les taux avant que les actions et le FX ne suivent.",
+   "Utilisez les corrélations comme CONFIRMATION : votre achat EURUSD s'accorde avec un DXY qui mollit ; le désaccord est une raison de réduire la taille, pas un trade en soi.",
+   "Respectez la logique SMT où elle s'applique : quand deux instruments corrélés divergent aux extrêmes — l'un fait le sommet, l'autre refuse — le refus dit souvent la vérité."
+  ],
+  "fails": [
+   "Les corrélations sont saisonnières, pas des lois : actions et obligations ont passé des décennies inversées, puis des années à bouger ensemble — une règle apprise dans un régime vous trahit dans le suivant.",
+   "Le décalage n'est pas un signal : l'or réagissant au DXY trente minutes en retard un jour et instantanément le lendemain signifie que chronométrer les entrées DEPUIS le graphique corrélé emprunte une précision qui n'existe pas.",
+   "Le NQ et le MNQ ne peuvent pas diverger — c'est le même sous-jacent. Le SMT exige des indices ou instruments réellement différents ; une « divergence » entre un contrat et son micro est un artefact de données."
+  ],
+  "drill": "Chaque vendredi pendant deux mois, tracez quatre lignes côte à côte — DXY, rendement 10 ans, votre indice, votre paire principale — et écrivez trois phrases sur qui a mené, qui a suivi et où ils ont divergé. Huit instantanés plus tard, vous aurez ce qu'aucun indicateur ne donne : le toucher de l'engrenage qui conduit la machine en ce moment.",
+  "related": [
+   {
+    "slug": "fundamental.macro-drivers",
+    "why": "les forces que ces relations transmettent"
+   },
+   {
+    "slug": "fundamental.interest-rates",
+    "why": "l’engrenage des rendements, examiné de près"
+   },
+   {
+    "slug": "quant.probability",
+    "why": "pourquoi une position corrélée est un seul pari, quel que soit le nombre de tickets"
+   }
+  ]
  },
  "fundamental.news-fade": {
   "lead": "Le fade du pic de nouvelles trade la surréaction réflexe à une publication : le prix bondit sur le titre, puis revient vers les niveaux d'avant-publication à mesure que la réaction algo initiale cède à un prix rationnel.",
@@ -1940,7 +2048,34 @@
    "Slippage",
    "Surprise macro"
   ],
-  "figcap": "Le prix bondit sur la publication, s'épuise, et revient vers le niveau d'avant-publication — le fade."
+  "figcap": "Le prix bondit sur la publication, s'épuise, et revient vers le niveau d'avant-publication — le fade.",
+  "playbook": [
+   "Qualifiez d'abord l'événement : les candidats au fade sont des surprises de second rang ou des titres qui ne changent PAS la trajectoire des taux — jamais des impressions qui changent le régime.",
+   "Laissez le pic s'épuiser : le signal d'entrée est le momentum qui meurt — bougies plus petites, un calage sur un niveau marqué du cadre supérieur — pas un compte à rebours depuis la publication.",
+   "Exigez un emplacement : un pic CONTRE une zone d'offre daily ou un extrême antérieur donne au fade un mur où s'appuyer ; un pic vers l'espace ouvert ne lui donne rien.",
+   "Entrez sur l'empreinte de l'échec — la bascule sur votre petit cadre contre le pic — et placez le stop au-delà de l'extrême du pic, car passé cela, la « surréaction » était le mouvement.",
+   "Visez l'origine : le prix d'avant la nouvelle est l'aimant naturel d'un réflexe qui ne signifiait rien ; prenez profit vers lui, pas à travers lui."
+  ],
+  "fails": [
+   "Fader une impression qui a vraiment changé l'histoire, c'est se tenir devant une recotation — le marché ne surréagit pas : il CORRIGE, et il ne reviendra pas pour vous.",
+   "Trop tôt est simplement faux : le pic court souvent en vagues, et le premier calage est un appât — sans empreinte d'épuisement, vous devinez où s'arrête une fusée.",
+   "L'asymétrie punit : les fades gagnent petit (retour à l'origine) et perdent gros quand ils échouent (journée de tendance contre vous) — sans stops stricts, les maths de la stratégie meurent en un mauvais vendredi."
+  ],
+  "drill": "Étudiez vingt graphiques post-pic : marquez où le pic a calé, s'il s'est effacé jusqu'à l'origine, et de quel rang était l'événement. Séparez le second rang des événements de régime. Le taux de fade du premier groupe contre le second est toute la règle de qualification, dérivée au lieu d'être mémorisée.",
+  "related": [
+   {
+    "slug": "fundamental.news-data",
+    "why": "l’anatomie de publication dont ce setup trade la seconde moitié"
+   },
+   {
+    "slug": "smc.liquidity-sweep",
+    "why": "la même récolte-et-retour, entraînée par un titre"
+   },
+   {
+    "slug": "price.support-resistance",
+    "why": "les murs sur lesquels un fade doit s’appuyer"
+   }
+  ]
  },
  "fundamental.data-continuation": {
   "lead": "La continuation après la donnée chevauche une publication qui confirme la tendance macro existante : après le pic et un bref repli, le prix continue dans la direction confirmée par la donnée.",
@@ -1977,7 +2112,34 @@
    "Toile de fond fondamentale",
    "Confluence"
   ],
-  "figcap": "Une publication bondit dans le sens de la tendance, recule vers un niveau, puis continue — l'entrée de continuation."
+  "figcap": "Une publication bondit dans le sens de la tendance, recule vers un niveau, puis continue — l'entrée de continuation.",
+  "playbook": [
+   "Vérifiez d'abord l'alignement : le setup n'existe que lorsque la surprise CONFIRME la tendance macro en place — la donnée avec le vent, pas contre lui.",
+   "Laissez le pic se produire sans vous : l'entrée de continuation n'est jamais la poursuite ; elle commence quand le premier repli se forme.",
+   "Achetez le repli sur un vrai niveau : le point de cassure d'avant le pic, le FVG laissé par le pic, un OTE de la jambe de la nouvelle — la structure donne un plancher au repli.",
+   "Confirmez la reprise : une empreinte de rejet à ce niveau dans la direction de la publication est le feu vert ; son absence est l'avertissement.",
+   "Chevauchez avec les objectifs de la tendance elle-même : macro et momentum s'accordant, l'extrême antérieur et la prochaine poche du cadre supérieur sont des objectifs honnêtes — c'est le rare setup où la patience paie deux fois."
+  ],
+  "fails": [
+   "Poursuivre le pic EST le mode d'échec : les premières bougies portent les pires prix et les spreads les plus larges, et le repli qui suit encaisse les poursuivants avant la vraie continuation.",
+   "Un repli qui broie À TRAVERS votre niveau au lieu de rebondir est le marché votant contre la thèse — moyenner dedans convertit une petite perte précoce en empoisonnement par conviction.",
+   "Parfois la publication arrivait après le mouvement : quand des semaines de tendance ont déjà coté la surprise, la « confirmation » s'imprime en épuisement — les derniers acheteurs célébrant contre le sommet."
+  ],
+  "drill": "Trouvez quinze publications ayant confirmé une tendance en place. Pour chacune, notez trois prix : l'entrée de poursuite (première minute), l'entrée du repli sur structure, et où chacune aurait été stoppée. L'espérance côte à côte de ces deux colonnes règle — définitivement — si la patience autour des nouvelles est une vertu ou un slogan.",
+  "related": [
+   {
+    "slug": "fundamental.macro-drivers",
+    "why": "la tendance en place que ce setup exige"
+   },
+   {
+    "slug": "smc.fvg-fill",
+    "why": "le déséquilibre que la jambe de la nouvelle laisse pour le repli"
+   },
+   {
+    "slug": "fundamental.news-fade",
+    "why": "la lecture opposée — et pourquoi la qualification les sépare"
+   }
+  ]
  },
  "quant.probability": {
   "lead": "Le trading quantitatif repose sur la pensée statistique : trader est un jeu de probabilités jugé sur de grands échantillons, pas sur des résultats isolés. L'espérance vous dit si vous avez un avantage ; la variance explique les séries douloureuses en chemin.",
@@ -2008,7 +2170,34 @@
    "Variance",
    "Avantage"
   ],
-  "figcap": "Une courbe de capital à espérance positive monte globalement tout en subissant des drawdowns de variance normaux."
+  "figcap": "Une courbe de capital à espérance positive monte globalement tout en subissant des drawdowns de variance normaux.",
+  "playbook": [
+   "Recadrez l'unité de jugement : un trade ne prouve rien ; cent trades du même setup sont le plus petit échantillon qui parle.",
+   "Calculez votre espérance honnêtement : (taux de gain × gain moyen) − (taux de perte × perte moyenne), depuis VOTRE journal — pas les chiffres promis par la formation.",
+   "Acceptez la courbe du compromis : un taux de gain élevé achète souvent de petits avantages par trade ; un taux faible avec de gros gagnants peut le surpasser — aucun n'est une vertu, le produit l'est.",
+   "Budgétez la variance AVANT qu'elle n'arrive : à 50 % de gain, huit pertes d'affilée apparaissent couramment dans une année de 400 trades — décidez maintenant ce que vous ferez à la perte numéro cinq.",
+   "Comptez les tickets corrélés comme un seul pari : deux achats sur des instruments qui bougent ensemble partagent un destin, et vos maths de risque doivent le savoir."
+  ],
+  "fails": [
+   "Juger un système sur dix trades, c'est juger une pièce sur trois lancers — la plupart des stratégies « cassées » ont été abandonnées dans la variance normale.",
+   "Les histoires de survivants empoisonnent l'intuition : les traders visibles sont la queue chanceuse ; copier leur risque parce que « ça a marché pour eux » importe leur besoin de chance, pas leur talent.",
+   "Une espérance calculée sur des exécutions de backtest — sans spread, sans slippage, sans entrées manquées — décrit un marché où personne ne trade."
+  ],
+  "drill": "Prenez vos cinquante derniers trades journalisés et calculez les quatre nombres à la main : taux de gain, gain moyen, perte moyenne, espérance. Puis simulez cette pièce mille fois dans un tableur et regardez les séries perdantes produites. La pire série de cette feuille est déjà assignée à votre avenir — la rencontrer d'abord sur papier est tout l'exercice.",
+  "related": [
+   {
+    "slug": "quant.risk-of-ruin",
+    "why": "ce que la variance fait à un compte sous-capitalisé"
+   },
+   {
+    "slug": "quant.backtesting",
+    "why": "d’où doivent venir les chiffres honnêtes"
+   },
+   {
+    "slug": "fundamental.intermarket",
+    "why": "pourquoi les positions corrélées sont un seul ticket"
+   }
+  ]
  },
  "quant.backtesting": {
   "lead": "Le backtesting applique une stratégie à des données historiques pour estimer son avantage avant de risquer du capital — mais il est truffé de pièges qui fabriquent une rentabilité factice qui ne survit jamais en réel.",
@@ -2039,7 +2228,34 @@
    "Slippage",
    "Dégradation de stratégie"
   ],
-  "figcap": "Découpage walk-forward : une forte courbe en échantillon interne et le test externe qui expose le surapprentissage."
+  "figcap": "Découpage walk-forward : une forte courbe en échantillon interne et le test externe qui expose le surapprentissage.",
+  "playbook": [
+   "Gelez les règles AVANT de toucher aux données : entrée, sortie, taille, séance — écrites si précisément que deux personnes prendraient des trades identiques.",
+   "Parcourez le graphique barre par barre avec le futur masqué — rejouez honnêtement ou le test mesure votre recul, pas votre méthode.",
+   "Facturez-vous les coûts complets : spread, commission, slippage sur chaque exécution — les exécutions bon marché sur papier sont le berceau des faux avantages.",
+   "Divisez les données : construisez sur une période, validez sur des données que les règles n'ont jamais vues — le verdict hors échantillon est le seul qui compte.",
+   "Consignez chaque trade avec ses étiquettes de contexte (séance, régime, note du setup) pour que l'autopsie trouve OÙ l'avantage se concentre."
+  ],
+  "fails": [
+   "Dix paramètres réglés jusqu'à ce que l'historique soit beau décrivent parfaitement le PASSÉ et rien d'autre — chaque bouton ajouté achète de la beauté de backtest avec de la fragilité en réel.",
+   "Les zones rétro-ajustées sont la version du surapprentissage du trader discrétionnaire : marquer des niveaux avec le résultat visible teste votre mémoire du graphique, pas votre méthode.",
+   "Survivre à un régime n'est pas de la robustesse : une stratégie bâtie entièrement dans une année de tendance rencontre son premier range comme un bateau rencontre la terre."
+  ],
+  "drill": "Prenez un setup auquel vous croyez et faites un replay de 50 trades avec les règles gelées sur papier à côté de vous. Chaque fois que vous ressentez l'envie d'« ajuster » en plein test, comptez-la au lieu de le faire. Le décompte final — combien de fois vous avez voulu plier les règles — mesure l'écart exact entre le système que vous avez et la discipline qu'il exige.",
+  "related": [
+   {
+    "slug": "quant.probability",
+    "why": "les chiffres que ce processus existe pour produire"
+   },
+   {
+    "slug": "quant.algo-systems",
+    "why": "des règles assez formelles pour tourner sans vous"
+   },
+   {
+    "slug": "smc.market-structure",
+    "why": "les définitions mécaniques qui rendent testables les règles discrétionnaires"
+   }
+  ]
  },
  "quant.risk-of-ruin": {
   "lead": "Le Risque de Ruine est la probabilité de perdre assez de capital pour être éliminé du jeu — fonction de l'avantage, du risque par trade et de la variance que votre compte peut absorber. Le dimensionnement compte autant que la stratégie.",
@@ -2070,7 +2286,34 @@
    "Dimensionnement",
    "Demi-Kelly"
   ],
-  "figcap": "Asymétrie du drawdown : le gain requis pour récupérer croît de façon non linéaire à mesure que la perte s'aggrave."
+  "figcap": "Asymétrie du drawdown : le gain requis pour récupérer croît de façon non linéaire à mesure que la perte s'aggrave.",
+  "playbook": [
+   "Comprenez d'abord l'asymétrie : −20 % exige +25 % de retour, −50 % exige +100 % — le drawdown est un trou dont les parois se raidissent à mesure que vous creusez.",
+   "Fixez votre risque par trade en fraction du capital ACTUEL : le dimensionnement fractionnel-fixe réduit les mises en drawdown automatiquement, précisément quand il le faut.",
+   "Dérivez votre fraction de vos chiffres : avantage, variance et tolérance psychologique — pas d'un slogan de formation comme « risquez 1 % ».",
+   "Traitez Kelly comme un plafond, pas une cible : le Kelly complet maximise la croissance ET produit des drawdowns qu'aucun humain ne traverse — les professionnels vivent à une fraction.",
+   "Définissez la ruine personnellement et arrêtez-vous AVANT : le nombre où vous ne pouvez plus trader rationnellement arrive plus tôt que celui où le compte est vide."
+  ],
+  "fails": [
+   "Doubler le risque pour « récupérer plus vite » après un drawdown multiplie exactement le nombre qui vous tuait — l'instinct martingale est le déguisement préféré de la ruine.",
+   "Les maths de la ruine supposent des paris indépendants : positions corrélées, séquences de revanche et gaps de nouvelles rendent le vrai risque quotidien bien plus grand que le chiffre par trade ne le suggère.",
+   "Un système à espérance positive ruine quand même un compte sous-capitalisé : l'avantage ne vous protège pas de la séquence qui arrive avant la moyenne."
+  ],
+  "drill": "Construisez un simulateur de ruine dans un tableur : votre taux de gain, vos multiples R, 1000 séries de 200 trades à trois niveaux de risque — 0,5 %, 1 %, 2 %. Comptez combien de séries touchent un drawdown de 30 % à chaque niveau. Voir la ruine devenir une fréquence réglable est ce qui fait de la taille de position le volant qu'elle est.",
+  "related": [
+   {
+    "slug": "quant.probability",
+    "why": "l’espérance et la variance que ces maths consomment"
+   },
+   {
+    "slug": "quant.backtesting",
+    "why": "où les intrants doivent être mesurés, pas souhaités"
+   },
+   {
+    "slug": "quant.algo-systems",
+    "why": "des règles de taille appliquées sans humeur"
+   }
+  ]
  },
  "quant.algo-systems": {
   "lead": "Les systèmes algorithmiques exécutent des règles prédéfinies automatiquement, éliminant l'émotion et permettant des tests rigoureux. Différentes approches exploitent différentes inefficiences — suivi de tendance, retour à la moyenne, tenue de marché et arbitrage.",
@@ -2101,7 +2344,34 @@
    "Latence",
    "Surapprentissage"
   ],
-  "figcap": "Deux régimes : une étendue tendancielle (territoire du suivi de tendance) et un range (territoire du retour à la moyenne)."
+  "figcap": "Deux régimes : une étendue tendancielle (territoire du suivi de tendance) et un range (territoire du retour à la moyenne).",
+  "playbook": [
+   "Écrivez la stratégie comme un algorithme même si un humain l'exécute : entrée, sortie, taille et séance si explicites qu'aucune bougie n'exige une opinion.",
+   "Classez votre système honnêtement — suiveur de tendance ou retour à la moyenne — car cette étiquette prédit QUAND il souffrira, et la souffrance non annoncée est ce qui casse les opérateurs.",
+   "Faites tourner les règles sur papier en parallèle avant d'automatiser : un mois d'exécution manuelle révèle les ambiguïtés qu'aucun backtest ne montre.",
+   "Automatisez d'abord le maillon faible : pour la plupart, ce sont les sorties et la taille — les endroits où l'émotion édite le plan en plein trade.",
+   "Surveillez le système comme un système : suivez son espérance en réel contre les bandes du backtest, et prédéfinissez le drawdown qui le met en pause — les machines n'échouent poliment que si vous leur avez dit comment."
+  ],
+  "fails": [
+   "L'automatisation multiplie ce qu'on lui donne : un défaut subtil de règle qu'un discrétionnaire attraperait au troisième trade s'exécute cinq cents fois avant lundi.",
+   "Tuer un système dans la variance normale — parce qu'une semaine perdante SEMBLAIT cassée — remplace un avantage mesuré par de l'humeur, ce que l'automatisation existait pour retirer.",
+   "Chaque système est un pari sur la persistance d'un régime : les machines de tendance meurent dans le chop, celles de réversion meurent en tendance — en faire tourner une sans connaître sa saison, c'est la faire tourner à l'aveugle."
+  ],
+  "drill": "Prenez votre setup le plus discrétionnaire et passez une semaine à l'écrire en pseudocode — chaque condition, chaque exception. Les points où vous ne pouvez pas écrire la règle sont les points où vous décidiez au ressenti. Vous n'avez rien à automatiser ; l'exercice est de rencontrer les parties de votre méthode qui n'existent qu'en humeur.",
+  "related": [
+   {
+    "slug": "quant.backtesting",
+    "why": "le terrain d’essai que tout jeu de règles doit survivre"
+   },
+   {
+    "slug": "quant.risk-of-ruin",
+    "why": "les contraintes de taille que la machine doit imposer"
+   },
+   {
+    "slug": "quant.momentum",
+    "why": "l’une des deux familles auxquelles tout système appartient"
+   }
+  ]
  },
  "quant.mean-reversion": {
   "lead": "Un signal de retour à la moyenne se déclenche quand le prix s'est étiré statistiquement loin de sa moyenne — par z-score, bande ou extrême de RSI — pariant sur un retour brusque à la moyenne. Mais le régime doit d'abord être en range.",
@@ -2138,7 +2408,34 @@
    "Cointégration",
    "Filtre ADX"
   ],
-  "figcap": "Le prix s'étire vers la bande +2σ en range, puis revient à la moyenne — le trade de retour."
+  "figcap": "Le prix s'étire vers la bande +2σ en range, puis revient à la moyenne — le trade de retour.",
+  "playbook": [
+   "Filtrez par régime avant tout : le retour à la moyenne se nourrit de ranges — un filtre ADX ou un contrôle de structure doit approuver le trade avant même de mesurer l'étirement.",
+   "Quantifiez l'étirement : un z-score ou une distance de bande transforme le « ça a l'air étiré » en un nombre à seuil testable.",
+   "Attendez que le retour COMMENCE : entrez sur la première contraction vers la moyenne, pas à l'étirement maximal — attraper le bord extérieur est un autre trade, pire.",
+   "Visez la moyenne, pas la lune : la thèse du trade est un retour à la moyenne, donc la moyenne est la sortie — étendre les objectifs au-delà emprunte une thèse que vous n'avez pas.",
+   "Coupez au changement de régime, pas seulement au prix : si le range casse pendant que vous tenez, la prémisse est morte — la perte est le prix de l'information, et rester, c'est payer deux fois."
+  ],
+  "fails": [
+   "« Ça ne peut pas monter plus haut » n'est pas une raison — en tendance, l'étiré s'étire davantage, et vendre la force sans filtre de régime est l'enterrement d'école de cette stratégie.",
+   "Moyenner contre un coureur convertit une petite perte planifiée en événement de compte : l'avantage de la stratégie vit dans de nombreuses petites réversions, et une tendance sans stop en efface cinquante.",
+   "La moyenne elle-même dérive : dans une tendance lente, le prix « revient » vers une cible mobile et votre avantage mesuré devient en silence du bruit autour d'une pente."
+  ],
+  "drill": "Backtestez une règle de réversion deux fois sur la même année de données : une avec filtre de régime (seulement dans des ranges diagnostiqués) et une sans. Mêmes entrées, mêmes sorties, un filtre d'écart. Les deux courbes de capital — une qui respire, une qui saigne — sont l'image la plus claire que vous aurez jamais de pourquoi le filtre EST la stratégie.",
+  "related": [
+   {
+    "slug": "technical.bollinger",
+    "why": "le mètre ruban que les traders de réversion saisissent d’abord"
+   },
+   {
+    "slug": "quant.momentum",
+    "why": "le pari opposé — et pourquoi le régime décide lequel est actif"
+   },
+   {
+    "slug": "quant.backtesting",
+    "why": "d’où le seuil et le filtre tirent leurs chiffres"
+   }
+  ]
  },
  "quant.momentum": {
   "lead": "Un signal de momentum entre quand le prix bouge avec assez de force directionnelle pour le chevaucher — captant la persistance plutôt que de la fader. L'ADX sépare le vrai momentum du bruit.",
@@ -2175,6 +2472,33 @@
    "Fausse cassure",
    "Stop suiveur"
   ],
-  "figcap": "Une cassure confirmée par l'ADX entrant dans une tendance soutenue, suivie par une moyenne mobile croissante."
+  "figcap": "Une cassure confirmée par l'ADX entrant dans une tendance soutenue, suivie par une moyenne mobile croissante.",
+  "playbook": [
+   "Confirmez qu'il y a une tendance qui vaut la peine : un ADX au-dessus du seuil, ou une séquence propre de structure externe — le filtre vient avant le signal.",
+   "Entrez AVEC la force, pas après son repos : la logique momentum achète haut pour vendre plus haut ; l'hésitation attendant « un meilleur prix » est une pensée de réversion sous le mauvais uniforme.",
+   "Dimensionnez pour la volatilité que vous embarquez : les jambes fortes bougent vite dans les deux sens, et le stop doit vivre hors de la respiration normale de la jambe.",
+   "Laissez respirer les gagnants avec un trailing de structure : sorties à chaque nouveau swing plutôt qu'objectifs fixes — la persistance est l'avantage, la sortie doit donc la permettre.",
+   "Retirez le trade quand la force meurt : les stratégies momentum dépendent du régime, et un ADX plat ou une continuation ratée est la machine annonçant la fin de sa saison."
+  ],
+  "fails": [
+   "Entrer sur la force à la FIN d'une jambe mature achète le climax : le momentum mesuré sans demander l'ÂGE du mouvement confond le dernier kilomètre d'un marathon avec le premier.",
+   "Dans les ranges, chaque poussée de « momentum » est l'aller-retour vers l'autre bord — le même signal qui imprime de l'argent en tendance le donne dans le chop.",
+   "Les stops serrés étouffent la persistance même que vous avez achetée : arrêté par des replis normaux quatre fois, le cinquième signal — celui qui court — part sans vous."
+  ],
+  "drill": "Étiquetez trente signaux de momentum avec l'âge du mouvement au déclenchement : première jambe, milieu, ou tardive/étendue. Suivez chacun jusqu'à sa conclusion. Le taux de mortalité des entrées de jambe tardive — visible dans vos propres chiffres — installe la question « quel âge a ce mouvement ? » en permanence devant le bouton d'achat.",
+  "related": [
+   {
+    "slug": "quant.mean-reversion",
+    "why": "la stratégie miroir partageant un même interrupteur de régime"
+   },
+   {
+    "slug": "price.trend-structure",
+    "why": "la définition structurelle de la force achetée"
+   },
+   {
+    "slug": "technical.macd",
+    "why": "la jauge de momentum-du-momentum pour le côté sortie"
+   }
+  ]
  }
 }
