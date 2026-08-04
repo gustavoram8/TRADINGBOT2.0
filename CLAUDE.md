@@ -1332,15 +1332,26 @@ borrado. PENDIENTE: agregar selector de mes / historial.
 > Calidad, no con apuro."* Marcar ✅ al cerrar cada punto, con una línea de qué se hizo.
 > (Renumerada 1-25: su lista traía dos #6 y saltaba el #8 y el #16.)
 
-- [ ] **1. Landing page desactualizada.** (a) Pre-Flight no aparece en la descripción del plan
-  Premium; (b) ¿precios $50 o $49,99? (decidir, mismo criterio para Standard); (c) dice **4
-  metodologías** cuando hoy hay más; (d) el bloque *"You screenshot your trades — then what?"* ya no
-  describe lo que el sitio hace; (e) **"LO QUE LEE LA IA"** — el dueño rechaza decir que la IA
-  *"lee patrones"*: la IA **entiende y aplica** cada metodología para corregir de forma educativa;
-  ahí también **faltan metodologías/gatillos**; (f) la descripción del **foro** con los mensajes de
-  ejemplo (`XAUUSD — AMD cycle confirmed… targeting 2,031.80`) **suena a asesoría financiera**;
-  (g) **sacar su nombre del ranking del quiz** ("M. Ramirez") y poner otro; (h) decidir si su
-  testimonio se queda o se borra (ver el punto FTC de 2026-08-01).
+- [x] ✅ **1. Landing page desactualizada (2026-08-03, commit `5d8ae27`).** (a) Pre-Flight agregada
+  al plan Premium; (b) **precios: se quedan redondos $25/$50** — decisión del dueño, opción A, NO
+  reabrir; (c) "4 metodologías" → **7**, con los nombres reales (el analizador tiene 7 approaches y
+  *Price Action* ni siquiera era uno); faltaban Harmonic y Elliott Wave en la rejilla, y
+  "Quantitative & Hybrid" no correspondía a ningún botón (el real es *Technical Analysis*); la
+  tarjeta STDV pasó a *OTE / Standard Deviation*; (d) bloque *"Sound familiar?"* reescrito para que
+  los tres dolores mapeen uno a uno con lo que el sitio hace hoy (analizador, Pre-Flight, quiz);
+  (e) *"WHAT THE AI READS"* reescrito: la IA no detecta patrones, **aplica la metodología que elige
+  el trader** y explica la operación ya tomada — y de paso cierra por el lado legal, porque dice
+  explícitamente que nunca indica qué operar; (f) los dos posts de ejemplo del foro llevaban
+  objetivo de precio y sonaban a señal → reescritos como preguntas de estudio; (g) fuera su nombre
+  del ranking de ejemplo. **Hallazgo aparte:** *"Sound familiar?"* y los posts del foro estaban
+  **hardcodeados en inglés, sin `data-t`** → se veían en inglés bajo ES/FR/PT; ahora cableados ×4.
+  · **Lo único que queda del punto es (h) y NO es trabajo de código:** decidir si su propio
+  testimonio se publica. Desde el 2026-08-01 hay pestaña **"⭐ Reseñas"** en `/admin` para
+  publicarlo o retirarlo con un botón, y la etiqueta de "fundador" ya sale sola (regla FTC).
+  Recomendación dada: **no publicarlo** — 5 estrellas firmadas por el dueño restan credibilidad al
+  resto, aunque estén etiquetadas.
+  > ⚠️ Este punto se cerró el 2026-08-03 pero **se quedó sin tachar aquí**, y al día siguiente lo di
+  > por pendiente y se lo volví a ofrecer al dueño. **Tachar el punto es parte de cerrarlo.**
 - [ ] **2. Propuesta comercial:** cambiar el acuerdo a **3 meses iniciales**, con revisión a los 30
   días y opción de renovación por otros 3 si se cumplen expectativas de cualquiera de las partes.
 - [ ] **3. "My coupons":** ya no hay cupones de descuento. ¿Se quita, o se deja solo para mostrar el
