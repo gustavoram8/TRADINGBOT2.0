@@ -1404,9 +1404,33 @@ borrado. PENDIENTE: agregar selector de mes / historial.
   `(23,25,35)` y el contraste sale inflado.
   🔴 **Deja destapado el punto 10:** el `<footer>` que va JUSTO ENCIMA sigue con `--muted` suelto
   sobre el camo — mismo defecto, sin arreglar.
-- [ ] **10. Legibilidad bajo camos:** hay muchísimas frases chicas, títulos y subtítulos que se
-  pierden con el camo puesto — sobre todo texto FUERA de paneles. Hay que barrer camo por camo,
-  página por página.
+- [x] ⛔ **10. Legibilidad bajo camos — INTENTADO Y REVERTIDO (2026-08-04). NO reabrir sin que él
+  lo pida.** El dueño lo paró: *"revierte lo que hiciste y dejemos todo como estaba"*. El sitio
+  quedó **idéntico** (revert `e221f5b` de `f94ecb1`); no se tocó nada del punto 9.
+  **Lo que sí quedó aprendido, para no repetir los errores si algún día se retoma:**
+  · 🔴 **Medir el contraste con un número NO sirve contra un camo.** El fondo es una ILUSTRACIÓN:
+    en la misma frase puede haber montaña oscura detrás de una mitad y cielo claro detrás de la
+    otra. No existe un número que describa eso, ni un color de texto que funcione contra las dos.
+    Se perdieron ~2 h construyendo un medidor de contraste por píxeles que solo daba ruido.
+  · ⚠️ **Dos fallos del medidor, por si se vuelve a intentar:** (1) el filtro de "está protegido por
+    un panel" exigía alfa ≥ 0.55 y los paneles del sitio son de VIDRIO → cientos de falsos
+    positivos de texto que sí estaba protegido; (2) un recorte de un solo color se contaba como
+    fallo con contraste 1.00, cuando significa que el texto no estaba ahí. **La pista de que todo
+    era ruido: salían fallos SIN camo puesto.**
+  · ✅ **Lo que SÍ funciona para enumerar el problema** (3 min, sin medir píxeles): recorrer el DOM
+    y quedarse con el texto cuyo camino de ancestros hasta `body` no tiene NINGÚN fondo. Da 67
+    nodos reales: encabezados de sección, calendario económico, foro, Pre-Flight, quiz y el pie.
+  · 🔴 **El diagnóstico del ejemplo era erróneo:** el subtítulo que él señaló (*"Submit a trade for
+    analysis…"*) NO es el caso malo — el dibujo de los camos vive ABAJO, así que arriba el texto
+    cae sobre fondo liso. El que de verdad se pierde es **el pie**, que es justo el que el punto 9
+    dejó explícitamente sin arreglar. ⚠️ Y él avisó que la ilegibilidad está **en varias partes**,
+    no solo donde se miró.
+  · ⚠️ **Un halo solo no basta ahí:** medido en el navegador, se aplicaba bien (crema sobre marrón)
+    y aun así el pie seguía sin leerse, porque es de **11px con transparencia 0.64**. Haría falta
+    tocar también el color, no solo ponerle contorno.
+  · Las herramientas quedan en el repo por si sirven: `tools/audita_legibilidad.py` (el medidor,
+    con sus trampas documentadas) y `tools/compara_legibilidad.py` (antes/después en la página
+    real, apagando el arreglo con una clase en el `<html>`).
 - [ ] **11. PDF de Synapse interactivo:** que el índice inicial sea clicable y salte al contenido
   de cada metodología.
 - [ ] **12. PDF de Synapse — más sustancia.** Está bien logrado pero **demasiado sintetizado**;
