@@ -40,3 +40,6 @@ reports/*.pdf
 
 # Mentorship support material (member-only files, served through a gated route)
 scalpel/private_uploads/
+
+# Tipografias descargadas por tools/gen_posts_ig.py (SIL OFL, no son del producto)
+tools/.fuentes/

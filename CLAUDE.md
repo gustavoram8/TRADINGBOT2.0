@@ -387,6 +387,33 @@ cada mes, si un mes no hay tanda el sistema se ve muerto).
   Cada uno = tema CSS + slug en `CAMO_SLUGS`/`CAMO_READY`/`CAMO_NAMES` + una línea en
   `CAMO_WHEEL_DESCS` ×4 idiomas; `_publish_roulette_camos()` lo publica solo al arrancar.
 
+## 📱 REDES SOCIALES — kit de marca generado (2026-08-04)
+Instagram y TikTok abiertos por el dueño, 0 seguidores, 0 publicado. Hecho:
+- **`tools/gen_posts_ig.py`** (+ `tools/rasteriza_posts.py` para el PNG) genera
+  los 9 primeros posts 1080×1350, las 5 portadas de destacadas 1080×1080 y el
+  avatar. Sale en `out/posts_ig/` (ignorado). Textos en `tools/posts_ig_textos.md`.
+- **Azul de marca medido del propio logo: `#004feb`.** ⚠️ Se toma el color MÁS
+  REPETIDO entre píxeles opacos, no el primero — el primero cae en el borde
+  suavizado y da `#84a9e8`. El generador lo verifica con un assert.
+- **Avatar = la "a", NO el logotipo.** El logotipo es 6:1 y la foto de perfil es
+  un círculo: a 32px (comentarios) la palabra entera es una mancha. Va cuadrado
+  a sangre — subir el círculo recortado deja esquinas que el visor rellena.
+  ⚠️ Se probó la "a" + la flecha del logo y el dueño la RECHAZÓ: esa flecha nace
+  después de la "e" final y al juntarla con la "a" cruza trazos ajenos.
+- **Los posts son 4:5 pero la cuadrícula del perfil RECORTA al cuadrado central**
+  → todo lo legible vive ahí (`--guias` lo dibuja).
+- **Portadas de destacadas SIN texto**: Instagram escribe el título debajo del
+  círculo; a ~64px una palabra dentro no se lee. Van con glifo.
+- Sistema: grafito + rejilla + resplandor del landing; **un solo acento por
+  pieza** (azul=producto, dorado=conocimiento, blanco=disciplina); números en
+  JetBrains Mono. Tipografías se bajan a `tools/.fuentes/` (gitignored, SIL OFL).
+- **Los diagramas de velas se dibujan desde OHLC y son correctos** (order block =
+  última vela bajista antes del desplazamiento; FVG = hueco entre máximo de la 1ª
+  y mínimo de la 3ª). Un diagrama bonito pero falso cuesta credibilidad.
+- **PENDIENTE:** publicar (el dueño quería 9-12 piezas antes de la primera),
+  campo "Nombre" con palabras clave, bio sin fecha de apertura, y el enlace
+  cuando el sitio abra.
+
 ## 📅 Recordatorio diario
 > 🔔 **PARA EL 2026-08-03 (pedido explícito del usuario):** re-revisar juntos los TONOS del
 > 1º/2º/3º del salón de la fama (commit `eb50f46`: f1 = blanco incandescente + movimiento + halo,
