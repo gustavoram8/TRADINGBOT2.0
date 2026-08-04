@@ -26,7 +26,7 @@ SALIDA = os.path.join(RAIZ, 'out', 'legibilidad')
 
 # La zona que el dueño señaló: el encabezado del analizador, que es texto
 # suelto sobre el dibujo del camo, sin ningún panel detrás.
-ZONA = 'footer'
+ZONA = '.page-header'
 
 
 def _rotula(im, texto, alto=34):
@@ -80,21 +80,9 @@ def main(argv):
                 pg.goto(BASE + '/welcome', wait_until='domcontentloaded')
                 pg.goto(BASE + '/app', wait_until='domcontentloaded')
                 pg.wait_for_timeout(1000)
-                # ⚠️ El primero que coincide puede estar OCULTO: hay varios
-                # `<footer>` en la página (el del libro de Synapse, por
-                # ejemplo). Hay que quedarse con el primero VISIBLE o se acaba
-                # esperando eternamente a que algo invisible entre en pantalla.
-                loc = None
-                for i in range(pg.locator(ZONA).count()):
-                    cand = pg.locator(ZONA).nth(i)
-                    try:
-                        if cand.is_visible():
-                            loc = cand
-                            break
-                    except Exception:
-                        continue
-                if loc is None:
-                    print('  (no hay %s visible en %s/%s)' % (ZONA, camo, modo))
+                loc = pg.locator(ZONA).first
+                if not loc.count():
+                    print('  (no encuentro %s en %s/%s)' % (ZONA, camo, modo))
                     continue
                 try:
                     loc.scroll_into_view_if_needed(timeout=2000)
