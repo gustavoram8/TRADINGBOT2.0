@@ -89,16 +89,18 @@
     {# ── codigo de descuento ──────────────────────────────────────────── #}
     {% if locked_code %}
     {# La cuenta ya esta atada a su codigo de creador: el precio de arriba lo
-       lleva dentro, para siempre. Ofrecer la casilla solo invitaria a pensar
-       que falta escribir algo. Lo decide el servidor: ningun JS puede
-       convencer a la pagina de usar otro codigo. #}
+       lleva dentro, para siempre. La casilla SIGUE abierta (clausula 3.1 del
+       acuerdo de socios): una promocion GENERAL puede mejorar el precio, pero
+       lo decide el servidor — otro codigo de creador no entra, y uno igual o
+       peor no cambia nada. La atribucion no se toca en ningun caso. #}
     <div class="pnote">
       <span data-i18n="checkout.lockedNote">Your permanent discount is already applied — it comes with your account and you never need to type the code again.</span>
       <b class="mono">{{ locked_code }}</b>{% if locked_creator %} · {{ locked_creator }}{% endif %}
     </div>
-    {% elif cycle == 'monthly' %}
+    {% endif %}
+    {% if cycle == 'monthly' %}
     <div class="pcode">
-      <label for="promo-input" data-i18n="checkout.promoLabel">Have a discount or creator code?</label>
+      <label for="promo-input" data-i18n="{{ 'checkout.promoLockedLabel' if locked_code else 'checkout.promoLabel' }}">{{ 'Have an even better promo code? It only applies if it lowers your price.' if locked_code else 'Have a discount or creator code?' }}</label>
       <div class="box">
         <input type="text" id="promo-input" placeholder="Enter code" data-i18n-ph="checkout.promoPlaceholder" maxlength="40" autocomplete="off" />
         <button type="button" id="promo-apply" data-i18n="checkout.promoApply">Apply</button>
@@ -221,9 +223,16 @@
     var discAmt  = document.getElementById('discount-amount');
     var finalEl  = document.getElementById('final-price');
 
-    var KNOWN_ERR = { not_found:1, expired:1, maxed:1, inactive:1, cycle:1, empty:1, locked:1 };
+    var KNOWN_ERR = { not_found:1, expired:1, maxed:1, inactive:1, cycle:1, empty:1, locked:1, worse:1 };
 
     if (!applyBtn) return;
+
+    /* El estado al que se vuelve si un codigo falla NO es el precio base: en
+       una cuenta atada el descuento permanente ya viene puesto del servidor.
+       Se fotografia lo pintado al cargar y se restaura ESO. */
+    var init = { rowShown: discRow.style.display !== 'none',
+                 label: discLbl.textContent, amount: discAmt.textContent,
+                 final: finalEl.textContent };
 
     applyBtn.addEventListener('click', function () {
       var code = (input.value || '').trim();
@@ -264,8 +273,10 @@
     });
 
     function showErr(code) {
-      discRow.style.display = 'none';
-      finalEl.textContent = basePrice.toFixed(2);
+      discRow.style.display = init.rowShown ? 'flex' : 'none';
+      discLbl.textContent = init.label;
+      discAmt.textContent = init.amount;
+      finalEl.textContent = init.final;
       hidden.value = '';
       msg.className = 'msg err';
       msg.textContent = KNOWN_ERR[code] ? PagesI18n.t('checkout.err.' + code) : PagesI18n.t('checkout.err.generic');

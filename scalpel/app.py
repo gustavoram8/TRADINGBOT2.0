@@ -7344,6 +7344,43 @@ def _bind_referral(user, promo):
     return True
 
 
+def _promo_para_compra(user, plan, cycle, code):
+    """Qué descuento gana en esta compra — sin tocar JAMÁS la atribución.
+
+    Cláusula 3.1 del acuerdo de socios: el código atado a la cuenta se aplica
+    solo, pero una promoción GENERAL (kind != 'creator') puede ganarle si deja
+    un precio ESTRICTAMENTE menor — el cliente nunca queda atrapado en el peor
+    precio, y el socio cobra igual su comisión (el vínculo vive en
+    `referred_by_code`; `record_sale_breakdown` cae a él cuando el pedido no
+    trae código de creador). Cláusula 3.2: el código de OTRO creador no entra
+    nunca — ni descuenta ni re-ata; la atribución no se reasigna.
+
+    Devuelve (promo_ganadora, es_uso_nuevo, error). `error` es para la casilla
+    de la UI; el checkout ignora el error y cobra con la ganadora, que siempre
+    es un precio que el comprador ya vio.
+    """
+    stored = _stored_promo(user)
+    stored_ok = stored and (stored.valid_for == 'both' or stored.valid_for == cycle)
+    base = stored if stored_ok else None
+    code = (code or '').strip()
+    if not code:
+        return base, False, None
+    if stored and code.lower() == (stored.code or '').strip().lower():
+        # Su propio código: ya está puesto; solo avisar si no cubre este ciclo.
+        return base, False, (None if stored_ok else 'cycle')
+    promo, reason = _validate_promo(code, cycle)
+    if not promo:
+        return base, False, reason
+    if stored:
+        if promo.kind == 'creator':
+            return base, False, 'locked'
+        if _quote(plan, cycle, promo)['final_price'] < \
+           _quote(plan, cycle, base)['final_price']:
+            return promo, True, None
+        return base, False, 'worse'
+    return promo, True, None
+
+
 def _validate_promo(code_str, cycle):
     """Look up and validate a promo code for a billing cycle.
     Returns (PromoCode|None, reason)."""
@@ -7437,22 +7474,23 @@ def api_validate_code():
     code = (data.get('code') or '').strip()
     if plan not in PLAN_PRICING or cycle not in allowed_cycles():
         return jsonify({'ok': False, 'error': 'invalid_plan'}), 400
-    # A bound account is spoken for: its own code is already applied, and a
-    # DIFFERENT code can neither replace the price nor take the attribution.
+    # Cuenta atada: su código se aplica solo, otro creador no entra jamás, y
+    # una promoción GENERAL solo si mejora el precio (cláusulas 3.1/3.2 del
+    # acuerdo de socios — la atribución no se toca en ningún caso).
+    if not code:
+        return jsonify({'ok': False, 'error': 'empty'}), 200
     stored = _stored_promo(current_user)
-    if stored:
-        if code.strip().lower() == stored.code.strip().lower():
-            q = _quote(plan, cycle, stored)
-            return jsonify({'ok': True, 'locked': True,
-                            'discount_pct': stored.discount_pct,
-                            'creator': stored.creator_name, **q})
-        return jsonify({'ok': False, 'error': 'locked'}), 200
-    promo, reason = _validate_promo(code, cycle)
+    promo, _fresh, err = _promo_para_compra(current_user, plan, cycle, code)
+    if err:
+        return jsonify({'ok': False, 'error': err}), 200
     if not promo:
-        return jsonify({'ok': False, 'error': reason}), 200
+        return jsonify({'ok': False, 'error': 'not_found'}), 200
     q = _quote(plan, cycle, promo)
-    return jsonify({'ok': True, 'discount_pct': promo.discount_pct,
-                    'creator': promo.creator_name, **q})
+    resp = {'ok': True, 'discount_pct': promo.discount_pct,
+            'creator': promo.creator_name, **q}
+    if stored is not None and promo is stored:
+        resp['locked'] = True     # era su propio código: nada que cambiar
+    return jsonify(resp)
 
 
 @app.route('/checkout/create', methods=['POST'])
@@ -7482,18 +7520,12 @@ def checkout_create():
         return _llevar_a_pagar(existing, duplicado=True,
                                metodo=request.form.get('method', ''))
 
-    # Resolution order: the code bound to the account wins over anything typed
-    # (that is the anti-theft rule), then whatever the form carried. The bound
-    # code does NOT bump uses_count — a renewal is the same conversion, not a
-    # new one, and the counter is the partner's conversions metric.
-    stored = _stored_promo(current_user)
-    stored_ok = stored and (stored.valid_for == 'both' or stored.valid_for == cycle)
-    fresh_use = False
-    if stored_ok:
-        promo = stored
-    else:
-        promo, _reason = _validate_promo(code, cycle) if code else (None, '')
-        fresh_use = promo is not None
+    # El código atado se aplica solo y nadie puede robarle la atribución; una
+    # promoción GENERAL mejor sí puede ganarle en PRECIO (cláusula 3.1 — misma
+    # regla que valida la casilla, un solo sitio decide). El código atado no
+    # suma uses_count (una renovación no es una conversión nueva); un cupón
+    # general usado de verdad sí consume su uso.
+    promo, fresh_use, _err = _promo_para_compra(current_user, plan, cycle, code)
     q = _quote(plan, cycle, promo)
     # Sin ninguna forma de cobrar, crear el pedido es mentirle al comprador: se
     # queda con un pendiente que nadie puede pagar y que además le bloquea

@@ -1490,9 +1490,17 @@ volvía a $50 y el socio cobraba $0 (lo contrario de la propuesta comercial). Ca
   re-atar es imposible — "primer código gana"). `_bind_referral()` en `_activate_plan_from_order`.
 - **Checkout auto-aplica** el código guardado (`_stored_promo`): renovación a $40 sola, pedido con
   el código pegado → la comisión fluye por el camino normal. `uses_count` NO se infla con
-  renovaciones. **Anti-robo:** cuenta atada → validate-code responde `locked` a otro código;
-  checkout_create ignora el form y usa el de la cuenta; el carrito muestra aviso de descuento
-  permanente en lugar del cajón (server-rendered). **Desactivar el código corta a NUEVOS, el
+  renovaciones. **Anti-robo:** cuenta atada → el código de OTRO creador responde `locked` (ni
+  descuenta ni re-ata, jamás).
+- **Cláusula 3.1 del acuerdo de socios — CABLEADA (2026-08-04):** una promoción **GENERAL**
+  (`kind != 'creator'`) SÍ puede ganarle en PRECIO al código atado si deja el total estrictamente
+  menor (peor o igual → error `worse`); la **atribución no se toca** — el pedido lleva el cupón
+  general pero `record_sale_breakdown` cae a `referred_by_code` y el socio cobra igual, sobre lo
+  pagado de verdad. Un solo decisor `_promo_para_compra()` (lo usan validate-code Y checkout_create).
+  El carrito atado muestra el aviso de descuento permanente Y la casilla abierta
+  (`checkout.promoLockedLabel`; ⚠️ el JS restaura el estado INICIAL pintado, no el precio base — en
+  cuenta atada el $40 ya viene del server). `tools/test_promo_31.py` 15/15. Motivo: sin esto el
+  cliente atado quedaba ATRAPADO en el peor precio y la 3.1 del acuerdo era mentira. **Desactivar el código corta a NUEVOS, el
   cliente atado conserva precio y atribución** (decisión: la desactivación detiene altas, no rompe
   promesas). Cinturón extra: `record_sale_breakdown` cae al vínculo de la cuenta si el pedido llega
   sin código.
