@@ -27625,5 +27625,72 @@
 })();
 </script>
 
+
+<!-- ══ PUNTO 10 · legibilidad del texto suelto bajo un camo ══════════════
+     Bloque autocontenido: borrarlo entero devuelve el sitio a como estaba.
+
+     EL PROBLEMA. El texto que va dentro de un panel está a salvo, porque el
+     panel le pone un fondo. El que se pierde es el que cae directamente sobre
+     el dibujo del camo: los encabezados de sección, el pie, las notas
+     pequeñas. Son 67 nodos, medidos.
+
+     POR QUÉ UN HALO Y NO "SUBIRLE EL CONTRASTE". Porque no hay un contraste
+     que subir: el fondo es una ILUSTRACIÓN, y en la misma frase puede haber
+     montaña oscura detrás de una mitad y cielo claro detrás de la otra. No
+     existe un color de texto que funcione contra las dos. Un halo sí: separa
+     la letra de lo que haya detrás, sea lo que sea. Es la misma solución que
+     ya se aprobó en el punto 9 para los créditos de las esculturas.
+
+     POR QUÉ EL HALO ES `--bg`. Cada camo define su propio `--bg` y su `--text`
+     de forma que uno se lea sobre el otro — eso ya está pensado por quien
+     dibujó el camo. Rodeando la letra con `--bg` se recupera exactamente esa
+     pareja, sin inventar colores y sin una tabla por camo que habría que
+     ampliar cada mes con la tanda nueva.
+
+     ALCANCE. Solo aplica con un camo puesto (`body[class*="camo-"]`) y solo a
+     estos elementos concretos. Sin camo no cambia absolutamente nada, y dentro
+     de los paneles tampoco. `.sin-halo` en el <html> lo apaga: es lo que usa
+     `tools/compara_legibilidad.py` para fotografiar el antes y el después.
+-->
+<style id="nx-halo-camo">
+html.sin-halo body [class] { text-shadow: none !important; }
+
+body[class*="camo-"] .page-header h1,
+body[class*="camo-"] .page-header p,
+body[class*="camo-"] .forum-h1,
+body[class*="camo-"] .forum-intro,
+body[class*="camo-"] .forum-left,
+body[class*="camo-"] .forum-empty,
+body[class*="camo-"] .pf-tabs,
+body[class*="camo-"] .pf-stats,
+body[class*="camo-"] .quiz-welcome-title,
+body[class*="camo-"] .quiz-welcome-tag,
+body[class*="camo-"] .quiz-welcome-q,
+body[class*="camo-"] .kzt-tt,
+body[class*="camo-"] .ec-header,
+body[class*="camo-"] .ec-hint,
+body[class*="camo-"] .ec-powered,
+body[class*="camo-"] .ec-filter-lab,
+body[class*="camo-"] footer {
+  /* Tres capas: una pegada a la letra para despegarla del fondo, una abierta
+     que apaga el detalle del dibujo alrededor, y una desplazada que le da
+     peso. Con una sola capa el texto sigue peleándose con las líneas finas
+     del dibujo (rejillas, montañas, almenas). */
+  text-shadow:
+    0 0 2px var(--bg),
+    0 0 5px var(--bg),
+    0 1px 2px var(--bg);
+}
+
+/* El texto grande necesita menos: a 26px o 40px la letra ya se defiende sola,
+   y un halo ancho ahí se ve como niebla en vez de como nitidez. */
+body[class*="camo-"] .page-header h1,
+body[class*="camo-"] .quiz-welcome-title {
+  text-shadow: 0 0 3px var(--bg), 0 1px 2px var(--bg);
+}
+
+@media (prefers-reduced-motion: no-preference) { /* nada que animar aquí */ }
+</style>
+
 </body>
 </html>
