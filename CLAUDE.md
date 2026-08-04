@@ -414,6 +414,14 @@ Instagram y TikTok abiertos por el dueño, 0 seguidores, 0 publicado. Hecho:
   campo "Nombre" con palabras clave, bio sin fecha de apertura, y el enlace
   cuando el sitio abra.
 
+## 📌 PENDIENTES DE ÉL (recordárselos cuando toque, no cada mensaje)
+1. **Revisar cómo quedó "Mi cuenta"** (punto 20, hecho el 2026-08-04): dijo *"aún no he revisado
+   cómo quedó"*. Preguntarle si le convence la posición (va la primera del menú) antes de darlo
+   por bueno del todo.
+2. **Devolverle el escrito de PayPal cuando lo pida.** Está en la sección "▶️ RETOMAR PAYPAL" de
+   este archivo: los 4 clics de su papá, sus 5 comandos, cómo comprobar que quedó bien y que la
+   compra de prueba va con cuenta nueva. Se lo entrega tal cual cuando diga "sigamos con PayPal".
+
 ## 📅 Recordatorio diario
 > 🔔 **PARA EL 2026-08-03 (pedido explícito del usuario):** re-revisar juntos los TONOS del
 > 1º/2º/3º del salón de la fama (commit `eb50f46`: f1 = blanco incandescente + movimiento + halo,
@@ -1431,8 +1439,19 @@ borrado. PENDIENTE: agregar selector de mes / historial.
   · Las herramientas quedan en el repo por si sirven: `tools/audita_legibilidad.py` (el medidor,
     con sus trampas documentadas) y `tools/compara_legibilidad.py` (antes/después en la página
     real, apagando el arreglo con una clase en el `<html>`).
-- [ ] **11. PDF de Synapse interactivo:** que el índice inicial sea clicable y salte al contenido
-  de cada metodología.
+- [x] ✅ **11. PDF de Synapse interactivo (2026-08-04).** Las 41 líneas del índice son enlaces que
+  saltan a su tema, y **además** el PDF lleva ahora **46 marcadores** — el panel de índice que abre
+  el propio lector, que es lo que permite recorrerlo sin volver a la primera página cada vez
+  (metodología en nivel 1, tema en nivel 2, vía `bookmark-level` de WeasyPrint).
+  · El enlace **no parece un enlace**: hereda el color del índice, sin azul ni subrayado — un PDF
+    de pago lleno de azul subrayado se lee como una web mal impresa.
+  · ⚠️ **Un ancla muerta NO da error**: el enlace existe, se pulsa, y te deja al principio del
+    documento. Por eso la comprobación no fue "¿hay enlaces?" sino resolver la tabla de destinos
+    del PDF y verificar que **cada uno cae en una página distinta** (41 destinos → 41 páginas
+    distintas, de la 5 a la 49, ninguno al inicio). Verificado en los 4 idiomas.
+  · ⚠️ Trampa al verificar: WeasyPrint escribe destinos **con NOMBRE** (`/Dest: tema-…` + tabla
+    `/Names/Dests`), no arrays de página. Un lector que espere arrays da "sin resolver" y parece
+    que los enlaces están rotos cuando están perfectos.
 - [ ] **12. PDF de Synapse — más sustancia.** Está bien logrado pero **demasiado sintetizado**;
   va a costar ~$20 y hoy duda de que los valga. Nutrirlo sin rellenar por rellenar.
 - [ ] **13. Chalkboard funcional:** hoy es pobre, hay interacciones tediosas. Añadir herramientas

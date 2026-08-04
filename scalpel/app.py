@@ -9228,6 +9228,11 @@ def _build_synapse_pdf(buyer_name: str, buyer_email: str, order_id: str,
         pills = ''.join(f'<span class="term-pill">{esc(t)}</span>' for t in tlist)
         return f'<div class="terms-row">{pills}</div>'
 
+    def _ancla(slug):
+        """Un id de destino seguro a partir del slug del tema."""
+        limpio = ''.join(c if (c.isalnum() or c in '-_') else '-' for c in str(slug))
+        return 'tema-' + (limpio or 'x')
+
     # ── TOC ──────────────────────────────────────────────────────────────────
     toc_rows = []
     current_method = None
@@ -9238,7 +9243,15 @@ def _build_synapse_pdf(buyer_name: str, buyer_email: str, order_id: str,
             toc_rows.append(
                 f'<div class="toc-method" style="color:{accent}">{esc(T.method_name(method, lang))}</div>'
             )
-        toc_rows.append(f'<div class="toc-item">· {esc(T.topic_title(slug, title, lang))}</div>')
+        # Punto 11: cada línea del índice salta a su tema. El destino es el
+        # `id` que lleva la página del tema; WeasyPrint convierte un enlace
+        # interno en un enlace real del PDF, así que funciona en cualquier
+        # lector. El slug se limpia porque un id con caracteres raros rompe el
+        # ancla en silencio: el enlace existe, se puede pulsar, y no va a
+        # ninguna parte.
+        toc_rows.append(
+            f'<div class="toc-item"><a class="toc-link" href="#{_ancla(slug)}">'
+            f'· {esc(T.topic_title(slug, title, lang))}</a></div>')
     toc_html = '\n'.join(toc_rows)
 
     # ── Topic pages ───────────────────────────────────────────────────────────
@@ -9271,7 +9284,7 @@ def _build_synapse_pdf(buyer_name: str, buyer_email: str, order_id: str,
         accent   = _METHOD_ACCENT.get(method, '#333')
 
         pages.append(f"""
-<div class="topic-page">
+<div class="topic-page" id="{_ancla(slug)}">
   <div class="tp-header" style="border-left:4px solid {accent};">
     <div class="tp-method" style="color:{accent}">{esc(method_l)}</div>
     <div class="tp-title">{esc(title_l)}</div>
@@ -9372,6 +9385,15 @@ def _build_synapse_pdf(buyer_name: str, buyer_email: str, order_id: str,
                 border-bottom: 2px solid #1a1a2e; padding-bottom: 5pt; }}
   .toc-method {{ font-size: 10pt; font-weight: 700; margin: 10pt 0 3pt; letter-spacing:.04em; }}
   .toc-item {{ font-size: 8.5pt; color: #555; margin: 1pt 0 1pt 10pt; }}
+  /* Punto 11 · el índice es clicable, pero NO debe parecerlo: un PDF lleno de
+     azul subrayado se lee como una web mal impresa. Hereda el color del
+     índice y el salto lo descubre quien pasa el ratón por encima. */
+  .toc-link {{ color: inherit; text-decoration: none; }}
+  /* Y los marcadores del PDF: el panel de índice que abre el propio lector,
+     que es lo que hace que el documento se pueda recorrer sin volver a la
+     primera página cada vez. `bookmark-level` es de WeasyPrint. */
+  .md-name {{ bookmark-level: 1; bookmark-label: content(text); bookmark-state: closed; }}
+  .tp-title {{ bookmark-level: 2; bookmark-label: content(text); }}
 
   /* ── Method divider ── */
   .method-divider {{ page-break-before: always; page-break-after: always;
