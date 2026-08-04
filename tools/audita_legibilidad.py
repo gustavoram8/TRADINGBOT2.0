@@ -61,10 +61,8 @@ def contraste(a, b):
     return (la + 0.05) / (lb + 0.05)
 
 
-def mide(png):
+def mide_img(im):
     """Contraste real de un recorte de texto: tinta contra lo que hay detrás."""
-    from PIL import Image
-    im = Image.open(io.BytesIO(png)).convert('RGB')
     px = list(im.getdata())
     if len(px) < 40:
         return None
@@ -121,6 +119,8 @@ JS_TEXTOS = """
     if (visto.has(clave)) return;
     visto.add(clave);
     fuera.push({
+      caja: [Math.round(r.left + scrollX), Math.round(r.top + scrollY),
+             Math.round(r.width), Math.round(r.height)],
       texto: txt.slice(0, 60),
       clase: (el.className || '').toString().slice(0, 60),
       tag: el.tagName.toLowerCase(),
@@ -135,18 +135,34 @@ JS_TEXTOS = """
 
 
 def _cosecha(pg, camo, modo, tab, fallos, contador):
-    """Mide todos los textos sueltos de la vista que hay ahora en pantalla."""
+    """Mide todos los textos sueltos de la vista que hay ahora en pantalla.
+
+    ⚠️ UNA captura de la página entera y los recortes en memoria. La versión
+    ingenua —una captura por cada texto— tardaba tanto que la primera pasada
+    completa no llegó a terminar: son miles de capturas, y cada una es un viaje
+    de ida y vuelta al navegador.
+
+    El recorte usa coordenadas de PÁGINA (`rect + scroll`), que es lo que
+    corresponde a una captura `full_page`; mezclarlas con las de viewport es el
+    error clásico que hace medir una zona distinta de la que se cree.
+    """
+    from PIL import Image
     try:
         textos = pg.evaluate(JS_TEXTOS)
     except Exception:
         return
+    if not textos:
+        return
+    try:
+        entera = Image.open(io.BytesIO(pg.screenshot(full_page=True))).convert('RGB')
+    except Exception:
+        return
+    W, H = entera.size
     for t in textos:
-        loc = pg.locator('[data-audita="%d"]' % t['sel_i'])
-        try:
-            png = loc.screenshot(timeout=2500)
-        except Exception:
+        x, y, w, h = t['caja']
+        if w < 8 or h < 6 or x < 0 or y < 0 or x + w > W or y + h > H:
             continue
-        r = mide(png)
+        r = mide_img(entera.crop((x, y, x + w, y + h)))
         contador[0] += 1
         if r and r['ratio'] < UMBRAL:
             fallos.append({'camo': camo or 'sin-camo', 'modo': modo,
