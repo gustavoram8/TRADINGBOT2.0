@@ -1146,7 +1146,34 @@
    "Signe de Force",
    "Cause et Effet"
   ],
-  "figcap": "Un range d'accumulation de Wyckoff : un spring plonge sous le support, puis le markup commence hors du range."
+  "figcap": "Un range d'accumulation de Wyckoff : un spring plonge sous le support, puis le markup commence hors du range.",
+  "playbook": [
+   "Lisez chaque graphique comme la campagne d'UN opérateur : le Composite Man accumule en silence, marque à la hausse bruyamment, distribue poliment et marque à la baisse sans s'excuser — demandez-vous dans quel chapitre vous êtes.",
+   "Appuyez-vous sur les trois lois dans l'ordre : l'offre et la demande donne la direction, la cause et l'effet dit jusqu'où le mouvement est financé, l'effort contre le résultat avertit quand l'histoire change.",
+   "Dans une accumulation soupçonnée, suivez les temps du schéma : selling climax, automatic rally, secondary test — et le spring, la secousse terminale qui balaie le bas du range avant le markup.",
+   "Notez chaque spring à son volume : un volume faible sur la cassure signifie une offre épuisée (haussier) ; un volume lourd signifie que de vrais vendeurs y vivent encore.",
+   "Reconnaissez l'héritage : le « balayage de liquidité » d'aujourd'hui est le spring, l'« order block » marque l'activité de l'opérateur — deux vocabulaires, un comportement."
+  ],
+  "fails": [
+   "Étiqueter les phases en temps réel est une leçon d'humilité : l'accumulation et la distribution se ressemblent la majeure partie de leur vie — la lecture honnête garde deux hypothèses ouvertes jusqu'à ce qu'un spring ou un upthrust en choisisse une.",
+   "Le schéma est une carte de logique, pas un pochoir : les ranges sautent des temps, impriment des springs doubles ou se résolvent sans le test d'école — forcer chaque case sur chaque range est de la numérologie.",
+   "Sans volume, Wyckoff perd son moteur : sur les instruments au volume peu fiable (forex spot), l'effort-contre-résultat doit se lire via les futures ou pas du tout."
+  ],
+  "drill": "Prenez dix ranges complétés résolus à la hausse. En travaillant de gauche à droite avec le futur masqué, écrivez vos étiquettes de phase et mettez-les à jour bougie par bougie, en notant chaque fois où vous auriez retourné votre lecture. Puis faites dix résolus À LA BAISSE. L'instant où vous sentez à quel point ils se ressemblaient en milieu de range est celui où Wyckoff cesse d'être un diagramme et devient du jugement.",
+  "related": [
+   {
+    "slug": "smc.liquidity-sweep",
+    "why": "le spring, renommé par une génération plus récente"
+   },
+   {
+    "slug": "technical.volume",
+    "why": "le moteur de l’effort-contre-résultat"
+   },
+   {
+    "slug": "smc.market-structure",
+    "why": "les phases D et E, écrites en notation BOS/ChoCH"
+   }
+  ]
  },
  "smc.market-structure": {
   "lead": "En SMC, la structure est la séquence de swings qui définit la tendance. Une Cassure de Structure (BOS) confirme la continuation ; un Changement de Caractère (ChoCH) est la première cassure de l'extrême opposé — l'alerte précoce de retournement.",
@@ -1177,7 +1204,34 @@
    "Structure externe",
    "Déplacement"
   ],
-  "figcap": "Une tendance haussière de continuations BOS, puis un ChoCH quand le prix casse le dernier creux plus haut — alerte de retournement."
+  "figcap": "Une tendance haussière de continuations BOS, puis un ChoCH quand le prix casse le dernier creux plus haut — alerte de retournement.",
+  "playbook": [
+   "Définissez vos swings mécaniquement avant d'étiqueter quoi que ce soit — une règle fractale, appliquée à l'identique, pour qu'un BOS soit un fait et non une humeur.",
+   "Séparez l'externe de l'interne : les swings externes définissent la tendance et leur cassure SIGNIFIE quelque chose ; les internes sont le trafic dans une jambe.",
+   "Étiquetez un BOS quand un swing externe casse AVEC la tendance — continuation confirmée, les replis restent achetables dans une tendance haussière.",
+   "Réservez le ChoCH à la cassure contre-tendance du swing qui comptait — et rappelez-vous qu'il ouvre une QUESTION sur le retournement, pas un verdict.",
+   "Les lectures les plus fortes viennent séquencées : balayage d'un extrême externe, puis displacement cassant le swing opposé — cette paire ordonnée est la bascule qui mérite le respect."
+  ],
+  "fails": [
+   "Une mèche au-delà d'un swing n'est pas une cassure : sans clôture — et idéalement displacement — vous avez documenté un balayage, qui plaide la direction OPPOSÉE.",
+   "Compter les cassures internes comme ChoCH fabrique des retournements quotidiens ; la plupart sont le repli faisant son travail dans une structure externe intacte.",
+   "Sans définition mécanique du swing, chaque étiquette hérite d'ambiguïté — deux traders honnêtes liront le même graphique différemment, et aucun ne peut apprendre du journal qui suit."
+  ],
+  "drill": "Écrivez votre règle de swing en une phrase. Faites-lui ensuite étiqueter trente graphiques et comptez : combien de BOS étaient des « cassures » de pure mèche, combien de ChoCH étaient internes. Chaque erreur d'étiquette trouvée est un trade que vos anciens yeux auraient pris — la règle, une fois cette vérification passée, devient l'arbitre qui manquait à votre journal.",
+  "related": [
+   {
+    "slug": "price.trend-structure",
+    "why": "le squelette brut avant le vocabulaire SMC"
+   },
+   {
+    "slug": "smc.liquidity-sweep",
+    "why": "l’événement qu’une cassure de pure mèche s’avère souvent être"
+   },
+   {
+    "slug": "smc.ob-retest",
+    "why": "l’entrée qui n’existe qu’après la confirmation de la bascule"
+   }
+  ]
  },
  "smc.order-blocks": {
   "lead": "Un order block est la dernière bougie opposée avant un mouvement institutionnel impulsif — l'empreinte finale d'accumulation (ou de distribution) où reposent des ordres non exécutés jusqu'au retour du prix.",
@@ -1209,7 +1263,34 @@
    "Breaker block",
    "BOS"
   ],
-  "figcap": "La dernière bougie baissière avant un rallye est marquée comme order block haussier ; le prix revient le mitiger."
+  "figcap": "La dernière bougie baissière avant un rallye est marquée comme order block haussier ; le prix revient le mitiger.",
+  "playbook": [
+   "Partez du MOUVEMENT, pas de la bougie : trouvez une jambe de displacement qui a cassé la structure, puis remontez jusqu'à la dernière bougie opposée avant le départ — cette bougie est le bloc.",
+   "Exigez les références : le mouvement qu'il a enfanté doit avoir pris de la liquidité ou cassé quelque chose d'important. Un OB sans displacement derrière n'est qu'une bougie rouge.",
+   "Classez vos blocs : un bloc formé à l'origine d'une séquence balayage-puis-BOS surclasse dix blocs simplement posés dans une jambe de tendance.",
+   "Affinez la zone : l'open du corps est le bord classique, le 50 % du bloc un compromis courant — choisissez une convention et laissez votre journal la juger.",
+   "Suivez la mitigation : une fois que le prix est revenu et a traversé le bloc, les ordres qui le définissaient sont dépensés — une seconde visite est un autre trade, plus faible."
+  ],
+  "fails": [
+   "Un OB contre lequel le prix s'est comprimé — scie latérale vers la zone au lieu d'en partir — se fait éroder ordre par ordre ; quand il casse « enfin », la surprise n'existe plus.",
+   "Les blocs contre le draw du cadre supérieur se font écraser : un bloc de demande 5 minutes sous un displacement baissier daily est un ralentisseur, pas un plancher.",
+   "Le débat mèche-contre-corps cache la vraie erreur : l'incohérence. N'importe quelle convention marche SI elle est appliquée à l'identique chaque fois ; en changer par trade rend vos données illisibles."
+  ],
+  "drill": "Marquez trente order blocks et notez chaque origine : le départ a-t-il balayé de la liquidité, cassé la structure, les deux, ou ni l'un ni l'autre ? Puis consignez la réaction du premier retour. Trier par cette note — dans votre propre tableur — est ce qui transforme « je trade les order blocks » en « je trade CES order blocks ».",
+  "related": [
+   {
+    "slug": "smc.ob-retest",
+    "why": "la séquence d’entrée complète que ce bloc ancre"
+   },
+   {
+    "slug": "price.supply-demand",
+    "why": "le même mécanisme en langage de zones — et où les deux lectures divergent"
+   },
+   {
+    "slug": "smc.liquidity-sweep",
+    "why": "l’événement qui donne à un bloc d’origine sa meilleure note"
+   }
+  ]
  },
  "smc.fair-value-gaps": {
   "lead": "Un Fair Value Gap est un déséquilibre de trois bougies : le prix bouge si vite que la mèche de la bougie 3 n'atteint jamais celle de la bougie 1, laissant une zone unilatérale vers laquelle le marché est attiré pour \"rééquilibrer\".",
@@ -1240,7 +1321,34 @@
    "Rééquilibrage",
    "Déplacement"
   ],
-  "figcap": "Trois bougies laissent un FVG haussier (le gap ombré) ; le prix revient ensuite à son point médian de 50% pour rééquilibrer."
+  "figcap": "Trois bougies laissent un FVG haussier (le gap ombré) ; le prix revient ensuite à son point médian de 50% pour rééquilibrer.",
+  "playbook": [
+   "Trouvez la signature en trois bougies : la bougie du milieu si décidée que la mèche de la bougie 1 et celle de la 3 ne se touchent jamais — l'espace non négocié entre elles est le gap.",
+   "Notez le CRÉATEUR, pas le gap : un FVG taillé par un displacement qui a balayé de la liquidité ou cassé la structure porte de l'intention ; un gap né du brassage nocturne est du mobilier.",
+   "Marquez le consequent encroachment — le milieu du gap. Le prix honore souvent cette ligne des 50 % plutôt que les bords complets, et votre plan doit décider à l'avance laquelle il trade.",
+   "Lisez les gaps comme un baromètre de santé de la tendance : des gaps qui tiennent sans se remplir pendant que le prix avance, c'est de la force ; les mêmes gaps qui cèdent l'un après l'autre disent que la livraison change de mains.",
+   "Quand un gap se traverse et que le prix clôture au-delà, retournez la lentille : l'inverse FVG — l'ancien déséquilibre agissant comme support ou résistance de l'autre camp — est une information, pas un échec."
+  ],
+  "fails": [
+   "« Tous les gaps se remplissent » est un slogan de survivance : beaucoup oui, selon aucun calendrier qui vous paie — les tendances laissent une traînée de gaps non remplis précisément parce que ce sont des tendances.",
+   "Un gap en premium tradé comme objectif d'un short fonctionne ; un gap en premium tradé comme entrée LONGUE se bat contre le dealing range — l'array doit s'accorder avec la position du prix dans le range.",
+   "Les bougies de nouvelles fabriquent d'énormes gaps dont l'information est l'événement, pas l'enchère — les noter comme des gaps de displacement importe du bruit dans votre carte de zones."
+  ],
+  "drill": "Cataloguez trente FVG selon leur créateur : balayage-displacement, simple jambe de tendance, bougie de nouvelle. Suivez lesquels ont été respectés au premier contact, lesquels se sont remplis de part en part, et à quelle fréquence le CE seul a été le tournant. Le tableau obtenu remplace le slogan par des taux de base — et décide pour vous votre convention d'entrée.",
+  "related": [
+   {
+    "slug": "smc.fvg-fill",
+    "why": "l’entrée bâtie sur cette empreinte"
+   },
+   {
+    "slug": "smc.pd-arrays",
+    "why": "le contexte premium/discount qui décide quels gaps sont tradables"
+   },
+   {
+    "slug": "price.supply-demand",
+    "why": "une autre empreinte laissée par la même urgence"
+   }
+  ]
  },
  "smc.liquidity": {
   "lead": "La liquidité, ce sont les poches d'ordres en attente — stops et entrées en attente — groupés à des niveaux évidents. Les institutions poussent le prix vers ces poches pour exécuter leur taille, utilisant le comportement prévisible du retail comme carburant.",
@@ -1271,7 +1379,34 @@
    "Poche de liquidité",
    "Déplacement"
   ],
-  "figcap": "Des sommets égaux construisent une poche de liquidité buy-side ; le prix balaie les stops au-dessus, puis s'inverse à la baisse."
+  "figcap": "Des sommets égaux construisent une poche de liquidité buy-side ; le prix balaie les stops au-dessus, puis s'inverse à la baisse.",
+  "playbook": [
+   "Cartographiez les poches avant la séance : plus haut et plus bas de la veille, equal highs/lows, les extrêmes de swing évidents — partout où les stops de la foule doivent se regrouper.",
+   "Demandez À QUI appartiennent les ordres qui y vivent : au-delà d'un sommet siègent les stops des vendeurs (ordres d'achat) plus les achats de cassure — cette poche est du carburant buy-side, quel que soit celui qui la consomme.",
+   "Classez interne contre externe : les poches dans le dealing range actuel nourrissent les rotations ; les extrêmes externes sont la destination du voyage majeur.",
+   "Observez le draw : le prix tend à aller D'UNE poche VERS la suivante — tradez la route entre elles au lieu de deviner à chaque coin.",
+   "Après consommation d'une poche, relisez la carte : l'aimant d'hier n'est plus, et la poche suivante hérite de l'attraction."
+  ],
+  "fails": [
+   "« Plus d'acheteurs que de vendeurs » est impossible — le volume s'apparie un pour un ; ce qui bouge le prix, c'est l'agression consommant les ordres AU REPOS, et l'oublier transforme toute la carte en bouillie.",
+   "Un dealing range dont les deux poches externes sont déjà purgées est une carte épuisée : continuer à trader son intérieur comme un territoire frais, c'est trader un souvenir.",
+   "La liquidité vous dit où se trouve le carburant, jamais QUAND il brûle — une poche peut attirer le prix pendant des jours ; l'impatience convertit une carte correcte en position perdante."
+  ],
+  "drill": "Chaque matin pendant deux semaines, marquez toutes les poches de votre instrument avant l'ouverture — PDH/PDL, extrêmes égaux, hauts et bas de séance. En fin de journée, notez quelles poches ont été consommées et dans quel ordre. Deux semaines de cela bâtissent l'instinct que la foule des indicateurs ne développe jamais : vous cessez de demander où ira le prix et commencez à voir ce qui lui est DÛ.",
+  "related": [
+   {
+    "slug": "smc.liquidity-sweep",
+    "why": "à quoi ressemble la consommation d’une poche, bougie par bougie"
+   },
+   {
+    "slug": "price.support-resistance",
+    "why": "les niveaux classiques derrière lesquels ces poches se cachent"
+   },
+   {
+    "slug": "technical.volume",
+    "why": "le complément crucial : affaires faites contre ordres encore au repos"
+   }
+  ]
  },
  "smc.pd-arrays": {
   "lead": "Premium/Discount divise une plage de négociation à son équilibre de 50% : au-dessus c'est premium (cher), en dessous discount (bon marché). Le smart money achète en discount et vend en premium — vous devriez donc aussi.",
@@ -1302,7 +1437,34 @@
    "OTE",
    "Plage de négociation"
   ],
-  "figcap": "Une plage de négociation divisée à l'équilibre de 50% : discount en dessous (zone d'achat) et premium au-dessus (zone de vente)."
+  "figcap": "Une plage de négociation divisée à l'équilibre de 50% : discount en dessous (zone d'achat) et premium au-dessus (zone de vente).",
+  "playbook": [
+   "Ancrez le dealing range honnêtement : le swing significatif le plus récent — idéalement de balayage à balayage — pas le Fib qui flatte l'idée du moment.",
+   "Coupez-le à 50 % : au-dessus, le premium, où les arrays de vente gagnent en autorité ; en dessous, le discount, où ceux d'achat la gagnent.",
+   "Laissez la coupe mettre son VETO : une belle zone de demande garée en premium profond est une belle façon d'acheter cher.",
+   "Empilez la logique : le biais donne la direction, premium/discount dit OÙ dans le range cette direction est abordable, et les arrays dans cette moitié disent où exactement.",
+   "Ré-ancrez quand le range change : un extrême balayé met l'ancien range à la retraite — l'equilibrium bouge, et le sens de chaque array bouge avec lui."
+  ],
+  "fails": [
+   "Mauvaise ancre, tout est faux : mesurez un swing interne mineur et votre « discount » siège dans le premium du vrai range — la moitié mal étiquetée inverse en silence chaque décision en aval.",
+   "L'equilibrium n'est pas une muraille : en expansion, le prix tranche les 50 % sans un salut ; le niveau n'arbitre que les RANGES, et prétendre le contraire transforme un outil de contexte en signal d'entrée raté.",
+   "Deux traders, deux ancres, étiquettes opposées — sans règle d'ancrage écrite, premium/discount dégénère en biais de confirmation avec des pourcentages."
+  ],
+  "drill": "Sur vingt graphiques, ancrez le dealing range selon votre règle écrite, puis notez chaque array à l'intérieur : lequel siégeait dans la bonne moitié, lequel dans la mauvaise. Suivez les réactions au premier contact des deux groupes. L'écart entre eux est la valeur de la ligne des 50 %, cotée dans la monnaie de votre propre marché.",
+  "related": [
+   {
+    "slug": "smc.ote",
+    "why": "la poche raffinée dans la moitié discount (ou premium)"
+   },
+   {
+    "slug": "smc.fair-value-gaps",
+    "why": "les arrays auxquels ce cadre attribue l’autorité"
+   },
+   {
+    "slug": "price.harmonic",
+    "why": "une école complètement différente posant la même question : cher ou bon marché ?"
+   }
+  ]
  },
  "smc.kill-zones": {
   "lead": "Les Kill Zones sont les fenêtres temporelles où l'activité institutionnelle culmine et où se forment les setups les plus nets. Ne trader qu'à l'intérieur — et éviter les heures mortes du déjeuner — est une discipline centrale d'ICT.",
@@ -1333,7 +1495,34 @@
    "Chevauchement de séances",
    "IPDA"
   ],
-  "figcap": "Une barre de 24 heures soulignant les kill zones de Londres, New York et Silver Bullet face aux heures mortes du déjeuner."
+  "figcap": "Une barre de 24 heures soulignant les kill zones de Londres, New York et Silver Bullet face aux heures mortes du déjeuner.",
+  "playbook": [
+   "Construisez votre journée autour des fenêtres, pas l'inverse : sachez à l'avance quelle kill zone vous tradez, et laissez le reste de l'horloge au temps d'analyse.",
+   "Avant l'ouverture de la fenêtre, ayez la carte prête : poches marquées, dealing range tracé, biais esquissé — la kill zone sert à EXÉCUTER un plan qui existe déjà.",
+   "Attendez le rythme manipulation-puis-livraison : l'open de Londres ou de New York adore courir les stops d'un côté avant le vrai mouvement — la première poussée est souvent le piège, pas la tendance.",
+   "Tradez le chevauchement du temps et du lieu : un balayage atterrissant sur votre poche marquée DANS la fenêtre est l'alignement dont vit cette méthodologie.",
+   "Consignez votre propre horloge : quelle fenêtre, quel jour de semaine, quels setups — vos meilleures heures sont un fait empirique sur VOUS, pas un slogan de formation."
+  ],
+  "fails": [
+   "La fenêtre est une horloge, pas un mécanisme : une semaine fériée morte a des kill zones sur le papier et personne dedans — le temps ne concentre que ce que la participation fournit.",
+   "Bonne fenêtre, mauvais jour : un lundi passé à attendre le vrai range de mardi, ou un matin de NFP où la donnée EST le marché, portent tous deux l'habit de la kill zone sans son comportement.",
+   "Forcer un trade par fenêtre convertit un filtre en quota — la kill zone choisit QUAND regarder, elle ne promet jamais qu'il y a quelque chose à voir."
+  ],
+  "drill": "Pendant un mois, journalisez chaque setup vu AVEC sa fenêtre : quelle kill zone, ou aucune. Consignez aussi les trades qui vous ont tenté hors fenêtres. En fin de mois, comparez la qualité — pas seulement les résultats, mais la propreté des séquences. La plupart découvrent que leur avantage vit dans deux heures par jour, et que le reste était un don.",
+  "related": [
+   {
+    "slug": "smc.liquidity-sweep",
+    "why": "la jambe de manipulation qui a fait la réputation de ces fenêtres"
+   },
+   {
+    "slug": "fundamental.news-data",
+    "why": "les événements programmés qui annulent toute horloge"
+   },
+   {
+    "slug": "smc.liquidity",
+    "why": "la carte qui doit être prête avant l’ouverture de la fenêtre"
+   }
+  ]
  },
  "smc.ote": {
   "lead": "L'Entrée Optimale (OTE) est la poche de Fibonacci d'ICT : dans une tendance confirmée, l'entrée de retracement la plus probable se situe entre les niveaux 61.8% et 79%, avec 70.5% comme point idéal.",
@@ -1371,7 +1560,34 @@
    "Confluence",
    "Biais HTF"
   ],
-  "figcap": "Une impulsion haussière, puis un retracement dans la poche OTE de 62–79% où l'entrée est prise."
+  "figcap": "Une impulsion haussière, puis un retracement dans la poche OTE de 62–79% où l'entrée est prise.",
+  "playbook": [
+   "Méritez d'abord la mesure : le swing sur lequel vous étirez le Fib doit être SIGNIFICATIF — idéalement né d'un balayage et confirmé par displacement.",
+   "Tracez de l'origine à l'extrême et marquez la poche 0,62–0,79 ; notez le 0,705, le milieu qu'ICT signale comme le point doux.",
+   "Laissez la poche être le lieu de rencontre, pas la raison : un OTE qui chevauche l'order block d'origine ou le CE du FVG est une confluence ; un ratio nu est une coordonnée.",
+   "Donnez-lui son heure : le repli qui atteint la poche pendant une kill zone, après avoir balayé quelque creux mineur en chemin, est la version de gala de cette entrée.",
+   "Ancrez le stop au-delà de l'origine du swing — si CELA cède, la jambe mesurée n'existe plus — et visez d'abord l'ancien extrême."
+  ],
+  "fails": [
+   "Fib sur le mauvais swing, précision sur la mauvaise carte : mesurer une jambe interne mineure place votre « poche » à des niveaux que la livraison n'a jamais eu l'intention de respecter.",
+   "Dans les tendances vraiment fortes, le repli s'épuise souvent avant 0,62 — exiger la profondeur OTE à chaque entrée vous met systématiquement sur le banc pendant les meilleures livraisons.",
+   "La poche attire l'inducement : des rebonds courts à 0,5 qui appâtent les entrées avant que le prix ne finisse le voyage — entrer au-dessus de la poche parce que « c'est presque ça » est payer plein tarif pour le piège."
+  ],
+  "drill": "Mesurez trente swings confirmés et notez où chaque repli a réellement fini : avant la poche, dedans, à 0,705, au-delà de 0,79. Puis séparez par force de tendance. Votre histogramme montrera QUAND votre marché accorde l'OTE et quand il ne se retourne jamais — la différence entre un outil et une superstition est exactement ce tableau.",
+  "related": [
+   {
+    "slug": "smc.pd-arrays",
+    "why": "le contexte discount dans lequel la poche doit s’asseoir"
+   },
+   {
+    "slug": "smc.ob-retest",
+    "why": "le partenaire de confluence qui attend le plus souvent à la même profondeur"
+   },
+   {
+    "slug": "smc.kill-zones",
+    "why": "l’horloge qui transforme un niveau en rendez-vous"
+   }
+  ]
  },
  "smc.ob-retest": {
   "lead": "Le retest d'order block est l'entrée centrale d'ICT : après un balayage, un déplacement et un BOS laissant un order block à l'origine du mouvement, le prix retrace dans cet OB pour relancer le mouvement.",
@@ -1408,7 +1624,34 @@
    "Confluence",
    "Objectif de liquidité"
   ],
-  "figcap": "Après un déplacement et un BOS, le prix revient au bord proximal de l'order block — l'entrée de retest."
+  "figcap": "Après un déplacement et un BOS, le prix revient au bord proximal de l'order block — l'entrée de retest.",
+  "playbook": [
+   "Vérifiez le pedigree complet avant de vous intéresser au bloc : un balayage de liquidité, puis un displacement, puis une cassure de structure — l'OB laissé à l'origine de CETTE séquence est celui qui mérite l'attente.",
+   "Laissez le prix venir à vous : ne placez rien à l'avance ; le setup est le RETOUR au bloc, et bien des séquences valides ne reviennent simplement jamais.",
+   "À l'arrivée, descendez sur votre cadre d'entrée et exigez une réaction : une empreinte de rejet ou une micro-bascule de structure dans la zone.",
+   "Les stops appartiennent au-delà du bord lointain du bloc — si le bloc entier se traverse, l'empreinte institutionnelle que vous suiviez a été réécrite.",
+   "Visez la carte, pas un ratio fixe : la prochaine poche de liquidité ou l'array opposé est l'endroit où le mouvement a une raison de faire une pause."
+  ],
+  "fails": [
+   "L'ordre limite pré-placé est la blessure auto-infligée classique de ce setup : le prix part souvent sans vous — mais quand il revient VRAIMENT sans réaction, la limite vous remplit pile dans les échecs.",
+   "Une poche d'inducement juste au-dessus de votre bloc est un appât : le repli court qui aspire les entrées avant que la vraie livraison n'aille plus profond — cartographiez le creux mineur évident qui sera balayé d'abord.",
+   "La séquence expire : un OB du Londres de lundi jugé jeudi appartient à un marché qui n'existe plus. Notez la fraîcheur en séances, pas en espoir."
+  ],
+  "drill": "Rejouez vingt séquences complètes (balayage → displacement → BOS → retour). Pour chacune, notez ce qu'aurait fait une limite pré-placée au bloc contre attendre la réaction du cadre inférieur : exécutions, échecs, mouvements manqués. Les deux courbes de capital issues de cette comparaison closent le débat limite-contre-confirmation avec les preuves de votre propre argent.",
+  "related": [
+   {
+    "slug": "smc.order-blocks",
+    "why": "comment la bougie d’ancrage gagne son rang au départ"
+   },
+   {
+    "slug": "smc.liquidity-sweep",
+    "why": "l’acte d’ouverture de la séquence que cette entrée complète"
+   },
+   {
+    "slug": "smc.ote",
+    "why": "la poche de Fibonacci qui chevauche souvent le même retour"
+   }
+  ]
  },
  "smc.fvg-fill": {
   "lead": "Le comblement de FVG entre quand le prix revient vers un fair value gap, dans le sens de l'impulsion qui l'a créé — le gap agit comme une zone magnétique, institutionnellement pertinente, à risque défini.",
@@ -1444,7 +1687,34 @@
    "FVG inverse",
    "Objectif de liquidité"
   ],
-  "figcap": "Le prix revient à un fair value gap et réagit à son point médian de 50% (CE), reprenant le mouvement initial."
+  "figcap": "Le prix revient à un fair value gap et réagit à son point médian de 50% (CE), reprenant le mouvement initial.",
+  "playbook": [
+   "Ne tradez que les gaps dont vous traderiez l'impulsion de toute façon : l'entrée sur remplissage hérite TOUTE sa probabilité du displacement qui a créé le gap.",
+   "Choisissez votre ligne avant l'arrivée du prix : bord du gap pour les remplissages précoces, consequent encroachment pour la lecture équilibrée, bord lointain pour la défense la plus profonde — un plan, pas trois.",
+   "Au contact, observez COMMENT il se remplit : une rotation lente dans le gap qui cale au CE se lit comme de la ré-accumulation ; une tranche violente à travers tout est l'autre camp qui parle.",
+   "Invalidez sur une CLÔTURE au-delà du bord lointain — les mèches à travers un gap sont du trafic normal ; l'acceptation au-delà ne l'est pas.",
+   "Visez la sortie sur la carte : le sommet ou le creux vers lequel l'impulsion originale était attirée reste l'objectif que le gap sert."
+  ],
+  "fails": [
+   "Attendre le remplissage complet, c'est ainsi que les meilleures partent sans vous : les livraisons fortes touchent le CE et s'en vont — un plan exigeant le bord complet sélectionne systématiquement les réactions les plus faibles.",
+   "Un gap assis contre le draw du cadre supérieur est un objectif, pas une entrée : attendre du support d'un déséquilibre que le daily veut traverser inverse l'outil.",
+   "Les gaps empilés se diluent entre eux — quand une jambe en laisse trois, le premier remplissage tranche souvent jusqu'au plus profond ; traiter chacun comme un support indépendant triple votre erreur."
+  ],
+  "drill": "Prenez vingt-cinq FVG de qualité et notez le point exact le plus profond du premier remplissage : avant le CE, au CE, après le CE, remplissage complet, tranché de part en part. Ce simple histogramme vous dit où vivent réellement les entrées de VOTRE marché — et si votre convention actuelle attendait à la mauvaise ligne.",
+  "related": [
+   {
+    "slug": "smc.fair-value-gaps",
+    "why": "l’anatomie et la notation dont cette entrée dépend"
+   },
+   {
+    "slug": "smc.ob-retest",
+    "why": "l’entrée sœur — même séquence, autre ancre"
+   },
+   {
+    "slug": "price.breakout-retest",
+    "why": "le cousin classique : revenir sur la scène avant de continuer"
+   }
+  ]
  },
  "smc.liquidity-sweep": {
   "lead": "Le retournement par balayage de liquidité est le setup fondateur d'ICT : le prix court au-delà d'une poche de stops, exécute des ordres institutionnels, puis s'inverse — confirmé par un Market Structure Shift avant d'entrer.",
@@ -1481,7 +1751,34 @@
    "Sommets/creux égaux",
    "Entrée en FVG"
   ],
-  "figcap": "Le prix balaie les stops au-dessus des sommets égaux, déplace à la baisse avec un MSS, puis retrace pour l'entrée en vente."
+  "figcap": "Le prix balaie les stops au-dessus des sommets égaux, déplace à la baisse avec un MSS, puis retrace pour l'entrée en vente.",
+  "playbook": [
+   "Choisissez la poche à l'avance : un equal low évident, un extrême de la veille — le setup commence par savoir OÙ la récolte devrait se produire.",
+   "Observez la course : le prix perce le niveau, les stops se déclenchent, et l'indice est ce qui arrive ENSUITE — un rejet violent de retour à l'intérieur est une récolte ; l'acceptation en dessous est une continuation.",
+   "Exigez la paire de confirmation : displacement ET bascule de structure dans la nouvelle direction. Sans les deux, vous avez une mèche intéressante.",
+   "Entrez sur le repli vers ce que le displacement a laissé derrière — le FVG ou le bloc d'origine — pas sur la bougie émotionnelle elle-même.",
+   "Invalidez au-delà de l'extrême du balayage : si le prix repasse la mèche qui a « rejeté », le rejet était une fiction."
+  ],
+  "fails": [
+   "Chaque balayage est à une bougie de patience d'être une cassure : la même percée qui récolte les stops peut être le début de l'expansion — la clôture et la bascule décident, pas la mèche.",
+   "Les balayages s'enchaînent : le creux « final » est balayé, puis le creux du balayage lui-même est balayé — dimensionner comme si la première récolte devait être LE tournant fait don de votre stop à la seconde.",
+   "Dans une livraison forte à sens unique, il n'y a pas de récolte-et-retour, juste de la consommation au passage : contre-trader chaque poche percée contre un vrai momentum, c'est se tenir devant la raison d'être de la poche."
+  ],
+  "drill": "Rassemblez quarante percées de poches évidentes et séparez-les selon ce qu'a fait la bougie SUIVANTE : clôturé de retour à l'intérieur contre accepté au-delà. Suivez chaque groupe cinq bougies de plus. Les deux destins — et la fréquence de chacun — calibreront le seul jugement que ce setup vous demande vraiment : récolte ou cassure.",
+  "related": [
+   {
+    "slug": "smc.liquidity",
+    "why": "la carte des poches sur laquelle cette chasse se joue"
+   },
+   {
+    "slug": "smc.market-structure",
+    "why": "la bascule qui sépare la récolte de la continuation"
+   },
+   {
+    "slug": "price.pin-bar",
+    "why": "à quoi ressemble la bougie du balayage en vocabulaire classique"
+   }
+  ]
  },
  "fundamental.macro-drivers": {
   "lead": "Les moteurs macro sont les grandes forces — croissance, emploi, inflation et politique des banques centrales — qui fixent le biais directionnel à long terme des devises, indices et matières premières.",

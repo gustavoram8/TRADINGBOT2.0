@@ -1146,7 +1146,34 @@
    "Signo de Fortaleza",
    "Causa y Efecto"
   ],
-  "figcap": "Un rango de acumulación de Wyckoff: un spring cae bajo el soporte, luego comienza el markup fuera del rango."
+  "figcap": "Un rango de acumulación de Wyckoff: un spring cae bajo el soporte, luego comienza el markup fuera del rango.",
+  "playbook": [
+   "Lee cada gráfico como la campaña de UN operador: el Composite Man acumula en silencio, marca al alza con ruido, distribuye con cortesía y marca a la baja sin disculparse — pregúntate en qué capítulo estás.",
+   "Apóyate en las tres leyes en orden: oferta y demanda dice la dirección, causa y efecto dice hasta dónde está financiado el movimiento, esfuerzo contra resultado avisa cuando la historia está cambiando.",
+   "Dentro de una acumulación sospechada, sigue los compases del esquema: selling climax, automatic rally, secondary test — y el spring, la sacudida terminal que barre el mínimo del rango antes del markup.",
+   "Califica cada spring por su volumen: volumen bajo en la ruptura significa oferta agotada (alcista); volumen pesado significa que ahí todavía viven vendedores reales.",
+   "Reconoce la herencia: la \"barrida de liquidez\" de hoy es el spring, el \"order block\" marca la actividad del operador — dos vocabularios, un comportamiento."
+  ],
+  "fails": [
+   "Etiquetar fases en tiempo real es una lección de humildad: la acumulación y la distribución se ven idénticas la mayor parte de su vida — la lectura honesta mantiene dos hipótesis abiertas hasta que un spring o un upthrust elige una.",
+   "El esquema es un mapa de lógica, no una plantilla: los rangos se saltan compases, imprimen springs dobles o resuelven sin el test de libro — forzar cada casilla sobre cada rango es numerología.",
+   "Sin volumen, Wyckoff pierde su motor: en instrumentos con volumen poco confiable (forex spot), esfuerzo-contra-resultado debe leerse a través de futuros o no leerse."
+  ],
+  "drill": "Toma diez rangos completados que resolvieron al alza. Trabajando de izquierda a derecha con el futuro tapado, escribe tus etiquetas de fase y actualízalas vela a vela, anotando cada vez que habrías volteado tu lectura. Luego haz diez que resolvieron A LA BAJA. El momento en que sientas lo parecidos que se veían a mitad de rango es el momento en que Wyckoff deja de ser un diagrama y empieza a ser criterio.",
+  "related": [
+   {
+    "slug": "smc.liquidity-sweep",
+    "why": "el spring, renombrado por una generación más nueva"
+   },
+   {
+    "slug": "technical.volume",
+    "why": "el motor del esfuerzo-contra-resultado"
+   },
+   {
+    "slug": "smc.market-structure",
+    "why": "las fases D y E, escritas en notación BOS/ChoCH"
+   }
+  ]
  },
  "smc.market-structure": {
   "lead": "En SMC, la estructura es la secuencia de swings que define la tendencia. Una Ruptura de Estructura (BOS) confirma continuación; un Cambio de Carácter (ChoCH) es la primera ruptura del extremo opuesto — la alerta temprana de reversión.",
@@ -1177,7 +1204,34 @@
    "Estructura externa",
    "Desplazamiento"
   ],
-  "figcap": "Una tendencia alcista de continuaciones BOS, luego un ChoCH cuando el precio rompe el último mínimo más alto — advertencia de reversión."
+  "figcap": "Una tendencia alcista de continuaciones BOS, luego un ChoCH cuando el precio rompe el último mínimo más alto — advertencia de reversión.",
+  "playbook": [
+   "Define tus swings mecánicamente antes de etiquetar nada — una regla fractal, aplicada idéntica, para que un BOS sea un hecho y no un estado de ánimo.",
+   "Separa lo externo de lo interno: los swings externos definen la tendencia y su ruptura SIGNIFICA algo; los internos son el tráfico dentro de una pierna.",
+   "Etiqueta un BOS cuando un swing externo rompe CON la tendencia — continuación confirmada, los retrocesos siguen siendo comprables en una alcista.",
+   "Reserva el ChoCH para la ruptura contra-tendencia del swing que importaba — y recuerda que abre una PREGUNTA sobre reversión, no un veredicto.",
+   "Las lecturas más fuertes vienen en secuencia: barrida de un extremo externo, luego desplazamiento rompiendo el swing opuesto — ese par ordenado es el cambio que vale respetar."
+  ],
+  "fails": [
+   "Una mecha pasando un swing no es ruptura: sin un cierre — e idealmente desplazamiento — documentaste una barrida, que argumenta la dirección OPUESTA.",
+   "Contar rupturas internas como ChoCH fabrica reversiones a diario; la mayoría son el retroceso haciendo su trabajo dentro de una estructura externa intacta.",
+   "Sin una definición mecánica de swing, toda etiqueta hereda ambigüedad — dos traders honestos leerán el mismo gráfico distinto, y ninguno puede aprender del journal que sigue."
+  ],
+  "drill": "Escribe tu regla de swing en una oración. Luego haz que etiquete treinta gráficos y cuenta: cuántos BOS eran \"rupturas\" de pura mecha, cuántos ChoCH eran internos. Cada mal etiquetado que encuentres es un trade que tus ojos viejos habrían tomado — la regla, cuando sobrevive esta auditoría, se vuelve el árbitro que a tu journal le faltaba.",
+  "related": [
+   {
+    "slug": "price.trend-structure",
+    "why": "el esqueleto crudo antes del vocabulario SMC"
+   },
+   {
+    "slug": "smc.liquidity-sweep",
+    "why": "el evento que una ruptura de pura mecha suele resultar ser"
+   },
+   {
+    "slug": "smc.ob-retest",
+    "why": "la entrada que solo existe después de confirmado el cambio"
+   }
+  ]
  },
  "smc.order-blocks": {
   "lead": "Un order block es la última vela opuesta antes de un movimiento institucional impulsivo — la huella final de acumulación (o distribución) donde reposan órdenes sin ejecutar hasta que el precio regresa.",
@@ -1209,7 +1263,34 @@
    "Breaker block",
    "BOS"
   ],
-  "figcap": "La última vela bajista antes de un rally se marca como order block alcista; el precio regresa a mitigarlo."
+  "figcap": "La última vela bajista antes de un rally se marca como order block alcista; el precio regresa a mitigarlo.",
+  "playbook": [
+   "Parte del MOVIMIENTO, no de la vela: encuentra una pierna de desplazamiento que rompió estructura, y camina hacia atrás hasta la última vela contraria antes del arranque — esa vela es el bloque.",
+   "Exige las credenciales: el movimiento que parió debió tomar liquidez o romper algo que importe. Un OB sin desplazamiento detrás es solo una vela roja.",
+   "Rankea tus bloques: uno formado en el origen de una secuencia barrida-luego-BOS supera a diez que solo quedaron dentro de una pierna de tendencia.",
+   "Refina la zona: el open del cuerpo es el borde clásico, el 50% del bloque un compromiso común — elige una convención y deja que tu journal la juzgue.",
+   "Rastrea la mitigación: una vez que el precio regresó y negoció a través del bloque, las órdenes que lo definían están gastadas — una segunda visita es otro trade, más débil."
+  ],
+  "fails": [
+   "Un OB contra el que el precio se comprimió — serruchando lateral hacia la zona en vez de partir de ella — está siendo erosionado orden por orden; para cuando \"por fin\" rompe, la sorpresa ya no existe.",
+   "Los bloques contra el draw del marco mayor son atropellados: un bloque de demanda de 5 minutos bajo un desplazamiento bajista diario es un tope de velocidad, no un piso.",
+   "El debate mecha-contra-cuerpo esconde el error real: la inconsistencia. Cualquier convención funciona SI se aplica idéntica cada vez; cambiarla por trade vuelve ilegibles tus datos."
+  ],
+  "drill": "Marca treinta order blocks y califica cada origen: ¿la partida barrió liquidez, rompió estructura, ambas o ninguna? Luego registra la reacción del primer regreso. Ordenar por esa calificación — en tu propia hoja — es lo que convierte \"opero order blocks\" en \"opero ESTOS order blocks\".",
+  "related": [
+   {
+    "slug": "smc.ob-retest",
+    "why": "la secuencia de entrada completa que este bloque ancla"
+   },
+   {
+    "slug": "price.supply-demand",
+    "why": "el mismo mecanismo en idioma de zonas — y dónde difieren las dos lecturas"
+   },
+   {
+    "slug": "smc.liquidity-sweep",
+    "why": "el evento que le da a un bloque de origen su calificación más alta"
+   }
+  ]
  },
  "smc.fair-value-gaps": {
   "lead": "Un Fair Value Gap es un desequilibrio de tres velas: el precio se mueve tan rápido que la mecha de la vela 3 nunca alcanza la de la vela 1, dejando una zona unilateral a la que el mercado es atraído para \"reequilibrar\".",
@@ -1240,7 +1321,34 @@
    "Reequilibrio",
    "Desplazamiento"
   ],
-  "figcap": "Tres velas dejan un FVG alcista (el gap sombreado); el precio luego regresa a su punto medio del 50% para reequilibrar."
+  "figcap": "Tres velas dejan un FVG alcista (el gap sombreado); el precio luego regresa a su punto medio del 50% para reequilibrar.",
+  "playbook": [
+   "Encuentra la firma de tres velas: la vela del medio tan decidida que la mecha de la vela 1 y la de la 3 nunca se tocan — el espacio sin negociar entre ellas es el gap.",
+   "Califica al CREADOR, no al gap: un FVG tallado por un desplazamiento que barrió liquidez o rompió estructura carga intención; uno del arrastre nocturno es mobiliario.",
+   "Marca el consequent encroachment — el punto medio del gap. El precio honra con frecuencia esa línea del 50% en vez de los bordes completos, y tu plan debe decidir por adelantado cuál de las dos opera.",
+   "Lee los gaps como medidor de salud de la tendencia: gaps aguantando sin llenarse mientras el precio avanza es fuerza; los mismos gaps cediendo uno tras otro dicen que la entrega está cambiando de manos.",
+   "Cuando un gap se negocia entero y el precio cierra más allá, voltea el lente: el inverse FVG — el viejo desequilibrio actuando como soporte o resistencia del otro bando — es información, no fracaso."
+  ],
+  "fails": [
+   "\"Todos los gaps se llenan\" es un eslogan de sobrevivencia: muchos sí, sin ningún calendario que te pague — las tendencias dejan un rastro de gaps sin llenar precisamente porque son tendencias.",
+   "Un gap en premium operado como objetivo de un corto funciona; un gap en premium operado como entrada LARGA pelea contra el dealing range — el array debe estar de acuerdo con dónde está el precio dentro del rango.",
+   "Las velas de noticia fabrican gaps enormes cuya información es el evento, no la subasta — calificarlos como gaps de desplazamiento importa ruido a tu mapa de zonas."
+  ],
+  "drill": "Cataloga treinta FVGs por su creador: barrida-con-desplazamiento, pierna simple de tendencia, vela de noticia. Sigue cuáles fueron respetados al primer toque, cuáles se llenaron de largo, y qué tan seguido el CE solo fue el giro. La tabla resultante reemplaza el eslogan con tasas base — y decide tu convención de entrada por ti.",
+  "related": [
+   {
+    "slug": "smc.fvg-fill",
+    "why": "la entrada construida sobre esta huella"
+   },
+   {
+    "slug": "smc.pd-arrays",
+    "why": "el contexto premium/discount que decide qué gaps son operables"
+   },
+   {
+    "slug": "price.supply-demand",
+    "why": "otra huella dejada por la misma urgencia"
+   }
+  ]
  },
  "smc.liquidity": {
   "lead": "La liquidez son los cúmulos de órdenes en reposo — stops y entradas pendientes — agrupados en niveles obvios. Las instituciones llevan el precio a esos cúmulos para ejecutar su tamaño, usando el comportamiento predecible del minorista como combustible.",
@@ -1271,7 +1379,34 @@
    "Cúmulo de liquidez",
    "Desplazamiento"
   ],
-  "figcap": "Máximos iguales construyen un cúmulo de liquidez buy-side; el precio barre los stops de arriba y luego revierte a la baja."
+  "figcap": "Máximos iguales construyen un cúmulo de liquidez buy-side; el precio barre los stops de arriba y luego revierte a la baja.",
+  "playbook": [
+   "Mapea las piscinas antes de la sesión: máximo y mínimo del día previo, equal highs/lows, los extremos de swing obvios — donde sea que los stops de la multitud deban agruparse.",
+   "Pregunta DE QUIÉN son las órdenes que viven ahí: más allá de un máximo se sientan los stops de los cortos (órdenes de compra) más las compras de ruptura — esa piscina es combustible buy-side, la consuma quien la consuma.",
+   "Clasifica interno contra externo: las piscinas dentro del dealing range actual alimentan rotaciones; los extremos externos son a donde apunta el viaje mayor.",
+   "Observa el draw: el precio tiende a moverse DESDE una piscina HACIA la siguiente — opera el camino entre ellas en vez de adivinar en cada esquina.",
+   "Después de consumida una piscina, relee el mapa: el imán de ayer ya no está, y la siguiente piscina hereda la atracción."
+  ],
+  "fails": [
+   "\"Más compradores que vendedores\" es imposible — el volumen empata uno a uno; lo que mueve el precio es la agresión consumiendo órdenes EN REPOSO, y olvidarlo convierte todo el mapa en papilla.",
+   "Un dealing range con sus dos piscinas externas ya purgadas es un mapa gastado: seguir operando su interior como territorio fresco es operar un recuerdo.",
+   "La liquidez te dice dónde está el combustible, nunca CUÁNDO arde — una piscina puede atraer al precio por días; la impaciencia convierte un mapa correcto en una posición perdedora."
+  ],
+  "drill": "Cada mañana durante dos semanas, marca todas las piscinas de tu instrumento antes de la apertura — PDH/PDL, extremos iguales, máximos y mínimos de sesión. Al cierre, registra qué piscinas se consumieron y en qué orden. Dos semanas de esto construyen el instinto que la multitud de los indicadores nunca desarrolla: dejas de preguntar a dónde irá el precio y empiezas a ver qué se le DEBE.",
+  "related": [
+   {
+    "slug": "smc.liquidity-sweep",
+    "why": "cómo se ve el consumo de una piscina, vela a vela"
+   },
+   {
+    "slug": "price.support-resistance",
+    "why": "los niveles clásicos detrás de los que estas piscinas se esconden"
+   },
+   {
+    "slug": "technical.volume",
+    "why": "el complemento crucial: negocio hecho contra órdenes aún en reposo"
+   }
+  ]
  },
  "smc.pd-arrays": {
   "lead": "Premium/Descuento divide un rango de negociación en su equilibrio del 50%: arriba es premium (caro), abajo es descuento (barato). El smart money compra en descuento y vende en premium — así que tú también deberías.",
@@ -1302,7 +1437,34 @@
    "OTE",
    "Rango de negociación"
   ],
-  "figcap": "Un rango de negociación dividido en el equilibrio del 50%: descuento abajo (zona de compra) y premium arriba (zona de venta)."
+  "figcap": "Un rango de negociación dividido en el equilibrio del 50%: descuento abajo (zona de compra) y premium arriba (zona de venta).",
+  "playbook": [
+   "Ancla el dealing range con honestidad: el swing significativo más reciente — idealmente de barrida a barrida — no el Fib que haga ver bien la idea actual.",
+   "Pártelo en el 50%: arriba es premium, donde los arrays de venta ganan autoridad; abajo es discount, donde la ganan los de compra.",
+   "Deja que la partición VETE trades: una zona de demanda hermosa estacionada en premium profundo es una manera hermosa de comprar caro.",
+   "Apila la lógica: el sesgo dice la dirección, premium/discount dice DÓNDE en el rango esa dirección es pagable, y los arrays dentro de esa mitad dicen dónde exactamente.",
+   "Re-ancla cuando el rango cambie: un extremo barrido jubila al rango viejo — el equilibrium se mueve, y el significado de cada array se mueve con él."
+  ],
+  "fails": [
+   "Ancla equivocada, todo equivocado: mide un swing interno menor y tu \"discount\" queda dentro del premium del rango real — la mitad mal etiquetada invierte en silencio cada decisión aguas abajo.",
+   "El equilibrium no es una muralla: en expansión el precio rebana el 50% sin saludar; el nivel solo arbitra RANGOS, y pretender lo contrario convierte una herramienta de contexto en una señal de entrada fallida.",
+   "Dos traders, dos anclas, etiquetas opuestas — sin una regla de anclaje escrita, premium/discount degenera en sesgo de confirmación con porcentajes."
+  ],
+  "drill": "En veinte gráficos, ancla el dealing range con tu regla escrita, y luego califica cada array adentro: cuál quedó en la mitad correcta, cuál en la incorrecta. Sigue las reacciones del primer toque de ambos grupos. La brecha entre ellos es el valor de la línea del 50%, cotizado en la moneda de tu propio mercado.",
+  "related": [
+   {
+    "slug": "smc.ote",
+    "why": "el bolsillo refinado dentro de la mitad discount (o premium)"
+   },
+   {
+    "slug": "smc.fair-value-gaps",
+    "why": "los arrays a los que este marco les asigna autoridad"
+   },
+   {
+    "slug": "price.harmonic",
+    "why": "una escuela completamente distinta haciendo la misma pregunta: ¿caro o barato?"
+   }
+  ]
  },
  "smc.kill-zones": {
   "lead": "Las Kill Zones son las ventanas de tiempo cuando la actividad institucional alcanza su pico y se forman los setups más limpios. Operar solo dentro de ellas — y evitar las horas muertas del almuerzo — es una disciplina central de ICT.",
@@ -1333,7 +1495,34 @@
    "Solape de sesiones",
    "IPDA"
   ],
-  "figcap": "Una barra de 24 horas resaltando las kill zones de Londres, Nueva York y Silver Bullet frente a las horas muertas del almuerzo."
+  "figcap": "Una barra de 24 horas resaltando las kill zones de Londres, Nueva York y Silver Bullet frente a las horas muertas del almuerzo.",
+  "playbook": [
+   "Construye tu día alrededor de las ventanas, no al revés: sabe por adelantado qué kill zone operas, y deja que el resto del reloj sea tiempo de análisis.",
+   "Antes de que abra la ventana, ten el mapa hecho: piscinas marcadas, dealing range trazado, sesgo esbozado — la kill zone es para EJECUTAR un plan que ya existe.",
+   "Espera el ritmo manipulación-luego-entrega: al open de Londres o Nueva York le encanta correr los stops de un lado antes del movimiento real — el primer empujón suele ser la trampa, no la tendencia.",
+   "Opera el solape de tiempo y lugar: una barrida aterrizando en tu piscina marcada DENTRO de la ventana es la alineación de la que vive esta metodología.",
+   "Registra tu propio reloj: qué ventana, qué día de la semana, qué setups — tus mejores horas son un hecho empírico sobre TI, no un eslogan de un curso."
+  ],
+  "fails": [
+   "La ventana es un reloj, no un mecanismo: una semana festiva muerta tiene kill zones en el papel y a nadie adentro — el tiempo solo concentra lo que la participación provee.",
+   "Ventana correcta, día equivocado: un lunes esperando el rango real del martes, o una mañana de NFP donde el dato ES el mercado, ambos visten la ropa de la kill zone sin su comportamiento.",
+   "Forzar un trade por ventana convierte un filtro en una cuota — la kill zone selecciona CUÁNDO mirar, nunca promete que haya algo que ver."
+  ],
+  "drill": "Durante un mes, registra cada setup que veas CON su ventana: qué kill zone, o ninguna. Registra también los trades que te tentaron fuera de las ventanas. Al cerrar el mes, compara la calidad — no solo resultados, sino qué tan limpias fueron las secuencias. La mayoría descubre que su ventaja vive en dos horas al día, y todo lo demás era donación.",
+  "related": [
+   {
+    "slug": "smc.liquidity-sweep",
+    "why": "la pierna de manipulación por la que estas ventanas son famosas"
+   },
+   {
+    "slug": "fundamental.news-data",
+    "why": "los eventos programados que anulan cualquier reloj"
+   },
+   {
+    "slug": "smc.liquidity",
+    "why": "el mapa que debe estar listo antes de que abra la ventana"
+   }
+  ]
  },
  "smc.ote": {
   "lead": "La Entrada Óptima (OTE) es el bolsillo de Fibonacci de ICT: en una tendencia confirmada, la entrada de retroceso de mayor probabilidad se sitúa entre los niveles 61.8% y 79%, con el 70.5% como punto dulce.",
@@ -1371,7 +1560,34 @@
    "Confluencia",
    "Sesgo HTF"
   ],
-  "figcap": "Un impulso alcista, luego un retroceso al bolsillo OTE del 62–79% donde se toma la entrada."
+  "figcap": "Un impulso alcista, luego un retroceso al bolsillo OTE del 62–79% donde se toma la entrada.",
+  "playbook": [
+   "Gánate la medición primero: el swing sobre el que estiras el Fib debe ser uno SIGNIFICATIVO — idealmente nacido de una barrida y confirmado por desplazamiento.",
+   "Dibuja del origen al extremo y marca el bolsillo 0.62–0.79; nota el 0.705, el punto medio que ICT destaca como el dulce.",
+   "Deja que el bolsillo sea el punto de encuentro, no la razón: un OTE que se solapa con el order block de origen o el CE del FVG es una confluencia; un ratio desnudo es una coordenada.",
+   "Dale su tiempo: el retroceso que alcanza el bolsillo durante una kill zone, tras barrer algún mínimo menor en el camino, es la versión de gala de esta entrada.",
+   "Ancla el stop más allá del origen del swing — si ESO cede, la pierna que mediste ya no existe — y apunta primero al extremo viejo."
+  ],
+  "fails": [
+   "Fib en el swing equivocado, precisión en el mapa equivocado: medir una pierna interna menor pone tu \"bolsillo\" en niveles que la entrega nunca pensó respetar.",
+   "En tendencias genuinamente fuertes el retroceso suele agotarse antes del 0.62 — exigir profundidad OTE en cada entrada te sienta en la banca sistemáticamente durante las mejores entregas.",
+   "El bolsillo atrae inducement: rebotes cortos en el 0.5 que carnean entradas antes de que el precio complete el viaje — entrar arriba del bolsillo porque \"ya casi llega\" es pagar precio completo por la trampa."
+  ],
+  "drill": "Mide treinta swings confirmados y registra dónde terminó realmente cada retroceso: antes del bolsillo, dentro, en el 0.705, más allá del 0.79. Luego separa por fuerza de tendencia. Tu histograma mostrará CUÁNDO tu mercado concede el OTE y cuándo no mira atrás — la diferencia entre una herramienta y una superstición es exactamente esta tabla.",
+  "related": [
+   {
+    "slug": "smc.pd-arrays",
+    "why": "el contexto discount dentro del que el bolsillo debe sentarse"
+   },
+   {
+    "slug": "smc.ob-retest",
+    "why": "el socio de confluencia que más seguido espera a la misma profundidad"
+   },
+   {
+    "slug": "smc.kill-zones",
+    "why": "el reloj que convierte un nivel en una cita"
+   }
+  ]
  },
  "smc.ob-retest": {
   "lead": "El retest de order block es la entrada central de ICT: tras un barrido, desplazamiento y BOS que dejan un order block en el origen del movimiento, el precio retrocede a ese OB para reiniciar el movimiento.",
@@ -1408,7 +1624,34 @@
    "Confluencia",
    "Objetivo de liquidez"
   ],
-  "figcap": "Tras un desplazamiento y un BOS, el precio regresa al borde proximal del order block — la entrada de retest."
+  "figcap": "Tras un desplazamiento y un BOS, el precio regresa al borde proximal del order block — la entrada de retest.",
+  "playbook": [
+   "Verifica el pedigrí completo antes de que te importe el bloque: una barrida de liquidez, luego desplazamiento, luego ruptura de estructura — el OB que quedó en el origen de ESA secuencia es el que vale la espera.",
+   "Deja que el precio venga a ti: no coloques nada por adelantado; el setup es el REGRESO al bloque, y muchas secuencias válidas simplemente nunca regresan.",
+   "A la llegada, baja a tu marco de entrada y exige una reacción: una impresión de rechazo o un microcambio de estructura dentro de la zona.",
+   "Los stops pertenecen más allá del borde lejano del bloque — si el bloque entero se negocia de lado a lado, la huella institucional que seguías fue sobrescrita.",
+   "Apunta al mapa, no a un ratio fijo: la siguiente piscina de liquidez o el array contrario es donde el movimiento tiene una razón para pausar."
+  ],
+  "fails": [
+   "La orden límite pre-colocada es la herida autoinfligida clásica de este setup: el precio se va sin ti muchas veces — pero cuando SÍ regresa sin reacción, la límite te llena justo en los fallos.",
+   "Un bolsillo de inducement justo encima de tu bloque es carnada: el retroceso corto que aspira entradas antes de que la entrega real llegue más hondo — mapea el mínimo menor obvio que será barrido primero.",
+   "La secuencia expira: un OB del Londres del lunes juzgado el jueves pertenece a un mercado que ya no existe. Califica la frescura en sesiones, no en esperanza."
+  ],
+  "drill": "Repasa veinte secuencias completas (barrida → desplazamiento → BOS → regreso). Para cada una, registra qué habría hecho una límite pre-colocada en el bloque contra esperar la reacción del marco menor: llenados, fallos, corridas perdidas. Las dos curvas de capital que salen de esa comparación cierran el debate límite-contra-confirmación con la evidencia de tu propio dinero.",
+  "related": [
+   {
+    "slug": "smc.order-blocks",
+    "why": "cómo la vela ancla se gana su rango en primer lugar"
+   },
+   {
+    "slug": "smc.liquidity-sweep",
+    "why": "el acto de apertura de la secuencia que esta entrada completa"
+   },
+   {
+    "slug": "smc.ote",
+    "why": "el bolsillo de Fibonacci que suele solaparse con el mismo regreso"
+   }
+  ]
  },
  "smc.fvg-fill": {
   "lead": "El relleno de FVG entra cuando el precio regresa a un fair value gap, en la dirección del impulso que lo creó — el gap actúa como una zona magnética, institucionalmente relevante, con riesgo definido.",
@@ -1444,7 +1687,34 @@
    "FVG inverso",
    "Objetivo de liquidez"
   ],
-  "figcap": "El precio regresa a un fair value gap y reacciona en su punto medio del 50% (CE), reanudando el movimiento original."
+  "figcap": "El precio regresa a un fair value gap y reacciona en su punto medio del 50% (CE), reanudando el movimiento original.",
+  "playbook": [
+   "Opera solo gaps cuyo impulso operarías de todas formas: la entrada del llenado hereda TODA su probabilidad del desplazamiento que creó el gap.",
+   "Elige tu línea antes de que llegue el precio: borde del gap para llenados tempranos, consequent encroachment para la lectura balanceada, borde lejano para la defensa más profunda — un plan, no tres.",
+   "En el toque, observa CÓMO se llena: una rotación lenta hacia adentro que se frena en el CE se lee como reacumulación; una rebanada violenta a través de todo es el otro bando hablando.",
+   "Invalida con un CIERRE más allá del borde lejano — las mechas a través de un gap son tráfico normal; la aceptación más allá no lo es.",
+   "Apunta la salida al mapa: el máximo o mínimo hacia el que el impulso original era atraído sigue siendo el objetivo al que el gap sirve."
+  ],
+  "fails": [
+   "Esperar el llenado completo es como las mejores se van sin ti: las entregas fuertes tocan el CE y se van — un plan que exige el borde completo selecciona sistemáticamente las reacciones más débiles.",
+   "Un gap sentado contra el draw del marco mayor es un objetivo, no una entrada: esperar soporte de un desequilibrio que el diario quiere atravesar invierte la herramienta.",
+   "Los gaps apilados se diluyen entre sí — cuando una pierna deja tres, el primer llenado suele rebanar hasta el más profundo; tratar cada uno como soporte independiente triplica tu equivocación."
+  ],
+  "drill": "Toma veinticinco FVGs de calidad y registra el punto exacto más profundo del primer llenado: antes del CE, en el CE, pasado el CE, llenado completo, rebanado entero. Ese único histograma te dice dónde viven de verdad las entradas de TU mercado — y si tu convención actual ha estado parada en la línea equivocada.",
+  "related": [
+   {
+    "slug": "smc.fair-value-gaps",
+    "why": "la anatomía y calificación de las que esta entrada depende"
+   },
+   {
+    "slug": "smc.ob-retest",
+    "why": "la entrada hermana — misma secuencia, otra ancla"
+   },
+   {
+    "slug": "price.breakout-retest",
+    "why": "el primo clásico: regresar a la escena antes de continuar"
+   }
+  ]
  },
  "smc.liquidity-sweep": {
   "lead": "La reversión por barrido de liquidez es el setup fundacional de ICT: el precio corre más allá de un cúmulo de stops, ejecuta órdenes institucionales y luego revierte — confirmado por un Cambio de Estructura de Mercado antes de entrar.",
@@ -1481,7 +1751,34 @@
    "Máximos/mínimos iguales",
    "Entrada en FVG"
   ],
-  "figcap": "El precio barre los stops sobre máximos iguales, desplaza a la baja con un MSS, luego retrocede para la entrada en corto."
+  "figcap": "El precio barre los stops sobre máximos iguales, desplaza a la baja con un MSS, luego retrocede para la entrada en corto.",
+  "playbook": [
+   "Elige la piscina por adelantado: un equal low obvio, un extremo del día previo — el setup empieza por saber DÓNDE debería ocurrir la cosecha.",
+   "Observa la corrida: el precio perfora el nivel, los stops se disparan, y la pista es lo que pasa DESPUÉS — un rechazo violento de vuelta adentro es cosecha; la aceptación debajo es continuación.",
+   "Exige el par de confirmación: desplazamiento Y cambio de estructura en la dirección nueva. Sin ambos, tienes una mecha interesante.",
+   "Entra en el retroceso hacia lo que el desplazamiento dejó atrás — el FVG o el bloque de origen — no en la vela emocional misma.",
+   "Invalida más allá del extremo de la barrida: si el precio regresa pasada la mecha que \"rechazó\", el rechazo era ficción."
+  ],
+  "fails": [
+   "Toda barrida está a una vela de paciencia de ser una ruptura: la misma perforación que cosecha stops puede ser el inicio de la expansión — el cierre y el cambio deciden, no la mecha.",
+   "Las barridas se encadenan: el mínimo \"final\" es barrido, luego el mínimo de la propia barrida es barrido — dimensionar como si la primera cosecha debiera ser EL giro le dona tu stop a la segunda.",
+   "En una entrega fuerte de un solo lado no hay cosecha-y-reversa, solo consumo de pasada: contra-operar cada piscina perforada contra momentum real es pararse frente a la razón por la que la piscina existía."
+  ],
+  "drill": "Reúne cuarenta perforaciones de piscinas obvias y sepáralas por lo que hizo la vela SIGUIENTE: cerró de vuelta adentro contra aceptó más allá. Sigue cada grupo cinco velas más. Los dos destinos — y qué tan seguido ocurrió cada uno — calibrarán el único juicio que este setup realmente te pide: cosecha o ruptura.",
+  "related": [
+   {
+    "slug": "smc.liquidity",
+    "why": "el mapa de piscinas sobre el que se juega esta cacería"
+   },
+   {
+    "slug": "smc.market-structure",
+    "why": "el cambio que separa la cosecha de la continuación"
+   },
+   {
+    "slug": "price.pin-bar",
+    "why": "cómo se ve la vela de la barrida en vocabulario clásico"
+   }
+  ]
  },
  "fundamental.macro-drivers": {
   "lead": "Los drivers macro son las grandes fuerzas — crecimiento, empleo, inflación y política de los bancos centrales — que fijan el sesgo direccional de largo plazo de divisas, índices y materias primas.",

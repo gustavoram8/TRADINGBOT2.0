@@ -1212,7 +1212,34 @@
     "Sign of Strength",
     "Cause & Effect"
    ],
-   "figcap": "A Wyckoff accumulation range: a spring dips below support, then markup begins out of the range."
+   "figcap": "A Wyckoff accumulation range: a spring dips below support, then markup begins out of the range.",
+   "playbook": [
+    "Read every chart as ONE operator's campaign: the Composite Man accumulates quietly, marks up loudly, distributes politely, and marks down without apology — ask which chapter you are in.",
+    "Lean on the three laws in order: supply and demand says direction, cause and effect says how far the move is funded, effort versus result warns when the story is changing.",
+    "Inside a suspected accumulation, watch the schematic's beats: selling climax, automatic rally, secondary test — and the spring, the terminal shakeout that sweeps the range's low before markup.",
+    "Grade every spring by its volume: low volume on the break means supply is exhausted (bullish); heavy volume means real sellers still live there.",
+    "Recognize the inheritance: today's \"liquidity sweep\" is the spring, the \"order block\" marks the operator's activity — two vocabularies, one behavior."
+   ],
+   "fails": [
+    "Labeling phases in real time is humbling: accumulation and distribution look identical for most of their life — the honest read keeps two hypotheses open until a spring or upthrust picks one.",
+    "The schematic is a map of logic, not a stencil: ranges skip beats, print double springs, or resolve without the textbook test — forcing every box onto every range is numerology.",
+    "Without volume, Wyckoff loses its engine: on instruments with unreliable volume (spot forex), effort-versus-result must be read through futures or not at all."
+   ],
+   "drill": "Take ten completed ranges that resolved upward. Working left to right with the future covered, write your phase labels and update them candle by candle, noting every time you would have flipped your read. Then do ten that resolved DOWN. The moment you feel how alike they looked at mid-range is the moment Wyckoff stops being a diagram and starts being judgment.",
+   "related": [
+    {
+     "slug": "smc.liquidity-sweep",
+     "why": "the spring, renamed by a newer generation"
+    },
+    {
+     "slug": "technical.volume",
+     "why": "the engine of effort-versus-result"
+    },
+    {
+     "slug": "smc.market-structure",
+     "why": "phases D and E, written in BOS/ChoCH notation"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><line class=\"df-axis\" x1=\"34\" y1=\"196\" x2=\"384\" y2=\"196\"/><line class=\"df-axis\" x1=\"34\" y1=\"16\" x2=\"34\" y2=\"196\"/><line class=\"df-dash\" x1=\"40\" y1=\"150\" x2=\"372\" y2=\"150\"/><text class=\"df-tag\" x=\"44\" y=\"145\" text-anchor=\"start\">support</text><line class=\"df-dash\" x1=\"40\" y1=\"80\" x2=\"246\" y2=\"80\"/><text class=\"df-tag\" x=\"44\" y=\"75\" text-anchor=\"start\">resistance</text><path class=\"df-line\" d=\"M40 120 L70 96 L100 140 L130 100 L160 144 L190 104 L210 150\"/><path class=\"df-line-accent\" d=\"M210 150 L228 178 L246 138\"/><path class=\"df-line-accent\" d=\"M246 138 L280 100 L310 70 L345 44 L372 34\"/><circle class=\"df-accent-f\" cx=\"228\" cy=\"178\" r=\"3.5\"/><text class=\"df-tag-accent\" x=\"228\" y=\"194\" text-anchor=\"middle\">spring</text><line class=\"df-line-accent\" x1=\"310\" y1=\"70\" x2=\"338.5780492163644\" y2=\"48.77059201070075\"/><polygon class=\"df-accent-f\" points=\"345,44 341.26150722238356,52.38293932649579 335.8945912103452,45.15824469490572\"/><text class=\"df-tag\" x=\"330\" y=\"130\" text-anchor=\"middle\">accumulation</text></svg>"
  },
@@ -1246,7 +1273,34 @@
     "External structure",
     "Displacement"
    ],
-   "figcap": "An uptrend of BOS continuations, then a ChoCH as price breaks the last higher low — reversal warning."
+   "figcap": "An uptrend of BOS continuations, then a ChoCH as price breaks the last higher low — reversal warning.",
+   "playbook": [
+    "Define your swings mechanically before labeling anything — a fractal rule, applied identically, so a BOS is a fact and not a mood.",
+    "Separate external from internal: external swings define the trend and their break MEANS something; internal swings are the traffic inside a leg.",
+    "Label a BOS when an external swing breaks WITH the trend — continuation confirmed, pullbacks remain buyable in an uptrend.",
+    "Reserve ChoCH for the against-trend break of the swing that mattered — and remember it opens a QUESTION about reversal, not a verdict.",
+    "The strongest reads come sequenced: sweep of an external extreme, then displacement breaking the opposite swing — that ordered pair is the shift worth respecting."
+   ],
+   "fails": [
+    "A wick past a swing is not a break: without a close — and ideally displacement — you have documented a sweep, which argues the OPPOSITE direction.",
+    "Counting internal breaks as ChoCH manufactures reversals daily; most are the pullback doing its job inside an untouched external structure.",
+    "Without a mechanical swing definition every label inherits ambiguity — two honest traders will read the same chart differently, and neither can learn from the journal that follows."
+   ],
+   "drill": "Write your swing rule down in one sentence. Then have it label thirty charts and count: how many BOS were wick-only \"breaks\", how many ChoCH were internal. Every mislabel you find is a trade your old eyes would have taken — the rule, once it survives this audit, becomes the referee your journal has been missing.",
+   "related": [
+    {
+     "slug": "price.trend-structure",
+     "why": "the raw skeleton before the SMC vocabulary"
+    },
+    {
+     "slug": "smc.liquidity-sweep",
+     "why": "the event a wick-only break usually turns out to be"
+    },
+    {
+     "slug": "smc.ob-retest",
+     "why": "the entry that only exists after the shift is confirmed"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><line class=\"df-axis\" x1=\"34\" y1=\"196\" x2=\"384\" y2=\"196\"/><line class=\"df-axis\" x1=\"34\" y1=\"16\" x2=\"34\" y2=\"196\"/><path class=\"df-line-accent\" d=\"M40 170 L85 110 L120 140 L165 80 L205 116 L250 56 L290 120 L330 150 L372 176\"/><line class=\"df-dash\" x1=\"85\" y1=\"110\" x2=\"230\" y2=\"110\"/><text class=\"df-tag-accent\" x=\"150\" y=\"104\" text-anchor=\"middle\">BOS</text><line class=\"df-dash\" x1=\"205\" y1=\"116\" x2=\"320\" y2=\"116\"/><text class=\"df-tag-down\" x=\"300\" y=\"110\" text-anchor=\"middle\">ChoCH</text><line class=\"df-line-down\" x1=\"290\" y1=\"120\" x2=\"323.6\" y2=\"145.2\"/><polygon class=\"df-down\" points=\"330,150 320.90000000000003,148.79999999999998 326.3,141.6\"/></svg>"
  },
@@ -1281,7 +1335,34 @@
     "Breaker block",
     "BOS"
    ],
-   "figcap": "The last down candle before a rally is marked as a bullish order block; price returns to mitigate it."
+   "figcap": "The last down candle before a rally is marked as a bullish order block; price returns to mitigate it.",
+   "playbook": [
+    "Start from the MOVE, not the candle: find a displacement leg that broke structure, then walk backwards to the last opposing candle before it launched — that candle is the block.",
+    "Demand the credentials: the move it birthed should have taken liquidity or broken something that matters. An OB without displacement behind it is just a red candle.",
+    "Rank your blocks: one that formed the origin of a sweep-then-BOS sequence outranks ten that merely sat inside a trend leg.",
+    "Refine the zone: the body's open is the classic edge, the 50% of the block a common compromise — pick one convention and let your journal judge it.",
+    "Track mitigation: once price has returned and traded through the block, the orders that defined it are spent — a second visit is a different, weaker trade."
+   ],
+   "fails": [
+    "An OB that price has compressed against — grinding sideways into the zone instead of departing from it — is being eroded order by order; by the time it \"finally\" breaks, the surprise is gone.",
+    "Blocks against the higher-timeframe draw get run: a 5-minute demand block under a daily bearish displacement is a speed bump, not a floor.",
+    "The wick-versus-body debate hides the real error: inconsistency. Any convention works IF applied identically every time; switching per trade makes your data unreadable."
+   ],
+   "drill": "Mark thirty order blocks and grade each origin: did the departure sweep liquidity, break structure, both, or neither? Then log the first-return reaction. Sorting by that grade — in your own spreadsheet — is what turns \"I trade order blocks\" into \"I trade THESE order blocks\".",
+   "related": [
+    {
+     "slug": "smc.ob-retest",
+     "why": "the full entry sequence this block anchors"
+    },
+    {
+     "slug": "price.supply-demand",
+     "why": "the same mechanism in zone language — and where the two readings differ"
+    },
+    {
+     "slug": "smc.liquidity-sweep",
+     "why": "the event that gives an origin block its highest grade"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><line class=\"df-axis\" x1=\"34\" y1=\"196\" x2=\"384\" y2=\"196\"/><line class=\"df-axis\" x1=\"34\" y1=\"16\" x2=\"34\" y2=\"196\"/><line class=\"df-wick\" x1=\"70\" y1=\"78\" x2=\"70\" y2=\"126\"/><rect class=\"df-down\" x=\"64\" y=\"84\" width=\"12\" height=\"36\" rx=\"1\"/><line class=\"df-wick\" x1=\"100\" y1=\"94\" x2=\"100\" y2=\"146\"/><rect class=\"df-down\" x=\"94\" y=\"100\" width=\"12\" height=\"40\" rx=\"1\"/><rect class=\"df-zone\" x=\"120\" y=\"116\" width=\"130\" height=\"28\" rx=\"2\"/><text class=\"df-tag-accent\" x=\"126\" y=\"110\" text-anchor=\"start\">order block</text><line class=\"df-wick\" x1=\"132\" y1=\"118\" x2=\"132\" y2=\"146\"/><rect class=\"df-up\" x=\"125.5\" y=\"122\" width=\"13\" height=\"20\" rx=\"1\"/><line class=\"df-wick\" x1=\"168\" y1=\"74\" x2=\"168\" y2=\"128\"/><rect class=\"df-up\" x=\"162\" y=\"80\" width=\"12\" height=\"44\" rx=\"1\"/><line class=\"df-wick\" x1=\"198\" y1=\"44\" x2=\"198\" y2=\"94\"/><rect class=\"df-up\" x=\"192\" y=\"50\" width=\"12\" height=\"40\" rx=\"1\"/><line class=\"df-line-up\" x1=\"150\" y1=\"150\" x2=\"205.56239843019816\" y2=\"66.65640235470275\"/><polygon class=\"df-up\" points=\"210,60 209.30662475471846,69.15255323771628 201.81817210567786,64.16025147168922\"/><line class=\"df-wick\" x1=\"280\" y1=\"44\" x2=\"280\" y2=\"102\"/><rect class=\"df-down\" x=\"274\" y=\"50\" width=\"12\" height=\"46\" rx=\"1\"/><line class=\"df-wick\" x1=\"310\" y1=\"94\" x2=\"310\" y2=\"138\"/><rect class=\"df-down\" x=\"304\" y=\"100\" width=\"12\" height=\"34\" rx=\"1\"/><line class=\"df-line-up\" x1=\"322\" y1=\"150\" x2=\"327.4701778718653\" y2=\"133.58946638440412\"/><polygon class=\"df-up\" points=\"330,126 331.73925271309264,135.01249133147988 323.20110303063797,132.16644143732836\"/><text class=\"df-tag\" x=\"330\" y=\"168\" text-anchor=\"middle\">mitigation</text></svg>"
  },
@@ -1315,7 +1396,34 @@
     "Rebalancing",
     "Displacement"
    ],
-   "figcap": "Three candles leave a bullish FVG (the shaded gap); price later returns to its 50% midpoint to rebalance."
+   "figcap": "Three candles leave a bullish FVG (the shaded gap); price later returns to its 50% midpoint to rebalance.",
+   "playbook": [
+    "Find the three-candle signature: the middle candle so decisive that candle 1's wick and candle 3's wick never touch — the untraded space between them is the gap.",
+    "Grade the CREATOR, not the gap: an FVG carved by displacement that swept liquidity or broke structure carries intent; one from drifting overnight churn is furniture.",
+    "Mark the consequent encroachment — the gap's midpoint. Price frequently honors that 50% line rather than the full edges, and your plan should decide in advance which one it trades.",
+    "Read gaps as a health meter for the trend: gaps holding unfilled while price advances is strength; the same gaps giving way one after another says the delivery is changing hands.",
+    "When a gap trades through and closes beyond, flip your lens: the inverse FVG — old imbalance acting as the other side's support or resistance — is information, not failure."
+   ],
+   "fails": [
+    "\"Every gap fills\" is a survivorship slogan: many do, on no schedule that pays you — trends leave a trail of unfilled gaps precisely because they are trends.",
+    "A gap in premium traded as a long target for a short works; a gap in premium traded as a LONG entry fights the dealing range — the array must agree with where price sits in the range.",
+    "News candles manufacture huge gaps whose information is the event, not the auction — grading them like displacement gaps imports noise into your zone map."
+   ],
+   "drill": "Catalog thirty FVGs by their creator: sweep-displacement, plain trend leg, news candle. Track which got respected on first touch, which filled through, and how often the CE alone was the turn. Your resulting table replaces the slogan with base rates — and decides your entry convention for you.",
+   "related": [
+    {
+     "slug": "smc.fvg-fill",
+     "why": "the entry built on this footprint"
+    },
+    {
+     "slug": "smc.pd-arrays",
+     "why": "the premium/discount context that decides which gaps are tradable"
+    },
+    {
+     "slug": "price.supply-demand",
+     "why": "a different footprint left by the same urgency"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><line class=\"df-axis\" x1=\"34\" y1=\"196\" x2=\"384\" y2=\"196\"/><line class=\"df-axis\" x1=\"34\" y1=\"16\" x2=\"34\" y2=\"196\"/><line class=\"df-wick\" x1=\"90\" y1=\"150\" x2=\"90\" y2=\"178\"/><rect class=\"df-up\" x=\"82\" y=\"158\" width=\"16\" height=\"14\" rx=\"1\"/><line class=\"df-wick\" x1=\"140\" y1=\"96\" x2=\"140\" y2=\"150\"/><rect class=\"df-up\" x=\"132\" y=\"104\" width=\"16\" height=\"38\" rx=\"1\"/><line class=\"df-wick\" x1=\"190\" y1=\"58\" x2=\"190\" y2=\"104\"/><rect class=\"df-up\" x=\"182\" y=\"66\" width=\"16\" height=\"30\" rx=\"1\"/><rect class=\"df-zone\" x=\"70\" y=\"108\" width=\"240\" height=\"40\" rx=\"2\"/><text class=\"df-tag-accent\" x=\"316\" y=\"130\" text-anchor=\"start\">FVG</text><line class=\"df-dash-accent\" x1=\"70\" y1=\"128\" x2=\"310\" y2=\"128\"/><text class=\"df-tag-accent\" x=\"316\" y=\"124\" text-anchor=\"start\">CE</text><line class=\"df-wick\" x1=\"280\" y1=\"52\" x2=\"280\" y2=\"102\"/><rect class=\"df-down\" x=\"273.5\" y=\"58\" width=\"13\" height=\"38\" rx=\"1\"/><line class=\"df-wick\" x1=\"310\" y1=\"94\" x2=\"310\" y2=\"132\"/><rect class=\"df-up\" x=\"303.5\" y=\"100\" width=\"13\" height=\"26\" rx=\"1\"/><line class=\"df-line-accent\" x1=\"322\" y1=\"150\" x2=\"327.2660554953064\" y2=\"135.5183473879075\"/><polygon class=\"df-accent-f\" points=\"330,128 331.4951259010043,137.05619117179768 323.03698508960844,133.98050360401734\"/></svg>"
  },
@@ -1349,7 +1457,34 @@
     "Liquidity pool",
     "Displacement"
    ],
-   "figcap": "Equal highs build a buy-side liquidity pool; price sweeps the stops above, then reverses down."
+   "figcap": "Equal highs build a buy-side liquidity pool; price sweeps the stops above, then reverses down.",
+   "playbook": [
+    "Map the pools before the session: previous day's high and low, equal highs/lows, the obvious swing extremes — anywhere the crowd's stops must cluster.",
+    "Ask WHOSE orders live there: beyond a high sit shorts' stops (buy orders) plus breakout buys — that pool is buy-side fuel, whoever ends up consuming it.",
+    "Classify internal versus external: pools inside the current dealing range feed rotations; the external extremes are where the bigger journey aims.",
+    "Watch the draw: price tends to move FROM one pool TOWARD the next — trade the road between them instead of guessing at every corner.",
+    "After a pool is consumed, re-read the map: yesterday's magnet is gone, and the next pool inherits the pull."
+   ],
+   "fails": [
+    "\"More buyers than sellers\" is impossible — volume matches one-to-one; what moves price is aggression consuming RESTING orders, and forgetting that turns the whole map into mush.",
+    "A dealing range whose both external pools are already purged is a spent map: continuing to trade its interior like fresh territory is trading a memory.",
+    "Liquidity tells you where fuel sits, never WHEN it burns — a pool can pull price for days; impatience converts a correct map into a losing position."
+   ],
+   "drill": "Each morning for two weeks, mark every pool on your instrument before the open — PDH/PDL, equal extremes, session highs and lows. At day's end, record which pools got consumed and in what order. Two weeks of this builds the instinct the indicator crowd never develops: you stop asking where price will go and start seeing what it is OWED.",
+   "related": [
+    {
+     "slug": "smc.liquidity-sweep",
+     "why": "what consuming a pool looks like, candle by candle"
+    },
+    {
+     "slug": "price.support-resistance",
+     "why": "the classical levels these pools hide behind"
+    },
+    {
+     "slug": "technical.volume",
+     "why": "the crucial complement: business done versus orders still resting"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><line class=\"df-axis\" x1=\"34\" y1=\"196\" x2=\"384\" y2=\"196\"/><line class=\"df-axis\" x1=\"34\" y1=\"16\" x2=\"34\" y2=\"196\"/><line class=\"df-dash\" x1=\"60\" y1=\"70\" x2=\"300\" y2=\"70\"/><text class=\"df-tag\" x=\"64\" y=\"64\" text-anchor=\"start\">equal highs · BSL</text><line class=\"df-wick\" x1=\"80\" y1=\"68\" x2=\"80\" y2=\"136\"/><rect class=\"df-up\" x=\"74\" y=\"74\" width=\"12\" height=\"56\" rx=\"1\"/><line class=\"df-wick\" x1=\"120\" y1=\"104\" x2=\"120\" y2=\"156\"/><rect class=\"df-down\" x=\"114\" y=\"110\" width=\"12\" height=\"40\" rx=\"1\"/><line class=\"df-wick\" x1=\"160\" y1=\"70\" x2=\"160\" y2=\"126\"/><rect class=\"df-up\" x=\"154\" y=\"74\" width=\"12\" height=\"46\" rx=\"1\"/><line class=\"df-wick\" x1=\"200\" y1=\"102\" x2=\"200\" y2=\"152\"/><rect class=\"df-down\" x=\"194\" y=\"108\" width=\"12\" height=\"38\" rx=\"1\"/><line class=\"df-wick\" x1=\"248\" y1=\"50\" x2=\"248\" y2=\"120\"/><rect class=\"df-down\" x=\"241.5\" y=\"64\" width=\"13\" height=\"46\" rx=\"1\"/><text class=\"df-tag-accent\" x=\"248\" y=\"42\" text-anchor=\"middle\">sweep</text><line class=\"df-wick\" x1=\"288\" y1=\"90\" x2=\"288\" y2=\"146\"/><rect class=\"df-down\" x=\"282\" y=\"96\" width=\"12\" height=\"44\" rx=\"1\"/><line class=\"df-wick\" x1=\"322\" y1=\"124\" x2=\"322\" y2=\"178\"/><rect class=\"df-down\" x=\"316\" y=\"130\" width=\"12\" height=\"42\" rx=\"1\"/><line class=\"df-line-down\" x1=\"248\" y1=\"58\" x2=\"316.98593084146796\" y2=\"143.76629239750068\"/><polygon class=\"df-down\" points=\"322,150 313.4794703150621,146.58670629917495 320.49239136787384,140.9458784958264\"/></svg>"
  },
@@ -1383,7 +1518,34 @@
     "OTE",
     "Dealing range"
    ],
-   "figcap": "A dealing range split at 50% equilibrium: discount below (buy zone) and premium above (sell zone)."
+   "figcap": "A dealing range split at 50% equilibrium: discount below (buy zone) and premium above (sell zone).",
+   "playbook": [
+    "Anchor the dealing range honestly: the most recent significant swing — ideally sweep-to-sweep — not whatever Fib makes the current idea look good.",
+    "Split it at 50%: above is premium, where selling arrays gain authority; below is discount, where buying arrays do.",
+    "Let the split VETO trades: a beautiful demand zone parked in deep premium is a beautiful way to buy expensive.",
+    "Stack the logic: bias says direction, premium/discount says WHERE in the range that direction is affordable, and the arrays inside that half say where exactly.",
+    "Re-anchor when the range changes: a swept extreme retires the old range — equilibrium moves, and every array's meaning moves with it."
+   ],
+   "fails": [
+    "Wrong anchor, wrong everything: measure a minor internal swing and your \"discount\" sits inside the real range's premium — the mislabeled half quietly inverts every decision downstream.",
+    "Equilibrium is not a wall: in expansion price slices through 50% without a nod; the level only referees RANGES, and pretending otherwise turns a context tool into a failed entry signal.",
+    "Two traders, two anchors, opposite labels — without a written anchoring rule, premium/discount degrades into confirmation bias with percentages."
+   ],
+   "drill": "On twenty charts, anchor the dealing range by your written rule, then grade every array inside it: which sat in the correct half, which in the wrong one. Track the first-touch reactions of both groups. The gap between them is the value of the 50% line, priced in your own market's currency.",
+   "related": [
+    {
+     "slug": "smc.ote",
+     "why": "the refined pocket inside the discount (or premium) half"
+    },
+    {
+     "slug": "smc.fair-value-gaps",
+     "why": "the arrays this framework assigns authority to"
+    },
+    {
+     "slug": "price.harmonic",
+     "why": "a completely different school asking the same question: cheap or expensive?"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><line class=\"df-axis\" x1=\"34\" y1=\"196\" x2=\"384\" y2=\"196\"/><line class=\"df-axis\" x1=\"34\" y1=\"16\" x2=\"34\" y2=\"196\"/><rect class=\"df-zone-up\" x=\"40\" y=\"115\" width=\"332\" height=\"65\" rx=\"2\"/><rect class=\"df-zone-down\" x=\"40\" y=\"50\" width=\"332\" height=\"65\" rx=\"2\"/><line class=\"df-dash-accent\" x1=\"40\" y1=\"115\" x2=\"372\" y2=\"115\"/><text class=\"df-tag-accent\" x=\"376\" y=\"111\" text-anchor=\"end\">EQ 50%</text><line class=\"df-dash\" x1=\"40\" y1=\"50\" x2=\"372\" y2=\"50\"/><text class=\"df-tag\" x=\"44\" y=\"62\" text-anchor=\"start\">swing high</text><line class=\"df-dash\" x1=\"40\" y1=\"180\" x2=\"372\" y2=\"180\"/><text class=\"df-tag\" x=\"44\" y=\"174\" text-anchor=\"start\">swing low</text><text class=\"df-tag-down\" x=\"200\" y=\"78\" text-anchor=\"middle\">PREMIUM · sell</text><text class=\"df-tag\" x=\"200\" y=\"162\" text-anchor=\"middle\">DISCOUNT · buy</text></svg>"
  },
@@ -1417,7 +1579,34 @@
     "Session overlap",
     "IPDA"
    ],
-   "figcap": "A 24-hour bar highlighting the London, New York, and Silver Bullet kill zones against the dead lunch hours."
+   "figcap": "A 24-hour bar highlighting the London, New York, and Silver Bullet kill zones against the dead lunch hours.",
+   "playbook": [
+    "Build your day around the windows, not the other way arount: know in advance which kill zone you trade, and let the rest of the clock be analysis time.",
+    "Before the window opens, have the map done: pools marked, dealing range drawn, bias sketched — the kill zone is for EXECUTING a plan that already exists.",
+    "Expect the manipulation-then-delivery rhythm: the London or New York open loves to run one side's stops before the real move — the first push is often the trap, not the trend.",
+    "Trade the overlap of time and place: a sweep landing on your marked pool INSIDE the window is the alignment this methodology lives on.",
+    "Log your own clock: which window, which weekday, which setups — your best hours are an empirical fact about YOU, not a slogan from a course."
+   ],
+   "fails": [
+    "The window is a clock, not a mechanism: a dead holiday week has kill zones on paper and nobody inside them — time only concentrates what participation provides.",
+    "Right window, wrong day: a Monday spent waiting for Tuesday's real range, or an NFP morning where the data IS the market, both wear the kill zone's clothes without its behavior.",
+    "Forcing one trade per window converts a filter into a quota — the kill zone selects WHEN to look, it never promises there is something to see."
+   ],
+   "drill": "For a month, journal every setup you see WITH its window: which kill zone, or none. Also log the trades you were tempted into outside the windows. At month's end, compare quality — not just outcomes, but how clean the sequences were. Most traders discover their edge lives in two hours a day, and everything else was donation.",
+   "related": [
+    {
+     "slug": "smc.liquidity-sweep",
+     "why": "the manipulation leg these windows are famous for"
+    },
+    {
+     "slug": "fundamental.news-data",
+     "why": "the scheduled events that override any clock"
+    },
+    {
+     "slug": "smc.liquidity",
+     "why": "the map that must be ready before the window opens"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><rect class=\"df-grid\" x=\"40\" y=\"96\" width=\"332\" height=\"40\" rx=\"2\"/><line class=\"df-axis\" x1=\"40\" y1=\"136\" x2=\"372\" y2=\"136\"/><rect class=\"df-zone\" x=\"67.66666666666666\" y=\"96\" width=\"41.500000000000014\" height=\"40\" rx=\"2\"/><text class=\"df-tag-accent\" x=\"88.41666666666666\" y=\"152\" text-anchor=\"middle\">London</text><rect class=\"df-zone\" x=\"136.83333333333334\" y=\"96\" width=\"41.5\" height=\"40\" rx=\"2\"/><text class=\"df-tag-accent\" x=\"157.58333333333334\" y=\"152\" text-anchor=\"middle\">New York</text><rect class=\"df-zone\" x=\"178.33333333333334\" y=\"96\" width=\"13.833333333333314\" height=\"40\" rx=\"2\"/><text class=\"df-tag-accent\" x=\"185.25\" y=\"152\" text-anchor=\"middle\">SB</text><text class=\"df-tag\" x=\"40\" y=\"86\" text-anchor=\"start\">00:00</text><text class=\"df-tag\" x=\"372\" y=\"86\" text-anchor=\"end\">24:00 EST</text><text class=\"df-tag\" x=\"219.83333333333331\" y=\"152\" text-anchor=\"middle\">lunch</text></svg>"
  },
@@ -1459,7 +1648,34 @@
     "Confluence",
     "HTF bias"
    ],
-   "figcap": "A bullish impulse, then a retrace into the 62–79% OTE pocket where the entry is taken."
+   "figcap": "A bullish impulse, then a retrace into the 62–79% OTE pocket where the entry is taken.",
+   "playbook": [
+    "Earn the measurement first: the swing you stretch the Fib across must be a SIGNIFICANT one — ideally born from a sweep and confirmed by displacement.",
+    "Draw from origin to extreme and mark the 0.62–0.79 pocket; note 0.705, the midpoint ICT highlights as the sweet spot.",
+    "Let the pocket be the meeting place, not the reason: an OTE that overlaps the origin order block or the FVG's CE is a confluence; a naked ratio is a coordinate.",
+    "Time it: the retrace that reaches the pocket during a kill zone, after sweeping some minor low on the way down, is the full-dress version of this entry.",
+    "Anchor the stop beyond the swing's origin — if THAT gives way, the leg you measured no longer exists — and aim first at the old extreme."
+   ],
+   "fails": [
+    "Fib on the wrong swing, precision on the wrong map: measuring a minor internal leg puts your \"pocket\" at levels the delivery never intended to respect.",
+    "In genuinely strong trends the retrace often exhausts before 0.62 — demanding OTE depth on every entry systematically benches you during the best deliveries.",
+    "The pocket attracts inducement: shallow bounces at 0.5 that bait entries before price completes the trip — entering above the pocket because \"it's close enough\" is paying full price for the trap."
+   ],
+   "drill": "Measure thirty confirmed swings and log where each retrace actually ended: before the pocket, inside it, at 0.705, beyond 0.79. Then split by trend strength. Your histogram will show WHEN your market grants the OTE and when it never looks back — the difference between a tool and a superstition is exactly this table.",
+   "related": [
+    {
+     "slug": "smc.pd-arrays",
+     "why": "the discount context the pocket must sit inside"
+    },
+    {
+     "slug": "smc.ob-retest",
+     "why": "the confluence partner most often waiting at the same depth"
+    },
+    {
+     "slug": "smc.kill-zones",
+     "why": "the clock that turns a level into an appointment"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><line class=\"df-axis\" x1=\"34\" y1=\"196\" x2=\"384\" y2=\"196\"/><line class=\"df-axis\" x1=\"34\" y1=\"16\" x2=\"34\" y2=\"196\"/><rect class=\"df-zone\" x=\"40\" y=\"130.6\" width=\"332\" height=\"22.099999999999994\" rx=\"2\"/><line class=\"df-dash\" x1=\"40\" y1=\"130.6\" x2=\"372\" y2=\"130.6\"/><text class=\"df-tag\" x=\"376\" y=\"127.6\" text-anchor=\"end\">.62</text><line class=\"df-dash-accent\" x1=\"40\" y1=\"141.64999999999998\" x2=\"372\" y2=\"141.64999999999998\"/><text class=\"df-tag-accent\" x=\"376\" y=\"138.64999999999998\" text-anchor=\"end\">.705</text><line class=\"df-dash\" x1=\"40\" y1=\"152.7\" x2=\"372\" y2=\"152.7\"/><text class=\"df-tag\" x=\"376\" y=\"162.7\" text-anchor=\"end\">.79</text><path class=\"df-line\" d=\"M40 180 L90 150 L130 120 L175 78 L210 56\"/><path class=\"df-line\" d=\"M210 56 L250 96 L285 130 L300 142\"/><path class=\"df-line-accent\" d=\"M300 142 L335 96 L372 48\"/><text class=\"df-tag-accent\" x=\"150\" y=\"200\" text-anchor=\"middle\">OTE pocket</text><line class=\"df-line-accent\" x1=\"300\" y1=\"142\" x2=\"330.1558253401339\" y2=\"102.36662955296687\"/><polygon class=\"df-accent-f\" points=\"335,96 333.7370544636778,105.09147779914156 326.57459621659,99.64178130679218\"/></svg>"
  },
@@ -1500,7 +1716,34 @@
     "Confluence",
     "Draw on liquidity"
    ],
-   "figcap": "After displacement and a BOS, price returns to the order block's proximal edge — the retest entry."
+   "figcap": "After displacement and a BOS, price returns to the order block's proximal edge — the retest entry.",
+   "playbook": [
+    "Verify the full pedigree before caring about the block: a sweep of liquidity, then displacement, then a break of structure — the OB left at the origin of THAT sequence is the one worth waiting for.",
+    "Let price come to you: place nothing in advance; the setup is the RETURN to the block, and many valid sequences simply never return.",
+    "On arrival, drop to your entry timeframe and demand a reaction: a rejection print or a micro shift of structure inside the zone.",
+    "Stops belong beyond the block's far edge — if the whole block trades through, the institutional footprint you followed has been overwritten.",
+    "Target the map, not a fixed ratio: the next pool of liquidity or opposing array is where the move has a reason to pause."
+   ],
+   "fails": [
+    "The pre-placed limit order is this setup's classic self-inflicted wound: price runs without you often — but when it DOES return with no reaction, the limit fills you into the failures.",
+    "An inducement pocket just above your block is bait: the shallow pullback that sucks entries in before the real delivery reaches deeper — map the obvious minor low that will be swept first.",
+    "The sequence expires: an OB from Monday's London session judged on Thursday belongs to a market that no longer exists. Grade freshness in sessions, not in hope."
+   ],
+   "drill": "Replay twenty full sequences (sweep → displacement → BOS → return). For each, record what a pre-placed limit at the block would have done versus waiting for a lower-timeframe reaction: fills, failures, missed runners. The two equity curves that come out of that comparison end the limit-versus-confirmation debate with your own money's evidence.",
+   "related": [
+    {
+     "slug": "smc.order-blocks",
+     "why": "how the anchor candle earns its rank in the first place"
+    },
+    {
+     "slug": "smc.liquidity-sweep",
+     "why": "the opening act of the sequence this entry completes"
+    },
+    {
+     "slug": "smc.ote",
+     "why": "the Fibonacci pocket that often overlaps the same return"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><line class=\"df-axis\" x1=\"34\" y1=\"196\" x2=\"384\" y2=\"196\"/><line class=\"df-axis\" x1=\"34\" y1=\"16\" x2=\"34\" y2=\"196\"/><rect class=\"df-zone\" x=\"60\" y=\"120\" width=\"70\" height=\"28\" rx=\"2\"/><text class=\"df-tag-accent\" x=\"64\" y=\"114\" text-anchor=\"start\">OB</text><line class=\"df-wick\" x1=\"95\" y1=\"122\" x2=\"95\" y2=\"150\"/><rect class=\"df-up\" x=\"88.5\" y=\"126\" width=\"13\" height=\"20\" rx=\"1\"/><line class=\"df-wick\" x1=\"140\" y1=\"78\" x2=\"140\" y2=\"130\"/><rect class=\"df-up\" x=\"134\" y=\"84\" width=\"12\" height=\"42\" rx=\"1\"/><line class=\"df-wick\" x1=\"172\" y1=\"44\" x2=\"172\" y2=\"96\"/><rect class=\"df-up\" x=\"166\" y=\"50\" width=\"12\" height=\"42\" rx=\"1\"/><line class=\"df-dash\" x1=\"140\" y1=\"84\" x2=\"320\" y2=\"84\"/><text class=\"df-tag-accent\" x=\"250\" y=\"78\" text-anchor=\"middle\">BOS</text><line class=\"df-line-up\" x1=\"120\" y1=\"150\" x2=\"175.69571637662509\" y2=\"62.74337767662071\"/><polygon class=\"df-up\" points=\"180,56 179.48886631972422,65.1645372147691 171.90256643352595,60.322218138472316\"/><line class=\"df-wick\" x1=\"250\" y1=\"44\" x2=\"250\" y2=\"102\"/><rect class=\"df-down\" x=\"244\" y=\"50\" width=\"12\" height=\"46\" rx=\"1\"/><line class=\"df-wick\" x1=\"282\" y1=\"90\" x2=\"282\" y2=\"138\"/><rect class=\"df-down\" x=\"276\" y=\"96\" width=\"12\" height=\"38\" rx=\"1\"/><line class=\"df-line-up\" x1=\"294\" y1=\"150\" x2=\"297.7012169154692\" y2=\"137.66261028176922\"/><polygon class=\"df-up\" points=\"300,130 302.0114351989644,138.95567576681776 293.390998631974,136.36954479672067\"/><text class=\"df-tag\" x=\"300\" y=\"166\" text-anchor=\"middle\">retest</text><line class=\"df-wick\" x1=\"330\" y1=\"64\" x2=\"330\" y2=\"126\"/><rect class=\"df-up\" x=\"324\" y=\"70\" width=\"12\" height=\"50\" rx=\"1\"/></svg>"
  },
@@ -1540,7 +1783,34 @@
     "Inverse FVG",
     "Draw on liquidity"
    ],
-   "figcap": "Price returns to a fair value gap and reacts at its 50% midpoint (CE), resuming the original move."
+   "figcap": "Price returns to a fair value gap and reacts at its 50% midpoint (CE), resuming the original move.",
+   "playbook": [
+    "Trade only gaps whose impulse you would trade anyway: the fill entry inherits ALL its probability from the displacement that created the gap.",
+    "Choose your line before price arrives: gap edge for early fills, consequent encroachment for the balanced read, far edge for the deepest defense — one plan, not three.",
+    "On the touch, watch HOW it fills: a slow rotation into the gap that stalls at CE reads as re-accumulation; a violent slice through the whole thing is the other side talking.",
+    "Invalidate on a CLOSE beyond the far edge — wicks through a gap are normal traffic; acceptance beyond it is not.",
+    "Aim the exit at the map: the high or low that the original impulse was drawn toward remains the objective the gap serves."
+   ],
+   "fails": [
+    "Waiting for the complete fill is how the best ones leave without you: strong deliveries tap the CE and go — a plan that demands the full edge systematically selects the weaker reactions.",
+    "A gap sitting against the higher-timeframe draw is a target, not an entry: expecting support from an imbalance the daily wants to trade through inverts the tool.",
+    "Stacked gaps dilute each other — when a leg leaves three, the first fill often slices to the deepest one; treating each as independent support triples your wrongness."
+   ],
+   "drill": "Take twenty-five quality FVGs and log the exact deepest point of the first fill: before CE, at CE, past CE, full fill, sliced through. That single histogram tells you where YOUR market's entries actually live — and whether your current convention has been standing at the wrong line.",
+   "related": [
+    {
+     "slug": "smc.fair-value-gaps",
+     "why": "the anatomy and grading this entry depends on"
+    },
+    {
+     "slug": "smc.ob-retest",
+     "why": "the sibling entry — same sequence, different anchor"
+    },
+    {
+     "slug": "price.breakout-retest",
+     "why": "the classical cousin: return to the scene before continuation"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><line class=\"df-axis\" x1=\"34\" y1=\"196\" x2=\"384\" y2=\"196\"/><line class=\"df-axis\" x1=\"34\" y1=\"16\" x2=\"34\" y2=\"196\"/><line class=\"df-wick\" x1=\"70\" y1=\"144\" x2=\"70\" y2=\"184\"/><rect class=\"df-up\" x=\"63.5\" y=\"150\" width=\"13\" height=\"28\" rx=\"1\"/><line class=\"df-wick\" x1=\"105\" y1=\"100\" x2=\"105\" y2=\"152\"/><rect class=\"df-up\" x=\"97\" y=\"108\" width=\"16\" height=\"36\" rx=\"1\"/><line class=\"df-wick\" x1=\"140\" y1=\"50\" x2=\"140\" y2=\"110\"/><rect class=\"df-up\" x=\"133.5\" y=\"56\" width=\"13\" height=\"48\" rx=\"1\"/><rect class=\"df-zone\" x=\"56\" y=\"108\" width=\"250\" height=\"38\" rx=\"2\"/><line class=\"df-dash-accent\" x1=\"56\" y1=\"127\" x2=\"306\" y2=\"127\"/><text class=\"df-tag-accent\" x=\"312\" y=\"123\" text-anchor=\"start\">CE</text><line class=\"df-wick\" x1=\"240\" y1=\"44\" x2=\"240\" y2=\"98\"/><rect class=\"df-down\" x=\"233.5\" y=\"50\" width=\"13\" height=\"42\" rx=\"1\"/><line class=\"df-wick\" x1=\"275\" y1=\"90\" x2=\"275\" y2=\"130\"/><rect class=\"df-down\" x=\"268.5\" y=\"96\" width=\"13\" height=\"28\" rx=\"1\"/><line class=\"df-line-accent\" x1=\"288\" y1=\"150\" x2=\"293.2660554953064\" y2=\"135.5183473879075\"/><polygon class=\"df-accent-f\" points=\"296,128 297.4951259010043,137.05619117179768 289.03698508960844,133.98050360401734\"/><line class=\"df-wick\" x1=\"322\" y1=\"64\" x2=\"322\" y2=\"124\"/><rect class=\"df-up\" x=\"315.5\" y=\"70\" width=\"13\" height=\"48\" rx=\"1\"/></svg>"
  },
@@ -1581,7 +1851,34 @@
     "Equal highs/lows",
     "FVG entry"
    ],
-   "figcap": "Price sweeps the stops above equal highs, displaces down with an MSS, then retraces for the short entry."
+   "figcap": "Price sweeps the stops above equal highs, displaces down with an MSS, then retraces for the short entry.",
+   "playbook": [
+    "Pick the pool in advance: an obvious equal low, a previous-day extreme — the setup begins with knowing WHERE the harvest should happen.",
+    "Watch the run: price pierces the level, stops fire, and the tell is what happens NEXT — a violent rejection back inside is harvest; acceptance below is continuation.",
+    "Demand the confirmation pair: displacement AND a shift of structure in the new direction. Without both, you have an interesting wick.",
+    "Enter on the retrace into what the displacement left behind — the FVG or the origin block — not on the emotional candle itself.",
+    "Invalidate beyond the sweep's extreme: if price returns past the wick that \"rejected\", the rejection was fiction."
+   ],
+   "fails": [
+    "Every sweep is one candle of patience away from being a breakout: the same pierce that harvests stops can be the start of expansion — the close and the shift decide, not the wick.",
+    "Sweeps chain: the \"final\" low gets swept, then the sweep's own low gets swept — sizing as if the first harvest must be THE turn donates your stop to the second.",
+    "In a strong one-sided delivery there is no harvest-and-reverse, just consumption in passing: counter-trading every pierced pool against real momentum is standing in front of the reason the pool existed."
+   ],
+   "drill": "Collect forty pierces of obvious pools and split them by what the NEXT candle did: closed back inside versus accepted beyond. Track each group five candles further. The two destinies — and how often each occurred — will calibrate the only judgment this setup really asks of you: harvest or breakout.",
+   "related": [
+    {
+     "slug": "smc.liquidity",
+     "why": "the map of pools this hunt is played on"
+    },
+    {
+     "slug": "smc.market-structure",
+     "why": "the shift that separates harvest from continuation"
+    },
+    {
+     "slug": "price.pin-bar",
+     "why": "what the sweep candle looks like in classical vocabulary"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><line class=\"df-axis\" x1=\"34\" y1=\"196\" x2=\"384\" y2=\"196\"/><line class=\"df-axis\" x1=\"34\" y1=\"16\" x2=\"34\" y2=\"196\"/><line class=\"df-dash\" x1=\"60\" y1=\"76\" x2=\"250\" y2=\"76\"/><text class=\"df-tag\" x=\"64\" y=\"70\" text-anchor=\"start\">liquidity pool</text><line class=\"df-wick\" x1=\"80\" y1=\"74\" x2=\"80\" y2=\"136\"/><rect class=\"df-up\" x=\"74\" y=\"80\" width=\"12\" height=\"50\" rx=\"1\"/><line class=\"df-wick\" x1=\"118\" y1=\"104\" x2=\"118\" y2=\"156\"/><rect class=\"df-down\" x=\"112\" y=\"110\" width=\"12\" height=\"40\" rx=\"1\"/><line class=\"df-wick\" x1=\"156\" y1=\"76\" x2=\"156\" y2=\"130\"/><rect class=\"df-up\" x=\"150\" y=\"80\" width=\"12\" height=\"44\" rx=\"1\"/><line class=\"df-wick\" x1=\"200\" y1=\"52\" x2=\"200\" y2=\"122\"/><rect class=\"df-down\" x=\"193.5\" y=\"66\" width=\"13\" height=\"46\" rx=\"1\"/><text class=\"df-tag-accent\" x=\"200\" y=\"44\" text-anchor=\"middle\">sweep</text><line class=\"df-wick\" x1=\"236\" y1=\"94\" x2=\"236\" y2=\"156\"/><rect class=\"df-down\" x=\"230\" y=\"100\" width=\"12\" height=\"50\" rx=\"1\"/><line class=\"df-wick\" x1=\"268\" y1=\"124\" x2=\"268\" y2=\"184\"/><rect class=\"df-down\" x=\"262\" y=\"130\" width=\"12\" height=\"48\" rx=\"1\"/><line class=\"df-dash\" x1=\"150\" y1=\"150\" x2=\"300\" y2=\"150\"/><text class=\"df-tag-down\" x=\"280\" y=\"144\" text-anchor=\"middle\">MSS</text><line class=\"df-line-down\" x1=\"200\" y1=\"60\" x2=\"263.17733528651445\" y2=\"143.61706140862208\"/><polygon class=\"df-down\" points=\"268,150 259.58693232886435,146.32981030995768 266.76773824416455,140.90431250728648\"/><line class=\"df-wick\" x1=\"310\" y1=\"114\" x2=\"310\" y2=\"166\"/><rect class=\"df-up\" x=\"304\" y=\"120\" width=\"12\" height=\"40\" rx=\"1\"/><line class=\"df-line-down\" x1=\"322\" y1=\"100\" x2=\"317.94028500029066\" y2=\"116.23885999883734\"/><polygon class=\"df-down\" points=\"316,124 313.57464374963666,115.14744968617384 322.30592625094465,117.33027031150084\"/></svg>"
  },

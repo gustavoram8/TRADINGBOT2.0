@@ -1471,7 +1471,13 @@ borrado. PENDIENTE: agregar selector de mes / historial.
   prompt del analizador: la confluencia real cruza FAMILIAS (dos osciladores = una señal contada
   dos veces), los indicadores rezagan, divergencia regular≠oculta, Clase A, RSI clavado en
   tendencia, volumen con reloj de sesión, head-fake del squeeze.
-  **FALTAN 3 tandas:** SMC/ICT (11) · Fundamental (6) · Quant (6).
+  **Tanda 3 = SMC/ICT (11 temas ×4×4, la insignia) ESCRITA y verificada (mismo día):** PDF
+  68→79 págs, 128 enlaces todos válidos, render inspeccionado (Order Blocks). Canon del
+  DAILY_BANK: el OB se califica por su ORIGEN (barrida→displacement→BOS), inducement como
+  carnada, mecha≠ruptura (sweep argumenta lo contrario), gaps como salud de la tendencia,
+  CE, re-anclar el dealing range tras un sweep, kill zone = reloj no mecanismo, spring
+  calificado por volumen, "más compradores que vendedores" es imposible.
+  **FALTAN 2 tandas:** Fundamental (6) · Quant (6).
   Tras cada tanda: `python3 tools/validate_synapse_content.py` + rebuild + mirar el render.
   ⚠️ El flipbook web ignora los campos nuevos sin romperse (Object.assign) — los podrá usar
   algún día, pero HOY la profundidad es exclusiva del PDF de pago, lo que justifica su precio.
