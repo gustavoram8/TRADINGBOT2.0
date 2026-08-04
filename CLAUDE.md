@@ -1117,6 +1117,57 @@ se registra al crear cada factura (`ipn_callback_url`); **sin dominio/HTTPS el w
 pero la reconciliación del success_url + el barrido de /admin cubren la activación igual**. Dominio
 sigue siendo el desbloqueo para que el aviso instantáneo sea fiable.
 
+## 🔁 SUSCRIPCIONES — los planes mensuales se cobran SOLOS (cableado 2026-08-04)
+**Decisión reafirmada del dueño:** *"habíamos quedado en que los planes SÍ DEBÍAN DE COBRARSE
+AUTOMÁTICAMENTE. y que el cliente cuando quisiera podía darse de baja"*. Se le señaló que los T&C
+decían lo contrario y aun así lo confirmó → hecho, y los T&C reescritos.
+- **Es OTRA API de PayPal.** Pago suelto = `/v2/checkout/orders` (lo de siempre, cosméticos incluidos).
+  Suscripción = `/v1/billing/subscriptions`, y **esa sí exige crear producto + planes con id fijo** —
+  esto era la media razón que tenía el papá del dueño; para los cosméticos no hace falta nada de eso.
+  Se crean por API con **`tools/paypal_setup_subs.py`** (idempotente, busca por nombre antes de crear;
+  `set_paypal.py` ya lo llama de paso, así configurar PayPal sigue siendo UN comando).
+- **Modelo `PlanSubscription` = el PERMISO de cobro; `Order` sigue siendo UN cobro.** Cada mes cobrado
+  escribe una Order nueva → extensión del plan, libro de ventas y comisión del socio pasan por
+  `_activate_plan_from_order`/`record_sale_breakdown` de siempre. Cero código paralelo.
+  `_sub_cobro()` es idempotente por `provider_ref` (id de la venta) → aviso repetido no regala un mes.
+- **El descuento del socio sobrevive:** el precio se manda sobrescribiendo `pricing_scheme` al abrir
+  cada suscripción, así un cliente atado paga $40/mes para siempre sin crear un plan por descuento.
+  La renovación copia `promo_code` → el socio cobra comisión en cada mes. Probado ($12 al 30%).
+- 🔴 **`PAYPAL_SUBS_ENABLED` exige `PAYPAL_WEBHOOK_ID`**, y por eso el dominio con HTTPS pasó de
+  "mejora" a **requisito duro**: en una renovación **nadie vuelve a la web**, así que el cobro del mes 2
+  en adelante llega ÚNICAMENTE por webhook. Sin él se cobraría y el plan no se extendería, en silencio.
+  Sin los ids de plan el sitio cae al pago suelto y no promete ninguna renovación (nunca se cae en
+  silencio a "un solo cobro" tras haber anunciado la renovación en el carrito).
+- 🔴 **Bug real arreglado de paso:** `/account/cancel-plan` solo levantaba una bandera (no pasaba nada
+  porque nada renovaba). Con cobro automático detrás eso = cobrarle a quien pulsó "darme de baja".
+  Ahora corta en PayPal de verdad; si PayPal no responde **NO se le dice que está cancelado**
+  (`sec=cancel_failed`). **El plan pagado nunca se revoca** — cancelar corta el mes siguiente.
+  `reactivate-plan` manda a `/pricing`: la API de PayPal no tiene "descancelar".
+- Subir de Standard a Premium **cancela sola** la suscripción vieja (si no, se cobran las dos).
+- **Anual y USDT NO son recurrentes.** El anual por decisión (un contracargo de $408 no lo cubre
+  ninguna reserva). USDT porque **no se puede**: una cadena de bloques no deja cobrar sin que el dueño
+  del dinero firme cada vez. Lo que NOWPayments llama "suscripciones" es **factura recurrente por
+  correo** que el cliente paga a mano, o débito de un saldo que él precarga en NOWPayments — útil,
+  pero NO es el cobro automático de una tarjeta. Hay que decírselo así al cliente.
+- Cobro rechazado → `BILLING.SUBSCRIPTION.PAYMENT.FAILED` avisa al dueño por correo
+  (`_avisar_cobro_fallido`) porque **es el único fallo que nadie nota**: el cliente no está delante.
+- **T&C Secc. 5 reescrita** ×4 idiomas (renovación, baja sin preaviso ni coste, período empezado no
+  reembolsable, reintentos, anual/USDT no recurrentes, no se sube el importe sin avisar). Auditor 144.
+- `tools/test_subs.py` **41/41** con PayPal simulado.
+
+## 🌐 `SITE_URL` — los enlaces absolutos dejan de depender del Host (2026-08-04)
+Los 20 `url_for(..., _external=True)` pasaron a **`abs_url()`**, que antepone `SITE_URL` si está.
+Sin esto, entrar por la IP cruda hacía que la vuelta de PayPal y los enlaces de los correos salieran
+como `http://62.171.180.22:5001/...`. ⚠️ **NO se usa `SERVER_NAME` de Flask** (lo obvio): fijarlo hace
+que la app deje de responder a cualquier otro Host → 404 en TODO el sitio por la IP, y parece caído.
+`PUBLIC_HTTPS=1` enciende **ProxyFix + cookies Secure/HttpOnly/SameSite** y hace que `_client_ip()`
+use `remote_addr` en vez de un `X-Forwarded-For` que escribe quien llama (era falsificable, y de ahí
+cuelgan límites por IP). ⚠️ Encenderlo **apaga el acceso por `http://IP:5001`** (la cookie deja de
+viajar) — es el precio de cerrar bien, y hay que avisarle antes.
+**nginx listo en `deploy/nginx/tradeable.academy.live.conf`** (proxy_pass, estáticos servidos por
+nginx, `client_max_body_size 24m`, `location ~ ^/webhook/` con más espera, robots.txt abierto). El
+archivo viejo de "en construcción" se conserva para volver atrás con un comando.
+
 ## 🟣 PayPal — 2º riel de cobro (código LISTO 2026-07-26, falta encender)
 Mismo patrón condicional que cripto/Stripe: **inerte sin claves** (`PAYPAL_CLIENT_ID`/`PAYPAL_SECRET`,
 + `PAYPAL_ENV=sandbox|live`, `PAYPAL_WEBHOOK_ID`, `PAYPAL_BRAND_NAME`). Convive con USDT, no lo
@@ -1707,6 +1758,9 @@ son de **SANDBOX** (dinero de mentira; se le explicó que en sandbox nunca llega
 de cobrar están en la pestaña **Live**, con Client ID y Secret distintos). **El usuario decidió
 pausarlo** para atender primero el correo del dominio. ⚠️ **NO pegar el Secret en el chat** — va del
 panel de PayPal directo a supervisor + `scalpel/.env`.
+🔁 **Al retomarlo, ahora hay DOS cosas más que pedirle** (ver la sección de suscripciones arriba):
+los **ids de los dos planes** (`tools/set_paypal.py` los crea solo, no hay que tocar el panel) y el
+**Webhook ID**, que dejó de ser opcional: sin él las renovaciones se cobran y el plan no se extiende.
 Piezas nuevas listas para cuando se retome: **`tools/check_paypal.py`** (pide un token y dice si el
 par autentica y **a qué entorno pertenece**, sin imprimir valores; detecta el desajuste con
 `PAYPAL_ENV`, que **cae en `live` por defecto** — sandbox contra el host de producción da un 401 sin
