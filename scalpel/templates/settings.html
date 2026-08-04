@@ -103,6 +103,8 @@
     <div class="flash info" data-i18n="settings.flash2faWrong">The password or code did not match. Two-factor authentication is still on.</div>
   {% elif sec == '2fa_off' %}
     <div class="flash ok" data-i18n="settings.flash2faOff">Two-factor authentication has been turned off.</div>
+  {% elif sec == 'cancel_failed' %}
+    <div class="flash info" data-i18n="settings.flashCancelFail">We could not reach PayPal to stop your renewal, so nothing was changed — your plan is still active and will still renew. Please try again in a few minutes, or write to us and we will stop it by hand.</div>
   {% endif %}
 
   {% if request.args.get('cancelled') %}
@@ -154,8 +156,13 @@
         {% if user.plan != 'free' and user.plan_expires_at %}
           {% if user.cancel_at_period_end %}
             <div class="expires-note warn"><span data-i18n="settings.accessEnds">⚠ Access ends</span> {{ user.plan_expires_at.strftime('%b %d, %Y') }}</div>
+          {% elif sub %}
+            {# Solo se dice "se renueva sola" cuando existe de verdad un cobro
+               automático detrás. Antes lo decía siempre, y no era cierto: nada
+               se renovaba, así que el plan vencía en silencio. #}
+            <div class="expires-note"><span data-i18n="settings.renewsAuto">Renews automatically</span> {{ user.plan_expires_at.strftime('%b %d, %Y') }} · ${{ '%.2f'|format(sub.price) }}/<span data-i18n="settings.perMonth">month</span></div>
           {% else %}
-            <div class="expires-note"><span data-i18n="settings.renews">Renews</span> {{ user.plan_expires_at.strftime('%b %d, %Y') }}</div>
+            <div class="expires-note"><span data-i18n="settings.accessUntil">Access until</span> {{ user.plan_expires_at.strftime('%b %d, %Y') }} · <span data-i18n="settings.noAutoCharge">no automatic charge</span></div>
           {% endif %}
         {% endif %}
       </div>

@@ -185,6 +185,37 @@ def main():
               '       sandbox para que el circuito funcione, pero NO vas a cobrar.')
 
     valores = {'PAYPAL_CLIENT_ID': cid, 'PAYPAL_SECRET': secret, 'PAYPAL_ENV': entorno}
+
+    # ── Los planes de suscripción ─────────────────────────────────────────
+    # Se crean aquí mismo para que sea UN solo comando. Un cobro que se repite
+    # necesita un plan con id fijo en PayPal; sin estos dos ids el sitio cobra
+    # una vez y no vuelve a cobrar nunca, en silencio.
+    print('\nCreando el producto y los dos planes mensuales en PayPal…')
+    os.environ['PAYPAL_CLIENT_ID'] = cid
+    os.environ['PAYPAL_SECRET'] = secret
+    os.environ['PAYPAL_ENV'] = entorno
+    try:
+        import importlib.util
+        _s = importlib.util.spec_from_file_location(
+            'ppsubs', os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                   'paypal_setup_subs.py'))
+        _m = importlib.util.module_from_spec(_s)
+        _s.loader.exec_module(_m)          # imprime lo que crea o reutiliza
+    except SystemExit as exc:
+        print('\n⚠️  No se pudieron crear los planes (%s).' % exc)
+        print('    Las credenciales SÍ se van a guardar, pero hasta que existan\n'
+              '    los planes el sitio cobrará una sola vez, sin renovación.\n'
+              '    Reintentá luego con: python3 tools/paypal_setup_subs.py')
+    except Exception as exc:
+        print('\n⚠️  No se pudieron crear los planes: %s' % exc)
+    else:
+        for var in ('PAYPAL_PLAN_STANDARD', 'PAYPAL_PLAN_PREMIUM'):
+            if os.environ.get(var):
+                valores[var] = os.environ[var]
+        # El script los imprime; también se leen de su resultado por si acaso.
+        for var, pid in getattr(_m, 'IDS', {}).items():
+            valores[var] = pid
+
     copia_env = respaldo(ENV)
     escribir_env(valores)
     print('\n📄 scalpel/.env actualizado%s' % ('  (copia: %s)' % os.path.basename(copia_env)

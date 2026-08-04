@@ -93,6 +93,34 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 # "Remember this device" — when opted in, keep the user logged in indefinitely.
 app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=3650)
 
+# ── Detrás de nginx ───────────────────────────────────────────────────────
+# El cifrado termina en nginx, así que a gunicorn le llega una petición en
+# claro. Sin esto Flask cree que la conversación entera es `http`, y lo nota
+# todo lo que dependa del esquema: la marca `Secure` de la cookie, `request.
+# is_secure`, y la IP del visitante (que alimenta los límites por IP).
+#
+# ⚠️ Va detrás de una variable de entorno a propósito. `SESSION_COOKIE_SECURE`
+# significa "este cookie SOLO viaja cifrado": si se pusiera fijo, el día de
+# ponerlo se rompería el acceso por `http://62.171.180.22:5001`, que es
+# justamente por donde el dueño previsualiza sus cambios — no podría ni
+# iniciar sesión, y el fallo no dice nada (el login simplemente no toma).
+# Se enciende con PUBLIC_HTTPS=1 el día que el dominio sirva la aplicación.
+PUBLIC_HTTPS = os.environ.get('PUBLIC_HTTPS', '0') == '1'
+if PUBLIC_HTTPS:
+    from werkzeug.middleware.proxy_fix import ProxyFix
+    # x_for=1: se hace caso a UN solo salto, el de nuestro propio nginx. Con
+    # un número mayor se estaría creyendo lo que diga quien llame desde fuera.
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
+    app.config.update(
+        SESSION_COOKIE_SECURE=True,
+        SESSION_COOKIE_HTTPONLY=True,
+        SESSION_COOKIE_SAMESITE='Lax',
+        REMEMBER_COOKIE_SECURE=True,
+        REMEMBER_COOKIE_HTTPONLY=True,
+        PREFERRED_URL_SCHEME='https',
+    )
+print("[HTTPS] público=%s" % PUBLIC_HTTPS, flush=True)
+
 # ── Correo saliente (SMTP) ────────────────────────────────────────────────
 # Todo va por variables de entorno: mudarse de un Gmail personal a la casilla
 # del dominio (support@tradeable.academy en Google Workspace) NO toca código,
@@ -385,6 +413,39 @@ PAYPAL_LOCALES = {"en": "en-US", "es": "es-ES", "fr": "fr-FR", "pt": "pt-BR"}
 # contracargos "no reconozco esto", y avisarlo de antemano los desactiva.
 # Va por env var y NUNCA al repositorio — es el nombre de una persona real.
 PAYPAL_RECEIPT_NAME = os.environ.get("PAYPAL_RECEIPT_NAME", "").strip()
+
+# ── Suscripciones: el cobro que se renueva SOLO ────────────────────────────
+# Decisión del dueño: los planes mensuales se cobran automáticamente y el
+# cliente se da de baja cuando quiera. Eso NO es lo mismo que un pago suelto
+# repetido, y por eso vive aparte:
+#
+#   · Un pago suelto (`/v2/checkout/orders`) cobra UNA vez. Cada mes habría que
+#     pedirle al cliente que volviera a pagar a mano.
+#   · Una suscripción (`/v1/billing/subscriptions`) necesita que el producto y
+#     el plan existan ANTES en PayPal, con un id fijo. Eso es lo único que hay
+#     que crear "producto por producto" — justo lo que el papá del dueño había
+#     entendido que hacía falta para todo, cuando en realidad solo hace falta
+#     aquí. Se crean UNA vez con `tools/paypal_setup_subs.py` y se pegan estos
+#     dos ids; no hay que tocar nada en el panel de PayPal.
+#
+# 🔴 Y una consecuencia que conviene tener clara: en un pago suelto el cliente
+# vuelve al sitio después de pagar, así que la vuelta sirve de red de
+# seguridad. En una renovación NO hay nadie delante de la pantalla: el cobro
+# del mes 2 llega ÚNICAMENTE por webhook. Sin dominio con HTTPS y sin
+# PAYPAL_WEBHOOK_ID, las renovaciones se cobrarían y el plan no se extendería.
+# Por eso `PAYPAL_SUBS_ENABLED` exige las dos cosas.
+PAYPAL_PLAN_IDS = {
+    'standard': os.environ.get("PAYPAL_PLAN_STANDARD", "").strip(),
+    'premium': os.environ.get("PAYPAL_PLAN_PREMIUM", "").strip(),
+}
+PAYPAL_SUBS_ENABLED = bool(
+    PAYPAL_ENABLED and PAYPAL_WEBHOOK_ID and any(PAYPAL_PLAN_IDS.values()))
+print("[PayPal] subs=%s planes=%s"
+      % (PAYPAL_SUBS_ENABLED,
+         ', '.join('%s:%s' % (k, 'set' if v else 'MISSING')
+                   for k, v in sorted(PAYPAL_PLAN_IDS.items()))),
+      flush=True)
+
 # Boot line so the owner can confirm from the log that the keys actually took
 # effect (supervisor's `environment=` is easy to edit and forget to reload).
 # NEVER prints the values: only whether each one is present, and which API it
@@ -396,6 +457,32 @@ print("[PayPal] enabled=%s env=%s client_id=%s secret=%s webhook_id=%s"
          "set" if PAYPAL_SECRET else "MISSING",
          "set" if PAYPAL_WEBHOOK_ID else "missing (opcional hasta tener HTTPS)"),
       flush=True)
+
+
+# ── La dirección pública del sitio ────────────────────────────────────────
+# Todo lo que sale de aquí y tiene que volver —el enlace de vuelta de PayPal,
+# la URL donde el procesador avisa de un pago, el enlace de restablecer
+# contraseña de un correo— es una dirección ABSOLUTA. Sin esta variable, Flask
+# la arma con el Host de la petición que la disparó, así que si el dueño estaba
+# entrando por la IP cruda, el comprador acababa aterrizando en
+# `http://62.171.180.22:5001/...`: sin HTTPS, con un aviso de "sitio no seguro"
+# justo después de pagar, y con una URL que PayPal ni siquiera acepta para una
+# suscripción.
+#
+# ⚠️ Deliberadamente NO se usa `SERVER_NAME` de Flask, que sería lo obvio:
+# fijarlo hace que Flask deje de responder a cualquier Host distinto, así que
+# el día que se pone, entrar por la IP cruda devuelve 404 en TODO el sitio y
+# parece que se cayó el servidor. Esto solo cambia cómo se ESCRIBEN los
+# enlaces, nunca a qué peticiones responde.
+SITE_URL = os.environ.get("SITE_URL", "").strip().rstrip('/')
+print("[Site] url=%s" % (SITE_URL or "(el host de cada petición)"), flush=True)
+
+
+def abs_url(endpoint, **values):
+    """Una URL absoluta del sitio, en su dominio público."""
+    if SITE_URL:
+        return SITE_URL + url_for(endpoint, **values)
+    return url_for(endpoint, _external=True, **values)
 
 
 # ── Expose feature flags to every template ──
@@ -1021,6 +1108,53 @@ class Order(db.Model):
     tx_hash = db.Column(db.String(120), nullable=True)         # buyer-supplied or processor-reported
     alerted_at = db.Column(db.DateTime, nullable=True)         # problem alert already emailed
     user = db.relationship('User', backref='orders')
+
+
+class PlanSubscription(db.Model):
+    """El permiso que da el cliente para que se le cobre cada mes.
+
+    Vive APARTE de `Order` a propósito, porque son dos cosas distintas y
+    confundirlas es lo que rompe estos sistemas: la suscripción es el permiso
+    (uno solo, que dura años), y cada `Order` es UN cobro concreto. Cada vez
+    que PayPal cobra el mes, se escribe una `Order` nueva atada a esta fila —
+    así el libro de ventas, la comisión del socio y la extensión del plan pasan
+    por exactamente el mismo camino que una compra manual, sin código paralelo.
+
+    `price` es lo que se cobra CADA mes, y se guarda aquí porque puede no ser
+    el precio de lista: un cliente atado a un socio paga $40 en vez de $50, y
+    esa rebaja tiene que sobrevivir a las renovaciones (es la promesa del
+    acuerdo comercial). Se manda a PayPal como precio de esta suscripción.
+
+    ⚠️ Una baja NO quita el plan. `status` deja de ser 'active', pero el
+    usuario conserva lo pagado hasta `plan_expires_at`: canceló el permiso a
+    cobrarle otra vez, no el mes que ya pagó.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    provider = db.Column(db.String(20), default='paypal', nullable=False)
+    # El id de la suscripción en PayPal (I-XXXXXXXX). Es lo que permite
+    # PREGUNTARLE por ella y lo que llega en cada aviso de cobro.
+    provider_ref = db.Column(db.String(80), nullable=True, index=True)
+    plan = db.Column(db.String(20), nullable=False)             # standard / premium
+    billing_cycle = db.Column(db.String(10), default='monthly', nullable=False)
+    price = db.Column(db.Float, nullable=False)                 # por ciclo, ya con descuento
+    promo_code = db.Column(db.String(40), nullable=True)
+    # pending → active → cancelled / suspended / expired
+    status = db.Column(db.String(16), default='pending', nullable=False, index=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    activated_at = db.Column(db.DateTime, nullable=True)
+    cancelled_at = db.Column(db.DateTime, nullable=True)
+    last_payment_at = db.Column(db.DateTime, nullable=True)
+    next_billing_at = db.Column(db.DateTime, nullable=True)
+    # El pedido que abrió la suscripción: su primer cobro se salda contra él en
+    # vez de crear una fila nueva, o el primer mes quedaría contado dos veces.
+    first_order_id = db.Column(db.Integer, nullable=True)
+    note = db.Column(db.String(300), nullable=True)
+    user = db.relationship('User', backref='subscriptions')
+
+    @property
+    def is_live(self):
+        return self.status == 'active'
 
 
 class MentorshipOrder(db.Model):
@@ -4068,9 +4202,9 @@ def mentorship_checkout_create():
                     },
                     'quantity': 1,
                 }],
-                success_url=url_for('mentorship_checkout_success', _external=True)
+                success_url=abs_url('mentorship_checkout_success')
                             + '?session_id={CHECKOUT_SESSION_ID}',
-                cancel_url=url_for('improve_plans', _external=True),
+                cancel_url=abs_url('improve_plans'),
                 client_reference_id=str(order.id),
                 customer_email=current_user.email,
                 # `kind` lets the shared webhook route this to the mentorship
@@ -4132,8 +4266,21 @@ MENTORSHIP_APPLY_IP_MAX = 3
 
 
 def _client_ip():
-    """Best-effort client IP. Honours X-Forwarded-For (first hop) so the value
-    stays correct once nginx sits in front of gunicorn."""
+    """La IP del visitante, tan de fiar como se pueda.
+
+    ⚠️ Leer el PRIMER valor de `X-Forwarded-For` es lo intuitivo y es lo que
+    hacía antes, pero esa cabecera la escribe quien llama: cualquiera puede
+    mandar `X-Forwarded-For: 1.2.3.4` y aparecer con la IP que quiera. Como de
+    esto cuelgan límites por IP (antiflood de solicitudes, intentos de acceso),
+    era una puerta abierta para saltárselos rotando un número inventado.
+
+    Detrás del proxy, ProxyFix ya ha puesto en `remote_addr` el salto que
+    nuestro propio nginx añadió — ese sí no lo controla el visitante — así que
+    se usa ese. La cabecera cruda solo se mira cuando no hay proxy configurado,
+    que es el caso de la vista previa por IP y del desarrollo local.
+    """
+    if PUBLIC_HTTPS:
+        return (request.remote_addr or '')[:45]
     fwd = request.headers.get('X-Forwarded-For', '')
     if fwd:
         return fwd.split(',')[0].strip()[:45]
@@ -4850,7 +4997,8 @@ def guide():
 @login_required
 def settings():
     return render_template('settings.html', user=current_user,
-                           sec=request.args.get('sec'))
+                           sec=request.args.get('sec'),
+                           sub=active_subscription(current_user))
 
 
 @app.route('/account/password', methods=['POST'])
@@ -4971,18 +5119,46 @@ def twofa_disable():
 @app.route('/account/cancel-plan', methods=['POST'])
 @login_required
 def cancel_plan():
+    """Darse de baja: se corta el cobro del mes que viene, no el mes pagado.
+
+    🔴 Este botón EXISTÍA ya, pero solo levantaba una bandera — y no pasaba
+    nada porque nada se renovaba. Ahora que hay un cobro automático detrás,
+    dejarlo así sería el peor fallo posible del sitio: el cliente pulsa
+    "cancelar plan", lee "el acceso termina el día X", y al mes siguiente se le
+    cobra igual. Eso no es un error de programación, es un cargo que él no
+    autorizó — y es exactamente el que acaba en contracargo.
+    """
     if current_user.plan == 'free':
         return redirect(url_for('settings'))
+    sub = active_subscription(current_user)
+    if sub is not None and not _paypal_sub_cancel(sub):
+        # No se pudo cortar el cobro: NO se le dice que está cancelado.
+        # Prometerlo sin haberlo hecho es lo que produce el cargo sorpresa.
+        return redirect(url_for('settings', sec='cancel_failed'))
     current_user.cancel_at_period_end = True
     db.session.commit()
+    record_audit_event('plan_cancelled', user_id=current_user.id,
+                       detail=('suscripción #%d' % sub.id) if sub else 'sin cobro automático')
     return redirect(url_for('settings', cancelled=1))
 
 
 @app.route('/account/reactivate-plan', methods=['POST'])
 @login_required
 def reactivate_plan():
+    """Volver atrás, mientras se pueda.
+
+    ⚠️ Una suscripción cancelada en PayPal NO se puede revivir: su API no
+    tiene "descancelar". Así que si el cobro automático ya se cortó, esto no
+    puede reactivarlo por su cuenta — se le manda a contratar de nuevo, que es
+    lo honesto, en vez de bajar la bandera y dejarle creyendo que se le
+    seguirá cobrando cuando no va a pasar."""
     if current_user.plan == 'free':
         return redirect(url_for('settings'))
+    cortada = PlanSubscription.query.filter_by(
+        user_id=current_user.id, status='cancelled').order_by(
+        PlanSubscription.id.desc()).first()
+    if cortada is not None and active_subscription(current_user) is None:
+        return redirect(url_for('pricing'))
     current_user.cancel_at_period_end = False
     db.session.commit()
     return redirect(url_for('settings', reactivated=1))
@@ -5695,7 +5871,7 @@ def forgot_password():
         user = User.query.filter_by(email=email).first()
         if user:
             token = reset_serializer.dumps(email, salt='password-reset')
-            reset_url = url_for('reset_password', token=token, _external=True)
+            reset_url = abs_url('reset_password', token=token)
             sent = send_reset_email(email, reset_url)
             record_audit_event('email_reset', user_id=user.id, detail=email, success=sent)
         intentos.append(ahora)
@@ -6045,7 +6221,7 @@ def admin_preview_checkout():
     # juzgar textos y disposicion. Solo pinta: no habilita ningun cobro.
     return render_template('checkout.html', plan=plan, cycle=cycle,
                            plan_label=PLAN_LABELS[plan], quote=_quote(plan, cycle),
-                           preview=True,
+                           preview=True, subs=True,
                            rails=available_payment_rails() or ['paypal', 'manual'],
                            preview_next=url_for('admin_preview_success', plan=plan, cycle=cycle))
 
@@ -6255,9 +6431,9 @@ def _crypto_create_invoice(order, kind='plan'):
             'pay_currency': CRYPTO_PAY_CURRENCY,
             'order_id': '%s-%d' % (kind, order.id),
             'order_description': label,
-            'ipn_callback_url': url_for('crypto_webhook', _external=True),
-            'success_url': url_for('checkout_status', order_id=order.id, _external=True),
-            'cancel_url': url_for('checkout_status', order_id=order.id, _external=True),
+            'ipn_callback_url': abs_url('crypto_webhook'),
+            'success_url': abs_url('checkout_status', order_id=order.id),
+            'cancel_url': abs_url('checkout_status', order_id=order.id),
         })
     except Exception as exc:
         app.logger.error('crypto invoice create failed (order %s): %s', order.id, exc)
@@ -6327,6 +6503,43 @@ def send_payment_alert_email(order, kind):
         return False
     finally:
         socket.setdefaulttimeout(prev_timeout)
+
+
+def _avisar_cobro_fallido(sub):
+    """Avisa al dueño de que una renovación no se pudo cobrar.
+
+    Merece su propio correo porque es el único fallo del sistema que NADIE
+    nota: el cliente no está delante (no hizo nada, era un cobro automático) y
+    el pedido ni siquiera llega a existir. Sin este aviso, un cliente fiel se
+    queda sin plan y ninguno de los dos se entera hasta que se queja."""
+    if not app.config.get('MAIL_PASSWORD'):
+        app.logger.warning('MAIL_APP_PASSWORD sin poner — aviso de cobro fallido no enviado.')
+        return False
+    u = db.session.get(User, sub.user_id)
+    hasta = _aware(u.plan_expires_at) if u else None
+    cuerpo = (
+        '⚠️ RENOVACIÓN RECHAZADA — Tradeable Academy\n'
+        + '=' * 46 + '\n\n'
+        f'Suscripción: #{sub.id} ({sub.provider_ref or "—"})\n'
+        f'Cliente:     {(u.username if u else "?")} / {(u.email if u else "?")}\n'
+        f'Plan:        {PLAN_LABELS.get(sub.plan, sub.plan)} · ${sub.price:.2f}/mes\n'
+        f'Plan activo hasta: {hasta.date().isoformat() if hasta else "—"}\n\n'
+        'PayPal reintenta el cobro por su cuenta durante unos días. Si no lo\n'
+        'consigue, suspende la suscripción y el cliente se queda sin plan al\n'
+        'llegar la fecha de arriba. Conviene escribirle antes de que pase.\n')
+    msg = Message('⚠️ Renovación rechazada — suscripción #%d' % sub.id,
+                  recipients=[ADMIN_INBOX])
+    msg.body = cuerpo
+    prev = socket.getdefaulttimeout()
+    socket.setdefaulttimeout(15)
+    try:
+        mail.send(msg)
+        return True
+    except Exception as exc:
+        app.logger.warning('aviso de cobro fallido no enviado: %s', exc)
+        return False
+    finally:
+        socket.setdefaulttimeout(prev)
 
 
 # Statuses that mean the buyer's money did NOT arrive cleanly.
@@ -6677,14 +6890,14 @@ def _paypal_create_order(order, kind='plan'):
                 # en alemán. Se le impone el idioma que el usuario ya eligió en
                 # el sitio, que es el único dato fiable que tenemos.
                 'locale': PAYPAL_LOCALES.get(_email_lang(), 'en-US'),
-                'return_url': (url_for('camo_paypal_return', order_id=order.id, _external=True)
+                'return_url': (abs_url('camo_paypal_return', order_id=order.id)
                                if kind == 'camo' else
-                               url_for('cosmetics_paypal_return', order_id=order.id, _external=True)
+                               abs_url('cosmetics_paypal_return', order_id=order.id)
                                if kind == 'cosm' else
-                               url_for('paypal_return', order_id=order.id, _external=True)),
-                'cancel_url': (url_for('camos', _external=True)
+                               abs_url('paypal_return', order_id=order.id)),
+                'cancel_url': (abs_url('camos')
                                if kind in ('camo', 'cosm') else
-                               url_for('checkout_status', order_id=order.id, _external=True)),
+                               abs_url('checkout_status', order_id=order.id)),
             }}},
         }, request_id='create-%s' % ref)
     except Exception as exc:
@@ -6833,6 +7046,210 @@ def _paypal_reconcile(order, kind='plan'):
     return _paypal_apply_status(order, status, amount, cap_id, kind)
 
 
+# ── Suscripciones de PayPal: el cobro que se repite solo ──────────────────
+
+def _subs_ok_for(order):
+    """¿Este pedido se puede convertir en una suscripción que se renueve sola?
+
+    Mensual y nada más. Un anual con renovación automática es exactamente el
+    riesgo que el dueño decidió no correr (un contracargo de $408 a los cinco
+    meses se lleva la ganancia de veintidós meses-cliente), y hoy los anuales
+    ni siquiera se venden."""
+    return (PAYPAL_SUBS_ENABLED
+            and order.billing_cycle == 'monthly'
+            and (order.final_price or 0) > 0
+            and bool(PAYPAL_PLAN_IDS.get(order.plan)))
+
+
+def _paypal_create_subscription(order):
+    """Abre la suscripción y devuelve dónde la aprueba el comprador.
+
+    El precio se manda SIEMPRE, aunque coincida con el del plan: sobrescribir
+    el importe del ciclo es lo que permite que un cliente traído por un socio
+    siga pagando $40 cada mes en vez de $50 sin tener que crear un plan de
+    PayPal por cada descuento posible.
+    """
+    plan_id = PAYPAL_PLAN_IDS.get(order.plan)
+    if not plan_id:
+        return None
+    user = db.session.get(User, order.user_id)
+    sub = PlanSubscription(
+        user_id=order.user_id, provider='paypal', plan=order.plan,
+        billing_cycle=order.billing_cycle, price=float(order.final_price),
+        promo_code=order.promo_code, status='pending', first_order_id=order.id)
+    db.session.add(sub)
+    db.session.commit()
+    ref = 'sub-%d' % sub.id
+    payload = {
+        'plan_id': plan_id,
+        'custom_id': ref,
+        'plan': {'billing_cycles': [{
+            'sequence': 1, 'total_cycles': 0,
+            'pricing_scheme': {'fixed_price': {
+                'currency_code': 'USD', 'value': '%.2f' % float(order.final_price)}},
+        }]},
+        'application_context': {
+            'brand_name': PAYPAL_BRAND_NAME,
+            'user_action': 'SUBSCRIBE_NOW',
+            'shipping_preference': 'NO_SHIPPING',
+            'locale': PAYPAL_LOCALES.get(_email_lang(), 'en-US'),
+            'return_url': abs_url('paypal_sub_return', sub_id=sub.id),
+            'cancel_url': abs_url('checkout_status', order_id=order.id),
+        },
+    }
+    if user and user.email:
+        payload['subscriber'] = {'email_address': user.email}
+    try:
+        code, data = _paypal_api('POST', '/v1/billing/subscriptions', payload,
+                                 request_id='create-%s' % ref)
+    except Exception as exc:
+        app.logger.error('paypal subscription create failed (order %s): %s', order.id, exc)
+        return None
+    if code >= 300 or not data.get('id'):
+        app.logger.error('paypal subscription rejected (order %s): %s %s',
+                         order.id, code, data)
+        return None
+    sub.provider_ref = str(data['id'])
+    order.provider_ref = sub.provider_ref
+    order.payment_method = 'paypal'
+    order.pay_status = 'sub_created'
+    order.pay_currency = 'usd'
+    db.session.commit()
+    for link in data.get('links') or []:
+        if link.get('rel') in ('approve', 'payer-action'):
+            return link.get('href')
+    return None
+
+
+def _paypal_sub_fetch(sub):
+    """Lo que PayPal dice hoy de esta suscripción, o None."""
+    if not (PAYPAL_ENABLED and sub and sub.provider_ref):
+        return None
+    try:
+        code, data = _paypal_api('GET', '/v1/billing/subscriptions/%s' % sub.provider_ref)
+    except Exception as exc:
+        app.logger.warning('paypal sub fetch failed (%s): %s', sub.id, exc)
+        return None
+    return data if code < 300 else None
+
+
+# Cómo se traduce el estado de PayPal al nuestro. 'APPROVAL_PENDING' y
+# 'APPROVED' siguen siendo 'pending': aprobada no es cobrada.
+PAYPAL_SUB_STATES = {
+    'ACTIVE': 'active', 'SUSPENDED': 'suspended',
+    'CANCELLED': 'cancelled', 'EXPIRED': 'expired',
+}
+
+
+def _paypal_sub_sync(sub, data=None):
+    """Pone al día nuestra fila con lo que dice PayPal. Devuelve el estado."""
+    data = data if data is not None else _paypal_sub_fetch(sub)
+    if not data:
+        return sub.status
+    nuevo = PAYPAL_SUB_STATES.get((data.get('status') or '').upper())
+    if nuevo and nuevo != sub.status:
+        sub.status = nuevo
+        if nuevo == 'active' and not sub.activated_at:
+            sub.activated_at = datetime.now(timezone.utc)
+        if nuevo in ('cancelled', 'expired') and not sub.cancelled_at:
+            sub.cancelled_at = datetime.now(timezone.utc)
+    info = data.get('billing_info') or {}
+    prox = info.get('next_billing_time')
+    if prox:
+        try:
+            sub.next_billing_at = datetime.fromisoformat(prox.replace('Z', '+00:00'))
+        except ValueError:
+            pass
+    db.session.commit()
+    return sub.status
+
+
+def _sub_cobro(sub, importe, fee=None, cuando=None, referencia=None):
+    """Registra UN cobro mensual: extiende el plan y anota la venta.
+
+    El primer cobro se salda contra el pedido que abrió la suscripción; del
+    segundo en adelante se crea un pedido nuevo. Así cada mes cobrado deja su
+    fila en el libro de ventas, y la comisión del socio se paga en cada
+    renovación — que es literalmente lo que promete el acuerdo mientras el
+    cliente siga pagando.
+
+    Idempotente por `provider_ref`: PayPal reintenta sus avisos, y dos avisos
+    del mismo cobro no pueden regalar dos meses.
+    """
+    ref = str(referencia or '')
+    if ref and Order.query.filter_by(provider_ref=ref, status='paid').first():
+        return None                        # ese cobro ya está contado
+    ahora = cuando or datetime.now(timezone.utc)
+    order = None
+    if sub.first_order_id:
+        primero = db.session.get(Order, sub.first_order_id)
+        if primero and primero.status != 'paid':
+            order = primero
+    if order is None:
+        # Renovación: pedido nuevo, con el MISMO precio y el mismo código que
+        # la suscripción. Copiar el código es lo que mantiene viva la
+        # atribución del socio mes tras mes.
+        base = PLAN_PRICING.get(sub.plan, {}).get(sub.billing_cycle, sub.price)
+        desc = int(round(100.0 * (1 - (sub.price / base)))) if base else 0
+        order = Order(user_id=sub.user_id, plan=sub.plan,
+                      billing_cycle=sub.billing_cycle, base_price=base,
+                      discount_pct=max(0, desc), final_price=float(sub.price),
+                      promo_code=sub.promo_code, status='pending',
+                      payment_method='paypal',
+                      note='Renovación automática (suscripción #%d)' % sub.id)
+        db.session.add(order)
+    order.provider_ref = ref or order.provider_ref
+    order.pay_status = 'completed'
+    order.paid_amount = float(importe) if importe is not None else float(sub.price)
+    order.pay_currency = 'usd'
+    order.status = 'paid'
+    order.paid_at = ahora
+    db.session.commit()
+    if fee is not None:
+        order._pp_fee = fee
+    _activate_plan_from_order(order)
+    sub.last_payment_at = ahora
+    if sub.status != 'active':
+        sub.status = 'active'
+        sub.activated_at = sub.activated_at or ahora
+    db.session.commit()
+    record_audit_event('subscription_charge', user_id=sub.user_id,
+                       detail='suscripción #%d · pedido #%d · $%.2f'
+                              % (sub.id, order.id, order.final_price))
+    return order
+
+
+def _paypal_sub_cancel(sub, motivo='Cancelada por el cliente'):
+    """Corta los cobros futuros. El plan ya pagado NO se toca."""
+    if not (PAYPAL_ENABLED and sub.provider_ref):
+        return False
+    try:
+        code, _ = _paypal_api(
+            'POST', '/v1/billing/subscriptions/%s/cancel' % sub.provider_ref,
+            {'reason': motivo[:127]})
+    except Exception as exc:
+        app.logger.error('paypal sub cancel failed (%s): %s', sub.id, exc)
+        return False
+    # 422 = PayPal dice que ya no estaba activa. Para el cliente el resultado
+    # es el mismo, así que se acepta en vez de enseñarle un error por algo que
+    # ya está como él quería.
+    if code >= 300 and code != 422:
+        app.logger.error('paypal sub cancel rejected (%s): %s', sub.id, code)
+        return False
+    sub.status = 'cancelled'
+    sub.cancelled_at = datetime.now(timezone.utc)
+    db.session.commit()
+    return True
+
+
+def active_subscription(user):
+    """La suscripción viva del usuario, si tiene una."""
+    return (PlanSubscription.query
+            .filter(PlanSubscription.user_id == user.id,
+                    PlanSubscription.status.in_(('active', 'suspended')))
+            .order_by(PlanSubscription.id.desc()).first())
+
+
 # ═══ Payment rails — the shared front door ════════════════════════════════
 # Se puede esconder USDT del todo poniéndolo a 0, pero por defecto se ofrece.
 USDT_ENABLED = os.environ.get('USDT_ENABLED', '1') == '1'
@@ -6864,6 +7281,15 @@ def available_payment_rails():
 def _reconcile_order(order):
     """Re-check one order with whichever processor it belongs to."""
     if order.payment_method == 'paypal':
+        # Un pedido abierto por una suscripción NO se puede preguntar como si
+        # fuera un pago suelto: su referencia es un id de suscripción (I-…) y
+        # el endpoint de pedidos devolvería 404 para siempre, así que la red de
+        # seguridad no atraparía nada. Se le pregunta a la suscripción.
+        sub = PlanSubscription.query.filter_by(first_order_id=order.id).first()
+        if sub is not None:
+            if _paypal_sub_sync(sub) == 'active':
+                return _sub_activada(sub) is not None
+            return False
         return _paypal_reconcile(order)
     return _crypto_reconcile(order)
 
@@ -7474,7 +7900,12 @@ def checkout():
                            # eleccion de verdad, que es lo que el dueno pidio.
                            rails=available_payment_rails(),
                            locked_code=(stored.code if stored_ok else None),
-                           locked_creator=(stored.creator_name if stored_ok else None))
+                           locked_creator=(stored.creator_name if stored_ok else None),
+                           # ¿Este pedido se cobrará solo cada mes? El carrito
+                           # tiene que decirlo ANTES de pagar: un cargo que se
+                           # repite y no se anunció es un contracargo esperando.
+                           subs=(PAYPAL_SUBS_ENABLED and cycle == 'monthly'
+                                 and bool(PAYPAL_PLAN_IDS.get(plan))))
 
 
 @app.route('/api/checkout/validate-code', methods=['POST'])
@@ -7651,6 +8082,12 @@ def _start_payment(order, method):
     if method == 'stripe' and STRIPE_ENABLED:
         return _stripe_checkout_url(order)
     if method == 'paypal' and PAYPAL_ENABLED:
+        # Mensual = suscripción que se renueva sola. Si la creación falla, NO
+        # se cae al pago suelto: el carrito le acaba de prometer que se le
+        # cobrará cada mes, y cobrarle una sola vez en silencio sería dejarle
+        # sin plan a los treinta días creyendo que estaba al día.
+        if _subs_ok_for(order):
+            return _paypal_create_subscription(order)
         return _paypal_create_order(order, 'plan')
     if method == 'crypto' and CRYPTO_ENABLED:
         return _crypto_create_invoice(order, 'plan')
@@ -7701,6 +8138,53 @@ def paypal_return(order_id):
     return redirect(url_for('checkout_status', order_id=order.id))
 
 
+@app.route('/checkout/paypal/subscription/<int:sub_id>')
+@login_required
+def paypal_sub_return(sub_id):
+    """La vuelta después de autorizar la suscripción.
+
+    Aquí NO se cobra nada: el primer cargo lo hace PayPal por su cuenta al
+    activarla. Lo que se hace es preguntar cómo quedó y, si ya está activa,
+    entregar el plan en el acto en vez de dejar al comprador esperando a que
+    llegue un aviso."""
+    sub = db.session.get(PlanSubscription, sub_id)
+    if not sub or sub.user_id != current_user.id:
+        abort(404)
+    destino = url_for('checkout_status', order_id=sub.first_order_id) \
+        if sub.first_order_id else url_for('settings')
+    try:
+        estado = _paypal_sub_sync(sub)
+        if estado == 'active':
+            _sub_activada(sub)
+    except Exception as exc:
+        app.logger.error('paypal sub return failed (%s): %s', sub.id, exc)
+    return redirect(destino)
+
+
+def _sub_activada(sub, importe=None, fee=None, referencia=None):
+    """Todo lo que pasa cuando una suscripción empieza a correr.
+
+    Se entra por aquí desde la vuelta del comprador Y desde el webhook, así que
+    tiene que ser idempotente: `_sub_cobro` lo es, y cancelar una suscripción
+    ya cancelada no hace nada."""
+    orden = _sub_cobro(sub, importe if importe is not None else sub.price,
+                       fee=fee, referencia=referencia)
+    # Un cliente no puede tener dos permisos de cobro a la vez. Al subir de
+    # Standard a Premium se abre una suscripción nueva, y si no se cierra la
+    # vieja se le cobrarían las dos todos los meses.
+    for otra in PlanSubscription.query.filter(
+            PlanSubscription.user_id == sub.user_id,
+            PlanSubscription.id != sub.id,
+            PlanSubscription.status.in_(('active', 'pending', 'suspended'))).all():
+        if otra.provider_ref:
+            _paypal_sub_cancel(otra, 'Reemplazada por la suscripción #%d' % sub.id)
+        else:
+            otra.status = 'cancelled'
+            otra.cancelled_at = datetime.now(timezone.utc)
+            db.session.commit()
+    return orden
+
+
 @app.route('/webhook/paypal', methods=['POST'])
 def paypal_webhook():
     """Payment notification from PayPal.
@@ -7733,6 +8217,68 @@ def paypal_webhook():
         return jsonify({'error': 'bad_signature'}), 400
 
     res = event.get('resource') or {}
+    etype_raw = (event.get('event_type') or '').upper()
+
+    # ── Suscripciones ────────────────────────────────────────────────────
+    # Van antes que nada porque son los únicos avisos que llegan SIN que haya
+    # nadie mirando la pantalla: el cobro del mes 2 en adelante existe solo
+    # aquí. Si esto se ignora, la renovación se cobra y el plan no se extiende.
+    if etype_raw.startswith('BILLING.SUBSCRIPTION.') or etype_raw.startswith('PAYMENT.SALE.'):
+        sub = None
+        sub_ref = str(res.get('billing_agreement_id') or res.get('id') or '')
+        if sub_ref.startswith('I-'):
+            sub = PlanSubscription.query.filter_by(provider_ref=sub_ref).first()
+        if sub is None:
+            # Respaldo por nuestra propia referencia, por si PayPal manda el
+            # aviso antes de que terminemos de guardar su id.
+            propia = str(res.get('custom_id') or '')
+            if propia.startswith('sub-'):
+                try:
+                    sub = db.session.get(PlanSubscription, int(propia[4:]))
+                except ValueError:
+                    sub = None
+        if sub is None:
+            return jsonify({'ok': True, 'ignored': 'unknown_subscription'})
+
+        if etype_raw == 'PAYMENT.SALE.COMPLETED':
+            monto = (res.get('amount') or {}).get('total')
+            fee = res.get('transaction_fee') or {}
+            try:
+                fee_val = round(float(fee.get('value')), 2) if fee.get('value') else None
+            except (TypeError, ValueError):
+                fee_val = None
+            _sub_cobro(sub, float(monto) if monto else sub.price,
+                       fee=fee_val, referencia=res.get('id'))
+            _paypal_sub_sync(sub)
+            return jsonify({'ok': True})
+        if etype_raw == 'BILLING.SUBSCRIPTION.ACTIVATED':
+            _paypal_sub_sync(sub, res)
+            # El primer cobro llega en su propio aviso; si ya vino, esto no
+            # hace nada (`_sub_cobro` es idempotente) y si se perdió, lo cubre.
+            _sub_activada(sub)
+            return jsonify({'ok': True})
+        if etype_raw in ('BILLING.SUBSCRIPTION.CANCELLED',
+                         'BILLING.SUBSCRIPTION.SUSPENDED',
+                         'BILLING.SUBSCRIPTION.EXPIRED'):
+            # ⚠️ NO se le quita el plan: conserva hasta la fecha ya pagada.
+            _paypal_sub_sync(sub, res)
+            return jsonify({'ok': True})
+        if etype_raw in ('BILLING.SUBSCRIPTION.PAYMENT.FAILED', 'PAYMENT.SALE.DENIED'):
+            sub.note = 'Cobro rechazado el %s' % datetime.now(timezone.utc).date()
+            db.session.commit()
+            try:
+                _avisar_cobro_fallido(sub)
+            except Exception:
+                app.logger.exception('aviso de cobro fallido no enviado (sub %s)', sub.id)
+            return jsonify({'ok': True})
+        if etype_raw in ('PAYMENT.SALE.REFUNDED', 'PAYMENT.SALE.REVERSED'):
+            estado = 'refunded' if 'REFUND' in etype_raw else 'reversed'
+            pedido = Order.query.filter_by(provider_ref=str(res.get('sale_id') or '')).first()
+            if pedido:
+                _paypal_apply_status(pedido, estado, None, None, 'plan')
+            return jsonify({'ok': True})
+        return jsonify({'ok': True, 'ignored': etype_raw})
+
     ref = str(res.get('custom_id') or '')
     if not ref:
         units = res.get('purchase_units') or []
@@ -7791,9 +8337,9 @@ def _stripe_checkout_url(order):
                     },
                     'quantity': 1,
                 }],
-                success_url=url_for('checkout_success', _external=True)
+                success_url=abs_url('checkout_success')
                             + '?session_id={CHECKOUT_SESSION_ID}',
-                cancel_url=url_for('pricing', _external=True),
+                cancel_url=abs_url('pricing'),
                 client_reference_id=str(order.id),
                 customer_email=current_user.email,
                 metadata={'order_id': str(order.id)},
@@ -8927,7 +9473,7 @@ def admin_issue_synapse_pdf():
     db.session.add(dl_token)
     db.session.commit()
 
-    download_url = url_for('synapse_pdf_download', token=token, _external=True)
+    download_url = abs_url('synapse_pdf_download', token=token)
     record_audit_event('pdf_issued', user_id=user.id, detail=f'order={order_id} token={token[:8]}…')
     # Return a simple redirect back to admin with the URL in a flash-style param
     return redirect(url_for('admin', pdf_issued=download_url))
@@ -12037,7 +12583,7 @@ def certificate_view(rank):
         abort(403)
     cert = _issue_or_get_certificate(current_user, rank)
     lang = _cert_lang(request)
-    verify_url = url_for('verify_certificate', code=cert.code, _external=True)
+    verify_url = abs_url('verify_certificate', code=cert.code)
     return render_template(
         'certificate.html', rank=rank, rank_name=RANK_CERT_NAMES_ES[rank - 1],
         roman=_ROMAN[rank - 1], xp=RANK_THRESHOLDS[rank - 1], cert=cert,
@@ -12045,7 +12591,7 @@ def certificate_view(rank):
         is_legend=(rank == 8), for_pdf=False,
         # The short alias is what gets shared: fewer characters left over for
         # the message on X, and it is the same page either way.
-        share_url=url_for('verify_short', code=cert.code, _external=True),
+        share_url=abs_url('verify_short', code=cert.code),
         share_text=CERT_I18N[lang]['shareText'].replace('{rank}', RANK_CERT_NAMES_ES[rank - 1]),
         theme=_cert_theme(rank), cl=CERT_I18N[lang], lang=lang)
 
@@ -12060,7 +12606,7 @@ def certificate_pdf(rank):
         abort(403)
     cert = _issue_or_get_certificate(current_user, rank)
     lang = _cert_lang(request)
-    verify_url = url_for('verify_certificate', code=cert.code, _external=True)
+    verify_url = abs_url('verify_certificate', code=cert.code)
     html_content = render_template(
         'certificate.html', rank=rank, rank_name=RANK_CERT_NAMES_ES[rank - 1],
         roman=_ROMAN[rank - 1], xp=RANK_THRESHOLDS[rank - 1], cert=cert,
@@ -12110,9 +12656,9 @@ def verify_certificate(code):
         theme=theme, roman=roman,
         code=code, vl=VERIFY_I18N[lang], lang=lang,
         xp_needed=xp_needed, rank_idx=idx, rank_total=total,
-        page_url=(url_for('verify_certificate', code=cert.code, _external=True)
+        page_url=(abs_url('verify_certificate', code=cert.code)
                   if valid else None),
-        og_url=(url_for('verify_certificate_og', code=cert.code, _external=True)
+        og_url=(abs_url('verify_certificate_og', code=cert.code)
                 if valid else None))
 
 

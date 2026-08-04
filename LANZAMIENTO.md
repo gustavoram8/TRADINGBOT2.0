@@ -64,8 +64,17 @@ justo cuando ya decidió pagar. **Y no vuelve.**
 ✅ **Buena noticia:** los tres webhooks **exigían dominio con HTTPS**, y eso ya existe desde el
 2026-07-30. Antes no se podían ni configurar. Ese freno desapareció.
 
-⚠️ **Al activar Stripe LIVE hay que actualizar la Sección 5 de los T&C** (hoy dice que los pagos se
-procesan manualmente) **y sus traducciones ES/FR/PT en `legal_i18n.js`.** Ver `CLAUDE.md`.
+🔴 **Y ahora los planes mensuales SE COBRAN SOLOS** (decisión del dueño, cableado el 2026-08-04),
+lo que convierte el dominio con HTTPS en un requisito duro y no en una mejora: en una renovación
+**nadie vuelve a la web**, así que el cobro del mes 2 en adelante llega ÚNICAMENTE por webhook. Sin
+`PAYPAL_WEBHOOK_ID` y sin HTTPS, se cobraría al cliente y su plan no se extendería, en silencio.
+Por eso `PAYPAL_SUBS_ENABLED` exige el webhook y los dos ids de plan; sin ellos el sitio cae al pago
+suelto de siempre y no promete ninguna renovación. Crear los planes: `tools/paypal_setup_subs.py`
+(o directamente `tools/set_paypal.py`, que ya los crea de paso).
+
+⚠️ **La Sección 5 de los T&C ya está reescrita** con la renovación automática, la baja y los
+reintentos (EN + ES/FR/PT, auditor 144 cláusulas OK). Si algún día se enciende Stripe LIVE, revisarla
+otra vez.
 
 ### 📌 Al tocar la pasarela, hacer TAMBIÉN estas dos cosas
 
@@ -125,7 +134,19 @@ Ver `CLAUDE.md`. Conviene antes de publicar, o dentro de los 3 meses siguientes.
 > Verificados leyendo `scalpel/app.py` el 2026-07-30. Hoy no molestan porque la app se sirve directo;
 > **en cuanto nginx se ponga delante, sí molestan.**
 
-### A. Falta `ProxyFix` 🔴
+### A. `ProxyFix` ✅ HECHO (2026-08-04) — solo falta encenderlo
+
+Ya está en `app.py`, **detrás de `PUBLIC_HTTPS=1`**. Y el problema de los enlaces absolutos se
+resolvió por otra vía, más directa: existe **`SITE_URL`** y un helper `abs_url()`, y los **20**
+sitios que generaban enlaces absolutos pasan por él. Con `SITE_URL=https://tradeable.academy` los
+enlaces salen bien aunque el esquema de la petición sea otro.
+
+> ⚠️ Deliberadamente NO se usa `SERVER_NAME` de Flask: fijarlo hace que la app deje de responder a
+> cualquier otro Host, así que el día de ponerlo la IP cruda devolvería 404 en TODO el sitio.
+
+Lo que sigue debajo es el diagnóstico original, que se conserva porque explica por qué importa.
+
+### A-bis. El diagnóstico original 🔴
 
 `app.py` **no importa ni aplica** `werkzeug.middleware.proxy_fix.ProxyFix` (comprobado: 0 coincidencias).
 Detrás de nginx, Flask creería que la conversación es por `http`, porque el cifrado termina en nginx.
@@ -150,9 +171,15 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 ```
 
-### B. Falta `SESSION_COOKIE_SECURE` 🔴
+### B. `SESSION_COOKIE_SECURE` ✅ HECHO (2026-08-04) — solo falta encenderlo
 
-No está configurado (comprobado). La cookie de sesión viajaría sin la marca que la obliga a ir siempre
+Va en el mismo bloque `PUBLIC_HTTPS=1`, junto con `HTTPONLY`, `SAMESITE='Lax'`,
+`REMEMBER_COOKIE_SECURE` y `PREFERRED_URL_SCHEME='https'`. La advertencia de abajo sigue siendo
+válida y es la razón de que esté condicionado.
+
+### B-bis. El diagnóstico original 🔴
+
+No estaba configurado. La cookie de sesión viajaría sin la marca que la obliga a ir siempre
 cifrada. Añadir junto con las otras banderas de endurecimiento:
 
 ```python
@@ -169,7 +196,14 @@ deja de enviarse → no se puede iniciar sesión). Como el usuario previsualiza 
 hay que **condicionarlo a una variable de entorno** (p. ej. `PUBLIC_HTTPS=1`), no ponerlo fijo, o
 apagarle su vista previa sin avisar.
 
-### C. La IP del cliente se puede falsificar 🟡
+### C. La IP del cliente ✅ ARREGLADO EN CÓDIGO (2026-08-04)
+
+`_client_ip()` ya NO lee el primer valor de `X-Forwarded-For` cuando `PUBLIC_HTTPS=1`: usa
+`request.remote_addr`, que ProxyFix rellena con el salto que añade nuestro propio nginx — ese no lo
+controla el visitante. La cabecera cruda solo se mira sin proxy (vista previa por IP y local).
+Lo de `set_real_ip_from` de Cloudflare de abajo sigue siendo la mejora fina y queda pendiente.
+
+### C-bis. El diagnóstico original 🟡
 
 `_client_ip()` (`app.py:3423`) toma el **primer** valor de `X-Forwarded-For`. Detrás de Cloudflare eso
 normalmente **es** el visitante real… pero Cloudflare **añade** la IP a la cadena que llegue, así que
@@ -203,6 +237,12 @@ anti-ataques, sin HTTPS y revelando la IP del servidor).
 ---
 
 # 🔵 EL INTERRUPTOR — conectar el dominio a la aplicación
+
+> ✅ **Ya no hay que escribirlo a mano: está en `deploy/nginx/tradeable.academy.live.conf`** (creado
+> el 2026-08-04), con los estáticos, el `client_max_body_size`, el `robots.txt` corregido y un
+> `location ~ ^/webhook/` aparte con más tiempo de espera. El archivo viejo se conserva para poder
+> volver atrás con un solo comando. **Antes de recargar nginx**, poner en supervisor
+> `SITE_URL=https://tradeable.academy` y `PUBLIC_HTTPS=1`.
 
 Sustituir el `location /` de `deploy/nginx/tradeable.academy.conf`. Certbot ya creó el bloque `443`;
 **el cambio va ahí, no en el bloque 80.**

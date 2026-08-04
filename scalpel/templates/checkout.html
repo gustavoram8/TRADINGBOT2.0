@@ -184,7 +184,15 @@
 
     <div class="pfine">
       {% set fk %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>{% endset %}
-      <div class="pfi">{{ fk }}<span data-i18n-html="pay.fineOnce"><b>One-time payment.</b> No auto-renewal — nobody charges you again.</span></div>
+      {# Lo que dice esta línea depende de CÓMO va a pagar, y eso lo elige
+         arriba en esta misma pantalla: PayPal mensual se renueva solo, USDT
+         no (una cadena de bloques no deja cobrar sin que el dueño del dinero
+         firme cada vez). Por eso se pintan las dos y el JS enseña la que toca:
+         anunciar mal un cargo que se repite es la causa nº1 de contracargo. #}
+      {% if subs %}
+      <div class="pfi" id="fine-auto" hidden>{{ fk }}<span data-i18n-html="pay.fineAuto"><b>Renews by itself every month.</b> Cancel whenever you want, with one button in Settings.</span></div>
+      {% endif %}
+      <div class="pfi" id="fine-once">{{ fk }}<span data-i18n-html="pay.fineOnce"><b>One-time payment.</b> No auto-renewal — nobody charges you again.</span></div>
       <div class="pfi">{{ fk }}<span data-i18n-html="pay.fineCard"><b>We never see your card.</b> The charge is processed by whichever provider you pick.</span></div>
       <div class="pfi">{{ fk }}<span data-i18n-html="pay.fineActivate"><b>Your plan switches on by itself</b> as soon as the payment is confirmed.</span></div>
     </div>
@@ -200,13 +208,26 @@
     /* Marcar el metodo elegido. El CSS ya lo resuelve solo con :has(), pero
        esto lo mantiene en pie en un navegador que no lo tenga. */
     var rails = document.querySelectorAll('.prail-in');
+    var fAuto = document.getElementById('fine-auto');
+    var fOnce = document.getElementById('fine-once');
+
+    function letra() {
+      if (!fAuto) return;                 /* sin suscripciones: nada que cambiar */
+      var sel = document.querySelector('.prail-in:checked');
+      var auto = !!sel && sel.value === 'paypal';
+      fAuto.hidden = !auto;
+      fOnce.hidden = auto;
+    }
+
     Array.prototype.forEach.call(rails, function (r) {
       r.addEventListener('change', function () {
         Array.prototype.forEach.call(rails, function (o) {
           o.closest('.prail').classList.toggle('on', o.checked);
         });
+        letra();
       });
     });
+    letra();
   })();
 
   (function () {
