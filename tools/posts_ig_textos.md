@@ -1,16 +1,27 @@
 # Los 9 primeros posts — textos listos para pegar
 
-**Antes de publicar nada:** ten las 9 piezas cargadas. Un perfil con un solo
-post no se sigue, y la primera vez que alguien llegue tiene que ver una cuenta
-viva. Publica 3 por semana (lunes, miércoles, viernes) y en tres semanas tienes
-el fondo hecho.
+## Para qué son estos 9
+
+Son **posts del feed** — la cuadrícula del perfil. No son historias ni
+destacadas: eso es aparte y se explica al final.
+
+Su trabajo es ser el **escaparate**. Alguien ve un reel tuyo, entra al perfil y
+en tres segundos decide si te sigue. Si encuentra un perfil vacío o con un solo
+post, no te sigue por muy bueno que fuera el reel.
+
+**Por eso van AHORA, antes de empezar con reels.** Publica 3 por semana (lunes,
+miércoles, viernes) y en tres semanas tienes el fondo hecho. En paralelo empiezas
+a grabar vídeo corto, que es lo único que da alcance a una cuenta sin seguidores.
+
+**El post 5 va en el centro de la cuadrícula** — es el de la mascota, y ancla
+visualmente el 3×3. Respeta el orden.
 
 **Regla que atraviesa todos los textos:** educativo siempre. Nada de señales,
-recomendaciones, promesas de ganancia ni "vas a lograr". Y en público la IA es
-*nuestro motor de IA*, nunca el nombre del proveedor.
+recomendaciones ni promesas de ganancia. Y en público la IA es *nuestro motor de
+IA*, nunca el nombre del proveedor.
 
-**El enlace de la bio** todavía no va al sitio (sigue cerrado). Hasta que abras,
-la bio no promete fecha.
+**El enlace de la bio** todavía no va al sitio (sigue cerrado). Sin fecha: una
+fecha que se corre deja peor que no haber dicho nada.
 
 ---
 
@@ -24,9 +35,9 @@ la bio no promete fecha.
 >
 > El problema es que nadie te lo tradujo.
 >
-> Eso es Tradeable Academy: un sitio donde subes tu gráfico y recibes la
-> corrección que nunca te dieron. No una señal. No una opinión. Una corrección,
-> según la metodología que tú estudias.
+> Eso es Tradeable Academy: subes tu gráfico y recibes la corrección que nunca
+> te dieron. No una señal. No una opinión. Una corrección, según la metodología
+> que tú estudias.
 >
 > Contenido educativo. Nada de esto es asesoría financiera.
 
@@ -35,7 +46,7 @@ la bio no promete fecha.
 ---
 
 ## 2 · El problema — `02-problema.png`
-**Tema:** el dolor real del trader que estudia solo. **Semana 1, miércoles.**
+**Tema:** el dolor del que estudia solo. **Semana 1, miércoles.**
 
 > Abre tu galería. Cuenta las capturas de tus operaciones.
 >
@@ -44,8 +55,8 @@ la bio no promete fecha.
 > Ahora dime en cuáles repetiste el mismo error. No la que te acuerdas — todas.
 >
 > Guardar tus trades no es revisarlos. Una carpeta llena de gráficos es un
-> archivo, no un método. Revisar es otra cosa: es que alguien te señale el
-> patrón que tú no ves porque estabas dentro.
+> archivo, no un método. Revisar es que alguien te señale el patrón que tú no
+> ves porque estabas dentro.
 >
 > ¿Cuántas capturas tienes tú? Dilo abajo.
 
@@ -67,14 +78,14 @@ la bio no promete fecha.
 >
 > Como te lo diría un profesor. No como te lo diría un vendedor.
 >
-> Educativo. No es asesoría financiera ni una recomendación de operar.
+> Educativo. No es asesoría financiera ni recomendación de operar.
 
 `#ict #smc #wyckoff #trading #aprenderatradear`
 
 ---
 
 ## 4 · Order Block — `04-order-block.png`
-**Tema:** concepto, con diagrama. **Semana 2, lunes.**
+**Tema:** concepto con diagrama. **Semana 2, lunes.**
 
 > **Order Block** — la vela que casi todos señalan mal.
 >
@@ -92,51 +103,72 @@ la bio no promete fecha.
 
 ---
 
-## 5 · Fair Value Gap — `05-fvg.png`
-**Tema:** concepto, con diagrama. **Semana 2, miércoles.**
+## 5 · La mascota / Detrás — `05-mascota.png`
+**Tema:** presentación de marca. **Va en el CENTRO de la cuadrícula.**
+**Semana 2, miércoles.**
+
+> Estamos construyendo algo, y lo vamos a ir enseñando por aquí.
+>
+> Un sitio donde revisar tus gráficos deje de ser una carpeta de capturas: un
+> analizador que te corrige, una academia con rangos, un mapa de estudio en 3D,
+> pizarras, y un foro moderado donde nadie te va a vender una señal.
+>
+> Todavía no está abierto. Cuando lo esté, lo sabrás por aquí primero.
+>
+> Guarda este post si quieres verlo crecer desde el día cero.
+
+`#buildinpublic #trading #tradingeducativo`
+
+---
+
+## 6 · Fair Value Gap — `06-fvg.png`
+**Tema:** concepto con diagrama. **Semana 2, viernes.**
 
 > **Fair Value Gap** en una imagen.
 >
 > Tres velas. El máximo de la primera queda por debajo del mínimo de la
-> tercera. Ese hueco no lo negoció nadie: el precio pasó tan rápido que se
-> saltó un tramo entero.
+> tercera. Entre esas dos líneas no se negoció nada: el precio pasó tan rápido
+> que se saltó un tramo entero.
 >
 > Por eso llama la atención. Es una zona donde la entrega fue desequilibrada, y
 > el mercado tiende a volver a visitarla.
 >
-> Dos cosas que no dice el dibujo: ni todos se rellenan, ni el que se rellena
-> lo hace cuando a ti te conviene.
+> Dos cosas que no dice el dibujo: ni todos se rellenan, ni el que se rellena lo
+> hace cuando a ti te conviene.
 
 `#fairvaluegap #fvg #ict #trading #tradingeducativo`
 
 ---
 
-## 6 · Disciplina — `06-disciplina.png`
-**Tema:** el error humano. **Semana 2, viernes.**
+## 7 · Los dos frentes — `07-analisis-ejecucion.png`
+**Tema:** el alcance real de la corrección. **Semana 3, lunes.**
 
-> Revisa tus últimas diez operaciones perdedoras y sé honesto:
+> Un trade se pierde en dos sitios, y conviene saber en cuál se te fue.
 >
-> ¿Cuántas se perdieron porque el análisis estaba mal? ¿Y cuántas porque
-> entraste antes de tiempo, moviste el stop, o doblaste para recuperar?
+> **En el análisis:** marcaste la zona donde no era, leíste la estructura al
+> revés, ignoraste el marco mayor.
 >
-> Casi siempre es lo segundo. Y ahí está la buena noticia: **eso se puede
-> medir**. Un error de ejecución deja rastro — la hora, el estado, si seguiste
-> tu plan o lo improvisaste.
+> **En la ejecución:** entraste antes de tiempo, moviste el stop, doblaste para
+> recuperar.
 >
-> Lo que se mide se corrige. Lo que se justifica se repite.
+> Son fallos distintos y se corrigen distinto. Por eso nuestra IA revisa los
+> dos: de poco sirve leer bien el gráfico si lo operas de otra forma — y al
+> revés, tampoco.
+>
+> ¿Cuál de los dos te pasa más? Sé honesto 👇
 
-`#psicotrading #disciplina #tradingjournal #trading`
+`#psicotrading #tradingjournal #ict #trading #disciplina`
 
 ---
 
-## 7 · Metodologías — `07-metodologias.png`
-**Tema:** alcance del producto. **Semana 3, lunes.**
+## 8 · Metodologías — `08-metodologias.png`
+**Tema:** alcance del producto. **Semana 3, miércoles.**
 
 > Siete personas miran el mismo gráfico y ven siete cosas distintas.
 >
 > El de ICT ve dónde quedó la liquidez. El de Wyckoff ve en qué fase está la
 > campaña. El de Price Action ve la reacción en un nivel. Ninguno está
-> inventando: están leyendo en idiomas distintos.
+> inventando: leen en idiomas distintos.
 >
 > El problema empieza cuando alguien te corrige en un idioma que tú no estudias.
 >
@@ -149,8 +181,8 @@ la bio no promete fecha.
 
 ---
 
-## 8 · Los rangos — `08-rangos.png`
-**Tema:** la academia y cómo se progresa. **Semana 3, miércoles.**
+## 9 · Los rangos — `09-rangos.png`
+**Tema:** la academia y cómo se progresa. **Semana 3, viernes.**
 
 > De Paper Trader a Market Maker: ocho rangos.
 >
@@ -167,27 +199,10 @@ la bio no promete fecha.
 
 ---
 
-## 9 · Detrás — `09-detras.png`
-**Tema:** construir en público. **Semana 3, viernes.**
-
-> Estamos construyendo algo, y lo vamos a ir enseñando por aquí.
->
-> Un sitio donde revisar tus gráficos deje de ser una carpeta de capturas: un
-> analizador que te corrige, una academia con rangos, un mapa de estudio en 3D,
-> pizarras, y un foro moderado donde nadie te va a vender una señal.
->
-> Todavía no está abierto. Cuando lo esté, lo sabrás por aquí primero.
->
-> Guarda este post si quieres verlo crecer desde el día cero.
-
-`#buildinpublic #trading #tradingeducativo #startup`
-
----
-
 # Portadas de historias destacadas
 
-Las portadas van **sin texto**: Instagram escribe el título debajo del círculo,
-así que la palabra dentro sobraría y a 64px no se leería.
+Van **sin texto**: Instagram escribe el título debajo del círculo, así que la
+palabra dentro sobraría y a ~64px no se leería. Por eso llevan glifo simple.
 
 | Archivo | Título que escribes en Instagram |
 |---|---|
@@ -197,15 +212,17 @@ así que la palabra dentro sobraría y a 64px no se leería.
 | `h4-academia.png` | Academia |
 | `h5-empezar.png` | Empezar |
 
-**Qué va dentro de cada una:** en Destacadas solo puedes guardar historias, así
-que primero súbelas como historia y luego las agrupas. Contenido sugerido:
+⚠️ En Destacadas **solo se pueden guardar historias**. Primero súbelas como
+historia y luego las agrupas; la portada se elige aparte, desde "Editar
+destacada".
+
+Qué meter en cada una:
 
 - **Qué es** — 3 historias: el problema, qué hace el producto, para quién es.
 - **Métodos** — una historia por metodología (sirven de teaser a los posts).
 - **Conceptos** — reaprovecha las fichas (Order Block, FVG) y ve sumando.
 - **Academia** — los rangos, el quiz, el reto diario.
-- **Empezar** — cómo se usa, paso a paso. Esta es la que se llena el día que
-  abras el sitio.
+- **Empezar** — cómo se usa, paso a paso. Esta se llena el día que abras el sitio.
 
 ---
 
@@ -221,4 +238,4 @@ que primero súbelas como historia y luego las agrupas. Contenido sugerido:
 > Contenido educativo — no es asesoría financiera.
 > 🔧 Abriendo pronto
 
-⚠️ Sin fecha. Una fecha que se corre te deja peor que no haber dicho nada.
+**Foto de perfil:** `avatar.png` (la "a" blanca sobre el azul de marca).
