@@ -59,11 +59,22 @@ def main():
     # El trazo del personaje mide 8-15 px, el de la baranda 3-4. Una apertura
     # morfológica con radio 3 borra lo fino y respeta lo grueso, así que la
     # barrera queda siendo solo el personaje.
-    yy, xx = np.mgrid[-2:3, -2:3]
-    disco = (xx ** 2 + yy ** 2) <= 4
-    negro_grueso = ndimage.binary_opening(negro, structure=disco)
-    print('trazo negro: %d px totales, %d tras quitar lo fino'
-          % (negro.sum(), negro_grueso.sum()))
+    # ¿Hay baranda? Se busca una estructura gris LARGA y horizontal en la franja
+    # donde no hay personaje. Si no la hay, la imagen ya viene limpia y aplicarle
+    # el tratamiento (apertura + reconstrucción) sería maltratarla para nada.
+    gris0 = (mx - mn < 34) & (mx > 90) & (mx < 246)
+    hay_baranda = bool(ndimage.binary_opening(
+        gris0, structure=np.ones((1, 200), bool)).any())
+    print('baranda detectada: %s' % ('SI' if hay_baranda else 'no, imagen limpia'))
+
+    if hay_baranda:
+        yy, xx = np.mgrid[-2:3, -2:3]
+        disco = (xx ** 2 + yy ** 2) <= 4
+        negro_grueso = ndimage.binary_opening(negro, structure=disco)
+        print('trazo negro: %d px totales, %d tras quitar lo fino'
+              % (negro.sum(), negro_grueso.sum()))
+    else:
+        negro_grueso = negro
     barrera = azul | negro_grueso
 
     # ── inundación desde el borde ────────────────────────────────────────
@@ -86,10 +97,12 @@ def main():
     largo_h = ndimage.binary_opening(negro, structure=np.ones((1, 25), bool))
     largo_v = ndimage.binary_opening(negro, structure=np.ones((25, 1), bool))
     recta = ndimage.binary_dilation(largo_h | largo_v, iterations=2)
-    vecino = ndimage.binary_dilation(~fuera, iterations=2)
-    rescate = fuera & negro & vecino & ~recta
-    fuera &= ~rescate
-    print('trazo rescatado del personaje: %d px' % rescate.sum())
+
+    if hay_baranda:
+        vecino = ndimage.binary_dilation(~fuera, iterations=2)
+        rescate = fuera & negro & vecino & ~recta
+        fuera &= ~rescate
+        print('trazo rescatado del personaje: %d px' % rescate.sum())
 
     # ── los huecos que deja la baranda al cruzar el personaje ────────────
     # No es solo la barra de arriba: el travesaño de ABAJO cruza por delante de
@@ -111,7 +124,8 @@ def main():
     aba = ndimage.binary_dilation(dentro, structure=V, origin=(-15, 0))
     izq = ndimage.binary_dilation(dentro, structure=Hh, origin=(0, 15))
     der = ndimage.binary_dilation(dentro, structure=Hh, origin=(0, -15))
-    tapado = fuera & gris & ((arr & aba) | (izq & der))
+    tapado = (fuera & gris & ((arr & aba) | (izq & der))
+              if hay_baranda else np.zeros_like(fuera))
     print('pixeles a reconstruir: %d' % tapado.sum())
     fuera &= ~tapado          # pasan a ser personaje ya, no al final
 
