@@ -629,7 +629,34 @@
     "Dynamic S/R",
     "Lag"
    ],
-   "figcap": "Price trends upward while repeatedly using the moving average as dynamic support on each pullback."
+   "figcap": "Price trends upward while repeatedly using the moving average as dynamic support on each pullback.",
+   "playbook": [
+    "Choose the average by its JOB, not by fashion: a long MA (100–200) answers \"what regime am I in?\", a short one (9–21) tracks the rhythm of pullbacks.",
+    "Read three things before anything else: the MA's slope, which side price is on, and how long it has stayed there.",
+    "Use it as a filter, not a trigger: rising MA plus price above it means you hunt longs — the entry itself comes from structure or a candle signal.",
+    "Treat dynamic support only in a trending regime: a pullback tagging a rising MA that already caught price before is a location, not an order to buy.",
+    "For real confluence, pair the MA's regime read with a DIFFERENT family — a momentum or volume read — never with a second average."
+   ],
+   "fails": [
+    "When the MA flattens, every touch becomes a coin flip: a horizontal average means no regime, and \"dynamic support\" in chop is a story traders tell themselves.",
+    "Optimizing the period until the past looks perfect is curve fitting — the 34 that \"worked\" last quarter carries no promise into the next.",
+    "Price bouncing exactly at an MA in a range is usually coincidence with a real level nearby; credit the level, not the line."
+   ],
+   "drill": "Collect fifty touches of a 20-period EMA on your market and grade each by the MA's slope at the touch: steep, mild, flat. Log whether the touch held for at least three candles. The hold rate falling off a cliff as the slope flattens is the whole lesson — measured, not believed.",
+   "related": [
+    {
+     "slug": "technical.ma-cross",
+     "why": "what happens when two of these lines argue with each other"
+    },
+    {
+     "slug": "price.trend-structure",
+     "why": "the regime the MA smooths was always visible in raw swings"
+    },
+    {
+     "slug": "technical.volume",
+     "why": "a different family — the confluence an MA read actually needs"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><line class=\"df-axis\" x1=\"34\" y1=\"196\" x2=\"384\" y2=\"196\"/><line class=\"df-axis\" x1=\"34\" y1=\"16\" x2=\"34\" y2=\"196\"/><path class=\"df-line-accent\" d=\"M40 190 L100 172 L170 144 L240 112 L310 80 L360 62\"/><path class=\"df-line\" d=\"M40 184 L70 158 L95 174 L125 136 L155 154 L190 106 L225 122 L260 78 L295 96 L330 56 L360 72\"/><circle class=\"df-accent-f\" cx=\"95\" cy=\"174\" r=\"3.5\"/><circle class=\"df-accent-f\" cx=\"155\" cy=\"154\" r=\"3.5\"/><circle class=\"df-accent-f\" cx=\"225\" cy=\"122\" r=\"3.5\"/><text class=\"df-tag-accent\" x=\"368\" y=\"58\" text-anchor=\"end\">MA</text><text class=\"df-tag\" x=\"155\" y=\"168\" text-anchor=\"middle\">bounce</text><line class=\"df-line-accent\" x1=\"160\" y1=\"164\" x2=\"159.94028500029066\" y2=\"163.76114000116266\"/><polygon class=\"df-accent-f\" points=\"158,156 164.30592625094465,162.66972968849916 155.57464374963666,164.85255031382616\"/></svg>"
  },
@@ -664,7 +691,34 @@
     "Trend regime",
     "Lookback"
    ],
-   "figcap": "The RSI oscillator with the 70/30 bands; it can ride along overbought through a strong trend."
+   "figcap": "The RSI oscillator with the 70/30 bands; it can ride along overbought through a strong trend.",
+   "playbook": [
+    "Diagnose the regime FIRST: in a range, 70/30 mark real extremes; in a trend, they mark strength — the same number, two opposite meanings.",
+    "In ranges, take overbought/oversold only at a marked level, and demand a price signal there — the RSI locates, the candle confirms.",
+    "In trends, watch the 40–60 band: healthy pullbacks in an uptrend tend to exhaust there, which turns RSI into a pullback-depth gauge.",
+    "Use the 50 centerline as the momentum regime line: holding above it while price builds higher lows is agreement worth noticing.",
+    "Save your strongest attention for divergence at structure — that is the one RSI read that leads instead of lagging."
+   ],
+   "fails": [
+    "In a strong trend the RSI pins: it can sit above 70 for weeks while price doubles — fading every reading is the textbook way to bleed against momentum.",
+    "\"RSI overbought AND Stochastic overbought\" is one signal counted twice — same family, same math, no added evidence. Real confluence needs a trend or volume read.",
+    "In thin sessions the RSI whips violently on tiny prints; an extreme made on no participation is a statistical artifact, not a message."
+   ],
+   "drill": "Find thirty RSI-above-70 readings: fifteen inside ranges, fifteen inside established uptrends. Track price five candles later. The two groups will tell opposite stories — and you will have taught yourself, with data, why the regime diagnosis comes before the number.",
+   "related": [
+    {
+     "slug": "technical.rsi-divergence",
+     "why": "the one RSI read that leads — taken apart on its own page"
+    },
+    {
+     "slug": "price.support-resistance",
+     "why": "the levels that turn an oscillator extreme into a location"
+    },
+    {
+     "slug": "technical.macd",
+     "why": "a cousin that adds a trend component to the momentum read"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><line class=\"df-axis\" x1=\"34\" y1=\"30\" x2=\"34\" y2=\"200\"/><line class=\"df-axis\" x1=\"34\" y1=\"200\" x2=\"384\" y2=\"200\"/><rect class=\"df-zone-down\" x=\"34\" y=\"30\" width=\"350\" height=\"51.000000000000014\" rx=\"2\"/><rect class=\"df-zone-up\" x=\"34\" y=\"149\" width=\"350\" height=\"51\" rx=\"2\"/><line class=\"df-dash\" x1=\"34\" y1=\"81.00000000000001\" x2=\"384\" y2=\"81.00000000000001\"/><text class=\"df-tag\" x=\"376\" y=\"77.00000000000001\" text-anchor=\"end\">70</text><line class=\"df-dash\" x1=\"34\" y1=\"149\" x2=\"384\" y2=\"149\"/><text class=\"df-tag\" x=\"376\" y=\"159\" text-anchor=\"end\">30</text><line class=\"df-grid\" x1=\"34\" y1=\"115\" x2=\"384\" y2=\"115\"/><text class=\"df-tag\" x=\"376\" y=\"111\" text-anchor=\"end\">50</text><path class=\"df-line-accent\" d=\"M40 135.4 C80 89.5 120 67.4 170 74.2 C220 81.00000000000001 270 128.60000000000002 372 138.8\"/><text class=\"df-tag-accent\" x=\"44\" y=\"40\" text-anchor=\"start\">RSI</text></svg>"
  },
@@ -699,7 +753,34 @@
     "Divergence",
     "Crossover"
    ],
-   "figcap": "MACD and signal lines crossing above a histogram whose bars flip from negative to positive."
+   "figcap": "MACD and signal lines crossing above a histogram whose bars flip from negative to positive.",
+   "playbook": [
+    "Read the three parts in ORDER: the MACD line against zero gives the regime, the histogram gives the momentum of momentum, the signal cross gives the timing — regime first, timing last.",
+    "Watch the histogram shrink as price approaches a marked level: momentum dying INTO structure is an early warning the cross itself will only confirm later.",
+    "Respect the zero line as a border: crosses far from zero carry conviction; activity hugging zero means the two EMAs agree there is no trend to measure.",
+    "Divergence between price and histogram at an extreme is the strongest read this tool offers — treat it exactly like RSI divergence, structure first.",
+    "Complete the picture with a different family: MACD is built FROM price averages, so its confirmation must come from volume or raw structure, not another EMA derivative."
+   ],
+   "fails": [
+    "In sideways markets the signal line gets crossed constantly and none of it follows through — the whipsaw is not the indicator failing, it is the indicator honestly reporting that there is nothing to measure.",
+    "MACD values are RELATIVE: they scale with the instrument and the timeframe, so yesterday's \"big\" histogram bar means nothing on another chart — only comparisons within the same context count.",
+    "By construction everything here lags twice — averages of averages. In a violent reversal the cross prints when the move is half done; using it as the entry is paying full price for old news."
+   ],
+   "drill": "Take thirty signal-line crosses and record two attributes: distance from the zero line at the cross, and whether the histogram had already been shrinking for three-plus bars before it. Track five candles of follow-through. You will find your own version of the classic result — the far-from-zero, histogram-led crosses carry the weight.",
+   "related": [
+    {
+     "slug": "technical.macd-cross",
+     "why": "the trigger event, with its own quality rules"
+    },
+    {
+     "slug": "technical.moving-averages",
+     "why": "the raw material — MACD is two of these arguing"
+    },
+    {
+     "slug": "technical.rsi-divergence",
+     "why": "the same leading read, on a cousin oscillator"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><line class=\"df-axis\" x1=\"34\" y1=\"110\" x2=\"384\" y2=\"110\"/><text class=\"df-tag\" x=\"38\" y=\"106\" text-anchor=\"start\">0</text><rect class=\"df-down\" x=\"42\" y=\"110\" width=\"20\" height=\"28\" rx=\"2\"/><rect class=\"df-down\" x=\"82\" y=\"110\" width=\"20\" height=\"36\" rx=\"2\"/><rect class=\"df-down\" x=\"122\" y=\"110\" width=\"20\" height=\"30\" rx=\"2\"/><rect class=\"df-down\" x=\"162\" y=\"110\" width=\"20\" height=\"14\" rx=\"2\"/><rect class=\"df-up\" x=\"202\" y=\"100\" width=\"20\" height=\"10\" rx=\"2\"/><rect class=\"df-up\" x=\"242\" y=\"88\" width=\"20\" height=\"22\" rx=\"2\"/><rect class=\"df-up\" x=\"282\" y=\"78\" width=\"20\" height=\"32\" rx=\"2\"/><rect class=\"df-up\" x=\"322\" y=\"90\" width=\"20\" height=\"20\" rx=\"2\"/><path class=\"df-line\" d=\"M40 160 C100 154 148 146 196 138 C240 130 300 116 372 100\"/><path class=\"df-line-accent\" d=\"M40 172 C100 158 140 138 184 130 C220 124 280 104 372 88\"/><circle class=\"df-accent-f\" cx=\"212\" cy=\"132\" r=\"3.5\"/><text class=\"df-tag-accent\" x=\"220\" y=\"124\" text-anchor=\"start\">cross</text><text class=\"df-tag-accent\" x=\"44\" y=\"30\" text-anchor=\"start\">MACD</text><text class=\"df-tag\" x=\"44\" y=\"44\" text-anchor=\"start\">—— signal</text></svg>"
  },
@@ -734,7 +815,34 @@
     "Walking the bands",
     "Mean reversion"
    ],
-   "figcap": "Bands contract into a squeeze, then expand violently as price breaks out and walks the upper band."
+   "figcap": "Bands contract into a squeeze, then expand violently as price breaks out and walks the upper band.",
+   "playbook": [
+    "Diagnose the band STATE before reading any touch: squeezed (energy loading), expanding (move underway), or walking (trend riding the band).",
+    "In a confirmed range, a band touch is a candidate fade — but only WITH a rejection candle and ideally at a horizontal level that agrees.",
+    "In a trend, the outer band is a ladder, not a ceiling: price walking the band is strength, and the correct pullback reference is the midline (the 20 SMA).",
+    "Use %B when you need objectivity: it turns \"looks stretched\" into a number you can compare across setups and log honestly.",
+    "Mark squeezes as APPOINTMENTS, not entries — the compression tells you when a move is loading, and structure tells you which way to lean when it releases."
+   ],
+   "fails": [
+    "Two standard deviations is NORMAL territory in a trend — fading every band touch is betting against the definition of a trending market.",
+    "The bands describe the recent past: they widen AFTER volatility arrives. Using their width as a forecast confuses the thermometer with the weather.",
+    "Bands tuned until history looks clean (a 13 here, a 2.5σ there) inherit all the fragility of curve fitting — the market that produced those numbers is gone."
+   ],
+   "drill": "Log forty outer-band touches, each tagged with the regime you diagnosed FIRST: range or trend. Track whether price reverted to the midline within five candles. The reversion rate split by regime — high in ranges, poor in trends — is the entire argument for diagnosing before touching, in your own handwriting.",
+   "related": [
+    {
+     "slug": "technical.squeeze-break",
+     "why": "the squeeze state, promoted to a full setup"
+    },
+    {
+     "slug": "quant.mean-reversion",
+     "why": "the statistical bet a band fade is actually making"
+    },
+    {
+     "slug": "technical.moving-averages",
+     "why": "the midline is one of these — with all its rules"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><line class=\"df-axis\" x1=\"34\" y1=\"196\" x2=\"384\" y2=\"196\"/><line class=\"df-axis\" x1=\"34\" y1=\"16\" x2=\"34\" y2=\"196\"/><path class=\"df-dash-accent\" d=\"M40 60 C90 72 130 96 165 104 C200 110 240 86 290 54 C320 36 350 28 372 22\"/><path class=\"df-dash-accent\" d=\"M40 160 C90 148 130 124 165 116 C200 110 240 134 290 166 C320 184 350 192 372 198\"/><path class=\"df-line\" d=\"M40 110 C120 110 160 110 200 110 C240 110 300 110 372 110\"/><rect class=\"df-zone\" x=\"148\" y=\"100\" width=\"60\" height=\"20\" rx=\"2\"/><text class=\"df-tag\" x=\"178\" y=\"94\" text-anchor=\"middle\">squeeze</text><path class=\"df-line-accent\" d=\"M40 120 L75 108 L110 132 L145 114 L175 112 L205 108 L235 88 L260 68 L290 50 L320 36 L352 24\"/><line class=\"df-up-s\" x1=\"230\" y1=\"88\" x2=\"250.1215724429801\" y2=\"69.42624082186452\"/><polygon class=\"df-up\" points=\"256,64 253.17383290527889,72.73285632268822 247.0693119806813,66.11962532104083\"/></svg>"
  },
@@ -769,7 +877,34 @@
     "Volume climax",
     "Volume Profile"
    ],
-   "figcap": "Rising price on healthy volume, then a climax bar — outsized volume with little progress — warning of exhaustion."
+   "figcap": "Rising price on healthy volume, then a climax bar — outsized volume with little progress — warning of exhaustion.",
+   "playbook": [
+    "Build a baseline before judging any bar: volume has a clock, and 10:00 New York is not 3:00 Tokyo — compare each bar against what is normal for THAT hour.",
+    "Confirm breakouts with expansion: a real departure from a range should be bought or sold by MORE participants than the range itself attracted.",
+    "Read effort against result at extremes: enormous volume that fails to push price further is absorption — someone is taking the other side with intent.",
+    "Use the profile's landmarks: the Point of Control marks the price where the most business was accepted; thin low-volume shelves mark prices the market rejected fast — and travels back through fast.",
+    "Let volume arbitrate between competing reads: two structures can disagree, but participation tells you which side the money actually showed up for."
+   ],
+   "fails": [
+    "A volume spike on a news release measures forced execution, not conviction — everyone who HAD to trade, traded, and the reading says nothing about who wants to.",
+    "In spot forex there is no central tape: your \"volume\" is your broker's tick count, a proxy that can diverge badly from real participation — futures volume is the honest reference.",
+    "Volume confirms and arbitrates; it does not locate. A volume signal with no structure underneath tells you something happened, but not where you are wrong."
+   ],
+   "drill": "Collect twenty range breakouts that fired on clear volume expansion and twenty that fired on quiet volume. Log which ones kept going and which returned into the range. The gap between those two continuation rates is the price you have been paying every time you took a quiet breakout.",
+   "related": [
+    {
+     "slug": "price.breakout-retest",
+     "why": "the setup volume most often has to judge"
+    },
+    {
+     "slug": "smc.liquidity",
+     "why": "the crucial distinction: resting orders versus business already done"
+    },
+    {
+     "slug": "technical.squeeze-break",
+     "why": "where the expansion read decides everything"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><line class=\"df-axis\" x1=\"34\" y1=\"144\" x2=\"384\" y2=\"144\"/><line class=\"df-axis\" x1=\"34\" y1=\"20\" x2=\"34\" y2=\"144\"/><line class=\"df-axis\" x1=\"34\" y1=\"194\" x2=\"384\" y2=\"194\"/><line class=\"df-wick\" x1=\"55\" y1=\"90\" x2=\"55\" y2=\"124\"/><rect class=\"df-up\" x=\"49\" y=\"96\" width=\"12\" height=\"22\" rx=\"1\"/><line class=\"df-wick\" x1=\"82\" y1=\"78\" x2=\"82\" y2=\"114\"/><rect class=\"df-up\" x=\"76\" y=\"84\" width=\"12\" height=\"24\" rx=\"1\"/><line class=\"df-wick\" x1=\"109\" y1=\"84\" x2=\"109\" y2=\"120\"/><rect class=\"df-down\" x=\"103\" y=\"90\" width=\"12\" height=\"24\" rx=\"1\"/><line class=\"df-wick\" x1=\"136\" y1=\"62\" x2=\"136\" y2=\"102\"/><rect class=\"df-up\" x=\"130\" y=\"68\" width=\"12\" height=\"28\" rx=\"1\"/><line class=\"df-wick\" x1=\"163\" y1=\"46\" x2=\"163\" y2=\"88\"/><rect class=\"df-up\" x=\"157\" y=\"52\" width=\"12\" height=\"30\" rx=\"1\"/><line class=\"df-wick\" x1=\"190\" y1=\"32\" x2=\"190\" y2=\"76\"/><rect class=\"df-up\" x=\"184\" y=\"38\" width=\"12\" height=\"32\" rx=\"1\"/><line class=\"df-wick\" x1=\"217\" y1=\"38\" x2=\"217\" y2=\"82\"/><rect class=\"df-down\" x=\"211\" y=\"44\" width=\"12\" height=\"32\" rx=\"1\"/><line class=\"df-wick\" x1=\"244\" y1=\"24\" x2=\"244\" y2=\"68\"/><rect class=\"df-up\" x=\"238\" y=\"30\" width=\"12\" height=\"32\" rx=\"1\"/><line class=\"df-wick\" x1=\"286\" y1=\"22\" x2=\"286\" y2=\"142\"/><rect class=\"df-down\" x=\"280\" y=\"28\" width=\"12\" height=\"108\" rx=\"1\"/><rect class=\"df-up\" x=\"47\" y=\"176\" width=\"16\" height=\"18\" rx=\"2\"/><rect class=\"df-up\" x=\"74\" y=\"170\" width=\"16\" height=\"24\" rx=\"2\"/><rect class=\"df-down\" x=\"101\" y=\"178\" width=\"16\" height=\"16\" rx=\"2\"/><rect class=\"df-up\" x=\"128\" y=\"166\" width=\"16\" height=\"28\" rx=\"2\"/><rect class=\"df-up\" x=\"155\" y=\"162\" width=\"16\" height=\"32\" rx=\"2\"/><rect class=\"df-up\" x=\"182\" y=\"168\" width=\"16\" height=\"26\" rx=\"2\"/><rect class=\"df-down\" x=\"209\" y=\"174\" width=\"16\" height=\"20\" rx=\"2\"/><rect class=\"df-up\" x=\"236\" y=\"170\" width=\"16\" height=\"24\" rx=\"2\"/><rect class=\"df-down\" x=\"278\" y=\"150\" width=\"16\" height=\"44\" rx=\"2\"/><text class=\"df-tag-down\" x=\"286\" y=\"22\" text-anchor=\"middle\">climax</text><text class=\"df-tag\" x=\"44\" y=\"188\" text-anchor=\"start\">volume</text></svg>"
  },
@@ -811,7 +946,34 @@
     "ADX filter",
     "Pullback entry"
    ],
-   "figcap": "A golden cross: the fast moving average crosses up through the slow one, marking the trend trigger."
+   "figcap": "A golden cross: the fast moving average crosses up through the slow one, marking the trend trigger.",
+   "playbook": [
+    "Use the cross as a REGIME stamp on the higher timeframe: golden cross says the environment now favors longs — it does not say buy here.",
+    "Filter by the slow MA's slope: a golden cross while the 200 still points down is two tools disagreeing, and the slope usually wins.",
+    "Accept the lag as the price of smoothness: the cross will always confirm what structure showed earlier — so let structure provide the entry inside the MA-defined regime.",
+    "Disable the tool in chop: when price weaves through both averages repeatedly, the next cross carries no more information than the last three.",
+    "If you must trade the cross itself, wait for the first pullback after it — the cross plus a held retest reads far better than the cross alone."
+   ],
+   "fails": [
+    "Ranges produce cross clusters — golden, death, golden again within days — and each one arrives exactly late enough to enter at the range's opposite edge.",
+    "The famous long-only golden-cross backtests lean on decades of equity drift; lifting that conclusion onto leveraged intraday trading imports a result its conditions do not support.",
+    "A fast/slow pair is ONE instrument, not two opinions — and adding MACD to \"confirm\" it adds the same EMAs a third time."
+   ],
+   "drill": "Find the last twenty golden or death crosses on your chart. For each, measure the move from the actual structural turn to the cross, and from the cross onward. Seeing — in your own data — how much of each move the cross consumed before speaking is what finally reframes it as a regime stamp instead of an entry.",
+   "related": [
+    {
+     "slug": "technical.moving-averages",
+     "why": "each line’s own rules, before they argue"
+    },
+    {
+     "slug": "price.trend-structure",
+     "why": "what the cross confirms late, raw and early"
+    },
+    {
+     "slug": "technical.macd-cross",
+     "why": "the same disagreement expressed as an oscillator"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><line class=\"df-axis\" x1=\"34\" y1=\"196\" x2=\"384\" y2=\"196\"/><line class=\"df-axis\" x1=\"34\" y1=\"16\" x2=\"34\" y2=\"196\"/><path class=\"df-line\" d=\"M40 140 C100 140 160 138 210 132 C260 126 320 118 372 108\"/><path class=\"df-line-accent\" d=\"M40 168 C90 160 140 148 180 130 C220 112 280 76 372 44\"/><circle class=\"df-accent-f\" cx=\"196\" cy=\"132\" r=\"4.5\"/><text class=\"df-tag-accent\" x=\"196\" y=\"150\" text-anchor=\"middle\">golden cross</text><text class=\"df-tag-accent\" x=\"372\" y=\"40\" text-anchor=\"end\">fast</text><text class=\"df-tag\" x=\"372\" y=\"116\" text-anchor=\"end\">slow</text></svg>"
  },
@@ -852,7 +1014,34 @@
     "Confirmation candle",
     "Trend context"
    ],
-   "figcap": "Price makes a higher high while RSI makes a lower high — bearish regular divergence warning of a top."
+   "figcap": "Price makes a higher high while RSI makes a lower high — bearish regular divergence warning of a top.",
+   "playbook": [
+    "Only hunt divergence where it matters: at a structural extreme — a swing into resistance, a low into support. Mid-range disagreements are noise.",
+    "Classify before acting: REGULAR (price new extreme, RSI refuses) argues reversal; HIDDEN (RSI retraces deeper than price on a pullback) argues continuation WITH the trend.",
+    "Grade the quality: a bearish divergence whose first RSI peak printed above 70 — Class A — outranks one built entirely in the middle of the scale.",
+    "Wait for price to speak: a structure break or a decisive rejection candle converts the divergence from an observation into a setup.",
+    "Target like an adult: divergence signals the CURRENT leg is tired, not that a new opposite trend begins — first structure is the honest objective."
+   ],
+   "fails": [
+    "Strong trends print bearish divergences in series — three, four, five — while price keeps climbing. Each one alone was \"a signal\"; together they were the trend breathing.",
+    "Confusing hidden with regular inverts the trade: reading a continuation signature as a reversal puts you exactly against the move the market just advertised.",
+    "Divergence drawn between two swings a few candles apart measures nothing — the disagreement needs meaningful extremes to disagree about."
+   ],
+   "drill": "Build two folders of twenty divergences: one where the divergence printed at marked structure, one where it printed mid-range. Log whether price confirmed within five candles and how far the reaction traveled. Then count how many SERIAL divergences each trending chart produced before the actual turn — that number is your vaccine against fading trends.",
+   "related": [
+    {
+     "slug": "technical.rsi",
+     "why": "the regime rules that decide when a divergence is even worth reading"
+    },
+    {
+     "slug": "smc.market-structure",
+     "why": "the confirmation layer — the break that turns observation into setup"
+    },
+    {
+     "slug": "price.candles",
+     "why": "the rejection prints that give the divergence its trigger"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><path class=\"df-line-accent\" d=\"M40 120 L80 90 L120 110 L170 64 L210 96 L250 70\"/><circle class=\"df-accent-f\" cx=\"80\" cy=\"90\" r=\"3\"/><circle class=\"df-accent-f\" cx=\"170\" cy=\"64\" r=\"3\"/><line class=\"df-dash\" x1=\"80\" y1=\"88\" x2=\"170\" y2=\"62\"/><text class=\"df-tag\" x=\"125\" y=\"52\" text-anchor=\"middle\">higher high</text><line class=\"df-axis\" x1=\"40\" y1=\"158\" x2=\"384\" y2=\"158\"/><path class=\"df-line\" d=\"M40 150 L80 83.58 L120 105.44999999999999 L170 91.68 L210 109.5 L250 101.4\"/><text class=\"df-tag\" x=\"40\" y=\"176\" text-anchor=\"start\">RSI</text><circle class=\"df-accent-f\" cx=\"80\" cy=\"83.58\" r=\"3\"/><circle class=\"df-accent-f\" cx=\"170\" cy=\"91.68\" r=\"3\"/><line class=\"df-dash-accent\" x1=\"80\" y1=\"83.58\" x2=\"170\" y2=\"91.68\"/><text class=\"df-tag-accent\" x=\"125\" y=\"77.1\" text-anchor=\"middle\">lower high</text><line class=\"df-line-down\" x1=\"250\" y1=\"78\" x2=\"275.35009445024724\" y2=\"113.49013223034612\"/><polygon class=\"df-down\" points=\"280,120 271.6882938298169,116.10570410208206 279.01189507067755,110.87456035861018\"/></svg>"
  },
@@ -893,7 +1082,34 @@
     "Trend filter",
     "Whipsaw"
    ],
-   "figcap": "The MACD line crossing up through the signal line as the histogram flips from red to green."
+   "figcap": "The MACD line crossing up through the signal line as the histogram flips from red to green.",
+   "playbook": [
+    "Name which cross you are looking at: signal-line crosses are frequent and early; zero-line crosses are rare and declare a regime change — they are different events with different jobs.",
+    "Before trusting a signal cross, check where it happened: far from zero with a steep approach reads as momentum turning; glued to zero it reads as noise.",
+    "Look one step earlier — the histogram flips direction BEFORE the lines cross. A cross the histogram announced for three bars is riper than one out of nowhere.",
+    "Demand a location: the same cross at a marked level after a pullback is a trigger; in the middle of open space it is a lottery ticket.",
+    "Use the zero cross as your regime stamp — a signal-line entry aligned with a recent zero cross is trading WITH the tool's own bigger verdict."
+   ],
+   "fails": [
+    "Counting a MACD cross plus an MA cross as \"two confirmations\" is self-deception — both are EMA arithmetic, one family, one vote.",
+    "In fast reversals the cross prints AFTER the move has run; the more violent the turn, the later the signal — precisely when you most want speed, the tool is slowest.",
+    "Range conditions manufacture crosses endlessly; without a regime filter the strategy is just paying spread to a random number generator."
+   ],
+   "drill": "Mark the last thirty signal crosses on one chart. For each, write down BEFORE scrolling: distance from zero, histogram behavior in the prior three bars, and whether price sat at marked structure. Then check follow-through. Sorting by those three attributes turns \"the MACD cross\" from one signal into four different signals of very different quality.",
+   "related": [
+    {
+     "slug": "technical.macd",
+     "why": "the full instrument this trigger belongs to"
+    },
+    {
+     "slug": "technical.ma-cross",
+     "why": "the same event one derivative earlier — and why they are one family"
+    },
+    {
+     "slug": "price.trend-structure",
+     "why": "the location context that separates trigger from lottery"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><line class=\"df-axis\" x1=\"34\" y1=\"140\" x2=\"384\" y2=\"140\"/><rect class=\"df-down\" x=\"51\" y=\"140\" width=\"18\" height=\"22\" rx=\"2\"/><rect class=\"df-down\" x=\"95\" y=\"140\" width=\"18\" height=\"26\" rx=\"2\"/><rect class=\"df-down\" x=\"139\" y=\"140\" width=\"18\" height=\"20\" rx=\"2\"/><rect class=\"df-down\" x=\"183\" y=\"140\" width=\"18\" height=\"8\" rx=\"2\"/><rect class=\"df-up\" x=\"227\" y=\"134\" width=\"18\" height=\"6\" rx=\"2\"/><rect class=\"df-up\" x=\"271\" y=\"122\" width=\"18\" height=\"18\" rx=\"2\"/><rect class=\"df-up\" x=\"315\" y=\"114\" width=\"18\" height=\"26\" rx=\"2\"/><path class=\"df-line\" d=\"M40 162 C120 154 180 140 240 132 C300 124 350 108 372 100\"/><path class=\"df-line-accent\" d=\"M40 176 C120 156 170 132 220 124 C280 114 340 96 372 86\"/><circle class=\"df-accent-f\" cx=\"214\" cy=\"126\" r=\"3.5\"/><text class=\"df-tag-accent\" x=\"222\" y=\"116\" text-anchor=\"start\">cross</text></svg>"
  },
@@ -934,7 +1150,34 @@
     "%B",
     "Volatility expansion"
    ],
-   "figcap": "Bands pinch into a tight squeeze, then expand sharply as price breaks out with momentum."
+   "figcap": "Bands pinch into a tight squeeze, then expand sharply as price breaks out with momentum.",
+   "playbook": [
+    "Spot the squeeze objectively: Bandwidth at its lowest in a hundred-plus bars, price coiling into smaller candles — energy loading, direction undecided.",
+    "Refuse to predict the side: mark BOTH edges of the compression and treat them as the tripwires.",
+    "Demand two things from the release: a decisive CLOSE beyond the compression, and volume expanding beyond the squeeze's own quiet baseline.",
+    "Respect the head-fake: squeezes love to break one way, harvest that side's breakout traders, and run the other way — a failed first break through one edge is often the strongest signal FOR the opposite side.",
+    "Measure the target from the compression's height and manage at structure: the squeeze promises expansion, not distance."
+   ],
+   "fails": [
+    "A squeeze can stay squeezed far longer than your patience: entering because Bandwidth looks low — before any break — parks your capital inside somebody else's waiting room.",
+    "The first break is the least trustworthy: the head-fake is common enough that many traders only trade the SECOND move, after the first side gets trapped.",
+    "When the release rides a scheduled news event, the chart did not decide anything — the data did, and the squeeze was just the room it happened in."
+   ],
+   "drill": "Catalog twenty finished squeezes: how many bars each lasted, whether the first break was the real one or a head-fake, and whether volume expanded on the true release. Three columns, twenty rows — and the head-fake column alone will justify why the close, not the poke, is your trigger.",
+   "related": [
+    {
+     "slug": "technical.bollinger",
+     "why": "the instrument this setup is built on"
+    },
+    {
+     "slug": "technical.volume",
+     "why": "the expansion read that separates release from head-fake"
+    },
+    {
+     "slug": "smc.liquidity-sweep",
+     "why": "the head-fake, told in another methodology’s language"
+    }
+   ]
   },
   "svg": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\"><line class=\"df-axis\" x1=\"34\" y1=\"196\" x2=\"384\" y2=\"196\"/><line class=\"df-axis\" x1=\"34\" y1=\"16\" x2=\"34\" y2=\"196\"/><path class=\"df-dash-accent\" d=\"M40 80 C120 96 170 108 210 108 C250 108 300 80 372 40\"/><path class=\"df-dash-accent\" d=\"M40 140 C120 124 170 112 210 112 C250 112 300 140 372 180\"/><rect class=\"df-zone\" x=\"190\" y=\"106\" width=\"40\" height=\"12\" rx=\"2\"/><text class=\"df-tag\" x=\"210\" y=\"132\" text-anchor=\"middle\">squeeze</text><path class=\"df-line-accent\" d=\"M40 112 L70 104 L100 116 L130 108 L165 112 L200 110 L235 96 L270 72 L305 60 L345 44\"/><line class=\"df-line-accent\" x1=\"270\" y1=\"110\" x2=\"300.1558253401339\" y2=\"70.36662955296687\"/><polygon class=\"df-accent-f\" points=\"305,64 303.7370544636778,73.09147779914156 296.57459621659,67.64178130679218\"/></svg>"
  },

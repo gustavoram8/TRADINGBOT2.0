@@ -1466,7 +1466,12 @@ borrado. PENDIENTE: agregar selector de mes / historial.
   págs, 68 enlaces todos con destino válido (41 índice + 27 related), render inspeccionado
   visualmente (pymupdf). El contenido va en los JSON (`synapse_export.json` EN +
   `synapse_content_{es,fr,pt}.json`); ES=tú LatAm, FR=vous, PT-BR=você, jerga en inglés.
-  **FALTAN 4 tandas:** Technical Analysis (9) · SMC/ICT (11) · Fundamental (6) · Quant (6).
+  **Tanda 2 = Technical Analysis (9 temas ×4×4) ESCRITA y verificada (mismo día):** PDF 59→68
+  págs, 95 enlaces todos válidos, render inspeccionado (RSI). Doctrina alineada con el system
+  prompt del analizador: la confluencia real cruza FAMILIAS (dos osciladores = una señal contada
+  dos veces), los indicadores rezagan, divergencia regular≠oculta, Clase A, RSI clavado en
+  tendencia, volumen con reloj de sesión, head-fake del squeeze.
+  **FALTAN 3 tandas:** SMC/ICT (11) · Fundamental (6) · Quant (6).
   Tras cada tanda: `python3 tools/validate_synapse_content.py` + rebuild + mirar el render.
   ⚠️ El flipbook web ignora los campos nuevos sin romperse (Object.assign) — los podrá usar
   algún día, pero HOY la profundidad es exclusiva del PDF de pago, lo que justifica su precio.

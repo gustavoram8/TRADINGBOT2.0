@@ -594,7 +594,34 @@
    "S/R dynamique",
    "Retard"
   ],
-  "figcap": "Le prix monte en utilisant à plusieurs reprises la moyenne mobile comme support dynamique à chaque repli."
+  "figcap": "Le prix monte en utilisant à plusieurs reprises la moyenne mobile comme support dynamique à chaque repli.",
+  "playbook": [
+   "Choisissez la moyenne selon son TRAVAIL, pas selon la mode : une MM longue (100–200) répond à « dans quel régime suis-je ? », une courte (9–21) suit le rythme des replis.",
+   "Lisez trois choses avant tout : la pente de la moyenne, de quel côté se trouve le prix, et depuis combien de temps il y reste.",
+   "Utilisez-la comme filtre, pas comme déclencheur : moyenne montante plus prix au-dessus signifie que vous chassez des achats — l'entrée elle-même vient de la structure ou d'une bougie signal.",
+   "Ne traitez le support dynamique qu'en régime de tendance : un repli touchant une moyenne ascendante qui a déjà rattrapé le prix est un emplacement, pas un ordre d'achat.",
+   "Pour une vraie confluence, associez la lecture de régime de la moyenne à une famille DIFFÉRENTE — momentum ou volume — jamais à une seconde moyenne."
+  ],
+  "fails": [
+   "Quand la moyenne s'aplatit, chaque contact devient un pile ou face : une moyenne horizontale signifie pas de régime, et le « support dynamique » dans le chop est une histoire que les traders se racontent.",
+   "Optimiser la période jusqu'à ce que le passé paraisse parfait, c'est du curve fitting — la 34 qui a « marché » le trimestre dernier ne porte aucune promesse pour le suivant.",
+   "Un prix qui rebondit exactement sur une moyenne dans un range coïncide généralement avec un vrai niveau proche ; créditez le niveau, pas la ligne."
+  ],
+  "drill": "Rassemblez cinquante contacts d'une EMA 20 sur votre marché et notez chacun selon la pente de la moyenne au contact : raide, douce, plate. Consignez si le contact a tenu au moins trois bougies. Voir le taux de tenue s'effondrer à mesure que la pente s'aplatit est toute la leçon — mesurée, pas crue.",
+  "related": [
+   {
+    "slug": "technical.ma-cross",
+    "why": "ce qui arrive quand deux de ces lignes se disputent"
+   },
+   {
+    "slug": "price.trend-structure",
+    "why": "le régime que la moyenne lisse a toujours été visible dans les swings bruts"
+   },
+   {
+    "slug": "technical.volume",
+    "why": "une famille différente — la confluence dont une lecture de moyenne a réellement besoin"
+   }
+  ]
  },
  "technical.rsi": {
   "lead": "Le RSI est un oscillateur de momentum de 0–100 mesurant la vitesse et l'ampleur des changements récents de prix — le plus puissant non comme grossier indicateur de surachat/survente mais comme lecteur de momentum, de divergence et de régime de tendance.",
@@ -626,7 +653,34 @@
    "Régime de tendance",
    "Période"
   ],
-  "figcap": "L'oscillateur RSI avec les bandes 70/30 ; il peut longer le surachat durant une forte tendance."
+  "figcap": "L'oscillateur RSI avec les bandes 70/30 ; il peut longer le surachat durant une forte tendance.",
+  "playbook": [
+   "Diagnostiquez le régime D'ABORD : dans un range, 70/30 marquent de vrais extrêmes ; dans une tendance, ils marquent la force — le même chiffre, deux sens opposés.",
+   "Dans les ranges, ne prenez le surachat/survente que sur un niveau marqué, et exigez-y un signal de prix — le RSI localise, la bougie confirme.",
+   "Dans les tendances, surveillez la bande 40–60 : les replis sains d'une tendance haussière tendent à s'y épuiser, ce qui fait du RSI une jauge de profondeur de repli.",
+   "Utilisez la ligne médiane des 50 comme ligne de régime du momentum : tenir au-dessus pendant que le prix construit des creux plus hauts est un accord digne d'attention.",
+   "Réservez votre attention maximale à la divergence sur structure — c'est la seule lecture du RSI qui précède au lieu de retarder."
+  ],
+  "fails": [
+   "Dans une tendance forte, le RSI se cloue : il peut rester au-dessus de 70 pendant des semaines pendant que le prix double — vendre chaque lecture est la façon d'école de saigner contre le momentum.",
+   "« RSI suracheté ET Stochastique suracheté » est un signal compté deux fois — même famille, mêmes maths, aucune preuve ajoutée. La vraie confluence exige une lecture de tendance ou de volume.",
+   "Dans les séances creuses, le RSI fouette violemment sur de minuscules échanges ; un extrême fait sans participation est un artefact statistique, pas un message."
+  ],
+  "drill": "Trouvez trente lectures de RSI au-dessus de 70 : quinze dans des ranges, quinze dans des tendances haussières établies. Suivez le prix cinq bougies plus tard. Les deux groupes raconteront des histoires opposées — et vous vous serez appris, avec des données, pourquoi le diagnostic de régime précède le chiffre.",
+  "related": [
+   {
+    "slug": "technical.rsi-divergence",
+    "why": "la seule lecture du RSI qui précède — démontée sur sa propre page"
+   },
+   {
+    "slug": "price.support-resistance",
+    "why": "les niveaux qui transforment un extrême d’oscillateur en emplacement"
+   },
+   {
+    "slug": "technical.macd",
+    "why": "un cousin qui ajoute une composante de tendance à la lecture de momentum"
+   }
+  ]
  },
  "technical.macd": {
   "lead": "Le MACD mélange tendance et momentum à partir de deux EMA en trois parties — la ligne MACD, sa ligne de signal et un histogramme — révélant direction, force et points de retournement à la fois.",
@@ -658,7 +712,34 @@
    "Divergence",
    "Croisement"
   ],
-  "figcap": "Les lignes MACD et signal se croisant au-dessus d'un histogramme dont les barres passent de négatives à positives."
+  "figcap": "Les lignes MACD et signal se croisant au-dessus d'un histogramme dont les barres passent de négatives à positives.",
+  "playbook": [
+   "Lisez les trois parties dans l'ORDRE : la ligne MACD contre zéro donne le régime, l'histogramme donne le momentum du momentum, le croisement de signal donne le timing — régime d'abord, timing en dernier.",
+   "Observez l'histogramme rétrécir pendant que le prix approche un niveau marqué : le momentum qui meurt CONTRE la structure est un avertissement précoce que le croisement ne fera que confirmer plus tard.",
+   "Respectez la ligne zéro comme frontière : les croisements loin de zéro portent de la conviction ; l'activité collée à zéro signifie que les deux EMA s'accordent qu'il n'y a pas de tendance à mesurer.",
+   "La divergence entre prix et histogramme sur un extrême est la lecture la plus forte de cet outil — traitez-la exactement comme la divergence RSI, structure d'abord.",
+   "Complétez le tableau avec une famille différente : le MACD est construit À PARTIR de moyennes du prix, sa confirmation doit donc venir du volume ou de la structure brute, pas d'un autre dérivé d'EMA."
+  ],
+  "fails": [
+   "Dans les marchés latéraux, la ligne de signal se fait croiser constamment et rien ne suit — le whipsaw n'est pas l'indicateur qui échoue : c'est l'indicateur qui rapporte honnêtement qu'il n'y a rien à mesurer.",
+   "Les valeurs du MACD sont RELATIVES : elles varient avec l'instrument et le cadre temporel, donc la « grande » barre d'histogramme d'hier ne veut rien dire sur un autre graphique — seules comptent les comparaisons dans le même contexte.",
+   "Par construction, tout ici retarde deux fois — des moyennes de moyennes. Dans un retournement violent, le croisement s'imprime quand le mouvement est à moitié fait ; l'utiliser comme entrée, c'est payer plein tarif pour de vieilles nouvelles."
+  ],
+  "drill": "Prenez trente croisements de ligne de signal et notez deux attributs : la distance à la ligne zéro au croisement, et si l'histogramme rétrécissait déjà depuis trois barres ou plus avant. Suivez cinq bougies de continuation. Vous trouverez votre propre version du résultat classique — les croisements loin de zéro et annoncés par l'histogramme portent le poids.",
+  "related": [
+   {
+    "slug": "technical.macd-cross",
+    "why": "l’événement déclencheur, avec ses propres règles de qualité"
+   },
+   {
+    "slug": "technical.moving-averages",
+    "why": "la matière première — le MACD, c’est deux de ces lignes qui se disputent"
+   },
+   {
+    "slug": "technical.rsi-divergence",
+    "why": "la même lecture avancée, sur un oscillateur cousin"
+   }
+  ]
  },
  "technical.bollinger": {
   "lead": "Les Bandes de Bollinger enveloppent une moyenne de 20 périodes dans deux bandes situées à deux écarts-types — une enveloppe de volatilité qui s'élargit quand les marchés bougent et se contracte quand ils se reposent.",
@@ -690,7 +771,34 @@
    "Longer les bandes",
    "Retour à la moyenne"
   ],
-  "figcap": "Les bandes se contractent en compression, puis s'étendent violemment quand le prix casse et longe la bande supérieure."
+  "figcap": "Les bandes se contractent en compression, puis s'étendent violemment quand le prix casse et longe la bande supérieure.",
+  "playbook": [
+   "Diagnostiquez l'ÉTAT des bandes avant de lire tout contact : comprimées (énergie en charge), en expansion (mouvement en cours) ou longées (tendance chevauchant la bande).",
+   "Dans un range confirmé, un contact de bande est un candidat au contre — mais seulement AVEC une bougie de rejet et idéalement sur un niveau horizontal qui concorde.",
+   "Dans une tendance, la bande extérieure est une échelle, pas un plafond : le prix qui longe la bande est de la force, et la référence correcte du repli est la ligne médiane (la SMA 20).",
+   "Utilisez %B quand il vous faut de l'objectivité : il transforme le « ça a l'air étiré » en un nombre comparable entre setups et consignable honnêtement.",
+   "Marquez les compressions comme des RENDEZ-VOUS, pas des entrées — la compression vous dit quand un mouvement se charge, et la structure vous dit de quel côté pencher quand il se libère."
+  ],
+  "fails": [
+   "Deux écarts-types sont un territoire NORMAL dans une tendance — faire le contre sur chaque contact de bande, c'est parier contre la définition même d'un marché en tendance.",
+   "Les bandes décrivent le passé récent : elles s'élargissent APRÈS l'arrivée de la volatilité. Utiliser leur largeur comme prévision confond le thermomètre avec la météo.",
+   "Des bandes réglées jusqu'à ce que l'historique paraisse propre (un 13 ici, un 2,5σ là) héritent de toute la fragilité du curve fitting — le marché qui a produit ces chiffres n'existe plus."
+  ],
+  "drill": "Consignez quarante contacts de bande extérieure, chacun étiqueté avec le régime diagnostiqué D'ABORD : range ou tendance. Suivez si le prix est revenu à la ligne médiane sous cinq bougies. Le taux de retour séparé par régime — élevé dans les ranges, pauvre dans les tendances — est l'argument entier du diagnostic avant le contact, de votre propre main.",
+  "related": [
+   {
+    "slug": "technical.squeeze-break",
+    "why": "l’état de compression, promu en setup complet"
+   },
+   {
+    "slug": "quant.mean-reversion",
+    "why": "le pari statistique qu’un contre de bande fait réellement"
+   },
+   {
+    "slug": "technical.moving-averages",
+    "why": "la ligne médiane est l’une d’elles — avec toutes ses règles"
+   }
+  ]
  },
  "technical.volume": {
   "lead": "Le volume est la mesure la plus directe de participation et de conviction. Le Profil de Volume l'affine en distribuant les transactions par niveaux de prix plutôt que par temps, exposant où la vraie enchère a eu lieu.",
@@ -722,7 +830,34 @@
    "Climax de volume",
    "Profil de Volume"
   ],
-  "figcap": "Prix en hausse sur volume sain, puis une barre climax — volume démesuré avec peu de progrès — avertissant d'un épuisement."
+  "figcap": "Prix en hausse sur volume sain, puis une barre climax — volume démesuré avec peu de progrès — avertissant d'un épuisement.",
+  "playbook": [
+   "Construisez une ligne de base avant de juger toute barre : le volume a une horloge, et 10h00 à New York n'est pas 3h00 à Tokyo — comparez chaque barre à la normale de CETTE heure.",
+   "Confirmez les cassures par l'expansion : une vraie sortie de range devrait être achetée ou vendue par PLUS de participants que le range lui-même n'en attirait.",
+   "Lisez l'effort contre le résultat aux extrêmes : un volume énorme qui n'arrive pas à pousser le prix plus loin est de l'absorption — quelqu'un prend l'autre côté avec intention.",
+   "Utilisez les repères du profil : le Point of Control marque le prix où le plus d'affaires ont été acceptées ; les étagères fines de faible volume marquent des prix que le marché a rejetés vite — et retraverse vite.",
+   "Laissez le volume arbitrer entre lectures concurrentes : deux structures peuvent diverger, mais la participation vous dit de quel côté l'argent s'est réellement présenté."
+  ],
+  "fails": [
+   "Un pic de volume sur une annonce mesure de l'exécution forcée, pas de la conviction — tous ceux qui DEVAIENT trader ont tradé, et la lecture ne dit rien de qui le veut.",
+   "Sur le forex spot, il n'y a pas de bande centrale : votre « volume » est le comptage de ticks de votre courtier, un proxy qui peut diverger fortement de la participation réelle — le volume des futures est la référence honnête.",
+   "Le volume confirme et arbitre ; il ne localise pas. Un signal de volume sans structure dessous vous dit que quelque chose s'est passé, mais pas où vous avez tort."
+  ],
+  "drill": "Rassemblez vingt cassures de range parties sur une expansion claire de volume et vingt parties sur un volume silencieux. Notez lesquelles ont continué et lesquelles sont rentrées dans le range. L'écart entre ces deux taux de continuation est le prix que vous payez chaque fois que vous prenez une cassure silencieuse.",
+  "related": [
+   {
+    "slug": "price.breakout-retest",
+    "why": "le setup que le volume doit le plus souvent juger"
+   },
+   {
+    "slug": "smc.liquidity",
+    "why": "la distinction cruciale : ordres au repos contre affaires déjà faites"
+   },
+   {
+    "slug": "technical.squeeze-break",
+    "why": "là où la lecture d’expansion décide de tout"
+   }
+  ]
  },
  "technical.ma-cross": {
   "lead": "Un croisement de MM se déclenche quand une moyenne plus rapide croise une plus lente : le croisement doré (rapide au-dessus de lente) suggère une hausse, le croisement de la mort (rapide en dessous de lente) une baisse.",
@@ -760,7 +895,34 @@
    "Filtre ADX",
    "Entrée en repli"
   ],
-  "figcap": "Un croisement doré : la moyenne mobile rapide croise vers le haut la lente, marquant le déclencheur de tendance."
+  "figcap": "Un croisement doré : la moyenne mobile rapide croise vers le haut la lente, marquant le déclencheur de tendance.",
+  "playbook": [
+   "Utilisez le croisement comme tampon de RÉGIME sur le cadre supérieur : le golden cross dit que l'environnement favorise désormais les achats — il ne dit pas achetez ici.",
+   "Filtrez par la pente de la moyenne lente : un golden cross avec la 200 pointant encore vers le bas, ce sont deux outils en désaccord, et la pente gagne généralement.",
+   "Acceptez le retard comme prix du lissage : le croisement confirmera toujours ce que la structure a montré plus tôt — laissez donc la structure fournir l'entrée dans le régime défini par les moyennes.",
+   "Désactivez l'outil dans le chop : quand le prix se tisse à travers les deux moyennes à répétition, le prochain croisement ne porte pas plus d'information que les trois derniers.",
+   "Si vous devez trader le croisement lui-même, attendez le premier repli après lui — le croisement plus un retest tenu se lit bien mieux que le croisement seul."
+  ],
+  "fails": [
+   "Les ranges produisent des grappes de croisements — golden, death, golden encore en quelques jours — et chacun arrive exactement assez tard pour entrer au bord opposé du range.",
+   "Les fameux backtests du golden cross acheteur s'appuient sur des décennies de dérive haussière des actions ; transposer cette conclusion à l'intraday à effet de levier importe un résultat que ses conditions ne soutiennent pas.",
+   "Une paire rapide/lente est UN instrument, pas deux avis — et ajouter le MACD pour « confirmer » ajoute les mêmes EMA une troisième fois."
+  ],
+  "drill": "Trouvez les vingt derniers golden ou death crosses sur votre graphique. Pour chacun, mesurez le mouvement du vrai tournant structurel jusqu'au croisement, et du croisement en avant. Voir — dans vos propres données — quelle part de chaque mouvement le croisement a consommée avant de parler est ce qui le recadre enfin comme tampon de régime plutôt qu'entrée.",
+  "related": [
+   {
+    "slug": "technical.moving-averages",
+    "why": "les règles propres de chaque ligne, avant leur dispute"
+   },
+   {
+    "slug": "price.trend-structure",
+    "why": "ce que le croisement confirme en retard, brut et tôt"
+   },
+   {
+    "slug": "technical.macd-cross",
+    "why": "le même désaccord exprimé en oscillateur"
+   }
+  ]
  },
  "technical.rsi-divergence": {
   "lead": "La divergence du RSI, c'est quand prix et momentum sont en désaccord — le prix imprime un nouvel extrême mais pas le RSI — signalant que le mouvement tourne à vide.",
@@ -797,7 +959,34 @@
    "Bougie de confirmation",
    "Contexte de tendance"
   ],
-  "figcap": "Le prix fait un sommet plus haut tandis que le RSI fait un sommet plus bas — divergence baissière régulière avertissant d'un sommet."
+  "figcap": "Le prix fait un sommet plus haut tandis que le RSI fait un sommet plus bas — divergence baissière régulière avertissant d'un sommet.",
+  "playbook": [
+   "Ne chassez la divergence que là où elle compte : sur un extrême structurel — un swing contre résistance, un creux contre support. Les désaccords en milieu de range sont du bruit.",
+   "Classez avant d'agir : la RÉGULIÈRE (prix fait un nouvel extrême, le RSI refuse) plaide le retournement ; la CACHÉE (le RSI replie plus profond que le prix sur un pullback) plaide la continuation AVEC la tendance.",
+   "Notez la qualité : une divergence baissière dont le premier pic de RSI s'est imprimé au-dessus de 70 — Classe A — surclasse celle bâtie entièrement au milieu de l'échelle.",
+   "Attendez que le prix parle : une cassure de structure ou une bougie de rejet décidée transforme la divergence d'observation en setup.",
+   "Visez en adulte : la divergence signale que la jambe ACTUELLE est fatiguée, pas qu'une tendance inverse commence — la première structure est l'objectif honnête."
+  ],
+  "fails": [
+   "Les tendances fortes impriment des divergences baissières en série — trois, quatre, cinq — pendant que le prix continue de monter. Chacune seule était « un signal » ; ensemble, c'était la tendance qui respirait.",
+   "Confondre la cachée avec la régulière inverse le trade : lire une signature de continuation comme un retournement vous place exactement contre le mouvement que le marché vient d'annoncer.",
+   "Une divergence tracée entre deux swings distants de quelques bougies ne mesure rien — le désaccord a besoin d'extrêmes significatifs sur lesquels discorder."
+  ],
+  "drill": "Constituez deux dossiers de vingt divergences : un où la divergence s'est imprimée sur structure marquée, un où elle s'est imprimée en milieu de range. Notez si le prix a confirmé sous cinq bougies et jusqu'où la réaction a voyagé. Comptez ensuite combien de divergences EN SÉRIE chaque graphique en tendance a produites avant le vrai tournant — ce nombre est votre vaccin contre le contre-tendance.",
+  "related": [
+   {
+    "slug": "technical.rsi",
+    "why": "les règles de régime qui décident quand une divergence vaut même la lecture"
+   },
+   {
+    "slug": "smc.market-structure",
+    "why": "la couche de confirmation — la cassure qui change l’observation en setup"
+   },
+   {
+    "slug": "price.candles",
+    "why": "les empreintes de rejet qui donnent à la divergence son déclencheur"
+   }
+  ]
  },
  "technical.macd-cross": {
   "lead": "Un croisement de MACD se déclenche quand la ligne MACD croise sa ligne de signal (fréquent, précoce) ou la ligne zéro (plus rare, plus significatif) — des entrées de momentum qui ont besoin de contexte pour valoir la peine.",
@@ -834,7 +1023,34 @@
    "Filtre de tendance",
    "Faux signal"
   ],
-  "figcap": "La ligne MACD croisant vers le haut la ligne de signal tandis que l'histogramme passe du rouge au vert."
+  "figcap": "La ligne MACD croisant vers le haut la ligne de signal tandis que l'histogramme passe du rouge au vert.",
+  "playbook": [
+   "Nommez le croisement que vous regardez : les croisements de ligne de signal sont fréquents et précoces ; ceux de la ligne zéro sont rares et déclarent un changement de régime — des événements différents aux travaux différents.",
+   "Avant de croire un croisement de signal, vérifiez où il s'est produit : loin de zéro avec une approche raide, il se lit comme un momentum qui tourne ; collé à zéro, comme du bruit.",
+   "Regardez un pas plus tôt — l'histogramme change de direction AVANT que les lignes croisent. Un croisement annoncé par l'histogramme depuis trois barres est plus mûr qu'un venu de nulle part.",
+   "Exigez un emplacement : le même croisement sur un niveau marqué après un repli est un déclencheur ; au milieu de l'espace ouvert, c'est un billet de loterie.",
+   "Utilisez le croisement de zéro comme tampon de régime — une entrée sur croisement de signal alignée avec un croisement de zéro récent trade AVEC le verdict supérieur de l'outil lui-même."
+  ],
+  "fails": [
+   "Compter un croisement MACD plus un croisement de moyennes comme « deux confirmations » est de l'auto-illusion — les deux sont de l'arithmétique d'EMA, une famille, un vote.",
+   "Dans les retournements rapides, le croisement s'imprime APRÈS que le mouvement a couru ; plus le virage est violent, plus le signal est tardif — précisément quand vous voulez de la vitesse, l'outil est le plus lent.",
+   "Les conditions de range fabriquent des croisements sans fin ; sans filtre de régime, la stratégie revient à payer le spread à un générateur de nombres aléatoires."
+  ],
+  "drill": "Marquez les trente derniers croisements de signal sur un graphique. Pour chacun, notez AVANT d'avancer : distance à zéro, comportement de l'histogramme sur les trois barres précédentes, et si le prix se trouvait sur une structure marquée. Vérifiez ensuite la continuation. Trier selon ces trois attributs transforme « le croisement MACD » d'un signal en quatre signaux de qualités très différentes.",
+  "related": [
+   {
+    "slug": "technical.macd",
+    "why": "l’instrument complet auquel ce déclencheur appartient"
+   },
+   {
+    "slug": "technical.ma-cross",
+    "why": "le même événement un dérivé plus tôt — et pourquoi c’est une seule famille"
+   },
+   {
+    "slug": "price.trend-structure",
+    "why": "le contexte d’emplacement qui sépare le déclencheur de la loterie"
+   }
+  ]
  },
  "technical.squeeze-break": {
   "lead": "La cassure de compression de Bollinger trade la vérité statistique selon laquelle une très faible volatilité précède des mouvements explosifs : quand les bandes se compriment à un plus bas de plusieurs mois, l'énergie s'accumule pour une cassure.",
@@ -871,7 +1087,34 @@
    "%B",
    "Expansion de volatilité"
   ],
-  "figcap": "Les bandes se pincent en une compression serrée, puis s'étendent brusquement quand le prix casse avec momentum."
+  "figcap": "Les bandes se pincent en une compression serrée, puis s'étendent brusquement quand le prix casse avec momentum.",
+  "playbook": [
+   "Repérez la compression objectivement : Bandwidth à son plus bas sur plus de cent barres, prix qui s'enroule en bougies de plus en plus petites — énergie en charge, direction indécise.",
+   "Refusez de prédire le côté : marquez les DEUX bords de la compression et traitez-les comme des fils de détente.",
+   "Exigez deux choses de la libération : une CLÔTURE décidée au-delà de la compression, et un volume en expansion au-dessus de la ligne de base silencieuse du squeeze lui-même.",
+   "Respectez le head-fake : les compressions adorent casser d'un côté, récolter les traders de cassure de ce côté, puis courir de l'autre — une première cassure ratée par un bord est souvent le signal le plus fort POUR le côté opposé.",
+   "Mesurez l'objectif depuis la hauteur de la compression et gérez sur structure : le squeeze promet de l'expansion, pas de la distance."
+  ],
+  "fails": [
+   "Une compression peut rester comprimée bien plus longtemps que votre patience : entrer parce que le Bandwidth paraît bas — avant toute cassure — gare votre capital dans la salle d'attente de quelqu'un d'autre.",
+   "La première cassure est la moins fiable : le head-fake est assez courant pour que beaucoup ne tradent que le SECOND mouvement, après que le premier camp s'est fait piéger.",
+   "Quand la libération chevauche une annonce programmée, le graphique n'a rien décidé — les données l'ont fait, et le squeeze n'était que la pièce où c'est arrivé."
+  ],
+  "drill": "Cataloguez vingt compressions terminées : combien de barres chacune a duré, si la première cassure était la vraie ou un head-fake, et si le volume s'est étendu à la vraie libération. Trois colonnes, vingt lignes — et la colonne des head-fakes justifiera à elle seule pourquoi la clôture, et non la percée, est votre déclencheur.",
+  "related": [
+   {
+    "slug": "technical.bollinger",
+    "why": "l’instrument sur lequel ce setup est bâti"
+   },
+   {
+    "slug": "technical.volume",
+    "why": "la lecture d’expansion qui sépare la libération du head-fake"
+   },
+   {
+    "slug": "smc.liquidity-sweep",
+    "why": "le head-fake, raconté dans la langue d’une autre méthodologie"
+   }
+  ]
  },
  "smc.wyckoff-roots": {
   "lead": "Le cadre de Wyckoff des années 1930 est le socle sous le trading moderne du smart money : un seul grand opérateur — le \"Composite Man\" — accumule et distribue systématiquement à travers des cycles de prix orchestrés que vous pouvez apprendre à lire.",
