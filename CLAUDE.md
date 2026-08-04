@@ -1451,8 +1451,13 @@ borrado. PENDIENTE: agregar selector de mes / historial.
 - [ ] **19. 🔴 Calidad del analizador fuera de ICT/STDV.** No sabe operar armónicos ni otras
   metodologías y **no puede juzgar si el análisis es correcto**. Hay que encontrarle una forma de
   validarlo. (El punto más difícil de la lista.)
-- [ ] **20. "My account"** en el panel de arriba a la derecha (bajo my coupons / my rank), con lo de
-  Settings y algo más.
+- [x] ✅ **20. "Mi cuenta" en el menú de arriba a la derecha (2026-08-04).** No existía ninguna
+  forma de llegar a Ajustes desde ahí: vivía solo en el acordeón **Products** del lateral, que es
+  el último sitio donde alguien busca su propia cuenta. Fila nueva `#menu-account` → `/settings`,
+  puesta la PRIMERA del menú (encima de Planes, Rango y Cupones) porque es la de uso más frecuente.
+  Clave `account.mine` ×4 idiomas. Verificado en navegador real: visible y traducida en EN/ES/FR/PT
+  y el clic aterriza en `/settings`. ⚠️ Ajustes ya trae contraseña, 2FA, cerrar otras sesiones y el
+  estado del plan — no hacía falta contenido nuevo, faltaba la puerta.
 - [ ] **21. Simular tráfico farmeando XP** y desbloqueando rangos, para cazar bugs del cableado.
 - [x] ✅ **22. Unlocks de rango ilegibles bajo camos (2026-08-03).** Una sola línea lo causaba:
   `body.light .ru-rwd{background:#f8f9fc}` — un blanco FIJO. Con un camo puesto el texto es claro

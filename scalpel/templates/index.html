@@ -5059,6 +5059,14 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/></svg>
           <span data-i18n="account.admin">Admin panel</span>
         </a>
+        <!-- Punto 20: no había forma de llegar a Ajustes desde aquí. Vivía
+             solo en el acordeón Products del lateral, que es el último sitio
+             donde alguien busca su cuenta. Abre en la misma pestaña: es una
+             página del propio sitio, no un enlace externo. -->
+        <a class="row" href="/settings" id="menu-account">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span data-i18n="account.mine">My account</span>
+        </a>
         <a class="row" href="/?plans=1#plans" target="_blank" rel="noopener">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
           <span data-i18n="account.plans">Plans &amp; pricing</span>
@@ -8219,6 +8227,7 @@
       'scalper.bgNavy': 'Navy', 'scalper.bgCharcoal': 'Charcoal', 'scalper.bgForest': 'Forest', 'scalper.bgSepia': 'Sepia', 'scalper.bgCream': 'Cream', 'scalper.bgCustom': 'Custom…',
       'scalper.present': 'Present', 'scalper.exitPresent': 'Exit', 'scalper.exportPdf': 'Export PDF', 'scalper.slides': 'Slides', 'scalper.text': 'Text',
       'account.admin': 'Admin panel',
+      'account.mine': 'My account',
       'account.plans': 'Plans & pricing',
       'account.signin': 'Sign in',
       'account.logout': 'Sign out',
@@ -8735,6 +8744,7 @@
       'scalper.bgNavy': 'Marino', 'scalper.bgCharcoal': 'Carbón', 'scalper.bgForest': 'Bosque', 'scalper.bgSepia': 'Sepia', 'scalper.bgCream': 'Crema', 'scalper.bgCustom': 'Personalizado…',
       'scalper.present': 'Presentar', 'scalper.exitPresent': 'Salir', 'scalper.exportPdf': 'Exportar PDF', 'scalper.slides': 'Diapositivas', 'scalper.text': 'Texto',
       'account.admin': 'Panel de admin',
+      'account.mine': 'Mi cuenta',
       'account.plans': 'Planes y precios',
       'account.signin': 'Iniciar sesión',
       'account.logout': 'Cerrar sesión',
@@ -9251,6 +9261,7 @@
       'scalper.bgNavy': 'Marine', 'scalper.bgCharcoal': 'Charbon', 'scalper.bgForest': 'Forêt', 'scalper.bgSepia': 'Sépia', 'scalper.bgCream': 'Crème', 'scalper.bgCustom': 'Personnalisé…',
       'scalper.present': 'Présenter', 'scalper.exitPresent': 'Quitter', 'scalper.exportPdf': 'Exporter PDF', 'scalper.slides': 'Diapositives', 'scalper.text': 'Texte',
       'account.admin': "Panneau d'admin",
+      'account.mine': 'Mon compte',
       'account.plans': 'Offres et tarifs',
       'account.signin': 'Se connecter',
       'account.logout': 'Se déconnecter',
@@ -9767,6 +9778,7 @@
       'scalper.bgNavy': 'Marinho', 'scalper.bgCharcoal': 'Carvão', 'scalper.bgForest': 'Floresta', 'scalper.bgSepia': 'Sépia', 'scalper.bgCream': 'Creme', 'scalper.bgCustom': 'Personalizado…',
       'scalper.present': 'Apresentar', 'scalper.exitPresent': 'Sair', 'scalper.exportPdf': 'Exportar PDF', 'scalper.slides': 'Slides', 'scalper.text': 'Texto',
       'account.admin': 'Painel de admin',
+      'account.mine': 'Minha conta',
       'account.plans': 'Planos e preços',
       'account.signin': 'Entrar',
       'account.logout': 'Sair',
