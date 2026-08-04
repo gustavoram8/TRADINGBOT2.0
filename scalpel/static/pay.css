@@ -1,0 +1,229 @@
+/* ============================================================================
+   PAGO — hoja comun de las pantallas de compra (F, aprobado por el dueno)
+   ----------------------------------------------------------------------------
+   Vive aqui y no dentro de cada plantilla a proposito: eran tres <style>
+   parecidos pero distintos, y por eso "se veian hechas a los golpes" — la
+   revision del pedido, la eleccion de metodo y las instrucciones de USDT no
+   compartian ni el tipo de letra ni los margenes. Un solo archivo = una sola
+   familia, y lo que se toque aqui cambia las tres a la vez.
+
+   Decisiones de diseno que NO son cosmeticas:
+   · Sin barra de pasos. El dueno la rechazo ("no me gusta la estructura de
+     '1 pago, 2 tal'") y ademas mentia: con un metodo unico no hay dos pasos.
+   · El metodo de pago se elige aqui, con la marca en una PLACA GRANDE, no con
+     un logotipo diminuto. Pedido textual suyo.
+   · La cifra va en tipografia de cifras tabulares: asi la columna no baila
+     cuando cambia el precio, y un total no se lee como un titular.
+   ========================================================================== */
+
+:root{
+  --pg:#f4f5f8; --ink:#15171f; --ink2:#5c6274; --ink3:#7a8095;
+  --ln:rgba(20,25,45,.11); --ln2:rgba(20,25,45,.17);
+  --acc:#a97e14; --acc2:#c99a22; --acc-ink:#2a1e02;
+  --cta-a:#e6be4e; --cta-b:#c08f14; --cta-ink:#241a02;
+  --ok:#1e7a52; --warn:#9a6b12;
+  --panel:transparent; --plate:#fff; --plate-ln:rgba(20,25,45,.09);
+  --soft:rgba(169,126,20,.07);
+}
+body.dark{
+  --pg:#0d0f14; --ink:#e9ebf0; --ink2:#8a90a2; --ink3:#7d8496;
+  --ln:rgba(255,255,255,.07); --ln2:rgba(255,255,255,.12);
+  --acc:#d8ae3c; --acc2:#f0c563; --acc-ink:#221806;
+  --cta-a:#f0c563; --cta-b:#c9a227; --cta-ink:#221806;
+  --ok:#4f9b74; --warn:#e0a83d;
+  --panel:transparent; --plate:#fff; --plate-ln:transparent;
+  --soft:rgba(216,174,60,.07);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--pg);color:var(--ink);font-family:Inter,system-ui,-apple-system,sans-serif;
+     font-size:15px;line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased;
+     overflow-x:hidden}
+.mono{font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+      font-variant-numeric:tabular-nums}
+
+/* ── cabecera ────────────────────────────────────────────────────────────── */
+.pbar{height:62px;display:flex;align-items:center;justify-content:space-between;
+      padding:0 32px;border-bottom:1px solid var(--ln)}
+.pbar .lg{display:flex;align-items:center;text-decoration:none;color:inherit}
+.pbar .logo-img{height:46px;width:auto;display:block}
+body.dark .pbar .logo-img{filter:invert(1)}
+.pbar .rt{display:flex;align-items:center;gap:16px}
+.pbar .back{font-size:12.5px;font-weight:600;color:var(--ink2);text-decoration:none;
+      padding:7px 14px;border:1px solid var(--ln);border-radius:20px;transition:.15s}
+.pbar .back:hover{border-color:var(--acc);color:var(--acc)}
+.pbar .safe{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--ink3);
+      letter-spacing:.02em;white-space:nowrap}
+
+/* ── columna ─────────────────────────────────────────────────────────────── */
+.pwrap{max-width:560px;margin:0 auto;padding:54px 24px 84px}
+.pref{font-size:11px;color:var(--ink3);letter-spacing:.12em;margin-bottom:14px}
+.pwrap h1{font-size:29px;font-weight:700;letter-spacing:-.025em;margin-bottom:7px}
+.psub{color:var(--ink2);font-size:14.5px;margin-bottom:36px}
+
+/* ── el plan, como producto y no como linea de recibo ────────────────────── */
+.pplan{display:flex;justify-content:space-between;align-items:flex-start;
+       padding-bottom:20px;border-bottom:1px solid var(--ln)}
+.pplan .nm{font-size:19px;font-weight:700}
+.pplan .tg{color:var(--ink2);font-size:13.5px;margin-top:3px}
+.pplan .pr{font-size:33px;font-weight:700;letter-spacing:-.02em;white-space:nowrap}
+.pplan .pr small{font-size:13px;font-weight:500;color:var(--ink2);letter-spacing:0;
+       margin-left:5px}
+.pplan .was{font-size:15px;font-weight:600;color:var(--ink3);text-decoration:line-through;
+       margin-left:6px}
+.psave{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:12.5px;
+       font-weight:700;padding:4px 12px;border-radius:14px;
+       background:rgba(16,185,129,.13);color:#10b981}
+
+.pfeats{list-style:none;margin:22px 0 24px}
+.pfeats li{display:flex;gap:11px;align-items:flex-start;padding:6px 0;font-size:14px;
+       color:var(--ink2);line-height:1.5}
+.pfeats li strong{color:var(--ink);font-weight:700}
+.pfeats .ck{flex:0 0 auto;width:15px;height:15px;color:var(--ink3);margin-top:4px}
+.pfeats .ck svg{width:15px;height:15px;display:block}
+
+/* ── etiqueta de seccion ─────────────────────────────────────────────────── */
+/* Las mayusculas las pone el CSS, no el diccionario: asi una traduccion se
+   escribe en frase normal y sale igual de bien en los cuatro idiomas. */
+.plbl{font-size:11px;font-weight:700;letter-spacing:.16em;color:var(--acc);
+      margin:26px 0 12px;text-transform:uppercase}
+.pref{text-transform:uppercase}
+.pnote-h{text-transform:uppercase}
+
+/* ── metodo de pago: la marca en PLACA, no en logotipo diminuto ──────────── */
+.prails{display:grid;gap:10px}
+.prail{border:1px solid var(--ln2);border-radius:12px;overflow:hidden;background:var(--panel);
+       width:100%;text-align:left;color:inherit;font:inherit;cursor:pointer;display:block;
+       padding:0;transition:border-color .15s,background .15s,box-shadow .15s}
+.prail:hover{border-color:color-mix(in srgb,var(--acc) 55%,transparent)}
+.prail:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.prail.on{border-color:var(--acc);background:var(--soft);
+       box-shadow:0 0 0 1px var(--acc) inset}
+.prail{position:relative}
+/* El radio real sigue ahi (teclado, lectores de pantalla, envio del formulario);
+   lo que se ve es .rd. Ocultarlo con display:none lo sacaria del formulario. */
+.prail-in{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.prail:has(.prail-in:checked){border-color:var(--acc);background:var(--soft);
+       box-shadow:0 0 0 1px var(--acc) inset}
+.prail:has(.prail-in:checked) .rd{border-color:var(--acc)}
+.prail:has(.prail-in:checked) .rd::after{content:'';position:absolute;inset:4px;
+       border-radius:50%;background:var(--acc)}
+.prail:has(.prail-in:focus-visible){outline:2px solid var(--acc);outline-offset:2px}
+.prail .fila{display:flex;align-items:center;gap:16px;padding:18px}
+.pplate{flex:0 0 auto;height:52px;min-width:168px;border-radius:9px;display:grid;
+       place-items:center;background:var(--plate);padding:0 18px;
+       border:1px solid var(--plate-ln)}
+.pplate svg{display:block}
+.prail .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.prail .t1{display:block;font-size:14.5px;font-weight:650}
+.prail .t2{display:block;font-size:12.5px;color:var(--ink2);line-height:1.45}
+.prail .rd{width:19px;height:19px;border-radius:50%;border:1.5px solid var(--ln2);
+       flex:0 0 auto;position:relative}
+.prail.on .rd{border-color:var(--acc)}
+.prail.on .rd::after{content:'';position:absolute;inset:4px;border-radius:50%;background:var(--acc)}
+/* Cuando la eleccion no es del comprador (un solo riel) la fila informa, no
+   pregunta: sin radio y sin cursor de boton. */
+.prail.solo{cursor:default}
+.prail.solo:hover{border-color:var(--ln2)}
+@media(max-width:520px){
+  .prail .fila{flex-wrap:wrap;gap:12px}
+  .pplate{min-width:0;width:100%;height:46px}
+  .prail .rd{order:3}
+}
+
+/* ── desglose y total ────────────────────────────────────────────────────── */
+.prows{margin-top:28px;border-top:1px solid var(--ln)}
+.prow{display:flex;justify-content:space-between;gap:16px;padding:13px 0;font-size:14px;
+      border-bottom:1px solid var(--ln)}
+.prow .k{color:var(--ink2)}
+.prow.disc{color:var(--ok);font-weight:600}
+.ptot{display:flex;justify-content:space-between;align-items:baseline;padding:22px 0 0}
+.ptot .k{font-size:15.5px;font-weight:600}
+.ptot .kc{font-size:13px;color:var(--ink3);font-weight:500}
+.ptot .v{font-size:29px;font-weight:700;letter-spacing:-.02em}
+
+/* ── el boton ────────────────────────────────────────────────────────────── */
+.pcta{display:block;width:100%;margin-top:26px;padding:16px;border:0;border-radius:10px;
+      background:linear-gradient(180deg,var(--cta-a),var(--cta-b));color:var(--cta-ink);
+      font:inherit;font-size:15.5px;font-weight:700;cursor:pointer;text-align:center;
+      text-decoration:none;transition:transform .12s,box-shadow .15s;
+      box-shadow:0 10px 26px -8px color-mix(in srgb,var(--acc) 60%,transparent)}
+.pcta:hover{transform:translateY(-1px)}
+.pcta.ghost{background:transparent;color:var(--ink);border:1px solid var(--ln2);
+      box-shadow:none;font-weight:600;font-size:14.5px;padding:13px}
+.pcta.ghost:hover{border-color:var(--acc);color:var(--acc)}
+
+/* ── letra chica: promesas concretas, con su marca de verificado ─────────── */
+.pfine{margin-top:15px;display:grid;gap:7px}
+.pfi{display:flex;gap:8px;font-size:12.5px;color:var(--ink3);line-height:1.55}
+.pfi svg{width:12px;height:12px;flex:0 0 auto;color:var(--ok);margin-top:3px}
+.pfi b{color:var(--ink2);font-weight:600}
+.pfoot{text-align:center;margin-top:18px;font-size:12.5px;color:var(--ink3)}
+.pfoot a{color:var(--acc);text-decoration:none}
+.pfoot a:hover{text-decoration:underline}
+
+/* ── avisos ──────────────────────────────────────────────────────────────── */
+.pnote{border:1px solid var(--ln2);border-left:3px solid var(--acc);border-radius:10px;
+       padding:14px 16px;margin:18px 0;background:var(--soft);font-size:13px;
+       color:var(--ink2);line-height:1.6}
+.pnote b{color:var(--ink);font-weight:700}
+.pnote-h{font-size:11.5px;font-weight:700;letter-spacing:.08em;color:var(--acc);
+       margin-bottom:8px;display:flex;align-items:center;gap:7px}
+.pnote ul{list-style:none;display:grid;gap:7px}
+.pnote li{display:flex;gap:8px;align-items:flex-start;font-size:12.8px}
+.pnote li::before{content:'';flex:0 0 auto;width:5px;height:5px;margin-top:7px;
+       border-radius:50%;background:var(--acc);opacity:.75}
+
+/* ── campo de codigo ─────────────────────────────────────────────────────── */
+.pcode{margin-top:26px}
+.pcode label{font-size:13px;font-weight:600;color:var(--ink2);margin-bottom:8px;display:block}
+.pcode .box{display:flex;gap:8px}
+.pcode input{flex:1;padding:11px 14px;border:1px solid var(--ln2);background:transparent;
+       color:var(--ink);border-radius:9px;font:inherit;font-size:14px;text-transform:uppercase;
+       outline:none;transition:.15s}
+.pcode input:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--soft)}
+.pcode button{padding:11px 20px;border:1px solid var(--ln2);background:transparent;
+       color:var(--ink);border-radius:9px;font:inherit;font-size:14px;font-weight:700;
+       cursor:pointer;transition:.15s}
+.pcode button:hover:not(:disabled){border-color:var(--acc);color:var(--acc)}
+.pcode button:disabled{opacity:.5;cursor:not-allowed}
+.pcode .msg{font-size:13px;margin-top:10px;font-weight:600;display:none}
+.pcode .msg.ok{color:var(--ok);display:block}
+.pcode .msg.err{color:#d05656;display:block}
+.pcode .hint{font-size:12px;color:var(--ink3);margin-top:10px}
+
+/* ── pasos numerados (instrucciones de USDT) ─────────────────────────────── */
+/* Lista propia y no .pfeats: alli cada hijo es un elemento flexible, asi que un
+   paso partido en varios <span> salia con huecos entre las palabras. Aqui el
+   contenido va en UN solo hijo y el numero lo pone el contador del CSS. */
+.psteps{list-style:none;counter-reset:s;margin:22px 0 26px;display:grid;gap:13px}
+.psteps li{counter-increment:s;display:flex;gap:12px;align-items:flex-start;
+      font-size:14px;color:var(--ink2);line-height:1.55}
+.psteps li::before{content:counter(s);flex:0 0 auto;width:22px;height:22px;border-radius:50%;
+      display:grid;place-items:center;font-size:11.5px;font-weight:700;color:var(--acc);
+      background:var(--soft);border:1px solid color-mix(in srgb,var(--acc) 32%,transparent);
+      margin-top:1px}
+.psteps b{color:var(--ink);font-weight:700}
+.psteps a{color:var(--acc)}
+
+/* ── datos a copiar (instrucciones de USDT) ──────────────────────────────── */
+.pdata{display:grid;gap:2px;margin-top:8px}
+.pdl{display:flex;justify-content:space-between;gap:12px;align-items:center;
+     padding:12px 0;border-bottom:1px solid var(--ln)}
+.pdl .k{font-size:12.5px;color:var(--ink3);letter-spacing:.04em}
+.pdl .v{font-size:14px;font-weight:600;word-break:break-all;text-align:right}
+.pcopy{border:1px solid var(--ln2);background:transparent;color:var(--ink2);border-radius:7px;
+       padding:5px 10px;font:inherit;font-size:11.5px;font-weight:600;cursor:pointer;
+       flex:0 0 auto;transition:.15s}
+.pcopy:hover{border-color:var(--acc);color:var(--acc)}
+
+@media(max-width:540px){
+  .pbar{padding:0 18px}.pbar .safe{display:none}
+  .pwrap{padding:36px 18px 70px}
+  .pwrap h1{font-size:24px}
+  .pplan{flex-direction:column;gap:12px}
+}
+@media (prefers-reduced-motion:reduce){
+  .pcta:hover{transform:none}
+  .prail,.pcta,.pcode input,.pcode button{transition:none}
+}

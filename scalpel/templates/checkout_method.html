@@ -1,237 +1,109 @@
 {% import '_pay_marks.html' as marks %}
+{#
+  ELEGIR METODO — misma familia visual que la revision del pedido (pay.css).
+
+  Normalmente el metodo ya se eligio en /checkout. Esta pantalla existe para
+  los dos casos en que eso no paso: un pedido pendiente que se retoma dias
+  despues, y una pasarela que no respondio y hay que reintentar por otra via.
+
+  Un <form> por riel: ningun JavaScript decide a donde va el dinero.
+#}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title data-i18n-title="cpay.doctitle">Tradeable Academy — How would you like to pay?</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
-    :root {
-      --ink:#15171f; --ink-soft:#4a4f5e; --muted:#8a8f9e;
-      --line:#e6e8ee; --card:rgba(255,255,255,.82); --page:#eef1f7; --nav-bg:rgba(238,241,247,.88);
-      --gold:#b8860b; --gold-2:#d9a636; --accent-bg:rgba(184,134,11,.10);
-      --ok:#166534; --ok-bg:#f0fdf4; --ok-border:#bbf7d0;
-      --radius:16px;
-      --glow-gold:rgba(224,168,61,.20); --glow-graphite:rgba(90,110,150,.16);
-      --shadow:0 18px 50px rgba(20,25,45,.10);
-    }
-    body.dark {
-      --ink:#e8eaf0; --ink-soft:#b0b5c2; --muted:#8a8f9e;
-      --line:rgba(255,255,255,.10); --card:rgba(22,25,34,.72); --page:#0b0d12; --nav-bg:rgba(11,13,18,.88);
-      --gold:#e0a83d; --gold-2:#f0c060; --accent-bg:rgba(224,168,61,.12);
-      --ok:#4ade80; --ok-bg:rgba(34,80,50,.30); --ok-border:rgba(74,222,128,.35);
-      --shadow:0 22px 60px rgba(0,0,0,.45);
-      --glow-gold:rgba(224,168,61,.16); --glow-graphite:rgba(70,95,150,.22);
-    }
-    body { background:var(--page); color:var(--ink); font-family:'Inter',sans-serif; font-size:15px;
-           line-height:1.65; min-height:100vh; position:relative; overflow-x:hidden;
-           -webkit-font-smoothing:antialiased; }
-    body::before { content:''; position:fixed; inset:0; z-index:-2; pointer-events:none;
-      background:
-        radial-gradient(70% 55% at 50% -8%, var(--glow-gold), transparent 68%),
-        radial-gradient(50% 45% at 110% 8%, var(--glow-graphite), transparent 70%),
-        radial-gradient(55% 50% at -10% 100%, var(--glow-graphite), transparent 70%); }
-    body::after { content:''; position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:.5;
-      background-image:linear-gradient(var(--line) 1px, transparent 1px),
-                       linear-gradient(90deg, var(--line) 1px, transparent 1px);
-      background-size:44px 44px; -webkit-mask-image:radial-gradient(75% 60% at 50% 0%, #000, transparent 75%);
-      mask-image:radial-gradient(75% 60% at 50% 0%, #000, transparent 75%); }
-
-    nav { display:flex; align-items:center; justify-content:space-between; padding:16px 32px;
-          border-bottom:1px solid var(--line); background:var(--nav-bg); position:sticky; top:0;
-          z-index:10; backdrop-filter:blur(10px); }
-    /* The transparent cut of the logo: the flat one carries a white plate that
-       shows as a pale box on the dark page. */
-    .logo-img { height:60px; width:auto; display:block; }
-    body.dark .logo-img { filter:invert(1); }
-    .back-link { font-size:13px; font-weight:600; color:var(--ink-soft); text-decoration:none;
-                 padding:8px 16px; border:1px solid var(--line); border-radius:20px; transition:all .15s; }
-    .back-link:hover { border-color:var(--gold); color:var(--gold); }
-
-    .wrap { max-width:580px; margin:0 auto; padding:38px 24px 90px; }
-
-    /* ── where you are in the purchase ── */
-    .steps { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:26px; }
-    .step { display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:700; color:var(--muted); }
-    .step .n { width:22px; height:22px; border-radius:50%; display:grid; place-items:center;
-               font-size:11px; font-weight:800; border:1px solid var(--line); color:var(--muted); }
-    .step.done .n { background:var(--ok-bg); border-color:var(--ok-border); color:var(--ok); }
-    .step.done { color:var(--ink-soft); }
-    .step.now .n { background:linear-gradient(135deg, var(--gold-2), var(--gold)); border-color:transparent;
-                   color:#1a1300; box-shadow:0 4px 12px -3px var(--glow-gold); }
-    .step.now { color:var(--ink); }
-    .step-line { width:34px; height:2px; border-radius:2px; background:var(--line); }
-
-    .eyebrow { font-size:11px; font-weight:700; letter-spacing:.16em; text-transform:uppercase;
-               color:var(--gold); margin-bottom:8px; display:flex; align-items:center; gap:8px; }
-    .eyebrow::before { content:''; width:22px; height:2px; border-radius:2px;
-               background:linear-gradient(90deg, var(--gold), transparent); }
-    h1 { font-size:29px; font-weight:800; letter-spacing:-.02em; margin-bottom:6px; }
-    .lede { color:var(--ink-soft); font-size:14.5px; margin-bottom:24px; }
-
-    .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
-            padding:22px 26px; margin-bottom:20px; box-shadow:var(--shadow);
-            backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
-            position:relative; overflow:hidden; }
-    .card.order::before { content:''; position:absolute; top:0; left:0; right:0; height:3px;
-            background:linear-gradient(90deg, var(--gold), var(--gold-2), transparent); }
-    .order-row { display:flex; justify-content:space-between; align-items:center; padding:7px 0; font-size:14.5px; }
-    .order-row .label { color:var(--ink-soft); }
-    .order-row .val { font-weight:700; }
-    .total { display:flex; justify-content:space-between; align-items:baseline;
-             padding-top:13px; margin-top:6px; border-top:2px solid var(--line); }
-    .total .t-label { font-size:15.5px; font-weight:700; }
-    .total .t-val { font-size:29px; font-weight:800; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
-    .total .t-cur { font-size:14px; color:var(--muted); font-weight:600; }
-
-    /* ── one button per way of paying ── */
-    .rail-title { font-size:11px; font-weight:800; letter-spacing:.12em; text-transform:uppercase;
-                  color:var(--muted); margin:0 2px 11px; }
-    .rail { display:block; width:100%; text-align:left; cursor:pointer; font-family:inherit; color:inherit;
-            background:var(--card); border:1.5px solid var(--line); border-radius:14px;
-            padding:18px 20px; margin-bottom:12px; box-shadow:var(--shadow);
-            transition:border-color .15s, transform .15s, box-shadow .15s; }
-    .rail:hover, .rail:focus-visible { border-color:var(--gold); transform:translateY(-2px);
-            box-shadow:0 16px 34px -12px var(--glow-gold); outline:none; }
-    .rail-head { display:flex; align-items:center; gap:12px; margin-bottom:9px; }
-    .rail-head .go { margin-left:auto; font-size:19px; color:var(--muted); transition:transform .15s, color .15s; }
-    .rail:hover .go { color:var(--gold); transform:translateX(3px); }
-    .tag { font-size:10px; font-weight:800; letter-spacing:.05em; text-transform:uppercase;
-           color:var(--ok); background:var(--ok-bg); border:1px solid var(--ok-border);
-           border-radius:20px; padding:2px 9px; white-space:nowrap; }
-    .rail-body { font-size:13.5px; color:var(--ink-soft); line-height:1.55; margin-bottom:11px; }
-    .rail-foot { display:flex; align-items:center; gap:9px; flex-wrap:wrap;
-                 padding-top:11px; border-top:1px solid var(--line); }
-    .rail-foot .fl { font-size:11.5px; font-weight:600; color:var(--muted); }
-
-    /* ── how paying in crypto works ──
-       Sits OUTSIDE the rail button (a button may not nest interactive or block
-       content) and only renders when the crypto rail is offered. Written as a
-       short how-to rather than a warning: it still carries the two facts that
-       protect the buyer (copy the network/amount exactly, the address only ever
-       lives on the invoice) but at the moment of payment an alarm costs sales,
-       so the tone stays helpful. Terms §5 keeps the full, strict wording. */
-    .cwarn { border:1px solid var(--line); border-left:3px solid var(--gold);
-             border-radius:12px; padding:14px 16px; margin:-4px 0 18px;
-             background:var(--accent-bg); }
-    .cwarn-h { font-size:11.5px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
-               color:var(--gold); margin-bottom:9px; display:flex; align-items:center; gap:7px; }
-    .cwarn ul { list-style:none; display:flex; flex-direction:column; gap:7px; }
-    .cwarn li { font-size:12.8px; line-height:1.5; color:var(--ink-soft);
-                display:flex; gap:8px; align-items:flex-start; }
-    .cwarn li::before { content:''; flex:none; width:5px; height:5px; margin-top:7px;
-                        border-radius:50%; background:var(--gold); opacity:.7; }
-    .cwarn b { color:var(--ink); font-weight:700; }
-
-    .promise { font-size:13px; color:var(--ink-soft); background:var(--accent-bg);
-               border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin:20px 0 14px;
-               display:flex; gap:11px; align-items:flex-start; }
-    .promise b { color:var(--ink); }
-    .promise .sh { font-size:17px; line-height:1.2; flex:none; }
-    .trust { display:flex; align-items:center; justify-content:center; gap:7px; margin-top:14px;
-             font-size:12.5px; color:var(--muted); font-weight:600; text-align:center; }
-    .foot { text-align:center; margin-top:14px; font-size:12.5px; color:var(--muted); }
-    .foot a { color:var(--gold); text-decoration:none; }
-    .foot a:hover { text-decoration:underline; }
-
-    @media(max-width:540px){
-      h1{font-size:23px;} .card,.rail{padding:17px;} nav{padding:14px 18px;}
-      .steps{gap:6px;} .step-line{width:20px;} .step span:not(.n){display:none;}
-    }
-    @media (prefers-reduced-motion:reduce){ .rail:hover{transform:none;} .rail:hover .go{transform:none;} }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/pay.css" />
   {{ marks.styles() }}
 </head>
 <body>
   <script>
-    try { var th = localStorage.getItem('scalpel_theme'); document.body.classList.add(th === 'light' ? 'light' : 'dark'); }
+    try { var th = localStorage.getItem('scalpel_theme');
+          document.body.classList.add(th === 'light' ? 'light' : 'dark'); }
     catch (e) { document.body.classList.add('dark'); }
   </script>
 
-  <nav>
-    <a href="/"><img src="/static/logo_t.png" alt="Tradeable Academy" class="logo-img" onerror="this.style.display='none';" /></a>
-    <a href="/pricing" class="back-link" data-i18n="cpay.back">← Plans</a>
-  </nav>
-
-  <div class="wrap">
-    <div class="steps">
-      <span class="step done"><span class="n">✓</span><span data-i18n="pay.step1">Your order</span></span>
-      <span class="step-line"></span>
-      <span class="step now"><span class="n">2</span><span data-i18n="pay.step2">Payment</span></span>
+  <div class="pbar">
+    <a href="/" class="lg"><img src="/static/logo_t.png" alt="Tradeable Academy" class="logo-img" onerror="this.style.display='none';" /></a>
+    <div class="rt">
+      <a href="/pricing" class="back" data-i18n="cpay.back">← Plans</a>
+      <span class="safe">{{ marks.lock(13) }}<span data-i18n="pay.safeConn">SECURE CONNECTION</span></span>
     </div>
+  </div>
 
-    <div class="eyebrow" data-i18n="cpay.eyebrow">Payment</div>
+  <div class="pwrap">
+    <div class="pref mono"><span data-i18n="cdone.orderId">ORDER</span> #{{ '%05d'|format(order.id) }}</div>
     <h1 data-i18n="cpay.title">How would you like to pay?</h1>
-    <p class="lede" data-i18n="cpay.sub">Same price either way. Pick whichever is easiest for you.</p>
+    <p class="psub" data-i18n="cpay.sub">Same price either way. Pick whichever is easiest for you.</p>
 
-    <div class="card order">
-      <div class="order-row"><span class="label" data-i18n="cpay.plan">Plan</span><span class="val">{{ plan_label }}</span></div>
-      <div class="order-row"><span class="label" data-i18n="cpay.cycle">Billing</span>
-        <span class="val">{% if order.billing_cycle == 'annual' %}<span data-i18n="cpay.annual">Annual</span>{% else %}<span data-i18n="cpay.monthly">Monthly</span>{% endif %}</span></div>
-      <div class="total">
-        <span class="t-label" data-i18n="cpay.total">Total</span>
-        <span><span class="t-val">${{ '%.2f'|format(order.final_price) }}</span> <span class="t-cur">USD</span></span>
+    <div class="pplan">
+      <div>
+        <div class="nm">{{ plan_label }}</div>
+        <div class="tg">{% if order.billing_cycle == 'annual' %}<span data-i18n="cpay.annual">Annual</span>{% else %}<span data-i18n="cpay.monthly">Monthly</span>{% endif %}</div>
       </div>
+      <div class="pr mono">${{ '%.2f'|format(order.final_price) }}<small> USD</small></div>
     </div>
 
-    <div class="rail-title" data-i18n="cpay.choose">Choose a payment method</div>
+    <div class="plbl" data-i18n="cpay.choose">CHOOSE A PAYMENT METHOD</div>
+    <div class="prails">
+      {% for rail in rails %}
+      <form method="post" action="/checkout/pay/{{ order.id }}">
+        <input type="hidden" name="method" value="{{ rail }}" />
+        <button type="submit" class="prail">
+          <span class="fila">
+            <span class="pplate">
+              {% if rail == 'paypal' or rail == 'stripe' %}{{ marks.paypal_plate() }}
+              {% else %}{{ marks.usdt_plate() }}{% endif %}
+            </span>
+            <span class="tx">
+              {% if rail == 'paypal' %}
+                <span class="t1">PayPal</span>
+                <span class="t2" data-i18n="cpay.ppBody">Pay with a debit or credit card, or with your PayPal balance.
+                  You don't need a PayPal account to pay by card. Your plan activates as soon as the payment goes through.</span>
+                {% if paypal_receipt_name %}
+                {# El titular de la cuenta receptora puede no llamarse igual que
+                   la marca. Decirlo ANTES de pagar es la mejor defensa contra el
+                   contracargo "no reconozco este cargo", y es coherente con la
+                   Secc. 5 de los T&C ("Quien recibe el pago"). #}
+                <span class="t2"><span data-i18n="cpay.ppWho">The charge will appear as</span>
+                  <b>{{ paypal_receipt_name }}</b></span>
+                {% endif %}
+              {% elif rail == 'crypto' %}
+                <span class="t1">USDT</span>
+                <span class="t2" data-i18n="cpay.cryptoBody">Send USDT from Binance or any wallet. We show you the exact amount,
+                  the network and the address; your plan activates on its own once the network confirms it.</span>
+              {% elif rail == 'manual' %}
+                <span class="t1">USDT</span>
+                <span class="t2" data-i18n="cpay.manualBody">Send the USDT yourself to our account and attach the receipt. We check it
+                  and switch your plan on — normally within a few hours, and never more than 24.</span>
+              {% else %}
+                <span class="t1" data-i18n="cpay.cardTitle">Debit or credit card</span>
+                <span class="t2" data-i18n="cpay.cardBody">Pay by card on a secure page. We never see or store your card number.</span>
+              {% endif %}
+            </span>
+            <span class="rd" style="border:0;font-size:19px;color:var(--ink3);width:auto">→</span>
+          </span>
+        </button>
+      </form>
+      {% endfor %}
+    </div>
 
-    <!-- One form per rail: no JavaScript decides where the money goes. -->
-    {% for rail in rails %}
-    <form method="post" action="/checkout/pay/{{ order.id }}">
-      <input type="hidden" name="method" value="{{ rail }}" />
-      <button type="submit" class="rail">
-        {% if rail == 'paypal' %}
-          <span class="rail-head">{{ marks.paypal() }}<span class="tag" data-i18n="cpay.instant">Instant</span><span class="go">→</span></span>
-          <span class="rail-body" data-i18n="cpay.ppBody">Pay with a debit or credit card, or with your PayPal balance.
-            You don't need a PayPal account to pay by card. Your plan activates as soon as the payment goes through.</span>
-          <span class="rail-foot">
-            <span class="fl" data-i18n="cpay.ppFoot">Card payments are handled by PayPal — we never see your card number.</span>
-          </span>
-          {% if paypal_receipt_name %}
-          <!-- El titular de la cuenta receptora puede no llamarse igual que la
-               marca. Decírselo ANTES de pagar es la mejor defensa contra el
-               contracargo "no reconozco este cargo" — y es coherente con la
-               Secc. 5 de los T&C ("Quién recibe el pago"). -->
-          <span class="rail-foot">
-            <span class="fl"><span data-i18n="cpay.ppWho">The charge will appear as</span>
-              <b>{{ paypal_receipt_name }}</b></span>
-          </span>
-          {% endif %}
-        {% elif rail == 'crypto' %}
-          <span class="rail-head">{{ marks.usdt() }}<span class="go">→</span></span>
-          <span class="rail-body" data-i18n="cpay.cryptoBody">Send USDT from Binance or any wallet. We show you the exact amount,
-            the network and the address; your plan activates on its own once the network confirms it.</span>
-          <span class="rail-foot">
-            <span class="fl" data-i18n="cpay.sendFrom">Send from Binance, Trust Wallet or any wallet you already use.</span>
-          </span>
-        {% elif rail == 'manual' %}
-          <span class="rail-head">{{ marks.usdt() }}<span class="tag" data-i18n="cpay.manualTag">By hand</span><span class="go">→</span></span>
-          <span class="rail-body" data-i18n="cpay.manualBody">Send the USDT yourself to our account and attach the receipt. We check it
-            and switch your plan on — normally within a few hours, and never more than 24.</span>
-          <span class="rail-foot">
-            <span class="fl" data-i18n="cpay.manualFoot">Choose this one if you'd rather transfer from your own exchange.</span>
-          </span>
-        {% else %}
-          <span class="rail-head">
-            <span class="paymark" style="--pm-size:34px">{{ marks.lock(20) }}<span class="pm-word" data-i18n="cpay.cardTitle">Debit or credit card</span></span>
-            <span class="tag" data-i18n="cpay.instant">Instant</span><span class="go">→</span>
-          </span>
-          <span class="rail-body" data-i18n="cpay.cardBody">Pay by card on a secure page. We never see or store your card number.</span>
-        {% endif %}
-      </button>
-    </form>
-    {% if rail == 'crypto' %}
-    <div class="cwarn">
-      <div class="cwarn-h">
+    {% if 'crypto' in rails %}
+    {# Va FUERA del boton (un boton no puede anidar contenido interactivo ni de
+       bloque) y solo cuando el riel de cripto se ofrece. Escrito como un
+       como-se-hace y no como una advertencia: lleva igual los dos datos que
+       protegen al comprador, pero una alarma en el momento de pagar cuesta
+       ventas. La redaccion estricta vive en la Secc. 5 de los T&C. #}
+    <div class="pnote">
+      <div class="pnote-h">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/>
           <line x1="12" y1="8" x2="12.01" y2="8"/>
         </svg>
-        <span data-i18n="cpay.wTitle">Paying with USDT</span>
+        <span data-i18n="cpay.wTitle">PAYING WITH USDT</span>
       </div>
       <ul>
         <li data-i18n-html="cpay.wCheck"><b>Copy the network and the amount exactly as your invoice shows them.</b> A crypto transfer can't be undone, so it's worth the extra second to check.</li>
@@ -240,22 +112,18 @@
       </ul>
     </div>
     {% endif %}
-    {% endfor %}
 
-    <div class="promise">
-      <span class="sh">🛡️</span>
-      <span>
-        <b data-i18n="cpay.promiseTitle">Our commitment:</b>
+    <div class="pfine">
+      {% set fk %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>{% endset %}
+      <div class="pfi">{{ fk }}<span><b data-i18n="cpay.promiseTitle">Our commitment:</b>
         <span data-i18n="cpay.promiseBody">if you pay and your plan is not active within {h} hours, we activate it
-          manually or refund you in full. Prices are always in USD, whichever method you choose.</span>
-      </span>
+          manually or refund you in full. Prices are always in USD, whichever method you choose.</span></span></div>
+      <div class="pfi">{{ fk }}<span data-i18n="pay.noCard">We never see or store your card details</span></div>
     </div>
 
-    <div class="trust">{{ marks.lock() }}<span data-i18n="pay.noCard">We never see or store your card details</span></div>
-
-    <div class="foot">
+    <p class="pfoot">
       <a href="/checkout/status/{{ order.id }}" data-i18n="cpay.later">I'll pay later — show me my order</a>
-    </div>
+    </p>
   </div>
 
 <script src="/static/pages_i18n.js"></script>
@@ -263,8 +131,8 @@
 (function(){
   'use strict';
   var SLA = {{ sla_hours }};
-  /* The promise carries a number, so the generic [data-i18n] pass leaves a
-     "{h}" behind. Fill it after that pass has run. */
+  /* La promesa lleva un numero, asi que la pasada generica de [data-i18n] deja
+     un "{h}" a la vista. Se rellena despues de esa pasada. */
   function fillPromise(){
     var el = document.querySelector('[data-i18n="cpay.promiseBody"]');
     if (el && el.textContent.indexOf('{h}') !== -1) el.textContent = el.textContent.replace('{h}', SLA);

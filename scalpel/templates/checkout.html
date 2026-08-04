@@ -1,443 +1,212 @@
 {% import '_pay_marks.html' as marks %}
+{#
+  REVISION DEL PEDIDO — diseno F, aprobado por el dueno.
+
+  Cambio de fondo respecto a la version anterior: el METODO DE PAGO se elige
+  AQUI, no en una pantalla aparte. El dueno lo pidio tres veces ("la persona
+  DEBE DE PODER ELEGIR"), y ademas ahorra un salto: quien ya sabe con que va a
+  pagar no deberia tener que pulsar "continuar" para descubrir sus opciones.
+  Con un solo riel encendido la fila se pinta igual pero solo informa.
+
+  El selector aparte (/checkout/pay) NO desaparece: sigue siendo la puerta de
+  un pedido pendiente que se retoma y la salida cuando una pasarela no responde.
+#}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title data-i18n-title="checkout.doctitle">Tradeable Academy — Checkout</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
-    :root {
-      --ink:#15171f; --ink-soft:#4a4f5e; --muted:#8a8f9e;
-      --line:#e6e8ee; --card:rgba(255,255,255,.82); --page:#eef1f7; --nav-bg:rgba(238,241,247,.88);
-      --accent:#b8860b; --accent-h:#9a6f0e; --accent-bg:rgba(184,134,11,.10);
-      --gold:#b8860b; --gold-2:#d9a636;
-      --premium:#b8860b; --standard:#2563eb;
-      --ok:#166534; --ok-bg:#f0fdf4; --ok-border:#bbf7d0;
-      --err:#991b1b; --radius:16px;
-      --glow-gold:rgba(224,168,61,.20); --glow-graphite:rgba(90,110,150,.16);
-      --shadow:0 18px 50px rgba(20,25,45,.10);
-    }
-    /* Dark mode — carried from the main app via localStorage (matches pricing.html) */
-    body.dark {
-      --ink:#e8eaf0; --ink-soft:#b0b5c2; --muted:#8a8f9e;
-      --line:rgba(255,255,255,.10); --card:rgba(22,25,34,.72); --page:#0b0d12; --nav-bg:rgba(11,13,18,.88);
-      --accent:#e0a83d; --accent-h:#f0c060; --accent-bg:rgba(224,168,61,.12);
-      --gold:#e0a83d; --gold-2:#f0c060;
-      --premium:#e0a83d; --standard:#5b8ef0;
-      --ok:#4ade80; --ok-bg:rgba(34,80,50,.30); --ok-border:rgba(74,222,128,.35);
-      --shadow:0 22px 60px rgba(0,0,0,.45);
-      --glow-gold:rgba(224,168,61,.16); --glow-graphite:rgba(70,95,150,.22);
-    }
-
-    body { background:var(--page); color:var(--ink); font-family:'Inter',sans-serif;
-           font-size:15px; line-height:1.65; min-height:100vh; position:relative;
-           overflow-x:hidden; -webkit-font-smoothing:antialiased; }
-    /* Designed background — soft gold + graphite aurora glows behind frosted cards */
-    body::before { content:''; position:fixed; inset:0; z-index:-2; pointer-events:none;
-      background:
-        radial-gradient(70% 55% at 50% -8%, var(--glow-gold), transparent 68%),
-        radial-gradient(50% 45% at 110% 8%, var(--glow-graphite), transparent 70%),
-        radial-gradient(55% 50% at -10% 100%, var(--glow-graphite), transparent 70%); }
-    /* Faint hairline grid for a "trading terminal" texture */
-    body::after { content:''; position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:.5;
-      background-image:linear-gradient(var(--line) 1px, transparent 1px),
-                       linear-gradient(90deg, var(--line) 1px, transparent 1px);
-      background-size:44px 44px; -webkit-mask-image:radial-gradient(75% 60% at 50% 0%, #000, transparent 75%);
-      mask-image:radial-gradient(75% 60% at 50% 0%, #000, transparent 75%); }
-
-    nav { display:flex; align-items:center; justify-content:space-between;
-          padding:16px 32px; border-bottom:1px solid var(--line);
-          background:var(--nav-bg); position:sticky; top:0; z-index:10; backdrop-filter:blur(10px); }
-    /* Light: true colors (blue "a") via multiply on the neutral nav.
-       Dark: invert like the rest of the site — this is what turns the "a" its
-       intended orange and the text white. (The earlier gold tint was the gold
-       background glow bleeding through a transparent nav; the opaque --nav-bg
-       above fixes that, so the invert here is clean.) */
-    .logo-img { height:60px; width:auto; display:block; }
-    body.dark .logo-img { filter:invert(1); }
-    .back-link { font-size:13px; font-weight:600; color:var(--ink-soft); text-decoration:none;
-                 padding:8px 16px; border:1px solid var(--line); border-radius:20px; transition:all .15s; }
-    .back-link:hover { border-color:var(--gold); color:var(--gold); }
-
-    .wrap { max-width:580px; margin:0 auto; padding:44px 24px 90px; }
-    .eyebrow { font-size:11px; font-weight:700; letter-spacing:.16em; text-transform:uppercase;
-               color:var(--gold); margin-bottom:8px; display:flex; align-items:center; gap:8px; }
-    .eyebrow::before { content:''; width:22px; height:2px; border-radius:2px;
-               background:linear-gradient(90deg, var(--gold), transparent); }
-    h1 { font-size:30px; font-weight:800; letter-spacing:-.02em; margin-bottom:6px; }
-    .lede { color:var(--ink-soft); font-size:14.5px; margin-bottom:26px; }
-
-    .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
-            padding:26px 28px; margin-bottom:18px; box-shadow:var(--shadow);
-            backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); }
-    /* Order card gets a gold top accent bar */
-    .card.order { position:relative; overflow:hidden; }
-    .card.order::before { content:''; position:absolute; top:0; left:0; right:0; height:3px;
-            background:linear-gradient(90deg, var(--gold), var(--gold-2), transparent); }
-
-    .summary-row { display:flex; justify-content:space-between; align-items:center;
-                   padding:10px 0; font-size:15px; }
-    .summary-row .label { color:var(--ink-soft); }
-    .summary-row .val { font-weight:600; }
-    .plan-head { display:flex; align-items:center; gap:12px; }
-    .plan-badge { width:44px; height:44px; border-radius:12px; display:grid; place-items:center;
-                  font-size:22px; flex:none;
-                  background:linear-gradient(135deg, var(--accent-bg), transparent);
-                  border:1px solid var(--line); }
-    .plan-name { font-size:21px; font-weight:800; letter-spacing:-.01em; }
-    .plan-name.premium { color:var(--premium); }
-    .plan-name.standard { color:var(--standard); }
-    .cycle-tag { display:inline-block; font-size:10.5px; font-weight:800; text-transform:uppercase;
-                 letter-spacing:.06em; padding:4px 11px; border-radius:12px;
-                 background:var(--accent-bg); color:var(--gold); border:1px solid var(--line); }
-    .divider { height:1px; background:var(--line); margin:16px 0; }
-
-    /* What's included — details by purchase type */
-    .incl-title { font-size:11px; font-weight:800; letter-spacing:.12em; text-transform:uppercase;
-                  color:var(--muted); margin-bottom:12px; }
-    .incl-list { list-style:none; display:flex; flex-direction:column; gap:11px; }
-    .incl-list li { display:flex; align-items:flex-start; gap:11px; font-size:14px; color:var(--ink); line-height:1.5; }
-    .incl-list li .ic { flex:none; width:20px; height:20px; border-radius:6px; margin-top:1px;
-                  display:grid; place-items:center; font-size:11px; font-weight:800; color:var(--gold);
-                  background:var(--accent-bg); border:1px solid var(--line); }
-    .incl-list li strong { font-weight:700; }
-
-    .discount-row { display:flex; justify-content:space-between; padding:6px 0;
-                    color:var(--ok); font-weight:600; font-size:14px; }
-    .total-row { display:flex; justify-content:space-between; align-items:baseline;
-                 padding-top:14px; margin-top:8px; border-top:2px solid var(--line); }
-    .total-row .t-label { font-size:16px; font-weight:700; }
-    .total-row .t-val { font-size:30px; font-weight:800; letter-spacing:-.02em; color:var(--ink);
-                 font-variant-numeric:tabular-nums; }
-    .total-row .t-cycle { font-size:13px; color:var(--muted); font-weight:500; }
-
-    /* Promo */
-    .promo-label { font-size:13px; font-weight:600; color:var(--ink-soft); margin-bottom:8px; display:block; }
-    .promo-box { display:flex; gap:8px; }
-    .promo-box input { flex:1; padding:11px 14px; border:1px solid var(--line); background:transparent;
-                       color:var(--ink); border-radius:10px; font-size:14px; font-family:inherit;
-                       text-transform:uppercase; outline:none; transition:all .15s; }
-    .promo-box input:focus { border-color:var(--gold); box-shadow:0 0 0 3px var(--accent-bg); }
-    .promo-box button { padding:11px 20px; background:var(--ink); color:var(--page); border:none;
-                        border-radius:10px; font-size:14px; font-weight:700; cursor:pointer;
-                        font-family:inherit; transition:opacity .15s; }
-    .promo-box button:hover { opacity:.85; }
-    .promo-box button:disabled { opacity:.5; cursor:not-allowed; }
-    .promo-msg { font-size:13px; margin-top:10px; font-weight:600; display:none; }
-    .promo-msg.ok  { color:var(--ok); display:block; }
-    .promo-msg.err { color:var(--err); display:block; }
-    .promo-note { font-size:12px; color:var(--muted); margin-top:10px; }
-
-    .pay-btn { display:block; width:100%; padding:16px; border:none; border-radius:12px;
-               font-size:16px; font-weight:800; cursor:pointer; font-family:inherit;
-               transition:transform .12s, box-shadow .15s; text-align:center; text-decoration:none;
-               color:#1a1300; background:linear-gradient(135deg, var(--gold-2), var(--gold));
-               box-shadow:0 10px 26px -6px var(--glow-gold), inset 0 1px 0 rgba(255,255,255,.35); }
-    .pay-btn:hover { transform:translateY(-1px); box-shadow:0 14px 32px -6px var(--glow-gold), inset 0 1px 0 rgba(255,255,255,.35); }
-
-    .trust { display:flex; align-items:center; justify-content:center; gap:8px; margin-top:16px;
-             font-size:12.5px; color:var(--muted); font-weight:600; }
-    .trust svg { width:14px; height:14px; }
-    .info { font-size:12.5px; color:var(--muted); text-align:center; margin-top:12px; line-height:1.6; }
-    .info a { color:var(--gold); }
-
-    /* Each plan brings its own accent, instead of painting everything gold. */
-    .order.premium { --pa:var(--premium); --pa-soft:rgba(184,134,11,.13); --pa-glow:rgba(184,134,11,.20); }
-    .order.standard { --pa:var(--standard); --pa-soft:rgba(37,99,235,.11); --pa-glow:rgba(37,99,235,.20); }
-    body.dark .order.premium { --pa-soft:rgba(224,168,61,.14); --pa-glow:rgba(224,168,61,.20); }
-    body.dark .order.standard { --pa-soft:rgba(91,142,240,.15); --pa-glow:rgba(91,142,240,.22); }
-
-    h1 { font-family:'Fraunces',Georgia,serif; font-weight:500; letter-spacing:-.01em; }
-
-    /* ── the plan, presented as a product and not as a receipt line ── */
-    .card.order { padding:0; overflow:hidden; border:1.5px solid var(--line);
-            border-color:color-mix(in srgb, var(--pa) 34%, var(--line));
-            transition:transform .24s cubic-bezier(.2,.7,.3,1), box-shadow .24s ease,
-                       border-color .24s ease; }
-    /* The same lift the plan cards use on /pricing, a touch softer: the card
-       should feel picked up, not clickable — it is a summary, not a button. */
-    .card.order:hover {
-      transform:translateY(-5px) scale(1.012);
-      border-color:color-mix(in srgb, var(--pa) 62%, var(--line));
-      box-shadow:0 28px 62px -20px var(--pa-glow), var(--shadow);
-    }
-    /* The plan's glow and its emblem come up with it. */
-    .oemblem { transition:transform .24s cubic-bezier(.2,.7,.3,1); }
-    .card.order:hover .oemblem { transform:translateY(-1px) scale(1.06); }
-    .card.order:hover .ocycle { border-color:color-mix(in srgb, var(--pa) 45%, transparent); }
-    /* The frosted wash the rest of the site uses, tinted by the plan. */
-    .card.order::before { height:2px; transition:opacity .24s ease; opacity:.9;
-            background:linear-gradient(90deg, var(--pa), transparent 78%); }
-    .card.order:hover::before { opacity:1; }
-    .card.order::after { content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
-            opacity:.85; transition:opacity .24s ease;
-            background:radial-gradient(90% 70% at 0% 0%, var(--pa-soft), transparent 60%); }
-    .card.order:hover::after { opacity:1; }
-    .card.order > * { position:relative; z-index:1; }
-
-    .ohead { padding:26px 28px 22px; }
-    .oline { display:flex; align-items:center; gap:12px; margin-bottom:7px; }
-    .oemblem { width:34px; height:34px; flex:none; color:var(--pa); }
-    .oname { font-size:14px; font-weight:800; letter-spacing:.11em; text-transform:uppercase;
-             color:var(--pa); }
-    .ocycle { margin-left:auto; font-size:10px; font-weight:800; text-transform:uppercase;
-              letter-spacing:.09em; padding:5px 12px; border-radius:20px;
-              background:var(--pa-soft); color:var(--pa);
-              border:1px solid color-mix(in srgb, var(--pa) 26%, transparent); white-space:nowrap; }
-    .otag { font-size:13.5px; color:var(--muted); line-height:1.5; margin-bottom:20px; }
-    /* The amount stays in the interface sans, not the display serif: a serif
-       cuts its digits for reading in prose, and next to a currency symbol it
-       reads as a headline rather than as money. Tabular figures keep every
-       digit the same width, so the column does not shift as the price changes. */
-    .oprice { display:flex; align-items:baseline; gap:4px; }
-    .oprice .cur { font-size:24px; font-weight:600; color:var(--ink-soft);
-              align-self:flex-start; margin-top:7px; }
-    .oprice .amt { font-size:52px; font-weight:800; letter-spacing:-.035em; line-height:1;
-              font-variant-numeric:tabular-nums; font-feature-settings:'tnum' 1, 'ss01' 1; }
-    .oprice .per { font-family:'Inter',sans-serif; font-size:14px; font-weight:500; color:var(--muted); }
-    /* List price, struck through, next to what they actually pay today. */
-    .oprice .owas { font-size:17px; font-weight:600; color:var(--muted);
-                    text-decoration:line-through; margin-left:6px;
-                    font-variant-numeric:tabular-nums; }
-    .osave { display:inline-flex; align-items:center; gap:6px; margin-top:12px;
-             font-size:12.5px; font-weight:800; letter-spacing:.01em; padding:4px 12px;
-             border-radius:14px; background:rgba(16,185,129,.14); color:#10b981; }
-
-    .odiv { height:1px; background:var(--line); margin:0 28px; }
-
-    /* One column, one bullet per line — a list you read down, not across. */
-    .obody { padding:22px 28px 6px; }
-    .feats { list-style:none; }
-    .feats li { display:flex; align-items:flex-start; gap:12px; padding:8px 0;
-                font-size:14px; color:var(--ink-soft); line-height:1.5; }
-    .feats .tick { flex:none; width:21px; height:21px; margin-top:1px; border-radius:50%;
-                   display:grid; place-items:center; color:var(--pa); background:var(--pa-soft); }
-    .feats .tick svg { width:12px; height:12px; stroke:currentColor; stroke-width:3.2; fill:none;
-                   stroke-linecap:round; stroke-linejoin:round; }
-    .feats li strong { color:var(--ink); font-weight:700; }
-    .feats li.more { color:var(--muted); }
-
-    .lines { padding:16px 28px 24px; }
-    .lines .summary-row { padding:7px 0; font-size:14px; }
-    .lines .total-row .t-val { font-weight:800; letter-spacing:-.02em;
-              font-variant-numeric:tabular-nums; }
-
-    /* ── where you are in the purchase ── */
-    .steps { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:24px; }
-    .step { display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:700; color:var(--muted); }
-    .step .n { width:22px; height:22px; border-radius:50%; display:grid; place-items:center;
-               font-size:11px; font-weight:800; border:1px solid var(--line); color:var(--muted); }
-    .step.now .n { background:linear-gradient(135deg, var(--gold-2), var(--gold)); border-color:transparent;
-                   color:#1a1300; box-shadow:0 4px 12px -3px var(--glow-gold); }
-    .step.now { color:var(--ink); }
-    .step-line { width:34px; height:2px; border-radius:2px; background:var(--line); }
-
-    /* Accepted payment methods, so nobody has to click "continue" to find out
-       whether their card works here. */
-    .methods { margin-top:18px; text-align:center; }
-    .methods .ml { font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
-                   color:var(--muted); margin-bottom:9px; }
-    .methods .chiprow { justify-content:center; }
-    .methods .paymark { margin:0 4px; vertical-align:middle; }
-
-    /* Someone who asked their system to stop moving things gets a still card. */
-    @media (prefers-reduced-motion:reduce){
-      .card.order, .card.order:hover, .oemblem, .card.order:hover .oemblem {
-        transition:none; transform:none; }
-    }
-    /* On touch there is no cursor to hover with, and a sticky :hover left over
-       from a tap looks like a bug. */
-    @media (hover:none){ .card.order:hover { transform:none; } }
-
-    @media(max-width:540px){ h1{font-size:24px;} .card{padding:20px;} nav{padding:14px 18px;}
-      .steps{gap:6px;} .step-line{width:20px;} .step span:not(.n){display:none;} }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/pay.css" />
   {{ marks.styles() }}
 </head>
 <body>
   <script>
-    // Carry the theme chosen in the main app (defaults to dark for the checkout flow, like /pricing).
-    try {
-      var th = localStorage.getItem('scalpel_theme');
-      document.body.classList.add(th === 'light' ? 'light' : 'dark');
-    } catch (e) { document.body.classList.add('dark'); }
+    /* El tema elegido en la app manda tambien aqui; por defecto oscuro, como /pricing. */
+    try { var th = localStorage.getItem('scalpel_theme');
+          document.body.classList.add(th === 'light' ? 'light' : 'dark'); }
+    catch (e) { document.body.classList.add('dark'); }
   </script>
 
-  <nav>
-    <a href="/"><img src="/static/logo_t.png" alt="Tradeable Academy" class="logo-img" onerror="this.style.display='none';" /></a>
-    <a href="/pricing" class="back-link" data-i18n="nav.backPlans">← Back to plans</a>
-  </nav>
-
-  <div class="wrap">
-    <div class="steps">
-      <span class="step now"><span class="n">1</span><span data-i18n="pay.step1">Your order</span></span>
-      <span class="step-line"></span>
-      <span class="step"><span class="n">2</span><span data-i18n="pay.step2">Payment</span></span>
+  <div class="pbar">
+    <a href="/" class="lg"><img src="/static/logo_t.png" alt="Tradeable Academy" class="logo-img" onerror="this.style.display='none';" /></a>
+    <div class="rt">
+      <a href="/pricing" class="back" data-i18n="nav.backPlans">← Back to plans</a>
+      <span class="safe">{{ marks.lock(13) }}<span data-i18n="pay.safeConn">SECURE CONNECTION</span></span>
     </div>
+  </div>
 
-    <div class="eyebrow" data-i18n="checkout.eyebrow">Checkout</div>
+  <div class="pwrap">
+    <div class="pref mono" data-i18n="checkout.eyebrow">CHECKOUT</div>
     <h1 data-i18n="checkout.title">Review your order</h1>
-    <p class="lede" data-i18n="checkout.lede">You're one step away. Confirm the details below and continue to secure payment.</p>
+    <p class="psub" data-i18n="checkout.lede">You're one step away. Confirm the details below and continue to secure payment.</p>
 
     {% if preview %}
-    <div style="background:#fef3c7;border:1px solid #fcd34d;color:#92400e;border-radius:10px;padding:11px 14px;margin-bottom:18px;font-size:13px;font-weight:600;text-align:center;line-height:1.5;">
+    <div class="pnote" style="margin-top:0;">
       🔍 Admin preview — visual simulation only. No order is created and no card is charged.
     </div>
     {% endif %}
 
-    <div class="card order {{ plan }}">
-      <div class="ohead">
-        <div class="oline">
-          <span class="oemblem">
-            {% if plan == 'premium' %}
-            {# A cut gem: facets read as craftsmanship where a crown reads as a costume. #}
-            <svg viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="1.35"
-                 stroke-linejoin="round" aria-hidden="true">
-              <path d="M9.4 5.5h15.2l5.4 7.6L17 29.2 3.9 13.1 9.4 5.5Z"/>
-              <path d="M3.9 13.1h26.1M12.2 13.1 17 29.2l4.8-16.1M9.4 5.5l2.8 7.6M24.6 5.5l-2.8 7.6"/>
-            </svg>
-            {% else %}
-            {# Rising bars with a mark above: momentum, drawn the way the site draws. #}
-            <svg viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="1.6"
-                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M5.5 28.5h23"/>
-              <path d="M9.5 28.5V19M16 28.5v-6.4M22.5 28.5V13M29 28.5V8.5" opacity=".92"/>
-              <path d="M5.5 15.4 12.6 9l4.9 4.3L28.4 4"/>
-              <path d="M23.4 4h5v5" />
-            </svg>
-            {% endif %}
-          </span>
-          <span class="oname">{{ plan_label }}</span>
-          <span class="ocycle" data-i18n="{{ 'common.annual' if cycle == 'annual' else 'common.monthly' }}">{{ 'Annual' if cycle == 'annual' else 'Monthly' }}</span>
-        </div>
-        <div class="otag" data-i18n="{{ 'co.tagPrem' if plan == 'premium' else 'co.tagStd' }}">{{ 'For serious traders who want deep daily review.' if plan == 'premium' else 'One deep review a day, every day.' }}</div>
-        {% set shown = quote.final_price if quote.discount_pct else quote.base_price %}
-        <div class="oprice">
-          <span class="cur">$</span>
-          <span class="amt">{{ shown|int if shown == shown|int else '%.2f'|format(shown) }}</span>
-          <span class="per" data-i18n="{{ 'checkout.perYear' if cycle == 'annual' else 'checkout.perMonth' }}">{{ '/ year' if cycle == 'annual' else '/ month' }}</span>
-          {% if quote.discount_pct %}
-          <span class="owas">${{ quote.base_price|int if quote.base_price == quote.base_price|int else '%.2f'|format(quote.base_price) }}</span>
-          {% endif %}
-        </div>
-        {% if annual_saving %}
-        <div class="osave">↓ <span data-i18n="co.save">You save</span>
-          <span>${{ '%.0f'|format(annual_saving) }}</span>
-          <span data-i18n="co.perYear">a year</span></div>
-        {% endif %}
+    <div class="pplan">
+      <div>
+        <div class="nm">{{ plan_label }}</div>
+        <div class="tg" data-i18n="{{ 'co.tagPrem' if plan == 'premium' else 'co.tagStd' }}">{{ 'For serious traders who want deep daily review.' if plan == 'premium' else 'One deep review a day, every day.' }}</div>
       </div>
-
-      <div class="odiv"></div>
-
-      <div class="obody">
-        {% set tick %}<span class="tick"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>{% endset %}
-        <ul class="feats">
-          {% if plan == 'premium' %}
-          <li>{{ tick }}<span data-i18n-html="co.f.analysesPrem">Up to <strong>5</strong> AI screenshot analyses per day</span></li>
-          <li>{{ tick }}<span data-i18n-html="co.f.projPrem"><strong>10</strong> saved analyzer projects</span></li>
-          <li>{{ tick }}<span data-i18n="co.f.engine">Full AI feedback engine</span></li>
-          <li>{{ tick }}<span data-i18n-html="co.f.forum">Trading Forum — AI-moderated community</span></li>
-          <li>{{ tick }}<span data-i18n-html="co.f.preflight">Pre-Flight — checklists &amp; discipline stats</span></li>
-          <li>{{ tick }}<span data-i18n-html="co.f.synapse">Synapse — the 3D study map</span></li>
-          <li>{{ tick }}<span data-i18n-html="co.f.academy">Quiz academy &amp; Daily Challenge</span></li>
-          <li>{{ tick }}<span data-i18n-html="co.f.chalkboard">Chalkboard — visual study whiteboards</span></li>
-          <li>{{ tick }}<span data-i18n="co.f.camo">An exclusive camo for your dashboard</span></li>
-          <li class="more">{{ tick }}<span data-i18n="co.f.allStd">Everything in Standard</span></li>
-          {% else %}
-          <li>{{ tick }}<span data-i18n-html="co.f.analysesStd"><strong>1</strong> AI screenshot analysis per day</span></li>
-          <li>{{ tick }}<span data-i18n-html="co.f.projStd"><strong>5</strong> saved analyzer projects</span></li>
-          <li>{{ tick }}<span data-i18n="co.f.engine">Full AI feedback engine</span></li>
-          <li>{{ tick }}<span data-i18n-html="co.f.forum">Trading Forum — AI-moderated community</span></li>
-          <li>{{ tick }}<span data-i18n="co.f.camo">An exclusive camo for your dashboard</span></li>
-          <li class="more">{{ tick }}<span data-i18n="co.f.allFree">Everything in Free</span></li>
-          {% endif %}
-        </ul>
-      </div>
-
-      <div class="odiv"></div>
-
-      <div class="lines">
-        <div class="summary-row">
-          <span class="label">{{ plan_label }} <span data-i18n="{{ 'checkout.planBilledYearly' if cycle == 'annual' else 'checkout.planBilledMonthly' }}">{{ 'plan (billed yearly)' if cycle == 'annual' else 'plan (billed monthly)' }}</span></span>
-          <span class="val">$<span id="base-price">{{ '%.2f'|format(quote.base_price) }}</span></span>
-        </div>
-
-        {# The launch offer is already priced in by the server, so it has to be
-           spelled out here — otherwise the total sits below the plan price with
-           nothing explaining the gap. A promo code replaces this row (they never
-           stack), which the JS below handles. #}
-        <div class="discount-row" id="discount-row"
-             style="display:{{ 'flex' if quote.discount_pct else 'none' }};">
-          <span id="discount-label" data-i18n="{{ 'checkout.launchOffer' if quote.launch_pct and quote.discount_pct == quote.launch_pct else 'checkout.discount' }}">{{ 'Launch offer' if quote.launch_pct and quote.discount_pct == quote.launch_pct else 'Discount' }}</span>
-          <span>−$<span id="discount-amount">{{ '%.2f'|format(quote.base_price - quote.final_price) }}</span></span>
-        </div>
-
-        <div class="total-row">
-          <span class="t-label"><span data-i18n="checkout.total">Total</span>
-            <span class="t-cycle" data-i18n="{{ 'checkout.perYear' if cycle == 'annual' else 'checkout.perMonth' }}">{{ '/ year' if cycle == 'annual' else '/ month' }}</span>
-          </span>
-          <span class="t-val">$<span id="final-price">{{ '%.2f'|format(quote.final_price) }}</span></span>
-        </div>
-      </div>
+      {% set shown = quote.final_price if quote.discount_pct else quote.base_price %}
+      <div class="pr mono">${{ shown|int if shown == shown|int else '%.2f'|format(shown) }}<small data-i18n="{{ 'checkout.perYear' if cycle == 'annual' else 'checkout.perMonth' }}"> / month</small>{% if quote.discount_pct %}<span class="was">${{ quote.base_price|int if quote.base_price == quote.base_price|int else '%.2f'|format(quote.base_price) }}</span>{% endif %}</div>
     </div>
 
-    <!-- PROMO (monthly only, per product decision) -->
+    {% if annual_saving %}
+    <div class="psave">↓ <span data-i18n="co.save">You save</span>
+      <span>${{ '%.0f'|format(annual_saving) }}</span>
+      <span data-i18n="co.perYear">a year</span></div>
+    {% endif %}
+
+    {% set tick %}<i class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></i>{% endset %}
+    <ul class="pfeats">
+      {% if plan == 'premium' %}
+      <li>{{ tick }}<span data-i18n-html="co.f.analysesPrem">Up to <strong>5</strong> AI screenshot analyses per day</span></li>
+      <li>{{ tick }}<span data-i18n-html="co.f.projPrem"><strong>10</strong> saved analyzer projects</span></li>
+      <li>{{ tick }}<span data-i18n="co.f.engine">Full AI feedback engine</span></li>
+      <li>{{ tick }}<span data-i18n-html="co.f.forum">Trading Forum — AI-moderated community</span></li>
+      <li>{{ tick }}<span data-i18n-html="co.f.preflight">Pre-Flight — checklists &amp; discipline stats</span></li>
+      <li>{{ tick }}<span data-i18n-html="co.f.synapse">Synapse — the 3D study map</span></li>
+      <li>{{ tick }}<span data-i18n-html="co.f.academy">Quiz academy &amp; Daily Challenge</span></li>
+      <li>{{ tick }}<span data-i18n-html="co.f.chalkboard">Chalkboard — visual study whiteboards</span></li>
+      <li>{{ tick }}<span data-i18n="co.f.camo">An exclusive camo for your dashboard</span></li>
+      <li>{{ tick }}<span data-i18n="co.f.allStd">Everything in Standard</span></li>
+      {% else %}
+      <li>{{ tick }}<span data-i18n-html="co.f.analysesStd"><strong>1</strong> AI screenshot analysis per day</span></li>
+      <li>{{ tick }}<span data-i18n-html="co.f.projStd"><strong>5</strong> saved analyzer projects</span></li>
+      <li>{{ tick }}<span data-i18n="co.f.engine">Full AI feedback engine</span></li>
+      <li>{{ tick }}<span data-i18n-html="co.f.forum">Trading Forum — AI-moderated community</span></li>
+      <li>{{ tick }}<span data-i18n="co.f.camo">An exclusive camo for your dashboard</span></li>
+      <li>{{ tick }}<span data-i18n="co.f.allFree">Everything in Free</span></li>
+      {% endif %}
+    </ul>
+
+    {# ── codigo de descuento ──────────────────────────────────────────── #}
     {% if locked_code %}
-    {# The account is bound to its creator code: the price above already has
-       the discount in, forever, so the code box would only invite confusion.
-       Server decides this — no JS can talk the page into another code. #}
-    <div class="card" style="border-color:#ecd9a8; background:#fdf8ec;">
-      <div class="promo-msg ok" style="display:block; margin:0;">
-        <span data-i18n="checkout.lockedNote">Your permanent discount is already applied — it comes with your account and you never need to type the code again.</span>
-        <b style="font-family:ui-monospace,Menlo,Consolas,monospace;">{{ locked_code }}</b>{% if locked_creator %} · {{ locked_creator }}{% endif %}
-      </div>
+    {# La cuenta ya esta atada a su codigo de creador: el precio de arriba lo
+       lleva dentro, para siempre. Ofrecer la casilla solo invitaria a pensar
+       que falta escribir algo. Lo decide el servidor: ningun JS puede
+       convencer a la pagina de usar otro codigo. #}
+    <div class="pnote">
+      <span data-i18n="checkout.lockedNote">Your permanent discount is already applied — it comes with your account and you never need to type the code again.</span>
+      <b class="mono">{{ locked_code }}</b>{% if locked_creator %} · {{ locked_creator }}{% endif %}
     </div>
     {% elif cycle == 'monthly' %}
-    <div class="card">
-      <label class="promo-label" for="promo-input" data-i18n="checkout.promoLabel">Have a discount or creator code?</label>
-      <div class="promo-box">
+    <div class="pcode">
+      <label for="promo-input" data-i18n="checkout.promoLabel">Have a discount or creator code?</label>
+      <div class="box">
         <input type="text" id="promo-input" placeholder="Enter code" data-i18n-ph="checkout.promoPlaceholder" maxlength="40" autocomplete="off" />
         <button type="button" id="promo-apply" data-i18n="checkout.promoApply">Apply</button>
       </div>
-      <div class="promo-msg" id="promo-msg"></div>
-      <div class="promo-note" data-i18n="checkout.promoNote">Creator codes support the trader who referred you and may unlock a discount.</div>
+      <div class="msg" id="promo-msg"></div>
+      <div class="hint" data-i18n="checkout.promoNote">Creator codes support the trader who referred you and may unlock a discount.</div>
     </div>
     {% endif %}
 
-    <!-- CONFIRM -->
-    {% if preview %}
-    <!-- Admin preview: no real order; the button walks to the next simulated screen. -->
-    <a href="{{ preview_next }}" class="pay-btn" style="display:block;text-align:center;text-decoration:none;" data-i18n="checkout.continue">Continue to payment →</a>
-    {% else %}
     <form method="POST" action="/checkout/create" id="checkout-form">
       <input type="hidden" name="plan" value="{{ plan }}" />
       <input type="hidden" name="cycle" value="{{ cycle }}" />
       <input type="hidden" name="promo_code" id="promo-hidden" value="" />
-      <button type="submit" class="pay-btn" data-i18n="checkout.continue">Continue to payment →</button>
-    </form>
-    {% endif %}
 
-    <div class="methods">
-      <div class="ml" data-i18n="pay.methods">Secure payment with</div>
-      <div class="chiprow">
-        {{ marks.paypal(28) }}{{ marks.usdt(28) }}
+      {# ── como quiere pagar ─────────────────────────────────────────────
+         Con varios rieles es una eleccion de verdad (radio). Con uno solo la
+         misma fila informa de con que se va a pagar, sin fingir una eleccion
+         que no existe. #}
+      {% if rails %}
+      <div class="plbl" data-i18n="{{ 'cpay.choose' if rails|length > 1 else 'cpay.payWith' }}">{{ 'CHOOSE A PAYMENT METHOD' if rails|length > 1 else 'PAYING WITH' }}</div>
+      <div class="prails">
+        {% for rail in rails %}
+        <label class="prail{{ ' on' if loop.first }}{{ ' solo' if rails|length == 1 }}">
+          {% if rails|length > 1 %}<input class="prail-in" type="radio" name="method" value="{{ rail }}"{{ ' checked' if loop.first }} />{% endif %}
+          <span class="fila">
+            <span class="pplate">
+              {% if rail == 'paypal' %}{{ marks.paypal_plate() }}
+              {% elif rail == 'stripe' %}{{ marks.paypal_plate() }}
+              {% else %}{{ marks.usdt_plate() }}{% endif %}
+            </span>
+            <span class="tx">
+              {% if rail == 'paypal' %}
+                <span class="t1">PayPal</span>
+                <span class="t2" data-i18n="cpay.ppShort">Pay with your balance or a card, without leaving PayPal.</span>
+              {% elif rail == 'crypto' %}
+                <span class="t1">USDT</span>
+                <span class="t2" data-i18n="cpay.cryptoShort">From Binance or any wallet. TRC-20 or ERC-20 network.</span>
+              {% elif rail == 'manual' %}
+                <span class="t1">USDT</span>
+                <span class="t2" data-i18n="cpay.manualShort">You send the transfer and attach the receipt; we switch your plan on.</span>
+              {% else %}
+                <span class="t1" data-i18n="cpay.cardTitle">Debit or credit card</span>
+                <span class="t2" data-i18n="cpay.cardBody">Pay by card on a secure page. We never see or store your card number.</span>
+              {% endif %}
+            </span>
+            {% if rails|length > 1 %}<span class="rd"></span>{% endif %}
+          </span>
+        </label>
+        {% endfor %}
       </div>
+      {% endif %}
+
+      <div class="prows">
+        <div class="prow">
+          <span class="k">{{ plan_label }} <span data-i18n="{{ 'checkout.planBilledYearly' if cycle == 'annual' else 'checkout.planBilledMonthly' }}">{{ 'plan (billed yearly)' if cycle == 'annual' else 'plan (billed monthly)' }}</span></span>
+          <span class="mono">$<span id="base-price">{{ '%.2f'|format(quote.base_price) }}</span></span>
+        </div>
+        {# La oferta de lanzamiento ya viene aplicada por el servidor, asi que
+           hay que decirla: si no, el total queda por debajo del precio del plan
+           sin nada que explique la diferencia. Un codigo promocional SUSTITUYE
+           esta linea (nunca se acumulan), y de eso se encarga el JS de abajo. #}
+        <div class="prow disc" id="discount-row"
+             style="display:{{ 'flex' if quote.discount_pct else 'none' }};">
+          <span id="discount-label" data-i18n="{{ 'checkout.launchOffer' if quote.launch_pct and quote.discount_pct == quote.launch_pct else 'checkout.discount' }}">{{ 'Launch offer' if quote.launch_pct and quote.discount_pct == quote.launch_pct else 'Discount' }}</span>
+          <span class="mono">−$<span id="discount-amount">{{ '%.2f'|format(quote.base_price - quote.final_price) }}</span></span>
+        </div>
+      </div>
+
+      <div class="ptot">
+        <span class="k"><span data-i18n="checkout.total">Total</span>
+          <span class="kc" data-i18n="{{ 'checkout.perYear' if cycle == 'annual' else 'checkout.perMonth' }}">{{ '/ year' if cycle == 'annual' else '/ month' }}</span></span>
+        <span class="v mono">$<span id="final-price">{{ '%.2f'|format(quote.final_price) }}</span></span>
+      </div>
+
+      {% if preview %}
+      <a href="{{ preview_next }}" class="pcta" data-i18n="checkout.continue">Continue to payment →</a>
+      {% else %}
+      <button type="submit" class="pcta" data-i18n="checkout.continue">Continue to payment →</button>
+      {% endif %}
+    </form>
+
+    <div class="pfine">
+      {% set fk %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>{% endset %}
+      <div class="pfi">{{ fk }}<span data-i18n-html="pay.fineOnce"><b>One-time payment.</b> No auto-renewal — nobody charges you again.</span></div>
+      <div class="pfi">{{ fk }}<span data-i18n-html="pay.fineCard"><b>We never see your card.</b> The charge is processed by whichever provider you pick.</span></div>
+      <div class="pfi">{{ fk }}<span data-i18n-html="pay.fineActivate"><b>Your plan switches on by itself</b> as soon as the payment is confirmed.</span></div>
     </div>
 
-    <div class="trust">
-      {{ marks.lock(14) }}
-      <span data-i18n="checkout.secure">Secure, encrypted checkout</span>
-    </div>
-    <p class="info">
-      <span data-i18n="checkout.infoLine">You'll choose how to pay on the next step. Your plan activates
-      automatically as soon as the payment is confirmed.</span><br />
-      <span data-i18n="checkout.agreePre">By continuing you agree to our</span> <a href="/terms" target="_blank" data-i18n="checkout.terms">Terms &amp; Conditions</a>.
+    <p class="pfoot">
+      <span data-i18n="checkout.agreePre">By continuing you agree to our</span>
+      <a href="/terms" target="_blank" data-i18n="checkout.terms">Terms &amp; Conditions</a>.
     </p>
   </div>
 
   <script>
+  (function () {
+    /* Marcar el metodo elegido. El CSS ya lo resuelve solo con :has(), pero
+       esto lo mantiene en pie en un navegador que no lo tenga. */
+    var rails = document.querySelectorAll('.prail-in');
+    Array.prototype.forEach.call(rails, function (r) {
+      r.addEventListener('change', function () {
+        Array.prototype.forEach.call(rails, function (o) {
+          o.closest('.prail').classList.toggle('on', o.checked);
+        });
+      });
+    });
+  })();
+
   (function () {
     var plan  = {{ plan|tojson }};
     var cycle = {{ cycle|tojson }};
@@ -478,7 +247,7 @@
           discAmt.textContent = saved;
           finalEl.textContent = d.final_price.toFixed(2);
           hidden.value = code;
-          msg.className = 'promo-msg ok';
+          msg.className = 'msg ok';
           msg.textContent = PagesI18n.t('checkout.codeApplied', { saved: saved });
           input.disabled = true;
           applyBtn.textContent = PagesI18n.t('checkout.promoApplied');
@@ -495,11 +264,10 @@
     });
 
     function showErr(code) {
-      // reset to base price
       discRow.style.display = 'none';
       finalEl.textContent = basePrice.toFixed(2);
       hidden.value = '';
-      msg.className = 'promo-msg err';
+      msg.className = 'msg err';
       msg.textContent = KNOWN_ERR[code] ? PagesI18n.t('checkout.err.' + code) : PagesI18n.t('checkout.err.generic');
     }
   })();

@@ -6040,9 +6040,13 @@ def admin_preview_checkout():
     if not current_user.is_admin:
         return redirect(url_for('app_view'))
     plan, cycle = _preview_plan_cycle()
+    # Sin claves de pasarela solo existe la via manual, asi que el selector no se
+    # podria revisar. En la vista previa se enseñan los dos rieles para poder
+    # juzgar textos y disposicion. Solo pinta: no habilita ningun cobro.
     return render_template('checkout.html', plan=plan, cycle=cycle,
                            plan_label=PLAN_LABELS[plan], quote=_quote(plan, cycle),
                            preview=True,
+                           rails=available_payment_rails() or ['paypal', 'manual'],
                            preview_next=url_for('admin_preview_success', plan=plan, cycle=cycle))
 
 
@@ -7416,6 +7420,10 @@ def checkout():
     return render_template('checkout.html', plan=plan, cycle=cycle,
                            plan_label=PLAN_LABELS[plan], quote=q,
                            annual_saving=saving,
+                           # El metodo de pago se elige AQUI, en el carrito. Con
+                           # un solo riel la fila solo informa; con varios es una
+                           # eleccion de verdad, que es lo que el dueno pidio.
+                           rails=available_payment_rails(),
                            locked_code=(stored.code if stored_ok else None),
                            locked_creator=(stored.creator_name if stored_ok else None))
 
@@ -7527,20 +7535,37 @@ def checkout_create():
                                   + (f' promo={promo.code}' if promo else ''))
         return redirect(url_for('checkout_status', order_id=order.id))
 
-    return _llevar_a_pagar(order)
+    return _llevar_a_pagar(order, metodo=request.form.get('method', ''))
 
 
-def _llevar_a_pagar(order, duplicado=False):
+def _llevar_a_pagar(order, duplicado=False, metodo=None):
     """A dónde va el comprador con su pedido en la mano.
 
     Un solo sitio para decidirlo, porque cuando la compra nueva y el pedido ya
     existente lo decidían por separado, acabaron divergiendo: uno mandaba a
     PayPal y el otro a unas instrucciones de USDT que ni siquiera eran una
     opción activa del sitio.
+
+    `metodo` es lo que el comprador marcó en el carrito. Se respeta solo si es
+    un riel encendido de verdad — el navegador puede mandar cualquier cosa —,
+    y si no viene se cae en el comportamiento de siempre: elegir pantalla
+    cuando hay varias vías, ir directo cuando solo hay una.
     """
     rails = available_payment_rails()
     etiqueta = PLAN_LABELS.get(order.plan, order.plan)
     if order.final_price > 0:
+        if metodo in rails:
+            if metodo != 'manual':
+                dest = _start_payment(order, metodo)
+                if dest:
+                    return redirect(dest, code=303)
+                return render_template('checkout_status.html', order=order,
+                                       plan_label=etiqueta, rails=rails,
+                                       gateway_down=True), 200
+            # Eligió USDT a mano: sus instrucciones, que es lo que pidió.
+            return render_template('checkout_done.html', order=order,
+                                   plan_label=etiqueta, rails=rails,
+                                   duplicate=duplicado)
         if len(rails) > 1:
             return redirect(url_for('checkout_pay', order_id=order.id))
         if rails and rails[0] != 'manual':

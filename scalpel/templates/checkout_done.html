@@ -1,252 +1,129 @@
 {% import '_pay_marks.html' as marks %}
+{#
+  INSTRUCCIONES DE USDT A MANO — misma familia visual que las otras dos (pay.css).
+
+  Esta pantalla NO es texto viejo: es el flujo vigente cuando no hay pasarela
+  automatica configurada, y tambien la salida de emergencia si una pasarela no
+  responde. Lo que si era un error, y esta corregido en app.py, es que se
+  mostrara a quien habia elegido PayPal.
+#}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title data-i18n-title="cdone.doctitle">Tradeable Academy — Order received</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
-    :root {
-      --ink:#15171f; --ink-soft:#4a4f5e; --muted:#8a8f9e;
-      --line:#e6e8ee; --card:rgba(255,255,255,.82); --page:#eef1f7; --nav-bg:rgba(238,241,247,.88);
-      --gold:#b8860b; --gold-2:#d9a636;
-      --accent:#2563eb; --accent-bg:rgba(37,99,235,.10);
-      --warn:#92400e; --warn-bg:rgba(180,120,20,.10); --warn-border:rgba(180,120,20,.30);
-      --radius:16px;
-      --glow-gold:rgba(224,168,61,.20); --glow-graphite:rgba(90,110,150,.16);
-      --shadow:0 18px 50px rgba(20,25,45,.10);
-    }
-    body.dark {
-      --ink:#e8eaf0; --ink-soft:#b0b5c2; --muted:#8a8f9e;
-      --line:rgba(255,255,255,.10); --card:rgba(22,25,34,.72); --page:#0b0d12; --nav-bg:rgba(11,13,18,.88);
-      --gold:#e0a83d; --gold-2:#f0c060;
-      --accent:#5b8ef0; --accent-bg:rgba(91,142,240,.14);
-      --warn:#f0c060; --warn-bg:rgba(180,130,40,.16); --warn-border:rgba(224,168,61,.32);
-      --shadow:0 22px 60px rgba(0,0,0,.45);
-      --glow-gold:rgba(224,168,61,.16); --glow-graphite:rgba(70,95,150,.22);
-    }
-    body { background:var(--page); color:var(--ink); font-family:'Inter',sans-serif; font-size:15px;
-           line-height:1.65; min-height:100vh; position:relative; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
-    body::before { content:''; position:fixed; inset:0; z-index:-2; pointer-events:none;
-      background:
-        radial-gradient(70% 55% at 50% -8%, var(--glow-gold), transparent 68%),
-        radial-gradient(50% 45% at 110% 8%, var(--glow-graphite), transparent 70%),
-        radial-gradient(55% 50% at -10% 100%, var(--glow-graphite), transparent 70%); }
-    body::after { content:''; position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:.5;
-      background-image:linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
-      background-size:44px 44px; -webkit-mask-image:radial-gradient(75% 60% at 50% 0%, #000, transparent 75%);
-      mask-image:radial-gradient(75% 60% at 50% 0%, #000, transparent 75%); }
-
-    nav { display:flex; align-items:center; justify-content:space-between; padding:16px 32px;
-          border-bottom:1px solid var(--line); background:var(--nav-bg); position:sticky; top:0; z-index:10; backdrop-filter:blur(10px); }
-    /* The transparent cut of the logo: the flat one carries a white plate that
-       shows as a pale box on the dark page. */
-    .logo-img { height:60px; width:auto; display:block; }
-    body.dark .logo-img { filter:invert(1); }
-    .back-link { font-size:13px; font-weight:600; color:var(--ink-soft); text-decoration:none;
-                 padding:8px 16px; border:1px solid var(--line); border-radius:20px; transition:all .15s; }
-    .back-link:hover { border-color:var(--gold); color:var(--gold); }
-
-    .wrap { max-width:560px; margin:0 auto; padding:40px 24px 90px; }
-    .badge-hero { width:82px; height:82px; margin:6px auto 18px; border-radius:22px; display:grid; place-items:center;
-                  font-size:40px; background:linear-gradient(135deg, var(--accent-bg), transparent);
-                  border:1px solid var(--line); box-shadow:var(--shadow); }
-    h1 { font-size:28px; font-weight:800; letter-spacing:-.02em; margin-bottom:8px; text-align:center; }
-    .sub { color:var(--ink-soft); text-align:center; margin-bottom:30px; }
-
-    .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
-            padding:26px 28px; margin-bottom:18px; box-shadow:var(--shadow);
-            backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); position:relative; overflow:hidden; }
-    .card.order::before { content:''; position:absolute; top:0; left:0; right:0; height:3px;
-            background:linear-gradient(90deg, var(--gold), var(--gold-2), transparent); }
-
-    .order-row { display:flex; justify-content:space-between; padding:9px 0; font-size:14.5px; }
-    .order-row .label { color:var(--ink-soft); }
-    .order-row .val { font-weight:700; }
-    .divider { height:1px; background:var(--line); margin:12px 0; }
-    .total { display:flex; justify-content:space-between; align-items:baseline;
-             padding-top:14px; margin-top:6px; border-top:2px solid var(--line); }
-    .total .t-label { font-size:15px; font-weight:700; }
-    .total .t-val { font-size:24px; font-weight:800; font-variant-numeric:tabular-nums; }
-
-    .pay-card { background:var(--warn-bg); border:1px solid var(--warn-border); }
-    .pay-card h2 { font-size:15px; font-weight:800; color:var(--warn); margin-bottom:12px;
-                   display:flex; align-items:center; gap:8px; }
-    .pay-steps { padding-left:20px; }
-    .pay-steps li { margin-bottom:8px; font-size:14px; color:var(--ink-soft); }
-    .pay-steps strong { color:var(--ink); }
-
-    .dup-banner { background:var(--accent-bg); border:1px solid var(--line); border-radius:12px;
-                  padding:14px 18px; font-size:14px; color:var(--ink); margin-bottom:20px; }
-    .dup-banner a { color:var(--gold); }
-
-    .btn-row { display:flex; gap:10px; margin-top:8px; }
-    .btn { flex:1; padding:14px; border-radius:11px; font-size:14px; font-weight:800;
-           text-decoration:none; text-align:center; cursor:pointer; }
-    .btn-primary { color:#1a1300; background:linear-gradient(135deg, var(--gold-2), var(--gold));
-                   box-shadow:0 8px 22px -6px var(--glow-gold), inset 0 1px 0 rgba(255,255,255,.35); }
-    .btn-ghost { background:transparent; color:var(--ink-soft); border:1px solid var(--line); }
-    .btn-ghost:hover { color:var(--gold); border-color:var(--gold); }
-
-    /* The plan, shown as a product rather than a receipt line. */
-    .card.order { padding:0; }
-    .ohero { display:flex; align-items:center; gap:14px; padding:20px 24px 18px;
-             border-bottom:1px solid var(--line);
-             background:
-               radial-gradient(120% 150% at 0% 0%, var(--accent-bg), transparent 62%),
-               linear-gradient(180deg, rgba(255,255,255,.03), transparent); }
-    .oicon { width:48px; height:48px; border-radius:14px; flex:none; display:grid; place-items:center;
-             color:var(--gold); background:linear-gradient(150deg, var(--accent-bg), transparent 70%);
-             border:1px solid var(--line); box-shadow:inset 0 1px 0 rgba(255,255,255,.10); }
-    .ometa { display:flex; flex-direction:column; gap:1px; }
-    .oname { font-size:20px; font-weight:800; letter-spacing:-.02em; line-height:1.2; }
-    .osub { font-size:12.5px; color:var(--muted); }
-    .ocycle { margin-left:auto; font-size:10px; font-weight:800; text-transform:uppercase;
-              letter-spacing:.08em; padding:5px 11px; border-radius:20px; background:var(--accent-bg);
-              color:var(--gold); border:1px solid var(--line); white-space:nowrap; }
-    .obody { padding:16px 24px 20px; }
-
-    /* Numbered steps that read as a procedure, not a bulleted paragraph. */
-    .pay-card { background:var(--card); border:1px solid var(--warn-border); padding:0; }
-    .pay-head { display:flex; align-items:center; gap:10px; padding:16px 22px;
-                border-bottom:1px solid var(--line); background:var(--warn-bg); }
-    .pay-head .ph-ic { width:30px; height:30px; border-radius:9px; flex:none; display:grid;
-                place-items:center; color:var(--warn); background:var(--card); border:1px solid var(--warn-border); }
-    .pay-card h2 { font-size:14.5px; font-weight:800; color:var(--warn); margin:0; }
-    .pay-steps { list-style:none; padding:18px 22px 20px; counter-reset:s; }
-    .pay-steps li { counter-increment:s; position:relative; padding-left:36px; margin-bottom:14px;
-                font-size:13.8px; color:var(--ink-soft); line-height:1.55; }
-    .pay-steps li:last-child { margin-bottom:0; }
-    .pay-steps li::before { content:counter(s); position:absolute; left:0; top:0;
-                width:24px; height:24px; border-radius:50%; display:grid; place-items:center;
-                font-size:11.5px; font-weight:800; color:var(--gold);
-                background:var(--accent-bg); border:1px solid var(--line); }
-    .pay-steps strong { color:var(--ink); font-weight:800; }
-    .pay-steps a { color:var(--gold); }
-    .amt-chip { display:inline-block; font-variant-numeric:tabular-nums; font-weight:800;
-                color:var(--ink); background:var(--accent-bg); border:1px solid var(--line);
-                border-radius:7px; padding:1px 8px; }
-
-    .rails-note { display:flex; align-items:center; justify-content:center; gap:10px; margin-top:16px;
-                  font-size:12px; color:var(--muted); font-weight:600; }
-
-    @media(max-width:540px){ h1{font-size:23px;} .card{padding:20px;} .card.order,.pay-card{padding:0;}
-      nav{padding:14px 18px;} }
-      .lnk-cancel{background:none;border:0;font:inherit;font-size:12.5px;color:var(--muted);
-      text-decoration:underline;cursor:pointer;padding:6px;}
-    .lnk-cancel:hover{color:var(--ink);}
-    .dup-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:11px;}
-</style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/pay.css" />
   {{ marks.styles() }}
 </head>
 <body>
   <script>
-    try { var th = localStorage.getItem('scalpel_theme'); document.body.classList.add(th === 'light' ? 'light' : 'dark'); }
+    try { var th = localStorage.getItem('scalpel_theme');
+          document.body.classList.add(th === 'light' ? 'light' : 'dark'); }
     catch (e) { document.body.classList.add('dark'); }
   </script>
 
-  <nav>
-    <a href="/"><img src="/static/logo_t.png" alt="Tradeable Academy" class="logo-img" onerror="this.style.display='none';" /></a>
-    <a href="/app" class="back-link" data-i18n="nav.backApp">← Back to app</a>
-  </nav>
-
-  <div class="wrap">
-
-    {% if preview %}
-    <div style="background:#fef3c7;border:1px solid #fcd34d;color:#92400e;border-radius:10px;padding:11px 14px;margin-bottom:20px;font-size:13px;font-weight:600;text-align:center;line-height:1.5;">
-      🔍 Admin preview — visual simulation only. This is the manual fallback screen (shown when Stripe is off).
+  <div class="pbar">
+    <a href="/" class="lg"><img src="/static/logo_t.png" alt="Tradeable Academy" class="logo-img" onerror="this.style.display='none';" /></a>
+    <div class="rt">
+      <a href="/app" class="back" data-i18n="nav.backApp">← Back to app</a>
+      <span class="safe">{{ marks.lock(13) }}<span data-i18n="pay.safeConn">SECURE CONNECTION</span></span>
     </div>
+  </div>
+
+  <div class="pwrap">
+    {% if preview %}
+    <div class="pnote">🔍 Admin preview — visual simulation only. This is the manual fallback screen.</div>
     {% endif %}
 
     {% if duplicate %}
-    <div class="dup-banner">
+    <div class="pnote">
       <span data-i18n="cdone.dup2">You already have this order open, waiting to be paid. You can finish
         paying it, or cancel it and choose a different plan.</span>
       {% if not preview %}
-      <div class="dup-actions">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
         {% if rails and rails|length > 1 %}
-        <a href="/checkout/pay/{{ order.id }}" class="btn btn-primary" data-i18n="cdone.keepPaying">Continue paying</a>
+        <a href="/checkout/pay/{{ order.id }}" class="pcta" style="width:auto;margin:0;padding:11px 18px;font-size:14px;" data-i18n="cdone.keepPaying">Continue paying</a>
         {% endif %}
         <form method="post" action="/checkout/cancel/{{ order.id }}">
-          <button type="submit" class="btn btn-ghost" data-i18n="cdone.cancel">Cancel this order</button>
+          <button type="submit" class="pcta ghost" style="width:auto;margin:0;padding:11px 18px;" data-i18n="cdone.cancel">Cancel this order</button>
         </form>
       </div>
       {% endif %}
     </div>
     {% endif %}
 
-    <div class="badge-hero" style="color:var(--gold)">
-      <svg viewBox="0 0 24 24" width="38" height="38" fill="none" stroke="currentColor" stroke-width="1.7"
-           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M5 3.5h14a1 1 0 0 1 1 1V21l-3-1.6L14 21l-2-1.6L10 21l-3-1.6L4 21V4.5a1 1 0 0 1 1-1Z"/>
-        <path d="M8.5 8.5h7M8.5 12h7M8.5 15.5h4"/>
-      </svg>
-    </div>
+    <div class="pref mono"><span data-i18n="cdone.orderId">ORDER</span> #{{ '%05d'|format(order.id) }}</div>
     <h1 data-i18n="cdone.title">Order received</h1>
-    <p class="sub" data-i18n="cdone.sub">Your order is reserved. Complete payment to activate your plan.</p>
+    <p class="psub" data-i18n="cdone.sub">Your order is reserved. Complete payment to activate your plan.</p>
 
-    <div class="card order">
-      <div class="ohero">
-        <span class="oicon">
-          {% if order.plan == 'premium' %}
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true">
-            <path d="M3 18h18l1.4-9.6a.6.6 0 0 0-.95-.56L17 11.4 12.8 4.3a.9.9 0 0 0-1.6 0L7 11.4 2.55 7.84A.6.6 0 0 0 1.6 8.4L3 18Zm0 2.2h18v1.4a.6.6 0 0 1-.6.6H3.6a.6.6 0 0 1-.6-.6v-1.4Z"/></svg>
-          {% else %}
-          <svg viewBox="0 0 24 24" width="23" height="23" fill="currentColor" aria-hidden="true">
-            <path d="M13.4 2 4 13.3a.7.7 0 0 0 .54 1.15h5.3l-1.3 7.4a.7.7 0 0 0 1.24.55L20 11.1a.7.7 0 0 0-.54-1.15h-5.4l1.6-7.35A.7.7 0 0 0 13.4 2Z"/></svg>
-          {% endif %}
-        </span>
-        <span class="ometa">
-          <span class="oname">{{ plan_label }}</span>
-          <span class="osub"><span data-i18n="cdone.orderId">Order ID</span> #{{ '%05d'|format(order.id) }}</span>
-        </span>
-        <span class="ocycle" data-i18n="{{ 'common.annual' if order.billing_cycle == 'annual' else 'common.monthly' }}">{{ 'Annual' if order.billing_cycle == 'annual' else 'Monthly' }}</span>
+    <div class="pplan">
+      <div>
+        <div class="nm">{{ plan_label }}</div>
+        <div class="tg">{% if order.billing_cycle == 'annual' %}<span data-i18n="common.annual">Annual</span>{% else %}<span data-i18n="common.monthly">Monthly</span>{% endif %}{% if order.promo_code %} · {{ order.promo_code }} (−{{ order.discount_pct }}%){% endif %}</div>
       </div>
-      <div class="obody">
-        {% if order.promo_code %}
-        <div class="order-row">
-          <span class="label" data-i18n="cdone.promoCode">Promo code</span>
-          <span class="val">{{ order.promo_code }} (−{{ order.discount_pct }}%)</span>
-        </div>
-        {% endif %}
-        <div class="total" style="border-top:none; padding-top:0; margin-top:0;">
-          <span class="t-label" data-i18n="cdone.amountDue">Amount due</span>
-          <span class="t-val">${{ '%.2f'|format(order.final_price) }} <span style="font-size:14px;color:var(--muted);font-weight:600">USD</span></span>
-        </div>
+      <div class="pr mono">${{ '%.2f'|format(order.final_price) }}<small> USD</small></div>
+    </div>
+
+    <div class="plbl" data-i18n="cdone.payTitle">PAYMENT INSTRUCTIONS</div>
+    <div class="prails">
+      <div class="prail solo">
+        <span class="fila">
+          <span class="pplate">{{ marks.usdt_plate() }}</span>
+          <span class="tx">
+            <span class="t1">USDT</span>
+            <span class="t2" data-i18n="cpay.manualShort">You send the transfer and attach the receipt; we switch your plan on.</span>
+          </span>
+        </span>
       </div>
     </div>
 
-    <div class="card pay-card">
-      <div class="pay-head">
-        <span class="ph-ic">
-          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"
-               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 1.8"/></svg>
-        </span>
-        <h2 data-i18n="cdone.payTitle">Payment instructions</h2>
+    <div class="pdata">
+      <div class="pdl">
+        <span class="k" data-i18n="cdone.amountDue">Amount due</span>
+        <span class="v mono">${{ '%.2f'|format(order.final_price) }} USD</span>
       </div>
-      <ol class="pay-steps">
-        <li><span data-i18n="cdone.step1a">Send</span> <span class="amt-chip">${{ '%.2f'|format(order.final_price) }} USD</span> <span data-i18n="cdone.step1b">in USDT to our Binance account.</span></li>
-        <li><span data-i18n="cdone.step2a">Include your</span> <strong><span data-i18n="cdone.orderIdInline">Order ID</span> #{{ '%05d'|format(order.id) }}</strong> <span data-i18n="cdone.step2b">in the payment note.</span></li>
-        <li><span data-i18n="cdone.step3a">Send the payment proof through our</span> <a href="/contact" style="color:var(--gold);" data-i18n="cdone.contactForm">contact form</a><span data-i18n="cdone.step3b">, selecting "Billing".</span></li>
-        <li data-i18n="cdone.step4">Our team verifies and activates your plan — usually within a few hours.</li>
-      </ol>
+      <div class="pdl">
+        <span class="k" data-i18n="cdone.orderIdInline">Order ID</span>
+        <span class="v mono" id="oid">#{{ '%05d'|format(order.id) }}</span>
+        <button type="button" class="pcopy" data-copy="#{{ '%05d'|format(order.id) }}" data-i18n="cdone.copy">Copy</button>
+      </div>
     </div>
 
-    <div class="rails-note">{{ marks.usdt(24) }}</div>
+    {# Cada paso va en UN solo hijo del <li>: la lista es flex y con varios
+       hijos las palabras se separaban como si fueran columnas. #}
+    <ol class="psteps">
+      <li><span><span data-i18n="cdone.step1a">Send</span> <b class="mono">${{ '%.2f'|format(order.final_price) }} USD</b> <span data-i18n="cdone.step1b">in USDT to our Binance account.</span></span></li>
+      <li><span><span data-i18n="cdone.step2a">Include your</span> <b class="mono">#{{ '%05d'|format(order.id) }}</b> <span data-i18n="cdone.step2b">in the payment note.</span></span></li>
+      <li><span><span data-i18n="cdone.step3a">Send the payment proof through our</span> <a href="/contact" data-i18n="cdone.contactForm">contact form</a><span data-i18n="cdone.step3b">, selecting "Billing".</span></span></li>
+      <li><span data-i18n="cdone.step4">Our team verifies and activates your plan — usually within a few hours.</span></li>
+    </ol>
 
-    <div class="btn-row">
-      <a href="/app" class="btn btn-ghost" data-i18n="cdone.backApp">Back to app</a>
-      <a href="/contact" class="btn btn-primary" data-i18n="cdone.sendProof">Send payment proof →</a>
-    </div>
+    <a href="/contact" class="pcta" data-i18n="cdone.sendProof">Send payment proof →</a>
+    <a href="/app" class="pcta ghost" style="margin-top:10px" data-i18n="cdone.backApp">Back to app</a>
+
     {% if not preview and not duplicate %}
-    <form method="post" action="/checkout/cancel/{{ order.id }}" style="margin-top:14px;text-align:center;">
-      <button type="submit" class="lnk-cancel" data-i18n="cdone.cancel2">I changed my mind — cancel this order</button>
+    <form method="post" action="/checkout/cancel/{{ order.id }}" class="pfoot">
+      <button type="submit" style="background:none;border:0;color:var(--ink3);font:inherit;font-size:12.5px;cursor:pointer;text-decoration:underline" data-i18n="cdone.cancel2">I changed my mind — cancel this order</button>
     </form>
     {% endif %}
   </div>
+
 <script src="/static/pages_i18n.js"></script>
+<script>
+(function(){
+  /* Copiar el numero de pedido: es el dato que hay que pegar en la nota de la
+     transferencia, y transcribirlo a mano es justo donde se equivoca la gente. */
+  var b = document.querySelector('.pcopy');
+  if (!b || !navigator.clipboard) return;
+  b.addEventListener('click', function(){
+    navigator.clipboard.writeText(b.getAttribute('data-copy')).then(function(){
+      var t = b.textContent; b.textContent = '✓';
+      setTimeout(function(){ b.textContent = t; }, 1400);
+    });
+  });
+})();
+</script>
 </body>
 </html>
