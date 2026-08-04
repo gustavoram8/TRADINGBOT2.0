@@ -81,7 +81,11 @@ def mide_img(im):
         d = contraste(color, fondo)
         if d > peor:
             peor, tinta = d, color
-    if tinta is None:
+    if tinta is None or peor <= 1.02:
+        # ⚠️ Un recorte de un solo color significa que el texto no estaba ahi
+        # (tapado, fuera de pantalla, aun sin pintar), NO que sea ilegible.
+        # Contarlo como fallo llenaba el informe de casos con contraste 1.00
+        # que no existian — incluso sin ningun camo puesto, que fue la pista.
         return None
     return {'ratio': round(peor, 2), 'fondo': fondo, 'tinta': tinta}
 
@@ -110,7 +114,13 @@ JS_TEXTOS = """
       if (m) {
         const partes = m[1].split(',').map(s => parseFloat(s));
         const alfa = partes.length > 3 ? partes[3] : 1;
-        if (alfa >= 0.55) { protegido = true; break; }
+        // ⚠️ Antes el umbral era 0.55 y colaba cientos de falsos positivos:
+        // los paneles de este sitio son de VIDRIO (rgba con alfa bajo), asi
+        // que no llegaban al umbral y su texto se contaba como si estuviera
+        // desnudo sobre el dibujo. Lo que el dueno senala es el texto que NO
+        // tiene ningun panel detras, asi que cualquier fondo, por tenue que
+        // sea, ya cuenta como proteccion.
+        if (alfa > 0.02) { protegido = true; break; }
       }
       p = p.parentElement;
     }
@@ -151,18 +161,19 @@ def _cosecha(pg, camo, modo, tab, fallos, contador):
         textos = pg.evaluate(JS_TEXTOS)
     except Exception:
         return
-    if not textos:
-        return
-    try:
-        entera = Image.open(io.BytesIO(pg.screenshot(full_page=True))).convert('RGB')
-    except Exception:
-        return
-    W, H = entera.size
+    # ⚠️ Se descarto `full_page=True`: para hacerla, Chromium estira el viewport
+    # a la altura de la pagina, y con eso todo lo que sea `position:fixed` o
+    # mida `100vh` se recoloca — las coordenadas dejan de corresponder con lo
+    # capturado y se mide una zona equivocada. Con el filtro bien puesto quedan
+    # pocos elementos, asi que una captura por elemento vuelve a ser barata.
     for t in textos:
-        x, y, w, h = t['caja']
-        if w < 8 or h < 6 or x < 0 or y < 0 or x + w > W or y + h > H:
+        loc = pg.locator('[data-audita="%d"]' % t['sel_i'])
+        try:
+            loc.scroll_into_view_if_needed(timeout=1500)
+            png = loc.screenshot(timeout=2500)
+        except Exception:
             continue
-        r = mide_img(entera.crop((x, y, x + w, y + h)))
+        r = mide_img(Image.open(io.BytesIO(png)).convert('RGB'))
         contador[0] += 1
         if r and r['ratio'] < UMBRAL:
             fallos.append({'camo': camo or 'sin-camo', 'modo': modo,
