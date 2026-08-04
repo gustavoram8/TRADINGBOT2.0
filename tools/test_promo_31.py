@@ -169,6 +169,49 @@ def main():
         check('promo-input' in cuerpo,
               'la casilla de código SIGUE visible en la cuenta atada (3.1)')
 
+    # ── 5 · el candado NO depende de que la fila del código exista ─────────
+    # Escenario real: la alianza termina y el dueño BORRA el código del socio
+    # en /admin. El cliente sigue atado (cláusula 2.3, perpetua). Antes de este
+    # blindaje, el guard colgaba de la fila borrada: el código de OTRO creador
+    # entraba y el libro le pagaba la comisión al rival.
+    with A.app.app_context():
+        s = A.PromoCode.query.filter_by(code='SOCIO20').first()
+        A.db.session.delete(s)
+        A.db.session.commit()
+
+    with A.app.test_client() as c:
+        entrar(c, 'cli31')
+        d = valida(c, 'RIVAL25')
+        check(not d.get('ok') and d.get('error') == 'locked',
+              'código del socio BORRADO: otro creador sigue bloqueado')
+        r = c.post('/checkout/create',
+                   data={'plan': 'premium', 'cycle': 'monthly',
+                         'promo_code': 'RIVAL25', 'method': 'manual'},
+                   follow_redirects=False)
+
+    with A.app.app_context():
+        o = A.Order.query.filter_by(user_id=uid, status='pending').first()
+        check(o is not None and o.promo_code != 'RIVAL25',
+              'ni forzando el form: el pedido NO lleva el código del rival (%s)'
+              % (o and o.promo_code))
+        # y si un pedido llegara igual con el código del rival encima (venta
+        # vieja, carrera), el libro paga por el VÍNCULO, no por el portador
+        from datetime import datetime, timezone
+        o2 = A.Order(user_id=uid, plan='premium', billing_cycle='monthly',
+                     base_price=50.0, discount_pct=25, final_price=37.5,
+                     promo_code='RIVAL25', status='paid', payment_method='manual',
+                     paid_at=datetime.now(timezone.utc))
+        A.db.session.add(o2)
+        A.db.session.commit()
+        fila = A.record_sale_breakdown(o2)
+        check(fila is not None and fila.partner != 'Otro Creador',
+              'libro de ventas: el rival NO cobra por el cliente ajeno (%s)'
+              % (fila and fila.partner))
+        # limpieza final
+        A.SaleBreakdown.query.filter_by(user_id=uid).delete()
+        A.Order.query.filter_by(user_id=uid).delete()
+        A.db.session.commit()
+
     print('\n%d/%d' % (ok, ok + fallos))
     return 1 if fallos else 0
 

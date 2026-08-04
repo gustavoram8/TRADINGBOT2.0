@@ -7130,15 +7130,22 @@ def record_sale_breakdown(order, processor_fee=None, fee_is_real=False):
     net = float(order.final_price or 0.0)
     fee = (round(float(processor_fee), 2) if processor_fee is not None
            else estimated_processor_fee(net))
-    partner = _partner_for_code(order.promo_code)
-    if not partner:
-        # Attribution belt-and-braces: even if an order somehow reaches here
-        # without the code on it (manual admin order, an older client), a
-        # bound customer's payment still credits their partner. The binding
-        # is the source of truth, the order code is just its carrier.
-        buyer = db.session.get(User, order.user_id)
-        if buyer and buyer.referred_by_code:
-            partner = _partner_for_code(buyer.referred_by_code)
+    # La ATADURA de la cuenta manda; el código del pedido es solo su portador.
+    # 🔴 El orden importa: primero iba el código del pedido, y un pedido que
+    # llegara con el código de otro creador (p.ej. con la fila del socio
+    # borrada de /admin) le habría pagado la comisión al rival por un cliente
+    # que la cláusula 2.3 hace del socio para siempre. Con la promo general de
+    # la 3.1 pasa lo mismo: el pedido lleva el cupón, la comisión va al vínculo.
+    buyer = db.session.get(User, order.user_id)
+    if buyer and buyer.referred_by_code:
+        # Cuenta atada: SOLO el vínculo puede nombrar al socio. Si su fila fue
+        # borrada de /admin, la venta queda sin atribuir — feo, pero infinitamente
+        # mejor que pagarle al creador del código que el pedido traiga encima.
+        partner = _partner_for_code(buyer.referred_by_code)
+    else:
+        # Sin vínculo (venta manual del admin, cliente viejo): el código del
+        # pedido decide, como siempre.
+        partner = _partner_for_code(order.promo_code)
     position = _next_partner_position(partner, user_id=order.user_id)
     pct = partner_tier_pct(position) if partner else 0.0
     commission = round(net * pct / 100.0, 2)
@@ -7360,6 +7367,11 @@ def _promo_para_compra(user, plan, cycle, code):
     es un precio que el comprador ya vio.
     """
     stored = _stored_promo(user)
+    # 🔴 "Atada" es la CUENTA (referred_by_code), no la fila del código: si el
+    # dueño borra el código del socio en /admin tras terminar la alianza, el
+    # cliente sigue siendo de ese socio (cláusula 2.3, perpetua) — sin esto, el
+    # código de OTRO creador entraba y hasta se llevaba la comisión.
+    atada = bool(getattr(user, 'referred_by_code', None))
     stored_ok = stored and (stored.valid_for == 'both' or stored.valid_for == cycle)
     base = stored if stored_ok else None
     code = (code or '').strip()
@@ -7371,7 +7383,7 @@ def _promo_para_compra(user, plan, cycle, code):
     promo, reason = _validate_promo(code, cycle)
     if not promo:
         return base, False, reason
-    if stored:
+    if atada:
         if promo.kind == 'creator':
             return base, False, 'locked'
         if _quote(plan, cycle, promo)['final_price'] < \

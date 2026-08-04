@@ -1499,8 +1499,17 @@ volvía a $50 y el socio cobraba $0 (lo contrario de la propuesta comercial). Ca
   pagado de verdad. Un solo decisor `_promo_para_compra()` (lo usan validate-code Y checkout_create).
   El carrito atado muestra el aviso de descuento permanente Y la casilla abierta
   (`checkout.promoLockedLabel`; ⚠️ el JS restaura el estado INICIAL pintado, no el precio base — en
-  cuenta atada el $40 ya viene del server). `tools/test_promo_31.py` 15/15. Motivo: sin esto el
-  cliente atado quedaba ATRAPADO en el peor precio y la 3.1 del acuerdo era mentira. **Desactivar el código corta a NUEVOS, el
+  cuenta atada el $40 ya viene del server). Motivo: sin esto el cliente atado quedaba ATRAPADO en el
+  peor precio y la 3.1 del acuerdo era mentira.
+- **🔴 Candado 3.2 blindado contra el BORRADO del código (2026-08-04):** "atada" es la CUENTA
+  (`referred_by_code`), no la fila del PromoCode — si el dueño borra el código del socio en /admin
+  tras terminar la alianza, el cliente sigue siendo del socio; antes el guard colgaba de la fila y
+  el código de OTRO creador entraba Y el libro le pagaba la comisión al rival. Además
+  `record_sale_breakdown` ahora decide el socio POR EL VÍNCULO cuando la cuenta está atada (el
+  código del pedido solo decide en cuentas sin vínculo: ventas manuales/clientes viejos); vínculo a
+  fila borrada = venta sin atribuir (mejor que pagarle al rival). ⚠️ Por eso: **NUNCA borrar un
+  código de creador con clientes atados — usar el toggle de desactivar**, que corta altas nuevas
+  sin romper precio ni atribución. `tools/test_promo_31.py` 18/18. **Desactivar el código corta a NUEVOS, el
   cliente atado conserva precio y atribución** (decisión: la desactivación detiene altas, no rompe
   promesas). Cinturón extra: `record_sale_breakdown` cae al vínculo de la cuenta si el pedido llega
   sin código.
