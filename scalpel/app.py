@@ -376,6 +376,8 @@ PAYPAL_ENABLED = bool(PAYPAL_CLIENT_ID and PAYPAL_SECRET)
 # to the trade name in the Terms is what stops "I don't recognise this charge"
 # disputes when the receiving account is held under a different name.
 PAYPAL_BRAND_NAME = os.environ.get("PAYPAL_BRAND_NAME", "Tradeable Academy")
+# El idioma de la pantalla de PayPal, en su formato (BCP-47).
+PAYPAL_LOCALES = {"en": "en-US", "es": "es-ES", "fr": "fr-FR", "pt": "pt-BR"}
 # Titular REAL de la cuenta que recibe el dinero, cuando no coincide con el
 # nombre comercial (caso normal si la cuenta se usa también para otros cobros:
 # PayPal no deja renombrarla sin afectar el resto). Se le enseña al comprador
@@ -6666,6 +6668,11 @@ def _paypal_create_order(order, kind='plan'):
                 'brand_name': PAYPAL_BRAND_NAME,
                 'user_action': 'PAY_NOW',
                 'shipping_preference': 'NO_SHIPPING',
+                # Sin esto, PayPal adivina el idioma por la IP del comprador y
+                # lo acierta mal: una VPN o un proxy y la pantalla de pago sale
+                # en alemán. Se le impone el idioma que el usuario ya eligió en
+                # el sitio, que es el único dato fiable que tenemos.
+                'locale': PAYPAL_LOCALES.get(_email_lang(), 'en-US'),
                 'return_url': (url_for('camo_paypal_return', order_id=order.id, _external=True)
                                if kind == 'camo' else
                                url_for('cosmetics_paypal_return', order_id=order.id, _external=True)
@@ -7457,14 +7464,14 @@ def checkout_create():
     existing = Order.query.filter_by(
         user_id=current_user.id, status='pending').first()
     if existing:
-        # Un intento abandonado NO puede encerrar al comprador. Se le enseña su
-        # pedido tal cual, con dos salidas claras: terminar de pagarlo o
-        # cancelarlo y elegir otra cosa. Antes solo veía el aviso y un enlace a
-        # soporte, así que quien se equivocaba de plan —o quería aplicar un
-        # cupón después— se quedaba atascado sin poder comprar nada más.
-        return render_template('checkout_done.html', order=existing,
-                               plan_label=PLAN_LABELS.get(existing.plan, existing.plan),
-                               rails=available_payment_rails(), duplicate=True)
+        # Un intento abandonado NO puede encerrar al comprador: se le lleva otra
+        # vez a pagar el pedido que ya tiene. 🔴 Antes esto renderizaba SIEMPRE
+        # checkout_done.html — que es la pantalla de instrucciones de USDT a
+        # mano — así que con PayPal encendido y el cobro manual APAGADO, quien
+        # volvía a pulsar "pagar" aterrizaba en unas instrucciones para
+        # transferir USDT que no eran ni una opción del sitio. Reportado por el
+        # dueño tres veces antes de que yo lo entendiera.
+        return _llevar_a_pagar(existing, duplicado=True)
 
     # Resolution order: the code bound to the account wins over anything typed
     # (that is the anti-theft rule), then whatever the form carried. The bound
@@ -7524,21 +7531,35 @@ def checkout_create():
                                   + (f' promo={promo.code}' if promo else ''))
         return redirect(url_for('checkout_status', order_id=order.id))
 
+    return _llevar_a_pagar(order)
+
+
+def _llevar_a_pagar(order, duplicado=False):
+    """A dónde va el comprador con su pedido en la mano.
+
+    Un solo sitio para decidirlo, porque cuando la compra nueva y el pedido ya
+    existente lo decidían por separado, acabaron divergiendo: uno mandaba a
+    PayPal y el otro a unas instrucciones de USDT que ni siquiera eran una
+    opción activa del sitio.
+    """
     rails = available_payment_rails()
+    etiqueta = PLAN_LABELS.get(order.plan, order.plan)
     if order.final_price > 0:
         if len(rails) > 1:
             return redirect(url_for('checkout_pay', order_id=order.id))
-        # Con UNA sola pasarela no se le hace "elegir" entre una sola cosa: va
-        # directo. 'manual' no es pasarela — su destino son las instrucciones.
         if rails and rails[0] != 'manual':
             dest = _start_payment(order, rails[0])
             if dest:
                 return redirect(dest, code=303)
-            # Si la pasarela no responde, mejor las instrucciones que un
-            # callejon sin salida: el pedido sigue vivo y se puede liquidar.
-
+            # La pasarela no respondió. No se le enseñan instrucciones de otro
+            # método que no eligió: se le dice lo que pasa y se le deja
+            # reintentar o soltar el pedido.
+            return render_template('checkout_status.html', order=order,
+                                   plan_label=etiqueta, rails=rails,
+                                   gateway_down=True), 200
+    # Solo queda la vía manual (o el pedido es de $0): sus instrucciones.
     return render_template('checkout_done.html', order=order,
-                           plan_label=PLAN_LABELS.get(plan, plan), duplicate=False)
+                           plan_label=etiqueta, rails=rails, duplicate=duplicado)
 
 
 def _start_payment(order, method):
