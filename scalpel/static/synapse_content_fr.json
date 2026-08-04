@@ -33,7 +33,34 @@
    "Confluence",
    "Amas d'ordres"
   ],
-  "figcap": "Le prix respecte un niveau deux fois comme résistance, le casse, puis le reteste comme support (inversion de rôle)."
+  "figcap": "Le prix respecte un niveau deux fois comme résistance, le casse, puis le reteste comme support (inversion de rôle).",
+  "playbook": [
+   "Marquez les swing highs et swing lows où le prix s'est clairement retourné au moins deux fois, en ancrant votre ligne sur des clôtures de bougies groupées plutôt que sur des mèches isolées.",
+   "Élargissez la ligne en une zone couvrant les mèches proches — le marché mémorise des aires, pas des prix exacts.",
+   "Observez COMMENT le prix arrive dans la zone : une glissade lente vers le support ne raconte pas la même histoire qu'une chute violente contre lui.",
+   "Attendez qu'un rejet s'imprime dans la zone — une mèche qui ne parvient pas à clôturer au-delà, ou une clôture forte qui s'en éloigne — au lieu d'acheter ou vendre le simple contact.",
+   "Si une bougie CLÔTURE à travers la zone, cessez de la traiter comme l'ancien côté : à la prochaine visite, attendez-la dans son rôle inversé (le support devient résistance)."
+  ],
+  "fails": [
+   "Dans une tendance forte, les niveaux se font écraser : une zone testée trois ou quatre fois n'est pas « plus forte » — chaque test consomme les ordres au repos qui la faisaient fonctionner, et la zone épuisée cède.",
+   "Une mèche qui perce le niveau et clôture de retour à l'intérieur est généralement un balayage des stops placés derrière, pas une cassure — la lire comme une cassure, c'est la façon classique de vendre le point bas.",
+   "Le niveau en soi n'a pas de direction. Sans contexte — tendance, structure du cadre supérieur, manière dont le prix est arrivé — la même zone est un rebond pour l'un et une cassure pour l'autre, et les deux devinent."
+  ],
+  "drill": "Prenez cinquante graphiques historiques. Masquez le côté droit, marquez vos zones en n'utilisant que le gauche, puis avancez et notez ce que chaque zone a réellement fait : tenue, balayée ou cassée. Après cinquante entrées, vous aurez vos propres taux de base — et vous cesserez d'attendre que chaque niveau tienne.",
+  "related": [
+   {
+    "slug": "smc.liquidity",
+    "why": "les stops au repos derrière chaque niveau évident sont le carburant qui explique pourquoi on les perce"
+   },
+   {
+    "slug": "price.breakout-retest",
+    "why": "à quoi ressemble une vraie cassure de niveau, et comment il bascule de l’autre côté"
+   },
+   {
+    "slug": "smc.liquidity-sweep",
+    "why": "la fausse cassure : percé, récolté, puis rendu"
+   }
+  ]
  },
  "price.trend-structure": {
   "lead": "La structure de marché lit la tendance par une séquence de swings : une tendance haussière imprime des sommets et des creux plus hauts ; une baissière des sommets et des creux plus bas.",
@@ -69,7 +96,34 @@
    "Multi-unités de temps",
    "Range"
   ],
-  "figcap": "Une tendance haussière en escalier de sommets plus hauts (HH) et creux plus hauts (HL) reliés par impulsion et correction."
+  "figcap": "Une tendance haussière en escalier de sommets plus hauts (HH) et creux plus hauts (HL) reliés par impulsion et correction.",
+  "playbook": [
+   "Choisissez UN cadre temporel et marquez ses swings mécaniquement : un swing high est un sommet entouré de plus hauts inférieurs des deux côtés, le swing low en est le miroir.",
+   "Lisez la séquence : des sommets plus hauts et des creux plus hauts font une tendance haussière ; la tendance reste innocente tant qu'un creux définissant n'est pas réellement cassé.",
+   "Séparez les swings qui DÉFINISSENT la tendance des petites oscillations internes de chaque jambe — casser un creux interne ne change rien.",
+   "Quand un creux définissant cède sur une clôture décidée, cessez de projeter l'ancienne tendance et mettez-vous en attente.",
+   "Le changement n'est confirmé que lorsque le marché imprime son premier sommet plus bas puis casse à nouveau — une seule cassure est un avertissement, pas un retournement."
+  ],
+  "fails": [
+   "Mélanger les cadres temporels est l'auto-illusion classique : une « cassure de structure » en 5 minutes n'est souvent que du bruit à l'intérieur d'une seule jambe de 4 heures. Décidez de votre cadre avant de lire, pas après.",
+   "Dans un range, il n'y a pas de swings définissants — plaquer des étiquettes de tendance sur du chop produit un nouveau « retournement » chaque jour, tous sans signification.",
+   "La première cassure de structure est souvent un balayage du creux évident avant continuation. Traiter chaque cassure comme un retournement fait de vos entrées le carburant de la tendance elle-même."
+  ],
+  "drill": "Sur trente graphiques historiques, étiquetez à la main chaque swing high et swing low, puis marquez où VOS règles auraient déclaré le retournement — et où le prix s'est réellement retourné. L'écart entre ces deux marques est votre programme d'étude : il montre si votre définition du swing est trop rapide ou trop lente.",
+  "related": [
+   {
+    "slug": "smc.market-structure",
+    "why": "le même squelette formalisé en BOS et ChoCH"
+   },
+   {
+    "slug": "smc.liquidity-sweep",
+    "why": "pourquoi la première cassure se retourne si souvent contre vous"
+   },
+   {
+    "slug": "price.chart-patterns",
+    "why": "les figures sont des séquences de structure déguisées"
+   }
+  ]
  },
  "price.candles": {
   "lead": "Une bougie comprime quatre nombres — ouverture, haut, bas, clôture — en une seule forme qui enregistre la bataille entre acheteurs et vendeurs sur une période.",
@@ -101,7 +155,34 @@
    "Conviction",
    "Rejet"
   ],
-  "figcap": "Anatomie d'une bougie : corps (ouverture→clôture) plus mèches supérieure et inférieure marquant les extrêmes rejetés."
+  "figcap": "Anatomie d'une bougie : corps (ouverture→clôture) plus mèches supérieure et inférieure marquant les extrêmes rejetés.",
+  "playbook": [
+   "Lisez chaque bougie comme le résumé d'une bataille : où elle a ouvert, jusqu'où chaque camp a poussé (les mèches) et — le plus important — où elle a CLÔTURÉ.",
+   "Jugez la clôture par rapport au range : une clôture dans le tiers supérieur après un creux profond signifie que les acheteurs ont fini la période aux commandes, quelle que soit la couleur de la bougie.",
+   "Établissez l'emplacement avant le sens : la même bougie de rejet est une information sur un niveau marqué et du bruit au milieu de nulle part.",
+   "Demandez-vous ce que la bougie a fait aux bougies PRÉCÉDENTES — a-t-elle repris leur range, balayé leur extrême, ou est-elle simplement restée à l'intérieur ?",
+   "Laissez la bougie suivante voter : la continuation transforme une bougie signal en mouvement ; le silence la transforme en piège."
+  ],
+  "fails": [
+   "Une bougie isolée ne prédit presque rien — le catalogue de noms appris par cœur échoue sans le mécanisme du OÙ et de l'APRÈS QUOI elle s'est imprimée.",
+   "La figure n'existe qu'à la clôture. Un « avalement » ou un « marteau » intrabar peut s'évaporer dans les dernières minutes, et agir sur la forme à moitié faite, c'est agir sur une bougie qui n'a jamais existé.",
+   "Dans les périodes de faible liquidité (séances de jours fériés, creux nocturnes), les formes des bougies sont sculptées par une poignée d'ordres — y lire de la conviction, c'est lire dans le marc de café."
+  ],
+  "drill": "Rassemblez vingt bougies de rejet imprimées SUR un niveau marqué et vingt imprimées au milieu d'un range. Pour chacune, notez si les trois bougies suivantes ont confirmé. Les deux taux de continuation obtenus sont toute la leçon sur l'emplacement — mesurée sur votre propre marché.",
+  "related": [
+   {
+    "slug": "price.pin-bar",
+    "why": "la bougie de rejet, démontée pièce par pièce"
+   },
+   {
+    "slug": "price.engulfing",
+    "why": "la bougie de confirmation et ses règles de clôture"
+   },
+   {
+    "slug": "smc.order-blocks",
+    "why": "une bougie précise dont le sens vient entièrement de ce qui se passe après elle"
+   }
+  ]
  },
  "price.chart-patterns": {
   "lead": "Les figures chartistes sont des formations géométriques récurrentes nées de la psychologie répétée de la foule — elles se divisent en figures de continuation (la tendance reprend) et de retournement (la tendance se termine).",
@@ -137,7 +218,34 @@
    "Continuation",
    "Retournement"
   ],
-  "figcap": "Une tête-épaules de sommet : épaule gauche, tête plus haute, épaule droite, et la ligne de cou dont la cassure confirme."
+  "figcap": "Une tête-épaules de sommet : épaule gauche, tête plus haute, épaule droite, et la ligne de cou dont la cassure confirme.",
+  "playbook": [
+   "Ne nommez une figure que lorsque ses parties existent vraiment : une épaule-tête-épaule exige les deux épaules et une ligne de cou traçable sans plisser les yeux.",
+   "Mesurez la hauteur de la figure — cette projection est l'objectif classique, et c'est une estimation d'énergie, pas une promesse.",
+   "Vérifiez l'histoire du volume : les figures de retournement saines tendent à se tarir pendant leur construction et à s'étendre sur le mouvement de cassure.",
+   "Prenez la cassure de la ligne de cou sur une clôture décidée, ou attendez le retest de la ligne cassée depuis l'autre côté.",
+   "Définissez à l'avance la mort de l'idée : une clôture de retour dans le corps de la figure dit que la complétion a échoué — et les figures échouées voyagent fort dans l'autre sens."
+  ],
+  "fails": [
+   "La moitié des figures que vous « voyez » n'existent qu'avec le recul — le graphique en formation offrait trois autres lectures mortes en silence. Ne backtester que des figures complétées mesure le recul, pas la méthode.",
+   "Une figure de retournement contre la tendance du cadre supérieur demande à un range de battre un fleuve ; le taux d'échec grimpe nettement.",
+   "L'objectif mesuré suppose une résolution moyenne — les nouvelles, les séances et les niveaux proches du cadre supérieur l'écourtent ou le traversent régulièrement."
+  ],
+  "drill": "Constituez un dossier de vingt épaule-tête-épaule ou doubles sommets complétés. Pour chacun, notez trois données : le retest de la ligne de cou a-t-il tenu, le prix a-t-il atteint l'objectif mesuré, et jusqu'où est-il allé sinon. Ces vingt lignes remplaceront « la figure fonctionne » par à quelle fréquence, et de combien, sur votre marché.",
+  "related": [
+   {
+    "slug": "price.trend-structure",
+    "why": "toute figure est d’abord une séquence de structure — lisez le squelette avant le costume"
+   },
+   {
+    "slug": "technical.volume",
+    "why": "la couche de confirmation à laquelle les figures empruntent leur crédibilité"
+   },
+   {
+    "slug": "price.breakout-retest",
+    "why": "la cassure de la ligne de cou est une cassure, avec toutes ses règles"
+   }
+  ]
  },
  "price.supply-demand": {
   "lead": "Les zones d'offre et de demande marquent là où des ordres institutionnels — trop gros pour être exécutés d'un coup — ont laissé un résidu non exécuté, faisant réagir le prix à son retour vers cette origine.",
@@ -169,7 +277,34 @@
    "Déséquilibre",
    "Proximal / distal"
   ],
-  "figcap": "Une base serrée suivie d'un rallye explosif — la base devient une zone de demande où le prix revient."
+  "figcap": "Une base serrée suivie d'un rallye explosif — la base devient une zone de demande où le prix revient.",
+  "playbook": [
+   "Trouvez d'abord le départ : un mouvement rapide, aux corps larges, qui a quitté une aire avec une urgence évidente. Pas de départ violent, pas de zone qui mérite d'être tracée.",
+   "La zone est la base DEPUIS laquelle le mouvement est parti — la grappe de petites bougies avant l'explosion, tracée du corps le plus haut à la mèche extrême.",
+   "Préférez les zones fraîches : le premier retour est celui qui rencontre les ordres non exécutés restés derrière.",
+   "Au retour du prix, ne faites rien au contact — observez si la zone tient réellement : mèches de rejet, bascule sur votre cadre d'entrée.",
+   "Placez l'invalidation au-delà du bord distal de la zone : si toute l'aire se traverse, les ordres sur lesquels vous pariiez n'y sont pas."
+  ],
+  "fails": [
+   "Une base dont le départ fut une dérive paresseuse tient bien moins souvent — la zone emprunte tout son pouvoir à l'urgence qui l'a créée.",
+   "Chaque revisite consomme des ordres au repos : le troisième contact d'une zone n'est pas du « respect », c'est une zone presque épuisée.",
+   "Une bougie de nouvelle à fort impact peut trancher n'importe quelle zone. C'est un risque d'exécution, pas la preuve que l'idée était fausse — une reprise rapide de la zone est l'indice qui mérite étude."
+  ],
+  "drill": "Marquez trente bases en n'utilisant que le côté gauche du graphique, et notez chaque départ : explosif, correct, faible. Puis avancez et consignez si le premier retour a tenu. Trier les résultats par note vous montre — dans vos propres données — à quel point le départ prédit la tenue.",
+  "related": [
+   {
+    "slug": "smc.order-blocks",
+    "why": "le même mécanisme réduit à la dernière bougie opposée"
+   },
+   {
+    "slug": "price.support-resistance",
+    "why": "le cousin des niveaux horizontaux, et quand chaque lecture s’applique"
+   },
+   {
+    "slug": "smc.fair-value-gaps",
+    "why": "le déséquilibre que le départ laisse derrière lui — une autre empreinte de la même urgence"
+   }
+  ]
  },
  "price.pin-bar": {
   "lead": "Un pin bar est un retournement d'une seule bougie : un petit corps avec une longue mèche montrant que le prix a été poussé fort dans un sens, puis rejeté vigoureusement, clôturant près de son ouverture.",
@@ -207,7 +342,34 @@
    "Confluence",
    "Biais HTF"
   ],
-  "figcap": "Un pin bar haussier rejetant le support : une longue queue inférieure, corps minuscule, entrée à la clôture, stop sous la mèche."
+  "figcap": "Un pin bar haussier rejetant le support : une longue queue inférieure, corps minuscule, entrée à la clôture, stop sous la mèche.",
+  "playbook": [
+   "Cherchez l'anatomie : une mèche d'au moins deux fois le corps, le corps logé à une extrémité du range, imprimée sur un extrême — pas en plein milieu du mouvement.",
+   "Exigez que la mèche ait PERCÉ quelque chose : un niveau, une zone, un swing antérieur. Un rejet a besoin de quelque chose à rejeter.",
+   "Lisez la clôture : de retour dans l'aire percée, idéalement au-delà du milieu du range de la bougie elle-même — c'est l'enchère échouée consignée au registre.",
+   "Les entrées vivent sur la cassure du nez du pin ou sur le repli vers le milieu de la mèche ; les deux exigent la même invalidation.",
+   "L'invalidation est l'extrême de la mèche : si le prix retraverse ce point, le rejet que vous avez acheté n'existe plus."
+  ],
+  "fails": [
+   "Un pin bar au milieu d'un range n'a rien rejeté — c'est le marché qui respire, et il échoue aussi souvent qu'il fonctionne.",
+   "Contre un momentum authentique, les pins se font avaler : une mèche de rejet ne discute pas avec une chaîne de bougies de displacement.",
+   "Sur les petits cadres, une bougie sur trois ressemble à un pin ; la forme sans taille relative à ses voisines ne porte aucune information."
+  ],
+  "drill": "Rassemblez quarante pin bars : vingt imprimés contre des zones marquées, vingt en espace ouvert. Suivez trois bougies de continuation pour chacun. Quand les deux groupes se sépareront dans votre tableur — et ils se sépareront — vous ne prendrez plus jamais la forme sans l'emplacement.",
+  "related": [
+   {
+    "slug": "price.candles",
+    "why": "la grammaire générale dont cette bougie est un mot"
+   },
+   {
+    "slug": "smc.liquidity-sweep",
+    "why": "beaucoup de pins d’école SONT des balayages — la mèche a récolté les stops derrière le niveau"
+   },
+   {
+    "slug": "price.support-resistance",
+    "why": "les niveaux qui donnent à la mèche quelque chose à rejeter"
+   }
+  ]
  },
  "price.engulfing": {
   "lead": "Une figure d'avalement est un retournement de deux bougies où le corps de la seconde engloutit complètement la première — une prise de contrôle décisive par le camp opposé.",
@@ -244,7 +406,34 @@
    "Contexte",
    "Confirmation par volume"
   ],
-  "figcap": "Un avalement haussier à un creux : le corps vert engloutit entièrement le corps rouge précédent, signalant une prise de contrôle."
+  "figcap": "Un avalement haussier à un creux : le corps vert engloutit entièrement le corps rouge précédent, signalant une prise de contrôle.",
+  "playbook": [
+   "Attendez que le CORPS de la deuxième bougie enveloppe le corps précédent en entier — le chevauchement de mèches n'est pas un avalement, et le « presque » ne compte pas.",
+   "L'emplacement lui donne son sens : imprimée sur un niveau après un repli, elle documente un camp absorbant la dernière poussée de l'autre.",
+   "Notez-la selon sa clôture : au-delà de l'extrême de la bougie précédente, c'est une déclaration ; à peine passé le corps, c'est un murmure.",
+   "Entrées : la cassure de l'extrême de la bougie d'avalement, ou le repli vers son milieu pour un meilleur prix avec la même invalidation.",
+   "L'invalidation se place au-delà du swing d'où l'avalement est né — si cela cède, le contrôle n'a jamais réellement changé."
+  ],
+  "fails": [
+   "Dans le chop, une bougie d'avalement avale du bruit — le contrôle ne peut pas changer de mains quand personne ne l'avait.",
+   "Un avalement géant est une information tardive : au moment où il clôture, le mouvement qu'il annonce est à moitié dépensé et le stop logique est loin.",
+   "La figure n'existe qu'à la clôture ; un avalement intrabar peut se ratatiner en inside bar dans les dernières minutes."
+  ],
+  "drill": "Consignez trente bougies d'avalement avec deux attributs chacune : imprimée sur une zone marquée ou non, et taille du corps par rapport à la moyenne des dix bougies précédentes. Notez ensuite si chacune a confirmé. Le tableau croisé obtenu — emplacement par taille — est une carte personnelle des moments où cette bougie mérite votre attention.",
+  "related": [
+   {
+    "slug": "price.pin-bar",
+    "why": "l’autre empreinte classique de rejet — une bougie au lieu de deux"
+   },
+   {
+    "slug": "smc.market-structure",
+    "why": "un avalement sur un swing EST souvent la bascule de micro-structure"
+   },
+   {
+    "slug": "price.candles",
+    "why": "pourquoi la clôture, et non la forme, porte le verdict"
+   }
+  ]
  },
  "price.breakout-retest": {
   "lead": "La cassure-et-retest attend que le prix clôture de façon décisive au-delà d'un niveau, puis revienne tester ce niveau cassé depuis l'autre côté avant d'entrer — trader l'inversion de rôle avec confirmation.",
@@ -281,7 +470,34 @@
    "Fausse cassure",
    "Confirmation par volume"
   ],
-  "figcap": "La résistance casse sur une clôture forte, le prix la reteste comme support, puis continue — le retest est l'entrée."
+  "figcap": "La résistance casse sur une clôture forte, le prix la reteste comme support, puis continue — le retest est l'entrée.",
+  "playbook": [
+   "Identifiez un niveau pour lequel le marché s'est réellement battu — plusieurs contacts, des réactions visibles, de l'intérêt au repos des deux côtés.",
+   "Exigez une vraie cassure : une bougie d'expansion qui CLÔTURE au-delà du niveau, pas une mèche qui le transperce.",
+   "Puis la partie difficile — ne faites rien. L'entrée n'est pas la cassure ; c'est le retour.",
+   "Quand le prix revient au niveau cassé, regardez-le agir dans son nouveau rôle : l'ancienne résistance rattrapant le repli comme support.",
+   "Si le retest tient avec un rejet, voilà le setup ; si le prix clôture de retour de l'ancien côté, la cassure a échoué et les traders de cassure piégés deviennent le carburant du mouvement inverse."
+  ],
+  "fails": [
+   "Courir après la cassure brute est l'habitude la plus coûteuse du trading : sans le retest, l'entrée tardive EST la liquidité de quelqu'un d'autre.",
+   "Une dérive qui traverse sans displacement se retourne bien plus souvent qu'une cassure explosive — le marché qui suinte à travers un niveau ne s'y est jamais engagé.",
+   "Certaines cassures authentiques ne retestent jamais. Accepter le trade manqué fait partie de la méthode ; étirer la définition du « retest » pour les rattraper, c'est ainsi que la méthode se dissout."
+  ],
+  "drill": "Classez cinquante cassures historiques selon deux axes : clôture avec displacement contre dérive, et retestée contre jamais revenue. Mesurez ensuite la continuation de chacune des quatre cases. La case combinant displacement et retest tenu justifiera — avec vos chiffres — pourquoi ce setup exige de la patience.",
+  "related": [
+   {
+    "slug": "price.support-resistance",
+    "why": "l’inversion de rôle est la physique sur laquelle roule ce setup"
+   },
+   {
+    "slug": "smc.liquidity",
+    "why": "qui exactement se retrouve piégé sur une cassure ratée, et pourquoi cela alimente le retour"
+   },
+   {
+    "slug": "smc.fvg-fill",
+    "why": "le déséquilibre laissé par une cassure avec displacement — et comment le prix le retraverse"
+   }
+  ]
  },
  "price.harmonic": {
   "lead": "Les figures harmoniques sont des structures à cinq points (X-A-B-C-D) dont les jambes obéissent à des ratios de Fibonacci précis, projetant une Zone de Retournement Potentielle au point D où le retournement se trade.",
@@ -319,7 +535,34 @@
    "Butterfly",
    "Point D"
   ],
-  "figcap": "Une structure harmonique X-A-B-C-D se complétant à la PRZ (point D), où l'entrée de retournement est prise."
+  "figcap": "Une structure harmonique X-A-B-C-D se complétant à la PRZ (point D), où l'entrée de retournement est prise.",
+  "playbook": [
+   "Laissez d'abord les jambes se former : X-A, A-B, B-C — chaque repli mesuré, aucun supposé. La figure se mérite point par point.",
+   "Classez par le point B : son repli de X-A est ce qui sépare un Gartley d'un Bat d'un Butterfly, et mal étiqueter B corrompt toute projection ultérieure.",
+   "Projetez D là où les ratios se REGROUPENT — deux ou trois mesures concordant dans une bande étroite. Cette zone de confluence est la PRZ.",
+   "Dans la PRZ, chassez des preuves, pas des contacts : une bougie de rejet, un momentum qui cale, une micro-bascule sur le cadre d'entrée.",
+   "Une clôture décidée à travers le bord lointain de la PRZ met la figure à la retraite — les complétions harmoniques sont des zones d'intérêt, jamais des murailles."
+  ],
+  "fails": [
+   "Forcer des ratios qui collent « presque » construit une figure qui n'a jamais existé — la discipline consiste à rejeter des candidats, pas à les collectionner.",
+   "Une PRZ dressée contre un displacement frais se fait traverser de part en part : les mesures n'arrêtent pas un marché qui vient de montrer son jeu.",
+   "Des figures qui se chevauchent peuvent projeter des points D contradictoires ; quand deux PRZ divergent, la lecture honnête est qu'il n'y a pas de lecture."
+  ],
+  "drill": "Backtestez vingt PRZ complétées. Pour chacune, notez quel groupe de ratios a tenu, l'ampleur de la réaction et — le point critique — comparez le résultat d'une entrée au contact contre l'attente d'une bougie de confirmation. La troisième colonne est l'endroit où la plupart découvrent pourquoi la patience en D est le vrai avantage de la figure.",
+  "related": [
+   {
+    "slug": "price.chart-patterns",
+    "why": "la famille géométrique que les harmoniques formalisent avec des ratios"
+   },
+   {
+    "slug": "smc.pd-arrays",
+    "why": "une autre langue pour la même question : le prix est-il cher ou bon marché ici ?"
+   },
+   {
+    "slug": "price.candles",
+    "why": "la preuve de confirmation que la PRZ attend"
+   }
+  ]
  },
  "technical.moving-averages": {
   "lead": "Une moyenne mobile lisse le prix en une seule ligne fluide, filtrant le bruit pour révéler la tendance sous-jacente — et agissant comme support et résistance dynamiques tandis que le prix avance.",

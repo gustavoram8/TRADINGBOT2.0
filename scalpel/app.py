@@ -9233,6 +9233,63 @@ def _build_synapse_pdf(buyer_name: str, buyer_email: str, order_id: str,
         limpio = ''.join(c if (c.isalnum() or c in '-_') else '-' for c in str(slug))
         return 'tema-' + (limpio or 'x')
 
+    # ── Punto 12: las secciones de PROFUNDIDAD ────────────────────────────
+    # Cuatro campos nuevos y opcionales por tema. Opcionales a propósito: el
+    # contenido se está escribiendo por tandas (como el DAILY_BANK), y un tema
+    # que aún no tiene su tanda se imprime exactamente como antes — nada de
+    # secciones vacías ni encabezados huérfanos.
+    def playbook_html(steps):
+        """La secuencia narrada: qué se ve en el gráfico, en orden."""
+        if not steps:
+            return ''
+        lis = ''.join(f'<li>{esc(x)}</li>' for x in steps)
+        return (f'<div class="playbook"><div class="pb-label">{esc(CH["playbook"])}'
+                f'</div><ol class="pb-list">{lis}</ol></div>')
+
+    def fails_html(items):
+        """Los modos de fallo honestos — qué invalida la lectura."""
+        if not items:
+            return ''
+        if isinstance(items, str):
+            items = [items]
+        lis = ''.join(f'<li>{esc(x)}</li>' for x in items)
+        return (f'<div class="fails"><div class="fl-label">{esc(CH["fails"])}</div>'
+                f'<ul class="fl-list">{lis}</ul></div>')
+
+    def drill_html(texto):
+        """Un ejercicio concreto de estudio/backtest para el tema."""
+        if not texto:
+            return ''
+        return (f'<div class="drill"><span class="dr-label">{esc(CH["drill"])}</span> '
+                f'{esc(texto)}</div>')
+
+    _titulos = {slug: t for slug, t, _m in _SYNAPSE_ORDER}
+
+    def related_html(rel):
+        """Enlaces internos a temas conectados — la red de Synapse, en el PDF.
+
+        Cada entrada es {'slug': ..., 'why': ...}. Usa las anclas del punto 11,
+        así que saltan de verdad. Un slug que no exista se OMITE en silencio en
+        vez de imprimir un enlace muerto (el validador lo caza antes, pero el
+        PDF nunca debe ser el que reviente)."""
+        if not rel:
+            return ''
+        filas = []
+        for r in rel:
+            slug2 = (r or {}).get('slug', '')
+            if slug2 not in _titulos:
+                continue
+            titulo2 = T.topic_title(slug2, _titulos[slug2], lang)
+            why = (r or {}).get('why', '')
+            filas.append(f'<div class="rel-item"><a class="rel-link" '
+                         f'href="#{_ancla(slug2)}">→ {esc(titulo2)}</a>'
+                         + (f' <span class="rel-why">— {esc(why)}</span>' if why else '')
+                         + '</div>')
+        if not filas:
+            return ''
+        return (f'<div class="related"><div class="rel-label">{esc(CH["related"])}'
+                f'</div>{"".join(filas)}</div>')
+
     # ── TOC ──────────────────────────────────────────────────────────────────
     toc_rows = []
     current_method = None
@@ -9259,7 +9316,12 @@ def _build_synapse_pdf(buyer_name: str, buyer_email: str, order_id: str,
     current_method = None
     for slug, title, method in _SYNAPSE_ORDER:
         data    = library.get(slug, {})
-        content = overrides.get(slug) or data.get('content') or {}
+        # Merge CAMPO a CAMPO, igual que hace el flipbook web (Object.assign):
+        # un campo sin traducir cae al inglés en vez de desaparecer. Antes se
+        # reemplazaba el dict entero, y con los campos nuevos del punto 12 eso
+        # significaba que un idioma rezagado PERDÍA secciones enteras en
+        # silencio — el PDF salía más flaco según el idioma, sin ningún error.
+        content = {**(data.get('content') or {}), **(overrides.get(slug) or {})}
         svg_raw = _style_svg(data.get('svg') or '')
         title_l = T.topic_title(slug, title, lang)
         method_l = T.method_name(method, lang)
@@ -9294,14 +9356,18 @@ def _build_synapse_pdf(buyer_name: str, buyer_email: str, order_id: str,
   {f'<p class="tp-body">{esc(body)}</p>' if body else ''}
 
   {mechanics_html(mech)}
+  {playbook_html(content.get('playbook'))}
   {setup_html(setup)}
   {mistake_html(mistake)}
+  {fails_html(content.get('fails'))}
+  {drill_html(content.get('drill'))}
   {terms_html(terms)}
 
   {f'''<div class="tp-figure">
     <div class="svg-wrap">{svg_raw}</div>
     {f'<div class="tp-figcap">{esc(figcap)}</div>' if figcap else ''}
   </div>''' if svg_raw else ''}
+  {related_html(content.get('related'))}
 </div>""")
 
     pages_html = '\n'.join(pages)
@@ -9429,6 +9495,38 @@ def _build_synapse_pdf(buyer_name: str, buyer_email: str, order_id: str,
   .terms-row {{ margin-bottom: 10pt; }}
   .term-pill {{ display: inline-block; background: #eef1ff; color: #3d5afe; font-size: 7.5pt;
                 font-weight: 600; border-radius: 20pt; padding: 1.5pt 7pt; margin: 2pt 2pt 0 0; }}
+
+  /* ── Punto 12 · las secciones de profundidad ─────────────────────────
+     Estética de la casa: mismas familias de caja que setup/mistake/terms,
+     cada una con su propio tinte para que el ojo distinga QUÉ clase de
+     información es sin leer el encabezado. */
+  .playbook {{ background: #f4faf4; border-left: 3px solid #2e9e44; padding: 7pt 10pt;
+               margin-bottom: 10pt; }}
+  .pb-label {{ font-size: 8pt; font-weight: 800; color: #1d7a32; letter-spacing:.06em;
+               text-transform: uppercase; margin-bottom: 3pt; }}
+  .pb-list  {{ margin: 0; padding-left: 14pt; }}
+  .pb-list li {{ font-size: 8.5pt; color: #234; line-height: 1.55; margin: 2pt 0; }}
+
+  .fails    {{ background: #fdf6ee; border-left: 3px solid #c77b1e; padding: 7pt 10pt;
+               margin-bottom: 10pt; }}
+  .fl-label {{ font-size: 8pt; font-weight: 800; color: #a4610e; letter-spacing:.06em;
+               text-transform: uppercase; margin-bottom: 3pt; }}
+  .fl-list  {{ margin: 0; padding-left: 13pt; }}
+  .fl-list li {{ font-size: 8.5pt; color: #4a3a24; line-height: 1.55; margin: 2pt 0; }}
+
+  .drill    {{ background: #f2f4fb; border-radius: 5pt; padding: 7pt 11pt;
+               margin-bottom: 10pt; font-size: 8.5pt; color: #333; line-height: 1.55; }}
+  .dr-label {{ font-weight: 800; color: #3d5afe; margin-right: 4pt;
+               text-transform: uppercase; font-size: 8pt; letter-spacing:.06em; }}
+
+  /* Los temas conectados: la red de Synapse dentro del PDF. Los enlaces
+     heredan color (misma regla que el índice: clicable sin parecer web). */
+  .related  {{ margin-top: 9pt; border-top: 1px solid #e8e8f0; padding-top: 6pt; }}
+  .rel-label {{ font-size: 7.5pt; font-weight: 800; color: #777; letter-spacing:.08em;
+                text-transform: uppercase; margin-bottom: 3pt; }}
+  .rel-item {{ font-size: 8pt; margin: 1.5pt 0; }}
+  .rel-link {{ color: #3d5afe; text-decoration: none; font-weight: 700; }}
+  .rel-why  {{ color: #888; }}
 
   /* Figure */
   .tp-figure {{ margin-top: 8pt; text-align: center; }}

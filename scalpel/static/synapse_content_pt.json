@@ -33,7 +33,34 @@
    "Confluência",
    "Aglomerados de ordens"
   ],
-  "figcap": "O preço respeita um nível duas vezes como resistência, quebra-o, depois reteste-o como suporte (inversão de papel)."
+  "figcap": "O preço respeita um nível duas vezes como resistência, quebra-o, depois reteste-o como suporte (inversão de papel).",
+  "playbook": [
+   "Marque os swing highs e swing lows onde o preço reverteu com clareza pelo menos duas vezes, ancorando a linha em fechamentos de velas agrupados e não em pavios soltos.",
+   "Alargue a linha até virar uma zona que cubra os pavios próximos — o mercado lembra de áreas, não de preços exatos.",
+   "Observe COMO o preço chega à zona: um arrasto lento até o suporte conta uma história diferente de uma queda violenta contra ele.",
+   "Espere um rechaço se imprimir dentro da zona — um pavio que não consegue fechar além, ou um fechamento forte se afastando — em vez de comprar ou vender o toque em si.",
+   "Se uma vela FECHAR atravessando a zona, pare de tratá-la como o lado antigo: na próxima visita, espere que atue no papel invertido (o suporte vira resistência)."
+  ],
+  "fails": [
+   "Numa tendência forte, os níveis são atropelados: uma zona testada três ou quatro vezes não é \"mais forte\" — cada teste consome as ordens em repouso que a faziam funcionar, e a zona esgotada rompe.",
+   "Um pavio que fura o nível e fecha de volta para dentro costuma ser uma varrida dos stops atrás dele, não um rompimento — lê-lo como rompimento é o jeito clássico de vender a mínima.",
+   "O nível em si não tem direção. Sem contexto — tendência, estrutura de tempo gráfico maior, como o preço chegou — a mesma zona é repique para um trader e rompimento para outro, e ambos estão adivinhando."
+  ],
+  "drill": "Pegue cinquenta gráficos históricos. Cubra o lado direito, marque suas zonas usando só o esquerdo, depois avance e registre o que cada zona realmente fez: segurou, foi varrida ou rompeu. Depois de cinquenta registros você terá suas próprias taxas base — e vai parar de esperar que todo nível segure.",
+  "related": [
+   {
+    "slug": "smc.liquidity",
+    "why": "os stops em repouso atrás de cada nível óbvio são o combustível que explica por que eles são furados"
+   },
+   {
+    "slug": "price.breakout-retest",
+    "why": "como é um rompimento genuíno de um nível, e como ele se converte para o outro lado"
+   },
+   {
+    "slug": "smc.liquidity-sweep",
+    "why": "o rompimento falso: furado, colhido e devolvido"
+   }
+  ]
  },
  "price.trend-structure": {
   "lead": "A estrutura de mercado lê a tendência através de uma sequência de swings: uma tendência de alta imprime máximos e mínimos mais altos; uma de baixa imprime máximos e mínimos mais baixos.",
@@ -69,7 +96,34 @@
    "Multitemporal",
    "Range"
   ],
-  "figcap": "Uma tendência de alta como escada de máximos mais altos (HH) e mínimos mais altos (HL) ligados por impulso e correção."
+  "figcap": "Uma tendência de alta como escada de máximos mais altos (HH) e mínimos mais altos (HL) ligados por impulso e correção.",
+  "playbook": [
+   "Escolha UM tempo gráfico e marque os swings de forma mecânica: um swing high é um pico com máximas menores dos dois lados, e o swing low é o espelho.",
+   "Leia a sequência: máximas crescentes mais mínimas crescentes é tendência de alta; a tendência é inocente até que uma mínima definidora seja rompida de verdade.",
+   "Separe os swings que DEFINEM a tendência dos chacoalhos internos de cada perna — romper uma mínima interna não muda nada.",
+   "Quando uma mínima definidora rompe com um fechamento decidido, pare de projetar a tendência velha e fique em espera.",
+   "A mudança só se confirma quando o mercado imprime sua primeira máxima decrescente e rompe de novo — um rompimento sozinho é um aviso, não uma reversão."
+  ],
+  "fails": [
+   "Misturar tempos gráficos é o autoengano clássico: um \"rompimento de estrutura\" no 5 minutos costuma ser ruído dentro de uma única perna de 4 horas. Decida seu tempo gráfico antes de ler, não depois.",
+   "Num range não há swings definidores — forçar rótulos de tendência sobre o serrote produz uma \"reversão\" nova por dia, todas sem significado.",
+   "O primeiro rompimento de estrutura é com frequência uma varrida da mínima óbvia antes da continuação. Tratar cada rompimento como reversão transforma o reabastecimento da própria tendência na sua entrada."
+  ],
+  "drill": "Em trinta gráficos históricos, rotule à mão cada swing high e swing low, depois marque onde as SUAS regras teriam declarado a reversão — e onde o preço reverteu de verdade. A distância entre essas duas marcas é o seu currículo: mostra se a sua definição de swing é rápida demais ou lenta demais.",
+  "related": [
+   {
+    "slug": "smc.market-structure",
+    "why": "o mesmo esqueleto formalizado como BOS e ChoCH"
+   },
+   {
+    "slug": "smc.liquidity-sweep",
+    "why": "por que o primeiro rompimento tantas vezes reverte contra você"
+   },
+   {
+    "slug": "price.chart-patterns",
+    "why": "os padrões são sequências de estrutura fantasiadas"
+   }
+  ]
  },
  "price.candles": {
   "lead": "Uma vela comprime quatro números — abertura, máximo, mínimo, fecho — numa única forma que regista a batalha entre compradores e vendedores ao longo de um período.",
@@ -101,7 +155,34 @@
    "Convicção",
    "Rejeição"
   ],
-  "figcap": "Anatomia de uma vela: corpo (abertura→fecho) mais pavios superior e inferior marcando os extremos rejeitados."
+  "figcap": "Anatomia de uma vela: corpo (abertura→fecho) mais pavios superior e inferior marcando os extremos rejeitados.",
+  "playbook": [
+   "Leia cada vela como o resumo de uma batalha: onde abriu, até onde cada lado empurrou (os pavios) e — o mais importante — onde FECHOU.",
+   "Julgue o fechamento contra o range: um fechamento no terço superior depois de uma mínima profunda significa que os compradores terminaram o período no controle, seja qual for a cor da vela.",
+   "Estabeleça a localização antes do significado: a mesma vela de rechaço é informação num nível marcado e ruído no meio do nada.",
+   "Pergunte o que a vela fez com as velas ANTERIORES — recuperou o range delas, varreu o extremo delas ou só ficou dentro delas?",
+   "Deixe a próxima vela votar: o follow-through converte uma vela sinal em movimento; o silêncio a converte em armadilha."
+  ],
+  "fails": [
+   "Uma vela isolada não prevê quase nada — o catálogo de nomes decorado falha sem o mecanismo de ONDE e depois de QUÊ ela se imprimiu.",
+   "O padrão só existe no fechamento. Um \"engolfo\" ou um \"martelo\" intrabar pode evaporar nos últimos minutos, e agir sobre a forma pela metade é agir sobre uma vela que nunca existiu.",
+   "Em períodos de pouca liquidez (sessões de feriado, madrugadas) as formas das velas são talhadas por um punhado de ordens — ler convicção nelas é ler borra de café."
+  ],
+  "drill": "Reúna vinte velas de rechaço impressas EM um nível marcado e vinte impressas no meio de um range. Para cada uma, anote se as três velas seguintes deram continuidade. As duas taxas de follow-through que você obtiver são a lição inteira sobre localização — medida no seu próprio mercado.",
+  "related": [
+   {
+    "slug": "price.pin-bar",
+    "why": "a vela de rechaço, desmontada peça por peça"
+   },
+   {
+    "slug": "price.engulfing",
+    "why": "a vela de confirmação e suas regras de fechamento"
+   },
+   {
+    "slug": "smc.order-blocks",
+    "why": "uma vela específica cujo significado vem inteiramente do que acontece depois dela"
+   }
+  ]
  },
  "price.chart-patterns": {
   "lead": "Os padrões gráficos são formações geométricas recorrentes nascidas da psicologia repetida da multidão — dividem-se em padrões de continuação (a tendência retoma) e de reversão (a tendência termina).",
@@ -137,7 +218,34 @@
    "Continuação",
    "Reversão"
   ],
-  "figcap": "Um ombro-cabeça-ombro de topo: ombro esquerdo, cabeça mais alta, ombro direito, e a linha de pescoço cuja quebra confirma."
+  "figcap": "Um ombro-cabeça-ombro de topo: ombro esquerdo, cabeça mais alta, ombro direito, e a linha de pescoço cuja quebra confirma.",
+  "playbook": [
+   "Só nomeie um padrão quando as partes dele existirem de verdade: um ombro-cabeça-ombro precisa dos dois ombros e de um neckline que você trace sem apertar os olhos.",
+   "Meça a altura do padrão — essa projeção é o alvo clássico, e é uma estimativa de energia, não uma promessa.",
+   "Confira a história do volume: padrões de reversão saudáveis tendem a secar enquanto se constroem e a expandir no movimento que rompe.",
+   "Pegue o rompimento do neckline com um fechamento decidido, ou espere o reteste da linha rompida pelo outro lado.",
+   "Defina a morte da ideia de antemão: um fechamento de volta dentro do corpo do padrão diz que a completação falhou — e padrões falhos viajam com força para o outro lado."
+  ],
+  "fails": [
+   "Metade dos padrões que você \"vê\" só existe em retrospecto — o gráfico em formação oferecia outras três leituras que morreram em silêncio. Backtestar só padrões completados mede o retrospecto, não o método.",
+   "Um padrão de reversão contra a tendência do tempo gráfico maior pede que um range vença um rio; a taxa de falha sobe forte.",
+   "O alvo medido supõe uma resolução média — notícias, sessões e níveis próximos do tempo gráfico maior o encurtam ou o atravessam com regularidade."
+  ],
+  "drill": "Monte uma pasta com vinte ombro-cabeça-ombro ou topos duplos completados. Para cada um registre três dados: o reteste do neckline segurou, o preço alcançou o alvo medido, e até onde foi se não alcançou. Essas vinte linhas vão substituir \"o padrão funciona\" por quantas vezes, e por quanto, no seu mercado.",
+  "related": [
+   {
+    "slug": "price.trend-structure",
+    "why": "todo padrão é primeiro uma sequência de estrutura — leia o esqueleto antes da fantasia"
+   },
+   {
+    "slug": "technical.volume",
+    "why": "a camada de confirmação da qual os padrões emprestam sua credibilidade"
+   },
+   {
+    "slug": "price.breakout-retest",
+    "why": "o rompimento do neckline é um rompimento, com todas as suas regras"
+   }
+  ]
  },
  "price.supply-demand": {
   "lead": "As zonas de oferta e procura marcam onde ordens institucionais — grandes demais para executar de uma vez — deixaram resíduo não executado, fazendo o preço reagir ao regressar a essa origem.",
@@ -169,7 +277,34 @@
    "Desequilíbrio",
    "Proximal / distal"
   ],
-  "figcap": "Uma base apertada seguida de um rally explosivo — a base torna-se uma zona de procura à qual o preço regressa."
+  "figcap": "Uma base apertada seguida de um rally explosivo — a base torna-se uma zona de procura à qual o preço regressa.",
+  "playbook": [
+   "Encontre primeiro a partida: um movimento rápido, de corpos largos, que deixou uma área com urgência evidente. Sem partida violenta, não há zona que valha desenhar.",
+   "A zona é a base DE ONDE o movimento partiu — o cacho de velas pequenas antes da explosão, desenhado do corpo mais alto ao pavio extremo.",
+   "Prefira zonas frescas: o primeiro retorno é o que encontra as ordens não preenchidas que ficaram para trás.",
+   "Quando o preço voltar, não faça nada no toque — observe se a zona realmente segura: pavios de rechaço, uma virada no seu tempo gráfico de entrada.",
+   "Coloque a invalidação além da borda distal da zona: se a área inteira for negociada de lado a lado, as ordens em que você apostava não estão lá."
+  ],
+  "fails": [
+   "Uma base cuja partida foi um arrasto preguiçoso segura bem menos — a zona empresta todo o seu poder da urgência que a criou.",
+   "Cada revisita consome ordens em repouso: o terceiro toque numa zona não é \"respeito\", é uma zona quase gasta.",
+   "Uma vela de notícia de alto impacto pode fatiar qualquer zona. Isso é um risco de execução, não a prova de que a ideia era ruim — uma recuperação rápida da zona é a pista que vale estudar."
+  ],
+  "drill": "Marque trinta bases usando só o lado esquerdo do gráfico, e classifique cada partida: explosiva, decente, fraca. Depois avance e registre se o primeiro retorno segurou. Ordenar os resultados por classificação mostra — nos seus próprios dados — o quanto a partida prevê a sustentação.",
+  "related": [
+   {
+    "slug": "smc.order-blocks",
+    "why": "o mesmo mecanismo reduzido à última vela contrária"
+   },
+   {
+    "slug": "price.support-resistance",
+    "why": "o primo dos níveis horizontais, e quando cada leitura se aplica"
+   },
+   {
+    "slug": "smc.fair-value-gaps",
+    "why": "o desequilíbrio que a partida deixa para trás — outra pegada da mesma urgência"
+   }
+  ]
  },
  "price.pin-bar": {
   "lead": "Um pin bar é uma reversão de uma única vela: um corpo pequeno com um pavio longo que mostra que o preço foi empurrado com força num sentido e depois rejeitado vigorosamente, fechando perto de onde abriu.",
@@ -207,7 +342,34 @@
    "Confluência",
    "Viés HTF"
   ],
-  "figcap": "Um pin bar de alta a rejeitar o suporte: uma longa cauda inferior, corpo minúsculo, entrada no fecho, stop abaixo do pavio."
+  "figcap": "Um pin bar de alta a rejeitar o suporte: uma longa cauda inferior, corpo minúsculo, entrada no fecho, stop abaixo do pavio.",
+  "playbook": [
+   "Procure a anatomia: um pavio de pelo menos o dobro do corpo, o corpo enfiado numa ponta do range, impresso num extremo — não no meio do movimento.",
+   "Exija que o pavio tenha FURADO algo: um nível, uma zona, um swing anterior. Um rechaço precisa de algo para rechaçar.",
+   "Leia o fechamento: de volta para dentro da área furada, idealmente além do meio do range da própria vela — esse é o leilão fracassado que fica registrado.",
+   "As entradas vivem no rompimento do nariz do pin ou no recuo até o meio do pavio; ambas precisam da mesma invalidação.",
+   "A invalidação é o extremo do pavio: se o preço negociar de volta através dele, o rechaço que você comprou já não existe."
+  ],
+  "fails": [
+   "Um pin bar no meio de um range não rechaçou nada — é o mercado respirando, e falha com a mesma frequência com que funciona.",
+   "Contra um momentum genuíno, os pins são engolidos: um pavio de rechaço não discute com uma cadeia de velas de deslocamento.",
+   "Em tempos gráficos pequenos, uma em cada três velas parece pin; a forma sem tamanho relativo às vizinhas não carrega informação."
+  ],
+  "drill": "Reúna quarenta pin bars: vinte impressos contra zonas marcadas, vinte em espaço aberto. Acompanhe três velas de continuação em cada um. Quando os dois grupos se separarem na sua planilha — e vão se separar — você nunca mais vai pegar a forma sem a localização.",
+  "related": [
+   {
+    "slug": "price.candles",
+    "why": "a gramática geral da qual esta vela é uma palavra"
+   },
+   {
+    "slug": "smc.liquidity-sweep",
+    "why": "muitos pins de livro SÃO varridas — o pavio colheu os stops atrás do nível"
+   },
+   {
+    "slug": "price.support-resistance",
+    "why": "os níveis que dão ao pavio algo para rechaçar"
+   }
+  ]
  },
  "price.engulfing": {
   "lead": "Um padrão de engolfo é uma reversão de duas velas onde o corpo da segunda engole por completo o da primeira — uma tomada de controlo decisiva pelo lado oposto.",
@@ -244,7 +406,34 @@
    "Contexto",
    "Confirmação por volume"
   ],
-  "figcap": "Um engolfo de alta num mínimo: o corpo verde engole por completo o corpo vermelho anterior, sinalizando uma tomada de controlo."
+  "figcap": "Um engolfo de alta num mínimo: o corpo verde engole por completo o corpo vermelho anterior, sinalizando uma tomada de controlo.",
+  "playbook": [
+   "Espere o CORPO da segunda vela envolver o corpo anterior inteiro — sobreposição de pavios não é engolfo, e o \"quase\" não conta.",
+   "A localização dá o significado: impresso num nível depois de um recuo, documenta um lado absorvendo o último empurrão do outro.",
+   "Classifique pelo fechamento: além do extremo da vela anterior é uma declaração; mal passou do corpo é um sussurro.",
+   "Entradas: o rompimento do extremo do engolfo, ou o recuo até o meio dele para um preço melhor com a mesma invalidação.",
+   "A invalidação fica além do swing de onde o engolfo nasceu — se ali ceder, o controle na verdade nunca mudou."
+  ],
+  "fails": [
+   "Dentro do serrote, um engolfo engolfa ruído — o controle não pode mudar de mãos quando ninguém o tinha.",
+   "Um engolfo gigante é informação atrasada: quando fecha, o movimento que anuncia está meio gasto e o stop lógico fica longe.",
+   "O padrão só existe no fechamento; um engolfo intrabar pode encolher para um inside bar nos minutos finais."
+  ],
+  "drill": "Registre trinta engolfos com dois atributos cada: impresso em zona marcada ou não, e tamanho do corpo contra a média das dez velas anteriores. Depois anote se cada um teve continuidade. A tabela cruzada que você obtém — localização por tamanho — é um mapa pessoal de quando essa vela merece a sua atenção.",
+  "related": [
+   {
+    "slug": "price.pin-bar",
+    "why": "a outra impressão clássica de rechaço — uma vela em vez de duas"
+   },
+   {
+    "slug": "smc.market-structure",
+    "why": "um engolfo num swing muitas vezes É a virada de microestrutura"
+   },
+   {
+    "slug": "price.candles",
+    "why": "por que o fechamento, e não a forma, carrega o veredicto"
+   }
+  ]
  },
  "price.breakout-retest": {
   "lead": "O rompimento-e-reteste espera que o preço feche de forma decisiva além de um nível, depois regresse a testar esse nível rompido pelo outro lado antes de entrar — operando a inversão de papel com confirmação.",
@@ -281,7 +470,34 @@
    "Falso rompimento",
    "Confirmação por volume"
   ],
-  "figcap": "A resistência quebra num fecho forte, o preço reteste-a como suporte, depois continua — o reteste é a entrada."
+  "figcap": "A resistência quebra num fecho forte, o preço reteste-a como suporte, depois continua — o reteste é a entrada.",
+  "playbook": [
+   "Identifique um nível pelo qual o mercado brigou de verdade — vários toques, reações visíveis, interesse em repouso dos dois lados.",
+   "Exija um rompimento real: uma vela de expansão FECHANDO além do nível, não um pavio espetando através dele.",
+   "Depois a parte difícil — não faça nada. A entrada não é o rompimento; é o retorno.",
+   "Quando o preço voltar ao nível rompido, veja-o atuar no papel novo: a velha resistência segurando a queda como suporte.",
+   "Se o reteste segurar com um rechaço, esse é o setup; se o preço fechar de volta do lado velho, o rompimento falhou e os traders de rompimento presos viram o combustível do movimento contrário."
+  ],
+  "fails": [
+   "Correr atrás do rompimento cru é o hábito mais confiavelmente caro do trading: sem o reteste, a entrada atrasada É a liquidez de outra pessoa.",
+   "Um arrasto que atravessa sem deslocamento reverte com muito mais frequência que um rompimento explosivo — o mercado que escorre através de um nível nunca esteve comprometido com ele.",
+   "Alguns rompimentos genuínos nunca retestam. Aceitar o trade perdido faz parte do método; esticar a definição de \"reteste\" para persegui-los é como o método se dissolve."
+  ],
+  "drill": "Classifique cinquenta rompimentos históricos em dois eixos: fechamento com deslocamento contra arrasto, e retestado contra nunca retornou. Depois meça a continuação de cada uma das quatro caixas. A caixa que combina deslocamento mais reteste sustentado vai justificar — com os seus números — por que esse setup exige paciência.",
+  "related": [
+   {
+    "slug": "price.support-resistance",
+    "why": "a inversão de papel é a física sobre a qual esse setup roda"
+   },
+   {
+    "slug": "smc.liquidity",
+    "why": "quem exatamente fica preso num rompimento falho, e por que isso alimenta o reverso"
+   },
+   {
+    "slug": "smc.fvg-fill",
+    "why": "o desequilíbrio que um rompimento com deslocamento deixa — e como o preço retorna através dele"
+   }
+  ]
  },
  "price.harmonic": {
   "lead": "Os padrões harmónicos são estruturas de cinco pontos (X-A-B-C-D) cujas pernas obedecem a rácios de Fibonacci precisos, projetando uma Zona de Reversão Potencial no ponto D onde a reversão é operada.",
@@ -319,7 +535,34 @@
    "Butterfly",
    "Ponto D"
   ],
-  "figcap": "Uma estrutura harmónica X-A-B-C-D a completar-se na PRZ (ponto D), onde se toma a entrada de reversão."
+  "figcap": "Uma estrutura harmónica X-A-B-C-D a completar-se na PRZ (ponto D), onde se toma a entrada de reversão.",
+  "playbook": [
+   "Deixe as pernas se formarem primeiro: X-A, A-B, B-C — cada recuo medido, nenhum presumido. O padrão é conquistado ponto por ponto.",
+   "Classifique pelo ponto B: o recuo dele sobre X-A é o que separa um Gartley de um Bat de um Butterfly, e rotular mal o B corrompe toda projeção posterior.",
+   "Projete o D onde os ratios se AGRUPAM — duas ou três medições concordando numa faixa estreita. Essa zona de confluência é a PRZ.",
+   "Na PRZ, cace evidência, não toques: uma vela de rechaço, um momentum que trava, uma microvirada no tempo gráfico de entrada.",
+   "Um fechamento decidido através da borda distante da PRZ aposenta o padrão — completações harmônicas são zonas de interesse, nunca muralhas."
+  ],
+  "fails": [
+   "Forçar ratios que \"quase\" encaixam constrói um padrão que nunca existiu — a disciplina está em rejeitar candidatos, não em colecioná-los.",
+   "Uma PRZ parada contra um deslocamento fresco é atravessada direto: medições não param um mercado que acabou de mostrar a mão.",
+   "Padrões sobrepostos podem projetar pontos D conflitantes; quando duas PRZs discordam, a leitura honesta é que não há leitura."
+  ],
+  "drill": "Backteste vinte PRZs completadas. Para cada uma registre qual grupo de ratios segurou, qual foi o tamanho da reação e — o ponto crítico — compare o resultado de entrar no toque contra esperar uma vela de confirmação. A terceira coluna é onde a maioria descobre por que a paciência no D é a verdadeira vantagem do padrão.",
+  "related": [
+   {
+    "slug": "price.chart-patterns",
+    "why": "a família geométrica que os harmônicos formalizam com ratios"
+   },
+   {
+    "slug": "smc.pd-arrays",
+    "why": "outra língua para a mesma pergunta: o preço está caro ou barato aqui?"
+   },
+   {
+    "slug": "price.candles",
+    "why": "a evidência de confirmação que a PRZ espera"
+   }
+  ]
  },
  "technical.moving-averages": {
   "lead": "Uma média móvel suaviza o preço numa única linha fluida, filtrando o ruído para revelar a tendência subjacente — e atuando como suporte e resistência dinâmicos enquanto o preço avança.",

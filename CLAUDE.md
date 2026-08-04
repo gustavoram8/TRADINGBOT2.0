@@ -1452,8 +1452,24 @@ borrado. PENDIENTE: agregar selector de mes / historial.
   · ⚠️ Trampa al verificar: WeasyPrint escribe destinos **con NOMBRE** (`/Dest: tema-…` + tabla
     `/Names/Dests`), no arrays de página. Un lector que espere arrays da "sin resolver" y parece
     que los enlaces están rotos cuando están perfectos.
-- [ ] **12. PDF de Synapse — más sustancia.** Está bien logrado pero **demasiado sintetizado**;
-  va a costar ~$20 y hoy duda de que los valga. Nutrirlo sin rellenar por rellenar.
+- [ ] 🟡 **12. PDF de Synapse — más sustancia (EN CURSO 2026-08-04, tanda 1 de 5 hecha).**
+  Diagnóstico medido: cada tema traía 367–962 chars (mediana ~600) — ficha de glosario, no capítulo.
+  **El sistema (ya cableado, commiteado):** 4 campos nuevos y OPCIONALES por tema —
+  `playbook` (la secuencia narrada, 3-6 pasos, caja verde) · `fails` (modos de fallo honestos,
+  caja ámbar) · `drill` (un ejercicio concreto de backtest/journal, caja azul) · `related`
+  (2-3 temas conectados CON ENLACE INTERNO usando las anclas del punto 11 — la red de Synapse
+  dentro del PDF). Un tema sin tanda se imprime exactamente como antes (cero secciones vacías).
+  El merge del PDF pasó a ser campo-a-campo como el web (antes un idioma rezagado PERDÍA
+  secciones enteras en silencio). Etiquetas en `CHROME` ×4. `tools/validate_synapse_content.py`
+  exige tanda completa, paridad ×4 idiomas, slugs de related reales y ratios de longitud.
+  **Tanda 1 = Price Action (9 temas × 4 campos × 4 idiomas) ESCRITA y verificada:** PDF 50→59
+  págs, 68 enlaces todos con destino válido (41 índice + 27 related), render inspeccionado
+  visualmente (pymupdf). El contenido va en los JSON (`synapse_export.json` EN +
+  `synapse_content_{es,fr,pt}.json`); ES=tú LatAm, FR=vous, PT-BR=você, jerga en inglés.
+  **FALTAN 4 tandas:** Technical Analysis (9) · SMC/ICT (11) · Fundamental (6) · Quant (6).
+  Tras cada tanda: `python3 tools/validate_synapse_content.py` + rebuild + mirar el render.
+  ⚠️ El flipbook web ignora los campos nuevos sin romperse (Object.assign) — los podrá usar
+  algún día, pero HOY la profundidad es exclusiva del PDF de pago, lo que justifica su precio.
 - [ ] **13. Chalkboard funcional:** hoy es pobre, hay interacciones tediosas. Añadir herramientas
   propias de cada metodología (ej.: arrastrar una **secuencia de velas** ya dibujada).
 - [ ] **14. Chalkboard visual:** el panel de la pizarra se ve **estrecho** frente al fondo del
