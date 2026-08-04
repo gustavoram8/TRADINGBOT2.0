@@ -7475,7 +7475,12 @@ def checkout_create():
         # volvía a pulsar "pagar" aterrizaba en unas instrucciones para
         # transferir USDT que no eran ni una opción del sitio. Reportado por el
         # dueño tres veces antes de que yo lo entendiera.
-        return _llevar_a_pagar(existing, duplicado=True)
+        # El método que acaba de marcar en el carrito viaja también aquí. Sin
+        # esto, quien tenía un pedido colgando marcaba PayPal, pulsaba pagar, y
+        # la pantalla siguiente le volvía a preguntar el método — decidir dos
+        # veces lo mismo.
+        return _llevar_a_pagar(existing, duplicado=True,
+                               metodo=request.form.get('method', ''))
 
     # Resolution order: the code bound to the account wins over anything typed
     # (that is the anti-theft rule), then whatever the form carried. The bound
@@ -7547,16 +7552,26 @@ def _llevar_a_pagar(order, duplicado=False, metodo=None):
     opción activa del sitio.
 
     `metodo` es lo que el comprador marcó en el carrito. Se respeta solo si es
-    un riel encendido de verdad — el navegador puede mandar cualquier cosa —,
-    y si no viene se cae en el comportamiento de siempre: elegir pantalla
-    cuando hay varias vías, ir directo cuando solo hay una.
+    un riel encendido de verdad — el navegador puede mandar cualquier cosa.
+
+    Y si no viene, se reutiliza el que ya eligió la primera vez: el método vive
+    en el pedido, así que volver a un pedido de hace días retoma la misma vía
+    sin volver a preguntar. La pantalla de elegir método queda entonces para lo
+    único que tiene sentido: cuando NADIE ha elegido todavía, o cuando el propio
+    comprador pide cambiar de método.
     """
     rails = available_payment_rails()
     etiqueta = PLAN_LABELS.get(order.plan, order.plan)
     if order.final_price > 0:
-        if metodo in rails:
-            if metodo != 'manual':
-                dest = _start_payment(order, metodo)
+        elegido = metodo if metodo in rails else None
+        if elegido and order.payment_method != elegido:
+            order.payment_method = elegido       # que el pedido lo recuerde
+            db.session.commit()
+        if not elegido and order.payment_method in rails:
+            elegido = order.payment_method
+        if elegido:
+            if elegido != 'manual':
+                dest = _start_payment(order, elegido)
                 if dest:
                     return redirect(dest, code=303)
                 return render_template('checkout_status.html', order=order,
@@ -7614,16 +7629,9 @@ def checkout_pay(order_id):
     if request.method == 'GET' and current_user.is_admin and request.args.get('preview'):
         rails = ['paypal', 'crypto', 'manual']
     if request.method == 'POST':
-        method = request.form.get('method', '')
-        if method in rails:
-            dest = _start_payment(order, method)
-            if dest:
-                return redirect(dest, code=303)
-        # Could not reach the processor: show the manual instructions rather
-        # than leaving the buyer staring at a button that does nothing.
-        return render_template('checkout_done.html', order=order,
-                               plan_label=PLAN_LABELS.get(order.plan, order.plan),
-                               duplicate=False)
+        # Por el mismo sitio que el carrito: así el pedido también RECUERDA lo
+        # que eligió aquí, y retomarlo mañana no vuelve a preguntar.
+        return _llevar_a_pagar(order, metodo=request.form.get('method', ''))
     return render_template('checkout_method.html', order=order, rails=rails,
                            plan_label=PLAN_LABELS.get(order.plan, order.plan),
                            paypal_receipt_name=PAYPAL_RECEIPT_NAME,

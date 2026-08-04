@@ -41,11 +41,11 @@
     <div class="pnote">
       <span data-i18n="cdone.dup2">You already have this order open, waiting to be paid. You can finish
         paying it, or cancel it and choose a different plan.</span>
+      {# Antes había aquí un "seguir pagando" que llevaba a elegir método otra
+         vez. Sobra: esta pantalla YA es el método que eligió, y el pedido lo
+         recuerda. Lo único que falta poder hacer es soltarlo. #}
       {% if not preview %}
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
-        {% if rails and rails|length > 1 %}
-        <a href="/checkout/pay/{{ order.id }}" class="pcta" style="width:auto;margin:0;padding:11px 18px;font-size:14px;" data-i18n="cdone.keepPaying">Continue paying</a>
-        {% endif %}
         <form method="post" action="/checkout/cancel/{{ order.id }}">
           <button type="submit" class="pcta ghost" style="width:auto;margin:0;padding:11px 18px;" data-i18n="cdone.cancel">Cancel this order</button>
         </form>
@@ -102,6 +102,12 @@
 
     <a href="/contact" class="pcta" data-i18n="cdone.sendProof">Send payment proof →</a>
     <a href="/app" class="pcta ghost" style="margin-top:10px" data-i18n="cdone.backApp">Back to app</a>
+
+    {# La salida por si se arrepiente del metodo: es el UNICO camino que debe
+       llevar a la pantalla de elegir, porque aqui si esta cambiando de idea. #}
+    {% if not preview and rails and rails|length > 1 %}
+    <p class="pfoot"><a href="/checkout/pay/{{ order.id }}" data-i18n="cpay.other">Pay another way</a></p>
+    {% endif %}
 
     {% if not preview and not duplicate %}
     <form method="post" action="/checkout/cancel/{{ order.id }}" class="pfoot">
