@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
-"""El carrito mezclado: dos marcos + un camo + un cursor, y quitar UNO solo."""
+"""El carrito mezclado: dos marcos + un camo + un cursor, y quitar UNO solo.
+
+⚠️ Este test necesita el sitio CORRIENDO en 127.0.0.1:5001 y una cuenta NO
+admin llamada `compradora` — el admin posee todos los cosméticos, así que no le
+salen botones de compra. Si da ERR_CONNECTION_REFUSED no es una regresión: es
+que el servidor no está levantado.
+"""
 import time
 from playwright.sync_api import sync_playwright
 

@@ -6830,34 +6830,30 @@ def _paypal_reconcile(order, kind='plan'):
 
 
 # ═══ Payment rails — the shared front door ════════════════════════════════
-# El cobro a mano (mandar USDT a nuestra cuenta y esperar a que alguien mire el
-# comprobante) queda APAGADO por defecto. Decisión del dueño: tanto PayPal como
-# USDT van a ir por procesador automático — se paga y el plan se enciende solo,
-# igual que los cosméticos. Esta vía es de la época en que no había pasarela; se
-# deja encendible con MANUAL_USDT_ENABLED=1 por si algún día hace falta cobrar a
-# alguien a mano, pero no se le ofrece a nadie por defecto.
-MANUAL_USDT_ENABLED = os.environ.get('MANUAL_USDT_ENABLED', '0') == '1'
+# Se puede esconder USDT del todo poniéndolo a 0, pero por defecto se ofrece.
+USDT_ENABLED = os.environ.get('USDT_ENABLED', '1') == '1'
 
 
 def available_payment_rails():
-    """Como se puede pagar ahora mismo, en el orden en que se muestran.
+    """Cómo puede pagar el comprador, en el orden en que se le muestran.
 
-    'manual' (transferencia USDT a nuestra cuenta, con comprobante) va SIEMPRE
-    al final y no depende de ninguna clave: es una persona revisando, no una
-    pasarela. Cuenta como opcion de pleno derecho, y eso no es un detalle —
-    antes no estaba en esta lista, asi que el dia que se encendiera PayPal
-    habria quedado como UNICA via y el USDT habria desaparecido del sitio sin
-    que nadie lo decidiera. El comprador tiene que poder elegir entre las dos.
+    🔑 **USDT es SIEMPRE una opción**, no una consecuencia de la configuración.
+    Que por detrás sea una factura automática (NOWPayments) o unas
+    instrucciones para transferir a mano es problema NUESTRO, no del comprador:
+    él elige "pagar en USDT" y ya. Esto costó tres rondas de malentendido —
+    llegué a esconder la vía manual entera, y el efecto para quien compraba fue
+    que el sitio decidía por él con qué pagar.
+
+    Por eso la lista siempre trae la opción de USDT mientras USDT_ENABLED esté
+    puesto, y lo único que cambia con las claves es CÓMO se procesa.
     """
     rails = []
     if PAYPAL_ENABLED:
         rails.append('paypal')
-    if CRYPTO_ENABLED:
-        rails.append('crypto')
     if STRIPE_ENABLED:
         rails.append('stripe')
-    if MANUAL_USDT_ENABLED:
-        rails.append('manual')
+    if USDT_ENABLED:
+        rails.append('crypto' if CRYPTO_ENABLED else 'manual')
     return rails
 
 

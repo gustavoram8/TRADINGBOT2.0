@@ -91,7 +91,7 @@ def entrar(c):
 seccion('La configuración que verá el servidor')
 check('PayPal encendido', A.PAYPAL_ENABLED)
 check('apuntando a PRODUCCIÓN', A.PAYPAL_API_BASE == 'https://api-m.paypal.com', A.PAYPAL_API_BASE)
-check('es la única vía automática', A.available_payment_rails() == ['paypal'],
+check('se le ofrecen PayPal y USDT', A.available_payment_rails() == ['paypal', 'manual'],
       A.available_payment_rails())
 
 seccion('El comprador paga')
@@ -100,7 +100,12 @@ with A.app.test_client() as c:
     r = c.post('/checkout/create', data={'plan': 'premium', 'cycle': 'monthly',
                                          'promo_code': 'SOCIO20'})
     destino = r.headers.get('Location') or ''
-    check('con una sola vía va DIRECTO a PayPal', 'paypal.test/aprobar' in destino, destino)
+    check('primero le deja ELEGIR método', '/checkout/pay/' in destino, destino)
+    with A.app.app_context():
+        o = A.Order.query.filter_by(user_id=UID).first()
+    r = c.post('/checkout/pay/%d' % o.id, data={'method': 'paypal'})
+    check('y al elegir PayPal, va a PayPal',
+          'paypal.test/aprobar' in (r.headers.get('Location') or ''), r.headers.get('Location'))
     with A.app.app_context():
         o = A.Order.query.filter_by(user_id=UID).first()
     check('el pedido guarda la referencia de PayPal', o and o.provider_ref == 'PP-ORDER-1',

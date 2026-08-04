@@ -14,7 +14,7 @@ CLAVE = 'Xk9!mQ2#pL5v'
 def arranca(**env):
     for m in [m for m in list(sys.modules) if m == 'app' or m.startswith('app.')]:
         del sys.modules[m]
-    for k in ('PAYPAL_CLIENT_ID','PAYPAL_SECRET','CRYPTO_API_KEY','MANUAL_USDT_ENABLED'):
+    for k in ('PAYPAL_CLIENT_ID','PAYPAL_SECRET','CRYPTO_API_KEY','USDT_ENABLED'):
         os.environ.pop(k, None)
     os.environ['DATABASE_URL'] = 'sqlite:///' + os.path.join(tempfile.mkdtemp(), 'x.db')
     os.environ.update(env)
@@ -35,33 +35,37 @@ def compra(A, **datos):
         return c.post('/checkout/create',
                       data=dict(plan='standard', cycle='monthly', **datos))
 
-print('── HOY: sin ninguna pasarela')
+print('── Sin PayPal: queda USDT, que siempre se ofrece')
 A = arranca()
-check('no se ofrece ninguna via', A.available_payment_rails() == [], A.available_payment_rails())
+check('USDT sigue siendo una opcion', A.available_payment_rails() == ['manual'],
+      A.available_payment_rails())
+r = compra(A, promo_code='REGALO100')
+check('un cupon del 100% entrega el plan sin pasar por caja',
+      '/checkout/status/' in (r.headers.get('Location') or ''), r.headers.get('Location'))
+
+print('\n── Con USDT_ENABLED=0 se puede esconder del todo')
+A = arranca(USDT_ENABLED='0')
+check('no queda ninguna via', A.available_payment_rails() == [], A.available_payment_rails())
 r = compra(A)
 cuerpo = r.get_data(as_text=True)
 check('avisa que el cobro abre pronto', 'csoon.title' in cuerpo)
-check('y NO manda a las instrucciones de Binance', 'cdone.step3a' not in cuerpo)
 with A.app.app_context():
     n = A.Order.query.count()
-check('sobre todo: NO crea un pedido que nadie puede pagar', n == 0, '%d pedidos' % n)
-r = compra(A, promo_code='REGALO100')
-check('pero un cupón del 100% SÍ entrega el plan',
-      '/checkout/status/' in (r.headers.get('Location') or ''), r.headers.get('Location'))
+check('y NO crea un pedido que nadie puede pagar', n == 0, '%d pedidos' % n)
 
 print('\n── CON PAYPAL Y USDT AUTOMÁTICO')
 A = arranca(PAYPAL_CLIENT_ID='x', PAYPAL_SECRET='y', PAYPAL_ENV='live',
             CRYPTO_API_KEY='z')
-check('las dos vías, sin la manual',
+check('USDT pasa a ser la factura automatica',
       A.available_payment_rails() == ['paypal', 'crypto'], A.available_payment_rails())
 r = compra(A)
 check('manda a elegir entre las dos', '/checkout/pay/' in (r.headers.get('Location') or ''),
       r.headers.get('Location'))
 
-print('\n── Y si algún día hace falta cobrar a mano')
-A = arranca(MANUAL_USDT_ENABLED='1')
-check('la vía manual se puede reencender',
-      A.available_payment_rails() == ['manual'], A.available_payment_rails())
+print('\n── Y con PayPal pero sin NOWPayments, el comprador ELIGE igual')
+A = arranca(PAYPAL_CLIENT_ID='x', PAYPAL_SECRET='y', PAYPAL_ENV='live')
+check('PayPal y USDT conviven', A.available_payment_rails() == ['paypal', 'manual'],
+      A.available_payment_rails())
 
 print('\nRESULTADO: %d ok, %d fallas' % (PASS, FAIL))
 sys.exit(1 if FAIL else 0)

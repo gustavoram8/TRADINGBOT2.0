@@ -7,9 +7,7 @@ vemos exactamente qué recibe y qué NO. Sin tocar PayPal ni dinero.
 import os, sys, tempfile
 sys.path.insert(0, '/home/user/TRADINGBOT2.0/scalpel')
 os.environ['DATABASE_URL'] = 'sqlite:///' + os.path.join(tempfile.mkdtemp(), 'g.db')
-# El contraste del final compra CON dinero, y sin ninguna via de cobro el
-# checkout ya no crea pedido (a proposito). Se enciende la via manual.
-os.environ['MANUAL_USDT_ENABLED'] = '1'
+
 import app as A
 from flask import g
 
