@@ -1397,6 +1397,34 @@ razón, y no era solo el número raro de la pantalla.
   puede: se reencuadró sobre una SUBIDA de Standard a Premium (misma cláusula, compra legítima).
 `tools/test_meses_apilados.py` **15/15** (con el código viejo fallan 5, incluido el caso exacto).
 
+## ⬇️ BAJAR DE PLAN SE PROGRAMA (2026-08-05, decisión del dueño)
+**Regla:** **subir** = inmediato (pagas hoy, mes nuevo, pierdes los días del plan barato — avisado en
+el carrito). **Bajar** = **programado**: no se cobra nada hoy, conservas tu plan hasta la fecha que ya
+pagaste, y ese día empieza el más barato. Se puede cancelar desde Ajustes hasta que entre en vigor.
+- **Por qué:** el downgrade inmediato cobraba $25 el mismo día y tiraba los días de Premium que
+  quedaban → quien llevaba 3 días pagaba **$75 por un mes de Standard**. Es el mismo principio de los
+  meses apilados (nadie paga dos veces el mismo período) y además **contradecía la Secc. 5 de los
+  T&C**, que promete acceso hasta el final del período pagado. La opción programada es la única que
+  **no necesita cláusula de excepción** — ése fue el criterio con el que el dueño eligió.
+- **Cómo:** endpoint **`revise`** de PayPal (`_paypal_sub_revise`), que aplica el plan nuevo **a
+  partir del siguiente ciclo** sobre la MISMA suscripción — no hay que cancelar y recrear, así que
+  deshacerlo es otra revisión. El precio se manda sobrescribiendo el `pricing_scheme`, así el
+  descuento del socio sobrevive también al cambio. ⚠️ Hasta que el cliente **no aprueba en PayPal**
+  no cambia nada: sigue con su plan y su importe (fallo seguro correcto).
+- Columnas nuevas `PlanSubscription.pending_plan/pending_price/pending_at`
+  (`_migrate_sub_pending_columns`, cubiertas en `test_boot_migracion` 6/6). `_aplicar_cambio_si_toca`
+  vuelca el cambio al llegar el cobro, mirando **fecha O importe** (un aviso que se retrasa unas horas
+  sigue siendo del plan nuevo; un reloj desajustado no debe entregar lo que no se pagó) y corre
+  **antes** de `_sub_cobro`, que crea el pedido a partir de `sub.plan`.
+- Pantalla propia `checkout_switch.html` (no un carrito: no hay nada que cobrar, enseñar un total
+  sería mentir), rutas `/account/switch-plan[/return|/cancel]`, y Ajustes muestra "Cambia a X el
+  <fecha> · $Y" con botón de deshacer. 11 claves `swap.*` + 6 `settings.switch*` ×4 idiomas.
+- **T&C Secc. 5**: párrafo nuevo *"Un solo plan a la vez; cambio de plan"* — no acumulables, ni
+  recomprar ni adelantar meses; subir es inmediato y el período anterior termina ahí; bajar se
+  programa; un cambio pedido por el cliente no es una baja ni da derecho a reembolso. ×4 idiomas,
+  `audit_legal_translations.py` 144 cláusulas OK.
+`tools/test_cambio_plan.py` **28/28** + navegador real ×4 idiomas.
+
 ## ⬆️ SUBIR DE PLAN — nunca dos cobros a la vez (2026-08-05)
 Miedo del dueño, textual: *"compro standard y más tarde upgradeo a premium: ¿me cobran solo el
 último, o los dos?"*. **Solo el último**, y ahora también en el caso feo.

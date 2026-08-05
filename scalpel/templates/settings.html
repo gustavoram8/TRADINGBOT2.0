@@ -103,10 +103,18 @@
     <div class="flash info" data-i18n="settings.flash2faWrong">The password or code did not match. Two-factor authentication is still on.</div>
   {% elif sec == '2fa_off' %}
     <div class="flash ok" data-i18n="settings.flash2faOff">Two-factor authentication has been turned off.</div>
+  {% elif sec == 'switch_failed' %}
+    <div class="flash info" data-i18n="settings.flashSwitchFail">We could not reach PayPal to change your plan, so nothing was changed — you are still on your current plan. Please try again in a few minutes.</div>
   {% elif sec == 'cancel_failed' %}
     <div class="flash info" data-i18n="settings.flashCancelFail">We could not reach PayPal to stop your renewal, so nothing was changed — your plan is still active and will still renew. Please try again in a few minutes, or write to us and we will stop it by hand.</div>
   {% endif %}
 
+  {% if request.args.get('switched') %}
+    <div class="flash ok" data-i18n="settings.flashSwitched">Your plan change is scheduled. Nothing was charged today — you keep your current plan until the date shown below.</div>
+  {% endif %}
+  {% if request.args.get('switch_off') %}
+    <div class="flash ok" data-i18n="settings.flashSwitchOff">The scheduled change was cancelled. You stay on your current plan.</div>
+  {% endif %}
   {% if request.args.get('cancelled') %}
   <div class="flash ok" data-i18n="settings.flashCancelled">Plan cancellation scheduled — you'll keep access until your billing period ends.</div>
   {% endif %}
@@ -168,6 +176,16 @@
                un cobro en una fecha en la que no se le va a cobrar — y el día
                que sí se le cobre no lo estará esperando. #}
             <div class="expires-note"><span data-i18n="settings.renewsAuto">Renews automatically</span> {{ (sub.next_billing_at or user.plan_expires_at).strftime('%b %d, %Y') }} · ${{ '%.2f'|format(sub.price) }}/<span data-i18n="settings.perMonth">month</span></div>
+            {% if sub.pending_plan %}
+              {# Cambio de plan programado: lo que va a pasar y cuándo, con su
+                 importe. Sin esto el cliente ve "se renueva sola · $50" y el
+                 mes que viene le llegan $25 sin explicación. #}
+              <div class="expires-note"><span data-i18n="settings.switchTo">Switching to</span>
+                {{ sub.pending_plan|capitalize }}
+                <span data-i18n="settings.switchOn">on</span>
+                {{ sub.pending_at.strftime('%b %d, %Y') if sub.pending_at else '—' }}
+                · ${{ '%.2f'|format(sub.pending_price or 0) }}</div>
+            {% endif %}
             {% if sub.next_billing_at and user.plan_expires_at and (user.plan_expires_at.date() - sub.next_billing_at.date()).days > 1 %}
               {# Acceso comprado por delante del próximo cobro: se dice, o el
                  número de arriba parece contradecir al de la tarjeta. #}
@@ -190,6 +208,12 @@
         {% elif user.cancel_at_period_end %}
           <form method="POST" action="/account/reactivate-plan">
             <button type="submit" class="btn-reactivate" data-i18n="settings.reactivate">Reactivate</button>
+          </form>
+        {% elif sub and sub.pending_plan %}
+          {# Con un cambio programado, lo urgente es poder deshacerlo. La baja
+             total sigue estando: se llega por el mismo sitio tras cancelarlo. #}
+          <form method="POST" action="/account/switch-plan/cancel">
+            <button type="submit" class="btn-cancel" data-i18n="settings.switchUndo">Cancel the change</button>
           </form>
         {% else %}
           <form method="POST" action="/account/cancel-plan" class="js-cancel-form"

@@ -1,0 +1,94 @@
+{% import '_pay_marks.html' as marks %}
+{#
+  BAJAR DE PLAN — pantalla de confirmación, NO un carrito.
+
+  Aquí no se cobra nada, así que enseñar un total y un botón de "pagar" sería
+  mentir. Lo que se confirma es una FECHA: sigues con lo que tienes hasta el
+  día que ya pagaste, y ese día empieza el plan nuevo a su precio.
+
+  Es lo que evita el problema de fondo del downgrade inmediato — pagar dos
+  veces el mismo período y perder los días restantes — y lo que mantiene cierta
+  la promesa de la Sección 5 de los T&C sin ninguna excepción.
+#}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title data-i18n-title="checkout.doctitle">Tradeable Academy — Checkout</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/pay.css" />
+  {{ marks.styles() }}
+  <style>
+    .swrap{max-width:520px;margin:0 auto;}
+    .scard{background:var(--card);border:1px solid var(--line);border-radius:16px;
+           padding:24px 26px;margin-bottom:16px;}
+    .srow{display:flex;justify-content:space-between;gap:14px;padding:10px 0;font-size:14.5px;}
+    .srow + .srow{border-top:1px solid var(--line);}
+    .srow .k{color:var(--ink3);}
+    .srow .v{font-weight:700;text-align:right;}
+    .sfree{color:var(--ok);font-weight:800;}
+    .snote{font-size:12.5px;color:var(--ink3);line-height:1.6;margin-top:14px;}
+    .sdone{background:#eefaf1;border:1px solid #1a7a3f;color:#155e33;
+           border-radius:12px;padding:13px 15px;font-size:13.5px;margin-bottom:16px;}
+    body.dark .sdone{background:rgba(26,122,63,.14);color:#7fe0a4;}
+  </style>
+</head>
+<body>
+  <script>
+    try { var th = localStorage.getItem('scalpel_theme');
+          document.body.classList.add(th === 'light' ? 'light' : 'dark'); }
+    catch (e) { document.body.classList.add('dark'); }
+  </script>
+
+  <div class="pbar">
+    <a href="/" class="lg"><img src="/static/logo_t.png" alt="Tradeable Academy" class="logo-img" onerror="this.style.display='none';" /></a>
+    <div class="rt">
+      <a href="/pricing" class="back" data-i18n="nav.backPlans">← Back to plans</a>
+      <span class="safe">{{ marks.lock(13) }}<span data-i18n="pay.safeConn">SECURE CONNECTION</span></span>
+    </div>
+  </div>
+
+  <div class="pwrap swrap">
+    <div class="pref mono" data-i18n="swap.eyebrow">CHANGE OF PLAN</div>
+    <h1 data-i18n="swap.title">Switch to {{ plan_label }}</h1>
+    <p class="psub" data-i18n="swap.lede">Nothing is charged today. You keep what you have until the
+      period you already paid for ends.</p>
+
+    {% if ya_programado %}
+    <div class="sdone" data-i18n="swap.already">This change is already scheduled. You can cancel it
+      from your Settings page at any time before the date below.</div>
+    {% endif %}
+
+    <div class="scard">
+      <div class="srow">
+        <span class="k" data-i18n="swap.today">Charged today</span>
+        <span class="v sfree" data-i18n="swap.nothing">Nothing — $0.00</span>
+      </div>
+      <div class="srow">
+        <span class="k" data-i18n="swap.until">You keep {{ actual }} until</span>
+        <span class="v">{{ desde.strftime('%b %d, %Y') if desde else '—' }}</span>
+      </div>
+      <div class="srow">
+        <span class="k" data-i18n="swap.from">From that day you pay</span>
+        <span class="v">${{ '%.2f'|format(precio) }}<span style="opacity:.6">/<span data-i18n="swap.month">month</span></span></span>
+      </div>
+      <p class="snote" data-i18n="swap.note">Your next charge simply becomes the smaller one. You lose
+        none of the days you already paid for, and you can cancel this change from Settings until the
+        day it takes effect.</p>
+    </div>
+
+    <form method="POST" action="/account/switch-plan">
+      <input type="hidden" name="plan" value="{{ plan }}" />
+      <button type="submit" class="pcta" data-i18n="swap.confirm">Schedule the change →</button>
+    </form>
+
+    <p class="pfoot">
+      <span data-i18n="checkout.agreePre">By continuing you agree to our</span>
+      <a href="/terms" target="_blank" data-i18n="checkout.terms">Terms &amp; Conditions</a>.
+    </p>
+  </div>
+
+  <script src="/static/pages_i18n.js"></script>
+</body>
+</html>

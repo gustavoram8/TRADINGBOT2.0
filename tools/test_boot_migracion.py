@@ -13,7 +13,11 @@ NUEVAS = ['birth_date', 'totp_secret', 'totp_confirmed_at', 'totp_backup',
           'referred_by_code', 'referred_at', 'active_camo', 'owned_camos',
           'active_frame', 'active_cursor']
 # Columnas nuevas en OTRAS tablas: (tabla, columna, valor_de_backfill_esperado)
-NUEVAS_OTRAS = [('daily_quiz_state', 'best_streak', None)]
+NUEVAS_OTRAS = [('daily_quiz_state', 'best_streak', None),
+                # cambio de plan programado (2026-08-05)
+                ('plan_subscription', 'pending_plan', None),
+                ('plan_subscription', 'pending_price', None),
+                ('plan_subscription', 'pending_at', None)]
 
 if os.path.exists(DB):
     os.remove(DB)

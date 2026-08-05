@@ -1150,6 +1150,15 @@ class PlanSubscription(db.Model):
     # vez de crear una fila nueva, o el primer mes quedaría contado dos veces.
     first_order_id = db.Column(db.Integer, nullable=True)
     note = db.Column(db.String(300), nullable=True)
+    # ── Cambio de plan PROGRAMADO ────────────────────────────────────────
+    # Bajar de plan no cobra hoy ni quita los días ya pagados: se le pide a
+    # PayPal que a partir del SIGUIENTE ciclo cobre el otro plan (su endpoint
+    # `revise`), y hasta esa fecha aquí queda anotado a qué va a cambiar. Sin
+    # esto habría que cobrarle el plan nuevo el mismo día y tirarle a la basura
+    # el resto del mes que ya había pagado.
+    pending_plan = db.Column(db.String(20), nullable=True)
+    pending_price = db.Column(db.Float, nullable=True)
+    pending_at = db.Column(db.DateTime, nullable=True)     # cuándo entra en vigor
     user = db.relationship('User', backref='subscriptions')
 
     @property
@@ -5157,6 +5166,79 @@ def cancel_plan():
     return redirect(url_for('settings', cancelled=1))
 
 
+@app.route('/account/switch-plan', methods=['POST'])
+@login_required
+def switch_plan():
+    """Programar el cambio a otro plan para cuando termine el mes pagado.
+
+    🔴 POR QUÉ NO SE COBRA HOY. Cobrar el plan nuevo en el acto obliga a tirar
+    a la basura los días que el cliente ya había pagado del anterior: quien
+    lleva tres días de Premium acabaría pagando $75 por un mes de Standard. Es
+    la misma regla que el dueño fijó para los meses apilados — nadie paga dos
+    veces el mismo período — y además contradecía la propia Sección 5 de los
+    T&C, que promete acceso hasta el final del período pagado.
+
+    Así que el cambio se PROGRAMA: sigue con lo que tiene hasta su fecha, y ese
+    día se le cobra el importe del plan nuevo.
+    """
+    nuevo = request.form.get('plan', '')
+    if nuevo not in PLAN_PRICING or nuevo == current_user.plan:
+        return redirect(url_for('pricing'))
+    sub = sub_para_mostrar(current_user)
+    if sub is None:
+        # Sin cobro automático no hay nada que reprogramar: su plan se acaba
+        # solo, y entonces comprará el que quiera. Se le manda al carrito.
+        return redirect(url_for('checkout', plan=nuevo, cycle='monthly'))
+    q = _quote(nuevo, 'monthly', _stored_promo(current_user))
+    destino = _paypal_sub_revise(sub, nuevo, q['final_price'])
+    if destino is None:
+        return redirect(url_for('settings', sec='switch_failed'))
+    _anotar_cambio(sub, nuevo, q['final_price'])
+    if destino:
+        return redirect(destino, code=303)
+    return redirect(url_for('settings', switched=1))
+
+
+@app.route('/account/switch-plan/return/<int:sub_id>')
+@login_required
+def paypal_switch_return(sub_id):
+    """La vuelta después de aprobar el cambio de plan en PayPal."""
+    sub = db.session.get(PlanSubscription, sub_id)
+    if not sub or sub.user_id != current_user.id:
+        abort(404)
+    try:
+        _paypal_sub_sync(sub)     # refresca la próxima fecha de cobro
+        if sub.pending_at is None and sub.pending_plan:
+            sub.pending_at = _aware(sub.next_billing_at)
+            db.session.commit()
+    except Exception as exc:
+        app.logger.error('switch return failed (%s): %s', sub.id, exc)
+    return redirect(url_for('settings', switched=1))
+
+
+@app.route('/account/switch-plan/cancel', methods=['POST'])
+@login_required
+def switch_plan_cancel():
+    """Deshacer un cambio de plan que todavía no ha entrado en vigor.
+
+    Se le pide a PayPal volver al plan actual. Como cualquier revisión, el
+    cliente tiene que volver a aprobarla; si no lo hace, el cambio programado
+    sigue en pie — por eso NO se borra la anotación hasta que él vuelve."""
+    sub = sub_para_mostrar(current_user)
+    if sub is None or not sub.pending_plan:
+        return redirect(url_for('settings'))
+    destino = _paypal_sub_revise(sub, sub.plan, sub.price)
+    if destino is None:
+        return redirect(url_for('settings', sec='switch_failed'))
+    sub.pending_plan = sub.pending_price = sub.pending_at = None
+    db.session.commit()
+    record_audit_event('plan_switch_cancelled', user_id=sub.user_id,
+                       detail='suscripción #%d · se queda en %s' % (sub.id, sub.plan))
+    if destino:
+        return redirect(destino, code=303)
+    return redirect(url_for('settings', switch_off=1))
+
+
 @app.route('/account/reactivate-plan', methods=['POST'])
 @login_required
 def reactivate_plan():
@@ -7156,6 +7238,102 @@ def _paypal_create_subscription(order):
     return None
 
 
+def _paypal_sub_revise(sub, nuevo_plan, precio):
+    """Pide a PayPal cambiar el plan de una suscripción YA existente.
+
+    Devuelve la URL donde el cliente lo aprueba, o None.
+
+    Por qué `revise` y no "cancelar y crear otra": PayPal aplica el plan nuevo
+    **a partir del siguiente ciclo de cobro**, que es justo lo que queremos —
+    el cliente no paga hoy, no pierde los días que ya tenía comprados, y el
+    importe nuevo empieza el día en que le tocaba pagar de todas formas. Con
+    cancelar-y-crear habría que cobrarle hoy y tirarle el resto del mes.
+
+    El precio se manda igual que al abrirla, sobrescribiendo el `pricing_scheme`
+    del ciclo: así el descuento permanente de un cliente traído por un socio
+    sobrevive también al cambio de plan.
+
+    ⚠️ Hasta que el cliente NO aprueba, no cambia nada: sigue con su plan y su
+    importe de siempre. Ese es el fallo seguro correcto.
+    """
+    plan_id = PAYPAL_PLAN_IDS.get(nuevo_plan)
+    if not (PAYPAL_ENABLED and sub.provider_ref and plan_id):
+        return None
+    payload = {
+        'plan_id': plan_id,
+        'plan': {'billing_cycles': [{
+            'sequence': 1, 'total_cycles': 0,
+            'pricing_scheme': {'fixed_price': {
+                'currency_code': 'USD', 'value': '%.2f' % float(precio)}},
+        }]},
+        'application_context': {
+            'brand_name': PAYPAL_BRAND_NAME,
+            'user_action': 'SUBSCRIBE_NOW',
+            'shipping_preference': 'NO_SHIPPING',
+            'locale': PAYPAL_LOCALES.get(_email_lang(), 'en-US'),
+            'return_url': abs_url('paypal_switch_return', sub_id=sub.id),
+            'cancel_url': abs_url('settings'),
+        },
+    }
+    try:
+        code, data = _paypal_api(
+            'POST', '/v1/billing/subscriptions/%s/revise' % sub.provider_ref,
+            payload, request_id='revise-%d-%s' % (sub.id, nuevo_plan))
+    except Exception as exc:
+        app.logger.error('paypal revise failed (sub %s): %s', sub.id, exc)
+        return None
+    if code >= 300:
+        app.logger.error('paypal revise rejected (sub %s): %s %s', sub.id, code, data)
+        return None
+    for link in data.get('links') or []:
+        if link.get('rel') in ('approve', 'payer-action'):
+            return link.get('href')
+    # Sin enlace de aprobación PayPal ya lo aplicó (puede pasar cuando el
+    # método no exige re-consentimiento). Se da por hecho.
+    return ''
+
+
+def _anotar_cambio(sub, nuevo_plan, precio):
+    """Deja escrito a qué plan cambia esta suscripción y cuándo."""
+    sub.pending_plan = nuevo_plan
+    sub.pending_price = float(precio)
+    sub.pending_at = _aware(sub.next_billing_at) or _aware(
+        db.session.get(User, sub.user_id).plan_expires_at)
+    db.session.commit()
+    record_audit_event('plan_switch_scheduled', user_id=sub.user_id,
+                       detail='suscripción #%d · %s → %s · $%.2f · desde %s'
+                              % (sub.id, sub.plan, nuevo_plan, precio,
+                                 sub.pending_at.date() if sub.pending_at else '—'))
+
+
+def _aplicar_cambio_si_toca(sub, importe=None):
+    """¿Este cobro ya es del plan nuevo? Entonces la suscripción cambia.
+
+    Se mira por DOS vías porque ninguna sola es fiable: la fecha (el cobro llega
+    en o después del día pactado) y el importe (PayPal cobró lo del plan nuevo).
+    Un aviso que se retrasa unas horas sigue siendo el del plan nuevo, y un
+    reloj desajustado no debe entregar el plan que no se pagó.
+    """
+    if not sub.pending_plan:
+        return False
+    ahora = datetime.now(timezone.utc)
+    por_fecha = sub.pending_at is not None and _aware(sub.pending_at) <= ahora + timedelta(hours=12)
+    por_importe = (importe is not None and sub.pending_price is not None
+                   and abs(float(importe) - float(sub.pending_price)) < 0.01
+                   and abs(float(importe) - float(sub.price)) >= 0.01)
+    if not (por_fecha or por_importe):
+        return False
+    anterior = sub.plan
+    sub.plan = sub.pending_plan
+    sub.price = float(sub.pending_price if sub.pending_price is not None else sub.price)
+    sub.pending_plan = sub.pending_price = sub.pending_at = None
+    db.session.commit()
+    record_audit_event('plan_switch_applied', user_id=sub.user_id,
+                       detail='suscripción #%d · %s → %s · $%.2f'
+                              % (sub.id, anterior, sub.plan, sub.price))
+    return True
+
+
 def _paypal_sub_fetch(sub):
     """Lo que PayPal dice hoy de esta suscripción, o None."""
     if not (PAYPAL_ENABLED and sub and sub.provider_ref):
@@ -8037,6 +8215,22 @@ def checkout():
         if vence and vence > datetime.now(timezone.utc):
             cambio_desde = PLAN_LABELS.get(current_user.plan, current_user.plan)
             dias_restantes = max(0, (vence - datetime.now(timezone.utc)).days)
+
+    # 🔴 BAJAR de plan NO se cobra hoy. Se programa para cuando termine el mes
+    # que ya pagó: así no paga dos veces el mismo período ni pierde los días
+    # que le quedaban, y la Sección 5 de los T&C —que promete acceso hasta el
+    # final del período pagado— sigue siendo verdad sin excepciones.
+    # Subir sí es inmediato: el cliente quiere más y lo quiere ya (decisión del
+    # dueño; el mes empieza de cero y se le avisa arriba).
+    baja = (PLAN_RANK.get(plan, 0) < PLAN_RANK.get(current_user.plan, 0))
+    sub_viva = sub_para_mostrar(current_user) if baja else None
+    if sub_viva is not None:
+        desde = _aware(sub_viva.next_billing_at) or _aware(current_user.plan_expires_at)
+        return render_template(
+            'checkout_switch.html', plan=plan, plan_label=PLAN_LABELS[plan],
+            actual=PLAN_LABELS.get(current_user.plan, current_user.plan),
+            precio=q['final_price'], desde=desde,
+            ya_programado=(sub_viva.pending_plan == plan))
     return render_template('checkout.html', plan=plan, cycle=cycle,
                            cambio_desde=cambio_desde,
                            dias_restantes=dias_restantes,
@@ -8545,6 +8739,11 @@ def paypal_webhook():
             # ya se movió, pero no habrá un segundo.
             _sobra_esta_suscripcion(sub)
             monto = (res.get('amount') or {}).get('total')
+            # ¿Este cobro ya es el del plan al que había pedido cambiarse? Se
+            # aplica ANTES de contarlo, porque `_sub_cobro` crea el pedido a
+            # partir de `sub.plan` — si se aplicara después, el primer mes del
+            # plan nuevo se entregaría como el viejo.
+            _aplicar_cambio_si_toca(sub, monto)
             fee = res.get('transaction_fee') or {}
             try:
                 fee_val = round(float(fee.get('value')), 2) if fee.get('value') else None
@@ -13828,6 +14027,36 @@ def _migrate_sale_reserve_columns():
         app.logger.info('Migrated sale_breakdown: reserve columns ensured.')
 
 
+def _migrate_sub_pending_columns():
+    """Añade a plan_subscription las columnas del cambio de plan programado.
+
+    Sin backfill: una suscripción existente no tiene ningún cambio pendiente,
+    y NULL es exactamente eso.
+
+    ⚠️ SQL crudo, como todas las migraciones: el ORM pide el modelo COMPLETO y
+    una migración corre justo cuando la base todavía no lo está."""
+    from sqlalchemy import inspect, text
+    insp = inspect(db.engine)
+    if 'plan_subscription' not in insp.get_table_names():
+        return
+    cols = {c['name'] for c in insp.get_columns('plan_subscription')}
+    stmts = []
+    if 'pending_plan' not in cols:
+        stmts.append('ALTER TABLE plan_subscription ADD COLUMN pending_plan VARCHAR(20)')
+    if 'pending_price' not in cols:
+        stmts.append('ALTER TABLE plan_subscription ADD COLUMN pending_price FLOAT')
+    if 'pending_at' not in cols:
+        stmts.append('ALTER TABLE plan_subscription ADD COLUMN pending_at TIMESTAMP')
+    for st in stmts:
+        try:
+            with db.engine.begin() as conn:
+                conn.execute(text(st))
+        except Exception as e:
+            app.logger.info('sub pending migration note (ignored): %s', e)
+    if stmts:
+        app.logger.info('Migrated plan_subscription: pending-change columns ensured.')
+
+
 def _migrate_referral_columns():
     """Referral binding on user + partner-panel owner on promo_code.
 
@@ -14188,6 +14417,7 @@ def init_db():
         _migrate_promo_code_columns()
         _migrate_preflight_check_columns()
         _migrate_sale_reserve_columns()
+        _migrate_sub_pending_columns()
         _migrate_testimonial_insider_column()
         _migrate_daily_best_streak_column()
         _migrate_mentorship_application_columns()
