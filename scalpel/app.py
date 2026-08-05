@@ -7244,9 +7244,17 @@ def _sub_cobro(sub, importe, fee=None, cuando=None, referencia=None):
         order._pp_fee = fee
     _activate_plan_from_order(order)
     sub.last_payment_at = ahora
-    if sub.status != 'active':
+    # 🔴 Un cobro NO revive una suscripción cancelada. El último cargo de una
+    # que se acaba de cortar (o el duplicado de un cliente que subió de plan)
+    # llega DESPUÉS del corte: si eso la volviera a poner 'active', nuestra
+    # ficha diría que sigue cobrando algo que en PayPal ya no existe — y el
+    # cliente vería dos suscripciones vivas donde solo hay una.
+    if sub.status == 'pending':
         sub.status = 'active'
         sub.activated_at = sub.activated_at or ahora
+    elif sub.status == 'suspended':
+        # ésta sí: PayPal la suspendió por un cobro fallido y ahora sí cobró.
+        sub.status = 'active'
     db.session.commit()
     record_audit_event('subscription_charge', user_id=sub.user_id,
                        detail='suscripción #%d · pedido #%d · $%.2f'
@@ -8338,6 +8346,80 @@ def _sub_activada(sub, importe=None, fee=None, referencia=None):
     return orden
 
 
+def _sobra_esta_suscripcion(sub):
+    """¿Hay una suscripción MÁS NUEVA viva? Entonces ésta ya no debería cobrar.
+
+    Un cliente no puede tener dos permisos de cobro. Lo normal es que al
+    activarse el nuevo se corte el viejo (`_sub_activada`), pero eso ocurre
+    cuando el comprador vuelve del sitio o cuando llega el aviso. Si sube de
+    Standard a Premium, aprueba en PayPal, cierra la pestaña, y encima el aviso
+    se pierde, quedan los dos vivos — y el mes siguiente le llegan DOS cargos.
+
+    Así que antes de dar por bueno un cobro se comprueba: si existe una
+    posterior y PayPal dice que está activa, ésta sobra. Se corta en el acto
+    (para que no vuelva a cobrar nunca) y se avisa al dueño, porque el dinero
+    de ESTE cargo ya se movió y esa devolución la decide una persona.
+
+    El cobro de todas formas se acredita: el cliente pagó, y quedarnos con su
+    dinero sin darle los días sería peor que el propio duplicado.
+    """
+    nuevas = (PlanSubscription.query
+              .filter(PlanSubscription.user_id == sub.user_id,
+                      PlanSubscription.id > sub.id,
+                      PlanSubscription.status.in_(('pending', 'active', 'suspended')))
+              .order_by(PlanSubscription.id.desc()).all())
+    for otra in nuevas:
+        if _paypal_sub_sync(otra) in ('active', 'suspended'):
+            _paypal_sub_cancel(
+                sub, 'Reemplazada por la suscripción #%d' % otra.id)
+            record_audit_event(
+                'subscription_duplicate', user_id=sub.user_id,
+                detail='cobró la #%d teniendo viva la #%d — cortada la vieja'
+                       % (sub.id, otra.id), success=False)
+            try:
+                _avisar_doble_cobro(sub, otra)
+            except Exception:
+                app.logger.exception('aviso de doble cobro no enviado')
+            return True
+    return False
+
+
+def _avisar_doble_cobro(vieja, nueva):
+    """Le llega al dueño cuando un cliente ha pagado dos suscripciones.
+
+    Es de los pocos fallos que el cliente SÍ nota — en su extracto — y que
+    nosotros no podríamos deshacer solos: el reembolso lo decide una persona.
+    """
+    if not app.config.get('MAIL_PASSWORD'):
+        app.logger.warning('MAIL_APP_PASSWORD sin poner — aviso de doble cobro no enviado.')
+        return False
+    u = db.session.get(User, vieja.user_id)
+    cuerpo = (
+        '🔴 DOBLE SUSCRIPCIÓN — ACCIÓN REQUERIDA\n'
+        + '=' * 46 + '\n\n'
+        f'Cliente: {(u.username if u else "?")} / {(u.email if u else "?")}\n\n'
+        f'Cobró la suscripción #{vieja.id} ({PLAN_LABELS.get(vieja.plan, vieja.plan)}, '
+        f'${vieja.price:.2f}) teniendo viva la #{nueva.id} '
+        f'({PLAN_LABELS.get(nueva.plan, nueva.plan)}, ${nueva.price:.2f}).\n\n'
+        'La vieja YA se cortó en PayPal, así que no volverá a cobrar. Pero el\n'
+        'cargo de este mes se hizo: revisá si corresponde devolvérselo.\n\n'
+        f'Referencias PayPal: vieja={vieja.provider_ref or "—"} · '
+        f'nueva={nueva.provider_ref or "—"}\n')
+    msg = Message('🔴 Doble suscripción — suscripción #%d' % vieja.id,
+                  recipients=[ADMIN_INBOX])
+    msg.body = cuerpo
+    prev = socket.getdefaulttimeout()
+    socket.setdefaulttimeout(15)
+    try:
+        mail.send(msg)
+        return True
+    except Exception as exc:
+        app.logger.error('aviso de doble cobro no enviado: %s', exc)
+        return False
+    finally:
+        socket.setdefaulttimeout(prev)
+
+
 @app.route('/webhook/paypal', methods=['POST'])
 def paypal_webhook():
     """Payment notification from PayPal.
@@ -8394,6 +8476,11 @@ def paypal_webhook():
             return jsonify({'ok': True, 'ignored': 'unknown_subscription'})
 
         if etype_raw == 'PAYMENT.SALE.COMPLETED':
+            # Antes de dar el cobro por bueno: ¿este permiso de cobro sigue
+            # siendo el vigente, o el cliente ya cambió de plan y éste debió
+            # haberse cortado? Si sobra, se corta ahora — el dinero de este mes
+            # ya se movió, pero no habrá un segundo.
+            _sobra_esta_suscripcion(sub)
             monto = (res.get('amount') or {}).get('total')
             fee = res.get('transaction_fee') or {}
             try:

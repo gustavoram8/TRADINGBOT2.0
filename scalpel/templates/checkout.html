@@ -189,10 +189,16 @@
          no (una cadena de bloques no deja cobrar sin que el dueño del dinero
          firme cada vez). Por eso se pintan las dos y el JS enseña la que toca:
          anunciar mal un cargo que se repite es la causa nº1 de contracargo. #}
+      {# El servidor YA sabe cuál toca: el riel que viene marcado es el primero
+         de la lista. Se pinta bien de entrada en vez de pintar "pago único" y
+         dejar que el JS lo corrija — así no hay parpadeo, y si el JS no llega
+         a correr la frase sigue siendo la verdadera. El JS solo se ocupa de
+         cambiarla cuando el comprador cambia de método. #}
+      {% set auto0 = subs and rails and rails[0] == 'paypal' %}
       {% if subs %}
-      <div class="pfi" id="fine-auto" hidden>{{ fk }}<span data-i18n-html="pay.fineAuto"><b>Renews by itself every month.</b> Cancel whenever you want, with one button in Settings.</span></div>
+      <div class="pfi" id="fine-auto"{{ '' if auto0 else ' hidden' }}>{{ fk }}<span data-i18n-html="pay.fineAuto"><b>Renews by itself every month.</b> Cancel whenever you want, with one button in Settings.</span></div>
       {% endif %}
-      <div class="pfi" id="fine-once">{{ fk }}<span data-i18n-html="pay.fineOnce"><b>One-time payment.</b> No auto-renewal — nobody charges you again.</span></div>
+      <div class="pfi" id="fine-once"{{ ' hidden' if auto0 else '' }}>{{ fk }}<span data-i18n-html="pay.fineOnce"><b>One-time payment.</b> No auto-renewal — nobody charges you again.</span></div>
       <div class="pfi">{{ fk }}<span data-i18n-html="pay.fineCard"><b>We never see your card.</b> The charge is processed by whichever provider you pick.</span></div>
       <div class="pfi">{{ fk }}<span data-i18n-html="pay.fineActivate"><b>Your plan switches on by itself</b> as soon as the payment is confirmed.</span></div>
     </div>

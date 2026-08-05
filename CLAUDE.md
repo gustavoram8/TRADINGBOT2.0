@@ -1329,6 +1329,30 @@ El dueño vio en Ajustes *"PREMIUM · CANCELLING · Access ends Nov 03, 2026"* e
 `tools/test_renovaciones.py` **20/20** (fecha mostrada, cobro mensual que extiende, aviso repetido que
 no regala mes, baja que corta pending+active, PayPal que no responde → no se miente, fila huérfana).
 
+## ⬆️ SUBIR DE PLAN — nunca dos cobros a la vez (2026-08-05)
+Miedo del dueño, textual: *"compro standard y más tarde upgradeo a premium: ¿me cobran solo el
+último, o los dos?"*. **Solo el último**, y ahora también en el caso feo.
+- **Camino normal:** al activarse la nueva, `_sub_activada` corta en PayPal **todas** las demás del
+  usuario. Probado en las dos direcciones (subir y bajar): queda UNA viva y el plan de la cuenta la
+  refleja.
+- **Caso feo (el que faltaba):** aprueba el Premium, cierra la pestaña y el aviso se pierde → la
+  vieja sigue activa en PayPal y la nueva está 'pending' de nuestro lado = **dos cargos el mes que
+  viene**. Ahora, antes de dar por bueno un cobro, `_sobra_esta_suscripcion()` mira si hay una
+  posterior que PayPal dé por activa; si la hay, **corta la vieja en el acto** (no habrá un segundo
+  cargo), **acredita igual el dinero que ya se movió** (quedárselo sin dar días sería peor) y manda
+  `_avisar_doble_cobro` al dueño, porque el reembolso lo decide una persona.
+- 🔴 **Bug real cazado al probarlo:** `_sub_cobro` ponía la suscripción en `active` sin mirar su
+  estado, así que el último cargo de una recién cancelada **la resucitaba** — la ficha decía que
+  seguía cobrando algo que en PayPal ya no existe. Ahora solo revive desde `pending` (alta normal) o
+  `suspended` (PayPal la suspendió por un cobro fallido y ahora sí cobró). `cancelled` no vuelve.
+- ⚠️ **Subir de plan REINICIA el mes** (no prorratea): quien lleva 5 días de Standard y pasa a
+  Premium pierde los 25 restantes. Es la regla actual y es defendible, pero está sin decir en
+  ninguna pantalla — si algún día hay quejas, es aquí.
+- **La letra pequeña del carrito** ya no depende del JS: el servidor pinta la frase correcta de
+  entrada (`auto0` en `checkout.html`), porque ya sabe qué riel viene marcado. Antes mandaba "pago
+  único" oculto-a-medias y lo corregía el JS al cargar → parpadeo, y frase falsa si el JS no corría.
+`tools/test_upgrade.py` **18/18**.
+
 ## 🟢 Stripe — pagos con tarjeta (código LISTO, probado en TEST 2026-07-12)
 Integración **condicional**: totalmente inerte hasta setear `STRIPE_SECRET_KEY` → sin la clave, prod
 sigue con el flujo manual USDT/Binance intacto (cero regresión). Reutiliza el `Order` model y
