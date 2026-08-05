@@ -1329,6 +1329,33 @@ El dueño vio en Ajustes *"PREMIUM · CANCELLING · Access ends Nov 03, 2026"* e
 `tools/test_renovaciones.py` **20/20** (fecha mostrada, cobro mensual que extiende, aviso repetido que
 no regala mes, baja que corta pending+active, PayPal que no responde → no se miente, fila huérfana).
 
+## 🛒 CARRITO CON MINIATURAS + RECIBO CON IDENTIDAD (2026-08-05)
+- **El carrito enseñaba un rectángulo gris** en vez del producto. El código YA intentaba reutilizar
+  el arte de la tarjeta, pero **cada tipo lo guarda en un sitio distinto** y solo miraba uno:
+  camo → fondo del `.camo-swatch` · marco → fondo de `.cm-plate-strip`, que es un **hijo** · cursor →
+  un `<img>`, sin fondo ninguno. `arteDe(card)` busca los tres. El cursor va **contenido** sobre
+  fondo claro (`.cp-art.cur`): es una figura de 32px con transparencia y a `cover` no se reconoce.
+  ⚠️ La imagen se asigna por **propiedad** (`el.style.backgroundImage`), nunca dentro del string de
+  HTML — un `url("…")` lleva comillas dobles y parte el atributo `style` (misma trampa de la tienda).
+- **El "cuadrado" del recibo era un emoji sin fuente:** 🧾 (U+1F9FE, de 2018) no está en todas las
+  fuentes del sistema y el navegador dibuja el *tofu*. 🔴 **Regla: un icono de la interfaz no puede
+  depender de las fuentes de quien mira → SVG inline.**
+- **`/checkout/status` con identidad de plan:** hero y pastilla en dorado (Premium) o acero
+  (Standard), bloque **"Lo que acabas de desbloquear"** con 4 ventajas del plan comprado, y la
+  **fecha del próximo cobro** con su importe (la pregunta que todos se hacen al pagar; decirla ahí
+  sale más barato que un correo a soporte, y que una disputa). 21 claves `cstat.*` ×4.
+  · El estado salía crudo de la base (*"Estado: paid"* en la página en español) → traducido, con el
+    valor crudo de reserva para lo raro, que es lo que soporte necesita ver.
+  · Con el plan ya activo el botón dorado era **"Necesito ayuda"** — empujar a soporte a quien acaba
+    de tener una compra perfecta. Ahora el dorado es "Volver a la app"; soporte manda solo mientras
+    el pago está en el aire.
+- ⚠️ **Sin `FLASK_DEBUG` Jinja cachea las plantillas**: hay que reiniciar el server o la prueba en
+  navegador mide la versión vieja (volvió a pasar).
+- **PayPal "Pay in 4" — NO se puede quitar, y no hace falta.** El dueño temía cobrar a plazos: con
+  Pay Later **PayPal le paga el importe COMPLETO al capturar** y asume el riesgo de impago. En el
+  flujo de redirección (el nuestro) la oferta la decide PayPal según el comprador; solo se puede
+  filtrar con `disable-funding` del SDK de JavaScript, que no usamos. Fuente: PayPal.
+
 ## 🔴 NADIE PAGA UN MES QUE YA TIENE PAGADO (2026-08-05)
 El dueño, textual: *"si yo pago 4 premiums por adelantado, ¿qué sentido tiene que al cabo de un mes
 me cobren de nuevo la mensualidad? Va totalmente en contra de la protección al consumidor."* Tenía

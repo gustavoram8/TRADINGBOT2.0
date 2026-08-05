@@ -42,8 +42,32 @@
 
     .wrap { max-width:560px; margin:0 auto; padding:40px 24px 90px; }
     .badge-hero { width:82px; height:82px; margin:6px auto 18px; border-radius:22px; display:grid; place-items:center;
-                  font-size:40px; background:linear-gradient(135deg, var(--accent-bg), transparent);
-                  border:1px solid var(--line); box-shadow:var(--shadow); }
+                  background:linear-gradient(135deg, var(--accent-bg), transparent);
+                  border:1px solid var(--line); box-shadow:var(--shadow); color:var(--accent); }
+    .badge-hero svg { width:38px; height:38px; }
+    /* Cada plan trae su color: el mismo recibo neutro para los dos hacía que
+       comprar Premium se sintiera igual que comprar cualquier cosa. */
+    .badge-hero.premium { color:var(--gold);
+      background:linear-gradient(135deg, rgba(224,168,61,.16), transparent); }
+    .badge-hero.standard { color:#5b7fa8;
+      background:linear-gradient(135deg, rgba(91,127,168,.16), transparent); }
+    .plan-pill { display:inline-block; font-size:11.5px; font-weight:800; letter-spacing:.08em;
+                 text-transform:uppercase; padding:3px 10px; border-radius:20px; margin-right:8px;
+                 border:1px solid currentColor; }
+    .plan-pill.premium { color:var(--gold); }
+    .plan-pill.standard { color:#5b7fa8; }
+    /* Lo que acaba de desbloquear. Un recibo que solo dice un importe no
+       recuerda por qué valía la pena; esto lo convierte en una entrega. */
+    .unlocked { margin:0 0 18px; }
+    .unlocked h3 { font-size:12px; font-weight:800; letter-spacing:.09em; text-transform:uppercase;
+                   color:var(--muted); margin-bottom:11px; }
+    .unlocked ul { list-style:none; display:grid; gap:8px; }
+    .unlocked li { display:flex; gap:9px; align-items:flex-start; font-size:13.5px; color:var(--ink-soft); }
+    .unlocked li svg { width:15px; height:15px; flex:0 0 auto; margin-top:3px; color:var(--ok); }
+    .renews { display:flex; justify-content:space-between; gap:10px; align-items:baseline;
+              font-size:13px; color:var(--ink-soft); border-top:1px dashed var(--line);
+              margin-top:14px; padding-top:12px; }
+    .renews b { color:var(--ink); font-weight:700; }
     h1 { font-size:28px; font-weight:800; letter-spacing:-.02em; margin-bottom:8px; text-align:center; }
     .sub { color:var(--ink-soft); text-align:center; margin-bottom:30px; }
     .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
@@ -104,9 +128,23 @@
   </nav>
 
   <div class="wrap">
-    <div class="badge-hero" id="hero">🧾</div>
+    {# 🔴 Aquí había un emoji de recibo (🧾). En el equipo del dueño salía como
+       un CUADRADO VACÍO: es un emoji de 2018 y no todas las fuentes del sistema
+       lo tienen, así que el navegador dibuja el "tofu". Un icono de la interfaz
+       no puede depender de las fuentes que tenga instaladas quien mira: va en
+       SVG, que se dibuja igual en todas partes. #}
+    <div class="badge-hero {{ order.plan }}" id="hero">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 2.5h12a1 1 0 0 1 1 1v17l-2.6-1.6L13.8 20.5 12 19l-1.8 1.5-2.6-1.6L5 20.5v-17a1 1 0 0 1 1-1z"/>
+        <path d="M9 8.5h6M9 12h6"/>
+      </svg>
+    </div>
     <h1 data-i18n="cstat.title">Your order</h1>
-    <p class="sub"><span data-i18n="cstat.orderNo">Order</span> #{{ order.id }}</p>
+    <p class="sub">
+      <span class="plan-pill {{ order.plan }}">{{ plan_label }}</span>
+      <span data-i18n="cstat.orderNo">Order</span> #{{ order.id }}
+    </p>
 
     <!-- Live state. Server-rendered so it is correct without JavaScript, then
          kept fresh by polling (which also re-checks with the processor). -->
@@ -142,12 +180,47 @@
     </div>
     {% endif %}
 
+    {% if order.applied_at and order.plan in ('standard', 'premium') %}
+    {% set tic %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>{% endset %}
+    <div class="card unlocked">
+      <h3 data-i18n="cstat.gotTitle">What you just unlocked</h3>
+      <ul>
+        {% if order.plan == 'premium' %}
+        <li>{{ tic }}<span data-i18n="cstat.pp1">5 chart analyses every 24 h</span></li>
+        <li>{{ tic }}<span data-i18n="cstat.pp2">Pre-Flight checklists before you take a trade</span></li>
+        <li>{{ tic }}<span data-i18n="cstat.pp3">Trading Forum + 10 analyzer projects</span></li>
+        <li>{{ tic }}<span data-i18n="cstat.pp4">The Premium camo, yours to keep for good</span></li>
+        {% else %}
+        <li>{{ tic }}<span data-i18n="cstat.ps1">1 chart analysis every 24 h</span></li>
+        <li>{{ tic }}<span data-i18n="cstat.ps2">Trading Forum, moderated by AI</span></li>
+        <li>{{ tic }}<span data-i18n="cstat.ps3">5 analyzer projects</span></li>
+        <li>{{ tic }}<span data-i18n="cstat.ps4">The Standard camo, yours to keep for good</span></li>
+        {% endif %}
+      </ul>
+      {% if sub and sub.next_billing_at %}
+      {# La pregunta que se hace todo el mundo justo después de pagar. Decirla
+         aquí es más barato que un correo a soporte — y que una disputa. #}
+      <div class="renews">
+        <span data-i18n="cstat.renews">Renews automatically on</span>
+        <b>{{ sub.next_billing_at.strftime('%b %d, %Y') }} · ${{ '%.2f'|format(sub.price) }}</b>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
     <div class="card">
       <div class="order-row"><span class="label" data-i18n="cstat.plan">Plan</span><span class="val">{{ plan_label }}</span></div>
       <div class="order-row"><span class="label" data-i18n="cstat.cycle">Billing</span>
         <span class="val">{% if order.billing_cycle == 'annual' %}<span data-i18n="cstat.annual">Annual</span>{% else %}<span data-i18n="cstat.monthly">Monthly</span>{% endif %}</span></div>
       <div class="order-row"><span class="label" data-i18n="cstat.status">Status</span>
-        <span class="val" id="statusVal">{{ order.pay_status or order.status }}</span></div>
+        {# El valor crudo de la base ("paid", "completed") se colaba tal cual en
+           las cuatro traducciones: en la página en español ponía "Estado:
+           paid". Se traduce lo que se entiende y se deja el crudo solo para lo
+           raro, que además es lo que soporte necesita ver. #}
+        <span class="val" id="statusVal"
+              {% if (order.pay_status or order.status) in ('paid','completed','pending','waiting','confirming','failed','refunded','reversed','disputed','cancelled') %}
+              data-i18n="cstat.st.{{ order.pay_status or order.status }}"{% endif %}
+              >{{ order.pay_status or order.status }}</span></div>
       <div class="total">
         <span class="t-label" data-i18n="cstat.total">Total</span>
         <span>
@@ -179,8 +252,17 @@
     {% endif %}
 
     <div class="btn-row">
+      {# Con el plan ya activo, lo que quiere hacer es ENTRAR. Antes el botón
+         dorado era "necesito ayuda", que es empujar hacia soporte a quien
+         acaba de tener una compra perfecta. Mientras el pago está en el aire
+         sí manda soporte, que es cuando de verdad puede hacer falta. #}
+      {% if order.applied_at %}
+      <a href="/contact" class="btn btn-ghost" data-i18n="cstat.help">Get help →</a>
+      <a href="/app" class="btn btn-primary" data-i18n="cstat.backApp">Back to app</a>
+      {% else %}
       <a href="/app" class="btn btn-ghost" data-i18n="cstat.backApp">Back to app</a>
       <a href="/contact" class="btn btn-primary" data-i18n="cstat.help">Get help →</a>
+      {% endif %}
     </div>
   </div>
 
@@ -223,7 +305,14 @@
     fetch('/api/checkout/status/' + ORDER).then(function(r){ return r.json(); }).then(function(d){
       if (!d || !d.status) return;
       var sv = document.getElementById('statusVal');
-      if (sv && d.pay_status) sv.textContent = d.pay_status;
+      if (sv && d.pay_status) {
+        /* Traducido si lo conocemos; si no, el valor crudo, que es justo lo
+           que soporte necesita ver cuando pasa algo raro. */
+        var k = 'cstat.st.' + d.pay_status;
+        var tr = (window.PagesI18n && window.PagesI18n.t(k)) || k;
+        sv.textContent = (tr === k) ? d.pay_status : tr;
+        sv.setAttribute('data-i18n', k);
+      }
       if (d.applied) { clearInterval(timer); window.location.reload(); }
     }).catch(function(){});
   }, 10000);

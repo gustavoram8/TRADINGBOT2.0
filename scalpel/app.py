@@ -8715,9 +8715,15 @@ def checkout_status(order_id):
         abort(404)
     if order.status != 'paid':
         _reconcile_order(order)
+    # La suscripción, para poder decirle en el mismo recibo cuándo se le vuelve
+    # a cobrar. Es la pregunta que se hace todo el mundo justo después de pagar,
+    # y tenerla aquí evita que la busque por su cuenta o escriba a soporte.
+    sub = None
+    if order.applied_at and order.plan == current_user.plan:
+        sub = active_subscription(current_user)
     return render_template('checkout_status.html', order=order,
                            plan_label=PLAN_LABELS.get(order.plan, order.plan),
-                           sla_hours=CRYPTO_SLA_HOURS)
+                           sub=sub, sla_hours=CRYPTO_SLA_HOURS)
 
 
 @app.route('/api/checkout/status/<int:order_id>')

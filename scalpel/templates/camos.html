@@ -227,8 +227,15 @@
     .cp-list{max-height:46vh;overflow-y:auto;}
     .cp-row{display:flex;align-items:center;gap:11px;padding:11px 16px;border-bottom:1px solid var(--line,#e6e8ee);}
     .cp-row:last-child{border-bottom:0;}
-    .cp-art{width:44px;height:30px;border-radius:6px;flex:0 0 auto;background-size:cover;
-      background-position:center;border:1px solid var(--line,#e6e8ee);}
+    /* La miniatura del producto. El `background-size` lo decide el JS según el
+       tipo: un camo o un marco se recortan (cover) porque son escenas, pero un
+       cursor es una FIGURA de 32px con fondo transparente — estirarla a cover
+       la deja irreconocible, así que va contenida y sobre un tablero de
+       cuadros, que es como se enseña siempre una imagen con transparencia. */
+    .cp-art{width:52px;height:36px;border-radius:6px;flex:0 0 auto;background-size:cover;
+      background-position:center;background-repeat:no-repeat;
+      border:1px solid var(--line,#e6e8ee);}
+    .cp-art.cur{background-size:22px 22px;background-color:#eef0f5;}
     .cp-tx{min-width:0;flex:1;}
     .cp-tx{display:flex;flex-direction:column;gap:1px;}
     .cp-nm{font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -918,6 +925,30 @@
     // Que hay dentro se deduce de las PROPIAS tarjetas de la pagina (nombre,
     // precio y arte), en vez de pedirle al servidor otra lista: asi cualquier
     // cosmetico futuro aparece en el carrito sin cablear nada.
+    // 🔴 El arte de cada tipo vive en un sitio DISTINTO de la tarjeta, y por eso
+    // el carrito enseñaba un rectángulo gris para todo lo que no fuera un camo:
+    //   · camo    → fondo del propio .camo-swatch (lo pone su clase cm-<slug>)
+    //   · marco   → fondo de .cm-plate-strip, que es un HIJO del swatch
+    //   · cursor  → un <img>, sin fondo ninguno
+    // Se buscan los tres, en ese orden de especificidad.
+    function arteDe(card){
+      var img = card.querySelector('.cm-cursor-img');
+      if (img && img.getAttribute('src')) {
+        // Un cursor es una figura de 32px con transparencia: se enseña
+        // CONTENIDA sobre un fondo claro, no recortada a lo ancho.
+        return { css: 'url("' + img.getAttribute('src') + '")', cursor: true };
+      }
+      var cand = [card.querySelector('.cm-plate-strip'),
+                  card.querySelector('.cos-art'),
+                  card.querySelector('.camo-swatch')];
+      for (var i = 0; i < cand.length; i++) {
+        if (!cand[i]) continue;
+        var b = getComputedStyle(cand[i]).backgroundImage;
+        if (b && b !== 'none') return { css: b, cursor: false };
+      }
+      return { css: '', cursor: false };
+    }
+
     function cartIndex(){
       var ix = {};
       document.querySelectorAll('[data-ref]').forEach(function(b){
@@ -926,13 +957,13 @@
         var card = b.closest('.camo-card') || b.closest('.cos-card');
         if (!card) return;
         var nm = card.querySelector('.camo-name');
-        var art = card.querySelector('.cos-art, .camo-swatch');
+        var a = arteDe(card);
         ix[ref] = {
           name: nm ? nm.textContent.trim() : ref,
           kind: ref.indexOf('camo:') === 0 ? (T.kCamo || 'Camo')
               : ref.indexOf('item:cur-') === 0 ? (T.kCursor || 'Cursor')
               : (T.kFrame || 'Frame'),
-          art: art ? getComputedStyle(art).backgroundImage : ''
+          art: a.css, cursor: a.cursor
         };
       });
       // Los camos no llevan data-ref en su tarjeta: se arma desde el slug.
@@ -941,10 +972,10 @@
         var ref = 'camo:' + slug;
         if (ix[ref]) return;
         var nm = card.querySelector('.camo-name');
-        var sw = card.querySelector('.camo-swatch');
+        var a = arteDe(card);
         ix[ref] = { name: nm ? nm.textContent.trim() : slug,
                     kind: T.kCamo || 'Camo',
-                    art: sw ? getComputedStyle(sw).backgroundImage : '' };
+                    art: a.css, cursor: a.cursor };
       });
       return ix;
     }
@@ -957,10 +988,10 @@
         return;
       }
       box.innerHTML = l.map(function(ref){
-        var it = ix[ref] || {name: ref, kind: '', art: ''};
+        var it = ix[ref] || {name: ref, kind: '', art: '', cursor: false};
         var pr = (S.prices && S.prices[ref]) || 0;
         return '<div class="cp-row">'
-          + '<span class="cp-art" style="background-image:' + (it.art || 'none') + '"></span>'
+          + '<span class="cp-art' + (it.cursor ? ' cur' : '') + '"></span>'
           + '<span class="cp-tx"><span class="cp-nm">' + it.name + '</span>'
           +   '<span class="cp-kd">' + it.kind + ' · ' + (T.cartQty || 'Qty 1') + '</span></span>'
           + '<span class="cp-pr">$' + pr.toFixed(2) + '</span>'
@@ -968,6 +999,13 @@
           +   'aria-label="' + (T.cartRemove || 'Remove') + '">&times;</button>'
           + '</div>';
       }).join('');
+      // ⚠️ La imagen se asigna por PROPIEDAD, nunca dentro del string de HTML:
+      // un `url("…")` lleva comillas dobles y parte el atributo style. Es la
+      // misma trampa que dejó las placas en blanco al construir la tienda.
+      box.querySelectorAll('.cp-art').forEach(function(el, i){
+        var it = ix[l[i]];
+        if (it && it.art) el.style.backgroundImage = it.art;
+      });
       box.querySelectorAll('[data-rm]').forEach(function(b){
         b.addEventListener('click', function(){
           Cart.toggle(b.getAttribute('data-rm'));
