@@ -300,6 +300,7 @@
       <button class="atab" data-pane="bugs">🛠️ Bugs</button>
       <button class="atab" data-pane="giveaway">🎁 Giveaway</button>
       <button class="atab" data-pane="ledger">📒 Ventas</button>
+      <button class="atab" data-pane="cosmeticos">🎨 Cosméticos</button>
       <button class="atab" data-pane="reviews">⭐ Reseñas</button>
     </div>
 
@@ -1279,6 +1280,93 @@
         <button class="plan-btn" type="submit">Añadir venta</button>
       </form>
     </div>
+    </div>
+
+    <div class="tabpane" data-pane="cosmeticos">
+    <div class="section-h" id="cosmeticos">🎨 Libro de cosméticos</div>
+    <div class="section-d">
+      Solo cosméticos: camos, placas y cursores — compras sueltas y carritos, en una misma lista.
+      <b>Nada de aquí toca los planes, la escalera del socio ni la reserva</b>: un cosmético es una
+      venta sin comisión ni chargeback-reserve, y por eso tampoco aparece en 📒 Ventas. Lo que se
+      enseña como <b>pagado</b> es lo que el comprador terminó pagando en el carrito (el total que
+      cobró PayPal), no la suma de etiquetas.
+    </div>
+
+    <!-- ── Los dos números grandes ── -->
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+      <div style="flex:2;min-width:250px;background:linear-gradient(135deg,#2a1a4a,#4a2a7a);border-radius:12px;padding:14px 18px;color:#fff;">
+        <div style="font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.75;">🎨 Cosméticos — histórico</div>
+        <div style="font-size:30px;font-weight:800;line-height:1.1;margin-top:3px;">${{ '%.2f'|format(cos_lifetime_total) }}</div>
+        <div style="font-size:11.5px;opacity:.8;margin-top:2px;">{{ cos_lifetime_count }} compra(s) reales</div>
+      </div>
+      <div style="flex:1;min-width:200px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 18px;">
+        <div style="font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);">Mes en pantalla</div>
+        <div style="font-size:26px;font-weight:800;margin-top:4px;">${{ '%.2f'|format(cos_view_total) }}</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">{{ cos_view_count }} compra(s){% if cos_view_is_current %} · mes actual{% endif %}</div>
+      </div>
+    </div>
+
+    <!-- ── Selector de mes ── -->
+    <div class="section-d" style="margin-bottom:8px;">
+      Mes:
+      {% for m in cos_months %}
+        {% if m.is_view %}<b>{{ m.label }} (${{ '%.2f'|format(m.total) }})</b>{% else %}
+        <a href="/admin?cos_month={{ m.key }}#cosmeticos">{{ m.label }} (${{ '%.2f'|format(m.total) }})</a>{% endif %}
+        {%- if not loop.last %} · {% endif %}
+      {% endfor %}
+    </div>
+
+    <!-- ── Por día, del mes elegido ── -->
+    {% if cos_days %}
+    <div class="section-h" style="font-size:15px;">📅 Por día</div>
+    <div class="table-card">
+    <table>
+      <thead><tr><th>Día</th><th>Compras</th><th>Total</th></tr></thead>
+      <tbody>
+        {% for d in cos_days %}
+        <tr><td>{{ d.dia }}</td><td>{{ d.count }}</td><td><b>${{ '%.2f'|format(d.total) }}</b></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% endif %}
+
+    <!-- ── Cada compra del mes ── -->
+    <div class="section-h" style="font-size:15px;">🧾 Compras del mes</div>
+    {% if cos_rows %}
+    <div class="table-card">
+    <table>
+      <thead><tr><th>Fecha</th><th>Usuario</th><th>Qué compró</th><th>Método</th><th>Pagado</th></tr></thead>
+      <tbody>
+        {% for f in cos_rows %}
+        <tr>
+          <td style="white-space:nowrap;">{{ f.fecha.strftime('%Y-%m-%d %H:%M') if f.fecha else '—' }}</td>
+          <td>{{ f.username }}</td>
+          <td>{{ f.piezas|join(' · ') }}{% if f.n_piezas > 1 %} <span style="color:var(--muted);font-size:11px;">({{ f.n_piezas }} en un carrito)</span>{% endif %}</td>
+          <td>{{ f.metodo }}</td>
+          <td><b>${{ '%.2f'|format(f.pagado) }}</b></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% else %}
+    <div class="section-d">Sin compras de cosméticos en este mes.</div>
+    {% endif %}
+
+    <!-- ── Ensayos de sandbox: se ven, nunca se suman ── -->
+    {% if cos_pruebas_n %}
+    <div class="section-d" style="border-left:3px solid #c9a227;padding-left:10px;margin-top:12px;">
+      🧪 <b>{{ cos_pruebas_n }} ensayo(s) de sandbox por ${{ '%.2f'|format(cos_pruebas_total) }}</b> —
+      dinero de mentira de las pruebas. No suman en ningún total de arriba; se listan para que no
+      parezca que desaparecieron.
+      <div style="margin-top:6px;font-size:12px;color:var(--muted);">
+        {% for f in cos_pruebas_rows %}
+        {{ f.fecha.strftime('%Y-%m-%d') if f.fecha else '—' }} · {{ f.username }} · {{ f.piezas|join(', ') }} · ${{ '%.2f'|format(f.pagado) }}{% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
     </div>
 
     <div class="tabpane" data-pane="reviews">

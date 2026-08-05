@@ -44,6 +44,8 @@ QUITAR = {
                 'paid_amount', 'pay_currency', 'tx_hash', 'alerted_at'],
     'plan_subscription': ['pending_plan', 'pending_price', 'pending_at'],
     'sale_breakdown': ['reserve_amt', 'reserve_pct', 'available_profit'],
+    'camo_order': ['is_test'],
+    'cosmetic_order': ['is_test'],
     'testimonial': ['insider'],
     'promo_code': ['restrict_user_id', 'owner_user_id'],
     'forum_post': ['community_id'],

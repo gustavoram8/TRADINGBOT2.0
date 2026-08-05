@@ -1243,6 +1243,9 @@ class CamoOrder(db.Model):
     pay_currency = db.Column(db.String(20), nullable=True)
     tx_hash = db.Column(db.String(120), nullable=True)
     alerted_at = db.Column(db.DateTime, nullable=True)
+    # Ensayo con dinero de mentira (sandbox). Mismo sello que Order.is_test:
+    # se estampa al pagarse y el entorno de mañana no lo reescribe.
+    is_test = db.Column(db.Boolean, default=False, nullable=False)
     user = db.relationship('User', backref='camo_orders')
 
 
@@ -1273,6 +1276,7 @@ class CosmeticOrder(db.Model):
     pay_currency = db.Column(db.String(20), nullable=True)
     tx_hash = db.Column(db.String(120), nullable=True)
     alerted_at = db.Column(db.DateTime, nullable=True)
+    is_test = db.Column(db.Boolean, default=False, nullable=False)
     user = db.relationship('User', backref='cosmetic_orders')
 
     def slug_list(self):
@@ -6301,6 +6305,7 @@ def admin():
         reviews=(Testimonial.query
                  .order_by(Testimonial.created_at.desc()).limit(200).all()),
         **_build_ledger_context(),
+        **_build_cosmetics_context(),
         **ai_ctx, **revenue,
     )
 
@@ -6528,6 +6533,107 @@ def _build_revenue_context():
         'expense_view_is_current': view_key == this_key,
         'expense_view_label': months[view_key]['label'],
         'expenses_lifetime': round(sum(e.amount for e in all_expenses), 2),
+    }
+
+
+def _nombre_de_ref(ref):
+    """El nombre legible de una pieza del carrito, para el libro de cosméticos.
+
+    Un carrito guarda referencias ('camo:santa', 'item:gambit', 'item:cur-…',
+    o un slug pelado que se lee como camo). El dueño no tiene por qué saber ese
+    dialecto: en su libro se enseña el nombre de la tienda."""
+    kind, slug = parse_cosmetic_ref(ref)
+    if kind == 'camo':
+        return CAMO_NAMES.get(slug, slug)
+    item = CosmeticItem.query.filter_by(slug=slug).first()
+    return item.name if (item and item.name) else slug
+
+
+def _build_cosmetics_context():
+    """El libro de COSMÉTICOS: aparte de los planes, sin socios, sin reserva.
+
+    Pedido del dueño (2026-08-05): "una tabla como la de ventas pero dedicada
+    únicamente a cosméticos — qué usuario compra, cuánto terminó pagando en el
+    carrito, y el dinero desglosado por mes y por día".
+
+    Todo sale de `CamoOrder` (compra individual) y `CosmeticOrder` (carrito),
+    que ya guardan cada pago con su fecha — así que el libro enseña también lo
+    vendido antes de hoy, no solo "de ahora en adelante". Los ensayos de
+    sandbox (`is_test`) se cuentan APARTE, nunca sumados: es el mismo trato que
+    Revenue les da a los planes."""
+    uname = {u.id: u.username for u in User.query.all()}
+
+    def fila(o, piezas):
+        return {
+            'fecha': o.paid_at or o.created_at,
+            'username': uname.get(o.user_id, 'unknown'),
+            'piezas': piezas,
+            'n_piezas': len(piezas),
+            'metodo': o.payment_method or '—',
+            'pagado': round(float(o.paid_amount or o.price or 0.0), 2),
+            'es_prueba': bool(getattr(o, 'is_test', False)),
+        }
+
+    filas = []
+    for o in CamoOrder.query.filter_by(status='paid').all():
+        filas.append(fila(o, [CAMO_NAMES.get(o.slug, o.label or o.slug)]))
+    for o in CosmeticOrder.query.filter_by(status='paid').all():
+        filas.append(fila(o, [_nombre_de_ref(r) for r in o.slug_list()]))
+    filas.sort(key=lambda f: (f['fecha'] is None,
+                              f['fecha'].isoformat() if f['fecha'] else ''),
+               reverse=True)
+
+    reales = [f for f in filas if not f['es_prueba']]
+    pruebas = [f for f in filas if f['es_prueba']]
+
+    def clave_mes(f):
+        return f['fecha'].strftime('%Y-%m') if f['fecha'] else '????-??'
+
+    # Un renglón por mes con algo vendido, más el mes actual aunque esté a
+    # cero — para que el libro nunca abra vacío sin explicar en qué mes está.
+    ahora = datetime.now(timezone.utc)
+    meses = {}
+    for f in reales:
+        k = clave_mes(f)
+        m = meses.setdefault(k, {'key': k, 'total': 0.0, 'count': 0})
+        m['total'] += f['pagado']
+        m['count'] += 1
+    mes_actual = ahora.strftime('%Y-%m')
+    meses.setdefault(mes_actual, {'key': mes_actual, 'total': 0.0, 'count': 0})
+
+    vista = request.args.get('cos_month', '')
+    if vista not in meses:
+        vista = mes_actual
+    del_mes = [f for f in reales if clave_mes(f) == vista]
+
+    dias = {}
+    for f in del_mes:
+        d = f['fecha'].strftime('%Y-%m-%d')
+        s = dias.setdefault(d, {'dia': d, 'total': 0.0, 'count': 0})
+        s['total'] += f['pagado']
+        s['count'] += 1
+
+    for m in meses.values():
+        m['total'] = round(m['total'], 2)
+        m['label'] = datetime.strptime(m['key'], '%Y-%m').strftime('%b %Y')
+        m['is_view'] = (m['key'] == vista)
+
+    return {
+        'cos_rows': del_mes,
+        'cos_months': sorted(meses.values(), key=lambda m: m['key'],
+                             reverse=True),
+        'cos_days': sorted((dict(d, total=round(d['total'], 2))
+                            for d in dias.values()),
+                           key=lambda d: d['dia'], reverse=True),
+        'cos_view_key': vista,
+        'cos_view_total': round(sum(f['pagado'] for f in del_mes), 2),
+        'cos_view_count': len(del_mes),
+        'cos_view_is_current': vista == mes_actual,
+        'cos_lifetime_total': round(sum(f['pagado'] for f in reales), 2),
+        'cos_lifetime_count': len(reales),
+        'cos_pruebas_n': len(pruebas),
+        'cos_pruebas_total': round(sum(f['pagado'] for f in pruebas), 2),
+        'cos_pruebas_rows': pruebas[:20],
     }
 
 
@@ -7167,6 +7273,12 @@ def _paypal_apply_status(order, status, amount=None, capture_id=None, kind='plan
     if status in PAYPAL_PAID_STATES and order.status != 'paid':
         order.status = 'paid'
         order.paid_at = datetime.now(timezone.utc)
+        # Los pedidos de PLAN se sellan en su activador; los de cosméticos se
+        # sellan aquí, que es su único punto de paso. Mismo principio que
+        # `es_pedido_de_prueba`: se estampa con el entorno del momento del pago
+        # y el sello no se reescribe jamás.
+        if kind != 'plan' and PAYPAL_ENV != 'live':
+            order.is_test = True
     db.session.commit()
     activated = False
     problem = status in PAYPAL_PROBLEM_STATES
@@ -14204,6 +14316,55 @@ def _migrate_order_is_test_column():
         app.logger.info('is_test: entorno LIVE, no se marca nada como ensayo.')
 
 
+# PayPal LIVE se configuró en el VPS el 2026-08-05 a las 22:55 UTC (la marca de
+# tiempo de los .bak que dejó set_paypal.py). Antes de ese instante las claves
+# de cobrar NO existían en el servidor, así que NINGÚN pedido de PayPal anterior
+# puede ser una venta real — eso es lo que hace seguro el backfill de abajo.
+PAYPAL_LIVE_DESDE = '2026-08-05 22:55:00'
+
+
+def _migrate_cosmetic_is_test_columns():
+    """La marca de ensayo, también en las dos tablas de cosméticos.
+
+    Existía solo en `Order` (planes), así que el libro de cosméticos habría
+    nacido sumando las compras de sandbox como si fueran dinero — el mismo
+    engaño que ya se arregló en Revenue.
+
+    El backfill NO usa `PAYPAL_ENV` como el de Order (el servidor ya está en
+    live: no marcaría nada). Usa la FECHA en que las claves live entraron al
+    VPS: todo pedido de PayPal anterior a ese instante es de sandbox por
+    definición, y uno posterior se deja como está. Así da igual cuándo se
+    despliegue esto — una compra real hecha entre el paso a live y el deploy
+    no se marca como ensayo.
+
+    ⚠️ FALSE, no 0: PostgreSQL rechaza `DEFAULT 0` en un booleano y el fallo
+    tumbó el checkout una vez. SQL crudo, nunca el ORM."""
+    from sqlalchemy import inspect, text
+    insp = inspect(db.engine)
+    for tabla in ('camo_order', 'cosmetic_order'):
+        if tabla not in insp.get_table_names():
+            continue
+        cols = {c['name'] for c in insp.get_columns(tabla)}
+        if 'is_test' in cols:
+            continue
+        try:
+            with db.engine.begin() as conn:
+                conn.execute(text('ALTER TABLE %s ADD COLUMN is_test BOOLEAN '
+                                  'NOT NULL DEFAULT FALSE' % tabla))
+        except Exception as e:
+            app.logger.error('🔴 NO se pudo añadir %s.is_test: %s', tabla, e)
+            continue
+        try:
+            with db.engine.begin() as conn:
+                r = conn.execute(text(
+                    "UPDATE %s SET is_test = TRUE WHERE payment_method = 'paypal' "
+                    "AND created_at < '%s'" % (tabla, PAYPAL_LIVE_DESDE)))
+            app.logger.info('%s: %s pedidos de sandbox sellados como ensayo.',
+                            tabla, getattr(r, 'rowcount', '?'))
+        except Exception as e:
+            app.logger.info('%s is_test backfill note (ignored): %s', tabla, e)
+
+
 def _migrate_sub_pending_columns():
     """Añade a plan_subscription las columnas del cambio de plan programado.
 
@@ -14596,6 +14757,7 @@ def init_db():
         _migrate_sale_reserve_columns()
         _migrate_sub_pending_columns()
         _migrate_order_is_test_column()
+        _migrate_cosmetic_is_test_columns()
         _migrate_testimonial_insider_column()
         _migrate_daily_best_streak_column()
         _migrate_mentorship_application_columns()
