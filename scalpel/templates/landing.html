@@ -860,6 +860,23 @@
 
   <canvas id="bg-canvas" aria-hidden="true"></canvas>
 
+  {% if current_user.is_authenticated %}
+  {# Puerta de vuelta. Era lo ÚNICO que la página de precios aparte tenía y
+     ésta no: quien llega aquí desde dentro de la app a mirar los planes se
+     quedaba sin salida evidente y tenía que tirar del botón atrás. #}
+  <a href="/app" class="back-to-app" data-t="back_app">← Back to app</a>
+  <style>
+    .back-to-app{position:fixed;top:16px;left:18px;z-index:60;font-size:13px;
+      font-weight:700;text-decoration:none;padding:8px 15px;border-radius:20px;
+      color:#cfd6e6;background:rgba(14,17,24,.72);border:1px solid rgba(255,255,255,.14);
+      backdrop-filter:blur(8px);}
+    .back-to-app:hover{color:#e0a83d;border-color:#e0a83d;}
+    body.light .back-to-app{color:#4a4f5e;background:rgba(255,255,255,.82);
+      border-color:rgba(20,25,45,.14);}
+    @media(max-width:640px){.back-to-app{top:10px;left:10px;font-size:12px;padding:6px 12px;}}
+  </style>
+  {% endif %}
+
   <!-- Language selector -->
   <div class="lang-sel" id="lang-sel" role="navigation" aria-label="Language">
     <button class="theme-btn" id="theme-btn" type="button" title="Toggle theme" aria-label="Toggle theme">
@@ -1969,7 +1986,7 @@
         pl_prem_billed:'<s>$600</s>&nbsp; $480 billed yearly', pl_prem_save:'↓ 20% — save $120 vs paying monthly',
         pf_tag:'For traders just getting started with journaling.', ps_tag:'For active traders reviewing setups daily.', pp_tag:'For committed learners who want in-depth daily review.',
         pf1:'<strong>1</strong> screenshot analysis per week', pf2:'Full AI feedback engine', pf_cta:'Start free',
-        ps1:'<strong>1</strong> screenshot analysis per day', ps2:'Full AI feedback engine', ps_forum:'<strong>Trading Forum</strong> — AI-moderated community to share setups &amp; ideas', ps3:'Everything in Free', ps4:'<strong>1 Camo included</strong> — exclusive website design theme', ps_cta:'Choose Standard', pp_current:'✓ Current Plan', ps_switch:'Switch to Standard',
+        ps1:'<strong>1</strong> screenshot analysis per day', ps2:'Full AI feedback engine', ps_forum:'<strong>Trading Forum</strong> — AI-moderated community to share setups &amp; ideas', ps3:'Everything in Free', ps4:'<strong>1 Camo included</strong> — exclusive website design theme', ps_cta:'Choose Standard', back_app:'← Back to app', pp_current:'✓ Current Plan', ps_switch:'Switch to Standard',
         pp1:'Up to <strong>5 screenshot analyses per day</strong>', pp2:'Full AI feedback engine', pp3:'<strong>Trading Forum</strong> — AI-moderated community to share setups &amp; ideas',
         pp_synapse:'<strong>Synapse</strong> — interactive AI knowledge map to explore trading concepts',
         pp_quiz:'<strong>Quiz</strong> — test your knowledge across every methodology and level',
@@ -2072,7 +2089,7 @@
         pl_prem_billed:'<s>$600</s>&nbsp; $480 al año', pl_prem_save:'↓ 20% — ahorras $120 frente a pagar mes a mes',
         pf_tag:'Para traders que recién empiezan a llevar su diario.', ps_tag:'Para traders activos que revisan setups a diario.', pp_tag:'Para estudiantes comprometidos que quieren un análisis diario a fondo.',
         pf1:'<strong>1</strong> análisis de captura por semana', pf2:'Motor completo de feedback con IA', pf_cta:'Empezar gratis',
-        ps1:'<strong>1</strong> análisis de captura por día', ps2:'Motor completo de feedback con IA', ps_forum:'<strong>Foro de Trading</strong> — comunidad moderada por IA para compartir setups e ideas', ps3:'Todo lo del plan Free', ps4:'<strong>1 Camo incluido</strong> — tema de diseño exclusivo del sitio', ps_cta:'Elegir Standard', pp_current:'✓ Plan actual', ps_switch:'Cambiar a Standard',
+        ps1:'<strong>1</strong> análisis de captura por día', ps2:'Motor completo de feedback con IA', ps_forum:'<strong>Foro de Trading</strong> — comunidad moderada por IA para compartir setups e ideas', ps3:'Todo lo del plan Free', ps4:'<strong>1 Camo incluido</strong> — tema de diseño exclusivo del sitio', ps_cta:'Elegir Standard', back_app:'← Volver a la app', pp_current:'✓ Plan actual', ps_switch:'Cambiar a Standard',
         pp1:'Hasta <strong>5 análisis de captura por día</strong>', pp2:'Motor completo de feedback con IA', pp3:'<strong>Foro de Trading</strong> — comunidad moderada por IA para compartir setups e ideas',
         pp_synapse:'<strong>Synapse</strong> — mapa interactivo de conocimiento con IA para explorar conceptos de trading',
         pp_quiz:'<strong>Quiz</strong> — pon a prueba lo que sabes en cada metodología y nivel',
@@ -2175,7 +2192,7 @@
         pl_prem_billed:'<s>600 $</s>&nbsp; 480 $ par an', pl_prem_save:'↓ 20 % — économisez 120 $ par rapport au mensuel',
         pf_tag:'Pour les traders qui débutent leur journal.', ps_tag:'Pour les traders actifs qui revoient leurs setups chaque jour.', pp_tag:'Pour les apprenants engagés qui veulent une analyse quotidienne approfondie.',
         pf1:'<strong>1</strong> analyse de capture par semaine', pf2:'Moteur de feedback IA complet', pf_cta:'Commencer gratuitement',
-        ps1:'<strong>1</strong> analyse de capture par jour', ps2:'Moteur de feedback IA complet', ps_forum:'<strong>Forum de Trading</strong> — communauté modérée par IA pour partager setups et idées', ps3:'Tout le plan Free', ps4:'<strong>1 Camo inclus</strong> — thème de design exclusif pour le site', ps_cta:'Choisir Standard', pp_current:'✓ Formule actuelle', ps_switch:'Passer à Standard',
+        ps1:'<strong>1</strong> analyse de capture par jour', ps2:'Moteur de feedback IA complet', ps_forum:'<strong>Forum de Trading</strong> — communauté modérée par IA pour partager setups et idées', ps3:'Tout le plan Free', ps4:'<strong>1 Camo inclus</strong> — thème de design exclusif pour le site', ps_cta:'Choisir Standard', back_app:'← Retour à l’app', pp_current:'✓ Formule actuelle', ps_switch:'Passer à Standard',
         pp1:'Jusqu\'à <strong>5 analyses de capture par jour</strong>', pp2:'Moteur de feedback IA complet', pp3:'<strong>Forum de Trading</strong> — communauté modérée par IA pour partager setups et idées',
         pp_synapse:'<strong>Synapse</strong> — carte de connaissances interactive par IA pour explorer les concepts de trading',
         pp_quiz:'<strong>Quiz</strong> — testez vos connaissances sur chaque méthodologie et niveau',
@@ -2278,7 +2295,7 @@
         pl_prem_billed:'<s>$600</s>&nbsp; $480 por ano', pl_prem_save:'↓ 20% — economize $120 em vez de pagar mês a mês',
         pf_tag:'Para traders que estão começando seu diário.', ps_tag:'Para traders ativos que revisam setups diariamente.', pp_tag:'Para estudantes comprometidos que querem análise diária aprofundada.',
         pf1:'<strong>1</strong> análise de captura por semana', pf2:'Motor completo de feedback IA', pf_cta:'Começar grátis',
-        ps1:'<strong>1</strong> análise de captura por dia', ps2:'Motor completo de feedback IA', ps_forum:'<strong>Fórum de Trading</strong> — comunidade moderada por IA para compartilhar setups e ideias', ps3:'Tudo do plano Free', ps4:'<strong>1 Camo incluído</strong> — tema de design exclusivo para o site', ps_cta:'Escolher Standard', pp_current:'✓ Plano atual', ps_switch:'Mudar para Standard',
+        ps1:'<strong>1</strong> análise de captura por dia', ps2:'Motor completo de feedback IA', ps_forum:'<strong>Fórum de Trading</strong> — comunidade moderada por IA para compartilhar setups e ideias', ps3:'Tudo do plano Free', ps4:'<strong>1 Camo incluído</strong> — tema de design exclusivo para o site', ps_cta:'Escolher Standard', back_app:'← Voltar ao app', pp_current:'✓ Plano atual', ps_switch:'Mudar para Standard',
         pp1:'Até <strong>5 análises de captura por dia</strong>', pp2:'Motor completo de feedback IA', pp3:'<strong>Fórum de Trading</strong> — comunidade moderada por IA para compartilhar setups e ideias',
         pp_synapse:'<strong>Synapse</strong> — mapa interativo de conhecimento com IA para explorar conceitos de trading',
         pp_quiz:'<strong>Quiz</strong> — teste seus conhecimentos em cada metodologia e nível',

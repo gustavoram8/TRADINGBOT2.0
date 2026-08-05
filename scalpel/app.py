@@ -3264,8 +3264,23 @@ def welcome():
 
 @app.route('/pricing')
 def pricing():
-    user_plan = current_user.plan if current_user.is_authenticated else 'free'
-    return render_template('pricing.html', user_plan=user_plan)
+    """Los planes viven en UN solo sitio: la sección de la landing.
+
+    🔴 Había DOS páginas de precios con las mismas tarjetas escritas dos veces,
+    y ya se habían separado: `pricing.html` anunciaba 4 funciones de Standard y
+    6 de Premium (dos de ellas de cosas APAGADAS) donde la landing anuncia 5 y
+    10. O sea que la página que veía un cliente desde dentro de la app vendía un
+    Premium mucho más pobre del que se entrega — sin Pre-Flight, sin Synapse,
+    sin Quiz, sin Chalkboard y sin camo. Y la misma duplicación ya se había
+    comido el botón de "Cambiar a Standard", arreglado en una copia y no en la
+    otra.
+
+    La ruta se queda como REDIRECCIÓN en vez de borrarse: de ella cuelgan diez
+    `redirect(url_for('pricing'))` del propio código, los enlaces "← Volver a
+    los planes" de los carritos y cualquier marcador que alguien tenga guardado.
+    Así no se rompe nada y la duplicación desaparece de raíz.
+    """
+    return redirect(url_for('landing', plans=1) + '#plans')
 
 
 @app.route('/store/indicators')
