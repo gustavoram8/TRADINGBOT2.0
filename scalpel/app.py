@@ -3248,7 +3248,14 @@ def landing():
             and current_user.is_authenticated
             and getattr(current_user, 'email_verified', True)):
         return redirect(url_for('welcome'))
-    return render_template('landing.html')
+    # Solo se aceptan los motivos que emite el propio sitio: el valor termina en
+    # una clave de traducción, y una clave inventada por quien escribe la URL no
+    # debe poder pintar nada.
+    motivo = request.args.get('nocompra', '')
+    return render_template(
+        'landing.html',
+        nocompra=motivo if motivo in ('ya_lo_tienes', 'ya_suscrito',
+                                      'no_existe') else '')
 
 
 @app.route('/welcome')
@@ -3280,7 +3287,13 @@ def pricing():
     los planes" de los carritos y cualquier marcador que alguien tenga guardado.
     Así no se rompe nada y la duplicación desaparece de raíz.
     """
-    return redirect(url_for('landing', plans=1) + '#plans')
+    # El motivo de un rechazo viaja hasta las tarjetas: es lo único que
+    # distingue "no puedes comprar esto y aquí tienes la razón" de un botón que
+    # parece no hacer nada.
+    motivo = request.args.get('nocompra', '')
+    destino = url_for('landing', plans=1,
+                      **({'nocompra': motivo} if motivo else {}))
+    return redirect(destino + '#plans')
 
 
 @app.route('/store/indicators')
@@ -8273,8 +8286,12 @@ def checkout():
     cycle = request.args.get('cycle', 'monthly')
     if plan not in PLAN_PRICING or cycle not in allowed_cycles():
         return redirect(url_for('pricing'))
-    if not puede_comprar(current_user, plan)[0]:
-        return redirect(url_for('pricing'))
+    # 🔴 Un rechazo TIENE que decir por qué. Sin el motivo, pulsar "Pásate a
+    # Premium" devolvía a la misma página sin una palabra, y desde fuera eso se
+    # ve exactamente igual que un botón roto — que es como lo reportó el dueño.
+    puede, motivo = puede_comprar(current_user, plan)
+    if not puede:
+        return redirect(url_for('pricing', nocompra=motivo))
     # A bound account's discount applies BY ITSELF: the renewal must cost $40
     # without anyone remembering to retype anything. The stored code only
     # discounts cycles it is valid for, but the binding itself never expires.
@@ -8411,8 +8428,9 @@ def checkout_create():
     # viejo o el botón atrás creaban un pedido del plan que la cuenta ya tiene
     # — y al pagarlo se apilaban 30 días más mientras el cobro automático
     # seguía su propio reloj: el cliente pagando meses que ya había comprado.
-    if not puede_comprar(current_user, plan)[0]:
-        return redirect(url_for('pricing'))
+    puede, motivo = puede_comprar(current_user, plan)
+    if not puede:
+        return redirect(url_for('pricing', nocompra=motivo))
 
     # El código atado se aplica solo y nadie puede robarle la atribución; una
     # promoción GENERAL mejor sí puede ganarle en PRECIO (cláusula 3.1 — misma
@@ -9415,6 +9433,20 @@ def admin_set_plan():
     if user.is_admin and user.id != current_user.id:
         abort(403)
     anterior = user.plan
+    # 🔴 Poner un plan A MANO tiene que dejar la cuenta COHERENTE. Sin esto, el
+    # dueño bajaba una cuenta a Free y le quedaba viva la suscripción de las
+    # pruebas: `puede_comprar` la veía y respondía 'ya_suscrito', así que el
+    # botón "Pásate a Premium" devolvía al cliente a la misma página una y otra
+    # vez, sin decir por qué. Un plan puesto a mano manda sobre el permiso de
+    # cobro anterior: se corta en PayPal y, si no se puede, al menos aquí.
+    for sub in subs_por_cortar(user):
+        if sub.plan == plan and plan != 'free':
+            continue                      # el permiso vigente sigue siendo válido
+        if not (sub.provider_ref and _paypal_sub_cancel(
+                sub, 'Plan cambiado a %s desde el panel' % plan)):
+            sub.status = 'cancelled'
+            sub.cancelled_at = datetime.now(timezone.utc)
+            db.session.commit()
     user.plan = plan
     if plan == 'free':
         # "Free" con una fecha de vencimiento futura es un estado incoherente:
@@ -13889,47 +13921,61 @@ def _migrate_user_verification_columns():
     db.create_all() never ALTERs existing tables, so accounts created before
     this feature need the new columns added by hand. Pre-existing users are
     marked verified so the new mandatory-verification flow can't lock them out.
+
+    🔴 Estaba escrita SOLO para SQLite y habría reventado el arranque en
+    PostgreSQL: `user` es palabra reservada y hay que citarla, `DATETIME` no
+    existe (es `TIMESTAMP`) y un booleano no acepta `= 1`. Hoy en producción no
+    salta porque las columnas ya están y no ejecuta nada — o sea que era una
+    mina esperando a la próxima columna que alguien añadiera aquí. Es el mismo
+    fallo que tumbó el sitio con `is_test`. Se deja portable en los dos motores.
     """
     from sqlalchemy import inspect, text
     insp = inspect(db.engine)
     cols = {c['name'] for c in insp.get_columns('user')}
+    pg = db.engine.url.get_backend_name().startswith('postgres')
+    tabla = '"user"'
+    FECHA = 'TIMESTAMP' if pg else 'DATETIME'
+
+    def add(col, tipo):
+        return 'ALTER TABLE %s ADD COLUMN %s %s' % (tabla, col, tipo)
+
     stmts = []
     if 'email_verified' not in cols:
-        stmts.append("ALTER TABLE user ADD COLUMN email_verified BOOLEAN NOT NULL DEFAULT 0")
+        stmts.append(add('email_verified', 'BOOLEAN NOT NULL DEFAULT FALSE'))
     if 'verification_code' not in cols:
-        stmts.append("ALTER TABLE user ADD COLUMN verification_code VARCHAR(6)")
+        stmts.append(add('verification_code', 'VARCHAR(6)'))
     if 'verification_expires' not in cols:
-        stmts.append("ALTER TABLE user ADD COLUMN verification_expires DATETIME")
+        stmts.append(add('verification_expires', FECHA))
     grandfather = bool(stmts)  # only mark-all-verified on the verification migration
     # ── Ban columns (added later; must not re-trigger the grandfather UPDATE) ──
     if 'is_banned' not in cols:
-        stmts.append("ALTER TABLE user ADD COLUMN is_banned BOOLEAN NOT NULL DEFAULT 0")
+        stmts.append(add('is_banned', 'BOOLEAN NOT NULL DEFAULT FALSE'))
     if 'banned_at' not in cols:
-        stmts.append("ALTER TABLE user ADD COLUMN banned_at DATETIME")
+        stmts.append(add('banned_at', FECHA))
     if 'ban_reason' not in cols:
-        stmts.append("ALTER TABLE user ADD COLUMN ban_reason VARCHAR(300)")
+        stmts.append(add('ban_reason', 'VARCHAR(300)'))
     # ── Terms acceptance column (added later; left NULL for pre-existing users,
     #    who accept on their next login via the passive consent notice) ──
     if 'terms_accepted_at' not in cols:
-        stmts.append("ALTER TABLE user ADD COLUMN terms_accepted_at DATETIME")
+        stmts.append(add('terms_accepted_at', FECHA))
     if 'terms_version' not in cols:
-        stmts.append("ALTER TABLE user ADD COLUMN terms_version VARCHAR(20)")
+        stmts.append(add('terms_version', 'VARCHAR(20)'))
     # ── Paid-plan lifecycle columns ──
     if 'plan_cycle' not in cols:
-        stmts.append("ALTER TABLE user ADD COLUMN plan_cycle VARCHAR(10)")
+        stmts.append(add('plan_cycle', 'VARCHAR(10)'))
     if 'plan_started_at' not in cols:
-        stmts.append("ALTER TABLE user ADD COLUMN plan_started_at DATETIME")
+        stmts.append(add('plan_started_at', FECHA))
     if 'plan_expires_at' not in cols:
-        stmts.append("ALTER TABLE user ADD COLUMN plan_expires_at DATETIME")
+        stmts.append(add('plan_expires_at', FECHA))
     if 'cancel_at_period_end' not in cols:
-        stmts.append("ALTER TABLE user ADD COLUMN cancel_at_period_end BOOLEAN NOT NULL DEFAULT 0")
+        stmts.append(add('cancel_at_period_end', 'BOOLEAN NOT NULL DEFAULT FALSE'))
     if stmts:
         with db.engine.begin() as conn:
             for s in stmts:
                 conn.execute(text(s))
             # Grandfather in every account that predates verification.
             if grandfather:
-                conn.execute(text("UPDATE user SET email_verified = 1"))
+                conn.execute(text('UPDATE %s SET email_verified = TRUE' % tabla))
         app.logger.info('Migrated user table: added missing columns (%d).', len(stmts))
 
 
@@ -14127,19 +14173,27 @@ def _migrate_order_is_test_column():
     cols = {c['name'] for c in insp.get_columns('order')}
     if 'is_test' in cols:
         return
-    tabla = '"order"' if db.engine.dialect.name == 'postgresql' else '"order"'
+    # ⚠️ FALSE/TRUE, no 0/1. PostgreSQL RECHAZA `DEFAULT 0` en una columna
+    # booleana ("default expression is of type integer"), así que la columna no
+    # se creaba, el modelo sí la declaraba, y CUALQUIER consulta de pedidos
+    # reventaba — el checkout entero caído. SQLite acepta las dos formas, por
+    # eso en local no se veía nada. Probado contra un PostgreSQL de verdad.
+    tabla = '"order"'
     try:
         with db.engine.begin() as conn:
             conn.execute(text('ALTER TABLE %s ADD COLUMN is_test BOOLEAN '
-                              'NOT NULL DEFAULT 0' % tabla))
+                              'NOT NULL DEFAULT FALSE' % tabla))
     except Exception as e:
-        app.logger.info('is_test migration note (ignored): %s', e)
+        # 🔴 Esto NO se puede tragar en silencio: sin la columna la aplicación
+        # no puede leer un solo pedido. Que se vea en el log de arranque.
+        app.logger.error('🔴 NO se pudo añadir order.is_test — la app no podrá '
+                         'leer pedidos hasta arreglarlo: %s', e)
         return
     if PAYPAL_ENV != 'live':
         try:
             with db.engine.begin() as conn:
                 r = conn.execute(text(
-                    "UPDATE %s SET is_test = 1 WHERE payment_method = 'paypal'"
+                    "UPDATE %s SET is_test = TRUE WHERE payment_method = 'paypal'"
                     % tabla))
             app.logger.info('Marcados %s pedidos de PayPal como ensayos '
                             '(PAYPAL_ENV=%s).', getattr(r, 'rowcount', '?'),

@@ -131,7 +131,13 @@ def main():
         # ── 3 · lo ve en Ajustes ──────────────────────────────────────────
         print('\n3 · Ajustes se lo cuenta')
         pag = cliente('cam_cliente').get('/settings').get_data(as_text=True)
-        check('settings.switchTo' in pag, 'dice a qué plan cambia')
+        # ⚠️ La clave era `settings.switchTo` cuando Ajustes pintaba DOS líneas
+        # (la renovación y, debajo, el cambio). Al fundirlas en una sola —el
+        # dueño leyó las dos como un cobro doble— pasó a ser `switchNote`, y
+        # esta comprobación se quedó mirando la clave vieja: seguía "fallando"
+        # por un texto que sí está.
+        check('settings.switchNote' in pag, 'dice a qué plan cambia')
+        check('Standard' in pag, 'nombrando el plan nuevo')
         check('settings.switchUndo' in pag, 'y ofrece cancelar el cambio')
 
         # ── 4 · llega el cobro del mes: ya es del plan nuevo ──────────────

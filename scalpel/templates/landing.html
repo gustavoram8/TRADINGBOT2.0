@@ -596,6 +596,18 @@
     }
     .bt-opt.active .bt-save { background: rgba(255,255,255,0.22); color: #fff; }
     .billing-sub { font-size: 12.5px; color: var(--muted); margin-top: 10px; }
+
+    /* Aviso de "no se pudo abrir el carrito". Ámbar, no rojo: no es un error
+       del cliente, es una condición de su cuenta. */
+    .nocompra {
+      display: flex; align-items: center; gap: 10px; text-align: left;
+      max-width: 620px; margin: 18px auto 0; padding: 12px 16px;
+      border: 1px solid rgba(224, 168, 62, .45); border-radius: 12px;
+      background: rgba(224, 168, 62, .10);
+      font-size: 14px; line-height: 1.45; color: var(--text);
+    }
+    .nocompra-i { flex: 0 0 auto; display: flex; color: #e0a83e; }
+    .nocompra-i svg { width: 20px; height: 20px; }
     .price-annual-block { display: none; }
     .price-annual-block .price { margin-bottom: 4px; }
     .annual-billed { font-size: 13px; font-weight: 600; color: var(--pp-ink-soft); display: block; margin-bottom: 4px; }
@@ -1318,6 +1330,25 @@
     <h2 class="h2 rv d1" data-t="s7_title">Start free. Scale when you're ready.</h2>
     <p class="lead rv d2" data-t="s7_body">Every plan includes the AI analysis engine. Upgrade when you want more.</p>
 
+    {# Por qué no se pudo abrir el carrito. Sin esta línea el rechazo es mudo y
+       se lee como un botón roto. El motivo lo filtra el servidor. #}
+    {% if nocompra %}
+    <div class="nocompra" role="status">
+      <span class="nocompra-i" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13"/>
+          <line x1="12" y1="16.5" x2="12" y2="16.5"/>
+        </svg>
+      </span>
+      <span data-t="nc_{{ nocompra }}">{{ {
+        'ya_lo_tienes': 'You are already on this plan. To change plans, pick a different one.',
+        'ya_suscrito': 'You already have an active subscription for this plan.',
+        'no_existe': 'That plan cannot be purchased. To go back to Free, cancel from Settings.',
+      }[nocompra] }}</span>
+    </div>
+    {% endif %}
+
     {# Annual plans switched off (ANNUAL_PLANS_ENABLED) — see app.py. #}
     <div class="billing-wrap">
       {% if annual_plans_enabled %}
@@ -1979,6 +2010,9 @@
         rank_you:'You?',
         s7_title:'Start free. Scale when you\'re ready.',
         s7_body:'Every plan includes the AI analysis engine. Upgrade when you want more.',
+        nc_ya_lo_tienes:'You are already on this plan. To change plans, pick a different one.',
+        nc_ya_suscrito:'You already have an active subscription for this plan. If you just cancelled, give it a minute and reload.',
+        nc_no_existe:'That plan cannot be purchased. To go back to Free, cancel your plan from Settings.',
         plan_free_name:'Free', plan_std_name:'Standard', plan_prem_name:'Premium',
         pl_free_cycle:'/ month', pl_std_cycle:'/ month', pl_prm_cycle:'/ month',
         pl_launch:'↓ 15% off your first month',
@@ -2082,6 +2116,9 @@
         rank_you:'¿Tú?',
         s7_title:'Empieza gratis. Crece cuando estés listo.',
         s7_body:'Todos los planes incluyen el motor de análisis con IA. Sube de plan cuando quieras más.',
+        nc_ya_lo_tienes:'Ya tienes este plan. Para cambiarte, elige uno distinto.',
+        nc_ya_suscrito:'Ya tienes una suscripción activa de este plan. Si acabas de darte de baja, espera un momento y recarga.',
+        nc_no_existe:'Ese plan no se compra. Para volver a Free, date de baja desde Ajustes.',
         plan_free_name:'Free', plan_std_name:'Standard', plan_prem_name:'Premium',
         pl_free_cycle:'/ mes', pl_std_cycle:'/ mes', pl_prm_cycle:'/ mes',
         pl_launch:'↓ 15% en tu primer mes',
@@ -2185,6 +2222,9 @@
         rank_you:'Vous ?',
         s7_title:'Commencez gratuitement. Évoluez quand vous êtes prêt.',
         s7_body:'Tous les plans incluent le moteur d\'analyse IA. Évoluez quand vous le souhaitez.',
+        nc_ya_lo_tienes:'Vous avez déjà ce plan. Pour changer, choisissez-en un autre.',
+        nc_ya_suscrito:'Vous avez déjà un abonnement actif pour ce plan. Si vous venez de le résilier, patientez un instant puis rechargez.',
+        nc_no_existe:'Ce plan ne s’achète pas. Pour revenir à Free, résiliez depuis les Paramètres.',
         plan_free_name:'Free', plan_std_name:'Standard', plan_prem_name:'Premium',
         pl_free_cycle:'/ mois', pl_std_cycle:'/ mois', pl_prm_cycle:'/ mois',
         pl_launch:'↓ 15 % sur votre premier mois',
@@ -2288,6 +2328,9 @@
         rank_you:'Você?',
         s7_title:'Comece grátis. Escale quando estiver pronto.',
         s7_body:'Todos os planos incluem o motor de análise IA. Evolua quando quiser mais.',
+        nc_ya_lo_tienes:'Você já está neste plano. Para trocar, escolha um diferente.',
+        nc_ya_suscrito:'Você já tem uma assinatura ativa deste plano. Se acabou de cancelar, espere um momento e recarregue.',
+        nc_no_existe:'Esse plano não é comprado. Para voltar ao Free, cancele em Configurações.',
         plan_free_name:'Free', plan_std_name:'Standard', plan_prem_name:'Premium',
         pl_free_cycle:'/ mês', pl_std_cycle:'/ mês', pl_prm_cycle:'/ mês',
         pl_launch:'↓ 15% no seu primeiro mês',
