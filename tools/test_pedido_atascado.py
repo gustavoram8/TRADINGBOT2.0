@@ -36,11 +36,28 @@ with A.app.test_client() as c:
         o = A.Order.query.filter_by(user_id=uid, status='pending').first()
     check('queda un pedido de $25 pendiente', o and o.final_price == 25.0, o.final_price if o else None)
 
-    r = c.post('/checkout/create', data={'plan': 'standard', 'cycle': 'monthly',
-                                         'promo_code': 'PRUEBA100'})
-    cuerpo = r.get_data(as_text=True)
-    check('el cupón NO se aplica: devuelve el pedido viejo', 'cdone.dup2' in cuerpo)
-    check('pero ahora ofrece cancelarlo', 'checkout/cancel/%d' % o.id in cuerpo)
+    # Estas dos comprobaciones documentaban el atasco: el cupón se ignoraba y
+    # lo único que se ofrecía era cancelar a mano. Desde el arreglo del cambiazo
+    # de plan (tools/test_pedido_pendiente.py) el pedido viejo se suelta solo
+    # cuando lo que se pide AHORA es distinto — y un cupón que cambia el precio
+    # lo es. El comprador ya no tiene que cancelar nada.
+    c.post('/checkout/create', data={'plan': 'standard', 'cycle': 'monthly',
+                                     'promo_code': 'PRUEBA100'})
+    with A.app.app_context():
+        viejo = A.db.session.get(A.Order, o.id)
+        nuevo = (A.Order.query.filter(A.Order.user_id == uid,
+                                      A.Order.id != o.id)
+                 .order_by(A.Order.id.desc()).first())
+        check('el cupón SÍ se aplica: el pedido viejo se suelta',
+              viejo.status == 'cancelled', viejo.status)
+        check('y el nuevo sale a $0 con el cupón puesto',
+              nuevo and nuevo.final_price == 0.0 and nuevo.promo_code,
+              (nuevo.final_price, nuevo.promo_code) if nuevo else None)
+        # Se entregó en el acto, así que el resto del guion (cancelar a mano y
+        # volver a comprar) necesita al usuario otra vez en Free.
+        us = A.db.session.get(A.User, uid)
+        us.plan = 'free'; us.plan_expires_at = None
+        A.db.session.commit()
 
 print('\n── Lo cancela él mismo y vuelve a intentarlo')
 with A.app.test_client() as c:

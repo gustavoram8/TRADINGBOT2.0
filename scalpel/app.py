@@ -7936,6 +7936,45 @@ def api_validate_code():
     return jsonify(resp)
 
 
+def _soltar_pedido(order, motivo):
+    """Suelta un pedido pendiente: lo cancela y desmonta lo que dejó a medias.
+
+    Tres cosas, y las tres importan:
+      1. el pedido queda 'cancelled';
+      2. se devuelve el uso reservado del código, o el cupón se gastaría por
+         una compra que nunca ocurrió;
+      3. 🔴 se corta en PayPal la suscripción que ese pedido hubiera abierto.
+         Sin esto queda una suscripción viva contra un pedido cancelado, y
+         `_sub_cobro` salda el primer cobro contra `first_order_id` mirando
+         solo que NO esté pagado — un pedido cancelado le sirve igual. O sea:
+         el comprador abandona a medio camino, más tarde aprueba aquel enlace
+         viejo, y se le cobra y entrega el plan que ya había descartado.
+    """
+    if order is None or order.status != 'pending':
+        return False
+    order.status = 'cancelled'
+    if order.promo_code:
+        promo = PromoCode.query.filter(
+            db.func.lower(PromoCode.code) == order.promo_code.lower()).first()
+        if promo and (promo.uses_count or 0) > 0:
+            promo.uses_count -= 1
+    db.session.commit()
+    for sub in PlanSubscription.query.filter_by(
+            first_order_id=order.id).filter(
+            PlanSubscription.status.in_(('pending', 'active'))).all():
+        if not (sub.provider_ref and _paypal_sub_cancel(
+                sub, 'Pedido #%d cancelado' % order.id)):
+            # Nunca llegó a existir en PayPal (o PayPal no responde): al menos
+            # que no quede en pie de nuestro lado.
+            sub.status = 'cancelled'
+            sub.cancelled_at = datetime.now(timezone.utc)
+            db.session.commit()
+    record_audit_event('order_cancelled', user_id=order.user_id,
+                       detail=f'#{order.id} {order.plan}/{order.billing_cycle} '
+                              f'${order.final_price:.2f} ({motivo})')
+    return True
+
+
 @app.route('/checkout/create', methods=['POST'])
 @login_required
 def checkout_create():
@@ -7945,31 +7984,63 @@ def checkout_create():
     if plan not in PLAN_PRICING or cycle not in allowed_cycles():
         return redirect(url_for('pricing'))
 
-    # Guard: don't let a user stack multiple pending orders.
-    existing = Order.query.filter_by(
-        user_id=current_user.id, status='pending').first()
-    if existing:
-        # Un intento abandonado NO puede encerrar al comprador: se le lleva otra
-        # vez a pagar el pedido que ya tiene. 🔴 Antes esto renderizaba SIEMPRE
-        # checkout_done.html — que es la pantalla de instrucciones de USDT a
-        # mano — así que con PayPal encendido y el cobro manual APAGADO, quien
-        # volvía a pulsar "pagar" aterrizaba en unas instrucciones para
-        # transferir USDT que no eran ni una opción del sitio. Reportado por el
-        # dueño tres veces antes de que yo lo entendiera.
-        # El método que acaba de marcar en el carrito viaja también aquí. Sin
-        # esto, quien tenía un pedido colgando marcaba PayPal, pulsaba pagar, y
-        # la pantalla siguiente le volvía a preguntar el método — decidir dos
-        # veces lo mismo.
-        return _llevar_a_pagar(existing, duplicado=True,
-                               metodo=request.form.get('method', ''))
-
     # El código atado se aplica solo y nadie puede robarle la atribución; una
     # promoción GENERAL mejor sí puede ganarle en PRECIO (cláusula 3.1 — misma
     # regla que valida la casilla, un solo sitio decide). El código atado no
     # suma uses_count (una renovación no es una conversión nueva); un cupón
     # general usado de verdad sí consume su uso.
+    # Se cotiza ANTES de mirar el pedido pendiente, porque hace falta saber qué
+    # está pidiendo AHORA para decidir si el pendiente sirve. No toca nada:
+    # `fresh_use` es una intención, y el uso solo se reserva al crear.
     promo, fresh_use, _err = _promo_para_compra(current_user, plan, cycle, code)
     q = _quote(plan, cycle, promo)
+    promo_code = promo.code if promo else None
+
+    # Guard: don't let a user stack multiple pending orders.
+    existing = Order.query.filter_by(
+        user_id=current_user.id, status='pending').first()
+    if existing:
+        # 🔴 EL PEDIDO PENDIENTE SOLO VALE SI ES ESTA MISMA COMPRA.
+        # Antes se devolvía el pendiente pasara lo que pasara, y eso convertía
+        # un intento abandonado en un cambiazo de producto: el dueño abandonó a
+        # medias una compra de Premium, volvió a por Standard, y el sitio le
+        # cobró y activó el Premium — el carrito decía una cosa y la pasarela
+        # cobró otra. Pedir otro plan, otro ciclo u otro precio significa que
+        # el comprador cambió de idea: el intento viejo se suelta y se abre uno
+        # nuevo con lo que acaba de elegir.
+        mismo = (existing.plan == plan
+                 and existing.billing_cycle == cycle
+                 and abs((existing.final_price or 0) - q['final_price']) < 0.005
+                 and (existing.promo_code or None) == promo_code)
+        if mismo:
+            # Un intento abandonado NO puede encerrar al comprador: se le lleva
+            # otra vez a pagar el pedido que ya tiene. 🔴 Antes esto renderizaba
+            # SIEMPRE checkout_done.html — que es la pantalla de instrucciones
+            # de USDT a mano — así que con PayPal encendido y el cobro manual
+            # APAGADO, quien volvía a pulsar "pagar" aterrizaba en unas
+            # instrucciones para transferir USDT que no eran ni una opción del
+            # sitio. Reportado por el dueño tres veces antes de que yo lo
+            # entendiera.
+            # El método que acaba de marcar en el carrito viaja también aquí.
+            # Sin esto, quien tenía un pedido colgando marcaba PayPal, pulsaba
+            # pagar, y la pantalla siguiente le volvía a preguntar el método —
+            # decidir dos veces lo mismo.
+            return _llevar_a_pagar(existing, duplicado=True,
+                                   metodo=request.form.get('method', ''))
+        if existing.provider_ref:
+            # Antes de soltarlo hay que descartar que se haya pagado hace un
+            # instante y el aviso no haya llegado todavía: cancelarlo ahí
+            # dejaría al comprador pagando sin plan. Si resulta que sí estaba
+            # pagado, se le entrega lo que compró y esta compra sigue su camino
+            # como lo que es — otra compra, encima de la anterior.
+            try:
+                _reconcile_order(existing)
+            except Exception:
+                app.logger.exception('reconcile antes de soltar #%s', existing.id)
+            db.session.refresh(existing)
+        _soltar_pedido(existing, 'sustituido por %s/%s $%.2f'
+                                 % (plan, cycle, q['final_price']))
+
     # Sin ninguna forma de cobrar, crear el pedido es mentirle al comprador: se
     # queda con un pendiente que nadie puede pagar y que además le bloquea
     # cualquier compra posterior. Es exactamente la trampa en la que cayó el
@@ -8609,19 +8680,9 @@ def checkout_cancel(order_id):
     order = db.session.get(Order, order_id)
     if not order or order.user_id != current_user.id:
         abort(404)
-    if order.status == 'pending':
-        order.status = 'cancelled'
-        # Devolver el uso reservado del código, o el cupón se gastaría por un
-        # pedido que nunca existió.
-        if order.promo_code:
-            promo = PromoCode.query.filter(
-                db.func.lower(PromoCode.code) == order.promo_code.lower()).first()
-            if promo and (promo.uses_count or 0) > 0:
-                promo.uses_count -= 1
-        db.session.commit()
-        record_audit_event('order_cancelled', user_id=order.user_id,
-                           detail=f'#{order.id} {order.plan}/{order.billing_cycle} '
-                                  f'${order.final_price:.2f} (cancelado por el comprador)')
+    # Mismo desmontaje que cuando el comprador cambia de plan: devolver el uso
+    # del cupón y cortar en PayPal la suscripción que este pedido dejó abierta.
+    _soltar_pedido(order, 'cancelado por el comprador')
     return redirect(url_for('pricing'))
 
 
