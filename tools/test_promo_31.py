@@ -41,12 +41,13 @@ def valida(c, code, plan='premium', cycle='monthly'):
     return r.get_json()
 
 
-def paga(uid, code=None, precio_final=None):
+def paga(uid, code=None, precio_final=None, plan='premium'):
     """Crea y paga un pedido por dentro (el circuito PayPal ya tiene su E2E)."""
     from datetime import datetime, timezone
+    base = A.PLAN_PRICING[plan]['monthly']
     with A.app.app_context():
-        o = A.Order(user_id=uid, plan='premium', billing_cycle='monthly',
-                    base_price=50.0, discount_pct=0, final_price=precio_final or 50.0,
+        o = A.Order(user_id=uid, plan=plan, billing_cycle='monthly',
+                    base_price=base, discount_pct=0, final_price=precio_final or base,
                     promo_code=code, status='paid', payment_method='manual',
                     paid_at=datetime.now(timezone.utc))
         A.db.session.add(o)
@@ -93,7 +94,11 @@ def main():
         uid = u.id
 
     # ── 1 · primera compra con el código del socio: ata ────────────────────
-    paga(uid, 'SOCIO20', 40.0)
+    # Se compra STANDARD, no Premium: así la compra del paso 3 es una SUBIDA de
+    # plan, que es una compra legítima. Repetir el mismo plan ya no se puede —
+    # sería pagar un mes que ya está pagado mientras el cobro automático sigue
+    # su reloj (ver tools/test_meses_apilados.py).
+    paga(uid, 'SOCIO20', 20.0, plan='standard')
     with A.app.app_context():
         u = A.db.session.get(A.User, uid)
         check(u.referred_by_code == 'SOCIO20', 'primer pago con SOCIO20 ata la cuenta')
@@ -114,7 +119,7 @@ def main():
         check(d.get('ok') and d.get('locked'),
               'su propio código: ok informativo, nada cambia')
 
-        # ── 3 · compra de renovación acogiéndose al 50% ────────────────────
+        # ── 3 · SUBIDA a Premium acogiéndose al 50% ────────────────────────
         r = c.post('/checkout/create',
                    data={'plan': 'premium', 'cycle': 'monthly',
                          'promo_code': 'VERANO50', 'method': 'manual'},

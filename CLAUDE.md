@@ -1329,6 +1329,26 @@ El dueño vio en Ajustes *"PREMIUM · CANCELLING · Access ends Nov 03, 2026"* e
 `tools/test_renovaciones.py` **20/20** (fecha mostrada, cobro mensual que extiende, aviso repetido que
 no regala mes, baja que corta pending+active, PayPal que no responde → no se miente, fila huérfana).
 
+## 🔴 NADIE PAGA UN MES QUE YA TIENE PAGADO (2026-08-05)
+El dueño, textual: *"si yo pago 4 premiums por adelantado, ¿qué sentido tiene que al cabo de un mes
+me cobren de nuevo la mensualidad? Va totalmente en contra de la protección al consumidor."* Tenía
+razón, y no era solo el número raro de la pantalla.
+- **Dos cosas correctas por separado que juntas cobran de más:** cada compra suelta SUMA 30 días al
+  vencimiento (bien: una renovación no debe quitarte lo que te queda), pero el cobro automático de
+  PayPal corre por su cuenta cada 30 días. Quien pagara 3 meses de golpe acumulaba 90 días **y**
+  seguía pagando cada 30.
+- 🔴 **El agujero:** el candado de "no compres el plan que ya tienes" vivía SOLO en `/checkout` (el
+  GET, la pantalla). **`/checkout/create` (el POST) no lo repetía** → un formulario viejo, el botón
+  atrás o un enlace guardado creaban el pedido igual. Medido con el código anterior: 3 intentos =
+  **$75 cobrados y 89 días apilados**.
+- **Regla fijada:** un plan mensual se paga **mes a mes**; para pagar varios meses por adelantado
+  está el ciclo anual. Un solo decisor `puede_comprar(user, plan)` que usan **las dos** puertas
+  (rechaza plan igual o inferior, y de cinturón: cualquier suscripción viva de ese plan, aunque
+  `user.plan` todavía no lo refleje). **Subir de plan sigue permitido** — eso no es repetir un mes.
+- ⚠️ `tools/test_promo_31.py` probaba la cláusula 3.1 **recomprando el mismo plan**, que ya no se
+  puede: se reencuadró sobre una SUBIDA de Standard a Premium (misma cláusula, compra legítima).
+`tools/test_meses_apilados.py` **15/15** (con el código viejo fallan 5, incluido el caso exacto).
+
 ## ⬆️ SUBIR DE PLAN — nunca dos cobros a la vez (2026-08-05)
 Miedo del dueño, textual: *"compro standard y más tarde upgradeo a premium: ¿me cobran solo el
 último, o los dos?"*. **Solo el último**, y ahora también en el caso feo.

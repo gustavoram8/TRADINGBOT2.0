@@ -7867,6 +7867,41 @@ def _bind_referral(user, promo):
     return True
 
 
+PLAN_RANK = {'free': 0, 'standard': 1, 'premium': 2}
+
+
+def puede_comprar(user, plan):
+    """¿Se le puede VENDER este plan a esta cuenta ahora mismo?
+
+    Devuelve (True, None) o (False, motivo).
+
+    🔴 EXISTE PARA QUE NADIE PAGUE UN MES QUE YA TIENE PAGADO. Un plan mensual
+    se cobra solo cada mes; si además se pudiera comprar suelto estando dentro
+    del período, el cliente acabaría con meses apilados por delante Y con el
+    cobro automático siguiendo su propio reloj — pagando cada 30 días por un
+    tiempo que ya había comprado. Eso no es un detalle de presentación: es
+    cobrar dos veces lo mismo.
+
+    Quien quiera pagar varios meses por adelantado tiene el ciclo anual; un
+    plan mensual se paga mes a mes, y punto.
+
+    ⚠️ Este control vivía SOLO en la pantalla del carrito (`/checkout`, un GET).
+    La que crea el pedido —el POST— no lo repetía, así que un formulario viejo,
+    un botón atrás o un enlace guardado abrían un pedido del plan que ya tenías.
+    Por eso ahora deciden los dos por aquí: una sola regla, un solo sitio.
+    """
+    if PLAN_RANK.get(plan, 0) <= PLAN_RANK.get(user.plan, 0):
+        return False, 'same_or_lower'
+    # Cinturón: aunque `user.plan` no lo refleje todavía (un aviso que aún no
+    # llegó), un permiso de cobro vivo de ESE plan ya significa que lo tiene.
+    for s in PlanSubscription.query.filter(
+            PlanSubscription.user_id == user.id,
+            PlanSubscription.plan == plan,
+            PlanSubscription.status.in_(('active', 'suspended'))).all():
+        return False, 'ya_suscrito'
+    return True, None
+
+
 def _promo_para_compra(user, plan, cycle, code):
     """Qué descuento gana en esta compra — sin tocar JAMÁS la atribución.
 
@@ -7966,9 +8001,7 @@ def checkout():
     cycle = request.args.get('cycle', 'monthly')
     if plan not in PLAN_PRICING or cycle not in allowed_cycles():
         return redirect(url_for('pricing'))
-    # Block same-plan or downgrade purchases
-    PLAN_RANK = {'free': 0, 'standard': 1, 'premium': 2}
-    if PLAN_RANK.get(plan, 0) <= PLAN_RANK.get(current_user.plan, 0):
+    if not puede_comprar(current_user, plan)[0]:
         return redirect(url_for('pricing'))
     # A bound account's discount applies BY ITSELF: the renewal must cost $40
     # without anyone remembering to retype anything. The stored code only
@@ -8072,6 +8105,12 @@ def checkout_create():
     cycle = request.form.get('cycle', 'monthly')
     code = (request.form.get('promo_code') or '').strip()
     if plan not in PLAN_PRICING or cycle not in allowed_cycles():
+        return redirect(url_for('pricing'))
+    # 🔴 La MISMA regla que la pantalla del carrito. Sin esto, un formulario
+    # viejo o el botón atrás creaban un pedido del plan que la cuenta ya tiene
+    # — y al pagarlo se apilaban 30 días más mientras el cobro automático
+    # seguía su propio reloj: el cliente pagando meses que ya había comprado.
+    if not puede_comprar(current_user, plan)[0]:
         return redirect(url_for('pricing'))
 
     # El código atado se aplica solo y nadie puede robarle la atribución; una
