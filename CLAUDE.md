@@ -1217,6 +1217,30 @@ reemplaza.
   que avisa y no quita el plan, elección de riel con los dos encendidos, precio siempre server-side,
   aislamiento entre compradores, y con las claves apagadas todo vuelve al flujo manual.
 
+## 🔴 Bug REAL cazado en la 1ª compra de prueba (2026-08-05) — te cobraba OTRO plan
+**Síntoma del dueño:** *"fui a pagar por un plan standard y se me cobró y activó uno premium"*.
+**NO era el sandbox** (lo sospechó, y era razonable): el cableado de PayPal estaba bien.
+`checkout_create` devolvía el **pedido pendiente** fuera cual fuera el plan que se acabara de
+pedir. Ese guard existe para que un intento abandonado no encierre al comprador (no puede apilar
+pendientes), pero a ciegas convertía el intento viejo en un **cambiazo de producto**: había
+abandonado a medias una compra de Premium, volvió a por Standard, y el carrito decía $25 mientras
+la pasarela cobraba $50.
+**Fix:** el pendiente **solo se retoma si es esta misma compra** (plan + ciclo + precio + cupón).
+Si pide otra cosa, `_soltar_pedido()` lo suelta — y soltar es tres cosas, no una: (1) cancelar,
+(2) devolver el uso reservado del cupón, (3) 🔴 **cortar en PayPal la suscripción que ese pedido
+hubiera abierto**, porque `_sub_cobro` salda el primer cobro contra `first_order_id` mirando solo
+que NO esté pagado — **un pedido cancelado le servía igual**, así que aprobar más tarde aquel
+enlace viejo entregaba el plan ya descartado. Antes de soltar nada se **reconcilia** contra la
+pasarela por si se pagó hace un instante y el aviso no llegó (cancelar ahí = cobrado sin plan).
+`/checkout/cancel` usa el mismo desmontaje (antes dejaba la suscripción en pie).
+**Bonus:** aplicar un cupón sobre algo que ya estaba en el carrito ahora funciona (cambia el
+precio → pedido nuevo). Dos checks de `test_pedido_atascado` documentaban lo contrario —que el
+cupón se ignoraba y había que cancelar a mano— y se actualizaron.
+⚠️ **Lección:** un guard "no apiles pendientes" **tiene que comparar QUÉ es el pendiente**. Y esto
+no lo cazó ninguna de las 46 comprobaciones de PayPal simulado: todas compraban UNA cosa. Lo cazó
+la primera compra de una persona, que abandonó a mitad — como hace todo el mundo.
+`tools/test_pedido_pendiente.py` **18/18** (con el código viejo falla justo el caso reportado).
+
 ## 🟢 Stripe — pagos con tarjeta (código LISTO, probado en TEST 2026-07-12)
 Integración **condicional**: totalmente inerte hasta setear `STRIPE_SECRET_KEY` → sin la clave, prod
 sigue con el flujo manual USDT/Binance intacto (cero regresión). Reutiliza el `Order` model y
