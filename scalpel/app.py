@@ -1107,6 +1107,11 @@ class Order(db.Model):
     pay_currency = db.Column(db.String(20), nullable=True)
     tx_hash = db.Column(db.String(120), nullable=True)         # buyer-supplied or processor-reported
     alerted_at = db.Column(db.DateTime, nullable=True)         # problem alert already emailed
+    # 🔴 Un ensayo, no una venta. Se sella al pagarse, con el entorno de ESE
+    # momento, y no se vuelve a mirar: si se decidiera por el entorno de HOY,
+    # el día que se pase a producción todos los ensayos de sandbox se
+    # convertirían de golpe en ingresos reales en el panel.
+    is_test = db.Column(db.Boolean, default=False, nullable=False, index=True)
     user = db.relationship('User', backref='orders')
 
 
@@ -6389,9 +6394,17 @@ def _build_revenue_context():
                       .filter_by(status='pending')
                       .order_by(Order.created_at.desc()).all()]
 
+    # 🔴 LOS ENSAYOS NO SON INGRESOS. El libro de ventas ya los ignoraba, pero
+    # este panel los sumaba igual y enseñaba miles de dólares de dinero de
+    # mentira. Se cuentan aparte para que el dueño vea que existen — borrarlos
+    # de la vista sin decirlo sería otra forma de mentirle.
+    pruebas = Order.query.filter_by(status='paid', is_test=True).all()
+    pruebas_total = round(sum(o.final_price or 0.0 for o in pruebas), 2)
+
     # Paid orders this calendar month
     paid_month = Order.query.filter(
         Order.status == 'paid',
+        Order.is_test.is_(False),
         Order.paid_at >= month_start).order_by(Order.paid_at.desc()).all()
 
     rev_by_plan = {}
@@ -6406,7 +6419,7 @@ def _build_revenue_context():
     # All-time paid revenue (lifetime)
     lifetime_total = round(sum(
         o.final_price or 0.0
-        for o in Order.query.filter_by(status='paid').all()), 2)
+        for o in Order.query.filter_by(status='paid', is_test=False).all()), 2)
 
     # Expenses. The whole ledger is read at once — this table stays small, and
     # it lets the panel offer any month without another round trip.
@@ -6472,6 +6485,8 @@ def _build_revenue_context():
         'rev_by_plan': rev_by_plan,
         'revenue_total': revenue_total,
         'lifetime_total': lifetime_total,
+        'pruebas_n': len(pruebas),
+        'pruebas_total': pruebas_total,
         'paid_month_rows': paid_month_rows,
         'expense_rows': expense_rows,
         'expenses_total': expenses_total,
@@ -7818,6 +7833,23 @@ def _next_partner_position(partner, user_id=None, username=None):
     return len(roster) + 1                   # new customer → last place
 
 
+def es_pedido_de_prueba(order):
+    """¿Este pago fue un ensayo con dinero de mentira?
+
+    Un solo sitio decide, y de él dependen DOS cosas que antes iban por su
+    cuenta: que el libro de ventas no lo anote y que el panel de ingresos no lo
+    sume. Estaban separadas, así que el libro ignoraba el sandbox mientras
+    Revenue enseñaba miles de dólares que nunca existieron.
+
+    Ya sellado (`is_test`) manda el sello: el entorno de HOY no puede
+    reescribir lo que fue un ensayo AYER.
+    """
+    if getattr(order, 'is_test', False):
+        return True
+    return (getattr(order, 'payment_method', '') == 'paypal'
+            and PAYPAL_ENV != 'live')
+
+
 def record_sale_breakdown(order, processor_fee=None, fee_is_real=False):
     """Take a paid order apart and file the result. Runs once per order.
 
@@ -7835,7 +7867,7 @@ def record_sale_breakdown(order, processor_fee=None, fee_is_real=False):
     # borrar (solo revertir, y queda tachada a la vista), habría consumido un
     # puesto de la escalera del socio y habría apartado reserva de un dinero
     # inexistente. El plan SÍ se activa: lo que se ensaya es el circuito.
-    if order.payment_method == 'paypal' and PAYPAL_ENV != 'live':
+    if es_pedido_de_prueba(order):
         app.logger.info('Order %s pagada en PayPal SANDBOX: se activa el plan '
                         'pero NO se anota en el libro de ventas.', order.id)
         return None
@@ -7943,6 +7975,9 @@ def _activate_plan_from_order(order):
         user.plan_started_at = now
     user.plan_expires_at = base + timedelta(days=days)
     order.applied_at = now
+    # Se sella aquí, con el entorno del momento del pago. Ver `es_pedido_de_prueba`.
+    if es_pedido_de_prueba(order):
+        order.is_test = True
     if renewal:
         # Renovar no estrena nada: se sella la celebración aquí mismo para que
         # no quede en cola. Sin esto, cada mes cobrado le sacaba otra vez el
@@ -14060,6 +14095,46 @@ def _migrate_sale_reserve_columns():
         app.logger.info('Migrated sale_breakdown: reserve columns ensured.')
 
 
+def _migrate_order_is_test_column():
+    """Marca de "esto fue un ensayo" en la tabla de pedidos.
+
+    ⚠️ AQUÍ EL BACKFILL SÍ CORRESPONDE, y solo bajo una condición: se marcan
+    los pedidos de PayPal ya existentes **únicamente si el servidor NO está en
+    live**. Si ya está en producción, no se toca nada — no vaya a ser que un
+    despliegue tardío borre ventas de verdad del panel.
+
+    La marca es permanente: una vez sellado, el entorno de mañana no puede
+    reescribir lo que fue un ensayo hoy."""
+    from sqlalchemy import inspect, text
+    insp = inspect(db.engine)
+    if 'order' not in insp.get_table_names():
+        return
+    cols = {c['name'] for c in insp.get_columns('order')}
+    if 'is_test' in cols:
+        return
+    tabla = '"order"' if db.engine.dialect.name == 'postgresql' else '"order"'
+    try:
+        with db.engine.begin() as conn:
+            conn.execute(text('ALTER TABLE %s ADD COLUMN is_test BOOLEAN '
+                              'NOT NULL DEFAULT 0' % tabla))
+    except Exception as e:
+        app.logger.info('is_test migration note (ignored): %s', e)
+        return
+    if PAYPAL_ENV != 'live':
+        try:
+            with db.engine.begin() as conn:
+                r = conn.execute(text(
+                    "UPDATE %s SET is_test = 1 WHERE payment_method = 'paypal'"
+                    % tabla))
+            app.logger.info('Marcados %s pedidos de PayPal como ensayos '
+                            '(PAYPAL_ENV=%s).', getattr(r, 'rowcount', '?'),
+                            PAYPAL_ENV)
+        except Exception as e:
+            app.logger.info('is_test backfill note (ignored): %s', e)
+    else:
+        app.logger.info('is_test: entorno LIVE, no se marca nada como ensayo.')
+
+
 def _migrate_sub_pending_columns():
     """Añade a plan_subscription las columnas del cambio de plan programado.
 
@@ -14451,6 +14526,7 @@ def init_db():
         _migrate_preflight_check_columns()
         _migrate_sale_reserve_columns()
         _migrate_sub_pending_columns()
+        _migrate_order_is_test_column()
         _migrate_testimonial_insider_column()
         _migrate_daily_best_streak_column()
         _migrate_mentorship_application_columns()

@@ -17,7 +17,9 @@ NUEVAS_OTRAS = [('daily_quiz_state', 'best_streak', None),
                 # cambio de plan programado (2026-08-05)
                 ('plan_subscription', 'pending_plan', None),
                 ('plan_subscription', 'pending_price', None),
-                ('plan_subscription', 'pending_at', None)]
+                ('plan_subscription', 'pending_at', None),
+                # ensayos de sandbox fuera de Revenue (2026-08-05)
+                ('order', 'is_test', None)]
 
 if os.path.exists(DB):
     os.remove(DB)
@@ -60,7 +62,12 @@ con.commit()
 quitadas_otras = []
 for tabla, col, _ in NUEVAS_OTRAS:
     try:
-        con.execute('ALTER TABLE %s DROP COLUMN %s' % (tabla, col))
+        # ⚠️ `order` es palabra reservada: sin comillas el ALTER falla y el
+        # test se salta ese caso EN SILENCIO — o sea que pasa sin probar nada.
+        # SQLite tampoco deja soltar una columna INDEXADA: fuera el índice
+        # primero, o el DROP falla y el caso se salta sin probarse.
+        con.execute('DROP INDEX IF EXISTS ix_%s_%s' % (tabla, col))
+        con.execute('ALTER TABLE "%s" DROP COLUMN %s' % (tabla, col))
         quitadas_otras.append((tabla, col))
     except Exception as e:
         print('      (no se pudo quitar %s.%s: %s)' % (tabla, col, e))
@@ -85,7 +92,7 @@ faltan = [c for c in quitadas if c not in cols]
 alt = con.execute("SELECT alt_id FROM user WHERE username='viejo'").fetchone()
 faltan_otras = []
 for tabla, col in quitadas_otras:
-    c2 = {r[1] for r in con.execute('PRAGMA table_info(%s)' % tabla)}
+    c2 = {r[1] for r in con.execute('PRAGMA table_info("%s")' % tabla)}
     if col not in c2:
         faltan_otras.append('%s.%s' % (tabla, col))
 best = con.execute('SELECT best_streak FROM daily_quiz_state').fetchone()
