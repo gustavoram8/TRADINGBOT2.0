@@ -179,6 +179,56 @@ def main():
         check(pedidos(uid3) == 0,
               'y no se le crea el pedido (%d)' % pedidos(uid3))
 
+    # ── 4b · BAJAR de plan también se permite, y reinicia el mes ──────────
+    print('\n4b · un Premium se pasa a Standard')
+    with A.app.app_context():
+        uid5 = usuario('apila_baja', plan='premium')
+        u = A.db.session.get(A.User, uid5)
+        u.plan_expires_at = datetime.now(timezone.utc) + timedelta(days=22)
+        u.plan_cycle = 'monthly'
+        A.db.session.commit()
+    c = cliente('apila_baja')
+    r = c.get('/checkout?plan=standard&cycle=monthly')
+    check(r.status_code == 200,
+          '🔴 puede abrir el carrito de Standard (%s)' % r.status_code)
+    cuerpo = r.get_data(as_text=True)
+    check('pswap' in cuerpo and 'checkout.swapBody' in cuerpo,
+          'y se le avisa de que cambia de plan')
+    check('"dias": 21' in cuerpo or '"dias": 22' in cuerpo,
+          'diciéndole cuántos días pierde (%s)'
+          % (cuerpo.split('"dias": ')[1][:2] if '"dias": ' in cuerpo else '—'))
+    r = c.post('/checkout/create', data={'plan': 'standard', 'cycle': 'monthly',
+                                         'method': 'manual'},
+               follow_redirects=False)
+    with A.app.app_context():
+        o = (A.Order.query.filter_by(user_id=uid5, status='pending')
+             .order_by(A.Order.id.desc()).first())
+        check(o is not None and o.plan == 'standard' and o.final_price == 25.0,
+              'el pedido de la bajada se crea a $%s' % (o.final_price if o else '—'))
+        o.status = 'paid'
+        o.paid_at = datetime.now(timezone.utc)
+        A.db.session.commit()
+        A._activate_plan_from_order(o)
+        u = A.db.session.get(A.User, uid5)
+        dias = (A._aware(u.plan_expires_at) - datetime.now(timezone.utc)).days
+        check(u.plan == 'standard', 'queda en Standard (%s)' % u.plan)
+        check(28 <= dias <= 30,
+              '🔴 el mes empieza de cero: 30 días, no 52 (%d)' % dias)
+
+    # ── 4c · comprar el plan que ya tienes: NO, en ninguna dirección ──────
+    print('\n4c · el mismo plan otra vez, ya sea alto o bajo')
+    with A.app.app_context():
+        for nombre, plan in (('apila_std', 'standard'), ('apila_prem', 'premium')):
+            uu = usuario(nombre, plan=plan)
+            u = A.db.session.get(A.User, uu)
+            u.plan_expires_at = datetime.now(timezone.utc) + timedelta(days=15)
+            A.db.session.commit()
+            se_puede, motivo = A.puede_comprar(u, plan)
+            check(not se_puede and motivo == 'ya_lo_tienes',
+                  '%s no puede recomprar %s (%s)' % (nombre, plan, motivo))
+            check(A.puede_comprar(u, 'free')[1] == 'no_existe',
+                  'y Free no se compra: se cancela en Ajustes')
+
     # ── 5 · la renovación automática SÍ suma su mes ───────────────────────
     print('\n5 · lo que sí debe apilar: la renovación del propio cobro')
     with A.app.app_context():

@@ -154,6 +154,13 @@ body.dark .pbar .logo-img{filter:invert(1)}
 .pcta.ghost:hover{border-color:var(--acc);color:var(--acc)}
 
 /* ── letra chica: promesas concretas, con su marca de verificado ─────────── */
+/* Aviso de cambio de plan: los días del plan anterior no se arrastran. Va en
+   ámbar y no en rojo — no es un error, es una consecuencia que hay que leer
+   antes de pagar. */
+.pswap{margin-top:14px;padding:11px 13px;border-radius:10px;
+       border:1px solid #f0c98a;background:#fdf6ea;color:#7a4b12;
+       font-size:12.5px;line-height:1.55;display:grid;gap:3px}
+.pswap strong{font-weight:700;font-size:13px}
 .pfine{margin-top:15px;display:grid;gap:7px}
 .pfi{display:flex;gap:8px;font-size:12.5px;color:var(--ink3);line-height:1.55}
 /* 🔴 `hidden` es solo `display:none` de la hoja del navegador, y CUALQUIER

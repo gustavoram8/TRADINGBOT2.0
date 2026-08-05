@@ -222,8 +222,16 @@ with A.app.test_client() as c:
     entrar(c, 'lucia@demo.invalid', CLAVE_LUCIA)
     check('premium entra al foro', c.get('/forum/feed').status_code == 200)
     check('premium ve su cuota de análisis', c.get('/api/usage').status_code == 200)
+    # Bajar de plan SÍ se puede desde el 2026-08-05 (decisión del dueño): era
+    # un callejón sin salida, un Premium solo podía irse cancelando y esperando
+    # a que se le acabara el mes. Lo que no se puede es recomprar el plan que
+    # ya se tiene — ver tools/test_meses_apilados.py.
     r = c.get('/checkout?plan=standard&cycle=monthly')
-    check('no puede "bajar" a standard estando en premium', r.status_code == 302, r.status_code)
+    check('puede BAJAR a standard estando en premium', r.status_code == 200, r.status_code)
+    check('y se le avisa de que el mes empieza de cero',
+          'checkout.swapBody' in r.get_data(as_text=True))
+    r = c.get('/checkout?plan=premium&cycle=monthly')
+    check('pero NO recomprar el premium que ya tiene', r.status_code == 302, r.status_code)
 
 seccion('RENOVACIÓN Y CADUCIDAD')
 with A.app.app_context():

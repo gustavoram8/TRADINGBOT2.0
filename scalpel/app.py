@@ -7882,22 +7882,33 @@ def puede_comprar(user, plan):
     tiempo que ya había comprado. Eso no es un detalle de presentación: es
     cobrar dos veces lo mismo.
 
-    Quien quiera pagar varios meses por adelantado tiene el ciclo anual; un
-    plan mensual se paga mes a mes, y punto.
+    Decisión del dueño (2026-08-05): **nadie paga más de un plan a la vez**, y
+    punto — ni siquiera adelantando meses. El ciclo anual, que sería la vía
+    legítima de pagar por adelantado, está apagado hasta que exista un método
+    de cobro con menos exposición a contracargos que PayPal.
+
+    Lo que SÍ se puede siempre es CAMBIAR de plan, en las dos direcciones:
+    subir a Premium o bajar a Standard. Cambiar no es repetir un mes — es otro
+    producto — y el mes empieza de cero el día del cambio (decisión del dueño:
+    los días que quedaban del plan anterior no se arrastran ni se suman).
+    Bajar a Free no se compra: eso es el botón de darse de baja en Ajustes.
 
     ⚠️ Este control vivía SOLO en la pantalla del carrito (`/checkout`, un GET).
     La que crea el pedido —el POST— no lo repetía, así que un formulario viejo,
     un botón atrás o un enlace guardado abrían un pedido del plan que ya tenías.
     Por eso ahora deciden los dos por aquí: una sola regla, un solo sitio.
     """
-    if PLAN_RANK.get(plan, 0) <= PLAN_RANK.get(user.plan, 0):
-        return False, 'same_or_lower'
+    if plan not in PLAN_PRICING:
+        return False, 'no_existe'          # 'free' no se compra: se cancela
+    if plan == user.plan:
+        return False, 'ya_lo_tienes'
     # Cinturón: aunque `user.plan` no lo refleje todavía (un aviso que aún no
     # llegó), un permiso de cobro vivo de ESE plan ya significa que lo tiene.
-    for s in PlanSubscription.query.filter(
-            PlanSubscription.user_id == user.id,
-            PlanSubscription.plan == plan,
-            PlanSubscription.status.in_(('active', 'suspended'))).all():
+    viva = PlanSubscription.query.filter(
+        PlanSubscription.user_id == user.id,
+        PlanSubscription.plan == plan,
+        PlanSubscription.status.in_(('active', 'suspended'))).first()
+    if viva is not None:
         return False, 'ya_suscrito'
     return True, None
 
@@ -8015,7 +8026,20 @@ def checkout():
     if cycle == 'annual':
         prices = PLAN_PRICING.get(plan, {})
         saving = max(0.0, prices.get('monthly', 0) * 12 - prices.get('annual', 0))
+    # Cambiar de plan REINICIA el mes: los días que le quedaban del anterior no
+    # se arrastran. Es la regla elegida por el dueño y es defendible —estrena
+    # producto—, pero cobrar sin decirlo no lo es. Se cuentan los días que va a
+    # perder y se le enseñan ANTES de pagar.
+    cambio_desde = ''
+    dias_restantes = 0
+    if current_user.plan in PLAN_PRICING and current_user.plan != plan:
+        vence = _aware(current_user.plan_expires_at)
+        if vence and vence > datetime.now(timezone.utc):
+            cambio_desde = PLAN_LABELS.get(current_user.plan, current_user.plan)
+            dias_restantes = max(0, (vence - datetime.now(timezone.utc)).days)
     return render_template('checkout.html', plan=plan, cycle=cycle,
+                           cambio_desde=cambio_desde,
+                           dias_restantes=dias_restantes,
                            plan_label=PLAN_LABELS[plan], quote=q,
                            annual_saving=saving,
                            # El metodo de pago se elige AQUI, en el carrito. Con

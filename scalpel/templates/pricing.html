@@ -570,7 +570,10 @@
     {% if user_plan == 'standard' %}
     <span class="cta cta-current" data-i18n="pricing.currentPlan">✓ Current Plan</span>
     {% elif user_plan == 'premium' %}
-    <span class="cta cta-current">—</span>
+    {# Bajar de plan es un derecho del cliente, no un callejón sin salida. Aquí
+       había un "—" que dejaba a un Premium sin forma de pasarse a Standard más
+       que cancelando y esperando a que se le acabara el mes. #}
+    <a href="/checkout?plan=standard&cycle=monthly" class="cta cta-buy" data-plan="standard" data-i18n="pricing.switchStandard">Switch to Standard</a>
     {% else %}
     <a href="/checkout?plan=standard&cycle=monthly" class="cta cta-buy" data-plan="standard" data-i18n="pricing.chooseStandard">Choose Standard</a>
     {% endif %}

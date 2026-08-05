@@ -48,6 +48,7 @@
       'pricing.stdF1': '<strong>1</strong> screenshot analysis per day',
       'pricing.everythingFree': 'Everything in Free',
       'pricing.chooseStandard': 'Choose Standard',
+      'pricing.switchStandard': 'Switch to Standard',
       // Premium
       'pricing.mostPopular': 'Most Popular',
       'pricing.premTag': 'For serious traders who want deep daily review.',
@@ -242,6 +243,8 @@
       'settings.accessUntil': 'Access until',
       'settings.noAutoCharge': 'no automatic charge',
       'settings.paidThrough': 'Access already paid through',
+      'checkout.swapTitle': "You're changing plan",
+      'checkout.swapBody': 'Your new month starts today. The {dias} day(s) left on your {plan} plan do not carry over.',
       'settings.cancelledNoDate': "Cancelled — you won't be charged again. Your access continues for now.",
       'settings.upgrade': 'Upgrade →',
       'settings.reactivate': 'Reactivate',
@@ -494,6 +497,7 @@
       'pricing.stdF1': '<strong>1</strong> análisis de captura por día',
       'pricing.everythingFree': 'Todo lo de Gratis',
       'pricing.chooseStandard': 'Elegir Standard',
+      'pricing.switchStandard': 'Cambiar a Standard',
       // Premium
       'pricing.mostPopular': 'Más popular',
       'pricing.premTag': 'Para traders serios que quieren una revisión diaria profunda.',
@@ -688,6 +692,8 @@
       'settings.accessUntil': 'Acceso hasta el',
       'settings.noAutoCharge': 'sin cobro automático',
       'settings.paidThrough': 'Acceso ya pagado hasta el',
+      'checkout.swapTitle': 'Vas a cambiar de plan',
+      'checkout.swapBody': 'Tu nuevo mes empieza hoy. Los {dias} día(s) que te quedan de {plan} no se suman al plan nuevo.',
       'settings.cancelledNoDate': 'Cancelado — no se te volverá a cobrar. Tu acceso sigue activo por ahora.',
       'settings.upgrade': 'Mejorar plan →',
       'settings.reactivate': 'Reactivar',
@@ -942,6 +948,7 @@
       'pricing.stdF1': '<strong>1</strong> analyse de capture par jour',
       'pricing.everythingFree': 'Tout ce qui est inclus dans Gratuit',
       'pricing.chooseStandard': 'Choisir Standard',
+      'pricing.switchStandard': 'Passer à Standard',
       // Premium
       'pricing.mostPopular': 'Le plus populaire',
       'pricing.premTag': 'Pour les traders sérieux qui veulent une revue quotidienne approfondie.',
@@ -1136,6 +1143,8 @@
       'settings.accessUntil': 'Accès jusqu’au',
       'settings.noAutoCharge': 'sans prélèvement automatique',
       'settings.paidThrough': "Accès déjà payé jusqu'au",
+      'checkout.swapTitle': 'Vous changez de formule',
+      'checkout.swapBody': "Votre nouveau mois commence aujourd'hui. Les {dias} jour(s) restants de votre formule {plan} ne sont pas reportés.",
       'settings.cancelledNoDate': "Annulé — vous ne serez plus prélevé. Votre accès reste actif pour l'instant.",
       'settings.upgrade': 'Améliorer la formule →',
       'settings.reactivate': 'Réactiver',
@@ -1387,6 +1396,7 @@
       'pricing.stdF1': '<strong>1</strong> análise de captura por dia',
       'pricing.everythingFree': 'Tudo do plano Grátis',
       'pricing.chooseStandard': 'Escolher Standard',
+      'pricing.switchStandard': 'Mudar para Standard',
       // Premium
       'pricing.mostPopular': 'Mais popular',
       'pricing.premTag': 'Para traders sérios que querem uma revisão diária aprofundada.',
@@ -1581,6 +1591,8 @@
       'settings.accessUntil': 'Acesso até',
       'settings.noAutoCharge': 'sem cobrança automática',
       'settings.paidThrough': 'Acesso já pago até',
+      'checkout.swapTitle': 'Você vai mudar de plano',
+      'checkout.swapBody': 'Seu novo mês começa hoje. Os {dias} dia(s) restantes do seu plano {plan} não são transferidos.',
       'settings.cancelledNoDate': 'Cancelado — você não será cobrado novamente. Seu acesso continua ativo por enquanto.',
       'settings.upgrade': 'Fazer upgrade →',
       'settings.reactivate': 'Reativar',
@@ -1824,8 +1836,26 @@
       if (tv != null) document.title = tv;
     }
 
+    // Sustitución de variables en el propio HTML: data-i18n-vars='{"dias":20}'
+    // rellena los {dias} de la traducción. Hace falta cuando el número lo sabe
+    // el SERVIDOR (días que quedan, importes) y el texto que lo rodea cambia de
+    // idioma: sin esto habría que partir la frase en trozos, y en francés o en
+    // portugués los trozos no van en el mismo orden.
+    function conVars(el, s) {
+      if (s == null) return s;
+      var crudo = el.getAttribute('data-i18n-vars');
+      if (!crudo) return s;
+      try {
+        var vars = JSON.parse(crudo);
+        Object.keys(vars).forEach(function (k) {
+          s = s.split('{' + k + '}').join(vars[k]);
+        });
+      } catch (e) {}
+      return s;
+    }
+
     document.querySelectorAll('[data-i18n]').forEach(function (el) {
-      var v = str(lang, el.getAttribute('data-i18n'));
+      var v = conVars(el, str(lang, el.getAttribute('data-i18n')));
       if (v != null) el.textContent = v;
     });
     // Hover tooltips. NOT data-i18n-title: that one is reserved above for the
@@ -1835,7 +1865,7 @@
       if (v != null) el.setAttribute('title', v);
     });
     document.querySelectorAll('[data-i18n-html]').forEach(function (el) {
-      var v = str(lang, el.getAttribute('data-i18n-html'));
+      var v = conVars(el, str(lang, el.getAttribute('data-i18n-html')));
       if (v != null) el.innerHTML = v;
     });
     document.querySelectorAll('[data-i18n-ph]').forEach(function (el) {

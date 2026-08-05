@@ -1341,10 +1341,25 @@ razón, y no era solo el número raro de la pantalla.
   GET, la pantalla). **`/checkout/create` (el POST) no lo repetía** → un formulario viejo, el botón
   atrás o un enlace guardado creaban el pedido igual. Medido con el código anterior: 3 intentos =
   **$75 cobrados y 89 días apilados**.
-- **Regla fijada:** un plan mensual se paga **mes a mes**; para pagar varios meses por adelantado
-  está el ciclo anual. Un solo decisor `puede_comprar(user, plan)` que usan **las dos** puertas
-  (rechaza plan igual o inferior, y de cinturón: cualquier suscripción viva de ese plan, aunque
-  `user.plan` todavía no lo refleje). **Subir de plan sigue permitido** — eso no es repetir un mes.
+- **Regla fijada por el dueño:** **nadie paga más de un plan a la vez**, ni siquiera adelantando
+  meses (el ciclo anual, que sería la vía legítima, sigue apagado hasta tener un método con menos
+  exposición a contracargos que PayPal). Un solo decisor `puede_comprar(user, plan)` que usan **las
+  dos** puertas: rechaza **el mismo plan** (`ya_lo_tienes`), Free (`no_existe` — bajar a Free es el
+  botón de baja en Ajustes) y, de cinturón, cualquier suscripción viva de ese plan aunque
+  `user.plan` todavía no lo refleje (`ya_suscrito`).
+- ✅ **CAMBIAR de plan se permite en LAS DOS direcciones (2026-08-05).** Bajar estaba bloqueado y era
+  un callejón sin salida: un Premium solo podía irse cancelando y esperando a que se le acabara el
+  mes. En `/pricing` la tarjeta Standard mostraba un **"—"** a los Premium → ahora **"Cambiar a
+  Standard"** (`pricing.switchStandard` ×4).
+- **Al cambiar, el mes EMPIEZA DE CERO** (decisión explícita del dueño): los días que quedaban del
+  plan anterior **no se arrastran ni se suman**. Ya era el comportamiento del código; lo que faltaba
+  era **decirlo antes de cobrar** → aviso ámbar `.pswap` en el carrito con **los días exactos que
+  pierde** (`checkout.swapTitle/swapBody` ×4, verificado en navegador en los 4 idiomas).
+  ⚠️ El aplicador de `pages_i18n.js` no sustituía variables → se le añadió **`data-i18n-vars`**
+  (JSON en el atributo). Hacía falta porque el número lo sabe el SERVIDOR y el texto que lo rodea
+  cambia de orden entre idiomas; partir la frase en trozos no funciona en FR/PT.
+- ⚠️ `test_circuito_completo` afirmaba *"no puede bajar a standard estando en premium"* — regla
+  vieja, actualizada a la nueva (y se le añadió el check de que sí se le avisa).
 - ⚠️ `tools/test_promo_31.py` probaba la cláusula 3.1 **recomprando el mismo plan**, que ya no se
   puede: se reencuadró sobre una SUBIDA de Standard a Premium (misma cláusula, compra legítima).
 `tools/test_meses_apilados.py` **15/15** (con el código viejo fallan 5, incluido el caso exacto).

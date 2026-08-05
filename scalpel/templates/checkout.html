@@ -182,6 +182,21 @@
       {% endif %}
     </form>
 
+    {% if cambio_desde %}
+    {# Cambiar de plan reinicia el mes: los días que le quedan del anterior no
+       se suman. La regla es defendible —estrena producto— pero cobrar sin
+       decirlo no lo es, y es justo la clase de sorpresa que acaba en disputa.
+       El número de días sale del servidor; el texto lo traduce el cliente. #}
+    <div class="pswap" role="note">
+      <strong data-i18n="checkout.swapTitle">You're changing plan</strong>
+      <span data-i18n="checkout.swapBody"
+            data-i18n-vars='{"dias": {{ dias_restantes }}, "plan": {{ cambio_desde|tojson }}}'>
+        Your new month starts today. The {{ dias_restantes }} day(s) left on
+        {{ cambio_desde }} do not carry over.
+      </span>
+    </div>
+    {% endif %}
+
     <div class="pfine">
       {% set fk %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>{% endset %}
       {# Lo que dice esta línea depende de CÓMO va a pagar, y eso lo elige
