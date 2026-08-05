@@ -84,6 +84,25 @@ def cuenta(u):
     for e in ev:
         print('  %s  %-22s %s' % (h(e.created_at), e.event_type, e.detail or ''))
 
+    # ¿De dónde salen los días de acceso que tiene hoy?
+    aplicados = [o for o in pedidos if o.applied_at]
+    if aplicados:
+        print('\nDE DÓNDE SALEN SUS DÍAS DE ACCESO')
+        total = 0
+        for o in aplicados:
+            dias = 365 if o.billing_cycle == 'annual' else 30
+            total += dias
+            print('  +%-4d días  pedido #%-4d %-8s aplicado %s'
+                  % (dias, o.id, o.plan, h(o.applied_at)))
+        print('  %s' % ('─' * 52))
+        print('  %d días comprados en total, en %d pedido(s).' % (total, len(aplicados)))
+        if len(aplicados) > 1:
+            print('  ⚠️ Más de un pedido aplicado: si son del MISMO plan y se')
+            print('     compraron sin que venciera el anterior, se apilaron. Eso')
+            print('     ya no puede volver a pasar (el candado nuevo lo impide),')
+            print('     pero los días viejos siguen ahí: se limpian poniendo la')
+            print('     cuenta en Free y devolviéndole el plan desde /admin.')
+
     # La lectura que interesa, dicha en una línea.
     pagados = [o for o in pedidos if o.status == 'paid']
     if pagados:
