@@ -8229,8 +8229,8 @@ def checkout():
         return render_template(
             'checkout_switch.html', plan=plan, plan_label=PLAN_LABELS[plan],
             actual=PLAN_LABELS.get(current_user.plan, current_user.plan),
-            precio=q['final_price'], desde=desde,
-            ya_programado=(sub_viva.pending_plan == plan))
+            precio=q['final_price'], precio_actual=float(sub_viva.price or 0),
+            desde=desde, ya_programado=(sub_viva.pending_plan == plan))
     return render_template('checkout.html', plan=plan, cycle=cycle,
                            cambio_desde=cambio_desde,
                            dias_restantes=dias_restantes,

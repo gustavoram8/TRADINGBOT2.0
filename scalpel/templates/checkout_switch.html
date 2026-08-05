@@ -50,10 +50,16 @@
   </div>
 
   <div class="pwrap swrap">
+    {# ⚠️ Los nombres de los planes van por `data-i18n-vars`. Sin eso la
+       traducción PISA el texto del servidor y la pantalla acaba diciendo
+       "Cambiar de plan · Conservas tu plan actual" sin nombrar ni el plan que
+       dejas ni el que tomas — que es exactamente por qué el dueño no entendió
+       nada al verla. Si él no lo entiende, un cliente tampoco. #}
+    {% set vars %}{"actual": {{ actual|tojson }}, "nuevo": {{ plan_label|tojson }}, "fecha": {{ (desde.strftime('%b %d, %Y') if desde else '—')|tojson }}}{% endset %}
     <div class="pref mono" data-i18n="swap.eyebrow">CHANGE OF PLAN</div>
-    <h1 data-i18n="swap.title">Switch to {{ plan_label }}</h1>
-    <p class="psub" data-i18n="swap.lede">Nothing is charged today. You keep what you have until the
-      period you already paid for ends.</p>
+    <h1 data-i18n="swap.title" data-i18n-vars='{{ vars }}'>{{ actual }} → {{ plan_label }}</h1>
+    <p class="psub" data-i18n="swap.lede" data-i18n-vars='{{ vars }}'>You are moving from {{ actual }}
+      to {{ plan_label }}. Nothing is charged today.</p>
 
     {% if ya_programado %}
     <div class="sdone" data-i18n="swap.already">This change is already scheduled. You can cancel it
@@ -62,20 +68,25 @@
 
     <div class="scard">
       <div class="srow">
-        <span class="k" data-i18n="swap.today">Charged today</span>
-        <span class="v sfree" data-i18n="swap.nothing">Nothing — $0.00</span>
+        <span class="k" data-i18n="swap.today">Today you pay</span>
+        <span class="v sfree" data-i18n="swap.nothing">Nothing</span>
       </div>
       <div class="srow">
-        <span class="k" data-i18n="swap.until">You keep {{ actual }} until</span>
+        <span class="k" data-i18n="swap.until" data-i18n-vars='{{ vars }}'>You stay on {{ actual }} until</span>
         <span class="v">{{ desde.strftime('%b %d, %Y') if desde else '—' }}</span>
       </div>
       <div class="srow">
-        <span class="k" data-i18n="swap.from">From that day you pay</span>
-        <span class="v">${{ '%.2f'|format(precio) }}<span style="opacity:.6">/<span data-i18n="swap.month">month</span></span></span>
+        <span class="k" data-i18n="swap.from" data-i18n-vars='{{ vars }}'>That day you move to {{ plan_label }} and pay</span>
+        <span class="v">
+          {% if precio_actual and precio_actual > precio %}
+          <span style="opacity:.55;text-decoration:line-through;font-weight:600">${{ '%.2f'|format(precio_actual) }}</span>
+          {% endif %}
+          ${{ '%.2f'|format(precio) }}<span style="opacity:.6">/<span data-i18n="swap.month">month</span></span>
+        </span>
       </div>
-      <p class="snote" data-i18n="swap.note">Your next charge simply becomes the smaller one. You lose
-        none of the days you already paid for, and you can cancel this change from Settings until the
-        day it takes effect.</p>
+      <p class="snote" data-i18n="swap.note">This is not a new purchase: your next charge simply
+        becomes the smaller one. You lose none of the days you already paid for, and you can cancel
+        this change from Settings until the day it takes effect.</p>
     </div>
 
     <form method="POST" action="/account/switch-plan">
