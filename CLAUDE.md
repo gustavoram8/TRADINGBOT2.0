@@ -1270,6 +1270,24 @@ Dos cosas que el dueño vio como fallos. Una lo era y la otra no.
   `with` para nada que cruce dos sesiones. `tools/test_plan_en_vivo.py` **20/20** + navegador real
   (recarga sola, barra con texto a medias, el botón, y en español).
 
+## 🔴 "UNLOCKED" que salta cuando no toca — reglas fijadas (2026-08-05)
+**Síntoma:** compró COSMÉTICOS siendo Premium y le saltó el unlock de **Standard**. Los cosméticos no
+tienen nada que ver (viven en `CamoOrder`/`CosmeticOrder` y no crean pedidos de plan): el unlock
+quedaba **en cola** hasta el siguiente `/app`, sin comprobar si seguía describiendo la cuenta — era
+el Standard que había comprado antes en esa misma cuenta, esperando para asomar en cualquier momento.
+**Regla del dueño:** *"El unlock solo tiene sentido cuando haces upgrade / cambias de plan o cuando
+pagas alguno por primera vez."* Cableado en dos sitios:
+- `_activate_plan_from_order`: una **renovación nace ya sellada** (`celebrated_at`). 🔴 Sin esto, con
+  el cobro automático encendido, a un cliente fiel le saltaba "UNLOCKED Premium" **todos los meses**.
+- `/app`: se celebra **solo si el pedido coincide con el plan de HOY** (cuenta ya en Premium + pedido
+  viejo de Standard = ruido, se descarta), y se sella **TODA la cola**, no solo el que se enseña —
+  antes los demás iban asomando de uno en uno en visitas siguientes.
+- No dispara: cosméticos, plan puesto a mano desde /admin (nadie compró nada), ni un plan ya vencido.
+- El reveal de **RANK** es otra cosa y sigue igual: a propósito NO se sella hasta que el usuario lo
+  cierra (`/api/rank/celebrated`), para que un render que nadie vio no se lo trague.
+`tools/test_unlocks.py` **14/14** (con el código viejo fallan 3: el caso del dueño, la renovación y
+la cola). Las filas viejas de producción se sellan solas en el siguiente `/app`, sin enseñar nada.
+
 ## 🟢 Stripe — pagos con tarjeta (código LISTO, probado en TEST 2026-07-12)
 Integración **condicional**: totalmente inerte hasta setear `STRIPE_SECRET_KEY` → sin la clave, prod
 sigue con el flujo manual USDT/Binance intacto (cero regresión). Reutiliza el `Order` model y

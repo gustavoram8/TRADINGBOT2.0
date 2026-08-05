@@ -5262,17 +5262,37 @@ def app_view():
     # Funnel everyone through the welcome splash so it always plays before the app.
     if not _has_splash_pass():
         return redirect(url_for('welcome'))
-    # COD-style unlock reveal: shown exactly once after a purchase is applied.
-    # Marked as celebrated at render time so a reload can't replay it.
+    # COD-style unlock reveal: shown exactly once después de estrenar un plan.
+    # Marcado al renderizar, así una recarga no lo repite.
+    #
+    # 🔴 DOS REGLAS, y las dos nacen de saltos que el dueño vio en la práctica:
+    #
+    #  (a) SOLO se celebra si el pedido coincide con el plan que la cuenta
+    #      tiene AHORA. La celebración vivía en cola hasta el siguiente /app,
+    #      así que un pedido de Standard de hace días saltaba en cualquier
+    #      momento posterior — le pasó siendo Premium, justo al volver de
+    #      comprar cosméticos: "UNLOCKED Standard" de la nada. Una celebración
+    #      que no describe tu situación de hoy es ruido, no una recompensa.
+    #      (Los cosméticos no tienen nada que ver: viven en sus propias tablas
+    #      y no crean pedidos de plan. El pedido viejo ya estaba ahí.)
+    #
+    #  (b) Se sella TODA la cola, no solo el que se enseña. Antes los demás
+    #      quedaban sin sellar y volvían a asomar más adelante, de uno en uno.
+    #
+    # La renovación ni siquiera llega hasta aquí: se sella al activarse
+    # (`_activate_plan_from_order`), porque renovar no es estrenar nada.
     unlock_plan = ''
-    pending_unlock = (Order.query
-                      .filter_by(user_id=current_user.id, status='paid', celebrated_at=None)
-                      .filter(Order.applied_at.isnot(None))
-                      .order_by(Order.applied_at.desc())
-                      .first())
-    if pending_unlock:
-        unlock_plan = pending_unlock.plan
-        pending_unlock.celebrated_at = datetime.now(timezone.utc)
+    en_cola = (Order.query
+               .filter_by(user_id=current_user.id, status='paid', celebrated_at=None)
+               .filter(Order.applied_at.isnot(None))
+               .order_by(Order.applied_at.desc())
+               .all())
+    if en_cola:
+        if en_cola[0].plan == current_user.plan:
+            unlock_plan = en_cola[0].plan
+        ahora_ = datetime.now(timezone.utc)
+        for _o in en_cola:
+            _o.celebrated_at = ahora_
         db.session.commit()
     # Periodic testimonial prompt: every 30 days, for every plan (free included),
     # and never on the same load as the unlock reveal. The client still gates it
@@ -7648,6 +7668,12 @@ def _activate_plan_from_order(order):
         user.plan_started_at = now
     user.plan_expires_at = base + timedelta(days=days)
     order.applied_at = now
+    if renewal:
+        # Renovar no estrena nada: se sella la celebración aquí mismo para que
+        # no quede en cola. Sin esto, cada mes cobrado le sacaba otra vez el
+        # "UNLOCKED Premium" a alguien que lleva medio año siendo Premium — y
+        # con el cobro automático encendido eso pasaría solo, todos los meses.
+        order.celebrated_at = now
     # First PAID order with a creator code welds the account to that partner:
     # binding on payment (not at checkout) so an abandoned cart binds nothing.
     # Solo una compra CON DINERO ata la cuenta a un socio. Un pedido de $0
