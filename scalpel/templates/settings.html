@@ -164,6 +164,12 @@
           {% else %}
             <div class="expires-note"><span data-i18n="settings.accessUntil">Access until</span> {{ user.plan_expires_at.strftime('%b %d, %Y') }} · <span data-i18n="settings.noAutoCharge">no automatic charge</span></div>
           {% endif %}
+        {% elif user.plan != 'free' and user.cancel_at_period_end %}
+          {# Sin fecha de vencimiento no se puede decir "el acceso termina el
+             día X", y callarse deja la pastilla "Cancelando" sin explicar nada
+             — que es justo cuando el botón parece no haber hecho nada. Se dice
+             lo único que sí es cierto: no se te volverá a cobrar. #}
+          <div class="expires-note warn" data-i18n="settings.cancelledNoDate">Cancelled — you won't be charged again. Your access continues for now.</div>
         {% endif %}
       </div>
       <div class="setting-control" style="display:flex;gap:10px;align-items:center;">

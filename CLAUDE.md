@@ -1241,6 +1241,35 @@ no lo cazó ninguna de las 46 comprobaciones de PayPal simulado: todas compraban
 la primera compra de una persona, que abandonó a mitad — como hace todo el mundo.
 `tools/test_pedido_pendiente.py` **18/18** (con el código viejo falla justo el caso reportado).
 
+## 🟡 Cambio de plan EN VIVO + qué hace de verdad "darse de baja" (2026-08-05)
+Dos cosas que el dueño vio como fallos. Una lo era y la otra no.
+- **La pantalla no se enteraba.** Bajó a Free a `gussytrades` desde /admin y el otro siguió viendo
+  su plan hasta refrescar. ⚠️ **Era pintura, no permisos:** el servidor decide en CADA petición, así
+  que la pantalla vieja nunca da acceso a nada (verificado: al bajarlo, su misma sesión reporta
+  `plan=free`, cuota 1 y el foro le devuelve 403 sin refrescar ni volver a entrar).
+  **Vigilante `nx-plan-watch`** al final de `index.html`: pregunta a `/api/usage` (ya devolvía el
+  plan) cada 60 s y **al volver la pestaña al frente**, que es cuando pasa de verdad. 🔴 **No recarga
+  a ciegas**: si hay texto a medio escribir o un análisis corriendo, saca una barra
+  ("Tu plan cambió a X · Actualizar / Ahora no", ×4 idiomas) en vez de borrarle el trabajo.
+  ⚠️ **Trampa cazada en navegador real:** la primera versión usaba `offsetParent !== null` para
+  saber si un campo se ve, y **en `position:fixed` eso vale null aunque esté a la vista** (el
+  carrito y los drawers del sitio son fijos) → la nota escrita se contaba como inexistente y la
+  recarga se la llevaba. Se usa `getClientRects().length`.
+- **"El botón de darse de baja no funciona: sigo siendo premium."** Eso es lo pactado: la baja corta
+  la RENOVACIÓN, no el mes pagado (T&C Secc. 5). 🔴 **Pero había un fallo real detrás, mío:** el
+  botón de /admin ponía el plan **sin fecha de vencimiento**, así que no había nada que terminara y
+  la baja no producía ningún efecto nunca. Ahora otorga 30 días + `plan_cycle='monthly'` (repetir el
+  mismo plan NO estira la fecha: sería regalar meses a cada clic). Y Ajustes ya no se queda mudo sin
+  fecha (`settings.cancelledNoDate` ×4).
+- El **unlock de Premium que "vuelve a saltar"** no es de la baja: es el reveal de la compra, que
+  se dispara en el primer `/app` que se abre después de que el pedido se aplica (una vez por pedido,
+  `Order.celebrated_at`). Si compró y se fue directo a Ajustes a cancelar, lo ve al volver.
+- ⚠️ **Trampa de los tests:** con `with app.test_client() as c:` Flask **conserva** el contexto de la
+  última petición, y con él la sesión de SQLAlchemy — o sea su caché de objetos. El usuario se queda
+  congelado en el plan viejo y el test acusa un fallo del servidor **que no existe**. Clientes sin
+  `with` para nada que cruce dos sesiones. `tools/test_plan_en_vivo.py` **20/20** + navegador real
+  (recarga sola, barra con texto a medias, el botón, y en español).
+
 ## 🟢 Stripe — pagos con tarjeta (código LISTO, probado en TEST 2026-07-12)
 Integración **condicional**: totalmente inerte hasta setear `STRIPE_SECRET_KEY` → sin la clave, prod
 sigue con el flujo manual USDT/Binance intacto (cero regresión). Reutiliza el `Order` model y

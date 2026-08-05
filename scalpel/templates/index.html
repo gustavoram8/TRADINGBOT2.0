@@ -27637,5 +27637,135 @@
 })();
 </script>
 
+
+<script>
+/* ── Vigilante de plan · nx-plan-watch ───────────────────────────────────
+   El plan del usuario se pinta al cargar la página: tabs, candados, cuota,
+   camo, todo. Si el dueño se lo cambia desde /admin mientras la persona tiene
+   la app abierta, la pantalla se queda mintiendo hasta que refresque —
+   reportado así: "bajé a Free a mi hermano y siguió con su plan".
+
+   ⚠️ Es un problema de PINTURA, no de permisos: el servidor comprueba el plan
+   en cada petición, así que una pantalla desactualizada nunca da acceso a
+   nada. Lo que hace falta es que la pantalla se entere.
+
+   Se entera preguntando a /api/usage (que ya devuelve el plan) cada minuto y,
+   sobre todo, cada vez que la pestaña vuelve al frente — que es cuando de
+   verdad ocurre: el dueño cambia el plan en otra ventana y el usuario vuelve
+   a la suya.
+
+   🔴 Y NO recarga a ciegas. Una recarga automática encima de un texto a medio
+   escribir (una nota del analizador, un post del foro, un mensaje) le borra el
+   trabajo a alguien por un cambio que él no pidió. Si hay algo escrito, o hay
+   un análisis corriendo, se le enseña una barra y decide él.
+   ─────────────────────────────────────────────────────────────────────── */
+(function () {
+  var U = window.SCALPEL_USER;
+  if (!U || U.isGuest || !U.plan) return;
+
+  var T = {
+    en: { up: 'Your plan is now {p}.', down: 'Your plan changed to {p}.',
+          reload: 'Refresh', later: 'Later' },
+    es: { up: 'Tu plan ahora es {p}.', down: 'Tu plan cambió a {p}.',
+          reload: 'Actualizar', later: 'Ahora no' },
+    fr: { up: 'Votre plan est désormais {p}.', down: 'Votre plan a changé : {p}.',
+          reload: 'Actualiser', later: 'Plus tard' },
+    pt: { up: 'Seu plano agora é {p}.', down: 'Seu plano mudou para {p}.',
+          reload: 'Atualizar', later: 'Agora não' }
+  };
+  var NOMBRE = { free: 'Free', standard: 'Standard', premium: 'Premium' };
+  var ORDEN = { free: 0, standard: 1, premium: 2 };
+
+  function lang() {
+    try { return localStorage.getItem('scalpel_lang') || 'en'; } catch (e) { return 'en'; }
+  }
+  function t(k) { return (T[lang()] || T.en)[k]; }
+
+  /* ¿Se ve en pantalla?
+     ⚠️ NO se usa `offsetParent`: en un elemento `position:fixed` vale null
+     aunque esté a la vista, y varias cosas del sitio son fijas (la barra del
+     carrito, los drawers). Con eso, un texto a medio escribir se contaba como
+     inexistente y la recarga se lo llevaba por delante — cazado probándolo en
+     un navegador de verdad, no leyendo el código. `getClientRects()` sí
+     distingue lo pintado de lo oculto en los dos casos. */
+  function seVe(el) {
+    return !!(el && el.getClientRects && el.getClientRects().length);
+  }
+
+  /* ¿Recargar ahora le costaría algo a esta persona? */
+  function hayTrabajoAbierto() {
+    var lv = document.getElementById('loading-view');
+    if (lv && lv.style.display && lv.style.display !== 'none') return true;
+    var campos = document.querySelectorAll(
+      'textarea, input[type="text"], input[type="search"], input:not([type])');
+    for (var i = 0; i < campos.length; i++) {
+      if ((campos[i].value || '').trim() && seVe(campos[i])) return true;
+    }
+    var edit = document.querySelectorAll('[contenteditable="true"]');
+    for (var j = 0; j < edit.length; j++) {
+      if ((edit[j].textContent || '').trim() && seVe(edit[j])) return true;
+    }
+    return false;
+  }
+
+  var barra = null;
+  function avisar(nuevo) {
+    if (barra) return;
+    var subida = (ORDEN[nuevo] || 0) > (ORDEN[U.plan] || 0);
+    barra = document.createElement('div');
+    barra.id = 'nx-plan-bar';
+    barra.setAttribute('role', 'status');
+    barra.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:99999;'
+      + 'display:flex;gap:12px;align-items:center;justify-content:center;'
+      + 'padding:10px 16px;font:600 14px/1.35 system-ui,-apple-system,sans-serif;'
+      + 'background:#12151c;color:#f2f4f8;border-bottom:1px solid #2a2f3c;'
+      + 'box-shadow:0 6px 24px rgba(0,0,0,.35)';
+    var txt = document.createElement('span');
+    txt.textContent = t(subida ? 'up' : 'down').replace('{p}', NOMBRE[nuevo] || nuevo);
+    var si = document.createElement('button');
+    si.type = 'button';
+    si.textContent = t('reload');
+    si.style.cssText = 'cursor:pointer;border:0;border-radius:8px;padding:7px 14px;'
+      + 'font:600 13px system-ui;background:#dd9100;color:#12151c';
+    si.addEventListener('click', function () { location.reload(); });
+    var no = document.createElement('button');
+    no.type = 'button';
+    no.textContent = t('later');
+    no.style.cssText = 'cursor:pointer;border:0;background:transparent;color:#98a0b3;'
+      + 'font:600 13px system-ui;padding:7px 4px';
+    no.addEventListener('click', function () {
+      barra.remove();
+      /* Se queda con el plan nuevo para no volver a avisar de lo mismo; la
+         pantalla sigue desactualizada porque él lo eligió. */
+      U.plan = nuevo;
+      barra = null;
+    });
+    barra.appendChild(txt); barra.appendChild(si); barra.appendChild(no);
+    document.body.appendChild(barra);
+  }
+
+  var ultima = 0;
+  function mirar() {
+    var ahora = Date.now();
+    if (ahora - ultima < 5000) return;      /* no atosigar al servidor */
+    ultima = ahora;
+    fetch('/api/usage', { headers: { 'Accept': 'application/json' } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (!d || !d.plan || d.plan === U.plan) return;
+        if (hayTrabajoAbierto()) { avisar(d.plan); return; }
+        location.reload();
+      })
+      .catch(function () {});
+  }
+
+  setInterval(mirar, 60000);
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) mirar();
+  });
+  window.addEventListener('focus', mirar);
+})();
+</script>
+
 </body>
 </html>

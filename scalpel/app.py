@@ -8903,6 +8903,23 @@ def admin_set_plan():
         user.plan_expires_at = None
         user.plan_cycle = None
         user.cancel_at_period_end = False
+    else:
+        # 🔴 Un plan SIN fecha de vencimiento no se acaba nunca, y eso rompe
+        # "darse de baja": la baja no revoca el plan pagado, corta la
+        # renovación y deja el acceso hasta la fecha — si no hay fecha, no hay
+        # nada que termine y el botón parece no hacer nada para siempre.
+        # Se le pone el mismo mes que da una compra mensual.
+        if not user.plan_started_at:
+            user.plan_started_at = datetime.now(timezone.utc)
+        base = _aware(user.plan_expires_at)
+        ahora = datetime.now(timezone.utc)
+        if not (anterior == plan and base and base > ahora):
+            # Cambio de plan (o plan vencido) → mes nuevo desde hoy. Repetir el
+            # mismo plan con tiempo por delante no lo estira: sería regalar mes
+            # tras mes cada vez que se pulsa el botón.
+            user.plan_expires_at = ahora + timedelta(days=30)
+        user.plan_cycle = 'monthly'
+        user.cancel_at_period_end = False
     db.session.commit()
     record_audit_event('admin_set_plan', user_id=current_user.id,
                        detail='%s: %s → %s%s' % (user.username, anterior, plan,
