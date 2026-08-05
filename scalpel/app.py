@@ -8824,9 +8824,29 @@ def admin_set_plan():
     if plan not in ('free', 'standard', 'premium'):
         abort(400)
     user = db.session.get(User, int(user_id))
-    if user and not user.is_admin:
-        user.plan = plan
-        db.session.commit()
+    if not user:
+        abort(404)
+    # Un admin NO puede tocarle el plan a OTRO admin — esa protección se queda.
+    # Pero sí el suyo propio, y hace falta: el dueño es el único administrador,
+    # y estando en Premium el sitio le bloquea comprar cualquier plan (se
+    # rechaza comprar uno igual o inferior al que ya se tiene). Sin esto no hay
+    # forma de ensayar el circuito de compra ni la suscripción de PayPal.
+    if user.is_admin and user.id != current_user.id:
+        abort(403)
+    anterior = user.plan
+    user.plan = plan
+    if plan == 'free':
+        # "Free" con una fecha de vencimiento futura es un estado incoherente:
+        # Ajustes diría "se renueva el…" de un plan que ya no tiene. Se limpia
+        # para que la prueba arranque desde cero de verdad.
+        user.plan_expires_at = None
+        user.plan_cycle = None
+        user.cancel_at_period_end = False
+    db.session.commit()
+    record_audit_event('admin_set_plan', user_id=current_user.id,
+                       detail='%s: %s → %s%s' % (user.username, anterior, plan,
+                                                 ' (su propia cuenta)'
+                                                 if user.id == current_user.id else ''))
     return redirect(url_for('admin'))
 
 

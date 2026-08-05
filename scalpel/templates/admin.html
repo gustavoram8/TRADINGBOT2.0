@@ -395,9 +395,19 @@
             <td><span class="plan-badge {{ u.plan }}">{{ u.plan }}</span></td>
             <td style="color:var(--muted);font-size:12px;">{{ u.created_at.strftime('%Y-%m-%d') if u.created_at else '—' }}</td>
             <td>
-              {% if u.is_admin %}
+              {# Los botones aparecen para cualquier usuario normal Y para tu
+                 propia cuenta. Sin esto, el único admin del sitio no podía
+                 ensayar ninguna compra: estando en Premium, el checkout
+                 rechaza comprar un plan igual o inferior. Para OTROS admins
+                 siguen sin aparecer — el servidor también lo rechaza. #}
+              {% if u.is_admin and u.id != current_user.id %}
                 <span style="color:var(--muted);font-size:12px;">—</span>
               {% else %}
+                {% if u.id == current_user.id %}
+                <div style="font-size:10.5px;color:var(--muted);margin-bottom:4px;letter-spacing:.03em;">
+                  Tu cuenta · para probar compras
+                </div>
+                {% endif %}
                 <div class="plan-actions">
                   {% for p in ['free', 'standard', 'premium'] %}
                   <form method="POST" action="/admin/set-plan" style="display:inline;">
