@@ -156,6 +156,12 @@ body.dark .pbar .logo-img{filter:invert(1)}
 /* ── letra chica: promesas concretas, con su marca de verificado ─────────── */
 .pfine{margin-top:15px;display:grid;gap:7px}
 .pfi{display:flex;gap:8px;font-size:12.5px;color:var(--ink3);line-height:1.55}
+/* 🔴 `hidden` es solo `display:none` de la hoja del navegador, y CUALQUIER
+   regla de autor le gana. Sin esta línea, la de arriba dejaba visible una
+   letra pequeña marcada como oculta: el carrito decía "se renueva sola cada
+   mes" y JUSTO DEBAJO "pago único, nadie te vuelve a cobrar". Las dos a la
+   vez, y una de ellas mintiendo sobre un cargo recurrente. */
+.pfi[hidden]{display:none}
 .pfi svg{width:12px;height:12px;flex:0 0 auto;color:var(--ok);margin-top:3px}
 .pfi b{color:var(--ink2);font-weight:600}
 .pfoot{text-align:center;margin-top:18px;font-size:12.5px;color:var(--ink3)}

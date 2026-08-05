@@ -1305,6 +1305,20 @@ El dueño vio en Ajustes *"PREMIUM · CANCELLING · Access ends Nov 03, 2026"* e
   cortan TODAS; una fila sin `provider_ref` (nunca llegó a PayPal) se cierra en local y **no bloquea
   la baja**. Ajustes usa `sub_para_mostrar()`, que sincroniza UNA vez la 'pending' dudosa para no
   decir "sin cobro automático" a quien sí le van a cobrar.
+- 🔴 **La letra pequeña del carrito se contradecía (2026-08-05).** Decía *"Se renueva sola cada mes"*
+  **y justo debajo** *"Pago único, nadie te vuelve a cobrar"*. Dos fallos superpuestos, los dos en
+  `checkout.html`/`pay.css`: (1) `hidden` es solo `display:none` de la hoja del NAVEGADOR y
+  **cualquier regla de autor le gana** — `.pfi{display:flex}` dejaba visible la línea marcada como
+  oculta (fix: `.pfi[hidden]{display:none}`); (2) `letra()` miraba solo `.prail-in:checked`, y **con
+  un solo riel no hay radios** (la fila solo informa) → nada marcado → anunciaba "pago único" aunque
+  fuera a cobrarse solo (fix: `data-rail` en la etiqueta, se lee de ahí). Verificado en navegador con
+  1 riel y con 2, y **reproducida la causa exacta** borrando la regla nueva en caliente: vuelven a
+  salir las dos frases. ⚠️ Regla general: `[hidden]` **no sirve** en un elemento con `display` puesto
+  por clase; si se oculta por JS con `hidden`, hay que añadir la regla `[hidden]` al lado.
+- **`tools/paypal_plan_diario.py`** cierra la mitad que los avisos simulados NO prueban: crea en
+  **sandbox** un plan de ciclo **DIARIO** para ver una renovación REAL en ~24 h (PayPal cobra solo y
+  manda su aviso sin que nadie vuelva a la web, que es justo lo que pasa en una renovación de
+  verdad). Se niega a correr con `PAYPAL_ENV=live`. `apagar` lo desactiva.
 - **`tools/check_subs.py`** contesta *"¿sirven de verdad las renovaciones?"* sin esperar un mes:
   pregunta a PayPal si los dos planes existen, están ACTIVOS y son mensuales sin fin; si los ids no
   están cruzados; y si el webhook apunta a `SITE_URL` por HTTPS con `PAYMENT.SALE.COMPLETED` (por ahí

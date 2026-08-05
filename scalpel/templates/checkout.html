@@ -123,7 +123,7 @@
       <div class="plbl" data-i18n="{{ 'cpay.choose' if rails|length > 1 else 'cpay.payWith' }}">{{ 'CHOOSE A PAYMENT METHOD' if rails|length > 1 else 'PAYING WITH' }}</div>
       <div class="prails">
         {% for rail in rails %}
-        <label class="prail{{ ' on' if loop.first }}{{ ' solo' if rails|length == 1 }}">
+        <label class="prail{{ ' on' if loop.first }}{{ ' solo' if rails|length == 1 }}" data-rail="{{ rail }}">
           {% if rails|length > 1 %}<input class="prail-in" type="radio" name="method" value="{{ rail }}"{{ ' checked' if loop.first }} />{% endif %}
           <span class="fila">
             <span class="pplate">
@@ -213,8 +213,14 @@
 
     function letra() {
       if (!fAuto) return;                 /* sin suscripciones: nada que cambiar */
+      /* Con un solo riel NO hay radios — la fila solo informa. Antes se
+         miraba únicamente `:checked`, así que en ese caso no había nada
+         marcado y el carrito anunciaba "pago único" aunque fuera a cobrarse
+         solo cada mes. Se lee el riel del propio elemento. */
       var sel = document.querySelector('.prail-in:checked');
-      var auto = !!sel && sel.value === 'paypal';
+      var solo = document.querySelector('.prail.solo[data-rail]');
+      var riel = sel ? sel.value : (solo ? solo.getAttribute('data-rail') : '');
+      var auto = riel === 'paypal';
       fAuto.hidden = !auto;
       fOnce.hidden = auto;
     }

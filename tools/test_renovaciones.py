@@ -210,6 +210,59 @@ def main():
         check(not A.subs_por_cortar(A.db.session.get(A.User, uid3)),
               'y la fila huérfana queda cerrada')
 
+    # ── 7 · subir de plan: la fecha se recalcula desde HOY ────────────────
+    print('\n7 · subir de Standard a Premium a mitad de mes')
+    with A.app.app_context():
+        uid4 = usuario('ren_sube', plan='standard')
+        u = A.db.session.get(A.User, uid4)
+        # lleva 20 días de su mes de Standard
+        u.plan_expires_at = datetime.now(timezone.utc) + timedelta(days=10)
+        u.plan_cycle = 'monthly'
+        A.db.session.commit()
+        vieja = A.PlanSubscription(
+            user_id=uid4, provider='paypal', plan='standard',
+            billing_cycle='monthly', price=25.0, status='active',
+            provider_ref='I-VIEJA',
+            next_billing_at=datetime.now(timezone.utc) + timedelta(days=10))
+        A.db.session.add(vieja)
+        A.db.session.commit()
+        vieja_id = vieja.id
+        # compra Premium: pedido + suscripción nueva, que arranca HOY
+        o = A.Order(user_id=uid4, plan='premium', billing_cycle='monthly',
+                    base_price=50.0, discount_pct=0, final_price=50.0,
+                    status='pending', payment_method='paypal')
+        A.db.session.add(o)
+        A.db.session.commit()
+        nueva = A.PlanSubscription(
+            user_id=uid4, provider='paypal', plan='premium',
+            billing_cycle='monthly', price=50.0, status='active',
+            provider_ref='I-NUEVA', first_order_id=o.id,
+            next_billing_at=datetime.now(timezone.utc) + timedelta(days=30))
+        A.db.session.add(nueva)
+        A.db.session.commit()
+        nueva_id = nueva.id
+
+    A._paypal_sub_cancel = finge_cancelar
+    try:
+        with A.app.app_context():
+            A._sub_activada(A.db.session.get(A.PlanSubscription, nueva_id))
+    finally:
+        A._paypal_sub_cancel = real
+    with A.app.app_context():
+        u = A.db.session.get(A.User, uid4)
+        check(u.plan == 'premium', 'queda en Premium (%s)' % u.plan)
+        check(A.db.session.get(A.PlanSubscription, vieja_id).status == 'cancelled',
+              '🔴 la suscripción de Standard se corta (o se cobrarían las dos)')
+        mostrada = A.sub_para_mostrar(u)
+        check(mostrada is not None and mostrada.id == nueva_id,
+              'Ajustes enseña la NUEVA suscripción')
+        dias = (A._aware(mostrada.next_billing_at)
+                - datetime.now(timezone.utc)).days
+        check(29 <= dias <= 30,
+              'y su cobro cae a 30 días del upgrade, no del plan viejo (%d)' % dias)
+        check(abs(mostrada.price - 50.0) < 0.005,
+              'con el importe del plan nuevo ($%.2f)' % mostrada.price)
+
     print('\n%s\nRESULTADO: %d/%d' % ('=' * 46, ok, ok + fallos))
     return 0 if fallos == 0 else 1
 
