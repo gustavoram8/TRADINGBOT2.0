@@ -159,8 +159,20 @@
           {% elif sub %}
             {# Solo se dice "se renueva sola" cuando existe de verdad un cobro
                automático detrás. Antes lo decía siempre, y no era cierto: nada
-               se renovaba, así que el plan vencía en silencio. #}
-            <div class="expires-note"><span data-i18n="settings.renewsAuto">Renews automatically</span> {{ user.plan_expires_at.strftime('%b %d, %Y') }} · ${{ '%.2f'|format(sub.price) }}/<span data-i18n="settings.perMonth">month</span></div>
+               se renovaba, así que el plan vencía en silencio.
+
+               🔴 La fecha es la de PAYPAL (`next_billing_at`), no la del
+               vencimiento del acceso. No tienen por qué coincidir: comprar dos
+               meses seguidos APILA acceso (60 días) mientras PayPal sigue
+               cobrando cada 30. Poner aquí el vencimiento le anuncia al cliente
+               un cobro en una fecha en la que no se le va a cobrar — y el día
+               que sí se le cobre no lo estará esperando. #}
+            <div class="expires-note"><span data-i18n="settings.renewsAuto">Renews automatically</span> {{ (sub.next_billing_at or user.plan_expires_at).strftime('%b %d, %Y') }} · ${{ '%.2f'|format(sub.price) }}/<span data-i18n="settings.perMonth">month</span></div>
+            {% if sub.next_billing_at and user.plan_expires_at and (user.plan_expires_at.date() - sub.next_billing_at.date()).days > 1 %}
+              {# Acceso comprado por delante del próximo cobro: se dice, o el
+                 número de arriba parece contradecir al de la tarjeta. #}
+              <div class="expires-note"><span data-i18n="settings.paidThrough">Access already paid through</span> {{ user.plan_expires_at.strftime('%b %d, %Y') }}</div>
+            {% endif %}
           {% else %}
             <div class="expires-note"><span data-i18n="settings.accessUntil">Access until</span> {{ user.plan_expires_at.strftime('%b %d, %Y') }} · <span data-i18n="settings.noAutoCharge">no automatic charge</span></div>
           {% endif %}

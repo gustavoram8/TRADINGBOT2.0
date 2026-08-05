@@ -4998,7 +4998,7 @@ def guide():
 def settings():
     return render_template('settings.html', user=current_user,
                            sec=request.args.get('sec'),
-                           sub=active_subscription(current_user))
+                           sub=sub_para_mostrar(current_user))
 
 
 @app.route('/account/password', methods=['POST'])
@@ -5130,15 +5130,30 @@ def cancel_plan():
     """
     if current_user.plan == 'free':
         return redirect(url_for('settings'))
-    sub = active_subscription(current_user)
-    if sub is not None and not _paypal_sub_cancel(sub):
-        # No se pudo cortar el cobro: NO se le dice que está cancelado.
-        # Prometerlo sin haberlo hecho es lo que produce el cargo sorpresa.
-        return redirect(url_for('settings', sec='cancel_failed'))
+    # TODAS las que PayPal pudiera cobrar, no solo la que tenemos por activa.
+    # Una sola que se quede en pie basta para que le cobren un mes que él
+    # canceló, y encima con la pantalla diciéndole que estaba cancelado.
+    cortadas = []
+    for sub in subs_por_cortar(current_user):
+        if not sub.provider_ref:
+            # Nunca llegó a existir en PayPal (la llamada falló al abrirla):
+            # no hay nada que cortar allí, pero tampoco puede quedarse viva de
+            # nuestro lado. Y NO puede bloquear la baja de quien la pidió.
+            sub.status = 'cancelled'
+            sub.cancelled_at = datetime.now(timezone.utc)
+            db.session.commit()
+            continue
+        if not _paypal_sub_cancel(sub):
+            # No se pudo cortar el cobro: NO se le dice que está cancelado.
+            # Prometerlo sin haberlo hecho es lo que produce el cargo sorpresa.
+            return redirect(url_for('settings', sec='cancel_failed'))
+        cortadas.append(sub.id)
     current_user.cancel_at_period_end = True
     db.session.commit()
-    record_audit_event('plan_cancelled', user_id=current_user.id,
-                       detail=('suscripción #%d' % sub.id) if sub else 'sin cobro automático')
+    record_audit_event(
+        'plan_cancelled', user_id=current_user.id,
+        detail=('suscripción(es) %s' % ', '.join('#%d' % i for i in cortadas))
+               if cortadas else 'sin cobro automático')
     return redirect(url_for('settings', cancelled=1))
 
 
@@ -7268,6 +7283,47 @@ def active_subscription(user):
             .filter(PlanSubscription.user_id == user.id,
                     PlanSubscription.status.in_(('active', 'suspended')))
             .order_by(PlanSubscription.id.desc()).first())
+
+
+def subs_por_cortar(user):
+    """Todo permiso de cobro que PayPal pudiera ejecutar todavía.
+
+    🔴 Incluye las `pending`, y ahí está el motivo de que exista aparte de
+    `active_subscription`: una suscripción queda 'pending' de nuestro lado
+    hasta que la sincronizamos, y esa sincronización ocurre cuando el
+    comprador vuelve o cuando llega el aviso. Si aprueba en PayPal y cierra la
+    pestaña, y el aviso se pierde, PayPal la tiene ACTIVA y nosotros
+    'pending' — o sea que darse de baja no la habría cortado, y el sitio le
+    habría dicho "cancelado" mientras le seguían cobrando cada mes. Ese es
+    exactamente el cargo que acaba en contracargo."""
+    return (PlanSubscription.query
+            .filter(PlanSubscription.user_id == user.id,
+                    PlanSubscription.status.in_(('pending', 'active', 'suspended')))
+            .order_by(PlanSubscription.id.desc()).all())
+
+
+def sub_para_mostrar(user):
+    """La suscripción que se le enseña al usuario en Ajustes.
+
+    Si hay una 'pending' con id de PayPal, se pregunta UNA vez cómo quedó: sin
+    eso la pantalla puede decir "sin cobro automático" a alguien a quien PayPal
+    sí le va a cobrar. Solo en ese caso ambiguo — no en cada carga."""
+    viva = active_subscription(user)
+    if viva is not None:
+        return viva
+    dudosa = (PlanSubscription.query
+              .filter(PlanSubscription.user_id == user.id,
+                      PlanSubscription.status == 'pending',
+                      PlanSubscription.provider_ref.isnot(None))
+              .order_by(PlanSubscription.id.desc()).first())
+    if dudosa is not None:
+        try:
+            _paypal_sub_sync(dudosa)
+        except Exception:
+            app.logger.exception('sync de suscripción %s', dudosa.id)
+        if dudosa.status in ('active', 'suspended'):
+            return dudosa
+    return None
 
 
 # ═══ Payment rails — the shared front door ════════════════════════════════

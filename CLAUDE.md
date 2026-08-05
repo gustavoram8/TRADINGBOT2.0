@@ -1288,6 +1288,33 @@ pagas alguno por primera vez."* Cableado en dos sitios:
 `tools/test_unlocks.py` **14/14** (con el código viejo fallan 3: el caso del dueño, la renovación y
 la cola). Las filas viejas de producción se sellan solas en el siguiente `/app`, sin enseñar nada.
 
+## 🔁 RENOVACIONES — la fecha que se enseña y el corte de la baja (2026-08-05)
+El dueño vio en Ajustes *"PREMIUM · CANCELLING · Access ends Nov 03, 2026"* estando en agosto.
+- **El Nov 3 no era un bug:** son sus **tres compras de prueba apiladas** (una renovación SUMA 30
+  días al vencimiento vigente). Para volver a un mes limpio: /admin → Free → el plan otra vez.
+- 🔴 **Lo que SÍ era un fallo: se enseñaba la fecha equivocada.** "Se renueva sola" mostraba
+  `plan_expires_at` (el fin del ACCESO) cuando el cobro lo manda `sub.next_billing_at` (PayPal). Con
+  acceso apilado no coinciden: le anunciaba un cargo el 3-nov cuando PayPal cobra el 4-sep, y el día
+  del cargo real no lo estaría esperando. Ahora se muestra la de PayPal + línea aparte
+  `settings.paidThrough` ("acceso ya pagado hasta el…") cuando van por delante. **La fecha de
+  renovación se ve en Ajustes**, que ya es la primera entrada del menú (punto 20).
+- 🔴 **Hueco de la baja, cerrado:** `cancel_plan` cortaba solo la suscripción que teníamos por
+  ACTIVA. Una en **`pending`** —aprobada en PayPal pero sin sincronizar de nuestro lado, que es lo
+  que pasa si el comprador cierra la pestaña y el aviso se pierde— seguía cobrando **mientras la
+  pantalla decía "cancelado"**. Ahora `subs_por_cortar()` devuelve pending+active+suspended y se
+  cortan TODAS; una fila sin `provider_ref` (nunca llegó a PayPal) se cierra en local y **no bloquea
+  la baja**. Ajustes usa `sub_para_mostrar()`, que sincroniza UNA vez la 'pending' dudosa para no
+  decir "sin cobro automático" a quien sí le van a cobrar.
+- **`tools/check_subs.py`** contesta *"¿sirven de verdad las renovaciones?"* sin esperar un mes:
+  pregunta a PayPal si los dos planes existen, están ACTIVOS y son mensuales sin fin; si los ids no
+  están cruzados; y si el webhook apunta a `SITE_URL` por HTTPS con `PAYMENT.SALE.COMPLETED` (por ahí
+  llega cada cobro; sin él se cobra y el plan no se extiende, en silencio). Da un veredicto por plan.
+- **Al pasar a LIVE no cambia NADA del código**, solo la config: los ids de plan y el webhook **no
+  cruzan de sandbox a live** → repetir `set_paypal.py` + `paypal_setup_webhook.py` con credenciales
+  Live y volver a correr `check_subs.py`.
+`tools/test_renovaciones.py` **20/20** (fecha mostrada, cobro mensual que extiende, aviso repetido que
+no regala mes, baja que corta pending+active, PayPal que no responde → no se miente, fila huérfana).
+
 ## 🟢 Stripe — pagos con tarjeta (código LISTO, probado en TEST 2026-07-12)
 Integración **condicional**: totalmente inerte hasta setear `STRIPE_SECRET_KEY` → sin la clave, prod
 sigue con el flujo manual USDT/Binance intacto (cero regresión). Reutiliza el `Order` model y
