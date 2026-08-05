@@ -175,16 +175,23 @@
                cobrando cada 30. Poner aquí el vencimiento le anuncia al cliente
                un cobro en una fecha en la que no se le va a cobrar — y el día
                que sí se le cobre no lo estará esperando. #}
-            <div class="expires-note"><span data-i18n="settings.renewsAuto">Renews automatically</span> {{ (sub.next_billing_at or user.plan_expires_at).strftime('%b %d, %Y') }} · ${{ '%.2f'|format(sub.price) }}/<span data-i18n="settings.perMonth">month</span></div>
             {% if sub.pending_plan %}
-              {# Cambio de plan programado: lo que va a pasar y cuándo, con su
-                 importe. Sin esto el cliente ve "se renueva sola · $50" y el
-                 mes que viene le llegan $25 sin explicación. #}
-              <div class="expires-note"><span data-i18n="settings.switchTo">Switching to</span>
-                {{ sub.pending_plan|capitalize }}
-                <span data-i18n="settings.switchOn">on</span>
-                {{ sub.pending_at.strftime('%b %d, %Y') if sub.pending_at else '—' }}
-                · ${{ '%.2f'|format(sub.pending_price or 0) }}</div>
+              {# 🔴 CON UN CAMBIO PROGRAMADO SOLO HAY **UN** COBRO, y es el del
+                 plan nuevo. Antes se pintaban dos líneas — "se renueva sola ·
+                 $50" y debajo "cambia a Standard · $25" — y el dueño lo leyó
+                 como que se le iban a cobrar los dos a la vez. No era un cobro
+                 doble (es la MISMA suscripción, revisada), pero anunciar un
+                 importe que no se va a cobrar es igual de malo: el día del
+                 cargo el cliente esperaba otra cifra.
+                 Una sola línea, con lo que de verdad se cobrará. #}
+              <div class="expires-note"><span data-i18n="settings.renewsAuto">Renews automatically</span>
+                {{ (sub.pending_at or sub.next_billing_at or user.plan_expires_at).strftime('%b %d, %Y') }}
+                · ${{ '%.2f'|format(sub.pending_price or 0) }}/<span data-i18n="settings.perMonth">month</span></div>
+              <div class="expires-note"><span data-i18n="settings.switchNote"
+                    data-i18n-vars='{"actual": {{ user.plan|capitalize|tojson }}, "nuevo": {{ sub.pending_plan|capitalize|tojson }}}'>That
+                charge switches you from {{ user.plan|capitalize }} to {{ sub.pending_plan|capitalize }} — it is one charge, not two.</span></div>
+            {% else %}
+            <div class="expires-note"><span data-i18n="settings.renewsAuto">Renews automatically</span> {{ (sub.next_billing_at or user.plan_expires_at).strftime('%b %d, %Y') }} · ${{ '%.2f'|format(sub.price) }}/<span data-i18n="settings.perMonth">month</span></div>
             {% endif %}
             {% if sub.next_billing_at and user.plan_expires_at and (user.plan_expires_at.date() - sub.next_billing_at.date()).days > 1 %}
               {# Acceso comprado por delante del próximo cobro: se dice, o el

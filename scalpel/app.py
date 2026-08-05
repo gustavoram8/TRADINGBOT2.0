@@ -6703,6 +6703,38 @@ def _crypto_apply_status(order, info):
     return activated
 
 
+def _soltar_pedidos_caducos():
+    """Suelta los pedidos pendientes que HOY ya no se podrían crear.
+
+    🔴 EL ÚLTIMO HUECO POR EL QUE SE PODÍAN APILAR MESES. El candado nuevo vive
+    donde NACE la compra, así que a partir de ahora nadie abre un pedido del
+    plan que ya tiene. Pero los pedidos que quedaron pendientes de ANTES siguen
+    ahí, y un pedido pendiente se puede pagar más tarde desde el enlace viejo de
+    PayPal: al aplicarse sumaría 30 días encima de un plan vigente, que es
+    exactamente lo que ya no debe pasar.
+
+    Se sueltan solo los que ya no pasarían el candado (mismo plan, o Free), y
+    solo después de reconciliarlos — un pedido que se acaba de pagar NO se
+    cancela: `_soltar_pedido` solo toca lo que sigue en 'pending'.
+    """
+    sueltos = 0
+    for o in Order.query.filter(Order.status == 'pending').limit(200).all():
+        u = db.session.get(User, o.user_id)
+        if u is None or puede_comprar(u, o.plan)[0]:
+            continue                      # hoy seguiría siendo una compra válida
+        try:
+            if o.provider_ref:
+                _reconcile_order(o)
+                db.session.refresh(o)
+            if _soltar_pedido(o, 'caducado: la cuenta ya tiene ese plan'):
+                sueltos += 1
+        except Exception as exc:
+            app.logger.warning('no se pudo soltar el pedido %s: %s', o.id, exc)
+    if sueltos:
+        app.logger.info('Sueltos %d pedidos que ya no se podrían crear.', sueltos)
+    return sueltos
+
+
 def payments_sweep(max_orders=25):
     """Re-check every recent unpaid order against its processor.
 
@@ -6729,6 +6761,7 @@ def payments_sweep(max_orders=25):
                 recovered += 1
         except Exception as exc:            # one bad order must not stop the sweep
             app.logger.warning('sweep failed on order %s: %s', o.id, exc)
+    _soltar_pedidos_caducos()
     # Camo store orders ride the same net. They are PayPal-only, so they go
     # straight to the PayPal reconciler instead of through the method dispatch.
     camo_pending = (CamoOrder.query
