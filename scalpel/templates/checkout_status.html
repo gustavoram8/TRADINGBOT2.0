@@ -185,16 +185,28 @@
     <div class="card unlocked">
       <h3 data-i18n="cstat.gotTitle">What you just unlocked</h3>
       <ul>
+        {# ⚠️ Esta lista tiene que ser LA MISMA que la del reveal de "UNLOCKED"
+           (FEATURES en index.html). La primera versión la escribí de memoria y
+           se dejó fuera medio plan: faltaban Quiz, Reto Diario, Chalkboard y
+           Synapse. Al tocar una, tocar la otra. #}
         {% if order.plan == 'premium' %}
-        <li>{{ tic }}<span data-i18n="cstat.pp1">5 chart analyses every 24 h</span></li>
-        <li>{{ tic }}<span data-i18n="cstat.pp2">Pre-Flight checklists before you take a trade</span></li>
-        <li>{{ tic }}<span data-i18n="cstat.pp3">Trading Forum + 10 analyzer projects</span></li>
-        <li>{{ tic }}<span data-i18n="cstat.pp4">The Premium camo, yours to keep for good</span></li>
+        <li>{{ tic }}<span data-i18n="cstat.pp1">AI Analyzer — 5 chart analyses every 24 h</span></li>
+        <li>{{ tic }}<span data-i18n="cstat.pp2">Pre-Flight — the checklist before you take a trade</span></li>
+        <li>{{ tic }}<span data-i18n="cstat.pp3">Trading Forum — AI-moderated community</span></li>
+        <li>{{ tic }}<span data-i18n="cstat.pp4">Quiz Academy — every level, Hardcore included</span></li>
+        <li>{{ tic }}<span data-i18n="cstat.pp5">Daily Challenge & Roulette — streaks and cosmetics</span></li>
+        <li>{{ tic }}<span data-i18n="cstat.pp6">Chalkboard — the board to draw and practise</span></li>
+        <li>{{ tic }}<span data-i18n="cstat.pp7">Synapse — the methodology map</span></li>
+        {% if indicators_enabled %}
+        <li>{{ tic }}<span data-i18n="cstat.pp8">Indicators</span></li>
+        {% endif %}
+        <li>{{ tic }}<span data-i18n="cstat.pp9">10 analyzer projects</span></li>
+        <li>{{ tic }}<span data-i18n="cstat.pp10">1 Camo included — the Premium skin, yours to keep</span></li>
         {% else %}
-        <li>{{ tic }}<span data-i18n="cstat.ps1">1 chart analysis every 24 h</span></li>
-        <li>{{ tic }}<span data-i18n="cstat.ps2">Trading Forum, moderated by AI</span></li>
+        <li>{{ tic }}<span data-i18n="cstat.ps1">AI Analyzer — 1 chart analysis every 24 h</span></li>
+        <li>{{ tic }}<span data-i18n="cstat.ps2">Trading Forum — AI-moderated community</span></li>
         <li>{{ tic }}<span data-i18n="cstat.ps3">5 analyzer projects</span></li>
-        <li>{{ tic }}<span data-i18n="cstat.ps4">The Standard camo, yours to keep for good</span></li>
+        <li>{{ tic }}<span data-i18n="cstat.ps4">1 Camo included — the Standard skin, yours to keep</span></li>
         {% endif %}
       </ul>
       {% if sub and sub.next_billing_at %}

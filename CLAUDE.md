@@ -1340,8 +1340,14 @@ no regala mes, baja que corta pending+active, PayPal que no responde → no se m
 - **El "cuadrado" del recibo era un emoji sin fuente:** 🧾 (U+1F9FE, de 2018) no está en todas las
   fuentes del sistema y el navegador dibuja el *tofu*. 🔴 **Regla: un icono de la interfaz no puede
   depender de las fuentes de quien mira → SVG inline.**
+- 🔴 **La lista del recibo se escribió DE MEMORIA y se dejó fuera medio plan** (lo cazó el dueño
+  mirándolo en francés): Premium anuncia **9 funciones** en el reveal de UNLOCKED (`FEATURES` en
+  `index.html`) y el recibo enseñaba 4 — faltaban Quiz, Reto Diario, Chalkboard y Synapse. Corregido
+  a 9+1 (proyectos) ×4 idiomas, con los MISMOS nombres que el reveal. **Regla: la lista del recibo y
+  la del reveal son la misma cosa; al tocar una, tocar la otra.**
+  `tools/test_recibo_features.py` **15/15** compara ambas y falla si se desincronizan.
 - **`/checkout/status` con identidad de plan:** hero y pastilla en dorado (Premium) o acero
-  (Standard), bloque **"Lo que acabas de desbloquear"** con 4 ventajas del plan comprado, y la
+  (Standard), bloque **"Lo que acabas de desbloquear"** con las ventajas del plan comprado, y la
   **fecha del próximo cobro** con su importe (la pregunta que todos se hacen al pagar; decirla ahí
   sale más barato que un correo a soporte, y que una disputa). 21 claves `cstat.*` ×4.
   · El estado salía crudo de la base (*"Estado: paid"* en la página en español) → traducido, con el
