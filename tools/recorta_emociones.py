@@ -78,25 +78,74 @@ def _fuente(px):
     return ImageFont.load_default()
 
 
-def quita_fondo(panel):
-    """Inunda el fondo (crema/piso) desde el borde y lo pasa a transparente.
+def _anillo(w, h, fx):
+    """Puntos a lo largo de un rectángulo metido 'fx' hacia dentro."""
+    x0, y0 = int(w * fx), int(h * fx)
+    x1, y1 = w - 1 - x0, h - 1 - y0
+    pts = []
+    for x in range(x0, x1 + 1, max(1, w // 26)):
+        pts += [(x, y0), (x, y1)]
+    for y in range(y0, y1 + 1, max(1, h // 26)):
+        pts += [(x0, y), (x1, y)]
+    return pts
 
-    Devuelve un RGBA recortado pegado a lo que queda opaco. Los blancos
-    ENCERRADOS por un contorno no se tocan (el relleno no los alcanza).
+
+def dentro_del_marco(panel):
+    """Recorta el panel a JUSTO POR DENTRO de su marco negro.
+
+    Los garabatos de la expresión viven dentro del marco, así que recortar por
+    su borde interior los conserva enteros y deja fuera el marco. No toca nada
+    oscuro: solo mide dónde está el marco (línea negra de ancho casi completo).
+    """
+    g = panel.convert('L')
+    w, h = panel.size
+    m = g.point(lambda p: 255 if p < UMBRAL_OSCURO else 0)
+    rows = _perfil_filas(m, h)      # 0..255 = % de negro por fila
+    cols = _perfil_columnas(m, w)
+
+    def borde(prof, n):
+        # desde el principio: salta crema, cruza el marco, para en lo de dentro
+        i = 0
+        while i < n and prof[i] < 90:  i += 1   # crema exterior
+        while i < n and prof[i] >= 40: i += 1   # el trazo del marco
+        a = i
+        j = n - 1
+        while j >= 0 and prof[j] < 90:  j -= 1
+        while j >= 0 and prof[j] >= 40: j -= 1
+        b = j
+        return a, b
+
+    top, bot = borde(rows, h)
+    left, right = borde(cols, w)
+    if bot - top < h * 0.45 or right - left < w * 0.45:
+        return panel               # detección dudosa -> deja el panel completo
+    return panel.crop((max(0, left), max(0, top),
+                       min(w, right + 1), min(h, bot + 1)))
+
+
+def quita_fondo(panel):
+    """Borra el fondo del PANEL COMPLETO (crema + piso + marco) sin recortar la
+    expresión.
+
+    Recibe el panel entero, con su marco. Siembra el relleno en tres sitios:
+      · el borde y un anillo justo por DENTRO del marco -> se lleva el crema y el
+        piso, tanto el de fuera del marco como el de dentro (que el marco aísla);
+      · sobre el propio marco negro -> lo quita.
+    Los blancos ENCERRADOS por un contorno (globos de texto, brillo interno del
+    cubo) no se tocan: el relleno no llega a ellos. Devuelve un RGBA recortado
+    pegado a lo que queda, con lo que quede de la expresión INTACTO.
     """
     rgb = panel.convert('RGB')
     w, h = rgb.size
-    # semillas a lo largo de TODO el borde: el fondo casi siempre toca el marco
-    semillas = []
-    for x in range(0, w, max(1, w // 24)):
-        semillas += [(x, 0), (x, h - 1)]
-    for y in range(0, h, max(1, h // 24)):
-        semillas += [(0, y), (w - 1, y)]
-    for sx, sy in semillas:
-        r, g, b = rgb.getpixel((sx, sy))
-        # solo sembramos donde el borde es CLARO (fondo), nunca sobre un trazo
-        if (r + g + b) / 3 > 150:
-            ImageDraw.floodfill(rgb, (sx, sy), MARCA, thresh=FLOOD_THRESH)
+    # Solo se inunda el CREMA CLARO, desde el borde y varios anillos hacia
+    # dentro. Nunca se toca nada oscuro, así que el cubo (rojo oscuro) y sus
+    # contornos quedan INTACTOS. El panel ya viene recortado por dentro del
+    # marco, así que aquí solo queda crema/piso/sombra que quitar.
+    for fx in (0.0, 0.03, 0.06, 0.10):
+        for sx, sy in _anillo(w, h, fx):
+            r, g, b = rgb.getpixel((sx, sy))
+            if (r + g + b) / 3 > 150 and rgb.getpixel((sx, sy)) != MARCA:
+                ImageDraw.floodfill(rgb, (sx, sy), MARCA, thresh=FLOOD_THRESH)
     # alpha: transparente donde quedó la marca; opaco en el resto
     px = rgb.load()
     out = panel.convert('RGBA')
@@ -164,10 +213,12 @@ def main():
     for f, (ry0, ry1) in enumerate(filas):
         for c, (cx0, cx1) in enumerate(cols):
             nombre = FILAS[f][c]
-            iw = (cx1 - cx0) * INSET
-            ih = (ry1 - ry0) * INSET
-            panel = im.crop((int(cx0 + iw), int(ry0 + ih),
-                             int(cx1 - iw), int(ry1 - ih)))
+            # panel COMPLETO con margen: garantiza que el marco entra entero
+            ex = int((cx1 - cx0) * 0.04)
+            ey = int((ry1 - ry0) * 0.04)
+            panel = im.crop((max(0, cx0 - ex), max(0, ry0 - ey),
+                             min(W, cx1 + ex), min(H, ry1 + ey)))
+            panel = dentro_del_marco(panel)   # recorta por dentro del marco
             cara = quita_fondo(panel)
             cara.save(os.path.join(STATIC, 'emo-%s.png' % nombre))
             caras.append((nombre, cara))
