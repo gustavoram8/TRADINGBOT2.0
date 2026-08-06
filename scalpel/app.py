@@ -11121,8 +11121,7 @@ def assistant_ask():
     if m:
         cand = m.group(1).lower()
         texto = texto[m.end():].lstrip()
-        if cand in ('pensando', 'alegre', 'triste', 'sorprendido',
-                    'molesto', 'emocionado'):
+        if cand in ('pensando', 'alegre', 'triste', 'molesto', 'emocionado'):
             emocion = cand
     record_ai_cost('assistant', r, user_id=current_user.id,
                    plan=current_plan(), modelo=ASSISTANT_MODEL,

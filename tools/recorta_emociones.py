@@ -91,36 +91,38 @@ def _anillo(w, h, fx):
 
 
 def dentro_del_marco(panel):
-    """Recorta el panel a JUSTO POR DENTRO de su marco negro.
+    """Recorta el panel a JUSTO POR DENTRO de su marco, por ARRIBA y los LADOS.
 
-    Los garabatos de la expresión viven dentro del marco, así que recortar por
-    su borde interior los conserva enteros y deja fuera el marco. No toca nada
-    oscuro: solo mide dónde está el marco (línea negra de ancho casi completo).
+    TODOS los garabatos viven dentro del marco, así que recortar por su borde
+    interior los conserva enteros y deja el marco fuera. El panel entra con la
+    base ya cortada en el cubo (sin marco abajo ni etiqueta), así que ese lado
+    NO se toca. Se usa la máscara de gris-marco (<95) para pillar la línea
+    aunque sea grisácea.
     """
     g = panel.convert('L')
     w, h = panel.size
-    m = g.point(lambda p: 255 if p < UMBRAL_OSCURO else 0)
-    rows = _perfil_filas(m, h)      # 0..255 = % de negro por fila
+    m = g.point(lambda p: 255 if p < 95 else 0)
+    rows = _perfil_filas(m, h)
     cols = _perfil_columnas(m, w)
 
-    def borde(prof, n):
-        # desde el principio: salta crema, cruza el marco, para en lo de dentro
+    def desde_inicio(prof, n):
         i = 0
-        while i < n and prof[i] < 90:  i += 1   # crema exterior
-        while i < n and prof[i] >= 40: i += 1   # el trazo del marco
-        a = i
+        while i < n and prof[i] < 80:  i += 1   # crema/gutter exterior
+        while i < n and prof[i] >= 45: i += 1   # el trazo del marco
+        return i
+    def desde_fin(prof, n):
         j = n - 1
-        while j >= 0 and prof[j] < 90:  j -= 1
-        while j >= 0 and prof[j] >= 40: j -= 1
-        b = j
-        return a, b
+        while j >= 0 and prof[j] < 80:  j -= 1
+        while j >= 0 and prof[j] >= 45: j -= 1
+        return j
 
-    top, bot = borde(rows, h)
-    left, right = borde(cols, w)
-    if bot - top < h * 0.45 or right - left < w * 0.45:
-        return panel               # detección dudosa -> deja el panel completo
-    return panel.crop((max(0, left), max(0, top),
-                       min(w, right + 1), min(h, bot + 1)))
+    top = desde_inicio(rows, h)
+    left = desde_inicio(cols, w)
+    right = desde_fin(cols, w)
+    # base: sin marco (se cortó en el cubo) -> se deja tal cual (h)
+    if top > h * 0.5 or (right - left) < w * 0.45:
+        return panel               # detección dudosa -> panel completo
+    return panel.crop((max(0, left), max(0, top), min(w, right + 1), h))
 
 
 def quita_fondo(panel):
@@ -148,7 +150,10 @@ def quita_fondo(panel):
     # Máscara SOLO de negro-marco (~15), NO del rojo oscuro del cubo (~47): así
     # una fila/columna que cruza el cubo casi no cuenta, y solo las líneas
     # realmente negras del marco superan el listón.
-    mk = gray.point(lambda p: 255 if p < 42 else 0)
+    # Umbral medio: la línea del marco es gris (no negra del todo); con < 95 la
+    # captura. El rojo del cubo también cae aquí, pero da igual: el cubo NO está
+    # en las bandas del borde que se limpian (está centrado y más abajo).
+    mk = gray.point(lambda p: 255 if p < 95 else 0)
     rows = _perfil_filas(mk, h)
     cols = _perfil_columnas(mk, w)
     gpx = gray.load()
@@ -162,25 +167,26 @@ def quita_fondo(panel):
     # (el cubo no ocupa todo el alto y tiene brillos claros). Con el listón
     # alto se borra el marco entero y jamás se toca el cubo, aunque se
     # ensanche la banda.
-    LINEA = 120   # con la máscara de negro-marco, una línea llena supera esto;
-                  # una fila/columna que cruza el cubo (solo su contorno) no.
+    LINEA = 105   # una fila/columna llena (línea del marco) lo supera; un
+                  # garabato o el borde del cubo (parciales) no.
 
     def _limpia_filas(lo, hi):
         for yy in range(max(0, lo), min(h, hi)):
             if rows[yy] > LINEA:
                 for xx in range(w):
-                    if gpx[xx, yy] < 130:
+                    if gpx[xx, yy] < 160:
                         rgb.putpixel((xx, yy), MARCA)
 
     def _limpia_cols(lo, hi):
         for xx in range(max(0, lo), min(w, hi)):
             if cols[xx] > LINEA:
                 for yy in range(h):
-                    if gpx[xx, yy] < 130:
+                    if gpx[xx, yy] < 160:
                         rgb.putpixel((xx, yy), MARCA)
 
-    _limpia_filas(0, int(0.20 * h))
-    _limpia_filas(int(0.80 * h), h)
+    # Solo el marco de ARRIBA y de los LADOS. Abajo NO se limpia: ahí ya no hay
+    # marco (se cortó en la base del cubo) y limpiar tocaría el rojo del cubo.
+    _limpia_filas(0, int(0.22 * h))
     _limpia_cols(0, int(0.20 * w))
     _limpia_cols(int(0.80 * w), w)
 
@@ -206,8 +212,16 @@ def quita_fondo(panel):
             # DORADAS (todas con mucha diferencia entre canales) y el blanco puro
             # de los globos de texto (min>238).
             spread = max(r, g, b) - min(r, g, b)
-            if px[x, y] != MARCA and (r + g + b) / 3 > 168 and spread < 40 \
+            prom = (r + g + b) / 3
+            if px[x, y] != MARCA and prom > 168 and spread < 40 \
                     and min(r, g, b) <= 238 and r >= b:
+                px[x, y] = MARCA
+            # restos GRISES del marco, solo en la orilla extrema (el marco vive
+            # ahí; las nubes van más adentro). Lo dorado/negro/azul de los
+            # garabatos se salva por su color (saturado, o muy oscuro/claro).
+            elif px[x, y] != MARCA and spread < 34 and 62 < prom < 185 and (
+                    x < 0.045 * w or x > 0.955 * w or y < 0.055 * h
+                    or (y < 0.15 * h and (x < 0.10 * w or x > 0.90 * w))):
                 px[x, y] = MARCA
             if px[x, y] == MARCA:
                 op[x, y] = (0, 0, 0, 0)
@@ -255,17 +269,23 @@ def main():
         t = int(H * 0.11); rh = (H - t) / NFIL
         filas = [(int(t + i * rh), int(t + (i + 1) * rh)) for i in range(NFIL)]
 
+    # Las bandas detectadas son del CUBO (lo más oscuro), no del panel. Para no
+    # comernos los garabatos, el recorte usa el PANEL entero de ancho y hasta el
+    # techo (rejilla pareja) y la BASE DEL CUBO por abajo, así deja fuera la
+    # etiqueta ("EMOCIONADO", etc.) que va debajo.
+    gw = W / COLS
+    gh = (H - top) / NFIL
     caras = []
     for f, (ry0, ry1) in enumerate(filas):
         for c, (cx0, cx1) in enumerate(cols):
             nombre = FILAS[f][c]
-            # panel COMPLETO con margen generoso: entran TODOS los garabatos,
-            # incluso los que cruzan el marco (nubes, WOW, lámpara). El marco lo
-            # borra quita_fondo() por su línea, no recortándolo.
-            ex = int((cx1 - cx0) * 0.06)
-            ey = int((ry1 - ry0) * 0.06)
-            panel = im.crop((max(0, cx0 - ex), max(0, ry0 - ey),
-                             min(W, cx1 + ex), min(H, ry1 + ey)))
+            left = int(c * gw)
+            right = int((c + 1) * gw)
+            arriba = int(top + f * gh)                       # techo del panel
+            abajo = min(H, ry1 + int((ry1 - ry0) * 0.14))    # base del cubo (sin etiqueta)
+            panel = im.crop((max(0, left), max(0, arriba),
+                             min(W, right), abajo))
+            panel = dentro_del_marco(panel)   # recorta por dentro del marco
             cara = quita_fondo(panel)
             cara.save(os.path.join(STATIC, 'emo-%s.png' % nombre))
             caras.append((nombre, cara))
