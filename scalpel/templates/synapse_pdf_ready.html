@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tradeable Academy — Synapse Library</title>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{background:#101321;color:#eef0f8;font-family:'Inter',system-ui,sans-serif;
+         min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+    .card{max-width:520px;width:100%;background:#171b2c;border:1px solid #262b40;
+          border-radius:16px;padding:38px 34px;text-align:center}
+    .badge{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.12em;
+           text-transform:uppercase;color:#14b8a6;border:1px solid #14b8a6;
+           border-radius:20px;padding:3px 10px;margin-bottom:14px}
+    h1{font-size:22px;font-weight:800;margin-bottom:10px}
+    p{font-size:14px;color:#aab;line-height:1.65;margin-bottom:8px}
+    .spin{width:34px;height:34px;border:3px solid #262b40;border-top-color:#14b8a6;
+          border-radius:50%;margin:18px auto;animation:sp 1s linear infinite}
+    @keyframes sp{to{transform:rotate(360deg)}}
+    .langs{display:flex;gap:8px;justify-content:center;margin:20px 0 6px}
+    .langs a{min-width:46px;padding:8px 10px;border-radius:9px;font-size:13px;font-weight:700;
+             color:#eef0f8;background:rgba(20,184,166,.12);border:1px solid rgba(20,184,166,.4);
+             text-decoration:none}
+    .langs a:hover{background:rgba(20,184,166,.25)}
+    .back{display:inline-block;margin-top:18px;font-size:13px;color:#8a92b2;text-decoration:none}
+    .back:hover{color:#eef0f8}
+    .fine{font-size:11.5px;color:#78809c;margin-top:10px}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="badge">Synapse Library · PDF</div>
+
+    {% if owned %}
+      <h1 data-i18n="spdf.readyTitle">Preparing your book…</h1>
+      <div class="spin" id="spin"></div>
+      <p data-i18n="spdf.readyBody">Your personalized copy is being generated — the download starts
+        by itself in a few seconds. If it doesn't, use the buttons below.</p>
+      <div class="langs">
+        <a href="/synapse/pdf/mine?lang=en">EN</a>
+        <a href="/synapse/pdf/mine?lang=es">ES</a>
+        <a href="/synapse/pdf/mine?lang=fr">FR</a>
+        <a href="/synapse/pdf/mine?lang=pt">PT</a>
+      </div>
+      <p class="fine" data-i18n="spdf.readyFine">Yours forever: come back to Synapse in the app to
+        re-download it any time, in any of the four languages.</p>
+      {# La descarga arranca sola por un iframe: no navega la página (que
+         seguiría "cargando" para siempre) y el navegador espera los segundos
+         de generación sin que la pantalla parezca muerta. #}
+      <iframe id="dl" style="display:none" title="download"></iframe>
+      <script>
+        setTimeout(function () {
+          document.getElementById('dl').src = '/synapse/pdf/mine?lang={{ lang }}';
+          setTimeout(function () {
+            var s = document.getElementById('spin');
+            if (s) s.style.display = 'none';
+          }, 12000);
+        }, 700);
+      </script>
+    {% else %}
+      <h1 data-i18n="spdf.waitTitle">Confirming your payment…</h1>
+      <div class="spin"></div>
+      <p data-i18n="spdf.waitBody">PayPal is confirming the charge. This page refreshes by itself —
+        as soon as the payment lands, your download begins. If you already paid, nothing is lost:
+        the book stays attached to your account.</p>
+      <script>setTimeout(function(){ location.reload(); }, 6000);</script>
+    {% endif %}
+
+    <a class="back" href="/app" data-i18n="spdf.back">← Back to the app</a>
+  </div>
+  <script src="/static/pages_i18n.js"></script>
+</body>
+</html>

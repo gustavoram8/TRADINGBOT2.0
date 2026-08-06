@@ -1436,6 +1436,37 @@ class CosmeticOrder(db.Model):
         return [s for s in (self.slugs or '').split(',') if s]
 
 
+class SynapseOrder(db.Model):
+    """A one-time purchase of the Synapse Library PDF. PayPal only.
+
+    Mirror of CamoOrder field-for-field so the shared PayPal helpers (create /
+    capture / reconcile / sweep / alert) work on it without branching — the
+    same reason CosmeticOrder mirrors it. `lang` is the language chosen at
+    checkout for the instant download; ownership is NOT per-language (one paid
+    order = permanent re-download in any of the four, owner's decision
+    2026-08-06). `applied_at` is the idempotency guard, as everywhere else."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    lang = db.Column(db.String(5), default='en', nullable=False)
+    label = db.Column(db.String(80), nullable=False)          # snapshot at purchase
+    price = db.Column(db.Float, nullable=False)               # snapshot (server-side)
+    currency = db.Column(db.String(3), default='usd', nullable=False)
+    status = db.Column(db.String(12), default='pending', nullable=False)
+    payment_method = db.Column(db.String(30), nullable=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    paid_at = db.Column(db.DateTime, nullable=True)
+    applied_at = db.Column(db.DateTime, nullable=True)
+    note = db.Column(db.String(300), nullable=True)
+    provider_ref = db.Column(db.String(80), nullable=True, index=True)
+    pay_status = db.Column(db.String(24), nullable=True)
+    paid_amount = db.Column(db.Float, nullable=True)
+    pay_currency = db.Column(db.String(20), nullable=True)
+    tx_hash = db.Column(db.String(120), nullable=True)
+    alerted_at = db.Column(db.DateTime, nullable=True)
+    is_test = db.Column(db.Boolean, default=False, nullable=False)
+    user = db.relationship('User', backref='synapse_orders')
+
+
 # ═══ Mentorship MEMBERS AREA (post-purchase) ═══════════════════════════════
 class MentorshipFolder(db.Model):
     """A module/folder of the members video library."""
@@ -3411,6 +3442,8 @@ def landing():
     motivo = request.args.get('nocompra', '')
     return render_template(
         'landing.html',
+        spdf_price=SYNAPSE_PDF_PRICE,
+        spdf_list_price=SYNAPSE_PDF_LIST_PRICE,
         nocompra=motivo if motivo in ('ya_lo_tienes', 'ya_suscrito',
                                       'no_existe') else '')
 
@@ -5748,6 +5781,13 @@ def app_view():
         plan=plan_view,
         analyses_used=analyses_used,
         analyses_max=analyses_max,
+        synapse_pdf_owned=synapse_pdf_owned(current_user),
+        # El precio se sirve, nunca se escribe a mano en la plantilla: si
+        # SYNAPSE_PDF_PRICE cambia por env var, el escaparate tiene que
+        # cambiar con él o le estaríamos enseñando al comprador un número
+        # distinto del que le va a cobrar PayPal.
+        spdf_price=SYNAPSE_PDF_PRICE,
+        spdf_list_price=SYNAPSE_PDF_LIST_PRICE,
         is_admin=is_admin_view,
         username=current_user.username,
         is_guest=False,
@@ -6799,6 +6839,13 @@ def _build_cosmetics_context():
         filas.append(fila(o, [CAMO_NAMES.get(o.slug, o.label or o.slug)]))
     for o in CosmeticOrder.query.filter_by(status='paid').all():
         filas.append(fila(o, [_nombre_de_ref(r) for r in o.slug_list()]))
+    # El PDF de Synapse comparte pestaña pero lleva SU total aparte (decisión
+    # del dueño): las filas se mezclan en la cronología —quién compró qué— y
+    # los números no. `es_pdf` es lo que permite separar los totales abajo.
+    for o in SynapseOrder.query.filter_by(status='paid').all():
+        f = fila(o, ['📕 Synapse Library PDF · %s' % o.lang.upper()])
+        f['es_pdf'] = True
+        filas.append(f)
     filas.sort(key=lambda f: (f['fecha'] is None,
                               f['fecha'].isoformat() if f['fecha'] else ''),
                reverse=True)
@@ -6849,6 +6896,15 @@ def _build_cosmetics_context():
         'cos_view_total': round(sum(f['pagado'] for f in del_mes), 2),
         'cos_view_count': len(del_mes),
         'cos_view_is_current': vista == mes_actual,
+        # El PDF, con números propios: histórico y mes en pantalla. Los
+        # totales cos_* de arriba lo INCLUYEN (son "todo lo de compra única");
+        # estos dos dicen cuánto de eso es el libro.
+        'spdf_lifetime_total': round(sum(
+            f['pagado'] for f in reales if f.get('es_pdf')), 2),
+        'spdf_lifetime_count': sum(1 for f in reales if f.get('es_pdf')),
+        'spdf_view_total': round(sum(
+            f['pagado'] for f in del_mes if f.get('es_pdf')), 2),
+        'spdf_view_count': sum(1 for f in del_mes if f.get('es_pdf')),
         'cos_lifetime_total': round(sum(f['pagado'] for f in reales), 2),
         'cos_lifetime_count': len(reales),
         'cos_pruebas_n': len(pruebas),
@@ -6949,6 +7005,10 @@ def _avisar_pago(order, kind):
         que = ', '.join(piezas)
         monto = order.paid_amount or order.price
         tipo = 'Cosméticos (%d)' % len(piezas)
+    elif hasattr(order, 'lang'):
+        que = 'Biblioteca Synapse · %s' % order.lang.upper()
+        monto = order.paid_amount or order.price
+        tipo = 'PDF'
     else:
         que = CAMO_NAMES.get(getattr(order, 'slug', ''),
                              getattr(order, 'label', '?'))
@@ -7008,12 +7068,16 @@ def send_payment_alert_email(order, kind):
         'stuck': ('ACCIÓN REQUERIDA: entrá a /admin y activá el pedido a mano. '
                   'El cliente ya pagó.'),
     }.get(kind, '')
-    # Works for both plan Orders and CamoOrders — the fields differ slightly.
+    # Works for plan Orders, CamoOrders, carts and the Synapse PDF — the
+    # fields differ slightly.
     if hasattr(order, 'plan'):
         item = f'{PLAN_LABELS.get(order.plan, order.plan)} / {order.billing_cycle}'
         amount = order.final_price
     elif hasattr(order, 'slugs'):
         item = f'Carrito de cosméticos: {order.slugs}'
+        amount = order.price
+    elif hasattr(order, 'lang'):
+        item = f'Synapse Library PDF ({order.lang.upper()})'
         amount = order.price
     else:
         item = f'Camo: {getattr(order, "label", getattr(order, "slug", "?"))}'
@@ -7218,7 +7282,22 @@ def payments_sweep(max_orders=25):
                 recovered += 1
         except Exception as exc:
             app.logger.warning('sweep failed on cosmetics cart %s: %s', o.id, exc)
-    return len(pending) + len(camo_pending) + len(cosm_pending), recovered
+    # El PDF de Synapse: la misma red. Comprador que paga y cierra la pestaña
+    # sin volver = el barrido lo rescata al abrir /admin.
+    spdf_pending = (SynapseOrder.query
+                    .filter(SynapseOrder.status == 'pending',
+                            SynapseOrder.provider_ref.isnot(None),
+                            SynapseOrder.created_at >= cutoff)
+                    .order_by(SynapseOrder.created_at.desc())
+                    .limit(max_orders).all())
+    for o in spdf_pending:
+        try:
+            if _paypal_reconcile(o, 'spdf'):
+                recovered += 1
+        except Exception as exc:
+            app.logger.warning('sweep failed on spdf order %s: %s', o.id, exc)
+    return (len(pending) + len(camo_pending) + len(cosm_pending)
+            + len(spdf_pending)), recovered
 
 
 def order_trace(order):
@@ -7473,9 +7552,13 @@ def _paypal_create_order(order, kind='plan'):
                                if kind == 'camo' else
                                abs_url('cosmetics_paypal_return', order_id=order.id)
                                if kind == 'cosm' else
+                               abs_url('synapse_pdf_paypal_return', order_id=order.id)
+                               if kind == 'spdf' else
                                abs_url('paypal_return', order_id=order.id)),
                 'cancel_url': (abs_url('camos')
                                if kind in ('camo', 'cosm') else
+                               abs_url('app_view')
+                               if kind == 'spdf' else
                                abs_url('checkout_status', order_id=order.id)),
             }}},
         }, request_id='create-%s' % ref)
@@ -7538,7 +7621,8 @@ def _paypal_apply_status(order, status, amount=None, capture_id=None, kind='plan
     is the guard that makes that true.
     """
     activate = {'camo': _activate_camo_from_order,
-                'cosm': _activate_cosmetics_from_order}.get(
+                'cosm': _activate_cosmetics_from_order,
+                'spdf': _activate_synapse_from_order}.get(
                     kind, _activate_plan_from_order)
     if status:
         order.pay_status = status
@@ -9342,6 +9426,8 @@ def paypal_webhook():
         order = db.session.get(CamoOrder, oid)
     elif kind == 'cosm':
         order = db.session.get(CosmeticOrder, oid)
+    elif kind == 'spdf':
+        order = db.session.get(SynapseOrder, oid)
     else:
         return jsonify({'ok': True, 'ignored': kind})
     if not order:
@@ -10769,6 +10855,160 @@ def synapse_pdf_admin_download():
     resp = make_response(pdf_bytes)
     resp.headers['Content-Type'] = 'application/pdf'
     resp.headers['Content-Disposition'] = f'attachment; filename="synapse-library-{lang}-admin-preview.pdf"'
+    return resp
+
+
+# ═══ SYNAPSE PDF — venta (compra única, riel PayPal de los cosméticos) ═════
+# $20 de lista, $15 de lanzamiento. El precio vive AQUÍ y solo aquí: el
+# navegador jamás manda un monto. Sin comisión del socio (decisión del dueño
+# 2026-08-06, cláusula en docs/clausula_synapse_pdf.md): eso ya se cumple
+# solo, porque record_sale_breakdown únicamente lo llama el activador de
+# PLANES y este pedido nunca pasa por ahí.
+SYNAPSE_PDF_PRICE = float(os.environ.get('SYNAPSE_PDF_PRICE', '15.0'))
+# El precio de lista, el que va tachado. $20 es real: es el que el modal
+# lleva anunciando desde que existe, y $15 es el descuento de lanzamiento.
+SYNAPSE_PDF_LIST_PRICE = float(os.environ.get('SYNAPSE_PDF_LIST_PRICE', '20.0'))
+SYNAPSE_PDF_LANGS = ('en', 'es', 'fr', 'pt')
+
+
+def synapse_pdf_owned(user):
+    """¿Puede esta cuenta descargar el PDF? Una compra pagada = para siempre,
+    en cualquiera de los cuatro idiomas. El admin lo tiene de fábrica."""
+    if getattr(user, 'is_admin', False):
+        return True
+    return SynapseOrder.query.filter_by(
+        user_id=user.id, status='paid').first() is not None
+
+
+def _activate_synapse_from_order(order):
+    """La "entrega" del PDF: registrar el derecho, exactamente una vez.
+
+    No hay nada que encender — el archivo se genera al descargarlo y el
+    derecho ES la fila pagada. `applied_at` cumple el mismo papel de guard de
+    idempotencia que en camos: el webhook repetido no re-avisa la venta."""
+    if order.status != 'paid' or order.applied_at is not None:
+        return False
+    order.applied_at = datetime.now(timezone.utc)
+    db.session.commit()
+    record_audit_event('spdf_purchased', user_id=order.user_id,
+                       detail='pedido #%d · %s · $%.2f'
+                              % (order.id, order.lang, order.price))
+    return True
+
+
+@app.route('/api/synapse/pdf/buy', methods=['POST'])
+@login_required
+def synapse_pdf_buy():
+    """Arranca el pago del PDF. El navegador manda el IDIOMA y nada más."""
+    lang = ((request.get_json(silent=True) or {}).get('lang') or '').lower()
+    if lang not in SYNAPSE_PDF_LANGS:
+        return jsonify({'error': 'bad_lang'}), 400
+    if synapse_pdf_owned(current_user):
+        return jsonify({'error': 'already_owned'}), 400
+    if not PAYPAL_ENABLED:
+        return jsonify({'error': 'soon'}), 503
+    # Un pendiente abandonado se REUTILIZA (no se apilan), y como el producto
+    # es uno solo al mismo precio, cambiar el idioma elegido no es un cambiazo:
+    # se actualiza y listo.
+    order = (SynapseOrder.query
+             .filter_by(user_id=current_user.id, status='pending')
+             .order_by(SynapseOrder.created_at.desc()).first())
+    if not order:
+        order = SynapseOrder(user_id=current_user.id, lang=lang,
+                             label='Synapse Library PDF (%s)' % lang.upper(),
+                             price=SYNAPSE_PDF_PRICE)
+        db.session.add(order)
+    else:
+        order.lang = lang
+        order.label = 'Synapse Library PDF (%s)' % lang.upper()
+    db.session.commit()
+    url = _paypal_create_order(order, 'spdf')
+    if not url:
+        return jsonify({'error': 'paypal_unreachable'}), 502
+    return jsonify({'url': url})
+
+
+@app.route('/synapse/pdf/paypal/return/<int:order_id>')
+@login_required
+def synapse_pdf_paypal_return(order_id):
+    """La vuelta de PayPal: capturar y aterrizar en la página de descarga.
+
+    Si el comprador cierra la pestaña antes de volver, el webhook y el barrido
+    de /admin entregan igual — misma red triple que camos y planes."""
+    order = db.session.get(SynapseOrder, order_id)
+    if not order or order.user_id != current_user.id:
+        abort(404)
+    if order.status != 'paid':
+        try:
+            _paypal_capture(order, 'spdf')
+        except Exception as exc:            # never dead-end on the way back
+            app.logger.error('spdf paypal return failed (order %s): %s',
+                             order.id, exc)
+    return redirect(url_for('synapse_pdf_ready', lang=order.lang))
+
+
+@app.route('/synapse/pdf/ready')
+@login_required
+def synapse_pdf_ready():
+    """La pantalla de "preparando tu archivo".
+
+    Existe porque generar 91 páginas con marca de agua tarda unos segundos y
+    una pestaña en blanco durante esos segundos se lee como un fallo. Si el
+    pago aún no está confirmado (el aviso viene en camino), lo dice y se
+    recarga — nunca un callejón sin salida."""
+    lang = (request.args.get('lang') or 'en').lower()
+    if lang not in SYNAPSE_PDF_LANGS:
+        lang = 'en'
+    return render_template('synapse_pdf_ready.html',
+                           owned=synapse_pdf_owned(current_user), lang=lang)
+
+
+@app.route('/synapse/pdf/mine')
+@login_required
+def synapse_pdf_mine():
+    """La descarga del comprador: para siempre, en el idioma que pida.
+
+    Se genera personalizada en cada descarga (nombre + correo + nº de pedido
+    en la portada y en el pie de las 91 páginas), así que la marca de agua
+    siempre es la del dueño de la cuenta que descarga."""
+    if not synapse_pdf_owned(current_user):
+        abort(403)
+    lang = (request.args.get('lang') or 'en').lower()
+    if lang not in SYNAPSE_PDF_LANGS:
+        lang = 'en'
+    # Generar el PDF cuesta CPU de verdad: un tope suave evita que una cuenta
+    # (o un script con su sesión) convierta el botón en un ataque al servidor.
+    hace_10 = datetime.now(timezone.utc) - timedelta(minutes=10)
+    recientes = AuditEvent.query.filter(
+        AuditEvent.event_type == 'pdf_downloaded',
+        AuditEvent.user_id == current_user.id,
+        AuditEvent.created_at >= hace_10).count()
+    if recientes >= 5:
+        return ('Too many downloads — wait a few minutes and try again.',
+                429, {'Retry-After': '600'})
+    pedido = (SynapseOrder.query
+              .filter_by(user_id=current_user.id, status='paid')
+              .order_by(SynapseOrder.id.asc()).first())
+    ref = 'SPDF-%d' % pedido.id if pedido else 'ADMIN'
+    try:
+        pdf_bytes = _build_synapse_pdf(
+            buyer_name=current_user.username,
+            buyer_email=current_user.email,
+            order_id=ref, lang=lang)
+    except Exception as e:
+        app.logger.error('spdf generation error (user %s): %s',
+                         current_user.id, e)
+        record_audit_event('pdf_downloaded', user_id=current_user.id,
+                           detail='order=%s lang=%s generation error: %s'
+                                  % (ref, lang, e), success=False)
+        abort(500)
+    record_audit_event('pdf_downloaded', user_id=current_user.id,
+                       detail='order=%s lang=%s (compra, re-descargable)'
+                              % (ref, lang))
+    resp = make_response(pdf_bytes)
+    resp.headers['Content-Type'] = 'application/pdf'
+    resp.headers['Content-Disposition'] = (
+        'attachment; filename="synapse-library-%s.pdf"' % lang)
     return resp
 
 
@@ -14964,6 +15204,18 @@ def _migrate_mentorship_area_columns():
                   ('paid_amount', 'FLOAT'), ('pay_currency', 'VARCHAR(20)'),
                   ('tx_hash', 'VARCHAR(120)'), ('alerted_at', 'TIMESTAMP')],
         'mentorship_live_state': [('watermark_on', 'BOOLEAN')],
+        # 🔴 El PDF de Synapse. HOY la tabla nace completa (create_all la crea
+        # entera la primera vez), así que esto no ejecuta nada — está aquí
+        # para el día en que alguien le añada una columna al modelo: sin este
+        # renglón, la tabla existiría sin la columna, el modelo la declararía,
+        # y TODA consulta de pedidos del PDF reventaría en producción sin
+        # avisar. Es exactamente lo que pasó con `order.is_test`.
+        'synapse_order': [('lang', 'VARCHAR(5)'), ('applied_at', 'TIMESTAMP'),
+                          ('is_test', 'BOOLEAN'), ('provider_ref', 'VARCHAR(80)'),
+                          ('pay_status', 'VARCHAR(24)'), ('paid_amount', 'FLOAT'),
+                          ('pay_currency', 'VARCHAR(20)'),
+                          ('tx_hash', 'VARCHAR(120)'),
+                          ('alerted_at', 'TIMESTAMP'), ('note', 'VARCHAR(300)')],
     }
     for table, cols in wanted.items():
         if not insp.has_table(table):

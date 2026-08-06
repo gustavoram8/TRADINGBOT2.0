@@ -300,7 +300,7 @@
       <button class="atab" data-pane="bugs">🛠️ Bugs</button>
       <button class="atab" data-pane="giveaway">🎁 Giveaway</button>
       <button class="atab" data-pane="ledger">📒 Ventas</button>
-      <button class="atab" data-pane="cosmeticos">🎨 Cosméticos</button>
+      <button class="atab" data-pane="cosmeticos">📦 Compras únicas</button>
       <button class="atab" data-pane="reviews">⭐ Reseñas</button>
     </div>
 
@@ -1303,23 +1303,29 @@
     </div>
 
     <div class="tabpane" data-pane="cosmeticos">
-    <div class="section-h" id="cosmeticos">🎨 Libro de cosméticos</div>
+    <div class="section-h" id="cosmeticos">📦 Libro de compras únicas</div>
     <div class="section-d">
-      Solo cosméticos: camos, placas y cursores — compras sueltas y carritos, en una misma lista.
-      <b>Nada de aquí toca los planes, la escalera del socio ni la reserva</b>: un cosmético es una
-      venta sin comisión ni chargeback-reserve, y por eso tampoco aparece en 📒 Ventas. Lo que se
-      enseña como <b>pagado</b> es lo que el comprador terminó pagando en el carrito (el total que
-      cobró PayPal), no la suma de etiquetas.
+      Todo lo de pago único en una misma cronología: cosméticos (camos, placas y cursores, sueltos
+      o en carrito) y el <b>PDF de la Biblioteca Synapse</b> — que además lleva su total aparte.
+      <b>Nada de aquí toca los planes, la escalera del socio ni la reserva</b>: una compra única no
+      genera comisión ni chargeback-reserve, y por eso tampoco aparece en 📒 Ventas. Lo que se
+      enseña como <b>pagado</b> es lo que el comprador terminó pagando (el total que cobró PayPal),
+      no la suma de etiquetas.
     </div>
 
-    <!-- ── Los dos números grandes ── -->
+    <!-- ── Los números grandes ── -->
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
-      <div style="flex:2;min-width:250px;background:linear-gradient(135deg,#2a1a4a,#4a2a7a);border-radius:12px;padding:14px 18px;color:#fff;">
-        <div style="font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.75;">🎨 Cosméticos — histórico</div>
+      <div style="flex:2;min-width:230px;background:linear-gradient(135deg,#2a1a4a,#4a2a7a);border-radius:12px;padding:14px 18px;color:#fff;">
+        <div style="font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.75;">📦 Compras únicas — histórico</div>
         <div style="font-size:30px;font-weight:800;line-height:1.1;margin-top:3px;">${{ '%.2f'|format(cos_lifetime_total) }}</div>
-        <div style="font-size:11.5px;opacity:.8;margin-top:2px;">{{ cos_lifetime_count }} compra(s) reales</div>
+        <div style="font-size:11.5px;opacity:.8;margin-top:2px;">{{ cos_lifetime_count }} compra(s) reales · cosméticos + PDF</div>
       </div>
-      <div style="flex:1;min-width:200px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 18px;">
+      <div style="flex:1;min-width:190px;background:linear-gradient(135deg,#0b3d38,#12655c);border-radius:12px;padding:14px 18px;color:#fff;">
+        <div style="font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.78;">📕 De eso, el PDF Synapse</div>
+        <div style="font-size:26px;font-weight:800;margin-top:4px;">${{ '%.2f'|format(spdf_lifetime_total) }}</div>
+        <div style="font-size:11.5px;opacity:.8;margin-top:2px;">{{ spdf_lifetime_count }} libro(s) · mes: ${{ '%.2f'|format(spdf_view_total) }} ({{ spdf_view_count }})</div>
+      </div>
+      <div style="flex:1;min-width:190px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 18px;">
         <div style="font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);">Mes en pantalla</div>
         <div style="font-size:26px;font-weight:800;margin-top:4px;">${{ '%.2f'|format(cos_view_total) }}</div>
         <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">{{ cos_view_count }} compra(s){% if cos_view_is_current %} · mes actual{% endif %}</div>

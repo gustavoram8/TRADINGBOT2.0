@@ -46,6 +46,7 @@ QUITAR = {
     'sale_breakdown': ['reserve_amt', 'reserve_pct', 'available_profit'],
     'camo_order': ['is_test'],
     'cosmetic_order': ['is_test'],
+    'synapse_order': ['is_test', 'lang', 'applied_at'],
     'testimonial': ['insider'],
     'promo_code': ['restrict_user_id', 'owner_user_id'],
     'forum_post': ['community_id'],
@@ -153,7 +154,10 @@ def main():
                                ('PlanSubscription', A.PlanSubscription),
                                ('SaleBreakdown', A.SaleBreakdown),
                                ('Testimonial', A.Testimonial),
-                               ('PromoCode', A.PromoCode)):
+                               ('PromoCode', A.PromoCode),
+                               ('CamoOrder', A.CamoOrder),
+                               ('CosmeticOrder', A.CosmeticOrder),
+                               ('SynapseOrder', A.SynapseOrder)):
             try:
                 n = modelo.query.count()
                 check(True, '%-18s %d fila(s)' % (nombre, n))

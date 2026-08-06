@@ -45,7 +45,7 @@ def usuario(nombre, admin=False):
     u = A.User.query.filter_by(username=nombre).first()
     if u:
         for M in (A.KnownDevice, A.SaleBreakdown, A.PlanSubscription,
-                  A.CamoOrder, A.CosmeticOrder, A.Order):
+                  A.CamoOrder, A.CosmeticOrder, A.SynapseOrder, A.Order):
             M.query.filter_by(user_id=u.id).delete()
         A.db.session.delete(u)
         A.db.session.commit()
@@ -95,6 +95,9 @@ def main():
         A.db.create_all()
         A.CamoOrder.query.delete()
         A.CosmeticOrder.query.delete()
+        # El PDF de Synapse comparte esta pestaña: hay que limpiarlo también o
+        # los pedidos que deja otra suite se suman a los totales de aquí.
+        A.SynapseOrder.query.delete()
         A.db.session.commit()
         # Punto de partida del libro de PLANES: lo que haya dejado otra suite.
         ventas_antes = A.SaleBreakdown.query.count()
@@ -244,7 +247,9 @@ def main():
     html = r.get_data(as_text=True)
     check(r.status_code == 200, '/admin responde (%s)' % r.status_code)
     check('data-pane="cosmeticos"' in html, 'la pestaña existe')
-    check('Libro de cosméticos' in html, 'con su título')
+    # La pestaña se renombró al entrar el PDF de Synapse: ahora es el libro
+    # de COMPRAS ÚNICAS (cosméticos + PDF, cada uno con su total).
+    check('Libro de compras únicas' in html, 'con su título')
     # A esta altura la sección 6 selló la compra de julio como ensayo, así que
     # solo queda UN mes real y el selector no tiene enlaces — se comprueba que
     # el mes en pantalla y los ensayos aparte sí se pintan.
