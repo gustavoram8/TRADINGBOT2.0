@@ -223,7 +223,7 @@
    "Ne nommez une figure que lorsque ses parties existent vraiment : une épaule-tête-épaule exige les deux épaules et une ligne de cou traçable sans plisser les yeux.",
    "Mesurez la hauteur de la figure — cette projection est l'objectif classique, et c'est une estimation d'énergie, pas une promesse.",
    "Vérifiez l'histoire du volume : les figures de retournement saines tendent à se tarir pendant leur construction et à s'étendre sur le mouvement de cassure.",
-   "Prenez la cassure de la ligne de cou sur une clôture décidée, ou attendez le retest de la ligne cassée depuis l'autre côté.",
+   "La figure se complète à la cassure de la ligne de cou sur une clôture décidée ; la version plus patiente attend le retest de la ligne cassée depuis l'autre côté.",
    "Définissez à l'avance la mort de l'idée : une clôture de retour dans le corps de la figure dit que la complétion a échoué — et les figures échouées voyagent fort dans l'autre sens."
   ],
   "fails": [
@@ -283,7 +283,7 @@
    "La zone est la base DEPUIS laquelle le mouvement est parti — la grappe de petites bougies avant l'explosion, tracée du corps le plus haut à la mèche extrême.",
    "Préférez les zones fraîches : le premier retour est celui qui rencontre les ordres non exécutés restés derrière.",
    "Au retour du prix, ne faites rien au contact — observez si la zone tient réellement : mèches de rejet, bascule sur votre cadre d'entrée.",
-   "Placez l'invalidation au-delà du bord distal de la zone : si toute l'aire se traverse, les ordres sur lesquels vous pariiez n'y sont pas."
+   "L'invalidation vit au-delà du bord distal de la zone : si toute la zone est traversée, les ordres non exécutés qu'elle était censée contenir n'y sont pas."
   ],
   "fails": [
    "Une base dont le départ fut une dérive paresseuse tient bien moins souvent — la zone emprunte tout son pouvoir à l'urgence qui l'a créée.",
@@ -347,8 +347,8 @@
    "Cherchez l'anatomie : une mèche d'au moins deux fois le corps, le corps logé à une extrémité du range, imprimée sur un extrême — pas en plein milieu du mouvement.",
    "Exigez que la mèche ait PERCÉ quelque chose : un niveau, une zone, un swing antérieur. Un rejet a besoin de quelque chose à rejeter.",
    "Lisez la clôture : de retour dans l'aire percée, idéalement au-delà du milieu du range de la bougie elle-même — c'est l'enchère échouée consignée au registre.",
-   "Les entrées vivent sur la cassure du nez du pin ou sur le repli vers le milieu de la mèche ; les deux exigent la même invalidation.",
-   "L'invalidation est l'extrême de la mèche : si le prix retraverse ce point, le rejet que vous avez acheté n'existe plus."
+   "Les déclencheurs classiques sont la cassure du nez du pin ou le repli vers le milieu de la mèche ; les deux partagent la même invalidation.",
+   "L'invalidation est l'extrême de la mèche : si le prix repasse au travers, le rejet sur lequel le setup était construit n'existe plus."
   ],
   "fails": [
    "Un pin bar au milieu d'un range n'a rien rejeté — c'est le marché qui respire, et il échoue aussi souvent qu'il fonctionne.",
@@ -411,7 +411,7 @@
    "Attendez que le CORPS de la deuxième bougie enveloppe le corps précédent en entier — le chevauchement de mèches n'est pas un avalement, et le « presque » ne compte pas.",
    "L'emplacement lui donne son sens : imprimée sur un niveau après un repli, elle documente un camp absorbant la dernière poussée de l'autre.",
    "Notez-la selon sa clôture : au-delà de l'extrême de la bougie précédente, c'est une déclaration ; à peine passé le corps, c'est un murmure.",
-   "Entrées : la cassure de l'extrême de la bougie d'avalement, ou le repli vers son milieu pour un meilleur prix avec la même invalidation.",
+   "Les déclencheurs classiques : la cassure de l'extrême de l'englobante, ou le repli vers son point médian — un meilleur prix contre la même invalidation.",
    "L'invalidation se place au-delà du swing d'où l'avalement est né — si cela cède, le contrôle n'a jamais réellement changé."
   ],
   "fails": [
@@ -656,7 +656,7 @@
   "figcap": "L'oscillateur RSI avec les bandes 70/30 ; il peut longer le surachat durant une forte tendance.",
   "playbook": [
    "Diagnostiquez le régime D'ABORD : dans un range, 70/30 marquent de vrais extrêmes ; dans une tendance, ils marquent la force — le même chiffre, deux sens opposés.",
-   "Dans les ranges, ne prenez le surachat/survente que sur un niveau marqué, et exigez-y un signal de prix — le RSI localise, la bougie confirme.",
+   "En range, les lectures qui comptent sont surachat/survente SUR un niveau marqué, avec un signal de prix par-dessus — le RSI localise, la bougie confirme.",
    "Dans les tendances, surveillez la bande 40–60 : les replis sains d'une tendance haussière tendent à s'y épuiser, ce qui fait du RSI une jauge de profondeur de repli.",
    "Utilisez la ligne médiane des 50 comme ligne de régime du momentum : tenir au-dessus pendant que le prix construit des creux plus hauts est un accord digne d'attention.",
    "Réservez votre attention maximale à la divergence sur structure — c'est la seule lecture du RSI qui précède au lieu de retarder."
@@ -1525,7 +1525,7 @@
   ]
  },
  "smc.ote": {
-  "lead": "L'Entrée Optimale (OTE) est la poche de Fibonacci d'ICT : dans une tendance confirmée, l'entrée de retracement la plus probable se situe entre les niveaux 61.8% et 79%, avec 70.5% comme point idéal.",
+  "lead": "L'Entrée Optimale (OTE) est la poche de Fibonacci d'ICT : dans une tendance confirmée, la fenêtre de retracement que la méthodologie note le plus haut se situe entre les niveaux 61.8% et 79%, avec 70.5% comme point idéal.",
   "body": "Elle marie une zone de Fibonacci de discount profond (ou premium profond) avec un array institutionnel réel pour une confluence maximale.",
   "mechanics": [
    {
@@ -1566,7 +1566,7 @@
    "Tracez de l'origine à l'extrême et marquez la poche 0,62–0,79 ; notez le 0,705, le milieu qu'ICT signale comme le point doux.",
    "Laissez la poche être le lieu de rencontre, pas la raison : un OTE qui chevauche l'order block d'origine ou le CE du FVG est une confluence ; un ratio nu est une coordonnée.",
    "Donnez-lui son heure : le repli qui atteint la poche pendant une kill zone, après avoir balayé quelque creux mineur en chemin, est la version de gala de cette entrée.",
-   "Ancrez le stop au-delà de l'origine du swing — si CELA cède, la jambe mesurée n'existe plus — et visez d'abord l'ancien extrême."
+   "L'invalidation s'ancre au-delà de l'origine du swing — si CELA cède, la jambe mesurée n'existe plus — et le premier objectif que désigne l'école est l'ancien extrême."
   ],
   "fails": [
    "Fib sur le mauvais swing, précision sur la mauvaise carte : mesurer une jambe interne mineure place votre « poche » à des niveaux que la livraison n'a jamais eu l'intention de respecter.",
@@ -1629,7 +1629,7 @@
    "Vérifiez le pedigree complet avant de vous intéresser au bloc : un balayage de liquidité, puis un displacement, puis une cassure de structure — l'OB laissé à l'origine de CETTE séquence est celui qui mérite l'attente.",
    "Laissez le prix venir à vous : ne placez rien à l'avance ; le setup est le RETOUR au bloc, et bien des séquences valides ne reviennent simplement jamais.",
    "À l'arrivée, descendez sur votre cadre d'entrée et exigez une réaction : une empreinte de rejet ou une micro-bascule de structure dans la zone.",
-   "Les stops appartiennent au-delà du bord lointain du bloc — si le bloc entier se traverse, l'empreinte institutionnelle que vous suiviez a été réécrite.",
+   "L'invalidation appartient au-delà du bord opposé du bloc — si le bloc entier est traversé, l'empreinte institutionnelle que le setup suivait a été réécrite.",
    "Visez la carte, pas un ratio fixe : la prochaine poche de liquidité ou l'array opposé est l'endroit où le mouvement a une raison de faire une pause."
   ],
   "fails": [
@@ -1756,8 +1756,8 @@
    "Choisissez la poche à l'avance : un equal low évident, un extrême de la veille — le setup commence par savoir OÙ la récolte devrait se produire.",
    "Observez la course : le prix perce le niveau, les stops se déclenchent, et l'indice est ce qui arrive ENSUITE — un rejet violent de retour à l'intérieur est une récolte ; l'acceptation en dessous est une continuation.",
    "Exigez la paire de confirmation : displacement ET bascule de structure dans la nouvelle direction. Sans les deux, vous avez une mèche intéressante.",
-   "Entrez sur le repli vers ce que le displacement a laissé derrière — le FVG ou le bloc d'origine — pas sur la bougie émotionnelle elle-même.",
-   "Invalidez au-delà de l'extrême du balayage : si le prix repasse la mèche qui a « rejeté », le rejet était une fiction."
+   "L'entrée de la méthodologie est le repli vers ce que le déplacement a laissé derrière lui — le FVG ou le bloc d'origine — jamais la bougie émotionnelle elle-même.",
+   "L'invalidation se place au-delà de l'extrême du sweep : si le prix repasse la mèche qui « rejetait », le rejet était une fiction."
   ],
   "fails": [
    "Chaque balayage est à une bougie de patience d'être une cassure : la même percée qui récolte les stops peut être le début de l'expansion — la clôture et la bascule décident, pas la mèche.",
@@ -1931,7 +1931,7 @@
    "Traitez le calendrier comme une check-list de pré-vol : avant toute séance, sachez ce qui publie, quand, et son niveau d'impact — un setup 3 minutes avant le CPI n'est pas un setup.",
    "Localisez les TROIS chiffres de chaque publication : précédent, consensus, réel — le marché trade l'écart entre consensus et réel, rien d'autre.",
    "Attendez-vous à ce que le premier mouvement mente : le pic initial est dominé par les algorithmes et les stops forcés ; la structure qui se forme APRÈS porte le verdict des humains.",
-   "Protégez votre risque ouvert : élargissez, réduisez ou coupez avant les événements rouges par règle, pas par humeur — exécuter à travers une publication est une loterie même quand l'idée est bonne.",
+   "Le risque ouvert face à un événement rouge se décide par règle, pas par humeur : les playbooks professionnels élargissent, réduisent ou se mettent à plat avant la publication, parce qu'exécuter à travers une annonce est une loterie même quand l'idée est bonne.",
    "Journalisez la réaction, pas seulement le chiffre : que le prix ait tenu le pic ou l'ait effacé vous dit à quel point le marché était positionné — du carburant pour la prochaine fois."
   ],
   "fails": [
@@ -1989,7 +1989,7 @@
    "Partez du cadran du risque : à chaque séance, demandez si l'argent cherche le risque (actions en hausse, croisements yen en hausse) ou le fuit — cette seule réponse colore chaque graphique tradé.",
    "Suivez le dollar comme le soleil : la force du DXY presse l'or, les matières premières et les devises à risque en même temps — un coup d'œil explique bien des graphiques.",
    "Observez les rendements comme l'engrenage d'avance : les marchés obligataires recotent souvent la croissance et les taux avant que les actions et le FX ne suivent.",
-   "Utilisez les corrélations comme CONFIRMATION : votre achat EURUSD s'accorde avec un DXY qui mollit ; le désaccord est une raison de réduire la taille, pas un trade en soi.",
+   "Utilisez les corrélations comme CONFIRMATION : une thèse acheteuse sur EURUSD s'accorde avec un DXY qui mollit ; le désaccord appelle moins de conviction, et n'est jamais un trade en soi.",
    "Respectez la logique SMT où elle s'applique : quand deux instruments corrélés divergent aux extrêmes — l'un fait le sommet, l'autre refuse — le refus dit souvent la vérité."
   ],
   "fails": [
@@ -2053,8 +2053,8 @@
    "Qualifiez d'abord l'événement : les candidats au fade sont des surprises de second rang ou des titres qui ne changent PAS la trajectoire des taux — jamais des impressions qui changent le régime.",
    "Laissez le pic s'épuiser : le signal d'entrée est le momentum qui meurt — bougies plus petites, un calage sur un niveau marqué du cadre supérieur — pas un compte à rebours depuis la publication.",
    "Exigez un emplacement : un pic CONTRE une zone d'offre daily ou un extrême antérieur donne au fade un mur où s'appuyer ; un pic vers l'espace ouvert ne lui donne rien.",
-   "Entrez sur l'empreinte de l'échec — la bascule sur votre petit cadre contre le pic — et placez le stop au-delà de l'extrême du pic, car passé cela, la « surréaction » était le mouvement.",
-   "Visez l'origine : le prix d'avant la nouvelle est l'aimant naturel d'un réflexe qui ne signifiait rien ; prenez profit vers lui, pas à travers lui."
+   "Le déclencheur que cette école attend est l'impression d'échec — un basculement en petite unité de temps contre le pic — avec l'invalidation au-delà de l'extrême du pic, car passé ce point la « surréaction » était le mouvement.",
+   "L'objectif est l'origine : le prix d'avant la nouvelle est l'aimant naturel d'un réflexe qui ne signifiait rien — la thèse du fade s'arrête là, pas au-delà."
   ],
   "fails": [
    "Fader une impression qui a vraiment changé l'histoire, c'est se tenir devant une recotation — le marché ne surréagit pas : il CORRIGE, et il ne reviendra pas pour vous.",
@@ -2116,9 +2116,9 @@
   "playbook": [
    "Vérifiez d'abord l'alignement : le setup n'existe que lorsque la surprise CONFIRME la tendance macro en place — la donnée avec le vent, pas contre lui.",
    "Laissez le pic se produire sans vous : l'entrée de continuation n'est jamais la poursuite ; elle commence quand le premier repli se forme.",
-   "Achetez le repli sur un vrai niveau : le point de cassure d'avant le pic, le FVG laissé par le pic, un OTE de la jambe de la nouvelle — la structure donne un plancher au repli.",
+   "Le playbook achète le repli sur un niveau réel : le point de cassure d'avant le pic, le FVG laissé par le pic, un OTE de la jambe de la nouvelle — la structure donne un plancher au repli.",
    "Confirmez la reprise : une empreinte de rejet à ce niveau dans la direction de la publication est le feu vert ; son absence est l'avertissement.",
-   "Chevauchez avec les objectifs de la tendance elle-même : macro et momentum s'accordant, l'extrême antérieur et la prochaine poche du cadre supérieur sont des objectifs honnêtes — c'est le rare setup où la patience paie deux fois."
+   "Les objectifs sont ceux de la tendance elle-même : macro et momentum étant d'accord, l'extrême précédent et le prochain pool du cadre supérieur sont les cibles honnêtes — c'est le rare setup où la patience paie deux fois."
   ],
   "fails": [
    "Poursuivre le pic EST le mode d'échec : les premières bougies portent les pires prix et les spreads les plus larges, et le repli qui suit encaisse les poursuivants avant la vraie continuation.",
@@ -2412,9 +2412,9 @@
   "playbook": [
    "Filtrez par régime avant tout : le retour à la moyenne se nourrit de ranges — un filtre ADX ou un contrôle de structure doit approuver le trade avant même de mesurer l'étirement.",
    "Quantifiez l'étirement : un z-score ou une distance de bande transforme le « ça a l'air étiré » en un nombre à seuil testable.",
-   "Attendez que le retour COMMENCE : entrez sur la première contraction vers la moyenne, pas à l'étirement maximal — attraper le bord extérieur est un autre trade, pire.",
+   "Attendez que le retournement COMMENCE : l'entrée que cette stratégie définit est la première contraction de retour vers la moyenne, pas l'étirement maximal — attraper le bord extérieur est un autre trade, en pire.",
    "Visez la moyenne, pas la lune : la thèse du trade est un retour à la moyenne, donc la moyenne est la sortie — étendre les objectifs au-delà emprunte une thèse que vous n'avez pas.",
-   "Coupez au changement de régime, pas seulement au prix : si le range casse pendant que vous tenez, la prémisse est morte — la perte est le prix de l'information, et rester, c'est payer deux fois."
+   "La règle de sortie se déclenche au changement de régime, pas seulement au prix : si le range casse en cours de trade, la prémisse est morte — la perte est le prix de l'information, et rester, c'est payer deux fois."
   ],
   "fails": [
    "« Ça ne peut pas monter plus haut » n'est pas une raison — en tendance, l'étiré s'étire davantage, et vendre la force sans filtre de régime est l'enterrement d'école de cette stratégie.",
@@ -2475,8 +2475,8 @@
   "figcap": "Une cassure confirmée par l'ADX entrant dans une tendance soutenue, suivie par une moyenne mobile croissante.",
   "playbook": [
    "Confirmez qu'il y a une tendance qui vaut la peine : un ADX au-dessus du seuil, ou une séquence propre de structure externe — le filtre vient avant le signal.",
-   "Entrez AVEC la force, pas après son repos : la logique momentum achète haut pour vendre plus haut ; l'hésitation attendant « un meilleur prix » est une pensée de réversion sous le mauvais uniforme.",
-   "Dimensionnez pour la volatilité que vous embarquez : les jambes fortes bougent vite dans les deux sens, et le stop doit vivre hors de la respiration normale de la jambe.",
+   "La stratégie entre AVEC la force, pas après son repos : la logique momentum achète haut pour vendre plus haut ; attendre « un meilleur prix » est une pensée de réversion sous le mauvais uniforme.",
+   "La taille répond à la volatilité abordée : les jambes fortes bougent vite dans les deux sens, et l'invalidation doit vivre hors de la respiration normale de la jambe.",
    "Laissez respirer les gagnants avec un trailing de structure : sorties à chaque nouveau swing plutôt qu'objectifs fixes — la persistance est l'avantage, la sortie doit donc la permettre.",
    "Retirez le trade quand la force meurt : les stratégies momentum dépendent du régime, et un ADX plat ou une continuation ratée est la machine annonçant la fin de sa saison."
   ],

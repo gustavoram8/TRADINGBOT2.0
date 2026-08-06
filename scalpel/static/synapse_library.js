@@ -899,7 +899,7 @@
 
   C['smc.ote'] = {
     type: 't',
-    lead: 'The Optimal Trade Entry is ICT\'s Fibonacci pocket: in a confirmed trend, the highest-probability retracement entry sits between the 61.8% and 79% levels, with 70.5% the sweet spot.',
+    lead: 'The Optimal Trade Entry is ICT\'s Fibonacci pocket: in a confirmed trend, the retracement window the methodology rates highest sits between the 61.8% and 79% levels, with 70.5% the sweet spot.',
     body: 'It marries a deep-discount (or deep-premium) Fib zone with an actual institutional array for maximum confluence.',
     mechanics: [
       { term: 'Measurement', text: 'Anchor the Fib from the recent significant swing low to high (bullish); the OTE is the 0.62–0.79 band.' },

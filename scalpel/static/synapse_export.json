@@ -236,7 +236,7 @@
     "Only name a pattern once its parts actually exist: a head-and-shoulders needs both shoulders and a neckline you can draw without squinting.",
     "Measure the pattern's height — that projection is the classic target, and it is an estimate of energy, not a promise.",
     "Check the volume story: healthy reversal patterns tend to dry up as they build and expand on the breaking move.",
-    "Take the break of the neckline with a decisive close, or wait for the retest of the broken line from the other side.",
+    "The pattern completes at the break of the neckline with a decisive close; the more patient version waits for the retest of the broken line from the other side.",
     "Define the death of the idea in advance: a close back inside the pattern's body says the completion failed — and failed patterns travel hard the other way."
    ],
    "fails": [
@@ -299,7 +299,7 @@
     "The zone is the base the move departed FROM — the cluster of small candles before the explosion, drawn from the highest body to the extreme wick.",
     "Prefer fresh zones: the first return is the one that meets whatever unfilled orders were left behind.",
     "When price returns, do nothing at the touch — watch for the zone to actually hold: rejection wicks, a shift on your entry timeframe.",
-    "Place invalidation beyond the distal edge of the zone: if the whole area trades through, the orders you were betting on are not there."
+    "Invalidation lives beyond the distal edge of the zone: if the whole area trades through, the unfilled orders the zone was supposed to hold are not there."
    ],
    "fails": [
     "A base whose departure was a lazy drift holds far less often — the zone borrows its power entirely from the urgency that created it.",
@@ -367,8 +367,8 @@
     "Look for the anatomy: a wick at least twice the body, the body tucked into one end of the range, printed at an extreme — not mid-move.",
     "Demand that the wick PIERCED something: a level, a zone, a prior swing. A rejection needs something to reject.",
     "Read the close: back inside the pierced area, ideally beyond the midpoint of the candle's own range — that is the failed auction on record.",
-    "Entries live at the break of the pin's nose or on the retrace toward the middle of the wick; both need the same invalidation.",
-    "Invalidation is the wick's extreme: if price trades back through it, the rejection you bought no longer exists."
+    "The textbook triggers are the break of the pin's nose or the retrace toward the middle of the wick; both share the same invalidation.",
+    "Invalidation is the wick's extreme: if price trades back through it, the rejection the setup was built on no longer exists."
    ],
    "fails": [
     "A pin bar in the middle of a range rejected nothing — it is the market breathing, and it fails as often as it works.",
@@ -435,7 +435,7 @@
     "Wait for the second candle's BODY to wrap the entire prior body — wick overlap is not engulfment, and \"almost\" does not count.",
     "Location gives it meaning: printed at a level after a pullback, it documents one side absorbing the other's last push.",
     "Grade it by its close: beyond the prior candle's extreme is a statement; barely past the body is a whisper.",
-    "Entries: the break of the engulfing candle's extreme, or the retrace to its midpoint for a better price with the same invalidation.",
+    "The classic triggers: the break of the engulfing candle's extreme, or the retrace to its midpoint — a better price against the same invalidation.",
     "Invalidation sits beyond the swing the engulfing grew from — if that gives way, control never actually changed."
    ],
    "fails": [
@@ -694,7 +694,7 @@
    "figcap": "The RSI oscillator with the 70/30 bands; it can ride along overbought through a strong trend.",
    "playbook": [
     "Diagnose the regime FIRST: in a range, 70/30 mark real extremes; in a trend, they mark strength — the same number, two opposite meanings.",
-    "In ranges, take overbought/oversold only at a marked level, and demand a price signal there — the RSI locates, the candle confirms.",
+    "In ranges, the readings that matter are overbought/oversold AT a marked level, with a price signal on top — the RSI locates, the candle confirms.",
     "In trends, watch the 40–60 band: healthy pullbacks in an uptrend tend to exhaust there, which turns RSI into a pullback-depth gauge.",
     "Use the 50 centerline as the momentum regime line: holding above it while price builds higher lows is agreement worth noticing.",
     "Save your strongest attention for divergence at structure — that is the one RSI read that leads instead of lagging."
@@ -1613,7 +1613,7 @@
  "smc.ote": {
   "content": {
    "type": "t",
-   "lead": "The Optimal Trade Entry is ICT's Fibonacci pocket: in a confirmed trend, the highest-probability retracement entry sits between the 61.8% and 79% levels, with 70.5% the sweet spot.",
+   "lead": "The Optimal Trade Entry is ICT's Fibonacci pocket: in a confirmed trend, the retracement window the methodology rates highest sits between the 61.8% and 79% levels, with 70.5% the sweet spot.",
    "body": "It marries a deep-discount (or deep-premium) Fib zone with an actual institutional array for maximum confluence.",
    "mechanics": [
     {
@@ -1654,7 +1654,7 @@
     "Draw from origin to extreme and mark the 0.62–0.79 pocket; note 0.705, the midpoint ICT highlights as the sweet spot.",
     "Let the pocket be the meeting place, not the reason: an OTE that overlaps the origin order block or the FVG's CE is a confluence; a naked ratio is a coordinate.",
     "Time it: the retrace that reaches the pocket during a kill zone, after sweeping some minor low on the way down, is the full-dress version of this entry.",
-    "Anchor the stop beyond the swing's origin — if THAT gives way, the leg you measured no longer exists — and aim first at the old extreme."
+    "The invalidation anchors beyond the swing's origin — if THAT gives way, the measured leg no longer exists — and the first objective the school points at is the old extreme."
    ],
    "fails": [
     "Fib on the wrong swing, precision on the wrong map: measuring a minor internal leg puts your \"pocket\" at levels the delivery never intended to respect.",
@@ -1721,7 +1721,7 @@
     "Verify the full pedigree before caring about the block: a sweep of liquidity, then displacement, then a break of structure — the OB left at the origin of THAT sequence is the one worth waiting for.",
     "Let price come to you: place nothing in advance; the setup is the RETURN to the block, and many valid sequences simply never return.",
     "On arrival, drop to your entry timeframe and demand a reaction: a rejection print or a micro shift of structure inside the zone.",
-    "Stops belong beyond the block's far edge — if the whole block trades through, the institutional footprint you followed has been overwritten.",
+    "Invalidation belongs beyond the block's far edge — if the whole block trades through, the institutional footprint the setup followed has been overwritten.",
     "Target the map, not a fixed ratio: the next pool of liquidity or opposing array is where the move has a reason to pause."
    ],
    "fails": [
@@ -1856,8 +1856,8 @@
     "Pick the pool in advance: an obvious equal low, a previous-day extreme — the setup begins with knowing WHERE the harvest should happen.",
     "Watch the run: price pierces the level, stops fire, and the tell is what happens NEXT — a violent rejection back inside is harvest; acceptance below is continuation.",
     "Demand the confirmation pair: displacement AND a shift of structure in the new direction. Without both, you have an interesting wick.",
-    "Enter on the retrace into what the displacement left behind — the FVG or the origin block — not on the emotional candle itself.",
-    "Invalidate beyond the sweep's extreme: if price returns past the wick that \"rejected\", the rejection was fiction."
+    "The methodology's entry is the retrace into what the displacement left behind — the FVG or the origin block — never the emotional candle itself.",
+    "Invalidation sits beyond the sweep's extreme: if price returns past the wick that \"rejected\", the rejection was fiction."
    ],
    "fails": [
     "Every sweep is one candle of patience away from being a breakout: the same pierce that harvests stops can be the start of expansion — the close and the shift decide, not the wick.",
@@ -2040,7 +2040,7 @@
     "Run the calendar as pre-flight: before any session, know what publishes, when, and its impact tier — a setup 3 minutes ahead of CPI is not a setup.",
     "Locate the THREE numbers on every release: previous, consensus, actual — the market trades the gap between consensus and actual, nothing else.",
     "Expect the first move to lie: the initial spike is dominated by algorithms and forced stops; the structure that forms AFTER it carries the humans' verdict.",
-    "Protect your open risk: widen, reduce, or flatten into red-tier events by rule, not by mood — execution through a release is a lottery even when the idea is right.",
+    "Open risk into a red-tier event is decided by rule, not by mood: professional playbooks widen, reduce or go flat before the print, because execution through a release is a lottery even when the idea is right.",
     "Journal the reaction, not just the number: whether price held the spike or faded it tells you how positioned the market was — fuel for the next occasion."
    ],
    "fails": [
@@ -2101,7 +2101,7 @@
     "Start from the risk dial: every session, ask whether money is seeking risk (equities up, yen crosses up) or fleeing it — that single answer colors every chart you trade.",
     "Track the dollar as the sun: DXY strength pressures gold, commodities and risk currencies at once — one glance explains many charts.",
     "Watch yields as the leading gear: bond markets often re-price growth and rates before equities and FX catch up.",
-    "Use correlations as CONFIRMATION: your EURUSD long agrees with a softening DXY; disagreement is a reason to size down, not a trade by itself.",
+    "Use correlations as CONFIRMATION: a long-EURUSD thesis agrees with a softening DXY; disagreement argues for less conviction, and is never a trade by itself.",
     "Respect SMT logic where it applies: when two correlated instruments diverge at extremes — one makes the high, the other refuses — the refusal often tells the truth."
    ],
    "fails": [
@@ -2169,8 +2169,8 @@
     "Qualify the event first: fade candidates are second-tier surprises or headlines that do NOT change the rate path — never regime-changing prints.",
     "Let the spike exhaust: the entry signal is momentum dying — smaller candles, a stall at a marked HTF level — not a countdown from the release.",
     "Demand a location: a spike INTO a daily supply zone or a prior extreme gives the fade a wall to lean on; a spike into open space gives it nothing.",
-    "Enter on the failure print — the shift on your small timeframe against the spike — and stop beyond the spike's extreme, because past it the \"overreaction\" was the move.",
-    "Target the origin: the pre-news price is the natural magnet of a knee-jerk that meant nothing; take profit into it, not through it."
+    "The trigger this school waits for is the failure print — a small-timeframe shift against the spike — with invalidation beyond the spike's extreme, because past it the \"overreaction\" was the move.",
+    "The objective is the origin: the pre-news price is the natural magnet of a knee-jerk that meant nothing — the fade's thesis ends there, not beyond it."
    ],
    "fails": [
     "Fading a print that genuinely changed the story is standing in front of a repricing — the market is not overreacting, it is CORRECTING, and it will not come back for you.",
@@ -2236,9 +2236,9 @@
    "playbook": [
     "Check the alignment first: the setup exists only when the surprise CONFIRMS the standing macro trend — data with the wind, not against it.",
     "Let the spike happen without you: the continuation entry is never the chase; it begins when the first pullback starts forming.",
-    "Buy the retrace at a real level: the pre-spike breakout point, the FVG the spike left, an OTE of the news leg — structure gives the pullback a floor.",
+    "The playbook buys the retrace at a real level: the pre-spike breakout point, the FVG the spike left, an OTE of the news leg — structure gives the pullback a floor.",
     "Confirm the resumption: a rejection print at that level in the release's direction is the green light; its absence is the warning.",
-    "Ride with the trend's own targets: since macro and momentum agree, the prior extreme and the next HTF pool are honest objectives — this is the rare setup where patience pays twice."
+    "The objectives are the trend's own: since macro and momentum agree, the prior extreme and the next HTF pool are the honest targets — this is the rare setup where patience pays twice."
    ],
    "fails": [
     "Chasing the spike IS the failure mode: the first candles carry the worst prices and the widest spreads, and the pullback that follows collects the chasers before the real continuation.",
@@ -2548,9 +2548,9 @@
    "playbook": [
     "Gate by regime before anything: mean reversion feeds on ranges — an ADX filter or structure check must clear the trade before the stretch is even measured.",
     "Quantify the stretch: a z-score or band distance turns \"looks extended\" into a number with a threshold you can test.",
-    "Wait for the turn to BEGIN: enter on the first contraction back toward the mean, not at maximum stretch — catching the outside edge is a different, worse trade.",
+    "Wait for the turn to BEGIN: the entry this strategy defines is the first contraction back toward the mean, not maximum stretch — catching the outside edge is a different, worse trade.",
     "Target the mean, not the moon: the trade's thesis is a return to average, so the average is the exit — extending targets past it borrows a thesis you do not hold.",
-    "Cut on regime change, not just price: if the range breaks while you hold, the premise died — the loss is a fee for the information, and staying is paying twice."
+    "The exit rule fires on regime change, not just price: if the range breaks mid-trade, the premise died — the loss is a fee for the information, and staying is paying twice."
    ],
    "fails": [
     "\"It cannot go higher\" is not a reason — in a trend, stretched gets more stretched, and fading strength without a regime gate is the strategy's textbook funeral.",
@@ -2615,8 +2615,8 @@
    "figcap": "An ADX-confirmed breakout running into a sustained trend, trailed by a rising moving average.",
    "playbook": [
     "Confirm there is a trend worth riding: an ADX above threshold, or a clean external-structure sequence — the gate comes before the signal.",
-    "Enter WITH strength, not after it rests: momentum logic buys high to sell higher; hesitation waiting for \"a better price\" is reversion thinking wearing the wrong uniform.",
-    "Size for the volatility you are boarding: strong legs move fast both ways, and the stop must live outside the leg's normal breathing.",
+    "The strategy enters WITH strength, not after it rests: momentum logic buys high to sell higher; waiting for \"a better price\" is reversion thinking wearing the wrong uniform.",
+    "Sizing answers to the volatility being boarded: strong legs move fast both ways, and the invalidation must live outside the leg's normal breathing.",
     "Let winners breathe with a trailing structure: exits at each new swing rather than fixed targets — persistence is the edge, so the exit must allow persistence.",
     "Retire the trade when strength dies: momentum strategies are regime-dependent, and flat ADX or failed continuation is the machine telling you its season ended."
    ],

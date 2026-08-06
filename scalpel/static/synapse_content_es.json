@@ -223,7 +223,7 @@
    "Nombra un patrón solo cuando sus partes existan de verdad: un hombro-cabeza-hombro necesita ambos hombros y un neckline que puedas trazar sin entrecerrar los ojos.",
    "Mide la altura del patrón — esa proyección es el objetivo clásico, y es una estimación de energía, no una promesa.",
    "Revisa la historia del volumen: los patrones de reversión sanos tienden a secarse mientras se construyen y a expandirse en el movimiento que rompe.",
-   "Toma la ruptura del neckline con un cierre decidido, o espera el retest de la línea rota desde el otro lado.",
+   "El patrón se completa con la ruptura del neckline en un cierre decidido; la versión más paciente espera el retest de la línea rota desde el otro lado.",
    "Define la muerte de la idea por adelantado: un cierre de vuelta dentro del cuerpo del patrón dice que la completación falló — y los patrones fallidos viajan con fuerza hacia el otro lado."
   ],
   "fails": [
@@ -283,7 +283,7 @@
    "La zona es la base DESDE la que partió el movimiento — el racimo de velas pequeñas antes de la explosión, dibujado del cuerpo más alto a la mecha extrema.",
    "Prefiere zonas frescas: el primer regreso es el que se encuentra con las órdenes sin llenar que quedaron atrás.",
    "Cuando el precio regrese, no hagas nada en el toque — observa si la zona de verdad aguanta: mechas de rechazo, un cambio en tu marco de entrada.",
-   "Coloca la invalidación más allá del borde distal de la zona: si el área entera se negocia de lado a lado, las órdenes a las que apostabas no están."
+   "La invalidación vive más allá del borde distal de la zona: si el área entera se cruza de lado a lado, las órdenes sin llenar que la zona debía guardar no están."
   ],
   "fails": [
    "Una base cuya partida fue un goteo perezoso aguanta mucho menos — la zona toma prestado todo su poder de la urgencia que la creó.",
@@ -347,8 +347,8 @@
    "Busca la anatomía: una mecha de al menos el doble del cuerpo, el cuerpo metido en un extremo del rango, impresa en un extremo del movimiento — no a mitad de camino.",
    "Exige que la mecha haya PERFORADO algo: un nivel, una zona, un swing previo. Un rechazo necesita algo que rechazar.",
    "Lee el cierre: de vuelta dentro del área perforada, idealmente más allá del punto medio del propio rango de la vela — esa es la subasta fallida que queda registrada.",
-   "Las entradas viven en la ruptura de la nariz del pin o en el retroceso hacia la mitad de la mecha; ambas necesitan la misma invalidación.",
-   "La invalidación es el extremo de la mecha: si el precio vuelve a negociarse a través de él, el rechazo que compraste ya no existe."
+   "Los gatillos de manual son la ruptura de la nariz del pin o el retroceso hacia la mitad de la mecha; ambos comparten la misma invalidación.",
+   "La invalidación es el extremo de la mecha: si el precio vuelve a cruzarlo, el rechazo sobre el que se armó el setup ya no existe."
   ],
   "fails": [
    "Un pin bar en medio de un rango no rechazó nada — es el mercado respirando, y falla tan seguido como funciona.",
@@ -411,7 +411,7 @@
    "Espera a que el CUERPO de la segunda vela envuelva el cuerpo previo entero — el solape de mechas no es envolvencia, y el \"casi\" no cuenta.",
    "La ubicación le da el significado: impresa en un nivel tras un retroceso, documenta a un bando absorbiendo el último empuje del otro.",
    "Califícala por su cierre: más allá del extremo de la vela previa es una declaración; apenas pasado el cuerpo es un susurro.",
-   "Entradas: la ruptura del extremo de la envolvente, o el retroceso a su punto medio para mejor precio con la misma invalidación.",
+   "Los gatillos clásicos: la ruptura del extremo de la envolvente, o el retroceso a su punto medio — mejor precio contra la misma invalidación.",
    "La invalidación queda más allá del swing del que nació la envolvente — si eso cede, el control en realidad nunca cambió."
   ],
   "fails": [
@@ -656,7 +656,7 @@
   "figcap": "El oscilador RSI con las bandas 70/30; puede mantenerse pegado a sobrecompra durante una tendencia fuerte.",
   "playbook": [
    "Diagnostica el régimen PRIMERO: en un rango, 70/30 marcan extremos reales; en una tendencia, marcan fuerza — el mismo número, dos significados opuestos.",
-   "En rangos, toma sobrecompra/sobreventa solo en un nivel marcado, y exige ahí una señal de precio — el RSI ubica, la vela confirma.",
+   "En rangos, las lecturas que importan son sobrecompra/sobreventa EN un nivel marcado, con una señal de precio encima — el RSI ubica, la vela confirma.",
    "En tendencias, vigila la banda 40–60: los retrocesos sanos de una tendencia alcista tienden a agotarse ahí, lo que convierte al RSI en un medidor de profundidad del retroceso.",
    "Usa la línea central de 50 como línea de régimen del momentum: sostenerse encima mientras el precio construye mínimos crecientes es un acuerdo que vale la pena notar.",
    "Guarda tu mayor atención para la divergencia en estructura — esa es la única lectura del RSI que adelanta en vez de rezagar."
@@ -1525,7 +1525,7 @@
   ]
  },
  "smc.ote": {
-  "lead": "La Entrada Óptima (OTE) es el bolsillo de Fibonacci de ICT: en una tendencia confirmada, la entrada de retroceso de mayor probabilidad se sitúa entre los niveles 61.8% y 79%, con el 70.5% como punto dulce.",
+  "lead": "La Entrada Óptima (OTE) es el bolsillo de Fibonacci de ICT: en una tendencia confirmada, la ventana de retroceso que la metodología puntúa más alto se sitúa entre los niveles 61.8% y 79%, con el 70.5% como punto dulce.",
   "body": "Combina una zona de Fibonacci de descuento profundo (o premium profundo) con un array institucional real para máxima confluencia.",
   "mechanics": [
    {
@@ -1566,7 +1566,7 @@
    "Dibuja del origen al extremo y marca el bolsillo 0.62–0.79; nota el 0.705, el punto medio que ICT destaca como el dulce.",
    "Deja que el bolsillo sea el punto de encuentro, no la razón: un OTE que se solapa con el order block de origen o el CE del FVG es una confluencia; un ratio desnudo es una coordenada.",
    "Dale su tiempo: el retroceso que alcanza el bolsillo durante una kill zone, tras barrer algún mínimo menor en el camino, es la versión de gala de esta entrada.",
-   "Ancla el stop más allá del origen del swing — si ESO cede, la pierna que mediste ya no existe — y apunta primero al extremo viejo."
+   "La invalidación se ancla más allá del origen del swing — si ESO cede, la pierna medida ya no existe — y el primer objetivo que señala la escuela es el extremo viejo."
   ],
   "fails": [
    "Fib en el swing equivocado, precisión en el mapa equivocado: medir una pierna interna menor pone tu \"bolsillo\" en niveles que la entrega nunca pensó respetar.",
@@ -1629,7 +1629,7 @@
    "Verifica el pedigrí completo antes de que te importe el bloque: una barrida de liquidez, luego desplazamiento, luego ruptura de estructura — el OB que quedó en el origen de ESA secuencia es el que vale la espera.",
    "Deja que el precio venga a ti: no coloques nada por adelantado; el setup es el REGRESO al bloque, y muchas secuencias válidas simplemente nunca regresan.",
    "A la llegada, baja a tu marco de entrada y exige una reacción: una impresión de rechazo o un microcambio de estructura dentro de la zona.",
-   "Los stops pertenecen más allá del borde lejano del bloque — si el bloque entero se negocia de lado a lado, la huella institucional que seguías fue sobrescrita.",
+   "La invalidación pertenece más allá del borde lejano del bloque — si el bloque entero se cruza, la huella institucional que el setup seguía fue sobrescrita.",
    "Apunta al mapa, no a un ratio fijo: la siguiente piscina de liquidez o el array contrario es donde el movimiento tiene una razón para pausar."
   ],
   "fails": [
@@ -1756,8 +1756,8 @@
    "Elige la piscina por adelantado: un equal low obvio, un extremo del día previo — el setup empieza por saber DÓNDE debería ocurrir la cosecha.",
    "Observa la corrida: el precio perfora el nivel, los stops se disparan, y la pista es lo que pasa DESPUÉS — un rechazo violento de vuelta adentro es cosecha; la aceptación debajo es continuación.",
    "Exige el par de confirmación: desplazamiento Y cambio de estructura en la dirección nueva. Sin ambos, tienes una mecha interesante.",
-   "Entra en el retroceso hacia lo que el desplazamiento dejó atrás — el FVG o el bloque de origen — no en la vela emocional misma.",
-   "Invalida más allá del extremo de la barrida: si el precio regresa pasada la mecha que \"rechazó\", el rechazo era ficción."
+   "La entrada de la metodología es el retroceso hacia lo que el desplazamiento dejó atrás — el FVG o el bloque de origen — nunca la vela emocional misma.",
+   "La invalidación queda más allá del extremo de la barrida: si el precio regresa pasada la mecha que \"rechazó\", el rechazo era ficción."
   ],
   "fails": [
    "Toda barrida está a una vela de paciencia de ser una ruptura: la misma perforación que cosecha stops puede ser el inicio de la expansión — el cierre y el cambio deciden, no la mecha.",
@@ -1931,7 +1931,7 @@
    "Corre el calendario como pre-vuelo: antes de cualquier sesión, sabe qué se publica, cuándo y su nivel de impacto — un setup 3 minutos antes del CPI no es un setup.",
    "Ubica los TRES números en cada publicación: previo, consenso, actual — el mercado opera la brecha entre consenso y actual, nada más.",
    "Espera que el primer movimiento mienta: el pico inicial lo dominan algoritmos y stops forzados; la estructura que se forma DESPUÉS carga el veredicto de los humanos.",
-   "Protege tu riesgo abierto: amplía, reduce o aplana ante eventos de nivel rojo por regla, no por ánimo — ejecutar a través de una publicación es una lotería aunque la idea sea correcta.",
+   "El riesgo abierto ante un evento de nivel rojo se decide por regla, no por ánimo: los playbooks profesionales amplían, reducen o se ponen planos antes de la publicación, porque ejecutar a través de una es una lotería aunque la idea sea correcta.",
    "Registra la reacción, no solo el número: si el precio sostuvo el pico o lo desvaneció te dice qué tan posicionado estaba el mercado — combustible para la próxima ocasión."
   ],
   "fails": [
@@ -1989,7 +1989,7 @@
    "Parte del dial del riesgo: cada sesión, pregunta si el dinero busca riesgo (acciones arriba, cruces de yen arriba) o huye de él — esa sola respuesta colorea cada gráfico que operas.",
    "Sigue al dólar como el sol: la fuerza del DXY presiona al oro, las materias primas y las divisas de riesgo a la vez — un vistazo explica muchos gráficos.",
    "Observa los rendimientos como el engranaje adelantado: los mercados de bonos suelen re-cotizar crecimiento y tasas antes de que acciones y FX los alcancen.",
-   "Usa las correlaciones como CONFIRMACIÓN: tu largo de EURUSD concuerda con un DXY ablandándose; el desacuerdo es razón para achicar el tamaño, no un trade por sí mismo.",
+   "Usa las correlaciones como CONFIRMACIÓN: una tesis larga en EURUSD concuerda con un DXY ablandándose; el desacuerdo pide menos convicción, y nunca es un trade por sí mismo.",
    "Respeta la lógica SMT donde aplica: cuando dos instrumentos correlacionados divergen en extremos — uno hace el máximo, el otro se niega — la negativa suele decir la verdad."
   ],
   "fails": [
@@ -2053,8 +2053,8 @@
    "Califica el evento primero: los candidatos al fade son sorpresas de segundo nivel o titulares que NO cambian la trayectoria de tasas — nunca impresiones que cambian el régimen.",
    "Deja que el pico se agote: la señal de entrada es el momentum muriendo — velas menores, un freno en un nivel marcado del marco mayor — no una cuenta regresiva desde la publicación.",
    "Exige una ubicación: un pico CONTRA una zona de oferta diaria o un extremo previo le da al fade una pared donde apoyarse; un pico hacia el espacio abierto no le da nada.",
-   "Entra en la impresión del fallo — el cambio en tu marco pequeño contra el pico — y pon el stop más allá del extremo del pico, porque pasado eso la \"sobrerreacción\" era el movimiento.",
-   "Apunta al origen: el precio pre-noticia es el imán natural de un reflejo que no significó nada; toma ganancia hacia él, no a través de él."
+   "El gatillo que esta escuela espera es la impresión del fallo — un cambio en marco pequeño contra el pico — con la invalidación más allá del extremo del pico, porque pasado eso la \"sobrerreacción\" era el movimiento.",
+   "El objetivo es el origen: el precio previo a la noticia es el imán natural de un reflejo que no significó nada — la tesis del fade termina ahí, no más allá."
   ],
   "fails": [
    "Hacerle fade a una impresión que de verdad cambió la historia es pararse frente a una re-cotización — el mercado no está sobrerreaccionando: está CORRIGIENDO, y no va a volver por ti.",
@@ -2116,9 +2116,9 @@
   "playbook": [
    "Revisa la alineación primero: el setup existe solo cuando la sorpresa CONFIRMA la tendencia macro vigente — datos con el viento, no contra él.",
    "Deja que el pico ocurra sin ti: la entrada de continuación nunca es la persecución; empieza cuando el primer retroceso comienza a formarse.",
-   "Compra el retroceso en un nivel real: el punto de ruptura pre-pico, el FVG que dejó el pico, un OTE de la pierna de la noticia — la estructura le da piso al retroceso.",
+   "El playbook compra el retroceso en un nivel real: el punto de ruptura previo al pico, el FVG que dejó el pico, un OTE de la pierna de la noticia — la estructura le da piso al retroceso.",
    "Confirma la reanudación: una impresión de rechazo en ese nivel en la dirección de la publicación es la luz verde; su ausencia es la advertencia.",
-   "Cabalga con los objetivos de la propia tendencia: como macro y momentum concuerdan, el extremo previo y la siguiente piscina del marco mayor son objetivos honestos — este es el raro setup donde la paciencia paga dos veces."
+   "Los objetivos son los de la propia tendencia: como macro y momentum concuerdan, el extremo previo y la siguiente piscina del marco mayor son las metas honestas — este es el raro setup donde la paciencia paga dos veces."
   ],
   "fails": [
    "Perseguir el pico ES el modo de fallo: las primeras velas cargan los peores precios y los spreads más anchos, y el retroceso que sigue cobra a los perseguidores antes de la continuación real.",
@@ -2412,9 +2412,9 @@
   "playbook": [
    "Filtra por régimen antes que nada: la reversión a la media se alimenta de rangos — un filtro ADX o un chequeo de estructura debe aprobar el trade antes siquiera de medir el estiramiento.",
    "Cuantifica el estiramiento: un z-score o distancia de banda convierte el \"se ve estirado\" en un número con umbral testeable.",
-   "Espera que el giro EMPIECE: entra en la primera contracción de vuelta hacia la media, no en el estiramiento máximo — atrapar el borde exterior es otro trade, peor.",
+   "Espera que el giro EMPIECE: la entrada que esta estrategia define es la primera contracción de vuelta hacia la media, no el estiramiento máximo — atrapar el borde exterior es otro trade, y peor.",
    "Apunta a la media, no a la luna: la tesis del trade es un regreso al promedio, así que el promedio es la salida — extender objetivos más allá presta una tesis que no tienes.",
-   "Corta con el cambio de régimen, no solo con el precio: si el rango se rompe mientras estás adentro, la premisa murió — la pérdida es la cuota por la información, y quedarse es pagar dos veces."
+   "La regla de salida se dispara con el cambio de régimen, no solo con el precio: si el rango se rompe a mitad del trade, la premisa murió — la pérdida es la cuota por la información, y quedarse es pagar dos veces."
   ],
   "fails": [
    "\"Ya no puede subir más\" no es una razón — en tendencia, lo estirado se estira más, y vender fuerza sin filtro de régimen es el funeral de libro de esta estrategia.",
@@ -2475,8 +2475,8 @@
   "figcap": "Una ruptura confirmada por ADX entrando en una tendencia sostenida, arrastrada por una media móvil creciente.",
   "playbook": [
    "Confirma que hay una tendencia que valga montar: un ADX sobre umbral, o una secuencia limpia de estructura externa — el filtro va antes que la señal.",
-   "Entra CON la fuerza, no después de que descanse: la lógica de momentum compra alto para vender más alto; la duda esperando \"mejor precio\" es pensamiento de reversión con el uniforme equivocado.",
-   "Dimensiona para la volatilidad que estás abordando: las piernas fuertes se mueven rápido en ambos sentidos, y el stop debe vivir fuera de la respiración normal de la pierna.",
+   "La estrategia entra CON la fuerza, no después de que descanse: la lógica de momentum compra alto para vender más alto; esperar \"mejor precio\" es pensamiento de reversión con el uniforme equivocado.",
+   "El tamaño responde a la volatilidad que se aborda: las piernas fuertes se mueven rápido en ambos sentidos, y la invalidación debe vivir fuera de la respiración normal de la pierna.",
    "Deja respirar a los ganadores con un trailing de estructura: salidas en cada swing nuevo en vez de objetivos fijos — la persistencia es la ventaja, así que la salida debe permitir la persistencia.",
    "Jubila el trade cuando la fuerza muera: las estrategias de momentum dependen del régimen, y un ADX plano o una continuación fallida es la máquina avisándote que su temporada terminó."
   ],
