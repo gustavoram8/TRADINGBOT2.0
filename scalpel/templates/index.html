@@ -26773,7 +26773,10 @@
     if (!EMOS_OK[emo]) emo = 'pensando';
     var log = ov.querySelector('.nx-log');
     var im = document.createElement('img');
-    im.className = 'nx-emo'; im.alt = ''; im.src = '/static/emo-' + emo + '.png';
+    /* ?v= = rompe-caché: el navegador y Cloudflare guardan el PNG por su URL;
+       al cambiar el recorte hay que subir este número o siguen sirviendo el
+       viejo (con fondo). Súbelo cada vez que se regeneren los emo-*.png. */
+    im.className = 'nx-emo'; im.alt = ''; im.src = '/static/emo-' + emo + '.png?v=7';
     im.onerror = function(){ this.style.display = 'none'; };
     log.appendChild(im);
     log.scrollTop = log.scrollHeight;
