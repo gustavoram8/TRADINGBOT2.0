@@ -314,9 +314,23 @@ def _wa_worker():
             _wa_cola.task_done()
 
 
+_wa_avisado_sin_claves = False
+
+
 def _wa_encolar(texto):
-    global _wa_hilo
+    global _wa_hilo, _wa_avisado_sin_claves
     if not (WA_PHONE and WA_APIKEY):
+        # 🔴 Salir en silencio aquí era el peor fallo posible del asistente:
+        # los avisos desaparecerían sin dejar rastro y el dueño creería que
+        # "no ha pasado nada" cuando en realidad no se está enterando de
+        # nada. Se registra UNA vez (no por mensaje: eso inunda el log).
+        if not _wa_avisado_sin_claves:
+            _wa_avisado_sin_claves = True
+            app.logger.error(
+                '🔴 WhatsApp SIN CREDENCIALES: ningún aviso saldrá. '
+                'WA_PHONE/WA_APIKEY tienen que estar en la línea '
+                'environment= de supervisor — bajo gunicorn NO se lee '
+                'scalpel/.env.')
         return
     with _wa_lock:
         if _wa_hilo is None or not _wa_hilo.is_alive():
@@ -607,6 +621,14 @@ print("[PayPal] enabled=%s env=%s client_id=%s secret=%s webhook_id=%s"
 # enlaces, nunca a qué peticiones responde.
 SITE_URL = os.environ.get("SITE_URL", "").strip().rstrip('/')
 print("[Site] url=%s" % (SITE_URL or "(el host de cada petición)"), flush=True)
+# ⚠️ Esta línea existe por una razón concreta: probar CallMeBot con
+# `. scalpel/.env` desde el terminal demuestra que el fichero tiene las claves,
+# NO que las tenga gunicorn — que arranca por supervisor y no lee ese fichero.
+# Sin este renglón, un asistente mudo es indistinguible de un día tranquilo.
+print("[WhatsApp] phone=%s apikey=%s silenciado=%s"
+      % ("set" if WA_PHONE else "MISSING",
+         "set" if WA_APIKEY else "MISSING",
+         ",".join(sorted(WA_MUTE)) or "nada"), flush=True)
 
 
 def abs_url(endpoint, **values):
@@ -4801,6 +4823,29 @@ def admin_review_toggle():
             detail=f'#{t.id} by {t.display_name} ({t.rating}/5)'
                    f'{" [insider]" if t.insider else ""}')
     return redirect(url_for('admin') + '#reviews')
+
+
+@app.route('/admin/whatsapp/test', methods=['POST'])
+@login_required
+def admin_whatsapp_test():
+    """Manda un aviso de prueba POR EL CAMINO REAL.
+
+    Las pruebas automáticas sustituyen CallMeBot por una lista, y probar con
+    `curl` desde el terminal usa las variables del terminal. Ninguna de las dos
+    demuestra lo único que importa: que el PROCESO QUE SIRVE EL SITIO tenga las
+    claves y consiga salir a internet. Esto sí — usa `avisar()`, la misma
+    función que usan las ventas."""
+    if not current_user.is_admin:
+        abort(403)
+    if not (WA_PHONE and WA_APIKEY):
+        return redirect(url_for('admin', wa='sinclaves') + '#revenue')
+    avisar('sistema', 'Prueba del asistente',
+           [('Pedida por', current_user.username),
+            ('Significa', 'las ventas y los avisos urgentes te van a llegar'),
+            ('Silenciado', ','.join(sorted(WA_MUTE)) or 'nada')])
+    record_audit_event('whatsapp_test', user_id=current_user.id,
+                       detail='aviso de prueba encolado')
+    return redirect(url_for('admin', wa='enviado') + '#revenue')
 
 
 @app.route('/admin/giveaway', methods=['POST'])

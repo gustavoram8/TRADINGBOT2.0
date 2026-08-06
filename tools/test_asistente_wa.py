@@ -343,6 +343,31 @@ def main():
         cuerpo = r.get_data(as_text=True)
         check('contact.errRate' in cuerpo,
               'y al humano se le explica, no se le ignora')
+
+        # ── 16 · el botón de prueba de /admin ─────────────────────────────
+        print('\n16 · el botón "Probar ahora" de /admin')
+        del enviados[:]
+        jefe_c = cliente('wa_jefe')
+        r = jefe_c.post('/admin/whatsapp/test', follow_redirects=False)
+        check('wa=enviado' in (r.headers.get('Location') or ''),
+              'confirma el envío (%s)' % r.headers.get('Location'))
+        check(len(enviados) == 1 and 'Prueba del asistente' in enviados[0],
+              '🔴 y usa el camino REAL, el mismo de una venta')
+        # sin credenciales tiene que DECIRLO, no fingir que salió
+        p, k = A.WA_PHONE, A.WA_APIKEY
+        A.WA_PHONE = A.WA_APIKEY = ''
+        try:
+            r = jefe_c.post('/admin/whatsapp/test', follow_redirects=False)
+            check('wa=sinclaves' in (r.headers.get('Location') or ''),
+                  '🔴 sin credenciales avisa en vez de callarse (%s)'
+                  % r.headers.get('Location'))
+        finally:
+            A.WA_PHONE, A.WA_APIKEY = p, k
+        # un NO admin no puede usarlo
+        r = cliente('wa_cliente').post('/admin/whatsapp/test')
+        check(r.status_code == 403,
+              'y un usuario normal no puede hacerte sonar el teléfono (%s)'
+              % r.status_code)
     finally:
         A.PAYPAL_ENV = entorno
 

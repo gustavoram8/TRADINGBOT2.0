@@ -440,6 +440,26 @@
     </div><!-- /users pane -->
 
     <div class="tabpane" data-pane="revenue">
+
+    <!-- ═══════════ EL ASISTENTE DE WHATSAPP ═══════════
+         Un asistente mudo es indistinguible de un día tranquilo, así que la
+         única forma de saber que funciona es hacerlo sonar a propósito. Este
+         botón usa el MISMO camino que una venta real. -->
+    <div class="section-d" style="border-left:3px solid #25D366;padding-left:10px;margin-bottom:14px;">
+      📲 <b>Asistente de WhatsApp</b> — te avisa de ventas, renovaciones, pagos que no se
+      entregaron, contracargos, bugs, soporte y bajas.
+      {% if request.args.get('wa') == 'enviado' %}
+        <span style="color:#166534;font-weight:700;">✅ Aviso de prueba enviado — revisá tu teléfono.</span>
+      {% elif request.args.get('wa') == 'sinclaves' %}
+        <span style="color:#e0244a;font-weight:700;">🔴 SIN CREDENCIALES: no sale ningún aviso.
+        WA_PHONE/WA_APIKEY tienen que estar en la línea <code>environment=</code> de supervisor
+        (bajo gunicorn NO se lee <code>scalpel/.env</code>).</span>
+      {% endif %}
+      <form method="POST" action="/admin/whatsapp/test" style="display:inline-block;margin-left:8px;">
+        <button class="plan-btn" type="submit">Probar ahora</button>
+      </form>
+    </div>
+
     <!-- ═══════════ PAYMENTS NEEDING A HUMAN ═══════════
          Opening this panel already re-checked every recent unpaid order with
          the processor, so this list is the leftovers: money that arrived but
