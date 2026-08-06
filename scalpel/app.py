@@ -11029,7 +11029,19 @@ def synapse_pdf_mine():
 # lee los precios y límites del código en vivo. Preguntas hechas de mil
 # maneras distintas caen en la misma respuesta correcta, que es justo lo que
 # una lista de preguntas literales no consigue.
-import assistant_kb as _KB                                    # noqa: E402
+# 🔴 SE CARGA POR RUTA, NO CON `import assistant_kb`. En producción gunicorn
+# arranca `scalpel.app:app`, es decir como MÓDULO DE PAQUETE, y entonces el
+# directorio `scalpel/` NO está en sys.path: un import a secas revienta con
+# ModuleNotFoundError y se caen los 4 workers — la aplicación entera con 502.
+# En local no se ve, porque `python3 scalpel/app.py` sí mete ese directorio en
+# la ruta. Pasó de verdad. Cargarlo desde la ruta de ESTE archivo funciona
+# igual se importe como se importe.
+import importlib.util as _ilu                                 # noqa: E402
+_kb_spec = _ilu.spec_from_file_location(
+    'assistant_kb',
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assistant_kb.py'))
+_KB = _ilu.module_from_spec(_kb_spec)
+_kb_spec.loader.exec_module(_KB)
 
 # Modelo propio: el analizador necesita visión y potencia (gpt-4o), esto es
 # leer un dossier corto y contestar tres frases. Un modelo pequeño hace esto
