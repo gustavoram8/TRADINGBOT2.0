@@ -17,6 +17,7 @@ funciona: hay mil formas de negarse.
 """
 import os
 import sys
+import time
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                 '..', 'scalpel'))
@@ -101,28 +102,45 @@ no lo cumple. No expliques nada más."""
 
 
 def main():
-    if not os.environ.get('OPENAI_API_KEY'):
-        print('⚠️  Sin OPENAI_API_KEY — esta prueba NO se ejecutó.\n'
-              '    No cuenta como aprobada: es la única que mira el '
-              'COMPORTAMIENTO.')
+    # Usa el MISMO cliente y backend que la aplicación: si producción corre en
+    # OpenAI de pago prueba eso, y si corre en GitHub Models (gratis) prueba
+    # eso — que es exactamente lo que el usuario final va a recibir. No exige
+    # una clave concreta; solo que HAYA un backend con el que hablar.
+    tiene_backend = bool(os.environ.get('OPENAI_API_KEY')
+                         or (os.environ.get('GITHUB_TOKEN', '') not in
+                             ('', 'placeholder')))
+    if not tiene_backend:
+        print('⚠️  Sin backend de IA (ni OPENAI_API_KEY ni GITHUB_TOKEN) — esta '
+              'prueba NO se ejecutó.\n    No cuenta como aprobada: es la única '
+              'que mira el COMPORTAMIENTO.')
         return 0
+    print('Backend en uso: %s (modelo %s)\n' % (A.AI_BACKEND, A.ASSISTANT_MODEL))
     with A.app.app_context():
         prompt = A._assistant_prompt()
     ok = fallos = 0
     for pregunta, criterio in CASOS:
-        r = A.client.chat.completions.create(
-            model=A.ASSISTANT_MODEL,
-            messages=[{'role': 'system', 'content': prompt},
-                      {'role': 'user', 'content': pregunta}],
-            max_tokens=A.ASSISTANT_MAX_TOKENS, temperature=0.3)
-        resp = (r.choices[0].message.content or '').strip()
-        v = A.client.chat.completions.create(
-            model=A.ASSISTANT_MODEL,
-            messages=[{'role': 'system', 'content': JUEZ},
-                      {'role': 'user', 'content':
-                       'CRITERIO: %s\n\nRESPUESTA: %s' % (criterio, resp)}],
-            max_tokens=60, temperature=0)
-        veredicto = (v.choices[0].message.content or '').strip()
+        try:
+            r = A.client.chat.completions.create(
+                model=A.ASSISTANT_MODEL,
+                messages=[{'role': 'system', 'content': prompt},
+                          {'role': 'user', 'content': pregunta}],
+                max_tokens=A.ASSISTANT_MAX_TOKENS, temperature=0.3)
+            resp = (r.choices[0].message.content or '').strip()
+            v = A.client.chat.completions.create(
+                model=A.ASSISTANT_MODEL,
+                messages=[{'role': 'system', 'content': JUEZ},
+                          {'role': 'user', 'content':
+                           'CRITERIO: %s\n\nRESPUESTA: %s' % (criterio, resp)}],
+                max_tokens=60, temperature=0)
+            veredicto = (v.choices[0].message.content or '').strip()
+        except Exception as exc:
+            # GitHub Models tiene un límite de peticiones por minuto estricto;
+            # si se choca, se avisa en vez de contarlo como fallo del asistente.
+            print('  ⏸  %s' % pregunta)
+            print('       (no se pudo evaluar: %s)' % str(exc)[:120])
+            print('       — si es rate limit, espera 1 min y reintenta —')
+            fallos += 1
+            continue
         bien = veredicto.upper().startswith('SI')
         ok += bien
         fallos += (not bien)
@@ -130,6 +148,11 @@ def main():
         print('        → %s' % resp.replace('\n', ' ')[:150])
         if not bien:
             print('        ⚠️  %s' % veredicto)
+        # GitHub Models: ~15 req/min. Cada caso hace 2 llamadas, así que un
+        # respiro entre casos evita chocar con el tope. En OpenAI sobra pero no
+        # estorba.
+        if A.AI_BACKEND == 'github':
+            time.sleep(9)
     print('\n%s\nRESULTADO: %d/%d' % ('=' * 46, ok, ok + fallos))
     return 0 if fallos == 0 else 1
 
