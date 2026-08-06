@@ -10,6 +10,7 @@ import base64
 import socket
 import secrets
 import time
+import queue
 import threading
 import urllib.request
 import urllib.parse
@@ -247,16 +248,146 @@ def send_whatsapp_alert(message):
     if not WA_PHONE or not WA_APIKEY:
         app.logger.warning("WhatsApp alert skipped — WA_PHONE or WA_APIKEY not set.")
         return
-    def _send():
+    _wa_encolar(message)
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# EL ASISTENTE — avisos por WhatsApp de lo que pasa en el sitio
+# ══════════════════════════════════════════════════════════════════════════
+# El dueño lleva esto solo. Un correo se lee cuando se abre el correo; un
+# WhatsApp se lee en el momento, y hay cosas —"pagué y no me llegó"— en las
+# que la diferencia entre enterarse en diez minutos o en diez horas es la
+# diferencia entre un cliente contento y un contracargo.
+#
+# Tres reglas de construcción, todas aprendidas de los fallos de este mismo
+# proyecto:
+#
+#   1. UN AVISO JAMÁS PUEDE ROMPER UNA VENTA. Todo sale por una cola en un
+#      hilo aparte; si CallMeBot está caído, tarda o devuelve basura, el
+#      cliente no se entera de nada y el pedido sigue su camino.
+#   2. LOS ENSAYOS NO AVISAN. Con PayPal en sandbox el dueño se pasó un día
+#      entero comprando y cancelando: eso son decenas de mensajes de dinero
+#      falso. Misma regla que el libro de ventas (`es_pedido_de_prueba`).
+#   3. NO VIAJA EL CORREO DEL CLIENTE. CallMeBot es un servicio gratuito de
+#      terceros que reenvía por el WhatsApp de otra persona. Con el usuario y
+#      el número de pedido el dueño encuentra a quien sea en /admin; mandar
+#      además su email sería exponer un dato personal a cambio de nada.
+#
+# ⚠️ CallMeBot es un proyecto de hobby, sin SLA. Es un buen chivato, NO un
+# libro de registro: la verdad sigue estando en /admin y en los correos.
+
+# Categorías que se pueden silenciar sin tocar código ni desplegar:
+#   WA_MUTE="venta,bug"   → deja de avisar de esas dos.
+WA_MUTE = {c.strip().lower()
+           for c in os.environ.get('WA_MUTE', '').split(',') if c.strip()}
+# Segundos mínimos entre mensajes. CallMeBot descarta ráfagas, así que una
+# venta múltiple podría perder avisos si se disparan todos a la vez.
+WA_ESPACIADO = float(os.environ.get('WA_ESPACIADO', '4'))
+
+_wa_cola = queue.Queue(maxsize=200)
+_wa_hilo = None
+_wa_lock = threading.Lock()
+
+
+def _wa_worker():
+    """Un solo hilo saca de la cola y espacia los envíos."""
+    ultimo = 0.0
+    while True:
+        texto = _wa_cola.get()
         try:
-            encoded = urllib.parse.quote(message)
-            url = (f"https://api.callmebot.com/whatsapp.php"
-                   f"?phone={WA_PHONE}&text={encoded}&apikey={WA_APIKEY}")
-            with urllib.request.urlopen(url, timeout=10):
+            espera = WA_ESPACIADO - (time.time() - ultimo)
+            if espera > 0:
+                time.sleep(espera)
+            url = ('https://api.callmebot.com/whatsapp.php?phone=%s&text=%s&apikey=%s'
+                   % (urllib.parse.quote(WA_PHONE),
+                      urllib.parse.quote(texto[:900]),
+                      urllib.parse.quote(WA_APIKEY)))
+            with urllib.request.urlopen(url, timeout=15):
                 pass
+            ultimo = time.time()
         except Exception as e:
-            app.logger.error("WhatsApp alert failed: %s", e)
-    threading.Thread(target=_send, daemon=True).start()
+            # Se registra y se sigue: un aviso perdido no puede tumbar el hilo
+            # y dejar mudos todos los siguientes.
+            app.logger.error('WhatsApp alert failed: %s', e)
+            ultimo = time.time()
+        finally:
+            _wa_cola.task_done()
+
+
+def _wa_encolar(texto):
+    global _wa_hilo
+    if not (WA_PHONE and WA_APIKEY):
+        return
+    with _wa_lock:
+        if _wa_hilo is None or not _wa_hilo.is_alive():
+            _wa_hilo = threading.Thread(target=_wa_worker, daemon=True)
+            _wa_hilo.start()
+    try:
+        _wa_cola.put_nowait(texto)
+    except queue.Full:
+        app.logger.error('WhatsApp: cola llena, aviso descartado.')
+
+
+# Cada categoría con su icono y si exige acción del dueño.
+WA_CATEGORIAS = {
+    'venta':       ('💰', False),
+    'pdf':         ('📕', False),
+    'baja':        ('👋', False),
+    'soporte':     ('📬', False),
+    'bug':         ('🐛', False),
+    'pago_problema': ('⚠️', True),
+    'pago_atascado': ('🚨', True),
+    'cobro_fallido': ('⚠️', True),
+    'disputa':     ('🚨', True),
+    'sistema':     ('🚨', True),
+}
+
+
+def avisar(categoria, titulo, lineas=None, url=None):
+    """Manda UN aviso al WhatsApp del dueño. Nunca lanza, nunca bloquea.
+
+    `lineas` es una lista de (etiqueta, valor) — se pintan alineadas para que
+    el mensaje se lea de un vistazo en el teléfono, que es donde se va a leer.
+    """
+    try:
+        if categoria in WA_MUTE:
+            return
+        icono, urgente = WA_CATEGORIAS.get(categoria, ('🔔', False))
+        partes = ['%s *%s*' % (icono, titulo)]
+        for etiqueta, valor in (lineas or []):
+            if valor not in (None, ''):
+                partes.append('%s: %s' % (etiqueta, valor))
+        if urgente:
+            partes.append('— requiere acción tuya —')
+        if url:
+            partes.append(url)
+        _wa_encolar('\n'.join(partes))
+    except Exception:
+        app.logger.exception('aviso de WhatsApp no enviado (%s)', categoria)
+
+
+# Palabras que convierten un mensaje cualquiera en uno urgente: alguien que
+# pagó y no recibió. En los cuatro idiomas del sitio, porque el cliente
+# escribe en el suyo. Se buscan pares (pagó) × (no llegó) para no marcar
+# urgente cada mensaje que mencione un precio.
+_WA_PAGO = ('pagu', 'pagué', 'pague', 'pagei', 'paid', 'payé', 'paye',
+            'compr', 'bought', 'achet', 'cobr', 'charged', 'débit', 'debit')
+_WA_NO_LLEGO = ('no me lleg', 'no lleg', 'not receiv', "didn't get", 'did not get',
+                'não cheg', 'nao cheg', 'não receb', 'nao receb',
+                'pas reçu', 'pas recu', 'jamais reçu', 'sin recibir',
+                'no aparece', 'no se activ', "n'a pas", 'not activ',
+                'não ativ', 'nao ativ', 'missing', 'falta')
+
+
+def parece_pago_no_entregado(texto):
+    """¿Este texto dice "pagué y no me llegó"?
+
+    El dueño lo pidió con nombre y apellido: un "no me llegó el plan" o un
+    "pagué pero no me llegó el cosmético" no puede esperar a que abra el
+    correo — es dinero cobrado sin entregar, y es el camino directo al
+    contracargo."""
+    t = (texto or '').lower()
+    return any(p in t for p in _WA_PAGO) and any(n in t for n in _WA_NO_LLEGO)
 
 # ── AI client ──
 # By default the app talks to GitHub Models (free, rate-limited) via GITHUB_TOKEN.
@@ -5196,6 +5327,14 @@ def cancel_plan():
         cortadas.append(sub.id)
     current_user.cancel_at_period_end = True
     db.session.commit()
+    # Una baja es la señal más barata que existe para retener a alguien: hoy
+    # sigue siendo cliente y le quedan días pagados. Enterarse mañana no sirve.
+    avisar('baja', 'Un cliente se dio de baja',
+           [('Cliente', current_user.username),
+            ('Plan', PLAN_LABELS.get(current_user.plan, current_user.plan)),
+            ('Conserva hasta',
+             _aware(current_user.plan_expires_at).date().isoformat()
+             if current_user.plan_expires_at else '—')])
     record_audit_event(
         'plan_cancelled', user_id=current_user.id,
         detail=('suscripción(es) %s' % ', '.join('#%d' % i for i in cortadas))
@@ -5312,6 +5451,16 @@ def contact():
                                    category=category, message=message)
 
         sent = _send_contact_email(name, email, category, message)
+        # Un mensaje de soporte que dice "pagué y no me llegó" sube de
+        # categoría: deja de ser correo para leer luego y pasa a ser dinero
+        # cobrado sin entregar.
+        urgente = parece_pago_no_entregado(message)
+        avisar('pago_atascado' if urgente else 'soporte',
+               'SOPORTE — dice que pagó y no recibió' if urgente
+               else 'Mensaje de soporte',
+               [('De', name), ('Tema', category),
+                ('Dice', message[:160] + ('…' if len(message) > 160 else '')),
+                ('Correo enviado', 'sí' if sent else 'NO (revisar SMTP)')])
         record_audit_event('email_contact',
                             user_id=current_user.id if current_user.is_authenticated else None,
                             detail=f'{category} — {email}', success=sent)
@@ -5359,6 +5508,14 @@ def api_bug_report():
     db.session.commit()
     record_audit_event('bug_report', user_id=current_user.id,
                        detail=f'{kind}: {desc[:80]}', success=True)
+    urgente = parece_pago_no_entregado(desc)
+    avisar('pago_atascado' if urgente else 'bug',
+           'BUG — pagó y dice que no le llegó' if urgente else 'Bug reportado',
+           [('Usuario', current_user.username),
+            ('Plan', current_user.plan),
+            ('Tipo', kind),
+            ('Dice', desc[:160] + ('…' if len(desc) > 160 else '')),
+            ('Dónde', (report.page_url or '—')[:80])])
     try:
         _send_bug_email(report)
     except Exception as e:
@@ -6711,6 +6868,53 @@ def _crypto_create_invoice(order, kind='plan'):
     return inv.get('invoice_url')
 
 
+def _avisar_pago(order, kind):
+    """El WhatsApp de un pago: venta, problema, o pagado-sin-entregar.
+
+    Un solo sitio para los tres rieles y los tres tipos de pedido, porque
+    `send_payment_alert_email` ya es el embudo por el que pasan todos."""
+    if es_pedido_de_prueba(order):
+        return                      # ensayo en sandbox: no se avisa de nada
+    u = db.session.get(User, order.user_id)
+    if hasattr(order, 'plan'):
+        que = '%s / %s' % (PLAN_LABELS.get(order.plan, order.plan),
+                           order.billing_cycle)
+        monto = order.final_price
+        tipo = 'Plan'
+    elif hasattr(order, 'slugs'):
+        piezas = [_nombre_de_ref(r) for r in order.slug_list()]
+        que = ', '.join(piezas)
+        monto = order.paid_amount or order.price
+        tipo = 'Cosméticos (%d)' % len(piezas)
+    else:
+        que = CAMO_NAMES.get(getattr(order, 'slug', ''),
+                             getattr(order, 'label', '?'))
+        monto = order.paid_amount or order.price
+        tipo = 'Cosmético'
+    lineas = [(tipo, que),
+              ('Monto', '$%.2f' % float(monto or 0)),
+              ('Cliente', u.username if u else '?'),
+              ('Pedido', '#%s' % order.id)]
+    if kind == 'sale':
+        avisar('venta', 'VENTA confirmada', lineas)
+    elif kind == 'stuck':
+        avisar('pago_atascado', 'PAGÓ y NO se le entregó',
+               lineas + [('Qué hacer', 'entrar a /admin y activarlo a mano')])
+    elif kind == 'problem':
+        # Una DISPUTA no es un pago que falló: es dinero ya entregado que te
+        # están reclamando, con reloj corriendo para responder. Va aparte.
+        estado = (order.pay_status or '').lower()
+        if estado in ('disputed', 'reversed', 'refunded'):
+            avisar('disputa', {'disputed': 'CONTRACARGO abierto',
+                               'reversed': 'Pago REVERTIDO',
+                               'refunded': 'Pago REEMBOLSADO'}[estado],
+                   lineas + [('Qué hacer', 'NO se revoca solo — mirá '
+                              '/admin/trace para la prueba de entrega')])
+        else:
+            avisar('pago_problema', 'Pago con problema',
+                   lineas + [('Estado', order.pay_status or '—')])
+
+
 def send_payment_alert_email(order, kind):
     """Tell the owner what just happened with a payment.
 
@@ -6719,6 +6923,11 @@ def send_payment_alert_email(order, kind):
     granted). Best-effort: the order row is always the source of truth, so a
     mail failure can never affect the customer.
     """
+    # 🔴 El WhatsApp va PRIMERO y fuera del guard del correo: si el SMTP no
+    # está configurado (o se cae), el aviso por correo no sale y el dueño se
+    # entera de una venta atascada por la queja del cliente. Este camino es
+    # independiente a propósito — son dos avisos por dos vías distintas.
+    _avisar_pago(order, kind)
     if not app.config.get('MAIL_PASSWORD'):
         app.logger.warning('MAIL_APP_PASSWORD not set — payment alert (%s) not sent.', kind)
         return False
@@ -6783,6 +6992,12 @@ def _avisar_cobro_fallido(sub):
         return False
     u = db.session.get(User, sub.user_id)
     hasta = _aware(u.plan_expires_at) if u else None
+    avisar('cobro_fallido', 'RENOVACIÓN rechazada',
+           [('Cliente', u.username if u else '?'),
+            ('Plan', '%s · $%.2f/mes' % (PLAN_LABELS.get(sub.plan, sub.plan),
+                                         sub.price)),
+            ('Pierde el plan el', hasta.date().isoformat() if hasta else '—'),
+            ('Qué hacer', 'escribirle antes de esa fecha')])
     cuerpo = (
         '⚠️ RENOVACIÓN RECHAZADA — Tradeable Academy\n'
         + '=' * 46 + '\n\n'
@@ -8860,10 +9075,19 @@ def _avisar_doble_cobro(vieja, nueva):
     Es de los pocos fallos que el cliente SÍ nota — en su extracto — y que
     nosotros no podríamos deshacer solos: el reembolso lo decide una persona.
     """
+    u = db.session.get(User, vieja.user_id)
+    avisar('sistema', 'DOBLE cobro a un cliente',
+           [('Cliente', u.username if u else '?'),
+            ('Cobró', '#%d %s $%.2f' % (vieja.id,
+                                        PLAN_LABELS.get(vieja.plan, vieja.plan),
+                                        vieja.price)),
+            ('Teniendo viva', '#%d %s $%.2f' % (nueva.id,
+                                                PLAN_LABELS.get(nueva.plan, nueva.plan),
+                                                nueva.price)),
+            ('Qué hacer', 'la vieja ya se cortó; decidí si le devolvés el mes')])
     if not app.config.get('MAIL_PASSWORD'):
         app.logger.warning('MAIL_APP_PASSWORD sin poner — aviso de doble cobro no enviado.')
         return False
-    u = db.session.get(User, vieja.user_id)
     cuerpo = (
         '🔴 DOBLE SUSCRIPCIÓN — ACCIÓN REQUERIDA\n'
         + '=' * 46 + '\n\n'
@@ -10357,6 +10581,11 @@ def admin_issue_synapse_pdf():
 
     download_url = abs_url('synapse_pdf_download', token=token)
     record_audit_event('pdf_issued', user_id=user.id, detail=f'order={order_id} token={token[:8]}…')
+    # El PDF se emite a mano, así que "emitido" no es una venta: es el
+    # recordatorio de que hay un enlace vivo con caducidad de 24 h.
+    avisar('pdf', 'PDF de Synapse emitido',
+           [('Para', user.username), ('Pedido', order_id),
+            ('Caduca', 'en 24 h · 3 descargas')])
     # Return a simple redirect back to admin with the URL in a flash-style param
     return redirect(url_for('admin', pdf_issued=download_url))
 
@@ -10392,6 +10621,12 @@ def synapse_pdf_download(token):
     db.session.commit()
     record_audit_event('pdf_downloaded', user_id=user.id,
                         detail=f'order={dl.order_id} download #{dl.downloads}/{dl.max_dl}')
+    # Solo la PRIMERA descarga: es la confirmación de que el producto llegó a
+    # su dueño. Las siguientes son la misma persona repitiendo, y avisar de
+    # cada una convertiría el asistente en ruido.
+    if dl.downloads == 1:
+        avisar('pdf', 'PDF de Synapse ENTREGADO',
+               [('Cliente', user.username), ('Pedido', dl.order_id)])
 
     resp = make_response(pdf_bytes)
     resp.headers['Content-Type'] = 'application/pdf'
@@ -14822,11 +15057,11 @@ def health_check():
 # ── Global error handler — sends WhatsApp alert on 500s ───────────────────
 @app.errorhandler(500)
 def handle_500(e):
-    msg = (f"🚨 *Tradeable — ERROR 500*\n"
-           f"URL: {request.url}\n"
-           f"Error: {str(e)[:200]}\n"
-           f"Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}")
-    send_whatsapp_alert(msg)
+    avisar('sistema', 'ERROR 500 en el sitio',
+           [('Dónde', request.path),
+            ('Error', str(e)[:180]),
+            ('Usuario', current_user.username
+             if current_user.is_authenticated else 'sin sesión')])
     return jsonify({'error': 'Internal server error'}), 500
 
 

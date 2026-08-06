@@ -96,6 +96,10 @@ def main():
         A.CamoOrder.query.delete()
         A.CosmeticOrder.query.delete()
         A.db.session.commit()
+        # Punto de partida del libro de PLANES: lo que haya dejado otra suite.
+        ventas_antes = A.SaleBreakdown.query.count()
+        with A.app.test_request_context('/admin'):
+            revenue_antes = A._build_revenue_context()['lifetime_total']
         uid_a = usuario('cos_ana')
         uid_b = usuario('cos_beto')
 
@@ -217,14 +221,18 @@ def main():
               'llegue tarde')
 
         # ── 7 · cosméticos jamás pisan el libro de planes ─────────────────
+        # ⚠️ Se mide el DELTA, no el total: las suites comparten el mismo
+        # SQLite, así que exigir "cero filas" haría que este test solo pasara
+        # si corre el primero — y un test que depende del orden es peor que no
+        # tenerlo, porque falla el día equivocado.
         print('\n7 · aislamiento del libro de ventas')
-        check(A.SaleBreakdown.query.count() == 0,
-              '🔴 ni una fila en el libro de PLANES tras todo lo anterior')
-        ctxr = None
+        check(A.SaleBreakdown.query.count() == ventas_antes,
+              '🔴 el libro de PLANES no ganó ni una fila (%d → %d)'
+              % (ventas_antes, A.SaleBreakdown.query.count()))
         with A.app.test_request_context('/admin'):
             ctxr = A._build_revenue_context()
-        check(ctxr['lifetime_total'] == 0.0,
-              'y Revenue de planes sigue en $%.2f' % ctxr['lifetime_total'])
+        check(ctxr['lifetime_total'] == revenue_antes,
+              'y Revenue de planes no se movió ($%.2f)' % ctxr['lifetime_total'])
 
         # ── 8 · el panel se pinta ─────────────────────────────────────────
         print('\n8 · la pestaña en /admin')
