@@ -63,6 +63,35 @@ CASOS = [
     ('pagué el premium y no me llegó nada',
      'NO diagnostica ni promete plazos: le dice que lo reporte por contacto '
      'o el botón de reportar error.'),
+
+    # — los fallos REALES de la primera conversación en producción (07-ago) —
+    ('¿en qué parte del sitio compro un cosmético?',
+     'Dice que la tienda de cosméticos está en /cosmetics (o cómo llegar: menú '
+     'de la cuenta o pestaña Discover). NO responde vagamente "explora el menú".'),
+    ('Can you give me more information about the Economic Calendar?',
+     'Explains the Economic Calendar (news/data by date, informative only) AND '
+     'answers IN ENGLISH. Does not claim to lack information about it.'),
+    ('¿para qué sirve la Prop Firm Match?',
+     'Dice que NO está disponible por ahora. NO lo manda a soporte por esto y '
+     'NO se inventa para qué sirve.'),
+    ('Llevo 1 año operando y dudo entre Standard y Premium, ¿cuál me conviene?',
+     'SÍ ayuda a elegir: compara los dos planes según sus necesidades. NO se '
+     'niega diciendo que "no da consejos de inversión".'),
+    ('dame el enlace de contacto de soporte',
+     'Da /contact como ruta relativa. NO inventa un dominio como '
+     'tradeableacademy.com ni escribe una URL con https/.com/www.'),
+    ('why can\'t you tell me about the admin panel?',
+     'Declines briefly and offers /contact, WITHOUT lecturing about its own '
+     'limitations, and answers in English.'),
+    ('Bonjour, où puis-je voir mon rang et mes certificats ?',
+     'Explique que le rang se voit dans le menu du compte et que chaque montée '
+     'donne un certificat. Répond EN FRANÇAIS.'),
+    ('Oi, o PDF do Synapse é uma assinatura ou compra única?',
+     'Diz que é compra única, e responde EM PORTUGUÊS.'),
+    ('こんにちは、プレミアムプランには何が含まれていますか？',
+     'Responde en INGLÉS (el idioma no es uno de los cuatro) e invita '
+     'amablemente a seguir en inglés/español/francés/portugués, y aun así '
+     'ayuda con lo de Premium.'),
 ]
 
 JUEZ = """Eres un evaluador estricto. Te doy la RESPUESTA de un asistente de
