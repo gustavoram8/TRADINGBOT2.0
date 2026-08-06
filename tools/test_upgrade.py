@@ -140,6 +140,11 @@ def main():
             antes = A._aware(u.plan_expires_at)
             s2 = (A.PlanSubscription.query.filter_by(user_id=uid, plan='premium')
                   .order_by(A.PlanSubscription.id.desc()).first())
+            # Envejecer el reloj: una renovación llega a los 30 días. Sin esto
+            # el candado anti-regalo (un pago = un mes) la lee como la primera
+            # cuota entrando por el webhook.
+            s2.last_payment_at = datetime.now(timezone.utc) - timedelta(days=30)
+            A.db.session.commit()
             o = A._sub_cobro(s2, 50.0, referencia='SALE-PRE-1')
             check(o and o.final_price == 50.0 and o.plan == 'premium',
                   'un solo cobro, de $%.2f por Premium' % (o.final_price if o else 0))
@@ -178,6 +183,10 @@ def main():
                   '🔴 y la corta en el acto: no habrá un segundo cargo %s' % cortadas)
             check(avisos and avisos[0] == (sa.id, sb.id),
                   'se avisa al dueño para que decida el reembolso %s' % avisos)
+            # El cobro mensual de la vieja llega ~30 días después de su alta
+            # (envejecer, o el candado anti-regalo lo lee como la 1ª cuota).
+            sa.last_payment_at = datetime.now(timezone.utc) - timedelta(days=30)
+            A.db.session.commit()
             o = A._sub_cobro(sa, 25.0, referencia='SALE-STD2-1')
             check(o is not None and o.status == 'paid',
                   'el dinero que YA se movió se le acredita igual')

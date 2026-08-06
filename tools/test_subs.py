@@ -176,6 +176,15 @@ def main():
 
     # ═══ 3 · La renovación: el cobro del mes 2 ══════════════════════════════
     print('\n3 · la renovación')
+    # ⚠️ Hay que ENVEJECER el reloj: la vuelta del comprador saldó la primera
+    # cuota SIN id de venta, y un cobro que llegue minutos después se lee
+    # (correctamente) como esa misma cuota entrando por el webhook — el candado
+    # que evita que un solo pago regale 60 días. Una renovación real llega a
+    # los 30 días, así que eso se simula.
+    with A.app.app_context():
+        s = A.PlanSubscription.query.filter_by(provider_ref=sub_ref).first()
+        s.last_payment_at = datetime.now(timezone.utc) - timedelta(days=30)
+        A.db.session.commit()
     r = webhook('PAYMENT.SALE.COMPLETED',
                 {'id': 'VENTA-2', 'billing_agreement_id': sub_ref,
                  'amount': {'total': '50.00'},
@@ -266,6 +275,14 @@ def main():
     with A.app.test_client() as c:
         entrar(c, 'subs3')
         c.get('/checkout/paypal/subscription/%d' % id3)
+    # Mismo envejecimiento que en la sección 3: sin él, VENTA-S3 se leería
+    # como la primera cuota llegando por el webhook (candado anti-regalo) y
+    # esta sección dejaría de probar lo que dice probar — la comisión del
+    # socio en una RENOVACIÓN.
+    with A.app.app_context():
+        s3b = A.db.session.get(A.PlanSubscription, id3)
+        s3b.last_payment_at = datetime.now(timezone.utc) - timedelta(days=30)
+        A.db.session.commit()
     webhook('PAYMENT.SALE.COMPLETED',
             {'id': 'VENTA-S3', 'billing_agreement_id': ref3,
              'amount': {'total': '40.00'}})

@@ -253,6 +253,96 @@ def main():
         check(len(enviados) == 1 and 'sí debería' in enviados[0],
               'WA_MUTE apaga solo lo que se le dice (%d aviso)' % len(enviados))
         A.WA_MUTE = set()
+
+        # ══ LO QUE CAZÓ LA SEGUNDA PASADA (auditoría pedida por el dueño) ══
+
+        # ── 13 · la venta por SUSCRIPCIÓN (el camino live de verdad) ──────
+        print('\n13 · una venta por suscripción, por el camino REAL')
+        real_cancel = A._paypal_sub_cancel
+        A._paypal_sub_cancel = lambda *a, **k: True
+        try:
+            with A.app.app_context():
+                uid2 = usuario('wa_sub', plan='free')
+                po = A.Order(user_id=uid2, plan='premium',
+                             billing_cycle='monthly', base_price=50,
+                             discount_pct=0, final_price=50, status='pending',
+                             payment_method='paypal')
+                A.db.session.add(po)
+                A.db.session.commit()
+                s = A.PlanSubscription(
+                    user_id=uid2, provider='paypal', plan='premium',
+                    billing_cycle='monthly', price=50.0, status='active',
+                    provider_ref='I-WA', first_order_id=po.id)
+                A.db.session.add(s)
+                A.db.session.commit()
+                del enviados[:]
+                # 1º: vuelve el comprador (sin referencia de venta)
+                A._sub_activada(s)
+                check(len(enviados) == 1 and 'VENTA confirmada' in enviados[0],
+                      '🔴 la primera cuota SÍ avisa — antes este camino era '
+                      'mudo (%d aviso)' % len(enviados))
+                dias1 = (A._aware(A.db.session.get(A.User, uid2)
+                                  .plan_expires_at)
+                         - datetime.now(timezone.utc)).days
+                pedidos1 = A.Order.query.filter_by(user_id=uid2).count()
+
+                # 2º: llega el webhook ACTIVATED (también sin referencia)
+                A._sub_activada(s)
+                # 3º: llega PAYMENT.SALE.COMPLETED con el id de venta
+                A._sub_cobro(s, 50.0, referencia='SALE-PRIMERA')
+                u2 = A.db.session.get(A.User, uid2)
+                dias3 = (A._aware(u2.plan_expires_at)
+                         - datetime.now(timezone.utc)).days
+                check(dias3 == dias1,
+                      '🔴 los TRES caminos de la primera cuota = UN mes '
+                      '(%d días) — antes regalaban 60 y un pedido fantasma'
+                      % dias3)
+                check(A.Order.query.filter_by(user_id=uid2).count() == pedidos1,
+                      '🔴 y ningún pedido fantasma (%d)' % pedidos1)
+                check(len(enviados) == 1,
+                      '🔴 y UN solo aviso, no tres (%d)' % len(enviados))
+                check(A.db.session.get(A.Order, po.id).provider_ref
+                      == 'SALE-PRIMERA',
+                      'el id de venta quedó pegado al pedido: los reintentos '
+                      'de PayPal también dedupan')
+
+                # ── 14 · la renovación del mes 2 avisa ────────────────────
+                print('\n14 · la renovación del mes 2')
+                del enviados[:]
+                s.last_payment_at = (datetime.now(timezone.utc)
+                                     - timedelta(days=30))
+                A.db.session.commit()
+                orden = A._sub_cobro(s, 50.0, referencia='SALE-MES2')
+                check(orden is not None and orden.id != po.id,
+                      'a los 30 días sí es un pedido nuevo')
+                check(len(enviados) == 1
+                      and 'RENOVACIÓN cobrada' in enviados[0],
+                      '🔴 y avisa como RENOVACIÓN — antes el mes a mes era '
+                      'invisible')
+                print('       ┌─ lo que llega al teléfono:')
+                for l in enviados[0].split('\n'):
+                    print('       │ ' + l)
+        finally:
+            A._paypal_sub_cancel = real_cancel
+
+        # ── 15 · /contact no puede hacerte vibrar el teléfono sin fin ─────
+        print('\n15 · un bot atacando /contact')
+        del enviados[:]
+        anon = A.app.test_client()
+        for i in range(8):
+            r = anon.post('/contact', data={
+                'name': 'Bot', 'email': 'bot@spam.com', 'category': 'Other',
+                'message': 'mensaje repetido número %d' % i})
+        # El mensaje de Ana (sección 9) salió de la MISMA IP del test client,
+        # así que ya consumió 1 de los 5 de la hora: al bot le quedan 4. Que
+        # el límite cuente a través de remitentes distintos es justo lo que
+        # lo hace inevadible con cambiar el nombre.
+        check(len(enviados) == 4,
+              '🔴 4 avisos y ni uno más (%d) — el de Ana ya contaba, y '
+              'CallMeBot banea claves por inundación' % len(enviados))
+        cuerpo = r.get_data(as_text=True)
+        check('contact.errRate' in cuerpo,
+              'y al humano se le explica, no se le ignora')
     finally:
         A.PAYPAL_ENV = entorno
 

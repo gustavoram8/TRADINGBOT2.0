@@ -135,6 +135,11 @@
           <span class="alert-icon">⚠️</span>
           <span data-i18n="contact.errMissing">Please fill in all required fields before submitting.</span>
         </div>
+      {% elif error == 'rate' %}
+        <div class="alert alert-err">
+          <span class="alert-icon">⏳</span>
+          <span data-i18n="contact.errRate">You've sent several messages in a short time. Please wait a bit before sending another — we've received the previous ones.</span>
+        </div>
       {% endif %}
 
       <form method="POST" action="/contact" id="contact-form">
@@ -258,6 +263,7 @@
       'contact.successLogged': 'Your message was logged. Our team will review it shortly.',
       'contact.backApp': 'Back to app',
       'contact.errMissing': 'Please fill in all required fields before submitting.',
+      'contact.errRate': "You've sent several messages in a short time. Please wait a bit before sending another — we've received the previous ones.",
       'contact.labelName': 'Full name',
       'contact.phName': 'Your name',
       'contact.labelEmail': 'Email address',
@@ -297,6 +303,7 @@
       'contact.successLogged': 'Tu mensaje fue registrado. Nuestro equipo lo revisará pronto.',
       'contact.backApp': 'Volver a la app',
       'contact.errMissing': 'Por favor completa todos los campos obligatorios antes de enviar.',
+      'contact.errRate': 'Has enviado varios mensajes en poco tiempo. Espera un poco antes de enviar otro — los anteriores sí nos llegaron.',
       'contact.labelName': 'Nombre completo',
       'contact.phName': 'Tu nombre',
       'contact.labelEmail': 'Correo electrónico',
@@ -336,6 +343,7 @@
       'contact.successLogged': 'Votre message a été enregistré. Notre équipe le traitera prochainement.',
       'contact.backApp': 'Retour à l\'app',
       'contact.errMissing': 'Veuillez remplir tous les champs obligatoires avant d\'envoyer.',
+      'contact.errRate': 'Vous avez envoyé plusieurs messages en peu de temps. Patientez un peu avant d\'en envoyer un autre — les précédents nous sont bien parvenus.',
       'contact.labelName': 'Nom complet',
       'contact.phName': 'Votre nom',
       'contact.labelEmail': 'Adresse email',
@@ -375,6 +383,7 @@
       'contact.successLogged': 'Sua mensagem foi registrada. Nossa equipe a analisará em breve.',
       'contact.backApp': 'Voltar para o app',
       'contact.errMissing': 'Por favor, preencha todos os campos obrigatórios antes de enviar.',
+      'contact.errRate': 'Você enviou várias mensagens em pouco tempo. Espere um pouco antes de enviar outra — as anteriores chegaram, sim.',
       'contact.labelName': 'Nome completo',
       'contact.phName': 'Seu nome',
       'contact.labelEmail': 'Endereço de email',

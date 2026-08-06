@@ -5450,6 +5450,22 @@ def contact():
                                    name=name, email=email,
                                    category=category, message=message)
 
+        # 🔴 /contact es ANÓNIMO y ahora cada envío suena en el teléfono del
+        # dueño (además de mandar un correo). Sin un límite, un bot — o una
+        # persona enojada — puede hacérselo vibrar sin parar, y CallMeBot
+        # además banea claves por inundación. 5 por hora por IP sobra para
+        # cualquier humano con un problema real.
+        ip = _client_ip()
+        hace_1h = datetime.now(timezone.utc) - timedelta(hours=1)
+        recientes = AuditEvent.query.filter(
+            AuditEvent.event_type == 'email_contact',
+            AuditEvent.detail.like('%% [%s]' % ip),
+            AuditEvent.created_at >= hace_1h).count()
+        if recientes >= 5:
+            return render_template('contact.html', error='rate',
+                                   name=name, email=email,
+                                   category=category, message=message)
+
         sent = _send_contact_email(name, email, category, message)
         # Un mensaje de soporte que dice "pagué y no me llegó" sube de
         # categoría: deja de ser correo para leer luego y pasa a ser dinero
@@ -5461,9 +5477,11 @@ def contact():
                [('De', name), ('Tema', category),
                 ('Dice', message[:160] + ('…' if len(message) > 160 else '')),
                 ('Correo enviado', 'sí' if sent else 'NO (revisar SMTP)')])
+        # La IP va al final del detail entre corchetes: es lo que cuenta el
+        # límite anti-spam de arriba en su LIKE.
         record_audit_event('email_contact',
                             user_id=current_user.id if current_user.is_authenticated else None,
-                            detail=f'{category} — {email}', success=sent)
+                            detail=f'{category} — {email} [{ip}]', success=sent)
         return render_template('contact.html', success=True, sent=sent)
 
     # Pre-fill name/email for logged-in users.
@@ -6897,6 +6915,8 @@ def _avisar_pago(order, kind):
               ('Pedido', '#%s' % order.id)]
     if kind == 'sale':
         avisar('venta', 'VENTA confirmada', lineas)
+    elif kind == 'renewal':
+        avisar('venta', 'RENOVACIÓN cobrada', lineas)
     elif kind == 'stuck':
         avisar('pago_atascado', 'PAGÓ y NO se le entregó',
                lineas + [('Qué hacer', 'entrar a /admin y activarlo a mano')])
@@ -7797,11 +7817,43 @@ def _sub_cobro(sub, importe, fee=None, cuando=None, referencia=None):
         return None                        # ese cobro ya está contado
     ahora = cuando or datetime.now(timezone.utc)
     order = None
-    if sub.first_order_id:
-        primero = db.session.get(Order, sub.first_order_id)
-        if primero and primero.status != 'paid':
-            order = primero
+    primero = db.session.get(Order, sub.first_order_id) \
+        if sub.first_order_id else None
+    if primero and primero.status != 'paid':
+        order = primero
+    renueva = order is None
     if order is None:
+        # 🔴 EL CANDADO DE VERDAD. La primera cuota entra por TRES caminos —
+        # la vuelta del comprador, el webhook ACTIVATED y el webhook
+        # PAYMENT.SALE.COMPLETED — y solo el tercero trae la referencia de
+        # venta que usa el dedup de arriba. Sin lo que sigue, el segundo
+        # camino encontraba el primer pedido ya saldado y "deducía" que esto
+        # era una renovación: UN pago de $50 regalaba 60 días, creaba un
+        # pedido fantasma y (en live) anotaba DOS ventas con DOS comisiones.
+        # Reproducido tal cual con la vuelta + ACTIVATED.
+        if not ref:
+            # Sin referencia no hay llave de dedup, así que sin referencia
+            # JAMÁS se crea dinero: las entradas sin ella existen únicamente
+            # para saldar la primera cuota rápido (y ya está saldada).
+            return None
+        ult = _aware(sub.last_payment_at)
+        sin_venta = bool(primero) and (not primero.provider_ref
+                                       or primero.provider_ref == sub.provider_ref)
+        if sin_venta and ult and ahora - ult < timedelta(hours=6):
+            # La misma primera cuota llegando por su tercer camino, ahora sí
+            # con su id de venta: se le pega al pedido ya saldado (así los
+            # reintentos de PayPal también dedupan) y no se crea nada. Seis
+            # horas cubre el race vuelta/webhooks sin tragarse una renovación
+            # real (la más rápida posible, el plan DIARIO de sandbox, llega a
+            # las 24 h).
+            # `sin_venta` es el discriminador: solo se traga la venta si el
+            # primer pedido AÚN no tiene id de venta (conserva el de la
+            # suscripción, que le puso el checkout). Si ya lo tiene y llega
+            # OTRO id distinto, eso es un cobro doble DE VERDAD — dinero que
+            # se movió — y tragárselo en silencio sería peor que acreditarlo.
+            primero.provider_ref = ref
+            db.session.commit()
+            return None
         # Renovación: pedido nuevo, con el MISMO precio y el mismo código que
         # la suscripción. Copiar el código es lo que mantiene viva la
         # atribución del socio mes tras mes.
@@ -7840,6 +7892,18 @@ def _sub_cobro(sub, importe, fee=None, cuando=None, referencia=None):
     record_audit_event('subscription_charge', user_id=sub.user_id,
                        detail='suscripción #%d · pedido #%d · $%.2f'
                               % (sub.id, order.id, order.final_price))
+    # 🔴 El aviso de la venta vive AQUÍ, no solo en send_payment_alert_email:
+    # las ventas por suscripción (que es como se vende TODO plan mensual en
+    # live) no pasan por _paypal_apply_status, así que sin esto el asistente
+    # anunciaba "venta confirmada" en un camino por el que ya no entra nadie.
+    # Se cazó auditando: el test probaba el mensajero, no el cableado.
+    if renueva:
+        # Renovación: WhatsApp sí, correo no — un correo por cliente por mes
+        # es ruido de bandeja; la línea del teléfono basta y el libro ya la
+        # tiene anotada.
+        _avisar_pago(order, 'renewal')
+    else:
+        send_payment_alert_email(order, 'sale')
     return order
 
 
@@ -15057,11 +15121,18 @@ def health_check():
 # ── Global error handler — sends WhatsApp alert on 500s ───────────────────
 @app.errorhandler(500)
 def handle_500(e):
+    # ⚠️ current_user puede necesitar la BASE DE DATOS para resolverse — y si
+    # el 500 vino justamente de la base caída, leerlo aquí reventaría el
+    # propio handler: ni aviso, ni respuesta JSON. Se lee a la defensiva.
+    try:
+        quien = (current_user.username
+                 if current_user.is_authenticated else 'sin sesión')
+    except Exception:
+        quien = '?'
     avisar('sistema', 'ERROR 500 en el sitio',
            [('Dónde', request.path),
             ('Error', str(e)[:180]),
-            ('Usuario', current_user.username
-             if current_user.is_authenticated else 'sin sesión')])
+            ('Usuario', quien)])
     return jsonify({'error': 'Internal server error'}), 500
 
 
