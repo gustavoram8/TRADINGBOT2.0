@@ -26604,6 +26604,13 @@
   + '  color:rgba(240,235,220,.86); }'
   + '.nx-msg.err{ border-color:rgba(224,36,74,.45); color:#ffb3c0; }'
   + '.nx-msg a{ color:#e8c06a; }'
+  /* El teseracto de emoción encima de cada respuesta de la IA (recortes
+     emo-<nombre>.png). Flota suave; su tono lo elige el servidor. */
+  + '.nx-emo{ width:54px; height:54px; align-self:flex-start; margin:4px 0 -6px 2px;'
+  + '  object-fit:contain; border-radius:11px;'
+  + '  filter:drop-shadow(0 5px 12px rgba(224,36,74,.32));'
+  + '  animation:nxemo 2.8s ease-in-out infinite; }'
+  + '@keyframes nxemo{ 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-5px) } }'
   + '.nx-dots span{ display:inline-block; width:5px; height:5px; margin-right:3px; border-radius:50%;'
   + '  background:#e0a83d; animation:nxdot 1.1s infinite; }'
   + '.nx-dots span:nth-child(2){ animation-delay:.18s } .nx-dots span:nth-child(3){ animation-delay:.36s }'
@@ -26622,7 +26629,7 @@
   + '.nx-sugg button:hover{ border-color:rgba(232,192,106,.55); color:#f4eee0; }'
   + '@media (max-width:720px){ .nx-wL,.nx-wR{ display:none; } .nx-hub{ padding:22px 18px 16px; } }'
   + '@media (prefers-reduced-motion: reduce){'
-  + '  #nx-t3d,#nx-cube .nx-glow,.nx-bubble{ animation:none; }'
+  + '  #nx-t3d,#nx-cube .nx-glow,.nx-bubble,.nx-emo{ animation:none; }'
   + '  #nx-ov.go .nx-wall,#nx-ov.go .nx-floor,#nx-ov.go .nx-hub{ animation:none; opacity:1; clip-path:none; }'
   + '  #nx-ov.go .nx-wB{ transform:translateZ(-240px) scaleY(1);} #nx-ov.go .nx-wL{ transform:rotateY(55deg) scaleY(1);}'
   + '  #nx-ov.go .nx-wR{ transform:rotateY(-55deg) scaleY(1);} #nx-ov.go .nx-wC{ transform:rotateX(60deg) scaleY(1);} }';
@@ -26759,10 +26766,22 @@
     log.scrollTop = log.scrollHeight;
     return d;
   }
+  /* El teseracto con la emoción que devolvió el servidor, encima de la
+     respuesta. Si el recorte no existiera todavía, se oculta sin romper nada. */
+  var EMOS_OK = { pensando:1, alegre:1, triste:1, sorprendido:1, molesto:1, emocionado:1 };
+  function mostrarEmo(emo){
+    if (!EMOS_OK[emo]) emo = 'pensando';
+    var log = ov.querySelector('.nx-log');
+    var im = document.createElement('img');
+    im.className = 'nx-emo'; im.alt = ''; im.src = '/static/emo-' + emo + '.png';
+    im.onerror = function(){ this.style.display = 'none'; };
+    log.appendChild(im);
+    log.scrollTop = log.scrollHeight;
+  }
   function abrirChat(){
     showPanel('nx-chat');
     var log = ov.querySelector('.nx-log');
-    if (!log.children.length) burbuja('it', t('askHi'));
+    if (!log.children.length) { mostrarEmo('pensando'); burbuja('it', t('askHi')); }
     var sug = ov.querySelector('.nx-sugg'); sug.innerHTML = '';
     (t('askSugg') || []).forEach(function(q){
       var b = document.createElement('button'); b.type = 'button'; b.textContent = q;
@@ -26793,6 +26812,7 @@
     }).then(function(res){
       esperando.remove();
       if (res.ok && res.d.answer){
+        mostrarEmo(res.d.emotion);
         burbuja('it', res.d.answer);
         chatHist.push({ role: 'user', text: q });
         chatHist.push({ role: 'assistant', text: res.d.answer });
