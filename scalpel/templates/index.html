@@ -26438,31 +26438,35 @@
   /* ── i18n (reads scalpel_lang, same convention as the rest of the site) ── */
   var NX_T = {
     en: { bubble:'Need a hand?', sub:'Pick a door.',
-      aiT:'Tessera AI Chatbot', aiD:'Answers simple questions about the site — plans, tools, quizzes, camos.', aiB:'Awakening soon',
+      aiT:'Tessera AI Chatbot', aiD:'Answers simple questions about the site — plans, tools, quizzes, camos.',
       guideT:'User Guide', guideD:'Everything the site can do, explained step by step.',
       navT:'Teleporter', navD:'Jump to any corner of the site in one click.',
       helpT:'Support', helpD:'Write to us — a human answers.',
+      askHi:"Hi! I'm the site assistant. Ask me anything about how Tradeable works — plans, tools, payments, your account.", askPh:'Ask about the site…', send:'Ask', askSugg:["What's in Premium?",'How do I cancel?','What is Pre-Flight?','How does the roulette work?'], askRate:"You've asked a lot in a short time — give it a few minutes.", askErr:'I could not answer right now. Try again, or write to us from /contact.', disc:'I only answer questions about the site. I do not give market opinions or investment advice.',
       bugT:'Report a bug', bugD:'Something broken or off? Tell us and we’ll fix it.',
       back:'← Back', close:'Close' },
     es: { bubble:'¿Te echo una mano?', sub:'Elige una puerta.',
-      aiT:'Tessera AI Chatbot', aiD:'Responde preguntas simples del sitio — planes, herramientas, quizzes, camos.', aiB:'Despierta pronto',
+      aiT:'Tessera AI Chatbot', aiD:'Responde preguntas simples del sitio — planes, herramientas, quizzes, camos.',
       guideT:'Guía de uso', guideD:'Todo lo que el sitio puede hacer, explicado paso a paso.',
       navT:'Teletransportador', navD:'Salta a cualquier rincón del sitio en un clic.',
       helpT:'Soporte', helpD:'Escríbenos — responde un humano.',
+      askHi:'¡Hola! Soy el asistente del sitio. Pregúntame lo que quieras sobre cómo funciona Tradeable — planes, herramientas, pagos, tu cuenta.', askPh:'Pregunta sobre el sitio…', send:'Preguntar', askSugg:['¿Qué trae Premium?','¿Cómo me doy de baja?','¿Qué es Pre-Flight?','¿Cómo funciona la ruleta?'], askRate:'Has preguntado mucho en poco rato — dale unos minutos.', askErr:'No pude responder ahora. Inténtalo de nuevo o escríbenos desde /contact.', disc:'Solo respondo sobre el sitio. No doy opiniones de mercado ni consejos de inversión.',
       bugT:'Reportar un bug', bugD:'¿Algo roto o raro? Cuéntanos y lo arreglamos.',
       back:'← Volver', close:'Cerrar' },
     fr: { bubble:'Un coup de main ?', sub:'Choisis une porte.',
-      aiT:'Tessera AI Chatbot', aiD:'Répond aux questions simples du site — plans, outils, quiz, camos.', aiB:'Bientôt éveillé',
+      aiT:'Tessera AI Chatbot', aiD:'Répond aux questions simples du site — plans, outils, quiz, camos.',
       guideT:'Guide d’utilisation', guideD:'Tout ce que le site sait faire, expliqué pas à pas.',
       navT:'Téléporteur', navD:'Saute vers n’importe quel coin du site en un clic.',
       helpT:'Support', helpD:'Écris-nous — un humain répond.',
+      askHi:'Bonjour ! Je suis l’assistant du site. Demandez-moi tout sur le fonctionnement de Tradeable — plans, outils, paiements, votre compte.', askPh:'Une question sur le site…', send:'Demander', askSugg:['Que contient Premium ?','Comment résilier ?','Qu’est-ce que Pre-Flight ?','Comment marche la roulette ?'], askRate:'Vous avez posé beaucoup de questions en peu de temps — patientez quelques minutes.', askErr:'Je n’ai pas pu répondre. Réessayez, ou écrivez-nous depuis /contact.', disc:'Je réponds uniquement sur le site. Je ne donne ni avis de marché ni conseil en investissement.',
       bugT:'Signaler un bug', bugD:'Quelque chose de cassé ou d’étrange ? Dis-le-nous, on corrige.',
       back:'← Retour', close:'Fermer' },
     pt: { bubble:'Precisa de uma mãozinha?', sub:'Escolha uma porta.',
-      aiT:'Tessera AI Chatbot', aiD:'Responde perguntas simples do site — planos, ferramentas, quizzes, camos.', aiB:'Desperta em breve',
+      aiT:'Tessera AI Chatbot', aiD:'Responde perguntas simples do site — planos, ferramentas, quizzes, camos.',
       guideT:'Guia de uso', guideD:'Tudo o que o site pode fazer, explicado passo a passo.',
       navT:'Teletransportador', navD:'Pule para qualquer canto do site em um clique.',
       helpT:'Suporte', helpD:'Escreva pra gente — um humano responde.',
+      askHi:'Olá! Sou o assistente do site. Pergunte o que quiser sobre como o Tradeable funciona — planos, ferramentas, pagamentos, sua conta.', askPh:'Pergunte sobre o site…', send:'Perguntar', askSugg:['O que vem no Premium?','Como cancelo?','O que é o Pre-Flight?','Como funciona a roleta?'], askRate:'Você perguntou muito em pouco tempo — espere alguns minutos.', askErr:'Não consegui responder agora. Tente de novo ou escreva pra gente em /contact.', disc:'Só respondo sobre o site. Não dou opiniões de mercado nem conselhos de investimento.',
       bugT:'Reportar um bug', bugD:'Algo quebrado ou estranho? Conte pra gente que a gente conserta.',
       back:'← Voltar', close:'Fechar' }
   };
@@ -26587,6 +26591,35 @@
   + '  border:1px solid rgba(224,168,61,.28); background:rgba(255,255,255,.03); color:#efe9db; text-decoration:none;'
   + '  font:500 12.5px Inter,sans-serif; cursor:pointer; transition:border-color .2s, background .2s; }'
   + '.nx-navgrid a:hover,.nx-navgrid button:hover{ border-color:rgba(232,192,106,.6); background:rgba(224,168,61,.1); }'
+  /* ── El chat del asistente. Misma paleta dorada de la Cámara: es una sala
+        más, no una ventana de otro producto pegada encima. ── */
+  + '.nx-chat{ display:flex; flex-direction:column; gap:12px; }'
+  + '.nx-log{ max-height:min(46vh,320px); overflow-y:auto; display:flex; flex-direction:column; gap:10px;'
+  + '  padding-right:4px; }'
+  + '.nx-msg{ max-width:88%; padding:9px 13px; border-radius:12px; font:400 13px/1.6 Inter,sans-serif;'
+  + '  white-space:pre-wrap; word-wrap:break-word; }'
+  + '.nx-msg.me{ align-self:flex-end; background:rgba(224,168,61,.14); border:1px solid rgba(224,168,61,.3);'
+  + '  color:#f4eee0; }'
+  + '.nx-msg.it{ align-self:flex-start; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.09);'
+  + '  color:rgba(240,235,220,.86); }'
+  + '.nx-msg.err{ border-color:rgba(224,36,74,.45); color:#ffb3c0; }'
+  + '.nx-msg a{ color:#e8c06a; }'
+  + '.nx-dots span{ display:inline-block; width:5px; height:5px; margin-right:3px; border-radius:50%;'
+  + '  background:#e0a83d; animation:nxdot 1.1s infinite; }'
+  + '.nx-dots span:nth-child(2){ animation-delay:.18s } .nx-dots span:nth-child(3){ animation-delay:.36s }'
+  + '@keyframes nxdot{ 0%,60%,100%{ opacity:.25 } 30%{ opacity:1 } }'
+  + '.nx-ask{ display:flex; gap:8px; }'
+  + '.nx-ask input{ flex:1; padding:11px 14px; border-radius:999px; background:rgba(255,255,255,.04);'
+  + '  border:1px solid rgba(224,168,61,.28); color:#efe9db; font:400 13px Inter,sans-serif; outline:none; }'
+  + '.nx-ask input:focus{ border-color:rgba(232,192,106,.65); }'
+  + '.nx-ask button{ flex:none; padding:11px 20px; border-radius:999px; border:1px solid rgba(224,168,61,.4);'
+  + '  background:rgba(224,168,61,.16); color:#f4eee0; font:600 12.5px Inter,sans-serif; cursor:pointer; }'
+  + '.nx-ask button:disabled{ opacity:.45; cursor:default; }'
+  + '.nx-hint{ font:400 11px/1.5 Inter,sans-serif; color:rgba(240,235,220,.4); }'
+  + '.nx-sugg{ display:flex; flex-wrap:wrap; gap:7px; }'
+  + '.nx-sugg button{ padding:6px 12px; border-radius:999px; border:1px solid rgba(224,168,61,.22);'
+  + '  background:transparent; color:rgba(240,235,220,.72); font:400 11.5px Inter,sans-serif; cursor:pointer; }'
+  + '.nx-sugg button:hover{ border-color:rgba(232,192,106,.55); color:#f4eee0; }'
   + '@media (max-width:720px){ .nx-wL,.nx-wR{ display:none; } .nx-hub{ padding:22px 18px 16px; } }'
   + '@media (prefers-reduced-motion: reduce){'
   + '  #nx-t3d,#nx-cube .nx-glow,.nx-bubble{ animation:none; }'
@@ -26684,6 +26717,16 @@
     + '      <button class="nx-back" type="button" data-nx="back"></button>'
     + '      <div class="nx-navgrid"></div>'
     + '    </div>'
+    + '    <div class="nx-panel nx-chat">'
+    + '      <button class="nx-back" type="button" data-nx="back"></button>'
+    + '      <div class="nx-log"></div>'
+    + '      <div class="nx-sugg"></div>'
+    + '      <form class="nx-ask">'
+    + '        <input type="text" maxlength="500" autocomplete="off" data-nx-ph="askPh" />'
+    + '        <button type="submit" data-nx="send"></button>'
+    + '      </form>'
+    + '      <div class="nx-hint" data-nx="disc"></div>'
+    + '    </div>'
     + '</div>';
   /* attached in init() — see the paint-quirk note up top */
 
@@ -26700,10 +26743,81 @@
     if (fn) c.addEventListener('click', fn);
     return c;
   }
+  /* ── El asistente ───────────────────────────────────────────────────────
+     Habla con /api/assistant/ask, que solo puede afirmar lo que hay en el
+     dossier del servidor. Aquí no vive ningún conocimiento: si esto dijera
+     algo por su cuenta, sería una respuesta que nadie revisó. */
+  var chatHist = [];      // [{role,text}] — contexto de los últimos turnos
+  var chatOcupado = false;
+
+  function burbuja(clase, texto){
+    var log = ov.querySelector('.nx-log');
+    var d = document.createElement('div');
+    d.className = 'nx-msg ' + clase;
+    d.textContent = texto;
+    log.appendChild(d);
+    log.scrollTop = log.scrollHeight;
+    return d;
+  }
+  function abrirChat(){
+    showPanel('nx-chat');
+    var log = ov.querySelector('.nx-log');
+    if (!log.children.length) burbuja('it', t('askHi'));
+    var sug = ov.querySelector('.nx-sugg'); sug.innerHTML = '';
+    (t('askSugg') || []).forEach(function(q){
+      var b = document.createElement('button'); b.type = 'button'; b.textContent = q;
+      b.addEventListener('click', function(){ preguntar(q); });
+      sug.appendChild(b);
+    });
+    var inp = ov.querySelector('.nx-ask input');
+    setTimeout(function(){ try { inp.focus(); } catch(e){} }, 120);
+  }
+  function preguntar(q){
+    q = (q || '').trim();
+    if (!q || chatOcupado) return;
+    chatOcupado = true;
+    var boton = ov.querySelector('.nx-ask button');
+    var inp = ov.querySelector('.nx-ask input');
+    boton.disabled = true; inp.value = '';
+    ov.querySelector('.nx-sugg').innerHTML = '';
+    burbuja('me', q);
+    var esperando = burbuja('it', '');
+    esperando.innerHTML = '<span class="nx-dots"><span></span><span></span><span></span></span>';
+    fetch('/api/assistant/ask', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ q: q, history: chatHist.slice(-6) })
+    }).then(function(r){
+      return r.json().catch(function(){ return {}; }).then(function(d){
+        return { ok: r.ok, status: r.status, d: d };
+      });
+    }).then(function(res){
+      esperando.remove();
+      if (res.ok && res.d.answer){
+        burbuja('it', res.d.answer);
+        chatHist.push({ role: 'user', text: q });
+        chatHist.push({ role: 'assistant', text: res.d.answer });
+        if (chatHist.length > 12) chatHist = chatHist.slice(-12);
+      } else {
+        burbuja('err', res.status === 429 ? t('askRate') : t('askErr'));
+      }
+    }).catch(function(){
+      esperando.remove(); burbuja('err', t('askErr'));
+    }).then(function(){
+      chatOcupado = false; boton.disabled = false;
+      try { inp.focus(); } catch(e){}
+    });
+  }
+
   function fill(){
-    ov.querySelectorAll('[data-nx]').forEach(function(el){ el.textContent = t(el.getAttribute('data-nx')); });
+    ov.querySelectorAll('[data-nx]').forEach(function(el){
+      var v = t(el.getAttribute('data-nx'));
+      if (typeof v === 'string') el.textContent = v;
+    });
+    ov.querySelectorAll('[data-nx-ph]').forEach(function(el){
+      el.setAttribute('placeholder', t(el.getAttribute('data-nx-ph')));
+    });
     var grid = ov.querySelector('.nx-grid'); grid.innerHTML = '';
-    grid.appendChild(card(t('aiT'), t('aiD'), t('aiB'), null));
+    grid.appendChild(card(t('aiT'), t('aiD'), null, abrirChat));
     grid.appendChild(card(t('guideT'), t('guideD'), null, function(){ window.location.href = '/guide'; }));
     grid.appendChild(card(t('navT'), t('navD'), null, function(){ showPanel('nx-nav'); }));
     grid.appendChild(card(t('helpT'), t('helpD'), null, function(){ window.location.href = '/contact'; }));
@@ -26740,6 +26854,15 @@
   ov.querySelector('.nx-x').addEventListener('click', closeOv);
   ov.querySelector('.nx-bkd').addEventListener('click', closeOv);
   ov.querySelectorAll('.nx-back').forEach(function(b){ b.addEventListener('click', function(){ showPanel('nx-home'); }); });
+  /* 🔴 El submit del formulario del chat. Sin esto el navegador hace lo suyo
+     —navegar— y la página se RECARGA al pulsar "Preguntar": la conversación
+     entera desaparece. Se ve a la segunda pregunta, no a la primera (la
+     primera suele venir de un botón de sugerencia), que es exactamente por
+     qué hay que probar dos. */
+  ov.querySelector('.nx-ask').addEventListener('submit', function(e){
+    e.preventDefault();
+    preguntar(ov.querySelector('.nx-ask input').value);
+  });
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && ov.classList.contains('show')) closeOv(); });
 
   /* Re-translate on language change: the thought bubble is persistent (it isn't

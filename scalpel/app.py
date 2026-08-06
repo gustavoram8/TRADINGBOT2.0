@@ -2611,16 +2611,24 @@ def log_usage():
     db.session.commit()
 
 
-def record_ai_cost(kind, response, user_id=None, plan=None):
+def record_ai_cost(kind, response, user_id=None, plan=None, modelo=None,
+                   precio_in=None, precio_out=None):
     """Best-effort telemetry: log token usage + estimated USD cost of one AI call.
-    Never raises — billing analytics must not break the user-facing request."""
+    Never raises — billing analytics must not break the user-facing request.
+
+    ⚠️ `modelo` y los precios son opcionales porque no todas las llamadas usan
+    el mismo modelo. El asistente del sitio corre en uno pequeño, y cobrarle el
+    precio de gpt-4o inflaba su coste ~16 veces en el panel: un gasto ficticio
+    en el sitio donde el dueño decide si la IA le sale a cuenta."""
     try:
         usage = getattr(response, 'usage', None)
         pt = int(getattr(usage, 'prompt_tokens', 0) or 0)
         ct = int(getattr(usage, 'completion_tokens', 0) or 0)
-        cost = pt * AI_PRICE_IN + ct * AI_PRICE_OUT
+        p_in = AI_PRICE_IN if precio_in is None else precio_in
+        p_out = AI_PRICE_OUT if precio_out is None else precio_out
+        cost = pt * p_in + ct * p_out
         db.session.add(AICostLog(
-            user_id=user_id, plan=plan, kind=kind, model=MODEL,
+            user_id=user_id, plan=plan, kind=kind, model=modelo or MODEL,
             prompt_tokens=pt, completion_tokens=ct, cost_usd=round(cost, 6),
         ))
         db.session.commit()
@@ -11010,6 +11018,93 @@ def synapse_pdf_mine():
     resp.headers['Content-Disposition'] = (
         'attachment; filename="synapse-library-%s.pdf"' % lang)
     return resp
+
+
+# ═══ EL ASISTENTE DEL SITIO ═══════════════════════════════════════════════
+# Contesta preguntas sobre CÓMO FUNCIONA la plataforma. No es un tutor de
+# trading (decisión del dueño) ni un asistente de propósito general.
+#
+# La IA está aquí para ENTENDER la pregunta, no para inventar la respuesta:
+# todo lo que puede afirmar viene del dossier de `assistant_kb`, que a su vez
+# lee los precios y límites del código en vivo. Preguntas hechas de mil
+# maneras distintas caen en la misma respuesta correcta, que es justo lo que
+# una lista de preguntas literales no consigue.
+import assistant_kb as _KB                                    # noqa: E402
+
+# Modelo propio: el analizador necesita visión y potencia (gpt-4o), esto es
+# leer un dossier corto y contestar tres frases. Un modelo pequeño hace esto
+# igual de bien por una fracción del precio; se cambia por env var sin tocar
+# el analizador.
+ASSISTANT_MODEL = os.environ.get('ASSISTANT_MODEL', 'gpt-4o-mini')
+ASSISTANT_MAX_TOKENS = int(os.environ.get('ASSISTANT_MAX_TOKENS', '320'))
+# Precio del modelo pequeño (USD por millón de tokens). Solo sirve para
+# ESTIMAR el gasto en el panel; si OpenAI cambia tarifas, se ajusta por env.
+ASSISTANT_IN = float(os.environ.get('ASSISTANT_PRICE_IN_PER_1M', '0.15')) / 1_000_000
+ASSISTANT_OUT = float(os.environ.get('ASSISTANT_PRICE_OUT_PER_1M', '0.60')) / 1_000_000
+# Tope por usuario. No es tanto por el coste (céntimos) como porque una sesión
+# abierta con un bucle de preguntas es la forma barata de convertir tu cuenta
+# de OpenAI en la de otro.
+ASSISTANT_PER_HOUR = int(os.environ.get('ASSISTANT_PER_HOUR', '25'))
+ASSISTANT_PER_DAY = int(os.environ.get('ASSISTANT_PER_DAY', '80'))
+ASSISTANT_MAX_CHARS = 500          # una pregunta de ayuda no necesita más
+
+
+def _assistant_prompt():
+    """Reglas + dossier, con los números de HOY."""
+    return _KB.REGLAS + '\n' + _KB.construir(
+        PLAN_PRICING, PLAN_LIMITS, PROJECT_LIMITS,
+        precio_pdf=SYNAPSE_PDF_PRICE,
+        anuales_on=ANNUAL_PLANS_ENABLED,
+        mentoria_on=MENTORSHIP_ENABLED)
+
+
+def _assistant_usadas(user_id, horas):
+    desde = datetime.now(timezone.utc) - timedelta(hours=horas)
+    return AICostLog.query.filter(
+        AICostLog.user_id == user_id,
+        AICostLog.kind == 'assistant',
+        AICostLog.created_at >= desde).count()
+
+
+@app.route('/api/assistant/ask', methods=['POST'])
+@login_required
+def assistant_ask():
+    d = request.get_json(silent=True) or {}
+    pregunta = (d.get('q') or '').strip()[:ASSISTANT_MAX_CHARS]
+    if len(pregunta) < 2:
+        return jsonify({'error': 'empty'}), 400
+    # El hilo previo, recortado: da contexto para un "¿y eso cuánto cuesta?"
+    # sin dejar que la conversación crezca sin techo. Solo texto, y solo los
+    # últimos turnos — el cliente no puede colar un rol 'system' falso.
+    historial = []
+    for m in (d.get('history') or [])[-6:]:
+        rol = 'assistant' if (m or {}).get('role') == 'assistant' else 'user'
+        txt = str((m or {}).get('text') or '')[:600]
+        if txt:
+            historial.append({'role': rol, 'content': txt})
+
+    if _assistant_usadas(current_user.id, 1) >= ASSISTANT_PER_HOUR:
+        return jsonify({'error': 'rate', 'scope': 'hour'}), 429
+    if _assistant_usadas(current_user.id, 24) >= ASSISTANT_PER_DAY:
+        return jsonify({'error': 'rate', 'scope': 'day'}), 429
+
+    mensajes = ([{'role': 'system', 'content': _assistant_prompt()}]
+                + historial
+                + [{'role': 'user', 'content': pregunta}])
+    try:
+        r = client.chat.completions.create(
+            model=ASSISTANT_MODEL, messages=mensajes,
+            max_tokens=ASSISTANT_MAX_TOKENS, temperature=0.3)
+    except Exception as exc:
+        app.logger.error('assistant failed: %s', exc)
+        return jsonify({'error': 'unavailable'}), 503
+    texto = (r.choices[0].message.content or '').strip()
+    if not texto:
+        return jsonify({'error': 'unavailable'}), 503
+    record_ai_cost('assistant', r, user_id=current_user.id,
+                   plan=current_plan(), modelo=ASSISTANT_MODEL,
+                   precio_in=ASSISTANT_IN, precio_out=ASSISTANT_OUT)
+    return jsonify({'answer': texto})
 
 
 # ──────────────────────────────────────────────────────────────────────────
