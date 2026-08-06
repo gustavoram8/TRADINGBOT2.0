@@ -36,6 +36,10 @@
       --pp-line-soft: #e4e6ec;
       --pp-free:      #6b7280;
       --pp-standard:  #2563eb;
+      /* Turquesa: el único color de la sección que no pertenece a un plan.
+         Que el PDF NO se lea como un cuarto nivel de suscripción es la mitad
+         del trabajo de esta tarjeta. */
+      --pp-syn:       #0d9488;
       --pp-premium:   #b8860b;
       --pp-premium-2: #e0a83d;
       --pp-card-bg:   #ffffff;
@@ -640,6 +644,61 @@
       color: var(--muted); background: var(--pp-line-soft); padding: 1px 7px;
       border-radius: 10px; margin-left: 6px;
     }
+    /* ── La biblioteca Synapse en PDF ──────────────────────────────────
+       Va DEBAJO de los planes y deliberadamente más angosta: no es un plan
+       y no debe competir con ellos por la mirada. Turquesa, un color que no
+       usa ningún plan, para que se lea como "otra cosa" y no como un cuarto
+       nivel de suscripción. */
+    .sylib {
+      max-width: 720px; margin: 34px auto 0; text-align: left;
+      background: var(--pp-card-bg); border: 1.5px solid var(--pp-syn);
+      border-radius: 16px; padding: 26px 28px;
+      box-shadow: 0 10px 30px rgba(13,148,136,0.10);
+      /* ⚠️ La columna del precio va con ANCHO FIJO, no `auto`. Con `auto` el
+         navegador se lo da según su contenido, y la letra pequeña ("descarga
+         inmediata… en cualquiera de los cuatro idiomas") pedía ~570px: la
+         columna del precio se comía la tarjeta y el contenido quedaba en una
+         tira ilegible de 130px. Solo se ve en un screenshot — medir el ancho
+         total de la tarjeta daba 720px, correcto, con el interior destrozado. */
+      display: grid; grid-template-columns: 1fr 196px; gap: 26px; align-items: center;
+    }
+    .sylib-badge {
+      display: inline-block; font-size: 10.5px; font-weight: 800;
+      letter-spacing: .12em; text-transform: uppercase; color: var(--pp-syn);
+      border: 1px solid var(--pp-syn); border-radius: 20px;
+      padding: 3px 10px; margin-bottom: 10px;
+    }
+    .sylib-name { font-size: 21px; font-weight: 800; color: var(--pp-ink); letter-spacing: -0.01em; }
+    .sylib-sub  { font-size: 13.5px; color: var(--pp-ink-soft); margin: 5px 0 14px; line-height: 1.6; }
+    /* Los números que justifican el precio, en fila. */
+    .sylib-nums { display: flex; gap: 22px; flex-wrap: wrap; margin-bottom: 14px; }
+    .sylib-num  { line-height: 1.15; }
+    .sylib-n    { font-size: 20px; font-weight: 800; color: var(--pp-syn); }
+    .sylib-l    { font-size: 11px; color: var(--pp-ink-soft); text-transform: uppercase; letter-spacing: .06em; }
+    /* Las 5 metodologías como pastillas: se leen de un vistazo. */
+    .sylib-meths { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 13px; }
+    .sylib-meth {
+      font-size: 11.5px; font-weight: 600; color: var(--pp-syn);
+      background: rgba(13,148,136,0.08); border-radius: 6px; padding: 3px 9px;
+    }
+    .sylib-what { font-size: 12.5px; color: var(--pp-ink-soft); line-height: 1.65; }
+    .sylib-buy  { text-align: center; }
+    .sylib-was  { font-size: 14px; color: var(--pp-ink-soft); text-decoration: line-through; opacity: .75; }
+    .sylib-price{ font-size: 38px; font-weight: 800; color: var(--pp-ink); line-height: 1; }
+    .sylib-note { font-size: 11.5px; color: var(--pp-syn); font-weight: 700; margin-top: 4px; }
+    .sylib-cta {
+      display: block; margin-top: 13px; padding: 12px 20px; border-radius: 10px;
+      background: var(--pp-syn); color: #fff; font-size: 14px; font-weight: 700;
+      text-decoration: none; border: 1.5px solid transparent; transition: filter .15s ease;
+    }
+    .sylib-cta:hover { filter: brightness(1.08); }
+    .sylib-cta.soon { background: var(--pp-card-bg); color: var(--pp-ink-soft);
+                      border-color: var(--pp-line-soft); cursor: default; }
+    .sylib-fine { font-size: 11px; color: var(--pp-ink-soft); margin-top: 8px; line-height: 1.5; }
+    @media (max-width: 640px) {
+      .sylib { grid-template-columns: 1fr; gap: 16px; padding: 22px 20px; }
+    }
+
     .cta {
       display: block; width: 100%; text-align: center; padding: 13px;
       font-size: 14px; font-weight: 700; border-radius: 10px; cursor: pointer;
@@ -1531,6 +1590,42 @@
 
     </div>
 
+    {# ── La biblioteca Synapse en PDF ─────────────────────────────────────
+       Compra única, no un plan. Vive debajo de la rejilla de planes para que
+       quede claro que es otra cosa: quien no quiere suscribirse igual puede
+       llevarse el material, y quien ya está suscrito puede tenerlo offline. #}
+    <div class="sylib">
+      <div>
+        <span class="sylib-badge" data-t="sy_badge">PDF · One-time purchase</span>
+        <div class="sylib-name" data-t="sy_name">The Synapse Library</div>
+        <p class="sylib-sub" data-t="sy_sub">The whole knowledge base as a book you own — offline, personalized to you, and yours to keep.</p>
+
+        <div class="sylib-nums">
+          <div class="sylib-num"><div class="sylib-n">91</div><div class="sylib-l" data-t="sy_pages">pages</div></div>
+          <div class="sylib-num"><div class="sylib-n">41</div><div class="sylib-l" data-t="sy_topics">topics</div></div>
+          <div class="sylib-num"><div class="sylib-n">5</div><div class="sylib-l" data-t="sy_meths">methodologies</div></div>
+          <div class="sylib-num"><div class="sylib-n">4</div><div class="sylib-l" data-t="sy_langs">languages</div></div>
+        </div>
+
+        <div class="sylib-meths">
+          <span class="sylib-meth" data-t="sy_m1">Price Action · 9</span>
+          <span class="sylib-meth" data-t="sy_m2">Technical Analysis · 9</span>
+          <span class="sylib-meth" data-t="sy_m3">SMC / ICT · 11</span>
+          <span class="sylib-meth" data-t="sy_m4">Fundamental · 6</span>
+          <span class="sylib-meth" data-t="sy_m5">Quantitative · 6</span>
+        </div>
+
+        <p class="sylib-what" data-t="sy_what"><strong>Every topic carries:</strong> what it is and why it works · its mechanics term by term · the sequence to read it on a chart · the ways it fails · a drill to practise it · the mistake most traders make · and links to the topics it connects with.</p>
+      </div>
+
+      <div class="sylib-buy">
+        <div class="sylib-price">$15</div>
+        <div class="sylib-note" data-t="sy_launch">Launch price · $20 after launch</div>
+        <span class="sylib-cta soon" data-t="sy_soon">Coming soon</span>
+        <p class="sylib-fine" data-t="sy_fine">Instant download after payment. Re-download it any time from your account, in any of the four languages.</p>
+      </div>
+    </div>
+
     <!-- Feature comparison matrix (rows ordered by importance) -->
     <div class="compare">
       <button type="button" class="cmp-toggle" id="cmp-toggle" aria-expanded="false" aria-controls="cmp-panel">
@@ -2010,6 +2105,16 @@
         rank_you:'You?',
         s7_title:'Start free. Scale when you\'re ready.',
         s7_body:'Every plan includes the AI analysis engine. Upgrade when you want more.',
+        sy_badge:'PDF · One-time purchase',
+        sy_name:'The Synapse Library',
+        sy_sub:'The whole knowledge base as a book you own — offline, personalized to you, and yours to keep.',
+        sy_pages:'pages', sy_topics:'topics', sy_meths:'methodologies', sy_langs:'languages',
+        sy_m1:'Price Action · 9', sy_m2:'Technical Analysis · 9', sy_m3:'SMC / ICT · 11',
+        sy_m4:'Fundamental · 6', sy_m5:'Quantitative · 6',
+        sy_what:'<strong>Every topic carries:</strong> what it is and why it works · its mechanics term by term · the sequence to read it on a chart · the ways it fails · a drill to practise it · the mistake most traders make · and links to the topics it connects with.',
+        sy_launch:'Launch price · $20 after launch',
+        sy_soon:'Coming soon',
+        sy_fine:'Instant download after payment. Re-download it any time from your account, in any of the four languages.',
         nc_ya_lo_tienes:'You are already on this plan. To change plans, pick a different one.',
         nc_ya_suscrito:'You already have an active subscription for this plan. If you just cancelled, give it a minute and reload.',
         nc_no_existe:'That plan cannot be purchased. To go back to Free, cancel your plan from Settings.',
@@ -2116,6 +2221,16 @@
         rank_you:'¿Tú?',
         s7_title:'Empieza gratis. Crece cuando estés listo.',
         s7_body:'Todos los planes incluyen el motor de análisis con IA. Sube de plan cuando quieras más.',
+        sy_badge:'PDF · Compra única',
+        sy_name:'La Biblioteca Synapse',
+        sy_sub:'Toda la base de conocimiento como un libro tuyo — sin conexión, personalizado a tu nombre y para siempre.',
+        sy_pages:'páginas', sy_topics:'temas', sy_meths:'metodologías', sy_langs:'idiomas',
+        sy_m1:'Acción del Precio · 9', sy_m2:'Análisis Técnico · 9', sy_m3:'SMC / ICT · 11',
+        sy_m4:'Fundamental · 6', sy_m5:'Cuantitativo · 6',
+        sy_what:'<strong>Cada tema trae:</strong> qué es y por qué funciona · su mecánica término por término · la secuencia para leerlo en el gráfico · las formas en que falla · un ejercicio para practicarlo · el error que comete la mayoría · y enlaces a los temas con los que conecta.',
+        sy_launch:'Precio de lanzamiento · $20 después',
+        sy_soon:'Muy pronto',
+        sy_fine:'Descarga inmediata al pagar. Vuelve a descargarlo cuando quieras desde tu cuenta, en cualquiera de los cuatro idiomas.',
         nc_ya_lo_tienes:'Ya tienes este plan. Para cambiarte, elige uno distinto.',
         nc_ya_suscrito:'Ya tienes una suscripción activa de este plan. Si acabas de darte de baja, espera un momento y recarga.',
         nc_no_existe:'Ese plan no se compra. Para volver a Free, date de baja desde Ajustes.',
@@ -2222,6 +2337,16 @@
         rank_you:'Vous ?',
         s7_title:'Commencez gratuitement. Évoluez quand vous êtes prêt.',
         s7_body:'Tous les plans incluent le moteur d\'analyse IA. Évoluez quand vous le souhaitez.',
+        sy_badge:'PDF · Achat unique',
+        sy_name:'La Bibliothèque Synapse',
+        sy_sub:'Toute la base de connaissances sous forme de livre qui vous appartient — hors ligne, à votre nom, et pour toujours.',
+        sy_pages:'pages', sy_topics:'sujets', sy_meths:'méthodologies', sy_langs:'langues',
+        sy_m1:'Action des Prix · 9', sy_m2:'Analyse Technique · 9', sy_m3:'SMC / ICT · 11',
+        sy_m4:'Fondamentale · 6', sy_m5:'Quantitative · 6',
+        sy_what:'<strong>Chaque sujet contient :</strong> ce que c’est et pourquoi ça fonctionne · sa mécanique terme par terme · la séquence pour le lire sur un graphique · ses modes d’échec · un exercice pour le travailler · l’erreur que commet la majorité · et des liens vers les sujets connexes.',
+        sy_launch:'Prix de lancement · $20 ensuite',
+        sy_soon:'Bientôt disponible',
+        sy_fine:'Téléchargement immédiat après paiement. Retéléchargez-le quand vous voulez depuis votre compte, dans l’une des quatre langues.',
         nc_ya_lo_tienes:'Vous avez déjà ce plan. Pour changer, choisissez-en un autre.',
         nc_ya_suscrito:'Vous avez déjà un abonnement actif pour ce plan. Si vous venez de le résilier, patientez un instant puis rechargez.',
         nc_no_existe:'Ce plan ne s’achète pas. Pour revenir à Free, résiliez depuis les Paramètres.',
@@ -2328,6 +2453,16 @@
         rank_you:'Você?',
         s7_title:'Comece grátis. Escale quando estiver pronto.',
         s7_body:'Todos os planos incluem o motor de análise IA. Evolua quando quiser mais.',
+        sy_badge:'PDF · Compra única',
+        sy_name:'A Biblioteca Synapse',
+        sy_sub:'Toda a base de conhecimento como um livro seu — offline, personalizado com o seu nome e para sempre.',
+        sy_pages:'páginas', sy_topics:'tópicos', sy_meths:'metodologias', sy_langs:'idiomas',
+        sy_m1:'Price Action · 9', sy_m2:'Análise Técnica · 9', sy_m3:'SMC / ICT · 11',
+        sy_m4:'Fundamentalista · 6', sy_m5:'Quantitativa · 6',
+        sy_what:'<strong>Cada tópico traz:</strong> o que é e por que funciona · a mecânica termo a termo · a sequência para lê-lo no gráfico · as formas como falha · um exercício para praticar · o erro que a maioria comete · e links para os tópicos conectados.',
+        sy_launch:'Preço de lançamento · $20 depois',
+        sy_soon:'Em breve',
+        sy_fine:'Download imediato após o pagamento. Baixe de novo quando quiser pela sua conta, em qualquer um dos quatro idiomas.',
         nc_ya_lo_tienes:'Você já está neste plano. Para trocar, escolha um diferente.',
         nc_ya_suscrito:'Você já tem uma assinatura ativa deste plano. Se acabou de cancelar, espere um momento e recarregue.',
         nc_no_existe:'Esse plano não é comprado. Para voltar ao Free, cancele em Configurações.',
