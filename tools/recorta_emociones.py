@@ -137,11 +137,57 @@ def quita_fondo(panel):
     """
     rgb = panel.convert('RGB')
     w, h = rgb.size
-    # Solo se inunda el CREMA CLARO, desde el borde y varios anillos hacia
-    # dentro. Nunca se toca nada oscuro, así que el cubo (rojo oscuro) y sus
-    # contornos quedan INTACTOS. El panel ya viene recortado por dentro del
-    # marco, así que aquí solo queda crema/piso/sombra que quitar.
-    for fx in (0.0, 0.03, 0.06, 0.10):
+
+    # ── 1) BORRAR SOLO LA LÍNEA DEL MARCO ──────────────────────────────────
+    # Se localiza cada lado del marco (la fila/columna más negra cerca de cada
+    # borde) y se limpia ESA banda fina, solo sus píxeles oscuros. Así el marco
+    # se va pero los garabatos que lo cruzan (nubes, WOW, lámpara) y la punta
+    # del cubo se quedan enteros: solo pierden el pelo de píxel donde pisan la
+    # raya del marco.
+    gray = panel.convert('L')
+    # Máscara SOLO de negro-marco (~15), NO del rojo oscuro del cubo (~47): así
+    # una fila/columna que cruza el cubo casi no cuenta, y solo las líneas
+    # realmente negras del marco superan el listón.
+    mk = gray.point(lambda p: 255 if p < 42 else 0)
+    rows = _perfil_filas(mk, h)
+    cols = _perfil_columnas(mk, w)
+    gpx = gray.load()
+
+    # Una FILA del marco está casi toda negra (línea de borde a borde); un
+    # garabato solo ennegrece un trozo. Se limpia toda fila/columna del borde
+    # que supere el umbral -> se va el marco entero, caiga donde caiga, sin
+    # tocar el cubo (que está en el centro, fuera de estas bandas).
+    # Una línea del marco es negra casi de punta a punta (fila/columna ~90%+
+    # oscura). Una fila/columna que cruza el CUBO llega como mucho a ~60%
+    # (el cubo no ocupa todo el alto y tiene brillos claros). Con el listón
+    # alto se borra el marco entero y jamás se toca el cubo, aunque se
+    # ensanche la banda.
+    LINEA = 120   # con la máscara de negro-marco, una línea llena supera esto;
+                  # una fila/columna que cruza el cubo (solo su contorno) no.
+
+    def _limpia_filas(lo, hi):
+        for yy in range(max(0, lo), min(h, hi)):
+            if rows[yy] > LINEA:
+                for xx in range(w):
+                    if gpx[xx, yy] < 130:
+                        rgb.putpixel((xx, yy), MARCA)
+
+    def _limpia_cols(lo, hi):
+        for xx in range(max(0, lo), min(w, hi)):
+            if cols[xx] > LINEA:
+                for yy in range(h):
+                    if gpx[xx, yy] < 130:
+                        rgb.putpixel((xx, yy), MARCA)
+
+    _limpia_filas(0, int(0.20 * h))
+    _limpia_filas(int(0.80 * h), h)
+    _limpia_cols(0, int(0.20 * w))
+    _limpia_cols(int(0.80 * w), w)
+
+    # ── 2) INUNDAR SOLO EL CREMA CLARO ─────────────────────────────────────
+    # Desde el borde (crema exterior) y desde anillos por dentro del marco
+    # (crema interior). Nunca se toca nada oscuro -> el cubo queda INTACTO.
+    for fx in (0.0, 0.04, 0.09, 0.14):
         for sx, sy in _anillo(w, h, fx):
             r, g, b = rgb.getpixel((sx, sy))
             if (r + g + b) / 3 > 150 and rgb.getpixel((sx, sy)) != MARCA:
@@ -213,12 +259,13 @@ def main():
     for f, (ry0, ry1) in enumerate(filas):
         for c, (cx0, cx1) in enumerate(cols):
             nombre = FILAS[f][c]
-            # panel COMPLETO con margen: garantiza que el marco entra entero
-            ex = int((cx1 - cx0) * 0.04)
-            ey = int((ry1 - ry0) * 0.04)
+            # panel COMPLETO con margen generoso: entran TODOS los garabatos,
+            # incluso los que cruzan el marco (nubes, WOW, lámpara). El marco lo
+            # borra quita_fondo() por su línea, no recortándolo.
+            ex = int((cx1 - cx0) * 0.06)
+            ey = int((ry1 - ry0) * 0.06)
             panel = im.crop((max(0, cx0 - ex), max(0, ry0 - ey),
                              min(W, cx1 + ex), min(H, ry1 + ey)))
-            panel = dentro_del_marco(panel)   # recorta por dentro del marco
             cara = quita_fondo(panel)
             cara.save(os.path.join(STATIC, 'emo-%s.png' % nombre))
             caras.append((nombre, cara))
