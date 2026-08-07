@@ -125,6 +125,31 @@ def dentro_del_marco(panel):
     return panel.crop((max(0, left), max(0, top), min(w, right + 1), h))
 
 
+def _quita_confeti(op, w, h, min_area=28):
+    """Borra las islitas opacas pequeñas (confeti): restos de piso/sombra que
+    quedaron sueltos. Conserva el cubo (isla grande) y los garabatos (estrellas,
+    nubes, ?? …, que son islas de tamaño decente)."""
+    from collections import deque
+    seen = bytearray(w * h)
+    for y0 in range(h):
+        for x0 in range(w):
+            if seen[y0 * w + x0] or op[x0, y0][3] == 0:
+                continue
+            q = deque([(x0, y0)]); seen[y0 * w + x0] = 1; comp = [(x0, y0)]
+            while q:
+                x, y = q.popleft()
+                for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                    nx, ny = x + dx, y + dy
+                    if 0 <= nx < w and 0 <= ny < h and not seen[ny * w + nx] \
+                            and op[nx, ny][3] > 0:
+                        seen[ny * w + nx] = 1
+                        q.append((nx, ny)); comp.append((nx, ny))
+            if len(comp) < min_area:
+                for (x, y) in comp:
+                    r, g, b, a = op[x, y]
+                    op[x, y] = (r, g, b, 0)
+
+
 def quita_fondo(panel):
     """Borra el fondo del PANEL COMPLETO (crema + piso + marco) sin recortar la
     expresión.
@@ -225,7 +250,14 @@ def quita_fondo(panel):
                 px[x, y] = MARCA
             if px[x, y] == MARCA:
                 op[x, y] = (0, 0, 0, 0)
-            else:
+
+    _quita_confeti(op, w, h)           # borra las islitas sueltas (confeti)
+
+    # bbox de lo que quedó opaco (ya sin confeti -> se ajusta al cubo)
+    minx, miny, maxx, maxy = w, h, 0, 0
+    for y in range(h):
+        for x in range(w):
+            if op[x, y][3] > 0:
                 if x < minx: minx = x
                 if y < miny: miny = y
                 if x > maxx: maxx = x
