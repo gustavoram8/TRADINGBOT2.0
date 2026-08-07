@@ -97,7 +97,56 @@ with A.app.app_context():
     del enviados[:]
     A.send_receipt_email('compradora@demo.invalid', 'Premium', 50.0, 'plan-99')
     check('sin petición (webhook) → cae a inglés',
-          enviados and 'Thanks for your purchase' in enviados[0].body)
+          enviados and 'Thank you for your purchase' in enviados[0].body)
+
+with A.app.app_context():
+    print('── el toque profesional ──')
+    del enviados[:]
+    A.send_receipt_email('compradora@demo.invalid', 'Premium', 50.0, 'plan-7',
+                         es_plan=True)
+    m = enviados[0]
+    check('Reply-To apunta al buzón humano (support/avisos)',
+          m.reply_to == A.ADMIN_INBOX, m.reply_to)
+    check('versión HTML presente con el logo al pie',
+          m.html and 'static/logo.png' in m.html)
+    check('el texto invita a la reseña y a soporte',
+          'reseña' in m.body or 'review' in m.body)
+
+    print('── la bienvenida ──')
+    del enviados[:]
+    u2 = A.User.query.filter_by(username='compradora').first()
+    with A.app.test_request_context('/', headers={'Cookie': 'scalpel_lang=es'}):
+        A.send_welcome_email(u2)
+    check('se envía y saluda por su nombre',
+          enviados and 'compradora' in enviados[0].body)
+    check('presenta las herramientas y la guía',
+          enviados and 'ANALIZADOR' in enviados[0].body
+          and '/guide' in enviados[0].body)
+    check('con la nota honesta (educativo, sin señales)',
+          enviados and 'educativo' in enviados[0].body)
+
+    print('── la constancia de baja ──')
+    del enviados[:]
+    from datetime import datetime, timezone, timedelta
+    u2.plan = 'premium'
+    u2.plan_expires_at = (datetime.now(timezone.utc)
+                          + timedelta(days=17, hours=3))
+    A.db.session.commit()
+    with A.app.test_request_context('/', headers={'Cookie': 'scalpel_lang=es'}):
+        A.send_cancel_email(u2)
+    check('se envía con la fecha y los días restantes',
+          enviados and '17 días' in enviados[0].body
+          and 'Premium' in enviados[0].body, enviados[0].body[:200] if enviados else '')
+    check('y con el aviso de seguridad (si no fuiste tú)',
+          enviados and 'NO pediste' in enviados[0].body)
+    # sin fecha de vencimiento no inventa una
+    del enviados[:]
+    u2.plan_expires_at = None
+    A.db.session.commit()
+    with A.app.test_request_context('/', headers={'Cookie': 'scalpel_lang=es'}):
+        A.send_cancel_email(u2)
+    check('sin fecha registrada no inventa ninguna',
+          enviados and 'activo hasta' not in enviados[0].body)
 
 print('\nRESULTADO: %d ok, %d fallas' % (ok, fallas))
 sys.exit(1 if fallas else 0)

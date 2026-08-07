@@ -2721,78 +2721,315 @@ EMAIL_I18N = {
         'en': {
             'subject': 'Tradeable — Purchase confirmation #{ref}',
             'body': (
-                "Thanks for your purchase!\n\n"
+                "Thank you for your purchase!\n"
+                "Every purchase keeps this platform growing — we mean it.\n\n"
                 "  Item:    {label}\n"
                 "  Amount:  ${amount} USD\n"
                 "  Order:   #{ref}\n"
                 "  Date:    {date}\n\n"
                 "{extra}"
-                "You can review your plan and purchases any time in Settings.\n\n"
-                "Questions? Just reply to this email or write to "
-                "support@tradeable.academy.\n\n— Tradeable Academy"
+                "If anything didn't go as expected, write to us at "
+                "support@tradeable.academy (or just reply to this email) and "
+                "a real person will look into it.\n\n"
+                "Enjoying Tradeable? We'd love to read your review — you can "
+                "leave one from the app whenever the invitation appears.\n\n"
+                "Thanks for trusting us.\n— The Tradeable Academy team"
             ),
-            'plan_extra': ("Your plan is active as of now. If it renews "
-                           "automatically, you can cancel any time from "
-                           "Settings — you keep access until the end of the "
-                           "period you already paid.\n\n"),
+            'plan_extra': ("Your plan is active as of right now. If your "
+                           "payment method renews automatically, you can "
+                           "cancel any time from Settings — no fees, no "
+                           "notice period — and you keep full access until "
+                           "the end of the period you already paid.\n\n"),
         },
         'es': {
             'subject': 'Tradeable — Confirmación de compra #{ref}',
             'body': (
-                "¡Gracias por tu compra!\n\n"
+                "¡Gracias por tu compra!\n"
+                "Cada compra hace crecer esta plataforma — y lo decimos en "
+                "serio.\n\n"
                 "  Producto: {label}\n"
                 "  Importe:  ${amount} USD\n"
                 "  Pedido:   #{ref}\n"
                 "  Fecha:    {date}\n\n"
                 "{extra}"
-                "Puedes revisar tu plan y tus compras cuando quieras en "
-                "Ajustes.\n\n"
-                "¿Dudas? Responde a este correo o escríbenos a "
-                "support@tradeable.academy.\n\n— Tradeable Academy"
+                "Si algo no salió como esperabas, escríbenos a "
+                "support@tradeable.academy (o simplemente responde a este "
+                "correo) y una persona real lo revisará.\n\n"
+                "¿Te está gustando Tradeable? Nos encantaría leer tu reseña — "
+                "puedes dejarla desde la aplicación cuando te aparezca la "
+                "invitación.\n\n"
+                "Gracias por confiar en nosotros.\n"
+                "— El equipo de Tradeable Academy"
             ),
-            'plan_extra': ("Tu plan ya está activo. Si se renueva "
-                           "automáticamente, puedes darte de baja cuando "
-                           "quieras desde Ajustes — conservas el acceso hasta "
-                           "el final del período que ya pagaste.\n\n"),
+            'plan_extra': ("Tu plan ya está activo desde este momento. Si tu "
+                           "método de pago se renueva automáticamente, puedes "
+                           "darte de baja cuando quieras desde Ajustes — sin "
+                           "costos ni preavisos — y conservas el acceso "
+                           "completo hasta el final del período que ya "
+                           "pagaste.\n\n"),
         },
         'fr': {
             'subject': 'Tradeable — Confirmation d’achat #{ref}',
             'body': (
-                "Merci pour votre achat !\n\n"
+                "Merci pour votre achat !\n"
+                "Chaque achat fait grandir cette plateforme — et nous le "
+                "pensons vraiment.\n\n"
                 "  Article : {label}\n"
                 "  Montant : {amount} $ USD\n"
                 "  Commande : #{ref}\n"
                 "  Date :    {date}\n\n"
                 "{extra}"
-                "Vous pouvez consulter votre offre et vos achats à tout moment "
-                "dans les Réglages.\n\n"
-                "Des questions ? Répondez à cet e-mail ou écrivez-nous à "
-                "support@tradeable.academy.\n\n— Tradeable Academy"
+                "Si quelque chose ne s’est pas passé comme prévu, écrivez-nous "
+                "à support@tradeable.academy (ou répondez simplement à cet "
+                "e-mail) : une vraie personne s’en occupera.\n\n"
+                "Tradeable vous plaît ? Nous serions ravis de lire votre avis "
+                "— vous pouvez le laisser depuis l’application dès que "
+                "l’invitation apparaît.\n\n"
+                "Merci de votre confiance.\n— L’équipe Tradeable Academy"
             ),
-            'plan_extra': ("Votre offre est active dès maintenant. Si elle se "
-                           "renouvelle automatiquement, vous pouvez résilier à "
-                           "tout moment depuis les Réglages — vous conservez "
-                           "l’accès jusqu’à la fin de la période déjà "
-                           "payée.\n\n"),
+            'plan_extra': ("Votre offre est active dès maintenant. Si votre "
+                           "moyen de paiement se renouvelle automatiquement, "
+                           "vous pouvez résilier à tout moment depuis les "
+                           "Réglages — sans frais ni préavis — et vous "
+                           "conservez l’accès complet jusqu’à la fin de la "
+                           "période déjà payée.\n\n"),
         },
         'pt': {
             'subject': 'Tradeable — Confirmação de compra #{ref}',
             'body': (
-                "Obrigado pela sua compra!\n\n"
+                "Obrigado pela sua compra!\n"
+                "Cada compra faz esta plataforma crescer — e falamos "
+                "sério.\n\n"
                 "  Item:   {label}\n"
                 "  Valor:  ${amount} USD\n"
                 "  Pedido: #{ref}\n"
                 "  Data:   {date}\n\n"
                 "{extra}"
-                "Você pode conferir seu plano e suas compras a qualquer "
-                "momento em Ajustes.\n\n"
-                "Dúvidas? Responda este e-mail ou escreva para "
-                "support@tradeable.academy.\n\n— Tradeable Academy"
+                "Se algo não saiu como esperado, escreva para "
+                "support@tradeable.academy (ou simplesmente responda este "
+                "e-mail) e uma pessoa de verdade vai cuidar disso.\n\n"
+                "Está gostando do Tradeable? Adoraríamos ler sua avaliação — "
+                "você pode deixá-la pelo aplicativo quando o convite "
+                "aparecer.\n\n"
+                "Obrigado por confiar na gente.\n"
+                "— Equipe Tradeable Academy"
             ),
-            'plan_extra': ("Seu plano já está ativo. Se ele se renova "
-                           "automaticamente, você pode cancelar quando quiser "
-                           "em Ajustes — você mantém o acesso até o fim do "
-                           "período já pago.\n\n"),
+            'plan_extra': ("Seu plano já está ativo. Se o seu método de "
+                           "pagamento se renova automaticamente, você pode "
+                           "cancelar quando quiser em Ajustes — sem taxas nem "
+                           "aviso prévio — e mantém o acesso completo até o "
+                           "fim do período já pago.\n\n"),
+        },
+    },
+    'welcome': {
+        'en': {
+            'subject': 'Welcome to Tradeable Academy',
+            'body': (
+                "Hi {name},\n\n"
+                "Your account is verified — welcome home.\n\n"
+                "Tradeable Academy exists for one reason: to help you become a "
+                "more disciplined, better-prepared trader. No magic promises, "
+                "no signals — real education, built with care.\n\n"
+                "Where to start:\n\n"
+                "  · THE ANALYZER — upload a trade you already took and the "
+                "AI breaks it down using the methodology YOU choose (ICT, "
+                "SMC, Wyckoff and more). It explains, it never tells you "
+                "what to trade.\n"
+                "  · THE QUIZ & DAILY CHALLENGE — one hard question a day. "
+                "Keep the streak and you earn spins on the monthly cosmetics "
+                "roulette.\n"
+                "  · THE CHALKBOARD — sketch your ideas like on a real "
+                "trading desk.\n"
+                "  · THE GUIDE — everything explained step by step, at "
+                "/guide.\n\n"
+                "On paid plans you also unlock the trading forum, Synapse "
+                "(our immersive study universe) and Pre-Flight — you can "
+                "compare plans any time on the Pricing page.\n\n"
+                "One honest note, because it matters: everything here is "
+                "educational. We never give investment advice, signals or "
+                "profit promises — and if anyone claims otherwise in our "
+                "name, it isn't us.\n\n"
+                "Questions? Write to support@tradeable.academy or just reply "
+                "to this email. A real person answers.\n\n"
+                "Glad you're here.\n— The Tradeable Academy team"
+            ),
+        },
+        'es': {
+            'subject': 'Te damos la bienvenida a Tradeable Academy',
+            'body': (
+                "Hola, {name}:\n\n"
+                "Tu cuenta ya está verificada — bienvenido a casa.\n\n"
+                "Tradeable Academy existe por una sola razón: ayudarte a ser "
+                "un trader más disciplinado y mejor preparado. Sin promesas "
+                "mágicas ni señales — educación de verdad, hecha con "
+                "cariño.\n\n"
+                "Por dónde empezar:\n\n"
+                "  · EL ANALIZADOR — sube una operación que ya tomaste y la "
+                "IA la desglosa con la metodología que TÚ elijas (ICT, SMC, "
+                "Wyckoff y más). Te explica; nunca te dice qué operar.\n"
+                "  · EL QUIZ Y EL RETO DIARIO — una pregunta difícil al día. "
+                "Mantén la racha y ganas giros en la ruleta de cosméticos del "
+                "mes.\n"
+                "  · LA PIZARRA (CHALKBOARD) — dibuja tus ideas como en un "
+                "escritorio de trading de verdad.\n"
+                "  · LA GUÍA — todo explicado paso a paso, en /guide.\n\n"
+                "Con los planes de pago desbloqueas además el foro de "
+                "traders, Synapse (nuestro universo de estudio inmersivo) y "
+                "Pre-Flight — puedes comparar los planes cuando quieras en la "
+                "página de Precios.\n\n"
+                "Una nota honesta, porque importa: todo aquí es educativo. "
+                "Nunca damos consejos de inversión, señales ni promesas de "
+                "ganancia — y si alguien afirma lo contrario en nuestro "
+                "nombre, no somos nosotros.\n\n"
+                "¿Dudas? Escríbenos a support@tradeable.academy o responde a "
+                "este correo. Contesta una persona real.\n\n"
+                "Qué bueno tenerte aquí.\n— El equipo de Tradeable Academy"
+            ),
+        },
+        'fr': {
+            'subject': 'Bienvenue chez Tradeable Academy',
+            'body': (
+                "Bonjour {name},\n\n"
+                "Votre compte est vérifié — bienvenue chez vous.\n\n"
+                "Tradeable Academy existe pour une seule raison : vous aider "
+                "à devenir un trader plus discipliné et mieux préparé. Pas de "
+                "promesses magiques ni de signaux — une vraie formation, "
+                "faite avec soin.\n\n"
+                "Par où commencer :\n\n"
+                "  · L'ANALYSEUR — envoyez un trade déjà pris et l'IA le "
+                "décompose selon la méthodologie que VOUS choisissez (ICT, "
+                "SMC, Wyckoff et plus). Elle explique ; elle ne vous dit "
+                "jamais quoi trader.\n"
+                "  · LE QUIZ ET LE DÉFI QUOTIDIEN — une question difficile "
+                "par jour. Gardez la série et gagnez des tours à la roue de "
+                "cosmétiques du mois.\n"
+                "  · LE CHALKBOARD — esquissez vos idées comme sur un vrai "
+                "bureau de trading.\n"
+                "  · LE GUIDE — tout expliqué pas à pas, sur /guide.\n\n"
+                "Avec les offres payantes, vous débloquez aussi le forum, "
+                "Synapse (notre univers d'étude immersif) et Pre-Flight — "
+                "comparez les offres quand vous voulez sur la page "
+                "Tarifs.\n\n"
+                "Une note honnête, parce que c'est important : tout ici est "
+                "éducatif. Nous ne donnons jamais de conseils en "
+                "investissement, de signaux ni de promesses de gains — si "
+                "quelqu'un affirme le contraire en notre nom, ce n'est pas "
+                "nous.\n\n"
+                "Des questions ? Écrivez à support@tradeable.academy ou "
+                "répondez à cet e-mail. Une vraie personne vous répond.\n\n"
+                "Ravis de vous compter parmi nous.\n"
+                "— L'équipe Tradeable Academy"
+            ),
+        },
+        'pt': {
+            'subject': 'Boas-vindas à Tradeable Academy',
+            'body': (
+                "Olá, {name}!\n\n"
+                "Sua conta está verificada — bem-vindo à sua casa.\n\n"
+                "A Tradeable Academy existe por uma única razão: ajudar você "
+                "a ser um trader mais disciplinado e mais bem preparado. Sem "
+                "promessas mágicas nem sinais — educação de verdade, feita "
+                "com carinho.\n\n"
+                "Por onde começar:\n\n"
+                "  · O ANALISADOR — envie uma operação que você já fez e a IA "
+                "a destrincha com a metodologia que VOCÊ escolher (ICT, SMC, "
+                "Wyckoff e mais). Ela explica; nunca diz o que operar.\n"
+                "  · O QUIZ E O DESAFIO DIÁRIO — uma pergunta difícil por "
+                "dia. Mantenha a sequência e ganhe giros na roleta de "
+                "cosméticos do mês.\n"
+                "  · O CHALKBOARD — desenhe suas ideias como numa mesa de "
+                "trading de verdade.\n"
+                "  · O GUIA — tudo explicado passo a passo, em /guide.\n\n"
+                "Nos planos pagos você também desbloqueia o fórum, o Synapse "
+                "(nosso universo de estudo imersivo) e o Pre-Flight — compare "
+                "os planos quando quiser na página de Preços.\n\n"
+                "Uma nota honesta, porque importa: tudo aqui é educacional. "
+                "Nunca damos conselhos de investimento, sinais nem promessas "
+                "de lucro — e se alguém afirmar o contrário em nosso nome, "
+                "não somos nós.\n\n"
+                "Dúvidas? Escreva para support@tradeable.academy ou responda "
+                "este e-mail. Uma pessoa de verdade responde.\n\n"
+                "Que bom ter você aqui.\n— Equipe Tradeable Academy"
+            ),
+        },
+    },
+    'cancel': {
+        'en': {
+            'subject': 'Tradeable — Your renewal is cancelled',
+            'body': (
+                "Hi {name},\n\n"
+                "We confirm your plan renewal has been cancelled. You will "
+                "not be charged again.\n\n"
+                "{until}"
+                "If you change your mind, you can come back any time from "
+                "the Pricing page — your account, progress and purchases "
+                "stay exactly where you left them.\n\n"
+                "If you did NOT request this cancellation, write to "
+                "support@tradeable.academy right away.\n\n"
+                "Thanks for the time you've spent with us.\n"
+                "— The Tradeable Academy team"
+            ),
+            'until': ("Your {plan} access remains FULLY active until "
+                      "{date} ({days} days left) — cancelling stops the next "
+                      "charge, never the period you already paid.\n\n"),
+        },
+        'es': {
+            'subject': 'Tradeable — Tu renovación quedó cancelada',
+            'body': (
+                "Hola, {name}:\n\n"
+                "Confirmamos que la renovación de tu plan quedó cancelada. "
+                "No se te volverá a cobrar.\n\n"
+                "{until}"
+                "Si cambias de idea, puedes volver cuando quieras desde la "
+                "página de Precios — tu cuenta, tu progreso y tus compras se "
+                "quedan exactamente donde los dejaste.\n\n"
+                "Si tú NO pediste esta cancelación, escríbenos de inmediato "
+                "a support@tradeable.academy.\n\n"
+                "Gracias por el tiempo que has pasado con nosotros.\n"
+                "— El equipo de Tradeable Academy"
+            ),
+            'until': ("Tu acceso {plan} sigue COMPLETAMENTE activo hasta el "
+                      "{date} (te quedan {days} días) — cancelar corta el "
+                      "próximo cobro, nunca el período que ya pagaste.\n\n"),
+        },
+        'fr': {
+            'subject': 'Tradeable — Votre renouvellement est annulé',
+            'body': (
+                "Bonjour {name},\n\n"
+                "Nous confirmons que le renouvellement de votre offre a été "
+                "annulé. Vous ne serez plus débité.\n\n"
+                "{until}"
+                "Si vous changez d'avis, vous pouvez revenir à tout moment "
+                "depuis la page Tarifs — votre compte, votre progression et "
+                "vos achats restent exactement là où vous les avez "
+                "laissés.\n\n"
+                "Si vous n'êtes PAS à l'origine de cette annulation, écrivez "
+                "immédiatement à support@tradeable.academy.\n\n"
+                "Merci pour le temps passé avec nous.\n"
+                "— L'équipe Tradeable Academy"
+            ),
+            'until': ("Votre accès {plan} reste PLEINEMENT actif jusqu'au "
+                      "{date} ({days} jours restants) — annuler stoppe le "
+                      "prochain débit, jamais la période déjà payée.\n\n"),
+        },
+        'pt': {
+            'subject': 'Tradeable — Sua renovação foi cancelada',
+            'body': (
+                "Olá, {name}!\n\n"
+                "Confirmamos que a renovação do seu plano foi cancelada. "
+                "Você não será cobrado novamente.\n\n"
+                "{until}"
+                "Se mudar de ideia, pode voltar quando quiser pela página de "
+                "Preços — sua conta, seu progresso e suas compras ficam "
+                "exatamente onde você os deixou.\n\n"
+                "Se você NÃO pediu este cancelamento, escreva imediatamente "
+                "para support@tradeable.academy.\n\n"
+                "Obrigado pelo tempo que você passou com a gente.\n"
+                "— Equipe Tradeable Academy"
+            ),
+            'until': ("Seu acesso {plan} continua TOTALMENTE ativo até "
+                      "{date} (restam {days} dias) — cancelar interrompe a "
+                      "próxima cobrança, nunca o período já pago.\n\n"),
         },
     },
     'reset': {
@@ -2952,7 +3189,7 @@ def send_security_email(user, event):
             event=line,
             when=datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M'),
             detail=ua)
-        mail.send(msg)
+        mail.send(_toque_final(msg))
         return True
     except Exception as e:
         app.logger.warning('security email (%s) failed: %s', event, e)
@@ -2967,6 +3204,75 @@ def _email_lang():
         if lang in ('en', 'es', 'fr', 'pt'):
             return lang
     return 'en'
+
+
+def _correo_html(texto):
+    """La versión HTML de un correo de texto: el MISMO contenido con tipografía
+    limpia y el logo al pie. Viaja como multiparte junto al texto plano — si el
+    cliente de correo bloquea imágenes (muchos lo hacen hasta que el usuario
+    pulsa "mostrar"), el correo se lee perfecto igual; el logo es el remate
+    visual cuando sí carga, no una pieza de la que dependa nada."""
+    import html as _h
+    return (
+        '<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;'
+        'line-height:1.65;color:#1c2230;max-width:560px;margin:0 auto;'
+        'padding:8px 4px;white-space:pre-wrap;">%s'
+        '<div style="margin-top:28px;padding-top:16px;'
+        'border-top:1px solid #e4e7ee;">'
+        '<img src="https://tradeable.academy/static/logo.png" '
+        'alt="Tradeable Academy" width="150" '
+        'style="display:block;max-width:150px;height:auto;"></div>'
+        '</div>' % _h.escape(texto))
+
+
+def _toque_final(msg):
+    """Reply-To + HTML con logo, para todo correo que ve un USUARIO.
+
+    El Reply-To importa: la app envía como info@ pero quien responde a un
+    recibo espera hablar con soporte — sin esto, las respuestas caían en la
+    casilla que nadie mira a diario."""
+    msg.reply_to = ADMIN_INBOX
+    msg.html = _correo_html(msg.body)
+    return msg
+
+
+def send_welcome_email(user):
+    """La bienvenida tras verificar el correo. Best-effort."""
+    try:
+        if not app.config.get('MAIL_PASSWORD'):
+            return False
+        strings = EMAIL_I18N['welcome'][_email_lang()]
+        msg = Message(strings['subject'], recipients=[user.email])
+        msg.body = strings['body'].format(name=user.username)
+        mail.send(_toque_final(msg))
+        return True
+    except Exception as exc:
+        app.logger.warning('welcome email failed: %s', exc)
+        return False
+
+
+def send_cancel_email(user):
+    """La constancia escrita de la baja: renovación cortada, acceso hasta
+    cuándo. Es el correo que evita el reclamo de "yo cancelé y me cobraron".
+    Best-effort."""
+    try:
+        if not app.config.get('MAIL_PASSWORD'):
+            return False
+        strings = EMAIL_I18N['cancel'][_email_lang()]
+        exp = _aware(user.plan_expires_at)
+        until = ''
+        if exp:
+            dias = max(0, (exp - datetime.now(timezone.utc)).days)
+            until = strings['until'].format(
+                plan=PLAN_LABELS.get(user.plan, user.plan),
+                date=exp.strftime('%Y-%m-%d'), days=dias)
+        msg = Message(strings['subject'], recipients=[user.email])
+        msg.body = strings['body'].format(name=user.username, until=until)
+        mail.send(_toque_final(msg))
+        return True
+    except Exception as exc:
+        app.logger.warning('cancel email failed: %s', exc)
+        return False
 
 
 def send_receipt_email(to_email, label, amount, ref, es_plan=False):
@@ -2985,6 +3291,7 @@ def send_receipt_email(to_email, label, amount, ref, es_plan=False):
     msg.body = strings['body'].format(
         label=label, amount=('%.2f' % float(amount)), ref=ref, date=fecha,
         extra=(strings['plan_extra'] if es_plan else ''))
+    _toque_final(msg)
     prev_timeout = socket.getdefaulttimeout()
     socket.setdefaulttimeout(15)
     try:
@@ -3004,6 +3311,7 @@ def send_reset_email(to_email, reset_url):
     strings = EMAIL_I18N['reset'][_email_lang()]
     msg = Message(strings['subject'], recipients=[to_email])
     msg.body = strings['body'].format(reset_url=reset_url)
+    _toque_final(msg)
     # Bound the SMTP attempt so an unreachable mail server can't hang the request.
     prev_timeout = socket.getdefaulttimeout()
     socket.setdefaulttimeout(15)
@@ -3035,6 +3343,7 @@ def send_verification_email(to_email, code):
     strings = EMAIL_I18N['verify'][_email_lang()]
     msg = Message(strings['subject'], recipients=[to_email])
     msg.body = strings['body'].format(code=code)
+    _toque_final(msg)
     prev_timeout = socket.getdefaulttimeout()
     socket.setdefaulttimeout(15)
     try:
@@ -5603,6 +5912,8 @@ def cancel_plan():
         'plan_cancelled', user_id=current_user.id,
         detail=('suscripción(es) %s' % ', '.join('#%d' % i for i in cortadas))
                if cortadas else 'sin cobro automático')
+    # La constancia escrita, con la fecha exacta hasta la que conserva acceso.
+    send_cancel_email(current_user)
     return redirect(url_for('settings', cancelled=1))
 
 
@@ -6405,6 +6716,8 @@ def verify_email():
         user.verification_code = None
         user.verification_expires = None
         db.session.commit()
+        # La bienvenida de verdad: ya verificó, ya es de casa. Best-effort.
+        send_welcome_email(user)
         remember = session.pop('pending_remember', False)
         session.pop('pending_user_id', None)
         destino = _safe_next(session.pop('post_login_next', ''))
