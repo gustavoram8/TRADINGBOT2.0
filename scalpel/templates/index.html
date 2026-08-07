@@ -12192,7 +12192,12 @@
     };
     Object.keys(REVIEW_I18N).forEach(l => { if (I18N[l]) Object.assign(I18N[l], REVIEW_I18N[l]); });
 
-    if (!U.reviewPrompt) return;
+    // ?review=1 (el enlace del correo del recibo): el usuario QUIERE dejar
+    // su reseña ahora — se abre el modal sin esperar el aviso periódico. Los
+    // tiempos del aviso automático (paid, ~30 días, 20 min de uso) no se
+    // tocan: siguen mandando cuando la visita no trae el enlace.
+    const quiereReview = new URLSearchParams(location.search).has('review');
+    if (!U.reviewPrompt && !quiereReview) return;
 
     // Usage gate: only show the prompt after ~20 minutes of accumulated
     // real usage (tab visible), so brand-new upgraders aren't asked to
@@ -12264,7 +12269,8 @@
       localStorage.setItem(USAGE_KEY, String(usageMin));
       maybeShow();
     }, 60000);
-    maybeShow();
+    if (quiereReview) { shown = true; rov.style.display = ''; }
+    else maybeShow();
   })();
 
   // ── Usage limit + live countdown ──

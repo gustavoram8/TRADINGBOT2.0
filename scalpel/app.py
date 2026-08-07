@@ -2732,14 +2732,15 @@ EMAIL_I18N = {
                 "support@tradeable.academy (or just reply to this email) and "
                 "a real person will look into it.\n\n"
                 "Enjoying Tradeable? We'd love to read your review — you can "
-                "leave one from the app whenever the invitation appears.\n\n"
+                "leave it right here:\nhttps://tradeable.academy/app?review=1\n\n"
                 "Thanks for trusting us.\n— The Tradeable Academy team"
             ),
-            'plan_extra': ("Your plan is active as of right now. If your "
-                           "payment method renews automatically, you can "
-                           "cancel any time from Settings — no fees, no "
-                           "notice period — and you keep full access until "
-                           "the end of the period you already paid.\n\n"),
+            'plan_extra': ("Your plan is active as of right now. If it is "
+                           "set to renew automatically and you'd rather it "
+                           "didn't, you can cancel any time from Settings — "
+                           "no fees, no notice period. The next charge simply "
+                           "never happens, and you keep full access until the "
+                           "end of the period you already paid.\n\n"),
         },
         'es': {
             'subject': 'Tradeable — Confirmación de compra #{ref}',
@@ -2756,17 +2757,17 @@ EMAIL_I18N = {
                 "support@tradeable.academy (o simplemente responde a este "
                 "correo) y una persona real lo revisará.\n\n"
                 "¿Te está gustando Tradeable? Nos encantaría leer tu reseña — "
-                "puedes dejarla desde la aplicación cuando te aparezca la "
-                "invitación.\n\n"
+                "puedes dejarla aquí mismo:\nhttps://tradeable.academy/app?review=1\n\n"
                 "Gracias por confiar en nosotros.\n"
                 "— El equipo de Tradeable Academy"
             ),
-            'plan_extra': ("Tu plan ya está activo desde este momento. Si tu "
-                           "método de pago se renueva automáticamente, puedes "
-                           "darte de baja cuando quieras desde Ajustes — sin "
-                           "costos ni preavisos — y conservas el acceso "
-                           "completo hasta el final del período que ya "
-                           "pagaste.\n\n"),
+            'plan_extra': ("Tu plan ya está activo desde este momento. Si "
+                           "quedó con renovación automática y prefieres que "
+                           "no se renueve, puedes darte de baja cuando "
+                           "quieras desde Ajustes — sin costos ni preavisos. "
+                           "El próximo cobro simplemente no llega, y "
+                           "conservas el acceso completo hasta el final del "
+                           "período que ya pagaste.\n\n"),
         },
         'fr': {
             'subject': 'Tradeable — Confirmation d’achat #{ref}',
@@ -2783,16 +2784,16 @@ EMAIL_I18N = {
                 "à support@tradeable.academy (ou répondez simplement à cet "
                 "e-mail) : une vraie personne s’en occupera.\n\n"
                 "Tradeable vous plaît ? Nous serions ravis de lire votre avis "
-                "— vous pouvez le laisser depuis l’application dès que "
-                "l’invitation apparaît.\n\n"
+                "— laissez-le ici :\nhttps://tradeable.academy/app?review=1\n\n"
                 "Merci de votre confiance.\n— L’équipe Tradeable Academy"
             ),
-            'plan_extra': ("Votre offre est active dès maintenant. Si votre "
-                           "moyen de paiement se renouvelle automatiquement, "
-                           "vous pouvez résilier à tout moment depuis les "
-                           "Réglages — sans frais ni préavis — et vous "
-                           "conservez l’accès complet jusqu’à la fin de la "
-                           "période déjà payée.\n\n"),
+            'plan_extra': ("Votre offre est active dès maintenant. Si elle "
+                           "est en renouvellement automatique et que vous "
+                           "préférez l’éviter, vous pouvez résilier à tout "
+                           "moment depuis les Réglages — sans frais ni "
+                           "préavis. Le prochain débit n’aura simplement pas "
+                           "lieu, et vous conservez l’accès complet jusqu’à "
+                           "la fin de la période déjà payée.\n\n"),
         },
         'pt': {
             'subject': 'Tradeable — Confirmação de compra #{ref}',
@@ -2809,16 +2810,16 @@ EMAIL_I18N = {
                 "support@tradeable.academy (ou simplesmente responda este "
                 "e-mail) e uma pessoa de verdade vai cuidar disso.\n\n"
                 "Está gostando do Tradeable? Adoraríamos ler sua avaliação — "
-                "você pode deixá-la pelo aplicativo quando o convite "
-                "aparecer.\n\n"
+                "deixe-a aqui mesmo:\nhttps://tradeable.academy/app?review=1\n\n"
                 "Obrigado por confiar na gente.\n"
                 "— Equipe Tradeable Academy"
             ),
-            'plan_extra': ("Seu plano já está ativo. Se o seu método de "
-                           "pagamento se renova automaticamente, você pode "
-                           "cancelar quando quiser em Ajustes — sem taxas nem "
-                           "aviso prévio — e mantém o acesso completo até o "
-                           "fim do período já pago.\n\n"),
+            'plan_extra': ("Seu plano já está ativo. Se ele ficou com "
+                           "renovação automática e você prefere evitá-la, "
+                           "pode cancelar quando quiser em Ajustes — sem "
+                           "taxas nem aviso prévio. A próxima cobrança "
+                           "simplesmente não acontece, e você mantém o acesso "
+                           "completo até o fim do período já pago.\n\n"),
         },
     },
     'welcome': {
