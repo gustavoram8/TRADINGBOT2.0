@@ -10911,6 +10911,11 @@ def synapse_pdf_buy():
     lang = ((request.get_json(silent=True) or {}).get('lang') or '').lower()
     if lang not in SYNAPSE_PDF_LANGS:
         return jsonify({'error': 'bad_lang'}), 400
+    if not is_premium():
+        # El PDF es un extra de Premium (T&C Secc. 5): COMPRAR exige el plan.
+        # Lo ya comprado no caduca: /synapse/pdf/mine no lleva este candado,
+        # así quien compró y luego bajó de plan conserva su descarga.
+        return jsonify({'error': 'premium_only'}), 403
     if synapse_pdf_owned(current_user):
         return jsonify({'error': 'already_owned'}), 400
     if not PAYPAL_ENABLED:

@@ -25295,6 +25295,8 @@
             t.style.color = '#ff7a8a';
             t.textContent = (d && d.error === 'soon')
               ? 'Payments are almost ready — check back shortly.'
+              : (d && d.error === 'premium_only')
+              ? 'The Synapse PDF is a Premium extra — it can be purchased on the Premium plan.'
               : 'Could not start the payment. Please try again.';
             buyBtn.insertAdjacentElement('afterend', t);
             setTimeout(() => t.remove(), 6000);

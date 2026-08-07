@@ -90,8 +90,11 @@ def cliente(nombre):
 
 with A.app.app_context():
     A.db.create_all()
-    def usuario(n, admin=False):
-        u = A.User(username=n, email=n + '@demo.invalid', plan='free',
+    def usuario(n, admin=False, plan='premium'):
+        # las compradoras van en premium: desde 2026-08-07 COMPRAR el PDF exige
+        # el plan (decisión del dueño; Synapse entera es premium). Lo comprado
+        # se conserva aunque el plan caiga — eso se prueba más abajo.
+        u = A.User(username=n, email=n + '@demo.invalid', plan=plan,
                    email_verified=True, is_admin=admin)
         u.set_password(CLAVE)
         A.db.session.add(u)
@@ -100,9 +103,17 @@ with A.app.app_context():
     UID = usuario('lectora')
     UID2 = usuario('mirona')
     JEFE = usuario('jefa', admin=True)
+    UFREE = usuario('gratis', plan='free')
 
 # ── 1 · comprar ───────────────────────────────────────────────────────────
 print('── 1 · la compra')
+# el candado: sin premium NO se compra, ni llamando al endpoint directo
+cf = cliente('gratis')
+r = cf.post('/api/synapse/pdf/buy', json={'lang': 'es'})
+check('🔴 un usuario FREE no puede comprar (403 premium_only) aunque llame '
+      'al endpoint a mano',
+      r.status_code == 403 and (r.get_json() or {}).get('error') == 'premium_only',
+      '%s %s' % (r.status_code, r.get_json()))
 c = cliente('lectora')
 r = c.post('/api/synapse/pdf/buy', json={'lang': 'xx'})
 check('idioma inventado → 400', r.status_code == 400, r.status_code)
@@ -142,7 +153,7 @@ with A.app.app_context():
     check('🔴 SIN fila en el libro de PLANES — el socio no comisiona',
           A.SaleBreakdown.query.count() == 0)
     check('y el plan de la cuenta NO se tocó',
-          A.db.session.get(A.User, UID).plan == 'free')
+          A.db.session.get(A.User, UID).plan == 'premium')
 check('el dueño recibe UN WhatsApp de venta',
       len(avisos) == 1 and 'VENTA confirmada' in avisos[0], avisos)
 check('que dice que es el PDF', 'Biblioteca Synapse' in avisos[0]
@@ -188,9 +199,16 @@ with A.app.app_context():
     for ev in A.AuditEvent.query.filter_by(event_type='pdf_downloaded'):
         ev.created_at = datetime.now(timezone.utc) - timedelta(days=90)
     A.db.session.commit()
+with A.app.app_context():
+    # y aunque su plan haya CAÍDO a free: la compra exige premium, conservarla no
+    A.db.session.get(A.User, UID).plan = 'free'
+    A.db.session.commit()
 r = c.get('/synapse/pdf/mine?lang=pt')
-check('🔴 y meses después sigue descargable — es para siempre',
+check('🔴 y meses después, YA SIN PREMIUM, sigue descargable — es para siempre',
       r.status_code == 200, r.status_code)
+with A.app.app_context():
+    A.db.session.get(A.User, UID).plan = 'premium'
+    A.db.session.commit()
 
 # otra cuenta no puede
 r2 = cliente('mirona')
