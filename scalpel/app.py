@@ -527,6 +527,16 @@ CRYPTO_PAY_CURRENCY = os.environ.get("CRYPTO_PAY_CURRENCY", "usdttrc20")
 CRYPTO_ENABLED = bool(CRYPTO_API_KEY)
 # What we promise publicly when the automatic path fails (hours).
 CRYPTO_SLA_HOURS = 24
+# NUNCA imprime los valores: solo si cada uno está, y qué moneda cobrará. Sin el
+# IPN secret el aviso del procesador NO se puede verificar y se rechaza — el
+# cobro seguiría entrando por la reconciliación y el barrido de /admin, pero
+# tarde; por eso conviene verlo al arrancar y no descubrirlo con una venta real.
+print("[Cripto] enabled=%s api_key=%s ipn_secret=%s moneda=%s"
+      % (CRYPTO_ENABLED,
+         "set" if CRYPTO_API_KEY else "MISSING",
+         "set" if CRYPTO_IPN_SECRET else "MISSING (el aviso instantáneo se rechaza)",
+         CRYPTO_PAY_CURRENCY),
+      flush=True)
 
 
 # ── PayPal (optional) — the card/PayPal-balance rail ──────────────────────
