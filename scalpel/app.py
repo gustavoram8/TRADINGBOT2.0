@@ -648,6 +648,52 @@ def abs_url(endpoint, **values):
     return url_for(endpoint, _external=True, **values)
 
 
+# ── Candado de vista previa: el sitio entero, solo para cuentas concretas ──
+# `PREVIEW_USERS=maurotradesve,gussytrades` (env) enciende el candado: cualquier
+# otra visita —anónima o logueada— ve la página de "en construcción", DENTRO de
+# la aplicación. Es la garantía de verdad: el pase de nginx puede quedar
+# regalado en una galleta vieja o en una config equivocada; esto no depende de
+# nada de eso. Sin la variable, el candado no existe (patrón condicional de
+# siempre). Los admins pasan aunque no estén en la lista.
+PREVIEW_USERS = {u.strip().lower()
+                 for u in os.environ.get('PREVIEW_USERS', '').split(',')
+                 if u.strip()}
+print("[Preview] candado=%s usuarios=%s"
+      % ('ACTIVO' if PREVIEW_USERS else 'apagado',
+         ','.join(sorted(PREVIEW_USERS)) or '-'), flush=True)
+_COMING_SOON_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                '..', 'deploy', 'coming_soon')
+
+
+@app.before_request
+def _preview_lock():
+    """Con el candado puesto, para el resto del mundo el sitio ES la página de
+    "próximamente" — no un login, no un 403: no hay nada que ver todavía.
+
+    Se deja pasar siempre:
+      · /webhook/*  — los avisos de pago (PayPal/cripto) no son visitantes;
+      · /static/*, /logo.png, favicon, robots — los huesos de las páginas;
+      · /login y /logout — la puerta por la que entran las cuentas permitidas
+        (un desconocido que la encuentre y entre con OTRA cuenta se queda
+        igual en "próximamente": la lista se comprueba DESPUÉS del login).
+    """
+    if not PREVIEW_USERS:
+        return
+    p = request.path
+    if (p.startswith('/webhook/') or p.startswith('/static/')
+            or p in ('/login', '/logout', '/favicon.ico', '/robots.txt')):
+        return
+    if current_user.is_authenticated and (
+            current_user.username.lower() in PREVIEW_USERS
+            or getattr(current_user, 'is_admin', False)):
+        return
+    if p == '/logo.png':                      # el logo de la página de espera
+        return send_file(os.path.join(_COMING_SOON_DIR, 'logo.png'))
+    if p.startswith('/api/'):
+        return jsonify({'error': 'coming_soon'}), 503
+    return send_file(os.path.join(_COMING_SOON_DIR, 'index.html'))
+
+
 # ── Expose feature flags to every template ──
 @app.before_request
 def _mentorship_kill_switch():
