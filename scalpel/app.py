@@ -8412,8 +8412,14 @@ def es_pedido_de_prueba(order):
     """
     if getattr(order, 'is_test', False):
         return True
-    return (getattr(order, 'payment_method', '') == 'paypal'
-            and PAYPAL_ENV != 'live')
+    metodo = getattr(order, 'payment_method', '')
+    if metodo == 'paypal':
+        return PAYPAL_ENV != 'live'
+    if metodo == 'crypto':
+        # El sandbox del procesador cripto se distingue por su host (no hay una
+        # variable de entorno como la de PayPal): api-sandbox.nowpayments.io.
+        return 'sandbox' in CRYPTO_API_BASE.lower()
+    return False
 
 
 def record_sale_breakdown(order, processor_fee=None, fee_is_real=False):
