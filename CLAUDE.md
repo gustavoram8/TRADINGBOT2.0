@@ -18,6 +18,13 @@
   cd /var/www/TRADINGBOT2.0 && git pull origin claude/gallant-volta-i7cqmf && supervisorctl restart traderacelerator
   ```
   Sin el restart, lo pusheado NO se refleja en producción. **Recordar el deploy tras cada push.**
+  ⚠️ **Cuando cambia el conf de supervisor, `supervisorctl update` YA reinicia el proceso: NO
+  encadenar `restart` detrás.** Gunicorn tarda ~30 s en cerrar con elegancia, así que el segundo
+  reinicio lo mata a mitad del arranque y el sitio devuelve **502 Bad Gateway** durante ~40 s
+  (pasado el 2026-08-07). Usa `reread && update`, o `restart` a secas si el conf no cambió.
+  · Para poner/quitar variables sin editor: **`python3 tools/set_env.py NOMBRE=valor`**
+    (escribe en `.env` y en supervisor, respeta comas dentro de valores, hace copia y no imprime
+    secretos). `--quitar NOMBRE` para el día del lanzamiento.
 - Producción usa **PostgreSQL** + gunicorn (venv). **Config gunicorn actual (2026-06-23):** `--max-requests 300 --max-requests-jitter 50 -w 4 --threads 4 -k gthread` (4 workers × 4 hilos = 16 concurrentes; reciclaje de workers anti-fuga). Editar en `/etc/supervisor/conf.d/*trader*.conf`. Env vars en supervisor conf y `scalpel/.env` (gitignored, mantener ambos en sync). ⚠️ `user`/`order` son reservadas en PG → quotear `"user"`/`"order"` en SQL crudo.
 
 ### 🖥️ Infra / escalado (medido 2026-06-23)
