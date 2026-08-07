@@ -2714,6 +2714,87 @@ def record_ai_cost(kind, response, user_id=None, plan=None, modelo=None,
 # `scalpel_lang` cookie, which we read here to pick the email language.
 # EN/ES/FR/PT are all filled.
 EMAIL_I18N = {
+    # El recibo del COMPRADOR tras un pago aplicado. El aviso de venta al dueño
+    # es otra cosa (send_payment_alert_email); este es el que el cliente guarda
+    # y el que evita el correo a soporte de "¿me cobraron? ¿qué compré?".
+    'receipt': {
+        'en': {
+            'subject': 'Tradeable — Purchase confirmation #{ref}',
+            'body': (
+                "Thanks for your purchase!\n\n"
+                "  Item:    {label}\n"
+                "  Amount:  ${amount} USD\n"
+                "  Order:   #{ref}\n"
+                "  Date:    {date}\n\n"
+                "{extra}"
+                "You can review your plan and purchases any time in Settings.\n\n"
+                "Questions? Just reply to this email or write to "
+                "support@tradeable.academy.\n\n— Tradeable Academy"
+            ),
+            'plan_extra': ("Your plan is active as of now. If it renews "
+                           "automatically, you can cancel any time from "
+                           "Settings — you keep access until the end of the "
+                           "period you already paid.\n\n"),
+        },
+        'es': {
+            'subject': 'Tradeable — Confirmación de compra #{ref}',
+            'body': (
+                "¡Gracias por tu compra!\n\n"
+                "  Producto: {label}\n"
+                "  Importe:  ${amount} USD\n"
+                "  Pedido:   #{ref}\n"
+                "  Fecha:    {date}\n\n"
+                "{extra}"
+                "Puedes revisar tu plan y tus compras cuando quieras en "
+                "Ajustes.\n\n"
+                "¿Dudas? Responde a este correo o escríbenos a "
+                "support@tradeable.academy.\n\n— Tradeable Academy"
+            ),
+            'plan_extra': ("Tu plan ya está activo. Si se renueva "
+                           "automáticamente, puedes darte de baja cuando "
+                           "quieras desde Ajustes — conservas el acceso hasta "
+                           "el final del período que ya pagaste.\n\n"),
+        },
+        'fr': {
+            'subject': 'Tradeable — Confirmation d’achat #{ref}',
+            'body': (
+                "Merci pour votre achat !\n\n"
+                "  Article : {label}\n"
+                "  Montant : {amount} $ USD\n"
+                "  Commande : #{ref}\n"
+                "  Date :    {date}\n\n"
+                "{extra}"
+                "Vous pouvez consulter votre offre et vos achats à tout moment "
+                "dans les Réglages.\n\n"
+                "Des questions ? Répondez à cet e-mail ou écrivez-nous à "
+                "support@tradeable.academy.\n\n— Tradeable Academy"
+            ),
+            'plan_extra': ("Votre offre est active dès maintenant. Si elle se "
+                           "renouvelle automatiquement, vous pouvez résilier à "
+                           "tout moment depuis les Réglages — vous conservez "
+                           "l’accès jusqu’à la fin de la période déjà "
+                           "payée.\n\n"),
+        },
+        'pt': {
+            'subject': 'Tradeable — Confirmação de compra #{ref}',
+            'body': (
+                "Obrigado pela sua compra!\n\n"
+                "  Item:   {label}\n"
+                "  Valor:  ${amount} USD\n"
+                "  Pedido: #{ref}\n"
+                "  Data:   {date}\n\n"
+                "{extra}"
+                "Você pode conferir seu plano e suas compras a qualquer "
+                "momento em Ajustes.\n\n"
+                "Dúvidas? Responda este e-mail ou escreva para "
+                "support@tradeable.academy.\n\n— Tradeable Academy"
+            ),
+            'plan_extra': ("Seu plano já está ativo. Se ele se renova "
+                           "automaticamente, você pode cancelar quando quiser "
+                           "em Ajustes — você mantém o acesso até o fim do "
+                           "período já pago.\n\n"),
+        },
+    },
     'reset': {
         'en': {
             'subject': 'Tradeable — Password Reset',
@@ -2886,6 +2967,34 @@ def _email_lang():
         if lang in ('en', 'es', 'fr', 'pt'):
             return lang
     return 'en'
+
+
+def send_receipt_email(to_email, label, amount, ref, es_plan=False):
+    """El recibo del comprador. Best-effort: un fallo de correo jamás puede
+    afectar la compra (la fila del pedido es la fuente de verdad).
+
+    Idioma: la cookie del comprador cuando el pago se aplica dentro de una de
+    sus peticiones (la vuelta de PayPal, la página del pedido); si lo aplica el
+    webhook o el barrido —sin petición del cliente— cae a inglés."""
+    if not app.config.get('MAIL_PASSWORD'):
+        app.logger.warning('MAIL_APP_PASSWORD not configured — receipt not sent.')
+        return False
+    strings = EMAIL_I18N['receipt'][_email_lang()]
+    fecha = datetime.now(timezone.utc).strftime('%Y-%m-%d')
+    msg = Message(strings['subject'].format(ref=ref), recipients=[to_email])
+    msg.body = strings['body'].format(
+        label=label, amount=('%.2f' % float(amount)), ref=ref, date=fecha,
+        extra=(strings['plan_extra'] if es_plan else ''))
+    prev_timeout = socket.getdefaulttimeout()
+    socket.setdefaulttimeout(15)
+    try:
+        mail.send(msg)
+        return True
+    except Exception as exc:
+        app.logger.warning('Failed to send receipt email: %s', exc)
+        return False
+    finally:
+        socket.setdefaulttimeout(prev_timeout)
 
 
 def send_reset_email(to_email, reset_url):
@@ -8634,6 +8743,15 @@ def _activate_plan_from_order(order):
     except Exception:
         db.session.rollback()
         app.logger.exception('sale breakdown failed for order %s', order.id)
+    # El recibo del comprador (best-effort, corre UNA vez por el guard de
+    # applied_at — un webhook repetido no manda recibos duplicados).
+    try:
+        send_receipt_email(user.email,
+                           PLAN_LABELS.get(order.plan, order.plan),
+                           order.final_price, 'plan-%d' % order.id,
+                           es_plan=True)
+    except Exception:
+        app.logger.exception('receipt email failed for order %s', order.id)
     return True
 
 
@@ -8658,6 +8776,11 @@ def _activate_camo_from_order(order):
     db.session.commit()
     record_audit_event('camo_purchase', user_id=user.id,
                        detail=f'{order.slug} (${order.price:.2f}, order #{order.id})')
+    try:
+        send_receipt_email(user.email, CAMO_NAMES.get(order.slug, order.slug),
+                           order.price, 'camo-%d' % order.id)
+    except Exception:
+        app.logger.exception('receipt email failed for camo order %s', order.id)
     return True
 
 
@@ -8706,6 +8829,11 @@ def _activate_cosmetics_from_order(order):
     db.session.commit()
     record_audit_event('cosmetics_purchase', user_id=user.id,
                        detail=f'{order.slugs} (${order.price:.2f}, cart #{order.id})')
+    try:
+        send_receipt_email(user.email, order.label or 'Cosmetics',
+                           order.price, 'cosm-%d' % order.id)
+    except Exception:
+        app.logger.exception('receipt email failed for cart %s', order.id)
     return True
 
 
@@ -10976,6 +11104,13 @@ def _activate_synapse_from_order(order):
     record_audit_event('spdf_purchased', user_id=order.user_id,
                        detail='pedido #%d · %s · $%.2f'
                               % (order.id, order.lang, order.price))
+    try:
+        comprador = db.session.get(User, order.user_id)
+        if comprador:
+            send_receipt_email(comprador.email, order.label or 'Synapse PDF',
+                               order.price, 'spdf-%d' % order.id)
+    except Exception:
+        app.logger.exception('receipt email failed for spdf order %s', order.id)
     return True
 
 
