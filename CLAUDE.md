@@ -414,6 +414,41 @@ Instagram y TikTok abiertos por el dueño, 0 seguidores, 0 publicado. Hecho:
   campo "Nombre" con palabras clave, bio sin fecha de apertura, y el enlace
   cuando el sitio abra.
 
+## 💬 CHAT DE TESSERA — sala propia a pantalla completa (2026-08-07)
+El asistente dejó de vivir apretado dentro de la Cámara. Al pulsar la puerta **"Tessera AI
+Assistant"** (renombrada; era "Tessera AI Chatbot") se abre `#nxc-ov`, una sala aparte: barra con
+**← Tessera** (vuelve a la Cámara) · título con halo rubí · **"Volver a la app"**, y la conversación
+en una columna de 860px. **Fondo = constelación de nodos** en canvas (`dibujarNodos()`): el lenguaje
+de Synapse —puntos con glow + hilos a los 2 vecinos más cercanos, rechazo por distancia mínima— SIN
+figuras 3D, más un aliento rubí desde abajo. **Estática**: se pinta una vez por apertura/resize/
+cambio de tema (el MutationObserver la repinta en su otra paleta), así que no gasta batería y no
+choca con reduced-motion. Verificado en Chromium real: login → cubo → Cámara → chat → pregunta →
+claro y oscuro → volver → salir, **0 errores JS**.
+- **El teseracto va encima de cada respuesta** (`tesseract.png`, 60px tras el ajuste del dueño).
+- 🔴 **Las 12 EMOCIONES se descartaron, y la lección importa más que el resultado.** Se perdió un día
+  entero recortándolas. Causas, en orden: (1) la lámina estaba **solo en el VPS** y yo corté a ciegas
+  con scripts en vez de mirarla; (2) **el chat guarda cada imagen que el usuario pega dentro del
+  `.jsonl` de la sesión** — se extrae con `json`+`base64` y queda en disco, o sea que **SIEMPRE se
+  puede trabajar una imagen pegada como archivo**; no saberlo fue lo que provocó las vueltas al VPS;
+  (3) aun con la imagen delante, la lámina es **plana** (sombras, piso y confeti horneados), así que
+  ningún recorte automático queda perfecto. El dueño cortó por lo sano: *"si lo ves muy complicado
+  dejamos las emociones y dejamos el teseracto SIN EMOCIONES flotando"*. **Se quitó la lógica de tono
+  del asistente** (prompt, parseo en `/api/assistant/ask` y cliente). Los `emo-*.png` y
+  `tools/recorta_emociones.py` quedan en el repo **por si algún día hay cada cubo como PNG
+  transparente de origen** — con eso el recorte es de un minuto. `emo-sorprendido` se borró: traía
+  la marca de agua de Gemini pintada ENCIMA del cubo (quitarla deja hueco).
+- ⚠️ **Trampa de despliegue cazada:** `git checkout <rama> -- 'scalpel/static/emo-*.png'` **no pisa
+  los binarios** (el comodín entre comillas no expande) — el código llegaba y las imágenes no, y
+  parecía caché. Para archivos concretos, **rutas explícitas**. Y al cambiar un PNG servido, subir el
+  `?v=N` de su URL o Cloudflare sigue sirviendo el viejo.
+- 🔴 **El VPS está parado en `claude/epic-lovelace-GsOuo`**, no en la rama de trabajo → cada
+  `git pull origin claude/gallant-volta-i7cqmf` muere con *"divergent branches"* y el sitio no se
+  actualiza. **Todo lo desarrollado SÍ está en `gallant-volta`** (verificado: `nxc-ov` aparece 15
+  veces ahí y 0 en epic-lovelace). Arreglo pendiente de correr, no borra nada:
+  `git fetch origin claude/gallant-volta-i7cqmf && git checkout -f -B claude/gallant-volta-i7cqmf
+  origin/claude/gallant-volta-i7cqmf && git config pull.ff only` + restart. Tras eso el deploy de
+  siempre vuelve a funcionar.
+
 ## 📌 PENDIENTES DE ÉL (recordárselos cuando toque, no cada mensaje)
 1. **Revisar cómo quedó "Mi cuenta"** (punto 20, hecho el 2026-08-04): dijo *"aún no he revisado
    cómo quedó"*. Preguntarle si le convence la posición (va la primera del menú) antes de darlo
@@ -1608,9 +1643,24 @@ borrado. PENDIENTE: agregar selector de mes / historial.
   es el riel de cobro, que tampoco lleva etiqueta en los planes). 5 claves nuevas ×4 a paridad
   (58/58/58/58, 0 claves de plantilla sin dict). Verificado en navegador con un usuario **Free**
   real en los 4 idiomas, 0 errores JS.
-- [ ] **5. T&C:** ¿hay que delimitar los dos productos nuevos (cursores y marcos)?
-- [ ] **6. T&C:** revisar si dice algo de la **ruleta y cupones de descuento** — hoy los premios son
-  SOLO cosméticos.
+- [x] ✅ **5. T&C — cosméticos delimitados (2026-08-07).** La Secc. 5 pasó de hablar solo de "camos"
+  a definir **cosméticos** como categoría: camos, **marcos de perfil** y **cursores** (con la nota
+  honesta de que el cursor solo se ve en escritorio). Cubre además lo que no estaba escrito en
+  ninguna parte: **ventanas festivas de 24h y rotación mensual** ("cuando su ventana o rotación
+  termina, un artículo puede dejar de estar disponible permanentemente, y nada te da derecho a
+  exigir que vuelva"), las piezas **solo-ruleta que jamás se venden**, y que lo comprado **Y lo
+  ganado** queda anclado a la cuenta aunque el plan venza — la regla "nada se revoca jamás", ahora
+  en el contrato. ×4 idiomas, auditor 144 cláusulas OK.
+- [x] ✅ **6. T&C — ruleta con premios cosméticos (2026-08-07).** La Secc. 6 ya nombra los
+  **cosméticos como premio**, su rotación mensual y que el premio entregado se queda. ⚠️ El párrafo
+  de **códigos de descuento se CONSERVA a propósito**: los códigos del socio comercial y los SPIN
+  viejos siguen vivos, así que ese texto sigue haciendo falta — no borrarlo pensando que sobra.
+  · **Extra cazado al revisar:** los T&C decían que el PDF de Synapse era para suscriptores Premium
+    y el **endpoint `/api/synapse/pdf/buy` no lo exigía** — la UI lo escondía, pero una cuenta Free
+    podía comprarlo llamando la URL a mano. El dueño confirmó la regla (*"para acceder a Synapse
+    ajuro necesitas premium"*) → candado server-side (`403 premium_only`), la card de la landing lo
+    declara ×4, y **lo comprado sobrevive al downgrade** (`/synapse/pdf/mine` sin candado, como
+    prometen los T&C). `test_pdf_venta.py` **42/42**.
 - [ ] **7. Validez jurídica de la propuesta comercial.** No tiene empresa constituida ni vive en la
   zona del influencer. ¿Qué valor legal tiene el documento? ¿Firmarlo le da marco legal?
 - [ ] **8. Tessera:** el interior y los efectos le gustan, pero el **diseño se siente pobre** —
