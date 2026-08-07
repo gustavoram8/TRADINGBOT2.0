@@ -2221,10 +2221,21 @@ Probar primero con `PAYPAL_ENV=sandbox`. ⚠️ Sin dominio+HTTPS el webhook no 
 el return-url y el barrido de /admin, así que se puede dejar el Webhook ID para cuando haya dominio.
 
 ### 🚨 Alerta recurrente (mostrar hasta que el usuario confirme que lo hizo)
-1. ✅ Dominio comprado y linkeado al VPS con HTTPS (2026-07-30). **Sigue faltando el CORREO
-   EMPRESARIAL** (`support@tradeable.academy`): hoy los OTP/reset salen de un Gmail personal y el
-   correo publicado en T&C/Privacy no existe todavía. Ver el "Plan de correo" arriba (Workspace 1
-   usuario + alias, o Zoho free; transaccional aparte; SPF+DKIM+DMARC en Cloudflare).
+1. ✅ Dominio comprado y linkeado al VPS con HTTPS (2026-07-30). ✅ **CORREO EMPRESARIAL RESUELTO
+   (2026-08-08), y NO fue por Workspace/Zoho/Mailcow** (Workspace y Zoho le rechazaban el alta;
+   Mailcow exigía ticket a Contabo por el puerto 25 saliente, que está BLOQUEADO — medido). **El
+   buzón vive en el servidor cPanel del papá** (`vps-8f2896f9.vps.ovh.us` = 15.204.88.98, OVH):
+   casillas `info@` y `support@tradeable.academy` creadas allí, webmail en `:2096`. En Cloudflare
+   (via **`tools/dns_cf.py`**, todo por terminal): MX→ese hostname, SPF `v=spf1 +a +mx
+   +ip4:15.204.88.98 ~all`, DMARC `p=none` + rua, DKIM selector `default` (verificada íntegra:
+   392 b64 → RSA 2048). **La app ENVÍA como `info@`** (SMTP SSL puerto 465 — se añadió soporte 465,
+   antes solo STARTTLS/587) y **los avisos van a `support@`** (`ADMIN_EMAIL`). `check_mail.py
+   --enviar` ✅ todo en orden. **Recibo de compra al COMPRADOR** (`send_receipt_email`, ×4 idiomas,
+   plan/camo/carrito/PDF, 1 vez por pedido): `test_recibo_email.py` 13/13.
+   ⚠️ El servidor del papá tiene una ZONA DNS PROPIA de tradeable.academy (ns guaramo.com) con
+   `tradeable.academy→15.204.88.98`: NO usarla jamás como nameservers o la web se cae — solo se
+   copian a Cloudflare los registros de correo. ⚠️ El candado de preview dejaba `/health` fuera y
+   monitor.py (cron horario) mandaba un WhatsApp de error CADA HORA — `/health` ya está exento.
 2. **ENCENDER PAYPAL — es lo único que falta para poder COBRAR.** (Esta alerta decía "instalar Stripe LIVE"; quedó obsoleta con el pivote del 2026-07-26 y se corrigió el 2026-08-01.) El código está listo y probado con PayPal simulado (46 checks). Lo pendiente es configuración: (a) subir la cuenta del papá a **PayPal Business**; (b) crear la app REST y copiar **Client ID** y **Secret**; (c) webhook a `/webhook/paypal` con los 6 eventos y copiar el **Webhook ID**; (d) las 4 variables en supervisor conf + `scalpel/.env` → restart. Detalle paso a paso en "📌 PENDIENTE INMEDIATO". **Mostrar este recordatorio una vez al día hasta que el usuario confirme que PayPal está activo.**
    ⚠️ **RECORDATORIO OBLIGATORIO AL TOCAR STRIPE (pedido explícito del usuario 2026-07-25 — repetir SIN
    EXCEPCIONES cada vez que se trabaje en Stripe):** al activar Stripe LIVE hay que **actualizar la Sección 5
