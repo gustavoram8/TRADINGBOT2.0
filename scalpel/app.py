@@ -690,7 +690,11 @@ def _preview_lock():
         return
     p = request.path
     if (p.startswith('/webhook/') or p.startswith('/static/')
-            or p in ('/login', '/logout', '/favicon.ico', '/robots.txt')):
+            or p in ('/login', '/logout', '/favicon.ico', '/robots.txt',
+                     '/health')):
+        # /health incluido: lo consulta monitor.py cada hora esperando JSON;
+        # servirle la página de espera lo hacía reventar y mandaba un WhatsApp
+        # de error CADA HORA (pasó el 2026-08-07, la noche del candado).
         return
     if current_user.is_authenticated and (
             current_user.username.lower() in PREVIEW_USERS

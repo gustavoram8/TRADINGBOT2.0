@@ -64,6 +64,10 @@ check('un /api/* contesta 503 coming_soon',
       and (c.get('/api/usage').get_json() or {}).get('error') in
       ('coming_soon', None))
 
+check('🔴 /health sigue contestando JSON (monitor.py lo lee cada hora)',
+      (c.get('/health').content_type or '').startswith('application/json'),
+      c.get('/health').content_type)
+
 print('── la puerta ──')
 check('/login SÍ se sirve (por ahí entran las cuentas permitidas)',
       'afinando los últimos detalles' not in c.get('/login').get_data(as_text=True))
