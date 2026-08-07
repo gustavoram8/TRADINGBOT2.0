@@ -11111,22 +11111,15 @@ def assistant_ask():
         app.logger.error('assistant failed: %s', exc)
         return jsonify({'error': 'unavailable'}), 503
     texto = (r.choices[0].message.content or '').strip()
+    # Por si alguna respuesta antigua trae aún la etiqueta de tono al inicio
+    # (p.ej. "[alegre] ..."), se descarta — ya no se usan emociones.
+    texto = re.sub(r'^\s*\[[A-Za-zÁÉÍÓÚáéíóúñÑ]{3,14}\]\s*', '', texto)
     if not texto:
         return jsonify({'error': 'unavailable'}), 503
-    # La respuesta viene con una etiqueta de tono al inicio, p.ej. "[alegre] ...".
-    # La separamos para pintar el teseracto con esa emoción; si falta o es
-    # desconocida, cae a "pensando" (el valor por defecto acordado).
-    emocion = 'pensando'
-    m = re.match(r'^\s*\[([A-Za-zÁÉÍÓÚáéíóúñÑ]{3,14})\]\s*', texto)
-    if m:
-        cand = m.group(1).lower()
-        texto = texto[m.end():].lstrip()
-        if cand in ('pensando', 'alegre', 'triste', 'molesto', 'emocionado'):
-            emocion = cand
     record_ai_cost('assistant', r, user_id=current_user.id,
                    plan=current_plan(), modelo=ASSISTANT_MODEL,
                    precio_in=ASSISTANT_IN, precio_out=ASSISTANT_OUT)
-    return jsonify({'answer': texto, 'emotion': emocion})
+    return jsonify({'answer': texto})
 
 
 # ──────────────────────────────────────────────────────────────────────────

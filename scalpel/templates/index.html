@@ -26766,17 +26766,13 @@
     log.scrollTop = log.scrollHeight;
     return d;
   }
-  /* El teseracto con la emoción que devolvió el servidor, encima de la
-     respuesta. Si el recorte no existiera todavía, se oculta sin romper nada. */
-  var EMOS_OK = { pensando:1, alegre:1, triste:1, molesto:1, emocionado:1 };
-  function mostrarEmo(emo){
-    if (!EMOS_OK[emo]) emo = 'pensando';
+  /* El teseracto (rubí limpio, SIN emociones) flotando encima de cada
+     respuesta. Si el archivo no estuviera, se oculta sin romper nada.
+     ?v= rompe caché de navegador/Cloudflare: subir el número si se cambia. */
+  function mostrarEmo(){
     var log = ov.querySelector('.nx-log');
     var im = document.createElement('img');
-    /* ?v= = rompe-caché: el navegador y Cloudflare guardan el PNG por su URL;
-       al cambiar el recorte hay que subir este número o siguen sirviendo el
-       viejo (con fondo). Súbelo cada vez que se regeneren los emo-*.png. */
-    im.className = 'nx-emo'; im.alt = ''; im.src = '/static/emo-' + emo + '.png?v=8';
+    im.className = 'nx-emo'; im.alt = ''; im.src = '/static/tesseract.png?v=9';
     im.onerror = function(){ this.style.display = 'none'; };
     log.appendChild(im);
     log.scrollTop = log.scrollHeight;
