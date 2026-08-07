@@ -145,13 +145,22 @@ ADMIN_INBOX = os.environ.get('ADMIN_EMAIL', MAIL_FROM)
 
 app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
 app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
-app.config['MAIL_USE_TLS'] = True
+# El 465 y el 587 NO hablan igual: el 465 es SSL desde el primer byte y el 587
+# empieza en claro y sube a TLS con STARTTLS. Elegir mal no da un error claro —
+# la conexión se queda colgada. Se decide por el puerto, que es lo que el
+# proveedor te dice; `MAIL_USE_SSL=1` lo fuerza si algún día hace falta.
+_MAIL_SSL = (os.environ.get('MAIL_USE_SSL', '').lower() in ('1', 'true', 'yes')
+             or app.config['MAIL_PORT'] == 465)
+app.config['MAIL_USE_SSL'] = _MAIL_SSL
+app.config['MAIL_USE_TLS'] = not _MAIL_SSL
 app.config['MAIL_USERNAME'] = MAIL_ACCOUNT
 app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_APP_PASSWORD', '')
 app.config['MAIL_DEFAULT_SENDER'] = (
     os.environ.get('MAIL_SENDER_NAME', 'Tradeable Academy'), MAIL_FROM)
-print("[Mail] servidor=%s usuario=%s remitente=%s avisos=%s password=%s"
-      % (app.config['MAIL_SERVER'], MAIL_ACCOUNT, MAIL_FROM, ADMIN_INBOX,
+print("[Mail] servidor=%s:%d (%s) usuario=%s remitente=%s avisos=%s password=%s"
+      % (app.config['MAIL_SERVER'], app.config['MAIL_PORT'],
+         'SSL' if _MAIL_SSL else 'STARTTLS',
+         MAIL_ACCOUNT, MAIL_FROM, ADMIN_INBOX,
          "set" if app.config['MAIL_PASSWORD'] else "MISSING (no se envía nada)"),
       flush=True)
 

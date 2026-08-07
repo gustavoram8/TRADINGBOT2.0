@@ -71,11 +71,22 @@ def _smtp(passwd, cuenta, remitente, servidor, puerto, avisos, problemas):
     if not passwd:
         print('  (sin contraseña no se puede probar el envío)')
         return 1
+    # El 465 es SSL desde el primer byte; el 587 empieza en claro y sube con
+    # STARTTLS. Hacerlo al revés no da un error legible: la conexión se cuelga.
+    ssl_directo = puerto == 465
+    print('  modo: %s (puerto %d)' % ('SSL' if ssl_directo else 'STARTTLS',
+                                      puerto))
     try:
-        with smtplib.SMTP(servidor, puerto, timeout=25) as s:
+        ctx = ssl.create_default_context()
+        abrir = ((lambda: smtplib.SMTP_SSL(servidor, puerto, timeout=25,
+                                           context=ctx))
+                 if ssl_directo else
+                 (lambda: smtplib.SMTP(servidor, puerto, timeout=25)))
+        with abrir() as s:
             s.ehlo()
-            s.starttls(context=ssl.create_default_context())
-            s.ehlo()
+            if not ssl_directo:
+                s.starttls(context=ctx)
+                s.ehlo()
             s.login(cuenta, passwd)
             print('  ✅ conexión y autenticación correctas')
             if '--enviar' in sys.argv:
