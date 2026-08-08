@@ -1361,6 +1361,18 @@ El dueño vio en Ajustes *"PREMIUM · CANCELLING · Access ends Nov 03, 2026"* e
   **sandbox** un plan de ciclo **DIARIO** para ver una renovación REAL en ~24 h (PayPal cobra solo y
   manda su aviso sin que nadie vuelva a la web, que es justo lo que pasa en una renovación de
   verdad). Se niega a correr con `PAYPAL_ENV=live`. `apagar` lo desactiva.
+- **`tools/check_suscripcion.py` (2026-08-08) prueba una suscripción REAL sin que nadie pague.**
+  `check_subs.py` mira los PLANES (el molde); éste mira lo que PayPal tiene anotado para UNA
+  persona: primer mes, renovación, fecha del próximo cobro. 🔑 **PayPal registra los importes en
+  cuanto el comprador llega a la pantalla de aprobación, ANTES de mover un dólar** → basta con
+  empezar una compra y CERRAR esa pantalla. Compara los tres pares que tienen que cuadrar (lo que
+  cobró el carrito ↔ el tramo TRIAL · lo que Ajustes anuncia ↔ el tramo REGULAR · que ese sea
+  mensual sin fin) y grita si no cuadran, que es el descuadre que acaba en disputa y es invisible
+  desde la web. `venv/bin/python3 tools/check_suscripcion.py [usuario|I-xxx|--todas]`.
+  `test_check_suscripcion.py` 13/13. ⚠️ **Un cupón del 100% NO sirve para probar nada de esto:** un
+  pedido de $0 no toca la pasarela (se activa solo, `payment_method='free'`) y no crea suscripción.
+  ⚠️ Con `PAYPAL_ENV=live` una compra de prueba **SÍ entra en el libro de ventas** (`is_test` solo
+  se sella solo en sandbox) → hay que revertirla a mano en /admin, y queda tachada.
 - **`tools/check_subs.py`** contesta *"¿sirven de verdad las renovaciones?"* sin esperar un mes:
   pregunta a PayPal si los dos planes existen, están ACTIVOS y son mensuales sin fin; si los ids no
   están cruzados; y si el webhook apunta a `SITE_URL` por HTTPS con `PAYMENT.SALE.COMPLETED` (por ahí
