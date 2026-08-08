@@ -8684,6 +8684,33 @@ def _sub_cobro(sub, importe, fee=None, cuando=None, referencia=None):
     return order
 
 
+def _sub_puede_cobrar(sub):
+    """¿PayPal todavía podría ejecutar un cargo con este permiso?
+
+    La respuesta la da PayPal, no nosotros. Solo ACTIVE y SUSPENDED cobran:
+    una SUSPENDED puede reanudarse y cobrar, así que cuenta. APPROVAL_PENDING
+    (el comprador nunca aprobó), CANCELLED y EXPIRED no pueden, y un 404 —el
+    caso de una suscripción abandonada en la pantalla de aprobación— significa
+    que para PayPal ni siquiera existe.
+
+    Ante la duda (la API no responde, red caída) se devuelve True: dar por
+    cortado lo que no se pudo comprobar es como se acaba cobrando a alguien
+    que pidió la baja.
+    """
+    if not (PAYPAL_ENABLED and sub.provider_ref):
+        return False
+    try:
+        code, data = _paypal_api(
+            'GET', '/v1/billing/subscriptions/%s' % sub.provider_ref)
+    except Exception:
+        return True
+    if code == 404:
+        return False
+    if code >= 300:
+        return True
+    return (data.get('status') or '').upper() in ('ACTIVE', 'SUSPENDED')
+
+
 def _paypal_sub_cancel(sub, motivo='Cancelada por el cliente'):
     """Corta los cobros futuros. El plan ya pagado NO se toca."""
     if not (PAYPAL_ENABLED and sub.provider_ref):
@@ -8699,8 +8726,20 @@ def _paypal_sub_cancel(sub, motivo='Cancelada por el cliente'):
     # es el mismo, así que se acepta en vez de enseñarle un error por algo que
     # ya está como él quería.
     if code >= 300 and code != 422:
-        app.logger.error('paypal sub cancel rejected (%s): %s', sub.id, code)
-        return False
+        # 🔴 Antes se daba por fallido y ahí acababa todo. Pero el rechazo más
+        # común es un 404 sobre una suscripción que el comprador NUNCA aprobó:
+        # llegó a la pantalla de PayPal y la cerró. Esa no puede cobrar nada
+        # jamás, y sin embargo bloqueaba la baja del cliente — pulsaba "darme
+        # de baja", el sitio le decía que había fallado, y su suscripción de
+        # verdad seguía viva. Así que antes de rendirse se le PREGUNTA a
+        # PayPal: solo se sigue considerando un fallo si la suscripción existe
+        # y está en un estado que todavía puede generar un cargo.
+        if not _sub_puede_cobrar(sub):
+            app.logger.info('paypal sub cancel %s: HTTP %s, pero PayPal '
+                            'confirma que ya no puede cobrar', sub.id, code)
+        else:
+            app.logger.error('paypal sub cancel rejected (%s): %s', sub.id, code)
+            return False
     sub.status = 'cancelled'
     sub.cancelled_at = datetime.now(timezone.utc)
     db.session.commit()

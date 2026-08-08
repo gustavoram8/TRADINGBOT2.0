@@ -1226,6 +1226,19 @@ contador global.
   nueva, no se debilitaron: `test_pedido_pendiente` (19/19) y `test_promo_31` (20/20 — ahora
   verifica que una compra con cupón general NO le sume un cliente al socio).
 
+## 🔴 Una suscripción NUNCA APROBADA bloqueaba la baja del cliente (2026-08-08)
+Salió al preparar el ensayo de compra, pero es un bug de cliente de pleno derecho. El comprador
+llega a la pantalla de PayPal y la cierra → de nuestro lado queda una `PlanSubscription` 'pending'
+con su `provider_ref`; en PayPal esa suscripción nunca se activó, así que **cancelar responde 404**.
+`_paypal_sub_cancel` leía cualquier código ≠422 como fallo → `cancel_plan` devolvía
+`sec=cancel_failed` y **la baja no cancelaba NADA, ni siquiera la suscripción de verdad detrás**.
+- **Fix:** `_sub_puede_cobrar(sub)` le PREGUNTA a PayPal antes de rendirse. Solo `ACTIVE` y
+  `SUSPENDED` cobran (una suspendida se puede reanudar); `APPROVAL_PENDING`/`CANCELLED`/`EXPIRED`
+  y el 404 no. ⚠️ **Ante una API muda devuelve True** (= sigue bloqueando): dar por cortado lo que
+  no se pudo comprobar es como se cobra a quien pidió la baja.
+- `tools/test_baja_sub_fantasma.py` **10/10** (fantasma no bloquea · una ACTIVE que no se corta
+  sigue avisando · PayPal mudo bloquea · el botón de baja de punta a punta).
+
 ## 🧪 Probar una compra REAL sin gastar dinero (2026-08-08)
 `tools/preparar_prueba.py <cuenta> [--aplicar]` deja una cuenta lista para el ensayo en UN comando:
 baja el plan a Free, suelta pedidos pendientes, **corta en PayPal los permisos de cobro vivos** y
