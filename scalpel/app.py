@@ -3966,8 +3966,6 @@ def landing():
     motivo = request.args.get('nocompra', '')
     return render_template(
         'landing.html',
-        spdf_price=SYNAPSE_PDF_PRICE,
-        spdf_list_price=SYNAPSE_PDF_LIST_PRICE,
         nocompra=motivo if motivo in ('ya_lo_tienes', 'ya_suscrito',
                                       'no_existe') else '')
 
