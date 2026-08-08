@@ -1713,6 +1713,40 @@ class PromoCode(db.Model):
         return True, 'ok'
 
 
+class PromoRedemption(db.Model):
+    """Un código general, canjeado por UNA cuenta. Fila única (código, usuario).
+
+    Existe porque `max_uses` solo pone un techo GLOBAL: con él, la misma
+    persona podía gastar la promoción de lanzamiento en Standard, darse de
+    baja y volver a gastarla en Premium. El descuento es un gancho para captar
+    a alguien, no una tarifa que se pueda repetir.
+
+    Los códigos de SOCIO no se registran aquí a propósito: ese descuento es
+    permanente por acuerdo comercial y se re-aplica en cada compra del cliente
+    atado. Solo se limita `kind='discount'`.
+    """
+    __tablename__ = 'promo_redemption'
+    id = db.Column(db.Integer, primary_key=True)
+    promo_id = db.Column(db.Integer, nullable=False, index=True)
+    user_id = db.Column(db.Integer, nullable=False, index=True)
+    order_id = db.Column(db.Integer, nullable=True)
+    created_at = db.Column(db.DateTime,
+                           default=lambda: datetime.now(timezone.utc))
+    __table_args__ = (db.UniqueConstraint('promo_id', 'user_id',
+                                          name='uq_promo_user'),)
+
+
+def promo_ya_usado(promo, user):
+    """¿Esta cuenta ya gastó este código? Solo aplica a promos GENERALES."""
+    if not promo or not user or not getattr(user, 'id', None):
+        return False
+    if promo.kind == 'creator':
+        return False                 # el del socio se re-aplica siempre
+    return db.session.query(
+        PromoRedemption.query.filter_by(promo_id=promo.id,
+                                        user_id=user.id).exists()).scalar()
+
+
 class SaleBreakdown(db.Model):
     """One paid sale, taken apart into every piece of money it moves.
 
@@ -9325,6 +9359,10 @@ def _promo_para_compra(user, plan, cycle, code):
     promo, reason = _validate_promo(code, cycle)
     if not promo:
         return base, False, reason
+    # Una promoción general se gasta UNA vez por cuenta. Sin esto, cancelar y
+    # volver a comprar la revivía indefinidamente.
+    if promo_ya_usado(promo, user):
+        return base, False, 'already_used'
     if atada:
         if promo.kind == 'creator':
             return base, False, 'locked'
@@ -9505,6 +9543,11 @@ def _soltar_pedido(order, motivo):
             db.func.lower(PromoCode.code) == order.promo_code.lower()).first()
         if promo and (promo.uses_count or 0) > 0:
             promo.uses_count -= 1
+        # Un pedido cancelado no gastó nada: se libera también el canje de
+        # ESTA cuenta, o el comprador se quedaría sin poder volver a intentarlo.
+        if promo:
+            PromoRedemption.query.filter_by(
+                promo_id=promo.id, user_id=order.user_id).delete()
     db.session.commit()
     for sub in PlanSubscription.query.filter_by(
             first_order_id=order.id).filter(
@@ -9615,6 +9658,11 @@ def checkout_create():
     # Reserve the promo use optimistically; released if the order is cancelled.
     if fresh_use:
         promo.uses_count = (promo.uses_count or 0) + 1
+        # Y se marca gastado PARA ESTA CUENTA (las de socio no: su descuento
+        # es permanente y se re-aplica en cada compra).
+        if promo.kind != 'creator':
+            db.session.add(PromoRedemption(promo_id=promo.id,
+                                           user_id=current_user.id))
     db.session.commit()
     record_audit_event('order_created', user_id=current_user.id,
                         detail=f'{plan}/{cycle} ${q["final_price"]:.2f}'
@@ -10311,6 +10359,9 @@ def admin_order_cancel():
                 db.func.lower(PromoCode.code) == order.promo_code.lower()).first()
             if promo and promo.uses_count > 0:
                 promo.uses_count -= 1
+            if promo:
+                PromoRedemption.query.filter_by(
+                    promo_id=promo.id, user_id=order.user_id).delete()
         db.session.commit()
         record_audit_event('order_cancelled', user_id=order.user_id,
                             detail=f'order #{order.id} {order.plan}/{order.billing_cycle} ${order.final_price:.2f}')
