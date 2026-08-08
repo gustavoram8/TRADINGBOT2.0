@@ -20,7 +20,18 @@ from types import SimpleNamespace
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                 '..', 'scalpel'))
-import app as A                # noqa: E402
+try:
+    import app as A            # noqa: E402
+except ModuleNotFoundError as _e:
+    # Este script IMPORTA la aplicación, así que necesita el intérprete del
+    # venv (el `python3` del sistema no tiene Flask). Otros tools del repo
+    # —check_mail, dns_cf, set_env— sí corren con python3 a secas porque no
+    # importan la app; de ahí la confusión.
+    print('✗ Falta «%s»: este script necesita el venv.' % _e.name)
+    print('  Córrelo así:')
+    print('    venv/bin/python3 tools/manda_correos_prueba.py '
+          'tu-correo@ejemplo.com')
+    sys.exit(1)
 
 
 def main():
