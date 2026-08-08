@@ -9145,6 +9145,41 @@ def reverse_sale_breakdown(row, reason='chargeback'):
     return True
 
 
+def _consumir_uso_de_promo(order, user, renewal):
+    """Anota el canje de un código — al COBRAR, nunca al poner el pedido.
+
+    🔴 Antes el uso se reservaba al crear el pedido y se devolvía al
+    cancelarlo. Suena prudente y es justo el fallo que hacía que el propio
+    comprador se bloqueara solo: pulsaba pagar, se volvía atrás, y su carrito a
+    medias ya había gastado el código. Con `max_uses=1` el sitio le decía
+    "límite alcanzado" con su reserva colgando. Es la misma lección que ya
+    valía para el límite por cuenta: **si no pagó, no lo usó**.
+
+    Se cuenta una sola vez por (cuenta, código): la primera compra pagada. Así
+    `uses_count` significa "cuántos CLIENTES trajo este código" — ni las
+    renovaciones ni una subida de plan posterior lo inflan, que es lo que
+    hacía antes de que el límite se midiera en clientes.
+
+    ⚠️ El precio de arreglarlo: `max_uses` deja de ser una reserva, así que dos
+    personas con el carrito abierto a la vez podrían pagar ambas y pasarse del
+    tope por uno. Se acepta a sabiendas: regalar un descuento de más es mucho
+    más barato que impedirle comprar a alguien que sí quiere pagar.
+    """
+    if renewal or not order.promo_code:
+        return
+    promo = PromoCode.query.filter(
+        db.func.lower(PromoCode.code) == order.promo_code.lower()).first()
+    if not promo:
+        return
+    ya = (Order.query
+          .filter(Order.user_id == user.id,
+                  db.func.lower(Order.promo_code) == order.promo_code.lower(),
+                  Order.status == 'paid', Order.id != order.id)
+          .first())
+    if ya is None:
+        promo.uses_count = (promo.uses_count or 0) + 1
+
+
 def _activate_plan_from_order(order):
     """Grant the purchased plan to the user, exactly once per order.
 
@@ -9195,6 +9230,7 @@ def _activate_plan_from_order(order):
         pc = PromoCode.query.filter(
             db.func.lower(PromoCode.code) == order.promo_code.lower()).first()
         _bind_referral(user, pc)
+    _consumir_uso_de_promo(order, user, renewal)
     db.session.commit()
     # File the money breakdown for this sale. Best-effort on purpose: an
     # accounting row that fails to write must never cost the buyer the plan
@@ -9606,11 +9642,9 @@ def _soltar_pedido(order, motivo):
     if order is None or order.status != 'pending':
         return False
     order.status = 'cancelled'
-    if order.promo_code:
-        promo = PromoCode.query.filter(
-            db.func.lower(PromoCode.code) == order.promo_code.lower()).first()
-        if promo and (promo.uses_count or 0) > 0:
-            promo.uses_count -= 1
+    # No se devuelve ningún uso del código: un pedido pendiente nunca lo gastó.
+    # 🔴 Y descontarlo aquí sería peor que inútil — restaría el canje de OTRA
+    # persona que sí pagó, porque el contador ya no distingue reservas.
     db.session.commit()
     for sub in PlanSubscription.query.filter_by(
             first_order_id=order.id).filter(
@@ -9648,11 +9682,10 @@ def checkout_create():
     # promoción GENERAL mejor sí puede ganarle en PRECIO (cláusula 3.1 — misma
     # regla que valida la casilla, un solo sitio decide). El código atado no
     # suma uses_count (una renovación no es una conversión nueva); un cupón
-    # general usado de verdad sí consume su uso.
+    # general usado de verdad sí consume su uso — pero al COBRAR, no aquí.
     # Se cotiza ANTES de mirar el pedido pendiente, porque hace falta saber qué
-    # está pidiendo AHORA para decidir si el pendiente sirve. No toca nada:
-    # `fresh_use` es una intención, y el uso solo se reserva al crear.
-    promo, fresh_use, _err = _promo_para_compra(current_user, plan, cycle, code)
+    # está pidiendo AHORA para decidir si el pendiente sirve. No toca nada.
+    promo, _fresh, _err = _promo_para_compra(current_user, plan, cycle, code)
     q = _quote(plan, cycle, promo)
     promo_code = promo.code if promo else None
 
@@ -9718,9 +9751,8 @@ def checkout_create():
         status='pending', payment_method='usdt-binance',
     )
     db.session.add(order)
-    # Reserve the promo use optimistically; released if the order is cancelled.
-    if fresh_use:
-        promo.uses_count = (promo.uses_count or 0) + 1
+    # El uso del código NO se reserva aquí. Poner algo en el carrito no es
+    # canjearlo: se anota cuando el dinero entra, en `_consumir_uso_de_promo`.
     db.session.commit()
     record_audit_event('order_created', user_id=current_user.id,
                         detail=f'{plan}/{cycle} ${q["final_price"]:.2f}'
@@ -10411,12 +10443,7 @@ def admin_order_cancel():
         abort(404)
     if order.status == 'pending':
         order.status = 'cancelled'
-        # Release the reserved promo use.
-        if order.promo_code:
-            promo = PromoCode.query.filter(
-                db.func.lower(PromoCode.code) == order.promo_code.lower()).first()
-            if promo and promo.uses_count > 0:
-                promo.uses_count -= 1
+        # Nada que devolver: el uso del código se anota al cobrar, no al crear.
         db.session.commit()
         record_audit_event('order_cancelled', user_id=order.user_id,
                             detail=f'order #{order.id} {order.plan}/{order.billing_cycle} ${order.final_price:.2f}')

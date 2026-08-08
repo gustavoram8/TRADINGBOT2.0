@@ -1205,6 +1205,34 @@ decían lo contrario y aun así lo confirmó → hecho, y los T&C reescritos.
   reembolsable, reintentos, anual/USDT no recurrentes, no se sube el importe sin avisar). Auditor 144.
 - `tools/test_subs.py` **41/41** con PayPal simulado.
 
+## 🔴 El cupón se canja al COBRAR, no al ponerlo en el carrito (2026-08-08)
+Lo cazó el dueño probando en producción: aplicó un cupón de un solo uso, pulsó pagar, se volvió
+atrás y el sitio le dijo **"límite alcanzado"**. Su propio carrito a medias le había gastado el
+código. Causa: `uses_count` se **reservaba al crear el pedido** y solo se devolvía al cancelarlo,
+y `is_redeemable()` mira ese contador. Es EXACTAMENTE el mismo fallo que ya se había corregido
+para el límite por cuenta (`promo_ya_usado` mira pedidos PAGADOS) — la reserva sobrevivió en el
+contador global.
+- **Fix:** `_consumir_uso_de_promo(order, user, renewal)` en `_activate_plan_from_order`. Se anota
+  **una vez por (cuenta, código)**, en la primera compra pagada → `uses_count` pasa a significar
+  *"cuántos CLIENTES trajo este código"*: ni las renovaciones ni una subida de plan posterior lo
+  inflan (antes, un código de socio tecleado a mano sí lo hacía).
+- 🔴 **Se quitaron los DOS decrementos** (`_soltar_pedido` y el botón de cancelar de /admin): sin
+  reserva, restar ahí le quitaría el canje a OTRA persona que sí pagó.
+- ⚠️ **Precio asumido a sabiendas:** `max_uses` deja de ser una reserva, así que dos carritos
+  abiertos a la vez podrían pagar ambos y pasarse del tope por uno. Regalar un descuento de más es
+  más barato que impedirle comprar a alguien que quiere pagar.
+- `tools/test_cupon_al_cobrar.py` **11/11** (con el código viejo fallan 5, incluido el `maxed` que
+  vio el dueño). Dos suites documentaban la conducta vieja y se **reencuadraron** sobre la regla
+  nueva, no se debilitaron: `test_pedido_pendiente` (19/19) y `test_promo_31` (20/20 — ahora
+  verifica que una compra con cupón general NO le sume un cliente al socio).
+
+## 🧪 Probar una compra REAL sin gastar dinero (2026-08-08)
+`tools/preparar_prueba.py <cuenta> [--aplicar]` deja una cuenta lista para el ensayo en UN comando:
+baja el plan a Free, suelta pedidos pendientes, **corta en PayPal los permisos de cobro vivos** y
+crea el cupón general de un solo uso. Sin `--aplicar` solo informa. 🔴 **Se detiene** si alguna
+suscripción no se pudo cortar: bajar el plan dejando vivo el permiso deja la cuenta gratuita en el
+sitio mientras PayPal le sigue cobrando. `test_preparar_prueba.py` **24/24**.
+
 ## 🌐 `SITE_URL` — los enlaces absolutos dejan de depender del Host (2026-08-04)
 Los 20 `url_for(..., _external=True)` pasaron a **`abs_url()`**, que antepone `SITE_URL` si está.
 Sin esto, entrar por la IP cruda hacía que la vuelta de PayPal y los enlaces de los correos salieran

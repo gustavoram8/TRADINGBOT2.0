@@ -136,8 +136,13 @@ def main():
               'la ATRIBUCIÓN no se movió: sigue siendo cliente del socio')
         v = A.PromoCode.query.filter_by(code='VERANO50').first()
         s = A.PromoCode.query.filter_by(code='SOCIO20').first()
-        check((v.uses_count or 0) == 1, 'VERANO50 consumió su uso')
-        check((s.uses_count or 0) == 0, 'SOCIO20 no sumó uso por la renovación')
+        check((v.uses_count or 0) == 0,
+              'un pedido PENDIENTE todavía no gasta VERANO50 (%s)'
+              % (v.uses_count or 0))
+        socio_antes = (s.uses_count or 0)
+        check(socio_antes == 1,
+              'SOCIO20 lleva 1 cliente: el que convirtió al atarlo (%s)'
+              % socio_antes)
 
         # pagar ese pedido y mirar el libro: la comisión debe ir al socio
         from datetime import datetime, timezone
@@ -145,6 +150,13 @@ def main():
         o.paid_at = datetime.now(timezone.utc)
         A.db.session.commit()
         A._activate_plan_from_order(o)
+        v = A.PromoCode.query.filter_by(code='VERANO50').first()
+        s = A.PromoCode.query.filter_by(code='SOCIO20').first()
+        check((v.uses_count or 0) == 1,
+              'VERANO50 consumió su uso al COBRAR (%s)' % (v.uses_count or 0))
+        check((s.uses_count or 0) == socio_antes,
+              '🔴 y esta compra con cupón general NO le suma otro cliente al '
+              'socio (%s)' % (s.uses_count or 0))
         fila = A.SaleBreakdown.query.filter_by(order_id=o.id).first()
         check(fila is not None, 'la venta entró al libro')
         check(fila and fila.partner == 'El Socio',

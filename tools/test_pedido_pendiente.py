@@ -111,8 +111,12 @@ def main():
               'retoma el MISMO pedido, no crea otro (#%s)'
               % (p[0].id if p else '—'))
 
-    # ── 3 · el cupón reservado se devuelve al soltar el pedido ────────────
-    print('\n3 · el uso del cupón vuelve cuando el pedido se suelta')
+    # ── 3 · un carrito con cupón NO gasta el cupón ───────────────────────
+    # Antes el uso se reservaba al crear el pedido y se devolvía al soltarlo.
+    # Esa reserva es justo lo que bloqueaba al propio comprador: pulsaba pagar,
+    # se volvía atrás y su cupón de un solo uso figuraba agotado. Ahora el
+    # canje se anota al COBRAR, así que aquí el contador no se mueve nunca.
+    print('\n3 · poner un cupón en el carrito no lo gasta')
     with A.app.app_context():
         for o in pendientes(uid):
             o.status = 'cancelled'
@@ -131,7 +135,11 @@ def main():
         with A.app.app_context():
             pc = A.PromoCode.query.filter(
                 A.db.func.lower(A.PromoCode.code) == 'testcup').first()
-            check(pc.uses_count == 1, 'el cupón queda reservado (%d)' % pc.uses_count)
+            check(pc.uses_count == 0,
+                  '🔴 el cupón NO se gasta por estar en el carrito (%d)'
+                  % pc.uses_count)
+            check(pc.is_redeemable('monthly')[0],
+                  '...y sigue aplicable si se vuelve atrás y reintenta')
             p = pendientes(uid)
             check(p and p[0].promo_code and p[0].promo_code.lower() == 'testcup',
                   'el pedido lleva el cupón')
@@ -145,7 +153,8 @@ def main():
         pc = A.PromoCode.query.filter(
             A.db.func.lower(A.PromoCode.code) == 'testcup').first()
         check(pc.uses_count == 0,
-              'al soltarlo, el uso se devuelve (%d)' % pc.uses_count)
+              'al soltarlo sigue intacto, sin restar el canje de nadie (%d)'
+              % pc.uses_count)
         p = pendientes(uid)
         check(len(p) == 1 and p[0].plan == 'premium',
               'y el pendiente es el nuevo, de Premium')
