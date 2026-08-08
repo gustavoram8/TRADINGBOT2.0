@@ -137,7 +137,8 @@
                 <span class="t2" data-i18n="cpay.ppShort">Pay with your balance or a card, without leaving PayPal.</span>
               {% elif rail == 'crypto' %}
                 <span class="t1">USDT</span>
-                <span class="t2" data-i18n="cpay.cryptoShort">From Binance or any wallet. TRC-20 or ERC-20 network.</span>
+                <span class="t2" data-i18n="cpay.cryptoShort"
+                      data-i18n-vars='{"net": "{{ crypto_net }}"}">From Binance or any wallet. {{ crypto_net }} network only.</span>
               {% elif rail == 'manual' %}
                 <span class="t1">USDT</span>
                 <span class="t2" data-i18n="cpay.manualShort">You send the transfer and attach the receipt; we switch your plan on.</span>

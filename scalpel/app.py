@@ -533,6 +533,19 @@ CRYPTO_API_KEY = os.environ.get("CRYPTO_API_KEY", "")
 CRYPTO_IPN_SECRET = os.environ.get("CRYPTO_IPN_SECRET", "")
 CRYPTO_API_BASE = os.environ.get("CRYPTO_API_BASE", "https://api.nowpayments.io/v1")
 CRYPTO_PAY_CURRENCY = os.environ.get("CRYPTO_PAY_CURRENCY", "usdttrc20")
+# 🔴 El nombre de la red que se le enseña al comprador se DERIVA de la moneda
+# que se le va a cobrar; jamás se escribe a mano en una plantilla. Enviar USDT
+# por la red equivocada destruye el dinero de forma irreversible, así que el
+# texto y el cobro tienen que salir de la misma fuente: si algún día cambia
+# `CRYPTO_PAY_CURRENCY`, el aviso cambia con él. (El carrito llegó a decir
+# "TRC-20 o ERC-20" mientras las facturas eran solo TRON.)
+CRYPTO_NET_LABEL = {
+    'usdttrc20': 'TRON (TRC-20)',
+    'usdterc20': 'Ethereum (ERC-20)',
+    'usdtbsc':   'BNB Smart Chain (BEP-20)',
+    'usdtsol':   'Solana',
+    'usdtmatic': 'Polygon',
+}.get(CRYPTO_PAY_CURRENCY.lower(), CRYPTO_PAY_CURRENCY.upper())
 CRYPTO_ENABLED = bool(CRYPTO_API_KEY)
 # What we promise publicly when the automatic path fails (hours).
 CRYPTO_SLA_HOURS = 24
@@ -735,6 +748,8 @@ def inject_feature_flags():
         'mentorship_enabled': MENTORSHIP_ENABLED,
         'preflight_enabled': PREFLIGHT_ENABLED,
         'annual_plans_enabled': ANNUAL_PLANS_ENABLED,
+        # La red en la que hay que enviar, para las pantallas de pago.
+        'crypto_net': CRYPTO_NET_LABEL,
         'has_beta_access': has_beta_access(),
         'beta_min_rank': BETA_MIN_RANK,
     }
