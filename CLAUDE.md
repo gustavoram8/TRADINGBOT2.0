@@ -1718,9 +1718,14 @@ borrado. PENDIENTE: agregar selector de mes / historial.
   · **Extra cazado al revisar:** los T&C decían que el PDF de Synapse era para suscriptores Premium
     y el **endpoint `/api/synapse/pdf/buy` no lo exigía** — la UI lo escondía, pero una cuenta Free
     podía comprarlo llamando la URL a mano. El dueño confirmó la regla (*"para acceder a Synapse
-    ajuro necesitas premium"*) → candado server-side (`403 premium_only`), la card de la landing lo
-    declara ×4, y **lo comprado sobrevive al downgrade** (`/synapse/pdf/mine` sin candado, como
-    prometen los T&C). `test_pdf_venta.py` **42/42**.
+    ajuro necesitas premium"*) → candado server-side (`403 premium_only`), y **lo comprado
+    sobrevive al downgrade** (`/synapse/pdf/mine` sin candado, como prometen los T&C).
+    `test_pdf_venta.py` **42/42**.
+  🔴 **(2026-08-08) La tarjeta de venta del PDF que había en la landing se ELIMINÓ por orden del
+    dueño** (*"YO JAMÁS TE PEDÍ que metieras la venta del PDF en la landing"* — el commit `47afe4f`
+    decía lo contrario, da igual): **la venta vive SOLO dentro de Synapse**, en el modal de siempre.
+    NO re-agregar tarjetas/menciones de venta del PDF a la landing. El cableado interno quedó
+    verificado tras la cirugía: 42/42 + landing sin restos `sylib`/`sy_*` + node --check.
 - [ ] **7. Validez jurídica de la propuesta comercial.** No tiene empresa constituida ni vive en la
   zona del influencer. ¿Qué valor legal tiene el documento? ¿Firmarlo le da marco legal?
 - [ ] **8. Tessera:** el interior y los efectos le gustan, pero el **diseño se siente pobre** —
