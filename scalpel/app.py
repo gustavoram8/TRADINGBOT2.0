@@ -7489,6 +7489,13 @@ def _crypto_api(method, path, payload=None):
     req = urllib.request.Request(url, data=data, method=method)
     req.add_header('x-api-key', CRYPTO_API_KEY)
     req.add_header('Content-Type', 'application/json')
+    req.add_header('Accept', 'application/json')
+    # 🔴 El User-Agent no es cortesía: urllib se presenta como
+    # "Python-urllib/3.x" y el CDN que protege la API lo rechaza con un 403 y
+    # una página HTML. Sin esto, crear la factura falla SIEMPRE — y falla
+    # callando, porque el comprador cae en las instrucciones manuales de USDT
+    # como si el cobro en cripto no estuviera encendido.
+    req.add_header('User-Agent', 'TradeableAcademy/1.0 (+https://tradeable.academy)')
     with urllib.request.urlopen(req, timeout=20) as resp:
         return json.loads(resp.read().decode())
 

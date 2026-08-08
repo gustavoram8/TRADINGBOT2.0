@@ -52,15 +52,33 @@ def _get(base, ruta, api_key=None):
     req = urllib.request.Request(base + ruta)
     if api_key:
         req.add_header('x-api-key', api_key)
+    req.add_header('Accept', 'application/json')
+    # Mismo User-Agent que usa la app. Sin él, el CDN que protege la API
+    # responde 403 con una página HTML y el diagnóstico acusa a la clave de
+    # ser inválida cuando el problema es que ni siquiera llegó a la API.
+    req.add_header('User-Agent',
+                   'TradeableAcademy/1.0 (+https://tradeable.academy)')
     try:
         with urllib.request.urlopen(req, timeout=25) as r:
             return True, json.loads(r.read().decode())
     except urllib.error.HTTPError as e:
-        cuerpo = ''
+        crudo = ''
         try:
-            cuerpo = (json.loads(e.read().decode()).get('message') or '')[:120]
+            crudo = e.read().decode(errors='replace')
         except Exception:
             pass
+        if crudo.lstrip()[:1] in ('<',):
+            # Respuesta HTML = no contestó la API, contestó su muro de entrada.
+            return False, ('HTTP %s — respuesta HTML, no JSON: la petición la '
+                           'frenó el CDN ANTES de llegar a la API (no es la '
+                           'clave)' % e.code)
+        # ⚠️ El cuerpo ya se leyó arriba: `e.read()` es un flujo y una segunda
+        # lectura devuelve vacío — por eso el 403 salía sin explicación.
+        cuerpo = ''
+        try:
+            cuerpo = (json.loads(crudo).get('message') or '')[:120]
+        except Exception:
+            cuerpo = crudo.strip()[:120]
         return False, 'HTTP %s %s' % (e.code, cuerpo)
     except Exception as e:                      # red, DNS, proxy…
         return None, 'no se pudo conectar (%s)' % e.__class__.__name__
