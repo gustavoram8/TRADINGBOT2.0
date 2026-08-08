@@ -9,7 +9,11 @@ tres piezas de las que depende cada cobro, preguntándoselas a PayPal:
 
   1. las credenciales autentican, y en QUÉ entorno;
   2. los dos planes (Standard y Premium) existen ahí, están ACTIVOS y son
-     mensuales sin límite de ciclos;
+     mensuales sin límite de ciclos. Desde 2026-08 el plan bueno es el "v2"
+     de DOS tramos (mes 1 sobrescribible + renovación sin fin): es lo que
+     hace que una promo general caduque sola tras el primer mes. Un plan
+     v1 (un solo tramo) sigue cobrando, pero convierte cualquier descuento
+     en precio de por vida — este archivo lo distingue y lo avisa;
   3. el webhook apunta a este sitio por HTTPS y trae los eventos que hacen
      falta — sobre todo `PAYMENT.SALE.COMPLETED`, que es por donde llega cada
      cobro mensual. 🔴 En una renovación NADIE vuelve a la web, así que si ese
@@ -148,26 +152,53 @@ def main():
                 'entorno?' % (nombre, entorno, code))
             continue
         estado = (data.get('status') or '').upper()
-        ciclos = (data.get('billing_cycles') or [{}])[0]
-        freq = (ciclos.get('frequency') or {})
-        unidad = (freq.get('interval_unit') or '').upper()
-        cuenta = freq.get('interval_count')
-        total = ciclos.get('total_cycles')
-        precio = ((ciclos.get('pricing_scheme') or {}).get('fixed_price')
-                  or {}).get('value')
-        detalle = '%s · %s×%s · ciclos=%s · $%s' % (estado, cuenta, unidad,
-                                                    total, precio)
+
+        def _tramo(c):
+            freq = c.get('frequency') or {}
+            return {'tenure': (c.get('tenure_type') or '').upper(),
+                    'unidad': (freq.get('interval_unit') or '').upper(),
+                    'cuenta': freq.get('interval_count'),
+                    'total': c.get('total_cycles'),
+                    'precio': ((c.get('pricing_scheme') or {})
+                               .get('fixed_price') or {}).get('value')}
+
+        info = [_tramo(c) for c in (data.get('billing_cycles') or [])]
+        resumen = ' + '.join('%s %s×%s ciclos=%s $%s'
+                             % (t['tenure'] or '?', t['cuenta'], t['unidad'],
+                                t['total'], t['precio']) for t in info) or 'sin ciclos'
         if estado != 'ACTIVE':
-            mal('%s: el plan NO está activo (%s)' % (nombre, detalle))
+            mal('%s: el plan NO está activo (%s · %s)' % (nombre, estado, resumen))
             continue
-        if unidad != 'MONTH' or cuenta != 1:
-            mal('%s: no es mensual (%s)' % (nombre, detalle))
-            continue
-        if total not in (0, None):
-            ojo('%s: se detiene tras %s ciclos — no es "hasta que se dé de '
-                'baja" (%s)' % (nombre, total, detalle))
+        mensual = lambda t: t['unidad'] == 'MONTH' and t['cuenta'] == 1  # noqa: E731
+
+        if (len(info) == 2 and info[0]['tenure'] == 'TRIAL'
+                and info[1]['tenure'] == 'REGULAR'):
+            # v2: mes 1 (sobrescribible por suscripción) + renovación sin fin.
+            t1, t2 = info
+            malo = None
+            if not (mensual(t1) and t1['total'] == 1):
+                malo = 'el 1er tramo no es "un solo mes"'
+            elif not (mensual(t2) and t2['total'] in (0, None)):
+                malo = 'la renovación no es "mensual sin fin"'
+            elif t1['precio'] != t2['precio']:
+                # En el PLAN ambos tramos llevan el precio de lista; los
+                # descuentos se sobrescriben al abrir cada suscripción.
+                malo = 'los dos tramos del plan traen precios distintos'
+            if malo:
+                mal('%s: %s (%s)' % (nombre, malo, resumen))
+                continue
+            bien('%s: activo, v2 de DOS tramos (%s) — una promo general '
+                 'caduca sola tras el mes 1' % (nombre, resumen))
+        elif len(info) == 1 and mensual(info[0]) \
+                and info[0]['total'] in (0, None):
+            ojo('%s: plan v1 de UN tramo (%s) — cobra bien, pero cualquier '
+                'descuento se vuelve precio DE POR VIDA. Arreglo: python3 '
+                'tools/paypal_setup_subs.py (crea los v2 y guarda los ids '
+                'solo)' % (nombre, resumen))
         else:
-            bien('%s: activo y mensual sin fin (%s)' % (nombre, detalle))
+            mal('%s: estructura de ciclos que el sitio no espera (%s)'
+                % (nombre, resumen))
+            continue
         vivos[nombre] = pid
     if len(set(planes.values())) < len([v for v in planes.values() if v]):
         mal('¡los dos planes apuntan al MISMO id! Standard cobraría lo de '
