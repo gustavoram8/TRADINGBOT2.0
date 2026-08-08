@@ -4831,6 +4831,7 @@
     analysesMax: {{ analyses_max|default(1) }},
     unlockPlan: "{{ unlock_plan|default('') }}",
     reviewPrompt: {{ 'true' if review_prompt else 'false' }},
+    reviewNow: {{ 'true' if review_now else 'false' }},
     isAdmin: {{ 'true' if is_admin else 'false' }},
     isGuest: {{ 'true' if is_guest else 'false' }},
     username: {{ (username or '')|tojson }},
@@ -12192,11 +12193,12 @@
     };
     Object.keys(REVIEW_I18N).forEach(l => { if (I18N[l]) Object.assign(I18N[l], REVIEW_I18N[l]); });
 
-    // ?review=1 (el enlace del correo del recibo): el usuario QUIERE dejar
-    // su reseña ahora — se abre el modal sin esperar el aviso periódico. Los
-    // tiempos del aviso automático (paid, ~30 días, 20 min de uso) no se
-    // tocan: siguen mandando cuando la visita no trae el enlace.
-    const quiereReview = new URLSearchParams(location.search).has('review');
+    // El enlace "deja tu reseña" del correo: el servidor lo marca en la
+    // sesión (ver /review) y llega aquí como U.reviewNow. El usuario QUIERE
+    // dejarla, así que el modal se abre sin esperar el aviso periódico — y
+    // los tiempos de ese aviso (plan de pago, ~30 días, 20 min de uso real)
+    // NO se tocan: siguen mandando en las visitas normales.
+    const quiereReview = !!U.reviewNow;
     if (!U.reviewPrompt && !quiereReview) return;
 
     // Usage gate: only show the prompt after ~20 minutes of accumulated

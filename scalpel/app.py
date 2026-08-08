@@ -2732,7 +2732,7 @@ EMAIL_I18N = {
                 "support@tradeable.academy (or just reply to this email) and "
                 "a real person will look into it.\n\n"
                 "Enjoying Tradeable? We'd love to read your review — you can "
-                "leave it right here:\nhttps://tradeable.academy/app?review=1\n\n"
+                "leave it right here:\nhttps://tradeable.academy/review\n\n"
                 "Thanks for trusting us.\n— The Tradeable Academy team"
             ),
             'plan_extra': ("Your plan is active as of right now. If it is "
@@ -2757,7 +2757,7 @@ EMAIL_I18N = {
                 "support@tradeable.academy (o simplemente responde a este "
                 "correo) y una persona real lo revisará.\n\n"
                 "¿Te está gustando Tradeable? Nos encantaría leer tu reseña — "
-                "puedes dejarla aquí mismo:\nhttps://tradeable.academy/app?review=1\n\n"
+                "puedes dejarla aquí mismo:\nhttps://tradeable.academy/review\n\n"
                 "Gracias por confiar en nosotros.\n"
                 "— El equipo de Tradeable Academy"
             ),
@@ -2784,7 +2784,7 @@ EMAIL_I18N = {
                 "à support@tradeable.academy (ou répondez simplement à cet "
                 "e-mail) : une vraie personne s’en occupera.\n\n"
                 "Tradeable vous plaît ? Nous serions ravis de lire votre avis "
-                "— laissez-le ici :\nhttps://tradeable.academy/app?review=1\n\n"
+                "— laissez-le ici :\nhttps://tradeable.academy/review\n\n"
                 "Merci de votre confiance.\n— L’équipe Tradeable Academy"
             ),
             'plan_extra': ("Votre offre est active dès maintenant. Si elle "
@@ -2810,7 +2810,7 @@ EMAIL_I18N = {
                 "support@tradeable.academy (ou simplesmente responda este "
                 "e-mail) e uma pessoa de verdade vai cuidar disso.\n\n"
                 "Está gostando do Tradeable? Adoraríamos ler sua avaliação — "
-                "deixe-a aqui mesmo:\nhttps://tradeable.academy/app?review=1\n\n"
+                "deixe-a aqui mesmo:\nhttps://tradeable.academy/review\n\n"
                 "Obrigado por confiar na gente.\n"
                 "— Equipe Tradeable Academy"
             ),
@@ -3216,7 +3216,8 @@ def _correo_html(texto):
     import html as _h
     return (
         '<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;'
-        'line-height:1.65;color:#1c2230;max-width:560px;margin:0 auto;'
+        'line-height:1.65;color:#1c2230;max-width:560px;margin:0;'
+        'text-align:left;'
         'padding:8px 4px;white-space:pre-wrap;">%s'
         '<div style="margin-top:28px;padding-top:16px;'
         'border-top:1px solid #e4e7ee;">'
@@ -6138,6 +6139,19 @@ def admin_bug_update():
     return redirect(url_for('admin') + '#bugs')
 
 
+@app.route('/review')
+@login_required
+def review_now():
+    """El enlace del correo del recibo: "deja tu reseña".
+
+    La intención se guarda en la SESIÓN, no en la URL, porque /app puede
+    desviar a /welcome (el pase del splash) y una redirección se lleva por
+    delante cualquier `?parametro`. Así sobrevive al splash, al login y a
+    cualquier rodeo: se consume en el próximo /app y se borra."""
+    session['quiere_review'] = True
+    return redirect(url_for('app_view'))
+
+
 @app.route('/app')
 @login_required
 def app_view():
@@ -6291,6 +6305,7 @@ def app_view():
         is_guest=False,
         unlock_plan=unlock_plan,
         review_prompt=review_prompt,
+        review_now=session.pop('quiere_review', False),
         rank_up_to=rank_up_to,
         user_rank=view_rank,
         user_xp=view_xp,
