@@ -7503,8 +7503,14 @@ def _crypto_create_invoice(order, kind='plan'):
 
     A failure here must never dead-end the buyer: the caller falls back to the
     manual instructions, and the order still exists so it can be settled later."""
-    label = ('Tradeable — %s' % PLAN_LABELS.get(order.plan, order.plan)) if kind == 'plan' \
-            else ('Tradeable — %s' % getattr(order, 'label', 'Order'))
+    # ⚠️ Guion normal, NO raya (—), y a propósito: esta descripción vuelve
+    # dentro del aviso de pago, que llega firmado sobre su propio texto JSON.
+    # Un carácter no ASCII ahí obliga a que los dos lados lo escriban igual, y
+    # Python y JavaScript no lo hacen (uno escapa a \uXXXX y el otro no).
+    # En ASCII, la firma deja de depender de ese detalle. El verificador
+    # tolera ambas formas de todos modos: esto es el segundo cinturón.
+    label = ('Tradeable - %s' % PLAN_LABELS.get(order.plan, order.plan)) if kind == 'plan' \
+            else ('Tradeable - %s' % getattr(order, 'label', 'Order'))
     price = order.final_price if kind == 'plan' else order.price
     try:
         inv = _crypto_api('POST', '/invoice', {
@@ -10261,10 +10267,26 @@ def crypto_webhook():
             payload = json.loads(raw.decode() or '{}')
         except ValueError:
             return jsonify({'error': 'bad_json'}), 400
-        expected = hmac.new(CRYPTO_IPN_SECRET.encode(),
-                            json.dumps(payload, sort_keys=True, separators=(',', ':')).encode(),
-                            hashlib.sha512).hexdigest()
-        if not hmac.compare_digest(expected, sig):
+        # 🔴 Se prueban las DOS formas de escribir el mismo JSON, y no es
+        # pereza: el emisor firma el texto que él serializó, y ahí hay una
+        # diferencia invisible entre lenguajes. El `JSON.stringify` de
+        # JavaScript —el de su ejemplo oficial— deja los caracteres no ASCII
+        # tal cual, mientras que el `json.dumps` de Python los escapa a
+        # `\uXXXX` por defecto. Con una sola raya (—) en la descripción del
+        # pedido, las dos cadenas dejan de ser iguales y TODOS los avisos se
+        # rechazarían por firma inválida — sin ruido, porque el pago se acaba
+        # rescatando por la reconciliación y por el barrido de /admin, así que
+        # se ve igual que "todavía no lo he encendido".
+        # Aceptar ambas no debilita nada: las dos son serializaciones legítimas
+        # del mismo contenido, y quien no tenga el secreto no produce ninguna.
+        cuerpos = (
+            json.dumps(payload, sort_keys=True, separators=(',', ':'),
+                       ensure_ascii=False),
+            json.dumps(payload, sort_keys=True, separators=(',', ':')),
+        )
+        if not any(hmac.compare_digest(
+                hmac.new(CRYPTO_IPN_SECRET.encode(), c.encode(),
+                         hashlib.sha512).hexdigest(), sig) for c in cuerpos):
             app.logger.warning('crypto webhook: bad signature')
             return jsonify({'error': 'bad_signature'}), 400
     else:
