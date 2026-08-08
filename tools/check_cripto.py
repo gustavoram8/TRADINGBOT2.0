@@ -133,6 +133,36 @@ def main():
     else:
         avisos.append('no se pudieron listar las monedas (%s)' % d)
 
+    # 3b) el MÍNIMO que el procesador acepta cobrar en esa moneda
+    # Importa porque una factura por debajo del mínimo la rechaza el procesador
+    # y el comprador cae en las instrucciones manuales sin entender por qué.
+    # Hoy solo los PLANES pueden pagarse en cripto ($25 el más barato), pero el
+    # mínimo lo fija el procesador y puede subir cuando suben las comisiones de
+    # la red — así que se comprueba contra el precio real, no contra un supuesto.
+    ok, d = _get(base, '/min-amount?currency_from=usd&currency_to=%s'
+                 '&fiat_equivalent=usd' % moneda, api_key)
+    if ok:
+        try:
+            minimo = float(d.get('fiat_equivalent')
+                           or d.get('min_amount') or 0)
+        except (TypeError, ValueError):
+            minimo = 0.0
+        barato = 25.0            # Standard mensual: el plan más barato
+        if minimo and minimo > barato:
+            print('✗ El mínimo del procesador ($%.2f) supera el plan más '
+                  'barato ($%.2f): esa compra no se podría pagar en cripto.'
+                  % (minimo, barato))
+            problemas.append('mínimo por encima del precio')
+        elif minimo:
+            print('✓ Mínimo del procesador: $%.2f (por debajo del plan más '
+                  'barato, $%.2f)' % (minimo, barato))
+        else:
+            avisos.append('el procesador no informó de un mínimo')
+    elif ok is None:
+        avisos.append('no se pudo consultar el mínimo')
+    else:
+        avisos.append('no se pudo consultar el mínimo (%s)' % d)
+
     # 4) el aviso instantáneo
     if not ipn:
         print('✗ Falta CRYPTO_IPN_SECRET: el aviso del procesador llega SIN poder'
