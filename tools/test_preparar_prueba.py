@@ -117,6 +117,44 @@ check('le dice los dos importes del carrito',
       'Primer mes $2.50' in sal and '$25.00/mes' in sal, sal[-400:])
 check('y que cierre PayPal sin aprobar', 'CIERRA esa pantalla sin' in sal)
 
+print('── 🔴 la reserva colgada del sistema viejo ──')
+with A.app.app_context():
+    pc = A.PromoCode.query.filter_by(code='PRUEBA90').first()
+    pc.uses_count = 1          # lo que dejaba el contador al PONER el cupón
+    A.db.session.commit()
+    check('el cupón queda agotado sin que nadie pagara',
+          not pc.is_redeemable('monthly')[0])
+rc, sal = corre('gussytrades')
+check('el diagnóstico lo detecta', 'contador inflado' in sal)
+rc, sal = corre('gussytrades', '--aplicar')
+check('y --aplicar lo sanea', rc == 0 and 'contador del cupón saneado' in sal)
+with A.app.app_context():
+    pc = A.PromoCode.query.filter_by(code='PRUEBA90').first()
+    check('🔴 el cupón vuelve a poder aplicarse',
+          pc.is_redeemable('monthly')[0], pc.uses_count)
+
+print('── un canje PAGADO de verdad no se borra ──')
+with A.app.app_context():
+    u = A.db.session.get(A.User, UID)
+    A.db.session.add(A.Order(user_id=u.id, plan='standard',
+                             billing_cycle='monthly', base_price=25.0,
+                             final_price=2.5, promo_code='PRUEBA90',
+                             status='paid'))
+    pc = A.PromoCode.query.filter_by(code='PRUEBA90').first()
+    pc.uses_count = 1
+    A.db.session.commit()
+rc, sal = corre('gussytrades', '--aplicar')
+with A.app.app_context():
+    pc = A.PromoCode.query.filter_by(code='PRUEBA90').first()
+    check('🔴 el contador NO se toca: esa compra existió',
+          (pc.uses_count or 0) == 1, pc.uses_count)
+check('y se avisa de que ya no se puede aplicar',
+      rc == 1 and 'SIGUE sin poder aplicarse' in sal)
+with A.app.app_context():
+    A.Order.query.filter_by(promo_code='PRUEBA90', status='paid').delete()
+    A.PromoCode.query.filter_by(code='PRUEBA90').first().uses_count = 0
+    A.db.session.commit()
+
 print('── correrlo dos veces no rompe nada ──')
 rc, sal = corre('gussytrades', '--aplicar')
 check('rc=0 e idempotente', rc == 0 and 'ya estaba en free' in sal)

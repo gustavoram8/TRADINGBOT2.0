@@ -46,6 +46,22 @@ except ImportError as exc:
     sys.exit(2)
 
 
+def _canjes_pagados(pc):
+    """Cuántas cuentas distintas compraron DE VERDAD con este código.
+
+    Es lo que `uses_count` significa desde que el canje se anota al cobrar. Un
+    número mayor solo puede venir de una reserva colgada del sistema anterior,
+    que apuntaba el uso al poner el cupón en el carrito: agotaba el código sin
+    que nadie hubiera pagado, y ni cancelando el pedido se soltaba.
+    """
+    if pc is None:
+        return 0
+    return (A.db.session.query(A.Order.user_id)
+            .filter(A.db.func.lower(A.Order.promo_code) == pc.code.lower(),
+                    A.Order.status == 'paid')
+            .distinct().count())
+
+
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith('--')]
     flags = {a for a in sys.argv[1:] if a.startswith('--')}
@@ -110,6 +126,7 @@ def main():
         # 4 · el cupón
         pc = A.PromoCode.query.filter(A.db.func.lower(A.PromoCode.code)
                                       == cupon.lower()).first()
+        canjes = _canjes_pagados(pc) if pc else 0
         if pc:
             print('\n  cupón %s: ya existe · %s%% · tipo=%s · usos=%s/%s · %s'
                   % (pc.code, pc.discount_pct, pc.kind, pc.uses_count or 0,
@@ -118,6 +135,13 @@ def main():
             if pc.kind == 'creator':
                 print('     ⛔ es de CREADOR: su descuento es permanente a '
                       'propósito. Para este ensayo hace falta uno general.')
+            if (pc.uses_count or 0) > canjes:
+                # Reserva colgada del sistema viejo (el uso se apuntaba al
+                # PONER el cupón en el carrito, no al cobrar): agota el cupón
+                # sin que nadie haya pagado nunca.
+                print('     ⚠️  contador inflado: marca %s usos pero solo hay '
+                      '%s compra(s) pagada(s).' % (pc.uses_count or 0, canjes))
+                print('        Con --aplicar se corrige a %s.' % canjes)
         else:
             print('\n  cupón %s: no existe todavía (%s%%, un solo uso)'
                   % (cupon, pct))
@@ -192,10 +216,21 @@ def main():
             A.db.session.commit()
             print('  ✅ cupón %s creado: %s%% · general · un solo uso'
                   % (cupon, pct))
-        elif not pc.active:
-            pc.active = True
+        else:
+            if not pc.active:
+                pc.active = True
+                print('  ✅ cupón %s reactivado' % cupon)
+            if (pc.uses_count or 0) > canjes:
+                viejo = pc.uses_count or 0
+                pc.uses_count = canjes
+                print('  ✅ contador del cupón saneado: %s → %s (nadie había '
+                      'pagado con él)' % (viejo, canjes))
             A.db.session.commit()
-            print('  ✅ cupón %s reactivado' % cupon)
+        puede, motivo = pc.is_redeemable('monthly')
+        if not puede:
+            print('  ⛔ el cupón SIGUE sin poder aplicarse (%s) — revísalo en '
+                  '/admin' % motivo)
+            return 1
 
         base = float(A._plan_base_price('standard', 'monthly') or 25.0)
         print('\n══ ahora, desde la cuenta %s ' % u.username + '═' * 26)
