@@ -46,6 +46,42 @@ except ImportError as exc:
     sys.exit(2)
 
 
+def _codigo_viejo_en_marcha():
+    """¿El sitio que atiende a los clientes es más antiguo que el código?
+
+    Existe porque este archivo importa el código FRESCO del disco, mientras que
+    quien atiende la web es gunicorn, que se quedó con el que tenía al
+    arrancar. Sin reiniciar, un arreglo pusheado no existe para el comprador —
+    y el síntoma es desconcertante: la herramienta dice que lo dejó todo bien y
+    el navegador sigue comportándose como antes.
+
+    Devuelve (hay_proceso_viejo, minutos_de_desfase) o (False, 0) si no se
+    puede saber (otro sistema operativo, sin /proc, permisos).
+    """
+    try:
+        codigo = max(os.path.getmtime(os.path.join(RAIZ, 'scalpel', f))
+                     for f in ('app.py',))
+        viejo = False
+        desfase = 0.0
+        for pid in os.listdir('/proc'):
+            if not pid.isdigit():
+                continue
+            try:
+                with open('/proc/%s/cmdline' % pid, 'rb') as f:
+                    cmd = f.read().decode('utf-8', 'replace')
+                if 'gunicorn' not in cmd:
+                    continue
+                arranque = os.stat('/proc/%s' % pid).st_mtime
+            except OSError:
+                continue
+            if arranque < codigo:
+                viejo = True
+                desfase = max(desfase, (codigo - arranque) / 60.0)
+        return viejo, desfase
+    except Exception:
+        return False, 0.0
+
+
 def _canjes_pagados(pc):
     """Cuántas cuentas distintas compraron DE VERDAD con este código.
 
@@ -83,6 +119,17 @@ def main():
         if u is None:
             print('\n⛔ No existe ninguna cuenta llamada "%s".' % quien)
             return 1
+
+        rancio, desfase = _codigo_viejo_en_marcha()
+        if rancio:
+            print('\n🔴 EL SITIO ESTÁ CORRIENDO CÓDIGO VIEJO')
+            print('   Hay un proceso arrancado %d min ANTES del código que hay'
+                  ' en disco.' % desfase)
+            print('   Mientras no se reinicie, el arreglo del cupón no existe '
+                  'para el comprador:\n   cada intento de pago se lo vuelve a '
+                  'gastar, pase lo que pase aquí.')
+            print('   Arréglalo antes de nada:  supervisorctl restart '
+                  'traderacelerator')
 
         print('\n══ cuenta: %s ' % u.username + '═' * 44)
         print('  plan actual : %s%s' % (
@@ -228,11 +275,25 @@ def main():
             A.db.session.commit()
         puede, motivo = pc.is_redeemable('monthly')
         if not puede:
-            print('  ⛔ el cupón SIGUE sin poder aplicarse (%s) — revísalo en '
-                  '/admin' % motivo)
+            print('  ⛔ el cupón SIGUE sin poder aplicarse (motivo: %s)' % motivo)
+            if motivo == 'maxed':
+                print('     Hay %s compra(s) PAGADA(S) con él, así que su tope '
+                      'está\n     legítimamente gastado. Usa un código nuevo:'
+                      % canjes)
+                print('     venv/bin/python3 tools/preparar_prueba.py %s '
+                      '--aplicar --cupon=PRUEBA90B' % u.username)
             return 1
 
         base = float(A._plan_base_price('standard', 'monthly') or 25.0)
+        print('\n  estado final del cupón: %s · %s%% · usos %s/%s · '
+              'aplicable=%s'
+              % (pc.code, pc.discount_pct, pc.uses_count or 0,
+                 pc.max_uses if pc.max_uses is not None else '∞',
+                 'SÍ' if puede else 'NO'))
+        if rancio:
+            print('\n  🔴 PERO EL SITIO SIGUE CON CÓDIGO VIEJO: reinícialo o el '
+                  'primer\n     intento de pago volverá a agotar el cupón.')
+            print('     supervisorctl restart traderacelerator')
         print('\n══ ahora, desde la cuenta %s ' % u.username + '═' * 26)
         print('  1. Entra a /pricing y elige Standard mensual.')
         print('  2. Aplica el cupón %s → el carrito debe decir:' % cupon)
