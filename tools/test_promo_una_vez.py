@@ -59,9 +59,14 @@ with A.app.app_context():
     o = A.Order.query.filter_by(user_id=ANA).first()
     check('el descuento se aplica ($25 → $20)',
           o and abs(o.final_price - 20.0) < 0.01, o.final_price if o else None)
-    check('y queda registrado como gastado por esa cuenta',
-          A.PromoRedemption.query.filter_by(user_id=ANA).count() == 1)
-    # el pedido se paga y se aplica: ya no hay vuelta atrás
+    ana = A.db.session.get(A.User, ANA)
+    promo = A.PromoCode.query.filter_by(code='LANZAMIENTO').first()
+    check('🔴 mientras NO paga, su carrito abandonado no le quema el código',
+          not A.promo_ya_usado(promo, ana))
+    _, _, err = A._promo_para_compra(ana, 'standard', 'monthly', 'LANZAMIENTO')
+    check('...y al volver al día siguiente lo puede reaplicar',
+          err is None, err)
+    # ahora sí paga: a partir de aquí queda gastado
     o.status = 'paid'
     A.db.session.commit()
 
@@ -90,22 +95,23 @@ with A.app.app_context():
     ana = A.db.session.get(A.User, ANA)
     check('🔴 nunca se marca como usado (su descuento es permanente)',
           not A.promo_ya_usado(soc, ana))
-    A.db.session.add(A.PromoRedemption(promo_id=soc.id, user_id=ANA))
+    A.db.session.add(A.Order(user_id=ANA, plan='premium',
+                             billing_cycle='monthly', base_price=50.0,
+                             final_price=40.0, promo_code='GABRIEL',
+                             status='paid'))
     A.db.session.commit()
-    check('...ni aunque hubiera una fila suelta en la tabla',
+    check('...ni aunque ya tenga compras pagadas con él',
           not A.promo_ya_usado(soc, ana))
 
-print('── un pedido cancelado devuelve el canje ──')
+print('── un pedido cancelado nunca cuenta ──')
 with A.app.app_context():
     beto = A.User.query.filter_by(username='beto').first()
     ob = A.Order(user_id=beto.id, plan='standard', billing_cycle='monthly',
                  base_price=25.0, final_price=20.0, promo_code='LANZAMIENTO',
-                 status='pending')
+                 status='cancelled')
     A.db.session.add(ob)
-    A.db.session.add(A.PromoRedemption(promo_id=promo.id, user_id=beto.id))
     A.db.session.commit()
-    A._soltar_pedido(ob, 'prueba')
-    check('🔴 tras cancelar, puede volver a intentarlo',
+    check('🔴 un pedido cancelado no le gasta el código',
           not A.promo_ya_usado(promo, beto))
 
 print('\nRESULTADO: %d ok, %d fallas' % (ok, fallas))
