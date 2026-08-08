@@ -109,13 +109,20 @@ def main():
         print('  El sitio sigue funcionando: cae al flujo manual de USDT.')
         return 1
 
-    # 1) ¿responde el servicio?
+    # 1) ¿responde el servicio? Se reintenta una vez: este ping va SIN clave y
+    # falla de vez en cuando por un corte momentáneo. El veredicto no se apoya
+    # en él — si la clave autentica más abajo, el servicio respondió por
+    # definición, así que un fallo aquí se queda en nota y no en aviso (un
+    # aviso permanente que no significa nada enseña a ignorar los avisos).
     ok, d = _get(base, '/status')
+    if ok is None:
+        ok, d = _get(base, '/status')
+    ping_ok = bool(ok)
     if ok:
         print('✓ El servicio responde (%s)' % (d.get('message') or 'ok'))
     elif ok is None:
-        print('⚠️  No se pudo consultar el servicio: %s' % d)
-        avisos.append('sin red hacia el procesador')
+        print('· El ping sin clave no respondió (%s) — se comprueba de verdad '
+              'con las llamadas de abajo' % d)
     else:
         print('✗ El servicio contestó con error: %s' % d)
         problemas.append('servicio inalcanzable')
@@ -129,7 +136,9 @@ def main():
     ok, d = _get(base, '/estimate?amount=25&currency_from=usd&currency_to=%s'
                  % moneda, api_key)
     if ok:
-        print('✓ La API key autentica')
+        print('✓ La API key autentica%s'
+              % ('' if ping_ok else ' (y con eso queda claro que el servicio '
+                                    'responde)'))
     elif ok is None:
         print('⚠️  No se pudo verificar la API key: %s' % d)
         avisos.append('no se verificó la API key')
