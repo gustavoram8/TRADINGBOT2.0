@@ -120,13 +120,22 @@ def main():
         print('✗ El servicio contestó con error: %s' % d)
         problemas.append('servicio inalcanzable')
 
-    # 2) ¿la API key autentica? (endpoint que EXIGE la clave)
-    ok, d = _get(base, '/payment?limit=1', api_key)
+    # 2) ¿la API key autentica?
+    # ⚠️ Con `/payment` (listar pagos) NO se puede comprobar: ese endpoint se
+    # autentica con un token JWT de sesión (usuario y contraseña), no con la
+    # API key, y responde 401 aunque la clave sea perfecta. Acusaba de
+    # inválida una clave que funcionaba. Se usa `/estimate`, que sí es de los
+    # que exigen la API key y no crea nada.
+    ok, d = _get(base, '/estimate?amount=25&currency_from=usd&currency_to=%s'
+                 % moneda, api_key)
     if ok:
         print('✓ La API key autentica')
     elif ok is None:
         print('⚠️  No se pudo verificar la API key: %s' % d)
         avisos.append('no se verificó la API key')
+    elif 'JWT' in str(d) or 'Bearer' in str(d):
+        print('⚠️  Ese endpoint pide un token de sesión, no la API key: %s' % d)
+        avisos.append('no se pudo comprobar la clave por esa vía')
     else:
         print('✗ La API key NO autentica: %s' % d)
         print('  Revisa que sea la clave de la MISMA cuenta y esté activa.')
