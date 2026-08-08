@@ -8245,6 +8245,33 @@ def _subs_ok_for(order):
             and bool(PAYPAL_PLAN_IDS.get(order.plan)))
 
 
+def descuento_permanente(promo_code):
+    """¿El descuento de este código sigue vivo en cada renovación?
+
+    SOLO los códigos de socio (`kind='creator'`). Es lo pactado en el acuerdo
+    comercial: el cliente traído por un influencer conserva su precio mientras
+    siga suscrito, y por eso el socio cobra comisión mes tras mes.
+
+    Cualquier otra promoción —lanzamiento, temporada, un código suelto— es un
+    GANCHO, no una tarifa nueva: rebaja el primer mes y a partir del segundo se
+    cobra el precio de lista. Sin esto, una promo de una semana le regalaba el
+    descuento de por vida a quien pasara por ahí ese día."""
+    if not promo_code:
+        return False
+    pc = PromoCode.query.filter(
+        db.func.lower(PromoCode.code) == promo_code.lower()).first()
+    return bool(pc and pc.kind == 'creator')
+
+
+def _precios_de_los_tramos(order):
+    """(precio del 1er mes, precio de cada renovación) para esta compra."""
+    rebajado = float(order.final_price)
+    if descuento_permanente(order.promo_code):
+        return rebajado, rebajado
+    lista = float(order.base_price or rebajado)
+    return rebajado, max(rebajado, lista)
+
+
 def _paypal_create_subscription(order):
     """Abre la suscripción y devuelve dónde la aprueba el comprador.
 
@@ -8259,18 +8286,29 @@ def _paypal_create_subscription(order):
     user = db.session.get(User, order.user_id)
     sub = PlanSubscription(
         user_id=order.user_id, provider='paypal', plan=order.plan,
-        billing_cycle=order.billing_cycle, price=float(order.final_price),
+        billing_cycle=order.billing_cycle,
+        # El precio de la suscripción es el de la RENOVACIÓN, no el del primer
+        # mes: es lo que se le cobrará mes tras mes y lo que Ajustes le anuncia.
+        price=_precios_de_los_tramos(order)[1],
         promo_code=order.promo_code, status='pending', first_order_id=order.id)
     db.session.add(sub)
     db.session.commit()
     ref = 'sub-%d' % sub.id
+    primero, recurrente = _precios_de_los_tramos(order)
     payload = {
         'plan_id': plan_id,
         'custom_id': ref,
+        # Se sobrescriben LOS DOS tramos del plan: el primer mes y lo que se
+        # cobra a partir del segundo. Cuando no hay promoción (o el descuento
+        # es de socio) valen lo mismo y el comprador ve un único importe.
         'plan': {'billing_cycles': [{
-            'sequence': 1, 'total_cycles': 0,
+            'sequence': 1, 'total_cycles': 1,
             'pricing_scheme': {'fixed_price': {
-                'currency_code': 'USD', 'value': '%.2f' % float(order.final_price)}},
+                'currency_code': 'USD', 'value': '%.2f' % primero}},
+        }, {
+            'sequence': 2, 'total_cycles': 0,
+            'pricing_scheme': {'fixed_price': {
+                'currency_code': 'USD', 'value': '%.2f' % recurrente}},
         }]},
         'application_context': {
             'brand_name': PAYPAL_BRAND_NAME,
@@ -8328,8 +8366,16 @@ def _paypal_sub_revise(sub, nuevo_plan, precio):
         return None
     payload = {
         'plan_id': plan_id,
+        # Los DOS tramos al mismo importe: un cambio de plan NO es una promoción
+        # nueva. Si el cliente venía con descuento de socio, `precio` ya llega
+        # rebajado y se mantiene; si no, es la tarifa de lista. En ningún caso
+        # se le regala aquí un primer mes barato.
         'plan': {'billing_cycles': [{
-            'sequence': 1, 'total_cycles': 0,
+            'sequence': 1, 'total_cycles': 1,
+            'pricing_scheme': {'fixed_price': {
+                'currency_code': 'USD', 'value': '%.2f' % float(precio)}},
+        }, {
+            'sequence': 2, 'total_cycles': 0,
             'pricing_scheme': {'fixed_price': {
                 'currency_code': 'USD', 'value': '%.2f' % float(precio)}},
         }]},

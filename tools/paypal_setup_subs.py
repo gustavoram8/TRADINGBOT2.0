@@ -54,10 +54,15 @@ PRODUCTO = 'Tradeable Academy — Membership'
 # socio), y eso se decide al abrir cada suscripción, no aquí.
 IDS = {}          # se rellena al correr: {'PAYPAL_PLAN_STANDARD': 'P-…', …}
 
+# ⚠️ El NOMBRE lleva versión a propósito. El script busca por nombre antes de
+# crear, así que cambiar la estructura de los tramos exige un nombre nuevo: un
+# plan de PayPal es INMUTABLE una vez creado. Los planes v1 (un solo tramo) se
+# quedan donde están y las suscripciones abiertas con ellos siguen cobrando
+# igual — no se toca ni una.
 PLANES = [
-    ('standard', 'Tradeable Academy — Standard (monthly)', '25.00',
+    ('standard', 'Tradeable Academy — Standard (monthly) v2', '25.00',
      'PAYPAL_PLAN_STANDARD'),
-    ('premium', 'Tradeable Academy — Premium (monthly)', '50.00',
+    ('premium', 'Tradeable Academy — Premium (monthly) v2', '50.00',
      'PAYPAL_PLAN_PREMIUM'),
 ]
 
@@ -145,10 +150,25 @@ def main():
             'product_id': prod_id,
             'name': nombre,
             'status': 'ACTIVE',
+            # DOS tramos, y esta es la pieza que hace que un descuento pueda
+            # CADUCAR. El primero es un ciclo suelto cuyo precio se sobrescribe
+            # al abrir cada suscripción; el segundo es el precio de lista, para
+            # siempre. Sin promoción los dos valen igual y el cliente no nota
+            # nada. Con una promo general, el primer mes va rebajado y a partir
+            # del segundo se cobra la tarifa normal — y el cliente lo aprobó
+            # así desde el principio, que es lo que permite subirle el precio
+            # sin pedirle permiso otra vez.
             'billing_cycles': [{
                 'frequency': {'interval_unit': 'MONTH', 'interval_count': 1},
-                'tenure_type': 'REGULAR',
+                'tenure_type': 'TRIAL',
                 'sequence': 1,
+                'total_cycles': 1,
+                'pricing_scheme': {'fixed_price': {
+                    'currency_code': 'USD', 'value': precio}},
+            }, {
+                'frequency': {'interval_unit': 'MONTH', 'interval_count': 1},
+                'tenure_type': 'REGULAR',
+                'sequence': 2,
                 # 0 = para siempre, hasta que el cliente se dé de baja. Es
                 # justo lo que se prometió: se renueva solo y él lo corta.
                 'total_cycles': 0,
