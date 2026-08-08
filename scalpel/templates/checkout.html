@@ -212,6 +212,9 @@
       {% set auto0 = subs and rails and rails[0] == 'paypal' %}
       {% if subs %}
       <div class="pfi" id="fine-auto"{{ '' if auto0 else ' hidden' }}>{{ fk }}<span data-i18n-html="pay.fineAuto"><b>Renews by itself every month.</b> Cancel whenever you want, with one button in Settings.</span></div>
+      <div class="pfi" id="fine-auto-promo" hidden
+           data-p="{{ '%.2f'|format(primer_mes|default(quote.final_price)) }}"
+           data-r="{{ '%.2f'|format(renovacion|default(quote.final_price)) }}">{{ fk }}<span id="fine-auto-promo-txt"></span></div>
       {% endif %}
       <div class="pfi" id="fine-once"{{ ' hidden' if auto0 else '' }}>{{ fk }}<span data-i18n-html="pay.fineOnce"><b>One-time payment.</b> No auto-renewal — nobody charges you again.</span></div>
       <div class="pfi">{{ fk }}<span data-i18n-html="pay.fineCard"><b>We never see your card.</b> The charge is processed by whichever provider you pick.</span></div>
@@ -231,6 +234,13 @@
     var rails = document.querySelectorAll('.prail-in');
     var fAuto = document.getElementById('fine-auto');
     var fOnce = document.getElementById('fine-once');
+    var fProm = document.getElementById('fine-auto-promo');
+    /* primer mes vs renovación: cuando difieren (promo general, oferta de
+       lanzamiento), la letra pequeña canta LOS DOS importes. */
+    window.__tramos = fProm
+      ? { p: parseFloat(fProm.getAttribute('data-p')) || 0,
+          r: parseFloat(fProm.getAttribute('data-r')) || 0 }
+      : { p: 0, r: 0 };
 
     function letra() {
       if (!fAuto) return;                 /* sin suscripciones: nada que cambiar */
@@ -242,9 +252,18 @@
       var solo = document.querySelector('.prail.solo[data-rail]');
       var riel = sel ? sel.value : (solo ? solo.getAttribute('data-rail') : '');
       var auto = riel === 'paypal';
-      fAuto.hidden = !auto;
+      var dif = auto && fProm && (window.__tramos.r > window.__tramos.p + 0.004);
+      if (dif) {
+        fProm.querySelector('#fine-auto-promo-txt').innerHTML =
+          PagesI18n.t('pay.fineAutoPromo',
+                      { p: window.__tramos.p.toFixed(2),
+                        r: window.__tramos.r.toFixed(2) });
+      }
+      fAuto.hidden = !auto || dif;
+      if (fProm) fProm.hidden = !dif;
       fOnce.hidden = auto;
     }
+    window.__letra = letra;
 
     Array.prototype.forEach.call(rails, function (r) {
       r.addEventListener('change', function () {
@@ -280,7 +299,8 @@
        Se fotografia lo pintado al cargar y se restaura ESO. */
     var init = { rowShown: discRow.style.display !== 'none',
                  label: discLbl.textContent, amount: discAmt.textContent,
-                 final: finalEl.textContent };
+                 final: finalEl.textContent,
+                 tramos: { p: window.__tramos.p, r: window.__tramos.r } };
 
     applyBtn.addEventListener('click', function () {
       var code = (input.value || '').trim();
@@ -309,6 +329,10 @@
           input.disabled = true;
           applyBtn.textContent = PagesI18n.t('checkout.promoApplied');
           applyBtn.disabled = true;
+          if (typeof d.renewal_price === 'number' && window.__letra) {
+            window.__tramos = { p: d.final_price, r: d.renewal_price };
+            window.__letra();
+          }
         } else {
           showErr(d.error);
         }
@@ -325,6 +349,10 @@
       discLbl.textContent = init.label;
       discAmt.textContent = init.amount;
       finalEl.textContent = init.final;
+      if (init.tramos && window.__letra) {
+        window.__tramos = { p: init.tramos.p, r: init.tramos.r };
+        window.__letra();
+      }
       hidden.value = '';
       msg.className = 'msg err';
       msg.textContent = KNOWN_ERR[code] ? PagesI18n.t('checkout.err.' + code) : PagesI18n.t('checkout.err.generic');

@@ -43,9 +43,37 @@ import sys
 import urllib.error
 import urllib.request
 
-CLIENT = os.environ.get('PAYPAL_CLIENT_ID', '').strip()
-SECRET = os.environ.get('PAYPAL_SECRET', '').strip()
-ENV = os.environ.get('PAYPAL_ENV', 'live').strip().lower()
+def _dotenv(path=None):
+    """Lee scalpel/.env sin depender de python-dotenv: en el VPS las claves
+    viven en supervisor y en ese archivo, no en el shell de quien ejecuta —
+    sin esto el script decía "Faltan..." con las claves perfectamente puestas."""
+    if path is None:
+        path = os.path.join(os.path.dirname(os.path.dirname(
+            os.path.abspath(__file__))), 'scalpel', '.env')
+    out = {}
+    try:
+        with open(path, encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith('#') or '=' not in line:
+                    continue
+                k, v = line.split('=', 1)
+                out[k.strip()] = v.strip().strip('"').strip("'")
+    except OSError:
+        pass
+    return out
+
+
+_ENVF = _dotenv()
+
+
+def _var(nombre, defecto=''):
+    return (os.environ.get(nombre) or _ENVF.get(nombre, defecto)).strip()
+
+
+CLIENT = _var('PAYPAL_CLIENT_ID')
+SECRET = _var('PAYPAL_SECRET')
+ENV = _var('PAYPAL_ENV', 'live').lower()
 BASE = ('https://api-m.sandbox.paypal.com' if ENV == 'sandbox'
         else 'https://api-m.paypal.com')
 
@@ -197,8 +225,24 @@ def main():
     global IDS
     IDS = dict(resultado)
 
+    # Guardarlos a mano era un paso que se podía olvidar — y con los planes
+    # v2 olvidarlo significa seguir usando los viejos de un tramo (el descuento
+    # de una promo no caducaría). Se escriben SOLOS en .env y supervisor con la
+    # misma pieza de siempre; si no se puede (permisos), quedan impresos.
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import set_env
+        vals = {var: pid for var, pid in resultado}
+        set_env.escribir_env(vals, set())
+        ruta_sup, _copia = set_env.escribir_supervisor(vals, set())
+        print('\n✓ Ids guardados en scalpel/.env%s'
+              % (' y en %s' % ruta_sup if ruta_sup else
+                 ' (supervisor NO: pégalo a mano abajo)'))
+        print('  Aplica con: supervisorctl reread && supervisorctl update')
+    except Exception as exc:
+        print('\n⚠️  No se pudieron guardar solos (%s) — pégalos a mano:' % exc)
     print('\n' + '=' * 60)
-    print('Pegá estas dos líneas en la config del servidor (supervisor y .env):')
+    print('Los ids de los planes (ya guardados arriba si no hubo aviso):')
     print('=' * 60)
     for var, pid in resultado:
         print('%s=%s' % (var, pid))

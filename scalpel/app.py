@@ -8290,13 +8290,32 @@ def descuento_permanente(promo_code):
     return bool(pc and pc.kind == 'creator')
 
 
+def _tramos(user, plan, cycle, promo_code, primer):
+    """(primer mes, renovación) según la regla de descuentos del dueño.
+
+    · Código de SOCIO → los dos tramos rebajados: permanente, es el acuerdo.
+    · Cuenta ATADA a un socio que hoy usa una promo general mejor (cláusula
+      3.1) → el primer mes va con la promo, pero la renovación vuelve a SU
+      TARIFA DE SOCIO, no a la de lista: la promo no puede quitarle lo que la
+      atadura le promete.
+    · Cualquier otra promo — un código general o la oferta de lanzamiento sin
+      código — es un gancho de UNA vez: la renovación va a precio de lista.
+    """
+    if descuento_permanente(promo_code):
+        return primer, primer
+    lista = float(_plan_base_price(plan, cycle) or primer)
+    stored = _stored_promo(user) if user is not None else None
+    if stored and stored.kind == 'creator' and             (stored.valid_for == 'both' or stored.valid_for == cycle):
+        perm = _quote(plan, cycle, stored)['final_price']
+        return primer, max(primer, min(lista, perm))
+    return primer, max(primer, lista)
+
+
 def _precios_de_los_tramos(order):
-    """(precio del 1er mes, precio de cada renovación) para esta compra."""
-    rebajado = float(order.final_price)
-    if descuento_permanente(order.promo_code):
-        return rebajado, rebajado
-    lista = float(order.base_price or rebajado)
-    return rebajado, max(rebajado, lista)
+    """(precio del 1er mes, precio de cada renovación) para este pedido."""
+    user = db.session.get(User, order.user_id)
+    return _tramos(user, order.plan, order.billing_cycle, order.promo_code,
+                   float(order.final_price))
 
 
 def _paypal_create_subscription(order):
@@ -8351,6 +8370,30 @@ def _paypal_create_subscription(order):
     try:
         code, data = _paypal_api('POST', '/v1/billing/subscriptions', payload,
                                  request_id='create-%s' % ref)
+        # 🔴 ¿Los planes de la cuenta siguen siendo los VIEJOS de un solo
+        # tramo? Sobrescribir un tramo 2 que el plan no tiene se rechaza — y
+        # una compra no puede fallar por nuestra mejora. Se reintenta con el
+        # payload de siempre: funciona igual que antes (el descuento del primer
+        # pago queda autorizado para cada renovación) hasta que existan los
+        # planes v2 de `tools/paypal_setup_subs.py`. Aviso fuerte en el log.
+        if code >= 300:
+            app.logger.error(
+                '🔴 PayPal rechazó los DOS tramos (plan %s): %s — reintento '
+                'con UN tramo. Hasta correr tools/paypal_setup_subs.py (y '
+                'guardar los ids v2), el descuento de una promo general NO '
+                'caduca en la renovación.', plan_id, str(data)[:200])
+            payload['plan']['billing_cycles'] = [{
+                'sequence': 1, 'total_cycles': 0,
+                'pricing_scheme': {'fixed_price': {
+                    'currency_code': 'USD', 'value': '%.2f' % primero}},
+            }]
+            # Lo autorizado será el precio del primer mes: la ficha y Ajustes
+            # tienen que decir ESO, no un importe que nunca se cobrará.
+            sub.price = primero
+            db.session.commit()
+            code, data = _paypal_api('POST', '/v1/billing/subscriptions',
+                                     payload,
+                                     request_id='create-legacy-%s' % ref)
     except Exception as exc:
         app.logger.error('paypal subscription create failed (order %s): %s', order.id, exc)
         return None
@@ -8419,6 +8462,23 @@ def _paypal_sub_revise(sub, nuevo_plan, precio):
         code, data = _paypal_api(
             'POST', '/v1/billing/subscriptions/%s/revise' % sub.provider_ref,
             payload, request_id='revise-%d-%s' % (sub.id, nuevo_plan))
+        if code >= 300:
+            # Planes v1 (un solo tramo): mismo reintento que al crear. Los dos
+            # tramos del revise van al mismo importe, así que aquí no se
+            # pierde nada — solo compatibilidad.
+            app.logger.error('paypal revise con 2 tramos rechazado (sub %s): '
+                             '%s — reintento con 1 tramo (planes v1).',
+                             sub.id, str(data)[:160])
+            payload['plan']['billing_cycles'] = [{
+                'sequence': 1, 'total_cycles': 0,
+                'pricing_scheme': {'fixed_price': {
+                    'currency_code': 'USD', 'value': '%.2f' % float(precio)}},
+            }]
+            code, data = _paypal_api(
+                'POST',
+                '/v1/billing/subscriptions/%s/revise' % sub.provider_ref,
+                payload,
+                request_id='revise1-%d-%s' % (sub.id, nuevo_plan))
     except Exception as exc:
         app.logger.error('paypal revise failed (sub %s): %s', sub.id, exc)
         return None
@@ -9483,7 +9543,20 @@ def checkout():
                            # tiene que decirlo ANTES de pagar: un cargo que se
                            # repite y no se anunció es un contracargo esperando.
                            subs=(PAYPAL_SUBS_ENABLED and cycle == 'monthly'
-                                 and bool(PAYPAL_PLAN_IDS.get(plan))))
+                                 and bool(PAYPAL_PLAN_IDS.get(plan))),
+                           # El precio del primer mes y el de la renovación
+                           # pueden diferir (promo general / oferta de
+                           # lanzamiento). El carrito TIENE que decirlo antes
+                           # de pagar: una renovación más cara que no se
+                           # anunció es un contracargo esperando.
+                           primer_mes=_tramos(current_user, plan, cycle,
+                                              (stored.code if stored_ok
+                                               else None),
+                                              q['final_price'])[0],
+                           renovacion=_tramos(current_user, plan, cycle,
+                                              (stored.code if stored_ok
+                                               else None),
+                                              q['final_price'])[1])
 
 
 @app.route('/api/checkout/validate-code', methods=['POST'])
@@ -9508,7 +9581,9 @@ def api_validate_code():
         return jsonify({'ok': False, 'error': 'not_found'}), 200
     q = _quote(plan, cycle, promo)
     resp = {'ok': True, 'discount_pct': promo.discount_pct,
-            'creator': promo.creator_name, **q}
+            'creator': promo.creator_name, **q,
+            'renewal_price': _tramos(current_user, plan, cycle, promo.code,
+                                     q['final_price'])[1]}
     if stored is not None and promo is stored:
         resp['locked'] = True     # era su propio código: nada que cambiar
     return jsonify(resp)

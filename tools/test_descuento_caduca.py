@@ -35,9 +35,19 @@ def check(t, c, extra=''):
         print('   FALLA %s %s' % (t, extra))
 
 
+MODO = {'v1': False}          # True = la cuenta aún tiene los planes viejos
+LLAMADAS = []
+
+
 def falso_api(metodo, ruta, payload=None, request_id=None):
-    """PayPal de mentira: guarda lo que se le mandó."""
+    """PayPal de mentira: guarda lo que se le mandó. En modo v1 rechaza el
+    payload de DOS tramos, como haría el PayPal real contra un plan viejo."""
     if ruta.endswith('/subscriptions'):
+        LLAMADAS.append(payload)
+        ciclos = (payload or {}).get('plan', {}).get('billing_cycles', [])
+        if MODO['v1'] and len(ciclos) > 1:
+            return 422, {'name': 'INVALID_REQUEST',
+                         'message': 'billing_cycles do not match plan'}
         enviado.clear()
         enviado.update(payload or {})
         return 201, {'id': 'I-FAKE',
@@ -109,6 +119,45 @@ with A.app.app_context():
     print('── un código inventado no rompe nada ──')
     p, r = tramos(pedido('NOEXISTE', 40.0))
     check('se trata como promo general (caduca)', (p, r) == (40.0, 50.0), (p, r))
+
+    print('── cuenta ATADA a un socio que usa una promo general mejor ──')
+    A.db.session.add(A.PromoCode(code='LANZA30', discount_pct=30,
+                                 kind='discount'))
+    atada = A.User(username='atada', email='at@demo.invalid', plan='free',
+                   email_verified=True, referred_by_code='GABRIEL')
+    atada.set_password('Zx9!wQ4mNp2r')
+    A.db.session.add(atada)
+    A.db.session.commit()
+    oa = A.Order(user_id=atada.id, plan='premium', billing_cycle='monthly',
+                 base_price=50.0, final_price=35.0, promo_code='LANZA30',
+                 status='pending')
+    A.db.session.add(oa)
+    A.db.session.commit()
+    p, r = tramos(oa)
+    check('🔴 primer mes con la promo ($35) y la renovación vuelve a SU '
+          'tarifa de socio ($40), no a lista', (p, r) == (35.0, 40.0), (p, r))
+
+    print('── la cuenta aún tiene los planes VIEJOS de un tramo ──')
+    MODO['v1'] = True
+    del LLAMADAS[:]
+    ov = pedido('LANZAMIENTO', 40.0)
+    with A.app.test_request_context('/'):
+        url = A._paypal_create_subscription(ov)
+    check('🔴 la compra NO falla: se reintenta y sale la URL de aprobación',
+          url == 'https://paypal.test/ok', url)
+    check('el reintento fue con UN tramo',
+          len(LLAMADAS) == 2
+          and len(LLAMADAS[1]['plan']['billing_cycles']) == 1,
+          len(LLAMADAS))
+    check('...al precio del PRIMER mes ($40): lo autorizado es lo que se '
+          'cobrará',
+          float(LLAMADAS[1]['plan']['billing_cycles'][0]['pricing_scheme']
+                ['fixed_price']['value']) == 40.0)
+    subv = A.PlanSubscription.query.order_by(
+        A.PlanSubscription.id.desc()).first()
+    check('y la ficha dice $40 (no un importe que nunca se cobrará)',
+          abs(subv.price - 40.0) < 0.01, subv.price)
+    MODO['v1'] = False
 
 print('\nRESULTADO: %d ok, %d fallas' % (ok, fallas))
 sys.exit(1 if fallas else 0)
