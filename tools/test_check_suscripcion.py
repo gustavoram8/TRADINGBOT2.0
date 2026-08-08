@@ -129,11 +129,38 @@ rc, sal = corre()
 check('🔴 se puede verificar SIN que nadie pague', rc == 0, rc)
 check('lo dice explícitamente', 'no se ha cobrado nada' in sal)
 
-print('── una suscripción de otro entorno ──')
+print('── una suscripción que PayPal ya no conoce (404) ──')
+# 🔑 No es un problema: si PayPal no la conoce, no puede cobrar. Marcarlo como
+# grave llenaba la pantalla de rojo con los intentos abandonados y los ids
+# viejos de sandbox, tapando lo único que importa.
 CS.api = lambda base, tk, path: (404, {})
 rc, sal = corre()
-check('lo marca como GRAVE y sugiere el motivo',
-      rc == 1 and 'sandbox vs live' in sal)
+check('🔴 NO es grave: sin PayPal no hay cargo posible', rc == 0, rc)
+check('lo explica en vez de asustar',
+      'no puede cobrar' in sal and 'sandbox' in sal)
+
+print('── ...y si de nuestro lado ya está cerrada, ni se avisa ──')
+with A.app.app_context():
+    s = A.PlanSubscription.query.first()
+    s.status = 'cancelled'
+    A.db.session.commit()
+rc, sal = corre()
+check('queda como simple nota', rc == 0 and 'de nuestro lado está' in sal)
+check('sin avisos ni graves', '0 avisos · 0 graves' in sal, sal[-200:])
+with A.app.app_context():
+    s = A.PlanSubscription.query.first()
+    s.status = 'active'
+    A.db.session.commit()
+
+print('── el titular del resumen ──')
+CS.api = api
+RESP = {'status': 'APPROVAL_PENDING', 'billing_info': {},
+        'plan': {'billing_cycles': [ciclo('TRIAL', 5.0, 1),
+                                    ciclo('REGULAR', 50.0, 0)]}}
+rc, sal = corre()
+check('dice de una línea qué se cobrará',
+      'cobrará $5.0 el 1er mes y $50.0/mes desde el 2º' in sal)
+check('y avisa de que aún no está aprobada', 'pendiente de aprobar' in sal)
 
 print('\nRESULTADO: %d ok, %d fallas' % (ok, fallas))
 sys.exit(1 if fallas else 0)

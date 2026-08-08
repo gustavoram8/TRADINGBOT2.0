@@ -48,6 +48,7 @@ except ImportError:
     sys.exit(2)
 
 ok = avisos = fallos = 0
+LEIDAS = []          # las que PayPal sí reconoce, para el titular del final
 
 
 def bien(t):
@@ -142,9 +143,23 @@ def revisa(base, tk, s):
     code, data = CS.api(base, tk,
                         '/v1/billing/subscriptions/%s?fields=plan'
                         % s['provider_ref'])
+    if code == 404:
+        # 🔑 Un 404 NO es un problema: significa que para PayPal esa
+        # suscripción no existe, o sea que jamás podrá ejecutar un cargo. Es lo
+        # normal en un intento que el comprador abandonó en la pantalla de
+        # aprobación, y en todo lo creado cuando la cuenta estaba en sandbox
+        # (los ids no cruzan de un entorno al otro). Marcarlo como grave era
+        # asustar por lo que precisamente NO puede cobrarle a nadie.
+        if s['status'] in ('cancelled', 'expired'):
+            print('     · PayPal ya no la conoce y de nuestro lado está '
+                  'cerrada: no puede cobrar nada')
+        else:
+            ojo('PayPal no la conoce (nunca se aprobó, o se creó en sandbox): '
+                'no puede cobrar, pero la ficha local sigue como "%s"'
+                % s['status'])
+        return
     if code >= 300:
-        mal('PayPal no reconoce esta suscripción (HTTP %s) — ¿es de otro '
-            'entorno (sandbox vs live)?' % code)
+        mal('PayPal no respondió por esta suscripción (HTTP %s)' % code)
         return
     estado = (data.get('status') or '?').upper()
     print('     estado     : %s%s' % (
@@ -180,6 +195,7 @@ def revisa(base, tk, s):
                 'ese es su precio permanente (socio o sin descuento); MAL si el '
                 'descuento era de una sola vez.' % unico)
     elif tri and reg:
+        LEIDAS.append((s['id'], estado, tri[0]['importe'], reg[0]['importe']))
         if esperado_1 is not None and abs(tri[0]['importe'] - esperado_1) > 0.005:
             mal('🔴 el 1er mes: el carrito le cobró $%s y PayPal tiene anotado '
                 '$%s' % (esperado_1, tri[0]['importe']))
@@ -207,11 +223,20 @@ def revisa(base, tk, s):
 
     if s['promo_code']:
         print('     cupón      : %s' % s['promo_code'])
-    if s['status'] != {'ACTIVE': 'active', 'APPROVAL_PENDING': 'pending',
-                       'CANCELLED': 'cancelled', 'SUSPENDED': 'suspended',
-                       'EXPIRED': 'expired'}.get(estado, s['status']):
-        ojo('el sitio la tiene como "%s" y PayPal como "%s" — se sincroniza '
-            'sola al siguiente aviso, pero anótalo' % (s['status'], estado))
+    equivalente = {'ACTIVE': 'active', 'APPROVAL_PENDING': 'pending',
+                   'CANCELLED': 'cancelled', 'SUSPENDED': 'suspended',
+                   'EXPIRED': 'expired'}.get(estado, s['status'])
+    if s['status'] != equivalente:
+        if estado == 'APPROVAL_PENDING' and s['status'] == 'cancelled':
+            # A propósito: una que nunca se aprobó no puede cobrar, así que se
+            # cierra de nuestro lado sin esperar a PayPal (que la dejará
+            # caducar por su cuenta). No es un descuadre que haya que vigilar.
+            print('     · cerrada de nuestro lado por no haberse aprobado '
+                  'nunca; PayPal la caduca sola')
+        else:
+            ojo('el sitio la tiene como "%s" y PayPal como "%s" — se '
+                'sincroniza sola al siguiente aviso, pero anótalo'
+                % (s['status'], estado))
 
 
 def main():
@@ -251,6 +276,11 @@ def main():
         revisa(base, tk, s)
 
     print('\n══ RESUMEN ' + '═' * 49)
+    for sid, estado, primero, recurrente in LEIDAS:
+        print('  #%s · PayPal cobrará $%s el 1er mes y $%s/mes desde el 2º%s'
+              % (sid, primero, recurrente,
+                 '  (pendiente de aprobar)'
+                 if estado == 'APPROVAL_PENDING' else ''))
     print('  %d bien · %d avisos · %d graves' % (ok, avisos, fallos))
     if not fallos:
         print('  Lo que PayPal tiene anotado coincide con lo que el sitio le '
