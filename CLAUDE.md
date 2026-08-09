@@ -1205,6 +1205,30 @@ decían lo contrario y aun así lo confirmó → hecho, y los T&C reescritos.
   reembolsable, reintentos, anual/USDT no recurrentes, no se sube el importe sin avisar). Auditor 144.
 - `tools/test_subs.py` **41/41** con PayPal simulado.
 
+## 📧 UN BUZÓN = UNA CUENTA — correo canónico en el registro (2026-08-09)
+Auditoría multi-cuentas pedida por el dueño. Diagnóstico honesto que se le dio: la huella de
+navegador solo se compara contra BANEADOS (varias cuentas desde el mismo navegador = permitido),
+se calcula en el cliente (falsificable, y sin JS se salta), y NO hay límite por IP en /register.
+**Decisión del dueño tras discutirlo: cablear SOLO el punto 1 (alias de correo)** — el resto se
+anotó como "si aparece abuso real". Razones: el foro exige plan de PAGO (un baneado que vuelve
+con cuenta free no puede publicar; volver a molestar = pagar $25 otra vez y perder XP/rango/
+cosméticos), y 10 cuentas free = ~$1.20/mes de análisis. El único truco de coste CERO era el
+alias: `juan+2@gmail.com` / `j.u.a.n@gmail.com` = EL MISMO buzón (documentado por Google).
+- **`User.email_canonical`** (índice NO único a propósito: filas viejas podrían colisionar y un
+  índice único tumbaría el arranque; la unicidad la impone /register). `_correo_canonico()`:
+  minúsculas; quita `+etiqueta` solo en proveedores que lo documentan (`_CORREO_SUBDIR`); quita
+  puntos SOLO en gmail (`_CORREO_SIN_PUNTOS`) — en un dominio corriente juan.perez@ ≠ juanperez@.
+- Migración `_migrate_user_email_canonical_column()` con **backfill** (sin él la regla nace coja:
+  el alias de una cuenta ANTERIOR no chocaría — justo el baneado con cuenta vieja). SQL crudo
+  tocando solo id/email. `test_boot_migracion` 7/7 (columna nueva cubierta).
+- El rechazo usa el MISMO error `email_taken` de siempre — no delata nada.
+- `tools/test_correo_canonico.py` **19/19**. ⚠️ El test comprueba `reg.errEmail` (la clave que
+  renderiza la plantilla), no el nombre interno del error; e init_db siembra un admin (no contar
+  usuarios en absoluto).
+- **PENDIENTE ANTES DE LANZAR (acordado):** antiflood en /register por IP — no por los análisis,
+  sino porque mil registros automáticos = mil correos de verificación desde info@ = reputación
+  del dominio quemada y los códigos de clientes reales cayendo en spam.
+
 ## 🔴 El cupón se canja al COBRAR, no al ponerlo en el carrito (2026-08-08)
 Lo cazó el dueño probando en producción: aplicó un cupón de un solo uso, pulsó pagar, se volvió
 atrás y el sitio le dijo **"límite alcanzado"**. Su propio carrito a medias le había gastado el

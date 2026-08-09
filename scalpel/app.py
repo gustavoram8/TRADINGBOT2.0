@@ -762,6 +762,15 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False)
+    # La forma CANÓNICA del correo: minúsculas, sin subdirección (+lo-que-sea)
+    # en los proveedores que la documentan, y sin puntos en Gmail. Es lo que
+    # impide que juan@, j.u.a.n@ y juan+2@gmail.com — que son EL MISMO buzón,
+    # por diseño de Gmail — cuenten como cuentas distintas: el truco de coste
+    # cero para evadir un baneo o multiplicar cuentas Free. El correo original
+    # se conserva intacto en `email` (es a donde se escribe).
+    # ⚠️ SIN unique: filas viejas podrían colisionar entre sí y un índice único
+    # tumbaría el arranque. La unicidad la impone /register al crear.
+    email_canonical = db.Column(db.String(255), nullable=True, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
     plan = db.Column(db.String(20), default='free', nullable=False)  # free / standard / premium
     is_admin = db.Column(db.Boolean, default=False, nullable=False)
@@ -6507,6 +6516,39 @@ def login_2fa():
 # one digit. Existing accounts are unaffected (rules apply on create/reset).
 USERNAME_RE = re.compile(r'^[A-Za-z0-9][A-Za-z0-9._-]{2,19}$')
 
+# Proveedores donde el "+etiqueta" está DOCUMENTADO como el mismo buzón. La
+# lista es deliberadamente corta y conservadora: aquí el error caro es el
+# contrario — tratar como iguales dos correos que sí son de personas distintas
+# y negarle el registro a un cliente real. Solo entra un dominio cuando su
+# proveedor garantiza la regla.
+_CORREO_SUBDIR = {
+    'gmail.com', 'googlemail.com', 'outlook.com', 'hotmail.com', 'live.com',
+    'icloud.com', 'me.com', 'proton.me', 'protonmail.com', 'pm.me',
+    'fastmail.com',
+}
+# Solo Gmail ignora los puntos. En cualquier otro dominio juan.perez@ y
+# juanperez@ pueden ser dos personas: los puntos NO se tocan.
+_CORREO_SIN_PUNTOS = {'gmail.com', 'googlemail.com'}
+
+
+def _correo_canonico(correo):
+    """El buzón real detrás de un correo, según las reglas de su proveedor.
+
+    juan@gmail.com, J.u.a.n@gmail.com y juan+2@gmail.com se ENTREGAN en la
+    misma bandeja — no es una heurística, es cómo Gmail funciona y lo
+    documenta. Guardar esta forma y compararla al registrar es lo que evita
+    que el mismo buzón abra cuentas "distintas" sin ningún esfuerzo.
+    """
+    correo = (correo or '').strip().lower()
+    if '@' not in correo:
+        return correo
+    local, _, dominio = correo.rpartition('@')
+    if dominio in _CORREO_SUBDIR and '+' in local:
+        local = local.split('+', 1)[0]
+    if dominio in _CORREO_SIN_PUNTOS:
+        local = local.replace('.', '')
+    return '%s@%s' % (local, dominio)
+
 
 def _valid_password(pw):
     return (len(pw) >= 8
@@ -6709,7 +6751,14 @@ def register():
             return render_template('register.html', next=_safe_next(), error='terms_required', username=username, email=email)
         if User.query.filter_by(username=username).first():
             return render_template('register.html', next=_safe_next(), error='username_taken', username=username, email=email)
-        if User.query.filter_by(email=email).first():
+        # Se compara el buzón CANÓNICO, no la cadena: juan+2@gmail.com es el
+        # mismo buzón que juan@gmail.com (así lo entrega Gmail), y sin esto un
+        # baneado volvía escribiendo "+2" en su propio correo. El mensaje es el
+        # mismo "ya registrado" de siempre — para quien probó un alias por
+        # curiosidad no hay diferencia con haberse olvidado de su cuenta.
+        canon = _correo_canonico(email)
+        if User.query.filter(db.or_(User.email == email,
+                                    User.email_canonical == canon)).first():
             return render_template('register.html', next=_safe_next(), error='email_taken', username=username, email=email)
 
         # Block registrations from known-banned devices
@@ -6719,6 +6768,7 @@ def register():
         # Create the account unverified; activation happens after the email code.
         code = _new_verification_code()
         user = User(username=username, email=email, plan='free', email_verified=False)
+        user.email_canonical = canon
         user.set_password(password)
         user.verification_code = code
         user.verification_expires = datetime.now(timezone.utc) + timedelta(minutes=15)
@@ -15589,6 +15639,43 @@ def _migrate_user_verification_columns():
         app.logger.info('Migrated user table: added missing columns (%d).', len(stmts))
 
 
+def _migrate_user_email_canonical_column():
+    """Añade `email_canonical` y lo rellena para las cuentas que ya existen.
+
+    Sin el backfill la regla nacería coja: el alias de un correo ANTERIOR al
+    cambio no chocaría con nada, que es justo el caso del baneado que ya tenía
+    su cuenta. El índice NO es único a propósito — si dos filas viejas resultan
+    ser el mismo buzón (juan@ y juan+2@ registrados antes de esta regla), el
+    arranque no puede morir por eso: a los que ya están dentro no se les echa,
+    solo se impide que el truco siga funcionando de aquí en adelante.
+
+    SQL crudo tocando solo id/email, como TODA migración de esta tabla: el ORM
+    pide el modelo completo y una migración corre justamente cuando la base
+    todavía no lo está (la lección del 2026-08-02).
+    """
+    from sqlalchemy import inspect, text
+    insp = inspect(db.engine)
+    cols = {c['name'] for c in insp.get_columns('user')}
+    table = '"user"' if db.engine.dialect.name == 'postgresql' else 'user'
+    if 'email_canonical' not in cols:
+        with db.engine.begin() as conn:
+            conn.execute(text('ALTER TABLE %s ADD COLUMN email_canonical '
+                              'VARCHAR(255)' % table))
+            conn.execute(text('CREATE INDEX ix_user_email_canonical ON %s '
+                              '(email_canonical)' % table))
+        app.logger.info('Migrated user table: added email_canonical + index.')
+    with db.engine.begin() as conn:
+        pending = conn.execute(text(
+            "SELECT id, email FROM %s WHERE email_canonical IS NULL "
+            "OR email_canonical = ''" % table)).fetchall()
+        for uid, correo in pending:
+            conn.execute(
+                text('UPDATE %s SET email_canonical = :c WHERE id = :i' % table),
+                {'c': _correo_canonico(correo), 'i': uid})
+    if pending:
+        app.logger.info('Backfilled email_canonical for %d user(s).', len(pending))
+
+
 def _migrate_user_alt_id_column():
     """Add `alt_id` and backfill it for every existing user.
 
@@ -16260,6 +16347,7 @@ def init_db():
         _migrate_user_cosmetic_wear_columns()
         _migrate_user_security_columns()
         _migrate_referral_columns()
+        _migrate_user_email_canonical_column()
         _migrate_user_alt_id_column()
         _migrate_order_columns()
         _migrate_promo_code_columns()

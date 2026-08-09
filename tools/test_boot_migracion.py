@@ -11,7 +11,7 @@ SCRATCH = os.path.dirname(os.path.abspath(__file__))
 DB = os.path.join(SCRATCH, 'boot.db')
 NUEVAS = ['birth_date', 'totp_secret', 'totp_confirmed_at', 'totp_backup',
           'referred_by_code', 'referred_at', 'active_camo', 'owned_camos',
-          'active_frame', 'active_cursor']
+          'active_frame', 'active_cursor', 'email_canonical']
 # Columnas nuevas en OTRAS tablas: (tabla, columna, valor_de_backfill_esperado)
 NUEVAS_OTRAS = [('daily_quiz_state', 'best_streak', None),
                 # cambio de plan programado (2026-08-05)
@@ -44,7 +44,7 @@ paso1 = arrancar('la app arranca y crea la base desde cero')
 print('\n2 · simulo PRODUCCIÓN: le quito a "user" las columnas del último release')
 con = sqlite3.connect(DB)
 quitadas = []
-for idx in ('ix_user_referred_by_code',):
+for idx in ('ix_user_referred_by_code', 'ix_user_email_canonical'):
     con.execute('DROP INDEX IF EXISTS %s' % idx)
 for c in NUEVAS:
     try:
@@ -96,10 +96,15 @@ for tabla, col in quitadas_otras:
     if col not in c2:
         faltan_otras.append('%s.%s' % (tabla, col))
 best = con.execute('SELECT best_streak FROM daily_quiz_state').fetchone()
+canon = con.execute("SELECT email_canonical FROM user "
+                    "WHERE username='viejo'").fetchone()
 con.close()
 paso4a = not faltan and not faltan_otras
 paso4b = bool(alt and alt[0])
 paso4c = bool(best and best[0] == 5)
+# el backfill del correo canónico: sin él, el alias de una cuenta ANTERIOR
+# al cambio no chocaría con nada (justo el caso del baneado con cuenta vieja)
+paso4d = bool(canon and canon[0] == 'viejo@t.local')
 print('  %s  las %d+%d columnas volvieron%s' % ('ok  ' if paso4a else 'FALLA',
       len(quitadas), len(quitadas_otras),
       '' if paso4a else ' (faltan: %s)' % (faltan + faltan_otras)))
@@ -107,12 +112,14 @@ print('  %s  el usuario viejo recibió su alt_id (%s)'
       % ('ok  ' if paso4b else 'FALLA', (alt[0][:12] + '…') if paso4b else 'vacío'))
 print('  %s  la racha viva (5) quedó copiada a best_streak (%s)'
       % ('ok  ' if paso4c else 'FALLA', best[0] if best else '—'))
+print('  %s  el correo canónico del usuario viejo quedó rellenado (%s)'
+      % ('ok  ' if paso4d else 'FALLA', canon[0] if canon else '—'))
 
 print('\n5 · arranco una tercera vez (la migración tiene que ser idempotente)')
 paso5 = arrancar('arranca de nuevo sin reventar ni duplicar columnas')
 
 os.remove(DB)
-todos = [paso1, paso3, paso4a, paso4b, paso4c, paso5]
+todos = [paso1, paso3, paso4a, paso4b, paso4c, paso4d, paso5]
 print('\n' + '=' * 60)
 print('RESULTADO: %d de %d' % (sum(todos), len(todos)))
 sys.exit(0 if all(todos) else 1)
