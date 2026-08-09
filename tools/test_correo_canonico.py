@@ -122,5 +122,37 @@ with A.app.app_context():
     check('sigue todo igual', A.User.query.count() == antes,
           A.User.query.count())
 
+print('── 🔴 lo que NO puede romperse: que un cliente YA REGISTRADO entre ──')
+# El riesgo caro de este cambio no es el registro, es dejar fuera a alguien
+# que ya paga. Login y recuperación miran `email`/username, nunca el canónico.
+with A.app.app_context():
+    ya = A.User(username='conalias', email='pepe+work@gmail.com',
+                email_canonical=A._correo_canonico('pepe+work@gmail.com'),
+                plan='premium', email_verified=True)
+    ya.set_password(CL)
+    A.db.session.add(ya)
+    antiguo = A.User(username='antiguo', email='vieja@hotmail.com',
+                     plan='standard', email_verified=True)   # sin canónico
+    antiguo.set_password(CL)
+    A.db.session.add(antiguo)
+    A.db.session.commit()
+
+for etiqueta, ident in (('cuyo correo real LLEVA "+", por usuario', 'conalias'),
+                        ('cuyo correo real LLEVA "+", por su correo',
+                         'pepe+work@gmail.com'),
+                        ('anterior al cambio, por usuario', 'antiguo'),
+                        ('anterior al cambio, por correo', 'vieja@hotmail.com')):
+    cli = A.app.test_client()
+    resp = cli.post('/login', data={'identifier': ident, 'password': CL})
+    check('entra el cliente %s' % etiqueta,
+          resp.status_code == 302
+          and 'login' not in (resp.headers.get('Location') or ''),
+          '%s %s' % (resp.status_code, resp.headers.get('Location')))
+
+cli = A.app.test_client()
+resp = cli.post('/forgot-password', data={'email': 'pepe+work@gmail.com'})
+check('y "olvidé mi contraseña" acepta su correo con "+"',
+      resp.status_code in (200, 302), resp.status_code)
+
 print('\nRESULTADO: %d ok, %d fallas' % (ok, fallas))
 sys.exit(1 if fallas else 0)
