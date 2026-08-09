@@ -15821,10 +15821,19 @@ def _migrate_forum_member_status_column():
         return
     cols = {c['name'] for c in insp.get_columns('forum_community_member')}
     if 'status' not in cols:
-        with db.engine.begin() as conn:
-            conn.execute(text("ALTER TABLE forum_community_member ADD COLUMN "
-                              "status VARCHAR(10) NOT NULL DEFAULT 'member'"))
-        app.logger.info('Migrated forum_community_member: added status column.')
+        # 🔴 El try/except NO es decoración: gunicorn levanta 4 workers a la vez
+        # y los cuatro corren init_db() en paralelo. Uno gana la carrera y hace
+        # el ALTER; los otros tres ya habían leído que la columna no existía y
+        # lo repiten → "column already exists". Sin capturarlo, esa excepción
+        # sale de init_db(), que corre al IMPORTAR, y mata a los cuatro workers:
+        # el sitio se queda en 502 aunque la migración haya funcionado.
+        try:
+            with db.engine.begin() as conn:
+                conn.execute(text("ALTER TABLE forum_community_member ADD COLUMN "
+                                  "status VARCHAR(10) NOT NULL DEFAULT 'member'"))
+            app.logger.info('Migrated forum_community_member: added status column.')
+        except Exception as e:
+            app.logger.info('forum member status migration note (ignored): %s', e)
 
 
 def _migrate_user_email_canonical_column():
@@ -15846,20 +15855,34 @@ def _migrate_user_email_canonical_column():
     cols = {c['name'] for c in insp.get_columns('user')}
     table = '"user"' if db.engine.dialect.name == 'postgresql' else 'user'
     if 'email_canonical' not in cols:
+        # 🔴 Cada sentencia va con su red: los 4 workers de gunicorn corren
+        # init_db() a la vez y todos leyeron "no existe" antes de que el primero
+        # la creara. Sin capturar el "ya existe", la excepción sale de init_db()
+        # —que corre al importar— y mata a los cuatro: 502 con la migración ya
+        # hecha. El índice va aparte del ALTER a propósito: si el segundo falla,
+        # la columna (que es lo que importa) ya quedó.
+        for st in ('ALTER TABLE %s ADD COLUMN email_canonical VARCHAR(255)' % table,
+                   'CREATE INDEX ix_user_email_canonical ON %s (email_canonical)' % table):
+            try:
+                with db.engine.begin() as conn:
+                    conn.execute(text(st))
+            except Exception as e:
+                app.logger.info('email_canonical migration note (ignored): %s', e)
+        app.logger.info('Migrated user table: email_canonical ensured.')
+    pending = []
+    try:
         with db.engine.begin() as conn:
-            conn.execute(text('ALTER TABLE %s ADD COLUMN email_canonical '
-                              'VARCHAR(255)' % table))
-            conn.execute(text('CREATE INDEX ix_user_email_canonical ON %s '
-                              '(email_canonical)' % table))
-        app.logger.info('Migrated user table: added email_canonical + index.')
-    with db.engine.begin() as conn:
-        pending = conn.execute(text(
-            "SELECT id, email FROM %s WHERE email_canonical IS NULL "
-            "OR email_canonical = ''" % table)).fetchall()
-        for uid, correo in pending:
-            conn.execute(
-                text('UPDATE %s SET email_canonical = :c WHERE id = :i' % table),
-                {'c': _correo_canonico(correo), 'i': uid})
+            pending = conn.execute(text(
+                "SELECT id, email FROM %s WHERE email_canonical IS NULL "
+                "OR email_canonical = ''" % table)).fetchall()
+            for uid, correo in pending:
+                conn.execute(
+                    text('UPDATE %s SET email_canonical = :c WHERE id = :i' % table),
+                    {'c': _correo_canonico(correo), 'i': uid})
+    except Exception as e:
+        # Un backfill a medias se termina en el siguiente arranque; lo que NO
+        # puede pasar es que deje el sitio caído.
+        app.logger.info('email_canonical backfill note (ignored): %s', e)
     if pending:
         app.logger.info('Backfilled email_canonical for %d user(s).', len(pending))
 

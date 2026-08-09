@@ -120,8 +120,69 @@ print('  %s  el correo canónico del usuario viejo quedó rellenado (%s)'
 print('\n5 · arranco una tercera vez (la migración tiene que ser idempotente)')
 paso5 = arrancar('arranca de nuevo sin reventar ni duplicar columnas')
 
+# ── 6 · LOS 4 WORKERS A LA VEZ ────────────────────────────────────────────
+# 🔴 Esto tumbó producción el 2026-08-09. gunicorn levanta 4 workers en
+# paralelo y los cuatro corren init_db(): todos leen "la columna no existe",
+# uno gana la carrera y hace el ALTER, y los otros tres lo repiten contra una
+# tabla que ya la tiene. Sin try/except esa excepción sale de init_db() —que
+# corre al IMPORTAR— y mata a los cuatro: 502 con la migración ya aplicada.
+print("\n6 · el worker que PIERDE la carrera del ALTER (lo de anoche)")
+con = sqlite3.connect(DB)
+for idx in ('ix_user_email_canonical',):
+    con.execute('DROP INDEX IF EXISTS %s' % idx)
+soltadas = []
+for tabla, col in (('user', 'email_canonical'),
+                   ('forum_community_member', 'status')):
+    try:
+        con.execute('ALTER TABLE "%s" DROP COLUMN %s' % (tabla, col))
+        soltadas.append('%s.%s' % (tabla, col))
+    except Exception as e:
+        print('      (no se pudo quitar %s.%s: %s)' % (tabla, col, e))
+con.commit()
+con.close()
+print('  ok    columnas quitadas otra vez: %s' % ', '.join(soltadas))
+
+# ⚠️ Lanzar 4 procesos y esperar que choquen NO reproduce nada: el arranque
+# de Python tarda más que la migración, así que llegan en fila y el fallo no
+# aparece. Se reproduce el estado EXACTO del worker perdedor: cree que la
+# columna no existe (leyó antes) y la base ya la tiene.
+guion = textwrap.dedent('''
+    import sys
+    sys.path.insert(0, "scalpel")
+    import app
+    from sqlalchemy import inspect as _insp_real
+    for fn, tabla, col in (
+            (app._migrate_forum_member_status_column,
+             "forum_community_member", "status"),
+            (app._migrate_user_email_canonical_column, "user", "email_canonical")):
+        with app.app.app_context():
+            class Ciego:
+                """Un inspector que MIENTE: dice que la columna no está."""
+                def __init__(s, real): s.r = real
+                def get_table_names(s): return s.r.get_table_names()
+                def get_columns(s, t):
+                    cols = s.r.get_columns(t)
+                    return [c for c in cols if not (t == tabla and c["name"] == col)]
+            import sqlalchemy
+            orig = sqlalchemy.inspect
+            sqlalchemy.inspect = lambda x: Ciego(orig(x))
+            try:
+                fn()          # el worker perdedor repite el ALTER
+            finally:
+                sqlalchemy.inspect = orig
+    print("PERDEDOR_SOBREVIVE")
+''')
+r6 = subprocess.run([sys.executable, '-c', guion], capture_output=True,
+                    text=True, cwd=os.getcwd(),
+                    env={**os.environ, 'DATABASE_URL': 'sqlite:///' + DB})
+paso6 = 'PERDEDOR_SOBREVIVE' in r6.stdout
+print('  %s  el worker que repite el ALTER NO se muere'
+      % ('ok  ' if paso6 else 'FALLA'))
+if not paso6:
+    print('      ' + '\n      '.join((r6.stderr or '').strip().splitlines()[-5:]))
+
 os.remove(DB)
-todos = [paso1, paso3, paso4a, paso4b, paso4c, paso4d, paso5]
+todos = [paso1, paso3, paso4a, paso4b, paso4c, paso4d, paso5, paso6]
 print('\n' + '=' * 60)
 print('RESULTADO: %d de %d' % (sum(todos), len(todos)))
 sys.exit(0 if all(todos) else 1)
