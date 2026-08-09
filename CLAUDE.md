@@ -1885,13 +1885,20 @@ borrado. PENDIENTE: agregar selector de mes / historial.
   no es pertenencia). Migración `_migrate_forum_member_status_column()` (DEFAULT 'member' = el
   backfill: nadie que estaba dentro sale expulsado), boot test 7/7. 15 claves `forum.comm.*`/
   `forum.dmLocked` ×4. ⚠️ `ForumCommunityMember` NO tiene relación `user` — joins explícitos.
-- [x] ✅ **21. Farmeo de XP simulado (2026-08-09).** `tools/simula_xp.py` = **14 defensas, 0
-  farmeables**: login repetido paga 1/día (⚠️ el XP de login se paga al ABRIR /app, no en el POST
-  de login — y /app exige el cookie del splash), la misma pregunta de quiz en bucle paga 0 (dedup
-  `q:<id>`), mentir el acierto no cuela (el server juzga), 40 correctas no pasan del tope de 20,
-  borrar-y-republicar no burla ni el límite de 2 posts/día (`todays_post_count` cuenta borrados)
-  ni su tope de XP, la cuenta cómplice cambiando de emoji paga como UNA reacción, tope maestro
-  premium 80/día, y rank == rank_for_xp(xp) y nunca baja.
+- [x] ✅ **21. Farmeo de XP + AUDITORÍA COMPLETA POR PLAN (2026-08-09).** `tools/simula_xp.py`
+  = **36 defensas, 0 farmeables**. Farmeo: login repetido paga 1/día (⚠️ el XP de login se paga al
+  ABRIR /app, no en el POST de login — y /app exige el cookie del splash), la misma pregunta de
+  quiz en bucle paga 0 (dedup `q:<id>`), mentir el acierto no cuela, 40 correctas no pasan del
+  tope de 20, borrar-y-republicar no burla el límite de 2 posts/día, la cuenta cómplice cambiando
+  de emoji paga como UNA reacción, tope maestro premium 80/día. **Por plan:** montos exactos de
+  login (18/12/5) y análisis (60/30/10); quiz/daily/pre-flight responden 403 a free y standard;
+  testimonio = 30 XP UNA vez con ventana de 30 días server-side (4 POSTs = 1 fila); daily paga 15
+  una vez por día UTC (repetir = 409) y el bono de racha 30 al llegar a 7; pre-flight = bono único
+  20 + 5/check topado en 15/día; fuente inventada paga 0; los 16 bordes de `RANK_THRESHOLDS` dan
+  el rango exacto; bajar de plan NO toca ni XP ni rango. Techos de un día perfecto: free 108
+  (con análisis semanal y testimonio mensual) · standard ~97 · premium 160 irrepetible → el rango
+  2 (200 XP) toma días: no hay atajo. ⚠️ Rutas reales: `/api/testimonial/submit`, y pre-flight
+  exige `verdict` ∈ go/caution/no-go.
 - [ ] **18. Subidas al foro:** permitir capturas **del propio sitio** (landing, camos, etc.) y
   bloquear drogas, desnudos, armas y asesoría financiera — **sin censurar de más**.
 - [ ] **19. 🔴 Calidad del analizador fuera de ICT/STDV.** No sabe operar armónicos ni otras

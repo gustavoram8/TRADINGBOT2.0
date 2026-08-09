@@ -172,6 +172,154 @@ with A.app.app_context():
     # se calcula del total y NUNCA se recalcula hacia abajo en el modelo.
     ok('el rango nunca baja de lo ya alcanzado', u.rank >= antes)
 
+print('\n══ AUDITORÍA POR PLAN ' + '═' * 39)
+
+print('\n· lo que paga el login, por plan (pesa al revés: menos fuentes = más)')
+FREE = cuenta('librecito', 'free')
+STD = cuenta('estandar', 'standard')
+visita_app('librecito')
+visita_app('estandar')
+ok('free cobra %d por su login diario' % A.XP_SHARED['login']['free'],
+   xp_de(FREE, 'login') == A.XP_SHARED['login']['free'], xp_de(FREE, 'login'))
+ok('standard cobra %d' % A.XP_SHARED['login']['standard'],
+   xp_de(STD, 'login') == A.XP_SHARED['login']['standard'], xp_de(STD, 'login'))
+ok('premium cobra %d (ya medido arriba)' % A.XP_SHARED['login']['premium'],
+   base_login == A.XP_SHARED['login']['premium'], base_login)
+
+print('\n· las fuentes premium están CERRADAS para free y standard')
+sf, ss = sesion('librecito'), sesion('estandar')
+for nombre, cli in (('free', sf), ('standard', ss)):
+    r = cli.post('/api/quiz/answer', json={'question_id': 0, 'selected': 0})
+    ok('%s: el quiz responde 403 (no hay XP posible por ahí)' % nombre,
+       r.status_code == 403, r.status_code)
+    r = cli.post('/api/daily/answer', json={'selected': 0})
+    ok('%s: el daily responde 403' % nombre, r.status_code == 403, r.status_code)
+    r = cli.post('/api/preflight/checks',
+                 json={'checklist_name': 'x', 'checked': [], 'total': 5,
+                       'verdict': 'go'})
+    ok('%s: pre-flight responde 403 (premium-only)' % nombre,
+       r.status_code == 403, r.status_code)
+
+print('\n· el testimonio: 30 XP UNA vez, y el bucle se frena en el server')
+for nombre, cli, uid in (('free', sf, FREE), ('standard', ss, STD)):
+    for _ in range(4):
+        cli.post('/api/testimonial/submit', json={'rating': 5, 'text': 'Muy bueno',
+                                           'consent': False})
+    gan = xp_de(uid, 'testimonial')
+    with A.app.app_context():
+        filas = A.Testimonial.query.filter_by(user_id=uid).count()
+    ok('%s: cuatro envíos = %d XP y UNA fila (ventana de 30 días server-side)'
+       % (nombre, A.XP_SHARED['testimonial'][nombre]),
+       gan == A.XP_SHARED['testimonial'][nombre] and filas == 1,
+       'xp %s filas %s' % (gan, filas))
+
+print('\n· el daily (premium): el server juzga, paga una vez y la racha manda')
+with A.app.app_context():
+    st = A.DailyQuizState(user_id=GRANJERO, streak=A.DAILY_STREAK_TARGET - 1,
+                          spins_available=0, total_correct=0)
+    A.db.session.add(st)
+    A.db.session.commit()
+with A.app.test_request_context('/'):
+    from flask_login import login_user as _lu
+    _lu(A.db.session.get(A.User, GRANJERO))
+    idx_ok = A._daily_correct_index()
+s = sesion('granjero')
+s.post('/api/daily/start')
+r = s.post('/api/daily/answer', json={'selected': idx_ok})
+d = r.get_json() or {}
+ok('acierta y cobra %d de daily_correct' % A.XP_PREMIUM['daily_correct'],
+   d.get('correct') is True
+   and xp_de(GRANJERO, 'daily_correct') == A.XP_PREMIUM['daily_correct'],
+   xp_de(GRANJERO, 'daily_correct'))
+ok('la racha llegó a %d y pagó el bono de %d'
+   % (A.DAILY_STREAK_TARGET, A.XP_PREMIUM['daily_streak']),
+   xp_de(GRANJERO, 'daily_streak') == A.XP_PREMIUM['daily_streak'],
+   xp_de(GRANJERO, 'daily_streak'))
+r = s.post('/api/daily/answer', json={'selected': idx_ok})
+ok('🔴 responder de nuevo el mismo día → 409, sin segundo pago',
+   r.status_code == 409
+   and xp_de(GRANJERO, 'daily_correct') == A.XP_PREMIUM['daily_correct'])
+
+print('\n· pre-flight (premium): bono único + 5 por check con tope de 15/día')
+pagos = []
+for i in range(5):
+    r = s.post('/api/preflight/checks',
+               json={'checklist_name': 'Rutina %d' % i,
+                     'checked': ['a', 'b'], 'total': 5, 'verdict': 'go'})
+    if r.status_code != 200:
+        break
+primero = xp_de(GRANJERO, 'preflight_first')
+checks = xp_de(GRANJERO, 'preflight_check')
+ok('el primer check de la vida pagó su bono de %d'
+   % A.XP_PREMIUM['preflight_first'],
+   primero == A.XP_PREMIUM['preflight_first'], primero)
+ok('🔴 cinco checks el mismo día se quedan en el tope (%d ≤ %d)'
+   % (checks, A.XP_DAILY_CAP['preflight_check']),
+   0 < checks <= A.XP_DAILY_CAP['preflight_check'])
+
+print('\n· el análisis: el monto sale de la tabla por plan')
+with A.app.app_context():
+    for nombre, uid in (('free', FREE), ('standard', STD)):
+        u = A.db.session.get(A.User, uid)
+        pagado = A.add_xp(u, 'analysis')
+        ok('%s: un análisis paga %d' % (nombre, A.XP_SHARED['analysis'][nombre]),
+           pagado == A.XP_SHARED['analysis'][nombre], pagado)
+    # premium ya está contra su tope maestro: se mide el monto de tabla
+    ok('premium: la tabla dice %d por análisis (frecuencia acotada por su '
+       'cuota de 5/día)' % A.XP_SHARED['analysis']['premium'],
+       A.XP_SHARED['analysis']['premium'] == 10)
+
+print('\n· una fuente INVENTADA no paga nada')
+with A.app.app_context():
+    u = A.db.session.get(A.User, FREE)
+    ok('add_xp("fuente_falsa") devuelve 0', A.add_xp(u, 'fuente_falsa') == 0)
+
+print('\n· los umbrales de rango, borde a borde')
+UMB = A.RANK_THRESHOLDS
+casos = []
+for i, u_ in enumerate(UMB):
+    casos.append((u_, i + 1))                      # justo EN el umbral
+    if u_ > 0:
+        casos.append((u_ - 1, i))                  # un punto por debajo
+casos.append((10 ** 9, len(UMB)))                  # muy por encima del último
+ok('los %d bordes de la tabla dan el rango exacto' % len(casos),
+   all(A.rank_for_xp(x) == r for x, r in casos),
+   [(x, A.rank_for_xp(x), r) for x, r in casos if A.rank_for_xp(x) != r])
+
+print('\n· bajar de plan NO toca ni XP ni rango')
+with A.app.app_context():
+    u = A.db.session.get(A.User, GRANJERO)
+    xp_antes, rk_antes = u.xp, u.rank
+    u.plan = 'free'
+    A.db.session.commit()
+    u = A.db.session.get(A.User, GRANJERO)
+    ok('🔴 el premium que baja a free conserva su XP (%d) y su rango (%d)'
+       % (xp_antes, rk_antes), u.xp == xp_antes and u.rank == rk_antes)
+    u.plan = 'premium'
+    A.db.session.commit()
+
+print('\n· techo REAL de un día perfecto, por plan (informativo)')
+premium_tope = (A.XP_MASTER_CAP['premium']
+                + A.XP_SHARED['testimonial']['premium']
+                + A.XP_PREMIUM['daily_streak'] + A.XP_PREMIUM['preflight_first'])
+print('   ·  free    : login %d + análisis %d (1 cada 7 días) + testimonio %d '
+      '(1 cada 30 días)' % (A.XP_SHARED['login']['free'],
+                            A.XP_SHARED['analysis']['free'],
+                            A.XP_SHARED['testimonial']['free']))
+print('   ·  standard: login %d + análisis %d + foro %d+%d+%d + testimonio %d'
+      % (A.XP_SHARED['login']['standard'], A.XP_SHARED['analysis']['standard'],
+         A.XP_DAILY_CAP['forum_post'], A.XP_DAILY_CAP['forum_comment'],
+         A.XP_DAILY_CAP['forum_reaction'],
+         A.XP_SHARED['testimonial']['standard']))
+print('   ·  premium : tope maestro %d + exentas (testimonio %d, racha %d, '
+      '1er pre-flight %d) = %d máx. en un día irrepetible'
+      % (A.XP_MASTER_CAP['premium'], A.XP_SHARED['testimonial']['premium'],
+         A.XP_PREMIUM['daily_streak'], A.XP_PREMIUM['preflight_first'],
+         premium_tope))
+umbral2 = A.RANK_THRESHOLDS[1]
+print('   ·  con esos techos, el rango 2 (%d XP) toma DÍAS, no minutos — '
+      'no hay atajo.' % umbral2)
+
 print('\n══ INFORME ' + '═' * 50)
 print('  %d defensas aguantaron · %d farmeables' % (bien, roto))
 sys.exit(1 if roto else 0)
