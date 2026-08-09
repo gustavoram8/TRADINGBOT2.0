@@ -1911,7 +1911,6 @@ borrado. PENDIENTE: agregar selector de mes / historial.
   Clave `account.mine` ×4 idiomas. Verificado en navegador real: visible y traducida en EN/ES/FR/PT
   y el clic aterriza en `/settings`. ⚠️ Ajustes ya trae contraseña, 2FA, cerrar otras sesiones y el
   estado del plan — no hacía falta contenido nuevo, faltaba la puerta.
-- [ ] **21. Simular tráfico farmeando XP** y desbloqueando rangos, para cazar bugs del cableado.
 - [x] ✅ **22. Unlocks de rango ilegibles bajo camos (2026-08-03).** Una sola línea lo causaba:
   `body.light .ru-rwd{background:#f8f9fc}` — un blanco FIJO. Con un camo puesto el texto es claro
   (lo fija `--text` del camo) y caía sobre ese blanco: ilegible. En el tema claro por defecto
