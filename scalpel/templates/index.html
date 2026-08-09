@@ -8110,6 +8110,20 @@
       'forum.comm.empty': 'No communities yet — create the first one.',
       'forum.comm.limit': 'You can create up to 3 communities.',
       'forum.comm.nameTaken': 'That name is already taken.',
+      'forum.comm.priv': 'Private',
+      'forum.comm.request': 'Request to join',
+      'forum.comm.requested': 'Request sent — waiting for the owner.',
+      'forum.comm.cancelReq': 'Cancel request',
+      'forum.comm.reqs': 'Requests',
+      'forum.comm.noReqs': 'No pending requests.',
+      'forum.comm.accept': 'Accept',
+      'forum.comm.deny': 'Decline',
+      'forum.comm.invite': 'Invite',
+      'forum.comm.invitePh': 'Username',
+      'forum.comm.invited': 'Invited ✓',
+      'forum.comm.noUser': 'User not found',
+      'forum.comm.notMember': 'This community is private — ask to join first.',
+      'forum.dmLocked': "This member can't receive messages right now.",
       'forum.follow': 'Follow',
       'forum.following': 'Following',
       'forum.emptyFollowing': 'No posts from traders you follow yet. Tap Follow on any post to build your feed.',
@@ -8631,6 +8645,20 @@
       'forum.comm.empty': 'Aún no hay comunidades — crea la primera.',
       'forum.comm.limit': 'Puedes crear hasta 3 comunidades.',
       'forum.comm.nameTaken': 'Ese nombre ya está tomado.',
+      'forum.comm.priv': 'Privada',
+      'forum.comm.request': 'Solicitar unirme',
+      'forum.comm.requested': 'Solicitud enviada — esperando al dueño.',
+      'forum.comm.cancelReq': 'Retirar solicitud',
+      'forum.comm.reqs': 'Solicitudes',
+      'forum.comm.noReqs': 'No hay solicitudes pendientes.',
+      'forum.comm.accept': 'Aceptar',
+      'forum.comm.deny': 'Rechazar',
+      'forum.comm.invite': 'Invitar',
+      'forum.comm.invitePh': 'Usuario',
+      'forum.comm.invited': 'Invitado ✓',
+      'forum.comm.noUser': 'Usuario no encontrado',
+      'forum.comm.notMember': 'Esta comunidad es privada — solicita unirte primero.',
+      'forum.dmLocked': 'Este miembro no puede recibir mensajes por ahora.',
       'forum.follow': 'Seguir',
       'forum.following': 'Siguiendo',
       'forum.emptyFollowing': 'Aún no hay posts de traders que sigas. Toca Seguir en cualquier post para armar tu feed.',
@@ -9152,6 +9180,20 @@
       'forum.comm.empty': 'Pas encore de communautés — créez la première.',
       'forum.comm.limit': 'Vous pouvez créer jusqu’à 3 communautés.',
       'forum.comm.nameTaken': 'Ce nom est déjà pris.',
+      'forum.comm.priv': 'Privée',
+      'forum.comm.request': 'Demander à rejoindre',
+      'forum.comm.requested': 'Demande envoyée — en attente du propriétaire.',
+      'forum.comm.cancelReq': 'Retirer la demande',
+      'forum.comm.reqs': 'Demandes',
+      'forum.comm.noReqs': 'Aucune demande en attente.',
+      'forum.comm.accept': 'Accepter',
+      'forum.comm.deny': 'Refuser',
+      'forum.comm.invite': 'Inviter',
+      'forum.comm.invitePh': "Nom d'utilisateur",
+      'forum.comm.invited': 'Invité ✓',
+      'forum.comm.noUser': 'Utilisateur introuvable',
+      'forum.comm.notMember': "Cette communauté est privée — demandez d'abord à la rejoindre.",
+      'forum.dmLocked': 'Ce membre ne peut pas recevoir de messages pour le moment.',
       'forum.follow': 'Suivre',
       'forum.following': 'Abonné',
       'forum.emptyFollowing': 'Aucun post des traders que vous suivez pour l’instant. Touchez Suivre sur un post pour bâtir votre fil.',
@@ -9673,6 +9715,20 @@
       'forum.comm.empty': 'Ainda não há comunidades — crie a primeira.',
       'forum.comm.limit': 'Você pode criar até 3 comunidades.',
       'forum.comm.nameTaken': 'Esse nome já está em uso.',
+      'forum.comm.priv': 'Privada',
+      'forum.comm.request': 'Pedir para entrar',
+      'forum.comm.requested': 'Pedido enviado — aguardando o dono.',
+      'forum.comm.cancelReq': 'Retirar pedido',
+      'forum.comm.reqs': 'Pedidos',
+      'forum.comm.noReqs': 'Nenhum pedido pendente.',
+      'forum.comm.accept': 'Aceitar',
+      'forum.comm.deny': 'Recusar',
+      'forum.comm.invite': 'Convidar',
+      'forum.comm.invitePh': 'Usuário',
+      'forum.comm.invited': 'Convidado ✓',
+      'forum.comm.noUser': 'Usuário não encontrado',
+      'forum.comm.notMember': 'Esta comunidade é privada — peça para entrar primeiro.',
+      'forum.dmLocked': 'Este membro não pode receber mensagens no momento.',
       'forum.follow': 'Seguir',
       'forum.following': 'Seguindo',
       'forum.emptyFollowing': 'Ainda não há posts de traders que você segue. Toque em Seguir em qualquer post para montar seu feed.',
@@ -12582,6 +12638,8 @@
         return { msg: m, detail: data.reason || '', warn: true };
       }
       if (data.error === 'daily_limit') return { msg: T('forum.noPostsLeft'), detail: '', warn: false };
+      if (data.error === 'not_a_member') return { msg: T('forum.comm.notMember'), detail: '', warn: false };
+      if (data.error === 'recipient_locked') return { msg: T('forum.dmLocked'), detail: '', warn: false };
       if (data.error === 'too_short')   return { msg: T('forum.error'), detail: '', warn: false };
       if (data.error === 'rate_limited') {
         const mins = Math.max(1, Math.round((data.retry_after || 300) / 60));
@@ -13078,6 +13136,9 @@
     }
 
     function commCard(c) {
+      // La tarjeta ES la vista previa pública: nombre, emoji, descripción del
+      // creador y números. Lo de dentro (el feed) es privado: "Abrir" solo
+      // existe para miembros y para el creador; el resto pide entrar y espera.
       const card = document.createElement('div'); card.className = 'comm-card';
       const top = document.createElement('div'); top.className = 'cm-top';
       const em = document.createElement('span'); em.className = 'cm-emoji'; em.textContent = c.emoji || '👥';
@@ -13085,22 +13146,83 @@
       top.appendChild(em); top.appendChild(nm); card.appendChild(top);
       const de = document.createElement('div'); de.className = 'cm-desc'; de.textContent = c.description || ''; card.appendChild(de);
       const mt = document.createElement('div'); mt.className = 'cm-meta';
-      mt.textContent = c.members + ' ' + T('forum.comm.members') + ' · ' + c.posts + ' ' + T('forum.comm.posts') + (c.is_mine ? ' · ' + T('forum.comm.mine') : '');
+      mt.textContent = c.members + ' ' + T('forum.comm.members') + ' · ' + c.posts + ' ' + T('forum.comm.posts')
+        + (c.is_mine ? ' · ' + T('forum.comm.mine') : '')
+        + ((c.joined || c.is_mine) ? '' : ' · 🔒 ' + T('forum.comm.priv'));
       card.appendChild(mt);
       const act = document.createElement('div'); act.className = 'cm-actions';
-      const open = document.createElement('button'); open.type = 'button'; open.className = 'forum-btn primary';
-      open.textContent = T('forum.comm.open');
-      open.addEventListener('click', () => openCommunity(c));
-      act.appendChild(open);
+      if (c.joined || c.is_mine) {
+        const open = document.createElement('button'); open.type = 'button'; open.className = 'forum-btn primary';
+        open.textContent = T('forum.comm.open');
+        open.addEventListener('click', () => openCommunity(c));
+        act.appendChild(open);
+      }
       if (!c.is_mine) {
         const j = document.createElement('button'); j.type = 'button'; j.className = 'forum-btn ghost';
-        j.textContent = c.joined ? T('forum.comm.leave') : T('forum.comm.join');
+        j.textContent = c.joined ? T('forum.comm.leave')
+          : (c.pending ? T('forum.comm.cancelReq') : T('forum.comm.request'));
         j.addEventListener('click', () => {
-          api('/forum/community/' + c.id + '/membership', { json: { join: !c.joined } }).then(r => {
+          const dentro = c.joined || c.pending;   // salir, o retirar la solicitud
+          api('/forum/community/' + c.id + '/membership', { json: { join: !dentro } }).then(r => {
             if (r.ok) loadCommunities();
           });
         });
         act.appendChild(j);
+        if (c.pending) {
+          const p = document.createElement('span'); p.className = 'cm-meta';
+          p.textContent = T('forum.comm.requested');
+          act.appendChild(p);
+        }
+      } else {
+        // Herramientas del creador: la cola de solicitudes y la invitación.
+        const rq = document.createElement('button'); rq.type = 'button'; rq.className = 'forum-btn ghost';
+        rq.textContent = T('forum.comm.reqs') + (c.requests ? ' (' + c.requests + ')' : '');
+        const zona = document.createElement('div'); zona.style.display = 'none';
+        zona.style.cssText = 'display:none;margin-top:10px;width:100%;';
+        rq.addEventListener('click', async () => {
+          if (zona.style.display !== 'none') { zona.style.display = 'none'; return; }
+          const r = await api('/forum/community/' + c.id + '/requests');
+          zona.innerHTML = '';
+          const filas = (r.ok && r.data.requests) || [];
+          if (!filas.length) {
+            const v = document.createElement('div'); v.className = 'cm-meta';
+            v.textContent = T('forum.comm.noReqs'); zona.appendChild(v);
+          }
+          filas.forEach(f => {
+            const fila = document.createElement('div');
+            fila.style.cssText = 'display:flex;align-items:center;gap:8px;margin-top:6px;';
+            const who = document.createElement('span'); who.className = 'cm-meta';
+            who.style.marginLeft = '0'; who.textContent = f.username;
+            const si = document.createElement('button'); si.type = 'button'; si.className = 'forum-btn primary';
+            si.textContent = T('forum.comm.accept');
+            const no = document.createElement('button'); no.type = 'button'; no.className = 'forum-btn ghost';
+            no.textContent = T('forum.comm.deny');
+            const decide = (accept) => api('/forum/community/' + c.id + '/requests',
+              { json: { username: f.username, accept } }).then(() => loadCommunities());
+            si.addEventListener('click', () => decide(true));
+            no.addEventListener('click', () => decide(false));
+            fila.appendChild(who); fila.appendChild(si); fila.appendChild(no);
+            zona.appendChild(fila);
+          });
+          zona.style.display = 'block';
+        });
+        act.appendChild(rq);
+        const inp = document.createElement('input'); inp.type = 'text';
+        inp.placeholder = T('forum.comm.invitePh'); inp.maxLength = 30;
+        inp.style.cssText = 'flex:1;min-width:90px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:12px;';
+        const inv = document.createElement('button'); inv.type = 'button'; inv.className = 'forum-btn ghost';
+        inv.textContent = T('forum.comm.invite');
+        inv.addEventListener('click', () => {
+          const u = inp.value.trim(); if (!u) return;
+          api('/forum/community/' + c.id + '/invite', { json: { username: u } }).then(r => {
+            inp.value = '';
+            inp.placeholder = r.ok ? T('forum.comm.invited') : T('forum.comm.noUser');
+            if (r.ok) loadCommunities();
+          });
+        });
+        act.appendChild(inp); act.appendChild(inv);
+        card.appendChild(act); card.appendChild(zona);
+        return card;
       }
       card.appendChild(act);
       return card;

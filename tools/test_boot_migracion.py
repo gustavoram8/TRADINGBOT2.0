@@ -19,7 +19,9 @@ NUEVAS_OTRAS = [('daily_quiz_state', 'best_streak', None),
                 ('plan_subscription', 'pending_price', None),
                 ('plan_subscription', 'pending_at', None),
                 # ensayos de sandbox fuera de Revenue (2026-08-05)
-                ('order', 'is_test', None)]
+                ('order', 'is_test', None),
+                # comunidades privadas (2026-08-09)
+                ('forum_community_member', 'status', None)]
 
 if os.path.exists(DB):
     os.remove(DB)

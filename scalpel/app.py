@@ -1036,6 +1036,11 @@ class ForumCommunityMember(db.Model):
     community_id = db.Column(db.Integer, db.ForeignKey('forum_community.id'), nullable=False, index=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
     joined_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    # Las comunidades son PRIVADAS (decisión del dueño, 2026-08-09): entrar es
+    # por solicitud que el creador acepta, o por invitación directa suya.
+    # 'member' = dentro · 'pending' = solicitud esperando al creador (si la
+    # rechaza, la fila se borra — así puede volver a pedirlo más adelante).
+    status = db.Column(db.String(10), default='member', nullable=False)
 
 
 class ForumFollow(db.Model):
@@ -12500,15 +12505,50 @@ MAX_COMMUNITIES_PER_USER = 3
 DM_PAGE = 40
 
 
+def _es_miembro(cid, uid):
+    """¿Está DENTRO? Una solicitud pendiente no es pertenencia."""
+    return ForumCommunityMember.query.filter_by(
+        community_id=cid, user_id=uid, status='member').first() is not None
+
+
+def _puede_ver_comunidad(cid):
+    """Miembro, creador o admin. Es el candado de LECTURA: las comunidades son
+    privadas, así que leer su feed, abrir sus posts, comentarlos o
+    reaccionarles exige estar dentro."""
+    if current_user.is_admin:
+        return True
+    c = db.session.get(ForumCommunity, cid)
+    if c is not None and c.creator_id == current_user.id:
+        return True
+    return _es_miembro(cid, current_user.id)
+
+
+def _mis_comunidades_ids(uid):
+    """Ids de comunidades a las que el usuario pertenece (o que creó)."""
+    ids = {m.community_id for m in ForumCommunityMember.query.filter_by(
+        user_id=uid, status='member').all()}
+    ids.update(c.id for c in ForumCommunity.query.filter_by(creator_id=uid).all())
+    return ids
+
+
 def _community_dict(c):
-    return {'id': c.id, 'name': c.name, 'emoji': c.emoji or '👥',
-            'description': c.description or '',
-            'members': ForumCommunityMember.query.filter_by(community_id=c.id).count(),
-            'posts': ForumPost.query.filter_by(community_id=c.id, is_deleted=False).count(),
-            'creator': c.creator.username if c.creator else '—',
-            'is_mine': c.creator_id == current_user.id,
-            'joined': ForumCommunityMember.query.filter_by(
-                community_id=c.id, user_id=current_user.id).first() is not None}
+    fila = ForumCommunityMember.query.filter_by(
+        community_id=c.id, user_id=current_user.id).first()
+    es_mia = c.creator_id == current_user.id
+    d = {'id': c.id, 'name': c.name, 'emoji': c.emoji or '👥',
+         'description': c.description or '',
+         'members': ForumCommunityMember.query.filter_by(
+             community_id=c.id, status='member').count(),
+         'posts': ForumPost.query.filter_by(community_id=c.id, is_deleted=False).count(),
+         'creator': c.creator.username if c.creator else '—',
+         'is_mine': es_mia,
+         'joined': bool(fila and fila.status == 'member'),
+         'pending': bool(fila and fila.status == 'pending')}
+    if es_mia:
+        # Solo el creador ve cuánta gente espera en la puerta.
+        d['requests'] = ForumCommunityMember.query.filter_by(
+            community_id=c.id, status='pending').count()
+    return d
 
 
 @app.route('/forum/communities', methods=['GET', 'POST'])
@@ -12546,17 +12586,93 @@ def forum_communities():
 @app.route('/forum/community/<int:cid>/membership', methods=['POST'])
 @standard_required
 def forum_community_membership(cid):
+    """Pedir entrar, cancelar la solicitud, o salirse.
+
+    Las comunidades son privadas: "unirse" ya no mete a nadie — deja una
+    SOLICITUD que el creador acepta o rechaza. Salirse (o retirar la
+    solicitud) sí es inmediato: nadie necesita permiso para irse.
+    """
     c = db.session.get(ForumCommunity, cid)
     if not c:
         return jsonify({'error': 'not_found'}), 404
     join = bool(request.json.get('join')) if request.is_json else False
     row = ForumCommunityMember.query.filter_by(community_id=cid, user_id=current_user.id).first()
-    if join and not row:
-        db.session.add(ForumCommunityMember(community_id=cid, user_id=current_user.id))
+    if join and not row and c.creator_id != current_user.id:
+        muted = forum_mute_remaining(current_user)
+        if muted:
+            return jsonify({'error': 'muted', 'retry_after': muted}), 403
+        db.session.add(ForumCommunityMember(community_id=cid,
+                                            user_id=current_user.id,
+                                            status='pending'))
     elif not join and row:
         if c.creator_id == current_user.id:
             return jsonify({'error': 'creator_cannot_leave'}), 400
         db.session.delete(row)
+    db.session.commit()
+    return jsonify({'ok': True, 'community': _community_dict(c)})
+
+
+@app.route('/forum/community/<int:cid>/requests', methods=['GET', 'POST'])
+@standard_required
+def forum_community_requests(cid):
+    """La puerta de la comunidad: solo el CREADOR ve y decide las solicitudes.
+
+    Aceptar convierte la fila pending en member; rechazar la borra — a
+    propósito, para que el rechazado pueda volver a pedirlo en el futuro sin
+    quedar marcado para siempre.
+    """
+    c = db.session.get(ForumCommunity, cid)
+    if not c:
+        return jsonify({'error': 'not_found'}), 404
+    if c.creator_id != current_user.id and not current_user.is_admin:
+        return jsonify({'error': 'forbidden'}), 403
+    if request.method == 'POST':
+        d = request.json if request.is_json else {}
+        uname = (d.get('username') or '').strip()
+        quien = User.query.filter(db.func.lower(User.username) == uname.lower()).first()
+        fila = (ForumCommunityMember.query.filter_by(
+            community_id=cid, user_id=quien.id, status='pending').first()
+            if quien else None)
+        if not fila:
+            return jsonify({'error': 'not_found'}), 404
+        if d.get('accept'):
+            fila.status = 'member'
+        else:
+            db.session.delete(fila)
+        db.session.commit()
+        return jsonify({'ok': True, 'community': _community_dict(c)})
+    # ⚠️ ForumCommunityMember no declara relación `user`: el join va explícito.
+    pendientes = (db.session.query(ForumCommunityMember, User)
+                  .join(User, User.id == ForumCommunityMember.user_id)
+                  .filter(ForumCommunityMember.community_id == cid,
+                          ForumCommunityMember.status == 'pending')
+                  .order_by(ForumCommunityMember.joined_at.asc()).all())
+    return jsonify({'requests': [
+        {'username': u.username, 'rank': u.rank or 1,
+         'since': _as_utc(m.joined_at).isoformat()} for m, u in pendientes]})
+
+
+@app.route('/forum/community/<int:cid>/invite', methods=['POST'])
+@standard_required
+def forum_community_invite(cid):
+    """El creador mete a alguien directamente, sin que lo pida."""
+    c = db.session.get(ForumCommunity, cid)
+    if not c:
+        return jsonify({'error': 'not_found'}), 404
+    if c.creator_id != current_user.id and not current_user.is_admin:
+        return jsonify({'error': 'forbidden'}), 403
+    d = request.json if request.is_json else {}
+    uname = (d.get('username') or '').strip()
+    quien = User.query.filter(db.func.lower(User.username) == uname.lower()).first()
+    if not quien or quien.id == current_user.id or quien.is_banned:
+        return jsonify({'error': 'not_found'}), 404
+    fila = ForumCommunityMember.query.filter_by(community_id=cid,
+                                                user_id=quien.id).first()
+    if fila:
+        fila.status = 'member'     # una solicitud pendiente queda aceptada
+    else:
+        db.session.add(ForumCommunityMember(community_id=cid, user_id=quien.id,
+                                            status='member'))
     db.session.commit()
     return jsonify({'ok': True, 'community': _community_dict(c)})
 
@@ -12617,6 +12733,13 @@ def forum_dm_with(username):
         muted = forum_mute_remaining(current_user)
         if muted:
             return jsonify({'error': 'muted', 'retry_after': muted}), 403
+        # 🔴 Un destinatario que no puede LEER el foro (free, o baneado) no
+        # puede recibir privados: el mensaje entraba a un buzón que el otro
+        # jamás podía abrir, y el remitente se quedaba esperando respuesta de
+        # alguien que ni sabe que le escribieron. Mejor decirlo de frente.
+        if other.is_banned or (other.plan not in ('standard', 'premium')
+                               and not other.is_admin):
+            return jsonify({'error': 'recipient_locked'}), 403
         body = (request.json.get('body') or '').strip()[:2000] if request.is_json else ''
         if len(body) < 1:
             return jsonify({'error': 'too_short'}), 400
@@ -12668,9 +12791,21 @@ def forum_feed():
     comm = request.args.get('community')
     if comm:
         try:
-            q = q.filter(ForumPost.community_id == int(comm))
+            cid = int(comm)
         except (TypeError, ValueError):
-            pass
+            return jsonify({'error': 'not_found'}), 404
+        # Privadas: el feed de una comunidad solo lo ven sus miembros.
+        if not _puede_ver_comunidad(cid):
+            return jsonify({'error': 'not_a_member'}), 403
+        q = q.filter(ForumPost.community_id == cid)
+    else:
+        # 🔴 El feed general NO puede filtrar contenido de comunidades ajenas:
+        # sin esto, todo lo publicado en una sala privada salía igualmente en
+        # el feed de todo el mundo y la privacidad era pura decoración.
+        if not current_user.is_admin:
+            mias = _mis_comunidades_ids(current_user.id)
+            q = q.filter(db.or_(ForumPost.community_id.is_(None),
+                                ForumPost.community_id.in_(mias or [-1])))
     if request.args.get('feed') == 'following':
         fids = [f.followed_id for f in ForumFollow.query.filter_by(follower_id=current_user.id).all()]
         q = q.filter(ForumPost.user_id.in_(fids or [-1]))
@@ -12691,6 +12826,8 @@ def forum_post_detail(pid):
     post = ForumPost.query.filter_by(id=pid, is_deleted=False).first()
     if not post:
         return jsonify({'error': 'not_found'}), 404
+    if post.community_id and not _puede_ver_comunidad(post.community_id):
+        return jsonify({'error': 'not_a_member'}), 403
     comments = (ForumComment.query.filter_by(post_id=pid)
                 .order_by(ForumComment.created_at.asc()).all())
     # Hide deleted comments that have no surviving replies (keep ones needed for thread shape)
@@ -12749,8 +12886,11 @@ def forum_create_post():
         except (TypeError, ValueError):
             cid = None
         if cid:
-            if not ForumCommunityMember.query.filter_by(community_id=cid,
-                                                        user_id=current_user.id).first():
+            # Publicar exige estar DENTRO (o ser el creador): una solicitud
+            # pendiente todavía no es pertenencia.
+            c = db.session.get(ForumCommunity, cid)
+            es_creador = bool(c and c.creator_id == current_user.id)
+            if not es_creador and not _es_miembro(cid, current_user.id):
                 return jsonify({'error': 'not_a_member'}), 403
             community_id = cid
 
@@ -12779,6 +12919,8 @@ def forum_add_comment(pid):
     post = ForumPost.query.filter_by(id=pid, is_deleted=False).first()
     if not post:
         return jsonify({'error': 'not_found'}), 404
+    if post.community_id and not _puede_ver_comunidad(post.community_id):
+        return jsonify({'error': 'not_a_member'}), 403
 
     body = (request.form.get('body') or '').strip()
     if not body:
@@ -12828,6 +12970,27 @@ def forum_react():
     if not pid and not cid:
         return jsonify({'error': 'missing_target'}), 400
 
+    # 🔴 El objetivo tiene que EXISTIR y estar vivo. Sin esto se podían crear
+    # reacciones huérfanas contra ids inventados, y peor: reaccionar a un post
+    # BORRADO seguía pagándole XP al autor — dos cuentas coordinadas farmeaban
+    # sobre un post que ningún moderador podía ver. Y si el objetivo vive en
+    # una comunidad, reaccionar exige ser miembro (privadas).
+    if pid:
+        objetivo = ForumPost.query.filter_by(id=pid, is_deleted=False).first()
+        comunidad = objetivo.community_id if objetivo else None
+    else:
+        cmt = ForumComment.query.filter_by(id=cid, is_deleted=False).first()
+        objetivo = cmt
+        padre = (ForumPost.query.filter_by(id=cmt.post_id, is_deleted=False)
+                 .first() if cmt else None)
+        if not padre:
+            objetivo = None
+        comunidad = padre.community_id if padre else None
+    if not objetivo:
+        return jsonify({'error': 'not_found'}), 404
+    if comunidad and not _puede_ver_comunidad(comunidad):
+        return jsonify({'error': 'not_a_member'}), 403
+
     existing = ForumReaction.query.filter_by(
         user_id=current_user.id, post_id=pid, comment_id=cid).first()
     if existing:
@@ -12859,6 +13022,13 @@ def forum_save():
     if not (raw_pid and raw_pid.isdigit()):
         return jsonify({'error': 'missing_target'}), 400
     pid = int(raw_pid)
+    # Mismo candado que las reacciones: el post debe existir, estar vivo, y si
+    # es de una comunidad, guardar exige ser miembro.
+    post = ForumPost.query.filter_by(id=pid, is_deleted=False).first()
+    if not post:
+        return jsonify({'error': 'not_found'}), 404
+    if post.community_id and not _puede_ver_comunidad(post.community_id):
+        return jsonify({'error': 'not_a_member'}), 403
     existing = SavedPost.query.filter_by(user_id=current_user.id, post_id=pid).first()
     if existing:
         db.session.delete(existing)
@@ -15639,6 +15809,24 @@ def _migrate_user_verification_columns():
         app.logger.info('Migrated user table: added missing columns (%d).', len(stmts))
 
 
+def _migrate_forum_member_status_column():
+    """Comunidades privadas (2026-08-09): `status` en forum_community_member.
+
+    El DEFAULT 'member' es el backfill: todo el que ya estaba dentro sigue
+    dentro — la privacidad corta hacia adelante, no expulsa a nadie.
+    """
+    from sqlalchemy import inspect, text
+    insp = inspect(db.engine)
+    if 'forum_community_member' not in insp.get_table_names():
+        return
+    cols = {c['name'] for c in insp.get_columns('forum_community_member')}
+    if 'status' not in cols:
+        with db.engine.begin() as conn:
+            conn.execute(text("ALTER TABLE forum_community_member ADD COLUMN "
+                              "status VARCHAR(10) NOT NULL DEFAULT 'member'"))
+        app.logger.info('Migrated forum_community_member: added status column.')
+
+
 def _migrate_user_email_canonical_column():
     """Añade `email_canonical` y lo rellena para las cuentas que ya existen.
 
@@ -16354,6 +16542,7 @@ def init_db():
         _migrate_preflight_check_columns()
         _migrate_sale_reserve_columns()
         _migrate_sub_pending_columns()
+        _migrate_forum_member_status_column()
         _migrate_order_is_test_column()
         _migrate_cosmetic_is_test_columns()
         _migrate_testimonial_insider_column()

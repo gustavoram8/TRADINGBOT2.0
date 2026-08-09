@@ -1868,9 +1868,30 @@ borrado. PENDIENTE: agregar selector de mes / historial.
 - [ ] **16. Intranet del influencer:** que vea SUS clientes, sus comisiones y nada más. Propone un
   rol tipo admin, "Commercial Ally". ⚠️ Ojo: `/partner` ya existe (2026-08-01) — revisar qué falta
   en vez de rehacerlo.
-- [ ] **17. Foro — simulacro de tráfico real:** cuentas falsas publicando, comentando, siguiéndose,
-  mandándose DMs y **tratando de romper las reglas**. Reportar bugs encontrados, qué falta, y si
-  alguna regla es evadible o algo prometido no se puede hacer.
+- [x] ✅ **17. Foro — simulacro de tráfico real (2026-08-09) + COMUNIDADES PRIVADAS.**
+  `tools/simula_foro.py` = **65 reglas atacadas por HTTP, 0 evadibles** (puertas por plan con el
+  free EMPUJANDO la puerta, límites diarios, prefiltro, propiedad, silenciado, XSS: todo se pinta
+  con textContent). **3 bugs reales cazados y arreglados:** (a) reaccionar/guardar contra ids
+  inexistentes creaba filas huérfanas, y reaccionar a un post BORRADO seguía pagando XP al autor
+  (farmeo invisible a moderación); (b) DM a un usuario FREE/baneado entraba a un buzón que el otro
+  jamás podía abrir → ahora 403 `recipient_locked` con su texto ×4 (`forum.dmLocked`); (c) el feed
+  general enseñaba los posts de comunidad a todo el mundo.
+  **Comunidades PRIVADAS (decisión del dueño):** la tarjeta es la vista previa pública (nombre,
+  emoji, descripción del creador, números); leer/abrir/comentar/reaccionar/guardar exige ser
+  miembro. Entrar = **solicitud** (`ForumCommunityMember.status` 'pending'→'member'; rechazar
+  BORRA la fila para poder re-pedir) que solo el creador acepta/rechaza (`GET/POST
+  /forum/community/<id>/requests`), o **invitación directa** del creador (`/invite`). El feed
+  general filtra a no-miembros (`_mis_comunidades_ids`); publicar exige status='member' (pending
+  no es pertenencia). Migración `_migrate_forum_member_status_column()` (DEFAULT 'member' = el
+  backfill: nadie que estaba dentro sale expulsado), boot test 7/7. 15 claves `forum.comm.*`/
+  `forum.dmLocked` ×4. ⚠️ `ForumCommunityMember` NO tiene relación `user` — joins explícitos.
+- [x] ✅ **21. Farmeo de XP simulado (2026-08-09).** `tools/simula_xp.py` = **14 defensas, 0
+  farmeables**: login repetido paga 1/día (⚠️ el XP de login se paga al ABRIR /app, no en el POST
+  de login — y /app exige el cookie del splash), la misma pregunta de quiz en bucle paga 0 (dedup
+  `q:<id>`), mentir el acierto no cuela (el server juzga), 40 correctas no pasan del tope de 20,
+  borrar-y-republicar no burla ni el límite de 2 posts/día (`todays_post_count` cuenta borrados)
+  ni su tope de XP, la cuenta cómplice cambiando de emoji paga como UNA reacción, tope maestro
+  premium 80/día, y rank == rank_for_xp(xp) y nunca baja.
 - [ ] **18. Subidas al foro:** permitir capturas **del propio sitio** (landing, camos, etc.) y
   bloquear drogas, desnudos, armas y asesoría financiera — **sin censurar de más**.
 - [ ] **19. 🔴 Calidad del analizador fuera de ICT/STDV.** No sabe operar armónicos ni otras

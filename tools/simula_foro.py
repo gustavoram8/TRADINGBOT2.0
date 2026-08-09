@@ -241,20 +241,100 @@ ok('...ni crear comunidades',
 ok('pero SÍ puede leer el feed (no es una expulsión)',
    sm.get('/forum/feed').status_code == 200)
 
-print('\n· qué se puede hacer SIN ser miembro de una comunidad')
-# Esto NO se marca como roto: es una decisión de diseño. Las comunidades se
-# presentan como salas públicas ("Join", "Open", "members") y en ningún texto
-# se promete privacidad. Se deja medido para que el dueño lo confirme.
+print('\n· comunidades PRIVADAS (decisión del dueño, 2026-08-09)')
+# ana creó "Futuros NQ" (COM). beto NO es miembro. Publica dentro un post que
+# beto no debería ni ver.
+r = publicar(S['ana'], 'Solo para la sala', 'Contenido privado de la comunidad.',
+             community_id=COM)
+# ana ya gastó sus 2 posts del día arriba: se lo publica caro tras entrar.
+ok('pedir unirse deja una SOLICITUD, no te mete',
+   S['caro'].post('/forum/community/%d/membership' % COM,
+                  json={'join': True}).status_code == 200)
+r = S['caro'].get('/forum/feed?community=%d' % COM)
+ok('🔴 con la solicitud PENDIENTE aún no se lee el feed',
+   r.status_code == 403, r.status_code)
 r = S['beto'].get('/forum/feed?community=%d' % COM)
-leible = r.status_code == 200
-r2 = S['caro'].post('/forum/post/%d/comment' % PID,
-                    data={'body': 'Comento sin ser miembro de la sala.'})
-print('   ·  leer el feed de una comunidad ajena: %s'
-      % ('SÍ se puede' if leible else 'bloqueado'))
-print('   ·  comentar en un post de esa comunidad: %s'
-      % ('SÍ se puede' if r2.status_code == 200 else 'bloqueado'))
-print('      (unirse hace falta solo para PUBLICAR. Nada en la interfaz')
-print('       promete que sean privadas — decisión tuya si debe cambiar.)')
+ok('🔴 un no-miembro no puede leer el feed de la sala',
+   r.status_code == 403, r.status_code)
+r = S['beto'].post('/forum/community/%d/requests' % COM,
+                   json={'username': 'caro', 'accept': True})
+ok('🔴 un no-dueño NO puede aceptar solicitudes ajenas',
+   r.status_code == 403, r.status_code)
+r = S['ana'].get('/forum/community/%d/requests' % COM)
+ok('el dueño ve la cola de solicitudes',
+   r.status_code == 200 and any(x['username'] == 'caro'
+                                for x in r.get_json()['requests']))
+ok('el dueño acepta a caro',
+   S['ana'].post('/forum/community/%d/requests' % COM,
+                 json={'username': 'caro', 'accept': True}).status_code == 200)
+ok('...y caro ya lee el feed de la sala',
+   S['caro'].get('/forum/feed?community=%d' % COM).status_code == 200)
+
+r = S['caro'].post('/forum/post', data={
+    'title': 'Post desde dentro', 'body': 'Ya soy miembro y publico en la sala.',
+    'community_id': str(COM)})
+ok('un miembro aceptado puede publicar dentro', r.status_code == 200,
+   r.status_code)
+PRIV = (r.get_json() or {}).get('post', {}).get('id')
+
+feed = S['beto'].get('/forum/feed').get_json()
+ok('🔴 el post privado NO aparece en el feed general de un no-miembro',
+   all(p['id'] != PRIV for p in feed['posts']))
+feed = S['caro'].get('/forum/feed').get_json()
+ok('...pero el miembro SÍ lo ve en su feed general',
+   any(p['id'] == PRIV for p in feed['posts']))
+ok('🔴 abrir el post privado por id directo tampoco funciona',
+   S['beto'].get('/forum/post/%d' % PRIV).status_code == 403)
+ok('🔴 ni comentarlo',
+   S['beto'].post('/forum/post/%d/comment' % PRIV,
+                  data={'body': 'Colando un comentario en sala ajena.'})
+   .status_code == 403)
+ok('🔴 ni reaccionarle',
+   S['beto'].post('/forum/react', data={'emoji': 'fire',
+                                        'post_id': str(PRIV)}).status_code == 403)
+ok('🔴 ni guardarlo',
+   S['beto'].post('/forum/save', data={'post_id': str(PRIV)}).status_code == 403)
+
+ok('el dueño invita a beto directamente',
+   S['ana'].post('/forum/community/%d/invite' % COM,
+                 json={'username': 'beto'}).status_code == 200)
+ok('...y beto ya abre el post privado',
+   S['beto'].get('/forum/post/%d' % PRIV).status_code == 200)
+ok('invitar a un fantasma se rechaza',
+   S['ana'].post('/forum/community/%d/invite' % COM,
+                 json={'username': 'nadie'}).status_code == 404)
+ok('un miembro puede irse cuando quiera',
+   S['beto'].post('/forum/community/%d/membership' % COM,
+                  json={'join': False}).status_code == 200)
+ok('...y al irse pierde la sala',
+   S['beto'].get('/forum/post/%d' % PRIV).status_code == 403)
+
+print('\n· objetivos fantasma y farmeo sobre borrados')
+ok('reaccionar a un post INEXISTENTE ya no crea nada',
+   S['caro'].post('/forum/react', data={'emoji': 'fire', 'post_id': '99999'})
+   .status_code == 404)
+ok('guardar un post inexistente tampoco',
+   S['caro'].post('/forum/save', data={'post_id': '99999'}).status_code == 404)
+with A.app.app_context():
+    borrado = A.ForumPost.query.filter_by(user_id=UID['ana'],
+                                          community_id=None).first()
+    borrado.is_deleted = True
+    A.db.session.commit()
+    BID = borrado.id
+    xp_antes = A.XPLog.query.filter_by(user_id=UID['ana'],
+                                       source='forum_reaction').count()
+r = S['caro'].post('/forum/react', data={'emoji': 'chart', 'post_id': str(BID)})
+with A.app.app_context():
+    xp_despues = A.XPLog.query.filter_by(user_id=UID['ana'],
+                                         source='forum_reaction').count()
+ok('🔴 reaccionar a un post BORRADO se rechaza (y no paga XP al autor)',
+   r.status_code == 404 and xp_despues == xp_antes,
+   '%s xp %d→%d' % (r.status_code, xp_antes, xp_despues))
+
+print('\n· mensajes al vacío')
+ok('🔴 un privado a un usuario FREE se rechaza de frente (no puede leerlo)',
+   S['caro'].post('/forum/dm/with/dani', json={'body': 'hola'})
+   .status_code == 403)
 
 print('\n· inyección de HTML')
 r = publicar(S['beto'], '<script>alert(1)</script>',
