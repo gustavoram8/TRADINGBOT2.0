@@ -1,204 +1,192 @@
 # -*- coding: utf-8 -*-
-"""El acuerdo, en PDF legible.
+"""Convierte docs/acuerdo_colaboracion.md en un PDF listo para firmar.
 
-Conversion a mano y no con una libreria generica de markdown porque el documento
-tiene tres construcciones que esas librerias maquetan mal: la tabla de tramos, el
-bloque de firmas y las viñetas dentro de apartados numerados.
+    python3 tools/build_acuerdo_pdf.py
 
-⚠️ La primera version se colgo en un bucle infinito: una linea sangrada que NO
-venia detras de una viñeta entraba en la rama de listas, no consumia nada y
-dejaba el indice donde estaba. El arreglo no es parchear esa condicion sino
-quitarle el problema de encima al parser: en una PRIMERA pasada se juntan las
-continuaciones con su linea madre, y despues cada rama consume exactamente una
-linea (salvo la tabla). Ademas hay un guardia que revienta si el indice no
-avanza, para que un fallo asi se vea en vez de colgarse.
+Se regenera tras CADA ronda de correcciones del acuerdo: el .md es la fuente
+de verdad, el PDF es solo su presentacion. Nunca editar el PDF a mano.
+
+Tipografia: Inter (la de la marca) en los titulos y Bitstream Charter en el
+cuerpo. Charter porque es la unica serif del sistema con familia COMPLETA
+—regular, cursiva, negrita y negrita cursiva—: DejaVu Serif no trae cursiva y
+WeasyPrint acabaria inclinando las letras por calculo, que en un documento
+que se imprime y se firma se nota.
 """
-import re
-
-from reportlab.lib import colors
-from reportlab.lib.enums import TA_JUSTIFY
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
-from reportlab.lib.units import mm
-from reportlab.platypus import (HRFlowable, Image, ListFlowable, ListItem,
-                                Paragraph, SimpleDocTemplate, Spacer, Table,
-                                TableStyle)
-
 import os
+import re
+import sys
 
-_RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ORIGEN = os.path.join(_RAIZ, 'docs', 'acuerdo_colaboracion.md')
-DESTINO = os.path.join(_RAIZ, 'out', 'Acuerdo_de_colaboracion_Tradeable_Academy.pdf')
-os.makedirs(os.path.dirname(DESTINO), exist_ok=True)
+import markdown
+from weasyprint import HTML
 
-TINTA = colors.HexColor('#1b1c20')
-SUAVE = colors.HexColor('#5c6274')
-ORO = colors.HexColor('#a97e14')
-LINEA = colors.HexColor('#d9dce3')
+RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MD = os.path.join(RAIZ, 'docs', 'acuerdo_colaboracion.md')
+PDF = os.path.join(RAIZ, 'docs', 'acuerdo_colaboracion.pdf')
+FUENTES = os.path.join(RAIZ, 'tools', '.fuentes')
 
-ss = getSampleStyleSheet()
-E = {
-    'h1': ParagraphStyle('h1', parent=ss['Title'], fontName='Helvetica-Bold',
-                         fontSize=19, leading=24, textColor=TINTA,
-                         spaceAfter=2, alignment=0),
-    'h2': ParagraphStyle('h2', parent=ss['Heading2'], fontName='Helvetica-Bold',
-                         fontSize=12.5, leading=16, textColor=ORO,
-                         spaceBefore=15, spaceAfter=5),
-    'p': ParagraphStyle('p', parent=ss['BodyText'], fontName='Helvetica',
-                        fontSize=9.6, leading=14.2, textColor=TINTA,
-                        alignment=TA_JUSTIFY, spaceAfter=7),
-    'li': ParagraphStyle('li', parent=ss['BodyText'], fontName='Helvetica',
-                         fontSize=9.6, leading=13.8, textColor=TINTA,
-                         alignment=TA_JUSTIFY, spaceAfter=4),
-    'celda': ParagraphStyle('celda', parent=ss['BodyText'], fontName='Helvetica',
-                            fontSize=9.4, leading=13, textColor=TINTA,
-                            spaceAfter=0),
-    'nota': ParagraphStyle('nota', parent=ss['BodyText'], fontName='Helvetica-Oblique',
-                           fontSize=8.6, leading=12.4, textColor=SUAVE,
-                           alignment=TA_JUSTIFY, spaceBefore=4, spaceAfter=6),
+AZUL = '#004feb'
+TINTA = '#15181f'
+
+
+def caras():
+    """@font-face de Inter y JetBrains Mono desde tools/.fuentes (gitignored).
+
+    Si la carpeta no esta, se cae a las del sistema sin romper el documento.
+    """
+    reglas = []
+    for fam, archivo, peso in (('InterDoc', 'Inter-400.ttf', 400),
+                               ('InterDoc', 'Inter-700.ttf', 700),
+                               ('InterDoc', 'Inter-800.ttf', 800),
+                               ('MonoDoc', 'JetBrainsMono-400.ttf', 400)):
+        ruta = os.path.join(FUENTES, archivo)
+        if os.path.exists(ruta):
+            reglas.append("@font-face{font-family:'%s';font-weight:%d;"
+                          "src:url('file://%s')}" % (fam, peso, ruta))
+    return '\n'.join(reglas)
+
+
+CSS = """
+%(caras)s
+
+@page {
+  size: A4;
+  margin: 22mm 20mm 20mm 20mm;
+  @bottom-center {
+    content: "P\\00E1gina " counter(page) " de " counter(pages);
+    font-family: 'InterDoc', 'Liberation Sans', sans-serif;
+    font-size: 7.6pt; color: #8b93a6; padding-top: 5mm;
+  }
+}
+/* La primera pagina lleva el titulo, no necesita ademas la cabecera */
+@page :first { @top-right { content: ""; } }
+@page { @top-right {
+    content: "Carta de acuerdo de colaboraci\\00F3n \\2014  Tradeable Academy";
+    font-family: 'InterDoc', 'Liberation Sans', sans-serif;
+    font-size: 7.6pt; color: #a7aebd; padding-bottom: 6mm;
+} }
+
+body {
+  font-family: 'Bitstream Charter', 'Charter', 'Liberation Serif', serif;
+  font-size: 10.4pt; line-height: 1.58; color: %(tinta)s;
+  text-align: justify; hyphens: none;
+  widows: 3; orphans: 3;
 }
 
+h1 {
+  font-family: 'InterDoc', 'Liberation Sans', sans-serif;
+  font-size: 19pt; font-weight: 800; letter-spacing: -0.015em;
+  line-height: 1.15; margin: 0 0 2mm; color: #0d0f14; text-align: left;
+}
+h1 + p { margin-top: 0; }
+h2 {
+  font-family: 'InterDoc', 'Liberation Sans', sans-serif;
+  font-size: 12.4pt; font-weight: 700; color: #0d0f14;
+  margin: 9mm 0 3mm; padding-bottom: 1.6mm;
+  border-bottom: 1.6pt solid %(azul)s;
+  text-align: left; page-break-after: avoid; break-after: avoid;
+}
+h2 + p, h2 + ul, h2 + table { page-break-before: avoid; }
 
-def enriquece(t):
-    """Markdown en linea -> etiquetas de reportlab. El orden importa: primero lo
-    doble, o **negrita** se leeria como dos cursivas."""
-    t = t.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-    t = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', t)
-    t = re.sub(r'(?<!\*)\*([^*\n]+?)\*(?!\*)', r'<i>\1</i>', t)
-    t = re.sub(r'`(.+?)`', r'<font face="Courier">\1</font>', t)
-    return t
+p { margin: 0 0 3.2mm; }
+strong { font-weight: 700; }
+em { font-style: italic; }
 
+ul { margin: 0 0 3.4mm; padding-left: 6.5mm; }
+li { margin-bottom: 1.4mm; padding-left: 1mm; }
+li::marker { color: %(azul)s; }
 
-def junta_continuaciones(bruto):
-    """Markdown se lee por BLOQUES, no por lineas.
+hr {
+  border: 0; border-top: 0.6pt solid #d3d8e2; margin: 7mm 0;
+}
 
-    ⚠️ Dos fallos reales que motivan esto:
-      · la primera version se colgaba (una linea sangrada que no seguia a una
-        viñeta no consumia nada y dejaba el indice quieto);
-      · la segunda no se colgaba pero maquetaba fatal: cada linea del origen
-        salia como parrafo propio, con el texto en escalera, y una **negrita**
-        partida entre dos lineas se imprimia con los asteriscos a la vista.
+table {
+  width: 100%%; border-collapse: collapse; margin: 3mm 0 5mm;
+  font-size: 9.8pt; page-break-inside: avoid;
+}
+th {
+  font-family: 'InterDoc', 'Liberation Sans', sans-serif;
+  font-size: 8.6pt; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; text-align: left; color: #fff;
+  background: %(azul)s; padding: 2.4mm 3mm;
+}
+td {
+  padding: 2.2mm 3mm; border-bottom: 0.5pt solid #dfe3ec; text-align: left;
+}
+tr:last-child td { border-bottom: 0; }
 
-    Ambos desaparecen si el texto se agrupa ANTES: un bloque = un elemento, con
-    sus lineas ya unidas. Lo unico que conserva sus lineas es la tabla, y las
-    viñetas, que se separan por elemento.
-    """
-    bloques, actual = [], []
-    for l in bruto.split('\n'):
-        if l.strip():
-            actual.append(l.rstrip())
-        elif actual:
-            bloques.append(actual); actual = []
-    if actual:
-        bloques.append(actual)
+/* El dibujo de la escalera: monoespaciada y en su caja */
+pre {
+  font-family: 'MonoDoc', 'DejaVu Sans Mono', monospace;
+  font-size: 8.4pt; line-height: 1.5; text-align: left;
+  background: #f4f6fa; border-left: 2.4pt solid %(azul)s;
+  padding: 3.5mm 4mm; margin: 3mm 0 4mm; white-space: pre;
+  page-break-inside: avoid;
+}
 
-    fuera = []
-    for b in bloques:
-        if b[0].startswith('|'):
-            fuera.append(('tabla', b))
-        elif b[0].startswith('#'):
-            fuera.append(('titulo', [b[0]]))
-            resto = b[1:]
-            if resto:
-                fuera.append(('parrafo', [' '.join(x.strip() for x in resto)]))
-        elif b[0].startswith('---'):
-            fuera.append(('regla', []))
-            resto = b[1:]
-            if resto:
-                fuera.append(('parrafo', [' '.join(x.strip() for x in resto)]))
-        elif any(x.startswith('- ') for x in b):
-            items = []
-            for l in b:
-                if l.startswith('- '):
-                    items.append(l[2:].strip())
-                elif items:
-                    items[-1] += ' ' + l.strip()
-                else:
-                    fuera.append(('parrafo', [l.strip()]))
-            fuera.append(('lista', items))
-        else:
-            fuera.append(('parrafo', [' '.join(x.strip() for x in b)]))
-    return fuera
+/* Bloque de firmas: jamas partido entre dos paginas */
+.firmas { page-break-inside: avoid; margin-top: 4mm; }
+.firmas table { margin-top: 6mm; }
+.firmas table td { padding: 2mm 6mm 2mm 0; vertical-align: bottom;
+  border-bottom: 0; width: 50%%; }
+/* El hueco donde se firma. La raya va en un <span> DENTRO de la celda, no
+   en el borde de la celda: con border-collapse las dos celdas quedan
+   pegadas y las rayas se sueldan en una sola linea de lado a lado, como si
+   ambos firmaran encima del mismo renglon. */
+.firmas tr.rubrica td { padding: 0; }
+.firmas .raya {
+  display: block; height: 22mm; margin-right: 14mm;
+  border-bottom: 0.8pt solid #6f7789;
+}
+.firmas tr.rubrica + tr td { padding-top: 2.4mm; }
 
-
-def construye():
-    hist = []
-    for clase, cuerpo in junta_continuaciones(open(ORIGEN, encoding='utf-8').read()):
-        if clase == 'titulo':
-            l = cuerpo[0]
-            if l.startswith('## '):
-                hist.append(Paragraph(enriquece(l[3:]), E['h2']))
-            else:
-                hist.append(Paragraph(enriquece(l.lstrip('# ')), E['h1']))
-                hist.append(HRFlowable(width='100%', color=ORO, thickness=1.4,
-                                       spaceBefore=7, spaceAfter=11))
-        elif clase == 'regla':
-            hist.append(HRFlowable(width='100%', color=LINEA, thickness=.7,
-                                   spaceBefore=9, spaceAfter=9))
-        elif clase == 'tabla':
-            filas = []
-            for l in cuerpo:
-                celdas = [c.strip() for c in l.strip().strip('|').split('|')]
-                if not set(''.join(celdas)) <= set('-: '):     # la fila de guiones
-                    filas.append(celdas)
-            if not filas:
-                continue
-            n = max(len(f) for f in filas)
-            filas = [f + [''] * (n - len(f)) for f in filas]
-            datos = [[Paragraph(enriquece(c), E['celda']) for c in f] for f in filas]
-            t = Table(datos, colWidths=[166 * mm / n] * n, hAlign='LEFT')
-            t.setStyle(TableStyle([
-                ('LINEBELOW', (0, 0), (-1, 0), .9, ORO),
-                ('LINEBELOW', (0, 1), (-1, -2), .4, LINEA),
-                ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-                ('TOPPADDING', (0, 0), (-1, -1), 6),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-                ('LEFTPADDING', (0, 0), (-1, -1), 2),
-            ]))
-            hist.extend([Spacer(1, 4), t, Spacer(1, 10)])
-        elif clase == 'lista':
-            hist.append(ListFlowable(
-                [ListItem(Paragraph(enriquece(x), E['li']), leftIndent=13)
-                 for x in cuerpo],
-                bulletType='bullet', start='\u2022', bulletColor=ORO,
-                leftIndent=13, bulletFontSize=8, spaceAfter=7))
-        else:
-            t = cuerpo[0]
-            estilo = E['nota'] if (t.startswith('*') and t.endswith('*')
-                                   and '**' not in t) else E['p']
-            hist.append(Paragraph(enriquece(t.strip('*') if estilo is E['nota'] else t),
-                                  estilo))
-    # una negrita partida entre lineas ya no puede llegar entera al PDF, pero se
-    # comprueba igual: es el sintoma exacto del fallo anterior
-    crudos = [f for f in hist if isinstance(f, Paragraph) and '**' in f.text]
-    assert not crudos, 'quedaron asteriscos sin convertir'
-    # La marca cierra el documento (pedido del dueno): el logo con la "a" azul,
-    # centrado bajo las firmas. Recortado del aire transparente del PNG
-    # original (1536x1024 con el arte en una franja de 1398x232).
-    LOGO = os.path.join(_RAIZ, 'docs', 'assets', 'logo_acuerdo.png')
-    ancho = 52 * mm
-    alto = ancho * 232.0 / 1398.0
-    img = Image(LOGO, width=ancho, height=alto)
-    img.hAlign = 'CENTER'
-    hist.extend([Spacer(1, 26), img])
-    return hist
+.cierre {
+  font-size: 8.8pt; color: #5d6474; font-style: italic;
+  text-align: left; margin-top: 6mm;
+}
+"""
 
 
-def pie(canvas, doc):
-    canvas.saveState()
-    canvas.setFont('Helvetica', 7.5)
-    canvas.setFillColor(SUAVE)
-    canvas.drawString(22 * mm, 12 * mm, 'Acuerdo de colaboración · Tradeable Academy')
-    canvas.drawRightString(A4[0] - 22 * mm, 12 * mm, 'Página %d' % doc.page)
-    canvas.setStrokeColor(LINEA)
-    canvas.line(22 * mm, 16 * mm, A4[0] - 22 * mm, 16 * mm)
-    canvas.restoreState()
+def md_a_html(texto):
+    html = markdown.markdown(texto, extensions=['tables', 'fenced_code',
+                                                'sane_lists'])
+    # La tabla de firmas nace con una cabecera vacia (| | |): se quita, o
+    # el PDF muestra una franja azul sin texto encima de los nombres.
+    html = re.sub(r'<thead>\s*<tr>\s*(<th[^>]*>\s*</th>\s*)+</tr>\s*</thead>',
+                  '', html)
+    # ...y se le abre arriba el hueco donde cada uno estampa su firma.
+    html = html.replace('<tbody>\n<tr>\n<td><strong>[TU NOMBRE]',
+                        '<tbody>\n<tr class="rubrica">'
+                        '<td><span class="raya"></span></td>'
+                        '<td><span class="raya"></span></td></tr>'
+                        '\n<tr>\n<td><strong>[TU NOMBRE]')
+    return html
 
 
-doc = SimpleDocTemplate(DESTINO, pagesize=A4,
-                        leftMargin=22 * mm, rightMargin=22 * mm,
-                        topMargin=20 * mm, bottomMargin=22 * mm,
-                        title='Acuerdo de colaboración — Tradeable Academy',
-                        author='Tradeable Academy')
-doc.build(construye(), onFirstPage=pie, onLaterPages=pie)
-print('PDF escrito en', DESTINO)
+def main():
+    if not os.path.exists(MD):
+        sys.exit('No encuentro %s' % MD)
+    with open(MD, encoding='utf-8') as fh:
+        texto = fh.read()
+
+    cuerpo = md_a_html(texto)
+
+    # El bloque final (firmas + nota del abogado) se envuelve para poder
+    # pedirle a WeasyPrint que no lo parta en dos paginas.
+    if '<h2>Firmas</h2>' in cuerpo:
+        cabeza, cola = cuerpo.split('<h2>Firmas</h2>', 1)
+        cuerpo = (cabeza + '<div class="firmas"><h2>Firmas</h2>' + cola
+                  + '</div>')
+    cuerpo = cuerpo.replace('<p><em>Documento redactado',
+                            '<p class="cierre"><em>Documento redactado')
+
+    doc = ('<!doctype html><html lang="es"><head><meta charset="utf-8">'
+           '<title>Carta de acuerdo de colaboracion</title>'
+           '<style>%s</style></head><body>%s</body></html>'
+           % (CSS % {'caras': caras(), 'azul': AZUL, 'tinta': TINTA}, cuerpo))
+
+    HTML(string=doc, base_url=RAIZ).write_pdf(PDF)
+    print('ok -> %s (%.0f KB)' % (PDF, os.path.getsize(PDF) / 1024.0))
+
+
+if __name__ == '__main__':
+    main()
