@@ -6357,6 +6357,13 @@ def app_view():
         is_admin=is_admin_view,
         username=current_user.username,
         is_guest=False,
+        # "Mis cupones" solo aparece si la cuenta TIENE alguno. Los cupones
+        # personales ya no se emiten desde la ruleta (hoy da cosméticos): los
+        # que existen son SPIN viejos —siguen válidos, nada se revoca— y los
+        # que /admin emita a mano (premio de un sorteo, una disculpa). Para
+        # todo el mundo lo demás, la entrada es una puerta a un modal vacío.
+        has_coupons=PromoCode.query.filter_by(
+            restrict_user_id=current_user.id).count() > 0,
         unlock_plan=unlock_plan,
         review_prompt=review_prompt,
         review_now=session.pop('quiere_review', False),
@@ -10725,12 +10732,25 @@ def admin_promo_create():
     if owner_name:
         ou = User.query.filter_by(username=owner_name).first()
         owner = ou.id if ou else None
+    # Código PERSONAL: atado a una cuenta concreta (premio de sorteo,
+    # compensación). Si el usuario no existe, NO se crea el código — crearlo
+    # general en silencio sería publicar un descuento que cualquiera puede
+    # usar, justo lo que este campo evita.
+    restrict = None
+    restrict_name = (request.form.get('restrict_to') or '').strip()
+    if restrict_name:
+        ru = User.query.filter(db.func.lower(User.username)
+                               == restrict_name.lower()).first()
+        if not ru:
+            return redirect(url_for('admin') + '#promos')
+        restrict = ru.id
     promo = PromoCode(
         code=code, discount_pct=discount,
         creator_name=(request.form.get('creator_name') or '').strip() or None,
         kind=request.form.get('kind', 'discount'),
         valid_for=request.form.get('valid_for', 'monthly'),
         max_uses=max_uses, active=True, owner_user_id=owner,
+        restrict_user_id=restrict,
     )
     db.session.add(promo)
     db.session.commit()
@@ -14664,9 +14684,17 @@ def daily_spin():
 
 
 @app.route('/api/daily/coupons')
-@premium_required
+@login_required
 def daily_coupons():
-    """List the personal promo codes this user has won on the roulette."""
+    """Los códigos personales de ESTA cuenta (SPIN viejos, premios de sorteo,
+    compensaciones emitidas desde /admin).
+
+    ⚠️ @login_required, NO @premium_required, a propósito: el cupón es de la
+    cuenta y sobrevive a cualquier cambio de plan. Con el candado premium,
+    quien ganó uno y bajó de plan dejaba de poder VERLO aunque siguiera
+    siendo válido en el carrito — contradiciendo el "nada se revoca jamás".
+    Y el free con cupón es justo el comprador al que no hay que esconderle
+    su descuento."""
     codes = (PromoCode.query.filter_by(restrict_user_id=current_user.id)
              .order_by(PromoCode.created_at.desc()).all())
     now = datetime.now(timezone.utc)

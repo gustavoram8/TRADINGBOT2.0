@@ -4838,6 +4838,7 @@
     rank: {{ user_rank|default(1) }},
     xp: {{ user_xp|default(0) }},
     hasBeta: {{ 'true' if has_beta_access else 'false' }},
+    hasCoupons: {{ 'true' if has_coupons|default(false) else 'false' }},
     betaMinRank: {{ beta_min_rank|default(6) }},
     rankUpTo: {{ rank_up_to|default(0) }},
     demoMode: {{ 'true' if demo_mode else 'false' }},
@@ -11758,9 +11759,12 @@
     }
 
     document.getElementById('menu-admin').style.display = U.isAdmin ? 'flex' : 'none';
-    // Roulette coupons are a premium feature (won via the Daily Challenge).
+    // "Mis cupones" aparece SOLO si la cuenta tiene alguno — y sin filtro de
+    // plan: un cupón pertenece a la CUENTA, y quien ganó uno y luego bajó de
+    // plan lo conserva ("nada se revoca jamás"). De hecho el free con cupón
+    // es el caso que MÁS importa: su único uso es comprar un plan.
     document.getElementById('menu-coupons').style.display =
-      (U.plan === 'premium' || U.isAdmin) ? 'flex' : 'none';
+      U.hasCoupons ? 'flex' : 'none';
     // Rank progress is for everyone with an account (all plans have a rank).
     document.getElementById('menu-rank').style.display = U.isGuest ? 'none' : 'flex';
     // Guests get "Sign in"; the logout row doubles as "exit free mode"

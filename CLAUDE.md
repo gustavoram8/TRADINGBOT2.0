@@ -1713,8 +1713,19 @@ borrado. PENDIENTE: agregar selector de mes / historial.
   > por pendiente y se lo volví a ofrecer al dueño. **Tachar el punto es parte de cerrarlo.**
 - [ ] **2. Propuesta comercial:** cambiar el acuerdo a **3 meses iniciales**, con revisión a los 30
   días y opción de renovación por otros 3 si se cumplen expectativas de cualquiera de las partes.
-- [ ] **3. "My coupons":** ya no hay cupones de descuento. ¿Se quita, o se deja solo para mostrar el
-  cupón de referido activo de cara a la próxima renovación?
+- [x] ✅ **3. "My coupons" — condicional + emisor de códigos personales (2026-08-09).** Decisión:
+  no se quita — la entrada del menú aparece **solo si la cuenta tiene algún código personal**, y
+  **sin filtro de plan** (era premium-only: quien ganó un SPIN y bajó de plan dejaba de poder VERLO
+  aunque siguiera válido — contra "nada se revoca jamás"; el free con cupón es justo el comprador).
+  `/api/daily/coupons` pasó a @login_required; `has_coupons` viaja en SCALPEL_USER. **T&C ya
+  correctos** (Secc. 6 dice "wheel prizes currently consist of virtual cosmetic items" — verificado,
+  nada que tocar). **Bonus: /admin ahora emite códigos PERSONALES** (campo "Personal para (usuario)"
+  → `restrict_user_id`; usuario inexistente = NO se crea el código): la pieza que faltaba para
+  entregar premios de sorteos de /socials sin publicar un código que cualquiera pueda usar, y para
+  compensaciones. Ya nada más crea códigos personales (la ruleta da cosméticos desde el 2026-08-02).
+  `tools/test_mis_cupones.py` **11/11** + navegador real (free con cupón ve y abre su modal, 1 fila;
+  premium sin cupones no ve la entrada; 0 errores JS). ⚠️ Ruta real:
+  `/api/checkout/validate-code`, no `/api/validate-code`.
 - [x] ✅ **4. Discover — cosméticos nuevos (2026-08-03).** Dos tarjetas: en **Extras** (la sección
   que ven Free, Standard **y** Premium, porque son compras aparte) la vieja "Tienda de camos"
   pasó a ser **"Tienda de cosméticos"** — camos + placas de foro + cursores, con la línea honesta

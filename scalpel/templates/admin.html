@@ -622,6 +622,10 @@
         <div class="fld"><label>Tipo</label><select name="kind"><option value="creator">Creator</option><option value="discount">Discount</option></select></div>
         <div class="fld"><label>Vale para</label><select name="valid_for"><option value="both">Mensual y anual</option><option value="monthly">Solo mensual</option><option value="annual">Solo anual</option></select></div>
         <div class="fld"><label>Usos máx.</label><input type="number" name="max_uses" min="1" placeholder="∞" /></div>
+        {# PERSONAL: solo esa cuenta puede canjearlo, y le aparece en su
+           "Mis cupones". Para entregar el premio de un sorteo o compensar a un
+           cliente sin publicar un código que cualquiera pueda usar. #}
+        <div class="fld"><label>Personal para (usuario)</label><input type="text" name="restrict_to" placeholder="ganador del sorteo" /></div>
         <button type="submit" class="mini-btn">Crear código</button>
       </form>
       <table>
