@@ -2275,7 +2275,20 @@ tabla lista para 10. ⚠️ Si piden regenerarlo: script en scratchpad de la ses
 - Verificar prop firms que aceptan Venezuela (hoy solo OneUp Trader).
 - Ratings del Scout con fuente verificable (Trustpilot, etc.).
 
-### ▶️ RETOMAR PAYPAL — la receta exacta (pausado 2026-08-04: el papá salió)
+### ✅ PAYPAL ESTÁ ENCENDIDO Y EN LIVE (confirmado 2026-08-10)
+🔴 **NO volver a decirle "el día que enciendas PayPal" ni ofrecerle la receta de encendido.** Está
+hecho: credenciales LIVE en el VPS, los dos planes de suscripción creados y el webhook apuntando a
+`SITE_URL` por HTTPS. Verificado con `tools/check_subs.py` → **5 bien, 0 bloqueantes** (los dos
+planes existen, ACTIVOS, mensuales sin fin, ids sin cruzar, y el webhook con `PAYMENT.SALE.COMPLETED`).
+Se comprobó además una suscripción real con `tools/check_suscripcion.py` sin gastar dinero.
+Lo que sigue vigente de la sección de abajo es solo **la referencia** de qué hace cada comando por si
+hay que rehacer algo; el estado "pausado / falta encender" es HISTORIA, no una tarea.
+⚠️ **Consecuencia práctica:** todo lo que se cablee contra PayPal corre ya contra dinero real. Nada de
+"probar en sandbox" — no hay sandbox conectado. Antes de exponer una función nueva que llame a la API
+(p. ej. el borrado de cuenta del 2026-08-10), hacer UNA prueba con cuenta desechable y comprobar el
+resultado en el panel de PayPal.
+
+### ▶️ Referencia histórica: cómo se encendió PayPal (hecho, no pendiente)
 > Cuando el usuario diga **"sigamos con PayPal"**, es ESTO, sin volver a discutirlo. Ya está todo
 > construido y probado; lo único que falta es que su papá le pase dos cadenas de texto.
 - **Lo que le pide a su papá (4 clics, nada más):** developer.paypal.com → **Apps & Credentials** →
@@ -2326,11 +2339,11 @@ aplicación real a quien traiga el pase, y la página de espera a todos los dem�
   el teléfono con el WiFi apagado. `/`, `/login` y `/pricing` deben dar la página de espera.
 
 ### 📌 Detalle previo — encender PayPal (EN PAUSA por el usuario 2026-08-03)
-🟡 **Estado al 2026-08-03:** la cuenta del papá **YA ES BUSINESS**, pero las credenciales que pasó
-son de **SANDBOX** (dinero de mentira; se le explicó que en sandbox nunca llega un dólar y que las
-de cobrar están en la pestaña **Live**, con Client ID y Secret distintos). **El usuario decidió
-pausarlo** para atender primero el correo del dominio. ⚠️ **NO pegar el Secret en el chat** — va del
-panel de PayPal directo a supervisor + `scalpel/.env`.
+📜 **Cómo fue (historia, ya resuelta).** El 2026-08-03 la cuenta del papá ya era **Business** pero las
+credenciales que pasó eran de **SANDBOX**; se pausó para atender el correo del dominio y se retomó
+después con las de **Live**. Hoy está encendido y verificado (ver el bloque ✅ de arriba).
+⚠️ Lo único de esta sección que sigue siendo REGLA: **NO pegar el Secret en el chat** — va del panel
+de PayPal directo a supervisor + `scalpel/.env`.
 🔁 **Al retomarlo, ahora hay DOS cosas más que pedirle** (ver la sección de suscripciones arriba):
 los **ids de los dos planes** (`tools/set_paypal.py` los crea solo, no hay que tocar el panel) y el
 **Webhook ID**, que dejó de ser opcional: sin él las renovaciones se cobran y el plan no se extiende.
@@ -2376,7 +2389,12 @@ el return-url y el barrido de /admin, así que se puede dejar el Webhook ID para
    `tradeable.academy→15.204.88.98`: NO usarla jamás como nameservers o la web se cae — solo se
    copian a Cloudflare los registros de correo. ⚠️ El candado de preview dejaba `/health` fuera y
    monitor.py (cron horario) mandaba un WhatsApp de error CADA HORA — `/health` ya está exento.
-2. **ENCENDER PAYPAL — es lo único que falta para poder COBRAR.** (Esta alerta decía "instalar Stripe LIVE"; quedó obsoleta con el pivote del 2026-07-26 y se corrigió el 2026-08-01.) El código está listo y probado con PayPal simulado (46 checks). Lo pendiente es configuración: (a) subir la cuenta del papá a **PayPal Business**; (b) crear la app REST y copiar **Client ID** y **Secret**; (c) webhook a `/webhook/paypal` con los 6 eventos y copiar el **Webhook ID**; (d) las 4 variables en supervisor conf + `scalpel/.env` → restart. Detalle paso a paso en "📌 PENDIENTE INMEDIATO". **Mostrar este recordatorio una vez al día hasta que el usuario confirme que PayPal está activo.**
+2. ✅ **PAYPAL YA ESTÁ ACTIVO EN LIVE (2026-08-10) — este aviso está CERRADO, no repetirlo.**
+   El dueño lo confirmó y `check_subs.py` lo verificó contra la API real (5 bien, 0 bloqueantes).
+   🔴 Esta alerta estuvo pidiendo "encender PayPal" **después** de que estuviera encendido, y por
+   arrastrarla se le dijo "el día que enciendas PayPal" sobre algo que ya cobraba dinero real. Si una
+   alerta recurrente se queda desactualizada, hace decir tonterías con confianza: al cerrar cualquier
+   punto de esta lista, tacharlo el mismo día.
    ⚠️ **RECORDATORIO OBLIGATORIO AL TOCAR STRIPE (pedido explícito del usuario 2026-07-25 — repetir SIN
    EXCEPCIONES cada vez que se trabaje en Stripe):** al activar Stripe LIVE hay que **actualizar la Sección 5
    de los T&C** (`terms.html`, "Plans, Payments & Billing"): hoy dice *"Payments are currently processed
