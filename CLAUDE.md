@@ -465,11 +465,10 @@ claro y oscuro → volver → salir, **0 errores JS**.
    compra de prueba va con cuenta nueva. Se lo entrega tal cual cuando diga "sigamos con PayPal".
 
 ## 📅 Recordatorio diario
-> 🔔 **PARA EL 2026-08-03 (pedido explícito del usuario):** re-revisar juntos los TONOS del
-> 1º/2º/3º del salón de la fama (commit `eb50f46`: f1 = blanco incandescente + movimiento + halo,
-> f2 = degradado quieto, f3 = brasa plana `#c9603a`) y repasar lo hecho el 2026-08-02 (panel
-> temporada + fama + chips del foro). Mostrar este aviso al primer mensaje de ese día y luego
-> borrar esta nota.
+> 🔔 **SIN CERRAR, del aviso que tocaba el 2026-08-03:** re-revisar juntos los TONOS del 1º/2º/3º
+> del salón de la fama (commit `eb50f46`: f1 = blanco incandescente + movimiento + halo, f2 =
+> degradado quieto, f3 = brasa plana `#c9603a`). Se le recordó el 2026-08-10 y **sigue sin mirarlo**;
+> no volver a ponerle fecha: sacarlo cuando toque el quiz o los cosméticos.
 
 La **primera vez que el usuario escriba cada día calendario** (`currentDate`), mostrar (si ya se mostró
 hoy, no repetir):
@@ -1711,8 +1710,29 @@ borrado. PENDIENTE: agregar selector de mes / historial.
   resto, aunque estén etiquetadas.
   > ⚠️ Este punto se cerró el 2026-08-03 pero **se quedó sin tachar aquí**, y al día siguiente lo di
   > por pendiente y se lo volví a ofrecer al dueño. **Tachar el punto es parte de cerrarlo.**
-- [ ] **2. Propuesta comercial:** cambiar el acuerdo a **3 meses iniciales**, con revisión a los 30
-  días y opción de renovación por otros 3 si se cumplen expectativas de cualquiera de las partes.
+- [x] ✅ **2. El acuerdo, reescrito entero (2026-08-10).** Ya trae los **3 meses iniciales** (5.1),
+  la **revisión a los 30 días** (5.2) y la renovación por períodos de 3 meses (5.3). Vive en
+  **`docs/acuerdo_colaboracion.md`** y se publica en PDF con **`tools/build_acuerdo_pdf.py`**
+  (el `.md` es la fuente de verdad; el PDF **jamás** se edita a mano). Se aplicaron las 20
+  anotaciones de su papá + lo hablado ese día. Decisiones de fondo que quedan fijadas:
+  · **"socio" queda PROHIBIDO** en todo el documento → **"el Colaborador"**, prestador de servicios
+    independiente: la palabra contradecía la propia cláusula de "no existe sociedad".
+  · La escala 30/35/40 se explica **cliente por cliente** (con dibujo ASCII y ejemplo numérico);
+    fuera "marginales" y "no es una medalla", que no se entendían.
+  · Bajas: *"los que llegaron después cubren los puestos que quedaron vacíos"* (la metáfora
+    arriba/abajo se eliminó — cada uno la leía al revés).
+  · **Liquidaciones SIEMPRE en USDT** (no hay caja garantizada en PayPal). La comisión de RED del
+    envío la paga la plataforma; conversión y retiro los paga él.
+  · Revisión a 30 días = **conversación, no derecho a exigir cambios**: ninguna parte puede
+    imponerle nada a la otra (miedo explícito del papá a una réplica económica en su contra).
+  · **Renovación AUTOMÁTICA** por trimestres (el papá rechazó tener que firmar de nuevo cada vez).
+  · Preaviso de cambios de producto **15 → 5 días**.
+  · Cesión: solo formalizar el MISMO negocio en una empresa suya; **una venta o cambio de dueños
+    exige acuerdo nuevo** (el texto viejo se leía como perpetuo aunque cambiaran los dueños).
+  · No se usa "suscripción mensual" al definir la atribución: dejaría fuera el ciclo **anual**.
+  · Logotipo **solo al final, centrado** (se intentó también un membrete arriba y lo rechazó).
+  ⚠️ **Sigue SIN decidir:** el 5.4 (terminación anticipada) conserva **15 días** de preaviso — el
+  papá solo pidió bajar el del punto 7. Y faltan por rellenar los 6 huecos entre corchetes.
 - [x] ✅ **3. "My coupons" — condicional + emisor de códigos personales (2026-08-09).** Decisión:
   no se quita — la entrada del menú aparece **solo si la cuenta tiene algún código personal**, y
   **sin filtro de plan** (era premium-only: quien ganó un SPIN y bajó de plan dejaba de poder VERLO
