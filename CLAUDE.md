@@ -432,6 +432,17 @@ cambio de tema (el MutationObserver la repinta en su otra paleta), así que no g
 choca con reduced-motion. Verificado en Chromium real: login → cubo → Cámara → chat → pregunta →
 claro y oscuro → volver → salir, **0 errores JS**.
 - **El teseracto va encima de cada respuesta** (`tesseract.png`, 60px tras el ajuste del dueño).
+  ✅ **Recorte arreglado (2026-08-10).** El dueño vio "residuos" fuera de la figura. Diagnóstico
+  medido: el alfa era **estrictamente binario (0/255, cero intermedios)** = recorte por umbral, así
+  que cada píxel del borde que era mezcla de cubo y fondo NEGRO sobrevivía al 100% (306 px de más
+  sobre la silueta real; 196 de los 383 del contorno, casi negros).
+  🔑 **Se arregla con GEOMETRÍA, no con color:** el contorno propio del cubo es granate muy oscuro
+  → por tono es indistinguible del fondo sobrante, y limpiar "por color" se come el dibujo. Pero la
+  silueta de un cubo isométrico es un **hexágono**: `tools/limpia_tesseract.py` lo ajusta al casco
+  convexo, mete 2px (ahí vive el residuo), rasteriza a 8× (alfa parcial de verdad) y **quita el
+  negro mezclado** con `color = obs/a` (exacto si el fondo era negro, que lo era).
+  ⚠️ **NO es idempotente** — se niega a correr sobre un archivo que ya tenga alfa suave. El
+  original se recupera de git. Al cambiar el PNG, subir el `?v=` (va por `?v=10`).
 - 🔴 **El fondo del chat NO puede preguntar por `body.light` (bug real, 2026-08-10).** Lo cazó el
   dueño: Rising Sun + modo oscuro → el asistente pintado en BLANCO. La causa no es el camo, es que
   **hay camos que fuerzan la clase**: los **LIGHT_ALWAYS** (rising-sun, blackflag) llevan `.light`
