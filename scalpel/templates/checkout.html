@@ -137,8 +137,13 @@
                 <span class="t2" data-i18n="cpay.ppShort">Pay with your balance or a card, without leaving PayPal.</span>
               {% elif rail == 'crypto' %}
                 <span class="t1">USDT</span>
+                {# ⚠️ El cierre del atributo es COMILLA SIMPLE (}'>): cerrarlo
+                   con }"> deja la comilla de apertura sin pareja y el
+                   navegador se traga el HTML siguiente como parte del
+                   atributo — la tarjeta USDT quedaba muerta al clic y el
+                   {net} salía sin sustituir. Pasó el 2026-08-10. #}
                 <span class="t2" data-i18n="cpay.cryptoShort"
-                      data-i18n-vars='{"net": "{{ crypto_net }}"}">From Binance or any wallet. {{ crypto_net }} network only.</span>
+                      data-i18n-vars='{"net": "{{ crypto_net }}"}'>From Binance or any wallet. {{ crypto_net }} network only.</span>
               {% elif rail == 'manual' %}
                 <span class="t1">USDT</span>
                 <span class="t2" data-i18n="cpay.manualShort">You send the transfer and attach the receipt; we switch your plan on.</span>
