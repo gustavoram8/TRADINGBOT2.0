@@ -4,22 +4,56 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title data-i18n-title="settings.doctitle">Tradeable Academy — Settings</title>
+  <script>
+    // Pre-paint: la clase se pone ANTES de dibujar nada, o la página aparece
+    // blanca un instante y luego salta a oscuro (el FOUC de siempre).
+    try {
+      if (localStorage.getItem('scalpel_theme') === 'dark')
+        document.documentElement.className = 'dark';
+    } catch (e) {}
+  </script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root { --ink:#15171f; --ink-soft:#4a4f5e; --muted:#8a8f9e; --line:#e4e6ec; --accent:#2563eb; --radius:14px; }
-    body { background:#f8f9fc; color:var(--ink); font-family:'Inter',sans-serif; font-size:15px; line-height:1.6; min-height:100vh; -webkit-font-smoothing:antialiased; }
-    nav { display:flex; align-items:center; justify-content:space-between; padding:16px 32px; border-bottom:1px solid var(--line); position:sticky; top:0; background:rgba(248,249,252,0.94); backdrop-filter:blur(8px); z-index:10; }
+    :root { --ink:#15171f; --ink-soft:#4a4f5e; --muted:#8a8f9e; --line:#e4e6ec; --accent:#2563eb; --radius:14px;
+            --bg:#f8f9fc; --card:#fff; --soft:#f1f5f9; --navbg:rgba(248,249,252,0.94); }
+    /* Modo oscuro. Esta página era SOLO clara, así que el interruptor de tema
+       que vive aquí no habría cambiado nada de lo que el usuario tiene
+       delante: parecería roto. Los colores fijos pasaron a variables. */
+    html.dark { --ink:#eef0f5; --ink-soft:#c2c7d4; --muted:#8b93a6; --line:#242833; --accent:#6ea0ff;
+                --bg:#0a0b10; --card:#141821; --soft:#1c212c; --navbg:rgba(10,11,16,0.94); }
+    html.dark .plan-badge.free { background:var(--soft); color:#aab2c4; }
+    html.dark .plan-badge.standard { background:#152241; color:#93b4ff; }
+    html.dark .plan-badge.premium { background:#2a2413; color:#e2bb62; }
+    html.dark .plan-badge.cancelling { background:#33191a; color:#f2a3a3; }
+    html.dark .flash.ok { background:#10261a; color:#8fe0b0; border-color:#1d5136; }
+    html.dark .flash.info { background:#111d38; color:#a9c6ff; border-color:#26406e; }
+    html.dark .badge-on { background:#10261a; color:#8fe0b0; }
+    html.dark .btn-sec { border-color:#2c4a86; }
+    html.dark .btn-sec:hover { background:#16233c; }
+    html.dark .btn-cancel { color:#f08a8a; border-color:#6d2b2b; }
+    html.dark .btn-cancel:hover { background:#2a1616; }
+    html.dark .btn-reactivate { color:#7fd6a2; border-color:#2b6041; }
+    html.dark .btn-reactivate:hover { background:#12251a; }
+    html.dark .sec-input { background:var(--soft); color:var(--ink); }
+    html.dark .expires-note.warn { color:#e0a45c; }
+    html.dark .danger-label { color:#f08a8a !important; }
+    /* invert() sola vuelve AMARILLA la "a" azul de la marca (#004feb -> #ffb014).
+       hue-rotate(180) le devuelve el tono azul y no toca el blanco ni el negro,
+       que no tienen tono que girar: el logotipo queda blanco con su "a" azul. */
+    html.dark .logo-img { filter:invert(1) hue-rotate(180deg); }
+    body { background:var(--bg); color:var(--ink); font-family:'Inter',sans-serif; font-size:15px; line-height:1.6; min-height:100vh; -webkit-font-smoothing:antialiased; }
+    nav { display:flex; align-items:center; justify-content:space-between; padding:16px 32px; border-bottom:1px solid var(--line); position:sticky; top:0; background:var(--navbg); backdrop-filter:blur(8px); z-index:10; }
     .logo-img { height:72px; width:auto; display:block; }
     .back-link { font-size:13px; font-weight:600; color:var(--muted); text-decoration:none; }
     .back-link:hover { color:var(--accent); }
     .wrap { max-width:680px; margin:0 auto; padding:48px 24px 96px; }
     .page-title { font-size:30px; font-weight:800; letter-spacing:-.02em; margin-bottom:32px; }
-    .section { background:#fff; border:1px solid var(--line); border-radius:var(--radius); margin-bottom:20px; overflow:hidden; }
+    .section { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:20px; overflow:hidden; }
     .section-head { padding:16px 22px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); border-bottom:1px solid var(--line); }
     /* Security controls */
     .sec-input { font-family:inherit; font-size:13px; padding:8px 12px; border:1px solid var(--line);
-                 border-radius:8px; flex:1; min-width:150px; }
+                 border-radius:8px; flex:1; min-width:150px; background:var(--card); color:var(--ink); }
     .sec-input:focus { outline:none; border-color:var(--accent); }
     .btn-sec { font-size:13px; font-weight:600; color:var(--accent); background:transparent;
                border:1px solid #bfdbfe; border-radius:8px; padding:8px 16px; cursor:pointer;
@@ -28,14 +62,14 @@
     .badge-on  { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.06em;
                  padding:3px 9px; border-radius:20px; background:#f0fdf4; color:#166534; }
     .badge-off { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.06em;
-                 padding:3px 9px; border-radius:20px; background:#f1f5f9; color:var(--muted); }
+                 padding:3px 9px; border-radius:20px; background:var(--soft); color:var(--muted); }
     .setting-row { display:flex; align-items:center; justify-content:space-between; padding:16px 22px; border-bottom:1px solid var(--line); gap:20px; }
     .setting-row:last-child { border-bottom:none; }
     .setting-info { flex:1; }
     .setting-label { font-size:14px; font-weight:600; }
     .setting-desc  { font-size:12px; color:var(--muted); margin-top:2px; }
     .setting-control { flex:none; }
-    .pill-soon { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; padding:3px 9px; border-radius:20px; background:#f1f5f9; color:var(--muted); }
+    .pill-soon { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; padding:3px 9px; border-radius:20px; background:var(--soft); color:var(--muted); }
     .toggle-wrap { display:flex; align-items:center; }
     input[type=checkbox].toggle { appearance:none; width:42px; height:24px; background:#e2e8f0; border-radius:12px; cursor:not-allowed; position:relative; transition:background .2s; opacity:.5; }
     input[type=checkbox].toggle:checked { background:var(--accent); }
@@ -71,6 +105,21 @@
     /* Danger zone */
     .danger-label { color:#dc2626 !important; }
 
+    /* Botonera segmentada (idioma y tema) */
+    .seg { display:flex; gap:4px; background:var(--soft); border-radius:9px; padding:3px; }
+    .seg button { font-family:inherit; font-size:12.5px; font-weight:700; color:var(--muted);
+                  background:transparent; border:0; border-radius:7px; padding:6px 11px;
+                  cursor:pointer; transition:background .15s, color .15s; }
+    .seg button:hover { color:var(--ink); }
+    .seg button.active { background:var(--card); color:var(--accent);
+                         box-shadow:0 1px 3px rgba(0,0,0,.12); }
+    /* Formularios que no caben en la fila: bajan a su propia línea */
+    .stack { display:flex; gap:10px; flex-wrap:wrap; align-items:center; width:100%;
+             margin-top:10px; }
+    .row-col { display:block; }
+    .note { font-size:12px; color:var(--muted); margin-top:8px; }
+    .note strong { color:var(--ink-soft); }
+
     /* ── Mobile polish ── */
     @media (max-width: 560px) {
       nav { padding:12px 18px; }
@@ -85,7 +134,7 @@
 </head>
 <body>
 <nav>
-  <a href="/" class="logo"><img src="/static/logo.png" alt="Tradeable" class="logo-img" onerror="this.style.display='none';" /></a>
+  <a href="/" class="logo"><img src="/static/logo_t.png" alt="Tradeable" class="logo-img" onerror="this.style.display='none';" /></a>
   <a href="/app" class="back-link" data-i18n="nav.backApp">← Back to app</a>
 </nav>
 <div class="wrap">
@@ -115,6 +164,39 @@
   {% if request.args.get('switch_off') %}
     <div class="flash ok" data-i18n="settings.flashSwitchOff">The scheduled change was cancelled. You stay on your current plan.</div>
   {% endif %}
+  {% if sec == 'email_sent' %}
+    <div class="flash ok" data-i18n="settings.flashEmailSent">Code sent to the new address. It expires in 30 minutes. Nothing has changed yet.</div>
+  {% endif %}
+  {% if sec == 'email_ok' %}
+    <div class="flash ok" data-i18n="settings.flashEmailOk">Email changed. Every other device has been signed out.</div>
+  {% endif %}
+  {% if sec == 'email_wrong' %}
+    <div class="flash info" data-i18n="settings.flashEmailWrong">Your password did not match. Nothing was changed.</div>
+  {% endif %}
+  {% if sec == 'email_bad' %}
+    <div class="flash info" data-i18n="settings.flashEmailBad">That address does not look valid, or it is the one you already use.</div>
+  {% endif %}
+  {% if sec == 'email_taken' %}
+    <div class="flash info" data-i18n="settings.flashEmailTaken">That address cannot be used. Try another one.</div>
+  {% endif %}
+  {% if sec == 'email_code' %}
+    <div class="flash info" data-i18n="settings.flashEmailCode">That code is not right. Check the email we sent to the new address.</div>
+  {% endif %}
+  {% if sec == 'email_expired' %}
+    <div class="flash info" data-i18n="settings.flashEmailExpired">That code expired. Start the change again.</div>
+  {% endif %}
+  {% if sec == 'del_wrong' %}
+    <div class="flash info" data-i18n="settings.flashDelWrong">The password or code did not match. Your account was NOT deleted.</div>
+  {% endif %}
+  {% if sec == 'del_confirm' %}
+    <div class="flash info" data-i18n="settings.flashDelConfirm">You must type your username exactly to confirm. Your account was NOT deleted.</div>
+  {% endif %}
+  {% if sec == 'del_sub' %}
+    <div class="flash info" data-i18n="settings.flashDelSub">We could not reach PayPal to stop your renewal, so nothing was deleted — deleting the account while the charge stays alive would keep billing you with no way to tell us. Please try again in a few minutes.</div>
+  {% endif %}
+  {% if sec == 'del_admin' %}
+    <div class="flash info" data-i18n="settings.flashDelAdmin">An administrator account cannot be deleted from here.</div>
+  {% endif %}
   {% if request.args.get('cancelled') %}
   <div class="flash ok" data-i18n="settings.flashCancelled">Plan cancellation scheduled — you'll keep access until your billing period ends.</div>
   {% endif %}
@@ -129,8 +211,38 @@
         <div class="setting-label" data-i18n="settings.email">Email</div>
         <div class="setting-desc">{{ user.email }}</div>
       </div>
-      <div class="setting-control"><span class="pill-soon" data-i18n="common.soon">Coming soon</span></div>
+      <div class="setting-control"></div>
     </div>
+    {% if user.pending_email %}
+    <div class="setting-row" style="flex-wrap:wrap;">
+      <div class="setting-info" style="flex-basis:100%;">
+        <div class="setting-label" data-i18n="settings.emailPending">Confirm your new email</div>
+        <div class="setting-desc"><span data-i18n="settings.emailPendingDesc">We sent a 6-digit code to</span> <strong>{{ user.pending_email }}</strong></div>
+      </div>
+      <form method="POST" action="/account/email/confirm" class="stack">
+        <input type="text" name="code" inputmode="numeric" autocomplete="one-time-code" required
+               data-i18n-ph="settings.emailCode" placeholder="6-digit code" class="sec-input" />
+        <button type="submit" class="btn-sec" data-i18n="settings.emailConfirm">Confirm</button>
+      </form>
+      <form method="POST" action="/account/email/cancel" style="margin-top:8px;">
+        <button type="submit" class="btn-cancel" data-i18n="settings.emailCancel">Cancel the change</button>
+      </form>
+    </div>
+    {% else %}
+    <div class="setting-row" style="flex-wrap:wrap;">
+      <div class="setting-info" style="flex-basis:100%;">
+        <div class="setting-label" data-i18n="settings.emailChange">Change email</div>
+        <div class="setting-desc" data-i18n="settings.emailChangeDesc">A 6-digit code goes to the new address to prove you can read it, and a notice goes to the current one.</div>
+      </div>
+      <form method="POST" action="/account/email" class="stack">
+        <input type="email" name="email" autocomplete="email" required
+               data-i18n-ph="settings.emailNew" placeholder="New email address" class="sec-input" />
+        <input type="password" name="password" autocomplete="current-password" required
+               data-i18n-ph="settings.pwCurrent" placeholder="Current password" class="sec-input" />
+        <button type="submit" class="btn-sec" data-i18n="settings.emailSend">Send code</button>
+      </form>
+    </div>
+    {% endif %}
     <div class="setting-row" style="flex-wrap:wrap;">
       <div class="setting-info" style="flex-basis:100%;">
         <div class="setting-label" data-i18n="settings.password">Password</div>
@@ -282,50 +394,115 @@
     <div class="setting-row">
       <div class="setting-info">
         <div class="setting-label" data-i18n="settings.language">Language</div>
-        <div class="setting-desc" data-i18n="settings.languageDesc">Interface language (EN / ES / FR / PT).</div>
+        <div class="setting-desc" data-i18n="settings.languageDesc">Interface language. It also decides the language of the emails we send you.</div>
       </div>
-      <div class="setting-control"><span class="pill-soon" data-i18n="common.soon">Coming soon</span></div>
+      <!-- pages_i18n.js ya engancha solo cualquier `.lang-switch [data-lang]`:
+           aplica el idioma, lo guarda y escribe la cookie que lee el servidor
+           para los correos. Esta fila no necesita JS propio. -->
+      <div class="setting-control seg lang-switch">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="es">ES</button>
+        <button type="button" data-lang="fr">FR</button>
+        <button type="button" data-lang="pt">PT</button>
+      </div>
     </div>
     <div class="setting-row">
       <div class="setting-info">
         <div class="setting-label" data-i18n="settings.theme">Theme</div>
-        <div class="setting-desc" data-i18n="settings.themeDesc">Dark or light mode (toggle available in-app).</div>
+        <div class="setting-desc" data-i18n="settings.themeDesc">Light or dark. Applies to the whole site on this device.</div>
       </div>
-      <div class="setting-control"><span class="pill-soon" data-i18n="common.soon">Coming soon</span></div>
+      <div class="setting-control seg" id="theme-seg">
+        <button type="button" data-theme="light" data-i18n="settings.themeLight">Light</button>
+        <button type="button" data-theme="dark" data-i18n="settings.themeDark">Dark</button>
+      </div>
     </div>
     <div class="setting-row">
       <div class="setting-info">
         <div class="setting-label" data-i18n="settings.activeCamo">Active Camo</div>
         <div class="setting-desc" data-i18n="settings.activeCamoDesc">Choose a purchased website skin.</div>
       </div>
-      <div class="setting-control"><a href="/camos" style="font-size:13px;font-weight:700;color:var(--accent);text-decoration:none;" data-i18n="settings.browseCamos">Browse Camos →</a></div>
+      <div class="setting-control"><a href="/cosmetics" style="font-size:13px;font-weight:700;color:var(--accent);text-decoration:none;" data-i18n="settings.browseCamos">Browse Camos →</a></div>
     </div>
   </div>
 
   <div class="section">
     <div class="section-head" data-i18n="settings.secNotif">Notifications</div>
-    <div class="setting-row">
-      <div class="setting-info">
-        <div class="setting-label" data-i18n="settings.emailNotif">Email notifications</div>
-        <div class="setting-desc" data-i18n="settings.emailNotifDesc">Analysis results and important updates.</div>
+    <!-- Aquí había un interruptor DESACTIVADO y sin marcar: fingía un ajuste
+         que no existía y, de paso, daba a entender que los correos estaban
+         apagados cuando sí se envían. Se dice la verdad en su lugar: los
+         únicos correos que salen son los de la cuenta, y esos no se apagan
+         porque son parte del servicio (y de la seguridad). El día que exista
+         un boletín, ESE sí llevará interruptor. -->
+    <div class="setting-row" style="flex-wrap:wrap;">
+      <div class="setting-info" style="flex-basis:100%;">
+        <div class="setting-label" data-i18n="settings.emailNotif">Emails we send you</div>
+        <div class="setting-desc" data-i18n="settings.emailNotifDesc">Only account emails: your verification code, password resets, purchase receipts, and security alerts such as a sign-in from a new device.</div>
+        <div class="note" data-i18n="settings.emailNotifNote">These cannot be turned off — they are part of the service and of keeping your account safe. We do not send a newsletter, and we never sell your address.</div>
       </div>
-      <div class="setting-control toggle-wrap"><input type="checkbox" class="toggle" disabled /></div>
     </div>
   </div>
 
   <div class="section">
     <div class="section-head" data-i18n="settings.secDanger">Danger zone</div>
-    <div class="setting-row">
-      <div class="setting-info">
-        <div class="setting-label" data-i18n="settings.deleteAccount">Delete account</div>
-        <div class="setting-desc" data-i18n="settings.deleteAccountDesc">Permanently remove your account and all data.</div>
+    <div class="setting-row" style="flex-wrap:wrap;">
+      <div class="setting-info" style="flex-basis:100%;">
+        <div class="setting-label danger-label" data-i18n="settings.deleteAccount">Delete account</div>
+        <div class="setting-desc" data-i18n="settings.deleteAccountDesc">Deletes your posts, comments, private messages, projects, checklists, quiz history, XP and cosmetics. Your billing records are kept, without your identity attached, because the law requires it.</div>
+        <div class="note" data-i18n="settings.deleteAccountNote">Any automatic renewal is stopped first. This cannot be undone: nothing is recoverable and cosmetics are not transferable.</div>
       </div>
-      <div class="setting-control"><span class="pill-soon" data-i18n="common.soon">Coming soon</span></div>
+      <form method="POST" action="/account/delete" class="stack" onsubmit="return borrarCuenta(this);"
+            data-username="{{ user.username }}">
+        <input type="password" name="password" autocomplete="current-password" required
+               data-i18n-ph="settings.pwCurrent" placeholder="Current password" class="sec-input" />
+        {% if user.totp_confirmed_at %}
+        <input type="text" name="code" inputmode="numeric" autocomplete="one-time-code" required
+               data-i18n-ph="settings.twofaCode" placeholder="6-digit or backup code" class="sec-input" />
+        {% endif %}
+        <input type="text" name="confirm" required autocomplete="off" class="sec-input"
+               data-i18n-ph="settings.deleteType" placeholder="Type your username to confirm" />
+        <button type="submit" class="btn-cancel" data-i18n="settings.deleteBtn">Delete my account</button>
+      </form>
     </div>
   </div>
 </div>
 <script src="/static/pages_i18n.js"></script>
 <script>
+  // Tema: se guarda en la MISMA clave que usa la app (`scalpel_theme`), así
+  // que cambiarlo aquí cambia también /app. No hace falta recargar: basta la
+  // clase en <html>, que es lo que leen todas las variables de esta página.
+  (function () {
+    var seg = document.getElementById('theme-seg');
+    if (!seg) return;
+    function pinta() {
+      var oscuro = false;
+      try { oscuro = localStorage.getItem('scalpel_theme') === 'dark'; } catch (e) {}
+      document.documentElement.className = oscuro ? 'dark' : '';
+      seg.querySelectorAll('[data-theme]').forEach(function (b) {
+        b.classList.toggle('active', (b.getAttribute('data-theme') === 'dark') === oscuro);
+      });
+    }
+    seg.querySelectorAll('[data-theme]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        try { localStorage.setItem('scalpel_theme', b.getAttribute('data-theme')); } catch (e) {}
+        pinta();
+      });
+    });
+    pinta();
+  })();
+
+  // Borrado de cuenta: se comprueba el nombre ANTES de enviar para no gastar
+  // un viaje al servidor en la errata más previsible, y se pide confirmación
+  // porque no hay vuelta atrás.
+  function borrarCuenta(form) {
+    var esperado = form.getAttribute('data-username') || '';
+    var puesto = (form.querySelector('[name=confirm]').value || '').trim();
+    if (puesto !== esperado) {
+      alert(PagesI18n.t('settings.deleteMismatch', { user: esperado }));
+      return false;
+    }
+    return confirm(PagesI18n.t('settings.deleteConfirm'));
+  }
+
   // Localized cancel-plan confirmation (date stays as server-rendered).
   function cancelPlanConfirm(form) {
     var d = form.getAttribute('data-cancel-date');

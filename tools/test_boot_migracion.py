@@ -11,7 +11,10 @@ SCRATCH = os.path.dirname(os.path.abspath(__file__))
 DB = os.path.join(SCRATCH, 'boot.db')
 NUEVAS = ['birth_date', 'totp_secret', 'totp_confirmed_at', 'totp_backup',
           'referred_by_code', 'referred_at', 'active_camo', 'owned_camos',
-          'active_frame', 'active_cursor', 'email_canonical']
+          'active_frame', 'active_cursor', 'email_canonical',
+          # cambio de correo y borrado de cuenta (2026-08-10)
+          'pending_email', 'pending_email_code', 'pending_email_at',
+          'deleted_at']
 # Columnas nuevas en OTRAS tablas: (tabla, columna, valor_de_backfill_esperado)
 NUEVAS_OTRAS = [('daily_quiz_state', 'best_streak', None),
                 # cambio de plan programado (2026-08-05)
@@ -132,6 +135,7 @@ for idx in ('ix_user_email_canonical',):
     con.execute('DROP INDEX IF EXISTS %s' % idx)
 soltadas = []
 for tabla, col in (('user', 'email_canonical'),
+                   ('user', 'pending_email'),
                    ('forum_community_member', 'status')):
     try:
         con.execute('ALTER TABLE "%s" DROP COLUMN %s' % (tabla, col))
@@ -154,7 +158,8 @@ guion = textwrap.dedent('''
     for fn, tabla, col in (
             (app._migrate_forum_member_status_column,
              "forum_community_member", "status"),
-            (app._migrate_user_email_canonical_column, "user", "email_canonical")):
+            (app._migrate_user_email_canonical_column, "user", "email_canonical"),
+            (app._migrate_user_account_columns, "user", "pending_email")):
         with app.app.app_context():
             class Ciego:
                 """Un inspector que MIENTE: dice que la columna no está."""

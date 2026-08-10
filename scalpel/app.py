@@ -813,6 +813,16 @@ class User(UserMixin, db.Model):
     totp_secret = db.Column(db.String(64), nullable=True)
     totp_confirmed_at = db.Column(db.DateTime, nullable=True)
     totp_backup = db.Column(db.Text, nullable=True)   # JSON: sha256 of unused backup codes
+
+    # Cambio de correo pendiente de confirmar. Vive aquí y no en `email` para
+    # que el buzón nuevo no sea la credencial de nada hasta que se demuestre
+    # que su dueño lo lee (código de 6 dígitos, 30 minutos).
+    pending_email = db.Column(db.String(255), nullable=True)
+    pending_email_code = db.Column(db.String(6), nullable=True)
+    pending_email_at = db.Column(db.DateTime, nullable=True)
+    # Cuenta eliminada por su dueño: la fila sobrevive vaciada de identidad
+    # porque los pedidos y el libro de ventas apuntan a ella.
+    deleted_at = db.Column(db.DateTime, nullable=True)
     # ── Referral binding (the partner program's core promise) ──
     # Set ONCE, on the first PAID order that carried a creator code. From then
     # on the discount auto-applies at every checkout (no retyping) and every
@@ -3216,6 +3226,16 @@ _SEC_EVENT_LINES = {
                    'es': 'Tu contraseña fue cambiada',
                    'fr': 'Votre mot de passe a été modifié',
                    'pt': 'Sua senha foi alterada'},
+    # Este aviso va al buzón VIEJO: es el único que el dueño todavía controla
+    # si alguien entrase en una sesión abierta e intentase llevarse la cuenta.
+    'email_change': {'en': 'Someone asked to change your account email',
+                     'es': 'Se pidió cambiar el correo de tu cuenta',
+                     'fr': "Une demande de changement d'e-mail a été faite",
+                     'pt': 'Foi solicitada a troca do e-mail da sua conta'},
+    'email_changed': {'en': 'Your account email was changed',
+                      'es': 'El correo de tu cuenta fue cambiado',
+                      'fr': "L'e-mail de votre compte a été modifié",
+                      'pt': 'O e-mail da sua conta foi alterado'},
     '2fa_on':     {'en': 'Two-factor authentication was enabled',
                    'es': 'Se activó la verificación en dos pasos',
                    'fr': 'La validation en deux étapes a été activée',
@@ -5920,6 +5940,232 @@ def twofa_disable():
     send_security_email(current_user, '2fa_off')
     record_audit_event('2fa_disabled', user_id=current_user.id)
     return redirect(url_for('settings', sec='2fa_off'))
+
+
+# ── Cambiar el correo de la cuenta ──
+
+def _correo_libre(nuevo, salvo_id):
+    """¿Está ese buzón disponible? Mira el correo Y su forma canónica, o sea
+    que `juan+2@gmail` no cuela si ya existe `juan@gmail` (misma regla que el
+    registro desde el 2026-08-09)."""
+    canon = _correo_canonico(nuevo)
+    return User.query.filter(
+        User.id != salvo_id,
+        db.or_(User.email == nuevo, User.email_canonical == canon)).first() is None
+
+
+@app.route('/account/email', methods=['POST'])
+@login_required
+def account_email_start():
+    """Pide el cambio de correo. TODAVÍA no cambia nada.
+
+    Manda un código de 6 dígitos al buzón NUEVO y un aviso al VIEJO, y esa
+    división es la seguridad entera: quien se cuele en una sesión abierta no
+    puede llevarse la cuenta a un buzón suyo (no recibe el código), y el
+    cambio tampoco ocurre a espaldas del dueño (el aviso le llega al buzón que
+    aún controla). Por eso además se exige la contraseña."""
+    if not current_user.check_password(request.form.get('password', '')):
+        return redirect(url_for('settings', sec='email_wrong'))
+    nuevo = (request.form.get('email') or '').strip().lower()
+    if ('@' not in nuevo or '.' not in nuevo.split('@')[-1]
+            or len(nuevo) > 255 or nuevo == (current_user.email or '').lower()):
+        return redirect(url_for('settings', sec='email_bad'))
+    if not _correo_libre(nuevo, current_user.id):
+        # Mismo error que el registro: no se delata si ese buzón tiene cuenta.
+        return redirect(url_for('settings', sec='email_taken'))
+    current_user.pending_email = nuevo
+    current_user.pending_email_code = _new_verification_code()
+    current_user.pending_email_at = datetime.now(timezone.utc)
+    db.session.commit()
+    send_verification_email(nuevo, current_user.pending_email_code)
+    send_security_email(current_user, 'email_change')
+    record_audit_event('email_change_requested', user_id=current_user.id)
+    return redirect(url_for('settings', sec='email_sent'))
+
+
+@app.route('/account/email/confirm', methods=['POST'])
+@login_required
+def account_email_confirm():
+    """Cierra el cambio con el código que llegó al buzón nuevo."""
+    pend = (current_user.pending_email or '').strip().lower()
+    caduca = current_user.pending_email_at
+    if caduca is not None and caduca.tzinfo is None:
+        caduca = caduca.replace(tzinfo=timezone.utc)
+    if (not pend or not current_user.pending_email_code
+            or caduca is None
+            or datetime.now(timezone.utc) - caduca > timedelta(minutes=30)):
+        return redirect(url_for('settings', sec='email_expired'))
+    if (request.form.get('code') or '').strip() != current_user.pending_email_code:
+        return redirect(url_for('settings', sec='email_code'))
+    # Se vuelve a comprobar: entre la petición y el código, otra persona pudo
+    # registrarse con ese buzón.
+    if not _correo_libre(pend, current_user.id):
+        current_user.pending_email = None
+        current_user.pending_email_code = None
+        db.session.commit()
+        return redirect(url_for('settings', sec='email_taken'))
+    viejo = current_user.email
+    current_user.email = pend
+    current_user.email_canonical = _correo_canonico(pend)
+    current_user.email_verified = True
+    current_user.pending_email = None
+    current_user.pending_email_code = None
+    current_user.pending_email_at = None
+    db.session.commit()
+    # El correo es una credencial de entrada: al cambiarla se echan las demás
+    # sesiones, igual que al cambiar la contraseña.
+    _kill_other_sessions(current_user)
+    try:
+        send_security_email(current_user, 'email_changed')
+    except Exception:
+        pass
+    record_audit_event('email_changed', user_id=current_user.id,
+                       detail='%s -> %s' % (viejo, pend))
+    return redirect(url_for('settings', sec='email_ok'))
+
+
+@app.route('/account/email/cancel', methods=['POST'])
+@login_required
+def account_email_cancel():
+    current_user.pending_email = None
+    current_user.pending_email_code = None
+    current_user.pending_email_at = None
+    db.session.commit()
+    return redirect(url_for('settings'))
+
+
+# ── Eliminar la cuenta ──
+
+# Lo que se BORRA al eliminar una cuenta: contenido personal y de juego.
+# (modelo, columna que apunta al usuario)
+BORRAR_AL_ELIMINAR = [
+    ('ForumReaction', 'user_id'), ('SavedPost', 'user_id'),
+    ('ForumComment', 'user_id'), ('ForumPost', 'user_id'),
+    ('ForumCommunityMember', 'user_id'),
+    ('AnalysisProject', 'user_id'),
+    ('PreflightCheck', 'user_id'), ('PreflightChecklist', 'user_id'),
+    ('Testimonial', 'user_id'), ('RankCertificate', 'user_id'),
+    ('DailyAnswerLog', 'user_id'), ('DailyQuizState', 'user_id'),
+    ('XPLog', 'user_id'), ('RouletteSpin', 'user_id'),
+    ('UserCosmetic', 'user_id'), ('KnownDevice', 'user_id'),
+    ('MentorshipVideoComment', 'user_id'), ('MentorshipQuestion', 'user_id'),
+    ('MentorshipProgress', 'user_id'), ('MentorshipMsgReaction', 'user_id'),
+    ('MentorshipMessage', 'user_id'), ('MentorshipNote', 'user_id'),
+    ('MentorshipApplication', 'user_id'),
+]
+# Lo que se CONSERVA, atado a la fila anonimizada: registros de cobro y de
+# auditoría. El aviso de privacidad (Secc. 8) reserva expresamente esa
+# excepción — "salvo cuando la conservación sea necesaria por ley o para el
+# ejercicio o la defensa de reclamaciones". Y hay un motivo práctico: la
+# comisión del socio y el libro de ventas se calculan sobre esas filas.
+CONSERVAR_AL_ELIMINAR = ('Order', 'SaleBreakdown', 'CamoOrder', 'CosmeticOrder',
+                         'MentorshipOrder', 'SynapseOrder', 'PlanSubscription',
+                         'AuditEvent', 'AICostLog', 'UsageLog', 'ModWarning')
+
+
+def _borrar_datos_personales(user):
+    """Borra el contenido personal y deja la cuenta como un cascarón sin
+    identidad. Devuelve cuántas filas se borraron, por tabla."""
+    borradas = {}
+    for nombre, col in BORRAR_AL_ELIMINAR:
+        modelo = globals().get(nombre)
+        if modelo is None:
+            continue
+        try:
+            n = modelo.query.filter(getattr(modelo, col) == user.id).delete(
+                synchronize_session=False)
+            if n:
+                borradas[nombre] = n
+        except Exception as e:
+            app.logger.warning('borrado de %s: %s', nombre, e)
+    # Los privados van en las dos direcciones: un mensaje es de los dos.
+    try:
+        n = ForumDM.query.filter(db.or_(ForumDM.sender_id == user.id,
+                                        ForumDM.recipient_id == user.id)).delete(
+            synchronize_session=False)
+        if n:
+            borradas['ForumDM'] = n
+    except Exception as e:
+        app.logger.warning('borrado de ForumDM: %s', e)
+    # Un código personal suyo deja de estar atado a nadie; si era creador, el
+    # código sobrevive porque la atribución de sus clientes va por la CADENA,
+    # no por la fila del usuario.
+    try:
+        PromoCode.query.filter_by(restrict_user_id=user.id).update(
+            {'restrict_user_id': None}, synchronize_session=False)
+        PromoCode.query.filter_by(owner_user_id=user.id).update(
+            {'owner_user_id': None}, synchronize_session=False)
+    except Exception as e:
+        app.logger.warning('desligado de PromoCode: %s', e)
+    return borradas
+
+
+@app.route('/account/delete', methods=['POST'])
+@login_required
+def account_delete():
+    """Eliminar la cuenta de verdad, como promete el aviso de privacidad.
+
+    🔴 Antes de borrar nada se CORTA el cobro en PayPal. Borrar dejando vivo
+    el permiso de cobro sería lo peor que puede hacer este botón: la cuenta
+    desaparece del sitio y la tarjeta se sigue cobrando todos los meses, sin
+    nadie a quien avisar ni un panel donde verlo. Si PayPal no contesta, NO se
+    borra y se dice por qué — igual que hace el botón de darse de baja.
+    """
+    if current_user.is_admin:
+        return redirect(url_for('settings', sec='del_admin'))
+    if not current_user.check_password(request.form.get('password', '')):
+        return redirect(url_for('settings', sec='del_wrong'))
+    if (request.form.get('confirm') or '').strip() != current_user.username:
+        return redirect(url_for('settings', sec='del_confirm'))
+    if current_user.totp_confirmed_at:
+        code = (request.form.get('code') or '').strip()
+        if not (_totp_verify(current_user.totp_secret, code)
+                or _use_backup_code(current_user, code)):
+            return redirect(url_for('settings', sec='del_wrong'))
+
+    usuario = current_user._get_current_object()
+    for sub in subs_por_cortar(usuario):
+        if not sub.provider_ref:
+            sub.status = 'cancelled'
+            continue
+        if not _paypal_sub_cancel(sub, motivo='Cuenta eliminada'):
+            db.session.rollback()
+            return redirect(url_for('settings', sec='del_sub'))
+        sub.status = 'cancelled'
+    db.session.commit()
+
+    borradas = _borrar_datos_personales(usuario)
+
+    # La FILA no se borra: los pedidos y el libro de ventas apuntan a ella, y
+    # el recuento de clientes del socio se hace por user_id. Se vacía de
+    # identidad, que es lo que promete el aviso ("borramos o anonimizamos").
+    marca = 'deleted_%d' % usuario.id
+    usuario.username = marca
+    usuario.email = '%s@deleted.invalid' % marca
+    usuario.email_canonical = usuario.email
+    usuario.email_verified = False
+    usuario.set_password(secrets.token_urlsafe(32))
+    usuario.alt_id = secrets.token_hex(20)
+    usuario.birth_date = None
+    usuario.totp_secret = None
+    usuario.totp_confirmed_at = None
+    usuario.totp_backup = None
+    usuario.pending_email = None
+    usuario.pending_email_code = None
+    usuario.deleted_at = datetime.now(timezone.utc)
+    usuario.plan = 'free'
+    usuario.plan_expires_at = None
+    usuario.cancel_at_period_end = False
+    usuario.active_camo = ''
+    usuario.owned_camos = ''
+    usuario.active_frame = ''
+    usuario.active_cursor = ''
+    db.session.commit()
+    record_audit_event('account_deleted', user_id=usuario.id,
+                       detail=', '.join('%s=%d' % kv for kv in sorted(
+                           borradas.items())) or 'sin contenido')
+    logout_user()
+    return redirect(url_for('landing', bye='1'))
 
 
 @app.route('/account/cancel-plan', methods=['POST'])
@@ -15864,6 +16110,36 @@ def _migrate_forum_member_status_column():
             app.logger.info('forum member status migration note (ignored): %s', e)
 
 
+def _migrate_user_account_columns():
+    """Columnas del cambio de correo y del borrado de cuenta.
+
+    Sin backfill a propósito: nacen vacías y eso ya es su valor correcto (no
+    hay ningún cambio de correo pendiente ni ninguna cuenta borrada antes de
+    que esto existiera). SQL crudo y cada sentencia con su try/except, como
+    TODA migración de esta tabla: los 4 workers de gunicorn corren init_db()
+    a la vez y los que pierden la carrera del ALTER no pueden morir por ello.
+    """
+    from sqlalchemy import inspect, text
+    insp = inspect(db.engine)
+    cols = {c['name'] for c in insp.get_columns('user')}
+    table = '"user"' if db.engine.dialect.name == 'postgresql' else 'user'
+    nuevas = (('pending_email', 'VARCHAR(255)'),
+              ('pending_email_code', 'VARCHAR(6)'),
+              ('pending_email_at', 'TIMESTAMP'),
+              ('deleted_at', 'TIMESTAMP'))
+    faltan = [(c, t) for c, t in nuevas if c not in cols]
+    for col, tipo in faltan:
+        try:
+            with db.engine.begin() as conn:
+                conn.execute(text('ALTER TABLE %s ADD COLUMN %s %s'
+                                  % (table, col, tipo)))
+        except Exception as e:
+            app.logger.info('account column %s note (ignored): %s', col, e)
+    if faltan:
+        app.logger.info('Migrated user table: %s ensured.',
+                        ', '.join(c for c, _ in faltan))
+
+
 def _migrate_user_email_canonical_column():
     """Añade `email_canonical` y lo rellena para las cuentas que ya existen.
 
@@ -16587,6 +16863,7 @@ def init_db():
         _migrate_user_security_columns()
         _migrate_referral_columns()
         _migrate_user_email_canonical_column()
+        _migrate_user_account_columns()
         _migrate_user_alt_id_column()
         _migrate_order_columns()
         _migrate_promo_code_columns()
