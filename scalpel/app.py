@@ -6038,9 +6038,13 @@ def account_email_cancel():
 
 # Lo que se BORRA al eliminar una cuenta: contenido personal y de juego.
 # (modelo, columna que apunta al usuario)
+#
+# ⚠️ El foro NO está aquí: sus publicaciones y comentarios se VACÍAN en vez de
+# borrarse (ver `_vaciar_foro`). Un DELETE de una publicación revienta en
+# PostgreSQL porque los comentarios, reacciones y guardados de OTRA gente
+# apuntan a ella con una clave foránea sin cascada.
 BORRAR_AL_ELIMINAR = [
     ('ForumReaction', 'user_id'), ('SavedPost', 'user_id'),
-    ('ForumComment', 'user_id'), ('ForumPost', 'user_id'),
     ('ForumCommunityMember', 'user_id'),
     ('AnalysisProject', 'user_id'),
     ('PreflightCheck', 'user_id'), ('PreflightChecklist', 'user_id'),
@@ -6119,40 +6123,73 @@ def _cortar_todos_los_cobros(user):
     return True, ''
 
 
+def _vaciar_foro(user):
+    """Vacía sus publicaciones y comentarios en vez de borrarlos.
+
+    🔴 Borrarlos NO se puede: en PostgreSQL, los comentarios, reacciones y
+    guardados de OTRA gente apuntan a esas filas con una clave foránea sin
+    cascada, así que el DELETE es un FK violation y se lleva por delante el
+    borrado entero. (En SQLite no salta porque no exige las foráneas — por eso
+    la primera versión de esto parecía funcionar.) Y aunque se pudiera, se
+    llevaría los hilos de conversación de terceros.
+
+    Vaciar el texto y marcarlo como borrado cumple lo que promete el aviso de
+    privacidad —el contenido personal desaparece— sin romper lo que
+    escribieron los demás. Es además el mecanismo que el foro ya usa para
+    retirar una publicación (`is_deleted`).
+    """
+    n = 0
+    for post in ForumPost.query.filter_by(user_id=user.id).all():
+        post.title = ''
+        post.body = ''
+        post.image_path = None
+        post.is_deleted = True
+        n += 1
+    m = 0
+    for com in ForumComment.query.filter_by(user_id=user.id).all():
+        com.body = ''
+        com.is_deleted = True
+        m += 1
+    return n, m
+
+
 def _borrar_datos_personales(user):
-    """Borra el contenido personal y deja la cuenta como un cascarón sin
-    identidad. Devuelve cuántas filas se borraron, por tabla."""
+    """Borra el contenido personal. Devuelve cuántas filas, por tabla.
+
+    🔴 SIN try/except por tabla, y es deliberado. La versión anterior lo
+    llevaba y se tragó en silencio el fallo de las claves foráneas: la cuenta
+    quedaba "eliminada" mientras sus publicaciones seguían publicadas con su
+    texto. Prefiero que reviente y que el usuario vea "no se pudo" a decirle
+    que borramos algo que sigue ahí. Quien llama envuelve todo en una
+    transacción: o se borra todo, o no se borra nada.
+    """
     borradas = {}
+    posts, coms = _vaciar_foro(user)
+    if posts:
+        borradas['ForumPost(vaciados)'] = posts
+    if coms:
+        borradas['ForumComment(vaciados)'] = coms
     for nombre, col in BORRAR_AL_ELIMINAR:
         modelo = globals().get(nombre)
         if modelo is None:
             continue
-        try:
-            n = modelo.query.filter(getattr(modelo, col) == user.id).delete(
-                synchronize_session=False)
-            if n:
-                borradas[nombre] = n
-        except Exception as e:
-            app.logger.warning('borrado de %s: %s', nombre, e)
-    # Los privados van en las dos direcciones: un mensaje es de los dos.
-    try:
-        n = ForumDM.query.filter(db.or_(ForumDM.sender_id == user.id,
-                                        ForumDM.recipient_id == user.id)).delete(
+        n = modelo.query.filter(getattr(modelo, col) == user.id).delete(
             synchronize_session=False)
         if n:
-            borradas['ForumDM'] = n
-    except Exception as e:
-        app.logger.warning('borrado de ForumDM: %s', e)
+            borradas[nombre] = n
+    # Los privados van en las dos direcciones: un mensaje es de los dos.
+    n = ForumDM.query.filter(db.or_(ForumDM.sender_id == user.id,
+                                    ForumDM.recipient_id == user.id)).delete(
+        synchronize_session=False)
+    if n:
+        borradas['ForumDM'] = n
     # Un código personal suyo deja de estar atado a nadie; si era creador, el
     # código sobrevive porque la atribución de sus clientes va por la CADENA,
     # no por la fila del usuario.
-    try:
-        PromoCode.query.filter_by(restrict_user_id=user.id).update(
-            {'restrict_user_id': None}, synchronize_session=False)
-        PromoCode.query.filter_by(owner_user_id=user.id).update(
-            {'owner_user_id': None}, synchronize_session=False)
-    except Exception as e:
-        app.logger.warning('desligado de PromoCode: %s', e)
+    PromoCode.query.filter_by(restrict_user_id=user.id).update(
+        {'restrict_user_id': None}, synchronize_session=False)
+    PromoCode.query.filter_by(owner_user_id=user.id).update(
+        {'owner_user_id': None}, synchronize_session=False)
     return borradas
 
 
@@ -6189,14 +6226,25 @@ def account_delete():
                                 sec='del_paypal' if motivo == 'paypal_apagado'
                                 else 'del_sub'))
 
-    borradas = _borrar_datos_personales(usuario)
+    try:
+        borradas = _borrar_datos_personales(usuario)
+    except Exception:
+        # Todo o nada: si algo no se pudo borrar, no se le dice que se borró.
+        db.session.rollback()
+        app.logger.exception('borrado de cuenta %s abortado', usuario.id)
+        record_audit_event('account_delete_failed', user_id=usuario.id,
+                           detail='fallo al borrar contenido', success=False)
+        return redirect(url_for('settings', sec='del_error'))
 
     # La FILA no se borra: los pedidos y el libro de ventas apuntan a ella, y
     # el recuento de clientes del socio se hace por user_id. Se vacía de
     # identidad, que es lo que promete el aviso ("borramos o anonimizamos").
-    marca = 'deleted_%d' % usuario.id
+    # ⚠️ La marca lleva '#' A PROPÓSITO: `username` es único y USERNAME_RE no
+    # admite ese carácter, así que nadie puede registrar "deleted#7" de
+    # antemano para que el borrado del usuario 7 choque contra su nombre.
+    marca = 'deleted#%d' % usuario.id
     usuario.username = marca
-    usuario.email = '%s@deleted.invalid' % marca
+    usuario.email = 'deleted_%d@deleted.invalid' % usuario.id
     usuario.email_canonical = usuario.email
     usuario.email_verified = False
     usuario.set_password(secrets.token_urlsafe(32))
@@ -6215,7 +6263,15 @@ def account_delete():
     usuario.owned_camos = ''
     usuario.active_frame = ''
     usuario.active_cursor = ''
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        app.logger.exception('borrado de cuenta %s: falló el commit final',
+                             usuario.id)
+        record_audit_event('account_delete_failed', user_id=usuario.id,
+                           detail='fallo al anonimizar', success=False)
+        return redirect(url_for('settings', sec='del_error'))
     record_audit_event('account_deleted', user_id=usuario.id,
                        detail=', '.join('%s=%d' % kv for kv in sorted(
                            borradas.items())) or 'sin contenido')
@@ -9690,6 +9746,21 @@ def _activate_plan_from_order(order):
     upgrade, a new plan, or a lapsed plan starts fresh from now.
     """
     if order.status != 'paid' or order.applied_at is not None:
+        return False
+    # 🔴 Cuenta BORRADA: no se le devuelve el plan por ningún camino.
+    # El guard vive aquí, y no solo en `_sub_cobro`, porque a esta función se
+    # llega por SEIS sitios distintos (la vuelta de PayPal, tres ramas del
+    # webhook, el barrido de /admin y la renovación). Poner la red en uno solo
+    # deja los otros cinco abiertos, y este fallo no lo notaría nadie: el dueño
+    # de la cuenta ya no está para quejarse.
+    _cliente = db.session.get(User, order.user_id)
+    if _cliente is not None and _cliente.deleted_at is not None:
+        app.logger.error('pedido %s sobre cuenta BORRADA (%s): no se activa',
+                         order.id, order.user_id)
+        record_audit_event('pago_sobre_cuenta_borrada', user_id=order.user_id,
+                           detail='pedido=%s importe=%s' % (order.id,
+                                                            order.final_price),
+                           success=False)
         return False
     user = db.session.get(User, order.user_id)
     if not user:

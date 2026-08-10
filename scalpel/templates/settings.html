@@ -191,6 +191,9 @@
   {% if sec == 'del_confirm' %}
     <div class="flash info" data-i18n="settings.flashDelConfirm">You must type the confirmation word exactly. Your account was NOT deleted.</div>
   {% endif %}
+  {% if sec == 'del_error' %}
+    <div class="flash info" data-i18n="settings.flashDelError">Something went wrong while deleting your data, so nothing was deleted and your account is intact. We would rather stop than tell you your data is gone while it is still there. Please write to us and we will finish it by hand.</div>
+  {% endif %}
   {% if sec == 'del_paypal' %}
     <div class="flash info" data-i18n="settings.flashDelPaypal">We cannot reach the payment provider right now, so we cannot prove your renewal is stopped — and we will not delete an account while a charge might still go through. Please try again later or write to us.</div>
   {% endif %}

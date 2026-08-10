@@ -213,15 +213,19 @@ check('🔴 y TAMBIÉN la fila que figuraba cancelada aquí pero seguía viva '
       ZID in cortadas, cortadas)
 check('al terminar, PayPal ya no puede cobrar por ninguna',
       not any(viva.values()), viva)
-check('sin identidad: el nombre pasa a deleted_%d' % BID,
-      u.username == 'deleted_%d' % BID, u.username)
+check('sin identidad: el nombre pasa a deleted#%d (con "#", que el registro '
+      'no admite, para que nadie pueda ocuparlo antes)' % BID,
+      u.username == 'deleted#%d' % BID, u.username)
 check('sin correo real', u.email.endswith('@deleted.invalid'), u.email)
 check('y no puede entrar con su contraseña de siempre',
       sesion('borrame').get('/settings').status_code in (302, 401))
 with A.app.app_context():
     A.db.session.expire_all()
-    check('se borró su publicación del foro',
-          A.ForumPost.query.filter_by(user_id=BID).count() == 0)
+    post = A.ForumPost.query.filter_by(user_id=BID).first()
+    check('su publicación del foro queda VACÍA y marcada como borrada '
+          '(borrarla reventaría las claves foráneas en PostgreSQL)',
+          post is not None and post.is_deleted and not (post.body or '')
+          and not (post.title or ''), post and (post.title, post.body))
     check('se borró su historial de XP',
           A.XPLog.query.filter_by(user_id=BID).count() == 0)
     check('🔴 SE CONSERVA el pedido pagado (obligación legal)',
@@ -257,6 +261,26 @@ with A.app.app_context():
     ev = A.AuditEvent.query.filter_by(
         event_type='cobro_sobre_cuenta_borrada').first()
     check('queda registrado en la auditoría', ev is not None)
+
+print('\n== y por CUALQUIER otro camino que active un plan ==')
+# _activate_plan_from_order es la puerta comun de los 6 caminos (vuelta de
+# PayPal, 3 ramas del webhook, barrido de /admin y renovacion).
+with A.app.app_context():
+    A.db.session.expire_all()
+    o2 = A.Order(user_id=BID, plan='premium', billing_cycle='monthly',
+                 base_price=50, final_price=50, status='paid',
+                 paid_at=datetime.now(timezone.utc))
+    A.db.session.add(o2)
+    A.db.session.commit()
+    aplicado = A._activate_plan_from_order(o2)
+    A.db.session.expire_all()
+    check('🔴 un pedido pagado NO le devuelve el plan a una cuenta borrada',
+          aplicado is False, aplicado)
+    check('...y la cuenta sigue en free',
+          A.db.session.get(A.User, BID).plan == 'free')
+    check('queda registrado en la auditoría',
+          A.AuditEvent.query.filter_by(
+              event_type='pago_sobre_cuenta_borrada').first() is not None)
 
 print('\n== la palabra se acepta en minúsculas y en los 4 idiomas ==')
 for nombre, palabra in (('mini', 'confirmar'), ('eng', 'Confirm'),

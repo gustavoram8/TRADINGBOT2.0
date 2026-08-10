@@ -311,6 +311,7 @@
       'settings.flashDelConfirm': 'You must type the confirmation word exactly. Your account was NOT deleted.',
       'settings.flashDelSub': 'We could not stop your renewal with the payment provider, so nothing was deleted — deleting the account while the charge stays alive would keep billing you with no way to tell us. Please try again in a few minutes.',
       'settings.flashDelPaypal': 'We cannot reach the payment provider right now, so we cannot prove your renewal is stopped — and we will not delete an account while a charge might still go through. Please try again later or write to us.',
+      'settings.flashDelError': 'Something went wrong while deleting your data, so nothing was deleted and your account is intact. We would rather stop than tell you your data is gone while it is still there. Please write to us and we will finish it by hand.',
       'settings.flashDelAdmin': 'An administrator account cannot be deleted from here.',
 
       // ── checkout.html ──
@@ -846,6 +847,7 @@
       'settings.flashDelConfirm': 'Tienes que escribir exactamente la palabra de confirmación. Tu cuenta NO se eliminó.',
       'settings.flashDelSub': 'No pudimos detener tu renovación en la pasarela de pago, así que no se borró nada — eliminar la cuenta dejando vivo el cobro te seguiría cobrando sin que puedas avisarnos. Inténtalo de nuevo en unos minutos.',
       'settings.flashDelPaypal': 'Ahora mismo no podemos contactar con la pasarela de pago, así que no podemos demostrar que tu renovación quedó detenida — y no vamos a borrar una cuenta mientras un cobro pueda seguir saliendo. Inténtalo más tarde o escríbenos.',
+      'settings.flashDelError': 'Algo salió mal al borrar tus datos, así que no se borró nada y tu cuenta sigue intacta. Preferimos parar antes que decirte que tus datos ya no están mientras siguen ahí. Escríbenos y lo terminamos a mano.',
       'settings.flashDelAdmin': 'Una cuenta de administrador no se puede eliminar desde aquí.',
 
       // ── checkout.html ──
@@ -1383,6 +1385,7 @@
       'settings.flashDelConfirm': 'Vous devez saisir exactement le mot de confirmation. Votre compte n\'a PAS été supprimé.',
       'settings.flashDelSub': 'Nous n\'avons pas pu arrêter votre renouvellement auprès du prestataire de paiement, donc rien n\'a été supprimé — supprimer le compte en laissant le prélèvement actif continuerait à vous facturer sans moyen de nous prévenir. Réessayez dans quelques minutes.',
       'settings.flashDelPaypal': 'Nous ne parvenons pas à joindre le prestataire de paiement pour l\'instant, donc nous ne pouvons pas prouver que votre renouvellement est arrêté — et nous ne supprimerons pas un compte tant qu\'un prélèvement pourrait encore passer. Réessayez plus tard ou écrivez-nous.',
+      'settings.flashDelError': 'Un problème est survenu pendant la suppression de vos données : rien n\'a été supprimé et votre compte est intact. Nous préférons nous arrêter plutôt que vous dire que vos données ont disparu alors qu\'elles sont toujours là. Écrivez-nous et nous le terminerons à la main.',
       'settings.flashDelAdmin': 'Un compte administrateur ne peut pas être supprimé d\'ici.',
 
       // ── checkout.html ──
@@ -1917,6 +1920,7 @@
       'settings.flashDelConfirm': 'Você precisa digitar exatamente a palavra de confirmação. Sua conta NÃO foi excluída.',
       'settings.flashDelSub': 'Não conseguimos interromper sua renovação no meio de pagamento, então nada foi excluído — apagar a conta deixando a cobrança viva continuaria cobrando de você sem um jeito de nos avisar. Tente de novo em alguns minutos.',
       'settings.flashDelPaypal': 'No momento não conseguimos falar com o meio de pagamento, então não podemos provar que sua renovação foi interrompida — e não vamos excluir uma conta enquanto uma cobrança ainda puder sair. Tente mais tarde ou fale conosco.',
+      'settings.flashDelError': 'Algo deu errado ao apagar seus dados, então nada foi excluído e sua conta segue intacta. Preferimos parar a dizer que seus dados sumiram enquanto ainda estão lá. Fale conosco e terminamos na mão.',
       'settings.flashDelAdmin': 'Uma conta de administrador não pode ser excluída aqui.',
 
       // ── checkout.html ──
