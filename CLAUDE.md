@@ -432,6 +432,25 @@ cambio de tema (el MutationObserver la repinta en su otra paleta), así que no g
 choca con reduced-motion. Verificado en Chromium real: login → cubo → Cámara → chat → pregunta →
 claro y oscuro → volver → salir, **0 errores JS**.
 - **El teseracto va encima de cada respuesta** (`tesseract.png`, 60px tras el ajuste del dueño).
+- 🔴 **El fondo del chat NO puede preguntar por `body.light` (bug real, 2026-08-10).** Lo cazó el
+  dueño: Rising Sun + modo oscuro → el asistente pintado en BLANCO. La causa no es el camo, es que
+  **hay camos que fuerzan la clase**: los **LIGHT_ALWAYS** (rising-sun, blackflag) llevan `.light`
+  SIEMPRE —el suelo es crema en los dos modos— y marcan la preferencia oscura aparte con
+  **`.camo-night`**; el **DARK_ALWAYS** (premium) **nunca** lleva `.light` y marca la clara con
+  **`.camo-day`**. Regla del dueño: *el fondo del asistente es identidad propia como Synapse — no
+  depende del camo — pero SÍ sigue el claro/oscuro del sitio.* Fix: helper **`temaClaro()`**
+  (`camo-day || (light && !camo-night)`) + las 13 reglas `body.light #nxc-ov…` pasaron a
+  **`#nxc-ov.nxc-claro`**, una clase que pone `sincTemaChat()` al abrir, al arrancar y en el
+  MutationObserver del tema; `dibujarNodos()` usa el mismo helper.
+  ⚠️ **Había un fallo ESPEJO que nadie había visto: premium en modo CLARO pintaba el chat NEGRO.**
+  Por eso la comprobación se hizo camo por camo y no solo en el que él reportó.
+  `tools/test_chat_tema.py` = **21/21** (9 camos × 2 modos + sin camo), midiendo el color REAL que
+  pinta el navegador (fondo del overlay + píxel del canvas), no la clase que debería estar puesta.
+  Con el código viejo **fallan justo 3**: rising-sun·dark, blackflag·dark y premium·light.
+  ⚠️ Trampa del entorno: **`/app` BORRA el cookie `scalpel_splash_ts` al servirse** (es de un solo
+  uso) → hay que volver a ponerlo antes de CADA visita o la siguiente rebota a `/welcome` y no
+  existe ni el cubo. Y el camo lo pinta el SERVIDOR (`active_camo`): se cambia en la cuenta, no
+  desde el navegador.
 - 🔴 **Las 12 EMOCIONES se descartaron, y la lección importa más que el resultado.** Se perdió un día
   entero recortándolas. Causas, en orden: (1) la lámina estaba **solo en el VPS** y yo corté a ciegas
   con scripts en vez de mirarla; (2) **el chat guarda cada imagen que el usuario pega dentro del

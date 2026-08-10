@@ -26606,6 +26606,22 @@
       bugT:'Reportar um bug', bugD:'Algo quebrado ou estranho? A gente conserta.',
       back:'← Voltar', close:'Fechar' }
   };
+  /* ── ¿el usuario quiere claro u oscuro? ─────────────────────────────────
+     🔴 NO se puede preguntar por `body.light`: hay camos que la fuerzan.
+     · LIGHT_ALWAYS (rising-sun, blackflag): el suelo es crema en los DOS
+       modos, así que body SIEMPRE lleva .light y la preferencia oscura se
+       marca aparte con .camo-night.
+     · DARK_ALWAYS (premium): body NUNCA lleva .light y la preferencia clara
+       se marca con .camo-day.
+     El chat del asistente tiene identidad propia como Synapse —su fondo no
+     depende del camo— pero SÍ debe seguir el claro/oscuro del sitio. Mirando
+     `body.light` a secas, rising-sun en modo oscuro pintaba el chat en
+     blanco, y premium en modo claro lo pintaba en negro (el fallo espejo). */
+  function temaClaro(){
+    var b = document.body.classList;
+    return b.contains('camo-day')
+        || (b.contains('light') && !b.contains('camo-night'));
+  }
   function lang(){ try { var l = localStorage.getItem('scalpel_lang'); return NX_T[l] ? l : 'en'; } catch(e){ return 'en'; } }
   function t(k){ return (NX_T[lang()] || NX_T.en)[k] || NX_T.en[k] || k; }
 
@@ -26793,7 +26809,7 @@
   + '#nxc-ov{ display:none; position:fixed; inset:0; z-index:2147483000; flex-direction:column;'
   + '  background:#07080d; }'
   + '#nxc-ov.show{ display:flex; }'
-  + 'body.light #nxc-ov{ background:#eef1f7; }'
+  + '#nxc-ov.nxc-claro{ background:#eef1f7; }'
   + '#nxc-bg{ position:absolute; inset:0; width:100%; height:100%; }'
   + '.nxc-top{ position:relative; z-index:2; display:flex; align-items:center; gap:14px;'
   + '  padding:14px 20px 10px; }'
@@ -26801,30 +26817,30 @@
   + '  border:1px solid rgba(224,168,61,.38); background:rgba(255,255,255,.03); color:#e8c06a;'
   + '  font:600 12px Inter,sans-serif; letter-spacing:.04em; transition:border-color .2s, background .2s; }'
   + '.nxc-back:hover,.nxc-exit:hover{ border-color:rgba(232,192,106,.7); background:rgba(224,168,61,.12); }'
-  + 'body.light .nxc-back, body.light .nxc-exit{ background:rgba(16,24,44,.04); color:#8a6a1c;'
+  + '#nxc-ov.nxc-claro .nxc-back, #nxc-ov.nxc-claro .nxc-exit{ background:rgba(16,24,44,.04); color:#8a6a1c;'
   + '  border-color:rgba(180,130,20,.45); }'
   + '.nxc-title{ flex:1; text-align:center; font:700 15px Orbitron,Inter,sans-serif;'
   + '  letter-spacing:.24em; color:#fff;'
   + '  text-shadow:0 0 10px rgba(224,36,74,.85), 0 0 26px rgba(224,36,74,.4); }'
-  + 'body.light .nxc-title{ color:#1c2230; text-shadow:0 0 10px rgba(224,36,74,.28); }'
+  + '#nxc-ov.nxc-claro .nxc-title{ color:#1c2230; text-shadow:0 0 10px rgba(224,36,74,.28); }'
   + '.nxc-title span{ display:inline-block; margin-left:10px; vertical-align:2px;'
   + '  font:600 9.5px "JetBrains Mono",monospace; letter-spacing:.28em; color:#e8c06a;'
   + '  border:1px solid rgba(224,168,61,.4); padding:3px 8px 2px; border-radius:4px; }'
-  + 'body.light .nxc-title span{ color:#8a6a1c; border-color:rgba(180,130,20,.5); }'
+  + '#nxc-ov.nxc-claro .nxc-title span{ color:#8a6a1c; border-color:rgba(180,130,20,.5); }'
   + '.nxc-col{ position:relative; z-index:2; flex:1; min-height:0; display:flex;'
   + '  flex-direction:column; gap:12px; width:min(860px,94vw); margin:0 auto; padding:4px 0 18px; }'
   + '#nxc-ov .nx-log{ max-height:none; flex:1; min-height:0; padding:10px 6px; }'
   + '#nxc-ov .nx-emo{ width:60px; height:60px; }'
   /* burbujas e input legibles sobre papel claro */
-  + 'body.light #nxc-ov .nx-msg.it{ background:rgba(16,24,44,.05); border-color:rgba(16,24,44,.13); color:#242b3a; }'
-  + 'body.light #nxc-ov .nx-msg.me{ background:rgba(180,130,20,.10); border-color:rgba(180,130,20,.38); color:#242b3a; }'
-  + 'body.light #nxc-ov .nx-msg.err{ color:#a51e3e; }'
-  + 'body.light #nxc-ov .nx-msg a{ color:#8a6a1c; }'
-  + 'body.light #nxc-ov .nx-ask input{ background:rgba(16,24,44,.05); border-color:rgba(180,130,20,.45); color:#1c2230; }'
-  + 'body.light #nxc-ov .nx-ask button{ background:rgba(180,130,20,.14); border-color:rgba(180,130,20,.5); color:#5a4614; }'
-  + 'body.light #nxc-ov .nx-sugg button{ border-color:rgba(180,130,20,.38); color:rgba(40,46,60,.78); }'
-  + 'body.light #nxc-ov .nx-sugg button:hover{ border-color:rgba(180,130,20,.7); color:#1c2230; }'
-  + 'body.light #nxc-ov .nx-hint{ color:rgba(40,46,60,.55); }'
+  + '#nxc-ov.nxc-claro .nx-msg.it{ background:rgba(16,24,44,.05); border-color:rgba(16,24,44,.13); color:#242b3a; }'
+  + '#nxc-ov.nxc-claro .nx-msg.me{ background:rgba(180,130,20,.10); border-color:rgba(180,130,20,.38); color:#242b3a; }'
+  + '#nxc-ov.nxc-claro .nx-msg.err{ color:#a51e3e; }'
+  + '#nxc-ov.nxc-claro .nx-msg a{ color:#8a6a1c; }'
+  + '#nxc-ov.nxc-claro .nx-ask input{ background:rgba(16,24,44,.05); border-color:rgba(180,130,20,.45); color:#1c2230; }'
+  + '#nxc-ov.nxc-claro .nx-ask button{ background:rgba(180,130,20,.14); border-color:rgba(180,130,20,.5); color:#5a4614; }'
+  + '#nxc-ov.nxc-claro .nx-sugg button{ border-color:rgba(180,130,20,.38); color:rgba(40,46,60,.78); }'
+  + '#nxc-ov.nxc-claro .nx-sugg button:hover{ border-color:rgba(180,130,20,.7); color:#1c2230; }'
+  + '#nxc-ov.nxc-claro .nx-hint{ color:rgba(40,46,60,.55); }'
   + '@media (max-width:600px){ .nxc-title{ font-size:11.5px; letter-spacing:.14em; }'
   + '  .nxc-title span{ display:none; } .nxc-top{ padding:10px 10px 8px; gap:8px; }'
   + '  .nxc-back,.nxc-exit{ padding:8px 12px; font-size:11px; } }'
@@ -27033,7 +27049,7 @@
     var w = c.width = cv.clientWidth || window.innerWidth;
     var h = c.height = cv.clientHeight || window.innerHeight;
     var ctx = c.getContext('2d');
-    var claro = document.body.classList.contains('light');
+    var claro = temaClaro();
     var g = ctx.createLinearGradient(0, 0, 0, h);
     if (claro){ g.addColorStop(0, '#f6f8fc'); g.addColorStop(1, '#e8ecf4'); }
     else { g.addColorStop(0, '#0a0c13'); g.addColorStop(1, '#06070b'); }
@@ -27085,6 +27101,10 @@
       el.setAttribute('placeholder', t(el.getAttribute('data-nxc-ph')));
     });
   }
+  /* La paleta del chat vive en SU propia clase, no en `body.light`: así el
+     camo no puede decidirla (ver temaClaro()). */
+  function sincTemaChat(){ cv.classList.toggle('nxc-claro', temaClaro()); }
+
   function abrirChat(){
     /* la Cámara se guarda; su lock de scroll se hereda */
     ov.style.display = 'none'; ov.classList.remove('show', 'go');
@@ -27092,7 +27112,7 @@
     cv.style.display = 'flex'; cv.classList.add('show');
     document.body.classList.add('nx-lock');
     fadeId++; cube.classList.remove('on'); cube.style.display = 'none'; cube.style.opacity = '0';
-    dibujarNodos();
+    sincTemaChat(); dibujarNodos();
     var log = cv.querySelector('.nx-log');
     if (!log.children.length) { mostrarEmo(); burbuja('it', t('askHi')); }
     var sug = cv.querySelector('.nx-sugg'); sug.innerHTML = '';
@@ -27247,12 +27267,14 @@
     document.body.appendChild(cube);
     document.body.appendChild(ov);
     document.body.appendChild(cv);
+    sincTemaChat();
     syncVisibility();
     try {
       new MutationObserver(function(){
         syncVisibility();
-        /* si cambia el tema con el chat abierto, la constelación se repinta
-           en su otra paleta (oscura ⇄ clara) */
+        /* si cambia el tema (o el camo) con el chat abierto, se repintan las
+           dos capas: la clase de paleta y la constelación del canvas */
+        sincTemaChat();
         if (cv.classList.contains('show')) dibujarNodos();
       }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
     } catch (e) { park(); }
