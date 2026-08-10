@@ -66,6 +66,58 @@ def cancelar(base, tk, sub_id):
         return False, str(exc)
 
 
+def gritar(env, vivos):
+    """Avisa al dueño por WhatsApp y correo de que hay cobros vivos.
+
+    🔴 Sin esto el vigilante era medio vigilante: encontraba el problema y lo
+    escribía en un log que nadie mira (cron manda su salida a un buzón local
+    que aquí no lee nadie). Un aviso que no llega no es un aviso.
+
+    La app se importa AQUÍ dentro, y solo cuando hay algo que contar: en el
+    caso normal —que es todos los días— este archivo no arranca Flask ni toca
+    la base más de lo necesario. Y antes de importarla se vuelcan las
+    variables de `scalpel/.env` al entorno, porque la app las busca en el
+    directorio actual y desde el cron no las encontraría: sin eso se importa
+    con el correo apagado y el aviso se pierde en silencio.
+    """
+    for k, v in env.items():
+        os.environ.setdefault(k, v)
+    try:
+        sys.path.insert(0, os.path.join(RAIZ, 'scalpel'))
+        import app as A
+    except Exception as exc:
+        print('     ⚠️  no se pudo avisar (no cargó la app): %s' % exc)
+        return False
+    lineas = [('Cuentas', '%d' % len({v[0] for v in vivos})),
+              ('Permisos vivos', '%d' % len(vivos)),
+              ('Qué hacer', 'correr check_borrados.py --cortar')]
+    try:
+        A.avisar('borrados_vivos', '🔴 COBRO VIVO EN CUENTA BORRADA', lineas)
+    except Exception as exc:
+        print('     ⚠️  WhatsApp no salió: %s' % exc)
+    cuerpo = ['🔴 CUENTAS BORRADAS CON EL COBRO TODAVÍA VIVO', '=' * 48, '']
+    for uid, quien, sid, ref, real, precio, plan in vivos:
+        cuerpo.append('  cuenta #%s (%s) · %s · %s · $%.2f/mes (%s)'
+                      % (uid, quien, ref, real, float(precio or 0), plan))
+    cuerpo += ['', 'Esas personas eliminaron su cuenta: no pueden entrar, ni',
+               'darse de baja, ni ver el cargo. Hay que cortarlo ya.', '',
+               'Arreglarlo:',
+               '  cd /var/www/TRADINGBOT2.0 && venv/bin/python3 '
+               'tools/check_borrados.py --cortar', '',
+               'Y después, reembolsar en PayPal lo que se haya cobrado.']
+    try:
+        with A.app.app_context():
+            msg = A.Message('🔴 Cobro vivo en cuenta borrada — acción requerida',
+                            recipients=[A.ADMIN_INBOX])
+            msg.body = '\n'.join(cuerpo)
+            A.mail.send(msg)
+        print('     ✅ aviso enviado al dueño')
+        return True
+    except Exception as exc:
+        print('     ⚠️  correo no salió: %s' % exc)
+        return False
+
+
 def filas(env):
     """Cuentas borradas y sus permisos de cobro, de la base del sitio."""
     url = (env.get('DATABASE_URL') or '').strip()
@@ -162,7 +214,12 @@ def main():
         for uid, quien, sid, ref, real, precio, plan in vivos:
             print('       · cuenta #%s (%s) → %s [%s]' % (uid, quien, ref, real))
         print('\n     Arreglarlo: volver a correr esto con --cortar, o')
-        print('     cancelarlas a mano en el panel de PayPal.\n')
+        print('     cancelarlas a mano en el panel de PayPal.')
+        if not cortar:
+            # Con --cortar ya se intentó apagarlas; el aviso es para el caso
+            # en que el cron lo encuentre y nadie esté mirando el log.
+            gritar(env, vivos)
+        print('')
         return 2
     if mudos:
         print('\n  ⚠️  %d no se pudieron comprobar (PayPal no contestó).' % mudos)

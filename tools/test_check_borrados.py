@@ -72,6 +72,10 @@ def falsa_cancel(base, tk, sub_id):
 
 CB.cancelar = falsa_cancel
 
+# el aviso al dueno: se simula para no mandar correos de verdad
+avisos = []
+CB.gritar = lambda env, vivos: avisos.append(len(vivos)) or True
+
 # ── la base ───────────────────────────────────────────────────────────────
 with A.app.app_context():
     A.db.create_all()
@@ -122,6 +126,8 @@ check('avisa de la que no pudo comprobar, sin darla por cortada',
       'I-MUDA' in salida and 'NO se puede' in salida)
 check('🔴 NO se mete con la suscripción de un cliente VIVO',
       'I-CLIENTE' not in salida)
+check('🔴 al encontrar algo, AVISA al dueño (no solo lo escribe en el log)',
+      avisos == [2], avisos)
 check('no imprime credenciales',
       os.environ['PAYPAL_SECRET'] not in salida
       and os.environ['PAYPAL_CLIENT_ID'] not in salida)
@@ -136,6 +142,8 @@ check('cancela las dos que podían cobrar',
       sorted(canceladas) == ['I-SUSPENDIDA', 'I-VIVA'], canceladas)
 check('y al terminar ya no queda ninguna viva (solo la muda sin comprobar)',
       code2 == 3, code2)
+check('con --cortar no vuelve a avisar (ya las apagó él mismo)',
+      avisos == [2], avisos)
 
 print('\nRESULTADO: %d ok, %d fallas' % (ok, fallas))
 if os.path.exists(DB):
