@@ -1567,6 +1567,44 @@ Miedo del dueño, textual: *"compro standard y más tarde upgradeo a premium: ¿
   único" oculto-a-medias y lo corregía el JS al cargar → parpadeo, y frase falsa si el JS no corría.
 `tools/test_upgrade.py` **18/18**.
 
+## 🔴 BAJA → BORRADO: el orden es sagrado (2026-08-10, decisión del dueño)
+**La regla, en una línea: el borrado de cuenta NO cancela nada; EXIGE que la baja ya esté hecha.**
+- **"Cancelar plan"** es el ÚNICO sitio que corta cobros. Usa `_cortar_todos_los_cobros()`, que
+  mira **todas** las filas con `provider_ref` (`permisos_de_cobro()`, no solo pending/active/
+  suspended: una fila que aquí consta 'cancelled' puede seguir viva ALLÍ si un corte falló), las
+  cancela y después **le PREGUNTA a PayPal** que ninguna pueda cobrar. `_sub_puede_cobrar` responde
+  **True ante una API muda** → un fallo de red bloquea, nunca deja pasar. Sin confirmación NO se le
+  dice "cancelado" (`sec=cancel_failed`).
+- **"Eliminar cuenta"** solo comprueba que no quede cobro posible; si lo hay responde
+  `del_active` ("cancela tu plan primero"). 🔑 **Motivo del dueño:** si algo fallara tras borrar, esa
+  persona no tendría ni cómo volver a soporte — su cuenta ya no existe. Con este orden, *cuenta
+  borrada + cobro vivo* es **imposible por construcción**, y mientras el cobro exista la cuenta
+  existe y puede escribir.
+- Redes que quedan detrás: guard de cuenta borrada en **`_activate_plan_from_order`** (la puerta
+  común de los **6** caminos que activan un plan — estaba solo en `_sub_cobro`, o sea 5 abiertos), y
+  `_avisar_cobro_a_borrada` si aun así llegara dinero (no revive el plan, no anota comisión —ese
+  dinero se devuelve, no se reparte—, reintenta cortar y avisa por WhatsApp+correo).
+- **`tools/check_borrados.py`** = el vigilante. Recorre las cuentas borradas y le pregunta a PayPal
+  por cada permiso; `--cortar` cancela lo que siga vivo. Salidas para cron: **0** limpio · **2** algo
+  vivo · **3** no se pudo comprobar ("no lo sé" NO es "está bien"). Lee las credenciales de
+  `scalpel/.env` (verificado 2026-08-10: son las mismas LIVE que usa supervisor).
+  ⚠️ **PENDIENTE: dejarlo en un cron diario.** Sin eso hay que acordarse de correrlo.
+- 🔴 **Tres bugs REALES cazados al auditarlo, todos invisibles en SQLite:**
+  (1) **el foro no se borraba y en silencio** — borrar una publicación es FK violation en PostgreSQL
+  (comentarios/reacciones/guardados de OTROS la referencian sin cascada) y el `try/except` por tabla
+  se lo tragaba: la cuenta quedaba "eliminada" y sus publicaciones seguían con su texto. Ahora se
+  **VACÍA** (`title/body=''` + `is_deleted`), que es el mecanismo que el foro ya usa; (2) fuera el
+  `try/except` por tabla — el borrado es **todo o nada** (`del_error`); (3) **`deleted_N` era
+  secuestrable** (username es único: alguien registra `deleted_7` y revienta el borrado del 7) →
+  marca **`deleted#N`**, y `USERNAME_RE` no admite `#`.
+  `tools/test_borrado_fk.py` corre con `PRAGMA foreign_keys=ON` para que SQLite se porte como PG.
+- ⚠️ **Trampa de los simuladores:** los PayPal falsos de `test_subs`/`test_renovaciones` respondían
+  ACTIVE **después** de cancelar (el real no), y tumbaban la verificación nueva. Un doble de prueba
+  que miente hace fallar código correcto.
+- 🔴 **LO QUE SIGUE SIN PROBARSE:** nadie ha visto cancelarse una suscripción **ACTIVE de verdad** —
+  haría falta una suscripción real (cuenta de comprador + primer cobro). Lo demás sí tocó PayPal
+  live. Tests: `test_cuenta` 45/45 · `test_borrado_fk` 15/15 · `test_check_borrados` 10/10.
+
 ## 🟢 Stripe — pagos con tarjeta (código LISTO, probado en TEST 2026-07-12)
 Integración **condicional**: totalmente inerte hasta setear `STRIPE_SECRET_KEY` → sin la clave, prod
 sigue con el flujo manual USDT/Binance intacto (cero regresión). Reutiliza el `Order` model y
