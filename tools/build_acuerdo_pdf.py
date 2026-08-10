@@ -162,13 +162,9 @@ pre {
 }
 .firmas tr.rubrica + tr td { padding-top: 2.4mm; }
 
-.membrete {
-  margin: 0 0 9mm; padding-bottom: 4mm;
-  border-bottom: 0.6pt solid #d3d8e2;
-}
-.membrete img { height: 11mm; }
-.sello { text-align: center; margin: 9mm 0 2mm; }
-.sello img { height: 7mm; opacity: 0.42; }
+/* El logotipo cierra el documento, centrado al pie de la ultima pagina */
+.sello { text-align: center; margin: 14mm 0 0; }
+.sello img { height: 9mm; }
 
 .cierre {
   font-size: 9.6pt; color: #5d6474; font-style: italic;
@@ -203,20 +199,15 @@ def main():
     uri, _ = logo_uri()
 
     # El bloque final (firmas + nota del abogado) se envuelve para poder
-    # pedirle a WeasyPrint que no lo parta en dos paginas. El sello va DENTRO
-    # de ese bloque, para que nunca quede huerfano en una pagina sin firmas.
+    # pedirle a WeasyPrint que no lo parta en dos paginas. El logotipo cierra
+    # el documento y va DENTRO de ese bloque: asi no puede quedar solo en una
+    # pagina de mas, sin nada mas alrededor.
     if '<h2>Firmas</h2>' in cuerpo:
         cabeza, cola = cuerpo.split('<h2>Firmas</h2>', 1)
-        sello = ('<div class="sello"><img src="%s" alt=""></div>' % uri
-                 if uri else '')
-        cuerpo = (cabeza + '<div class="firmas">' + sello
-                  + '<h2>Firmas</h2>' + cola + '</div>')
-    # Membrete: el logotipo encabeza la primera pagina, como cualquier
-    # documento que sale de una empresa.
-    if uri:
-        cuerpo = ('<div class="membrete"><img src="%s" alt="Tradeable '
-                  'Academy"></div>' % uri) + cuerpo
-
+        sello = ('<div class="sello"><img src="%s" alt="Tradeable Academy">'
+                 '</div>' % uri if uri else '')
+        cuerpo = (cabeza + '<div class="firmas"><h2>Firmas</h2>' + cola
+                  + sello + '</div>')
     cuerpo = cuerpo.replace('<p><em>Documento redactado',
                             '<p class="cierre"><em>Documento redactado')
 
