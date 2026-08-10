@@ -189,7 +189,10 @@
     <div class="flash info" data-i18n="settings.flashDelWrong">The password or code did not match. Your account was NOT deleted.</div>
   {% endif %}
   {% if sec == 'del_confirm' %}
-    <div class="flash info" data-i18n="settings.flashDelConfirm">You must type your username exactly to confirm. Your account was NOT deleted.</div>
+    <div class="flash info" data-i18n="settings.flashDelConfirm">You must type the confirmation word exactly. Your account was NOT deleted.</div>
+  {% endif %}
+  {% if sec == 'del_paypal' %}
+    <div class="flash info" data-i18n="settings.flashDelPaypal">We cannot reach the payment provider right now, so we cannot prove your renewal is stopped — and we will not delete an account while a charge might still go through. Please try again later or write to us.</div>
   {% endif %}
   {% if sec == 'del_sub' %}
     <div class="flash info" data-i18n="settings.flashDelSub">We could not reach PayPal to stop your renewal, so nothing was deleted — deleting the account while the charge stays alive would keep billing you with no way to tell us. Please try again in a few minutes.</div>
@@ -450,8 +453,7 @@
         <div class="setting-desc" data-i18n="settings.deleteAccountDesc">Deletes your posts, comments, private messages, projects, checklists, quiz history, XP and cosmetics. Your billing records are kept, without your identity attached, because the law requires it.</div>
         <div class="note" data-i18n="settings.deleteAccountNote">Any automatic renewal is stopped first. This cannot be undone: nothing is recoverable and cosmetics are not transferable.</div>
       </div>
-      <form method="POST" action="/account/delete" class="stack" onsubmit="return borrarCuenta(this);"
-            data-username="{{ user.username }}">
+      <form method="POST" action="/account/delete" class="stack" onsubmit="return borrarCuenta(this);">
         <input type="password" name="password" autocomplete="current-password" required
                data-i18n-ph="settings.pwCurrent" placeholder="Current password" class="sec-input" />
         {% if user.totp_confirmed_at %}
@@ -459,7 +461,7 @@
                data-i18n-ph="settings.twofaCode" placeholder="6-digit or backup code" class="sec-input" />
         {% endif %}
         <input type="text" name="confirm" required autocomplete="off" class="sec-input"
-               data-i18n-ph="settings.deleteType" placeholder="Type your username to confirm" />
+               data-i18n-ph="settings.deleteType" placeholder="Type CONFIRM" />
         <button type="submit" class="btn-cancel" data-i18n="settings.deleteBtn">Delete my account</button>
       </form>
     </div>
@@ -494,10 +496,15 @@
   // un viaje al servidor en la errata más previsible, y se pide confirmación
   // porque no hay vuelta atrás.
   function borrarCuenta(form) {
-    var esperado = form.getAttribute('data-username') || '';
-    var puesto = (form.querySelector('[name=confirm]').value || '').trim();
-    if (puesto !== esperado) {
-      alert(PagesI18n.t('settings.deleteMismatch', { user: esperado }));
+    // Se aceptan las 4 palabras (una por idioma) para que cambiar de idioma
+    // a mitad del formulario no deje a nadie fuera. El servidor comprueba
+    // exactamente lo mismo: esto solo ahorra un viaje.
+    var validas = ['CONFIRMAR', 'CONFIRM', 'CONFIRMER'];
+    var puesto = (form.querySelector('[name=confirm]').value || '')
+                   .trim().toUpperCase();
+    if (validas.indexOf(puesto) === -1) {
+      alert(PagesI18n.t('settings.deleteMismatch',
+                        { word: PagesI18n.t('settings.deleteWord') }));
       return false;
     }
     return confirm(PagesI18n.t('settings.deleteConfirm'));

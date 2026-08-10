@@ -6062,6 +6062,62 @@ CONSERVAR_AL_ELIMINAR = ('Order', 'SaleBreakdown', 'CamoOrder', 'CosmeticOrder',
                          'MentorshipOrder', 'SynapseOrder', 'PlanSubscription',
                          'AuditEvent', 'AICostLog', 'UsageLog', 'ModWarning')
 
+# La palabra que hay que teclear para borrar la cuenta. Se aceptan las cuatro
+# porque la pantalla la muestra en el idioma del usuario y nadie debería
+# quedarse fuera por cambiar de idioma a mitad del formulario.
+PALABRAS_BORRAR = ('CONFIRMAR', 'CONFIRM', 'CONFIRMER')
+
+
+def permisos_de_cobro(user):
+    """TODA fila de suscripción del usuario que haya llegado a PayPal.
+
+    🔴 A propósito NO filtra por estado, al revés que `subs_por_cortar()`.
+    Para darse de baja basta con cortar lo que consta vivo; para BORRAR la
+    cuenta hay que mirar todas las filas y preguntarle a PayPal por cada una,
+    porque una fila que aquí figura 'cancelled' puede seguir viva allí si el
+    corte falló y nadie lo reintentó. Con la cuenta borrada ya no hay quien
+    lo note ni a quién avisar, así que ese hueco no se puede dejar abierto.
+    """
+    return [s for s in PlanSubscription.query.filter_by(user_id=user.id).all()
+            if s.provider_ref]
+
+
+def _cortar_todos_los_cobros(user):
+    """Corta en PayPal cualquier permiso de cobro del usuario y lo VERIFICA.
+
+    Devuelve (True, '') si al terminar no queda nada que pueda cobrar, o
+    (False, motivo) si algo impide asegurarlo. Ante cualquier duda devuelve
+    False: es preferible no borrar la cuenta a borrarla dejando una tarjeta
+    enganchada.
+    """
+    permisos = permisos_de_cobro(user)
+    # Filas que nunca llegaron a PayPal: no pueden cobrar nada, se cierran.
+    for sub in PlanSubscription.query.filter_by(user_id=user.id).all():
+        if not sub.provider_ref and sub.status != 'cancelled':
+            sub.status = 'cancelled'
+    if not permisos:
+        db.session.commit()
+        return True, ''
+    if not PAYPAL_ENABLED:
+        # Sin credenciales no se puede ni preguntar ni cortar, y el permiso
+        # sigue vivo del lado de PayPal aunque aquí esté todo apagado.
+        return False, 'paypal_apagado'
+    for sub in permisos:
+        if not _paypal_sub_cancel(sub, motivo='Cuenta eliminada'):
+            return False, 'no_se_pudo_cancelar'
+    # 🔴 La verificación es el punto entero de esta función. Cancelar y creerse
+    # el "ok" no basta cuando lo que está en juego es que a alguien le sigan
+    # cobrando algo que ya no puede ni mirar: se le vuelve a preguntar a PayPal
+    # por CADA permiso, y `_sub_puede_cobrar` responde True ante una API muda,
+    # así que un fallo de red bloquea el borrado en vez de dejarlo pasar.
+    for sub in permisos:
+        if _sub_puede_cobrar(sub):
+            app.logger.error('borrado abortado: la suscripción %s sigue '
+                             'pudiendo cobrar', sub.provider_ref)
+            return False, 'sigue_viva'
+    db.session.commit()
+    return True, ''
+
 
 def _borrar_datos_personales(user):
     """Borra el contenido personal y deja la cuenta como un cascarón sin
@@ -6115,7 +6171,7 @@ def account_delete():
         return redirect(url_for('settings', sec='del_admin'))
     if not current_user.check_password(request.form.get('password', '')):
         return redirect(url_for('settings', sec='del_wrong'))
-    if (request.form.get('confirm') or '').strip() != current_user.username:
+    if (request.form.get('confirm') or '').strip().upper() not in PALABRAS_BORRAR:
         return redirect(url_for('settings', sec='del_confirm'))
     if current_user.totp_confirmed_at:
         code = (request.form.get('code') or '').strip()
@@ -6124,15 +6180,14 @@ def account_delete():
             return redirect(url_for('settings', sec='del_wrong'))
 
     usuario = current_user._get_current_object()
-    for sub in subs_por_cortar(usuario):
-        if not sub.provider_ref:
-            sub.status = 'cancelled'
-            continue
-        if not _paypal_sub_cancel(sub, motivo='Cuenta eliminada'):
-            db.session.rollback()
-            return redirect(url_for('settings', sec='del_sub'))
-        sub.status = 'cancelled'
-    db.session.commit()
+    cortado, motivo = _cortar_todos_los_cobros(usuario)
+    if not cortado:
+        db.session.rollback()
+        record_audit_event('account_delete_blocked', user_id=usuario.id,
+                           detail=motivo, success=False)
+        return redirect(url_for('settings',
+                                sec='del_paypal' if motivo == 'paypal_apagado'
+                                else 'del_sub'))
 
     borradas = _borrar_datos_personales(usuario)
 
@@ -7985,6 +8040,52 @@ def send_payment_alert_email(order, kind):
         socket.setdefaulttimeout(prev_timeout)
 
 
+def _avisar_cobro_a_borrada(user, sub, importe):
+    """ACCIÓN REQUERIDA: le cobraron a alguien que ya borró su cuenta.
+
+    Es el peor cobro posible: el cliente no puede entrar a quejarse, no puede
+    darse de baja otra vez y ni siquiera puede ver el cargo. Nadie lo va a
+    notar salvo su banco. Por eso lleva aviso al teléfono Y correo, y por eso
+    no se anota la venta: ese dinero hay que devolverlo, no repartirlo.
+    """
+    avisar('cobro_borrada', '🔴 COBRO A UNA CUENTA BORRADA',
+           [('Cuenta', 'id %d (%s)' % (user.id, user.username)),
+            ('Suscripción', sub.provider_ref or '—'),
+            ('Importe', '$%.2f' % float(importe or sub.price)),
+            ('Qué hacer', 'reembolsar en PayPal y comprobar que quedó cancelada')])
+    if not app.config.get('MAIL_PASSWORD'):
+        app.logger.warning('MAIL_APP_PASSWORD sin poner — aviso de cobro a '
+                           'cuenta borrada no enviado.')
+        return False
+    cuerpo = (
+        '🔴 ACCIÓN REQUERIDA — se cobró a una cuenta BORRADA\n'
+        + '=' * 52 + '\n\n'
+        f'Cuenta:      id {user.id} ({user.username})\n'
+        f'Suscripción: {sub.provider_ref or "—"} (#{sub.id})\n'
+        f'Importe:     ${float(importe or sub.price):.2f}\n\n'
+        'Esa persona eliminó su cuenta, así que NO puede entrar, ni darse de\n'
+        'baja, ni ver el cargo. El sitio ya reintentó cancelar la suscripción\n'
+        'en PayPal, no le ha devuelto el plan y NO ha anotado la venta (ese\n'
+        'dinero hay que devolverlo, no repartir comisión sobre él).\n\n'
+        'Qué hacer, en este orden:\n'
+        '  1. Reembolsar el cargo en PayPal.\n'
+        '  2. Comprobar en PayPal que la suscripción quedó CANCELADA.\n'
+        '  3. Avisarme para revisar por qué el corte del borrado no bastó.\n')
+    msg = Message('🔴 Cobro a una cuenta borrada — acción requerida',
+                  recipients=[ADMIN_INBOX])
+    msg.body = cuerpo
+    prev = socket.getdefaulttimeout()
+    socket.setdefaulttimeout(15)
+    try:
+        mail.send(msg)
+        return True
+    except Exception as exc:
+        app.logger.warning('aviso de cobro a cuenta borrada no enviado: %s', exc)
+        return False
+    finally:
+        socket.setdefaulttimeout(prev)
+
+
 def _avisar_cobro_fallido(sub):
     """Avisa al dueño de que una renovación no se pudo cobrar.
 
@@ -8926,6 +9027,30 @@ def _sub_cobro(sub, importe, fee=None, cuando=None, referencia=None):
     ref = str(referencia or '')
     if ref and Order.query.filter_by(provider_ref=ref, status='paid').first():
         return None                        # ese cobro ya está contado
+    # 🔴 ÚLTIMA RED: un cobro sobre una cuenta ya BORRADA.
+    # No debería llegar nunca —el borrado corta el permiso y lo verifica contra
+    # PayPal—, pero si llega significa que a alguien le están cobrando algo que
+    # ya no puede ni mirar, y es el único fallo que nadie va a notar: el cliente
+    # se fue. Así que no se le devuelve la vida a la cuenta ni se anota una
+    # comisión sobre un dinero que hay que devolver: se reintenta el corte y se
+    # avisa al dueño, que es quien puede hacer el reembolso.
+    duenio = db.session.get(User, sub.user_id)
+    if duenio is not None and duenio.deleted_at is not None:
+        app.logger.error('COBRO SOBRE CUENTA BORRADA: usuario %s, suscripción '
+                         '%s, %s USD', duenio.id, sub.provider_ref, importe)
+        try:
+            _paypal_sub_cancel(sub, motivo='Cuenta eliminada (reintento)')
+        except Exception:
+            pass
+        record_audit_event('cobro_sobre_cuenta_borrada', user_id=duenio.id,
+                           detail='sub=%s importe=%s ref=%s'
+                                  % (sub.provider_ref, importe, ref),
+                           success=False)
+        try:
+            _avisar_cobro_a_borrada(duenio, sub, importe)
+        except Exception as e:
+            app.logger.warning('aviso de cobro a cuenta borrada: %s', e)
+        return None
     ahora = cuando or datetime.now(timezone.utc)
     order = None
     primero = db.session.get(Order, sub.first_order_id) \

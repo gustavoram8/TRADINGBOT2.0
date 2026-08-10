@@ -53,13 +53,20 @@ def leer(uid):
         return A.db.session.get(A.User, uid)
 
 
-# PayPal simulado: se anota a quien se le corta el cobro.
+# PayPal simulado. `viva` = lo que PayPal contestaria si le preguntan si ese
+# permiso todavia puede cobrar; cancelar lo apaga.
+viva = {}
+
+
 def falso_cancel(sub, motivo=''):
     cortadas.append(sub.id)
+    viva[sub.provider_ref] = False
     return True
 
 
 A._paypal_sub_cancel = falso_cancel
+A._sub_puede_cobrar = lambda sub: viva.get(sub.provider_ref, True)
+A.PAYPAL_ENABLED = True
 
 with A.app.app_context():
     A.db.create_all()
@@ -154,15 +161,23 @@ with A.app.app_context():
     SUB = sub.id
 
 cb = sesion('borrame')
-cb.post('/account/delete', data={'password': 'mala', 'confirm': 'borrame'})
+cb.post('/account/delete', data={'password': 'mala', 'confirm': 'CONFIRMAR'})
 check('sin la contraseña no borra', leer(BID).deleted_at is None)
-cb.post('/account/delete', data={'password': CL, 'confirm': 'otro-nombre'})
-check('sin escribir bien el nombre de usuario, tampoco',
+cb.post('/account/delete', data={'password': CL, 'confirm': 'borrame'})
+check('sin escribir la palabra, tampoco (ni con su nombre de usuario)',
       leer(BID).deleted_at is None)
+
+print('   -- con las claves de PayPal APAGADAS tampoco se borra --')
+A.PAYPAL_ENABLED = False
+cb.post('/account/delete', data={'password': CL, 'confirm': 'CONFIRMAR'})
+check('🔴 sin claves no se puede ni preguntar ni cortar, y el permiso sigue '
+      'vivo en PayPal: no se borra',
+      leer(BID).deleted_at is None)
+A.PAYPAL_ENABLED = True
 
 print('   -- si PayPal no contesta, NO se borra --')
 A._paypal_sub_cancel = lambda sub, motivo='': False
-cb.post('/account/delete', data={'password': CL, 'confirm': 'borrame'})
+cb.post('/account/delete', data={'password': CL, 'confirm': 'CONFIRMAR'})
 check('🔴 PayPal mudo = la cuenta sigue entera (borrar dejando el cobro vivo '
       'sería cobrarle a alguien que ya no existe)',
       leer(BID).deleted_at is None)
@@ -171,12 +186,33 @@ with A.app.app_context():
     check('...y su suscripción sigue activa, no a medio cancelar',
           A.db.session.get(A.PlanSubscription, SUB).status == 'active')
 
-print('   -- con PayPal respondiendo --')
+print('   -- PayPal dice OK pero la suscripcion SIGUE viva --')
+A._paypal_sub_cancel = lambda sub, motivo='': True     # miente: dice que si
+cb.post('/account/delete', data={'password': CL, 'confirm': 'CONFIRMAR'})
+check('🔴 se VERIFICA contra PayPal: si al preguntar sigue pudiendo cobrar, '
+      'no se borra (cancelar y creerse el ok no basta)',
+      leer(BID).deleted_at is None)
+
+print('   -- una fila que aqui figura CANCELADA pero vive en PayPal --')
+with A.app.app_context():
+    zombi = A.PlanSubscription(user_id=BID, plan='premium', price=50,
+                               status='cancelled', provider_ref='I-ZOMBI')
+    A.db.session.add(zombi)
+    A.db.session.commit()
+    ZID = zombi.id
+viva['I-ZOMBI'] = True
+
+print('   -- con PayPal respondiendo de verdad --')
 A._paypal_sub_cancel = falso_cancel
-cb.post('/account/delete', data={'password': CL, 'confirm': 'borrame'})
+cb.post('/account/delete', data={'password': CL, 'confirm': 'CONFIRMAR'})
 u = leer(BID)
 check('la cuenta queda marcada como eliminada', u.deleted_at is not None)
 check('🔴 el cobro se cortó ANTES de borrar', SUB in cortadas, cortadas)
+check('🔴 y TAMBIÉN la fila que figuraba cancelada aquí pero seguía viva '
+      'en PayPal (por eso se miran todas, no solo las activas)',
+      ZID in cortadas, cortadas)
+check('al terminar, PayPal ya no puede cobrar por ninguna',
+      not any(viva.values()), viva)
 check('sin identidad: el nombre pasa a deleted_%d' % BID,
       u.username == 'deleted_%d' % BID, u.username)
 check('sin correo real', u.email.endswith('@deleted.invalid'), u.email)
@@ -194,6 +230,50 @@ with A.app.app_context():
     check('🔴 y la comisión del socio sigue en el libro de ventas',
           fila is not None and fila.partner == 'Gabriel')
 
+print('\n== LA ÚLTIMA RED: un cobro que llega DESPUÉS del borrado ==')
+# No deberia pasar nunca (el borrado corta y verifica), pero es el unico
+# fallo que nadie notaria: el cliente ya no esta para quejarse.
+avisos = []
+A._avisar_cobro_a_borrada = lambda u, sub, imp: avisos.append((u.id, imp))
+with A.app.app_context():
+    A.db.session.expire_all()
+    sub = A.db.session.get(A.PlanSubscription, SUB)
+    viva[sub.provider_ref] = True          # PayPal la revive por lo que sea
+    antes_pedidos = A.Order.query.filter_by(user_id=BID).count()
+    antes_ventas = A.SaleBreakdown.query.filter_by(user_id=BID).count()
+    A._sub_cobro(sub, 50.0, referencia='VENTA-FANTASMA')
+    A.db.session.expire_all()
+    check('🔴 NO se le devuelve el plan a la cuenta borrada',
+          A.db.session.get(A.User, BID).plan == 'free',
+          A.db.session.get(A.User, BID).plan)
+    check('🔴 NO se crea un pedido (ese dinero hay que devolverlo)',
+          A.Order.query.filter_by(user_id=BID).count() == antes_pedidos)
+    check('🔴 NO se anota una comisión sobre un dinero a reembolsar',
+          A.SaleBreakdown.query.filter_by(user_id=BID).count() == antes_ventas)
+check('se avisa al dueño con importe y todo', avisos == [(BID, 50.0)], avisos)
+check('y se reintenta cortar la suscripción en PayPal',
+      viva.get('I-VIVA') is False, viva)
+with A.app.app_context():
+    ev = A.AuditEvent.query.filter_by(
+        event_type='cobro_sobre_cuenta_borrada').first()
+    check('queda registrado en la auditoría', ev is not None)
+
+print('\n== la palabra se acepta en minúsculas y en los 4 idiomas ==')
+for nombre, palabra in (('mini', 'confirmar'), ('eng', 'Confirm'),
+                        ('fra', 'CONFIRMER')):
+    with A.app.app_context():
+        n = A.User(username=nombre, email=nombre + '@demo.invalid',
+                   plan='free', email_verified=True)
+        n.email_canonical = n.email
+        n.set_password(CL)
+        A.db.session.add(n)
+        A.db.session.commit()
+        NID = n.id
+    cn = sesion(nombre)
+    cn.post('/account/delete', data={'password': CL, 'confirm': palabra})
+    check('"%s" sirve para confirmar' % palabra,
+          leer(NID).deleted_at is not None, palabra)
+
 print('\n== un admin no se borra a sí mismo desde aquí ==')
 with A.app.app_context():
     adm = A.User.query.filter_by(is_admin=True).first()
@@ -201,7 +281,7 @@ with A.app.app_context():
     A.db.session.commit()
     ADM, AID = adm.username, adm.id
 ca = sesion(ADM)
-ca.post('/account/delete', data={'password': CL, 'confirm': ADM})
+ca.post('/account/delete', data={'password': CL, 'confirm': 'CONFIRMAR'})
 check('la cuenta de administrador sobrevive', leer(AID).deleted_at is None)
 
 print('\nRESULTADO: %d ok, %d fallas' % (ok, fallas))
