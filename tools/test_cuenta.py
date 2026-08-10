@@ -202,12 +202,18 @@ with A.app.app_context():
     ZID = zombi.id
 viva['I-ZOMBI'] = True
 
-print('   -- con PayPal respondiendo de verdad --')
+print('   -- flujo correcto: PRIMERO la baja, DESPUÉS el borrado --')
 A._paypal_sub_cancel = falso_cancel
+cb.post('/account/delete', data={'password': CL, 'confirm': 'CONFIRMAR'})
+check('🔴 con el cobro vivo, borrar responde "cancela tu plan primero" '
+      'y NO borra', leer(BID).deleted_at is None)
+r = cb.post('/account/cancel-plan')
+check('la baja corta y VERIFICA contra PayPal',
+      'cancel_failed' not in (r.headers.get('Location') or ''))
 cb.post('/account/delete', data={'password': CL, 'confirm': 'CONFIRMAR'})
 u = leer(BID)
 check('la cuenta queda marcada como eliminada', u.deleted_at is not None)
-check('🔴 el cobro se cortó ANTES de borrar', SUB in cortadas, cortadas)
+check('🔴 el cobro lo cortó LA BAJA, antes del borrado', SUB in cortadas, cortadas)
 check('🔴 y TAMBIÉN la fila que figuraba cancelada aquí pero seguía viva '
       'en PayPal (por eso se miran todas, no solo las activas)',
       ZID in cortadas, cortadas)

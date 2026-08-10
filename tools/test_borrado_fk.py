@@ -111,8 +111,12 @@ with A.app.app_context():
     A.db.session.commit()
     CID = ca.id
 
-print('\n== la autora borra su cuenta ==')
+print('\n== la autora se da de baja y luego borra su cuenta ==')
 c = sesion('autora')
+r = c.post('/account/delete', data={'password': CL, 'confirm': 'CONFIRMAR'})
+check('con la suscripción viva, borrar se niega (cancela primero)',
+      leer(AID).deleted_at is None)
+c.post('/account/cancel-plan')
 r = c.post('/account/delete', data={'password': CL, 'confirm': 'CONFIRMAR'})
 check('el borrado NO revienta (sin 500)', r.status_code in (302, 303),
       r.status_code)

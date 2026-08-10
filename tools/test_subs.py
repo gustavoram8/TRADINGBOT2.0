@@ -51,6 +51,9 @@ def check(cond, txt):
         print('  FALLA ', txt)
 
 
+CANCELADAS = set()
+
+
 def falso_api(method, path, payload=None, request_id=None):
     """PayPal de mentira. Devuelve lo mismo que el de verdad, en forma."""
     LLAMADAS.append((method, path, payload))
@@ -60,10 +63,16 @@ def falso_api(method, path, payload=None, request_id=None):
         return 201, {'id': 'I-SUB%03d' % len(LLAMADAS), 'status': 'APPROVAL_PENDING',
                      'links': [{'rel': 'approve', 'href': 'https://paypal/aprobar'}]}
     if path.startswith('/v1/billing/subscriptions/') and path.endswith('/cancel'):
-        return (500, {}) if CANCELA_FALLA['valor'] else (204, {})
+        if CANCELA_FALLA['valor']:
+            return 500, {}
+        # como el PayPal real: tras cancelar, el GET responde CANCELLED
+        CANCELADAS.add(path.split('/')[-2])
+        return 204, {}
     if path.startswith('/v1/billing/subscriptions/'):
+        ref = path.rsplit('/', 1)[1]
         prox = (datetime.now(timezone.utc) + timedelta(days=30))
-        return 200, {'id': path.rsplit('/', 1)[1], 'status': ESTADO_SUB['valor'],
+        estado = 'CANCELLED' if ref in CANCELADAS else ESTADO_SUB['valor']
+        return 200, {'id': ref, 'status': estado,
                      'billing_info': {'next_billing_time':
                                       prox.strftime('%Y-%m-%dT%H:%M:%SZ')}}
     if path == '/v2/checkout/orders' and method == 'POST':

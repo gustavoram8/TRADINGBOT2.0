@@ -148,13 +148,21 @@ def main():
         A.db.session.commit()
         return True
     A._paypal_sub_cancel = finge_cancelar
+    # la baja ahora VERIFICA contra PayPal (2026-08-10): el doble hay que
+    # simular tambien la pregunta, y encender el flag o bloquea antes
+    _flag, _puede = A.PAYPAL_ENABLED, A._sub_puede_cobrar
+    A.PAYPAL_ENABLED = True
+    A._sub_puede_cobrar = lambda sub: sub.status != 'cancelled'
     try:
         c = A.app.test_client()
         entrar(c, 'ren_cliente')
         r = c.post('/account/cancel-plan', follow_redirects=False)
-        check(r.status_code in (302, 303), 'la baja se acepta')
+        check(r.status_code in (302, 303)
+              and 'cancel_failed' not in (r.headers.get('Location') or ''),
+              'la baja se acepta')
     finally:
         A._paypal_sub_cancel = real
+        A.PAYPAL_ENABLED, A._sub_puede_cobrar = _flag, _puede
     check(sorted(cortadas) == ['I-PENDIENTE', 'I-PRUEBA1'],
           '🔴 se cortaron LAS DOS en PayPal (%s)' % sorted(cortadas))
     with A.app.app_context():

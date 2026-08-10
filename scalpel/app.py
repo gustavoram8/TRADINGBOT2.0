@@ -6116,8 +6116,8 @@ def _cortar_todos_los_cobros(user):
     # así que un fallo de red bloquea el borrado en vez de dejarlo pasar.
     for sub in permisos:
         if _sub_puede_cobrar(sub):
-            app.logger.error('borrado abortado: la suscripción %s sigue '
-                             'pudiendo cobrar', sub.provider_ref)
+            app.logger.error('corte de cobros abortado: la suscripción %s '
+                             'sigue pudiendo cobrar', sub.provider_ref)
             return False, 'sigue_viva'
     db.session.commit()
     return True, ''
@@ -6217,14 +6217,31 @@ def account_delete():
             return redirect(url_for('settings', sec='del_wrong'))
 
     usuario = current_user._get_current_object()
-    cortado, motivo = _cortar_todos_los_cobros(usuario)
-    if not cortado:
-        db.session.rollback()
+    # 🔴 EL BORRADO NO CANCELA NADA: EXIGE QUE LA BAJA YA ESTÉ HECHA.
+    # Decisión del dueño (2026-08-10): si quedara un cobro vivo tras borrar,
+    # la persona no tendría ni cómo volver a soporte — su cuenta ya no existe.
+    # Así que el orden es al revés: primero "Cancelar plan" (que corta en
+    # PayPal y lo VERIFICA), y solo cuando PayPal ya no puede cobrarle nada se
+    # permite borrar. Una cuenta borrada con cobro vivo pasa a ser imposible
+    # por construcción, no un caso "manejado".
+    permisos = permisos_de_cobro(usuario)
+    if permisos and not PAYPAL_ENABLED:
         record_audit_event('account_delete_blocked', user_id=usuario.id,
-                           detail=motivo, success=False)
-        return redirect(url_for('settings',
-                                sec='del_paypal' if motivo == 'paypal_apagado'
-                                else 'del_sub'))
+                           detail='paypal_apagado', success=False)
+        return redirect(url_for('settings', sec='del_paypal'))
+    for sub in permisos:
+        # `_sub_puede_cobrar` responde True también ante una API muda: en la
+        # duda se bloquea el borrado, nunca al revés.
+        if _sub_puede_cobrar(sub):
+            record_audit_event('account_delete_blocked', user_id=usuario.id,
+                               detail='cobro_vivo sub=%s' % sub.provider_ref,
+                               success=False)
+            return redirect(url_for('settings', sec='del_active'))
+    # Filas que nunca llegaron a PayPal: no pueden cobrar nada, se cierran.
+    for sub in PlanSubscription.query.filter_by(user_id=usuario.id).all():
+        if not sub.provider_ref and sub.status != 'cancelled':
+            sub.status = 'cancelled'
+    db.session.commit()
 
     try:
         borradas = _borrar_datos_personales(usuario)
@@ -6293,24 +6310,23 @@ def cancel_plan():
     """
     if current_user.plan == 'free':
         return redirect(url_for('settings'))
-    # TODAS las que PayPal pudiera cobrar, no solo la que tenemos por activa.
-    # Una sola que se quede en pie basta para que le cobren un mes que él
-    # canceló, y encima con la pantalla diciéndole que estaba cancelado.
-    cortadas = []
-    for sub in subs_por_cortar(current_user):
-        if not sub.provider_ref:
-            # Nunca llegó a existir en PayPal (la llamada falló al abrirla):
-            # no hay nada que cortar allí, pero tampoco puede quedarse viva de
-            # nuestro lado. Y NO puede bloquear la baja de quien la pidió.
-            sub.status = 'cancelled'
-            sub.cancelled_at = datetime.now(timezone.utc)
-            db.session.commit()
-            continue
-        if not _paypal_sub_cancel(sub):
-            # No se pudo cortar el cobro: NO se le dice que está cancelado.
-            # Prometerlo sin haberlo hecho es lo que produce el cargo sorpresa.
-            return redirect(url_for('settings', sec='cancel_failed'))
-        cortadas.append(sub.id)
+    # 🔴 Mismo cortador que usa el borrado de cuenta: mira TODAS las filas con
+    # id de PayPal (también las que aquí constan 'cancelled' — un corte que
+    # falló en su día las deja vivas ALLÍ), cancela, y después VERIFICA
+    # preguntándole a PayPal que ninguna puede cobrar ya. Antes la baja se
+    # fiaba del "ok" de la cancelación; desde el 2026-08-10 la promesa es más
+    # fuerte: al salir de aquí con éxito, PayPal no tiene NINGÚN permiso vivo
+    # de esta cuenta — hasta que la persona vuelva a aprobar uno nuevo.
+    cortado, motivo = _cortar_todos_los_cobros(current_user)
+    if not cortado:
+        # No se pudo cortar o no se pudo COMPROBAR: NO se le dice que está
+        # cancelado. Prometerlo sin haberlo verificado es lo que produce el
+        # cargo sorpresa del mes siguiente.
+        record_audit_event('plan_cancel_blocked', user_id=current_user.id,
+                           detail=motivo, success=False)
+        return redirect(url_for('settings', sec='cancel_failed'))
+    cortadas = [s.id for s in PlanSubscription.query
+                .filter_by(user_id=current_user.id, status='cancelled').all()]
     current_user.cancel_at_period_end = True
     db.session.commit()
     # Una baja es la señal más barata que existe para retener a alguien: hoy
