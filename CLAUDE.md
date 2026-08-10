@@ -1821,8 +1821,35 @@ borrado. PENDIENTE: agregar selector de mes / historial.
     verificado tras la cirugía: 42/42 + landing sin restos `sylib`/`sy_*` + node --check.
 - [ ] **7. Validez jurídica de la propuesta comercial.** No tiene empresa constituida ni vive en la
   zona del influencer. ¿Qué valor legal tiene el documento? ¿Firmarlo le da marco legal?
-- [ ] **8. Tessera:** el interior y los efectos le gustan, pero el **diseño se siente pobre** —
-  sospecha de la tipografía, que no le pega a la marca.
+- [x] ✅ **8. Tessera — la Cámara pasa a CONSTELACIÓN (2026-08-10, aprobado: *"quedó excelente"*).**
+  Tenía razón con la tipografía: TODO era Inter (título 30px/700, tarjetas 15.5px/600) y las
+  "puertas numeradas con brackets" de la nota vieja habían decaído en **cinco filas de lista con
+  hairlines**. Se le pasaron **8 maquetas** (A instrumentos · B puertas · C placa grabada ·
+  D constelación · E mosaico · F ascensor de acero · G proyección sobre la pared · H rubí) y
+  eligió **D**. Generadores en `scratchpad/tessera_mock.py` y `tessera_mock2.py`.
+  · Cada puerta = un nodo con su hilo (lenguaje de Synapse). **Space Grotesk** muy espaciado en
+    el título + **JetBrains Mono** en los números; las dos ya las carga el `<link>` de la página
+    → cero peticiones nuevas. El **nodo entero es el botón**, no solo la etiqueta.
+  · 🔑 **Los hilos y los nodos comparten las MISMAS coordenadas** (`NX_NODOS`/`NX_HILOS`): el SVG
+    va con **`preserveAspectRatio="none"`** + `vector-effect:non-scaling-stroke`, y los nodos se
+    colocan en % desde esos mismos números. Con el `meet` por defecto el SVG se centra con banda
+    y **las líneas quedan cortas sin dar ningún error** — es el fallo clásico de este dibujo (la
+    maqueta D se envió con él). Medido en navegador: extremo del hilo a **0.01 px** del centro
+    de su punto. Mover un nodo mueve su hilo; NO duplicar esos números.
+  · Los hilos de abajo cuelgan de su **vecino de arriba**, no del nodo central: un hilo 0→3
+    cruzaba por encima de la descripción del 0 y parecía atravesarla.
+  · **<820px la constelación no cabe** (cinco etiquetas de 160px) → las mismas puertas en columna
+    y el SVG oculto (sin SVG no puede quedar un hilo suelto).
+  · **Descripciones de las 5 puertas acortadas ×4 idiomas**: 76 caracteres en una columna de
+    ~160px a 11px son 4 líneas y desbordaban. Subtítulo → "Cinco puertas · elige una", **oculto
+    dentro del teletransportador** (`#nx-ov.nx-inner`), donde ya no hay puertas que elegir.
+  · Verificado en navegador real (1440/1180/430 px · EN/ES/FR/PT): **0 px de desbordamiento en
+    los 4 idiomas**, panel dentro de la pared del fondo, puerta 01 abre el chat y el ← vuelve
+    con la constelación intacta, 0 errores JS. Visores: `scratchpad/ver_tessera2.py` y `3.py`.
+  ⚠️ Trampas del entorno: **recargar `/app` rebota a `/welcome`** (fijar el idioma ANTES de
+  entrar, y poner el cookie `scalpel_splash_ts`); y **Google Fonts es inalcanzable en el
+  contenedor**, así que sin inyectar el pack embebido (`scratchpad/fuentes/caras.css`) se juzga
+  la fuente del sistema en vez de la que se está eligiendo.
 - [x] ✅ **9. Atribución de las 2 esculturas 3D de Synapse (2026-08-03).** No estaba borrada, pero
   daba igual: `.model-credits` vivía a **9.5px con `opacity:.62`** pegada al `<footer>` de
   `index.html` (o sea **solo en `/app`**), y **dentro de Synapse no aparecía**: `.synapse-app` mide
