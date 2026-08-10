@@ -12,11 +12,14 @@ cuerpo. Charter porque es la unica serif del sistema con familia COMPLETA
 WeasyPrint acabaria inclinando las letras por calculo, que en un documento
 que se imprime y se firma se nota.
 """
+import base64
+import io
 import os
 import re
 import sys
 
 import markdown
+from PIL import Image
 from weasyprint import HTML
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -45,6 +48,26 @@ def caras():
     return '\n'.join(reglas)
 
 
+def logo_uri():
+    """El logotipo, recortado a su tinta y en data URI.
+
+    Va recortado porque el PNG original mide 1536x1024 con el logotipo
+    flotando en medio: sin recortar, el hueco transparente ocupa sitio y el
+    membrete queda descolgado del borde. Va en data URI y no como archivo
+    para que el PDF no dependa de rutas al generarse desde otra carpeta.
+    Devuelve (uri, proporcion ancho/alto) o (None, 0) si falta el archivo.
+    """
+    ruta = os.path.join(RAIZ, 'scalpel', 'static', 'logo_t.png')
+    if not os.path.exists(ruta):
+        return None, 0
+    im = Image.open(ruta).convert('RGBA')
+    im = im.crop(im.getbbox())
+    buf = io.BytesIO()
+    im.save(buf, 'PNG')
+    uri = 'data:image/png;base64,' + base64.b64encode(buf.getvalue()).decode()
+    return uri, im.width / float(im.height)
+
+
 CSS = """
 %(caras)s
 
@@ -54,7 +77,7 @@ CSS = """
   @bottom-center {
     content: "P\\00E1gina " counter(page) " de " counter(pages);
     font-family: 'InterDoc', 'Liberation Sans', sans-serif;
-    font-size: 7.6pt; color: #8b93a6; padding-top: 5mm;
+    font-size: 8.4pt; color: #8b93a6; padding-top: 5mm;
   }
 }
 /* La primera pagina lleva el titulo, no necesita ademas la cabecera */
@@ -62,25 +85,25 @@ CSS = """
 @page { @top-right {
     content: "Carta de acuerdo de colaboraci\\00F3n \\2014  Tradeable Academy";
     font-family: 'InterDoc', 'Liberation Sans', sans-serif;
-    font-size: 7.6pt; color: #a7aebd; padding-bottom: 6mm;
+    font-size: 8.4pt; color: #a7aebd; padding-bottom: 6mm;
 } }
 
 body {
   font-family: 'Bitstream Charter', 'Charter', 'Liberation Serif', serif;
-  font-size: 10.4pt; line-height: 1.58; color: %(tinta)s;
+  font-size: 11.5pt; line-height: 1.55; color: %(tinta)s;
   text-align: justify; hyphens: none;
   widows: 3; orphans: 3;
 }
 
 h1 {
   font-family: 'InterDoc', 'Liberation Sans', sans-serif;
-  font-size: 19pt; font-weight: 800; letter-spacing: -0.015em;
+  font-size: 21pt; font-weight: 800; letter-spacing: -0.015em;
   line-height: 1.15; margin: 0 0 2mm; color: #0d0f14; text-align: left;
 }
 h1 + p { margin-top: 0; }
 h2 {
   font-family: 'InterDoc', 'Liberation Sans', sans-serif;
-  font-size: 12.4pt; font-weight: 700; color: #0d0f14;
+  font-size: 13.6pt; font-weight: 700; color: #0d0f14;
   margin: 9mm 0 3mm; padding-bottom: 1.6mm;
   border-bottom: 1.6pt solid %(azul)s;
   text-align: left; page-break-after: avoid; break-after: avoid;
@@ -101,11 +124,11 @@ hr {
 
 table {
   width: 100%%; border-collapse: collapse; margin: 3mm 0 5mm;
-  font-size: 9.8pt; page-break-inside: avoid;
+  font-size: 10.8pt; page-break-inside: avoid;
 }
 th {
   font-family: 'InterDoc', 'Liberation Sans', sans-serif;
-  font-size: 8.6pt; font-weight: 700; text-transform: uppercase;
+  font-size: 9.4pt; font-weight: 700; text-transform: uppercase;
   letter-spacing: 0.06em; text-align: left; color: #fff;
   background: %(azul)s; padding: 2.4mm 3mm;
 }
@@ -117,7 +140,7 @@ tr:last-child td { border-bottom: 0; }
 /* El dibujo de la escalera: monoespaciada y en su caja */
 pre {
   font-family: 'MonoDoc', 'DejaVu Sans Mono', monospace;
-  font-size: 8.4pt; line-height: 1.5; text-align: left;
+  font-size: 9.2pt; line-height: 1.5; text-align: left;
   background: #f4f6fa; border-left: 2.4pt solid %(azul)s;
   padding: 3.5mm 4mm; margin: 3mm 0 4mm; white-space: pre;
   page-break-inside: avoid;
@@ -139,8 +162,16 @@ pre {
 }
 .firmas tr.rubrica + tr td { padding-top: 2.4mm; }
 
+.membrete {
+  margin: 0 0 9mm; padding-bottom: 4mm;
+  border-bottom: 0.6pt solid #d3d8e2;
+}
+.membrete img { height: 11mm; }
+.sello { text-align: center; margin: 9mm 0 2mm; }
+.sello img { height: 7mm; opacity: 0.42; }
+
 .cierre {
-  font-size: 8.8pt; color: #5d6474; font-style: italic;
+  font-size: 9.6pt; color: #5d6474; font-style: italic;
   text-align: left; margin-top: 6mm;
 }
 """
@@ -169,13 +200,23 @@ def main():
         texto = fh.read()
 
     cuerpo = md_a_html(texto)
+    uri, _ = logo_uri()
 
     # El bloque final (firmas + nota del abogado) se envuelve para poder
-    # pedirle a WeasyPrint que no lo parta en dos paginas.
+    # pedirle a WeasyPrint que no lo parta en dos paginas. El sello va DENTRO
+    # de ese bloque, para que nunca quede huerfano en una pagina sin firmas.
     if '<h2>Firmas</h2>' in cuerpo:
         cabeza, cola = cuerpo.split('<h2>Firmas</h2>', 1)
-        cuerpo = (cabeza + '<div class="firmas"><h2>Firmas</h2>' + cola
-                  + '</div>')
+        sello = ('<div class="sello"><img src="%s" alt=""></div>' % uri
+                 if uri else '')
+        cuerpo = (cabeza + '<div class="firmas">' + sello
+                  + '<h2>Firmas</h2>' + cola + '</div>')
+    # Membrete: el logotipo encabeza la primera pagina, como cualquier
+    # documento que sale de una empresa.
+    if uri:
+        cuerpo = ('<div class="membrete"><img src="%s" alt="Tradeable '
+                  'Academy"></div>' % uri) + cuerpo
+
     cuerpo = cuerpo.replace('<p><em>Documento redactado',
                             '<p class="cierre"><em>Documento redactado')
 
