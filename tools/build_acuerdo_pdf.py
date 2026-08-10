@@ -53,7 +53,7 @@ def logo_uri():
 
     Va recortado porque el PNG original mide 1536x1024 con el logotipo
     flotando en medio: sin recortar, el hueco transparente ocupa sitio y el
-    membrete queda descolgado del borde. Va en data URI y no como archivo
+    logotipo queda descentrado al pie. Va en data URI y no como archivo
     para que el PDF no dependa de rutas al generarse desde otra carpeta.
     Devuelve (uri, proporcion ancho/alto) o (None, 0) si falta el archivo.
     """
