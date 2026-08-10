@@ -116,12 +116,13 @@ renovaciones siguen generando comisión con normalidad.
 
 ## 3. Qué cuenta como cliente atribuido
 
-Se atribuye al Colaborador el cliente que, **al concretar su primera
-suscripción cobrada, utiliza su código de creador**. La atribución:
+Se atribuye al Colaborador el cliente que **utiliza su código de creador al
+contratar por primera vez uno de los planes de suscripción**. La atribución:
 
-- queda **anclada a la cuenta del cliente** desde ese primer pago: sus
-  renovaciones siguen generando comisión aunque no vuelva a escribir el código;
-- **no** se produce con carritos abandonados ni pedidos sin pagar;
+- se produce en el momento en que **ese primer pago se completa**: un carrito
+  abandonado o un pedido que nunca llega a pagarse no atribuyen nada;
+- queda **anclada a la cuenta del cliente** desde ese pago: sus renovaciones
+  siguen generando comisión aunque no vuelva a escribir el código;
 - **no** puede trasladarse nunca al código de otro creador (punto 3.2).
 
 **3.1 — Promociones generales de la plataforma.** La plataforma puede lanzar de
