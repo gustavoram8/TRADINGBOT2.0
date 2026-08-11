@@ -407,7 +407,21 @@ versiones exactas → cero cambio visual/funcional; app.py intacto (PDF de Synap
 - ⚠️ El velo de carga de Synapse dura **10 s a propósito** (LOAD_MS; cuenta hasta 100% aunque
   los assets ya estén) — un test que espere menos acusa "atascado" a algo que solo cuenta.
 - `tools/test_vendor.py` **12/12** (navegador con TODA la red externa cortada: Synapse pinta,
-  Chalkboard dibuja). Marked/DomPurify (foro) siguen en CDN — fuera del alcance pedido.
+  Chalkboard dibuja).
+- ✅ **marked 18.0.9 + DomPurify 3.4.13 también vendorizados (2026-08-10, 2º commit).** Los usa
+  el RENDER DEL ANÁLISIS (no el foro: el foro pinta con textContent). Solo se tocaron las DOS
+  etiquetas del `<head>`; el consumidor (`marked.parse`/`DOMPurify.sanitize`) quedó intacto.
+  🔴 **Hallazgo: la etiqueta vieja de marked era una URL 404 silenciosa** — pedía
+  `npm/marked/marked.min.js` SIN versión, y marked no publica ese archivo en la raíz desde la
+  v5 (2023); el guard `window.marked ? … : texto plano` lo tapaba. O sea: el análisis llevaba
+  tiempo saliendo SIN formato (asteriscos literales) y parecía normal. Verificado offline: el
+  pipeline exacto del analizador rinde negritas/listas y mata un `onerror` inyectado.
+- **Lag reportado por el dueño tras el deploy (2026-08-10): MEDIDO, no hay fuga.** Su hipótesis
+  (animaciones de Synapse en bucle al salir) es falsa: `switchTab` llama `Synapse.pause()` →
+  `stopLoop()`, y medido con rAF instrumentado: 0 callbacks/s en Analyze antes Y después de
+  visitar Synapse (idénticos 47½ vs 49½ ms de frame en scroll). El 3D solo consume con su
+  pestaña abierta (y ahí siempre costó lo mismo). Lo que SÍ cambió: la PRIMERA carga de los
+  vendor (~1 MB) ahora sale del VPS — por IP cruda no hay caché de Cloudflare delante.
 - Descarga sin CDN en este contenedor: registro de npm (tarballs) y raw.githubusercontent SÍ
   pasan el proxy; cdnjs/jsdelivr/unpkg no.
 
