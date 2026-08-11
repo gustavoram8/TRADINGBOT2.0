@@ -694,7 +694,11 @@ def monta():
 
     # ⚠️ Intro de 4,8 s: con 2,3 s las dos frases pasaban tan rápido que
     # no daba tiempo a leerlas.
-    INTRO, CIERRE = 4.80, 2.80
+    # ⚠️ El cierre dura 4,30 y no 2,80 porque el logo tiene que seguir en
+    # pantalla mientras suena la MARCA SONORA (tools/marca_sonora.py): una
+    # firma de audio que termina sobre negro no la asocia nadie con la marca.
+    # Si se acorta el sonido, acórtese también esto — van juntos.
+    INTRO, CIERRE = 4.80, 4.30
     orden = sorted(picos, key=lambda p: p[1])
     sig = {p[0]: (orden[k + 1][1] if k + 1 < len(orden) else dur_src)
            for k, p in enumerate(orden)}
