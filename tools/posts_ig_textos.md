@@ -34,9 +34,38 @@ autorización previa. La IA es *"our AI engine"*, nunca el nombre del proveedor.
 
 ### Fase 1 — los nueve (ya generados)
 
-Súbelos **del 1 al 9, en ese orden**. La cuadrícula se llena desde arriba a la
-izquierda, así que al terminar **el post 5 (la mascota) cae en el centro**, que
-es para lo que se diseñó.
+🔴 **Súbelos AL REVÉS: primero `09-rangos`, después el 08, el 07… y
+`01-manifiesto` de ÚLTIMO.**
+
+Suena absurdo y no lo es: Instagram coloca lo ÚLTIMO que publicas arriba a la
+izquierda, que es por donde una persona empieza a leer. Publicando del 1 al 9,
+el manifiesto —la pieza escrita para ser lo primero que se lee— acaba abajo del
+todo y la primera casilla es el post de los rangos. Publicando al revés, la
+parrilla se lee 1·2·3 / 4·5·6 / 7·8·9 como se lee cualquier cosa.
+
+**El caption de cada imagen es el de su número**, aunque el orden de subida vaya
+al contrario: la imagen `09-rangos` lleva el caption "9 · The ranks" y es la
+primera que cuelgas.
+
+| Subes | Imagen | Caption |
+|---|---|---|
+| 1º | `09-rangos` | 9 · The ranks |
+| 2º | `08-metodologias` | 8 · Approaches |
+| 3º | `07-analisis-ejecucion` | 7 · Two fronts |
+| 4º | `06-fvg` | 6 · Fair Value Gap |
+| 5º | `05-mascota` | 5 · Behind it |
+| 6º | `04-order-block` | 4 · Order Block |
+| 7º | `03-que-hace` | 3 · How it works |
+| 8º | `02-problema` | 2 · The problem |
+| 9º | `01-manifiesto` | 1 · Manifesto |
+
+**El post 5 (la mascota) cae en el centro igual**, porque el centro de un 3×3 es
+la quinta casilla se cuente por donde se cuente.
+
+⚠️ Lo único que se pierde: tus seguidores verían en el feed el de los rangos
+primero y el manifiesto al final. Con la cuenta a cero seguidores eso no le pasa
+a nadie — el feed no lo ve ni una persona, la cuadrícula la ve todo el que entre
+al perfil.
 
 ⚠️ **En cuanto publiques el post 10 la cuadrícula se desplaza.** El 3×3
 compuesto es un efecto de arranque, no algo permanente.
@@ -401,12 +430,40 @@ anuncio y lo que contradice el descargo del propio pie.
 **Nombre** (el campo que Instagram indexa al buscar, distinto del @):
 `Tradeable Academy · ICT · SMC`
 
-**Bio** (mientras el sitio siga cerrado) — **128 caracteres de los 150**:
+**Bio — tiene DOS estados.** El 👇 apunta al enlace: si no hay enlace, la
+flecha señala al vacío, así que la última línea cambia el día que el sitio abra.
+
+**Ahora, con el sitio cerrado y SIN enlace** — 126 caracteres de los 150:
 
 > This is not a course. It's an ecosystem.
 > 🧠 AI · 📚 Methodologies · ✅ Checklists
 > 🎓 Academy · 💬 Forum · 🖊 Chalkboard
-> 👇 Opening soon
+> Opening soon
+
+**El día que abra, con el enlace puesto** — 126 caracteres:
+
+> This is not a course. It's an ecosystem.
+> 🧠 AI · 📚 Methodologies · ✅ Checklists
+> 🎓 Academy · 💬 Forum · 🖊 Chalkboard
+> 👇 Start free
+
+### El enlace
+
+**Enlace: `https://tradeable.academy` — directo, y UNO SOLO.** Instagram admite
+hasta cinco, pero un menú de enlaces reparte el clic y no lo multiplica: quien
+llega ya venía a ver el producto.
+
+🔴 **No lo pongas hasta que el sitio esté abierto.** Hoy el dominio sirve la
+página de "en construcción" a todo el que no traiga el pase, y un clic que
+aterriza en una obra es un clic que no vuelve. Mejor sin enlace que con uno que
+decepciona.
+
+⚠️ **Nada de Linktree ni intermediarios.** Un salto extra pierde gente y pone la
+marca de otro entre tú y tu producto.
+
+💡 Si algún día pones analítica en el sitio, añade `?utm_source=instagram` al
+final del enlace: es la única forma de saber cuánta gente te manda Instagram de
+verdad. Hoy no mide nada porque no hay nada leyéndolo — anotado para entonces.
 
 Es la que se eligió en su día (la variante compacta con dos líneas de iconos),
 con la última línea cambiada: la lista de espera se descartó.
