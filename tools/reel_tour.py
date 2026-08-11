@@ -121,7 +121,7 @@ def graba():
         pp.fill('input[name=password]', CL)
         pp.click('button[type=submit]')
         pp.wait_for_timeout(800)
-        pp.evaluate("localStorage.setItem('scalpel_lang','es')")
+        pp.evaluate("localStorage.setItem('scalpel_lang','%s')" % IDIOMA)
         pp.evaluate("localStorage.setItem('scalpel_theme','dark')")
         sesion = prev.storage_state()
         prev.close()
@@ -185,45 +185,75 @@ def graba():
         escena.siguiente = 0
         a_la_app()
 
-        # 1 · ANALIZADOR: se rellena el setup pulsando pills de verdad
+        # 1 · ANALIZADOR: se DESGLOSA el trade pulsando grupo por grupo, que
+        #     es lo que hace entender el producto: activo → dirección →
+        #     sesión → metodología → confluencias, y recién ahí la captura.
         def analizador():
-            for sel in ('[data-group="instrument"] .pill, .pill',):
-                pass
-            pills = pg.query_selector_all('#analyze-container .pill')
-            for i in (2, 14, 26, 33):
-                if i < len(pills):
-                    pills[i].click()
-                    pg.wait_for_timeout(520)
-            pg.wait_for_timeout(700)
-        escena('analizador', analizador, lambda: (tab('analyze'),
-                                                  pg.wait_for_timeout(1400)))
-
-        # 2 · PRE-FLIGHT: se marcan comprobaciones
-        def preflight():
-            cajas = pg.query_selector_all('.pf-box, .pf-check, .pf-row input')
-            for c in cajas[:5]:
-                try:
-                    c.click()
-                    pg.wait_for_timeout(430)
-                except Exception:
-                    pass
+            def grupo(g, texto):
+                pg.evaluate("""([g, t]) => {
+                  const c = document.querySelector('[data-group="' + g + '"]');
+                  if (!c) return;
+                  const b = [...c.querySelectorAll('.pill')]
+                    .find(x => x.textContent.trim().startsWith(t));
+                  if (b) { b.scrollIntoView({block:'center'}); b.click(); }
+                }""", [g, texto])
+                pg.wait_for_timeout(620)
+            grupo('instrument', 'NQ')
+            grupo('direction', 'Long')
+            grupo('session', 'NY Morning')
+            grupo('approach', 'ICT')
+            grupo('confluences', 'Liquidity')
+            grupo('confluences', 'FVG')
             pg.wait_for_timeout(600)
+        escena('analizador', analizador, lambda: (tab('analyze'),
+                                                  pg.wait_for_timeout(1500)))
+
+        # 2 · PRE-FLIGHT: se pasa a "By project" y se arma una lista
+        def preflight():
+            pg.evaluate("""() => {
+              const t = [...document.querySelectorAll('.pf-tab')]
+                .find(x => /project|proyecto/i.test(x.textContent));
+              if (t) t.click();
+            }""")
+            pg.wait_for_timeout(1100)
+            for sel in ('.pf-new', '.pf-add', '.pf-builder-rows input',
+                        '.pf-field input', '.pf-box'):
+                els = pg.query_selector_all(sel)
+                for e in els[:4]:
+                    try:
+                        e.click()
+                        pg.wait_for_timeout(430)
+                    except Exception:
+                        pass
+                if els:
+                    break
+            pg.wait_for_timeout(700)
         escena('preflight', preflight, lambda: (tab('preflight'),
-                                                pg.wait_for_timeout(1800)))
+                                                pg.wait_for_timeout(2000)))
 
-        # 3 · QUIZ: se responde una pregunta
+        # 3 · QUIZ: se ATRAVIESA la bienvenida (si no, se ve la mascota
+        #     gigante llenando la pantalla) y se responde UNA pregunta
         def quiz():
-            pg.wait_for_timeout(900)
-            for sel in ('.quiz-intent', '.quiz-start', '.quiz-topic',
-                        '.quiz-opt'):
-                el = pg.query_selector(sel)
-                if el:
-                    el.click()
-                    pg.wait_for_timeout(1100)
-            pg.wait_for_timeout(900)
-        escena('quiz', quiz, lambda: (tab('quiz'), pg.wait_for_timeout(2000)))
+            op = pg.query_selector('.quiz-welcome-opt')
+            if op:
+                op.click()
+                pg.wait_for_timeout(1600)
+            for sel in ('.quiz-topic', '.quiz-card', '.quiz-start',
+                        '.quiz-mode'):
+                e = pg.query_selector(sel)
+                if e:
+                    e.click()
+                    pg.wait_for_timeout(1500)
+                    break
+            o = pg.query_selector_all('.quiz-opt')
+            if o:
+                o[0].click()
+                pg.wait_for_timeout(1400)
+            pg.wait_for_timeout(600)
+        escena('quiz', quiz, lambda: (tab('quiz'), pg.wait_for_timeout(2200)))
 
-        # 4 · CHALKBOARD: se dibuja de verdad sobre el lienzo
+        # 4 · CHALKBOARD: con la herramienta LÍNEA DE TENDENCIA, trazada
+        #     tramo a tramo — no el rectángulo de antes
         def pizarra():
             caja = pg.evaluate("""() => { const c =
                 document.querySelector('#sk-canvas'); if (!c) return null;
@@ -231,57 +261,83 @@ def graba():
                 return {x: r.x, y: r.y, w: r.width, h: r.height}; }""")
             if not caja:
                 raise RuntimeError('sin lienzo')
-            lapiz = pg.query_selector('.sk-tool[data-tool="draw"], .sk-tool')
-            if lapiz:
-                lapiz.click()
-                pg.wait_for_timeout(400)
-            x0, y0 = caja['x'] + caja['w'] * .18, caja['y'] + caja['h'] * .70
-            pg.mouse.move(x0, y0)
-            pg.mouse.down()
-            for i in range(1, 26):
-                pg.mouse.move(x0 + i * (caja['w'] * .026),
-                              y0 - i * (caja['h'] * .018)
-                              + (18 if i % 6 < 3 else -18))
-                pg.wait_for_timeout(24)
-            pg.mouse.up()
-            pg.wait_for_timeout(900)
+            pg.evaluate("""() => { const b =
+                document.querySelector('.tool-btn[data-tool="trendline"]');
+                if (b) b.click(); }""")
+            pg.wait_for_timeout(500)
+            # tres tramos de una tendencia alcista, dibujados uno a uno
+            tramos = [(.14, .78, .42, .52), (.42, .52, .66, .62), (.66, .62, .88, .28)]
+            for x0, y0, x1, y1 in tramos:
+                pg.mouse.move(caja['x'] + caja['w'] * x0, caja['y'] + caja['h'] * y0)
+                pg.mouse.down()
+                for k in range(1, 13):
+                    pg.mouse.move(caja['x'] + caja['w'] * (x0 + (x1 - x0) * k / 12.0),
+                                  caja['y'] + caja['h'] * (y0 + (y1 - y0) * k / 12.0))
+                    pg.wait_for_timeout(26)
+                pg.mouse.up()
+                pg.wait_for_timeout(320)
+            pg.wait_for_timeout(700)
         escena('chalkboard', pizarra, lambda: (tab('scalper'),
-                                               pg.wait_for_timeout(4200)))
+                                               pg.wait_for_timeout(4500)))
 
-        # 5 · SYNAPSE: el velo dura 10 s A PROPÓSITO, así que se marca DESPUÉS
+        # 5 · SYNAPSE: se DISPARA la sinapsis (el prompt tapaba el cerebro) y
+        #     luego se entra a una metodología para ver la biblioteca
         def synapse():
-            pg.mouse.move(ANCHO * .5, ALTO * .45)
-            for i in range(22):
-                pg.mouse.move(ANCHO * (.5 + .012 * i), ALTO * (.45 - .004 * i))
+            pg.mouse.click(ANCHO * .5, ALTO * .42)
+            pg.wait_for_timeout(1800)
+            pg.evaluate("""() => { const p =
+                document.querySelector('.syn-fire-prompt');
+                if (p) p.style.opacity = '0'; }""")
+            for i in range(14):
+                pg.mouse.move(ANCHO * (.5 + .014 * i), ALTO * (.44 - .003 * i))
                 pg.wait_for_timeout(45)
-            pg.wait_for_timeout(1500)
+            pg.mouse.click(ANCHO * .5, ALTO * .30)
+            pg.wait_for_timeout(2000)
+            c = pg.query_selector('.syn-node, .synlib-card, .syn-card')
+            if c:
+                try:
+                    c.click()
+                    pg.wait_for_timeout(1600)
+                except Exception:
+                    pass
+            pg.wait_for_timeout(600)
         escena('synapse', synapse, lambda: (tab('synapse'),
                                             pg.wait_for_timeout(14500)))
 
-        # 6 · FORO: se recorre el feed
+        # 6 · FORO
         def foro():
             for i in range(8):
                 pg.mouse.wheel(0, 190)
                 pg.wait_for_timeout(150)
-            pg.wait_for_timeout(800)
+            pg.wait_for_timeout(900)
         escena('foro', foro, lambda: (tab('forum'), pg.wait_for_timeout(2600)))
 
-        # 7 · COSMÉTICOS: la tienda, que es puro color
+        # 7 · COSMÉTICOS: se recorren camo, marco y cursor, no solo scroll
         def cosmeticos():
-            for i in range(7):
-                pg.mouse.wheel(0, 220)
-                pg.wait_for_timeout(150)
+            for anc in ('.camo-swatch', '.cm-plate-strip', '.cp-art'):
+                el = pg.query_selector(anc)
+                if el:
+                    try:
+                        el.scroll_into_view_if_needed()
+                        pg.wait_for_timeout(280)
+                        el.hover()
+                        pg.wait_for_timeout(900)
+                    except Exception:
+                        pass
+            for i in range(4):
+                pg.mouse.wheel(0, 240)
+                pg.wait_for_timeout(200)
             pg.wait_for_timeout(700)
 
         def ir_cosmeticos():
             pg.goto(URL + '/cosmetics', wait_until='domcontentloaded')
-            pg.wait_for_timeout(2400)
+            pg.wait_for_timeout(2500)
         escena('cosmeticos', cosmeticos, ir_cosmeticos)
 
-        # 8 · TESSERA: la Cámara abriéndose, como remate antes del logo
+        # 8 · TESSERA: más aire, que las paredes tardan ~2 s en subir
         def tessera():
             pg.evaluate("document.getElementById('nx-cube').click()")
-            pg.wait_for_timeout(4200)
+            pg.wait_for_timeout(5200)
         escena('tessera', tessera, a_la_app)
 
         ctx.close()
@@ -343,6 +399,32 @@ def marcas():
     return salida, dur
 
 
+def logo_oscuro(destino):
+    """Logo para fondo oscuro: logotipo BLANCO conservando la 'a' AZUL.
+
+    🔴 Antes se resolvía con `filter:brightness(0) invert(1)` en CSS, y eso
+    pinta de blanco TODO — incluida la 'a', que es la única pieza de color de
+    la marca. Aquí se recolorea píxel a píxel: lo azul se queda azul.
+    """
+    from PIL import Image
+    im = Image.open(os.path.join(RAIZ, 'scalpel', 'static',
+                                 'logo_t.png')).convert('RGBA')
+    im = im.crop(im.getchannel('A').getbbox())
+    px = im.load()
+    W, Hh = im.size
+    for y in range(Hh):
+        for x in range(W):
+            r, g, bb, a = px[x, y]
+            if not a:
+                continue
+            # el mismo criterio que usa el generador de posts para hallar la 'a'
+            if bb > 90 and bb - r > 45 and bb - g > 35:
+                px[x, y] = (0, 79, 235, a)          # azul de marca medido
+            else:
+                px[x, y] = (255, 255, 255, a)
+    im.save(destino)
+
+
 def fuentes_css():
     css = []
     for arch in sorted(os.listdir(FUENTES_DIR)):
@@ -359,16 +441,52 @@ def fuentes_css():
 
 
 # ══ 3 · EL MONTAJE ═══════════════════════════════════════════════════════
-ROTULOS = {
-    'analizador': ('Subes tu gráfico.', 'Te corrige en TU metodología'),
-    'preflight': ('¿Te sirven tus confluencias?', 'Checklists con estadísticas reales'),
-    'quiz': ('De básico a ultrahardcore', 'Quizzes de casi todas las metodologías'),
-    'chalkboard': ('Tu pizarra.', 'Estudia, crea, graba tus clases'),
-    'synapse': ('41 temas. Un solo mapa.', 'La biblioteca, en 3D'),
-    'foro': ('Comunidad, sin señales.', 'Foro moderado de traders'),
-    'cosmeticos': ('Y hasta se personaliza.', 'Camos, marcos y cursores'),
-    'tessera': ('Ayuda dentro del sitio.', 'Tessera, tu asistente'),
+IDIOMA = os.environ.get('REEL_LANG', 'en')      # 'en' o 'es'
+
+TEXTOS = {
+ 'en': {
+  'intro1': 'This is not<br>a course.', 'intro2': "It's an<br><em>ecosystem</em>.",
+  'eq': 'Tradeable Academy', 'cierre': 'Educational content · Not financial advice',
+  'analizador': ('Break down your trade.',
+                 'Instrument, direction, session, methodology — then upload the chart'),
+  'preflight': ('Build your confluence list.',
+                'Stop trading on impulse. See which confluences actually hold up'),
+  'quiz': ('400+ quizzes across every methodology',
+           'From beginner to ultra-hardcore'),
+  'chalkboard': ('Your own chalkboard.',
+                 'Study, build, record your own lessons'),
+  'synapse': ('41 topics. One map.',
+              'The whole library, in 3D'),
+  'foro': ('A community, not a signal group.',
+           'Moderated trader forum'),
+  'cosmeticos': ('Make the ecosystem yours.',
+                 'Camos, profile plates and cursors'),
+  'tessera': ('Help inside the site.', 'Tessera, your assistant'),
+ },
+ 'es': {
+  'intro1': 'Esto no<br>es un curso.', 'intro2': 'Es un<br><em>ecosistema</em>.',
+  'eq': 'Tradeable Academy', 'cierre': 'Contenido educativo · No es asesoría financiera',
+  'analizador': ('Desglosa tu operación.',
+                 'Activo, dirección, sesión, metodología — y luego subes el gráfico'),
+  'preflight': ('Arma tu lista de confluencias.',
+                'Deja de operar por impulso. Mira cuáles te funcionan de verdad'),
+  'quiz': ('400+ quizzes de todas las metodologías',
+           'De principiante a ultrahardcore'),
+  'chalkboard': ('Tu propio pizarrón.',
+                 'Estudia, crea y graba tus clases'),
+  'synapse': ('41 temas. Un solo mapa.', 'La biblioteca entera, en 3D'),
+  'foro': ('Una comunidad, no un grupo de señales.', 'Foro moderado de traders'),
+  'cosmeticos': ('Haz tuyo el ecosistema.', 'Camos, placas y cursores'),
+  'tessera': ('Ayuda dentro del sitio.', 'Tessera, tu asistente'),
+ },
 }
+T = TEXTOS[IDIOMA]
+ROTULOS = {k: v for k, v in T.items() if isinstance(v, tuple)}
+
+# Cada herramienta necesita su propio tiempo: el analizador enseña 4 pasos y
+# la Cámara de Tessera tarda ~2 s solo en abrir las paredes.
+DURACION = {'analizador': 3.6, 'preflight': 3.2, 'quiz': 3.2, 'chalkboard': 3.2,
+            'synapse': 3.4, 'foro': 2.6, 'cosmeticos': 3.2, 'tessera': 4.2}
 
 PAGINA = """<!doctype html><meta charset=utf-8><style>@@FUENTES@@
 *{box-sizing:border-box;margin:0;padding:0}
@@ -397,7 +515,7 @@ video{position:absolute;left:50%;top:50%;width:@@W@@px;height:@@H@@px;
 #flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
 #out{position:absolute;inset:0;background:#05060a;display:flex;
   flex-direction:column;align-items:center;justify-content:center;gap:30px}
-#out img{width:520px;filter:brightness(0) invert(1)}
+#out img{width:520px}   /* sin filtro: el logo ya viene con su "a" azul */
 #out .s{font:700 26px 'JetBrains Mono',monospace;letter-spacing:.34em;
   color:@@ORO@@;text-transform:uppercase}
 #out .a{font:600 34px Inter,sans-serif;color:rgba(255,255,255,.66)}
@@ -408,11 +526,11 @@ video{position:absolute;left:50%;top:50%;width:@@W@@px;height:@@H@@px;
 <div id=capa><video id=v src="@@SRC@@" muted preload=auto></video>
   <div id=vig></div><div id=scrim></div></div>
 <div id=rot></div><div id=num></div>
-<div id=intro><div class=eq>Tradeable Academy</div><h1 id=ih></h1></div>
+<div id=intro><div class=eq>@@EQ@@</div><h1 id=ih></h1></div>
 <div id=flash></div>
-<div id=out><img src="@@LOGO@@" alt=""><div class=s>Tradeable Academy</div>
+<div id=out><img src="@@LOGO@@" alt=""><div class=s>@@EQ@@</div>
   <div class=a>@tradeableacademy</div>
-  <div class=l>Contenido educativo · No es asesoría financiera</div></div>
+  <div class=l>@@CIERRE@@</div></div>
 <div id=bar></div>
 <script>
 const V=document.getElementById('v'), PLAN=@@PLAN@@, DUR=@@DUR@@;
@@ -431,8 +549,8 @@ window.enCuadre = async function(t){
   const intro=document.getElementById('intro');
   intro.style.clipPath = 'inset(0 0 '+(fin*100)+'% 0)';
   const ih=document.getElementById('ih');
-  ih.innerHTML = t<1.15 ? 'Esto no<br>es un curso.' : 'Es un<br><em>ecosistema</em>.';
-  const e1 = t<1.15 ? tr(t,.25,.8) : tr(t,1.20,1.55);
+  ih.innerHTML = t<2.45 ? @@I1TXT@@ : @@I2TXT@@;
+  const e1 = t<2.45 ? tr(t,.30,.95)*(1-tr(t,2.15,2.45)) : tr(t,2.50,3.10);
   ih.style.opacity = e1;
   ih.style.transform = 'translateY('+(32*(1-e1))+'px)';
   document.querySelector('#intro .eq').style.opacity = tr(t,.1,.5);
@@ -497,7 +615,9 @@ def monta():
         # herramienta que se ve, que es peor que no tener reel.
         sys.exit('sin marca para: %s. Vuelve a grabar.' % ', '.join(faltan))
 
-    INTRO, CIERRE, POR_ESCENA = 2.30, 2.60, 2.35
+    # ⚠️ Intro de 4,8 s: con 2,3 s las dos frases pasaban tan rápido que
+    # no daba tiempo a leerlas.
+    INTRO, CIERRE = 4.80, 2.80
     orden = sorted(picos, key=lambda p: p[1])
     sig = {p[0]: (orden[k + 1][1] if k + 1 < len(orden) else dur_src)
            for k, p in enumerate(orden)}
@@ -510,12 +630,13 @@ def monta():
             continue
         # ⚠️ se toma el trozo INICIAL, no el central: el final de la ventana lo
         # ocupa la preparación de la escena siguiente
-        v1 = min(tope, v0 + POR_ESCENA)
+        dur = DURACION.get(nombre, 2.6)
+        v1 = min(tope, v0 + dur)
         g, p = ROTULOS.get(nombre, (nombre, ''))
-        plan.append({'r0': round(r, 3), 'r1': round(r + POR_ESCENA, 3),
+        plan.append({'r0': round(r, 3), 'r1': round(r + dur, 3),
                      'v0': round(v0, 3), 'v1': round(v1, 3),
                      'g': g, 'p': p, 'n': '%02d' % (i + 1)})
-        r += POR_ESCENA
+        r += dur
     total = round(r + CIERRE, 2)
     print('reel de %.1f s con %d escenas' % (total, len(plan)))
 
@@ -526,13 +647,15 @@ def monta():
                          ('@@LOGO@@', 'logo_tour.png'),
                          ('@@PLAN@@', json.dumps(plan)),
                          ('@@DUR@@', '%.2f' % total),
+                         ('@@I1TXT@@', json.dumps(T['intro1'])),
+                         ('@@I2TXT@@', json.dumps(T['intro2'])),
+                         ('@@EQ@@', T['eq']), ('@@CIERRE@@', T['cierre']),
                          ('@@I0@@', '%.2f' % (INTRO - 0.30)),
                          ('@@I1@@', '%.2f' % INTRO),
                          ('@@O0@@', '%.2f' % r)):
         doc = doc.replace(marca, valor)
 
-    shutil.copy(os.path.join(RAIZ, 'scalpel', 'static', 'logo_t.png'),
-                os.path.join(SALIDA, 'logo_tour.png'))
+    logo_oscuro(os.path.join(SALIDA, 'logo_tour.png'))
     ruta = os.path.join(SALIDA, '_montaje_tour.html')
     io.open(ruta, 'w', encoding='utf-8').write(doc)
 
