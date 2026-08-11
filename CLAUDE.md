@@ -416,6 +416,26 @@ versiones exactas → cero cambio visual/funcional; app.py intacto (PDF de Synap
   v5 (2023); el guard `window.marked ? … : texto plano` lo tapaba. O sea: el análisis llevaba
   tiempo saliendo SIN formato (asteriscos literales) y parecía normal. Verificado offline: el
   pipeline exacto del analizador rinde negritas/listas y mata un `onerror` inyectado.
+## 🐌 SCROLL — el cristal esmerilado costaba 3,6× (2026-08-10)
+El dueño reportó lag al hacer scroll **en cualquier pestaña** (iMac 2011). Medido aislando un
+sospechoso cada vez: **46 elementos con `backdrop-filter`** obligan a re-desenfocar su fondo en
+CADA fotograma. **60,6 ms/fotograma (17 fps) → 16,7 ms (60 fps).** Descartadas con datos:
+sombras (−22%), filtros (−4%), fondos de camo (−1%).
+- ⚠️ **Bajar el radio NO sirve** (probado a 10/6/3 px: 58-65 ms igual). El precio es TENER la
+  capa, no cuánto desenfoca. La única cura es quitarla de lo que se desplaza.
+- Se conserva en lo que NO scrollea (sidebar, `.mt-nav`, velos de overlay). Las tarjetas pasan a
+  fondo **opaco con el mismo color percibido** (`linear-gradient(var(--card),var(--card)), var(--bg)`
+  — el truco que ya usaban los menús bajo camo): sin desenfoque, un fondo translúcido dejaría ver
+  el arte del camo crudo detrás del texto.
+- 🔴 **Dos velos INVISIBLES arrastraban desenfoque a pantalla completa siempre**: el de compra del
+  PDF de Synapse (`display:flex; opacity:0`) costaba el **20% del scroll de TODA la app**, y el
+  del cajón de ayuda (`#nxh-scrim`) otro tanto. El blur pasó a su clase `.open`. **Regla: un
+  elemento invisible no puede llevar `backdrop-filter`** — `test_scroll_perf.py` lo vigila.
+- ⚠️ `body.light .card{background:var(--card)}` le gana a un `.card` pelado → la 1ª versión dejó
+  el modo claro translúcido. Lo cazó el test midiendo el fondo REAL por tema y camo.
+- **NO lo causó la vendorización**: medido el commit anterior (bf0f5cf) = 62,8 ms con las mismas
+  46 capas. Entró el 2026-07-05 con el rediseño Aurora Glass. `tools/test_scroll_perf.py` **8/8**.
+
 - **Lag reportado por el dueño tras el deploy (2026-08-10): MEDIDO, no hay fuga.** Su hipótesis
   (animaciones de Synapse en bucle al salir) es falsa: `switchTab` llama `Synapse.pause()` →
   `stopLoop()`, y medido con rAF instrumentado: 0 callbacks/s en Analyze antes Y después de
