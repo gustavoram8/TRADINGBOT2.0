@@ -7759,7 +7759,9 @@
   (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>, Sketchfab)
 </span></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+<!-- Vendorizada (2026-08-10): misma 2.5.1 que servía cdnjs, desde nuestro
+     propio servidor — el export a PDF deja de depender de un tercero. -->
+<script src="/static/vendor/jspdf-2.5.1.umd.min.js" defer></script>
 <!-- Synapse Library: real content + textbook SVG diagrams for the 41 topics -->
 <script src="/static/synapse_library.js?v=1"></script>
 <!-- TradingView Lightweight Charts (Apache 2.0) — vendored locally for the Hardcore quiz -->
@@ -14446,15 +14448,23 @@
       });
     }
     async function ensureLibs() {
+      // Vendorizadas (2026-08-10): primero NUESTRA copia; los CDN, de respaldo.
+      // ⚠️ Los fallback viejos de fabric @5.3.1 en jsdelivr/unpkg eran URLs
+      // MUERTAS: esos dos sirven lo que hay en npm, y npm nunca tuvo 5.3.1
+      // (salta de 5.3.0 a 6.x) — la "cadena de 3 CDN" era en realidad 1. El
+      // respaldo externo ahora apunta al dist del tag v5.3.1 del propio repo
+      // VÍA jsdelivr/gh — raw.githubusercontent NO sirve para <script>: manda
+      // text/plain + nosniff y el navegador se niega a ejecutarlo.
       if (typeof fabric === 'undefined') {
         await loadScript([
+          '/static/vendor/fabric-5.3.1.min.js',
           'https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js',
-          'https://cdn.jsdelivr.net/npm/fabric@5.3.1/dist/fabric.min.js',
-          'https://unpkg.com/fabric@5.3.1/dist/fabric.min.js',
+          'https://cdn.jsdelivr.net/gh/fabricjs/fabric.js@v5.3.1/dist/fabric.min.js',
         ]).catch(() => {});
       }
       if (!(window.jspdf && window.jspdf.jsPDF)) {
         await loadScript([
+          '/static/vendor/jspdf-2.5.1.umd.min.js',
           'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
           'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',
           'https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js',
@@ -23902,13 +23912,27 @@
 
     function ensureThree() {
       if (typeof THREE !== 'undefined') return Promise.resolve();
+      // Vendorizada (2026-08-10): primero NUESTRA copia (r128, misma versión
+      // que se venía sirviendo), y los CDN quedan solo de respaldo — antes
+      // Synapse dependía de UN único host externo, sin cadena de fallback
+      // como la que ya tenía el Chalkboard.
+      const urls = [
+        '/static/vendor/three-r128.min.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
+        'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js',
+      ];
       return new Promise((resolve) => {
         const tid = setTimeout(resolve, 12000);  // give up after 12 s so we can show an error
-        const s = document.createElement('script');
-        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-        s.onload = () => { clearTimeout(tid); resolve(); };
-        s.onerror = () => { clearTimeout(tid); resolve(); };
-        document.head.appendChild(s);
+        let i = 0;
+        const tryNext = () => {
+          if (i >= urls.length) { clearTimeout(tid); resolve(); return; }
+          const s = document.createElement('script');
+          s.src = urls[i++];
+          s.onload = () => { clearTimeout(tid); resolve(); };
+          s.onerror = tryNext;
+          document.head.appendChild(s);
+        };
+        tryNext();
       });
     }
 
@@ -24016,16 +24040,26 @@
       return fetch(url).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); }).then(parseOBJ);
     }
 
-    // GLTFLoader is not in the three.js core build — pull the matching non-module
-    // example loader from the same CDN family already used for marked/three.
+    // GLTFLoader is not in the three.js core build — vendorizado (2026-08-10)
+    // junto al core: es el MISMO archivo de three@0.128.0, y sin él las dos
+    // esculturas GLB no cargan. El CDN queda de respaldo.
     function ensureGLTF() {
       if (typeof THREE !== 'undefined' && THREE.GLTFLoader) return Promise.resolve();
+      const urls = [
+        '/static/vendor/three-r128-GLTFLoader.js',
+        'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js',
+      ];
       return new Promise((resolve) => {
-        const s = document.createElement('script');
-        s.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
-        s.onload = () => resolve();
-        s.onerror = () => resolve();
-        document.head.appendChild(s);
+        let i = 0;
+        const tryNext = () => {
+          if (i >= urls.length) { resolve(); return; }
+          const s = document.createElement('script');
+          s.src = urls[i++];
+          s.onload = () => resolve();
+          s.onerror = tryNext;
+          document.head.appendChild(s);
+        };
+        tryNext();
       });
     }
 
