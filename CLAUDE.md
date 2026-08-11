@@ -438,6 +438,12 @@ sombras (−22%), filtros (−4%), fondos de camo (−1%).
 - ✅ Verificado en **los 9 camos × 2 modos**: tarjeta opaca y 16,7 ms en las 20 combinaciones. La
   regla no nombra ningún camo (usa `var(--card)`/`var(--bg)`) → los camos futuros la heredan.
   El dueño confirmó que **no nota diferencia estética** y pidió dejarlo.
+- 📄 **`docs/cambio_visual_2026-08-10.md` = el registro para el día del lanzamiento** (lo pidió el
+  dueño, por si ve algo distinto y no sabe si es bug o caché): qué se tocó exactamente, la
+  diferencia MEDIDA píxel a píxel (media 0,6-3,4 sobre 255 → por debajo del umbral visible; el
+  oscuro cambia más porque su `--card` es mucho más transparente), capturas de referencia en
+  `docs/ref_visual/` y cómo revertir (`git revert e0619d3`). Regenerable con
+  `scratchpad/compara_visual.py`.
 - 🟡 **HILO ABIERTO, sin cerrar:** tras desplegar el arreglo el dueño sigue notando que en su iMac
   2011 el **modo oscuro** va más pesado que el claro (sin camo). **No se reproduce aquí** —layout,
   estilos, JS y coste de sombras salen iguales o mejores en oscuro— pero este contenedor va **por
