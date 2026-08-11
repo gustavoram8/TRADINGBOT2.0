@@ -26503,6 +26503,36 @@
     .ag-sidebar{ position:static; max-height:none; flex-direction:row; flex-wrap:wrap; align-items:center; }
     .ag-sidebar #tabs, .ag-sidebar .tabs{ flex-direction:row; flex-wrap:wrap; flex:1 1 100%; }
     .ag-sidebar .tab{ width:auto; } .ag-side-spacer{ display:none; } }
+
+  /* ══ RENDIMIENTO DEL SCROLL — el cristal, solo donde no cuesta ═══════════
+     Medido en navegador real (2026-08-10): 46 elementos con backdrop-filter
+     obligaban al navegador a RE-DESENFOCAR su fondo en cada fotograma del
+     scroll → 60 ms/fotograma (17 fps). Quitándolo de lo que se desplaza:
+     16,7 ms (60 fps), 3,6× más fluido.
+     ⚠️ Bajar el radio NO sirve: probado a 10, 6 y 3 px, cuesta lo mismo
+     (58-65 ms). El precio es TENER la capa, no cuánto desenfoca.
+     Se CONSERVA en lo que no se desplaza —sidebar, nav de mentorías y los
+     velos de overlay—, que además es 1 elemento de cada uno.
+     Las tarjetas pasan a fondo OPACO con el MISMO color percibido, usando el
+     truco de doble capa que ya usan los menús bajo camo: sin desenfoque, un
+     fondo translúcido dejaría ver el arte del camo crudo detrás del texto. */
+  .card, .ag-rail .ag-card, .ag-rail .account-btn, .disc-fp, .disc-pct,
+  .modal, .syn-toast, .syn-pdf-btn, .syn-dossier{
+    backdrop-filter:none !important; -webkit-backdrop-filter:none !important; }
+  /* ⚠️ `body.light .card{background:var(--card)}` existe más arriba y le gana
+     a un `.card` pelado — el fondo opaco hay que declararlo con la misma
+     especificidad o el modo claro se queda translúcido. */
+  body .card, body.light .card,
+  body .ag-rail .ag-card, body .ag-rail .account-btn,
+  body .disc-fp, body .modal{
+    background:linear-gradient(var(--card),var(--card)), var(--bg); }
+  /* 🔴 El velo de compra del PDF de Synapse vive SIEMPRE en el árbol
+     (`display:flex; opacity:0`), así que su desenfoque a pantalla completa se
+     calculaba en cada fotograma aunque nadie lo viera: costaba el 20% del
+     scroll de TODA la app. El desenfoque pasa a la clase .open; como la
+     transición es solo de opacidad, no cambia nada visualmente. */
+  .syn-pdf-overlay{ backdrop-filter:none; -webkit-backdrop-filter:none; }
+  .syn-pdf-overlay.open{ backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); }
 </style>
 <script id="ag-shell-js">
 (function(){
@@ -28049,9 +28079,14 @@
     + '.help-q:focus-visible{outline:2px solid var(--accent);outline-offset:2px}'
     + '.help-slot{margin-left:auto;display:inline-flex}'
     + '@media (max-width:640px){ .help-q span{display:none} .help-q{padding:7px 8px} }'
-    + '#nxh-scrim{position:fixed;inset:0;z-index:1200;background:rgba(6,8,12,.5);backdrop-filter:blur(2px);'
+    /* El desenfoque va en .on, no en el estado base: este velo vive SIEMPRE
+       en el árbol con opacity:0, y un backdrop-filter a pantalla completa se
+       calcula en cada fotograma aunque nadie lo vea (mismo caso que el velo
+       del PDF de Synapse, que costaba el 20% del scroll). */
+    + '#nxh-scrim{position:fixed;inset:0;z-index:1200;background:rgba(6,8,12,.5);'
     + 'opacity:0;transition:opacity .22s;pointer-events:none}'
-    + '#nxh-scrim.on{opacity:1;pointer-events:auto}'
+    + '#nxh-scrim.on{opacity:1;pointer-events:auto;backdrop-filter:blur(2px);'
+    + '-webkit-backdrop-filter:blur(2px)}'
     + '#nxh{position:fixed;top:0;right:0;bottom:0;width:min(430px,92vw);z-index:1201;display:flex;flex-direction:column;'
     + 'background:var(--bg);border-left:1px solid var(--border2);box-shadow:-24px 0 60px rgba(0,0,0,.35);'
     + 'transform:translateX(102%);transition:transform .26s cubic-bezier(.22,.9,.3,1)}'
