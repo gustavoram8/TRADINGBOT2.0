@@ -1,356 +1,400 @@
-# Los 9 primeros posts — kit de publicación
+# Instagram — plan de publicación y captions
 
-Arte generado por `tools/gen_posts_ig.py` (+ `rasteriza_posts.py`), sale en
-`out/posts_ig/` (ignorado por git).
+Arte generado por `tools/gen_posts_ig.py --idioma en` (+ `rasteriza_posts.py`),
+sale en `out/posts_ig/` (ignorado por git).
+
+**Los textos del ARTE están en inglés. Los captions también.** El español sigue
+disponible: `--idioma es` regenera los nueve. Lo que no se puede es mezclar —
+arte en inglés con caption en español se lee como una traducción a medias.
 
 ---
 
-## Antes de publicar: tres cosas que deciden si esto sirve
+## Antes de publicar
 
-**1 · La cuenta está PRIVADA, y eso apaga todo el mecanismo.** Subir los 9
-ahora estando privada está bien —quedan publicados y se vuelven visibles en el
-instante en que la abras—, pero **antes del primer reel y antes de pagar un
-solo anuncio la cuenta tiene que ser PÚBLICA**. En privado: no sales en
-búsquedas, los hashtags no indexan nada, los reels **no entran** ni en Explorar
-ni en el feed de reels, y un anuncio que lleve al perfil enseña un candado en
-vez de contenido. Es un escaparate con la persiana bajada.
+**1 · La cuenta ya es profesional. Falta que sea PÚBLICA.** En privado no sales
+en búsquedas, los hashtags no indexan, los reels **no entran** ni en Explorar ni
+en el feed de reels, y un anuncio que lleve al perfil enseña un candado. Subir
+los posts estando privada está bien —se vuelven visibles el día que la abras—,
+pero **antes del reel y antes de pagar un solo anuncio tiene que ser pública**.
 
-**2 · Hace falta cuenta profesional (Creator o Business).** Es gratis y se
-cambia en Configuración → Tipo de cuenta. Sin ella no hay anuncios ni
-estadísticas. Creator encaja mejor que Business para una marca personal-ish;
-las dos sirven.
-
-**3 · Los hashtags ya casi no reparten alcance.** Instagram quitó el seguir
-hashtags y los degradó como vía de descubrimiento. Hoy pesan, por este orden:
-la **primera línea** del caption (es lo único que se ve antes del "… más"), las
+**2 · Los hashtags ya casi no reparten alcance.** Hoy pesan, por este orden: la
+**primera línea** del caption (es lo único que se ve antes del "… more"), las
 **palabras clave** del caption y del campo *Nombre* del perfil —ese campo sí se
-indexa en la búsqueda—, el **texto alternativo**, y sobre todo **guardados y
-compartidos**. Por eso aquí van 4-5 hashtags por post y no 30: treinta hoy solo
-ensucian el pie.
+indexa—, el **texto alternativo**, y sobre todo **guardados y compartidos**. Por
+eso van 4-5 hashtags y no 30.
 
-### Orden y cuadrícula
+**3 · Reglas que atraviesan todo.** Educativo siempre: nada de señales,
+recomendaciones ni promesas de ganancia; cero capturas de PnL. No es solo legal
+— Meta rechaza anuncios financieros con esas señales y varios países exigen
+autorización previa. La IA es *"our AI engine"*, nunca el nombre del proveedor.
+
+---
+
+## La cuadrícula, por fases
+
+### Fase 1 — los nueve (ya generados)
 
 Súbelos **del 1 al 9, en ese orden**. La cuadrícula se llena desde arriba a la
-izquierda con lo más reciente, así que al terminar los nueve **el post 5 (la
-mascota) cae justo en el centro**, que es para lo que se diseñó.
+izquierda, así que al terminar **el post 5 (la mascota) cae en el centro**, que
+es para lo que se diseñó.
 
-⚠️ **En cuanto publiques el post 10 la cuadrícula se desplaza** y el centro pasa
-a ser otro. Es normal: el 3×3 compuesto es un efecto de arranque, no algo que se
-mantenga para siempre.
+⚠️ **En cuanto publiques el post 10 la cuadrícula se desplaza.** El 3×3
+compuesto es un efecto de arranque, no algo permanente.
+⚠️ **No fijes posts todavía**: Instagram manda los fijados a las tres primeras
+casillas y rompe la composición.
 
-⚠️ **No fijes posts todavía.** Instagram manda los posts fijados a las tres
-primeras casillas, así que fijar rompe la composición. Fija cuando ya tengas más
-de nueve y el 3×3 haya dejado de importar.
+**Ritmo:** con 0 seguidores, dosificar no gana nada. Súbelos seguidos —2 o 3 al
+día durante 3-4 días.
 
-### Ritmo
+### Fase 2 — el reel, y lo que va antes de los precios
 
-El plan original era 3 por semana. **Con 0 seguidores eso no gana nada**:
-dosificar sirve cuando hay alguien a quien dosificar. Súbelos seguidos —2 o 3 al
-día durante 3-4 días— y deja el calendario para cuando empiecen los reels, que
-es lo único que da alcance a una cuenta nueva.
+Aquí propusiste: Premium → reel (con ads) → Standard → seis de herramientas.
+**Le daría la vuelta**, por una razón concreta: con ese orden, **dos de tus
+doce primeros posts son tarifas**, puestas delante de gente que todavía no sabe
+qué vendes. Una tarjeta de precio no convence a nadie — convierte a quien ya
+quiere el producto. Y ahora mismo nadie lo quiere todavía porque nadie lo ha
+visto funcionando.
 
-### Reglas que atraviesan los nueve
+El orden que recomiendo:
 
-- **Educativo siempre.** Nada de señales, recomendaciones ni promesas de
-  ganancia. Cero capturas de PnL, cero cifras de rentabilidad. No es solo legal:
-  Meta rechaza anuncios de contenido financiero con esas señales, y en varios
-  países exige autorización previa para publicidad financiera.
-- **La IA es "nuestro motor de IA"**, nunca el nombre del proveedor.
-- **El enlace de la bio no va al sitio todavía** (sigue cerrado) y la bio no
-  lleva fecha: una fecha que se corre deja peor que no haber dicho nada.
-- El **texto alternativo** se pone al publicar, en *Configuración avanzada →
-  Escribir texto alternativo*.
+| # | Pieza | Por qué ahí |
+|---|---|---|
+| 10 | **El reel** (el tour) | Es lo único que da alcance real a una cuenta nueva. Va antes que cualquier tarjeta de precio. |
+| 11-16 | **Meet our tools** ×6 | Seis posts, una herramienta cada uno, enseñándola por dentro. Es lo que crea el deseo que después cobra la tarjeta. |
+| 17 | **Card del plan Premium** | Ahora sí: quien llegue aquí ya vio las herramientas una a una. |
+| 18 | **Card del plan Standard** | Detrás de Premium a propósito — se lee como "la versión de entrada", no como el techo. |
 
----
+**Las seis herramientas**, en este orden (de lo más impactante a lo más de
+nicho): Analyzer · Pre-Flight · Synapse · Quizzes & Daily · Chalkboard · Forum.
+Tessera y los cosméticos quedan fuera de esta tanda: son encantadores pero no
+son la razón por la que alguien paga.
 
-## 1 · Manifiesto — `01-manifiesto.png`
-
-**Caption**
-
-> Tu gráfico ya te dijo qué hiciste mal. El problema es que nadie te lo tradujo.
->
-> La información siempre estuvo ahí: la vela que te avisó, el nivel que
-> respetaste tarde, la entrada que te comiste por ansiedad. Ninguna de esas
-> cosas estaba escondida. Estaban en la pantalla, delante de ti.
->
-> Lo que falta no es información. Es alguien que te la lea.
->
-> Eso es Tradeable Academy: subes tu gráfico y recibes la corrección que nunca
-> te dieron. No una señal. No una opinión sobre hacia dónde va el precio. Una
-> corrección, en la metodología que tú estudias.
->
-> Esto es una cuenta nueva y vamos a construirlo a la vista. Si te quedas,
-> lo ves desde el día cero.
->
-> Contenido educativo. Nada de esto es asesoría financiera.
->
-> #trading #ict #smartmoneyconcepts #wyckoff #tradingeducativo
-
-**Texto alternativo:** Fondo azul con la letra "a" del logo saliendo por el
-borde derecho. Texto: "Tu gráfico ya te dijo qué hiciste mal. Nadie te lo
-tradujo."
+**Sobre los ADS: no los pagues todavía.** Tres condiciones antes de poner un
+euro: (a) la cuenta pública, (b) **el sitio abierto** —pagar tráfico hacia una
+página de "en construcción" es tirar el dinero y quemar el mejor público que vas
+a tener—, y (c) el reel publicado en orgánico unos días, para saber si retiene.
+Si no retiene gratis, tampoco retiene pagando: los ads amplifican lo que
+funciona, no arreglan lo que no.
 
 ---
 
-## 2 · El problema — `02-problema.png`
+# CAPTIONS
 
-**Caption**
+## 1 · Manifesto — `01-manifiesto.png`
 
-> Abre tu galería ahora mismo y cuenta las capturas de tus operaciones.
+> Your chart already told you what you did wrong. Nobody translated it for you.
 >
-> ¿Cincuenta? ¿Doscientas? ¿Más?
+> The information was always there: the candle that warned you, the level you
+> respected too late, the entry you took out of anxiety. None of it was hidden.
+> It was on the screen, in front of you.
 >
-> Ahora la pregunta incómoda: dime en cuáles repetiste el mismo error. No la que
-> te acuerdas — todas.
+> What's missing isn't information. It's someone to read it back to you.
 >
-> Guardar tus trades no es revisarlos. Una carpeta llena de gráficos es un
-> archivo, no un método. Revisar de verdad es que alguien te señale el patrón
-> que tú no ves, precisamente porque estabas dentro de la operación.
+> That's Tradeable Academy: you upload your chart and you get the correction
+> nobody ever gave you. Not a signal. Not an opinion on where price is going. A
+> correction, in the methodology you actually study.
 >
-> Ese es el trabajo que estamos automatizando.
+> This account is brand new and we're building it in the open. Stay and you see
+> it from day zero.
 >
-> ¿Cuántas capturas tienes tú? Deja el número abajo — vas a ver que no eres el
-> único.
+> Educational content. None of this is financial advice.
 >
-> #tradingjournal #disciplinatrading #trading #tradingeducativo
+> #trading #ict #smartmoneyconcepts #wyckoff #tradingeducation
 
-**Texto alternativo:** Mosaico de capturas de gráficos desenfocadas al fondo.
-Texto en primer plano: "Cientos de capturas. Ningún método."
+**Alt text:** Blue background with the logo's "a" running off the right edge.
+Text: "Your chart already told you what went wrong. Nobody translated it for you."
 
----
+## 2 · The problem — `02-problema.png`
 
-## 3 · Cómo funciona — `03-que-hace.png`
+> Open your camera roll right now and count the screenshots of your trades.
+>
+> Fifty? Two hundred? More?
+>
+> Now the uncomfortable question: tell me which ones share the same mistake. Not
+> the one you remember — all of them.
+>
+> Saving your trades isn't reviewing them. A folder full of charts is an
+> archive, not a method. Reviewing means someone points at the pattern you can't
+> see, precisely because you were inside the trade.
+>
+> That's the work we're automating.
+>
+> How many screenshots do you have? Drop the number below — you won't be the
+> only one.
+>
+> #tradingjournal #tradingdiscipline #trading #tradingeducation
 
-**Caption**
+**Alt text:** Blurred mosaic of chart screenshots in the background. Foreground
+text: "Hundreds of screenshots. No method."
 
-> "Una IA que detecta patrones" lo dice todo el mundo. La nuestra hace otra cosa.
->
-> No sale a buscar formas bonitas en tu gráfico. Aplica **la metodología que tú
-> elegiste antes de subir la captura**. Si estudias ICT, te corrige en ICT. Si
-> vienes de Wyckoff, te habla de fases y de esfuerzo contra resultado. Si operas
-> price action, te habla de niveles y reacción.
->
-> El flujo entero son tres pasos: subes la captura → eliges tu enfoque →
-> recibes una corrección escrita, con lo que hiciste bien, lo que fallaste y por
-> qué.
->
-> Como te lo diría un profesor. No como te lo diría un vendedor.
->
-> En la imagen tienes una corrección real de ejemplo, en ICT.
->
-> Educativo. No es asesoría financiera ni recomendación de operar.
->
-> #ict #smc #wyckoff #trading #aprenderatradear
+## 3 · How it works — `03-que-hace.png`
 
-**Texto alternativo:** Tarjeta con una corrección de ejemplo en metodología ICT
-sobre fondo azul, junto a la mascota de la marca vestida de profesor.
+> "An AI that detects patterns" — everyone says that. Ours does something else.
+>
+> It doesn't go hunting for pretty shapes on your chart. It applies **the
+> methodology you picked before uploading**. Study ICT and it corrects you in
+> ICT. Come from Wyckoff and it talks phases, effort versus result. Trade price
+> action and it talks levels and reaction.
+>
+> Three steps: upload the screenshot → choose your approach → get a written
+> correction with what you got right, what you missed and why.
+>
+> The way a teacher would tell you. Not the way a salesman would.
+>
+> The image shows a real example correction, in ICT.
+>
+> Educational. Not financial advice or a recommendation to trade.
+>
+> #ict #smc #wyckoff #trading #learntotrade
 
----
+**Alt text:** Card showing an example ICT correction on a blue background, next
+to the brand mascot dressed as a teacher.
 
 ## 4 · Order Block — `04-order-block.png`
 
-**Caption**
-
-> El order block no es "cualquier vela roja antes de que el precio suba".
+> An order block is not "any red candle before price goes up".
 >
-> Es la **última** vela bajista antes de un movimiento alcista **con
-> desplazamiento** — ese arranque que rompe estructura y ya no deja volver.
+> It's the **last** bearish candle before a bullish move **with displacement** —
+> that push that breaks structure and doesn't look back.
 >
-> La diferencia no es de nomenclatura, es práctica: si marcas cualquier vela
-> previa, terminas con el gráfico lleno de cajas y ninguna te dice nada. Si
-> marcas la correcta, tienes una zona con una razón detrás.
+> The difference isn't naming, it's practical: mark any previous candle and you
+> end up with a chart full of boxes that tell you nothing. Mark the right one
+> and you have a zone with a reason behind it.
 >
-> El diagrama está dibujado desde precios reales, no es un dibujito decorativo:
-> la vela marcada es la última bajista antes del desplazamiento.
+> The diagram is drawn from real prices, not decoration: the highlighted candle
+> is the last bearish one before the displacement.
 >
-> Guarda este post para cuando estés marcando en vivo.
+> Save this for when you're marking up live.
 >
-> Y la discusión eterna: ¿tú marcas el cuerpo o la mecha? 👇
+> And the eternal argument: do you mark the body or the wick? 👇
 >
 > #orderblock #ict #smartmoneyconcepts #trading
 
-**Texto alternativo:** Diagrama de siete velas japonesas sobre fondo dorado. La
-tercera, bajista, está resaltada como order block justo antes de un
-desplazamiento alcista.
+**Alt text:** Diagram of seven candles on a gold background. The third, bearish,
+is highlighted as an order block right before a bullish displacement.
 
----
+## 5 · Behind it — `05-mascota.png` · **CENTRE of the grid**
 
-## 5 · Detrás / la mascota — `05-mascota.png` · **CENTRO de la cuadrícula**
-
-**Caption**
-
-> Estamos construyendo algo, y lo vamos a ir enseñando por aquí pieza por pieza.
+> We're building something, and we're going to show it here piece by piece.
 >
-> Un sitio donde revisar tus gráficos deje de ser una carpeta de capturas:
+> A place where reviewing your charts stops being a folder of screenshots:
 >
-> · un analizador que te corrige en tu metodología
-> · una academia con rangos que se suben estudiando
-> · un mapa de estudio en 3D
-> · pizarras para practicar
-> · un foro moderado donde nadie te va a vender una señal
+> · an analyzer that corrects you in your own methodology
+> · an academy with ranks you climb by studying
+> · a 3D study map
+> · chalkboards to practise on
+> · a moderated forum where nobody is selling you a signal
 >
-> Todavía no está abierto. Cuando lo esté, lo sabrás por aquí primero.
+> It isn't open yet. When it is, you'll hear it here first.
 >
-> Guarda este post si quieres verlo crecer desde el día cero.
+> Save this post if you want to watch it grow from day zero.
 >
-> #buildinpublic #trading #tradingeducativo
+> #buildinpublic #trading #tradingeducation
 
-**Texto alternativo:** La mascota de Tradeable Academy en grande y translúcida
-sobre fondo azul, con el texto "Estamos construyendo algo".
-
----
+**Alt text:** The Tradeable Academy mascot, large and translucent on a blue
+background, with the text "We're building something".
 
 ## 6 · Fair Value Gap — `06-fvg.png`
 
-**Caption**
+> A Fair Value Gap explained in three candles, no fluff.
+>
+> The **high of the first** sits below the **low of the third**. Between those
+> two lines, literally nothing traded: price moved so fast it skipped a whole
+> stretch.
+>
+> That's why it draws attention. It's a zone where delivery was one-sided, and
+> the market tends to come back and revisit it.
+>
+> Two things the diagram doesn't say, because nobody says them:
+> · not all of them get filled
+> · the ones that do, don't fill when it suits you
+>
+> A gap is not an entry. It's context.
+>
+> Save it — this is one of those you forget and go looking for again.
+>
+> #fairvaluegap #fvg #ict #trading #tradingeducation
 
-> Un Fair Value Gap explicado en tres velas, sin rodeos.
->
-> El **máximo de la primera** queda por debajo del **mínimo de la tercera**.
-> Entre esas dos líneas, literalmente, no se negoció nada: el precio pasó tan
-> rápido que se saltó un tramo entero.
->
-> Por eso llama la atención. Es una zona donde la entrega fue desequilibrada, y
-> el mercado tiende a volver a visitarla.
->
-> Y dos cosas que el dibujo no dice, porque nadie las dice:
-> · no todos se rellenan
-> · el que se rellena no lo hace cuando a ti te conviene
->
-> Un hueco no es una entrada. Es contexto.
->
-> Guárdalo — este es de los que se olvidan y se vuelven a buscar.
->
-> #fairvaluegap #fvg #ict #trading #tradingeducativo
+**Alt text:** Three-candle diagram on a gold background with the Fair Value Gap
+shaded between the first candle's high and the third candle's low, both labelled.
 
-**Texto alternativo:** Diagrama de tres velas sobre fondo dorado con la zona del
-Fair Value Gap sombreada entre el máximo de la primera vela y el mínimo de la
-tercera, ambos rotulados.
+## 7 · Two fronts — `07-analisis-ejecucion.png`
 
----
+> A trade is lost in two places, and almost nobody knows which one got them.
+>
+> **In the analysis:** you marked the wrong zone, read structure backwards,
+> ignored the higher timeframe.
+>
+> **In the execution:** you entered early, moved the stop, doubled down to get
+> it back.
+>
+> They're different families of mistake and they're fixed differently. The first
+> one you fix by studying. The second one you don't — the second one you fix
+> with process, and that's why it hurts more.
+>
+> Our AI engine reviews both, because reading the chart well is worth little if
+> you trade it another way. And the other way round too.
+>
+> Which one gets you more often? Be honest 👇 analysis or execution.
+>
+> #tradingpsychology #tradingjournal #ict #trading #discipline
 
-## 7 · Los dos frentes — `07-analisis-ejecucion.png`
+**Alt text:** Light background split into two columns titled "Analysis" and
+"Execution", each listing three typical mistakes.
 
-**Caption**
+## 8 · Approaches — `08-metodologias.png`
 
-> Un trade se pierde en dos sitios, y casi nadie sabe en cuál se le fue.
+> Seven people look at the same chart and see seven different things.
 >
-> **En el análisis:** marcaste la zona donde no era, leíste la estructura al
-> revés, ignoraste el marco mayor.
+> The ICT trader sees where liquidity is resting. The Wyckoff trader sees which
+> phase the campaign is in. The price action trader sees the reaction at a
+> level. None of them is making it up: they're reading in different languages.
 >
-> **En la ejecución:** entraste antes de tiempo, moviste el stop, doblaste para
-> recuperar.
+> The trouble starts when someone corrects you in a language you don't study.
+> You don't learn anything there — you just collect vocabulary and confusion.
 >
-> Son fallos de familias distintas y se corrigen distinto. El primero se arregla
-> estudiando. El segundo no — el segundo se arregla con proceso, y por eso duele
-> más.
+> That's why you pick the approach **before** the AI looks at your chart. The
+> correction comes back in yours.
 >
-> Nuestro motor de IA revisa los dos, porque de poco sirve leer bien el gráfico
-> si lo operas de otra forma. Y al revés, tampoco.
->
-> ¿Cuál de los dos te pasa más? Sé honesto 👇 análisis o ejecución.
->
-> #psicotrading #tradingjournal #ict #trading #disciplina
-
-**Texto alternativo:** Fondo claro dividido en dos columnas tituladas "Análisis"
-y "Ejecución", cada una con tres errores típicos listados.
-
----
-
-## 8 · Metodologías — `08-metodologias.png`
-
-**Caption**
-
-> Siete personas miran el mismo gráfico y ven siete cosas distintas.
->
-> El de ICT ve dónde quedó la liquidez. El de Wyckoff ve en qué fase está la
-> campaña. El de price action ve la reacción en un nivel. Ninguno se lo está
-> inventando: están leyendo en idiomas distintos.
->
-> El problema empieza cuando alguien te corrige en un idioma que tú no estudias.
-> Ahí no aprendes nada — solo te confundes con más vocabulario.
->
-> Por eso el enfoque lo eliges tú **antes** de que la IA mire tu gráfico. La
-> corrección llega en el tuyo.
->
-> ¿Cuál es el tuyo? Dilo abajo 👇 (y si estás mezclando dos, dilo también, que
-> es más común de lo que parece)
+> Which one is yours? Say it below 👇 (and if you're mixing two, say that too —
+> it's more common than it looks)
 >
 > #ict #wyckoff #priceaction #elliottwave #smc #trading
 
-**Texto alternativo:** Fondo azul con una lista numerada del 01 al 07 de las
-metodologías: ICT, Smart Money Concepts, Wyckoff, Price Action, Patrones y
-armónicos, Elliott, Análisis técnico.
+**Alt text:** Blue background with a numbered list from 01 to 07 of the
+methodologies: ICT, Smart Money Concepts, Wyckoff, Price Action, Patterns &
+harmonics, Elliott, Technical analysis.
+
+## 9 · The ranks — `09-rangos.png`
+
+> From Paper Trader to Market Maker: eight ranks. And one decision we made on
+> purpose.
+>
+> **You don't climb them by winning trades.**
+>
+> You climb by studying, answering quizzes, reviewing your charts and showing up
+> every day. Rewarding wins would reward luck, and luck can't be taught or
+> repeated. Rewarding consistency actually builds someone.
+>
+> It's also why you'll never see profit screenshots here: they aren't merit,
+> they're noise.
+>
+> Every rank leaves a medal and a verifiable certificate.
+>
+> Follow if you want to be there the day it opens.
+>
+> #tradingeducation #learntotrade #trading #discipline
+
+**Alt text:** Gold background with a strip of eight rank marks, three completed,
+and the text "From Paper Trader to Market Maker".
 
 ---
 
-## 9 · Los rangos — `09-rangos.png`
+# Fase 2 — captions de las piezas que faltan por diseñar
 
-**Caption**
+El arte de estas nueve **todavía no existe**; los captions están listos para
+cuando se diseñen.
 
-> De Paper Trader a Market Maker: ocho rangos. Y una decisión que tomamos a
-> propósito.
+## 10 · El reel (el tour) — `reel-tour-con-sonido.mp4`
+
+> This is not a course. It's an ecosystem.
 >
-> **No se sube acertando operaciones.**
+> 42 seconds, every tool, in use — not a slideshow of screenshots:
 >
-> Se sube estudiando, resolviendo quizzes, revisando tus gráficos y apareciendo
-> todos los días. Premiar aciertos sería premiar suerte, y la suerte no se
-> enseña ni se repite. Premiar constancia sí construye a alguien.
+> · break your trade down before you upload it
+> · build the confluence checklist you actually follow
+> · 400+ quizzes, beginner to ultra-hardcore
+> · your own chalkboard
+> · 41 topics on one 3D map, every concept opens up
+> · a moderated forum
 >
-> Es también la razón por la que aquí no vas a ver capturas de resultados: no
-> son mérito, son ruido.
+> Process over impulse. That's the whole idea.
 >
-> Cada rango deja su medalla y su certificado verificable.
+> Educational content. Not financial advice.
 >
-> Sígueme si quieres estar el día que abra.
+> #trading #ict #smartmoneyconcepts #tradingeducation #learntotrade
+
+**Nota:** publícalo como **Reel**, no como post de feed — sale igual en la
+cuadrícula pero solo el formato reel entra en Explorar. Miniatura: un fotograma
+de Synapse o del Pre-Flight con la lista en verde; son los dos que se leen bien
+recortados al cuadrado.
+
+## 11-16 · Meet our tools
+
+Una herramienta por post, enseñada por dentro. Primera línea del caption = qué
+resuelve, no cómo se llama.
+
+**11 · Analyzer** — *"You upload the chart. It answers in your methodology."*
+El flujo entero: instrumento, dirección, sesión, enfoque, confluencias, y la
+corrección escrita.
+
+**12 · Pre-Flight** — *"The checklist you write before you're tempted."*
+Se arma una vez, se tilda antes de entrar, y el semáforo no negocia contigo.
+
+**13 · Synapse** — *"41 topics. One map. Open any of them."*
+La biblioteca en 3D; el gancho es lo visual.
+
+**14 · Quizzes & Daily** — *"400+ questions. One a day that you can't look up."*
+El reto diario, la racha y el ranking mensual.
+
+**15 · Chalkboard** — *"Draw it until you understand it."*
+Practicar el concepto en vez de leerlo.
+
+**16 · Forum** — *"A community, not a signal group."*
+Moderado, con reglas, y sin nadie vendiéndote nada.
+
+## 17 · Plan Premium
+
+> Everything, with room to work: 5 analyses a day, 10 projects, Pre-Flight,
+> Synapse, quizzes, the daily challenge, the chalkboard and the forum.
 >
-> #tradingeducativo #aprenderatradear #trading #disciplina
+> One flat monthly price. Cancel whenever you want, from your settings, without
+> writing to anybody.
+>
+> Educational content. Not financial advice.
 
-**Texto alternativo:** Fondo dorado con una tira de ocho marcas de rango, tres
-completadas, y el texto "De Paper Trader a Market Maker".
+⚠️ **En la tarjeta no pongas nada que suene a resultado** ("multiplica tu
+cuenta", "opera como un profesional"): es lo que hace que Meta rechace el
+anuncio y lo que contradice el descargo del propio pie.
 
----
+## 18 · Plan Standard
 
-# Portadas de historias destacadas
-
-Van **sin texto**: Instagram escribe el título debajo del círculo, así que la
-palabra dentro sobraría y a ~64px no se leería. Por eso llevan glifo simple.
-
-| Archivo | Título que escribes en Instagram |
-|---|---|
-| `h1-que-es.png` | Qué es |
-| `h2-metodos.png` | Métodos |
-| `h3-conceptos.png` | Conceptos |
-| `h4-academia.png` | Academia |
-| `h5-empezar.png` | Empezar |
-
-⚠️ En Destacadas **solo se pueden guardar historias**. Primero súbelas como
-historia y luego las agrupas; la portada se elige aparte, desde "Editar
-destacada".
-
-Qué meter en cada una:
-
-- **Qué es** — 3 historias: el problema, qué hace el producto, para quién es.
-- **Métodos** — una historia por metodología (sirven de teaser a los posts).
-- **Conceptos** — reaprovecha las fichas (Order Block, FVG) y ve sumando.
-- **Academia** — los rangos, el quiz, el reto diario.
-- **Empezar** — cómo se usa, paso a paso. Esta se llena el día que abras el sitio.
+> The way in: one analysis a day, 5 projects and the forum.
+>
+> Same corrections, same methodologies, less volume. If you analyse one chart a
+> day, this is your plan.
 
 ---
 
 # El perfil
 
 **Nombre** (el campo que Instagram indexa al buscar, distinto del @):
-`Tradeable Academy · Trading educativo`
-
-Alternativa si quieres pescar búsquedas de metodología —mismo largo, más
-palabras clave—: `Tradeable Academy · ICT y trading educativo`
+`Tradeable Academy · ICT · SMC`
 
 **Bio** (mientras el sitio siga cerrado):
 
-> Subes tu gráfico. La IA te corrige en tu metodología.
+> Not just an academy — the whole ecosystem.
+> Upload your chart. Our AI corrects you in your own methodology.
 > ICT · SMC · Wyckoff · Price Action
-> Contenido educativo — no es asesoría financiera.
-> 🔧 Abriendo pronto
+> Educational content — not financial advice.
+> 👇 Opening soon
 
-**Foto de perfil:** la "a" azul sobre fondo negro (`tradeable_instagram_1080.png`).
+**Foto de perfil:** la "a" blanca sobre el azul de marca (`avatar.png`).
+
+---
+
+# Portadas de historias destacadas
+
+Van **sin texto**: Instagram escribe el título debajo del círculo, así que la
+palabra dentro sobraría y a ~64 px no se leería.
+
+| Archivo | Título en Instagram |
+|---|---|
+| `h1-que-es.png` | What it is |
+| `h2-metodos.png` | Methods |
+| `h3-conceptos.png` | Concepts |
+| `h4-academia.png` | Academy |
+| `h5-empezar.png` | Start here |
+
+⚠️ En Destacadas **solo se pueden guardar historias**. Primero súbelas como
+historia y luego las agrupas; la portada se elige desde "Editar destacada".

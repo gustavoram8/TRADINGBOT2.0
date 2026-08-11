@@ -355,105 +355,184 @@ DESTACADAS = [('h1-que-es', AZUL, 'marca'), ('h2-metodos', AZUL, 'velas'),
               ('h5-empezar', BLANCO, 'flecha')]
 
 
-def construye_posts(letra_b64, mascota_b64):
+# ══ TEXTOS POR IDIOMA ════════════════════════════════════════════════════
+# 🔑 El texto va HORNEADO en la imagen (no es un caption), así que cambiar de
+#    idioma obliga a rehacer el arte. Por eso vive aquí y no dentro de la
+#    maquetación: `--idioma en` regenera los nueve y el español no se pierde.
+# ⚠️ Al traducir, vigilar el LARGO: los titulares llevan saltos de línea a mano
+#    (<br>) porque están calibrados para que ninguna línea desborde el ancho
+#    seguro. Una traducción más larga sin recolocar el <br> parte la maqueta.
+TEXTOS = {
+ 'es': {
+  'e1': 'Tradeable Academy',
+  't1': 'Tu gráfico ya te dijo<br>qué hiciste mal.', 's1': 'Nadie te lo tradujo.',
+  'e2': 'El problema',
+  't2': 'Cientos<br>de capturas.<br><em>Ningún método.</em>',
+  's2': ('Guardar tus trades no es revisarlos. Una carpeta llena de gráficos '
+         'no te dice qué repetiste mal.'),
+  'e3': 'Cómo funciona',
+  't3': 'No detecta patrones.<br>Aplica <em>tu</em> metodología.',
+  'c3cab': 'Corrección · ICT',
+  'c3': ('Marcaste el order block sobre una vela bajista cualquiera. El válido '
+         'es <u>la última antes del desplazamiento</u> — el que usaste no tenía '
+         'intención detrás.'),
+  'e4': 'Concepto', 't4': 'Order Block',
+  'n4': ('La última vela bajista <b>antes</b> de un movimiento alcista con '
+         'desplazamiento. No cualquier vela roja: la que quedó justo antes de '
+         'que el precio saliera disparado.'),
+  'e5': 'Detrás', 't5': 'Estamos<br>construyendo<br>algo.',
+  's5': ('Un sitio donde revisar tus gráficos deje de ser una carpeta de '
+         'capturas. Te vamos a ir enseñando cada pieza.'),
+  'e6': 'Concepto', 't6': 'Fair Value Gap',
+  'g6a': 'mínimo 3ª', 'g6b': 'máximo 1ª',
+  'n6': ('Tres velas. El <b>máximo de la primera</b> queda por debajo del '
+         '<b>mínimo de la tercera</b>: entre esas dos líneas no se negoció '
+         'nada. El precio pasó demasiado rápido.'),
+  'e7': 'Los dos frentes', 't7': 'Un trade se pierde<br>en dos sitios.',
+  'h7a': 'Análisis', 'h7b': 'Ejecución',
+  'l7a': ['Zona mal marcada', 'Estructura leída al revés',
+          'Contexto del marco mayor ignorado'],
+  'l7b': ['Entrada adelantada', 'Stop movido', 'Posición doblada'],
+  'n7': ('La IA te corrige en los dos. De poco sirve leer bien el gráfico si '
+         'lo operas de otra forma — y al revés tampoco.'),
+  'e8': 'Enfoques', 't8': 'Siete formas de leer<br>el mismo gráfico.',
+  'l8': ['ICT', 'Smart Money Concepts', 'Wyckoff', 'Price Action',
+         'Patrones y armónicos', 'Elliott', 'Análisis técnico'],
+  'n8': 'Eliges la tuya. La corrección llega en ese idioma.',
+  'e9': 'La academia', 't9': 'De Paper Trader<br>a Market Maker.',
+  's9': ('Ocho rangos. Se suben estudiando, resolviendo y revisando — no '
+         'acertando operaciones.'),
+  'n9': ('Premiar aciertos sería premiar suerte, y la suerte no se enseña.'),
+ },
+ 'en': {
+  'e1': 'Tradeable Academy',
+  # ⚠️ el <br> tras "already" no es capricho: "Your chart already told you" no
+  #    cabe en una línea a este cuerpo y el navegador partía dejando un renglón
+  #    huérfano de dos palabras
+  't1': 'Your chart<br>already told you<br>what went wrong.',
+  's1': 'Nobody translated it for you.',
+  'e2': 'The problem',
+  't2': 'Hundreds<br>of screenshots.<br><em>No method.</em>',
+  's2': ('Saving your trades is not reviewing them. A folder full of charts '
+         "won't tell you what you keep getting wrong."),
+  'e3': 'How it works',
+  't3': "It doesn't spot patterns.<br>It applies <em>your</em> method.",
+  'c3cab': 'Correction · ICT',
+  'c3': ('You marked the order block on just any bearish candle. The valid one '
+         'is <u>the last one before the displacement</u> — the one you used had '
+         'no intent behind it.'),
+  'e4': 'Concept', 't4': 'Order Block',
+  'n4': ('The last bearish candle <b>before</b> a bullish move with '
+         'displacement. Not any red candle: the one sitting right before price '
+         'took off.'),
+  'e5': 'Behind it', 't5': "We're<br>building<br>something.",
+  's5': ('A place where reviewing your charts stops being a folder of '
+         "screenshots. We'll show you every piece of it."),
+  'e6': 'Concept', 't6': 'Fair Value Gap',
+  'g6a': '3rd low', 'g6b': '1st high',
+  'n6': ('Three candles. The <b>high of the first</b> sits below the <b>low of '
+         'the third</b>: between those two lines nothing traded at all. Price '
+         'moved through too fast.'),
+  'e7': 'Two fronts', 't7': 'A trade is lost<br>in two places.',
+  'h7a': 'Analysis', 'h7b': 'Execution',
+  'l7a': ['Zone marked wrong', 'Structure read backwards',
+          'Higher timeframe ignored'],
+  'l7b': ['Entry taken early', 'Stop moved', 'Position doubled'],
+  'n7': ('The AI corrects both. Reading the chart well is worth little if you '
+         'trade it another way — and the other way round too.'),
+  'e8': 'Approaches', 't8': 'Seven ways to read<br>the same chart.',
+  'l8': ['ICT', 'Smart Money Concepts', 'Wyckoff', 'Price Action',
+         'Patterns & harmonics', 'Elliott', 'Technical analysis'],
+  'n8': 'You pick yours. The correction comes back in that language.',
+  'e9': 'The academy', 't9': 'From Paper Trader<br>to Market Maker.',
+  's9': ('Eight ranks. You climb them by studying, answering and reviewing — '
+         'not by winning trades.'),
+  'n9': 'Rewarding wins would reward luck, and luck cannot be taught.',
+ },
+}
+
+
+def construye_posts(letra_b64, mascota_b64, T):
     """Nueve piezas, nueve maquetaciones. El suelo es lo único que se repite."""
     P = []
+    li = lambda xs: ''.join('<li>%s</li>' % x for x in xs)          # noqa: E731
 
     # 1 · titular con la "a" gigante saliendo por el borde
     P.append(('01-manifiesto', AZUL,
               "<img class='agua a-der' src='data:image/png;base64,%s'>" % letra_b64,
-              "<div class='etq'>Tradeable Academy</div><div class='cuerpo'>"
-              "<h1>Tu gráfico ya te dijo<br>qué hiciste mal.</h1>"
-              "<p class='sub'>Nadie te lo tradujo.</p></div>"))
+              "<div class='etq'>%s</div><div class='cuerpo'>"
+              "<h1>%s</h1><p class='sub'>%s</p></div>"
+              % (T['e1'], T['t1'], T['s1'])))
 
     # 2 · el problema, con el fondo lleno de capturas
     P.append(('02-problema', BLANCO,
               miniaturas() + "<div class='velo'></div>",
-              "<div class='etq'>El problema</div><div class='cuerpo'>"
-              "<h1>Cientos<br>de capturas.<br><em>Ningún método.</em></h1>"
-              "<p class='sub'>Guardar tus trades no es revisarlos. Una carpeta "
-              "llena de gráficos no te dice qué repetiste mal.</p></div>"))
+              "<div class='etq'>%s</div><div class='cuerpo'>"
+              "<h1>%s</h1><p class='sub'>%s</p></div>"
+              % (T['e2'], T['t2'], T['s2'])))
 
     # 3 · cómo funciona: la corrección simulada + la mascota de profesor
     P.append(('03-que-hace', AZUL, '',
-              "<div class='etq'>Cómo funciona</div><div class='cuerpo'>"
-              "<h1 class='chico'>No detecta patrones.<br>Aplica <em>tu</em> "
-              "metodología.</h1>"
+              "<div class='etq'>%s</div><div class='cuerpo'>"
+              "<h1 class='chico'>%s</h1>"
               "<div class='fila'><div style='flex:1'><div class='tarj'>"
-              "<div class='cab'><b></b>Corrección · ICT</div>"
-              "<p>Marcaste el order block sobre una vela bajista cualquiera. "
-              "El válido es <u>la última antes del desplazamiento</u> — el que "
-              "usaste no tenía intención detrás.</p></div></div>"
+              "<div class='cab'><b></b>%s</div><p>%s</p></div></div>"
               "<img class='mascota chica' src='data:image/png;base64,%s'></div>"
-              "</div>" % mascota_b64))
+              "</div>" % (T['e3'], T['t3'], T['c3cab'], T['c3'], mascota_b64)))
 
     # 4 · order block
     P.append(('04-order-block', ORO, '',
-              "<div class='etq'>Concepto</div><div class='cuerpo'>"
-              "<h1>Order Block</h1><div class='graf'>%s</div>"
-              "<p class='nota'>La última vela bajista <b>antes</b> de un "
-              "movimiento alcista con desplazamiento. No cualquier vela roja: "
-              "la que quedó justo antes de que el precio saliera disparado.</p>"
-              "</div>"
-              % velas([(50, 52, 53, 49), (52, 51, 53, 50), (51, 48, 52, 47),
-                       (48, 58, 60, 47), (58, 66, 68, 57), (66, 64, 69, 62),
-                       (64, 71, 73, 63)], destacar=2)))
+              "<div class='etq'>%s</div><div class='cuerpo'>"
+              "<h1>%s</h1><div class='graf'>%s</div>"
+              "<p class='nota'>%s</p></div>"
+              % (T['e4'], T['t4'],
+                 velas([(50, 52, 53, 49), (52, 51, 53, 50), (51, 48, 52, 47),
+                        (48, 58, 60, 47), (58, 66, 68, 57), (66, 64, 69, 62),
+                        (64, 71, 73, 63)], destacar=2), T['n4'])))
 
     # 5 · CENTRO de la cuadrícula: la mascota, enorme y translúcida
     P.append(('05-mascota', AZUL,
               "<img class='mascota' src='data:image/png;base64,%s'>" % mascota_b64,
-              "<div class='etq'>Detrás</div><div class='cuerpo'>"
-              "<h1>Estamos<br>construyendo<br>algo.</h1>"
-              "<p class='sub'>Un sitio donde revisar tus gráficos deje de ser "
-              "una carpeta de capturas. Te vamos a ir enseñando cada pieza.</p>"
-              "</div>"))
+              "<div class='etq'>%s</div><div class='cuerpo'>"
+              "<h1>%s</h1><p class='sub'>%s</p></div>"
+              % (T['e5'], T['t5'], T['s5'])))
 
     # 6 · fair value gap — hueco delimitado y rotulado
     P.append(('06-fvg', ORO, '',
-              "<div class='etq'>Concepto</div><div class='cuerpo'>"
-              "<h1>Fair Value Gap</h1><div class='graf'>%s</div>"
-              "<p class='nota'>Tres velas. El <b>máximo de la primera</b> queda "
-              "por debajo del <b>mínimo de la tercera</b>: entre esas dos líneas "
-              "no se negoció nada. El precio pasó demasiado rápido.</p></div>"
-              % velas([(50, 52, 53, 49), (52, 69, 71, 51), (69, 73, 75, 64)],
-                      alto=74, zona=(53, 64),
-                      etiquetas=[(64, 'mínimo 3ª'), (53, 'máximo 1ª')])))
+              "<div class='etq'>%s</div><div class='cuerpo'>"
+              "<h1>%s</h1><div class='graf'>%s</div>"
+              "<p class='nota'>%s</p></div>"
+              % (T['e6'], T['t6'],
+                 velas([(50, 52, 53, 49), (52, 69, 71, 51), (69, 73, 75, 64)],
+                       alto=74, zona=(53, 64),
+                       etiquetas=[(64, T['g6a']), (53, T['g6b'])]), T['n6'])))
 
     # 7 · dónde se pierde un trade: las DOS familias de error
     P.append(('07-analisis-ejecucion', BLANCO, '',
-              "<div class='etq'>Los dos frentes</div><div class='cuerpo'>"
-              "<h1 class='chico'>Un trade se pierde<br>en dos sitios.</h1>"
-              "<div class='dos'>"
-              "<section><h2>Análisis</h2><ul>"
-              "<li>Zona mal marcada</li><li>Estructura leída al revés</li>"
-              "<li>Contexto del marco mayor ignorado</li></ul></section>"
-              "<section><h2>Ejecución</h2><ul>"
-              "<li>Entrada adelantada</li><li>Stop movido</li>"
-              "<li>Posición doblada</li></ul></section></div>"
-              "<p class='nota'>La IA te corrige en los dos. De poco sirve leer "
-              "bien el gráfico si lo operas de otra forma — y al revés tampoco.</p>"
-              "</div>"))
+              "<div class='etq'>%s</div><div class='cuerpo'>"
+              "<h1 class='chico'>%s</h1><div class='dos'>"
+              "<section><h2>%s</h2><ul>%s</ul></section>"
+              "<section><h2>%s</h2><ul>%s</ul></section></div>"
+              "<p class='nota'>%s</p></div>"
+              % (T['e7'], T['t7'], T['h7a'], li(T['l7a']), T['h7b'],
+                 li(T['l7b']), T['n7'])))
 
     # 8 · metodologías, con haz diagonal
     P.append(('08-metodologias', AZUL, "<div class='haz'></div>",
-              "<div class='etq'>Enfoques</div><div class='cuerpo'>"
-              "<h1 class='chico'>Siete formas de leer<br>el mismo gráfico.</h1>"
-              "<div class='lista'><div><i>01</i>ICT</div>"
-              "<div><i>02</i>Smart Money Concepts</div><div><i>03</i>Wyckoff</div>"
-              "<div><i>04</i>Price Action</div><div><i>05</i>Patrones y armónicos</div>"
-              "<div><i>06</i>Elliott</div><div><i>07</i>Análisis técnico</div></div>"
-              "<p class='nota'>Eliges la tuya. La corrección llega en ese idioma.</p>"
-              "</div>"))
+              "<div class='etq'>%s</div><div class='cuerpo'>"
+              "<h1 class='chico'>%s</h1><div class='lista'>%s</div>"
+              "<p class='nota'>%s</p></div>"
+              % (T['e8'], T['t8'],
+                 ''.join('<div><i>%02d</i>%s</div>' % (i + 1, m)
+                         for i, m in enumerate(T['l8'])), T['n8'])))
 
     # 9 · rangos, con la tira de pips
     P.append(('09-rangos', ORO, '',
-              "<div class='etq'>La academia</div><div class='cuerpo'>"
-              "<h1 class='chico'>De Paper Trader<br>a Market Maker.</h1>"
-              "<div class='pipbar'>%s</div>"
-              "<p class='sub' style='margin-top:34px'>Ocho rangos. Se suben "
-              "estudiando, resolviendo y revisando — no acertando operaciones.</p>"
-              "<p class='nota'>Premiar aciertos sería premiar suerte, y la suerte "
-              "no se enseña.</p></div>" % pips(3)))
+              "<div class='etq'>%s</div><div class='cuerpo'>"
+              "<h1 class='chico'>%s</h1><div class='pipbar'>%s</div>"
+              "<p class='sub' style='margin-top:34px'>%s</p>"
+              "<p class='nota'>%s</p></div>"
+              % (T['e9'], T['t9'], pips(3), T['s9'], T['n9'])))
     return P
 
 
@@ -461,7 +540,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--guias', action='store_true',
                     help='dibuja la zona segura de la cuadrícula del perfil')
+    ap.add_argument('--idioma', default='en', choices=sorted(TEXTOS),
+                    help='idioma del texto HORNEADO en el arte (default: en)')
     args = ap.parse_args()
+    T = TEXTOS[args.idioma]
 
     asegura_fuentes()
     os.makedirs(SALIDA, exist_ok=True)
@@ -492,7 +574,7 @@ def main():
                 "<div class='dest'>%s</div>" % (css, cuerpo))
 
     plan = []
-    for nombre, acento, fondo, cuerpo in construye_posts(letra_b64, mascota_b64):
+    for nombre, acento, fondo, cuerpo in construye_posts(letra_b64, mascota_b64, T):
         io.open(os.path.join(SALIDA, nombre + '.html'), 'w', encoding='utf-8').write(
             pagina(acento, fondo, cuerpo))
         plan.append({'archivo': nombre, 'alto': 1350})
