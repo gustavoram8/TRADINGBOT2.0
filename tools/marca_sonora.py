@@ -21,6 +21,7 @@ exactamente donde el barrido descubre el logo.
 
     python3 tools/marca_sonora.py            # genera los candidatos
     python3 tools/marca_sonora.py --solo-audio   # sin montar el vídeo
+    python3 tools/marca_sonora.py --incrustar 03E_solo_cuerda_larga
 
 ⚠️ El impacto tiene que caer en el fotograma en que se completa el barrido a
    negro, no cuando empieza: si cae antes, el oído lo separa del logo y deja de
@@ -321,10 +322,40 @@ CANDIDATOS = [
 ]
 
 
+def incrusta(nombre):
+    """Pega la marca sonora elegida al reel COMPLETO, en el mismo sitio.
+
+    🔑 El preview recortaba el reel desde REEL_DESDE, así que el golpe caía en
+    REEL_DESDE + GOLPE del reel entero. Retrasando el wav esos mismos
+    REEL_DESDE segundos (`adelay`), el sonido queda clavado donde se aprobó —
+    no se re-elige el momento "a ojo" sobre el vídeo largo, que es como se
+    desplazan estas cosas medio segundo sin que nadie sepa por qué.
+    """
+    import imageio_ffmpeg
+    ff = imageio_ffmpeg.get_ffmpeg_exe()
+    wav = os.path.join(SALIDA, nombre + '.wav')
+    if not os.path.exists(wav):
+        sys.exit('no existe %s — genera los candidatos primero' % wav)
+    dest = os.path.join(RAIZ, 'out', 'reels', 'reel-tour-con-sonido.mp4')
+    ms = int(round(REEL_DESDE * 1000))
+    subprocess.run(
+        [ff, '-y', '-loglevel', 'error', '-i', REEL, '-i', wav,
+         '-filter_complex', '[1:a]adelay=%d|%d,pan=stereo|c0=c0|c1=c0[a]' % (ms, ms),
+         '-map', '0:v:0', '-map', '[a]', '-c:v', 'copy',
+         '-c:a', 'aac', '-b:a', '192k', '-shortest',
+         '-movflags', '+faststart', dest], check=True)
+    print('reel con sonido:', dest,
+          '· %.1f MB' % (os.path.getsize(dest) / 1e6))
+    return dest
+
+
 def main():
     import imageio_ffmpeg
     ff = imageio_ffmpeg.get_ffmpeg_exe()
     os.makedirs(SALIDA, exist_ok=True)
+    if '--incrustar' in sys.argv:
+        incrusta(sys.argv[sys.argv.index('--incrustar') + 1])
+        return
     solo_audio = '--solo-audio' in sys.argv
     for nombre, fn in CANDIDATOS:
         wav = os.path.join(SALIDA, nombre + '.wav')
