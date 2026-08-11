@@ -504,6 +504,14 @@ TEXTOS = {
  'en': {
   'intro1': 'This is not<br>a course.', 'intro2': "It's an<br><em>ecosystem</em>.",
   'eq': 'Tradeable Academy', 'cierre': 'Educational content · Not financial advice',
+  # 🔑 En la tarjeta final va el LEMA, no el arroba: Instagram ya pinta el
+  #    usuario encima del vídeo y el logo ya dice el nombre justo arriba — ese
+  #    renglón estaba gastado. Y el lema dice qué ES la marca, no qué promete:
+  #    un "reach your goals" en un sitio de trading se lee como "vas a ganar
+  #    dinero" y contradice el descargo que sale DOS LÍNEAS más abajo.
+  #    Recoge además el "stop trading on impulse" de la escena 02: aquello era
+  #    la instrucción, esto es el principio.
+  'lema': 'Process over impulse.',
   'analizador': ('Break down your trade.',
                  'Instrument, direction, session, methodology — then upload the chart'),
   'preflight': ('Build your confluence list.',
@@ -523,6 +531,7 @@ TEXTOS = {
  'es': {
   'intro1': 'Esto no<br>es un curso.', 'intro2': 'Es un<br><em>ecosistema</em>.',
   'eq': 'Tradeable Academy', 'cierre': 'Contenido educativo · No es asesoría financiera',
+  'lema': 'Proceso antes que impulso.',
   'analizador': ('Desglosa tu operación.',
                  'Activo, dirección, sesión, metodología — y luego subes el gráfico'),
   'preflight': ('Arma tu lista de confluencias.',
@@ -606,7 +615,7 @@ video{position:absolute;left:50%;top:50%;width:@@W@@px;height:@@H@@px;
 <div id=intro><div class=eq>@@EQ@@</div><h1 id=ih></h1></div>
 <div id=flash></div>
 <div id=out><img src="@@LOGO@@" alt=""><div class=s>@@EQ@@</div>
-  <div class=a>@tradeableacademy</div>
+  <div class=a>@@LEMA@@</div>
   <div class=l>@@CIERRE@@</div></div>
 <div id=bar></div>
 <script>
@@ -732,6 +741,7 @@ def monta():
                          ('@@I1TXT@@', json.dumps(T['intro1'])),
                          ('@@I2TXT@@', json.dumps(T['intro2'])),
                          ('@@EQ@@', T['eq']), ('@@CIERRE@@', T['cierre']),
+                         ('@@LEMA@@', T['lema']),
                          ('@@I0@@', '%.2f' % (INTRO - 0.30)),
                          ('@@I1@@', '%.2f' % INTRO),
                          ('@@O0@@', '%.2f' % r)):
