@@ -20,11 +20,20 @@ que habla y no necesita convencerte a gritos.
 ⚠️ **Dos reglas que no conviene romper:**
 
 1. **Sobre el logo final no se habla.** Del segundo 38,3 al 42,3 solo suena la
-   marca sonora. Una firma de audio con una voz encima deja de ser una firma.
+   marca sonora sobre el logotipo y el lema *"Process over impulse."*. Una firma
+   de audio con una voz encima deja de ser una firma, y el lema se lee mejor de
+   lo que se oiría: leerlo en voz alta a la vez que aparece escrito hace que
+   compitan. Si algún día se quiere decir, hay que mover la guitarra — no meter
+   la voz encima.
 2. **Una sola lengua.** El reel actual tiene los textos en pantalla **en
    inglés**. Si la narración va en español, hay que regenerar el reel con los
    textos en español — es una variable y un remontaje, pero mezclar voz en
    español con texto en inglés se ve amateur. Elige idioma **antes** de grabar.
+
+**Y una consecuencia de añadir voz:** la música pasa a segundo plano. Con
+narración, el audio que añadas en Instagram tiene que ir **bajo** (alrededor del
+20-30 % en el mezclador, no el 50-60 % que valía sin voz) o se come las
+consonantes. Si la voz queda bien seca, el reel funciona incluso **sin** música.
 
 ---
 
