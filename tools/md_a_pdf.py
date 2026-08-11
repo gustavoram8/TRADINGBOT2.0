@@ -12,6 +12,7 @@ from __future__ import print_function
 
 import io
 import os
+import re
 import sys
 
 import markdown
@@ -43,8 +44,18 @@ ul { margin:5pt 0 5pt 14pt; } li { margin:2pt 0; }
 """
 
 
+# 🔴 En Markdown, una almohadilla al principio de línea es un TÍTULO. Una línea
+# de hashtags —`#trading #ict …`— se convertía en un <h1> gigante, y encima
+# perdía la primera almohadilla: en el PDF parecía que los captions no llevaban
+# hashtags. Lo cazó el dueño leyéndolo.
+# Un título SIEMPRE lleva espacio tras las almohadillas (`# Título`, `### A`),
+# así que se escapa solo la que va pegada a una palabra. Con esto el .md sigue
+# limpio y copiable — que es lo que importa, porque de ahí se pega el caption.
+HASHTAG = re.compile(r'(?m)^((?:> ?)*)#(?=[^\s#])')
+
+
 def convierte(origen, destino):
-    md = io.open(origen, encoding='utf-8').read()
+    md = HASHTAG.sub(r'\1\\#', io.open(origen, encoding='utf-8').read())
     cuerpo = markdown.markdown(md, extensions=['tables', 'sane_lists'])
     os.makedirs(os.path.dirname(destino) or '.', exist_ok=True)
     HTML(string='<html><meta charset="utf-8"><body>%s</body></html>'

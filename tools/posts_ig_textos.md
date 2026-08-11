@@ -46,35 +46,65 @@ casillas y rompe la composición.
 **Ritmo:** con 0 seguidores, dosificar no gana nada. Súbelos seguidos —2 o 3 al
 día durante 3-4 días.
 
-### Fase 2 — el reel, y lo que va antes de los precios
+### Fase 2 — el orden, y por qué éste
 
-Aquí propusiste: Premium → reel (con ads) → Standard → seis de herramientas.
-**Le daría la vuelta**, por una razón concreta: con ese orden, **dos de tus
-doce primeros posts son tarifas**, puestas delante de gente que todavía no sabe
-qué vendes. Una tarjeta de precio no convence a nadie — convierte a quien ya
-quiere el producto. Y ahora mismo nadie lo quiere todavía porque nadie lo ha
-visto funcionando.
+**Orden acordado (es el que propuso el dueño):**
 
-El orden que recomiendo:
+| # | Pieza |
+|---|---|
+| 10 | **Card del plan Premium** |
+| 11 | **El reel** (el tour) — aquí van los ADS |
+| 12 | **Card del plan Standard** |
+| 13-18 | **Meet our tools** ×6 |
 
-| # | Pieza | Por qué ahí |
-|---|---|---|
-| 10 | **El reel** (el tour) | Es lo único que da alcance real a una cuenta nueva. Va antes que cualquier tarjeta de precio. |
-| 11-16 | **Meet our tools** ×6 | Seis posts, una herramienta cada uno, enseñándola por dentro. Es lo que crea el deseo que después cobra la tarjeta. |
-| 17 | **Card del plan Premium** | Ahora sí: quien llegue aquí ya vio las herramientas una a una. |
-| 18 | **Card del plan Standard** | Detrás de Premium a propósito — se lee como "la versión de entrada", no como el techo. |
+**Por qué éste y no el "orden de embudo".** Se propuso primero reel → seis
+herramientas → planes, con el argumento de que un precio convierte mejor al
+final. El dueño objetó que eso **descuadra la parrilla**, y tenía razón: la
+cuadrícula se llena arriba-izquierda con lo más reciente, así que se calculó
+casilla por casilla y sale esto.
 
-**Las seis herramientas**, en este orden (de lo más impactante a lo más de
-nicho): Analyzer · Pre-Flight · Synapse · Quizzes & Daily · Chalkboard · Forum.
-Tessera y los cosméticos quedan fuera de esta tanda: son encantadores pero no
-son la razón por la que alguien paga.
+Con SU orden, a los 18 posts:
 
-**Sobre los ADS: no los pagues todavía.** Tres condiciones antes de poner un
-euro: (a) la cuenta pública, (b) **el sitio abierto** —pagar tráfico hacia una
-página de "en construcción" es tirar el dinero y quemar el mejor público que vas
-a tener—, y (c) el reel publicado en orgánico unos días, para saber si retiene.
-Si no retiene gratis, tampoco retiene pagando: los ads amplifican lo que
-funciona, no arreglan lo que no.
+```
+| TOOL 6   | TOOL 5 | TOOL 4   |
+| TOOL 3   | TOOL 2 | TOOL 1   |
+| STANDARD | REEL ▶ | PREMIUM  |
+| welcome 9 … welcome 1        |
+```
+
+Dos filas limpias de herramientas y **el reel centrado, flanqueado por los dos
+planes**. Con el orden de embudo, las seis herramientas se parten en tres filas
+y el reel queda arrinconado abajo a la derecha.
+
+🔑 **La parrilla es el orden de publicación leído al revés**, de abajo hacia
+arriba. Lo que subes primero termina en el fondo.
+
+⚠️ El argumento de "publicar Premium antes del reel lo gasta en una sala vacía"
+**era flojo**: un post de cuadrícula no se consume al publicarse, se queda; el
+que llegue en dos meses lo ve igual. El coste de publicarlo pronto es temporal,
+la composición es permanente.
+
+⚠️ Este 6×3 **solo existe con exactamente 18 posts**. El día 19 todo se
+desplaza. Igual que el 3×3 de los primeros nueve: es un efecto de arranque.
+
+**Las seis herramientas**, en este orden: Analyzer · Pre-Flight · Synapse ·
+Quizzes & Daily · Chalkboard · Forum. Tessera y los cosméticos quedan fuera de
+esta tanda: son encantadores pero no son la razón por la que alguien paga.
+Cada uno, además, como **carrusel de 3-4 diapositivas** (portada · dos de la
+herramienta en uso · qué resuelve): seis casillas de cuadrícula y profundidad
+de verdad dentro de cada una.
+
+**Sobre los ADS: enciéndelos DESPUÉS de publicar las seis herramientas**, aunque
+el reel se cuelgue antes en orgánico. Motivo: cuando el dinero traiga gente al
+perfil, la parte de arriba tiene que ser herramientas funcionando y no las dos
+tarifas, que en ese momento intermedio son la fila más alta. Retrasar el pago
+unos días no cuesta nada y cambia la primera impresión.
+
+Y tres condiciones antes de poner un euro: (a) la cuenta pública, (b) **el sitio
+abierto** —pagar tráfico hacia una página de "en construcción" es tirar el
+dinero y quemar el mejor público que vas a tener—, y (c) el reel unos días en
+orgánico para saber si retiene. Si no retiene gratis, tampoco retiene pagando:
+los ads amplifican lo que funciona, no arreglan lo que no.
 
 ---
 
@@ -179,11 +209,11 @@ is highlighted as an order block right before a bullish displacement.
 >
 > A place where reviewing your charts stops being a folder of screenshots:
 >
-> · an analyzer that corrects you in your own methodology
-> · an academy with ranks you climb by studying
-> · a 3D study map
-> · chalkboards to practise on
-> · a moderated forum where nobody is selling you a signal
+> 🧠 an analyzer that corrects you in your own methodology
+> 🎓 an academy with ranks you climb by studying
+> 📚 a 3D study map
+> 🖊 chalkboards to practise on
+> 💬 a moderated forum where nobody is selling you a signal
 >
 > It isn't open yet. When it is, you'll hear it here first.
 >
@@ -301,12 +331,12 @@ cuando se diseñen.
 >
 > 42 seconds, every tool, in use — not a slideshow of screenshots:
 >
-> · break your trade down before you upload it
-> · build the confluence checklist you actually follow
-> · 400+ quizzes, beginner to ultra-hardcore
-> · your own chalkboard
-> · 41 topics on one 3D map, every concept opens up
-> · a moderated forum
+> 🔍 break your trade down before you upload it
+> ✅ build the confluence checklist you actually follow
+> 🎓 400+ quizzes, beginner to ultra-hardcore
+> 🖊 your own chalkboard
+> 🧠 41 topics on one 3D map, every concept opens up
+> 💬 a moderated forum
 >
 > Process over impulse. That's the whole idea.
 >
