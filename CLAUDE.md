@@ -435,6 +435,20 @@ sombras (−22%), filtros (−4%), fondos de camo (−1%).
   el modo claro translúcido. Lo cazó el test midiendo el fondo REAL por tema y camo.
 - **NO lo causó la vendorización**: medido el commit anterior (bf0f5cf) = 62,8 ms con las mismas
   46 capas. Entró el 2026-07-05 con el rediseño Aurora Glass. `tools/test_scroll_perf.py` **8/8**.
+- ✅ Verificado en **los 9 camos × 2 modos**: tarjeta opaca y 16,7 ms en las 20 combinaciones. La
+  regla no nombra ningún camo (usa `var(--card)`/`var(--bg)`) → los camos futuros la heredan.
+  El dueño confirmó que **no nota diferencia estética** y pidió dejarlo.
+- 🟡 **HILO ABIERTO, sin cerrar:** tras desplegar el arreglo el dueño sigue notando que en su iMac
+  2011 el **modo oscuro** va más pesado que el claro (sin camo). **No se reproduce aquí** —layout,
+  estilos, JS y coste de sombras salen iguales o mejores en oscuro— pero este contenedor va **por
+  software, sin GPU**, así que es ciego al coste de compositing, que es justo donde sufre una GPU
+  vieja. Único candidato concreto encontrado: la sombra de `.card` es **40px de blur en oscuro y
+  30px en claro** (línea ~84 vs ~87) y el coste crece ~con el cuadrado del radio → ~1,8× por
+  tarjeta × ~14 tarjetas. Igualarlo son dos números; el dueño decidió no perseguirlo por ahora.
+  ⚠️ **Medir con cuidado: 16,7 ms es el TECHO de vsync** — una vez ahí, todo marca igual y las
+  diferencias de rasterizado quedan escondidas. Para compararlas hay que subir el viewport (2560×
+  1440) o usar `Performance.getMetrics` de CDP; `--disable-gpu-vsync` NO sirve (rAF deja de
+  esperar al pintado y mide 1,5 ms de nada).
 
 - **Lag reportado por el dueño tras el deploy (2026-08-10): MEDIDO, no hay fuga.** Su hipótesis
   (animaciones de Synapse en bucle al salir) es falsa: `switchTab` llama `Synapse.pause()` →
