@@ -266,104 +266,58 @@ def c6_ascenso():
     return normaliza(b)
 
 
-# ══ FAMILIA GUITARRA ═════════════════════════════════════════════════════
-# El dueño eligió el 03 pero rechazó su arranque: "el principio es como un
-# WOOOOP, eso no va, solo va el sonido de guitarra final". Ese "wooop" era el
-# `sub()` — un golpe de graves cuyo TONO CAE de 104 a 44 Hz, y una caída de
-# tono es exactamente lo que el oído lee como "wup". Así que en esta familia no
-# hay ningún barrido de tono: o no hay grave, o el grave es de nota FIJA.
-# Y como pidió alargarlo, la cuerda se sintetiza con Karplus-Strong en vez de
-# con senos: un pulso de ruido metido en una línea de retardo que se
-# realimenta filtrada. Es como suena una cuerda de verdad — los armónicos
-# agudos se apagan antes que el fundamental — y por eso aguanta 4 s sin sonar
-# a pitido, que es justo lo que un seno con envolvente no aguanta.
+# ══ EL 03, SIN EL "WOOOOP" ═══════════════════════════════════════════════
+# El dueño eligió el 03 y pidió UNA cosa: "el principio es como un WOOOOP, eso
+# no va, solo va el sonido de guitarra final".
+#
+# 🔑 Ese "wooop" era el `sub(104, 44, ...)`: un golpe de graves cuyo TONO CAE
+#    de 104 a 44 Hz. Una caída de tono es exactamente lo que el oído lee como
+#    "wup". Así que quitar el wooop es borrar ESA línea y nada más — todo lo
+#    demás (los clics, la nota grave, el brillo agudo, la reverberación, las
+#    ganancias) queda idéntico al 03 que le gustó.
+#
+# ⚠️ Se intentó primero rehacer la cuerda con Karplus-Strong para poder
+#    alargarla, y el dueño lo rechazó: sonaba a otra cosa, no al 03. Lección:
+#    cuando alguien aprueba un sonido y pide quitarle UN elemento, se quita ese
+#    elemento; no se reconstruye el sonido "mejor". Por eso el alargado de
+#    abajo toca SOLO los tiempos de caída, no cómo se genera el timbre.
 
 
-def cuerda(f, dur, brillo=0.50, sostenido=0.9994, pua=0.5):
-    """Cuerda pulsada (Karplus-Strong extendido).
-
-    `sostenido` (0-1) alarga la cola: es la realimentación de la línea de
-    retardo. `brillo` es cuánto agudo lleva la púa; `pua` cuánto se filtra el
-    pulso inicial (púa blanda = menos armónicos altos = más 'guitarra de
-    nailon', púa dura = más metálico).
-    """
-    n = int(SR * dur)
-    L = max(2, int(round(SR / f)))
-    rng = np.random.default_rng(int(f * 13) % 9999)
-    buf = rng.standard_normal(L)
-    if pua < 1.0:                       # suaviza el pulso = púa más blanda
-        for _ in range(int((1 - pua) * 8)):
-            buf = (buf + np.roll(buf, 1)) * 0.5
-    buf -= buf.mean()                   # sin continua, o el altavoz "salta"
-    buf /= (np.max(np.abs(buf)) + 1e-9)
-    y = np.empty(n)
-    idx = 0
-    ant = 0.0
-    for i in range(n):
-        v = buf[idx]
-        y[i] = v
-        # filtro de un polo dentro del lazo: cuanto más bajo `brillo`, antes
-        # se apagan los armónicos agudos (que es lo que hace una cuerda real)
-        nuevo = sostenido * ((1 - brillo) * ant + brillo * v)
-        ant = v
-        buf[idx] = nuevo
-        idx = (idx + 1) % L
-    # cuerpo de la caja: un realce suave alrededor de 180 Hz
-    return y * np.exp(-t_de(n) * 0.22)
-
-
-def rasgueo(notas, dur, retardo=0.021, brillo=0.5, sostenido=0.9994, pua=0.45):
-    """Varias cuerdas con unos milisegundos de diferencia.
-
-    🔑 Ese desfase ES lo que separa "guitarra" de "sintetizador": un acorde
-    con todas las notas exactamente a la vez no suena a nadie tocando.
-    """
-    b = lienzo(dur + 0.2)
-    for k, f in enumerate(notas):
-        x = cuerda(f, dur - k * retardo, brillo, sostenido, pua)
-        pon(b, x, k * retardo, 1.0 / (1 + 0.18 * k))
-    return b[:int(SR * dur)]
-
-
-def g_sola():
-    """G1 · GUITARRA SOLA — solo el acorde, sin nada antes. Lo que pidió, en
-    su versión más limpia: la firma es la cuerda y nada más."""
-    b = lienzo()
-    ac = rasgueo([D3, A3, D4, Fs4], 3.9, 0.024, .52, .99955, .45)
-    pon(b, cola(ac, 1.7, .30), GOLPE - 0.02, 0.95)
-    return normaliza(b)
-
-
-def g_clics():
-    """G2 · GUITARRA + CLICS — se conservan los tres clics que aceleran (eso
-    NO era el 'wooop'; el wooop era el golpe de graves) y desembocan en el
-    acorde. Mantiene la idea de mecanismo que encaja."""
+def c3_sin_woop():
+    """03B · EL 03 SIN EL WOOOOP — línea por línea el 03, menos el golpe de
+    graves con caída de tono. Misma duración que el original."""
     b = lienzo()
     for k, seg in enumerate((GOLPE - 0.62, GOLPE - 0.34, GOLPE - 0.15)):
         clic = paso_alto(ruido(0.05), 1800) * env(int(SR * .05), .0008, .02, 3.0)
-        pon(b, clic, seg, 0.26 + 0.10 * k)
-    ac = rasgueo([D3, A3, D4, Fs4], 3.9, 0.024, .52, .99955, .45)
-    pon(b, cola(ac, 1.7, .30), GOLPE - 0.02, 0.95)
+        pon(b, clic, seg, 0.30 + 0.12 * k)
+    pon(b, cola(tono(D3, 2.6, .004, 1.7, 1.5, (1.0, .30, .12)), 1.3, .26),
+        GOLPE, 0.66)
+    pon(b, cola(tono(Fs4, 1.8, .004, 1.0, 1.9, (1.0, .18)), 1.2, .34),
+        GOLPE + 0.02, 0.20)
     return normaliza(b)
 
 
-def g_peso():
-    """G3 · GUITARRA + PESO — igual que G1 pero con un grave debajo. ⚠️ El
-    grave es de NOTA FIJA (la misma D2 del acorde) y entra suave: sostiene sin
-    'wup', porque lo que hacía el 'wup' era la caída de tono, no el grave."""
+def c3_sin_woop_largo():
+    """03C · IGUAL, PERO MÁS LARGO — mismos generadores, mismos armónicos,
+    mismas ganancias. Lo único que cambia son los tiempos de caída (1,7→2,9 y
+    1,0→1,9) y la cola de reverberación. El timbre es el mismo: solo tarda más
+    en apagarse."""
     b = lienzo()
-    grave = tono(D2, 2.6, .010, 1.9, 1.5, (1.0, .30, .08))
-    pon(b, grave, GOLPE - 0.02, 0.52)
-    ac = rasgueo([D3, A3, D4, Fs4], 3.9, 0.024, .52, .99955, .45)
-    pon(b, cola(ac, 1.7, .30), GOLPE - 0.02, 0.90)
+    for k, seg in enumerate((GOLPE - 0.62, GOLPE - 0.34, GOLPE - 0.15)):
+        clic = paso_alto(ruido(0.05), 1800) * env(int(SR * .05), .0008, .02, 3.0)
+        pon(b, clic, seg, 0.30 + 0.12 * k)
+    pon(b, cola(tono(D3, 4.0, .004, 2.9, 1.5, (1.0, .30, .12)), 1.9, .26),
+        GOLPE, 0.66)
+    pon(b, cola(tono(Fs4, 3.0, .004, 1.9, 1.9, (1.0, .18)), 1.7, .34),
+        GOLPE + 0.02, 0.20)
     return normaliza(b)
 
 
 CANDIDATOS = [('01_campana', c1_campana), ('02_dos_notas', c2_dos_notas),
               ('03_precision', c3_precision), ('04_grafito', c4_grafito),
               ('05_teseracto', c5_teseracto), ('06_ascenso', c6_ascenso),
-              ('G1_guitarra_sola', g_sola), ('G2_guitarra_clics', g_clics),
-              ('G3_guitarra_peso', g_peso)]
+              ('03B_sin_woop', c3_sin_woop),
+              ('03C_sin_woop_largo', c3_sin_woop_largo)]
 
 
 def main():
