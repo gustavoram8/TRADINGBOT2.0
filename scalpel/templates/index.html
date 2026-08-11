@@ -5,8 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tradeable Academy — Trade Analysis</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js" defer></script>
+  <!-- Vendorizadas (2026-08-10) y con versión FIJADA. Además de quitar al
+       tercero del camino, esto arregla un fallo silencioso: la URL vieja de
+       marked pedía /marked.min.js SIN versión, y marked dejó de publicar ese
+       archivo en la raíz del paquete a partir de la v5 (2023) — jsdelivr sin
+       versión sirve la última, así que esa etiqueta devolvía 404 y el guard
+       `window.marked ? … : texto plano` lo tapaba sin ruido. DomPurify es
+       defensa (sanitiza el HTML del análisis): una capa de seguridad no debe
+       depender de que un CDN responda. -->
+  <script src="/static/vendor/marked-18.0.9.umd.js" defer></script>
+  <script src="/static/vendor/dompurify-3.4.13.min.js" defer></script>
   <script>
   // Health-check: if the main JS never finishes initializing (truncated page,
   // network glitch, CDN timeout), auto-reload ONCE so the user doesn't get
