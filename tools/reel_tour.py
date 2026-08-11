@@ -543,7 +543,7 @@ ROTULOS = {k: v for k, v in T.items() if isinstance(v, tuple)}
 # Cada herramienta necesita su propio tiempo: el analizador enseña 4 pasos y
 # la Cámara de Tessera tarda ~2 s solo en abrir las paredes.
 DURACION = {'analizador': 3.2, 'preflight': 5.4, 'quiz': 4.4, 'chalkboard': 2.8,
-            'synapse': 7.8, 'foro': 2.2, 'cosmeticos': 2.6, 'tessera': 3.2}
+            'synapse': 7.8, 'foro': 2.2, 'cosmeticos': 2.6, 'tessera': 4.8}
 
 # 🔑 Desde qué segundo de SU grabación se mira cada escena.
 # Por defecto se toma el trozo inicial, porque el final de la ventana lo ocupa
@@ -551,13 +551,16 @@ DURACION = {'analizador': 3.2, 'preflight': 5.4, 'quiz': 4.4, 'chalkboard': 2.8,
 # que enseñar —el remate— pasa al final: el quiz tarda ~4 s en llegar a la
 # pregunta y Synapse ~5 s en abrir el dossier. Sin este desfase el reel cortaba
 # justo ANTES de lo que el dueño pidió ver.
-# (y en Tessera la Cámara tarda ~2 s en levantar sus paredes: empezando en el
-#  clic, el reel enseñaba una pantalla casi negra)
+# En Tessera la Cámara tarda ~2 s en levantar sus paredes. Se probó saltárselas
+# (empezaba en negro y parecía un fallo), pero el dueño pidió justo lo
+# contrario: que se VEA abrirse. Así que el tramo empieza en el clic y dura lo
+# suficiente para las paredes MÁS la constelación ya montada — un reveal que
+# empieza oscuro solo funciona si después se queda el tiempo del premio.
 # ⚠️ Synapse va a 0 A PROPÓSITO: es la única escena que empieza por el
 #    principio, porque su principio ES lo que hay que enseñar — la escultura 3D
 #    girando y el "Fire a synapse" abriendo el mapa de metodologías. Pedido
 #    expreso del dueño, y por eso su tramo dura casi 8 s.
-DESDE = {'preflight': 1.0, 'quiz': 3.6, 'synapse': 0.0, 'tessera': 1.9}
+DESDE = {'preflight': 1.0, 'quiz': 3.6, 'synapse': 0.0, 'tessera': 0.1}
 
 PAGINA = """<!doctype html><meta charset=utf-8><style>@@FUENTES@@
 *{box-sizing:border-box;margin:0;padding:0}
