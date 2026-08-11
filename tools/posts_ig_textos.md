@@ -371,13 +371,33 @@ anuncio y lo que contradice el descargo del propio pie.
 **Nombre** (el campo que Instagram indexa al buscar, distinto del @):
 `Tradeable Academy · ICT · SMC`
 
-**Bio** (mientras el sitio siga cerrado):
+**Bio** (mientras el sitio siga cerrado) — **128 caracteres de los 150**:
 
-> Not just an academy — the whole ecosystem.
-> Upload your chart. Our AI corrects you in your own methodology.
-> ICT · SMC · Wyckoff · Price Action
-> Educational content — not financial advice.
+> This is not a course. It's an ecosystem.
+> 🧠 AI · 📚 Methodologies · ✅ Checklists
+> 🎓 Academy · 💬 Forum · 🖊 Chalkboard
 > 👇 Opening soon
+
+Es la que se eligió en su día (la variante compacta con dos líneas de iconos),
+con la última línea cambiada: la lista de espera se descartó.
+
+🔑 **La primera línea es exactamente la que abre el reel.** Quien llega desde el
+vídeo lee en el perfil la misma frase que acaba de oír — eso es lo que hace que
+una marca se sienta una sola cosa y no dos piezas sueltas.
+
+⚠️ **Los emoji aquí son estructura, no decoración.** Uno por herramienta, en
+fila, dejan leer el inventario de un vistazo. La lluvia de emojis está quemada
+en trading; esto no es lluvia.
+
+⚠️ **El descargo educativo NO cabe en la bio.** Añadir una línea tipo
+"Educational only" la deja en 151 caracteres en el peor caso (algunos contadores
+cobran doble por emoji). Va en cada caption y en el propio reel, que es donde
+tiene efecto real.
+
+⚠️ **La bio va en el mismo idioma que el arte.** Si algún día se vuelve al
+español, es: *"No es un curso. Es un ecosistema. / 🧠 IA · 📚 Metodologías ·
+✅ Checklists / 🎓 Academia · 💬 Foro · 🖊 Pizarra / 👇 Abriendo pronto"* —
+120 caracteres.
 
 **Foto de perfil:** la "a" blanca sobre el azul de marca (`avatar.png`).
 
