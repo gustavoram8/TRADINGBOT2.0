@@ -394,6 +394,23 @@ cada mes, si un mes no hay tanda el sistema se ve muerto).
   Cada uno = tema CSS + slug en `CAMO_SLUGS`/`CAMO_READY`/`CAMO_NAMES` + una línea en
   `CAMO_WHEEL_DESCS` ×4 idiomas; `_publish_roulette_camos()` lo publica solo al arrancar.
 
+## 📦 LIBRERÍAS VENDORIZADAS — Synapse/Chalkboard sin CDNs (2026-08-10)
+three.js r128 + su GLTFLoader, fabric v5.3.1 y jspdf 2.5.1 viven en
+`scalpel/static/vendor/` y se cargan PRIMERO en local; los CDN quedan de respaldo. Mismas
+versiones exactas → cero cambio visual/funcional; app.py intacto (PDF de Synapse 42/42).
+- 🔴 Synapse cargaba DOS libs externas (el GLTFLoader venía aparte) y ANTES no tenía ningún
+  fallback; los fallback de fabric @5.3.1 en jsdelivr/unpkg eran **URLs muertas** (npm nunca
+  tuvo 5.3.1 — la "cadena de 3 CDN" era 1).
+- ⚠️ `raw.githubusercontent` NO sirve como `<script>` (text/plain+nosniff) → el respaldo del
+  tag de fabric va vía `cdn.jsdelivr.net/gh`. El dist del tag v5.3.1 se autodeclara "5.3.0"
+  (tageo sin regenerar; es el mismo artefacto que espeja cdnjs).
+- ⚠️ El velo de carga de Synapse dura **10 s a propósito** (LOAD_MS; cuenta hasta 100% aunque
+  los assets ya estén) — un test que espere menos acusa "atascado" a algo que solo cuenta.
+- `tools/test_vendor.py` **12/12** (navegador con TODA la red externa cortada: Synapse pinta,
+  Chalkboard dibuja). Marked/DomPurify (foro) siguen en CDN — fuera del alcance pedido.
+- Descarga sin CDN en este contenedor: registro de npm (tarballs) y raw.githubusercontent SÍ
+  pasan el proxy; cdnjs/jsdelivr/unpkg no.
+
 ## 📱 REDES SOCIALES — kit de marca generado (2026-08-04)
 Instagram y TikTok abiertos por el dueño, 0 seguidores, 0 publicado. Hecho:
 - **`tools/gen_posts_ig.py`** (+ `tools/rasteriza_posts.py` para el PNG) genera
