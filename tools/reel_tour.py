@@ -78,6 +78,18 @@ def arranca_servidor(tmp):
         u.email_canonical = u.email
         u.plan = 'premium'
         A.db.session.commit()
+        if not A.PreflightChecklist.query.filter_by(user_id=u.id).count():
+            A.db.session.add(A.PreflightChecklist(
+                user_id=u.id, name='ICT — London session',
+                config={'confluences': [
+                    {'id': 'c1', 'label': 'HTF bias aligned'},
+                    {'id': 'c2', 'label': 'Liquidity swept'},
+                    {'id': 'c3', 'label': 'Displacement + BOS'},
+                    {'id': 'c4', 'label': 'FVG in premium/discount'},
+                    {'id': 'c5', 'label': 'Inside the kill zone'},
+                    {'id': 'c6', 'label': 'Stop below the swept low'}],
+                    'min_go': 5, 'min_caution': 3}))
+            A.db.session.commit()
     threading.Thread(target=lambda: A.app.run(port=PUERTO, threaded=True,
                                               use_reloader=False),
                      daemon=True).start()
@@ -208,49 +220,75 @@ def graba():
         escena('analizador', analizador, lambda: (tab('analyze'),
                                                   pg.wait_for_timeout(1500)))
 
-        # 2 · PRE-FLIGHT: se pasa a "By project" y se arma una lista
+        # 2 · PRE-FLIGHT: el encargo del dueño era ver cómo se ARMA la lista y
+        #     cómo se van marcando las confluencias, así que la escena hace las
+        #     dos: constructor → nombre → preset → guardar → tildar.
+        #     ⚠️ `.pf-box` NO existe hasta que hay una lista ABIERTA (el tablero
+        #     nace con `display:none`), por eso la versión anterior no tildaba
+        #     nada: el bucle salía en la primera vuelta.
         def preflight():
-            pg.evaluate("""() => {
-              const t = [...document.querySelectorAll('.pf-tab')]
-                .find(x => /project|proyecto/i.test(x.textContent));
-              if (t) t.click();
-            }""")
-            pg.wait_for_timeout(1100)
-            for sel in ('.pf-new', '.pf-add', '.pf-builder-rows input',
-                        '.pf-field input', '.pf-box'):
-                els = pg.query_selector_all(sel)
-                for e in els[:4]:
-                    try:
-                        e.click()
-                        pg.wait_for_timeout(430)
-                    except Exception:
-                        pass
-                if els:
-                    break
-            pg.wait_for_timeout(700)
-        escena('preflight', preflight, lambda: (tab('preflight'),
-                                                pg.wait_for_timeout(2000)))
+            def clic(sel, i=0, espera=700):
+                ok = pg.evaluate("""([s, i]) => {
+                  const e = [...document.querySelectorAll(s)]
+                    .filter(x => x.offsetParent)[i];
+                  if (!e) return false;
+                  e.scrollIntoView({block: 'center'}); e.click(); return true;
+                }""", [sel, i])
+                pg.wait_for_timeout(espera if ok else 120)
+                return ok
 
-        # 3 · QUIZ: se ATRAVIESA la bienvenida (si no, se ve la mascota
-        #     gigante llenando la pantalla) y se responde UNA pregunta
-        def quiz():
-            op = pg.query_selector('.quiz-welcome-opt')
-            if op:
-                op.click()
-                pg.wait_for_timeout(1600)
-            for sel in ('.quiz-topic', '.quiz-card', '.quiz-start',
-                        '.quiz-mode'):
-                e = pg.query_selector(sel)
-                if e:
-                    e.click()
-                    pg.wait_for_timeout(1500)
+            clic('.proj-tile.tile-new', 0, 900)           # + nueva lista
+            pg.click('#pf-builder-name')
+            pg.type('#pf-builder-name', 'NY Open — long', delay=52)
+            pg.wait_for_timeout(450)
+            clic('#pf-template-btns .proj-btn', 2, 950)   # un preset la rellena
+            clic('#pf-builder-save', 0, 1300)             # y queda guardada
+            for i in range(5):                            # ahora sí, a tildar
+                if not clic('.pf-row', i, 440):
                     break
-            o = pg.query_selector_all('.quiz-opt')
-            if o:
-                o[0].click()
-                pg.wait_for_timeout(1400)
+            pg.wait_for_timeout(900)
+        escena('preflight', preflight, lambda: (tab('preflight'),
+                                                pg.wait_for_timeout(2400)))
+
+        # 3 · QUIZ: el camino REAL hasta responder.
+        #     ⚠️ La opción (a) de la bienvenida es "test what I studied in
+        #     Synapse" y lleva a una pantalla VACÍA con un botón "Go to
+        #     Synapse" — era la que salía en la versión anterior. La buena es
+        #     la (b), "verify the knowledge I already have".
+        def quiz():
+            def pulsa(sel, i=0, espera=1700):
+                ok = pg.evaluate("""([s, i]) => {
+                  const e = [...document.querySelectorAll(s)]
+                    .filter(x => x.offsetParent)[i];
+                  if (!e) return false;
+                  e.scrollIntoView({block: 'center'}); e.click(); return true;
+                }""", [sel, i])
+                pg.wait_for_timeout(espera if ok else 120)
+                return ok
+            pulsa('.quiz-welcome-opt', 1, 1200)      # (b), no la (a)
+            pulsa('.quiz-method-card', 0, 1000)      # ICT
+            pulsa('.quiz-topic-card', 0, 1100)       # Order Blocks
+            pulsa('.quiz-placement-cta', 0, 2000)    # arranca el test
+            pg.wait_for_timeout(1400)                # se lee la pregunta
+            # ⚠️ Las opciones se barajan (es la defensa anti-trampa), así que
+            # pulsar "la segunda" acierta o falla según el día. Se pulsa la
+            # BUENA, que el propio DOM marca con data-ok, y así el reel siempre
+            # remata con el "Correct!" verde y su explicación.
+            pulsa('.quiz-opt[data-ok="true"]', 0, 2100)
+            pg.wait_for_timeout(700)
+
+        def a_quiz():
+            tab('quiz')
+            pg.wait_for_timeout(2300)
+            # 🔑 El quiz ocupa el tercio superior de una pantalla de 1600 px y
+            # el resto queda vacío: encuadrado así, el reel enseñaría sobre todo
+            # el pie de página. Se amplía LA PÁGINA (nítido, se re-renderiza)
+            # en vez de ampliar el vídeo en el montaje (borroso, es reescalado).
+            pg.evaluate("document.documentElement.style.zoom = '1.55'")
             pg.wait_for_timeout(600)
-        escena('quiz', quiz, lambda: (tab('quiz'), pg.wait_for_timeout(2200)))
+        escena('quiz', quiz, a_quiz)
+        pg.evaluate("document.documentElement.style.zoom = ''")
+        pg.wait_for_timeout(400)
 
         # 4 · CHALKBOARD: con la herramienta LÍNEA DE TENDENCIA, trazada
         #     tramo a tramo — no el rectángulo de antes
@@ -280,27 +318,46 @@ def graba():
         escena('chalkboard', pizarra, lambda: (tab('scalper'),
                                                pg.wait_for_timeout(4500)))
 
-        # 5 · SYNAPSE: se DISPARA la sinapsis (el prompt tapaba el cerebro) y
-        #     luego se entra a una metodología para ver la biblioteca
+        # 5 · SYNAPSE: disparar → entrar a una metodología → ABRIR un
+        #     concepto, que es lo que enseña qué hay dentro de la biblioteca
         def synapse():
-            pg.mouse.click(ANCHO * .5, ALTO * .42)
-            pg.wait_for_timeout(1800)
+            pg.mouse.click(ANCHO * .5, ALTO * .42)          # dispara la sinapsis
+            pg.wait_for_timeout(2100)
             pg.evaluate("""() => { const p =
                 document.querySelector('.syn-fire-prompt');
                 if (p) p.style.opacity = '0'; }""")
-            for i in range(14):
-                pg.mouse.move(ANCHO * (.5 + .014 * i), ALTO * (.44 - .003 * i))
-                pg.wait_for_timeout(45)
-            pg.mouse.click(ANCHO * .5, ALTO * .30)
-            pg.wait_for_timeout(2000)
-            c = pg.query_selector('.syn-node, .synlib-card, .syn-card')
-            if c:
-                try:
-                    c.click()
-                    pg.wait_for_timeout(1600)
-                except Exception:
-                    pass
-            pg.wait_for_timeout(600)
+            pg.evaluate("""() => {
+              const n = [...document.querySelectorAll('.syn-node-label')]
+                .find(e => /SMC|ICT/i.test(e.textContent))
+                || document.querySelector('.syn-node-label');
+              if (n) n.click();
+            }""")
+            pg.wait_for_timeout(2600)                       # se abre la biblioteca
+            # y se abre una NEURONA concreta: ahí está el dossier del concepto.
+            # ⚠️ Dos trampas encadenadas aquí. Un clic a ciegas en el centro de
+            # `.syn-lib-stage` cae en el vacío entre nodos y no abre nada (era
+            # lo que pasaba antes). Y apuntar al centro del `<g>.syn-neuron`
+            # TAMPOCO sirve: el grupo contiene el cuerpo y su etiqueta 24px más
+            # abajo, así que el centro de su caja cae justo en el hueco entre
+            # los dos — y en SVG solo hay impacto sobre geometría pintada, no
+            # sobre la caja. Se apunta al cuerpo (`.syn-soma`).
+            caja = pg.evaluate("""() => {
+                const s = document.querySelectorAll('.syn-neuron .syn-soma');
+                if (!s.length) return null;
+                const r = s[Math.min(4, s.length - 1)].getBoundingClientRect();
+                return {x: r.x + r.width / 2, y: r.y + r.height / 2}; }""")
+            if caja:
+                pg.mouse.move(caja['x'], caja['y'])
+                pg.wait_for_timeout(500)
+                pg.mouse.click(caja['x'], caja['y'])
+                pg.wait_for_timeout(1700)                  # el dossier, abierto
+                # y se pasa una página: los 4 puntos del pie dejan claro que
+                # cada concepto es un cuadernillo, no una ficha suelta
+                pg.evaluate("""() => { const b =
+                    document.getElementById('syn-book-next');
+                    if (b) b.click(); }""")
+                pg.wait_for_timeout(1800)
+            pg.wait_for_timeout(700)
         escena('synapse', synapse, lambda: (tab('synapse'),
                                             pg.wait_for_timeout(14500)))
 
@@ -485,8 +542,18 @@ ROTULOS = {k: v for k, v in T.items() if isinstance(v, tuple)}
 
 # Cada herramienta necesita su propio tiempo: el analizador enseña 4 pasos y
 # la Cámara de Tessera tarda ~2 s solo en abrir las paredes.
-DURACION = {'analizador': 3.6, 'preflight': 3.2, 'quiz': 3.2, 'chalkboard': 3.2,
-            'synapse': 3.4, 'foro': 2.6, 'cosmeticos': 3.2, 'tessera': 4.2}
+DURACION = {'analizador': 3.2, 'preflight': 5.4, 'quiz': 4.4, 'chalkboard': 2.8,
+            'synapse': 5.2, 'foro': 2.2, 'cosmeticos': 2.6, 'tessera': 3.2}
+
+# 🔑 Desde qué segundo de SU grabación se mira cada escena.
+# Por defecto se toma el trozo inicial, porque el final de la ventana lo ocupa
+# la preparación de la escena siguiente. Pero en tres herramientas lo que hay
+# que enseñar —el remate— pasa al final: el quiz tarda ~4 s en llegar a la
+# pregunta y Synapse ~5 s en abrir el dossier. Sin este desfase el reel cortaba
+# justo ANTES de lo que el dueño pidió ver.
+# (y en Tessera la Cámara tarda ~2 s en levantar sus paredes: empezando en el
+#  clic, el reel enseñaba una pantalla casi negra)
+DESDE = {'preflight': 1.0, 'quiz': 3.6, 'synapse': 2.6, 'tessera': 1.9}
 
 PAGINA = """<!doctype html><meta charset=utf-8><style>@@FUENTES@@
 *{box-sizing:border-box;margin:0;padding:0}
@@ -497,8 +564,11 @@ video{position:absolute;left:50%;top:50%;width:@@W@@px;height:@@H@@px;
   transform-origin:center center;translate:-50% -50%}
 #vig{position:absolute;inset:0;pointer-events:none;
   background:radial-gradient(ellipse 88% 72% at 50% 46%,transparent 54%,rgba(0,0,0,.38))}
+/* ⚠️ El velo tiene que aguantar una escena de fondo CLARO (la tienda de
+   cosméticos no tiene modo oscuro): con el degradado suave de antes, el titular
+   quedaba blanco sobre gris medio y no se leía. Se oscurece antes y más. */
 #scrim{position:absolute;left:0;right:0;bottom:0;height:50%;pointer-events:none;
-  background:linear-gradient(transparent,rgba(0,0,0,.30) 32%,rgba(0,0,0,.88) 76%)}
+  background:linear-gradient(transparent,rgba(0,0,0,.34) 26%,rgba(0,0,0,.92) 62%)}
 #rot{position:absolute;left:70px;right:70px;bottom:250px}
 #rot .g{font:900 72px/1.02 Inter,sans-serif;letter-spacing:-.03em;
   text-shadow:0 8px 40px rgba(0,0,0,.9)}
@@ -626,11 +696,12 @@ def monta():
         nombre, idx = h['n'], h['i']
         v0 = porIdx[idx][2] + 0.16          # justo después de que acaba el flash
         tope = min(dur_src, sig[idx] - 0.25)
+        dur = DURACION.get(nombre, 2.6)
+        # el desfase se recorta si no cabe: antes de dejar la escena fuera del
+        # reel es preferible enseñarla desde donde se pueda
+        v0 = min(v0 + DESDE.get(nombre, 0.0), max(v0, tope - dur))
         if tope - v0 < 0.8:          # escena demasiado corta: se descarta
             continue
-        # ⚠️ se toma el trozo INICIAL, no el central: el final de la ventana lo
-        # ocupa la preparación de la escena siguiente
-        dur = DURACION.get(nombre, 2.6)
         v1 = min(tope, v0 + dur)
         g, p = ROTULOS.get(nombre, (nombre, ''))
         plan.append({'r0': round(r, 3), 'r1': round(r + dur, 3),
