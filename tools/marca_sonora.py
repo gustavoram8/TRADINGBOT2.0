@@ -266,58 +266,59 @@ def c6_ascenso():
     return normaliza(b)
 
 
-# ══ EL 03, SIN EL "WOOOOP" ═══════════════════════════════════════════════
-# El dueño eligió el 03 y pidió UNA cosa: "el principio es como un WOOOOP, eso
-# no va, solo va el sonido de guitarra final".
+# ══ LA MARCA SONORA ELEGIDA: EL 03, PELADO ═══════════════════════════════
+# De los seis, el dueño eligió el 03 y fue quitándole capas en dos pasadas:
+#   · "el principio es como un WOOOOP, eso no va" → era el `sub(104, 44, ...)`,
+#     un golpe de graves cuyo TONO CAE de 104 a 44 Hz. Una caída de tono es
+#     exactamente lo que el oído lee como "wup".
+#   · "se escucha algo como unas metras cayendo, como si se te cayera una
+#     moneda al suelo 2 o 3 veces" → eran los tres clics que aceleraban.
+# Queda SOLO la cuerda. Y eso es lo correcto para un audio logo: cuanto menos
+# elementos, más fácil de reconocer y más difícil de confundir con otro.
 #
-# 🔑 Ese "wooop" era el `sub(104, 44, ...)`: un golpe de graves cuyo TONO CAE
-#    de 104 a 44 Hz. Una caída de tono es exactamente lo que el oído lee como
-#    "wup". Así que quitar el wooop es borrar ESA línea y nada más — todo lo
-#    demás (los clics, la nota grave, el brillo agudo, la reverberación, las
-#    ganancias) queda idéntico al 03 que le gustó.
-#
-# ⚠️ Se intentó primero rehacer la cuerda con Karplus-Strong para poder
-#    alargarla, y el dueño lo rechazó: sonaba a otra cosa, no al 03. Lección:
-#    cuando alguien aprueba un sonido y pide quitarle UN elemento, se quita ese
-#    elemento; no se reconstruye el sonido "mejor". Por eso el alargado de
-#    abajo toca SOLO los tiempos de caída, no cómo se genera el timbre.
+# ⚠️ DOS LECCIONES, y la segunda me costó dos rondas:
+#   1. Cuando alguien aprueba un sonido y pide quitarle UN elemento, se quita
+#      ese elemento — no se reconstruye el sonido "mejor". Se intentó rehacer
+#      la cuerda con Karplus-Strong para poder alargarla y el dueño lo rechazó
+#      de plano: sonaba a otra cosa. Por eso `largo` toca SOLO los tiempos de
+#      caída, nunca cómo se genera el timbre.
+#   2. Yo defendí los clics ("eso no era el wooop") en vez de preguntarme si
+#      además sobraban. Tenía razón en el diagnóstico y me equivoqué en la
+#      conclusión: que un elemento no sea el que molestaba no significa que
+#      haga falta.
 
 
-def c3_sin_woop():
-    """03B · EL 03 SIN EL WOOOOP — línea por línea el 03, menos el golpe de
-    graves con caída de tono. Misma duración que el original."""
+# Los tres elementos del 03, para poder quitarlos de uno en uno sin reescribir
+# nada: (1) los CLICS que aceleran, que el dueño describió como "unas metras
+# cayendo, como si se te cayera una moneda al suelo 2 o 3 veces" → fuera; (2)
+# el GOLPE DE GRAVES con caída de tono, el "wooop" → fuera; (3) la CUERDA, que
+# es lo único que se queda. `largo` solo estira los tiempos de caída.
+def c3_variante(clics=False, woop=False, largo=False):
     b = lienzo()
-    for k, seg in enumerate((GOLPE - 0.62, GOLPE - 0.34, GOLPE - 0.15)):
-        clic = paso_alto(ruido(0.05), 1800) * env(int(SR * .05), .0008, .02, 3.0)
-        pon(b, clic, seg, 0.30 + 0.12 * k)
-    pon(b, cola(tono(D3, 2.6, .004, 1.7, 1.5, (1.0, .30, .12)), 1.3, .26),
+    if clics:
+        for k, seg in enumerate((GOLPE - 0.62, GOLPE - 0.34, GOLPE - 0.15)):
+            clic = (paso_alto(ruido(0.05), 1800)
+                    * env(int(SR * .05), .0008, .02, 3.0))
+            pon(b, clic, seg, 0.30 + 0.12 * k)
+    if woop:
+        pon(b, sub(104, 44, 1.3, 0.7), GOLPE, 0.92)
+    d1, c1, r1 = (4.0, 2.9, 1.9) if largo else (2.6, 1.7, 1.3)
+    d2, c2, r2 = (3.0, 1.9, 1.7) if largo else (1.8, 1.0, 1.2)
+    pon(b, cola(tono(D3, d1, .004, c1, 1.5, (1.0, .30, .12)), r1, .26),
         GOLPE, 0.66)
-    pon(b, cola(tono(Fs4, 1.8, .004, 1.0, 1.9, (1.0, .18)), 1.2, .34),
+    pon(b, cola(tono(Fs4, d2, .004, c2, 1.9, (1.0, .18)), r2, .34),
         GOLPE + 0.02, 0.20)
     return normaliza(b)
 
 
-def c3_sin_woop_largo():
-    """03C · IGUAL, PERO MÁS LARGO — mismos generadores, mismos armónicos,
-    mismas ganancias. Lo único que cambia son los tiempos de caída (1,7→2,9 y
-    1,0→1,9) y la cola de reverberación. El timbre es el mismo: solo tarda más
-    en apagarse."""
-    b = lienzo()
-    for k, seg in enumerate((GOLPE - 0.62, GOLPE - 0.34, GOLPE - 0.15)):
-        clic = paso_alto(ruido(0.05), 1800) * env(int(SR * .05), .0008, .02, 3.0)
-        pon(b, clic, seg, 0.30 + 0.12 * k)
-    pon(b, cola(tono(D3, 4.0, .004, 2.9, 1.5, (1.0, .30, .12)), 1.9, .26),
-        GOLPE, 0.66)
-    pon(b, cola(tono(Fs4, 3.0, .004, 1.9, 1.9, (1.0, .18)), 1.7, .34),
-        GOLPE + 0.02, 0.20)
-    return normaliza(b)
-
-
-CANDIDATOS = [('01_campana', c1_campana), ('02_dos_notas', c2_dos_notas),
-              ('03_precision', c3_precision), ('04_grafito', c4_grafito),
-              ('05_teseracto', c5_teseracto), ('06_ascenso', c6_ascenso),
-              ('03B_sin_woop', c3_sin_woop),
-              ('03C_sin_woop_largo', c3_sin_woop_largo)]
+CANDIDATOS = [
+    ('01_campana', c1_campana), ('02_dos_notas', c2_dos_notas),
+    ('03_precision', c3_precision), ('04_grafito', c4_grafito),
+    ('05_teseracto', c5_teseracto), ('06_ascenso', c6_ascenso),
+    # los dos que quedan vivos: solo la cuerda, corta y larga
+    ('03D_solo_cuerda', lambda: c3_variante()),
+    ('03E_solo_cuerda_larga', lambda: c3_variante(largo=True)),
+]
 
 
 def main():
