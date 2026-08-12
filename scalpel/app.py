@@ -3903,11 +3903,20 @@ IMPORTANT — TRADING SLANG IS ON-TOPIC. The following words and expressions are
 BLOCK (allowed=false) if the content contains ANY of:
 - Insults, harassment, personal attacks, name-calling, hate speech, or threats toward another person
 - Aggressive vulgar/profane language (sexual obscenities, slurs)
-- Content clearly UNRELATED to trading or markets (politics, religion debates, dating, random chatter, unrelated advertising, links to unrelated sites). When in doubt, ALLOW.
+- Content clearly UNRELATED to trading or markets AND unrelated to this platform (politics, religion debates, dating, random chatter, unrelated advertising, links to unrelated sites). When in doubt, ALLOW.
 - Spam, scams, "pump" schemes, signal-selling solicitation, or referral farming
 - Sexual or graphic content
 
-ALLOW (allowed=true) normal trading discussion — including content that is critical of a strategy, an indicator, or a prop firm — as long as it stays civil and on-topic. Mild venting about losses or frustration with the market is fine. Posts that share or ask about a chart, setup, or trade are ALWAYS allowed. On-topic + civil = allowed. When in doubt, ALLOW.
+THE PLATFORM ITSELF IS ON-TOPIC. This forum lives inside Tradeable Academy, a trading education platform, and talking about it — or about what a member did, earned or bought in it — is ALWAYS on-topic. Never flag any of this as unrelated:
+  • camos / skins / cosmetics / frames / cursors — the site's visual themes and profile decorations. "¿Qué les parece mi camo?", "look at my new frame", "which cursor did you get?" are normal posts.
+  • the monthly roulette, the cosmetics shop, giveaways and seasonal items
+  • ranks, XP, medals, streaks, the hall of fame, certificates
+  • the Quiz, the Daily Challenge and their questions or scores
+  • the Analyzer (screenshot analysis), Synapse, the Chalkboard whiteboard, Pre-Flight checklists, Kill Zones, the economic calendar
+  • plans, prices, the forum itself, bugs, feature requests, feedback and questions about how something works
+  • greetings, introductions and members welcoming each other
+
+ALLOW (allowed=true) normal trading discussion — including content that is critical of a strategy, an indicator, a prop firm, or of this platform — as long as it stays civil. Mild venting about losses or frustration with the market is fine. Posts that share or ask about a chart, setup, or trade are ALWAYS allowed. On-topic + civil = allowed. When in doubt, ALLOW.
 
 Respond with ONLY a raw JSON object, no markdown, exactly:
 {"allowed": true, "category": "ok", "reason": ""}

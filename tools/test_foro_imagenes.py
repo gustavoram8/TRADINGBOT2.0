@@ -234,6 +234,25 @@ def main():
     ]:
         check(frase in P, 'el prompt dice: %s' % motivo)
 
+    print('\n══ 7b · el prompt de TEXTO sabe que la plataforma es on-topic ══')
+    # 🔴 Lo cazó el dueño: subió una captura del quiz con el mensaje "¿Qué les
+    # parece mi camo?" y lo bloqueó el moderador de TEXTO por "unrelated to
+    # trading". Se arregló el prompt de imágenes en el punto 18 y se olvidó el
+    # de texto, que es el que corre PRIMERO.
+    TP = A.FORUM_TEXT_MOD_PROMPT
+    for frase, motivo in [
+        ('THE PLATFORM ITSELF IS ON-TOPIC', 'declara la plataforma como tema válido'),
+        ('camo', 'camos'),
+        ('roulette', 'ruleta'),
+        ('ranks, XP', 'rangos y XP'),
+        ('Chalkboard', 'pizarra'),
+        ('bugs, feature requests', 'reportes y sugerencias'),
+        ('greetings, introductions', 'saludos y presentaciones'),
+        ('UNRELATED to trading or markets AND unrelated to this platform',
+         'el bloqueo por off-topic exige que TAMPOCO sea de la plataforma'),
+    ]:
+        check(frase in TP, 'el prompt de texto cubre: %s' % motivo)
+
     print('\n══ 8 · i18n ×4 ══')
     html = io.open(os.path.join(RAIZ, 'scalpel', 'templates', 'index.html'),
                    encoding='utf-8').read()
