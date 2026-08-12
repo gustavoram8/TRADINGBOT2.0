@@ -1784,8 +1784,11 @@
     /* Generic data table (trades + comparison) — spreadsheet style */
     .pf-table-wrap { margin-top: 16px; overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
     .pf-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    /* ⚠️ 12 px de relleno lateral × 11 columnas dejaban la tabla 26 px por
+       encima del hueco (medido: 820 en 794) y la columna de P&L —el número que
+       más se mira— quedaba cortada. Con 8 px cabe entera y se sigue leyendo. */
     .pf-table th {
-      text-align: left; padding: 9px 12px; white-space: nowrap;
+      text-align: left; padding: 9px 8px; white-space: nowrap;
       color: var(--text); font-weight: 700; font-size: 12px;
       background: var(--surface);
       border-bottom: 2px solid var(--border);
@@ -1793,7 +1796,7 @@
     }
     .pf-table th:last-child { border-right: none; }
     .pf-table td {
-      padding: 9px 12px; color: var(--text); white-space: nowrap;
+      padding: 9px 8px; color: var(--text); white-space: nowrap;
       border-bottom: 1px solid var(--border2);
       border-right: 1px solid var(--border2);
     }
@@ -1848,6 +1851,15 @@
     .pf-stats-table tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--surface) 45%, transparent); }
     .pf-stats-table tr:last-child td { border-bottom: none; }
     .pf-stats-table td.best { color: #16a34a; font-weight: 700; }
+    .pf-buscar { display: flex; align-items: center; gap: 10px; margin: 12px 0 4px; flex-wrap: wrap; }
+    .pf-buscar input { flex: 1 1 240px; max-width: 420px; }
+    .pf-cuenta { font-size: 12px; color: var(--muted); font-weight: 600; }
+    /* cabeceras ordenables: el cursor y la flecha avisan de que se pulsan */
+    .pf-table th.orden { cursor: pointer; user-select: none; white-space: nowrap; }
+    .pf-table th.orden:hover { color: var(--text); }
+    .pf-table th.orden::after { content: ' ⇅'; opacity: .35; font-size: 10px; }
+    .pf-table th.orden.asc::after  { content: ' ↑'; opacity: 1; }
+    .pf-table th.orden.desc::after { content: ' ↓'; opacity: 1; }
     .pf-table-wrap .pf-stats-table { border: none; border-radius: 0; margin-top: 0; }
     .pf-table-wrap .pf-empty, .pf-stats-table .pf-empty { padding: 18px 14px; }
 
@@ -2000,8 +2012,14 @@
     .pf-chip.caution { background: rgba(245,158,11,.16); color: #f59e0b; }
     .pf-chip.no-go   { background: rgba(239,68,68,.16);  color: #ef4444; }
     .pf-hist-note { color: var(--muted); font-style: italic; }
+    /* 🔴 La "X" salía unas veces a la derecha y otras a la izquierda. Causa:
+       la fila es flex CON wrap, el selector llevaba `margin-left:auto` y la X
+       era su hermano suelto — cuando el selector entraba justo al final de la
+       línea pero la X ya no cabía, la X caía sola al principio de la línea
+       siguiente. Ahora los dos van en una caja que envuelve como UNA pieza. */
+    .pf-hist-acts { margin-left: auto; display: flex; align-items: center; gap: 8px; flex: none; }
     .pf-hist-row select {
-      margin-left: auto; padding: 5px 8px; border-radius: 8px;
+      padding: 5px 8px; border-radius: 8px;
       background: var(--card); border: 1px solid var(--border2);
       color: var(--text); font-size: 12px; font-family: inherit; cursor: pointer;
     }
@@ -7455,6 +7473,14 @@
         <div class="card-label" data-i18n="pf.projTitle">Project breakdown</div>
         <p style="font-size:12px; color:var(--muted); margin:6px 0 0;" data-i18n="pf.projHint">Pick a checklist to see only its trades and its full statistics.</p>
         <div class="pf-proj-chips" id="pf-proj-chips"></div>
+        <!-- Buscar dentro del proyecto: el historial de arriba solo enseña lo
+             reciente, y aquí está TODO lo del proyecto. Sin un buscador, "ir a
+             constatar aquel trade de NQ" es bajar a mano por 200 filas. -->
+        <div class="pf-buscar">
+          <input type="search" id="pf-buscar" class="pf-input"
+                 data-i18n-ph="pf.buscarPh" placeholder="Search instrument, verdict, result, note…">
+          <span class="pf-cuenta" id="pf-cuenta"></span>
+        </div>
         <div class="pf-table-wrap" id="pf-proj-table-wrap"></div>
       </div>
       <div class="card" style="--card-accent:#22c55e;">
@@ -8297,6 +8323,9 @@
       'pf.pocaMuestra': 'not enough data yet',
       'pf.con': 'with',
       'pf.sin': 'without',
+      'pf.buscarPh': 'Search instrument, verdict, result, note…',
+      'pf.cuentaTodo': '{n} trades',
+      'pf.cuentaFiltro': 'showing {m} of {n}',
       'pf.s1': 'Trades logged',
       'pf.s2': 'With result (win/loss)',
       'pf.s3': 'Win rate',
@@ -8853,6 +8882,9 @@
       'pf.pocaMuestra': 'aún no hay muestra',
       'pf.con': 'con',
       'pf.sin': 'sin',
+      'pf.buscarPh': 'Busca instrumento, veredicto, resultado, nota…',
+      'pf.cuentaTodo': '{n} trades',
+      'pf.cuentaFiltro': 'mostrando {m} de {n}',
       'pf.s1': 'Trades registrados',
       'pf.s2': 'Con resultado (win/loss)',
       'pf.s3': 'Win rate',
@@ -9409,6 +9441,9 @@
       'pf.pocaMuestra': 'pas encore assez de données',
       'pf.con': 'avec',
       'pf.sin': 'sans',
+      'pf.buscarPh': 'Rechercher instrument, verdict, résultat, note…',
+      'pf.cuentaTodo': '{n} trades',
+      'pf.cuentaFiltro': '{m} sur {n} affichés',
       'pf.s1': 'Trades enregistrés',
       'pf.s2': 'Avec résultat (gain/perte)',
       'pf.s3': 'Win rate',
@@ -9965,6 +10000,9 @@
       'pf.pocaMuestra': 'ainda sem amostra',
       'pf.con': 'com',
       'pf.sin': 'sem',
+      'pf.buscarPh': 'Busque instrumento, veredicto, resultado, nota…',
+      'pf.cuentaTodo': '{n} trades',
+      'pf.cuentaFiltro': 'mostrando {m} de {n}',
       'pf.s1': 'Trades registrados',
       'pf.s2': 'Com resultado (win/loss)',
       'pf.s3': 'Win rate',
@@ -11536,7 +11574,9 @@
           });
           if (res.ok) refreshChecks();   // outcomes feed the stats strip
         });
-        row.appendChild(sel);
+        const acts = document.createElement('div');
+        acts.className = 'pf-hist-acts';
+        acts.appendChild(sel);
         const del = document.createElement('button');
         del.type = 'button';
         del.className = 'pf-hist-del';
@@ -11546,7 +11586,8 @@
           const res = await fetch('/api/preflight/checks/' + c.id, { method: 'DELETE' });
           if (res.ok) refreshChecks();
         });
-        row.appendChild(del);
+        acts.appendChild(del);
+        row.appendChild(acts);
         el.appendChild(row);
       });
     }
@@ -12043,13 +12084,69 @@
       });
     }
 
+    // ── buscar y ordenar dentro de un proyecto ──
+    // Aquí está TODO el historial del proyecto, no solo lo reciente. Con 200
+    // filas, "ir a comprobar aquel trade de NQ que salió mal" sin buscador es
+    // bajar a mano hasta encontrarlo.
+    let pfBusca = '', pfOrden = { col: 'fecha', desc: true };
+    const PF_COLS = ['fecha', 'instrumento', 'dir', 'entrada', 'salida', 'tam',
+                     'rr', 'score', 'verdict', 'outcome', 'pnl'];
+    function pfValor(c, col) {
+      switch (col) {
+        case 'fecha': return claveFecha(c);
+        case 'instrumento': return (c.instrument || '').toLowerCase();
+        case 'dir': return c.direction || '';
+        case 'entrada': return c.entry_price;
+        case 'salida': return c.exit_price;
+        case 'tam': return c.position_size;
+        case 'rr': return c.rr;
+        case 'score': return c.score;
+        case 'verdict': return c.verdict || '';
+        case 'outcome': return c.outcome || '';
+        case 'pnl': return c.pnl;
+      }
+      return '';
+    }
+    function pfFiltra(rows) {
+      const q = pfBusca.trim().toLowerCase();
+      let out = rows;
+      if (q) {
+        // se busca sobre lo que el usuario VE, traducciones incluidas: quien
+        // escribe "ganada" o "win" tiene que encontrar lo mismo
+        out = rows.filter(c => {
+          const campos = [c.instrument, c.direction, c.verdict, c.outcome, c.note,
+                          fmtTradeDate(c), verdictLabel(c.verdict),
+                          c.outcome ? T('pf.' + (c.outcome === 'skipped' ? 'skipped' : c.outcome)) : '',
+                          c.entry_price, c.exit_price, c.rr, c.pnl, c.position_size];
+          return campos.some(v => v !== null && v !== undefined &&
+                                  String(v).toLowerCase().indexOf(q) >= 0);
+        });
+      }
+      const dir = pfOrden.desc ? -1 : 1;
+      return out.slice().sort((a, b) => {
+        const va = pfValor(a, pfOrden.col), vb = pfValor(b, pfOrden.col);
+        // los vacíos siempre al final, se ordene como se ordene
+        const na = (va === null || va === undefined || va === '');
+        const nb = (vb === null || vb === undefined || vb === '');
+        if (na && nb) return 0;
+        if (na) return 1;
+        if (nb) return -1;
+        if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * dir;
+        return String(va).localeCompare(String(vb)) * dir;
+      });
+    }
+
     function tradesTableHtml(rows) {
       if (!rows.length) return '<div class="pf-empty">' + escapeHtml(T('pf.noTrades')) + '</div>';
-      const th = k => '<th>' + escapeHtml(T(k)) + '</th>';
+      const th = (k, col) => '<th class="orden' +
+        (pfOrden.col === col ? (pfOrden.desc ? ' desc' : ' asc') : '') +
+        '" data-col="' + col + '">' + escapeHtml(T(k)) + '</th>';
       const n = v => (v === null || v === undefined) ? '<td class="muted">—</td>' : '<td class="num">' + v + '</td>';
+      const cabeceras = ['pf.thDate', 'pf.thInstr', 'pf.thDir', 'pf.thEntry', 'pf.thExit',
+                        'pf.thSize', 'pf.thRR', 'pf.thScore', 'pf.thVerdict',
+                        'pf.thOutcome', 'pf.thPnl'];
       let html = '<table class="pf-table"><thead><tr>' +
-        th('pf.thDate') + th('pf.thInstr') + th('pf.thDir') + th('pf.thEntry') + th('pf.thExit') +
-        th('pf.thSize') + th('pf.thRR') + th('pf.thScore') + th('pf.thVerdict') + th('pf.thOutcome') + th('pf.thPnl') +
+        cabeceras.map((k, i) => th(k, PF_COLS[i])).join('') +
         '</tr></thead><tbody>';
       rows.forEach(c => {
         const pnlCls = typeof c.pnl === 'number' ? (c.pnl >= 0 ? 'num pos' : 'num neg') : 'muted';
@@ -12075,7 +12172,25 @@
         k => { projSel = k; renderProjects(); });
       const g = groups.find(x => x.key === projSel);
       const rows = g ? g.rows : [];
-      document.getElementById('pf-proj-table-wrap').innerHTML = tradesTableHtml(rows);
+      const vistos = pfFiltra(rows);
+      document.getElementById('pf-proj-table-wrap').innerHTML = tradesTableHtml(vistos);
+      // cuántos hay y cuántos se están viendo: sin esto, filtrar y no ver nada
+      // parece que los trades se perdieron
+      const cuenta = document.getElementById('pf-cuenta');
+      if (cuenta) {
+        cuenta.textContent = (vistos.length === rows.length)
+          ? T('pf.cuentaTodo').replace('{n}', rows.length)
+          : T('pf.cuentaFiltro').replace('{m}', vistos.length).replace('{n}', rows.length);
+      }
+      // ordenar al pulsar una cabecera; repetir la misma invierte el sentido
+      document.querySelectorAll('#pf-proj-table-wrap th.orden').forEach(th => {
+        th.addEventListener('click', () => {
+          const col = th.dataset.col;
+          if (pfOrden.col === col) pfOrden.desc = !pfOrden.desc;
+          else pfOrden = { col: col, desc: true };
+          renderProjects();
+        });
+      });
       const statsEl = document.getElementById('pf-proj-stats');
       if (!g) { statsEl.innerHTML = '<div class="pf-empty">' + escapeHtml(T('pf.noTrades')) + '</div>'; return; }
       let html = '<table>';
@@ -12144,6 +12259,13 @@
       document.getElementById('pf-builder-save').addEventListener('click', saveBuilder);
       document.getElementById('pf-builder-cancel').addEventListener('click', closeBuilder);
       document.getElementById('pf-log').addEventListener('click', logCheck);
+      const buscador = document.getElementById('pf-buscar');
+      if (buscador) {
+        buscador.addEventListener('input', () => {
+          pfBusca = buscador.value;
+          renderProjects();
+        });
+      }
       document.querySelectorAll('#pf-trade-direction .pf-dir-btn').forEach(b => {
         b.addEventListener('click', () => setDirection(direction === b.dataset.val ? null : b.dataset.val));
       });

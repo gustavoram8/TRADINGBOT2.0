@@ -163,6 +163,67 @@ def lee_pantalla():
                 pg.screenshot(path=os.path.join(RAIZ, 'out', 'tests', ('pf_proyecto_estres.png' if '--estres' in sys.argv else 'pf_proyecto.png')),
                               full_page=True)
 
+        # ── buscador y orden dentro del proyecto ──
+        filas = lambda: pg.evaluate("() => document.querySelectorAll('#pf-proj-table-wrap tbody tr').length")
+        salida['buscar'] = {'todas': filas()}
+        salida['tabla_trades'] = pg.evaluate("""() => {
+            const w = document.getElementById('pf-proj-table-wrap');
+            const t = w.querySelector('table');
+            const th = [...w.querySelectorAll('thead th')];
+            return {hueco: Math.round(w.clientWidth), tabla: Math.round(t.scrollWidth),
+                    sobra: Math.round(t.scrollWidth - w.clientWidth),
+                    columnas: th.map(x => ({n: x.textContent.trim().slice(0,8),
+                                            w: Math.round(x.getBoundingClientRect().width)}))}; }""")
+        pg.fill('#pf-buscar', 'NQ')
+        pg.wait_for_timeout(600)
+        salida['buscar']['filtradas_NQ'] = filas()
+        salida['buscar']['cuenta'] = pg.evaluate(
+            "() => (document.getElementById('pf-cuenta')||{}).textContent")
+        salida['buscar']['solo_NQ'] = pg.evaluate("""() =>
+            [...document.querySelectorAll('#pf-proj-table-wrap tbody tr')]
+              .every(tr => tr.children[1].textContent.trim() === 'NQ')""")
+        pg.fill('#pf-buscar', 'zzzz')
+        pg.wait_for_timeout(500)
+        salida['buscar']['sin_resultados'] = pg.evaluate(
+            "() => (document.getElementById('pf-cuenta')||{}).textContent")
+        pg.fill('#pf-buscar', 'NQ')
+        pg.wait_for_timeout(600)
+        pg.screenshot(path=os.path.join(RAIZ, 'out', 'tests', 'pf_buscador.png'),
+                      full_page=True)
+        pg.fill('#pf-buscar', '')
+        pg.wait_for_timeout(500)
+        # ordenar por P&L: la primera fila tiene que ser la mayor ganancia
+        pg.evaluate("""() => { const th =
+            [...document.querySelectorAll('#pf-proj-table-wrap th.orden')]
+              .find(t => t.dataset.col === 'pnl'); if (th) th.click(); }""")
+        pg.wait_for_timeout(600)
+        salida['orden'] = pg.evaluate("""() => {
+            // ⚠️ las filas SIN P&L van al final a propósito; si se cuentan
+            //    como 0 rompen la monotonía y el test acusa un fallo que no es
+            const celdas = [...document.querySelectorAll('#pf-proj-table-wrap tbody tr')]
+                            .map(tr => tr.children[10].textContent.trim());
+            const conDato = celdas.filter(t => t !== '—' && t !== '');
+            const vacias = celdas.length - conDato.length;
+            const c = conDato.map(t => parseFloat(t.replace(/[^0-9.\\-]/g, '')));
+            const alFinal = celdas.slice(conDato.length).every(t => t === '—' || t === '');
+            return {primera: c[0], ultima: c[c.length-1],
+                    descendente: c.every((v, i) => i === 0 || c[i-1] >= v),
+                    vacias_al_final: alFinal, vacias: vacias,
+                    flecha: (document.querySelector('#pf-proj-table-wrap th.orden.desc')||{}).textContent}; }""")
+
+        # ── la "X" de borrar: ¿siempre en el mismo sitio? ──
+        pg.evaluate("""() => { const b =
+            document.querySelector('.pf-tab[data-pftab="board"]'); if (b) b.click(); }""")
+        pg.wait_for_timeout(1000)
+        salida['equis'] = pg.evaluate("""() => {
+            const filas = [...document.querySelectorAll('#pf-history .pf-hist-row')];
+            const xs = filas.map(f => { const b = f.querySelector('.pf-hist-del');
+              const r = b.getBoundingClientRect(), rf = f.getBoundingClientRect();
+              return {dx: Math.round(rf.right - r.right), fila: Math.round(r.top - rf.top)}; });
+            const dx = xs.map(x => x.dx);
+            return {filas: filas.length, distancias: [...new Set(dx)].slice(0, 6),
+                    uniforme: new Set(dx).size === 1}; }""")
+
         # pestaña Comparar: los 3 a la vez
         pg.evaluate("""() => { const b =
             document.querySelector('.pf-tab[data-pftab="compare"]'); if (b) b.click(); }""")

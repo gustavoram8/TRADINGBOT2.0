@@ -2309,6 +2309,22 @@ boards"** que llevaba desde antes del lanzamiento en la lista de críticos.
     mide 794 y cabe entera), la **primera columna se queda fija** al desplazar y hay **sombra en el
     borde** cuando queda algo a la derecha. Verificado con los 10: chips en 3 filas sin cortarse,
     último proyecto alcanzable, etiqueta de fila siempre visible, 0 errores JS.
+  · **3 cosas más que reportó el dueño al verlo en su cuenta (2026-08-12):**
+    (a) 🔴 **la "X" de borrar salía unas veces a la derecha y otras a la izquierda.** La fila es
+    `flex` CON `wrap`, el selector de resultado llevaba `margin-left:auto` y la X era su hermano
+    suelto: cuando el selector entraba justo al final de la línea pero la X ya no cabía, la X caía
+    sola al principio de la línea siguiente. Ahora los dos van en una caja (`.pf-hist-acts`) que
+    envuelve como UNA pieza — medido: las 92 filas con la X a 13 px del borde, sin excepción.
+    (b) **Buscador y orden en la tabla del proyecto** (*"que alguien pueda ver la DATA de todos los
+    trades… por si quiere buscarlos"*): campo de búsqueda sobre lo que el usuario VE (traducciones
+    incluidas: "ganada" y "win" encuentran lo mismo), cabeceras ordenables con flecha, y contador
+    "mostrando M de N" — sin él, filtrar y no ver nada parece que los trades se perdieron. Los
+    vacíos van SIEMPRE al final, se ordene como se ordene.
+    (c) 🔴 **La columna de P&L quedaba cortada**: 11 columnas × 12 px de relleno dejaban la tabla en
+    820 px dentro de un hueco de 794. Con 8 px cabe entera (medido: sobra 0) y se sigue leyendo.
+  · ⚠️ El servidor sirve como mucho **500 chequeos** (`limit(500)` en `preflight_list_checks`), de
+    todas las pizarras juntas. Con 92 no se nota; a un usuario que registre a diario le llegaría en
+    ~2 años y las más viejas dejarían de verse **sin avisar**. Anotado, no arreglado.
   · La demo queda en el repo para re-probar el panel tras cualquier cambio.
 - [ ] **16. Intranet del influencer:** que vea SUS clientes, sus comisiones y nada más. Propone un
   rol tipo admin, "Commercial Ally". ⚠️ Ojo: `/partner` ya existe (2026-08-01) — revisar qué falta
