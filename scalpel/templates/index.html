@@ -8504,6 +8504,8 @@
       'forum.img.content': 'Image blocked — that content is not allowed on this forum.',
       'forum.img.format': 'Please upload a JPG, PNG or WebP image.',
       'forum.img.large': 'Image too large (max 8 MB).',
+      'forum.needPlan': 'The forum is included with Standard and Premium. Upgrade your plan to post.',
+      'forum.session': 'Your session expired. Sign in again and your text will still be here.',
       'forum.error': 'Something went wrong. Please try again.',
       'indicators.title': 'Indicators',
       'indicators.desc': 'Access a curated library of trading indicators for multiple trading methodologies.',
@@ -9064,6 +9066,8 @@
       'forum.img.content': 'Imagen bloqueada — ese contenido no está permitido en este foro.',
       'forum.img.format': 'Sube una imagen JPG, PNG o WebP.',
       'forum.img.large': 'Imagen demasiado grande (máx. 8 MB).',
+      'forum.needPlan': 'El foro viene con Standard y Premium. Mejora tu plan para publicar.',
+      'forum.session': 'Tu sesión expiró. Vuelve a entrar y tu texto seguirá aquí.',
       'forum.error': 'Algo salió mal. Inténtalo de nuevo.',
       'indicators.title': 'Indicadores',
       'indicators.desc': 'Accede a una biblioteca curada de indicadores de trading para múltiples metodologías de trading.',
@@ -9624,6 +9628,8 @@
       'forum.img.content': 'Image bloquée — ce contenu n’est pas autorisé sur ce forum.',
       'forum.img.format': 'Veuillez importer une image JPG, PNG ou WebP.',
       'forum.img.large': 'Image trop volumineuse (max 8 Mo).',
+      'forum.needPlan': "Le forum est inclus avec Standard et Premium. Passez à un plan supérieur pour publier.",
+      'forum.session': "Votre session a expiré. Reconnectez-vous, votre texte sera toujours là.",
       'forum.error': "Une erreur s'est produite. Réessayez.",
       'indicators.title': 'Indicateurs',
       'indicators.desc': "Accédez à une bibliothèque d'indicateurs de trading pour plusieurs méthodologies de trading.",
@@ -10184,6 +10190,8 @@
       'forum.img.content': 'Imagem bloqueada — esse conteúdo não é permitido neste fórum.',
       'forum.img.format': 'Envie uma imagem JPG, PNG ou WebP.',
       'forum.img.large': 'Imagem muito grande (máx. 8 MB).',
+      'forum.needPlan': 'O fórum vem com Standard e Premium. Faça upgrade do seu plano para publicar.',
+      'forum.session': 'Sua sessão expirou. Entre de novo e seu texto continuará aqui.',
       'forum.error': 'Algo deu errado. Tente novamente.',
       'indicators.title': 'Indicadores',
       'indicators.desc': 'Acesse uma biblioteca selecionada de indicadores de trading para múltiplas metodologias de trading.',
@@ -13254,11 +13262,27 @@
         const mins = Math.max(1, Math.round((data.retry_after || 0) / 60));
         return { msg: T('forum.block.muted').replace('{min}', mins), detail: '', warn: true };
       }
-      return { msg: T('forum.error'), detail: '', warn: false };
+      /* 🔴 Estos dos SÍ los devuelve el servidor y no estaban mapeados, así que
+         un usuario Free intentando publicar —o cualquiera con la sesión
+         caducada— recibía "algo salió mal", que no dice qué hacer. */
+      if (data.error === 'standard_required')
+        return { msg: T('forum.needPlan'), detail: '', warn: false };
+      if (data.error === 'unauthorized')
+        return { msg: T('forum.session'), detail: '', warn: false };
+      /* Último recurso. Se le pega el código HTTP: sin él, "algo salió mal" es
+         un callejón sin salida — ni el usuario ni yo podemos distinguir un 413
+         (imagen demasiado grande para nginx) de un 502 o de un fallo de red. */
+      return { msg: T('forum.error'), detail: '', warn: false, generic: true };
     }
 
-    function showErr(box, data) {
-      const r = blockReason(data);
+    /* Expuesto para poder comprobar los mensajes de error desde una prueba de
+       navegador sin tener que provocar cada fallo de verdad (el 413 de nginx
+       o una bajada de plan a mitad de sesión no se reproducen a mano). */
+    window.__forumShowErr = (box, data, status) => showErr(box, data, status);
+
+    function showErr(box, data, status) {
+      const r = blockReason(data || {});
+      if (r.generic && status) r.msg += ' (' + status + ')';
       box.innerHTML = '';
       const span = document.createElement('span');
       span.textContent = r.msg;
@@ -13573,7 +13597,7 @@
         const res = await submitComment(v, parentId);
         send.disabled = false; send.textContent = T('forum.reply');
         if (res.ok) openPost(currentPostId);
-        else showErr(err, res.data);
+        else showErr(err, res.data, res.status);
       });
     }
 
@@ -13616,7 +13640,7 @@
       if (imageInput.files[0]) form.append('image', imageInput.files[0]);
       publishBtn.disabled = true;
       const orig = publishBtn.textContent; publishBtn.textContent = T('forum.publishing');
-      const { ok, data } = await api('/forum/post', { method: 'POST', form });
+      const { ok, data, status } = await api('/forum/post', { method: 'POST', form });
       publishBtn.disabled = false; publishBtn.textContent = orig;
       if (ok) {
         titleInput.value = ''; bodyInput.value = ''; clearImage();
@@ -13625,7 +13649,7 @@
         else if (state.feed !== 'all') setFeed('all'); else loadFeed(true);
         updatePostsLeft(data.posts_left_today);
       } else {
-        showErr(composerErr, data);
+        showErr(composerErr, data, status);
       }
     }
 
@@ -14007,7 +14031,7 @@
       const res = await submitComment(v, null);
       rootSend.disabled = false; rootSend.textContent = orig;
       if (res.ok) openPost(currentPostId);
-      else showErr(commentErr, res.data);
+      else showErr(commentErr, res.data, res.status);
     });
 
     window.Forum = {
