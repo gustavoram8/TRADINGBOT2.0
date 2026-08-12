@@ -34,8 +34,16 @@ sys.path.insert(0, os.path.join(RAIZ, 'tools'))
 
 try:
     import app as A
-except Exception as e:                                   # pragma: no cover
-    sys.exit('no se pudo cargar la app: %s' % e)
+except Exception as e:                                    # pragma: no cover
+    # El error crudo aquí es "No module named 'flask'", que no dice lo que hay
+    # que hacer: las dependencias viven en el venv, no en el python del
+    # sistema. Decirlo en el propio mensaje ahorra una vuelta entera.
+    falta = 'No module named' in str(e)
+    sys.exit('no se pudo cargar la app: %s%s' % (
+        e, ('\n\n👉 Usa el intérprete del entorno:\n'
+            '   venv/bin/python3 %s %s' % (
+                os.path.relpath(__file__, RAIZ),
+                ' '.join(sys.argv[1:]) or '<usuario>')) if falta else ''))
 
 import pf_demo_datos as D                                # noqa: E402
 
