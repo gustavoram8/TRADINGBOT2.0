@@ -2057,10 +2057,55 @@ borrado. PENDIENTE: agregar selector de mes / historial.
   Tras cada tanda: `python3 tools/validate_synapse_content.py` + rebuild + mirar el render.
   ⚠️ El flipbook web ignora los campos nuevos sin romperse (Object.assign) — los podrá usar
   algún día, pero HOY la profundidad es exclusiva del PDF de pago, lo que justifica su precio.
-- [ ] **13. Chalkboard funcional:** hoy es pobre, hay interacciones tediosas. Añadir herramientas
-  propias de cada metodología (ej.: arrastrar una **secuencia de velas** ya dibujada).
-- [ ] **14. Chalkboard visual:** el panel de la pizarra se ve **estrecho** frente al fondo del
-  sitio, como una diapositiva encogida.
+- [x] ✅ **13. Chalkboard funcional (2026-08-12).** Su queja textual: *"cuando seleccionabas una
+  herramienta y la utilizabas tenías que volver a activarla, siento que vuelvo todo muy lento"*.
+  · **Herramienta PEGAJOSA**: se quitó el `setTool('select')` que venía detrás de cada figura, línea,
+    rayo y polilínea. ⚠️ **El texto es la única excepción a propósito**: al crearlo se entra a
+    editar y el clic siguiente sirve para SALIR de la edición — con la herramienta puesta, ese clic
+    crearía otro cuadro encima del que acabas de escribir.
+  · **Atajos de una letra** (`ATAJOS`: v/p/l/r/o/t/e/a/h/y/n/f/d/c), **Ctrl+D** duplica (maneja el
+    `activeSelection` desagrupándolo), **flechas** mueven 1px (10 con Shift), **Esc** vuelve a
+    Seleccionar, y pulsar dos veces la misma herramienta la apaga.
+  · 🕯️ **Secuencia de velas** (lo que él pidió): se arrastra y salen velas coherentes — cada una
+    abre donde cerró la anterior y la mecha siempre contiene al cuerpo; la dirección del arrastre
+    fija la tendencia, una vela por cada ~34px (4-20). ⚠️ **`state.lastX/lastY` hace falta** porque
+    el rectángulo-guía normaliza min/max y ahí se pierde hacia dónde arrastraste.
+    ⚠️ **Dos defectos que solo se vieron MIRANDO el dibujo:** con el ruido por debajo de la deriva
+    salía una escalera perfecta (0 px rojos — ningún retroceso, imposible en un gráfico), y con las
+    mechas de valor fijo salían cuerpos de 8px con mechas de 34. Las dos cosas se miden ahora en el
+    test contando píxeles verdes/rojos.
+- [x] ✅ **14. Chalkboard visual — el panel encogido, y luego la barra (2026-08-12).**
+  · **1ª parte:** la pizarra usaba el **29%** de su panel → **93%**. El rail derecho de la app se
+    esconde en esta pestaña (`body.ag-chalk-mode`), la rejilla pasa a 2 columnas y `fitCanvas()`
+    calcula el alto disponible desde la posición real del contenedor (tope de escala 1.75 fuera de
+    presentación, para no reventar la nitidez).
+  · **2ª parte (él, al usarlo):** *"luego del límite inferior de la primera diapositiva aún hay más
+    herramientas hacia abajo"*. Medido: **961 px fijos y 20 botones** → a 1440×900, **10 botones por
+    debajo del lienzo y 4 FUERA de la pantalla**; a 1366×768, 11 y 6. **Ahora 335 px y 7 botones, 0
+    y 0** en las tres resoluciones. Tres familias con desplegable (Líneas · Zonas · Velas) y los 7
+    ajustes/acciones suben a la barra de arriba junto a Fondo/Presentar/PNG/Exportar PDF.
+    🔑 **NO se reescribió el HTML de la barra: se MUEVEN los botones que ya existen** a sus
+    desplegables, así cada uno conserva su manejador y `setTool`/`toolBtns`/atajos no se enteran.
+    Un clic en la cabecera activa la última usada de esa familia (el caso normal sigue costando un
+    clic); el desplegable abre al posar el ratón y lleva los nombres escritos.
+  · ⚠️ **Se le propuso y se DESCARTÓ la barra en "L"** que él mismo sugería (herramientas bajo la
+    diapositiva): se come justo el alto que acabábamos de recuperar —70 px a 1366×768, el 16% de la
+    pizarra— y no escala, con la siguiente tanda vuelve a llenarse.
+  · ⚠️ **Tres trampas de CSS, todas invisibles leyendo el código:** (1) `var(--card)` es
+    **translúcido** → sobre la pizarra negra el desplegable salía gris y los nombres a medias (se
+    opaca con `linear-gradient(var(--card),var(--card)), var(--bg)`, el mismo truco de los menús
+    bajo camo); (2) el tooltip de la cabecera se coloca 48px a la derecha, o sea **dentro** del
+    desplegable, y caía encima del primer nombre de su propia lista; (3) la flechita del grupo tuvo
+    que irse a `::before` porque **`::after` de `.tool-btn` ya lo ocupa el tooltip** (`content:
+    attr(data-tip)`) — misma especificidad, ganaba la última y la flecha se convertía en el tooltip
+    descolocado.
+  · `tools/test_chalkboard_ux.py` **31/31** en navegador real (el desplegable probado con el ratón
+    de verdad, no con `.click()` de JS: un botón dentro de un desplegable cerrado se puede pulsar
+    por código aunque el usuario no lo alcance) + `test_vendor.py` 12/12.
+    ⚠️ El selector del test filtra `.tool-btn.active[data-tool]`: la cabecera de familia también se
+    enciende y no lleva herramienta.
+  · **PENDIENTE de preguntarle:** si 20 velas es el tope correcto, y si quiere poder editar una
+    secuencia ya dibujada (hoy es un `fabric.Group`: se mueve y escala entera).
 - [ ] **15. Pre-Flight:** revisar las "estadísticas" — hay comparaciones que no aportan.
 - [ ] **16. Intranet del influencer:** que vea SUS clientes, sus comisiones y nada más. Propone un
   rol tipo admin, "Commercial Ally". ⚠️ Ojo: `/partner` ya existe (2026-08-01) — revisar qué falta
