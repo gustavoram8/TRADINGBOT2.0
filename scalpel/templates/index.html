@@ -3002,6 +3002,17 @@
       box-shadow: 0 12px 34px rgba(0,0,0,0.45);
     }
     .tool-group.open .tool-flyout { display: flex; }
+    /* 🔴 EL PUENTE. Entre la cabecera y el panel hay 8 px de aire que no
+       pertenecen a ningún elemento: al cruzarlos el navegador dispara
+       `mouseleave` del grupo y el desplegable se cerraba justo cuando ibas a
+       coger una herramienta. Esta tira transparente es HIJA del desplegable,
+       así que el puntero nunca llega a salir del grupo.
+       ⚠️ Mide EXACTAMENTE los 8 px del hueco: si se pasa, se monta encima del
+       borde derecho del botón cabecera (el desplegable va a z-index 80) y le
+       come esa franja a los clics. */
+    .tool-flyout::before {
+      content: ''; position: absolute; left: -8px; top: 0; bottom: 0; width: 8px;
+    }
     /* ⚠️ El desplegable se abre al posar el ratón en la cabecera, así que su
        tooltip seguía en pantalla y caía JUSTO encima del primer nombre de la
        lista (el tooltip se coloca a 48 px a la derecha). */
@@ -14276,13 +14287,24 @@
           const t = grupo.dataset.ultima;
           setTool(state.tool === t ? 'select' : t);
         });
-        let temp = 0;
+        // El desplegable se queda abierto mientras el puntero esté en la
+        // cabecera O dentro del panel, que es lo que pidió el dueño. Dos
+        // temporizadores:
+        //  · abrir a los 150 ms — lo justo para no ir abriendo paneles al
+        //    barrer la barra de arriba abajo, sin que se sienta lento.
+        //  · cerrar con 260 ms de gracia — un atajo en diagonal hacia el
+        //    tercer nombre de la lista se sale un instante del grupo, y sin
+        //    esta espera el panel se cierra a mitad de camino.
+        let abrir = 0, cerrar = 0;
         grupo.addEventListener('mouseenter', () => {
-          clearTimeout(temp);
-          temp = setTimeout(() => grupo.classList.add('open'), 340);
+          clearTimeout(cerrar);
+          if (grupo.classList.contains('open')) return;
+          clearTimeout(abrir);
+          abrir = setTimeout(() => grupo.classList.add('open'), 150);
         });
         grupo.addEventListener('mouseleave', () => {
-          clearTimeout(temp); grupo.classList.remove('open');
+          clearTimeout(abrir);
+          cerrar = setTimeout(() => grupo.classList.remove('open'), 260);
         });
         // sin ratón (táctil) el desplegable se abre pulsando la flecha
         cab.addEventListener('dblclick', e => {

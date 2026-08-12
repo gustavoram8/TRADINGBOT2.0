@@ -230,11 +230,17 @@ with sync_playwright() as p:
     check('…con velas en contra (retroceso), no una escalera perfecta',
           r_sube > 60, (v_sube, r_sube))
 
-    # la posición vertical del verde tiene que subir a lo largo del recorrido:
-    # una tendencia alcista dibujada al revés se detectaría aquí
+    # Las velas tienen que subir a lo largo del recorrido: una tendencia
+    # dibujada al revés se detectaría aquí.
+    # ⚠️ Se miden TODAS las velas, verdes Y rojas. La primera versión miraba
+    #    solo el verde y era inestable entre ejecuciones —las velas se generan
+    #    con azar— porque un retroceso al final desplaza la media del verde sin
+    #    que la tendencia haya cambiado. El conjunto de la serie sí sube
+    #    siempre: en un tramo alcista las rojas suben igual que las verdes.
     png = pg.locator('#sk-canvas').screenshot()
     a = _np.asarray(_Im.open(_io.BytesIO(png)).convert('RGB'), dtype=int)
-    m = (a[:, :, 1] > 90) & (a[:, :, 1] - a[:, :, 0] > 35)
+    r_, g_, b_ = a[:, :, 0], a[:, :, 1], a[:, :, 2]
+    m = (((g_ > 90) & (g_ - r_ > 35)) | ((r_ > 90) & (r_ - g_ > 35))) & (b_ < 200)
     ys, xs = _np.nonzero(m)
     if len(xs) > 50:
         mitad = xs.mean()
@@ -275,20 +281,61 @@ with sync_playwright() as p:
     pg.keyboard.press('Escape')
     cabecera = '#sk-tools .tool-group[data-familia="lineas"] > .tool-btn'
     pg.hover(cabecera)
-    pg.wait_for_timeout(600)                      # el desplegable abre a los 340 ms
+    pg.wait_for_timeout(500)                      # el desplegable abre a los 150 ms
     abierto = pg.evaluate("""() => {
         const f = document.querySelector('.tool-group[data-familia="lineas"] .tool-flyout');
         const r = f.getBoundingClientRect();
         return getComputedStyle(f).display !== 'none' && r.width > 60 &&
                r.right < innerWidth && r.left > 0; }""")
     check('posar el ratón abre el desplegable, y cabe en pantalla', abierto)
-    pg.click('.tool-group[data-familia="lineas"] .tool-btn[data-tool="hray"]')
+    # 🔴 EL CASO QUE EL DUEÑO REPORTÓ, y que el test anterior NO cazaba:
+    #    `page.click()` teletransporta el puntero al destino, así que nunca
+    #    cruzaba los 8 px de aire entre la cabecera y el panel — justo donde el
+    #    navegador dispara `mouseleave` y el desplegable se cerraba. Hay que
+    #    mover el ratón POR PASOS, como una mano.
+    destino = pg.locator(
+        '.tool-group[data-familia="lineas"] .tool-btn[data-tool="hray"]')
+    d = destino.bounding_box()
+    h = pg.locator(cabecera).bounding_box()
+    pg.mouse.move(h['x'] + h['width'] / 2, h['y'] + h['height'] / 2)
+    pg.wait_for_timeout(400)
+    pg.mouse.move(d['x'] + d['width'] / 2, d['y'] + d['height'] / 2, steps=25)
+    pg.wait_for_timeout(120)
+    check('el panel SIGUE abierto al cruzar el hueco hasta él (era el fallo)',
+          pg.evaluate("""() => document.querySelector(
+              '.tool-group[data-familia="lineas"]').classList.contains('open')"""))
+    pg.mouse.down()
+    pg.mouse.up()
     pg.wait_for_timeout(220)
     check('se puede elegir una herramienta del desplegable con el ratón',
           pg.evaluate(HERRAMIENTA) == 'hray', pg.evaluate(HERRAMIENTA))
     check('…y el desplegable se cierra solo al elegir',
           pg.evaluate("""() => getComputedStyle(document.querySelector(
               '.tool-group[data-familia="lineas"] .tool-flyout')).display === 'none'"""))
+    # …y recorrer la lista por dentro tampoco lo cierra
+    pg.hover(cabecera)
+    pg.wait_for_timeout(400)
+    ult = pg.locator(
+        '.tool-group[data-familia="lineas"] .tool-btn[data-tool="arrow"]').bounding_box()
+    pg.mouse.move(ult['x'] + ult['width'] / 2, ult['y'] + ult['height'] / 2, steps=30)
+    pg.wait_for_timeout(150)
+    check('bajar hasta el último nombre de la lista no cierra el panel',
+          pg.evaluate("""() => document.querySelector(
+              '.tool-group[data-familia="lineas"]').classList.contains('open')"""))
+    pg.mouse.move(caja['x'] + 400, caja['y'] + 300, steps=10)
+    pg.wait_for_timeout(500)
+    check('sacar el ratón del grupo SÍ lo cierra',
+          pg.evaluate("""() => !document.querySelector(
+              '.tool-group[data-familia="lineas"]').classList.contains('open')"""))
+    # ⚠️ el puente que mantiene abierto el panel va por ENCIMA (z-index 80): si
+    #    se pasara de ancho, se comería el borde derecho del botón cabecera
+    hh = pg.locator(cabecera).bounding_box()
+    pg.keyboard.press('Escape')
+    pg.wait_for_timeout(160)
+    pg.mouse.click(hh['x'] + hh['width'] - 3, hh['y'] + hh['height'] / 2)
+    pg.wait_for_timeout(220)
+    check('el botón cabecera responde hasta su borde derecho (el puente no lo tapa)',
+          pg.evaluate(HERRAMIENTA) == 'hray', pg.evaluate(HERRAMIENTA))
     # la cabecera recuerda la última usada: el segundo uso cuesta UN clic
     pg.keyboard.press('Escape')
     pg.wait_for_timeout(160)
