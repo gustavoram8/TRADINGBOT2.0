@@ -197,6 +197,49 @@ with sync_playwright() as p:
     check('las flechas mueven la selección a la derecha (%.0f → %.0f px)'
           % (cx1, cx2), cx2 > cx1 + 8, (cx1, cx2))
 
+    # ── 🕯️ herramienta de secuencia de velas (punto 13 del dueño) ──
+    pg.keyboard.press('Escape')
+    pg.wait_for_timeout(200)
+
+    def velas(y0, y1):
+        """dibuja arrastrando y devuelve (verdes, rojas) contadas en el lienzo"""
+        pulsa('candles')
+        pg.mouse.move(caja['x'] + 80, caja['y'] + y0)
+        pg.mouse.down()
+        pg.mouse.move(caja['x'] + 560, caja['y'] + y1, steps=10)
+        pg.mouse.up()
+        pg.wait_for_timeout(500)
+        png = pg.locator('#sk-canvas').screenshot()
+        a = _np.asarray(_Im.open(_io.BytesIO(png)).convert('RGB'), dtype=int)
+        r, g, bl = a[:, :, 0], a[:, :, 1], a[:, :, 2]
+        verde = int(((g > 110) & (g - r > 45) & (g - bl > 45)).sum())
+        rojo = int(((r > 110) & (r - g > 45) & (r - bl > 45)).sum())
+        return verde, rojo
+
+    v_sube, r_sube = velas(320, 90)          # arrastre HACIA ARRIBA
+    check('arrastrando hacia arriba se dibujan velas (verde %d px, rojo %d px)'
+          % (v_sube, r_sube), v_sube + r_sube > 400, (v_sube, r_sube))
+    check('…y la secuencia es mayoritariamente ALCISTA',
+          v_sube > max(200, r_sube * 1.3), (v_sube, r_sube))
+    # 🔑 Una tendencia SIN una sola vela en contra es una escalera, no un
+    #    gráfico. Aquí se exige que haya retroceso.
+    check('…con velas en contra (retroceso), no una escalera perfecta',
+          r_sube > 60, (v_sube, r_sube))
+
+    # la posición vertical del verde tiene que subir a lo largo del recorrido:
+    # una tendencia alcista dibujada al revés se detectaría aquí
+    png = pg.locator('#sk-canvas').screenshot()
+    a = _np.asarray(_Im.open(_io.BytesIO(png)).convert('RGB'), dtype=int)
+    m = (a[:, :, 1] > 90) & (a[:, :, 1] - a[:, :, 0] > 35)
+    ys, xs = _np.nonzero(m)
+    if len(xs) > 50:
+        mitad = xs.mean()
+        alto_izq = ys[xs < mitad].mean()
+        alto_der = ys[xs >= mitad].mean()
+        check('la tendencia SUBE de izquierda a derecha (y %.0f → %.0f)'
+              % (alto_izq, alto_der), alto_der < alto_izq - 5,
+              (alto_izq, alto_der))
+
     check('ningún error de JavaScript en toda la sesión', not errores, errores[:3])
     b.close()
 

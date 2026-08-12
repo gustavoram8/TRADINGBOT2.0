@@ -7453,6 +7453,9 @@
           <button class="tool-btn" data-tool="fvg" data-tip="FVG zone">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="12" rx="1"/><text x="12" y="15.2" font-size="7" font-weight="700" fill="currentColor" stroke="none" text-anchor="middle" font-family="Inter, sans-serif">FVG</text></svg>
           </button>
+          <button class="tool-btn" data-tool="candles" data-tip="Candle sequence — drag up or down">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><line x1="5" y1="4" x2="5" y2="20"/><rect x="3" y="8" width="4" height="8" rx="1" fill="currentColor" stroke="none"/><line x1="12" y1="3" x2="12" y2="18"/><rect x="10" y="6" width="4" height="9" rx="1" fill="currentColor" stroke="none"/><line x1="19" y1="6" x2="19" y2="21"/><rect x="17" y="10" width="4" height="8" rx="1" fill="currentColor" stroke="none"/></svg>
+          </button>
           <button class="tool-btn" data-tool="circle" data-tip="Circle">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>
           </button>
@@ -13728,6 +13731,10 @@
     let suppress = false;
     const state = {
       loaded: false, tool: 'select', isDown: false, startX: 0, startY: 0, obj: null,
+      // ⚠️ el recuadro guía se normaliza con min/max y pierde el SENTIDO del
+      // arrastre; la secuencia de velas necesita saber si se fue hacia arriba
+      // o hacia abajo, así que se guarda el último punto tal cual
+      lastX: 0, lastY: 0,
       cur: 0, slides: [], hist: [],
       slide1BgVersion: 0, // counts bg changes on slide #1; triggers "apply all?" from 2nd change onward
       fillOn: true, // when false, new shapes are outline-only (no translucent fill)
@@ -13741,7 +13748,7 @@
     const ATAJOS = {
       v: 'select', p: 'pencil', l: 'trendline', r: 'rect', o: 'circle',
       t: 'text', e: 'erase', a: 'arrow', h: 'hline', y: 'hray',
-      n: 'polyline', f: 'fvg', d: 'ray',
+      n: 'polyline', f: 'fvg', d: 'ray', c: 'candles',
     };
     const FILL_ALPHA = 0.13; // translucent fill opacity for shapes/zones
     // Polyline (continuous-click) tool state — capped at POLY_MAX_PTS clicks
@@ -13977,6 +13984,14 @@
           obj = new fabric.Rect(Object.assign(baseOpts(), { left: p.x, top: p.y, width: 0, height: 0, stroke: color, strokeWidth: w, fill: state.fillOn ? hexA(color, FILL_ALPHA) : 'transparent' }));
         } else if (t === 'circle') {
           obj = new fabric.Ellipse(Object.assign(baseOpts(), { left: p.x, top: p.y, rx: 0, ry: 0, stroke: color, strokeWidth: w, fill: state.fillOn ? hexA(color, FILL_ALPHA) : 'transparent' }));
+        } else if (t === 'candles') {
+          // caja guía punteada mientras se arrastra; las velas se dibujan al
+          // soltar, cuando ya se sabe el ancho (= cuántas velas) y el sentido
+          obj = new fabric.Rect(Object.assign(baseOpts(), {
+            left: p.x, top: p.y, width: 0, height: 0,
+            stroke: 'rgba(150,160,176,.75)', strokeWidth: 1, strokeDashArray: [5, 4],
+            fill: 'transparent', excludeFromExport: true,
+          }));
         }
         if (obj) { state.obj = obj; canvas.add(obj); }
       });
@@ -14005,12 +14020,13 @@
         }
         if (!state.isDown || !state.obj) return;
         const p = canvas.getPointer(opt.e), o = state.obj, t = state.tool;
+        state.lastX = p.x; state.lastY = p.y;
         if (t === 'trendline' || t === 'arrow') {
           o.set({ x2: p.x, y2: p.y });
         } else if (t === 'ray') {
           const dx = p.x - state.startX, dy = p.y - state.startY, len = Math.hypot(dx, dy) || 1, ext = 2400;
           o.set({ x2: state.startX + dx / len * ext, y2: state.startY + dy / len * ext });
-        } else if (t === 'rect' || t === 'fvg') {
+        } else if (t === 'rect' || t === 'fvg' || t === 'candles') {
           o.set({ left: Math.min(p.x, state.startX), top: Math.min(p.y, state.startY), width: Math.abs(p.x - state.startX), height: Math.abs(p.y - state.startY) });
         } else if (t === 'circle') {
           o.set({ left: Math.min(p.x, state.startX), top: Math.min(p.y, state.startY), rx: Math.abs(p.x - state.startX) / 2, ry: Math.abs(p.y - state.startY) / 2 });
@@ -14050,6 +14066,12 @@
             const g = makeArrow(x1, y1, x2, y2, colorInput.value, parseInt(widthSel.value, 10));
             canvas.add(g); canvas.setActiveObject(g);
           }
+        } else if (t === 'candles') {
+          // la caja punteada era solo la guía: se retira y en su hueco se
+          // dibuja la secuencia. El sentido lo da el arrastre, no un ajuste.
+          canvas.remove(o);
+          const g = secuenciaVelas(state.startX, state.startY, state.lastX, state.lastY);
+          if (g) { canvas.add(g); canvas.setActiveObject(g); }
         } else if (t === 'fvg') {
           // Wrap the drawn box + a centered "FVG" label into one movable group
           const left = o.left, top = o.top, ww = o.width, hh = o.height; canvas.remove(o);
@@ -14123,6 +14145,76 @@
         canvas.setActiveObject(c);
         canvas.requestRenderAll(); pushHistory(); updateThumb();
       });
+    }
+
+    // ══ Secuencia de velas ══════════════════════════════════════════════
+    // Pedido del dueño, textual: "una herramienta de candlesticks que al
+    // seleccionarla y arrastrarla ya te dibuje una secuencia de candlesticks
+    // hacia arriba o hacia abajo".
+    //
+    // 🔑 Las velas se generan a partir de una serie de precios COHERENTE, no
+    // dibujando rectángulos al azar: cada vela abre donde cerró la anterior y
+    // las mechas siempre contienen al cuerpo. Un gráfico imposible lo detecta
+    // al instante justo el público al que enseña esta pizarra, y una vez visto
+    // ya no se confía en el resto de la lección.
+    const VELA_ALCISTA = '#22c55e', VELA_BAJISTA = '#ef4444';
+
+    function secuenciaVelas(x0, y0, x1, y1) {
+      const izq = Math.min(x0, x1), der = Math.max(x0, x1);
+      const arr = Math.min(y0, y1), aba = Math.max(y0, y1);
+      const ancho = der - izq, alto = aba - arr;
+      if (ancho < 24 || alto < 24) return null;
+      // El SENTIDO del arrastre manda: hacia arriba, secuencia alcista.
+      const sube = y1 < y0;
+      // Una vela cada ~34 px de arrastre, entre 4 y 20: así el usuario decide
+      // cuántas velas con el mismo gesto con el que decide el tamaño.
+      const n = Math.max(4, Math.min(20, Math.round(ancho / 34)));
+      const paso = ancho / n, cuerpo = Math.max(3, paso * 0.62);
+
+      // serie normalizada 0..1 (0 = abajo del recuadro) con tendencia + ruido
+      const ps = [];
+      let v = sube ? 0.12 : 0.88;
+      for (let i = 0; i <= n; i++) {
+        const deriva = (sube ? 1 : -1) * (0.76 / n);
+        // 🔑 El ruido se mide CONTRA la deriva, no en valor absoluto. Con ruido
+        // menor que la deriva salía una escalera perfecta sin una sola vela en
+        // contra —medido: 0 píxeles rojos en un tramo alcista— y eso no es un
+        // gráfico, es un dibujo. A 3,2× la deriva caen ~1 de cada 5 velas en
+        // contra: hay retroceso y la tendencia se sigue leyendo.
+        const ruido = Math.abs(deriva) * 3.2;
+        v = Math.max(0.04, Math.min(0.96, v + deriva + (Math.random() - 0.5) * ruido));
+        ps.push(v);
+      }
+      const Y = u => aba - u * alto;
+
+      const piezas = [];
+      for (let i = 0; i < n; i++) {
+        const ap = ps[i], ci = ps[i + 1];
+        const alcista = ci >= ap;
+        const col = alcista ? VELA_ALCISTA : VELA_BAJISTA;
+        // ⚠️ la mecha se calcula DESDE el cuerpo hacia fuera, nunca al revés:
+        // así es imposible que quede una mecha dentro del cuerpo.
+        // 🔑 Y su tamaño es PROPORCIONAL al cuerpo, no un valor fijo: con 0,09
+        // absoluto salían cuerpos de 8 px con mechas de 34 —un campo de cruces,
+        // no velas. Entre un cuarto y una vez el cuerpo es lo que se ve en un
+        // gráfico de verdad.
+        const rango = Math.max(0.012, Math.abs(ci - ap));
+        const mAlta = Math.max(ap, ci) + rango * (0.22 + Math.random() * 0.85);
+        const mBaja = Math.min(ap, ci) - rango * (0.22 + Math.random() * 0.85);
+        const cx = izq + i * paso + paso / 2;
+        piezas.push(new fabric.Line([cx, Y(mAlta), cx, Y(mBaja)],
+          { stroke: col, strokeWidth: Math.max(1, cuerpo * 0.16) }));
+        const yTop = Y(Math.max(ap, ci));
+        piezas.push(new fabric.Rect({
+          left: cx - cuerpo / 2, top: yTop, width: cuerpo,
+          // cuerpo mínimo de 2 px: una vela doji no puede desaparecer
+          height: Math.max(2, Math.abs(Y(ci) - Y(ap))),
+          fill: col, stroke: col, strokeWidth: 0,
+        }));
+      }
+      // Se agrupan: la secuencia se mueve, escala y borra como UNA pieza, que
+      // es lo que se espera de un gesto que dibuja 40 objetos de golpe.
+      return new fabric.Group(piezas, Object.assign(baseOpts(), {}));
     }
 
     function deleteSel() {
