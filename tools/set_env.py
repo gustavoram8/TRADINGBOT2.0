@@ -13,7 +13,12 @@ NUNCA imprime los valores (podrían ser claves): solo los nombres. Hace copia de
 seguridad de los dos archivos antes de tocarlos.
 
 Después hay que aplicar los cambios:
-    supervisorctl reread && supervisorctl update && supervisorctl restart traderacelerator
+    supervisorctl reread && supervisorctl update
+
+⚠️ NO encadenar `restart` detrás de `update`. Al cambiar el conf, `update` YA
+reinicia el proceso; gunicorn tarda ~30 s en cerrar con elegancia, así que el
+segundo reinicio lo mata a mitad del arranque y el sitio devuelve **502 durante
+~40 s**. Pasó en producción el 2026-08-07 con este mismo comando escrito aquí.
 """
 import glob
 import os
@@ -27,7 +32,11 @@ ENV = os.path.join(RAIZ, 'scalpel', '.env')
 # valores que sí se pueden enseñar: no son secretos y verlos ayuda a confirmar
 NO_SECRETO = {'PREVIEW_USERS', 'PAYPAL_ENV', 'SITE_URL', 'CRYPTO_PAY_CURRENCY',
               'CRYPTO_API_BASE', 'MAIL_SERVER', 'MAIL_PORT', 'MAIL_FROM',
-              'MAIL_USERNAME', 'ADMIN_EMAIL', 'PUBLIC_HTTPS', 'ASSISTANT_MODEL'}
+              'MAIL_USERNAME', 'ADMIN_EMAIL', 'PUBLIC_HTTPS', 'ASSISTANT_MODEL',
+              # El % de la oferta de bienvenida NO es un secreto y verlo
+              # confirmado evita el peor error posible con él: creer que quedó
+              # puesto en 30 cuando quedó en 3.
+              'LAUNCH_DISCOUNT_PCT'}
 
 
 def muestra(k, v):
