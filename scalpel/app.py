@@ -5251,17 +5251,40 @@ def _current_giveaway():
         return None, False
 
 
-# Official social accounts. Env-configured because they are set once and never
-# again; anything unset simply does not render, so the page never shows a dead
-# link to an account that does not exist yet.
+# Official social accounts. Anything without a URL simply does not render, so
+# the page never shows a dead link to an account that does not exist yet.
+#
+# Las cuentas que YA existen viven aquí con su URL por defecto: son públicas y
+# permanentes, así que esconderlas tras una variable de entorno solo consigue
+# que el sitio se despliegue con la página vacía si alguien olvida ponerla. La
+# variable se mantiene por si un día hay que cambiar una cuenta sin tocar el
+# código (poner la variable a vacío también la esconde).
 SOCIAL_LINKS = [
-    ('instagram', 'Instagram', os.environ.get('SOCIAL_INSTAGRAM', '')),
-    ('tiktok', 'TikTok', os.environ.get('SOCIAL_TIKTOK', '')),
+    ('instagram', 'Instagram', os.environ.get(
+        'SOCIAL_INSTAGRAM', 'https://www.instagram.com/tradeableacademy')),
+    ('tiktok', 'TikTok', os.environ.get(
+        'SOCIAL_TIKTOK', 'https://www.tiktok.com/@tradeableacademy')),
     ('x', 'X', os.environ.get('SOCIAL_X', '')),
     ('youtube', 'YouTube', os.environ.get('SOCIAL_YOUTUBE', '')),
     ('discord', 'Discord', os.environ.get('SOCIAL_DISCORD', '')),
     ('telegram', 'Telegram', os.environ.get('SOCIAL_TELEGRAM', '')),
 ]
+
+
+def _social_handle(url):
+    """El @arroba que la gente reconoce, sacado de la propia URL.
+
+    Se muestra en vez del enlace crudo porque una cuenta se busca por su
+    arroba, no por su dominio. Si la URL no tiene forma de perfil (un servidor
+    de Discord, por ejemplo) se cae al dominio + ruta, que siempre dice algo.
+    """
+    limpio = (url or '').split('?')[0].rstrip('/')
+    limpio = limpio.replace('https://', '').replace('http://', '')
+    limpio = limpio[4:] if limpio.startswith('www.') else limpio
+    trozos = [t for t in limpio.split('/') if t]
+    if len(trozos) == 2:                       # dominio + un solo segmento
+        return '@' + trozos[1].lstrip('@')
+    return limpio[:36]
 
 
 @app.route('/socials')
@@ -5274,7 +5297,8 @@ def socials():
     gw, closed = _current_giveaway()
     return render_template(
         'socials.html',
-        socials=[(k, n, u) for k, n, u in SOCIAL_LINKS if u.strip()],
+        socials=[(k, n, u, _social_handle(u))
+                 for k, n, u in SOCIAL_LINKS if u.strip()],
         gw=gw, gw_closed=closed,
         gw_ends_iso=(gw.ends_at.replace(tzinfo=timezone.utc).isoformat()
                      if gw and gw.ends_at else None),
