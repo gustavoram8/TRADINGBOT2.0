@@ -2130,6 +2130,10 @@ borrado. PENDIENTE: agregar selector de mes / historial.
     no coloque un vértice. De paso se quita el menú del navegador sobre el dibujo.
 
 ## 🗂️ CHALKBOARD — biblioteca de pizarras + tope de diapositivas (2026-08-12)
+> ✅ **CERRADO PARA EL LANZAMIENTO (decisión del dueño, 2026-08-12):** *"por y hasta ahora podemos
+> dejar el chalkboard tal cual al menos para aperturar la página al público, luego más adelante
+> iremos agregando cosas, recibiendo reportes"*. **No seguir metiéndole herramientas por iniciativa
+> propia** — lo que entre a partir de ahora sale de reportes de usuarios reales.
 Pedido del dueño: *"limitar el número de diapositivas… no quiero que alguien malintencionado cree
 40000"* y *"algo para poder guardar tus proyectos, y una vez guardado que se te reinicien las
 diapositivas… alguna especie de biblioteca donde vayan esos proyectos, y que alguien pueda volver a
