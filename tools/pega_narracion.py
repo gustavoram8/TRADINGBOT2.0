@@ -45,6 +45,10 @@ DEST = os.path.join(REELS, 'reel-tour-narrado.mp4')
 SR = 48000
 TOTAL = 42.30
 MARCA_EN = 36.30
+# Volumen de la marca sonora respecto a la voz. Bajado de 0,85 a 0,77 (−10 %)
+# a petición del dueño: con narración delante, la guitarra sonaba por encima
+# del nivel de la voz y una firma no debe ser lo más fuerte de la pieza.
+MARCA_VOL = 0.77
 GUARDA = 0.12          # margen de seguridad a cada lado de un tramo de voz
 
 # (texto, palabras, cuándo entra, hasta cuándo dura su escena)
@@ -185,7 +189,7 @@ def main():
     g = pcm(MARCA)
     i = int(MARCA_EN * SR)
     n = min(len(g), len(pista) - i)
-    pista[i:i + n] += g[:n] * 0.85
+    pista[i:i + n] += g[:n] * MARCA_VOL
 
     pista = np.tanh(pista * 1.02)
     pista = pista / (np.abs(pista).max() + 1e-9) * 0.92
