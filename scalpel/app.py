@@ -3915,6 +3915,7 @@ THE PLATFORM ITSELF IS ON-TOPIC. This forum lives inside Tradeable Academy, a tr
   • the Analyzer (screenshot analysis), Synapse, the Chalkboard whiteboard, Pre-Flight checklists, Kill Zones, the economic calendar
   • plans, prices, the forum itself, bugs, feature requests, feedback and questions about how something works
   • greetings, introductions and members welcoming each other
+Members write in four languages, so recognise these features under their local names too: camo / camuflaje / camouflage · marco / cadre / moldura (frame) · cursor / curseur · ruleta / roulette / roleta · tienda / boutique / loja (shop) · rango / rang / patente (rank) · racha / série / sequência (streak) · medalla / médaille / medalha · certificado / certificat · Reto Diario / Défi quotidien / Desafio diário (Daily Challenge) · Analizador / Analyseur / Analisador · pizarra / tableau / lousa (Chalkboard) · sorteo / tirage / sorteio (giveaway) · plan / plano / formule. Quiz, Synapse, Pre-Flight, Kill Zones and Chalkboard keep their English names in every language.
 
 ALLOW (allowed=true) normal trading discussion — including content that is critical of a strategy, an indicator, a prop firm, or of this platform — as long as it stays civil. Mild venting about losses or frustration with the market is fine. Posts that share or ask about a chart, setup, or trade are ALWAYS allowed. On-topic + civil = allowed. When in doubt, ALLOW.
 

@@ -252,6 +252,13 @@ def main():
          'el bloqueo por off-topic exige que TAMPOCO sea de la plataforma'),
     ]:
         check(frase in TP, 'el prompt de texto cubre: %s' % motivo)
+    # El foro es multilingüe: un francés escribe "la roulette" y un brasileño
+    # "minha sequência". Nombrar las funciones SOLO en inglés dejaba esa
+    # traducción al criterio del modelo.
+    for palabra in ('camuflaje', 'moldura', 'roleta', 'Défi quotidien',
+                    'Analisador', 'lousa', 'sorteio', 'patente'):
+        check(palabra in TP, 'reconoce la función por su nombre local: %s' % palabra)
+    check('multilingual' in TP, 'ordena juzgar en el idioma en que esté escrito')
 
     print('\n══ 8 · i18n ×4 ══')
     html = io.open(os.path.join(RAIZ, 'scalpel', 'templates', 'index.html'),
