@@ -13378,7 +13378,18 @@
       const { ok } = await api('/forum/post/' + id + '/delete', { method: 'POST' });
       if (!ok) return;
       if (detailView.style.display !== 'none') { backToList(); loadFeed(true); }
-      else if (cardEl) cardEl.remove();
+      else if (cardEl) {
+        cardEl.remove();
+        /* 🔴 Borrar NO devuelve cupo del día (el servidor cuenta también las
+           borradas, a propósito: si no, borrar y republicar sería un limite
+           infinito). Pero al borrar desde la lista no se volvía a pedir el
+           contador, así que la cifra en pantalla se quedaba congelada en la
+           de antes y parecía que el cupo iba por libre. Se relee del
+           servidor, que es el único que sabe la verdad. */
+        api('/forum/feed?page=1').then(r => {
+          if (r.ok) updatePostsLeft(r.data.posts_left_today);
+        });
+      }
     }
 
     async function deleteComment(id) {
