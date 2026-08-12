@@ -8504,6 +8504,8 @@
       'forum.img.content': 'Image blocked — that content is not allowed on this forum.',
       'forum.img.format': 'Please upload a JPG, PNG or WebP image.',
       'forum.img.large': 'Image too large (max 8 MB).',
+      'forum.shortTitle': 'The title needs at least {n} characters.',
+      'forum.shortBody': 'The message needs at least {n} characters.',
       'forum.netErr': 'The request never reached the server. Check your connection and try again.',
       'forum.needPlan': 'The forum is included with Standard and Premium. Upgrade your plan to post.',
       'forum.session': 'Your session expired. Sign in again and your text will still be here.',
@@ -9067,6 +9069,8 @@
       'forum.img.content': 'Imagen bloqueada — ese contenido no está permitido en este foro.',
       'forum.img.format': 'Sube una imagen JPG, PNG o WebP.',
       'forum.img.large': 'Imagen demasiado grande (máx. 8 MB).',
+      'forum.shortTitle': 'El título necesita al menos {n} caracteres.',
+      'forum.shortBody': 'El mensaje necesita al menos {n} caracteres.',
       'forum.netErr': 'La petición no llegó al servidor. Revisa tu conexión y vuelve a intentarlo.',
       'forum.needPlan': 'El foro viene con Standard y Premium. Mejora tu plan para publicar.',
       'forum.session': 'Tu sesión expiró. Vuelve a entrar y tu texto seguirá aquí.',
@@ -9630,6 +9634,8 @@
       'forum.img.content': 'Image bloquée — ce contenu n’est pas autorisé sur ce forum.',
       'forum.img.format': 'Veuillez importer une image JPG, PNG ou WebP.',
       'forum.img.large': 'Image trop volumineuse (max 8 Mo).',
+      'forum.shortTitle': "Le titre doit contenir au moins {n} caractères.",
+      'forum.shortBody': "Le message doit contenir au moins {n} caractères.",
       'forum.netErr': "La requête n'a jamais atteint le serveur. Vérifiez votre connexion et réessayez.",
       'forum.needPlan': "Le forum est inclus avec Standard et Premium. Passez à un plan supérieur pour publier.",
       'forum.session': "Votre session a expiré. Reconnectez-vous, votre texte sera toujours là.",
@@ -10193,6 +10199,8 @@
       'forum.img.content': 'Imagem bloqueada — esse conteúdo não é permitido neste fórum.',
       'forum.img.format': 'Envie uma imagem JPG, PNG ou WebP.',
       'forum.img.large': 'Imagem muito grande (máx. 8 MB).',
+      'forum.shortTitle': 'O título precisa de pelo menos {n} caracteres.',
+      'forum.shortBody': 'A mensagem precisa de pelo menos {n} caracteres.',
       'forum.netErr': 'A requisição não chegou ao servidor. Verifique sua conexão e tente de novo.',
       'forum.needPlan': 'O fórum vem com Standard e Premium. Faça upgrade do seu plano para publicar.',
       'forum.session': 'Sua sessão expirou. Entre de novo e seu texto continuará aqui.',
@@ -13257,7 +13265,14 @@
       if (data.error === 'daily_limit') return { msg: T('forum.noPostsLeft'), detail: '', warn: false };
       if (data.error === 'not_a_member') return { msg: T('forum.comm.notMember'), detail: '', warn: false };
       if (data.error === 'recipient_locked') return { msg: T('forum.dmLocked'), detail: '', warn: false };
-      if (data.error === 'too_short')   return { msg: T('forum.error'), detail: '', warn: false };
+      /* 🔴 Esto decía "algo salió mal", que es exactamente lo que NO hay que
+         decirle a alguien que solo escribió un título corto: manda a buscar un
+         fallo del sistema donde solo faltaban letras. Y como este camino ni
+         siquiera llega a enviar la petición, el servidor no registra nada —
+         costó una tarde entera de logs vacíos. Ahora dice qué falta. */
+      if (data.error === 'too_short')
+        return { msg: T(data.field === 'title' ? 'forum.shortTitle' : 'forum.shortBody')
+                        .replace('{n}', data.min), detail: '', warn: false };
       if (data.error === 'rate_limited') {
         const mins = Math.max(1, Math.round((data.retry_after || 300) / 60));
         return { msg: T('forum.block.rateLimited').replace('{min}', mins), detail: '', warn: true };
@@ -13640,7 +13655,8 @@
       const title = titleInput.value.trim();
       const body = bodyInput.value.trim();
       composerErr.style.display = 'none';
-      if (title.length < 4 || body.length < 10) { showErr(composerErr, { error: 'too_short' }); return; }
+      if (title.length < 4) { showErr(composerErr, { error: 'too_short', field: 'title', min: 4 }); titleInput.focus(); return; }
+      if (body.length < 10) { showErr(composerErr, { error: 'too_short', field: 'body', min: 10 }); bodyInput.focus(); return; }
       const form = new FormData();
       form.append('title', title); form.append('body', body);
       const commChoice = (commWrap.style.display !== 'none' && commSel.value) ? commSel.value
