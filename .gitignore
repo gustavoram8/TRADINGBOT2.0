@@ -40,6 +40,9 @@ reports/*.pdf
 
 # Mentorship support material (member-only files, served through a gated route)
 scalpel/private_uploads/
+# Subidas del foro: datos de runtime (y las deja también el test
+# tools/test_foro_imagenes.py al probar la subida permitida).
+scalpel/static/uploads/
 
 # Tipografias descargadas por tools/gen_posts_ig.py (SIL OFL, no son del producto)
 tools/.fuentes/
