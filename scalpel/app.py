@@ -89,6 +89,21 @@ app.config['SECRET_KEY'] = _load_secret_key()
 _db_url = os.environ.get('DATABASE_URL', 'sqlite:///' + os.path.join(BASE_DIR, 'scalpel.db'))
 app.config['SQLALCHEMY_DATABASE_URI'] = _db_url
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_pre_ping': True, 'pool_recycle': 300}
+# 🔴 LA SESIÓN DE POSTGRESQL VA EN UTC, SIEMPRE.
+# Todo el código guarda instantes con `datetime.now(timezone.utc)` y las
+# columnas son `DateTime` SIN zona. Al insertar un valor CON zona en una
+# columna sin zona, PostgreSQL lo convierte a la zona de la SESIÓN — que por
+# defecto es la del sistema operativo. El VPS está en Europa/Berlín, así que
+# cada fecha se guardaba con 2 horas de más y al releerla se interpretaba como
+# UTC: instantes en el futuro.
+#
+# Lo que rompía: una publicación de las 23:21 UTC quedaba fechada el día
+# siguiente, así que NO contaba para el cupo diario y el contador nunca
+# bajaba. Lo reportó el dueño. Y lo mismo afectaba a rachas, límites por
+# ventana y cualquier comparación con la hora actual.
+if _db_url.startswith('postgres'):
+    app.config['SQLALCHEMY_ENGINE_OPTIONS']['connect_args'] = {
+        'options': '-c timezone=utc'}
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 # "Remember this device" — when opted in, keep the user logged in indefinitely.
@@ -2709,9 +2724,17 @@ def mentorship_member_required(fn):
 
 
 def _as_utc(dt):
+    """El instante en UTC, venga como venga de la base.
+
+    ⚠️ Antes devolvía tal cual cualquier fecha que YA trajera zona, y eso es
+    una trampa: una fecha con +02:00 se comparaba y se le pedía `.date()` en
+    hora de Berlín mientras el resto del código vive en UTC. Ahora se
+    CONVIERTE; solo se le pone la etiqueta UTC a las que vienen sin zona,
+    que es lo que escribe esta aplicación.
+    """
     if dt is None:
         return None
-    return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc) if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
 
 
 def check_rate_limit():
