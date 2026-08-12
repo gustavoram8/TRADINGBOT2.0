@@ -96,16 +96,9 @@ with sync_playwright() as p:
     pg.evaluate("""() => { const e =
         document.querySelector('.tab[data-tab="scalper"]'); if (e) e.click(); }""")
     pg.wait_for_timeout(3800)
-    # se expone el lienzo de fabric para poder contar objetos
-    pg.evaluate("""() => {
-        const c = document.querySelector('#sk-canvas');
-        window.__skCanvas = c && c.__fabric ? c.__fabric : (c && c.fabric) || null;
-        if (!window.__skCanvas && window.fabric) {
-          // fabric guarda la instancia en el elemento superior
-          const el = document.querySelector('.canvas-container canvas.upper-canvas');
-          if (el && el.__fabricInstance) window.__skCanvas = el.__fabricInstance;
-        }
-      }""")
+    # ⚠️ `window.__skCanvas` lo publica la propia app (el lienzo vive en un
+    #    closure y sin ese handle no hay forma de preguntarle nada). Antes aquí
+    #    se intentaba adivinarlo del DOM y salía siempre null.
 
     caja = pg.evaluate("""() => { const c =
         document.querySelector('#sk-canvas'); const r = c.getBoundingClientRect();
@@ -284,100 +277,155 @@ with sync_playwright() as p:
             return {verde: gy.length, rojo: ry.length,
                     yVerde: med(gy), yRojo: med(ry)}; }""")
 
-    def posicion(xe, ye, xs, ys, yObj):
-        """entrada→stop arrastrando, y el objetivo con el clic siguiente"""
-        pulsa('trade')
-        pg.mouse.move(caja['x'] + xe, caja['y'] + ye)
-        pg.mouse.down()
-        pg.mouse.move(caja['x'] + xs, caja['y'] + ys, steps=6)
-        pg.mouse.up()
-        pg.wait_for_timeout(280)
-        pg.mouse.move(caja['x'] + xs, caja['y'] + yObj, steps=8)
-        pg.wait_for_timeout(280)
-        pg.mouse.click(caja['x'] + xs, caja['y'] + yObj)
-        pg.wait_for_timeout(380)
-
     def limpia():
         pulsa('select')
         pg.evaluate("""() => document.getElementById('sk-clear').click()""")
         pg.wait_for_timeout(450)
 
+    def lienzo():
+        """⚠️ Hay que RE-MEDIR el lienzo después de colocar una pieza: al
+        aparecer su barra de edición el lienzo baja ~61 px, y con la medida
+        vieja los clics caen fuera. Esto costó una hora de creer que los
+        tiradores no funcionaban cuando funcionaban perfectamente."""
+        return pg.evaluate("""() => { const r =
+            document.querySelector('#sk-canvas').getBoundingClientRect();
+            return {x: r.x, y: r.y}; }""")
+
+    def pieza(campo) :
+        return pg.evaluate("""c => { const o = window.__skCanvas.getActiveObject();
+            if (!o) return null;
+            if (c === 'tp' || c === 'sl') { const p = o.oCoords[c];
+              return p ? {x: p.x, y: p.y} : null; }
+            return o[c]; }""", campo)
+
+    def arrastra(p0, dy, c=None):
+        c = c or lienzo()
+        pg.mouse.move(c['x'] + p0['x'], c['y'] + p0['y'])
+        pg.mouse.down()
+        pg.mouse.move(c['x'] + p0['x'], c['y'] + p0['y'] + dy, steps=14)
+        pg.mouse.up()
+        pg.wait_for_timeout(550)
+
+    def zonas():
+        """(alto del verde, alto del rojo, y de su centro) leído del lienzo"""
+        return pg.evaluate("""() => {
+            const c = document.querySelector('#sk-canvas-wrap canvas.lower-canvas') ||
+                      document.querySelector('#sk-canvas');
+            const g = c.getContext('2d');
+            const d = g.getImageData(0, 0, c.width, c.height).data;
+            let gy = [], ry = [];
+            for (let y = 0; y < c.height; y++) {
+              let nv = 0, nr = 0;
+              for (let x = 0; x < c.width; x++) {
+                const i = (y * c.width + x) * 4;
+                const R = d[i], G = d[i+1], B = d[i+2];
+                // ⚠️ umbrales MEDIDOS sobre la mezcla real del relleno
+                //    translúcido con el fondo: el verde queda rgb(15,38,30),
+                //    o sea G-R=23 pero G-B solo 8
+                if (G - R > 12 && G - B > 4) nv++;
+                if (R - G > 12 && R - B > 8) nr++;
+              }
+              if (nv > 30) gy.push(y);
+              if (nr > 30) ry.push(y);
+            }
+            const med = a => a.length ? a.reduce((s,v)=>s+v,0)/a.length : -1;
+            return {verde: gy.length, rojo: ry.length,
+                    yVerde: med(gy), yRojo: med(ry)}; }""")
+
     pg.keyboard.press('Escape')
     limpia()
-    # riesgo de 60 px, objetivo a 60 → 1R
-    posicion(120, 240, 380, 300, 180)
+    check('el lienzo se puede consultar desde fuera (handle de pruebas)',
+          pg.evaluate("() => !!window.__skCanvas"))
+
+    pulsa('trade')
+    dibuja(120, 240, 380, 300)          # arrastre HACIA ABAJO = compra
     z = zonas()
     check('la posición dibuja zona verde y zona roja', z['verde'] > 20 and z['rojo'] > 10, z)
     check('arrastrando hacia ABAJO el TP queda ARRIBA y el SL abajo (compra)',
           z['yVerde'] < z['yRojo'], z)
-    # 🔑 EL R:R SE MIDE: con el objetivo a 1R el verde tiene que medir lo MISMO
-    #    que el rojo. Antes iba escrito un 2 fijo y esto habría fallado.
-    check('objetivo a 1R → verde y rojo miden igual (%d vs %d px)'
-          % (z['verde'], z['rojo']),
-          abs(z['verde'] - z['rojo']) <= max(10, z['rojo'] * 0.2), z)
-    # …y la herramienta se apaga sola (petición expresa del dueño)
+    check('nace a 2R (verde %d px, rojo %d px)' % (z['verde'], z['rojo']),
+          abs(z['verde'] - 2 * z['rojo']) <= max(12, z['rojo'] * 0.25), z)
     check('tras colocar una posición la herramienta se SUELTA',
           pg.evaluate(HERRAMIENTA) == 'select', pg.evaluate(HERRAMIENTA))
+    check('…y aparece su barra de edición',
+          pg.evaluate("""() => document.getElementById('sk-pos-tools').classList.contains('show')"""))
 
-    limpia()
-    # mismo riesgo, objetivo a 180 px → 3R
-    posicion(120, 240, 380, 300, 60)
-    z3 = zonas()
-    check('objetivo a 3R → el verde mide el TRIPLE que el rojo (%d vs %d px)'
-          % (z3['verde'], z3['rojo']),
-          abs(z3['verde'] - 3 * z3['rojo']) <= max(14, z3['rojo'] * 0.3), z3)
-
-    limpia()
-    posicion(120, 300, 380, 250, 400)     # arrastre HACIA ARRIBA = venta
+    # ── 🔑 LO QUE PIDIÓ: mover el TP y que el R:R CAMBIE ──
+    tp = pieza('tp')
+    check('la posición trae tiradores propios de TP y SL',
+          tp is not None and pieza('sl') is not None, tp)
+    arrastra(tp, 60)                    # bajar el TP acerca el objetivo
+    z1 = zonas()
+    check('bajar el tirador del TP baja el R:R (verde %d → %d px)'
+          % (z['verde'], z1['verde']), z1['verde'] < z['verde'] - 30, (z, z1))
+    check('…y la barra lo refleja (%s)'
+          % pg.evaluate("() => document.getElementById('sk-pos-rr').value"),
+          abs(float(pg.evaluate("() => document.getElementById('sk-pos-rr').value"))
+              - z1['verde'] / max(1.0, z1['rojo'])) < 0.35)
+    arrastra(pieza('tp'), -160)         # subirlo lo aleja
     z2 = zonas()
-    check('arrastrando hacia ARRIBA el SL queda arriba y el TP abajo (venta)',
-          z2['yVerde'] > z2['yRojo'], z2)
+    check('subirlo lo vuelve a subir (verde %d px)' % z2['verde'],
+          z2['verde'] > z1['verde'] + 60, (z1, z2))
 
-    # una posición a medio colocar se cancela con el clic derecho y no deja nada
-    limpia()
-    vacio, _ = dibujado()
-    pulsa('trade')
-    pg.mouse.move(caja['x'] + 120, caja['y'] + 240)
-    pg.mouse.down()
-    pg.mouse.move(caja['x'] + 380, caja['y'] + 300, steps=6)
-    pg.mouse.up()
-    pg.wait_for_timeout(300)
-    pg.mouse.move(caja['x'] + 380, caja['y'] + 150, steps=6)
-    pg.wait_for_timeout(250)
-    a_medias, _ = dibujado()
-    check('mientras se coloca, el objetivo ya se ve siguiendo al ratón',
-          a_medias > vacio + 300, (vacio, a_medias))
-    pg.mouse.click(caja['x'] + 380, caja['y'] + 150, button='right')
-    pg.wait_for_timeout(400)
-    tras, _ = dibujado()
-    check('el clic derecho cancela la posición a medias y no deja rastro',
-          abs(tras - vacio) < 250, (vacio, a_medias, tras))
+    # cruzar el TP al otro lado de la entrada da la vuelta a la operación
+    ent = pg.evaluate("""() => { const o = window.__skCanvas.getActiveObject();
+        return o.top + (o.largo ? o.rec : o.rie); }""")
+    zoom = pg.evaluate("() => window.__skCanvas.getZoom()")
+    tp = pieza('tp')
+    arrastra(tp, (ent + 120) * zoom - tp['y'])
+    check('cruzar el TP por debajo de la entrada convierte la compra en VENTA',
+          pieza('largo') is False, pieza('largo'))
+    z3 = zonas()
+    check('…y ahora el SL queda arriba y el TP abajo', z3['yVerde'] > z3['yRojo'], z3)
+
+    # teclear un R:R exacto
+    pg.fill('#sk-pos-rr', '2')
+    pg.wait_for_timeout(500)
+    z4 = zonas()
+    check('tecleando 2 en la barra el dibujo se ajusta a 1:2 (%d vs %d px)'
+          % (z4['verde'], z4['rojo']),
+          abs(z4['verde'] - 2 * z4['rojo']) <= max(12, z4['rojo'] * 0.25), z4)
 
     limpia()
+    # ── Fibonacci editable ──
     pulsa('fib')
     dibuja(120, 380, 520, 120)
-    fib = pg.evaluate("""() => {
+    check('al seleccionar un Fibonacci sale su barra',
+          pg.evaluate("""() => document.getElementById('sk-fib-tools').classList.contains('show')"""))
+    n0 = pg.evaluate("() => window.__skCanvas.getActiveObject().niveles.length")
+    check('trae 8 niveles de salida y 10 disponibles en la barra',
+          n0 == 8 and pg.evaluate("() => document.querySelectorAll('#sk-fib-chips .fib-chip').length") == 10,
+          n0)
+    pg.click('#sk-fib-chips .fib-chip:nth-child(9)')     # 1.272
+    pg.wait_for_timeout(400)
+    check('pulsar un chip AÑADE ese nivel (%d → %d)'
+          % (n0, pg.evaluate("() => window.__skCanvas.getActiveObject().niveles.length")),
+          pg.evaluate("() => window.__skCanvas.getActiveObject().niveles.length") == n0 + 1)
+    pg.click('#sk-fib-chips .fib-chip:nth-child(2)')     # quita el 0.236
+    pg.wait_for_timeout(400)
+    check('y volver a pulsarlo lo QUITA',
+          pg.evaluate("() => window.__skCanvas.getActiveObject().niveles.indexOf(0.236)") == -1)
+    pg.evaluate("""() => { const i = document.getElementById('sk-fib-col');
+        i.value = '#ff9900'; i.dispatchEvent(new Event('input', {bubbles: true})); }""")
+    pg.wait_for_timeout(400)
+    check('se puede cambiar el color de las líneas',
+          pg.evaluate("() => window.__skCanvas.getActiveObject().colorLinea") == '#ff9900',
+          pg.evaluate("() => window.__skCanvas.getActiveObject().colorLinea"))
+    naranja = pg.evaluate("""() => {
         const c = document.querySelector('#sk-canvas-wrap canvas.lower-canvas') ||
                   document.querySelector('#sk-canvas');
         const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
-        let lineas = 0, ote = 0;
-        for (let y = 0; y < c.height; y++) {
-          let n = 0, v = 0;
-          for (let x = 0; x < c.width; x++) {
-            const i = (y * c.width + x) * 4;
-            const R = d[i], G = d[i+1], B = d[i+2];
-            if (B - R > 40 && B > 90) n++;               // azul = las líneas
-            if (G - R > 12 && G - B > 4) v++;            // verde = la banda OTE
-          }
-          if (n > 60) lineas++;
-          if (v > 60) ote++;
+        let n = 0;
+        for (let i = 0; i < d.length; i += 4) {
+          if (d[i] > 150 && d[i+1] > 80 && d[i+1] < 190 && d[i+2] < 90) n++;
         }
-        return {lineas: lineas, ote: ote}; }""")
-    check('el Fibonacci pinta sus niveles (%d filas de línea)' % fib['lineas'],
-          fib['lineas'] >= 6, fib)
-    # la banda OTE (0,62-0,79) es lo que ata la herramienta a lo que enseña el
-    # sitio; sin ella son ocho rayas
-    check('…y sombrea la banda OTE (%d px de alto)' % fib['ote'], fib['ote'] > 15, fib)
+        return n; }""")
+    check('…y el cambio se VE en el dibujo (%d px naranjas)' % naranja, naranja > 300, naranja)
+    ote0 = pg.evaluate("() => window.__skCanvas.getActiveObject().ote")
+    pg.click('#sk-fib-ote')
+    pg.wait_for_timeout(400)
+    check('la banda OTE se puede apagar y encender',
+          pg.evaluate("() => window.__skCanvas.getActiveObject().ote") != ote0)
     limpia()
 
     # ── 🖱️ clic derecho = dejar de colocar ──

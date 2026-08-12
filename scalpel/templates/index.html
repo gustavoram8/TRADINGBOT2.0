@@ -2952,6 +2952,16 @@
       border-radius: 7px; font-size: 12.5px; font-family: 'Inter', sans-serif; padding: 6px 8px; cursor: pointer;
     }
     .sk-text-tools input[type="number"] { width: 58px; }
+    .stt-mini { font-size: 11px; font-weight: 700; color: var(--muted); }
+    .stt-toggle.wide { width: auto; padding: 0 10px; font-size: 11.5px; font-weight: 700; }
+    /* los niveles del Fibonacci, uno por chip: se encienden y se apagan */
+    .fib-chips { display: inline-flex; gap: 4px; flex-wrap: wrap; }
+    .fib-chip {
+      font-size: 11px; font-weight: 700; padding: 4px 7px; border-radius: 6px;
+      border: 1px solid var(--border2); background: var(--surface);
+      color: var(--muted); cursor: pointer; font-family: 'Inter', sans-serif;
+    }
+    .fib-chip.on { color: #fff; background: var(--accent); border-color: var(--accent); }
     .sk-text-tools .stt-sep { width: 1px; height: 22px; background: var(--border); margin: 0 2px; }
     .stt-toggle {
       width: 32px; height: 32px; border-radius: 7px; border: 1px solid var(--border2); background: var(--surface);
@@ -7528,6 +7538,36 @@
       </div>
 
       <!-- Text formatting toolbar -->
+      <!-- Barra de la POSICIÓN: aparece al seleccionar una -->
+      <div class="sk-text-tools" id="sk-pos-tools">
+        <span class="stt-label" data-i18n="scalper.position">Position</span>
+        <label class="stt-mini" data-i18n="scalper.rr">R:R</label>
+        <input type="number" id="sk-pos-rr" min="0.1" max="20" step="0.1" value="2">
+        <button class="stt-toggle wide" type="button" id="sk-pos-flip"
+                data-i18n="scalper.flip">Buy / Sell</button>
+        <span class="stt-sep"></span>
+        <label class="stt-mini" data-i18n="scalper.tp">TP</label>
+        <input type="color" class="tool-color" id="sk-pos-ctp" value="#22c55e">
+        <label class="stt-mini" data-i18n="scalper.sl">SL</label>
+        <input type="color" class="tool-color" id="sk-pos-csl" value="#ef4444">
+        <label class="stt-mini" data-i18n="scalper.entry">Entry</label>
+        <input type="color" class="tool-color" id="sk-pos-cen" value="#5b8ef0">
+      </div>
+
+      <!-- Barra del FIBONACCI -->
+      <div class="sk-text-tools" id="sk-fib-tools">
+        <span class="stt-label">Fib</span>
+        <span class="fib-chips" id="sk-fib-chips"></span>
+        <span class="stt-sep"></span>
+        <label class="stt-mini" data-i18n="scalper.lines">Lines</label>
+        <input type="color" class="tool-color" id="sk-fib-col" value="#5b8ef0">
+        <label class="stt-mini" data-i18n="scalper.labels">Labels</label>
+        <input type="color" class="tool-color" id="sk-fib-txt" value="#5b8ef0">
+        <span class="stt-sep"></span>
+        <button class="stt-toggle wide active" type="button" id="sk-fib-ote">OTE</button>
+        <input type="color" class="tool-color" id="sk-fib-cote" value="#22c55e">
+      </div>
+
       <div class="sk-text-tools" id="sk-text-tools">
         <span class="stt-label" data-i18n="scalper.text">Text</span>
         <select id="sk-font" title="Font family">
@@ -8442,7 +8482,7 @@
       'scalper.bgNavy': 'Navy', 'scalper.bgCharcoal': 'Charcoal', 'scalper.bgForest': 'Forest', 'scalper.bgSepia': 'Sepia', 'scalper.bgCream': 'Cream', 'scalper.bgCustom': 'Custom…',
       'scalper.maxSlides': 'This board is full: {n} slides maximum. Export it to PDF and start a new one.',
       'scalper.saveFail': "Your browser ran out of room and this board could NOT be saved. Export it to PDF now so you don't lose it.",
-      'scalper.newName': 'Board', 'scalper.save': 'Save', 'scalper.library': 'Library',
+      'scalper.newName': 'Board', 'scalper.position': 'Position', 'scalper.rr': 'R:R', 'scalper.flip': 'Buy / Sell', 'scalper.tp': 'TP', 'scalper.sl': 'SL', 'scalper.entry': 'Entry', 'scalper.lines': 'Lines', 'scalper.labels': 'Labels', 'scalper.save': 'Save', 'scalper.library': 'Library',
       'scalper.libTitle': 'Your boards', 'scalper.libCount': '{n} of {max} saved',
       'scalper.libEmpty': "You haven't saved a board yet. Draw something and press Save \u2014 it will be waiting here, from any computer.",
       'scalper.saveTitle': 'Save this board', 'scalper.saveHint': 'It goes to your library and the board starts fresh with one blank slide.',
@@ -8991,7 +9031,7 @@
       'scalper.bgNavy': 'Marino', 'scalper.bgCharcoal': 'Carbón', 'scalper.bgForest': 'Bosque', 'scalper.bgSepia': 'Sepia', 'scalper.bgCream': 'Crema', 'scalper.bgCustom': 'Personalizado…',
       'scalper.maxSlides': 'Esta pizarra está llena: máximo {n} diapositivas. Expórtala a PDF y empieza otra.',
       'scalper.saveFail': 'Tu navegador se quedó sin espacio y esta pizarra NO se pudo guardar. Expórtala a PDF ahora para no perderla.',
-      'scalper.newName': 'Pizarra', 'scalper.save': 'Guardar', 'scalper.library': 'Biblioteca',
+      'scalper.newName': 'Pizarra', 'scalper.position': 'Posición', 'scalper.rr': 'R:R', 'scalper.flip': 'Compra / Venta', 'scalper.tp': 'TP', 'scalper.sl': 'SL', 'scalper.entry': 'Entrada', 'scalper.lines': 'Líneas', 'scalper.labels': 'Etiquetas', 'scalper.save': 'Guardar', 'scalper.library': 'Biblioteca',
       'scalper.libTitle': 'Tus pizarras', 'scalper.libCount': '{n} de {max} guardadas',
       'scalper.libEmpty': 'Todav\u00eda no has guardado ninguna pizarra. Dibuja algo y pulsa Guardar \u2014 aqu\u00ed te espera, desde cualquier computadora.',
       'scalper.saveTitle': 'Guardar esta pizarra', 'scalper.saveHint': 'Va a tu biblioteca y la pizarra vuelve a empezar con una diapositiva en blanco.',
@@ -9540,7 +9580,7 @@
       'scalper.bgNavy': 'Marine', 'scalper.bgCharcoal': 'Charbon', 'scalper.bgForest': 'Forêt', 'scalper.bgSepia': 'Sépia', 'scalper.bgCream': 'Crème', 'scalper.bgCustom': 'Personnalisé…',
       'scalper.maxSlides': 'Ce tableau est plein : {n} diapositives maximum. Exportez-le en PDF et commencez-en un autre.',
       'scalper.saveFail': "Votre navigateur n'a plus de place et ce tableau n'a PAS pu être enregistré. Exportez-le en PDF maintenant pour ne pas le perdre.",
-      'scalper.newName': 'Tableau', 'scalper.save': 'Enregistrer', 'scalper.library': 'Biblioth\u00e8que',
+      'scalper.newName': 'Tableau', 'scalper.position': 'Position', 'scalper.rr': 'R:R', 'scalper.flip': 'Achat / Vente', 'scalper.tp': 'TP', 'scalper.sl': 'SL', 'scalper.entry': 'Entrée', 'scalper.lines': 'Lignes', 'scalper.labels': 'Étiquettes', 'scalper.save': 'Enregistrer', 'scalper.library': 'Biblioth\u00e8que',
       'scalper.libTitle': 'Vos tableaux', 'scalper.libCount': '{n} sur {max} enregistr\u00e9s',
       'scalper.libEmpty': "Vous n'avez encore enregistr\u00e9 aucun tableau. Dessinez quelque chose et appuyez sur Enregistrer \u2014 il vous attendra ici, depuis n'importe quel ordinateur.",
       'scalper.saveTitle': 'Enregistrer ce tableau', 'scalper.saveHint': "Il part dans votre biblioth\u00e8que et le tableau recommence avec une diapositive vierge.",
@@ -10089,7 +10129,7 @@
       'scalper.bgNavy': 'Marinho', 'scalper.bgCharcoal': 'Carvão', 'scalper.bgForest': 'Floresta', 'scalper.bgSepia': 'Sépia', 'scalper.bgCream': 'Creme', 'scalper.bgCustom': 'Personalizado…',
       'scalper.maxSlides': 'Este quadro está cheio: máximo de {n} slides. Exporte para PDF e comece outro.',
       'scalper.saveFail': 'Seu navegador ficou sem espaço e este quadro NÃO pôde ser salvo. Exporte para PDF agora para não perdê-lo.',
-      'scalper.newName': 'Quadro', 'scalper.save': 'Salvar', 'scalper.library': 'Biblioteca',
+      'scalper.newName': 'Quadro', 'scalper.position': 'Posição', 'scalper.rr': 'R:R', 'scalper.flip': 'Compra / Venda', 'scalper.tp': 'TP', 'scalper.sl': 'SL', 'scalper.entry': 'Entrada', 'scalper.lines': 'Linhas', 'scalper.labels': 'Rótulos', 'scalper.save': 'Salvar', 'scalper.library': 'Biblioteca',
       'scalper.libTitle': 'Seus quadros', 'scalper.libCount': '{n} de {max} salvos',
       'scalper.libEmpty': 'Voc\u00ea ainda n\u00e3o salvou nenhum quadro. Desenhe algo e toque em Salvar \u2014 ele fica esperando aqui, de qualquer computador.',
       'scalper.saveTitle': 'Salvar este quadro', 'scalper.saveHint': 'Vai para a sua biblioteca e o quadro recome\u00e7a com um slide em branco.',
@@ -13992,9 +14032,6 @@
     // de sobra para marcar una estructura larga (HH/HL/HH/HL…).
     const POLY_MAX_PTS = 12;
     let _polyPts = [], _polySegs = [], _polyPreview = null, _polyLastClick = 0;
-    // Posición a medio colocar: ya se arrastró entrada→stop y falta el clic
-    // que fija el objetivo. `prev` es la pieza que sigue al ratón.
-    let _trade = null;
     let _pendingBgAll = null; // bg type waiting for "apply to all" confirmation
     // Erase-by-area (marquee) tool state
     let _eraseRect = null;
@@ -14086,9 +14123,6 @@
         _polyPts = []; _polySegs = []; _polyLastClick = 0;
         canvas.requestRenderAll(); pushHistory(); updateThumb();
       }
-      // una posición a medio colocar no puede sobrevivir a un cambio de
-      // herramienta: quedaría un previo suelto en el lienzo
-      if (_trade && t !== 'trade') cancelaTrade();
       state.tool = t;
       toolBtns.forEach(b => b.classList.toggle('active', b.dataset.tool === t));
       canvas.isDrawingMode = (t === 'pencil');
@@ -14191,7 +14225,6 @@
     //   2 · figura a medio arrastrar → se descarta (no queda nada)
     //   3 · nada en curso → se suelta la herramienta (vuelve a Seleccionar)
     function cancelaColocacion() {
-      if (_trade) { cancelaTrade(); return; }
       if (state.tool === 'polyline' && _polyPts.length > 0) { polyFinish(); return; }
       if (state.isDown) {
         state.isDown = false;
@@ -14220,9 +14253,6 @@
         if (t === 'select' || t === 'pencil') return;
         const p = canvas.getPointer(opt.e);
         const color = colorInput.value, w = parseInt(widthSel.value, 10);
-
-        // Posición esperando su objetivo: este clic lo fija y cierra la pieza
-        if (t === 'trade' && _trade) { fijaTrade(p.y); return; }
 
         // Polyline: each click adds a segment; double-click finishes
         if (t === 'polyline') {
@@ -14295,12 +14325,6 @@
           }
           return;
         }
-        // Posición: el objetivo sigue al ratón y el múltiplo se recalcula
-        if (state.tool === 'trade' && _trade && !state.isDown) {
-          const p = canvas.getPointer(opt.e);
-          pintaTrade(p.y);
-          return;
-        }
         // Polyline preview: update dashed preview line to cursor
         if (state.tool === 'polyline') {
           if (_polyPts.length > 0 && _polyPreview) {
@@ -14358,23 +14382,20 @@
             const g = makeArrow(x1, y1, x2, y2, colorInput.value, parseInt(widthSel.value, 10));
             canvas.add(g); canvas.setActiveObject(g);
           }
-        } else if (t === 'trade') {
-          // el arrastre solo fijó ENTRADA y STOP; el objetivo lo pone el clic
-          // siguiente, y hasta entonces la pieza sigue al ratón
-          canvas.remove(o);
-          if (Math.abs(state.lastY - state.startY) >= 12) {
-            _trade = { x0: state.startX, y0: state.startY,
-                       x1: state.lastX, y1: state.lastY, prev: null };
-            pintaTrade(state.lastY + (state.lastY > state.startY ? -1 : 1) *
-                       Math.abs(state.lastY - state.startY) * 3);
-          }
-        } else if (t === 'candles' || t === 'fib') {
+        } else if (t === 'candles' || t === 'trade' || t === 'fib') {
           // la caja punteada era solo la guía: se retira y en su hueco se
-          // dibuja la figura. El sentido lo da el arrastre, no un ajuste.
+          // crea la pieza. El sentido lo da el arrastre, no un ajuste.
           canvas.remove(o);
-          const constructor = (t === 'candles') ? secuenciaVelas : fibonacci;
+          const constructor = (t === 'candles') ? secuenciaVelas
+                            : (t === 'trade') ? window.__nuevaPosicion
+                            : window.__nuevoFibo;
           const g = constructor(state.startX, state.startY, state.lastX, state.lastY);
           if (g) { canvas.add(g); canvas.setActiveObject(g); }
+          // 🔑 la posición SE SUELTA al colocarla (petición del dueño): se
+          //    dibuja de una en una, y además lo siguiente es ajustarla con
+          //    sus tiradores, no dibujar otra.
+          if (t === 'trade' && g) { canvas.requestRenderAll(); pushHistory(); updateThumb();
+                                    setTool('select'); return; }
         } else if (t === 'fvg') {
           // Wrap the drawn box + a centered "FVG" label into one movable group
           const left = o.left, top = o.top, ww = o.width, hh = o.height; canvas.remove(o);
@@ -14695,148 +14716,333 @@
     // secuencia de velas: se arrastra de la ENTRADA al STOP. Stop abajo =
     // compra; stop arriba = venta. Una sola herramienta en vez de dos, y el
     // gesto es el mismo que ya aprendió con las velas.
-    // 🔑 EL R:R SE MIDE, NO SE ESCRIBE (pedido del dueño: *"no se puede colocar
-    // para que realmente mida el margen R:R?"*).
+    // ══════════════════════════════════════════════════════════════════════
+    // OBJETOS EDITABLES: POSICIÓN (TP/SL) y FIBONACCI
+    // ══════════════════════════════════════════════════════════════════════
+    // Pedido del dueño, textual: *"debería de poder editarse como tal el R:R
+    // del mismo TP/SL, está muy precaria esa herramienta, debe de ser algo
+    // como la de TradingView"*, *"que se pueda separar la selección entre un
+    // TP arriba y un TP abajo, o un SL abajo y un SL arriba"*, y *"que la
+    // herramienta de Fibonacci (sus niveles) sean tan editables como en
+    // TradingView, incluso los colores de sus líneas"*.
     //
-    // Por qué hizo falta cambiar el gesto: la posición es UNA pieza agrupada,
-    // así que al achicarla o estirarla **las dos zonas escalan igual** y la
-    // proporción no puede cambiar — un 1:2 sigue siendo 1:2 por mucho que la
-    // encojas. Para que el número signifique algo, el objetivo tiene que
-    // ponerlo el usuario: se arrastra de la entrada al stop (eso fija el
-    // riesgo) y después el objetivo sigue al ratón con el múltiplo
-    // actualizándose en vivo, hasta que se hace clic.
+    // 🔑 POR QUÉ SON CLASES PROPIAS Y NO GRUPOS. Un `fabric.Group` es un dibujo
+    // muerto: sus piezas ya están calculadas, así que arrastrar un lado escala
+    // TODO por igual y el R:R no puede cambiar. Con una clase propia el objeto
+    // guarda los NÚMEROS (riesgo, recompensa, niveles, colores) y se repinta a
+    // partir de ellos, que es lo que permite tiradores independientes.
     //
-    // ⚠️ Consecuencia buena: como el grupo escala entero, el número que quedó
-    // escrito NUNCA se vuelve mentira al mover o redimensionar la pieza.
-    const R_MINIMO = 0.15;                  // por debajo, el dibujo no se lee
-    function posicionTrade(x0, y0, x1, y1, yObjetivo) {
-      const riesgo = Math.abs(y1 - y0);
-      if (riesgo < 12) return null;
-      const largo = y1 > y0;                // arrastraste hacia abajo → compra
-      const ancho = Math.max(120, Math.abs(x1 - x0));
-      const izq = Math.min(x0, x1);
-      const yEntrada = y0;
-      const yStop = y1;
-      // el objetivo siempre al lado contrario del stop, nunca pegado a la
-      // entrada: si el ratón se va al lado equivocado se sujeta al mínimo
-      const sentido = largo ? -1 : 1;
-      let mult = (yObjetivo === undefined)
-        ? 2
-        : (yObjetivo - yEntrada) * sentido / riesgo;
-      if (!(mult > R_MINIMO)) mult = R_MINIMO;
-      const yObj = yEntrada + sentido * riesgo * mult;
-      const verde = VELA_ALCISTA, rojo = VELA_BAJISTA;
-      const zona = (yA, yB, col) => new fabric.Rect({
-        left: izq, top: Math.min(yA, yB), width: ancho, height: Math.abs(yB - yA),
-        fill: hexA(col, 0.13), stroke: col, strokeWidth: 1, strokeUniform: true,
-      });
-      const cuerpo = Math.max(11, Math.min(19, ancho * 0.085));
-      const etiqueta = (txt, y, col, dcha) => new fabric.Text(txt, {
-        left: dcha ? izq + ancho - 6 : izq + 6, top: y,
-        originX: dcha ? 'right' : 'left', originY: 'center',
-        fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: cuerpo, fill: col,
-      });
-      const piezas = [
-        zona(yEntrada, yObj, verde),
-        zona(yEntrada, yStop, rojo),
-        // la entrada va punteada: es un precio, no una zona
-        new fabric.Line([izq, yEntrada, izq + ancho, yEntrada], {
-          stroke: colorInput.value, strokeWidth: 2, strokeDashArray: [6, 4],
-        }),
-        etiqueta('TP', (yEntrada + yObj) / 2, verde, true),
-        etiqueta('SL', (yEntrada + yStop) / 2, rojo, true),
-        // 🔑 el múltiplo se escribe: es el dato que convierte el dibujo en una
-        //    lección. Sin él son dos rectángulos de colores.
-        //    Un decimal solo cuando hace falta: "1 : 2 R" se lee mejor que
-        //    "1 : 2.0 R", pero un 1,7 no se puede redondear a 2 y mentir.
-        etiqueta('1 : ' + (Math.round(mult * 10) / 10) + ' R',
-                 yEntrada - cuerpo * 0.9, colorInput.value, false),
-      ];
-      return new fabric.Group(piezas, Object.assign(baseOpts(), {}));
-    }
+    // 🔴 LA TRAMPA QUE HAY QUE RESOLVER DE ENTRADA: las pizarras se guardan en
+    // la biblioteca como JSON. Un objeto a medida solo revive si (a) declara
+    // sus campos en `toObject` y (b) registra `fromObject` con el nombre que
+    // fabric busca por su `type`. Si falta cualquiera de las dos, al reabrir la
+    // pizarra la pieza desaparece o vuelve como un rectángulo tonto. Los
+    // CONTROLES no se guardan nunca — por eso viven en el PROTOTIPO de la
+    // clase, así los hereda también una pieza revivida de la base de datos.
 
-    // Repinta la posición a medio colocar con el objetivo donde esté el ratón.
-    function pintaTrade(yObj) {
-      if (!_trade) return;
-      if (_trade.prev) { canvas.remove(_trade.prev); _trade.prev = null; }
-      const g = posicionTrade(_trade.x0, _trade.y0, _trade.x1, _trade.y1, yObj);
-      if (!g) return;
-      // mientras se coloca no es seleccionable ni se exporta: es un previo
-      g.set({ selectable: false, evented: false, opacity: 0.85 });
-      _trade.prev = g;
-      _trade.ultimoY = yObj;
-      canvas.add(g);
-      canvas.requestRenderAll();
-    }
-    // El clic fija el objetivo y cierra la pieza.
-    function fijaTrade(yObj) {
-      if (!_trade) return;
-      const d = _trade;
-      if (d.prev) { canvas.remove(d.prev); }
-      _trade = null;
-      const g = posicionTrade(d.x0, d.y0, d.x1, d.y1, yObj);
-      if (g) { canvas.add(g); canvas.setActiveObject(g); }
-      canvas.requestRenderAll();
-      pushHistory(); updateThumb();
-      // 🔑 Esta herramienta SÍ se apaga al terminar (petición expresa del
-      //    dueño). Es la excepción a la regla pegajosa, y tiene sentido: una
-      //    posición se dibuja de una en una, no de tres en tres como los
-      //    niveles o las líneas.
-      setTool('select');
-    }
-    function cancelaTrade() {
-      if (!_trade) return false;
-      if (_trade.prev) canvas.remove(_trade.prev);
-      _trade = null;
-      canvas.requestRenderAll();
-      return true;
-    }
+    // 🔴 Estas clases NO se pueden declarar aquí sueltas: fabric se carga BAJO
+    // DEMANDA al abrir la pestaña, así que al evaluarse el módulo todavía no
+    // existe y el `fabric.util.createClass` reventaba con "fabric is not
+    // defined" — dejando la pizarra entera sin arrancar. Se declaran cuando el
+    // lienzo se crea, que es cuando fabric ya está garantizado.
+    // ⚠️ Estas dos van FUERA de la función: las usa también la barra de
+    //    edición, que vive en otro sitio del módulo.
+    const RR_MIN_PX = 8;             // por debajo la zona no se puede ni ver
+    const FIB_CATALOGO = [0, 0.236, 0.382, 0.5, 0.618, 0.705, 0.786, 1, 1.272, 1.618];
+    const FIB_POR_DEFECTO = [0, 0.236, 0.382, 0.5, 0.618, 0.705, 0.786, 1];
+    let _clasesListas = false;
+    function defineClases() {
+      if (_clasesListas || typeof fabric === 'undefined') return;
+      _clasesListas = true;
+      // Tiradores: cuadrados un poco más grandes que los de fabric y con el color
+      // de lo que mueven, para que se lea qué hace cada uno sin probarlo.
+      function pintaTirador(color) {
+        return function (ctx, left, top) {
+          const r = 6;
+          ctx.save();
+          ctx.fillStyle = color;
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.rect(left - r, top - r / 2, r * 2, r);
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
+        };
+      }
 
-    // ══ Retroceso de Fibonacci ══════════════════════════════════════════
-    // Se arrastra del ARRANQUE del movimiento a su FINAL: 1 queda donde
-    // empezaste y 0 donde soltaste, que es como lo espera cualquiera que venga
-    // de un gráfico de verdad.
-    // 🔑 Lleva sombreada la banda 0,62–0,79 (**OTE**) porque es una de las
-    // metodologías que enseña el sitio: dibujar los niveles sin marcarla sería
-    // dejar el trabajo a medias justo en el nivel que aquí se estudia.
-    const FIB_NIVELES = [0, 0.236, 0.382, 0.5, 0.618, 0.705, 0.79, 1];
-    function fibonacci(x0, y0, x1, y1) {
-      const alto = Math.abs(y1 - y0);
-      if (alto < 24) return null;
-      const ancho = Math.max(140, Math.abs(x1 - x0));
-      const izq = Math.min(x0, x1);
-      const Y = n => y1 + (y0 - y1) * n;          // n=0 donde soltaste
-      const col = colorInput.value;
-      const piezas = [];
-      // la banda OTE, debajo de las líneas para que no las tape
-      piezas.push(new fabric.Rect({
-        left: izq, top: Math.min(Y(0.62), Y(0.79)), width: ancho,
-        height: Math.abs(Y(0.79) - Y(0.62)),
-        fill: hexA(VELA_ALCISTA, 0.12), stroke: '', strokeWidth: 0,
-      }));
-      const cuerpo = Math.max(10, Math.min(15, ancho * 0.06));
-      FIB_NIVELES.forEach(n => {
-        const y = Y(n);
-        const clave = (n === 0 || n === 1);
-        piezas.push(new fabric.Line([izq, y, izq + ancho, y], {
-          stroke: col, strokeWidth: clave ? 2 : 1,
-          strokeDashArray: clave ? null : [5, 4], opacity: clave ? 1 : 0.75,
-        }));
-        piezas.push(new fabric.Text(n.toFixed(3).replace(/0+$/, '').replace(/\.$/, ''), {
-          left: izq + ancho - 5, top: y, originX: 'right', originY: 'center',
-          fontFamily: 'Inter, sans-serif', fontWeight: clave ? 700 : 600,
-          fontSize: cuerpo, fill: col, opacity: clave ? 1 : 0.85,
-        }));
+      // ── Posición ────────────────────────────────────────────────────────
+      // Geometría: la caja va del extremo del TP al extremo del SL. `rec` es la
+      // distancia de la entrada al objetivo y `rie` la de la entrada al stop;
+      // `largo` dice de qué lado cae cada una. El R:R es rec/rie, siempre.
+      fabric.Posicion = fabric.util.createClass(fabric.Object, {
+        type: 'posicion',
+        rec: 80, rie: 40, largo: true,
+        colorTP: '#22c55e', colorSL: '#ef4444', colorEntrada: '#5b8ef0',
+        objectCaching: false,
+        lockRotation: true, lockScalingX: true, lockScalingY: true,
+
+        initialize: function (o) {
+          o = o || {};
+          this.callSuper('initialize', o);
+          this.set({ width: o.width || 200, height: (o.rec || 80) + (o.rie || 40) });
+        },
+        // el borde de la entrada en coordenadas del propio objeto
+        _yEntrada: function () {
+          return -this.height / 2 + (this.largo ? this.rec : this.rie);
+        },
+        razon: function () { return this.rie > 0 ? this.rec / this.rie : 0; },
+
+        _render: function (ctx) {
+          const w = this.width, h = this.height;
+          const yE = this._yEntrada();
+          const yTP = this.largo ? -h / 2 : h / 2;
+          const ySL = this.largo ? h / 2 : -h / 2;
+          const x0 = -w / 2;
+          const zona = (yA, yB, col) => {
+            ctx.fillStyle = hexA(col, 0.13);
+            ctx.fillRect(x0, Math.min(yA, yB), w, Math.abs(yB - yA));
+            ctx.strokeStyle = col;
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x0, Math.min(yA, yB), w, Math.abs(yB - yA));
+          };
+          zona(yE, yTP, this.colorTP);
+          zona(yE, ySL, this.colorSL);
+          // la entrada va punteada: es un precio, no una zona
+          ctx.save();
+          ctx.strokeStyle = this.colorEntrada;
+          ctx.lineWidth = 2;
+          ctx.setLineDash([6, 4]);
+          ctx.beginPath();
+          ctx.moveTo(x0, yE);
+          ctx.lineTo(x0 + w, yE);
+          ctx.stroke();
+          ctx.restore();
+
+          const cuerpo = Math.max(11, Math.min(19, w * 0.085));
+          ctx.font = '700 ' + cuerpo + 'px Inter, sans-serif';
+          ctx.textBaseline = 'middle';
+          ctx.textAlign = 'right';
+          ctx.fillStyle = this.colorTP;
+          ctx.fillText('TP', x0 + w - 6, (yE + yTP) / 2);
+          ctx.fillStyle = this.colorSL;
+          ctx.fillText('SL', x0 + w - 6, (yE + ySL) / 2);
+          // 🔑 el múltiplo se calcula al pintar, así que no puede quedar viejo:
+          //    se mueva el tirador que se mueva, el número dice la verdad.
+          //    Un decimal solo cuando hace falta — un 1,7 no se redondea a 2.
+          ctx.textAlign = 'left';
+          ctx.fillStyle = this.colorEntrada;
+          ctx.fillText('1 : ' + (Math.round(this.razon() * 10) / 10) + ' R',
+                       x0 + 6, yE - cuerpo * 0.9);
+        },
+
+        toObject: function (extra) {
+          return fabric.util.object.extend(this.callSuper('toObject', extra), {
+            rec: this.rec, rie: this.rie, largo: this.largo,
+            colorTP: this.colorTP, colorSL: this.colorSL,
+            colorEntrada: this.colorEntrada,
+          });
+        },
       });
-      // ⚠️ NO en el centro de la banda: el centro de 0,62–0,79 es 0,705, que es
-      //    justo uno de los niveles, y la etiqueta caía encima de su línea. Se
-      //    coloca en el hueco entre 0,618 y 0,705.
-      piezas.push(new fabric.Text('OTE', {
-        left: izq + 5, top: Y(0.662), originX: 'left', originY: 'center',
-        fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: cuerpo,
-        fill: VELA_ALCISTA,
-      }));
-      return new fabric.Group(piezas, Object.assign(baseOpts(), {}));
+      fabric.Posicion.fromObject = function (o, cb) {
+        return fabric.Object._fromObject('Posicion', o, cb);
+      };
+
+      // Mueve un extremo dejando la ENTRADA clavada donde está. Sin esto, al
+      // cambiar el alto fabric recoloca la caja por su centro y la entrada se
+      // desplaza sola: moverías el TP y se te iría también el precio de entrada.
+      function _mueveExtremo(obj, cual, yPuntero) {
+        const E = obj.top + (obj.largo ? obj.rec : obj.rie);   // entrada, en lienzo
+        const d = Math.max(RR_MIN_PX, Math.abs(yPuntero - E));
+        const arriba = yPuntero < E;
+        if (cual === 'tp') {
+          obj.rec = d;
+          // 🔑 cruzar la entrada da la vuelta a la operación (era lo que pedía:
+          //    "un TP arriba y un TP abajo"). El stop se va al lado contrario,
+          //    porque TP y SL en el mismo lado no es ninguna operación.
+          obj.largo = arriba;
+        } else {
+          obj.rie = d;
+          obj.largo = !arriba;
+        }
+        obj.height = obj.rec + obj.rie;
+        obj.top = E - (obj.largo ? obj.rec : obj.rie);
+        obj.setCoords();
+        return true;
+      }
+      function _tiradorNivel(cual) {
+        return new fabric.Control({
+          x: 0,
+          // ⚠️ Se usa `finalMatrix` —la que fabric ya trae calculada— y
+          //    FRACCIONES de `dim`, que es como lo hacen sus controles. Con
+          //    `calcTransformMatrix()` y píxeles absolutos los tiradores
+          //    salían disparados fuera de la pieza (el del stop acababa en el
+          //    fondo del lienzo).
+          positionHandler: function (dim, finalMatrix, obj) {
+            const arriba = (cual === 'tp') ? obj.largo : !obj.largo;
+            return fabric.util.transformPoint(
+              { x: 0, y: (arriba ? -0.5 : 0.5) * dim.y }, finalMatrix);
+          },
+          actionHandler: function (eventData, transform, x, y) {
+            return _mueveExtremo(transform.target, cual, y);
+          },
+          actionName: 'nivel',
+          cursorStyle: 'ns-resize',
+          render: pintaTirador(cual === 'tp' ? '#22c55e' : '#ef4444'),
+        });
+      }
+      // 🔑 En el PROTOTIPO: los controles no se guardan en el JSON, así que una
+      //    pieza revivida desde la biblioteca los hereda igual de aquí.
+      fabric.Posicion.prototype.controls = {
+        ml: fabric.Object.prototype.controls.ml,
+        mr: fabric.Object.prototype.controls.mr,
+        tp: _tiradorNivel('tp'),
+        sl: _tiradorNivel('sl'),
+      };
+      // el ancho se estira sin deformar nada: se cambia `width`, no la escala
+      ['ml', 'mr'].forEach(k => {
+        const base = fabric.Posicion.prototype.controls[k];
+        fabric.Posicion.prototype.controls[k] = new fabric.Control({
+          x: base.x, y: 0, cursorStyle: 'ew-resize', actionName: 'ancho',
+          actionHandler: function (eventData, transform, x) {
+            const o = transform.target;
+            if (k === 'mr') {
+              o.width = Math.max(60, x - o.left);
+            } else {
+              const der = o.left + o.width;
+              o.width = Math.max(60, der - x);
+              o.left = der - o.width;
+            }
+            o.setCoords();
+            return true;
+          },
+          render: pintaTirador('#9aa4b5'),
+        });
+      });
+
+      window.__nuevaPosicion = nuevaPosicion;
+      function nuevaPosicion(x0, y0, x1, y1) {
+        const rie = Math.abs(y1 - y0);
+        if (rie < 12) return null;
+        const largo = y1 > y0;              // arrastraste hacia abajo → compra
+        const rec = rie * 2;                // 2R de salida; se ajusta arrastrando
+        const ancho = Math.max(120, Math.abs(x1 - x0));
+        return new fabric.Posicion(Object.assign(baseOpts(), {
+          left: Math.min(x0, x1), top: y0 - (largo ? rec : rie),
+          width: ancho, rec: rec, rie: rie, largo: largo,
+          colorEntrada: colorInput.value,
+        }));
+      }
+
+      // ── Fibonacci ───────────────────────────────────────────────────────
+      // Catálogo completo; `niveles` guarda los que se ven, y se editan desde la
+      // barra que aparece al seleccionar la pieza.
+      fabric.Fibo = fabric.util.createClass(fabric.Object, {
+        type: 'fibo',
+        niveles: null, colorLinea: '#5b8ef0', colorTexto: '#5b8ef0',
+        ote: true, colorOte: '#22c55e', oteDe: 0.62, oteA: 0.79,
+        objectCaching: false, lockRotation: true,
+        lockScalingX: true, lockScalingY: true,
+
+        initialize: function (o) {
+          o = o || {};
+          this.callSuper('initialize', o);
+          this.niveles = (o.niveles && o.niveles.length)
+            ? o.niveles.slice() : FIB_POR_DEFECTO.slice();
+        },
+        // y del nivel n en coordenadas locales: 0 abajo del recorrido, 1 arriba
+        _y: function (n) { return this.height / 2 - n * this.height; },
+
+        _render: function (ctx) {
+          const w = this.width, x0 = -w / 2;
+          if (this.ote) {
+            const a = this._y(this.oteDe), b = this._y(this.oteA);
+            ctx.fillStyle = hexA(this.colorOte, 0.12);
+            ctx.fillRect(x0, Math.min(a, b), w, Math.abs(b - a));
+          }
+          const cuerpo = Math.max(10, Math.min(15, w * 0.06));
+          ctx.font = '600 ' + cuerpo + 'px Inter, sans-serif';
+          ctx.textBaseline = 'middle';
+          this.niveles.forEach(n => {
+            const y = this._y(n);
+            const clave = (n === 0 || n === 1);
+            ctx.save();
+            ctx.strokeStyle = this.colorLinea;
+            ctx.globalAlpha = clave ? 1 : 0.75;
+            ctx.lineWidth = clave ? 2 : 1;
+            ctx.setLineDash(clave ? [] : [5, 4]);
+            ctx.beginPath();
+            ctx.moveTo(x0, y);
+            ctx.lineTo(x0 + w, y);
+            ctx.stroke();
+            ctx.restore();
+            ctx.fillStyle = this.colorTexto;
+            ctx.textAlign = 'right';
+            ctx.font = (clave ? '700 ' : '600 ') + cuerpo + 'px Inter, sans-serif';
+            // ⚠️ 16 y no 5: el tirador de ancho vive en el borde derecho a
+            //    media altura y se montaba justo encima de la etiqueta del 0,5
+            ctx.fillText(String(n), x0 + w - 16, y);
+          });
+          if (this.ote) {
+            // ⚠️ NO en el centro de la banda: el centro de 0,62–0,79 es 0,705,
+            //    que es un nivel, y la etiqueta caía sobre su línea.
+            ctx.fillStyle = this.colorOte;
+            ctx.textAlign = 'left';
+            ctx.font = '800 ' + cuerpo + 'px Inter, sans-serif';
+            ctx.fillText('OTE', x0 + 5, this._y(0.662));
+          }
+        },
+
+        toObject: function (extra) {
+          return fabric.util.object.extend(this.callSuper('toObject', extra), {
+            niveles: this.niveles.slice(), colorLinea: this.colorLinea,
+            colorTexto: this.colorTexto, ote: this.ote, colorOte: this.colorOte,
+            oteDe: this.oteDe, oteA: this.oteA,
+          });
+        },
+      });
+      fabric.Fibo.fromObject = function (o, cb) {
+        return fabric.Object._fromObject('Fibo', o, cb);
+      };
+      // los dos extremos del recorrido se arrastran, como en un gráfico
+      function _tiradorFib(arriba) {
+        return new fabric.Control({
+          x: 0,
+          positionHandler: function (dim, finalMatrix) {
+            return fabric.util.transformPoint(
+              { x: 0, y: (arriba ? -0.5 : 0.5) * dim.y }, finalMatrix);
+          },
+          actionHandler: function (eventData, transform, x, y) {
+            const o = transform.target;
+            const fijo = arriba ? (o.top + o.height) : o.top;
+            const alto = Math.max(24, Math.abs(fijo - y));
+            o.height = alto;
+            o.top = arriba ? (fijo - alto) : fijo;
+            o.setCoords();
+            return true;
+          },
+          actionName: 'rango',
+          cursorStyle: 'ns-resize',
+          render: pintaTirador('#5b8ef0'),
+        });
+      }
+      fabric.Fibo.prototype.controls = {
+        tp: _tiradorFib(true),
+        sl: _tiradorFib(false),
+        ml: fabric.Posicion.prototype.controls.ml,
+        mr: fabric.Posicion.prototype.controls.mr,
+      };
+
+      window.__nuevoFibo = nuevoFibo;
+      function nuevoFibo(x0, y0, x1, y1) {
+        const alto = Math.abs(y1 - y0);
+        if (alto < 24) return null;
+        return new fabric.Fibo(Object.assign(baseOpts(), {
+          left: Math.min(x0, x1), top: Math.min(y0, y1),
+          width: Math.max(140, Math.abs(x1 - x0)), height: alto,
+          colorLinea: colorInput.value, colorTexto: colorInput.value,
+        }));
+      }
     }
 
     function deleteSel() {
@@ -15438,15 +15644,138 @@
       });
       alignSel.addEventListener('change', () => { if (!_syncingText) applyTextStyle('textAlign', alignSel.value); });
 
+      // ── barras de POSICIÓN y FIBONACCI ──
+      // Mismo patrón que la barra de texto: aparecen al seleccionar la pieza y
+      // editan el OBJETO, que se repinta solo desde sus propios números.
+      const posTools = document.getElementById('sk-pos-tools');
+      const fibTools = document.getElementById('sk-fib-tools');
+      let _sinc = false;                 // evita que rellenar la barra dispare cambios
+
+      const seleccion = tipo => {
+        const o = canvas.getActiveObject();
+        return (o && o.type === tipo) ? o : null;
+      };
+      function aplicaPos(campo, valor) {
+        const o = seleccion('posicion');
+        if (!o || _sinc) return;
+        if (campo === 'rr') {
+          // el R:R se puede TECLEAR: mover el tirador es cómodo, pero para un
+          // 1:2 exacto hace falta poder escribirlo
+          const r = Math.max(0.1, Math.min(20, parseFloat(valor) || 2));
+          const E = o.top + (o.largo ? o.rec : o.rie);
+          o.rec = Math.max(RR_MIN_PX, o.rie * r);
+          o.height = o.rec + o.rie;
+          o.top = E - (o.largo ? o.rec : o.rie);
+        } else if (campo === 'flip') {
+          const E = o.top + (o.largo ? o.rec : o.rie);
+          o.largo = !o.largo;
+          o.top = E - (o.largo ? o.rec : o.rie);
+        } else {
+          o.set(campo, valor);
+        }
+        o.setCoords();
+        canvas.requestRenderAll();
+        pushHistory(); updateThumb();
+      }
+      function sincPos(o) {
+        _sinc = true;
+        const rr = document.getElementById('sk-pos-rr');
+        if (rr) rr.value = Math.round(o.razon() * 10) / 10;
+        const c = (id, v) => { const e = document.getElementById(id); if (e) e.value = v; };
+        c('sk-pos-ctp', o.colorTP); c('sk-pos-csl', o.colorSL); c('sk-pos-cen', o.colorEntrada);
+        _sinc = false;
+      }
+      const _on2 = (id, ev, fn) => {
+        const e = document.getElementById(id);
+        if (e) e.addEventListener(ev, fn);
+      };
+      _on2('sk-pos-rr', 'input', e => aplicaPos('rr', e.target.value));
+      _on2('sk-pos-flip', 'click', () => aplicaPos('flip'));
+      _on2('sk-pos-ctp', 'input', e => aplicaPos('colorTP', e.target.value));
+      _on2('sk-pos-csl', 'input', e => aplicaPos('colorSL', e.target.value));
+      _on2('sk-pos-cen', 'input', e => aplicaPos('colorEntrada', e.target.value));
+
+      // los chips de niveles se generan del catálogo: añadir un nivel nuevo es
+      // tocar UNA lista, no el HTML
+      const chips = document.getElementById('sk-fib-chips');
+      if (chips) {
+        FIB_CATALOGO.forEach(n => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'fib-chip';
+          b.dataset.n = String(n);
+          b.textContent = String(n);
+          b.addEventListener('click', () => {
+            const o = seleccion('fibo');
+            if (!o) return;
+            const i = o.niveles.indexOf(n);
+            if (i >= 0) o.niveles.splice(i, 1); else o.niveles.push(n);
+            o.niveles.sort((a, c) => a - c);
+            b.classList.toggle('on', i < 0);
+            canvas.requestRenderAll(); pushHistory(); updateThumb();
+          });
+          chips.appendChild(b);
+        });
+      }
+      function aplicaFib(campo, valor) {
+        const o = seleccion('fibo');
+        if (!o || _sinc) return;
+        o.set(campo, valor);
+        canvas.requestRenderAll(); pushHistory(); updateThumb();
+      }
+      _on2('sk-fib-col', 'input', e => aplicaFib('colorLinea', e.target.value));
+      _on2('sk-fib-txt', 'input', e => aplicaFib('colorTexto', e.target.value));
+      _on2('sk-fib-cote', 'input', e => aplicaFib('colorOte', e.target.value));
+      _on2('sk-fib-ote', 'click', () => {
+        const o = seleccion('fibo');
+        if (!o) return;
+        aplicaFib('ote', !o.ote);
+        document.getElementById('sk-fib-ote').classList.toggle('on', o.ote);
+        document.getElementById('sk-fib-ote').classList.toggle('active', o.ote);
+      });
+      function sincFib(o) {
+        _sinc = true;
+        const c = (id, v) => { const e = document.getElementById(id); if (e) e.value = v; };
+        c('sk-fib-col', o.colorLinea); c('sk-fib-txt', o.colorTexto);
+        c('sk-fib-cote', o.colorOte);
+        const ot = document.getElementById('sk-fib-ote');
+        if (ot) { ot.classList.toggle('active', !!o.ote); ot.classList.toggle('on', !!o.ote); }
+        if (chips) {
+          Array.prototype.forEach.call(chips.children, b => {
+            b.classList.toggle('on', o.niveles.indexOf(parseFloat(b.dataset.n)) >= 0);
+          });
+        }
+        _sinc = false;
+      }
+
       // Show/sync the text toolbar when a text object is selected; hide otherwise
       const onSelect = () => {
         const o = canvas.getActiveObject();
         if (isTextObj(o)) { syncTextToolbar(o); showTextToolbar(true); }
         else if (state.tool !== 'text') { showTextToolbar(false); }
+        const esPos = !!(o && o.type === 'posicion');
+        const esFib = !!(o && o.type === 'fibo');
+        if (esPos) sincPos(o);
+        if (esFib) sincFib(o);
+        if (posTools) posTools.classList.toggle('show', esPos);
+        if (fibTools) fibTools.classList.toggle('show', esFib);
       };
       canvas.on('selection:created', onSelect);
       canvas.on('selection:updated', onSelect);
-      canvas.on('selection:cleared', () => { if (state.tool !== 'text') showTextToolbar(false); });
+      canvas.on('selection:cleared', () => {
+        if (state.tool !== 'text') showTextToolbar(false);
+        if (posTools) posTools.classList.remove('show');
+        if (fibTools) fibTools.classList.remove('show');
+      });
+      // arrastrar un tirador cambia el R:R: la barra tiene que ir con él
+      canvas.on('object:modified', e => {
+        const o = e && e.target;
+        if (o && o.type === 'posicion') sincPos(o);
+      });
+      canvas.on('object:scaling', e => {
+        const o = e && e.target;
+        if (o && o.type === 'posicion') sincPos(o);
+      });
 
       // "Apply bg to all slides?" modal
       document.getElementById('sk-applyall-yes').addEventListener('click', () => {
@@ -15498,7 +15827,6 @@
         }
         else if (app.classList.contains('presenting') && e.key === 'ArrowRight') { gotoSlide(state.cur + 1); }
         else if (app.classList.contains('presenting') && e.key === 'ArrowLeft') { gotoSlide(state.cur - 1); }
-        else if (e.key === 'Escape' && _trade) { e.preventDefault(); cancelaTrade(); }
         else if (e.key === 'Escape' && state.tool === 'polyline' && _polyPts.length > 0) { e.preventDefault(); polyFinish(); }
         else if (app.classList.contains('presenting') && e.key === 'Escape') { exitPresent(); }
         // Esc = soltar la herramienta. Es la salida que espera cualquiera que
@@ -15553,7 +15881,12 @@
     }
 
     function initStudio() {
+      defineClases();          // fabric ya está: aquí sí se pueden declarar
       canvas = new fabric.Canvas('sk-canvas', { backgroundColor: SOLID.dark, preserveObjectStacking: true });
+      // Handle de solo lectura para las pruebas en navegador: sin esto no hay
+      // forma de preguntarle nada al lienzo desde fuera (vive en un closure) y
+      // los tests tienen que adivinar midiendo píxeles.
+      window.__skCanvas = canvas;
       canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
       canvas.freeDrawingBrush.color = colorInput.value;
       canvas.freeDrawingBrush.width = parseInt(widthSel.value, 10);

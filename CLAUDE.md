@@ -2198,12 +2198,45 @@ boards"** que llevaba desde antes del lanzamiento en la lista de críticos.
       `loadFromJSON`**, o sea que se perderían al reabrir la pizarra desde la biblioteca.
   · **Fibonacci (`fib`, atajo `i`)**: 0 donde sueltas y 1 donde empezaste (como en un gráfico de
     verdad), niveles 0/.236/.382/.5/.618/.705/.79/1 y **la banda OTE 0,62–0,79 sombreada**, porque
-    OTE es una de las metodologías del sitio: dibujar los niveles sin marcarla sería dejarlo a
-    medias justo en el nivel que aquí se estudia.
+    OTE es una de las metodologías del sitio.
     ⚠️ La etiqueta "OTE" NO va en el centro de la banda: el centro es 0,705, que es un nivel, y caía
     encima de su línea. Va en el hueco (0,662).
   · 🔑 **Las dos entran en la familia existente** (que pasa de "Velas" a "Trading"): mismo gesto,
     misma cabecera, y **la barra no crece ni un botón**.
+- 🛠️ **PIEZAS EDITABLES DE VERDAD (2026-08-12, 3ª versión — la que pidió).** Su veredicto de la
+  anterior: *"está muy precaria esa herramienta, debe de ser algo como la de TradingView"*, con tres
+  peticiones: editar el R:R después de colocarlo, poder separar TP arriba/abajo y SL arriba/abajo, y
+  que los niveles y **colores** del Fibonacci se editen.
+  · 🔑 **Por qué hubo que cambiar el fondo:** un `fabric.Group` es un dibujo MUERTO — sus piezas ya
+    están calculadas, así que arrastrar un lado escala todo por igual y el R:R no puede cambiar.
+    Ahora son **clases propias** (`fabric.Posicion`, `fabric.Fibo`) que guardan los NÚMEROS (riesgo,
+    recompensa, niveles, colores) y se repintan de ellos: eso es lo que permite tiradores
+    independientes y que el múltiplo se calcule **al pintar**, así que nunca queda viejo.
+  · 🔴 **La trampa resuelta de entrada:** las pizarras se guardan en la biblioteca como JSON, y un
+    objeto a medida solo revive si declara sus campos en `toObject` **y** registra `fromObject` con
+    el nombre que fabric busca por su `type`. Los **controles NO se guardan nunca** → viven en el
+    **prototipo**, así los hereda también una pieza revivida de la base. Verificado: se guardan como
+    `['posicion','fibo']` y al reabrirlas siguen editables (un R:R tecleado de 3.5 sobrevivió).
+  · **Posición:** tiradores de TP y SL por separado; **cruzar el TP por debajo de la entrada da la
+    vuelta a la operación** (el stop se va al lado contrario — TP y SL del mismo lado no es ninguna
+    operación). Barra propia con **R:R tecleable**, botón Compra/Venta y colores de TP, SL y entrada.
+    Medido: bajar el TP → 1:1, subirlo → 1:3.7, cruzarlo → pasa a venta.
+  · **Fibonacci:** barra con **un chip por nivel** (10 en el catálogo, 8 encendidos de salida) y
+    colores de líneas, etiquetas y banda OTE, más tiradores en los dos extremos del recorrido.
+  · ⚠️ **`_mueveExtremo` deja la ENTRADA clavada:** al cambiar el alto, fabric recoloca la caja por
+    su centro y la entrada se desplazaría sola — moverías el TP y se te iría también el precio de
+    entrada.
+  · ⚠️ **Los `positionHandler` usan `finalMatrix` y FRACCIONES de `dim`**, como los controles de
+    fabric. Con `calcTransformMatrix()` y píxeles absolutos los tiradores salían disparados fuera de
+    la pieza (el del stop acababa en el fondo del lienzo).
+  · 🔴 **`fabric` se carga BAJO DEMANDA**: declarar las clases en el cuerpo del módulo reventaba con
+    *"fabric is not defined"* y dejaba la pizarra entera sin arrancar. Van en `defineClases()`, que
+    se llama al crear el lienzo. Las constantes que usa la barra de edición van FUERA.
+  · **`window.__skCanvas`** ahora lo publica la app: el lienzo vive en un closure y sin ese handle
+    las pruebas tenían que adivinar midiendo píxeles (el test lo intentaba y salía siempre null).
+  · ⚠️ **Trampa que costó una hora:** al colocar una pieza aparece su barra de edición y **el lienzo
+    baja ~61 px**. Con la medida vieja los clics caían fuera y parecía que los tiradores no
+    funcionaban, cuando funcionaban perfectamente. **Re-medir el lienzo tras colocar.**
 - `tools/test_chalk_biblioteca.py` **23/23** (servidor: nadie ve ni toca las pizarras de otro, el
   tope se impone en el servidor, envíos gigantes rechazados) + `tools/test_chalk_lib_nav.py`
   **18/18** (navegador: guardar → queda 1 en blanco → deshacer → reabrir → **sobrevive a borrar el
