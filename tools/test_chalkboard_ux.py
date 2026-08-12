@@ -424,6 +424,74 @@ with sync_playwright() as p:
               const l = document.querySelector('.tool-group[data-familia="lineas"] > .tool-btn');
               return z.classList.contains('active') && !l.classList.contains('active'); }"""))
 
+    # ── 💾 lo que ocupa una pizarra y el tope de diapositivas ──
+    # 🔴 MEDIDO antes del arreglo: una diapositiva con fondo de REJILLA pesaba
+    #    32,3 KB porque `canvas.toJSON()` hornea el fondo como una imagen
+    #    base64 del lienzo entero, y se guardaba una copia idéntica por
+    #    diapositiva. Con el cupo de ~5 MB del navegador, ~155 diapositivas y
+    #    a partir de ahí guardar fallaba EN SILENCIO.
+    pg.evaluate("""() => { localStorage.removeItem('scalperBoard'); }""")
+    # ⚠️ /app BORRA el cookie del splash al servirse (es de un solo uso): sin
+    #    volver a ponerlo, recargar rebota a /welcome y no hay ni pizarra
+    pg.context.add_cookies([{'name': 'scalpel_splash_ts', 'value': '1',
+                             'url': URL + '/'}])
+    pg.goto(URL + '/app', wait_until='domcontentloaded')
+    pg.wait_for_timeout(2200)
+    pg.evaluate("""() => { const e =
+        document.querySelector('.tab[data-tab="scalper"]'); if (e) e.click(); }""")
+    pg.wait_for_timeout(3000)
+    pg.evaluate("""() => { const b = document.querySelector('[data-bg="grid"]'); if (b) b.click(); }""")
+    pg.wait_for_timeout(800)
+    for _ in range(9):
+        pg.click('.slide-add')
+        pg.wait_for_timeout(180)
+    pg.wait_for_timeout(600)
+    peso = pg.evaluate("() => (localStorage.getItem('scalperBoard')||'').length")
+    kb = peso / 1024.0 / 10
+    check('10 diapositivas con rejilla ocupan %.1f KB c/u (antes 32,3)' % kb,
+          kb < 3.0, peso)
+    # el fondo tiene que SEGUIR viéndose, y sobrevivir a deshacer
+    pinta = pg.evaluate("""() => {
+        const c = document.querySelector('#sk-canvas-wrap canvas.lower-canvas') ||
+                  document.querySelector('#sk-canvas');
+        const g = c.getContext('2d'); const d = g.getImageData(4, 4, 1, 1).data;
+        return [d[0], d[1], d[2]]; }""")
+    check('la rejilla se sigue pintando sin guardarla en cada copia', sum(pinta) > 12,
+          pinta)
+    pulsa('rect')
+    dibuja(60, 60, 180, 140)
+    pg.evaluate("""() => document.getElementById('sk-undo').click()""")
+    pg.wait_for_timeout(700)
+    tras = pg.evaluate("""() => {
+        const c = document.querySelector('#sk-canvas-wrap canvas.lower-canvas') ||
+                  document.querySelector('#sk-canvas');
+        const g = c.getContext('2d'); const d = g.getImageData(4, 4, 1, 1).data;
+        return [d[0], d[1], d[2]]; }""")
+    check('deshacer NO deja la diapositiva sin fondo', tras == pinta, (pinta, tras))
+
+    # el tope: ni una diapositiva más, y se dice por qué
+    tope = pg.evaluate("() => (typeof MAX_SLIDES !== 'undefined') ? MAX_SLIDES : 60")
+    pg.evaluate("""() => { const b = document.getElementById('sk-add-slide');
+        for (let i = 0; i < 80; i++) b.click(); }""")
+    pg.wait_for_timeout(1200)
+    n = pg.evaluate("""() => document.querySelectorAll('#sk-thumbs > *').length""")
+    check('la pizarra se planta en el tope de %d diapositivas (quedaron %d)'
+          % (tope, n), n == tope, n)
+    # ⚠️ Un clic MÁS, justo antes de mirar. Llenar la pizarra deja al navegador
+    #    renderizando 60 miniaturas durante bastante más de los 6 s que dura el
+    #    aviso, así que mirarlo después de los 80 clics medía uno ya desvanecido
+    #    (y parecía que no salía).
+    pg.evaluate("""() => document.getElementById('sk-add-slide').click()""")
+    pg.wait_for_timeout(250)
+    # ⚠️ se comprueba el TEXTO traducido, no que "haya algo": la primera
+    #    versión pintaba la clave cruda `scalper.maxSlides` porque el
+    #    diccionario vive en otro <script> y `const` no llega a `window`
+    aviso = pg.evaluate("""() => { const e = document.getElementById('sk-aviso');
+        return e ? {ve: e.classList.contains('show'), txt: e.textContent} : null; }""")
+    check('…y lo dice, en vez de ignorar el clic en silencio',
+          aviso and aviso['ve'] and '60' in aviso['txt'] and ' ' in aviso['txt'].strip()
+          and not aviso['txt'].startswith('scalper.'), aviso)
+
     check('ningún error de JavaScript en toda la sesión', not errores, errores[:3])
     b.close()
 

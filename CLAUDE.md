@@ -2117,6 +2117,62 @@ borrado. PENDIENTE: agregar selector de mes / historial.
     enciende y no lleva herramienta.
   · **PENDIENTE de preguntarle:** si 20 velas es el tope correcto, y si quiere poder editar una
     secuencia ya dibujada (hoy es un `fabric.Group`: se mueve y escala entera).
+  · ✅ **CLIC DERECHO = dejar de colocar (2026-08-12).** Queja: *"si solo quieres colocar tres
+    palitos no puedes, tienes que terminar la tendencia como de 5 líneas"*. **Eran DOS causas
+    superpuestas:** (1) el **doble clic** que cerraba la polilínea **añade un punto de más** (su 1er
+    clic coloca un vértice, el 2º cierra) → cerrar costaba un tramo; (2) **`POLY_MAX_PTS` estaba en
+    6 = 5 tramos EXACTOS** y ahí se cerraba sola — ese "5" de su queja era literal. Tres niveles:
+    polilínea a medias → cierra donde estás sin colocar nada · figura a medio arrastrar → se
+    descarta · nada en curso → suelta la herramienta. Tope 6→**12** (con el cierre a voluntad, deja
+    de gobernar la herramienta y pasa a ser red de seguridad).
+    🔑 **El manejador va en el elemento del DOM, NO en `canvas.on(...)`:** fabric ignora el botón
+    derecho por defecto (`fireRightClick` apagado), que es justo lo que hace falta para que cerrar
+    no coloque un vértice. De paso se quita el menú del navegador sobre el dibujo.
+
+## 🗂️ CHALKBOARD — biblioteca de pizarras + tope de diapositivas (2026-08-12)
+Pedido del dueño: *"limitar el número de diapositivas… no quiero que alguien malintencionado cree
+40000"* y *"algo para poder guardar tus proyectos, y una vez guardado que se te reinicien las
+diapositivas… alguna especie de biblioteca donde vayan esos proyectos, y que alguien pueda volver a
+editarlos, exportarlos a PDF, presentar"*. Cierra el punto **"persistencia server-side de Scalper
+boards"** que llevaba desde antes del lanzamiento en la lista de críticos.
+- 🔴 **MEDIDO antes de elegir el número, y el peligro real no era el malintencionado:** una
+  diapositiva con fondo de **REJILLA pesaba 32,3 KB** contra **0,3 KB** una con fondo liso — cien
+  veces más. Causa: `canvas.toJSON()` **hornea el fondo como una imagen base64 del lienzo entero** y
+  se guardaba **una copia idéntica por diapositiva** (y otra por cada paso de deshacer). Con el cupo
+  de ~5 MB del navegador eso son **~155 diapositivas**, y al llenarse **`persist()` fallaba EN
+  SILENCIO** (`catch (e) {}` mudo): seguías dibujando encima de algo que ya no se guardaba y al
+  recargar aparecía la versión de hacía media hora. **Fix:** `instantanea()` quita el
+  `backgroundImage` (el fondo ya lo manda `s.bg`, que se reaplica al cargar) → **32,3 → 0,1 KB**.
+  ⚠️ `loadJSON` tuvo que volver a poner el fondo, o **deshacer** dejaba la diapositiva lisa.
+- **Tope `MAX_SLIDES = 60`** (holgado: una clase larga son 15-20) **con aviso**, no ignorando el
+  clic. Y el fallo de guardado ya no es mudo: `scalper.saveFail` dice que exportes a PDF ya.
+- **Biblioteca:** modelo `ChalkBoard` + `/api/chalk/boards` (GET lista sin el contenido · POST
+  guarda/sobrescribe · GET `<id>` abre · DELETE · POST `<id>/rename`), todo `@premium_required` y
+  filtrado por `user_id`. **`CHALK_MAX_BOARDS = 20`** (decisión del dueño) impuesto **en el
+  servidor**, `CHALK_MAX_BYTES` 2 MB y miniatura recortada a 120 KB. 🔑 **Con la biblioteca llena se
+  puede seguir guardando SOBRE una existente** — si no, llenarla te dejaría sin poder guardar tu
+  trabajo. Se guarda **el MISMO JSON que ya vivía en el navegador**, así que abrir = cargar ese
+  estado; no hay una segunda representación que se desincronice.
+- **Guardar = archivar y empezar en blanco** (decisión suya), con **"Devolvérmela"** en el aviso por
+  si guardó sin querer. Abrir una pizarra **pide confirmación** si hay trabajo sin guardar en el
+  lienzo (si no, un clic curioso se lleva por delante lo que estabas haciendo). Presentar y Exportar
+  PDF son los botones de siempre, sobre la pizarra ya abierta.
+- 🔴 **`window.T` NUEVO, y el motivo importa:** `I18N`/`currentLang` son `const`/`let` del `<script>`
+  #12 y **eso NO los pone en `window`** — el Chalkboard vive en el #13 y no los veía, así que el
+  primer aviso salió con la **clave cruda** en pantalla. Cualquier mensaje que se arme en tiempo de
+  ejecución fuera de ese bloque necesita `window.T`. 22 claves `scalper.*` nuevas ×4 idiomas.
+  ⚠️ El nombre por defecto reusaba `scalper.library` y proponía *"Biblioteca 2026-08-12"* como
+  nombre de una pizarra → clave propia `scalper.newName`.
+- ⚠️ **Trampa de medición (costó un falso fallo):** `locator.screenshot()` fotografía **la zona de
+  pantalla** donde está el elemento, o sea que **incluye lo pintado encima**. El aviso "Guardada"
+  cae sobre el lienzo → una pizarra recién vaciada marcaba 3.754 px "dibujados" y parecía que no se
+  limpiaba. Para medir el LIENZO hay que leer `getImageData` del canvas.
+- ⚠️ Al llenar la pizarra, el navegador se queda renderizando 60 miniaturas **más de los 6 s que
+  dura el aviso** → mirarlo después de los 80 clics medía uno ya desvanecido.
+- `tools/test_chalk_biblioteca.py` **23/23** (servidor: nadie ve ni toca las pizarras de otro, el
+  tope se impone en el servidor, envíos gigantes rechazados) + `tools/test_chalk_lib_nav.py`
+  **18/18** (navegador: guardar → queda 1 en blanco → deshacer → reabrir → **sobrevive a borrar el
+  guardado local, que es el punto de tenerlo en el servidor** → borrar).
 - [ ] **15. Pre-Flight:** revisar las "estadísticas" — hay comparaciones que no aportan.
 - [ ] **16. Intranet del influencer:** que vea SUS clientes, sus comisiones y nada más. Propone un
   rol tipo admin, "Commercial Ally". ⚠️ Ojo: `/partner` ya existe (2026-08-01) — revisar qué falta

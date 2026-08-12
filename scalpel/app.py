@@ -14193,6 +14193,134 @@ class SynapseProgress(db.Model):
     __table_args__ = (db.UniqueConstraint('user_id', 'topic_slug'),)
 
 
+class ChalkBoard(db.Model):
+    """Una pizarra guardada del Chalkboard.
+
+    Hasta ahora la pizarra vivía SOLO en el `localStorage` del navegador: se
+    perdía al limpiar el navegador y no existía desde otro equipo. Esto es la
+    persistencia server-side que estaba pendiente desde antes del lanzamiento.
+
+    `data` es el mismo JSON que ya se guardaba en el navegador ({slides, cur}),
+    así que abrir una pizarra guardada es exactamente cargar ese estado — no
+    hay una segunda representación que pueda desincronizarse.
+
+    ⚠️ `thumb` es un PNG pequeño en base64 de la primera diapositiva. Se guarda
+    porque la biblioteca tiene que poder pintar la lista SIN cargar 20 pizarras
+    enteras; el límite de tamaño lo impone el servidor, no el navegador.
+    """
+    id         = db.Column(db.Integer, primary_key=True)
+    user_id    = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    name       = db.Column(db.String(80), nullable=False)
+    data       = db.Column(db.Text, nullable=False)
+    slides     = db.Column(db.Integer, default=1)
+    thumb      = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    user       = db.relationship('User', backref='chalk_boards')
+
+
+# Cuántas pizarras puede guardar una cuenta. Decisión del dueño (2026-08-12).
+# Una pizarra pesa ~15-40 KB, así que 20 son <1 MB por alumno: el número no
+# está puesto por coste de disco, sino para que nadie pueda llenar la base.
+CHALK_MAX_BOARDS = int(os.environ.get('CHALK_MAX_BOARDS', '20'))
+# Tope por pizarra. 2 MB es ~4x la pizarra más cargada que se puede dibujar con
+# el tope de 60 diapositivas; sirve para rechazar un envío inventado a mano.
+CHALK_MAX_BYTES = 2 * 1024 * 1024
+CHALK_MAX_THUMB = 120 * 1024
+
+
+def _chalk_fila(b, con_datos=False):
+    d = {'id': b.id, 'name': b.name, 'slides': b.slides or 1,
+         'thumb': b.thumb or '',
+         'updated': (b.updated_at or b.created_at).isoformat() if (b.updated_at or b.created_at) else ''}
+    if con_datos:
+        d['data'] = b.data
+    return d
+
+
+def _chalk_mia(bid):
+    return ChalkBoard.query.filter_by(id=bid, user_id=current_user.id).first()
+
+
+@app.route('/api/chalk/boards', methods=['GET'])
+@premium_required
+def chalk_list():
+    # la más recientemente tocada primero (updated_at siempre se escribe)
+    q = (ChalkBoard.query.filter_by(user_id=current_user.id)
+         .order_by(ChalkBoard.updated_at.desc()).all())
+    return jsonify({'boards': [_chalk_fila(b) for b in q],
+                    'max': CHALK_MAX_BOARDS})
+
+
+@app.route('/api/chalk/boards', methods=['POST'])
+@premium_required
+def chalk_save():
+    p = request.get_json(silent=True) or {}
+    data = p.get('data') or ''
+    if not isinstance(data, str) or not data.strip():
+        return jsonify({'error': 'empty'}), 400
+    if len(data) > CHALK_MAX_BYTES:
+        return jsonify({'error': 'too_big'}), 413
+    thumb = (p.get('thumb') or '')[:CHALK_MAX_THUMB]
+    name = (p.get('name') or '').strip()[:80] or 'Untitled'
+    bid = p.get('id')
+    if bid:                                   # sobrescribir una existente
+        b = _chalk_mia(bid)
+        if not b:
+            return jsonify({'error': 'not_found'}), 404
+    else:
+        n = ChalkBoard.query.filter_by(user_id=current_user.id).count()
+        if n >= CHALK_MAX_BOARDS:
+            return jsonify({'error': 'full', 'max': CHALK_MAX_BOARDS}), 409
+        b = ChalkBoard(user_id=current_user.id, name=name)
+        db.session.add(b)
+    b.name = name
+    b.data = data
+    b.thumb = thumb
+    try:
+        b.slides = max(1, int(p.get('slides') or 1))
+    except (TypeError, ValueError):
+        b.slides = 1
+    b.updated_at = datetime.now(timezone.utc)
+    db.session.commit()
+    return jsonify({'ok': True, 'board': _chalk_fila(b)})
+
+
+@app.route('/api/chalk/boards/<int:bid>', methods=['GET'])
+@premium_required
+def chalk_open(bid):
+    b = _chalk_mia(bid)
+    if not b:
+        return jsonify({'error': 'not_found'}), 404
+    return jsonify({'board': _chalk_fila(b, con_datos=True)})
+
+
+@app.route('/api/chalk/boards/<int:bid>', methods=['DELETE'])
+@premium_required
+def chalk_delete(bid):
+    b = _chalk_mia(bid)
+    if not b:
+        return jsonify({'error': 'not_found'}), 404
+    db.session.delete(b)
+    db.session.commit()
+    return jsonify({'ok': True})
+
+
+@app.route('/api/chalk/boards/<int:bid>/rename', methods=['POST'])
+@premium_required
+def chalk_rename(bid):
+    b = _chalk_mia(bid)
+    if not b:
+        return jsonify({'error': 'not_found'}), 404
+    name = ((request.get_json(silent=True) or {}).get('name') or '').strip()[:80]
+    if not name:
+        return jsonify({'error': 'empty'}), 400
+    b.name = name
+    b.updated_at = datetime.now(timezone.utc)
+    db.session.commit()
+    return jsonify({'ok': True, 'board': _chalk_fila(b)})
+
+
 @app.route('/api/fingerprint', methods=['POST'])
 def store_fingerprint():
     """Receive a browser fingerprint hash from the client.

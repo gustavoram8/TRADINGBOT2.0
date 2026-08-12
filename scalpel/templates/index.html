@@ -3026,6 +3026,71 @@
        desplegable quedarían encima de los propios nombres */
     .tool-flyout .tool-btn[data-tip]:hover::after { display: none; }
     /* los ajustes que se mudaron a la barra de arriba */
+    /* aviso de la pizarra (tope de diapositivas / no se pudo guardar) */
+    #sk-aviso {
+      position: absolute; left: 50%; bottom: 18px; transform: translate(-50%, 12px);
+      max-width: min(560px, 88%); background: #1b1e27; color: #f2f4f8;
+      border: 1px solid rgba(255,255,255,.14); border-radius: 10px;
+      padding: 10px 14px; font-size: 13px; font-weight: 600; line-height: 1.35;
+      text-align: center; box-shadow: 0 14px 40px rgba(0,0,0,.5); z-index: 90;
+      opacity: 0; pointer-events: none; transition: opacity .18s, transform .18s;
+    }
+    #sk-aviso.show { opacity: 1; transform: translate(-50%, 0); }
+    .sk-aviso-btn {
+      margin-left: 8px; border: 1px solid rgba(255,255,255,.3); background: transparent;
+      color: #ffd479; font: inherit; padding: 3px 9px; border-radius: 7px; cursor: pointer;
+      pointer-events: auto;
+    }
+    #sk-aviso.show { pointer-events: auto; }
+
+    /* ── biblioteca de pizarras + diálogo de guardar ── */
+    .sk-ov {
+      position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
+      background: rgba(6,8,13,.62); z-index: 120; padding: 20px;
+    }
+    .sk-ov.show { display: flex; }
+    .sk-ov-box {
+      /* ⚠️ var(--card) es translúcido: sobre el velo oscuro los textos se leen
+         a medias. Se opaca igual que los menús bajo camo. */
+      background: linear-gradient(var(--card), var(--card)), var(--bg);
+      border: 1px solid var(--border2); border-radius: 14px; padding: 18px;
+      width: min(440px, 100%); max-height: 86vh; overflow-y: auto;
+      box-shadow: 0 24px 70px rgba(0,0,0,.55);
+    }
+    .sk-ov-box.wide { width: min(880px, 100%); }
+    .sk-ov-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .sk-ov-head h3 { margin: 0; font-size: 17px; font-weight: 800; color: var(--text); }
+    .sk-lib-count { font-size: 12px; font-weight: 700; color: var(--muted); }
+    .sk-ov-x {
+      margin-left: auto; width: 30px; height: 30px; border-radius: 8px; cursor: pointer;
+      border: 1px solid var(--border2); background: transparent; color: var(--muted);
+      font-size: 19px; line-height: 1;
+    }
+    .sk-ov-x:hover { color: var(--text); border-color: var(--accent); }
+    .sk-lib-body { display: grid; grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); gap: 12px; }
+    .sk-lib-empty { grid-column: 1 / -1; margin: 6px 2px 10px; color: var(--muted); font-size: 13.5px; line-height: 1.5; }
+    .sk-lib-card { border: 1px solid var(--border); border-radius: 11px; padding: 9px; background: var(--surface); }
+    .sk-lib-thumb {
+      aspect-ratio: 16 / 9; border-radius: 7px; background: #0c0e14 center/cover no-repeat;
+      border: 1px solid var(--border); margin-bottom: 8px;
+    }
+    .sk-lib-name { font-size: 13.5px; font-weight: 700; color: var(--text);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .sk-lib-meta { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+    .sk-lib-acts { display: flex; gap: 5px; margin-top: 9px; flex-wrap: wrap; }
+    .sk-lib-btn {
+      flex: 1 1 auto; font-size: 11.5px; font-weight: 700; padding: 5px 7px; cursor: pointer;
+      border-radius: 7px; border: 1px solid var(--border2); background: transparent; color: var(--muted);
+    }
+    .sk-lib-btn:hover { color: var(--text); border-color: var(--accent); }
+    .sk-lib-btn.go { color: var(--text); border-color: var(--accent); }
+    .sk-save-lbl { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 5px; }
+    #sk-save-name {
+      width: 100%; padding: 9px 11px; border-radius: 9px; font-size: 14px;
+      border: 1px solid var(--border2); background: var(--bg); color: var(--text);
+    }
+    .sk-save-hint { font-size: 12.5px; color: var(--muted); line-height: 1.45; margin: 9px 0 0; }
+    .sk-ov-acts { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
     .sk-inline { display: inline-flex; align-items: center; gap: 6px;
       padding-left: 10px; margin-left: 2px; border-left: 1px solid var(--border); }
     .sk-inline .tool-btn { width: 34px; height: 34px; }
@@ -3056,6 +3121,8 @@
       background: var(--card); border: 1px solid var(--border); border-radius: 12px;
       padding: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden;
       min-height: 420px;
+      /* ancla del aviso (#sk-aviso va absoluto dentro) */
+      position: relative;
     }
     .scalper-canvas-wrap canvas { border-radius: 6px; box-shadow: 0 4px 18px rgba(0,0,0,0.25); }
 
@@ -7415,6 +7482,14 @@
           <span data-help="chalkboard"></span>
         </div>
         <div class="scalper-actions">
+          <button class="sk-btn" id="sk-save-btn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            <span data-i18n="scalper.save">Save</span>
+          </button>
+          <button class="sk-btn" id="sk-lib-btn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            <span data-i18n="scalper.library">Library</span>
+          </button>
           <div class="sk-menu-wrap">
             <button class="sk-btn" id="sk-bg-btn" type="button">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
@@ -7571,6 +7646,35 @@
         <button type="button" data-sk-prev>‹</button>
         <span id="sk-slide-counter">1 / 1</span>
         <button type="button" data-sk-next>›</button>
+      </div>
+
+      <!-- Biblioteca de pizarras guardadas -->
+      <div class="sk-ov" id="sk-lib">
+        <div class="sk-ov-box wide">
+          <div class="sk-ov-head">
+            <h3 data-i18n="scalper.libTitle">Your boards</h3>
+            <span class="sk-lib-count" id="sk-lib-count"></span>
+            <button class="sk-ov-x" type="button" id="sk-lib-x" aria-label="Close">×</button>
+          </div>
+          <div class="sk-lib-body" id="sk-lib-body"></div>
+        </div>
+      </div>
+
+      <!-- Guardar: nombre + qué va a pasar -->
+      <div class="sk-ov" id="sk-save">
+        <div class="sk-ov-box">
+          <div class="sk-ov-head">
+            <h3 data-i18n="scalper.saveTitle">Save this board</h3>
+            <button class="sk-ov-x" type="button" id="sk-save-x" aria-label="Close">×</button>
+          </div>
+          <label class="sk-save-lbl" for="sk-save-name" data-i18n="scalper.saveName">Name</label>
+          <input type="text" id="sk-save-name" maxlength="80" autocomplete="off">
+          <p class="sk-save-hint" data-i18n="scalper.saveHint">It goes to your library and the board starts fresh.</p>
+          <div class="sk-ov-acts">
+            <button class="sk-btn" type="button" id="sk-save-cancel" data-i18n="scalper.cancel">Cancel</button>
+            <button class="sk-btn gold" type="button" id="sk-save-go" data-i18n="scalper.saveGo">Save</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -8330,6 +8434,20 @@
       'scalper.tag': 'The Trading Education Studio',
       'scalper.bg': 'Background', 'scalper.bgDark': 'Dark', 'scalper.bgWhite': 'White', 'scalper.bgBlack': 'Black', 'scalper.bgGrid': 'Chart grid',
       'scalper.bgNavy': 'Navy', 'scalper.bgCharcoal': 'Charcoal', 'scalper.bgForest': 'Forest', 'scalper.bgSepia': 'Sepia', 'scalper.bgCream': 'Cream', 'scalper.bgCustom': 'Custom…',
+      'scalper.maxSlides': 'This board is full: {n} slides maximum. Export it to PDF and start a new one.',
+      'scalper.saveFail': "Your browser ran out of room and this board could NOT be saved. Export it to PDF now so you don't lose it.",
+      'scalper.newName': 'Board', 'scalper.save': 'Save', 'scalper.library': 'Library',
+      'scalper.libTitle': 'Your boards', 'scalper.libCount': '{n} of {max} saved',
+      'scalper.libEmpty': "You haven't saved a board yet. Draw something and press Save \u2014 it will be waiting here, from any computer.",
+      'scalper.saveTitle': 'Save this board', 'scalper.saveHint': 'It goes to your library and the board starts fresh with one blank slide.',
+      'scalper.saveName': 'Name', 'scalper.saveGo': 'Save', 'scalper.cancel': 'Cancel',
+      'scalper.saved': 'Saved to your library. Blank board ready.', 'scalper.undoSave': 'Bring it back',
+      'scalper.restored': 'Back on the board.',
+      'scalper.open': 'Open', 'scalper.rename': 'Rename', 'scalper.del': 'Delete',
+      'scalper.libFull': 'Your library is full ({max} boards). Delete one to save another.',
+      'scalper.nSlides': '{n} slides',       'scalper.confirmDel': 'Delete this board? It cannot be undone.',
+      'scalper.confirmOpen': 'What is on the board now will be replaced. Save it first if you want to keep it.',
+      'scalper.netFail': "Couldn't reach the server. Nothing was saved \u2014 try again.",
       'scalper.present': 'Present', 'scalper.exitPresent': 'Exit', 'scalper.exportPdf': 'Export PDF', 'scalper.slides': 'Slides', 'scalper.text': 'Text',
       'account.admin': 'Admin panel',
       'account.mine': 'My account',
@@ -8865,6 +8983,20 @@
       'scalper.tag': 'El Estudio de Educación en Trading',
       'scalper.bg': 'Fondo', 'scalper.bgDark': 'Oscuro', 'scalper.bgWhite': 'Blanco', 'scalper.bgBlack': 'Negro', 'scalper.bgGrid': 'Cuadrícula',
       'scalper.bgNavy': 'Marino', 'scalper.bgCharcoal': 'Carbón', 'scalper.bgForest': 'Bosque', 'scalper.bgSepia': 'Sepia', 'scalper.bgCream': 'Crema', 'scalper.bgCustom': 'Personalizado…',
+      'scalper.maxSlides': 'Esta pizarra está llena: máximo {n} diapositivas. Expórtala a PDF y empieza otra.',
+      'scalper.saveFail': 'Tu navegador se quedó sin espacio y esta pizarra NO se pudo guardar. Expórtala a PDF ahora para no perderla.',
+      'scalper.newName': 'Pizarra', 'scalper.save': 'Guardar', 'scalper.library': 'Biblioteca',
+      'scalper.libTitle': 'Tus pizarras', 'scalper.libCount': '{n} de {max} guardadas',
+      'scalper.libEmpty': 'Todav\u00eda no has guardado ninguna pizarra. Dibuja algo y pulsa Guardar \u2014 aqu\u00ed te espera, desde cualquier computadora.',
+      'scalper.saveTitle': 'Guardar esta pizarra', 'scalper.saveHint': 'Va a tu biblioteca y la pizarra vuelve a empezar con una diapositiva en blanco.',
+      'scalper.saveName': 'Nombre', 'scalper.saveGo': 'Guardar', 'scalper.cancel': 'Cancelar',
+      'scalper.saved': 'Guardada en tu biblioteca. Pizarra nueva lista.', 'scalper.undoSave': 'Devolvérmela',
+      'scalper.restored': 'De vuelta en la pizarra.',
+      'scalper.open': 'Abrir', 'scalper.rename': 'Renombrar', 'scalper.del': 'Borrar',
+      'scalper.libFull': 'Tu biblioteca está llena ({max} pizarras). Borra una para guardar otra.',
+      'scalper.nSlides': '{n} diapositivas',       'scalper.confirmDel': '¿Borrar esta pizarra? No se puede deshacer.',
+      'scalper.confirmOpen': 'Lo que hay ahora en la pizarra se reemplaza. Guárdalo primero si quieres conservarlo.',
+      'scalper.netFail': 'No se pudo llegar al servidor. No se guardó nada — inténtalo de nuevo.',
       'scalper.present': 'Presentar', 'scalper.exitPresent': 'Salir', 'scalper.exportPdf': 'Exportar PDF', 'scalper.slides': 'Diapositivas', 'scalper.text': 'Texto',
       'account.admin': 'Panel de admin',
       'account.mine': 'Mi cuenta',
@@ -9400,6 +9532,20 @@
       'scalper.tag': "Le Studio d'Éducation au Trading",
       'scalper.bg': 'Arrière-plan', 'scalper.bgDark': 'Sombre', 'scalper.bgWhite': 'Blanc', 'scalper.bgBlack': 'Noir', 'scalper.bgGrid': 'Grille',
       'scalper.bgNavy': 'Marine', 'scalper.bgCharcoal': 'Charbon', 'scalper.bgForest': 'Forêt', 'scalper.bgSepia': 'Sépia', 'scalper.bgCream': 'Crème', 'scalper.bgCustom': 'Personnalisé…',
+      'scalper.maxSlides': 'Ce tableau est plein : {n} diapositives maximum. Exportez-le en PDF et commencez-en un autre.',
+      'scalper.saveFail': "Votre navigateur n'a plus de place et ce tableau n'a PAS pu être enregistré. Exportez-le en PDF maintenant pour ne pas le perdre.",
+      'scalper.newName': 'Tableau', 'scalper.save': 'Enregistrer', 'scalper.library': 'Biblioth\u00e8que',
+      'scalper.libTitle': 'Vos tableaux', 'scalper.libCount': '{n} sur {max} enregistr\u00e9s',
+      'scalper.libEmpty': "Vous n'avez encore enregistr\u00e9 aucun tableau. Dessinez quelque chose et appuyez sur Enregistrer \u2014 il vous attendra ici, depuis n'importe quel ordinateur.",
+      'scalper.saveTitle': 'Enregistrer ce tableau', 'scalper.saveHint': "Il part dans votre biblioth\u00e8que et le tableau recommence avec une diapositive vierge.",
+      'scalper.saveName': 'Nom', 'scalper.saveGo': 'Enregistrer', 'scalper.cancel': 'Annuler',
+      'scalper.saved': 'Enregistr\u00e9 dans votre biblioth\u00e8que. Tableau vierge pr\u00eat.', 'scalper.undoSave': 'Le r\u00e9cup\u00e9rer',
+      'scalper.restored': 'De retour sur le tableau.',
+      'scalper.open': 'Ouvrir', 'scalper.rename': 'Renommer', 'scalper.del': 'Supprimer',
+      'scalper.libFull': 'Votre biblioth\u00e8que est pleine ({max} tableaux). Supprimez-en un pour en enregistrer un autre.',
+      'scalper.nSlides': '{n} diapositives',       'scalper.confirmDel': 'Supprimer ce tableau ? C\u2019est irr\u00e9versible.',
+      'scalper.confirmOpen': 'Ce qui est sur le tableau va \u00eatre remplac\u00e9. Enregistrez-le d\u2019abord si vous voulez le garder.',
+      'scalper.netFail': "Serveur injoignable. Rien n\u2019a \u00e9t\u00e9 enregistr\u00e9 \u2014 r\u00e9essayez.",
       'scalper.present': 'Présenter', 'scalper.exitPresent': 'Quitter', 'scalper.exportPdf': 'Exporter PDF', 'scalper.slides': 'Diapositives', 'scalper.text': 'Texte',
       'account.admin': "Panneau d'admin",
       'account.mine': 'Mon compte',
@@ -9935,6 +10081,20 @@
       'scalper.tag': 'O Estúdio de Educação em Trading',
       'scalper.bg': 'Fundo', 'scalper.bgDark': 'Escuro', 'scalper.bgWhite': 'Branco', 'scalper.bgBlack': 'Preto', 'scalper.bgGrid': 'Grade',
       'scalper.bgNavy': 'Marinho', 'scalper.bgCharcoal': 'Carvão', 'scalper.bgForest': 'Floresta', 'scalper.bgSepia': 'Sépia', 'scalper.bgCream': 'Creme', 'scalper.bgCustom': 'Personalizado…',
+      'scalper.maxSlides': 'Este quadro está cheio: máximo de {n} slides. Exporte para PDF e comece outro.',
+      'scalper.saveFail': 'Seu navegador ficou sem espaço e este quadro NÃO pôde ser salvo. Exporte para PDF agora para não perdê-lo.',
+      'scalper.newName': 'Quadro', 'scalper.save': 'Salvar', 'scalper.library': 'Biblioteca',
+      'scalper.libTitle': 'Seus quadros', 'scalper.libCount': '{n} de {max} salvos',
+      'scalper.libEmpty': 'Voc\u00ea ainda n\u00e3o salvou nenhum quadro. Desenhe algo e toque em Salvar \u2014 ele fica esperando aqui, de qualquer computador.',
+      'scalper.saveTitle': 'Salvar este quadro', 'scalper.saveHint': 'Vai para a sua biblioteca e o quadro recome\u00e7a com um slide em branco.',
+      'scalper.saveName': 'Nome', 'scalper.saveGo': 'Salvar', 'scalper.cancel': 'Cancelar',
+      'scalper.saved': 'Salvo na sua biblioteca. Quadro novo pronto.', 'scalper.undoSave': 'Trazer de volta',
+      'scalper.restored': 'De volta ao quadro.',
+      'scalper.open': 'Abrir', 'scalper.rename': 'Renomear', 'scalper.del': 'Excluir',
+      'scalper.libFull': 'Sua biblioteca est\u00e1 cheia ({max} quadros). Exclua um para salvar outro.',
+      'scalper.nSlides': '{n} slides',       'scalper.confirmDel': 'Excluir este quadro? N\u00e3o d\u00e1 para desfazer.',
+      'scalper.confirmOpen': 'O que est\u00e1 no quadro agora ser\u00e1 substitu\u00eddo. Salve primeiro se quiser manter.',
+      'scalper.netFail': 'N\u00e3o foi poss\u00edvel falar com o servidor. Nada foi salvo — tente de novo.',
       'scalper.present': 'Apresentar', 'scalper.exitPresent': 'Sair', 'scalper.exportPdf': 'Exportar PDF', 'scalper.slides': 'Slides', 'scalper.text': 'Texto',
       'account.admin': 'Painel de admin',
       'account.mine': 'Minha conta',
@@ -10370,6 +10530,11 @@
     const dict = I18N[currentLang] || I18N.en;
     return dict[key] !== undefined ? dict[key] : (I18N.en[key] !== undefined ? I18N.en[key] : key);
   }
+  // ⚠️ `I18N` y `currentLang` son `const`/`let` en el ámbito de ESTE <script>,
+  //    y eso NO los pone en `window`: otros bloques (el Chalkboard, sin ir más
+  //    lejos) no los ven. Un mensaje que se arma en tiempo de ejecución fuera
+  //    de aquí necesita esta puerta, o sale la clave cruda en pantalla.
+  window.T = T;
 
   function applyLanguage(lang) {
     if (!I18N[lang]) lang = 'en';
@@ -14215,17 +14380,36 @@
 
     // ── per-slide history ──
     function curHist() { return state.hist[state.cur]; }
+    // 🔴 MEDIDO: una diapositiva con fondo de REJILLA ocupaba 32,3 KB y una
+    // con fondo liso 0,3 KB — cien veces más. La causa: `canvas.toJSON()`
+    // hornea el fondo como una imagen base64 del lienzo entero, y se guardaba
+    // UNA COPIA IDÉNTICA por diapositiva y otra por cada paso de deshacer.
+    // Con el cupo de ~5 MB del navegador eso son ~155 diapositivas antes de
+    // que guardar deje de funcionar (y falla EN SILENCIO, ver `persist`).
+    // El fondo ya lo manda `s.bg`, que es el que se reaplica al cargar — así
+    // que la copia sobra. Quitarlo no cambia nada de lo que se ve.
+    function instantanea() {
+      const j = canvas.toJSON();
+      delete j.backgroundImage;
+      return JSON.stringify(j);
+    }
     function pushHistory() {
       if (suppress) return;
       const h = curHist(); if (!h) return;
-      const json = JSON.stringify(canvas.toJSON());
+      const json = instantanea();
       h.stack = h.stack.slice(0, h.idx + 1);
       h.stack.push(json); h.idx = h.stack.length - 1;
       persist();
     }
     function loadJSON(json, after) {
       suppress = true;
-      canvas.loadFromJSON(json, () => { canvas.renderAll(); suppress = false; if (after) after(); });
+      // ⚠️ el fondo se vuelve a poner aquí: la copia ya no lo lleva dentro, y
+      //    sin esto deshacer sobre una diapositiva con rejilla la dejaría lisa
+      canvas.loadFromJSON(json, () => {
+        setCanvasBg(canvas, (state.slides[state.cur] || {}).bg || 'dark', () => {
+          canvas.renderAll(); suppress = false; if (after) after();
+        });
+      });
     }
     function undo() { const h = curHist(); if (!h || h.idx <= 0) return; h.idx--; loadJSON(h.stack[h.idx], updateThumb); }
     function redo() { const h = curHist(); if (!h || h.idx >= h.stack.length - 1) return; h.idx++; loadJSON(h.stack[h.idx], updateThumb); }
@@ -14480,14 +14664,14 @@
     }
 
     // ── slides ──
-    function saveCurrent() { if (state.slides[state.cur]) state.slides[state.cur].json = JSON.stringify(canvas.toJSON()); }
+    function saveCurrent() { if (state.slides[state.cur]) state.slides[state.cur].json = instantanea(); }
     function loadSlide(initialHist) {
       const s = state.slides[state.cur];
       suppress = true;
       const finish = () => {
         suppress = false;
         const h = curHist();
-        if (initialHist || !h.stack.length) { h.stack = [JSON.stringify(canvas.toJSON())]; h.idx = 0; }
+        if (initialHist || !h.stack.length) { h.stack = [instantanea()]; h.idx = 0; }
         // Defer fitCanvas so the container has had a chance to lay out
         requestAnimationFrame(() => { fitCanvas(); canvas.requestRenderAll(); });
       };
@@ -14499,7 +14683,15 @@
       if (i === state.cur || i < 0 || i >= state.slides.length) return;
       saveCurrent(); state.cur = i; loadSlide(); markActiveThumb(); updateCounters(); persist();
     }
+    // Tope de diapositivas por pizarra. No es por miedo al "malintencionado":
+    // el navegador guarda ~5 MB para TODO el sitio y `persist()` falla EN
+    // SILENCIO al llenarse, así que sin tope lo que pasa no es que alguien
+    // abuse — es que a un usuario normal deja de guardársele el trabajo sin
+    // que nada se lo diga. 60 es holgado (una clase larga son 15-20) y deja
+    // el cupo lejísimos incluso con todas en rejilla.
+    const MAX_SLIDES = 60;
     function addSlide() {
+      if (state.slides.length >= MAX_SLIDES) { avisoTope(); return; }
       saveCurrent();
       // New slides inherit slide #1's background
       const inheritBg = (state.slides[0] && state.slides[0].bg) || 'dark';
@@ -14643,6 +14835,211 @@
       pdf.save('scalper-board.pdf');
     }
 
+    // ══ BIBLIOTECA DE PIZARRAS ══════════════════════════════════════════
+    // Pedido del dueño: guardar proyectos, que la pizarra vuelva a empezar en
+    // blanco, y una biblioteca donde reabrirlos, presentarlos y exportarlos.
+    //
+    // 🔑 Se guarda EL MISMO JSON que ya vivía en el navegador ({slides, cur}),
+    // así que abrir una pizarra guardada es literalmente cargar ese estado. No
+    // hay una segunda representación que pueda desincronizarse con la primera.
+    const LIB = { lista: [], max: 20, deshacer: null };
+
+    function tableroActual() {
+      saveCurrent();
+      return JSON.stringify({ slides: state.slides, cur: state.cur });
+    }
+    function pizarraEnBlanco() {
+      const bg = (state.slides[0] && state.slides[0].bg) || 'dark';
+      state.slides = [{ json: null, bg: bg }];
+      state.hist = [{ stack: [], idx: -1 }];
+      state.cur = 0;
+      loadSlide(true); renderThumbs(); updateCounters(); persist();
+    }
+    function cargarTablero(txt) {
+      const d = JSON.parse(txt);
+      if (!d || !d.slides || !d.slides.length) throw new Error('vacío');
+      state.slides = d.slides.slice(0, MAX_SLIDES);
+      state.hist = state.slides.map(() => ({ stack: [], idx: -1 }));
+      state.cur = Math.min(d.cur || 0, state.slides.length - 1);
+      loadSlide(true); renderThumbs(); updateCounters(); persist();
+    }
+
+    function libPedir(url, opts) {
+      return fetch(url, Object.assign({ headers: { 'Content-Type': 'application/json' } }, opts || {}))
+        .then(r => r.json().then(j => ({ ok: r.ok, code: r.status, j: j }))
+                    .catch(() => ({ ok: false, code: r.status, j: {} })));
+    }
+
+    function libRefrescar() {
+      return libPedir('/api/chalk/boards').then(r => {
+        if (!r.ok) return false;
+        LIB.lista = r.j.boards || [];
+        LIB.max = r.j.max || LIB.max;
+        libPintar();
+        return true;
+      }).catch(() => false);
+    }
+
+    function libAbrirPanel() {
+      const ov = document.getElementById('sk-lib');
+      if (!ov) return;
+      ov.classList.add('show');
+      libPintar();                       // se pinta ya con lo último conocido
+      libRefrescar();
+    }
+    function libCerrar() {
+      const ov = document.getElementById('sk-lib');
+      if (ov) ov.classList.remove('show');
+    }
+
+    function libPintar() {
+      const cuerpo = document.getElementById('sk-lib-body');
+      const cuenta = document.getElementById('sk-lib-count');
+      if (!cuerpo) return;
+      if (cuenta) {
+        cuenta.textContent = (window.T ? window.T('scalper.libCount') : '{n}/{max}')
+          .replace('{n}', LIB.lista.length).replace('{max}', LIB.max);
+      }
+      cuerpo.innerHTML = '';
+      if (!LIB.lista.length) {
+        const v = document.createElement('p');
+        v.className = 'sk-lib-empty';
+        v.textContent = window.T ? window.T('scalper.libEmpty') : '';
+        cuerpo.appendChild(v);
+        return;
+      }
+      LIB.lista.forEach(b => {
+        const c = document.createElement('div');
+        c.className = 'sk-lib-card';
+        const im = document.createElement('div');
+        im.className = 'sk-lib-thumb';
+        // ⚠️ por propiedad, nunca dentro de un string de HTML: un data URL
+        //    lleva comillas y parte el atributo style (trampa ya vista en la
+        //    tienda de cosméticos y en el carrito)
+        if (b.thumb) im.style.backgroundImage = 'url("' + b.thumb + '")';
+        c.appendChild(im);
+        const n = document.createElement('div');
+        n.className = 'sk-lib-name';
+        n.textContent = b.name;                        // textContent: nunca HTML
+        c.appendChild(n);
+        const m = document.createElement('div');
+        m.className = 'sk-lib-meta';
+        m.textContent = (window.T ? window.T('scalper.nSlides') : '{n}')
+          .replace('{n}', b.slides) + ' · ' + (b.updated || '').slice(0, 10);
+        c.appendChild(m);
+        const fila = document.createElement('div');
+        fila.className = 'sk-lib-acts';
+        const bt = (clave, fn, cls) => {
+          const x = document.createElement('button');
+          x.type = 'button';
+          x.className = 'sk-lib-btn' + (cls ? ' ' + cls : '');
+          x.textContent = window.T ? window.T(clave) : clave;
+          x.addEventListener('click', fn);
+          fila.appendChild(x);
+        };
+        bt('scalper.open', () => libAbrirPizarra(b), 'go');
+        bt('scalper.rename', () => libRenombrar(b));
+        bt('scalper.del', () => libBorrar(b));
+        c.appendChild(fila);
+        cuerpo.appendChild(c);
+      });
+    }
+
+    function libAbrirPizarra(b) {
+      // 🔴 Abrir REEMPLAZA lo que hay en la pizarra. Sin este aviso, un clic
+      //    curioso en la biblioteca se lleva por delante el trabajo sin
+      //    guardar de quien lo pulsa.
+      if (!hayPizarraVacia() &&
+          !window.confirm(window.T ? window.T('scalper.confirmOpen') : 'Replace?')) return;
+      libPedir('/api/chalk/boards/' + b.id).then(r => {
+        if (!r.ok) { avisoPizarra('scalper.netFail'); return; }
+        try { cargarTablero(r.j.board.data); } catch (e) { avisoPizarra('scalper.netFail'); return; }
+        libCerrar();
+      }).catch(() => avisoPizarra('scalper.netFail'));
+    }
+    function hayPizarraVacia() {
+      saveCurrent();
+      if (state.slides.length > 1) return false;
+      const j = state.slides[0] && state.slides[0].json;
+      if (!j) return true;
+      try { return !(JSON.parse(j).objects || []).length; } catch (e) { return false; }
+    }
+    function libRenombrar(b) {
+      const n = window.prompt(window.T ? window.T('scalper.saveName') : 'Name', b.name);
+      if (n === null) return;
+      const v = n.trim();
+      if (!v) return;
+      libPedir('/api/chalk/boards/' + b.id + '/rename',
+               { method: 'POST', body: JSON.stringify({ name: v }) })
+        .then(r => { if (r.ok) libRefrescar(); else avisoPizarra('scalper.netFail'); })
+        .catch(() => avisoPizarra('scalper.netFail'));
+    }
+    function libBorrar(b) {
+      if (!window.confirm(window.T ? window.T('scalper.confirmDel') : 'Delete?')) return;
+      libPedir('/api/chalk/boards/' + b.id, { method: 'DELETE' })
+        .then(r => { if (r.ok) libRefrescar(); else avisoPizarra('scalper.netFail'); })
+        .catch(() => avisoPizarra('scalper.netFail'));
+    }
+
+    // ── guardar ──
+    function libGuardarPedirNombre() {
+      const dlg = document.getElementById('sk-save');
+      if (!dlg) return;
+      const inp = document.getElementById('sk-save-name');
+      if (inp) {
+        const hoy = new Date().toISOString().slice(0, 10);
+        inp.value = (window.T ? window.T('scalper.newName') : 'Board') + ' ' + hoy;
+      }
+      dlg.classList.add('show');
+      if (inp) { inp.focus(); inp.select(); }
+    }
+    function libGuardarCerrar() {
+      const dlg = document.getElementById('sk-save');
+      if (dlg) dlg.classList.remove('show');
+    }
+    function libGuardar() {
+      const inp = document.getElementById('sk-save-name');
+      const nombre = ((inp && inp.value) || '').trim();
+      const datos = tableroActual();
+      const nslides = state.slides.length;
+      libGuardarCerrar();
+      renderSlideDataURL(0, 0.25).then(thumb => {
+        return libPedir('/api/chalk/boards', {
+          method: 'POST',
+          body: JSON.stringify({ name: nombre, data: datos, slides: nslides, thumb: thumb }),
+        });
+      }).then(r => {
+        if (!r.ok) {
+          if (r.code === 409) {
+            avisoPizarra('scalper.libFull', { max: (r.j && r.j.max) || LIB.max });
+            libAbrirPanel();            // se le enseña QUÉ borrar, no solo el no
+          } else { avisoPizarra('scalper.netFail'); }
+          return;                        // 🔑 y NO se limpia: guardar falló
+        }
+        // guardado: se archiva y la pizarra empieza de cero (decisión del
+        // dueño), pero con la de antes a un clic de distancia
+        LIB.deshacer = datos;
+        pizarraEnBlanco();
+        libRefrescar();
+        avisoConDeshacer();
+      }).catch(() => avisoPizarra('scalper.netFail'));
+    }
+    function avisoConDeshacer() {
+      avisoPizarra('scalper.saved');
+      const el = document.getElementById('sk-aviso');
+      if (!el || !LIB.deshacer) return;
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'sk-aviso-btn';
+      b.textContent = window.T ? window.T('scalper.undoSave') : 'Undo';
+      b.addEventListener('click', () => {
+        try { cargarTablero(LIB.deshacer); avisoPizarra('scalper.restored'); }
+        catch (e) { avisoPizarra('scalper.netFail'); }
+      });
+      el.appendChild(document.createTextNode(' '));
+      el.appendChild(b);
+    }
+
     // ── presentation ──
     function present() {
       saveCurrent();
@@ -14662,10 +15059,39 @@
     });
 
     // ── persistence ──
+    // Aviso propio de la pizarra (el toast de Synapse vive en su pestaña).
+    function avisoPizarra(clave, vars) {
+      let msg = (typeof window.T === 'function') ? window.T(clave) : clave;
+      if (vars) Object.keys(vars).forEach(k => { msg = msg.replace('{' + k + '}', vars[k]); });
+      let el = document.getElementById('sk-aviso');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'sk-aviso';
+        (document.getElementById('sk-canvas-wrap') || document.body).appendChild(el);
+      }
+      el.textContent = msg;
+      el.classList.add('show');
+      clearTimeout(avisoPizarra._t);
+      avisoPizarra._t = setTimeout(() => el.classList.remove('show'), 6000);
+    }
+    function avisoTope() { avisoPizarra('scalper.maxSlides', { n: MAX_SLIDES }); }
+
     function persist() {
       saveCurrent();
-      try { localStorage.setItem('scalperBoard', JSON.stringify({ slides: state.slides, cur: state.cur })); } catch (e) {}
+      try {
+        localStorage.setItem('scalperBoard',
+          JSON.stringify({ slides: state.slides, cur: state.cur }));
+        _sinEspacio = false;
+      } catch (e) {
+        // 🔴 Esto era un `catch (e) {}` MUDO. Al llenarse el cupo del navegador
+        // el trabajo dejaba de guardarse y nadie se enteraba: seguías
+        // dibujando encima de algo que ya no se estaba escribiendo en ningún
+        // sitio, y al recargar aparecía la versión de hace media hora. Un
+        // fallo de guardado tiene que decirse SIEMPRE.
+        if (!_sinEspacio) { _sinEspacio = true; avisoPizarra('scalper.saveFail'); }
+      }
     }
+    let _sinEspacio = false;
     function restore() {
       try {
         const raw = localStorage.getItem('scalperBoard');
@@ -14685,6 +15111,26 @@
         (state.tool === b.dataset.tool && b.dataset.tool !== 'select')
           ? 'select' : b.dataset.tool)));
       agrupaBarra();
+      // biblioteca
+      const _on = (id, ev, fn) => {
+        const e = document.getElementById(id);
+        if (e) e.addEventListener(ev, fn);
+      };
+      _on('sk-save-btn', 'click', libGuardarPedirNombre);
+      _on('sk-lib-btn', 'click', libAbrirPanel);
+      _on('sk-lib-x', 'click', libCerrar);
+      _on('sk-save-x', 'click', libGuardarCerrar);
+      _on('sk-save-cancel', 'click', libGuardarCerrar);
+      _on('sk-save-go', 'click', libGuardar);
+      _on('sk-save-name', 'keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); libGuardar(); }
+        if (e.key === 'Escape') { e.preventDefault(); libGuardarCerrar(); }
+      });
+      // clic en el velo = cerrar, pero solo en el velo: dentro de la caja no
+      ['sk-lib', 'sk-save'].forEach(id => _on(id, 'click', e => {
+        if (e.target && e.target.id === id) e.currentTarget.classList.remove('show');
+      }));
+
       document.getElementById('sk-undo').addEventListener('click', undo);
       document.getElementById('sk-redo').addEventListener('click', redo);
       document.getElementById('sk-delete').addEventListener('click', deleteSel);
