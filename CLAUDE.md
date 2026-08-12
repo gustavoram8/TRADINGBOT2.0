@@ -2360,8 +2360,22 @@ boards"** que llevaba desde antes del lanzamiento en la lista de críticos.
   (con análisis semanal y testimonio mensual) · standard ~97 · premium 160 irrepetible → el rango
   2 (200 XP) toma días: no hay atajo. ⚠️ Rutas reales: `/api/testimonial/submit`, y pre-flight
   exige `verdict` ∈ go/caution/no-go.
-- [ ] **18. Subidas al foro:** permitir capturas **del propio sitio** (landing, camos, etc.) y
-  bloquear drogas, desnudos, armas y asesoría financiera — **sin censurar de más**.
+- [x] ✅ **18. Subidas al foro (2026-08-12).** El moderador de imágenes (`FORUM_IMAGE_MOD_PROMPT`)
+  tenía tres agujeros; el peor no era el evidente: (1) las capturas del PROPIO SITIO se bloqueaban
+  como "app que no es de trading" **y anotaban advertencia** que suma al automute — presumir tu camo
+  3 veces = muteado; (2) drogas/desnudos/armas/violencia no estaban nombrados; (3) 🔴 **una imagen de
+  VENTA DE SEÑALES pasaba limpia** ("BUY GOLD NOW, join my VIP" es "claramente de trading" según el
+  prompt viejo — el texto ya lo bloqueaba, la imagen era el agujero, y es lo más peligroso legalmente
+  para un sitio educativo). Ahora el moderador devuelve **categoría** → dos códigos: `offtopic` →
+  `not_chart` (mensaje amable: qué SÍ se acepta) y sexual/drugs/weapons/violence/signal → `content`
+  (seco, sin detalle que ayude a afinar el intento); la advertencia lleva la categoría, no 'image'
+  genérico. **Anti-sobre-censura, 3 cláusulas explícitas:** los SL/TP dibujados en TU gráfico no son
+  asesoría (todos los gráficos del foro los llevan), "en la duda permitir", y la duda jamás aplica a
+  lo vetado. Respuesta sin categoría (formato viejo) bloquea como not_chart. `save_forum_image` ahora
+  devuelve 4-tupla (…, moderation_dict). i18n: `forum.img.content` nueva ×4, `forum.img.blocked`
+  reescrita ×4 (menciona el sitio). `tools/test_foro_imagenes.py` **32/32** + simula_foro 65/65.
+  ⚠️ Lo que NO se puede probar sin gastar llamadas: el juicio de la IA en sí — el test cubre todo lo
+  que lo rodea y vigila que el prompt conserve sus cláusulas. Fail-open se queda (IA caída → pasa).
 - [ ] **19. 🔴 Calidad del analizador fuera de ICT/STDV.** No sabe operar armónicos ni otras
   metodologías y **no puede juzgar si el análisis es correcto**. Hay que encontrarle una forma de
   validarlo. (El punto más difícil de la lista.)
