@@ -8504,6 +8504,7 @@
       'forum.img.content': 'Image blocked — that content is not allowed on this forum.',
       'forum.img.format': 'Please upload a JPG, PNG or WebP image.',
       'forum.img.large': 'Image too large (max 8 MB).',
+      'forum.netErr': 'The request never reached the server. Check your connection and try again.',
       'forum.needPlan': 'The forum is included with Standard and Premium. Upgrade your plan to post.',
       'forum.session': 'Your session expired. Sign in again and your text will still be here.',
       'forum.error': 'Something went wrong. Please try again.',
@@ -9066,6 +9067,7 @@
       'forum.img.content': 'Imagen bloqueada — ese contenido no está permitido en este foro.',
       'forum.img.format': 'Sube una imagen JPG, PNG o WebP.',
       'forum.img.large': 'Imagen demasiado grande (máx. 8 MB).',
+      'forum.netErr': 'La petición no llegó al servidor. Revisa tu conexión y vuelve a intentarlo.',
       'forum.needPlan': 'El foro viene con Standard y Premium. Mejora tu plan para publicar.',
       'forum.session': 'Tu sesión expiró. Vuelve a entrar y tu texto seguirá aquí.',
       'forum.error': 'Algo salió mal. Inténtalo de nuevo.',
@@ -9628,6 +9630,7 @@
       'forum.img.content': 'Image bloquée — ce contenu n’est pas autorisé sur ce forum.',
       'forum.img.format': 'Veuillez importer une image JPG, PNG ou WebP.',
       'forum.img.large': 'Image trop volumineuse (max 8 Mo).',
+      'forum.netErr': "La requête n'a jamais atteint le serveur. Vérifiez votre connexion et réessayez.",
       'forum.needPlan': "Le forum est inclus avec Standard et Premium. Passez à un plan supérieur pour publier.",
       'forum.session': "Votre session a expiré. Reconnectez-vous, votre texte sera toujours là.",
       'forum.error': "Une erreur s'est produite. Réessayez.",
@@ -10190,6 +10193,7 @@
       'forum.img.content': 'Imagem bloqueada — esse conteúdo não é permitido neste fórum.',
       'forum.img.format': 'Envie uma imagem JPG, PNG ou WebP.',
       'forum.img.large': 'Imagem muito grande (máx. 8 MB).',
+      'forum.netErr': 'A requisição não chegou ao servidor. Verifique sua conexão e tente de novo.',
       'forum.needPlan': 'O fórum vem com Standard e Premium. Faça upgrade do seu plano para publicar.',
       'forum.session': 'Sua sessão expirou. Entre de novo e seu texto continuará aqui.',
       'forum.error': 'Algo deu errado. Tente novamente.',
@@ -13282,7 +13286,12 @@
 
     function showErr(box, data, status) {
       const r = blockReason(data || {});
-      if (r.generic && status) r.msg += ' (' + status + ')';
+      /* status 0 = `fetch` reventó: la petición NUNCA llegó al servidor
+         (conexión caída, petición abortada, la pestaña perdió la red). No es
+         un fallo del servidor y decir "algo salió mal" manda a buscar donde no
+         es — a mí me costó tres rondas de logs vacíos averiguarlo. */
+      if (r.generic && status === 0) r.msg = T('forum.netErr');
+      else if (r.generic && status) r.msg += ' (' + status + ')';
       box.innerHTML = '';
       const span = document.createElement('span');
       span.textContent = r.msg;
