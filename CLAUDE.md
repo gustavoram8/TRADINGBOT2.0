@@ -2099,9 +2099,20 @@ borrado. PENDIENTE: agregar selector de mes / historial.
     que irse a `::before` porque **`::after` de `.tool-btn` ya lo ocupa el tooltip** (`content:
     attr(data-tip)`) — misma especificidad, ganaba la última y la flecha se convertía en el tooltip
     descolocado.
-  · `tools/test_chalkboard_ux.py` **31/31** en navegador real (el desplegable probado con el ratón
-    de verdad, no con `.click()` de JS: un botón dentro de un desplegable cerrado se puede pulsar
-    por código aunque el usuario no lo alcance) + `test_vendor.py` 12/12.
+  · 🔴 **El desplegable se cerraba al ir a coger la herramienta** (lo reportó él al usarlo). Entre
+    la cabecera y el panel hay **8 px de aire que no pertenecen a ningún elemento**: al cruzarlos
+    salta el `mouseleave` del grupo. Arreglado con un **puente transparente** (`::before` del propio
+    desplegable) de **exactamente 8 px** —pasarse le come el borde derecho del botón cabecera a los
+    clics, porque el panel va a `z-index:80`— más **260 ms de gracia** al salir (un atajo en diagonal
+    hacia el tercer nombre se sale un instante del grupo). Abrir bajó de 340 a **150 ms**: 340 se
+    sentía lento y era lo que empujaba a pulsar en vez de posar el ratón.
+  · `tools/test_chalkboard_ux.py` **35/35** en navegador real + `test_vendor.py` 12/12.
+    🔴 **El test pasaba con ese fallo puesto:** `page.click()` de Playwright **teletransporta** el
+    puntero al destino, así que nunca cruzaba el hueco. Lo que reproduce el bug es
+    `mouse.move(..., steps=25)`. Verificado quitando el arreglo: con el código viejo fallan 4.
+    ⚠️ La comprobación de la tendencia de las velas era **inestable** (se generan con azar y medir
+    solo el verde baila entre ejecuciones) → mide verdes **y** rojas: en un tramo alcista las rojas
+    suben igual.
     ⚠️ El selector del test filtra `.tool-btn.active[data-tool]`: la cabecera de familia también se
     enciende y no lleva herramienta.
   · **PENDIENTE de preguntarle:** si 20 velas es el tope correcto, y si quiere poder editar una
