@@ -2952,6 +2952,9 @@
       border-radius: 7px; font-size: 12.5px; font-family: 'Inter', sans-serif; padding: 6px 8px; cursor: pointer;
     }
     .sk-text-tools input[type="number"] { width: 58px; }
+    #sk-fib-add, #sk-fib-ode, #sk-fib-oa { width: 62px; }
+    /* un nivel propio se distingue de los del catálogo */
+    .fib-chip.propio { border-style: dashed; }
     .stt-mini { font-size: 11px; font-weight: 700; color: var(--muted); }
     .stt-toggle.wide { width: auto; padding: 0 10px; font-size: 11.5px; font-weight: 700; }
     /* los niveles del Fibonacci, uno por chip: se encienden y se apagan */
@@ -7554,17 +7557,36 @@
         <input type="color" class="tool-color" id="sk-pos-cen" value="#5b8ef0">
       </div>
 
+      <!-- Qué evento escribe la etiqueta -->
+      <div class="sk-text-tools" id="sk-ev-tools">
+        <span class="stt-label" data-i18n="scalper.event">Event</span>
+        <select id="sk-ev-sel"></select>
+        <span class="stt-mini" data-i18n="scalper.eventHint">Click on the board to place it</span>
+      </div>
+
       <!-- Barra del FIBONACCI -->
       <div class="sk-text-tools" id="sk-fib-tools">
         <span class="stt-label">Fib</span>
         <span class="fib-chips" id="sk-fib-chips"></span>
+        <input type="number" id="sk-fib-add" step="0.001" min="-5" max="10"
+               placeholder="0.886" title="Add level">
+        <button class="stt-toggle" type="button" id="sk-fib-addgo" title="Add level">+</button>
         <span class="stt-sep"></span>
         <label class="stt-mini" data-i18n="scalper.lines">Lines</label>
         <input type="color" class="tool-color" id="sk-fib-col" value="#5b8ef0">
+        <select id="sk-fib-ancho" title="Line width">
+          <option value="1">1</option>
+          <option value="2" selected>2</option>
+          <option value="3">3</option>
+        </select>
         <label class="stt-mini" data-i18n="scalper.labels">Labels</label>
         <input type="color" class="tool-color" id="sk-fib-txt" value="#5b8ef0">
         <span class="stt-sep"></span>
         <button class="stt-toggle wide active" type="button" id="sk-fib-ote">OTE</button>
+        <input type="number" id="sk-fib-ode" step="0.01" min="0" max="1" value="0.62"
+               title="OTE from">
+        <input type="number" id="sk-fib-oa" step="0.01" min="0" max="1" value="0.79"
+               title="OTE to">
         <input type="color" class="tool-color" id="sk-fib-cote" value="#22c55e">
       </div>
 
@@ -7637,6 +7659,27 @@
           </button>
           <button class="tool-btn" data-tool="fib" data-tip="Fibonacci retracement">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><line x1="3" y1="4" x2="21" y2="4"/><line x1="3" y1="9" x2="21" y2="9" stroke-dasharray="3 2"/><line x1="3" y1="13" x2="21" y2="13" stroke-dasharray="3 2"/><line x1="3" y1="16" x2="21" y2="16" stroke-dasharray="3 2"/><line x1="3" y1="20" x2="21" y2="20"/></svg>
+          </button>
+          <button class="tool-btn" data-tool="xabcd" data-tip="Harmonic XABCD — 5 clicks">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18 L7 7 L12 15 L16 6 L21 17"/></svg>
+          </button>
+          <button class="tool-btn" data-tool="ew5" data-tip="Elliott impulse 0-5 — 6 clicks">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19 L6 12 L8 16 L13 5 L15 11 L21 4"/></svg>
+          </button>
+          <button class="tool-btn" data-tool="ewabc" data-tip="Elliott ABC correction — 4 clicks">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6 L9 16 L14 9 L20 18"/></svg>
+          </button>
+          <button class="tool-btn" data-tool="hch" data-tip="Head & shoulders + neckline — 5 clicks">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18 L6 12 L9 16 L12 5 L15 16 L18 11 L22 18"/><line x1="3" y1="16" x2="21" y2="16" stroke-dasharray="3 2"/></svg>
+          </button>
+          <button class="tool-btn" data-tool="canal" data-tip="Parallel channel — 3 clicks">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="17" x2="20" y2="6"/><line x1="5" y1="21" x2="22" y2="10"/></svg>
+          </button>
+          <button class="tool-btn" data-tool="fibext" data-tip="Fibonacci extension — 3 clicks">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20 L9 9 L14 15"/><line x1="9" y1="5" x2="22" y2="5" stroke-dasharray="3 2"/><line x1="9" y1="11" x2="22" y2="11" stroke-dasharray="3 2"/></svg>
+          </button>
+          <button class="tool-btn" data-tool="evento" data-tip="Event tag (Wyckoff / SMC) — 1 click">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="9" rx="2"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
           </button>
           <button class="tool-btn" data-tool="circle" data-tip="Circle">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>
@@ -8482,7 +8525,7 @@
       'scalper.bgNavy': 'Navy', 'scalper.bgCharcoal': 'Charcoal', 'scalper.bgForest': 'Forest', 'scalper.bgSepia': 'Sepia', 'scalper.bgCream': 'Cream', 'scalper.bgCustom': 'Custom…',
       'scalper.maxSlides': 'This board is full: {n} slides maximum. Export it to PDF and start a new one.',
       'scalper.saveFail': "Your browser ran out of room and this board could NOT be saved. Export it to PDF now so you don't lose it.",
-      'scalper.newName': 'Board', 'scalper.position': 'Position', 'scalper.rr': 'R:R', 'scalper.flip': 'Buy / Sell', 'scalper.tp': 'TP', 'scalper.sl': 'SL', 'scalper.entry': 'Entry', 'scalper.lines': 'Lines', 'scalper.labels': 'Labels', 'scalper.save': 'Save', 'scalper.library': 'Library',
+      'scalper.newName': 'Board', 'scalper.event': 'Event', 'scalper.eventHint': 'Click on the board to place it', 'scalper.position': 'Position', 'scalper.rr': 'R:R', 'scalper.flip': 'Buy / Sell', 'scalper.tp': 'TP', 'scalper.sl': 'SL', 'scalper.entry': 'Entry', 'scalper.lines': 'Lines', 'scalper.labels': 'Labels', 'scalper.save': 'Save', 'scalper.library': 'Library',
       'scalper.libTitle': 'Your boards', 'scalper.libCount': '{n} of {max} saved',
       'scalper.libEmpty': "You haven't saved a board yet. Draw something and press Save \u2014 it will be waiting here, from any computer.",
       'scalper.saveTitle': 'Save this board', 'scalper.saveHint': 'It goes to your library and the board starts fresh with one blank slide.',
@@ -9031,7 +9074,7 @@
       'scalper.bgNavy': 'Marino', 'scalper.bgCharcoal': 'Carbón', 'scalper.bgForest': 'Bosque', 'scalper.bgSepia': 'Sepia', 'scalper.bgCream': 'Crema', 'scalper.bgCustom': 'Personalizado…',
       'scalper.maxSlides': 'Esta pizarra está llena: máximo {n} diapositivas. Expórtala a PDF y empieza otra.',
       'scalper.saveFail': 'Tu navegador se quedó sin espacio y esta pizarra NO se pudo guardar. Expórtala a PDF ahora para no perderla.',
-      'scalper.newName': 'Pizarra', 'scalper.position': 'Posición', 'scalper.rr': 'R:R', 'scalper.flip': 'Compra / Venta', 'scalper.tp': 'TP', 'scalper.sl': 'SL', 'scalper.entry': 'Entrada', 'scalper.lines': 'Líneas', 'scalper.labels': 'Etiquetas', 'scalper.save': 'Guardar', 'scalper.library': 'Biblioteca',
+      'scalper.newName': 'Pizarra', 'scalper.event': 'Evento', 'scalper.eventHint': 'Haz clic en la pizarra para colocarla', 'scalper.position': 'Posición', 'scalper.rr': 'R:R', 'scalper.flip': 'Compra / Venta', 'scalper.tp': 'TP', 'scalper.sl': 'SL', 'scalper.entry': 'Entrada', 'scalper.lines': 'Líneas', 'scalper.labels': 'Etiquetas', 'scalper.save': 'Guardar', 'scalper.library': 'Biblioteca',
       'scalper.libTitle': 'Tus pizarras', 'scalper.libCount': '{n} de {max} guardadas',
       'scalper.libEmpty': 'Todav\u00eda no has guardado ninguna pizarra. Dibuja algo y pulsa Guardar \u2014 aqu\u00ed te espera, desde cualquier computadora.',
       'scalper.saveTitle': 'Guardar esta pizarra', 'scalper.saveHint': 'Va a tu biblioteca y la pizarra vuelve a empezar con una diapositiva en blanco.',
@@ -9580,7 +9623,7 @@
       'scalper.bgNavy': 'Marine', 'scalper.bgCharcoal': 'Charbon', 'scalper.bgForest': 'Forêt', 'scalper.bgSepia': 'Sépia', 'scalper.bgCream': 'Crème', 'scalper.bgCustom': 'Personnalisé…',
       'scalper.maxSlides': 'Ce tableau est plein : {n} diapositives maximum. Exportez-le en PDF et commencez-en un autre.',
       'scalper.saveFail': "Votre navigateur n'a plus de place et ce tableau n'a PAS pu être enregistré. Exportez-le en PDF maintenant pour ne pas le perdre.",
-      'scalper.newName': 'Tableau', 'scalper.position': 'Position', 'scalper.rr': 'R:R', 'scalper.flip': 'Achat / Vente', 'scalper.tp': 'TP', 'scalper.sl': 'SL', 'scalper.entry': 'Entrée', 'scalper.lines': 'Lignes', 'scalper.labels': 'Étiquettes', 'scalper.save': 'Enregistrer', 'scalper.library': 'Biblioth\u00e8que',
+      'scalper.newName': 'Tableau', 'scalper.event': 'Événement', 'scalper.eventHint': 'Cliquez sur le tableau pour la placer', 'scalper.position': 'Position', 'scalper.rr': 'R:R', 'scalper.flip': 'Achat / Vente', 'scalper.tp': 'TP', 'scalper.sl': 'SL', 'scalper.entry': 'Entrée', 'scalper.lines': 'Lignes', 'scalper.labels': 'Étiquettes', 'scalper.save': 'Enregistrer', 'scalper.library': 'Biblioth\u00e8que',
       'scalper.libTitle': 'Vos tableaux', 'scalper.libCount': '{n} sur {max} enregistr\u00e9s',
       'scalper.libEmpty': "Vous n'avez encore enregistr\u00e9 aucun tableau. Dessinez quelque chose et appuyez sur Enregistrer \u2014 il vous attendra ici, depuis n'importe quel ordinateur.",
       'scalper.saveTitle': 'Enregistrer ce tableau', 'scalper.saveHint': "Il part dans votre biblioth\u00e8que et le tableau recommence avec une diapositive vierge.",
@@ -10129,7 +10172,7 @@
       'scalper.bgNavy': 'Marinho', 'scalper.bgCharcoal': 'Carvão', 'scalper.bgForest': 'Floresta', 'scalper.bgSepia': 'Sépia', 'scalper.bgCream': 'Creme', 'scalper.bgCustom': 'Personalizado…',
       'scalper.maxSlides': 'Este quadro está cheio: máximo de {n} slides. Exporte para PDF e comece outro.',
       'scalper.saveFail': 'Seu navegador ficou sem espaço e este quadro NÃO pôde ser salvo. Exporte para PDF agora para não perdê-lo.',
-      'scalper.newName': 'Quadro', 'scalper.position': 'Posição', 'scalper.rr': 'R:R', 'scalper.flip': 'Compra / Venda', 'scalper.tp': 'TP', 'scalper.sl': 'SL', 'scalper.entry': 'Entrada', 'scalper.lines': 'Linhas', 'scalper.labels': 'Rótulos', 'scalper.save': 'Salvar', 'scalper.library': 'Biblioteca',
+      'scalper.newName': 'Quadro', 'scalper.event': 'Evento', 'scalper.eventHint': 'Clique no quadro para colocar', 'scalper.position': 'Posição', 'scalper.rr': 'R:R', 'scalper.flip': 'Compra / Venda', 'scalper.tp': 'TP', 'scalper.sl': 'SL', 'scalper.entry': 'Entrada', 'scalper.lines': 'Linhas', 'scalper.labels': 'Rótulos', 'scalper.save': 'Salvar', 'scalper.library': 'Biblioteca',
       'scalper.libTitle': 'Seus quadros', 'scalper.libCount': '{n} de {max} salvos',
       'scalper.libEmpty': 'Voc\u00ea ainda n\u00e3o salvou nenhum quadro. Desenhe algo e toque em Salvar \u2014 ele fica esperando aqui, de qualquer computador.',
       'scalper.saveTitle': 'Salvar este quadro', 'scalper.saveHint': 'Vai para a sua biblioteca e o quadro recome\u00e7a com um slide em branco.',
@@ -14021,6 +14064,7 @@
       v: 'select', p: 'pencil', l: 'trendline', r: 'rect', o: 'circle',
       t: 'text', e: 'erase', a: 'arrow', h: 'hline', y: 'hray',
       n: 'polyline', f: 'fvg', d: 'ray', c: 'candles', g: 'trade', i: 'fib',
+      x: 'xabcd', w: 'ew5', k: 'canal', j: 'evento',
     };
     const FILL_ALPHA = 0.13; // translucent fill opacity for shapes/zones
     // Polilínea: tope de clics antes de cerrarse sola.
@@ -14123,6 +14167,7 @@
         _polyPts = []; _polySegs = []; _polyLastClick = 0;
         canvas.requestRenderAll(); pushHistory(); updateThumb();
       }
+      if (_multi && _multi.tool !== t) multiCancela();
       state.tool = t;
       toolBtns.forEach(b => b.classList.toggle('active', b.dataset.tool === t));
       canvas.isDrawingMode = (t === 'pencil');
@@ -14136,6 +14181,8 @@
       canvas.defaultCursor = isSelect ? 'default' : 'crosshair';
       if (!isSelect) canvas.discardActiveObject().requestRenderAll();
       // Text toolbar: show when the text tool is active (or a text object is selected)
+      const bev = document.getElementById('sk-ev-tools');
+      if (bev) bev.classList.toggle('show', t === 'evento');
       if (t === 'text') { syncTextToolbar(null); showTextToolbar(true); }
       else if (!isTextObj(canvas.getActiveObject())) { showTextToolbar(false); }
       // la cabecera de la familia tiene que encenderse aunque la herramienta se
@@ -14225,6 +14272,13 @@
     //   2 · figura a medio arrastrar → se descarta (no queda nada)
     //   3 · nada en curso → se suelta la herramienta (vuelve a Seleccionar)
     function cancelaColocacion() {
+      // un patrón a medio marcar: el clic derecho lo CIERRA con lo que lleve
+      // si ya tiene forma, y si no lo descarta — igual que la polilínea
+      if (_multi) {
+        if (_multi.pts.length >= 2 && !MULTI[_multi.tool].canal) multiCierra();
+        else multiCancela();
+        return;
+      }
       if (state.tool === 'polyline' && _polyPts.length > 0) { polyFinish(); return; }
       if (state.isDown) {
         state.isDown = false;
@@ -14253,6 +14307,20 @@
         if (t === 'select' || t === 'pencil') return;
         const p = canvas.getPointer(opt.e);
         const color = colorInput.value, w = parseInt(widthSel.value, 10);
+
+        // herramientas de varios clics (armónicos, Elliott, HCH, canal…)
+        if (MULTI[t]) {
+          if (_multi && _multi.tool === t) multiPunto(p); else multiEmpieza(t, p);
+          return;
+        }
+        // etiqueta de evento: un clic y ya
+        if (t === 'evento') {
+          const g = nuevaEtiqueta(p.x, p.y);
+          canvas.add(g); canvas.setActiveObject(g);
+          canvas.requestRenderAll(); pushHistory(); updateThumb();
+          setTool('select');
+          return;
+        }
 
         // Polyline: each click adds a segment; double-click finishes
         if (t === 'polyline') {
@@ -14325,6 +14393,11 @@
           }
           return;
         }
+        // patrón a medio marcar: la figura sigue al ratón
+        if (_multi && MULTI[state.tool]) {
+          multiPrevio(canvas.getPointer(opt.e));
+          return;
+        }
         // Polyline preview: update dashed preview line to cursor
         if (state.tool === 'polyline') {
           if (_polyPts.length > 0 && _polyPreview) {
@@ -14391,11 +14464,13 @@
                             : window.__nuevoFibo;
           const g = constructor(state.startX, state.startY, state.lastX, state.lastY);
           if (g) { canvas.add(g); canvas.setActiveObject(g); }
-          // 🔑 la posición SE SUELTA al colocarla (petición del dueño): se
-          //    dibuja de una en una, y además lo siguiente es ajustarla con
-          //    sus tiradores, no dibujar otra.
-          if (t === 'trade' && g) { canvas.requestRenderAll(); pushHistory(); updateThumb();
-                                    setTool('select'); return; }
+          // 🔑 Las piezas de OPERATIVA se sueltan al colocarlas (regla del
+          //    dueño): se dibujan de una en una, y lo siguiente es ajustarlas
+          //    con sus tiradores, no dibujar otra igual.
+          if ((t === 'trade' || t === 'fib') && g) {
+            canvas.requestRenderAll(); pushHistory(); updateThumb();
+            setTool('select'); return;
+          }
         } else if (t === 'fvg') {
           // Wrap the drawn box + a centered "FVG" label into one movable group
           const left = o.left, top = o.top, ww = o.width, hh = o.height; canvas.remove(o);
@@ -14507,7 +14582,14 @@
       //    dos herramientas nuevas no añaden ni un botón a la barra.
       { id: 'velas', tip: 'Trading', ini: 'candles',
         nombres: { candles: 'Candle sequence', trade: 'Position — TP / SL',
-                   fib: 'Fibonacci retracement' } },
+                   fib: 'Fibonacci retracement', fibext: 'Fibonacci extension',
+                   evento: 'Event tag (Wyckoff / SMC)' } },
+      // Patrones: armónicos, Elliott y chartismo. Familia aparte para que el
+      // desplegable de Trading no se convierta en una lista de diez.
+      { id: 'patrones', tip: 'Patterns', ini: 'xabcd',
+        nombres: { xabcd: 'Harmonic XABCD', ew5: 'Elliott impulse 0-5',
+                   ewabc: 'Elliott ABC', hch: 'Head & shoulders',
+                   canal: 'Parallel channel' } },
     ];
 
     function agrupaBarra() {
@@ -14940,7 +15022,7 @@
       fabric.Fibo = fabric.util.createClass(fabric.Object, {
         type: 'fibo',
         niveles: null, colorLinea: '#5b8ef0', colorTexto: '#5b8ef0',
-        ote: true, colorOte: '#22c55e', oteDe: 0.62, oteA: 0.79,
+        ote: true, anchoLinea: 2, colorOte: '#22c55e', oteDe: 0.62, oteA: 0.79,
         objectCaching: false, lockRotation: true,
         lockScalingX: true, lockScalingY: true,
 
@@ -14969,7 +15051,7 @@
             ctx.save();
             ctx.strokeStyle = this.colorLinea;
             ctx.globalAlpha = clave ? 1 : 0.75;
-            ctx.lineWidth = clave ? 2 : 1;
+            ctx.lineWidth = clave ? (this.anchoLinea || 2) : Math.max(1, (this.anchoLinea || 2) - 1);
             ctx.setLineDash(clave ? [] : [5, 4]);
             ctx.beginPath();
             ctx.moveTo(x0, y);
@@ -14996,6 +15078,7 @@
         toObject: function (extra) {
           return fabric.util.object.extend(this.callSuper('toObject', extra), {
             niveles: this.niveles.slice(), colorLinea: this.colorLinea,
+            anchoLinea: this.anchoLinea,
             colorTexto: this.colorTexto, ote: this.ote, colorOte: this.colorOte,
             oteDe: this.oteDe, oteA: this.oteA,
           });
@@ -15043,6 +15126,187 @@
           colorLinea: colorInput.value, colorTexto: colorInput.value,
         }));
       }
+    }
+
+    // ══ HERRAMIENTAS DE VARIOS CLICS ════════════════════════════════════
+    // Pedido del dueño: *"agrega muchas más herramientas de trading. No solo
+    // pienses en ICT, recuerda que manejamos Wyckoff, harmonic, Elliott, SMC,
+    // análisis técnico, patrones chartistas"* — todas bajo la misma regla:
+    // al colocar una, la herramienta se suelta.
+    //
+    // 🔑 UN SOLO MOTOR. Armónicos, Elliott, hombro-cabeza-hombro y el canal
+    // son el MISMO gesto: marcar N puntos y unirlos. Cambia lo que se dibuja
+    // al final, no cómo se recogen los puntos. Con un motor, añadir el próximo
+    // patrón son ~15 líneas: una entrada en MULTI y su función de dibujo.
+    const MULTI = {
+      xabcd:  { n: 5, etiquetas: ['X', 'A', 'B', 'C', 'D'], razones: true },
+      ew5:    { n: 6, etiquetas: ['0', '1', '2', '3', '4', '5'] },
+      ewabc:  { n: 4, etiquetas: ['0', 'A', 'B', 'C'] },
+      hch:    { n: 5, etiquetas: ['H', 'v', 'C', 'v', 'H'], cuello: true },
+      canal:  { n: 3, canal: true },
+      fibext: { n: 3, extension: true },
+    };
+    let _multi = null;      // {tool, pts, previo}
+
+    function multiEmpieza(tool, p) {
+      _multi = { tool: tool, pts: [{ x: p.x, y: p.y }], previo: null };
+    }
+    function multiPunto(p) {
+      if (!_multi) return;
+      _multi.pts.push({ x: p.x, y: p.y });
+      if (_multi.pts.length >= MULTI[_multi.tool].n) multiCierra();
+    }
+    function multiPrevio(p) {
+      if (!_multi) return;
+      if (_multi.previo) { canvas.remove(_multi.previo); _multi.previo = null; }
+      const pts = _multi.pts.concat([{ x: p.x, y: p.y }]);
+      const g = construyeMulti(_multi.tool, pts, true);
+      if (g) {
+        g.set({ selectable: false, evented: false, opacity: 0.7 });
+        _multi.previo = g;
+        canvas.add(g);
+      }
+      canvas.requestRenderAll();
+    }
+    function multiCierra() {
+      if (!_multi) return;
+      const d = _multi;
+      if (d.previo) canvas.remove(d.previo);
+      _multi = null;
+      const g = construyeMulti(d.tool, d.pts, false);
+      if (g) { canvas.add(g); canvas.setActiveObject(g); }
+      canvas.requestRenderAll();
+      pushHistory(); updateThumb();
+      setTool('select');          // la regla: se suelta al colocarla
+    }
+    function multiCancela() {
+      if (!_multi) return false;
+      if (_multi.previo) canvas.remove(_multi.previo);
+      _multi = null;
+      canvas.requestRenderAll();
+      return true;
+    }
+
+    // ── el dibujo de cada patrón ───────────────────────────────────────
+    function _txt(t, x, y, col, tam, centro) {
+      return new fabric.Text(t, {
+        left: x, top: y, originX: centro ? 'center' : 'left', originY: 'center',
+        fontFamily: 'Inter, sans-serif', fontWeight: 700,
+        fontSize: tam || 14, fill: col,
+      });
+    }
+    function construyeMulti(tool, pts, previo) {
+      const cfg = MULTI[tool];
+      const col = colorInput.value, w = parseInt(widthSel.value, 10);
+      const piezas = [];
+      if (pts.length < 2) return null;
+
+      if (cfg.canal) {
+        // canal paralelo: los dos primeros puntos dan la recta y el tercero
+        // (o el ratón) la distancia de la paralela
+        const a = pts[0], b = pts[1], c = pts[2] || pts[1];
+        // desplazamiento perpendicular del 3er punto respecto de la recta A-B
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const largo = Math.hypot(dx, dy) || 1;
+        const nx = -dy / largo, ny = dx / largo;
+        const off = (c.x - a.x) * nx + (c.y - a.y) * ny;
+        piezas.push(new fabric.Line([a.x, a.y, b.x, b.y],
+          { stroke: col, strokeWidth: w }));
+        piezas.push(new fabric.Line([a.x + nx * off, a.y + ny * off,
+                                     b.x + nx * off, b.y + ny * off],
+          { stroke: col, strokeWidth: w }));
+        // el relleno hace que se lea como canal y no como dos rectas sueltas
+        piezas.unshift(new fabric.Polygon([
+          { x: a.x, y: a.y }, { x: b.x, y: b.y },
+          { x: b.x + nx * off, y: b.y + ny * off },
+          { x: a.x + nx * off, y: a.y + ny * off },
+        ], { fill: hexA(col, 0.10), stroke: '', objectCaching: false }));
+      } else if (cfg.extension) {
+        // extensión de Fibonacci: 3 puntos (A-B-C) y las proyecciones de AB
+        // medidas desde C, que es como se usa para buscar objetivos
+        const a = pts[0], b = pts[1], c = pts[2] || pts[1];
+        const tramo = b.y - a.y;
+        const izq = Math.min(a.x, b.x, c.x), der = Math.max(a.x, b.x, c.x) + 90;
+        piezas.push(new fabric.Polyline(pts.map(p => ({ x: p.x, y: p.y })),
+          { stroke: col, strokeWidth: w, fill: '', objectCaching: false }));
+        [0, 0.618, 1, 1.272, 1.618, 2].forEach(n => {
+          const y = c.y + tramo * n;
+          piezas.push(new fabric.Line([izq, y, der, y], {
+            stroke: col, strokeWidth: 1, strokeDashArray: [5, 4], opacity: 0.8,
+          }));
+          // ⚠️ a la DERECHA del final de la línea: puesta encima, el último
+          //    guion del punteado se lee como un signo menos ("- 2" → "-2")
+          piezas.push(_txt(String(n), der + 5, y, col, 12));
+        });
+      } else {
+        // el resto son puntos unidos con su etiqueta
+        piezas.push(new fabric.Polyline(pts.map(p => ({ x: p.x, y: p.y })),
+          { stroke: col, strokeWidth: w, fill: '', objectCaching: false }));
+        pts.forEach((p, i) => {
+          const et = (cfg.etiquetas || [])[i];
+          if (!et || et === 'v') return;     // 'v' = valle sin etiqueta (HCH)
+          piezas.push(new fabric.Circle({
+            left: p.x, top: p.y, radius: 3.5, originX: 'center', originY: 'center',
+            fill: col, stroke: '',
+          }));
+          // la etiqueta se aparta del trazo: encima si el punto es un máximo
+          const arriba = (i === 0) ? true
+            : (pts[i - 1] && p.y <= pts[i - 1].y);
+          piezas.push(_txt(et, p.x, p.y + (arriba ? -15 : 15), col, 15, true));
+        });
+      }
+
+      if (cfg.cuello && pts.length >= 4) {
+        // la clavicular pasa por los dos valles y se prolonga a los lados
+        const v1 = pts[1], v2 = pts[3];
+        const m = (v2.y - v1.y) / ((v2.x - v1.x) || 1);
+        const x0 = v1.x - 90, x1 = v2.x + 90;
+        piezas.push(new fabric.Line([x0, v1.y + m * (x0 - v1.x),
+                                     x1, v1.y + m * (x1 - v1.x)], {
+          stroke: col, strokeWidth: Math.max(1, w - 1), strokeDashArray: [7, 5],
+        }));
+      }
+      if (cfg.razones && pts.length >= 3) {
+        // 🔑 Lo que convierte un zigzag en un ARMÓNICO son las razones entre
+        //    tramos: sin ellas es una polilínea de cinco puntos. Se calculan
+        //    del dibujo, así que si mueves un punto y rehaces la figura los
+        //    números siguen siendo los de lo dibujado.
+        const L = i => Math.abs(pts[i + 1].y - pts[i].y) || 1;
+        const nom = ['AB/XA', 'BC/AB', 'CD/BC'];
+        for (let i = 1; i < pts.length - 1 && i <= 3; i++) {
+          const r = L(i) / L(i - 1);
+          const mx = (pts[i].x + pts[i + 1].x) / 2;
+          const my = (pts[i].y + pts[i + 1].y) / 2;
+          piezas.push(_txt(nom[i - 1] + ' ' + (Math.round(r * 1000) / 1000),
+                           mx + 8, my, col, 12));
+        }
+      }
+      if (!piezas.length) return null;
+      void previo;
+      return new fabric.Group(piezas, Object.assign(baseOpts(), {}));
+    }
+
+    // ── etiqueta de evento (Wyckoff / SMC / ICT) ────────────────────────
+    // Un solo objeto cubre media docena de metodologías: lo que se anota en un
+    // gráfico son EVENTOS con nombre, y el nombre lo elige el usuario de una
+    // lista en vez de escribirlo a mano cada vez.
+    const EVENTOS = [
+      'PS', 'SC', 'AR', 'ST', 'Spring', 'Test', 'SOS', 'LPS', 'UTAD', 'BC',
+      'BOS', 'CHoCH', 'MSS', 'OB', 'FVG', 'Liq', 'EQH', 'EQL', 'PDH', 'PDL',
+    ];
+    let _evento = 'BOS';
+    function nuevaEtiqueta(x, y) {
+      const col = colorInput.value;
+      const t = _txt(_evento, 0, 0, '#ffffff', 13, true);
+      const anchoCaja = Math.max(34, t.width + 14);
+      const caja = new fabric.Rect({
+        left: -anchoCaja / 2, top: -11, width: anchoCaja, height: 22, rx: 5, ry: 5,
+        fill: col, stroke: '', objectCaching: false,
+      });
+      t.set({ left: 0, top: 0 });
+      return new fabric.Group([caja, t], Object.assign(baseOpts(), {
+        left: x, top: y, originX: 'center', originY: 'center',
+      }));
     }
 
     function deleteSel() {
@@ -15695,23 +15959,34 @@
       _on2('sk-pos-csl', 'input', e => aplicaPos('colorSL', e.target.value));
       _on2('sk-pos-cen', 'input', e => aplicaPos('colorEntrada', e.target.value));
 
-      // los chips de niveles se generan del catálogo: añadir un nivel nuevo es
-      // tocar UNA lista, no el HTML
+      // ── niveles del Fibonacci ──
+      // 🔑 Los chips se RECONSTRUYEN cada vez que se selecciona una pieza, a
+      //    partir del catálogo UNIDO a los niveles que tenga esa pieza. Así un
+      //    nivel propio (0,886, 1,414, lo que sea) aparece como chip y se
+      //    puede quitar igual que los de fábrica: no hay dos clases de nivel.
       const chips = document.getElementById('sk-fib-chips');
-      if (chips) {
-        FIB_CATALOGO.forEach(n => {
+      function pintaChips(o) {
+        if (!chips) return;
+        chips.innerHTML = '';
+        const todos = FIB_CATALOGO.slice();
+        o.niveles.forEach(n => { if (todos.indexOf(n) < 0) todos.push(n); });
+        todos.sort((a, c) => a - c);
+        todos.forEach(n => {
           const b = document.createElement('button');
           b.type = 'button';
-          b.className = 'fib-chip';
+          b.className = 'fib-chip' + (FIB_CATALOGO.indexOf(n) < 0 ? ' propio' : '')
+                      + (o.niveles.indexOf(n) >= 0 ? ' on' : '');
           b.dataset.n = String(n);
           b.textContent = String(n);
+          b.title = (o.niveles.indexOf(n) >= 0) ? 'Quitar' : 'Añadir';
           b.addEventListener('click', () => {
-            const o = seleccion('fibo');
-            if (!o) return;
-            const i = o.niveles.indexOf(n);
-            if (i >= 0) o.niveles.splice(i, 1); else o.niveles.push(n);
-            o.niveles.sort((a, c) => a - c);
+            const a = seleccion('fibo');
+            if (!a) return;
+            const i = a.niveles.indexOf(n);
+            if (i >= 0) a.niveles.splice(i, 1); else a.niveles.push(n);
+            a.niveles.sort((x, y) => x - y);
             b.classList.toggle('on', i < 0);
+            b.title = (i < 0) ? 'Quitar' : 'Añadir';
             canvas.requestRenderAll(); pushHistory(); updateThumb();
           });
           chips.appendChild(b);
@@ -15723,29 +15998,60 @@
         o.set(campo, valor);
         canvas.requestRenderAll(); pushHistory(); updateThumb();
       }
+      function anadeNivel() {
+        const o = seleccion('fibo');
+        const inp = document.getElementById('sk-fib-add');
+        if (!o || !inp) return;
+        const n = parseFloat(inp.value);
+        if (isNaN(n)) return;
+        // se redondea a 3 decimales: 0.6180339 en una etiqueta no se lee
+        const v = Math.round(n * 1000) / 1000;
+        if (o.niveles.indexOf(v) < 0) o.niveles.push(v);
+        o.niveles.sort((x, y) => x - y);
+        inp.value = '';
+        pintaChips(o);
+        canvas.requestRenderAll(); pushHistory(); updateThumb();
+      }
+      _on2('sk-fib-addgo', 'click', anadeNivel);
+      _on2('sk-fib-add', 'keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); anadeNivel(); }
+      });
       _on2('sk-fib-col', 'input', e => aplicaFib('colorLinea', e.target.value));
       _on2('sk-fib-txt', 'input', e => aplicaFib('colorTexto', e.target.value));
       _on2('sk-fib-cote', 'input', e => aplicaFib('colorOte', e.target.value));
+      _on2('sk-fib-ancho', 'change', e => aplicaFib('anchoLinea', parseInt(e.target.value, 10)));
+      _on2('sk-fib-ode', 'input', e => aplicaFib('oteDe', parseFloat(e.target.value)));
+      _on2('sk-fib-oa', 'input', e => aplicaFib('oteA', parseFloat(e.target.value)));
       _on2('sk-fib-ote', 'click', () => {
         const o = seleccion('fibo');
         if (!o) return;
         aplicaFib('ote', !o.ote);
-        document.getElementById('sk-fib-ote').classList.toggle('on', o.ote);
-        document.getElementById('sk-fib-ote').classList.toggle('active', o.ote);
+        const ot = document.getElementById('sk-fib-ote');
+        ot.classList.toggle('on', o.ote);
+        ot.classList.toggle('active', o.ote);
       });
       function sincFib(o) {
         _sinc = true;
         const c = (id, v) => { const e = document.getElementById(id); if (e) e.value = v; };
         c('sk-fib-col', o.colorLinea); c('sk-fib-txt', o.colorTexto);
-        c('sk-fib-cote', o.colorOte);
+        c('sk-fib-cote', o.colorOte); c('sk-fib-ancho', o.anchoLinea || 2);
+        c('sk-fib-ode', o.oteDe); c('sk-fib-oa', o.oteA);
         const ot = document.getElementById('sk-fib-ote');
         if (ot) { ot.classList.toggle('active', !!o.ote); ot.classList.toggle('on', !!o.ote); }
-        if (chips) {
-          Array.prototype.forEach.call(chips.children, b => {
-            b.classList.toggle('on', o.niveles.indexOf(parseFloat(b.dataset.n)) >= 0);
-          });
-        }
+        pintaChips(o);
         _sinc = false;
+      }
+
+      // el catálogo de eventos se pinta del array: añadir uno es una palabra
+      const evSel = document.getElementById('sk-ev-sel');
+      if (evSel) {
+        EVENTOS.forEach(e => {
+          const o = document.createElement('option');
+          o.value = e; o.textContent = e;
+          evSel.appendChild(o);
+        });
+        evSel.value = _evento;
+        evSel.addEventListener('change', () => { _evento = evSel.value; });
       }
 
       // Show/sync the text toolbar when a text object is selected; hide otherwise
@@ -15827,6 +16133,7 @@
         }
         else if (app.classList.contains('presenting') && e.key === 'ArrowRight') { gotoSlide(state.cur + 1); }
         else if (app.classList.contains('presenting') && e.key === 'ArrowLeft') { gotoSlide(state.cur - 1); }
+        else if (e.key === 'Escape' && _multi) { e.preventDefault(); multiCancela(); }
         else if (e.key === 'Escape' && state.tool === 'polyline' && _polyPts.length > 0) { e.preventDefault(); polyFinish(); }
         else if (app.classList.contains('presenting') && e.key === 'Escape') { exitPresent(); }
         // Esc = soltar la herramienta. Es la salida que espera cualquiera que

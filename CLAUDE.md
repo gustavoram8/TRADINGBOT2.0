@@ -2237,6 +2237,39 @@ boards"** que llevaba desde antes del lanzamiento en la lista de críticos.
   · ⚠️ **Trampa que costó una hora:** al colocar una pieza aparece su barra de edición y **el lienzo
     baja ~61 px**. Con la medida vieja los clics caían fuera y parecía que los tiradores no
     funcionaban, cuando funcionaban perfectamente. **Re-medir el lienzo tras colocar.**
+- 🧭 **7 HERRAMIENTAS MÁS + FIBONACCI CONFIGURABLE (2026-08-12).** Pedido: *"agrega muchas más
+  herramientas de trading. No solo pienses en ICT, recuerda que manejamos Wyckoff, harmonic,
+  Elliott, SMC, análisis técnico, patrones chartistas"*, todas con la regla *"si aplicas alguna de
+  estas herramientas, debes volver a seleccionarla si quieres colocar otra"*.
+  · 🔑 **UN SOLO MOTOR de varios clics** (`MULTI` + `multiEmpieza/Punto/Previo/Cierra/Cancela`):
+    armónicos, Elliott, HCH y canal son el MISMO gesto —marcar N puntos y unirlos—, solo cambia lo
+    que se dibuja al final. **Añadir el próximo patrón son ~15 líneas**: una entrada en `MULTI` y su
+    rama de dibujo. La figura sigue al ratón mientras se marca; clic derecho / Esc cancelan.
+  · **XABCD armónico** (5 clics) con las **razones AB/XA, BC/AB, CD/BC calculadas del dibujo** — sin
+    ellas un armónico es una polilínea de cinco puntos. ⚠️ **NO valida** si es Gartley/Bat/Cypher:
+    dibuja y mide, no juzga (ponerle nombre exige rangos por variante; el dueño no lo pidió).
+  · **Elliott 0-5** (6 clics) · **corrección ABC** (4) · **hombro-cabeza-hombro** (5 + clavicular
+    automática por los dos valles) · **canal paralelo** (3: los 2 primeros la recta, el 3º el ancho;
+    va con relleno o se lee como dos rectas sueltas) · **extensión de Fibonacci** (3, proyecta
+    0/.618/1/1.272/1.618/2 desde C).
+  · **Etiqueta de evento** (1 clic): la que más cubre por sí sola — catálogo `EVENTOS` con Wyckoff
+    (PS, SC, AR, ST, Spring, Test, SOS, LPS, UTAD, BC) y SMC/ICT (BOS, CHoCH, MSS, OB, FVG, Liq,
+    EQH, EQL, PDH, PDL). Lo que se anota en un gráfico son eventos CON NOMBRE, y el nombre se elige
+    de una lista en vez de escribirlo cada vez.
+  · **Familia nueva "Patrones"** en la barra para que el desplegable de Trading no se vuelva una
+    lista de diez. Atajos `x` XABCD · `w` Elliott · `k` canal · `j` etiqueta.
+  · **Fibonacci configurable** (lo pidió "tan editable como en TradingView"): los chips se
+    **reconstruyen del catálogo UNIDO a los niveles de esa pieza**, así un nivel propio (0,886…) se
+    quita igual que uno de fábrica — no hay dos clases de nivel. Campo para **añadir** cualquier
+    nivel, **banda OTE reajustable** (dejó de estar clavada en 0,62–0,79), colores separados de
+    líneas/etiquetas/banda y **grosor** de línea. Y el fib **también se suelta al colocarlo**.
+  · ⚠️ La etiqueta de cada nivel de la extensión va a la DERECHA del final de su línea: encima, el
+    último guion del punteado se lee como un signo menos (`- 2` → `-2`).
+  · ⚠️ **La secuencia de velas se dejó PEGAJOSA a propósito** — él no la mencionó y no se le cambió
+    algo que ya le funcionaba. Si algún día quiere la misma regla, es una línea.
+  · `test_chalkboard_ux.py` **80/80** (18 comprobaciones nuevas; los patrones se verifican mirando
+    los TEXTOS que quedan dentro de la pieza —las razones del armónico, las ondas, los niveles—, no
+    que "dibuje algo").
 - `tools/test_chalk_biblioteca.py` **23/23** (servidor: nadie ve ni toca las pizarras de otro, el
   tope se impone en el servidor, envíos gigantes rechazados) + `tools/test_chalk_lib_nav.py`
   **18/18** (navegador: guardar → queda 1 en blanco → deshacer → reabrir → **sobrevive a borrar el

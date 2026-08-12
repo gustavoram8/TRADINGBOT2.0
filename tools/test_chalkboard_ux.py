@@ -428,6 +428,100 @@ with sync_playwright() as p:
           pg.evaluate("() => window.__skCanvas.getActiveObject().ote") != ote0)
     limpia()
 
+    # ── 🧭 patrones: armónicos, Elliott, chartismo, Wyckoff/SMC ──
+    # Pedido del dueño: *"agrega muchas más herramientas... Wyckoff, harmonic,
+    # Elliott, SMC, análisis técnico, patrones chartistas"*, todas con la misma
+    # regla: al colocar una, la herramienta se suelta.
+    limpia()
+
+    def clics(tool, pts):
+        pulsa(tool)
+        for (x, y) in pts:
+            c = lienzo()
+            pg.mouse.move(c['x'] + x, c['y'] + y)
+            pg.wait_for_timeout(110)
+            pg.mouse.click(c['x'] + x, c['y'] + y)
+            pg.wait_for_timeout(190)
+        pg.wait_for_timeout(350)
+
+    def textos():
+        """los textos que quedaron dentro de la última pieza"""
+        return pg.evaluate("""() => {
+            const os = window.__skCanvas.getObjects();
+            const g = os[os.length - 1];
+            if (!g || !g._objects) return [];
+            return g._objects.filter(o => o.type === 'text').map(o => o.text); }""")
+
+    def cuantos():
+        return pg.evaluate("() => window.__skCanvas.getObjects().length")
+
+    n0 = cuantos()
+    clics('xabcd', [(40, 300), (110, 150), (160, 240), (230, 120), (290, 220)])
+    check('el armónico XABCD se dibuja de 5 clics', cuantos() == n0 + 1, cuantos())
+    t = textos()
+    check('…con sus vértices X A B C D etiquetados',
+          all(e in t for e in ('X', 'A', 'B', 'C', 'D')), t)
+    # 🔑 lo que convierte un zigzag en un ARMÓNICO son las razones entre tramos
+    check('…y con las RAZONES entre tramos calculadas del dibujo',
+          any('AB/XA' in x for x in t) and any('BC/AB' in x for x in t), t)
+    check('…y la herramienta se suelta al colocarlo',
+          pg.evaluate(HERRAMIENTA) == 'select', pg.evaluate(HERRAMIENTA))
+
+    clics('ew5', [(330, 320), (370, 250), (395, 285), (450, 150), (480, 200), (540, 90)])
+    t = textos()
+    check('Elliott marca las ondas 1 a 5',
+          all(e in t for e in ('1', '2', '3', '4', '5')), t)
+    clics('ewabc', [(580, 120), (620, 220), (660, 160), (710, 260)])
+    t = textos()
+    check('la corrección marca A, B y C', all(e in t for e in ('A', 'B', 'C')), t)
+
+    n1 = cuantos()
+    clics('hch', [(60, 430), (110, 390), (160, 340), (215, 390), (265, 435)])
+    check('el hombro-cabeza-hombro se dibuja y trae su clavicular',
+          cuantos() == n1 + 1 and pg.evaluate("""() => {
+              const os = window.__skCanvas.getObjects(), g = os[os.length-1];
+              return g._objects.some(o => o.type === 'line' && o.strokeDashArray); }"""))
+
+    n2 = cuantos()
+    clics('canal', [(330, 410), (520, 340), (345, 445)])
+    check('el canal paralelo se dibuja de 3 clics', cuantos() == n2 + 1)
+    check('…y es una BANDA, no dos rectas sueltas',
+          pg.evaluate("""() => { const os = window.__skCanvas.getObjects(), g = os[os.length-1];
+              return g._objects.some(o => o.type === 'polygon'); }"""))
+
+    clics('fibext', [(600, 420), (655, 330), (695, 390)])
+    t = textos()
+    check('la extensión proyecta 1.272, 1.618 y 2',
+          all(e in t for e in ('1.272', '1.618', '2')), t)
+
+    # etiqueta de evento: la escribe el catálogo, no el usuario
+    pulsa('evento')
+    check('al elegir la etiqueta sale su selector de evento',
+          pg.evaluate("""() => document.getElementById('sk-ev-tools').classList.contains('show')"""))
+    pg.select_option('#sk-ev-sel', 'Spring')
+    pg.wait_for_timeout(200)
+    c = lienzo()
+    pg.mouse.click(c['x'] + 700, c['y'] + 120)
+    pg.wait_for_timeout(450)
+    check('la etiqueta escribe el evento elegido (Wyckoff: Spring)',
+          'Spring' in textos(), textos())
+    check('…y también se suelta al colocarla',
+          pg.evaluate(HERRAMIENTA) == 'select', pg.evaluate(HERRAMIENTA))
+
+    # un patrón a medias se cancela con Escape y no deja nada
+    n3 = cuantos()
+    pulsa('xabcd')
+    c = lienzo()
+    pg.mouse.click(c['x'] + 100, c['y'] + 100)
+    pg.wait_for_timeout(200)
+    pg.mouse.move(c['x'] + 200, c['y'] + 200)
+    pg.wait_for_timeout(250)
+    pg.keyboard.press('Escape')
+    pg.wait_for_timeout(400)
+    check('un patrón a medio marcar se cancela con Escape sin dejar rastro',
+          cuantos() == n3, (n3, cuantos()))
+    limpia()
+
     # ── 🖱️ clic derecho = dejar de colocar ──
     # Queja del dueño: "si solo quieres colocar tres palitos no puedes, tienes
     # que terminar la tendencia como de 5 líneas".
