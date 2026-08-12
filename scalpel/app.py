@@ -1230,6 +1230,18 @@ def allowed_cycles():
 # would hand every existing customer a price RISE.
 LAUNCH_DISCOUNT_PCT = int(os.environ.get("LAUNCH_DISCOUNT_PCT", "0"))
 LAUNCH_DISCOUNT_CYCLES = ('monthly',)
+# Línea de arranque, igual que [PayPal] / [Cripto] / [Mail]: es un número que
+# toca PRECIOS, así que hay que poder confirmar desde la terminal que quedó el
+# que se quería. Un 3 donde iba un 30 no lo nota nadie hasta ver la factura.
+print("[Oferta] bienvenida=%s%s"
+      % (('%d%%' % LAUNCH_DISCOUNT_PCT) if LAUNCH_DISCOUNT_PCT > 0 else 'APAGADA',
+         (' → %s' % ', '.join(
+             '%s $%.2f (lista $%g)'
+             % (p, round(v['monthly'] * (1 - LAUNCH_DISCOUNT_PCT / 100.0), 2),
+                v['monthly'])
+             for p, v in sorted(PLAN_PRICING.items()) if v.get('monthly'))
+          ) if LAUNCH_DISCOUNT_PCT > 0 else ''),
+      flush=True)
 
 # ── Partner economics — what every sale is actually worth ─────────────────
 # These mirror the Financial Hub exactly, so the panel and the spreadsheet can
