@@ -25,6 +25,11 @@ import time
 import urllib.request
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# ⚠️ Las capturas que deja este test son ARTEFACTOS, no fuentes: iban a
+# `tools/` y ensuciaban el repo con dos PNG sin seguimiento cada vez que se
+# corría. `out/` ya está en .gitignore.
+SALIDA = os.path.join(RAIZ, 'out', 'tests')
+os.makedirs(SALIDA, exist_ok=True)
 DB = os.path.join(RAIZ, 'tools', 'vendor.db')
 if os.path.exists(DB):
     os.remove(DB)
@@ -135,7 +140,7 @@ with sync_playwright() as p:
           not any(s in d['texto'].lower()
                   for s in ('could not be loaded', 'no se pudo cargar',
                             'check your internet', 'verifica tu conex')))
-    pg.screenshot(path=os.path.join(RAIZ, 'tools', 'vendor_synapse.png'))
+    pg.screenshot(path=os.path.join(SALIDA, 'vendor_synapse.png'))
 
     # ── Chalkboard (tab Scalpe) ──
     pg.evaluate("document.querySelector('.tab[data-tab=\"scalper\"]').click()")
@@ -148,7 +153,7 @@ with sync_playwright() as p:
     t2 = pg.evaluate("document.body.innerText.slice(0, 4000)").lower()
     check('sin cartel de "engine could not be loaded" en el Chalkboard',
           'could not be loaded' not in t2)
-    pg.screenshot(path=os.path.join(RAIZ, 'tools', 'vendor_chalk.png'))
+    pg.screenshot(path=os.path.join(SALIDA, 'vendor_chalk.png'))
 
     # ── nada intentó salir a un CDN de librerías ──
     libs = [u for u in externas
