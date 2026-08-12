@@ -53,6 +53,10 @@ CRUDO = os.path.join(SALIDA, '_crudo-tour.webm')
 BEATS = os.path.join(SALIDA, '_beats-tour.json')
 PUERTO = 5088
 CL = 'Zx9!wQ4mNp2r'
+# ⚠️ El nombre del usuario que graba SALE EN PANTALLA (firma el post del foro),
+# así que no puede llamarse "tour": delataría que es una demo. Nombre corriente
+# y creíble, dentro de USERNAME_RE (^[A-Za-z0-9][A-Za-z0-9._-]{2,19}$).
+USUARIO = 'ryan.cole'
 ANCHO, ALTO = 900, 1600        # se graba ya en vertical
 W, H = 1080, 1920
 FPS = 30
@@ -129,9 +133,9 @@ def arranca_servidor(tmp):
     import app as A
     with A.app.app_context():
         A.db.create_all()
-        u = A.User.query.filter_by(username='tour').first()
+        u = A.User.query.filter_by(username=USUARIO).first()
         if u is None:
-            u = A.User(username='tour', email='t@demo.invalid',
+            u = A.User(username=USUARIO, email='r@demo.invalid',
                        plan='premium', email_verified=True)
             A.db.session.add(u)
         u.set_password(CL)
@@ -190,7 +194,7 @@ def graba():
         pp.route('**/*', lambda r: r.continue_()
                  if '127.0.0.1' in r.request.url else r.abort())
         pp.goto(URL + '/login', wait_until='domcontentloaded')
-        pp.fill('input[name=identifier]', 'tour')
+        pp.fill('input[name=identifier]', USUARIO)
         pp.fill('input[name=password]', CL)
         pp.click('button[type=submit]')
         pp.wait_for_timeout(800)
