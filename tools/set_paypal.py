@@ -227,8 +227,9 @@ def main():
               '    .env no se lee.')
         return 1
     print('⚙️  %s actualizado%s' % (ruta, '  (copia: %s)' % os.path.basename(copia) if copia else ''))
-    print('\nAhora, para que la app las tome:\n'
-          '   supervisorctl reread && supervisorctl update && supervisorctl restart traderacelerator\n'
+    # SIN `restart` detrás: `update` ya reinicia al cambiar el conf.
+    print('\nAhora, para que la app las tome (SIN restart detrás):\n'
+          '   supervisorctl reread && supervisorctl update\n'
           '\nY para confirmarlo:\n'
           '   tail -5 /var/log/*trader*.log  (o el log que uses) → línea [PayPal] enabled=True')
     return 0

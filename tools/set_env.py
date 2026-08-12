@@ -180,9 +180,13 @@ def main():
         return 1
     print('✓ %s actualizado%s' % (ruta, (' (copia: %s)' % os.path.basename(c2))
                                   if c2 else ''))
-    print('\nAhora aplica los cambios:')
-    print('  supervisorctl reread && supervisorctl update && '
-          'supervisorctl restart traderacelerator')
+    # ⚠️ SIN `restart` detrás. Al cambiar el conf, `update` YA reinicia el
+    # proceso; el segundo reinicio mata a gunicorn a mitad del arranque y el
+    # sitio devuelve 502 unos 40 s. Este print es el que la gente copia y
+    # pega, así que es el que de verdad importa: el aviso del docstring de
+    # arriba no lo lee nadie con prisa.
+    print('\nAhora aplica los cambios (SIN restart detrás — `update` ya reinicia):')
+    print('  supervisorctl reread && supervisorctl update')
     return 0
 
 

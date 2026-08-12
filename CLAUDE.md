@@ -2732,7 +2732,7 @@ resultado en el panel de PayPal.
      pertenecen y **crea el producto + los 2 planes de suscripción** solo.
   3. `python3 tools/paypal_setup_webhook.py` → crea el webhook a `SITE_URL/webhook/paypal` con los
      **15 eventos** y deja `PAYPAL_WEBHOOK_ID` puesto. Idempotente; repara uno incompleto.
-  4. `supervisorctl reread && supervisorctl update && supervisorctl restart traderacelerator`
+  4. `supervisorctl reread && supervisorctl update` (SIN `restart` detrás: `update` ya reinicia)
   5. Comprobar: `tail -20 /var/log/*trader*.log | grep -i paypal` → deben salir
      `subs=True planes=premium:set, standard:set` y `enabled=True env=sandbox … webhook_id=set`.
 - **La compra de prueba: con una cuenta NUEVA, no la de admin** (el sitio bloquea comprar un plan

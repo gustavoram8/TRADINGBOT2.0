@@ -171,9 +171,10 @@ def main(argv):
         print('\n⚠️  No pude escribirlo solo (%s). Ponelo a mano con:' % exc)
         print('    python3 tools/set_env.py PAYPAL_WEBHOOK_ID=%s' % wid)
 
-    print('\nPara que la app lo tome:')
-    print('  supervisorctl reread && supervisorctl update && '
-          'supervisorctl restart traderacelerator')
+    # SIN `restart` detrás: al cambiar el conf, `update` ya reinicia el
+    # proceso, y el segundo reinicio deja el sitio en 502 unos 40 s.
+    print('\nPara que la app lo tome (SIN restart detrás — `update` ya reinicia):')
+    print('  supervisorctl reread && supervisorctl update')
     return 0
 
 

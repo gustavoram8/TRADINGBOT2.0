@@ -196,7 +196,7 @@ QUÉ HACER AHORA
 
         PAYPAL_PLAN_STANDARD=%s
 
-     supervisorctl reread && supervisorctl update && supervisorctl restart traderacelerator
+     supervisorctl reread && supervisorctl update   (SIN restart: `update` ya reinicia)
 
  2 · Comprá Standard con una cuenta sandbox de COMPRADOR (no la del
      comercio). El primer cobro ocurre al aprobar.
