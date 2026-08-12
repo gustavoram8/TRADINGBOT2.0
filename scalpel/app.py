@@ -3914,14 +3914,40 @@ Respond with ONLY a raw JSON object, no markdown, exactly:
 When blocking, category is one of: "insult", "profanity", "offtopic", "spam", "sexual", "hate". reason = a short human-readable explanation (max 12 words, in English)."""
 
 
-FORUM_IMAGE_MOD_PROMPT = """You decide whether an uploaded image is appropriate for a TRADING forum where members share their charts and setups.
+# Reescrito para el punto 18 de la lista del dueño (2026-08-12). Tres cambios
+# de fondo respecto al prompt anterior:
+#   1. Las capturas del PROPIO SITIO ahora se permiten (antes caían en
+#      "captura de una app que no es de trading" → bloqueo + advertencia que
+#      sumaba para el silenciado automático — castigaba a quien presumía su
+#      camo nuevo o su certificado).
+#   2. Drogas, desnudos, armas y violencia se nombran con categoría propia
+#      (antes solo "explicit/graphic content", más estrecho).
+#   3. 🔴 Una imagen de VENTA DE SEÑALES antes PASABA: un flyer "BUY GOLD NOW,
+#      join my VIP" es "claramente de trading" según el prompt viejo. El
+#      moderador de TEXTO ya lo bloqueaba; la imagen era el agujero. La línea
+#      difícil es no sobre-censurar: TODOS los gráficos del foro llevan
+#      SL/TP dibujados, así que el prompt distingue "tu propio gráfico con
+#      tus niveles" (normal) de "material cuyo propósito es vender señales".
+FORUM_IMAGE_MOD_PROMPT = """You decide whether an uploaded image is appropriate for the forum of Tradeable Academy, a TRADING EDUCATION platform. Members share their charts, their setups, and their activity inside the platform itself.
 
-ALLOW (allowed=true): trading chart screenshots (TradingView, NinjaTrader, MT4/MT5, ThinkOrSwim, etc.), candlestick or line charts, annotated charts, order/position panels, broker or prop-firm account dashboards, P&L screens, economic calendars, or any clearly trading-related screenshot.
+ALLOW (allowed=true, category "ok"):
+- Trading chart screenshots (TradingView, NinjaTrader, MT4/MT5, ThinkOrSwim, etc.), candlestick or line charts, annotated charts — INCLUDING the member's own entry, stop-loss and take-profit levels drawn on the chart. SL/TP annotations on a chart are normal trading content, NOT financial advice.
+- Order/position panels, broker or prop-firm account dashboards, P&L screens, economic calendars.
+- Screenshots of the Tradeable Academy platform itself: its interface under any theme, analyzer results, quiz scores and streaks, rank medals and certificates, the Synapse library, the Chalkboard whiteboard, Pre-Flight checklists, the cosmetics/camo store, profile frames and cursors, its landing or pricing pages. Members showing something they earned, bought or built on the platform is on-topic.
+- Trading study material: journal spreadsheets, backtest tables, handwritten or typed trading notes.
 
-BLOCK (allowed=false): selfies or photos of people, memes unrelated to trading, random photographs, screenshots of non-trading apps (chats, social media, games), explicit/graphic content, or advertisements for unrelated products.
+BLOCK (allowed=false) with the matching category:
+- "sexual": nudity or sexualized content.
+- "drugs": drugs or drug paraphernalia.
+- "weapons": photographs of real weapons. (A stock chart of a weapons company is a chart → "ok".)
+- "violence": gore, graphic violence, or hate symbols.
+- "signal": images whose purpose is to sell or broadcast trade calls — signal-group advertisements, "join my VIP/Telegram", guaranteed-profit or fixed-return promises, screenshots of paid signal channels shared as promotion. A member's own chart with their own levels, or a screenshot asking "was this a good trade?", is NOT this.
+- "offtopic": selfies or photos of people, memes unrelated to trading, random photographs, screenshots of unrelated apps (chats, social media, games), advertisements for unrelated products.
+
+When genuinely uncertain whether an image is trading-related, ALLOW it — but never allow anything that fits sexual, drugs, weapons, violence or signal.
 
 Respond with ONLY a raw JSON object, no markdown:
-{"allowed": true, "reason": ""}  or  {"allowed": false, "reason": "short reason in English"}"""
+{"allowed": true, "category": "ok", "reason": ""}  or  {"allowed": false, "category": "<category>", "reason": "short reason in English"}"""
 
 
 def _parse_mod_json(raw):
@@ -3990,10 +4016,10 @@ def moderate_forum_image(image_data_b64, content_type):
                        user_id=current_user.id if current_user.is_authenticated else None,
                        plan=current_plan())
         d = _parse_mod_json(resp.choices[0].message.content)
-        return {'ok': d['ok'], 'reason': d['reason']}
+        return {'ok': d['ok'], 'category': d['category'], 'reason': d['reason']}
     except Exception as exc:
         app.logger.warning('Forum image moderation failed (allowing): %s', exc)
-        return {'ok': True, 'reason': ''}
+        return {'ok': True, 'category': 'ok', 'reason': ''}
 
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -12991,27 +13017,35 @@ def serialize_comment(c):
 
 def save_forum_image(file):
     """Validate + AI-moderate + persist an uploaded chart image.
-    Returns (ok, relative_path_or_None, error_code)."""
+    Returns (ok, relative_path_or_None, error_code, moderation_dict_or_None).
+
+    Dos códigos de bloqueo distintos A PROPÓSITO (punto 18): `not_chart` es
+    "esto no va en un foro de trading" — un error inocente, foto equivocada —
+    y `content` es contenido vetado (desnudos/drogas/armas/violencia/venta de
+    señales). El cliente les pone mensajes distintos: al inocente se le dice
+    QUÉ se acepta; al otro no se le da detalle que ayude a afinar el intento.
+    """
     allowed = {'image/jpeg', 'image/jpg', 'image/png', 'image/webp'}
     ct = (file.content_type or 'image/jpeg').lower()
     if ct not in allowed:
-        return False, None, 'format'
+        return False, None, 'format', None
     data = file.read()
     if not data:
-        return False, None, 'empty'
+        return False, None, 'empty', None
     if len(data) > 8 * 1024 * 1024:
-        return False, None, 'too_large'
+        return False, None, 'too_large', None
     b64 = base64.b64encode(data).decode('utf-8')
     check = moderate_forum_image(b64, ct)
     if not check['ok']:
-        return False, None, 'not_chart'
+        dura = check.get('category') not in ('offtopic', 'ok', '', None)
+        return False, None, ('content' if dura else 'not_chart'), check
     ext = {'image/jpeg': 'jpg', 'image/jpg': 'jpg', 'image/png': 'png', 'image/webp': 'webp'}[ct]
     folder = os.path.join(BASE_DIR, 'static', 'uploads', 'forum')
     os.makedirs(folder, exist_ok=True)
     basename = f"{secrets.token_urlsafe(16)}.{ext}"
     with open(os.path.join(folder, basename), 'wb') as f:
         f.write(data)
-    return True, f"uploads/forum/{basename}", None
+    return True, f"uploads/forum/{basename}", None, None
 
 
 # ═══ Forum BOOST — communities, follows, DMs (Standard+) ═══════════════════
@@ -13385,10 +13419,17 @@ def forum_create_post():
     image_path = None
     file = request.files.get('image')
     if file and file.filename:
-        ok, rel, err = save_forum_image(file)
+        ok, rel, err, mod_img = save_forum_image(file)
         if not ok:
-            if err == 'not_chart':
-                record_warning(current_user.id, 'image', 'Non-trading image upload blocked', title)
+            if err in ('not_chart', 'content'):
+                # La advertencia lleva la categoría del moderador (sexual/
+                # drugs/weapons/violence/signal/offtopic), no un 'image'
+                # genérico: es lo que deja al panel de moderación distinguir
+                # al que subió la foto equivocada del que probó con porno.
+                record_warning(current_user.id,
+                               (mod_img or {}).get('category') or 'image',
+                               (mod_img or {}).get('reason') or 'Image upload blocked',
+                               title)
             return jsonify({'error': 'image_blocked', 'reason': err}), 422
         image_path = rel
 

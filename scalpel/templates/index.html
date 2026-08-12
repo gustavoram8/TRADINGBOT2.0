@@ -8500,7 +8500,8 @@
       'forum.block.spamRate': 'Slow down — you are posting too fast.',
       'forum.block.rateLimited': 'Slow down — too many attempts. Try again in about {min} min.',
       'forum.block.muted': 'You are temporarily muted for repeated inappropriate content. Try again in about {min} min.',
-      'forum.img.blocked': 'Image blocked — only trading charts and platform screenshots are allowed.',
+      'forum.img.blocked': 'Image blocked — only trading charts, platform screenshots and captures of this site are allowed.',
+      'forum.img.content': 'Image blocked — that content is not allowed on this forum.',
       'forum.img.format': 'Please upload a JPG, PNG or WebP image.',
       'forum.img.large': 'Image too large (max 8 MB).',
       'forum.error': 'Something went wrong. Please try again.',
@@ -9059,7 +9060,8 @@
       'forum.block.spamRate': 'Más despacio — estás publicando demasiado rápido.',
       'forum.block.rateLimited': 'Más despacio — demasiados intentos. Inténtalo de nuevo en unos {min} min.',
       'forum.block.muted': 'Estás silenciado temporalmente por contenido inapropiado repetido. Inténtalo de nuevo en unos {min} min.',
-      'forum.img.blocked': 'Imagen bloqueada — solo se permiten gráficos de trading y capturas de plataformas.',
+      'forum.img.blocked': 'Imagen bloqueada — solo se permiten gráficos de trading, capturas de plataformas y del propio sitio.',
+      'forum.img.content': 'Imagen bloqueada — ese contenido no está permitido en este foro.',
       'forum.img.format': 'Sube una imagen JPG, PNG o WebP.',
       'forum.img.large': 'Imagen demasiado grande (máx. 8 MB).',
       'forum.error': 'Algo salió mal. Inténtalo de nuevo.',
@@ -9618,7 +9620,8 @@
       'forum.block.spamRate': 'Doucement — vous publiez trop vite.',
       'forum.block.rateLimited': 'Doucement — trop de tentatives. Réessayez dans environ {min} min.',
       'forum.block.muted': 'Vous êtes temporairement réduit au silence pour contenu inapproprié répété. Réessayez dans environ {min} min.',
-      'forum.img.blocked': 'Image bloquée — seuls les graphiques de trading et captures de plateformes sont autorisés.',
+      'forum.img.blocked': 'Image bloquée — seuls les graphiques de trading, les captures de plateformes et celles du site lui-même sont autorisés.',
+      'forum.img.content': 'Image bloquée — ce contenu n’est pas autorisé sur ce forum.',
       'forum.img.format': 'Veuillez importer une image JPG, PNG ou WebP.',
       'forum.img.large': 'Image trop volumineuse (max 8 Mo).',
       'forum.error': "Une erreur s'est produite. Réessayez.",
@@ -10177,7 +10180,8 @@
       'forum.block.spamRate': 'Mais devagar — você está publicando rápido demais.',
       'forum.block.rateLimited': 'Mais devagar — tentativas demais. Tente novamente em cerca de {min} min.',
       'forum.block.muted': 'Você está temporariamente silenciado por conteúdo inapropriado repetido. Tente novamente em cerca de {min} min.',
-      'forum.img.blocked': 'Imagem bloqueada — apenas gráficos de trading e capturas de plataformas são permitidos.',
+      'forum.img.blocked': 'Imagem bloqueada — apenas gráficos de trading, capturas de plataformas e do próprio site são permitidos.',
+      'forum.img.content': 'Imagem bloqueada — esse conteúdo não é permitido neste fórum.',
       'forum.img.format': 'Envie uma imagem JPG, PNG ou WebP.',
       'forum.img.large': 'Imagem muito grande (máx. 8 MB).',
       'forum.error': 'Algo deu errado. Tente novamente.',
@@ -13226,6 +13230,10 @@
       if (data.error === 'image_blocked') {
         if (data.reason === 'format')    return { msg: T('forum.img.format'), detail: '', warn: false };
         if (data.reason === 'too_large') return { msg: T('forum.img.large'),  detail: '', warn: false };
+        /* 'content' = contenido vetado (desnudos/drogas/armas/señales): mensaje
+           seco y SIN detalle — el detalle solo ayudaría a afinar el intento.
+           El resto ('not_chart') es la foto equivocada: se le dice qué se acepta. */
+        if (data.reason === 'content')   return { msg: T('forum.img.content'), detail: '', warn: true };
         return { msg: T('forum.img.blocked'), detail: data.reason || '', warn: true };
       }
       if (data.error === 'blocked') {
