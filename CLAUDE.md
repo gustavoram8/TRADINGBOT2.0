@@ -2179,10 +2179,23 @@ boards"** que llevaba desde antes del lanzamiento en la lista de críticos.
 - 📈 **HERRAMIENTAS DE OPERATIVA (2026-08-12).** Pedido suyo: *"más herramientas tipo la de conjunto
   de velas: ejemplo las de Take profit y SL"*. Dos nuevas, con **el mismo gesto que ya aprendió con
   las velas — el SENTIDO del arrastre decide**:
-  · **Posición (`trade`, atajo `g`)**: se arrastra **de la ENTRADA al STOP**. Stop abajo = compra,
-    stop arriba = venta → **una sola herramienta en vez de dos**. Zona roja al stop, zona verde al
-    objetivo a **2R** (`RIESGO_A_OBJETIVO`), entrada punteada y el múltiplo escrito (`1 : 2 R`) —
-    sin ese número son dos rectángulos de colores.
+  · **Posición (`trade`, atajo `g`) — el R:R SE MIDE (2ª versión, mismo día).** Pedido del dueño:
+    *"no se puede colocar para que realmente mida el margen R:R? tipo, si lo achicas baja a 1;2"*.
+    🔑 **No se podía con la 1ª versión y el motivo importa:** la posición es UNA pieza agrupada, así
+    que al achicarla **las dos zonas escalan igual** y la proporción es invariante — un 1:2 seguía
+    siendo 1:2 por mucho que la encogieras. Para que el número signifique algo, el objetivo lo tiene
+    que poner el usuario → **gesto de DOS pasos**: se arrastra de la entrada al stop (fija el
+    riesgo) y luego el objetivo **sigue al ratón con el múltiplo recalculándose en vivo** hasta que
+    se hace clic. Probado: 1:1, 1:3 y una venta a 1:2, todos medidos del dibujo.
+    ⚠️ Consecuencia buena: como el grupo escala entero, **el número que quedó escrito nunca se
+    vuelve mentira** al mover o redimensionar la pieza.
+    · **Esta herramienta SÍ se apaga al colocarla** (petición expresa del dueño) — la excepción a la
+      regla pegajosa, y con sentido: una posición se dibuja de una en una, no de tres en tres como
+      los niveles. Clic derecho / Esc / cambiar de herramienta cancelan una a medio colocar.
+    · Un decimal solo cuando hace falta (`1 : 2 R`, pero `1 : 1.7 R` no se redondea a 2 y miente).
+    · La alternativa —tiradores para mover TP y SL por separado— se descartó: en fabric exige una
+      clase propia con `toObject/fromObject`, y **los controles a medida NO sobreviven a
+      `loadFromJSON`**, o sea que se perderían al reabrir la pizarra desde la biblioteca.
   · **Fibonacci (`fib`, atajo `i`)**: 0 donde sueltas y 1 donde empezaste (como en un gráfico de
     verdad), niveles 0/.236/.382/.5/.618/.705/.79/1 y **la banda OTE 0,62–0,79 sombreada**, porque
     OTE es una de las metodologías del sitio: dibujar los niveles sin marcarla sería dejarlo a

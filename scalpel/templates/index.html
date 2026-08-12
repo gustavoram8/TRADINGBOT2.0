@@ -7592,7 +7592,7 @@
           <button class="tool-btn" data-tool="candles" data-tip="Candle sequence — drag up or down">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><line x1="5" y1="4" x2="5" y2="20"/><rect x="3" y="8" width="4" height="8" rx="1" fill="currentColor" stroke="none"/><line x1="12" y1="3" x2="12" y2="18"/><rect x="10" y="6" width="4" height="9" rx="1" fill="currentColor" stroke="none"/><line x1="19" y1="6" x2="19" y2="21"/><rect x="17" y="10" width="4" height="8" rx="1" fill="currentColor" stroke="none"/></svg>
           </button>
-          <button class="tool-btn" data-tool="trade" data-tip="Position — drag from entry to stop">
+          <button class="tool-btn" data-tool="trade" data-tip="Position — drag entry→stop, then click the target">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="8" rx="1"/><rect x="4" y="13" width="16" height="5" rx="1"/><line x1="2" y1="12" x2="22" y2="12" stroke-dasharray="3 2"/></svg>
           </button>
           <button class="tool-btn" data-tool="fib" data-tip="Fibonacci retracement">
@@ -13992,6 +13992,9 @@
     // de sobra para marcar una estructura larga (HH/HL/HH/HL…).
     const POLY_MAX_PTS = 12;
     let _polyPts = [], _polySegs = [], _polyPreview = null, _polyLastClick = 0;
+    // Posición a medio colocar: ya se arrastró entrada→stop y falta el clic
+    // que fija el objetivo. `prev` es la pieza que sigue al ratón.
+    let _trade = null;
     let _pendingBgAll = null; // bg type waiting for "apply to all" confirmation
     // Erase-by-area (marquee) tool state
     let _eraseRect = null;
@@ -14083,6 +14086,9 @@
         _polyPts = []; _polySegs = []; _polyLastClick = 0;
         canvas.requestRenderAll(); pushHistory(); updateThumb();
       }
+      // una posición a medio colocar no puede sobrevivir a un cambio de
+      // herramienta: quedaría un previo suelto en el lienzo
+      if (_trade && t !== 'trade') cancelaTrade();
       state.tool = t;
       toolBtns.forEach(b => b.classList.toggle('active', b.dataset.tool === t));
       canvas.isDrawingMode = (t === 'pencil');
@@ -14185,6 +14191,7 @@
     //   2 · figura a medio arrastrar → se descarta (no queda nada)
     //   3 · nada en curso → se suelta la herramienta (vuelve a Seleccionar)
     function cancelaColocacion() {
+      if (_trade) { cancelaTrade(); return; }
       if (state.tool === 'polyline' && _polyPts.length > 0) { polyFinish(); return; }
       if (state.isDown) {
         state.isDown = false;
@@ -14213,6 +14220,9 @@
         if (t === 'select' || t === 'pencil') return;
         const p = canvas.getPointer(opt.e);
         const color = colorInput.value, w = parseInt(widthSel.value, 10);
+
+        // Posición esperando su objetivo: este clic lo fija y cierra la pieza
+        if (t === 'trade' && _trade) { fijaTrade(p.y); return; }
 
         // Polyline: each click adds a segment; double-click finishes
         if (t === 'polyline') {
@@ -14285,6 +14295,12 @@
           }
           return;
         }
+        // Posición: el objetivo sigue al ratón y el múltiplo se recalcula
+        if (state.tool === 'trade' && _trade && !state.isDown) {
+          const p = canvas.getPointer(opt.e);
+          pintaTrade(p.y);
+          return;
+        }
         // Polyline preview: update dashed preview line to cursor
         if (state.tool === 'polyline') {
           if (_polyPts.length > 0 && _polyPreview) {
@@ -14342,12 +14358,21 @@
             const g = makeArrow(x1, y1, x2, y2, colorInput.value, parseInt(widthSel.value, 10));
             canvas.add(g); canvas.setActiveObject(g);
           }
-        } else if (t === 'candles' || t === 'trade' || t === 'fib') {
+        } else if (t === 'trade') {
+          // el arrastre solo fijó ENTRADA y STOP; el objetivo lo pone el clic
+          // siguiente, y hasta entonces la pieza sigue al ratón
+          canvas.remove(o);
+          if (Math.abs(state.lastY - state.startY) >= 12) {
+            _trade = { x0: state.startX, y0: state.startY,
+                       x1: state.lastX, y1: state.lastY, prev: null };
+            pintaTrade(state.lastY + (state.lastY > state.startY ? -1 : 1) *
+                       Math.abs(state.lastY - state.startY) * 3);
+          }
+        } else if (t === 'candles' || t === 'fib') {
           // la caja punteada era solo la guía: se retira y en su hueco se
           // dibuja la figura. El sentido lo da el arrastre, no un ajuste.
           canvas.remove(o);
-          const constructor = (t === 'candles') ? secuenciaVelas
-                            : (t === 'trade') ? posicionTrade : fibonacci;
+          const constructor = (t === 'candles') ? secuenciaVelas : fibonacci;
           const g = constructor(state.startX, state.startY, state.lastX, state.lastY);
           if (g) { canvas.add(g); canvas.setActiveObject(g); }
         } else if (t === 'fvg') {
@@ -14670,8 +14695,21 @@
     // secuencia de velas: se arrastra de la ENTRADA al STOP. Stop abajo =
     // compra; stop arriba = venta. Una sola herramienta en vez de dos, y el
     // gesto es el mismo que ya aprendió con las velas.
-    const RIESGO_A_OBJETIVO = 2;            // el objetivo sale a 2R por defecto
-    function posicionTrade(x0, y0, x1, y1) {
+    // 🔑 EL R:R SE MIDE, NO SE ESCRIBE (pedido del dueño: *"no se puede colocar
+    // para que realmente mida el margen R:R?"*).
+    //
+    // Por qué hizo falta cambiar el gesto: la posición es UNA pieza agrupada,
+    // así que al achicarla o estirarla **las dos zonas escalan igual** y la
+    // proporción no puede cambiar — un 1:2 sigue siendo 1:2 por mucho que la
+    // encojas. Para que el número signifique algo, el objetivo tiene que
+    // ponerlo el usuario: se arrastra de la entrada al stop (eso fija el
+    // riesgo) y después el objetivo sigue al ratón con el múltiplo
+    // actualizándose en vivo, hasta que se hace clic.
+    //
+    // ⚠️ Consecuencia buena: como el grupo escala entero, el número que quedó
+    // escrito NUNCA se vuelve mentira al mover o redimensionar la pieza.
+    const R_MINIMO = 0.15;                  // por debajo, el dibujo no se lee
+    function posicionTrade(x0, y0, x1, y1, yObjetivo) {
       const riesgo = Math.abs(y1 - y0);
       if (riesgo < 12) return null;
       const largo = y1 > y0;                // arrastraste hacia abajo → compra
@@ -14679,7 +14717,14 @@
       const izq = Math.min(x0, x1);
       const yEntrada = y0;
       const yStop = y1;
-      const yObj = yEntrada + (largo ? -1 : 1) * riesgo * RIESGO_A_OBJETIVO;
+      // el objetivo siempre al lado contrario del stop, nunca pegado a la
+      // entrada: si el ratón se va al lado equivocado se sujeta al mínimo
+      const sentido = largo ? -1 : 1;
+      let mult = (yObjetivo === undefined)
+        ? 2
+        : (yObjetivo - yEntrada) * sentido / riesgo;
+      if (!(mult > R_MINIMO)) mult = R_MINIMO;
+      const yObj = yEntrada + sentido * riesgo * mult;
       const verde = VELA_ALCISTA, rojo = VELA_BAJISTA;
       const zona = (yA, yB, col) => new fabric.Rect({
         left: izq, top: Math.min(yA, yB), width: ancho, height: Math.abs(yB - yA),
@@ -14702,10 +14747,49 @@
         etiqueta('SL', (yEntrada + yStop) / 2, rojo, true),
         // 🔑 el múltiplo se escribe: es el dato que convierte el dibujo en una
         //    lección. Sin él son dos rectángulos de colores.
-        etiqueta('1 : ' + RIESGO_A_OBJETIVO + ' R', yEntrada - cuerpo * 0.9,
-                 colorInput.value, false),
+        //    Un decimal solo cuando hace falta: "1 : 2 R" se lee mejor que
+        //    "1 : 2.0 R", pero un 1,7 no se puede redondear a 2 y mentir.
+        etiqueta('1 : ' + (Math.round(mult * 10) / 10) + ' R',
+                 yEntrada - cuerpo * 0.9, colorInput.value, false),
       ];
       return new fabric.Group(piezas, Object.assign(baseOpts(), {}));
+    }
+
+    // Repinta la posición a medio colocar con el objetivo donde esté el ratón.
+    function pintaTrade(yObj) {
+      if (!_trade) return;
+      if (_trade.prev) { canvas.remove(_trade.prev); _trade.prev = null; }
+      const g = posicionTrade(_trade.x0, _trade.y0, _trade.x1, _trade.y1, yObj);
+      if (!g) return;
+      // mientras se coloca no es seleccionable ni se exporta: es un previo
+      g.set({ selectable: false, evented: false, opacity: 0.85 });
+      _trade.prev = g;
+      _trade.ultimoY = yObj;
+      canvas.add(g);
+      canvas.requestRenderAll();
+    }
+    // El clic fija el objetivo y cierra la pieza.
+    function fijaTrade(yObj) {
+      if (!_trade) return;
+      const d = _trade;
+      if (d.prev) { canvas.remove(d.prev); }
+      _trade = null;
+      const g = posicionTrade(d.x0, d.y0, d.x1, d.y1, yObj);
+      if (g) { canvas.add(g); canvas.setActiveObject(g); }
+      canvas.requestRenderAll();
+      pushHistory(); updateThumb();
+      // 🔑 Esta herramienta SÍ se apaga al terminar (petición expresa del
+      //    dueño). Es la excepción a la regla pegajosa, y tiene sentido: una
+      //    posición se dibuja de una en una, no de tres en tres como los
+      //    niveles o las líneas.
+      setTool('select');
+    }
+    function cancelaTrade() {
+      if (!_trade) return false;
+      if (_trade.prev) canvas.remove(_trade.prev);
+      _trade = null;
+      canvas.requestRenderAll();
+      return true;
     }
 
     // ══ Retroceso de Fibonacci ══════════════════════════════════════════
@@ -15414,6 +15498,7 @@
         }
         else if (app.classList.contains('presenting') && e.key === 'ArrowRight') { gotoSlide(state.cur + 1); }
         else if (app.classList.contains('presenting') && e.key === 'ArrowLeft') { gotoSlide(state.cur - 1); }
+        else if (e.key === 'Escape' && _trade) { e.preventDefault(); cancelaTrade(); }
         else if (e.key === 'Escape' && state.tool === 'polyline' && _polyPts.length > 0) { e.preventDefault(); polyFinish(); }
         else if (app.classList.contains('presenting') && e.key === 'Escape') { exitPresent(); }
         // Esc = soltar la herramienta. Es la salida que espera cualquiera que

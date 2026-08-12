@@ -284,31 +284,76 @@ with sync_playwright() as p:
             return {verde: gy.length, rojo: ry.length,
                     yVerde: med(gy), yRojo: med(ry)}; }""")
 
+    def posicion(xe, ye, xs, ys, yObj):
+        """entrada→stop arrastrando, y el objetivo con el clic siguiente"""
+        pulsa('trade')
+        pg.mouse.move(caja['x'] + xe, caja['y'] + ye)
+        pg.mouse.down()
+        pg.mouse.move(caja['x'] + xs, caja['y'] + ys, steps=6)
+        pg.mouse.up()
+        pg.wait_for_timeout(280)
+        pg.mouse.move(caja['x'] + xs, caja['y'] + yObj, steps=8)
+        pg.wait_for_timeout(280)
+        pg.mouse.click(caja['x'] + xs, caja['y'] + yObj)
+        pg.wait_for_timeout(380)
+
+    def limpia():
+        pulsa('select')
+        pg.evaluate("""() => document.getElementById('sk-clear').click()""")
+        pg.wait_for_timeout(450)
+
     pg.keyboard.press('Escape')
-    pg.evaluate("""() => document.getElementById('sk-clear').click()""")
-    pg.wait_for_timeout(500)
-    pulsa('trade')
-    dibuja(120, 180, 380, 240)            # arrastre HACIA ABAJO = compra
+    limpia()
+    # riesgo de 60 px, objetivo a 60 → 1R
+    posicion(120, 240, 380, 300, 180)
     z = zonas()
     check('la posición dibuja zona verde y zona roja', z['verde'] > 20 and z['rojo'] > 10, z)
     check('arrastrando hacia ABAJO el TP queda ARRIBA y el SL abajo (compra)',
           z['yVerde'] < z['yRojo'], z)
-    # 🔑 el objetivo sale a 2R: el verde tiene que medir el DOBLE que el rojo
-    check('el objetivo sale a 2R (verde %d px, rojo %d px)' % (z['verde'], z['rojo']),
-          abs(z['verde'] - 2 * z['rojo']) <= max(12, z['rojo'] * 0.25), z)
+    # 🔑 EL R:R SE MIDE: con el objetivo a 1R el verde tiene que medir lo MISMO
+    #    que el rojo. Antes iba escrito un 2 fijo y esto habría fallado.
+    check('objetivo a 1R → verde y rojo miden igual (%d vs %d px)'
+          % (z['verde'], z['rojo']),
+          abs(z['verde'] - z['rojo']) <= max(10, z['rojo'] * 0.2), z)
+    # …y la herramienta se apaga sola (petición expresa del dueño)
+    check('tras colocar una posición la herramienta se SUELTA',
+          pg.evaluate(HERRAMIENTA) == 'select', pg.evaluate(HERRAMIENTA))
 
-    pulsa('select')
-    pg.evaluate("""() => document.getElementById('sk-clear').click()""")
-    pg.wait_for_timeout(500)
-    pulsa('trade')
-    dibuja(120, 300, 380, 250)            # arrastre HACIA ARRIBA = venta
+    limpia()
+    # mismo riesgo, objetivo a 180 px → 3R
+    posicion(120, 240, 380, 300, 60)
+    z3 = zonas()
+    check('objetivo a 3R → el verde mide el TRIPLE que el rojo (%d vs %d px)'
+          % (z3['verde'], z3['rojo']),
+          abs(z3['verde'] - 3 * z3['rojo']) <= max(14, z3['rojo'] * 0.3), z3)
+
+    limpia()
+    posicion(120, 300, 380, 250, 400)     # arrastre HACIA ARRIBA = venta
     z2 = zonas()
     check('arrastrando hacia ARRIBA el SL queda arriba y el TP abajo (venta)',
           z2['yVerde'] > z2['yRojo'], z2)
 
-    pulsa('select')
-    pg.evaluate("""() => document.getElementById('sk-clear').click()""")
-    pg.wait_for_timeout(500)
+    # una posición a medio colocar se cancela con el clic derecho y no deja nada
+    limpia()
+    vacio, _ = dibujado()
+    pulsa('trade')
+    pg.mouse.move(caja['x'] + 120, caja['y'] + 240)
+    pg.mouse.down()
+    pg.mouse.move(caja['x'] + 380, caja['y'] + 300, steps=6)
+    pg.mouse.up()
+    pg.wait_for_timeout(300)
+    pg.mouse.move(caja['x'] + 380, caja['y'] + 150, steps=6)
+    pg.wait_for_timeout(250)
+    a_medias, _ = dibujado()
+    check('mientras se coloca, el objetivo ya se ve siguiendo al ratón',
+          a_medias > vacio + 300, (vacio, a_medias))
+    pg.mouse.click(caja['x'] + 380, caja['y'] + 150, button='right')
+    pg.wait_for_timeout(400)
+    tras, _ = dibujado()
+    check('el clic derecho cancela la posición a medias y no deja rastro',
+          abs(tras - vacio) < 250, (vacio, a_medias, tras))
+
+    limpia()
     pulsa('fib')
     dibuja(120, 380, 520, 120)
     fib = pg.evaluate("""() => {
@@ -322,7 +367,7 @@ with sync_playwright() as p:
             const i = (y * c.width + x) * 4;
             const R = d[i], G = d[i+1], B = d[i+2];
             if (B - R > 40 && B > 90) n++;               // azul = las líneas
-            if (G - R > 12 && G - B > 4) v++;           // verde = la banda OTE
+            if (G - R > 12 && G - B > 4) v++;            // verde = la banda OTE
           }
           if (n > 60) lineas++;
           if (v > 60) ote++;
@@ -333,9 +378,7 @@ with sync_playwright() as p:
     # la banda OTE (0,62-0,79) es lo que ata la herramienta a lo que enseña el
     # sitio; sin ella son ocho rayas
     check('…y sombrea la banda OTE (%d px de alto)' % fib['ote'], fib['ote'] > 15, fib)
-    pulsa('select')
-    pg.evaluate("""() => document.getElementById('sk-clear').click()""")
-    pg.wait_for_timeout(400)
+    limpia()
 
     # ── 🖱️ clic derecho = dejar de colocar ──
     # Queja del dueño: "si solo quieres colocar tres palitos no puedes, tienes
