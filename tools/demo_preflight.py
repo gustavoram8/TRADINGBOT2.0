@@ -83,6 +83,19 @@ PROYECTOS = [
     },
 ]
 
+# Proyectos de relleno para la prueba de ESTRÉS: Premium permite 10 pizarras
+# (PROJECT_LIMITS['premium']), así que la comparación tiene que aguantar 10
+# columnas sin cortar texto ni tarjetas. Nombres largos a propósito.
+RELLENO = [
+    ('SMC — Londres continuación', ['CHoCH M5', 'OB refinado', 'Liquidez interna']),
+    ('Elliott — Onda 3 en NASDAQ', ['Onda 2 respetada', 'Impulso confirmado', 'Fibo 1.618']),
+    ('Armónicos — Gartley diario', ['Punto B 0.618', 'PRZ definida', 'Divergencia RSI']),
+    ('Rangos asiáticos y su barrida', ['Rango limpio', 'Barrida del alto', 'Vuelta al 50%']),
+    ('Noticias — NFP y CPI (alto impacto)', ['Sin posición previa', 'Segundo movimiento', 'Spread normal']),
+    ('Reversión a la media en oro', ['Banda tocada', 'RSI extremo', 'Sin tendencia diaria']),
+    ('Swing semanal — acciones USA', ['Cierre semanal a favor', 'Volumen creciente', 'Sector fuerte']),
+]
+
 RIESGO = 200.0          # dólares arriesgados por trade (fijo, para que el P&L
                         # se pueda comparar entre proyectos)
 
@@ -111,8 +124,17 @@ def arranca_servidor():
             pass
 
 
-def siembra():
-    """Crea los 3 proyectos y registra sus trades por la API real."""
+def siembra(extra=0):
+    """Crea los proyectos y registra sus trades por la API real.
+
+    `extra` añade proyectos de relleno para la prueba de estrés con el tope de
+    Premium (10 pizarras).
+    """
+    proyectos = list(PROYECTOS)
+    for nombre, conf in RELLENO[:extra]:
+        proyectos.append({'nombre': nombre, 'conf': conf, 'instrumentos': ['NQ', 'EURUSD'],
+                          'n': 22, 'base': 0.45, 'peso': 0.02, 'clave': None, 'extra': 0.0,
+                          'r_gana': (1.5, 3.0), 'r_pierde': (1.0, 1.0)})
     rnd = random.Random(SEMILLA)
     c = A.app.test_client()
     c.post('/login', data={'identifier': 'demopf', 'password': CL},
@@ -120,7 +142,7 @@ def siembra():
 
     resumen = []
     dia = datetime.date(2026, 6, 1)
-    for p in PROYECTOS:
+    for p in proyectos:
         cfg = {'confluences': [{'id': 'c%d' % (i + 1), 'label': l}
                                for i, l in enumerate(p['conf'])],
                'min_go': len(p['conf']) - 1,
@@ -254,7 +276,7 @@ def lee_pantalla():
                 [...document.querySelectorAll('#pf-proj-stats tr')].map(tr =>
                   [...tr.children].map(td => td.textContent.trim()))""")
             if i == 0:
-                pg.screenshot(path=os.path.join(RAIZ, 'out', 'tests', 'pf_proyecto.png'),
+                pg.screenshot(path=os.path.join(RAIZ, 'out', 'tests', ('pf_proyecto_estres.png' if '--estres' in sys.argv else 'pf_proyecto.png')),
                               full_page=True)
 
         # pestaña Comparar: los 3 a la vez
@@ -267,7 +289,26 @@ def lee_pantalla():
         salida['comparacion'] = pg.evaluate("""() =>
             [...document.querySelectorAll('#pf-cmp-table tr')].map(tr =>
               [...tr.children].map(td => td.textContent.trim()))""")
-        pg.screenshot(path=os.path.join(RAIZ, 'out', 'tests', 'pf_comparar.png'),
+        pg.screenshot(path=os.path.join(RAIZ, 'out', 'tests', ('pf_comparar_estres.png' if '--estres' in sys.argv else 'pf_comparar.png')),
+                      full_page=True)
+        # desplazada hasta el final: comprueba que la primera columna se queda
+        # fija y que el ÚLTIMO proyecto se alcanza
+        pg.evaluate("""() => { const c =
+            document.querySelector('#pf-cmp-table .pf-stats-table');
+            if (c) c.scrollLeft = c.scrollWidth; }""")
+        pg.wait_for_timeout(500)
+        salida['tras_scroll'] = pg.evaluate("""() => {
+            const c = document.querySelector('#pf-cmp-table .pf-stats-table');
+            const p = c.querySelector('tbody tr td:first-child');
+            const r = p.getBoundingClientRect(), rc = c.getBoundingClientRect();
+            const ult = c.querySelector('thead th:last-child');
+            return {etiqueta_visible: r.left >= rc.left - 2 && r.right <= rc.right + 2,
+                    texto_etiqueta: p.textContent.trim(),
+                    ultimo_proyecto: ult.textContent.trim(),
+                    ultimo_visible: ult.getBoundingClientRect().right <= rc.right + 2,
+                    sombra: c.classList.contains('hay-mas')}; }""")
+        pg.screenshot(path=os.path.join(RAIZ, 'out', 'tests',
+                      ('pf_comparar_scroll.png' if '--estres' in sys.argv else 'pf_cmp_scroll.png')),
                       full_page=True)
         salida['desborde'] = pg.evaluate("""() => {
             const c = document.querySelector('#pf-cmp-table .pf-stats-table');
@@ -283,8 +324,11 @@ def lee_pantalla():
 
 
 def main():
+    extra = 0
+    if '--estres' in sys.argv:
+        extra = 7          # 3 + 7 = 10 = el tope de Premium
     arranca_servidor()
-    real = siembra()
+    real = siembra(extra)
     print('\n===== LO QUE DE VERDAD PASÓ (lo sabe el generador, no el panel) =====')
     for r in real:
         print('  %-24s %d registrados · %dW %dL %d no tomados · win %s%% · P&L %s'

@@ -1822,7 +1822,29 @@
     }
     .pf-stats-table td:last-child { border-right: none; }
     .pf-stats-table td:first-child { color: var(--text); font-weight: 500; }
-    .pf-stats-table td + td { text-align: right; font-variant-numeric: tabular-nums; color: var(--text); white-space: nowrap; }
+    /* 🔴 `nowrap` era lo que reventaba el ancho: con 3 proyectos la tabla
+       medía 1255 px en un hueco de 794 y la tercera columna quedaba invisible
+       (medido). Ahora el valor ENVUELVE y cada columna tiene un ancho mínimo
+       legible, así el desbordamiento crece despacio y se puede desplazar. */
+    .pf-stats-table td + td { text-align: right; font-variant-numeric: tabular-nums; color: var(--text); }
+    .pf-stats-table th + th, .pf-stats-table td + td { min-width: 132px; }
+    /* la primera columna se queda fija al desplazar: sin ella, al mirar el
+       cuarto proyecto ya no sabes qué fila estás leyendo */
+    .pf-stats-table th:first-child, .pf-stats-table td:first-child {
+      position: sticky; left: 0; z-index: 2;
+      background: linear-gradient(var(--card), var(--card)), var(--bg);
+      min-width: 190px; max-width: 230px;
+    }
+    .pf-stats-table thead th:first-child { z-index: 3; }
+    /* aviso de que hay más a la derecha: sombra en el borde mientras se pueda
+       desplazar (un scroll horizontal dentro de una tarjeta no se ve venir) */
+    .pf-scrollable { position: relative; }
+    .pf-scrollable::after {
+      content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 26px;
+      pointer-events: none; opacity: 0; transition: opacity .15s;
+      background: linear-gradient(to right, transparent, rgba(0,0,0,.28));
+    }
+    .pf-scrollable.hay-mas::after { opacity: 1; }
     .pf-stats-table tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--surface) 45%, transparent); }
     .pf-stats-table tr:last-child td { border-bottom: none; }
     .pf-stats-table td.best { color: #16a34a; font-weight: 700; }
@@ -8212,12 +8234,14 @@
       'pf.loss': 'Loss',
       'pf.skipped': 'Skipped',
       'pf.deleteCheck': 'Delete this check?',
+      'pf.statAdh': 'Adherence',
+      'pf.statPend': 'Without result',
+      'pf.statPendSub': 'mark them to unlock the rest',
+      'pf.statSobre': 'over {n} with result',
+      'pf.statsAll': 'All your boards together',
       'pf.statTotal': 'Checks logged',
       'pf.statWin': 'Overall win rate',
       'pf.statGo': 'Win rate on GO',
-      'pf.statNotGo': 'Win rate below GO',
-      'pf.statTop': 'Top confluence',
-      'pf.statTopMeta': '{rate}% in {n} trades',
       'pf.onboardTitle': 'How Pre-Flight works',
       'pf.onboard1Title': 'Build your checklist',
       'pf.onboard1Body': 'List the exact confluences your entry trigger requires — your own rules, in your own words.',
@@ -8263,6 +8287,16 @@
       'pf.thDate': 'Date', 'pf.thInstr': 'Instrument', 'pf.thDir': 'Dir', 'pf.thEntry': 'Entry',
       'pf.thExit': 'Exit', 'pf.thSize': 'Size', 'pf.thRR': 'R:R', 'pf.thScore': 'Conf.',
       'pf.thVerdict': 'Verdict', 'pf.thOutcome': 'Result', 'pf.thPnl': 'P&L',
+      'pf.sPend': 'Without result yet',
+      'pf.sSkip': 'Setups you skipped',
+      'pf.sAdh': 'Adherence (taken trades that were GO)',
+      'pf.sExpR': 'Expectancy in R (uses planned R:R)',
+      'pf.sDD': 'Max drawdown',
+      'pf.sConf': 'Confluence that changes the most (with vs without)',
+      'pf.faltaMuestra': 'not enough data yet (needs {n} each side)',
+      'pf.pocaMuestra': 'not enough data yet',
+      'pf.con': 'with',
+      'pf.sin': 'without',
       'pf.s1': 'Trades logged',
       'pf.s2': 'With result (win/loss)',
       'pf.s3': 'Win rate',
@@ -8272,16 +8306,11 @@
       'pf.s7': 'Total P&L',
       'pf.s8': 'Expectancy (avg P&L per trade)',
       'pf.s9': 'Best · worst trade',
-      'pf.s10': 'Avg R:R in wins · losses',
       'pf.s11': 'Win rate Long · Short',
       'pf.s12': 'Best instrument',
-      'pf.s13': 'Best · worst confluence',
       'pf.s14': 'Streak now · max wins · max losses',
-      'pf.s15': 'Best weekday',
       'pf.s16': 'Win rate by R:R bucket',
       'pf.s17': 'False GOs (GO but lost)',
-      'pf.s18': 'Winning overrides (below GO, won)',
-      'pf.s19': 'Avg position size',
       'pf.s20': 'Avg confluences in wins · losses',
       'quiz.title': 'Quiz',
       'quiz.desc': 'Test your trading knowledge with timed quizzes tailored to your methodology and level.',
@@ -8761,12 +8790,14 @@
       'pf.loss': 'Loss',
       'pf.skipped': 'Omitido',
       'pf.deleteCheck': '¿Eliminar este chequeo?',
+      'pf.statAdh': 'Adherencia',
+      'pf.statPend': 'Sin resultado',
+      'pf.statPendSub': 'márcalos para activar el resto',
+      'pf.statSobre': 'sobre {n} con resultado',
+      'pf.statsAll': 'Todas tus pizarras juntas',
       'pf.statTotal': 'Chequeos registrados',
       'pf.statWin': 'Win rate general',
       'pf.statGo': 'Win rate en GO',
-      'pf.statNotGo': 'Win rate bajo GO',
-      'pf.statTop': 'Confluencia top',
-      'pf.statTopMeta': '{rate}% en {n} trades',
       'pf.onboardTitle': 'Cómo funciona Pre-Flight',
       'pf.onboard1Title': 'Arma tu checklist',
       'pf.onboard1Body': 'Lista las confluencias exactas que exige tu gatillo de entrada — tus propias reglas, en tus propias palabras.',
@@ -8812,6 +8843,16 @@
       'pf.thDate': 'Fecha', 'pf.thInstr': 'Instrumento', 'pf.thDir': 'Dir', 'pf.thEntry': 'Entrada',
       'pf.thExit': 'Salida', 'pf.thSize': 'Tamaño', 'pf.thRR': 'R:R', 'pf.thScore': 'Conf.',
       'pf.thVerdict': 'Veredicto', 'pf.thOutcome': 'Resultado', 'pf.thPnl': 'P&L',
+      'pf.sPend': 'Sin resultado todavía',
+      'pf.sSkip': 'Setups que descartaste',
+      'pf.sAdh': 'Adherencia (tomados que eran GO)',
+      'pf.sExpR': 'Expectativa en R (usa el R:R planeado)',
+      'pf.sDD': 'Drawdown máximo',
+      'pf.sConf': 'Confluencia que más cambia (con vs sin)',
+      'pf.faltaMuestra': 'aún no hay muestra ({n} de cada lado)',
+      'pf.pocaMuestra': 'aún no hay muestra',
+      'pf.con': 'con',
+      'pf.sin': 'sin',
       'pf.s1': 'Trades registrados',
       'pf.s2': 'Con resultado (win/loss)',
       'pf.s3': 'Win rate',
@@ -8821,16 +8862,11 @@
       'pf.s7': 'P&L total',
       'pf.s8': 'Expectativa (P&L promedio por trade)',
       'pf.s9': 'Mejor · peor trade',
-      'pf.s10': 'R:R promedio en wins · losses',
       'pf.s11': 'Win rate Long · Short',
       'pf.s12': 'Mejor instrumento',
-      'pf.s13': 'Mejor · peor confluencia',
       'pf.s14': 'Racha actual · máx wins · máx losses',
-      'pf.s15': 'Mejor día de la semana',
       'pf.s16': 'Win rate por rango de R:R',
       'pf.s17': 'GOs falsos (GO pero perdió)',
-      'pf.s18': 'Overrides ganadores (bajo GO, ganó)',
-      'pf.s19': 'Tamaño de posición promedio',
       'pf.s20': 'Confluencias promedio en wins · losses',
       'quiz.title': 'Quiz',
       'quiz.desc': 'Pon a prueba tu conocimiento de trading con quizzes cronometrados según tu metodología y nivel.',
@@ -9310,12 +9346,14 @@
       'pf.loss': 'Perte',
       'pf.skipped': 'Passé',
       'pf.deleteCheck': 'Supprimer ce check ?',
+      'pf.statAdh': 'Adhérence',
+      'pf.statPend': 'Sans résultat',
+      'pf.statPendSub': 'marquez-les pour activer le reste',
+      'pf.statSobre': 'sur {n} avec résultat',
+      'pf.statsAll': 'Tous vos tableaux réunis',
       'pf.statTotal': 'Checks enregistrés',
       'pf.statWin': 'Win rate global',
       'pf.statGo': 'Win rate en GO',
-      'pf.statNotGo': 'Win rate sous GO',
-      'pf.statTop': 'Confluence top',
-      'pf.statTopMeta': '{rate}% sur {n} trades',
       'pf.onboardTitle': 'Comment fonctionne Pre-Flight',
       'pf.onboard1Title': 'Construisez votre checklist',
       'pf.onboard1Body': "Listez les confluences exactes qu'exige votre déclencheur d'entrée — vos propres règles, dans vos propres mots.",
@@ -9361,6 +9399,16 @@
       'pf.thDate': 'Date', 'pf.thInstr': 'Instrument', 'pf.thDir': 'Dir', 'pf.thEntry': 'Entrée',
       'pf.thExit': 'Sortie', 'pf.thSize': 'Taille', 'pf.thRR': 'R:R', 'pf.thScore': 'Conf.',
       'pf.thVerdict': 'Verdict', 'pf.thOutcome': 'Résultat', 'pf.thPnl': 'P&L',
+      'pf.sPend': 'Sans résultat pour l’instant',
+      'pf.sSkip': 'Setups écartés',
+      'pf.sAdh': 'Adhérence (trades pris qui étaient GO)',
+      'pf.sExpR': 'Espérance en R (R:R prévu)',
+      'pf.sDD': 'Drawdown maximum',
+      'pf.sConf': 'Confluence la plus décisive (avec vs sans)',
+      'pf.faltaMuestra': 'pas encore assez de données ({n} de chaque côté)',
+      'pf.pocaMuestra': 'pas encore assez de données',
+      'pf.con': 'avec',
+      'pf.sin': 'sans',
       'pf.s1': 'Trades enregistrés',
       'pf.s2': 'Avec résultat (gain/perte)',
       'pf.s3': 'Win rate',
@@ -9370,16 +9418,11 @@
       'pf.s7': 'P&L total',
       'pf.s8': 'Espérance (P&L moyen par trade)',
       'pf.s9': 'Meilleur · pire trade',
-      'pf.s10': 'R:R moyen gains · pertes',
       'pf.s11': 'Win rate Long · Short',
       'pf.s12': 'Meilleur instrument',
-      'pf.s13': 'Meilleure · pire confluence',
       'pf.s14': 'Série en cours · max gains · max pertes',
-      'pf.s15': 'Meilleur jour de la semaine',
       'pf.s16': 'Win rate par tranche de R:R',
       'pf.s17': 'Faux GO (GO mais perdu)',
-      'pf.s18': 'Overrides gagnants (sous GO, gagné)',
-      'pf.s19': 'Taille de position moyenne',
       'pf.s20': 'Confluences moyennes gains · pertes',
       'quiz.title': 'Quiz',
       'quiz.desc': "Testez vos connaissances en trading avec des quiz chronométrés adaptés à votre méthodologie et votre niveau.",
@@ -9859,12 +9902,14 @@
       'pf.loss': 'Loss',
       'pf.skipped': 'Pulado',
       'pf.deleteCheck': 'Excluir este check?',
+      'pf.statAdh': 'Aderência',
+      'pf.statPend': 'Sem resultado',
+      'pf.statPendSub': 'marque-os para ativar o resto',
+      'pf.statSobre': 'sobre {n} com resultado',
+      'pf.statsAll': 'Todos os seus quadros juntos',
       'pf.statTotal': 'Checks registrados',
       'pf.statWin': 'Win rate geral',
       'pf.statGo': 'Win rate em GO',
-      'pf.statNotGo': 'Win rate abaixo de GO',
-      'pf.statTop': 'Confluência top',
-      'pf.statTopMeta': '{rate}% em {n} trades',
       'pf.onboardTitle': 'Como funciona o Pre-Flight',
       'pf.onboard1Title': 'Monte sua checklist',
       'pf.onboard1Body': 'Liste as confluências exatas que seu gatilho de entrada exige — suas próprias regras, com suas próprias palavras.',
@@ -9910,6 +9955,16 @@
       'pf.thDate': 'Data', 'pf.thInstr': 'Instrumento', 'pf.thDir': 'Dir', 'pf.thEntry': 'Entrada',
       'pf.thExit': 'Saída', 'pf.thSize': 'Tamanho', 'pf.thRR': 'R:R', 'pf.thScore': 'Conf.',
       'pf.thVerdict': 'Veredito', 'pf.thOutcome': 'Resultado', 'pf.thPnl': 'P&L',
+      'pf.sPend': 'Ainda sem resultado',
+      'pf.sSkip': 'Setups descartados',
+      'pf.sAdh': 'Aderência (tomados que eram GO)',
+      'pf.sExpR': 'Expectativa em R (usa o R:R planejado)',
+      'pf.sDD': 'Drawdown máximo',
+      'pf.sConf': 'Confluência que mais muda (com vs sem)',
+      'pf.faltaMuestra': 'ainda sem amostra ({n} de cada lado)',
+      'pf.pocaMuestra': 'ainda sem amostra',
+      'pf.con': 'com',
+      'pf.sin': 'sem',
       'pf.s1': 'Trades registrados',
       'pf.s2': 'Com resultado (win/loss)',
       'pf.s3': 'Win rate',
@@ -9919,16 +9974,11 @@
       'pf.s7': 'P&L total',
       'pf.s8': 'Expectativa (P&L médio por trade)',
       'pf.s9': 'Melhor · pior trade',
-      'pf.s10': 'R:R médio em wins · losses',
       'pf.s11': 'Win rate Long · Short',
       'pf.s12': 'Melhor instrumento',
-      'pf.s13': 'Melhor · pior confluência',
       'pf.s14': 'Sequência atual · máx wins · máx losses',
-      'pf.s15': 'Melhor dia da semana',
       'pf.s16': 'Win rate por faixa de R:R',
       'pf.s17': 'GOs falsos (GO mas perdeu)',
-      'pf.s18': 'Overrides vencedores (abaixo de GO, ganhou)',
-      'pf.s19': 'Tamanho médio de posição',
       'pf.s20': 'Confluências médias em wins · losses',
       'quiz.title': 'Quiz',
       'quiz.desc': 'Teste seu conhecimento de trading com quizzes cronometrados de acordo com sua metodologia e nível.',
@@ -11430,14 +11480,18 @@
     function renderStats() {
       const el = document.getElementById('pf-stats');
       const s = stats || {};
-      const top = s.top_confluence;
+      // ⚠️ Esta tira junta TODAS las pizarras, así que solo lleva números que
+      //    sobreviven a mezclar estrategias distintas. El subtítulo lo dice,
+      //    porque un win rate que promedia tres métodos no significa gran cosa
+      //    y hay que avisarlo en vez de disimularlo.
       el.innerHTML =
         statCard(s.total_checks || 0, T('pf.statTotal')) +
-        statCard(pct(s.win_rate), T('pf.statWin')) +
+        statCard(pct(s.win_rate), T('pf.statWin'),
+                 s.decided ? T('pf.statSobre').replace('{n}', s.decided) : '') +
         statCard(pct(s.win_rate_go), T('pf.statGo')) +
-        statCard(pct(s.win_rate_not_go), T('pf.statNotGo')) +
-        statCard(top ? escapeHtml(top.label) : '—', T('pf.statTop'),
-                 top ? T('pf.statTopMeta').replace('{rate}', top.win_rate).replace('{n}', top.n) : '');
+        statCard(pct(s.adherence), T('pf.statAdh')) +
+        statCard(s.pending || 0, T('pf.statPend'),
+                 s.pending ? T('pf.statPendSub') : '');
     }
 
     // ── History ──
@@ -11796,97 +11850,184 @@
     }
 
     // Returns the ordered list of 20 stats: [{label, value}].
+    // ══ ESTADÍSTICAS DE UN PROYECTO ═════════════════════════════════════
+    // 🔑 UNA SOLA REGLA, y de ella sale casi todo el rediseño:
+    //    NINGUNA TASA SIN SU MUESTRA, Y NINGÚN "MEJOR / PEOR" CON MENOS DE
+    //    `MIN_MUESTRA` TRADES DETRÁS.
+    //
+    // Sale de una prueba real (`tools/demo_preflight.py`): se sembraron 3
+    // proyectos, uno de ellos con una ventaja REAL metida a propósito y otro
+    // SIN ninguna, y se repitió con 5 azares distintos. Resultados medidos:
+    //  · "Mejor confluencia" acertó 1 de 5 veces en el proyecto que sí tenía
+    //    una buena, y una de esas veces señaló la buena como la PEOR.
+    //  · En el proyecto donde ninguna confluencia hacía nada, coronaba una
+    //    distinta en cada tirada, con porcentajes convincentes.
+    //  · "Mejor día de la semana" salió Vie/Mar/Mar/Lun/Jue con 4 trades.
+    // O sea: no era una fórmula mal hecha, era una muestra imposible. Por eso
+    // ahora, cuando no hay datos, el panel lo DICE en vez de coronar a alguien.
+    const MIN_MUESTRA = 10;    // por lado, para poder comparar dos grupos
+    const MIN_TRAMO = 3;       // para que un tramo aparezca en un desglose
+
     function computeStats(rows) {
       const dec = rows.filter(c => c.outcome === 'win' || c.outcome === 'loss');
       const wins = dec.filter(c => c.outcome === 'win');
       const losses = dec.filter(c => c.outcome === 'loss');
+      const saltados = rows.filter(c => c.outcome === 'skipped');
+      const pendientes = rows.filter(c => !c.outcome);
       const pnls = rows.filter(c => typeof c.pnl === 'number');
       const grossW = pnls.filter(c => c.pnl > 0).reduce((a, c) => a + c.pnl, 0);
       const grossL = -pnls.filter(c => c.pnl < 0).reduce((a, c) => a + c.pnl, 0);
       const avg = (arr, f) => arr.length ? arr.reduce((a, c) => a + f(c), 0) / arr.length : null;
-      const r1 = v => v === null ? '—' : Math.round(v * 100) / 100;
+      const r1 = v => (v === null || v === undefined) ? '—' : Math.round(v * 100) / 100;
+      // toda tasa se escribe CON su muestra: "48.5% (23)"
+      const conN = sub => sub.length ? fmtPct(rate(sub)) + ' (' + sub.length + ')' : '—';
 
-      // 4 — by verdict
-      const byVerdict = ['go', 'caution', 'no-go']
-        .map(v => fmtPct(rate(dec.filter(c => c.verdict === v)))).join(' · ');
-      // 5 — by # of confluences ticked
+      // ── disciplina ──
+      const goDec = dec.filter(c => c.verdict === 'go');
+      const adherencia = dec.length
+        ? fmtPct(100 * goDec.length / dec.length) + ' (' + goDec.length + '/' + dec.length + ')' : '—';
+      const falseGo = goDec.length
+        ? fmtPct(100 * goDec.filter(c => c.outcome === 'loss').length / goDec.length)
+          + ' (' + goDec.length + ')' : '—';
+
+      // ── expectativa en R ──
+      // 🔑 El dinero no se puede comparar entre proyectos (mezcla instrumentos
+      //    y tamaños); la R sí. Ganada = +R planeado, perdida = −1R.
+      const conRR = dec.filter(c => typeof c.rr === 'number');
+      const expR = conRR.length
+        ? avg(conRR, c => c.outcome === 'win' ? c.rr : -1) : null;
+      const expRTxt = expR === null ? '—'
+        : (expR >= 0 ? '+' : '') + (Math.round(expR * 100) / 100) + 'R (' + conRR.length + ')';
+
+      // ── drawdown máximo, en orden CRONOLÓGICO de trade ──
+      const porFecha = pnls.slice().sort((a, b) => claveFecha(a) - claveFecha(b));
+      let acum = 0, pico = 0, dd = 0;
+      porFecha.forEach(c => {
+        acum += c.pnl;
+        if (acum > pico) pico = acum;
+        dd = Math.min(dd, acum - pico);
+      });
+      const ddTxt = porFecha.length ? fmtMoney(dd) : '—';
+
+      // ── desgloses (un tramo solo aparece con muestra suficiente) ──
       const scoreMap = {};
       dec.forEach(c => { (scoreMap[c.score] = scoreMap[c.score] || []).push(c); });
       const byScore = Object.keys(scoreMap).sort((a, b) => a - b)
-        .map(s => s + '✓ ' + fmtPct(rate(scoreMap[s])) + ' (' + scoreMap[s].length + ')').join(' · ') || '—';
-      // 12 — best instrument
+        .filter(s => scoreMap[s].length >= MIN_TRAMO)
+        .map(s => s + '✓ ' + conN(scoreMap[s])).join(' · ') || T('pf.pocaMuestra');
+
+      const rrB = { '<1': [], '1–2': [], '2–3': [], '3+': [] };
+      dec.filter(c => typeof c.rr === 'number').forEach(c => {
+        rrB[c.rr < 1 ? '<1' : c.rr < 2 ? '1–2' : c.rr < 3 ? '2–3' : '3+'].push(c);
+      });
+      const byRR = Object.keys(rrB).filter(b => rrB[b].length >= MIN_TRAMO)
+        .map(b => b + ' ' + conN(rrB[b])).join(' · ') || T('pf.pocaMuestra');
+
+      const byVerdict = ['go', 'caution', 'no-go'].map(v =>
+        conN(dec.filter(c => c.verdict === v))).join(' · ');
+
+      // ── ¿qué confluencia cambia algo? CON ella contra SIN ella ──
+      // 🔑 Mirar solo el win rate DE los trades donde la marcaste no dice
+      //    nada: si la marcas en el 90% de tus trades, su tasa es tu tasa
+      //    general. Lo único que informa es la DIFERENCIA contra no marcarla,
+      //    y solo cuando hay muestra a los dos lados.
+      const etiquetas = [];
+      dec.forEach(c => (c.checked || []).forEach(l => {
+        if (etiquetas.indexOf(l) < 0) etiquetas.push(l);
+      }));
+      let mejorDif = null;
+      etiquetas.forEach(l => {
+        const con = dec.filter(c => (c.checked || []).indexOf(l) >= 0);
+        const sin = dec.filter(c => (c.checked || []).indexOf(l) < 0);
+        if (con.length < MIN_MUESTRA || sin.length < MIN_MUESTRA) return;
+        const d = rate(con) - rate(sin);
+        if (!mejorDif || Math.abs(d) > Math.abs(mejorDif.d)) {
+          mejorDif = { l: l, d: d, nc: con.length, ns: sin.length };
+        }
+      });
+      const confTxt = mejorDif
+        ? mejorDif.l + ' ' + (mejorDif.d >= 0 ? '+' : '') + Math.round(mejorDif.d) + ' pts (' +
+          mejorDif.nc + ' ' + T('pf.con') + ' · ' + mejorDif.ns + ' ' + T('pf.sin') + ')'
+        : T('pf.faltaMuestra').replace('{n}', MIN_MUESTRA);
+
+      // ── mejor instrumento: mismo listón ──
       const instMap = {};
-      dec.filter(c => c.instrument).forEach(c => { (instMap[c.instrument] = instMap[c.instrument] || []).push(c); });
-      const instRank = Object.keys(instMap).filter(k => instMap[k].length >= 2)
+      dec.filter(c => c.instrument).forEach(c => {
+        (instMap[c.instrument] = instMap[c.instrument] || []).push(c);
+      });
+      const instRank = Object.keys(instMap).filter(k => instMap[k].length >= MIN_MUESTRA)
         .map(k => ({ k, r: rate(instMap[k]), n: instMap[k].length }))
         .sort((a, b) => b.r - a.r || b.n - a.n);
-      const bestInst = instRank.length ? instRank[0].k + ' ' + fmtPct(instRank[0].r) + ' (' + instRank[0].n + ')' : '—';
-      // 13 — best/worst confluence
-      const confMap = {};
-      dec.forEach(c => (c.checked || []).forEach(l => { (confMap[l] = confMap[l] || []).push(c); }));
-      const confRank = Object.keys(confMap).filter(k => confMap[k].length >= 2)
-        .map(k => ({ k, r: rate(confMap[k]), n: confMap[k].length }))
-        .sort((a, b) => b.r - a.r || b.n - a.n);
-      const bestConf = confRank.length
-        ? confRank[0].k + ' ' + fmtPct(confRank[0].r) + ' · ' + confRank[confRank.length - 1].k + ' ' + fmtPct(confRank[confRank.length - 1].r)
-        : '—';
-      // 14 — streaks (chronological: rows arrive newest-first)
-      const chrono = dec.slice().reverse();
+      // ⚠️ hacen falta DOS con muestra: llamar "mejor" al único candidato no
+      //    es un ranking (salía "mejor instrumento: ES 25%", que es el peor
+      //    resultado posible y aun así encabezaba)
+      const bestInst = instRank.length >= 2
+        ? instRank[0].k + ' ' + fmtPct(instRank[0].r) + ' (' + instRank[0].n + ')'
+        : T('pf.faltaMuestra').replace('{n}', MIN_MUESTRA);
+
+      // ── rachas, POR FECHA DEL TRADE ──
+      // ⚠️ antes se calculaban por orden de REGISTRO: quien anotaba el lunes
+      //    los trades del viernes veía una racha falsa.
+      const chrono = dec.slice().sort((a, b) => claveFecha(a) - claveFecha(b));
       let cur = 0, curKind = null, maxW = 0, maxL = 0;
       chrono.forEach(c => {
-        if (c.outcome === curKind) cur++;
-        else { curKind = c.outcome; cur = 1; }
+        if (c.outcome === curKind) cur++; else { curKind = c.outcome; cur = 1; }
         if (curKind === 'win') maxW = Math.max(maxW, cur); else maxL = Math.max(maxL, cur);
       });
       const streaks = dec.length
         ? cur + (curKind === 'win' ? 'W' : 'L') + ' · ' + maxW + 'W · ' + maxL + 'L' : '—';
-      // 15 — best weekday
-      const dayMap = {};
-      dec.forEach(c => {
-        const d = c.trade_date ? new Date(c.trade_date + 'T12:00:00') : c.created_at ? new Date(c.created_at) : null;
-        if (d && !isNaN(d)) (dayMap[d.getDay()] = dayMap[d.getDay()] || []).push(c);
-      });
-      const dayRank = Object.keys(dayMap).filter(k => dayMap[k].length >= 2)
-        .map(k => ({ k, r: rate(dayMap[k]), n: dayMap[k].length }))
-        .sort((a, b) => b.r - a.r || b.n - a.n);
-      const bestDay = dayRank.length ? weekdayShort(+dayRank[0].k) + ' ' + fmtPct(dayRank[0].r) + ' (' + dayRank[0].n + ')' : '—';
-      // 16 — by R:R bucket
-      const rrB = { '<1': [], '1–2': [], '2–3': [], '3+': [] };
-      dec.filter(c => typeof c.rr === 'number').forEach(c => {
-        const b = c.rr < 1 ? '<1' : c.rr < 2 ? '1–2' : c.rr < 3 ? '2–3' : '3+';
-        rrB[b].push(c);
-      });
-      const byRR = Object.keys(rrB).filter(b => rrB[b].length)
-        .map(b => b + ' ' + fmtPct(rate(rrB[b])) + ' (' + rrB[b].length + ')').join(' · ') || '—';
-      // 17/18 — discipline signals
-      const goDec = dec.filter(c => c.verdict === 'go');
-      const belowDec = dec.filter(c => c.verdict !== 'go');
-      const falseGo = goDec.length ? fmtPct(100 * goDec.filter(c => c.outcome === 'loss').length / goDec.length) : '—';
-      const overrides = belowDec.length ? fmtPct(100 * belowDec.filter(c => c.outcome === 'win').length / belowDec.length) : '—';
 
       const pair = (a, b) => (a === '—' && b === '—') ? '—' : a + ' · ' + b;
       return [
         { label: T('pf.s1'), value: String(rows.length) },
         { label: T('pf.s2'), value: rows.length ? fmtPct(100 * dec.length / rows.length) + ' (' + dec.length + ')' : '—' },
-        { label: T('pf.s3'), value: fmtPct(rate(dec)) },
+        { label: T('pf.sPend'), value: pendientes.length ? String(pendientes.length) : '0' },
+        { label: T('pf.sSkip'), value: String(saltados.length) },
+        { label: T('pf.sAdh'), value: adherencia },
+        { label: T('pf.s17'), value: falseGo },
+        { label: T('pf.s3'), value: conN(dec) },
         { label: T('pf.s4'), value: byVerdict },
-        { label: T('pf.s5'), value: byScore },
+        { label: T('pf.sExpR'), value: expRTxt },
         { label: T('pf.s6'), value: grossL > 0 ? r1(grossW / grossL) : (grossW > 0 ? '∞' : '—') },
         { label: T('pf.s7'), value: pnls.length ? fmtMoney(pnls.reduce((a, c) => a + c.pnl, 0)) : '—' },
         { label: T('pf.s8'), value: pnls.length ? fmtMoney(avg(pnls, c => c.pnl)) : '—' },
+        { label: T('pf.sDD'), value: ddTxt },
         { label: T('pf.s9'), value: pnls.length ? fmtMoney(Math.max(...pnls.map(c => c.pnl))) + ' · ' + fmtMoney(Math.min(...pnls.map(c => c.pnl))) : '—' },
-        { label: T('pf.s10'), value: pair(r1(avg(wins.filter(c => typeof c.rr === 'number'), c => c.rr)) + '', r1(avg(losses.filter(c => typeof c.rr === 'number'), c => c.rr)) + '').replace(/null/g, '—') },
-        { label: T('pf.s11'), value: pair(fmtPct(rate(dec.filter(c => c.direction === 'long'))), fmtPct(rate(dec.filter(c => c.direction === 'short')))) },
-        { label: T('pf.s12'), value: bestInst },
-        { label: T('pf.s13'), value: bestConf },
-        { label: T('pf.s14'), value: streaks },
-        { label: T('pf.s15'), value: bestDay },
+        { label: T('pf.s5'), value: byScore },
         { label: T('pf.s16'), value: byRR },
-        { label: T('pf.s17'), value: falseGo },
-        { label: T('pf.s18'), value: overrides },
-        { label: T('pf.s19'), value: r1(avg(rows.filter(c => typeof c.position_size === 'number'), c => c.position_size)) },
+        { label: T('pf.s11'), value: pair(conN(dec.filter(c => c.direction === 'long')),
+                                          conN(dec.filter(c => c.direction === 'short'))) },
+        { label: T('pf.sConf'), value: confTxt },
+        { label: T('pf.s12'), value: bestInst },
+        { label: T('pf.s14'), value: streaks },
         { label: T('pf.s20'), value: pair(r1(avg(wins, c => c.score)) + '', r1(avg(losses, c => c.score)) + '').replace(/null/g, '—') },
       ];
+    }
+
+    // Fecha con la que se ORDENA un trade: la del trade si la puso, y si no la
+    // de registro. Se usa para rachas y drawdown, que dependen del orden real.
+    function claveFecha(c) {
+      const d = c.trade_date ? new Date(c.trade_date + 'T12:00:00')
+              : c.created_at ? new Date(c.created_at) : null;
+      return (d && !isNaN(d)) ? d.getTime() : 0;
+    }
+
+    // Enciende la sombra del borde solo cuando de verdad hay algo más a la
+    // derecha, y la apaga al llegar al final. Se recalcula al desplazar y al
+    // cambiar el tamaño de la ventana.
+    function marcaDesbordes() {
+      document.querySelectorAll('#preflight-view .pf-stats-table, #preflight-view .pf-table-wrap')
+        .forEach(c => {
+          c.classList.add('pf-scrollable');
+          const act = () => c.classList.toggle('hay-mas',
+            c.scrollWidth - c.clientWidth - c.scrollLeft > 4);
+          act();
+          if (!c.dataset.vigilado) {
+            c.dataset.vigilado = '1';
+            c.addEventListener('scroll', act);
+            window.addEventListener('resize', act);
+          }
+        });
     }
 
     function projChipsInto(el, isActive, onClick) {
@@ -11942,6 +12083,7 @@
         html += '<tr><td>' + escapeHtml(s.label) + '</td><td>' + escapeHtml(s.value) + '</td></tr>';
       });
       statsEl.innerHTML = html + '</table>';
+      marcaDesbordes();
     }
 
     function renderCompare() {
@@ -11966,6 +12108,7 @@
         html += '</tr>';
       });
       out.innerHTML = html + '</tbody></table></div>';
+      marcaDesbordes();
     }
 
     function switchPfTab(name) {

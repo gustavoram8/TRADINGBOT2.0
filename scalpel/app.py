@@ -16225,28 +16225,31 @@ def _preflight_stats(rows):
         return round(100.0 * sum(1 for c in subset if c.outcome == 'win') / len(subset), 1) if subset else None
 
     go = [c for c in decided if c.verdict == 'go']
-    not_go = [c for c in decided if c.verdict != 'go']
 
-    # Per-confluence ranking: win rate of decided checks where the label was ticked.
-    per = {}
-    for c in decided:
-        for label in (c.checked or []):
-            d = per.setdefault(label, {'wins': 0, 'n': 0})
-            d['n'] += 1
-            d['wins'] += 1 if c.outcome == 'win' else 0
-    ranking = sorted(
-        ({'label': k, 'n': v['n'], 'win_rate': round(100.0 * v['wins'] / v['n'], 1)}
-         for k, v in per.items() if v['n'] >= 2),
-        key=lambda r: (r['win_rate'], r['n']), reverse=True)
+    # 🔴 QUÉ SE QUITÓ DE AQUÍ Y POR QUÉ (medido en `tools/demo_preflight.py`):
+    #  · "win rate bajo GO": se calcula con los trades que tomaste CONTRA tu
+    #    propio checklist, que son poquísimos. En una prueba con 16 registros
+    #    la tarjeta saltaba de 100% a 0% cambiando solo 2 resultados, y estaba
+    #    puesta al lado del win rate en GO invitando a leer "mis no-go ganan
+    #    más, mi checklist está mal". En una herramienta de disciplina eso es
+    #    contraproducente.
+    #  · "confluencia estrella": ordenaba por win rate con un mínimo de 2
+    #    registros y MEZCLABA las confluencias de todas las pizarras — una
+    #    casilla de Wyckoff compitiendo con una de ICT en el mismo ranking.
+    #    Con 5 azares distintos coronaba una distinta cada vez.
+    # En su lugar van dos números que sí sobreviven a juntar pizarras, porque
+    # describen a la PERSONA y no a una estrategia: cuánto sigue su proceso, y
+    # cuántos registros ha dejado a medias (que es lo que apaga el resto).
+    adherence = round(100.0 * len(go) / len(decided), 1) if decided else None
+    pending = sum(1 for c in rows if not c.outcome)
 
     return {
         'total_checks': len(rows),
         'decided': len(decided),
+        'pending': pending,
         'win_rate': _rate(decided),
         'win_rate_go': _rate(go),
-        'win_rate_not_go': _rate(not_go),
-        'top_confluence': ranking[0] if ranking else None,
-        'confluence_ranking': ranking[:10],
+        'adherence': adherence,
     }
 
 

@@ -2278,7 +2278,38 @@ boards"** que llevaba desde antes del lanzamiento en la lista de críticos.
   tope se impone en el servidor, envíos gigantes rechazados) + `tools/test_chalk_lib_nav.py`
   **18/18** (navegador: guardar → queda 1 en blanco → deshacer → reabrir → **sobrevive a borrar el
   guardado local, que es el punto de tenerlo en el servidor** → borrar).
-- [ ] **15. Pre-Flight:** revisar las "estadísticas" — hay comparaciones que no aportan.
+- [x] ✅ **15. Pre-Flight — estadísticas revisadas con una prueba real (2026-08-12).**
+  🔑 **Antes de tocar nada se midió**, con `tools/demo_preflight.py`: 3 proyectos y ~92 trades
+  registrados **por la API real**, con el generador declarado ANTES (uno con ventaja real metida a
+  propósito, uno SIN ninguna señal, y uno de win rate bajo con R alto), repetido con **5 azares**.
+  · 🔴 **"Mejor · peor confluencia" era una moneda:** en el proyecto que SÍ tenía una confluencia
+    buena, el panel la acertó **1 de 5 veces** y una vez la señaló como la PEOR. En el proyecto donde
+    ninguna confluencia hacía nada, coronaba una distinta cada tirada con porcentajes convincentes.
+    También se probó el método correcto (con-la-casilla vs sin-ella): se acerca a la verdad (+8,1
+    frente al +10 real) pero produce monstruos de +70 puntos calculados sobre **1 trade**. **No era
+    la fórmula, era la muestra.**
+  · 🔴 **"Mejor día de la semana"**: Vie/Mar/Mar/Lun/Jue entre semillas, siempre con 4 trades.
+  · 🔴 **"Winning overrides"** decía *"rompiendo tus reglas ganaste el 56%"* sobre 9 trades, en una
+    herramienta de disciplina.
+  **REGLA NUEVA, de la que sale todo el rediseño: ninguna tasa sin su muestra, y ningún "mejor/peor"
+  con menos de `MIN_MUESTRA`=10 por lado** (y 2 candidatos: llamar "mejor instrumento" al único que
+  llega no es un ranking). Cuando no hay datos, **lo dice** en vez de coronar a alguien.
+  **Fuera:** mejor·peor confluencia (por la de con-vs-sin), mejor día, overrides ganadores, tamaño
+  medio de posición, R:R medio en ganadoras·perdedoras. **Dentro:** adherencia (% de los tomados que
+  eran GO — lo que la herramienta existe para medir), **expectativa en R** (el dinero no se compara
+  entre proyectos, la R sí; ordenó los 3 proyectos igual que la verdad), **drawdown máximo**,
+  descartados y pendientes de marcar.
+  · 🐛 **Bugs arreglados:** rachas y drawdown se calculaban por **orden de registro**, no por fecha
+    del trade (quien anota el lunes los trades del viernes veía rachas falsas); la tira de arriba
+    mezclaba las pizarras en un ranking único (una casilla de Wyckoff compitiendo con una de ICT) —
+    ahora solo lleva números que sobreviven a juntar estrategias; tramos con n=1 mostrando 100%.
+  · 🖥️ **Layout con muchos proyectos (Premium permite 10, no 5):** `white-space: nowrap` en los
+    valores era lo que reventaba el ancho — con 3 proyectos la tabla medía **1255 px en un hueco de
+    794** y la 3ª columna era invisible. Ahora los valores **envuelven** (con 3 proyectos la tabla
+    mide 794 y cabe entera), la **primera columna se queda fija** al desplazar y hay **sombra en el
+    borde** cuando queda algo a la derecha. Verificado con los 10: chips en 3 filas sin cortarse,
+    último proyecto alcanzable, etiqueta de fila siempre visible, 0 errores JS.
+  · La demo queda en el repo para re-probar el panel tras cualquier cambio.
 - [ ] **16. Intranet del influencer:** que vea SUS clientes, sus comisiones y nada más. Propone un
   rol tipo admin, "Commercial Ally". ⚠️ Ojo: `/partner` ya existe (2026-08-01) — revisar qué falta
   en vez de rehacerlo.
