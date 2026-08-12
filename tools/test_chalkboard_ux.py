@@ -1,0 +1,204 @@
+# -*- coding: utf-8 -*-
+"""La pizarra tiene que dejarse usar sin pelear con ella.
+
+Nace de la queja textual del dueño (punto 13 de su lista): "hay conexiones
+usuario/elemento que son un poco tediosas… cuando seleccionabas una herramienta
+y la utilizabas tenías que volver a activarla, siento que vuelvo todo muy
+lento".
+
+Se comprueba en un navegador de verdad, porque nada de esto se ve leyendo el
+código: se dibuja con el ratón y se mira qué queda seleccionado después.
+
+    python3 tools/test_chalkboard_ux.py
+"""
+from __future__ import print_function
+
+import glob
+import os
+import sys
+import tempfile
+import threading
+import time
+import urllib.request
+
+RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+tmp = tempfile.mkdtemp()
+os.environ['DATABASE_URL'] = 'sqlite:///' + os.path.join(tmp, 'ux.db')
+os.environ.setdefault('SECRET_KEY', 'test-chalk-ux')
+sys.path.insert(0, os.path.join(RAIZ, 'scalpel'))
+
+import app as A                                          # noqa: E402
+from playwright.sync_api import sync_playwright          # noqa: E402
+
+CL = 'Zx9!wQ4mNp2r'
+PUERTO = 5081
+ok = fallas = 0
+
+
+def check(t, c, extra=''):
+    global ok, fallas
+    if c:
+        ok += 1
+        print('   ok    %s' % t)
+    else:
+        fallas += 1
+        print('   FALLA %s %s' % (t, extra))
+
+
+with A.app.app_context():
+    A.db.create_all()
+    u = A.User.query.filter_by(username='chalkux').first()
+    if u is None:
+        u = A.User(username='chalkux', email='u@demo.invalid', plan='premium',
+                   email_verified=True)
+        A.db.session.add(u)
+    u.set_password(CL)
+    u.email_canonical = u.email
+    u.plan = 'premium'
+    A.db.session.commit()
+threading.Thread(target=lambda: A.app.run(port=PUERTO, threaded=True,
+                                          use_reloader=False), daemon=True).start()
+for _ in range(80):
+    time.sleep(.25)
+    try:
+        urllib.request.urlopen('http://127.0.0.1:%d/health' % PUERTO, timeout=1)
+        break
+    except Exception:
+        pass
+URL = 'http://127.0.0.1:%d' % PUERTO
+
+HERRAMIENTA = "() => document.querySelector('#sk-tools .tool-btn.active').dataset.tool"
+OBJETOS = "() => (window.__skCanvas ? window.__skCanvas.getObjects().length : -1)"
+
+exe = (glob.glob('/opt/pw-browsers/chromium-*/chrome-linux/chrome') or [None])[0]
+with sync_playwright() as p:
+    b = p.chromium.launch(args=['--no-sandbox'],
+                          **({'executable_path': exe} if exe else {}))
+    pg = b.new_context(viewport={'width': 1440, 'height': 900}).new_page()
+    errores = []
+    pg.on('pageerror', lambda e: errores.append(str(e)))
+    pg.route('**/*', lambda r: r.continue_()
+             if '127.0.0.1' in r.request.url else r.abort())
+    pg.goto(URL + '/login', wait_until='domcontentloaded')
+    pg.fill('input[name=identifier]', 'chalkux')
+    pg.fill('input[name=password]', CL)
+    pg.click('button[type=submit]')
+    pg.wait_for_timeout(700)
+    # ⚠️ /app borra el cookie del splash al servirse: es de un solo uso
+    pg.context.add_cookies([{'name': 'scalpel_splash_ts', 'value': '1',
+                             'url': URL + '/'}])
+    pg.goto(URL + '/app', wait_until='domcontentloaded')
+    pg.wait_for_timeout(2000)
+    pg.evaluate("""() => { const e =
+        document.querySelector('.tab[data-tab="scalper"]'); if (e) e.click(); }""")
+    pg.wait_for_timeout(3800)
+    # se expone el lienzo de fabric para poder contar objetos
+    pg.evaluate("""() => {
+        const c = document.querySelector('#sk-canvas');
+        window.__skCanvas = c && c.__fabric ? c.__fabric : (c && c.fabric) || null;
+        if (!window.__skCanvas && window.fabric) {
+          // fabric guarda la instancia en el elemento superior
+          const el = document.querySelector('.canvas-container canvas.upper-canvas');
+          if (el && el.__fabricInstance) window.__skCanvas = el.__fabricInstance;
+        }
+      }""")
+
+    caja = pg.evaluate("""() => { const c =
+        document.querySelector('#sk-canvas'); const r = c.getBoundingClientRect();
+        return {x: r.x, y: r.y, w: r.width, h: r.height}; }""")
+    check('el lienzo existe y tiene tamaño', caja and caja['w'] > 300, caja)
+
+    # ── el ancho recuperado (punto 14) ──
+    m = pg.evaluate("""() => {
+        const w = document.getElementById('sk-canvas-wrap');
+        const c = document.querySelector('#sk-canvas-wrap canvas');
+        const rw = w.getBoundingClientRect(), rc = c.getBoundingClientRect();
+        return {pct: Math.round(100*(rc.width*rc.height)/(rw.width*rw.height)),
+                ancho: Math.round(rc.width),
+                rail: !!document.querySelector('.ag-rail') &&
+                      getComputedStyle(document.querySelector('.ag-rail')).display}; }""")
+    check('la pizarra llena su panel (%d%%, antes 29%%)' % m['pct'], m['pct'] >= 80, m)
+    check('el rail derecho se esconde en la pizarra', m['rail'] == 'none', m)
+
+    def dibuja(x0, y0, x1, y1):
+        pg.mouse.move(caja['x'] + x0, caja['y'] + y0)
+        pg.mouse.down()
+        pg.mouse.move(caja['x'] + x1, caja['y'] + y1, steps=6)
+        pg.mouse.up()
+        pg.wait_for_timeout(260)
+
+    def pulsa(tool):
+        pg.evaluate("""t => { const b = [...document.querySelectorAll('#sk-tools .tool-btn')]
+            .find(x => x.dataset.tool === t); if (b) b.click(); }""", tool)
+        pg.wait_for_timeout(160)
+
+    # ── 🔑 la herramienta se queda puesta ──
+    pulsa('rect')
+    dibuja(60, 60, 190, 150)
+    check('tras dibujar un rectángulo la herramienta SIGUE siendo rect',
+          pg.evaluate(HERRAMIENTA) == 'rect', pg.evaluate(HERRAMIENTA))
+    dibuja(230, 60, 350, 150)
+    n = pg.evaluate("""() => document.querySelectorAll('.canvas-container').length""")
+    check('se dibuja un SEGUNDO rectángulo sin volver a pulsar la herramienta',
+          pg.evaluate(HERRAMIENTA) == 'rect')
+
+    # ── Esc suelta la herramienta ──
+    pg.keyboard.press('Escape')
+    pg.wait_for_timeout(140)
+    check('Escape vuelve a Seleccionar', pg.evaluate(HERRAMIENTA) == 'select',
+          pg.evaluate(HERRAMIENTA))
+
+    # ── atajos de una letra ──
+    for tecla, esperado in (('r', 'rect'), ('l', 'trendline'), ('o', 'circle'),
+                            ('a', 'arrow'), ('p', 'pencil'), ('v', 'select')):
+        pg.keyboard.press(tecla)
+        pg.wait_for_timeout(120)
+        got = pg.evaluate(HERRAMIENTA)
+        check("la tecla '%s' activa %s" % (tecla, esperado), got == esperado, got)
+
+    # ── pulsar la herramienta activa la apaga ──
+    pulsa('rect')
+    pulsa('rect')
+    check('pulsar dos veces la misma herramienta vuelve a Seleccionar',
+          pg.evaluate(HERRAMIENTA) == 'select', pg.evaluate(HERRAMIENTA))
+
+    # ── duplicar y mover con el teclado ──
+    # 🔑 No se leen los objetos de fabric (viven en un closure, no hay forma de
+    #    alcanzarlos desde fuera): se MIRA EL LIENZO. Duplicar tiene que pintar
+    #    más píxeles, y mover tiene que desplazar el centro de masa a la
+    #    derecha. Es más trabajo que preguntarle al objeto, pero comprueba lo
+    #    que el usuario ve en vez de lo que el código cree.
+    import io as _io
+    from PIL import Image as _Im
+    import numpy as _np
+
+    def dibujado():
+        """(cuántos píxeles pintados, dónde está su centro horizontal)"""
+        b = pg.locator('#sk-canvas').screenshot()
+        a = _np.asarray(_Im.open(_io.BytesIO(b)).convert('L'), dtype=float)
+        m = a > 40                      # el fondo de la pizarra es casi negro
+        xs = _np.nonzero(m)[1]
+        return int(m.sum()), (float(xs.mean()) if len(xs) else 0.0)
+
+    pulsa('select')
+    pg.mouse.click(caja['x'] + 120, caja['y'] + 100)      # coge el 1er rectángulo
+    pg.wait_for_timeout(250)
+    n0, _ = dibujado()
+    pg.keyboard.press('Control+d')
+    pg.wait_for_timeout(400)
+    n1, cx1 = dibujado()
+    check('Ctrl+D duplica: más píxeles pintados (%d → %d)' % (n0, n1), n1 > n0 + 20,
+          (n0, n1))
+
+    for _ in range(12):
+        pg.keyboard.press('Shift+ArrowRight')             # 10 px por pulsación
+    pg.wait_for_timeout(350)
+    _, cx2 = dibujado()
+    check('las flechas mueven la selección a la derecha (%.0f → %.0f px)'
+          % (cx1, cx2), cx2 > cx1 + 8, (cx1, cx2))
+
+    check('ningún error de JavaScript en toda la sesión', not errores, errores[:3])
+    b.close()
+
+print('\nRESULTADO: %d ok, %d fallas' % (ok, fallas))
+sys.exit(1 if fallas else 0)

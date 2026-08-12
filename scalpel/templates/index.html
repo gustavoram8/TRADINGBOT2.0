@@ -13732,6 +13732,17 @@
       slide1BgVersion: 0, // counts bg changes on slide #1; triggers "apply all?" from 2nd change onward
       fillOn: true, // when false, new shapes are outline-only (no translucent fill)
     };
+    // Una tecla por herramienta. Se respetan las letras que ya son estándar en
+    // los editores de dibujo (V seleccionar, P lápiz, L línea, R rectángulo,
+    // O círculo, T texto, E borrar) para que quien venga de otro programa no
+    // tenga que aprenderlas; el resto son la inicial de lo que hacen.
+    // ⚠️ La Z queda LIBRE a propósito: Ctrl+Z es deshacer y una Z suelta al
+    // lado confunde. Y la M no se usa porque en muchos teclados abre el menú.
+    const ATAJOS = {
+      v: 'select', p: 'pencil', l: 'trendline', r: 'rect', o: 'circle',
+      t: 'text', e: 'erase', a: 'arrow', h: 'hline', y: 'hray',
+      n: 'polyline', f: 'fvg', d: 'ray',
+    };
     const FILL_ALPHA = 0.13; // translucent fill opacity for shapes/zones
     // Polyline (continuous-click) tool state — capped at POLY_MAX_PTS clicks
     // 6 clicks = 5 visible connected segments
@@ -13864,6 +13875,10 @@
       }));
       canvas.add(it); canvas.setActiveObject(it);
       it.enterEditing(); it.selectAll();
+      // ⚠️ El texto es la ÚNICA excepción a la regla de herramienta pegajosa:
+      // al crearlo se entra a editar, y el siguiente clic sirve para salir de
+      // la edición. Si la herramienta siguiera activa, ese clic crearía otro
+      // cuadro de texto encima en vez de cerrar el que acabas de escribir.
       setTool('select'); pushHistory();
       syncTextToolbar(it);
     }
@@ -13905,7 +13920,8 @@
       if (_polyPreview) { canvas.remove(_polyPreview); _polyPreview = null; }
       _polyPts = []; _polySegs = []; _polyLastClick = 0;
       canvas.requestRenderAll(); pushHistory(); updateThumb();
-      setTool('select');
+      // la polilínea tampoco se apaga: cerrar una y empezar la siguiente es
+      // el caso normal cuando se marca estructura
     }
 
     function bindDrawing() {
@@ -13939,12 +13955,12 @@
         if (t === 'hline') {
           const ln = new fabric.Line([0, p.y, LOGICAL_W, p.y], Object.assign(baseOpts(), { stroke: color, strokeWidth: w }));
           canvas.add(ln); canvas.setActiveObject(ln); state.isDown = false; pushHistory(); updateThumb();
-          setTool('select'); return;
+          return;   // la herramienta SE QUEDA: casi nunca se traza un solo nivel
         }
         if (t === 'hray') {
           const ln = new fabric.Line([p.x, p.y, LOGICAL_W * 6, p.y], Object.assign(baseOpts(), { stroke: color, strokeWidth: w }));
           canvas.add(ln); canvas.setActiveObject(ln); state.isDown = false; pushHistory(); updateThumb();
-          setTool('select'); return;
+          return;   // idem: los rayos se trazan de tres en tres, no de uno
         }
         if (t === 'erase') {
           _eraseRect = new fabric.Rect({
@@ -14055,8 +14071,15 @@
           if (tiny) canvas.remove(o); else canvas.setActiveObject(o);
         }
         canvas.requestRenderAll(); pushHistory(); updateThumb();
-        // Auto-return to Select after any single-use draw tool
-        if (new Set(['trendline', 'ray', 'rect', 'circle', 'arrow', 'fvg']).has(t)) setTool('select');
+        // 🔴 ANTES: `if (new Set([...]).has(t)) setTool('select')` — al soltar
+        // el ratón la herramienta se apagaba sola y había que volver a
+        // pulsarla para dibujar otra caja, otra línea u otra flecha. Es la
+        // queja textual del dueño: "tenías que volver a activarla, siento que
+        // vuelvo todo muy lento". Ninguna herramienta de dibujo seria hace eso
+        // (Figma, Excalidraw, TradingView mantienen la herramienta puesta).
+        // Ahora la herramienta SE QUEDA; para volver a Seleccionar hay tres
+        // caminos: Esc, la tecla V, o pulsar otra vez el botón que ya está
+        // activo. El texto es la excepción y se explica en `addText()`.
       });
 
       canvas.on('path:created', () => { pushHistory(); updateThumb(); });
@@ -14079,6 +14102,28 @@
     }
     function undo() { const h = curHist(); if (!h || h.idx <= 0) return; h.idx--; loadJSON(h.stack[h.idx], updateThumb); }
     function redo() { const h = curHist(); if (!h || h.idx >= h.stack.length - 1) return; h.idx++; loadJSON(h.stack[h.idx], updateThumb); }
+
+    // Duplica lo seleccionado 18 px abajo-derecha y lo deja seleccionado, para
+    // poder encadenar Ctrl+D y repartir copias sin volver a dibujar.
+    function duplicarSel() {
+      const o = canvas && canvas.getActiveObject();
+      if (!o) return;
+      o.clone(c => {
+        c.set({ left: o.left + 18, top: o.top + 18, evented: true });
+        // ⚠️ una selección múltiple se clona como grupo temporal: hay que
+        // desmontarla y añadir cada objeto por separado, o el lienzo se queda
+        // con un grupo que no se puede editar pieza a pieza
+        if (c.type === 'activeSelection') {
+          c.canvas = canvas;
+          c.forEachObject(x => canvas.add(x));
+          c.setCoords();
+        } else {
+          canvas.add(c);
+        }
+        canvas.setActiveObject(c);
+        canvas.requestRenderAll(); pushHistory(); updateThumb();
+      });
+    }
 
     function deleteSel() {
       const objs = canvas.getActiveObjects();
@@ -14215,10 +14260,21 @@
       const presenting = app.classList.contains('presenting');
       let availW, availH;
       if (presenting) { availW = window.innerWidth; availH = window.innerHeight; }
-      else { availW = wrap.clientWidth - 22; availH = Math.min(window.innerHeight - 220, LOGICAL_H); }
+      else {
+        availW = wrap.clientWidth - 22;
+        // ⚠️ Antes: `Math.min(window.innerHeight - 220, LOGICAL_H)`. Los dos
+        // términos estorbaban — el 220 es un número fijo que no sabe qué hay
+        // encima de la pizarra, y el tope en LOGICAL_H impedía pasar de 720 px
+        // de alto por muy grande que fuera la pantalla. Se mide el hueco REAL
+        // que queda debajo de donde empieza el contenedor.
+        availH = window.innerHeight - wrap.getBoundingClientRect().top - 28;
+      }
       if (availW <= 0) { requestAnimationFrame(fitCanvas); return; } // layout not ready yet
       let scale = Math.min(availW / LOGICAL_W, availH / LOGICAL_H);
-      if (!presenting) scale = Math.min(scale, 1);
+      // 🔑 Antes se topaba en 1: la pizarra no podía crecer por encima de
+      // 1280×720 ni en un monitor de 4K. Todo lo que se dibuja son objetos
+      // vectoriales de fabric, así que escalar por encima de 1 no pixela nada.
+      if (!presenting) scale = Math.min(scale, 1.75);
       scale = Math.max(scale, 0.15);
       canvas.setDimensions({ width: LOGICAL_W * scale, height: LOGICAL_H * scale });
       canvas.setZoom(scale);
@@ -14282,7 +14338,11 @@
 
     // ── wire UI ──
     function wireUI() {
-      toolBtns.forEach(b => b.addEventListener('click', () => setTool(b.dataset.tool)));
+      // pulsar la herramienta que YA está activa vuelve a Seleccionar: es la
+      // salida sin teclado, para quien no conoce Esc
+      toolBtns.forEach(b => b.addEventListener('click', () => setTool(
+        (state.tool === b.dataset.tool && b.dataset.tool !== 'select')
+          ? 'select' : b.dataset.tool)));
       document.getElementById('sk-undo').addEventListener('click', undo);
       document.getElementById('sk-redo').addEventListener('click', redo);
       document.getElementById('sk-delete').addEventListener('click', deleteSel);
@@ -14432,10 +14492,40 @@
         if (typing || editing) return;
         if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); deleteSel(); }
         else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); }
+        // ── Atajos añadidos para quitar viajes al ratón ──
+        // Duplicar: repetir una zona o una caja obligaba a redibujarla entera.
+        else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') {
+          e.preventDefault(); duplicarSel();
+        }
+        // Mover fino con las flechas: a ratón es imposible ajustar 1 px, y
+        // colocar un nivel "casi" donde toca es justo lo que desespera.
+        else if (!e.ctrlKey && !e.metaKey && e.key.startsWith('Arrow')
+                 && !app.classList.contains('presenting')) {
+          const o = canvas && canvas.getActiveObject();
+          if (o) {
+            e.preventDefault();
+            const d = e.shiftKey ? 10 : 1;
+            if (e.key === 'ArrowLeft') o.left -= d;
+            if (e.key === 'ArrowRight') o.left += d;
+            if (e.key === 'ArrowUp') o.top -= d;
+            if (e.key === 'ArrowDown') o.top += d;
+            o.setCoords(); canvas.requestRenderAll(); pushHistory(); updateThumb();
+          }
+        }
+        // Una letra por herramienta. 🔑 Con la herramienta ya pegajosa, esto es
+        // lo que convierte la pizarra en algo que se usa con las dos manos.
+        else if (!e.ctrlKey && !e.metaKey && !e.altKey && ATAJOS[e.key.toLowerCase()]) {
+          const t = ATAJOS[e.key.toLowerCase()];
+          if (toolBtns.some(b => b.dataset.tool === t)) { e.preventDefault(); setTool(t); }
+        }
         else if (app.classList.contains('presenting') && e.key === 'ArrowRight') { gotoSlide(state.cur + 1); }
         else if (app.classList.contains('presenting') && e.key === 'ArrowLeft') { gotoSlide(state.cur - 1); }
         else if (e.key === 'Escape' && state.tool === 'polyline' && _polyPts.length > 0) { e.preventDefault(); polyFinish(); }
         else if (app.classList.contains('presenting') && e.key === 'Escape') { exitPresent(); }
+        // Esc = soltar la herramienta. Es la salida que espera cualquiera que
+        // haya usado un editor de dibujo, y la contrapartida de que ahora las
+        // herramientas se queden puestas.
+        else if (e.key === 'Escape' && state.tool !== 'select') { e.preventDefault(); setTool('select'); }
       });
     }
 
@@ -26525,6 +26615,19 @@
   body.ag-synapse-mode .improve-ribbon{ display:none !important; }
   body.ag-synapse-mode .ag-shell{ grid-template-columns:1fr; padding:0; margin:0; max-width:none; }
   body.ag-synapse-mode #synapse-app{ position:fixed; inset:0; width:100vw; height:100vh; margin:0; z-index:30; }
+
+  /* ══ Chalkboard: modo ancho ══
+     La pizarra es una herramienta de LIENZO y necesita superficie. Aquí se
+     esconde el rail derecho (322 px + 22 de hueco) y se sube el techo del
+     shell; la barra lateral se queda, así que no hace falta un botón de salida
+     como el de Synapse. */
+  body.ag-chalk-mode .ag-rail{ display:none !important; }
+  body.ag-chalk-mode .ag-shell{ grid-template-columns:236px minmax(0,1fr);
+    max-width:1860px; }
+  /* ⚠️ sin esto el contenedor del lienzo se estira a la altura de la columna de
+     diapositivas (medido: caja de 917 px con una pizarra de 343 dentro) y la
+     pizarra queda flotando en medio de una caja vacía */
+  .scalper-canvas-wrap{ align-self:start; }
   body.ag-synapse-mode .ag-quiz-back{ display:inline-flex; }
   @media(max-width:1180px){ .ag-shell{ grid-template-columns:236px minmax(0,1fr); } .ag-rail{ display:none !important; } }
   @media(max-width:900px){ .ag-shell{ grid-template-columns:1fr; padding:14px; }
@@ -26629,9 +26732,17 @@
       var bar=document.getElementById('ag-bar'); if(bar) bar.style.width=(n/5*100)+'%';
     }
     function applyTab(dt){
-      var quiz=(dt==='quiz'), syn=(dt==='synapse');
+      var quiz=(dt==='quiz'), syn=(dt==='synapse'), chalk=(dt==='scalper');
       document.body.classList.toggle('ag-quiz-mode', quiz);
       document.body.classList.toggle('ag-synapse-mode', syn);
+      /* 🔑 La pizarra reclama el ancho del rail derecho. Medido: en un monitor
+         de 1920 el lienzo se quedaba en 610 px —el 32% de la pantalla— porque
+         vive en una columna de 634. Es lo que el dueño describió como "una
+         diapositiva que estrechaste con la flecha doble". Se conserva la barra
+         lateral (la navegación no se pierde, a diferencia de Synapse) y se
+         recupera el rail: 344 px más de lienzo. */
+      document.body.classList.toggle('ag-chalk-mode', chalk);
+      if(chalk) setTimeout(function(){ window.dispatchEvent(new Event('resize')); },60);
       rail.style.display=(quiz||syn)?'none':''; /* rail (with account) shows on every tab except immersive quiz/synapse */
       cards.style.display=(dt==='analyze')?'':'none';  /* setup summary / quotas only make sense on Analyze */
       /* Synapse sizes its WebGL canvas from #synapse-app's box; the layout just
