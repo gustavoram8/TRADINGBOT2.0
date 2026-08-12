@@ -13015,6 +13015,19 @@ def serialize_comment(c):
     }
 
 
+def _rastro(msg, *args):
+    """Traza de diagnóstico que SÍ se ve en producción.
+
+    🔴 Bajo gunicorn el nivel efectivo de `app.logger` es WARNING, así que las
+    67 llamadas a `app.logger.info` que hay en este archivo NO se imprimen en
+    el VPS. Un rastro puesto para depurar un fallo real no puede depender de
+    eso: se emite como warning, con un prefijo para poder filtrarlo de un
+    grep. Son unas pocas líneas por publicación, y publicar está limitado por
+    día, así que no ensucia el log.
+    """
+    app.logger.warning('🔎 ' + msg, *args)
+
+
 def save_forum_image(file):
     """Validate + AI-moderate + persist an uploaded chart image.
     Returns (ok, relative_path_or_None, error_code, moderation_dict_or_None).
@@ -13025,17 +13038,31 @@ def save_forum_image(file):
     señales). El cliente les pone mensajes distintos: al inocente se le dice
     QUÉ se acepta; al otro no se le da detalle que ayude a afinar el intento.
     """
+    # 🔎 RASTRO. Una subida que falla puede morir en seis sitios distintos y
+    # desde fuera todos se ven igual: el navegador solo dice que algo salió
+    # mal. Sin esta línea la única salida es adivinar — se perdieron tres
+    # rondas de logs vacíos en ello. Es UNA línea por intento y los posts
+    # están limitados por día, así que no ensucia nada.
     allowed = {'image/jpeg', 'image/jpg', 'image/png', 'image/webp'}
     ct = (file.content_type or 'image/jpeg').lower()
+    _rastro('FORO-IMG intento: usuario=%s archivo=%r tipo=%s',
+                    getattr(current_user, 'username', '?'),
+                    (file.filename or '')[:80], ct)
     if ct not in allowed:
+        _rastro('FORO-IMG rechazo: formato %s', ct)
         return False, None, 'format', None
     data = file.read()
     if not data:
+        _rastro('FORO-IMG rechazo: archivo vacío')
         return False, None, 'empty', None
     if len(data) > 8 * 1024 * 1024:
+        _rastro('FORO-IMG rechazo: %d bytes (tope 8MB)', len(data))
         return False, None, 'too_large', None
+    _rastro('FORO-IMG %d bytes → al moderador', len(data))
     b64 = base64.b64encode(data).decode('utf-8')
     check = moderate_forum_image(b64, ct)
+    _rastro('FORO-IMG moderador: ok=%s categoría=%s motivo=%r',
+                    check.get('ok'), check.get('category'), (check.get('reason') or '')[:80])
     if not check['ok']:
         dura = check.get('category') not in ('offtopic', 'ok', '', None)
         return False, None, ('content' if dura else 'not_chart'), check
@@ -13045,6 +13072,7 @@ def save_forum_image(file):
     basename = f"{secrets.token_urlsafe(16)}.{ext}"
     with open(os.path.join(folder, basename), 'wb') as f:
         f.write(data)
+    _rastro('FORO-IMG guardada: %s', basename)
     return True, f"uploads/forum/{basename}", None, None
 
 
@@ -13388,6 +13416,13 @@ def forum_post_detail(pid):
 @app.route('/forum/post', methods=['POST'])
 @standard_required
 def forum_create_post():
+    # 🔎 Rastro de entrada: si esta línea NO aparece en el log, la petición
+    # nunca llegó a la aplicación y el problema está en el camino (navegador,
+    # red, proxy), no aquí. Es la primera pregunta que hay que poder responder.
+    _f = request.files.get('image')
+    _rastro('FORO-POST entra: usuario=%s con_imagen=%s',
+                    getattr(current_user, 'username', '?'),
+                    bool(_f and _f.filename))
     # Cost/abuse guards run BEFORE any AI call (see the forum guards section).
     muted = forum_mute_remaining(current_user)
     if muted:
