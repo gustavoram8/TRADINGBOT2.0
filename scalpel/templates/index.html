@@ -7592,6 +7592,12 @@
           <button class="tool-btn" data-tool="candles" data-tip="Candle sequence — drag up or down">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><line x1="5" y1="4" x2="5" y2="20"/><rect x="3" y="8" width="4" height="8" rx="1" fill="currentColor" stroke="none"/><line x1="12" y1="3" x2="12" y2="18"/><rect x="10" y="6" width="4" height="9" rx="1" fill="currentColor" stroke="none"/><line x1="19" y1="6" x2="19" y2="21"/><rect x="17" y="10" width="4" height="8" rx="1" fill="currentColor" stroke="none"/></svg>
           </button>
+          <button class="tool-btn" data-tool="trade" data-tip="Position — drag from entry to stop">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="8" rx="1"/><rect x="4" y="13" width="16" height="5" rx="1"/><line x1="2" y1="12" x2="22" y2="12" stroke-dasharray="3 2"/></svg>
+          </button>
+          <button class="tool-btn" data-tool="fib" data-tip="Fibonacci retracement">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><line x1="3" y1="4" x2="21" y2="4"/><line x1="3" y1="9" x2="21" y2="9" stroke-dasharray="3 2"/><line x1="3" y1="13" x2="21" y2="13" stroke-dasharray="3 2"/><line x1="3" y1="16" x2="21" y2="16" stroke-dasharray="3 2"/><line x1="3" y1="20" x2="21" y2="20"/></svg>
+          </button>
           <button class="tool-btn" data-tool="circle" data-tip="Circle">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>
           </button>
@@ -13974,7 +13980,7 @@
     const ATAJOS = {
       v: 'select', p: 'pencil', l: 'trendline', r: 'rect', o: 'circle',
       t: 'text', e: 'erase', a: 'arrow', h: 'hline', y: 'hray',
-      n: 'polyline', f: 'fvg', d: 'ray', c: 'candles',
+      n: 'polyline', f: 'fvg', d: 'ray', c: 'candles', g: 'trade', i: 'fib',
     };
     const FILL_ALPHA = 0.13; // translucent fill opacity for shapes/zones
     // Polilínea: tope de clics antes de cerrarse sola.
@@ -14254,9 +14260,9 @@
           obj = new fabric.Rect(Object.assign(baseOpts(), { left: p.x, top: p.y, width: 0, height: 0, stroke: color, strokeWidth: w, fill: state.fillOn ? hexA(color, FILL_ALPHA) : 'transparent' }));
         } else if (t === 'circle') {
           obj = new fabric.Ellipse(Object.assign(baseOpts(), { left: p.x, top: p.y, rx: 0, ry: 0, stroke: color, strokeWidth: w, fill: state.fillOn ? hexA(color, FILL_ALPHA) : 'transparent' }));
-        } else if (t === 'candles') {
-          // caja guía punteada mientras se arrastra; las velas se dibujan al
-          // soltar, cuando ya se sabe el ancho (= cuántas velas) y el sentido
+        } else if (t === 'candles' || t === 'trade' || t === 'fib') {
+          // caja guía punteada mientras se arrastra; la figura se dibuja al
+          // soltar, cuando ya se sabe el tamaño y el SENTIDO del arrastre
           obj = new fabric.Rect(Object.assign(baseOpts(), {
             left: p.x, top: p.y, width: 0, height: 0,
             stroke: 'rgba(150,160,176,.75)', strokeWidth: 1, strokeDashArray: [5, 4],
@@ -14336,11 +14342,13 @@
             const g = makeArrow(x1, y1, x2, y2, colorInput.value, parseInt(widthSel.value, 10));
             canvas.add(g); canvas.setActiveObject(g);
           }
-        } else if (t === 'candles') {
+        } else if (t === 'candles' || t === 'trade' || t === 'fib') {
           // la caja punteada era solo la guía: se retira y en su hueco se
-          // dibuja la secuencia. El sentido lo da el arrastre, no un ajuste.
+          // dibuja la figura. El sentido lo da el arrastre, no un ajuste.
           canvas.remove(o);
-          const g = secuenciaVelas(state.startX, state.startY, state.lastX, state.lastY);
+          const constructor = (t === 'candles') ? secuenciaVelas
+                            : (t === 'trade') ? posicionTrade : fibonacci;
+          const g = constructor(state.startX, state.startY, state.lastX, state.lastY);
           if (g) { canvas.add(g); canvas.setActiveObject(g); }
         } else if (t === 'fvg') {
           // Wrap the drawn box + a centered "FVG" label into one movable group
@@ -14448,8 +14456,12 @@
                    hray: 'Horizontal ray', polyline: 'Continuous line', arrow: 'Arrow' } },
       { id: 'zonas', tip: 'Zones & shapes', ini: 'rect',
         nombres: { rect: 'Rectangle / Zone', fvg: 'FVG zone', circle: 'Circle' } },
-      { id: 'velas', tip: 'Candles', ini: 'candles',
-        nombres: { candles: 'Candle sequence' } },
+      // 🔑 La familia de velas pasa a ser la de OPERATIVA: las tres son el
+      //    mismo gesto (arrastrar, y el sentido del arrastre decide) y así las
+      //    dos herramientas nuevas no añaden ni un botón a la barra.
+      { id: 'velas', tip: 'Trading', ini: 'candles',
+        nombres: { candles: 'Candle sequence', trade: 'Position — TP / SL',
+                   fib: 'Fibonacci retracement' } },
     ];
 
     function agrupaBarra() {
@@ -14650,6 +14662,99 @@
       return new fabric.Group(piezas, Object.assign(baseOpts(), {}));
     }
 
+    // ══ Posición: entrada, stop y objetivo ══════════════════════════════
+    // Pedido del dueño: "herramientas tipo la de conjunto de velas: ejemplo
+    // las de Take profit y SL".
+    //
+    // 🔑 El SENTIDO del arrastre decide si es larga o corta, igual que en la
+    // secuencia de velas: se arrastra de la ENTRADA al STOP. Stop abajo =
+    // compra; stop arriba = venta. Una sola herramienta en vez de dos, y el
+    // gesto es el mismo que ya aprendió con las velas.
+    const RIESGO_A_OBJETIVO = 2;            // el objetivo sale a 2R por defecto
+    function posicionTrade(x0, y0, x1, y1) {
+      const riesgo = Math.abs(y1 - y0);
+      if (riesgo < 12) return null;
+      const largo = y1 > y0;                // arrastraste hacia abajo → compra
+      const ancho = Math.max(120, Math.abs(x1 - x0));
+      const izq = Math.min(x0, x1);
+      const yEntrada = y0;
+      const yStop = y1;
+      const yObj = yEntrada + (largo ? -1 : 1) * riesgo * RIESGO_A_OBJETIVO;
+      const verde = VELA_ALCISTA, rojo = VELA_BAJISTA;
+      const zona = (yA, yB, col) => new fabric.Rect({
+        left: izq, top: Math.min(yA, yB), width: ancho, height: Math.abs(yB - yA),
+        fill: hexA(col, 0.13), stroke: col, strokeWidth: 1, strokeUniform: true,
+      });
+      const cuerpo = Math.max(11, Math.min(19, ancho * 0.085));
+      const etiqueta = (txt, y, col, dcha) => new fabric.Text(txt, {
+        left: dcha ? izq + ancho - 6 : izq + 6, top: y,
+        originX: dcha ? 'right' : 'left', originY: 'center',
+        fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: cuerpo, fill: col,
+      });
+      const piezas = [
+        zona(yEntrada, yObj, verde),
+        zona(yEntrada, yStop, rojo),
+        // la entrada va punteada: es un precio, no una zona
+        new fabric.Line([izq, yEntrada, izq + ancho, yEntrada], {
+          stroke: colorInput.value, strokeWidth: 2, strokeDashArray: [6, 4],
+        }),
+        etiqueta('TP', (yEntrada + yObj) / 2, verde, true),
+        etiqueta('SL', (yEntrada + yStop) / 2, rojo, true),
+        // 🔑 el múltiplo se escribe: es el dato que convierte el dibujo en una
+        //    lección. Sin él son dos rectángulos de colores.
+        etiqueta('1 : ' + RIESGO_A_OBJETIVO + ' R', yEntrada - cuerpo * 0.9,
+                 colorInput.value, false),
+      ];
+      return new fabric.Group(piezas, Object.assign(baseOpts(), {}));
+    }
+
+    // ══ Retroceso de Fibonacci ══════════════════════════════════════════
+    // Se arrastra del ARRANQUE del movimiento a su FINAL: 1 queda donde
+    // empezaste y 0 donde soltaste, que es como lo espera cualquiera que venga
+    // de un gráfico de verdad.
+    // 🔑 Lleva sombreada la banda 0,62–0,79 (**OTE**) porque es una de las
+    // metodologías que enseña el sitio: dibujar los niveles sin marcarla sería
+    // dejar el trabajo a medias justo en el nivel que aquí se estudia.
+    const FIB_NIVELES = [0, 0.236, 0.382, 0.5, 0.618, 0.705, 0.79, 1];
+    function fibonacci(x0, y0, x1, y1) {
+      const alto = Math.abs(y1 - y0);
+      if (alto < 24) return null;
+      const ancho = Math.max(140, Math.abs(x1 - x0));
+      const izq = Math.min(x0, x1);
+      const Y = n => y1 + (y0 - y1) * n;          // n=0 donde soltaste
+      const col = colorInput.value;
+      const piezas = [];
+      // la banda OTE, debajo de las líneas para que no las tape
+      piezas.push(new fabric.Rect({
+        left: izq, top: Math.min(Y(0.62), Y(0.79)), width: ancho,
+        height: Math.abs(Y(0.79) - Y(0.62)),
+        fill: hexA(VELA_ALCISTA, 0.12), stroke: '', strokeWidth: 0,
+      }));
+      const cuerpo = Math.max(10, Math.min(15, ancho * 0.06));
+      FIB_NIVELES.forEach(n => {
+        const y = Y(n);
+        const clave = (n === 0 || n === 1);
+        piezas.push(new fabric.Line([izq, y, izq + ancho, y], {
+          stroke: col, strokeWidth: clave ? 2 : 1,
+          strokeDashArray: clave ? null : [5, 4], opacity: clave ? 1 : 0.75,
+        }));
+        piezas.push(new fabric.Text(n.toFixed(3).replace(/0+$/, '').replace(/\.$/, ''), {
+          left: izq + ancho - 5, top: y, originX: 'right', originY: 'center',
+          fontFamily: 'Inter, sans-serif', fontWeight: clave ? 700 : 600,
+          fontSize: cuerpo, fill: col, opacity: clave ? 1 : 0.85,
+        }));
+      });
+      // ⚠️ NO en el centro de la banda: el centro de 0,62–0,79 es 0,705, que es
+      //    justo uno de los niveles, y la etiqueta caía encima de su línea. Se
+      //    coloca en el hueco entre 0,618 y 0,705.
+      piezas.push(new fabric.Text('OTE', {
+        left: izq + 5, top: Y(0.662), originX: 'left', originY: 'center',
+        fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: cuerpo,
+        fill: VELA_ALCISTA,
+      }));
+      return new fabric.Group(piezas, Object.assign(baseOpts(), {}));
+    }
+
     function deleteSel() {
       const objs = canvas.getActiveObjects();
       if (!objs.length) return;
@@ -14683,13 +14788,14 @@
       if (i === state.cur || i < 0 || i >= state.slides.length) return;
       saveCurrent(); state.cur = i; loadSlide(); markActiveThumb(); updateCounters(); persist();
     }
-    // Tope de diapositivas por pizarra. No es por miedo al "malintencionado":
-    // el navegador guarda ~5 MB para TODO el sitio y `persist()` falla EN
-    // SILENCIO al llenarse, así que sin tope lo que pasa no es que alguien
-    // abuse — es que a un usuario normal deja de guardársele el trabajo sin
-    // que nada se lo diga. 60 es holgado (una clase larga son 15-20) y deja
-    // el cupo lejísimos incluso con todas en rejilla.
-    const MAX_SLIDES = 60;
+    // Tope de diapositivas por PROYECTO. Decisión del dueño (2026-08-12): 20,
+    // y tiene sentido desde que existen los proyectos — una clase larga se
+    // parte en dos proyectos y se organiza mejor que en una tira de 60.
+    // El tope además tapa un fallo silencioso: el navegador guarda ~5 MB para
+    // TODO el sitio y `persist()` fallaba callado al llenarse, así que sin
+    // tope lo que pasaba no era que alguien abusara — es que a un usuario
+    // normal dejaba de guardársele el trabajo sin que nada se lo dijera.
+    const MAX_SLIDES = 20;
     function addSlide() {
       if (state.slides.length >= MAX_SLIDES) { avisoTope(); return; }
       saveCurrent();

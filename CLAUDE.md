@@ -2144,8 +2144,15 @@ boards"** que llevaba desde antes del lanzamiento en la lista de críticos.
   recargar aparecía la versión de hacía media hora. **Fix:** `instantanea()` quita el
   `backgroundImage` (el fondo ya lo manda `s.bg`, que se reaplica al cargar) → **32,3 → 0,1 KB**.
   ⚠️ `loadJSON` tuvo que volver a poner el fondo, o **deshacer** dejaba la diapositiva lisa.
-- **Tope `MAX_SLIDES = 60`** (holgado: una clase larga son 15-20) **con aviso**, no ignorando el
-  clic. Y el fallo de guardado ya no es mudo: `scalper.saveFail` dice que exportes a PDF ya.
+- **Números FIJADOS por el dueño (2026-08-12, tras enseñarle lo medido):** **20 diapositivas por
+  proyecto** (`MAX_SLIDES`) y **30 proyectos por cuenta** (`CHALK_MAX_BOARDS`). Él lo planteó al
+  revés de mi primera propuesta y tenía razón: con proyectos, una clase larga se parte en dos y se
+  organiza mejor que en una tira de 60. **Lo medido que sostiene el 30:** una diapositiva cargada al
+  máximo (secuencia de velas + 10 objetos) = **28 KB** → un proyecto de 20 así = 560 KB → **30
+  proyectos = 16 MB por usuario en el PEOR caso**; lo normal, 1-3 MB. Con 100 premium, ~300 MB
+  reales. **El límite no lo pone el disco**, lo pone que una biblioteca de 60 tarjetas ya no se
+  navega. El tope de diapositivas **avisa**, no ignora el clic; y el fallo de guardado ya no es
+  mudo: `scalper.saveFail` dice que exportes a PDF ya.
 - **Biblioteca:** modelo `ChalkBoard` + `/api/chalk/boards` (GET lista sin el contenido · POST
   guarda/sobrescribe · GET `<id>` abre · DELETE · POST `<id>/rename`), todo `@premium_required` y
   filtrado por `user_id`. **`CHALK_MAX_BOARDS = 20`** (decisión del dueño) impuesto **en el
@@ -2169,6 +2176,21 @@ boards"** que llevaba desde antes del lanzamiento en la lista de críticos.
   limpiaba. Para medir el LIENZO hay que leer `getImageData` del canvas.
 - ⚠️ Al llenar la pizarra, el navegador se queda renderizando 60 miniaturas **más de los 6 s que
   dura el aviso** → mirarlo después de los 80 clics medía uno ya desvanecido.
+- 📈 **HERRAMIENTAS DE OPERATIVA (2026-08-12).** Pedido suyo: *"más herramientas tipo la de conjunto
+  de velas: ejemplo las de Take profit y SL"*. Dos nuevas, con **el mismo gesto que ya aprendió con
+  las velas — el SENTIDO del arrastre decide**:
+  · **Posición (`trade`, atajo `g`)**: se arrastra **de la ENTRADA al STOP**. Stop abajo = compra,
+    stop arriba = venta → **una sola herramienta en vez de dos**. Zona roja al stop, zona verde al
+    objetivo a **2R** (`RIESGO_A_OBJETIVO`), entrada punteada y el múltiplo escrito (`1 : 2 R`) —
+    sin ese número son dos rectángulos de colores.
+  · **Fibonacci (`fib`, atajo `i`)**: 0 donde sueltas y 1 donde empezaste (como en un gráfico de
+    verdad), niveles 0/.236/.382/.5/.618/.705/.79/1 y **la banda OTE 0,62–0,79 sombreada**, porque
+    OTE es una de las metodologías del sitio: dibujar los niveles sin marcarla sería dejarlo a
+    medias justo en el nivel que aquí se estudia.
+    ⚠️ La etiqueta "OTE" NO va en el centro de la banda: el centro es 0,705, que es un nivel, y caía
+    encima de su línea. Va en el hueco (0,662).
+  · 🔑 **Las dos entran en la familia existente** (que pasa de "Velas" a "Trading"): mismo gesto,
+    misma cabecera, y **la barra no crece ni un botón**.
 - `tools/test_chalk_biblioteca.py` **23/23** (servidor: nadie ve ni toca las pizarras de otro, el
   tope se impone en el servidor, envíos gigantes rechazados) + `tools/test_chalk_lib_nav.py`
   **18/18** (navegador: guardar → queda 1 en blanco → deshacer → reabrir → **sobrevive a borrar el

@@ -14219,10 +14219,14 @@ class ChalkBoard(db.Model):
     user       = db.relationship('User', backref='chalk_boards')
 
 
-# Cuántas pizarras puede guardar una cuenta. Decisión del dueño (2026-08-12).
-# Una pizarra pesa ~15-40 KB, así que 20 son <1 MB por alumno: el número no
-# está puesto por coste de disco, sino para que nadie pueda llenar la base.
-CHALK_MAX_BOARDS = int(os.environ.get('CHALK_MAX_BOARDS', '20'))
+# Cuántos proyectos puede guardar una cuenta. Decisión del dueño (2026-08-12).
+# 🔑 MEDIDO antes de fijarlo: una diapositiva cargada al máximo (secuencia de
+# velas + 10 objetos) ocupa 28 KB, así que un proyecto de 20 diapositivas TODAS
+# así son 560 KB y 30 proyectos son 16 MB por usuario — y eso es el peor caso
+# absoluto; lo normal son 1-3 MB. Con 100 alumnos premium, ~300 MB reales. O
+# sea que el número NO está limitado por el disco: está para que nadie llene la
+# base a propósito, y porque una biblioteca de 60 tarjetas ya no se navega.
+CHALK_MAX_BOARDS = int(os.environ.get('CHALK_MAX_BOARDS', '30'))
 # Tope por pizarra. 2 MB es ~4x la pizarra más cargada que se puede dibujar con
 # el tope de 60 diapositivas; sirve para rechazar un envío inventado a mano.
 CHALK_MAX_BYTES = 2 * 1024 * 1024

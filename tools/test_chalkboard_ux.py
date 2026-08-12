@@ -250,6 +250,93 @@ with sync_playwright() as p:
               % (alto_izq, alto_der), alto_der < alto_izq - 5,
               (alto_izq, alto_der))
 
+    # ── 📈 posición (TP/SL) y Fibonacci ──
+    # Pedido del dueño: *"Hay que incluir más herramientas tipo la de conjunto
+    # de velas: ejemplo las de Take profit y SL"*.
+    # 🔑 Lo que se comprueba no es que "dibuje algo", sino la SEMÁNTICA: que el
+    #    sentido del arrastre decida compra/venta y que el objetivo salga a 2R.
+    #    Un dibujo bonito con el TP del lado equivocado enseña mal.
+    def zonas():
+        """(alto del verde, alto del rojo, y de su centro) leído del lienzo"""
+        return pg.evaluate("""() => {
+            const c = document.querySelector('#sk-canvas-wrap canvas.lower-canvas') ||
+                      document.querySelector('#sk-canvas');
+            const g = c.getContext('2d');
+            const d = g.getImageData(0, 0, c.width, c.height).data;
+            let gy = [], ry = [];
+            for (let y = 0; y < c.height; y++) {
+              let nv = 0, nr = 0;
+              for (let x = 0; x < c.width; x++) {
+                const i = (y * c.width + x) * 4;
+                const R = d[i], G = d[i+1], B = d[i+2];
+                // ⚠️ umbrales MEDIDOS sobre el color que queda de verdad al
+                //    mezclar el relleno translúcido con el fondo oscuro:
+                //    verde rgb(15,38,30) → G-R=23 pero G-B solo 8; rojo
+                //    rgb(42,21,26) → R-G=21, R-B=16. Exigir 12 en las dos
+                //    diferencias descartaba la zona verde entera.
+                if (G - R > 12 && G - B > 4) nv++;
+                if (R - G > 12 && R - B > 8) nr++;
+              }
+              if (nv > 30) gy.push(y);
+              if (nr > 30) ry.push(y);
+            }
+            const med = a => a.length ? a.reduce((s,v)=>s+v,0)/a.length : -1;
+            return {verde: gy.length, rojo: ry.length,
+                    yVerde: med(gy), yRojo: med(ry)}; }""")
+
+    pg.keyboard.press('Escape')
+    pg.evaluate("""() => document.getElementById('sk-clear').click()""")
+    pg.wait_for_timeout(500)
+    pulsa('trade')
+    dibuja(120, 180, 380, 240)            # arrastre HACIA ABAJO = compra
+    z = zonas()
+    check('la posición dibuja zona verde y zona roja', z['verde'] > 20 and z['rojo'] > 10, z)
+    check('arrastrando hacia ABAJO el TP queda ARRIBA y el SL abajo (compra)',
+          z['yVerde'] < z['yRojo'], z)
+    # 🔑 el objetivo sale a 2R: el verde tiene que medir el DOBLE que el rojo
+    check('el objetivo sale a 2R (verde %d px, rojo %d px)' % (z['verde'], z['rojo']),
+          abs(z['verde'] - 2 * z['rojo']) <= max(12, z['rojo'] * 0.25), z)
+
+    pulsa('select')
+    pg.evaluate("""() => document.getElementById('sk-clear').click()""")
+    pg.wait_for_timeout(500)
+    pulsa('trade')
+    dibuja(120, 300, 380, 250)            # arrastre HACIA ARRIBA = venta
+    z2 = zonas()
+    check('arrastrando hacia ARRIBA el SL queda arriba y el TP abajo (venta)',
+          z2['yVerde'] > z2['yRojo'], z2)
+
+    pulsa('select')
+    pg.evaluate("""() => document.getElementById('sk-clear').click()""")
+    pg.wait_for_timeout(500)
+    pulsa('fib')
+    dibuja(120, 380, 520, 120)
+    fib = pg.evaluate("""() => {
+        const c = document.querySelector('#sk-canvas-wrap canvas.lower-canvas') ||
+                  document.querySelector('#sk-canvas');
+        const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+        let lineas = 0, ote = 0;
+        for (let y = 0; y < c.height; y++) {
+          let n = 0, v = 0;
+          for (let x = 0; x < c.width; x++) {
+            const i = (y * c.width + x) * 4;
+            const R = d[i], G = d[i+1], B = d[i+2];
+            if (B - R > 40 && B > 90) n++;               // azul = las líneas
+            if (G - R > 12 && G - B > 4) v++;           // verde = la banda OTE
+          }
+          if (n > 60) lineas++;
+          if (v > 60) ote++;
+        }
+        return {lineas: lineas, ote: ote}; }""")
+    check('el Fibonacci pinta sus niveles (%d filas de línea)' % fib['lineas'],
+          fib['lineas'] >= 6, fib)
+    # la banda OTE (0,62-0,79) es lo que ata la herramienta a lo que enseña el
+    # sitio; sin ella son ocho rayas
+    check('…y sombrea la banda OTE (%d px de alto)' % fib['ote'], fib['ote'] > 15, fib)
+    pulsa('select')
+    pg.evaluate("""() => document.getElementById('sk-clear').click()""")
+    pg.wait_for_timeout(400)
+
     # ── 🖱️ clic derecho = dejar de colocar ──
     # Queja del dueño: "si solo quieres colocar tres palitos no puedes, tienes
     # que terminar la tendencia como de 5 líneas".
@@ -470,7 +557,10 @@ with sync_playwright() as p:
     check('deshacer NO deja la diapositiva sin fondo', tras == pinta, (pinta, tras))
 
     # el tope: ni una diapositiva más, y se dice por qué
-    tope = pg.evaluate("() => (typeof MAX_SLIDES !== 'undefined') ? MAX_SLIDES : 60")
+    # ⚠️ el número va escrito aquí a propósito: `MAX_SLIDES` es una const del
+    #    módulo y no llega a `window`, así que preguntárselo a la página daría
+    #    siempre el valor de reserva y el test no probaría nada
+    tope = 20
     pg.evaluate("""() => { const b = document.getElementById('sk-add-slide');
         for (let i = 0; i < 80; i++) b.click(); }""")
     pg.wait_for_timeout(1200)
@@ -489,7 +579,8 @@ with sync_playwright() as p:
     aviso = pg.evaluate("""() => { const e = document.getElementById('sk-aviso');
         return e ? {ve: e.classList.contains('show'), txt: e.textContent} : null; }""")
     check('…y lo dice, en vez de ignorar el clic en silencio',
-          aviso and aviso['ve'] and '60' in aviso['txt'] and ' ' in aviso['txt'].strip()
+          aviso and aviso['ve'] and str(tope) in aviso['txt']
+          and ' ' in aviso['txt'].strip()
           and not aviso['txt'].startswith('scalper.'), aviso)
 
     check('ningún error de JavaScript en toda la sesión', not errores, errores[:3])
