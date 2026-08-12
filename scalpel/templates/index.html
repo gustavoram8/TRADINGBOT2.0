@@ -7502,7 +7502,7 @@
           <button class="tool-btn" data-tool="hray" data-tip="Horizontal ray">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="12" r="2" fill="currentColor" stroke="none"/><line x1="6" y1="12" x2="19" y2="12"/><polyline points="16 9 20 12 16 15"/></svg>
           </button>
-          <button class="tool-btn" data-tool="polyline" data-tip="Continuous line (dbl-click to finish)">
+          <button class="tool-btn" data-tool="polyline" data-tip="Continuous line (right-click to finish)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19 L8 8 L14 14 L20 5"/><circle cx="3" cy="19" r="1.8" fill="currentColor" stroke="none"/><circle cx="8" cy="8" r="1.8" fill="currentColor" stroke="none"/><circle cx="14" cy="14" r="1.8" fill="currentColor" stroke="none"/><circle cx="20" cy="5" r="1.8" fill="currentColor" stroke="none"/></svg>
           </button>
           <button class="tool-btn" data-tool="arrow" data-tip="Arrow">
@@ -13812,9 +13812,14 @@
       n: 'polyline', f: 'fvg', d: 'ray', c: 'candles',
     };
     const FILL_ALPHA = 0.13; // translucent fill opacity for shapes/zones
-    // Polyline (continuous-click) tool state — capped at POLY_MAX_PTS clicks
-    // 6 clicks = 5 visible connected segments
-    const POLY_MAX_PTS = 6;
+    // Polilínea: tope de clics antes de cerrarse sola.
+    // 🔴 Estaba en 6 (= 5 tramos) y ERA la otra mitad de la queja del dueño
+    // ("tienes que terminar la tendencia como de 5 líneas"): no solo no podía
+    // parar antes, es que tampoco podía seguir después. Ahora el clic derecho
+    // cierra cuando tú quieras, así que este número deja de ser el gobernador
+    // de la herramienta y pasa a ser solo una red de seguridad: 12 puntos dan
+    // de sobra para marcar una estructura larga (HH/HL/HH/HL…).
+    const POLY_MAX_PTS = 12;
     let _polyPts = [], _polySegs = [], _polyPreview = null, _polyLastClick = 0;
     let _pendingBgAll = null; // bg type waiting for "apply to all" confirmation
     // Erase-by-area (marquee) tool state
@@ -13995,7 +14000,43 @@
       // el caso normal cuando se marca estructura
     }
 
+    // ══ Clic derecho = dejar de colocar ═════════════════════════════════
+    // Pedido del dueño: "si solo quieres colocar tres palitos no puedes,
+    // tienes que terminar la tendencia como de 5 líneas".
+    //
+    // 🔑 El motivo real es que el DOBLE CLIC que cierra la polilínea añade un
+    // punto de más: su primer clic coloca un vértice y el segundo cierra. O
+    // sea que cerrar te cuesta un tramo que no querías. El clic derecho cierra
+    // exactamente donde estás, sin colocar nada.
+    //
+    // Tres niveles, del más concreto al más general:
+    //   1 · polilínea a medias  → se cierra aquí, con lo ya trazado
+    //   2 · figura a medio arrastrar → se descarta (no queda nada)
+    //   3 · nada en curso → se suelta la herramienta (vuelve a Seleccionar)
+    function cancelaColocacion() {
+      if (state.tool === 'polyline' && _polyPts.length > 0) { polyFinish(); return; }
+      if (state.isDown) {
+        state.isDown = false;
+        if (state.obj) { canvas.remove(state.obj); state.obj = null; }
+        if (_eraseRect) { canvas.remove(_eraseRect); _eraseRect = null; }
+        canvas.requestRenderAll();
+        return;
+      }
+      if (state.tool !== 'select') setTool('select');
+    }
+
     function bindDrawing() {
+      // ⚠️ Va en el elemento del DOM y no en `canvas.on(...)`: fabric ignora el
+      //    botón derecho por defecto (`fireRightClick` viene apagado), que es
+      //    justo lo que interesa — así el clic derecho NO coloca un vértice
+      //    antes de cerrar. Y se quita el menú del navegador, que si no se
+      //    abre encima del dibujo.
+      if (canvas.upperCanvasEl) {
+        canvas.upperCanvasEl.addEventListener('contextmenu', e => {
+          e.preventDefault();
+          cancelaColocacion();
+        });
+      }
       canvas.on('mouse:down', opt => {
         const t = state.tool;
         if (t === 'select' || t === 'pencil') return;

@@ -250,6 +250,75 @@ with sync_playwright() as p:
               % (alto_izq, alto_der), alto_der < alto_izq - 5,
               (alto_izq, alto_der))
 
+    # ── 🖱️ clic derecho = dejar de colocar ──
+    # Queja del dueño: "si solo quieres colocar tres palitos no puedes, tienes
+    # que terminar la tendencia como de 5 líneas".
+    pg.keyboard.press('Escape')
+    pg.wait_for_timeout(150)
+    # 🔑 diapositiva NUEVA: sobre el lienzo vacío los píxeles se pueden contar
+    #    y comparar; sobre lo ya dibujado, cualquier delta se pierde en el ruido
+    pg.click('.slide-add')
+    pg.wait_for_timeout(700)
+    vacio, _ = dibujado()
+    pulsa('polyline')
+    pg.mouse.click(caja['x'] + 80, caja['y'] + 300)
+    pg.wait_for_timeout(420)                             # lento: no es doble clic
+    pg.mouse.click(caja['x'] + 170, caja['y'] + 240)
+    pg.wait_for_timeout(420)
+    un_tramo, _ = dibujado()
+    pg.mouse.click(caja['x'] + 260, caja['y'] + 280)     # 3 puntos = 2 tramos
+    pg.wait_for_timeout(420)
+    dos_tramos, _ = dibujado()
+    coste = dos_tramos - un_tramo                        # lo que cuesta UN tramo
+    pg.mouse.move(caja['x'] + 340, caja['y'] + 220)      # el previo sigue al ratón
+    pg.wait_for_timeout(200)
+    pg.mouse.click(caja['x'] + 340, caja['y'] + 220, button='right')
+    pg.wait_for_timeout(350)
+    n_tras, _ = dibujado()
+    check('el clic derecho cierra la polilínea SIN colocar un punto más '
+          '(un tramo cuesta %d px, el cierre movió %d)' % (coste, n_tras - dos_tramos),
+          coste > 120 and (n_tras - dos_tramos) < coste * 0.4,
+          (un_tramo, dos_tramos, n_tras))
+    check('…y lo ya trazado sigue ahí (cerrar no borra la tendencia)',
+          n_tras > vacio + coste, (vacio, n_tras))
+    # el siguiente clic izquierdo empieza una línea NUEVA, no continúa la
+    # anterior: si siguiera abierta, uniría con el punto de antes
+    pg.mouse.click(caja['x'] + 460, caja['y'] + 320)
+    pg.wait_for_timeout(350)
+    n_nueva, _ = dibujado()
+    check('…y de verdad quedó cerrada (el clic siguiente no la continúa)',
+          (n_nueva - n_tras) < coste * 0.4, (n_tras, n_nueva, coste))
+    # sin nada en curso, el clic derecho suelta la herramienta
+    pg.mouse.click(caja['x'] + 500, caja['y'] + 300, button='right')
+    pg.wait_for_timeout(250)
+    pg.mouse.click(caja['x'] + 520, caja['y'] + 260, button='right')
+    pg.wait_for_timeout(250)
+    check('sin nada en curso, el clic derecho suelta la herramienta',
+          pg.evaluate(HERRAMIENTA) == 'select', pg.evaluate(HERRAMIENTA))
+    check('el menú del navegador no se abre sobre la pizarra',
+          pg.evaluate("""() => {
+              const c = document.querySelector('#sk-canvas').parentNode
+                        .querySelector('canvas.upper-canvas') ||
+                        document.querySelector('canvas.upper-canvas');
+              let visto = false;
+              const h = e => { visto = !e.defaultPrevented; };
+              c.addEventListener('contextmenu', h);
+              c.dispatchEvent(new MouseEvent('contextmenu', {bubbles: true, cancelable: true}));
+              c.removeEventListener('contextmenu', h);
+              return !visto; }"""))
+    # una figura a medio arrastrar se descarta y no deja nada
+    pulsa('rect')
+    n0r, _ = dibujado()
+    pg.mouse.move(caja['x'] + 600, caja['y'] + 120)
+    pg.mouse.down()
+    pg.mouse.move(caja['x'] + 720, caja['y'] + 220, steps=8)
+    pg.mouse.click(caja['x'] + 720, caja['y'] + 220, button='right')
+    pg.mouse.up()
+    pg.wait_for_timeout(300)
+    n1r, _ = dibujado()
+    check('una figura a medio arrastrar se descarta con el clic derecho',
+          abs(n1r - n0r) < 250, (n0r, n1r))
+
     # ── 🧰 la barra agrupada (punto 14, 2ª parte) ──
     # Antes: 20 botones y 961 px fijos. A 1440x900 quedaban 10 por debajo del
     # lienzo y 4 fuera de la pantalla; a 1366x768, 11 y 6.
