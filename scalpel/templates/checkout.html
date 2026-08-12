@@ -20,6 +20,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/static/pay.css" />
   {{ marks.styles() }}
+  {# 🔴 El diccionario se carga ARRIBA a propósito. Estaba al final del body y
+     los scripts de esta página lo usan mientras se parsea: `letra()` corre en
+     cuanto se define, y si el primer mes y la renovación difieren pide el texto
+     a `PagesI18n` — que todavía no existía. La excepción se llevaba por delante
+     el resto del bloque y el carrito se quedaba anunciando "se renueva solo
+     cada mes" SIN decir que a partir del segundo sube el importe. No se veía
+     porque ese camino solo aparece con una promoción encendida. Cargarlo aquí
+     no adelanta la traducción (sigue esperando a DOMContentLoaded), solo
+     garantiza que `window.PagesI18n` esté definido antes que nada. #}
+  <script src="/static/pages_i18n.js"></script>
 </head>
 <body>
   <script>
@@ -260,10 +270,19 @@
       var auto = riel === 'paypal';
       var dif = auto && fProm && (window.__tramos.r > window.__tramos.p + 0.004);
       if (dif) {
-        fProm.querySelector('#fine-auto-promo-txt').innerHTML =
-          PagesI18n.t('pay.fineAutoPromo',
-                      { p: window.__tramos.p.toFixed(2),
-                        r: window.__tramos.r.toFixed(2) });
+        /* Segundo cinturón: si el diccionario fallara, el aviso del cambio de
+           importe se pinta igual en crudo. Es la línea que evita un cargo que
+           el comprador no esperaba — no puede depender de que cargue un JS. */
+        var txt;
+        try {
+          txt = PagesI18n.t('pay.fineAutoPromo',
+                            { p: window.__tramos.p.toFixed(2),
+                              r: window.__tramos.r.toFixed(2) });
+        } catch (e) {
+          txt = '<b>$' + window.__tramos.p.toFixed(2) + '</b> → $' +
+                window.__tramos.r.toFixed(2) + '/mo';
+        }
+        fProm.querySelector('#fine-auto-promo-txt').innerHTML = txt;
       }
       fAuto.hidden = !auto || dif;
       if (fProm) fProm.hidden = !dif;
@@ -365,6 +384,5 @@
     }
   })();
   </script>
-  <script src="/static/pages_i18n.js"></script>
 </body>
 </html>

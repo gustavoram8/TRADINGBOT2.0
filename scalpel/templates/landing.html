@@ -2025,7 +2025,7 @@
         nc_no_existe:'That plan cannot be purchased. To go back to Free, cancel your plan from Settings.',
         plan_free_name:'Free', plan_std_name:'Standard', plan_prem_name:'Premium',
         pl_free_cycle:'/ month', pl_std_cycle:'/ month', pl_prm_cycle:'/ month',
-        pl_launch:'↓ 15% off your first month',
+        pl_launch:'↓ {pct}% off your first month',
         pl_std_billed:'<s>$300</s>&nbsp; $240 billed yearly', pl_std_save:'↓ 20% — save $60 vs paying monthly',
         pl_prem_billed:'<s>$600</s>&nbsp; $480 billed yearly', pl_prem_save:'↓ 20% — save $120 vs paying monthly',
         pf_tag:'For traders just getting started with journaling.', ps_tag:'For active traders reviewing setups daily.', pp_tag:'For committed learners who want in-depth daily review.',
@@ -2131,7 +2131,7 @@
         nc_no_existe:'Ese plan no se compra. Para volver a Free, date de baja desde Ajustes.',
         plan_free_name:'Free', plan_std_name:'Standard', plan_prem_name:'Premium',
         pl_free_cycle:'/ mes', pl_std_cycle:'/ mes', pl_prm_cycle:'/ mes',
-        pl_launch:'↓ 15% en tu primer mes',
+        pl_launch:'↓ {pct}% en tu primer mes',
         pl_std_billed:'<s>$300</s>&nbsp; $240 al año', pl_std_save:'↓ 20% — ahorras $60 frente a pagar mes a mes',
         pl_prem_billed:'<s>$600</s>&nbsp; $480 al año', pl_prem_save:'↓ 20% — ahorras $120 frente a pagar mes a mes',
         pf_tag:'Para traders que recién empiezan a llevar su diario.', ps_tag:'Para traders activos que revisan setups a diario.', pp_tag:'Para estudiantes comprometidos que quieren un análisis diario a fondo.',
@@ -2237,7 +2237,7 @@
         nc_no_existe:'Ce plan ne s’achète pas. Pour revenir à Free, résiliez depuis les Paramètres.',
         plan_free_name:'Free', plan_std_name:'Standard', plan_prem_name:'Premium',
         pl_free_cycle:'/ mois', pl_std_cycle:'/ mois', pl_prm_cycle:'/ mois',
-        pl_launch:'↓ 15 % sur votre premier mois',
+        pl_launch:'↓ {pct} % sur votre premier mois',
         pl_std_billed:'<s>300 $</s>&nbsp; 240 $ par an', pl_std_save:'↓ 20 % — économisez 60 $ par rapport au mensuel',
         pl_prem_billed:'<s>600 $</s>&nbsp; 480 $ par an', pl_prem_save:'↓ 20 % — économisez 120 $ par rapport au mensuel',
         pf_tag:'Pour les traders qui débutent leur journal.', ps_tag:'Pour les traders actifs qui revoient leurs setups chaque jour.', pp_tag:'Pour les apprenants engagés qui veulent une analyse quotidienne approfondie.',
@@ -2343,7 +2343,7 @@
         nc_no_existe:'Esse plano não é comprado. Para voltar ao Free, cancele em Configurações.',
         plan_free_name:'Free', plan_std_name:'Standard', plan_prem_name:'Premium',
         pl_free_cycle:'/ mês', pl_std_cycle:'/ mês', pl_prm_cycle:'/ mês',
-        pl_launch:'↓ 15% no seu primeiro mês',
+        pl_launch:'↓ {pct}% no seu primeiro mês',
         pl_std_billed:'<s>$300</s>&nbsp; $240 por ano', pl_std_save:'↓ 20% — economize $60 em vez de pagar mês a mês',
         pl_prem_billed:'<s>$600</s>&nbsp; $480 por ano', pl_prem_save:'↓ 20% — economize $120 em vez de pagar mês a mês',
         pf_tag:'Para traders que estão começando seu diário.', ps_tag:'Para traders ativos que revisam setups diariamente.', pp_tag:'Para estudantes comprometidos que querem análise diária aprofundada.',
@@ -2378,6 +2378,9 @@
     },
   };
 
+  // El % de la oferta de bienvenida, tal y como lo va a cobrar el servidor.
+  const LAUNCH_PCT = {{ LAUNCH_PCT|default(0)|tojson }};
+
   function applyLang(code) {
     const C = I18N[code] || I18N.en;
     document.documentElement.lang = code;
@@ -2388,7 +2391,14 @@
     window.__landingT = dict;
     document.querySelectorAll('[data-t]').forEach(el => {
       const k = el.getAttribute('data-t');
-      if (dict[k] !== undefined) el.innerHTML = dict[k];   // trusted strings; allows <strong> in plan features
+      // 🔴 El porcentaje de la oferta lo decide el SERVIDOR (LAUNCH_DISCOUNT_PCT),
+      // y este diccionario pisa el HTML ya renderizado. Con el número escrito a
+      // mano dentro de la traducción, cambiar la oferta a 30 dejaba el precio en
+      // $35 y la etiqueta diciendo "15%" — una contradicción, y encima sobre un
+      // precio. Por eso la frase lleva {pct} y el número se mete aquí.
+      if (dict[k] !== undefined) {
+        el.innerHTML = String(dict[k]).replace(/\{pct\}/g, LAUNCH_PCT);
+      }
     });
     document.querySelectorAll('.lang-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.lang === code);
