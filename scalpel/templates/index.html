@@ -2969,6 +2969,56 @@
       padding: 8px 6px; display: flex; flex-direction: column; gap: 4px; align-items: center;
       position: sticky; top: 72px; align-self: start; z-index: 15;
     }
+    /* ══ Barra agrupada (familias con desplegable) ══
+       🔴 La barra medía 961 px FIJOS con 20 botones. Medido en tres monitores:
+       a 1440x900 quedaban 10 botones por debajo del lienzo y 4 FUERA DE LA
+       PANTALLA; a 1366x768, 11 y 6. O sea, herramientas inalcanzables sin
+       scrollear la página. Se agrupan en familias y los ajustes suben a la
+       barra de arriba: de 20 botones a 7.
+       ⚠️ Se descartó la barra en "L" (herramientas bajo la diapositiva): se
+       come justo el alto que acabábamos de recuperar —a 1366x768 son 70 px, el
+       16% de la pizarra— y no escala: al añadir la siguiente tanda vuelve a
+       llenarse. */
+    .tool-group { position: relative; }
+    /* La flechita que avisa de que ahí dentro hay más.
+       ⚠️ Va en ::before y NO en ::after: el ::after de .tool-btn ya lo ocupa el
+       tooltip (`content: attr(data-tip)`), y al pasar el ratón por encima las
+       dos reglas se pisaban — misma especificidad, gana la última — así que la
+       flecha se convertía en el propio tooltip descolocado. */
+    .tool-group > .tool-btn::before {
+      content: ''; position: absolute; right: 3px; bottom: 3px;
+      border-left: 4px solid transparent; border-top: 4px solid currentColor;
+      opacity: .5; transform: rotate(-45deg);
+    }
+    .tool-flyout {
+      position: absolute; left: calc(100% + 8px); top: -6px; display: none;
+      /* ⚠️ `var(--card)` es TRANSLÚCIDO: sobre la pizarra negra el desplegable
+         salía gris y los nombres se leían a medias. Mismo truco que los menús
+         bajo camo: se pinta el color sobre el fondo del sitio para opacarlo
+         sin inventar un color nuevo (así hereda tema claro/oscuro y camos). */
+      background: linear-gradient(var(--card), var(--card)), var(--bg);
+      border: 1px solid var(--border2); border-radius: 11px;
+      padding: 6px; gap: 4px; flex-direction: column; z-index: 80;
+      box-shadow: 0 12px 34px rgba(0,0,0,0.45);
+    }
+    .tool-group.open .tool-flyout { display: flex; }
+    /* ⚠️ El desplegable se abre al posar el ratón en la cabecera, así que su
+       tooltip seguía en pantalla y caía JUSTO encima del primer nombre de la
+       lista (el tooltip se coloca a 48 px a la derecha). */
+    .tool-group.open > .tool-btn[data-tip]:hover::after { display: none; }
+    /* dentro del desplegable la herramienta se lee, no se adivina */
+    .tool-flyout .tool-btn { width: auto; height: 34px; padding: 0 10px 0 8px;
+      justify-content: flex-start; gap: 9px; font-size: 12.5px; font-weight: 600;
+      white-space: nowrap; }
+    .tool-flyout .tool-btn svg { flex: 0 0 auto; }
+    /* ⚠️ los tooltip de la barra se posicionan a la derecha y dentro del
+       desplegable quedarían encima de los propios nombres */
+    .tool-flyout .tool-btn[data-tip]:hover::after { display: none; }
+    /* los ajustes que se mudaron a la barra de arriba */
+    .sk-inline { display: inline-flex; align-items: center; gap: 6px;
+      padding-left: 10px; margin-left: 2px; border-left: 1px solid var(--border); }
+    .sk-inline .tool-btn { width: 34px; height: 34px; }
+
     .tool-btn {
       width: 40px; height: 40px; border-radius: 9px; border: 1px solid transparent;
       background: transparent; color: var(--muted); cursor: pointer; display: flex;
@@ -13861,6 +13911,9 @@
       // Text toolbar: show when the text tool is active (or a text object is selected)
       if (t === 'text') { syncTextToolbar(null); showTextToolbar(true); }
       else if (!isTextObj(canvas.getActiveObject())) { showTextToolbar(false); }
+      // la cabecera de la familia tiene que encenderse aunque la herramienta se
+      // haya elegido por atajo de teclado y no pulsando dentro del desplegable
+      sincronizaGrupos();
     }
 
     const baseOpts = () => ({ strokeUniform: true, strokeLineCap: 'round', strokeLineJoin: 'round', cornerColor: '#5b8ef0', borderColor: '#5b8ef0', cornerSize: 9, transparentCorners: false });
@@ -14144,6 +14197,139 @@
         }
         canvas.setActiveObject(c);
         canvas.requestRenderAll(); pushHistory(); updateThumb();
+      });
+    }
+
+    // ══ Barra agrupada ══════════════════════════════════════════════════
+    // 🔑 NO se reescribe el HTML: se MUEVEN los botones que ya existen a sus
+    // desplegables. Así cada botón conserva el manejador que se le puso arriba
+    // y el resto del módulo (setTool, toolBtns, los atajos) sigue funcionando
+    // sin enterarse. Reescribir la barra habría obligado a re-cablear catorce
+    // herramientas para ganar cero.
+    const FAMILIAS = [
+      { id: 'lineas', tip: 'Lines', ini: 'trendline',
+        nombres: { trendline: 'Trendline', ray: 'Ray', hline: 'Horizontal',
+                   hray: 'Horizontal ray', polyline: 'Continuous line', arrow: 'Arrow' } },
+      { id: 'zonas', tip: 'Zones & shapes', ini: 'rect',
+        nombres: { rect: 'Rectangle / Zone', fvg: 'FVG zone', circle: 'Circle' } },
+      { id: 'velas', tip: 'Candles', ini: 'candles',
+        nombres: { candles: 'Candle sequence' } },
+    ];
+
+    function agrupaBarra() {
+      const rail = document.getElementById('sk-tools');
+      if (!rail || rail.dataset.agrupada) return;
+      rail.dataset.agrupada = '1';
+
+      // 1 · los ajustes y las acciones se mudan a la barra de arriba: no son
+      //     herramientas de dibujo y ocupaban ~290 px de barra
+      const acciones = document.querySelector('.scalper-actions');
+      if (acciones) {
+        const caja = document.createElement('div');
+        caja.className = 'sk-inline';
+        ['sk-color', 'sk-width', 'sk-fill', 'sk-undo', 'sk-redo', 'sk-delete', 'sk-clear']
+          .forEach(id => { const e = document.getElementById(id); if (e) caja.appendChild(e); });
+        if (caja.children.length) acciones.appendChild(caja);
+      }
+
+      FAMILIAS.forEach(fam => {
+        const dentro = Object.keys(fam.nombres)
+          .map(t => rail.querySelector('.tool-btn[data-tool="' + t + '"]'))
+          .filter(Boolean);
+        if (dentro.length < 2 && fam.id !== 'velas') return;
+        const grupo = document.createElement('div');
+        grupo.className = 'tool-group';
+        grupo.dataset.familia = fam.id;
+        dentro[0].parentNode.insertBefore(grupo, dentro[0]);
+
+        // el botón cabecera es un CLON del icono de la herramienta recordada;
+        // se repinta al elegir otra dentro del grupo
+        const cab = document.createElement('button');
+        cab.className = 'tool-btn';
+        cab.type = 'button';
+        cab.dataset.grupo = fam.id;
+        grupo.appendChild(cab);
+
+        const fly = document.createElement('div');
+        fly.className = 'tool-flyout';
+        grupo.appendChild(fly);
+        dentro.forEach(b => {
+          fly.appendChild(b);
+          // el nombre al lado del icono: dentro del desplegable hay sitio, y
+          // un icono suelto obliga a adivinar
+          const et = document.createElement('span');
+          et.textContent = fam.nombres[b.dataset.tool] || b.dataset.tool;
+          b.appendChild(et);
+          b.addEventListener('click', () => {
+            grupo.dataset.ultima = b.dataset.tool;
+            pintaCabecera(grupo);
+            grupo.classList.remove('open');
+          });
+        });
+        grupo.dataset.ultima = fam.ini;
+        pintaCabecera(grupo);
+
+        // Un clic en la cabecera activa la ÚLTIMA usada de la familia — el
+        // caso normal cuesta un clic, como en TradingView. El desplegable se
+        // abre al posarse encima, que es como se descubre lo que hay dentro.
+        cab.addEventListener('click', () => {
+          const t = grupo.dataset.ultima;
+          setTool(state.tool === t ? 'select' : t);
+        });
+        let temp = 0;
+        grupo.addEventListener('mouseenter', () => {
+          clearTimeout(temp);
+          temp = setTimeout(() => grupo.classList.add('open'), 340);
+        });
+        grupo.addEventListener('mouseleave', () => {
+          clearTimeout(temp); grupo.classList.remove('open');
+        });
+        // sin ratón (táctil) el desplegable se abre pulsando la flecha
+        cab.addEventListener('dblclick', e => {
+          e.preventDefault(); grupo.classList.toggle('open');
+        });
+      });
+
+      // 2 · los separadores que se quedaron sin nada debajo. Los dos últimos
+      //     dividían los ajustes de las acciones, y esas ya no viven aquí: sin
+      //     esto quedan dos rayitas colgando al final de la barra.
+      Array.from(rail.querySelectorAll('.tool-sep')).forEach(sep => {
+        let n = sep.nextElementSibling;
+        while (n && n.classList.contains('tool-sep')) n = n.nextElementSibling;
+        if (!n) sep.remove();
+      });
+      let prev = null;
+      Array.from(rail.children).forEach(e => {
+        const es = e.classList.contains('tool-sep');
+        if (es && prev) e.remove(); else prev = es;
+      });
+      sincronizaGrupos();
+    }
+
+    function pintaCabecera(grupo) {
+      const t = grupo.dataset.ultima;
+      const orig = grupo.querySelector('.tool-btn[data-tool="' + t + '"]');
+      const cab = grupo.querySelector('[data-grupo]');
+      if (!orig || !cab) return;
+      const svg = orig.querySelector('svg');
+      cab.innerHTML = svg ? svg.outerHTML : '';
+      const fam = FAMILIAS.find(f => f.id === grupo.dataset.familia);
+      cab.setAttribute('data-tip', (fam ? fam.tip + ' — ' : '') +
+        ((fam && fam.nombres[t]) || t));
+    }
+
+    // La cabecera se enciende cuando la herramienta activa vive dentro de su
+    // familia; si no, la barra mentiría sobre dónde estás.
+    function sincronizaGrupos() {
+      document.querySelectorAll('#sk-tools .tool-group').forEach(g => {
+        const suyas = Array.from(g.querySelectorAll('.tool-btn[data-tool]'))
+          .map(b => b.dataset.tool);
+        const dentro = suyas.indexOf(state.tool) >= 0;
+        const cab = g.querySelector('[data-grupo]');
+        if (cab) cab.classList.toggle('active', dentro);
+        if (dentro && g.dataset.ultima !== state.tool) {
+          g.dataset.ultima = state.tool; pintaCabecera(g);
+        }
       });
     }
 
@@ -14435,6 +14621,7 @@
       toolBtns.forEach(b => b.addEventListener('click', () => setTool(
         (state.tool === b.dataset.tool && b.dataset.tool !== 'select')
           ? 'select' : b.dataset.tool)));
+      agrupaBarra();
       document.getElementById('sk-undo').addEventListener('click', undo);
       document.getElementById('sk-redo').addEventListener('click', redo);
       document.getElementById('sk-delete').addEventListener('click', deleteSel);

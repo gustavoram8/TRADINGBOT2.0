@@ -67,7 +67,11 @@ for _ in range(80):
         pass
 URL = 'http://127.0.0.1:%d' % PUERTO
 
-HERRAMIENTA = "() => document.querySelector('#sk-tools .tool-btn.active').dataset.tool"
+# ⚠️ `[data-tool]` no sobra: la cabecera de cada familia también se enciende
+#    (para que la barra no mienta sobre dónde estás) y no lleva herramienta —
+#    sin el filtro, querySelector devuelve la cabecera y sale undefined.
+HERRAMIENTA = ("() => (document.querySelector('#sk-tools .tool-btn.active[data-tool]')"
+               " || {dataset: {}}).dataset.tool")
 OBJETOS = "() => (window.__skCanvas ? window.__skCanvas.getObjects().length : -1)"
 
 exe = (glob.glob('/opt/pw-browsers/chromium-*/chrome-linux/chrome') or [None])[0]
@@ -239,6 +243,70 @@ with sync_playwright() as p:
         check('la tendencia SUBE de izquierda a derecha (y %.0f → %.0f)'
               % (alto_izq, alto_der), alto_der < alto_izq - 5,
               (alto_izq, alto_der))
+
+    # ── 🧰 la barra agrupada (punto 14, 2ª parte) ──
+    # Antes: 20 botones y 961 px fijos. A 1440x900 quedaban 10 por debajo del
+    # lienzo y 4 fuera de la pantalla; a 1366x768, 11 y 6.
+    bar = pg.evaluate("""() => {
+        const rail = document.getElementById('sk-tools');
+        const lz = document.querySelector('#sk-canvas-wrap canvas').getBoundingClientRect();
+        const bs = [...rail.querySelectorAll(
+            ':scope > .tool-btn, :scope > .tool-group > .tool-btn')];
+        return {alto: Math.round(rail.getBoundingClientRect().height),
+                botones: bs.length,
+                bajo: bs.filter(b => b.getBoundingClientRect().bottom > lz.bottom + 2).length,
+                fuera: bs.filter(b => b.getBoundingClientRect().bottom > innerHeight).length,
+                arriba: document.querySelectorAll('.scalper-actions .sk-inline > *').length,
+                sueltos: rail.querySelectorAll(':scope > .tool-sep + .tool-sep').length};
+      }""")
+    check('la barra cabe en el alto del lienzo (%d px, antes 961)' % bar['alto'],
+          bar['alto'] < 420, bar)
+    check('ninguna herramienta queda por debajo de la pizarra (antes 10)',
+          bar['bajo'] == 0, bar)
+    check('ninguna herramienta queda fuera de la pantalla (antes 4)',
+          bar['fuera'] == 0, bar)
+    check('los 7 ajustes/acciones se mudaron a la barra de arriba',
+          bar['arriba'] == 7, bar)
+    check('no quedan separadores colgando', bar['sueltos'] == 0, bar)
+
+    # 🔑 Con el RATÓN de verdad, no con .click() de JavaScript: un botón dentro
+    #    de un desplegable cerrado se puede pulsar por código aunque el usuario
+    #    no lo alcance. Lo que se comprueba aquí es que se alcanza.
+    pg.keyboard.press('Escape')
+    cabecera = '#sk-tools .tool-group[data-familia="lineas"] > .tool-btn'
+    pg.hover(cabecera)
+    pg.wait_for_timeout(600)                      # el desplegable abre a los 340 ms
+    abierto = pg.evaluate("""() => {
+        const f = document.querySelector('.tool-group[data-familia="lineas"] .tool-flyout');
+        const r = f.getBoundingClientRect();
+        return getComputedStyle(f).display !== 'none' && r.width > 60 &&
+               r.right < innerWidth && r.left > 0; }""")
+    check('posar el ratón abre el desplegable, y cabe en pantalla', abierto)
+    pg.click('.tool-group[data-familia="lineas"] .tool-btn[data-tool="hray"]')
+    pg.wait_for_timeout(220)
+    check('se puede elegir una herramienta del desplegable con el ratón',
+          pg.evaluate(HERRAMIENTA) == 'hray', pg.evaluate(HERRAMIENTA))
+    check('…y el desplegable se cierra solo al elegir',
+          pg.evaluate("""() => getComputedStyle(document.querySelector(
+              '.tool-group[data-familia="lineas"] .tool-flyout')).display === 'none'"""))
+    # la cabecera recuerda la última usada: el segundo uso cuesta UN clic
+    pg.keyboard.press('Escape')
+    pg.wait_for_timeout(160)
+    pg.click(cabecera)
+    pg.wait_for_timeout(200)
+    check('la cabecera recuerda la última de su familia (1 clic, no 2)',
+          pg.evaluate(HERRAMIENTA) == 'hray', pg.evaluate(HERRAMIENTA))
+    check('…y la cabecera se enciende cuando su familia está activa',
+          pg.evaluate("""() => document.querySelector(
+              '.tool-group[data-familia="lineas"] > .tool-btn').classList.contains('active')"""))
+    # un atajo de teclado también tiene que encender la cabecera correcta
+    pg.keyboard.press('r')
+    pg.wait_for_timeout(200)
+    check('un atajo de teclado enciende la cabecera de SU familia y apaga la otra',
+          pg.evaluate("""() => {
+              const z = document.querySelector('.tool-group[data-familia="zonas"] > .tool-btn');
+              const l = document.querySelector('.tool-group[data-familia="lineas"] > .tool-btn');
+              return z.classList.contains('active') && !l.classList.contains('active'); }"""))
 
     check('ningún error de JavaScript en toda la sesión', not errores, errores[:3])
     b.close()
