@@ -25672,13 +25672,22 @@
       fireTimer = setTimeout(() => {
         then();
         vp.classList.remove('firing');
-        // entrance: quick zoom-settle
+        // Entrada: SOLO fundido, sin zoom.
+        // 🔴 Antes entraba a scale(1.06) y se asentaba a scale(1) en medio
+        // segundo. Medido: las neuronas de fuera nacen ~12 px más abiertas y
+        // convergen. A 60 fps eso es un asentamiento elegante; en una máquina
+        // lenta (iMac 2011, o este contenedor sin GPU, donde se midieron 5 fps
+        // con Synapse en marcha) ese medio segundo se dibuja en DOS posiciones
+        // sueltas y se lee como "las estrellas saltan de sitio". Lo reportó el
+        // dueño viendo el reel.
+        // Un elemento que no se mueve no puede verse a trompicones por lento
+        // que vaya el equipo: se cambia el movimiento por opacidad.
         vp.style.transition = 'none';
-        vp.style.transform = 'scale(1.06)'; vp.style.opacity = '0';
+        vp.style.opacity = '0';
         requestAnimationFrame(() => {
-          vp.style.transition = 'transform .5s cubic-bezier(.22,.61,.36,1), opacity .4s ease';
-          vp.style.transform = 'scale(1)'; vp.style.opacity = '1';
-          setTimeout(resetVp, 520);
+          vp.style.transition = 'opacity .42s ease';
+          vp.style.opacity = '1';
+          setTimeout(resetVp, 460);
         });
       }, 380);
     }

@@ -62,6 +62,66 @@ GRAFITO = '#0b0d12'
 
 
 # ══ 1 · GRABAR ═══════════════════════════════════════════════════════════
+def siembra_foro(A, dueño):
+    """Un hilo de verdad en el foro, con su gráfico, respuestas y reacciones.
+
+    🔴 Por qué. En la versión anterior el foro salía VACÍO: el texto quedaba
+    arriba y media pantalla era aire. Un foro sin nadie dentro, en un vídeo que
+    vende una comunidad, dice justo lo contrario de lo que se quiere decir.
+
+    El gráfico es DIBUJADO POR NOSOTROS (`tools/gen_chart_foro.py`), no una
+    captura de TradingView — el porqué está explicado en ese archivo.
+
+    ⚠️ Nada de esto sugiere una operación a nadie: es un alumno preguntando por
+    un trade YA CERRADO y en pérdida, que es exactamente para lo que existe el
+    foro. Un post con un objetivo de precio sería una señal y no puede salir en
+    una pieza promocional.
+    """
+    if A.ForumPost.query.count():
+        return
+    otros = []
+    for nom, correo in (('marcos_fx', 'm@demo.invalid'),
+                        ('lucia.trades', 'l@demo.invalid'),
+                        ('dani_ict', 'd@demo.invalid')):
+        u = A.User.query.filter_by(username=nom).first()
+        if u is None:
+            u = A.User(username=nom, email=correo, plan='premium',
+                       email_verified=True)
+            u.set_password(CL)
+            u.email_canonical = correo
+            A.db.session.add(u)
+        otros.append(u)
+    A.db.session.commit()
+
+    p = A.ForumPost(
+        user_id=dueño.id,
+        title='Bought the session high and got stopped. What did I miss?',
+        body=("MES, 5m, NY AM. Price had been selling off all morning, came "
+              "back up and broke the session high, so I took the breakout.\n\n"
+              "It closed back below the level on the same candle and never "
+              "traded up there again. Stop taken 12 minutes later.\n\n"
+              "Looking at it now the wick above the high is the whole story, "
+              "but I only saw it after. What should have stopped me from "
+              "pressing buy?"),
+        image_path='foro_ejemplo.png')
+    A.db.session.add(p)
+    A.db.session.commit()
+    for u, t in ((otros[0], "That's a sweep, not a break. The candle closed "
+                            "back inside — until it closes above, the high is "
+                            "still liquidity sitting there."),
+                 (otros[1], "Ask yourself who was on the other side. Everyone "
+                            "short from the morning had their stop right above "
+                            "that level."),
+                 (otros[2], "Also worth checking: you were buying into the "
+                            "high of the range after a full leg down. Where "
+                            "was the trade going?")):
+        A.db.session.add(A.ForumComment(post_id=p.id, user_id=u.id, body=t))
+    for u, e in ((otros[0], 'chart'), (otros[1], 'think'), (otros[2], 'like'),
+                 (dueño, 'fire')):
+        A.db.session.add(A.ForumReaction(user_id=u.id, post_id=p.id, emoji=e))
+    A.db.session.commit()
+
+
 def arranca_servidor(tmp):
     os.environ['DATABASE_URL'] = 'sqlite:///' + os.path.join(tmp, 'r.db')
     os.environ.setdefault('SECRET_KEY', 'reel-tour')
@@ -90,6 +150,7 @@ def arranca_servidor(tmp):
                     {'id': 'c6', 'label': 'Stop below the swept low'}],
                     'min_go': 5, 'min_caution': 3}))
             A.db.session.commit()
+        siembra_foro(A, u)
     threading.Thread(target=lambda: A.app.run(port=PUERTO, threaded=True,
                                               use_reloader=False),
                      daemon=True).start()
