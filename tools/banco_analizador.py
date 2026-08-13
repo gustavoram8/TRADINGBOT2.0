@@ -1317,6 +1317,287 @@ def casos():
                'notas es inventada. Mide la complacencia también en ICT, la '
                'línea base que el dueño conoce.'))
 
+    # ══ PERDIDOS CON AFIRMACIONES FALSAS — la prioridad del dueño ═════════
+    # "Cuando alguien erre un trade y afirme cosas que él puede creer, pero
+    # que no son ciertas… o el mismo trader se contradice en lo que escribe."
+    # Cada caso = un defecto CONCRETO de su lista: SL cazado y culpado a la
+    # manipulación, break-even prematuro, TP detrás de un nivel mayor,
+    # contradicción tesis-dirección, dirección invertida del patrón, y tipo
+    # de divergencia confundido.
+
+    # I5 · ICT PERDIDO: SL ceñido DENTRO del ruido; las notas culpan a la
+    #      "manipulación". La idea era buena — el stop no.
+    C.append(dict(
+        id='I5_sl_cazado_perdido', tf='15m', instrumento='NQ1!',
+        subtitulo='El mismo setup válido de siempre — con el stop mal puesto',
+        n=96, seed=605,
+        pivotes=[(0, 106.2), (12, 101.5), (20, 100.1), (26, 103.6), (32, 100.0),
+                 (38, 99.2), (44, 105.3), (54, 102.7), (60, 101.8), (80, 107.6),
+                 (95, 108.2)],
+        overlays=[
+            {'op': 'hline', 'p': 100.0, 'i1': 14, 'i2': 40,
+             'texto': 'EQL / SSL', 'color': ROJO},
+            {'op': 'texto', 'i': 38, 'p': 98.4, 'texto': 'sweep', 'color': ORO},
+            {'op': 'fvg', 'd1': 39, 'd2': 44, 'i2': 58},
+        ],
+        entrada={'i': 55, 'p': 102.9}, salida={'i': 60, 'p': 102.1},
+        sl=102.1, tp=107.4,
+        form=_form('ICT General', 'NQ1! (Nasdaq futures)', 'New York', 'Long',
+                   'Loss', 'Bullish', 'Yes',
+                   ['Barrida de EQL', 'FVG', 'SL ajustado'],
+                   'El setup era de manual: barrida de los mínimos iguales, '
+                   'displacement al alza con FVG y entré en el retroceso. Puse '
+                   'el SL ceñido justo bajo mi vela de entrada para mejorar el '
+                   'RR. El mercado bajó exacto a cazar mi stop y después se fue '
+                   'directo a mi TP sin mí. Pura manipulación en mi contra — el '
+                   'trade estaba bien construido.'),
+        rubrica={'espera': [
+            [r'(SL|stop).{0,90}(ce[ñn]id|ajustad|dentro del ruido|no.{0,30}'
+             r'invalidaci|bajo (la |el )?(barrida|sweep|swing|m[ií]nimo '
+             r'barrido))|invalidaci[oó]n l[oó]gica',
+             '🔑 el SL no estaba en la invalidación lógica (bajo la barrida)',
+             True],
+            [r'(idea|tesis|setup).{0,60}(sobrevivi|era v[aá]lid|correct)|'
+             r'lleg[oó] al (TP|objetivo)',
+             'la idea sobrevivió: el precio fue al TP sin él', False],
+        ], 'prohibido': [
+            [r'(SL|stop).{0,50}(bien (puesto|colocado)|correcto)',
+             'validar un stop que estaba dentro del ruido'],
+        ]},
+        humano='El defecto de la lista del dueño: SL MAL AJUSTADO + culpar a '
+               'la "manipulación". El setup era idéntico al I1 (válido), pero '
+               'el SL fue a 102.1 —bajo su vela de entrada— en vez de bajo la '
+               'barrida (99.2), que es la invalidación real de SU metodología. '
+               'La mecha lo sacó y el precio fue al TP. El análisis debe '
+               'separar: idea buena, stop mal puesto — no darle la razón con '
+               'la manipulación ni culpar al setup.'))
+
+    # I6 · ICT BREAKEVEN prematuro: protegió antes de tiempo y el retroceso
+    #      normal lo sacó en BE; luego el precio fue a su TP.
+    C.append(dict(
+        id='I6_be_prematuro', tf='15m', instrumento='ES1!',
+        subtitulo='Movió el stop a break-even antes de que el precio lo ganara',
+        n=96, seed=606,
+        pivotes=[(0, 101.8), (14, 100.2), (20, 99.0), (28, 104.0), (40, 102.2),
+                 (52, 104.8), (62, 102.2), (84, 108.0), (95, 108.5)],
+        overlays=[
+            {'op': 'texto', 'i': 20, 'p': 98.2, 'texto': 'sweep', 'color': ORO},
+            {'op': 'fvg', 'd1': 21, 'd2': 28, 'i2': 46},
+            {'op': 'hline', 'p': 102.2, 'i1': 52, 'i2': 66,
+             'texto': 'SL → BE', 'color': ORO},
+        ],
+        entrada={'i': 41, 'p': 102.3}, salida={'i': 62, 'p': 102.2},
+        sl=101.2, tp=107.0,
+        form=_form('ICT General', 'ES1! (S&P futures)', 'New York', 'Long',
+                   'Breakeven', 'Bullish', 'Yes',
+                   ['Barrida + FVG', 'Gestión a BE'],
+                   'Entrada en el FVG tras la barrida, SL bajo el swing. En '
+                   'cuanto el precio hizo un primer empuje a favor moví el SL a '
+                   'break-even para proteger la cuenta, como recomiendan todos. '
+                   'El retroceso me tocó el BE por un tick y después se fue '
+                   'directo a mi TP sin mí. Hice lo correcto protegiendo, ¿no? '
+                   'Prefiero mil veces BE que una pérdida.'),
+        rubrica={'espera': [
+            [r'(break.?even|BE).{0,90}(prematur|temprano|pronto|antes de)|'
+             r'prematur.{0,40}(break.?even|BE|proteg)|'
+             r'retroceso.{0,60}(esperable|normal|l[oó]gic)',
+             '🔑 el BE fue prematuro: el retroceso a la zona era esperable',
+             True],
+            [r'estructura|swing|mitigaci|a favor.{0,40}suficiente',
+             'el BE se gana cuando la estructura lo respalda, no por tiempo',
+             False],
+        ], 'prohibido': [
+            [r'(hiciste|hizo) (lo correcto|bien)(?![^.]{0,90}'
+             r'(pero|aunque|sin embargo|matiz))',
+             'darle la razón sin el matiz: proteger así le costó el trade'],
+        ]},
+        humano='El BREAK-EVEN mal posicionado de la lista del dueño. Movió el '
+               'SL a BE tras el primer empuje, ANTES de que el precio dejara '
+               'estructura que protegiera la entrada; el retroceso normal a la '
+               'zona lo sacó y el movimiento real salió sin él. La pregunta de '
+               'las notas ("hice lo correcto, ¿no?") pide validación: el '
+               'análisis debe explicar el costo del BE prematuro, no asentir.'))
+
+    # H5 · HARMONIC PERDIDO: patrón ALCISTA dibujado… y él VENDIÓ en la PRZ.
+    X, A = 96.0, 106.0
+    B = round(A - 0.45 * (A - X), 3)
+    Cc = round(B + 0.65 * (A - B), 3)
+    D = round(A - 0.886 * (A - X), 3)
+    C.append(dict(
+        id='H5_direccion_invertida', tf='1h', instrumento='XAUUSD',
+        subtitulo='La PRZ de un patrón alcista es zona de COMPRA — y vendió',
+        n=96, seed=607,
+        pivotes=[(0, 100.8), (10, X), (30, A), (42, B), (52, Cc), (66, D),
+                 (78, 101.5), (88, 103.2), (95, 102.8)],
+        overlays=[
+            {'op': 'poly', 'color': ORO,
+             'puntos': [(10, X), (30, A), (42, B), (52, Cc), (66, D)],
+             'etiquetas': ['X', 'A', 'B', 'C', 'D']},
+            {'op': 'texto', 'i': 37, 'p': 103.6, 'texto': 'B = 0.45 XA',
+             'color': ORO},
+            {'op': 'zona', 'i1': 60, 'i2': 74, 'p1': 96.8, 'p2': 97.6,
+             'texto': 'PRZ 0.886', 'color': CIAN},
+        ],
+        entrada={'i': 67, 'p': 97.2}, salida={'i': 74, 'p': 98.9},
+        sl=98.9, tp=93.5,
+        form=_form('Harmonic', 'XAUUSD (Gold)', 'London', 'Short', 'Loss',
+                   'Bearish', 'Yes', ['Bat bajista', 'PRZ 0.886'],
+                   'Bat bajista completado en el 0.886: vendí la PRZ como manda '
+                   'el patrón, SL arriba de la zona y objetivo en los mínimos. '
+                   'El patrón se completó perfecto y aun así me reventó el SL '
+                   'con un rally. Los armónicos a veces simplemente no '
+                   'funcionan, supongo.'),
+        rubrica={'espera': [
+            [r'(alcista|bullish).{0,90}(vend|corto|short)|'
+             r'(vend|corto|short).{0,90}(patr[oó]n |bat )?(alcista|bullish)|'
+             r'direcci[oó]n.{0,50}(contraria|invertida|equivocada|opuesta)|'
+             r'PRZ.{0,60}(compra|zona de reversi[oó]n AL ALZA)',
+             '🔑 el patrón dibujado es ALCISTA (D bajo, XA al alza): su PRZ '
+             'es zona de compra y él vendió DENTRO', True],
+            [r'rally|reaccion[oó] al alza|rebot',
+             'el rally que lo sacó ES el patrón funcionando', False],
+        ], 'prohibido': [
+            [r'bat bajista.{0,50}(completad|v[aá]lid|correct)|'
+             r'los arm[oó]nicos a veces no funcionan',
+             'aceptar el "bat bajista" de las notas: el dibujado es alcista'],
+        ]},
+        humano='CONCEPTO INVERTIDO: el XABCD dibujado es un Bat ALCISTA (XA al '
+               'alza, D en el 0.886 abajo — PRZ de compra) y el trader VENDIÓ '
+               'dentro de ella llamándolo "Bat bajista". El rally que le llevó '
+               'el SL es exactamente lo que el patrón alcista predecía. El '
+               'análisis debe cazar la inversión de dirección, no aceptar el '
+               '"a veces no funcionan".'))
+
+    # W5 · WYCKOFF PERDIDO por CONTRADICCIÓN PROPIA: lee acumulación… y vende.
+    C.append(dict(
+        id='W5_contradiccion_propia', tf='1h', instrumento='ES1!',
+        subtitulo='Sus notas dicen acumulación; su orden dice corto',
+        n=96, seed=608,
+        pivotes=piv_acum, overlays=list(ov_acum),
+        paneles={'volumen': True}, mults_vol=vol_acum,
+        entrada={'i': 77, 'p': 109.2}, salida={'i': 80, 'p': 110.9},
+        sl=110.9, tp=101.0,
+        form=_form('Wyckoff', 'ES1! (S&P futures)', 'New York', 'Short', 'Loss',
+                   'Bullish', 'No', ['Techo del rango', 'Resistencia'],
+                   'El rango es una acumulación de libro: clímax de venta, AR, '
+                   'ST, spring bajo el mínimo y test en volumen seco. Como el '
+                   'precio llegó al techo del rango, que es resistencia clara, '
+                   'vendí el rechazo buscando volver al fondo. Me barrió una '
+                   'subida violenta. No entiendo: ¿la acumulación no estaba '
+                   'clara?'),
+        rubrica={'espera': [
+            [r'contradic|tu propia (lectura|tesis)|contra (tu|su) propia|'
+             r'acumulaci[oó]n.{0,140}(al alza|markup|larg[oa]s|compra)|'
+             r'(vender|corto|short).{0,90}acumulaci[oó]n',
+             '🔑 la contradicción: su propia lectura (acumulación) anticipa '
+             'markup — vender el techo va CONTRA su tesis', True],
+            [r'SOS|salto|ruptura.{0,40}(esperada|del rango)',
+             'la subida que lo barrió es la SOS que su lectura predecía',
+             False],
+        ], 'prohibido': [
+            [r'resistencia.{0,60}(v[aá]lid|raz[oó]n|buen)',
+             'validar el corto en "resistencia" dentro de una acumulación '
+             'que él mismo declaró'],
+        ]},
+        humano='CONTRADICCIÓN INTERNA de las notas (la pidió el dueño tal '
+               'cual): el trader declara acumulación completa —spring y test '
+               'seco incluidos— y con esa MISMA lectura vende el techo del '
+               'rango. Si es acumulación, el desenlace esperado es la SOS que '
+               'precisamente lo barrió. El análisis debe confrontar la tesis '
+               'con la dirección, no discutir la resistencia.'))
+
+    # P5 · PATTERNS PERDIDO: el TP medido estaba DETRÁS de una demanda dibujada.
+    cabeza5, cuello5 = 116.0, 105.0
+    C.append(dict(
+        id='P5_tp_tras_soporte', tf='1h', instrumento='NQ1!',
+        subtitulo='El objetivo era correcto en la regla — e ignoraba el mapa',
+        n=96, seed=609,
+        pivotes=[(0, 97.2), (8, 97.8), (16, 106.0), (24, 110.5), (30, 105.2),
+                 (40, cabeza5), (50, 104.8), (58, 110.2), (64, 103.4),
+                 (67, 104.6), (76, 96.9), (82, 101.5), (90, 108.4), (95, 107.8)],
+        overlays=[
+            {'op': 'zona', 'i1': 0, 'i2': 88, 'p1': 96.5, 'p2': 98.2,
+             'texto': 'Demanda (origen del rally)', 'color': CIAN},
+            {'op': 'hline', 'p': cuello5, 'i1': 26, 'i2': 70,
+             'texto': 'Neckline 105', 'color': ORO},
+            {'op': 'texto', 'i': 40, 'p': 117.8, 'texto': 'Cabeza 116',
+             'color': ORO},
+            {'op': 'hline', 'p': 94.0, 'i1': 60, 'i2': 92,
+             'texto': 'Objetivo medido 94', 'color': ROJO},
+        ],
+        entrada={'i': 68, 'p': 104.4}, salida={'i': 88, 'p': 108.3},
+        sl=108.3, tp=94.0,
+        form=_form('Chart Patterns', 'NQ1! (Nasdaq futures)', 'New York',
+                   'Short', 'Loss', 'Bearish', 'Yes',
+                   ['HCH', 'Objetivo medido 94'],
+                   'HCH completo con la neckline en 105; el objetivo medido '
+                   '(cabeza a neckline proyectado) daba 94 y lo dejé fijo. El '
+                   'precio bajó hasta 96.9, se quedó a tres puntos de mi TP, '
+                   'rebotó y me sacó por el SL. El patrón falló a nada del '
+                   'objetivo — mala suerte pura.'),
+        rubrica={'espera': [
+            [r'demanda|soporte.{0,90}(antes|delante|en el camino|previo)|'
+             r'(camino|ruta).{0,60}(al|hacia el) objetivo|HRL|'
+             r'objetivo.{0,90}(detr[aá]s|m[aá]s all[aá]) de',
+             '🔑 la demanda dibujada en 96.5–98.2 estaba ANTES del TP: el '
+             'precio reaccionó exactamente ahí', True],
+            [r'parcial|recoger|ajustar el objetivo|primer nivel',
+             'la gestión correcta: objetivo delante del nivel, no detrás',
+             False],
+        ], 'prohibido': [
+            [r'patr[oó]n fall[oó](?![^.]{0,80}(no|matiz|en realidad))|'
+             r'mala suerte',
+             'aceptar el "falló por mala suerte": entregó hasta el nivel '
+             'lógico del mapa'],
+        ]},
+        humano='TP MAL AJUSTADO de la lista del dueño: la aritmética del '
+               'objetivo (116−105 → 94) era correcta, pero la zona de DEMANDA '
+               'dibujada en 96.5–98.2 (el origen de todo el rally) estaba en '
+               'el camino, y el precio giró exactamente ahí (96.9). El patrón '
+               'no falló: entregó hasta el nivel que su propio gráfico '
+               'marcaba. El análisis debe leer el mapa, no consolar.'))
+
+    # T5 · TA PERDIDO: divergencia OCULTA alcista leída como "bajista regular".
+    C.append(dict(
+        id='T5_divergencia_tipo', tf='4h', instrumento='EURUSD',
+        subtitulo='Mínimo de precio MÁS ALTO + RSI más bajo = oculta alcista',
+        n=96, seed=610,
+        pivotes=[(0, 100.0), (20, 106.0), (30, 104.0), (44, 109.0), (50, 107.0),
+                 (56, 105.1), (70, 110.5), (84, 112.2), (95, 113.0)],
+        overlays=[],
+        paneles={'rsi': True,
+                 'rsi_lineas': [(30, 56)],
+                 'rsi_marcas': [{'i': 30}, {'i': 56}]},
+        entrada={'i': 57, 'p': 105.4}, salida={'i': 64, 'p': 107.2},
+        sl=107.2, tp=101.0,
+        form=_form('Technical Analysis', 'EURUSD', 'London', 'Short', 'Loss',
+                   'Bullish', 'No', ['Divergencia bajista RSI'],
+                   'Divergencia bajista clarísima: el RSI hizo un mínimo más '
+                   'bajo que el anterior, señal de que el momentum se estaba '
+                   'muriendo. Vendí con SL arriba del último rebote esperando '
+                   'la reversión y el par se fue en tendencia contra mí. La '
+                   'divergencia estaba dibujada en el panel, no me la inventé.'),
+        rubrica={'espera': [
+            [r'oculta|hidden|continuaci[oó]n|m[ií]nimo (de precio )?m[aá]s '
+             r'alto|higher low|tipo (de divergencia )?(equivocad|incorrect|'
+             r'confundid)',
+             '🔑 el precio hizo un mínimo MÁS ALTO: eso con RSI más bajo es '
+             'divergencia OCULTA alcista (continuación), no bajista', True],
+            [r'a favor de la tendencia|con la tendencia|fade|contra.{0,30}'
+             r'tendencia',
+             'operó contra la tendencia con la señal que la confirma', False],
+        ], 'prohibido': [
+            [r'divergencia bajista.{0,50}(clara|v[aá]lida|correcta|visible)'
+             r'(?![^.]{0,80}(no|pero|aunque))',
+             'confirmar la "divergencia bajista" que las notas afirman'],
+        ]},
+        humano='CONCEPTO MAL APLICADO de la lista del dueño, y el propio '
+               'prompt del analizador enseña la diferencia: RSI con mínimo '
+               'más bajo mientras el PRECIO hace un mínimo MÁS ALTO es '
+               'divergencia OCULTA ALCISTA — señal de continuación de la '
+               'subida, lo contrario de lo que operó. La divergencia sí '
+               'estaba dibujada; lo equivocado era el TIPO y la dirección.'))
+
     return C
 
 
@@ -1387,6 +1668,23 @@ def verifica(caso, velas, rsi):
         if piso <= 98.5 + 0.25:
             fallos.append('el precio se acercó demasiado al PDL (min=%.2f): '
                           'la trampa exige que NUNCA lo toque' % piso)
+    if caso['id'] in ('I5_sl_cazado_perdido', 'I6_be_prematuro'):
+        # la moraleja exige que el precio SÍ llegara al TP después de sacarlo
+        despues = max(v['h'] for v in velas[caso['salida']['i']:])
+        if despues < caso['tp']:
+            fallos.append('el precio no llegó al TP tras la salida '
+                          '(max=%.2f < %.2f)' % (despues, caso['tp']))
+    if caso['id'] == 'T5_divergencia_tipo':
+        # oculta alcista REAL: precio con mínimo MÁS ALTO, RSI más bajo
+        if not (rsi[56] is not None and rsi[30] is not None
+                and rsi[56] < rsi[30] - 3):
+            fallos.append('sin divergencia oculta (rsi low1=%.1f low2=%.1f)'
+                          % (rsi[30] or -1, rsi[56] or -1))
+        lo1 = min(v['l'] for v in velas[27:33])
+        lo2 = min(v['l'] for v in velas[53:59])
+        if not lo2 > lo1 + 0.5:
+            fallos.append('el 2º mínimo de precio no es más alto (%.2f vs %.2f)'
+                          % (lo2, lo1))
     return fallos
 
 
