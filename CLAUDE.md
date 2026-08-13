@@ -632,7 +632,20 @@ Solo mensual y solo para quien **nunca ha pagado** (atado a la cuenta, no a una 
   "tener plan Free HOY" ≠ "no haber pagado nunca": un pedido pagado en el historial la excluye para
   siempre, que es lo que despistó al dueño (sus cuentas de prueba ya habían pagado).
 
-## 🔑 EL CANDADO DEL LANZAMIENTO ES `PREVIEW_USERS`, YA NO NGINX (2026-08-13)
+## 🚀 EL SITIO ESTÁ ABIERTO AL PÚBLICO (2026-08-13, orden del dueño: "YA SALIMOS")
+Ejecutado y VERIFICADO en el VPS: `PREVIEW_USERS` quitada (candado=apagado) + **`PUBLIC_HTTPS=1`**
++ nginx cambiado a la config **live** (`robots.txt` → `Allow: /`, estáticos por nginx con
+`max-age=604800`, `/sitemap.xml` nuevo con solo páginas públicas, candado anti-caché
+private/no-store + Vary: Cookie añadido a la live). Registro abierto, compras con dinero real y
+la oferta del 30% activa. Copia de la config anterior en `…/tradeable.academy.antes-de-abrir`.
+- ⚠️ **La vista previa por `http://IP:5001` YA NO sirve para loguearse** (cookie Secure): el dueño
+  prueba en el propio dominio desde ahora. NO diagnosticar como avería.
+- **Cerrar de emergencia** = volver a poner `PREVIEW_USERS=maurotradesve,gussytrades,guaramo2026`
+  (+ `reread && update`); nginx no hace falta tocarlo.
+- Pendientes del mismo día: los 2 clics de Cloudflare (Purge Everything + Always Use HTTPS),
+  alta en Search Console cuando quiera acelerar a Google, y 🔴 el #0 (rotar secretos).
+
+## 🔑 EL CANDADO DEL LANZAMIENTO ERA `PREVIEW_USERS` (histórico; quitado el 2026-08-13)
 Descubierto al dar acceso al papá del dueño: **nginx está en la config ABIERTA** (`…academy.abierto
 .conf`) — el pase de nginx ya no existe, `nginx -T | grep pase` solo devuelve comentarios. Lo único
 que tapa el sitio hoy es el candado de la aplicación: `PREVIEW_USERS=maurotradesve,gussytrades,
