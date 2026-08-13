@@ -781,7 +781,11 @@ def casos():
             [r'(rebote|rally).{0,60}(d[eé]bil|sin (demanda|volumen))|no.{0,20}SOS',
              'el rebote posterior sin demanda — la segunda pista', False],
         ], 'prohibido': [
-            [r'volumen del test.{0,30}(seco|bajo|correcto|normal)',
+            # ⚠️ exige verbo de AFIRMACIÓN: "el volumen del test LE PARECIÓ
+            # normal, pero…" es el modelo CITANDO al trader para corregirlo
+            # (pasó en la 1ª pasada: rojo falso sobre una respuesta excelente).
+            [r'volumen del test (es|era|fue|parece|se ve) '
+             r'(seco|bajo|correcto|normal)',
              'darle la razón a las notas: el panel muestra lo contrario'],
         ]},
         humano='La razón REAL de la pérdida está pintada: el TEST llegó con '
