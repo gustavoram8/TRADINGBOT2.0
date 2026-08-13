@@ -557,7 +557,106 @@ claro y oscuro → volver → salir, **0 errores JS**.
   origin/claude/gallant-volta-i7cqmf && git config pull.ff only` + restart. Tras eso el deploy de
   siempre vuelve a funcionar.
 
+## 🕐 LAS FECHAS SE GUARDABAN EN HORA DE BERLÍN (2026-08-13) — leer antes de tocar fechas
+🔴 **El VPS está en Europa/Berlín.** Todo el código guarda con `datetime.now(timezone.utc)`, pero
+las columnas son `DateTime` SIN zona, y al insertar un valor CON zona en una columna sin zona
+**PostgreSQL lo convierte a la zona de la SESIÓN** (la del sistema operativo). Cada fecha se
+escribía **+2 h** y al releerla se interpretaba como UTC: instantes **en el futuro**.
+- **Lo que rompía, y cómo se vio:** una publicación de las 23:21 UTC quedaba fechada al día
+  siguiente → NO contaba para el cupo diario → el dueño publicaba y seguía diciendo "2 restantes".
+  También afectaba a rachas y a la ventana antiflood de comentarios (una fila "2 h en el futuro"
+  contaba como "hace un instante" → el límite de 5/minuto era 5/2-horas).
+- **Fix:** la sesión de PostgreSQL se abre con `connect_args={'options': '-c timezone=utc'}`, y los
+  DOS helpers gemelos (`_as_utc` **y** `_aware`, 30 usos, muchos en pagos) **CONVIERTEN** las fechas
+  con zona en vez de devolverlas tal cual.
+- ⚠️ **Las filas viejas conservan su desfase y NO se migran**: Berlín es +1 en invierno y +2 en
+  verano, una corrección en bloque estropearía media base. Se cura sola con los datos nuevos; una
+  fila desplazada **bloquea de más, nunca regala cuota** (probado).
+- 🔴 **`tools/test_horas_pg.py` 16/16 levanta un PostgreSQL REAL con el servidor en Berlín.** Existe
+  porque **toda la batería del repo corre sobre SQLite, que no convierte zonas: era ciega a esto por
+  construcción.** Cualquier bug de fechas futuro se prueba ahí, no en SQLite.
+- `tools/check_horas.py [--probar]` compara los tres relojes (proceso / base / última fila escrita).
+- ⚠️ **La cuota del analizador NUNCA estuvo rota**: es una ventana DESLIZANTE (`now - window`), no un
+  día de calendario, así que escribía y comparaba desplazado y se cancelaba. Y por eso **la zona del
+  cliente da igual**: UK o USA recuperan su análisis 24 h exactas después de gastarlo. Lo que SÍ va
+  por día UTC (corte a las 00:00 UTC = 20:00 en Nueva York): cupo de posts, Reto Diario y su racha,
+  topes de XP. No es un bug, es una decisión — si un cliente americano se queja de que "la racha se
+  reinicia a las 8pm", es por aquí.
+
+## 🚪 REGISTRO — dos fallos que espantaban clientes (2026-08-13)
+Los cazó el dueño creando la cuenta de su papá. Ninguno se veía en los tests porque los dos nacen
+del **tiempo real** de una persona usando el formulario.
+- 🔴 **"Ese usuario ya está tomado"… dicho por tu propia cuenta.** El POST del registro envía el
+  correo de verificación **por SMTP DENTRO de la petición** (2-6 s con la página colgada y el botón
+  vivo) → segundo clic → el primer envío ya había creado la cuenta y el segundo choca contra ella.
+  La cuenta quedaba perfectamente creada y solo se descubría probando a loguear.
+  **Fix en dos capas:** el botón se deshabilita al primer envío válido (`reg.creating` ×4; solo si
+  `checkValidity()`, o un formulario incompleto dejaría el botón muerto sin haber enviado nada); y
+  en el servidor, un conflicto donde **el buzón canónico coincide Y la contraseña verifica contra el
+  hash de la cuenta chocada** no es conflicto: es el mismo creador reintentando → se le manda a la
+  pantalla del código. **La contraseña es la prueba de identidad** — un extraño con el username o el
+  correo de otro sigue viendo el error de siempre. `tools/test_registro_doble.py` **17/17**.
+- 🔴 **"Código incorrecto" con el código bien tecleado.** CADA login de una cuenta sin verificar
+  **regeneraba el código y mataba el anterior** — y el flujo real de alguien atascado es probar el
+  login varias veces. Letal cuando el buzón es de OTRA persona (fue el caso: el padre le dictaba un
+  código que el propio login del hijo acababa de invalidar). También explica los "dos códigos que
+  nunca pedí": uno del registro, otro de su login.
+  **Fix:** el login solo genera y envía si NO hay uno vigente. El botón "reenviar código" sigue
+  rotándolo — ésa es la vía explícita. `tools/test_codigo_verificacion.py` **13/13**.
+- ⚠️ Tres checks de `test_correo_canonico` se **reencuadraron** (usaban la misma contraseña que la
+  cuenta base = "la misma persona"). La regla que vigilan —un buzón, una cuenta— sigue intacta, y
+  ahora además se prueba el alias de un extraño. 24/24.
+- ⚠️ **Trampa de los tests de registro:** un `test_client` que ya verificó queda LOGUEADO, y a un
+  usuario con sesión `/register` lo redirige a `/welcome` sin crear nada. Cliente nuevo por caso.
+
+## 🎁 LA OFERTA DE BIENVENIDA, ENCENDIDA AL 30% (2026-08-13)
+`LAUNCH_DISCOUNT_PCT=30` puesta en producción. **El descuento se aplica al crear el pedido, antes de
+elegir riel**, así que vale igual por PayPal y por USDT: primer mes $17.50/$35, renovación $25/$50.
+Solo mensual y solo para quien **nunca ha pagado** (atado a la cuenta, no a una cookie).
+- Línea de arranque nueva **`[Oferta] bienvenida=30% → premium $35.00 (lista $50)…`** — un número que
+  toca precios tiene que poder confirmarse desde la terminal; el error caro no es que no quede
+  puesta, es que quede un 3 donde iba un 30.
+- 🔴 **Dos fallos que solo aparecían con la oferta ENCENDIDA** (o sea: habrían salido el día del
+  lanzamiento, cobrando dinero real): (1) el porcentaje estaba escrito **a mano** en las 4
+  traducciones de la landing ("15%") y el diccionario pisa lo que renderiza Jinja → habría mostrado
+  $35 junto a "↓ 15%"; ahora lleva `{pct}` y el número sale de `LAUNCH_PCT`. (2) `checkout.html`
+  cargaba `pages_i18n.js` al FINAL del body pero su script lo usa al parsear → cuando el primer mes
+  y la renovación difieren, la excepción tumbaba el bloque y **el carrito no avisaba de que el precio
+  sube en el mes 2**. El diccionario pasó al `<head>`.
+- ⚠️ **NO caduca sola**: apagarla el **12-oct-2026** con `LAUNCH_DISCOUNT_PCT=0`. Y ojo — el dueño
+  apagó la oferta sin querer copiando el bloque de apagado que iba en el mismo mensaje que el de
+  encendido: **nunca dar los dos comandos juntos.**
+- ⚠️ Choca con el socio: su código da 20% y esto da 30% público. Su dinero no se rompe (el cliente
+  atado renueva a SU tarifa y la comisión se paga igual), pero su código deja de ser un privilegio.
+- `tools/check_oferta.py [usuario…]` dice si está encendida y **por qué una cuenta la ve o no** —
+  "tener plan Free HOY" ≠ "no haber pagado nunca": un pedido pagado en el historial la excluye para
+  siempre, que es lo que despistó al dueño (sus cuentas de prueba ya habían pagado).
+
+## 🔑 EL CANDADO DEL LANZAMIENTO ES `PREVIEW_USERS`, YA NO NGINX (2026-08-13)
+Descubierto al dar acceso al papá del dueño: **nginx está en la config ABIERTA** (`…academy.abierto
+.conf`) — el pase de nginx ya no existe, `nginx -T | grep pase` solo devuelve comentarios. Lo único
+que tapa el sitio hoy es el candado de la aplicación: `PREVIEW_USERS=maurotradesve,gussytrades,
+guaramo2026`. Cualquier otro —anónimo o logueado— ve "Próximamente".
+- **Abrir al público el día del lanzamiento = `set_env.py --quitar PREVIEW_USERS`.** No hay que tocar
+  nginx. (Actualizar `LANZAMIENTO.md` con esto.)
+- ⚠️ **`/register` también está detrás del candado**, así que para crear una cuenta nueva hay que
+  quitarlo, registrar y volver a ponerlo CON el nombre nuevo en la lista — **la lista se escribe
+  entera, no se añade**. Y mientras está quitado el sitio queda 100% público (ya no hay segunda
+  barrera): hacerlo del tirón.
+- Confirmar siempre con `grep -i preview /var/log/trader.out.log | tail -1`.
+
 ## 📌 PENDIENTES DE ÉL (recordárselos cuando toque, no cada mensaje)
+0. 🔴 **ROTAR LOS SECRETOS DE PRODUCCIÓN — antes de abrir al público (2026-08-13).** El 13-ago se
+   pegaron en el chat, en texto plano, TODOS los de la línea `environment=` de supervisor: **Secret
+   LIVE de PayPal**, `SECRET_KEY` de Flask, clave de OpenAI, token de GitHub (`ghp_…`), contraseña
+   del correo, API key + IPN secret de NOWPayments y la de PostgreSQL. Pasó porque el comando que se
+   le dio (`grep LAUNCH … *trader*.conf`) imprime la línea ENTERA — **culpa compartida: no volver a
+   mandar un grep sobre esa línea sin avisar de lo que va a salir.**
+   Orden: (1) PayPal Secret — es LIVE, opera su cuenta de cobros; (2) `SECRET_KEY` — con ella se
+   **falsifican sesiones de cualquier usuario, admin incluido** (efecto: todos vuelven a entrar, hoy
+   gratis); (3) OpenAI; (4) token GitHub; (5) correo (y si la reusa en algo personal, allí también);
+   (6) NOWPayments; (7) PostgreSQL (solo localhost, riesgo bajo). Cada una con `set_env.py` +
+   `reread && update`. **Los valores nuevos NUNCA al chat.**
 1. **Revisar cómo quedó "Mi cuenta"** (punto 20, hecho el 2026-08-04): dijo *"aún no he revisado
    cómo quedó"*. Preguntarle si le convence la posición (va la primera del menú) antes de darlo
    por bueno del todo.
