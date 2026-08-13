@@ -4135,6 +4135,23 @@ def welcome():
     return resp
 
 
+@app.route('/sitemap.xml')
+def sitemap():
+    """Las páginas PÚBLICAS del sitio, para los buscadores.
+
+    Existe porque el `robots.txt` de la config live de nginx lo anuncia
+    (`Sitemap: …/sitemap.xml`) — anunciar un sitemap que responde 404 es
+    peor que no anunciarlo. Solo lista lo que un visitante sin cuenta puede
+    ver; nada de /app, /admin ni /api."""
+    paginas = ['landing', 'pricing', 'guide', 'socials', 'contact',
+               'terms', 'privacy', 'login', 'register']
+    urls = ''.join('<url><loc>%s</loc></url>' % abs_url(p) for p in paginas)
+    xml = ('<?xml version="1.0" encoding="UTF-8"?>'
+           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+           '%s</urlset>' % urls)
+    return app.response_class(xml, mimetype='application/xml')
+
+
 @app.route('/pricing')
 def pricing():
     """Los planes viven en UN solo sitio: la sección de la landing.
