@@ -2279,10 +2279,17 @@ def _send_audit_alert_email(event_type, user_id, detail):
 
 
 def _aware(dt):
-    """Treat naive DB datetimes as UTC so comparisons never crash."""
+    """Treat naive DB datetimes as UTC so comparisons never crash.
+
+    ⚠️ Mismo arreglo que `_as_utc` (son helpers gemelos, este lo usan pagos y
+    suscripciones): una fecha que YA trae zona se CONVIERTE a UTC en vez de
+    devolverse tal cual. Las fechas de esta base vienen sin zona, pero las que
+    llegan parseadas de la API de PayPal sí la traen — y compararlas sin
+    convertir mezcla relojes.
+    """
     if dt is None:
         return None
-    return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc) if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
 
 
 @login_manager.user_loader
