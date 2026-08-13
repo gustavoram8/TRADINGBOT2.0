@@ -2489,6 +2489,25 @@ boards"** que llevaba desde antes del lanzamiento en la lista de críticos.
   ⚠️ El ES del panel decía "socio" — palabra PROHIBIDA por el acuerdo (contradice "no existe
   sociedad") → "colaborador". `tools/test_panel_socio.py` **34/34** + navegador real (ES, los tres
   perfiles, billetera guardada desde la página, 0 errores JS).
+  · ✅ **La escalera 30/35/40 y el chargeback: VERIFICADOS corriendo 79 ventas por
+    `record_sale_breakdown` — `tools/test_escalera_socio.py` 19/19** (reconstruye `test_reglaB` y
+    `test_rerank`, perdidos al reciclarse el contenedor). El % sube solo (24→30%, 25→35%, 74→35%,
+    75→40%), una renovación NO sube tramo (cuenta clientes, no pagos), y un contracargo quita al
+    cliente del recuento + cancela su comisión pendiente (o la vuelve **clawback** si ya se pagó) +
+    hace subir de puesto a los de abajo (un 40% puede volver a 35%).
+  · 🔴 **ESQUEMA MARGINAL CONFIRMADO POR EL DUEÑO (2026-08-13) — no reabrir.** Su papá propuso
+    hacerlo **retroactivo** ("con 25 clientes cobra 35% por LOS 25") por ser más fácil de entender.
+    Se midió con `tools/compara_esquemas.py` (constantes reales del sitio) y el dueño se quedó con
+    el marginal. **El argumento que decidió no fue el coste** (+$853/año creciendo de 10 a 100
+    clientes) **sino el incentivo invertido:** con el retroactivo el cliente 75 trae $40 y sube la
+    comisión $134 → **te deja $101 PEOR que no tenerlo**, y no recuperas ese nivel hasta el cliente
+    83 (8 clientes que valen cero). En el umbral de 25 pasa igual en pequeño (24→25: caes de $404 a
+    $384, recuperas en el 27). O sea: habría puntos donde al dueño le conviene que el colaborador
+    NO venda. Textual: *"dejémoslo así, y en caso de que para el colaborador sea complicado de
+    entender se le replantea"*. Alternativa ofrecida y guardada por si hace falta simplificar:
+    **33% plano** = mismo coste que el acuerdo actual ($6.851 vs $6.805 en ese año) en UNA frase,
+    sin escalera ni zonas muertas. Explicación del marginal que sí entendió el papá: *"cada cliente
+    tiene su propia tarifa y no cambia nunca, como la antigüedad"*.
 - [x] ✅ **17. Foro — simulacro de tráfico real (2026-08-09) + COMUNIDADES PRIVADAS.**
   `tools/simula_foro.py` = **65 reglas atacadas por HTTP, 0 evadibles** (puertas por plan con el
   free EMPUJANDO la puerta, límites diarios, prefiltro, propiedad, silenciado, XSS: todo se pinta
