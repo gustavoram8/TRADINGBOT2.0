@@ -1,14 +1,54 @@
 # 🚀 LANZAMIENTO — abrir Tradeable Academy al público
 
-> **Qué es esto.** La lista completa de lo que falta para que `tradeable.academy` deje de mostrar la
-> página de "en construcción" y sirva la aplicación real. Escrito el **2026-07-30**, el día que el
-> dominio quedó en línea con HTTPS.
+> **Qué es esto.** La checklist para abrir `tradeable.academy` al público. Escrita el **2026-07-30**;
+> **reescrita la cabecera el 2026-08-13**, porque casi todo lo de abajo ya se hizo y el interruptor
+> cambió de sitio.
+
+---
+
+## ⚡ EL ESTADO REAL (2026-08-13) — leer ESTO antes que el resto del archivo
+
+**El candado del sitio es `PREVIEW_USERS`, ya NO nginx.** nginx sirve la app en el dominio desde la
+config ABIERTA (`deploy/nginx/tradeable.academy.abierto.conf`); el pase de nginx ya no existe. Lo
+único que tapa el sitio es la lista de usuarios de vista previa en la aplicación.
+
+**Abrir al público = un comando:**
+```bash
+cd /var/www/TRADINGBOT2.0
+python3 tools/set_env.py --quitar PREVIEW_USERS
+supervisorctl reread && supervisorctl update      # SIN restart detrás
+# comprobar:  grep -i preview /var/log/trader.out.log | tail -1   → candado=apagado
+```
+
+**Lo que ya está HECHO de las secciones viejas de abajo** (no rehacer):
+- ✅ PayPal LIVE encendido con suscripciones y webhook verificado (2026-08-10, `check_subs.py` 5 bien).
+- ✅ Correo: `info@`/`support@tradeable.academy` reales (cPanel del papá), SPF/DKIM/DMARC, la app
+  envía como `info@` (2026-08-08).
+- ✅ nginx con `proxy_pass` a gunicorn, estáticos, webhooks con más espera (config abierta).
+- ✅ `SITE_URL=https://tradeable.academy` puesta; bypass de `scalpel_anon` y cabeceras desplegados.
+- ✅ Oferta de bienvenida 30% encendida (`LAUNCH_DISCOUNT_PCT=30`; apagarla el 12-oct-2026).
+
+**Lo que queda para el lanzamiento DE VERDAD (el del anuncio público):**
+1. 🔴 **Rotar los secretos de producción** (pendiente #0 de `CLAUDE.md`, se pegaron en el chat el
+   2026-08-13): PayPal Secret → `SECRET_KEY` → OpenAI → GitHub → correo → NOWPayments → PostgreSQL.
+2. **`PUBLIC_HTTPS=1`** (cookies Secure + ProxyFix + IP real). ⚠️ Apaga el acceso por
+   `http://IP:5001` — avisar al dueño antes; su vista previa pasa a ser el propio dominio.
+3. **Cambiar nginx a `tradeable.academy.live.conf`** cuando se quiera salir en Google: la config
+   abierta actual sigue con `robots.txt` en `Disallow: /` a propósito (apertura sin indexar).
+   Receta en la cabecera del propio archivo `.conf`. Purgar caché de Cloudflare después.
+4. **Cerrar el puerto 5001 al exterior** (sección D de abajo).
+5. Copyright (sección 3 de abajo) y reservar los handles `@tradeableacademy` (ya reservados IG/TikTok).
+
+> ⚠️ `/register` también está detrás del candado: quitar `PREVIEW_USERS` abre TAMBIÉN los registros.
+> Y la lista se escribe ENTERA al reponerla, no se añade.
+
+---
+
+> **Lo de aquí para abajo es el documento original (2026-07-30).** Sigue siendo útil como referencia
+> de por qué se hizo cada cosa, pero su "estado hoy" quedó viejo: usar la sección de arriba.
 >
-> **Cómo usarlo.** Cuando el usuario diga *"ya estamos listos para abrir"*, Claude lee este archivo y
-> ejecuta las secciones en orden. Nada de improvisar el día del lanzamiento.
->
-> **Estado hoy:** el dominio funciona y muestra la página de construcción. La aplicación real sigue
-> corriendo aparte en `62.171.180.22:5001` (IP cruda, sin HTTPS) y **ahí es donde el usuario
+> **Estado de entonces:** el dominio funciona y muestra la página de construcción. La aplicación real
+> sigue corriendo aparte en `62.171.180.22:5001` (IP cruda, sin HTTPS) y **ahí es donde el usuario
 > previsualiza sus cambios**. Los dos mundos no se tocan todavía.
 
 ---
