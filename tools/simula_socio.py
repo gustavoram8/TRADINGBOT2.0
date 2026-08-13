@@ -72,7 +72,29 @@ def main():
             if pc:
                 A.db.session.delete(pc)
             if u:
-                A.AuditEvent.query.filter_by(user_id=u.id).delete()
+                # 🔴 Borrar el User a secas REVIENTA en cuanto alguien ha usado
+                # la cuenta: al entrar una vez se le crea un `known_device`, y
+                # su `user_id` no admite nulo, así que PostgreSQL rechaza el
+                # DELETE entero (pasó el 2026-08-13, con la demo ya usada).
+                # Se reusa el MISMO barrido del borrado de cuenta real —
+                # `BORRAR_AL_ELIMINAR` es la única lista que sabe qué cuelga de
+                # un usuario, y repetirla a mano aquí es como se desincroniza.
+                borradas = A._borrar_datos_personales(u)
+                # Y lo que ese barrido CONSERVA a propósito (cobros y
+                # auditoría, atados a la fila anonimizada): aquí la fila
+                # desaparece del todo, así que también tienen que irse.
+                for nombre in A.CONSERVAR_AL_ELIMINAR:
+                    modelo = getattr(A, nombre, None)
+                    if modelo is None or not hasattr(modelo, 'user_id'):
+                        continue
+                    n = modelo.query.filter_by(user_id=u.id).delete(
+                        synchronize_session=False)
+                    if n:
+                        borradas[nombre] = n
+                if borradas:
+                    print('   · filas dependientes: %s'
+                          % ', '.join('%s×%d' % (k, v)
+                                      for k, v in sorted(borradas.items())))
                 A.db.session.delete(u)
             A.db.session.commit()
             print('demo del colaborador borrada entera.')
