@@ -2555,9 +2555,22 @@ boards"** que llevaba desde antes del lanzamiento en la lista de críticos.
   reescrita ×4 (menciona el sitio). `tools/test_foro_imagenes.py` **32/32** + simula_foro 65/65.
   ⚠️ Lo que NO se puede probar sin gastar llamadas: el juicio de la IA en sí — el test cubre todo lo
   que lo rodea y vigila que el prompt conserve sus cláusulas. Fail-open se queda (IA caída → pasa).
-- [ ] **19. 🔴 Calidad del analizador fuera de ICT/STDV.** No sabe operar armónicos ni otras
-  metodologías y **no puede juzgar si el análisis es correcto**. Hay que encontrarle una forma de
-  validarlo. (El punto más difícil de la lista.)
+- [ ] **19. 🔴 Calidad del analizador fuera de ICT/STDV — EN CURSO (banco construido 2026-08-13).**
+  El dueño no puede etiquetar Harmonic/Elliott/etc. (solo opera ICT/OTE) → la salida: **gráficos
+  SINTÉTICOS construidos desde la definición aritmética del patrón** (un Gartley ES B=0.618·XA;
+  la onda 4 NO solapa a la 1) — la verdad se sabe por construcción, sin experto. **Hecho:**
+  `tools/banco_analizador.py` (20 casos = 5 metodologías × ganado + perdido-con-confluencias +
+  2 trampas; render TradingView 1280×800 con entrada/salida/SL/TP/temporalidad/volumen/RSI; los
+  asserts cazaron 7 fallos de la 1ª pasada) + `tools/corre_banco.py` (mismo prompt/modelo/params
+  que `/analyze`, calcados; exige la clave de pago; ~$0.70 la pasada) + `tools/califica_banco.py`
+  (rúbrica con señal clave / prohibidas → INFORME.md; probado con respuestas simuladas y borradas).
+  Las TRAMPAS son lo central: etiquetas que mienten (ratios falsos, solape de onda 4, spring sin
+  rango, RSI "en 28" que el panel marca 50.5, cruce de medias inexistente) → miden complacencia.
+  **PENDIENTE:** el dueño corre en el VPS `venv/bin/python3 tools/banco_analizador.py` →
+  `corre_banco.py --si` → `califica_banco.py` y se lee el INFORME juntos; según el resultado se
+  decide (mejorar prompt / pasar números medidos tipo Chalkboard / cambiar modelo / marcar beta).
+  ⚠️ Límite honesto anotado: sintético limpio = condición necesaria, no suficiente. NO se tocó
+  nada del analizador (zona prohibida). `HOJA.md` = la spec para que Gabriel valide los 20 casos.
 - [x] ✅ **20. "Mi cuenta" en el menú de arriba a la derecha (2026-08-04).** No existía ninguna
   forma de llegar a Ajustes desde ahí: vivía solo en el acordeón **Products** del lateral, que es
   el último sitio donde alguien busca su propia cuenta. Fila nueva `#menu-account` → `/settings`,
