@@ -2566,9 +2566,25 @@ boards"** que llevaba desde antes del lanzamiento en la lista de críticos.
   (rúbrica con señal clave / prohibidas → INFORME.md; probado con respuestas simuladas y borradas).
   Las TRAMPAS son lo central: etiquetas que mienten (ratios falsos, solape de onda 4, spring sin
   rango, RSI "en 28" que el panel marca 50.5, cruce de medias inexistente) → miden complacencia.
-  **PENDIENTE:** el dueño corre en el VPS `venv/bin/python3 tools/banco_analizador.py` →
-  `corre_banco.py --si` → `califica_banco.py` y se lee el INFORME juntos; según el resultado se
-  decide (mejorar prompt / pasar números medidos tipo Chalkboard / cambiar modelo / marcar beta).
+  **1ª PASADA CORRIDA Y LEÍDA (2026-08-13, $0.33, resultados en `docs/banco_resultados/`):**
+  · **Trades normales: BIEN.** Ganados 4/5 limpios y en los 5 perdidos encontró la razón REAL
+    (límite ciega, 5ª truncada, test con volumen alto —contradiciendo las notas del trader—,
+    ruptura sin volumen, cruce en rango). Lo que el cliente usa a diario funciona.
+  · 🔴 **Trampas: 8–9 de 10 FALLADAS. El patrón es COMPLACENCIA: cree las etiquetas y las notas,
+    no MIDE.** Validó ratios falsos de Gartley leyendo las etiquetas ("el gráfico muestra
+    claramente 0.618/0.786" cuando eran 0.50/0.618); validó un Butterfly cuyo D no supera X;
+    afirmó "la onda 4 no entra en territorio de la 1, es visible" siendo falso; llamó "más larga"
+    a una onda 3 que era la más corta; **alucinó lecturas de volumen en un gráfico SIN panel de
+    volumen** (violando su propia regla); dio por "máximos iguales" un 2º pico 4.5 pts más alto;
+    avaló un objetivo medido dibujado al DOBLE y encima aconsejó "más paciencia" hacia él;
+    y confirmó un golden cross INEXISTENTE ("esto es visible en el gráfico"). T3 fue el único
+    matiz (dudó del RSI=28 pero no leyó el 50.5 rotulado); W4 medio punto (objetó el contexto).
+  · ⚠️ El calificador regex dio 2 rojos FALSOS (W2/W4 citaban al trader para corregirlo) —
+    corregido W2; SIEMPRE leer los textos antes de sentenciar.
+  **PENDIENTE — decisión del dueño sobre el arreglo:** el candidato #1 es cirugía de prompt
+  ("etiquetas y notas son AFIRMACIONES a verificar contra el eje, no hechos"), medible re-corriendo
+  el banco (~$0.35) y comparando; #2 modelo más fuerte; #3 números medidos tipo Chalkboard;
+  #4 marcar beta. 🔴 Tocar el prompt = zona prohibida: SOLO con su autorización explícita.
   ⚠️ Límite honesto anotado: sintético limpio = condición necesaria, no suficiente. NO se tocó
   nada del analizador (zona prohibida). `HOJA.md` = la spec para que Gabriel valide los 20 casos.
 - [x] ✅ **20. "Mi cuenta" en el menú de arriba a la derecha (2026-08-04).** No existía ninguna
