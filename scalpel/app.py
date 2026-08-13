@@ -8957,6 +8957,15 @@ def _subs_ok_for(order):
             and bool(PAYPAL_PLAN_IDS.get(order.plan)))
 
 
+def _codigo_creador(promo_code):
+    """El PromoCode de socio que corresponde a este código, o None."""
+    if not promo_code:
+        return None
+    pc = PromoCode.query.filter(
+        db.func.lower(PromoCode.code) == promo_code.lower()).first()
+    return pc if (pc and pc.kind == 'creator') else None
+
+
 def descuento_permanente(promo_code):
     """¿El descuento de este código sigue vivo en cada renovación?
 
@@ -8968,31 +8977,48 @@ def descuento_permanente(promo_code):
     GANCHO, no una tarifa nueva: rebaja el primer mes y a partir del segundo se
     cobra el precio de lista. Sin esto, una promo de una semana le regalaba el
     descuento de por vida a quien pasara por ahí ese día."""
-    if not promo_code:
-        return False
-    pc = PromoCode.query.filter(
-        db.func.lower(PromoCode.code) == promo_code.lower()).first()
-    return bool(pc and pc.kind == 'creator')
+    return _codigo_creador(promo_code) is not None
+
+
+def _tarifa_de_creador(lista, pc):
+    """Lo que ese código de socio deja el plan, SOLO con su propio descuento.
+
+    🔴 A propósito NO usa `_quote()`: _quote aplica `max(oferta_de_lanzamiento,
+    código)` porque al COMPRADOR se le cobra siempre el mejor precio. Pero la
+    tarifa perpetua de un cliente atado es la de SU SOCIO, no la de una oferta
+    pública que caduca — mezclarlas convertía el gancho temporal en un precio
+    de por vida."""
+    return round(lista * (1 - (pc.discount_pct or 0) / 100.0), 2)
 
 
 def _tramos(user, plan, cycle, promo_code, primer):
     """(primer mes, renovación) según la regla de descuentos del dueño.
 
-    · Código de SOCIO → los dos tramos rebajados: permanente, es el acuerdo.
-    · Cuenta ATADA a un socio que hoy usa una promo general mejor (cláusula
-      3.1) → el primer mes va con la promo, pero la renovación vuelve a SU
-      TARIFA DE SOCIO, no a la de lista: la promo no puede quitarle lo que la
-      atadura le promete.
-    · Cualquier otra promo — un código general o la oferta de lanzamiento sin
-      código — es un gancho de UNA vez: la renovación va a precio de lista.
+    · El PRIMER MES es siempre `primer`: lo que el carrito acaba de cobrar, que
+      ya es el mejor precio disponible (nunca se acumulan descuentos).
+    · La RENOVACIÓN depende de si hay un socio detrás:
+        - código de socio en este pedido, o cuenta ATADA a uno → SU TARIFA DE
+          CREADOR, perpetua (cláusulas 2.4 y 3.1 del acuerdo);
+        - nadie detrás → precio de LISTA: una promo general o la oferta de
+          lanzamiento son un gancho de una vez.
+
+    🔴 El caso que costó dinero: con la oferta pública del 30% encendida y un
+    socio del 20%, el primer mes son $35 por la oferta — pero la RENOVACIÓN
+    tiene que ser $40 (su tarifa de socio), no $35. Antes se congelaba el
+    precio de lanzamiento para siempre, contra la cláusula 3.1 y a razón de
+    $5/mes por cliente mientras siguiera suscrito.
     """
-    if descuento_permanente(promo_code):
-        return primer, primer
     lista = float(_plan_base_price(plan, cycle) or primer)
-    stored = _stored_promo(user) if user is not None else None
-    if stored and stored.kind == 'creator' and             (stored.valid_for == 'both' or stored.valid_for == cycle):
-        perm = _quote(plan, cycle, stored)['final_price']
-        return primer, max(primer, min(lista, perm))
+    # El socio que manda: el del código de ESTE pedido si es de creador; si no,
+    # el que la cuenta ya lleva atado (el cliente que canjea una promo general).
+    pc = _codigo_creador(promo_code)
+    if pc is None:
+        stored = _stored_promo(user) if user is not None else None
+        if stored and stored.kind == 'creator' and \
+                (stored.valid_for == 'both' or stored.valid_for == cycle):
+            pc = stored
+    if pc is not None:
+        return primer, max(primer, min(lista, _tarifa_de_creador(lista, pc)))
     return primer, max(primer, lista)
 
 
