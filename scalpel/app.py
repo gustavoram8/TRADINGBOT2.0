@@ -6901,12 +6901,26 @@ def login():
                 return render_template('login.html', error='banned')
             # Unverified account → resume the email-verification flow.
             if not user.email_verified and not user.is_admin:
-                code = _new_verification_code()
-                user.verification_code = code
-                user.verification_expires = datetime.now(timezone.utc) + timedelta(minutes=15)
-                db.session.commit()
-                sent = send_verification_email(user.email, code)
-                record_audit_event('email_verification', user_id=user.id, detail=user.email, success=sent)
+                # 🔴 Solo se genera código si NO hay uno vigente. Antes, CADA
+                # intento de login regeneraba y MATABA el anterior — y quien
+                # está atascado verificando prueba el login varias veces, así
+                # que el código que tenía en el buzón moría por detrás mientras
+                # lo tecleaba: "código incorrecto" con el código bien escrito.
+                # Le pasó al dueño con la cuenta de su papá (el buzón era de
+                # otra persona: cada reintento suyo invalidaba lo que el padre
+                # le había dictado). El botón "reenviar código" sigue siendo la
+                # vía EXPLÍCITA de pedir uno nuevo.
+                vigente = (user.verification_code
+                           and _as_utc(user.verification_expires)
+                           and datetime.now(timezone.utc)
+                           < _as_utc(user.verification_expires))
+                if not vigente:
+                    code = _new_verification_code()
+                    user.verification_code = code
+                    user.verification_expires = datetime.now(timezone.utc) + timedelta(minutes=15)
+                    db.session.commit()
+                    sent = send_verification_email(user.email, code)
+                    record_audit_event('email_verification', user_id=user.id, detail=user.email, success=sent)
                 session['pending_user_id'] = user.id
                 session['pending_remember'] = remember
                 session['post_login_next'] = destino
