@@ -78,7 +78,15 @@ def main():
     with io.open(manif_ruta, encoding='utf-8') as fh:
         casos = json.load(fh)
 
-    filtro = [a for a in sys.argv[1:] if not a.startswith('--')]
+    # --tag v2 → resultados-v2/: una pasada nueva NUNCA pisa la línea base,
+    # porque el veredicto ES la comparación entre las dos carpetas.
+    args = list(sys.argv[1:])
+    global RES
+    if '--tag' in args:
+        i = args.index('--tag')
+        RES = os.path.join(BANCO, 'resultados-' + args[i + 1])
+        del args[i:i + 2]
+    filtro = [a for a in args if not a.startswith('--')]
     if filtro:
         casos = [c for c in casos
                  if any(c['id'].startswith(f) for f in filtro)]

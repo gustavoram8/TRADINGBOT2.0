@@ -3845,6 +3845,34 @@ SP_CORE_LITE = """SHARED MARKET CONCEPTS (baseline context — the trader may re
 - INSTRUMENT: the trader states the exact instrument (index futures NQ/ES/YM, forex majors, metals XAU/XAG, energy CL/NG). Calibrate typical volatility, session timing and stop distances to it — gold and NQ produce wider stop-runs than a quiet FX pair."""
 
 
+# ── Cláusula de VERIFICACIÓN DE AFIRMACIONES (tras el banco del 2026-08-13) ──
+# El banco de gráficos sintéticos midió el analizador y encontró el hueco
+# exacto: maneja bien los conceptos y encuentra la razón real de una pérdida,
+# pero ante afirmaciones MEDIBLES que mienten (ratios etiquetados, longitudes
+# de onda, "máximos iguales", objetivos medidos, valores de indicador, cruces)
+# les cree en vez de medirlas — validó un Gartley con B en 0.50, un solape de
+# onda 4 "visible", un golden cross inexistente y lecturas de volumen sin
+# panel de volumen. Esta cláusula ordena verificar ese tipo de afirmación
+# contra el eje de precios antes de validarla.
+# 🔑 Va DETRÁS de una env var y por defecto APAGADA: producción sirve el
+# prompt de siempre hasta que el banco demuestre, con el antes/después de los
+# 30 casos, que la cláusula mejora las trampas SIN empeorar ICT/OTE (regla
+# pactada con el dueño). Encenderla = ANALYZE_VERIFY_CLAIMS=1 + restart;
+# apagarla = quitar la variable. Nada que revertir en código.
+ANALYZE_VERIFY_CLAIMS = os.environ.get('ANALYZE_VERIFY_CLAIMS', '0') == '1'
+print('[AI] clausula-verificacion=%s'
+      % ('ENCENDIDA' if ANALYZE_VERIFY_CLAIMS else 'apagada (prompt de siempre)'),
+      flush=True)
+
+VERIFY_CLAIMS_CLAUSE = """
+CLAIM VERIFICATION — MEASURABLE CLAIMS GET CHECKED, NEVER ASSUMED (PERMANENT RULE, EVERY METHODOLOGY):
+The trader's labels, drawings and written notes are CLAIMS, not facts — including the ratio numbers written next to a pattern. Whenever a claim is CHECKABLE on the chart, CHECK it against the price axis and the visible swings before you rely on it. Checkable claims include: harmonic/fib ratios and retracement depths (read the pivot prices off the axis and compare the leg distances yourself), Elliott wave lengths and overlaps (is wave 3 the shortest? does wave 4 dip into wave 1's territory?), "equal" highs or lows (are they actually equal on the axis?), measured-move targets (project the pattern height yourself and compare), a level described as swept or broken (did price actually reach it?), a printed indicator value, a claimed crossover, and a claimed volume signature (only checkable if a volume panel is visible). Three outcomes, in order of usefulness:
+(1) your measurement supports the claim — proceed normally;
+(2) your measurement CONTRADICTS the claim or the label — make this your LEAD observation, stated kindly but plainly: "the drawn D sits near 100.6, while a 0.786 retracement of the marked X-A leg would sit near 98.6 — worth re-measuring before trusting this PRZ." Never soften a measured contradiction into agreement;
+(3) the chart does not let you verify it (no panel, not drawn, too small to read) — say you cannot confirm it, and do NOT restate the claim as fact anywhere in the analysis.
+The interpretation-variance rule ("judge against the trader's OWN rules, never one universal standard") applies to STYLE — which entry model they prefer, which confluences they weigh. It NEVER applies to arithmetic or geometry: a mislabeled ratio, an overlapping wave 4, an unequal "double top" or a nonexistent crossover is not a style choice, and silently endorsing it is the failure that harms the trader most."""
+
+
 def build_system_prompt(approach):
     """Assemble the system prompt with ONLY the sections relevant to the trader's
     chosen approach, to avoid paying for methodology blocks that don't apply.
@@ -3853,6 +3881,11 @@ def build_system_prompt(approach):
     The global scaffolding (compliance, two-phase reading, grounding, direction)
     and the OUTPUT rules are ALWAYS included."""
     raw = SYSTEM_PROMPT
+    if ANALYZE_VERIFY_CLAIMS:
+        # La cláusula entra al final del andamiaje GLOBAL (antes del primer
+        # bloque de metodología) → viaja con TODAS las metodologías, también
+        # en el fallback de approach desconocido.
+        raw = raw.replace('@@SEC:', VERIFY_CLAIMS_CLAUSE + '\n\n@@SEC:', 1)
     parts = re.split(r'@@SEC:([A-Z]+)@@\n', raw)
     global_top = parts[0]
     sec = {}

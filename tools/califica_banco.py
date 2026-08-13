@@ -32,11 +32,17 @@ BANCO = os.path.join(RAIZ, 'out', 'banco_analizador')
 
 
 def main():
+    # --tag v2 → califica la carpeta resultados-v2 y escribe INFORME-v2.md
+    args = list(sys.argv[1:])
+    sufijo = ''
+    if '--tag' in args:
+        sufijo = '-' + args[args.index('--tag') + 1]
     try:
         with io.open(os.path.join(BANCO, 'manifest.json'),
                      encoding='utf-8') as fh:
             casos = json.load(fh)
-        with io.open(os.path.join(BANCO, 'resultados', 'resultados.json'),
+        with io.open(os.path.join(BANCO, 'resultados' + sufijo,
+                                  'resultados.json'),
                      encoding='utf-8') as fh:
             resultados = json.load(fh)
     except IOError as e:
@@ -52,8 +58,11 @@ def main():
         rid = caso['id']
         r = resultados.get(rid)
         es_trampa = '_trampa_' in rid
+        # el tipo sale del RESULT del formulario, no del nombre del caso (el
+        # nombre mentía en I6/H5/W5: son perdidos sin el sufijo "_perdido")
+        res_form = caso['form'].get('result', '')
         tipo = 'TRAMPA' if es_trampa else \
-            ('perdido' if '_perdido' in rid else 'ganado')
+            {'Loss': 'perdido', 'Breakeven': 'BE'}.get(res_form, 'ganado')
         if not r:
             tabla.append('| %s | %s | — sin correr | | |' % (rid, tipo))
             cuenta['—'] += 1
@@ -108,15 +117,14 @@ def main():
     resumen = ('**Resultado global:** 🟢 %(🟢)d cazados · 🔴 %(🔴)d fallados · '
                '🟡 %(🟡)d a revisar · %(—)d sin correr\n' % cuenta)
     salida = '\n'.join([lineas[0], resumen, ''] + tabla + lineas[1:])
-    with io.open(os.path.join(BANCO, 'INFORME.md'), 'w',
-                 encoding='utf-8') as fh:
+    ruta_inf = os.path.join(BANCO, 'INFORME%s.md' % sufijo)
+    with io.open(ruta_inf, 'w', encoding='utf-8') as fh:
         fh.write(salida)
 
     print(resumen)
     for fila in tabla[2:]:
         print('  ' + fila.strip('| ').replace(' | ', '  ·  '))
-    print('\nInforme completo: %s'
-          % os.path.relpath(os.path.join(BANCO, 'INFORME.md'), RAIZ))
+    print('\nInforme completo: %s' % os.path.relpath(ruta_inf, RAIZ))
     return 0
 
 
