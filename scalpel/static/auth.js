@@ -31,6 +31,7 @@ const AUTH_I18N = {
     'reg.password': 'Password',
     'reg.passwordHint': '8+ characters, with a letter and a number',
     'reg.submit': 'Create account',
+    'reg.creating': 'Creating your account…',
     'reg.haveAccount': 'Already have an account?',
     'reg.login': 'Sign in',
     'reg.errInvalid': 'Please check your details.',
@@ -103,6 +104,7 @@ const AUTH_I18N = {
     'reg.password': 'Contraseña',
     'reg.passwordHint': '8+ caracteres, con una letra y un número',
     'reg.submit': 'Crear cuenta',
+    'reg.creating': 'Creando tu cuenta…',
     'reg.haveAccount': '¿Ya tienes una cuenta?',
     'reg.login': 'Iniciar sesión',
     'reg.errInvalid': 'Revisa tus datos.',
@@ -175,6 +177,7 @@ const AUTH_I18N = {
     'reg.password': 'Mot de passe',
     'reg.passwordHint': '8+ caractères, avec une lettre et un chiffre',
     'reg.submit': 'Créer le compte',
+    'reg.creating': 'Création de votre compte…',
     'reg.haveAccount': 'Vous avez déjà un compte ?',
     'reg.login': 'Se connecter',
     'reg.errInvalid': 'Vérifiez vos informations.',
@@ -247,6 +250,7 @@ const AUTH_I18N = {
     'reg.password': 'Senha',
     'reg.passwordHint': '8+ caracteres, com uma letra e um número',
     'reg.submit': 'Criar conta',
+    'reg.creating': 'Criando sua conta…',
     'reg.haveAccount': 'Já tem uma conta?',
     'reg.login': 'Entrar',
     'reg.errInvalid': 'Verifique seus dados.',
@@ -296,6 +300,9 @@ const AUTH_I18N = {
   try { const s = localStorage.getItem('scalpel_lang'); if (s && AUTH_I18N[s]) lang = s; } catch (e) {}
   const dict = AUTH_I18N[lang] || AUTH_I18N.en;
   const t = (k) => (dict[k] !== undefined ? dict[k] : (AUTH_I18N.en[k] || k));
+  // El botón de registro necesita traducir 'Creando tu cuenta…' en el
+  // momento del clic, fuera de este IIFE.
+  window.AuthI18n = { t: t };
 
   document.documentElement.lang = lang;
   // Default is LIGHT; switch to dark only if the user previously saved dark.

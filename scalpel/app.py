@@ -7236,17 +7236,48 @@ def register():
         # Clickwrap: the account cannot be created without explicit T&C consent.
         if not accepted_terms:
             return render_template('register.html', next=_safe_next(), error='terms_required', username=username, email=email)
-        if User.query.filter_by(username=username).first():
-            return render_template('register.html', next=_safe_next(), error='username_taken', username=username, email=email)
-        # Se compara el buzón CANÓNICO, no la cadena: juan+2@gmail.com es el
-        # mismo buzón que juan@gmail.com (así lo entrega Gmail), y sin esto un
-        # baneado volvía escribiendo "+2" en su propio correo. El mensaje es el
-        # mismo "ya registrado" de siempre — para quien probó un alias por
-        # curiosidad no hay diferencia con haberse olvidado de su cuenta.
         canon = _correo_canonico(email)
-        if User.query.filter(db.or_(User.email == email,
-                                    User.email_canonical == canon)).first():
-            return render_template('register.html', next=_safe_next(), error='email_taken', username=username, email=email)
+
+        def _es_el_mismo(u):
+            """¿El "conflicto" es la PROPIA cuenta que este formulario acaba de
+            crear? Pasa de verdad: el POST del registro envía el correo de
+            verificación por SMTP DENTRO de la petición (2-6 s de espera con el
+            botón todavía vivo), el usuario vuelve a pulsar, y el segundo envío
+            choca contra la cuenta que el primero creó hace tres segundos. El
+            dueño lo sufrió tal cual: "tu usuario ya está tomado" en la pantalla
+            y la cuenta perfectamente creada por debajo.
+
+            La prueba de identidad es LA CONTRASEÑA: si coincide con el hash de
+            la cuenta en conflicto (y es el mismo buzón), quien reenvía es quien
+            la creó — a esa persona no se le dice "tomado", se le lleva a donde
+            iba: la pantalla del código. Un extraño probando el username de otro
+            no conoce su contraseña y sigue viendo el error de siempre."""
+            return (u is not None and u.email_canonical == canon
+                    and u.check_password(password))
+
+        chocado = User.query.filter_by(username=username).first()
+        if chocado is None:
+            # Se compara el buzón CANÓNICO, no la cadena: juan+2@gmail.com es el
+            # mismo buzón que juan@gmail.com (así lo entrega Gmail), y sin esto
+            # un baneado volvía escribiendo "+2" en su propio correo.
+            chocado = User.query.filter(db.or_(
+                User.email == email, User.email_canonical == canon)).first()
+            if chocado is not None and not _es_el_mismo(chocado):
+                return render_template('register.html', next=_safe_next(),
+                                       error='email_taken', username=username,
+                                       email=email)
+        elif not _es_el_mismo(chocado):
+            return render_template('register.html', next=_safe_next(),
+                                   error='username_taken', username=username,
+                                   email=email)
+        if chocado is not None:
+            # El mismo creador, reintentando: a la pantalla del código, que es
+            # donde el primer envío lo habría dejado. (Si ya verificó en otra
+            # pestaña, /verify-email lo loguea directo — ya contempla ese caso.)
+            session['pending_user_id'] = chocado.id
+            session['pending_remember'] = remember
+            session['post_login_next'] = _safe_next()
+            return redirect(url_for('verify_email'))
 
         # Block registrations from known-banned devices
         if fp_hash and BannedFingerprint.query.filter_by(fp_hash=fp_hash).first():

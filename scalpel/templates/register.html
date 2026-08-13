@@ -132,6 +132,31 @@
         if (fpInput) fpInput.value = hash;
       });
     })();
+
+    // 🔴 Un solo envío por clic. El POST del registro manda el correo de
+    // verificación por SMTP DENTRO de la petición: 2-6 segundos con la página
+    // "colgada" y el botón vivo. El segundo clic de un usuario impaciente
+    // creaba el peor mensaje posible: su cuenta YA creada respondiéndole
+    // "ese usuario está tomado". El servidor ahora también reconoce el
+    // reintento, pero la cura de origen es que el segundo clic no salga.
+    (function () {
+      var form = document.getElementById('reg-form');
+      if (!form) return;
+      var enviado = false;
+      form.addEventListener('submit', function (e) {
+        if (enviado) { e.preventDefault(); return; }
+        // Solo si el navegador da el formulario por válido (required, minlength):
+        // si no, no hay POST y el botón debe seguir vivo.
+        if (form.checkValidity && !form.checkValidity()) return;
+        enviado = true;
+        var btn = form.querySelector('button[type=submit]');
+        if (btn) {
+          btn.disabled = true;
+          var k = (window.AuthI18n && AuthI18n.t) ? AuthI18n.t('reg.creating') : null;
+          btn.textContent = (k && k !== 'reg.creating') ? k : 'Creating your account…';
+        }
+      });
+    })();
   </script>
 </body>
 </html>

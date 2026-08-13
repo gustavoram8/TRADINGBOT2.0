@@ -68,17 +68,28 @@ with A.app.app_context():
     check('el correo ORIGINAL no se toca (es a donde se escribe)',
           u.email == 'juan@gmail.com')
 
-# La plantilla renderiza la clave traducida (reg.errEmail), no el nombre
-# interno del error: se comprueba lo que el USUARIO ve.
+# ⚠️ REENCUADRADO (2026-08-13, arreglo del doble envío del registro): estas
+# pruebas usaban LA MISMA contraseña que la cuenta base, y "mismo buzón + su
+# contraseña" ahora significa "la misma persona reintentando" — se le lleva a
+# la pantalla del código de SU cuenta en vez de decirle "ya registrado". La
+# regla que este archivo vigila (UN buzón = UNA cuenta) no se movió: en ningún
+# caso se crea una segunda cuenta, y un extraño sin la contraseña sigue viendo
+# el rechazo. La plantilla renderiza la clave traducida (reg.errEmail), no el
+# nombre interno del error: se comprueba lo que el USUARIO ve.
 r = registra('juan2', 'juan+2@gmail.com')
-check('🔴 el alias "+2" se rechaza como ya registrado',
+check('🔴 el alias "+2" con SU contraseña: a la verificación de su cuenta',
+      r.status_code == 302 and 'verify' in (r.headers.get('Location') or ''),
+      r.status_code)
+r = registra('juan3', 'J.u.a.n@gmail.com')
+check('🔴 el alias con puntos, igual',
+      r.status_code == 302 and 'verify' in (r.headers.get('Location') or ''))
+c_intruso = A.app.test_client()
+r = c_intruso.post('/register', data={
+    'username': 'juan4', 'email': 'juan+9@gmail.com', 'password': 'OtraClave77z',
+    'birth_date': '1999-05-05', 'accept_terms': '1'})
+check('🔴 el alias SIN la contraseña (un extraño) se rechaza como ya registrado',
       r.status_code == 200 and 'reg.errEmail' in r.get_data(as_text=True),
       r.status_code)
-check('...sin redirigir a verificación (no se creó nada)',
-      'verify' not in (r.headers.get('Location') or ''))
-r = registra('juan3', 'J.u.a.n@gmail.com')
-check('🔴 el alias con puntos también',
-      'reg.errEmail' in r.get_data(as_text=True))
 with A.app.app_context():
     # init_db siembra un admin: se cuentan solo las cuentas del test
     check('y no se creó ninguna cuenta nueva',
