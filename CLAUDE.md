@@ -645,6 +645,23 @@ guaramo2026`. Cualquier otro —anónimo o logueado— ve "Próximamente".
   barrera): hacerlo del tirón.
 - Confirmar siempre con `grep -i preview /var/log/trader.out.log | tail -1`.
 
+## 🔴 La tarifa del cliente de un socio se congelaba en la de LANZAMIENTO (2026-08-13)
+Salió al explicarle cómo distingue PayPal un descuento de creador (perpetuo) de la oferta pública
+(de una vez). `_tramos` calculaba la tarifa PERPETUA con `_quote()`, que aplica **max(oferta,
+código)** porque al comprador se le cobra el mejor precio. Con la oferta al 30% y un socio al 20%,
+la **renovación quedaba en $35 en vez de $40, para siempre** — el gancho temporal convertido en
+precio de por vida, contra la cláusula 3.1 del acuerdo. **$5/mes por cada cliente de socio captado
+durante la ventana de lanzamiento, mientras siguiera suscrito.**
+- **Fix:** `_tarifa_de_creador(lista, pc)` aplica **solo** el descuento del socio; el primer mes
+  sigue cobrando el mejor precio disponible. 🔑 Las **dos ramas** (código de socio en el pedido /
+  cuenta atada que canja una promo general) pasaron a un solo camino — el fallo vivía en las dos y
+  el primer arreglo solo tapó una.
+- ⚠️ **Lo que la pasarela ve es un IMPORTE, nunca un "cupón":** PayPal recibe dos tramos
+  (`TRIAL` 1 ciclo con el primer mes + `REGULAR` sin fin con la renovación) y NOWPayments una
+  factura por `final_price`. Por eso un error aquí no lo caza ningún panel externo: PayPal cobraría
+  $35/mes tan feliz durante años.
+- `tools/test_tarifa_creador.py` **16/16** (con el código viejo fallan 4).
+
 ## 📌 PENDIENTES DE ÉL (recordárselos cuando toque, no cada mensaje)
 0. 🔴 **ROTAR LOS SECRETOS DE PRODUCCIÓN — antes de abrir al público (2026-08-13).** El 13-ago se
    pegaron en el chat, en texto plano, TODOS los de la línea `environment=` de supervisor: **Secret
