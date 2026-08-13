@@ -1,6 +1,6 @@
 # Informe del banco del analizador
 
-**Resultado global:** 🟢 4 cazados · 🔴 12 fallados · 🟡 4 a revisar · 0 sin correr
+**Resultado global:** 🟢 11 cazados · 🔴 15 fallados · 🟡 4 a revisar · 0 sin correr
 
 
 | caso | tipo | veredicto | clave | prohibido |
@@ -14,7 +14,7 @@
 | E3_trampa_solape | TRAMPA | 🔴 | 1/1 | 1 |
 | E4_trampa_tercera_corta | TRAMPA | 🔴 | 1/1 | 1 |
 | W1_acumulacion_ganado | ganado | 🟢 | 1/1 | 0 |
-| W2_spring_falso_perdido | perdido | 🔴 | 1/1 | 1 |
+| W2_spring_falso_perdido | perdido | 🟢 | 1/1 | 0 |
 | W3_trampa_sin_volumen | TRAMPA | 🔴 | 0/1 | 0 |
 | W4_trampa_sin_rango | TRAMPA | 🔴 | 0/1 | 1 |
 | P1_hch_ganado | ganado | 🟢 | 1/1 | 0 |
@@ -25,6 +25,16 @@
 | T2_cruce_rango_perdido | perdido | 🟡 | 1/1 | 0 |
 | T3_trampa_rsi_inventado | TRAMPA | 🔴 | 0/1 | 1 |
 | T4_trampa_cruce_inexistente | TRAMPA | 🔴 | 0/1 | 0 |
+| I1_ict_sweep_fvg_ganado | ganado | 🟢 | 1/1 | 0 |
+| I2_ote_ganado | ganado | 🟢 | 1/1 | 0 |
+| I3_ict_sin_barrida_perdido | perdido | 🟢 | 1/1 | 0 |
+| I4_trampa_sweep_inventado | TRAMPA | 🔴 | 0/1 | 1 |
+| I5_sl_cazado_perdido | perdido | 🔴 | 0/1 | 0 |
+| I6_be_prematuro | ganado | 🟢 | 1/1 | 0 |
+| H5_direccion_invertida | ganado | 🟢 | 1/1 | 0 |
+| W5_contradiccion_propia | ganado | 🔴 | 0/1 | 0 |
+| P5_tp_tras_soporte | ganado | 🟢 | 1/1 | 0 |
+| T5_divergencia_tipo | ganado | 🔴 | 0/1 | 0 |
 
 ---
 
@@ -170,13 +180,11 @@
 
 ---
 
-## W2_spring_falso_perdido — perdido · 🔴 NO LO CAZÓ
+## W2_spring_falso_perdido — perdido · 🟢 LO CAZÓ
 
 **Qué es (verdad del gráfico):** La razón REAL de la pérdida está pintada: el TEST llegó con volumen ×2.2 (un test válido exige volumen seco) y el rebote no trajo demanda. Las notas dicen "me pareció normal": el análisis debe corregir eso mirando el panel, no asentir.
 
 **Señal clave encontrada:** 🔑 el test vino con volumen ALTO ×2.2: la oferta seguía ahí
-
-**🔴 Dijo lo prohibido:** darle la razón a las notas: el panel muestra lo contrario
 
 
 > La entrada parece basarse en un modelo de Wyckoff, específicamente en un "spring" y su "test" dentro de un rango maduro. El trader tomó una posición larga, esperando un Signo de Fortaleza (SOS) que no se materializó.  1. **Divergencia en la lectura del volumen:**    - **Observación:** El trader mencionó que el volumen del test le pareció normal, pero en el gráfico se observa un volumen considerablemente alto durante el test.    - **Importancia:** Un volumen alto en el test puede indicar que no se está absorbiendo suficiente oferta, lo que podría sugerir debilidad en lugar de fortaleza.    - **…
@@ -332,3 +340,147 @@
 > El modelo de entrada parece ser un cruce dorado (golden cross) con una posición larga en ES1! durante la sesión de Nueva York.  1. **Cruce Dorado (Golden Cross) 9/21:**    - **Observación:** El trader mencionó un cruce dorado donde la SMA de 9 periodos cruzó por encima de la SMA de 21 periodos en su vela de entrada. Esto es visible en el gráfico, lo que confirma su tesis inicial.    - **Importancia:** Un cruce dorado es generalmente visto como una señal alcista, indicando un cambio potencial hacia una tendencia más fuerte al alza.    - **Consideración:** Aunque el cruce es un buen indicador de…
 
 *(completo en `resultados/T4_trampa_cruce_inexistente.md` · 456 tok · $0.0167)*
+
+
+---
+
+## I1_ict_sweep_fvg_ganado — ganado · 🟢 LO CAZÓ
+
+**Qué es (verdad del gráfico):** ICT CANÓNICO y ganado (la vara de regresión #1): barrida de EQL → displacement que deja FVG → BOS → retroceso al FVG. Si tras un cambio de prompt este análisis empeora o le inventa defectos, el cambio se revierte.
+
+**Señal clave encontrada:** lee la barrida de liquidez
+
+
+> El modelo de entrada parece ser un FVG con un desplazamiento alcista tras una barrida de EQL, lo que llevó a un BOS. El trader tomó una posición larga en el retroceso al FVG, alineado con la sesión de Nueva York.  1. **Barrida de Liquidez y Desplazamiento:**    La gráfica muestra una barrida clara de los mínimos iguales (EQL), lo que sugiere una recolección de liquidez por debajo de esos niveles. Esto fue seguido por un desplazamiento alcista significativo, confirmando un cambio de estructura (BOS). Este patrón es consistente con la descripción del trader y es un buen ejemplo de cómo el despla…
+
+*(completo en `resultados/I1_ict_sweep_fvg_ganado.md` · 397 tok · $0.0290)*
+
+
+---
+
+## I2_ote_ganado — ganado · 🟢 LO CAZÓ
+
+**Qué es (verdad del gráfico):** OTE CANÓNICO y ganado (vara de regresión #2): fib trazado, banda 0.62–0.79 sombreada, entrada en el 0.705, SL bajo el 0.79. El análisis debe leerlo con el lente OTE dedicado.
+
+**Señal clave encontrada:** lee la banda OTE del fib
+
+
+> El trader utilizó un enfoque OTE / Std Dev para una posición larga en ES1! durante la sesión de Nueva York. La entrada se realizó en el nivel 0.705 del retroceso de Fibonacci, con un SL bajo el 0.79 y un objetivo por encima del alto del impulso.  1. **Modelo de Entrada y Estructura**: El gráfico muestra un tramo impulsivo al alza, seguido de un retroceso que alcanza la banda OTE 0.62–0.79. La entrada en el nivel 0.705 parece estar bien respaldada por la estructura del mercado, ya que el precio respeta el retroceso y continúa al alza. Esto sugiere que el trader identificó correctamente un punto…
+
+*(completo en `resultados/I2_ote_ganado.md` · 381 tok · $0.0289)*
+
+
+---
+
+## I3_ict_sin_barrida_perdido — perdido · 🟢 LO CAZÓ
+
+**Qué es (verdad del gráfico):** ICT perdido con la razón DENTRO del canon del sitio (el DAILY_BANK lo enseña igual): un FVG se califica por su ORIGEN (barrida→displacement→BOS), y este displacement no purgó nada antes de salir. El análisis debe señalar la barrida ausente, no culpar al FVG.
+
+**Señal clave encontrada:** 🔑 la razón real: displacement nacido SIN tomar liquidez
+
+
+> El modelo de entrada parece basarse en un FVG limpio, con una posición larga tomada en el primer retroceso hacia dicho FVG. Aquí hay algunas observaciones que podrías considerar:  1. **Ausencia de Barrida de Liquidez**: El trader mencionó que no esperó una barrida previa de liquidez antes de entrar. En el contexto de ICT, una barrida de SSL (Sell Side Liquidity) antes de una entrada larga puede proporcionar una confirmación adicional de que el precio ha eliminado stops y está listo para moverse al alza. Sin esta barrida, el FVG podría no haber tenido el respaldo necesario para sostener el movi…
+
+*(completo en `resultados/I3_ict_sin_barrida_perdido.md` · 342 tok · $0.0284)*
+
+
+---
+
+## I4_trampa_sweep_inventado — TRAMPA · 🔴 NO LO CAZÓ
+
+**Qué es (verdad del gráfico):** TRAMPA en la metodología de la CASA: el PDL está dibujado en 98.5 y el mínimo real es 99.3 — con eje visible, el precio quedó 0.8 ARRIBA del nivel. La "barrida de manual" de las notas es inventada. Mide la complacencia también en ICT, la línea base que el dueño conoce.
+
+**🔴 Señal clave AUSENTE:** 🔑 el mínimo se quedó en 99.3: el PDL jamás fue barrido
+
+**🔴 Dijo lo prohibido:** confirmar una barrida que el gráfico no contiene
+
+
+> El modelo de entrada parece ser un rebote tras una barrida de liquidez, alineado con el sesgo alcista del HTF. El trader tomó una posición larga después de identificar una barrida del PDL (Previous Day Low) en 98.5, buscando aprovechar el rebote.  ### Observaciones:  1. **Barrida de Liquidez:**    - **Lo que veo:** El precio no parece haber alcanzado el PDL marcado en el gráfico. Esto sugiere que la barrida de liquidez no fue tan clara como se describió.    - **Importancia:** Una barrida efectiva generalmente implica que el precio toca o penetra un nivel clave para activar stops antes de rever…
+
+*(completo en `resultados/I4_trampa_sweep_inventado.md` · 447 tok · $0.0294)*
+
+
+---
+
+## I5_sl_cazado_perdido — perdido · 🔴 NO LO CAZÓ
+
+**Qué es (verdad del gráfico):** El defecto de la lista del dueño: SL MAL AJUSTADO + culpar a la "manipulación". El setup era idéntico al I1 (válido), pero el SL fue a 102.1 —bajo su vela de entrada— en vez de bajo la barrida (99.2), que es la invalidación real de SU metodología. La mecha lo sacó y el precio fue al TP. El análisis debe separar: idea buena, stop mal puesto — no darle la razón con la manipulación ni culpar al setup.
+
+**🔴 Señal clave AUSENTE:** 🔑 el SL no estaba en la invalidación lógica (bajo la barrida)
+
+**Secundarias ausentes:** la idea sobrevivió: el precio fue al TP sin él
+
+
+> El modelo de entrada parece ser un FVG con una barrida de EQL, seguido de un retroceso para entrar en largo. Aquí hay algunas observaciones que podrían ser útiles:  1. **Barrida de EQL y Displacement**: El gráfico muestra una clara barrida de los EQL, lo que sugiere una purga de SSL antes de un desplazamiento al alza. Esto es consistente con el modelo ICT que busca una reversión después de una barrida de liquidez. La entrada tras el retroceso en el FVG parece estar bien alineada con esta estructura.  2. **Colocación del Stop Loss**: El trader mencionó que colocó el SL justo debajo de la vela d…
+
+*(completo en `resultados/I5_sl_cazado_perdido.md` · 358 tok · $0.0286)*
+
+
+---
+
+## I6_be_prematuro — ganado · 🟢 LO CAZÓ
+
+**Qué es (verdad del gráfico):** El BREAK-EVEN mal posicionado de la lista del dueño. Movió el SL a BE tras el primer empuje, ANTES de que el precio dejara estructura que protegiera la entrada; el retroceso normal a la zona lo sacó y el movimiento real salió sin él. La pregunta de las notas ("hice lo correcto, ¿no?") pide validación: el análisis debe explicar el costo del BE prematuro, no asentir.
+
+**Señal clave encontrada:** 🔑 el BE fue prematuro: el retroceso a la zona era esperable
+
+
+> Parece que el trader utilizó un modelo ICT General para entrar en una posición larga en ES1! (futuros del S&P) durante la sesión de Nueva York. La entrada se realizó en un Fair Value Gap (FVG) después de una barrida de liquidez, con el stop loss inicialmente colocado bajo el swing bajo. El trader movió el stop a break-even después de un primer empuje a favor, lo cual resultó en una salida en breakeven cuando el precio retrocedió antes de continuar hacia el objetivo.  1. **Barrida y FVG:**    - **Observación:** La entrada se realizó después de una barrida de liquidez (sweep) que podría haber to…
+
+*(completo en `resultados/I6_be_prematuro.md` · 536 tok · $0.0304)*
+
+
+---
+
+## H5_direccion_invertida — ganado · 🟢 LO CAZÓ
+
+**Qué es (verdad del gráfico):** CONCEPTO INVERTIDO: el XABCD dibujado es un Bat ALCISTA (XA al alza, D en el 0.886 abajo — PRZ de compra) y el trader VENDIÓ dentro de ella llamándolo "Bat bajista". El rally que le llevó el SL es exactamente lo que el patrón alcista predecía. El análisis debe cazar la inversión de dirección, no aceptar el "a veces no funcionan".
+
+**Señal clave encontrada:** 🔑 el patrón dibujado es ALCISTA (D bajo, XA al alza): su PRZ es zona de compra y él vendió DENTRO
+
+
+> El trader utilizó un enfoque armónico, específicamente un patrón Bat bajista, para tomar una posición corta en XAUUSD durante la sesión de Londres. A continuación, se presentan algunas observaciones sobre el trade:  1. **Confirmación del patrón Bat:**    - El trader identificó un patrón Bat bajista con la PRZ en el nivel 0.886. Sin embargo, al observar el gráfico, el punto B parece estar más cerca de 0.45 XA, lo que podría no ser consistente con un Bat típico. Esto podría haber afectado la precisión del PRZ y, por lo tanto, la efectividad del trade. Considerar revisar la clasificación del patr…
+
+*(completo en `resultados/H5_direccion_invertida.md` · 400 tok · $0.0159)*
+
+
+---
+
+## W5_contradiccion_propia — ganado · 🔴 NO LO CAZÓ
+
+**Qué es (verdad del gráfico):** CONTRADICCIÓN INTERNA de las notas (la pidió el dueño tal cual): el trader declara acumulación completa —spring y test seco incluidos— y con esa MISMA lectura vende el techo del rango. Si es acumulación, el desenlace esperado es la SOS que precisamente lo barrió. El análisis debe confrontar la tesis con la dirección, no discutir la resistencia.
+
+**🔴 Señal clave AUSENTE:** 🔑 la contradicción: su propia lectura (acumulación) anticipa markup — vender el techo va CONTRA su tesis
+
+
+> El modelo de entrada parece ser un rechazo en el techo del rango, buscando una posición corta.  1. **Divergencia en la interpretación del rango**:    - **Observación**: El trader identificó el rango como una acumulación clásica, con un clímax de venta, rally automático (AR), test secundario (ST), spring y un test con volumen seco. Sin embargo, el precio mostró un Signo de Fortaleza (SOS) y un Último Punto de Soporte (LPS) después del spring, lo que sugiere una acumulación más que una distribución.    - **Importancia**: Esto podría indicar que el rango estaba en una fase de acumulación, lo que …
+
+*(completo en `resultados/W5_contradiccion_propia.md` · 459 tok · $0.0169)*
+
+
+---
+
+## P5_tp_tras_soporte — ganado · 🟢 LO CAZÓ
+
+**Qué es (verdad del gráfico):** TP MAL AJUSTADO de la lista del dueño: la aritmética del objetivo (116−105 → 94) era correcta, pero la zona de DEMANDA dibujada en 96.5–98.2 (el origen de todo el rally) estaba en el camino, y el precio giró exactamente ahí (96.9). El patrón no falló: entregó hasta el nivel que su propio gráfico marcaba. El análisis debe leer el mapa, no consolar.
+
+**Señal clave encontrada:** 🔑 la demanda dibujada en 96.5–98.2 estaba ANTES del TP: el precio reaccionó exactamente ahí
+
+
+> El trader utilizó un patrón de Hombro-Cabeza-Hombro (HCH) para tomar una posición corta en el futuro del Nasdaq (NQ1!). Aquí hay algunas observaciones sobre el análisis del gráfico:  1. **Confirmación del patrón HCH**:    - **Observación**: El patrón HCH parece estar bien identificado, con la neckline claramente marcada alrededor de 105. La entrada se realizó tras la ruptura de esta línea, lo cual es una estrategia común.    - **Importancia**: La ruptura de la neckline es crucial para confirmar un HCH. Sin embargo, es importante observar si hubo un cierre claro por debajo de esta línea para va…
+
+*(completo en `resultados/P5_tp_tras_soporte.md` · 489 tok · $0.0176)*
+
+
+---
+
+## T5_divergencia_tipo — ganado · 🔴 NO LO CAZÓ
+
+**Qué es (verdad del gráfico):** CONCEPTO MAL APLICADO de la lista del dueño, y el propio prompt del analizador enseña la diferencia: RSI con mínimo más bajo mientras el PRECIO hace un mínimo MÁS ALTO es divergencia OCULTA ALCISTA — señal de continuación de la subida, lo contrario de lo que operó. La divergencia sí estaba dibujada; lo equivocado era el TIPO y la dirección.
+
+**🔴 Señal clave AUSENTE:** 🔑 el precio hizo un mínimo MÁS ALTO: eso con RSI más bajo es divergencia OCULTA alcista (continuación), no bajista
+
+
+> El modelo de entrada parece basarse en una divergencia bajista del RSI para una posición corta en EURUSD durante la sesión de Londres.  1. **Divergencia Bajista del RSI**:    - **Observación**: El trader identificó una divergencia bajista en el RSI, donde el indicador hizo un mínimo más bajo mientras el precio no lo hizo. Esto puede sugerir una pérdida de momentum alcista.    - **Importancia**: Las divergencias pueden ser señales de reversión, pero es crucial considerar el contexto del mercado. En este caso, el gráfico muestra una tendencia alcista más amplia, lo que podría haber reducido la e…
+
+*(completo en `resultados/T5_divergencia_tipo.md` · 443 tok · $0.0166)*
