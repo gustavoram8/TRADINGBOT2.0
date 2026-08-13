@@ -676,17 +676,26 @@ durante la ventana de lanzamiento, mientras siguiera suscrito.**
 - `tools/test_tarifa_creador.py` **16/16** (con el código viejo fallan 4).
 
 ## 📌 PENDIENTES DE ÉL (recordárselos cuando toque, no cada mensaje)
-0. 🔴 **ROTAR LOS SECRETOS DE PRODUCCIÓN — antes de abrir al público (2026-08-13).** El 13-ago se
-   pegaron en el chat, en texto plano, TODOS los de la línea `environment=` de supervisor: **Secret
-   LIVE de PayPal**, `SECRET_KEY` de Flask, clave de OpenAI, token de GitHub (`ghp_…`), contraseña
-   del correo, API key + IPN secret de NOWPayments y la de PostgreSQL. Pasó porque el comando que se
-   le dio (`grep LAUNCH … *trader*.conf`) imprime la línea ENTERA — **culpa compartida: no volver a
-   mandar un grep sobre esa línea sin avisar de lo que va a salir.**
-   Orden: (1) PayPal Secret — es LIVE, opera su cuenta de cobros; (2) `SECRET_KEY` — con ella se
-   **falsifican sesiones de cualquier usuario, admin incluido** (efecto: todos vuelven a entrar, hoy
-   gratis); (3) OpenAI; (4) token GitHub; (5) correo (y si la reusa en algo personal, allí también);
-   (6) NOWPayments; (7) PostgreSQL (solo localhost, riesgo bajo). Cada una con `set_env.py` +
-   `reread && update`. **Los valores nuevos NUNCA al chat.**
+0. ⚪ **ROTAR LOS SECRETOS — el dueño DECIDIÓ NO HACERLO y asume el riesgo (2026-08-13).** Textual:
+   *"si es ese el riesgo yo lo asumo"*. 🔴 **NO volver a sacárselo cada semana**; solo si él
+   pregunta, o si aparece una señal real (cargo raro en PayPal, gasto de OpenAI que no cuadra,
+   sesión de admin que él no abrió).
+   **Qué pasó:** el 13-ago se pegaron en el chat, en texto plano, TODOS los de la línea
+   `environment=` de supervisor: Secret LIVE de PayPal, `SECRET_KEY` de Flask, clave de OpenAI,
+   token de GitHub, contraseña del correo, NOWPayments y PostgreSQL. Fue por un comando que se le
+   dio (`grep LAUNCH … *trader*.conf`), que imprime la línea ENTERA — **culpa compartida: no volver
+   a mandar un grep sobre esa línea sin avisar de lo que va a salir.**
+   **Alcance REAL, verificado:** `scalpel/.env` está en `.gitignore` y **nunca se commiteó**; el
+   conf de supervisor no vive en el repo → **los secretos NO están en GitHub**. La única copia
+   fuera del VPS es el historial de esta conversación, que no es público. ⚠️ **Se le presentó el
+   riesgo más grave de lo que era** ("cada día que pasa es riesgo real") — corregido ante él.
+   **Si algún día decide rotarlas**, el orden es: (1) PayPal Secret (es LIVE, opera su cuenta de
+   cobros); (2) `SECRET_KEY` — con ella se falsifican sesiones de cualquier usuario, admin
+   incluido; (3) OpenAI; (4) token GitHub; (5) correo; (6) NOWPayments; (7) PostgreSQL (solo
+   localhost). Cada una con `set_env.py` + `reread && update`. **Los valores nuevos NUNCA al chat.**
+   ⏳ **El único argumento que se le dio y sigue siendo cierto:** rotar `SECRET_KEY` cierra TODAS
+   las sesiones abiertas. Hoy eso no le cuesta nada (3 cuentas); con clientes pagando, sí. El
+   riesgo no crece con el tiempo — **crece el precio de arreglarlo**.
 1. **Revisar cómo quedó "Mi cuenta"** (punto 20, hecho el 2026-08-04): dijo *"aún no he revisado
    cómo quedó"*. Preguntarle si le convence la posición (va la primera del menú) antes de darlo
    por bueno del todo.
