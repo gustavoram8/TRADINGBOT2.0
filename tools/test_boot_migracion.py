@@ -14,7 +14,9 @@ NUEVAS = ['birth_date', 'totp_secret', 'totp_confirmed_at', 'totp_backup',
           'active_frame', 'active_cursor', 'email_canonical',
           # cambio de correo y borrado de cuenta (2026-08-10)
           'pending_email', 'pending_email_code', 'pending_email_at',
-          'deleted_at']
+          'deleted_at',
+          # panel del colaborador: billetera USDT + inicio del acuerdo (2026-08-13)
+          'partner_wallet', 'partner_wallet_net', 'partner_since']
 # Columnas nuevas en OTRAS tablas: (tabla, columna, valor_de_backfill_esperado)
 NUEVAS_OTRAS = [('daily_quiz_state', 'best_streak', None),
                 # cambio de plan programado (2026-08-05)

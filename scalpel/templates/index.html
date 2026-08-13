@@ -5028,6 +5028,7 @@
     xp: {{ user_xp|default(0) }},
     hasBeta: {{ 'true' if has_beta_access else 'false' }},
     hasCoupons: {{ 'true' if has_coupons|default(false) else 'false' }},
+    isPartner: {{ 'true' if is_partner|default(false) else 'false' }},
     betaMinRank: {{ beta_min_rank|default(6) }},
     rankUpTo: {{ rank_up_to|default(0) }},
     demoMode: {{ 'true' if demo_mode else 'false' }},
@@ -5269,6 +5270,12 @@
         <a class="row" href="#" id="menu-coupons" style="display:none;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a2 2 0 0 1 2-2V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v3a2 2 0 0 1 0 4v3a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-3a2 2 0 0 1-2-2z"/><line x1="13" y1="5" x2="13" y2="7"/><line x1="13" y1="11" x2="13" y2="13"/><line x1="13" y1="17" x2="13" y2="19"/></svg>
           <span data-i18n="daily.coupons">My coupons</span>
+        </a>
+        <!-- Panel del colaborador: solo existe para dueños de un código de
+             creador (y para el admin, que supervisa). El resto ni lo ve. -->
+        <a class="row" href="/partner" id="menu-partner" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11h-6"/></svg>
+          <span data-i18n="account.partner">Partner panel</span>
         </a>
         <a class="row" href="/login" id="menu-login" style="display:none;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
@@ -8604,6 +8611,7 @@
       'scalper.present': 'Present', 'scalper.exitPresent': 'Exit', 'scalper.exportPdf': 'Export PDF', 'scalper.slides': 'Slides', 'scalper.text': 'Text',
       'account.admin': 'Admin panel',
       'account.mine': 'My account',
+      'account.partner': 'Partner panel',
       'account.plans': 'Plans & pricing',
       'account.signin': 'Sign in',
       'account.logout': 'Sign out',
@@ -9169,6 +9177,7 @@
       'scalper.present': 'Presentar', 'scalper.exitPresent': 'Salir', 'scalper.exportPdf': 'Exportar PDF', 'scalper.slides': 'Diapositivas', 'scalper.text': 'Texto',
       'account.admin': 'Panel de admin',
       'account.mine': 'Mi cuenta',
+      'account.partner': 'Panel de colaborador',
       'account.plans': 'Planes y precios',
       'account.signin': 'Iniciar sesión',
       'account.logout': 'Cerrar sesión',
@@ -9734,6 +9743,7 @@
       'scalper.present': 'Présenter', 'scalper.exitPresent': 'Quitter', 'scalper.exportPdf': 'Exporter PDF', 'scalper.slides': 'Diapositives', 'scalper.text': 'Texte',
       'account.admin': "Panneau d'admin",
       'account.mine': 'Mon compte',
+      'account.partner': 'Panneau du collaborateur',
       'account.plans': 'Offres et tarifs',
       'account.signin': 'Se connecter',
       'account.logout': 'Se déconnecter',
@@ -10299,6 +10309,7 @@
       'scalper.present': 'Apresentar', 'scalper.exitPresent': 'Sair', 'scalper.exportPdf': 'Exportar PDF', 'scalper.slides': 'Slides', 'scalper.text': 'Texto',
       'account.admin': 'Painel de admin',
       'account.mine': 'Minha conta',
+      'account.partner': 'Painel do colaborador',
       'account.plans': 'Planos e preços',
       'account.signin': 'Entrar',
       'account.logout': 'Sair',
@@ -12382,6 +12393,11 @@
     // es el caso que MÁS importa: su único uso es comprar un plan.
     document.getElementById('menu-coupons').style.display =
       U.hasCoupons ? 'flex' : 'none';
+    // Panel del colaborador: dueños de código y admin. El server decide
+    // (isPartner viene calculado de PromoCode.owner_user_id) — el cliente
+    // solo pinta; /partner repite el candado por su cuenta.
+    document.getElementById('menu-partner').style.display =
+      U.isPartner ? 'flex' : 'none';
     // Rank progress is for everyone with an account (all plans have a rank).
     document.getElementById('menu-rank').style.display = U.isGuest ? 'none' : 'flex';
     // Guests get "Sign in"; the logout row doubles as "exit free mode"

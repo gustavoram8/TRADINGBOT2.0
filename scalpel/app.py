@@ -874,6 +874,14 @@ class User(UserMixin, db.Model):
     # migration as active_frame so cursors don't need a second prod ALTER.
     active_frame = db.Column(db.String(60), nullable=True, default='')
     active_cursor = db.Column(db.String(60), nullable=True, default='')
+    # ── Colaborador (acuerdo comercial) ─────────────────────────────────
+    # La billetera la escribe EL PROPIO colaborador desde /partner: el punto
+    # 4.4 del acuerdo exige que la indique "por escrito", y el formulario con
+    # su fila de auditoría ES ese escrito, con fecha. La fecha de inicio la
+    # fija el admin al conectar el código (con override manual).
+    partner_wallet = db.Column(db.String(120), nullable=True)
+    partner_wallet_net = db.Column(db.String(40), nullable=True)
+    partner_since = db.Column(db.Date, nullable=True)
 
     def camos_owned(self):
         try:
@@ -6858,6 +6866,10 @@ def app_view():
         # todo el mundo lo demás, la entrada es una puerta a un modal vacío.
         has_coupons=PromoCode.query.filter_by(
             restrict_user_id=current_user.id).count() > 0,
+        # "Panel de colaborador": solo para quien tiene acceso de verdad
+        # (dueño de un código, o el admin en su vista de supervisión). Para
+        # cualquier otro la entrada no existe — ni gris ni con candado.
+        is_partner=(es_socio(current_user) or is_admin_view),
         unlock_plan=unlock_plan,
         review_prompt=review_prompt,
         review_now=session.pop('quiere_review', False),
@@ -11242,17 +11254,59 @@ def checkout_cancel(order_id):
 
 
 # ── Partner panel (the influencer's own numbers) ──────────────────────────
+def es_socio(user):
+    """Colaborador = dueño de un código. No hay rol aparte A PROPÓSITO: ser
+    dueño del código es exactamente lo mismo que decide el dinero (la comisión
+    se calcula por el creator_name de ese código). Un flag `is_partner`
+    separado serían dos verdades que pueden desincronizarse — marcado sin
+    código = panel vacío; con código sin marcar = no ve su propio dinero."""
+    try:
+        return PromoCode.query.filter_by(owner_user_id=user.id).count() > 0
+    except Exception:
+        return False
+
+
+def _proxima_liquidacion(hoy=None):
+    """El próximo día 15 (punto 4.1 del acuerdo: lo devengado en un mes se
+    liquida el 15 del siguiente)."""
+    from datetime import date as _date
+    d = hoy or datetime.now(timezone.utc).date()
+    if d.day <= 15:
+        return _date(d.year, d.month, 15)
+    y, m = (d.year + 1, 1) if d.month == 12 else (d.year, d.month + 1)
+    return _date(y, m, 15)
+
+
+def _suma_meses(d, n):
+    """d + n meses de calendario (recortando al último día si hace falta)."""
+    import calendar
+    m = d.month - 1 + n
+    y, m = d.year + m // 12, m % 12 + 1
+    return d.replace(year=y, month=m,
+                     day=min(d.day, calendar.monthrange(y, m)[1]))
+
+
 @app.route('/partner')
 @login_required
 def partner_panel():
     """The panel the proposal promises the partner: their subscribers, their
     tier and what they are owed — without asking, without trusting anyone's
     word, and without seeing any customer's personal data. Access = owning a
-    code (PromoCode.owner_user_id), which the admin sets once."""
+    code (PromoCode.owner_user_id), which the admin sets once.
+
+    El ADMIN también entra, y ve TODOS los paneles tal como los ve cada
+    colaborador (punto 4.2: el panel es la fuente única de los números — el
+    dueño tiene que poder mirar la misma fuente sin pedir capturas). Antes el
+    admin recibía un 404: el dueño no podía ver lo que iba a entregar."""
+    vista_admin = False
     codes = PromoCode.query.filter_by(owner_user_id=current_user.id).all()
+    if not codes and current_user.is_admin:
+        vista_admin = True
+        codes = [c for c in PromoCode.query.filter_by(kind='creator').all()
+                 if (c.creator_name or '').strip()]
     partners = sorted({(c.creator_name or '').strip()
                        for c in codes if (c.creator_name or '').strip()})
-    if not partners:
+    if not partners and not vista_admin:
         abort(404)
 
     now = datetime.now(timezone.utc)
@@ -11285,10 +11339,26 @@ def partner_panel():
                        else (r.commission_status or 'pending')),
         } for r in rows[:15]]
 
+        # La cuenta del colaborador de ESTE bloque: su billetera y sus fechas.
+        bcodes = [c for c in codes if (c.creator_name or '').strip() == name]
+        duenio = next((db.session.get(User, c.owner_user_id)
+                       for c in bcodes if c.owner_user_id), None)
+        fechas = None
+        if duenio is not None and duenio.partner_since:
+            ini = duenio.partner_since
+            fechas = {'inicio': ini.strftime('%Y-%m-%d'),
+                      'revision': (ini + timedelta(days=30)).strftime('%Y-%m-%d'),
+                      'fin_periodo': _suma_meses(ini, 3).strftime('%Y-%m-%d')}
+
         blocks.append({
             'name': name,
-            'codes': [c.code for c in codes
-                      if (c.creator_name or '').strip() == name],
+            'codes': [c.code for c in bcodes],
+            'owner': (duenio.username if duenio else None),
+            'wallet': (duenio.partner_wallet if duenio else None),
+            'wallet_net': (duenio.partner_wallet_net if duenio else None),
+            'es_mio': bool(duenio is not None
+                           and duenio.id == current_user.id),
+            'fechas': fechas,
             'clients': clients,
             'sales': len(live),
             'revenue': round(sum(r.net_paid or 0 for r in live), 2),
@@ -11305,7 +11375,38 @@ def partner_panel():
             'recent': recent,
         })
     return render_template('partner.html', blocks=blocks,
-                           tiers=PARTNER_TIERS, month=month_key)
+                           tiers=PARTNER_TIERS, month=month_key,
+                           vista_admin=vista_admin,
+                           liq=_proxima_liquidacion().strftime('%Y-%m-%d'),
+                           wallet_msg=(request.args.get('wallet') or ''))
+
+
+@app.route('/partner/wallet', methods=['POST'])
+@login_required
+def partner_wallet_set():
+    """El colaborador registra SU billetera USDT desde el panel.
+
+    El punto 4.4 del acuerdo pide la dirección "por escrito": este formulario,
+    con su fila de auditoría (quién, cuándo, de qué valor a cuál), ES ese
+    escrito. Solo el dueño de un código puede escribir la suya — el admin ve
+    las billeteras en su vista pero no las edita: una dirección de cobro
+    tecleada por un tercero es exactamente el error que el punto 4.4 carga
+    sobre el Colaborador, y no puede cargárselo si no la escribió él."""
+    if not es_socio(current_user):
+        abort(404)
+    addr = (request.form.get('address') or '').strip()[:120]
+    net = (request.form.get('network') or '').strip()[:40] or 'TRC-20'
+    # Validación mínima honesta: no se puede verificar una dirección ajena a
+    # la cadena, pero sí cazar lo que seguro NO es una (espacios, muy corta).
+    if len(addr) < 15 or ' ' in addr:
+        return redirect(url_for('partner_panel') + '?wallet=err')
+    viejo = current_user.partner_wallet or '(vacía)'
+    current_user.partner_wallet = addr
+    current_user.partner_wallet_net = net
+    db.session.commit()
+    record_audit_event('partner_wallet_set', user_id=current_user.id,
+                       detail=f'{viejo} -> {addr} ({net})')
+    return redirect(url_for('partner_panel') + '?wallet=ok')
 
 
 @app.route('/admin/promo/owner', methods=['POST'])
@@ -11325,6 +11426,18 @@ def admin_promo_owner():
             if not u:
                 return redirect(url_for('admin') + '#promos')
             promo.owner_user_id = u.id
+            # La fecha de entrada en vigor (punto 5.1). Conectar el código ES
+            # el arranque operativo, así que se sella sola la primera vez; el
+            # campo opcional `since` (YYYY-MM-DD) la fija a mano si el acuerdo
+            # se firmó otro día. Nunca se pisa una fecha ya puesta sin pedirlo.
+            raw_since = (request.form.get('since') or '').strip()
+            if raw_since:
+                try:
+                    u.partner_since = datetime.strptime(raw_since, '%Y-%m-%d').date()
+                except ValueError:
+                    pass
+            elif not u.partner_since:
+                u.partner_since = datetime.now(timezone.utc).date()
         db.session.commit()
         record_audit_event('promo_owner_set', user_id=current_user.id,
                            detail=f'{promo.code} -> {uname or "(none)"}')
@@ -17228,6 +17341,30 @@ def _migrate_user_cosmetic_wear_columns():
         app.logger.info('Migrated user table: cosmetic wear columns ensured.')
 
 
+def _migrate_partner_columns():
+    """Add the collaborator columns (wallet, network, agreement start) to an
+    existing user table. Raw SQL only (permanent rule: migrations never touch
+    the ORM). No backfill: a wallet nobody wrote down does not exist."""
+    from sqlalchemy import inspect, text
+    insp = inspect(db.engine)
+    cols = {c['name'] for c in insp.get_columns('user')}
+    stmts = []
+    if 'partner_wallet' not in cols:
+        stmts.append('ALTER TABLE "user" ADD COLUMN partner_wallet VARCHAR(120)')
+    if 'partner_wallet_net' not in cols:
+        stmts.append('ALTER TABLE "user" ADD COLUMN partner_wallet_net VARCHAR(40)')
+    if 'partner_since' not in cols:
+        stmts.append('ALTER TABLE "user" ADD COLUMN partner_since DATE')
+    for s in stmts:
+        try:
+            with db.engine.begin() as conn:
+                conn.execute(text(s))
+        except Exception as e:
+            app.logger.info('partner migration note (ignored): %s', e)
+    if stmts:
+        app.logger.info('Migrated user table: partner columns ensured.')
+
+
 def _migrate_mentorship_application_columns():
     """Add columns introduced after the mentorship_application table first
     shipped (program, then the 2026-07 FAQ-profile fields). Same guard pattern
@@ -17423,6 +17560,7 @@ def init_db():
         _migrate_user_mute_column()
         _migrate_user_camo_columns()
         _migrate_user_cosmetic_wear_columns()
+        _migrate_partner_columns()
         _migrate_user_security_columns()
         _migrate_referral_columns()
         _migrate_user_email_canonical_column()

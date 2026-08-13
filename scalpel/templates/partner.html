@@ -31,6 +31,30 @@
     .card .v { font-size:22px; font-weight:800; letter-spacing:-.02em; }
     .card.hero { background:var(--gold-bg); border-color:#ecd9a8; }
     .card.hero .v { color:var(--gold); }
+    .adminband { background:#eef4ff; border:1px solid #c8d8f5; border-radius:var(--radius);
+      padding:10px 14px; font-size:13px; margin:0 0 14px; color:#27436e; }
+    .liqband { background:var(--gold-bg); border:1px solid #ecd9a8; border-radius:var(--radius);
+      padding:10px 14px; font-size:13px; margin:0 0 18px; }
+    .walletbox { background:#fff; border:1px solid var(--line); border-radius:var(--radius);
+      padding:14px 16px; margin:0 0 12px; }
+    .walletbox .wk { font-size:11px; font-weight:700; text-transform:uppercase;
+      letter-spacing:.06em; color:var(--muted); margin-bottom:8px; }
+    .walletbox .waddr { font-family:ui-monospace,monospace; font-size:13px;
+      word-break:break-all; margin-bottom:8px; }
+    .wform { display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 8px; }
+    .wform input { flex:1 1 260px; padding:9px 11px; border:1px solid var(--line);
+      border-radius:8px; font:inherit; font-size:13px; }
+    .wform input[name=network] { flex:0 1 120px; }
+    .wform button { padding:9px 16px; border:0; border-radius:8px; background:var(--gold);
+      color:#fff; font-weight:700; font-size:13px; cursor:pointer; }
+    .wmsg { font-size:12.5px; border-radius:8px; padding:7px 10px; margin-bottom:8px; }
+    .wmsg.ok { background:#e9f7ee; color:#1c6b3a; border:1px solid #bfe5cc; }
+    .wmsg.err { background:#fdf0ee; color:#8a3527; border:1px solid #f0cfc7; }
+    .wnote { font-size:11.5px; color:var(--muted); line-height:1.5; }
+    .datesbox { font-size:12.5px; color:var(--muted); background:#fff;
+      border:1px solid var(--line); border-radius:var(--radius);
+      padding:10px 14px; margin:0 0 14px; line-height:1.6; }
+    .datesbox b { color:var(--ink, #1d2430); }
     .tierbox { background:#fff; border:1px solid var(--line); border-radius:var(--radius);
                padding:16px 20px; margin-bottom:16px; font-size:13.5px; color:var(--soft); }
     .tierbox b { color:var(--ink); }
@@ -61,6 +85,14 @@
 <div class="wrap">
   <h1 data-i18n="partner.title">Your partner panel</h1>
   <div class="sub" data-i18n="partner.sub">Live numbers for your code — subscribers, commission band and what you are owed. What you see here is what gets paid on the 15th.</div>
+
+  {% if vista_admin %}
+  <div class="adminband" data-i18n="partner.adminView">Administrator view — you are seeing every collaborator's panel exactly as they see it. Wallets are read-only here: each collaborator writes their own.</div>
+  {% endif %}
+
+  {# El punto 4.1/4.4 del acuerdo, con FECHA concreta: lo devengado en un mes
+     se liquida el 15 del siguiente, siempre en USDT. #}
+  <div class="liqband"><span data-i18n="partner.liq">Commissions for a month are settled on the 15th of the following month, always in USDT. Next settlement day:</span> <b>{{ liq }}</b></div>
 
   {% for b in blocks %}
     {% if blocks|length > 1 %}<div class="pname">{{ b.name }}</div>{% endif %}
@@ -94,6 +126,45 @@
       {% endif %}
     </div>
 
+    <div class="walletbox">
+      <div class="wk" data-i18n="partner.walletTitle">Payout wallet (USDT)</div>
+      {% if b.es_mio %}
+        {% if wallet_msg == 'ok' %}<div class="wmsg ok" data-i18n="partner.walletOk">Saved. This is now the address your settlements go to.</div>{% endif %}
+        {% if wallet_msg == 'err' %}<div class="wmsg err" data-i18n="partner.walletErr">That does not look like a wallet address (too short, or it has spaces). Nothing was changed.</div>{% endif %}
+        {% if b.wallet %}
+          <div class="waddr"><b>{{ b.wallet }}</b> · {{ b.wallet_net or 'TRC-20' }}</div>
+        {% else %}
+          <div class="wmsg err" data-i18n="partner.walletNone">No wallet on file yet — settlements cannot be sent until you save one.</div>
+        {% endif %}
+        <form method="POST" action="/partner/wallet" class="wform">
+          <input type="text" name="address" maxlength="120" required
+                 data-i18n-ph="partner.walletAddr" placeholder="USDT address (e.g. TRON / TRC-20)"
+                 value="{{ b.wallet or '' }}">
+          <input type="text" name="network" maxlength="40"
+                 data-i18n-ph="partner.walletNet" placeholder="Network"
+                 value="{{ b.wallet_net or 'TRC-20' }}">
+          <button type="submit" data-i18n="partner.walletSave">Save wallet</button>
+        </form>
+        <div class="wnote" data-i18n="partner.walletBody">Saving it here is the written notice the agreement asks for (clause 4.4): it is recorded with date and time. Double-check address AND network — the platform pays the sending fee and guarantees what it sends, not what a wrong address receives.</div>
+      {% else %}
+        {% if b.wallet %}
+          <div class="waddr"><b>{{ b.wallet }}</b> · {{ b.wallet_net or 'TRC-20' }}{% if b.owner %} — <span data-i18n="partner.ownerLbl">account:</span> {{ b.owner }}{% endif %}</div>
+        {% elif b.owner %}
+          <div class="wmsg err"><span data-i18n="partner.walletNoneAdmin">This collaborator has not saved a wallet yet.</span> (<span data-i18n="partner.ownerLbl">account:</span> {{ b.owner }})</div>
+        {% else %}
+          <div class="wmsg err" data-i18n="partner.noOwner">This code is not connected to any account yet — connect it from the admin panel (Owner field) so the collaborator can see this panel and save their wallet.</div>
+        {% endif %}
+      {% endif %}
+    </div>
+
+    {% if b.fechas %}
+    <div class="datesbox">
+      <span data-i18n="partner.dSince">Agreement in force since</span> <b>{{ b.fechas.inicio }}</b> ·
+      <span data-i18n="partner.dReview">30-day review on</span> <b>{{ b.fechas.revision }}</b> ·
+      <span data-i18n="partner.dPeriod">current period runs to</span> <b>{{ b.fechas.fin_periodo }}</b><span data-i18n="partner.dRenew">, then it renews automatically for 3 more months unless either side gives written notice before that date (clauses 5.1–5.3).</span>
+    </div>
+    {% endif %}
+
     <div class="table-card">
       <table>
         <thead><tr>
@@ -120,6 +191,7 @@
         </tbody>
       </table>
     </div>
+    <div class="note" data-i18n="partner.noCommission">One-time products (the Synapse PDF and cosmetic items) never earn commission and never count as clients — only the subscription plans do, exactly as clause 2.5 of the agreement describes. Your customers' subscriptions and renewals are unaffected.</div>
     <div class="note" data-i18n="partner.privacy">For your customers' privacy this panel never shows who they are — only that a payment happened and what it pays you. Commissions for a month are settled on the 15th of the following month; a reversed sale (refund or chargeback) returns its commission, exactly as the agreement describes.</div>
   {% endfor %}
 </div>

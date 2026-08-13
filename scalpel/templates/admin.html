@@ -643,6 +643,10 @@
                 <input type="hidden" name="id" value="{{ p.id }}" />
                 <input type="text" name="owner" value="{{ p.owner_username or '' }}"
                        placeholder="—" style="width:110px;font-size:12px;padding:3px 6px;" />
+                {# Fecha de entrada en vigor del acuerdo (5.1). Vacío al conectar
+                   = hoy; con valor, fija/corrige la fecha. Sale en /partner. #}
+                <input type="date" name="since" title="Inicio del acuerdo (vacío = hoy al conectar)"
+                       style="width:120px;font-size:12px;padding:3px 6px;" />
                 <button type="submit" class="row-btn toggle">Set</button>
               </form>
             </td>

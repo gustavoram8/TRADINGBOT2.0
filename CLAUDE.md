@@ -2425,9 +2425,31 @@ boards"** que llevaba desde antes del lanzamiento en la lista de críticos.
     todas las pizarras juntas. Con 92 no se nota; a un usuario que registre a diario le llegaría en
     ~2 años y las más viejas dejarían de verse **sin avisar**. Anotado, no arreglado.
   · La demo queda en el repo para re-probar el panel tras cualquier cambio.
-- [ ] **16. Intranet del influencer:** que vea SUS clientes, sus comisiones y nada más. Propone un
-  rol tipo admin, "Commercial Ally". ⚠️ Ojo: `/partner` ya existe (2026-08-01) — revisar qué falta
-  en vez de rehacerlo.
+- [x] ✅ **16. Intranet del colaborador (2026-08-13).** `/partner` ya existía; se completó contra el
+  acuerdo (`docs/acuerdo_colaboracion.md`, leído entero) en vez de rehacerse. **SIN rol nuevo, a
+  propósito** (el dueño propuso "Commercial Ally"): colaborador = dueño de un código
+  (`PromoCode.owner_user_id`), que es EXACTAMENTE lo que decide el dinero — un flag aparte serían
+  dos verdades desincronizables. Lo cableado:
+  · 🔴 **El admin recibía 404 en `/partner`** — el dueño no podía ver lo que iba a entregar (por eso
+    "no encontraba el apartado"). Ahora el admin ve TODOS los paneles tal como los ve cada
+    colaborador (punto 4.2: el panel es la fuente única), con banda de "vista de administrador" y
+    billeteras en SOLO lectura.
+  · **Entrada de menú** "Panel de colaborador" (`#menu-partner`, `is_partner` en SCALPEL_USER):
+    solo existe para dueños de código y admin; el usuario común ni la ve (y `/partner` le da 404).
+  · **Billetera USDT** (punto 4.4): la escribe EL COLABORADOR en su panel (decisión del dueño) —
+    `User.partner_wallet/partner_wallet_net`, POST `/partner/wallet` con validación mínima (≥15
+    chars, sin espacios) y **fila de auditoría `partner_wallet_set` = el "por escrito" del
+    acuerdo**. El admin la ve pero NO la edita: una dirección tecleada por un tercero es justo el
+    error que el 4.4 carga sobre el Colaborador.
+  · **Fechas del acuerdo** (5.1–5.3): `User.partner_since` se sella solo al conectar el código en
+    /admin (campo `since` opcional para fijarla; jamás pisa una ya puesta) → el panel calcula
+    inicio, revisión de 30 días y fin del período de 3 meses con la nota de renovación automática.
+  · **Día 15 con fecha concreta** (`_proxima_liquidacion()`) + "siempre en USDT" en banda dorada, y
+    la nota de **qué NO genera comisión** (2.5: PDF de Synapse y cosméticos, solo suscripciones).
+  · Migración `_migrate_partner_columns()` (boot 8/8), 18 claves `partner.*` + `account.partner` ×4.
+  ⚠️ El ES del panel decía "socio" — palabra PROHIBIDA por el acuerdo (contradice "no existe
+  sociedad") → "colaborador". `tools/test_panel_socio.py` **34/34** + navegador real (ES, los tres
+  perfiles, billetera guardada desde la página, 0 errores JS).
 - [x] ✅ **17. Foro — simulacro de tráfico real (2026-08-09) + COMUNIDADES PRIVADAS.**
   `tools/simula_foro.py` = **65 reglas atacadas por HTTP, 0 evadibles** (puertas por plan con el
   free EMPUJANDO la puerta, límites diarios, prefiltro, propiedad, silenciado, XSS: todo se pinta
