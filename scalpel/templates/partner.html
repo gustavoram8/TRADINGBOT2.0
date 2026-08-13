@@ -55,6 +55,10 @@
       border:1px solid var(--line); border-radius:var(--radius);
       padding:10px 14px; margin:0 0 14px; line-height:1.6; }
     .datesbox b { color:var(--ink, #1d2430); }
+    .emptybox { background:#fff; border:1px dashed var(--line); border-radius:var(--radius);
+      padding:22px 24px; font-size:13.5px; line-height:1.65; color:var(--muted); }
+    .emptybox .eb-t { font-size:15px; font-weight:800; color:var(--ink,#1d2430);
+      margin-bottom:6px; }
     .tierbox { background:#fff; border:1px solid var(--line); border-radius:var(--radius);
                padding:16px 20px; margin-bottom:16px; font-size:13.5px; color:var(--soft); }
     .tierbox b { color:var(--ink); }
@@ -93,6 +97,16 @@
   {# El punto 4.1/4.4 del acuerdo, con FECHA concreta: lo devengado en un mes
      se liquida el 15 del siguiente, siempre en USDT. #}
   <div class="liqband"><span data-i18n="partner.liq">Commissions for a month are settled on the 15th of the following month, always in USDT. Next settlement day:</span> <b>{{ liq }}</b></div>
+
+  {% if vista_admin and not blocks %}
+  {# Vista de admin sin ningún colaborador: en vez de una página en blanco,
+     los tres pasos para dar de alta al primero. Al dueño le pasó: abrió el
+     panel recién cableado y el vacío parecía un fallo. #}
+  <div class="emptybox">
+    <div class="eb-t" data-i18n="partner.emptyTitle">No collaborators yet</div>
+    <div data-i18n="partner.emptyBody">This view fills in as soon as the first collaborator exists. Three steps, all in the admin panel: (1) create their creator code in the Codes tab (type "Creator", with their name); (2) have them register a normal account on the site; (3) type their username in the code's Owner field and press Set. From that moment they get "Partner panel" in their account menu, they can save their USDT wallet, and every sale with their code shows up here for both of you.</div>
+  </div>
+  {% endif %}
 
   {% for b in blocks %}
     {% if blocks|length > 1 %}<div class="pname">{{ b.name }}</div>{% endif %}
