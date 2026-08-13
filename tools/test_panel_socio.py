@@ -155,6 +155,36 @@ def main():
     liq = A._proxima_liquidacion(hoy)
     check(liq.day == 15 and (liq >= hoy), 'la próxima liquidación es un 15 futuro')
 
+    print('\n══ 5b · TRES colaboradores: cada uno ve SOLO lo suyo ══')
+    # La pregunta del dueño tal cual: "imagina que tengo 3 asociados — al
+    # activarse su interruptor, ¿uno puede ver el apartado de los demás?".
+    # El filtro es owner_user_id == la cuenta logueada: no hay parámetro en la
+    # URL que un curioso pueda cambiar, así que no hay nada que adivinar.
+    with A.app.app_context():
+        for n, cod in (('lucia', 'LUCIA20'), ('pedro', 'PEDRO20')):
+            u = A.User(username=n, email=n + '@d.invalid', email_verified=True)
+            u.set_password(CL); u.email_canonical = u.email; u.plan = 'free'
+            A.db.session.add(u); A.db.session.flush()
+            A.db.session.add(A.PromoCode(
+                code=cod, discount_pct=20, creator_name=n.capitalize(),
+                kind='creator', owner_user_id=u.id, valid_for='monthly'))
+        A.db.session.commit()
+    vistas = {}
+    for n in ('gabriel', 'lucia', 'pedro'):
+        h = sesion(n).get('/partner').get_data(as_text=True)
+        vistas[n] = h
+    check('GABRIEL20' in vistas['gabriel'] and 'LUCIA20' not in vistas['gabriel']
+          and 'PEDRO20' not in vistas['gabriel'],
+          'Gabriel ve su código y NO los de Lucía ni Pedro')
+    check('LUCIA20' in vistas['lucia'] and 'GABRIEL20' not in vistas['lucia'],
+          'Lucía ve el suyo y NO el de Gabriel')
+    check('TXa9b8c7d6e5f4g3h2j1k0mnpqrstuvwxy' not in vistas['lucia']
+          and 'TXa9b8c7d6e5f4g3h2j1k0mnpqrstuvwxy' not in vistas['pedro'],
+          'y NADIE ve la billetera de otro')
+    h = c_jefe.get('/partner').get_data(as_text=True)
+    check(all(c in h for c in ('GABRIEL20', 'LUCIA20', 'PEDRO20')),
+          'el admin sí ve los tres bloques, cada uno separado')
+
     print('\n══ 6 · i18n ══')
     import io
     js = io.open(os.path.join(RAIZ, 'scalpel', 'static', 'pages_i18n.js'),
