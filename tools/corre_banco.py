@@ -167,16 +167,25 @@ def main():
                                   'completion_tokens': ct,
                                   'costo': round(costo, 5),
                                   'modelo': A.MODEL}
-        with io.open(os.path.join(RES, caso['id'] + '.md'), 'w',
-                     encoding='utf-8') as fh:
-            f = caso['form']
-            fh.write('# %s\n\n**%s · %s · %s · %s**\n\n**Notas del trader:** '
-                     '%s\n\n---\n\n%s\n'
-                     % (caso['id'], f['approach'], caso['instrumento'],
-                        f['direction'], f['result'], f['notes'], texto))
-        # guardar tras CADA caso: un corte a mitad no pierde lo ya pagado
+        # 🔴 EL JSON PRIMERO. La respuesta ya está PAGADA en cuanto vuelve del
+        # modelo: si se escribe antes el .md y ese formateo falla (le faltaba
+        # una clave al manifiesto), el dinero se va y el texto se pierde.
+        # Guardar lo pagado no puede depender de que el informe salga bonito.
         with io.open(ruta_json, 'w', encoding='utf-8') as fh:
             json.dump(resultados, fh, ensure_ascii=False, indent=1)
+        try:
+            f = caso['form']
+            with io.open(os.path.join(RES, caso['id'] + '.md'), 'w',
+                         encoding='utf-8') as fh:
+                fh.write('# %s\n\n**%s · %s · %s · %s**\n\n**Notas del '
+                         'trader:** %s\n\n---\n\n%s\n'
+                         % (caso['id'], f.get('approach', '—'),
+                            caso.get('instrumento', f.get('instrument', '—')),
+                            f.get('direction', '—'), f.get('result', '—'),
+                            f.get('notes', ''), texto))
+        except Exception as e:
+            print('   (aviso: no se pudo escribir el .md: %s — el texto está '
+                  'a salvo en resultados.json)' % e)
         time.sleep(1)
 
     print('\nGastado: $%.3f · %d respuestas en %s'
