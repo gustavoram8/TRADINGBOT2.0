@@ -740,6 +740,25 @@
       min-height: 100vh;
     }
 
+    /* ── CANDADO ANTI-DESPLAZAMIENTO LATERAL — SOLO MÓVIL Y TABLET ────────
+       Pedido del dueño: "lo único que yo quitaría para el sitio web en vista
+       de teléfono es que puedas scrollear hacia los lados… a veces vas
+       scrolleando hacia abajo, se te va el dedo y ves pedazos de pantalla en
+       negro". Eso es la PÁGINA yéndose de lado, y nunca es correcto.
+       🔑 `overflow-x: clip` y no `hidden`: `hidden` crea un contexto de
+       desplazamiento que ROMPE `position: sticky` en los hijos (la primera
+       columna de la tabla de Pre-Flight, las barras pegajosas), mientras que
+       `clip` recorta sin crear ese contexto. `overscroll-behavior-x: none`
+       mata además el rebote horizontal, que es lo que enseña la franja negra.
+       ⚠️ Esto NO afecta a las cajas que se desplazan POR DENTRO (la tabla de
+       Pre-Flight, el lienzo): ésas siguen funcionando, y deben.
+       ⚠️ Es una RED DE SEGURIDAD, no la cura: los desbordes reales se
+       arreglan uno por uno; esto evita que uno nuevo estropee la experiencia
+       sin que nadie se entere. En escritorio no se aplica. */
+    @media (max-width: 900px) {
+      html, body { overflow-x: clip; overscroll-behavior-x: none; }
+    }
+
     /* ── NAV ── */
     nav {
       display: flex;
@@ -3501,7 +3520,15 @@
       background: var(--bg);
     }
     @media (max-width: 768px) {
+      /* 🔴 `100vh` en un teléfono NO es lo que se ve: iOS Safari y Chrome
+         Android lo calculan SIN la barra de direcciones, así que el alto real
+         visible es menor y a Synapse se le corta la franja de abajo — que es
+         justo donde vive el crédito CC BY de los escultores (reportado por el
+         dueño: "se pierden los créditos"). `dvh` es el alto dinámico, el que
+         de verdad queda a la vista. Se deja el `vh` de arriba como respaldo
+         para navegadores sin `dvh`. */
       .synapse-app { margin-top: -24px; margin-bottom: -60px; height: calc(100vh - 92px); }
+      .synapse-app { height: calc(100dvh - 92px); }
     }
     .synapse-canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; display: block; }
 
@@ -3535,7 +3562,12 @@
     .syn-credit a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
     .syn-credit a:hover { color: var(--text); }
     @media (max-width: 768px) {
-      .syn-credit { left: 8px; right: 8px; bottom: 8px; max-width: none; font-size: 9.5px; }
+      /* ⚠️ `left:8px` + `right:8px` con el `transform:translateX(-50%)` de la
+         regla base empujaba el bloque media pantalla a la izquierda: al fijar
+         los dos lados el ancho ya no es `max-content`, así que el translate
+         deja de centrar y descoloca. Se anula aquí. */
+      .syn-credit { left: 8px; right: 8px; bottom: 8px; max-width: none;
+                    font-size: 9.5px; width: auto; transform: none; }
     }
 
     .syn-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
@@ -4288,6 +4320,16 @@
     .syn-load-photo, .syn-load-candles {
       position: absolute; inset: 0; width: 100%; height: 100%;
       object-fit: cover; object-position: center; user-select: none;
+    }
+    /* 🔴 SOLO MÓVIL. `cover` en una pantalla alta y estrecha recorta los lados
+       sin piedad: el dueño reportó ver "un 40% de la imagen, como si se
+       hubiese escalado extremadamente". `contain` la muestra entera; las
+       bandas que quedan son del mismo #06070b del fondo, así que no se notan.
+       ⚠️ La regla es COMPARTIDA con `.syn-load-candles` a propósito: las velas
+       extraídas van alineadas 1:1 con la foto, y cambiar el encuadre de una
+       sola las desalinearía. */
+    @media (max-width: 768px) {
+      .syn-load-photo, .syn-load-candles { object-fit: contain; }
     }
     /* dark overlay so the glowing candlesticks pop */
     .syn-load-dark {
@@ -28590,8 +28632,19 @@
      shell; la barra lateral se queda, así que no hace falta un botón de salida
      como el de Synapse. */
   body.ag-chalk-mode .ag-rail{ display:none !important; }
-  body.ag-chalk-mode .ag-shell{ grid-template-columns:236px minmax(0,1fr);
-    max-width:1860px; }
+  /* 🔴 SOLO DE 901px PARA ARRIBA. Sin este guard la regla se aplicaba también
+     en el teléfono, y como `body.ag-chalk-mode .ag-shell` (0,2,1) es MÁS
+     ESPECÍFICA que el `.ag-shell{grid-template-columns:1fr}` de la media
+     query de 900px (0,1,0) — las media queries NO suman especificidad — le
+     ganaba y la barra lateral seguía reclamando sus 236 px. Medido en un
+     iPhone de 375: 375 − 28 de márgenes − 236 de barra − 50 del rail de
+     herramientas = ~60 px de lienzo. De ahí que el dueño reportara "solo se
+     alcanzan a ver las barras de herramientas" y la barra de pestañas
+     desordenada. Synapse ya lo hacía bien (1fr) y por eso no estaba roto. */
+  @media(min-width:901px){
+    body.ag-chalk-mode .ag-shell{ grid-template-columns:236px minmax(0,1fr);
+      max-width:1860px; }
+  }
   /* ⚠️ sin esto el contenedor del lienzo se estira a la altura de la columna de
      diapositivas (medido: caja de 917 px con una pizarra de 343 dentro) y la
      pizarra queda flotando en medio de una caja vacía */
