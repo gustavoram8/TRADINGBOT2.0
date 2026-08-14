@@ -2599,8 +2599,17 @@ boards"** que llevaba desde antes del lanzamiento en la lista de críticos.
   armónicos H3/H4, solape E3, cruce de medias T4. ⚠️ E3 dio verde FALSO en v3 (valida el solape
   citando la frase clave). Los 4 restantes son tareas de agudeza visual fina → siguientes peldaños:
   modelo más fuerte (medible con este banco) o pedir ratios en el formulario. Resultados en
-  `docs/banco_resultados[,_v2,_v3]/`. **ENCENDER en producción = `ANALYZE_VERIFY_CLAIMS=1`
-  (set_env) + `reread && update`; apagar = quitarla. PENDIENTE: la decisión del dueño.**
+  `docs/banco_resultados[,_v2,_v3]/`. ✅ **ENCENDIDA EN PRODUCCIÓN (verificado 2026-08-14):**
+  `ANALYZE_VERIFY_CLAIMS=1` está en supervisor Y en `scalpel/.env`, y los 4 workers imprimen
+  `[AI] clausula-verificacion=ENCENDIDA` al arrancar. Apagar = `set_env.py --quitar
+  ANALYZE_VERIFY_CLAIMS` + `reread && update`.
+  ⚠️ **Trampa de diagnóstico:** `grep ANALYZE_VERIFY_CLAIMS /var/log/trader.out.log` da 0 aunque
+  esté encendida — el log imprime `clausula-verificacion`, no el nombre de la variable. Para saber
+  el estado real hay que mirar la línea `[AI] clausula-…` del último arranque, no buscar la
+  variable en el log (se dio un comando equivocado y confundió al dueño).
+  📄 **`tools/informe_banco_pdf.py`** arma el PDF de 51 páginas con los 30 casos (gráfico +
+  construcción del trade + respuesta del analizador + veredicto humano) y la **nota por
+  metodología**: ICT/OTE 8 · Wyckoff 8 · Patterns 7 · Elliott 6 · TA 5.5 · Harmonic 5.
   ⚠️ Límite honesto anotado: sintético limpio = condición necesaria, no suficiente. NO se tocó
   nada del analizador (zona prohibida). `HOJA.md` = la spec para que Gabriel valide los 20 casos.
 - [x] ✅ **20. "Mi cuenta" en el menú de arriba a la derecha (2026-08-04).** No existía ninguna
