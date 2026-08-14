@@ -2581,10 +2581,26 @@ boards"** que llevaba desde antes del lanzamiento en la lista de críticos.
     matiz (dudó del RSI=28 pero no leyó el 50.5 rotulado); W4 medio punto (objetó el contexto).
   · ⚠️ El calificador regex dio 2 rojos FALSOS (W2/W4 citaban al trader para corregirlo) —
     corregido W2; SIEMPRE leer los textos antes de sentenciar.
-  **PENDIENTE — decisión del dueño sobre el arreglo:** el candidato #1 es cirugía de prompt
-  ("etiquetas y notas son AFIRMACIONES a verificar contra el eje, no hechos"), medible re-corriendo
-  el banco (~$0.35) y comparando; #2 modelo más fuerte; #3 números medidos tipo Chalkboard;
-  #4 marcar beta. 🔴 Tocar el prompt = zona prohibida: SOLO con su autorización explícita.
+  **CIRUGÍA HECHA Y MEDIDA (2026-08-13/14, autorizada por el dueño con condición de no dañar
+  ICT/OTE — resuelta por MEDICIÓN, el 100% de certeza no existe):** cláusula "toda etiqueta/nota es
+  una AFIRMACIÓN a verificar contra el eje" + regla de honestidad numérica ("nunca digas que un
+  valor es visible si no lo derivaste tú; repetir el número de las notas como si lo hubieras leído
+  del panel es peor que callar"), **detrás de `ANALYZE_VERIFY_CLAIMS` (default APAGADA = prompt
+  byte a byte idéntico, verificado por hash)**. Guardianes nuevos: 4 casos ICT/OTE (I1-I4) + 6
+  perdidos con afirmaciones falsas (I5 SL cazado "manipulación", I6 BE prematuro, H5 dirección
+  invertida, W5 contradicción tesis-corto, P5 TP tras la demanda, T5 divergencia oculta) = 30 casos.
+  **Veredicto del antes/después (3 pasadas, ~$1 total, textos leídos a mano — el regex dio 6+
+  rojos/verdes FALSOS, SIEMPRE leer):** la cláusula CAZA lo que antes tragaba en comparaciones
+  gruesas — E4 onda 3 más corta, W3 "el panel de volumen no está visible" (antes alucinaba
+  lecturas), P3 "los máximos no son exactamente iguales" citando el eje — y T3 se curó con la regla
+  de honestidad (v2 había EMPEORADO: la orden de verificar le hacía AFIRMAR el RSI=28 falso).
+  **CERO daño:** I1/I2 y los 7 ganados sin una sola sospecha inventada; los 12 perdidos igual de
+  buenos. **Siguen ciegos (límite de VISTA, no de prompt — 2 iteraciones, no insistir):** ratios
+  armónicos H3/H4, solape E3, cruce de medias T4. ⚠️ E3 dio verde FALSO en v3 (valida el solape
+  citando la frase clave). Los 4 restantes son tareas de agudeza visual fina → siguientes peldaños:
+  modelo más fuerte (medible con este banco) o pedir ratios en el formulario. Resultados en
+  `docs/banco_resultados[,_v2,_v3]/`. **ENCENDER en producción = `ANALYZE_VERIFY_CLAIMS=1`
+  (set_env) + `reread && update`; apagar = quitarla. PENDIENTE: la decisión del dueño.**
   ⚠️ Límite honesto anotado: sintético limpio = condición necesaria, no suficiente. NO se tocó
   nada del analizador (zona prohibida). `HOJA.md` = la spec para que Gabriel valide los 20 casos.
 - [x] ✅ **20. "Mi cuenta" en el menú de arriba a la derecha (2026-08-04).** No existía ninguna
