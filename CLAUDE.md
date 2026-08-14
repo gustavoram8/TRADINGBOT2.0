@@ -705,15 +705,25 @@ durante la ventana de lanzamiento, mientras siguiera suscrito.**
 ## 📋 COLA PARA MAÑANA (2026-08-14, anotado a petición suya — SIN luz verde aún)
 El dueño las dictó al cerrar la sesión de responsive. **No empezar ninguna hasta que lo diga.**
 
-1. **El logo sale CON FONDO (caja blanca) en los correos.** Le llegó así a su hermano — sería el de
-   verificación o el de restablecer contraseña. 🔑 Pista ya verificada: el sitio TIENE las dos
-   versiones (`logo.png` con caja y **`logo_t.png` sin fondo**), y el shell de `/app` ya hace el
-   cambio en caliente (`_lm.src.replace('logo.png','logo_t.png')`, comentario "transparent logo, no
-   box"). Así que casi seguro es apuntar al archivo correcto, no rehacer arte.
-2. **El mismo fondo del logo en `/cosmetics`**, en las TRES vistas (iPhone, iPad y PC), y "en algún
-   otro sitio que no recuerda" — probablemente Mi cuenta. → **Barrer TODAS las referencias al logo
-   en plantillas y correos de una vez** en lugar de ir una por una; así aparece también la que no
-   recuerda.
+1. ✅ **2. LOGO CON CAJA — BARRIDO COMPLETO (2026-08-14, puntos 1 y 2 juntos).** La caja blanca vive
+   HORNEADA en `logo.png`; `logo_t.png` es el mismo arte transparente. Barridas TODAS las
+   referencias (28 plantillas + el correo): las páginas apuntan a `logo_t.png`.
+   · **El correo** (`_correo_html`) era el caso del hermano: en un correo no hay CSS que disimule la
+     caja (**los clientes de correo NO soportan `mix-blend-mode`**) y en Gmail oscuro salía un
+     rectángulo blanco. Ahora `logo_t.png` + **`background:#ffffff` en el contenedor** — el seguro
+     inverso: las letras del transparente son NEGRAS y en un cliente oscuro sin fondo propio
+     quedarían invisibles.
+   · 🔑 Tres familias de páginas: (a) SIN truco alguno (cosmetics/socials/contact/terms/privacy/
+     store_indicators/partner/2FA) — ahí la caja SÍ se veía; (b) con el par
+     `invert(1)+lighten / multiply` (auth, admin, splash, improve/mentorship) — la caja ya moría por
+     blend, se cambió el archivo por uniformidad, mismo resultado; (c) `index.html` NO SE TOCÓ: el
+     shell ya hace el swap en runtime y los camos pisan el logo con `content:url()`.
+   · `admin_trace.html` no estaba en ninguna lista y era oscuro sin filtro → se le puso el par de
+     admin. "Mi cuenta" (`/settings`) YA usaba `logo_t` — por eso él no lo recordaba con seguridad.
+   · `test_recibo_email.py` ahora exige `logo_t.png` y prohíbe `logo.png` (23/23). Verificado por
+     PÍXELES en navegador real (scratchpad `mide_logo.py`): 11 casos (8 páginas × temas), tinta
+     dibujada y Δ esquina-vs-fondo ≤1 en todos. ⚠️ `/login` y `/register` REDIRIGEN con sesión
+     abierta: medirlas ANTES de loguear o el selector no existe.
 3. 🔴 **SEGURIDAD DEL SITIO — revisión general.** Contexto de lo que YA existe, para no repetirlo:
    cabeceras básicas puestas (nosniff, X-Frame-Options, Referrer-Policy, Permissions-Policy),
    `PUBLIC_HTTPS=1` con cookies Secure/HttpOnly/SameSite y ProxyFix, 2FA TOTP opcional, contraseñas

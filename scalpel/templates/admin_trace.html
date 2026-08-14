@@ -10,7 +10,10 @@
     body { display:block; padding:0; min-height:100vh; }
     .admin-nav { display:flex; align-items:center; justify-content:space-between;
       padding:16px 28px; border-bottom:1px solid var(--border); }
-    .admin-nav img { height:34px; }
+    /* Mismo par de reglas que admin.html: en oscuro invert vuelve blancas las
+       letras del logo transparente; en claro se queda tal cual. */
+    .admin-nav img { height:34px; filter:invert(1); mix-blend-mode:lighten; }
+    body.light .admin-nav img { filter:none; mix-blend-mode:multiply; }
     .admin-nav .left { display:flex; align-items:center; gap:12px; }
     .admin-nav .badge { font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
       color:var(--accent); border:1px solid var(--border2); border-radius:14px; padding:3px 10px; }
@@ -93,7 +96,7 @@
 
   <nav class="admin-nav">
     <div class="left">
-      <img src="/static/logo.png" alt="Tradeable" onerror="this.style.display='none';" />
+      <img src="/static/logo_t.png" alt="Tradeable" onerror="this.style.display='none';" />
       <span class="badge">Rastro</span>
     </div>
     <div class="links">

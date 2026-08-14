@@ -107,8 +107,14 @@ with A.app.app_context():
     m = enviados[0]
     check('Reply-To apunta al buzón humano (support/avisos)',
           m.reply_to == A.ADMIN_INBOX, m.reply_to)
-    check('versión HTML presente con el logo al pie',
-          m.html and 'static/logo.png' in m.html)
+    # 🔴 logo_t (transparente), JAMÁS logo.png: aquel lleva la caja blanca
+    # horneada y en Gmail oscuro sale un rectángulo brillante (reportado por
+    # el hermano del dueño el 2026-08-13).
+    check('versión HTML presente con el logo TRANSPARENTE al pie',
+          m.html and 'static/logo_t.png' in m.html
+          and 'static/logo.png' not in m.html)
+    check('el HTML fija fondo blanco (letras negras en clientes oscuros)',
+          'background:#ffffff' in m.html)
     check('el texto invita a la reseña y a soporte',
           'reseña' in m.body or 'review' in m.body)
 

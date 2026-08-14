@@ -3374,16 +3374,25 @@ def _correo_html(texto):
     limpia y el logo al pie. Viaja como multiparte junto al texto plano — si el
     cliente de correo bloquea imágenes (muchos lo hacen hasta que el usuario
     pulsa "mostrar"), el correo se lee perfecto igual; el logo es el remate
-    visual cuando sí carga, no una pieza de la que dependa nada."""
+    visual cuando sí carga, no una pieza de la que dependa nada.
+
+    🔴 El logo va en su versión TRANSPARENTE (`logo_t.png`), no `logo.png`:
+    aquella lleva la caja blanca horneada en el archivo, y en un correo no hay
+    CSS que la disimule (los clientes de correo no soportan mix-blend-mode) —
+    en Gmail en modo oscuro salía un rectángulo blanco brillante, que fue
+    exactamente lo que reportó el hermano del dueño. El `background:#ffffff`
+    del contenedor es el seguro de la jugada inversa: las letras del logo
+    transparente son NEGRAS, y sin un fondo claro propio un cliente en modo
+    oscuro las dejaría invisibles."""
     import html as _h
     return (
         '<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;'
         'line-height:1.65;color:#1c2230;max-width:560px;margin:0;'
-        'text-align:left;'
+        'text-align:left;background:#ffffff;'
         'padding:8px 4px;white-space:pre-wrap;">%s'
         '<div style="margin-top:28px;padding-top:16px;'
         'border-top:1px solid #e4e7ee;">'
-        '<img src="https://tradeable.academy/static/logo.png" '
+        '<img src="https://tradeable.academy/static/logo_t.png" '
         'alt="Tradeable Academy" width="150" '
         'style="display:block;max-width:150px;height:auto;"></div>'
         '</div>' % _h.escape(texto))
