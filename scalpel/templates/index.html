@@ -3688,7 +3688,18 @@
        ancla a la pantalla y se ve siempre — que es lo que la licencia CC BY
        EXIGE, no un adorno. En escritorio (≥1181) sigue como estaba, porque
        allí el contenedor es más alto que su contenido y nunca se corta. */
-    @media (max-width: 1180px) {
+    /* 🔴 POR TIPO DE DISPOSITIVO, NO POR ANCHO. Perseguir el ancho fue un
+       error: puse el corte en 1180 y el iPad Pro apaisado mide 1366 (el de 11"
+       mide 1194), así que se quedaron fuera y el dueño seguía teniendo que
+       bajar con el scroll para ver la atribución. `hover:none` +
+       `pointer:coarse` describe exactamente lo que importa —pantalla táctil
+       con barra de navegador que se come el alto— y acierta con CUALQUIER
+       iPad y cualquier teléfono, presente o futuro, sin tocar un ordenador
+       (un portátil informa `pointer:fine` aunque tenga pantalla táctil).
+       ⚠️ Mi banco de pruebas NO reproducía el fallo porque un navegador sin
+       interfaz no tiene esa barra: por eso medí "visible" mientras en su iPad
+       no lo era. */
+    @media (max-width: 1180px), (hover: none) and (pointer: coarse) {
       body.ag-synapse-mode .syn-credit {
         position: fixed; left: 8px; right: 8px; bottom: 8px; max-width: none;
         width: auto; transform: none; z-index: 6;
@@ -3701,6 +3712,14 @@
        se ve — el navegador descuenta su propia barra —, así que aquí también
        manda `dvh`. */
     @media (min-width: 769px) and (max-width: 1180px) {
+      .synapse-app { height: calc(100dvh - 108px); }
+    }
+    /* Y en CUALQUIER táctil por ancho que sea (iPad Pro apaisado = 1366):
+       `100vh` allí incluye la barra del navegador, así que la franja de abajo
+       —donde vive el crédito— queda fuera de lo visible. `dvh` es el alto que
+       de verdad se ve. Acotado a >768 para no pisar el valor del teléfono,
+       que ya tiene el suyo unas líneas más arriba. */
+    @media (min-width: 769px) and (hover: none) and (pointer: coarse) {
       .synapse-app { height: calc(100dvh - 108px); }
     }
 
@@ -4196,20 +4215,35 @@
     @media (max-width: 1024px) {
       .qw-stage { flex-direction: column; justify-content: flex-start;
         align-items: center; min-height: auto; padding: 8px 18px 24px; }
+      /* ⚠️ El margen inferior tiene que despejar la ROTACIÓN, no solo la
+         imagen. Una `transform` NO ocupa sitio en el layout: el elemento
+         reserva su caja sin girar y la figura girada sobresale por las
+         esquinas — con 22 px la esquina caía encima de "Welcome to
+         Tradeable" (medido: solape real en iPad mini, Air y Pro verticales).
+         Un ancho de 320 px girado 9° sobresale ~25 px por abajo; 56 lo
+         despeja con holgura. */
       .quiz-welcome-logo { position: relative; left: auto; top: auto;
         height: auto; width: 70vw; max-width: 320px;
-        transform: rotate(9deg); margin: 4px auto 22px; }
+        transform: rotate(9deg); margin: 4px auto 56px; }
       body[class*="camo-"] .quiz-welcome-logo { transform: rotate(0deg); }
       .qw-content { max-width: 540px; margin: 0 auto; text-align: center; }
       .quiz-welcome-title { font-size: 30px; }
       .quiz-welcome-opts { margin: 0 auto; text-align: left; }
     }
-    /* iPad APAISADO (1025–1180): aquí sí caben lado a lado, pero justos. Se
-       encoge el muñeco y se recorta el margen derecho para que entre aire
-       entre la figura y el texto en vez de que se toquen. */
-    @media (min-width: 1025px) and (max-width: 1180px) {
+    /* iPad APAISADO (1025–1450): aquí sí caben lado a lado, pero justos.
+       🔴 El corte llega hasta 1450 porque el iPad Pro apaisado mide 1366 y se
+       me había quedado fuera: medido ahí, el muñeco ocupaba de −16 a 934 y el
+       texto empezaba en 676 → 258 px de solape.
+       🔑 La clave es el `max-width`, no la altura: el ancho del muñeco depende
+       del ALTO de la ventana (`70vh` × su proporción), así que una pantalla
+       ancha pero también alta —justo un iPad apaisado— lo hace enorme por un
+       lado que la media query no mira. El tope lo ata al hueco que de verdad
+       queda: el ancho total menos el margen derecho, menos la columna de
+       texto (540) y menos un respiro. */
+    @media (min-width: 1025px) and (max-width: 1450px) {
       .qw-stage { padding-right: 5vw; }
-      .quiz-welcome-logo { height: 54vh; left: 1vw; }
+      .quiz-welcome-logo { height: 54vh; left: 1vw;
+        max-width: calc(94vw - 540px - 60px); }
       .qw-content { max-width: 470px; }
     }
 
