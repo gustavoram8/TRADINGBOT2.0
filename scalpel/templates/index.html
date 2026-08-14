@@ -29639,7 +29639,12 @@
     esperando.innerHTML = '<span class="nx-dots"><span></span><span></span><span></span></span>';
     fetch('/api/assistant/ask', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ q: q, history: chatHist.slice(-6) })
+      // `w` = el ancho de SU ventana. Sin esto el asistente describía siempre
+      // la disposición de escritorio y mandaba a quien pregunta desde el
+      // teléfono a un "arriba a la derecha" que en su pantalla no existe.
+      // El umbral lo decide el servidor, para que la regla viva en un sitio.
+      body: JSON.stringify({ q: q, history: chatHist.slice(-6),
+                             w: window.innerWidth || 0 })
     }).then(function(r){
       return r.json().catch(function(){ return {}; }).then(function(d){
         return { ok: r.ok, status: r.status, d: d };

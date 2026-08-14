@@ -20,8 +20,51 @@ def _lista(d):
     return ', '.join('%s: %s' % (k, v) for k, v in d.items())
 
 
+# ── DÓNDE ESTÁ CADA COSA SEGÚN LA PANTALLA ────────────────────────────────
+# 🔴 Tessera daba indicaciones FALSAS en el teléfono: decía "arriba a la
+# derecha" para "Mi cuenta" — cierto en un ordenador, falso en un móvil, donde
+# esa barra vive al final de la página. Lo cazó el dueño preguntándoselo.
+# La cura NO es enseñarle las dos vistas y que adivine: es DECIRLE en cuál está
+# el usuario. El cliente manda el ancho de la ventana y aquí entra el bloque
+# que corresponde. Si no lo manda (versión vieja del cliente), se asume
+# escritorio, que es como se comportaba antes.
+# ⚠️ El iPad usa el bloque de ESCRITORIO: su disposición es prácticamente la
+# misma (barra lateral izquierda con las pestañas). El único que cambia de
+# verdad es el teléfono.
+VISTA_ESCRITORIO = """
+## DÓNDE ESTÁ CADA COSA — EL USUARIO ESTÁ EN ORDENADOR O IPAD
+Esta es la disposición que ve AHORA MISMO. Descríbele SOLO ésta.
+- Las **pestañas** (Analizar, Quiz, Foro, Chalkboard, Pre-Flight, Synapse,
+  Discover, Productos…) están en la **barra lateral izquierda**.
+- El **menú de la cuenta** — con "Mi cuenta"/Ajustes, Planes, tu rango y tus
+  cupones — está **arriba a la derecha**, en la columna derecha.
+- El **progreso de rango** y el **resumen del setup** viven en esa misma
+  **columna derecha**, junto al contenido.
+"""
+
+VISTA_MOVIL = """
+## DÓNDE ESTÁ CADA COSA — EL USUARIO ESTÁ EN UN TELÉFONO
+Esta es la disposición que ve AHORA MISMO, y es DISTINTA de la de ordenador.
+Descríbele SOLO ésta; NO le digas "arriba a la derecha" para nada, porque en su
+pantalla no hay columna derecha.
+- Las **pestañas** (Analizar, Quiz, Foro, Chalkboard, Pre-Flight, Synapse,
+  Discover, Productos…) no están en una barra lateral: aparecen **en fila, en
+  la parte de arriba**, y pueden ocupar varias líneas.
+- El **menú de la cuenta** ("Mi cuenta"/Ajustes, Planes, rango, cupones) y el
+  **progreso de rango** están **ABAJO DEL TODO**, al final de la página: hay
+  que desplazarse hasta el fondo. Es el sitio donde tocar tu nombre despliega
+  el menú.
+- El **resumen del setup** del analizador NO se muestra en el teléfono (en su
+  lugar están las propias pastillas que el usuario ya marcó).
+- La **pizarra (Chalkboard)** funciona, pero es una herramienta de pantalla
+  grande: si pregunta por dibujar con comodidad, sugiérele el ordenador.
+- En **Synapse**, el mapa de metodologías y los temas se muestran **apilados en
+  una columna** que se desplaza hacia abajo, no en un círculo.
+"""
+
+
 def construir(PLAN_PRICING, PLAN_LIMITS, PROJECT_LIMITS, precio_pdf,
-              anuales_on=False, mentoria_on=False):
+              anuales_on=False, mentoria_on=False, movil=False):
     """Arma el dossier con los números REALES de la aplicación."""
     std = PLAN_PRICING.get('standard', {}).get('monthly', 0)
     prm = PLAN_PRICING.get('premium', {}).get('monthly', 0)
@@ -90,16 +133,17 @@ en una pestaña; siempre que expliques dónde está algo, di en qué pestaña.
 - **Rangos y XP** — se gana XP usando la plataforma (entrar, analizar, quiz,
   reto diario, foro, Pre-Flight). Hay 8 rangos; el rango NUNCA baja. Cada
   subida da medalla y certificado PDF verificable públicamente. El rango se ve
-  en el menú de la cuenta (arriba a la derecha).
+  en el menú de la cuenta (mira la sección DÓNDE ESTÁ CADA COSA para saber
+  dónde queda en la pantalla de este usuario).
 
 ## DÓNDE ESTÁ CADA COSA (navegación)
 - La **tienda de cosméticos** está en **/cosmetics** (antes /camos). También se
-  llega desde el menú de la cuenta (arriba a la derecha) → Productos, o desde la
+  llega desde el menú de la cuenta → Productos, o desde la
   pestaña Discover. Ahí se compran camos, placas y cursores.
 - Los **planes** y sus precios están en la página de planes (menú de la cuenta →
   Planes, o el botón "Ver planes"). La compra se hace desde ahí.
 - **Ajustes** (contraseña, 2FA, cerrar sesiones, estado del plan, darse de baja):
-  menú de la cuenta arriba a la derecha → "Mi cuenta" / Ajustes, o en /settings.
+  menú de la cuenta → "Mi cuenta" / Ajustes, o en /settings.
 - El **PDF de Synapse** se compra desde la pestaña Synapse (botón "Get PDF") y,
   una vez comprado, se descarga desde ahí en cualquier idioma.
 - El **formulario de contacto/soporte** está en /contact. El **reportar un
@@ -158,7 +202,9 @@ agota, el propio panel indica cuándo se libera el siguiente.
 Si te preguntan por algo de esta lista, responde que no está disponible por
 ahora; no inventes cómo usarlo ni mandes a soporte por ello.
 %(mentoria)s
+%(vista)s
 """ % {
+        'vista': VISTA_MOVIL if movil else VISTA_ESCRITORIO,
         'ciclos': ciclos,
         'std': std, 'prm': prm, 'pdf': precio_pdf,
         'cf': cuota('free'), 'cs': cuota('standard'), 'cp': cuota('premium'),

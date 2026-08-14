@@ -12754,13 +12754,19 @@ ASSISTANT_PER_DAY = int(os.environ.get('ASSISTANT_PER_DAY', '80'))
 ASSISTANT_MAX_CHARS = 500          # una pregunta de ayuda no necesita más
 
 
-def _assistant_prompt():
-    """Reglas + dossier, con los números de HOY."""
+def _assistant_prompt(movil=False):
+    """Reglas + dossier, con los números de HOY y la vista del usuario.
+
+    `movil` decide qué bloque de navegación entra: en el teléfono la cuenta y
+    el rango viven ABAJO del todo, no arriba a la derecha, y decirle lo
+    contrario a alguien que está mirando su móvil es mandarlo a un sitio que
+    no existe (pasó, y lo cazó el dueño)."""
     return _KB.REGLAS + '\n' + _KB.construir(
         PLAN_PRICING, PLAN_LIMITS, PROJECT_LIMITS,
         precio_pdf=SYNAPSE_PDF_PRICE,
         anuales_on=ANNUAL_PLANS_ENABLED,
-        mentoria_on=MENTORSHIP_ENABLED)
+        mentoria_on=MENTORSHIP_ENABLED,
+        movil=movil)
 
 
 def _assistant_usadas(user_id, horas):
@@ -12793,7 +12799,17 @@ def assistant_ask():
     if _assistant_usadas(current_user.id, 24) >= ASSISTANT_PER_DAY:
         return jsonify({'error': 'rate', 'scope': 'day'}), 429
 
-    mensajes = ([{'role': 'system', 'content': _assistant_prompt()}]
+    # El ancho de la ventana del usuario, para saber QUÉ disposición está
+    # viendo. Se valida como número y se corta el umbral aquí (no en el
+    # cliente) para que la regla viva en un solo sitio. 900 es el mismo corte
+    # que usa el CSS. Sin dato → escritorio, que es como se comportaba antes.
+    try:
+        ancho = int(d.get('w') or 0)
+    except (TypeError, ValueError):
+        ancho = 0
+    es_movil = 0 < ancho <= 900
+
+    mensajes = ([{'role': 'system', 'content': _assistant_prompt(es_movil)}]
                 + historial
                 + [{'role': 'user', 'content': pregunta}])
     try:
