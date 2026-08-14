@@ -4584,6 +4584,15 @@
 
     .syn-lib-stage { position: absolute; inset: 0; z-index: 4; }
     .syn-map-vp { position: absolute; inset: 0; transform-origin: 50% 50%; }
+    /* En teléfono el mapa se apila en columna y puede ser MÁS ALTO que la
+       pantalla: aquí se le permite desplazarse en VERTICAL (lo prohibido era
+       el lateral). `overscroll-behavior:contain` evita que al llegar al final
+       el gesto arrastre la página de detrás. */
+    @media (max-width: 820px) {
+      .syn-map-vp { overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
+                    -webkit-overflow-scrolling: touch; }
+      .syn-map-svg { position: relative; height: auto; }
+    }
     /* synaptic "fire" pulse when diving into a cluster */
     .syn-map-vp.firing { animation: synFire .38s ease-in; }
     @keyframes synFire {
@@ -27359,25 +27368,37 @@
     const hintEl  = document.getElementById('syn-lib-hint');
     const dossier = document.getElementById('syn-dossier');
 
-    /* 🔴 SOLO MÓVIL: aire alrededor del mapa. El viewBox es 1000×1000 con
-       `meet`, así que la galaxia entra entera… pero las ETIQUETAS de los
-       métodos se dibujan pegadas a los nodos, y las de los nodos del borde se
-       salen del viewBox y el navegador las recorta. En escritorio no se nota
-       porque sobra ancho; en un teléfono de 393 px el cuadrado se encoge y el
-       texto, que no encoge igual, se come el margen. El dueño lo describió
-       como "los métodos se entrecortan, los laterales muy estrechos y se
-       pierde texto". Se ensancha el viewBox (mismo dibujo, más margen) sin
-       tocar una sola coordenada de la galaxia.
-       ⚠️ El viewBox NO se puede poner desde CSS: va por atributo. Y se
-       recalcula al girar el teléfono. */
-    function ajustaViewBoxMovil() {
-      if (!svg) return;
-      const estrecho = window.innerWidth <= 820;
-      svg.setAttribute('viewBox',
-        estrecho ? '-130 -110 1260 1220' : '0 0 1000 1000');
+    /* ── SYNAPSE EN TELÉFONO: EL MAPA SE APILA ───────────────────────────
+       🔴 La raíz del problema, medida: el dibujo vive en un viewBox de 1000
+       unidades que se comprime al ancho real, así que en un iPhone de 393 px
+       TODO se multiplica por 0.39 — una etiqueta de 14.5 unidades acaba en
+       5.7 px y un nodo de radio 13 en 5 px. Por eso el dueño reportó que
+       "todos los mapas neuronales se ven muy pero muy pequeños, tienes que
+       hacer zoom para poder escoger alguna metodología".
+       Ningún ajuste de tamaño lo arregla: mientras el lienzo mida 1000 y la
+       pantalla 393, la escala manda. La cura es ACERCAR el lienzo (viewBox de
+       ~420 → escala ≈ 1, el texto se lee a su tamaño real) y, como en esa
+       anchura ya no cabe una disposición radial, APILAR los nodos en una
+       columna y dejar que la vista se desplace en VERTICAL (que sí está
+       permitido; lo prohibido era el desplazamiento lateral).
+       El escritorio no se entera: todo esto vive tras `esEstrecho()`. */
+    const MOV_W = 420;              // ancho del lienzo en móvil
+    const MOV_PASO = 190;           // separación vertical entre nodos
+    function esEstrecho() { return window.innerWidth <= 820; }
+    function lienzoMovil(n) {
+      // alto = los nodos + aire arriba y abajo para que las etiquetas quepan
+      const alto = 130 + n * MOV_PASO;
+      svg.setAttribute('viewBox', '0 0 ' + MOV_W + ' ' + alto);
+      // se le da altura REAL para que pueda superar el alto del contenedor y
+      // éste lo desplace verticalmente en vez de encogerlo
+      svg.style.height = (alto * (Math.min(window.innerWidth, MOV_W * 1.6) / MOV_W)) + 'px';
+      svg.style.minHeight = '100%';
+      return { cx: MOV_W / 2, y0: 96, paso: MOV_PASO };
     }
-    ajustaViewBoxMovil();
-    window.addEventListener('resize', ajustaViewBoxMovil);
+    function lienzoEscritorio() {
+      svg.setAttribute('viewBox', '0 0 1000 1000');
+      svg.style.height = ''; svg.style.minHeight = '';
+    }
 
     let mode = 'map';        // 'map' | 'cluster'
     let activeMethod = null; // method id when in cluster mode
@@ -27566,7 +27587,18 @@
       hintEl.textContent = L().hintG; hintEl.style.display = '';
       svg.parentElement.style.setProperty('--syn-accent', '#5fd0c8');
 
-      CATALOG.forEach(m => {
+      // En teléfono los métodos se apilan en columna sobre un lienzo acercado
+      // (ver `lienzoMovil`); en escritorio se respetan sus coordenadas de
+      // siempre, así que la galaxia no cambia ni un píxel.
+      const mov = esEstrecho() ? lienzoMovil(CATALOG.length) : (lienzoEscritorio(), null);
+      const pos = m => mov
+        ? { cx: mov.cx, cy: mov.y0 + CATALOG.indexOf(m) * mov.paso }
+        : { cx: m.cx, cy: m.cy };
+
+      CATALOG.forEach(mm => {
+        // copia superficial con las coordenadas de esta vista: no se muta el
+        // CATALOG, que es compartido y lo lee también el cerebro 3D
+        const m = Object.assign({}, mm, pos(mm));
         const g = el('g', { class:'syn-cluster', style:'cursor:pointer' });
         // halo around the cluster soma
         g.appendChild(el('circle', { class:'syn-hub-glow', cx:m.cx, cy:m.cy, r:70 }));
@@ -27615,8 +27647,13 @@
       // ALWAYS a gap between two neurons — never a neuron itself. This reserves
       // a clean vertical corridor above the nucleus for its (sometimes long)
       // name label, so it can't collide with the upper neurons' labels.
-      const CX = 500, CY = 470, n = m.topics.length;
+      const n = m.topics.length;
+      // En teléfono: núcleo arriba y los temas en columna debajo, sobre el
+      // lienzo acercado. En escritorio, los anillos de siempre — intactos.
+      const movC = esEstrecho() ? lienzoMovil(n + 1) : (lienzoEscritorio(), null);
+      const CX = movC ? movC.cx : 500, CY = movC ? 60 : 470;
       const pts = m.topics.map((_, i) => {
+        if (movC) return { x: movC.cx, y: movC.y0 + (i + 1) * movC.paso - 40 };
         const ring = Math.floor(i / 6);
         const idx  = i % 6;
         const perRing = Math.min(n - ring*6, 6);
