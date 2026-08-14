@@ -465,6 +465,33 @@ sombras (−22%), filtros (−4%), fondos de camo (−1%).
 - Descarga sin CDN en este contenedor: registro de npm (tarballs) y raw.githubusercontent SÍ
   pasan el proxy; cdnjs/jsdelivr/unpkg no.
 
+## 🎯 QUÉ ES TRADEABLE — el posicionamiento OFICIAL (dictado por el dueño 2026-08-14)
+> 🔴 **Esta es la idea que gobierna TODO el contenido (Instagram, TikTok, landing, copy).** Sale
+> textual de él; no reformularla a la ligera ni suavizarla para que suene más comercial.
+
+**Tradeable es un ECOSISTEMA de trading. Su herramienta principal es el analizador.**
+
+**Lo que NO somos, y hay que decirlo:** no somos un bot de trading · **no somos mentores y NO
+suplimos el papel de un mentor** · no vendemos señales · no prometemos resultados.
+
+**El caso de uso REAL —el que hay que contar—:** el analizador te ayuda a encontrar el error de
+un trade que **por "X" razón NO pudiste enseñarle a tu mentor**:
+  · porque no tienes dinero para pagar un mentor;
+  · porque son **las 3 AM** y te da pena contactarlo;
+  · o porque tu mentor simplemente **no te contesta**.
+Es **feedback rápido y barato para alguien en apuros** que necesita encontrar su error ya.
+
+🔑 Ese es el ángulo que hace que el contenido NO sea genérico: no competimos con el mentor, lo
+cubrimos cuando no está. Todo post/historia/reel debería poder responder "¿esto de qué le sirve
+al tipo de las 3 AM?".
+
+**Criterio visual del dueño (mismo día):** *"piensa en nuestro instagram como la fachada de una
+casa en pleno 2026. Si la casa es vieja, no llama la atención aunque su patio sea grande (el
+website). Hay que hacer que parezca la casa de Elon Musk y que al verla digan «qué locura es
+esta»"*. Es decir: **el listón NO es "correcto y limpio", es que pare el scroll.** Va a mandar
+referencias de artes que le parecen buenos → calibrar el sistema visual con ellas ANTES de
+producir nada nuevo.
+
 ## 📱 REDES SOCIALES — kit de marca generado (2026-08-04)
 Instagram y TikTok abiertos por el dueño, 0 seguidores, 0 publicado. Hecho:
 - **`tools/gen_posts_ig.py`** (+ `tools/rasteriza_posts.py` para el PNG) genera
