@@ -1901,8 +1901,24 @@
         content: attr(data-proj); color: var(--muted); font-weight: 600;
         font-size: 12px; text-align: left;
       }
-      /* la tabla de UN proyecto no tiene data-proj y no lo necesita */
-      .pf-stats-table td + td:not([data-proj]) { display: block; }
+      /* La tabla de UN proyecto es distinta: etiqueta y valor caben en la
+         MISMA línea, así que no se parte en dos como la de comparar. Sin esta
+         rama salía la etiqueta arriba, el número abajo y media pantalla
+         desperdiciada — el dueño lo describió como "se ve cortado y no se ven
+         números". */
+      .pf-stats-table table.pf-una tr {
+        display: flex; align-items: baseline; justify-content: space-between;
+        gap: 14px; padding: 7px 12px;
+      }
+      .pf-stats-table table.pf-una td { padding: 0; }
+      .pf-stats-table table.pf-una td:first-child {
+        text-transform: none; letter-spacing: 0; font-weight: 600;
+        font-size: 12.5px; flex: 1 1 auto;
+      }
+      .pf-stats-table table.pf-una td + td {
+        display: block; flex: 0 0 auto; text-align: right;
+        font-weight: 700; color: var(--text);
+      }
       .pf-scrollable::after { display: none; }
     }
     .pf-stats-table tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--surface) 45%, transparent); }
@@ -1917,6 +1933,37 @@
     .pf-table th.orden::after { content: ' ⇅'; opacity: .35; font-size: 10px; }
     .pf-table th.orden.asc::after  { content: ' ↑'; opacity: 1; }
     .pf-table th.orden.desc::after { content: ' ↓'; opacity: 1; }
+    /* ── LOS TRADES, UNA TARJETA POR FILA EN MÓVIL ───────────────────────
+       Son ONCE columnas: en un iPhone se veían cinco y el resto quedaba
+       cortado (el dueño: "los números de exit salen cortados… no sé si hay
+       más info"). Sí la hay, y ésta es la forma de enseñarla toda. Cada trade
+       pasa a ser una tarjeta con "campo — valor" por línea; el nombre del
+       campo sale del `data-h` que pone el generador, así que traducirlo o
+       añadir una columna no exige tocar este CSS. */
+    @media (max-width: 760px) {
+      .pf-table-wrap { overflow-x: visible; border: none; }
+      .pf-table, .pf-table tbody, .pf-table tr, .pf-table td { display: block; width: auto; }
+      .pf-table thead { display: none; }
+      .pf-table tr {
+        border: 1px solid var(--border); border-radius: 10px;
+        margin-bottom: 10px; padding: 6px 0;
+        background: linear-gradient(var(--card), var(--card)), var(--bg);
+      }
+      .pf-table td {
+        border: none !important; padding: 4px 12px; text-align: right !important;
+        display: flex; align-items: baseline; justify-content: space-between; gap: 14px;
+      }
+      .pf-table td::before {
+        content: attr(data-h); color: var(--muted); font-weight: 600;
+        font-size: 11.5px; text-align: left; flex: 0 0 auto;
+      }
+      /* la fecha, de titular de la tarjeta */
+      .pf-table td:first-child {
+        font-weight: 700; border-bottom: 1px solid var(--border) !important;
+        padding-bottom: 7px; margin-bottom: 3px;
+      }
+      .pf-table tbody tr:nth-child(even) td { background: none; }
+    }
     .pf-table-wrap .pf-stats-table { border: none; border-radius: 0; margin-top: 0; }
     .pf-table-wrap .pf-empty, .pf-stats-table .pf-empty { padding: 18px 14px; }
 
@@ -12291,17 +12338,29 @@
       let html = '<table class="pf-table"><thead><tr>' +
         cabeceras.map((k, i) => th(k, PF_COLS[i])).join('') +
         '</tr></thead><tbody>';
+      // `data-h` = el nombre de la columna. En ESCRITORIO no hace nada (manda
+      // la cabecera); en MÓVIL cada trade se convierte en una tarjeta y el CSS
+      // pinta ahí el nombre del campo delante de su valor. Sin esto, en un
+      // teléfono se veían cinco columnas y el resto quedaba cortado.
+      const et = cabeceras.map(k => escapeHtml(T(k)));
+      const c_ = (i, contenido, cls) =>
+        '<td data-h="' + et[i] + '"' + (cls ? ' class="' + cls + '"' : '') +
+        '>' + contenido + '</td>';
       rows.forEach(c => {
         const pnlCls = typeof c.pnl === 'number' ? (c.pnl >= 0 ? 'num pos' : 'num neg') : 'muted';
+        const nh = (i, v) => {                     // numérico, con su etiqueta
+          const celda = n(v);                      // '<td class="num">…</td>'
+          return celda.replace('<td', '<td data-h="' + et[i] + '"');
+        };
         html += '<tr>' +
-          '<td>' + escapeHtml(fmtTradeDate(c)) + '</td>' +
-          '<td>' + (c.instrument ? escapeHtml(c.instrument) : '<span class="muted">—</span>') + '</td>' +
-          '<td>' + (c.direction ? escapeHtml(c.direction === 'long' ? T('pill.long') : T('pill.short')) : '—') + '</td>' +
-          n(c.entry_price) + n(c.exit_price) + n(c.position_size) + n(c.rr) +
-          '<td class="num">' + c.score + '/' + c.total + '</td>' +
-          '<td><span class="pf-chip ' + c.verdict + '">' + escapeHtml(verdictLabel(c.verdict)) + '</span></td>' +
-          '<td>' + (c.outcome ? escapeHtml(T('pf.' + (c.outcome === 'skipped' ? 'skipped' : c.outcome))) : '<span class="muted">—</span>') + '</td>' +
-          '<td class="' + pnlCls + '">' + (typeof c.pnl === 'number' ? fmtMoney(c.pnl) : '—') + '</td>' +
+          c_(0, escapeHtml(fmtTradeDate(c))) +
+          c_(1, c.instrument ? escapeHtml(c.instrument) : '<span class="muted">—</span>') +
+          c_(2, c.direction ? escapeHtml(c.direction === 'long' ? T('pill.long') : T('pill.short')) : '—') +
+          nh(3, c.entry_price) + nh(4, c.exit_price) + nh(5, c.position_size) + nh(6, c.rr) +
+          c_(7, c.score + '/' + c.total, 'num') +
+          c_(8, '<span class="pf-chip ' + c.verdict + '">' + escapeHtml(verdictLabel(c.verdict)) + '</span>') +
+          c_(9, c.outcome ? escapeHtml(T('pf.' + (c.outcome === 'skipped' ? 'skipped' : c.outcome))) : '<span class="muted">—</span>') +
+          c_(10, (typeof c.pnl === 'number' ? fmtMoney(c.pnl) : '—'), pnlCls) +
           '</tr>';
       });
       return html + '</tbody></table>';
@@ -12336,7 +12395,10 @@
       });
       const statsEl = document.getElementById('pf-proj-stats');
       if (!g) { statsEl.innerHTML = '<div class="pf-empty">' + escapeHtml(T('pf.noTrades')) + '</div>'; return; }
-      let html = '<table>';
+      // `pf-una` = tabla de UN proyecto (etiqueta + valor). La de comparar
+      // lleva varias columnas y en móvil se transpone distinto; sin esta
+      // marca el CSS no puede distinguirlas y una de las dos sale mal.
+      let html = '<table class="pf-una">';
       computeStats(rows).forEach(s => {
         html += '<tr><td>' + escapeHtml(s.label) + '</td><td>' + escapeHtml(s.value) + '</td></tr>';
       });
@@ -27591,6 +27653,21 @@
           'font-style': isTrig?'italic':'normal',
           'paint-order':'stroke', stroke: lt3?'rgba(235,243,255,.9)':'rgba(2,8,14,.9)', 'stroke-width':'3.2', 'stroke-linejoin':'round',
         }));
+        /* 🔴 ZONA TOCABLE. El soma es un círculo de r≈6.5 en un lienzo de 1000
+           unidades: en un iPhone de 393 px eso son ~2.5 px REALES, y la
+           etiqueta son unas letras finas. Por eso el dueño reportó que "Order
+           block retest" no le abría en el teléfono — no es que el manejador
+           falle, es que no se puede acertar con el dedo. Se añade un blanco
+           TRANSPARENTE que cubre el nodo y su etiqueta.
+           ⚠️ Va PRIMERO en el grupo (debajo del dibujo) y sin relleno visible:
+           no cambia nada de lo que se ve, ni en escritorio ni aquí. El tamaño
+           es un compromiso: más grande sería más fácil de tocar pero
+           empezaría a robarle los toques al nodo vecino. */
+        const blanco = el('rect', {
+          x: p.x - 46, y: p.y - 20, width: 92, height: 52,
+          fill: 'transparent', 'pointer-events': 'all',
+        });
+        g.insertBefore(blanco, g.firstChild);
         g.addEventListener('click', () => openTopic(t.slug));
         svg.appendChild(g);
       });
