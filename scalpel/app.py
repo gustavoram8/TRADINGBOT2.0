@@ -19,7 +19,7 @@ from functools import wraps
 from datetime import datetime, timedelta, timezone
 
 from flask import (
-    Flask, render_template, request, jsonify, send_file,
+    Flask, render_template, request, jsonify, send_file, send_from_directory,
     redirect, url_for, abort, make_response, session, has_request_context, g
 )
 from flask_sqlalchemy import SQLAlchemy
@@ -758,6 +758,10 @@ def _mentorship_kill_switch():
 @app.context_processor
 def inject_feature_flags():
     return {
+        # `abs_url` en las plantillas: la tarjeta social (`og:image`) necesita
+        # una URL ABSOLUTA — ninguna red social resuelve rutas relativas — y
+        # este helper ya antepone SITE_URL cuando está puesta.
+        'abs_url': abs_url,
         'scout_enabled': SCOUT_ENABLED,
         'indicators_enabled': INDICATORS_ENABLED,
         'mentorship_enabled': MENTORSHIP_ENABLED,
@@ -4166,6 +4170,37 @@ def welcome():
         return redirect(url_for('verify_email'))
     resp = make_response(render_template('splash.html'))
     resp.set_cookie('scalpel_splash_ts', '1', max_age=60, httponly=True, samesite='Lax')
+    return resp
+
+
+# ── El icono del sitio, servido desde la RAÍZ ─────────────────────────────
+# 🔑 Por qué en la raíz y no solo con etiquetas <link>: los navegadores Y
+# Google piden `/favicon.ico` y `/apple-touch-icon.png` a la raíz POR
+# CONVENCIÓN, sin que ninguna página se lo diga. Publicándolos aquí, el icono
+# aparece en la pestaña y en los resultados de búsqueda de TODO el sitio —
+# incluidas las 44 plantillas — sin editar ni una de ellas.
+# ⚠️ nginx puede adelantarse y servirlos él (la config live ya trae su
+# `location = /favicon.ico`); estas rutas son la red de seguridad para cuando
+# no lo haga, y para el servidor de desarrollo.
+_ICONOS_RAIZ = {
+    '/favicon.ico': ('favicon.ico', 'image/x-icon'),
+    '/apple-touch-icon.png': ('apple-touch-icon.png', 'image/png'),
+    # iOS pide también estos dos nombres antes de rendirse
+    '/apple-touch-icon-precomposed.png': ('apple-touch-icon.png', 'image/png'),
+    '/icon-192.png': ('icon-192.png', 'image/png'),
+}
+
+
+@app.route('/favicon.ico')
+@app.route('/apple-touch-icon.png')
+@app.route('/apple-touch-icon-precomposed.png')
+@app.route('/icon-192.png')
+def icono_raiz():
+    archivo, mime = _ICONOS_RAIZ[request.path]
+    resp = send_from_directory(os.path.join(app.root_path, 'static'), archivo)
+    resp.headers['Content-Type'] = mime
+    # un icono cambia cada varios años: que el navegador no lo vuelva a pedir
+    resp.headers['Cache-Control'] = 'public, max-age=604800'
     return resp
 
 

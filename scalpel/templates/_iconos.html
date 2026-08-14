@@ -1,0 +1,26 @@
+{# Iconos del sitio + tarjeta social. Se incluye en el <head>.
+
+   🔑 Existe como archivo aparte porque son 44 plantillas con <head> y ninguna
+   base común: el día que cambie el icono, se toca AQUÍ y no en 44 sitios.
+
+   ⚠️ Lo básico (pestaña del navegador y resultado de Google) ya funciona sin
+   estas etiquetas, porque `/favicon.ico` y `/apple-touch-icon.png` se sirven
+   desde la RAÍZ y los navegadores los piden por convención. Esto añade lo que
+   NO se puede adivinar: las resoluciones altas y la tarjeta que se ve al
+   pegar el enlace en WhatsApp, X o LinkedIn.
+
+   ⚠️ `og:image` DEBE ser una URL absoluta — las redes no resuelven rutas
+   relativas —, por eso pasa por `abs_url`. #}
+<link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" sizes="any" />
+<link rel="icon" type="image/png" sizes="96x96" href="{{ url_for('static', filename='icon-96.png') }}" />
+<link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='icon-192.png') }}" />
+<link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}" />
+<meta name="theme-color" content="#004feb" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Tradeable Academy" />
+<meta property="og:title" content="{{ og_titulo|default('Tradeable Academy') }}" />
+<meta property="og:description" content="{{ og_desc|default('Un ecosistema de trading. Su herramienta principal es un analizador que te ayuda a encontrar el error de un trade cuando no tienes a quién enseñárselo. Educativo: no damos señales ni prometemos resultados.') }}" />
+<meta property="og:image" content="{{ abs_url('static', filename='og-image.png') }}" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
