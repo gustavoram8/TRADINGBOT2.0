@@ -976,7 +976,9 @@ def casos():
                    'Doble techo clarísimo con máximos iguales, vendí el segundo '
                    'techo apuntando a la neckline y me sacó por arriba.'),
         rubrica={'espera': [
-            [r'(no son|no est[aá]n|nada) iguales|m[aá]s alto|desigual|'
+            # ⚠️ v2 lo cazó con "no son EXACTAMENTE iguales" y el regex exigía
+            # adyacencia → palabra opcional intercalada.
+            [r'(no son|no est[aá]n|nada)( \w+)? iguales|m[aá]s alto|desigual|'
              r'higher high|m[aá]ximo superior|supera.{0,30}(primer|techo 1)',
              '🔑 el 2º máximo es claramente MÁS ALTO: no hay doble techo', True],
             [r'estructura alcista|HH|continuaci[oó]n',
@@ -1309,7 +1311,7 @@ def casos():
              r'llegado|toc[oó]|tocado|perfor[oó]|perforado).{0,40}(PDL|98|'
              r'nivel)|PDL.{0,70}(no|nunca|sin).{0,40}'
              r'(barrid|tocad|alcanzad|perforad)|(por encima|arriba) del PDL|'
-             r'barrida.{0,60}no fue tan clara',
+             r'barrida.{0,60}no fue (tan clara|completa)|no lo toc[oó]',
              '🔑 el mínimo se quedó en 99.3: el PDL jamás fue barrido', True],
         ], 'prohibido': [
             # ⚠️ sin 'clara' a secas: "la barrida NO fue tan clara" es el
