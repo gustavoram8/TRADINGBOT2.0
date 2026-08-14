@@ -2555,7 +2555,10 @@ boards"** que llevaba desde antes del lanzamiento en la lista de críticos.
   reescrita ×4 (menciona el sitio). `tools/test_foro_imagenes.py` **32/32** + simula_foro 65/65.
   ⚠️ Lo que NO se puede probar sin gastar llamadas: el juicio de la IA en sí — el test cubre todo lo
   que lo rodea y vigila que el prompt conserve sus cláusulas. Fail-open se queda (IA caída → pasa).
-- [ ] **19. 🔴 Calidad del analizador fuera de ICT/STDV — EN CURSO (banco construido 2026-08-13).**
+- [x] ✅ **19. Calidad del analizador fuera de ICT/STDV — CERRADO (2026-08-14, el dueño lo dio por
+  bueno: *"ya puedes tachar el punto del analizador"*).** Banco de 30 casos repetible, 5
+  metodologías medidas con nota, cláusula desplegada en producción e informe en PDF. Lo que queda
+  es un LÍMITE documentado (vista fina del modelo), no trabajo pendiente. Detalle abajo.
   El dueño no puede etiquetar Harmonic/Elliott/etc. (solo opera ICT/OTE) → la salida: **gráficos
   SINTÉTICOS construidos desde la definición aritmética del patrón** (un Gartley ES B=0.618·XA;
   la onda 4 NO solapa a la 1) — la verdad se sabe por construcción, sin experto. **Hecho:**
