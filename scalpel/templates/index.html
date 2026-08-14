@@ -4849,6 +4849,20 @@
       transition: transform .42s cubic-bezier(.22,.61,.36,1), opacity .3s ease;
     }
     .syn-dossier.open .syn-book { transform: translateY(0) scale(1); opacity: 1; }
+    /* 🔴 EL CORTE DE ARRIBA, en teléfono. El libro pide `92vh` — 92% de la
+       PANTALLA —, pero su contenedor (`.syn-dossier`, `inset:0` dentro de
+       `.synapse-app`) mide `100dvh − 92px`: menos. Al centrarlo con
+       `align-items:center` dentro de una caja MÁS BAJA, sobresale por arriba y
+       por abajo a partes iguales, y como `.synapse-app` recorta lo que se
+       sale, lo que se pierde es la cabecera. En escritorio no ocurre porque
+       ahí el contenedor es más alto que el libro.
+       La cura es medir el libro contra su CONTENEDOR (`max-height:100%`) en
+       vez de contra la pantalla. El contenido sigue alcanzable: `.syn-page`
+       ya se desplaza por dentro. */
+    @media (max-width: 820px) {
+      .syn-dossier { align-items: stretch; padding: 10px; }
+      .syn-book { width: 100%; height: auto; max-height: 100%; }
+    }
     /* the methodology-coloured spine running down the left edge */
     .syn-book-spine {
       position: absolute; top: 0; left: 0; bottom: 0; width: 6px;
