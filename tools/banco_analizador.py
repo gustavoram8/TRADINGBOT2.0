@@ -58,6 +58,22 @@ VERDE, ROJO = (38, 166, 154), (239, 83, 80)
 AZUL, ORO, VIOLETA, CIAN = (41, 98, 255), (255, 183, 77), (171, 71, 188), (0, 188, 212)
 
 
+# Rótulos del gráfico. El banco se generó en español; el inglés hace falta
+# para material publicado y para comprobar que el modelo no depende del idioma.
+ETI = {'es': {'ent': 'ENTRADA %s %.2f', 'sal': 'SALIDA %.2f'},
+       'en': {'ent': 'ENTRY %s %.2f',   'sal': 'EXIT %.2f'}}
+IDIOMA_ETI = 'es'
+
+# 🔴 SIN PISTAS. El subtítulo se escribió como rótulo PARA EL REVISOR HUMANO y
+# acabó impreso DENTRO del PNG que se le manda al modelo — y en varios casos
+# dice la respuesta que el analizador tenía que encontrar ("el FVG era real; lo
+# que faltó fue la purga previa"). Eso invalida cualquier veredicto positivo:
+# no se puede distinguir si lo dedujo o si lo leyó. Con `--sin-pistas` el
+# subtítulo se deja en blanco y el gráfico solo lleva instrumento y
+# temporalidad, que es lo que trae la captura de un cliente real.
+SIN_PISTAS = False
+
+
 def fuente(sz, bold=False):
     for ruta in ('/usr/share/fonts/truetype/dejavu/DejaVuSans%s.ttf'
                  % ('-Bold' if bold else ''),):
@@ -331,9 +347,10 @@ def dibuja(caso, velas, ruta):
 
     # ENTRADA / SALIDA — las marcas que pidió el dueño, inconfundibles
     largo = caso['form']['direction'].lower().startswith('l')
-    for m, eti, arriba in ((ent, 'ENTRADA %s %.2f'
+    _e = ETI.get(IDIOMA_ETI, ETI['es'])
+    for m, eti, arriba in ((ent, _e['ent']
                             % ('LONG' if largo else 'SHORT', ent['p']), not largo),
-                           (sal, 'SALIDA %.2f' % sal['p'], largo)):
+                           (sal, _e['sal'] % sal['p'], largo)):
         cx, cy = x(m['i']), y(m['p'])
         s = 9
         if (m is ent) == largo:      # flecha hacia arriba bajo el precio
@@ -386,7 +403,8 @@ def dibuja(caso, velas, ruta):
     # cabecera: instrumento + temporalidad GRANDES (pedido explícito)
     d.text((m_izq + 4, 10), '%s · %s' % (caso['instrumento'], caso['tf']),
            font=f16b, fill=TXT)
-    d.text((m_izq + 4, 32), caso['subtitulo'], font=f12, fill=TXT2)
+    if not SIN_PISTAS:
+        d.text((m_izq + 4, 32), caso['subtitulo'], font=f12, fill=TXT2)
 
     img.save(ruta, 'PNG')
     return rsi14([v['c'] for v in velas])
@@ -1707,6 +1725,11 @@ def verifica(caso, velas, rsi):
 
 
 def main():
+    global SIN_PISTAS, IDIOMA_ETI
+    if '--sin-pistas' in sys.argv:
+        SIN_PISTAS = True
+    if '--en' in sys.argv:
+        IDIOMA_ETI = 'en'
     os.makedirs(SALIDA, exist_ok=True)
     manifest, hoja = [], []
     total_fallos = 0

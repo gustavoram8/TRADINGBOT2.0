@@ -5,6 +5,8 @@
     venv/bin/python3 tools/corre_banco.py --si       # lo corre (gasta dinero)
     venv/bin/python3 tools/corre_banco.py --si --caso H3 E4   # solo esos
     venv/bin/python3 tools/corre_banco.py --si I3 --idioma English --tag en
+    venv/bin/python3 tools/corre_banco.py --si --manifiesto manifest_limpio.json \
+        --idioma English --tag limpio
 
 NO toca el analizador: importa `build_system_prompt`, el cliente y el modelo
 de `app.py` en SOLO lectura y arma el mensaje de usuario CALCADO del endpoint
@@ -75,7 +77,12 @@ LANGUAGE: Write your entire response in {idioma}. Keep ICT-specific terms and ac
 
 
 def main():
-    manif_ruta = os.path.join(BANCO, 'manifest.json')
+    # --manifiesto <archivo>: para correr un lote aparte (p. ej. gráficos sin
+    # subtítulo) sin tocar el banco original.
+    manif = 'manifest.json'
+    if '--manifiesto' in sys.argv:
+        manif = sys.argv[sys.argv.index('--manifiesto') + 1]
+    manif_ruta = os.path.join(BANCO, manif)
     if not os.path.exists(manif_ruta):
         sys.exit('No existe el banco. Genera primero:\n'
                  '  venv/bin/python3 tools/banco_analizador.py')
@@ -85,6 +92,9 @@ def main():
     # --tag v2 → resultados-v2/: una pasada nueva NUNCA pisa la línea base,
     # porque el veredicto ES la comparación entre las dos carpetas.
     args = list(sys.argv[1:])
+    if '--manifiesto' in args:
+        i = args.index('--manifiesto')
+        del args[i:i + 2]
     global RES, IDIOMA
     if '--idioma' in args:
         i = args.index('--idioma')

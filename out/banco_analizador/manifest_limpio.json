@@ -1,0 +1,20 @@
+[
+ {
+  "id": "I3_limpio_en",
+  "png": "out/banco_analizador/I3_limpio_en.png",
+  "form": {
+   "approach": "ICT General",
+   "instrument": "NQ1! (Nasdaq futures)",
+   "session": "New York",
+   "direction": "Long",
+   "result": "Loss",
+   "htf_bias": "Bullish",
+   "aligned": "Yes",
+   "confluences": [
+    "Clean FVG",
+    "Retracement"
+   ],
+   "notes": "The displacement left a clean FVG and I entered on the first retracement into it. I did not wait for any sweep because the FVG looked high quality. It took my SL. What went wrong?"
+  }
+ }
+]
