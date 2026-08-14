@@ -3677,10 +3677,31 @@
          pantalla y se ve siempre, que es lo que la licencia CC BY EXIGE.
          Se limita a `body.ag-synapse-mode` para que no aparezca en otras
          pestañas (con `fixed` ya no depende de su contenedor). */
+      body.ag-synapse-mode .syn-credit { font-size: 9.5px; }
+    }
+    /* 🔴 HASTA 1180px, iPad INCLUIDO. El crédito colgaba del fondo de
+       `.synapse-app`, cuya altura se calcula restando una cabecera fija de
+       108/92 px que en pantallas estrechas es MÁS ALTA (la barra de pestañas
+       se parte en filas), así que su borde inferior caía por debajo de lo
+       visible: en el teléfono desaparecía y en el iPad había que bajar con el
+       scroll para verlo (reportado por el dueño en las dos). Con `fixed` se
+       ancla a la pantalla y se ve siempre — que es lo que la licencia CC BY
+       EXIGE, no un adorno. En escritorio (≥1181) sigue como estaba, porque
+       allí el contenedor es más alto que su contenido y nunca se corta. */
+    @media (max-width: 1180px) {
       body.ag-synapse-mode .syn-credit {
         position: fixed; left: 8px; right: 8px; bottom: 8px; max-width: none;
-        font-size: 9.5px; width: auto; transform: none; z-index: 6;
+        width: auto; transform: none; z-index: 6;
       }
+    }
+    /* ⚠️ Acotado por ABAJO a 769: el teléfono ya tiene su propia altura
+       (`100dvh − 92px`) unas líneas más arriba y, al declararse esta regla
+       DESPUÉS, sin el `min-width` le ganaría por orden de cascada y le
+       cambiaría el valor a sus espaldas. `100vh` en tablet tampoco es lo que
+       se ve — el navegador descuenta su propia barra —, así que aquí también
+       manda `dvh`. */
+    @media (min-width: 769px) and (max-width: 1180px) {
+      .synapse-app { height: calc(100dvh - 108px); }
     }
 
     .syn-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
@@ -4165,8 +4186,14 @@
       background: rgba(99,150,255,.13); color: var(--accent); text-transform: uppercase; }
     .quiz-welcome-opt .wo-text { font-size: 14px; font-weight: 600; line-height: 1.4; }
     .quiz-welcome-opt.synapse .wo-letter { background: rgba(168,85,247,.15); color: #c084fc; }
-    /* Tablet / mobile: stack the logo above the content */
-    @media (max-width: 880px) {
+    /* 🔴 EL CORTE SUBE DE 880 A 1024. En la disposición de escritorio el
+       muñeco va suelto a la izquierda con `height:70vh` y el texto pegado a la
+       derecha; en un monitor ancho sobra sitio entre los dos, pero en un iPad
+       vertical (1024) ese muñeco de ~950 px de alto y girado 13° invade la
+       columna de texto y queda encima de "Quiero verificar lo estudiado" —
+       reportado por el dueño. A partir de aquí el iPad vertical usa la
+       disposición apilada, que le sobra espacio de largo. */
+    @media (max-width: 1024px) {
       .qw-stage { flex-direction: column; justify-content: flex-start;
         align-items: center; min-height: auto; padding: 8px 18px 24px; }
       .quiz-welcome-logo { position: relative; left: auto; top: auto;
@@ -4176,6 +4203,14 @@
       .qw-content { max-width: 540px; margin: 0 auto; text-align: center; }
       .quiz-welcome-title { font-size: 30px; }
       .quiz-welcome-opts { margin: 0 auto; text-align: left; }
+    }
+    /* iPad APAISADO (1025–1180): aquí sí caben lado a lado, pero justos. Se
+       encoge el muñeco y se recorta el margen derecho para que entre aire
+       entre la figura y el texto en vez de que se toquen. */
+    @media (min-width: 1025px) and (max-width: 1180px) {
+      .qw-stage { padding-right: 5vw; }
+      .quiz-welcome-logo { height: 54vh; left: 1vw; }
+      .qw-content { max-width: 470px; }
     }
 
     .quiz-setup-grid { display: flex; flex-direction: column; gap: 10px; }
