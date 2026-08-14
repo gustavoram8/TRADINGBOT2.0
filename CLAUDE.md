@@ -702,6 +702,35 @@ durante la ventana de lanzamiento, mientras siguiera suscrito.**
   $35/mes tan feliz durante años.
 - `tools/test_tarifa_creador.py` **16/16** (con el código viejo fallan 4).
 
+## 📋 COLA PARA MAÑANA (2026-08-14, anotado a petición suya — SIN luz verde aún)
+El dueño las dictó al cerrar la sesión de responsive. **No empezar ninguna hasta que lo diga.**
+
+1. **El logo sale CON FONDO (caja blanca) en los correos.** Le llegó así a su hermano — sería el de
+   verificación o el de restablecer contraseña. 🔑 Pista ya verificada: el sitio TIENE las dos
+   versiones (`logo.png` con caja y **`logo_t.png` sin fondo**), y el shell de `/app` ya hace el
+   cambio en caliente (`_lm.src.replace('logo.png','logo_t.png')`, comentario "transparent logo, no
+   box"). Así que casi seguro es apuntar al archivo correcto, no rehacer arte.
+2. **El mismo fondo del logo en `/cosmetics`**, en las TRES vistas (iPhone, iPad y PC), y "en algún
+   otro sitio que no recuerda" — probablemente Mi cuenta. → **Barrer TODAS las referencias al logo
+   en plantillas y correos de una vez** en lugar de ir una por una; así aparece también la que no
+   recuerda.
+3. 🔴 **SEGURIDAD DEL SITIO — revisión general.** Contexto de lo que YA existe, para no repetirlo:
+   cabeceras básicas puestas (nosniff, X-Frame-Options, Referrer-Policy, Permissions-Policy),
+   `PUBLIC_HTTPS=1` con cookies Secure/HttpOnly/SameSite y ProxyFix, 2FA TOTP opcional, contraseñas
+   débiles bloqueadas, avisos de dispositivo nuevo, `test_seguridad.py` 10/10. **Lo que NO está:**
+   CSP (se dejó fuera a propósito: la app usa scripts en línea por todas partes, es trabajo aparte
+   con pruebas), HSTS, antiflood por IP en `/register` (acordado como pendiente antes de lanzar,
+   ver la sección del correo canónico), y el puerto 5001 sigue abierto a internet (sección D de
+   `LANZAMIENTO.md`). Y él DECIDIÓ no rotar los secretos (pendiente #0): no reabrir salvo que
+   pregunte.
+4. **NO HAY FAVICON — verificado, no existe nada.** Ni `favicon.ico`, ni `<link rel="icon">`, ni
+   `apple-touch-icon`, ni `og:image` en la landing (la única tarjeta OG del sitio es la de
+   `/verify/<code>`). Consecuencias reales: **Google pinta un globo genérico** junto a cada
+   resultado de búsqueda, la pestaña del navegador sale en blanco, "añadir a inicio" en iPhone
+   guarda una captura en vez de un icono, y **al pegar el enlace en WhatsApp/X/LinkedIn no sale
+   ninguna imagen**. 🔑 Google pide el icono en un tamaño múltiplo de 48 (48×48 mínimo, mejor
+   96/144) y que sea estable; el arte ya existe (la "a" del avatar de Instagram, `tools/gen_posts_ig.py`).
+
 ## 📌 PENDIENTES DE ÉL (recordárselos cuando toque, no cada mensaje)
 0. ⚪ **ROTAR LOS SECRETOS — el dueño DECIDIÓ NO HACERLO y asume el riesgo (2026-08-13).** Textual:
    *"si es ese el riesgo yo lo asumo"*. 🔴 **NO volver a sacárselo cada semana**; solo si él
