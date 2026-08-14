@@ -28903,6 +28903,14 @@
     }
     .ag-rail .account{ grid-column:1 / -1; }
   }
+  /* 🔴 El "Setup summary" NO baja: se quita en pantalla estrecha. Es un espejo
+     EN VIVO del formulario (con su punto animado) que en escritorio vive en la
+     columna de al lado y se ve cambiar mientras marcas las pastillas. Empujado
+     detrás de todo el contenido se actualiza donde nadie lo mira, y encima
+     repite lo que el usuario acaba de introducir unos centímetros más arriba —
+     las propias pastillas ya enseñan lo elegido. Cuenta y rango SÍ se quedan
+     abajo: ésos se consultan, no se usan mientras trabajas. */
+  @media(max-width:900px){ #ag-analyze-cards{ display:none; } }
   @media(max-width:900px){ .ag-shell{ grid-template-columns:1fr; padding:14px; }
     .ag-sidebar{ position:static; max-height:none; flex-direction:row; flex-wrap:wrap; align-items:center; }
     .ag-sidebar #tabs, .ag-sidebar .tabs{ flex-direction:row; flex-wrap:wrap; flex:1 1 100%; }
