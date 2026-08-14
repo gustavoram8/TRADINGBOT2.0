@@ -13555,6 +13555,55 @@ def forum_community_membership(cid):
     return jsonify({'ok': True, 'community': _community_dict(c)})
 
 
+@app.route('/forum/community/<int:cid>/delete', methods=['POST'])
+@standard_required
+def forum_community_delete(cid):
+    """Cerrar una comunidad. Solo su creador (o un admin).
+
+    🔴 Faltaba por completo: una comunidad creada no se podía borrar, ni
+    siquiera abandonar (`creator_cannot_leave`), y su nombre —único en todo
+    el sitio— quedaba bloqueado para siempre además de consumir uno de los 3
+    cupos de la cuenta. Tres comunidades de prueba dejaban a esa cuenta sin
+    poder crear ninguna nunca más.
+
+    🔑 Las publicaciones se VACÍAN y se marcan retiradas (`is_deleted`), no se
+    borran de la tabla — mismo mecanismo que usa el borrado de cuenta, y por
+    la misma razón: sus comentarios, reacciones y guardados son de OTRAS
+    personas y apuntan a ellas con clave ajena; un DELETE real revienta en
+    PostgreSQL (SQLite lo tragaría y el fallo saldría en producción).
+
+    ⚠️ Y NO se mueven al foro general aunque la columna lo permita: las
+    comunidades son PRIVADAS, así que reasignarlas publicaría ante todo el
+    mundo lo que alguien escribió contando con que solo lo verían los
+    miembros. Decisión del dueño (2026-08-14): se cierran con ella.
+    """
+    c = db.session.get(ForumCommunity, cid)
+    if not c:
+        return jsonify({'error': 'not_found'}), 404
+    if c.creator_id != current_user.id and not current_user.is_admin:
+        return jsonify({'error': 'forbidden'}), 403
+
+    posts = 0
+    for post in ForumPost.query.filter_by(community_id=cid).all():
+        if not post.is_deleted:
+            posts += 1
+        post.title = ''
+        post.body = ''
+        post.image_path = None
+        post.is_deleted = True
+        # se desliga de la comunidad para que al borrar la fila no quede una
+        # clave ajena apuntando al vacío
+        post.community_id = None
+    miembros = ForumCommunityMember.query.filter_by(community_id=cid).delete()
+    nombre = c.name
+    db.session.delete(c)
+    db.session.commit()
+    record_audit_event('forum_community_delete', user_id=current_user.id,
+                       detail='"%s" · posts=%d miembros=%d'
+                              % (nombre, posts, miembros))
+    return jsonify({'ok': True, 'posts': posts, 'members': miembros})
+
+
 @app.route('/forum/community/<int:cid>/requests', methods=['GET', 'POST'])
 @standard_required
 def forum_community_requests(cid):

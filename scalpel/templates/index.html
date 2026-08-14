@@ -2860,7 +2860,11 @@
     .comm-card .cm-name { font-weight:700; font-size:14.5px; }
     .comm-card .cm-desc { color:var(--muted); font-size:12.5px; min-height:16px; }
     .comm-card .cm-meta { color:var(--muted); font-size:11.5px; }
-    .comm-card .cm-actions { display:flex; gap:8px; margin-top:4px; }
+    /* ⚠️ `wrap` es obligatorio: la fila del CREADOR lleva 5 controles
+       (abrir · solicitudes · campo de invitar · invitar · cerrar) y sin él se
+       desbordan de la tarjeta y se montan unos encima de otros — el de cerrar
+       quedaba literalmente debajo del de abrir. */
+    .comm-card .cm-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; align-items:center; }
     .comm-card .cm-actions .forum-btn { padding:6px 12px; font-size:12px; }
     .post-chip { display:inline-flex; align-items:center; gap:5px; border:1px solid var(--border); background:var(--surface); color:var(--muted); border-radius:999px; padding:3px 10px; font-size:11.5px; font-weight:600; cursor:pointer; margin:6px 0 2px; }
     .post-chip:hover { border-color:var(--accent); color:var(--text); }
@@ -8702,6 +8706,8 @@
       'forum.comm.invite': 'Invite',
       'forum.comm.invitePh': 'Username',
       'forum.comm.invited': 'Invited ✓',
+      'forum.comm.del': 'Close community',
+      'forum.comm.delSure': 'Sure? This cannot be undone',
       'forum.comm.noUser': 'User not found',
       'forum.comm.notMember': 'This community is private — ask to join first.',
       'forum.dmLocked': "This member can't receive messages right now.",
@@ -9268,6 +9274,8 @@
       'forum.comm.invite': 'Invitar',
       'forum.comm.invitePh': 'Usuario',
       'forum.comm.invited': 'Invitado ✓',
+      'forum.comm.del': 'Cerrar comunidad',
+      'forum.comm.delSure': '¿Seguro? Esto no se puede deshacer',
       'forum.comm.noUser': 'Usuario no encontrado',
       'forum.comm.notMember': 'Esta comunidad es privada — solicita unirte primero.',
       'forum.dmLocked': 'Este miembro no puede recibir mensajes por ahora.',
@@ -9834,6 +9842,8 @@
       'forum.comm.invite': 'Inviter',
       'forum.comm.invitePh': "Nom d'utilisateur",
       'forum.comm.invited': 'Invité ✓',
+      'forum.comm.del': 'Fermer la communauté',
+      'forum.comm.delSure': 'Sûr ? C’est irréversible',
       'forum.comm.noUser': 'Utilisateur introuvable',
       'forum.comm.notMember': "Cette communauté est privée — demandez d'abord à la rejoindre.",
       'forum.dmLocked': 'Ce membre ne peut pas recevoir de messages pour le moment.',
@@ -10400,6 +10410,8 @@
       'forum.comm.invite': 'Convidar',
       'forum.comm.invitePh': 'Usuário',
       'forum.comm.invited': 'Convidado ✓',
+      'forum.comm.del': 'Fechar comunidade',
+      'forum.comm.delSure': 'Tem certeza? Isso não pode ser desfeito',
       'forum.comm.noUser': 'Usuário não encontrado',
       'forum.comm.notMember': 'Esta comunidade é privada — peça para entrar primeiro.',
       'forum.dmLocked': 'Este membro não pode receber mensagens no momento.',
@@ -14172,6 +14184,37 @@
           });
         });
         act.appendChild(inp); act.appendChild(inv);
+        // Cerrar la comunidad. Va en DOS pasos a propósito: no tiene vuelta
+        // atrás, se lleva por delante las publicaciones de dentro y libera un
+        // nombre que es único en todo el sitio.
+        const del = document.createElement('button'); del.type = 'button'; del.className = 'forum-btn ghost';
+        del.style.marginLeft = 'auto';
+        del.textContent = T('forum.comm.del');
+        let armado = false, reloj = null;
+        del.addEventListener('click', async () => {
+          if (!armado) {
+            armado = true;
+            del.textContent = T('forum.comm.delSure');
+            del.style.color = 'var(--loss)';
+            // se desarma solo: un botón destructivo no puede quedarse
+            // "cargado" esperando un clic despistado un minuto después
+            reloj = setTimeout(() => {
+              armado = false; del.textContent = T('forum.comm.del'); del.style.color = '';
+            }, 5000);
+            return;
+          }
+          clearTimeout(reloj);
+          del.disabled = true;
+          const r = await api('/forum/community/' + c.id + '/delete', { json: {} });
+          if (r.ok) {
+            if (state.community && state.community.id === c.id) { state.community = null; loadFeed(); }
+            loadCommunities();
+          } else {
+            del.disabled = false; armado = false;
+            del.textContent = T('forum.comm.del'); del.style.color = '';
+          }
+        });
+        act.appendChild(del);
         card.appendChild(act); card.appendChild(zona);
         return card;
       }

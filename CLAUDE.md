@@ -2631,6 +2631,28 @@ boards"** que llevaba desde antes del lanzamiento en la lista de críticos.
   no es pertenencia). Migración `_migrate_forum_member_status_column()` (DEFAULT 'member' = el
   backfill: nadie que estaba dentro sale expulsado), boot test 7/7. 15 claves `forum.comm.*`/
   `forum.dmLocked` ×4. ⚠️ `ForumCommunityMember` NO tiene relación `user` — joins explícitos.
+## 🗑️ CERRAR UNA COMUNIDAD DEL FORO (2026-08-14)
+🔴 **No se podía, y era un agujero de verdad:** una comunidad creada era ETERNA — sin endpoint de
+borrado (ni para el creador, ni para admin) y sin poder abandonarla (`creator_cannot_leave`). Su
+nombre es **único en todo el sitio**, así que quedaba bloqueado para siempre, y consumía uno de los
+**3 cupos** de la cuenta: tres pruebas dejaban a esa cuenta sin poder crear ninguna más. Lo cazó el
+dueño preguntando cómo borrar las suyas.
+- `POST /forum/community/<cid>/delete` — creador o admin. Fila de auditoría por cada cierre.
+- **Decisión del dueño: las publicaciones se van CON ella.** No se reasignan al foro general aunque
+  `community_id` sea nullable: las comunidades son **privadas**, y moverlas publicaría ante todo el
+  mundo lo que alguien escribió contando con que solo lo verían los miembros.
+- 🔑 Los posts se **VACÍAN** (`title=''`, `body=''`, `image_path=None`, `is_deleted`) y se
+  desligan (`community_id=None`) — no se borran de la tabla: sus comentarios, reacciones y guardados
+  son de OTRA gente y apuntan con clave ajena; un DELETE real revienta en PostgreSQL. **Es
+  exactamente el bug del 2026-08-10**, que reaparece cada vez que algo con hijos se borra.
+- Cliente: botón solo del creador, **en dos pasos** (arma → confirma) y **se desarma solo a los 5 s**
+  para que no quede "cargado" esperando un clic despistado. 2 claves `forum.comm.del*` ×4.
+- ⚠️ **Defecto que solo se vio en navegador:** `.cm-actions` no tenía `flex-wrap`, y con el 5º
+  control la fila del creador desbordaba la tarjeta — el botón de cerrar quedaba **debajo** del de
+  abrir (Playwright lo delató: "Abrir intercepts pointer events"). Leyendo el código no se ve.
+- `tools/test_borrar_comunidad.py` **19/19** (con `PRAGMA foreign_keys=ON`) + `simula_foro` 65/65 +
+  navegador real en ES. ⚠️ `/forum/post` lee `request.form`, NO JSON.
+
 - [x] ✅ **21. Farmeo de XP + AUDITORÍA COMPLETA POR PLAN (2026-08-09).** `tools/simula_xp.py`
   = **36 defensas, 0 farmeables**. Farmeo: login repetido paga 1/día (⚠️ el XP de login se paga al
   ABRIR /app, no en el POST de login — y /app exige el cookie del splash), la misma pregunta de
