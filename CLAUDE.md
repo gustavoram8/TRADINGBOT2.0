@@ -755,9 +755,21 @@ El dueño las dictó al cerrar la sesión de responsive. **No empezar ninguna ha
    · `tools/test_favicon.py` **32/32** (rutas raíz sin etiquetas, og:image ABSOLUTA, `.ico` con sus
      3 resoluciones dentro, apple-touch opaco, largo 60-165 de cada descripción, todas distintas,
      ninguna promete resultados).
-   · ⏳ **PENDIENTE, y sin esto Google tarda semanas:** dar de alta `tradeable.academy` en **Search
-     Console** (registro TXT en Cloudflare con `tools/dns_cf.py`), pedir **indexación** de la
-     portada y enviar el **sitemap**. El icono además exige **no cambiar de archivo** mientras tanto.
+   · ✅ **SEARCH CONSOLE DADO DE ALTA (2026-08-14):** propiedad de **Dominio**, verificada por el
+     método *"Proveedor de nombres de dominio"* — **Google puso el TXT él mismo** vía su integración
+     con Cloudflare (botón *Authorize*), no hizo falta `dns_cf.py`. Indexación de la portada
+     solicitada y **sitemap enviado**. La *Prueba en tiempo real* confirmó **"La URL está disponible
+     para Google"** — o sea que el bloqueo de robots está resuelto de verdad, no solo en el archivo.
+     🔴 **EL REGISTRO TXT `google-site-verification` NO SE BORRA NUNCA** — si desaparece, Google
+     desverifica el dominio y se pierde el panel. Ojo al limpiar DNS con `tools/dns_cf.py`.
+     ⚠️ Convive sin problema con el SPF del correo en la raíz: puede haber muchos TXT en el mismo
+     nombre, lo único prohibido es tener DOS que empiecen por `v=spf1`.
+     ⚠️ **En una propiedad de DOMINIO el sitemap se escribe con la URL COMPLETA**
+     (`https://tradeable.academy/sitemap.xml`); solo las de tipo *prefijo de URL* rellenan el
+     dominio solas — con `sitemap.xml` a secas responde *"Dirección de sitemap no válida"*.
+   · ⏳ **PENDIENTE:** el icono exige **no cambiar de archivo** mientras Google lo recoge (días o
+     un par de semanas). *"Indexada"* ≠ *"leída"*: la portada llevaba tiempo indexada **y** con
+     `Disallow`, que es justo lo que produce el *"No hay información disponible sobre esta página"*.
 
 ## 📌 PENDIENTES DE ÉL (recordárselos cuando toque, no cada mensaje)
 0. ⚪ **ROTAR LOS SECRETOS — el dueño DECIDIÓ NO HACERLO y asume el riesgo (2026-08-13).** Textual:
