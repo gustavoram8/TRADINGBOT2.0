@@ -1867,6 +1867,44 @@
       background: linear-gradient(to right, transparent, rgba(0,0,0,.28));
     }
     .pf-scrollable.hay-mas::after { opacity: 1; }
+    /* ── LA TABLA DE ESTADÍSTICAS, TRANSPUESTA EN MÓVIL ──────────────────
+       🔴 En un iPhone de 375 px la tabla NO cabe y nunca cabrá: la columna
+       fija son 190 px y cada proyecto pide 132, así que con dos proyectos ya
+       te has salido. Antes eso se resolvía desplazando la PÁGINA de lado —
+       justo lo que el dueño pidió eliminar —, y al poner el candado las
+       estadísticas se volvieron inalcanzables (regresión que introduje yo).
+       La cura no es devolver el desplazamiento: es cambiar la FORMA. Aquí
+       cada métrica pasa a ser un bloque, con una línea por proyecto y el
+       nombre del proyecto a la izquierda (sale de `data-proj`). Así entra
+       entera en cualquier ancho, sin desplazar nada.
+       ⚠️ Se anula el `position:sticky` de la primera columna: en esta forma
+       ya no hay nada horizontal que fijar, y dejarlo puesto la descoloca. */
+    @media (max-width: 760px) {
+      .pf-stats-table { overflow-x: visible; }
+      .pf-stats-table table, .pf-stats-table tbody, .pf-stats-table tr,
+      .pf-stats-table td { display: block; width: auto; }
+      .pf-stats-table thead { display: none; }
+      .pf-stats-table tr { border-bottom: 1px solid var(--border); padding: 8px 0; }
+      .pf-stats-table tr:last-child { border-bottom: none; }
+      .pf-stats-table td { border: none !important; padding: 3px 12px; }
+      .pf-stats-table td:first-child {
+        position: static; min-width: 0; max-width: none; background: none;
+        font-weight: 700; font-size: 12px; color: var(--muted);
+        text-transform: uppercase; letter-spacing: .04em;
+      }
+      .pf-stats-table td + td {
+        min-width: 0; text-align: right;
+        display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+      }
+      /* el nombre del proyecto, delante de su número */
+      .pf-stats-table td + td::before {
+        content: attr(data-proj); color: var(--muted); font-weight: 600;
+        font-size: 12px; text-align: left;
+      }
+      /* la tabla de UN proyecto no tiene data-proj y no lo necesita */
+      .pf-stats-table td + td:not([data-proj]) { display: block; }
+      .pf-scrollable::after { display: none; }
+    }
     .pf-stats-table tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--surface) 45%, transparent); }
     .pf-stats-table tr:last-child td { border-bottom: none; }
     .pf-stats-table td.best { color: #16a34a; font-weight: 700; }
@@ -2996,7 +3034,25 @@
     .scalper-stage {
       display: grid; grid-template-columns: 56px 1fr 168px; gap: 12px; align-items: stretch;
     }
-    @media (max-width: 900px) { .scalper-stage { grid-template-columns: 50px 1fr; } .scalper-slides { display: none; } }
+    /* 🔴 En móvil las diapositivas NO se esconden: se bajan. La versión
+       anterior hacía `display:none` a toda la columna, y con ella se iba el
+       botón "+" — el dueño reportó "no encontré para poder añadir
+       diapositivas". Aquí la columna pasa a ser una TIRA horizontal debajo
+       del lienzo: ocupa dos filas de la rejilla, las miniaturas se ponen en
+       fila y el "+" queda a mano. */
+    @media (max-width: 900px) {
+      .scalper-stage { grid-template-columns: 50px minmax(0,1fr); }
+      .scalper-slides {
+        grid-column: 1 / -1; width: auto; max-height: none;
+        display: flex; align-items: center; gap: 10px;
+        overflow-x: auto; padding: 8px 6px; margin-top: 10px;
+      }
+      .scalper-slides .slides-head { flex: 0 0 auto; margin: 0; }
+      .scalper-slides #sk-thumbs {
+        display: flex; gap: 8px; overflow: visible;
+      }
+      .scalper-slides #sk-thumbs > * { flex: 0 0 auto; width: 74px; }
+    }
 
     /* Text formatting toolbar (contextual — shown when text tool is active or a text object is selected) */
     .sk-text-tools {
@@ -3566,8 +3622,18 @@
          regla base empujaba el bloque media pantalla a la izquierda: al fijar
          los dos lados el ancho ya no es `max-content`, así que el translate
          deja de centrar y descoloca. Se anula aquí. */
-      .syn-credit { left: 8px; right: 8px; bottom: 8px; max-width: none;
-                    font-size: 9.5px; width: auto; transform: none; }
+      /* 🔴 `position:fixed`, no `absolute`. El crédito colgaba del fondo de
+         `.synapse-app`, cuya altura se calcula restando una cabecera fija
+         (92 px) que en móvil es MÁS ALTA — la barra de pestañas se parte en
+         varias filas —, así que su borde inferior caía por debajo de lo
+         visible y la atribución desaparecía. Con `fixed` se ancla a la
+         pantalla y se ve siempre, que es lo que la licencia CC BY EXIGE.
+         Se limita a `body.ag-synapse-mode` para que no aparezca en otras
+         pestañas (con `fixed` ya no depende de su contenedor). */
+      body.ag-synapse-mode .syn-credit {
+        position: fixed; left: 8px; right: 8px; bottom: 8px; max-width: none;
+        font-size: 9.5px; width: auto; transform: none; z-index: 6;
+      }
     }
 
     .syn-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
@@ -12296,7 +12362,14 @@
       html += '</tr></thead><tbody>';
       cols[0].forEach((s, i) => {
         html += '<tr><td>' + escapeHtml(s.label) + '</td>';
-        cols.forEach(c => { html += '<td>' + escapeHtml(c[i].value) + '</td>'; });
+        // `data-proj` es lo que permite la vista de MÓVIL: allí la tabla se
+        // transpone (cada métrica, un bloque con una línea por proyecto) y el
+        // nombre del proyecto lo pinta el CSS desde este atributo. En
+        // escritorio el atributo no hace nada — la cabecera sigue mandando.
+        cols.forEach((c, j) => {
+          html += '<td data-proj="' + escapeHtml(sel[j].name) + '">'
+                + escapeHtml(c[i].value) + '</td>';
+        });
         html += '</tr>';
       });
       out.innerHTML = html + '</tbody></table></div>';
@@ -27211,6 +27284,26 @@
     const closeBtn= document.getElementById('syn-lib-close');
     const hintEl  = document.getElementById('syn-lib-hint');
     const dossier = document.getElementById('syn-dossier');
+
+    /* 🔴 SOLO MÓVIL: aire alrededor del mapa. El viewBox es 1000×1000 con
+       `meet`, así que la galaxia entra entera… pero las ETIQUETAS de los
+       métodos se dibujan pegadas a los nodos, y las de los nodos del borde se
+       salen del viewBox y el navegador las recorta. En escritorio no se nota
+       porque sobra ancho; en un teléfono de 393 px el cuadrado se encoge y el
+       texto, que no encoge igual, se come el margen. El dueño lo describió
+       como "los métodos se entrecortan, los laterales muy estrechos y se
+       pierde texto". Se ensancha el viewBox (mismo dibujo, más margen) sin
+       tocar una sola coordenada de la galaxia.
+       ⚠️ El viewBox NO se puede poner desde CSS: va por atributo. Y se
+       recalcula al girar el teléfono. */
+    function ajustaViewBoxMovil() {
+      if (!svg) return;
+      const estrecho = window.innerWidth <= 820;
+      svg.setAttribute('viewBox',
+        estrecho ? '-130 -110 1260 1220' : '0 0 1000 1000');
+    }
+    ajustaViewBoxMovil();
+    window.addEventListener('resize', ajustaViewBoxMovil);
 
     let mode = 'map';        // 'map' | 'cluster'
     let activeMethod = null; // method id when in cluster mode
