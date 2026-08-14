@@ -3,7 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tradeable Academy</title>
+  {# ⚠️ El título es lo que Google pinta en AZUL, y "Tradeable Academy" a secas
+     no le dice a nadie qué es esto. La marca va primero (es lo que se busca
+     por nombre) y detrás, en una línea, de qué va. #}
+  <title>Tradeable Academy — Trade analysis, review and practice</title>
+  {% set meta_desc = 'A trading ecosystem built around an analyzer that reviews the trade you already took and helps you find the mistake. Educational: no signals, no promises.' %}
   {% include '_iconos.html' %}
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <style>

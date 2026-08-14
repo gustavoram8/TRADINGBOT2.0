@@ -64,7 +64,35 @@ def main():
     ):
         check(frag in h, que)
 
-    print('\n══ 3 · los archivos son lo que dicen ser ══')
+    print('\n══ 3 · lo que Google enseña DEBAJO del título ══')
+    # 🔴 Esto es lo que faltaba cuando el dueño buscó el sitio y leyó "No hay
+    # información disponible sobre esta página": sin descripción, Google no
+    # tiene qué escribir. Se comprueba en TODAS las páginas del sitemap, no
+    # solo en la landing — cada una necesita la suya.
+    vistas = ['/', '/guide', '/socials', '/contact', '/terms', '/privacy',
+              '/login', '/register']
+    descs = {}
+    for ruta in vistas:
+        r = c.get(ruta, follow_redirects=True)
+        t = r.get_data(as_text=True)
+        i = t.find('name="description" content="')
+        d = t[i + 28:t.find('"', i + 28)] if i >= 0 else ''
+        descs[ruta] = d
+        # 60-165: por debajo no dice nada y por encima Google la corta a mitad
+        check(60 <= len(d) <= 165,
+              '%-11s descripción de %3d caracteres' % (ruta, len(d)))
+        check('rel="canonical" href="https://tradeable.academy%s"' % ruta in t
+              or ruta == '/' and 'canonical" href="https://tradeable.academy/"' in t,
+              '%-11s declara su dirección canónica' % ruta)
+    # 🔑 Una descripción copiada en todas las páginas es peor que ninguna:
+    # Google las trata como duplicados y elige él qué enseñar.
+    check(len(set(descs.values())) == len(descs),
+          'las %d descripciones son DISTINTAS entre sí' % len(descs))
+    check(all(p not in ' '.join(descs.values()).lower()
+              for p in ('guarantee', 'signal service', 'profit')),
+          'ninguna promete resultados ni señales')
+
+    print('\n══ 4 · los archivos son lo que dicen ser ══')
     im = Image.open(_io.BytesIO(c.get('/static/og-image.png').data))
     check(im.size == (1200, 630), 'og-image.png mide 1200×630 (%dx%d)' % im.size)
     ico = Image.open(_io.BytesIO(c.get('/favicon.ico').data))

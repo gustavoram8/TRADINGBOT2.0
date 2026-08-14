@@ -685,6 +685,18 @@ def abs_url(endpoint, **values):
     return url_for(endpoint, _external=True, **values)
 
 
+def url_canonica():
+    """La dirección OFICIAL de la página que se está sirviendo.
+
+    Sale de la ruta pedida, no del `Host`, para que `www.tradeable.academy`,
+    `tradeable.academy` y la IP cruda declaren todos la MISMA dirección. Sin
+    esto un buscador puede tratarlas como tres sitios distintos y repartir
+    entre ellos la reputación de uno solo."""
+    if SITE_URL:
+        return SITE_URL + request.path
+    return request.base_url
+
+
 # ── Candado de vista previa: el sitio entero, solo para cuentas concretas ──
 # `PREVIEW_USERS=maurotradesve,gussytrades` (env) enciende el candado: cualquier
 # otra visita —anónima o logueada— ve la página de "en construcción", DENTRO de
@@ -762,6 +774,7 @@ def inject_feature_flags():
         # una URL ABSOLUTA — ninguna red social resuelve rutas relativas — y
         # este helper ya antepone SITE_URL cuando está puesta.
         'abs_url': abs_url,
+        'url_canonica': url_canonica,
         'scout_enabled': SCOUT_ENABLED,
         'indicators_enabled': INDICATORS_ENABLED,
         'mentorship_enabled': MENTORSHIP_ENABLED,

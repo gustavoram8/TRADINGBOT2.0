@@ -723,13 +723,41 @@ El dueño las dictó al cerrar la sesión de responsive. **No empezar ninguna ha
    ver la sección del correo canónico), y el puerto 5001 sigue abierto a internet (sección D de
    `LANZAMIENTO.md`). Y él DECIDIÓ no rotar los secretos (pendiente #0): no reabrir salvo que
    pregunte.
-4. **NO HAY FAVICON — verificado, no existe nada.** Ni `favicon.ico`, ni `<link rel="icon">`, ni
-   `apple-touch-icon`, ni `og:image` en la landing (la única tarjeta OG del sitio es la de
-   `/verify/<code>`). Consecuencias reales: **Google pinta un globo genérico** junto a cada
-   resultado de búsqueda, la pestaña del navegador sale en blanco, "añadir a inicio" en iPhone
-   guarda una captura en vez de un icono, y **al pegar el enlace en WhatsApp/X/LinkedIn no sale
-   ninguna imagen**. 🔑 Google pide el icono en un tamaño múltiplo de 48 (48×48 mínimo, mejor
-   96/144) y que sea estable; el arte ya existe (la "a" del avatar de Instagram, `tools/gen_posts_ig.py`).
+4. ✅ **FAVICON + FICHA DE GOOGLE (2026-08-14).** No existía NADA: ni `favicon.ico`, ni
+   `apple-touch-icon`, ni `og:image`, ni **una sola `<meta name="description">` en todo el sitio**.
+   **`tools/gen_favicon.py`** genera todo desde la MISMA "a" y el mismo `#004feb` del kit de
+   Instagram (favicon.ico 16/32/48 · icon-96/192/512 · apple-touch-icon 180 · og-image 1200×630 con
+   el logotipo entero). **`scalpel/templates/_iconos.html`** = el único sitio donde se declaran
+   (son 45 plantillas con `<head>` y ninguna base común); incluido en landing, `/app` y las 7
+   páginas públicas del sitemap.
+   · 🔑 **Las rutas van en la RAÍZ** (`/favicon.ico`, `/apple-touch-icon.png`,
+     `…-precomposed.png`, `/icon-192.png` → `icono_raiz()`): navegadores y Google las piden **por
+     convención, sin que ninguna etiqueta las declare**, así que el icono aparece también en las
+     plantillas que no incluyen el parcial.
+   · ⚠️ **El icono es la "a", NO el logotipo** (6:1 → a 16px la palabra es una mancha), **opaco y a
+     sangre** (iOS pinta NEGRO detrás del alfa y pone sus propias esquinas) y con **proporción
+     distinta por tamaño**; el `.ico` va a 0.74 y no a 0.58 porque a 16px los trazos finos se lavan.
+     El azul se toma del **color MÁS REPETIDO** entre píxeles opacos (el primero cae en el borde
+     suavizado y da `#84a9e8`), y la "a" se recorta pintando **solo los píxeles azules** — copiar el
+     recuadro entero colaba un trozo del glifo vecino.
+   · 🔴 **Lo que el dueño reportó DESPUÉS, y era lo gordo:** al buscarse en Google salía *"No hay
+     información disponible sobre esta página"*. **Eso NO es el favicon: es el mensaje de "robots.txt
+     me prohíbe leer la página"** — Google indexó la URL mientras el sitio aún servía `Disallow: /`
+     y no había vuelto. Verificado con él que hoy da `Allow: /`. **De las 4 configs de nginx, TRES
+     devuelven `Disallow: /`** (conf, abierto, preview) y solo `live.conf` abre: al tocar nginx,
+     comprobar SIEMPRE `curl -s https://tradeable.academy/robots.txt`.
+   · **Descripciones ×8 páginas** (una distinta por página — repetir la misma es peor que no
+     ponerla: Google las trata como duplicados) + **`<link rel="canonical">`** vía `url_canonica()`
+     (que `www.`, el dominio pelado y la IP declaren la MISMA dirección). Título de la landing:
+     "Tradeable Academy — Trade analysis, review and practice" (a secas no decía qué es).
+     ⚠️ **Van en INGLÉS a propósito:** el servidor sirve `<html lang="en">` y la traducción la
+     aplica el navegador DESPUÉS; un buscador solo ve lo primero.
+   · `tools/test_favicon.py` **32/32** (rutas raíz sin etiquetas, og:image ABSOLUTA, `.ico` con sus
+     3 resoluciones dentro, apple-touch opaco, largo 60-165 de cada descripción, todas distintas,
+     ninguna promete resultados).
+   · ⏳ **PENDIENTE, y sin esto Google tarda semanas:** dar de alta `tradeable.academy` en **Search
+     Console** (registro TXT en Cloudflare con `tools/dns_cf.py`), pedir **indexación** de la
+     portada y enviar el **sitemap**. El icono además exige **no cambiar de archivo** mientras tanto.
 
 ## 📌 PENDIENTES DE ÉL (recordárselos cuando toque, no cada mensaje)
 0. ⚪ **ROTAR LOS SECRETOS — el dueño DECIDIÓ NO HACERLO y asume el riesgo (2026-08-13).** Textual:

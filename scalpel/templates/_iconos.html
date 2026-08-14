@@ -10,7 +10,19 @@
    pegar el enlace en WhatsApp, X o LinkedIn.
 
    ⚠️ `og:image` DEBE ser una URL absoluta — las redes no resuelven rutas
-   relativas —, por eso pasa por `abs_url`. #}
+   relativas —, por eso pasa por `abs_url`.
+
+   ⚠️ La DESCRIPCIÓN va en inglés a propósito: el servidor sirve la página en
+   inglés (`<html lang="en">`) y la traducción la aplica el navegador DESPUÉS.
+   Un buscador solo ve lo primero, así que una descripción en español sobre una
+   página en inglés se lee como incoherente y se descarta. Cada página pone la
+   suya con `{% set meta_desc = "…" %}` justo antes de incluir este archivo.
+
+   ⚠️ Y el texto respeta el posicionamiento: NO somos mentores, NO damos
+   señales, NO prometemos resultados. Esto es lo que Google enseña debajo del
+   título — es la primera frase que lee alguien que no nos conoce. #}
+<link rel="canonical" href="{{ url_canonica() }}" />
+<meta name="description" content="{{ meta_desc|default('A trading ecosystem built around an analyzer that reviews the trade you already took and helps you find the mistake. Educational: no signals, no promises.') }}" />
 <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" sizes="any" />
 <link rel="icon" type="image/png" sizes="96x96" href="{{ url_for('static', filename='icon-96.png') }}" />
 <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='icon-192.png') }}" />
@@ -19,7 +31,7 @@
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Tradeable Academy" />
 <meta property="og:title" content="{{ og_titulo|default('Tradeable Academy') }}" />
-<meta property="og:description" content="{{ og_desc|default('Un ecosistema de trading. Su herramienta principal es un analizador que te ayuda a encontrar el error de un trade cuando no tienes a quién enseñárselo. Educativo: no damos señales ni prometemos resultados.') }}" />
+<meta property="og:description" content="{{ og_desc|default(meta_desc)|default('A trading ecosystem built around an analyzer that reviews the trade you already took and helps you find the mistake. Educational: no signals, no promises.') }}" />
 <meta property="og:image" content="{{ abs_url('static', filename='og-image.png') }}" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
