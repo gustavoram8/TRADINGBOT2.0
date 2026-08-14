@@ -4,6 +4,7 @@
     venv/bin/python3 tools/corre_banco.py            # dice qué haría y el costo
     venv/bin/python3 tools/corre_banco.py --si       # lo corre (gasta dinero)
     venv/bin/python3 tools/corre_banco.py --si --caso H3 E4   # solo esos
+    venv/bin/python3 tools/corre_banco.py --si I3 --idioma English --tag en
 
 NO toca el analizador: importa `build_system_prompt`, el cliente y el modelo
 de `app.py` en SOLO lectura y arma el mensaje de usuario CALCADO del endpoint
@@ -26,6 +27,9 @@ import sys
 import time
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Idioma de la RESPUESTA (el analizador contesta en el del cliente). El banco
+# se corrió en español; `--idioma English` sirve para material en inglés.
+IDIOMA = 'Spanish'
 BANCO = os.path.join(RAIZ, 'out', 'banco_analizador')
 RES = os.path.join(BANCO, 'resultados')
 sys.path.insert(0, os.path.join(RAIZ, 'scalpel'))
@@ -81,7 +85,11 @@ def main():
     # --tag v2 → resultados-v2/: una pasada nueva NUNCA pisa la línea base,
     # porque el veredicto ES la comparación entre las dos carpetas.
     args = list(sys.argv[1:])
-    global RES
+    global RES, IDIOMA
+    if '--idioma' in args:
+        i = args.index('--idioma')
+        IDIOMA = args[i + 1]
+        del args[i:i + 2]
     if '--tag' in args:
         i = args.index('--tag')
         RES = os.path.join(BANCO, 'resultados-' + args[i + 1])
@@ -131,7 +139,7 @@ def main():
                  'content': A.build_system_prompt(caso['form']['approach'])},
                 {'role': 'user', 'content': [
                     {'type': 'text',
-                     'text': mensaje_usuario(caso['form'], 'Spanish')},
+                     'text': mensaje_usuario(caso['form'], IDIOMA)},
                     {'type': 'image_url', 'image_url': {
                         'url': 'data:image/png;base64,' + img64,
                         'detail': A.ANALYZE_IMG_DETAIL}},
