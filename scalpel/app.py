@@ -5479,6 +5479,7 @@ SOCIAL_LINKS = [
         'SOCIAL_TIKTOK', 'https://www.tiktok.com/@tradeableacademy')),
     ('x', 'X', os.environ.get('SOCIAL_X', '')),
     ('youtube', 'YouTube', os.environ.get('SOCIAL_YOUTUBE', '')),
+    ('reddit', 'Reddit', os.environ.get('SOCIAL_REDDIT', '')),
     ('discord', 'Discord', os.environ.get('SOCIAL_DISCORD', '')),
     ('telegram', 'Telegram', os.environ.get('SOCIAL_TELEGRAM', '')),
 ]
@@ -5497,6 +5498,11 @@ def _social_handle(url):
     trozos = [t for t in limpio.split('/') if t]
     if len(trozos) == 2:                       # dominio + un solo segmento
         return '@' + trozos[1].lstrip('@')
+    # Reddit no usa arroba: su identidad es u/nombre, y su URL lleva un
+    # segmento de más (reddit.com/user/nombre). Sin esto la tarjeta enseñaría
+    # la ruta cruda, que es justo lo que este helper existe para evitar.
+    if len(trozos) == 3 and trozos[1] in ('user', 'u'):
+        return 'u/' + trozos[2]
     return limpio[:36]
 
 
