@@ -4233,9 +4233,17 @@ def sitemap():
     Existe porque el `robots.txt` de la config live de nginx lo anuncia
     (`Sitemap: …/sitemap.xml`) — anunciar un sitemap que responde 404 es
     peor que no anunciarlo. Solo lista lo que un visitante sin cuenta puede
-    ver; nada de /app, /admin ni /api."""
-    paginas = ['landing', 'pricing', 'guide', 'socials', 'contact',
-               'terms', 'privacy', 'login', 'register']
+    ver; nada de /app, /admin ni /api.
+
+    🔴 Un sitemap solo puede llevar URLs FINALES. `pricing` estaba aquí y hoy
+    es una REDIRECCIÓN a la sección de planes de la landing (se convirtió en
+    redirect al matar la página de precios duplicada, y nadie la sacó de esta
+    lista) — de ahí el aviso "Página con redirección" de Search Console: le
+    estábamos pidiendo a Google que indexara una URL que no existe como
+    página. La landing ya está en la lista, así que el contenido no se pierde.
+    `login`/`register` tampoco van: son utilitarias, sin contenido que
+    indexar, y solo generan avisos de "no indexada"."""
+    paginas = ['landing', 'guide', 'socials', 'contact', 'terms', 'privacy']
     urls = ''.join('<url><loc>%s</loc></url>' % abs_url(p) for p in paginas)
     xml = ('<?xml version="1.0" encoding="UTF-8"?>'
            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
