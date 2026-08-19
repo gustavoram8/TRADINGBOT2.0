@@ -672,6 +672,20 @@
     body.camo-chronicles.light      .quiz-result-mascot.fail { content: url('/static/logo4_chronicles.png'); }
     body.camo-chronicles:not(.light) .quiz-result-mascot.fail { content: url('/static/logo4_chronicles_dark.png'); }
 
+    /* Standard Steel — EL HERRERO (botargas entregadas por el dueño el
+       2026-08-19). welcome = forjando la pieza al rojo sobre el yunque;
+       pass = la pieza terminada, un $ aún encendido; fail = el yunque
+       partido, cara de "otra vez será". Camo de DOS looks → keyea por
+       .light como naval/mission/pole. Los _dark son el recolor estándar
+       flecha azul→naranja (mapeo muestreado de logo2/logo2_dark). */
+    body.camo-standard.light      .quiz-welcome-logo { content: url('/static/logo2_standard.png'); }
+    body.camo-standard:not(.light) .quiz-welcome-logo { content: url('/static/logo2_standard_dark.png'); }
+    body.camo-standard .quiz-welcome-logo { transform: translateY(-50%) rotate(0deg); }
+    body.camo-standard.light      .quiz-result-mascot.pass { content: url('/static/logo3_standard.png'); }
+    body.camo-standard:not(.light) .quiz-result-mascot.pass { content: url('/static/logo3_standard_dark.png'); }
+    body.camo-standard.light      .quiz-result-mascot.fail { content: url('/static/logo4_standard.png'); }
+    body.camo-standard:not(.light) .quiz-result-mascot.fail { content: url('/static/logo4_standard_dark.png'); }
+
     /* EL DRAGÓN — cuarto slot, que ningún otro camo tiene: vuela arriba a la
        derecha de la bienvenida y le escupe fuego al caballero (su llama sale
        hacia la izquierda, que es donde vive la botarga).
