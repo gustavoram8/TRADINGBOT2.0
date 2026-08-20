@@ -59,13 +59,29 @@ W, H = 1080, 1920
 FPS = 30
 ORO = '#c9a227'
 GRAFITO = '#0b0d12'
-IDIOMA = os.environ.get('REEL_LANG', 'es')
+IDIOMA = os.environ.get('REEL_LANG', 'en')
 # Los dos proyectos que narra el reel, por NOMBRE (nunca por posición):
 #  · PROYECTO  = el de la lista que se marca en pantalla.
 #  · RENTABLE  = el del remate: el que MENOS acierta y más deja por trade.
-PROYECTO = 'ICT' if IDIOMA == 'es' else 'ICT'
+PROYECTO = 'ICT'
 RENTABLE = 'Chartismo' if IDIOMA == 'es' else 'Chart patterns'
+# Las filas del panel se buscan POR SU ETIQUETA, y la etiqueta está
+# traducida: con las claves en español el reel en inglés no encontraba
+# ninguna y moría. Una tabla por idioma, no un `if` suelto.
+FILAS = {
+ 'es': {'fg': 'GOs falsos', 'wr': 'Win rate', 'exp': 'Expectativa en R',
+        'pf': 'Profit factor', 'dd': 'Drawdown máximo',
+        'n': 'Trades registrados'},
+ 'en': {'fg': 'False GOs', 'wr': 'Win rate', 'exp': 'Expectancy in R',
+        'pf': 'Profit factor', 'dd': 'Max drawdown',
+        'n': 'Trades logged'},
+}[IDIOMA]
 ALTO_HIST = 2600          # px de historial que recorre el barrido del reel
+# La firma sonora que eligió el dueño: el candidato 03 pelado, solo la cuerda
+# (se le quitaron el "wooop" de graves y los clics). Vive en out/marca_sonora/
+# y se regenera con `python3 tools/marca_sonora.py`.
+MARCA_SONORA = '03E_solo_cuerda_larga'
+GOLPE_EN_WAV = 2.00       # segundo del wav en que cae el impacto
 
 sys.path.insert(0, os.path.join(RAIZ, 'tools'))
 
@@ -223,6 +239,29 @@ def captura():
             leidos['veredicto_%d' % i] = pg.evaluate(
                 "() => (document.getElementById('pf-verdict-label')||{}).textContent")
         foto('veredicto', '#pf-verdict', margen=10)
+        # ── el CONSTRUCTOR: escribir las confluencias y fijar el umbral ──
+        pg.evaluate("() => { const b = document.getElementById('pf-edit'); if (b) b.click(); }")
+        pg.wait_for_timeout(1200)
+        if pg.query_selector('#pf-builder'):
+            foto('constructor', '#pf-builder')
+            leidos['zonas_constructor'] = pg.evaluate("""dpr => {
+                const c = document.getElementById('pf-builder').getBoundingClientRect();
+                const uno = s => { const e = document.querySelector(s);
+                  if (!e) return null; const r = e.getBoundingClientRect();
+                  return {x: Math.round((r.left-c.left)*dpr), y: Math.round((r.top-c.top)*dpr),
+                          w: Math.round(r.width*dpr), h: Math.round(r.height*dpr)}; };
+                const a = uno('#pf-min-go'), b2 = uno('#pf-builder-rows');
+                const um = document.querySelector('#pf-min-go');
+                const caja = um ? um.closest('.pf-thresholds') || um.parentElement.parentElement : null;
+                let u = null;
+                if (caja) { const r = caja.getBoundingClientRect();
+                  u = {x: Math.round((r.left-c.left)*dpr), y: Math.round((r.top-c.top)*dpr),
+                       w: Math.round(r.width*dpr), h: Math.round(r.height*dpr)}; }
+                return {filas: b2, mingo: a, umbral: u}; }""", DPR)
+            pg.evaluate("() => { const b = document.getElementById('pf-builder-cancel'); if (b) b.click(); }")
+            pg.wait_for_timeout(900)
+        else:
+            print('  ⚠️ no se abrió el constructor')
         # rects DENTRO de la foto del tablero, para poder encuadrar solo la
         # lista + el veredicto y dejar fuera el formulario de detalles
         leidos['zonas_tablero'] = pg.evaluate("""dpr => {
@@ -297,24 +336,6 @@ def captura():
                       y: Math.round((r.top - rc.top) * dpr),
                       w: Math.round(r.width * dpr),
                       h: Math.round(r.height * dpr)}; }); }""", DPR)
-        # cada estadística del guion, recortada sola y con aire
-        claves = {'adherencia': 'Adherencia', 'falsosgo': 'GOs falsos',
-                  'veredictos': 'Win rate GO', 'expectativa': 'Expectativa en R',
-                  'confluencia': 'Confluencia que'}
-        for nombre, texto in claves.items():
-            sel = pg.evaluate("""t => {
-                const tr = [...document.querySelectorAll('#pf-proj-stats tr')]
-                  .find(r => r.children[0] && r.children[0].textContent.indexOf(t) >= 0);
-                if (!tr) return null;
-                tr.setAttribute('data-foco', '1');
-                return true; }""", texto)
-            if sel:
-                foto(nombre, '#pf-proj-stats tr[data-foco]', margen=6)
-                pg.evaluate("""() => document.querySelectorAll('[data-foco]')
-                    .forEach(e => e.removeAttribute('data-foco'))""")
-            else:
-                print('  ⚠️ no encontré la fila: %s' % texto)
-
         # ── D · la comparación entre proyectos (el añadido del dueño) ──
         pg.evaluate("""() => { const b =
             document.querySelector('.pf-tab[data-pftab="compare"]'); if (b) b.click(); }""")
@@ -361,43 +382,60 @@ CAJA = {'izq': 158, 'der': 762, 'arriba': 210, 'abajo': 1450}
 ANCHO_CAJA = CAJA['der'] - CAJA['izq']          # 604
 
 TEXTOS = {
- 'es': {
-  'eq': 'Tradeable Academy',
-  'h1': ['¿Cuántos de tus', 'trades cumplían', '<em>tu propio</em> plan?'],
-  'adh': 'Adherencia',
-  'subAdh': 'de tus {n} chequeos, esos fueron los que SÍ cumplían tu lista',
-  'duT': ['Aciertos', 'no es <em>rentabilidad</em>.'],
-  'board': ['Marcas tu lista', 'antes de entrar.'],
-  'fg': ['Y cumplirla', 'tampoco te salva.'],
-  'fgK': 'GOs falsos',
-  'fgSub': 'de los que SÍ cumplían tu lista terminaron en pérdida',
-  'cmpT': ['Tus estrategias,', 'lado a lado.'],
-  'cmpSub': '21 métricas · 3 proyectos · 220 trades',
-  'wr': ['El que menos acierta…'],
-  'expr': ['…es el que más deja.'],
-  'exprSub': 'Win rate no es rentabilidad. La expectativa en R sí.',
-  'cierre': ['Tu propio historial.', 'No un bot. No señales.'],
-  'legal': 'Contenido educativo · No es asesoría financiera',
-  'datos': 'Datos de demostración',
- },
  'en': {
   'eq': 'Tradeable Academy',
-  'h1': ['How many of your', 'trades followed', '<em>your own</em> plan?'],
-  'adh': 'Adherence',
-  'subAdh': 'of your {n} checks, those were the ones that DID follow your list',
+  'lema': 'Process over impulse.',
+  # 🔴 El reel NO le habla a alguien que ya usa el sitio. Le habla a un trader
+  #    que no lo conoce: primero el problema que ya tiene, después la
+  #    herramienta como salida. Estructura dictada por el dueño.
+  'h1': ['How many of your', 'trades actually', 'followed <em>your plan</em>?'],
+  'h2': ['How many were', '<em>revenge</em>?', 'How many were <em>fear</em>?'],
+  'giro': ['Those days', 'are over.'],
+  'giroSub': 'PRE-FLIGHT',
+  'lista': ['Write down every', 'confluence you use.'],
+  'listaSub': 'Your setup. Your words. Not a template.',
+  'umbral': ['You pick how many', 'are enough', 'to enter.'],
+  'umbralSub': 'Set your own bar for GO and for CAUTION.',
+  'semaforo': ['A traffic light', 'answers before', 'you click.'],
+  'semaforoSub': 'It reads the boxes you ticked on your chart — nothing else.',
+  'stats': ['Every check you log', 'becomes <em>your</em>', 'own numbers.'],
+  'statsSub': 'Not a demo account. Not a guru. The trades you actually took.',
+  'cmp': ['Trading more than', 'one strategy?'],
+  'cmpSub': 'Put them side by side.',
+  'wr': 'The one that wins least…',
+  'expr': '…is the one that pays most.',
+  'exprSub': 'Win rate is not profit. Expectancy in R is.',
   'duT': ['Win rate', 'is not <em>profit</em>.'],
-  'board': ['You tick your list', 'before you enter.'],
-  'fg': ['And following it', "won't save you."],
-  'fgK': 'False GOs',
-  'fgSub': 'of the trades that DID follow your list still lost',
-  'cmpT': ['Your strategies,', 'side by side.'],
-  'cmpSub': '21 metrics · 3 projects · 220 trades',
-  'wr': ['The one that wins least…'],
-  'expr': ['…is the one that pays most.'],
-  'exprSub': "Win rate isn't profitability. Expectancy in R is.",
-  'cierre': ['Your own track record.', 'Not a bot. Not signals.'],
-  'legal': 'Educational content · Not financial advice',
-  'datos': 'Demo data',
+  'legal': 'Educational content · Not financial advice · Demo data',
+  'fWr': 'Win rate', 'fExp': 'Expectancy',
+  'mWr': 'Win rate', 'mExp': 'Expectancy', 'mPf': 'Profit factor',
+  'mDd': 'Max drawdown', 'mN': 'Trades logged',
+ },
+ 'es': {
+  'eq': 'Tradeable Academy',
+  'lema': 'Proceso antes que impulso.',
+  'h1': ['¿Cuántos de tus', 'trades siguieron', '<em>tu plan</em> de verdad?'],
+  'h2': ['¿Cuántos fueron', '<em>venganza</em>?', '¿Cuántos fueron <em>miedo</em>?'],
+  'giro': ['Esos tiempos', 'se acabaron.'],
+  'giroSub': 'PRE-FLIGHT',
+  'lista': ['Anota cada confluencia', 'que de verdad usas.'],
+  'listaSub': 'Tu setup. Tus palabras. No una plantilla.',
+  'umbral': ['Tú decides cuántas', 'bastan', 'para entrar.'],
+  'umbralSub': 'Pones tu propio listón para el GO y para la PRECAUCIÓN.',
+  'semaforo': ['Un semáforo', 'responde antes', 'de que hagas clic.'],
+  'semaforoSub': 'Lee las casillas que marcaste en tu gráfico. Nada más.',
+  'stats': ['Cada chequeo', 'se vuelve', '<em>tus</em> números.'],
+  'statsSub': 'No una cuenta demo. No un gurú. Los trades que tomaste.',
+  'cmp': ['¿Operas más de', 'una estrategia?'],
+  'cmpSub': 'Ponlas lado a lado.',
+  'wr': 'La que menos acierta…',
+  'expr': '…es la que más deja.',
+  'exprSub': 'El win rate no es rentabilidad. La expectativa en R sí.',
+  'duT': ['Aciertos no es', '<em>rentabilidad</em>.'],
+  'legal': 'Contenido educativo · No es asesoría financiera · Datos de demostración',
+  'fWr': 'Aciertos', 'fExp': 'Expectativa',
+  'mWr': 'Win rate', 'mExp': 'Expectativa en R', 'mPf': 'Profit factor',
+  'mDd': 'Drawdown máximo', 'mN': 'Trades registrados',
  },
 }
 
@@ -406,24 +444,27 @@ def _lee():
     """Los números del reel salen del panel, nunca de un dedo."""
     d = json.loads(io.open(os.path.join(FOTOS, 'leido.json'),
                            encoding='utf-8').read())['pantalla']
-    def de(filas, clave):
+    def busca(filas, clave):
+        k = clave.lower()
         for f in filas:
-            if f and clave.lower() in f[0].lower():
-                return f[1]
+            if f and f[0].strip().lower() == k:
+                return f
+        for f in filas:
+            if f and f[0].strip().lower().startswith(k):
+                return f
         sys.exit('🔴 no encontré la fila "%s" en el panel' % clave)
+
+    def de(filas, clave):
+        return busca(filas, clave)[1]
     tira = {x['k']: x['v'] for x in d['tira']}
     celdas = {x['k']: x for x in d['tira']}
     ict = d['proyecto_ict']
     cmp_ = d['comparacion']
     cols = cmp_[0][1:]
     def fila(clave):
-        for f in cmp_:
-            if f and clave.lower() in f[0].lower():
-                return dict(zip(cols, f[1:]))
-        sys.exit('🔴 no encontré la fila "%s" en la comparación' % clave)
-    peor = min(fila('Win rate')[c] for c in cols)   # cadena tipo "40% (50)"
-    wr = fila('Win rate')
-    ex = fila('Expectativa en R')
+        return dict(zip(cols, busca(cmp_, clave)[1:]))
+    wr = fila(FILAS['wr'])
+    ex = fila(FILAS['exp'])
     # el proyecto con PEOR win rate, leído del panel (no elegido a mano)
     num = lambda s: float(s.split('%')[0].replace(',', '.'))
     rentable = min(cols, key=lambda c: num(wr[c]))
@@ -432,7 +473,11 @@ def _lee():
         'zonas': d.get('zonas_tablero', {}),
         'adherencia': tira.get('Adherencia', '—'),
         'registrados': tira.get('Chequeos registrados', '—'),
-        'falsosGo': de(ict, 'GOs falsos'),
+        'falsosGo': de(ict, FILAS['fg']),
+        'wrIct': de(ict, FILAS['wr']), 'expIct': de(ict, FILAS['exp']),
+        'pfIct': de(ict, FILAS['pf']), 'ddIct': de(ict, FILAS['dd']),
+        'nIct': de(ict, FILAS['n']),
+        'pf': fila(FILAS['pf']), 'dd': fila(FILAS['dd']),
         'proyIct': [f[0] for f in ict][:1] and 'ICT — NY AM',
         'cols': cols, 'wr': wr, 'expR': ex, 'rentable': rentable,
         'wrPeor': wr[rentable], 'exPeor': ex[rentable],
@@ -459,7 +504,7 @@ html,body{width:@@W@@px;height:@@H@@px;background:@@GRAF@@;overflow:hidden;
 #marco img{position:absolute;left:0;top:0;display:block;image-rendering:auto}
 /* ── tipografía del reel ── */
 #h{position:absolute;left:@@IZQ@@px;width:@@ANCHO@@px;opacity:0}
-#h .l{font:900 66px/1.06 Inter,sans-serif;letter-spacing:-.035em;
+#h .l{font:900 62px/1.07 Inter,sans-serif;letter-spacing:-.035em;
   text-shadow:0 8px 42px rgba(0,0,0,.92)}
 #h .l em{font-style:normal;color:@@ORO@@}
 #sub{position:absolute;left:@@IZQ@@px;width:@@ANCHO@@px;opacity:0;
@@ -475,18 +520,30 @@ html,body{width:@@W@@px;height:@@H@@px;background:@@GRAF@@;overflow:hidden;
       en vertical: 1640 px de ancho en una caja de 604) ── */
 #duelo{position:absolute;left:@@IZQ@@px;width:@@ANCHO@@px;opacity:0}
 #duelo table{width:100%;border-collapse:collapse}
-#duelo th,#duelo td{padding:13px 6px;text-align:center}
-#duelo th{font:700 22px 'JetBrains Mono',monospace;letter-spacing:.06em;
+#duelo th,#duelo td{padding:16px 5px;text-align:center}
+#duelo th{font:700 24px 'JetBrains Mono',monospace;letter-spacing:.06em;
   color:rgba(255,255,255,.60);border-bottom:1px solid rgba(255,255,255,.16)}
-#duelo td.k{text-align:left;font:600 22px Inter,sans-serif;
+#duelo td.k{text-align:left;font:600 24px Inter,sans-serif;
   color:rgba(255,255,255,.62);white-space:nowrap}
-#duelo td.v{font:800 40px 'JetBrains Mono',monospace;letter-spacing:-.02em}
+#duelo td.v{font:800 46px 'JetBrains Mono',monospace;letter-spacing:-.02em}
 #duelo .col.on th{color:@@ORO@@}
 #duelo .on-cell{color:@@ORO@@}
 #duelo td.mal{color:#f0785a}
 #duelo tr+tr td{border-top:1px solid rgba(255,255,255,.10)}
-#duelo .cap{margin-top:26px;font:700 32px/1.30 Inter,sans-serif;
+#duelo .cap{margin-top:30px;font:700 34px/1.30 Inter,sans-serif;
   color:rgba(255,255,255,.78)}
+/* ── el nombre del producto, en el giro ── */
+#marca{position:absolute;left:@@IZQ@@px;width:@@ANCHO@@px;opacity:0;
+  font:900 58px 'JetBrains Mono',monospace;letter-spacing:.16em;color:@@ORO@@;
+  text-shadow:0 6px 34px rgba(0,0,0,.9)}
+/* ── rejilla de métricas ── */
+#rej2{position:absolute;left:@@IZQ@@px;width:@@ANCHO@@px;opacity:0;
+  display:grid;grid-template-columns:1fr 1fr;gap:26px 22px}
+#rej2 .m{border-left:3px solid rgba(201,162,39,.55);padding:6px 0 6px 18px}
+#rej2 .mk{font:700 19px 'JetBrains Mono',monospace;letter-spacing:.10em;
+  text-transform:uppercase;color:rgba(255,255,255,.58)}
+#rej2 .mv{margin-top:8px;font:900 54px/1 Inter,sans-serif;letter-spacing:-.03em;
+  color:#fff;text-shadow:0 6px 30px rgba(0,0,0,.9)}
 /* ── cierre ── */
 #out{position:absolute;inset:0;background:#05060a;display:flex;
   flex-direction:column;align-items:center;justify-content:center;gap:26px;opacity:0}
@@ -503,10 +560,11 @@ html,body{width:@@W@@px;height:@@H@@px;background:@@GRAF@@;overflow:hidden;
 <div id=amb></div><div id=rej></div>
 <div id=marco><img id=shot src=""></div>
 <div id=vig></div>
-<div id=h></div><div id=sub></div><div id=big></div><div id=duelo></div>
+<div id=h></div><div id=sub></div><div id=big></div>
+<div id=marca></div><div id=rej2></div><div id=duelo></div>
 <div id=flash></div>
 <div id=out><img src="@@LOGO@@" alt=""><div class=s>@@EQ@@</div>
-  <div class=a>@@CIERRE1@@<span>@@CIERRE2@@</span></div>
+  <div class=a>@@LEMA@@</div>
   <div class=l>@@LEGAL_TXT@@</div></div>
 <div id=bar></div>
 <script>
@@ -579,6 +637,22 @@ window.enCuadre = function(t){
     big.style.transform = 'scale('+lerp(1.14,1,g)+')';
   } else big.style.opacity=0;
 
+  // ── el nombre del producto ──
+  const mk=E('marca');
+  if (s && s.marca){ mk.textContent=s.marca; mk.style.top=s.marcay+'px';
+    const g=tr(t,s.t0+.55,s.t0+1.05);
+    mk.style.opacity=ap*g; mk.style.letterSpacing=(0.16+0.10*(1-g))+'em';
+  } else mk.style.opacity=0;
+
+  // ── rejilla de métricas ──
+  const rj=E('rej2');
+  if (s && s.rejilla){ rj.innerHTML=s.rejilla; rj.style.top=s.rejy+'px';
+    rj.style.opacity=ap;
+    /* entran de una en una: cuatro números de golpe no se leen */
+    [...rj.children].forEach((e,i)=>{ const g=tr(t,s.t0+.30+i*.42,s.t0+.72+i*.42);
+      e.style.opacity=g; e.style.transform='translateY('+(18*(1-g))+'px)'; });
+  } else rj.style.opacity=0;
+
   // ── duelo tipografiado ──
   const du=E('duelo');
   if (s && s.duelo){
@@ -608,6 +682,22 @@ window.enCuadre = function(t){
 def _corto(nombre):
     """'Chartismo — Rupturas' → 'Chartismo'. Los nombres largos no caben."""
     return nombre.split('—')[0].split('(')[0].strip()
+
+
+def _rejilla_html(d, T):
+    """Cuatro métricas del proyecto, GRANDES.
+
+    🔴 Antes esto era una foto del panel encogida a 700 px de ancho, y el
+    dueño la vio "muy pequeña". Tenía razón: la tabla mide 1640 px nativos, o
+    sea que el texto quedaba en ~12 px sobre un lienzo de 1080. Los valores
+    siguen saliendo del panel (`leido.json`); lo único que cambia es que se
+    componen aquí, a un tamaño que se lee en un teléfono.
+    """
+    filas = [(T['mWr'], d['wrIct']), (T['mExp'], d['expIct']),
+             (T['mPf'], d['pfIct']), (T['mDd'], d['ddIct'])]
+    return ''.join(
+        '<div class="m"><div class="mk">%s</div><div class="mv">%s</div></div>'
+        % (k, v.split('(')[0].strip()) for k, v in filas)
 
 
 def _duelo_html(d, T):
@@ -649,76 +739,79 @@ def monta():
     A = ANCHO_CAJA
     ANCHO_IMG = 760          # ancho de las capturas anchas (ver CAJA)
     todo = lambda n: [0, 0, tam[n][0], tam[n][1]]
-    cel = {c['k']: c for c in rects['tira']}
-    filaIct = {r['t']: r for r in rects['filas_ict']}
     zon = rects['zonas_tablero']
+    con = rects.get('zonas_constructor') or {}
+    hw, hh = tam['historial']
+    bw, bh = tam['tablero_0']
 
     # ── EL GUION ──────────────────────────────────────────────────────────
-    # Cada escena declara: cuándo, qué captura, qué recorte de esa captura
-    # (inicio → fin, de ahí sale el barrido) y qué texto lleva encima.
+    # 🔴 REESCRITO tras la revisión del dueño. El primero le hablaba a alguien
+    #    que YA usa el sitio ("tu adherencia", "tu lista") — o sea, no vendía
+    #    nada. Este va: problema que el espectador ya tiene → la herramienta
+    #    como salida → lo que le devuelve. Y cada rótulo dura 3,4 s o más:
+    #    con 2,4 s la primera frase no daba tiempo ni a leerse.
     plan = []
 
-    # 1 · GANCHO — el historial pasando deprisa, desenfocado, detrás del
-    #     titular. Sin tarjeta: el gancho es la frase, no la pantalla.
-    hw, hh = tam['historial']
+    # 1-2 · EL PROBLEMA. Dos preguntas, sin producto todavía.
     plan.append(dict(
-        t0=0.0, t1=2.40, img='historial.png', iw=hw, corte=False, desnudo=1,
-        c0=[0, 0, hw, 1500], c1=[0, hh - 1500, hw, 1500],
-        y=300, alto=900, amb=1,
-        h=T['h1'], hy=620, sub=None))
-
-    # 2 · EL NÚMERO — adherencia. La prueba es la CELDA del panel ampliada
-    #     1,7×, no la tira entera: a tamaño de tira el texto es una mancha.
+        t0=0.0, t1=4.00, img='historial.png', iw=hw, corte=False, desnudo=1,
+        c0=[0, 0, hw, 1500], c1=[0, 700, hw, 1500], y=300, alto=900, amb=1,
+        h=T['h1'], hy=560, sub=None))
     plan.append(dict(
-        t0=2.40, t1=5.20, img='historial.png', iw=hw, corte=True, desnudo=1,
-        c0=[0, 900, hw, 1500], c1=[0, hh - 1500, hw, 1500],
-        y=300, alto=900, amb=1,
-        big=d['adherencia'].split('(')[0].strip(), bigK=T['adh'], bigy=560,
-        sub=T['subAdh'].replace('{n}', d['registrados']), suby=930))
+        t0=4.00, t1=7.80, img='historial.png', iw=hw, corte=True, desnudo=1,
+        c0=[0, 700, hw, 1500], c1=[0, hh - 1500, hw, 1500], y=300, alto=900, amb=1,
+        h=T['h2'], hy=560, sub=None))
 
-    # 3 · EL TABLERO — la lista marcándose hasta GO. Se encuadra la unión de
-    #     las filas y el veredicto: el formulario de detalles sobra aquí.
-    bw, bh = tam['tablero_0']
+    # 3 · EL GIRO. Nombre del producto, a secas, sobre negro.
+    plan.append(dict(
+        t0=7.80, t1=11.20, img=None, corte=True,
+        h=T['giro'], hy=640, big=None, marca=T['giroSub'], marcay=980))
+
+    # 4 · LA LISTA — el constructor, que es donde se ESCRIBEN.
+    if con.get('filas'):
+        cf = con['filas']
+        plan.append(dict(
+            t0=11.20, t1=16.40, img='constructor.png', iw=tam['constructor'][0],
+            corte=True, c0=[40, 800, 900, 600], c1=[40, 800, 900, 600],
+            y=560, alto=640, ancho=ANCHO_IMG, amb=1,
+            h=T['lista'], hy=250, sub=T['listaSub'], suby=1250))
+
+    # 5 · EL UMBRAL — cuántas bastan para entrar.
+    if con.get('umbral'):
+        cu = con['umbral']
+        plan.append(dict(
+            t0=16.40, t1=21.00, img='constructor.png', iw=tam['constructor'][0],
+            corte=True, c0=[40, 1470, 800, 200], c1=[40, 1470, 800, 200],
+            y=660, alto=260, ancho=ANCHO_IMG, amb=1,
+            h=T['umbral'], hy=250, sub=T['umbralSub'], suby=1230))
+
+    # 6 · EL SEMÁFORO — la lista marcándose y el veredicto cambiando solo.
     zy, zh = zon['filas']['y'], (zon['veredicto']['y'] + zon['veredicto']['h']
                                  - zon['filas']['y'])
     plan.append(dict(
-        t0=5.20, t1=9.00, img='tablero_6.png', iw=bw, corte=True,
+        t0=21.00, t1=26.60, img='tablero_6.png', iw=bw, corte=True,
         seq=['tablero_%d.png' % i for i in range(7)],
-        c0=[zon['filas']['x'], zy, 1040, zh],
-        c1=[zon['filas']['x'], zy, 1040, zh],
+        c0=[zon['filas']['x'], zy, 1040, zh], c1=[zon['filas']['x'], zy, 1040, zh],
         y=540, alto=700, ancho=ANCHO_IMG, amb=1,
-        h=T['board'], hy=270, sub=None))
+        h=T['semaforo'], hy=250, sub=T['semaforoSub'], suby=1290))
 
-    # 4 · EL GOLPE — cumplir la lista tampoco salva. La prueba es la MITAD
-    #     derecha de la fila, a escala 1:1, para que se lea la muestra.
-    fg = filaIct['GOs falsos (GO pero perdió)']
+    # 7 · LOS NÚMEROS — tipografiados y GRANDES. La captura del panel real se
+    #     quitó: el dueño la vio "muy pequeña", y con razón (1640 px de tabla
+    #     metidos en 700 dejan el texto en 12 px).
     plan.append(dict(
-        t0=9.00, t1=12.20, img='proyecto_ict.png', iw=tam['proyecto_ict'][0],
-        corte=True,
-        c0=[1150, fg['y'], 490, fg['h']], c1=[1150, fg['y'], 490, fg['h']],
-        y=1010, alto=90, ancho=490, amb=1,
-        h=T['fg'], hy=250,
-        big=d['falsosGo'].split('(')[0].strip(), bigK=T['fgK'], bigy=480,
-        sub=T['fgSub'], suby=830))
+        t0=26.60, t1=32.60, img=None, corte=True,
+        rejilla=_rejilla_html(d, T), rejy=560,
+        h=T['stats'], hy=250, sub=T['statsSub'], suby=1210))
 
-    # 5 · LA DENSIDAD — la tabla real. Aquí NO se lee: se ve que hay materia.
-    cw, ch = tam['comparar']
+    # 8 · LA COMPARACIÓN — el remate que pidió el dueño.
     plan.append(dict(
-        t0=12.20, t1=14.60, img='comparar.png', iw=cw, corte=True,
-        c0=[0, 0, cw, 760], c1=[0, 0, cw, ch],
-        y=380, alto=800, amb=1,
-        h=T['cmpT'], hy=215, sub=T['cmpSub'], suby=1235))
+        t0=32.60, t1=39.60, img=None, corte=True,
+        duelo=_duelo_html(d, T), duy=600, onCol=d['cols'].index(d['rentable']),
+        on1=False, on2=36.10,
+        capA=T['wr'], capB=T['expr'], cap2=36.10,
+        h=T['cmp'], hy=250, sub=T['exprSub'], suby=1210))
 
-    # 6 · EL DUELO — tipografiado, porque 1640 px de tabla no se leen en
-    #     vertical (medido: a 604 px de ancho el texto queda en 8,8 px).
-    plan.append(dict(
-        t0=14.60, t1=21.00, img=None, corte=True,
-        duelo=_duelo_html(d, T), duy=560, onCol=d['cols'].index(d['rentable']),
-        on1=False, on2=17.80,
-        capA=T['wr'][0], capB=T['expr'][0], cap2=17.80,
-        h=T['duT'], hy=250, sub=T['exprSub'], suby=1120))
-
-    total = 24.20
+    total = 44.20
 
     plan = [dict(s) for s in plan]
 
@@ -729,8 +822,8 @@ def monta():
             ('@@GRAF@@', GRAFITO), ('@@ORO@@', ORO),
             ('@@IZQ@@', str(CAJA['izq'])), ('@@ANCHO@@', str(A)),
             ('@@LOGO@@', 'logo_tour.png'), ('@@EQ@@', T['eq']),
-            ('@@CIERRE1@@', T['cierre'][0]), ('@@CIERRE2@@', T['cierre'][1]),
-            ('@@LEGAL_TXT@@', T['legal'] + '  ·  ' + T['datos']),
+            ('@@LEMA@@', T['lema']),
+            ('@@LEGAL_TXT@@', T['legal']),
             ('@@LEGAL@@', str(H - CAJA['abajo'] + 70)),
             ('@@BARRA@@', str(H - CAJA['abajo'] + 10)),
             ('@@PLAN@@', json.dumps(plan)), ('@@CAJA@@', json.dumps(caja)),
@@ -766,12 +859,38 @@ def monta():
         b.close()
 
     ff = imageio_ffmpeg.get_ffmpeg_exe()
-    dest = os.path.join(SALIDA, 'reel-preflight.mp4')
+    mudo = os.path.join(FOTOS, '_mudo.mp4')
     subprocess.run([ff, '-y', '-loglevel', 'error', '-framerate', str(FPS),
                     '-i', os.path.join(carpeta, '%04d.png'),
                     '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18',
-                    '-movflags', '+faststart', dest], check=True)
+                    '-movflags', '+faststart', mudo], check=True)
     shutil.rmtree(carpeta, ignore_errors=True)
+
+    # ── LA MARCA SONORA ──────────────────────────────────────────────────
+    # 🔑 El golpe tiene que caer cuando el logo ASIENTA, no cuando empieza el
+    #    barrido: si suena antes, el oído lo separa de la marca y deja de
+    #    leerse como una firma (medido en `tools/marca_sonora.py`, que fija el
+    #    golpe en el segundo 2,00 del wav). Aquí el barrido arranca en O0 y
+    #    tarda 0,5 s, así que el logo está entero en O0+0,5 → el wav empieza
+    #    en O0 + 0,5 − 2,00.
+    dest = os.path.join(SALIDA, 'reel-preflight.mp4')
+    wav = os.path.join(RAIZ, 'out', 'marca_sonora', MARCA_SONORA + '.wav')
+    asienta = (plan[-1]['t1'] - 0.10) + 0.50
+    ms = int(round(max(0.0, asienta - GOLPE_EN_WAV) * 1000))
+    if os.path.exists(wav):
+        subprocess.run(
+            [ff, '-y', '-loglevel', 'error', '-i', mudo, '-i', wav,
+             '-filter_complex',
+             '[1:a]adelay=%d|%d,pan=stereo|c0=c0|c1=c0[a]' % (ms, ms),
+             '-map', '0:v:0', '-map', '[a]', '-c:v', 'copy',
+             '-c:a', 'aac', '-b:a', '192k', '-shortest',
+             '-movflags', '+faststart', dest], check=True)
+        print('marca sonora %s · golpe en %.2f s' % (MARCA_SONORA, asienta))
+    else:
+        # ⚠️ Sin el wav el reel sale MUDO en vez de fallar: se regenera con
+        #    `python3 tools/marca_sonora.py`, que no depende de nada externo.
+        shutil.copy(mudo, dest)
+        print('⚠️ sin marca sonora (falta %s) — el reel sale mudo' % wav)
     print('listo:', dest, '· %.1f MB' % (os.path.getsize(dest) / 1e6))
     return dest
 
