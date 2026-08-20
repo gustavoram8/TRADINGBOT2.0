@@ -750,28 +750,39 @@ def monta():
     #    nada. Este va: problema que el espectador ya tiene → la herramienta
     #    como salida → lo que le devuelve. Y cada rótulo dura 3,4 s o más:
     #    con 2,4 s la primera frase no daba tiempo ni a leerse.
+    # 🔑 Si hay locución medida, los cortes NO se eligen a ojo: los manda la
+    #    voz (`tools/narra_preflight.py` los escribe). La voz de este reel dura
+    #    40,6 s y el montaje aprobado tenía 39,6 s de hueco — no cabía. Así que
+    #    el vídeo se estira hasta la frase, en vez de recortar a nadie.
+    tj = os.path.join(SALIDA, '_tiempos_narracion.json')
+    C = json.load(io.open(tj, encoding='utf-8')) if os.path.exists(tj) else None
+    if C:
+        print('cortes tomados de la locución: %.1f s en total' % C['total'])
+    def T2(clave, por_defecto):
+        return C[clave] if C else por_defecto
+
     plan = []
 
     # 1-2 · EL PROBLEMA. Dos preguntas, sin producto todavía.
     plan.append(dict(
-        t0=0.0, t1=4.00, img='historial.png', iw=hw, corte=False, desnudo=1,
+        t0=0.0, t1=T2('problema2', 4.00), img='historial.png', iw=hw, corte=False, desnudo=1,
         c0=[0, 0, hw, 1500], c1=[0, 700, hw, 1500], y=300, alto=900, amb=1,
         h=T['h1'], hy=560, sub=None))
     plan.append(dict(
-        t0=4.00, t1=7.80, img='historial.png', iw=hw, corte=True, desnudo=1,
+        t0=T2('problema2', 4.00), t1=T2('giro', 7.80), img='historial.png', iw=hw, corte=True, desnudo=1,
         c0=[0, 700, hw, 1500], c1=[0, hh - 1500, hw, 1500], y=300, alto=900, amb=1,
         h=T['h2'], hy=560, sub=None))
 
     # 3 · EL GIRO. Nombre del producto, a secas, sobre negro.
     plan.append(dict(
-        t0=7.80, t1=11.20, img=None, corte=True,
+        t0=T2('giro', 7.80), t1=T2('lista', 11.20), img=None, corte=True,
         h=T['giro'], hy=640, big=None, marca=T['giroSub'], marcay=980))
 
     # 4 · LA LISTA — el constructor, que es donde se ESCRIBEN.
     if con.get('filas'):
         cf = con['filas']
         plan.append(dict(
-            t0=11.20, t1=16.40, img='constructor.png', iw=tam['constructor'][0],
+            t0=T2('lista', 11.20), t1=T2('umbral', 16.40), img='constructor.png', iw=tam['constructor'][0],
             corte=True, c0=[40, 800, 900, 600], c1=[40, 800, 900, 600],
             y=560, alto=640, ancho=ANCHO_IMG, amb=1,
             h=T['lista'], hy=250, sub=T['listaSub'], suby=1250))
@@ -780,7 +791,7 @@ def monta():
     if con.get('umbral'):
         cu = con['umbral']
         plan.append(dict(
-            t0=16.40, t1=21.00, img='constructor.png', iw=tam['constructor'][0],
+            t0=T2('umbral', 16.40), t1=T2('semaforo', 21.00), img='constructor.png', iw=tam['constructor'][0],
             corte=True, c0=[40, 1470, 800, 200], c1=[40, 1470, 800, 200],
             y=660, alto=260, ancho=ANCHO_IMG, amb=1,
             h=T['umbral'], hy=250, sub=T['umbralSub'], suby=1230))
@@ -789,7 +800,7 @@ def monta():
     zy, zh = zon['filas']['y'], (zon['veredicto']['y'] + zon['veredicto']['h']
                                  - zon['filas']['y'])
     plan.append(dict(
-        t0=21.00, t1=26.60, img='tablero_6.png', iw=bw, corte=True,
+        t0=T2('semaforo', 21.00), t1=T2('stats', 26.60), img='tablero_6.png', iw=bw, corte=True,
         seq=['tablero_%d.png' % i for i in range(7)],
         c0=[zon['filas']['x'], zy, 1040, zh], c1=[zon['filas']['x'], zy, 1040, zh],
         y=540, alto=700, ancho=ANCHO_IMG, amb=1,
@@ -799,19 +810,19 @@ def monta():
     #     quitó: el dueño la vio "muy pequeña", y con razón (1640 px de tabla
     #     metidos en 700 dejan el texto en 12 px).
     plan.append(dict(
-        t0=26.60, t1=32.60, img=None, corte=True,
+        t0=T2('stats', 26.60), t1=T2('cmp', 32.60), img=None, corte=True,
         rejilla=_rejilla_html(d, T), rejy=560,
         h=T['stats'], hy=250, sub=T['statsSub'], suby=1210))
 
     # 8 · LA COMPARACIÓN — el remate que pidió el dueño.
     plan.append(dict(
-        t0=32.60, t1=39.60, img=None, corte=True,
+        t0=T2('cmp', 32.60), t1=T2('fin', 39.60), img=None, corte=True,
         duelo=_duelo_html(d, T), duy=600, onCol=d['cols'].index(d['rentable']),
-        on1=False, on2=36.10,
-        capA=T['wr'], capB=T['expr'], cap2=36.10,
+        on1=False, on2=T2('vuelta', 36.10),
+        capA=T['wr'], capB=T['expr'], cap2=T2('vuelta', 36.10),
         h=T['cmp'], hy=250, sub=T['exprSub'], suby=1210))
 
-    total = 44.20
+    total = T2('total', 44.20)
 
     plan = [dict(s) for s in plan]
 
@@ -877,7 +888,10 @@ def monta():
     wav = os.path.join(RAIZ, 'out', 'marca_sonora', MARCA_SONORA + '.wav')
     asienta = (plan[-1]['t1'] - 0.10) + 0.50
     ms = int(round(max(0.0, asienta - GOLPE_EN_WAV) * 1000))
-    if os.path.exists(wav):
+    if '--mudo' in sys.argv:
+        shutil.copy(mudo, dest)
+        print('sin sonido: lo pega tools/narra_preflight.py')
+    elif os.path.exists(wav):
         subprocess.run(
             [ff, '-y', '-loglevel', 'error', '-i', mudo, '-i', wav,
              '-filter_complex',
