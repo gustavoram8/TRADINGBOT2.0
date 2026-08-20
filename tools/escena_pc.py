@@ -1,143 +1,187 @@
 # -*- coding: utf-8 -*-
-"""La botarga, de espaldas, sentada frente al PC — la escena del reel 2.
+"""La botarga EN SU PC, animada — los planos de personaje del reel 2.
 
-El dueño la describió así: *"en primer plano se viese a la botarga de welcome
-original, sentada de espaldas frente a una computadora, haciendo un trade, ese
-trade lo erra… y se pone molesta. Luego abre una pestaña, escribe Tradeable
-Academy, googlea y le sale el analizador"*.
+Historia del dueño: la botarga hace un trade, lo pierde y se molesta; después
+busca Tradeable Academy y aparece el analizador.
 
-🔑 CÓMO SE HACE SIN REDIBUJAR AL PERSONAJE: se usan las piezas que corta
-   `tools/botarga_rig.py` (cuerpo sin cara + brazos + piernas) y se MUEVEN.
-   Girar un brazo funciona porque es un tubo negro de grosor uniforme con el
-   guante aparte — no hay hombro ni codo que se rompa al rotar.
-   El escritorio, la silla, el monitor, el teclado y el ratón se dibujan
-   procedimentalmente: son OBJETOS, no criaturas. Ahí sí se puede dibujar.
+🔴 POR QUÉ DE FRENTE Y NO DE ESPALDAS. El primer intento fue el plano que él
+   describió —la botarga sentada de espaldas frente al monitor— y NO SE LEE.
+   Probados tres encuadres. La causa es del propio personaje: es una flecha
+   plana cuyo carácter vive ENTERO en la cara; sin cara queda una figura
+   geométrica, y ni espejada ni rotada parece una espalda. Se resuelve con
+   MONTAJE en vez de con cámara: la botarga siempre de frente (con su cara) y
+   la pantalla siempre a plano completo, alternando. De paso, así la grabación
+   real del sitio entra sin costura y se lee en un teléfono.
+   El despiece de espaldas se conserva en botarga_rig.py por si algún día el
+   dueño encarga las poses dibujadas.
 
-⚠️ Orden de profundidad, que es lo que hace que la escena se lea: el monitor
-   está al fondo, el escritorio delante de él, y la botarga DELANTE de todo
-   (es la que está más cerca de la cámara). Los brazos salen de sus costados y
-   van HACIA ARRIBA en el encuadre, que en esta perspectiva significa "hacia
-   adelante", sobre el escritorio.
+🔑 QUÉ SE ANIMA. Las piezas de `tools/botarga_rig.py` giran sobre su
+   articulación REAL (calculada como el centro de los píxeles que tocan el
+   cuerpo, no puesta a ojo). El torso respira y se inclina; los brazos teclean
+   y hacen clic. Nada se redibuja.
 
-    python3 tools/escena_pc.py            # una imagen fija para revisar
+🔑 LA RABIA NO SE ANIMA: SE CAMBIA DE POSE. `logo4_dark` ya es la botarga
+   frustrada, dibujada y aprobada. Cambiar de dibujo + sacudida es más honesto
+   —y se ve mucho mejor— que intentar deformar la cara alegre.
+
+    python3 tools/escena_pc.py --fija     # una imagen para revisar
+    python3 tools/escena_pc.py            # el clip de prueba (7 s)
 """
 from __future__ import print_function
 
 import glob
 import io
 import os
+import shutil
+import subprocess
 import sys
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RIG = os.path.join(RAIZ, 'out', 'rig')
+EST = os.path.join(RAIZ, 'scalpel', 'static')
 SALIDA = os.path.join(RAIZ, 'out', 'reels')
-W, H = 1080, 1920
+W, H, FPS = 1080, 1920, 30
 
-ORO = '#c9a227'
+T_OPERA = (0.00, 4.20)     # teclea y hace clic
+T_GOLPE = (4.20, 7.40)     # pierde: cambia de pose y se sacude
+TOTAL = 7.40
 
 
-def url(n):
-    return 'file://' + os.path.join(RIG, n + '.png')
+def url(p):
+    return 'file://' + p
 
 
 PAGINA = u"""<!doctype html><meta charset=utf-8>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel=stylesheet>
 <style>
  *{margin:0;padding:0;box-sizing:border-box}
  html,body{width:@@W@@px;height:@@H@@px;overflow:hidden;background:#07080b}
- #esc{position:relative;width:@@W@@px;height:@@H@@px;font-family:Inter,sans-serif}
-
- /* ── el cuarto: una pared oscura con una luz fría detrás del monitor ── */
+ #e{position:relative;width:@@W@@px;height:@@H@@px}
  #pared{position:absolute;inset:0;
-   background:radial-gradient(90% 55% at 50% 34%,#1b2030 0%,#0e1119 46%,#07080b 100%)}
- #brillo{position:absolute;left:50%;top:250px;width:1180px;height:900px;
-   transform:translateX(-50%);pointer-events:none;
-   background:radial-gradient(closest-side,rgba(90,140,220,.20),transparent 72%)}
-
- /* ── el monitor, al fondo ── */
- #mon{position:absolute;left:50%;top:180px;width:900px;height:620px;
-   transform:translateX(-50%);border-radius:18px;background:#0c0e13;
-   border:14px solid #1c2029;
-   box-shadow:0 40px 90px rgba(0,0,0,.75), 0 0 0 2px rgba(255,255,255,.05)}
- #pant{position:absolute;inset:0;overflow:hidden;border-radius:6px;background:#0a0c11}
- #pie{position:absolute;left:50%;top:800px;width:120px;height:80px;
-   transform:translateX(-50%);background:linear-gradient(#1c2029,#12151b)}
- #base{position:absolute;left:50%;top:872px;width:360px;height:22px;
-   transform:translateX(-50%);border-radius:11px;
-   background:linear-gradient(#222733,#141821)}
-
- /* ── el escritorio: una tabla en perspectiva ── */
- #mesa{position:absolute;left:-140px;right:-140px;top:905px;height:340px;
-   background:linear-gradient(#232833 0%,#1a1e27 42%,#141821 100%);
-   box-shadow:0 -2px 0 rgba(255,255,255,.07) inset, 0 26px 60px rgba(0,0,0,.6);
-   clip-path:polygon(11% 0,89% 0,100% 100%,0 100%)}
- #teclado{position:absolute;left:50%;top:975px;width:520px;height:140px;
-   transform:translateX(-50%) perspective(700px) rotateX(52deg);
-   border-radius:12px;background:linear-gradient(#2b3140,#1d222c);
-   box-shadow:0 14px 26px rgba(0,0,0,.55)}
- #teclas{position:absolute;inset:13px 14px;border-radius:6px;
-   background:
-    repeating-linear-gradient(90deg,#3a4152 0 30px,transparent 30px 36px),
-    repeating-linear-gradient(0deg,#3a4152 0 18px,transparent 18px 24px)}
- #raton{position:absolute;left:812px;top:990px;width:86px;height:122px;
-   border-radius:44px 44px 38px 38px;
-   background:linear-gradient(#2f3646,#20252f);
-   box-shadow:0 12px 22px rgba(0,0,0,.55)}
-
- /* ── la botarga, delante de todo ── */
- .pz{position:absolute;transform-origin:var(--ox,50%) var(--oy,50%)}
- #cuerpo{transform:rotate(-4deg);left:50%;top:1035px;width:940px;margin-left:-470px;
-   filter:drop-shadow(0 -12px 40px rgba(0,0,0,.6))}
- #bi{left:196px;top:945px;width:196px}
- #bd{left:700px;top:930px;width:250px}
- img{display:block;width:100%}
- #silla{position:absolute;left:50%;top:1520px;width:900px;height:400px;
-   transform:translateX(-50%);border-radius:70px 70px 0 0;
-   background:linear-gradient(#191d26,#0d1015);
-   box-shadow:0 0 0 3px rgba(255,255,255,.045) inset}
+   background:radial-gradient(84% 48% at 50% 74%,#1b2030,#0d1018 54%,#07080b)}
+ /* el resplandor del monitor: es la única fuente de luz del cuarto, así que
+    también es lo que tiñe la escena cuando el trade se pierde */
+ #glow{position:absolute;left:50%;top:1080px;width:1700px;height:1000px;
+   margin-left:-850px;pointer-events:none;
+   background:radial-gradient(closest-side,rgba(96,158,242,.42),transparent 72%)}
+ #rojo{position:absolute;inset:0;pointer-events:none;opacity:0;
+   background:radial-gradient(105% 60% at 50% 78%,rgba(229,72,77,.60),
+              rgba(150,30,36,.30) 58%,transparent 82%)}
+ /* el monitor visto POR DETRÁS: no hace falta la pantalla, el corte siguiente
+    la enseña a plano completo */
+ #mesa{position:absolute;left:-160px;right:-160px;top:1400px;height:560px;
+   background:linear-gradient(#2a3140 0%,#1b2029 38%,#0f1219 100%);
+   box-shadow:0 -3px 0 rgba(140,180,240,.16) inset, 0 -30px 70px rgba(0,0,0,.5)}
+ #tec{position:absolute;left:50%;top:1490px;width:700px;height:190px;
+   margin-left:-350px;border-radius:16px;
+   background:linear-gradient(#333b4b,#20262f);
+   box-shadow:0 20px 40px rgba(0,0,0,.6), 0 -2px 0 rgba(255,255,255,.07) inset}
+ #tec i{position:absolute;inset:18px;border-radius:9px;display:block;
+   background:repeating-linear-gradient(90deg,#414a5e 0 40px,transparent 40px 49px),
+              repeating-linear-gradient(0deg,#414a5e 0 26px,transparent 26px 35px)}
+ /* ── la botarga ── */
+ /* el contenedor tiene las proporciones del PNG de origen; dentro, cada
+    pieza va en su sitio exacto (ver @@PIEZAS@@, calculado de rig.json) */
+ #bot{position:absolute;left:50%;top:@@BTOP@@px;width:@@BW@@px;
+   margin-left:-@@BW2@@px;height:@@BH@@px;transform-origin:50% 100%}
+ #bot img{position:absolute;display:block}
+@@PIEZAS@@
+ #enojo{position:absolute;left:50%;top:640px;width:1010px;margin-left:-505px;
+   opacity:0}
+ #enojo img{width:100%;display:block}
  #vin{position:absolute;inset:0;pointer-events:none;
-   background:radial-gradient(120% 78% at 50% 40%,transparent 42%,rgba(0,0,0,.66))}
+   background:radial-gradient(122% 74% at 50% 52%,transparent 44%,rgba(0,0,0,.70))}
 </style>
-<div id=esc>
-  <div id=pared></div><div id=brillo></div>
-  <div id=mon><div id=pant><canvas id=cv width=872 height=612></canvas></div></div>
-  <div id=pie></div><div id=base></div>
-  <div id=mesa></div>
-  <div id=teclado><div id=teclas></div></div>
-  <div id=raton></div>
-  <div id=silla></div>
-  <img id=bi class=pz src="@@BI@@">
-  <img id=bd class=pz src="@@BD@@">
-  <img id=cuerpo class=pz src="@@CUERPO@@">
-  <div id=vin></div>
+<div id=e>
+ <div id=pared></div><div id=glow></div>
+ <div id=bot>
+   <img id=bi src="@@BI@@"><img id=bd src="@@BD@@">
+   <img id=torso src="@@TORSO@@">
+ </div>
+ <div id=enojo><img src="@@ENOJO@@"></div>
+ <div id=mesa></div><div id=tec><i></i></div>
+ <div id=rojo></div>
+ <div id=vin></div>
 </div>
 <script>
-// de espaldas los brazos van al revés: el que en el dibujo cae a la izquierda
-// es el que aquí queda a la derecha
-document.getElementById('bi').style.transform='scaleX(-1) rotate(-52deg)';
-document.getElementById('bd').style.transform='scaleX(-1) rotate(46deg)';
-const cx=document.getElementById('cv').getContext('2d');
-cx.fillStyle='#0a0c11'; cx.fillRect(0,0,872,612);
-cx.fillStyle='#39404f'; cx.font="700 26px 'JetBrains Mono',monospace";
-cx.fillText('[ aquí va el gráfico ]', 250, 300);
+const E=id=>document.getElementById(id);
+const cl=(v,a,b)=>Math.max(a,Math.min(b,v));
+const tr=(t,a,b)=>{const x=cl((t-a)/(b-a),0,1);return x*x*(3-2*x);};
+const G0=@@G0@@;
+
+function pinta(t){
+  const enojado = t >= G0;
+
+  // ── mientras opera ──
+  // el torso respira; el brazo izquierdo teclea (giros cortos y desiguales,
+  // que es lo que distingue teclear de saludar) y el derecho hace clic
+  const resp = Math.sin(t*2.1)*1.1;
+  const tec  = Math.sin(t*13.0)*2.2 + Math.sin(t*7.3)*1.4;
+  const clic = (t>2.55 && t<2.78) ? 6 : 0;
+  E('bot').style.opacity = enojado ? 0 : 1;
+  if (!enojado){
+    E('bot').style.transform = 'rotate('+(resp*0.35)+'deg) translateY('+(resp*3)+'px)';
+    E('bi').style.transform  = 'rotate('+(-6+tec)+'deg)';
+    E('bd').style.transform  = 'rotate('+(4+clic+Math.sin(t*2.7)*1.6)+'deg)';
+  }
+
+  // ── el golpe ──
+  // cambio de dibujo + sacudida que se amortigua, y el cuarto se pone rojo
+  const en=E('enojo');
+  if (enojado){
+    const u = t - G0;
+    const amort = Math.exp(-u*2.6);
+    const sac = Math.sin(u*26)*13*amort;
+    const gi  = Math.sin(u*23)*3.4*amort;
+    en.style.opacity = tr(t,G0,G0+0.10);
+    en.style.transform = 'translateX('+sac+'px) rotate('+gi+'deg) scale('+(1+0.05*amort)+')';
+    E('rojo').style.opacity = 0.85*Math.exp(-u*1.5) + 0.18;
+  } else { en.style.opacity=0; E('rojo').style.opacity=0; }
+}
+window.pinta = pinta;
 </script>"""
 
 
 def main():
     from playwright.sync_api import sync_playwright
-    falta = [n for n in ('cuerpo_espalda', 'brazo_izq', 'brazo_der')
+    falta = [n for n in ('torso_frente', 'brazo_izq', 'brazo_der')
              if not os.path.exists(os.path.join(RIG, n + '.png'))]
     if falta:
         sys.exit('faltan piezas %s — corre antes tools/botarga_rig.py' % falta)
+    import json
+    rig = json.load(io.open(os.path.join(RIG, 'rig.json'), encoding='utf-8'))
+    ORIG_W, ORIG_H = 960, 850          # el PNG del que salió el despiece
+    BW = 980                            # ancho del muñeco en el encuadre
+    k = BW / float(ORIG_W)
+    css = []
+    for nom, ident in (('torso_frente', 'torso'), ('brazo_izq', 'bi'),
+                       ('brazo_der', 'bd')):
+        p = rig[nom]
+        ox, oy = p['origen']
+        pw, ph = p['tam']
+        piv = p.get('pivote', [0.5, 0.5])
+        css.append(' #%s{left:%.1fpx;top:%.1fpx;width:%.1fpx;'
+                   'transform-origin:%.1f%% %.1f%%}'
+                   % (ident, ox * k, oy * k, pw * k, piv[0] * 100, piv[1] * 100))
     doc = PAGINA
-    for k, v in [('@@W@@', str(W)), ('@@H@@', str(H)),
-                 ('@@CUERPO@@', url('cuerpo_espalda')),
-                 ('@@BI@@', url('brazo_izq')), ('@@BD@@', url('brazo_der'))]:
-        doc = doc.replace(k, v)
+    for k2, v in [('@@PIEZAS@@', '\n'.join(css)),
+                  ('@@BW@@', '%d' % BW), ('@@BW2@@', '%d' % (BW // 2)),
+                  ('@@BH@@', '%d' % int(ORIG_H * k)), ('@@BTOP@@', '760'),
+                  ('@@W@@', str(W)), ('@@H@@', str(H)),
+                 ('@@G0@@', '%.2f' % T_GOLPE[0]),
+                 ('@@TORSO@@', url(os.path.join(RIG, 'torso_frente.png'))),
+                 ('@@BI@@', url(os.path.join(RIG, 'brazo_izq.png'))),
+                 ('@@BD@@', url(os.path.join(RIG, 'brazo_der.png'))),
+                  ('@@ENOJO@@', url(os.path.join(EST, 'logo4_dark.png')))]:
+        doc = doc.replace(k2, v)
     ruta = os.path.join(SALIDA, '_escena_pc.html')
     with io.open(ruta, 'w', encoding='utf-8') as f:
         f.write(doc)
+
     exe = (glob.glob('/opt/pw-browsers/chromium-*/chrome-linux/chrome') or [None])[0]
+    fija = '--fija' in sys.argv
+    carpeta = os.path.join(SALIDA, '_pcf')
+    shutil.rmtree(carpeta, ignore_errors=True)
+    os.makedirs(carpeta)
     with sync_playwright() as p:
         b = p.chromium.launch(args=['--no-sandbox', '--allow-file-access-from-files',
                                     '--hide-scrollbars'],
@@ -146,13 +190,34 @@ def main():
         errores = []
         pg.on('pageerror', lambda e: errores.append(str(e)))
         pg.goto('file://' + ruta, wait_until='load')
-        pg.wait_for_timeout(1400)
-        dest = os.path.join(SALIDA, '_escena_pc.png')
-        pg.screenshot(path=dest)
+        pg.wait_for_timeout(1200)
+        if fija:
+            for t in (1.6, 4.45, 5.6):
+                pg.evaluate('t => window.pinta(t)', t)
+                pg.screenshot(path=os.path.join(SALIDA, '_pc_%.2f.png' % t))
+            b.close()
+            if errores:
+                print('🔴 errores JS:', errores[:3])
+            print('fijas en', SALIDA)
+            return
+        n = int(TOTAL * FPS)
+        for i in range(n):
+            pg.evaluate('t => window.pinta(t)', i / float(FPS))
+            pg.screenshot(path=os.path.join(carpeta, '%04d.png' % i))
+            if i % 60 == 0:
+                print('  fotograma %d/%d' % (i, n))
         b.close()
     if errores:
         print('🔴 errores JS:', errores[:3])
-    print('escena:', dest)
+    import imageio_ffmpeg
+    ff = imageio_ffmpeg.get_ffmpeg_exe()
+    dest = os.path.join(SALIDA, 'prueba-botarga-pc.mp4')
+    subprocess.run([ff, '-y', '-loglevel', 'error', '-framerate', str(FPS),
+                    '-i', os.path.join(carpeta, '%04d.png'),
+                    '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18',
+                    '-movflags', '+faststart', dest], check=True)
+    shutil.rmtree(carpeta, ignore_errors=True)
+    print('listo:', dest, '· %.1f MB' % (os.path.getsize(dest) / 1e6))
 
 
 if __name__ == '__main__':

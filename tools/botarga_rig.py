@@ -114,6 +114,11 @@ def main():
     a = np.array(Image.open(FUENTE).convert('RGBA'))
     sil = cuerpo_sin_cara(a)
 
+    # ── el TORSO DE FRENTE conserva la cara ──────────────────────────────
+    # 🔑 `cuerpo_frente` sale del silueteado y por eso viene SIN cara: sirve
+    #    para el plano de espaldas. Para animar de frente hace falta el dibujo
+    #    original con sus ojos y su boca — o sea, el original MENOS las
+    #    extremidades. El personaje entero vive en esa cara.
     cuerpo = pinta(sil)
     cuerpo.save(os.path.join(SALIDA, 'cuerpo_frente.png'))
     cuerpo.transpose(Image.FLIP_LEFT_RIGHT).save(
@@ -134,12 +139,34 @@ def main():
     piezas.sort(key=lambda p: (p[4], p[2]))
     nombres = ['brazo_der', 'brazo_izq', 'pierna_der', 'pierna_izq']
     manifiesto = {}
+    extremidades = np.zeros_like(sil)
+    cuerpoD = nd.binary_dilation(sil, np.ones((3, 3)), iterations=CONTORNO + 2)
     for (idx, tam, x0, x1, y0, y1), nom in zip(piezas, nombres):
-        img, org = recorta(a, lab == idx)
+        m = lab == idx
+        extremidades |= m
+        img, org = recorta(a, m)
         img.save(os.path.join(SALIDA, nom + '.png'))
-        manifiesto[nom] = {'origen': org, 'tam': list(img.size), 'px': int(tam)}
-        print('  %-11s %4dx%-4d en (%d,%d)  %6d px'
-              % (nom, img.size[0], img.size[1], org[0], org[1], tam))
+        # 🔑 La ARTICULACIÓN se calcula, no se estima a ojo: es el centro de
+        #    los píxeles de la extremidad que TOCAN el cuerpo. Girar sobre otro
+        #    punto despega el brazo del hombro, que es el defecto clásico de
+        #    la animación de recortes.
+        toca = m & nd.binary_dilation(cuerpoD, np.ones((3, 3)), iterations=3)
+        if toca.sum() < 10:
+            toca = m & nd.binary_dilation(cuerpoD, np.ones((3, 3)), iterations=12)
+        ys, xs = np.where(toca)
+        piv = [float((xs.mean() - org[0]) / img.size[0]),
+               float((ys.mean() - org[1]) / img.size[1])]
+        manifiesto[nom] = {'origen': org, 'tam': list(img.size),
+                           'px': int(tam), 'pivote': [round(p, 4) for p in piv]}
+        print('  %-11s %4dx%-4d en (%d,%d)  %6d px   pivote %.2f,%.2f'
+              % (nom, img.size[0], img.size[1], org[0], org[1], tam, piv[0], piv[1]))
+
+    # torso de frente = el dibujo original sin las extremidades
+    torso, torg = recorta(a, (a[:, :, 3] > 0) & (~extremidades), margen=4)
+    torso.save(os.path.join(SALIDA, 'torso_frente.png'))
+    manifiesto['torso_frente'] = {'origen': torg, 'tam': list(torso.size)}
+    print('  %-11s %4dx%-4d en (%d,%d)' % ('torso_frente', torso.size[0],
+                                           torso.size[1], torg[0], torg[1]))
     manifiesto['cuerpo'] = {'origen': [0, 0], 'tam': list(cuerpo.size)}
     manifiesto['fuente'] = os.path.relpath(FUENTE, RAIZ)
     with io.open(os.path.join(SALIDA, 'rig.json'), 'w', encoding='utf-8') as f:
