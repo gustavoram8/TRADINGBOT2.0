@@ -52,7 +52,15 @@ T_ENTRADA = (3.40, 5.00)     # aparece la entrada y sus marcas
 T_STOP = (5.00, 7.20)        # el precio baja y caza el stop
 T_SIN_TI = (7.20, 9.90)     # y se va al objetivo sin él
 T_EXCUSA = (9.90, 13.40)    # "pura manipulación" + la botarga
+# ── y a partir de aquí, la HERRAMIENTA ──
+T_SUBE = (13.40, 18.20)     # el gráfico subido al analizador
+T_METOD = (18.20, 22.60)    # las 7 metodologías, ICT encendida
+T_NOTAS = (22.60, 27.00)    # sus propias notas, las que culpan al mercado
+T_VER1 = (27.00, 31.60)     # el veredicto: el setup estaba bien
+T_VER2 = (31.60, 36.60)     # …el stop no
+T_CIERRE = (36.60, 41.00)
 TOTAL_INTRO = 13.40
+TOTAL = 41.00
 
 
 def datos():
@@ -104,6 +112,39 @@ PAGINA = u"""<!doctype html><meta charset=utf-8>
  #mas{position:absolute;left:50%;bottom:60px;width:470px;opacity:0;
    transform:translateX(-50%)}
  #mas img{width:100%;display:block;filter:drop-shadow(0 24px 60px rgba(0,0,0,.8))}
+ /* capturas REALES del analizador */
+ #shot{position:absolute;left:60px;right:60px;top:640px;opacity:0}
+ #shot img{width:100%;display:block;border-radius:14px;
+   box-shadow:0 30px 70px rgba(0,0,0,.75), 0 0 0 1px rgba(255,255,255,.07)}
+ #shot .cap{margin-top:26px;text-align:center;
+   font:700 21px 'JetBrains Mono',monospace;letter-spacing:.14em;
+   text-transform:uppercase;color:rgba(255,255,255,.55)}
+ /* las notas del trader, compuestas (la captura del campo no se lee) */
+ #nota{position:absolute;left:80px;right:80px;top:760px;opacity:0}
+ #nota .cja{border-radius:16px;padding:34px 34px 30px;
+   background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.10)}
+ #nota .lb{font:700 18px 'JetBrains Mono',monospace;letter-spacing:.14em;
+   text-transform:uppercase;color:rgba(255,255,255,.42)}
+ #nota .tx{margin-top:16px;font:500 30px/1.44 Inter,sans-serif;
+   color:rgba(255,255,255,.90)}
+ #nota .tx b{color:@@ORO@@;font-weight:800}
+ /* el veredicto, citado */
+ #ver{position:absolute;left:88px;right:88px;top:620px;opacity:0}
+ #ver .k{font:700 20px 'JetBrains Mono',monospace;letter-spacing:.16em;
+   text-transform:uppercase;color:@@ORO@@}
+ #ver .q{margin-top:22px;font:800 50px/1.22 Inter,sans-serif;color:#fff;
+   text-shadow:0 8px 40px rgba(0,0,0,.9)}
+ #ver .q em{font-style:normal;color:@@ORO@@}
+ #ver .f{margin-top:26px;font:500 27px/1.4 Inter,sans-serif;
+   color:rgba(255,255,255,.68)}
+ /* ── cierre ── */
+ #out{position:absolute;inset:0;opacity:0;display:flex;flex-direction:column;
+   align-items:center;justify-content:center;background:#07080b}
+ #out .lg{width:520px;filter:brightness(0) invert(1)}
+ #out .sl{margin-top:34px;font:800 40px Inter,sans-serif;color:#fff;
+   letter-spacing:-.01em}
+ #out .lgl{position:absolute;left:0;right:0;bottom:@@LEGY@@px;text-align:center;
+   font:500 22px Inter,sans-serif;color:rgba(255,255,255,.42)}
  #bar{position:absolute;left:0;bottom:0;height:5px;background:@@ORO@@;width:0}
  #flash{position:absolute;inset:0;background:@@ROJO@@;opacity:0;
    mix-blend-mode:screen;pointer-events:none}
@@ -115,11 +156,19 @@ PAGINA = u"""<!doctype html><meta charset=utf-8>
   <div id=golpe><div class=g></div><div class=p></div></div>
   <div id=cita><div class=c></div><div class=q></div></div>
   <div id=mas><img src="@@MASCOTA@@"></div>
+  <div id=shot><img id=shotimg><div class=cap></div></div>
+  <div id=nota><div class=cja><div class=lb></div><div class=tx></div></div></div>
+  <div id=ver><div class=k></div><div class=q></div><div class=f></div></div>
+  <div id=out><img class=lg src="@@LOGO@@"><div class=sl>@@LEMA@@</div>
+    <div class=lgl>@@LEGAL@@</div></div>
   <div id=bar></div>
 </div>
 <script>
 const D = @@DATOS@@;
 const TXT = @@TXT@@;
+const TP  = @@TP@@;
+const PASOS = @@PASOS@@;
+const CIE = @@CIE@@;
 const W=@@W@@, H=@@H@@, TOTAL=@@TOTAL@@;
 const E = id => document.getElementById(id);
 const cv = E('cv'), cx = cv.getContext('2d');
@@ -274,6 +323,60 @@ function pinta(t){
     ms.style.transform='translateX(-50%) translateY('+(46*(1-m))+'px) scale('+(0.94+0.06*m)+')';
   } else { ct.style.opacity=0; ms.style.opacity=0; }
 
+  // ── LA HERRAMIENTA ────────────────────────────────────────────────
+  // ⚠️ al salir del intro hay que APAGAR el lienzo del gráfico y las capas
+  //    del intro: si no, siguen pintadas debajo de las capturas.
+  const sh=E('shot'), vr=E('ver');
+  if (t >= TP.sube){
+    cx.clearRect(0,0,W,H);
+    E('cita').style.opacity=0; E('mas').style.opacity=0;
+    E('golpe').style.opacity=0; E('tit').style.opacity=0;
+  }
+  let paso = null;
+  for (const p of PASOS) if (t >= p.t0 && t < p.t1) paso = p;
+  if (paso && paso.img){
+    const g = tr(t,paso.t0,paso.t0+0.55)*(1-tr(t,paso.t1-0.35,paso.t1));
+    sh.style.opacity=g;
+    sh.style.transform='translateY('+(26*(1-tr(t,paso.t0,paso.t0+0.7)))+'px)';
+    sh.style.top=paso.top+'px';
+    if (E('shotimg').getAttribute('src')!==paso.img)
+      E('shotimg').setAttribute('src', paso.img);
+    sh.querySelector('.cap').textContent = paso.cap;
+  } else if (t >= TP.sube) sh.style.opacity=0;
+
+  if (paso && paso.h){
+    E('tit').style.opacity =
+      tr(t,paso.t0+0.15,paso.t0+0.7)*(1-tr(t,paso.t1-0.3,paso.t1));
+    E('tit').querySelector('.k').textContent = paso.k || '';
+    E('tit').querySelector('.g').innerHTML = paso.h;
+  }
+
+  const nt=E('nota');
+  if (paso && paso.nota){
+    const g = tr(t,paso.t0,paso.t0+0.5)*(1-tr(t,paso.t1-0.35,paso.t1));
+    nt.style.opacity=g;
+    nt.style.transform='translateY('+(22*(1-tr(t,paso.t0,paso.t0+0.7)))+'px)';
+    nt.querySelector('.lb').textContent = paso.lb;
+    nt.querySelector('.tx').innerHTML = paso.nota;
+  } else nt.style.opacity=0;
+
+  if (paso && paso.cita){
+    const g = tr(t,paso.t0,paso.t0+0.5)*(1-tr(t,paso.t1-0.35,paso.t1));
+    vr.style.opacity=g;
+    vr.style.transform='translateY('+(22*(1-tr(t,paso.t0,paso.t0+0.7)))+'px)';
+    vr.querySelector('.k').textContent = paso.k;
+    vr.querySelector('.q').innerHTML = paso.cita;
+    vr.querySelector('.f').innerHTML = paso.pie || '';
+  } else vr.style.opacity=0;
+
+  // ── el cierre: barrido a negro y la marca ──
+  const ou=E('out');
+  if (t >= CIE){
+    const g = tr(t, CIE, CIE+0.5);
+    ou.style.opacity = 1;
+    ou.style.clipPath = 'inset(0 0 ' + (100*(1-g)) + '% 0)';
+  } else ou.style.opacity = 0;
+
   // el fogonazo del stop: corto y sin pasarse, no es una película de acción
   E('flash').style.opacity = 0.30*(1-tr(t,@@P0@@,@@P0@@+0.42))*(t>=@@P0@@?1:0);
   E('bar').style.width = (100*cl(t/TOTAL,0,1))+'%';
@@ -290,17 +393,104 @@ TXT = {
     'p3': 'Without you.',
     'cita': 'Pure manipulation. My trade was fine.',
     'citaPie': "— what you tell yourself at 11 p.m.",
+    # ── la herramienta ──
+    'k_sube': 'Or you can just ask',
+    'h_sube': 'Upload the <em>same</em> chart.',
+    'cap_sube': 'the screenshot you already have',
+    'k_met': 'Your method, not ours',
+    'h_met': 'Pick how you<br>actually trade.',
+    'cap_met': 'ICT · OTE · Wyckoff · Patterns · Harmonic · Elliott · Technical',
+    'k_notas': 'And tell it what you thought',
+    'h_notas': 'Including the part<br>you got wrong.',
+    'cap_notas': 'Trade construction',
+    'nota': 'Sweep of the equal lows, displacement with an FVG, I entered on '
+            'the retracement. <b>I put the stop tight just under my entry '
+            'candle to improve the R:R.</b> Price went down exactly to take '
+            'my stop and then ran to my target without me.',
+    # 🔴 Estas dos citas son la RESPUESTA REAL del analizador a este mismo
+    #    gráfico (banco, caso I5). Ver la nota de VERDICTO_EN abajo.
+    'k_v1': 'The answer',
+    'v1': 'The setup was<br><em>technically valid.</em>',
+    'pv1': 'Sweep of the equal lows, displacement, FVG. The idea was fine.',
+    'k_v2': 'The answer',
+    'v2': 'The <em>stop</em> was<br>the problem.',
+    'pv2': 'Placed inside the noise instead of beyond the low of the sweep — '
+          'so the trade never had room to breathe.',
 }
+
+
+AZ = os.path.join(SALIDA, '_az')
+
+
+def pasos():
+    """Los tramos de producto: capturas REALES y las citas del veredicto."""
+    u = lambda n: 'file://' + os.path.join(AZ, n + '.png')
+    T = TXT
+    return [
+        dict(t0=T_SUBE[0], t1=T_SUBE[1], img=u('subida_rec'), top=700,
+             k=T['k_sube'], h=T['h_sube'], cap=T['cap_sube']),
+        dict(t0=T_METOD[0], t1=T_METOD[1], img=u('metodologias_2f'), top=860,
+             k=T['k_met'], h=T['h_met'], cap=T['cap_met']),
+        dict(t0=T_NOTAS[0], t1=T_NOTAS[1], nota=T['nota'], lb=T['cap_notas'],
+             k=T['k_notas'], h=T['h_notas']),
+        dict(t0=T_VER1[0], t1=T_VER1[1], cita=T['v1'], pie=T['pv1'], k=T['k_v1']),
+        dict(t0=T_VER2[0], t1=T_VER2[1], cita=T['v2'], pie=T['pv2'], k=T['k_v2']),
+    ]
+
+
+def parte_metodologias():
+    """Parte la tira de metodologías en dos filas.
+
+    ⚠️ Es una tira de 1592×94: mostrada a lo ancho del lienzo el texto queda en
+    ~16 px y no se lee en un teléfono. Partida en dos, cada mitad se muestra al
+    doble de escala.
+    """
+    from PIL import Image
+    src = os.path.join(AZ, 'metodologias_ict.png')
+    if not os.path.exists(src):
+        return
+    im = Image.open(src).convert('RGBA')
+    w, h = im.size
+    corte = int(w * 0.42)          # tras "OTE / Std Dev"
+    hueco = 18
+    out = Image.new('RGBA', (max(corte, w - corte), h * 2 + hueco), (0, 0, 0, 0))
+    out.paste(im.crop((0, 0, corte, h)), (0, 0))
+    out.paste(im.crop((corte, 0, w, h)), (0, h + hueco))
+    out.save(os.path.join(AZ, 'metodologias_2f.png'))
+
+
+def recorta_subida():
+    """De la captura de pantalla completa, solo la tarjeta del gráfico.
+
+    ⚠️ La foto `subida` es la pantalla ENTERA (3000×2000): metida en 960 px de
+    ancho el gráfico queda en nada. Se recorta la zona de la vista previa.
+    """
+    from PIL import Image
+    src = os.path.join(AZ, 'subida.png')
+    if not os.path.exists(src):
+        return
+    # con el selector #preview-wrap la foto YA es solo la vista previa
+    Image.open(src).save(os.path.join(AZ, 'subida_rec.png'))
 
 
 def monta(solo_intro=True):
     from playwright.sync_api import sync_playwright
     import imageio_ffmpeg
+    recorta_subida()
+    parte_metodologias()
     d = datos()
     doc = PAGINA
     for k, v in [('@@W@@', str(W)), ('@@H@@', str(H)), ('@@ORO@@', ORO),
                  ('@@ROJO@@', ROJO), ('@@VERDE@@', VERDE),
-                 ('@@TOTAL@@', '%.2f' % TOTAL_INTRO),
+                 ('@@TOTAL@@', '%.2f' % (TOTAL_INTRO if solo_intro else TOTAL)),
+                 ('@@TP@@', json.dumps({'sube': T_SUBE[0]})),
+                 ('@@CIE@@', '%.2f' % (999 if solo_intro else T_CIERRE[0])),
+                 ('@@LOGO@@', 'file://' + os.path.join(
+                     RAIZ, 'scalpel', 'static', 'logo_t.png')),
+                 ('@@LEMA@@', 'Process over impulse.'),
+                 ('@@LEGY@@', '150'),
+                 ('@@LEGAL@@', 'Educational content · Not financial advice'),
+                 ('@@PASOS@@', json.dumps([] if solo_intro else pasos())),
                  ('@@DATOS@@', json.dumps(d)), ('@@TXT@@', json.dumps(TXT)),
                  ('@@MASCOTA@@', 'file://' + os.path.join(
                      RAIZ, 'scalpel', 'static', 'logo4_standard_dark.png')),
@@ -318,7 +508,7 @@ def monta(solo_intro=True):
     carpeta = os.path.join(FOTOS, '_f')
     shutil.rmtree(carpeta, ignore_errors=True)
     os.makedirs(carpeta)
-    n = int(TOTAL_INTRO * FPS)
+    n = int((TOTAL_INTRO if solo_intro else TOTAL) * FPS)
     # ⚠️ el navegador del contenedor NO está donde Playwright lo busca por
     #    defecto: hay que darle la ruta o falla con "Executable doesn't exist".
     exe = (glob.glob('/opt/pw-browsers/chromium-*/chrome-linux/chrome') or [None])[0]
@@ -341,12 +531,29 @@ def monta(solo_intro=True):
         b.close()
 
     ff = imageio_ffmpeg.get_ffmpeg_exe()
-    dest = os.path.join(SALIDA, 'reel-analizador-intro.mp4')
+    dest = os.path.join(SALIDA, 'reel-analizador-intro.mp4'
+                        if solo_intro else 'reel-analizador.mp4')
+    mudo = os.path.join(SALIDA, '_an_mudo.mp4')
     subprocess.run([ff, '-y', '-loglevel', 'error', '-framerate', str(FPS),
                     '-i', os.path.join(carpeta, '%04d.png'),
                     '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18',
-                    '-movflags', '+faststart', dest], check=True)
+                    '-movflags', '+faststart', mudo], check=True)
     shutil.rmtree(carpeta, ignore_errors=True)
+    # 🔑 el golpe cae cuando el logo ASIENTA (fin del barrido), no cuando
+    #    empieza: si suena antes, el oído lo separa de la marca.
+    wav = os.path.join(RAIZ, 'out', 'marca_sonora',
+                       '03E_solo_cuerda_larga.wav')
+    if not solo_intro and os.path.exists(wav):
+        ms = int(round(max(0.0, T_CIERRE[0] + 0.50 - 2.00) * 1000))
+        subprocess.run(
+            [ff, '-y', '-loglevel', 'error', '-i', mudo, '-i', wav,
+             '-filter_complex',
+             '[1:a]adelay=%d|%d,pan=stereo|c0=c0|c1=c0[a]' % (ms, ms),
+             '-map', '0:v:0', '-map', '[a]', '-c:v', 'copy',
+             '-c:a', 'aac', '-b:a', '192k', '-shortest',
+             '-movflags', '+faststart', dest], check=True)
+    else:
+        shutil.copy(mudo, dest)
     print('listo:', dest, '· %.1f MB' % (os.path.getsize(dest) / 1e6))
     return dest
 
