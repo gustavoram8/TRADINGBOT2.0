@@ -4,6 +4,7 @@ bienvenida del quiz y los mascotas pass/fail deben servir los archivos
 NUEVOS, en claro Y en oscuro. El camo lo pinta el SERVIDOR (active_camo),
 asi que se fija en la cuenta, no en el navegador."""
 import glob, os, sys, tempfile, threading, time, urllib.request
+CAPS = tempfile.mkdtemp(prefix='botstd-')
 
 RAIZ = '/home/user/TRADINGBOT2.0'
 os.environ['DATABASE_URL'] = 'sqlite:///' + os.path.join(tempfile.mkdtemp(), 'b.db')
@@ -67,7 +68,7 @@ with sync_playwright() as p:
         quiere = 'logo2_standard%s.png' % esperado
         chk(quiere in src, '[%s] welcome sirve %s (esperaba %s)' % (tema, src[:70], quiere))
         print('  [%s] welcome ->' % tema, src[:80])
-        pg.screenshot(path='bot_std_%s.png' % tema)
+        pg.screenshot(path=os.path.join(CAPS, 'bot_std_%s.png' % tema))
 
     chk(not errs, 'errores JS: %s' % errs[:2])
     b.close()
