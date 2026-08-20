@@ -71,5 +71,32 @@ with sync_playwright() as p:
 
     chk(not errs, 'errores JS: %s' % errs[:2])
     b.close()
+
+# ── los 6 archivos: RGBA, borde SUAVE y sin cerco blanco ──
+# ⚠️ Existe porque el primer recorte se comio el vertice de la flecha y un
+# dedo del PASS: la banda de desvanecido tocaba pixeles CLAROS del dibujo.
+# La regla que quedo: minc<235 es tinta y su alfa es 1, siempre.
+from PIL import Image as _I
+import numpy as _np
+EST = os.path.join(RAIZ, 'scalpel', 'static')
+for _b in ('logo2_standard', 'logo3_standard', 'logo4_standard'):
+    for _suf in ('', '_dark'):
+        _r = os.path.join(EST, _b + _suf + '.png')
+        chk(os.path.exists(_r), 'falta ' + _r)
+        _im = _I.open(_r)
+        chk(_im.mode == 'RGBA', '%s no es RGBA' % _b)
+        _a = _np.asarray(_im).astype(int)
+        _al = _a[:, :, 3]
+        chk(((_al > 10) & (_al < 245)).sum() > 500,
+            '%s%s sin borde suave (recorte binario)' % (_b, _suf))
+        # cerco: pixel casi opaco y casi blanco NEUTRO tocando transparencia
+        _blanco = (_a[:, :, :3].min(2) > 246) & (abs(_a[:, :, 0] - _a[:, :, 2]) < 8)
+        _borde = _np.zeros_like(_al, bool)
+        _borde[1:-1, 1:-1] = (_al[1:-1, 1:-1] > 200) & (
+            (_al[:-2, 1:-1] < 30) | (_al[2:, 1:-1] < 30) |
+            (_al[1:-1, :-2] < 30) | (_al[1:-1, 2:] < 30))
+        chk((_blanco & _borde).sum() < 400,
+            '%s%s tiene cerco blanco (%d px)' % (_b, _suf, (_blanco & _borde).sum()))
+
 print('%d bien, %d fallos' % (ok, fallos))
 sys.exit(1 if fallos else 0)
