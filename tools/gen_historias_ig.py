@@ -112,7 +112,7 @@ def grafico():
     # ⚠️ El lienzo del SVG es MÁS ALTO que la zona de precios: los 52 de abajo
     #    son para el rótulo de la barrida, que cuelga de la mecha. Sin esa
     #    reserva el rótulo cae fuera del viewBox y se come el texto siguiente.
-    AN, AL, ALTO = 1000.0, 400.0, 350.0
+    AN, AL, ALTO = 1000.0, 384.0, 336.0
     # ⚠️ PAD_D es GRANDE porque el gráfico va A SANGRE: con el margen justo,
     #    las pastillas de ENTRY/STOP quedaban pegadas al borde de la pantalla.
     PAD_D = 164.0
@@ -225,15 +225,22 @@ T = {
     'e1': 'THE ANALYZER',
     't1': 'STOPPED<br>OUT.',
     's1': 'Then it ran without you.',
-    'v1': 'Was it manipulation — or was your stop in the wrong place?',
-    'p1': ['UPLOAD THE CHART', 'SAY WHAT YOU WERE AFTER', 'GET THE READ'],
+    # 🔴 El caso dibujado es UNO. Sin esta linea la pieza se lee como "el
+    #    analizador sirve para stops cazados", que es una fraccion de lo que
+    #    hace — y una promesa mas pequena que el producto.
+    'v1': 'That’s one mistake. It reads the whole trade:',
+    'p1': 'ENTRY · STOP · TARGET · TIMING · RISK · THE SETUP ITSELF',
     'c1': 'GET YOUR ANALYSIS RIGHT NOW',
+    'c1b': 'upload the chart · say what you were after · get the read',
     'n1': 'tradeable.academy · no card needed',
 
     'e2': 'NO FINE PRINT',
     't2': 'WHAT<br>WE’RE<br><em>NOT</em>',
     'p2': ['Signals', 'A “copy my trades” group', 'Profit screenshots'],
-    'r2': 'A second opinion at 3&nbsp;a.m. that reads your chart back to you.',
+    'r2': ('At 3 a.m., when there’s<br>no mentor to ask —<br>'
+           'or there is, and no answer comes.'),
+    'r2b': ('An educational ecosystem, built so you find '
+            'and fix your own mistakes faster.'),
     'c2': 'FOLLOW US',
     'n2': 'This week we break down every tool.',
 }
@@ -268,7 +275,7 @@ html,body{width:1080px;height:1920px;background:GRAFITO}
      interlineado por debajo de 1 no se parece a Inter por defecto — */
 h1{font-size:136px;font-weight:900;line-height:.86;letter-spacing:-.055em;
   margin-top:46px}
-h1.tres{font-size:124px}
+h1.tres{font-size:106px}
 h1 em{font-style:normal;color:ACENTO}
 .filete{height:9px;background:ACENTO;margin:30px 0 20px;width:210px}
 .sub{font-size:50px;font-weight:800;letter-spacing:-.025em;line-height:1.1;
@@ -281,25 +288,27 @@ h1 em{font-style:normal;color:ACENTO}
 
 .pregunta{margin-top:26px;font-size:34px;line-height:1.3;font-weight:600;
   color:#f4f6fa;max-width:900px}
-/* pasos como fichas de blotter. ⚠️ El cuerpo está calibrado para que los TRES
-   quepan en UNA fila: partidos en dos, la pieza crece 60 px y el remate se mete
-   en la barra de responder de Instagram. */
-.pasos{display:flex;flex-wrap:nowrap;gap:11px;margin-top:22px}
-.pasos span{font-family:Mono,monospace;font-size:20px;font-weight:700;
-  letter-spacing:.10em;padding:10px 14px;color:#f4f6fa;white-space:nowrap;
-  border:2px solid rgba(244,246,250,.30)}
+/* la lista de lo que el analizador lee. ⚠️ Calibrada para UNA sola línea: al
+   partirse en dos la pieza crece y el remate se mete en la barra de responder
+   de Instagram. Si se añade un término, baja el cuerpo. */
+.lee{margin-top:18px;font-family:Mono,monospace;font-size:21px;font-weight:700;
+  letter-spacing:.09em;color:ACENTO;white-space:nowrap}
 
 /* — el anti-pitch: tachado literal, grueso, y que SE SALGA del lienzo — */
-.no{display:flex;flex-direction:column;gap:30px;margin-top:52px}
+.no{display:flex;flex-direction:column;gap:26px;margin-top:44px}
 .no div{position:relative;display:inline-block;align-self:flex-start;
-  font-size:58px;font-weight:800;letter-spacing:-.02em;color:#767e8f}
+  font-size:54px;font-weight:800;letter-spacing:-.02em;color:#767e8f}
 .no div::after{content:'';position:absolute;left:-26px;right:-62px;top:52%;
   height:9px;background:ACENTO;transform:rotate(ROTdeg);transform-origin:left center}
 
 /* — el bloque invertido: la única cosa que sí somos, en negativo sobre el
      acento. Es el remate del cartel — */
-.bloque{margin-top:56px;background:ACENTO;color:#07080b;padding:32px 38px 36px;
-  font-size:46px;font-weight:800;line-height:1.2;letter-spacing:-.025em}
+.bloque{margin-top:44px;background:ACENTO;color:#07080b;padding:32px 38px 34px;
+  font-size:44px;font-weight:800;line-height:1.18;letter-spacing:-.025em}
+/* la promesa de fondo va DENTRO del bloque y en cuerpo pequeño: fuera pedía su
+   propio margen y hacía crecer la pieza más de lo que cabe */
+.bloque .eco{margin-top:20px;padding-top:18px;border-top:3px solid rgba(7,8,11,.30);
+  font-size:27px;font-weight:700;line-height:1.34;letter-spacing:0}
 
 .cuerpo{flex:1;display:flex;flex-direction:column;justify-content:center}
 .abajo{margin-top:auto}
@@ -308,14 +317,16 @@ h1 em{font-style:normal;color:ACENTO}
      ella queda la banda LIBRE donde cae el sticker del enlace — */
 .remate{background:ACENTO;color:#07080b;padding:22px 76px 26px}
 .remate .t{font-size:52px;font-weight:900;letter-spacing:-.02em;line-height:1.06}
-.remate .n{margin-top:10px;font-family:Mono,monospace;font-size:26px;
-  font-weight:700;letter-spacing:.06em;opacity:.82}
+.remate .p{margin-top:12px;font-family:Mono,monospace;font-size:23px;
+  font-weight:700;letter-spacing:.05em;opacity:.90}
+.remate .n{margin-top:5px;font-family:Mono,monospace;font-size:23px;
+  font-weight:700;letter-spacing:.05em;opacity:.72}
 .hueco{height:HUECOpx}
 /* remate en claro para el anti-pitch, que ya gastó el acento en el bloque */
 .remate.plano{background:transparent;color:#f4f6fa;padding-bottom:0}
 .remate.plano .t{color:#f4f6fa}
-.remate.plano .n{opacity:1;color:#9aa2b4;font-family:Inter,sans-serif;
-  font-size:33px;font-weight:600;letter-spacing:0}
+.remate.plano .n{margin-top:10px;opacity:1;color:#9aa2b4;
+  font-family:Inter,sans-serif;font-size:33px;font-weight:600;letter-spacing:0}
 
 .pie{display:flex;align-items:center;justify-content:space-between;
   padding:0 76px;margin:24px 0 14px}
@@ -331,23 +342,23 @@ h1 em{font-style:normal;color:ACENTO}
 
 
 def historia_entrada():
-    pasos = ''.join('<span>%s</span>' % x for x in T['p1'])
     cuerpo = ("<div class='banda'><span>%s</span>"
               "<span class='b2'>TRADEABLE.ACADEMY</span></div>"
               "<div class='aire'><h1>%s</h1><div class='filete'></div>"
               "<div class='sub'>%s</div></div>"
               "<div class='grafico'>%s</div>"
               "<div class='aire'><p class='pregunta'>%s</p>"
-              "<div class='pasos'>%s</div></div>"
+              "<div class='lee'>%s</div></div>"
               "<div class='abajo'><div class='remate'><div class='t'>%s</div>"
-              "<div class='n'>%s</div></div><div class='hueco'></div></div>"
-              % (T['e1'], T['t1'], T['s1'], grafico(), T['v1'], pasos,
-                 T['c1'], T['n1']))
-    return 'historia-1-entrada', AZUL, cuerpo, 124, False
+              "<div class='p'>%s</div><div class='n'>%s</div></div>"
+              "<div class='hueco'></div></div>"
+              % (T['e1'], T['t1'], T['s1'], grafico(), T['v1'], T['p1'],
+                 T['c1'], T['c1b'], T['n1']))
+    return 'historia-1-entrada', AZUL, cuerpo, 118, False
 
 
 def historia_no_somos():
-    """Tachado LITERAL y que se SALE del lienzo: se entiende sin leer, que es
+    """Tachado LITERAL en vez de una cruz al lado: se entiende sin leer, que es
     todo lo que se le pide a una historia. Cada línea con su propio ángulo —
     tres tachones idénticos se leen como una tabla, no como una mano."""
     angulos = (-1.0, -.5, -1.2)
@@ -357,10 +368,10 @@ def historia_no_somos():
               "<span class='b2'>TRADEABLE.ACADEMY</span></div>"
               "<div class='aire cuerpo'><h1 class='tres'>%s</h1>"
               "<div class='no'>%s</div>"
-              "<div class='bloque'>%s</div></div>"
+              "<div class='bloque'>%s<div class='eco'>%s</div></div></div>"
               "<div class='abajo'><div class='remate plano'><div class='t'>%s</div>"
               "<div class='n'>%s</div></div></div>"
-              % (T['e2'], T['t2'], lista, T['r2'], T['c2'], T['n2']))
+              % (T['e2'], T['t2'], lista, T['r2'], T['r2b'], T['c2'], T['n2']))
     return 'historia-2-no-somos', ORO, cuerpo, 0, True
 
 
