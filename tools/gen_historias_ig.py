@@ -241,6 +241,10 @@ T = {
            'or there is, and no answer comes.'),
     'r2b': ('An educational ecosystem, built so you find '
             'and fix your own mistakes faster.'),
+    # ⚠️ El sello va DENTRO del bloque, pegado al «3 a.m.»: suelto arriba se
+    #    lee como un dato más y no corrige la lectura de que el analizador
+    #    solo funciona de madrugada, que es justo lo que hay que evitar.
+    'sello2': 'OPEN 24/7',
     'c2': 'FOLLOW US',
     'n2': 'This week we break down every tool.',
 }
@@ -303,8 +307,16 @@ h1 em{font-style:normal;color:ACENTO}
 
 /* — el bloque invertido: la única cosa que sí somos, en negativo sobre el
      acento. Es el remate del cartel — */
-.bloque{margin-top:44px;background:ACENTO;color:#07080b;padding:32px 38px 34px;
+.bloque{margin-top:38px;background:ACENTO;color:#07080b;padding:30px 38px 34px;
   font-size:44px;font-weight:800;line-height:1.18;letter-spacing:-.025em}
+/* sello invertido: negro macizo sobre el oro. Mismo recurso que el bloque
+   sobre el fondo, un peldaño más adentro */
+/* ⚠️ `display:table`, NO `inline-block`: al ir el sello delante del texto del
+   bloque, inline-block se mete EN LA MISMA LÍNEA que la frase. table encoge al
+   contenido igual pero ocupa su propio renglón. */
+.bloque .sello{display:table;margin-bottom:20px;background:#07080b;
+  color:ACENTO;font-family:Mono,monospace;font-size:23px;font-weight:700;
+  letter-spacing:.20em;padding:9px 16px}
 /* la promesa de fondo va DENTRO del bloque y en cuerpo pequeño: fuera pedía su
    propio margen y hacía crecer la pieza más de lo que cabe */
 .bloque .eco{margin-top:20px;padding-top:18px;border-top:3px solid rgba(7,8,11,.30);
@@ -368,10 +380,12 @@ def historia_no_somos():
               "<span class='b2'>TRADEABLE.ACADEMY</span></div>"
               "<div class='aire cuerpo'><h1 class='tres'>%s</h1>"
               "<div class='no'>%s</div>"
-              "<div class='bloque'>%s<div class='eco'>%s</div></div></div>"
+              "<div class='bloque'><div class='sello'>%s</div>%s"
+              "<div class='eco'>%s</div></div></div>"
               "<div class='abajo'><div class='remate plano'><div class='t'>%s</div>"
               "<div class='n'>%s</div></div></div>"
-              % (T['e2'], T['t2'], lista, T['r2'], T['r2b'], T['c2'], T['n2']))
+              % (T['e2'], T['t2'], lista, T['sello2'], T['r2'], T['r2b'],
+                 T['c2'], T['n2']))
     return 'historia-2-no-somos', ORO, cuerpo, 0, True
 
 
