@@ -39,40 +39,40 @@ ROJO = '#e5484d'
 VERDE = '#30a46c'
 MARCA_VOL = 0.877
 
-T_H1 = (0.00, 4.60)      # has estudiado…
-T_H2 = (4.60, 9.00)      # …pero ¿lo sabes?
-T_MET = (9.00, 13.60)    # las metodologías
-T_TEM = (13.60, 18.00)   # los temas
-T_NIV = (18.00, 22.60)   # los niveles
-T_PRE = (22.60, 31.00)   # una pregunta real, con su reloj
-T_REV = (31.00, 37.40)   # la correcta y su explicación
-T_HC = (37.40, 43.00)    # y encima, el hardcore con gráfico
-T_NUM = (43.00, 47.60)   # el número
-T_CIERRE = (47.60, 52.40)
-TOTAL = 52.40
+# 🔴 REESTRUCTURADO para TikTok tras la revisión del dueño: "no me llama la
+#    atención ni me despierta nada… alguien ve 3 o 4 s y si no lo engancha
+#    desliza". Lo que se fue: las rejillas de metodologías y de temas, que son
+#    catálogo de funciones — nadie se queda por un catálogo.
+#    Lo que manda ahora es SU observación: hay conceptos que crees saber y con
+#    el tiempo descubres que los tenías mal. Eso es el gancho, y va en los
+#    primeros 2,6 s.
+#    Y la pregunta entra en el segundo 5,6 para que el espectador JUEGUE — que
+#    es lo que retiene en TikTok, no que le enseñen pantallas.
+T_H1 = (0.00, 2.60)      # "crees que lo sabes"
+T_H2 = (2.60, 5.60)      # "…hasta que descubres que lo tenías mal"
+T_PRE = (5.60, 13.60)    # la pregunta, con el reloj — que la conteste él
+T_REV = (13.60, 19.00)   # la correcta y la explicación
+T_NIV = (19.00, 23.20)   # de principiante a avanzado
+T_HC = (23.20, 29.20)    # hardcore: además, en el gráfico
+T_NUM = (29.20, 32.80)   # el número
+T_CIERRE = (32.80, 36.80)
+TOTAL = 36.80
 
 TXT = {
-    'k1': 'You read the theory',
-    'h1': 'You watched<br>the videos.',
-    'k2': 'But',
-    'h2': 'Do you actually<br><em>know it</em>?',
-    'k_met': 'Four methodologies',
-    'h_met': 'Pick what<br>you study.',
-    'cap_met': 'ICT · Pattern Trading · Wyckoff · SMC',
-    'k_tem': 'Then the topic',
-    'h_tem': 'Down to the<br>exact concept.',
-    'cap_tem': 'seven topics in ICT alone',
-    'k_niv': 'And the level',
-    'h_niv': 'From beginner<br>to <em>hardcore</em>.',
-    'cap_niv': 'the hardcore tier is chart-based scenarios',
-    'k_pre': 'A real question',
-    'h_pre': 'Sixty seconds.',
+    'k1': '',
+    'h1': 'There\u2019s always a concept<br>you <em>think</em> you know.',
+    'k2': '',
+    'h2': 'Until you find out<br>you had it <em>wrong</em>.',
+    'k_pre': 'Try this one',
+    'h_pre': 'Can you answer it?',
     'k_rev': 'The answer',
-    'k_hc': 'And above all of it',
+    'k_niv': 'Beginner to Advanced',
+    'h_niv': 'For every concept<br>you\u2019re not sure about.',
+    'cap_niv': 'pick the level, not the guesswork',
+    'k_hc': 'And then',
     'h_hc': 'Hardcore.',
-    'cap_hc': 'read the chart, then decide',
-    'k_num': 'The bank',
-    'h_num': '<em>598</em> questions.',
+    'cap_hc': 'not just what you know — how it looks on the chart',
+    'k_num': '',
     'p_num': 'How many would you get wrong?',
     'lema': 'Process over impulse.',
     'legal': 'Educational content · Not financial advice',
@@ -282,16 +282,12 @@ def pasos():
     return [
         dict(t0=T_H1[0], t1=T_H1[1], k=TXT['k1'], h=TXT['h1']),
         dict(t0=T_H2[0], t1=T_H2[1], k=TXT['k2'], h=TXT['h2']),
-        dict(t0=T_MET[0], t1=T_MET[1], img=u('metodologias'), top=880,
-             k=TXT['k_met'], h=TXT['h_met'], cap=TXT['cap_met']),
-        dict(t0=T_TEM[0], t1=T_TEM[1], img=u('temas'), top=700,
-             k=TXT['k_tem'], h=TXT['h_tem'], cap=TXT['cap_tem']),
-        dict(t0=T_NIV[0], t1=T_NIV[1], img=u('niveles'), top=860,
-             k=TXT['k_niv'], h=TXT['h_niv'], cap=TXT['cap_niv']),
         dict(t0=T_PRE[0], t1=T_PRE[1], pregunta=True, k=TXT['k_pre'],
              h=TXT['h_pre']),
         dict(t0=T_REV[0], t1=T_REV[1], revela=True),
-        dict(t0=T_HC[0], t1=T_HC[1], img=u('hardcore_rec'), top=800,
+        dict(t0=T_NIV[0], t1=T_NIV[1], img=u('niveles'), top=900,
+             k=TXT['k_niv'], h=TXT['h_niv'], cap=TXT['cap_niv']),
+        dict(t0=T_HC[0], t1=T_HC[1], img=u('hardcore_rec'), top=820,
              k=TXT['k_hc'], h=TXT['h_hc'], cap=TXT['cap_hc']),
         dict(t0=T_NUM[0], t1=T_NUM[1], numero=True, k=TXT['k_num']),
     ]
