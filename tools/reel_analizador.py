@@ -53,19 +53,21 @@ T_DIBUJO = (0.60, 4.60)      # las velas entran hasta la entrada
 T_ENTRADA = (4.60, 7.20)     # aparece la entrada y sus marcas
 T_STOP = (7.20, 10.60)       # el precio baja y caza el stop
 T_SIN_TI = (10.60, 14.40)    # y se va al objetivo sin él
-T_EXCUSA = (14.40, 18.60)    # LA DUDA, dicha en primera persona
+# ⚠️ La excusa dura 6,2 s a propósito: son dos frases y el dueño no llegaba
+#    a leerlas. Es el rótulo más largo del reel, y el que sostiene la idea.
+T_EXCUSA = (14.40, 20.60)    # LA DUDA, dicha en primera persona
 # ── el giro: la pregunta que abre la herramienta ──
-T_GIRO = (18.60, 22.20)
+T_GIRO = (20.60, 24.20)
 # ── y los PASOS, numerados: es una secuencia de verdad ──
-T_P1 = (22.20, 26.20)        # elige tu activo
-T_P2 = (26.20, 30.20)        # sube la captura
-T_P3 = (30.20, 34.40)        # elige tu metodología
-T_P4 = (34.40, 39.00)        # di qué estabas buscando
-T_VER1 = (39.00, 43.60)      # el setup estaba bien
-T_VER2 = (43.60, 48.60)      # …el stop no
-T_CIERRE = (48.60, 53.40)
-TOTAL_INTRO = 18.60
-TOTAL = 53.40
+T_P1 = (24.20, 28.20)        # elige tu activo
+T_P2 = (28.20, 32.20)        # sube la captura
+T_P3 = (32.20, 36.40)        # elige tu metodología
+T_P4 = (36.40, 41.00)        # di qué estabas buscando
+T_VER1 = (41.00, 45.60)      # el setup estaba bien
+T_VER2 = (45.60, 50.60)      # …el stop no
+T_CIERRE = (50.60, 55.40)
+TOTAL_INTRO = 20.60
+TOTAL = 55.40
 
 
 def datos():
@@ -111,6 +113,10 @@ PAGINA = u"""<!doctype html><meta charset=utf-8>
  #cita .c{font:800 44px/1.24 Inter,sans-serif;color:#fff}
  #cita .c:before{content:'\\201C';color:@@ORO@@;font-size:64px;line-height:0;
    vertical-align:-14px;margin-right:6px}
+ /* 🔴 faltaba la comilla de cierre: una cita abierta y sin cerrar se lee
+    como si la frase estuviera cortada */
+ #cita .c:after{content:'\\201D';color:@@ORO@@;font-size:64px;line-height:0;
+   vertical-align:-14px;margin-left:4px}
  #cita .q{margin-top:18px;font:700 20px 'JetBrains Mono',monospace;
    letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)}
  /* capturas REALES del analizador */
