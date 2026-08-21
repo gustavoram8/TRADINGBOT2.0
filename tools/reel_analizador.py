@@ -53,16 +53,19 @@ T_DIBUJO = (0.60, 4.60)      # las velas entran hasta la entrada
 T_ENTRADA = (4.60, 7.20)     # aparece la entrada y sus marcas
 T_STOP = (7.20, 10.60)       # el precio baja y caza el stop
 T_SIN_TI = (10.60, 14.40)    # y se va al objetivo sin él
-T_EXCUSA = (14.40, 18.00)    # "pura manipulación"
-# ── y a partir de aquí, la HERRAMIENTA ──
-T_SUBE = (18.00, 22.60)      # el gráfico subido al analizador
-T_METOD = (22.60, 27.00)     # las 7 metodologías, ICT encendida
-T_NOTAS = (27.00, 31.80)     # qué estaba buscando con ese trade
-T_VER1 = (31.80, 36.20)      # el veredicto: el setup estaba bien
-T_VER2 = (36.20, 41.00)      # …el stop no
-T_CIERRE = (41.00, 45.80)
-TOTAL_INTRO = 18.00
-TOTAL = 45.80
+T_EXCUSA = (14.40, 18.60)    # LA DUDA, dicha en primera persona
+# ── el giro: la pregunta que abre la herramienta ──
+T_GIRO = (18.60, 22.20)
+# ── y los PASOS, numerados: es una secuencia de verdad ──
+T_P1 = (22.20, 26.20)        # elige tu activo
+T_P2 = (26.20, 30.20)        # sube la captura
+T_P3 = (30.20, 34.40)        # elige tu metodología
+T_P4 = (34.40, 39.00)        # di qué estabas buscando
+T_VER1 = (39.00, 43.60)      # el setup estaba bien
+T_VER2 = (43.60, 48.60)      # …el stop no
+T_CIERRE = (48.60, 53.40)
+TOTAL_INTRO = 18.60
+TOTAL = 53.40
 
 
 def datos():
@@ -385,31 +388,40 @@ TXT = {
     'p2': 'The market went down to the tick of your stop.',
     't3': 'Then it went to <em>your target</em>.',
     'p3': 'Without you.',
-    'cita': 'Pure manipulation. My trade was fine.',
-    'citaPie': "— what you tell yourself at 11 p.m.",
-    # ── la herramienta ──
-    'k_sube': 'Or you can just ask',
-    'h_sube': 'Upload the <em>same</em> chart.',
-    'cap_sube': 'the screenshot you already have',
-    'k_met': 'Your method, not ours',
-    'h_met': 'Pick how you<br>actually trade.',
-    'cap_met': 'ICT · OTE · Wyckoff · Patterns · Harmonic · Elliott · Technical',
-    'k_notas': 'And what you were looking for',
-    'h_notas': 'Tell it what you<br>were looking for.',
-    'cap_notas': 'Trade construction',
+    'cita': "Maybe it was manipulation.<br>Maybe that's why they took my stop.",
+    'citaPie': '— and you never actually find out',
+    # ── el giro y los pasos ──
+    # 🔴 Reescrito entero: el dueño no entendía la idea leyendo los rótulos.
+    #    La duda se dice ahora en PRIMERA PERSONA (es lo que el trader se
+    #    cuenta a sí mismo) y la herramienta pasa a ser una SECUENCIA
+    #    NUMERADA — elige el activo, sube la captura, elige el método, di qué
+    #    buscabas — en vez de tres frases sueltas.
+    'k_giro': 'You never find out',
+    'h_giro': 'Why stay<br><em>guessing</em>?',
+    'k_p1': 'Step 01',
+    'h_p1': 'Pick the instrument<br>you traded.',
+    'cap_p1': 'futures · forex · indices · crypto · stocks',
+    'k_p2': 'Step 02',
+    'h_p2': 'Upload the screenshot<br>you already have.',
+    'cap_p2': 'the same chart you were staring at',
+    'k_p3': 'Step 03',
+    'h_p3': 'Choose the method<br>you actually trade.',
+    'cap_p3': 'ICT · OTE · Wyckoff · Patterns · Harmonic · Elliott · Technical',
+    'k_p4': 'Step 04',
+    'h_p4': 'Say what you<br>were looking for.',
+    'cap_p4': 'Trade construction',
     'nota': 'Sweep of the equal lows, displacement with an FVG, I entered on '
             'the retracement. <b>I put the stop tight just under my entry '
-            'candle to improve the R:R.</b> Price went down exactly to take '
-            'my stop and then ran to my target without me.',
-    # 🔴 Estas dos citas son la RESPUESTA REAL del analizador a este mismo
-    #    gráfico (banco, caso I5). Ver la nota de VERDICTO_EN abajo.
+            'candle to improve the R:R.</b> My idea was that price would run '
+            'to the highs above.',
+    # 🔴 La RESPUESTA REAL del analizador a este mismo gráfico (banco, I5).
     'k_v1': 'The answer',
-    'v1': 'The setup was<br><em>technically valid.</em>',
+    'v1': 'Your setup was<br><em>technically valid.</em>',
     'pv1': 'Sweep of the equal lows, displacement, FVG. The idea was fine.',
     'k_v2': 'The answer',
-    'v2': 'The <em>stop</em> was<br>the problem.',
+    'v2': 'Your <em>stop</em> was<br>the problem.',
     'pv2': 'Placed inside the noise instead of beyond the low of the sweep — '
-          'so the trade never had room to breathe.',
+           'so the trade never had room to breathe.',
 }
 
 
@@ -417,19 +429,42 @@ AZ = os.path.join(SALIDA, '_az')
 
 
 def pasos():
-    """Los tramos de producto: capturas REALES y las citas del veredicto."""
+    """El giro y los cuatro pasos, con las capturas REALES."""
     u = lambda n: 'file://' + os.path.join(AZ, n + '.png')
     T = TXT
     return [
-        dict(t0=T_SUBE[0], t1=T_SUBE[1], img=u('subida_rec'), top=700,
-             k=T['k_sube'], h=T['h_sube'], cap=T['cap_sube']),
-        dict(t0=T_METOD[0], t1=T_METOD[1], img=u('metodologias_2f'), top=860,
-             k=T['k_met'], h=T['h_met'], cap=T['cap_met']),
-        dict(t0=T_NOTAS[0], t1=T_NOTAS[1], nota=T['nota'], lb=T['cap_notas'],
-             k=T['k_notas'], h=T['h_notas']),
-        dict(t0=T_VER1[0], t1=T_VER1[1], cita=T['v1'], pie=T['pv1'], k=T['k_v1']),
-        dict(t0=T_VER2[0], t1=T_VER2[1], cita=T['v2'], pie=T['pv2'], k=T['k_v2']),
+        # el giro no lleva imagen: es la pregunta, sola sobre negro
+        dict(t0=T_GIRO[0], t1=T_GIRO[1], k=T['k_giro'], h=T['h_giro'],
+             solo=True),
+        dict(t0=T_P1[0], t1=T_P1[1], img=u('instrumento_rec'), top=860,
+             k=T['k_p1'], h=T['h_p1'], cap=T['cap_p1']),
+        dict(t0=T_P2[0], t1=T_P2[1], img=u('subida_rec'), top=760,
+             k=T['k_p2'], h=T['h_p2'], cap=T['cap_p2']),
+        dict(t0=T_P3[0], t1=T_P3[1], img=u('metodologias_2f'), top=920,
+             k=T['k_p3'], h=T['h_p3'], cap=T['cap_p3']),
+        dict(t0=T_P4[0], t1=T_P4[1], nota=T['nota'], lb=T['cap_p4'],
+             k=T['k_p4'], h=T['h_p4']),
+        dict(t0=T_VER1[0], t1=T_VER1[1], cita=T['v1'], pie=T['pv1'],
+             k=T['k_v1']),
+        dict(t0=T_VER2[0], t1=T_VER2[1], cita=T['v2'], pie=T['pv2'],
+             k=T['k_v2']),
     ]
+
+
+def recorta_instrumento():
+    """La rejilla de instrumentos, recortada para que sus etiquetas se lean.
+
+    ⚠️ Mide 1592 px de ancho: a lo ancho del lienzo cae a 0,60x y las
+    etiquetas quedan en ~16 px. Recortada a 1040 sube a 0,92x. Se corta la
+    columna derecha, que se lee como "la rejilla sigue" — no como un fallo.
+    """
+    from PIL import Image
+    src = os.path.join(AZ, 'instrumento.png')
+    if not os.path.exists(src):
+        return
+    im = Image.open(src)
+    im.crop((0, 0, min(1040, im.size[0]), min(470, im.size[1]))) \
+      .save(os.path.join(AZ, 'instrumento_rec.png'))
 
 
 def logo_oscuro():
@@ -437,10 +472,9 @@ def logo_oscuro():
 
     🔴 Antes se pintaba con `filter: brightness(0) invert(1)`, que aplasta
     TODO a blanco y luego lo invierte: las letras negras salían bien pero la
-    "a" azul se volvía NARANJA (el inverso de #004feb). Lo cazó el dueño.
-    Aquí se hace por píxel: lo oscuro pasa a blanco y el azul se queda como
-    está. El color azul no se escribe a mano — se toma de los píxeles del
-    propio archivo.
+    "a" azul se volvía NARANJA (el inverso exacto de #004feb). Lo cazó el
+    dueño. Aquí se hace por píxel: lo oscuro pasa a blanco y el azul se queda
+    como está, tomado de los píxeles del propio archivo.
     """
     from PIL import Image
     import numpy as np
@@ -451,10 +485,8 @@ def logo_oscuro():
     azul = (al > 60) & (a[:, :, 2] > a[:, :, 0] + 40)
     out = a.copy()
     tinta = (al > 0) & (~azul)
-    # la tinta negra se vuelve blanca conservando su antialias
-    out[:, :, 0] = np.where(tinta, 255, out[:, :, 0])
-    out[:, :, 1] = np.where(tinta, 255, out[:, :, 1])
-    out[:, :, 2] = np.where(tinta, 255, out[:, :, 2])
+    for c in range(3):
+        out[:, :, c] = np.where(tinta, 255, out[:, :, c])
     Image.fromarray(out.astype('uint8')).save(dest)
     return dest
 
@@ -462,7 +494,7 @@ def logo_oscuro():
 def parte_metodologias():
     """Parte la tira de metodologías en dos filas.
 
-    ⚠️ Es una tira de 1592×94: mostrada a lo ancho del lienzo el texto queda en
+    ⚠️ Es una tira de 1592x94: mostrada a lo ancho del lienzo el texto queda en
     ~16 px y no se lee en un teléfono. Partida en dos, cada mitad se muestra al
     doble de escala.
     """
@@ -498,6 +530,7 @@ def monta(solo_intro=True):
     from playwright.sync_api import sync_playwright
     import imageio_ffmpeg
     recorta_subida()
+    recorta_instrumento()
     parte_metodologias()
     logo_oscuro()
     d = datos()
@@ -505,7 +538,7 @@ def monta(solo_intro=True):
     for k, v in [('@@W@@', str(W)), ('@@H@@', str(H)), ('@@ORO@@', ORO),
                  ('@@ROJO@@', ROJO), ('@@VERDE@@', VERDE),
                  ('@@TOTAL@@', '%.2f' % (TOTAL_INTRO if solo_intro else TOTAL)),
-                 ('@@TP@@', json.dumps({'sube': T_SUBE[0]})),
+                 ('@@TP@@', json.dumps({'sube': T_GIRO[0]})),
                  ('@@CIE@@', '%.2f' % (999 if solo_intro else T_CIERRE[0])),
                  ('@@LOGO@@', 'file://' + os.path.join(
                      SALIDA, '_logo_oscuro.png')),

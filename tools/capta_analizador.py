@@ -155,6 +155,15 @@ def main():
             print('  ·', nom)
             return True
 
+        # ── 0 · el selector de INSTRUMENTO (paso 1 del reel) ──
+        pg.evaluate("""() => {
+            const g = document.querySelector('.pill-group[data-group=instrument]');
+            if (g) g.scrollIntoView({block:'center'});
+        }""")
+        pg.wait_for_timeout(700)
+        foto('instrumento', '.pill-group[data-group="instrument"]')
+        foto('sesion', '.pill-group[data-group="session"]')
+
         # ── 1 · el formulario, con sus metodologías ──
         pg.evaluate("""() => {
             const g = document.querySelector('.pill-group[data-group=approach]');
