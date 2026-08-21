@@ -109,8 +109,13 @@ def comprueba_serie():
 def grafico():
     """El trade, en SVG. Coordenadas propias 0-1000 × 0-560."""
     fvg = comprueba_serie()
-    AN, AL = 1000.0, 500.0
-    PAD_D = 96.0                       # sitio para los rótulos de precio
+    # ⚠️ El lienzo del SVG es MÁS ALTO que la zona de precios: los 52 de abajo
+    #    son para el rótulo de la barrida, que cuelga de la mecha. Sin esa
+    #    reserva el rótulo cae fuera del viewBox y se come el texto siguiente.
+    AN, AL, ALTO = 1000.0, 400.0, 350.0
+    # ⚠️ PAD_D es GRANDE porque el gráfico va A SANGRE: con el margen justo,
+    #    las pastillas de ENTRY/STOP quedaban pegadas al borde de la pantalla.
+    PAD_D = 164.0
     todos = [v for d in SERIE for v in d]
     lo, hi = min(todos), max(todos)
     m = (hi - lo) * .07
@@ -120,15 +125,16 @@ def grafico():
     cw = paso * .52
 
     def Y(v):
-        return AL - (v - lo) / (hi - lo) * AL
+        return ALTO - (v - lo) / (hi - lo) * ALTO
 
     def X(i):
         return paso * (i + .5)
 
     p = []
-    # rejilla: tenue, sólo para que el espacio se lea como un gráfico
+    # rejilla: sólo horizontales y muy tenues. Es un eje de precios, no la
+    # cuadrícula decorativa que llevaba la versión anterior.
     for k in range(1, 6):
-        y = AL * k / 6.0
+        y = ALTO * k / 6.0
         p.append('<line x1="0" y1="%.1f" x2="%.1f" y2="%.1f" stroke="#ffffff" '
                  'stroke-opacity=".055" stroke-width="1"/>' % (y, AN, y))
 
@@ -207,9 +213,9 @@ def grafico():
     # ⚠️ El tramo posterior NO lleva rótulo: el titular ya dice "without you" y
     #    repetirlo sobre las velas se lee como un pie de foto de más. Lo cuentan
     #    la atenuación y la ✕.
-    return ('<svg viewBox="0 0 %.0f %.0f" style="width:100%%;height:auto;'
-            'overflow:visible" xmlns="http://www.w3.org/2000/svg">%s</svg>'
-            % (AN, AL, ''.join(p)))
+    return ('<svg viewBox="0 0 %.0f %.0f" preserveAspectRatio="xMidYMid meet" '
+            'style="width:100%%;height:auto" '
+            'xmlns="http://www.w3.org/2000/svg">%s</svg>' % (AN, AL, ''.join(p)))
 
 
 # ── textos ───────────────────────────────────────────────────────────────
@@ -217,85 +223,104 @@ def grafico():
 # "no fine print" y "the read" son lo que un trader dice de verdad.
 T = {
     'e1': 'THE ANALYZER',
-    't1': 'Stopped out.<br>Then it ran<br><em>without you.</em>',
+    't1': 'STOPPED<br>OUT.',
+    's1': 'Then it ran without you.',
     'v1': 'Was it manipulation — or was your stop in the wrong place?',
-    'p1': ['Upload the chart', 'Say what you were after', 'Get the read'],
-    'c1': 'Get your analysis right now',
-    'n1': 'no card needed',
+    'p1': ['UPLOAD THE CHART', 'SAY WHAT YOU WERE AFTER', 'GET THE READ'],
+    'c1': 'GET YOUR ANALYSIS RIGHT NOW',
+    'n1': 'tradeable.academy · no card needed',
 
     'e2': 'NO FINE PRINT',
-    't2': 'What we’re<br><em>not</em>',
+    't2': 'WHAT<br>WE’RE<br><em>NOT</em>',
     'p2': ['Signals', 'A “copy my trades” group', 'Profit screenshots'],
-    'r2': 'A second opinion at 3 a.m.<br>that reads your chart<br>back to you.',
-    'c2': 'Follow us',
+    'r2': 'A second opinion at 3&nbsp;a.m. that reads your chart back to you.',
+    'c2': 'FOLLOW US',
     'n2': 'This week we break down every tool.',
 }
 
+
 CSS = """
+/* ═══ CARTEL, NO "DARK TECH" ═══════════════════════════════════════════
+   🔴 La versión anterior tenía los cuatro tics del arte generado por
+   defecto: resplandor radial arriba, rejilla tenue de 60 px, esquinas
+   redondeadas y todo a la izquierda con un gris apagado debajo. El dueño lo
+   cazó a la primera ("se ve muy Claude") y tenía razón.
+   Se va TODO eso y se adopta el lenguaje que sí funcionó en las portadas de
+   destacadas: FORMA MACIZA, color plano, cero adorno fino. En cartel eso es:
+   bandas sólidas a sangre, tipografía colosal con interlineado cerrado,
+   filetes gruesos y ningún degradado. El único gradiente que sobrevive es un
+   velo casi negro al pie, y sólo porque el gráfico sangra por ahí. */
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1920px;background:GRAFITO}
 .lienzo{position:relative;width:1080px;height:1920px;overflow:hidden;
-  background:GRAFITO;font-family:Inter,sans-serif;color:#eef0f5}
-/* el mismo suelo que los posts del feed: si la historia no se reconoce como la
-   misma casa, no suma marca */
-.lienzo::before{content:'';position:absolute;inset:0;z-index:0;
-  background:radial-gradient(58% 32% at 50% -2%, ACENTO26, transparent 70%)}
-.lienzo::after{content:'';position:absolute;inset:0;z-index:0;opacity:.5;
-  background-image:linear-gradient(rgba(255,255,255,.055) 1px,transparent 1px),
-                   linear-gradient(90deg,rgba(255,255,255,.055) 1px,transparent 1px);
-  background-size:60px 60px;
-  -webkit-mask-image:radial-gradient(72% 46% at 50% 8%,#000,transparent 78%)}
-.brillo{position:absolute;z-index:0;left:50%;bottom:-340px;width:1560px;height:800px;
-  margin-left:-780px;pointer-events:none;
-  background:radial-gradient(closest-side, ACENTO1c, transparent 72%)}
+  background:GRAFITO;font-family:Inter,sans-serif;color:#f4f6fa}
+.marco{position:relative;z-index:3;height:100%;display:flex;flex-direction:column;
+  padding-top:SEGARRIBApx;padding-bottom:SEGABAJOpx}
+.aire{padding-left:76px;padding-right:76px}
 
-.marco{position:relative;z-index:3;height:100%;
-  padding:SEGARRIBApx 84px SEGABAJOpx;display:flex;flex-direction:column}
-.etq{display:flex;align-items:center;gap:16px;
-  font-family:Mono,monospace;font-size:25px;font-weight:700;letter-spacing:.24em;
-  color:ACENTO;text-transform:uppercase}
-.etq::after{content:'';flex:1;height:1px;background:ACENTO;opacity:.30}
-h1{margin-top:34px;font-size:88px;font-weight:900;line-height:1.02;
-  letter-spacing:-.038em}
+/* — la banda de cabecera: sólida y A SANGRE, negro sobre el acento — */
+.banda{background:ACENTO;color:#07080b;display:flex;align-items:center;
+  justify-content:space-between;padding:16px 76px;
+  font-family:Mono,monospace;font-size:25px;font-weight:700;letter-spacing:.22em}
+.banda .b2{letter-spacing:.10em;opacity:.78}
+
+/* — tipografía colosal. Inter a 900 con el tracking muy cerrado y el
+     interlineado por debajo de 1 no se parece a Inter por defecto — */
+h1{font-size:136px;font-weight:900;line-height:.86;letter-spacing:-.055em;
+  margin-top:46px}
+h1.tres{font-size:124px}
 h1 em{font-style:normal;color:ACENTO}
-.cuerpo{flex:1;display:flex;flex-direction:column;justify-content:center}
+.filete{height:9px;background:ACENTO;margin:30px 0 20px;width:210px}
+.sub{font-size:50px;font-weight:800;letter-spacing:-.025em;line-height:1.1;
+  color:ACENTO}
 
-/* — el gráfico, protagonista — */
-/* el gráfico sube y se mete BAJO el titular: la tendencia deja libre
-   justo la esquina superior izquierda, que es donde cae el texto */
-.grafico{margin:-116px 0 4px;position:relative;z-index:-1}
-.pregunta{font-size:38px;line-height:1.36;color:#aab2c4;max-width:850px}
-/* los pasos en UNA línea con separadores: en una historia que ya lleva un
-   gráfico, tres filas numeradas roban el sitio que necesita el titular */
-.pasos{display:flex;flex-wrap:wrap;align-items:center;gap:14px 18px;margin-top:26px}
-.pasos span{font-size:28px;font-weight:700;color:#eef0f5}
-.pasos b{width:7px;height:7px;border-radius:50%;background:ACENTO;display:block}
+/* — el gráfico sangra de borde a borde: dentro de una caja se lee como una
+     ilustración, a sangre se lee como el propio mercado — */
+.grafico{margin:26px 0 0;position:relative}
+.grafico svg{display:block;width:100%}
 
-/* — el anti-pitch: tachado de verdad, no una cruz al lado — */
-.no{display:flex;flex-direction:column;gap:34px;margin-top:56px}
+.pregunta{margin-top:26px;font-size:34px;line-height:1.3;font-weight:600;
+  color:#f4f6fa;max-width:900px}
+/* pasos como fichas de blotter. ⚠️ El cuerpo está calibrado para que los TRES
+   quepan en UNA fila: partidos en dos, la pieza crece 60 px y el remate se mete
+   en la barra de responder de Instagram. */
+.pasos{display:flex;flex-wrap:nowrap;gap:11px;margin-top:22px}
+.pasos span{font-family:Mono,monospace;font-size:20px;font-weight:700;
+  letter-spacing:.10em;padding:10px 14px;color:#f4f6fa;white-space:nowrap;
+  border:2px solid rgba(244,246,250,.30)}
+
+/* — el anti-pitch: tachado literal, grueso, y que SE SALGA del lienzo — */
+.no{display:flex;flex-direction:column;gap:30px;margin-top:52px}
 .no div{position:relative;display:inline-block;align-self:flex-start;
-  font-size:56px;font-weight:800;color:#6f7787}
-.no div::after{content:'';position:absolute;left:-22px;right:-22px;top:52%;
-  height:5px;border-radius:3px;background:ACENTO;transform:rotate(ROTdeg);
-  transform-origin:left center}
-.si{margin-top:64px;padding-left:30px;border-left:5px solid ACENTO;
-  font-size:52px;font-weight:800;line-height:1.24;letter-spacing:-.02em}
+  font-size:58px;font-weight:800;letter-spacing:-.02em;color:#767e8f}
+.no div::after{content:'';position:absolute;left:-26px;right:-62px;top:52%;
+  height:9px;background:ACENTO;transform:rotate(ROTdeg);transform-origin:left center}
 
-/* — el pie de llamada — */
-.cta{position:relative;z-index:3;margin-top:38px}
-.cta .t{font-size:56px;font-weight:900;letter-spacing:-.02em;line-height:1.12}
-/* banda LIBRE: aquí cae el sticker nativo del enlace, no se pinta nada */
+/* — el bloque invertido: la única cosa que sí somos, en negativo sobre el
+     acento. Es el remate del cartel — */
+.bloque{margin-top:56px;background:ACENTO;color:#07080b;padding:32px 38px 36px;
+  font-size:46px;font-weight:800;line-height:1.2;letter-spacing:-.025em}
+
+.cuerpo{flex:1;display:flex;flex-direction:column;justify-content:center}
+.abajo{margin-top:auto}
+
+/* — remate: barra sólida a sangre. En la 1 lleva el CTA y el dominio; bajo
+     ella queda la banda LIBRE donde cae el sticker del enlace — */
+.remate{background:ACENTO;color:#07080b;padding:22px 76px 26px}
+.remate .t{font-size:52px;font-weight:900;letter-spacing:-.02em;line-height:1.06}
+.remate .n{margin-top:10px;font-family:Mono,monospace;font-size:26px;
+  font-weight:700;letter-spacing:.06em;opacity:.82}
 .hueco{height:HUECOpx}
-.cta .dom{font-family:Mono,monospace;font-size:38px;font-weight:700;color:ACENTO;
-  letter-spacing:.02em}
-.cta .nota{margin-top:14px;font-family:Mono,monospace;font-size:26px;color:#7c8496;
-  letter-spacing:.06em}
-/* el anti-pitch no lleva enlace: su razón para seguir va PEGADA al CTA */
-.cta .razon{margin-top:16px;font-size:36px;line-height:1.36;color:#aab2c4}
-.pie{position:relative;z-index:3;margin-top:40px;display:flex;align-items:center;
-  justify-content:space-between}
-.pie img{height:42px;opacity:.9}
-.pie .ar{font-family:Mono,monospace;font-size:24px;color:#6d7484}
+/* remate en claro para el anti-pitch, que ya gastó el acento en el bloque */
+.remate.plano{background:transparent;color:#f4f6fa;padding-bottom:0}
+.remate.plano .t{color:#f4f6fa}
+.remate.plano .n{opacity:1;color:#9aa2b4;font-family:Inter,sans-serif;
+  font-size:33px;font-weight:600;letter-spacing:0}
+
+.pie{display:flex;align-items:center;justify-content:space-between;
+  padding:0 76px;margin:24px 0 14px}
+.pie img{height:40px;opacity:.85}
+.pie .ar{font-family:Mono,monospace;font-size:23px;color:#6d7484}
 
 /* — guías: sólo en la versión de revisión — */
 .g{position:absolute;left:0;right:0;z-index:9;pointer-events:none;
@@ -306,35 +331,37 @@ h1 em{font-style:normal;color:ACENTO}
 
 
 def historia_entrada():
-    pasos = '<b></b>'.join('<span>%s</span>' % s for s in T['p1'])
-    cuerpo = ("<div class='etq'>%s</div>"
-              "<div class='cuerpo'><h1>%s</h1>"
+    pasos = ''.join('<span>%s</span>' % x for x in T['p1'])
+    cuerpo = ("<div class='banda'><span>%s</span>"
+              "<span class='b2'>TRADEABLE.ACADEMY</span></div>"
+              "<div class='aire'><h1>%s</h1><div class='filete'></div>"
+              "<div class='sub'>%s</div></div>"
               "<div class='grafico'>%s</div>"
-              "<p class='pregunta'>%s</p>"
+              "<div class='aire'><p class='pregunta'>%s</p>"
               "<div class='pasos'>%s</div></div>"
-              "<div class='cta'><div class='t'>%s</div>"
-              "<div class='hueco'></div>"
-              "<div class='dom'>tradeable.academy</div>"
-              "<div class='nota'>%s</div></div>"
-              % (T['e1'], T['t1'], grafico(), T['v1'], pasos, T['c1'], T['n1']))
-    return 'historia-1-entrada', AZUL, cuerpo, 150
+              "<div class='abajo'><div class='remate'><div class='t'>%s</div>"
+              "<div class='n'>%s</div></div><div class='hueco'></div></div>"
+              % (T['e1'], T['t1'], T['s1'], grafico(), T['v1'], pasos,
+                 T['c1'], T['n1']))
+    return 'historia-1-entrada', AZUL, cuerpo, 124, False
 
 
 def historia_no_somos():
-    """Tachado LITERAL en vez de una cruz al lado: se entiende sin leer, que es
-    todo lo que se pide de una historia. Cada línea con su propio ángulo — tres
-    tachones idénticos se leen como una tabla, no como una mano."""
+    """Tachado LITERAL y que se SALE del lienzo: se entiende sin leer, que es
+    todo lo que se le pide a una historia. Cada línea con su propio ángulo —
+    tres tachones idénticos se leen como una tabla, no como una mano."""
     angulos = (-1.0, -.5, -1.2)
-    lista = ''.join("<div style='--r:%.1fdeg'>%s</div>" % (a, p)
-                    for a, p in zip(angulos, T['p2']))
-    cuerpo = ("<div class='etq'>%s</div>"
-              "<div class='cuerpo'><h1>%s</h1>"
+    lista = ''.join("<div style='--r:%.1fdeg'>%s</div>" % (a, x)
+                    for a, x in zip(angulos, T['p2']))
+    cuerpo = ("<div class='banda'><span>%s</span>"
+              "<span class='b2'>TRADEABLE.ACADEMY</span></div>"
+              "<div class='aire cuerpo'><h1 class='tres'>%s</h1>"
               "<div class='no'>%s</div>"
-              "<div class='si'>%s</div></div>"
-              "<div class='cta'><div class='t'>%s</div>"
-              "<div class='razon'>%s</div></div>"
+              "<div class='bloque'>%s</div></div>"
+              "<div class='abajo'><div class='remate plano'><div class='t'>%s</div>"
+              "<div class='n'>%s</div></div></div>"
               % (T['e2'], T['t2'], lista, T['r2'], T['c2'], T['n2']))
-    return 'historia-2-no-somos', ORO, cuerpo, 0
+    return 'historia-2-no-somos', ORO, cuerpo, 0, True
 
 
 def main():
@@ -350,29 +377,30 @@ def main():
     assert '#%02x%02x%02x' % azul == AZUL, \
         'el azul del logo cambió (%s)' % ('#%02x%02x%02x' % azul)
 
-    def pagina(acento, cuerpo, hueco, guia):
+    def pagina(acento, cuerpo, hueco, pie, guia):
         css = (CSS.replace('ACENTO', acento).replace('GRAFITO', GRAFITO)
                   .replace('SEGARRIBA', str(SEG_ARRIBA))
                   .replace('SEGABAJO', str(SEG_ABAJO))
                   .replace('HUECO', str(hueco))
                   .replace('rotate(ROTdeg)', 'rotate(var(--r,-1.2deg))'))
         g = "<div class='g arr'></div><div class='g aba'></div>" if guia else ''
+        # el logotipo sólo va al pie donde queda sitio; en la 1 ya vive en la
+        # banda de cabecera y repetirlo sería ruido
+        marca = ("<div class='pie'><img src='data:image/png;base64,%s'>"
+                 "<span class='ar'>@tradeableacademy</span></div>" % logo_b64) if pie else ''
         return ("<!doctype html><meta charset='utf-8'><style>%s%s</style>"
-                "<div class='lienzo'><div class='brillo'></div>%s"
-                "<div class='marco'>%s<div class='pie'>"
-                "<img src='data:image/png;base64,%s'>"
-                "<span class='ar'>@tradeableacademy</span></div></div></div>"
-                % (fuentes, css, g, cuerpo, logo_b64))
+                "<div class='lienzo'>%s<div class='marco'>%s%s</div></div>"
+                % (fuentes, css, g, cuerpo, marca))
 
     plan = []
     for hacer in (historia_entrada, historia_no_somos):
-        nombre, acento, cuerpo, hueco = hacer()
+        nombre, acento, cuerpo, hueco, pie = hacer()
         io.open(os.path.join(SALIDA, nombre + '.html'), 'w',
-                encoding='utf-8').write(pagina(acento, cuerpo, hueco, False))
+                encoding='utf-8').write(pagina(acento, cuerpo, hueco, pie, False))
         plan.append(nombre)
         if args.guias:
             io.open(os.path.join(SALIDA, nombre + '.guia.html'), 'w',
-                    encoding='utf-8').write(pagina(acento, cuerpo, hueco, True))
+                    encoding='utf-8').write(pagina(acento, cuerpo, hueco, pie, True))
             plan.append(nombre + '.guia')
     io.open(os.path.join(SALIDA, 'plan.json'), 'w').write(json.dumps(plan))
     rasteriza(plan)
