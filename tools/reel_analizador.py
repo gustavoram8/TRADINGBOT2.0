@@ -41,26 +41,28 @@ CASO = 'I5_sl_cazado_perdido'
 W, H, FPS = 1080, 1920, 30
 
 ORO = '#c9a227'
+# el pico al que suena la marca en los reels narrados (medido)
+MARCA_VOL = 0.877
 ROJO = '#e5484d'
 VERDE = '#30a46c'
 
 # ── el reloj del intro ────────────────────────────────────────────────────
 # Cada tramo dura lo que tarda en LEERSE, no lo que tarda en dibujarse: el
 # error del primer reel fue justo ese.
-T_DIBUJO = (0.50, 3.40)      # las velas entran hasta la entrada
-T_ENTRADA = (3.40, 5.00)     # aparece la entrada y sus marcas
-T_STOP = (5.00, 7.20)        # el precio baja y caza el stop
-T_SIN_TI = (7.20, 9.90)     # y se va al objetivo sin él
-T_EXCUSA = (9.90, 13.40)    # "pura manipulación" + la botarga
+T_DIBUJO = (0.60, 4.60)      # las velas entran hasta la entrada
+T_ENTRADA = (4.60, 7.20)     # aparece la entrada y sus marcas
+T_STOP = (7.20, 10.60)       # el precio baja y caza el stop
+T_SIN_TI = (10.60, 14.40)    # y se va al objetivo sin él
+T_EXCUSA = (14.40, 18.00)    # "pura manipulación"
 # ── y a partir de aquí, la HERRAMIENTA ──
-T_SUBE = (13.40, 18.20)     # el gráfico subido al analizador
-T_METOD = (18.20, 22.60)    # las 7 metodologías, ICT encendida
-T_NOTAS = (22.60, 27.00)    # sus propias notas, las que culpan al mercado
-T_VER1 = (27.00, 31.60)     # el veredicto: el setup estaba bien
-T_VER2 = (31.60, 36.60)     # …el stop no
-T_CIERRE = (36.60, 41.00)
-TOTAL_INTRO = 13.40
-TOTAL = 41.00
+T_SUBE = (18.00, 22.60)      # el gráfico subido al analizador
+T_METOD = (22.60, 27.00)     # las 7 metodologías, ICT encendida
+T_NOTAS = (27.00, 31.80)     # qué estaba buscando con ese trade
+T_VER1 = (31.80, 36.20)      # el veredicto: el setup estaba bien
+T_VER2 = (36.20, 41.00)      # …el stop no
+T_CIERRE = (41.00, 45.80)
+TOTAL_INTRO = 18.00
+TOTAL = 45.80
 
 
 def datos():
@@ -108,10 +110,6 @@ PAGINA = u"""<!doctype html><meta charset=utf-8>
    vertical-align:-14px;margin-right:6px}
  #cita .q{margin-top:18px;font:700 20px 'JetBrains Mono',monospace;
    letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)}
- /* la botarga: se MUEVE, no se redibuja */
- #mas{position:absolute;left:50%;bottom:60px;width:470px;opacity:0;
-   transform:translateX(-50%)}
- #mas img{width:100%;display:block;filter:drop-shadow(0 24px 60px rgba(0,0,0,.8))}
  /* capturas REALES del analizador */
  #shot{position:absolute;left:60px;right:60px;top:640px;opacity:0}
  #shot img{width:100%;display:block;border-radius:14px;
@@ -140,7 +138,7 @@ PAGINA = u"""<!doctype html><meta charset=utf-8>
  /* ── cierre ── */
  #out{position:absolute;inset:0;opacity:0;display:flex;flex-direction:column;
    align-items:center;justify-content:center;background:#07080b}
- #out .lg{width:520px;filter:brightness(0) invert(1)}
+ #out .lg{width:520px}
  #out .sl{margin-top:34px;font:800 40px Inter,sans-serif;color:#fff;
    letter-spacing:-.01em}
  #out .lgl{position:absolute;left:0;right:0;bottom:@@LEGY@@px;text-align:center;
@@ -155,7 +153,6 @@ PAGINA = u"""<!doctype html><meta charset=utf-8>
   <div id=tit><div class=k></div><div class=g></div></div>
   <div id=golpe><div class=g></div><div class=p></div></div>
   <div id=cita><div class=c></div><div class=q></div></div>
-  <div id=mas><img src="@@MASCOTA@@"></div>
   <div id=shot><img id=shotimg><div class=cap></div></div>
   <div id=nota><div class=cja><div class=lb></div><div class=tx></div></div></div>
   <div id=ver><div class=k></div><div class=q></div><div class=f></div></div>
@@ -312,16 +309,13 @@ function pinta(t){
     gp.querySelector('.p').innerHTML = (t < @@N0@@) ? TXT.p2 : TXT.p3;
   } else gp.style.opacity = 0;
 
-  const ct=E('cita'), ms=E('mas');
+  const ct=E('cita');
   if (t >= @@X0@@){
     const a=tr(t,@@X0@@+0.2,@@X0@@+0.8);
     ct.style.opacity=a;
     ct.querySelector('.c').innerHTML = TXT.cita;
     ct.querySelector('.q').textContent = TXT.citaPie;
-    const m=tr(t,@@X0@@+0.55,@@X0@@+1.35);
-    ms.style.opacity=m;
-    ms.style.transform='translateX(-50%) translateY('+(46*(1-m))+'px) scale('+(0.94+0.06*m)+')';
-  } else { ct.style.opacity=0; ms.style.opacity=0; }
+  } else ct.style.opacity=0;
 
   // ── LA HERRAMIENTA ────────────────────────────────────────────────
   // ⚠️ al salir del intro hay que APAGAR el lienzo del gráfico y las capas
@@ -329,7 +323,7 @@ function pinta(t){
   const sh=E('shot'), vr=E('ver');
   if (t >= TP.sube){
     cx.clearRect(0,0,W,H);
-    E('cita').style.opacity=0; E('mas').style.opacity=0;
+    E('cita').style.opacity=0;
     E('golpe').style.opacity=0; E('tit').style.opacity=0;
   }
   let paso = null;
@@ -400,8 +394,8 @@ TXT = {
     'k_met': 'Your method, not ours',
     'h_met': 'Pick how you<br>actually trade.',
     'cap_met': 'ICT · OTE · Wyckoff · Patterns · Harmonic · Elliott · Technical',
-    'k_notas': 'And tell it what you thought',
-    'h_notas': 'Including the part<br>you got wrong.',
+    'k_notas': 'And what you were looking for',
+    'h_notas': 'Tell it what you<br>were looking for.',
     'cap_notas': 'Trade construction',
     'nota': 'Sweep of the equal lows, displacement with an FVG, I entered on '
             'the retracement. <b>I put the stop tight just under my entry '
@@ -436,6 +430,33 @@ def pasos():
         dict(t0=T_VER1[0], t1=T_VER1[1], cita=T['v1'], pie=T['pv1'], k=T['k_v1']),
         dict(t0=T_VER2[0], t1=T_VER2[1], cita=T['v2'], pie=T['pv2'], k=T['k_v2']),
     ]
+
+
+def logo_oscuro():
+    """El logotipo para fondo oscuro, con su "a" AZUL.
+
+    🔴 Antes se pintaba con `filter: brightness(0) invert(1)`, que aplasta
+    TODO a blanco y luego lo invierte: las letras negras salían bien pero la
+    "a" azul se volvía NARANJA (el inverso de #004feb). Lo cazó el dueño.
+    Aquí se hace por píxel: lo oscuro pasa a blanco y el azul se queda como
+    está. El color azul no se escribe a mano — se toma de los píxeles del
+    propio archivo.
+    """
+    from PIL import Image
+    import numpy as np
+    dest = os.path.join(SALIDA, '_logo_oscuro.png')
+    src = os.path.join(RAIZ, 'scalpel', 'static', 'logo_t.png')
+    a = np.array(Image.open(src).convert('RGBA')).astype(int)
+    al = a[:, :, 3]
+    azul = (al > 60) & (a[:, :, 2] > a[:, :, 0] + 40)
+    out = a.copy()
+    tinta = (al > 0) & (~azul)
+    # la tinta negra se vuelve blanca conservando su antialias
+    out[:, :, 0] = np.where(tinta, 255, out[:, :, 0])
+    out[:, :, 1] = np.where(tinta, 255, out[:, :, 1])
+    out[:, :, 2] = np.where(tinta, 255, out[:, :, 2])
+    Image.fromarray(out.astype('uint8')).save(dest)
+    return dest
 
 
 def parte_metodologias():
@@ -478,6 +499,7 @@ def monta(solo_intro=True):
     import imageio_ffmpeg
     recorta_subida()
     parte_metodologias()
+    logo_oscuro()
     d = datos()
     doc = PAGINA
     for k, v in [('@@W@@', str(W)), ('@@H@@', str(H)), ('@@ORO@@', ORO),
@@ -486,14 +508,12 @@ def monta(solo_intro=True):
                  ('@@TP@@', json.dumps({'sube': T_SUBE[0]})),
                  ('@@CIE@@', '%.2f' % (999 if solo_intro else T_CIERRE[0])),
                  ('@@LOGO@@', 'file://' + os.path.join(
-                     RAIZ, 'scalpel', 'static', 'logo_t.png')),
+                     SALIDA, '_logo_oscuro.png')),
                  ('@@LEMA@@', 'Process over impulse.'),
                  ('@@LEGY@@', '150'),
                  ('@@LEGAL@@', 'Educational content · Not financial advice'),
                  ('@@PASOS@@', json.dumps([] if solo_intro else pasos())),
                  ('@@DATOS@@', json.dumps(d)), ('@@TXT@@', json.dumps(TXT)),
-                 ('@@MASCOTA@@', 'file://' + os.path.join(
-                     RAIZ, 'scalpel', 'static', 'logo4_standard_dark.png')),
                  ('@@D0@@', '%.2f' % T_DIBUJO[0]), ('@@D1@@', '%.2f' % T_DIBUJO[1]),
                  ('@@E0@@', '%.2f' % T_ENTRADA[0]),
                  ('@@S0@@', '%.2f' % T_STOP[0]), ('@@S1@@', '%.2f' % T_SIN_TI[1]),
@@ -548,7 +568,8 @@ def monta(solo_intro=True):
         subprocess.run(
             [ff, '-y', '-loglevel', 'error', '-i', mudo, '-i', wav,
              '-filter_complex',
-             '[1:a]adelay=%d|%d,pan=stereo|c0=c0|c1=c0[a]' % (ms, ms),
+             '[1:a]adelay=%d|%d,volume=%.3f,pan=stereo|c0=c0|c1=c0[a]'
+             % (ms, ms, MARCA_VOL),
              '-map', '0:v:0', '-map', '[a]', '-c:v', 'copy',
              '-c:a', 'aac', '-b:a', '192k', '-shortest',
              '-movflags', '+faststart', dest], check=True)
