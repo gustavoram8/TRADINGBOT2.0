@@ -5945,7 +5945,10 @@ def camos():
         open_now, when = festive_window(s)
         if not open_now:
             camo_locked[s] = when.strftime('%Y-%m-%d') if when else ''
+    # el mes del viaje, solo si un admin lo tiene puesto (el aviso de arriba)
+    _demo = _admin_demo() or {}
     return render_template('camos.html',
+                           viaje_mes=_demo.get('season'),
                            camo_owned=owned, camo_active=active,
                            camo_ready=sorted(CAMO_READY), camo_authed=authed,
                            camo_paypal=PAYPAL_ENABLED,
@@ -12168,6 +12171,13 @@ def admin_demo_set():
     if not d:
         abort(400)
     session['_admin_demo'] = d
+    # 🔴 El viaje en el tiempo aterriza en la TIENDA, no en /app. Viajar no te
+    #    pone ningún camo —solo cambia el mes— y mandar al dueño a /app le
+    #    dejaba delante el camo que ya tenía puesto, con toda la pinta de que
+    #    el viaje no había hecho nada. La tanda del mes se ve en /cosmetics,
+    #    que es adonde iba de verdad.
+    if d.get('season'):
+        return redirect(url_for('camos'))
     return redirect(url_for('app_view'))
 
 

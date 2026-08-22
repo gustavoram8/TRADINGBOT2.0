@@ -272,6 +272,22 @@
   <a href="/" class="logo"><img src="/static/logo_t.png" alt="Tradeable" class="logo-img" onerror="this.style.display='none';" /></a>
   <a href="/app" class="back-link" data-i18n="nav.backApp">← Back to app</a>
 </nav>
+{# 🔴 Aviso de VIAJE EN EL TIEMPO. Sin él, un admin que se olvida de salir del
+   demo ve la tienda de otro mes y la lee como un bug del sitio. Va arriba del
+   todo, en dorado y con la salida al lado — no en letra chica. #}
+{% if viaje_mes %}
+<div style="background:#f2b332;color:#1a1206;padding:11px 20px;font:600 14px/1.4 Inter,sans-serif;
+            display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;">
+  <span>🕐 <b>Viaje en el tiempo activo</b> — estás viendo la tienda de <b>{{ viaje_mes }}</b>.
+    Los camos, marcos y cursores de abajo son los de ese mes.</span>
+  <form method="POST" action="/admin/demo/clear" style="margin:0;">
+    <input type="hidden" name="next" value="/app">
+    <button style="background:#1a1206;color:#f2b332;border:0;border-radius:6px;
+                   padding:6px 13px;font:700 13px Inter,sans-serif;cursor:pointer;">
+      Volver al presente</button>
+  </form>
+</div>
+{% endif %}
 <section class="hero">
   <div class="eyebrow" data-i18n="camos.eyebrow">Cosmetics Store</div>
   <h1 data-i18n="camos.title">Cosmetics</h1>
