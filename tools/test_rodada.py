@@ -69,9 +69,9 @@ with A.app.app_context():
          tanda_en('2026-10') == {'gridiron', 'sakura', 'cur-gridiron',
                                  'cur-coin', 'cur-anchor', 'camo-gridiron'},
          str(tanda_en('2026-10')))
-    caso('noviembre 2026 = Nile',
+    caso('noviembre 2026 = Nile COMPLETO (camo construido 2026-08-22)',
          tanda_en('2026-11') == {'nile', 'terminal', 'cur-nile',
-                                 'cur-chart', 'cur-compass'})
+                                 'cur-chart', 'cur-compass', 'camo-nile'})
     caso('diciembre 2026 = Colosseum',
          tanda_en('2026-12') == {'colosseum', 'cartography', 'cur-colosseum',
                                  'cur-bell', 'cur-bulb'})

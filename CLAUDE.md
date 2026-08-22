@@ -417,8 +417,16 @@ cada mes, si un mes no hay tanda el sistema se ve muerto).
   camo; sept sin TARJETA de gridiron — el slug sí sale en `window.CAMO_STATE.ready`, que es una
   lista de datos, no una tarjeta). ⚠️ Botargas del ilustrador PENDIENTES (las tiene el dueño);
   mientras, muñeco-flecha por defecto.
-· **FALTA del paso 5:** los camos de los 10 meses siguientes (arte mensual que encarga el usuario;
-  el siguiente es **Nile, mes real noviembre**).
+· ✅ **CAMO NILE (mes real noviembre) — HECHO (2026-08-22).** El Egipto del río, **DOS looks**
+  (patrón Chronicles, NO DARK_ALWAYS): ☀️ desierto a pleno sol (pirámides con cara iluminada/en
+  sombra, obelisco, palmeras, papiros, el Nilo en lapislázuli) · 🌙 la MISMA geometría de noche
+  (luna con mordisco, estrellas de 4 puntas con rechazo de distancia — regla Mission —, reflejo
+  lunar roto en trazos sobre el agua). Adorno de esquina: la FALUCA (vela latina) navegando el
+  río. Generador `tools/build_nile_camo.py` (una geometría, dos paletas, idempotente). Acento día
+  = lapislázuli del río; acento noche = oro. Piel determinista `camo_skin_nile.jpg`.
+  `test_rodada` 23/23 (noviembre = 6 piezas con camo-nile). Botargas del ilustrador pendientes.
+· **FALTA del paso 5:** los camos de los 9 meses siguientes (arte mensual que encarga el usuario;
+  el siguiente es **Colosseum, mes real diciembre**).
   Cada uno = tema CSS + slug en `CAMO_SLUGS`/`CAMO_READY`/`CAMO_NAMES` + una línea en
   `CAMO_WHEEL_DESCS` ×4 idiomas; `_publish_roulette_camos()` lo publica solo al arrancar.
 
@@ -1057,7 +1065,7 @@ en los T&C públicos.
 reskinea SOLO el fondo/colores del sitio (layout/paneles/posiciones NO cambian) + swap de la mascota en
 el Quiz (welcome + pass/fail). **Infra base (cableada, estable):** `User.active_camo`/`owned_camos` +
 helpers `camos_owned()/add_camo()/owns_camo()` (admin posee TODO); `CAMO_SLUGS` (20 slugs) y
-`CAMO_READY` en app.py — **hoy `{'rising-sun','pole','premium','fourth','naval','mission','blackflag','standard','chronicles','gridiron'}`**, el resto pendiente; endpoints
+`CAMO_READY` en app.py — **hoy `{'rising-sun','pole','premium','fourth','naval','mission','blackflag','standard','chronicles','gridiron','nile'}`**, el resto pendiente; endpoints
 `/api/camo/activate` `/api/camo/deactivate`; `/app` pinta `body.camo-<slug>` pre-paint (sin FOUC);
 tienda `/camos` con ownership/compra. ✅ **TIENDA CABLEADA A PAYPAL (2026-07-30, inerte sin claves):**
 decisión del usuario = camos SOLO por PayPal ($1.99 themes / $4.99 seasonal, asume la comisión fija;
