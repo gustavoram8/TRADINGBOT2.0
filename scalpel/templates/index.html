@@ -785,6 +785,32 @@
     body.camo-standard.light      .quiz-result-mascot.fail { content: url('/static/logo4_standard.png'); }
     body.camo-standard:not(.light) .quiz-result-mascot.fail { content: url('/static/logo4_standard_dark.png'); }
 
+    /* American Football — botargas entregadas por el dueño el 2026-08-22.
+       welcome = el jugador con el balón y el pulgar arriba; pass = la patada
+       que entra entre los postes; fail = el petardo que le explota en la cara.
+       ⚠️ gridiron es DARK_ALWAYS (el partido es de noche): el body NUNCA
+       lleva .light, así que las botargas keyean por .camo-day igual que
+       premium — con .light no cambiarían jamás y el modo claro se quedaría
+       con la flecha naranja. */
+    body.camo-gridiron.camo-day      .quiz-welcome-logo { content: url('/static/logo2_gridiron.png'); }
+    body.camo-gridiron:not(.camo-day) .quiz-welcome-logo { content: url('/static/logo2_gridiron_dark.png'); }
+    body.camo-gridiron .quiz-welcome-logo { transform: translateY(-50%) rotate(0deg); }
+    body.camo-gridiron.camo-day      .quiz-result-mascot.pass { content: url('/static/logo3_gridiron.png'); }
+    body.camo-gridiron:not(.camo-day) .quiz-result-mascot.pass { content: url('/static/logo3_gridiron_dark.png'); }
+    body.camo-gridiron.camo-day      .quiz-result-mascot.fail { content: url('/static/logo4_gridiron.png'); }
+    body.camo-gridiron:not(.camo-day) .quiz-result-mascot.fail { content: url('/static/logo4_gridiron_dark.png'); }
+
+    /* Nile — welcome = el faraón con su nemes; pass = en la cumbre de la
+       pirámide haciendo la V; fail = la caída al río entre los templos.
+       Camo de DOS looks (día / noche) → keyea por .light, como naval. */
+    body.camo-nile.light      .quiz-welcome-logo { content: url('/static/logo2_nile.png'); }
+    body.camo-nile:not(.light) .quiz-welcome-logo { content: url('/static/logo2_nile_dark.png'); }
+    body.camo-nile .quiz-welcome-logo { transform: translateY(-50%) rotate(0deg); }
+    body.camo-nile.light      .quiz-result-mascot.pass { content: url('/static/logo3_nile.png'); }
+    body.camo-nile:not(.light) .quiz-result-mascot.pass { content: url('/static/logo3_nile_dark.png'); }
+    body.camo-nile.light      .quiz-result-mascot.fail { content: url('/static/logo4_nile.png'); }
+    body.camo-nile:not(.light) .quiz-result-mascot.fail { content: url('/static/logo4_nile_dark.png'); }
+
     /* EL DRAGÓN — cuarto slot, que ningún otro camo tiene: vuela arriba a la
        derecha de la bienvenida y le escupe fuego al caballero (su llama sale
        hacia la izquierda, que es donde vive la botarga).

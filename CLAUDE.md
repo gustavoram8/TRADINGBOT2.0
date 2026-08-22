@@ -415,8 +415,7 @@ cada mes, si un mes no hay tanda el sistema se ve muerto).
   VENTA — cazado por test). Piel `camo_skin_gridiron.jpg` generada DETERMINISTA (div normal con el
   mismo background, nada de capturar pseudo-elementos). `test_rodada` 23/23 (oct = 6 piezas con
   camo; sept sin TARJETA de gridiron — el slug sí sale en `window.CAMO_STATE.ready`, que es una
-  lista de datos, no una tarjeta). ⚠️ Botargas del ilustrador PENDIENTES (las tiene el dueño);
-  mientras, muñeco-flecha por defecto.
+  lista de datos, no una tarjeta).
 · ✅ **CAMO NILE (mes real noviembre) — HECHO (2026-08-22).** El Egipto del río, **DOS looks**
   (patrón Chronicles, NO DARK_ALWAYS): ☀️ desierto a pleno sol (pirámides con cara iluminada/en
   sombra, obelisco, palmeras, papiros, el Nilo en lapislázuli) · 🌙 la MISMA geometría de noche
@@ -424,7 +423,44 @@ cada mes, si un mes no hay tanda el sistema se ve muerto).
   lunar roto en trazos sobre el agua). Adorno de esquina: la FALUCA (vela latina) navegando el
   río. Generador `tools/build_nile_camo.py` (una geometría, dos paletas, idempotente). Acento día
   = lapislázuli del río; acento noche = oro. Piel determinista `camo_skin_nile.jpg`.
-  `test_rodada` 23/23 (noviembre = 6 piezas con camo-nile). Botargas del ilustrador pendientes.
+  `test_rodada` 23/23 (noviembre = 6 piezas con camo-nile).
+· ✅ **LAS 6 BOTARGAS DE gridiron Y nile, RECORTADAS Y CABLEADAS (2026-08-22).** Entregadas por el
+  dueño. gridiron: jugador con balón / patada entre los postes / petardo que le explota. nile:
+  faraón con nemes / la V en la cumbre de la pirámide / la caída al río entre templos.
+  🔴 **Llegaron con el CUADRICULADO de transparencia HORNEADO en el píxel** (el generador exporta
+  la vista de su visor): cuadros de 29 px alternando gris 213 y blanco 253, en RGB y sin alfa. Las
+  de bienvenida sí venían con blanco plano. Herramienta nueva **`tools/limpia_botarga_nueva.py`**
+  (`mirar` numera las bolsas cerradas, `cortar` inunda desde el borde; **jamás borra bolsas
+  encerradas sola** — la lección de julio sigue en pie: aquí los blancos legítimos eran ojos,
+  dientes, guantes, botas, el "88" de la camiseta y la espuma del río).
+  ⚠️ **Tres cosas que solo se vieron MIRANDO la lámina sobre magenta, no leyendo el código:**
+  1. **La sombra del suelo NO se borra, se reconstruye.** Llega pintada semitransparente ENCIMA
+     del tablero: quitarla deja la botarga flotando (las del sitio la llevan, mírese
+     `logo3_naval`), dejarla tal cual enseña los cuadros grises dentro de la elipse. Se resuelve
+     con la regla de multiplicar — un gris G sobre blanco **es** tinta negra al alfa `255-G`.
+  2. 🔴 **Quitar el tablero por GEOMETRÍA no funciona.** La lámina viene reescalada: los cuadros
+     miden "29 px de media" y la rejilla se desfasa a lo ancho, así que la mejor fase global
+     acierta el **52%** — o sea nada — y el resultado es un **tablero fantasma en el alfa** que se
+     ve como cuadros oscuros sobre cualquier fondo. Lo que sí funciona es sin geometría: subir
+     cada píxel del fondo hasta su **techo local** (ventana 33 px > un cuadro), con tope de un
+     escalón. El techo se mide SOLO sobre el fondo alcanzable desde el borde — si no, un zapato
+     blanco pegado a la sombra se la come.
+  3. El suavizado del borde va **solo en la orilla** (dilatación de 2 px de lo que se quitó). La
+     primera versión graduaba TODO píxel blanquecino y dejaba medio transparentes ojos, botas y
+     el número de la camiseta.
+  **`tools/botarga_oscura.py`** hace el `_dark`: flecha azul→naranja con el mapeo
+  `(r,g,b)→(b, 0.6561·b, r)` **muestreado de la pareja real** `logo2_standard`/`_dark` (lo
+  reproduce con error 0 sobre sus 159.726 px); el contorno queda fuera con `b>=31`.
+  🔑 **Los dos camos NO keyean igual y confundirlos no da ningún error:** nile va por `.light`
+  (dos looks) y **gridiron por `.camo-day`**, porque es DARK_ALWAYS y su body nunca lleva
+  `.light` — con el selector equivocado la botarga se queda clavada en la variante oscura para
+  siempre. Los archivos se recortan a su bbox + 2% de aire: la CSS escala el LIENZO ENTERO
+  (`height:120px` / `70vh`), así que un margen grande encoge la figura.
+  `tools/test_botargas_nuevas.py` **40/40** (12 archivos + navegador real, leyendo qué PNG sirve
+  `getComputedStyle().content` en claro y oscuro).
+  ⚠️ El PASS de nile es la pirámide entera con el muñeco diminuto en la cumbre: a los 120 px de
+  `.quiz-result-mascot` la flecha queda a ~15 px. Es el arte tal cual llegó — si al dueño le
+  parece pequeño, se reencuadra el PNG, no la CSS.
 · 🕐 **VIAJE EN EL TIEMPO PARA REVISAR TANDAS FUTURAS (2026-08-22).** La tienda esconde las
   temporadas futuras a propósito, así que **ni el dueño podía revisar un camo/marco/cursor antes de
   estrenarlo**. Nuevo escenario `season` en `/admin/demo` (panel: selector con los 12 meses y SU
