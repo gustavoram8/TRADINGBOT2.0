@@ -1553,6 +1553,16 @@
     }
     .approach-hint::before { content: '💡 '; }
     .pill.has-tip { position: relative; }
+    /* 🔴 Los tooltips de metodología miden 360px anclados a la IZQUIERDA de su
+       pastilla; aun ocultos (visibility:hidden SIGUE contando para el overflow)
+       empujaban el ancho del documento 165-205px entre ~900 y ~1200px de
+       viewport → scrollbar horizontal y "elementos montados" al angostar la
+       ventana (lo cazó el hermano del dueño). `clip` y no `hidden`: hidden
+       convierte a html en contenedor de scroll y rompe position:sticky;
+       clip solo PROHÍBE el desplazamiento en ese eje. El contenido que
+       legítimamente scrollea en horizontal ya vive en contenedores propios
+       con overflow-x:auto, así que nada pierde su scroll. */
+    html { overflow-x: clip; }
     /* A .card has backdrop-filter, which creates a stacking context — so an
        open .pill-tip would otherwise be painted BEHIND later sibling cards
        (Confluences, etc.). Lift whichever card currently owns an open tip. */
@@ -1572,7 +1582,7 @@
     }
     .pill.has-tip:hover .pill-tip { opacity: 1; visibility: visible; transform: translateY(0); }
     .pill-tip::before {
-      content: ''; position: absolute; bottom: 100%; left: 24px;
+      content: ''; position: absolute; bottom: 100%; left: var(--flecha, 24px);
       border: 6px solid transparent; border-bottom-color: #A06BF0;
     }
     .pill-tip-h { display: block; font-size: 11.5px; font-weight: 600; line-height: 1.45;
@@ -30954,6 +30964,33 @@
     if (!document.hidden) mirar();
   });
   window.addEventListener('focus', mirar);
+})();
+</script>
+
+<script>
+/* ── Tooltips de metodología: que no mueran cortados en el borde ─────────
+   El tip va anclado a la izquierda de su pastilla; en pastillas cercanas al
+   borde derecho se saldría de pantalla (y con html{overflow-x:clip} se
+   cortaría en seco). CSS puro no puede saberlo — el grupo envuelve en dos
+   líneas y "la última pastilla" no es siempre la más a la derecha — así que
+   al abrir se mide y se empuja lo justo. La flecha (::before) se recoloca
+   con --flecha para seguir señalando a SU pastilla. */
+(function () {
+  'use strict';
+  document.querySelectorAll('.pill.has-tip').forEach(function (p) {
+    p.addEventListener('mouseenter', function () {
+      var t = p.querySelector('.pill-tip');
+      if (!t) return;
+      t.style.left = '0px';
+      t.style.removeProperty('--flecha');
+      var r = t.getBoundingClientRect();
+      var sobra = r.right - (window.innerWidth - 12);
+      if (sobra > 0) {
+        t.style.left = (-sobra) + 'px';
+        t.style.setProperty('--flecha', (24 + sobra) + 'px');
+      }
+    });
+  });
 })();
 </script>
 

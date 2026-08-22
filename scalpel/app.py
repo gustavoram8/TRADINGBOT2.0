@@ -7642,7 +7642,17 @@ def register():
         # Age: a concrete birth date, not just a checkbox. The clickwrap below
         # still runs — the two are evidence of different things (a fact vs. an
         # agreement) and together they are the under-18 defence.
-        birth_date, bd_err = _parse_birth_date(request.form.get('birth_date'))
+        # El formulario manda la fecha en TRES campos (birth_y/m/d, selectores
+        # con el mes por nombre — ver register.html); `birth_date` entero se
+        # sigue aceptando por los tests y cualquier cliente viejo.
+        raw_bd = (request.form.get('birth_date') or '').strip()
+        if not raw_bd:
+            y = (request.form.get('birth_y') or '').strip()
+            m = (request.form.get('birth_m') or '').strip()
+            d = (request.form.get('birth_d') or '').strip()
+            if y and m and d:
+                raw_bd = '%s-%s-%s' % (y, m.zfill(2), d.zfill(2))
+        birth_date, bd_err = _parse_birth_date(raw_bd)
         if bd_err == 'underage':
             return render_template('register.html', next=_safe_next(), error='underage', username=username, email=email)
         if bd_err:

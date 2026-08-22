@@ -66,11 +66,40 @@
                data-i18n-ph="reg.passwordHint" placeholder="8+ characters, with a letter and a number" required />
       </div>
       <div class="field">
-        <label for="birth_date" data-i18n="reg.dob">Date of birth</label>
-        {# min/max are only browser-side niceties; the server does the real
-           18+ check, so a static min and no max is fine here. #}
-        <input type="date" id="birth_date" name="birth_date" autocomplete="bday" required
-               min="1906-01-01" />
+        <label for="birth_m" data-i18n="reg.dob">Date of birth</label>
+        {# 🔴 Tres selectores en vez de <input type=date>, y el motivo es el
+           FORMATO: el control nativo lo formatea el navegador según el idioma
+           del SISTEMA de quien mira, y la página no puede forzarlo — un
+           visitante con el sistema en español veía dd/mm/aaaa aunque el sitio
+           estuviera en inglés (lo cazó el hermano del dueño). Con el mes por
+           NOMBRE ya no existe ningún formato que confundir, y de paso teclear
+           el año deja de pelearse con el date-picker.
+           · El orden del DOM es el de USA (mes-día-año); auth.js pone la clase
+             `dmy` en es/fr/pt y el CSS los reordena con `order`.
+           · Los nombres de mes los pone auth.js con Intl según el idioma; el
+             inglés server-rendered es el fallback sin JS.
+           · El servidor sigue recibiendo `birth_date` como YYYY-MM-DD si un
+             cliente viejo lo manda; si no, compone desde birth_y/m/d. El
+             chequeo 18+ real siempre fue server-side y no se movió. #}
+        <div class="dob-row" id="dob-row">
+          <select id="birth_m" name="birth_m" autocomplete="bday-month" required class="dob-m">
+            <option value="" disabled selected data-i18n="reg.dobMonth">Month</option>
+            {% for m in ['January','February','March','April','May','June','July',
+                         'August','September','October','November','December'] %}
+            <option value="{{ loop.index }}">{{ m }}</option>
+            {% endfor %}
+          </select>
+          <select id="birth_d" name="birth_d" autocomplete="bday-day" required class="dob-d">
+            <option value="" disabled selected data-i18n="reg.dobDay">Day</option>
+            {% for d in range(1, 32) %}<option value="{{ d }}">{{ d }}</option>{% endfor %}
+          </select>
+          <select id="birth_y" name="birth_y" autocomplete="bday-year" required class="dob-y">
+            <option value="" disabled selected data-i18n="reg.dobYear">Year</option>
+            {# El año más nuevo útil es "hoy − 18" (el server rechaza menores):
+               2008 vale hasta 2027; auth.js añade los que falten cada año. #}
+            {% for y in range(2008, 1905, -1) %}<option value="{{ y }}">{{ y }}</option>{% endfor %}
+          </select>
+        </div>
         <div class="consent-note" style="margin-top:6px;" data-i18n="reg.dobHint">You must be 18 or older to create an account.</div>
       </div>
       <label class="remember-row">

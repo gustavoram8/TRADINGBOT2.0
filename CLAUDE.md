@@ -633,6 +633,32 @@ claro y oscuro → volver → salir, **0 errores JS**.
   origin/claude/gallant-volta-i7cqmf && git config pull.ff only` + restart. Tras eso el deploy de
   siempre vuelve a funcionar.
 
+## 🐛 DOS BUGS CAZADOS POR EL HERMANO (2026-08-22)
+1. 🔴 **Scroll lateral fantasma en `/app` entre ~900 y ~1200px** ("los elementos se montan al
+   angostar"). Causa REAL: los 6 tooltips de metodología (`.pill-tip`, 360px, anclados a la
+   izquierda de su pastilla) — **una caja `visibility:hidden` SIGUE contando para el overflow**
+   del documento → 165-205px de scroll horizontal. El cajón de ayuda `#nxh` fue el primer
+   sospechoso y quedó ABSUELTO probando (quitarlo no cambiaba nada; un `fixed` no crea scroll).
+   **Fix:** `html{overflow-x:clip}` en index.html (`clip`, NO `hidden`: hidden convierte a html
+   en contenedor de scroll y rompe sticky) + IIFE al final del body que al abrir un tip lo
+   EMPUJA dentro del viewport (CSS puro no sabe cuál pastilla queda al borde: el grupo envuelve
+   en 2 líneas) recolocando la flecha vía `--flecha`. Verificado: 0px de scroll lateral REAL en
+   6 anchos, tip de Elliott Wave abierto dentro, 0 errores JS.
+   ⚠️ **`scrollWidth` MIENTE con `clip`**: sigue reportando el contenido recortado. Para saber si
+   hay scroll de verdad hay que intentar `window.scrollTo(500,0)` y leer `scrollX`.
+   ⚠️ Dos FALSOS positivos clásicos al sondear solapes: los hijos de un velo `opacity:0`
+   (syn-pdf) declaran opacity 1 (no se hereda, se compone), y el acordeón PLEGADO de la tabla
+   comparativa de la landing (`.cmp-panel{max-height:0;overflow:hidden}`) deja cajas fantasma
+   con rect. La landing quedó LIMPIA — no tenía nada real.
+2. 🔴 **La fecha de nacimiento del registro "no estaba en formato USA".** El `<input type=date>`
+   nativo lo formatea el navegador según el idioma del SISTEMA de quien mira y la página no
+   puede forzarlo. **Fix:** tres selectores Mes(NOMBRE)/Día/Año — con el mes por nombre no
+   existe formato que confundir. Orden USA en el DOM; auth.js pone `dmy` en es/fr/pt (CSS
+   `order` reordena) y pone los nombres de mes con `Intl` según el idioma del sitio; años
+   futuros se auto-añaden (el HTML llega a 2008 = hoy−18). El server compone birth_y/m/d y
+   SIGUE aceptando `birth_date` entero (tests/clientes viejos). Suites: registro_doble 17/17,
+   codigo_verificacion 13/13, correo_canonico 24/24, boot 8/8 + 5 casos nuevos del compositor.
+
 ## 🕐 LAS FECHAS SE GUARDABAN EN HORA DE BERLÍN (2026-08-13) — leer antes de tocar fechas
 🔴 **El VPS está en Europa/Berlín.** Todo el código guarda con `datetime.now(timezone.utc)`, pero
 las columnas son `DateTime` SIN zona, y al insertar un valor CON zona en una columna sin zona

@@ -42,6 +42,9 @@ const AUTH_I18N = {
     'reg.errTerms': 'You must be 18 or older and accept the Terms & Conditions to create an account.',
     'reg.terms': 'I confirm I am <strong>18 years of age or older</strong> and I have read and accepted the <a href="/terms" target="_blank" rel="noopener">Terms &amp; Conditions</a> and <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a>.',
     'reg.dob': 'Date of birth',
+    'reg.dobMonth': 'Month',
+    'reg.dobDay': 'Day',
+    'reg.dobYear': 'Year',
     'reg.dobHint': 'You must be 18 or older to create an account.',
     'reg.errUnderage': 'You must be at least 18 years old to use Tradeable Academy.',
     'reg.errWeak': 'That password is too easy to guess. Avoid common passwords and your own username or email.',
@@ -115,6 +118,9 @@ const AUTH_I18N = {
     'reg.errTerms': 'Debes ser mayor de 18 años y aceptar los Términos y Condiciones para crear una cuenta.',
     'reg.terms': 'Confirmo que soy <strong>mayor de 18 años</strong> y he leído y aceptado los <a href="/terms" target="_blank" rel="noopener">Términos y Condiciones</a> y la <a href="/privacy" target="_blank" rel="noopener">Política de Privacidad</a>.',
     'reg.dob': 'Fecha de nacimiento',
+    'reg.dobMonth': 'Mes',
+    'reg.dobDay': 'Día',
+    'reg.dobYear': 'Año',
     'reg.dobHint': 'Debes tener 18 años o más para crear una cuenta.',
     'reg.errUnderage': 'Debes tener al menos 18 años para usar Tradeable Academy.',
     'reg.errWeak': 'Esa contraseña es demasiado fácil de adivinar. Evita contraseñas comunes y tu propio usuario o correo.',
@@ -188,6 +194,9 @@ const AUTH_I18N = {
     'reg.errTerms': 'Vous devez avoir 18 ans ou plus et accepter les Conditions Générales pour créer un compte.',
     'reg.terms': "Je confirme que j'ai <strong>18 ans ou plus</strong> et j'ai lu et accepté les <a href=\"/terms\" target=\"_blank\" rel=\"noopener\">Conditions Générales</a> et la <a href=\"/privacy\" target=\"_blank\" rel=\"noopener\">Politique de Confidentialité</a>.",
     'reg.dob': 'Date de naissance',
+    'reg.dobMonth': 'Mois',
+    'reg.dobDay': 'Jour',
+    'reg.dobYear': 'Année',
     'reg.dobHint': 'Vous devez avoir 18 ans ou plus pour créer un compte.',
     'reg.errUnderage': 'Vous devez avoir au moins 18 ans pour utiliser Tradeable Academy.',
     'reg.errWeak': 'Ce mot de passe est trop facile à deviner. Évitez les mots de passe courants et votre propre pseudo ou e-mail.',
@@ -261,6 +270,9 @@ const AUTH_I18N = {
     'reg.errTerms': 'Você precisa ter 18 anos ou mais e aceitar os Termos e Condições para criar uma conta.',
     'reg.terms': 'Confirmo que tenho <strong>18 anos ou mais</strong> e li e aceitei os <a href="/terms" target="_blank" rel="noopener">Termos e Condições</a> e a <a href="/privacy" target="_blank" rel="noopener">Política de Privacidade</a>.',
     'reg.dob': 'Data de nascimento',
+    'reg.dobMonth': 'Mês',
+    'reg.dobDay': 'Dia',
+    'reg.dobYear': 'Ano',
     'reg.dobHint': 'Você precisa ter 18 anos ou mais para criar uma conta.',
     'reg.errUnderage': 'Você precisa ter pelo menos 18 anos para usar o Tradeable Academy.',
     'reg.errWeak': 'Essa senha é fácil demais de adivinhar. Evite senhas comuns e o seu próprio usuário ou e-mail.',
@@ -325,4 +337,31 @@ const AUTH_I18N = {
   document.querySelectorAll('[data-i18n-html]').forEach((el) => {
     el.innerHTML = t(el.getAttribute('data-i18n-html'));
   });
+
+  // ── fecha de nacimiento (solo /register) ──
+  // El mes va por NOMBRE para que no exista ningún formato dd/mm vs mm/dd que
+  // confundir. Los nombres salen de Intl según el idioma del SITIO (no del
+  // sistema); el inglés server-rendered queda de fallback sin JS.
+  const dob = document.getElementById('dob-row');
+  if (dob) {
+    if (lang !== 'en') {
+      dob.classList.add('dmy');            // día antes que mes fuera de EN
+      const sm = document.getElementById('birth_m');
+      for (const op of sm.options) {
+        if (!op.value) continue;
+        let n = new Date(2000, op.value - 1, 1)
+                  .toLocaleDateString(lang, { month: 'long' });
+        op.textContent = n.charAt(0).toUpperCase() + n.slice(1);
+      }
+    }
+    // El HTML llega hasta 2008 (18 años antes de 2026). A partir de 2027 van
+    // faltando años válidos: se añaden aquí y el server sigue juzgando 18+.
+    const sy = document.getElementById('birth_y');
+    const tope = new Date().getFullYear() - 18;
+    for (let y = 2009; y <= tope; y++) {
+      const op = document.createElement('option');
+      op.value = y; op.textContent = y;
+      sy.insertBefore(op, sy.options[1]);  // el más nuevo arriba, como el resto
+    }
+  }
 })();
