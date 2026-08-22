@@ -650,6 +650,18 @@ claro y oscuro → volver → salir, **0 errores JS**.
    (syn-pdf) declaran opacity 1 (no se hereda, se compone), y el acordeón PLEGADO de la tabla
    comparativa de la landing (`.cmp-panel{max-height:0;overflow:hidden}`) deja cajas fantasma
    con rect. La landing quedó LIMPIA — no tenía nada real.
+1b. 🔴 **Y el arreglo NO se vio al desplegar: salían las CLAVES en crudo**
+   (`reg.dobMonth`/`reg.dobDay`/`reg.dobYear`). No era un fallo del arreglo —
+   era **caché de estáticos**: nginx sirve `/static/` con `max-age=604800`
+   (7 días) y Cloudflare cachea delante, así que el navegador tenía el
+   `auth.js` VIEJO con el HTML NUEVO. `Ctrl+F5` no basta: no toca la copia de
+   Cloudflare. 🔑 **Fix permanente: helper `estatico('auth.js')`** en app.py
+   (context processor) que pega `?v=<mtime>` — la URL cambia sola al desplegar
+   y una URL nueva no la tiene cacheada nadie. Aplicado a las 15 referencias de
+   `auth.js`/`auth.css`. **Al añadir un JS/CSS nuevo, usarlo**; un número de
+   versión a mano es justo lo que se olvida. ⚠️ El síntoma es traicionero: la
+   página no falla, sale a medias — y parece un bug del código recién escrito.
+
 2. 🔴 **La fecha de nacimiento del registro "no estaba en formato USA".** El `<input type=date>`
    nativo lo formatea el navegador según el idioma del SISTEMA de quien mira y la página no
    puede forzarlo. **Fix:** tres selectores Mes(NOMBRE)/Día/Año — con el mes por nombre no

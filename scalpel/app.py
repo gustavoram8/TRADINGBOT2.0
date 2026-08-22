@@ -772,9 +772,44 @@ def _mentorship_kill_switch():
     abort(404)
 
 
+_ESTATICO_V = {}
+
+
+def estatico(nombre):
+    """URL de un archivo de `static/` con su versión pegada: `…/auth.js?v=…`.
+
+    🔴 POR QUÉ EXISTE. nginx sirve `/static/` con `max-age=604800` (7 días) y
+    Cloudflare cachea delante, así que al cambiar un JS o un CSS el visitante
+    —y el borde de Cloudflare— siguen con el viejo durante una semana. Con el
+    HTML nuevo y el JS viejo la página no falla: hace algo PEOR, sale a medias.
+    Pasó de verdad el 2026-08-22: los tres selectores de la fecha de nacimiento
+    aparecieron rotulados `reg.dobMonth` / `reg.dobDay` / `reg.dobYear` —el HTML
+    nuevo pedía claves que el `auth.js` cacheado no tenía— y `Ctrl+F5` no lo
+    arregla, porque no toca la copia de Cloudflare.
+
+    La versión es la fecha de modificación del archivo: cambia sola al
+    desplegar, y una URL nueva no la tiene cacheada NADIE. Es preferible a un
+    número a mano, que es justo lo que se olvida.
+
+    ⚠️ Se cachea en memoria por proceso: `os.stat` en cada render de cada
+    etiqueta sería tocar disco por cosa. Los workers se reinician en cada
+    deploy, así que el valor no se queda viejo.
+    """
+    if nombre not in _ESTATICO_V:
+        try:
+            marca = int(os.path.getmtime(os.path.join(app.static_folder, nombre)))
+        except OSError:
+            marca = 0          # si el archivo no está, que no reviente el render
+        _ESTATICO_V[nombre] = marca
+    return '%s?v=%d' % (url_for('static', filename=nombre), _ESTATICO_V[nombre])
+
+
 @app.context_processor
 def inject_feature_flags():
     return {
+        # Ver `estatico()`: sin esto, un cambio en un JS/CSS tarda 7 días en
+        # llegarle al visitante por la caché de nginx + Cloudflare.
+        'estatico': estatico,
         # `abs_url` en las plantillas: la tarjeta social (`og:image`) necesita
         # una URL ABSOLUTA — ninguna red social resuelve rutas relativas — y
         # este helper ya antepone SITE_URL cuando está puesta.

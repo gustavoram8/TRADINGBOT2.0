@@ -7,7 +7,7 @@
   {% set meta_desc = 'Create your Tradeable Academy account and start reviewing your trades.' %}
   {% include '_iconos.html' %}
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/static/auth.css" />
+  <link rel="stylesheet" href="{{ estatico('auth.css') }}" />
 </head>
 <body>
   <script>
@@ -125,7 +125,7 @@
 
   <div class="legal" data-i18n="common.legal">For educational purposes only · Not financial advice</div>
 
-  <script src="/static/auth.js"></script>
+  <script src="{{ estatico('auth.js') }}"></script>
   <script>
     // Collect browser fingerprint and embed it in the form before submit.
     (function () {
