@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tradeable Academy — Creators</title>
+  {# 🔴 `noindex`: el enlace vive en una historia destacada de Instagram, no en
+     Google. Y por eso mismo esta página NO está en /sitemap.xml ni en ningún
+     menú del sitio — se llega por el enlace o no se llega. #}
+  <meta name="robots" content="noindex, nofollow" />
+  {% set meta_desc = 'Apply to collaborate with Tradeable Academy as a content creator.' %}
+  {% include '_iconos.html' %}
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  {# ⚠️ La hoja de fuentes va NO BLOQUEANTE (`media=print` + `onload`). Una
+     hoja pendiente en el <head> bloquea la ejecución de cualquier <script>
+     posterior, así que con Google Fonts lento —o inalcanzable— la página se
+     quedaba en inglés hasta que la petición se rendía. Y justo aquí importa:
+     el visitante llega desde el navegador interno de Instagram, que no es
+     precisamente rápido. Medido en el contenedor (red externa cortada): con la
+     hoja bloqueante el idioma tardaba >1,5 s en aplicarse. #}
+  <link rel="stylesheet" media="print" onload="this.media='all'"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" />
+  <noscript><link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" /></noscript>
+  <style>
+    /* Misma casa que las historias de Instagram: grafito, azul #004feb medido
+       del logotipo, banda sólida a sangre, mono para las etiquetas. NADA del
+       producto — ni pestañas, ni barra lateral, ni Synapse. */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --fondo:#0b0d12; --panel:#12151d; --panel2:#171b25; --linea:#242938;
+      --linea2:#333a4d; --tinta:#eef0f5; --apagado:#8e96a8;
+      --azul:#004feb; --azulc:#4d84ff;
+      --ok:#2fa572; --err:#e0524d;
+    }
+    body { background:var(--fondo); color:var(--tinta); font-family:Inter,system-ui,sans-serif;
+           font-size:15px; line-height:1.6; -webkit-font-smoothing:antialiased; }
+
+    /* — banda de cabecera, sólida y a sangre — */
+    .banda { background:var(--azul); color:#07080b; display:flex; align-items:center;
+             justify-content:space-between; gap:16px; padding:13px 28px; flex-wrap:wrap; }
+    .banda .marca { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700;
+                    letter-spacing:.20em; }
+    .idiomas { display:flex; gap:2px; }
+    .idiomas button { font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700;
+                      letter-spacing:.10em; background:transparent; border:0; cursor:pointer;
+                      color:#07080b; opacity:.55; padding:4px 8px; }
+    .idiomas button.on { opacity:1; background:#07080b; color:var(--azul); }
+
+    .wrap { max-width:760px; margin:0 auto; padding:52px 24px 90px; }
+    .ojo { font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700;
+           letter-spacing:.22em; text-transform:uppercase; color:var(--azulc); }
+    h1 { margin-top:14px; font-size:clamp(34px,7vw,52px); font-weight:900;
+         letter-spacing:-.035em; line-height:1.03; }
+    .lead { margin-top:16px; font-size:17px; color:#c3cad8; max-width:60ch; }
+    .filete { height:6px; width:120px; background:var(--azul); margin:26px 0 0; }
+
+    /* — avisos — */
+    .aviso { margin-top:30px; padding:16px 18px; border-left:5px solid; font-size:15px; }
+    .aviso.mal { border-color:var(--err); background:rgba(224,82,77,.10); }
+    .aviso.bien { border-color:var(--ok); background:rgba(47,165,114,.10); }
+    .aviso b { display:block; margin-bottom:4px; }
+
+    /* — secciones — */
+    section { margin-top:44px; }
+    .stit { display:flex; align-items:baseline; gap:14px; padding-bottom:12px;
+            border-bottom:1px solid var(--linea); }
+    .stit i { font-style:normal; font-family:'JetBrains Mono',monospace; font-size:13px;
+              font-weight:700; color:var(--azul); letter-spacing:.14em; }
+    .stit h2 { font-size:21px; font-weight:800; letter-spacing:-.02em; }
+    .shint { margin-top:10px; font-size:14px; color:var(--apagado); }
+
+    .rejilla { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:20px; }
+    .campo { display:flex; flex-direction:column; gap:7px; }
+    .campo.ancho { grid-column:1 / -1; }
+    label { font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700;
+            letter-spacing:.12em; text-transform:uppercase; color:var(--apagado); }
+    label .req { color:var(--azulc); }
+    input[type=text], input[type=email], input[type=url] {
+      width:100%; padding:12px 14px; background:var(--panel); color:var(--tinta);
+      border:1px solid var(--linea2); border-radius:4px; font-family:Inter,sans-serif;
+      font-size:15px; }
+    input::placeholder { color:#5c6373; }
+    input:focus-visible { outline:3px solid var(--azul); outline-offset:1px;
+                          border-color:var(--azul); }
+
+    /* — fichas seleccionables (checkbox oculto + etiqueta) — */
+    .fichas { display:flex; flex-wrap:wrap; gap:9px; margin-top:16px; }
+    .fichas input { position:absolute; opacity:0; width:0; height:0; }
+    .fichas label { text-transform:none; letter-spacing:0; font-family:Inter,sans-serif;
+                    font-size:14.5px; font-weight:600; color:#c3cad8; cursor:pointer;
+                    padding:10px 15px; border:2px solid var(--linea2); border-radius:4px;
+                    user-select:none; }
+    .fichas input:checked + label { border-color:var(--azul); background:rgba(0,79,235,.16);
+                                    color:#fff; }
+    .fichas input:focus-visible + label { outline:3px solid var(--azulc); outline-offset:2px; }
+
+    /* — redes: una fila por plataforma — */
+    .red { display:grid; grid-template-columns:118px 1fr 150px; gap:12px; align-items:center;
+           margin-top:11px; }
+    .red .n { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700;
+              color:var(--apagado); letter-spacing:.06em; }
+    .red.oculta { display:none; }
+    .masredes { margin-top:16px; background:transparent; border:2px dashed var(--linea2);
+                color:var(--azulc); font-family:'JetBrains Mono',monospace; font-size:13px;
+                font-weight:700; letter-spacing:.10em; padding:11px 16px; cursor:pointer;
+                border-radius:4px; }
+    .masredes:hover { border-color:var(--azul); }
+
+    /* — consentimiento — */
+    .consent { display:flex; gap:13px; align-items:flex-start; margin-top:22px;
+               padding:18px; background:var(--panel); border:1px solid var(--linea); }
+    .consent input { margin-top:3px; width:20px; height:20px; flex:0 0 20px;
+                     accent-color:var(--azul); }
+    .consent span { font-size:14.5px; color:#c3cad8; }
+
+    .enviar { margin-top:34px; width:100%; background:var(--azul); color:#fff;
+              border:0; padding:20px; font-family:Inter,sans-serif; font-size:19px;
+              font-weight:900; letter-spacing:-.01em; cursor:pointer; }
+    .enviar:hover { background:#0b5cff; }
+    .enviar:disabled { opacity:.55; cursor:default; }
+
+    .legal { margin-top:26px; font-size:13px; color:var(--apagado); line-height:1.65; }
+    .pie { margin-top:56px; padding-top:22px; border-top:1px solid var(--linea);
+           display:flex; align-items:center; justify-content:space-between; gap:16px;
+           flex-wrap:wrap; }
+    .pie img { height:30px; opacity:.75; }
+    .pie a { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--apagado);
+             text-decoration:none; letter-spacing:.06em; }
+    .pie a:hover { color:var(--azulc); }
+
+    @media (max-width:620px) {
+      .rejilla { grid-template-columns:1fr; }
+      .red { grid-template-columns:1fr; gap:7px; }
+      .red .n { margin-top:8px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="banda">
+  <span class="marca">TRADEABLE.ACADEMY · CREATORS</span>
+  <div class="idiomas" id="idiomas">
+    <button type="button" data-l="en">EN</button>
+    <button type="button" data-l="es">ES</button>
+    <button type="button" data-l="pt">PT</button>
+    <button type="button" data-l="fr">FR</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <p class="ojo" data-i18n="cre.eyebrow">Collaboration</p>
+  <h1 data-i18n="cre.h1">Work with Tradeable Academy</h1>
+  <div class="filete"></div>
+  <p class="lead" data-i18n="cre.lead">Tell us who you are and what you publish. We read every
+    application and reply by email.</p>
+
+  {% if success %}
+    <div class="aviso bien">
+      <b data-i18n="cre.okTitle">Application received.</b>
+      <span data-i18n="cre.okBody">Thanks. We'll go through your profile and reply to the email
+        you gave us. If it's a fit, we'll send you the collaboration agreement with the full
+        terms.</span>
+    </div>
+  {% else %}
+
+    {% if error %}
+      <div class="aviso mal">
+        {% if error == 'missing' %}
+          <b data-i18n="cre.errMissing">Some required fields are missing.</b>
+          <span data-i18n="cre.errMissingB">Check your name, email, country, language, at least
+            one social account and what you publish.</span>
+        {% elif error == 'email' %}
+          <b data-i18n="cre.errEmail">That email doesn't look right.</b>
+          <span data-i18n="cre.errEmailB">It's the only way we have to reply to you.</span>
+        {% elif error == 'consent' %}
+          <b data-i18n="cre.errConsent">You need to tick the box at the end.</b>
+          <span data-i18n="cre.errConsentB">It confirms you're 18+ and that this is an
+            application, not an agreement.</span>
+        {% else %}
+          <b data-i18n="cre.errRate">You already sent an application.</b>
+          <span data-i18n="cre.errRateB">Give us a day to read it. If you need to correct
+            something, reply to our email instead.</span>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <form method="POST" id="form" novalidate>
+      <input type="hidden" name="lang" id="lang-field" value="en" />
+
+      <section>
+        <div class="stit"><i>01</i><h2 data-i18n="cre.s1">About you</h2></div>
+        <div class="rejilla">
+          <div class="campo">
+            <label for="fn" data-i18n="cre.firstName">First name</label>
+            <input type="text" id="fn" name="first_name" maxlength="60" required />
+          </div>
+          <div class="campo">
+            <label for="ln" data-i18n="cre.lastName">Last name</label>
+            <input type="text" id="ln" name="last_name" maxlength="60" required />
+          </div>
+          <div class="campo">
+            <label for="em" data-i18n="cre.email">Email</label>
+            <input type="email" id="em" name="email" maxlength="255" required />
+          </div>
+          <div class="campo">
+            <label for="co" data-i18n="cre.country">Country</label>
+            <input type="text" id="co" name="country" maxlength="80" required />
+          </div>
+        </div>
+        <p class="shint" style="margin-top:22px" data-i18n="cre.langQ">What language do you
+          publish in?</p>
+        <div class="fichas">
+          {% for k, d in [('es','Español'),('en','English'),('pt','Português'),
+                          ('fr','Français'),('other','Other')] %}
+            <input type="checkbox" id="lg-{{ k }}" name="languages" value="{{ k }}" />
+            <label for="lg-{{ k }}" {% if k == 'other' %}data-i18n="cre.langOther"{% endif %}>{{ d }}</label>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section>
+        <div class="stit"><i>02</i><h2 data-i18n="cre.s2">Your accounts</h2></div>
+        <p class="shint" data-i18n="cre.s2hint">Fill in the ones you actually use. Username and
+          follower count for each.</p>
+        {% set nombres = {'instagram':'Instagram','tiktok':'TikTok','youtube':'YouTube',
+                          'x':'X (Twitter)','twitch':'Twitch','telegram':'Telegram',
+                          'facebook':'Facebook','other':'Other'} %}
+        {% for n in nets %}
+          <div class="red {% if loop.index > 3 %}oculta extra{% endif %}">
+            <span class="n" {% if n == 'other' %}data-i18n="cre.netOther"{% endif %}>{{ nombres[n] }}</span>
+            <input type="text" name="net_{{ n }}_user" maxlength="60"
+                   data-i18n-ph="cre.phUser" placeholder="@username" />
+            <input type="text" name="net_{{ n }}_followers" maxlength="20" inputmode="numeric"
+                   data-i18n-ph="cre.phFollowers" placeholder="followers" />
+          </div>
+        {% endfor %}
+        <button type="button" class="masredes" id="mas"
+                data-i18n="cre.moreNets">+ ANOTHER NETWORK</button>
+      </section>
+
+      <section>
+        <div class="stit"><i>03</i><h2 data-i18n="cre.s3">What you publish</h2></div>
+        <p class="shint" data-i18n="cre.s3hint">Pick everything that applies — there's no wrong
+          answer here.</p>
+        <div class="fichas">
+          {% for k, d in [('educational','Educational — I teach concepts'),
+                          ('analysis','Market analysis and ideas'),
+                          ('journey','I document my own process'),
+                          ('mentorship','I sell mentorship or courses'),
+                          ('signals','I share or sell signals'),
+                          ('reviews','Tool and broker reviews'),
+                          ('lifestyle','Entertainment / lifestyle'),
+                          ('other','Something else')] %}
+            <input type="checkbox" id="ct-{{ k }}" name="content_types" value="{{ k }}" />
+            <label for="ct-{{ k }}" data-i18n="cre.ct.{{ k }}">{{ d }}</label>
+          {% endfor %}
+        </div>
+        <div class="campo" style="margin-top:16px">
+          <input type="text" name="content_other" maxlength="120"
+                 data-i18n-ph="cre.phOther" placeholder="If you picked “something else”, tell us in a line" />
+        </div>
+        <p class="shint" style="margin-top:24px" data-i18n="cre.marketsQ">Which markets do you
+          cover?</p>
+        <div class="fichas">
+          {% for k, d in [('futures','Futures'),('forex','Forex'),('indices','Indices'),
+                          ('crypto','Crypto'),('stocks','Stocks'),('mixed','A bit of everything')] %}
+            <input type="checkbox" id="mk-{{ k }}" name="markets" value="{{ k }}" />
+            <label for="mk-{{ k }}" data-i18n="cre.mk.{{ k }}">{{ d }}</label>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section>
+        <div class="stit"><i>04</i><h2 data-i18n="cre.s4">One post</h2></div>
+        <p class="shint" data-i18n="cre.s4hint">Link us to something you're proud of, and tell us
+          roughly how many views it got. Optional — but it's the fastest way for us to see what
+          you do.</p>
+        <div class="rejilla">
+          <div class="campo">
+            <label for="su" data-i18n="cre.sampleUrl">Link to the post</label>
+            <input type="url" id="su" name="sample_url" maxlength="400" placeholder="https://" />
+          </div>
+          <div class="campo">
+            <label for="sv" data-i18n="cre.sampleViews">Views it got</label>
+            <input type="text" id="sv" name="sample_views" maxlength="20" inputmode="numeric" />
+          </div>
+        </div>
+      </section>
+
+      <div class="consent">
+        <input type="checkbox" id="cs" name="consent" value="1" required />
+        <label for="cs" style="text-transform:none;letter-spacing:0;font-family:inherit">
+          <span data-i18n="cre.consent">I'm 18 or older, and I understand this is an application —
+            not an agreement. Sending it doesn't grant me a creator code or any commission. If
+            there's a fit, Tradeable Academy will contact me by email with the terms.</span>
+        </label>
+      </div>
+
+      <button type="submit" class="enviar" id="btn" data-i18n="cre.submit">Send application</button>
+
+      <p class="legal" data-i18n="cre.legal">We use what you send here only to evaluate the
+        collaboration and get back to you. Tradeable Academy is an educational platform: we don't
+        sell signals and we don't promise results — any collaboration has to respect that.</p>
+    </form>
+  {% endif %}
+
+  <div class="pie">
+    <img src="{{ url_for('static', filename='logo_t.png') }}" alt="Tradeable Academy"
+         style="filter:invert(1)" />
+    <a href="{{ url_for('landing') }}" data-i18n="cre.home">tradeable.academy</a>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  /* Diccionario propio dentro de la plantilla — mismo patrón que contact.html.
+     Autocontenido: no toca `pages_i18n.js`, así esta página no puede romper
+     ninguna otra ni al revés. */
+  var I18N = {
+    en: {},
+    es: {
+      'cre.eyebrow': 'Colaboración',
+      'cre.h1': 'Trabaja con Tradeable Academy',
+      'cre.lead': 'Cuéntanos quién eres y qué publicas. Leemos todas las solicitudes y respondemos por correo.',
+      'cre.okTitle': 'Solicitud recibida.',
+      'cre.okBody': 'Gracias. Vamos a revisar tu perfil y te respondemos al correo que nos dejaste. Si encajamos, te enviamos el acuerdo de colaboración con las condiciones completas.',
+      'cre.errMissing': 'Faltan campos obligatorios.',
+      'cre.errMissingB': 'Revisa nombre, correo, país, idioma, al menos una red social y qué publicas.',
+      'cre.errEmail': 'Ese correo no parece válido.',
+      'cre.errEmailB': 'Es la única forma que tenemos de responderte.',
+      'cre.errConsent': 'Falta marcar la casilla del final.',
+      'cre.errConsentB': 'Confirma que eres mayor de edad y que esto es una solicitud, no un acuerdo.',
+      'cre.errRate': 'Ya enviaste una solicitud.',
+      'cre.errRateB': 'Danos un día para leerla. Si necesitas corregir algo, respóndenos al correo.',
+      'cre.s1': 'Sobre ti',
+      'cre.firstName': 'Nombre',
+      'cre.lastName': 'Apellido',
+      'cre.email': 'Correo',
+      'cre.country': 'País',
+      'cre.langQ': '¿En qué idioma publicas?',
+      'cre.langOther': 'Otro',
+      'cre.s2': 'Tus cuentas',
+      'cre.s2hint': 'Rellena las que uses de verdad. Usuario y número de seguidores de cada una.',
+      'cre.netOther': 'Otra',
+      'cre.phUser': '@usuario',
+      'cre.phFollowers': 'seguidores',
+      'cre.moreNets': '+ OTRA RED',
+      'cre.s3': 'Qué publicas',
+      'cre.s3hint': 'Marca todo lo que aplique — aquí no hay respuesta mala.',
+      'cre.ct.educational': 'Educativo — enseño conceptos',
+      'cre.ct.analysis': 'Análisis de mercado e ideas',
+      'cre.ct.journey': 'Documento mi propio proceso',
+      'cre.ct.mentorship': 'Vendo mentorías o cursos',
+      'cre.ct.signals': 'Comparto o vendo señales',
+      'cre.ct.reviews': 'Reseñas de herramientas y brókers',
+      'cre.ct.lifestyle': 'Entretenimiento / lifestyle',
+      'cre.ct.other': 'Otra cosa',
+      'cre.phOther': 'Si marcaste “otra cosa”, cuéntanos en una línea',
+      'cre.marketsQ': '¿Qué mercados cubres?',
+      'cre.mk.futures': 'Futuros',
+      'cre.mk.forex': 'Forex',
+      'cre.mk.indices': 'Índices',
+      'cre.mk.crypto': 'Cripto',
+      'cre.mk.stocks': 'Acciones',
+      'cre.mk.mixed': 'Un poco de todo',
+      'cre.s4': 'Una publicación',
+      'cre.s4hint': 'Enlázanos algo de lo que estés orgulloso y dinos más o menos cuántas vistas hizo. Es opcional, pero es la forma más rápida de que veamos lo que haces.',
+      'cre.sampleUrl': 'Enlace a la publicación',
+      'cre.sampleViews': 'Vistas que hizo',
+      'cre.consent': 'Soy mayor de edad y entiendo que esto es una solicitud, no un acuerdo. Enviarla no me otorga ningún código de creador ni ninguna comisión. Si encajamos, Tradeable Academy me escribirá por correo con las condiciones.',
+      'cre.submit': 'Enviar solicitud',
+      'cre.sending': 'Enviando…',
+      'cre.legal': 'Usamos lo que nos envías aquí solo para valorar la colaboración y responderte. Tradeable Academy es una plataforma educativa: no vendemos señales ni prometemos resultados, y cualquier colaboración tiene que respetarlo.',
+      'cre.home': 'tradeable.academy'
+    },
+    pt: {
+      'cre.eyebrow': 'Colaboração',
+      'cre.h1': 'Trabalhe com a Tradeable Academy',
+      'cre.lead': 'Conte pra gente quem você é e o que publica. Lemos todas as inscrições e respondemos por e-mail.',
+      'cre.okTitle': 'Inscrição recebida.',
+      'cre.okBody': 'Obrigado. Vamos analisar seu perfil e responder no e-mail que você deixou. Se fizer sentido, enviamos o acordo de colaboração com as condições completas.',
+      'cre.errMissing': 'Faltam campos obrigatórios.',
+      'cre.errMissingB': 'Confira nome, e-mail, país, idioma, pelo menos uma rede social e o que você publica.',
+      'cre.errEmail': 'Esse e-mail não parece válido.',
+      'cre.errEmailB': 'É a única forma que temos de responder.',
+      'cre.errConsent': 'Falta marcar a caixa no final.',
+      'cre.errConsentB': 'Ela confirma que você é maior de idade e que isto é uma inscrição, não um acordo.',
+      'cre.errRate': 'Você já enviou uma inscrição.',
+      'cre.errRateB': 'Nos dê um dia para ler. Se precisar corrigir algo, responda ao nosso e-mail.',
+      'cre.s1': 'Sobre você',
+      'cre.firstName': 'Nome',
+      'cre.lastName': 'Sobrenome',
+      'cre.email': 'E-mail',
+      'cre.country': 'País',
+      'cre.langQ': 'Em que idioma você publica?',
+      'cre.langOther': 'Outro',
+      'cre.s2': 'Suas contas',
+      'cre.s2hint': 'Preencha as que você realmente usa. Usuário e número de seguidores de cada uma.',
+      'cre.netOther': 'Outra',
+      'cre.phUser': '@usuário',
+      'cre.phFollowers': 'seguidores',
+      'cre.moreNets': '+ OUTRA REDE',
+      'cre.s3': 'O que você publica',
+      'cre.s3hint': 'Marque tudo que se aplica — aqui não tem resposta errada.',
+      'cre.ct.educational': 'Educacional — ensino conceitos',
+      'cre.ct.analysis': 'Análise de mercado e ideias',
+      'cre.ct.journey': 'Documento meu próprio processo',
+      'cre.ct.mentorship': 'Vendo mentorias ou cursos',
+      'cre.ct.signals': 'Compartilho ou vendo sinais',
+      'cre.ct.reviews': 'Avaliações de ferramentas e corretoras',
+      'cre.ct.lifestyle': 'Entretenimento / lifestyle',
+      'cre.ct.other': 'Outra coisa',
+      'cre.phOther': 'Se marcou “outra coisa”, conte em uma linha',
+      'cre.marketsQ': 'Quais mercados você cobre?',
+      'cre.mk.futures': 'Futuros',
+      'cre.mk.forex': 'Forex',
+      'cre.mk.indices': 'Índices',
+      'cre.mk.crypto': 'Cripto',
+      'cre.mk.stocks': 'Ações',
+      'cre.mk.mixed': 'Um pouco de tudo',
+      'cre.s4': 'Uma publicação',
+      'cre.s4hint': 'Mande o link de algo de que você se orgulhe e diga mais ou menos quantas visualizações teve. É opcional, mas é o jeito mais rápido de a gente ver o que você faz.',
+      'cre.sampleUrl': 'Link da publicação',
+      'cre.sampleViews': 'Visualizações que teve',
+      'cre.consent': 'Sou maior de idade e entendo que isto é uma inscrição, não um acordo. Enviá-la não me dá nenhum código de criador nem nenhuma comissão. Se fizer sentido, a Tradeable Academy vai me escrever por e-mail com as condições.',
+      'cre.submit': 'Enviar inscrição',
+      'cre.sending': 'Enviando…',
+      'cre.legal': 'Usamos o que você envia aqui apenas para avaliar a colaboração e responder. A Tradeable Academy é uma plataforma educacional: não vendemos sinais nem prometemos resultados, e qualquer colaboração precisa respeitar isso.',
+      'cre.home': 'tradeable.academy'
+    },
+    fr: {
+      'cre.eyebrow': 'Collaboration',
+      'cre.h1': 'Travaillez avec Tradeable Academy',
+      'cre.lead': 'Dites-nous qui vous êtes et ce que vous publiez. Nous lisons chaque candidature et répondons par e-mail.',
+      'cre.okTitle': 'Candidature reçue.',
+      'cre.okBody': 'Merci. Nous allons étudier votre profil et vous répondre à l’adresse indiquée. Si le courant passe, nous vous enverrons l’accord de collaboration avec toutes les conditions.',
+      'cre.errMissing': 'Il manque des champs obligatoires.',
+      'cre.errMissingB': 'Vérifiez le nom, l’e-mail, le pays, la langue, au moins un réseau social et ce que vous publiez.',
+      'cre.errEmail': 'Cet e-mail ne semble pas valide.',
+      'cre.errEmailB': 'C’est le seul moyen que nous ayons de vous répondre.',
+      'cre.errConsent': 'Il faut cocher la case en bas.',
+      'cre.errConsentB': 'Elle confirme que vous êtes majeur et qu’il s’agit d’une candidature, pas d’un accord.',
+      'cre.errRate': 'Vous avez déjà envoyé une candidature.',
+      'cre.errRateB': 'Laissez-nous un jour pour la lire. Si vous devez corriger quelque chose, répondez à notre e-mail.',
+      'cre.s1': 'À propos de vous',
+      'cre.firstName': 'Prénom',
+      'cre.lastName': 'Nom',
+      'cre.email': 'E-mail',
+      'cre.country': 'Pays',
+      'cre.langQ': 'Dans quelle langue publiez-vous ?',
+      'cre.langOther': 'Autre',
+      'cre.s2': 'Vos comptes',
+      'cre.s2hint': 'Remplissez ceux que vous utilisez vraiment. Pseudo et nombre d’abonnés pour chacun.',
+      'cre.netOther': 'Autre',
+      'cre.phUser': '@pseudo',
+      'cre.phFollowers': 'abonnés',
+      'cre.moreNets': '+ AUTRE RÉSEAU',
+      'cre.s3': 'Ce que vous publiez',
+      'cre.s3hint': 'Cochez tout ce qui s’applique — il n’y a pas de mauvaise réponse ici.',
+      'cre.ct.educational': 'Éducatif — j’explique des concepts',
+      'cre.ct.analysis': 'Analyse de marché et idées',
+      'cre.ct.journey': 'Je documente mon propre parcours',
+      'cre.ct.mentorship': 'Je vends du mentorat ou des formations',
+      'cre.ct.signals': 'Je partage ou vends des signaux',
+      'cre.ct.reviews': 'Avis sur des outils et des courtiers',
+      'cre.ct.lifestyle': 'Divertissement / lifestyle',
+      'cre.ct.other': 'Autre chose',
+      'cre.phOther': 'Si vous avez coché « autre chose », dites-le en une ligne',
+      'cre.marketsQ': 'Quels marchés couvrez-vous ?',
+      'cre.mk.futures': 'Futures',
+      'cre.mk.forex': 'Forex',
+      'cre.mk.indices': 'Indices',
+      'cre.mk.crypto': 'Crypto',
+      'cre.mk.stocks': 'Actions',
+      'cre.mk.mixed': 'Un peu de tout',
+      'cre.s4': 'Une publication',
+      'cre.s4hint': 'Envoyez-nous le lien d’une publication dont vous êtes fier et dites-nous à peu près combien de vues elle a faites. Facultatif, mais c’est le plus rapide pour voir ce que vous faites.',
+      'cre.sampleUrl': 'Lien de la publication',
+      'cre.sampleViews': 'Vues obtenues',
+      'cre.consent': 'Je suis majeur et je comprends qu’il s’agit d’une candidature, pas d’un accord. L’envoyer ne me donne aucun code créateur ni aucune commission. Si le courant passe, Tradeable Academy m’écrira par e-mail avec les conditions.',
+      'cre.submit': 'Envoyer la candidature',
+      'cre.sending': 'Envoi…',
+      'cre.legal': 'Nous utilisons ce que vous envoyez ici uniquement pour évaluer la collaboration et vous répondre. Tradeable Academy est une plateforme éducative : nous ne vendons pas de signaux et ne promettons aucun résultat, et toute collaboration doit le respecter.',
+      'cre.home': 'tradeable.academy'
+    }
+  };
+
+  /* ⚠️ Quien llega aquí viene de una historia de Instagram: lo más probable es
+     que NUNCA haya abierto el sitio, así que no hay idioma guardado. Por eso se
+     mira el idioma del NAVEGADOR antes de caer al inglés — si no, un creador
+     hispanohablante aterriza en una página en inglés sin motivo. */
+  function idiomaInicial() {
+    var g = '';
+    try { g = localStorage.getItem('scalpel_lang') || ''; } catch (e) {}
+    if (I18N[g]) return g;
+    var nav = (navigator.language || 'en').slice(0, 2).toLowerCase();
+    return I18N[nav] ? nav : 'en';
+  }
+
+  var actual = 'en';
+
+  function aplica(l) {
+    actual = I18N[l] ? l : 'en';
+    var t = I18N[actual];
+    document.documentElement.lang = actual;
+    var campo = document.getElementById('lang-field');
+    if (campo) campo.value = actual;
+    /* El inglés vive en el HTML, así que su diccionario está VACÍO a propósito:
+       hay que restaurar el original en vez de buscar una clave que no existe.
+       Por eso cada nodo guarda su texto de origen la primera vez. */
+    document.querySelectorAll('[data-i18n]').forEach(function (el) {
+      if (el.__en === undefined) el.__en = el.textContent;
+      var k = el.getAttribute('data-i18n');
+      el.textContent = (t[k] !== undefined) ? t[k] : el.__en;
+    });
+    document.querySelectorAll('[data-i18n-ph]').forEach(function (el) {
+      if (el.__ph === undefined) el.__ph = el.getAttribute('placeholder') || '';
+      var k = el.getAttribute('data-i18n-ph');
+      el.setAttribute('placeholder', (t[k] !== undefined) ? t[k] : el.__ph);
+    });
+    document.querySelectorAll('#idiomas button').forEach(function (b) {
+      b.classList.toggle('on', b.getAttribute('data-l') === actual);
+    });
+  }
+
+  document.getElementById('idiomas').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-l]');
+    if (!b) return;
+    var l = b.getAttribute('data-l');
+    try { localStorage.setItem('scalpel_lang', l); } catch (err) {}
+    aplica(l);
+  });
+
+  aplica(idiomaInicial());
+
+  /* Las redes menos usadas nacen ocultas: ocho filas vacías de entrada hacen
+     que el formulario parezca el triple de largo de lo que es. Sin JS siguen
+     funcionando las tres primeras, que cubren el caso normal. */
+  var mas = document.getElementById('mas');
+  if (mas) {
+    mas.addEventListener('click', function () {
+      document.querySelectorAll('.red.extra').forEach(function (r) {
+        r.classList.remove('oculta');
+      });
+      mas.remove();
+    });
+  }
+
+  /* 🔴 El botón se desactiva al primer envío VÁLIDO. Es el mismo fallo del
+     registro: el POST tarda segundos (manda un correo dentro de la petición) y
+     un segundo clic crea una solicitud duplicada. La comprobación de validez
+     es obligatoria — sin ella, un formulario incompleto dejaría el botón
+     muerto sin haber enviado nada. */
+  var form = document.getElementById('form');
+  var btn = document.getElementById('btn');
+  if (form && btn) {
+    form.addEventListener('submit', function () {
+      if (!form.checkValidity()) return;
+      btn.disabled = true;
+      btn.textContent = (I18N[actual]['cre.sending'] || 'Sending…');
+    });
+  }
+})();
+</script>
+</body>
+</html>

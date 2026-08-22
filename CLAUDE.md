@@ -492,6 +492,37 @@ esta»"*. Es decir: **el listón NO es "correcto y limpio", es que pare el scrol
 referencias de artes que le parecen buenos → calibrar el sistema visual con ellas ANTES de
 producir nada nuevo.
 
+## 📝 `/creators` — solicitudes de creadores de contenido (2026-08-22)
+La puerta de entrada ANTES del acuerdo de colaboración y del código de creador. El enlace vive en
+una **historia destacada de Instagram**; la página es SUELTA (nada del producto: ni pestañas, ni
+barra lateral, ni Synapse), con `noindex`, **fuera del sitemap y de todos los menús**.
+- **Modelo `CreatorApplication`** (tabla nueva → `create_all`, sin ALTER) + ruta `GET/POST
+  /creators` + plantilla `creators.html` autocontenida (diccionario ×4 DENTRO de la plantilla,
+  patrón de `contact.html` — no toca `pages_i18n.js`, así no puede romper otra página).
+- **Correo a `CREATORS_INBOX`** (env `CREATORS_EMAIL`, default `info@tradeable.academy`) con
+  **Reply-To del creador**. 🔴 **NO se reutiliza `ADMIN_INBOX`**: por ahí van las alertas de dinero
+  y mezclarlas con correo comercial es como se pasa por alto un "pagué y no se activó".
+- 🔴 **La fila se guarda AUNQUE el correo falle** — el aviso es best-effort; sin la fila, un creador
+  escribe y se pierde sin que nadie se entere. Campos: nombre/apellido, correo, país, idiomas,
+  **redes en JSON** (`[{net,user,followers}]` — en un solo campo porque añadir una red no puede
+  exigir un ALTER), qué publica, mercados, publicación de muestra + sus vistas.
+- **Antiflood** igual que las solicitudes de mentoría: 1 por correo/24 h + **3 por IP/24 h**
+  (`CREATOR_IP_MAX`). Obligatorio: fijado en una destacada, el enlace es público en la práctica.
+- **NO muestra la escala 30/35/40** (decisión): un enlace se reenvía, y publicar los porcentajes
+  los vuelve compromiso público. La página dice que las condiciones van en el acuerdo. Y deja
+  escrito que **enviar no otorga nada** — si alguien se cree colaborador y empieza a promocionar,
+  el lío es del dueño.
+- ⚠️ **La hoja de Google Fonts va NO BLOQUEANTE** (`media=print` + `onload`): una hoja pendiente en
+  el `<head>` bloquea la ejecución de los `<script>` posteriores, así que la página se quedaba en
+  inglés hasta que Fonts respondía. Importa porque el visitante llega desde el navegador interno de
+  Instagram. Y el idioma se elige por **`navigator.language`** cuando no hay preferencia guardada:
+  quien llega de una historia nunca ha abierto el sitio.
+- `tools/test_creators.py` **50/50** + navegador real (es/en/pt + móvil 412px, envío completo).
+  ⚠️ Cada caso del test va con su **propia IP** (`X-Forwarded-For`): sin eso el tope por IP se
+  agota con los primeros envíos y todo lo demás se rechaza por la razón equivocada.
+- **PENDIENTE:** no hay pestaña en `/admin` para verlas — hoy se leen por correo, y si el SMTP
+  falla la fila solo se ve en la base. Ofrecido al dueño, aún no pedido.
+
 ## 📱 REDES SOCIALES — kit de marca generado (2026-08-04)
 Instagram y TikTok abiertos por el dueño, 0 seguidores, 0 publicado. Hecho:
 - **`tools/gen_posts_ig.py`** (+ `tools/rasteriza_posts.py` para el PNG) genera

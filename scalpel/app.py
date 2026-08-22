@@ -157,6 +157,11 @@ MAIL_FROM = os.environ.get('MAIL_FROM', '') or MAIL_ACCOUNT
 # formulario de contacto, alertas de auditoría). Por defecto, el remitente: así
 # al poner la casilla del dominio se mudan solos.
 ADMIN_INBOX = os.environ.get('ADMIN_EMAIL', MAIL_FROM)
+# 🔑 Buzón APARTE para las solicitudes de creadores de contenido (/creators).
+# NO se reutiliza `ADMIN_INBOX` a propósito: por ahí van las alertas de dinero
+# (venta confirmada, pago atascado, disputa) y mezclarlas con correo comercial
+# es como se termina pasando por alto un "pagó y no se activó".
+CREATORS_INBOX = os.environ.get('CREATORS_EMAIL', 'info@tradeable.academy')
 
 app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
 app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
@@ -2125,6 +2130,40 @@ class MentorshipApplication(db.Model):
     submit_ip = db.Column(db.String(45), nullable=True, index=True)   # IPv6-safe length
     submit_count = db.Column(db.Integer, default=1, nullable=True)
     user = db.relationship('User', backref='mentorship_applications')
+
+
+class CreatorApplication(db.Model):
+    """Una solicitud de colaboración de un creador de contenido (`/creators`).
+
+    Es la puerta de entrada ANTES del acuerdo de colaboración y del código de
+    creador: enviarla no otorga nada, la lee una persona y contesta.
+
+    🔴 SE GUARDA AUNQUE EL CORREO FALLE. El aviso a la bandeja es best-effort
+    (sin `MAIL_APP_PASSWORD` solo deja un warning), así que si esta fila no
+    existiera, un creador podría escribir y perderse sin que nadie se entere.
+    La fila es la fuente de verdad; el correo es solo la notificación.
+
+    Tabla NUEVA: la crea `create_all()`, no hace falta migración con ALTER.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String(60), nullable=False)
+    last_name = db.Column(db.String(60), nullable=False)
+    email = db.Column(db.String(255), nullable=False, index=True)
+    country = db.Column(db.String(80), nullable=False)
+    languages = db.Column(db.String(60), nullable=False)      # CSV: es,en,pt,fr,other
+    # Redes en JSON: [{"net":"instagram","user":"@x","followers":12000}, …].
+    # Va en un solo campo y no en columnas fijas porque las plataformas cambian
+    # (hoy no está Threads, mañana sí) y añadir una red no puede exigir un ALTER.
+    networks = db.Column(db.Text, nullable=False)
+    content_types = db.Column(db.String(200), nullable=False)  # CSV
+    content_other = db.Column(db.String(120), nullable=True)   # texto libre si marcó "otro"
+    markets = db.Column(db.String(120), nullable=True)         # CSV: futures,forex,…
+    sample_url = db.Column(db.String(400), nullable=True)      # publicación que le representa
+    sample_views = db.Column(db.Integer, nullable=True)        # vistas de ESA publicación
+    lang = db.Column(db.String(5), nullable=True)              # idioma de la página al enviar
+    status = db.Column(db.String(20), default='pending', nullable=False)  # pending/contacted/accepted/rejected
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    submit_ip = db.Column(db.String(45), nullable=True, index=True)   # largo IPv6-safe
 
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -6690,6 +6729,214 @@ def reactivate_plan():
     current_user.cancel_at_period_end = False
     db.session.commit()
     return redirect(url_for('settings', reactivated=1))
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# CREADORES DE CONTENIDO — `/creators`
+# Página SUELTA (nada del producto: ni pestañas, ni barra lateral, ni Synapse)
+# cuyo enlace vive en una historia destacada de Instagram. Fuera del sitemap y
+# con `noindex`: no queremos que Google la posicione, pero cualquiera que entre
+# al perfil puede abrirla → el antiflood es obligatorio, no un adorno.
+# ──────────────────────────────────────────────────────────────────────────
+CREATOR_NETS = ['instagram', 'tiktok', 'youtube', 'x', 'twitch',
+                'telegram', 'facebook', 'other']
+CREATOR_LANGS = ['es', 'en', 'pt', 'fr', 'other']
+CREATOR_CONTENT = ['educational', 'mentorship', 'signals', 'journey',
+                   'analysis', 'reviews', 'lifestyle', 'other']
+CREATOR_MARKETS = ['futures', 'forex', 'crypto', 'stocks', 'indices', 'mixed']
+CREATOR_WINDOW = timedelta(hours=24)
+CREATOR_IP_MAX = 3
+
+
+def _creator_retry_after(email, ip):
+    """Segundos que faltan para poder volver a enviar, o 0 si puede ya.
+
+    Dos capas, como en las solicitudes de mentoría: una por CORREO (evita el
+    duplicado honesto de quien pulsa dos veces o se arrepiente y reescribe) y
+    otra por IP, más holgada, para que una conexión compartida no castigue a
+    varias personas de verdad."""
+    now = datetime.now(timezone.utc)
+    cutoff = now - CREATOR_WINDOW
+
+    def _wait(row):
+        last = _aware(row.created_at)
+        if not last:
+            return 0
+        return max(1, int((last + CREATOR_WINDOW - now).total_seconds()))
+
+    if email:
+        row = (CreatorApplication.query
+               .filter(db.func.lower(CreatorApplication.email) == email,
+                       CreatorApplication.created_at >= cutoff)
+               .order_by(CreatorApplication.created_at.desc()).first())
+        if row:
+            return _wait(row)
+    if ip:
+        rows = (CreatorApplication.query
+                .filter(CreatorApplication.submit_ip == ip,
+                        CreatorApplication.created_at >= cutoff)
+                .order_by(CreatorApplication.created_at.asc()).all())
+        if len(rows) >= CREATOR_IP_MAX:
+            return _wait(rows[0])      # se libera cuando caduca la MÁS VIEJA
+    return 0
+
+
+def send_creator_application_email(a):
+    """Avisa a la bandeja de creadores. Best-effort: la fila ya está guardada,
+    así que un fallo de SMTP solo deja un warning — nunca pierde la solicitud."""
+    if not app.config.get('MAIL_PASSWORD'):
+        app.logger.warning('MAIL_APP_PASSWORD sin configurar — no se envió el '
+                           'aviso de solicitud de creador (la fila SÍ se guardó).')
+        return False
+    etq = {
+        'es': 'Español', 'en': 'Inglés', 'pt': 'Portugués', 'fr': 'Francés',
+        'other': 'Otro',
+        'educational': 'Educativo (enseña conceptos)',
+        'mentorship': 'Vende mentorías / formación',
+        'signals': 'Vende o comparte señales',
+        'journey': 'Documenta su proceso (empezando)',
+        'analysis': 'Análisis de mercado / ideas',
+        'reviews': 'Reseñas de herramientas o brókers',
+        'lifestyle': 'Entretenimiento / lifestyle',
+        'futures': 'Futuros', 'forex': 'Forex', 'crypto': 'Cripto',
+        'stocks': 'Acciones', 'indices': 'Índices', 'mixed': 'Varios',
+        'instagram': 'Instagram', 'tiktok': 'TikTok', 'youtube': 'YouTube',
+        'x': 'X (Twitter)', 'twitch': 'Twitch', 'telegram': 'Telegram',
+        'facebook': 'Facebook',
+    }
+
+    def lab(v):
+        return etq.get(v, v or '—')
+
+    def labs(csv):
+        return ', '.join(lab(x) for x in (csv or '').split(',') if x) or '—'
+
+    try:
+        redes = json.loads(a.networks or '[]')
+    except Exception:
+        redes = []
+    total = sum(int(r.get('followers') or 0) for r in redes)
+    lineas = [('  %-11s %-24s %s'
+               % (lab(r.get('net')) + ':', r.get('user') or '—',
+                  '{:,}'.format(int(r.get('followers') or 0)).replace(',', '.')
+                  + ' seguidores'))
+              for r in redes] or ['  —']
+
+    otros = (' (%s)' % a.content_other) if a.content_other else ''
+    vistas = ('{:,}'.format(a.sample_views).replace(',', '.')
+              if a.sample_views else '—')
+    body = (
+        'Nueva solicitud de CREADOR DE CONTENIDO — Tradeable Academy\n'
+        '===========================================================\n\n'
+        f'Nombre:       {a.first_name} {a.last_name}\n'
+        f'Correo:       {a.email}\n'
+        f'País:         {a.country}\n'
+        f'Idioma(s):    {labs(a.languages)}\n\n'
+        'REDES\n'
+        + '\n'.join(lineas) + '\n'
+        f'  TOTAL       {"{:,}".format(total).replace(",", ".")} seguidores sumados\n\n'
+        f'Qué publica:  {labs(a.content_types)}{otros}\n'
+        f'Mercados:     {labs(a.markets)}\n\n'
+        f'Publicación:  {a.sample_url or "—"}\n'
+        f'Vistas de esa publicación: {vistas}\n\n'
+        '-----------------------------------------------------------\n'
+        f'Enviada:      {a.created_at:%Y-%m-%d %H:%M} UTC\n'
+        f'Idioma de la página: {a.lang or "—"}\n'
+        f'Solicitud nº {a.id}\n\n'
+        '⚠️ Esto es una SOLICITUD: no se le ha otorgado ningún código ni se le\n'
+        '   ha prometido nada. Responder desde info@tradeable.academy.\n'
+    )
+    msg = Message('Creador: %s %s — %s seguidores'
+                  % (a.first_name, a.last_name,
+                     '{:,}'.format(total).replace(',', '.')),
+                  recipients=[CREATORS_INBOX])
+    msg.body = body
+    msg.reply_to = a.email          # responder va directo al creador
+    prev_timeout = socket.getdefaulttimeout()
+    socket.setdefaulttimeout(15)
+    try:
+        mail.send(msg)
+        return True
+    except Exception as exc:
+        app.logger.warning('No se pudo enviar el aviso de creador: %s', exc)
+        return False
+    finally:
+        socket.setdefaulttimeout(prev_timeout)
+
+
+@app.route('/creators', methods=['GET', 'POST'])
+def creators():
+    """El formulario de creadores. Anónimo a propósito: quien llega desde una
+    historia de Instagram no tiene cuenta ni tiene por qué crearse una."""
+    if request.method == 'GET':
+        return render_template('creators.html', nets=CREATOR_NETS)
+
+    f = request.form
+
+    def s(k, n):
+        v = f.get(k, '')
+        return v.strip()[:n] if isinstance(v, str) else ''
+
+    def multi(k, permitidos):
+        # ⚠️ se filtra contra la lista blanca: getlist() trae lo que el cliente
+        #    mande, y de ahí sale texto que acaba en un correo.
+        return [v for v in f.getlist(k) if v in permitidos]
+
+    def err(code, **extra):
+        return render_template('creators.html', nets=CREATOR_NETS,
+                               error=code, **extra), 400
+
+    first, last = s('first_name', 60), s('last_name', 60)
+    email = s('email', 255).lower()
+    country = s('country', 80)
+    langs = multi('languages', CREATOR_LANGS)
+    tipos = multi('content_types', CREATOR_CONTENT)
+    mercados = multi('markets', CREATOR_MARKETS)
+    otro = s('content_other', 120)
+    sample = s('sample_url', 400)
+
+    redes = []
+    for net in CREATOR_NETS:
+        usuario = s('net_%s_user' % net, 60)
+        if not usuario:
+            continue
+        crudo = re.sub(r'[^0-9]', '', s('net_%s_followers' % net, 20))
+        redes.append({'net': net, 'user': usuario,
+                      # tope de 10 cifras: un número absurdo no debe reventar
+                      # la columna ni el formato del correo
+                      'followers': min(int(crudo or 0), 9_999_999_999)})
+
+    vistas_crudo = re.sub(r'[^0-9]', '', s('sample_views', 20))
+    vistas = min(int(vistas_crudo), 9_999_999_999) if vistas_crudo else None
+
+    if not (first and last and email and country):
+        return err('missing')
+    if '@' not in email or '.' not in email.split('@')[-1]:
+        return err('email')
+    if not langs or not tipos or not redes:
+        return err('missing')
+    if not f.get('consent'):
+        return err('consent')
+
+    ip = _client_ip()
+    espera = _creator_retry_after(email, ip)
+    if espera:
+        return err('rate')
+
+    a = CreatorApplication(
+        first_name=first, last_name=last, email=email, country=country,
+        languages=','.join(langs), networks=json.dumps(redes, ensure_ascii=False),
+        content_types=','.join(tipos), content_other=(otro or None),
+        markets=','.join(mercados) or None,
+        sample_url=(sample or None), sample_views=vistas,
+        lang=s('lang', 5) or None, submit_ip=ip)
+    db.session.add(a)
+    db.session.commit()
+
+    enviado = send_creator_application_email(a)
+    record_audit_event('creator_apply', detail='%s %s — %s [%s]'
+                       % (first, last, email, ip), success=enviado)
+    return render_template('creators.html', nets=CREATOR_NETS, success=True)
 
 
 @app.route('/contact', methods=['GET', 'POST'])
