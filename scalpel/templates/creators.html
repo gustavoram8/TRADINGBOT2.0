@@ -39,7 +39,36 @@
 
     /* — banda de cabecera, sólida y a sangre — */
     .banda { background:var(--azul); color:#07080b; display:flex; align-items:center;
-             justify-content:space-between; gap:16px; padding:13px 28px; flex-wrap:wrap; }
+             justify-content:space-between; gap:16px; padding:13px 28px; flex-wrap:wrap;
+             position:relative; overflow:hidden; }
+    .banda > * { position:relative; z-index:1; }
+
+    /* — ESTARCIDO EN MARCHA —
+       La idea del dueño, literal: un foami azul con la silueta de la botarga
+       recortada y un foami blanco detrás. Aquí el "foami blanco" es
+       `tira-botarga.png` (siluetas blancas con alfa) sobre el azul de la banda.
+
+       🔑 BARATO A PROPÓSITO. Es UNA animación de `transform` sobre UN elemento:
+       la resuelve el compositor y no repinta ni un píxel de la página. Es lo
+       contrario del `backdrop-filter`, que costó 3,6× el scroll de toda la app
+       (ver CLAUDE.md, 2026-08-10). Nada de animar `background-position`, que sí
+       obliga a repintar.
+
+       ⚠️ El recorrido de la animación tiene que ser EXACTAMENTE el ancho del
+       mosaico (60 px). Un píxel de más o de menos y el bucle da un salto
+       visible cada vuelta. Ese número lo imprime `tools/gen_tira_botarga.py`;
+       si algún día cambia ahí, cambia AQUÍ en los dos sitios. */
+    .tira { position:absolute; top:0; bottom:0; left:0; width:calc(100% + 60px);
+            z-index:0; pointer-events:none; opacity:.30;
+            background:url("{{ url_for('static', filename='tira-botarga.png') }}")
+                       repeat-x center center;
+            background-size:60px 34px;
+            animation:desfile 3.4s linear infinite; }
+    @keyframes desfile { from { transform:translateX(-60px); }
+                         to   { transform:translateX(0); } }
+    @media (prefers-reduced-motion: reduce) {
+      .tira { animation:none; }
+    }
     .banda .marca { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700;
                     letter-spacing:.20em; }
     .idiomas { display:flex; gap:2px; }
@@ -159,6 +188,7 @@
 <body>
 
 <div class="banda">
+  <div class="tira" aria-hidden="true"></div>
   <span class="marca">TRADEABLE.ACADEMY · CREATORS</span>
   <div class="idiomas" id="idiomas">
     <button type="button" data-l="en">EN</button>
