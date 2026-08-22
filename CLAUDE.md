@@ -250,6 +250,20 @@ cada mes, si un mes no hay tanda el sistema se ve muerto).
   en el opening day de abril, floración del apicultor en mayo). Criterio del dueño para las
   temáticas: **poco transitadas** (nada de piratas, ninjas, vaqueros, astronautas, safaris) y
   **cerrado el cupo de deportes y de oficios**.
+· 🔴 **RODADA DE TEMPORADAS (2026-08-22, decisión del dueño — el calendario de arriba ya NO es el
+  vigente).** El sitio abrió sin clientes y no tenía sentido quemar la tanda de agosto ante una sala
+  vacía: **Chronicles corre agosto Y septiembre**, lo de septiembre pasa a octubre, etc., y
+  **Quetzalcóatl SALE** (rodado caía en abril, lejos de su equinoccio) — con lo que **de 2027-04 en
+  adelante cada lote vuelve a su mes original** (béisbol en el opening day, apicultor en la
+  floración). 🔑 **La base NO se re-estampa**: las filas de `CosmeticItem` conservan su sello (el
+  "lote") y el dict **`RULETA_RODADA`** en app.py traduce mes real → lote vivo; para volver a rodar
+  el calendario se edita SOLO ese dict. Los calendarios `ROULETTE_*_CALENDAR` quedan como catálogos
+  de lotes — no editarles las fechas. El lote de quetzal (frame `quetzal` + libre `volcano` +
+  cursores `cur-quetzal`/`key`/`umbrella`) sigue en la base pero sin mes: invisible en ruleta Y
+  tienda; su arte libre queda para una temporada 2. `tools/test_rodada.py` **22/22** (tanda EXACTA
+  por mes —igualdad de conjuntos, no "contiene"—, quetzal en 0 de 13 meses, tienda con
+  estados/etiquetas por mes, 12 spins reales solo entregan el lote vivo). ⚠️ El spin responde
+  PLANO (`slug` en la raíz, no `prize.slug`), y el mes se simula parcheando `A._current_season`.
 · 🔴 **División de trabajo del arte:** lo procedimental (paisajes, lava, rejillas, vitrales, montañas,
   terminales) se dibuja acá; **las criaturas y personajes NO** — el dragón de Chronicles se intentó 4
   veces y el usuario lo cortó (*"es como si te hubiese enviado una foto de un iPhone y tú me hubieses

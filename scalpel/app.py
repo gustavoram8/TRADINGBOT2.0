@@ -5825,6 +5825,7 @@ def camos():
     # states: buyable / owned / roulette-only / season ended. Champion frames
     # show as their own non-buyable state.
     season_now = _current_season()
+    lote_now = _lote_del_mes()
     owned_ids = _owned_cosmetic_ids(current_user.id) if authed else set()
     active_frame = (current_user.active_frame or '') if authed else ''
     active_cursor = (current_user.active_cursor or '') if authed else ''
@@ -5835,7 +5836,15 @@ def camos():
             # A future season is a surprise, not a spoiler: its pieces stay
             # invisible until their month opens (the whole calendar is
             # pre-published at boot).
-            if i.season and i.season > season_now:
+            # ⚠️ Las piezas de RULETA llevan un LOTE, no un mes: se traducen
+            #    con la rodada. Un lote fuera del calendario (Quetzalcóatl) no
+            #    tiene meses y no se pinta jamás. Campeón y tienda siguen
+            #    comparando su mes crudo, que sí es real.
+            if i.channel == 'roulette':
+                meses = _meses_del_lote(i.season)
+                if meses is None or meses[0] > season_now:
+                    continue
+            elif i.season and i.season > season_now:
                 continue
             open_now, when = festive_window(i.slug)
             if i.id in owned_ids or (authed and current_user.is_admin):
@@ -5846,7 +5855,7 @@ def camos():
                 state = 'buy'
             elif i.channel == 'champion':
                 state = 'champion'
-            elif i.channel == 'roulette' and i.season == season_now and i.active:
+            elif i.channel == 'roulette' and i.season == lote_now and i.active:
                 state = 'roulette'
             else:
                 state = 'ended'
@@ -5861,7 +5870,10 @@ def camos():
                 art_hot = art and art.replace('.png', '_hot.png')
                 wearing = i.slug == active_cursor
             out.append({'slug': i.slug, 'name': i.name, 'state': state,
-                        'season': i.season or '',
+                        # la etiqueta "temporada terminada — <mes>" tiene que
+                        # decir el ÚLTIMO mes en que se pudo ganar, no el lote
+                        'season': ((_meses_del_lote(i.season) or ('', ''))[1]
+                                   if i.channel == 'roulette' else (i.season or '')),
                         'channel': i.channel,
                         'ref': 'item:%s' % i.slug,
                         'art': art,
@@ -5898,16 +5910,18 @@ def camos():
     camos_wheel = []
     for i in (CosmeticItem.query.filter_by(kind='camo', channel='roulette')
               .order_by(CosmeticItem.season.asc()).all()):
-        if i.season and i.season > season_now:
+        # mismo trato que los marcos: el sello es un LOTE y se traduce
+        meses = _meses_del_lote(i.season)
+        if meses is None or meses[0] > season_now:
             continue
         bare = camo_slug_of(i.slug)
         camos_wheel.append({
-            'slug': bare, 'name': i.name, 'season': i.season or '',
+            'slug': bare, 'name': i.name, 'season': meses[1],
             'art': '/static/camo_skin_%s.jpg' % bare,
             # English fallback; the client dict translates by `camos.d.<slug>`
             # like every other camo card.
             'desc': CAMO_WHEEL_DESCS.get(bare, ''),
-            'state': ('roulette' if i.season == season_now and i.active
+            'state': ('roulette' if i.season == lote_now and i.active
                       else 'ended'),
         })
     frames_all = _pack('frame')
@@ -15431,6 +15445,11 @@ def plates_meta():
 # and the store hides unreleased seasons, so pre-inserting a year is safe.
 ROULETTE_FRAME_CALENDAR = [
     # (season,   themed slug,   free slug)
+    # ⚠️ Desde la rodada del 2026-08-22, la primera columna es el LOTE con el
+    #    que la pieza queda sellada en la base — NO el mes real en que se gana.
+    #    El mes real lo decide `RULETA_RODADA` (Chronicles corre ago+sep, todo
+    #    lo demás corre un mes, Quetzalcóatl quedó fuera). NO editar estas
+    #    fechas para mover el calendario: se edita la rodada.
     ('2026-08', 'chronicles', 'mars'),
     ('2026-09', 'gridiron',   'sakura'),
     ('2026-10', 'nile',       'terminal'),
@@ -15652,6 +15671,60 @@ def _current_season():
     return datetime.now(timezone.utc).strftime('%Y-%m')
 
 
+# ── RODADA DE TEMPORADAS (2026-08-22, decidida por el dueño) ──────────────
+# El sitio abrió sin clientes: dejar vencer la tanda de agosto ante una sala
+# vacía no castigaba a nadie y quemaba el ÚNICO camo construido (Chronicles).
+# Decisión: Chronicles corre agosto Y septiembre; lo que estaba cableado para
+# septiembre pasa a octubre, octubre a noviembre, etc. Quetzalcóatl SALE del
+# calendario: su gracia era el equinoccio de marzo y rodado caía en abril.
+# 🔑 Al quitarlo, de 2027-04 en adelante el lote vuelve a coincidir con su mes
+# (béisbol en el opening day, apicultor en la floración) — solo se traducen
+# los meses de esta tabla.
+#
+# 🔴 Las filas de CosmeticItem conservan su sello ORIGINAL ("el lote"): la
+# base NO se re-estampa. Este dict traduce mes real → lote vivo, y es la ÚNICA
+# pieza que hay que tocar si algún día hay que volver a rodar el calendario.
+# Un lote que ningún mes nombra (el '2027-03' de Quetzalcóatl) no existe para
+# nadie: ni sale en la ruleta ni se pinta en la tienda.
+RULETA_RODADA = {
+    '2026-08': '2026-08',   # Chronicles
+    '2026-09': '2026-08',   # Chronicles, segundo mes
+    '2026-10': '2026-09',   # American Football
+    '2026-11': '2026-10',   # Nile
+    '2026-12': '2026-11',   # Colosseum
+    '2027-01': '2026-12',   # Summit
+    '2027-02': '2027-01',   # Bengal
+    '2027-03': '2027-02',   # Olympus
+}
+# Desde aquí el calendario está re-sincronizado: lote == mes real.
+RODADA_IDENTIDAD_DESDE = '2027-04'
+
+_LOTE_MESES = {}
+for _m, _l in RULETA_RODADA.items():
+    _a, _b = _LOTE_MESES.get(_l, (_m, _m))
+    _LOTE_MESES[_l] = (min(_a, _m), max(_b, _m))
+
+
+def _lote_del_mes(mes=None):
+    """El lote (sello `season` de CosmeticItem) vivo en un mes real."""
+    mes = mes or _current_season()
+    if mes in RULETA_RODADA:
+        return RULETA_RODADA[mes]
+    return mes if mes >= RODADA_IDENTIDAD_DESDE else mes
+
+
+def _meses_del_lote(lote):
+    """(primer, último) mes REAL en que ese lote vive, o None si quedó fuera
+    del calendario (Quetzalcóatl). El primero decide cuándo deja de ser
+    'sorpresa futura'; el último es la fecha honesta del 'temporada
+    terminada — <mes>' de la tienda."""
+    if not lote:
+        return None
+    if lote in _LOTE_MESES:
+        return _LOTE_MESES[lote]
+    return (lote, lote) if lote >= RODADA_IDENTIDAD_DESDE else None
+
+
 def _next_season_start():
     """First day of next month, ISO — the 'next batch opens on…' date."""
     now = datetime.now(timezone.utc)
@@ -15660,9 +15733,12 @@ def _next_season_start():
 
 
 def _roulette_tanda(season=None):
+    # ⚠️ `season` aquí es un LOTE (el sello de las filas), no un mes real: el
+    #    mes real se traduce con `_lote_del_mes()`. Todos los caminos del
+    #    premio (tanda, spin) pasan por esta función — es el único embudo.
     return (CosmeticItem.query
             .filter_by(channel='roulette', active=True,
-                       season=season or _current_season())
+                       season=season or _lote_del_mes())
             .order_by(CosmeticItem.id.asc()).all())
 
 
