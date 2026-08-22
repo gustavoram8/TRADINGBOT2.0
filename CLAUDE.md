@@ -448,6 +448,23 @@ cada mes, si un mes no hay tanda el sistema se ve muerto).
   3. El suavizado del borde va **solo en la orilla** (dilatación de 2 px de lo que se quitó). La
      primera versión graduaba TODO píxel blanquecino y dejaba medio transparentes ojos, botas y
      el número de la camiseta.
+  🔴 **Y dos defectos MÁS que cazó el dueño mirándolas puestas (mismo día):**
+  · **Las AXILAS de los dos welcome.** Son bolsas de fondo ENCERRADAS por el brazo y el torso, y
+    por diseño el script no las borra solo (regla de julio). Se pasan a mano tras leer el mapa
+    numerado: `366` en el jugador, `794` en el faraón. **Al recortar cualquier botarga con los
+    brazos pegados al cuerpo, mirar el mapa: es el defecto por defecto.** Las otras cuatro tienen
+    los brazos abiertos y no lo traen (comprobado con el mapa, no de memoria).
+  · 🔴 **El escalón del tablero NO se puede escribir a mano.** El MISMO generador exportó tres
+    pares distintos en seis láminas: 253/213 (escalón 40), 255/205 (50) y **255/201 (54)**. Con
+    un tope fijo de 45 la tercera se quedaba corta y el fondo salía con un **velo de cuadros casi
+    transparentes** — lo que él vio en el PASS de Nile (4,3% del lienzo en alfa 1-19 → hoy 0,08%).
+    `_niveles()` mide los dos grises de CADA lámina y usa el claro como "blanco del papel" al
+    calcular la tinta, así el fondo cae a alfa 0 valga 253 o 255. ⚠️ El papel se busca desde 235:
+    en una lámina muy tapada los cuadros oscuros pueden ser MÁS que los claros y ganarían el pico,
+    con lo que el escalón saldría 0 y el tablero se quedaría entero.
+  · El encuadre se mide con **alfa ≥ 16**, no con `getbbox()`: cuatro píxeles sueltos a alfa 2 en
+    una esquina estiran el lienzo y —como la CSS escala el lienzo ENTERO— encogen la figura sin
+    que se vea por qué.
   **`tools/botarga_oscura.py`** hace el `_dark`: flecha azul→naranja con el mapeo
   `(r,g,b)→(b, 0.6561·b, r)` **muestreado de la pareja real** `logo2_standard`/`_dark` (lo
   reproduce con error 0 sobre sus 159.726 px); el contorno queda fuera con `b>=31`.
@@ -456,7 +473,7 @@ cada mes, si un mes no hay tanda el sistema se ve muerto).
   `.light` — con el selector equivocado la botarga se queda clavada en la variante oscura para
   siempre. Los archivos se recortan a su bbox + 2% de aire: la CSS escala el LIENZO ENTERO
   (`height:120px` / `70vh`), así que un margen grande encoge la figura.
-  `tools/test_botargas_nuevas.py` **40/40** (12 archivos + navegador real, leyendo qué PNG sirve
+  `tools/test_botargas_nuevas.py` **46/46** (12 archivos + navegador real, leyendo qué PNG sirve
   `getComputedStyle().content` en claro y oscuro).
   ⚠️ El PASS de nile es la pirámide entera con el muñeco diminuto en la cumbre: a los 120 px de
   `.quiz-result-mascot` la flecha queda a ~15 px. Es el arte tal cual llegó — si al dueño le

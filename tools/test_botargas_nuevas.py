@@ -71,6 +71,14 @@ for camo in ('gridiron', 'nile'):
              % (n, camo, 100 * transp), 0.08 < transp < 0.85)
         caso('logo%d_%s: el alfa es SUAVE, no binario' % (n, camo),
              ((a[..., 3] > 20) & (a[..., 3] < 235)).sum() > 500)
+        # 🔴 El VELO del tablero: si el escalón del cuadriculado se corrige
+        #    con un número fijo en vez del medido, el fondo no llega a alfa 0
+        #    y queda una nube de píxeles casi transparentes con forma de
+        #    cuadros. No rompe nada, no da error — solo se ve. Antes de
+        #    medir el escalón por lámina, logo3_nile traía 4,3%.
+        velo = ((a[..., 3] > 0) & (a[..., 3] < 20)).mean()
+        caso('logo%d_%s: sin velo de cuadrícula (%.2f%% casi-transparente)'
+             % (n, camo, 100 * velo), velo < 0.01)
         cambia = (np.abs(a[..., :3] - d[..., :3]).sum(2) > 20).mean()
         caso('logo%d_%s: el _dark recolorea (%.1f%% de píxeles)'
              % (n, camo, 100 * cambia), 0.02 < cambia < 0.60)

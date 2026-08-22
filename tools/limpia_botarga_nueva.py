@@ -56,9 +56,9 @@ TABLERO = (140, BLANCO)  # rango de gris del cuadriculado horneado
 FEATHER_LO, FEATHER_HI = 165, 246
 MIN_AREA = 150      # bolsas más chicas que esto no se listan (motas)
 
-SALTO = 45          # cuánto oscurece un cuadro del tablero (medido: 253→213)
 VENTANA = 33        # ventana del techo local: mayor que un cuadro (29 px)
 NEUTRO = 14         # separación máxima entre canales para llamarlo "gris"
+HOLGURA = 8         # margen sobre el escalón medido (el gris no es plano)
 
 
 def _neutro(a):
@@ -68,7 +68,36 @@ def _neutro(a):
     return (mx - mn) < NEUTRO, mx
 
 
-def _destablero(a, fuera):
+def _niveles(a, fuera):
+    """Los dos grises del tablero de ESTA lámina: (claro, escalón).
+
+    🔴 No se pueden escribir a mano. Medido en las seis de agosto de 2026, el
+    mismo generador exportó tres pares distintos: 253/213 (escalón 40),
+    255/205 (50) y 255/201 (**54**). Con un escalón fijo de 45 la tercera se
+    quedaba 9 niveles corta y el fondo salía con un velo de cuadros — que es
+    justo lo que el dueño vio en el PASS de Nile. `claro` sirve además de
+    "blanco del papel" al calcular la tinta: así el fondo cae a alfa 0 solo,
+    valga 253 o 255.
+    """
+    _, mx = _neutro(a)
+    v = mx[fuera]
+    if v.size < 1000:
+        return 255, 0
+    h = np.bincount(np.clip(v, 0, 255), minlength=256).astype(float)
+    # ⚠️ El "papel" se busca desde 235, no desde 200: en una lámina muy tapada
+    #    los cuadros OSCUROS (213) pueden ser más que los claros y ganarían el
+    #    pico, con lo que el escalón saldría 0 y el tablero se quedaría entero.
+    claro = int(np.argmax(h[235:])) + 235
+    lo, hi = max(TABLERO[0], claro - 90), claro - 12
+    if hi <= lo:
+        return claro, 0
+    oscuro = int(np.argmax(h[lo:hi])) + lo
+    if h[oscuro] < 0.10 * h[claro]:      # fondo blanco plano, sin tablero
+        return claro, 0
+    return claro, claro - oscuro
+
+
+def _destablero(a, fuera, paso):
     """Devuelve la lámina como si se hubiera pintado sobre BLANCO.
 
     ⚠️ Se intentó primero por GEOMETRÍA (medir período y fase del tablero y
@@ -85,10 +114,12 @@ def _destablero(a, fuera):
     borde). Si se midiera sobre todo, un zapato blanco pegado a la sombra
     subiría la sombra hasta 253 y se la comería.
     """
+    if paso <= 0:
+        return a
     _, mx = _neutro(a)
     vis = np.where(fuera, mx, 0).astype(np.int16)
     techo = ndimage.maximum_filter(vis, size=VENTANA)
-    sube = np.clip(techo - mx, 0, SALTO)
+    sube = np.clip(techo - mx, 0, paso + HOLGURA)
     sube[~fuera] = 0
     out = a.copy()
     for c in range(3):
@@ -112,15 +143,18 @@ def _componentes(a):
 
 
 def _preparar(ruta):
-    """Lámina lista para recortar: sin tablero y con su fondo ya localizado."""
+    """Lámina lista para recortar: sin tablero y con su fondo ya localizado.
+
+    Devuelve (lámina, blanco_del_papel)."""
     a = np.asarray(Image.open(ruta).convert('RGB')).astype(np.int16)
     _, lbl, _, borde = _componentes(a)
     fuera = np.isin(lbl, list(borde))
-    return _destablero(a, fuera)
+    claro, paso = _niveles(a, fuera)
+    return _destablero(a, fuera, paso), claro
 
 
 def mirar(ruta):
-    a = _preparar(ruta)
+    a, _ = _preparar(ruta)
     m, lbl, n, borde = _componentes(a)
     fuera = np.isin(lbl, list(borde))
     print('%s  %dx%d' % (os.path.basename(ruta), a.shape[1], a.shape[0]))
@@ -141,7 +175,7 @@ def mirar(ruta):
 
 
 def cortar(ruta, salida, ids=()):
-    a = _preparar(ruta)
+    a, claro = _preparar(ruta)
     m, lbl, n, borde = _componentes(a)
     quitar = np.isin(lbl, list(borde) + [int(i) for i in ids])
 
@@ -160,9 +194,11 @@ def cortar(ruta, salida, ids=()):
     alfa[borde_suave] = np.clip(grad[borde_suave], 0, 255)
 
     # El exterior no se borra a secas: un gris G sobre blanco ES tinta negra
-    # al alfa 255-G, así que la sombra del suelo sobrevive con su degradado y
-    # el fondo blanco desaparece solo.
-    tinta = np.clip(255 - br, 0, 255)
+    # al alfa `claro - G`, así que la sombra del suelo sobrevive con su
+    # degradado y el fondo desaparece solo. ⚠️ El blanco de referencia es el
+    # MEDIDO en la lámina (253 en unas, 255 en otras), no un 255 a mano: con
+    # el número equivocado el fondo se queda en alfa 2-9 y se ve un velo.
+    tinta = np.clip(claro - br, 0, 255)
     tinta[tinta < 8] = 0
     alfa[quitar] = tinta[quitar]
     for c in range(3):
