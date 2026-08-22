@@ -493,6 +493,9 @@ referencias de artes que le parecen buenos → calibrar el sistema visual con el
 producir nada nuevo.
 
 ## 📝 `/creators` — solicitudes de creadores de contenido (2026-08-22)
+> 🔗 **EL ENLACE, para cuando lo pida: `https://tradeable.academy/creators`**
+> Va fijado en una historia destacada de Instagram. No está en ningún menú, ni
+> en el sitemap, y lleva `noindex` — se llega por ese enlace o no se llega.
 La puerta de entrada ANTES del acuerdo de colaboración y del código de creador. El enlace vive en
 una **historia destacada de Instagram**; la página es SUELTA (nada del producto: ni pestañas, ni
 barra lateral, ni Synapse), con `noindex`, **fuera del sitemap y de todos los menús**.
