@@ -122,6 +122,25 @@
     .enviar:disabled { opacity:.55; cursor:default; }
 
     .legal { margin-top:26px; font-size:13px; color:var(--apagado); line-height:1.65; }
+
+    /* 🔴 "Qué pasa después" YA estaba dicho en tres sitios —el lead, la casilla
+       de consentimiento y la pantalla de gracias— y aun así el dueño leyó el
+       formulario entero y no lo registró. El problema no era el texto, era
+       DÓNDE vivía: el final de una frase de introducción y una casilla legal
+       son los dos sitios que nadie lee. Va aquí, justo encima del botón, que
+       es el único momento en que la persona se pregunta "¿y ahora qué?". */
+    .luego { margin-top:30px; border:1px solid var(--linea); border-left:5px solid var(--azul);
+             padding:20px 22px 22px; background:rgba(255,255,255,.025); }
+    .luego h3 { font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700;
+                letter-spacing:.18em; text-transform:uppercase; color:var(--azul);
+                margin-bottom:14px; }
+    .luego ol { list-style:none; display:flex; flex-direction:column; gap:12px; }
+    /* a contraste PLENO, no en gris apagado: este es el bloque que queremos
+       que se lea, no la letra pequeña */
+    .luego li { display:flex; gap:14px; font-size:14.5px; line-height:1.6;
+                color:var(--tinta); }
+    .luego li b { flex:0 0 26px; font-family:'JetBrains Mono',monospace; font-size:13px;
+                  font-weight:700; color:var(--azul); font-variant-numeric:tabular-nums; }
     .pie { margin-top:56px; padding-top:22px; border-top:1px solid var(--linea);
            display:flex; align-items:center; justify-content:space-between; gap:16px;
            flex-wrap:wrap; }
@@ -153,15 +172,19 @@
   <p class="ojo" data-i18n="cre.eyebrow">Collaboration</p>
   <h1 data-i18n="cre.h1">Work with Tradeable Academy</h1>
   <div class="filete"></div>
+  {# 🔴 Antes decía "we read every application and reply by email". Eso es una
+     promesa que una sola persona no puede cumplir: si llegan treinta y contesta
+     veinte, queda peor por haberlo prometido que por no haber dicho nada.
+     "Si encaja, te escribimos" es honesto y sigue siendo respetuoso. #}
   <p class="lead" data-i18n="cre.lead">Tell us who you are and what you publish. We read every
-    application and reply by email.</p>
+    one — if there's a fit, we'll write to you.</p>
 
   {% if success %}
     <div class="aviso bien">
       <b data-i18n="cre.okTitle">Application received.</b>
-      <span data-i18n="cre.okBody">Thanks. We'll go through your profile and reply to the email
-        you gave us. If it's a fit, we'll send you the collaboration agreement with the full
-        terms.</span>
+      <span data-i18n="cre.okBody">Thanks. We'll go through your profile and your accounts. If
+        there's a fit, we'll write to the email you gave us and send you the collaboration
+        agreement with the full terms.</span>
     </div>
   {% else %}
 
@@ -289,6 +312,19 @@
         </div>
       </section>
 
+      <div class="luego">
+        <h3 data-i18n="cre.nextT">What happens next</h3>
+        <ol>
+          <li><b>01</b><span data-i18n="cre.next1">We read every application and take a look at
+            your accounts.</span></li>
+          <li><b>02</b><span data-i18n="cre.next2">If there's a fit, we write to the email you
+            gave us. That's the only way we'll contact you — we won't DM you.</span></li>
+          <li><b>03</b><span data-i18n="cre.next3">The terms aren't published here. They go in
+            the collaboration agreement, and we go through it with you before you sign
+            anything.</span></li>
+        </ol>
+      </div>
+
       <div class="consent">
         <input type="checkbox" id="cs" name="consent" value="1" required />
         <label for="cs" style="text-transform:none;letter-spacing:0;font-family:inherit">
@@ -324,9 +360,13 @@
     es: {
       'cre.eyebrow': 'Colaboración',
       'cre.h1': 'Trabaja con Tradeable Academy',
-      'cre.lead': 'Cuéntanos quién eres y qué publicas. Leemos todas las solicitudes y respondemos por correo.',
+      'cre.lead': 'Cuéntanos quién eres y qué publicas. Las leemos todas — si encajamos, te escribimos.',
       'cre.okTitle': 'Solicitud recibida.',
-      'cre.okBody': 'Gracias. Vamos a revisar tu perfil y te respondemos al correo que nos dejaste. Si encajamos, te enviamos el acuerdo de colaboración con las condiciones completas.',
+      'cre.okBody': 'Gracias. Vamos a revisar tu perfil y tus cuentas. Si encajamos, te escribimos al correo que nos dejaste y te enviamos el acuerdo de colaboración con las condiciones completas.',
+      'cre.nextT': 'Qué pasa después',
+      'cre.next1': 'Leemos todas las solicitudes y entramos a ver tus cuentas.',
+      'cre.next2': 'Si encajamos, te escribimos al correo que nos dejaste. Es la única vía por la que te vamos a contactar: no te escribimos por privado.',
+      'cre.next3': 'Las condiciones no se publican aquí. Van en el acuerdo de colaboración, y lo repasamos contigo antes de que firmes nada.',
       'cre.errMissing': 'Faltan campos obligatorios.',
       'cre.errMissingB': 'Revisa nombre, correo, país, idioma, al menos una red social y qué publicas.',
       'cre.errEmail': 'Ese correo no parece válido.',
@@ -379,9 +419,13 @@
     pt: {
       'cre.eyebrow': 'Colaboração',
       'cre.h1': 'Trabalhe com a Tradeable Academy',
-      'cre.lead': 'Conte pra gente quem você é e o que publica. Lemos todas as inscrições e respondemos por e-mail.',
+      'cre.lead': 'Conte pra gente quem você é e o que publica. Lemos todas — se fizer sentido, a gente escreve pra você.',
       'cre.okTitle': 'Inscrição recebida.',
-      'cre.okBody': 'Obrigado. Vamos analisar seu perfil e responder no e-mail que você deixou. Se fizer sentido, enviamos o acordo de colaboração com as condições completas.',
+      'cre.okBody': 'Obrigado. Vamos analisar seu perfil e suas contas. Se fizer sentido, escrevemos no e-mail que você deixou e enviamos o acordo de colaboração com as condições completas.',
+      'cre.nextT': 'O que acontece depois',
+      'cre.next1': 'Lemos todas as inscrições e damos uma olhada nas suas contas.',
+      'cre.next2': 'Se fizer sentido, escrevemos no e-mail que você deixou. É o único caminho pelo qual vamos te procurar: não chamamos no direct.',
+      'cre.next3': 'As condições não são publicadas aqui. Elas ficam no acordo de colaboração, e a gente revisa ele com você antes de assinar qualquer coisa.',
       'cre.errMissing': 'Faltam campos obrigatórios.',
       'cre.errMissingB': 'Confira nome, e-mail, país, idioma, pelo menos uma rede social e o que você publica.',
       'cre.errEmail': 'Esse e-mail não parece válido.',
@@ -434,9 +478,13 @@
     fr: {
       'cre.eyebrow': 'Collaboration',
       'cre.h1': 'Travaillez avec Tradeable Academy',
-      'cre.lead': 'Dites-nous qui vous êtes et ce que vous publiez. Nous lisons chaque candidature et répondons par e-mail.',
+      'cre.lead': 'Dites-nous qui vous êtes et ce que vous publiez. Nous les lisons toutes — si le courant passe, nous vous écrirons.',
       'cre.okTitle': 'Candidature reçue.',
-      'cre.okBody': 'Merci. Nous allons étudier votre profil et vous répondre à l’adresse indiquée. Si le courant passe, nous vous enverrons l’accord de collaboration avec toutes les conditions.',
+      'cre.okBody': 'Merci. Nous allons étudier votre profil et vos comptes. Si le courant passe, nous vous écrirons à l’adresse indiquée et vous enverrons l’accord de collaboration avec toutes les conditions.',
+      'cre.nextT': 'Ce qui se passe ensuite',
+      'cre.next1': 'Nous lisons chaque candidature et allons voir vos comptes.',
+      'cre.next2': 'Si le courant passe, nous écrivons à l’adresse que vous avez indiquée. C’est la seule voie par laquelle nous vous contacterons : nous n’envoyons pas de message privé.',
+      'cre.next3': 'Les conditions ne sont pas publiées ici. Elles figurent dans l’accord de collaboration, que nous parcourons avec vous avant toute signature.',
       'cre.errMissing': 'Il manque des champs obligatoires.',
       'cre.errMissingB': 'Vérifiez le nom, l’e-mail, le pays, la langue, au moins un réseau social et ce que vous publiez.',
       'cre.errEmail': 'Cet e-mail ne semble pas valide.',

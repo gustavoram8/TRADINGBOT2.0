@@ -517,6 +517,24 @@ barra lateral, ni Synapse), con `noindex`, **fuera del sitemap y de todos los me
   inglés hasta que Fonts respondía. Importa porque el visitante llega desde el navegador interno de
   Instagram. Y el idioma se elige por **`navigator.language`** cuando no hay preferencia guardada:
   quien llega de una historia nunca ha abierto el sitio.
+- 🔴 **Bloque "Qué pasa después" (2026-08-22).** El "te contactamos por correo" YA estaba dicho en
+  TRES sitios —el lead, la casilla de consentimiento y la pantalla de gracias— y aun así el dueño
+  leyó el formulario entero y no lo registró. **El problema no era el texto, era dónde vivía:** el
+  final de una frase de introducción y una casilla legal son los dos sitios que nadie lee. Se sacó
+  a un bloque propio (`.luego`, 3 pasos numerados) **justo encima del botón**, que es el único
+  momento en que la persona se pregunta "¿y ahora qué?". Dice además que **solo se contacta por
+  correo, nunca por privado** (defensa contra el que se haga pasar por Tradeable en DM) y que las
+  condiciones van en el acuerdo. ⚠️ De paso se corrigió una promesa incumplible: *"leemos todas y
+  respondemos por correo"* → *"las leemos todas; si encajamos, te escribimos"* — con una sola
+  persona atendiendo, prometer respuesta a todos y no darla es peor que no prometerla.
+- **Campos: se decidió NO añadir más (2026-08-22).** El dueño preguntó por "cuánto tiempo lleva en
+  el trading" y se desaconsejó: no evalúas su trading, evalúas su AUDIENCIA (2 años y 80k
+  enganchados valen más que 10 años y 900), auto-selecciona al revés (el de 8 meses que hace buen
+  contenido no aplica), y ya está capturado en la opción *documenta su proceso*. Regla general: la
+  página la abre alguien que llega de una historia y no te debe nada — cada campo extra cuesta
+  solicitudes que nunca ves. Lo que de verdad decide ya está: **los usernames** (abres su cuenta y
+  en 30 s sabes más que con cualquier campo autodeclarado) y **la publicación + sus vistas**
+  (lo único que delata una audiencia comprada).
 - `tools/test_creators.py` **50/50** + navegador real (es/en/pt + móvil 412px, envío completo).
   ⚠️ Cada caso del test va con su **propia IP** (`X-Forwarded-For`): sin eso el tope por IP se
   agota con los primeros envíos y todo lo demás se rechaza por la razón equivocada.
