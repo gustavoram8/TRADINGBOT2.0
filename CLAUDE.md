@@ -425,6 +425,18 @@ cada mes, si un mes no hay tanda el sistema se ve muerto).
   río. Generador `tools/build_nile_camo.py` (una geometría, dos paletas, idempotente). Acento día
   = lapislázuli del río; acento noche = oro. Piel determinista `camo_skin_nile.jpg`.
   `test_rodada` 23/23 (noviembre = 6 piezas con camo-nile). Botargas del ilustrador pendientes.
+· 🕐 **VIAJE EN EL TIEMPO PARA REVISAR TANDAS FUTURAS (2026-08-22).** La tienda esconde las
+  temporadas futuras a propósito, así que **ni el dueño podía revisar un camo/marco/cursor antes de
+  estrenarlo**. Nuevo escenario `season` en `/admin/demo` (panel: selector con los 12 meses y SU
+  temática + "Travel to that month"). 🔑 **El salto vive en `_current_season()`**, la fuente del
+  mes, no en cada pantalla: así tanda, giro, tienda y etiquetas viajan TODOS juntos — un parche por
+  vista habría dejado alguna sin viajar, que es justo el bug a cazar. De sesión, solo-admin, no
+  escribe NADA; fuera de una petición (`has_request_context()`) siempre devuelve el mes real, así
+  los publicadores del arranque no se ven afectados. El admin ya poseía todo (`owns_camo`), así que
+  viajando puede además ponerse cualquier pieza. `tools/test_viaje_temporada.py` **13/13**.
+  ⚠️ El test cayó en la trampa de `g`: Flask-Login cachea el usuario en el contexto de APP y la
+  petición del 2º usuario corría como el 1º — el candado solo-admin salía verde SIN serlo. Hay que
+  `g.pop('_login_user', None)` antes de cada cambio de usuario.
 · **FALTA del paso 5:** los camos de los 9 meses siguientes (arte mensual que encarga el usuario;
   el siguiente es **Colosseum, mes real diciembre**).
   Cada uno = tema CSS + slug en `CAMO_SLUGS`/`CAMO_READY`/`CAMO_NAMES` + una línea en

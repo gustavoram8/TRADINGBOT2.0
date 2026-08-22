@@ -340,6 +340,30 @@
       </div>
 
       <div class="demo-group">
+        <div class="demo-glabel">Roulette season — time travel
+          <span style="font-weight:400;color:#8a8f9e;">(see a batch before it ships; session only, nothing is written)</span></div>
+        <div class="demo-row">
+          {# Un botón por temporada: el mes que la ruleta cree que es. Todo
+             viaja junto — tanda, giro, tienda y etiquetas — porque el salto
+             vive en `_current_season()`, la fuente del mes. #}
+          <form method="POST" action="/admin/demo/set" style="display:flex;gap:6px;align-items:center;">
+            <input type="hidden" name="scenario" value="season">
+            <select name="season" class="demo-btn" style="padding:7px 10px;">
+              {% for m, etq in season_options %}
+              <option value="{{ m }}"{% if m == season_now %} selected{% endif %}>{{ etq }}</option>
+              {% endfor %}
+            </select>
+            <button class="demo-btn accent">🕐 Travel to that month</button>
+          </form>
+        </div>
+        <div style="font-size:12px;color:#8a8f9e;margin-top:8px;">
+          Viajas como <b>premium</b>. Abre <a href="/cosmetics" target="_blank">/cosmetics</a>
+          para ver la tanda del mes (el admin posee todo: puedes ponerte cualquier camo,
+          marco o cursor) y la pestaña Quiz → 🎁 para la rueda. Sal con <b>Exit demo</b>.
+        </div>
+      </div>
+
+      <div class="demo-group">
         <div class="demo-glabel">Checkout / payment preview <span style="font-weight:400;color:#8a8f9e;">(simulated — no order, no charge)</span></div>
         <div class="demo-row">
           <a href="/admin/preview/checkout?plan=standard&cycle=monthly" target="_blank" class="demo-btn">🛒 Cart · Standard/mo</a>

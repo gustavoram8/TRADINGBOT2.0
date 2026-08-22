@@ -8158,6 +8158,10 @@ def admin():
         audit_events=audit_events, audit_failed_count=audit_failed_count,
         warn_counts=warn_counts, recent_warnings=recent_warnings, flagged=flagged,
         ban_queue=ban_queue, demo_active=_admin_demo() is not None,
+        season_options=_season_options(),
+        # el mes REAL, no el del viaje: el selector tiene que abrir donde
+        # de verdad estamos aunque el admin ya esté viajando
+        season_now=datetime.now(timezone.utc).strftime('%Y-%m'),
         bug_reports=bug_reports, bug_new_count=bug_new_count,
         pay_attention=attention, pay_swept=swept, pay_recovered=recovered,
         crypto_on=bool(available_payment_rails()), sla_hours=CRYPTO_SLA_HOURS,
@@ -12148,6 +12152,19 @@ def admin_demo_set():
         # Preview the roulette as a premium member would see it, with a real spin.
         d['plan'] = 'premium'
         d['spin'] = True
+    elif scenario == 'season':
+        # 🔑 VIAJE EN EL TIEMPO: ver la tanda de un mes que todavía no salió.
+        # Sin esto no hay forma de revisar un camo/marco/cursor futuro antes
+        # de que se publique solo — la tienda esconde las temporadas futuras a
+        # propósito ("una sorpresa, no un spoiler") y esconderlas también al
+        # dueño significaba estrenar sin haberlo visto nunca.
+        # Se acepta cualquier YYYY-MM (también meses PASADOS, para comprobar
+        # cómo quedó una temporada ya cerrada). Formato validado: este valor
+        # acaba en una consulta y en la pantalla.
+        mes = (request.form.get('season') or '').strip()
+        if re.fullmatch(r'20\d{2}-(0[1-9]|1[0-2])', mes):
+            d['season'] = mes
+            d['plan'] = 'premium'      # la ruleta es premium: si no, no se ve
     if not d:
         abort(400)
     session['_admin_demo'] = d
@@ -15672,6 +15689,25 @@ def _sync_cosmetic_names():
 
 
 def _current_season():
+    """El mes de calendario… salvo que un ADMIN esté viajando en el tiempo.
+
+    🔑 El viaje vive AQUÍ, en la fuente del mes, y no en cada pantalla: así
+    la tanda de la ruleta, el giro, los estados de la tienda y las etiquetas
+    de "temporada terminada" se mueven TODOS juntos y coherentes. Poner el
+    parche en cada vista habría dejado alguna sin viajar — que es justo el
+    bug que el dueño quiere poder cazar antes de que el mes salga.
+
+    Es de sesión, solo-admin y no escribe NADA en la base (mismo contrato que
+    el resto de `/admin/demo`). Para cualquier otro usuario, y en cualquier
+    llamada fuera de una petición (arranque, publicadores), devuelve el mes
+    real: `has_request_context()` lo garantiza."""
+    try:
+        if has_request_context():
+            d = _admin_demo()
+            if d and d.get('season'):
+                return d['season']
+    except Exception:
+        pass                     # el mes real nunca puede fallar por esto
     return datetime.now(timezone.utc).strftime('%Y-%m')
 
 
@@ -15715,6 +15751,28 @@ def _lote_del_mes(mes=None):
     if mes in RULETA_RODADA:
         return RULETA_RODADA[mes]
     return mes if mes >= RODADA_IDENTIDAD_DESDE else mes
+
+
+def _season_options():
+    """Los meses que el selector de viaje en el tiempo ofrece: cada mes del
+    calendario con el nombre de SU temática, para que el dueño elija por lo
+    que quiere ver y no por una fecha que tenga que traducir de memoria."""
+    from collections import OrderedDict
+    nombres = {}
+    try:
+        nombres = {s: (plates_meta().get(s) or {}).get('name', s.title())
+                   for _, s, _ in ROULETTE_FRAME_CALENDAR}
+    except Exception:
+        pass
+    meses = sorted(RULETA_RODADA) + [m for m, _, _ in ROULETTE_FRAME_CALENDAR
+                                     if m >= RODADA_IDENTIDAD_DESDE]
+    out = OrderedDict()
+    for m in meses:
+        lote = _lote_del_mes(m)
+        tema = dict((s, t) for s, t, _ in
+                    ((a, b, c) for a, b, c in ROULETTE_FRAME_CALENDAR)).get(lote)
+        out[m] = '%s · %s' % (m, nombres.get(tema, tema or '—'))
+    return list(out.items())
 
 
 def _meses_del_lote(lote):
