@@ -404,7 +404,21 @@ cada mes, si un mes no hay tanda el sistema se ve muerto).
   tienda 38, ventanas 26, boot 6/6) + navegador real (claro y oscuro, tienda en ES, 0 errores JS).
   ⚠️ La **botarga del dragón la encarga el usuario** — mientras no exista, Chronicles usa el
   muñeco-flecha por defecto (igual que arrancó `standard`).
-· **FALTA del paso 5:** los camos de los 11 meses siguientes (arte mensual que encarga el usuario).
+· ✅ **CAMO AMERICAN FOOTBALL (`gridiron`, mes real octubre) — HECHO (2026-08-22).** NOCHE DE
+  PARTIDO, un solo look **DARK_ALWAYS** (como premium: el slug va en LAS DOS copias de la lista de
+  index.html). Escena procedimental (`tools/build_gridiron_camo.py`, idempotente): gradería en
+  sombra con el público como puntitos, dos torres de luz con halo, postes amarillos a la
+  IZQUIERDA (la placa los lleva a la derecha — sin espejo), césped con bandas de corte, líneas de
+  yarda, hash marks y números 10/50/10 **TRAZADOS con paths, no <text>** (un SVG de background no
+  hereda fuentes); balón de cuero con cordón en la esquina inf-der. Acento = amarillo de postes.
+  Muro de canal: `ROULETTE_CAMOS` ya lleva 'gridiron' (sin él la tienda le pintaba tarjeta de
+  VENTA — cazado por test). Piel `camo_skin_gridiron.jpg` generada DETERMINISTA (div normal con el
+  mismo background, nada de capturar pseudo-elementos). `test_rodada` 23/23 (oct = 6 piezas con
+  camo; sept sin TARJETA de gridiron — el slug sí sale en `window.CAMO_STATE.ready`, que es una
+  lista de datos, no una tarjeta). ⚠️ Botargas del ilustrador PENDIENTES (las tiene el dueño);
+  mientras, muñeco-flecha por defecto.
+· **FALTA del paso 5:** los camos de los 10 meses siguientes (arte mensual que encarga el usuario;
+  el siguiente es **Nile, mes real noviembre**).
   Cada uno = tema CSS + slug en `CAMO_SLUGS`/`CAMO_READY`/`CAMO_NAMES` + una línea en
   `CAMO_WHEEL_DESCS` ×4 idiomas; `_publish_roulette_camos()` lo publica solo al arrancar.
 
@@ -1043,7 +1057,7 @@ en los T&C públicos.
 reskinea SOLO el fondo/colores del sitio (layout/paneles/posiciones NO cambian) + swap de la mascota en
 el Quiz (welcome + pass/fail). **Infra base (cableada, estable):** `User.active_camo`/`owned_camos` +
 helpers `camos_owned()/add_camo()/owns_camo()` (admin posee TODO); `CAMO_SLUGS` (20 slugs) y
-`CAMO_READY` en app.py — **hoy `{'rising-sun','pole','premium','fourth','naval','mission','blackflag','standard'}`**, el resto pendiente; endpoints
+`CAMO_READY` en app.py — **hoy `{'rising-sun','pole','premium','fourth','naval','mission','blackflag','standard','chronicles','gridiron'}`**, el resto pendiente; endpoints
 `/api/camo/activate` `/api/camo/deactivate`; `/app` pinta `body.camo-<slug>` pre-paint (sin FOUC);
 tienda `/camos` con ownership/compra. ✅ **TIENDA CABLEADA A PAYPAL (2026-07-30, inerte sin claves):**
 decisión del usuario = camos SOLO por PayPal ($1.99 themes / $4.99 seasonal, asume la comisión fija;

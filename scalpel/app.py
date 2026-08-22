@@ -2448,16 +2448,16 @@ CAMO_SLUGS = {
     'alchemist', 'shadow', 'pole', 'arcade', 'cyber',        # themes
     'santa', 'hallow', 'fourth', 'lucky', 'valentine',
     'easter', 'newyear', 'muertos',                          # seasonal
-    'chronicles',                                            # roulette seasons
+    'chronicles', 'gridiron',                                # roulette seasons
 }
 # Camos that actually have a theme built and can be activated today. The rest
 # still render as "Coming soon" in the store. Add a slug here once its CSS ships.
 CAMO_READY = {'rising-sun', 'pole', 'premium', 'fourth', 'naval', 'mission',
-              'blackflag', 'standard', 'chronicles'}
+              'blackflag', 'standard', 'chronicles', 'gridiron'}
 # Camos that are ONLY ever won on the roulette — never for sale, at any price.
 # Same channel wall the frames and cursors live behind: a piece belongs to one
 # channel forever, so the store must never quote a price for these.
-ROULETTE_CAMOS = {'chronicles'}
+ROULETTE_CAMOS = {'chronicles', 'gridiron'}
 
 # The camo that ships with each paid plan. Granting it is part of what the
 # buyer paid for, so it is written into the account (see grant_plan_camo).
@@ -2585,13 +2585,15 @@ CAMO_NAMES = {
     'santa': "Santa's Rally", 'hallow': "Hallow's Eve", 'fourth': 'Star-Spangled',
     'lucky': 'Lucky Streak', 'valentine': 'Bullish Hearts',
     'easter': 'Spring Bloom', 'newyear': 'Fresh Start', 'muertos': 'Marigold Night',
-    'chronicles': 'Chronicles',
+    'chronicles': 'Chronicles', 'gridiron': 'American Football',
 }
 # One-line pitch for each roulette camo card (English fallback; the client
 # translates it by `camos.d.<slug>` like every other camo).
 CAMO_WHEEL_DESCS = {
     'chronicles': 'A medieval kingdom, two looks: the walled city lit up at '
                   'night, and the same kingdom by day among green hills.',
+    'gridiron': 'Game night: stadium lights, the crowd in shadow, yard lines '
+                'under your feet and the leather ball waiting.',
 }
 
 

@@ -65,9 +65,9 @@ with A.app.app_context():
          tanda_en('2026-08') == CHRON, str(tanda_en('2026-08')))
     caso('septiembre 2026 = LA MISMA tanda de Chronicles',
          tanda_en('2026-09') == CHRON, str(tanda_en('2026-09')))
-    caso('octubre 2026 = American Football (sin camo: no está construido)',
+    caso('octubre 2026 = American Football COMPLETO (camo construido 2026-08-22)',
          tanda_en('2026-10') == {'gridiron', 'sakura', 'cur-gridiron',
-                                 'cur-coin', 'cur-anchor'},
+                                 'cur-coin', 'cur-anchor', 'camo-gridiron'},
          str(tanda_en('2026-10')))
     caso('noviembre 2026 = Nile',
          tanda_en('2026-11') == {'nile', 'terminal', 'cur-nile',
@@ -129,11 +129,18 @@ with A.app.app_context():
         return r.data.decode('utf-8')
 
     h = tienda_en('2026-09')
-    caso('sept: el marco Chronicles se pinta y gridiron sigue OCULTO (sorpresa)',
-         'chronicles' in h and 'gridiron' not in h)
+    # ⚠️ el slug 'gridiron' aparece en `window.CAMO_STATE.ready` (una lista de
+    #    DATOS que lleva todos los camos con CSS, chronicles incluido desde
+    #    siempre): lo que delataría la sorpresa es una TARJETA — su arte.
+    caso('sept: el marco Chronicles se pinta y gridiron sigue sin TARJETA',
+         'chronicles' in h and 'plates/gridiron.svg' not in h
+         and 'camo_skin_gridiron' not in h)
     caso('sept: quetzal no aparece', 'quetzal' not in h)
     h = tienda_en('2026-10')
-    caso('oct: gridiron ya se pinta', 'gridiron' in h)
+    caso('oct: la tarjeta del marco gridiron ya se pinta',
+         'plates/gridiron.svg' in h)
+    caso('oct: el camo gridiron sale en el estante de ruleta',
+         'camo_skin_gridiron' in h)
     # ⚠️ la tarjeta reparte slug y etiqueta en varias líneas: la ventana del
     #    regex tiene que aceptar saltos ([\s\S]), no [^\n]
     caso('oct: chronicles sigue visible (ya pasó) con cierre en 2026-09',
