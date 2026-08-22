@@ -434,6 +434,13 @@ cada mes, si un mes no hay tanda el sistema se ve muerto).
   escribe NADA; fuera de una petición (`has_request_context()`) siempre devuelve el mes real, así
   los publicadores del arranque no se ven afectados. El admin ya poseía todo (`owns_camo`), así que
   viajando puede además ponerse cualquier pieza. `tools/test_viaje_temporada.py` **13/13**.
+  ⚠️ **Viajar NO te pone ningún camo — solo cambia el mes.** El primer intento aterrizaba en
+  `/app` y el dueño veía el camo que ya llevaba puesto: parecía que el viaje no hacía nada
+  ("no funciona"). Ahora aterriza en **`/cosmetics`** —donde vive la tanda— y la tienda pinta
+  una **banda dorada** con el mes y un "Volver al presente"; sin ella, un admin que olvida
+  salir del demo lee la tienda de otro mes como un bug del sitio. Para verlo PUESTO: botón
+  **Activate** en la tarjeta. ⚠️ Ese botón lo cuelga el JS (`renderCard`), **en el HTML crudo
+  del servidor NO aparece** — mirar solo el HTML hace concluir que falta cuando no falta.
   ⚠️ El test cayó en la trampa de `g`: Flask-Login cachea el usuario en el contexto de APP y la
   petición del 2º usuario corría como el 1º — el candado solo-admin salía verde SIN serlo. Hay que
   `g.pop('_login_user', None)` antes de cada cambio de usuario.
