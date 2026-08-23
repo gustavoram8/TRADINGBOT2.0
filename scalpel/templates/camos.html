@@ -50,11 +50,11 @@
     .cm-premium::after { content:''; position:absolute; inset:0; background:radial-gradient(60% 80% at 78% 18%,rgba(255,255,255,.35),transparent 60%); }
     /* ── Themes ── */
     .cm-naval    { background:linear-gradient(135deg,#0b1f3a,#13315c 55%,#1c3d6e); }
-    .cm-highnoon { background:linear-gradient(135deg,#7a3b1e,#b5722f 52%,#e0a95e); }
+    .cm-highnoon { background:url('/static/camo_skin_highnoon.jpg') center/cover; }
     .cm-sun      { background:linear-gradient(135deg,#f6f3ee,#ece5db 46%,#c2352b); }
     .cm-mission  { background:linear-gradient(135deg,#080b22,#1b2456 55%,#3b2f6e); }
     .cm-blackflag{ background:linear-gradient(135deg,#0e0e10,#26262b 55%,#4a4a52); }
-    .cm-alchemist{ background:linear-gradient(135deg,#2a1a4a,#4b2e83 50%,#1f7a5a); }
+    .cm-alchemist{ background:url('/static/camo_skin_alchemist.jpg') center/cover; }
     .cm-shadow   { background:linear-gradient(135deg,#0c0c0f,#1c1c24 56%,#7a1f2b); }
     .cm-pole     { background:linear-gradient(135deg,#c1121f,#7a0c15 46%,#111114); }
     .cm-arcade   { background:linear-gradient(135deg,#ff2e97,#8a2be2 50%,#00e5ff); }
@@ -726,7 +726,7 @@
       pt:{activate:'Ativar',active:'Ativo ✓',owned:'Adquirido',deactivate:'Usar padrão',get:'Obter skin',soon:'Os pagamentos chegam em breve',on:'Ativado — ',go:'veja no app →',off:'Voltou ao tema padrão',prev:'👁 Prévia',hint:'Clique em qualquer lugar para fechar',flip:'Ver o outro visual',inside:'O app com o camo',skin:'A pele do camo',bought:'A skin é sua! ',err:'Não foi possível conectar ao PayPal — tente de novo',cartAdd:'Adicionar ao carrinho',cartIn:'No carrinho ✓',cartBought:'O carrinho inteiro é seu! ',cartErr:'Algo do carrinho não está mais disponível',locked:'Abre em',lockedTip:'Abre às 00:00 (horário da Venezuela) e fica aberto por 24 horas.',lockedWhen:'00:00 UTC−4 (horário da Venezuela)',prevFrameLbl:'Como fica no fórum',prevFrameTitle:'Sweep do PDL e reclaim na abertura',prevFrameBody:'A mínima de ontem foi varrida e o reclaim veio limpo.',curNormal:'Normal',curHot:'Sobre um link',notReady:'Em breve — a arte está a caminho',cartTitle:'Seu carrinho',cartSee:'Ver o que tem \u25B8',cartTotal:'Total',cartEmpty:'Ainda não tem nada.',cartRemove:'Remover',cartQty:'Quantidade 1',kCamo:'Camo',kFrame:'Placa do fórum',kCursor:'Cursor'}
     }[lang];
     // Camos whose theme has a second look (light/dark) worth flipping to.
-    var PREV_ALT = { standard:1, mission:1, pole:1, chronicles:1 };
+    var PREV_ALT = { standard:1, mission:1, pole:1, chronicles:1, highnoon:1, alchemist:1 };
 
     function slugOf(card){
       // Server-rendered cards (roulette camos) carry their slug directly, so a

@@ -1137,7 +1137,7 @@ en los T&C públicos.
 reskinea SOLO el fondo/colores del sitio (layout/paneles/posiciones NO cambian) + swap de la mascota en
 el Quiz (welcome + pass/fail). **Infra base (cableada, estable):** `User.active_camo`/`owned_camos` +
 helpers `camos_owned()/add_camo()/owns_camo()` (admin posee TODO); `CAMO_SLUGS` (20 slugs) y
-`CAMO_READY` en app.py — **hoy `{'rising-sun','pole','premium','fourth','naval','mission','blackflag','standard','chronicles','gridiron','nile'}`**, el resto pendiente; endpoints
+`CAMO_READY` en app.py — **hoy `{'rising-sun','pole','premium','fourth','naval','mission','blackflag','standard','chronicles','gridiron','nile','highnoon','alchemist'}`**, el resto pendiente; endpoints
 `/api/camo/activate` `/api/camo/deactivate`; `/app` pinta `body.camo-<slug>` pre-paint (sin FOUC);
 tienda `/camos` con ownership/compra. ✅ **TIENDA CABLEADA A PAYPAL (2026-07-30, inerte sin claves):**
 decisión del usuario = camos SOLO por PayPal ($1.99 themes / $4.99 seasonal, asume la comisión fija;
@@ -1351,7 +1351,26 @@ sampleado con precisión de píxel); camos con arte que NO debe recolorearse (ej
   termina SIEMPRE en la X en cualquier pantalla (verificado 1440 y 1920). Se eliminó la capa X de esquina.
   Regla: elementos que DEBEN tocarse van en el MISMO sistema de coordenadas (mismo SVG), nunca uno con
   `100% 100%` y otro con px fijo anclado a la esquina.
-- **Pendientes de theme:** 13 slugs más sin arte de mascota
+- **High Noon + The Alchemist** ✅ **(2026-08-22, los 2 primeros camos de TIENDA pendientes; DOS
+  looks cada uno por pedido del dueño).** Generadores `tools/build_highnoon_camo.py` y
+  `tools/build_alchemist_camo.py` (patrón Nile: una geometría, dos paletas, idempotentes; keyean
+  por `.light`, NO son DARK/LIGHT_ALWAYS). **High Noon** = la calle del oeste (mesetas, saloon con
+  falsa fachada, almacén, banco, torre de agua, saguaros, matojo) ☀️ a pleno sol / 🌙 de noche con
+  las ventanas encendidas; esquina = **estrella de sheriff** (latón de día, plata de noche).
+  **Alchemist** = el laboratorio (tomos+vela, mortero, matraz cónico púrpura, el de bola
+  burbujeando esmeralda, pergamino, estante, símbolos geométricos en la pared — sin <text>);
+  esquina = **el alambique goteando ORO**. Cableado: `CAMO_READY` + swatch con piel real +
+  `PREV_ALT` (⇆ en tarjeta y lightbox); bios ×4 ya existían. 8 imágenes (skin/skin_alt/prev/
+  prev_alt ×2) regeneradas con `scratchpad/gen_hn_alq.py`; sin botargas propias (muñeco-flecha,
+  como arrancó standard). Verificado en navegador: tienda 18/18 + rodada 23/23 + viaje 13/13 +
+  botargas 46/46.
+  ⚠️ **Trampa del generador de pieles (2 lecciones):** (1) re-correr un builder cortaba hasta el
+  ancla de Blackflag y SE COMÍA los bloques insertados en medio — el corte va hasta el SIGUIENTE
+  `/* ═══`, no hasta un ancla fija; (2) un data-URI de SVG dentro de `style='…'` (comilla simple)
+  **parte el atributo en la primera comilla del URI** y la declaración entera muere — ni el
+  gradiente pinta, y el guard de stddev NO lo caza porque el gradiente solo ya varía. El CSS de
+  prueba va SIEMPRE en `<style>`.
+- **Pendientes de theme:** 10 slugs más sin arte de mascota
   aún. Antes de diseñar cada uno: preguntar 1ª idea/temática al usuario (así arrancó Pole: "plano de
   construcción de F1"), ofrecer 3 variantes, iterar sobre la elegida, cablear igual que Pole/Premium
   (bloque CSS con vars `--bg/--surface/--card/--border/--border2/--text/--muted/--accent/--accent-h/

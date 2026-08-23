@@ -2453,7 +2453,8 @@ CAMO_SLUGS = {
 # Camos that actually have a theme built and can be activated today. The rest
 # still render as "Coming soon" in the store. Add a slug here once its CSS ships.
 CAMO_READY = {'rising-sun', 'pole', 'premium', 'fourth', 'naval', 'mission',
-              'blackflag', 'standard', 'chronicles', 'gridiron', 'nile'}
+              'blackflag', 'standard', 'chronicles', 'gridiron', 'nile',
+              'highnoon', 'alchemist'}
 # Camos that are ONLY ever won on the roulette — never for sale, at any price.
 # Same channel wall the frames and cursors live behind: a piece belongs to one
 # channel forever, so the store must never quote a price for these.
