@@ -652,6 +652,40 @@ barra lateral, ni Synapse), con `noindex`, **fuera del sitemap y de todos los me
 - **PENDIENTE:** no hay pestaña en `/admin` para verlas — hoy se leen por correo, y si el SMTP
   falla la fila solo se ve en la base. Ofrecido al dueño, aún no pedido.
 
+## 🔬 INVESTIGACIÓN — autopublicación en redes + upgrade de visión (2026-08-23, SIN construir)
+> Última tarea antes de su pausa de 1-2 semanas. Solo investigación verificada; NO hay luz verde
+> de construcción. Al volver, decidir fases.
+**A. Autopublicar (YouTube/X/Reddit) — arquitectura recomendada: cola de aprobación en /admin +
+cron en el VPS (patrón monitor.py).** Claude genera lotes → el dueño aprueba → el cron publica
+espaciado. Por red (verificado 2026-08):
+- **YouTube:** 🔴 subir por API desde un proyecto SIN AUDITAR deja el video FORZADO A PRIVADO
+  (regla desde jul-2020; sin apelación — hay que pasar la API Compliance Audit de Google).
+  Camino pragmático HOY: **programación nativa de YouTube Studio** (gratis, ilimitada): una
+  sesión al mes deja 8-12 videos aprobados ya programados. API solo si algún día se quiere
+  full-auto (la subida ya va en bucket propio ~100/día, la cuota no es problema — el candado es
+  la auditoría).
+- **X:** la API pasó a PAGO POR USO en feb-2026 (sin tier gratis para nuevos): $0.015/post pero
+  **$0.20 si lleva URL** — y los nuestros llevarían link. ~30 posts/mes con link ≈ $6/mes, sin
+  mínimo. Alternativas: programar nativo en x.com (gratis, manual) o Metricool ($22/mes + $10
+  por cuenta de X).
+- **Reddit:** API gratis (<100 req/min, PRAW). 🔴 PERO el full-auto respondiendo desde su cuenta
+  es EL de mayor riesgo: regla del 10% de autopromo, shadowban por patrones automáticos
+  (intervalos exactos, mismo dominio), subs de trading hostiles a promo. Recomendado SEMI-auto:
+  cron caza hilos por keywords → Claude redacta borradores a una bandeja de /admin → él aprueba
+  con un clic (la API publica lo aprobado). Sin link en la mayoría de respuestas.
+- Si se construye: tabla ContentQueue + pestaña admin + `tools/social_cron.py`, credenciales por
+  env (patrón condicional). Fase 1 X, fase 2 Reddit semi-auto, fase 3 YouTube.
+**B. Upgrade de visión del analizador (hoy GPT-4o).** Estado 2026: Gemini (2.5/3.x Pro) lidera
+los benchmarks multimodales; GPT-5.x fuerte en razonamiento con imágenes; Claude fuerte en docs.
+Ningún ganador universal y NINGÚN benchmark público mide lo nuestro. 🔑 **La ventaja ya está
+construida: el banco de 30 casos** (verdad por construcción + calificador) — una pasada por
+modelo ≈ $0.35-1 y dice EXACTAMENTE si el candidato ve los 4 ciegos de GPT-4o (ratios armónicos
+H3/H4, solape E3, cruce de medias T4, RSI T3). Plan al volver: variante de `corre_banco` con
+base_url/model por parámetro (Gemini expone endpoint compatible-OpenAI → mismo SDK; NO se toca
+el analizador), correr 2-3 candidatos, comparar nota y costo. Costos: hoy ≈$0.029/análisis;
+Gemini 2.5 Pro y GPT-5 están en $1.25/M in + $10/M out (mismo orden); GPT-5.5 dobla ($5/$30).
+El switch de producción sería config (patrón condicional), con su decisión.
+
 ## 📱 REDES SOCIALES — kit de marca generado (2026-08-04)
 Instagram y TikTok abiertos por el dueño, 0 seguidores, 0 publicado. Hecho:
 - **`tools/gen_posts_ig.py`** (+ `tools/rasteriza_posts.py` para el PNG) genera
