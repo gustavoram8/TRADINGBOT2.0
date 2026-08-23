@@ -247,6 +247,32 @@ T = {
     'sello2': 'OPEN 24/7',
     'c2': 'FOLLOW US',
     'n2': 'This week we break down every tool.',
+
+    # ── 3 · el tamaño de posición. Contenido de VALOR, no pitch: el dueño
+    #    acababa de chocar con esto en su cuenta de fondeo (le rechazaron
+    #    2.1 lotes en una cuenta de 6K) y es un error que comete todo el que
+    #    llega a CFDs desde futuros. Cierra con FOLLOW, no con el producto:
+    #    una historia que enseña y no vende es la que gana el seguidor.
+    'e3': 'POSITION SIZING',
+    't3': '28 POINTS.<br>TWO<br>TRADERS.',
+    's3': 'Same chart. Same stop. One survives.',
+    'spec3': 'SPX500 · SAME 28-POINT MOVE',
+    'sello3': 'THE RULE',
+    'r3': 'Margin is the broker’s limit.<br>Your stop is yours.',
+    # la fórmula vive DENTRO del bloque: suelta pedía su propio renglón y la
+    # pieza ya no cabe entre las dos zonas muertas de Instagram.
+    'r3b': 'RISK ÷ (STOP IN POINTS × POINT VALUE) = SIZE',
+    # 🔴 EL CIERRE ES LO QUE HACE QUE LA PIEZA SEA DE TRADEABLE. La primera
+    #    versión remataba en FOLLOW US y el dueño la cazó: *"¿qué tiene que
+    #    ver esa historia con Tradeable Academy?"*. Tenía razón — era una
+    #    lección de trading que podía publicar cualquiera. La lección pasa a
+    #    ser la DEMOSTRACIÓN y el analizador, la respuesta: el tamaño es una
+    #    de las seis cosas que lee, y es justo la que no ves tú solo.
+    'v3': 'You don’t catch that on your own trade. Six things get read back:',
+    'p3': 'ENTRY · STOP · TARGET · TIMING · RISK · THE SETUP ITSELF',
+    'c3': 'GET YOUR ANALYSIS',
+    'c3b': 'upload the chart · say what you were after · get the read',
+    'n3': 'tradeable.academy · no card needed',
 }
 
 
@@ -389,6 +415,90 @@ def historia_no_somos():
     return 'historia-2-no-somos', ORO, cuerpo, 0, True
 
 
+def barras():
+    """El mismo movimiento del mercado, dos tamaños. Dos barras macizas y nada
+    más: la lección se ve ANTES de leerse, que es lo único que se le puede
+    pedir a una historia.
+
+    ⚠️ Las longitudes son proporcionales a la pérdida REAL (84/588 = 14,3 %),
+    no “una grande y otra chica”: si la proporción se dibuja a ojo, cualquiera
+    que haga la cuenta pilla el truco y la pieza pierde justo lo que la hace
+    creíble. Los porcentajes de cuenta son aritmética pura (588/6000 = 9,8 %),
+    no una regla de ninguna prop firm — eso no se afirma sin verificarlo.
+    """
+    AN, AL = 1000.0, 296.0
+    ALTA, BAJA = 588.0, 84.0
+    ancho_a = AN
+    ancho_b = AN * BAJA / ALTA
+    p = []
+
+    def fila(y, etiqueta, ancho, color, cifra, pct, tinta_dentro):
+        p.append('<text x="0" y="%.1f" fill="#f4f6fa" font-size="25" '
+                 'font-weight="700" font-family="Mono,monospace" '
+                 'letter-spacing=".08em">%s</text>' % (y, etiqueta))
+        p.append('<rect x="0" y="%.1f" width="%.1f" height="62" fill="%s"/>'
+                 % (y + 16, ancho, color))
+        if tinta_dentro:
+            p.append('<text x="%.1f" y="%.1f" fill="#07080b" font-size="44" '
+                     'font-weight="900" font-family="Inter,sans-serif" '
+                     'text-anchor="end">%s</text>' % (ancho - 22, y + 63, cifra))
+        else:
+            p.append('<text x="%.1f" y="%.1f" fill="#f4f6fa" font-size="44" '
+                     'font-weight="900" font-family="Inter,sans-serif">%s</text>'
+                     % (ancho + 22, y + 63, cifra))
+        p.append('<text x="0" y="%.1f" fill="#8e96a8" font-size="21" '
+                 'font-weight="700" font-family="Mono,monospace" '
+                 'letter-spacing=".07em">%s</text>' % (y + 110, pct))
+
+    fila(22, '2.1 LOTS  ·  $21 / POINT', ancho_a, ROJO,
+         '−$588', '9.8% OF A 6,000 ACCOUNT', True)
+    fila(178, '0.3 LOTS  ·  $3 / POINT', ancho_b, ORO,
+         '−$84', '1.4% OF THE SAME ACCOUNT', False)
+    return ('<svg viewBox="0 0 %.0f %.0f" preserveAspectRatio="xMidYMid meet" '
+            'style="width:100%%;height:auto" '
+            'xmlns="http://www.w3.org/2000/svg">%s</svg>' % (AN, AL, ''.join(p)))
+
+
+def historia_lotes():
+    """La tercera: enseña y no vende. El remate es FOLLOW porque la pieza no
+    lleva ningún anuncio detrás — su trabajo es que quien la lea se quede."""
+    # 🔴 Overrides LOCALES, y no son cosmética: esta pieza lleva un bloque
+    #    más que las otras dos y, medida en el navegador con los cuerpos
+    #    compartidos, el remate y el logotipo caían 130 px DENTRO de la barra
+    #    de responder de Instagram. Van aquí y no en CSS para no mover ni un
+    #    píxel de las historias 1 y 2, que ya están aprobadas.
+    ajuste = ("<style>h1.tres{font-size:80px;margin-top:24px}"
+              ".filete{margin:20px 0 14px}.sub{font-size:44px}"
+              ".spec{margin-top:12px;font-family:Mono,monospace;font-size:20px;"
+              "font-weight:700;letter-spacing:.06em;color:#6d7484}"
+              ".grafico{margin-top:20px}.bloque{margin-top:26px;padding:26px 34px 28px}"
+              ".bloque .eco{font-family:Mono,monospace;font-size:23px;"
+              "letter-spacing:.04em;margin-top:16px;padding-top:14px}"
+              ".pregunta{margin-top:20px;font-size:31px}"
+              ".lee{margin-top:14px;margin-bottom:26px}"
+              "</style>")
+    # El remate va SÓLIDO (como la historia 1) y con su hueco debajo: ahí cae
+    # el sticker del enlace sin pisar texto. Sin logotipo al pie — ya está en
+    # la banda de cabecera, repetirlo es ruido y son 64 px que no sobran.
+    cuerpo = (ajuste
+              + "<div class='banda'><span>%s</span>"
+              "<span class='b2'>TRADEABLE.ACADEMY</span></div>"
+              "<div class='aire'><h1 class='tres'>%s</h1>"
+              "<div class='filete'></div><div class='sub'>%s</div>"
+              "<div class='spec'>%s</div></div>"
+              "<div class='aire grafico'>%s</div>"
+              "<div class='aire'><div class='bloque'><div class='sello'>%s</div>%s"
+              "<div class='eco'>%s</div></div>"
+              "<p class='pregunta'>%s</p><div class='lee'>%s</div></div>"
+              "<div class='abajo'><div class='remate'><div class='t'>%s</div>"
+              "<div class='p'>%s</div><div class='n'>%s</div></div>"
+              "<div class='hueco'></div></div>"
+              % (T['e3'], T['t3'], T['s3'], T['spec3'], barras(), T['sello3'],
+                 T['r3'], T['r3b'], T['v3'], T['p3'], T['c3'], T['c3b'],
+                 T['n3']))
+    return 'historia-3-lotes', ORO, cuerpo, 96, False
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--guias', action='store_true',
@@ -418,7 +528,7 @@ def main():
                 % (fuentes, css, g, cuerpo, marca))
 
     plan = []
-    for hacer in (historia_entrada, historia_no_somos):
+    for hacer in (historia_entrada, historia_no_somos, historia_lotes):
         nombre, acento, cuerpo, hueco, pie = hacer()
         io.open(os.path.join(SALIDA, nombre + '.html'), 'w',
                 encoding='utf-8').write(pagina(acento, cuerpo, hueco, pie, False))
