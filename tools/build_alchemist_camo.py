@@ -1,31 +1,39 @@
 # -*- coding: utf-8 -*-
 """Genera el bloque CSS del camo THE ALCHEMIST y lo inserta en index.html.
 
-Temática (tienda, camo común $4.99): **el laboratorio del alquimista** — la
-bio de la tienda lo fija desde siempre: "púrpuras arcanos y un brillo
-esmeralda — convierte los gráficos en oro". La escena es la mesa de trabajo:
-la pila de tomos con la vela encima, el mortero, los matraces (el cónico
-púrpura y el de bola esmeralda burbujeando sobre su trípode), el pergamino,
-el estante de frascos y los símbolos alquímicos desvaídos en la pared. El
-adorno de esquina que NOMBRA al camo (como la faluca de Nile o la estrella
-de High Noon): **el ALAMBIQUE destilando una gota de ORO** en su vial.
+Temática (tienda, camo común $4.99): **LA PÁGINA DEL GRIMORIO** — la bio de
+la tienda manda: "púrpuras arcanos y un brillo esmeralda — convierte los
+gráficos en oro". v2 tras el veredicto del dueño sobre la v1 (una mesa de
+laboratorio): *"el diseño de alquimista no me gusta… iguales al de Egipto"*.
+La v1 era la fórmula de los camos de ruleta (escena en franja baja). Ésta es
+el cuaderno del alquimista, con el patrón que hizo bueno a Pole — el MISMO
+dibujo en dos materiales:
 
-DOS LOOKS pedidos por el dueño (patrón Chronicles/Nile — NO va en
-DARK_ALWAYS):
-  🌙 night · el laboratorio a la luz de la vela: piedra púrpura, la llama y
-             los brillos — el esmeralda del matraz y el oro del alambique.
-  ☀️ day   · el MISMO estudio de día: pared de pergamino cálido, los
-             líquidos en tonos joya y los símbolos como tinta desvaída.
-Una geometría, dos paletas (dict PALETTE) — re-correr el script re-inserta el
+  ☀️ light · la página de VITELA: tinta ferrogálica sobre pergamino, con los
+             toques de PAN DE ORO (el centro del diagrama, la gota).
+  🌙 dark  · el MISMO dibujo FOSFORESCENTE: el conjuro activo — líneas
+             esmeralda con halo y el oro encendido sobre púrpura casi negro.
+
+El dibujo (idéntico en ambos looks — eso ES el patrón Pole):
+  · el DIAGRAMA DE LA GRAN OBRA abajo a la izquierda: la cuadratura del
+    círculo (círculo–triángulo–cuadrado–círculo) con los triángulos de los
+    cuatro elementos y el símbolo del ORO en el centro. Trazos GRUESOS —
+    el dueño rechazó las telarañas de línea fina (lección de Premium).
+  · la RECETA a lo largo del borde inferior: la fila de símbolos alquímicos
+    (mercurio, azufre, sal, oro, plata) como GEOMETRÍA pura — nada de
+    <text>, un SVG de background no hereda fuentes — sobre sus renglones.
+  · el ALAMBIQUE dibujado a tinta en la esquina inferior derecha, destilando
+    su GOTA DE ORO: el objeto que nombra al camo.
+  · los renglones de margen a los lados en CSS puro (abrazan cualquier
+    pantalla sin estirarse).
+
+Una geometría, dos tintas (dict PALETTE) — re-correr el script re-inserta el
 bloque, es idempotente.
 
-Reglas del sitio que respeta (las de siempre):
-  · Nada de `cover` con horizonte: la mesa se ancla `center bottom /
-    100% auto`.
-  · Todo lo importante vive en la franja BAJA (los paneles tapan el centro).
-  · El adorno de esquina se RECONOCE a la primera → el alambique y su gota.
-  · Los símbolos de la pared son GEOMETRÍA (círculos, triángulos, lunas):
-    nada de <text> — un SVG de background no hereda fuentes.
+Reglas del sitio que respeta:
+  · El adorno se RECONOCE a la primera → el diagrama y el alambique.
+  · Todo lo importante vive en la franja BAJA y en los laterales (los
+    paneles tapan el centro).
   · iOS-safe: body transparente + ::before position:fixed.
   · Jinja: ningún `{#`/`{{`/`{%` dentro del CSS insertado.
 
@@ -33,7 +41,6 @@ Uso:  python3 tools/build_alchemist_camo.py        (desde la raíz del repo)
 """
 import math
 import os
-import random
 import re
 from urllib.parse import quote
 
@@ -46,295 +53,238 @@ def datauri(svg):
     return "url(\"data:image/svg+xml,%s\")" % quote(svg, safe="/:=;,.-()'% ")
 
 
-# ══ una geometría, dos paletas ════════════════════════════════════════════
+# ══ un dibujo, dos tintas ═════════════════════════════════════════════════
 PALETTE = {
-    # 🌙 el laboratorio de noche — piedra púrpura + esmeralda + oro (la bio)
-    'night': dict(SYM='#8f7fc0', SYM_OP='0.30',
-                  BENCH='#3a2a20', BENCH_D='#2a1d15', SHELF='#32241a',
-                  GLASS='#b9c4e8', BOOK1='#5a3a6e', BOOK2='#2f5a4a',
-                  BOOK3='#7a5a2a', PAGE='#d8cba8',
-                  LIQ_P='#7a4fc0', LIQ_E='#35d18e', LIQ_G='#e8b34a',
-                  FLAME='#ffb85c', CANDLE='#d8cba8',
-                  GLOW_OP='0.5', IRON='#242032',
-                  JAR='#4a3a68', CORK='#8a6a3c'),
-    # ☀️ el mismo estudio de día — pergamino, madera cálida y tinta
-    'day': dict(SYM='#8a6a34', SYM_OP='0.28',
-                BENCH='#8a5f38', BENCH_D='#6e4826', SHELF='#7a5230',
-                GLASS='#6e5a3a', BOOK1='#6a3fa0', BOOK2='#2f8f5a',
-                BOOK3='#a8742e', PAGE='#fdf6e0',
-                LIQ_P='#6a3fa0', LIQ_E='#2f8f5a', LIQ_G='#c8912a',
-                FLAME='#e8933c', CANDLE='#f2e8cc',
-                GLOW_OP='0.0', IRON='#4a3a28',
-                JAR='#c9a468', CORK='#8a6a3c'),
+    # ☀️ tinta ferrogálica + pan de oro sobre vitela
+    'day': dict(INK='#4a3520', GOLD='#c8912a', HALO=None, HALO_G=None),
+    # 🌙 el conjuro activo: esmeralda con halo + oro encendido
+    'night': dict(INK='#35d18e', GOLD='#e8b34a',
+                  HALO='#35d18e', HALO_G='#e8b34a'),
 }
 
-BENCH_TOP = 430           # la tabla de la mesa
+
+def _stroke(d, C, w=4.5, gold=False, fill='none'):
+    """Un trazo con su halo cuando el look es fosforescente. El halo es el
+    MISMO path, gordo y translúcido, debajo — así el 'brillo' funciona en un
+    SVG de background sin filtros."""
+    col = C['GOLD'] if gold else C['INK']
+    halo = C['HALO_G'] if gold else C['HALO']
+    out = []
+    if halo:
+        out.append("<path d='%s' fill='%s' stroke='%s' stroke-width='%.1f' "
+                   "opacity='0.28' stroke-linecap='round'/>"
+                   % (d, 'none' if fill == 'none' else halo, halo, w * 3))
+    out.append("<path d='%s' fill='%s' stroke='%s' stroke-width='%.1f' "
+               "stroke-linecap='round' stroke-linejoin='round'/>"
+               % (d, fill if fill == 'none' else col, col, w))
+    return ''.join(out)
 
 
-def _symbol(kind, cx, cy, s, col, op):
-    """Símbolos alquímicos como geometría pura (sin <text>): el círculo con
-    su triángulo inscrito, la luna creciente, el 'mercurio' (círculo + cruz +
-    cuernos) y el sol con sus rayos."""
-    p = []
-    if kind == 'tri':
-        p.append("<circle cx='%d' cy='%d' r='%.0f' fill='none' stroke='%s' "
-                 "stroke-width='2.5' opacity='%s'/>" % (cx, cy, s, col, op))
-        pts = []
-        for i in range(3):
-            a = -math.pi / 2 + i * 2 * math.pi / 3
-            pts.append('%.0f,%.0f' % (cx + s * .8 * math.cos(a),
-                                      cy + s * .8 * math.sin(a)))
-        p.append("<polygon points='%s' fill='none' stroke='%s' "
-                 "stroke-width='2.5' opacity='%s'/>" % (' '.join(pts), col, op))
-    elif kind == 'moon':
-        p.append("<path d='M%d,%d a%.0f,%.0f 0 1,0 0,%.0f a%.0f,%.0f 0 1,1 "
-                 "0,-%.0f Z' fill='%s' opacity='%s'/>"
-                 % (cx, cy - s, s, s, 2 * s, s * .72, s * .72, 2 * s, col, op))
-    elif kind == 'merc':
-        p.append("<g stroke='%s' stroke-width='2.5' fill='none' opacity='%s'>"
-                 % (col, op))
-        p.append("<circle cx='%d' cy='%d' r='%.0f'/>" % (cx, cy, s * .55))
-        p.append("<path d='M%d,%.0f v%.0f M%.0f,%.0f h%.0f'/>"
-                 % (cx, cy + s * .55, s * .8,
-                    cx - s * .5, cy + s * 1.0, s))
-        p.append("<path d='M%.0f,%.0f a%.0f,%.0f 0 0,0 %.0f,0'/>"
-                 % (cx - s * .55, cy - s * .8, s * .55, s * .55, s * 1.1))
-        p.append("</g>")
-    else:                                   # 'sun'
-        p.append("<circle cx='%d' cy='%d' r='%.0f' fill='none' stroke='%s' "
-                 "stroke-width='2.5' opacity='%s'/>" % (cx, cy, s * .6, col, op))
-        p.append("<g stroke='%s' stroke-width='2' opacity='%s'>" % (col, op))
-        for i in range(8):
-            a = i * math.pi / 4
-            p.append("<path d='M%.0f,%.0f L%.0f,%.0f'/>"
-                     % (cx + s * .75 * math.cos(a), cy + s * .75 * math.sin(a),
-                        cx + s * 1.05 * math.cos(a), cy + s * 1.05 * math.sin(a)))
-        p.append("</g>")
-    return ''.join(p)
+def _circle(cx, cy, r, C, w=4.5, gold=False):
+    d = ("M%.0f,%.0f a%.0f,%.0f 0 1,0 %.0f,0 a%.0f,%.0f 0 1,0 -%.0f,0"
+         % (cx - r, cy, r, r, 2 * r, r, r, 2 * r))
+    return _stroke(d, C, w, gold)
 
 
-def scene_svg(mode='night'):
-    """1440×540. Los símbolos desvaídos en la pared, el estante de frascos a
-    la derecha, y la MESA a lo ancho con todo el instrumental encima. El
-    centro-alto queda tranquilo: ahí caen los paneles."""
-    W, H = 1440, 540
+def _poly(pts, C, w=4.5, gold=False, close=True):
+    d = 'M' + ' L'.join('%.0f,%.0f' % p for p in pts) + (' Z' if close else '')
+    return _stroke(d, C, w, gold)
+
+
+def _elemento(cx, cy, s, C, quien):
+    """Los triángulos de los cuatro elementos: fuego △, agua ▽, aire △ con
+    barra, tierra ▽ con barra. Macizos y chicos."""
+    up = quien in ('fuego', 'aire')
+    dy = -s if up else s
+    pts = [(cx - s, cy - dy * .55), (cx + s, cy - dy * .55), (cx, cy + dy * .75)]
+    out = [_poly(pts, C, 3.5)]
+    if quien in ('aire', 'tierra'):
+        out.append(_stroke('M%.0f,%.0f L%.0f,%.0f'
+                           % (cx - s * .6, cy + dy * .1, cx + s * .6,
+                              cy + dy * .1), C, 3.5))
+    return ''.join(out)
+
+
+def diagram_svg(mode='day'):
+    """420×420: el diagrama de la GRAN OBRA — la cuadratura del círculo con
+    los cuatro elementos y el oro en el centro."""
     C = PALETTE[mode]
-    night = mode == 'night'
-    rng = random.Random(20260499)
-    p = ["<svg xmlns='http://www.w3.org/2000/svg' width='%d' height='%d' "
-         "viewBox='0 0 %d %d'>" % (W, H, W, H)]
-    p.append(
-        "<defs>"
-        "<linearGradient id='aBen' x1='0' y1='0' x2='0' y2='1'>"
-        "<stop offset='0' stop-color='%s'/>"
-        "<stop offset='1' stop-color='%s'/></linearGradient>"
-        "<radialGradient id='aGlowE' cx='50%%' cy='50%%' r='50%%'>"
-        "<stop offset='0' stop-color='%s' stop-opacity='%s'/>"
-        "<stop offset='1' stop-color='%s' stop-opacity='0'/></radialGradient>"
-        "<radialGradient id='aGlowF' cx='50%%' cy='50%%' r='50%%'>"
-        "<stop offset='0' stop-color='%s' stop-opacity='%s'/>"
-        "<stop offset='1' stop-color='%s' stop-opacity='0'/></radialGradient>"
-        "</defs>" % (C['BENCH'], C['BENCH_D'],
-                     C['LIQ_E'], C['GLOW_OP'], C['LIQ_E'],
-                     C['FLAME'], C['GLOW_OP'], C['FLAME']))
-
-    # ── los símbolos en la pared, desvaídos y SOLO en los laterales ──
-    for kind, cx, cy, s in (('tri', 130, 240, 34), ('moon', 300, 320, 16),
-                            ('merc', 90, 380, 22), ('sun', 260, 170, 26),
-                            ('tri', 1330, 300, 26), ('sun', 1160, 210, 22),
-                            ('moon', 1240, 370, 14), ('merc', 1380, 170, 20)):
-        p.append(_symbol(kind, cx, cy, s, C['SYM'], C['SYM_OP']))
-
-    # ── el estante de la derecha con sus frascos ──
-    shx = 1080
-    p.append("<rect x='%d' y='330' width='260' height='10' fill='%s'/>"
-             % (shx, C['SHELF']))
-    p.append("<path d='M%d,340 l14,18 M%d,340 l-14,18' stroke='%s' "
-             "stroke-width='5'/>" % (shx + 8, shx + 252, C['SHELF']))
-    for i, (jw, jh) in enumerate(((30, 40), (24, 30), (34, 46), (26, 36))):
-        jx = shx + 22 + i * 60
-        p.append("<rect x='%d' y='%d' width='%d' height='%d' rx='5' "
-                 "fill='%s' opacity='0.9'/>" % (jx, 330 - jh, jw, jh, C['JAR']))
-        p.append("<rect x='%d' y='%d' width='%d' height='7' rx='2' fill='%s'/>"
-                 % (jx + jw // 4, 330 - jh - 6, jw // 2, C['CORK']))
-
-    # ── LA MESA, de borde a borde ──
-    p.append("<rect x='0' y='%d' width='%d' height='14' fill='%s'/>"
-             % (BENCH_TOP, W, C['SHELF']))
-    p.append("<rect x='0' y='%d' width='%d' height='%d' fill='url(#aBen)'/>"
-             % (BENCH_TOP + 14, W, H - BENCH_TOP - 14))
-    p.append("<g stroke='%s' stroke-width='2' opacity='0.35' fill='none'>"
-             % C['BENCH_D'])
-    for _ in range(8):
-        x0 = rng.uniform(0, W - 260)
-        y0 = rng.uniform(BENCH_TOP + 30, H - 12)
-        p.append("<path d='M%.0f,%.0f h%.0f'/>" % (x0, y0, rng.uniform(90, 240)))
-    p.append("</g>")
-
-    # ── la pila de tomos con la VELA encima (izquierda) ──
-    bx = 110
-    for i, (bw, bh, col) in enumerate(((150, 26, C['BOOK1']),
-                                       (136, 22, C['BOOK2']),
-                                       (144, 24, C['BOOK3']))):
-        by = BENCH_TOP - sum(h for _, h, _ in
-                             (((150, 26, 0), (136, 22, 0), (144, 24, 0))[:i + 1]))
-        p.append("<rect x='%d' y='%d' width='%d' height='%d' rx='4' fill='%s'/>"
-                 % (bx + i * 5, by, bw, bh, col))
-        p.append("<rect x='%d' y='%d' width='%d' height='4' fill='%s' "
-                 "opacity='0.8'/>" % (bx + i * 5 + 6, by + bh - 7, bw - 12,
-                                      C['PAGE']))
-    cy_top = BENCH_TOP - 72
-    p.append("<rect x='%d' y='%d' width='16' height='44' rx='3' fill='%s'/>"
-             % (bx + 62, cy_top - 44, C['CANDLE']))
-    if night:
-        p.append("<circle cx='%d' cy='%d' r='46' fill='url(#aGlowF)'/>"
-                 % (bx + 70, cy_top - 56))
-        p.append("<path d='M%d,%d q7,-12 0,-22 q-7,10 0,22 Z' fill='%s'/>"
-                 % (bx + 70, cy_top - 46, C['FLAME']))
-    else:
-        p.append("<path d='M%d,%d v-9' stroke='%s' stroke-width='2'/>"
-                 % (bx + 70, cy_top - 44, C['GLASS']))
-
-    # ── el mortero con su mano ──
-    mx = 380
-    p.append("<path d='M%d,%d h84 q-6,36 -42,36 q-36,0 -42,-36 Z' fill='%s'/>"
-             % (mx, BENCH_TOP - 36, C['IRON']))
-    p.append("<path d='M%d,%d l26,-34' stroke='%s' stroke-width='9' "
-             "stroke-linecap='round'/>" % (mx + 52, BENCH_TOP - 40, C['IRON']))
-
-    # ── el matraz cónico (líquido púrpura) ──
-    ex = 640
-    p.append("<path d='M%d,%d h24 v-52 h-24 Z M%d,%d l-30,84 h108 l-30,-84 Z' "
-             "fill='none' stroke='%s' stroke-width='4' "
-             "stroke-linejoin='round'/>"
-             % (ex + 12, BENCH_TOP - 84, ex, BENCH_TOP - 84, C['GLASS']))
-    p.append("<path d='M%d,%d l-13,38 h74 l-13,-38 Z' fill='%s' opacity='0.9'/>"
-             % (ex - 12, BENCH_TOP - 38, C['LIQ_P']))
-
-    # ── el matraz de bola sobre su trípode, burbujeando esmeralda ──
-    fx, fy = 880, BENCH_TOP - 66
-    if night:
-        p.append("<circle cx='%d' cy='%d' r='84' fill='url(#aGlowE)'/>"
-                 % (fx, fy))
-    p.append("<path d='M%.0f,%d l%.0f,%.0f h%.0f Z' fill='none' stroke='%s' "
-             "stroke-width='4'/>" % (fx - 34, BENCH_TOP, 34, -26.0, 68,
-                                     C['IRON']))
-    p.append("<path d='M%d,%d q-8,10 -8,18 M%d,%d q8,10 8,18' stroke='%s' "
-             "stroke-width='4' fill='none'/>"
-             % (fx - 30, BENCH_TOP - 26, fx + 30, BENCH_TOP - 26, C['IRON']))
-    p.append("<circle cx='%d' cy='%d' r='36' fill='none' stroke='%s' "
-             "stroke-width='4'/>" % (fx, fy, C['GLASS']))
-    p.append("<rect x='%d' y='%d' width='18' height='26' fill='none' "
-             "stroke='%s' stroke-width='4'/>"
-             % (fx - 9, fy - 36 - 24, C['GLASS']))
-    p.append("<path d='M%d,%d a36,36 0 0,0 72,0 Z' fill='%s' opacity='0.92'/>"
-             % (fx - 36, fy, C['LIQ_E']))
-    for bx_, by_, br_ in ((fx - 10, fy - 8, 4), (fx + 12, fy - 20, 3),
-                          (fx + 2, fy - 34, 2.5)):
-        p.append("<circle cx='%d' cy='%d' r='%.1f' fill='none' stroke='%s' "
-                 "stroke-width='2' opacity='0.8'/>"
-                 % (bx_, by_, br_, C['LIQ_E'] if night else C['GLASS']))
-    p.append("<path d='M%d,%d q6,-12 0,-20 q-6,8 0,20 Z' fill='%s'/>"
-             % (fx, BENCH_TOP - 6, C['FLAME']))
-
-    # ── el pergamino desenrollado ──
-    px_ = 1020
-    p.append("<rect x='%d' y='%d' width='104' height='34' rx='4' fill='%s' "
-             "opacity='0.95'/>" % (px_, BENCH_TOP - 34, C['PAGE']))
-    p.append("<rect x='%d' y='%d' width='10' height='34' rx='5' fill='%s'/>"
-             % (px_ - 8, BENCH_TOP - 34, C['CORK']))
-    p.append("<rect x='%d' y='%d' width='10' height='34' rx='5' fill='%s'/>"
-             % (px_ + 102, BENCH_TOP - 34, C['CORK']))
-    p.append("<g stroke='%s' stroke-width='2' opacity='0.5'>" % C['SYM'])
-    for i in range(3):
-        p.append("<path d='M%d,%d h%d'/>"
-                 % (px_ + 12, BENCH_TOP - 26 + i * 8, 80 - i * 14))
-    p.append("</g>")
+    cx = cy = 210
+    p = ["<svg xmlns='http://www.w3.org/2000/svg' width='420' height='420' "
+         "viewBox='0 0 420 420'>"]
+    p.append(_circle(cx, cy, 185, C, 5.5))          # el círculo exterior
+    # el cuadrado, girado 45° no: recto, inscrito
+    s = 185 * 0.7071
+    p.append(_poly([(cx - s, cy - s), (cx + s, cy - s), (cx + s, cy + s),
+                    (cx - s, cy + s)], C, 4.5))
+    # el triángulo inscrito en el cuadrado
+    p.append(_poly([(cx, cy - s), (cx + s, cy + s), (cx - s, cy + s)], C, 4.5))
+    p.append(_circle(cx, cy, 92, C, 4.5))           # el círculo interior
+    # el símbolo del ORO en el centro: círculo con su punto, en pan de oro
+    p.append(_circle(cx, cy, 40, C, 5, gold=True))
+    if C['HALO_G']:
+        p.append("<circle cx='%d' cy='%d' r='22' fill='%s' opacity='0.25'/>"
+                 % (cx, cy, C['HALO_G']))
+    p.append("<circle cx='%d' cy='%d' r='11' fill='%s'/>" % (cx, cy, C['GOLD']))
+    # los cuatro elementos en las esquinas del cuadrado
+    p.append(_elemento(cx, cy - 185 * .82, 17, C, 'fuego'))
+    p.append(_elemento(cx + 185 * .82, cy, 17, C, 'agua'))
+    p.append(_elemento(cx, cy + 185 * .82, 17, C, 'tierra'))
+    p.append(_elemento(cx - 185 * .82, cy, 17, C, 'aire'))
+    # los puntitos cardinales sobre el círculo exterior (macizos)
+    for i in range(8):
+        a = i * math.pi / 4 + math.pi / 8
+        p.append("<circle cx='%.0f' cy='%.0f' r='5.5' fill='%s'/>"
+                 % (cx + 185 * math.cos(a), cy + 185 * math.sin(a), C['INK']))
     p.append("</svg>")
     return ''.join(p)
 
 
-# ══ CAPA 2 · el ALAMBIQUE, esquina inferior derecha ═══════════════════════
-def alembic_svg(mode='night'):
-    """210×190. El alambique clásico: la cucúrbita con su líquido, el capitel
-    con el pico de cisne, y la GOTA DE ORO cayendo en el vial — convierte los
-    gráficos en oro, dice la bio."""
+def _sym(kind, cx, cy, s, C):
+    """Los símbolos de la receta, como geometría: mercurio ☿, azufre 🜍,
+    sal 🜔, oro ☉ y plata ☽ — trazos gruesos, nada de <text>."""
+    out = []
+    if kind == 'mercurio':
+        out.append(_circle(cx, cy, s * .55, C, 3.8))
+        out.append(_stroke('M%.0f,%.0f v%.0f M%.0f,%.0f h%.0f'
+                           % (cx, cy + s * .55, s * .8, cx - s * .5,
+                              cy + s * 1.0, s), C, 3.8))
+        out.append(_stroke('M%.0f,%.0f a%.0f,%.0f 0 0,0 %.0f,0'
+                           % (cx - s * .55, cy - s * .85, s * .55, s * .55,
+                              s * 1.1), C, 3.8))
+    elif kind == 'azufre':
+        out.append(_poly([(cx - s * .6, cy), (cx + s * .6, cy),
+                          (cx, cy - s * .95)], C, 3.8))
+        out.append(_stroke('M%.0f,%.0f v%.0f M%.0f,%.0f h%.0f'
+                           % (cx, cy, s * .9, cx - s * .45, cy + s * .55,
+                              s * .9), C, 3.8))
+    elif kind == 'sal':
+        out.append(_circle(cx, cy, s * .75, C, 3.8))
+        out.append(_stroke('M%.0f,%.0f h%.0f'
+                           % (cx - s * .75, cy, s * 1.5), C, 3.8))
+    elif kind == 'oro':
+        out.append(_circle(cx, cy, s * .75, C, 3.8, gold=True))
+        out.append("<circle cx='%.0f' cy='%.0f' r='%.1f' fill='%s'/>"
+                   % (cx, cy, s * .22, C['GOLD']))
+    else:                                            # plata
+        d = ("M%.0f,%.0f a%.0f,%.0f 0 1,1 0,%.0f a%.0f,%.0f 0 1,0 0,-%.0f Z"
+             % (cx, cy - s * .8, s * .8, s * .8, s * 1.6, s * .58, s * .58,
+                s * 1.6))
+        out.append(_stroke(d, C, 3.5))
+    return ''.join(out)
+
+
+def recipe_svg(mode='day'):
+    """1440×150: la línea de la receta — símbolos sobre sus renglones, con
+    la flecha de la transmutación apuntando al ORO (el último)."""
     C = PALETTE[mode]
-    night = mode == 'night'
-    p = ["<svg xmlns='http://www.w3.org/2000/svg' width='210' height='190' "
-         "viewBox='0 0 210 190'>"]
-    if night:
-        p.append("<circle cx='160' cy='150' r='38' fill='%s' opacity='0.30'/>"
-                 % C['LIQ_G'])
-    # la cucúrbita (cuerpo de cebolla) con su base
-    p.append("<path d='M30,168 h76 M40,168 q-18,-30 4,-58 q-26,-22 -6,-52 "
-             "h60 q20,30 -6,52 q22,28 4,58' fill='none' stroke='%s' "
-             "stroke-width='4' stroke-linejoin='round'/>" % C['GLASS'])
-    p.append("<path d='M42,166 q-14,-26 6,-52 h40 q20,26 6,52 Z' fill='%s' "
-             "opacity='0.9'/>" % C['LIQ_G'])
-    # el capitel y el pico de cisne que baja a la derecha
-    p.append("<path d='M38,58 q30,-34 60,0' fill='none' stroke='%s' "
-             "stroke-width='4'/>" % C['GLASS'])
-    p.append("<path d='M96,44 q44,6 54,58 l6,34' fill='none' stroke='%s' "
-             "stroke-width='4' stroke-linecap='round'/>" % C['GLASS'])
-    # la GOTA de oro, cayendo del pico al vial
-    p.append("<path d='M158,146 q5,-9 0,-16 q-5,7 0,16 Z' fill='%s'/>"
-             % C['LIQ_G'])
-    # el vial que la recoge
-    p.append("<path d='M146,152 h24 v22 q0,8 -12,8 q-12,0 -12,-8 Z' "
-             "fill='none' stroke='%s' stroke-width='3.5'/>" % C['GLASS'])
-    p.append("<path d='M149,166 h18 v8 q0,5 -9,5 q-9,0 -9,-5 Z' fill='%s'/>"
-             % C['LIQ_G'])
-    # las burbujas dentro de la cucúrbita
-    for bx_, by_, br_ in ((60, 140, 4), (78, 128, 3), (70, 150, 2.5)):
-        p.append("<circle cx='%d' cy='%d' r='%.1f' fill='none' stroke='%s' "
-                 "stroke-width='2' opacity='0.75'/>"
-                 % (bx_, by_, br_, C['PAGE'] if night else C['GLASS']))
+    p = ["<svg xmlns='http://www.w3.org/2000/svg' width='1440' height='150' "
+         "viewBox='0 0 1440 150'>"]
+    # los renglones (dos, como cuaderno)
+    p.append(_stroke('M40,112 h560', C, 2.5))
+    p.append(_stroke('M40,138 h430', C, 2.5))
+    # la receta: mercurio + azufre + sal → oro (con la plata como resto)
+    xs = (95, 205, 315, 545, 425)
+    kinds = ('mercurio', 'azufre', 'sal', 'oro', 'plata')
+    for x, k in zip(xs, kinds):
+        p.append(_sym(k, x, 62, 26, C))
+    # los signos entre símbolos: + + = (geometría, no texto)
+    for x in (150, 260):
+        p.append(_stroke('M%.0f,62 h24 M%.0f,50 v24' % (x - 12, x), C, 3.5))
+    p.append(_stroke('M470,54 h30 M470,68 h30', C, 3.5))
+    # la flechita de la transmutación bajo el oro
+    p.append(_stroke('M515,112 h60 l-12,-9 m12,9 l-12,9', C, 3, gold=True))
+    p.append("</svg>")
+    return ''.join(p)
+
+
+def alembic_svg(mode='day'):
+    """230×210: el alambique A TINTA — cucúrbita con su rayado de grabado,
+    capitel, pico de cisne y la gota de ORO cayendo al vial."""
+    C = PALETTE[mode]
+    p = ["<svg xmlns='http://www.w3.org/2000/svg' width='230' height='210' "
+         "viewBox='0 0 230 210'>"]
+    # cuerpo de cebolla
+    p.append(_stroke('M42,188 h84 M52,188 q-20,-34 4,-64 q-28,-24 -6,-58 h64 '
+                     'q22,34 -6,58 q24,30 4,64', C, 4.5))
+    # el rayado del grabado dentro del cuerpo (media tinta)
+    p.append("<g opacity='0.55'>")
+    for i in range(5):
+        y = 132 + i * 11
+        p.append(_stroke('M%d,%d h%d' % (58 + i * 2, y, 58 - i * 6), C, 2.2))
+    p.append("</g>")
+    # capitel + pico de cisne
+    p.append(_stroke('M46,66 q34,-38 66,0', C, 4.5))
+    p.append(_stroke('M110,50 q48,8 58,62 l6,38', C, 4.5))
+    # la GOTA de oro
+    p.append(_stroke('M174,162 q6,-11 0,-19 q-6,8 0,19 Z', C, 3,
+                     gold=True))
+    if PALETTE[mode]['HALO_G']:
+        p.append("<circle cx='174' cy='154' r='16' fill='%s' opacity='0.22'/>"
+                 % C['HALO_G'])
+    # el vial
+    p.append(_stroke('M160,170 h28 v24 q0,9 -14,9 q-14,0 -14,-9 Z', C, 3.5))
+    p.append("<path d='M164,186 h20 v8 q0,5 -10,5 q-10,0 -10,-5 Z' "
+             "fill='%s'/>" % C['GOLD'])
     p.append("</svg>")
     return ''.join(p)
 
 
 # ══ el bloque CSS ═════════════════════════════════════════════════════════
+def _margins_css(ink, alpha):
+    """Los renglones de margen del cuaderno, en CSS puro (dos líneas por
+    lado, pegadas al viewport — sin SVG que estirar)."""
+    c = 'rgba(%d,%d,%d,%s)' % (int(ink[1:3], 16), int(ink[3:5], 16),
+                               int(ink[5:7], 16), alpha)
+    return (
+        "linear-gradient(90deg,transparent 54px,%(c)s 54px 56px,transparent 56px) left top / 100%% 100%% no-repeat,\n"
+        "        linear-gradient(90deg,transparent 64px,%(c)s 64px 66px,transparent 66px) left top / 100%% 100%% no-repeat,\n"
+        "        linear-gradient(270deg,transparent 54px,%(c)s 54px 56px,transparent 56px) left top / 100%% 100%% no-repeat,\n"
+        "        linear-gradient(270deg,transparent 64px,%(c)s 64px 66px,transparent 66px) left top / 100%% 100%% no-repeat"
+        % {'c': c})
+
+
 def css_block():
     return ("""
-    /* ═══ The Alchemist (tienda · camo común) — el LABORATORIO del
-       alquimista, con DOS looks (patrón Chronicles / Nile — NO es
-       DARK_ALWAYS):
-
-       🌙 dark  · el taller a la luz de la vela: piedra púrpura, los símbolos
-                  desvaídos en la pared, la pila de tomos con la vela, el
-                  mortero, el matraz cónico púrpura, el de bola burbujeando
-                  ESMERALDA sobre su llama, el pergamino y el estante de
-                  frascos — y el alambique destilando su gota de ORO en la
-                  esquina.
-       ☀️ light · el MISMO estudio de día: pergamino cálido, madera, los
-                  líquidos en tonos joya y los símbolos como tinta desvaída.
-
-       La mesa se ancla `100% auto center bottom` (nunca `cover`); iOS-safe
-       (body transparente + ::before fixed); el logo va por defecto sobre el
-       día y blanco sobre la noche, igual que Nile. */
+    /* ═══ The Alchemist (tienda · camo común) — LA PÁGINA DEL GRIMORIO, v2.
+       La v1 era una mesa de laboratorio y al dueño no le gustó (con razón:
+       la fórmula de los camos de ruleta otra vez). Ahora es el patrón que
+       hizo bueno a Pole — el MISMO dibujo en dos materiales:
+       ☀️ light · tinta ferrogálica sobre VITELA, con pan de oro.
+       🌙 dark  · el conjuro ACTIVO: el mismo dibujo fosforescente —
+                  esmeralda con halo y oro encendido sobre púrpura casi negro.
+       El dibujo: el diagrama de la GRAN OBRA (cuadratura del círculo + los
+       cuatro elementos + el oro en el centro) abajo-izquierda, la RECETA de
+       símbolos alquímicos sobre sus renglones a lo largo del borde inferior,
+       el ALAMBIQUE a tinta con su gota de oro en la esquina, y los renglones
+       de margen a los lados (CSS puro: abrazan cualquier pantalla). Trazos
+       GRUESOS a propósito — nada de telarañas de línea fina. */
     body.camo-alchemist { background: transparent !important; }
     body.camo-alchemist.light {
-      --bg:#f0e2c4;--surface:rgba(255,250,238,0.60);--card:rgba(255,250,238,0.72);
-      --border:rgba(90,60,120,0.20);--border2:rgba(90,60,120,0.32);
+      --bg:#f2e6c8;--surface:rgba(255,251,240,0.62);--card:rgba(255,251,240,0.74);
+      --border:rgba(74,53,32,0.22);--border2:rgba(74,53,32,0.34);
       --text:#38254a;--muted:rgba(56,37,74,0.62);
-      --accent:#6a3fa0;--accent-h:#55328a;--win:#2f8f5a;--loss:#c0392b;--be:#b4803c;
+      --accent:#6a3fa0;--accent-h:#55328a;--win:#2f8f5a;--loss:#c0392b;--be:#c8912a;
       color: var(--text);
     }
     body.camo-alchemist.light::before {
       content:""; position:fixed; inset:0; z-index:-2; pointer-events:none;
       background:
-        __ALE_DAY__ right 4% bottom 2% / 195px auto no-repeat,
-        __DAY__ center bottom / 100% auto no-repeat,
-        linear-gradient(#f6ecd6,#efe0bc 60%,#e7d4a8);
+        __ALE_DAY__ right 3% bottom 4% / 200px auto no-repeat,
+        __DIA_DAY__ left 2% bottom -60px / 360px auto no-repeat,
+        __REC_DAY__ center bottom / 100% auto no-repeat,
+        __MARG_DAY__,
+        radial-gradient(ellipse 60% 44% at 18% 12%, rgba(138,106,52,0.14), transparent 60%),
+        radial-gradient(ellipse 50% 40% at 86% 30%, rgba(138,106,52,0.10), transparent 62%),
+        linear-gradient(170deg,#f6ecd4,#efe2c0 52%,#e6d3a6);
     }
     body.camo-alchemist.light::after {
       content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
-      background: radial-gradient(ellipse 96% 88% at 50% 44%, transparent 60%, rgba(70,44,100,0.14) 100%);
+      background: radial-gradient(ellipse 96% 88% at 50% 44%, transparent 58%, rgba(90,62,24,0.20) 100%);
     }
     body.camo-alchemist:not(.light) {
-      --bg:#170f2e;--surface:rgba(255,255,255,0.06);--card:rgba(255,255,255,0.075);
-      --border:rgba(150,140,200,0.18);--border2:rgba(150,140,200,0.30);
+      --bg:#150d28;--surface:rgba(255,255,255,0.06);--card:rgba(255,255,255,0.075);
+      --border:rgba(53,209,142,0.20);--border2:rgba(53,209,142,0.32);
       --text:#e9e2f2;--muted:rgba(233,226,242,0.62);
       --accent:#35d18e;--accent-h:#27b478;--win:#43d18d;--loss:#e05563;--be:#e8b34a;
       color: var(--text);
@@ -342,13 +292,17 @@ def css_block():
     body.camo-alchemist:not(.light)::before {
       content:""; position:fixed; inset:0; z-index:-2; pointer-events:none;
       background:
-        __ALE_NIGHT__ right 4% bottom 2% / 195px auto no-repeat,
-        __NIGHT__ center bottom / 100% auto no-repeat,
-        linear-gradient(#120b26,#170f2e 55%,#241a44);
+        __ALE_NIGHT__ right 3% bottom 4% / 200px auto no-repeat,
+        __DIA_NIGHT__ left 2% bottom -60px / 360px auto no-repeat,
+        __REC_NIGHT__ center bottom / 100% auto no-repeat,
+        __MARG_NIGHT__,
+        radial-gradient(ellipse 70% 55% at 22% 78%, rgba(53,209,142,0.10), transparent 60%),
+        radial-gradient(ellipse 46% 40% at 88% 82%, rgba(232,179,74,0.08), transparent 62%),
+        linear-gradient(170deg,#100922,#150d28 52%,#1e1438);
     }
     body.camo-alchemist:not(.light)::after {
       content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
-      background: radial-gradient(ellipse 96% 90% at 50% 42%, transparent 56%, rgba(5,3,14,0.55) 100%);
+      background: radial-gradient(ellipse 96% 90% at 50% 42%, transparent 56%, rgba(4,2,12,0.55) 100%);
     }
     body.camo-alchemist:not(.light) .logo-img {
       content: url('/static/logo_t.png'); filter: invert(1); mix-blend-mode: normal;
@@ -356,8 +310,12 @@ def css_block():
 """
             .replace('__ALE_DAY__', datauri(alembic_svg('day')))
             .replace('__ALE_NIGHT__', datauri(alembic_svg('night')))
-            .replace('__DAY__', datauri(scene_svg('day')))
-            .replace('__NIGHT__', datauri(scene_svg('night'))))
+            .replace('__DIA_DAY__', datauri(diagram_svg('day')))
+            .replace('__DIA_NIGHT__', datauri(diagram_svg('night')))
+            .replace('__REC_DAY__', datauri(recipe_svg('day')))
+            .replace('__REC_NIGHT__', datauri(recipe_svg('night')))
+            .replace('__MARG_DAY__', _margins_css('#4a3520', '0.28'))
+            .replace('__MARG_NIGHT__', _margins_css('#35d18e', '0.16')))
 
 
 ANCHOR = '    /* ═══ Blackflag (pirate)'

@@ -1351,19 +1351,33 @@ sampleado con precisión de píxel); camos con arte que NO debe recolorearse (ej
   termina SIEMPRE en la X en cualquier pantalla (verificado 1440 y 1920). Se eliminó la capa X de esquina.
   Regla: elementos que DEBEN tocarse van en el MISMO sistema de coordenadas (mismo SVG), nunca uno con
   `100% 100%` y otro con px fijo anclado a la esquina.
-- **High Noon + The Alchemist** ✅ **(2026-08-22, los 2 primeros camos de TIENDA pendientes; DOS
-  looks cada uno por pedido del dueño).** Generadores `tools/build_highnoon_camo.py` y
-  `tools/build_alchemist_camo.py` (patrón Nile: una geometría, dos paletas, idempotentes; keyean
-  por `.light`, NO son DARK/LIGHT_ALWAYS). **High Noon** = la calle del oeste (mesetas, saloon con
-  falsa fachada, almacén, banco, torre de agua, saguaros, matojo) ☀️ a pleno sol / 🌙 de noche con
-  las ventanas encendidas; esquina = **estrella de sheriff** (latón de día, plata de noche).
-  **Alchemist** = el laboratorio (tomos+vela, mortero, matraz cónico púrpura, el de bola
-  burbujeando esmeralda, pergamino, estante, símbolos geométricos en la pared — sin <text>);
-  esquina = **el alambique goteando ORO**. Cableado: `CAMO_READY` + swatch con piel real +
-  `PREV_ALT` (⇆ en tarjeta y lightbox); bios ×4 ya existían. 8 imágenes (skin/skin_alt/prev/
-  prev_alt ×2) regeneradas con `scratchpad/gen_hn_alq.py`; sin botargas propias (muñeco-flecha,
-  como arrancó standard). Verificado en navegador: tienda 18/18 + rodada 23/23 + viaje 13/13 +
-  botargas 46/46.
+- **High Noon + The Alchemist** ✅ **(2026-08-22, v2 — los 2 primeros camos de TIENDA).**
+  🔴 **La v1 (calle del oeste / mesa de laboratorio) la tachó el dueño con razón:** *"prácticamente
+  iguales al de Egipto e iguales entre ellos… color arena en light y de noche en dark"*. El
+  diagnóstico que queda: eso era la fórmula de los camos de RULETA (paisaje en franja baja +
+  recolor nocturno). **Los camos de TIENDA buenos son un MATERIAL, no una escena** (Pole =
+  plano/cianotipo, Standard = acero, Premium = obsidiana, Blackflag = mapa) **y sus dos looks
+  cambian de material, no de hora** (patrón Pole/Mission). Se le ofrecieron 3 variantes por camo,
+  eligió las recomendadas:
+  · **High Noon = CUERO DE TALABARTERÍA**: la piel entera con su veta (tile repetido cuyos poros
+    no tocan los bordes), costura doble de guiones en los 4 bordes EN CSS PURO (abraza cualquier
+    viewport sin estirar puntadas), conchos de latón en las esquinas, cenefa repujada abajo
+    (volutas + abanicos + fondo picado; surco = truco de Standard, dos <use>) y la ESTRELLA DE
+    SHERIFF herrada a fuego, MACIZA (de puro contorno se perdía de noche). ☀️ cuero miel nuevo /
+    🌙 el mismo cuero engrasado espresso con hilo y latón dorados.
+  · **Alchemist = LA PÁGINA DEL GRIMORIO**: el MISMO dibujo en dos tintas — ☀️ ferrogálica + pan
+    de oro sobre vitela / 🌙 FOSFORESCENTE (esmeralda con halo + oro encendido sobre púrpura casi
+    negro; el halo = el mismo path gordo y translúcido debajo, sin filtros). Dibujo: diagrama de
+    la Gran Obra abajo-izq (cuadratura del círculo + 4 elementos + el oro al centro, trazos
+    GRUESOS — nada de telaraña), la receta de símbolos alquímicos como geometría (sin <text>),
+    márgenes de cuaderno en CSS puro, y el alambique a tinta goteando oro en la esquina.
+  Cableado: `CAMO_READY` + swatch con piel + `PREV_ALT` (⇆); bios ×4 ya existían. 8 imágenes
+  regeneradas (`scratchpad/gen_hn_alq.py`, que ahora saca el stack de capas DEL index.html —
+  sirve para cualquier camo futuro). Tienda 18/18 + rodada 23/23 + viaje 13/13.
+  🔑 **El riel de PayPal NO se cablea por camo** (pregunta del dueño): `camo_store_price()`
+  devuelve None para todo slug fuera de `CAMO_READY` y `/api/camo/buy` rechaza ahí — un camo sin
+  arte no se puede comprar ni llamando al endpoint a mano; al entrar en `CAMO_READY` queda
+  comprable solo, con su precio y su ventana festiva si aplica.
   ⚠️ **Trampa del generador de pieles (2 lecciones):** (1) re-correr un builder cortaba hasta el
   ancla de Blackflag y SE COMÍA los bloques insertados en medio — el corte va hasta el SIGUIENTE
   `/* ═══`, no hasta un ancla fija; (2) un data-URI de SVG dentro de `style='…'` (comilla simple)
