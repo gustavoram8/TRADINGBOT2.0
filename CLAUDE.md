@@ -1003,7 +1003,12 @@ El dueño las dictó al cerrar la sesión de responsive. **No empezar ninguna ha
 1. **Revisar cómo quedó "Mi cuenta"** (punto 20, hecho el 2026-08-04): dijo *"aún no he revisado
    cómo quedó"*. Preguntarle si le convence la posición (va la primera del menú) antes de darlo
    por bueno del todo.
-2. **Devolverle el escrito de PayPal cuando lo pida.** Está en la sección "▶️ RETOMAR PAYPAL" de
+2. 🔴 **BOTARGAS DE THE ALCHEMIST — las genera él, aún no existen (anotado 2026-08-23 a petición
+   suya).** Se fue ~1-2 semanas (bajó al plan de $20) y pidió que se le recordara AL VOLVER: High
+   Noon ya tiene sus 3 botargas cableadas; Alchemist vende con el muñeco-flecha por defecto hasta
+   que entregue las suyas (ideas ya acordadas: matraz esmeralda + grimorio / oro logrado / matraz
+   explotado con hollín y círculos de las gafas). Detalle del proceso en la sección del camo.
+3. **Devolverle el escrito de PayPal cuando lo pida.** Está en la sección "▶️ RETOMAR PAYPAL" de
    este archivo: los 4 clics de su papá, sus 5 comandos, cómo comprobar que quedó bien y que la
    compra de prueba va con cuenta nueva. Se lo entrega tal cual cuando diga "sigamos con PayPal".
 
@@ -1371,6 +1376,20 @@ sampleado con precisión de píxel); camos con arte que NO debe recolorearse (ej
     la Gran Obra abajo-izq (cuadratura del círculo + 4 elementos + el oro al centro, trazos
     GRUESOS — nada de telaraña), la receta de símbolos alquímicos como geometría (sin <text>),
     márgenes de cuaderno en CSS puro, y el alambique a tinta goteando oro en la esquina.
+  · ✅ **Botargas de HIGH NOON entregadas por el dueño y cableadas (2026-08-23):** welcome = el
+    sheriff con su estrella de TRADING POLICE · pass = a caballo con el lazo (¡YIJAAH!) · fail =
+    el tropezón con el matojo. Recorte con el mapa numerado: axila del welcome (id 281 — el
+    defecto por defecto, otra vez), interior del lazo + huecos del rollo de cuerda en el pass
+    (las letras YIJAAH y sus blancos SE QUEDAN), y 25 huecos entre las ramas del matojo en el
+    fail (las nubes de polvo y el zapato que entra en él NO se tocan). Keyea por `.light` como
+    nile; URLs por `estatico()`. `test_botargas_nuevas.py` ahora cubre 3 camos: **69/69**.
+  · 🔴 **FALTAN LAS BOTARGAS DE THE ALCHEMIST** — el dueño no las había generado al cerrar la
+    sesión del 2026-08-23 (dijo que volvería en 1-2 semanas; pidió EXPLÍCITAMENTE recordárselo).
+    Mientras, Alchemist usa el muñeco-flecha por defecto y se vende igual. Propuestas ya dadas:
+    welcome = alquimista con matraz esmeralda y grimorio · pass = lingote/matraz de oro · fail =
+    el matraz explotado (hollín + círculos limpios de las gafas). Al llegar: mismo proceso
+    (limpia_botarga_nueva con mapa, botarga_oscura, bloque CSS keyed por .light tras el de
+    highnoon, extender test_botargas_nuevas).
   Cableado: `CAMO_READY` + swatch con piel + `PREV_ALT` (⇆); bios ×4 ya existían. 8 imágenes
   regeneradas (`scratchpad/gen_hn_alq.py`, que ahora saca el stack de capas DEL index.html —
   sirve para cualquier camo futuro). Tienda 18/18 + rodada 23/23 + viaje 13/13.

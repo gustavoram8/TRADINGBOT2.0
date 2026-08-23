@@ -976,6 +976,20 @@
     body.camo-nile.light      .quiz-result-mascot.fail { content: url('{{ estatico('logo4_nile.png') }}'); }
     body.camo-nile:not(.light) .quiz-result-mascot.fail { content: url('{{ estatico('logo4_nile_dark.png') }}'); }
 
+    /* High Noon — botargas entregadas por el dueño el 2026-08-23.
+       welcome = el sheriff con su estrella de TRADING POLICE; pass = a
+       caballo con el lazo (¡YIJAAH!); fail = el tropezón con el matojo.
+       Camo de DOS looks (cuero miel / cuero engrasado) → keyea por .light,
+       como nile. URLs por estatico(): sin el ?v= un recorte nuevo tarda
+       una semana en atravesar la caché de nginx + Cloudflare. */
+    body.camo-highnoon.light      .quiz-welcome-logo { content: url('{{ estatico('logo2_highnoon.png') }}'); }
+    body.camo-highnoon:not(.light) .quiz-welcome-logo { content: url('{{ estatico('logo2_highnoon_dark.png') }}'); }
+    body.camo-highnoon .quiz-welcome-logo { transform: translateY(-50%) rotate(0deg); }
+    body.camo-highnoon.light      .quiz-result-mascot.pass { content: url('{{ estatico('logo3_highnoon.png') }}'); }
+    body.camo-highnoon:not(.light) .quiz-result-mascot.pass { content: url('{{ estatico('logo3_highnoon_dark.png') }}'); }
+    body.camo-highnoon.light      .quiz-result-mascot.fail { content: url('{{ estatico('logo4_highnoon.png') }}'); }
+    body.camo-highnoon:not(.light) .quiz-result-mascot.fail { content: url('{{ estatico('logo4_highnoon_dark.png') }}'); }
+
     /* EL DRAGÓN — cuarto slot, que ningún otro camo tiene: vuela arriba a la
        derecha de la bienvenida y le escupe fuego al caballero (su llama sale
        hacia la izquierda, que es donde vive la botarga).

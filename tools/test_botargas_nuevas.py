@@ -51,7 +51,7 @@ def caso(nombre, cond, extra=''):
 
 # ── los 12 archivos ──
 print('── los archivos ──')
-for camo in ('gridiron', 'nile'):
+for camo in ('gridiron', 'nile', 'highnoon'):
     for n in (2, 3, 4):
         base = os.path.join(RAIZ, 'scalpel/static/logo%d_%s' % (n, camo))
         claro, oscuro = base + '.png', base + '_dark.png'
@@ -93,7 +93,8 @@ CL = 'Zx9!wQ4mNp2r'
 PUERTO = 5573
 with A.app.app_context():
     A.db.create_all()
-    for u, camo in (('fer_grid', 'gridiron'), ('fer_nile', 'nile')):
+    for u, camo in (('fer_grid', 'gridiron'), ('fer_nile', 'nile'),
+                    ('fer_hn', 'highnoon')):
         us = A.User(username=u, email=u + '@demo.invalid', plan='premium',
                     email_verified=True)
         us.set_password(CL)
@@ -124,7 +125,8 @@ CAPS = tempfile.mkdtemp(prefix='botnuevas-')
 print('── el navegador ──')
 with sync_playwright() as p:
     b = p.chromium.launch(args=['--no-sandbox'], executable_path=exe)
-    for usuario, camo in (('fer_grid', 'gridiron'), ('fer_nile', 'nile')):
+    for usuario, camo in (('fer_grid', 'gridiron'), ('fer_nile', 'nile'),
+                          ('fer_hn', 'highnoon')):
         ctx = b.new_context(viewport={'width': 1440, 'height': 900})
         pg = ctx.new_page()
         errs = []
