@@ -71,61 +71,84 @@
 4. **Sin cierre.** *"lo conversamos con calma cuando tengas un espacio"* no pide nada concreto.
    La reunión se propone, no se insinúa.
 
-## 🔴 EL MENSAJE CANÓNICO (fijado 2026-08-30) — usar este
+## 🔴 EL MENSAJE CANÓNICO (v2, fijado 2026-08-30) — usar este
+
+> ⚠️ **La v1 se descartó**: abría con el bloque de negaciones ("no es un bot, no da señales,
+> no sustituye al mentor") y eso hace que el mensaje se lea como un **descargo legal o una
+> respuesta de soporte**, no como una oferta. Palabras del dueño: *"parece que nos estuviesen
+> demandando"*. **Esto vende una oportunidad de la que ganan las dos partes** — y la aclaración
+> sobre la IA va DESPUÉS, convertida en principio de diseño (una virtud), no en disculpa.
 
 > Estimado [Nombre]:
 >
-> Nos dirigimos a usted desde la dirección de **Tradeable Academy**.
+> Le escribimos desde la dirección de **Tradeable Academy** para proponerle una alianza comercial.
 >
-> Tradeable Academy es un ecosistema de trabajo y formación para traders. No es un bot, no emite
-> señales y no opera cuentas. No sustituye al trader ni al mentor: fue construido para
-> **complementar** lo que ya existe, cubriendo las etapas del proceso que hoy quedan desatendidas o
-> resueltas de forma precaria.
+> [Motivo concreto y verificable: la forma en que explica X, el enfoque técnico de su contenido, el
+> tipo de audiencia que ha construido] — y es exactamente el perfil de trader para el que
+> construimos la plataforma.
 >
-> La plataforma reúne siete instrumentos, cada uno dirigido a una carencia concreta:
+> Tradeable Academy es un ecosistema completo de formación y trabajo diario para traders: **siete
+> instrumentos** que cubren el ciclo entero, desde la preparación previa a la sesión hasta la
+> revisión de la operación ya cerrada. Cada uno nació de una carencia real del proceso que hoy
+> nadie atiende, o atiende de forma precaria.
 >
-> **Analizador de operaciones.** El trader carga el screenshot de una operación ya cerrada, indica
-> la metodología con la que operó —ICT, SMC, Wyckoff, patrones clásicos, OTE, armónicos, Elliott,
-> price action o análisis técnico— y recibe un diagnóstico escrito dentro de ese marco. Nunca
-> indica qué operar: explica la operación que ya se tomó.
+> **Analizador de operaciones** — el trader carga el screenshot de un trade cerrado, indica con qué
+> metodología operó (ICT, SMC, Wyckoff, patrones clásicos, OTE, armónicos, Elliott, price action,
+> análisis técnico) y obtiene un diagnóstico escrito dentro de ese marco, **disponible a cualquier
+> hora**: a las once de la noche, a las dos de la madrugada, o una tarde cualquiera en la que
+> sencillamente no hay a quién preguntarle por qué falló esa entrada. Esa duda sin resolver es lo
+> que hace que el mismo error sobreviva otro mes.
 >
-> **Pre-Flight.** Una lista de verificación previa a la entrada que obliga a contrastar el setup
-> contra las reglas del propio trader antes de ejecutar, registra la operación y mide su disciplina
-> en el tiempo. Es la herramienta que ataca de forma directa la operativa emocional.
+> **Pre-Flight** — la lista de verificación previa a la entrada: obliga a contrastar el setup contra
+> las reglas del propio trader antes de ejecutar, registra la operación y mide su disciplina en el
+> tiempo. Es la herramienta que ataca de frente la operativa emocional.
 >
-> **Synapse.** Biblioteca de conocimiento en entorno 3D sobre ICT, SMC, Wyckoff, patrones clásicos
+> **Synapse** — biblioteca de conocimiento en entorno 3D sobre ICT, SMC, Wyckoff, patrones clásicos
 > y teoría cuantitativa, con su edición en PDF.
 >
-> **Sistema de evaluación.** Rutas de quiz por metodología y por nivel, con ranking, certificados
-> verificables y progresión por experiencia y rangos. Su función es que el trader pueda **medir** lo
-> que entiende, en lugar de suponerlo.
+> **Sistema de evaluación** — rutas de quiz por metodología y por nivel, con ranking, certificados
+> verificables y progresión por experiencia y rangos. Permite que el trader **mida** lo que
+> entiende, en lugar de suponerlo.
 >
-> **Foro moderado por IA.** Comunidad donde se discute estructura bajo un estándar de calidad
-> exigido: sin ruido y sin señales.
+> **Foro moderado por IA** — comunidad donde se discute estructura bajo un estándar de calidad
+> exigido, sin ruido.
 >
-> **Chalkboard.** Lienzo digital para el mapeo de sesgo previo a la sesión y el marcado de niveles.
+> **Chalkboard** — lienzo digital para el mapeo de sesgo previo a la sesión y el marcado de niveles.
 >
 > **Biblioteca de indicadores** para TradingView, sin repintado.
 >
-> Sobre el analizador conviene ser preciso, porque es la pieza que más se malinterpreta. Su valor no
-> consiste en reemplazar a un mentor, sino en **existir cuando no hay ninguno disponible**: a las
-> once de la noche, a las dos de la madrugada, o un martes por la tarde cuando sencillamente no hay
-> a quién preguntarle por qué falló esa entrada. La duda que queda sin resolver es lo que permite
-> que el mismo error sobreviva otro mes. Ahí interviene la herramienta, y ahí termina su alcance.
+> Todo el ecosistema comparte un mismo principio de diseño: **la tecnología está puesta al servicio
+> de la formación, nunca de la ejecución**. Corrige, evalúa y entrena; el criterio y las decisiones
+> son siempre del trader. Es una herramienta complementaria, no un reemplazo de nada de lo que ya
+> existe.
 >
-> Le escribimos a usted en particular por [motivo concreto y verificable de su contenido].
+> **Lo que la alianza representa para usted.** Un código propio para su audiencia y una comisión
+> recurrente que alcanza el **40% de cada suscripción originada**, vigente todos los meses que el
+> usuario permanezca activo. No es un pago único ni un canje por publicaciones: es una línea de
+> ingreso que se acumula y sigue rindiendo mucho después de la publicación que la generó. Su
+> audiencia, por su parte, accede con descuento a un conjunto de herramientas que hoy no está
+> reunido en ningún otro lugar. Ganamos las dos partes, y su comunidad también.
 >
-> Nuestro interés es **coordinar una reunión** para exponerle la plataforma por dentro y evaluar en
-> conjunto una alianza estratégica entre ambas partes: un esquema de colaboración con código propio
-> y una comisión recurrente que alcanza el **40% de cada suscripción originada**, vigente mientras
-> el usuario permanezca activo. No se trata de un pago único ni de un canje por publicaciones.
+> Nuestro interés es **coordinar una reunión** para exponerle la plataforma por dentro y definir en
+> conjunto las condiciones de la colaboración. Adjuntamos una muestra visual del sitio.
 >
-> Adjuntamos una muestra visual de la plataforma. Quedamos atentos a la disponibilidad que nos
-> indique para agendar.
+> Quedamos atentos a su disponibilidad para agendar.
 >
 > Cordialmente,
 > **Fundador — Tradeable Academy**
 > tradeable.academy
+
+### El orden importa, y es el siguiente
+
+1. **Propuesta de alianza** (a qué venimos) + **por qué él**.
+2. **El tamaño del proyecto**: ecosistema de siete instrumentos, cada uno contra una carencia.
+   Es esto lo que responde al *"tienen pocos seguidores"* — lo que se evalúa deja de ser la cuenta.
+3. **El principio de diseño** (mata la objeción de la IA sin sonar defensivo, y llega ANTES de la
+   reunión para que no se sienta emboscado como el influencer 1).
+4. **El beneficio mutuo, con cifra**, justo antes del cierre: es lo último que lee.
+5. **La reunión**, propuesta formalmente.
+
+🔴 **Nunca invertir 1 y 3.** Abrir por lo que NO somos convierte la oferta en descargo.
 
 ### Reglas de redacción que fijó el dueño (2026-08-30)
 
