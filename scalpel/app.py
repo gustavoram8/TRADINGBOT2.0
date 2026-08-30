@@ -6789,6 +6789,20 @@ def reactivate_plan():
 
 
 # ──────────────────────────────────────────────────────────────────────────
+# PRESENTACIÓN — `/proyecto`
+# El enlace que se pega en el DM de Instagram cuando se contacta a un creador.
+# Existe porque Instagram NO deja adjuntar un PDF y el texto completo había que
+# partirlo en ocho mensajes. Página SUELTA, `noindex`, fuera del sitemap y de
+# todos los menús: se llega por el enlace pegado a mano o no se llega.
+# 🔴 Sin formulario y sin nada que escribir → no necesita antiflood (a
+#    diferencia de /creators, que sí guarda filas).
+# ──────────────────────────────────────────────────────────────────────────
+@app.route('/proyecto')
+def proyecto():
+    return render_template('proyecto.html')
+
+
+# ──────────────────────────────────────────────────────────────────────────
 # CREADORES DE CONTENIDO — `/creators`
 # Página SUELTA (nada del producto: ni pestañas, ni barra lateral, ni Synapse)
 # cuyo enlace vive en una historia destacada de Instagram. Fuera del sitemap y

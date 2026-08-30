@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tradeable Academy — Qué somos</title>
+  {# 🔴 `noindex`, igual que /creators: el enlace se pega A MANO en un DM de
+     Instagram, no se busca en Google. Fuera del sitemap y de todos los menús.
+     Se llega por el enlace o no se llega. #}
+  <meta name="robots" content="noindex, nofollow" />
+  {% set meta_desc = 'Qué es Tradeable Academy y de qué carencias del trading nació.' %}
+  {% include '_iconos.html' %}
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  {# ⚠️ Hoja de fuentes NO BLOQUEANTE (`media=print` + `onload`), por la misma
+     razón que en /creators: quien abre esto llega desde el navegador interno
+     de Instagram, que no es rápido, y una hoja pendiente en el <head> retrasa
+     el primer pintado de toda la página. #}
+  <link rel="stylesheet" media="print" onload="this.media='all'"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" />
+  <noscript><link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" /></noscript>
+  <style>
+    /* Misma casa que /creators y que las historias de Instagram: grafito,
+       azul #004feb medido del logotipo, banda sólida a sangre, mono para las
+       etiquetas. NADA del producto — ni pestañas, ni barra lateral. */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --fondo:#0b0d12; --panel:#12151d; --linea:#242938; --linea2:#333a4d;
+      --tinta:#eef0f5; --apagado:#8e96a8; --azul:#004feb; --azulc:#4d84ff;
+    }
+    body { background:var(--fondo); color:var(--tinta); font-family:Inter,system-ui,sans-serif;
+           font-size:16px; line-height:1.62; -webkit-font-smoothing:antialiased; }
+
+    /* — banda de cabecera, sólida y a sangre — */
+    .banda { background:var(--azul); color:#07080b; display:flex; align-items:center;
+             justify-content:space-between; gap:16px; padding:13px 28px; flex-wrap:wrap; }
+    .banda .marca { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700;
+                    letter-spacing:.20em; }
+    .banda a { font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700;
+               letter-spacing:.12em; color:#07080b; text-decoration:none;
+               border-bottom:2px solid rgba(7,8,11,.4); padding-bottom:1px; }
+
+    .wrap { max-width:720px; margin:0 auto; padding:52px 24px 80px; }
+    .ojo { font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700;
+           letter-spacing:.22em; text-transform:uppercase; color:var(--azulc); }
+    h1 { margin-top:14px; font-size:clamp(32px,7vw,50px); font-weight:900;
+         letter-spacing:-.035em; line-height:1.04; }
+    .filete { height:6px; width:120px; background:var(--azul); margin:24px 0 0; }
+    .lead { margin-top:26px; font-size:17.5px; color:#c8cfdc; }
+
+    /* — los seis bloques —
+       El número va GRANDE y en mono, fuera del flujo del texto en escritorio:
+       es lo que hace que la página se recorra de un vistazo en vez de leerse
+       como un muro. En móvil pasa a ir encima del título, porque una columna
+       de 40px a la izquierda se come el ancho útil de un teléfono. */
+    section { margin-top:46px; display:grid; grid-template-columns:56px 1fr; gap:0 18px; }
+    section .num { font-family:'JetBrains Mono',monospace; font-size:30px; font-weight:700;
+                   color:var(--azul); line-height:1; padding-top:4px; }
+    section h2 { font-size:23px; font-weight:800; letter-spacing:-.02em; line-height:1.2; }
+    section .cuerpo { grid-column:2; }
+    section p { margin-top:14px; color:#c3cad8; }
+    section p.destacado { color:var(--tinta); }
+    section p b { color:#fff; font-weight:700; }
+    @media (max-width:620px) {
+      section { grid-template-columns:1fr; }
+      section .num { font-size:24px; padding-top:0; margin-bottom:6px; }
+      section .cuerpo { grid-column:1; }
+    }
+
+    /* — cierre — */
+    .extra { margin-top:52px; padding:22px 24px; background:var(--panel);
+             border-left:5px solid var(--azul); }
+    .extra p { color:#c3cad8; }
+    .extra p + p { margin-top:12px; }
+
+    .cierre { margin-top:46px; padding-top:30px; border-top:1px solid var(--linea); }
+    .cierre p { color:#c3cad8; }
+    .cta { display:inline-block; margin-top:22px; background:var(--azul); color:#fff;
+           font-weight:800; font-size:16px; letter-spacing:.01em; text-decoration:none;
+           padding:15px 30px; }
+    .cta:hover { background:#0040c4; }
+
+    footer { margin-top:56px; padding-top:22px; border-top:1px solid var(--linea);
+             font-family:'JetBrains Mono',monospace; font-size:11.5px; letter-spacing:.12em;
+             text-transform:uppercase; color:var(--apagado); }
+  </style>
+</head>
+<body>
+
+<div class="banda">
+  <span class="marca">TRADEABLE ACADEMY</span>
+  <a href="https://tradeable.academy">TRADEABLE.ACADEMY</a>
+</div>
+
+<div class="wrap">
+
+  <p class="ojo">Qué somos</p>
+  <h1>Una plataforma de formación para traders.</h1>
+  <div class="filete"></div>
+
+  <p class="lead">El proyecto nace de carencias concretas que sufrimos los traders en el día a
+    día, y que hemos empezado a cubrir apoyándonos en desarrollo web e inteligencia artificial.</p>
+
+  <section>
+    <div class="num">01</div>
+    <h2>Si eres trader, ¿quién te acompaña?</h2>
+    <div class="cuerpo">
+      <p class="destacado">Da igual si eres principiante o experimentado, ni si tienes un mentor
+        que te guíe. Todos necesitamos algo que, cuando nos equivocamos, sepa decirnos en qué nos
+        equivocamos, o al menos darnos una pista. Un mentor no está disponible 24/7, no todos
+        pueden pagar uno, y en este rubro cuesta mucho distinguir quién ofrece contenido gratuito
+        útil y quién no.</p>
+      <p>De esa carencia nace el <b>Analizador de Screenshots</b>, y a partir de él nace todo
+        Tradeable Academy. Subes la captura de tu operación junto con el contexto de por qué la
+        tomaste, y recibes el análisis de una IA entrenada que te ayuda a identificar dónde falló.
+        No sustituye a un mentor y no es perfecta, pero está disponible a cualquier hora y cumple
+        su objetivo.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="num">02</div>
+    <h2>Pre-Flight</h2>
+    <div class="cuerpo">
+      <p>Tu checklist de confluencias antes de decidir si entras o no. Vas marcando las que se
+        cumplen y un sistema de semáforo te da luz verde o luz roja. Después registras el resultado
+        del trade, y todo eso alimenta un sistema de estadísticas que te muestra qué confluencias
+        realmente te funcionan y cuáles no.</p>
+      <p>Está pensada para frenar la entrada por emoción o por venganza, y para asegurar que sigas
+        tu propia estrategia al pie de la letra.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="num">03</div>
+    <h2>El foro</h2>
+    <div class="cuerpo">
+      <p>Moderado al 100% con IA: no se venden señales, no se acepta asesoría financiera ni
+        contenido ajeno al trading. Está para que interactúes con otros traders, conozcas nuevas
+        estrategias, pidas ayuda o hagas amigos. Puedes crear comunidades, unirte a otras y seguir
+        a otros traders.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="num">04</div>
+    <h2>Sistema de quizzes</h2>
+    <div class="cuerpo">
+      <p>Para evaluar tus conocimientos en cada metodología que operes, con quizzes conceptuales y
+        también de operativa —gráficos por resolver— y un ranking competitivo.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="num">05</div>
+    <h2>Synapse</h2>
+    <div class="cuerpo">
+      <p>Una biblioteca de trading que ataca el problema de la información dispersa. Hoy, para
+        estudiar un concepto, toca googlear y ver videos hasta dar con una fuente seria y lo
+        bastante específica.</p>
+      <p>Synapse reúne conceptos, gatillos de entrada, ejemplos reales de cómo se ve cada caso en
+        un gráfico y los errores típicos al aplicarlos. Todo a dos o tres clics, sin investigar
+        durante horas.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="num">06</div>
+    <h2>Chalkboard</h2>
+    <div class="cuerpo">
+      <p>Un pizarrón dedicado al trading: desglosas setups, armas documentos, presentas y exportas
+        a PDF. Es como un Google Docs, pero enfocado únicamente en esto.</p>
+      <p>Ya no tienes que rayar el gráfico en TradingView para explicarle algo a alguien, ni armar
+        diapositivas desde cero en Canva para compartir algo con tu comunidad.</p>
+    </div>
+  </section>
+
+  <div class="extra">
+    <p>A esto se suma un sistema de niveles con certificados y recompensas que se van desbloqueando
+      mientras más usas la plataforma.</p>
+    <p>No solo construimos un ecosistema para ayudar a los traders: también un sistema de
+      incentivos que hace todo más entretenido, con camuflajes para personalizar tu sitio,
+      insignias por rendimiento y badges.</p>
+  </div>
+
+  <div class="cierre">
+    <p>Hay bastante más de lo que cabe en una página. La plataforma está en línea y se puede
+      empezar a usar gratis, sin tarjeta.</p>
+    <a class="cta" href="https://tradeable.academy">Ver la plataforma</a>
+  </div>
+
+  <footer>Tradeable Academy · tradeable.academy</footer>
+
+</div>
+
+</body>
+</html>
