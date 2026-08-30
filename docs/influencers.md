@@ -71,97 +71,54 @@
 4. **Sin cierre.** *"lo conversamos con calma cuando tengas un espacio"* no pide nada concreto.
    La reunión se propone, no se insinúa.
 
-## 🔴 EL MENSAJE CANÓNICO (v3, fijado 2026-08-30) — usar este
+## 🔴 EL MENSAJE CANÓNICO (v4, fijado 2026-08-30) — usar este
 
-> ⚠️ **Dos versiones descartadas antes, por el mismo tipo de error de encuadre:**
-> · **v1** abría con el bloque de negaciones ("no es un bot, no da señales, no sustituye al
->   mentor") → se leía como **descargo legal o respuesta de soporte**, no como una oferta.
->   Palabras del dueño: *"parece que nos estuviesen demandando"*.
-> · **v2** abría diciendo *"le proponemos una alianza comercial"* → **suena desesperado y poco
->   profesional**. No se pide la alianza de entrada.
+> ⚠️ **TRES versiones descartadas antes. Leer los motivos ANTES de reescribir nada:**
+> · **v1** abría con las negaciones ("no es un bot, no da señales") → se leía como **descargo
+>   legal**: *"parece que nos estuviesen demandando"*.
+> · **v2** abría con *"le proponemos una alianza comercial"* → **desesperado y poco profesional**.
+> · **v3** abría con un párrafo-gancho ("hay algo que ningún curso resuelve…") y listaba los siete
+>   instrumentos en viñetas largas → **parecía caption de Instagram o venta de cursos de "sé tu
+>   propio jefe"**. Ese es el error más fácil de repetir.
 >
-> 🔑 **La arquitectura correcta: el mensaje VENDE el producto.** La reunión se ofrece al
-> final como cortesía ("nos gustaría mostrárselo"), y la alianza es **condicional a que le guste**
-> — la última frase, nunca el encabezado. El poder de decisión queda de su lado; eso es lo
-> contrario de la desesperación.
+> 🔑 **Esto es un DM de Instagram de una empresa a un profesional, no una landing.** Corto,
+> sobrio, sin gancho, sin storytelling, sin viñetas. Vende por **especificidad**, no por retórica.
+> 🔴 **La alianza NO se menciona.** El acuerdo lo cierra el dueño DENTRO de la reunión; el
+> mensaje solo tiene que conseguir la reunión.
 
-> Estimado [Nombre]:
+> Hola [Nombre]:
 >
-> Hay una parte del proceso del trader que ningún curso resuelve: la que ocurre **después** de
-> cerrar la operación. Un buen trade y un error pueden verse idénticos en el gráfico, y cuando no
-> hay nadie que le lea la entrada de vuelta, ese mismo error sobrevive otro mes más. Lo mismo pasa
-> antes de entrar, cuando el plan estaba claro y aun así la mano se adelantó a las reglas.
+> Le escribimos desde **Tradeable Academy**, una plataforma de formación para traders.
 >
-> Con esa premisa construimos **Tradeable Academy**: un ecosistema completo de formación y trabajo
-> diario para traders. Siete instrumentos que cubren el ciclo entero, desde la preparación previa a
-> la sesión hasta la revisión de la operación ya cerrada. Cada uno nació de una carencia concreta
-> que hoy nadie atiende, o atiende de forma precaria.
+> Reúne siete herramientas en un mismo lugar: un analizador que revisa el screenshot de una
+> operación ya cerrada y devuelve el diagnóstico dentro de la metodología con la que se operó
+> —ICT, SMC, Wyckoff, patrones clásicos, price action, técnico—; una checklist previa a la entrada
+> que registra las operaciones y mide la disciplina del trader; una biblioteca de contenido en
+> entorno 3D; un sistema de quizzes por metodología con ranking y certificados; un foro moderado;
+> una pizarra de análisis; y una librería de indicadores para TradingView.
 >
-> **Analizador de operaciones.** El trader carga el screenshot de un trade cerrado, indica con qué
-> metodología operó —ICT, SMC, Wyckoff, patrones clásicos, OTE, armónicos, Elliott, price action,
-> análisis técnico— y recibe un diagnóstico escrito dentro de ese marco, con su vocabulario y su
-> lógica. Disponible a cualquier hora: a las once de la noche, a las dos de la madrugada, o una
-> tarde cualquiera en la que sencillamente no hay a quién preguntarle por qué falló esa entrada.
+> Le escribimos a usted por [motivo concreto de su contenido].
 >
-> **Pre-Flight.** La lista de verificación previa a la entrada: obliga a contrastar el setup contra
-> las reglas del propio trader antes de ejecutar, registra la operación y mide su disciplina a lo
-> largo del tiempo. Es la pieza que ataca de frente la operativa emocional.
+> Nos gustaría mostrarle la plataforma por dentro, con calma y a detalle, en una reunión. Si le
+> interesa, coordinamos el día y la hora que mejor le convenga.
 >
-> **Synapse.** Una biblioteca de conocimiento en entorno 3D que recorre ICT, SMC, Wyckoff, patrones
-> clásicos y teoría cuantitativa, con su edición en PDF.
+> Quedamos atentos.
 >
-> **Sistema de evaluación.** Rutas de quiz por metodología y por nivel, con ranking, certificados
-> verificables y progresión por experiencia y rangos. Su función es que el trader pueda **medir** lo
-> que entiende, en lugar de suponerlo.
->
-> **Foro moderado por IA.** Una comunidad donde se discute estructura bajo un estándar de calidad
-> exigido, sin ruido y sin señales.
->
-> **Chalkboard.** Lienzo digital para el mapeo de sesgo previo a la sesión y el marcado de niveles.
->
-> **Biblioteca de indicadores** para TradingView, sin repintado.
->
-> Todo el ecosistema comparte un mismo principio de diseño: **la tecnología está puesta al servicio
-> de la formación, nunca de la ejecución**. Corrige, evalúa y entrena; el criterio y las decisiones
-> siguen siendo siempre del trader. Es una herramienta complementaria de lo que ya existe, no un
-> sustituto de nada ni de nadie.
->
-> La plataforma está en operación y disponible en cuatro idiomas.
->
-> Le escribimos a usted en particular por [motivo concreto y verificable de su contenido]: es
-> precisamente el criterio con el que construimos cada herramienta.
->
-> Nos gustaría poder mostrárselo por dentro, con calma y a detalle, en una reunión — no una
-> presentación comercial, sino un recorrido real por la plataforma. Y si al verlo considera que
-> aporta valor a su comunidad, estaríamos encantados de explorar con usted una colaboración de
-> largo plazo, con condiciones concretas y recurrentes.
->
-> Quedamos atentos a su disponibilidad.
->
-> Cordialmente,
-> **Fundador — Tradeable Academy**
+> **Tradeable Academy**
 > tradeable.academy
 
-### El orden, y por qué cada bloque está donde está
+### Lo que NO puede aparecer en el primer mensaje
 
-1. **El problema que él vive y le enseña a su gente.** No pide nada y es lo único que consigue que
-   lea el segundo párrafo. 🔴 Nunca abrir por nosotros, por la alianza, ni por lo que NO somos.
-2. **El producto: los siete instrumentos.** Aquí se gana o se pierde. Es el **volumen del
-   proyecto** lo que responde solo al *"tienen pocos seguidores"* — ya no evalúa una cuenta de
-   Instagram, evalúa una plataforma.
-3. **El principio de diseño** ("al servicio de la formación, nunca de la ejecución"). Dice lo mismo
-   que las negaciones de la v1 pero suena a criterio de construcción, no a disculpa — y llega
-   ANTES de la reunión, que es lo que evita que la aborte como el influencer 1.
-4. **Por qué él**, en una línea. Sin esto el mensaje es masivo y se nota.
-5. **La reunión se OFRECE** ("nos gustaría mostrárselo"), y se aclara que no es una presentación
-   comercial — que es justo lo que teme al aceptar una llamada.
-6. **La alianza, última frase y condicional** a que le guste.
-
-🔴 **El 40% NO va en el primer mensaje** (decisión del dueño, 2026-08-30): pasa a ser tema de
-la reunión. La vaguedad que hundió el mensaje de Gemini queda cubierta por *"condiciones concretas
-y recurrentes"* —promete sustancia sin publicar la cifra— y sobre todo porque **ya no le pedimos
-promoción**: le ofrecemos ver algo. Si pregunta por números antes de la reunión, ahí sí se responde
-con el techo del 40% (ver objeciones abajo).
+- 🔴 Ningún **gancho retórico** de apertura ("hay algo que nadie te dice", "la parte que
+  ningún curso resuelve"). Es el tono del vendedor de cursos y lo delata al instante.
+- 🔴 **Viñetas ni secciones en negrita por producto** — convierte el DM en folleto.
+- 🔴 **La palabra "alianza"** y cualquier cifra de comisión. Va en la reunión.
+- 🔴 **Bloques de negación** ("no es un bot, no damos señales"). Si sale la objeción de la
+  IA, se responde con el guion de abajo; no se abre con ella.
+- 🔴 **El nombre del dueño** y el "te escribo yo, no un equipo". Se firma la empresa.
+- 🔴 *"¿Tiene 15 minutos?"* — hace ver el producto como algo menor. Se ofrece una reunión.
+- ⚠️ Lo único que se personaliza **obligatoriamente** es el "le escribimos a usted por…". Sin eso
+  el mensaje es masivo y se nota.
 
 ### Reglas de redacción que fijó el dueño (2026-08-30)
 
