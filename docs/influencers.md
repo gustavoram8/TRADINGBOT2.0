@@ -71,84 +71,97 @@
 4. **Sin cierre.** *"lo conversamos con calma cuando tengas un espacio"* no pide nada concreto.
    La reunión se propone, no se insinúa.
 
-## 🔴 EL MENSAJE CANÓNICO (v2, fijado 2026-08-30) — usar este
+## 🔴 EL MENSAJE CANÓNICO (v3, fijado 2026-08-30) — usar este
 
-> ⚠️ **La v1 se descartó**: abría con el bloque de negaciones ("no es un bot, no da señales,
-> no sustituye al mentor") y eso hace que el mensaje se lea como un **descargo legal o una
-> respuesta de soporte**, no como una oferta. Palabras del dueño: *"parece que nos estuviesen
-> demandando"*. **Esto vende una oportunidad de la que ganan las dos partes** — y la aclaración
-> sobre la IA va DESPUÉS, convertida en principio de diseño (una virtud), no en disculpa.
+> ⚠️ **Dos versiones descartadas antes, por el mismo tipo de error de encuadre:**
+> · **v1** abría con el bloque de negaciones ("no es un bot, no da señales, no sustituye al
+>   mentor") → se leía como **descargo legal o respuesta de soporte**, no como una oferta.
+>   Palabras del dueño: *"parece que nos estuviesen demandando"*.
+> · **v2** abría diciendo *"le proponemos una alianza comercial"* → **suena desesperado y poco
+>   profesional**. No se pide la alianza de entrada.
+>
+> 🔑 **La arquitectura correcta: el mensaje VENDE el producto.** La reunión se ofrece al
+> final como cortesía ("nos gustaría mostrárselo"), y la alianza es **condicional a que le guste**
+> — la última frase, nunca el encabezado. El poder de decisión queda de su lado; eso es lo
+> contrario de la desesperación.
 
 > Estimado [Nombre]:
 >
-> Le escribimos desde la dirección de **Tradeable Academy** para proponerle una alianza comercial.
+> Hay una parte del proceso del trader que ningún curso resuelve: la que ocurre **después** de
+> cerrar la operación. Un buen trade y un error pueden verse idénticos en el gráfico, y cuando no
+> hay nadie que le lea la entrada de vuelta, ese mismo error sobrevive otro mes más. Lo mismo pasa
+> antes de entrar, cuando el plan estaba claro y aun así la mano se adelantó a las reglas.
 >
-> [Motivo concreto y verificable: la forma en que explica X, el enfoque técnico de su contenido, el
-> tipo de audiencia que ha construido] — y es exactamente el perfil de trader para el que
-> construimos la plataforma.
+> Con esa premisa construimos **Tradeable Academy**: un ecosistema completo de formación y trabajo
+> diario para traders. Siete instrumentos que cubren el ciclo entero, desde la preparación previa a
+> la sesión hasta la revisión de la operación ya cerrada. Cada uno nació de una carencia concreta
+> que hoy nadie atiende, o atiende de forma precaria.
 >
-> Tradeable Academy es un ecosistema completo de formación y trabajo diario para traders: **siete
-> instrumentos** que cubren el ciclo entero, desde la preparación previa a la sesión hasta la
-> revisión de la operación ya cerrada. Cada uno nació de una carencia real del proceso que hoy
-> nadie atiende, o atiende de forma precaria.
+> **Analizador de operaciones.** El trader carga el screenshot de un trade cerrado, indica con qué
+> metodología operó —ICT, SMC, Wyckoff, patrones clásicos, OTE, armónicos, Elliott, price action,
+> análisis técnico— y recibe un diagnóstico escrito dentro de ese marco, con su vocabulario y su
+> lógica. Disponible a cualquier hora: a las once de la noche, a las dos de la madrugada, o una
+> tarde cualquiera en la que sencillamente no hay a quién preguntarle por qué falló esa entrada.
 >
-> **Analizador de operaciones** — el trader carga el screenshot de un trade cerrado, indica con qué
-> metodología operó (ICT, SMC, Wyckoff, patrones clásicos, OTE, armónicos, Elliott, price action,
-> análisis técnico) y obtiene un diagnóstico escrito dentro de ese marco, **disponible a cualquier
-> hora**: a las once de la noche, a las dos de la madrugada, o una tarde cualquiera en la que
-> sencillamente no hay a quién preguntarle por qué falló esa entrada. Esa duda sin resolver es lo
-> que hace que el mismo error sobreviva otro mes.
+> **Pre-Flight.** La lista de verificación previa a la entrada: obliga a contrastar el setup contra
+> las reglas del propio trader antes de ejecutar, registra la operación y mide su disciplina a lo
+> largo del tiempo. Es la pieza que ataca de frente la operativa emocional.
 >
-> **Pre-Flight** — la lista de verificación previa a la entrada: obliga a contrastar el setup contra
-> las reglas del propio trader antes de ejecutar, registra la operación y mide su disciplina en el
-> tiempo. Es la herramienta que ataca de frente la operativa emocional.
+> **Synapse.** Una biblioteca de conocimiento en entorno 3D que recorre ICT, SMC, Wyckoff, patrones
+> clásicos y teoría cuantitativa, con su edición en PDF.
 >
-> **Synapse** — biblioteca de conocimiento en entorno 3D sobre ICT, SMC, Wyckoff, patrones clásicos
-> y teoría cuantitativa, con su edición en PDF.
+> **Sistema de evaluación.** Rutas de quiz por metodología y por nivel, con ranking, certificados
+> verificables y progresión por experiencia y rangos. Su función es que el trader pueda **medir** lo
+> que entiende, en lugar de suponerlo.
 >
-> **Sistema de evaluación** — rutas de quiz por metodología y por nivel, con ranking, certificados
-> verificables y progresión por experiencia y rangos. Permite que el trader **mida** lo que
-> entiende, en lugar de suponerlo.
+> **Foro moderado por IA.** Una comunidad donde se discute estructura bajo un estándar de calidad
+> exigido, sin ruido y sin señales.
 >
-> **Foro moderado por IA** — comunidad donde se discute estructura bajo un estándar de calidad
-> exigido, sin ruido.
->
-> **Chalkboard** — lienzo digital para el mapeo de sesgo previo a la sesión y el marcado de niveles.
+> **Chalkboard.** Lienzo digital para el mapeo de sesgo previo a la sesión y el marcado de niveles.
 >
 > **Biblioteca de indicadores** para TradingView, sin repintado.
 >
 > Todo el ecosistema comparte un mismo principio de diseño: **la tecnología está puesta al servicio
 > de la formación, nunca de la ejecución**. Corrige, evalúa y entrena; el criterio y las decisiones
-> son siempre del trader. Es una herramienta complementaria, no un reemplazo de nada de lo que ya
-> existe.
+> siguen siendo siempre del trader. Es una herramienta complementaria de lo que ya existe, no un
+> sustituto de nada ni de nadie.
 >
-> **Lo que la alianza representa para usted.** Un código propio para su audiencia y una comisión
-> recurrente que alcanza el **40% de cada suscripción originada**, vigente todos los meses que el
-> usuario permanezca activo. No es un pago único ni un canje por publicaciones: es una línea de
-> ingreso que se acumula y sigue rindiendo mucho después de la publicación que la generó. Su
-> audiencia, por su parte, accede con descuento a un conjunto de herramientas que hoy no está
-> reunido en ningún otro lugar. Ganamos las dos partes, y su comunidad también.
+> La plataforma está en operación y disponible en cuatro idiomas.
 >
-> Nuestro interés es **coordinar una reunión** para exponerle la plataforma por dentro y definir en
-> conjunto las condiciones de la colaboración. Adjuntamos una muestra visual del sitio.
+> Le escribimos a usted en particular por [motivo concreto y verificable de su contenido]: es
+> precisamente el criterio con el que construimos cada herramienta.
 >
-> Quedamos atentos a su disponibilidad para agendar.
+> Nos gustaría poder mostrárselo por dentro, con calma y a detalle, en una reunión — no una
+> presentación comercial, sino un recorrido real por la plataforma. Y si al verlo considera que
+> aporta valor a su comunidad, estaríamos encantados de explorar con usted una colaboración de
+> largo plazo, con condiciones concretas y recurrentes.
+>
+> Quedamos atentos a su disponibilidad.
 >
 > Cordialmente,
 > **Fundador — Tradeable Academy**
 > tradeable.academy
 
-### El orden importa, y es el siguiente
+### El orden, y por qué cada bloque está donde está
 
-1. **Propuesta de alianza** (a qué venimos) + **por qué él**.
-2. **El tamaño del proyecto**: ecosistema de siete instrumentos, cada uno contra una carencia.
-   Es esto lo que responde al *"tienen pocos seguidores"* — lo que se evalúa deja de ser la cuenta.
-3. **El principio de diseño** (mata la objeción de la IA sin sonar defensivo, y llega ANTES de la
-   reunión para que no se sienta emboscado como el influencer 1).
-4. **El beneficio mutuo, con cifra**, justo antes del cierre: es lo último que lee.
-5. **La reunión**, propuesta formalmente.
+1. **El problema que él vive y le enseña a su gente.** No pide nada y es lo único que consigue que
+   lea el segundo párrafo. 🔴 Nunca abrir por nosotros, por la alianza, ni por lo que NO somos.
+2. **El producto: los siete instrumentos.** Aquí se gana o se pierde. Es el **volumen del
+   proyecto** lo que responde solo al *"tienen pocos seguidores"* — ya no evalúa una cuenta de
+   Instagram, evalúa una plataforma.
+3. **El principio de diseño** ("al servicio de la formación, nunca de la ejecución"). Dice lo mismo
+   que las negaciones de la v1 pero suena a criterio de construcción, no a disculpa — y llega
+   ANTES de la reunión, que es lo que evita que la aborte como el influencer 1.
+4. **Por qué él**, en una línea. Sin esto el mensaje es masivo y se nota.
+5. **La reunión se OFRECE** ("nos gustaría mostrárselo"), y se aclara que no es una presentación
+   comercial — que es justo lo que teme al aceptar una llamada.
+6. **La alianza, última frase y condicional** a que le guste.
 
-🔴 **Nunca invertir 1 y 3.** Abrir por lo que NO somos convierte la oferta en descargo.
+🔴 **El 40% NO va en el primer mensaje** (decisión del dueño, 2026-08-30): pasa a ser tema de
+la reunión. La vaguedad que hundió el mensaje de Gemini queda cubierta por *"condiciones concretas
+y recurrentes"* —promete sustancia sin publicar la cifra— y sobre todo porque **ya no le pedimos
+promoción**: le ofrecemos ver algo. Si pregunta por números antes de la reunión, ahí sí se responde
+con el techo del 40% (ver objeciones abajo).
 
 ### Reglas de redacción que fijó el dueño (2026-08-30)
 
