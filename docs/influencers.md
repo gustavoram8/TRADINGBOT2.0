@@ -155,6 +155,40 @@
 > Saludos,
 > **Tradeable Academy**
 
+### 🔗 El DM corto + la página `/proyecto` (2026-08-30) — ESTA es la forma de enviarlo
+
+**El texto completo NO se manda por DM.** Instagram limita las palabras por mensaje y el dueño
+tuvo que partirlo en **ocho mensajes distintos**. Instagram tampoco deja adjuntar un PDF. Solución:
+los seis puntos viven en una página del propio sitio y el DM lleva el enlace.
+
+🔗 **https://tradeable.academy/proyecto** — plantilla `scalpel/templates/proyecto.html`,
+ruta en `app.py` (justo antes del bloque de `/creators`). `noindex`, fuera del sitemap y de todos
+los menús, sin formulario (por eso no necesita antiflood). Hoja de Google Fonts **no bloqueante**,
+porque quien la abre llega desde el navegador interno de Instagram.
+
+**El DM, que ahora cabe en UN mensaje:**
+
+> Hola [Nombre], ¿cómo estás?
+>
+> Te escribo de parte de **Tradeable Academy**, una plataforma de formación para traders.
+>
+> Estuve viendo tu perfil y tu trabajo como creador de contenido, y nos gustaría poder mostrarte a
+> detalle qué somos, qué hacemos y qué ofrecemos, con la idea de explorar alguna alianza que
+> beneficie a ambas partes.
+>
+> Aquí te dejo un resumen de qué es Tradeable Academy y de las carencias del trading de las que
+> nació: **tradeable.academy/proyecto**
+>
+> Hay bastante más de lo que cabe en esa página, así que me encantaría poder enseñártelo en vivo.
+> ¿Tendrías disponibilidad para una reunión virtual esta semana? Si la propuesta te despierta
+> interés, coordinamos el día y la hora que mejor te queden.
+>
+> Saludos,
+> **Tradeable Academy**
+
+⚠️ La página está **solo en español** (la lista de contactos lo es). Añadir el selector de idioma
+es replicar el patrón de `/creators`, aún no pedido.
+
 ### Al personalizar cada copia
 
 - Cambiar el nombre y **concordar el género** ("creador/creadora"; el punto 1 va en masculino
