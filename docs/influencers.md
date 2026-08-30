@@ -71,54 +71,99 @@
 4. **Sin cierre.** *"lo conversamos con calma cuando tengas un espacio"* no pide nada concreto.
    La reunión se propone, no se insinúa.
 
-## 🔴 EL MENSAJE CANÓNICO (v4, fijado 2026-08-30) — usar este
+## 🔴 EL MENSAJE CANÓNICO (v5, fijado 2026-08-30) — usar este
 
-> ⚠️ **TRES versiones descartadas antes. Leer los motivos ANTES de reescribir nada:**
-> · **v1** abría con las negaciones ("no es un bot, no da señales") → se leía como **descargo
->   legal**: *"parece que nos estuviesen demandando"*.
-> · **v2** abría con *"le proponemos una alianza comercial"* → **desesperado y poco profesional**.
-> · **v3** abría con un párrafo-gancho ("hay algo que ningún curso resuelve…") y listaba los siete
->   instrumentos en viñetas largas → **parecía caption de Instagram o venta de cursos de "sé tu
->   propio jefe"**. Ese es el error más fácil de repetir.
+> 🔴 **La voz, la estructura y la idea son DEL DUEÑO.** Él escribió el borrador entero y
+> dijo textualmente: *"la forma de hablar, comunicar, la idea y el cuerpo del mensaje es tal cual
+> como te la estoy mandando"*. **No reescribir el enfoque.** El trabajo permitido es: acortar,
+> corregir gramática y **quitar detalle de más**.
 >
-> 🔑 **Esto es un DM de Instagram de una empresa a un profesional, no una landing.** Corto,
-> sobrio, sin gancho, sin storytelling, sin viñetas. Vende por **especificidad**, no por retórica.
-> 🔴 **La alianza NO se menciona.** El acuerdo lo cierra el dueño DENTRO de la reunión; el
-> mensaje solo tiene que conseguir la reunión.
+> ⚠️ **Cuatro versiones MÍAS descartadas antes**, todas por inventar un enfoque en vez de usar el
+> suyo: (v1) abría con negaciones → parecía descargo legal; (v2) abría pidiendo la alianza →
+> desesperado; (v3) abría con gancho retórico y viñetas → *"caption de Instagram o venta de cursos
+> de sé tu propio jefe"*; (v4) demasiado seca y en "usted". **Él escribe en TÚ**, cercano pero
+> profesional, y presenta las herramientas numeradas.
+>
+> 🎣 **La regla del anzuelo:** se dice **qué problema resuelve** cada herramienta, NUNCA
+> **cómo funciona**. El "cómo" es el efecto WOW de la reunión, y además no se le regala la idea a
+> nadie. Guardado a propósito: los campos exactos que pide el analizador (activo, confluencias,
+> sesión, razones), el mecanismo de proyectos del Pre-Flight y su comparativa entre proyectos, y
+> las herramientas de dibujo del Chalkboard. La frase *"hay bastante más de lo que cabe en un
+> mensaje"* anuncia que hay cosas guardadas — crea curiosidad en vez de saciarla.
 
-> Hola [Nombre]:
+> Hola [Nombre], ¿cómo estás?
 >
-> Le escribimos desde **Tradeable Academy**, una plataforma de formación para traders.
+> Te escribo de parte de **Tradeable Academy**, una plataforma de formación para traders.
 >
-> Reúne siete herramientas en un mismo lugar: un analizador que revisa el screenshot de una
-> operación ya cerrada y devuelve el diagnóstico dentro de la metodología con la que se operó
-> —ICT, SMC, Wyckoff, patrones clásicos, price action, técnico—; una checklist previa a la entrada
-> que registra las operaciones y mide la disciplina del trader; una biblioteca de contenido en
-> entorno 3D; un sistema de quizzes por metodología con ranking y certificados; un foro moderado;
-> una pizarra de análisis; y una librería de indicadores para TradingView.
+> Estuve viendo tu perfil y tu trabajo como creador de contenido, y nos gustaría poder mostrarte a
+> detalle qué somos, qué hacemos y qué ofrecemos, con la idea de explorar alguna alianza que
+> beneficie a ambas partes.
 >
-> Le escribimos a usted por [motivo concreto de su contenido].
+> Te dejo un resumen breve de qué es Tradeable Academy y por qué nació.
 >
-> Nos gustaría mostrarle la plataforma por dentro, con calma y a detalle, en una reunión. Si le
-> interesa, coordinamos el día y la hora que mejor le convenga.
+> El proyecto nace de carencias concretas que sufrimos los traders en el día a día, y que hemos
+> empezado a cubrir apoyándonos en desarrollo web e inteligencia artificial.
 >
-> Quedamos atentos.
+> **1. Si eres trader, ¿quién te acompaña?**
+> Da igual si eres principiante o experimentado, ni si tienes un mentor que te guíe. Todos
+> necesitamos algo que, cuando nos equivocamos, sepa decirnos en qué nos equivocamos, o al menos
+> darnos una pista. Un mentor no está disponible 24/7, no todos pueden pagar uno, y en este rubro
+> cuesta mucho distinguir quién ofrece contenido gratuito útil y quién no.
 >
+> De esa carencia nace el **Analizador de Screenshots**, y a partir de él nace todo Tradeable
+> Academy. Subes la captura de tu operación junto con el contexto de por qué la tomaste, y recibes
+> el análisis de una IA entrenada que te ayuda a identificar dónde falló. No sustituye a un mentor
+> y no es perfecta, pero está disponible a cualquier hora y cumple su objetivo.
+>
+> **2. Pre-Flight.**
+> Tu checklist de confluencias antes de decidir si entras o no. Vas marcando las que se cumplen y un
+> sistema de semáforo te da luz verde o luz roja. Después registras el resultado del trade, y todo
+> eso alimenta un sistema de estadísticas que te muestra qué confluencias realmente te funcionan y
+> cuáles no. Está pensada para frenar la entrada por emoción o por venganza, y para asegurar que
+> sigas tu propia estrategia al pie de la letra.
+>
+> **3. El foro.**
+> Moderado al 100% con IA: no se venden señales, no se acepta asesoría financiera ni contenido ajeno
+> al trading. Está para que interactúes con otros traders, conozcas nuevas estrategias, pidas ayuda
+> o hagas amigos. Puedes crear comunidades, unirte a otras y seguir a otros traders.
+>
+> **4. Sistema de quizzes.**
+> Para evaluar tus conocimientos en cada metodología que operes, con quizzes conceptuales y también
+> de operativa —gráficos por resolver— y un ranking competitivo.
+>
+> **5. Synapse.**
+> Una biblioteca de trading que ataca el problema de la información dispersa. Hoy, para estudiar un
+> concepto, toca googlear y ver videos hasta dar con una fuente seria y lo bastante específica.
+> Synapse reúne conceptos, gatillos de entrada, ejemplos reales de cómo se ve cada caso en un
+> gráfico y los errores típicos al aplicarlos. Todo a dos o tres clics, sin investigar durante horas.
+>
+> **6. Chalkboard.**
+> Un pizarrón dedicado al trading: desglosas setups, armas documentos, presentas y exportas a PDF.
+> Es como un Google Docs, pero enfocado únicamente en esto. Ya no tienes que rayar el gráfico en
+> TradingView para explicarle algo a alguien, ni armar diapositivas desde cero en Canva para
+> compartir algo con tu comunidad.
+>
+> A esto se suma un sistema de niveles con certificados y recompensas que se van desbloqueando
+> mientras más usas la plataforma. No solo construimos un ecosistema para ayudar a los traders:
+> también un sistema de incentivos que hace todo más entretenido, con camuflajes para personalizar
+> tu sitio, insignias por rendimiento y badges.
+>
+> Hay bastante más de lo que cabe en un mensaje, así que me encantaría poder enseñártelo en vivo.
+> ¿Tendrías disponibilidad para una reunión virtual esta semana? Si la propuesta te despierta
+> interés, coordinamos el día y la hora que mejor te queden.
+>
+> Saludos,
 > **Tradeable Academy**
-> tradeable.academy
 
-### Lo que NO puede aparecer en el primer mensaje
+### Al personalizar cada copia
 
-- 🔴 Ningún **gancho retórico** de apertura ("hay algo que nadie te dice", "la parte que
-  ningún curso resuelve"). Es el tono del vendedor de cursos y lo delata al instante.
-- 🔴 **Viñetas ni secciones en negrita por producto** — convierte el DM en folleto.
-- 🔴 **La palabra "alianza"** y cualquier cifra de comisión. Va en la reunión.
-- 🔴 **Bloques de negación** ("no es un bot, no damos señales"). Si sale la objeción de la
-  IA, se responde con el guion de abajo; no se abre con ella.
-- 🔴 **El nombre del dueño** y el "te escribo yo, no un equipo". Se firma la empresa.
-- 🔴 *"¿Tiene 15 minutos?"* — hace ver el producto como algo menor. Se ofrece una reunión.
-- ⚠️ Lo único que se personaliza **obligatoriamente** es el "le escribimos a usted por…". Sin eso
-  el mensaje es masivo y se nota.
+- Cambiar el nombre y **concordar el género** ("creador/creadora"; el punto 1 va en masculino
+  genérico).
+- La reunión se menciona **dos veces a propósito**: arriba como el motivo del mensaje, abajo como
+  la petición concreta con lo de "esta semana". En el borrador original decían casi lo mismo las
+  dos veces; ahora cada una cumple una función distinta.
+- Errores del borrador ya corregidos, por si se reescribe desde él: *objetivfo · prop{osito ·
+  detetar · mtodologia · cantifdad · nformación · qu NO · STL* (→ SL/TP) · *quizes* (→ quizzes).
 
 ### Reglas de redacción que fijó el dueño (2026-08-30)
 
