@@ -155,18 +155,27 @@
 > Saludos,
 > **Tradeable Academy**
 
-### 🔗 El DM corto + la página `/proyecto` (2026-08-30) — ESTA es la forma de enviarlo
+### 🔗 ENVÍO EN DOS PASOS — el enlace va en el SEGUNDO mensaje (fijado 2026-08-30)
 
-**El texto completo NO se manda por DM.** Instagram limita las palabras por mensaje y el dueño
-tuvo que partirlo en **ocho mensajes distintos**. Instagram tampoco deja adjuntar un PDF. Solución:
-los seis puntos viven en una página del propio sitio y el DM lleva el enlace.
+**El texto completo NO se manda por DM.** Instagram limita las palabras por mensaje y el dueño tuvo
+que partirlo en **ocho mensajes distintos**; tampoco deja adjuntar un PDF. Por eso los seis puntos
+viven en una página del sitio: 🔗 **https://tradeable.academy/proyecto**
+(`scalpel/templates/proyecto.html` + ruta en `app.py` justo antes del bloque de `/creators`;
+`noindex`, fuera del sitemap y de los menús, sin formulario → sin antiflood; Google Fonts **no
+bloqueante** porque se abre desde el navegador interno de Instagram).
 
-🔗 **https://tradeable.academy/proyecto** — plantilla `scalpel/templates/proyecto.html`,
-ruta en `app.py` (justo antes del bloque de `/creators`). `noindex`, fuera del sitemap y de todos
-los menús, sin formulario (por eso no necesita antiflood). Hoja de Google Fonts **no bloqueante**,
-porque quien la abre llega desde el navegador interno de Instagram.
+🔴 **Pero el enlace NO va en el primer mensaje.** Dos motivos:
+1. Un enlace de un desconocido dispara la alarma de estafa. De alguien que ya te respondió, no.
+2. **Riesgo práctico, el que más pesa:** Instagram trata mal los enlaces en solicitudes de mensaje
+   de gente que no te sigue —a menudo ni los vuelve clicables— y enviarlos en frío a varias
+   cuentas seguidas es un patrón que la plataforma marca como spam. Los mensajes acaban en la
+   carpeta oculta de solicitudes sin que nadie se entere.
 
-**El DM, que ahora cabe en UN mensaje:**
+⚠️ Lo que sí juega a favor cuando por fin se manda: **el dominio ES la marca** (`tradeable.academy`
+coincide con la firma), y el perfil corrobora si la bio lleva el mismo dominio. 🔴 **Jamás
+usar un acortador** (bit.ly, linktr.ee): ahí sí se pierde toda la verificabilidad.
+
+**MENSAJE 1 — sin enlace:**
 
 > Hola [Nombre], ¿cómo estás?
 >
@@ -176,18 +185,27 @@ porque quien la abre llega desde el navegador interno de Instagram.
 > detalle qué somos, qué hacemos y qué ofrecemos, con la idea de explorar alguna alianza que
 > beneficie a ambas partes.
 >
-> Aquí te dejo un resumen de qué es Tradeable Academy y de las carencias del trading de las que
-> nació: **tradeable.academy/proyecto**
+> Muy en corto: el proyecto nace de carencias concretas que sufrimos los traders en el día a día.
+> Un analizador que te ayuda a identificar dónde falló el trade que tomaste, una checklist previa a
+> la entrada para dejar de operar por emoción, un foro moderado, un sistema de quizzes, una
+> biblioteca de conceptos y un pizarrón dedicado al trading.
 >
-> Hay bastante más de lo que cabe en esa página, así que me encantaría poder enseñártelo en vivo.
-> ¿Tendrías disponibilidad para una reunión virtual esta semana? Si la propuesta te despierta
-> interés, coordinamos el día y la hora que mejor te queden.
+> Si te interesa, te paso un resumen completo de cada herramienta. Y si te despierta interés la
+> propuesta, ¿tendrías disponibilidad para una reunión virtual esta semana? Coordinamos el día y la
+> hora que mejor te queden.
 >
 > Saludos,
 > **Tradeable Academy**
 
+**MENSAJE 2 — solo cuando conteste:**
+
+> Te dejo el resumen completo aquí: tradeable.academy/proyecto
+
+**`/proyecto` no se desperdicia:** es la pieza de seguimiento, y sirve además para la bio, para una
+historia destacada y para cualquiera que pregunte qué es esto.
+
 ⚠️ La página está **solo en español** (la lista de contactos lo es). Añadir el selector de idioma
-es replicar el patrón de `/creators`, aún no pedido.
+es replicar el patrón de `/creators`; aún no pedido.
 
 ### Al personalizar cada copia
 
