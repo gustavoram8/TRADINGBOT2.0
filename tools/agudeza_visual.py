@@ -277,7 +277,54 @@ def fam_conteo(nivel, k, rnd):
                 'gráfico? Responde SOLO con el número.'), str(n)
 
 
+def fam_presencia(nivel, k, rnd):
+    """CONTROL DE CORDURA — ¿hay líneas amarillas, sí o no?
+
+    🔴 ES LA FAMILIA MÁS IMPORTANTE DEL BANCO, y la que faltaba. Todas las
+    demás preguntas de SÍ/NO dieron "NO" el 100% de las veces. Eso admite dos
+    lecturas opuestas: (a) el modelo no sabe juzgar relaciones, o (b) el modelo
+    responde "NO" a cualquier pregunta de sí/no y sus respuestas no llevan
+    información. Sin distinguirlas, TODO el estudio es papel mojado.
+
+    Aquí el elemento está o no está, ocupa el ancho entero y va de `nivel` px de
+    grosor. Un humano lo resuelve de un vistazo. Si el modelo también falla
+    esto, el problema es la respuesta por defecto y no la vista."""
+    im, d = _lienzo()
+    _velas(d, 60, AN - 170, 200, 900, rnd.randint(0, 10 ** 6))
+    hay = (k % 2 == 0)
+    if hay:
+        for yy in rnd.sample(range(280, 840, 60), 3):
+            d.line([(60, yy), (AN - 150, yy)], fill=(255, 235, 120), width=nivel)
+    return im, ('¿Hay alguna línea horizontal AMARILLA dibujada sobre el gráfico? '
+                'Responde SOLO SI o NO.'), ('SI' if hay else 'NO')
+
+
+# 🔑 LA MISMA LÁMINA, LA PREGUNTA AL REVÉS. Si el modelo contesta "NO" tanto a
+#    "¿se solapan?" como a "¿están separadas?", entonces ese "NO" no es una
+#    lectura del gráfico: es una muletilla. Es la prueba que separa "no ve" de
+#    "no contesta", y ninguna cantidad de láminas nuevas la sustituye.
+#    ⚠️ Al invertir hay que invertir TAMBIÉN la respuesta esperada.
+INVERSAS = {
+    'cruce': ('En el gráfico hay dos medias móviles, una AZUL y una NARANJA. '
+              '¿Se mantienen separadas en todo momento, sin tocarse nunca? '
+              'Responde SOLO SI o NO.'),
+    'rsi': ('Abajo del gráfico hay un panel con un indicador tipo RSI (línea '
+            'morada) y dos guías horizontales marcadas 30 y 70. ¿El ÚLTIMO valor '
+            'del indicador, en el extremo derecho, está por ENCIMA de la guía 30? '
+            'Responde SOLO SI o NO.'),
+    'ruptura': ('Hay una línea horizontal blanca (un nivel). Fíjate en la vela '
+                'verde grande que llega hasta esa línea. ¿Su CIERRE (el borde '
+                'superior del cuerpo, no la mecha) quedó por DEBAJO de la línea? '
+                'Responde SOLO SI o NO.'),
+    'solape': ('Hay dos zonas rectangulares, una AZUL y una NARANJA. ¿Están a '
+               'alturas completamente distintas, sin compartir ningún rango de '
+               'precio? Responde SOLO SI o NO.'),
+    'presencia': ('¿El gráfico está LIBRE de líneas horizontales amarillas? '
+                  'Responde SOLO SI o NO.'),
+}
+
 FAMILIAS = {
+    'presencia': (fam_presencia, 'grosor del elemento (px)', [2, 4, 6, 10, 16, 24]),
     'ocr':      (fam_ocr,      'tamaño de la letra (px)',    [5, 7, 9, 12, 16, 22]),
     'cruce':    (fam_cruce,    'separación mínima (px)',     [2, 3, 4, 6, 10, 18]),
     'ruptura':  (fam_ruptura,  'margen del cierre (px)',     [1, 2, 3, 5, 9, 16]),
@@ -304,8 +351,14 @@ def generar():
                 im, preg, resp = fn(niv, k, rnd)
                 cid = '%s_%03d_%d' % (fam, niv, k)
                 im.save(os.path.join(LAMINAS, cid + '.png'))
+                inv = INVERSAS.get(fam)
                 manif.append({'id': cid, 'familia': fam, 'nivel': niv,
-                              'pregunta': preg, 'respuesta': resp})
+                              'pregunta': preg, 'respuesta': resp,
+                              'pregunta_inv': inv,
+                              # la respuesta invertida solo existe en SÍ/NO
+                              'respuesta_inv': ({'SI': 'NO', 'NO': 'SI'}[resp]
+                                                if inv and resp in ('SI', 'NO')
+                                                else None)})
     with io.open(os.path.join(SALIDA, 'manifiesto.json'), 'w', encoding='utf-8') as f:
         f.write(json.dumps(manif, indent=1, ensure_ascii=False))
     print('%d láminas de %dx%d en %s' % (len(manif), AN, AL, LAMINAS))
@@ -597,7 +650,7 @@ def _normaliza(txt, esperada):
     return t[:8]
 
 
-def correr(destino, solo_familia, tope, pausa, razonar):
+def correr(destino, solo_familia, tope, pausa, razonar, invertir):
     prov, _, modelo = destino.partition(':')
     if not modelo:
         raise SystemExit('formato: proveedor:modelo  (ej. gemini:gemini-3-pro)')
@@ -605,6 +658,12 @@ def correr(destino, solo_familia, tope, pausa, razonar):
     manif = json.load(io.open(os.path.join(SALIDA, 'manifiesto.json'), encoding='utf-8'))
     if solo_familia:
         manif = [c for c in manif if c['familia'] in solo_familia]
+    if invertir:
+        manif = [dict(c, pregunta=c['pregunta_inv'], respuesta=c['respuesta_inv'])
+                 for c in manif if c.get('respuesta_inv')]
+        if not manif:
+            raise SystemExit('--invertir solo aplica a las familias de SI/NO: %s'
+                             % ', '.join(sorted(INVERSAS)))
     print('%s · %d láminas' % (destino, len(manif)))
     filas, aciertos, fallos = [], 0, 0
     for i, c in enumerate(manif, 1):
@@ -633,9 +692,11 @@ def correr(destino, solo_familia, tope, pausa, razonar):
         filas.append(dict(c, dada=dada, bruto=(bruto or '')[:120], ok=ok,
                           error=err))
         time.sleep(pausa)
-    nombre = destino.replace('/', '_').replace(':', '__') + ('__raz' if razonar else '')
+    nombre = (destino.replace('/', '_').replace(':', '__')
+              + ('__raz' if razonar else '') + ('__inv' if invertir else ''))
     with io.open(os.path.join(SALIDA, 'res_%s.json' % nombre), 'w', encoding='utf-8') as f:
-        f.write(json.dumps({'destino': destino + (' [razona]' if razonar else ''),
+        f.write(json.dumps({'destino': destino + (' [razona]' if razonar else '')
+                            + (' [invertida]' if invertir else ''),
                             'filas': filas}, indent=1,
                            ensure_ascii=False))
     buenas = [f for f in filas if not f['error']]
@@ -735,6 +796,10 @@ if __name__ == '__main__':
     ap.add_argument('--pausa', type=float, default=1.5,
                     help='segundos entre láminas; súbelo si salen 429 '
                          '(GitHub Models limita las peticiones)')
+    ap.add_argument('--invertir', action='store_true',
+                    help='hace la pregunta CONTRARIA sobre las mismas láminas; '
+                         'si contesta lo mismo en las dos, su respuesta no '
+                         'lleva información')
     ap.add_argument('--razonar', action='store_true',
                     help='deja al modelo pensar 2-3 frases antes de responder; '
                          'descarta que el sesgo venga de prohibirle razonar')
@@ -747,7 +812,7 @@ if __name__ == '__main__':
     if a.generar:
         generar()
     if a.correr:
-        correr(a.correr, a.familia, a.tope, a.pausa, a.razonar)
+        correr(a.correr, a.familia, a.tope, a.pausa, a.razonar, a.invertir)
     if a.tabla:
         tabla()
     if not (a.generar or a.correr or a.tabla):

@@ -63,6 +63,9 @@ def main():
             ra, rb = np.where(az.sum(1) > 100)[0], np.where(na.sum(1) > 100)[0]
             real = 'SI' if (len(ra) and len(rb) and
                             max(ra.min(), rb.min()) <= min(ra.max(), rb.max())) else 'NO'
+        elif f == 'presencia':
+            am = cerca(a, (255, 235, 120), 60)
+            real = 'SI' if (am.sum(1) > 800).sum() > 0 else 'NO'
         elif f == 'conteo':
             am = cerca(a, (255, 235, 120), 60)
             n, prev = 0, -99
