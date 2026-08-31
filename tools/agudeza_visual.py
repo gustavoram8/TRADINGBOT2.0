@@ -177,9 +177,13 @@ def fam_cruce(nivel, k, rnd):
     #    número mide distancia entre ejes, así que el trazo tiene que ser fino.
     d.line(a, fill=LINEA_A, width=1)
     d.line(b, fill=LINEA_B, width=1)
+    # la región decisiva: el entorno del punto de acercamiento
+    wc = 34 * math.sin(f1 * ((xc - x0) / float(x1 - x0)) * 6.28 + d1) + \
+        16 * math.sin(f2 * ((xc - x0) / float(x1 - x0)) * 6.28 + d2)
+    caja = (xc - 260, base + wc - 150, xc + 260, base + wc + 150)
     return im, ('En el gráfico hay dos medias móviles, una AZUL y una NARANJA. '
                 '¿Se llegan a cruzar en algún punto? Responde SOLO SI o NO.'), \
-        ('SI' if cruza else 'NO')
+        ('SI' if cruza else 'NO'), caja
 
 
 def fam_ruptura(nivel, k, rnd):
@@ -198,10 +202,11 @@ def fam_ruptura(nivel, k, rnd):
     d.line([(cx + 6, cierre - 22), (cx + 6, apert + 14)], fill=SUBE)
     d.rectangle([cx, cierre, cx + 13, apert], fill=SUBE)
     _velas(d, 1290, AN - 170, y_niv - 40, y_niv + 220, rnd.randint(0, 10 ** 6))
+    caja = (1150, y_niv - 130, 1420, y_niv + 130)
     return im, ('Hay una línea horizontal blanca (un nivel). Fíjate en la vela '
                 'verde grande que llega hasta esa línea. ¿Su CIERRE (el borde superior '
                 'del cuerpo, no la mecha) quedó por ENCIMA de la línea? '
-                'Responde SOLO SI o NO.'), ('SI' if rompe else 'NO')
+                'Responde SOLO SI o NO.'), ('SI' if rompe else 'NO'), caja
 
 
 def fam_rsi(nivel, k, rnd):
@@ -230,10 +235,11 @@ def fam_rsi(nivel, k, rnd):
         v = min(0.97, max(0.03, v))
         pts.append((x, top + nivel * (1 - v)))
     d.line(pts, fill=(190, 120, 235), width=2)
+    caja = (AN - 700, top - 20, AN - 100, top + nivel + 20)
     return im, ('Abajo del gráfico hay un panel con un indicador tipo RSI (línea '
                 'morada) y dos guías horizontales marcadas 30 y 70. ¿El ÚLTIMO valor '
                 'del indicador, en el extremo derecho, está por DEBAJO de la guía 30? '
-                'Responde SOLO SI o NO.'), ('SI' if abajo else 'NO')
+                'Responde SOLO SI o NO.'), ('SI' if abajo else 'NO'), caja
 
 
 def fam_solape(nivel, k, rnd):
@@ -257,9 +263,15 @@ def fam_solape(nivel, k, rnd):
     z2 = (1020, y2, AN - 140, y2 + alto)
     d.rectangle(z1, fill=(40, 92, 178))
     d.rectangle(z2, fill=(190, 112, 42))
+    # ⚠️ NO se recorta el ancho completo. Las zonas están en x 140-900 y
+    #    1020-1860, así que una caja de 1800×280 al ampliarla a 1920 crece
+    #    1,07× — o sea, nada. Se recorta la franja CENTRAL (600 px de ancho),
+    #    donde sigue viéndose la derecha de la azul y la izquierda de la
+    #    naranja, y ahí el aumento es de 3,2×.
+    caja = (700, min(y, y2) - 60, 1300, max(y, y2) + alto + 60)
     return im, ('Hay dos zonas rectangulares, una AZUL y una NARANJA. ¿Se solapan '
                 'verticalmente, es decir, comparten algún rango de precio? '
-                'Responde SOLO SI o NO.'), ('SI' if solapan else 'NO')
+                'Responde SOLO SI o NO.'), ('SI' if solapan else 'NO'), caja
 
 
 def fam_conteo(nivel, k, rnd):
@@ -378,7 +390,9 @@ def generar():
                 # mes son el MISMO píxel, así que dos modelos corridos en días
                 # distintos siguen siendo comparables.
                 rnd = random.Random('%s|%d|%d' % (fam, niv, k))
-                im, preg, resp = fn(niv, k, rnd)
+                salida = fn(niv, k, rnd)
+                im, preg, resp = salida[:3]
+                caja = salida[3] if len(salida) > 3 else None
                 cid = '%s_%03d_%d' % (fam, niv, k)
                 im.save(os.path.join(LAMINAS, cid + '.png'))
                 inv = INVERSAS.get(fam)
@@ -386,6 +400,7 @@ def generar():
                 manif.append({'id': cid, 'familia': fam, 'nivel': niv,
                               'pregunta': preg, 'respuesta': resp,
                               'pregunta_inv': inv, 'tolerancia': tol,
+                              'caja': [int(v) for v in caja] if caja else None,
                               # la respuesta invertida solo existe en SÍ/NO
                               'respuesta_inv': ({'SI': 'NO', 'NO': 'SI'}[resp]
                                                 if inv and resp in ('SI', 'NO')
@@ -421,9 +436,31 @@ INSTR_RAZ = ('Eres un lector de gráficos. Observa la imagen con cuidado y razon
              'de SI/NO, sin nada más.')
 
 
-def _b64(ruta):
-    with open(ruta, 'rb') as f:
-        return base64.b64encode(f.read()).decode('ascii')
+def _b64(ruta, caja=None):
+    """La lámina en base64; con `caja`, solo esa región AMPLIADA.
+
+    🔑 Recortar no basta: hay que REESCALAR el recorte hasta un lienzo grande.
+    Mandar un trozo pequeño solo le da al modelo una imagen pequeña, y el
+    elemento sigue midiendo los mismos píxeles. Ampliando a 1920 de ancho, una
+    separación de 3 px pasa a medir ~20, que es terreno donde el modelo YA
+    demostró acertar.
+
+    ⚠️ Se amplía con NEAREST a propósito: una interpolación suave difumina una
+    línea de 1 px y podría borrar justo el detalle que decide la respuesta."""
+    if not caja:
+        with open(ruta, 'rb') as f:
+            return base64.b64encode(f.read()).decode('ascii')
+    im = Image.open(ruta).convert('RGB')
+    x0, y0, x1, y1 = [int(v) for v in caja]
+    x0, y0 = max(0, x0), max(0, y0)
+    x1, y1 = min(im.width, x1), min(im.height, y1)
+    tro = im.crop((x0, y0, x1, y1))
+    factor = min(1920.0 / max(1, tro.width), 1080.0 / max(1, tro.height))
+    tro = tro.resize((int(tro.width * factor), int(tro.height * factor)),
+                     Image.NEAREST)
+    buf = io.BytesIO()
+    tro.save(buf, format='PNG')
+    return base64.b64encode(buf.getvalue()).decode('ascii')
 
 
 def _post(url, cab, cuerpo):
@@ -697,7 +734,7 @@ def _acierta(dada, esperada, tol):
         return False
 
 
-def correr(destino, solo_familia, tope, pausa, razonar, invertir):
+def correr(destino, solo_familia, tope, pausa, razonar, invertir, zoom):
     prov, _, modelo = destino.partition(':')
     if not modelo:
         raise SystemExit('formato: proveedor:modelo  (ej. gemini:gemini-3-pro)')
@@ -717,8 +754,12 @@ def correr(destino, solo_familia, tope, pausa, razonar, invertir):
         ruta = os.path.join(LAMINAS, c['id'] + '.png')
         err = ''
         try:
-            bruto = _pide(prov, modelo, clave, _b64(ruta), c['pregunta'], tope,
-                          razonar)
+            caja = c.get('caja') if zoom else None
+            if zoom and not caja:
+                raise SystemExit('--zoom solo aplica a las familias con región '
+                                 'decisiva: cruce, ruptura, rsi, solape')
+            bruto = _pide(prov, modelo, clave, _b64(ruta, caja), c['pregunta'],
+                          tope, razonar)
         except Exception as e:
             bruto, err = '', str(e)[:200]
         if err:
@@ -740,7 +781,7 @@ def correr(destino, solo_familia, tope, pausa, razonar, invertir):
                           error=err))
         time.sleep(pausa)
     nombre = (destino.replace('/', '_').replace(':', '__')
-              + ('__raz' if razonar else '') + ('__inv' if invertir else ''))
+              + ('__raz' if razonar else '') + ('__inv' if invertir else '') + ('__zoom' if zoom else ''))
     # 🔴 SE FUSIONA, NO SE SOBRESCRIBE. Correr con --familia produce un archivo
     #    con el mismo nombre, y al guardarlo entero se borraban las familias que
     #    no se habían vuelto a correr: una pasada de 24 láminas se llevó por
@@ -757,7 +798,8 @@ def correr(destino, solo_familia, tope, pausa, razonar, invertir):
     todas = [f for f in previas if f['id'] not in nuevos] + filas
     with io.open(ruta_res, 'w', encoding='utf-8') as f:
         f.write(json.dumps({'destino': destino + (' [razona]' if razonar else '')
-                            + (' [invertida]' if invertir else ''),
+                            + (' [invertida]' if invertir else '')
+                            + (' [zoom]' if zoom else ''),
                             'filas': todas}, indent=1,
                            ensure_ascii=False))
     if len(todas) > len(filas):
@@ -860,6 +902,9 @@ if __name__ == '__main__':
     ap.add_argument('--pausa', type=float, default=1.5,
                     help='segundos entre láminas; súbelo si salen 429 '
                          '(GitHub Models limita las peticiones)')
+    ap.add_argument('--zoom', action='store_true',
+                    help='manda solo la region decisiva, ampliada; comprueba si '
+                         'la comparacion falla por tamano o por incapacidad')
     ap.add_argument('--invertir', action='store_true',
                     help='hace la pregunta CONTRARIA sobre las mismas láminas; '
                          'si contesta lo mismo en las dos, su respuesta no '
@@ -876,7 +921,8 @@ if __name__ == '__main__':
     if a.generar:
         generar()
     if a.correr:
-        correr(a.correr, a.familia, a.tope, a.pausa, a.razonar, a.invertir)
+        correr(a.correr, a.familia, a.tope, a.pausa, a.razonar, a.invertir,
+           a.zoom)
     if a.tabla:
         tabla()
     if not (a.generar or a.correr or a.tabla):
