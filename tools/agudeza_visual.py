@@ -30,9 +30,11 @@ supera aquí a GPT-4o, no tiene sentido pasarle el banco.
    número (OCR, conteo) no necesitan balance: acertar por azar es improbable.
 
 🔴 SE CORRE EN EL VPS. Este contenedor no llega a api.openai.com ni a
-   generativelanguage.googleapis.com. Las claves las lee solo del `.env`
-   (`load_dotenv`, igual que `app.py`): NO hace falta ningún `export` previo.
-   Generar las láminas sí funciona en cualquier sitio.
+   generativelanguage.googleapis.com. NO hace falta ningún `export`: la clave se
+   busca en el entorno, en `scalpel/.env` y —importante— en la línea
+   `environment=` del conf de supervisor, que es **donde vive de verdad en
+   producción** (bajo gunicorn no se lee el .env). Generar las láminas sí
+   funciona en cualquier sitio.
 
 Costo: 144 láminas ≈ $0.6-1,5 por modelo según tarifa. Nada que ver con el banco.
 """
@@ -399,6 +401,63 @@ CLAVES = {'openai': 'OPENAI_API_KEY', 'gemini': 'GEMINI_API_KEY',
           'anthropic': 'ANTHROPIC_API_KEY', 'github': 'GITHUB_TOKEN'}
 
 
+CONFS = ['/etc/supervisor/conf.d/*.conf', '/etc/supervisord.d/*.conf',
+         '/etc/supervisor/supervisord.conf']
+
+
+def _pares_supervisor():
+    """Los pares (nombre, valor) de las líneas `environment=` de supervisor.
+
+    ⚠️ La línea puede continuar en las siguientes con sangría, y los valores
+    suelen ir entre comillas. Un `split(',')` a secas parte cualquier valor que
+    lleve una coma dentro, así que se recorre carácter a carácter respetando
+    las comillas."""
+    pares = {}
+    for patron in CONFS:
+        for ruta in sorted(glob.glob(patron)):
+            try:
+                lineas = io.open(ruta, encoding='utf-8', errors='replace').read().split('\n')
+            except Exception:
+                continue
+            i = 0
+            while i < len(lineas):
+                ln = lineas[i]
+                if ln.strip().lower().startswith('environment='):
+                    bloque = ln.split('=', 1)[1]
+                    i += 1
+                    while i < len(lineas) and lineas[i][:1] in (' ', '\t'):
+                        bloque += lineas[i]
+                        i += 1
+                    trozo, comilla = '', ''
+                    for ch in bloque + ',':
+                        if comilla:
+                            if ch == comilla:
+                                comilla = ''
+                            else:
+                                trozo += ch
+                        elif ch in '"\'':
+                            comilla = ch
+                        elif ch == ',':
+                            if '=' in trozo:
+                                k, _, val = trozo.partition('=')
+                                pares[k.strip()] = val.strip()
+                            trozo = ''
+                        else:
+                            trozo += ch
+                    continue
+                i += 1
+    return pares
+
+
+def _de_supervisor(nombre):
+    return _pares_supervisor().get(nombre, '').strip()
+
+
+def _nombres_supervisor():
+    """Solo los NOMBRES. 🔴 El valor de estas variables jamás se imprime."""
+    return sorted(_pares_supervisor().keys())
+
+
 def _clave(prov):
     """La clave del proveedor, leyendo `scalpel/.env` como lo hace la app.
 
@@ -422,23 +481,38 @@ def _clave(prov):
         pass
     if v:
         return v
+    # 🔴 EN EL VPS LA CLAVE NO VIVE EN EL .env, SINO EN LA LÍNEA `environment=`
+    #    DEL CONF DE SUPERVISOR. Bajo gunicorn `load_dotenv()` no encuentra el
+    #    .env, así que producción se configura ahí (ver CLAUDE_ARCHIVE.md, "OpenAI
+    #    pago CONECTADO 2026-07-17"). Mirar solo el .env hace concluir que la app
+    #    corre sobre el backend gratuito cuando NO es verdad — pasó, y el
+    #    diagnóstico erróneo casi manda a cambiar de modelo por nada.
+    v = _de_supervisor(nombre)
+    if v:
+        return v
     hay = []
     if os.path.exists(env):
         for ln in io.open(env, encoding='utf-8', errors='replace'):
             ln = ln.strip()
             if ln and not ln.startswith('#') and '=' in ln:
                 hay.append(ln.split('=', 1)[0].strip())
+    hay += [n for n in _nombres_supervisor() if n not in hay]
     # Si falta la de pago pero SÍ está la de GitHub Models, decirlo: es el
     # backend que la app usa por defecto y sirve como línea base.
+    # ⚠️ Esta pista solo es cierta si la clave NO está TAMPOCO en supervisor —
+    #    que es donde vive en producción. Por eso se emite después de haber
+    #    mirado los dos sitios, nunca solo por lo que falte en el .env.
     pista = ''
     if prov == 'openai' and 'GITHUB_TOKEN' in hay:
-        pista = ('\n\n🔑 Tu .env NO trae OPENAI_API_KEY pero SÍ GITHUB_TOKEN. Entonces la\n'
-                 '   app corre sobre GitHub Models (gratis) — app.py:446 — y la línea\n'
-                 '   base honesta es esa:\n'
-                 '   venv/bin/python3 tools/agudeza_visual.py --correr github:gpt-4o')
+        pista = ('\n\n🔑 No hay OPENAI_API_KEY en ninguno de los dos sitios, pero sí\n'
+                 '   GITHUB_TOKEN. Entonces la app cae al backend gratuito de GitHub\n'
+                 '   Models (app.py:446) y la línea base honesta es esa:\n'
+                 '   venv/bin/python3 tools/agudeza_visual.py --correr github:gpt-4o\n'
+                 '   Compruébalo con:  grep -rh "\\[AI\\] backend" /var/log/supervisor/')
     raise SystemExit(
         'Falta %s.\n'
-        'Se buscó en el entorno y en %s.\n'
+        'Se buscó en el entorno, en %s y en las líneas `environment=` de\n'
+        'los conf de supervisor.\n'
         'Variables que SÍ están en ese archivo (solo los nombres):\n  %s\n\n'
         '👉 Si la clave vive en la config de supervisor y no en el .env, córrelo así:\n'
         '   %s=... venv/bin/python3 tools/agudeza_visual.py --correr %s:MODELO'
