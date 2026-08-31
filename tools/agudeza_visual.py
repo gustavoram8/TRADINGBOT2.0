@@ -2,6 +2,7 @@
 """PASO A — cuánto ve de fino cada modelo de visión sobre un gráfico de trading.
 
     python3 tools/agudeza_visual.py --generar          # dibuja las láminas (gratis)
+    python3 tools/agudeza_visual.py --correr github:gpt-4o   # la base: lo que corre HOY
     python3 tools/agudeza_visual.py --correr openai:gpt-4o          # gasta dinero
     python3 tools/agudeza_visual.py --correr gemini:gemini-3-pro
     python3 tools/agudeza_visual.py --tabla            # el resultado, comparado
@@ -357,9 +358,16 @@ def _post(url, cab, cuerpo):
 
 
 def _pide(prov, modelo, clave, img_b64, pregunta, tope):
-    if prov in ('openai', 'gemini'):
-        url = ('https://api.openai.com/v1/chat/completions' if prov == 'openai' else
-               'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions')
+    if prov in ('openai', 'gemini', 'github'):
+        # 🔑 `github` es el backend GRATUITO de GitHub Models, que es el que la app
+        #    usa por defecto cuando no hay OPENAI_API_KEY (app.py:446). Si
+        #    producción corre ahí, ESA es la línea base honesta: medir la API de
+        #    pago y compararla con lo que reciben los clientes sería trampa.
+        #    ⚠️ Va con límite de peticiones: si aparecen 429, espacia con --pausa.
+        url = {'openai': 'https://api.openai.com/v1/chat/completions',
+               'github': 'https://models.inference.ai.azure.com/chat/completions',
+               'gemini': ('https://generativelanguage.googleapis.com/v1beta/'
+                          'openai/chat/completions')}[prov]
         j = _post(url, {'Authorization': 'Bearer ' + clave}, {
             'model': modelo, 'max_completion_tokens': tope, 'temperature': 0,
             'messages': [
@@ -388,7 +396,7 @@ def _pide(prov, modelo, clave, img_b64, pregunta, tope):
 
 
 CLAVES = {'openai': 'OPENAI_API_KEY', 'gemini': 'GEMINI_API_KEY',
-          'anthropic': 'ANTHROPIC_API_KEY'}
+          'anthropic': 'ANTHROPIC_API_KEY', 'github': 'GITHUB_TOKEN'}
 
 
 def _clave(prov):
@@ -420,6 +428,14 @@ def _clave(prov):
             ln = ln.strip()
             if ln and not ln.startswith('#') and '=' in ln:
                 hay.append(ln.split('=', 1)[0].strip())
+    # Si falta la de pago pero SÍ está la de GitHub Models, decirlo: es el
+    # backend que la app usa por defecto y sirve como línea base.
+    pista = ''
+    if prov == 'openai' and 'GITHUB_TOKEN' in hay:
+        pista = ('\n\n🔑 Tu .env NO trae OPENAI_API_KEY pero SÍ GITHUB_TOKEN. Entonces la\n'
+                 '   app corre sobre GitHub Models (gratis) — app.py:446 — y la línea\n'
+                 '   base honesta es esa:\n'
+                 '   venv/bin/python3 tools/agudeza_visual.py --correr github:gpt-4o')
     raise SystemExit(
         'Falta %s.\n'
         'Se buscó en el entorno y en %s.\n'
@@ -427,7 +443,7 @@ def _clave(prov):
         '👉 Si la clave vive en la config de supervisor y no en el .env, córrelo así:\n'
         '   %s=... venv/bin/python3 tools/agudeza_visual.py --correr %s:MODELO'
         % (nombre, env, ', '.join(hay) or '(ninguna / archivo ausente)',
-           nombre, prov))
+           nombre, prov) + pista)
 
 
 def _normaliza(txt, esperada):
@@ -443,7 +459,7 @@ def _normaliza(txt, esperada):
     return dig or t[:8]
 
 
-def correr(destino, solo_familia, tope):
+def correr(destino, solo_familia, tope, pausa):
     prov, _, modelo = destino.partition(':')
     if not modelo:
         raise SystemExit('formato: proveedor:modelo  (ej. gemini:gemini-3-pro)')
@@ -466,7 +482,7 @@ def correr(destino, solo_familia, tope):
         print('  %3d/%d %-16s %-14s dijo %-6s %s'
               % (i, len(manif), c['id'], 'espera ' + c['respuesta'], dada,
                  '✅' if ok else '🔴'))
-        time.sleep(0.15)
+        time.sleep(pausa)
     nombre = destino.replace('/', '_').replace(':', '__')
     with io.open(os.path.join(SALIDA, 'res_%s.json' % nombre), 'w', encoding='utf-8') as f:
         f.write(json.dumps({'destino': destino, 'filas': filas}, indent=1,
@@ -528,6 +544,9 @@ if __name__ == '__main__':
     ap.add_argument('--correr', metavar='PROVEEDOR:MODELO')
     ap.add_argument('--familia', nargs='*', help='limita a estas familias')
     ap.add_argument('--tabla', action='store_true')
+    ap.add_argument('--pausa', type=float, default=0.15,
+                    help='segundos entre láminas; súbelo si salen 429 '
+                         '(GitHub Models limita las peticiones)')
     ap.add_argument('--tope', type=int, default=512,
                     help='tope de tokens de salida (subir a 2000 si el modelo '
                          'razona y devuelve vacío)')
@@ -537,7 +556,7 @@ if __name__ == '__main__':
     if a.generar:
         generar()
     if a.correr:
-        correr(a.correr, a.familia, a.tope)
+        correr(a.correr, a.familia, a.tope, a.pausa)
     if a.tabla:
         tabla()
     if not (a.generar or a.correr or a.tabla):
