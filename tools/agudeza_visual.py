@@ -323,6 +323,19 @@ INSTR = ('Eres un lector de gráficos. Mira la imagen y responde la pregunta con
          'Sin explicaciones, sin puntuación, sin unidades. Si no estás seguro, '
          'responde igualmente con tu mejor lectura.')
 
+# 🔑 SEGUNDA CONDICIÓN, para descartar un confundido grave del experimento.
+#    Con INSTR el modelo tiene que soltar la respuesta de golpe, sin pensar. Un
+#    modelo NO razonador al que se le prohíbe razonar puede caer en una
+#    respuesta por defecto ("NO" a todo) que se parece a ceguera pero es otra
+#    cosa. Y el analizador de producción SÍ escribe prosa larga antes de
+#    concluir, así que la condición realista es esta, no la anterior.
+#    Se comparan las dos: si con razonamiento sube, el problema era la pregunta;
+#    si sigue en 50%, la incapacidad es real.
+INSTR_RAZ = ('Eres un lector de gráficos. Observa la imagen con cuidado y razona '
+             'en voz alta en 2 o 3 frases breves lo que ves. Después escribe una '
+             'última línea que empiece por "RESPUESTA:" seguida SOLO del número o '
+             'de SI/NO, sin nada más.')
+
 
 def _b64(ruta):
     with open(ruta, 'rb') as f:
@@ -377,7 +390,7 @@ def _post(url, cab, cuerpo):
     raise SystemExit('el proveedor sigue devolviendo 400: %s' % msg)
 
 
-def _pide(prov, modelo, clave, img_b64, pregunta, tope):
+def _pide(prov, modelo, clave, img_b64, pregunta, tope, razonar=False):
     if prov in ('openai', 'gemini', 'github'):
         # 🔑 `github` es el backend GRATUITO de GitHub Models, que es el que la app
         #    usa por defecto cuando no hay OPENAI_API_KEY (app.py:446). Si
@@ -391,7 +404,7 @@ def _pide(prov, modelo, clave, img_b64, pregunta, tope):
         j = _post(url, {'Authorization': 'Bearer ' + clave}, {
             'model': modelo, 'max_completion_tokens': tope, 'temperature': 0,
             'messages': [
-                {'role': 'system', 'content': INSTR},
+                {'role': 'system', 'content': INSTR_RAZ if razonar else INSTR},
                 {'role': 'user', 'content': [
                     {'type': 'text', 'text': pregunta},
                     # 🔴 detail='high' es obligatorio: en 'auto'/'low' OpenAI manda
@@ -404,7 +417,7 @@ def _pide(prov, modelo, clave, img_b64, pregunta, tope):
         j = _post('https://api.anthropic.com/v1/messages',
                   {'x-api-key': clave, 'anthropic-version': '2023-06-01'},
                   {'model': modelo, 'max_tokens': tope, 'temperature': 0,
-                   'system': INSTR,
+                   'system': INSTR_RAZ if razonar else INSTR,
                    'messages': [{'role': 'user', 'content': [
                        {'type': 'image', 'source': {
                            'type': 'base64', 'media_type': 'image/png',
@@ -543,6 +556,18 @@ PALABRAS = {'CERO': '0', 'UNO': '1', 'UNA': '1', 'DOS': '2', 'TRES': '3',
             'OCHO': '8', 'NUEVE': '9', 'DIEZ': '10'}
 
 
+def _ultima(txt):
+    """En modo --razonar, la respuesta es lo que sigue a 'RESPUESTA:'.
+
+    ⚠️ Se busca la ÚLTIMA aparición: el modelo a veces menciona la palabra
+    dentro de su razonamiento antes de dar el veredicto."""
+    t = (txt or '')
+    i = t.upper().rfind('RESPUESTA')
+    if i >= 0:
+        return t[i + len('RESPUESTA'):].lstrip(': \n\t')
+    return t.strip().split('\n')[-1]
+
+
 def _normaliza(txt, esperada):
     """Texto crudo → la respuesta comparable.
 
@@ -572,7 +597,7 @@ def _normaliza(txt, esperada):
     return t[:8]
 
 
-def correr(destino, solo_familia, tope, pausa):
+def correr(destino, solo_familia, tope, pausa, razonar):
     prov, _, modelo = destino.partition(':')
     if not modelo:
         raise SystemExit('formato: proveedor:modelo  (ej. gemini:gemini-3-pro)')
@@ -586,7 +611,8 @@ def correr(destino, solo_familia, tope, pausa):
         ruta = os.path.join(LAMINAS, c['id'] + '.png')
         err = ''
         try:
-            bruto = _pide(prov, modelo, clave, _b64(ruta), c['pregunta'], tope)
+            bruto = _pide(prov, modelo, clave, _b64(ruta), c['pregunta'], tope,
+                          razonar)
         except Exception as e:
             bruto, err = '', str(e)[:200]
         if err:
@@ -597,7 +623,8 @@ def correr(destino, solo_familia, tope, pausa):
             print('  %3d/%d %-16s %-14s ⚠️  %s'
                   % (i, len(manif), c['id'], 'espera ' + c['respuesta'], err[:70]))
         else:
-            dada = _normaliza(bruto, c['respuesta'])
+            dada = _normaliza(_ultima(bruto) if razonar else bruto,
+                              c['respuesta'])
             ok = (dada == c['respuesta'])
             aciertos += ok
             print('  %3d/%d %-16s %-14s dijo %-6s %s'
@@ -606,9 +633,10 @@ def correr(destino, solo_familia, tope, pausa):
         filas.append(dict(c, dada=dada, bruto=(bruto or '')[:120], ok=ok,
                           error=err))
         time.sleep(pausa)
-    nombre = destino.replace('/', '_').replace(':', '__')
+    nombre = destino.replace('/', '_').replace(':', '__') + ('__raz' if razonar else '')
     with io.open(os.path.join(SALIDA, 'res_%s.json' % nombre), 'w', encoding='utf-8') as f:
-        f.write(json.dumps({'destino': destino, 'filas': filas}, indent=1,
+        f.write(json.dumps({'destino': destino + (' [razona]' if razonar else ''),
+                            'filas': filas}, indent=1,
                            ensure_ascii=False))
     buenas = [f for f in filas if not f['error']]
     vacias = sum(1 for f in buenas if not f['bruto'].strip())
@@ -638,7 +666,7 @@ def tabla():
     if not res:
         raise SystemExit('no hay resultados todavía: corre --correr primero.')
     datos = [json.load(io.open(r, encoding='utf-8')) for r in res]
-    print('\nACIERTOS POR FAMILIA Y NIVEL  (⚠️ en SI/NO, 50%% = adivinar)\n')
+    print('\nACIERTOS POR FAMILIA Y NIVEL  (⚠️ en SI/NO, 50% = adivinar)\n')
     for fam, (_fn, etiq, niveles) in sorted(FAMILIAS.items()):
         print('── %s — %s' % (fam, etiq))
         cab = '   %-34s' % 'modelo' + ''.join('%7d' % n for n in niveles) + '   umbral'
@@ -667,7 +695,18 @@ def tabla():
                     umbral = n
                 elif pct < 75:
                     umbral = None          # tiene que aguantar de ahí en adelante
+            # 🔴 EL SESGO. Si el modelo contesta lo mismo en todas las láminas
+            #    de una familia SÍ/NO, el 50% resultante NO es azar: es una
+            #    respuesta por defecto. Sin esta columna, "50%" se lee como
+            #    "ve la mitad de las veces", que es una conclusión falsa.
+            sino = [f['dada'] for f in fil if not f.get('error') and
+                   f['dada'] in ('SI', 'NO')]
             marca = ('%dpx' % umbral) if umbral else 'nunca'
+            if sino:
+                nn = 100.0 * sino.count('NO') / len(sino)
+                if nn >= 90 or nn <= 10:
+                    marca += '  🔴 contestó %s en el %d%% (respuesta fija)' % (
+                        'NO' if nn >= 90 else 'SI', round(max(nn, 100 - nn)))
             if huecos:
                 marca += '  ⚠️ %d perdidas' % huecos
             print('   %-34s%s   %s' % (d['destino'], linea, marca))
@@ -696,6 +735,9 @@ if __name__ == '__main__':
     ap.add_argument('--pausa', type=float, default=1.5,
                     help='segundos entre láminas; súbelo si salen 429 '
                          '(GitHub Models limita las peticiones)')
+    ap.add_argument('--razonar', action='store_true',
+                    help='deja al modelo pensar 2-3 frases antes de responder; '
+                         'descarta que el sesgo venga de prohibirle razonar')
     ap.add_argument('--tope', type=int, default=512,
                     help='tope de tokens de salida (subir a 2000 si el modelo '
                          'razona y devuelve vacío)')
@@ -705,7 +747,7 @@ if __name__ == '__main__':
     if a.generar:
         generar()
     if a.correr:
-        correr(a.correr, a.familia, a.tope, a.pausa)
+        correr(a.correr, a.familia, a.tope, a.pausa, a.razonar)
     if a.tabla:
         tabla()
     if not (a.generar or a.correr or a.tabla):
