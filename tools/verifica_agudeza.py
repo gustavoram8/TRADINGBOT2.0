@@ -63,6 +63,15 @@ def main():
             ra, rb = np.where(az.sum(1) > 100)[0], np.where(na.sum(1) > 100)[0]
             real = 'SI' if (len(ra) and len(rb) and
                             max(ra.min(), rb.min()) <= min(ra.max(), rb.max())) else 'NO'
+        elif f == 'coords':
+            # la línea blanca PURA (255,255,255); el nivel gris de otras
+            # familias es (200,205,215) y no la confunde
+            bl = cerca(a, (255, 255, 255), 20)
+            ys = np.where(bl.sum(1) > 1000)[0]
+            real = str(int(round(ys.mean()))) if len(ys) else '?'
+            # tolerancia: la línea es de 3 px, su centro puede caer a ±2
+            if real != '?' and abs(int(real) - int(esp)) <= 2:
+                real = esp
         elif f == 'presencia':
             am = cerca(a, (255, 235, 120), 60)
             real = 'SI' if (am.sum(1) > 800).sum() > 0 else 'NO'

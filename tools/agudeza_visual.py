@@ -277,6 +277,30 @@ def fam_conteo(nivel, k, rnd):
                 'gráfico? Responde SOLO con el número.'), str(n)
 
 
+def fam_coords(nivel, k, rnd):
+    """¿SABE DECIR DÓNDE ESTÁ ALGO? — la pregunta que decide si esto tiene arreglo.
+
+    🔑 Las cuatro familias relacionales salieron en azar, pero el modelo lee
+    texto (9 px) y detecta elementos finos (2 px) sin despeinarse. Si además
+    supiera dar la POSICIÓN de las cosas, el arreglo no sería cambiar de modelo:
+    sería dejar de pedirle que compare y pedirle que LEA, comparando nosotros en
+    código —donde es aritmética exacta—.
+
+    Esta familia mide justo eso y nada más: una línea blanca a una altura
+    conocida, y se le pide el número. `nivel` ES esa altura, para ver de paso si
+    acierta mejor arriba, en medio o abajo.
+
+    ⚠️ Se acepta ±25 px sobre 1080 (un 2,3%): si el modelo se acerca así, el
+    código puede decidir el resto. Exigir el píxel exacto mediría otra cosa."""
+    im, d = _lienzo()
+    _velas(d, 60, AN - 170, 200, 900, rnd.randint(0, 10 ** 6))
+    y = nivel + rnd.randint(-18, 18)
+    d.line([(60, y), (AN - 150, y)], fill=(255, 255, 255), width=3)
+    return im, ('La imagen mide 1080 píxeles de alto. Hay una línea horizontal '
+                'BLANCA gruesa. ¿A qué altura está, contando píxeles desde el '
+                'borde SUPERIOR de la imagen? Responde SOLO el número.'), str(y)
+
+
 def fam_presencia(nivel, k, rnd):
     """CONTROL DE CORDURA — ¿hay líneas amarillas, sí o no?
 
@@ -323,7 +347,13 @@ INVERSAS = {
                   'Responde SOLO SI o NO.'),
 }
 
+# Familias con margen de acierto: la respuesta es un número y vale si cae
+# dentro de N px. Solo tienen sentido en las de posición.
+TOLERANCIA = {'coords': 25}
+
 FAMILIAS = {
+    'coords': (fam_coords, 'altura real de la línea (px)',
+               [150, 300, 450, 600, 750, 900]),
     'presencia': (fam_presencia, 'grosor del elemento (px)', [2, 4, 6, 10, 16, 24]),
     'ocr':      (fam_ocr,      'tamaño de la letra (px)',    [5, 7, 9, 12, 16, 22]),
     'cruce':    (fam_cruce,    'separación mínima (px)',     [2, 3, 4, 6, 10, 18]),
@@ -352,9 +382,10 @@ def generar():
                 cid = '%s_%03d_%d' % (fam, niv, k)
                 im.save(os.path.join(LAMINAS, cid + '.png'))
                 inv = INVERSAS.get(fam)
+                tol = TOLERANCIA.get(fam)
                 manif.append({'id': cid, 'familia': fam, 'nivel': niv,
                               'pregunta': preg, 'respuesta': resp,
-                              'pregunta_inv': inv,
+                              'pregunta_inv': inv, 'tolerancia': tol,
                               # la respuesta invertida solo existe en SÍ/NO
                               'respuesta_inv': ({'SI': 'NO', 'NO': 'SI'}[resp]
                                                 if inv and resp in ('SI', 'NO')
@@ -650,6 +681,22 @@ def _normaliza(txt, esperada):
     return t[:8]
 
 
+def _acierta(dada, esperada, tol):
+    """Igualdad, o cercanía cuando la familia declara un margen.
+
+    ⚠️ Sin margen, la familia de posición mediría precisión de píxel en vez de
+    si la lectura sirve para decidir. Con ±25 px sobre 1080 el código ya puede
+    resolver la relación por su cuenta, que es lo único que nos importa."""
+    if dada == esperada:
+        return True
+    if not tol:
+        return False
+    try:
+        return abs(int(dada) - int(esperada)) <= tol
+    except (ValueError, TypeError):
+        return False
+
+
 def correr(destino, solo_familia, tope, pausa, razonar, invertir):
     prov, _, modelo = destino.partition(':')
     if not modelo:
@@ -684,7 +731,7 @@ def correr(destino, solo_familia, tope, pausa, razonar, invertir):
         else:
             dada = _normaliza(_ultima(bruto) if razonar else bruto,
                               c['respuesta'])
-            ok = (dada == c['respuesta'])
+            ok = _acierta(dada, c['respuesta'], c.get('tolerancia'))
             aciertos += ok
             print('  %3d/%d %-16s %-14s dijo %-6s %s'
                   % (i, len(manif), c['id'], 'espera ' + c['respuesta'], dada,
