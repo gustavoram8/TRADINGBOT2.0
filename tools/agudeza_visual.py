@@ -338,10 +338,28 @@ def _post(url, cab, cuerpo):
        · Los modelos de razonamiento de OpenAI RECHAZAN `temperature` distinto
          de 1 con un 400.
        Sin este reintento, la primera corrida en el VPS muere en la lámina 1 con
-       un 400 y hay que adivinar cuál de los dos era."""
+       un 400 y hay que adivinar cuál de los dos era.
+
+    🔴 Y REINTENTA LOS 429. Sin esto la prueba se autodestruye: 144 imágenes de
+       1920×1080 en alta resolución agotan el límite por minuto de la cuenta, la
+       petición devuelve 429, el error se guardaba COMO SI FUERA la respuesta del
+       modelo y el resultado salía 26% — un número inventado por el límite de la
+       API, no por la vista del modelo. Un error NO es una respuesta equivocada:
+       es un dato que falta, y se marca como tal."""
     import requests
-    for _ in range(4):
+    espera = 4.0
+    for intento in range(8):
         r = requests.post(url, timeout=180, headers=cab, json=cuerpo)
+        if r.status_code in (429, 500, 502, 503, 504):
+            # `Retry-After` manda cuando viene; si no, espera creciente.
+            ra = r.headers.get('Retry-After')
+            try:
+                pausa = float(ra) if ra else espera
+            except ValueError:
+                pausa = espera
+            time.sleep(min(pausa, 90))
+            espera = min(espera * 1.8, 90)
+            continue
         if r.status_code != 400:
             r.raise_for_status()
             return r.json()
@@ -520,7 +538,23 @@ def _clave(prov):
            nombre, prov) + pista)
 
 
+PALABRAS = {'CERO': '0', 'UNO': '1', 'UNA': '1', 'DOS': '2', 'TRES': '3',
+            'CUATRO': '4', 'CINCO': '5', 'SEIS': '6', 'SIETE': '7',
+            'OCHO': '8', 'NUEVE': '9', 'DIEZ': '10'}
+
+
 def _normaliza(txt, esperada):
+    """Texto crudo → la respuesta comparable.
+
+    🔴 NUNCA se llama con el texto de un error. Un fallo de red o un 429 se
+    marca aparte: si se normalizara, el mensaje
+    'ERROR: 429 Too Many Requests .../v1/...' dejaría los dígitos "429"+"1" y
+    quedaría registrado como si el modelo hubiera CONTESTADO 4291. Pasó en la
+    primera corrida y produjo un 26% falso.
+
+    ⚠️ Los números en palabra sí se aceptan ("CINCO" = 5): el modelo obedeció la
+    pregunta, solo eligió otro formato. Contarlo como fallo mediría redacción,
+    no vista."""
     t = (txt or '').strip().upper()
     t = t.replace('Í', 'I').replace('.', '').replace(',', '').strip()
     if esperada in ('SI', 'NO'):
@@ -528,9 +562,14 @@ def _normaliza(txt, esperada):
             return 'SI'
         if t.startswith('NO'):
             return 'NO'
-        return t[:4]
+        return t[:6]
     dig = ''.join(c for c in t if c.isdigit())
-    return dig or t[:8]
+    if dig:
+        return dig
+    for pal, n in PALABRAS.items():
+        if t.startswith(pal):
+            return n
+    return t[:8]
 
 
 def correr(destino, solo_familia, tope, pausa):
@@ -542,28 +581,48 @@ def correr(destino, solo_familia, tope, pausa):
     if solo_familia:
         manif = [c for c in manif if c['familia'] in solo_familia]
     print('%s · %d láminas' % (destino, len(manif)))
-    filas, aciertos = [], 0
+    filas, aciertos, fallos = [], 0, 0
     for i, c in enumerate(manif, 1):
         ruta = os.path.join(LAMINAS, c['id'] + '.png')
+        err = ''
         try:
             bruto = _pide(prov, modelo, clave, _b64(ruta), c['pregunta'], tope)
         except Exception as e:
-            bruto = 'ERROR: %s' % e
-        dada = _normaliza(bruto, c['respuesta'])
-        ok = (dada == c['respuesta'])
-        aciertos += ok
-        filas.append(dict(c, dada=dada, bruto=(bruto or '')[:120], ok=ok))
-        print('  %3d/%d %-16s %-14s dijo %-6s %s'
-              % (i, len(manif), c['id'], 'espera ' + c['respuesta'], dada,
-                 '✅' if ok else '🔴'))
+            bruto, err = '', str(e)[:200]
+        if err:
+            # 🔴 Un error NO es una respuesta equivocada: es un dato que FALTA.
+            #    Se guarda como tal y queda fuera del porcentaje.
+            fallos += 1
+            dada, ok = '', False
+            print('  %3d/%d %-16s %-14s ⚠️  %s'
+                  % (i, len(manif), c['id'], 'espera ' + c['respuesta'], err[:70]))
+        else:
+            dada = _normaliza(bruto, c['respuesta'])
+            ok = (dada == c['respuesta'])
+            aciertos += ok
+            print('  %3d/%d %-16s %-14s dijo %-6s %s'
+                  % (i, len(manif), c['id'], 'espera ' + c['respuesta'], dada,
+                     '✅' if ok else '🔴'))
+        filas.append(dict(c, dada=dada, bruto=(bruto or '')[:120], ok=ok,
+                          error=err))
         time.sleep(pausa)
     nombre = destino.replace('/', '_').replace(':', '__')
     with io.open(os.path.join(SALIDA, 'res_%s.json' % nombre), 'w', encoding='utf-8') as f:
         f.write(json.dumps({'destino': destino, 'filas': filas}, indent=1,
                            ensure_ascii=False))
-    vacias = sum(1 for f in filas if not f['bruto'].strip())
-    print('\n%s: %d/%d (%.0f%%)' % (destino, aciertos, len(filas),
-                                    100.0 * aciertos / max(1, len(filas))))
+    buenas = [f for f in filas if not f['error']]
+    vacias = sum(1 for f in buenas if not f['bruto'].strip())
+    print('\n%s: %d/%d contestadas (%.0f%%)  ·  %d sin respuesta'
+          % (destino, aciertos, len(buenas),
+             100.0 * aciertos / max(1, len(buenas)), fallos))
+    if fallos:
+        # 🔴 Con láminas perdidas el resultado NO es comparable: cada familia
+        #    queda medida con distinto número de casos.
+        print('🔴 %d de %d láminas fallaron. El porcentaje de arriba NO es el '
+              'resultado del estudio.' % (fallos, len(filas)))
+        print('   Primer error: %s' % next(f['error'] for f in filas if f['error']))
+        if any('429' in f['error'] for f in filas):
+            print('   👉 Son 429 (límite de peticiones). Repite con  --pausa 4')
     if vacias > len(filas) * 0.1:
         # 🔴 En un modelo de RAZONAMIENTO el tope incluye los tokens de
         #    pensamiento: con el tope bajo se los gasta pensando y devuelve
@@ -588,11 +647,19 @@ def tabla():
             fil = [f for f in d['filas'] if f['familia'] == fam]
             if not fil:
                 continue
-            linea, umbral = '', None
+            linea, umbral, huecos = '', None, 0
             for n in niveles:
-                sub = [f for f in fil if f['nivel'] == n]
-                if not sub:
+                # 🔴 Las láminas que fallaron (429, red) NO cuentan: no son
+                #    respuestas equivocadas, son datos que faltan. Meterlas
+                #    hundiría el porcentaje y culparíamos al modelo del límite
+                #    de la API.
+                sub = [f for f in fil if f['nivel'] == n and not f.get('error')]
+                perdidas = len([f for f in fil if f['nivel'] == n]) - len(sub)
+                huecos += perdidas
+                if len(sub) < 3:
+                    # Con menos de 3 de 4 respuestas el nivel no es concluyente.
                     linea += '%7s' % '·'
+                    umbral = None
                     continue
                 pct = 100.0 * sum(1 for f in sub if f['ok']) / len(sub)
                 linea += '%6d%%' % round(pct)
@@ -600,16 +667,24 @@ def tabla():
                     umbral = n
                 elif pct < 75:
                     umbral = None          # tiene que aguantar de ahí en adelante
-            print('   %-34s%s   %s' % (d['destino'], linea,
-                                       ('%dpx' % umbral) if umbral else 'nunca'))
+            marca = ('%dpx' % umbral) if umbral else 'nunca'
+            if huecos:
+                marca += '  ⚠️ %d perdidas' % huecos
+            print('   %-34s%s   %s' % (d['destino'], linea, marca))
         print()
     print('El UMBRAL es el primer nivel a partir del cual el modelo acierta ≥75% y ya')
     print('no vuelve a bajar. Más chico = ve más fino. "nunca" = no lo resuelve.')
-    print('\nTOTALES')
+    print('Un "·" es un nivel SIN datos suficientes (láminas perdidas), no un cero.')
+    print('\nTOTALES  (solo sobre las láminas contestadas)')
     for d in datos:
         ok = sum(1 for f in d['filas'] if f['ok'])
-        print('   %-34s %d/%d  (%.0f%%)' % (d['destino'], ok, len(d['filas']),
-                                            100.0 * ok / max(1, len(d['filas']))))
+        buenas = [f for f in d['filas'] if not f.get('error')]
+        perd = len(d['filas']) - len(buenas)
+        print('   %-34s %d/%d  (%.0f%%)%s'
+              % (d['destino'], ok, len(buenas),
+                 100.0 * ok / max(1, len(buenas)),
+                 ('   🔴 %d láminas perdidas: repite con --pausa 4' % perd)
+                 if perd else ''))
 
 
 if __name__ == '__main__':
@@ -618,7 +693,7 @@ if __name__ == '__main__':
     ap.add_argument('--correr', metavar='PROVEEDOR:MODELO')
     ap.add_argument('--familia', nargs='*', help='limita a estas familias')
     ap.add_argument('--tabla', action='store_true')
-    ap.add_argument('--pausa', type=float, default=0.15,
+    ap.add_argument('--pausa', type=float, default=1.5,
                     help='segundos entre láminas; súbelo si salen 429 '
                          '(GitHub Models limita las peticiones)')
     ap.add_argument('--tope', type=int, default=512,
