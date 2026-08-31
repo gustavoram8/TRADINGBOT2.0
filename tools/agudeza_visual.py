@@ -694,11 +694,28 @@ def correr(destino, solo_familia, tope, pausa, razonar, invertir):
         time.sleep(pausa)
     nombre = (destino.replace('/', '_').replace(':', '__')
               + ('__raz' if razonar else '') + ('__inv' if invertir else ''))
-    with io.open(os.path.join(SALIDA, 'res_%s.json' % nombre), 'w', encoding='utf-8') as f:
+    # 🔴 SE FUSIONA, NO SE SOBRESCRIBE. Correr con --familia produce un archivo
+    #    con el mismo nombre, y al guardarlo entero se borraban las familias que
+    #    no se habían vuelto a correr: una pasada de 24 láminas se llevó por
+    #    delante la de 144. Reejecutar un subconjunto ACTUALIZA esas filas y deja
+    #    intactas las demás.
+    ruta_res = os.path.join(SALIDA, 'res_%s.json' % nombre)
+    previas = []
+    if os.path.exists(ruta_res):
+        try:
+            previas = json.load(io.open(ruta_res, encoding='utf-8'))['filas']
+        except Exception:
+            previas = []
+    nuevos = set(f['id'] for f in filas)
+    todas = [f for f in previas if f['id'] not in nuevos] + filas
+    with io.open(ruta_res, 'w', encoding='utf-8') as f:
         f.write(json.dumps({'destino': destino + (' [razona]' if razonar else '')
                             + (' [invertida]' if invertir else ''),
-                            'filas': filas}, indent=1,
+                            'filas': todas}, indent=1,
                            ensure_ascii=False))
+    if len(todas) > len(filas):
+        print('(se conservaron %d filas de corridas anteriores)'
+              % (len(todas) - len(filas)))
     buenas = [f for f in filas if not f['error']]
     vacias = sum(1 for f in buenas if not f['bruto'].strip())
     print('\n%s: %d/%d contestadas (%.0f%%)  ·  %d sin respuesta'
