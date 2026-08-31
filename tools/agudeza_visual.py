@@ -29,7 +29,8 @@ supera aquí a GPT-4o, no tiene sentido pasarle el banco.
    número (OCR, conteo) no necesitan balance: acertar por azar es improbable.
 
 🔴 SE CORRE EN EL VPS. Este contenedor no llega a api.openai.com ni a
-   generativelanguage.googleapis.com, y las claves viven en `scalpel/.env`.
+   generativelanguage.googleapis.com. Las claves las lee solo del `.env`
+   (`load_dotenv`, igual que `app.py`): NO hace falta ningún `export` previo.
    Generar las láminas sí funciona en cualquier sitio.
 
 Costo: 144 láminas ≈ $0.6-1,5 por modelo según tarifa. Nada que ver con el banco.
@@ -390,6 +391,45 @@ CLAVES = {'openai': 'OPENAI_API_KEY', 'gemini': 'GEMINI_API_KEY',
           'anthropic': 'ANTHROPIC_API_KEY'}
 
 
+def _clave(prov):
+    """La clave del proveedor, leyendo `scalpel/.env` como lo hace la app.
+
+    🔴 NO se pide `export $(grep ... .env | xargs)`: ese truco revienta en cuanto
+    UN valor del .env lleva un espacio o una comilla (pasó en el VPS: se tragó
+    el error y siguió sin la clave). `load_dotenv` es exactamente lo que usa
+    `app.py` (línea 36), así que lee lo mismo que producción.
+
+    ⚠️ Si falta, se listan los NOMBRES de las variables presentes — nunca sus
+    valores. Un secreto no se imprime en una terminal ni en un log."""
+    nombre = CLAVES.get(prov, '')
+    v = os.environ.get(nombre, '').strip()
+    if v:
+        return v
+    env = os.path.join(RAIZ, 'scalpel', '.env')
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(env)
+        v = os.environ.get(nombre, '').strip()
+    except ImportError:
+        pass
+    if v:
+        return v
+    hay = []
+    if os.path.exists(env):
+        for ln in io.open(env, encoding='utf-8', errors='replace'):
+            ln = ln.strip()
+            if ln and not ln.startswith('#') and '=' in ln:
+                hay.append(ln.split('=', 1)[0].strip())
+    raise SystemExit(
+        'Falta %s.\n'
+        'Se buscó en el entorno y en %s.\n'
+        'Variables que SÍ están en ese archivo (solo los nombres):\n  %s\n\n'
+        '👉 Si la clave vive en la config de supervisor y no en el .env, córrelo así:\n'
+        '   %s=... venv/bin/python3 tools/agudeza_visual.py --correr %s:MODELO'
+        % (nombre, env, ', '.join(hay) or '(ninguna / archivo ausente)',
+           nombre, prov))
+
+
 def _normaliza(txt, esperada):
     t = (txt or '').strip().upper()
     t = t.replace('Í', 'I').replace('.', '').replace(',', '').strip()
@@ -407,11 +447,7 @@ def correr(destino, solo_familia, tope):
     prov, _, modelo = destino.partition(':')
     if not modelo:
         raise SystemExit('formato: proveedor:modelo  (ej. gemini:gemini-3-pro)')
-    clave = os.environ.get(CLAVES.get(prov, ''), '')
-    if not clave:
-        raise SystemExit('falta %s en el entorno.\n'
-                         '👉 En el VPS: export $(grep -v "^#" scalpel/.env | xargs -d "\\n")'
-                         % CLAVES.get(prov, '?'))
+    clave = _clave(prov)
     manif = json.load(io.open(os.path.join(SALIDA, 'manifiesto.json'), encoding='utf-8'))
     if solo_familia:
         manif = [c for c in manif if c['familia'] in solo_familia]
