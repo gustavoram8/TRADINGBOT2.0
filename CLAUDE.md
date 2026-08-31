@@ -212,6 +212,47 @@ El dueño las dictó al cerrar la sesión de responsive. **No empezar ninguna ha
      un par de semanas). *"Indexada"* ≠ *"leída"*: la portada llevaba tiempo indexada **y** con
      `Disallow`, que es justo lo que produce el *"No hay información disponible sobre esta página"*.
 
+## 🔬 VISIÓN DEL ANALIZADOR — MEDIDO (2026-08-31). El problema NO es la resolución.
+`tools/agudeza_visual.py` (+ `tools/verifica_agudeza.py`) — 168 láminas de gráfico de
+**1920×1080** con verdad por construcción, verificada midiendo los PÍXELES del PNG (168/168).
+Siete familias, cada una variando UN número en px. Correr en el VPS (aquí el proxy bloquea las
+APIs); la clave se busca en entorno → `.env` → **`environment=` de supervisor** (ahí vive en prod).
+
+**Resultado de GPT-4o, con todos los controles pasados:**
+| Capacidad | Umbral | Veredicto |
+|---|---|---|
+| OCR de etiqueta del eje | **9 px** (100% desde 12) | ✅ suficiente |
+| Detectar elemento fino (`presencia`) | **2 px**, 24/24 | ✅ excelente |
+| Contar líneas | inestable, sesgo +1 | ⚠️ regular |
+| Cruce de medias · ruptura de nivel · RSI vs guía 30 · solape de zonas | **azar** | 🔴 **no lo hace** |
+
+🔑 **CONCLUSIÓN: ve de sobra, pero no sabe COMPARAR dos cosas que ve.** Los ciegos T3, T4 y
+E3 del banco de 30 casos son el mismo defecto por tres puertas. 🔴 **Por eso migrar a Gemini
+"porque procesa a 210 DPI contra 90" probablemente NO arregla nada** — la resolución no era el
+cuello de botella. Hay que buscar razonamiento espacial, y eso no lo mide ningún benchmark
+público (ChartQA son gráficos de barras de informes, no velas con indicadores encima).
+
+⚠️ **Tres controles sin los cuales el resultado se lee AL REVÉS** (los tres cazaron algo):
+1. **Balance SÍ/NO al 50%.** GPT-4o contestó `NO` en las 72 láminas de rsi+ruptura+solape. Sin
+   balance eso habría salido como 100% de acierto en los casos NO.
+2. **Familia `presencia`** (un SÍ/NO trivial). 24/24 → la imagen llega íntegra, el modelo PUEDE
+   decir SI, y sus `NO` eran lecturas de verdad, no una muletilla. Sin esto no se distingue "no
+   ve" de "no contesta" y TODO el estudio sería papel mojado.
+3. **`--invertir`** (misma lámina, pregunta contraria). Reveló lo más fino: a *"¿el RSI está bajo
+   30?"* dice NO siempre y a *"¿está sobre 30?"* dice SI siempre — **la misma afirmación en las 24
+   láminas**. No es azar ni negativa: es una lectura FIRME y equivocada.
+
+⚠️ Trampas del propio test, ya resueltas: los 429 se guardaban como respuesta y el normalizador
+sacaba los dígitos del error (`429`+`1` de `/v1/` = "4291", que parecía una lectura del eje) → dio
+un 26% falso; dos rectas de pendiente opuesta se cruzan SIEMPRE (los "NO" salían dibujados como
+"SI"); zonas que se ocluyen vuelven ambiguo un solape de 1 px; y correr con `--familia`
+sobrescribía el archivo de resultados entero (ahora fusiona).
+
+**PENDIENTE:** probar Gemini. Necesita `GEMINI_API_KEY` de Google AI Studio (capa gratuita) puesta
+con `tools/set_env.py` — **nunca al chat**. Si tampoco resuelve lo relacional, la palanca deja de
+ser el modelo y pasa a ser el pipeline (recortes por región, o que el usuario marque la zona) —
+🔴 eso toca el analizador y no se mueve sin luz verde del dueño.
+
 ## 📌 PENDIENTES DE ÉL (recordárselos cuando toque, no cada mensaje)
 0. ⚪ **ROTAR LOS SECRETOS — el dueño DECIDIÓ NO HACERLO y asume el riesgo (2026-08-13).** Textual:
    *"si es ese el riesgo yo lo asumo"*. 🔴 **NO volver a sacárselo cada semana**; solo si él
