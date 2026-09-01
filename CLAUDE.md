@@ -248,10 +248,32 @@ un 26% falso; dos rectas de pendiente opuesta se cruzan SIEMPRE (los "NO" salía
 "SI"); zonas que se ocluyen vuelven ambiguo un solape de 1 px; y correr con `--familia`
 sobrescribía el archivo de resultados entero (ahora fusiona).
 
-**PENDIENTE:** probar Gemini. Necesita `GEMINI_API_KEY` de Google AI Studio (capa gratuita) puesta
-con `tools/set_env.py` — **nunca al chat**. Si tampoco resuelve lo relacional, la palanca deja de
-ser el modelo y pasa a ser el pipeline (recortes por región, o que el usuario marque la zona) —
-🔴 eso toca el analizador y no se mueve sin luz verde del dueño.
+**Dos hipótesis de arreglo casero, PROBADAS (2026-08-31):**
+- ⛔ **Pedirle COORDENADAS y comparar nosotros en código: NO FUNCIONA.** Error medio **93 px**
+  (8,6% del alto), 4/24 dentro de ±25 px, y las 24 respuestas múltiplo de 10 (varias en 960, que
+  es la mitad del ANCHO): no mide, estima proporciones. ⚠️ Pero la correlación fue **r=0,94** —
+  sabe aproximadamente dónde está todo y nunca se va 500 px. Eso no sirve para decidir una
+  relación pero **sí para apuntar un recorte**.
+- 🟡 **Mandar la región AMPLIADA 3-4× (`--zoom`): funciona SOLO para topología.** `cruce` pasó de
+  50% (y "NO" en 20 de 24) a **75%**, acertando **los 12 casos con cruce**. Pero `rsi`, `ruptura`
+  y `solape` siguieron en 50% y en "NO" las 72, con el objeto llenando la pantalla.
+
+🔑 **EL DIAGNÓSTICO FINO, que corrige el anterior:** no es que "no sepa comparar". Distingue
+**topología** ("¿estas dos líneas se tocan?" → SÍ lo hace, si el objeto es grande) de **ORDEN
+VERTICAL** ("¿A está por encima de B?" → **no lo hace a ningún tamaño**). Y el orden vertical es
+la operación central del análisis técnico: precio sobre un nivel, indicador bajo un umbral, zonas
+que comparten rango.
+
+**PENDIENTE — ahora con una pregunta concreta, ya no a ciegas:** probar un candidato (Gemini
+necesita `GEMINI_API_KEY` de Google AI Studio, capa gratuita, puesta con `tools/set_env.py` —
+**nunca al chat**) y mirar UNA cosa: *¿supera el 50% en `rsi`, `ruptura` y `solape`?* Si sí, esa
+sola capacidad justifica migrar. Si no, ningún modelo lo resuelve hoy y se deja de gastar en
+buscarlo. 72 láminas, <$0.50, 15 min por candidato.
+
+🟢 **Lo que se puede hacer YA sin cambiar de modelo (ofrecido, SIN luz verde):** que el analizador
+**deje de afirmar** relaciones que no puede verificar — hoy puede estar diciéndole a un cliente
+"cerró por encima del order block" sin haberlo comprobado. Es un cambio de prompt, gratis, y
+protege la credibilidad. 🔴 Toca el analizador: no se mueve sin que el dueño lo diga.
 
 ## 📌 PENDIENTES DE ÉL (recordárselos cuando toque, no cada mensaje)
 0. ⚪ **ROTAR LOS SECRETOS — el dueño DECIDIÓ NO HACERLO y asume el riesgo (2026-08-13).** Textual:
