@@ -66,7 +66,7 @@ def _clave(prov):
     return mod._clave(prov)
 
 
-def _pregunta(prov, modelo, clave, ruta, tope=8000):
+def _pregunta(prov, modelo, clave, ruta, tope=32000):
     """Una pregunta con imagen, reintentando lo que es temporal.
 
     🔴 Los 429 (cuota) y los 503 (servidor saturado) NO son fallos del modelo:
@@ -122,19 +122,31 @@ def _pregunta(prov, modelo, clave, ruta, tope=8000):
 
 
 def _cajas(txt):
-    """Saca los objetos del JSON aunque vengan envueltos en ``` o en prosa."""
-    m = re.search(r'\[.*\]', txt, re.S)
-    if not m:
-        return []
-    try:
-        datos = json.loads(m.group(0))
-    except ValueError:
-        return []
+    """Las cajas del texto, AUNQUE EL JSON VENGA CORTADO.
+
+    🔴 La primera versión hacía `json.loads` del array entero y devolvía cero
+    cuando la respuesta se truncaba por el tope de tokens — con 120 velas pasa
+    siempre. El modelo había hecho su trabajo y el fallo era del lector.
+
+    🔑 Se buscan las cajas UNA A UNA con una expresión regular. Cada objeto
+    completo se aprovecha y el último, si quedó a medias, se ignora."""
     out = []
-    for d in datos:
-        c = d.get('box_2d') or d.get('box') or d.get('bbox')
-        if isinstance(c, list) and len(c) == 4:
-            out.append([float(v) for v in c])
+    for m in re.finditer(r'"(?:box_2d|box|bbox)"\s*:\s*\[\s*'
+                         r'(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*,\s*'
+                         r'(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\]', txt):
+        out.append([float(v) for v in m.groups()])
+    if out:
+        return out
+    # por si algún modelo devuelve el array pelado, sin la clave box_2d
+    m = re.search(r'\[.*\]', txt, re.S)
+    if m:
+        try:
+            for d in json.loads(m.group(0)):
+                c = d.get('box_2d') or d.get('box') or d.get('bbox')
+                if isinstance(c, list) and len(c) == 4:
+                    out.append([float(v) for v in c])
+        except (ValueError, AttributeError):
+            pass
     return out
 
 
@@ -176,6 +188,8 @@ if __name__ == '__main__':
     txt = _pregunta(prov, modelo, _clave(prov), a.imagen)
     cajas = _cajas(txt)
     print('%d cajas devueltas por %s' % (len(cajas), a.modelo))
+    if cajas and not txt.rstrip().endswith((']', '```')):
+        print('⚠️  la respuesta venía CORTADA: puede faltar alguna vela al final.')
     if not cajas:
         print('\n--- lo que contestó (primeros 600 caracteres) ---')
         print(txt[:600])
