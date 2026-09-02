@@ -37,6 +37,7 @@ import json
 import os
 import re
 import sys
+import time
 
 from PIL import Image, ImageDraw
 
@@ -65,7 +66,17 @@ def _clave(prov):
     return mod._clave(prov)
 
 
-def _pregunta(prov, modelo, clave, ruta):
+def _pregunta(prov, modelo, clave, ruta, tope=8000):
+    """Una pregunta con imagen, reintentando lo que es temporal.
+
+    🔴 Los 429 (cuota) y los 503 (servidor saturado) NO son fallos del modelo:
+    son ruido de la infraestructura. Sin reintento, la prueba muere en el primer
+    intento y uno concluye que el modelo no sirve — que es justo la conclusión
+    equivocada. En la capa gratuita de Google los dos aparecen a menudo.
+
+    ⚠️ Y cuando de verdad falla, se imprime el CUERPO del error: el mensaje de
+    Google dice el motivo exacto (modelo retirado, cuota agotada, clave mala) y
+    sin él uno se queda adivinando con un número de tres cifras."""
     import requests
     b64 = base64.b64encode(open(ruta, 'rb').read()).decode('ascii')
     if prov == 'gemini':
@@ -76,21 +87,38 @@ def _pregunta(prov, modelo, clave, ruta):
     else:
         raise SystemExit('proveedor no soportado aquí: %s' % prov)
     cuerpo = {
-        'model': modelo, 'max_completion_tokens': 8000,
+        'model': modelo, 'max_completion_tokens': tope,
         'messages': [{'role': 'user', 'content': [
             {'type': 'text', 'text': PIDE},
             {'type': 'image_url',
              'image_url': {'url': 'data:image/png;base64,' + b64,
                            'detail': 'high'}}]}]}
-    r = requests.post(url, timeout=300,
-                      headers={'Authorization': 'Bearer ' + clave}, json=cuerpo)
-    if r.status_code == 400 and 'max_completion_tokens' in r.text:
-        cuerpo['max_tokens'] = cuerpo.pop('max_completion_tokens')
-        r = requests.post(url, timeout=300,
-                          headers={'Authorization': 'Bearer ' + clave},
-                          json=cuerpo)
-    r.raise_for_status()
-    return r.json()['choices'][0]['message'].get('content') or ''
+    cab = {'Authorization': 'Bearer ' + clave}
+    espera = 5.0
+    for intento in range(1, 9):
+        r = requests.post(url, timeout=300, headers=cab, json=cuerpo)
+        if r.status_code in (429, 500, 502, 503, 504):
+            ra = r.headers.get('Retry-After')
+            try:
+                pausa = float(ra) if ra else espera
+            except ValueError:
+                pausa = espera
+            pausa = min(pausa, 60)
+            print('   %d (temporal) — reintento %d/8 en %.0f s'
+                  % (r.status_code, intento, pausa))
+            time.sleep(pausa)
+            espera = min(espera * 1.7, 60)
+            continue
+        if r.status_code == 400 and 'max_completion_tokens' in r.text:
+            cuerpo['max_tokens'] = cuerpo.pop('max_completion_tokens')
+            continue
+        if r.status_code >= 400:
+            print('\n--- respuesta del servidor (%d) ---' % r.status_code)
+            print(r.text[:900])
+            raise SystemExit('el proveedor rechazó la petición.')
+        return r.json()['choices'][0]['message'].get('content') or ''
+    raise SystemExit('8 intentos y sigue saturado. Prueba más tarde o con otro '
+                     'modelo (--modelo gemini:gemini-2.5-flash-lite).')
 
 
 def _cajas(txt):
