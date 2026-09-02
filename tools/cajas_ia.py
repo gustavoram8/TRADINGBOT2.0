@@ -1,0 +1,163 @@
+# -*- coding: utf-8 -*-
+"""¿Sabe un modelo LOCALIZAR las velas de un gráfico, con coordenadas?
+
+    python3 tools/cajas_ia.py --imagen docs/capturas_prueba/mes_5m.png \\
+        --modelo gemini:gemini-3-pro
+
+🔴 NO TOCA EL ANALIZADOR. Vive en tools/, nadie lo importa.
+
+═══ QUÉ PREGUNTA, Y POR QUÉ NO ES LO MISMO QUE YA PROBAMOS ═══
+Las pruebas anteriores (`agudeza_visual.py`) le pedían a GPT-4o un JUICIO:
+"¿se cruzan?", "¿está por debajo de 30?". Salió en azar, y cuando se le pidió
+la posición de una línea falló por 93 px de media.
+
+Esto pregunta otra cosa: **"dime dónde está cada vela, con sus coordenadas"**.
+Es la función de *grounding* que algunos modelos traen entrenada a propósito
+—la misma familia de tarea que usan los detectores de objetos— y GPT-4o no
+tiene. Si un modelo devuelve cajas correctas, la comparación deja de ser suya:
+la hace el código, exacta. "El cuerpo termina en y=240 y el nivel está en
+y=247" no admite interpretación.
+
+⚠️ Un mal resultado aquí descarta ESTE ATAJO, no la idea. Un detector entrenado
+   (YOLO y familia) es otra tecnología y habría que medirlo aparte.
+
+🔴 SE CORRE EN EL VPS: este contenedor tiene bloqueado el proxy hacia
+   generativelanguage.googleapis.com. La clave se lee del entorno, de
+   `scalpel/.env` o del `environment=` de supervisor — nunca se escribe aquí.
+
+Salida: un PNG con las cajas dibujadas encima. Se mira y se juzga a ojo, que
+para esto es el criterio correcto: o están sobre las velas, o no lo están.
+"""
+from __future__ import print_function
+
+import argparse
+import base64
+import io
+import json
+import os
+import re
+import sys
+
+from PIL import Image, ImageDraw
+
+RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(RAIZ, 'tools'))
+
+PIDE = (
+    'Esta imagen es un gráfico de trading de velas japonesas. '
+    'Detecta CADA VELA (cada barra de precio individual: su cuerpo rectangular '
+    'junto con su mecha). NO detectes las líneas horizontales, ni las zonas de '
+    'color de fondo, ni el panel de precios de la derecha, ni los textos.\n'
+    'Devuelve SOLO un array JSON. Cada elemento: '
+    '{"box_2d": [ymin, xmin, ymax, xmax], "label": "vela"} '
+    'con las coordenadas normalizadas de 0 a 1000. Sin texto alrededor.'
+)
+
+
+def _clave(prov):
+    """Reutiliza el buscador de claves de agudeza_visual: entorno → .env →
+    línea `environment=` del conf de supervisor (donde vive en producción)."""
+    import importlib.util
+    ruta = os.path.join(RAIZ, 'tools', 'agudeza_visual.py')
+    spec = importlib.util.spec_from_file_location('ag', ruta)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod._clave(prov)
+
+
+def _pregunta(prov, modelo, clave, ruta):
+    import requests
+    b64 = base64.b64encode(open(ruta, 'rb').read()).decode('ascii')
+    if prov == 'gemini':
+        url = ('https://generativelanguage.googleapis.com/v1beta/openai/'
+               'chat/completions')
+    elif prov == 'openai':
+        url = 'https://api.openai.com/v1/chat/completions'
+    else:
+        raise SystemExit('proveedor no soportado aquí: %s' % prov)
+    cuerpo = {
+        'model': modelo, 'max_completion_tokens': 8000,
+        'messages': [{'role': 'user', 'content': [
+            {'type': 'text', 'text': PIDE},
+            {'type': 'image_url',
+             'image_url': {'url': 'data:image/png;base64,' + b64,
+                           'detail': 'high'}}]}]}
+    r = requests.post(url, timeout=300,
+                      headers={'Authorization': 'Bearer ' + clave}, json=cuerpo)
+    if r.status_code == 400 and 'max_completion_tokens' in r.text:
+        cuerpo['max_tokens'] = cuerpo.pop('max_completion_tokens')
+        r = requests.post(url, timeout=300,
+                          headers={'Authorization': 'Bearer ' + clave},
+                          json=cuerpo)
+    r.raise_for_status()
+    return r.json()['choices'][0]['message'].get('content') or ''
+
+
+def _cajas(txt):
+    """Saca los objetos del JSON aunque vengan envueltos en ``` o en prosa."""
+    m = re.search(r'\[.*\]', txt, re.S)
+    if not m:
+        return []
+    try:
+        datos = json.loads(m.group(0))
+    except ValueError:
+        return []
+    out = []
+    for d in datos:
+        c = d.get('box_2d') or d.get('box') or d.get('bbox')
+        if isinstance(c, list) and len(c) == 4:
+            out.append([float(v) for v in c])
+    return out
+
+
+def pinta(ruta, cajas, salida, orden='yxyx'):
+    """Dibuja las cajas sobre la imagen.
+
+    ⚠️ El orden de las coordenadas NO es universal: Gemini documenta
+    [ymin, xmin, ymax, xmax] normalizado a 0-1000, pero otros modelos usan
+    [xmin, ymin, xmax, ymax]. Si las cajas salen giradas 90°, es esto — se
+    prueba con `--orden xyxy` antes de concluir que el modelo falló."""
+    im = Image.open(ruta).convert('RGB')
+    d = ImageDraw.Draw(im)
+    W, H = im.size
+    for c in cajas:
+        if orden == 'yxyx':
+            y0, x0, y1, x1 = c
+        else:
+            x0, y0, x1, y1 = c
+        caja = [x0 / 1000.0 * W, y0 / 1000.0 * H,
+                x1 / 1000.0 * W, y1 / 1000.0 * H]
+        caja = [min(max(v, 0), W if i % 2 == 0 else H) for i, v in enumerate(caja)]
+        if caja[2] < caja[0]:
+            caja[0], caja[2] = caja[2], caja[0]
+        if caja[3] < caja[1]:
+            caja[1], caja[3] = caja[3], caja[1]
+        d.rectangle(caja, outline=(0, 220, 255))
+    im.save(salida)
+    return salida
+
+
+if __name__ == '__main__':
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--imagen', required=True)
+    ap.add_argument('--modelo', required=True, metavar='PROVEEDOR:MODELO')
+    ap.add_argument('--orden', default='yxyx', choices=('yxyx', 'xyxy'))
+    ap.add_argument('--salida')
+    a = ap.parse_args()
+    prov, _, modelo = a.modelo.partition(':')
+    txt = _pregunta(prov, modelo, _clave(prov), a.imagen)
+    cajas = _cajas(txt)
+    print('%d cajas devueltas por %s' % (len(cajas), a.modelo))
+    if not cajas:
+        print('\n--- lo que contestó (primeros 600 caracteres) ---')
+        print(txt[:600])
+        sys.exit(1)
+    sal = a.salida or os.path.join(
+        RAIZ, 'out', 'lee_grafico',
+        os.path.splitext(os.path.basename(a.imagen))[0] + '_cajas.png')
+    if not os.path.isdir(os.path.dirname(sal)):
+        os.makedirs(os.path.dirname(sal))
+    print('dibujado en', pinta(a.imagen, cajas, sal, a.orden))
+    print('\n👉 Mira ese PNG. Si las cajas caen sobre las velas, el atajo sirve.')
+    print('   Si salen giradas o desplazadas en bloque, repite con --orden xyxy')
+    print('   antes de dar el modelo por malo.')
