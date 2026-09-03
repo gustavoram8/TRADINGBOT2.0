@@ -44,15 +44,23 @@ from PIL import Image, ImageDraw
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(RAIZ, 'tools'))
 
-PIDE = (
-    'Esta imagen es un gráfico de trading de velas japonesas. '
-    'Detecta CADA VELA (cada barra de precio individual: su cuerpo rectangular '
-    'junto con su mecha). NO detectes las líneas horizontales, ni las zonas de '
-    'color de fondo, ni el panel de precios de la derecha, ni los textos.\n'
-    'Devuelve SOLO un array JSON. Cada elemento: '
-    '{"box_2d": [ymin, xmin, ymax, xmax], "label": "vela"} '
-    'con las coordenadas normalizadas de 0 a 1000. Sin texto alrededor.'
-)
+def _pide(n):
+    """El encargo. 🔴 Se PIDEN POCAS VELAS a propósito.
+
+    Pedir las ~120 del gráfico hacía que el modelo escribiera durante más de
+    cinco minutos y la petición se agotara por tiempo. Y no hace falta: la
+    pregunta del experimento es *si sabe localizar una vela*, y eso se responde
+    igual de bien con 25 que con 120. Menos salida = respuesta en segundos y
+    sin truncarse."""
+    return (
+        'Esta imagen es un gráfico de trading de velas japonesas. '
+        'Detecta ÚNICAMENTE las %d velas que están MÁS A LA DERECHA del '
+        'gráfico (cada barra de precio individual: su cuerpo rectangular junto '
+        'con su mecha). NO detectes las líneas horizontales, ni las zonas de '
+        'color de fondo, ni el panel de precios de la derecha, ni los textos.\n'
+        'Devuelve SOLO un array JSON, sin nada más. Cada elemento: '
+        '{"box_2d": [ymin, xmin, ymax, xmax], "label": "vela"} '
+        'con las coordenadas normalizadas de 0 a 1000.' % n)
 
 
 def _clave(prov):
@@ -66,7 +74,7 @@ def _clave(prov):
     return mod._clave(prov)
 
 
-def _pregunta(prov, modelo, clave, ruta, tope=32000):
+def _pregunta(prov, modelo, clave, ruta, velas=25, tope=8000):
     """Una pregunta con imagen, reintentando lo que es temporal.
 
     🔴 Los 429 (cuota) y los 503 (servidor saturado) NO son fallos del modelo:
@@ -89,14 +97,15 @@ def _pregunta(prov, modelo, clave, ruta, tope=32000):
     cuerpo = {
         'model': modelo, 'max_completion_tokens': tope,
         'messages': [{'role': 'user', 'content': [
-            {'type': 'text', 'text': PIDE},
+            {'type': 'text', 'text': _pide(velas)},
             {'type': 'image_url',
              'image_url': {'url': 'data:image/png;base64,' + b64,
                            'detail': 'high'}}]}]}
     cab = {'Authorization': 'Bearer ' + clave}
     espera = 5.0
     for intento in range(1, 9):
-        r = requests.post(url, timeout=300, headers=cab, json=cuerpo)
+        # ⏱️ 900 s: con 300 se agotaba mientras el modelo aún escribía.
+        r = requests.post(url, timeout=900, headers=cab, json=cuerpo)
         if r.status_code in (429, 500, 502, 503, 504):
             ra = r.headers.get('Retry-After')
             try:
@@ -182,10 +191,13 @@ if __name__ == '__main__':
     ap.add_argument('--imagen', required=True)
     ap.add_argument('--modelo', required=True, metavar='PROVEEDOR:MODELO')
     ap.add_argument('--orden', default='yxyx', choices=('yxyx', 'xyxy'))
+    ap.add_argument('--velas', type=int, default=25,
+                    help='cuántas velas pedir (de derecha a izquierda). Pocas '
+                         'bastan para juzgar y evitan que se agote el tiempo.')
     ap.add_argument('--salida')
     a = ap.parse_args()
     prov, _, modelo = a.modelo.partition(':')
-    txt = _pregunta(prov, modelo, _clave(prov), a.imagen)
+    txt = _pregunta(prov, modelo, _clave(prov), a.imagen, a.velas)
     cajas = _cajas(txt)
     print('%d cajas devueltas por %s' % (len(cajas), a.modelo))
     if cajas and not txt.rstrip().endswith((']', '```')):
