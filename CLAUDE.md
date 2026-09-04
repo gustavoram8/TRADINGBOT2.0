@@ -345,6 +345,47 @@ captura difícil, recorte 500,200,1020,800 (3,3 → 11,5 milésimas por vela):
 🔴 **Consecuencia para el producto: el arreglo NO le pide nada al cliente.** Nada de carteles de
 "acerca el gráfico"; el programa recorta solo, y para un gráfico entero manda por tiras y junta.
 
+### 📊 LA CADENA ENTERA, MEDIDA (`tools/banco_cadena.py`, 2026-09-04)
+24 láminas · 1.436 velas, dibujadas por el propio banco (verdad al píxel) con **fondo claro u
+oscuro, dos colores de vela cualesquiera, cuerpos rellenos o huecos, anchos y separaciones
+distintas** y encima la basura que rompió al lector en la captura real (zona translúcida detrás,
+líneas de nivel, una discontinua, etiquetas). Se mide **eslabón por eslabón** para saber cuál falla:
+
+| Eslabón B — medir el extenso | |
+|---|---|
+| máximo y mínimo exactos (±1 px) | **94,4%** |
+| cuerpo exacto | **92,7%** |
+| alcista/bajista (sin conocer la paleta) | **97,8%** |
+
+| Eslabón C — los hechos | acierta | encuentra |
+|---|---|---|
+| **BOS** | **99,0%** | 90,3% |
+| **barrida de liquidez** | 93,1% | 89,8% |
+| **FVG** | 🔴 **81,4%** | 98,1% |
+| **order block** | 🔴 **74,0%** | 86,7% |
+
+🔑 *acierta* = de lo que afirma, cuánto es cierto (lo que decide si le mentimos a un cliente).
+*encuentra* = de lo que hay, cuánto ve.
+
+🔑 **BOS y barrida ya están en punto de producto por precisión; FVG y order block NO.** Y el OB
+hereda el fallo por construcción: se define a partir de un FVG, así que cada FVG falso arrastra su
+order block falso. El culpable es el ~5,6% de velas con el extremo mal medido: un píxel de más
+abre un hueco que no existe.
+
+⛔ **Probado y descartado: filtrar los FVG pequeños.** Con mínimos de 2, 3, 4 y 6 px la precisión
+NO se movió (83%): los FVG falsos no son pequeños, salen de velas mal medidas.
+⛔ **Probado y descartado: abstenerse en la vela dudosa.** Ninguna señal calculable sin la verdad
+separa bien — para cazar el 46% de las velas malas hay que marcar el 9% de las buenas. **El camino
+para subir FVG y OB es medir mejor el extremo, no añadir un filtro de confianza.**
+
+⚠️ Trampas del propio banco, ya corregidas: el generador elegía el color de la zona translúcida al
+azar y a veces salía igual que el de las velas → láminas **ilegibles** por las que se culpaba al
+extractor; y medir **sin la pista vertical del modelo** castiga por un caso (el borde de una caja de
+sesión cruzando la vela) que en la cadena real está resuelto — la pista se imita con su error
+medido (σ 5-9 px y un 20% de fallos gordos de 30), nunca con la verdad.
+
+**PENDIENTE:** el eslabón A (columnas de Gemini) se mide en el VPS; aquí solo B y C.
+
 🟢 **Lo que se puede hacer YA sin cambiar de modelo (ofrecido, SIN luz verde):** que el analizador
 **deje de afirmar** relaciones que no puede verificar — hoy puede estar diciéndole a un cliente
 "cerró por encima del order block" sin haberlo comprobado. Es un cambio de prompt, gratis, y
