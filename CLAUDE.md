@@ -270,6 +270,45 @@ necesita `GEMINI_API_KEY` de Google AI Studio, capa gratuita, puesta con `tools/
 sola capacidad justifica migrar. Si no, ningún modelo lo resuelve hoy y se deja de gastar en
 buscarlo. 72 láminas, <$0.50, 15 min por candidato.
 
+### ✅ EL ATAJO FUNCIONA — Gemini SÍ localiza las velas (2026-09-04, medido en píxeles)
+`tools/cajas_ia.py` sobre una captura REAL suya (MES 5m, `docs/capturas_prueba/mes_5m.png`,
+TradingView con cajas de sesión translúcidas, fibs, textos y flechas encima). Se le pidieron las
+**25 velas de la derecha** y devolvió 25 cajas. 🔴 **Se corre en el VPS** — el proxy de este
+contenedor bloquea `generativelanguage.googleapis.com`.
+
+| Qué se midió | Resultado |
+|---|---|
+| Centro de la caja vs centro de su vela | **≤1 px** |
+| Velas del tramo sin caja | **0 de 25** |
+| Rango x de las cajas / de las últimas 25 velas | 274-412 / 275-410 |
+| Error del borde **superior** (mediana) | 3,5 px |
+| Error del borde **inferior** (mediana) | 8 px (tres casos sueltos de 30-37) |
+
+Para comparar: pedirle a GPT-4o la posición de una línea fallaba por **93 px de media**. Esto es
+10-25× más preciso. Y **no encajonó ninguna línea de fib, ni las cajas de sesión, ni el panel de
+precios, ni los textos** — que es exactamente donde `lee_grafico.py` se ahogaba (la caja
+translúcida y las velas que tapa son UNA sola mancha; una línea de fib tiene la altura de un doji).
+
+🔑 **EL REPARTO QUE SALE DE AQUÍ (y el veredicto del dueño, que coincide con la medición:**
+*"pareciera saber en dónde está la vela, lo que pareciera no saber es de dónde a dónde se
+extiende"*): el modelo **NO tiene que dar la medida exacta**, solo la COLUMNA. Sabiendo la columna,
+el máximo y el mínimo salen recorriendo los píxeles oscuros de esa franja — exacto, sin margen. O
+sea: **Gemini resuelve el "dónde" (que se rompía con cada paleta de colores), el código resuelve el
+"cuánto"**, y `hechos_grafico.py` (15/15) contesta *"rompió X a la baja"* con aritmética, no con
+impresión visual. Eso ataca la raíz, que es lo que el dueño exigió — no es callar al analizador.
+
+⚠️ **Una captura no prueba nada.** Siguiente paso acordado: tirar la misma prueba sobre láminas
+GENERADAS con paletas y temas aleatorios (velas rosadas/doradas/verdes, fondo claro y oscuro, con
+y sin indicadores), donde la verdad es exacta por construcción y no depende de mi medición. Gratis.
+🔴 **Todo backstage: no se toca el analizador del sitio.**
+
+⚠️ Notas de la prueba: pedir ~120 velas hace que el modelo escriba >5 min y la petición se agote
+(por eso 25 y `timeout=900`); el lector de cajas usa regex y tolera JSON truncado; y si las cajas
+salieran giradas o corridas en bloque es el ORDEN de coordenadas (`--orden xyxy`), no un fallo del
+modelo. Al reconstruir las cajas desde el PNG solo se aíslan ~14 de 25: las que se solapan
+comparten bordes — lo que a ojo parece "una vela sin recuadro" es una caja corrida montada sobre
+la vecina.
+
 🟢 **Lo que se puede hacer YA sin cambiar de modelo (ofrecido, SIN luz verde):** que el analizador
 **deje de afirmar** relaciones que no puede verificar — hoy puede estar diciéndole a un cliente
 "cerró por encima del order block" sin haberlo comprobado. Es un cambio de prompt, gratis, y
