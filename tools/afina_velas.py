@@ -157,16 +157,35 @@ def afina(a, x0, x1, y0, y1, margen=5, deslizar=False, guia=None):
     # y sus números se descartan igual. Sin guía se vuelve al bloque más largo.
     if guia:
         ga, gb = guia[0] - y0, guia[1] - y0
+        # ⚠️ La guía acota el TAMAÑO, no solo la posición. Un bloque tres veces
+        # más alto que la vela que anunció el modelo no es esa vela: es el
+        # borde de una caja de sesión recorriendo el panel. Sin este límite el
+        # borde ganaba la votación cuando la guía venía con error grande.
+        techo = 3 * (gb - ga) + 30
+        cand = [b for b in grupos if b[-1] - b[0] <= techo] or grupos
+
         def solape(b):
             return max(0, min(b[-1], gb) - max(b[0], ga))
-        g = max(grupos, key=lambda b: (solape(b), len(b)))
+        g = max(cand, key=lambda b: (solape(b), len(b)))
     else:
         g = max(grupos, key=len)
     alto, bajo = g[0], g[-1]
-    anchos = prop[alto:bajo + 1].sum(1)
-    tope = int(anchos.max())
-    minimo = max(2, int(round(FRACCION_CUERPO * tope)))
-    cu = np.nonzero(anchos >= minimo)[0]
+
+    # 🔑 CUERPO = las filas que tienen tinta en LOS DOS COSTADOS de la vela.
+    # La mecha solo pinta la columna del centro; el cuerpo llega a los bordes,
+    # esté relleno o sea un rectángulo hueco. Y sobrevive a que una línea de
+    # nivel borre la fila del borde superior, que era lo que en una vela hueca
+    # se llevaba por delante el cuerpo ENTERO (el 20% de los fallos).
+    n = prop.shape[1]
+    borde = max(1, int(round(0.30 * n)))
+    izq = prop[alto:bajo + 1, :borde].any(1)
+    der = prop[alto:bajo + 1, -borde:].any(1)
+    cu = np.nonzero(izq & der)[0]
+    if len(cu) == 0:
+        # respaldo: la parte ancha (velas de 1-2 px de ancho, o costados rotos)
+        anchos = prop[alto:bajo + 1].sum(1)
+        minimo = max(2, int(round(FRACCION_CUERPO * int(anchos.max()))))
+        cu = np.nonzero(anchos >= minimo)[0]
     if len(cu):
         ct, cb = alto + cu[0], alto + cu[-1]
     else:                      # vela sin cuerpo visible (doji de 1 px)
