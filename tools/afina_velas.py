@@ -51,8 +51,22 @@ UMBRAL_TINTA = 60
 # Hueco vertical que se tolera dentro de una misma vela. Una mecha fina puede
 # perder un píxel por el suavizado de la captura; con 0 se partiría en dos.
 HUECO = 4
-# Filas con al menos esta tinta a lo ancho de la vela = CUERPO; menos = mecha.
-ANCHO_CUERPO = 3
+# 🔴 CUERPO vs MECHA. Antes era un número fijo de píxeles (3) y ESO ESTABA MAL:
+# el dueño lo cazó mirando el dibujo — *"hay algunas mechas que coloreaste como
+# cuerpo"*. Un umbral fijo depende del tamaño de la captura, y en una imagen
+# encogida la mecha de 2 px y el cuerpo de 4 px quedan del mismo lado.
+# Ahora es RELATIVO a la propia vela: el cuerpo es su parte ANCHA. Se mide el
+# ancho máximo de tinta de esa vela y se llama cuerpo a las filas que llegan a
+# esta fracción de él. Una mecha es ~1 px contra un cuerpo de 5-15: no hay duda
+# a ninguna resolución.
+# ⚠️ Importa más que la estética: un FVG, un BOS y un order block se definen con
+# CIERRES, o sea con el borde del cuerpo. Confundir mecha con cuerpo cambia el
+# veredicto de "rompió" a "solo lo tocó", que es justo la distinción que el
+# analizador tiene que acertar.
+FRACCION_CUERPO = 0.60
+# Una fila cuya tinta ocupa casi toda la ventana no es la vela: es un objeto
+# ANCHO pasando por encima (la flecha de entrada, una etiqueta, un icono).
+FILA_ANCHA = 0.80
 # Una columna con tinta en más de esta fracción del panel no es una vela: es
 # una línea vertical de interfaz (borde de caja de sesión, separador de día).
 VERT_INTERFAZ = 0.60
@@ -70,7 +84,7 @@ def _fondo_por_fila(vent):
     return fondo
 
 
-def afina(a, x0, x1, y0, y1, margen=5, deslizar=False):
+def afina(a, x0, x1, y0, y1, margen=5, deslizar=False, guia=None):
     """Extenso real de la vela que vive entre las columnas x0..x1.
 
     Devuelve (alto, bajo, cuerpo_alto, cuerpo_bajo) en píxeles, o None si en esa
@@ -113,13 +127,19 @@ def afina(a, x0, x1, y0, y1, margen=5, deslizar=False):
                 mejor, mejor_x = n, x0 + dx
         x0, x1 = mejor_x, mejor_x + ancho - 1
 
+    # 🔴 FUERA LOS OBJETOS ANCHOS. La flecha roja de entrada del trade se comía
+    # la vela sobre la que estaba posada (lo cazó el dueño en el dibujo). Una
+    # flecha, una etiqueta o un icono son MÁS ANCHOS que la vela: su tinta cruza
+    # la ventana entera. La vela nunca lo hace, porque la ventana se eligió
+    # justamente tres veces más ancha que ella.
+    ancho_vent = tinta.shape[1]
+    tinta[tinta.sum(1) > FILA_ANCHA * ancho_vent, :] = False
+
     # solo las columnas de la vela, no las de la ventana de referencia
     prop = tinta[:, x0 - vx0:x1 - vx0 + 1]
     filas = np.nonzero(prop.any(1))[0]
     if len(filas) == 0:
         return None
-    # 🔑 el bloque contiguo MÁS LARGO: si un texto o una flecha rozan la
-    #    columna, quedan como un bloque suelto y pierden contra la vela.
     grupos = []
     g = [filas[0]]
     for v in filas[1:]:
@@ -128,10 +148,25 @@ def afina(a, x0, x1, y0, y1, margen=5, deslizar=False):
         else:
             grupos.append(g); g = [v]
     grupos.append(g)
-    g = max(grupos, key=len)
+    # 🔑 CUÁL DE LOS BLOQUES ES LA VELA. Antes se cogía el más largo y por eso
+    # salía un recuadro de 120 px EN EL VACÍO, donde no hay ninguna vela: se
+    # había enganchado al borde vertical entre dos cajas de sesión.
+    # Ahora manda la GUÍA: el recuadro de la IA falla el borde por 3,5-8 px,
+    # pero acierta de sobra para decir "la vela está por AQUÍ". Se usa como
+    # pista, nunca como medida — se elige el bloque que más se solapa con ella
+    # y sus números se descartan igual. Sin guía se vuelve al bloque más largo.
+    if guia:
+        ga, gb = guia[0] - y0, guia[1] - y0
+        def solape(b):
+            return max(0, min(b[-1], gb) - max(b[0], ga))
+        g = max(grupos, key=lambda b: (solape(b), len(b)))
+    else:
+        g = max(grupos, key=len)
     alto, bajo = g[0], g[-1]
     anchos = prop[alto:bajo + 1].sum(1)
-    cu = np.nonzero(anchos >= ANCHO_CUERPO)[0]
+    tope = int(anchos.max())
+    minimo = max(2, int(round(FRACCION_CUERPO * tope)))
+    cu = np.nonzero(anchos >= minimo)[0]
     if len(cu):
         ct, cb = alto + cu[0], alto + cu[-1]
     else:                      # vela sin cuerpo visible (doji de 1 px)
@@ -140,6 +175,7 @@ def afina(a, x0, x1, y0, y1, margen=5, deslizar=False):
 
 
 def dibuja(ruta, columnas, salida, banda=None, margen=5, deslizar=False):
+    """`columnas` = [(x0,x1)] o [(x0,x1,gy0,gy1)] si se tiene la guía de la IA."""
     """Pinta el recuadro AJUSTADO de cada vela y devuelve las medidas."""
     im = Image.open(ruta).convert('RGB')
     a = np.asarray(im).astype(int)
@@ -147,8 +183,10 @@ def dibuja(ruta, columnas, salida, banda=None, margen=5, deslizar=False):
     y0, y1 = banda if banda else (0, H)
     d = ImageDraw.Draw(im)
     out = []
-    for x0, x1 in columnas:
-        r = afina(a, x0, x1, y0, y1, margen, deslizar)
+    for c in columnas:
+        x0, x1 = c[0], c[1]
+        guia = (c[2], c[3]) if len(c) == 4 else None
+        r = afina(a, x0, x1, y0, y1, margen, deslizar, guia)
         if r is None:
             out.append(None)
             continue
@@ -162,10 +200,16 @@ def dibuja(ruta, columnas, salida, banda=None, margen=5, deslizar=False):
 
 
 def _columnas(txt):
+    """'274-278' o '274-278:417-489' (con la guía vertical de la IA)."""
     out = []
     for p in txt.split(','):
-        a, _, b = p.strip().partition('-')
-        out.append((int(a), int(b)))
+        xs, _, ys = p.strip().partition(':')
+        a, _, b = xs.partition('-')
+        if ys:
+            c, _, d = ys.partition('-')
+            out.append((int(a), int(b), int(c), int(d)))
+        else:
+            out.append((int(a), int(b)))
     return out
 
 
@@ -185,7 +229,8 @@ if __name__ == '__main__':
         os.makedirs(os.path.dirname(a.salida))
     med = dibuja(a.imagen, _columnas(a.columnas), a.salida, banda)
     print(' x0-x1    máx  mín | cuerpo    | mecha sup  mecha inf')
-    for (x0, x1), m in zip(_columnas(a.columnas), med):
+    for c, m in zip(_columnas(a.columnas), med):
+        x0, x1 = c[0], c[1]
         if m is None:
             print(' %3d-%3d  sin vela' % (x0, x1)); continue
         alto, bajo, ct, cb = m
