@@ -309,6 +309,42 @@ modelo. Al reconstruir las cajas desde el PNG solo se aíslan ~14 de 25: las que
 comparten bordes — lo que a ojo parece "una vela sin recuadro" es una caja corrida montada sobre
 la vecina.
 
+### 🔑 LA REGLA DE LAS 8 MILÉSIMAS — y por qué RECORTAR lo arregla (2026-09-04)
+La segunda captura del dueño (MNQ 5m, 1818×873, **255 velas en pantalla**) salió mal: 25 cajas
+repartidas sobre **64** velas, cada una comiéndose 2-3. Él le puso un 70-75% a ojo. La causa NO era
+la resolución, ni el tema claro, ni las velas huecas:
+
+| | MES | MNQ |
+|---|---|---|
+| Ancho de la imagen | 778 px | 1818 px |
+| Ancho de caja | 5 px | 15 px |
+| **Ancho de caja en milésimas del ancho** | **6,4** | **8,3** |
+
+🔑 **Gemini no devuelve píxeles: devuelve milésimas (0-1000), y su caja mide ~8 milésimas mandes lo
+que mandes.** El triple en píxeles, lo mismo en proporción. De ahí la regla: **una vela solo se
+separa de su vecina si ocupa más de ~8 milésimas del ancho**, o sea si en la imagen caben **menos de
+~125 velas**. MES 7,1 (justo, funcionó) · MNQ 3,3 (falló) · MNQ zoom 4,4 (predicho fallo, no se
+llegó a gastar la corrida).
+
+⚠️ **Se le pidió al dueño que "zoomeara" y ESO ERA EL CONSEJO EQUIVOCADO** — lo que manda no son los
+píxeles por vela sino cuántas velas caben a lo ancho. Zoomear de 255 a 189 velas solo subió de 3,3 a
+4,4 milésimas: seguía por debajo del umbral.
+
+✅ **`cajas_ia.py --recorte x0,y0,x1,y1`** manda solo ese trozo y sobre él pide **TODAS** las velas
+(en vez de "las 25 de la derecha": con 255 objetos casi idénticos, contar y elegir es justo lo que
+lo desordena). Recortar no mejora la imagen — **cambia el denominador**. Medido sobre la MISMA
+captura difícil, recorte 500,200,1020,800 (3,3 → 11,5 milésimas por vela):
+
+| | Imagen entera | Recorte |
+|---|---|---|
+| Ancho de caja | 15 px | **7 px** (velas a 6) |
+| Velas por caja | 2-3 | **1** |
+| Velas sin marcar | 2 de 25 | **0 de 93** |
+| Error del centro (mediana) | 1 px | **0 px** · 36/41 a ≤2 px |
+
+🔴 **Consecuencia para el producto: el arreglo NO le pide nada al cliente.** Nada de carteles de
+"acerca el gráfico"; el programa recorta solo, y para un gráfico entero manda por tiras y junta.
+
 🟢 **Lo que se puede hacer YA sin cambiar de modelo (ofrecido, SIN luz verde):** que el analizador
 **deje de afirmar** relaciones que no puede verificar — hoy puede estar diciéndole a un cliente
 "cerró por encima del order block" sin haberlo comprobado. Es un cambio de prompt, gratis, y
