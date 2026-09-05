@@ -283,6 +283,29 @@ if __name__ == '__main__':
     if not os.path.isdir(os.path.dirname(sal)):
         os.makedirs(os.path.dirname(sal))
     print('dibujado en', pinta(a.imagen, cajas, sal, a.orden))
+
+    # 🔑 LAS COORDENADAS, EN PÍXELES DE LA IMAGEN COMPLETA. El PNG sirve para
+    # juzgar a ojo; para CORRER LA CADENA hacen falta los números. Salen en una
+    # sola línea, en el mismo formato que come `afina_velas --columnas`, para
+    # poder copiarlas de la terminal y pegarlas sin editar nada.
+    W, H = Image.open(a.imagen).size
+    trozos = []
+    for c in cajas:
+        if a.orden == 'yxyx':
+            ym, xm, yM, xM = c
+        else:
+            xm, ym, xM, yM = c
+        px0, px1 = int(round(xm / 1000.0 * W)), int(round(xM / 1000.0 * W))
+        py0, py1 = int(round(ym / 1000.0 * H)), int(round(yM / 1000.0 * H))
+        if px1 < px0:
+            px0, px1 = px1, px0
+        if py1 < py0:
+            py0, py1 = py1, py0
+        trozos.append('%d-%d:%d-%d' % (px0, px1, py0, py1))
+    trozos.sort(key=lambda t: int(t.split('-')[0]))
+    print('\n--- COORDENADAS (cópialas enteras y pégamelas) ---')
+    print(','.join(trozos))
+    print('--- fin ---')
     print('\n👉 Mira ese PNG. Si las cajas caen sobre las velas, el atajo sirve.')
     print('   Si salen giradas o desplazadas en bloque, repite con --orden xyxy')
     print('   antes de dar el modelo por malo.')
