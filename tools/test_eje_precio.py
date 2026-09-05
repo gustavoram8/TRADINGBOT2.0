@@ -65,6 +65,16 @@ def main():
          r4 is None or r4['apoyos'] >= 3, r4)
     caso('con solo 2 etiquetas NO se fía',
          E.ajusta([(100, 7700.0), (200, 7690.0)]) is None)
+    # 🔴 EL CASO QUE SE COLÓ DE VERDAD (2026-09-05): sobre la captura del OTE se
+    # aceptó una escala con 4 apoyos de 31 etiquetas. Cuatro lecturas
+    # cualesquiera casi siempre se alinean por casualidad.
+    pocas = ([(i * 20.0, 7700 - i * 2.5) for i in range(4)] +
+             [(500 + i * 13.0, 7000 + i * i) for i in range(27)])
+    caso('4 apoyos de 31 etiquetas NO es consenso', E.ajusta(pocas) is None,
+         E.ajusta(pocas))
+    sanas = ([(i * 40.0, 7700 - i * 5.0) for i in range(22)] +
+             [(1.0, 1.0), (2.0, 5.0), (3.0, 9.0), (4.0, 2.0)])
+    caso('22 de 26 sí lo es', E.ajusta(sanas) is not None)
 
     print()
     print('%d/%d' % (hechos[0] - len(mal), hechos[0]))

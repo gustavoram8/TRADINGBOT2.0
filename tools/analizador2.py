@@ -310,7 +310,11 @@ def bloque(velas, hs, escala, minimo=MIN_PRECISION):
 
 
 def _fmt(p):
-    return ('%,.2f' % p).replace(',', '@').replace('.', ',').replace('@', '.')
+    """29428.5 → '29.428,50'. 🔴 Antes usaba '%,.2f', que NO existe en Python:
+    la coma como separador de miles solo la entiende `format`. Nunca había
+    saltado porque hasta ahora el eje siempre venía sin escala y esta función
+    no llegaba a ejecutarse — el primer gráfico con precios la reventó."""
+    return '{:,.2f}'.format(p).replace(',', '@').replace('.', ',').replace('@', '.')
 
 
 def analiza(ruta, prov=None, modelo=None, cajas=None, max_velas=80,

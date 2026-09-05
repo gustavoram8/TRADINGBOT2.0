@@ -47,9 +47,18 @@ sys.path.insert(0, os.path.join(RAIZ, 'tools'))
 # Cuánto puede desviarse una etiqueta de la recta para contar como de acuerdo.
 TOLERANCIA_PX = 2.0
 # Etiquetas que tienen que confirmar la recta para darla por buena.
+# 🔴 Y ADEMÁS UNA FRACCIÓN. Con un mínimo absoluto de 3 se aceptó una escala
+# con **4 apoyos de 31 etiquetas**: cuatro lecturas cualesquiera casi siempre
+# se pueden alinear por casualidad, así que ese "consenso" no valía nada y la
+# escala salió mal sin que nada chillara. En una lectura sana la mayoría cae en
+# la recta — sobre la captura del MNQ fueron 22 de 26.
 MIN_ACUERDO = 3
+FRACCION_ACUERDO = 0.40
 # Píxeles de margen a la IZQUIERDA del eje al recortarlo, para no cortar dígitos.
 MARGEN_EJE = 60
+# Ancho máximo de la tira del eje. Un eje de precios mide 50-90 px; más que
+# esto es gráfico colándose.
+ANCHO_EJE = 200
 # Filas mínimas para que una banda de tinta cuente como etiqueta.
 ALTO_ETIQUETA = 5
 # Alto máximo de cada trozo que se le manda al modelo, en veces su ancho. Una
@@ -77,7 +86,8 @@ def ajusta(etiquetas):
                       if abs((p - b) / m - y) <= TOLERANCIA_PX]
             if mejor is None or len(apoyos) > len(mejor[2]):
                 mejor = (m, b, apoyos)
-    if mejor is None or len(mejor[2]) < MIN_ACUERDO:
+    minimo = max(MIN_ACUERDO, int(round(FRACCION_ACUERDO * len(pts))))
+    if mejor is None or len(mejor[2]) < minimo:
         return None
     # refinado por mínimos cuadrados SOLO con los que están de acuerdo
     ys = [y for y, _ in mejor[2]]
@@ -186,7 +196,15 @@ def _tira_del_eje(ruta, destino, escala=3):
     # las etiquetas les falta el mismo dígito, así que concuerdan entre sí: la
     # pendiente sale bien y el precio sale desplazado 20.000 puntos, en
     # silencio. Es el único fallo de este método que no se detecta solo.
-    x0 = max(0, x0 - max(MARGEN_EJE, int(0.8 * (W - x0))))
+    # 🔴 Y NO MÁS ANCHA DE LA CUENTA. El margen se calculaba en proporción a lo
+    # que quedaba a la derecha del panel, y eso explota cuando el panel se pasa
+    # (se eligió que se pasara a propósito, ver recorta_grafico): en la captura
+    # del OTE el panel acaba en 1120 sobre una imagen de 1817, así que la "tira
+    # del eje" salía de 1254 px — media pantalla de gráfico. El modelo leyó 31
+    # "etiquetas", la mayoría basura del propio gráfico, y la escala se fue.
+    # Un eje de precios mide 50-90 px: la tira nunca necesita más de ANCHO_EJE.
+    x0 = max(x0 - MARGEN_EJE, W - ANCHO_EJE)
+    x0 = max(0, min(x0, W - 24))
     tira = im.crop((x0, 0, W, H))
     tira = tira.resize((tira.width * escala, tira.height * escala), Image.LANCZOS)
     tira.save(destino)
