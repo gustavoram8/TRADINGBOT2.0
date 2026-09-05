@@ -103,8 +103,24 @@ def _pregunta(prov, modelo, clave, ruta, velas=25, tope=8000, todas=False,
     ⚠️ Y cuando de verdad falla, se imprime el CUERPO del error: el mensaje de
     Google dice el motivo exacto (modelo retirado, cuota agotada, clave mala) y
     sin él uno se queda adivinando con un número de tres cifras."""
+    import hashlib
     import requests
-    b64 = base64.b64encode(open(ruta, 'rb').read()).decode('ascii')
+    crudo = open(ruta, 'rb').read()
+    b64 = base64.b64encode(crudo).decode('ascii')
+
+    # 🔑 CACHÉ EN DISCO. La capa gratuita de Google se agota, y sin esto cada
+    # reintento de una corrida vuelve a gastar TODAS las llamadas — incluidas
+    # las que ya habían salido bien. La clave es el modelo + la pregunta + los
+    # bytes exactos de la imagen: si algo cambia, la respuesta se vuelve a pedir.
+    texto = pregunta or (_pide_todas() if todas else _pide(velas))
+    firma = hashlib.sha256(
+        ('%s|%s|' % (modelo, texto)).encode('utf-8') + crudo).hexdigest()[:32]
+    nido = os.path.join(RAIZ, 'out', 'cache_ia')
+    guardado = os.path.join(nido, firma + '.txt')
+    if os.path.exists(guardado):
+        print('   (respuesta ya guardada, no se gasta cuota)')
+        with open(guardado, encoding='utf-8') as f:
+            return f.read()
     if prov == 'gemini':
         url = ('https://generativelanguage.googleapis.com/v1beta/openai/'
                'chat/completions')
@@ -115,8 +131,7 @@ def _pregunta(prov, modelo, clave, ruta, velas=25, tope=8000, todas=False,
     cuerpo = {
         'model': modelo, 'max_completion_tokens': tope,
         'messages': [{'role': 'user', 'content': [
-            {'type': 'text',
-             'text': pregunta or (_pide_todas() if todas else _pide(velas))},
+            {'type': 'text', 'text': texto},
             {'type': 'image_url',
              'image_url': {'url': 'data:image/png;base64,' + b64,
                            'detail': 'high'}}]}]}
@@ -144,7 +159,13 @@ def _pregunta(prov, modelo, clave, ruta, velas=25, tope=8000, todas=False,
             print('\n--- respuesta del servidor (%d) ---' % r.status_code)
             print(r.text[:900])
             raise SystemExit('el proveedor rechazó la petición.')
-        return r.json()['choices'][0]['message'].get('content') or ''
+        salida = r.json()['choices'][0]['message'].get('content') or ''
+        if salida.strip():
+            if not os.path.isdir(nido):
+                os.makedirs(nido)
+            with open(guardado, 'w', encoding='utf-8') as f:
+                f.write(salida)
+        return salida
     raise SystemExit('8 intentos y sigue saturado. Prueba más tarde o con otro '
                      'modelo (--modelo gemini:gemini-2.5-flash-lite).')
 
