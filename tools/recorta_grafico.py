@@ -57,12 +57,24 @@ UMBRAL_BORDE = 60
 # La mitad de un paso se acepta como paso verdadero si correlaciona al menos
 # así de bien respecto del ganador. Con 0.80 se colaba un tercio espurio.
 UMBRAL_MITAD = 0.85
+# Cuánto tiene que hundirse la correlación ENTRE la mitad y el candidato para
+# creer que son fundamental y armónica. Si no baja de esto, es una meseta.
+UMBRAL_VALLE = 0.75
 # Fuerza mínima del latido para dar una ventana por "panel de velas".
 # ⚠️ Medido sobre las tres capturas: DENTRO del panel el latido baila entre 0,08
 # y 0,58 (una ventana puede caer en un tramo lateral, con velas casi iguales, y
 # hundirse); FUERA cae a 0,00 o negativo. Con 0,25 la cadena se partía y el
 # panel salía a un tercio de su tamaño. El corte va bajo y se toleran huecos.
 LATIDO_MIN = 0.10
+# Fracción de la densidad máxima de bordes para que una ventana cuente como
+# parte del panel de velas.
+# ⚠️ Se eligió PASÁNDOSE, no quedándose corto. Medido en las cuatro capturas:
+# con 0,25 el panel de la MNQ se cortaba y perdía ~56 velas reales; con 0,20 el
+# de la del OTE se pasa 330 px hacia la zona vacía. Pasarse cuesta UNA llamada
+# de más sobre un trozo sin velas, de la que el modelo devuelve poco o nada y
+# que el juntado descarta solo. Quedarse corto pierde velas, y una vela que no
+# está no se puede recuperar después.
+DENSIDAD_MIN = 0.20
 HUECOS = 1
 VENTANA = 160
 BANDA = 40
@@ -97,14 +109,48 @@ def _latido(p, paso):
 
 
 def paso_velas(perfil):
-    """El paso entre velas, en píxeles (puede ser fraccionario)."""
-    mejores = [(p, _latido(perfil, p))
-               for p in np.arange(PASO_MIN, PASO_MAX + 0.01, 0.25)]
-    L, fuerza = max(mejores, key=lambda c: c[1])
-    p = L
-    while p / 2.0 >= PASO_MIN and _latido(perfil, p / 2.0) >= UMBRAL_MITAD * fuerza:
-        p = p / 2.0
-    return float(p), float(fuerza)
+    """El paso entre velas, en píxeles (puede ser fraccionario).
+
+    🔑 EL PROBLEMA DE LAS ARMÓNICAS. Si el paso real son 5,5 px, entonces 11 y
+    16,5 también correlacionan bien, y a veces MEJOR. Quedarse con 11 haría
+    recortes con la mitad de las velas debidas, así que hay que bajar a la
+    fundamental. Pero bajar a lo bruto es peor todavía.
+
+    ⛔ DOS CRITERIOS PROBADOS Y DESCARTADOS (2026-09-05, sobre 4 capturas reales):
+    · "acepta la mitad si supera el 85% del mejor" → en la captura del OTE la
+      curva es una MESETA (3,50 · 4,50 · 5,50 · 6,50 · 7,50 valen todas ~0,50),
+      así que la mitad pasaba el umbral sin ser un paso real: 7,50 → 3,75, y el
+      panel salió donde no hay ni una vela.
+    · "acepta la mitad solo si es un pico local" → arregla la del OTE y rompe la
+      del MES, donde la fundamental 5,50 no queda exactamente en p/2.
+
+    🔑 EL CRITERIO QUE SÍ DISTINGUE: **el valle**. Entre una fundamental y su
+    armónica la correlación se HUNDE (en la captura del MES cae a 0,13 entre
+    5,5 y 11,25). En una meseta no se hunde: se queda en 0,42 de mínimo. Así que
+    la mitad solo se acepta si entre ella y el candidato actual hay un valle de
+    verdad. Medido sobre las cuatro capturas: 5,50 · 8,25 · 10,50 · 7,50, con
+    reales 5,5 · 8 · 10,5 · 7,4."""
+    paso_g = 0.25
+    rej = np.arange(PASO_MIN, PASO_MAX + 0.01, paso_g)
+    cur = np.array([_latido(perfil, float(p)) for p in rej])
+    i = int(cur.argmax())
+    fuerza = float(cur[i])
+    while True:
+        objetivo = rej[i] / 2.0
+        if objetivo < PASO_MIN:
+            break
+        # el mejor de la vecindad de la mitad, no la mitad exacta
+        cerca = np.nonzero(np.abs(rej - objetivo) <= 0.75)[0]
+        if not len(cerca):
+            break
+        j = int(cerca[np.argmax(cur[cerca])])
+        if cur[j] < UMBRAL_MITAD * fuerza:
+            break
+        valle = float(cur[j + 1:i].min()) if i > j + 1 else cur[j]
+        if valle >= UMBRAL_VALLE * cur[j]:
+            break                      # meseta: no es una armónica
+        i, fuerza = j, float(cur[j])
+    return float(rej[i]), fuerza
 
 
 def _racha(marcas, huecos):
@@ -142,9 +188,20 @@ def panel(ruta):
     paso, fuerza = paso_velas(perfil)
     if not paso:
         return None
+    # 🔴 EL PANEL SE ACOTA POR DENSIDAD DE BORDES, NO POR PERIODICIDAD.
+    # Se probó con periodicidad y falla: una LÍNEA DISCONTINUA también es
+    # periódica. En la captura del OTE, las ventanas de la zona vacía de la
+    # derecha —solo cajas grises, fibs y punteadas— daban latidos de 0,48 y 0,68,
+    # más altos que los de varias ventanas con velas de verdad, y el panel salió
+    # en x 240-1440 cuando las velas están en 0-780.
+    # 🔑 Lo que sí las separa es CUÁNTA tinta de borde hay: una vela es alta, así
+    # que aporta decenas de cambios por columna; una raya aporta uno o dos.
+    # Medido en esa captura: 8,6 a 38 donde hay velas, 0,7 a 4 donde no.
     paso_v = VENTANA // 2
-    marcas = [_latido(perfil[x:x + VENTANA], paso) >= LATIDO_MIN
-              for x in range(0, max(1, len(perfil) - VENTANA), paso_v)]
+    dens = [perfil[x:x + VENTANA].mean()
+            for x in range(0, max(1, len(perfil) - VENTANA), paso_v)]
+    tope = max(dens) if dens else 0.0
+    marcas = [d >= DENSIDAD_MIN * tope for d in dens]
     tramo = _racha(marcas, HUECOS)
     if not tramo:
         return None
