@@ -22,20 +22,21 @@ No se busca "lo oscuro" ni "lo verde": eso fue lo que hundió a `lee_grafico.py`
 sobre una captura real (velas gris claro y negras, no verdes y rojas; cajas de
 sesión translúcidas que forman una sola mancha con las velas que tapan).
 
-Aquí el fondo se calcula **fila por fila, dentro de una ventana estrecha
-alrededor de la propia vela**: el color más repetido de esa ventana ES el fondo,
-sea blanco, negro, o el teal translúcido de una caja de sesión. Todo lo que se
-aparta de él es tinta.
+Aquí el fondo se calcula **dentro de una ventana alrededor de la propia vela**,
+eligiendo de una PALETA de los pocos fondos que tiene el gráfico (el del panel
+y, si la hay, el teñido de una caja de sesión). Todo lo que se aparta del fondo
+de su fila es tinta. Sirve igual con fondo blanco, negro o teal translúcido.
+Ver `_fondo_por_fila` para el porqué de la paleta — sin ella, una fila con
+muchas velas se inventa un fondo y borra la que estamos midiendo.
 
 ⚠️ Y sale gratis un efecto que importa: una línea horizontal (un fib, un nivel,
 la rejilla) cruza la ventana ENTERA, así que en su fila el color más repetido es
-el de la línea → la línea pasa a contar como fondo y desaparece sola. La vela,
-que ocupa 5 de 15 columnas, nunca puede ser el color más repetido.
+el de la línea → la línea pasa a contar como fondo y desaparece sola.
 
-⚠️ La ventana tiene que ser ANCHA respecto de la vela (por defecto ±5 px sobre
-un cuerpo de ~5) pero no tanto como para tragarse dos velas vecinas enteras: si
-la vela pasa de la mitad de la ventana, ella misma se convierte en "el fondo" y
-el resultado sale vacío.
+⚠️ La ventana quiere ser ANCHA: ~5 veces la vela. Medido (2026-09-05) con
+`banco_cadena`: a ×3 el extremo sale al 94,3% y a ×5 al 96,2%; de ahí en
+adelante no mejora. Cuantas más columnas, más filas de fondo limpio entran en
+la paleta.
 """
 from __future__ import print_function
 
@@ -70,17 +71,61 @@ FILA_ANCHA = 0.80
 # Una columna con tinta en más de esta fracción del panel no es una vela: es
 # una línea vertical de interfaz (borde de caja de sesión, separador de día).
 VERT_INTERFAZ = 0.60
+# Cuántos fondos distintos puede tener un gráfico: el del panel, el de una caja
+# de sesión, a lo sumo el de una segunda caja. Con más, una vela densa se cuela
+# en la paleta y volvemos al fallo que esto arregla.
+PALETA_FONDOS = 4
 
 
 def _fondo_por_fila(vent):
-    """El color más repetido de cada fila de la ventana."""
+    """El fondo de cada fila, ELIGIENDO DE UNA PALETA en vez de fila a fila.
+
+    🔴 EL FALLO QUE ESTO ARREGLA (2026-09-05, era el 73% de las velas mal
+    medidas). Antes el fondo de una fila era, sin más, su color más repetido.
+    En una fila donde las velas VECINAS ocupan más de media ventana, el color
+    más repetido pasa a ser **el color de las velas** — y entonces la mecha de
+    la vela que estamos midiendo, que es de ese mismo color, cuenta como fondo
+    y DESAPARECE. En el perfil de tinta se veía clarísimo: seis filas de mecha,
+    quince filas vacías, y el cuerpo debajo. El hueco partía la vela en dos y
+    nos quedábamos con el trozo de abajo.
+
+    🔑 La idea: un gráfico tiene MUY POCOS fondos (el del panel y, si hay caja
+    de sesión, el teñido) y esos son los que salen ganadores en la inmensa
+    mayoría de las filas. Las velas ganan en unas pocas. Así que primero se
+    reúnen los candidatos de todas las filas, se **construye una paleta con los
+    que mandan en más filas**, y luego cada fila elige de ESA paleta el que más
+    píxeles tenga en ella. Una fila densa de velas ya no puede inventarse un
+    fondo nuevo: tiene que escoger entre los de la casa.
+
+    ⚠️ Si en una fila no hay NI UN píxel de la paleta (una línea de nivel que
+    cruza la ventana entera), se deja su color más repetido — esa fila queda
+    entera como tinta y la caza el filtro de filas anchas."""
     h, w, _ = vent.shape
     plano = (vent[:, :, 0] * 65536 + vent[:, :, 1] * 256 + vent[:, :, 2])
-    fondo = np.zeros((h, 3), int)
+    crudo = np.zeros(h, dtype=np.int64)
     for y in range(h):
         val, cnt = np.unique(plano[y], return_counts=True)
-        c = int(val[cnt.argmax()])
-        fondo[y] = (c >> 16, (c >> 8) & 255, c & 255)
+        crudo[y] = val[cnt.argmax()]
+    val, cnt = np.unique(crudo, return_counts=True)
+    paleta = val[np.argsort(-cnt)[:PALETA_FONDOS]]
+
+    # ⛔ PROBADO Y DESCARTADO (2026-09-05): desempatar por VECINDARIO VERTICAL
+    # —usar el fondo que manda en las 50 filas de arriba y las 50 de abajo, que
+    # es sólido porque un fondo dura cientos de filas y un tramo denso de velas
+    # solo decenas—. Suena mejor y mide PEOR: FVG 86,8 → 86,3%, order block
+    # 81,8 → 81,4%. Se deja anotado para que nadie lo reintente creyendo que es
+    # una mejora evidente.
+    fondo = np.zeros((h, 3), int)
+    for y in range(h):
+        fila = plano[y]
+        mejor, cuantos = int(crudo[y]), -1
+        for c in paleta:
+            n = int((fila == c).sum())
+            if n > cuantos:
+                mejor, cuantos = int(c), n
+        if cuantos <= 0:
+            mejor = int(crudo[y])
+        fondo[y] = (mejor >> 16, (mejor >> 8) & 255, mejor & 255)
     return fondo
 
 

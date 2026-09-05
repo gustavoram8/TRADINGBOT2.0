@@ -212,9 +212,10 @@ def mide(ruta, columnas, guias=None):
     H, W, _ = a.shape
     out = []
     for i, (x0, x1) in enumerate(columnas):
-        # ventana ~3× la vela: el fondo por fila necesita que la vela sea
-        # minoría dentro de ella (ver afina_velas)
-        margen = max(4, x1 - x0 + 1)
+        # ventana ~5× la vela. Medido (2026-09-05): con ×3 el extremo sale al
+        # 94,3% y con ×5 al 96,2%; a partir de ahí no mejora. Cuanto más ancha,
+        # más filas de fondo limpio entran en la paleta.
+        margen = max(4, 2 * (x1 - x0 + 1))
         guia = guias[i] if guias else None
         r = AF.afina(a, x0, x1, 0, H, margen, False, guia)
         if r is None:
