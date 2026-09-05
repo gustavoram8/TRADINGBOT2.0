@@ -129,6 +129,30 @@ def bos(ohlc, k=2):
     return out
 
 
+def bos_eventos(ohlc, k=2):
+    """Los BOS como EVENTOS: uno por swing roto, en el instante de la ruptura.
+
+    🔴 POR QUÉ HACE FALTA (medido sobre la captura real del dueño, 2026-09-05).
+    `bos()` devuelve todos los pares (vela, swing anterior) que cumplen la
+    definición, y eso incluye a la vela que rompe **y a todas las que siguen
+    cerrando al otro lado**. Sobre su gráfico salían las velas x=886, 897 y 908
+    como tres BOS distintos cuando son **la misma ruptura contada tres veces**.
+    Su indicador dibujó UNA marca; nosotros 17.
+
+    Con esto, y con `k=3`, quedan 3 eventos en el recorte y el primero cae en
+    x=886 — **la misma vela exacta** donde su indicador puso su etiqueta.
+
+    ⚠️ No sustituye a `bos()`: para preguntar "¿este cierre está más allá de
+    aquel swing?" sigue haciendo falta la lista completa. Esto es lo que se le
+    enseña a una persona."""
+    vistos = {}
+    for b in sorted(bos(ohlc, k), key=lambda b: b['i']):
+        clave = (b['swing'], b['tipo'])
+        if clave not in vistos:
+            vistos[clave] = b
+    return sorted(vistos.values(), key=lambda b: b['i'])
+
+
 def order_blocks(ohlc, gaps):
     """El OB se califica por su ORIGEN, no por ser 'la última vela roja'.
 
@@ -267,6 +291,16 @@ def probar():
              for x in br), [(x['i'], x['nivel']) for x in br])
     caso('y NO lo llama barrida',
          not any(x['i'] == t['bos_i'] and x['tipo'] == 'alto' for x in barridas(o)))
+    # 🔑 El mismo swing roto no puede contarse dos veces. Sobre el gráfico real
+    # del dueño, tres velas seguidas cerraban al otro lado del mismo swing y
+    # salían como tres BOS; su indicador dibujó UNA marca.
+    ev = bos_eventos(o)
+    caso('un solo EVENTO por swing roto',
+         len(ev) == len({(x['swing'], x['tipo']) for x in bos(o)}), len(ev))
+    caso('el evento cae en la PRIMERA vela que rompe',
+         all(x['i'] == min(y['i'] for y in bos(o)
+                           if (y['swing'], y['tipo']) == (x['swing'], x['tipo']))
+             for x in ev))
 
     print('── order block ──')
     o, t = esc_order_block()

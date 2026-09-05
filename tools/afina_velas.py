@@ -129,11 +129,19 @@ def _fondo_por_fila(vent):
     return fondo
 
 
-def afina(a, x0, x1, y0, y1, margen=5, deslizar=False, guia=None):
+def afina(a, x0, x1, y0, y1, margen=5, deslizar=False, guia=None,
+          tope_alto=None):
     """Extenso real de la vela que vive entre las columnas x0..x1.
 
     Devuelve (alto, bajo, cuerpo_alto, cuerpo_bajo) en píxeles, o None si en esa
-    franja no hay ninguna vela. `a` es la imagen como array RGB."""
+    franja no hay ninguna vela. `a` es la imagen como array RGB.
+
+    🔑 `tope_alto` = altura máxima creíble para una vela DE ESTE gráfico. Se
+    calcula en dos pasadas (medir todas → mediana → volver a medir las que se
+    disparan) y ataca el defecto que apareció sobre la captura real del dueño:
+    dos velas pegadas al borde vertical de la banda de killzone salieron de 425
+    px cuando la mediana del gráfico era 70. La guía sola no bastaba, porque su
+    tope es relativo a un recuadro que en esas velas venía grande."""
     H, W, _ = a.shape
     x0 = max(0, x0); x1 = min(W - 1, x1)
     ancho = x1 - x0 + 1
@@ -207,13 +215,18 @@ def afina(a, x0, x1, y0, y1, margen=5, deslizar=False, guia=None):
         # borde de una caja de sesión recorriendo el panel. Sin este límite el
         # borde ganaba la votación cuando la guía venía con error grande.
         techo = 3 * (gb - ga) + 30
+        if tope_alto:
+            techo = min(techo, tope_alto)
         cand = [b for b in grupos if b[-1] - b[0] <= techo] or grupos
 
         def solape(b):
             return max(0, min(b[-1], gb) - max(b[0], ga))
         g = max(cand, key=lambda b: (solape(b), len(b)))
     else:
-        g = max(grupos, key=len)
+        cand = grupos
+        if tope_alto:
+            cand = [b for b in grupos if b[-1] - b[0] <= tope_alto] or grupos
+        g = max(cand, key=len)
     alto, bajo = g[0], g[-1]
 
     # 🔑 CUERPO = las filas que tienen tinta en LOS DOS COSTADOS de la vela.

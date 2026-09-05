@@ -58,6 +58,8 @@ import afina_velas as AF          # noqa: E402
 import hechos_grafico as HG       # noqa: E402
 
 AN, AL = 1400, 800
+# Una vela no puede medir más de esto por la MEDIANA de su propio gráfico.
+TOPE_ALTO = 3.0
 MARGEN_X, MARGEN_Y = 60, 70
 
 
@@ -206,10 +208,39 @@ def _color_cuerpo(a, x0, x1, ct, cb):
     return (c >> 16, (c >> 8) & 255, c & 255)
 
 
-def mide(ruta, columnas, guias=None):
-    """De columnas a velas medidas. `columnas` = [(x0,x1)]."""
+def mide(ruta, columnas, guias=None, banda=None):
+    """De columnas a velas medidas, EN DOS PASADAS.
+
+    🔑 La segunda pasada existe por un defecto que solo apareció sobre la
+    captura real: dos velas pegadas al borde vertical de la banda de killzone
+    se midieron de 425 px cuando la mediana del gráfico era 70 — se habían
+    enganchado al borde. La altura creíble de una vela no es un número fijo,
+    depende del gráfico, así que se mide primero todo, se toma la MEDIANA y se
+    vuelven a medir las que se disparan, prohibiéndoles pasar de 3 veces esa
+    mediana. El propio gráfico dice cuál es su escala."""
+    prim = _mide1(ruta, columnas, guias, banda)
+    alturas = [v['min'] - v['max'] for v in prim if v]
+    if len(alturas) < 5:
+        return prim
+    tope = int(round(TOPE_ALTO * np.median(alturas)))
+    sospechosas = [i for i, v in enumerate(prim)
+                   if v and (v['min'] - v['max']) > tope]
+    if not sospechosas:
+        return prim
+    seg = _mide1(ruta, columnas, guias, banda, tope)
+    for i in sospechosas:
+        if seg[i]:
+            prim[i] = seg[i]
+    return prim
+
+
+def _mide1(ruta, columnas, guias=None, banda=None, tope=None):
     a = np.asarray(Image.open(ruta).convert('RGB')).astype(int)
     H, W, _ = a.shape
+    if banda:
+        Y0, Y1 = banda
+    else:
+        Y0, Y1 = 0, H
     out = []
     for i, (x0, x1) in enumerate(columnas):
         # ventana ~5× la vela. Medido (2026-09-05): con ×3 el extremo sale al
@@ -217,7 +248,7 @@ def mide(ruta, columnas, guias=None):
         # más filas de fondo limpio entran en la paleta.
         margen = max(4, 2 * (x1 - x0 + 1))
         guia = guias[i] if guias else None
-        r = AF.afina(a, x0, x1, 0, H, margen, False, guia)
+        r = AF.afina(a, x0, x1, Y0, Y1, margen, False, guia, tope)
         if r is None:
             out.append(None)
             continue
