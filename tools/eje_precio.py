@@ -39,6 +39,8 @@ import os
 import re
 import sys
 
+import numpy as np
+
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(RAIZ, 'tools'))
 
@@ -48,6 +50,11 @@ TOLERANCIA_PX = 2.0
 MIN_ACUERDO = 3
 # Píxeles de margen a la IZQUIERDA del eje al recortarlo, para no cortar dígitos.
 MARGEN_EJE = 60
+# Filas mínimas para que una banda de tinta cuente como etiqueta.
+ALTO_ETIQUETA = 5
+# Alto máximo de cada trozo que se le manda al modelo, en veces su ancho. Una
+# tira de proporción 7:1 le descoloca las coordenadas; a 3:1 ya no.
+PROPORCION = 3.0
 
 
 def ajusta(etiquetas):
@@ -111,6 +118,44 @@ def _pide():
             'aparece"} con las coordenadas normalizadas de 0 a 1000.')
 
 
+def bandas_del_eje(a, x0, x1):
+    """Las ALTURAS de cada etiqueta del eje, medidas en píxeles.
+
+    🔴 POR QUÉ NO SE LE PIDEN AL MODELO (medido 2026-09-05). Se le mandó la tira
+    del eje y devolvió los 26 números **bien leídos** pero **mal situados**: dijo
+    que 29.428,50 estaba en y=673 cuando esa etiqueta es la línea de BE, que se
+    mide en la imagen en **y=496**. 177 px de error. La tira es de 348×2625 y con
+    una proporción tan extrema su sentido del espacio se descompone.
+
+    🔑 El reparto correcto es el mismo de siempre: **el modelo pone los dígitos,
+    los píxeles ponen la posición.** Una etiqueta del eje es una banda de filas
+    que se apartan del fondo, y eso se mide sin ambigüedad.
+
+    ⚠️ Solo se miran las columnas del eje, NO las del gráfico: metiendo velas en
+    la cuenta, todas las filas dan positivo y salen dos bandas gigantes en vez de
+    veinticinco."""
+    tira = a[:, x0:x1]
+    H = tira.shape[0]
+    pl = tira[:, :, 0] * 65536 + tira[:, :, 1] * 256 + tira[:, :, 2]
+    filas = np.zeros(H, int)
+    for y in range(H):
+        v, c = np.unique(pl[y], return_counts=True)
+        filas[y] = int((pl[y] != v[c.argmax()]).sum())
+    umbral = max(3, int(0.12 * tira.shape[1]))
+    marca = filas > umbral
+    out, y = [], 0
+    while y < H:
+        if marca[y]:
+            i = y
+            while y < H and marca[y]:
+                y += 1
+            if y - i >= ALTO_ETIQUETA:
+                out.append((i + y - 1) / 2.0)
+        else:
+            y += 1
+    return out
+
+
 def _tira_del_eje(ruta, destino, escala=3):
     """Recorta SOLO la franja del eje de precios y la amplía.
 
@@ -148,34 +193,66 @@ def _tira_del_eje(ruta, destino, escala=3):
     return x0, H
 
 
-def lee(prov, modelo, ruta):
-    """Lee las etiquetas del eje con el modelo. 🔴 Solo corre en el VPS."""
+def lee(prov, modelo, ruta, escala=3):
+    """Etiquetas del eje: los dígitos los pone el modelo, la altura los píxeles.
+
+    🔴 Y SE MANDA POR TROZOS. Con la tira entera (proporción 7:1) el modelo
+    situó 29.428,50 a 177 px de donde está. Partida en trozos de proporción 3:1
+    el error cae a unos pocos píxeles, y con eso basta: solo hace falta que cada
+    lectura quede MÁS CERCA de su banda que de la vecina, porque después se
+    ENGANCHA a la banda medida en píxeles y la altura pasa a ser exacta."""
     import importlib.util
+    from PIL import Image
     spec = importlib.util.spec_from_file_location(
         'ci', os.path.join(RAIZ, 'tools', 'cajas_ia.py'))
     ci = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(ci)
-    destino = os.path.join(RAIZ, 'out', 'lee_grafico', '_eje.png')
-    if not os.path.isdir(os.path.dirname(destino)):
-        os.makedirs(os.path.dirname(destino))
-    _x0, H = _tira_del_eje(ruta, destino)
-    # 🔴 El encargo va EXPLÍCITO. Antes se llamaba a la función de red sin
-    # pasárselo y ella mandaba el suyo — "detecta las 0 velas más a la derecha"
-    # — así que el modelo contestaba [] con toda la razón.
-    txt = ci._pregunta(prov, modelo, ci._clave(prov), destino,
-                       pregunta=_pide())
+    carpeta = os.path.join(RAIZ, 'out', 'lee_grafico')
+    if not os.path.isdir(carpeta):
+        os.makedirs(carpeta)
+    destino = os.path.join(carpeta, '_eje.png')
+    x0, H = _tira_del_eje(ruta, destino, escala)
+
+    a = np.asarray(Image.open(ruta).convert('RGB')).astype(int)
+    W = a.shape[1]
+    # las bandas se miden SOLO en las columnas del eje, sin el gráfico
+    bandas = bandas_del_eje(a, max(x0, W - int((W - x0) * 0.45)), W)
+    tira = Image.open(destino)
+    alto_trozo = int(PROPORCION * tira.width)
+    trozos = max(1, int(round(tira.height / float(alto_trozo))))
+    alto_trozo = int(np.ceil(tira.height / float(trozos)))
+
+    crudo, brutas = [], []
+    for k in range(trozos):
+        t0, t1 = k * alto_trozo, min(tira.height, (k + 1) * alto_trozo)
+        parte = os.path.join(carpeta, '_eje_%d.png' % k)
+        tira.crop((0, t0, tira.width, t1)).save(parte)
+        txt = ci._pregunta(prov, modelo, ci._clave(prov), parte,
+                           pregunta=_pide())
+        crudo.append(txt)
+        for m in re.finditer(
+                r'"box_2d"\s*:\s*\[\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*,\s*'
+                r'(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*\]\s*,\s*"label"\s*:\s*"([^"]*)"',
+                txt):
+            # y del trozo → y de la tira → y de la imagen original
+            ym, _xm, yM, _xM, lab = m.groups()
+            precio = _numero(lab)
+            if precio is None:
+                continue
+            y = (float(ym) + float(yM)) / 2.0 / 1000.0 * (t1 - t0) + t0
+            brutas.append((y / float(escala), precio))
+
+    # 🔑 ENGANCHE: cada lectura se lleva a la banda medida más cercana. Si no
+    # hay ninguna cerca, la lectura se descarta — es texto que no era del eje.
+    if not bandas:
+        return brutas, '\n'.join(crudo)
+    tol = max(6.0, np.median(np.diff(sorted(bandas))) / 2.0) if len(bandas) > 1 else 12.0
     out = []
-    for m in re.finditer(
-            r'"box_2d"\s*:\s*\[\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*,\s*'
-            r'(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*\]\s*,\s*"label"\s*:\s*"([^"]*)"',
-            txt):
-        ym, _xm, yM, _xM, lab = m.groups()
-        precio = _numero(lab)
-        if precio is None:
-            continue
-        y = (float(ym) + float(yM)) / 2.0 / 1000.0 * H
-        out.append((y, precio))
-    return out, txt
+    for y, precio in brutas:
+        b = min(bandas, key=lambda v: abs(v - y))
+        if abs(b - y) <= tol:
+            out.append((b, precio))
+    return out, '\n'.join(crudo)
 
 
 if __name__ == '__main__':
