@@ -18,7 +18,7 @@ hace solo lo que sabe hacer**, medido:
   1. `recorta_grafico`  encuentra el panel y el paso entre velas   (píxeles)
   2. `cajas_ia`         dice EN QUÉ COLUMNA está cada vela         (modelo)
   3. `afina_velas`      mide máximo, mínimo y cuerpo de cada una   (píxeles)
-  4. `lee_grafico`      decide alcista/bajista sin conocer paleta  (píxeles)
+  4. `afina_velas`      decide alcista/bajista sin conocer paleta  (píxeles)
   5. `eje_precio`       convierte altura en precio                 (modelo + píxeles)
   6. `hechos_grafico`   deduce BOS, barridas, FVG y order blocks   (aritmética)
 
@@ -58,7 +58,6 @@ import afina_velas as AF          # noqa: E402
 import eje_precio as EP           # noqa: E402
 import hechos_grafico as HG       # noqa: E402
 import recorta_grafico as RG      # noqa: E402
-from lee_grafico import _direccion  # noqa: E402
 
 # Precisión mínima MEDIDA para que una familia de hechos se pueda AFIRMAR.
 MIN_PRECISION = 90.0
@@ -209,7 +208,7 @@ def serie(velas):
     🔑 El precio no hace falta para deducir los hechos: TODOS son comparaciones,
     y una comparación no cambia al multiplicar por una constante positiva. La
     escala solo se usa para ESCRIBIR el resultado."""
-    _direccion(velas)
+    AF.direccion(velas)
     out = []
     for v in velas:
         h, l = -v['max'], -v['min']

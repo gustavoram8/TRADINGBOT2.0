@@ -129,6 +129,61 @@ def _fondo_por_fila(vent):
     return fondo
 
 
+def direccion(velas):
+    """Quién es alcista y quién bajista, SIN saber la paleta del tema.
+
+    🔴 VIVE AQUÍ, no en `lee_grafico`. Estaba allí por historia, y la cadena
+    nueva acababa importando al lector VIEJO —el que fallaba con capturas
+    reales— solo para esto. Peor aún: `lee_grafico` arrastra **scipy**, que no
+    está instalado en el VPS, así que el analizador 2.0 no arrancaba allí por
+    una dependencia que no usa para nada.
+
+
+    🔑 Dos pasos. Primero se agrupan las velas por su color de cuerpo en los
+    dos más repetidos (negro y gris en el tema claro de TradingView; verde y
+    rojo en uno oscuro). Segundo, para decidir cuál de los dos grupos es el
+    alcista, se usa una propiedad del propio gráfico: **la apertura de una vela
+    cae cerca del cierre de la anterior**. Se prueban las dos asignaciones y
+    gana la que hace esa cadena más continua.
+
+    ⚠️ Sin este segundo paso habría que escribir a mano "el claro sube y el
+    oscuro baja", que es exactamente la clase de suposición que ya nos rompió
+    el detector tres veces."""
+    if len(velas) < 4:
+        return velas
+    cuenta = {}
+    for v in velas:
+        cuenta[v['color']] = cuenta.get(v['color'], 0) + 1
+    top = [c for c, _n in sorted(cuenta.items(), key=lambda kv: -kv[1])[:2]]
+    if len(top) < 2:
+        for v in velas:
+            v['alcista'] = True
+        return velas
+
+    def cerca(c):
+        d0 = sum((c[i] - top[0][i]) ** 2 for i in range(3))
+        d1 = sum((c[i] - top[1][i]) ** 2 for i in range(3))
+        return 0 if d0 <= d1 else 1
+
+    grupo = [cerca(v['color']) for v in velas]
+
+    def salto(alcista_es):
+        # apertura de i+1 contra cierre de i, en píxeles
+        tot = 0.0
+        for i in range(len(velas) - 1):
+            a_alc = (grupo[i] == alcista_es)
+            b_alc = (grupo[i + 1] == alcista_es)
+            cierre = velas[i]['cuerpo_alto'] if a_alc else velas[i]['cuerpo_bajo']
+            apert = velas[i + 1]['cuerpo_bajo'] if b_alc else velas[i + 1]['cuerpo_alto']
+            tot += abs(apert - cierre)
+        return tot
+
+    elegido = 0 if salto(0) <= salto(1) else 1
+    for v, g in zip(velas, grupo):
+        v['alcista'] = (g == elegido)
+    return velas
+
+
 def afina(a, x0, x1, y0, y1, margen=5, deslizar=False, guia=None,
           tope_alto=None):
     """Extenso real de la vela que vive entre las columnas x0..x1.

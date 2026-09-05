@@ -263,8 +263,7 @@ def _a_ohlc(velas):
     """Velas medidas → serie OHLC. El precio es -y: la escala real no hace
     falta, porque TODOS los hechos son comparaciones y una comparación no
     cambia al multiplicar por una constante positiva."""
-    from lee_grafico import _direccion
-    velas = _direccion([v for v in velas if v])
+    velas = AF.direccion([v for v in velas if v])
     out = []
     for v in velas:
         h, l = -v['max'], -v['min']
