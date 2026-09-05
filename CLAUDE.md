@@ -426,11 +426,31 @@ y emite las tiras con las que llamar al modelo. **El cliente no tiene que hacer 
 · ⛔ **El alto NO se recorta, a propósito:** detectarlo por bandas devolvía y=240-640 sobre un panel
   de 200-800 y **cortaba velas**. La regla de las 8 milésimas es sobre el ANCHO.
 
-**`tools/eje_precio.py`** — de píxel a precio, para poder escribir *"perforó 29.428,50"*.
+**`tools/eje_precio.py`** — ✅ **FUNCIONANDO sobre la captura real (2026-09-05).**
 🔴 El riesgo no es no leer: es **leer mal un dígito**, porque eso mueve todos los precios y el
 resultado sigue pareciendo razonable. El seguro es la **redundancia**: cada par de etiquetas propone
-una recta y gana la que más etiquetas confirma; una lectura mala no tiene con quién ponerse de
-acuerdo. **Sin consenso devuelve None y el analizador habla SIN precios.** `test_eje_precio` 16/16.
+una recta y gana la que más etiquetas confirma. **Sin consenso devuelve None y el analizador habla
+SIN precios.** `test_eje_precio` 16/16.
+
+⚠️ **Y OTRA VEZ EL MISMO REPARTO:** en la primera corrida real el modelo leyó las 26 etiquetas
+**bien** y las situó **mal** — dijo que 29.428,50 estaba en y=673 cuando esa etiqueta es la línea de
+BE, medida en la imagen en **y=496**: 177 px. La tira del eje es de 348×2625 y con proporción 7:1 su
+sentido del espacio se descompone. Arreglo: **los dígitos los pone el modelo, la altura los
+píxeles** (`bandas_del_eje`, 25 bandas sobre esa captura, una en y=497), la tira se manda **por
+trozos de proporción 3:1**, y cada lectura se **engancha** a la banda medida más cercana.
+
+| Resultado | |
+|---|---|
+| Escala | **−0,4645 puntos/px** · 22 de 26 etiquetas de acuerdo |
+| Comprobación contra la línea de BE (y medida aparte, 496,5) | dice 29.428,18 · el eje dice 29.428,50 → **0,32 puntos**, ~1 tick del MNQ |
+| Residuo de las 22 | de +0,32 a −0,58 puntos, casi todas bajo 0,3 |
+
+⚠️ Las 4 descartadas son **dos parejas** de etiquetas resaltadas pegadas que el detector de bandas
+fundió en una sola (y=249,5 y y=289,5). De cada pareja solo una puede ser correcta y el consenso
+tira las dos: se pierden dos lecturas de 26 y la escala no se entera.
+🔴 **El único fallo que este método NO detecta solo:** si al recortar se corta el mismo dígito a
+TODAS las etiquetas (29.560,00 → 9.560,00), concuerdan entre sí y la escala sale con la pendiente
+correcta y el precio desplazado 20.000 puntos, en silencio. Por eso `MARGEN_EJE`.
 
 **PENDIENTE:** encadenarlo todo en un solo programa, y **ensamblarlo con el analizador** —
 🔴 eso sí toca el sitio y no se mueve sin que el dueño lo diga. Fuera sigue MACD/RSI.
