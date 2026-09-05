@@ -91,7 +91,8 @@ def _clave(prov):
     return mod._clave(prov)
 
 
-def _pregunta(prov, modelo, clave, ruta, velas=25, tope=8000, todas=False):
+def _pregunta(prov, modelo, clave, ruta, velas=25, tope=8000, todas=False,
+              pregunta=None):
     """Una pregunta con imagen, reintentando lo que es temporal.
 
     🔴 Los 429 (cuota) y los 503 (servidor saturado) NO son fallos del modelo:
@@ -114,7 +115,8 @@ def _pregunta(prov, modelo, clave, ruta, velas=25, tope=8000, todas=False):
     cuerpo = {
         'model': modelo, 'max_completion_tokens': tope,
         'messages': [{'role': 'user', 'content': [
-            {'type': 'text', 'text': _pide_todas() if todas else _pide(velas)},
+            {'type': 'text',
+             'text': pregunta or (_pide_todas() if todas else _pide(velas))},
             {'type': 'image_url',
              'image_url': {'url': 'data:image/png;base64,' + b64,
                            'detail': 'high'}}]}]}
