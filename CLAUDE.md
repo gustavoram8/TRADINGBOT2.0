@@ -351,26 +351,36 @@ oscuro, dos colores de vela cualesquiera, cuerpos rellenos o huecos, anchos y se
 distintas** y encima la basura que rompió al lector en la captura real (zona translúcida detrás,
 líneas de nivel, una discontinua, etiquetas). Se mide **eslabón por eslabón** para saber cuál falla:
 
-| Eslabón B — medir el extenso | |
-|---|---|
-| máximo y mínimo exactos (±1 px) | **94,4%** |
-| cuerpo exacto | **92,7%** |
-| alcista/bajista (sin conocer la paleta) | **97,8%** |
+| Eslabón B — medir el extenso | 04-sep | **05-sep** |
+|---|---|---|
+| máximo y mínimo exactos (±1 px) | 94,4% | **96,7%** |
+| cuerpo exacto | 92,7% | **95,8%** |
+| alcista/bajista (sin conocer la paleta) | 97,8% | **98,4%** |
 
 | Eslabón C — los hechos | acierta | encuentra |
 |---|---|---|
-| **BOS** | **99,0%** | 90,3% |
-| **barrida de liquidez** | 93,1% | 89,8% |
-| **FVG** | 🔴 **81,4%** | 98,1% |
-| **order block** | 🔴 **74,0%** | 86,7% |
+| **BOS** | **99,8%** | 88,0% |
+| **barrida de liquidez** | **93,7%** | 93,2% |
+| **FVG** | 🟡 **86,8%** | 98,1% |
+| **order block** | 🟡 **81,8%** | 91,4% |
 
 🔑 *acierta* = de lo que afirma, cuánto es cierto (lo que decide si le mentimos a un cliente).
 *encuentra* = de lo que hay, cuánto ve.
 
-🔑 **BOS y barrida ya están en punto de producto por precisión; FVG y order block NO.** Y el OB
+🔑 **BOS y barrida están en punto de producto por precisión; FVG y order block todavía no.** El OB
 hereda el fallo por construcción: se define a partir de un FVG, así que cada FVG falso arrastra su
-order block falso. El culpable es el ~5,6% de velas con el extremo mal medido: un píxel de más
+order block falso. El culpable es el ~3,3% de velas con el extremo mal medido: un píxel de más
 abre un hueco que no existe.
+
+✅ **EL 5,6% ATACADO (2026-09-05) → 3,3%.** Se diagnosticó antes de tocar nada: el **73% de los
+fallos eran velas TRUNCADAS**, y el perfil de tinta lo cantaba — seis filas de mecha, **quince filas
+vacías**, y el cuerpo debajo. El fondo de cada fila se tomaba como *su color más repetido*, así que
+en una fila donde las velas VECINAS ocupan más de media ventana el más repetido pasaba a ser **el
+color de las velas**, y la mecha de la vela medida —del mismo color— contaba como fondo y
+**desaparecía**. El hueco partía la vela en dos y se elegía el trozo de abajo. Dos cambios: el fondo
+se **elige de una PALETA** (un gráfico tiene poquísimos fondos y ganan en casi todas las filas; una
+fila densa ya no puede inventarse uno nuevo) y la **ventana pasa de ×3 a ×5** la vela (×3 → 94,3%,
+×5 → 96,2%, y de ahí no mejora). FVG +5,4 puntos, order block +7,8.
 
 ⛔ **Probado y descartado: filtrar los FVG pequeños.** Con mínimos de 2, 3, 4 y 6 px la precisión
 NO se movió (83%): los FVG falsos no son pequeños, salen de velas mal medidas.
