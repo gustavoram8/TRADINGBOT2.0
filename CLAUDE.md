@@ -394,7 +394,46 @@ extractor; y medir **sin la pista vertical del modelo** castiga por un caso (el 
 sesión cruzando la vela) que en la cadena real está resuelto — la pista se imita con su error
 medido (σ 5-9 px y un 20% de fallos gordos de 30), nunca con la verdad.
 
-**PENDIENTE:** el eslabón A (columnas de Gemini) se mide en el VPS; aquí solo B y C.
+### ✅ VALIDADA SOBRE SU GRÁFICO REAL (2026-09-05) — y la sospecha del dueño, dada la vuelta
+Primera medición del **eslabón A** con datos reales (`--recorte 760,200,1240,780` sobre
+`mnq_5m_zoom.png`): **46 cajas**, saltos entre cajas consecutivas de 8 a 13 px **sin un solo hueco
+del doble** → no se saltó ninguna vela. Las 46 se midieron.
+
+🔑 **La verdad independiente fue su propio indicador.** Él preguntó: *"¿no será que mi indicador de
+BOS se lo sopla?"*. No — el banco no tiene indicadores, y **la cadena no lee un solo píxel de texto
+ni de línea, solo geometría de velas**. Así que su marca sirve de árbitro: la línea "bos" de su
+BoS/ChoCh termina en **x=886, y=614**; la cadena calcula **BOS bajista en la vela cuya columna
+empieza en x=886**, rompiendo un swing en **y=611**. Misma vela, nivel a 3 px. (El origen difiere
+porque el swing real cae fuera del recorte.)
+
+⚠️ Dos fallos que SOLO aparecen con datos reales, ya arreglados:
+· **Dos velas de 425 px** con mediana de 70: pegadas al borde vertical de la banda de killzone. La
+  guía no bastaba (su tope es relativo a un recuadro que ahí venía grande) → `tope_alto` en **dos
+  pasadas**: se mide todo, se toma la mediana y se re-mide lo que pasa de 3× esa mediana. Máx 425 → 129.
+· **La misma ruptura contada tres veces** (velas 886, 897 y 908): `bos()` devuelve todos los pares
+  (vela, swing), o sea la que rompe **y todas las que siguen cerrando al otro lado**. Su indicador
+  puso UNA marca. → `hechos_grafico.bos_eventos()`, un BOS por swing roto. 15/15 → **17/17**.
+
+### ✅ RECORTE AUTOMÁTICO Y ESCALA DE PRECIOS (2026-09-05)
+**`tools/recorta_grafico.py`** — encuentra el panel y el paso entre velas sin que nadie se lo diga,
+y emite las tiras con las que llamar al modelo. **El cliente no tiene que hacer nada.**
+· 🔑 La señal son los **bordes verticales**, no la tinta: contar "píxeles que no son fondo" por
+  columna satura en un gráfico entero (el fondo cambia también a lo ancho) — medido, **424 de 424
+  filas en TODAS las columnas**. El cambio de color entre columnas no depende del fondo.
+· 🔑 El paso sale por periodicidad con desplazamientos **fraccionarios**: con lags enteros la
+  captura del MES (paso real 5,5) daba **11**, el doble. Medido: 5,62 · 8,25 · 10,50 sobre las tres
+  capturas reales (real 5,5 · 8 · 10,5).
+· ⛔ **El alto NO se recorta, a propósito:** detectarlo por bandas devolvía y=240-640 sobre un panel
+  de 200-800 y **cortaba velas**. La regla de las 8 milésimas es sobre el ANCHO.
+
+**`tools/eje_precio.py`** — de píxel a precio, para poder escribir *"perforó 29.428,50"*.
+🔴 El riesgo no es no leer: es **leer mal un dígito**, porque eso mueve todos los precios y el
+resultado sigue pareciendo razonable. El seguro es la **redundancia**: cada par de etiquetas propone
+una recta y gana la que más etiquetas confirma; una lectura mala no tiene con quién ponerse de
+acuerdo. **Sin consenso devuelve None y el analizador habla SIN precios.** `test_eje_precio` 16/16.
+
+**PENDIENTE:** encadenarlo todo en un solo programa, y **ensamblarlo con el analizador** —
+🔴 eso sí toca el sitio y no se mueve sin que el dueño lo diga. Fuera sigue MACD/RSI.
 
 🟢 **Lo que se puede hacer YA sin cambiar de modelo (ofrecido, SIN luz verde):** que el analizador
 **deje de afirmar** relaciones que no puede verificar — hoy puede estar diciéndole a un cliente
