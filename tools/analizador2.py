@@ -224,14 +224,40 @@ def hechos(ohlc):
     """Los hechos, por familia, con el índice de la vela."""
     g = HG.fvgs(ohlc)
     out = {'bos': [], 'barrida': [], 'fvg': [], 'ob': []}
-    for b in HG.bos_eventos(ohlc, K_SWING):
+
+    def _uno_por_vela(lista):
+        """Una línea por vela, no una por swing roto.
+
+        🔴 CAZADO EN LA PRIMERA CORRIDA SOBRE EL GRÁFICO ENTERO. Una vela que
+        se lleva por delante TRES swings anteriores salía tres veces:
+            vela 123 · BOS alcista: atravesó el swing de la vela 89
+            vela 123 · BOS alcista: atravesó el swing de la vela 95
+            vela 123 · BOS alcista: atravesó el swing de la vela 112
+        No son tres rupturas: es UNA, y un trader la nombra una vez. Con 46
+        velas casi no se notaba; con 162 el bloque se vuelve ilegible, y un
+        bloque ilegible no lo lee nadie — ni una persona ni una IA.
+
+        🔑 Se conserva el swing de índice MÁS ALTO, que es el más RECIENTE: ese
+        es el que define la estructura vigente. Romper los de más atrás viene
+        implícito en romper el último."""
+        mejor = {}
+        for b in lista:
+            k = (b['i'], b['tipo'])
+            if k not in mejor or b['swing'] > mejor[k]['swing']:
+                mejor[k] = b
+        return sorted(mejor.values(), key=lambda b: b['i'])
+
+    for b in _uno_por_vela(HG.bos_eventos(ohlc, K_SWING)):
         out['bos'].append({'i': b['i'], 'tipo': b['tipo'],
                            'nivel': b['nivel'], 'swing': b['swing']})
     vistas = set()
+    barridas = []
     for b in HG.barridas(ohlc, K_SWING):
         if (b['swing'], b['tipo']) in vistas:
             continue
         vistas.add((b['swing'], b['tipo']))
+        barridas.append(b)
+    for b in _uno_por_vela(barridas):
         out['barrida'].append({'i': b['i'], 'tipo': b['tipo'],
                                'nivel': b['nivel'], 'swing': b['swing']})
     for f in g:
