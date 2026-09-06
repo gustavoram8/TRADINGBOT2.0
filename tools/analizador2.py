@@ -193,6 +193,41 @@ def _junta(cajas, paso):
     return out
 
 
+def normaliza_ancho(cajas, paso):
+    """Todas las columnas al MISMO ancho, centradas donde dijo el modelo.
+
+    🔴 EL FALLO QUE ESTO ARREGLA, medido sobre la captura del dueño. El paso
+    entre velas es 7,5 px y la vela mide ~6, pero las cajas que devolvió el
+    modelo iban **de 5 a 12 px de ancho**, y **23 de 104 se solapaban con la
+    siguiente**. Una columna de 12 px con las velas a 7,5 de distancia contiene
+    por fuerza a la vecina: `afina` recibe una franja con DOS velas dentro y
+    elige mal. De ahí los tres síntomas que él reportó una y otra vez — un
+    recuadro que coge dos cuerpos, otro que coge fondo, otro que se queda a
+    medias — y ninguno se arreglaba tocando la regla del cuerpo, porque el
+    problema entraba antes.
+
+    🔑 Es la misma doctrina que gobierna el resto de la cadena: **el modelo
+    dice DÓNDE y los píxeles dicen CUÁNTO.** El ancho no hay que preguntárselo
+    a nadie: lo dice el paso, que se mide de la propia imagen. Se conserva el
+    CENTRO de su caja, que es lo único que hace bien.
+
+    ⚠️ El ancho se corta por `paso - 1` para que dos columnas consecutivas no
+    puedan tocarse ni con el redondeo. Y no se fuerza a ese valor: se toma la
+    mediana de lo que dio el modelo si es más estrecha, porque hay gráficos con
+    velas finas y separadas donde estirar la columna metería fondo dentro."""
+    if not cajas:
+        return cajas
+    tope = max(2, int(round(paso)) - 1)
+    ancho = int(min(np.median([c[1] - c[0] + 1 for c in cajas]), tope))
+    ancho = max(2, ancho)
+    out = []
+    for (x0, x1, gy0, gy1) in cajas:
+        cx = (x0 + x1) / 2.0
+        nx0 = int(round(cx - (ancho - 1) / 2.0))
+        out.append((nx0, nx0 + ancho - 1, gy0, gy1))
+    return out
+
+
 def banda_de_las_guias(cajas, H):
     """La franja vertical donde de verdad hay gráfico, sacada de las guías.
 
@@ -423,6 +458,10 @@ def analiza(ruta, prov=None, modelo=None, cajas=None, max_velas=80,
     # Medido en el banco, con el 14% de las velas fuera los hechos se caen
     # (BOS 100→63,5% · FVG 90,6→12% · OB 88,7→4,6%), así que esto no es un
     # retoque, es lo que sostiene todo lo demás. Ver `rejilla_velas`.
+    # 🔴 ANTES DE NADA: todas las columnas al mismo ancho. Si entra una caja
+    #    más ancha que el paso, arrastra a la vela vecina y todo lo que viene
+    #    después mide sobre una franja con dos velas. Ver `normaliza_ancho`.
+    cajas = normaliza_ancho(cajas, p['paso'])
     a_img = np.asarray(Image.open(ruta).convert('RGB')).astype(int)
     banda = banda_de_las_guias(cajas, a_img.shape[0])
     del_modelo = len(cajas)

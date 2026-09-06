@@ -243,8 +243,28 @@ def afina(a, x0, x1, y0, y1, margen=5, deslizar=False, guia=None,
     # flecha, una etiqueta o un icono son MÁS ANCHOS que la vela: su tinta cruza
     # la ventana entera. La vela nunca lo hace, porque la ventana se eligió
     # justamente tres veces más ancha que ella.
+    #
+    # 🔴 PERO LO QUE MANDA ES QUE LA TINTA SEA SEGUIDA, NO CUÁNTA HAY. Contando
+    # píxeles sueltos, en la zona densa de un gráfico —velas pegadas a 7,5 px—
+    # una fila cualquiera cruza cuatro o cinco velas y también pasa del 80%. El
+    # filtro borraba entonces LAS VELAS DE VERDAD, y en esa columna solo
+    # sobrevivía el texto de la barra de herramientas: sobre la captura del
+    # dueño salieron **cinco velas medidas en el menú** (y≈101-133) con la guía
+    # apuntando correctamente al gráfico, y 33 de 105 con el cuerpo tragándose
+    # las mechas. Una flecha es una mancha CONTINUA; cinco velas seguidas son
+    # cinco manchas con hueco entre medias. Por eso se mide el tramo seguido más
+    # largo de la fila y no su total.
     ancho_vent = tinta.shape[1]
-    tinta[tinta.sum(1) > FILA_ANCHA * ancho_vent, :] = False
+    limite = FILA_ANCHA * ancho_vent
+    for y in np.nonzero(tinta.sum(1) > limite)[0]:
+        fila = tinta[y]
+        mejor = actual = 0
+        for v in fila:
+            actual = actual + 1 if v else 0
+            if actual > mejor:
+                mejor = actual
+        if mejor > limite:
+            tinta[y, :] = False
 
     # solo las columnas de la vela, no las de la ventana de referencia
     prop = tinta[:, x0 - vx0:x1 - vx0 + 1]
@@ -279,7 +299,20 @@ def afina(a, x0, x1, y0, y1, margen=5, deslizar=False, guia=None,
 
         def solape(b):
             return max(0, min(b[-1], gb) - max(b[0], ga))
-        g = max(cand, key=lambda b: (solape(b), len(b)))
+
+        # 🔴 SI NINGÚN BLOQUE TOCA LA GUÍA, GANA EL MÁS CERCANO — NO EL MÁS
+        # LARGO. Cazado sobre la captura del dueño: cinco velas salieron
+        # medidas EN LA BARRA DE HERRAMIENTAS (y≈101-133) con su guía
+        # apuntando correctamente al gráfico (y≈250-295). En esa columna la
+        # tinta de la vela se había perdido, no quedaba ningún bloque que
+        # solapara, y el desempate por longitud premiaba al texto del menú
+        # —que es largo— por encima de cualquier cosa cercana. El error de la
+        # guía es de 3-8 px y en el peor caso 40: un bloque a 150 px no es esa
+        # vela, mida lo que mida.
+        def cerca(b):
+            return -abs((b[0] + b[-1]) / 2.0 - (ga + gb) / 2.0)
+
+        g = max(cand, key=lambda b: (solape(b), cerca(b), len(b)))
     else:
         cand = grupos
         if tope_alto:
@@ -312,7 +345,16 @@ def afina(a, x0, x1, y0, y1, margen=5, deslizar=False, guia=None,
     #   · fila ANCHA respecto a la más ancha de esta vela → sirve para la vela
     #     maciza más estrecha que su columna, donde los costados fallan.
     # Ninguna de las dos sola cubre los dos casos, y una mecha falla las dos.
-    umbral = max(2, int(round(FRACCION_CUERPO * int(anchos.max() or 0))))
+    # 🔴 EL SUELO ERA 2 Y ESO SE COMÍA LAS MECHAS. Con velas HUECAS —el tema
+    # claro de TradingView, el del dueño— el cuerpo solo pinta sus dos bordes,
+    # así que su ancho de tinta es 2, igual que el de una mecha gruesa. Y con
+    # un máximo de 4, `round(0.60*4)` da 2: el umbral caía al suelo y CUALQUIER
+    # fila de 2 píxeles pasaba por cuerpo. Sobre la captura del dueño eso
+    # dejaba 31 velas de 105 con el cuerpo tragándose las mechas enteras.
+    # El suelo sube a 3 para que esta rama nunca pueda dispararse con una
+    # mecha; la vela hueca la cubre la OTRA rama, la de los dos costados, que
+    # es justo el caso para el que se puso.
+    umbral = max(3, int(round(FRACCION_CUERPO * int(anchos.max() or 0))))
     cu = np.nonzero((izq & der) | (anchos >= umbral))[0]
 
     # 🔴 EL CUERPO ES EL TRAMO SEGUIDO MÁS LARGO, PERO CERRANDO HUECOS
