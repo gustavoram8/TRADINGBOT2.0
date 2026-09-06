@@ -382,6 +382,30 @@ T = {
             'left behind — price drifted, it didn’t run. That hole is why order '
             'blocks and fair value gaps work at all.'),
     'c8': 'SEE IT ON YOUR OWN CHART',
+    # 🔴 EL PUENTE AL SITIO (petición del dueño: la pieza enseñaba y se
+    #    acababa ahí). El concepto se cierra con lo que el ANALIZADOR te diría
+    #    sobre él en tu propio trade — el mismo recurso que ya está publicado
+    #    en el post 3 del feed, con su cabecera "Corrección · ICT". Así el
+    #    producto se ve trabajando en vez de anunciarse, y la invitación sale
+    #    sola: quien lee eso quiere saber qué diría del suyo.
+    # ⚠️ La corrección NO afirma nada que el analizador de hoy no pueda
+    #    sostener: discute el CRITERIO ("marcaste el order block sobre una vela
+    #    grande cualquiera"), que es lo que hace bien. Nada de "tu máximo no
+    #    rompió el nivel", que es medir píxeles y es justo donde falla.
+    # 🔴 Y la invitación es al ANALIZADOR, no a "seguir aprendiendo" en Synapse
+    #    ni en el reto diario: los dos son `@premium_required`. Mandar a alguien
+    #    a aprender gratis y estrellarlo contra un muro de $50 quema al
+    #    visitante justo cuando más abierto está.
+    'k8': 'CORRECTION · ICT',
+    # ⚠️ "on yours" NO es relleno. El gráfico de arriba dibuja un
+    #    desplazamiento VÁLIDO (deja hueco) y la corrección habla de uno
+    #    INVÁLIDO. Sin esas dos palabras, el texto parece estar describiendo la
+    #    misma imagen que se acaba de ver y se contradice con ella — y quien
+    #    sabe leer un gráfico lo caza al instante, que es justo el público.
+    'corr8': ('You marked the order block off a big green candle. But on '
+              'yours, price traded straight back over it: '
+              '<u>that move drifted, it didn’t run</u>.'),
+    'inv8': 'Bring the trade where you called it displacement.',
     'n8': 'tradeable.academy · no card needed',
 }
 
@@ -850,11 +874,23 @@ CONCEPTO_CSS = """
 .cz .oro{margin-top:22px;font-size:39px;font-weight:700;line-height:1.22;
   letter-spacing:-.015em;color:ACENTO}
 /* el filete es la ÚNICA pieza de acento sólido de toda la historia: separa el
-   qué es del cómo se distingue, que es la bisagra de la pieza */
-.cz .corte{height:5px;width:150px;background:ACENTO;margin:40px 0 26px}
-.cz .clave{font-size:41px;font-weight:800;line-height:1.16;letter-spacing:-.02em}
-.cz .gris{margin-top:20px;font-size:30px;line-height:1.38;color:#9aa2b4}
-.cz .dominio{margin-top:34px;font-family:Mono,monospace;font-size:24px;
+   concepto de lo que el producto haría con él */
+.cz .corte{height:5px;width:150px;background:ACENTO;margin:38px 0 24px}
+/* la corrección: tiene que leerse como algo SALIDO DE LA HERRAMIENTA, no como
+   otro párrafo de la marca. Por eso va en su propia tarjeta, levantada del
+   negro y con el filete del acento a la izquierda — el mismo recurso del post
+   3, que es donde este dispositivo ya está publicado. */
+.cz .correccion{background:#14171f;border-left:9px solid ACENTO;
+  border-radius:0 14px 14px 0;padding:26px 30px 28px}
+.cz .correccion .k{font-family:Mono,monospace;font-size:23px;font-weight:700;
+  letter-spacing:.18em;color:ACENTO;margin-bottom:14px}
+.cz .correccion .t{font-size:33px;line-height:1.35;color:#dfe5ef}
+.cz .correccion u{text-decoration:none;border-bottom:3px solid ACENTO;
+  padding-bottom:2px}
+/* la invitación NO es un botón: es la frase que a uno le dan ganas de contestar */
+.cz .invita{margin-top:30px;font-size:37px;font-weight:800;
+  letter-spacing:-.02em;line-height:1.18}
+.cz .dominio{margin-top:14px;font-family:Mono,monospace;font-size:24px;
   letter-spacing:.06em;color:#6f778a}
 """
 
@@ -866,11 +902,13 @@ def historia_desplazamiento():
               "<div class='escena'>%s</div>"
               "<h2>%s</h2><div class='oro'>%s</div>"
               "<div class='corte'></div>"
-              "<div class='clave'>%s</div><div class='gris'>%s</div>"
+              "<div class='correccion'><div class='k'>%s</div>"
+              "<div class='t'>%s</div></div>"
+              "<div class='invita'>%s</div>"
               "<div class='dominio'>%s</div></div>"
               % (CONCEPTO_CSS.replace('ACENTO', ORO), T['e8'],
                  grafico_desplazamiento(), T['t8b'], T['s8'],
-                 T['r8'], T['r8b'], T['n8']))
+                 T['k8'], T['corr8'], T['inv8'], T['n8']))
     return 'historia-7-desplazamiento', ORO, cuerpo, 0, True
 
 
