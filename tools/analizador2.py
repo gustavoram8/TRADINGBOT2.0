@@ -351,6 +351,7 @@ if __name__ == '__main__':
                                        'probar la cadena sin llamar al modelo')
     ap.add_argument('--max-velas', type=int, default=80)
     ap.add_argument('--json', help='guarda el resultado completo ahí')
+    ap.add_argument('--dibuja', help='PNG con las velas medidas dibujadas encima')
     a = ap.parse_args()
     prov = modelo = None
     if a.modelo:
@@ -387,6 +388,31 @@ if __name__ == '__main__':
             print('   %s: %.1f%% de precisión medida' % (NOMBRE[fam], PRECISION[fam]))
     for _fam, l in marcados:
         print('   · ' + l)
+    if a.dibuja:
+        # 🔑 MIRAR ES PARTE DE MEDIR. Un bloque de hechos con velas que faltan
+        # sigue pareciendo perfectamente razonable: los índices corren, los
+        # precios salen, y nada avisa. La única forma de saber si la cadena vio
+        # TODAS las velas es dibujarlas sobre el gráfico y mirarlo.
+        from PIL import ImageDraw
+        im = Image.open(a.imagen).convert('RGB')
+        d = ImageDraw.Draw(im)
+        for k, v in enumerate(velas):
+            d.rectangle([v['x0'] - 1, v['max'], v['x1'] + 1, v['min']],
+                        outline=(0, 230, 80))
+            d.rectangle([v['x0'] - 1, v['cuerpo_alto'], v['x1'] + 1,
+                         v['cuerpo_bajo']], outline=(255, 150, 0))
+        for fam, col in (('bos', (255, 0, 255)), ('barrida', (0, 160, 255))):
+            for h in r['hechos'][fam]:
+                v = velas[h['i']]
+                d.rectangle([v['x0'] - 4, v['max'] - 4, v['x1'] + 4,
+                             v['min'] + 4], outline=col)
+                d.rectangle([v['x0'] - 3, v['max'] - 3, v['x1'] + 3,
+                             v['min'] + 3], outline=col)
+        im.save(a.dibuja)
+        print('\ndibujado en', a.dibuja)
+        print('   verde = vela medida · naranja = su cuerpo')
+        print('   MAGENTA = BOS · AZUL = barrida')
+        print('   👉 mira si queda alguna vela SIN recuadro verde.')
     if a.json:
         with open(a.json, 'w') as f:
             json.dump({'panel': p, 'escala': None if not escala else
