@@ -65,6 +65,9 @@ HUECO = 4
 # veredicto de "rompió" a "solo lo tocó", que es justo la distinción que el
 # analizador tiene que acertar.
 FRACCION_CUERPO = 0.60
+# Huecos de hasta tantas filas se cierran antes de elegir el cuerpo. Ver la
+# explicación larga en `afina`: por encima de 2 se vuelve a tragar la mecha.
+HUECO_CUERPO = 2
 # Una fila cuya tinta ocupa casi toda la ventana no es la vela: es un objeto
 # ANCHO pasando por encima (la flecha de entrada, una etiqueta, un icono).
 FILA_ANCHA = 0.80
@@ -293,14 +296,53 @@ def afina(a, x0, x1, y0, y1, margen=5, deslizar=False, guia=None,
     borde = max(1, int(round(0.30 * n)))
     izq = prop[alto:bajo + 1, :borde].any(1)
     der = prop[alto:bajo + 1, -borde:].any(1)
-    cu = np.nonzero(izq & der)[0]
-    if len(cu) == 0:
-        # respaldo: la parte ancha (velas de 1-2 px de ancho, o costados rotos)
-        anchos = prop[alto:bajo + 1].sum(1)
-        minimo = max(2, int(round(FRACCION_CUERPO * int(anchos.max()))))
-        cu = np.nonzero(anchos >= minimo)[0]
+    anchos = prop[alto:bajo + 1].sum(1)
+
+    # 🔴 LOS DOS COSTADOS NO BASTAN, Y SE VIO SOBRE LA CAPTURA REAL. Si la
+    # columna es más ancha que la vela y la vela queda descentrada dentro, uno
+    # de los costados cae en el FONDO y la fila no cuenta — aunque sea cuerpo
+    # macizo. Medido en una vela del dueño (perfil de anchos por fila):
+    #     anchos  114416661444444444444444
+    #     cuerpo  .....###................
+    # el cuerpo es la tira larga de 4, y se quedó con los tres 6.
+    #
+    # 🔑 Por eso ahora vale CUALQUIERA de las dos señales:
+    #   · tinta en los dos costados  → sirve para la vela HUECA, cuyos lados
+    #     son dos rayas de 1 px y no se distinguen de una mecha por ancho;
+    #   · fila ANCHA respecto a la más ancha de esta vela → sirve para la vela
+    #     maciza más estrecha que su columna, donde los costados fallan.
+    # Ninguna de las dos sola cubre los dos casos, y una mecha falla las dos.
+    umbral = max(2, int(round(FRACCION_CUERPO * int(anchos.max() or 0))))
+    cu = np.nonzero((izq & der) | (anchos >= umbral))[0]
+
+    # 🔴 EL CUERPO ES EL TRAMO SEGUIDO MÁS LARGO, PERO CERRANDO HUECOS
+    # PEQUEÑOS. Las dos reglas ingenuas fallan por lados opuestos, y las dos se
+    # midieron en el banco (24 láminas, cuerpo exacto):
+    #   · `cu[0]..cu[-1]` (de la primera válida a la última) aguanta un agujero
+    #     DENTRO del cuerpo —una fila que se pierde por una línea encima— pero
+    #     se traga lo que haya fuera: en una vela real del dueño, tres filas de
+    #     mecha entre dos filas anchas entraron enteras al cuerpo. 95,7%.
+    #   · el tramo seguido más largo, a secas, no se traga la mecha pero se
+    #     PARTE en cuanto hay un agujero interior. **76,0%** — 20 puntos.
+    # Se queda con lo bueno de las dos: se cierran los huecos de hasta
+    # HUECO_CUERPO filas y después se toma el tramo más largo. El hueco de la
+    # mecha de aquella vela era de tres filas, así que el tope va por debajo.
     if len(cu):
-        ct, cb = alto + cu[0], alto + cu[-1]
+        cerrado = [cu[0]]
+        for v in cu[1:]:
+            if v - cerrado[-1] <= HUECO_CUERPO + 1:
+                cerrado.extend(range(cerrado[-1] + 1, v + 1))
+            else:
+                cerrado.append(v)
+        mejor, actual = [cerrado[0]], [cerrado[0]]
+        for v in cerrado[1:]:
+            if v == actual[-1] + 1:
+                actual.append(v)
+            else:
+                actual = [v]
+            if len(actual) > len(mejor):
+                mejor = actual
+        ct, cb = alto + mejor[0], alto + mejor[-1]
     else:                      # vela sin cuerpo visible (doji de 1 px)
         ct, cb = alto, bajo
     return (y0 + alto, y0 + bajo, y0 + ct, y0 + cb, x0, x1)

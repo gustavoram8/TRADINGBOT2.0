@@ -44,7 +44,7 @@ Cada familia de hechos lleva su precisión MEDIDA (banco de 24 láminas, 1.420
 velas, EN CONDICIONES REALES: con el 14% de las velas fuera y recuperadas).
 Solo entran en el bloque las que pasan de `MIN_PRECISION`, porque el propósito
 de todo esto es **no mentirle a un cliente**:
-  BOS 99,0% ✅ · barrida 95,2% ✅ · FVG 84,7% 🔴 · order block 82,5% 🔴
+  BOS 99,2% ✅ · barrida 95,6% ✅ · FVG 84,7% 🔴 · order block 82,6% 🔴
 Las que no pasan se calculan igual y se enseñan aparte, marcadas, para poder
 seguir midiéndolas — pero NO se afirman.
 
@@ -76,7 +76,7 @@ MIN_PRECISION = 90.0
 # las velas (lo que el modelo se deja de verdad) y recuperándolas con la
 # rejilla. Las de antes —99,8 · 93,7 · 86,8 · 81,8— se habían medido dándole al
 # extractor las columnas de TODAS las velas, que no es lo que pasa.
-PRECISION = {'bos': 99.0, 'barrida': 95.2, 'fvg': 84.7, 'ob': 82.5}
+PRECISION = {'bos': 99.2, 'barrida': 95.6, 'fvg': 84.7, 'ob': 82.6}
 NOMBRE = {'bos': 'BOS', 'barrida': 'barrida de liquidez',
           'fvg': 'FVG', 'ob': 'order block'}
 # Cuántas velas de giro a cada lado para que un extremo cuente como swing.
