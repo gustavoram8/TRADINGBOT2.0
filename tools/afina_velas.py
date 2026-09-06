@@ -330,20 +330,28 @@ def afina(a, x0, x1, y0, y1, margen=5, deslizar=False, guia=None,
     izq = prop[alto:bajo + 1, :borde].any(1)
     der = prop[alto:bajo + 1, -borde:].any(1)
     # 🔴 NO SE CUENTAN LOS PÍXELES DE LA FILA: SE MIDE DE DÓNDE A DÓNDE LLEGAN.
-    # Es el arreglo de fondo del defecto que el dueño no dejaba pasar —"si el
-    # analizador no sabe qué es mecha y qué es cuerpo, no puede decirte si se
-    # rompió un nivel o solo se tomó liquidez"— y tenía toda la razón.
     #
-    # Con velas HUECAS (el tema claro de TradingView, el suyo) el cuerpo solo
-    # pinta sus dos bordes verticales. Contando píxeles, una fila de cuerpo da
-    # 2 y una mecha da 2: son INDISTINGUIBLES, y ningún umbral sobre esa cuenta
-    # puede separarlas. Medido en sus propias velas:
-    #     cuenta     2 2 4 4 4 4 4 … 2 2 2 2
-    #     EXTENSIÓN  2 2 6 6 6 6 6 … 2 2 2 2
-    # La extensión sí: la mecha es una raya centrada (1-2 px de extremo a
-    # extremo) y el cuerpo llega al borde izquierdo Y al derecho (el ancho
-    # entero), aunque solo tenga 2 píxeles pintados. Sirve igual con el cuerpo
-    # relleno, hueco o medio borrado por una línea de nivel encima.
+    # 🔑 LA REGLA, dicha por el dueño y es la formulación correcta: **el cuerpo
+    # de una vela es SIEMPRE un rectángulo, tenga relleno o no**. Un rectángulo
+    # tiene borde izquierdo y borde derecho; una mecha es una sola raya en el
+    # centro. Así que la pregunta no es cuánta tinta hay en la fila, sino si esa
+    # fila llega de un borde al otro. Relleno, hueco, o con el interior tapado
+    # por una banda translúcida: da lo mismo, porque el rectángulo hay que
+    # dibujarlo igual. Y por eso esto vale para el gráfico de cualquier cliente
+    # sin preguntarle nada sobre su tema.
+    #
+    # ⚠️ CONTANDO PÍXELES ESTO NO SE PUEDE DISTINGUIR, y ahí perdí una sesión
+    # entera: en un cuerpo sin relleno la fila tiene 2 píxeles pintados (sus dos
+    # bordes) y en una mecha gruesa también 2. La EXTENSIÓN sí los separa: 6
+    # contra 2.
+    #
+    # ⚠️ Y NO: las velas del dueño NO son huecas —son macizas, gris relleno con
+    # borde negro—. Llegué a escribir lo contrario porque muestreé una fila y vi
+    # «borde, fondo, borde»; era mi columna cayendo a caballo ENTRE DOS VELAS
+    # (ver `analizador2.encaja_en_rejilla`). La medición desalineada me explicó
+    # por qué estaba desalineada y me lo creí. Queda anotado como aviso: cuando
+    # una lectura de píxeles diga algo raro del gráfico, sospechar primero del
+    # encuadre.
     prop_c = prop[alto:bajo + 1]
     anchos = np.zeros(prop_c.shape[0], dtype=int)
     for i in range(prop_c.shape[0]):
