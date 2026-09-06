@@ -141,6 +141,15 @@ def _pregunta(prov, modelo, clave, ruta, velas=25, tope=8000, todas=False,
         # ⏱️ 900 s: con 300 se agotaba mientras el modelo aún escribía.
         r = requests.post(url, timeout=900, headers=cab, json=cuerpo)
         if r.status_code in (429, 500, 502, 503, 504):
+            # 🔴 EL CUERPO DEL PRIMER ERROR, SIEMPRE. Un 429 puede ser el
+            # límite POR MINUTO (se quita solo en segundos) o el límite POR DÍA
+            # (no se quita hasta que resetea, y esperar no sirve de nada).
+            # Enseñando solo el número las dos cosas parecen la misma y uno se
+            # queda media hora esperando algo que no va a cambiar. Google lo
+            # dice en el texto: `quotaId` acaba en PerMinute o PerDay.
+            if intento == 1:
+                print('   --- lo que dice el servidor (%d) ---' % r.status_code)
+                print('   ' + r.text[:600].replace('\n', '\n   '))
             ra = r.headers.get('Retry-After')
             try:
                 pausa = float(ra) if ra else espera
