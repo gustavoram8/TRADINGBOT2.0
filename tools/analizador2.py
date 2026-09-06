@@ -4,8 +4,9 @@
     # completo, en el VPS (necesita la clave):
     python3 tools/analizador2.py --imagen docs/capturas_prueba/mnq_5m_zoom.png \\
         --modelo gemini:gemini-flash-latest
-    # sin red, con columnas ya obtenidas (para probar el resto de la cadena):
-    python3 tools/analizador2.py --imagen ... --columnas 760-767:503-525,...
+    # sin red ni cuota, reusando las columnas que dejó la corrida anterior:
+    python3 tools/analizador2.py --imagen ... \\
+        --columnas @out/analizador2/columnas_mes_ote_perdedor.txt
 
 🔴 NO TOCA EL ANALIZADOR DEL SITIO. Vive en tools/, la app no lo importa, y no
    sustituye a nada. Produce un BLOQUE DE HECHOS; qué se hace con él es una
@@ -128,7 +129,45 @@ def _columnas_del_modelo(ruta, prov, modelo, max_velas, callback=None):
                 py0, py1 = py1, py0
             todas.append((int(round(px0)), int(round(px1)),
                           int(round(py0)), int(round(py1))))
-    return _junta(todas, p['paso']), p
+    cajas = _junta(todas, p['paso'])
+    # 🔑 SE GUARDAN EN CUANTO SE TIENEN. Son lo único de la cadena que cuesta
+    # dinero y depende de que Google conteste; todo lo demás son píxeles y
+    # aritmética. Con el archivo, cualquier prueba posterior sobre esta misma
+    # captura se corre con `--columnas @<archivo>`, sin red y sin cuota.
+    guarda_columnas(cajas, ruta)
+    return cajas, p
+
+
+def _archivo_columnas(ruta):
+    base = os.path.splitext(os.path.basename(ruta))[0]
+    return os.path.join(RAIZ, 'out', 'analizador2', 'columnas_%s.txt' % base)
+
+
+def guarda_columnas(cajas, ruta):
+    destino = _archivo_columnas(ruta)
+    carpeta = os.path.dirname(destino)
+    if not os.path.isdir(carpeta):
+        os.makedirs(carpeta)
+    with open(destino, 'w') as f:
+        f.write(','.join('%d-%d:%d-%d' % c for c in cajas))
+    print('   columnas guardadas en %s' % destino)
+    return destino
+
+
+def lee_columnas(texto):
+    """`--columnas` acepta la lista, o `@ruta` de un archivo con la lista."""
+    if texto.startswith('@'):
+        with open(texto[1:]) as f:
+            texto = f.read().strip()
+    cajas = []
+    for t in texto.split(','):
+        if not t.strip():
+            continue
+        xs, _, ys = t.strip().partition(':')
+        x0, _, x1 = xs.partition('-')
+        y0, _, y1 = ys.partition('-')
+        cajas.append((int(x0), int(x1), int(y0), int(y1)))
+    return cajas
 
 
 def _junta(cajas, paso):
@@ -379,8 +418,10 @@ if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument('--imagen', required=True)
     ap.add_argument('--modelo', metavar='PROVEEDOR:MODELO')
-    ap.add_argument('--columnas', help='x0-x1:y0-y1,... ya obtenidas, para '
-                                       'probar la cadena sin llamar al modelo')
+    ap.add_argument('--columnas', help='x0-x1:y0-y1,... ya obtenidas, o '
+                                       '@ruta del archivo que deja la corrida '
+                                       'anterior. Corre la cadena entera SIN '
+                                       'red y SIN cuota.')
     ap.add_argument('--max-velas', type=int, default=80)
     ap.add_argument('--json', help='guarda el resultado completo ahí')
     ap.add_argument('--dibuja', help='PNG con las velas medidas dibujadas encima')
@@ -388,14 +429,7 @@ if __name__ == '__main__':
     prov = modelo = None
     if a.modelo:
         prov, _, modelo = a.modelo.partition(':')
-    cajas = None
-    if a.columnas:
-        cajas = []
-        for t in a.columnas.split(','):
-            xs, _, ys = t.strip().partition(':')
-            x0, _, x1 = xs.partition('-')
-            y0, _, y1 = ys.partition('-')
-            cajas.append((int(x0), int(x1), int(y0), int(y1)))
+    cajas = lee_columnas(a.columnas) if a.columnas else None
 
     r = analiza(a.imagen, prov, modelo, cajas, a.max_velas)
     p, velas, escala = r['panel'], r['velas'], r['escala']

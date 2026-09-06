@@ -48,12 +48,7 @@ def main():
     if not os.path.exists(IMAGEN):
         print('falta', IMAGEN)
         return False
-    cajas = []
-    for t in COLUMNAS.split(','):
-        xs, _, ys = t.partition(':')
-        x0, _, x1 = xs.partition('-')
-        y0, _, y1 = ys.partition('-')
-        cajas.append((int(x0), int(x1), int(y0), int(y1)))
+    cajas = A2.lee_columnas(COLUMNAS)
 
     hechos_, mal = [0], []
 
@@ -66,6 +61,17 @@ def main():
     r = A2.analiza(IMAGEN, cajas=cajas, verboso=False)
     velas = r['velas']
     xs = [v['x0'] for v in velas]
+
+    print('── las columnas se guardan y se releen igual ──')
+    # 🔑 Es lo ÚNICO de la cadena que cuesta dinero y depende de que Google
+    # conteste. Si el archivo que se guarda no se relee idéntico, una corrida
+    # saturada obliga a volver a pagarlas.
+    import tempfile
+    tmp = os.path.join(tempfile.gettempdir(), 'cols_prueba.txt')
+    with open(tmp, 'w') as f:
+        f.write(','.join('%d-%d:%d-%d' % c for c in cajas))
+    caso('@archivo devuelve las mismas columnas',
+         A2.lee_columnas('@' + tmp) == cajas)
 
     print('── la cadena entrega las velas ──')
     caso('mide las 46 velas', len(velas) == 46, len(velas))

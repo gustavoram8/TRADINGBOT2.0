@@ -166,8 +166,10 @@ def _pregunta(prov, modelo, clave, ruta, velas=25, tope=8000, todas=False,
             with open(guardado, 'w', encoding='utf-8') as f:
                 f.write(salida)
         return salida
-    raise SystemExit('8 intentos y sigue saturado. Prueba más tarde o con otro '
-                     'modelo (--modelo gemini:gemini-2.5-flash-lite).')
+    raise SystemExit(
+        '8 intentos y sigue saturado (es la capa gratuita de Google, no tu '
+        'clave).\nVuelve a lanzar el MISMO comando más tarde: las tiras que ya '
+        'contestaron\nestán guardadas en out/cache_ia/ y no se vuelven a pagar.')
 
 
 def _cajas(txt):
