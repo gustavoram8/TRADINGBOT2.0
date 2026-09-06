@@ -497,31 +497,60 @@ if __name__ == '__main__':
         # sigue pareciendo perfectamente razonable: los índices corren, los
         # precios salen, y nada avisa. La única forma de saber si la cadena vio
         # TODAS las velas es dibujarlas sobre el gráfico y mirarlo.
+        # 🔴 UN DIBUJO QUE NO SE ENTIENDE NO SIRVE PARA AUDITAR NADA. La
+        # primera versión pintaba CINCO colores y TRES de ellos eran
+        # rectángulos alrededor de la misma vela: verde el extenso, naranja el
+        # cuerpo y, encima, anillos magenta o azules en las velas con hecho. El
+        # dueño lo miró y dijo, con razón, que no se sabía «qué es cuerpo y qué
+        # es vela»: veía cuerpos en azul, mechas en naranja y cuadros verdes,
+        # todo mezclado. Y eso contamina el juicio — le puso un 80-85% a una
+        # medición que en parte no podía ni leer.
+        #
+        # 🔑 LAS TRES REGLAS DEL DIBUJO NUEVO:
+        #   1. El extenso y el cuerpo se distinguen por FORMA, no por color:
+        #      el extenso es un contorno fino, el cuerpo un bloque RELLENO
+        #      translúcido. Dos contornos concéntricos siempre se confunden;
+        #      relleno contra contorno, no.
+        #   2. Los hechos NO se dibujan encima de la vela. Van fuera, arriba o
+        #      abajo, como un triángulo. Un anillo alrededor de la vela compite
+        #      con las dos marcas que ya hay ahí.
+        #   3. La vela recuperada por rejilla no cambia de color: lleva un
+        #      punto debajo. El color ya significa otra cosa.
         from PIL import ImageDraw
-        im = Image.open(a.imagen).convert('RGB')
-        d = ImageDraw.Draw(im)
-        for k, v in enumerate(velas):
-            # 🔑 De otro color la que NO señaló el modelo, sino la rejilla. Las
-            # dos están medidas igual de bien, pero su respaldo no es el mismo y
-            # quien mire el dibujo tiene que poder auditarlas por separado.
+        base = Image.open(a.imagen).convert('RGBA')
+        capa = Image.new('RGBA', base.size, (0, 0, 0, 0))
+        d = ImageDraw.Draw(capa)
+        VERDE, NARANJA = (0, 235, 120, 255), (255, 150, 0, 90)
+        for v in velas:
             d.rectangle([v['x0'] - 1, v['max'], v['x1'] + 1, v['min']],
-                        outline=(0, 220, 220) if v.get('rejilla')
-                        else (0, 230, 80))
-            d.rectangle([v['x0'] - 1, v['cuerpo_alto'], v['x1'] + 1,
-                         v['cuerpo_bajo']], outline=(255, 150, 0))
-        for fam, col in (('bos', (255, 0, 255)), ('barrida', (0, 160, 255))):
+                        outline=VERDE)
+            d.rectangle([v['x0'], v['cuerpo_alto'], v['x1'],
+                         v['cuerpo_bajo']], fill=NARANJA)
+            if v.get('rejilla'):
+                cx = (v['x0'] + v['x1']) // 2
+                d.ellipse([cx - 3, v['min'] + 5, cx + 3, v['min'] + 11],
+                          fill=(0, 220, 220, 255))
+        for fam, col, arriba in (('bos', (255, 0, 255, 255), True),
+                                 ('barrida', (0, 170, 255, 255), False)):
             for h in r['hechos'][fam]:
                 v = velas[h['i']]
-                d.rectangle([v['x0'] - 4, v['max'] - 4, v['x1'] + 4,
-                             v['min'] + 4], outline=col)
-                d.rectangle([v['x0'] - 3, v['max'] - 3, v['x1'] + 3,
-                             v['min'] + 3], outline=col)
-        im.save(a.dibuja)
+                cx = (v['x0'] + v['x1']) // 2
+                if arriba:                       # punta hacia abajo, sobre la vela
+                    y = v['max'] - 16
+                    d.polygon([(cx - 7, y - 10), (cx + 7, y - 10), (cx, y)],
+                              fill=col)
+                else:                            # punta hacia arriba, bajo la vela
+                    y = v['min'] + 16
+                    d.polygon([(cx - 7, y + 10), (cx + 7, y + 10), (cx, y)],
+                              fill=col)
+        Image.alpha_composite(base, capa).convert('RGB').save(a.dibuja)
         print('\ndibujado en', a.dibuja)
-        print('   verde = vela que señaló el modelo · CIAN = recuperada por '
-              'la rejilla · naranja = su cuerpo')
-        print('   MAGENTA = BOS · AZUL = barrida')
-        print('   👉 mira si queda alguna vela SIN recuadro verde.')
+        print('   CONTORNO VERDE = la vela entera, de máximo a mínimo')
+        print('   RELLENO NARANJA = su cuerpo (lo de fuera son las mechas)')
+        print('   punto cian debajo = vela que recuperó la rejilla')
+        print('   triángulo MAGENTA arriba = BOS · AZUL abajo = barrida')
+        print('   👉 mira si queda alguna vela sin contorno verde, y si algún '
+              'relleno naranja se mete en una mecha.')
     if a.json:
         with open(a.json, 'w') as f:
             json.dump({'panel': p, 'escala': None if not escala else
