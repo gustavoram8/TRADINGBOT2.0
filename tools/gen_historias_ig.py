@@ -368,6 +368,12 @@ T = {
     #    la gente marca order blocks que no lo son.
     'e8': 'CONCEPT',
     't8': 'IT DIDN’T<br>MOVE.<br>IT <em>RAN.</em>',
+    # ⚠️ El mismo titular en CAJA BAJA para la maqueta de concepto. Las
+    #    mayúsculas colosales son del cartel; el post publicado va en caja baja
+    #    y es lo que se está imitando. No es el mismo texto con otro CSS: en
+    #    versales el punto y aparte se pierde, y aquí las dos frases cortas son
+    #    justamente el ritmo.
+    't8b': 'It didn’t move.<br>It <em>ran.</em>',
     's8': 'Displacement — the move that leaves a hole behind it.',
     'g8a': 'DISPLACEMENT', 'g8b': 'THE GAP IT LEFT',
     'sello8': 'HOW TO TELL',
@@ -734,7 +740,10 @@ def grafico_desplazamiento():
     hueco = (DESPL[I_DESPL - 1][2], DESPL[I_DESPL + 1][3])
     assert hueco[1] > hueco[0], 'no deja hueco: entonces no es desplazamiento'
 
-    AN, ALTO, PAD_D = 1000.0, 340.0, 150.0
+    # ⚠️ Más alto que el del cartel: aquí el gráfico NO acompaña a un titular,
+    #    es el protagonista, y a 340 px quedaba como una ilustración pequeña
+    #    flotando en mucho negro.
+    AN, ALTO, PAD_D = 1000.0, 430.0, 150.0
     todos = [v for d in DESPL for v in d]
     lo, hi = min(todos), max(todos)
     m = (hi - lo) * .10
@@ -799,21 +808,70 @@ def grafico_desplazamiento():
             % (int(AN), int(ALTO + 34), ''.join(p)))
 
 
+# ══ CONCEPTO — el idioma de las DESTACADAS, no el de los carteles ═══════════
+# 🔴 CORRECCIÓN DE RUMBO (a petición del dueño). Las historias de cartel
+# —banda a sangre arriba, mayúsculas colosales, losa del acento en medio y otra
+# banda abajo— son TRES MASAS DE COLOR APILADAS, y con varias publicadas se leen
+# todas iguales: "la fase eléctrica amarilla", palabras suyas.
+#
+# ⚠️ Y hay una nota vieja en la cabecera de este archivo que dice que ese estilo
+# de cartel se adoptó «copiando el lenguaje de las portadas de destacadas». Es
+# FALSO, y conviene dejarlo escrito para que nadie vuelva a apoyarse en ello:
+# las destacadas NO son carteles. Son **negro casi puro, UN solo elemento
+# enorme y centrado, y un halo suave detrás**. Cero bandas, cero tipografía,
+# cero adorno. El post de concepto publicado (Order Block) es de la misma
+# familia: casi negro, cejilla diminuta, titular en CAJA BAJA, el gráfico
+# respirando y un párrafo gris. El acento aparece en gotas, nunca en losas.
+#
+# 🔑 LA IDEA QUE HACE ESTA PIEZA Y NO OTRA: en las destacadas el halo está
+# detrás del glifo porque el glifo ES el tema. Aquí el halo va detrás de la
+# VELA DEL DESPLAZAMIENTO y del hueco que deja — o sea que **la luz señala el
+# concepto**, en vez de decorar el fondo. Y el orden se invierte respecto al
+# cartel: primero se ve el gráfico, después se lee. Una historia se juzga en
+# medio segundo, y en ese medio segundo un gráfico dice más que un titular.
+CONCEPTO_CSS = """
+.cz{flex:1;display:flex;flex-direction:column;justify-content:center;
+  padding-left:76px;padding-right:76px}
+.cz .cejilla{font-family:Mono,monospace;font-size:25px;font-weight:700;
+  letter-spacing:.24em;color:ACENTO}
+/* el halo: es la firma de las destacadas y aquí además SEÑALA.
+   ⚠️ Va en RADIO FIJO, no `closest-side`. En una caja mucho más ancha que alta
+   —que es lo que es un gráfico— `closest-side` estira el degradado a lo ancho
+   y sale una mancha alargada que parece suciedad del fondo en vez de un foco.
+   Un círculo de 430 px centrado en la vela concentra la luz donde está el
+   concepto, que es justo lo que hacen las portadas de destacadas. */
+.cz .escena{position:relative;margin:52px 0 0;padding:26px 0 10px;
+  background:radial-gradient(430px 430px at 56% 50%,
+    rgba(201,162,39,.40), rgba(201,162,39,.13) 46%, transparent 72%)}
+.cz .escena svg{display:block;width:100%}
+.cz h2{font-size:82px;font-weight:800;letter-spacing:-.035em;line-height:1.02;
+  margin-top:56px}
+.cz h2 em{font-style:normal;color:ACENTO}
+.cz .oro{margin-top:22px;font-size:39px;font-weight:700;line-height:1.22;
+  letter-spacing:-.015em;color:ACENTO}
+/* el filete es la ÚNICA pieza de acento sólido de toda la historia: separa el
+   qué es del cómo se distingue, que es la bisagra de la pieza */
+.cz .corte{height:5px;width:150px;background:ACENTO;margin:40px 0 26px}
+.cz .clave{font-size:41px;font-weight:800;line-height:1.16;letter-spacing:-.02em}
+.cz .gris{margin-top:20px;font-size:30px;line-height:1.38;color:#9aa2b4}
+.cz .dominio{margin-top:34px;font-family:Mono,monospace;font-size:24px;
+  letter-spacing:.06em;color:#6f778a}
+"""
+
+
 def historia_desplazamiento():
-    """Concepto: displacement. Va a la destacada de CONCEPTOS."""
-    cuerpo = ("<style>.bloque{margin-bottom:36px}.sub{margin-top:22px}</style>"
-              "<div class='banda'><span>%s</span>"
-              "<span class='b2'>TRADEABLE.ACADEMY</span></div>"
-              "<div class='aire cuerpo'><h1 class='tres'>%s</h1>"
-              "<div class='sub'>%s</div></div>"
-              "<div class='grafico'>%s</div>"
-              "<div class='aire'><div class='bloque'><div class='sello'>%s</div>%s"
-              "<div class='eco'>%s</div></div></div>"
-              "<div class='abajo'><div class='remate'><div class='t'>%s</div>"
-              "<div class='n'>%s</div></div></div>"
-              % (T['e8'], T['t8'], T['s8'], grafico_desplazamiento(),
-                 T['sello8'], T['r8'], T['r8b'], T['c8'], T['n8']))
-    return 'historia-7-desplazamiento', ORO, cuerpo, 0, False
+    """Concepto: displacement, en el idioma de las destacadas."""
+    cuerpo = ("<style>%s</style>"
+              "<div class='cz'><div class='cejilla'>%s</div>"
+              "<div class='escena'>%s</div>"
+              "<h2>%s</h2><div class='oro'>%s</div>"
+              "<div class='corte'></div>"
+              "<div class='clave'>%s</div><div class='gris'>%s</div>"
+              "<div class='dominio'>%s</div></div>"
+              % (CONCEPTO_CSS.replace('ACENTO', ORO), T['e8'],
+                 grafico_desplazamiento(), T['t8b'], T['s8'],
+                 T['r8'], T['r8b'], T['n8']))
+    return 'historia-7-desplazamiento', ORO, cuerpo, 0, True
 
 
 def riel():
