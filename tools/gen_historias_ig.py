@@ -429,9 +429,13 @@ T = {
     #    una que deja hueco sí"), y una comparación la hace una imagen, no un
     #    párrafo. Con los dos gráficos en pantalla, la corrección por fin tiene
     #    a qué señalar: "the second one" existe y se ve.
-    'corr8': ('You marked the second one. Same candle, same size — but the '
-              'two after it closed straight back through the level, so '
-              '<u>nothing was left behind</u> to come back to.'),
+    # ⚠️ "the second one" era AMBIGUO y el dueño se perdió ahí: ¿el segundo
+    #    gráfico o la segunda vela? Con dos gráficos y siete velas en cada uno,
+    #    un ordinal suelto no señala nada. "The one below" no admite dos
+    #    lecturas.
+    'corr8': ('You marked the one below. Same candle, same size — but the two '
+              'after it closed straight back through the level, so '
+              '<u>no gap was left</u> to come back to.'),
     'inv8': 'Bring the trade where you called it displacement.',
     'n8': 'tradeable.academy · no card needed',
 }
