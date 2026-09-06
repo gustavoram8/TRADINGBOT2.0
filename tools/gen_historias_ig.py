@@ -402,9 +402,17 @@ T = {
     #    INVÁLIDO. Sin esas dos palabras, el texto parece estar describiendo la
     #    misma imagen que se acaba de ver y se contradice con ella — y quien
     #    sabe leer un gráfico lo caza al instante, que es justo el público.
-    'corr8': ('You marked the order block off a big green candle. But on '
-              'yours, price traded straight back over it: '
-              '<u>that move drifted, it didn’t run</u>.'),
+    # 🔴 LA CORRECCIÓN SOLO PUEDE HABLAR DE LO QUE ESTÁ DIBUJADO. La primera
+    #    versión decía "marcaste el order block sobre una vela grande" y el
+    #    dueño la cazó al instante: en la lámina no hay ningún order block
+    #    marcado, así que el lector busca en la imagen algo que no existe. Y de
+    #    paso metía un segundo concepto en una pieza que es sobre otro.
+    #    Ahora señala las velas POSTERIORES, que sí se ven y que son justo
+    #    donde se decide si aquello fue una carrera o un paseo.
+    'corr8': ('You called it displacement because the candle was big. But on '
+              'yours the next two trade right back through the same prices: '
+              '<u>nothing was left unfilled</u>. That’s a wide candle, '
+              'not a run.'),
     'inv8': 'Bring the trade where you called it displacement.',
     'n8': 'tradeable.academy · no card needed',
 }
