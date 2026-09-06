@@ -11,9 +11,16 @@ Su trabajo aquí es retener a quien entra al perfil desde el reel publicitado y
 ganarse el follow — no explicar el producto (para eso están los 12 posts del
 feed y los carruseles que vienen después).
 
-Son DOS, pensadas para verse seguidas:
-  1. `entrada`  — el gancho. Un trade real que salió mal, dibujado.
-  2. `no-somos` — el anti-pitch. Es el que gana el follow.
+Son CINCO, pensadas para verse seguidas:
+  1. `entrada`      — el gancho. Un trade real que salió mal, dibujado.
+  2. `no-somos`     — el anti-pitch. Es el que gana el follow.
+  3. `reloj`        — el reloj del mercado; se apoya en una pieza gratis.
+  4. `porque-no`    — las tres razones por las que no se lo preguntaste a tu
+                      mentor. Es el POSICIONAMIENTO OFICIAL dicho de frente: la
+                      2 nombra las 3 a.m. de pasada, ésta las desarrolla.
+  5. `construccion` — tú escribes por qué entraste y el analizador discute ESO.
+                      Es lo que separa esto de "una IA que mira un gráfico", y
+                      no estaba en ninguna de las 12 piezas anteriores.
 
 EN INGLÉS, y escrito en inglés — no traducido. "Stopped out", "it ran without
 you", "no fine print" son cosas que un trader dice; sus equivalentes literales
@@ -266,6 +273,52 @@ T = {
     'c4': 'THE LIVE CLOCK',
     'c4b': 'kill zones · session countdown · economic calendar',
     'n4': 'tradeable.academy · free · no card needed',
+
+    # ── 4 · POR QUÉ NO SE LO PREGUNTASTE. Es el POSICIONAMIENTO OFICIAL dicho
+    #    de frente. La historia 2 ya nombra las 3 a.m., pero de pasada, dentro
+    #    del anti-pitch; aquí son las TRES situaciones concretas, que es lo que
+    #    hace que alguien se reconozca — y reconocerse es lo que para el scroll,
+    #    no un titular ingenioso. Salen textuales del dueño: no hay dinero para
+    #    un mentor · son las 3 a.m. y da pena escribirle · escribiste y no
+    #    contesta.
+    # 🔴 La tercera línea es la delicada: dice que el mentor NO contesta, y eso
+    #    puede leerse como pulla a los mentores, que son justo quienes podrían
+    #    recomendarnos. Por eso el bloque de abajo aclara, sin rodeos, que no
+    #    sustituimos a nadie: cubrimos las horas en las que no está.
+    'e5': 'THE 3 A.M. PROBLEM',
+    't5': 'WHY YOU<br>DIDN’T<br><em>ASK.</em>',
+    'l5': ['No money for a mentor.',
+           'It’s 3 a.m. and you feel bad writing to them.',
+           'You wrote. Nothing came back.'],
+    'sello5': 'NOT A MENTOR',
+    'r5': ('We don’t replace the person<br>who teaches you.<br>'
+           'We cover the hours they can’t.'),
+    'r5b': ('Upload the chart, say what you were going for, get the read. '
+            'Minutes, not days.'),
+    'c5': 'GET THE READ',
+    'n5': 'tradeable.academy · no card needed',
+
+    # ── 5 · LA CONSTRUCCIÓN DEL TRADE. Lo que de verdad separa esto de "una IA
+    #    que mira un gráfico", y no está en ninguna de las 12 piezas anteriores.
+    # 🔴 Las tres preguntas van sobre el RAZONAMIENTO, no sobre medir píxeles
+    #    ("¿el máximo está por encima del nivel?"). Es deliberado: lo que el
+    #    analizador de hoy hace bien es discutir tu criterio; comparar dos
+    #    alturas en una imagen es justamente donde falla, y prometerlo en una
+    #    historia sería vender algo que al abrirlo no está.
+    'e6': 'HOW IT ACTUALLY WORKS',
+    't6': 'IT DOESN’T<br>GUESS WHY<br>YOU <em>ENTERED.</em>',
+    's6': 'You tell it. That’s the whole difference.',
+    'k6a': 'WHAT YOU TYPE',
+    'q6': ('“HTF bearish. Waited for my shift on the 5m, marked the OTE, '
+           'shorted the 0.5 into stacked bearish FVGs.”'),
+    'k6b': 'WHAT COMES BACK',
+    'l6': ['Why that FVG and not the one above it?',
+           'Did the higher timeframe agree — or did you decide it did?',
+           'Was the entry your plan, or your nerves?'],
+    'v6': ('A rulebook can’t ask you that. It doesn’t know what you were '
+           'trying to do.'),
+    'c6': 'RUN YOUR LAST TRADE',
+    'n6': 'tradeable.academy · no card needed',
 }
 
 
@@ -303,6 +356,8 @@ h1 em{font-style:normal;color:ACENTO}
 .filete{height:9px;background:ACENTO;margin:30px 0 20px;width:210px}
 .sub{font-size:50px;font-weight:800;letter-spacing:-.025em;line-height:1.1;
   color:ACENTO}
+/* la coletilla de cierre: gris y pequeña, para que NO compita con el remate */
+.nota{margin-top:24px;font-size:30px;line-height:1.34;color:#9aa2b4}
 
 /* — el gráfico sangra de borde a borde: dentro de una caja se lee como una
      ilustración, a sangre se lee como el propio mercado — */
@@ -340,6 +395,33 @@ h1 em{font-style:normal;color:ACENTO}
    propio margen y hacía crecer la pieza más de lo que cabe */
 .bloque .eco{margin-top:20px;padding-top:18px;border-top:3px solid rgba(7,8,11,.30);
   font-size:27px;font-weight:700;line-height:1.34;letter-spacing:0}
+
+/* — las tres razones: el NÚMERO manda, no una viñeta. Un dígito enorme en
+     monoespaciada se lee como "caso 1, caso 2, caso 3" y empuja a leer los
+     tres; un punto delante se lee como lista de características. — */
+.razones{display:flex;flex-direction:column;gap:0;margin-top:40px}
+.razones .r{display:flex;align-items:baseline;gap:30px;
+  padding:26px 0;border-top:3px solid rgba(244,246,250,.13)}
+.razones .r:last-child{border-bottom:3px solid rgba(244,246,250,.13)}
+.razones .num{font-family:Mono,monospace;font-size:44px;font-weight:700;
+  color:ACENTO;flex:none;width:64px}
+.razones .tx{font-size:47px;font-weight:700;line-height:1.14;
+  letter-spacing:-.02em}
+
+/* — el bloque "lo que tecleas": tiene que parecer TECLEADO, no maquetado.
+     Monoespaciada, filete grueso a la izquierda y fondo apenas levantado del
+     grafito. Si se compone con la misma Inter del resto, se lee como una cita
+     de la marca y se pierde que las palabras son del trader. — */
+.rotulo{font-family:Mono,monospace;font-size:24px;font-weight:700;
+  letter-spacing:.20em;color:ACENTO;margin-top:34px;margin-bottom:14px}
+.tecleado{background:#161a22;border-left:10px solid ACENTO;
+  padding:26px 30px;font-family:Mono,monospace;font-size:31px;line-height:1.42;
+  color:#c9d1e0}
+/* — y la respuesta: PREGUNTAS, no veredictos. Cada una con su filete, para
+     que se lean como tres cosas distintas y no como un párrafo. — */
+.pregs{display:flex;flex-direction:column;gap:16px;margin-top:6px}
+.pregs div{border-left:10px solid rgba(244,246,250,.20);padding:14px 0 14px 24px;
+  font-size:40px;font-weight:700;line-height:1.16;letter-spacing:-.015em}
 
 .cuerpo{flex:1;display:flex;flex-direction:column;justify-content:center}
 .abajo{margin-top:auto}
@@ -406,6 +488,60 @@ def historia_no_somos():
               % (T['e2'], T['t2'], lista, T['sello2'], T['r2'], T['r2b'],
                  T['c2'], T['n2']))
     return 'historia-2-no-somos', ORO, cuerpo, 0, True
+
+
+def historia_porque_no():
+    """Las tres razones por las que no se lo preguntaste a tu mentor.
+
+    🔑 NO se resuelve en el titular. El titular deja la pregunta abierta
+    («WHY YOU DIDN'T ASK») y las tres razones la contestan una a una: el que
+    se reconoce en la segunda o en la tercera ya no está haciendo scroll.
+    Poner la solución arriba mataría eso — se leería como anuncio."""
+    filas = ''.join(
+        "<div class='r'><div class='num'>%02d</div><div class='tx'>%s</div></div>"
+        % (i + 1, t) for i, t in enumerate(T['l5']))
+    # ⚠️ Sin este aire, el bloque del acento y la banda del CTA —los dos del
+    #    mismo azul y los dos a sangre— se tocan y se leen como UNA mancha de
+    #    400 px. Deja de haber dos ideas y pasa a haber un cartel.
+    ajuste = "<style>.bloque{margin-bottom:36px}</style>"
+    cuerpo = (ajuste + "<div class='banda'><span>%s</span>"
+              "<span class='b2'>TRADEABLE.ACADEMY</span></div>"
+              "<div class='aire cuerpo'><h1 class='tres'>%s</h1>"
+              "<div class='razones'>%s</div>"
+              "<div class='bloque'><div class='sello'>%s</div>%s"
+              "<div class='eco'>%s</div></div></div>"
+              "<div class='abajo'><div class='remate'><div class='t'>%s</div>"
+              "<div class='n'>%s</div></div></div>"
+              % (T['e5'], T['t5'], filas, T['sello5'], T['r5'], T['r5b'],
+                 T['c5'], T['n5']))
+    return 'historia-4-porque-no', AZUL, cuerpo, 0, False
+
+
+def historia_construccion():
+    """Tú escribes por qué entraste; el analizador discute ESO.
+
+    🔑 La pieza es un CONTRASTE de dos bloques —lo que tecleas y lo que
+    vuelve— y por eso los dos van con tipografías distintas: monoespaciada las
+    palabras del trader, Inter las preguntas de vuelta. Con la misma
+    tipografía en los dos, la historia se lee como un solo texto de la marca y
+    se pierde de quién es cada mitad, que es justamente el argumento."""
+    pregs = ''.join('<div>%s</div>' % q for q in T['l6'])
+    # ⚠️ El subtítulo va pegado al titular por defecto y a este cuerpo se leía
+    #    como su cuarta línea; con el titular a tres líneas hace falta separarlo
+    #    de verdad para que se entienda que es otra voz.
+    ajuste = "<style>.sub{margin-top:26px}</style>"
+    cuerpo = (ajuste + "<div class='banda'><span>%s</span>"
+              "<span class='b2'>TRADEABLE.ACADEMY</span></div>"
+              "<div class='aire cuerpo'><h1 class='tres'>%s</h1>"
+              "<div class='sub'>%s</div>"
+              "<div class='rotulo'>%s</div><div class='tecleado'>%s</div>"
+              "<div class='rotulo'>%s</div><div class='pregs'>%s</div>"
+              "<div class='nota'>%s</div></div>"
+              "<div class='abajo'><div class='remate'><div class='t'>%s</div>"
+              "<div class='n'>%s</div></div></div>"
+              % (T['e6'], T['t6'], T['s6'], T['k6a'], T['q6'], T['k6b'],
+                 pregs, T['v6'], T['c6'], T['n6']))
+    return 'historia-5-construccion', ORO, cuerpo, 0, False
 
 
 def riel():
@@ -542,7 +678,8 @@ def main():
                 % (fuentes, css, g, cuerpo, marca))
 
     plan = []
-    for hacer in (historia_entrada, historia_no_somos, historia_reloj):
+    for hacer in (historia_entrada, historia_no_somos, historia_reloj,
+                  historia_porque_no, historia_construccion):
         nombre, acento, cuerpo, hueco, pie = hacer()
         io.open(os.path.join(SALIDA, nombre + '.html'), 'w',
                 encoding='utf-8').write(pagina(acento, cuerpo, hueco, pie, False))
