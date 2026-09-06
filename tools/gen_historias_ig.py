@@ -409,10 +409,18 @@ T = {
     #    paso metía un segundo concepto en una pieza que es sobre otro.
     #    Ahora señala las velas POSTERIORES, que sí se ven y que son justo
     #    donde se decide si aquello fue una carrera o un paseo.
-    'corr8': ('You called it displacement because the candle was big. But on '
-              'yours the next two trade right back through the same prices: '
-              '<u>nothing was left unfilled</u>. That’s a wide candle, '
-              'not a run.'),
+    # ⚠️ Y LA SEGUNDA VERSIÓN TAMBIÉN ESTABA MAL, también cazada por él:
+    #    mezclaba tiempos ("you called" en pasado con "the next two trade" en
+    #    presente) y "the next two" se quedaba sin sustantivo. El defecto de
+    #    fondo era otro: la tarjeta describía el gráfico del LECTOR mientras
+    #    encima está dibujado el contrario, y lo resolvía con un "on yours"
+    #    metido a presión. La solución no es esquivar el dibujo: es USARLO.
+    #    Ahora dice "Above" y señala la lámina como el caso bueno, así que el
+    #    contraste se ve en vez de tener que imaginarse.
+    'corr8': ('The candle you marked was big, but price came straight back '
+              'through it — <u>nothing stayed unfilled</u>. Above, two candles '
+              'later, the gap is still open. That one ran; yours was just '
+              'wide.'),
     'inv8': 'Bring the trade where you called it displacement.',
     'n8': 'tradeable.academy · no card needed',
 }
