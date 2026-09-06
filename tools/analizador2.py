@@ -3,7 +3,7 @@
 
     # completo, en el VPS (necesita la clave):
     python3 tools/analizador2.py --imagen docs/capturas_prueba/mnq_5m_zoom.png \\
-        --modelo gemini:gemini-flash-latest
+        --modelo gemini:gemini-2.5-flash
     # sin red ni cuota, reusando las columnas que dejó la corrida anterior:
     python3 tools/analizador2.py --imagen ... \\
         --columnas @out/analizador2/columnas_mes_ote_perdedor.txt
@@ -86,6 +86,14 @@ NOMBRE = {'bos': 'BOS', 'barrida': 'barrida de liquidez',
 K_SWING = 3
 # Una vela no puede medir más de esto por la mediana de su propio gráfico.
 TOPE_ALTO = 3.0
+# 🔴 NUNCA UN ALIAS `-latest` PARA TRABAJO MEDIBLE. Google apuntó
+# `gemini-flash-latest` a un modelo nuevo con 20 peticiones gratis al día y la
+# misma orden que llevaba semanas funcionando empezó a fallar sin que aquí
+# cambiara nada. Peor que el corte: un alias cambia el modelo EN SILENCIO, así
+# que dos corridas del mismo comando pueden medir cosas distintas y uno se lo
+# atribuye al código. Se fija un nombre concreto, y cambiarlo es una decisión
+# que se ve. `cajas_ia --modelos gemini` lista los que acepta la clave.
+MODELO_POR_DEFECTO = 'gemini:gemini-2.5-flash'
 
 
 def _columnas_del_modelo(ruta, prov, modelo, max_velas, callback=None):
@@ -417,7 +425,8 @@ def analiza(ruta, prov=None, modelo=None, cajas=None, max_velas=80,
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument('--imagen', required=True)
-    ap.add_argument('--modelo', metavar='PROVEEDOR:MODELO')
+    ap.add_argument('--modelo', metavar='PROVEEDOR:MODELO',
+                    default=MODELO_POR_DEFECTO)
     ap.add_argument('--columnas', help='x0-x1:y0-y1,... ya obtenidas, o '
                                        '@ruta del archivo que deja la corrida '
                                        'anterior. Corre la cadena entera SIN '
@@ -431,6 +440,11 @@ if __name__ == '__main__':
         prov, _, modelo = a.modelo.partition(':')
     cajas = lee_columnas(a.columnas) if a.columnas else None
 
+    if not a.columnas:
+        # 🔑 Queda ESCRITO en la salida qué modelo la produjo. Ahora que el
+        # modelo se puede cambiar, una medición sin esa línea no se puede
+        # comparar con otra.
+        print('modelo: %s' % a.modelo)
     r = analiza(a.imagen, prov, modelo, cajas, a.max_velas)
     p, velas, escala = r['panel'], r['velas'], r['escala']
     print('\npanel x %d-%d · paso %.2f px · %d velas medidas'
