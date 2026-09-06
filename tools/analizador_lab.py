@@ -157,7 +157,7 @@ def mensaje_usuario(datos, notas, hechos=None):
             '%(idioma)s.' % datos)
 
 
-def bloque_de_hechos(imagen, columnas):
+def bloque_de_hechos(imagen, columnas, prov=None, modelo=None):
     """El bloque de hechos de `analizador2`, en texto plano y SIN PÍXELES.
 
     🔴 LAS COORDENADAS EN PÍXELES HAY QUE QUITARLAS, y por poco se cuelan. El
@@ -170,7 +170,12 @@ def bloque_de_hechos(imagen, columnas):
     sí es localizable mirando el gráfico y no depende de la resolución."""
     import analizador2 as A2
     cajas = A2.lee_columnas(columnas)
-    r = A2.analiza(imagen, cajas=cajas, verboso=False)
+    # 🔴 CON EL MODELO, PARA QUE HAYA PRECIOS. Sin él no hay escala del eje y el
+    #    bloque sale diciendo "la vela 44 hizo un BOS" — un número que el modelo
+    #    NO puede situar, porque está mirando una imagen y no puede contar 44
+    #    velas. Con precio sí: "BOS bajista atravesando 7.720,67" es localizable.
+    #    La lectura del eje está cacheada, así que no cuesta cuota.
+    r = A2.analiza(imagen, prov=prov, modelo=modelo, cajas=cajas, verboso=False)
     firmes, marcados = A2.bloque(r['velas'], r['hechos'], r['escala'])
     total = len(r['velas'])
 
@@ -211,6 +216,9 @@ def main():
                     default='MSS, OTE 0.5 retracement, stacked bearish FVGs '
                             '(1H, 15m, 5m), HTF bearish bias')
     ap.add_argument('--idioma', default='Spanish')
+    ap.add_argument('--modelo', metavar='PROVEEDOR:MODELO',
+                    help='para leer el eje y que el bloque lleve PRECIOS')
+    ap.add_argument('--solo', help='corre solo estas variantes, p.ej. C')
     ap.add_argument('--salida', default=os.path.join(RAIZ, 'out',
                                                      'comparativa.md'))
     a = ap.parse_args()
@@ -224,7 +232,13 @@ def main():
 
     hechos_txt = None
     if a.columnas:
-        hechos_txt, _r = bloque_de_hechos(a.imagen, a.columnas)
+        prov = modelo = None
+        if a.modelo:
+            prov, _, modelo = a.modelo.partition(':')
+        hechos_txt, _r = bloque_de_hechos(a.imagen, a.columnas, prov, modelo)
+        if 'en 7' not in hechos_txt and '.' not in hechos_txt.split('\n')[1]:
+            print('⚠️  El bloque sale SIN PRECIOS. Pásale --modelo o la prueba '
+                  'no vale: un número de vela el modelo no lo puede situar.')
 
     crudo = open(a.imagen, 'rb').read()
     tipo = 'image/png' if a.imagen.lower().endswith('.png') else 'image/jpeg'
@@ -267,6 +281,9 @@ def main():
     if hechos_txt:
         variantes.append(('C', 'con el BLOQUE DE HECHOS medido', False,
                           hechos_txt))
+    if a.solo:
+        quiero = set(a.solo.upper().replace(',', ' ').split())
+        variantes = [v for v in variantes if v[0] in quiero]
 
     salida = ['# Comparativa del analizador — %s\n' % os.path.basename(a.imagen)]
     if hechos_txt:

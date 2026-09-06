@@ -491,12 +491,23 @@ def bloque(velas, hs, escala, minimo=MIN_PRECISION):
         return ('%s · %s %s%s' % (n, etiqueta, h['tipo'],
                 '' if a is None else ' entre %s y %s' % (_fmt(b), _fmt(a))))
 
+    # 🔴 EN ORDEN CRONOLÓGICO, NO AGRUPADOS POR FAMILIA. Cazado en la primera
+    # comparación real contra el analizador del sitio: con los hechos agrupados
+    # —todos los BOS juntos, después todas las barridas— el modelo perdió la
+    # secuencia y escribió «hubo un BOS bajista en la vela 44… el precio LUEGO
+    # mostró un BOS alcista en la vela 25». La vela 25 va ANTES que la 44.
+    # Un bloque que destruye el orden temporal es peor que no dar bloque,
+    # porque el modelo se fía de él: le entregamos un informe con los párrafos
+    # barajados y razonó sobre ese desorden.
     firmes, marcados = [], []
     for fam in ('bos', 'barrida', 'fvg', 'ob'):
         destino = firmes if PRECISION[fam] >= minimo else marcados
         for h in hs[fam]:
-            destino.append((fam, linea(fam, h)))
-    return firmes, marcados
+            destino.append((h['i'], fam, linea(fam, h)))
+    firmes.sort(key=lambda t: t[0])
+    marcados.sort(key=lambda t: t[0])
+    return ([(f, t) for _i, f, t in firmes],
+            [(f, t) for _i, f, t in marcados])
 
 
 def _fmt(p):
