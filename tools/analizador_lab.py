@@ -231,15 +231,36 @@ def main():
     crudo, tipo = sitio['normalize_chart_image'](crudo, tipo)
     b64 = base64.b64encode(crudo).decode('ascii')
 
+    # 🔴 UNA SESIÓN SSH NO HEREDA LAS VARIABLES DE SUPERVISOR, y en producción
+    #    la clave de OpenAI vive justo ahí, no en el entorno ni en el `.env`.
+    #    Mirar solo `os.environ` hacía caer al respaldo de GitHub Models —cuyo
+    #    host ni siquiera resuelve DNS en el VPS— y la corrida moría con un
+    #    'Name or service not known' que parece un problema de red y no lo es.
+    #    ⚠️ Está DOCUMENTADO en `agudeza_visual._clave`, con la advertencia de
+    #    que este mismo error casi hace cambiar de modelo por nada. Se reutiliza
+    #    ese buscador en vez de repetir la trampa: entorno → scalpel/.env →
+    #    línea `environment=` del conf de supervisor.
+    import importlib.util
+    _sp = importlib.util.spec_from_file_location(
+        'ag', os.path.join(RAIZ, 'tools', 'agudeza_visual.py'))
+    _ag = importlib.util.module_from_spec(_sp)
+    _sp.loader.exec_module(_ag)
     from openai import OpenAI
-    clave = os.environ.get('OPENAI_API_KEY', '').strip()
+    try:
+        clave = _ag._clave('openai')
+    except SystemExit:
+        clave = ''
     if clave:
         cliente, backend = OpenAI(api_key=clave), 'openai'
     else:
         cliente = OpenAI(base_url='https://models.inference.ai.azure.com',
-                         api_key=os.environ.get('GITHUB_TOKEN', 'placeholder'))
+                         api_key=_ag._clave('github'))
         backend = 'github'
+    # nunca la clave: solo qué backend salió
     print('[IA] backend=%s modelo=%s' % (backend, sitio['MODEL']))
+    if backend != 'openai':
+        print('⚠️  Sin OPENAI_API_KEY se usa GitHub Models, que en este VPS no '
+              'resuelve. Si esto falla, no es la prueba: es la clave.')
 
     variantes = [('A', 'como corre hoy', False, None),
                  ('B', 'con la cláusula de verificación ENCENDIDA', True, None)]
