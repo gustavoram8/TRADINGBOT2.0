@@ -329,7 +329,27 @@ def afina(a, x0, x1, y0, y1, margen=5, deslizar=False, guia=None,
     borde = max(1, int(round(0.30 * n)))
     izq = prop[alto:bajo + 1, :borde].any(1)
     der = prop[alto:bajo + 1, -borde:].any(1)
-    anchos = prop[alto:bajo + 1].sum(1)
+    # 🔴 NO SE CUENTAN LOS PÍXELES DE LA FILA: SE MIDE DE DÓNDE A DÓNDE LLEGAN.
+    # Es el arreglo de fondo del defecto que el dueño no dejaba pasar —"si el
+    # analizador no sabe qué es mecha y qué es cuerpo, no puede decirte si se
+    # rompió un nivel o solo se tomó liquidez"— y tenía toda la razón.
+    #
+    # Con velas HUECAS (el tema claro de TradingView, el suyo) el cuerpo solo
+    # pinta sus dos bordes verticales. Contando píxeles, una fila de cuerpo da
+    # 2 y una mecha da 2: son INDISTINGUIBLES, y ningún umbral sobre esa cuenta
+    # puede separarlas. Medido en sus propias velas:
+    #     cuenta     2 2 4 4 4 4 4 … 2 2 2 2
+    #     EXTENSIÓN  2 2 6 6 6 6 6 … 2 2 2 2
+    # La extensión sí: la mecha es una raya centrada (1-2 px de extremo a
+    # extremo) y el cuerpo llega al borde izquierdo Y al derecho (el ancho
+    # entero), aunque solo tenga 2 píxeles pintados. Sirve igual con el cuerpo
+    # relleno, hueco o medio borrado por una línea de nivel encima.
+    prop_c = prop[alto:bajo + 1]
+    anchos = np.zeros(prop_c.shape[0], dtype=int)
+    for i in range(prop_c.shape[0]):
+        idx = np.nonzero(prop_c[i])[0]
+        if len(idx):
+            anchos[i] = idx[-1] - idx[0] + 1
 
     # 🔴 LOS DOS COSTADOS NO BASTAN, Y SE VIO SOBRE LA CAPTURA REAL. Si la
     # columna es más ancha que la vela y la vela queda descentrada dentro, uno
