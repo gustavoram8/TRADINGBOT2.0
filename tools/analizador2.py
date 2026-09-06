@@ -325,12 +325,36 @@ def hechos(ohlc):
     for b in _uno_por_vela(barridas):
         out['barrida'].append({'i': b['i'], 'tipo': b['tipo'],
                                'nivel': b['nivel'], 'swing': b['swing']})
-    for f in g:
-        out['fvg'].append({'i': f['i'], 'tipo': f['tipo'],
-                           'suelo': f['suelo'], 'techo': f['techo']})
-    for o in HG.order_blocks(ohlc, g):
-        out['ob'].append({'i': o['i'], 'tipo': o['tipo'],
-                          'suelo': o['suelo'], 'techo': o['techo']})
+    def _sin_repetir(lista):
+        """El mismo hecho, una sola vez.
+
+        🔴 Cazado en la primera corrida completa sobre la captura del dueño:
+        `vela 2 · order block alcista entre 7.716,80 y 7.717,57` salía DOS
+        VECES, palabra por palabra, y con ella otras dos. La causa es de
+        construcción: un order block se deriva de un FVG, y una misma vela
+        puede ser el origen de dos FVG solapados —así que se emite una vez por
+        cada uno. No son dos hechos: es uno contado dos veces.
+
+        ⚠️ Importa más de lo que parece. Este bloque está pensado para que lo
+        lea una IA además de una persona, y un hecho repetido se lee como
+        confirmación: dos menciones del mismo order block sugieren que hay dos
+        zonas ahí. Se repiten los CUATRO campos, así que dos zonas de verdad
+        distintas (mismo índice, distinto rango) siguen saliendo las dos."""
+        vistos, out = set(), []
+        for h in lista:
+            k = (h['i'], h['tipo'], h['suelo'], h['techo'])
+            if k in vistos:
+                continue
+            vistos.add(k)
+            out.append(h)
+        return out
+
+    out['fvg'] = _sin_repetir(
+        [{'i': f['i'], 'tipo': f['tipo'], 'suelo': f['suelo'],
+          'techo': f['techo']} for f in g])
+    out['ob'] = _sin_repetir(
+        [{'i': o['i'], 'tipo': o['tipo'], 'suelo': o['suelo'],
+          'techo': o['techo']} for o in HG.order_blocks(ohlc, g)])
     return out
 
 

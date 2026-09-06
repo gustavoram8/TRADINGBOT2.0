@@ -90,6 +90,15 @@ def main():
     if en886:
         caso('y es BAJISTA', en886[0]['tipo'] == 'bajista', en886[0]['tipo'])
 
+    print('── ningún hecho se cuenta dos veces ──')
+    # 🔴 Cazado en la corrida real: el mismo order block salía dos veces
+    # palabra por palabra, porque se deriva de un FVG y una vela puede originar
+    # dos FVG solapados. Un hecho repetido se lee como confirmación.
+    for fam in ('fvg', 'ob', 'bos', 'barrida'):
+        cl = [tuple(sorted(h.items())) for h in r['hechos'][fam]]
+        caso('%s sin repetidos' % fam, len(cl) == len(set(cl)),
+             '%d de %d' % (len(set(cl)), len(cl)))
+
     print('── el bloque no afirma lo que no puede ──')
     firmes, marcados = A2.bloque(velas, r['hechos'], None)
     caso('solo BOS y barridas entre los hechos afirmados',
