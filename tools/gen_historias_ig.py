@@ -376,6 +376,9 @@ T = {
     't8b': 'It didn’t move.<br>It <em>ran.</em>',
     's8': 'Displacement — the move that leaves a hole behind it.',
     'g8a': 'DISPLACEMENT', 'g8b': 'THE GAP IT LEFT',
+    'g8c': 'NO GAP LEFT',
+    'p8a': 'IT RAN', 'p8b': 'IT WAS JUST WIDE',
+    'q8a': 'the gap is still open', 'q8b': 'price came back through it',
     'sello8': 'HOW TO TELL',
     'r8': 'A big candle isn’t displacement.<br>A big candle that leaves a gap is.',
     'r8b': ('If the next candles trade back over the same prices, nothing was '
@@ -417,10 +420,18 @@ T = {
     #    metido a presión. La solución no es esquivar el dibujo: es USARLO.
     #    Ahora dice "Above" y señala la lámina como el caso bueno, así que el
     #    contraste se ve en vez de tener que imaginarse.
-    'corr8': ('The candle you marked was big, but price came straight back '
-              'through it — <u>nothing stayed unfilled</u>. Above, two candles '
-              'later, the gap is still open. That one ran; yours was just '
-              'wide.'),
+    # 🔴 TERCERA VERSIÓN, y las dos anteriores fallaban por lo mismo: la
+    #    tarjeta describía un gráfico que NO ESTABA. El dueño lo dijo sin
+    #    rodeos — «"nada quedó unfilled" es falso, el FVG ni se ha tocado» —
+    #    y tenía razón respecto a lo único que tenía delante.
+    # 🔑 El arreglo no era otra redacción: era DIBUJAR LOS DOS CASOS. El
+    #    concepto es una comparación ("una vela grande no es desplazamiento;
+    #    una que deja hueco sí"), y una comparación la hace una imagen, no un
+    #    párrafo. Con los dos gráficos en pantalla, la corrección por fin tiene
+    #    a qué señalar: "the second one" existe y se ve.
+    'corr8': ('You marked the second one. Same candle, same size — but the '
+              'two after it closed straight back through the level, so '
+              '<u>nothing was left behind</u> to come back to.'),
     'inv8': 'Bring the trade where you called it displacement.',
     'n8': 'tradeable.academy · no card needed',
 }
@@ -762,33 +773,51 @@ DESPL = [(100.10, 100.25, 100.35, 100.00), (100.25, 100.05, 100.30,  99.95),
 I_DESPL = 4
 
 
-def grafico_desplazamiento():
-    """El desplazamiento y su hueco, en SVG, con la figura comprobada.
+# La MISMA vela grande, y lo único que cambia es lo que hace el precio
+# después. Es el par que enseña el concepto: sin el contraejemplo, "deja un
+# hueco" es una frase; con él, es una comprobación que el lector puede hacer.
+DESPL_NO = DESPL[:5] + [(101.30, 100.60, 101.40, 100.10),
+                        (100.60, 100.90, 101.05, 100.45)]
 
-    🔴 El assert del HUECO es el que sostiene la pieza: si el máximo de la vela
-    anterior no quedara por debajo del mínimo de la posterior, el dibujo sería
-    una vela grande cualquiera mientras el texto dice que un desplazamiento
-    deja un hueco — o sea, enseñando justo el error que la historia corrige."""
-    for i, (o, c, h, l) in enumerate(DESPL):
+
+def _comprueba_vela_grande(serie):
+    for i, (o, c, h, l) in enumerate(serie):
         assert h >= max(o, c) and l <= min(o, c), 'vela %d mal formada' % i
-    o, c, h, l = DESPL[I_DESPL]
+    o, c, h, l = serie[I_DESPL]
     cuerpo = abs(c - o)
-    otros = sorted(abs(v[1] - v[0]) for i, v in enumerate(DESPL) if i != I_DESPL)
+    otros = sorted(abs(v[1] - v[0]) for i, v in enumerate(serie) if i != I_DESPL)
     assert cuerpo > 4 * otros[len(otros) // 2], 'la vela no destaca lo suficiente'
     assert (h - max(o, c)) + (min(o, c) - l) < .25 * cuerpo, \
         'con esas mechas eso es rechazo, no desplazamiento'
-    hueco = (DESPL[I_DESPL - 1][2], DESPL[I_DESPL + 1][3])
-    assert hueco[1] > hueco[0], 'no deja hueco: entonces no es desplazamiento'
+    return (serie[I_DESPL - 1][2], serie[I_DESPL + 1][3])
 
-    # ⚠️ Más alto que el del cartel: aquí el gráfico NO acompaña a un titular,
-    #    es el protagonista, y a 340 px quedaba como una ilustración pequeña
-    #    flotando en mucho negro.
-    AN, ALTO, PAD_D = 1000.0, 430.0, 150.0
-    todos = [v for d in DESPL for v in d]
+
+def grafico_desplazamiento(serie=None, con_hueco=True):
+    """Una vela grande y lo que pasa después. Con hueco o sin él.
+
+    🔴 LOS DOS ASSERTS SON ESPEJO Y SON EL ARGUMENTO DE LA PIEZA. En el caso
+    bueno se exige que el máximo de la vela anterior quede POR DEBAJO del
+    mínimo de la posterior (hay hueco); en el contraejemplo se exige lo
+    contrario (no lo hay). Si alguno fallara, el dibujo estaría enseñando justo
+    lo opuesto de lo que dice su rótulo — que es el error que la historia
+    existe para corregir."""
+    serie = DESPL if serie is None else serie
+    hueco = _comprueba_vela_grande(serie)
+    if con_hueco:
+        assert hueco[1] > hueco[0], 'no deja hueco: entonces no es desplazamiento'
+    else:
+        assert hueco[1] <= hueco[0], 'este deja hueco: no sirve de contraejemplo'
+
+    AN, ALTO, PAD_D = 1000.0, 300.0, 150.0
+    # ⚠️ La escala se calcula con las DOS series, no con la propia. Si cada
+    #    gráfico se autoescala, la misma vela grande sale de alturas distintas
+    #    en cada uno y el lector cree que la diferencia está en la vela —
+    #    cuando lo único que cambia es lo que viene después.
+    todos = [v for d in (DESPL + DESPL_NO) for v in d]
     lo, hi = min(todos), max(todos)
     m = (hi - lo) * .10
     lo, hi = lo - m, hi + m
-    paso = (AN - PAD_D) / len(DESPL)
+    paso = (AN - PAD_D) / len(serie)
     cw = paso * .46
 
     def Y(v):
@@ -798,27 +827,34 @@ def grafico_desplazamiento():
         return paso * (i + .5)
 
     p = []
-    for k in range(1, 5):
-        y = ALTO * k / 5.0
+    for k in range(1, 4):
+        y = ALTO * k / 4.0
         p.append('<line x1="0" y1="%.1f" x2="%.1f" y2="%.1f" stroke="#ffffff" '
-                 'stroke-opacity=".055" stroke-width="1"/>' % (y, AN, y))
+                 'stroke-opacity=".05" stroke-width="1"/>' % (y, AN, y))
 
-    # 🔴 LA BANDA EMPIEZA DESPUÉS DE LA VELA GRANDE, no antes. Pintada desde
-    #    la vela anterior, cruza por encima del propio desplazamiento y se lee
-    #    como si el hueco lo incluyera — cuando el hueco es justo lo que queda
-    #    SIN NEGOCIAR a su derecha. Las dos líneas sí vienen de más atrás,
-    #    porque los niveles salen de las velas vecinas y hay que ver de dónde.
     xh0, xh1 = X(I_DESPL) + cw * .95, AN - 34
     xl0 = X(I_DESPL - 1) - cw
-    p.append('<rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" fill="%s" '
-             'fill-opacity=".18"/>'
-             % (xh0, Y(hueco[1]), xh1 - xh0, Y(hueco[0]) - Y(hueco[1]), ORO))
-    for v in hueco:
+    ref = serie[I_DESPL - 1][2]          # el máximo de la vela anterior
+    if con_hueco:
+        # 🔴 LA BANDA EMPIEZA DESPUÉS DE LA VELA GRANDE. Pintada desde antes,
+        #    cruza por encima del propio desplazamiento y se lee como si el
+        #    hueco lo incluyera — cuando el hueco es lo que queda SIN NEGOCIAR
+        #    a su derecha.
+        p.append('<rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" fill="%s" '
+                 'fill-opacity=".20"/>'
+                 % (xh0, Y(hueco[1]), xh1 - xh0, Y(hueco[0]) - Y(hueco[1]), ORO))
+        for v in hueco:
+            p.append('<line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" stroke="%s" '
+                     'stroke-width="2" stroke-dasharray="8 6" '
+                     'stroke-opacity=".85"/>' % (xl0, Y(v), xh1, Y(v), ORO))
+    else:
+        # el contraejemplo NO lleva banda: no hay nada que pintar. Lo que se
+        # marca es el nivel que debería haber quedado libre y el precio pisa.
         p.append('<line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" stroke="%s" '
-                 'stroke-width="2" stroke-dasharray="8 6" stroke-opacity=".85"/>'
-                 % (xl0, Y(v), xh1, Y(v), ORO))
+                 'stroke-width="2" stroke-dasharray="8 6" stroke-opacity=".8"/>'
+                 % (xl0, Y(ref), xh1, Y(ref), '#7c8496'))
 
-    for i, (o, c, h, l) in enumerate(DESPL):
+    for i, (o, c, h, l) in enumerate(serie):
         col = VERDE if c >= o else ROJO
         x = X(i)
         p.append('<line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" stroke="%s" '
@@ -827,25 +863,14 @@ def grafico_desplazamiento():
         p.append('<rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" fill="%s"/>'
                  % (x - cw / 2, y0, cw, max(3.0, y1 - y0), col))
 
-    # ⚠️ El rótulo del hueco va DENTRO de la banda y alineado a la derecha: a
-    #    la izquierda cae sobre las velas del lateral, que es donde vive la
-    #    figura, y encima la banda es justo el sitio vacío del dibujo.
+    col = ORO if con_hueco else '#7c8496'
+    txt = T['g8b'] if con_hueco else T['g8c']
+    yr = ((Y(hueco[0]) + Y(hueco[1])) / 2 + 6) if con_hueco else Y(ref) - 12
     p.append('<text x="%.1f" y="%.1f" fill="%s" font-size="17" font-weight="700" '
              'font-family="Mono,monospace" letter-spacing="1.8" '
-             'text-anchor="end">%s</text>'
-             % (xh1 - 10, (Y(hueco[0]) + Y(hueco[1])) / 2 + 6, ORO, T['g8b']))
-    # y la vela, cercada y rotulada por arriba (por abajo está el hueco)
-    xd = X(I_DESPL)
-    p.append('<rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" fill="none" '
-             'stroke="#f4f6fa" stroke-width="3"/>'
-             % (xd - cw * .95, Y(DESPL[I_DESPL][2]) - 10, cw * 1.9,
-                Y(DESPL[I_DESPL][3]) - Y(DESPL[I_DESPL][2]) + 20))
-    p.append('<text x="%.1f" y="%.1f" fill="#f4f6fa" font-size="17" '
-             'font-weight="700" font-family="Mono,monospace" letter-spacing="1.8" '
-             'text-anchor="middle">%s</text>'
-             % (xd, Y(DESPL[I_DESPL][2]) - 24, T['g8a']))
+             'text-anchor="end">%s</text>' % (xh1 - 10, yr, col, txt))
     return ('<svg viewBox="0 0 %d %d" xmlns="http://www.w3.org/2000/svg">%s</svg>'
-            % (int(AN), int(ALTO + 34), ''.join(p)))
+            % (int(AN), int(ALTO + 14), ''.join(p)))
 
 
 # ══ CONCEPTO — el idioma de las DESTACADAS, no el de los carteles ═══════════
@@ -880,10 +905,21 @@ CONCEPTO_CSS = """
    y sale una mancha alargada que parece suciedad del fondo en vez de un foco.
    Un círculo de 430 px centrado en la vela concentra la luz donde está el
    concepto, que es justo lo que hacen las portadas de destacadas. */
-.cz .escena{position:relative;margin:52px 0 0;padding:26px 0 10px;
-  background:radial-gradient(430px 430px at 56% 50%,
-    rgba(201,162,39,.40), rgba(201,162,39,.13) 46%, transparent 72%)}
+.cz .escena{position:relative;margin:44px 0 0}
 .cz .escena svg{display:block;width:100%}
+/* 🔑 El halo va SOLO sobre el caso bueno. Es la firma de las destacadas y aquí
+   además vota: sin ni una palabra, el ojo sabe cuál de los dos es el concepto
+   y cuál el impostor. Puesto en los dos, o en ninguno, la pieza vuelve a
+   depender de que alguien lea los rótulos. */
+.cz .par{position:relative;padding:6px 0 4px;
+  background:radial-gradient(400px 300px at 56% 56%,
+    rgba(201,162,39,.34), rgba(201,162,39,.11) 46%, transparent 72%)}
+.cz .par.tenue{background:none;margin-top:22px;opacity:.70}
+.cz .par .rot{font-family:Mono,monospace;font-size:23px;font-weight:700;
+  letter-spacing:.18em;color:ACENTO;margin-bottom:4px}
+.cz .par .rot span{letter-spacing:.02em;font-weight:400;color:#7c8496;
+  text-transform:none}
+.cz .par.tenue .rot{color:#8d94a4}
 .cz h2{font-size:82px;font-weight:800;letter-spacing:-.035em;line-height:1.02;
   margin-top:56px}
 .cz h2 em{font-style:normal;color:ACENTO}
@@ -915,7 +951,10 @@ def historia_desplazamiento():
     """Concepto: displacement, en el idioma de las destacadas."""
     cuerpo = ("<style>%s</style>"
               "<div class='cz'><div class='cejilla'>%s</div>"
-              "<div class='escena'>%s</div>"
+              "<div class='escena'>"
+              "<div class='par'><div class='rot'>%s <span>%s</span></div>%s</div>"
+              "<div class='par tenue'><div class='rot'>%s <span>%s</span></div>%s</div>"
+              "</div>"
               "<h2>%s</h2><div class='oro'>%s</div>"
               "<div class='corte'></div>"
               "<div class='correccion'><div class='k'>%s</div>"
@@ -923,7 +962,9 @@ def historia_desplazamiento():
               "<div class='invita'>%s</div>"
               "<div class='dominio'>%s</div></div>"
               % (CONCEPTO_CSS.replace('ACENTO', ORO), T['e8'],
-                 grafico_desplazamiento(), T['t8b'], T['s8'],
+                 T['p8a'], T['q8a'], grafico_desplazamiento(),
+                 T['p8b'], T['q8b'], grafico_desplazamiento(DESPL_NO, False),
+                 T['t8b'], T['s8'],
                  T['k8'], T['corr8'], T['inv8'], T['n8']))
     return 'historia-7-desplazamiento', ORO, cuerpo, 0, True
 
