@@ -518,8 +518,12 @@ if __name__ == '__main__':
         #      punto debajo. El color ya significa otra cosa.
         from PIL import ImageDraw
         base = Image.open(a.imagen).convert('RGBA')
+        # dos capas: la MEDICIÓN por un lado y los HECHOS por otro, para que
+        # los recortes de auditoría puedan salir sin marcas de hechos
         capa = Image.new('RGBA', base.size, (0, 0, 0, 0))
+        capa_h = Image.new('RGBA', base.size, (0, 0, 0, 0))
         d = ImageDraw.Draw(capa)
+        dh = ImageDraw.Draw(capa_h)
         VERDE, NARANJA = (0, 235, 120, 255), (255, 150, 0, 90)
         for v in velas:
             d.rectangle([v['x0'] - 1, v['max'], v['x1'] + 1, v['min']],
@@ -530,27 +534,76 @@ if __name__ == '__main__':
                 cx = (v['x0'] + v['x1']) // 2
                 d.ellipse([cx - 3, v['min'] + 5, cx + 3, v['min'] + 11],
                           fill=(0, 220, 220, 255))
+        # 🔴 NADA DE TRIÁNGULOS. La primera versión marcaba los hechos con
+        # triángulos flotando sobre y bajo la vela, y el dueño los leyó como
+        # entradas y salidas de una operación — que es EXACTAMENTE lo que un
+        # triángulo suelto significa en TradingView. Un símbolo no se elige por
+        # lo que uno quiere que diga, sino por lo que ya dice en el sitio donde
+        # se va a ver. Ahora es una BARRA vertical corta pegada a la vela, que
+        # ahí no significa nada y por eso puede significar lo nuestro.
         for fam, col, arriba in (('bos', (255, 0, 255, 255), True),
                                  ('barrida', (0, 170, 255, 255), False)):
             for h in r['hechos'][fam]:
                 v = velas[h['i']]
                 cx = (v['x0'] + v['x1']) // 2
-                if arriba:                       # punta hacia abajo, sobre la vela
-                    y = v['max'] - 16
-                    d.polygon([(cx - 7, y - 10), (cx + 7, y - 10), (cx, y)],
-                              fill=col)
-                else:                            # punta hacia arriba, bajo la vela
-                    y = v['min'] + 16
-                    d.polygon([(cx - 7, y + 10), (cx + 7, y + 10), (cx, y)],
-                              fill=col)
-        Image.alpha_composite(base, capa).convert('RGB').save(a.dibuja)
+                y = (v['max'] - 6, v['max'] - 22) if arriba else \
+                    (v['min'] + 6, v['min'] + 22)
+                dh.rectangle([cx - 1, min(y), cx + 1, max(y)], fill=col)
+        medido = Image.alpha_composite(base, capa)
+        Image.alpha_composite(medido, capa_h).convert('RGB').save(a.dibuja)
         print('\ndibujado en', a.dibuja)
         print('   CONTORNO VERDE = la vela entera, de máximo a mínimo')
         print('   RELLENO NARANJA = su cuerpo (lo de fuera son las mechas)')
         print('   punto cian debajo = vela que recuperó la rejilla')
-        print('   triángulo MAGENTA arriba = BOS · AZUL abajo = barrida')
-        print('   👉 mira si queda alguna vela sin contorno verde, y si algún '
-              'relleno naranja se mete en una mecha.')
+        print('   barrita MAGENTA arriba = BOS · AZUL abajo = barrida')
+
+        # 🔴 Y LOS RECORTES AMPLIADOS, que es lo único con lo que se puede
+        # juzgar de verdad. En la captura del dueño las velas miden 7 px: un
+        # contorno de 1 px más un relleno encima, sobre 7 px de ancho, es una
+        # mancha verde y naranja. Él la miró y dijo que no podía distinguir
+        # cuerpo de mecha, y tenía razón — no es que estuviera mal medido, es
+        # que a ese tamaño NADIE puede saberlo. Sin ampliar, "¿está bien
+        # marcado?" no es una pregunta contestable.
+        # ⚠️ Los recortes van SIN marcas de hechos: aquí se audita la MEDICIÓN,
+        # y cualquier cosa de más vuelve a llenar de símbolos un espacio que ya
+        # está apretado.
+        limpia = medido
+        xs0 = min(v['x0'] for v in velas)
+        xs1 = max(v['x1'] for v in velas)
+        # ⚠️ La escala se ELIGE, no se fija: con un ×4 fijo, una captura ancha
+        #    da tiras larguísimas y estrechas que no se pueden mirar en un
+        #    móvil. Se apunta a ~1300 px de ancho por recorte, que es lo que
+        #    llena una pantalla sin obligar a desplazarse a lo largo.
+        # ⚠️ NI el número de tiras NI la escala se fijan a ojo. Con un ×4 fijo
+        #    y 3 tiras salían recortes de 768×2892 —una columna larguísima que
+        #    no se puede mirar—, porque la altura de la banda de velas no tiene
+        #    por qué parecerse al ancho de una tira. Se corta en tantas tiras
+        #    como haga falta para que cada una sea CASI CUADRADA, y la escala
+        #    se elige para llenar ~1300 px de ancho.
+        ys0 = max(0, min(v['max'] for v in velas) - 30)
+        ys1 = min(base.size[1], max(v['min'] for v in velas) + 30)
+        alto_banda = max(1, ys1 - ys0)
+        tiras = max(1, int(round((xs1 - xs0) / float(alto_banda))))
+        raiz, ext = os.path.splitext(a.dibuja)
+        # 🔴 Fuera los recortes de la corrida anterior. El número de tiras
+        #    cambia con la imagen, así que si antes salieron 4 y ahora sale 1,
+        #    los tres viejos se quedan en disco con el mismo nombre y uno acaba
+        #    juzgando marcas de ayer sin enterarse.
+        import glob as _glob
+        for viejo in _glob.glob('%s_zoom*%s' % (raiz, ext)):
+            os.remove(viejo)
+        ancho = (xs1 - xs0) / float(tiras)
+        esc = max(2, min(8, int(round(1300.0 / max(1.0, ancho)))))
+        for k in range(tiras):
+            cx0 = int(xs0 + k * ancho) - 4
+            cx1 = int(xs0 + (k + 1) * ancho) + 4
+            tr = limpia.crop((max(0, cx0), ys0, min(base.size[0], cx1), ys1))
+            tr = tr.resize((tr.width * esc, tr.height * esc), Image.NEAREST)
+            tr.convert('RGB').save('%s_zoom%d%s' % (raiz, k + 1, ext))
+        print('   + %d recortes AMPLIADOS ×%d: %s_zoom1..%d%s'
+              % (tiras, esc, raiz, tiras, ext))
+        print('   👉 juzga con ESOS: en el grande las velas miden 7 px y no se '
+              'puede ver nada.')
     if a.json:
         with open(a.json, 'w') as f:
             json.dump({'panel': p, 'escala': None if not escala else
