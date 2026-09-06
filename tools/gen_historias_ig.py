@@ -11,7 +11,7 @@ Su trabajo aquí es retener a quien entra al perfil desde el reel publicitado y
 ganarse el follow — no explicar el producto (para eso están los 12 posts del
 feed y los carruseles que vienen después).
 
-Son CINCO, pensadas para verse seguidas:
+Son SEIS, pensadas para verse seguidas:
   1. `entrada`      — el gancho. Un trade real que salió mal, dibujado.
   2. `no-somos`     — el anti-pitch. Es el que gana el follow.
   3. `reloj`        — el reloj del mercado; se apoya en una pieza gratis.
@@ -19,8 +19,15 @@ Son CINCO, pensadas para verse seguidas:
                       mentor. Es el POSICIONAMIENTO OFICIAL dicho de frente: la
                       2 nombra las 3 a.m. de pasada, ésta las desarrolla.
   5. `construccion` — tú escribes por qué entraste y el analizador discute ESO.
-                      Es lo que separa esto de "una IA que mira un gráfico", y
-                      no estaba en ninguna de las 12 piezas anteriores.
+  6. `barrida`      — CONCEPTO: barrida de liquidez. Va a la destacada de
+                      conceptos, junto a Order Block y Fair Value Gap.
+
+⚠️ ANTES DE AÑADIR UNA HISTORIA, LEER `tools/posts_ig_textos.md`. Ahí está el
+plan de publicación REAL —los 18 posts, no 12— y es lo único que dice qué está
+ya cubierto. Las seis herramientas (analizador, Pre-Flight, Synapse, quizzes y
+reto diario, chalkboard, foro) son los posts 11-16: proponerlas como historia
+"nueva" es repetir. Los CONCEPTOS, en cambio, son el pozo que no se agota: solo
+hay Order Block (post 4), Fair Value Gap (post 6) y esta barrida.
 
 EN INGLÉS, y escrito en inglés — no traducido. "Stopped out", "it ran without
 you", "no fine print" son cosas que un trader dice; sus equivalentes literales
@@ -319,6 +326,30 @@ T = {
            'trying to do.'),
     'c6': 'RUN YOUR LAST TRADE',
     'n6': 'tradeable.academy · no card needed',
+
+    # ── 6 · CONCEPTO: BARRIDA DE LIQUIDEZ.
+    # 🔑 De las 18 piezas publicadas, las herramientas están TODAS cubiertas
+    #    (posts 11-16) y de conceptos solo hay dos: Order Block (post 4) y Fair
+    #    Value Gap (post 6). Los conceptos son el único pozo que no se agota, y
+    #    ya existe una destacada suya donde esta historia se queda a vivir.
+    # 🔑 Y no es un concepto cualquiera: la barrida es EL MECANISMO del trade
+    #    que ya está dibujado en la historia 1 (mínimos iguales barridos). Quien
+    #    vea las dos entiende la primera mejor.
+    # 🔴 LA PIEZA ES EL DISCRIMINANTE, no la definición. Cualquiera puede decir
+    #    "barrida = toma la liquidez"; lo que de verdad hace falta saber es
+    #    CUÁNDO NO lo es — la misma mecha, cerrando al otro lado, significa lo
+    #    contrario. Sin esa mitad, la historia enseña una palabra en vez de una
+    #    herramienta de lectura, y palabras ya hay de sobra en ese nicho.
+    'e7': 'CONCEPT',
+    't7': 'LIQUIDITY<br><em>SWEEP.</em>',
+    's7': 'Equal lows aren’t support. They’re where the stops are.',
+    'g7a': 'EQUAL LOWS', 'g7b': 'SWEEP', 'g7c': 'CLOSES BACK INSIDE',
+    'sello7': 'HOW TO TELL',
+    'r7': 'It pokes below —<br>and closes back inside.',
+    'r7b': ('If it closes below and stays there, that isn’t a sweep. '
+            'That’s a break. Same wick, opposite meaning.'),
+    'c7': 'SEE IT ON YOUR OWN CHART',
+    'n7': 'tradeable.academy · no card needed',
 }
 
 
@@ -544,6 +575,112 @@ def historia_construccion():
     return 'historia-5-construccion', ORO, cuerpo, 0, False
 
 
+# ── el concepto: mínimos iguales, la mecha que los perfora y el cierre dentro ─
+BARRIDA = [(100.35, 100.08, 100.50, 100.00), (100.08, 100.42, 100.55, 100.02),
+           (100.42, 100.14, 100.52, 100.01), (100.14, 100.38, 100.48, 100.00),
+           (100.38, 100.62, 100.70,  99.32),   # ← la barrida
+           (100.62, 101.35, 101.45, 100.55), (101.35, 102.10, 102.30, 101.25)]
+I_SWEEP = 4
+
+
+def grafico_barrida():
+    """La barrida, en SVG. Mismo criterio que el resto de diagramas del kit:
+    las velas se dibujan desde OHLC y **hay asserts que comprueban que la
+    figura es cierta**. Un diagrama bonito pero falso cuesta credibilidad ante
+    quien sabe leer, que es exactamente el público de una pieza de concepto."""
+    lows = [BARRIDA[i][3] for i in range(4)]
+    assert max(lows) - min(lows) < .04, 'los "mínimos iguales" no son iguales'
+    o, c, h, l = BARRIDA[I_SWEEP]
+    assert l < min(lows) - .5, 'la mecha no perfora los mínimos'
+    # 🔴 EL ASSERT QUE SOSTIENE LA PIEZA ENTERA: si el cierre no vuelve dentro
+    #    del rango, el dibujo estaría enseñando una RUPTURA mientras el texto
+    #    dice "barrida" — o sea, justo el error que la historia enseña a evitar.
+    assert c > min(lows), 'el cierre no vuelve dentro: eso es una ruptura'
+    for i, (o, c, h, l) in enumerate(BARRIDA):
+        assert h >= max(o, c) and l <= min(o, c), 'vela %d mal formada' % i
+
+    AN, ALTO, PAD_D = 1000.0, 340.0, 150.0
+    todos = [v for d in BARRIDA for v in d]
+    lo, hi = min(todos), max(todos)
+    m = (hi - lo) * .10
+    lo, hi = lo - m, hi + m
+    paso = (AN - PAD_D) / len(BARRIDA)
+    cw = paso * .46
+
+    def Y(v):
+        return ALTO - (v - lo) / (hi - lo) * ALTO
+
+    def X(i):
+        return paso * (i + .5)
+
+    p = []
+    for k in range(1, 5):
+        y = ALTO * k / 5.0
+        p.append('<line x1="0" y1="%.1f" x2="%.1f" y2="%.1f" stroke="#ffffff" '
+                 'stroke-opacity=".055" stroke-width="1"/>' % (y, AN, y))
+
+    # la línea de los mínimos iguales, prolongada: es la liquidez en reposo
+    yl = Y(sum(lows) / 4.0)
+    p.append('<line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" stroke="%s" '
+             'stroke-width="2.5" stroke-dasharray="9 7"/>'
+             % (X(0) - cw, yl, AN, yl, ORO))
+    # ⚠️ DEBAJO de la línea, no encima: encima cae justo sobre los cuerpos de
+    #    las cuatro primeras velas —que es donde vive la propia figura— y se
+    #    leía "EQU▮▮OWS". Debajo y a la izquierda el gráfico está vacío.
+    p.append('<text x="14" y="%.1f" fill="%s" font-size="17" font-weight="700" '
+             'font-family="Mono,monospace" letter-spacing="1.8">%s</text>'
+             % (yl + 34, ORO, T['g7a']))
+
+    for i, (o, c, h, l) in enumerate(BARRIDA):
+        col = VERDE if c >= o else ROJO
+        x = X(i)
+        p.append('<line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" stroke="%s" '
+                 'stroke-width="3"/>' % (x, Y(h), x, Y(l), col))
+        y0, y1 = Y(max(o, c)), Y(min(o, c))
+        p.append('<rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" fill="%s"/>'
+                 % (x - cw / 2, y0, cw, max(3.0, y1 - y0), col))
+
+    # la vela de la barrida, señalada: el cerco la separa sin taparla
+    xs = X(I_SWEEP)
+    o, c, h, l = BARRIDA[I_SWEEP]
+    p.append('<rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" fill="none" '
+             'stroke="%s" stroke-width="3"/>'
+             % (xs - cw * .95, Y(h) - 10, cw * 1.9, Y(l) - Y(h) + 20, ORO))
+    p.append('<text x="%.1f" y="%.1f" fill="%s" font-size="17" font-weight="700" '
+             'font-family="Mono,monospace" letter-spacing="1.8" '
+             'text-anchor="middle">%s</text>'
+             % (xs, Y(l) + 40, ORO, T['g7b']))
+    # y el cierre de vuelta dentro, que es lo que la define
+    p.append('<line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" stroke="%s" '
+             'stroke-width="2.5"/>'
+             % (xs + cw, Y(c), AN - 34, Y(c), '#f4f6fa'))
+    p.append('<text x="%.1f" y="%.1f" fill="#f4f6fa" font-size="17" '
+             'font-weight="700" font-family="Mono,monospace" letter-spacing="1.6" '
+             'text-anchor="end">%s</text>'
+             % (AN - 34, Y(c) - 14, T['g7c']))
+    return ('<svg viewBox="0 0 %d %d" xmlns="http://www.w3.org/2000/svg">%s</svg>'
+            % (int(AN), int(ALTO + 56), ''.join(p)))
+
+
+def historia_barrida():
+    """Concepto: barrida de liquidez. Va a la destacada de CONCEPTOS."""
+    # el mismo aire que en la 4: dos masas del acento a sangre y pegadas se
+    # leen como una sola pieza de 500 px
+    cuerpo = ("<style>.bloque{margin-bottom:36px}.sub{margin-top:22px}</style>"
+              "<div class='banda'><span>%s</span>"
+              "<span class='b2'>TRADEABLE.ACADEMY</span></div>"
+              "<div class='aire cuerpo'><h1 class='tres'>%s</h1>"
+              "<div class='sub'>%s</div></div>"
+              "<div class='grafico'>%s</div>"
+              "<div class='aire'><div class='bloque'><div class='sello'>%s</div>%s"
+              "<div class='eco'>%s</div></div></div>"
+              "<div class='abajo'><div class='remate'><div class='t'>%s</div>"
+              "<div class='n'>%s</div></div></div>"
+              % (T['e7'], T['t7'], T['s7'], grafico_barrida(),
+                 T['sello7'], T['r7'], T['r7b'], T['c7'], T['n7']))
+    return 'historia-6-barrida', ORO, cuerpo, 0, False
+
+
 def riel():
     """El día completo en vertical: 24 h de riel y, encima, las ventanas.
 
@@ -679,7 +816,8 @@ def main():
 
     plan = []
     for hacer in (historia_entrada, historia_no_somos, historia_reloj,
-                  historia_porque_no, historia_construccion):
+                  historia_porque_no, historia_construccion,
+                  historia_barrida):
         nombre, acento, cuerpo, hueco, pie = hacer()
         io.open(os.path.join(SALIDA, nombre + '.html'), 'w',
                 encoding='utf-8').write(pagina(acento, cuerpo, hueco, pie, False))
