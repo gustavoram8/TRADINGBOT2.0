@@ -17,10 +17,11 @@ hace solo lo que sabe hacer**, medido:
 
   1. `recorta_grafico`  encuentra el panel y el paso entre velas   (píxeles)
   2. `cajas_ia`         dice EN QUÉ COLUMNA está cada vela         (modelo)
-  3. `afina_velas`      mide máximo, mínimo y cuerpo de cada una   (píxeles)
-  4. `afina_velas`      decide alcista/bajista sin conocer paleta  (píxeles)
-  5. `eje_precio`       convierte altura en precio                 (modelo + píxeles)
-  6. `hechos_grafico`   deduce BOS, barridas, FVG y order blocks   (aritmética)
+  3. `rejilla_velas`    recupera las velas que el modelo se dejó   (píxeles)
+  4. `afina_velas`      mide máximo, mínimo y cuerpo de cada una   (píxeles)
+  5. `afina_velas`      decide alcista/bajista sin conocer paleta  (píxeles)
+  6. `eje_precio`       convierte altura en precio                 (modelo + píxeles)
+  7. `hechos_grafico`   deduce BOS, barridas, FVG y order blocks   (aritmética)
 
 🔑 **EL PATRÓN QUE SE REPITIÓ CUATRO VECES, y que gobierna este diseño:** el
 modelo **lee y reconoce muy bien, y sitúa mal**. Falló al dar el borde de la
@@ -30,11 +31,19 @@ veces la solución fue la misma: **que el modelo diga QUÉ y aproximadamente
 DÓNDE, y que los píxeles digan EXACTAMENTE dónde.** Aquí no se le pide nunca
 una medida ni una comparación.
 
+🔴 **Y UN QUINTO FALLO, DISTINTO DE LOS DEMÁS: se deja velas sin devolver.** No
+es que las sitúe mal, es que no están. Sobre la captura del OTE devolvió 88
+columnas donde hay ~102. Eso no lo arregla la precisión de los píxeles, porque
+una vela que nadie señaló no se mide: se pierde. Por eso el paso 3 —la rejilla—
+va ANTES de medir, y por eso es el eslabón del que dependen todos los números
+de abajo. Ver `rejilla_velas`.
+
 ═══ QUÉ SE AFIRMA Y QUÉ NO ═══
-Cada familia de hechos lleva su precisión MEDIDA (banco de 24 láminas, 1.436
-velas). Solo entran en el bloque las que pasan de `MIN_PRECISION`, porque el
-propósito de todo esto es **no mentirle a un cliente**:
-  BOS 99,8% ✅ · barrida 93,7% ✅ · FVG 86,8% 🔴 · order block 81,8% 🔴
+Cada familia de hechos lleva su precisión MEDIDA (banco de 24 láminas, 1.420
+velas, EN CONDICIONES REALES: con el 14% de las velas fuera y recuperadas).
+Solo entran en el bloque las que pasan de `MIN_PRECISION`, porque el propósito
+de todo esto es **no mentirle a un cliente**:
+  BOS 99,0% ✅ · barrida 95,2% ✅ · FVG 84,7% 🔴 · order block 82,5% 🔴
 Las que no pasan se calculan igual y se enseñan aparte, marcadas, para poder
 seguir midiéndolas — pero NO se afirman.
 
@@ -58,10 +67,15 @@ import afina_velas as AF          # noqa: E402
 import eje_precio as EP           # noqa: E402
 import hechos_grafico as HG       # noqa: E402
 import recorta_grafico as RG      # noqa: E402
+import rejilla_velas as RV        # noqa: E402
 
 # Precisión mínima MEDIDA para que una familia de hechos se pueda AFIRMAR.
 MIN_PRECISION = 90.0
-PRECISION = {'bos': 99.8, 'barrida': 93.7, 'fvg': 86.8, 'ob': 81.8}
+# ⚠️ MEDIDAS EN CONDICIONES REALES: banco de 24 láminas quitándole el 14% de
+# las velas (lo que el modelo se deja de verdad) y recuperándolas con la
+# rejilla. Las de antes —99,8 · 93,7 · 86,8 · 81,8— se habían medido dándole al
+# extractor las columnas de TODAS las velas, que no es lo que pasa.
+PRECISION = {'bos': 99.0, 'barrida': 95.2, 'fvg': 84.7, 'ob': 82.5}
 NOMBRE = {'bos': 'BOS', 'barrida': 'barrida de liquidez',
           'fvg': 'FVG', 'ob': 'order block'}
 # Cuántas velas de giro a cada lado para que un extremo cuente como swing.
@@ -159,7 +173,7 @@ def banda_de_las_guias(cajas, H):
     return y0, y1
 
 
-def mide(ruta, cajas):
+def mide(ruta, cajas, nuevas=None):
     """De columnas a velas medidas, EN DOS PASADAS.
 
     🔑 La segunda pasada nació de la captura real: dos velas pegadas al borde
@@ -170,9 +184,12 @@ def mide(ruta, cajas):
     H, W, _ = a.shape
     by0, by1 = banda_de_las_guias(cajas, H)
 
+    nuevas = nuevas or set()
+
     def pasada(tope):
         out = []
-        for (x0, x1, gy0, gy1) in cajas:
+        for caja in cajas:
+            x0, x1, gy0, gy1 = caja
             margen = max(4, 2 * (x1 - x0 + 1))
             r = AF.afina(a, x0, x1, by0, by1, margen, False, (gy0, gy1), tope)
             if r is None:
@@ -185,6 +202,7 @@ def mide(ruta, cajas):
             col = int(v[n.argmax()])
             out.append({'x0': sx0, 'x1': sx1, 'max': alto, 'min': bajo,
                         'cuerpo_alto': ct, 'cuerpo_bajo': cb,
+                        'rejilla': caja in nuevas,
                         'color': (col >> 16, (col >> 8) & 255, col & 255)})
         return out
 
@@ -328,7 +346,21 @@ def analiza(ruta, prov=None, modelo=None, cajas=None, max_velas=80,
         cajas, p = _columnas_del_modelo(ruta, prov, modelo, max_velas, aviso)
     else:
         p = RG.panel(ruta)
-    velas = mide(ruta, cajas)
+
+    # 🔴 LAS VELAS QUE EL MODELO SE DEJÓ. Sobre la captura real devolvió 88 de
+    # ~102, y una vela que falta no se nota: la lista se cierra sobre sí misma.
+    # Medido en el banco, con el 14% de las velas fuera los hechos se caen
+    # (BOS 100→63,5% · FVG 90,6→12% · OB 88,7→4,6%), así que esto no es un
+    # retoque, es lo que sostiene todo lo demás. Ver `rejilla_velas`.
+    a_img = np.asarray(Image.open(ruta).convert('RGB')).astype(int)
+    banda = banda_de_las_guias(cajas, a_img.shape[0])
+    del_modelo = len(cajas)
+    cajas, nuevas = RV.completa(cajas, p['paso'], a_img, banda)
+    if verboso and nuevas:
+        print('   rejilla: el modelo devolvió %d columnas, %d recuperadas'
+              % (del_modelo, len(nuevas)))
+
+    velas = mide(ruta, cajas, nuevas)
     if len(velas) < 5:
         raise SystemExit('solo se pudieron medir %d velas.' % len(velas))
     ohlc = serie(velas)
@@ -397,8 +429,12 @@ if __name__ == '__main__':
         im = Image.open(a.imagen).convert('RGB')
         d = ImageDraw.Draw(im)
         for k, v in enumerate(velas):
+            # 🔑 De otro color la que NO señaló el modelo, sino la rejilla. Las
+            # dos están medidas igual de bien, pero su respaldo no es el mismo y
+            # quien mire el dibujo tiene que poder auditarlas por separado.
             d.rectangle([v['x0'] - 1, v['max'], v['x1'] + 1, v['min']],
-                        outline=(0, 230, 80))
+                        outline=(0, 220, 220) if v.get('rejilla')
+                        else (0, 230, 80))
             d.rectangle([v['x0'] - 1, v['cuerpo_alto'], v['x1'] + 1,
                          v['cuerpo_bajo']], outline=(255, 150, 0))
         for fam, col in (('bos', (255, 0, 255)), ('barrida', (0, 160, 255))):
@@ -410,7 +446,8 @@ if __name__ == '__main__':
                              v['min'] + 3], outline=col)
         im.save(a.dibuja)
         print('\ndibujado en', a.dibuja)
-        print('   verde = vela medida · naranja = su cuerpo')
+        print('   verde = vela que señaló el modelo · CIAN = recuperada por '
+              'la rejilla · naranja = su cuerpo')
         print('   MAGENTA = BOS · AZUL = barrida')
         print('   👉 mira si queda alguna vela SIN recuadro verde.')
     if a.json:

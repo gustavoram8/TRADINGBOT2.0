@@ -56,6 +56,7 @@ sys.path.insert(0, os.path.join(RAIZ, 'tools'))
 
 import afina_velas as AF          # noqa: E402
 import hechos_grafico as HG       # noqa: E402
+import rejilla_velas as RV        # noqa: E402
 
 AN, AL = 1400, 800
 # Una vela no puede medir más de esto por la MEDIANA de su propio gráfico.
@@ -338,7 +339,61 @@ def _guias(verdad, rnd):
     return out
 
 
-def probar(n_laminas, semilla, salida, tolerancia=1, con_guia=True):
+def _quita_velas(velas, fraccion, rnd):
+    """Se le caen velas al azar, como se le caen al modelo.
+
+    🔴 SIN ESTO EL BANCO MIDE UNA CADENA QUE NO EXISTE. `probar` le entregaba al
+    extractor las columnas VERDADERAS de TODAS las velas, o sea que medía los
+    eslabones B y C dando por perfecto el A. Y el A no es perfecto: sobre la
+    captura real del OTE el modelo devolvió 88 columnas donde hay ~102.
+
+    Las precisiones que se publicaron (BOS 99,8% · barrida 93,7% · FVG 86,8% ·
+    OB 81,8%) valen SOLO si no falta ninguna vela. Con el 14% fuera, lo que más
+    se cae es ENCONTRARLAS (BOS 88,0 → 77,1% · FVG 98,1 → 72,3%) y la precisión
+    de FVG y order block, que pierden 20 puntos. Por eso ahora el banco quita
+    velas por defecto y deja que la rejilla las recupere: así el número que sale
+    es el de la cadena que de verdad se correría. Tabla entera en
+    `rejilla_velas`."""
+    idx = list(range(len(velas)))
+    if not fraccion:
+        return idx
+    fuera = set(rnd.sample(idx, int(round(fraccion * len(idx)))))
+    return [j for j in idx if j not in fuera]
+
+
+def paso_real(v):
+    """Paso entre velas de una lámina, sacado de su propia verdad."""
+    ve = v['velas']
+    return float(np.median([ve[j + 1]['x0'] - ve[j]['x0']
+                            for j in range(len(ve) - 1)]))
+
+
+def _empareja(cols_med, velas_verdad, paso):
+    """índice de la lista medida → índice de la vela REAL que le corresponde.
+
+    🔴 Es lo que permite puntuar con velas faltando. Sin esto, quitar una vela
+    corre todos los índices siguientes y el banco puntúa mal cosas que están
+    perfectamente bien."""
+    centros = np.array([(c['x0'] + c['x1']) / 2.0 for c in velas_verdad])
+    out = []
+    for (x0, x1) in cols_med:
+        cx = (x0 + x1) / 2.0
+        j = int(np.argmin(np.abs(centros - cx)))
+        out.append(j if abs(cx - centros[j]) <= paso / 2.0 else None)
+    return out
+
+
+def _traduce(hechos, mapa):
+    """Hechos con índice de la lista medida → con índice de la vela real."""
+    out = set()
+    for fam, i, tipo in hechos:
+        if 0 <= i < len(mapa) and mapa[i] is not None:
+            out.add((fam, mapa[i], tipo))
+    return out
+
+
+def probar(n_laminas, semilla, salida, tolerancia=1, con_guia=True,
+           faltan=0.14, con_rejilla=True):
     if not os.path.isdir(salida):
         os.makedirs(salida)
     rnd = random.Random(semilla)
@@ -346,16 +401,44 @@ def probar(n_laminas, semilla, salida, tolerancia=1, con_guia=True):
     prec_p, exh_p, prec_q, exh_q = [], [], [], []
     import collections
     por_familia = collections.defaultdict(lambda: [0, 0, 0])  # ok, dichos, reales
+    recup = [0, 0]                                 # recuperadas, perdidas
     for i in range(n_laminas):
         ruta = os.path.join(salida, 'lam_%02d.png' % i)
         v = lamina(ruta, rnd)
-        cols = [(c['x0'], c['x1']) for c in v['velas']]
-        med = mide(ruta, cols, _guias(v['velas'], rnd) if con_guia else None)
+        vivos = _quita_velas(v['velas'], faltan, rnd)
+        recup[1] += len(v['velas']) - len(vivos)
+        vivas = [v['velas'][j] for j in vivos]
+        cols = [(c['x0'], c['x1']) for c in vivas]
+        gus = _guias(vivas, rnd) if con_guia else None
 
-        for real, m in zip(v['velas'], med):
+        if con_rejilla and gus:
+            # la rejilla necesita las guías: es lo que le da la altura de una
+            # columna añadida, interpolando entre sus dos vecinas
+            a_img = np.asarray(Image.open(ruta).convert('RGB')).astype(int)
+            paso = paso_real(v)
+            ys = [g[0] for g in gus] + [g[1] for g in gus]
+            banda = (max(0, min(ys) - 40), min(a_img.shape[0], max(ys) + 40))
+            cajas = [(c[0], c[1], g[0], g[1]) for c, g in zip(cols, gus)]
+            cajas, nuevas = RV.completa(cajas, paso, a_img, banda)
+            recup[0] += len(nuevas)
+            cols = [(c[0], c[1]) for c in cajas]
+            gus = [(c[2], c[3]) for c in cajas]
+
+        med = mide(ruta, cols, gus)
+
+        # 🔴 SE EMPAREJA POR POSICIÓN EN LA IMAGEN, NUNCA POR ÍNDICE. Si falta
+        # una vela, la nº 40 de la lista medida NO es la nº 40 del gráfico:
+        # todos los índices posteriores se corren y un BOS perfectamente
+        # detectado contaría como fallo. Comparar por índice exagera el daño de
+        # las velas que faltan y luego exagera la mejora de recuperarlas.
+        vivos_med = [k for k, m in enumerate(med) if m]
+        mapa = _empareja([cols[k] for k in vivos_med], v['velas'], paso_real(v))
+
+        for k, j in zip(vivos_med, mapa):
             tot['velas'] += 1
-            if m is None:
+            if j is None:
                 continue
+            m, real = med[k], v['velas'][j]
             if (abs(m['max'] - real['max']) <= tolerancia and
                     abs(m['min'] - real['min']) <= tolerancia):
                 tot['ext'] += 1
@@ -364,13 +447,13 @@ def probar(n_laminas, semilla, salida, tolerancia=1, con_guia=True):
                 tot['cue'] += 1
 
         ohlc_med, con_dir = _a_ohlc(med)
-        for real, m in zip(v['velas'], con_dir):
-            if m.get('alcista') == real['alcista']:
+        for m, j in zip(con_dir, mapa):
+            if j is not None and m.get('alcista') == v['velas'][j]['alcista']:
                 tot['dir'] += 1
 
         h_precio = _hechos(v['ohlc'])              # verdad de PRECIO
         h_pixel = _hechos(_verdad_ohlc(v))         # verdad ya redondeada
-        h_med = _hechos(ohlc_med)
+        h_med = _traduce(_hechos(ohlc_med), mapa)
         p, e = _f1(h_precio, h_med); prec_p.append(p); exh_p.append(e)
         p, e = _f1(h_pixel, h_med); prec_q.append(p); exh_q.append(e)
         for fam in ('fvg', 'bos', 'barrida', 'ob'):
@@ -416,5 +499,15 @@ if __name__ == '__main__':
     ap.add_argument('--sin-guia', action='store_true',
                     help='mide sin la pista vertical del modelo, para ver '
                          'cuánto aporta ese eslabón')
+    ap.add_argument('--faltan', type=float, default=0.14,
+                    help='fracción de velas que el modelo NO devuelve. El 0,14 '
+                         'por defecto es lo medido sobre la captura real '
+                         '(88 columnas de ~102). Con 0 se mide la cadena '
+                         'suponiendo el eslabón A perfecto, que es lo que '
+                         'medía este banco antes y no es la realidad.')
+    ap.add_argument('--sin-rejilla', action='store_true',
+                    help='no recupera las velas que faltan, para ver el daño '
+                         'que hacen')
     a = ap.parse_args()
-    probar(a.laminas, a.semilla, a.salida, a.tolerancia, not a.sin_guia)
+    probar(a.laminas, a.semilla, a.salida, a.tolerancia, not a.sin_guia,
+           a.faltan, not a.sin_rejilla)
