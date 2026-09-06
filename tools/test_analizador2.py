@@ -84,9 +84,16 @@ def main():
 
     print('── el hecho verificado contra el indicador del dueño ──')
     bos = r['hechos']['bos']
-    en886 = [b for b in bos if xs[b['i']] == 886]
-    caso('hay un BOS en la vela de x=886', len(en886) == 1,
-         [xs[b['i']] for b in bos])
+    # ⚠️ Se compara la VELA que contiene x=886, no el píxel exacto de su borde
+    #    izquierdo. Lo que el indicador del dueño afirma es "el BOS es esta
+    #    vela", y una columna puede empezar en 885 o en 886 y seguir siendo la
+    #    misma vela. Fijar el píxel hacía fallar la prueba ante una mejora
+    #    legítima —encajar las columnas en la rejilla real las movió 1 px— y
+    #    eso convierte al test en un freno en vez de en una red.
+    en886 = [b for b in bos
+             if velas[b['i']]['x0'] <= 886 <= velas[b['i']]['x1']]
+    caso('hay un BOS en la vela que contiene x=886', len(en886) == 1,
+         [(v['x0'], v['x1']) for v in (velas[b['i']] for b in bos)])
     if en886:
         caso('y es BAJISTA', en886[0]['tipo'] == 'bajista', en886[0]['tipo'])
 

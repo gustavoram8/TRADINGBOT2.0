@@ -228,6 +228,72 @@ def normaliza_ancho(cajas, paso):
     return out
 
 
+def encaja_en_rejilla(cajas, paso, a_img, banda, ancho=None):
+    """Cada columna, ENCAJADA en la rejilla real de velas de la imagen.
+
+    🔴 EL FALLO GORDO, y estuvo tapando a todos los demás durante una sesión
+    entera. Medido sobre la captura del dueño comparando contra la posición
+    REAL de sus velas (sacada del color de sus cuerpos):
+
+        velas de verdad   198-200  206-208  213-215  221-223  228-230 …
+        columnas usadas   200-205  208-213  215-220  223-228  230-235 …
+        desplazamiento    +3,5 px  =  MEDIA VELA
+
+    Cada columna caía **a caballo entre una vela y el hueco siguiente**. De ahí
+    los cuatro síntomas que él repitió sin que yo diera con la causa: el
+    recuadro del cuerpo pintando fondo, cogiendo trozos de dos velas, no
+    llegando a cubrir el cuerpo, y mechas quedándose fuera de la medición.
+    Y de ahí también que NINGUNA corrección a la regla del cuerpo sirviera:
+    el error entra tres pasos antes, y a partir de ahí da igual lo fino que
+    hiles.
+
+    🔑 La rejilla no se le pregunta al modelo: se mide. Se conoce el paso (sale
+    de la autocorrelación de `recorta_grafico`, verificado en tres capturas:
+    5,62 · 8,25 · 10,50 contra 5,5 · 8 · 10,5) y la FASE se busca probando
+    desplazamientos de 0,05 px y quedándose con el que más tinta recoge. Sobre
+    la captura del dueño la rejilla así calculada da 196-201, 204-209, 211-216…
+    contra sus velas reales en 197-201, 205-209, 212-216: **1 px**.
+
+    ⚠️ Se conserva el ORDEN del modelo, no se inventan ranuras: cada caja se
+    lleva a la ranura más cercana, y si dos caen en la misma se quedan en una.
+    Rellenar los huecos sigue siendo trabajo de `rejilla_velas`, que además
+    exige que la ranura demuestre tener una vela."""
+    if not cajas:
+        return cajas
+    if ancho is None:
+        tope = max(2, int(round(paso)) - 1)
+        ancho = int(max(2, min(np.median([c[1] - c[0] + 1 for c in cajas]), tope)))
+    vent = a_img[banda[0]:banda[1]]
+    tinta = (np.abs(vent - AF._fondo_por_fila(vent)[:, None, :]).sum(2)
+             > AF.UMBRAL_TINTA)
+    col = tinta.sum(0).astype(float)
+    xs0 = min(c[0] for c in cajas)
+    xs1 = max(c[1] for c in cajas)
+    mejor = None
+    for f in np.arange(0, paso, 0.05):
+        tot, cu, x = 0.0, 0, xs0 + f
+        while x <= xs1:
+            i0 = int(round(x))
+            tot += col[max(0, i0):i0 + ancho].sum()
+            cu += 1
+            x += paso
+        if cu and (mejor is None or tot / cu > mejor[1]):
+            mejor = (f, tot / cu)
+    if mejor is None:
+        return cajas
+    origen = xs0 + mejor[0]
+    vistos, out = set(), []
+    for (x0, x1, gy0, gy1) in sorted(cajas, key=lambda c: c[0] + c[1]):
+        cx = (x0 + x1) / 2.0
+        k = int(round((cx - (origen + (ancho - 1) / 2.0)) / paso))
+        if k in vistos:
+            continue
+        vistos.add(k)
+        nx0 = int(round(origen + k * paso))
+        out.append((nx0, nx0 + ancho - 1, gy0, gy1))
+    return out
+
+
 def banda_de_las_guias(cajas, H):
     """La franja vertical donde de verdad hay gráfico, sacada de las guías.
 
@@ -463,6 +529,10 @@ def analiza(ruta, prov=None, modelo=None, cajas=None, max_velas=80,
     #    después mide sobre una franja con dos velas. Ver `normaliza_ancho`.
     cajas = normaliza_ancho(cajas, p['paso'])
     a_img = np.asarray(Image.open(ruta).convert('RGB')).astype(int)
+    banda = banda_de_las_guias(cajas, a_img.shape[0])
+    # 🔴 Y AHORA A LA REJILLA REAL. Las columnas del modelo venían a media vela
+    #    de donde están; ver `encaja_en_rejilla`.
+    cajas = encaja_en_rejilla(cajas, p['paso'], a_img, banda)
     banda = banda_de_las_guias(cajas, a_img.shape[0])
     del_modelo = len(cajas)
     cajas, nuevas = RV.completa(cajas, p['paso'], a_img, banda)
