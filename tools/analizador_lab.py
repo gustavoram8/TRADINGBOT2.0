@@ -128,7 +128,15 @@ def mensaje_usuario(datos, notas, hechos=None):
             'never contradict them. They do not tell you what the trade means '
             '— that is your job.\n\n%s\n\n'
             'Anything NOT listed here was not measured: do not assume its '
-            'absence proves anything.\n\n' % hechos)
+            'absence proves anything.\n'
+            'HARD RULE: you may cite ONLY the candles and levels that appear '
+            'in that list, exactly as written. NEVER introduce a candle number '
+            'or a price level of your own — not from the image, not from the '
+            'trader\'s notes, not inferred. If you want to talk about '
+            'something you see but cannot cite from the list, describe it in '
+            'words without numbering it. Inventing a reference is the single '
+            'worst thing you can do here, because the trader will trust it as '
+            'measured.\n\n' % hechos)
     return (cabeza + 'Trade submitted for retrospective, educational analysis '
             '(approach: %(approach)s):\n\n'
             'Instrument: %(instrument)s\n'
@@ -188,14 +196,17 @@ def bloque_de_hechos(imagen, columnas, prov=None, modelo=None):
 
     firmes = [limpia(p) for p in firmes]
     marcados = [limpia(p) for p in marcados]
-    lineas = ['VERIFIED (measured, high confidence):']
+    # 🔴 LA LISTA DE "NO VERIFICADOS" NO ENTRA EN EL PROMPT. Medido en la
+    # primera comparación real: se la dimos etiquetada como "menciónalos solo
+    # como posibilidades, nunca como hecho", y el modelo cogió de ahí la vela
+    # 79 —un FVG bajista— y la presentó como **BOS alcista confirmado**. Decirle
+    # a un modelo de lenguaje "esto no te lo creas" y dárselo igual no funciona:
+    # una vez dentro del contexto, lo usa. O es un hecho y entra, o no entra.
+    # Los no verificados se siguen calculando y se devuelven aparte, para
+    # seguir midiéndolos y para enseñárselos al DUEÑO — nunca al modelo.
+    lineas = ['MEASURED FACTS (verified):']
     lineas += ['  - ' + t for _f, t in firmes] or ['  - (none)']
-    if marcados:
-        lineas.append('')
-        lineas.append('DETECTED BUT NOT VERIFIED (lower measured precision — '
-                      'mention only as possibilities, never as fact):')
-        lineas += ['  - ' + t for _f, t in marcados]
-    return '\n'.join(lineas), r
+    return '\n'.join(lineas), r, marcados
 
 
 def main():
@@ -235,7 +246,12 @@ def main():
         prov = modelo = None
         if a.modelo:
             prov, _, modelo = a.modelo.partition(':')
-        hechos_txt, _r = bloque_de_hechos(a.imagen, a.columnas, prov, modelo)
+        hechos_txt, _r, _marcados = bloque_de_hechos(
+            a.imagen, a.columnas, prov, modelo)
+        print('[hechos] %d verificados · escala del eje: %s'
+              % (hechos_txt.count('\n  - '),
+                 'SÍ (con precios)' if _r['escala'] else
+                 '🔴 NO — el bloque sale sin precios y la prueba pierde valor'))
         if 'en 7' not in hechos_txt and '.' not in hechos_txt.split('\n')[1]:
             print('⚠️  El bloque sale SIN PRECIOS. Pásale --modelo o la prueba '
                   'no vale: un número de vela el modelo no lo puede situar.')
@@ -278,9 +294,12 @@ def main():
 
     variantes = [('A', 'como corre hoy', False, None),
                  ('B', 'con la cláusula de verificación ENCENDIDA', True, None)]
+    # D = C corregido: solo hechos verificados y prohibido inventar referencias
     if hechos_txt:
         variantes.append(('C', 'con el BLOQUE DE HECHOS medido', False,
                           hechos_txt))
+        variantes.append(('D', 'hechos verificados + cláusula + prohibido '
+                               'inventar referencias', True, hechos_txt))
     if a.solo:
         quiero = set(a.solo.upper().replace(',', ' ').split())
         variantes = [v for v in variantes if v[0] in quiero]
@@ -306,6 +325,16 @@ def main():
         txt = r.choices[0].message.content
         print(txt)
         salida.append('\n## %s · %s\n\n%s\n' % (letra, titulo, txt))
+        # 🔑 AUDITORÍA AUTOMÁTICA: ¿citó alguna vela que no estaba en la lista?
+        # Es la comprobación que a mano se me pasó la primera vez.
+        if hechos and letra in ('C', 'D'):
+            dados = set(re.findall(r'candle (\d+)', hechos))
+            citados = set(re.findall(r'vela[s]? (\d+)', txt))
+            inventados = sorted(citados - dados, key=int)
+            print('   [auditoría] velas citadas que NO estaban en el bloque: %s'
+                  % (', '.join(inventados) if inventados else 'ninguna ✅'))
+            salida.append('\n> auditoría — velas inventadas: %s\n'
+                          % (', '.join(inventados) if inventados else 'ninguna'))
 
     carpeta = os.path.dirname(a.salida)
     if carpeta and not os.path.isdir(carpeta):
