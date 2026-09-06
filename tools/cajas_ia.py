@@ -91,6 +91,38 @@ def _clave(prov):
     return mod._clave(prov)
 
 
+REINTENTOS_429 = 2
+
+
+def lista_modelos(prov):
+    """Los modelos que ACEPTA esta clave, preguntándoselo al proveedor.
+
+    🔴 EXISTE PARA NO ADIVINAR NOMBRES. Ya nos mordió dos veces: primero con
+    `gemini-2.5-flash-lite`, retirado sin avisar; después con
+    `gemini-flash-latest`, que es un ALIAS MÓVIL — Google lo apuntó a un modelo
+    nuevo cuya capa gratuita son 20 peticiones al día, y la misma orden que
+    llevaba semanas funcionando empezó a dar 429 sin que nada cambiara aquí.
+    La lección es la de siempre: **un alias no es un nombre, es una promesa que
+    otro puede romper.** Para trabajo repetible se fija un modelo concreto."""
+    import requests
+    clave = _clave(prov)
+    if prov != 'gemini':
+        raise SystemExit('por ahora solo se listan los de gemini.')
+    r = requests.get(
+        'https://generativelanguage.googleapis.com/v1beta/models',
+        headers={'x-goog-api-key': clave}, timeout=60)
+    if r.status_code >= 400:
+        print(r.text[:900])
+        raise SystemExit('el proveedor rechazó la petición.')
+    out = []
+    for m in r.json().get('models', []):
+        if 'generateContent' not in m.get('supportedGenerationMethods', []):
+            continue
+        nombre = m['name'].split('/')[-1]
+        out.append((nombre, m.get('displayName', '')))
+    return sorted(out)
+
+
 def _pregunta(prov, modelo, clave, ruta, velas=25, tope=8000, todas=False,
               pregunta=None):
     """Una pregunta con imagen, reintentando lo que es temporal.
@@ -99,6 +131,13 @@ def _pregunta(prov, modelo, clave, ruta, velas=25, tope=8000, todas=False,
     son ruido de la infraestructura. Sin reintento, la prueba muere en el primer
     intento y uno concluye que el modelo no sirve — que es justo la conclusión
     equivocada. En la capa gratuita de Google los dos aparecen a menudo.
+
+    🔴 PERO NO SE REINTENTAN IGUAL, y confundirlos sale caro. El 503 es que el
+    servidor de ellos está lleno: insistir no cuesta nada y acaba entrando. El
+    429 es que TU cuota se acabó, y **cada reintento gasta una petición más de
+    la que ya no queda**. Con 8 intentos por tira nos comimos las 20 gratuitas
+    del día del dueño nosotros solos, mientras el programa le decía "saturado"
+    —que suena a problema de Google— en vez de "se te acabó la cuota".
 
     ⚠️ Y cuando de verdad falla, se imprime el CUERPO del error: el mensaje de
     Google dice el motivo exacto (modelo retirado, cuota agotada, clave mala) y
@@ -146,10 +185,25 @@ def _pregunta(prov, modelo, clave, ruta, velas=25, tope=8000, todas=False,
             # (no se quita hasta que resetea, y esperar no sirve de nada).
             # Enseñando solo el número las dos cosas parecen la misma y uno se
             # queda media hora esperando algo que no va a cambiar. Google lo
-            # dice en el texto: `quotaId` acaba en PerMinute o PerDay.
+            # dice en el texto, con el nombre de la métrica y su límite.
             if intento == 1:
                 print('   --- lo que dice el servidor (%d) ---' % r.status_code)
                 print('   ' + r.text[:600].replace('\n', '\n   '))
+            # 🔴 UN 429 NO SE REINTENTA COMO UN 503. El 503 es que el servidor
+            # de Google está lleno: reintentar no cuesta nada y acaba entrando.
+            # El 429 es que TU cuota se acabó, y cada reintento GASTA UNA
+            # PETICIÓN MÁS de la que ya no queda. Con 8 intentos por tira nos
+            # comimos las 20 gratuitas del día nosotros solos, y encima el
+            # mensaje decía "saturado", que hacía pensar que era de ellos.
+            if r.status_code == 429 and intento >= REINTENTOS_429:
+                print(r.text[:900])
+                raise SystemExit(
+                    '\n🔴 CUOTA AGOTADA (429), no saturación. Reintentar gasta '
+                    'más cuota,\nasí que se para aquí. En el texto de arriba '
+                    'está el límite y el modelo\nexactos. Opciones: esperar al '
+                    'reseteo, usar otro modelo (--modelo\ngemini:MODELO — '
+                    '`--modelos` lista los que acepta tu clave), o activar\n'
+                    'facturación. Lo ya contestado sigue en out/cache_ia/.')
             ra = r.headers.get('Retry-After')
             try:
                 pausa = float(ra) if ra else espera
@@ -262,6 +316,15 @@ def _recorta(ruta, rec, destino):
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
+    ap.add_argument('--modelos', metavar='PROVEEDOR',
+                    help='lista los modelos que acepta tu clave y termina. '
+                         'Úsalo en vez de adivinar un nombre o fiarte de un '
+                         'alias como gemini-flash-latest.')
+    if '--modelos' in sys.argv:
+        pv = sys.argv[sys.argv.index('--modelos') + 1]
+        for nombre, mostrado in lista_modelos(pv):
+            print('  %-34s %s' % (nombre, mostrado))
+        sys.exit(0)
     ap.add_argument('--imagen', required=True)
     ap.add_argument('--modelo', required=True, metavar='PROVEEDOR:MODELO')
     ap.add_argument('--orden', default='yxyx', choices=('yxyx', 'xyxy'))
