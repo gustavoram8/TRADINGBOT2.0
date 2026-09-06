@@ -11,7 +11,7 @@ Su trabajo aquí es retener a quien entra al perfil desde el reel publicitado y
 ganarse el follow — no explicar el producto (para eso están los 12 posts del
 feed y los carruseles que vienen después).
 
-Son SEIS, pensadas para verse seguidas:
+Son SIETE, pensadas para verse seguidas:
   1. `entrada`      — el gancho. Un trade real que salió mal, dibujado.
   2. `no-somos`     — el anti-pitch. Es el que gana el follow.
   3. `reloj`        — el reloj del mercado; se apoya en una pieza gratis.
@@ -19,15 +19,20 @@ Son SEIS, pensadas para verse seguidas:
                       mentor. Es el POSICIONAMIENTO OFICIAL dicho de frente: la
                       2 nombra las 3 a.m. de pasada, ésta las desarrolla.
   5. `construccion` — tú escribes por qué entraste y el analizador discute ESO.
-  6. `barrida`      — CONCEPTO: barrida de liquidez. Va a la destacada de
-                      conceptos, junto a Order Block y Fair Value Gap.
+  6. `barrida`      — CONCEPTO: barrida de liquidez.
+  7. `desplazamiento` — CONCEPTO: displacement. Order Block (post 4) y Fair
+                      Value Gap (post 6) se definen LOS DOS a partir de él —el
+                      OB es la vela anterior, el FVG el hueco que deja—, así
+                      que estaban publicadas las dos consecuencias y no la
+                      causa. Las tres van a la destacada de conceptos.
 
 ⚠️ ANTES DE AÑADIR UNA HISTORIA, LEER `tools/posts_ig_textos.md`. Ahí está el
 plan de publicación REAL —los 18 posts, no 12— y es lo único que dice qué está
 ya cubierto. Las seis herramientas (analizador, Pre-Flight, Synapse, quizzes y
 reto diario, chalkboard, foro) son los posts 11-16: proponerlas como historia
 "nueva" es repetir. Los CONCEPTOS, en cambio, son el pozo que no se agota: solo
-hay Order Block (post 4), Fair Value Gap (post 6) y esta barrida.
+hay Order Block (post 4), Fair Value Gap (post 6), la barrida y el
+desplazamiento.
 
 EN INGLÉS, y escrito en inglés — no traducido. "Stopped out", "it ran without
 you", "no fine print" son cosas que un trader dice; sus equivalentes literales
@@ -350,6 +355,28 @@ T = {
             'That’s a break. Same wick, opposite meaning.'),
     'c7': 'SEE IT ON YOUR OWN CHART',
     'n7': 'tradeable.academy · no card needed',
+
+    # ── 7 · CONCEPTO: DISPLACEMENT.
+    # 🔑 POR QUÉ ÉSTE Y NO OTRO: el dueño ya publicó Order Block (post 4) y
+    #    Fair Value Gap (post 6), y LOS DOS SE DEFINEN A PARTIR DEL
+    #    DESPLAZAMIENTO — el order block es la última vela ANTES de él, el FVG
+    #    es el hueco QUE DEJA. O sea que publicó las dos consecuencias y nunca
+    #    la causa. Esto no es "otro concepto más": cierra el agujero del medio.
+    # 🔴 El discriminante, otra vez, es lo que da valor: una vela grande NO es
+    #    desplazamiento. Lo es una vela grande QUE DEJA UN HUECO. Sin esa
+    #    condición cualquier vela larga pasa por desplazamiento, y ahí es donde
+    #    la gente marca order blocks que no lo son.
+    'e8': 'CONCEPT',
+    't8': 'IT DIDN’T<br>MOVE.<br>IT <em>RAN.</em>',
+    's8': 'Displacement — the move that leaves a hole behind it.',
+    'g8a': 'DISPLACEMENT', 'g8b': 'THE GAP IT LEFT',
+    'sello8': 'HOW TO TELL',
+    'r8': 'A big candle isn’t displacement.<br>A big candle that leaves a gap is.',
+    'r8b': ('If the next candles trade back over the same prices, nothing was '
+            'left behind — price drifted, it didn’t run. That hole is why order '
+            'blocks and fair value gaps work at all.'),
+    'c8': 'SEE IT ON YOUR OWN CHART',
+    'n8': 'tradeable.academy · no card needed',
 }
 
 
@@ -681,6 +708,114 @@ def historia_barrida():
     return 'historia-6-barrida', ORO, cuerpo, 0, False
 
 
+# ── el concepto: lateral, la vela que se dispara, y el hueco que deja ────────
+DESPL = [(100.10, 100.25, 100.35, 100.00), (100.25, 100.05, 100.30,  99.95),
+         (100.05, 100.20, 100.28,  99.98), (100.20, 100.02, 100.30,  99.96),
+         (100.05, 101.60, 101.70, 100.02),   # ← el desplazamiento
+         (101.30, 101.60, 101.75, 100.90), (101.60, 101.45, 101.80, 101.30)]
+I_DESPL = 4
+
+
+def grafico_desplazamiento():
+    """El desplazamiento y su hueco, en SVG, con la figura comprobada.
+
+    🔴 El assert del HUECO es el que sostiene la pieza: si el máximo de la vela
+    anterior no quedara por debajo del mínimo de la posterior, el dibujo sería
+    una vela grande cualquiera mientras el texto dice que un desplazamiento
+    deja un hueco — o sea, enseñando justo el error que la historia corrige."""
+    for i, (o, c, h, l) in enumerate(DESPL):
+        assert h >= max(o, c) and l <= min(o, c), 'vela %d mal formada' % i
+    o, c, h, l = DESPL[I_DESPL]
+    cuerpo = abs(c - o)
+    otros = sorted(abs(v[1] - v[0]) for i, v in enumerate(DESPL) if i != I_DESPL)
+    assert cuerpo > 4 * otros[len(otros) // 2], 'la vela no destaca lo suficiente'
+    assert (h - max(o, c)) + (min(o, c) - l) < .25 * cuerpo, \
+        'con esas mechas eso es rechazo, no desplazamiento'
+    hueco = (DESPL[I_DESPL - 1][2], DESPL[I_DESPL + 1][3])
+    assert hueco[1] > hueco[0], 'no deja hueco: entonces no es desplazamiento'
+
+    AN, ALTO, PAD_D = 1000.0, 340.0, 150.0
+    todos = [v for d in DESPL for v in d]
+    lo, hi = min(todos), max(todos)
+    m = (hi - lo) * .10
+    lo, hi = lo - m, hi + m
+    paso = (AN - PAD_D) / len(DESPL)
+    cw = paso * .46
+
+    def Y(v):
+        return ALTO - (v - lo) / (hi - lo) * ALTO
+
+    def X(i):
+        return paso * (i + .5)
+
+    p = []
+    for k in range(1, 5):
+        y = ALTO * k / 5.0
+        p.append('<line x1="0" y1="%.1f" x2="%.1f" y2="%.1f" stroke="#ffffff" '
+                 'stroke-opacity=".055" stroke-width="1"/>' % (y, AN, y))
+
+    # 🔴 LA BANDA EMPIEZA DESPUÉS DE LA VELA GRANDE, no antes. Pintada desde
+    #    la vela anterior, cruza por encima del propio desplazamiento y se lee
+    #    como si el hueco lo incluyera — cuando el hueco es justo lo que queda
+    #    SIN NEGOCIAR a su derecha. Las dos líneas sí vienen de más atrás,
+    #    porque los niveles salen de las velas vecinas y hay que ver de dónde.
+    xh0, xh1 = X(I_DESPL) + cw * .95, AN - 34
+    xl0 = X(I_DESPL - 1) - cw
+    p.append('<rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" fill="%s" '
+             'fill-opacity=".18"/>'
+             % (xh0, Y(hueco[1]), xh1 - xh0, Y(hueco[0]) - Y(hueco[1]), ORO))
+    for v in hueco:
+        p.append('<line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" stroke="%s" '
+                 'stroke-width="2" stroke-dasharray="8 6" stroke-opacity=".85"/>'
+                 % (xl0, Y(v), xh1, Y(v), ORO))
+
+    for i, (o, c, h, l) in enumerate(DESPL):
+        col = VERDE if c >= o else ROJO
+        x = X(i)
+        p.append('<line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" stroke="%s" '
+                 'stroke-width="3"/>' % (x, Y(h), x, Y(l), col))
+        y0, y1 = Y(max(o, c)), Y(min(o, c))
+        p.append('<rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" fill="%s"/>'
+                 % (x - cw / 2, y0, cw, max(3.0, y1 - y0), col))
+
+    # ⚠️ El rótulo del hueco va DENTRO de la banda y alineado a la derecha: a
+    #    la izquierda cae sobre las velas del lateral, que es donde vive la
+    #    figura, y encima la banda es justo el sitio vacío del dibujo.
+    p.append('<text x="%.1f" y="%.1f" fill="%s" font-size="17" font-weight="700" '
+             'font-family="Mono,monospace" letter-spacing="1.8" '
+             'text-anchor="end">%s</text>'
+             % (xh1 - 10, (Y(hueco[0]) + Y(hueco[1])) / 2 + 6, ORO, T['g8b']))
+    # y la vela, cercada y rotulada por arriba (por abajo está el hueco)
+    xd = X(I_DESPL)
+    p.append('<rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" fill="none" '
+             'stroke="#f4f6fa" stroke-width="3"/>'
+             % (xd - cw * .95, Y(DESPL[I_DESPL][2]) - 10, cw * 1.9,
+                Y(DESPL[I_DESPL][3]) - Y(DESPL[I_DESPL][2]) + 20))
+    p.append('<text x="%.1f" y="%.1f" fill="#f4f6fa" font-size="17" '
+             'font-weight="700" font-family="Mono,monospace" letter-spacing="1.8" '
+             'text-anchor="middle">%s</text>'
+             % (xd, Y(DESPL[I_DESPL][2]) - 24, T['g8a']))
+    return ('<svg viewBox="0 0 %d %d" xmlns="http://www.w3.org/2000/svg">%s</svg>'
+            % (int(AN), int(ALTO + 34), ''.join(p)))
+
+
+def historia_desplazamiento():
+    """Concepto: displacement. Va a la destacada de CONCEPTOS."""
+    cuerpo = ("<style>.bloque{margin-bottom:36px}.sub{margin-top:22px}</style>"
+              "<div class='banda'><span>%s</span>"
+              "<span class='b2'>TRADEABLE.ACADEMY</span></div>"
+              "<div class='aire cuerpo'><h1 class='tres'>%s</h1>"
+              "<div class='sub'>%s</div></div>"
+              "<div class='grafico'>%s</div>"
+              "<div class='aire'><div class='bloque'><div class='sello'>%s</div>%s"
+              "<div class='eco'>%s</div></div></div>"
+              "<div class='abajo'><div class='remate'><div class='t'>%s</div>"
+              "<div class='n'>%s</div></div></div>"
+              % (T['e8'], T['t8'], T['s8'], grafico_desplazamiento(),
+                 T['sello8'], T['r8'], T['r8b'], T['c8'], T['n8']))
+    return 'historia-7-desplazamiento', ORO, cuerpo, 0, False
+
+
 def riel():
     """El día completo en vertical: 24 h de riel y, encima, las ventanas.
 
@@ -817,7 +952,7 @@ def main():
     plan = []
     for hacer in (historia_entrada, historia_no_somos, historia_reloj,
                   historia_porque_no, historia_construccion,
-                  historia_barrida):
+                  historia_barrida, historia_desplazamiento):
         nombre, acento, cuerpo, hueco, pie = hacer()
         io.open(os.path.join(SALIDA, nombre + '.html'), 'w',
                 encoding='utf-8').write(pagina(acento, cuerpo, hueco, pie, False))
