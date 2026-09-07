@@ -172,6 +172,209 @@ def order_blocks(ohlc, gaps):
     return out
 
 
+def _rango_mediano(ohlc):
+    r = sorted(_h(v) - _l(v) for v in ohlc)
+    return r[len(r) // 2] if r else 0.0
+
+
+def estado_fvgs(ohlc, gaps=None):
+    """En qué quedó cada FVG. Esta es la pregunta que hace un trader.
+
+    🔴 POR QUÉ EXISTE. `fvgs()` dice DÓNDE hay un hueco; `invertidos()` dice si
+    murió. Faltaba lo de en medio, que es justo lo que se pregunta mirando el
+    gráfico propio: *¿el mío se tocó siquiera?*. Cuatro estados, excluyentes y
+    en orden de gravedad:
+
+        intacto     el precio no volvió a entrar en la franja
+        tocado      entró, pero no llegó al CE
+        ce          llegó al midpoint (el 50% del hueco)
+        lleno       lo recorrió entero (llegó al borde lejano)
+        invertido   CERRÓ al otro lado — deja de ser soporte y pasa a techo
+
+    ⚠️ Tocar NO es cerrar. Una mecha dentro del hueco lo deja vivo; el estado
+    `invertido` exige cierre, igual que en `invertidos()`. Esa distinción es la
+    diferencia entre 'la zona aguantó' y 'la zona falló', y confundirla da la
+    vuelta al análisis entero."""
+    if gaps is None:
+        gaps = fvgs(ohlc)
+    out = []
+    for g in gaps:
+        e = dict(g, estado='intacto', tocado_en=None, ce_en=None,
+                 lleno_en=None, invertido_en=None)
+        # borde LEJANO: el que el precio tiene que recorrer para llenarlo.
+        lejano = g['suelo'] if g['tipo'] == 'alcista' else g['techo']
+        for j in range(g['i'] + 1, len(ohlc)):
+            v = ohlc[j]
+            if e['tocado_en'] is None and _l(v) <= g['techo'] and _h(v) >= g['suelo']:
+                e['tocado_en'] = j
+                e['estado'] = 'tocado'
+            if e['ce_en'] is None and _l(v) <= g['ce'] <= _h(v):
+                e['ce_en'] = j
+                e['estado'] = 'ce'
+            if e['lleno_en'] is None and _l(v) <= lejano <= _h(v):
+                e['lleno_en'] = j
+                e['estado'] = 'lleno'
+            roto = (_c(v) < g['suelo'] if g['tipo'] == 'alcista'
+                    else _c(v) > g['techo'])
+            if roto:
+                e['invertido_en'] = j
+                e['estado'] = 'invertido'
+                break
+        out.append(e)
+    return out
+
+
+def piscinas(ohlc, k=2, tol_frac=0.40, min_toques=2):
+    """BSL / SSL — liquidez en reposo: máximos (o mínimos) IGUALES.
+
+    Un nivel donde dos o más giros dejaron su extremo casi a la misma altura.
+    Ahí duermen las órdenes de stop, y por eso el precio va a buscarlo.
+
+    🔑 Se agrupan SWINGS, no todas las velas. Con todas las velas, un tramo
+    lateral de veinte velas produce 'un nivel con 19 toques', que no es una
+    piscina: es la propia lateralidad contada vela a vela. Medido sobre la
+    captura real del dueño: con todos los máximos salían niveles de 19 toques;
+    con giros, la lista se vuelve legible.
+
+    ⚠️ EL ENCADENADO. Al agrupar por cercanía hay que comparar contra el PRIMER
+    nivel del grupo, no contra el anterior: si cada uno está dentro de la
+    tolerancia del que le precede, una deriva larga se traga el gráfico entero
+    y el 'nivel' resultante no existe en ninguna parte.
+
+    `tomada_en` = la primera vela POSTERIOR al último toque que atraviesa el
+    nivel con su mecha. Mientras sea None, esa liquidez sigue arriba (o abajo)
+    sin recoger — que es lo que se quiere saber ANTES de entrar."""
+    tol = tol_frac * _rango_mediano(ohlc)
+    sw = swings(ohlc, k)
+    out = []
+    for lado, etiqueta in (('alto', 'BSL'), ('bajo', 'SSL')):
+        pts = sorted((niv, i) for (i, t, niv) in sw if t == lado)
+        grupo = []
+        for niv, i in pts:
+            if grupo and (niv - grupo[0][0]) > tol:
+                out.append(_piscina(ohlc, grupo, lado, etiqueta, min_toques))
+                grupo = []
+            grupo.append((niv, i))
+        if grupo:
+            out.append(_piscina(ohlc, grupo, lado, etiqueta, min_toques))
+    return sorted([p for p in out if p], key=lambda p: p['i'])
+
+
+def _piscina(ohlc, grupo, lado, etiqueta, min_toques):
+    if len(grupo) < min_toques:
+        return None
+    velas = sorted(i for _n, i in grupo)
+    nivel = sum(n for n, _i in grupo) / float(len(grupo))
+    tomada = None
+    for j in range(velas[-1] + 1, len(ohlc)):
+        if (_h(ohlc[j]) > nivel) if lado == 'alto' else (_l(ohlc[j]) < nivel):
+            tomada = j
+            break
+    return {'i': velas[-1], 'tipo': etiqueta, 'lado': lado, 'nivel': nivel,
+            'velas': velas, 'toques': len(velas), 'tomada_en': tomada}
+
+
+def manipulacion(ohlc, k=2, ventana=3):
+    """La PIERNA DE MANIPULACIÓN: barrida + reacción contraria inmediata.
+
+    No es una vela suelta ni una impresión. Son dos hechos encadenados:
+      1. una vela se lleva por delante un extremo previo y CIERRA de vuelta
+         dentro (eso ya lo da `barridas`), y
+      2. en las `ventana` velas siguientes aparece un desplazamiento en
+         sentido CONTRARIO — un FVG o un BOS al otro lado.
+
+    🔑 El paso 2 es lo que la separa de una barrida cualquiera. Una barrida sin
+    reacción es solo una mecha larga; lo que la convierte en manipulación es
+    que el precio se dé la vuelta con fuerza justo después. Por eso se compone
+    de piezas ya medidas en vez de inventar un detector nuevo."""
+    gaps = fvgs(ohlc)
+    ev = bos_eventos(ohlc, k)
+    out, vistos = [], set()
+    for b in sorted(barridas(ohlc, k), key=lambda x: x['i']):
+        # 🔴 UNA PIERNA POR SWING BARRIDO, no una por vela. Sobre el gráfico
+        #    real del dueño, las velas 44, 45 y 46 salían las tres como
+        #    "manipulación que barrió el swing de la vela 29 y se dio la
+        #    vuelta con el FVG de la 47": es UN movimiento contado tres veces.
+        #    Mismo error, misma cura que en `bos_eventos`.
+        if (b['swing'], b['tipo']) in vistos:
+            continue
+        contra = 'alcista' if b['tipo'] == 'bajo' else 'bajista'
+        hasta = b['i'] + ventana
+        g = [x['i'] for x in gaps if b['i'] < x['i'] <= hasta and x['tipo'] == contra]
+        r = [x['i'] for x in ev if b['i'] < x['i'] <= hasta and x['tipo'] == contra]
+        if g or r:
+            vistos.add((b['swing'], b['tipo']))
+            out.append({'i': b['i'], 'tipo': contra, 'nivel': b['nivel'],
+                        'swing': b['swing'], 'fvg': g[0] if g else None,
+                        'bos': r[0] if r else None})
+    return sorted(out, key=lambda x: x['i'])
+
+
+def acumulacion(ohlc, minimo=5, solape_max=0.40, crecimiento_max=0.15):
+    """Rango / acumulación: un tramo donde las velas se pisan entre sí.
+
+    🔑 LA MEDIDA ES ADIMENSIONAL, a propósito: el ancho total del tramo dividido
+    entre la SUMA de los rangos de sus velas. Cinco velas de 30 px en tendencia
+    abarcan ~150 px → 1,0. Las mismas cinco solapándose abarcan 55 → 0,37.
+
+    Se eligió así en vez de 'el tramo mide menos que N velas medianas' porque
+    esa versión depende de la mediana de TODO el gráfico: un gráfico con una
+    zona tranquila y otra violenta declara lateral media pantalla.
+
+    🔴 SEGUNDA CONDICIÓN, Y NO ES ADORNO: el ancho no puede crecer más de un
+    `crecimiento_max` al añadir una vela. Sin ella el cociente DILUYE — cazado
+    al construir el escenario de prueba: seis velas laterales seguidas de una
+    tendencia limpia seguían dando 0,38 en la vela 7, porque la suma de rangos
+    crece igual de rápido que el ancho. El tramo lateral se comía dos velas del
+    impulso siguiente, que es justo la lectura contraria a la que interesa.
+    Una vela que rompe el rango ENSANCHA el rango: eso es lo que se mide.
+
+    ⚠️ Solo se devuelven tramos MAXIMALES. Si 5 velas cumplen, las 4 de dentro
+    también cumplen, y sin filtrar salen cuatro 'acumulaciones' que son una."""
+    n = len(ohlc)
+    bruto = []
+    for i in range(n):
+        mejor, ancho_prev = None, None
+        # 🔴 La ventana se construye vela a vela DESDE `minimo - 1`, no se salta
+        #    de golpe a `minimo`. Si se salta, la primera ventana ya puede traer
+        #    dentro la vela del impulso y no hay contra qué comparar su ancho:
+        #    en el escenario de prueba salían DOS tramos, (0-5) y (2-6), y el
+        #    segundo metía la primera vela de la tendencia.
+        #    Se empieza en `minimo - 1` y no en 2 porque un rango puede abrirse
+        #    con dos velas diminutas: exigirle desde el principio que no se
+        #    ensanche mataría rangos legítimos.
+        for j in range(i + minimo - 2, n):
+            v = ohlc[i:j + 1]
+            span = max(_h(x) for x in v) - min(_l(x) for x in v)
+            suma = sum(_h(x) - _l(x) for x in v)
+            if suma <= 0:
+                break
+            if ancho_prev is not None and span > ancho_prev * (1 + crecimiento_max):
+                break
+            ancho_prev = span
+            if j - i + 1 < minimo:
+                continue
+            if span / suma > solape_max:
+                break
+            mejor = (j, span / suma, span)
+        if mejor:
+            bruto.append({'i': i, 'fin': mejor[0], 'solape': mejor[1],
+                          'ancho': mejor[2],
+                          'techo': max(_h(x) for x in ohlc[i:mejor[0] + 1]),
+                          'suelo': min(_l(x) for x in ohlc[i:mejor[0] + 1])})
+    # 🔴 NI SIQUIERA SE SOLAPAN. Quedarse con los maximales no basta: sobre el
+    #    gráfico real salían «velas 1-10», «8-13» y «11-15» como tres
+    #    acumulaciones, y ninguna contiene a otra. Un trader ve UN lateral ahí.
+    #    Se eligen de forma codiciosa —primero el tramo más largo, y a igualdad
+    #    el más temprano— y se descarta todo lo que pise a un ya elegido.
+    out = []
+    for t in sorted(bruto, key=lambda x: (-(x['fin'] - x['i']), x['i'])):
+        if any(t['i'] <= o['fin'] and o['i'] <= t['fin'] for o in out):
+            continue
+        out.append(t)
+    return sorted(out, key=lambda x: x['i'])
+
+
 def rompe(vela, nivel, arriba=True):
     return _c(vela) > nivel if arriba else _c(vela) < nivel
 
@@ -235,6 +438,40 @@ def esc_order_block():
          _v(103.2, 105, 101.0, 104.5),        # i=3: mínimo 101.0 > máximo 100.4 → FVG
          _v(104.5, 106, 104.0, 105.6)]
     return o, {'ob_i': 1, 'fvg_i': 3}
+
+
+def esc_piscina():
+    """Dos máximos de GIRO casi a la misma altura, y una vela que los barre."""
+    o = [_v(100, 101.0, 99.5, 100.5), _v(100.5, 102.0, 100.0, 101.5),
+         _v(101.5, 105.0, 101.0, 104.0),      # i=2: giro alto en 105.0
+         _v(104.0, 104.2, 102.0, 102.5), _v(102.5, 103.0, 101.0, 101.5),
+         _v(101.5, 103.5, 101.0, 103.0),
+         _v(103.0, 105.2, 102.5, 104.0),      # i=6: giro alto en 105.2 → BSL
+         _v(104.0, 104.5, 102.0, 102.5), _v(102.5, 103.0, 101.0, 101.5),
+         _v(101.5, 102.5, 100.5, 102.0),
+         _v(102.0, 106.0, 101.5, 105.5)]      # i=10: se lleva la piscina
+    return o, {'nivel': 105.1, 'velas': [2, 6], 'tomada_en': 10}
+
+
+def esc_manipulacion():
+    """Barrida del mínimo + desplazamiento alcista inmediato."""
+    o, _ = esc_barrida()
+    o = o + [_v(101.8, 104.5, 101.0, 104.2)]   # i=7: FVG alcista (101.0 > 100.4)
+    return o, {'i': 5, 'tipo': 'alcista', 'fvg': 7}
+
+
+def esc_acumulacion():
+    """Seis velas pisándose y después una tendencia limpia.
+
+    ⚠️ La tendencia está puesta A PROPÓSITO justo detrás: es el caso que
+    destapó la dilución del cociente (ver `acumulacion`)."""
+    o = [_v(100, 101.0, 99.0, 100.2), _v(100.2, 101.2, 99.2, 99.8),
+         _v(99.8, 100.8, 98.8, 100.5), _v(100.5, 101.1, 99.1, 99.4),
+         _v(99.4, 100.9, 99.0, 100.6), _v(100.6, 101.0, 98.9, 99.5),
+         _v(99.5, 103.0, 99.4, 102.8), _v(102.8, 106.0, 102.5, 105.8),
+         _v(105.8, 109.0, 105.5, 108.8), _v(108.8, 112.0, 108.5, 111.8),
+         _v(111.8, 115.0, 111.5, 114.8)]
+    return o, {'i': 0, 'fin': 5}
 
 
 def probar():
@@ -310,6 +547,76 @@ def probar():
          [x['i'] for x in g])
     caso('el OB es la vela %d' % t['ob_i'], any(x['i'] == t['ob_i'] for x in obs),
          [x['i'] for x in obs])
+
+    print('── estado del FVG (lo que pregunta un trader) ──')
+    o, t = esc_fvg_respetado()
+    e = estado_fvgs(o)
+    caso('el respetado llega al CE y NO se llena',
+         len(e) == 1 and e[0]['estado'] == 'ce' and e[0]['lleno_en'] is None,
+         [x['estado'] for x in e])
+    caso('y dice en qué vela se tocó',
+         e and e[0]['tocado_en'] == t['ce_tocado_en'], e and e[0]['tocado_en'])
+    o, t = esc_fvg_invalidado()
+    # ⚠️ Ese escenario tiene DOS huecos: al desplomarse abre uno bajista. Se
+    #    busca por índice, no por posición en la lista — el error que cometí al
+    #    escribir el caso, y que el propio test cazó.
+    e = [x for x in estado_fvgs(o) if x['i'] == t['fvg_i']]
+    caso('el invalidado sale como invertido',
+         len(e) == 1 and e[0]['estado'] == 'invertido',
+         [(x['i'], x['estado']) for x in estado_fvgs(o)])
+    # 🔑 Un FVG al que el precio nunca vuelve tiene que salir INTACTO, no
+    #    'tocado'. Es la respuesta literal a "el FVG ni se ha tocado".
+    o = esc_fvg_respetado()[0][:4] + [_v(105.5, 108.0, 105.2, 107.8),
+                                      _v(107.8, 110.0, 107.5, 109.8)]
+    e = estado_fvgs(o)
+    caso('un FVG al que el precio no vuelve sale INTACTO',
+         len(e) >= 1 and e[0]['estado'] == 'intacto', [x['estado'] for x in e])
+
+    print('── piscinas de liquidez (BSL / SSL) ──')
+    o, t = esc_piscina()
+    ps = [p for p in piscinas(o) if p['tipo'] == 'BSL']
+    caso('encuentra UNA piscina de compras', len(ps) == 1,
+         [(p['toques'], round(p['nivel'], 2)) for p in ps])
+    if ps:
+        caso('con los dos giros %s' % t['velas'], ps[0]['velas'] == t['velas'],
+             ps[0]['velas'])
+        caso('al nivel %.2f' % t['nivel'], abs(ps[0]['nivel'] - t['nivel']) < 1e-6,
+             ps[0]['nivel'])
+        caso('y la marca tomada en la vela %d' % t['tomada_en'],
+             ps[0]['tomada_en'] == t['tomada_en'], ps[0]['tomada_en'])
+    # ⚠️ Sin agrupar por GIROS, un lateral entero se declara "una piscina de N
+    #    toques". Se comprueba que un tramo lateral no dispara piscinas de más.
+    lat = esc_acumulacion()[0]
+    caso('un lateral no inventa una piscina por vela',
+         all(p['toques'] <= 3 for p in piscinas(lat)),
+         [p['toques'] for p in piscinas(lat)])
+
+    print('── pierna de manipulación ──')
+    o, t = esc_manipulacion()
+    m = manipulacion(o)
+    caso('la marca en la vela %d' % t['i'], any(x['i'] == t['i'] for x in m),
+         [x['i'] for x in m])
+    caso('en sentido %s' % t['tipo'],
+         any(x['i'] == t['i'] and x['tipo'] == t['tipo'] for x in m))
+    caso('apoyada en el FVG de la vela %d' % t['fvg'],
+         any(x['i'] == t['i'] and x['fvg'] == t['fvg'] for x in m))
+    # 🔑 Una barrida SIN reacción NO es manipulación: es una mecha larga.
+    caso('una barrida sin reacción NO cuenta', not manipulacion(esc_barrida()[0]),
+         manipulacion(esc_barrida()[0]))
+
+    print('── acumulación ──')
+    o, t = esc_acumulacion()
+    ac = acumulacion(o)
+    caso('encuentra UN tramo', len(ac) == 1, [(x['i'], x['fin']) for x in ac])
+    if ac:
+        caso('de la vela %d a la %d' % (t['i'], t['fin']),
+             ac[0]['i'] == t['i'] and ac[0]['fin'] == t['fin'],
+             (ac[0]['i'], ac[0]['fin']))
+    # 🔴 El caso que destapó la dilución: la tendencia NO puede entrar.
+    caso('la tendencia queda FUERA del tramo',
+         all(x['fin'] <= t['fin'] for x in ac), [x['fin'] for x in ac])
+    caso('una tendencia sola no es acumulación', not acumulacion(o[6:]),
+         acumulacion(o[6:]))
 
     print()
     print('%d/%d' % (hechos[0] - len(mal), hechos[0]))

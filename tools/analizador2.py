@@ -22,7 +22,7 @@ hace solo lo que sabe hacer**, medido:
   4. `afina_velas`      mide máximo, mínimo y cuerpo de cada una   (píxeles)
   5. `afina_velas`      decide alcista/bajista sin conocer paleta  (píxeles)
   6. `eje_precio`       convierte altura en precio                 (modelo + píxeles)
-  7. `hechos_grafico`   deduce BOS, barridas, FVG y order blocks   (aritmética)
+  7. `hechos_grafico`   deduce los HECHOS                          (aritmética)
 
 🔑 **EL PATRÓN QUE SE REPITIÓ CUATRO VECES, y que gobierna este diseño:** el
 modelo **lee y reconoce muy bien, y sitúa mal**. Falló al dar el borde de la
@@ -40,13 +40,29 @@ va ANTES de medir, y por eso es el eslabón del que dependen todos los números
 de abajo. Ver `rejilla_velas`.
 
 ═══ QUÉ SE AFIRMA Y QUÉ NO ═══
-Cada familia de hechos lleva su precisión MEDIDA (banco de 24 láminas, 1.420
-velas, EN CONDICIONES REALES: con el 14% de las velas fuera y recuperadas).
-Solo entran en el bloque las que pasan de `MIN_PRECISION`, porque el propósito
-de todo esto es **no mentirle a un cliente**:
-  BOS 99,2% ✅ · barrida 95,6% ✅ · FVG 84,7% 🔴 · order block 82,6% 🔴
-Las que no pasan se calculan igual y se enseñan aparte, marcadas, para poder
-seguir midiéndolas — pero NO se afirman.
+Cada familia lleva su precisión MEDIDA (banco de 24 láminas, 1.420 velas, EN
+CONDICIONES REALES: con el 14% de las velas fuera y recuperadas). El bloque
+tiene TRES niveles, no dos, y el nivel lo decide el banco, no yo:
+
+    se AFIRMA en seco   BOS 99,2% · barrida 95,6% · acumulación 92,6%
+    se dice CON su
+    tasa de acierto     manipulación 83,3% · order block 82,6%
+                        piscina BSL/SSL 82,0% · FVG+estado 80,1%
+    no se escribe       cualquier cosa por debajo de MIN_MENCION
+
+🔴 POR QUÉ TRES Y NO DOS (2026-09-06). Con dos niveles el bloque solo podía
+hablar de BOS y de barridas, y **jamás de un FVG, de un order block ni de
+liquidez**: o sea que un analizador que vende ICT no podía nombrar ni una sola
+pieza de ICT. El dueño lo dijo con estas palabras al leer una respuesta —«¿por
+qué no ve los FVG si están dibujados?»—. Callarlos no era prudencia: era
+entregar media herramienta.
+
+⚠️ La diferencia con la lista "sin verificar" que se probó y fracasó (prueba C,
+donde el modelo se inventó dos referencias) es de fondo: allí se daba una lista
+NO comprobada pidiendo desconfianza. Aquí TODO está medido; lo único que cambia
+entre niveles es con cuánta seguridad se afirma, y ese número sale del banco.
+La auditoría de velas citadas que no estaban en el bloque sigue siendo
+obligatoria de todos modos.
 
 ⚠️ Y si el eje no da consenso, el bloque sale **sin precios**: dirá "cerró por
 debajo del swing" en vez de inventarse una cifra.
@@ -76,9 +92,28 @@ MIN_PRECISION = 90.0
 # las velas (lo que el modelo se deja de verdad) y recuperándolas con la
 # rejilla. Las de antes —99,8 · 93,7 · 86,8 · 81,8— se habían medido dándole al
 # extractor las columnas de TODAS las velas, que no es lo que pasa.
-PRECISION = {'bos': 99.2, 'barrida': 95.6, 'fvg': 84.7, 'ob': 82.6}
+PRECISION = {'bos': 99.2, 'barrida': 95.6, 'fvg': 84.7, 'ob': 82.6,
+             'piscina': 82.0, 'manip': 83.3, 'acum': 92.6}
+# 🔑 EL 92,6 DE LA ACUMULACIÓN ES UNA ZONA, NO UNAS PUNTAS, y por eso la línea
+# se redacta con "en torno a". Medido en el banco con tres listones distintos:
+#     puntas exactas          70,2%
+#     puntas con ±1 vela      74,5%
+#     el tramo pisa al real
+#     en más de la mitad      92,6%   ← lo que se afirma
+# Es el único hecho del catálogo que no es una vela sino un TRAMO, así que
+# exigirle las dos puntas le cobra dos veces el mismo error de medición. Lo que
+# de verdad falla NO es que se invente laterales —el 92,6 dice que casi siempre
+# hay uno ahí— sino dónde los corta. Si algún día la línea pasa a dar las velas
+# exactas como dato firme, el número que le corresponde vuelve a ser 70,2.
+# El FVG se imprime CON su estado (intacto / tocado / CE / lleno / invertido),
+# así que la línea vale lo que vale el más flojo de los dos: 84,7 y 80,1.
+PRECISION_ESTADO = 80.1
 NOMBRE = {'bos': 'BOS', 'barrida': 'barrida de liquidez',
-          'fvg': 'FVG', 'ob': 'order block'}
+          'fvg': 'FVG', 'ob': 'order block', 'piscina': 'piscina de liquidez',
+          'manip': 'pierna de manipulación', 'acum': 'acumulación'}
+# Por debajo de esto un hecho no se escribe en ninguna parte.
+MIN_MENCION = 78.0
+FAMILIAS = ('bos', 'barrida', 'fvg', 'ob', 'piscina', 'manip', 'acum')
 # Cuántas velas de giro a cada lado para que un extremo cuente como swing.
 # Con k=2 el mismo tramo produce demasiados swings menores y los BOS se
 # multiplican; con k=3 el primer evento coincidió con la marca del indicador
@@ -389,7 +424,7 @@ def serie(velas):
 def hechos(ohlc):
     """Los hechos, por familia, con el índice de la vela."""
     g = HG.fvgs(ohlc)
-    out = {'bos': [], 'barrida': [], 'fvg': [], 'ob': []}
+    out = dict((f, []) for f in FAMILIAS)
 
     def _uno_por_vela(lista):
         """Una línea por vela, no una por swing roto.
@@ -450,9 +485,19 @@ def hechos(ohlc):
             out.append(h)
         return out
 
+    # 🔑 El FVG sale CON SU ESTADO. Dónde hay un hueco es media respuesta; la
+    #    otra media —y la que el dueño preguntó con estas palabras, "el FVG
+    #    literal ni se ha tocado"— es en qué quedó. Van juntos en la misma
+    #    línea porque separados invitan a leer dos hechos donde hay uno.
     out['fvg'] = _sin_repetir(
         [{'i': f['i'], 'tipo': f['tipo'], 'suelo': f['suelo'],
-          'techo': f['techo']} for f in g])
+          'techo': f['techo'], 'estado': f['estado'],
+          'tocado_en': f['tocado_en'], 'ce_en': f['ce_en'],
+          'lleno_en': f['lleno_en'], 'invertido_en': f['invertido_en']}
+         for f in HG.estado_fvgs(ohlc, g)])
+    out['piscina'] = HG.piscinas(ohlc, K_SWING)
+    out['manip'] = HG.manipulacion(ohlc, K_SWING)
+    out['acum'] = HG.acumulacion(ohlc)
     out['ob'] = _sin_repetir(
         [{'i': o['i'], 'tipo': o['tipo'], 'suelo': o['suelo'],
           'techo': o['techo']} for o in HG.order_blocks(ohlc, g)])
@@ -466,12 +511,44 @@ def _pre(valor, escala):
     return escala['precio'](-valor)
 
 
-def bloque(velas, hs, escala, minimo=MIN_PRECISION):
+ESTADO_TXT = {
+    'intacto': 'NO ha vuelto a tocarse',
+    'tocado': 'el precio entró en él pero no llegó al 50%%, en la vela %s',
+    'ce': 'el precio llegó a su 50%% (CE) en la vela %s',
+    'lleno': 'se rellenó entero en la vela %s',
+    'invertido': 'quedó INVALIDADO: un cierre lo atravesó en la vela %s',
+}
+
+
+def precision_de(fam):
+    """La tasa de acierto que se le atribuye a la línea de esa familia."""
+    if fam == 'fvg':
+        return min(PRECISION['fvg'], PRECISION_ESTADO)
+    return PRECISION[fam]
+
+
+def bloque(velas, hs, escala, minimo=MIN_PRECISION, minimo_mencion=MIN_MENCION):
     """El BLOQUE DE HECHOS: lo único que se le entregaría a una IA.
 
-    🔴 Solo entran las familias cuya precisión MEDIDA pasa el mínimo. Las demás
-    se devuelven aparte y marcadas: se siguen calculando para poder medirlas,
-    pero afirmarlas sería mentirle a un cliente una de cada cinco veces."""
+    🔴 TRES NIVELES, NO DOS (2026-09-06). Antes solo entraban las familias por
+    encima del mínimo y el resto se callaba entero. El efecto de eso, dicho por
+    el dueño al leer una respuesta, es que el analizador podía hablar de BOS y
+    de barridas y **jamás de un FVG, de un order block ni de liquidez** — o sea
+    que no podía hablar de ICT, que es la metodología que vende el sitio.
+
+        ≥ `minimo` (90%)        se afirma en seco
+        ≥ `minimo_mencion`      se escribe CON su tasa de acierto medida al lado
+        por debajo               no se escribe en ninguna parte
+
+    🔑 La diferencia con lo que falló en la prueba C no es cosmética. Allí se
+    le entregaba una lista SIN verificar pidiéndole que desconfiara, y se
+    inventó dos referencias. Aquí todas las líneas están medidas; lo único que
+    cambia entre los dos niveles es con cuánta seguridad se puede afirmar cada
+    una, y ese número no lo pone el modelo: lo pone el banco.
+
+    ⚠️ Que se escriba no garantiza que el modelo lo cite bien. La auditoría de
+    `analizador_lab` (velas citadas que no estaban en el bloque) sigue siendo
+    obligatoria."""
     def linea(fam, h):
         x = velas[h['i']]['x0']
         n = 'vela %d (x=%d)' % (h['i'], x)
@@ -486,10 +563,43 @@ def bloque(velas, hs, escala, minimo=MIN_PRECISION):
                     'y el cuerpo cerró DENTRO — no es ruptura'
                     % (n, h['tipo'], h['swing'],
                        '' if p is None else ' en %s' % _fmt(p)))
+        if fam == 'piscina':
+            p = _pre(h['nivel'], escala)
+            return ('%s · %s: %d máximos%s de giro iguales%s (velas %s) — %s'
+                    % (n, h['tipo'], h['toques'],
+                       '' if h['lado'] == 'alto' else ' (mínimos)',
+                       '' if p is None else ' en %s' % _fmt(p),
+                       ', '.join(str(v) for v in h['velas']),
+                       'liquidez SIN tomar todavía' if h['tomada_en'] is None
+                       else 'tomada en la vela %d' % h['tomada_en']))
+        if fam == 'manip':
+            p = _pre(h['nivel'], escala)
+            apoyo = ('FVG en la vela %d' % h['fvg']) if h['fvg'] is not None \
+                else ('BOS en la vela %d' % h['bos'])
+            return ('%s · pierna de manipulación %s: barrió el swing de la '
+                    'vela %d%s y el precio se dio la vuelta (%s)'
+                    % (n, h['tipo'], h['swing'],
+                       '' if p is None else ' en %s' % _fmt(p), apoyo))
+        if fam == 'acum':
+            a, b = _pre(h['techo'], escala), _pre(h['suelo'], escala)
+            return ('en torno a las velas %d-%d (extremos aproximados) · '
+                    'acumulación: unas %d velas dentro de una franja%s '
+                    '(se pisan entre sí: el tramo mide el %d%% de lo que suman '
+                    'sus velas)'
+                    % (h['i'], h['fin'], h['fin'] - h['i'] + 1,
+                       '' if a is None else ' de %s a %s' % (_fmt(b), _fmt(a)),
+                       int(round(100 * h['solape']))))
         a, b = _pre(h['techo'], escala), _pre(h['suelo'], escala)
-        etiqueta = 'FVG' if fam == 'fvg' else 'order block'
-        return ('%s · %s %s%s' % (n, etiqueta, h['tipo'],
-                '' if a is None else ' entre %s y %s' % (_fmt(b), _fmt(a))))
+        rango = '' if a is None else ' entre %s y %s' % (_fmt(b), _fmt(a))
+        if fam == 'ob':
+            return '%s · order block %s%s' % (n, h['tipo'], rango)
+        est = ESTADO_TXT[h['estado']]
+        if '%s' in est:
+            est = est % (h['tocado_en'] if h['estado'] == 'tocado' else
+                         h['ce_en'] if h['estado'] == 'ce' else
+                         h['lleno_en'] if h['estado'] == 'lleno' else
+                         h['invertido_en'])
+        return '%s · FVG %s%s — %s' % (n, h['tipo'], rango, est)
 
     # 🔴 EN ORDEN CRONOLÓGICO, NO AGRUPADOS POR FAMILIA. Cazado en la primera
     # comparación real contra el analizador del sitio: con los hechos agrupados
@@ -499,15 +609,21 @@ def bloque(velas, hs, escala, minimo=MIN_PRECISION):
     # Un bloque que destruye el orden temporal es peor que no dar bloque,
     # porque el modelo se fía de él: le entregamos un informe con los párrafos
     # barajados y razonó sobre ese desorden.
-    firmes, marcados = [], []
-    for fam in ('bos', 'barrida', 'fvg', 'ob'):
-        destino = firmes if PRECISION[fam] >= minimo else marcados
+    firmes, medidos = [], []
+    for fam in FAMILIAS:
+        pr = precision_de(fam)
+        if pr < minimo_mencion:
+            continue
+        destino = firmes if pr >= minimo else medidos
         for h in hs[fam]:
-            destino.append((h['i'], fam, linea(fam, h)))
+            t = linea(fam, h)
+            if destino is medidos:
+                t = '%s  [medido: acierta %.0f%% de las veces]' % (t, pr)
+            destino.append((h['i'], fam, t))
     firmes.sort(key=lambda t: t[0])
-    marcados.sort(key=lambda t: t[0])
+    medidos.sort(key=lambda t: t[0])
     return ([(f, t) for _i, f, t in firmes],
-            [(f, t) for _i, f, t in marcados])
+            [(f, t) for _i, f, t in medidos])
 
 
 def _fmt(p):

@@ -292,6 +292,14 @@ def _verdad_ohlc(verdad):
 # Eslabón C — los hechos
 # ══════════════════════════════════════════════════════════════════════════
 
+FAMILIAS = ('fvg', 'bos', 'barrida', 'ob', 'estado', 'piscina', 'manip', 'acum')
+NOMBRES = {'fvg': 'FVG', 'bos': 'BOS', 'barrida': 'barrida de liquidez',
+           'ob': 'order block', 'estado': 'estado del FVG',
+           'piscina': 'piscina BSL/SSL', 'manip': 'pierna de manipulacion',
+           'acum': 'acumulacion', 'acum±1': 'acumulacion (±1 vela)',
+           'acum~': 'acumulacion (zona, no puntas)'}
+
+
 def _hechos(ohlc):
     """Conjunto de hechos como (familia, índice, tipo). Sin precios: lo que se
     compara es SI el hecho está y en QUÉ vela, no su valor exacto."""
@@ -305,6 +313,18 @@ def _hechos(ohlc):
         s.add(('barrida', b['i'], b['tipo']))
     for o in HG.order_blocks(ohlc, g):
         s.add(('ob', o['i'], o['tipo']))
+    # Familias nuevas (2026-09-06). Se miden igual que las otras: se calculan
+    # sobre la verdad y sobre lo medido, y se comparan. No hace falta que el
+    # generador las dibuje a propósito — se DEDUCEN del OHLC, así que su
+    # precisión es la del OHLC pasada por su definición.
+    for e in HG.estado_fvgs(ohlc, g):
+        s.add(('estado', e['i'], e['estado']))
+    for x in HG.piscinas(ohlc):
+        s.add(('piscina', x['i'], x['tipo']))
+    for x in HG.manipulacion(ohlc):
+        s.add(('manip', x['i'], x['tipo']))
+    for x in HG.acumulacion(ohlc):
+        s.add(('acum', x['i'], x['fin']))
     return s
 
 
@@ -387,8 +407,18 @@ def _traduce(hechos, mapa):
     """Hechos con índice de la lista medida → con índice de la vela real."""
     out = set()
     for fam, i, tipo in hechos:
-        if 0 <= i < len(mapa) and mapa[i] is not None:
-            out.add((fam, mapa[i], tipo))
+        if not (0 <= i < len(mapa)) or mapa[i] is None:
+            continue
+        # 🔴 En `acum` el tercer campo NO es una etiqueta: es la vela donde
+        #    TERMINA el tramo, o sea otro índice de la lista medida. Si se deja
+        #    sin traducir, el hecho se compara contra la verdad con un final
+        #    corrido tantas velas como se hayan perdido, y la familia sale con
+        #    un 0% que no es suyo.
+        if fam == 'acum':
+            if not (0 <= tipo < len(mapa)) or mapa[tipo] is None:
+                continue
+            tipo = mapa[tipo]
+        out.add((fam, mapa[i], tipo))
     return out
 
 
@@ -456,11 +486,35 @@ def probar(n_laminas, semilla, salida, tolerancia=1, con_guia=True,
         h_med = _traduce(_hechos(ohlc_med), mapa)
         p, e = _f1(h_precio, h_med); prec_p.append(p); exh_p.append(e)
         p, e = _f1(h_pixel, h_med); prec_q.append(p); exh_q.append(e)
-        for fam in ('fvg', 'bos', 'barrida', 'ob'):
+        for fam in FAMILIAS:
             V = set(x for x in h_precio if x[0] == fam)
             M = set(x for x in h_med if x[0] == fam)
             fa = por_familia[fam]
             fa[0] += len(V & M); fa[1] += len(M); fa[2] += len(V)
+        # 🔑 La acumulación es el ÚNICO hecho que no es una vela sino un TRAMO,
+        #    y compararlo por igualdad exacta le exige acertar sus DOS puntas.
+        #    Un trader no llama fallo a un lateral que empieza una vela antes.
+        #    Se mide también con ±1 vela de holgura para saber cuánto del fallo
+        #    es de verdad y cuánto es el listón.
+        V = [x for x in h_precio if x[0] == 'acum']
+        M = [x for x in h_med if x[0] == 'acum']
+        ok = sum(1 for m in M if any(abs(m[1] - v[1]) <= 1 and
+                                     abs(m[2] - v[2]) <= 1 for v in V))
+        fa = por_familia['acum±1']
+        fa[0] += ok; fa[1] += len(M); fa[2] += len(V)
+        # ¿y cuando falla, se INVENTA un lateral o solo corre las puntas? Se
+        # cuenta como acierto si el tramo dicho pisa a un tramo real en al
+        # menos la mitad de sus velas. Es lo que decide si se puede decir
+        # "aquí hubo acumulación" sin dar las velas exactas.
+        ok = 0
+        for m in M:
+            for v in V:
+                sol = min(m[2], v[2]) - max(m[1], v[1]) + 1
+                if sol > 0 and sol >= 0.5 * (m[2] - m[1] + 1):
+                    ok += 1
+                    break
+        fa = por_familia['acum~']
+        fa[0] += ok; fa[1] += len(M); fa[2] += len(V)
 
     print('\n%d láminas · %d velas · temas, colores y basura al azar%s'
           % (n_laminas, tot['velas'],
@@ -475,14 +529,12 @@ def probar(n_laminas, semilla, salida, tolerancia=1, con_guia=True,
     print('   contra la verdad EN PÍXELES : acierta %5.1f%% · encuentra %5.1f%%'
           % (100 * np.mean(prec_q), 100 * np.mean(exh_q)))
     print('   ── por familia (contra la verdad de PRECIO) ──')
-    nombres = {'fvg': 'FVG', 'bos': 'BOS', 'barrida': 'barrida de liquidez',
-               'ob': 'order block'}
-    for fam in ('fvg', 'bos', 'barrida', 'ob'):
+    for fam in FAMILIAS + ('acum±1', 'acum~'):
         ok, dichos, reales = por_familia[fam]
         pa = 100.0 * ok / dichos if dichos else 0.0
         ea = 100.0 * ok / reales if reales else 0.0
         print('   %-20s acierta %5.1f%% · encuentra %5.1f%%   (%d reales)'
-              % (nombres[fam], pa, ea, reales))
+              % (NOMBRES[fam], pa, ea, reales))
     print('\n   "acierta" = de los hechos que dice, cuántos son ciertos.')
     print('   "encuentra" = de los hechos que hay, cuántos ve.')
     print('   Si la fila de PRECIO sale peor que la de PÍXELES, la diferencia')
