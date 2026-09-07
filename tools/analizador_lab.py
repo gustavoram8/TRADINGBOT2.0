@@ -90,7 +90,7 @@ def del_sitio():
     return ns
 
 
-def mensaje_usuario(datos, notas, hechos=None):
+def mensaje_usuario(datos, notas, hechos=None, tabla=None):
     """La MISMA plantilla que arma el sitio, más el bloque de hechos si lo hay.
 
     🔑 El bloque va al PRINCIPIO y dicho como lo que es: medido, no
@@ -137,6 +137,8 @@ def mensaje_usuario(datos, notas, hechos=None):
             'words without numbering it. Inventing a reference is the single '
             'worst thing you can do here, because the trader will trust it as '
             'measured.\n\n' % hechos)
+    if tabla:
+        cabeza += tabla + '\n\n'
     return (cabeza + 'Trade submitted for retrospective, educational analysis '
             '(approach: %(approach)s):\n\n'
             'Instrument: %(instrument)s\n'
@@ -165,7 +167,57 @@ def mensaje_usuario(datos, notas, hechos=None):
             '%(idioma)s.' % datos)
 
 
-def bloque_de_hechos(imagen, columnas, prov=None, modelo=None):
+def tabla_ohlc(r):
+    """LA TABLA DE VELAS MEDIDAS, tal cual, para que el modelo la tenga.
+
+    🔴 POR QUÉ EXISTE (2026-09-07, a raíz de una pregunta del dueño que da en
+    el clavo): medimos 102 velas con su máximo, mínimo, apertura y cierre… y le
+    entregábamos once frases. Textualmente: «es como tener una ametralladora y
+    decidir usar una pistola».
+
+    El catálogo de hechos solo cubre lo que YO decidí calcular. Todo lo demás
+    —una media móvil, una compresión que no llega a mi umbral, cualquier lectura
+    que a él se le ocurra y a mí no— queda fuera para siempre. Con la tabla
+    delante, el modelo puede contestar preguntas que nuestro catálogo no cubre.
+
+    🔑 Y no contradice lo medido en agosto. Lo que GPT-4o hace por azar es
+    comparar DOS ALTURAS EN UNA IMAGEN. Comparar dos números en una tabla de
+    texto es otra tarea completamente distinta, y en esa sí es competente.
+
+    ⚠️ Sin escala del eje la tabla va en unidades relativas y se dice: siguen
+    sirviendo para ordenar y comparar, que es lo único que se le pide."""
+    esc = r['escala']
+    filas = []
+    # ⚠️ La serie va en unidades de -y, o sea NEGATIVAS. Comparar sigue
+    #    funcionando, pero una tabla de números negativos invita a que el
+    #    modelo se líe con los signos justo en la operación que le pedimos.
+    #    Se desplaza para que el mínimo del gráfico sea 0.
+    base = min(min(v[1], v[2]) for v in r['ohlc']) if r['ohlc'] else 0
+    for i, v in enumerate(r['ohlc']):
+        o, h, l, c = v
+        if esc:
+            o, h, l, c = [esc['precio'](-x) for x in (o, h, l, c)]
+            filas.append('%3d | %9.2f %9.2f %9.2f %9.2f' % (i, o, h, l, c))
+        else:
+            o, h, l, c = [x - base for x in (o, h, l, c)]
+            filas.append('%3d | %7.0f %7.0f %7.0f %7.0f' % (i, o, h, l, c))
+    cab = ('MEASURED CANDLE TABLE — every candle in this screenshot, measured '
+           'from the pixels (open, high, low, close). Candle 0 is the leftmost.'
+           '\n%s\n'
+           'Use this table for ANY comparison of levels. Do NOT judge whether '
+           'one thing is above or below another by looking at the image — read '
+           'it off these numbers. If a question can be answered from this '
+           'table, answering it from the picture instead is an error.\n\n'
+           'idx |      open      high       low     close\n'
+           % ('Values are in PRICE.' if esc else
+              'NOTE: the price axis could not be read reliably, so these are '
+              'RELATIVE units — higher number = higher on the chart. They are '
+              'still exact for comparing and ordering; just never present them '
+              'to the trader as prices.'))
+    return cab + '\n'.join(filas)
+
+
+def bloque_de_hechos(imagen, columnas, prov=None, modelo=None, completo=False):
     """El bloque de hechos de `analizador2`, en texto plano y SIN PÍXELES.
 
     🔴 LAS COORDENADAS EN PÍXELES HAY QUE QUITARLAS, y por poco se cuelan. El
@@ -204,8 +256,19 @@ def bloque_de_hechos(imagen, columnas, prov=None, modelo=None):
     # una vez dentro del contexto, lo usa. O es un hecho y entra, o no entra.
     # Los no verificados se siguen calculando y se devuelven aparte, para
     # seguir midiéndolos y para enseñárselos al DUEÑO — nunca al modelo.
-    lineas = ['MEASURED FACTS (verified):']
+    lineas = ['MEASURED FACTS (verified, >=90%% accuracy):']
     lineas += ['  - ' + t for _f, t in firmes] or ['  - (none)']
+    if completo:
+        # 🔑 Este segundo bloque NO es la lista "sin verificar" que fracasó en
+        #    la prueba C. Aquella no estaba medida y se pedía desconfianza.
+        #    Estas líneas están medidas una por una y CADA UNA LLEVA SU TASA DE
+        #    ACIERTO al lado: 83% no es "quizá", es un número del banco.
+        lineas += ['', 'ALSO MEASURED, each with its measured hit rate. State '
+                       'these as measurements, not certainties — if a line says '
+                       '83%, say it looks like X rather than asserting X. The '
+                       'same citation rule applies: quote them exactly, invent '
+                       'nothing:']
+        lineas += ['  - ' + t for _f, t in marcados] or ['  - (none)']
     return '\n'.join(lineas), r, marcados
 
 
@@ -248,6 +311,9 @@ def main():
             prov, _, modelo = a.modelo.partition(':')
         hechos_txt, _r, _marcados = bloque_de_hechos(
             a.imagen, a.columnas, prov, modelo)
+        completo_txt, _r2, _m2 = bloque_de_hechos(
+            a.imagen, a.columnas, prov, modelo, completo=True)
+        tabla_txt = tabla_ohlc(_r)
         print('[hechos] %d verificados · escala del eje: %s'
               % (hechos_txt.count('\n  - '),
                  'SÍ (con precios)' if _r['escala'] else
@@ -300,6 +366,11 @@ def main():
                           hechos_txt))
         variantes.append(('D', 'hechos verificados + cláusula + prohibido '
                                'inventar referencias', True, hechos_txt))
+    if hechos_txt:
+        variantes.append(('E', 'TODO: bloque completo con sus tasas + la tabla '
+                               'de velas medidas + cláusula', True,
+                          completo_txt, tabla_txt))
+    variantes = [(v + (None,))[:5] for v in variantes]
     if a.solo:
         quiero = set(a.solo.upper().replace(',', ' ').split())
         variantes = [v for v in variantes if v[0] in quiero]
@@ -308,10 +379,10 @@ def main():
     if hechos_txt:
         salida += ['## Bloque de hechos que se le entrega en C\n',
                    '```\n%s\n```\n' % hechos_txt]
-    for letra, titulo, verificar, hechos in variantes:
+    for letra, titulo, verificar, hechos, tabla in variantes:
         sitio['ANALYZE_VERIFY_CLAIMS'] = verificar
         sistema = sitio['build_system_prompt'](a.approach)
-        usuario = mensaje_usuario(datos, notas, hechos)
+        usuario = mensaje_usuario(datos, notas, hechos, tabla)
         print('\n─── %s · %s ───' % (letra, titulo))
         r = cliente.chat.completions.create(
             model=sitio['MODEL'],
@@ -327,7 +398,7 @@ def main():
         salida.append('\n## %s · %s\n\n%s\n' % (letra, titulo, txt))
         # 🔑 AUDITORÍA AUTOMÁTICA: ¿citó alguna vela que no estaba en la lista?
         # Es la comprobación que a mano se me pasó la primera vez.
-        if hechos and letra in ('C', 'D'):
+        if hechos and letra in ('C', 'D', 'E'):
             dados = set(re.findall(r'candle (\d+)', hechos))
             citados = set(re.findall(r'vela[s]? (\d+)', txt))
             inventados = sorted(citados - dados, key=int)
