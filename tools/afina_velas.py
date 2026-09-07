@@ -112,6 +112,23 @@ def _fondo_por_fila(vent):
     val, cnt = np.unique(crudo, return_counts=True)
     paleta = val[np.argsort(-cnt)[:PALETA_FONDOS]]
 
+    # ⛔ PROBADO Y DESCARTADO (2026-09-08): sacar la paleta del PANEL ENTERO en
+    # vez de la ventana ×5. La idea era buena y el diagnóstico que la motivó es
+    # CIERTO: sobre la captura del dueño, en la fila y=340 de su entrada, el
+    # color más repetido de la ventana era **(2,46,39), el color de sus velas**,
+    # con solo 5 de 30 píxeles — ahí no domina nada y el fondo se elige por
+    # ruido. Un color de vela no puede dominar una fila de mil píxeles; un fondo
+    # sí. Med
+    # ido: en su captura bajó las velas de altura CERO de 6 a 4… y en el
+    # banco hundió todo lo demás — extremo 96,3→95,3 · FVG 84,7→78,7 · order
+    # block 82,6→80,5 · estado del FVG 80,1→73,9 · manipulación 83,3→79,8.
+    # Arreglaba dos velas de una captura y rompía seis puntos en 1.420. El fondo
+    # de VERDAD cambia a lo largo del gráfico (cajas de sesión, bandas), así que
+    # una paleta global le impone a cada zona los fondos de otra.
+    # 🔴 EL PROBLEMA SIGUE ABIERTO: en la zona de su entrada, con la killzone,
+    # la marca de agua "NY AM" —del mismo color que sus velas— y cuatro fibs
+    # apiladas, 5 de 102 velas se miden con altura CERO. Los hechos de esa zona
+    # se calculan sobre eso, y no valen.
     # ⛔ PROBADO Y DESCARTADO (2026-09-05): desempatar por VECINDARIO VERTICAL
     # —usar el fondo que manda en las 50 filas de arriba y las 50 de abajo, que
     # es sólido porque un fondo dura cientos de filas y un tramo denso de velas
