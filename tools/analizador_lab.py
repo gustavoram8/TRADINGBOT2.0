@@ -293,6 +293,9 @@ def main():
     ap.add_argument('--modelo', metavar='PROVEEDOR:MODELO',
                     help='para leer el eje y que el bloque lleve PRECIOS')
     ap.add_argument('--solo', help='corre solo estas variantes, p.ej. C')
+    ap.add_argument('--sin-eje', action='store_true', dest='sin_eje',
+                    help='corre aunque no se pueda leer el eje (prueba '
+                         'DEGRADADA: sin precios)')
     ap.add_argument('--salida', default=os.path.join(RAIZ, 'out',
                                                      'comparativa.md'))
     a = ap.parse_args()
@@ -314,6 +317,20 @@ def main():
         completo_txt, _r2, _m2 = bloque_de_hechos(
             a.imagen, a.columnas, prov, modelo, completo=True)
         tabla_txt = tabla_ohlc(_r)
+        # 🔴 SIN EJE, LA PRUEBA NO VALE Y HAY QUE PARAR. Corrió entera el
+        #    08-sep con el modelo de Gemini retirado: el bloque salió sin
+        #    precios, la tabla en unidades relativas, y las dos respuestas
+        #    parecían un resultado legítimo. Una prueba degradada que no se
+        #    anuncia es peor que una que falla.
+        if not _r['escala']:
+            print('\n🔴 SIN ESCALA DE PRECIOS — la prueba NO es válida y no se '
+                  'lanza.\n   El bloque saldría con números de vela que el '
+                  'modelo no puede situar\n   mirando la imagen, y la tabla en '
+                  'unidades relativas.\n   Comprueba el modelo de Gemini: '
+                  'python3 tools/cajas_ia.py --modelos gemini\n   (o pásale '
+                  '--sin-eje si de verdad quieres correrla degradada).')
+            if not a.sin_eje:
+                raise SystemExit(1)
         print('[hechos] %d verificados · escala del eje: %s'
               % (hechos_txt.count('\n  - '),
                  'SÍ (con precios)' if _r['escala'] else

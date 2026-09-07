@@ -3,7 +3,7 @@
 
     # completo, en el VPS (necesita la clave):
     python3 tools/analizador2.py --imagen docs/capturas_prueba/mnq_5m_zoom.png \\
-        --modelo gemini:gemini-2.5-flash
+        --modelo gemini:gemini-3.6-flash
     # sin red ni cuota, reusando las columnas que dejó la corrida anterior:
     python3 tools/analizador2.py --imagen ... \\
         --columnas @out/analizador2/columnas_mes_ote_perdedor.txt
@@ -128,7 +128,13 @@ TOPE_ALTO = 3.0
 # que dos corridas del mismo comando pueden medir cosas distintas y uno se lo
 # atribuye al código. Se fija un nombre concreto, y cambiarlo es una decisión
 # que se ve. `cajas_ia --modelos gemini` lista los que acepta la clave.
-MODELO_POR_DEFECTO = 'gemini:gemini-2.5-flash'
+# 🔴 TERCERA VEZ QUE GOOGLE RETIRA EL MODELO BAJO LOS PIES (08-sep). Primero
+# `gemini-2.5-flash-lite`, luego el alias `-latest`, y ahora `gemini-2.5-flash`
+# con un 404 «no longer available to new users». El daño no fue quedarse sin
+# modelo: fue que la corrida SIGUIÓ ADELANTE sin eje de precios y el resultado
+# parecía una prueba válida cuando ya no lo era. Fijar el modelo no basta; hay
+# que ver el fallo. `cajas_ia --modelos gemini` lista los que acepta la clave.
+MODELO_POR_DEFECTO = 'gemini:gemini-3.6-flash'
 
 
 def _columnas_del_modelo(ruta, prov, modelo, max_velas, callback=None):
