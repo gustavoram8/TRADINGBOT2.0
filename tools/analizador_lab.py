@@ -370,6 +370,19 @@ def main():
         variantes.append(('E', 'TODO: bloque completo con sus tasas + la tabla '
                                'de velas medidas + cláusula', True,
                           completo_txt, tabla_txt))
+        # 🔴 F ES LA PRUEBA LIMPIA, y existe por una objeción del dueño que era
+        #    correcta: en E le damos la tabla PERO TAMBIÉN nuestras líneas de
+        #    acumulación, liquidez y manipulación ya calculadas. Si entonces
+        #    nombra la acumulación, no prueba que sepa deducirla: prueba que
+        #    sabe copiar. Textualmente: «a mí me interesa que la IA sepa deducir
+        #    cuándo hay acumulación, en dónde y cuándo no».
+        #    F le da SOLO la tabla de velas medidas. Cero hechos, cero pistas,
+        #    ni una palabra sobre acumulación. Lo que diga, lo dedujo él.
+        #    ⚠️ Y sirve en las dos direcciones: si en F inventa una acumulación
+        #    donde no la hay, eso también se ve — que es la otra mitad de lo
+        #    que pidió, "y cuándo no".
+        variantes.append(('F', 'SOLO la tabla de velas medidas: ¿lo deduce '
+                               'sin que se lo digamos?', True, None, tabla_txt))
     variantes = [(v + (None,))[:5] for v in variantes]
     if a.solo:
         quiero = set(a.solo.upper().replace(',', ' ').split())
