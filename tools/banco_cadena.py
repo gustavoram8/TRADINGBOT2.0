@@ -114,13 +114,32 @@ def _tema(rnd):
             'sep': rnd.choice([3, 4, 5, 6])}
 
 
-def _serie(n, rnd):
+def _serie(n, rnd, desplazamientos=True):
+    """Un paseo aleatorio CON VELAS DE DESPLAZAMIENTO.
+
+    🔴 TERCER AGUJERO DE FÁBRICA (2026-09-09). El generador hacía velas de
+    tamaño uniforme, así que en el banco **nunca aparecía una vela gigante** —
+    y son justo las que decide un análisis de ICT: el desplazamiento que abre un
+    FVG, la vela que rompe estructura, la que barre liquidez.
+
+    Consecuencia medida: `TOPE_ALTO`, el tope de altura creíble para una vela,
+    daba EXACTAMENTE el mismo resultado en 3,0 · 5,0 · 6,0. O sea que el banco
+    no podía opinar sobre ese parámetro, y mientras tanto en la cuarta captura
+    del dueño ese tope estaba **descartando sus velas de entrada y de salida**
+    por medir 4-5 veces la mediana: se quedaban fuera de la votación y ganaba un
+    fragmento de 4 px en un sitio absurdo.
+
+    Un parámetro que el banco no puede mover es un parámetro elegido a ojo.
+    """
     p, out = 100.0, []
     for _ in range(n):
         o = p
-        c = o + rnd.uniform(-2.4, 2.4)
-        h = max(o, c) + rnd.uniform(0.02, 1.7)
-        l = min(o, c) - rnd.uniform(0.02, 1.7)
+        # ~1 de cada 12 es un desplazamiento de 3 a 6 veces el tamaño normal
+        k = rnd.uniform(3.0, 6.0) if (desplazamientos and rnd.random() < 0.08) \
+            else 1.0
+        c = o + rnd.uniform(-2.4, 2.4) * k
+        h = max(o, c) + rnd.uniform(0.02, 1.7) * k
+        l = min(o, c) - rnd.uniform(0.02, 1.7) * k
         out.append((o, h, l, c))
         p = c
     return out
@@ -337,6 +356,7 @@ def _mide1(ruta, columnas, guias=None, banda=None, tope=None):
         Y0, Y1 = 0, H
     # 🔑 Las columnas que NO son vela: ahí el fondo se puede LEER en vez de
     #    adivinarlo. Ver `afina_velas._fondo_de_los_huecos`.
+    FCOL = AF.fondo_por_columna(a, Y0, Y1)
     out = []
     for i, (x0, x1) in enumerate(columnas):
         # ventana ~5× la vela. Medido (2026-09-05): con ×3 el extremo sale al
@@ -344,7 +364,7 @@ def _mide1(ruta, columnas, guias=None, banda=None, tope=None):
         # más filas de fondo limpio entran en la paleta.
         margen = max(4, 2 * (x1 - x0 + 1))
         guia = guias[i] if guias else None
-        r = AF.afina(a, x0, x1, Y0, Y1, margen, False, guia, tope)
+        r = AF.afina(a, x0, x1, Y0, Y1, margen, False, guia, tope, FCOL)
         if r is None:
             out.append(None)
             continue

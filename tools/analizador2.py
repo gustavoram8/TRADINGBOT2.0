@@ -134,6 +134,27 @@ FAMILIAS = ('bos', 'barrida', 'fvg', 'ob', 'piscina', 'manip', 'acum')
 # del dueño. Ver CLAUDE.md.
 K_SWING = 3
 # Una vela no puede medir más de esto por la mediana de su propio gráfico.
+# ⚖️ SE QUEDA EN 3,0, Y ES UN EMPATE SIN RESOLVER (09-sep). Medido:
+# Con 3,0 una vela de DESPLAZAMIENTO —la que abre un FVG, la que rompe
+# estructura— se pasa del tope, queda fuera de la votación y gana un fragmento
+# de 4 px en un sitio absurdo. Es lo que destruyó las velas de entrada y salida
+# de la cuarta captura del dueño, que miden 4-5 veces la mediana de su gráfico.
+# ⚠️ El banco no podía opinar sobre esto hasta el mismo día: su generador hacía
+# velas de tamaño uniforme y NUNCA producía un desplazamiento, así que 3,0 · 5,0
+# y 6,0 daban el mismo número clavado. Con desplazamientos dentro:
+#     3,0 → 90,0%   ·   5,0 → 91,0%   ·   6,0 → 91,2%   ·   8,0 → 91,3%
+# Pero subirlo ROMPE el BOS de la vela x=886, que es el único hecho de toda la
+# cadena verificado contra una fuente independiente (la marca del indicador
+# BoS/ChoCh del propio dueño). El reparto exacto:
+#     tope ≤ 3,5 → BOS x=886 ✅ · velas de su cuarta captura 2 de 6 bien
+#     tope ≥ 4,0 → BOS x=886 🔴 · velas de su cuarta captura 3 de 6 bien
+# Ganar una vela a cambio del único hecho contrastado contra el mundo real no
+# es una mejora, es un canje. Y el +1,2 del banco se midió en una fábrica que
+# acababa de cambiar (los desplazamientos son nuevos), así que no es comparable
+# con la que validó el 3,0.
+# 🔴 QUEDA ABIERTO: hace falta un SEGUNDO punto de verdad externa —otra captura
+# con la marca de un indicador que podamos contrastar— para desempatar. Hasta
+# entonces, no se toca.
 TOPE_ALTO = 3.0
 # 🔴 NUNCA UN ALIAS `-latest` PARA TRABAJO MEDIBLE. Google apuntó
 # `gemini-flash-latest` a un modelo nuevo con 20 peticiones gratis al día y la
@@ -387,6 +408,8 @@ def mide(ruta, cajas, nuevas=None):
     H, W, _ = a.shape
     by0, by1 = banda_de_las_guias(cajas, H)
 
+    FCOL = AF.fondo_por_columna(a, by0, by1)
+
     nuevas = nuevas or set()
 
     def pasada(tope):
@@ -394,7 +417,8 @@ def mide(ruta, cajas, nuevas=None):
         for caja in cajas:
             x0, x1, gy0, gy1 = caja
             margen = max(4, 2 * (x1 - x0 + 1))
-            r = AF.afina(a, x0, x1, by0, by1, margen, False, (gy0, gy1), tope)
+            r = AF.afina(a, x0, x1, by0, by1, margen, False, (gy0, gy1),
+                         tope, FCOL)
             if r is None:
                 out.append(None)
                 continue

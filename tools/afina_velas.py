@@ -81,9 +81,102 @@ TOL_LINEA = 90
 # de sesión, a lo sumo el de una segunda caja. Con más, una vela densa se cuela
 # en la paleta y volvemos al fallo que esto arregla.
 PALETA_FONDOS = 4
+# Cuántos anchos de vela a cada lado se miran para estimar el fondo LOCAL.
+# Bastante estrecho a propósito: el borde de una caja de sesión tiene que
+# quedar respetado con un margen de una vela. Ver `_fondo_local`.
+SPAN_FONDO = 4
 # Cuántas velas a cada lado entran en la ventana de la que sale la PALETA (no
 # la de medir, que sigue en ×5). Ver `_paleta`.
 
+
+
+def mascara_huecos(W, columnas):
+    """Qu\u00e9 columnas de la imagen NO pueden contener una vela.
+
+    Se construye sobre la REJILLA COMPLETA \u2014paso y fase deducidos de las
+    columnas recibidas\u2014, no sobre las columnas en s\u00ed.
+
+    \u26a0\ufe0f Hecha con las columnas recibidas mide PEOR que no hacer nada: al
+    extractor le faltan velas \u2014al modelo se le escapa entre el 14 y el 27%\u2014 y
+    el sitio de cada vela ausente quedar\u00eda marcado como hueco, as\u00ed que el fondo
+    se muestrear\u00eda JUSTO ENCIMA DE UNA VELA."""
+    hueco = np.ones(W, bool)
+    if not len(columnas):
+        return hueco
+    cen = sorted((c[0] + c[1]) / 2.0 for c in columnas)
+    ancho = int(round(np.median([c[1] - c[0] + 1 for c in columnas])))
+    if len(cen) > 2:
+        dif = np.diff(cen)
+        paso = float(np.median(dif[dif > 0])) if (dif > 0).any() else ancho + 1
+    else:
+        paso = ancho + 1
+    x = cen[0] - int(np.floor(cen[0] / paso)) * paso
+    while x < W:
+        a = int(round(x - ancho / 2.0)) - 1
+        hueco[max(0, a):min(W, a + ancho + 3)] = False
+        x += paso
+    return hueco
+
+
+def fondo_por_columna(a, y0, y1):
+    """El color que MANDA en cada columna del panel, de arriba abajo.
+
+    \U0001f511 LA OTRA MITAD DEL FONDO. `_fondo_por_fila` da el fondo a lo alto y
+    mata las l\u00edneas HORIZONTALES; esto da el fondo a lo ancho y mata lo que
+    var\u00eda por COLUMNAS: la caja de sesi\u00f3n, el sombreado de una killzone, una
+    banda de color. Juntos son el fondo en dos dimensiones.
+
+    \u26a0\ufe0f Y no necesita huecos entre velas, que es por lo que hubo que llegar
+    aqu\u00ed: en la cuarta captura del due\u00f1o las velas miden 3 px y van cada 4,5, o
+    sea que entre una y otra queda **1,5 px** \u2014 no hay fondo limpio que
+    muestrear en ninguna parte. En cambio una columna de 740 filas con una vela
+    de 100 px sigue teniendo 640 filas de fondo, y su color m\u00e1s repetido ES el
+    fondo de esa zona, sea blanco, negro, amarillo o verde te\u00f1ido. No se
+    presupone ning\u00fan color: se lee el que haya."""
+    sub = a[y0:y1]
+    plano = (sub[:, :, 0] * 65536 + sub[:, :, 1] * 256 + sub[:, :, 2])
+    out = np.zeros((plano.shape[1], 3), int)
+    for x in range(plano.shape[1]):
+        val, cnt = np.unique(plano[:, x], return_counts=True)
+        c = int(val[cnt.argmax()])
+        out[x] = (c >> 16, (c >> 8) & 255, c & 255)
+    return out
+
+
+def _fondo_local(a, y0, y1, cx, hueco, span):
+    """EL FONDO EN DOS DIMENSIONES: por fila **y por zona de columnas**.
+
+    \U0001f534 LA RA\u00cdZ DE LOS DOS FALLOS DE ESTOS D\u00cdAS (2026-09-09). Este archivo
+    asum\u00eda **un color de fondo por FILA**, y un gr\u00e1fico real tiene VARIOS dentro
+    de la misma fila:
+
+        x=0 \u2500\u2500\u2500\u2500\u2500\u2500\u2500 x=640 \u2500\u2500\u2500\u2500\u2500\u2500\u2500 x=690 \u2500\u2500\u2500\u2500\u2500\u2500\u2500 x=1040
+          fondo normal    CAJA DE KILLZONE   fondo normal
+
+    Al elegir uno solo \u2014el que m\u00e1s se repite, el de fuera\u2014 **todo lo que hay
+    dentro de la caja se aparta del fondo y cuenta como tinta**. Medido en la
+    cuarta captura del due\u00f1o: la columna de la vela de su ENTRADA daba 0,67 de
+    tinta, el filtro de l\u00edneas verticales la tom\u00f3 por un borde de interfaz y
+    **borr\u00f3 su vela**. Cuatro velas bajistas seguidas salieron alcistas.
+    La marca de agua de sesi\u00f3n es el mismo fallo por la otra puerta: dentro de
+    las letras el fondo es otro, y ah\u00ed las velas DESAPARECÍAN.
+
+    \U0001f511 C\u00f3mo se estima sin saber ning\u00fan color de antemano \u2014el fondo de un
+    cliente puede ser blanco, negro o amarillo, y sus velas de cualquier
+    color\u2014: **en los HUECOS entre velas**, que es donde por construcci\u00f3n no
+    puede haber vela. Lo que se lea ah\u00ed ES el fondo de esa zona; si el hueco cae
+    dentro de la caja de sesi\u00f3n, sale el te\u00f1ido, que es justo lo que hace falta.
+
+    \u26a0\ufe0f Y LOCAL, que es lo que fall\u00f3 en el intento del 08-sep: aquel muestreaba
+    los huecos de toda la ventana ancha (\u00b110 velas), que CRUZA el borde de la
+    caja y vuelve a mezclar los dos fondos. Con \u00b1`span` p\u00edxeles alrededor de la
+    vela, el borde queda respetado con un margen de una vela."""
+    x0 = max(0, cx - span)
+    x1 = min(a.shape[1], cx + span + 1)
+    h = hueco[x0:x1]
+    if h.sum() < 4:
+        return None
+    return np.median(a[y0:y1, x0:x1][:, h], axis=1).astype(int)
 
 
 def _fondo_por_fila(vent, paleta=None):
@@ -245,7 +338,7 @@ def direccion(velas):
 
 
 def afina(a, x0, x1, y0, y1, margen=5, deslizar=False, guia=None,
-          tope_alto=None):
+          tope_alto=None, fcol=None):
     """Extenso real de la vela que vive entre las columnas x0..x1.
 
     Devuelve (alto, bajo, cuerpo_alto, cuerpo_bajo) en píxeles, o None si en esa
@@ -263,9 +356,17 @@ def afina(a, x0, x1, y0, y1, margen=5, deslizar=False, guia=None,
     vx0 = max(0, x0 - margen); vx1 = min(W, x1 + margen + 1)
     y0 = max(0, y0); y1 = min(H, y1)
     vent = a[y0:y1, vx0:vx1]
+    # 🔑 EL FONDO, EN DOS DIMENSIONES. Ver `_fondo_local`.
     fondo = _fondo_por_fila(vent)
     dif = np.abs(vent - fondo[:, None, :]).sum(2)
     tinta = dif > UMBRAL_TINTA
+    # 🔑 LA SEGUNDA DIMENSIÓN DEL FONDO. Un píxel solo es tinta si se aparta de
+    #    su fila **Y** del color que manda en su propia COLUMNA. Sin esto, una
+    #    caja de sesión translúcida convierte todas sus columnas en tinta de
+    #    arriba abajo, el filtro de verticales las toma por líneas de interfaz
+    #    y BORRA las velas que hay dentro. Ver `fondo_por_columna`.
+    if fcol is not None:
+        tinta &= np.abs(vent - fcol[vx0:vx1][None, :, :]).sum(2) > UMBRAL_TINTA
 
     # 🔴 FUERA LAS LÍNEAS VERTICALES. El fondo por fila mata las horizontales
     # solo (cruzan la ventana entera), pero el BORDE de una caja de sesión es
