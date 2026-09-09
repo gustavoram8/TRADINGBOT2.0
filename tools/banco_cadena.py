@@ -324,11 +324,27 @@ def lamina(ruta, rnd, n=60, marca_de_agua=True, verticales=True,
                        yy - h if arr else yy + h), (cx, pta)], fill=col)
     # un racimo de fibs: varias horizontales del mismo color con etiqueta
     if dibujos and DIB_FIBS[0] and rnd.random() < 0.7:
-        fy = rnd.randint(MARGEN_Y + 40, AL - MARGEN_Y - 140)
+        # 🔴 EL RACIMO DE FIBS, BIEN DIBUJADO — Y POR QUÉ IMPORTA (2026-09-10).
+        # La primera versión llamaba a `rnd.randint(70, 130)` DENTRO del bucle,
+        # así que cada nivel se multiplicaba por una altura distinta y los siete
+        # se apelotonaban: en una lámina taparon una vela durante ~15 filas
+        # SEGUIDAS. Diagnosticado mirando la fila 530 de la vela 47: la ventana
+        # entera valía (186,54,102) —el color del fib— y el color de la vela
+        # (5,190,236) NO APARECÍA. La vela no estaba en la imagen.
+        #
+        # 🔑 Y ese es el punto: esos "2,7 puntos que cuestan los fibs" eran en
+        # buena parte el generador haciendo láminas donde la vela no se ve, y
+        # cobrándole al extractor no leer lo que no está. Es exactamente el
+        # error que ya se cometió con la zona translúcida y que está anotado
+        # arriba. Un banco que dibuja lo imposible mide mentiras.
+        # ⚠️ La altura del racimo se sortea UNA vez, fuera del bucle, y los
+        #    niveles guardan su proporción real de un fib.
+        fy = rnd.randint(MARGEN_Y + 40, AL - MARGEN_Y - 200)
+        alto = rnd.randint(120, 260)
         fc = (rnd.randint(120, 220), rnd.randint(20, 80), rnd.randint(20, 80))
         for frac in (0.0, .25, .5, .62, .705, .79, 1.0):
-            y = int(fy + frac * rnd.randint(70, 130))
-            d.line([(rnd.randint(0, AN // 2), y), (AN, y)], fill=fc)
+            d.line([(rnd.randint(0, AN // 2), int(fy + frac * alto)),
+                    (AN, int(fy + frac * alto))], fill=fc)
 
     # basura ENCIMA: niveles, una discontinua y un par de etiquetas
     for _ in range(rnd.randint(3, 6)):

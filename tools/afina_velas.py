@@ -678,7 +678,21 @@ def afina(a, x0, x1, y0, y1, margen=5, deslizar=False, guia=None,
             if actual > mejor:
                 mejor = actual
         if mejor > limite:
-            tinta[y, :] = False
+            # 🔴 SE QUITA LA LÍNEA, NO LA FILA (2026-09-10). Borrar la fila
+            #    entera borra también **el píxel de la vela que esa fila
+            #    contiene**, y si la línea viene con antialias son 2-3 filas
+            #    seguidas: la vela se PARTE EN DOS y la medición se queda con un
+            #    trozo. Diagnosticado comparando la misma lámina con y sin fibs
+            #    y mirando solo las velas que cambian:
+            #        vela 47 · verdad 488-550 · con fibs 488-526  (−24 px)
+            #        vela 48 · verdad 524-574 · con fibs 542-574  (+18 px)
+            #    No se alargan: se acortan. Es un corte, no una invasión.
+            #    Es el mismo error que tenía el filtro de líneas VERTICALES y se
+            #    cura igual: fuera los píxeles del objeto, no los de la fila.
+            if mlin is not None:
+                tinta[y] &= ~mlin[y, vx0:vx1]
+            else:
+                tinta[y, :] = False
 
     # solo las columnas de la vela, no las de la ventana de referencia
     prop = tinta[:, x0 - vx0:x1 - vx0 + 1]
