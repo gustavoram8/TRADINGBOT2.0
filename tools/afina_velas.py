@@ -51,7 +51,25 @@ from PIL import Image, ImageDraw
 UMBRAL_TINTA = 60
 # Hueco vertical que se tolera dentro de una misma vela. Una mecha fina puede
 # perder un píxel por el suavizado de la captura; con 0 se partiría en dos.
-HUECO = 4
+# Cuántas filas seguidas sin tinta se toleran DENTRO de una misma vela.
+# 🔴 BAJADO DE 4 A 2 EL 09-sep, con el banco midiéndolo por primera vez (hasta
+# que la fábrica no tuvo marcas de agua, verticales y desplazamientos, este
+# parámetro daba lo mismo pusieras lo que pusieras).
+# Es el mismo número tirando en dos direcciones opuestas, y el dueño describió
+# las dos caras sobre su cuarta captura sin saberlo:
+#   · demasiado grande → FUSIONA objetos distintos. Su vela 134: tinta en
+#     316-379 y en 382-439, separadas por 3 px, y salía un recuadro 316-439
+#     que «va mucho más abajo del low del wick y toma fondo blanco».
+#   · demasiado pequeño → PIERDE la mecha, que llega rota. Su vela 135: tinta
+#     en 342-346, 361-363, 384-388, 417-422, con huecos de 15 a 29 px; salía
+#     solo el cuerpo, «la mecha superior e inferior no se marcó».
+# Medido: 2 → 92,3% · 4 → 92,0% · 6 y 8 → 91,6% · 12 → 90,6%, y el BOS
+# verificado del x=886 aguanta en todos. Gana el más pequeño: fusionar dos
+# objetos hace más daño que perder una mecha, porque inventa una vela que no
+# existe en vez de acortar una que sí.
+# ⚠️ Y NO arregla el caso de la mecha rota: 29 px de hueco no se cierran con
+#    ningún valor sensato. Eso es otro fallo y necesita otra cura.
+HUECO = 2
 # 🔴 CUERPO vs MECHA. Antes era un número fijo de píxeles (3) y ESO ESTABA MAL:
 # el dueño lo cazó mirando el dibujo — *"hay algunas mechas que coloreaste como
 # cuerpo"*. Un umbral fijo depende del tamaño de la captura, y en una imagen
