@@ -30,8 +30,24 @@ Cada lámina sortea fondo claro u oscuro, dos colores de vela cualesquiera
 huecos, ancho y separación de vela, rejilla sí o no, y encima le pinta la
 basura que rompió al lector de píxeles en la captura real: una **zona
 translúcida** por detrás, **líneas horizontales** de nivel, una **discontinua**
-y **etiquetas** de texto. Un método que solo funciona con velas verdes y rojas
-sobre fondo negro no sirve para nada: los clientes usan lo que les da la gana.
+y **etiquetas** de texto; **la marca de agua de la sesión**, en letras enormes
+del color de las velas y por detrás de ellas; y **líneas VERTICALES**, que son
+el borde de una caja de sesión. Un método que solo funciona con velas verdes y
+rojas sobre fondo negro no sirve para nada: los clientes usan lo que les da la
+gana.
+
+🔴 LAS DOS ÚLTIMAS SE AÑADIERON EL 09-sep Y LAS DOS DESTAPARON AGUJEROS QUE
+LLEVABAN MESES ABIERTOS con el control de calidad en verde:
+
+    máximo y mínimo exactos      sin nada    solo marca    marca + verticales
+                                   96,3%        85,8%            82,9%
+
+⚠️ El 2,9 de las verticales ENGAÑA por poco. En el banco caen al azar y tocan
+una o dos velas de cada 60; cuando tocan, **destruyen la vela entera**. Y en el
+mundo real no caen al azar: el borde de una caja de sesión cae en la APERTURA
+DE LA KILLZONE, que es exactamente donde entra un trader de ICT. En la cuarta
+captura del dueño cruza las columnas de su entrada y de su stop, y la tinta
+oscura de esas columnas mide 295 y 441 px en un gráfico de vela mediana 41.
 
 ⚠️ La comparación se hace contra DOS verdades a propósito:
   · contra la serie de PRECIO original → el resultado honesto de punta a punta,
@@ -61,6 +77,8 @@ import rejilla_velas as RV        # noqa: E402
 AN, AL = 1400, 800
 # Interruptor de la marca de agua, para medir el ANTES y el DESPUES.
 MARCA_AGUA = [True]
+# Interruptor de las lineas verticales (bordes de caja de sesion).
+VERTICALES = [True]
 # Una vela no puede medir más de esto por la MEDIANA de su propio gráfico.
 TOPE_ALTO = 3.0
 MARGEN_X, MARGEN_Y = 60, 70
@@ -166,7 +184,7 @@ def _marca_de_agua(im, t, rnd):
     return capa
 
 
-def lamina(ruta, rnd, n=60, marca_de_agua=True):
+def lamina(ruta, rnd, n=60, marca_de_agua=True, verticales=True):
     """Dibuja una lámina y devuelve su VERDAD (píxeles y precio)."""
     t = _tema(rnd)
     ohlc = _serie(n, rnd)
@@ -231,6 +249,26 @@ def lamina(ruta, rnd, n=60, marca_de_agua=True):
                        'cuerpo_alto': ct, 'cuerpo_bajo': cb, 'alcista': alc})
         usadas.append((o, h, l, c))
         x += paso
+
+    # 🔴 LÍNEAS VERTICALES — el borde de una caja de sesión (2026-09-09).
+    # LA FÁBRICA NO PROBABA ESTO y es el defecto más destructivo encontrado
+    # hasta ahora. En la cuarta captura del dueño, el borde vertical de la caja
+    # de killzone cruza de arriba abajo las columnas de las velas de su
+    # entrada: la tinta oscura de esas columnas mide 295 y 441 px en un gráfico
+    # cuya vela mediana mide 41. El extractor no puede separar la vela de la
+    # línea, se pasa del tope de credibilidad, vuelve a medir con límite y
+    # devuelve fragmentos de 5 y 8 px en sitios absurdos.
+    # 🔑 Y es GENERAL, no de su indicador: cualquier caja de sesión, cualquier
+    #    rayo vertical, la línea de la hora actual. Todas hacen lo mismo.
+    # ⚠️ Se dibujan ENCIMA de las velas, que es el caso duro y el que se ve en
+    #    su captura. Y de un color oscuro que contrasta, como un borde de caja.
+    if verticales:
+        for _ in range(rnd.randint(1, 2)):
+            vx = rnd.randint(MARGEN_X + 40, AN - MARGEN_X - 40)
+            col = tuple(max(0, c - rnd.randint(60, 140)) for c in t['fondo']) \
+                if sum(t['fondo']) > 380 else \
+                tuple(min(255, c + rnd.randint(60, 140)) for c in t['fondo'])
+            d.line([(vx, 0), (vx, AL)], fill=col, width=rnd.choice([1, 1, 2]))
 
     # basura ENCIMA: niveles, una discontinua y un par de etiquetas
     for _ in range(rnd.randint(3, 6)):
@@ -491,7 +529,8 @@ def probar(n_laminas, semilla, salida, tolerancia=1, con_guia=True,
     recup = [0, 0]                                 # recuperadas, perdidas
     for i in range(n_laminas):
         ruta = os.path.join(salida, 'lam_%02d.png' % i)
-        v = lamina(ruta, rnd, marca_de_agua=MARCA_AGUA[0])
+        v = lamina(ruta, rnd, marca_de_agua=MARCA_AGUA[0],
+                   verticales=VERTICALES[0])
         vivos = _quita_velas(v['velas'], faltan, rnd)
         recup[1] += len(v['velas']) - len(vivos)
         vivas = [v['velas'][j] for j in vivos]
@@ -614,6 +653,8 @@ if __name__ == '__main__':
                          '(88 columnas de ~102). Con 0 se mide la cadena '
                          'suponiendo el eslabón A perfecto, que es lo que '
                          'medía este banco antes y no es la realidad.')
+    ap.add_argument('--sin-verticales', action='store_true',
+                    help='fabrica SIN lineas verticales')
     ap.add_argument('--sin-marca', action='store_true',
                     help='fabrica SIN marcas de agua (la de antes del 09-sep)')
     ap.add_argument('--sin-rejilla', action='store_true',
@@ -621,5 +662,6 @@ if __name__ == '__main__':
                          'que hacen')
     a = ap.parse_args()
     MARCA_AGUA[0] = not a.sin_marca
+    VERTICALES[0] = not a.sin_verticales
     probar(a.laminas, a.semilla, a.salida, a.tolerancia, not a.sin_guia,
            a.faltan, not a.sin_rejilla)
