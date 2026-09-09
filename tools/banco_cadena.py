@@ -79,6 +79,8 @@ AN, AL = 1400, 800
 MARCA_AGUA = [True]
 # Interruptor de las lineas verticales (bordes de caja de sesion).
 VERTICALES = [True]
+# Interruptor de los dibujos del trader (flechas, fibs).
+DIBUJOS = [True]
 # Una vela no puede medir más de esto por la MEDIANA de su propio gráfico.
 TOPE_ALTO = 3.0
 MARGEN_X, MARGEN_Y = 60, 70
@@ -203,7 +205,8 @@ def _marca_de_agua(im, t, rnd):
     return capa
 
 
-def lamina(ruta, rnd, n=60, marca_de_agua=True, verticales=True):
+def lamina(ruta, rnd, n=60, marca_de_agua=True, verticales=True,
+           dibujos=True):
     """Dibuja una lámina y devuelve su VERDAD (píxeles y precio)."""
     t = _tema(rnd)
     ohlc = _serie(n, rnd)
@@ -289,6 +292,42 @@ def lamina(ruta, rnd, n=60, marca_de_agua=True, verticales=True):
                 tuple(min(255, c + rnd.randint(60, 140)) for c in t['fondo'])
             d.line([(vx, 0), (vx, AL)], fill=col, width=rnd.choice([1, 1, 2]))
 
+    # 🔴 LOS DIBUJOS DEL TRADER (2026-09-09). Cuarto agujero de fábrica, y el
+    # que más gente afecta: **el sitio le PIDE al cliente que marque su entrada
+    # y su salida**, y encima casi todos traen fibs, cajas y niveles propios.
+    # Todo eso se estaba contando como tinta de vela.
+    # Medido en la cuarta captura del dueño, columna x=610: lo que yo tomaba
+    # por "una mecha rota en tres trozos" eran su flecha azul (41,98,255) en
+    # y=361-363, una marca roja (178,40,51) en y=391-392 y una línea gris. La
+    # vela de verdad medía 5 px.
+    # 🔑 Van ENCIMA de las velas y PEGADAS a ellas, que es como las pinta un
+    #    trader: una flecha marcando la vela de entrada toca la vela.
+    if dibujos:
+        for _ in range(rnd.randint(1, 3)):
+            if not verdad:
+                break
+            vv = verdad[rnd.randrange(len(verdad))]
+            cx = (vv['x0'] + vv['x1']) // 2
+            col = (rnd.randint(0, 90), rnd.randint(60, 160), rnd.randint(180, 255)) \
+                if rnd.random() < 0.5 else \
+                (rnd.randint(180, 255), rnd.randint(20, 90), rnd.randint(20, 90))
+            arr = rnd.random() < 0.5
+            yy = (vv['max'] - rnd.randint(2, 26)) if arr else \
+                 (vv['min'] + rnd.randint(2, 26))
+            h = rnd.randint(10, 18)
+            d.rectangle([cx - 2, yy - h if arr else yy, cx + 2,
+                         yy if arr else yy + h], fill=col)
+            pta = yy - h - 8 if arr else yy + h + 8
+            d.polygon([(cx - 7, yy - h if arr else yy + h), (cx + 7,
+                       yy - h if arr else yy + h), (cx, pta)], fill=col)
+        # un racimo de fibs: varias horizontales del mismo color con etiqueta
+        if rnd.random() < 0.7:
+            fy = rnd.randint(MARGEN_Y + 40, AL - MARGEN_Y - 140)
+            fc = (rnd.randint(120, 220), rnd.randint(20, 80), rnd.randint(20, 80))
+            for k, frac in enumerate((0.0, .25, .5, .62, .705, .79, 1.0)):
+                y = int(fy + frac * rnd.randint(70, 130))
+                d.line([(rnd.randint(0, AN // 2), y), (AN, y)], fill=fc)
+
     # basura ENCIMA: niveles, una discontinua y un par de etiquetas
     for _ in range(rnd.randint(3, 6)):
         yy = rnd.randint(MARGEN_Y, AL - MARGEN_Y)
@@ -357,6 +396,7 @@ def _mide1(ruta, columnas, guias=None, banda=None, tope=None):
     # 🔑 Las columnas que NO son vela: ahí el fondo se puede LEER en vez de
     #    adivinarlo. Ver `afina_velas._fondo_de_los_huecos`.
     FCOL = AF.fondo_por_columna(a, Y0, Y1)
+    CVELA = AF.colores_de_vela(a, Y0, Y1, FCOL)
     out = []
     for i, (x0, x1) in enumerate(columnas):
         # ventana ~5× la vela. Medido (2026-09-05): con ×3 el extremo sale al
@@ -364,7 +404,7 @@ def _mide1(ruta, columnas, guias=None, banda=None, tope=None):
         # más filas de fondo limpio entran en la paleta.
         margen = max(4, 2 * (x1 - x0 + 1))
         guia = guias[i] if guias else None
-        r = AF.afina(a, x0, x1, Y0, Y1, margen, False, guia, tope, FCOL)
+        r = AF.afina(a, x0, x1, Y0, Y1, margen, False, guia, tope, FCOL, CVELA)
         if r is None:
             out.append(None)
             continue
@@ -550,7 +590,7 @@ def probar(n_laminas, semilla, salida, tolerancia=1, con_guia=True,
     for i in range(n_laminas):
         ruta = os.path.join(salida, 'lam_%02d.png' % i)
         v = lamina(ruta, rnd, marca_de_agua=MARCA_AGUA[0],
-                   verticales=VERTICALES[0])
+                   verticales=VERTICALES[0], dibujos=DIBUJOS[0])
         vivos = _quita_velas(v['velas'], faltan, rnd)
         recup[1] += len(v['velas']) - len(vivos)
         vivas = [v['velas'][j] for j in vivos]
@@ -673,6 +713,8 @@ if __name__ == '__main__':
                          '(88 columnas de ~102). Con 0 se mide la cadena '
                          'suponiendo el eslabón A perfecto, que es lo que '
                          'medía este banco antes y no es la realidad.')
+    ap.add_argument('--sin-dibujos', action='store_true',
+                    help='fabrica SIN dibujos del trader (flechas, fibs)')
     ap.add_argument('--sin-verticales', action='store_true',
                     help='fabrica SIN lineas verticales')
     ap.add_argument('--sin-marca', action='store_true',
@@ -683,5 +725,6 @@ if __name__ == '__main__':
     a = ap.parse_args()
     MARCA_AGUA[0] = not a.sin_marca
     VERTICALES[0] = not a.sin_verticales
+    DIBUJOS[0] = not a.sin_dibujos
     probar(a.laminas, a.semilla, a.salida, a.tolerancia, not a.sin_guia,
            a.faltan, not a.sin_rejilla)

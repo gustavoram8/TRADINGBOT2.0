@@ -57,7 +57,12 @@ def main():
 
     def caso(n, cond, extra=''):
         hechos_[0] += 1
-        print(('  ✅ ' if cond else '  🔴 ') + n + ('' if cond else ' %s' % extra))
+        # ⚠️ `% (extra,)` y no `% extra`: si `extra` es una tupla —y varias
+        #    comprobaciones pasan tuplas— Python la desempaqueta como argumentos
+        #    del formato y revienta con un TypeError JUSTO cuando el caso falla,
+        #    o sea que el test se cae en vez de decirte qué falló.
+        print(('  ✅ ' if cond else '  🔴 ') + n
+              + ('' if cond else ' %s' % (extra,)))
         if not cond:
             mal.append(n)
 

@@ -409,6 +409,7 @@ def mide(ruta, cajas, nuevas=None):
     by0, by1 = banda_de_las_guias(cajas, H)
 
     FCOL = AF.fondo_por_columna(a, by0, by1)
+    CVELA = AF.colores_de_vela(a, by0, by1, FCOL)
 
     nuevas = nuevas or set()
 
@@ -418,7 +419,7 @@ def mide(ruta, cajas, nuevas=None):
             x0, x1, gy0, gy1 = caja
             margen = max(4, 2 * (x1 - x0 + 1))
             r = AF.afina(a, x0, x1, by0, by1, margen, False, (gy0, gy1),
-                         tope, FCOL)
+                         tope, FCOL, CVELA)
             if r is None:
                 out.append(None)
                 continue

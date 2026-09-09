@@ -92,6 +92,12 @@ FILA_ANCHA = 0.80
 # Una columna con tinta en más de esta fracción del panel no es una vela: es
 # una línea vertical de interfaz (borde de caja de sesión, separador de día).
 VERT_INTERFAZ = 0.60
+# Cuántos colores distintos tiene una vela: cuerpo alcista, bajista y borde.
+COLORES_VELA = 3
+# Cuánto puede alejarse un píxel de un color de vela y seguir siéndolo (suma
+# de las tres diferencias RGB). Holgado, para no perder la mecha de 1 px, que
+# llega mezclada con el fondo.
+TOL_COLOR_VELA = 150
 # Cuántas veces la altura que anuncia la GUÍA puede medir la vela de verdad.
 # 🔑 El recuadro del modelo se queda CORTO: en la cuarta captura del dueño su
 # vela de entrada mide 243 px y la guía decía 146. Con 1,0 el bloque bueno se
@@ -166,6 +172,41 @@ def fondo_por_columna(a, y0, y1):
         c = int(val[cnt.argmax()])
         out[x] = (c >> 16, (c >> 8) & 255, c & 255)
     return out
+
+
+def colores_de_vela(a, y0, y1, fcol, cuantos=None):
+    """Los pocos colores con los que están pintadas LAS VELAS de este gráfico.
+
+    \U0001f534 EL CUARTO AGUJERO DE FÁBRICA, y el que más clientes afecta porque el
+    sitio se lo PIDE: **los dibujos del trader se contaban como tinta de vela**.
+    Sus flechas de entrada y salida, sus fibs, sus cajas. Medido en la cuarta
+    captura del dueño, columna x=610: lo que parecía "una mecha rota en tres
+    trozos" era su flecha azul (41,98,255) en y=361-363, una marca roja
+    (178,40,51) en y=391-392 y una línea gris. La vela medía 5 px.
+    En la fábrica, con dibujos encima: 91,9 → 85,6% de máximos y mínimos.
+
+    \U0001f511 LA REGLA, y no presupone ningún color: **un gráfico tiene DOS O TRES
+    colores de vela** —sube, baja y el borde— y con ellos pinta cientos de
+    velas. Un dibujo del trader es de otro color y aparece cuatro veces. Así que
+    se cuentan los colores de toda la tinta del panel y los que mandan son las
+    velas; lo demás, no. El fondo del cliente puede ser blanco, negro o amarillo
+    y sus velas rosadas: aquí no se decide nada de antemano, se cuenta.
+
+    \u26a0\ufe0f Y POR ESO SE MIRA EL PANEL ENTERO Y NO LA COLUMNA. Probado por columna
+    el 09-sep y midió PEOR (80,3%): cuando el dibujo ocupa más columna que la
+    vela, el color que gana la votación es el del DIBUJO y se filtra la vela.
+    En el panel entero eso no puede pasar: hay cientos de velas y cuatro
+    flechas."""
+    sub = a[y0:y1]
+    dif = np.abs(sub - fcol[None, :, :]).sum(2)
+    tin = sub[dif > UMBRAL_TINTA]
+    if len(tin) < 50:
+        return None
+    pl = tin[:, 0] * 65536 + tin[:, 1] * 256 + tin[:, 2]
+    val, cnt = np.unique(pl, return_counts=True)
+    orden = np.argsort(-cnt)[:(cuantos or COLORES_VELA)]
+    return np.array([[int(v) >> 16, (int(v) >> 8) & 255, int(v) & 255]
+                     for v in val[orden]])
 
 
 def _fondo_local(a, y0, y1, cx, hueco, span):
@@ -363,7 +404,7 @@ def direccion(velas):
 
 
 def afina(a, x0, x1, y0, y1, margen=5, deslizar=False, guia=None,
-          tope_alto=None, fcol=None):
+          tope_alto=None, fcol=None, cvela=None):
     """Extenso real de la vela que vive entre las columnas x0..x1.
 
     Devuelve (alto, bajo, cuerpo_alto, cuerpo_bajo) en píxeles, o None si en esa
@@ -392,6 +433,20 @@ def afina(a, x0, x1, y0, y1, margen=5, deslizar=False, guia=None,
     #    y BORRA las velas que hay dentro. Ver `fondo_por_columna`.
     if fcol is not None:
         tinta &= np.abs(vent - fcol[vx0:vx1][None, :, :]).sum(2) > UMBRAL_TINTA
+    # ⛔ AQUÍ IBA EL FILTRO POR COLOR DE VELA, Y SE REVIRTIÓ: 85,6 → 72,0%.
+    #    Es la TERCERA vez que un filtro por color fracasa del mismo modo, así
+    #    que la lección ya no es una sospecha: **filtrar la tinta por color mata
+    #    las mechas**. Una mecha es de 1 px, llega mezclada con el fondo, y
+    #    ningún umbral la separa de un dibujo sin llevársela por delante. El
+    #    cuerpo sobrevive (la dirección subió 93,9 → 94,6) y el extenso se
+    #    hunde: exactamente el perfil de "se pierden las mechas".
+    #    Los tres intentos, para no repetirlos:
+    #      · color dominante de la COLUMNA (09-sep)        → 80,3%
+    #      · dos colores, cuerpo + borde (09-sep)          → 86,4%
+    #      · los colores de vela del PANEL entero (09-sep) → 72,0%
+    #    `colores_de_vela` se conserva porque el diagnóstico que la motivó es
+    #    correcto y puede servir para OTRA cosa —decidir si un objeto es un
+    #    dibujo, en vez de filtrar píxel a píxel—, pero no se usa para medir.
 
     # 🔴 FUERA LAS LÍNEAS VERTICALES. El fondo por fila mata las horizontales
     # solo (cruzan la ventana entera), pero el BORDE de una caja de sesión es
