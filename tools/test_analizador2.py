@@ -108,10 +108,19 @@ def main():
 
     print('── el bloque no afirma lo que no puede ──')
     firmes, marcados = A2.bloque(velas, r['hechos'], None)
-    caso('solo BOS y barridas entre los hechos afirmados',
-         all(f in ('bos', 'barrida') for f, _ in firmes))
-    caso('FVG y order block quedan aparte, marcados',
-         all(f in ('fvg', 'ob') for f, _ in marcados) and len(marcados) > 0)
+    # ⚠️ ESTAS DOS COMPROBACIONES CAMBIARON EL 09-sep, y no por un fallo: el
+    #    bloque pasó de DOS niveles a TRES a propósito. Antes exigían que solo
+    #    BOS y barridas se afirmaran y que FVG y order block se callaran; eso
+    #    dejaba un analizador que vende ICT sin poder nombrar una pieza de ICT.
+    #    Lo que hay que blindar ahora no es QUÉ familia está en cada nivel —eso
+    #    lo decide el banco y se mueve— sino la REGLA: nada se afirma en seco
+    #    por debajo del mínimo, y todo lo que va marcado lleva su tasa.
+    caso('nada se afirma en seco por debajo del mínimo',
+         all(A2.precision_de(f) >= A2.MIN_PRECISION for f, _ in firmes))
+    caso('todo lo marcado lleva su tasa de acierto medida',
+         all('[medido: acierta' in l for _f, l in marcados) and len(marcados) > 0)
+    caso('nada por debajo del mínimo de mención se escribe',
+         all(A2.precision_de(f) >= A2.MIN_MENCION for f, _ in firmes + marcados))
     # sin escala del eje, NINGUNA línea puede llevar la frase "en <precio>"
     caso('sin escala, ninguna línea inventa un precio',
          not any(' en 2' in l or ' entre 2' in l for _f, l in firmes + marcados))

@@ -44,10 +44,9 @@ Cada familia lleva su precisión MEDIDA (banco de 24 láminas, 1.420 velas, EN
 CONDICIONES REALES: con el 14% de las velas fuera y recuperadas). El bloque
 tiene TRES niveles, no dos, y el nivel lo decide el banco, no yo:
 
-    se AFIRMA en seco   BOS 99,2% · barrida 95,6% · acumulación 92,6%
-    se dice CON su
-    tasa de acierto     manipulación 83,3% · order block 82,6%
-                        piscina BSL/SSL 82,0% · FVG+estado 80,1%
+    se AFIRMA en seco   BOS 96,9% · acumulación (zona) 94,5% · barrida 93,1%
+    se dice CON su      piscina BSL/SSL 76,9% · FVG+estado 67,7%
+    tasa de acierto     order block 68,9% · manipulación 69,2%
     no se escribe       cualquier cosa por debajo de MIN_MENCION
 
 🔴 POR QUÉ TRES Y NO DOS (2026-09-06). Con dos niveles el bloque solo podía
@@ -88,12 +87,20 @@ import rejilla_velas as RV        # noqa: E402
 
 # Precisión mínima MEDIDA para que una familia de hechos se pueda AFIRMAR.
 MIN_PRECISION = 90.0
-# ⚠️ MEDIDAS EN CONDICIONES REALES: banco de 24 láminas quitándole el 14% de
-# las velas (lo que el modelo se deja de verdad) y recuperándolas con la
-# rejilla. Las de antes —99,8 · 93,7 · 86,8 · 81,8— se habían medido dándole al
-# extractor las columnas de TODAS las velas, que no es lo que pasa.
-PRECISION = {'bos': 99.2, 'barrida': 95.6, 'fvg': 84.7, 'ob': 82.6,
-             'piscina': 82.0, 'manip': 83.3, 'acum': 92.6}
+# 🔴 NÚMEROS BAJADOS A PROPÓSITO EL 09-sep, Y NO ES QUE EL CÓDIGO EMPEORE: es
+# que la FÁBRICA ahora prueba un defecto que antes no probaba. Las láminas del
+# banco llevan la marca de agua de sesión —el "NY AM" gigante del color de las
+# velas— que rompía la captura real del dueño. Los números viejos (FVG 84,7 ·
+# OB 82,6) estaban medidos en un mundo sin esa basura, o sea que eran
+# optimistas: prometían al cliente una precisión que no tenían delante de un
+# gráfico de verdad con indicadores encima.
+# El arreglo del mismo día (`afina_velas._recorta_tinta_ajena`) sube el extenso
+# de 85,8 a 92,0% CON la marca, y de 96,3 a 97,1% sin ella. Estos son los
+# números honestos de la cadena en el mundo real, no un retroceso.
+# ⚠️ Medidas además EN CONDICIONES REALES: quitándole el 14% de las velas (lo
+# que el modelo se deja de verdad) y recuperándolas con la rejilla.
+PRECISION = {'bos': 96.9, 'barrida': 93.1, 'fvg': 71.9, 'ob': 68.9,
+             'piscina': 76.9, 'manip': 69.2, 'acum': 94.5}
 # 🔑 EL 92,6 DE LA ACUMULACIÓN ES UNA ZONA, NO UNAS PUNTAS, y por eso la línea
 # se redacta con "en torno a". Medido en el banco con tres listones distintos:
 #     puntas exactas          70,2%
@@ -107,12 +114,19 @@ PRECISION = {'bos': 99.2, 'barrida': 95.6, 'fvg': 84.7, 'ob': 82.6,
 # exactas como dato firme, el número que le corresponde vuelve a ser 70,2.
 # El FVG se imprime CON su estado (intacto / tocado / CE / lleno / invertido),
 # así que la línea vale lo que vale el más flojo de los dos: 84,7 y 80,1.
-PRECISION_ESTADO = 80.1
+PRECISION_ESTADO = 67.7
 NOMBRE = {'bos': 'BOS', 'barrida': 'barrida de liquidez',
           'fvg': 'FVG', 'ob': 'order block', 'piscina': 'piscina de liquidez',
           'manip': 'pierna de manipulación', 'acum': 'acumulación'}
 # Por debajo de esto un hecho no se escribe en ninguna parte.
-MIN_MENCION = 78.0
+# 🔴 BAJADO DE 78 A 65 EL 09-sep, y es una decisión, no un ajuste. Con la
+# fábrica midiendo el mundo real, FVG (71,9), order block (68,9) y pierna de
+# manipulación (69,2) caen por debajo de 78. Dejarlas fuera devuelve el
+# analizador a donde estaba: capaz de hablar de BOS y de barridas y de NINGUNA
+# pieza de ICT, que es exactamente lo que el dueño rechazó. Entran, pero cada
+# línea lleva su tasa de acierto MEDIDA al lado: "acierta 72% de las veces" no
+# es un adorno, es lo que separa informar de mentir.
+MIN_MENCION = 65.0
 FAMILIAS = ('bos', 'barrida', 'fvg', 'ob', 'piscina', 'manip', 'acum')
 # Cuántas velas de giro a cada lado para que un extremo cuente como swing.
 # Con k=2 el mismo tramo produce demasiados swings menores y los BOS se

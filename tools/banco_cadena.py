@@ -49,7 +49,7 @@ import random
 import sys
 
 import numpy as np
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(RAIZ, 'tools'))
@@ -59,6 +59,8 @@ import hechos_grafico as HG       # noqa: E402
 import rejilla_velas as RV        # noqa: E402
 
 AN, AL = 1400, 800
+# Interruptor de la marca de agua, para medir el ANTES y el DESPUES.
+MARCA_AGUA = [True]
 # Una vela no puede medir más de esto por la MEDIANA de su propio gráfico.
 TOPE_ALTO = 3.0
 MARGEN_X, MARGEN_Y = 60, 70
@@ -115,7 +117,56 @@ def _mezcla(im, caja, color, alfa):
     return Image.fromarray(a.astype('uint8'))
 
 
-def lamina(ruta, rnd, n=60):
+MARCAS = ('NY AM', 'LONDON', 'ASIA', 'NY PM', 'LUNCH', 'SILVER BULLET')
+_FUENTES = ('/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf',
+            '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf')
+
+
+def _marca_de_agua(im, t, rnd):
+    """La MARCA DE AGUA de la sesión: texto enorme, semitransparente y **del
+    color de las velas**, por DETRÁS de ellas.
+
+    🔴 ESTA ES LA TRAMPA QUE LA FÁBRICA NO PROBABA, y por eso el defecto salía
+    por la puerta con el control de calidad en verde. En la captura real del
+    dueño, su indicador de killzones pinta "NY AM" en letras gigantes de un
+    verde azulado **idéntico al de sus velas**. Resultado medido en la fila que
+    cruza su entrada: el color más repetido de la ventana pasa a ser el de las
+    velas, el extractor lo toma por FONDO, y la vela desaparece. 6 de sus 102
+    velas salieron con altura CERO, cinco pegadas a su entrada.
+
+    🔑 Va ANTES de dibujar las velas, que es como lo pinta la plataforma: las
+    velas tapan la marca, así que la lámina sigue siendo legible para una
+    persona. Lo que envenena no es tapar las velas — es que el FONDO entre
+    velas deje de ser fondo y pase a tener el color de la tinta.
+
+    ⚠️ El color se mezcla con el fondo, no se usa el de la vela a pelo: una
+    marca opaca del color exacto de la vela sería un caso que ninguna
+    plataforma pinta, y volveríamos a cobrarle al extractor una lámina
+    imposible en vez de una difícil."""
+    try:
+        for f in _FUENTES:
+            if os.path.exists(f):
+                fuente = ImageFont.truetype(f, rnd.randint(70, 150))
+                break
+        else:
+            return im
+    except Exception:
+        return im
+    capa = Image.new('RGB', im.size)
+    capa.paste(im)
+    d = ImageDraw.Draw(capa)
+    for _ in range(rnd.randint(1, 2)):
+        base = rnd.choice([t['sube'], t['baja']])
+        alfa = rnd.uniform(0.35, 0.70)
+        col = tuple(int(round(t['fondo'][i] * (1 - alfa) + base[i] * alfa))
+                    for i in range(3))
+        d.text((rnd.randint(MARGEN_X, AN - 420),
+                rnd.randint(MARGEN_Y, AL - 220)),
+               rnd.choice(MARCAS), font=fuente, fill=col)
+    return capa
+
+
+def lamina(ruta, rnd, n=60, marca_de_agua=True):
     """Dibuja una lámina y devuelve su VERDAD (píxeles y precio)."""
     t = _tema(rnd)
     ohlc = _serie(n, rnd)
@@ -154,6 +205,10 @@ def lamina(ruta, rnd, n=60):
         if ok:
             break
     im = _mezcla(im, zona, zc, alfa)
+    # 🔴 LA MARCA DE AGUA VA AQUÍ: después del fondo y de la caja de sesión,
+    #    ANTES de las velas. Ver `_marca_de_agua`.
+    if marca_de_agua:
+        im = _marca_de_agua(im, t, rnd)
     d = ImageDraw.Draw(im)
 
     paso = t['ancho'] + t['sep']
@@ -242,6 +297,8 @@ def _mide1(ruta, columnas, guias=None, banda=None, tope=None):
         Y0, Y1 = banda
     else:
         Y0, Y1 = 0, H
+    # 🔑 Las columnas que NO son vela: ahí el fondo se puede LEER en vez de
+    #    adivinarlo. Ver `afina_velas._fondo_de_los_huecos`.
     out = []
     for i, (x0, x1) in enumerate(columnas):
         # ventana ~5× la vela. Medido (2026-09-05): con ×3 el extremo sale al
@@ -434,7 +491,7 @@ def probar(n_laminas, semilla, salida, tolerancia=1, con_guia=True,
     recup = [0, 0]                                 # recuperadas, perdidas
     for i in range(n_laminas):
         ruta = os.path.join(salida, 'lam_%02d.png' % i)
-        v = lamina(ruta, rnd)
+        v = lamina(ruta, rnd, marca_de_agua=MARCA_AGUA[0])
         vivos = _quita_velas(v['velas'], faltan, rnd)
         recup[1] += len(v['velas']) - len(vivos)
         vivas = [v['velas'][j] for j in vivos]
@@ -557,9 +614,12 @@ if __name__ == '__main__':
                          '(88 columnas de ~102). Con 0 se mide la cadena '
                          'suponiendo el eslabón A perfecto, que es lo que '
                          'medía este banco antes y no es la realidad.')
+    ap.add_argument('--sin-marca', action='store_true',
+                    help='fabrica SIN marcas de agua (la de antes del 09-sep)')
     ap.add_argument('--sin-rejilla', action='store_true',
                     help='no recupera las velas que faltan, para ver el daño '
                          'que hacen')
     a = ap.parse_args()
+    MARCA_AGUA[0] = not a.sin_marca
     probar(a.laminas, a.semilla, a.salida, a.tolerancia, not a.sin_guia,
            a.faltan, not a.sin_rejilla)

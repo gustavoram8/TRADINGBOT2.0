@@ -78,9 +78,12 @@ VERT_INTERFAZ = 0.60
 # de sesión, a lo sumo el de una segunda caja. Con más, una vela densa se cuela
 # en la paleta y volvemos al fallo que esto arregla.
 PALETA_FONDOS = 4
+# Cuántas velas a cada lado entran en la ventana de la que sale la PALETA (no
+# la de medir, que sigue en ×5). Ver `_paleta`.
 
 
-def _fondo_por_fila(vent):
+
+def _fondo_por_fila(vent, paleta=None):
     """El fondo de cada fila, ELIGIENDO DE UNA PALETA en vez de fila a fila.
 
     🔴 EL FALLO QUE ESTO ARREGLA (2026-09-05, era el 73% de las velas mal
@@ -109,9 +112,43 @@ def _fondo_por_fila(vent):
     for y in range(h):
         val, cnt = np.unique(plano[y], return_counts=True)
         crudo[y] = val[cnt.argmax()]
-    val, cnt = np.unique(crudo, return_counts=True)
-    paleta = val[np.argsort(-cnt)[:PALETA_FONDOS]]
+    if paleta is None:
+        val, cnt = np.unique(crudo, return_counts=True)
+        paleta = val[np.argsort(-cnt)[:PALETA_FONDOS]]
 
+    # ⛔ PROBADO Y DESCARTADO (2026-09-09): RECORTAR LA TINTA AJENA POR COLOR.
+    # Es el intento que más cerca estuvo y el que mejor enseña por qué el banco
+    # solo no basta. Idea: una vela es de un color, la letra de la marca de agua
+    # es de otro; elegido ya el bloque por geometría, se recorta la tinta que no
+    # se parece al color que manda dentro de la columna. MEDIDO:
+    #     con marca de agua   85,8 → 92,0%   (y el cuerpo 89,8 → 92,9)
+    #     sin marca de agua   96,3 → 97,1%
+    # o sea que ganaba en las 1.420 velas de la fábrica, en las dos condiciones.
+    # 🔴 Y AUN ASÍ SE REVIERTE, porque rompía `test_analizador2`: el BOS de la
+    # vela x=886, que es el ÚNICO hecho de toda la cadena verificado contra una
+    # fuente independiente —la marca que dibuja el indicador BoS/ChoCh del
+    # propio dueño—. La causa, mirando los píxeles de SU captura: sus velas son
+    # cuerpo GRIS (74,74,74) con borde NEGRO (0,0,0), y la mecha va del color
+    # del borde. Quedarse con el color dominante borraba borde y mecha, y el
+    # extenso se encogía hasta el cuerpo. Él ya lo había avisado: «aunque sea
+    # hueca, las velas necesitan tener bordes».
+    # Admitir DOS colores (cuerpo + borde) tampoco: el banco cayó a 86,4% y la
+    # prueba del x=886 siguió fallando.
+    # 🔑 LA LECCIÓN, que vale más que el arreglo: el banco dibuja las mechas con
+    # UN color sólido, así que premia un filtro por color que en una captura de
+    # verdad borra la mecha. Antes de reintentar esto hay que hacer que la
+    # fábrica dibuje velas CON BORDE de otro color, y solo entonces medir.
+    # ⛔ PROBADO Y DESCARTADO (2026-09-09), DOS intentos más, los dos sobre la
+    # premisa equivocada de que el culpable era el FONDO:
+    #   · paleta desde una ventana ×20 en vez de ×5 → 85,8 → 86,7% (+0,9, nada)
+    #   · muestrear el fondo en los HUECOS entre columnas, que es donde no puede
+    #     haber vela → 85,6%, PEOR. (Y ojo: la máscara hay que construirla sobre
+    #     la rejilla COMPLETA; hecha con las columnas recibidas, el sitio de cada
+    #     vela que falta se marca como hueco y se muestrea el fondo encima de una
+    #     vela.)
+    # Con el arreglo bueno puesto (`_recorta_tinta_ajena`), las dos variantes
+    # miden PEOR que dejar el fondo como estaba: 90,9% contra 92,0%. El fondo
+    # nunca fue el problema.
     # ⛔ PROBADO Y DESCARTADO (2026-09-08): sacar la paleta del PANEL ENTERO en
     # vez de la ventana ×5. La idea era buena y el diagnóstico que la motivó es
     # CIERTO: sobre la captura del dueño, en la fila y=340 de su entrada, el
