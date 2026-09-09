@@ -38,6 +38,28 @@ semana y a partir de ahí la comparación miente.
 ⚠️ La imagen se normaliza EXACTAMENTE igual que en el sitio, así que la
 captura de 1817 px baja a 1280 antes de enviarse. Es lo que el analizador ve
 de verdad; medir sobre la grande y comparar contra otra cosa sería trampa.
+
+═══ LO QUE ESTAS VARIANTES YA CONTESTARON (2026-09-10) ═══
+Dos preguntas que llevaban días abiertas quedan cerradas con medición:
+
+🔴 **La IA NO deduce.** La variante F le entrega SOLO la tabla de las 149 velas
+   medidas —máximo, mínimo, apertura y cierre de cada una— y ningún hecho
+   calculado. Su respuesta no cita ni una sola vela: habla de "no mostró un
+   desplazamiento claro" y "asegúrate de que las confluencias estén visibles".
+   Con los números delante no saca ni un BOS.
+   → El catálogo de hechos NO es un atajo: es la única vía. Todo lo que se
+     quiera que el analizador sepa decir hay que calcularlo en código.
+
+✅ **Pero SÍ usa los hechos, si se le dice DÓNDE mirar.** La misma corrida, sin
+   el ancla de la entrada, citaba "BOS alcista en la vela 19 y en la 35" — el
+   principio del gráfico, cien velas antes del trade. Con `--entrada 144`:
+   «el cierre de la vela 143 muestra un BOS bajista, señal de advertencia para
+   una posición larga» y «el FVG alcista de la 142 fue invalidado en la 143».
+   Un solo cambio movió la respuesta de genérica a específica.
+
+⚠️ Y lo que sigue sin resolverse: esos hechos salen de velas que la cadena aún
+   mide mal. La FORMA de la respuesta ya es correcta; el CONTENIDO todavía no es
+   de fiar. Queda un solo frente, que es medir bien.
 """
 from __future__ import print_function
 
