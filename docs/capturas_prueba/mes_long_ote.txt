@@ -1,0 +1,8 @@
+Trade LONG. OTE / Standard Deviation. Marqué el OTE sobre mi market structure
+shift ALCISTA en 5min. NO usé el último structure shift alcista para el OTE
+porque lo vi demasiado pequeño, y porque sentía que había varios FVG de 5, 10 y
+15min (que no marqué en el gráfico) y el precio debía al menos corregir un poco
+a la baja para luego impulsarse. Eso no pasó. Mi entrada se dio en el nivel 0,5
+del fib y salí más abajo, donde tocó mi stop loss. La caja del gráfico indica
+el TP y el SL: fue un trade de riesgo/beneficio 1:2. En temporalidad de 1H
+estábamos alcistas.
