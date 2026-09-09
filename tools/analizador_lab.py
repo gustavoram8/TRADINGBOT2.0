@@ -339,7 +339,10 @@ def main():
                     help='número de vela donde entró el trader (lo da '
                          '`flechas.py`). Sin esto el modelo no sabe cuál de los '
                          'hechos es el de SU trade y comenta los primeros.')
-    ap.add_argument('--salida', type=int, help='número de vela de la salida')
+    # ⚠️ `--salida` ya estaba cogido para el archivo de salida. La vela va como
+    #    `--vela-salida`; el choque reventaba el programa al arrancar.
+    ap.add_argument('--vela-salida', type=int, dest='vela_salida',
+                    help='número de vela donde salió el trader')
     ap.add_argument('--sin-eje', action='store_true', dest='sin_eje',
                     help='corre aunque no se pueda leer el eje (prueba '
                          'DEGRADADA: sin precios)')
@@ -361,10 +364,10 @@ def main():
             prov, _, modelo = a.modelo.partition(':')
         hechos_txt, _r, _marcados = bloque_de_hechos(
             a.imagen, a.columnas, prov, modelo,
-            entrada=a.entrada, salida=a.salida)
+            entrada=a.entrada, salida=a.vela_salida)
         completo_txt, _r2, _m2 = bloque_de_hechos(
             a.imagen, a.columnas, prov, modelo, completo=True,
-            entrada=a.entrada, salida=a.salida)
+            entrada=a.entrada, salida=a.vela_salida)
         tabla_txt = tabla_ohlc(_r)
         # 🔴 SIN EJE, LA PRUEBA NO VALE Y HAY QUE PARAR. Corrió entera el
         #    08-sep con el modelo de Gemini retirado: el bloque salió sin
@@ -396,10 +399,10 @@ def main():
                       'AT AND BEFORE that candle; what happened after it is '
                       'the outcome, not the reason.'
                       % (a.entrada,
-                         '' if a.salida is None
-                         else ' and EXITED on candle %d' % a.salida))
+                         '' if a.vela_salida is None
+                         else ' and EXITED on candle %d' % a.vela_salida))
         print('[trade] entrada en la vela %s · salida en la %s'
-              % (a.entrada, a.salida))
+              % (a.entrada, a.vela_salida))
 
     crudo = open(a.imagen, 'rb').read()
     tipo = 'image/png' if a.imagen.lower().endswith('.png') else 'image/jpeg'
