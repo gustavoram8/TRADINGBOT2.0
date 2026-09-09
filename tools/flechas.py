@@ -144,6 +144,46 @@ def _sin_columnas_de_iconos(ms, minimo=3):
     return [m for i, m in enumerate(ms) if i not in fuera]
 
 
+def mascara(a, panel=None, banda=None):
+    """Los PÍXELES que ocupan los dibujos del trader (flechas y marcas).
+
+    \U0001f511 SE DEVUELVE LA MANCHA ENTERA, no una lista de recuadros. El extractor
+    de velas no necesita saber cuál es la entrada: necesita saber **qué píxeles
+    no son vela**, y eso es el objeto completo.
+
+    \u26a0\ufe0f Aquí NO importa que se cuelen falsos positivos —un icono de la
+    plataforma, la etiqueta de un fib—. Al medir velas, tratar un icono como
+    "no es vela" es CORRECTO. La precisión del detector solo importa cuando hay
+    que decidir cuál de las manchas es la ENTRADA del trader, que es otro uso
+    (ver `busca`)."""
+    H, W = a.shape[:2]
+    x0, x1 = (panel or (0, W))
+    y0, y1 = (banda or (0, H))
+    x0, x1 = max(0, x0), min(W, x1)
+    y0, y1 = max(0, y0), min(H, y1)
+    sub = a[y0:y1, x0:x1]
+    mx, mn = sub.max(2), sub.min(2)
+    vivo = (mx - mn) > SATURACION
+    out = np.zeros((H, W), bool)
+    for canal in (0, 1, 2):
+        m = vivo & (sub[:, :, canal] == mx) & (mx > 110)
+        et, n = ndimage.label(m)
+        if not n:
+            continue
+        for i in range(n):
+            ys, xs = np.nonzero(et == i + 1)
+            w = xs.max() - xs.min() + 1
+            h = ys.max() - ys.min() + 1
+            if not (ANCHO[0] <= w <= ANCHO[1] and ALTO[0] <= h <= ALTO[1]):
+                continue
+            if not (AREA[0] <= len(xs) <= AREA[1]):
+                continue
+            if not (PROPORCION[0] <= h / float(w) <= PROPORCION[1]):
+                continue
+            out[ys + y0, xs + x0] = True
+    return out
+
+
 def candidatas(ruta, panel=None, banda=None):
     """Todas las manchas con FORMA de flecha dentro del panel.
 

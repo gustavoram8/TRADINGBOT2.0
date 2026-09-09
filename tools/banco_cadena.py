@@ -416,6 +416,8 @@ def _mide1(ruta, columnas, guias=None, banda=None, tope=None):
     FCOL = AF.fondo_por_columna(a, Y0, Y1)
     CVELA = AF.colores_de_vela(a, Y0, Y1, FCOL)
     MLIN = AF.mascara_lineas(a, Y0, Y1, FCOL)
+    import flechas as FL
+    DIB = FL.mascara(a, (0, W), (Y0, Y1))
     out = []
     for i, (x0, x1) in enumerate(columnas):
         # ventana ~5× la vela. Medido (2026-09-05): con ×3 el extremo sale al
@@ -424,7 +426,7 @@ def _mide1(ruta, columnas, guias=None, banda=None, tope=None):
         margen = max(4, 2 * (x1 - x0 + 1))
         guia = guias[i] if guias else None
         r = AF.afina(a, x0, x1, Y0, Y1, margen, False, guia, tope, FCOL, CVELA,
-                     None, MLIN)
+                     None, MLIN, DIB)
         if r is None:
             out.append(None)
             continue

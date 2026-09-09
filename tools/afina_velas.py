@@ -506,7 +506,8 @@ def direccion(velas):
 
 
 def afina(a, x0, x1, y0, y1, margen=5, deslizar=False, guia=None,
-          tope_alto=None, fcol=None, cvela=None, flin=None, mlin=None):
+          tope_alto=None, fcol=None, cvela=None, flin=None, mlin=None,
+          dib=None):
     """Extenso real de la vela que vive entre las columnas x0..x1.
 
     Devuelve (alto, bajo, cuerpo_alto, cuerpo_bajo) en píxeles, o None si en esa
@@ -694,6 +695,34 @@ def afina(a, x0, x1, y0, y1, margen=5, deslizar=False, guia=None,
             else:
                 tinta[y, :] = False
 
+    # 🔴 LOS DIBUJOS DEL TRADER NO SON VELA — PERO TAMPOCO SON "NADA".
+    #    Quitar sus píxeles a secas deja un AGUJERO en la vela que tapan, y
+    #    entonces la vela se parte igual: cambias un error por otro. Lo correcto
+    #    es tratarlos como DESCONOCIDO — no cuentan como tinta, pero un hueco
+    #    cubierto por un dibujo no rompe la continuidad de la vela.
+    #    Es la pieza que les faltaba a los cinco intentos anteriores, que
+    #    borraban (por color, por fila o por objeto) sin reponer la continuidad.
+    # ⛔ SEXTO Y ÚLTIMO INTENTO POR PÍXELES, TAMBIÉN REVERTIDO: 85,6 → 68,1%.
+    #    Era el mejor razonado de los seis —quitar el OBJETO entero (que es lo
+    #    que fallaba en los cinco anteriores) y además tratar sus píxeles como
+    #    DESCONOCIDO en vez de "no es vela", para que el agujero que deja no
+    #    parta la vela que tapa—. Y aun así se hundió, por una razón que cierra
+    #    el asunto:
+    #
+    # 🔴 UNA FLECHA Y UNA VELA SON EL MISMO OBJETO. En el banco una vela mide
+    #    13×30 px; una flecha de trader, 12×25. Mismo tamaño, misma proporción,
+    #    misma compacidad, color vivo las dos. La máscara tapaba las velas.
+    #    `flechas.py` ya lo decía de los iconos de la plataforma; resulta que
+    #    vale también para las velas.
+    #
+    # 🔑 CONCLUSIÓN DE LOS SEIS INTENTOS: separar los dibujos del trader de las
+    #    velas **no se puede hacer solo con píxeles**. No es cuestión de dar con
+    #    el umbral: no existe la propiedad geométrica que los distinga. Y esa es
+    #    exactamente la clase de pregunta —"¿qué ES esto?"— que en este proyecto
+    #    resuelve el MODELO, cinco veces ya. El camino es preguntarle dónde
+    #    dibujó el trader, y que los píxeles afinen el recorte; no al revés.
+    tapado = None
+
     # solo las columnas de la vela, no las de la ventana de referencia
     prop = tinta[:, x0 - vx0:x1 - vx0 + 1]
     filas = np.nonzero(prop.any(1))[0]
@@ -702,6 +731,8 @@ def afina(a, x0, x1, y0, y1, margen=5, deslizar=False, guia=None,
     grupos = []
     g = [filas[0]]
     for v in filas[1:]:
+        # el hueco se cierra si es pequeño, O si lo que hay en medio está
+        # TAPADO por un dibujo del trader (ver arriba)
         if v - g[-1] <= HUECO:
             g.append(v)
         else:
