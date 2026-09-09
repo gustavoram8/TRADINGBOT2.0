@@ -74,6 +74,9 @@ FILA_ANCHA = 0.80
 # Una columna con tinta en más de esta fracción del panel no es una vela: es
 # una línea vertical de interfaz (borde de caja de sesión, separador de día).
 VERT_INTERFAZ = 0.60
+# Cuánto puede alejarse un píxel del color de la línea de interfaz y seguir
+# contando como parte de ella. Ver el bloque "FUERA LAS LÍNEAS VERTICALES".
+TOL_LINEA = 90
 # Cuántos fondos distintos puede tener un gráfico: el del panel, el de una caja
 # de sesión, a lo sumo el de una segunda caja. Con más, una vela densa se cuela
 # en la paleta y volvemos al fallo que esto arregla.
@@ -271,7 +274,51 @@ def afina(a, x0, x1, y0, y1, margen=5, deslizar=False, guia=None,
     # estrecha a la vez en más del 60% del panel; una línea de interfaz, sí.
     alto_vent = tinta.shape[0]
     vertical = tinta.sum(0) > VERT_INTERFAZ * alto_vent
-    tinta[:, vertical] = False
+    # 🔴 NO SE BORRA LA COLUMNA: SE RESTA LA LÍNEA (2026-09-09).
+    # Borrarla entera fue el fallo, y es de los que no dan ningún error. En la
+    # cuarta captura del dueño el borde de la caja de killzone de NY AM cae
+    # JUSTO en la columna de la vela de su entrada: el filtro veía 0,69 de
+    # tinta, decía "esto es una línea de interfaz" y **borraba la vela con
+    # ella**. Cuatro velas bajistas seguidas salieron como alcistas y el
+    # analizador escribió, muy convencido, una película que no ocurrió.
+    #
+    # 🔑 Una línea de interfaz es de UN color, constante de arriba abajo. La
+    # vela que comparte esa columna es de otro. Así que en las columnas
+    # marcadas se quita SOLO la tinta del color de la línea y se conserva el
+    # resto — que es la vela.
+    #
+    # 🔴 PERO OJO: ESTO NO ARREGLA EL CASO DE SU CAPTURA, Y LA RAZÓN IMPORTA.
+    # Midiendo la columna x=651, donde el filtro veía 0,67 de tinta: solo hay
+    # **109 píxeles negros**, en tramos de ~100 px. O sea que **NO HAY NINGUNA
+    # LÍNEA VERTICAL AHÍ**. Lo que llena esa columna de "tinta" es la CAJA
+    # VERDE TRANSLÚCIDA de la killzone: dentro de ella todos los píxeles se
+    # apartan del fondo estimado —que se calcula mezclando lo de dentro con lo
+    # de fuera de la caja— y la columna entera se declara tinta.
+    #
+    # 🔑 Y AHÍ ESTÁ LA RAÍZ COMÚN DE TODO LO DE ESTOS DOS DÍAS: este archivo
+    # asume **un color de fondo por FILA**. Un gráfico real tiene VARIOS fondos
+    # dentro de la misma fila — la marca de agua de la sesión y la caja de
+    # killzone son dos. La marca de agua hacía desaparecer velas; la caja las
+    # hace pasar por líneas de interfaz y las borra. Son el mismo fallo por dos
+    # puertas, y ningún ajuste de umbral lo arregla: hace falta estimar el fondo
+    # en DOS dimensiones, por fila **y por tramo de columnas**.
+    #
+    # ⚠️ Y no vale usar el color de la VELA para decidir (probado ese mismo día,
+    #    ver `_recorta_tinta_ajena` más abajo): la vela tiene dos colores,
+    #    cuerpo y borde, y la mecha va del color del borde. El color de la
+    #    LÍNEA en cambio es uno solo y se mide sin ambigüedad, porque es lo que
+    #    domina en una columna que va de un extremo al otro del panel.
+    for c in np.nonzero(vertical)[0]:
+        col = vent[:, c][tinta[:, c]]
+        if not len(col):
+            continue
+        pl = col[:, 0] * 65536 + col[:, 1] * 256 + col[:, 2]
+        val, cnt = np.unique(pl, return_counts=True)
+        v = int(val[cnt.argmax()])
+        linea = np.array([v >> 16, (v >> 8) & 255, v & 255])
+        es_linea = np.abs(vent[:, c] - linea).sum(1) <= TOL_LINEA
+        # Si al quitar la línea no queda casi nada, esa columna ERA solo línea.
+        tinta[es_linea, c] = False
 
     # ⛔ ENCUADRAR DESLIZANDO LA FRANJA: PROBADO Y DESCARTADO (2026-09-04).
     # La idea era corregir el ~1 px de error del centro moviendo la franja ±3
