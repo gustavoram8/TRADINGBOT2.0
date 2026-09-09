@@ -95,6 +95,9 @@ VERT_INTERFAZ = 0.60
 # Qué parte del panel tiene que recorrer un tramo del mismo color para ser una
 # LÍNEA y no velas. Ver `filas_de_linea`.
 FRAC_LINEA = 0.35
+# Cuántos píxeles seguidos del mismo color, a lo ancho, hacen una LÍNEA. La
+# vela más ancha del banco mide 17 px. Ver `pixeles_de_linea`.
+LARGO_LINEA = 24
 # Cuántos colores distintos tiene una vela: cuerpo alcista, bajista y borde.
 COLORES_VELA = 3
 # Cuánto puede alejarse un píxel de un color de vela y seguir siéndolo (suma
@@ -175,6 +178,57 @@ def fondo_por_columna(a, y0, y1):
         c = int(val[cnt.argmax()])
         out[x] = (c >> 16, (c >> 8) & 255, c & 255)
     return out
+
+
+def mascara_lineas(a, y0, y1, fcol, largo=None):
+    """Los píxeles del PANEL que forman una línea horizontal larga.
+
+    \u26a0\ufe0f SE CALCULA SOBRE EL PANEL, no sobre la ventana de cada vela, y esa es
+    la diferencia entre que funcione y no. La ventana mide 13-30 px de ancho:
+    un tramo de línea de 24 px casi nunca cabe entera dentro, así que mirándola
+    ahí el filtro no encuentra casi nada (+0,1 puntos medido). Vista sobre el
+    panel, una línea de fib recorre cientos de píxeles y es inconfundible."""
+    sub = a[y0:y1]
+    tin = np.abs(sub - fcol[None, :, :]).sum(2) > UMBRAL_TINTA
+    return pixeles_de_linea(sub, tin, largo or LARGO_LINEA)
+
+
+def pixeles_de_linea(vent, tinta, largo=None):
+    """Qué píxeles de tinta pertenecen a una LÍNEA HORIZONTAL larga.
+
+    \U0001f534 TERCER INTENTO CONTRA EL MISMO AGUJERO, y lo que aprendí de los dos
+    anteriores es qué NO hacer:
+      · por COLOR (85,6 → 72,0%): borraba todos los píxeles de un color, y con
+        ellos las mechas, que llegan mezcladas con el fondo.
+      · por FILAS (85,6 → 67,3%): borraba la fila entera, y con ella la vela que
+        esa fila contenía.
+    Los dos quitaban DE MÁS. Aquí se quita solo lo que forma parte del objeto:
+    si un fib cruza una vela, desaparece la línea y la vela se queda.
+
+    \U0001f511 La regla es de forma pura: **un píxel de tinta que vive dentro de un
+    tramo seguido de `largo` píxeles del MISMO color, a lo ancho, es una línea**.
+    La vela más ancha del banco mide 17 px y las de una captura real 3 a 17; un
+    fib recorre cientos. Y como solo se miran píxeles que YA son tinta, el fondo
+    de la derecha del gráfico —el que hundió el intento 2— ni se considera.
+
+    \u26a0\ufe0f El tramo se mide sobre la ventana de referencia, no sobre el panel:
+    basta con que la línea la cruce entera para saber que no es una vela."""
+    if not tinta.any():
+        return np.zeros(tinta.shape, bool)
+    n = largo or LARGO_LINEA
+    if tinta.shape[1] < n:
+        return np.zeros(tinta.shape, bool)
+    plano = (vent[:, :, 0] * 65536 + vent[:, :, 1] * 256 + vent[:, :, 2])
+    # ¿el píxel y los n-1 siguientes son del mismo color y son tinta?
+    ok = tinta.copy()
+    for k in range(1, n):
+        ok[:, :-k] &= tinta[:, k:] & (plano[:, :-k] == plano[:, k:])
+        ok[:, -k:] = False
+    # marcar los n píxeles de cada tramo encontrado
+    fuera = np.zeros(tinta.shape, bool)
+    for k in range(n):
+        fuera[:, k:] |= ok[:, :tinta.shape[1] - k]
+    return fuera
 
 
 def filas_de_linea(a, y0, y1, x0, x1, frac=None):
@@ -287,7 +341,7 @@ def _fondo_local(a, y0, y1, cx, hueco, span):
     return np.median(a[y0:y1, x0:x1][:, h], axis=1).astype(int)
 
 
-def _fondo_por_fila(vent, paleta=None):
+def _fondo_por_fila(vent, paleta=None, sin=None):
     """El fondo de cada fila, ELIGIENDO DE UNA PALETA en vez de fila a fila.
 
     🔴 EL FALLO QUE ESTO ARREGLA (2026-09-05, era el 73% de las velas mal
@@ -314,7 +368,13 @@ def _fondo_por_fila(vent, paleta=None):
     plano = (vent[:, :, 0] * 65536 + vent[:, :, 1] * 256 + vent[:, :, 2])
     crudo = np.zeros(h, dtype=np.int64)
     for y in range(h):
-        val, cnt = np.unique(plano[y], return_counts=True)
+        fila = plano[y]
+        # ⚠️ Los píxeles que forman una LÍNEA no votan al fondo de su fila: si
+        #    votaran, un fib que cruza la ventana entera ganaría, y entonces el
+        #    fondo de verdad pasaría a contar como tinta.
+        if sin is not None and not sin[y].all():
+            fila = fila[~sin[y]]
+        val, cnt = np.unique(fila, return_counts=True)
         crudo[y] = val[cnt.argmax()]
     if paleta is None:
         val, cnt = np.unique(crudo, return_counts=True)
@@ -446,7 +506,7 @@ def direccion(velas):
 
 
 def afina(a, x0, x1, y0, y1, margen=5, deslizar=False, guia=None,
-          tope_alto=None, fcol=None, cvela=None, flin=None):
+          tope_alto=None, fcol=None, cvela=None, flin=None, mlin=None):
     """Extenso real de la vela que vive entre las columnas x0..x1.
 
     Devuelve (alto, bajo, cuerpo_alto, cuerpo_bajo) en píxeles, o None si en esa
@@ -485,6 +545,26 @@ def afina(a, x0, x1, y0, y1, margen=5, deslizar=False, guia=None,
     #    🔑 Para reintentarlo hay que exigir dos cosas más: que el tramo sea de
     #    un color que NO sea el fondo de esa zona, y medirlo solo DENTRO del
     #    área que ocupan las velas, no del panel entero.
+    #    → Hecho en `pixeles_de_linea`, que además quita SOLO los píxeles del
+    #      tramo y no la fila entera.
+    # ⛔ CUATRO INTENTOS CONTRA EL AGUJERO DE LOS DIBUJOS DEL TRADER, LOS CUATRO
+    #    SIN MOVER EL NÚMERO (09-sep). Queda escrito con sus medidas porque el
+    #    valor está en no repetirlos:
+    #      1. filtrar la tinta por COLOR de vela ............ 85,6 → 72,0%
+    #      2. borrar las FILAS que son una línea ............ 85,6 → 67,3%
+    #      3. borrar los PÍXELES de la línea, en la ventana . 85,6 → 85,7%
+    #      4. borrar los PÍXELES de la línea, en el PANEL ... 85,6 → 85,7%
+    #      5. que esos píxeles no voten al FONDO de su fila . 85,6 → 85,6%
+    #    Los dos primeros quitaban de más y se llevaban las velas por delante.
+    #    Los tres últimos quitan lo correcto y **no cambia nada**, y eso es el
+    #    dato importante: significa que los 2,7 puntos que cuestan los fibs NO
+    #    salen de que sus píxeles se cuenten como vela.
+    # 🔴 CONCLUSIÓN HONESTA: no sé de dónde sale ese daño. Antes de escribir un
+    #    sexto intento hay que MEDIR el mecanismo — comparar vela a vela con y
+    #    sin fibs en la misma lámina y mirar las que cambian— en vez de seguir
+    #    proponiendo curas para una enfermedad que no está diagnosticada.
+    #    `mascara_lineas` y `pixeles_de_linea` se conservan sin usar: funcionan,
+    #    y servirán cuando se sepa dónde aplicarlas.
     # ⛔ AQUÍ IBA EL FILTRO POR COLOR DE VELA, Y SE REVIRTIÓ: 85,6 → 72,0%.
     #    Es la TERCERA vez que un filtro por color fracasa del mismo modo, así
     #    que la lección ya no es una sospecha: **filtrar la tinta por color mata

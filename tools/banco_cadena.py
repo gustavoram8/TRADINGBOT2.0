@@ -399,7 +399,7 @@ def _mide1(ruta, columnas, guias=None, banda=None, tope=None):
     #    adivinarlo. Ver `afina_velas._fondo_de_los_huecos`.
     FCOL = AF.fondo_por_columna(a, Y0, Y1)
     CVELA = AF.colores_de_vela(a, Y0, Y1, FCOL)
-    FLIN = AF.filas_de_linea(a, Y0, Y1, 0, W)
+    MLIN = AF.mascara_lineas(a, Y0, Y1, FCOL)
     out = []
     for i, (x0, x1) in enumerate(columnas):
         # ventana ~5× la vela. Medido (2026-09-05): con ×3 el extremo sale al
@@ -408,7 +408,7 @@ def _mide1(ruta, columnas, guias=None, banda=None, tope=None):
         margen = max(4, 2 * (x1 - x0 + 1))
         guia = guias[i] if guias else None
         r = AF.afina(a, x0, x1, Y0, Y1, margen, False, guia, tope, FCOL, CVELA,
-                     FLIN)
+                     None, MLIN)
         if r is None:
             out.append(None)
             continue
