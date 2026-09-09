@@ -90,7 +90,7 @@ def del_sitio():
     return ns
 
 
-def mensaje_usuario(datos, notas, hechos=None, tabla=None):
+def mensaje_usuario(datos, notas, hechos=None, tabla=None, entrada=None):
     """La MISMA plantilla que arma el sitio, más el bloque de hechos si lo hay.
 
     🔑 El bloque va al PRINCIPIO y dicho como lo que es: medido, no
@@ -118,6 +118,18 @@ def mensaje_usuario(datos, notas, hechos=None, tabla=None):
                   'Do NOT simply repeat their construction back — analyze and '
                   'contrast it.' % notas)
     cabeza = ''
+    if entrada:
+        # 🔴 LO QUE FALTABA, Y ERA LA RAÍZ (2026-09-10). Sin saber DÓNDE entró
+        #    el trader, ningún hecho es más relevante que otro: el modelo recibe
+        #    treinta y cuatro líneas ordenadas de la vela 1 a la 149 y comenta
+        #    las primeras. Medido sobre este mismo trade: citó "BOS alcista en
+        #    la vela 19 y en la 35" cuando la entrada fue la 144 — cien velas
+        #    antes, y ni una palabra de lo que pasó donde entró.
+        #    El sitio YA le pide al cliente que marque entrada y salida con
+        #    flechas; `flechas.py` las localiza desde hace días. Solo faltaba
+        #    esto: decírselo.
+        cabeza += ('THE TRADE ITSELF — this is the anchor of your whole '
+                   'analysis:\n%s\n\n' % entrada)
     if hechos:
         cabeza = (
             'MEASURED FACTS ABOUT THIS EXACT SCREENSHOT (computed from the '
@@ -217,7 +229,19 @@ def tabla_ohlc(r):
     return cab + '\n'.join(filas)
 
 
-def bloque_de_hechos(imagen, columnas, prov=None, modelo=None, completo=False):
+def _vela_de(texto):
+    """El número de vela de una línea del bloque, para poder ordenarla."""
+    m = re.search(r'candles? (\d+)', texto)
+    return int(m.group(1)) if m else None
+
+
+# Cuántas velas antes de la entrada y después de la salida entran en la ventana
+# del trade. Antes se mira más: lo que monta el trade pasa ANTES de entrar.
+ANTES, DESPUES = 8, 2
+
+
+def bloque_de_hechos(imagen, columnas, prov=None, modelo=None, completo=False,
+                     entrada=None, salida=None):
     """El bloque de hechos de `analizador2`, en texto plano y SIN PÍXELES.
 
     🔴 LAS COORDENADAS EN PÍXELES HAY QUE QUITARLAS, y por poco se cuelan. El
@@ -256,7 +280,25 @@ def bloque_de_hechos(imagen, columnas, prov=None, modelo=None, completo=False):
     # una vez dentro del contexto, lo usa. O es un hecho y entra, o no entra.
     # Los no verificados se siguen calculando y se devuelven aparte, para
     # seguir midiéndolos y para enseñárselos al DUEÑO — nunca al modelo.
-    lineas = ['MEASURED FACTS (verified, >=90%% accuracy):']
+    lineas = []
+    if entrada is not None:
+        # 🔑 LOS HECHOS DE LA VENTANA DEL TRADE, PRIMERO Y APARTE.
+        #    No se oculta nada: el bloque cronológico completo va debajo igual.
+        #    Lo que se añade es lo único que el modelo NO puede deducir solo —
+        #    cuáles de los treinta y cuatro hechos son los de ESTE trade.
+        fin = (salida if salida is not None else entrada) + DESPUES
+        ini = entrada - ANTES
+        cerca = [t for _f, t in firmes + marcados
+                 if _vela_de(t) is not None and ini <= _vela_de(t) <= fin]
+        cerca.sort(key=_vela_de)
+        lineas += ['WHAT HAPPENED AROUND THE TRADE (candles %d to %d). These '
+                   'are the same measured facts listed below, pulled out '
+                   'because they are the ones that belong to THIS trade. Your '
+                   'analysis has to deal with them; the rest is context:'
+                   % (ini, fin)]
+        lineas += ['  - ' + t for t in cerca] or ['  - (none in that window)']
+        lineas += ['']
+    lineas += ['ALL MEASURED FACTS, in order (verified, >=90%% accuracy):']
     lineas += ['  - ' + t for _f, t in firmes] or ['  - (none)']
     if completo:
         # 🔑 Este segundo bloque NO es la lista "sin verificar" que fracasó en
@@ -293,6 +335,11 @@ def main():
     ap.add_argument('--modelo', metavar='PROVEEDOR:MODELO',
                     help='para leer el eje y que el bloque lleve PRECIOS')
     ap.add_argument('--solo', help='corre solo estas variantes, p.ej. C')
+    ap.add_argument('--entrada', type=int,
+                    help='número de vela donde entró el trader (lo da '
+                         '`flechas.py`). Sin esto el modelo no sabe cuál de los '
+                         'hechos es el de SU trade y comenta los primeros.')
+    ap.add_argument('--salida', type=int, help='número de vela de la salida')
     ap.add_argument('--sin-eje', action='store_true', dest='sin_eje',
                     help='corre aunque no se pueda leer el eje (prueba '
                          'DEGRADADA: sin precios)')
@@ -313,9 +360,11 @@ def main():
         if a.modelo:
             prov, _, modelo = a.modelo.partition(':')
         hechos_txt, _r, _marcados = bloque_de_hechos(
-            a.imagen, a.columnas, prov, modelo)
+            a.imagen, a.columnas, prov, modelo,
+            entrada=a.entrada, salida=a.salida)
         completo_txt, _r2, _m2 = bloque_de_hechos(
-            a.imagen, a.columnas, prov, modelo, completo=True)
+            a.imagen, a.columnas, prov, modelo, completo=True,
+            entrada=a.entrada, salida=a.salida)
         tabla_txt = tabla_ohlc(_r)
         # 🔴 SIN EJE, LA PRUEBA NO VALE Y HAY QUE PARAR. Corrió entera el
         #    08-sep con el modelo de Gemini retirado: el bloque salió sin
@@ -338,6 +387,19 @@ def main():
         if 'en 7' not in hechos_txt and '.' not in hechos_txt.split('\n')[1]:
             print('⚠️  El bloque sale SIN PRECIOS. Pásale --modelo o la prueba '
                   'no vale: un número de vela el modelo no lo puede situar.')
+
+    # 🔑 La frase que ancla el análisis. Va arriba del todo del mensaje.
+    ENTRADA = [None]
+    if a.entrada is not None:
+        ENTRADA[0] = ('The trader ENTERED on candle %d%s. Everything you say '
+                      'about their decision has to be about what was visible '
+                      'AT AND BEFORE that candle; what happened after it is '
+                      'the outcome, not the reason.'
+                      % (a.entrada,
+                         '' if a.salida is None
+                         else ' and EXITED on candle %d' % a.salida))
+        print('[trade] entrada en la vela %s · salida en la %s'
+              % (a.entrada, a.salida))
 
     crudo = open(a.imagen, 'rb').read()
     tipo = 'image/png' if a.imagen.lower().endswith('.png') else 'image/jpeg'
@@ -412,7 +474,7 @@ def main():
     for letra, titulo, verificar, hechos, tabla in variantes:
         sitio['ANALYZE_VERIFY_CLAIMS'] = verificar
         sistema = sitio['build_system_prompt'](a.approach)
-        usuario = mensaje_usuario(datos, notas, hechos, tabla)
+        usuario = mensaje_usuario(datos, notas, hechos, tabla, ENTRADA[0])
         print('\n─── %s · %s ───' % (letra, titulo))
         r = cliente.chat.completions.create(
             model=sitio['MODEL'],
