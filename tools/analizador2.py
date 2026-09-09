@@ -44,9 +44,9 @@ Cada familia lleva su precisión MEDIDA (banco de 24 láminas, 1.420 velas, EN
 CONDICIONES REALES: con el 14% de las velas fuera y recuperadas). El bloque
 tiene TRES niveles, no dos, y el nivel lo decide el banco, no yo:
 
-    se AFIRMA en seco   BOS 96,9% · acumulación (zona) 94,5% · barrida 93,1%
-    se dice CON su      piscina BSL/SSL 76,9% · FVG+estado 67,7%
-    tasa de acierto     order block 68,9% · manipulación 69,2%
+    se AFIRMA en seco   BOS 97,1% · acumulación (zona) 94,2% · barrida 90,7%
+    se dice CON su      FVG+estado 81,0% · order block 83,5%
+    tasa de acierto     manipulación 81,4% · DOL 80,4% · liquidez 73,2%
     no se escribe       cualquier cosa por debajo de MIN_MENCION
 
 🔴 POR QUÉ TRES Y NO DOS (2026-09-06). Con dos niveles el bloque solo podía
@@ -87,20 +87,49 @@ import rejilla_velas as RV        # noqa: E402
 
 # Precisión mínima MEDIDA para que una familia de hechos se pueda AFIRMAR.
 MIN_PRECISION = 90.0
-# 🔴 NÚMEROS BAJADOS A PROPÓSITO EL 09-sep, Y NO ES QUE EL CÓDIGO EMPEORE: es
-# que la FÁBRICA ahora prueba un defecto que antes no probaba. Las láminas del
-# banco llevan la marca de agua de sesión —el "NY AM" gigante del color de las
-# velas— que rompía la captura real del dueño. Los números viejos (FVG 84,7 ·
-# OB 82,6) estaban medidos en un mundo sin esa basura, o sea que eran
-# optimistas: prometían al cliente una precisión que no tenían delante de un
-# gráfico de verdad con indicadores encima.
-# El arreglo del mismo día (`afina_velas._recorta_tinta_ajena`) sube el extenso
-# de 85,8 a 92,0% CON la marca, y de 96,3 a 97,1% sin ella. Estos son los
-# números honestos de la cadena en el mundo real, no un retroceso.
-# ⚠️ Medidas además EN CONDICIONES REALES: quitándole el 14% de las velas (lo
-# que el modelo se deja de verdad) y recuperándolas con la rejilla.
-PRECISION = {'bos': 96.9, 'barrida': 93.1, 'fvg': 71.9, 'ob': 68.9,
-             'piscina': 76.9, 'manip': 69.2, 'acum': 94.5}
+# ⚠️ TODAS MEDIDAS EN CONDICIONES REALES: con la basura que rompió la captura
+# del dueño encima de las láminas (marca de agua de sesión, líneas verticales
+# de killzone, dibujos del trader) y quitándole el 14% de las velas —lo que el
+# modelo se deja de verdad— para recuperarlas con la rejilla.
+# 📜 Historia, en una línea: el 09-sep bajaron mucho (FVG 84,7 → 71,9) cuando la
+# fábrica estrenó la marca de agua, porque hasta entonces estaban medidas en un
+# mundo sin esa basura y eran optimistas. Volvieron a subir al arreglarlo.
+# 🔴 RE-MEDIDOS EL 09-sep DESPUÉS DE AÑADIR LA LIQUIDEZ, y varios SUBEN mucho
+# (FVG 71,9 → 86,3 · order block 68,9 → 83,5 · manipulación 69,2 → 81,4). No es
+# que el catálogo haya mejorado hoy: es que estos números llevaban días
+# ATRASADOS. Se fijaron el mismo día en que la fábrica estrenó la marca de agua
+# —cuando el extracto se caía con ella— y NO se volvieron a medir después del
+# arreglo (`afina_velas._recorta_tinta_ajena`) ni de los de esta sesión (fondo
+# en dos dimensiones, tope guiado, HUECO). O sea que el bloque llevaba días
+# diciéndole al cliente "acierta 72%" de algo que acierta 86%.
+# ⚠️ LECCIÓN, y va aquí para que no se repita: **arreglar el código obliga a
+#    re-medir**. Un número de precisión sin fecha de medición es un número
+#    inventado, y el error puede ir en las dos direcciones — este iba a favor,
+#    el próximo puede ir en contra.
+# 🔑 CADA CIFRA ES EL MÍNIMO DE TRES SEMILLAS (7 · 11 · 23, 24 láminas cada
+#    una, ~1.440 velas). No la media: si el número se le enseña a un cliente
+#    como "acierta X% de las veces", el que vale es el peor de los que se han
+#    visto, no el mejor ni el del medio.
+#        familia        s7     s11    s23    → se usa
+#        BOS            99,6   97,1   98,6      97,1
+#        barrida        90,7   91,0   92,6      90,7
+#        FVG            88,5   88,1   86,3      86,3
+#        estado del FVG 82,3   85,2   81,0      81,0
+#        order block    85,5   86,3   83,5      83,5
+#        manipulación   81,4   84,3   85,0      81,4
+#        acumulación~   97,1   94,2   98,1      94,2
+#        liquidez       73,2   75,8   78,1      73,2
+#        DOL            81,8   80,4   86,7      80,4
+PRECISION = {'bos': 97.1, 'barrida': 90.7, 'fvg': 86.3, 'ob': 83.5,
+             'manip': 81.4, 'acum': 94.2, 'liq': 73.2, 'dol': 80.4}
+# 🔴 `piscina` YA NO ES UNA FAMILIA: la absorbe `liq`. `HG.piscinas` solo veía
+# los niveles con DOS O MÁS toques y los promediaba; `HG.liquidez` da esos
+# mismos y además los giros sueltos, con su etiqueta (EQH/EQL/REQH/REQL) y su
+# estado. Dejar las dos encendidas imprimía el mismo nivel dos veces con dos
+# nombres, que es justo lo que `_sin_repetir` existe para evitar: un hecho
+# repetido se lee como confirmación.
+# ⚠️ `piscinas()` NO se borra de `hechos_grafico`: el banco la sigue midiendo,
+#    y esa fila es la que demuestra que el cambio no fue un empate.
 # 🔑 EL 92,6 DE LA ACUMULACIÓN ES UNA ZONA, NO UNAS PUNTAS, y por eso la línea
 # se redacta con "en torno a". Medido en el banco con tres listones distintos:
 #     puntas exactas          70,2%
@@ -114,10 +143,11 @@ PRECISION = {'bos': 96.9, 'barrida': 93.1, 'fvg': 71.9, 'ob': 68.9,
 # exactas como dato firme, el número que le corresponde vuelve a ser 70,2.
 # El FVG se imprime CON su estado (intacto / tocado / CE / lleno / invertido),
 # así que la línea vale lo que vale el más flojo de los dos: 84,7 y 80,1.
-PRECISION_ESTADO = 67.7
+PRECISION_ESTADO = 81.0
 NOMBRE = {'bos': 'BOS', 'barrida': 'barrida de liquidez',
-          'fvg': 'FVG', 'ob': 'order block', 'piscina': 'piscina de liquidez',
-          'manip': 'pierna de manipulación', 'acum': 'acumulación'}
+          'fvg': 'FVG', 'ob': 'order block', 'manip': 'pierna de manipulación',
+          'acum': 'acumulación', 'liq': 'liquidez (BSL/SSL, EQH/EQL, LRL/HRL)',
+          'dol': 'DOL — lo que queda sin tomar'}
 # Por debajo de esto un hecho no se escribe en ninguna parte.
 # 🔴 BAJADO DE 78 A 65 EL 09-sep, y es una decisión, no un ajuste. Con la
 # fábrica midiendo el mundo real, FVG (71,9), order block (68,9) y pierna de
@@ -127,7 +157,7 @@ NOMBRE = {'bos': 'BOS', 'barrida': 'barrida de liquidez',
 # línea lleva su tasa de acierto MEDIDA al lado: "acierta 72% de las veces" no
 # es un adorno, es lo que separa informar de mentir.
 MIN_MENCION = 65.0
-FAMILIAS = ('bos', 'barrida', 'fvg', 'ob', 'piscina', 'manip', 'acum')
+FAMILIAS = ('bos', 'barrida', 'fvg', 'ob', 'liq', 'dol', 'manip', 'acum')
 # Cuántas velas de giro a cada lado para que un extremo cuente como swing.
 # Con k=2 el mismo tramo produce demasiados swings menores y los BOS se
 # multiplican; con k=3 el primer evento coincidió con la marca del indicador
@@ -472,8 +502,12 @@ def serie(velas):
     return out
 
 
-def hechos(ohlc):
-    """Los hechos, por familia, con el índice de la vela."""
+def hechos(ohlc, ref=None):
+    """Los hechos, por familia, con el índice de la vela.
+
+    `ref` es la vela desde la que se mira el DOL y la resistencia de cada
+    nivel. Por defecto la última; el laboratorio le pasa la vela de ENTRADA
+    del trader, que es la única desde la que tiene sentido juzgar su decisión."""
     g = HG.fvgs(ohlc)
     out = dict((f, []) for f in FAMILIAS)
 
@@ -546,7 +580,39 @@ def hechos(ohlc):
           'tocado_en': f['tocado_en'], 'ce_en': f['ce_en'],
           'lleno_en': f['lleno_en'], 'invertido_en': f['invertido_en']}
          for f in HG.estado_fvgs(ohlc, g)])
-    out['piscina'] = HG.piscinas(ohlc, K_SWING)
+    # 🔑 QUÉ LIQUIDEZ SE ESCRIBE Y CUÁL NO — y esto es una decisión de fondo,
+    #    no un filtro de tamaño. `HG.liquidez` devuelve TODOS los niveles, y en
+    #    un gráfico de 150 velas eso son treinta y pico líneas. Entran dos
+    #    grupos, por dos razones distintas:
+    #
+    #      · la que sigue SIN TOMAR, toda, sea de un giro suelto o de cinco
+    #        toques. Es lo único del bloque que mira hacia ADELANTE — el resto
+    #        del catálogo cuenta lo que ya pasó — y es la respuesta literal a la
+    #        pregunta que el dueño se hizo sobre su MNQ: *¿había más liquidez
+    #        arriba que abajo?*.
+    #      · la ya TOMADA, pero solo la de DOS O MÁS toques. Una barrida de un
+    #        giro suelto ya la cuenta la familia `barrida`, y repetirla aquí
+    #        sería el mismo hecho con dos nombres. Lo que `barrida` no dice es
+    #        que lo tomado fueran EQH: que se llevaran por delante un par de
+    #        máximos iguales es otra cosa, y esa sí merece su línea.
+    # 🔴 UN RELOJ POR LÍNEA, Y AQUÍ ESTABA MAL (cazado al mirar la salida sobre
+    #    la captura real). `liquidez` se llamaba con `ref=ref`, así que una
+    #    misma línea mezclaba dos instantes: "SIN TOMAR todavía" se juzgaba
+    #    hasta el FINAL del gráfico y el "LRL/HRL" desde la vela de entrada.
+    #    Nada avisaba; la frase se lee perfectamente bien y es incoherente.
+    #    Ahora `liq` es RETROSPECTIVA entera —cuenta lo que pasó, como el resto
+    #    del catálogo— y el único que mira desde `ref` es el DOL, que además lo
+    #    dice en voz alta ("en la vela N (la referencia)").
+    liq = HG.liquidez(ohlc, K_SWING)
+    out['liq'] = [n for n in liq
+                  if n['tomada_en'] is None or n['toques'] >= 2]
+    d = HG.dol(ohlc, K_SWING, ref=ref)
+    # 🔴 EL DOL ES UNA LÍNEA, NO UNA LISTA. Los niveles ya salen arriba, uno
+    #    por uno; lo que aquí falta es la COMPARACIÓN —cuántos hay a cada lado
+    #    y cuál cae más cerca—, que es aritmética sobre esos mismos niveles y
+    #    no un hecho nuevo. Sacarlos otra vez como lista sería contar dos veces.
+    if d['arriba'] or d['abajo']:
+        out['dol'] = [dict(d, i=d['ref'])]
     out['manip'] = HG.manipulacion(ohlc, K_SWING)
     out['acum'] = HG.acumulacion(ohlc)
     out['ob'] = _sin_repetir(
@@ -614,15 +680,69 @@ def bloque(velas, hs, escala, minimo=MIN_PRECISION, minimo_mencion=MIN_MENCION):
                     'y el cuerpo cerró DENTRO — no es ruptura'
                     % (n, h['tipo'], h['swing'],
                        '' if p is None else ' en %s' % _fmt(p)))
-        if fam == 'piscina':
+        if fam == 'liq':
             p = _pre(h['nivel'], escala)
-            return ('%s · %s: %d máximos%s de giro iguales%s (velas %s) — %s'
-                    % (n, h['tipo'], h['toques'],
-                       '' if h['lado'] == 'alto' else ' (mínimos)',
+            # el vocabulario que él usa, tal cual: BSL/SSL · EQH/EQL/REQH/REQL
+            # · LRL/HRL. No se traduce ni se suaviza: es el idioma de ICT y el
+            # bloque lo lee alguien que lo habla.
+            que = {'EQH': 'EQH (máximos iguales)',
+                   'EQL': 'EQL (mínimos iguales)',
+                   'REQH': 'REQH (máximos relativamente iguales)',
+                   'REQL': 'REQL (mínimos relativamente iguales)',
+                   'swing': ('máximo de giro' if h['lado'] == 'alto'
+                             else 'mínimo de giro')}[h['forma']]
+            cola = ('SIN TOMAR todavía' if h['tomada_en'] is None
+                    else 'ya la tomaron en la vela %d' % h['tomada_en'])
+            # 🔴 CADA RESISTENCIA DICE DESDE DÓNDE SE MIDIÓ, y no es palabrería.
+            #    Cazado leyendo la salida sobre la captura real: el mismo nivel
+            #    —la vela 145— salía LRL en la línea del DOL y HRL en su propia
+            #    línea, en el MISMO bloque. Las dos eran ciertas (en la vela 149
+            #    el camino estaba limpio; las zonas que lo estorban nacieron en
+            #    la 156 y la 159), pero puestas juntas y sin fecha se leen como
+            #    una contradicción — y un bloque que se contradice no lo usa
+            #    nadie, ni una persona ni un modelo. Cuatro palabras lo arreglan.
+            if h['resistencia'] == 'LRL':
+                cola += (' · LRL medido en la última vela: no hay ninguna zona '
+                         'contraria en el camino')
+            elif h['resistencia'] == 'HRL':
+                cola += (' · HRL medido en la última vela: hay %d zona(s) '
+                         'contraria(s) en el camino (%s)'
+                         % (len(h['obstaculos']),
+                            ', '.join('%s de la vela %d' % (o['que'], o['i'])
+                                      for o in h['obstaculos'][:3])))
+            return ('%s · %s %s%s%s — %s'
+                    % (n, h['sigla'], que,
                        '' if p is None else ' en %s' % _fmt(p),
-                       ', '.join(str(v) for v in h['velas']),
-                       'liquidez SIN tomar todavía' if h['tomada_en'] is None
-                       else 'tomada en la vela %d' % h['tomada_en']))
+                       '' if h['toques'] < 2 else
+                       ' (%d toques: velas %s)'
+                       % (h['toques'], ', '.join(str(v) for v in h['velas'])),
+                       cola))
+        if fam == 'dol':
+            def _lado(lista):
+                if not lista:
+                    return 'nada sin tomar'
+                p = _pre(lista[0]['nivel'], escala)
+                d = abs(lista[0]['nivel'] - h['cierre'])
+                # 🔑 La resistencia del más cercano SÍ va aquí, y es el dato
+                #    útil de la línea: en la vela de entrada, la pregunta no es
+                #    solo "¿dónde queda la liquidez?" sino "¿hay algo en medio?".
+                #    Este LRL/HRL está medido desde `ref`, igual que el resto de
+                #    la línea — mismo reloj.
+                r = lista[0]['resistencia']
+                return ('%d nivel(es), el más cercano%s a %s de distancia%s'
+                        % (len(lista), '' if p is None else ' en %s' % _fmt(p),
+                           _dist(d, escala),
+                           '' if not r else
+                           ' y con el camino %s EN ESE MOMENTO (%s)'
+                           % ('LIMPIO' if r == 'LRL' else
+                              'ESTORBADO por %d zona(s) contraria(s)'
+                              % len(lista[0]['obstaculos']), r)))
+            return ('DOL en la vela %d (la referencia) · liquidez que sigue SIN '
+                    'TOMAR: ARRIBA %s; ABAJO %s. %s'
+                    % (h['ref'], _lado(h['arriba']), _lado(h['abajo']),
+                       'Queda más cerca la de %s.' % h['mas_cerca']
+                       if h['mas_cerca'] else
+                       'Las dos quedan a la misma distancia.'))
         if fam == 'manip':
             p = _pre(h['nivel'], escala)
             apoyo = ('FVG en la vela %d' % h['fvg']) if h['fvg'] is not None \
@@ -677,6 +797,17 @@ def bloque(velas, hs, escala, minimo=MIN_PRECISION, minimo_mencion=MIN_MENCION):
             [(f, t) for _i, f, t in medidos])
 
 
+def _dist(d, escala):
+    """Una DISTANCIA de la serie a puntos de precio.
+
+    ⚠️ No se convierte con `_pre`: eso traduce un NIVEL (lleva la base sumada)
+    y aplicado a una diferencia devolvería el precio absoluto de esa distancia,
+    que es un número enorme y sin sentido. Una diferencia solo se escala."""
+    if not escala:
+        return '%d px' % int(round(d))
+    return '%s puntos' % _fmt(abs(escala['por_px']) * d)
+
+
 def _fmt(p):
     """29428.5 → '29.428,50'. 🔴 Antes usaba '%,.2f', que NO existe en Python:
     la coma como separador de miles solo la entiende `format`. Nunca había
@@ -686,7 +817,7 @@ def _fmt(p):
 
 
 def analiza(ruta, prov=None, modelo=None, cajas=None, max_velas=80,
-            verboso=True):
+            verboso=True, ref=None):
     def aviso(i, n, r):
         if verboso:
             print('   tira %d/%d  %s' % (i, n, r))
@@ -730,7 +861,7 @@ def analiza(ruta, prov=None, modelo=None, cajas=None, max_velas=80,
         except SystemExit:
             escala = None
     return {'panel': p, 'velas': velas, 'ohlc': ohlc, 'escala': escala,
-            'hechos': hechos(ohlc)}
+            'hechos': hechos(ohlc, ref)}
 
 
 if __name__ == '__main__':
@@ -743,6 +874,11 @@ if __name__ == '__main__':
                                        'anterior. Corre la cadena entera SIN '
                                        'red y SIN cuota.')
     ap.add_argument('--max-velas', type=int, default=80)
+    ap.add_argument('--ref', type=int,
+                    help='vela desde la que se mira el DOL y la resistencia de '
+                         'cada nivel (por defecto la última). Se le pasa la '
+                         'vela de ENTRADA cuando se juzga un trade: desde ahí '
+                         'el futuro no existe todavía.')
     ap.add_argument('--json', help='guarda el resultado completo ahí')
     ap.add_argument('--dibuja', help='PNG con las velas medidas dibujadas encima')
     a = ap.parse_args()
@@ -756,7 +892,7 @@ if __name__ == '__main__':
         # modelo se puede cambiar, una medición sin esa línea no se puede
         # comparar con otra.
         print('modelo: %s' % a.modelo)
-    r = analiza(a.imagen, prov, modelo, cajas, a.max_velas)
+    r = analiza(a.imagen, prov, modelo, cajas, a.max_velas, ref=a.ref)
     p, velas, escala = r['panel'], r['velas'], r['escala']
     print('\npanel x %d-%d · paso %.2f px · %d velas medidas'
           % (p['x0'], p['x1'], p['paso'], len(velas)))
@@ -774,8 +910,8 @@ if __name__ == '__main__':
     for _fam, l in firmes:
         print('   · ' + l)
     print('\n─── NO se afirman todavía (%d) ───' % len(marcados))
-    for fam in ('fvg', 'ob'):
-        if PRECISION[fam] < MIN_PRECISION:
+    for fam in FAMILIAS:
+        if MIN_MENCION <= PRECISION[fam] < MIN_PRECISION:
             print('   %s: %.1f%% de precisión medida' % (NOMBRE[fam], PRECISION[fam]))
     for _fam, l in marcados:
         print('   · ' + l)

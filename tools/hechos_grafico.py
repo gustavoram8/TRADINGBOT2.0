@@ -274,6 +274,222 @@ def _piscina(ohlc, grupo, lado, etiqueta, min_toques):
             'velas': velas, 'toques': len(velas), 'tomada_en': tomada}
 
 
+# ══════════════════════════════════════════════════════════════════════════
+# LIQUIDEZ — el mapa completo (2026-09-09, pedido por el dueño)
+# ══════════════════════════════════════════════════════════════════════════
+# 🔑 POR QUÉ ESTO NO ES "MÁS DE LO MISMO" QUE `piscinas`. `piscinas` contesta
+# *dónde hay dos máximos iguales*. Un trader de ICT no pregunta eso: pregunta
+# **qué liquidez sigue ahí arriba sin recoger**, cuál ya se llevaron, cuál es
+# de las que caen solas y cuál hay que pelearla. Son cuatro preguntas y las
+# cuatro son aritmética; lo que faltaba era escribirlas.
+#
+# El vocabulario, tal cual lo usa él, y qué significa cada pieza AQUÍ:
+#     BSL   liquidez del lado de las compras — la que duerme ARRIBA
+#     SSL   la del lado de las ventas — ABAJO
+#     EQH   dos o más máximos de giro IGUALES (dentro de `tol_eq`)
+#     EQL   lo mismo con mínimos
+#     REQH  máximos "relativamente" iguales: parecidos, no clavados
+#     REQL  ídem con mínimos
+#     LRL   liquidez de BAJA resistencia: nada se interpone en el camino
+#     HRL   liquidez de ALTA resistencia: hay que atravesar zonas contrarias
+#     DOL   los candidatos a "draw on liquidity": lo que queda SIN tomar
+#
+# ⚠️ DOS TOLERANCIAS, NO UNA, Y EN FRACCIÓN DEL RANGO MEDIANO DE LA VELA. Un
+#    número en puntos no sirve: 5 puntos son dos velas en el MES y un cuarto de
+#    vela en el NQ. Y hacen falta dos porque "iguales" y "relativamente
+#    iguales" son dos etiquetas distintas en su vocabulario, no un matiz.
+TOL_EQ = 0.10
+TOL_REQ = 0.35
+
+
+def obstaculos(ohlc, nivel, lado, ref=None):
+    """Qué hay EN MEDIO entre el precio y ese nivel. Es lo que separa LRL de HRL.
+
+    🔑 LA DEFINICIÓN QUE SE USA AQUÍ, dicha en voz alta porque es una elección
+    y no un hecho de la naturaleza: son obstáculos las zonas de sentido
+    CONTRARIO al camino —FVG sin rellenar y order blocks— cuyo rango se cruza
+    con la franja que va del cierre actual hasta el nivel. Para subir a buscar
+    un BSL estorban las zonas bajistas; para bajar a por un SSL, las alcistas.
+    Cero obstáculos = LRL (el precio llega de una tirada). Uno o más = HRL.
+
+    ⚠️ SE MIRA SOLO HASTA `ref`, nunca después. Si se preguntara sobre el
+    gráfico entero para juzgar la vela de entrada de alguien, se estaría usando
+    información que en ese momento no existía — y el análisis de un trade
+    tomado ayer con datos de hoy no vale nada.
+
+    ⚠️ Hereda la precisión de FVG y order block, que son las dos familias más
+    flojas del catálogo. Eso NO se disimula: el banco lo mide aparte."""
+    if ref is None:
+        ref = len(ohlc) - 1
+    sub = ohlc[:ref + 1]
+    if not sub:
+        return []
+    g = fvgs(sub)
+    c = _c(sub[ref])
+    lo, hi = (c, nivel) if nivel > c else (nivel, c)
+    contra = 'bajista' if lado == 'alto' else 'alcista'
+    out = []
+    for e in estado_fvgs(sub, g):
+        if e['tipo'] != contra or e['estado'] in ('lleno', 'invertido'):
+            continue
+        if e['suelo'] <= hi and e['techo'] >= lo:
+            out.append({'que': 'FVG', 'i': e['i'],
+                        'suelo': e['suelo'], 'techo': e['techo']})
+    # ⚠️ Un mismo order block sale UNA VEZ aunque lo hayan parido dos FVG
+    #    solapados. Es el mismo error que `_sin_repetir` ya cazó en el bloque:
+    #    un obstáculo contado dos veces convierte un LRL flojo en un HRL duro.
+    vistos = set()
+    for o in order_blocks(sub, g):
+        if o['tipo'] != contra or o['i'] in vistos:
+            continue
+        if o['suelo'] <= hi and o['techo'] >= lo:
+            # 🔑 UN ORDER BLOCK ATRAVESADO YA NO ESTORBA, igual que un FVG
+            # invalidado. `order_blocks` no lleva estado —a diferencia de
+            # `estado_fvgs`— así que se calcula aquí con la misma regla que usa
+            # `invertidos`: hace falta un CIERRE al otro lado, no una mecha.
+            # Sin esto, un order block de hace cien velas que el precio se pasó
+            # por encima hace noventa seguía contando, y cualquier gráfico con
+            # recorrido salía HRL — o sea que la etiqueta dejaba de distinguir.
+            if _atravesado(sub, o):
+                continue
+            vistos.add(o['i'])
+            out.append({'que': 'OB', 'i': o['i'],
+                        'suelo': o['suelo'], 'techo': o['techo']})
+    return sorted(out, key=lambda x: x['i'])
+
+
+def _atravesado(ohlc, ob):
+    """¿Algún cierre posterior dejó este order block del todo atrás?"""
+    for j in range(ob['i'] + 1, len(ohlc)):
+        if (_c(ohlc[j]) > ob['techo'] if ob['tipo'] == 'bajista'
+                else _c(ohlc[j]) < ob['suelo']):
+            return True
+    return False
+
+
+def _nivel_liq(ohlc, grupo, lado, sigla, teq, ref):
+    niveles = [n for n, _i in grupo]
+    velas = sorted(i for _n, i in grupo)
+    dispersion = max(niveles) - min(niveles)
+    # 🔴 EL NIVEL ES EL EXTREMO DEL GRUPO, NO SU MEDIA (y aquí se separa de
+    #    `piscinas`, que promedia). Los stops no duermen en el promedio de dos
+    #    máximos: duermen por encima del MÁS ALTO. Con la media, una vela que
+    #    asoma entre los dos máximos ya contaría la liquidez como tomada
+    #    cuando no ha tocado ni uno de los dos.
+    nivel = max(niveles) if lado == 'alto' else min(niveles)
+    if len(grupo) == 1:
+        forma = 'swing'
+    elif dispersion <= teq:
+        forma = 'EQH' if lado == 'alto' else 'EQL'
+    else:
+        forma = 'REQH' if lado == 'alto' else 'REQL'
+    tomada = None
+    for j in range(velas[-1] + 1, len(ohlc)):
+        if (_h(ohlc[j]) > nivel) if lado == 'alto' else (_l(ohlc[j]) < nivel):
+            tomada = j
+            break
+    d = {'i': velas[-1], 'lado': lado, 'sigla': sigla, 'forma': forma,
+         'nivel': nivel, 'dispersion': dispersion, 'velas': velas,
+         'toques': len(velas), 'tomada_en': tomada,
+         'estado': 'tomada' if tomada is not None else 'sin tomar',
+         'obstaculos': [], 'resistencia': None}
+    if tomada is None and velas[-1] <= ref:
+        d['obstaculos'] = obstaculos(ohlc, nivel, lado, ref)
+        d['resistencia'] = 'LRL' if not d['obstaculos'] else 'HRL'
+    return d
+
+
+def liquidez(ohlc, k=2, tol_eq=TOL_EQ, tol_req=TOL_REQ, ref=None):
+    """EL MAPA DE LIQUIDEZ: cada nivel, cómo se llama y en qué quedó.
+
+    Devuelve **todos** los niveles, tomados y sin tomar, porque las dos cosas
+    se preguntan: la tomada explica lo que ya pasó, la que sigue ahí explica a
+    dónde puede ir el precio.
+
+    Cada entrada trae:
+        sigla   BSL / SSL      — de qué lado duerme
+        forma   swing / EQH / EQL / REQH / REQL   — de qué está hecha
+        estado  tomada / sin tomar   (+ `tomada_en`, la vela que se la llevó)
+        resistencia  LRL / HRL  (+ `obstaculos`), solo si sigue sin tomar
+
+    🔑 UN SWING SUELTO TAMBIÉN ES LIQUIDEZ, y esto es lo que `piscinas` no
+    daba. Exigir dos toques dejaba fuera el caso más común del gráfico —un
+    máximo de giro cualquiera— y justamente ese fue el nivel que sirvió para la
+    segunda verificación externa del proyecto: nuestro mínimo sin barrer salió
+    en 29.334,12 y la línea SS del indicador del dueño estaba en 29.333,00,
+    **1,1 puntos**. Con `piscinas` ese nivel no existía.
+
+    ⚠️ SE AGRUPA CONTRA EL PRIMERO DEL GRUPO, no contra el anterior — misma
+    trampa que documenta `piscinas`: encadenando, una deriva larga se traga el
+    gráfico y el 'nivel' resultante no está en ninguna parte.
+
+    ⚠️ Esto es una lectura RETROSPECTIVA de la serie que se le pase: `tomada_en`
+    mira hasta el final. Para saber qué se veía en un instante concreto —la
+    vela en la que alguien entró— hay que pasarle la serie CORTADA ahí, que es
+    lo que hace `dol`. `ref` solo decide desde dónde se miden los obstáculos."""
+    rm = _rango_mediano(ohlc)
+    teq, treq = tol_eq * rm, tol_req * rm
+    if ref is None:
+        ref = len(ohlc) - 1
+    sw = swings(ohlc, k)
+    out = []
+    for lado, sigla in (('alto', 'BSL'), ('bajo', 'SSL')):
+        pts = sorted((niv, i) for (i, t, niv) in sw if t == lado)
+        grupo = []
+        for niv, i in pts:
+            if grupo and (niv - grupo[0][0]) > treq:
+                out.append(_nivel_liq(ohlc, grupo, lado, sigla, teq, ref))
+                grupo = []
+            grupo.append((niv, i))
+        if grupo:
+            out.append(_nivel_liq(ohlc, grupo, lado, sigla, teq, ref))
+    return sorted(out, key=lambda n: n['i'])
+
+
+def dol(ohlc, k=2, ref=None, tol_eq=TOL_EQ, tol_req=TOL_REQ):
+    """DRAW ON LIQUIDITY — la liquidez que queda SIN TOMAR a cada lado.
+
+    🔴 NO PREDICE NADA, Y ESO NO ES TIMIDEZ LEGAL: es que la aritmética no da
+    para más. Lo que aquí se calcula es *qué hay sin recoger arriba y abajo, a
+    qué distancia y con cuánto estorbo en el camino*. Decir cuál de los dos va
+    a buscar el precio sería una señal, y el sitio no da señales.
+
+    🔑 PERO CONTESTA LA PREGUNTA QUE DE VERDAD SE HACE. El dueño escribió, sobre
+    un trade suyo: *«no veía motivos para que el precio se diera la vuelta ya
+    que consideraba que había mucha más liquidez superior, aunque quizá pueda
+    estarme equivocando»*. Eso no es una opinión: es contable. Se cuentan los
+    niveles de cada lado, se miden las distancias y sale la respuesta.
+
+    ⚠️ SE CORTA LA SERIE EN `ref`. Todo lo posterior deja de existir, así que
+    `tomada_en` solo puede referirse a algo que ya había pasado. Sin este corte
+    se juzgaría la entrada de alguien con el gráfico de después, que es la
+    forma más fácil de parecer brillante y no servir para nada."""
+    if ref is None:
+        ref = len(ohlc) - 1
+    sub = ohlc[:ref + 1]
+    niveles = liquidez(sub, k, tol_eq, tol_req, ref)
+    c = _c(sub[ref])
+    arriba = sorted([n for n in niveles if n['lado'] == 'alto'
+                     and n['tomada_en'] is None and n['nivel'] > c],
+                    key=lambda n: n['nivel'])
+    abajo = sorted([n for n in niveles if n['lado'] == 'bajo'
+                    and n['tomada_en'] is None and n['nivel'] < c],
+                   key=lambda n: -n['nivel'])
+    da = (arriba[0]['nivel'] - c) if arriba else None
+    db = (c - abajo[0]['nivel']) if abajo else None
+    if da is None and db is None:
+        cerca = None
+    elif db is None:
+        cerca = 'arriba'
+    elif da is None:
+        cerca = 'abajo'
+    else:
+        cerca = 'arriba' if da < db else ('abajo' if db < da else None)
+    return {'ref': ref, 'cierre': c, 'arriba': arriba, 'abajo': abajo,
+            'dist_arriba': da, 'dist_abajo': db, 'mas_cerca': cerca,
+            'n_arriba': len(arriba), 'n_abajo': len(abajo)}
+
+
 def manipulacion(ohlc, k=2, ventana=3):
     """La PIERNA DE MANIPULACIÓN: barrida + reacción contraria inmediata.
 
@@ -474,6 +690,67 @@ def esc_acumulacion():
     return o, {'i': 0, 'fin': 5}
 
 
+def esc_equal_highs(alto2=105.0, cola=()):
+    """Dos máximos de GIRO a la misma altura y nadie los toca después.
+
+    `alto2` mueve el segundo máximo: con 105.0 son EQH (iguales), con 105.5
+    quedan REQH (relativamente iguales). Es la MISMA lámina — lo único que
+    cambia es medio punto, que es exactamente lo que separa las dos etiquetas
+    en el vocabulario del dueño."""
+    o = [_v(100.0, 101.0, 99.0, 100.5), _v(100.5, 102.0, 100.0, 101.5),
+         _v(101.5, 105.0, 101.0, 104.0),         # i=2: giro alto en 105.0
+         _v(104.0, 104.2, 102.0, 102.5), _v(102.5, 103.0, 101.0, 101.5),
+         _v(101.5, 103.5, 101.0, 103.0),
+         _v(103.0, alto2, 102.5, 104.0),         # i=6: el segundo giro alto
+         _v(104.0, 104.5, 102.0, 102.5), _v(102.5, 103.0, 101.0, 101.5),
+         _v(101.5, 102.5, 100.5, 102.0)]
+    return list(o) + list(cola)
+
+
+def esc_liquidez_tomada():
+    """Los mismos EQH, y una vela que se los lleva por delante."""
+    return esc_equal_highs(cola=[_v(102.0, 106.0, 101.8, 105.5)]), \
+        {'nivel': 105.0, 'tomada_en': 10}
+
+
+def esc_dol():
+    """Un BSL sin tomar arriba y un SSL sin tomar abajo, a distinta distancia.
+
+    Es la lámina que contesta literalmente la pregunta del dueño sobre su MNQ:
+    *¿había más liquidez arriba que abajo?*. Aquí la verdad se conoce porque
+    los dos niveles están puestos a mano."""
+    o = [_v(100.0, 101.0, 99.0, 100.5), _v(100.5, 102.0, 100.0, 101.5),
+         _v(101.5, 105.0, 101.0, 104.5),         # i=2: BSL en 105.0
+         _v(104.5, 104.7, 103.0, 103.5), _v(103.5, 104.0, 102.0, 102.5),
+         _v(102.5, 103.0, 98.0, 98.5),           # i=5: SSL en 98.0
+         _v(98.5, 100.0, 98.2, 99.5), _v(99.5, 101.0, 99.0, 100.5),
+         _v(100.5, 102.0, 100.0, 101.5),
+         _v(101.5, 102.5, 101.0, 102.0)]         # i=9: referencia, cierre 102
+    return o, {'arriba': 105.0, 'abajo': 98.0, 'dist_arriba': 3.0,
+               'dist_abajo': 4.0, 'mas_cerca': 'arriba'}
+
+
+def esc_hrl():
+    """ALTA resistencia: para llegar al BSL hay que atravesar zonas bajistas."""
+    o = [_v(100.0, 101.0, 99.0, 100.5), _v(100.5, 108.0, 100.0, 107.5),
+         _v(107.5, 110.0, 107.0, 109.0),         # i=2: BSL en 110, sin tomar
+         _v(109.0, 109.2, 105.0, 105.5),
+         _v(105.5, 106.0, 103.0, 103.5),         # i=4: FVG bajista 106,0-107,0
+         _v(103.5, 104.0, 102.0, 102.5),         # i=5: FVG bajista 104,0-105,0
+         _v(102.5, 103.5, 101.5, 103.0), _v(103.0, 104.0, 102.5, 103.5)]
+    return o, {'nivel': 110.0, 'resistencia': 'HRL'}
+
+
+def esc_lrl():
+    """BAJA resistencia: el camino hasta el BSL está limpio."""
+    o = [_v(100.0, 101.0, 99.0, 100.5), _v(100.5, 102.0, 100.0, 101.5),
+         _v(101.5, 106.0, 101.0, 105.5),         # i=2: BSL en 106, sin tomar
+         _v(105.5, 105.8, 104.0, 104.5), _v(104.5, 105.0, 103.5, 104.0),
+         _v(104.0, 104.8, 103.0, 104.5),         # i=5: SSL en 103, sin tomar
+         _v(104.5, 105.2, 104.0, 105.0), _v(105.0, 105.5, 104.5, 105.2)]
+    return o, {'nivel': 106.0, 'resistencia': 'LRL'}
+
+
 def probar():
     # ⚠️ El total se CUENTA, no se escribe a mano: lo tenía fijo en 17 cuando
     #    las comprobaciones eran 15, y un test que se inventa su propio marcador
@@ -603,6 +880,112 @@ def probar():
     # 🔑 Una barrida SIN reacción NO es manipulación: es una mecha larga.
     caso('una barrida sin reacción NO cuenta', not manipulacion(esc_barrida()[0]),
          manipulacion(esc_barrida()[0]))
+
+    print('── liquidez: EQH / REQH, tomada y sin tomar ──')
+    o = esc_equal_highs()
+    bsl = [n for n in liquidez(o) if n['lado'] == 'alto']
+    caso('un solo nivel de BSL', len(bsl) == 1,
+         [(n['forma'], n['nivel']) for n in bsl])
+    if bsl:
+        caso('etiquetado EQH', bsl[0]['forma'] == 'EQH', bsl[0]['forma'])
+        caso('con los dos giros [2, 6]', bsl[0]['velas'] == [2, 6], bsl[0]['velas'])
+        caso('y SIN TOMAR', bsl[0]['estado'] == 'sin tomar', bsl[0]['estado'])
+    # 🔑 Medio punto separa "iguales" de "relativamente iguales". Si la misma
+    #    lámina con el segundo máximo movido no cambia de etiqueta, es que la
+    #    tolerancia no está haciendo nada y las dos siglas son decorativas.
+    req = [n for n in liquidez(esc_equal_highs(alto2=105.5))
+           if n['lado'] == 'alto']
+    caso('el mismo nivel medio punto más arriba pasa a REQH',
+         len(req) == 1 and req[0]['forma'] == 'REQH',
+         [(n['forma'], n['nivel']) for n in req])
+    o, t = esc_liquidez_tomada()
+    bsl = [n for n in liquidez(o) if n['lado'] == 'alto']
+    caso('cuando una vela se los lleva, sale TOMADA en la vela %d' % t['tomada_en'],
+         len(bsl) == 1 and bsl[0]['tomada_en'] == t['tomada_en'],
+         [(n['forma'], n['tomada_en']) for n in bsl])
+    # 🔴 El nivel de un grupo es el EXTREMO, no la media. Con la media (105,25)
+    #    una vela que asomara a 105,3 declararía tomada una liquidez que está
+    #    en 105,5 y nadie ha tocado.
+    o = esc_equal_highs(alto2=105.5, cola=[_v(102.0, 105.3, 101.8, 105.0)])
+    bsl = [n for n in liquidez(o) if n['lado'] == 'alto']
+    caso('una vela entre los dos máximos NO cuenta como tomarlos',
+         len(bsl) == 1 and bsl[0]['tomada_en'] is None and bsl[0]['nivel'] == 105.5,
+         [(n['nivel'], n['tomada_en']) for n in bsl])
+    # 🔑 Un swing SUELTO también es liquidez. Es justo el nivel que sirvió para
+    #    la segunda verificación externa del proyecto (29.334,12 contra la
+    #    línea SS del indicador del dueño, 1,1 puntos) y `piscinas` no lo daba.
+    o, t = esc_dol()
+    uno = [n for n in liquidez(o) if n['forma'] == 'swing']
+    caso('un giro suelto SIN pareja también cuenta como liquidez',
+         len(uno) == 2, [(n['sigla'], n['nivel']) for n in uno])
+    caso('y `piscinas` NO lo veía (por eso hacía falta esto)',
+         not [p for p in piscinas(o) if abs(p['nivel'] - t['arriba']) < 1e-6],
+         [p['nivel'] for p in piscinas(o)])
+
+    print('── DOL: qué queda sin tomar a cada lado ──')
+    o, t = esc_dol()
+    d = dol(o)
+    caso('un candidato arriba y uno abajo',
+         d['n_arriba'] == 1 and d['n_abajo'] == 1,
+         (d['n_arriba'], d['n_abajo']))
+    caso('el de arriba en %.1f' % t['arriba'],
+         d['arriba'] and abs(d['arriba'][0]['nivel'] - t['arriba']) < 1e-6,
+         [n['nivel'] for n in d['arriba']])
+    caso('el de abajo en %.1f' % t['abajo'],
+         d['abajo'] and abs(d['abajo'][0]['nivel'] - t['abajo']) < 1e-6,
+         [n['nivel'] for n in d['abajo']])
+    caso('a %.1f y %.1f de distancia' % (t['dist_arriba'], t['dist_abajo']),
+         abs(d['dist_arriba'] - t['dist_arriba']) < 1e-6 and
+         abs(d['dist_abajo'] - t['dist_abajo']) < 1e-6,
+         (d['dist_arriba'], d['dist_abajo']))
+    caso('y el más cercano es el de %s' % t['mas_cerca'],
+         d['mas_cerca'] == t['mas_cerca'], d['mas_cerca'])
+    # 🔴 EL CORTE EN `ref`. Si se pregunta por la vela 5 —cuando el SSL acaba
+    #    de formarse y el gráfico aún no ha seguido— la respuesta NO puede
+    #    incluir nada de lo que pasó después. Un swing necesita k velas a cada
+    #    lado, así que en la vela 5 ni siquiera está confirmado: la lista de
+    #    arriba tiene que quedarse en el BSL y ya.
+    d5 = dol(o, ref=5)
+    caso('cortado en la vela 5, no se ve el futuro',
+         all(n['i'] <= 5 for n in d5['arriba'] + d5['abajo']),
+         [(n['i'], n['nivel']) for n in d5['arriba'] + d5['abajo']])
+    # 🔴 Y LOS OBSTÁCULOS TAMBIÉN, que es por donde se escapa sin que se note:
+    #    de la línea del DOL solo se imprime CUÁNTOS hay, así que un obstáculo
+    #    del futuro no se ve en el texto — se ve en el número, y un número no
+    #    delata nada. Sobre la captura real se comprobó a mano que ninguno pasa
+    #    de la referencia; aquí queda atado para que siga siendo verdad.
+    o2, _ = esc_hrl()
+    d3 = dol(o2, ref=4)
+    caso('y los OBSTÁCULOS tampoco son del futuro',
+         all(x['i'] <= 4 for n in d3['arriba'] + d3['abajo']
+             for x in n['obstaculos']),
+         [(n['i'], [x['i'] for x in n['obstaculos']])
+          for n in d3['arriba'] + d3['abajo']])
+
+    print('── LRL / HRL: cuánto estorbo hay en el camino ──')
+    o, t = esc_hrl()
+    n = [x for x in liquidez(o) if abs(x['nivel'] - t['nivel']) < 1e-6]
+    caso('el BSL de %.1f sigue sin tomar' % t['nivel'],
+         len(n) == 1 and n[0]['estado'] == 'sin tomar',
+         [(x['nivel'], x['estado']) for x in liquidez(o)])
+    if n:
+        caso('y se etiqueta HRL', n[0]['resistencia'] == 'HRL',
+             (n[0]['resistencia'], len(n[0]['obstaculos'])))
+        caso('nombrando los obstáculos que hay en medio',
+             len(n[0]['obstaculos']) >= 2,
+             [(x['que'], x['i']) for x in n[0]['obstaculos']])
+    o, t = esc_lrl()
+    n = [x for x in liquidez(o) if abs(x['nivel'] - t['nivel']) < 1e-6]
+    caso('con el camino limpio, el mismo tipo de nivel sale LRL',
+         len(n) == 1 and n[0]['resistencia'] == 'LRL',
+         [(x['nivel'], x['resistencia']) for x in liquidez(o)])
+    # ⚠️ Solo estorba lo del sentido CONTRARIO. Un FVG alcista debajo no impide
+    #    subir: si se contara, cualquier gráfico con volatilidad sería todo HRL
+    #    y la etiqueta dejaría de distinguir nada.
+    caso('una zona a favor NO cuenta como obstáculo',
+         not [x for x in obstaculos(o, t['nivel'], 'alto')
+              if x['que'] == 'FVG' and x['i'] == 3],
+         obstaculos(o, t['nivel'], 'alto'))
 
     print('── acumulación ──')
     o, t = esc_acumulacion()

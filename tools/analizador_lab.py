@@ -281,7 +281,17 @@ def bloque_de_hechos(imagen, columnas, prov=None, modelo=None, completo=False,
     #    NO puede situar, porque está mirando una imagen y no puede contar 44
     #    velas. Con precio sí: "BOS bajista atravesando 7.720,67" es localizable.
     #    La lectura del eje está cacheada, así que no cuesta cuota.
-    r = A2.analiza(imagen, prov=prov, modelo=modelo, cajas=cajas, verboso=False)
+    # 🔑 `ref=entrada`: EL DOL SE MIRA DESDE LA VELA EN LA QUE ÉL ENTRÓ, no
+    #    desde el final del gráfico. Es la única referencia con la que la
+    #    pregunta tiene sentido — *"¿qué liquidez quedaba sin tomar cuando
+    #    apreté el botón?"*—, y además corta el futuro: `HG.dol` trabaja sobre
+    #    la serie recortada ahí, así que ni un nivel ni un obstáculo posterior
+    #    puede colarse. Juzgar una entrada con el gráfico de después es la forma
+    #    más fácil de parecer brillante y no servirle de nada a nadie.
+    #    Sin `--entrada` la referencia es la última vela, que es lo correcto
+    #    cuando lo que se describe es el gráfico y no una decisión.
+    r = A2.analiza(imagen, prov=prov, modelo=modelo, cajas=cajas, verboso=False,
+                   ref=entrada)
     firmes, marcados = A2.bloque(r['velas'], r['hechos'], r['escala'])
     total = len(r['velas'])
 

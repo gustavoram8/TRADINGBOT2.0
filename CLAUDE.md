@@ -452,6 +452,55 @@ tira las dos: se pierden dos lecturas de 26 y la escala no se entera.
 TODAS las etiquetas (29.560,00 → 9.560,00), concuerdan entre sí y la escala sale con la pendiente
 correcta y el precio desplazado 20.000 puntos, en silencio. Por eso `MARGEN_EJE`.
 
+### 💧 LIQUIDEZ — el vocabulario entero, calculado (2026-09-09, pedido por él)
+`HG.liquidez()` + `HG.dol()` + `HG.obstaculos()`. Cubre lo que dictó: **BSL · SSL · EQH · EQL ·
+REQH · REQL · HRL · LRL · DOL · liquidity pools**, y sobre todo **tomada vs SIN TOMAR**, que era
+la petición de fondo. `hechos_grafico --probar` **41 → 55**.
+- **Cada nivel lleva cuatro cosas:** de qué lado duerme (BSL/SSL) · de qué está hecho (giro suelto,
+  EQH/EQL si los máximos son iguales, REQH/REQL si solo se parecen) · si ya se la llevaron y en qué
+  vela · y, si sigue ahí, si el camino está limpio (**LRL**) o hay zonas contrarias en medio (**HRL**).
+- 🔑 **Dos tolerancias en FRACCIÓN del rango mediano de la vela, no en puntos.** 5 puntos son dos
+  velas en el MES y un cuarto de vela en el NQ.
+- 🔑 **El nivel de un grupo es el EXTREMO, no la media** (aquí se separa de `piscinas`, que
+  promediaba): los stops no duermen en el promedio de dos máximos, duermen sobre el más alto.
+- 🔑 **UN GIRO SUELTO TAMBIÉN ES LIQUIDEZ**, y eso es lo que `piscinas` no daba — exigía 2 toques.
+  Justo ese caso fue la 2ª verificación externa del proyecto (nuestro mínimo sin barrer 29.334,12
+  contra la línea SS de su indicador, 29.333,00: **1,1 puntos**). Por eso `liq` **sustituye** a
+  `piscina` en el analizador; `piscinas()` se queda solo para que el banco siga comparando.
+- **Qué se escribe y qué no:** TODA la que sigue sin tomar (es lo único del bloque que mira hacia
+  adelante), y de la ya tomada solo la de **2+ toques** — una barrida de un giro suelto ya la cuenta
+  la familia `barrida`, y repetirla sería el mismo hecho con dos nombres.
+- 🔴 **El DOL NO predice, y no es timidez legal: la aritmética no da para más.** Cuenta qué queda
+  sin recoger arriba y abajo, a qué distancia y con cuánto estorbo. Decir cuál va a buscar el
+  precio sería una señal. **Contesta su pregunta del MNQ** —*"consideraba que había mucha más
+  liquidez superior"*— y la reproduce sola: en su vela de entrada (149), **3 niveles arriba contra
+  2 abajo**, el de arriba más cerca (157 px contra 190) y con el camino limpio. O sea que **la
+  aritmética le daba la razón y el trade falló igual**: el mapa de liquidez no le habría avisado.
+- 🔴 **DOS RELOJES, Y HAY QUE DECIR CUÁL ES CUÁL.** Cazado leyendo la salida real: el nivel de la
+  vela 145 salía **LRL** en la línea del DOL y **HRL** en su propia línea, en el mismo bloque. Las
+  dos eran ciertas (en la 149 el camino estaba limpio; lo que estorba nació en la 156 y la 159),
+  pero juntas y sin fecha se leen como una contradicción — y un bloque que se contradice no lo usa
+  nadie. Ahora cada una dice desde dónde se midió: *"medido en la última vela"* / *"en ese momento"*.
+- 🔴 **`--entrada` corta el futuro de verdad:** `dol` trabaja sobre la serie recortada en la vela de
+  entrada, así que ni un nivel ni un **obstáculo** posterior se cuela. Lo del obstáculo importa
+  porque de esa línea solo se imprime **cuántos** hay: uno del futuro no se vería en el texto, solo
+  en el número, y un número no delata nada. Atado con test.
+- ⚖️ **Un order block ya atravesado deja de estorbar** (misma regla que un FVG invalidado: hace
+  falta un CIERRE al otro lado). ⚠️ **El banco dice que da IGUAL** (79,0 / 76,3 / 77,4 contra
+  78,8 / 78,5 / 75,4 — ruido). Se queda igualmente porque **el agujero es de la fábrica**: sus
+  láminas son de ~60 velas y ahí casi no hay OB viejos, mientras que en su captura de 163 sí —
+  antes salía *"HRL: 5 zonas"* citando un OB de 130 velas atrás, y ahora sale limpio.
+- **MEDIDO en el banco, mínimo de 3 semillas** (7·11·23, 24 láminas, ~1.440 velas cada una):
+  liquidez completa (nivel+forma+estado) **73,2%** · solo el nivel **84,1%** · tomada/sin tomar
+  **82,5%** · LRL/HRL **75,4%** · **DOL 80,4%**. Los cuatro listones existen para que el fallo
+  tenga dueño: un solo número no dice si falla el nivel, la etiqueta o la resistencia.
+- 🔴 **Y DE PASO: TODA LA TABLA DE PRECISIÓN ESTABA ATRASADA.** Al re-medir subieron FVG 71,9 →
+  **86,3**, order block 68,9 → **83,5**, manipulación 69,2 → **81,4**. No mejoró nada hoy: esos
+  números se fijaron el día que la fábrica estrenó la marca de agua y **no se volvieron a medir
+  tras arreglarla**. El bloque llevaba días diciéndole al cliente *"acierta 72%"* de algo que
+  acierta 86%. ⚠️ **Lección: arreglar el código obliga a re-medir** — esta vez el error iba a
+  favor, el próximo puede ir en contra.
+
 **PENDIENTE:** encadenarlo todo en un solo programa, y **ensamblarlo con el analizador** —
 🔴 eso sí toca el sitio y no se mueve sin que el dueño lo diga. Fuera sigue MACD/RSI.
 

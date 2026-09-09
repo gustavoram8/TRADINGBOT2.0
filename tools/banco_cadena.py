@@ -490,12 +490,23 @@ def _verdad_ohlc(verdad):
 # Eslabón C — los hechos
 # ══════════════════════════════════════════════════════════════════════════
 
-FAMILIAS = ('fvg', 'bos', 'barrida', 'ob', 'estado', 'piscina', 'manip', 'acum')
+FAMILIAS = ('fvg', 'bos', 'barrida', 'ob', 'estado', 'piscina', 'manip', 'acum',
+            'liq')
+# ⚠️ `liq_lado`, `liq_estado`, `liq_res` y `dol` NO van en FAMILIAS a propósito.
+#    Son VISTAS del mismo hecho, no hechos aparte: metiéndolas en el conjunto
+#    global, cada nivel de liquidez contaría cuatro veces y la cifra de cabecera
+#    —la que resume la cadena entera— quedaría dominada por una sola familia.
+#    Se calculan aparte en `probar`, igual que `acum±1` y `acum~`.
 NOMBRES = {'fvg': 'FVG', 'bos': 'BOS', 'barrida': 'barrida de liquidez',
            'ob': 'order block', 'estado': 'estado del FVG',
            'piscina': 'piscina BSL/SSL', 'manip': 'pierna de manipulacion',
            'acum': 'acumulacion', 'acum±1': 'acumulacion (±1 vela)',
-           'acum~': 'acumulacion (zona, no puntas)'}
+           'acum~': 'acumulacion (zona, no puntas)',
+           'liq': 'liquidez (nivel+forma+estado)',
+           'liq_lado': '  · solo el nivel (BSL/SSL)',
+           'liq_estado': '  · tomada / sin tomar',
+           'liq_res': '  · LRL / HRL',
+           'dol': 'DOL (lo mas cercano sin tomar)'}
 
 
 def _hechos(ohlc):
@@ -523,6 +534,51 @@ def _hechos(ohlc):
         s.add(('manip', x['i'], x['tipo']))
     for x in HG.acumulacion(ohlc):
         s.add(('acum', x['i'], x['fin']))
+    # 🔑 LA LIQUIDEZ SE MIDE EN CUATRO LISTONES, NO EN UNO (2026-09-09). Un solo
+    #    número —"acierta el 60%"— no dice NADA accionable: no se sabe si el
+    #    fallo es que el nivel no está, que está pero se llama REQH en vez de
+    #    EQH, o que está bien y lo que falla es el LRL/HRL que cuelga de FVG y
+    #    order block, las dos familias más flojas del catálogo. Con los cuatro
+    #    listones el fallo tiene dueño, que es la única forma de arreglarlo.
+    #      liq         el listón duro: vela + forma + tomada/sin tomar
+    #      liq_lado    ¿hay liquidez ahí, de ese lado?  (lo mínimo útil)
+    #      liq_estado  ¿acierta si ya se la llevaron o sigue ahí?
+    #      liq_res     ¿acierta LRL/HRL?  (solo sobre las que siguen sin tomar)
+    for x in HG.liquidez(ohlc):
+        s.add(('liq', x['i'], '%s|%s|%s|%s'
+               % (x['sigla'], x['forma'], x['estado'], x['resistencia'] or '-')))
+    return s
+
+
+def _vista_liq(hechos, campo):
+    """Un listón suelto de la liquidez, sacado de la etiqueta compuesta."""
+    n = ('sigla', 'forma', 'estado', 'res').index(campo)
+    out = set()
+    for fam, i, tipo in hechos:
+        if fam != 'liq':
+            continue
+        p = tipo.split('|')
+        if campo == 'res' and p[3] == '-':
+            continue          # las ya tomadas no tienen resistencia que juzgar
+        out.add((i, p[n]))
+    return out
+
+
+def _hechos_dol(ohlc, ref):
+    """El DOL, como conjunto comparable.
+
+    🔴 SE MIDE APARTE Y CON UNA REFERENCIA COMÚN, y no es un capricho. El DOL
+    no es un hecho de una vela: es el estado del gráfico MIRADO DESDE una vela.
+    Si a la verdad se le pregunta por su última vela y a la medición por la
+    suya —que puede ser otra, porque el modelo se deja velas— se comparan dos
+    fotos de instantes distintos y el número que sale no significa nada.
+    Por eso `probar` busca la última vela que existe en LAS DOS y pregunta ahí."""
+    d = HG.dol(ohlc, ref=ref)
+    s = set()
+    if d['arriba']:
+        s.add(('dol', d['arriba'][0]['i'], 'arriba'))
+    if d['abajo']:
+        s.add(('dol', d['abajo'][0]['i'], 'abajo'))
     return s
 
 
@@ -761,8 +817,11 @@ def probar(n_laminas, semilla, salida, tolerancia=1, con_guia=True,
         #    es de verdad y cuánto es el listón.
         V = [x for x in h_precio if x[0] == 'acum']
         M = [x for x in h_med if x[0] == 'acum']
-        ok = sum(1 for m in M if any(abs(m[1] - v[1]) <= 1 and
-                                     abs(m[2] - v[2]) <= 1 for v in V))
+        # ⚠️ La variable del bucle NO puede llamarse `v`: `v` es la LÁMINA, y
+        #    pisarla deja la lámina convertida en una tupla de acumulación para
+        #    todo lo que venga después en la iteración.
+        ok = sum(1 for m in M if any(abs(m[1] - r[1]) <= 1 and
+                                     abs(m[2] - r[2]) <= 1 for r in V))
         fa = por_familia['acum±1']
         fa[0] += ok; fa[1] += len(M); fa[2] += len(V)
         # ¿y cuando falla, se INVENTA un lateral o solo corre las puntas? Se
@@ -771,13 +830,33 @@ def probar(n_laminas, semilla, salida, tolerancia=1, con_guia=True,
         # "aquí hubo acumulación" sin dar las velas exactas.
         ok = 0
         for m in M:
-            for v in V:
-                sol = min(m[2], v[2]) - max(m[1], v[1]) + 1
+            for r in V:
+                sol = min(m[2], r[2]) - max(m[1], r[1]) + 1
                 if sol > 0 and sol >= 0.5 * (m[2] - m[1] + 1):
                     ok += 1
                     break
         fa = por_familia['acum~']
         fa[0] += ok; fa[1] += len(M); fa[2] += len(V)
+
+        # ── los tres listones sueltos de la liquidez ────────────────────────
+        for campo, nom in (('sigla', 'liq_lado'), ('estado', 'liq_estado'),
+                           ('res', 'liq_res')):
+            V = _vista_liq(h_precio, campo)
+            M = _vista_liq(h_med, campo)
+            fa = por_familia[nom]
+            fa[0] += len(V & M); fa[1] += len(M); fa[2] += len(V)
+
+        # ── DOL, con la MISMA vela de referencia en las dos series ──────────
+        # La última vela que la medición y la verdad tienen en común. Sin esto
+        # se le preguntaría a cada una por un instante distinto.
+        comun = [(p, j) for p, (_k, j) in enumerate(zip(vivos_med, mapa))
+                 if j is not None]
+        if comun:
+            pos, j_real = comun[-1]
+            Vd = _hechos_dol(v['ohlc'], j_real)
+            Md = _traduce(_hechos_dol(ohlc_med, pos), mapa)
+            fa = por_familia['dol']
+            fa[0] += len(Vd & Md); fa[1] += len(Md); fa[2] += len(Vd)
 
     print('\n%d láminas · %d velas · temas, colores y basura al azar%s'
           % (n_laminas, tot['velas'],
@@ -792,7 +871,8 @@ def probar(n_laminas, semilla, salida, tolerancia=1, con_guia=True,
     print('   contra la verdad EN PÍXELES : acierta %5.1f%% · encuentra %5.1f%%'
           % (100 * np.mean(prec_q), 100 * np.mean(exh_q)))
     print('   ── por familia (contra la verdad de PRECIO) ──')
-    for fam in FAMILIAS + ('acum±1', 'acum~'):
+    for fam in FAMILIAS + ('acum±1', 'acum~',
+                           'liq_lado', 'liq_estado', 'liq_res', 'dol'):
         ok, dichos, reales = por_familia[fam]
         pa = 100.0 * ok / dichos if dichos else 0.0
         ea = 100.0 * ok / reales if reales else 0.0
