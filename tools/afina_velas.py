@@ -74,6 +74,13 @@ FILA_ANCHA = 0.80
 # Una columna con tinta en más de esta fracción del panel no es una vela: es
 # una línea vertical de interfaz (borde de caja de sesión, separador de día).
 VERT_INTERFAZ = 0.60
+# Cuántas veces la altura que anuncia la GUÍA puede medir la vela de verdad.
+# 🔑 El recuadro del modelo se queda CORTO: en la cuarta captura del dueño su
+# vela de entrada mide 243 px y la guía decía 146. Con 1,0 el bloque bueno se
+# quedaba fuera igual. Medido —BOS verificado del x=886 / velas suyas bien /
+# banco—:  1,0 → ✅ 2/6 91,9%   ·   1,5 → ✅ 4/6 92,0%   ·   2,0 → 🔴 4/6 92,0%
+# A partir de 2 se pierde el BOS contrastado y no se gana nada. Se queda en 1,5.
+TOPE_GUIA = 1.5
 # Cuánto puede alejarse un píxel del color de la línea de interfaz y seguir
 # contando como parte de ella. Ver el bloque "FUERA LAS LÍNEAS VERTICALES".
 TOL_LINEA = 90
@@ -496,7 +503,20 @@ def afina(a, x0, x1, y0, y1, margen=5, deslizar=False, guia=None,
         # borde ganaba la votación cuando la guía venía con error grande.
         techo = 3 * (gb - ga) + 30
         if tope_alto:
-            techo = min(techo, tope_alto)
+            # 🔴 EL TOPE GLOBAL NUNCA POR DEBAJO DE LO QUE DICE LA GUÍA
+            #    (2026-09-09). El tope existe para que una vela no se enganche
+            #    al borde de una caja de sesión y salga de 400 px. Pero se
+            #    aplicaba a ciegas, y en un gráfico con velas de desplazamiento
+            #    acababa **descartando la vela que el propio modelo acababa de
+            #    anunciar**: en la cuarta captura del dueño el tope valía 114 px
+            #    (3 × la mediana de 38) y la guía de su vela de entrada decía
+            #    417-563, o sea 146 px. El bloque bueno quedaba fuera de la
+            #    votación, solo sobrevivían fragmentos del texto de la etiqueta
+            #    "NYAM.H", y ganaba uno a 180 px de distancia.
+            #    La mediana de un gráfico NO acota lo que mide un desplazamiento;
+            #    la guía sí, porque es de esa vela. Se respeta la mayor de las
+            #    dos, con margen.
+            techo = min(techo, max(tope_alto, TOPE_GUIA * (gb - ga) + 30))
         cand = [b for b in grupos if b[-1] - b[0] <= techo] or grupos
 
         def solape(b):

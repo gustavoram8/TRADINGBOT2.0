@@ -22,6 +22,9 @@ from __future__ import print_function
 import os
 import sys
 
+import numpy as np
+from PIL import Image
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import analizador2 as A2  # noqa: E402
@@ -76,8 +79,27 @@ def main():
     print('── la cadena entrega las velas ──')
     caso('mide las 46 velas', len(velas) == 46, len(velas))
     alturas = [v['min'] - v['max'] for v in velas]
-    caso('ninguna vela disparatada (máx < 3× la mediana)',
-         max(alturas) < 3 * sorted(alturas)[len(alturas) // 2], max(alturas))
+    # 🔴 ESTA COMPROBACIÓN SE REESCRIBIÓ EL 09-sep, y el motivo importa. Decía
+    #    "ninguna vela mide más de 3× la mediana", y eso NO es cierto en un
+    #    gráfico real: una vela de DESPLAZAMIENTO —la que abre un FVG, la que
+    #    rompe estructura— mide tranquilamente 3 a 6 veces la mediana, y son
+    #    justo las que decide un análisis de ICT. La más alta de esta captura
+    #    mide 3,1× y es CORRECTA: la tinta de su columna va de y=306 a 521 y se
+    #    mide 302-522.
+    #    Un número mágico que declara imposible lo que el gráfico tiene delante
+    #    no es una red de seguridad: es un freno. Se cambia por lo único que de
+    #    verdad demuestra que no es un disparate — que la vela más alta COINCIDA
+    #    CON LA TINTA de su propia columna.
+    alto = max(range(len(velas)), key=lambda i: alturas[i])
+    _a = np.asarray(Image.open(IMAGEN).convert('RGB')).astype(int)
+    _c = _a[200:800, velas[alto]['x0']:velas[alto]['x1'] + 1]
+    _ys = np.nonzero((np.abs(_c).sum(2) < 150).any(1))[0]
+    caso('la vela más alta coincide con la tinta de su columna (±6 px)',
+         len(_ys) and abs(velas[alto]['max'] - (_ys.min() + 200)) <= 6
+         and abs(velas[alto]['min'] - (_ys.max() + 200)) <= 6,
+         (velas[alto]['max'], velas[alto]['min']))
+    caso('y ninguna se dispara de verdad (máx < 8× la mediana)',
+         max(alturas) < 8 * sorted(alturas)[len(alturas) // 2], max(alturas))
     caso('todas tienen cuerpo dentro de su extenso',
          all(v['max'] <= v['cuerpo_alto'] <= v['cuerpo_bajo'] <= v['min']
              for v in velas))
