@@ -83,6 +83,15 @@ VERTICALES = [True]
 DIBUJOS = [True]
 DIB_FLECHAS = [True]
 DIB_FIBS = [True]
+# Interruptor de la PISTA del modelo sobre donde dibujo el trader.
+# 🔴 APAGADA por defecto: el arreglo que la usaba esta revertido (ocho intentos,
+#    ver `afina_velas.afina`). La maquinaria se conserva —`_pistas_dibujos` y
+#    `mascara_de_pistas` funcionan y estan probadas— porque permite medir el
+#    proximo intento SIN gastar una sola llamada al modelo: el banco sabe donde
+#    dibujo, asi que puede imitar lo que diria Gemini con su error real.
+# ⚠️ Y encenderla cambia los numeros aunque no se use, porque consume azar y
+#    las laminas salen distintas. Comparar siempre con el mismo interruptor.
+PISTAS_DIB = [False]
 # Una vela no puede medir más de esto por la MEDIANA de su propio gráfico.
 TOPE_ALTO = 3.0
 MARGEN_X, MARGEN_Y = 60, 70
@@ -304,6 +313,7 @@ def lamina(ruta, rnd, n=60, marca_de_agua=True, verticales=True,
     # vela de verdad medía 5 px.
     # 🔑 Van ENCIMA de las velas y PEGADAS a ellas, que es como las pinta un
     #    trader: una flecha marcando la vela de entrada toca la vela.
+    marcas = []
     if dibujos and DIB_FLECHAS[0]:
         for _ in range(rnd.randint(1, 3)):
             if not verdad:
@@ -322,6 +332,9 @@ def lamina(ruta, rnd, n=60, marca_de_agua=True, verticales=True,
             pta = yy - h - 8 if arr else yy + h + 8
             d.polygon([(cx - 7, yy - h if arr else yy + h), (cx + 7,
                        yy - h if arr else yy + h), (cx, pta)], fill=col)
+            # 🔑 La VERDAD de dónde está cada dibujo, para poder imitar después
+            #    lo que diría el modelo (con su error). Ver `_pistas_dibujos`.
+            marcas.append((cx - 7, min(yy, pta), cx + 7, max(yy + h, pta)))
     # un racimo de fibs: varias horizontales del mismo color con etiqueta
     if dibujos and DIB_FIBS[0] and rnd.random() < 0.7:
         # 🔴 EL RACIMO DE FIBS, BIEN DIBUJADO — Y POR QUÉ IMPORTA (2026-09-10).
@@ -359,7 +372,7 @@ def lamina(ruta, rnd, n=60, marca_de_agua=True, verticales=True,
         d.rectangle([ex, ey, ex + rnd.randint(34, 60), ey + 14],
                     fill=(rnd.randint(0, 255), rnd.randint(0, 255), rnd.randint(0, 255)))
     im.save(ruta)
-    return {'tema': t, 'velas': verdad, 'ohlc': usadas,
+    return {'tema': t, 'velas': verdad, 'ohlc': usadas, 'marcas': marcas,
             'py': (y0, p0, y1, p1)}
 
 
@@ -378,7 +391,7 @@ def _color_cuerpo(a, x0, x1, ct, cb):
     return (c >> 16, (c >> 8) & 255, c & 255)
 
 
-def mide(ruta, columnas, guias=None, banda=None):
+def mide(ruta, columnas, guias=None, banda=None, pistas_dib=None):
     """De columnas a velas medidas, EN DOS PASADAS.
 
     🔑 La segunda pasada existe por un defecto que solo apareció sobre la
@@ -388,7 +401,7 @@ def mide(ruta, columnas, guias=None, banda=None):
     depende del gráfico, así que se mide primero todo, se toma la MEDIANA y se
     vuelven a medir las que se disparan, prohibiéndoles pasar de 3 veces esa
     mediana. El propio gráfico dice cuál es su escala."""
-    prim = _mide1(ruta, columnas, guias, banda)
+    prim = _mide1(ruta, columnas, guias, banda, pistas_dib=pistas_dib)
     alturas = [v['min'] - v['max'] for v in prim if v]
     if len(alturas) < 5:
         return prim
@@ -397,14 +410,15 @@ def mide(ruta, columnas, guias=None, banda=None):
                    if v and (v['min'] - v['max']) > tope]
     if not sospechosas:
         return prim
-    seg = _mide1(ruta, columnas, guias, banda, tope)
+    seg = _mide1(ruta, columnas, guias, banda, tope, pistas_dib)
     for i in sospechosas:
         if seg[i]:
             prim[i] = seg[i]
     return prim
 
 
-def _mide1(ruta, columnas, guias=None, banda=None, tope=None):
+def _mide1(ruta, columnas, guias=None, banda=None, tope=None,
+           pistas_dib=None):
     a = np.asarray(Image.open(ruta).convert('RGB')).astype(int)
     H, W, _ = a.shape
     if banda:
@@ -416,8 +430,7 @@ def _mide1(ruta, columnas, guias=None, banda=None, tope=None):
     FCOL = AF.fondo_por_columna(a, Y0, Y1)
     CVELA = AF.colores_de_vela(a, Y0, Y1, FCOL)
     MLIN = AF.mascara_lineas(a, Y0, Y1, FCOL)
-    import flechas as FL
-    DIB = FL.mascara(a, (0, W), (Y0, Y1))
+    DIB = mascara_de_pistas(a, pistas_dib, CVELA) if pistas_dib else None
     out = []
     for i, (x0, x1) in enumerate(columnas):
         # ventana ~5× la vela. Medido (2026-09-05): con ×3 el extremo sale al
@@ -512,6 +525,68 @@ def _f1(verdad, medido):
     prec = ok / float(len(medido)) if medido else 0.0
     exh = ok / float(len(verdad)) if verdad else 0.0
     return prec, exh
+
+
+def _pistas_dibujos(marcas, rnd, H, W):
+    """Lo que diría el MODELO al preguntarle dónde dibujó el trader, imitado.
+
+    🔴 POR QUÉ SE IMITA Y NO SE USA LA VERDAD: darle al extractor el recuadro
+    exacto mide una cadena que no existe. En producción el recuadro lo da
+    Gemini y viene con error — el mismo patrón que ya se usa con las guías de
+    las velas (`_guias`), y por la misma razón.
+
+    🔑 Y por qué esto hace falta: seis intentos de separar los dibujos del
+    trader SOLO CON PÍXELES fracasaron, y el último dejó el diagnóstico claro —
+    una flecha mide 12×25 px y una vela 13×30: **son el mismo objeto**. No hay
+    umbral que los distinga. Lo que sí distingue una cosa de otra es saber QUÉ
+    es, y eso lo contesta el modelo.
+
+    El error imitado es generoso a propósito (hasta 6 px por lado): si el
+    arreglo solo funciona con el recuadro clavado, no funciona."""
+    out = []
+    for (x0, y0, x1, y1) in marcas:
+        out.append((max(0, x0 - rnd.randint(0, 6)), max(0, y0 - rnd.randint(0, 6)),
+                    min(W, x1 + rnd.randint(0, 6)), min(H, y1 + rnd.randint(0, 6))))
+    return out
+
+
+def mascara_de_pistas(a, pistas, cvela=None):
+    """De los recuadros del modelo a los PÍXELES del dibujo.
+
+    Dentro de cada recuadro se marca solo lo que destaca sobre el fondo local,
+    no el rectángulo entero: el recuadro trae margen y taparlo todo se comería
+    trozos de la vela vecina. El modelo dice CUÁL y aproximadamente DÓNDE; los
+    píxeles dicen exactamente qué."""
+    out = np.zeros(a.shape[:2], bool)
+    for (x0, y0, x1, y1) in pistas:
+        x0, y0 = max(0, int(x0)), max(0, int(y0))
+        x1, y1 = min(a.shape[1], int(x1) + 1), min(a.shape[0], int(y1) + 1)
+        if x1 - x0 < 2 or y1 - y0 < 2:
+            continue
+        reg = a[y0:y1, x0:x1]
+        # el fondo de esa zona: el color más repetido del BORDE del recuadro
+        borde = np.concatenate([reg[0], reg[-1], reg[:, 0], reg[:, -1]])
+        pl = borde[:, 0] * 65536 + borde[:, 1] * 256 + borde[:, 2]
+        val, cnt = np.unique(pl, return_counts=True)
+        c = int(val[cnt.argmax()])
+        fondo = np.array([c >> 16, (c >> 8) & 255, c & 255])
+        m = np.abs(reg - fondo).sum(2) > AF.UMBRAL_TINTA
+        # 🔴 Y AQUÍ LA CONDICIÓN QUE FALTABA (medido: sin ella, 89,8 → 87,7%).
+        #    El recuadro del modelo contiene la flecha **y la vela que hay
+        #    debajo**, así que marcar "todo lo que destaca del fondo" se lleva
+        #    la vela por delante. Es dibujo lo que destaca **y NO es de un color
+        #    de vela**.
+        #    🔑 Filtrar por color de vela fracasó tres veces cuando se hacía
+        #    sobre TODO el gráfico —mataba las mechas, que llegan mezcladas—.
+        #    Aquí es distinto porque va acotado a una cajita de 20×30 px que el
+        #    modelo ha señalado: el daño posible está encerrado ahí dentro.
+        if cvela is not None and len(cvela):
+            suya = np.zeros(m.shape, bool)
+            for c in cvela:
+                suya |= np.abs(reg - c[None, None, :]).sum(2) <= AF.TOL_COLOR_VELA
+            m &= ~suya
+        out[y0:y1, x0:x1] = m
+    return out
 
 
 def _guias(verdad, rnd):
@@ -632,7 +707,9 @@ def probar(n_laminas, semilla, salida, tolerancia=1, con_guia=True,
             cols = [(c[0], c[1]) for c in cajas]
             gus = [(c[2], c[3]) for c in cajas]
 
-        med = mide(ruta, cols, gus)
+        med = mide(ruta, cols, gus,
+                   pistas_dib=_pistas_dibujos(v.get('marcas') or [], rnd,
+                                              AL, AN) if PISTAS_DIB[0] else None)
 
         # 🔴 SE EMPAREJA POR POSICIÓN EN LA IMAGEN, NUNCA POR ÍNDICE. Si falta
         # una vela, la nº 40 de la lista medida NO es la nº 40 del gráfico:
@@ -735,6 +812,9 @@ if __name__ == '__main__':
                          '(88 columnas de ~102). Con 0 se mide la cadena '
                          'suponiendo el eslabón A perfecto, que es lo que '
                          'medía este banco antes y no es la realidad.')
+    ap.add_argument('--pistas-dib', action='store_true', dest='pistas_dib',
+                    help='CON la pista del modelo sobre donde dibujo el trader '
+                         '(imitada, con su error). Apagada por defecto.')
     ap.add_argument('--sin-dibujos', action='store_true',
                     help='fabrica SIN dibujos del trader (flechas, fibs)')
     ap.add_argument('--sin-verticales', action='store_true',
@@ -748,5 +828,6 @@ if __name__ == '__main__':
     MARCA_AGUA[0] = not a.sin_marca
     VERTICALES[0] = not a.sin_verticales
     DIBUJOS[0] = not a.sin_dibujos
+    PISTAS_DIB[0] = a.pistas_dib
     probar(a.laminas, a.semilla, a.salida, a.tolerancia, not a.sin_guia,
            a.faltan, not a.sin_rejilla)

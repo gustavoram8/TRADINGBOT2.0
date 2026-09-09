@@ -526,6 +526,32 @@ def afina(a, x0, x1, y0, y1, margen=5, deslizar=False, guia=None,
     y0 = max(0, y0); y1 = min(H, y1)
     vent = a[y0:y1, vx0:vx1]
     # 🔑 EL FONDO, EN DOS DIMENSIONES. Ver `_fondo_local`.
+    # ⛔ OCHO INTENTOS CONTRA LOS DIBUJOS DEL TRADER, LOS OCHO REVERTIDOS. El
+    #    valor de este bloque no es el código —no hay— sino el DIAGNÓSTICO, que
+    #    sí está medido y le ahorra el camino a quien lo retome:
+    #
+    # 🔴 EL DAÑO NO ESTÁ DONDE ESTÁ EL DIBUJO. Comparando la misma lámina con y
+    #    sin flechas y mirando solo las velas que cambian, **cuatro de cada
+    #    cinco víctimas son velas que la flecha NI SIQUIERA TOCA**:
+    #        lám 3 vela 22 · verdad 301-343 · con flechas 301-329 · no la toca
+    #        lám 3 vela 23 · verdad 292-345 · con flechas 292-319 · no la toca
+    #        lám 6 vela 59 · verdad 255-305 · con flechas 255-301 · no la toca
+    #    El dibujo entra en la VENTANA DE REFERENCIA de las velas vecinas y les
+    #    envenena el cálculo del fondo. Por eso quitarlo de la tinta nunca sirvió
+    #    de nada: el mal estaba hecho un paso antes.
+    #
+    # ⚠️ Y aun así, sacar sus píxeles del cálculo del fondo TAMBIÉN mide peor
+    #    (89,8 → 88,8%), incluso con el modelo señalando dónde está el dibujo y
+    #    filtrando por color de vela dentro del recuadro. O sea que quitar
+    #    información del fondo cuesta más de lo que ahorra.
+    #
+    # 🔑 LO QUE QUEDA POR PROBAR, y en este orden: NO quitar, sino SUSTITUIR —
+    #    rellenar los píxeles del dibujo con el fondo de sus vecinos (una
+    #    interpolación simple) en vez de excluirlos del recuento. Así la ventana
+    #    conserva su tamaño y su estadística, que es lo que parece estar
+    #    costando caro.
+    dv = None
+    tapado = None
     fondo = _fondo_por_fila(vent)
     dif = np.abs(vent - fondo[:, None, :]).sum(2)
     tinta = dif > UMBRAL_TINTA
@@ -721,7 +747,6 @@ def afina(a, x0, x1, y0, y1, margen=5, deslizar=False, guia=None,
     #    exactamente la clase de pregunta —"¿qué ES esto?"— que en este proyecto
     #    resuelve el MODELO, cinco veces ya. El camino es preguntarle dónde
     #    dibujó el trader, y que los píxeles afinen el recorte; no al revés.
-    tapado = None
 
     # solo las columnas de la vela, no las de la ventana de referencia
     prop = tinta[:, x0 - vx0:x1 - vx0 + 1]
@@ -733,7 +758,8 @@ def afina(a, x0, x1, y0, y1, margen=5, deslizar=False, guia=None,
     for v in filas[1:]:
         # el hueco se cierra si es pequeño, O si lo que hay en medio está
         # TAPADO por un dibujo del trader (ver arriba)
-        if v - g[-1] <= HUECO:
+        if v - g[-1] <= HUECO or (tapado is not None
+                                  and tapado[g[-1] + 1:v].all()):
             g.append(v)
         else:
             grupos.append(g); g = [v]
