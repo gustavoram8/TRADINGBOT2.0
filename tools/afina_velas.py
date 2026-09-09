@@ -92,6 +92,9 @@ FILA_ANCHA = 0.80
 # Una columna con tinta en más de esta fracción del panel no es una vela: es
 # una línea vertical de interfaz (borde de caja de sesión, separador de día).
 VERT_INTERFAZ = 0.60
+# Qué parte del panel tiene que recorrer un tramo del mismo color para ser una
+# LÍNEA y no velas. Ver `filas_de_linea`.
+FRAC_LINEA = 0.35
 # Cuántos colores distintos tiene una vela: cuerpo alcista, bajista y borde.
 COLORES_VELA = 3
 # Cuánto puede alejarse un píxel de un color de vela y seguir siéndolo (suma
@@ -171,6 +174,45 @@ def fondo_por_columna(a, y0, y1):
         val, cnt = np.unique(plano[:, x], return_counts=True)
         c = int(val[cnt.argmax()])
         out[x] = (c >> 16, (c >> 8) & 255, c & 255)
+    return out
+
+
+def filas_de_linea(a, y0, y1, x0, x1, frac=None):
+    """Qué filas del panel son una LÍNEA HORIZONTAL, no velas.
+
+    \U0001f534 Un fib, un nivel, el borde de una caja: todos son una fila con un
+    TRAMO SEGUIDO DEL MISMO COLOR de cientos de píxeles. Ninguna vela hace eso:
+    la más ancha mide 17 px. Es la separación por FORMA que el filtro por color
+    no supo dar — y que fracasó tres veces (ver más abajo).
+
+    Medido en la fábrica: los racimos de fib le cuestan 2,7 puntos de máximo y
+    mínimo exactos (91,9 → 89,2%).
+
+    \u26a0\ufe0f Se mide el tramo SEGUIDO, no cuántos píxeles de ese color hay en la
+    fila. Veinte velas del mismo color en una fila suman mucho y son veinte
+    manchas con huecos; una línea es una sola tirada. Confundirlos borraría la
+    fila donde más velas hay, que es justo la del medio del gráfico."""
+    sub = a[y0:y1, x0:x1]
+    W = sub.shape[1]
+    if W < 20:
+        return np.zeros(sub.shape[0], bool)
+    minimo = int((frac or FRAC_LINEA) * W)
+    plano = (sub[:, :, 0] * 65536 + sub[:, :, 1] * 256 + sub[:, :, 2])
+    # tramo seguido más largo del mismo color, fila a fila
+    igual = plano[:, 1:] == plano[:, :-1]
+    out = np.zeros(sub.shape[0], bool)
+    for y in range(sub.shape[0]):
+        n = mejor = 1
+        fila = igual[y]
+        for v in fila:
+            if v:
+                n += 1
+                if n > mejor:
+                    mejor = n
+            else:
+                n = 1
+        if mejor >= minimo:
+            out[y] = True
     return out
 
 
@@ -404,7 +446,7 @@ def direccion(velas):
 
 
 def afina(a, x0, x1, y0, y1, margen=5, deslizar=False, guia=None,
-          tope_alto=None, fcol=None, cvela=None):
+          tope_alto=None, fcol=None, cvela=None, flin=None):
     """Extenso real de la vela que vive entre las columnas x0..x1.
 
     Devuelve (alto, bajo, cuerpo_alto, cuerpo_bajo) en píxeles, o None si en esa
@@ -433,6 +475,16 @@ def afina(a, x0, x1, y0, y1, margen=5, deslizar=False, guia=None,
     #    y BORRA las velas que hay dentro. Ver `fondo_por_columna`.
     if fcol is not None:
         tinta &= np.abs(vent - fcol[vx0:vx1][None, :, :]).sum(2) > UMBRAL_TINTA
+    # ⛔ AQUÍ IBA EL FILTRO DE LÍNEAS HORIZONTALES POR FORMA, Y SE REVIRTIÓ:
+    #    85,6 → 67,3%. La idea sigue siendo buena —un fib es un tramo seguido de
+    #    cientos de píxeles y ninguna vela pasa de 17— pero la REGLA estaba mal
+    #    escrita: marcaba como línea cualquier fila con un tramo largo del mismo
+    #    color, y **a la derecha del gráfico, donde no hay velas, el fondo ES un
+    #    tramo larguísimo**. Se marcaba casi todas las filas y se borraban con
+    #    ellas las velas que contenían.
+    #    🔑 Para reintentarlo hay que exigir dos cosas más: que el tramo sea de
+    #    un color que NO sea el fondo de esa zona, y medirlo solo DENTRO del
+    #    área que ocupan las velas, no del panel entero.
     # ⛔ AQUÍ IBA EL FILTRO POR COLOR DE VELA, Y SE REVIRTIÓ: 85,6 → 72,0%.
     #    Es la TERCERA vez que un filtro por color fracasa del mismo modo, así
     #    que la lección ya no es una sospecha: **filtrar la tinta por color mata

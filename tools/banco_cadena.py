@@ -81,6 +81,8 @@ MARCA_AGUA = [True]
 VERTICALES = [True]
 # Interruptor de los dibujos del trader (flechas, fibs).
 DIBUJOS = [True]
+DIB_FLECHAS = [True]
+DIB_FIBS = [True]
 # Una vela no puede medir más de esto por la MEDIANA de su propio gráfico.
 TOPE_ALTO = 3.0
 MARGEN_X, MARGEN_Y = 60, 70
@@ -302,7 +304,7 @@ def lamina(ruta, rnd, n=60, marca_de_agua=True, verticales=True,
     # vela de verdad medía 5 px.
     # 🔑 Van ENCIMA de las velas y PEGADAS a ellas, que es como las pinta un
     #    trader: una flecha marcando la vela de entrada toca la vela.
-    if dibujos:
+    if dibujos and DIB_FLECHAS[0]:
         for _ in range(rnd.randint(1, 3)):
             if not verdad:
                 break
@@ -320,13 +322,13 @@ def lamina(ruta, rnd, n=60, marca_de_agua=True, verticales=True,
             pta = yy - h - 8 if arr else yy + h + 8
             d.polygon([(cx - 7, yy - h if arr else yy + h), (cx + 7,
                        yy - h if arr else yy + h), (cx, pta)], fill=col)
-        # un racimo de fibs: varias horizontales del mismo color con etiqueta
-        if rnd.random() < 0.7:
-            fy = rnd.randint(MARGEN_Y + 40, AL - MARGEN_Y - 140)
-            fc = (rnd.randint(120, 220), rnd.randint(20, 80), rnd.randint(20, 80))
-            for k, frac in enumerate((0.0, .25, .5, .62, .705, .79, 1.0)):
-                y = int(fy + frac * rnd.randint(70, 130))
-                d.line([(rnd.randint(0, AN // 2), y), (AN, y)], fill=fc)
+    # un racimo de fibs: varias horizontales del mismo color con etiqueta
+    if dibujos and DIB_FIBS[0] and rnd.random() < 0.7:
+        fy = rnd.randint(MARGEN_Y + 40, AL - MARGEN_Y - 140)
+        fc = (rnd.randint(120, 220), rnd.randint(20, 80), rnd.randint(20, 80))
+        for frac in (0.0, .25, .5, .62, .705, .79, 1.0):
+            y = int(fy + frac * rnd.randint(70, 130))
+            d.line([(rnd.randint(0, AN // 2), y), (AN, y)], fill=fc)
 
     # basura ENCIMA: niveles, una discontinua y un par de etiquetas
     for _ in range(rnd.randint(3, 6)):
@@ -397,6 +399,7 @@ def _mide1(ruta, columnas, guias=None, banda=None, tope=None):
     #    adivinarlo. Ver `afina_velas._fondo_de_los_huecos`.
     FCOL = AF.fondo_por_columna(a, Y0, Y1)
     CVELA = AF.colores_de_vela(a, Y0, Y1, FCOL)
+    FLIN = AF.filas_de_linea(a, Y0, Y1, 0, W)
     out = []
     for i, (x0, x1) in enumerate(columnas):
         # ventana ~5× la vela. Medido (2026-09-05): con ×3 el extremo sale al
@@ -404,7 +407,8 @@ def _mide1(ruta, columnas, guias=None, banda=None, tope=None):
         # más filas de fondo limpio entran en la paleta.
         margen = max(4, 2 * (x1 - x0 + 1))
         guia = guias[i] if guias else None
-        r = AF.afina(a, x0, x1, Y0, Y1, margen, False, guia, tope, FCOL, CVELA)
+        r = AF.afina(a, x0, x1, Y0, Y1, margen, False, guia, tope, FCOL, CVELA,
+                     FLIN)
         if r is None:
             out.append(None)
             continue
