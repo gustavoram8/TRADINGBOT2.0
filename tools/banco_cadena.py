@@ -123,8 +123,16 @@ def _tema(rnd):
     return {'fondo': fondo, 'rejilla': rejilla, 'sube': a, 'baja': b,
             'hueco_cuerpo': rnd.random() < 0.35,
             'con_rejilla': rnd.random() < 0.7,
-            'ancho': rnd.choice([9, 11, 13, 15, 17]),
-            'sep': rnd.choice([3, 4, 5, 6])}
+            # 🔴 QUINTO AGUJERO DE FÁBRICA (2026-09-10). El banco solo probaba
+            #    velas de 9 a 17 px, y la cuarta captura del dueño las tiene de
+            #    **3**. En una vela de 3 px el cuerpo tiene tres columnas y la
+            #    mecha una: la regla que separa cuerpo de mecha —"hay tinta en
+            #    los DOS costados"— trabaja con 3 columnas en vez de 15, y el
+            #    margen de la ventana de referencia pasa de 34 px a 6.
+            #    Eso explica por qué el banco subía y su captura no: no estaban
+            #    midiendo el mismo problema.
+            'ancho': rnd.choice([3, 3, 5, 5, 7, 9, 11, 13, 15, 17]),
+            'sep': rnd.choice([1, 2, 2, 3, 4, 5, 6])}
 
 
 def _serie(n, rnd, desplazamientos=True):
