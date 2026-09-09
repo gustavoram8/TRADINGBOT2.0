@@ -30,3 +30,21 @@ falsas, que son las etiquetas «0,62» y «0,705» del fib.
 ⚠️ Y un caso nuevo: **la entrada NO está marcada con flecha**. Entró en la línea
 del 0,5 del fib y solo marcó con flecha la salida. Un detector que dé por hecho
 "la primera flecha es la entrada" se equivoca aquí.
+
+## `mnq_long_ote.png` — MNQ 5m, LONG en el 0,5 del OTE (2026-09-10)
+La quinta, y la primera de **otro instrumento** (NASDAQ 100 E-mini). Mismo
+tamaño de vela que la cuarta (~3 px) pero otro tema, otras cajas y otro
+recorrido, así que sirve de control: si falla igual que la del MES, el problema
+es del método; si falla distinto, es de esa captura.
+
+🔑 **Trae una hipótesis del dueño que se puede FALSAR con aritmética**, y eso la
+hace la mejor prueba que hemos tenido: *«no veía motivos para que el precio
+volviese a buscar liquidez, consideraba que había mucha más liquidez superior —
+aunque quizá pueda estarme equivocando»*. La familia `piscinas` (BSL/SSL)
+calcula máximos y mínimos iguales y si esa liquidez sigue SIN TOMAR. O sea que a
+esa duda suya se le contesta con números, no con opinión.
+
+⚠️ Su gráfico lleva además tres niveles «SS» dibujados por su indicador —dos
+arriba y uno abajo—. NO se leen: la cadena no mira un solo píxel de texto ni de
+línea. Sirven de árbitro independiente, como hizo la marca de BoS/ChoCh con el
+BOS de la vela x=886.

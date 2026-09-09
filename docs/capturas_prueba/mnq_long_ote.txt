@@ -1,0 +1,6 @@
+Trade LONG. OTE / Standard Deviation. Lo tomé en el nivel 0,5 del fib. Mi
+confluencia para tomarlo fue haber tenido en temporalidad de 1H un cierre de
+vela que ocasionó un Structure Shift a alcista. Realmente no veía motivos para
+que el precio volviese a darse la vuelta a buscar liquidez, ya que consideraba
+que había mucha más liquidez superior — aunque quizá pueda estarme equivocando.
+El trade falló.
