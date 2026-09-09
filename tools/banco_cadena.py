@@ -491,7 +491,7 @@ def _verdad_ohlc(verdad):
 # ══════════════════════════════════════════════════════════════════════════
 
 FAMILIAS = ('fvg', 'bos', 'barrida', 'ob', 'estado', 'piscina', 'manip', 'acum',
-            'liq')
+            'liq', 'estruct', 'mss')
 # ⚠️ `liq_lado`, `liq_estado`, `liq_res` y `dol` NO van en FAMILIAS a propósito.
 #    Son VISTAS del mismo hecho, no hechos aparte: metiéndolas en el conjunto
 #    global, cada nivel de liquidez contaría cuatro veces y la cifra de cabecera
@@ -503,6 +503,8 @@ NOMBRES = {'fvg': 'FVG', 'bos': 'BOS', 'barrida': 'barrida de liquidez',
            'acum': 'acumulacion', 'acum±1': 'acumulacion (±1 vela)',
            'acum~': 'acumulacion (zona, no puntas)',
            'liq': 'liquidez (nivel+forma+estado)',
+           'estruct': 'estructura HH/HL/LH/LL', 'mss': 'MSS / CHoCH',
+           'tend': 'tendencia (alcista/bajista/mixta)',
            'liq_lado': '  · solo el nivel (BSL/SSL)',
            'liq_estado': '  · tomada / sin tomar',
            'liq_res': '  · LRL / HRL',
@@ -547,6 +549,10 @@ def _hechos(ohlc):
     for x in HG.liquidez(ohlc):
         s.add(('liq', x['i'], '%s|%s|%s|%s'
                % (x['sigla'], x['forma'], x['estado'], x['resistencia'] or '-')))
+    for x in HG.estructura(ohlc):
+        s.add(('estruct', x['i'], x['tipo']))
+    for x in HG.mss(ohlc):
+        s.add(('mss', x['i'], x['tipo']))
     return s
 
 
@@ -857,6 +863,15 @@ def probar(n_laminas, semilla, salida, tolerancia=1, con_guia=True,
             Md = _traduce(_hechos_dol(ohlc_med, pos), mapa)
             fa = por_familia['dol']
             fa[0] += len(Vd & Md); fa[1] += len(Md); fa[2] += len(Vd)
+            # 🔑 La TENDENCIA es un escalar, no un conjunto: una sola respuesta
+            #    por lámina (alcista / bajista / mixta). Se compara en la misma
+            #    vela común, así que 'acierta' y 'encuentra' salen iguales — es
+            #    el porcentaje de láminas en las que la cadena lee la estructura
+            #    igual que la verdad.
+            fa = por_familia['tend']
+            fa[0] += int(HG.tendencia(v['ohlc'], hasta=j_real)['estado']
+                         == HG.tendencia(ohlc_med, hasta=pos)['estado'])
+            fa[1] += 1; fa[2] += 1
 
     print('\n%d láminas · %d velas · temas, colores y basura al azar%s'
           % (n_laminas, tot['velas'],
@@ -872,7 +887,7 @@ def probar(n_laminas, semilla, salida, tolerancia=1, con_guia=True,
           % (100 * np.mean(prec_q), 100 * np.mean(exh_q)))
     print('   ── por familia (contra la verdad de PRECIO) ──')
     for fam in FAMILIAS + ('acum±1', 'acum~',
-                           'liq_lado', 'liq_estado', 'liq_res', 'dol'):
+                           'liq_lado', 'liq_estado', 'liq_res', 'dol', 'tend'):
         ok, dichos, reales = por_familia[fam]
         pa = 100.0 * ok / dichos if dichos else 0.0
         ea = 100.0 * ok / reales if reales else 0.0

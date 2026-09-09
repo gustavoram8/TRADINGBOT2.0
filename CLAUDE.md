@@ -501,6 +501,51 @@ la petición de fondo. `hechos_grafico --probar` **41 → 55**.
   acierta 86%. ⚠️ **Lección: arreglar el código obliga a re-medir** — esta vez el error iba a
   favor, el próximo puede ir en contra.
 
+### 🧭 ESTRUCTURA DE MERCADO + MSS, y la VENTANA EN TRES (2026-09-09)
+🔴 **El agujero que destapó la 1ª comparación real:** su tesis para entrar fue *"un cierre de 1H
+que ocasionó un Structure Shift a alcista"* — y **el catálogo no sabía qué es un MSS**. Le pedíamos
+a la IA que juzgara su decisión con una lista que no contenía el hecho en el que se basó.
+- **`HG.estructura()`** etiqueta cada giro contra el anterior DE SU MISMO TIPO (HH/LH/HL/LL —
+  comparar alto contra bajo da una secuencia que no significa nada). **`HG.tendencia()`** resume las
+  últimas 4 etiquetas. **`HG.mss()`** = el BOS que va en CONTRA del anterior (CHoCH).
+- 🔑 **'mixta' NO es una evasiva, es el estado más informativo:** tras un solo LH la estructura aún
+  no ha roto nada pero ya no es limpiamente alcista, y ahí es donde se toman los peores trades.
+  **En su vela de entrada (149) la estructura de 5m salía MIXTA**, y el último MSS alcista fue en
+  la vela 113. ⚠️ Su MSS de 1H NO se puede verificar: vemos la captura de 5m.
+- **El MSS va como CLÁUSULA de la línea del BOS, no como línea propia** (un MSS *es* un BOS;
+  aparte se imprimiría dos veces), pero **con su propia tasa**: el BOS se afirma al 97,1% y que
+  además voltee la estructura, al 87,0%.
+- **MEDIDO** (mínimo de 3 semillas): estructura **84,5%** · MSS **87,0%** · tendencia **87,5%**.
+
+🔴 **LA VENTANA DEL TRADE, PARTIDA EN TRES — el cambio que convierte una lista en un PORQUÉ.**
+Con la ventana como lista única (velas 141-164), GPT-4o escribió que el trade no llegó a su
+objetivo por *"un OB bajista en la vela 156 y un FVG bajista en la vela 159"*. **Entró en la 149.**
+Le reprochaba cosas aparecidas SIETE VELAS DESPUÉS de apretar el botón.
+- ⚠️ **Etiquetar los relojes dentro de cada línea NO BASTÓ** (se probó esa misma mañana: *"medido
+  en la última vela"* / *"en ese momento"*). El modelo las junta igual. **Etiquetar no es separar:**
+  hacen falta secciones distintas con encabezados que digan qué se puede concluir de cada una.
+  (1) lo que ya estaba antes de entrar — *lo único de lo que puede salir una crítica a su entrada*;
+  (2) **lo que hizo su PROPIA vela de entrada**; (3) lo que pasó después — *nunca para decir que
+  debería haberlo sabido*.
+- 🔑 **El corte va por la ÚLTIMA vela que menciona la línea, no por la primera.** Un FVG nacido en
+  la 145 e invalidado en la 149 no es "lo que veía antes": es lo que le pasó AL entrar. Y en su
+  caso ESA es la respuesta entera — **su vela de entrada cerró atravesando el FVG alcista de la
+  vela 145**, la zona en la que se apoyaba. Con el corte por la primera vela caía en "contexto".
+
+### 📉 LA 1ª COMPARACIÓN REAL CONTRA EL SITIO (2026-09-09, 6 variantes sobre su MNQ)
+**A (el sitio hoy), B (sitio + cláusula) y F (solo la tabla OHLC) son el GRUPO DE CONTROL y
+salieron mal, que es lo que había que demostrar.** No citan ni una vela: **le repiten al trader sus
+propias confluencias** ("stacked bearish FVGs 1H/15m/5m" es literal de su construcción), se
+inventan un CHoCH, y **B afirma que entró "fuera de una Kill Zone"** cuando entró dentro.
+**F es la prueba limpia de que la IA NO deduce:** con la tabla de 163 velas *nombra* el DOL y pide
+"evaluar si el camino era de baja resistencia" — devuelve la pregunta en vez de la respuesta.
+**C, D y E (con bloque de hechos) citan velas, precios y niveles reales**; la auditoría confirma 0
+inventados en C y E. ⚠️ **D se inventó la vela 141** — y es justo la variante con la cláusula de
+"prohibido inventar referencias". Auditar no es opcional.
+⚠️ **Lección de método:** que la mitad del experimento salga mal no es que el trabajo falle — es el
+control. Y los 7 días previos arreglaron **lo que la IA RECIBE**, no lo que escribe; hoy es el
+primer día que el análisis de sangre llega a la mesa del que redacta.
+
 **PENDIENTE:** encadenarlo todo en un solo programa, y **ensamblarlo con el analizador** —
 🔴 eso sí toca el sitio y no se mueve sin que el dueño lo diga. Fuera sigue MACD/RSI.
 

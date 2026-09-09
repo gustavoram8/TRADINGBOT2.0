@@ -120,8 +120,12 @@ MIN_PRECISION = 90.0
 #        acumulación~   97,1   94,2   98,1      94,2
 #        liquidez       73,2   75,8   78,1      73,2
 #        DOL            81,8   80,4   86,7      80,4
+#        estructura     85,7   84,5   86,7      84,5
+#        MSS / CHoCH    88,9   90,0   87,0      87,0
+#        tendencia      87,5   87,5   87,5      87,5
 PRECISION = {'bos': 97.1, 'barrida': 90.7, 'fvg': 86.3, 'ob': 83.5,
-             'manip': 81.4, 'acum': 94.2, 'liq': 73.2, 'dol': 80.4}
+             'manip': 81.4, 'acum': 94.2, 'liq': 73.2, 'dol': 80.4,
+             'mss': 87.0, 'tend': 87.5}
 # 🔴 `piscina` YA NO ES UNA FAMILIA: la absorbe `liq`. `HG.piscinas` solo veía
 # los niveles con DOS O MÁS toques y los promediaba; `HG.liquidez` da esos
 # mismos y además los giros sueltos, con su etiqueta (EQH/EQL/REQH/REQL) y su
@@ -147,7 +151,8 @@ PRECISION_ESTADO = 81.0
 NOMBRE = {'bos': 'BOS', 'barrida': 'barrida de liquidez',
           'fvg': 'FVG', 'ob': 'order block', 'manip': 'pierna de manipulación',
           'acum': 'acumulación', 'liq': 'liquidez (BSL/SSL, EQH/EQL, LRL/HRL)',
-          'dol': 'DOL — lo que queda sin tomar'}
+          'dol': 'DOL — lo que queda sin tomar', 'mss': 'MSS / CHoCH',
+          'tend': 'estructura de mercado (HH/HL/LH/LL)'}
 # Por debajo de esto un hecho no se escribe en ninguna parte.
 # 🔴 BAJADO DE 78 A 65 EL 09-sep, y es una decisión, no un ajuste. Con la
 # fábrica midiendo el mundo real, FVG (71,9), order block (68,9) y pierna de
@@ -157,7 +162,17 @@ NOMBRE = {'bos': 'BOS', 'barrida': 'barrida de liquidez',
 # línea lleva su tasa de acierto MEDIDA al lado: "acierta 72% de las veces" no
 # es un adorno, es lo que separa informar de mentir.
 MIN_MENCION = 65.0
-FAMILIAS = ('bos', 'barrida', 'fvg', 'ob', 'liq', 'dol', 'manip', 'acum')
+# 🔴 `mss` NO está aquí, y es a propósito: un MSS **es** un BOS, así que sale
+# como una CLÁUSULA de la línea del BOS y no como línea propia. Emitirlo aparte
+# imprimiría el mismo suceso dos veces, y un hecho repetido se lee como
+# confirmación (el mismo error que ya cazó `_sin_repetir`).
+# ⚠️ Pero la cláusula lleva SU PROPIA tasa: el BOS se afirma al 97,1% y que ese
+# BOS sea además un MSS solo al 87,0%. Meterla en una línea firme sin marcarla
+# le regalaría a la afirmación floja la credibilidad de la fuerte.
+# `estruct` (las etiquetas HH/HL/LH/LL sueltas) tampoco entra: son ~30 líneas
+# por gráfico y lo que se quiere saber cabe en una, que es `tend`.
+FAMILIAS = ('bos', 'barrida', 'fvg', 'ob', 'liq', 'dol', 'tend', 'manip',
+            'acum')
 # Cuántas velas de giro a cada lado para que un extremo cuente como swing.
 # Con k=2 el mismo tramo produce demasiados swings menores y los BOS se
 # multiplican; con k=3 el primer evento coincidió con la marca del indicador
@@ -533,9 +548,11 @@ def hechos(ohlc, ref=None):
                 mejor[k] = b
         return sorted(mejor.values(), key=lambda b: b['i'])
 
+    es_mss = set((x['i'], x['tipo']) for x in HG.mss(ohlc, K_SWING))
     for b in _uno_por_vela(HG.bos_eventos(ohlc, K_SWING)):
         out['bos'].append({'i': b['i'], 'tipo': b['tipo'],
-                           'nivel': b['nivel'], 'swing': b['swing']})
+                           'nivel': b['nivel'], 'swing': b['swing'],
+                           'mss': (b['i'], b['tipo']) in es_mss})
     vistas = set()
     barridas = []
     for b in HG.barridas(ohlc, K_SWING):
@@ -613,6 +630,12 @@ def hechos(ohlc, ref=None):
     #    no un hecho nuevo. Sacarlos otra vez como lista sería contar dos veces.
     if d['arriba'] or d['abajo']:
         out['dol'] = [dict(d, i=d['ref'])]
+    # La ESTRUCTURA, en una línea y en la vela de referencia. Contesta la
+    # primera pregunta de cualquiera que abra un gráfico —¿esto sube o baja?—
+    # y es la que el catálogo no sabía contestar hasta hoy.
+    t = HG.tendencia(ohlc, K_SWING, hasta=ref)
+    if t['etiquetas']:
+        out['tend'] = [dict(t, i=ref if ref is not None else len(ohlc) - 1)]
     out['manip'] = HG.manipulacion(ohlc, K_SWING)
     out['acum'] = HG.acumulacion(ohlc)
     out['ob'] = _sin_repetir(
@@ -671,9 +694,29 @@ def bloque(velas, hs, escala, minimo=MIN_PRECISION, minimo_mencion=MIN_MENCION):
         n = 'vela %d (x=%d)' % (h['i'], x)
         if fam == 'bos':
             p = _pre(h['nivel'], escala)
-            return ('%s · BOS %s: el CIERRE atravesó el swing de la vela %d%s'
+            # 🔑 La cláusula del MSS va con SU PROPIA tasa. El BOS es firme
+            #    (97,1%); que ese BOS además VOLTEE la estructura se mide al
+            #    87,0%, y son dos afirmaciones distintas metidas en una frase.
+            extra = ('' if not h.get('mss') else
+                     '  — y este BOS es un MSS/CHoCH: va en CONTRA de la '
+                     'ruptura anterior, o sea que ahí la estructura cambia de '
+                     'manos  [MSS medido: acierta %.0f%% de las veces]'
+                     % PRECISION['mss'])
+            return ('%s · BOS %s: el CIERRE atravesó el swing de la vela %d%s%s'
                     % (n, h['tipo'], h['swing'],
-                       '' if p is None else ' en %s' % _fmt(p)))
+                       '' if p is None else ' en %s' % _fmt(p), extra))
+        if fam == 'tend':
+            return ('ESTRUCTURA DE MERCADO en la vela %d (la referencia): '
+                    '%s — los últimos giros son %s'
+                    % (h['i'],
+                       {'alcista': 'ALCISTA (máximos y mínimos ascendentes)',
+                        'bajista': 'BAJISTA (máximos y mínimos descendentes)',
+                        'mixta': 'MIXTA — ya no es limpiamente alcista ni '
+                                 'bajista: los giros se contradicen',
+                        'indefinida': 'sin giros suficientes para juzgarla'
+                        }[h['estado']],
+                       ', '.join('%s en la vela %d' % (t, i)
+                                 for i, t in h['etiquetas'])))
         if fam == 'barrida':
             p = _pre(h['nivel'], escala)
             return ('%s · barrida %s: la mecha pasó el swing de la vela %d%s '

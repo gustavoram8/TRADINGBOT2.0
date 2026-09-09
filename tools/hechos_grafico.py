@@ -490,6 +490,95 @@ def dol(ohlc, k=2, ref=None, tol_eq=TOL_EQ, tol_req=TOL_REQ):
             'n_arriba': len(arriba), 'n_abajo': len(abajo)}
 
 
+# ══════════════════════════════════════════════════════════════════════════
+# ESTRUCTURA DE MERCADO — HH/HL/LH/LL, tendencia y MSS (2026-09-09)
+# ══════════════════════════════════════════════════════════════════════════
+# 🔴 POR QUÉ FALTABA ESTO Y POR QUÉ IMPORTA MÁS QUE NADA DE LO ANTERIOR.
+# El dueño explicó su trade con estas palabras: *"mi confluencia fue haber
+# tenido en 1H un cierre de vela que ocasionó un Structure Shift a alcista"*.
+# O sea que su tesis entera era un MSS — y el catálogo **no sabía qué es un
+# MSS**. Le estábamos pidiendo a la IA que juzgara su decisión con una lista
+# de hechos que no contenía el hecho en el que se basó la decisión.
+# Tampoco sabía decir si la tendencia era alcista o bajista, que es la primera
+# pregunta que se hace cualquiera al abrir un gráfico.
+#
+# ⚠️ NO SE PUEDE VERIFICAR SU MSS DE 1H: nosotros vemos la captura de 5m y ahí
+#    no está. Lo que sí se puede decir —y es lo útil— es qué hacía la estructura
+#    de 5m en ese momento. Que no es lo mismo, y el bloque no debe confundirlo.
+
+
+def estructura(ohlc, k=2):
+    """Cada giro, etiquetado contra el anterior DE SU MISMO TIPO.
+
+        HH  máximo más alto que el máximo anterior
+        LH  máximo más BAJO que el anterior  → la subida pierde fuerza
+        HL  mínimo más alto que el anterior  → la caída pierde fuerza
+        LL  mínimo más bajo que el anterior
+
+    🔑 Se compara alto con alto y bajo con bajo, NUNCA alternando. Comparar un
+    máximo contra el mínimo que le precede da una secuencia que sube y baja sin
+    significar nada: la estructura son dos escaleras paralelas, no una.
+
+    ⚠️ El PRIMER giro de cada tipo no lleva etiqueta: no hay contra qué
+    compararlo. Ponerle una es inventarse el pasado del gráfico."""
+    out = []
+    ult = {'alto': None, 'bajo': None}
+    for (i, t, niv) in swings(ohlc, k):
+        prev = ult[t]
+        if prev is not None:
+            if t == 'alto':
+                et = 'HH' if niv > prev else 'LH'
+            else:
+                et = 'HL' if niv > prev else 'LL'
+            out.append({'i': i, 'tipo': et, 'nivel': niv, 'previo': prev})
+        ult[t] = niv
+    return out
+
+
+def tendencia(ohlc, k=2, hasta=None, ventana=4):
+    """En qué estado está la estructura, mirando las últimas `ventana` etiquetas.
+
+    🔑 SE MIRA UNA VENTANA, NO EL GRÁFICO ENTERO. Un gráfico de 160 velas suele
+    tener de todo; decir "la tendencia es alcista" contando desde la primera
+    vela describe algo que ya no existe. Lo que decide es lo último que hizo.
+
+    🔴 'mixta' NO ES UNA EVASIVA, es el estado más informativo de los tres.
+    Después de un solo LH la estructura **todavía no es bajista** —no ha roto
+    nada— pero ha dejado de ser limpiamente alcista. Ese momento exacto es
+    donde se toman los peores trades, y llamarlo 'alcista' o 'bajista' a la
+    fuerza le quitaría al trader justo el aviso que necesita.
+
+    ⚠️ `hasta` corta el futuro: para juzgar una entrada hay que preguntar por
+    la estructura que existía ENTONCES."""
+    e = [x for x in estructura(ohlc, k) if hasta is None or x['i'] <= hasta]
+    ult = e[-ventana:]
+    if not ult:
+        return {'estado': 'indefinida', 'etiquetas': [], 'alcistas': 0,
+                'bajistas': 0}
+    al = sum(1 for x in ult if x['tipo'] in ('HH', 'HL'))
+    ba = len(ult) - al
+    estado = 'alcista' if not ba else ('bajista' if not al else 'mixta')
+    return {'estado': estado, 'alcistas': al, 'bajistas': ba,
+            'etiquetas': [(x['i'], x['tipo']) for x in ult]}
+
+
+def mss(ohlc, k=2):
+    """MSS / CHoCH — el BOS que le da la VUELTA a la estructura.
+
+    🔑 La diferencia con un BOS cualquiera es la única que importa: un BOS *a
+    favor* confirma lo que ya estaba pasando; el que va en CONTRA del anterior
+    avisa de que el control cambió de manos. Se calcula comparando cada evento
+    de ruptura con el anterior — si cambia de signo, es un MSS.
+
+    ⚠️ El PRIMER BOS del gráfico nunca es un MSS: no hay nada que voltear."""
+    out, prev = [], None
+    for b in bos_eventos(ohlc, k):
+        if prev is not None and b['tipo'] != prev:
+            out.append(dict(b, mss=True))
+        prev = b['tipo']
+    return out
+
+
 def manipulacion(ohlc, k=2, ventana=3):
     """La PIERNA DE MANIPULACIÓN: barrida + reacción contraria inmediata.
 
@@ -751,6 +840,38 @@ def esc_lrl():
     return o, {'nivel': 106.0, 'resistencia': 'LRL'}
 
 
+def esc_estructura():
+    """Tendencia alcista limpia (HH/HL ×2), después un LH y una ruptura abajo.
+
+    Es la forma exacta del trade del dueño contada al revés: la estructura
+    sube, deja de subir, y solo DESPUÉS rompe. Lo que se quiere comprobar es
+    que las tres fases se distinguen — porque entrar en la segunda creyendo que
+    sigues en la primera es el error más caro que hay."""
+    o = [_v(100.0, 101.0, 99.5, 100.5), _v(100.5, 101.5, 100.0, 101.0),
+         _v(101.0, 102.0, 97.0, 98.0),        # i=2: primer giro (alto y bajo)
+         _v(98.0, 100.0, 97.5, 99.5), _v(99.5, 101.0, 99.0, 100.5),
+         _v(100.5, 105.0, 101.0, 104.5),      # i=5: HH  (105 > 102)
+         _v(104.5, 104.8, 102.0, 102.5),
+         _v(102.5, 103.0, 100.5, 101.0),      # i=7: HL  (100,5 > 97)
+         _v(101.0, 103.5, 100.8, 103.0),
+         _v(103.0, 110.0, 105.0, 109.5),      # i=9: HH  (110 > 105)
+         _v(109.5, 109.8, 106.0, 106.5),
+         _v(106.5, 107.0, 104.0, 104.5),      # i=11: HL (104 > 100,5)
+         _v(104.5, 106.0, 104.2, 105.5),
+         _v(105.5, 107.5, 105.0, 107.0),      # i=13: LH (107,5 < 110)
+         # ⚠️ Esta vela CIERRA en 104,5, por encima del HL de 104,0. Iba a
+         #    cerrar en 103,5 y el detector cantó el MSS una vela antes — tenía
+         #    razón él y estaba mal la lámina. Se arregló la LÁMINA, no la
+         #    comprobación: cuando el detector y tu intención discrepan, primero
+         #    hay que mirar cuál de los dos se equivocó.
+         _v(107.0, 107.2, 103.8, 104.5),
+         _v(104.5, 104.6, 100.0, 100.2),      # i=15: CIERRA bajo el HL → MSS
+         _v(100.2, 101.0, 98.5, 99.0), _v(99.0, 100.0, 98.0, 98.5)]
+    return o, {'etiquetas': [(5, 'HH'), (7, 'HL'), (9, 'HH'), (11, 'HL'),
+                             (13, 'LH')],
+               'alcista_hasta': 12, 'mss_i': 15, 'mss_tipo': 'bajista'}
+
+
 def probar():
     # ⚠️ El total se CUENTA, no se escribe a mano: lo tenía fijo en 17 cuando
     #    las comprobaciones eran 15, y un test que se inventa su propio marcador
@@ -880,6 +1001,36 @@ def probar():
     # 🔑 Una barrida SIN reacción NO es manipulación: es una mecha larga.
     caso('una barrida sin reacción NO cuenta', not manipulacion(esc_barrida()[0]),
          manipulacion(esc_barrida()[0]))
+
+    print('── estructura de mercado: HH/HL/LH/LL, tendencia y MSS ──')
+    o, t = esc_estructura()
+    e = estructura(o)
+    caso('etiqueta los 5 giros %s' % t['etiquetas'],
+         [(x['i'], x['tipo']) for x in e] == t['etiquetas'],
+         [(x['i'], x['tipo']) for x in e])
+    # 🔑 El primer giro de cada tipo NO lleva etiqueta: no hay contra qué
+    #    compararlo, y ponérsela es inventarse el pasado del gráfico.
+    caso('el primer giro se queda SIN etiquetar',
+         not any(x['i'] == 2 for x in e), [x['i'] for x in e])
+    caso('hasta la vela %d la tendencia es ALCISTA' % t['alcista_hasta'],
+         tendencia(o, hasta=t['alcista_hasta'])['estado'] == 'alcista',
+         tendencia(o, hasta=t['alcista_hasta']))
+    # 🔴 Tras UN solo LH la estructura no es bajista todavía —no ha roto nada—
+    #    pero ya no es limpiamente alcista. Ese hueco es donde se toman los
+    #    peores trades; forzarlo a un bando le quitaría al trader el aviso.
+    caso('tras el LH pasa a MIXTA, no a bajista',
+         tendencia(o, hasta=14)['estado'] == 'mixta', tendencia(o, hasta=14))
+    m = mss(o)
+    caso('el MSS cae en la vela %d' % t['mss_i'],
+         len(m) == 1 and m[0]['i'] == t['mss_i'],
+         [(x['i'], x['tipo']) for x in m])
+    caso('y es %s' % t['mss_tipo'],
+         m and m[0]['tipo'] == t['mss_tipo'], m and m[0]['tipo'])
+    # ⚠️ Un BOS A FAVOR no es un MSS. En esta lámina la vela 9 rompe al alza
+    #    estando ya alcista: confirma, no voltea. Si esto entrara como MSS, la
+    #    etiqueta perdería todo su valor — sería un sinónimo de BOS.
+    caso('un BOS a favor NO es un MSS',
+         not any(x['i'] == 9 for x in m), [x['i'] for x in m])
 
     print('── liquidez: EQH / REQH, tomada y sin tomar ──')
     o = esc_equal_highs()

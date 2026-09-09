@@ -257,6 +257,16 @@ def _vela_de(texto):
     return int(m.group(1)) if m else None
 
 
+def _velas_de(texto):
+    """TODAS las velas que menciona una línea.
+
+    ⚠️ Hace falta además de `_vela_de` porque una línea habla de dos momentos:
+    *"FVG de la vela 145 — quedó INVALIDADO en la vela 149"*. Para ordenar vale
+    la primera; para decidir **de qué lado de la entrada cae el hecho** vale la
+    ÚLTIMA, que es cuando el hecho terminó de ocurrir."""
+    return [int(x) for x in re.findall(r'candles? (\d+)', texto)]
+
+
 # Cuántas velas antes de la entrada y después de la salida entran en la ventana
 # del trade. Antes se mira más: lo que monta el trade pasa ANTES de entrar.
 ANTES, DESPUES = 8, 2
@@ -314,21 +324,64 @@ def bloque_de_hechos(imagen, columnas, prov=None, modelo=None, completo=False,
     # seguir midiéndolos y para enseñárselos al DUEÑO — nunca al modelo.
     lineas = []
     if entrada is not None:
-        # 🔑 LOS HECHOS DE LA VENTANA DEL TRADE, PRIMERO Y APARTE.
-        #    No se oculta nada: el bloque cronológico completo va debajo igual.
-        #    Lo que se añade es lo único que el modelo NO puede deducir solo —
-        #    cuáles de los treinta y cuatro hechos son los de ESTE trade.
+        # 🔴 LA VENTANA SE PARTE EN TRES, Y ESTE ES EL CAMBIO QUE CONVIERTE UNA
+        # LISTA DE HECHOS EN UNA RESPUESTA A *POR QUÉ FALLÓ*.
+        #
+        # Qué pasaba antes, medido leyendo la salida real: la ventana era UNA
+        # lista de la vela 141 a la 164 y el modelo escribió que el trade no
+        # llegó a su objetivo por *"un OB bajista en la vela 156 y un FVG
+        # bajista en la vela 159"*. El trader entró en la **149**. Le estaba
+        # reprochando cosas que aparecieron SIETE VELAS DESPUÉS de apretar el
+        # botón — hindsight con cara de análisis, que es la forma más rápida de
+        # perder la confianza de alguien que sabe leer un gráfico.
+        #
+        # ⚠️ Y no bastó con ETIQUETAR los relojes dentro de cada línea (se probó
+        #    esa misma mañana: "medido en la última vela" / "en ese momento").
+        #    El modelo las junta igual. Etiquetar no es separar: hay que ponerlas
+        #    en secciones distintas, con encabezados que digan qué se puede
+        #    concluir de cada una.
+        #
+        # 🔑 EL CORTE SE HACE POR LA ÚLTIMA VELA QUE MENCIONA LA LÍNEA, no por
+        #    la primera. Un FVG nacido en la 145 **e invalidado en la 149** no
+        #    es "lo que veía antes de entrar": es lo que le pasó JUSTO al
+        #    entrar, y en el caso real es la respuesta entera — su vela de
+        #    entrada es la que rompió la zona alcista en la que se apoyaba.
+        #    Con el corte por la primera vela, ese hecho caía en "contexto".
         fin = (salida if salida is not None else entrada) + DESPUES
         ini = entrada - ANTES
-        cerca = [t for _f, t in firmes + marcados
-                 if _vela_de(t) is not None and ini <= _vela_de(t) <= fin]
-        cerca.sort(key=_vela_de)
-        lineas += ['WHAT HAPPENED AROUND THE TRADE (candles %d to %d). These '
-                   'are the same measured facts listed below, pulled out '
-                   'because they are the ones that belong to THIS trade. Your '
-                   'analysis has to deal with them; the rest is context:'
-                   % (ini, fin)]
-        lineas += ['  - ' + t for t in cerca] or ['  - (none in that window)']
+        antes, durante, despues = [], [], []
+        for _f, t in firmes + marcados:
+            vs = _velas_de(t)
+            if not vs or not (ini <= min(vs) <= fin or ini <= max(vs) <= fin):
+                continue
+            ult = max(vs)
+            (antes if ult < entrada else
+             durante if ult == entrada else despues).append(t)
+        for l in (antes, durante, despues):
+            l.sort(key=_vela_de)
+        lineas += [
+            'THE TRADE. The trader ENTERED on candle %d%s. The facts around '
+            'that trade are split into three groups on purpose, and the '
+            'difference between them decides what you are allowed to '
+            'conclude:' % (entrada, '' if salida is None
+                           else ' and EXITED on candle %d' % salida), '',
+            '(1) WHAT WAS ALREADY ON THE CHART BEFORE THEY ENTERED (candles %d '
+            'to %d). This — and ONLY this — is what they could have used to '
+            'make the decision. Any criticism of their entry has to come from '
+            'here:' % (ini, entrada - 1)]
+        lineas += ['  - ' + t for t in antes] or ['  - (nothing measured)']
+        lineas += ['',
+                   '(2) WHAT THEIR OWN ENTRY CANDLE (%d) DID. Read this '
+                   'carefully: if their entry candle itself broke or '
+                   'invalidated something, that is usually the answer to why '
+                   'the trade failed:' % entrada]
+        lineas += ['  - ' + t for t in durante] or ['  - (nothing measured)']
+        lineas += ['',
+                   '(3) WHAT HAPPENED AFTER THEY WERE ALREADY IN (candles %d '
+                   'to %d). 🔴 They could NOT see any of this when they '
+                   'entered. Use it to explain what killed the trade, NEVER to '
+                   'say they should have known:' % (entrada + 1, fin)]
+        lineas += ['  - ' + t for t in despues] or ['  - (nothing measured)']
         lineas += ['']
     lineas += ['ALL MEASURED FACTS, in order (verified, >=90%% accuracy):']
     lineas += ['  - ' + t for _f, t in firmes] or ['  - (none)']
