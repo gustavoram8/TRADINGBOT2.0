@@ -409,10 +409,13 @@ def mide(ruta, cajas, nuevas=None):
     by0, by1 = banda_de_las_guias(cajas, H)
 
     FCOL = AF.fondo_por_columna(a, by0, by1)
-    CVELA = AF.colores_de_vela(a, by0, by1, FCOL)
-    MLIN = AF.mascara_lineas(a, by0, by1, FCOL)
-    import flechas as FL
-    DIB = FL.mascara(a, (0, W), (by0, by1))
+    # ⚠️ AQUÍ SE CALCULABAN TRES COSAS MÁS —colores de vela, máscara de líneas
+    #    y máscara de dibujos— y NINGUNA se usa: los arreglos que las usaban
+    #    están revertidos (ocho intentos, ver `afina_velas.afina`). Se quitan.
+    #    🔴 Y una de ellas importaba `flechas`, que necesita scipy: en el VPS no
+    #    está instalado, así que un cálculo muerto tumbaba la cadena entera con
+    #    un ModuleNotFoundError DESPUÉS de haber gastado las llamadas al modelo.
+    #    Código muerto que además cuesta dinero.
 
     nuevas = nuevas or set()
 
@@ -422,8 +425,7 @@ def mide(ruta, cajas, nuevas=None):
             x0, x1, gy0, gy1 = caja
             margen = max(4, 2 * (x1 - x0 + 1))
             r = AF.afina(a, x0, x1, by0, by1, margen, False, (gy0, gy1),
-                         tope, FCOL, CVELA, None, MLIN,
-                         DIB)
+                         tope, FCOL)
             if r is None:
                 out.append(None)
                 continue
