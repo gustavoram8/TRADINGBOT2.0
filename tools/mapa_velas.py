@@ -85,9 +85,19 @@ def dibuja(imagen, cajas, marcas, cada=10, salida='out/mapa.png',
             ImageDraw.Draw(tmp).text((0, 0), etiqueta, fill=(200, 0, 0), font=f)
             tmp = tmp.rotate(90, expand=True)
             lienzo.paste(tmp, (cx - 7, H + 26), tmp)
-            # y un recuadro sobre la vela, para no tener que seguir la línea
-            d.rectangle([v['x0'] - 2, v['max'] - 2, v['x1'] + 2, v['min'] + 2],
-                        outline=(200, 0, 0), width=2)
+            # 🔴 EL RECUADRO VA EXACTO, SIN UN PÍXEL DE MARGEN. Lo cazó el
+            #    dueño: llevaba 2 px por lado y con las velas cada 5,5 px el
+            #    recuadro de la 145 (802-806) llegaba a 808 y se comía el
+            #    arranque de la 146 (807). Él lo leyó como "englobaste dos
+            #    velas" y era exactamente eso.
+            #    ⚠️ En una rejilla apretada NINGÚN margen es seguro: el margen
+            #    que hace visible una marca es el que la hace mentir.
+            d.rectangle([v['x0'], v['max'], v['x1'], v['min']],
+                        outline=(200, 0, 0), width=1)
+            # Para que se vea sin margen, la marca se refuerza FUERA de la vela:
+            # un acento justo encima y otro justo debajo, del ancho exacto.
+            for y in (v['max'] - 4, v['min'] + 4):
+                d.line([v['x0'], y, v['x1'], y], fill=(200, 0, 0), width=2)
     # 🔑 EL ACERCAMIENTO NO ES UN EXTRA. Con 163 velas de 5 px, los números del
     #    tramo que interesa quedan pegados unos a otros y "verificar" se vuelve
     #    adivinar. Es la misma lección que ya dejó escrita `analizador2 --dibuja`:
