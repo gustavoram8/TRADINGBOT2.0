@@ -46,7 +46,11 @@ def _fuente(px):
 
 
 def dibuja(imagen, cajas, marcas, cada=10, salida='out/mapa.png',
-           desde=None, hasta=None):
+           desde=None, hasta=None, direccion=False):
+    """`direccion=True` escribe una flecha con lo que la cadena CREE que es
+    cada vela (arriba = alcista). Existe para poder MEDIR el acierto en una
+    captura real: el banco usa dos colores limpios y este gráfico tiene velas
+    huecas, así que su 96,6% puede no aplicar aquí."""
     r = A2.analiza(imagen, cajas=cajas, verboso=False)
     velas = r['velas']
     base = Image.open(imagen).convert('RGB')
@@ -74,7 +78,8 @@ def dibuja(imagen, cajas, marcas, cada=10, salida='out/mapa.png',
         # la línea guía baja desde la vela hasta su número
         d.line([cx, v['min'] + 2, cx, H + 6], fill=col,
                width=2 if etiqueta else 1)
-        t = str(i)
+        t = str(i) + (('\u2191' if velas[i]['alcista'] else '\u2193')
+                      if direccion else '')
         an = d.textlength(t, font=fg if etiqueta else f)
         d.text((cx - an / 2, H + 8), t, fill=col, font=fg if etiqueta else f)
         if etiqueta:
@@ -127,6 +132,9 @@ if __name__ == '__main__':
     ap.add_argument('--marca', action='append', default=[],
                     metavar='N[:NOMBRE]',
                     help='vela a resaltar, con nombre opcional. Repetible.')
+    ap.add_argument('--dir', action='store_true', dest='direccion',
+                    help='escribe una flecha con la direccion que cree la '
+                         'cadena, para poder contar los fallos a ojo')
     ap.add_argument('--desde', type=int, help='primera vela del acercamiento')
     ap.add_argument('--hasta', type=int, help='última vela del acercamiento')
     ap.add_argument('--salida', default=os.path.join(RAIZ, 'out', 'mapa.png'))
@@ -136,7 +144,7 @@ if __name__ == '__main__':
         n, _, nom = m.partition(':')
         marcas.append((int(n), nom or ''))
     ruta, n = dibuja(a.imagen, A2.lee_columnas(a.columnas), marcas,
-                     a.cada, a.salida, a.desde, a.hasta)
+                     a.cada, a.salida, a.desde, a.hasta, a.direccion)
     print('%d velas numeradas → %s' % (n, ruta))
     for i, nom in sorted(marcas):
         print('   vela %d%s' % (i, ' = %s' % nom if nom else ''))
