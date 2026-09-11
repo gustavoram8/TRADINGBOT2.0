@@ -450,6 +450,46 @@ def _fondo_por_fila(vent, paleta=None, sin=None):
     return fondo
 
 
+def color_cuerpo(a, x0, x1, ct, cb):
+    """El color del cuerpo — leyendo su INTERIOR, no el cuerpo entero.
+
+    🔴 EL FALLO QUE ESTO ARREGLA, y lo encontró el dueño mirando una vela suya.
+    Se tomaba "el color más repetido del cuerpo", borde incluido. Sus velas —y
+    las de TradingView por defecto— son de relleno gris claro u oscuro **con un
+    contorno NEGRO**, el mismo en alcistas y en bajistas. En una vela pequeña el
+    contorno tiene MÁS PÍXELES que el relleno, así que el color que salía era el
+    del borde: negro en las dos direcciones, o sea una moneda al aire.
+
+    Medido sobre su captura: **42 de 163 velas (26%) cambian de color al
+    quitarles 1 px de borde**, y salían 36 velas con color (0,0,0), que no es el
+    color de ninguna vela — es el contorno de todas.
+
+    🔑 Y no es cosmético: la dirección decide cuál extremo del cuerpo es el
+    CIERRE, y el cierre es lo que define un BOS, la invalidación de un FVG y el
+    order block. Tres de las familias que sí afirmamos.
+
+    ⚠️ Si el cuerpo es demasiado fino para tener interior (2 px o menos de alto,
+    o de ancho) se lee entero, como antes: erosionar ahí no deja nada que leer.
+    Esas velas siguen siendo el caso difícil y el banco las cuenta igual.
+
+    ⚠️ VIVE AQUÍ Y NO EN CADA LLAMADOR. Había dos copias —una en `analizador2`
+    y otra en `banco_cadena`— con el mismo código; o sea que el banco podía
+    quedarse midiendo la versión vieja mientras la cadena usaba la nueva, y el
+    control de calidad daría verde sobre un programa que ya no existe."""
+    alto, ancho = cb - ct, x1 - x0
+    if alto > 2 and ancho > 2:
+        reg = a[ct + 1:cb, x0 + 1:x1]
+    else:
+        reg = a[ct:cb + 1, x0:x1 + 1]
+    reg = reg.reshape(-1, 3)
+    if not len(reg):
+        return (0, 0, 0)
+    pl = reg[:, 0] * 65536 + reg[:, 1] * 256 + reg[:, 2]
+    v, n = np.unique(pl, return_counts=True)
+    c = int(v[n.argmax()])
+    return (c >> 16, (c >> 8) & 255, c & 255)
+
+
 def direccion(velas):
     """Quién es alcista y quién bajista, SIN saber la paleta del tema.
 

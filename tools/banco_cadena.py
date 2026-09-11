@@ -92,6 +92,9 @@ DIB_FIBS = [True]
 # ⚠️ Y encenderla cambia los numeros aunque no se use, porque consume azar y
 #    las laminas salen distintas. Comparar siempre con el mismo interruptor.
 PISTAS_DIB = [False]
+# Interruptor del BORDE del cuerpo (relleno con contorno de otro color, como
+# TradingView). Ver el sexto agujero de fabrica en `lamina`.
+BORDES = [True]
 # Una vela no puede medir más de esto por la MEDIANA de su propio gráfico.
 TOPE_ALTO = 3.0
 MARGEN_X, MARGEN_Y = 60, 70
@@ -120,8 +123,24 @@ def _tema(rnd):
         b = tinta()
         if sum(abs(a[i] - b[i]) for i in range(3)) > 150:
             break
+    _sin_borde = rnd.random() < 0.45
+    _col_borde = tuple([rnd.randint(0, 60)] * 3)
     return {'fondo': fondo, 'rejilla': rejilla, 'sube': a, 'baja': b,
             'hueco_cuerpo': rnd.random() < 0.35,
+            # 🔑 EL BORDE ES EL MISMO EN LAS DOS DIRECCIONES, a propósito: así
+            #    es como lo pinta TradingView y es justo lo que rompe el
+            #    detector de dirección. Un borde de color distinto por
+            #    dirección no probaría nada — sería otra pista más.
+            #    Se sortea un gris oscuro o negro, que es lo habitual en tema
+            #    claro, y a veces no hay borde (el caso que ya se probaba).
+            #    ⚠️ LOS DOS SORTEOS SE CONSUMEN SIEMPRE, pase lo que pase con
+            #    el interruptor. Si `borde` se decidiera con un `rnd` que a
+            #    veces no se llama, apagarlo cambiaría la secuencia de azar y
+            #    las láminas dejarían de ser las mismas: el antes y el después
+            #    medirían gráficos distintos. Es la misma trampa que ya está
+            #    documentada para `PISTAS_DIB`, y sin esto no hay comparación
+            #    pareada posible.
+            'borde': (None if (_sin_borde or not BORDES[0]) else _col_borde),
             'con_rejilla': rnd.random() < 0.7,
             # 🔴 QUINTO AGUJERO DE FÁBRICA (2026-09-10). El banco solo probaba
             #    velas de 9 a 17 px, y la cuarta captura del dueño las tiene de
@@ -284,6 +303,23 @@ def lamina(ruta, rnd, n=60, marca_de_agua=True, verticales=True,
         d.line([(cx, yh), (cx, yl)], fill=col)
         if t['hueco_cuerpo'] and alc:
             d.rectangle([x, ct, x + t['ancho'] - 1, cb], outline=col)
+        elif t['borde']:
+            # 🔴 SEXTO AGUJERO DE FÁBRICA (2026-09-11). El banco dibujaba o
+            #    contorno hueco o relleno liso, y NUNCA **relleno con borde de
+            #    otro color** — que es lo que hace TradingView por defecto y lo
+            #    que tiene la captura del dueño: cuerpo gris claro u oscuro con
+            #    un contorno NEGRO en las dos direcciones.
+            #    Consecuencia medida sobre su gráfico: el extractor toma "el
+            #    color más repetido del cuerpo", y en una vela pequeña **el
+            #    borde tiene más píxeles que el relleno**. Salían 36 velas con
+            #    color (0,0,0) — que no es el color de ninguna vela, es el
+            #    contorno — y como el contorno es igual en alcistas y bajistas,
+            #    ahí la dirección es una moneda al aire.
+            #    **42 de sus 163 velas (26%) cambian de color al quitarles 1 px
+            #    de borde.** Y el banco decía 96,6% de acierto en dirección
+            #    porque sus velas no tenían borde: medía otro problema.
+            d.rectangle([x, ct, x + t['ancho'] - 1, cb], fill=col,
+                        outline=t['borde'])
         else:
             d.rectangle([x, ct, x + t['ancho'] - 1, cb], fill=col)
         verdad.append({'x0': x, 'x1': x + t['ancho'] - 1, 'max': yh, 'min': yl,
@@ -389,14 +425,11 @@ def lamina(ruta, rnd, n=60, marca_de_agua=True, verticales=True,
 # ══════════════════════════════════════════════════════════════════════════
 
 def _color_cuerpo(a, x0, x1, ct, cb):
-    """Color más repetido dentro del cuerpo — para decidir alcista/bajista."""
-    reg = a[ct:cb + 1, x0:x1 + 1].reshape(-1, 3)
-    if not len(reg):
-        return (0, 0, 0)
-    pl = reg[:, 0] * 65536 + reg[:, 1] * 256 + reg[:, 2]
-    v, n = np.unique(pl, return_counts=True)
-    c = int(v[n.argmax()])
-    return (c >> 16, (c >> 8) & 255, c & 255)
+    """El color del cuerpo. 🔴 Delega en `afina_velas.color_cuerpo`: había dos
+    copias del mismo codigo, y con dos copias el banco puede acabar midiendo la
+    version vieja mientras la cadena usa la nueva — control de calidad en verde
+    sobre un programa que ya no existe."""
+    return AF.color_cuerpo(a, x0, x1, ct, cb)
 
 
 def mide(ruta, columnas, guias=None, banda=None, pistas_dib=None):
@@ -906,6 +939,9 @@ if __name__ == '__main__':
     ap.add_argument('--semilla', type=int, default=7)
     ap.add_argument('--tolerancia', type=int, default=1)
     ap.add_argument('--salida', default=os.path.join(RAIZ, 'out', 'banco_cadena'))
+    ap.add_argument('--sin-bordes', action='store_true',
+                    help='dibuja los cuerpos SIN contorno, para medir cuanto '
+                         'cuesta el borde con las MISMAS laminas')
     ap.add_argument('--sin-guia', action='store_true',
                     help='mide sin la pista vertical del modelo, para ver '
                          'cuánto aporta ese eslabón')
@@ -932,5 +968,7 @@ if __name__ == '__main__':
     VERTICALES[0] = not a.sin_verticales
     DIBUJOS[0] = not a.sin_dibujos
     PISTAS_DIB[0] = a.pistas_dib
+    if a.sin_bordes:
+        BORDES[0] = False
     probar(a.laminas, a.semilla, a.salida, a.tolerancia, not a.sin_guia,
            a.faltan, not a.sin_rejilla)

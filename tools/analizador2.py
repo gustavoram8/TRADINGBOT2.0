@@ -490,14 +490,15 @@ def mide(ruta, cajas, nuevas=None):
                 out.append(None)
                 continue
             alto, bajo, ct, cb, sx0, sx1 = r
-            reg = a[ct:cb + 1, sx0:sx1 + 1].reshape(-1, 3)
-            pl = reg[:, 0] * 65536 + reg[:, 1] * 256 + reg[:, 2]
-            v, n = np.unique(pl, return_counts=True)
-            col = int(v[n.argmax()])
+            # 🔴 El color se lee del INTERIOR del cuerpo, sin el contorno.
+            #    Ver `AF.color_cuerpo`: con velas de borde negro —las de
+            #    TradingView por defecto— el borde ganaba la votación en las
+            #    velas pequeñas y la dirección salía a cara o cruz.
+            col = AF.color_cuerpo(a, sx0, sx1, ct, cb)
             out.append({'x0': sx0, 'x1': sx1, 'max': alto, 'min': bajo,
                         'cuerpo_alto': ct, 'cuerpo_bajo': cb,
                         'rejilla': caja in nuevas,
-                        'color': (col >> 16, (col >> 8) & 255, col & 255)})
+                        'color': col})
         return out
 
     prim = pasada(None)
