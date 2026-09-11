@@ -472,9 +472,20 @@ def main():
               % (hechos_txt.count('\n  - '),
                  'SÍ (con precios)' if _r['escala'] else
                  '🔴 NO — el bloque sale sin precios y la prueba pierde valor'))
-        if 'en 7' not in hechos_txt and '.' not in hechos_txt.split('\n')[1]:
-            print('⚠️  El bloque sale SIN PRECIOS. Pásale --modelo o la prueba '
-                  'no vale: un número de vela el modelo no lo puede situar.')
+        # 🔴 SE BUSCA UN PRECIO DE VERDAD, NO UNA PISTA. Este aviso saltaba con
+        #    el eje leído y la línea de arriba diciendo "SÍ (con precios)" —
+        #    dos mensajes seguidos que se contradicen, que es peor que no
+        #    avisar: el que lo lee ya no sabe cuál creerse.
+        #    Miraba `'en 7' not in texto`, un 7 metido a mano cuando las pruebas
+        #    eran del MES (7.7xx); con el MNQ en 29.xxx no podía acertar nunca.
+        #    Y miraba la SEGUNDA LÍNEA del bloque, que desde que la ventana va
+        #    en tres secciones está en blanco.
+        #    Ahora busca el formato que produce `_fmt` (29.594,64) en cualquier
+        #    parte, que es lo único que significa "aquí hay precios".
+        if not re.search(r'\d[\d.]*,\d{2}', hechos_txt):
+            print('⚠️  El bloque sale SIN PRECIOS: ninguna línea trae una cifra. '
+                  'Un número de vela el modelo no lo puede situar mirando la '
+                  'imagen — la prueba pierde valor.')
 
     # 🔑 La frase que ancla el análisis. Va arriba del todo del mensaje.
     ENTRADA = [None]
