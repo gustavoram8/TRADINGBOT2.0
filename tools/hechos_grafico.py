@@ -535,31 +535,49 @@ def estructura(ohlc, k=2):
     return out
 
 
-def tendencia(ohlc, k=2, hasta=None, ventana=4):
-    """En qué estado está la estructura, mirando las últimas `ventana` etiquetas.
+def tendencia(ohlc, k=2, hasta=None):
+    """En qué estado está la estructura: el ÚLTIMO máximo contra el ÚLTIMO
+    mínimo. Dos escaleras, una pregunta a cada una.
 
-    🔑 SE MIRA UNA VENTANA, NO EL GRÁFICO ENTERO. Un gráfico de 160 velas suele
-    tener de todo; decir "la tendencia es alcista" contando desde la primera
-    vela describe algo que ya no existe. Lo que decide es lo último que hizo.
+        máximos subiendo (HH) + mínimos subiendo (HL)  →  ALCISTA
+        máximos bajando  (LH) + mínimos bajando  (LL)  →  BAJISTA
+        una sube y la otra baja                        →  MIXTA
 
-    🔴 'mixta' NO ES UNA EVASIVA, es el estado más informativo de los tres.
-    Después de un solo LH la estructura **todavía no es bajista** —no ha roto
-    nada— pero ha dejado de ser limpiamente alcista. Ese momento exacto es
-    donde se toman los peores trades, y llamarlo 'alcista' o 'bajista' a la
-    fuerza le quitaría al trader justo el aviso que necesita.
+    🔴 CÓMO SE HACÍA ANTES Y POR QUÉ ESTABA MAL — lo cazó el dueño leyendo un
+    informe, que es exactamente para lo que sirve que él revise. La versión
+    vieja CONTABA las últimas 4 etiquetas y declaraba 'mixta' en cuanto hubiera
+    una de cada signo. Sobre su gráfico, en su vela de entrada las etiquetas
+    eran HH(114) · LL(120) · HL(131) · HH(145): el informe dijo *"estructura
+    mixta"* y él contestó, con razón, que **ahí la estructura era claramente
+    alcista**. Y lo era: el último máximo era HH y el último mínimo HL — las dos
+    escaleras subiendo. Lo que arrastraba el veredicto era un LL de **29 velas
+    antes**, ya superado por el HL que vino después.
+    🔑 Una etiqueta vieja no describe la estructura vigente: la describe **la
+    última de cada tipo**. Un mínimo más bajo deja de contar en cuanto llega
+    uno más alto — eso es lo que significa que la estructura se recuperó.
+
+    🔴 'mixta' SIGUE SIN SER UNA EVASIVA, pero ahora nombra algo concreto:
+    máximos subiendo con mínimos bajando (rango que se abre) o máximos bajando
+    con mínimos subiendo (que se cierra). Son las dos formas en que un gráfico
+    se queda sin dirección, y las dos son avisos reales.
+
+    ⚠️ Hacen falta las DOS escaleras. Con solo máximos etiquetados no se puede
+    decir nada: un HH sin saber qué hacen los mínimos no es una tendencia.
 
     ⚠️ `hasta` corta el futuro: para juzgar una entrada hay que preguntar por
     la estructura que existía ENTONCES."""
     e = [x for x in estructura(ohlc, k) if hasta is None or x['i'] <= hasta]
-    ult = e[-ventana:]
-    if not ult:
-        return {'estado': 'indefinida', 'etiquetas': [], 'alcistas': 0,
-                'bajistas': 0}
-    al = sum(1 for x in ult if x['tipo'] in ('HH', 'HL'))
-    ba = len(ult) - al
-    estado = 'alcista' if not ba else ('bajista' if not al else 'mixta')
-    return {'estado': estado, 'alcistas': al, 'bajistas': ba,
-            'etiquetas': [(x['i'], x['tipo']) for x in ult]}
+    alto = next((x for x in reversed(e) if x['tipo'] in ('HH', 'LH')), None)
+    bajo = next((x for x in reversed(e) if x['tipo'] in ('HL', 'LL')), None)
+    if alto is None or bajo is None:
+        return {'estado': 'indefinida', 'etiquetas': [], 'alto': None,
+                'bajo': None}
+    sube_a, sube_b = alto['tipo'] == 'HH', bajo['tipo'] == 'HL'
+    estado = ('alcista' if sube_a and sube_b else
+              'bajista' if not sube_a and not sube_b else 'mixta')
+    return {'estado': estado, 'alto': (alto['i'], alto['tipo']),
+            'bajo': (bajo['i'], bajo['tipo']),
+            'etiquetas': [(alto['i'], alto['tipo']), (bajo['i'], bajo['tipo'])]}
 
 
 def mss(ohlc, k=2):
@@ -872,6 +890,34 @@ def esc_estructura():
                'alcista_hasta': 12, 'mss_i': 15, 'mss_tipo': 'bajista'}
 
 
+def esc_minimo_viejo():
+    """HH · LL · HL · HH — un mínimo más bajo SUPERADO por uno más alto.
+
+    🔴 ES EL PATRÓN EXACTO DE SU GRÁFICO en la vela donde entró: HH(114),
+    LL(120), HL(131), HH(145). El informe le dijo *"estructura mixta"* y él
+    contestó que ahí la estructura era **claramente alcista** — y tenía razón:
+    las dos escaleras suben, y lo único bajista era un LL de 29 velas antes,
+    ya superado. La regla vieja lo declaraba mixto por contar etiquetas.
+    Este caso existe para que eso no pueda volver."""
+    o = [_v(100, 101, 99.5, 100.5), _v(100.5, 101.5, 100, 101),
+         _v(101, 104, 100.5, 103.5),          # giro alto 104 (el primero)
+         _v(103.5, 103.8, 101, 101.5),
+         _v(101.5, 102, 99.0, 99.5),          # giro bajo 99,0 (el primero)
+         _v(99.5, 101, 99.2, 100.8),
+         _v(100.8, 106, 100.5, 105.5),        # i=6: HH  (106 > 104)
+         _v(105.5, 105.8, 103, 103.5),
+         _v(103.5, 104, 98.0, 98.5),          # i=8: LL  (98 < 99) ← el viejo
+         _v(98.5, 101.0, 98.4, 100.5), _v(100.5, 102.5, 100.9, 102.0),
+         _v(102.0, 103.0, 101.5, 102.5),
+         _v(102.5, 103.0, 100.8, 101.2),      # i=12: HL (100,8 > 98) ← lo supera
+         _v(101.2, 103.0, 101.0, 102.8),
+         _v(102.8, 108.0, 102.5, 107.5),      # i=14: HH (108 > 106)
+         _v(107.5, 107.8, 105, 105.5), _v(105.5, 106, 104, 104.5),
+         _v(104.5, 105, 103.5, 104)]
+    return o, {'etiquetas': [(6, 'HH'), (8, 'LL'), (12, 'HL'), (14, 'HH')],
+               'estado': 'alcista'}
+
+
 def probar():
     # ⚠️ El total se CUENTA, no se escribe a mano: lo tenía fijo en 17 cuando
     #    las comprobaciones eran 15, y un test que se inventa su propio marcador
@@ -1015,6 +1061,21 @@ def probar():
     caso('hasta la vela %d la tendencia es ALCISTA' % t['alcista_hasta'],
          tendencia(o, hasta=t['alcista_hasta'])['estado'] == 'alcista',
          tendencia(o, hasta=t['alcista_hasta']))
+    # 🔴 EL CASO QUE CAZÓ EL DUEÑO. Un mínimo más bajo YA SUPERADO por uno más
+    #    alto no describe la estructura vigente. Contando etiquetas esto salía
+    #    'mixta' (3 alcistas contra 1) y el informe se lo dijo a la cara sobre
+    #    un tramo donde la estructura era claramente alcista.
+    o2, t2 = esc_minimo_viejo()
+    caso('las etiquetas son %s' % [x[1] for x in t2['etiquetas']],
+         [(x['i'], x['tipo']) for x in estructura(o2)] == t2['etiquetas'],
+         [(x['i'], x['tipo']) for x in estructura(o2)])
+    caso('un LL viejo ya superado NO arrastra el veredicto a mixta',
+         tendencia(o2)['estado'] == t2['estado'], tendencia(o2))
+    # 🔑 Y lo que decide se puede SEÑALAR: el último de cada tipo, con su vela.
+    #    Sin eso la línea dice "alcista" y no hay forma de comprobarla.
+    caso('y dice de qué dos giros lo deduce',
+         tendencia(o2)['alto'] == (14, 'HH') and tendencia(o2)['bajo'] == (12, 'HL'),
+         (tendencia(o2)['alto'], tendencia(o2)['bajo']))
     # 🔴 Tras UN solo LH la estructura no es bajista todavía —no ha roto nada—
     #    pero ya no es limpiamente alcista. Ese hueco es donde se toman los
     #    peores trades; forzarlo a un bando le quitaría al trader el aviso.

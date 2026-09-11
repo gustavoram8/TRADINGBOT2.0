@@ -122,10 +122,25 @@ MIN_PRECISION = 90.0
 #        DOL            81,8   80,4   86,7      80,4
 #        estructura     85,7   84,5   86,7      84,5
 #        MSS / CHoCH    88,9   90,0   87,0      87,0
-#        tendencia      87,5   87,5   87,5      87,5
+#        tendencia      77,8   80,6     —       77,8   (144 láminas, ver abajo)
+# 🔴 LA TENDENCIA BAJÓ DE 87,5 A 77,8 Y ES UNA MEJORA, aunque el número diga lo
+# contrario. La regla vieja CONTABA las últimas 4 etiquetas; la nueva mira el
+# ÚLTIMO máximo contra el ÚLTIMO mínimo, que es como lo lee un trader. La vieja
+# era estable porque era TOSCA: promediando cuatro, un giro mal medido lo
+# tapaban los otros tres. La nueva cuelga de dos etiquetas concretas, así que un
+# giro mal medido voltea el veredicto.
+# ⚠️ Y el banco NO mide si la regla es correcta —calcula la verdad con la misma
+#    función, así que cualquier regla es "correcta" contra sí misma—: mide
+#    cuántas veces el error de PÍXELES cambia la respuesta. O sea 87% de acuerdo
+#    contestando mal contra 78% contestando bien. Sobre el gráfico real del
+#    dueño la vieja decía "mixta" en un tramo claramente alcista, y lo habría
+#    dicho igual con la medición perfecta.
+# ⚠️ Medida con 72 láminas ×2 semillas y no 24: es un ESCALAR (una respuesta por
+#    lámina), y con 24 el resultado bailaba entre 70,8 y 91,7 — puro ruido de
+#    muestra pequeña.
 PRECISION = {'bos': 97.1, 'barrida': 90.7, 'fvg': 86.3, 'ob': 83.5,
              'manip': 81.4, 'acum': 94.2, 'liq': 73.2, 'dol': 80.4,
-             'mss': 87.0, 'tend': 87.5}
+             'mss': 87.0, 'tend': 77.8}
 # 🔴 `piscina` YA NO ES UNA FAMILIA: la absorbe `liq`. `HG.piscinas` solo veía
 # los niveles con DOS O MÁS toques y los promediaba; `HG.liquidez` da esos
 # mismos y además los giros sueltos, con su etiqueta (EQH/EQL/REQH/REQL) y su
@@ -706,17 +721,22 @@ def bloque(velas, hs, escala, minimo=MIN_PRECISION, minimo_mencion=MIN_MENCION):
                     % (n, h['tipo'], h['swing'],
                        '' if p is None else ' en %s' % _fmt(p), extra))
         if fam == 'tend':
-            return ('ESTRUCTURA DE MERCADO en la vela %d (la referencia): '
-                    '%s — los últimos giros son %s'
+            # 🔑 SE DICE DE QUÉ DOS GIROS SALE EL VEREDICTO, con su vela. Antes
+            #    se volcaban las últimas cuatro etiquetas y el lector no podía
+            #    saber cuáles pesaban; el dueño leyó "mixta" sobre un tramo
+            #    alcista y no tenía forma de comprobar de dónde salía. Con los
+            #    dos giros nombrados, la frase se verifica mirando el gráfico.
+            a, b = h['alto'], h['bajo']
+            return ('ESTRUCTURA DE MERCADO en la vela %d (la referencia): %s. '
+                    'Sale de los DOS últimos giros: el último máximo fue %s en '
+                    'la vela %d y el último mínimo fue %s en la vela %d'
                     % (h['i'],
-                       {'alcista': 'ALCISTA (máximos y mínimos ascendentes)',
-                        'bajista': 'BAJISTA (máximos y mínimos descendentes)',
-                        'mixta': 'MIXTA — ya no es limpiamente alcista ni '
-                                 'bajista: los giros se contradicen',
+                       {'alcista': 'ALCISTA — máximos Y mínimos ascendentes',
+                        'bajista': 'BAJISTA — máximos Y mínimos descendentes',
+                        'mixta': 'MIXTA — una escalera sube y la otra baja, '
+                                 'así que no hay dirección limpia',
                         'indefinida': 'sin giros suficientes para juzgarla'
-                        }[h['estado']],
-                       ', '.join('%s en la vela %d' % (t, i)
-                                 for i, t in h['etiquetas'])))
+                        }[h['estado']], a[1], a[0], b[1], b[0]))
         if fam == 'barrida':
             p = _pre(h['nivel'], escala)
             return ('%s · barrida %s: la mecha pasó el swing de la vela %d%s '
