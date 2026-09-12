@@ -110,37 +110,58 @@ MIN_PRECISION = 90.0
 #    una, ~1.440 velas). No la media: si el número se le enseña a un cliente
 #    como "acierta X% de las veces", el que vale es el peor de los que se han
 #    visto, no el mejor ni el del medio.
-#        familia        s7     s11    s23    → se usa
-#        BOS            99,6   97,1   98,6      97,1
-#        barrida        90,7   91,0   92,6      90,7
-#        FVG            88,5   88,1   86,3      86,3
-#        estado del FVG 82,3   85,2   81,0      81,0
-#        order block    85,5   86,3   83,5      83,5
-#        manipulación   81,4   84,3   85,0      81,4
-#        acumulación~   97,1   94,2   98,1      94,2
-#        liquidez       73,2   75,8   78,1      73,2
-#        DOL            81,8   80,4   86,7      80,4
-#        estructura     85,7   84,5   86,7      84,5
-#        MSS / CHoCH    88,9   90,0   87,0      87,0
-#        tendencia      77,8   80,6     —       77,8   (144 láminas, ver abajo)
-# 🔴 LA TENDENCIA BAJÓ DE 87,5 A 77,8 Y ES UNA MEJORA, aunque el número diga lo
-# contrario. La regla vieja CONTABA las últimas 4 etiquetas; la nueva mira el
-# ÚLTIMO máximo contra el ÚLTIMO mínimo, que es como lo lee un trader. La vieja
-# era estable porque era TOSCA: promediando cuatro, un giro mal medido lo
-# tapaban los otros tres. La nueva cuelga de dos etiquetas concretas, así que un
-# giro mal medido voltea el veredicto.
-# ⚠️ Y el banco NO mide si la regla es correcta —calcula la verdad con la misma
-#    función, así que cualquier regla es "correcta" contra sí misma—: mide
-#    cuántas veces el error de PÍXELES cambia la respuesta. O sea 87% de acuerdo
-#    contestando mal contra 78% contestando bien. Sobre el gráfico real del
-#    dueño la vieja decía "mixta" en un tramo claramente alcista, y lo habría
-#    dicho igual con la medición perfecta.
-# ⚠️ Medida con 72 láminas ×2 semillas y no 24: es un ESCALAR (una respuesta por
-#    lámina), y con 24 el resultado bailaba entre 70,8 y 91,7 — puro ruido de
-#    muestra pequeña.
-PRECISION = {'bos': 97.1, 'barrida': 90.7, 'fvg': 86.3, 'ob': 83.5,
-             'manip': 81.4, 'acum': 94.2, 'liq': 73.2, 'dol': 80.4,
-             'mss': 87.0, 'tend': 77.8}
+#
+# 🔴 RE-MEDIDA ENTERA EL 12-sep, Y CASI TODO BAJA. No es que el codigo haya
+# empeorado: **la fabrica se hizo mas dura**. Las laminas llevan ahora velas
+# con BORDE de otro color —como las pinta TradingView y como son las del
+# dueno—, que es el sexto agujero, y con el borde dentro los numeros de antes
+# eran optimistas. Es la tercera vez que pasa lo mismo (marca de agua, velas
+# de 3 px, y ahora el borde) y el patron ya deberia estar aprendido: **cada vez
+# que la fabrica se parece mas a un grafico real, la tabla baja. Eso es la
+# fabrica funcionando, no el codigo rompiendose.**
+#
+#        familia        24 laminas x3      72 laminas x2   -> se usa
+#        BOS            95,1  95,9  99,3                      95,1
+#        barrida        89,1  84,6  90,9   91,6  91,4         84,6
+#        FVG            80,4  89,6  82,9                      80,4
+#        estado del FVG 76,9  85,8  78,1                      76,9
+#        order block    76,7  84,4  78,8                      76,7
+#        manipulacion   83,7  78,0  83,7                      78,0
+#        acumulacion~   93,0  91,0  93,9                      91,0
+#        liquidez       74,5  75,5  81,3                      74,5
+#        estructura     83,6  86,8  84,8                      83,6
+#        MSS / CHoCH    60,8  81,0  82,2   68,2  76,2         68,2  (*)
+#        DOL            78,6  93,0  77,1   81,4  79,3         77,1
+#        tendencia      79,2  91,7  83,3   72,2  84,7         72,2
+#        zona P/D/EQ    91,3  91,3  95,8   94,3  91,7         91,3
+#        banda OTE      82,6 100,0  91,7   88,6  91,7         82,6
+#        rango (2 giros) 56,5 78,3  83,3   65,7  75,0         56,5
+#
+# (*) ⚠️ AL MSS NO SE LE APLICA EL MINIMO DE TODAS LAS CORRIDAS, y es la unica
+#     excepcion: el 60,8 salio de una tirada con **43 casos**, y con 43 casos el
+#     intervalo de confianza es de ±14 puntos — o sea que ese numero no
+#     distingue 60 de 75. Se usa el minimo de las tiradas GRANDES (134 y 149
+#     casos), que es 68,2. Tomar el minimo de una muestra diminuta no es
+#     prudencia: es dejar que el ruido fije lo que le decimos al cliente.
+#
+# 🔴 CONSECUENCIA GORDA: la BARRIDA cae por debajo del 90 y sale del nivel que
+# se afirma en seco. Hoy solo quedan DOS familias en firme —BOS (95,1) y
+# acumulacion como zona (91,0)—; todo lo demas se escribe con su tasa al lado.
+# Se deja asi a proposito en vez de bajar el liston: el liston existe para que
+# "se afirma" signifique algo.
+#
+# 🔑 A `rangop` se le pone el MINIMO de sus dos afirmaciones (zona 91,3 y banda
+# OTE 82,6), no el mejor: la linea afirma las dos a la vez, asi que vale lo que
+# vale la mas floja. Y los extremos del rango van como APROXIMADOS porque
+# encontrar los dos giros exactos solo acierta el 56-83% — mientras que la ZONA
+# acierta el 91%: aunque se elija un giro distinto, el precio suele caer del
+# mismo lado del punto medio. Mismo patron que la acumulacion.
+PRECISION = {'bos': 95.1, 'barrida': 84.6, 'fvg': 80.4, 'ob': 76.7,
+             'manip': 78.0, 'acum': 91.0, 'liq': 74.5, 'dol': 77.1,
+             'mss': 68.2, 'tend': 72.2, 'rangop': 82.6}
+# 🔑 A `rangop` se le pone el MÍNIMO de sus dos afirmaciones (zona 89,6 y
+# banda OTE 85,1), no el mejor: la línea afirma las dos a la vez, así que
+# vale lo que vale la más floja.
 # 🔴 `piscina` YA NO ES UNA FAMILIA: la absorbe `liq`. `HG.piscinas` solo veía
 # los niveles con DOS O MÁS toques y los promediaba; `HG.liquidez` da esos
 # mismos y además los giros sueltos, con su etiqueta (EQH/EQL/REQH/REQL) y su
@@ -162,12 +183,13 @@ PRECISION = {'bos': 97.1, 'barrida': 90.7, 'fvg': 86.3, 'ob': 83.5,
 # exactas como dato firme, el número que le corresponde vuelve a ser 70,2.
 # El FVG se imprime CON su estado (intacto / tocado / CE / lleno / invertido),
 # así que la línea vale lo que vale el más flojo de los dos: 84,7 y 80,1.
-PRECISION_ESTADO = 81.0
+PRECISION_ESTADO = 76.9
 NOMBRE = {'bos': 'BOS', 'barrida': 'barrida de liquidez',
           'fvg': 'FVG', 'ob': 'order block', 'manip': 'pierna de manipulación',
           'acum': 'acumulación', 'liq': 'liquidez (BSL/SSL, EQH/EQL, LRL/HRL)',
           'dol': 'DOL — lo que queda sin tomar', 'mss': 'MSS / CHoCH',
-          'tend': 'estructura de mercado (HH/HL/LH/LL)'}
+          'tend': 'estructura de mercado (HH/HL/LH/LL)',
+          'rangop': 'rango operativo (premium/discount/OTE)'}
 # Por debajo de esto un hecho no se escribe en ninguna parte.
 # 🔴 BAJADO DE 78 A 65 EL 09-sep, y es una decisión, no un ajuste. Con la
 # fábrica midiendo el mundo real, FVG (71,9), order block (68,9) y pierna de
@@ -186,8 +208,8 @@ MIN_MENCION = 65.0
 # le regalaría a la afirmación floja la credibilidad de la fuerte.
 # `estruct` (las etiquetas HH/HL/LH/LL sueltas) tampoco entra: son ~30 líneas
 # por gráfico y lo que se quiere saber cabe en una, que es `tend`.
-FAMILIAS = ('bos', 'barrida', 'fvg', 'ob', 'liq', 'dol', 'tend', 'manip',
-            'acum')
+FAMILIAS = ('bos', 'barrida', 'fvg', 'ob', 'liq', 'dol', 'tend', 'rangop',
+            'manip', 'acum')
 # Cuántas velas de giro a cada lado para que un extremo cuente como swing.
 # Con k=2 el mismo tramo produce demasiados swings menores y los BOS se
 # multiplican; con k=3 el primer evento coincidió con la marca del indicador
@@ -650,8 +672,18 @@ def hechos(ohlc, ref=None):
     # primera pregunta de cualquiera que abra un gráfico —¿esto sube o baja?—
     # y es la que el catálogo no sabía contestar hasta hoy.
     t = HG.tendencia(ohlc, K_SWING, hasta=ref)
+    r_ref = ref if ref is not None else len(ohlc) - 1
     if t['etiquetas']:
-        out['tend'] = [dict(t, i=ref if ref is not None else len(ohlc) - 1)]
+        out['tend'] = [dict(t, i=r_ref)]
+    # 🔴 EL RANGO OPERATIVO, y dónde cayó el precio dentro de él. Es la regla
+    #    con la que el dueño toma sus trades —"entré en el 0,5 del fib"— y el
+    #    catálogo no sabía calcularla: le pedíamos a la IA que juzgara sus
+    #    entradas sin la vara con la que él las mide.
+    rg = HG.rango_operativo(ohlc, K_SWING, ref=r_ref)
+    if rg:
+        u = HG.ubica(rg, HG._c(ohlc[r_ref]))
+        if u:
+            out['rangop'] = [dict(rg, i=r_ref, **u)]
     out['manip'] = HG.manipulacion(ohlc, K_SWING)
     out['acum'] = HG.acumulacion(ohlc)
     out['ob'] = _sin_repetir(
@@ -721,6 +753,28 @@ def bloque(velas, hs, escala, minimo=MIN_PRECISION, minimo_mencion=MIN_MENCION):
             return ('%s · BOS %s: el CIERRE atravesó el swing de la vela %d%s%s'
                     % (n, h['tipo'], h['swing'],
                        '' if p is None else ' en %s' % _fmt(p), extra))
+        if fam == 'rangop':
+            eq = _pre(h['equilibrio'], escala)
+            a_, b_ = _pre(h['techo'], escala), _pre(h['suelo'], escala)
+            o0, o1 = _pre(h['ote'][0], escala), _pre(h['ote'][1], escala)
+            donde = {'premium': 'en PREMIUM (la mitad CARA del rango)',
+                     'discount': 'en DISCOUNT (la mitad BARATA)',
+                     'equilibrio': 'en EQUILIBRIO (el 50% justo: ni caro ni '
+                                   'barato)'}[h['mitad']]
+            return ('RANGO OPERATIVO en la vela %d (la referencia): la pierna '
+                    '%s va de%s a%s (extremos APROXIMADOS, giros de las velas '
+                    '%d y %d) · equilibrio%s. El precio de esa vela está %s, '
+                    'con un retroceso del %d%% · %s la banda OTE (62-79%%)%s'
+                    % (h['i'], h['pierna'],
+                       '' if b_ is None else ' %s' % _fmt(b_),
+                       '' if a_ is None else ' %s' % _fmt(a_),
+                       h['i_bajo'], h['i_alto'],
+                       '' if eq is None else ' en %s' % _fmt(eq),
+                       donde, int(round(100 * h['retroceso'])),
+                       'DENTRO de' if h['en_ote'] else 'FUERA de',
+                       '' if o0 is None else
+                       ', que va de %s a %s' % (_fmt(min(o0, o1)),
+                                                _fmt(max(o0, o1)))))
         if fam == 'tend':
             # 🔑 SE DICE DE QUÉ DOS GIROS SALE EL VEREDICTO, con su vela. Antes
             #    se volcaban las últimas cuatro etiquetas y el lector no podía

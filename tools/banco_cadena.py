@@ -536,6 +536,9 @@ NOMBRES = {'fvg': 'FVG', 'bos': 'BOS', 'barrida': 'barrida de liquidez',
            'acum': 'acumulacion', 'acum±1': 'acumulacion (±1 vela)',
            'acum~': 'acumulacion (zona, no puntas)',
            'liq': 'liquidez (nivel+forma+estado)',
+           'rango': 'rango operativo (los 2 giros)',
+           'zona': 'premium/discount/equilibrio',
+           'ote': 'dentro o fuera de la banda OTE',
            'estruct': 'estructura HH/HL/LH/LL', 'mss': 'MSS / CHoCH',
            'tend': 'tendencia (alcista/bajista/mixta)',
            'liq_lado': '  · solo el nivel (BSL/SSL)',
@@ -601,6 +604,24 @@ def _vista_liq(hechos, campo):
             continue          # las ya tomadas no tienen resistencia que juzgar
         out.add((i, p[n]))
     return out
+
+
+def _hechos_rango(ohlc, ref):
+    """El rango operativo y donde cae el cierre de `ref`, como conjuntos.
+
+    🔑 TRES LISTONES por la misma razon que la liquidez: con un numero solo no
+    se sabe si falla encontrar el rango o situar el precio dentro de el. Y el
+    segundo depende del primero, asi que sin separarlos un fallo del rango se
+    cobraria dos veces."""
+    rg = HG.rango_operativo(ohlc, ref=ref)
+    if not rg:
+        return set(), set(), set()
+    u = HG.ubica(rg, HG._c(ohlc[ref]))
+    if not u:
+        return {('rango', rg['i_alto'], rg['i_bajo'])}, set(), set()
+    return ({('rango', rg['i_alto'], rg['i_bajo'])},
+            {('zona', ref, u['mitad'])},
+            {('ote', ref, u['en_ote'])})
 
 
 def _hechos_dol(ohlc, ref):
@@ -901,6 +922,20 @@ def probar(n_laminas, semilla, salida, tolerancia=1, con_guia=True,
             #    vela común, así que 'acierta' y 'encuentra' salen iguales — es
             #    el porcentaje de láminas en las que la cadena lee la estructura
             #    igual que la verdad.
+            # 🔑 `rango` lleva DOS indices de vela (los dos giros), asi que
+            #    `_traduce` los mapea por el camino normal solo para el
+            #    primero; el segundo viaja en el tercer campo y `_traduce` lo
+            #    deja pasar tal cual — por eso se comparan indices MEDIDOS
+            #    contra indices REALES ahi. Se traduce a mano.
+            Vr, Vz, Vo = _hechos_rango(v['ohlc'], j_real)
+            Mr, Mz, Mo = _hechos_rango(ohlc_med, pos)
+            Mr = {('rango', mapa[x[1]], mapa[x[2]]) for x in Mr
+                  if 0 <= x[1] < len(mapa) and 0 <= x[2] < len(mapa)
+                  and mapa[x[1]] is not None and mapa[x[2]] is not None}
+            for nom, V, M in (('rango', Vr, Mr), ('zona', Vz, _traduce(Mz, mapa)),
+                              ('ote', Vo, _traduce(Mo, mapa))):
+                fa = por_familia[nom]
+                fa[0] += len(V & M); fa[1] += len(M); fa[2] += len(V)
             fa = por_familia['tend']
             fa[0] += int(HG.tendencia(v['ohlc'], hasta=j_real)['estado']
                          == HG.tendencia(ohlc_med, hasta=pos)['estado'])
@@ -920,7 +955,8 @@ def probar(n_laminas, semilla, salida, tolerancia=1, con_guia=True,
           % (100 * np.mean(prec_q), 100 * np.mean(exh_q)))
     print('   ── por familia (contra la verdad de PRECIO) ──')
     for fam in FAMILIAS + ('acum±1', 'acum~',
-                           'liq_lado', 'liq_estado', 'liq_res', 'dol', 'tend'):
+                           'liq_lado', 'liq_estado', 'liq_res', 'dol', 'tend',
+                           'rango', 'zona', 'ote'):
         ok, dichos, reales = por_familia[fam]
         pa = 100.0 * ok / dichos if dichos else 0.0
         ea = 100.0 * ok / reales if reales else 0.0

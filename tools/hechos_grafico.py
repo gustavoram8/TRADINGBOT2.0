@@ -597,6 +597,88 @@ def mss(ohlc, k=2):
     return out
 
 
+# ══════════════════════════════════════════════════════════════════════════
+# RANGO OPERATIVO — premium / discount / equilibrio y la banda OTE (2026-09-12)
+# ══════════════════════════════════════════════════════════════════════════
+# 🔴 POR QUÉ ES LA PIEZA QUE MÁS FALTABA. La metodología que usa el dueño se
+# llama **OTE / Standard Deviation**, y los tres trades que ha mandado empiezan
+# con la misma frase: *"entré en el nivel 0,5 del fib"*. O sea que la regla con
+# la que decide es exactamente esta — y el catálogo no sabía calcularla. Le
+# pedíamos a la IA que juzgara sus entradas sin la vara con la que él las mide.
+# Es el mismo error que el MSS, por tercera vez: **si el trader lo nombra al
+# explicar su trade, tiene que estar en el catálogo.**
+#
+# ⚠️ Y no es opinión: un rango tiene dos extremos y un punto medio. Que un
+#    precio esté por encima o por debajo de ese medio es una resta.
+
+# La banda OTE clásica: entre el 62% y el 79% de retroceso de la pierna.
+OTE = (0.62, 0.79)
+# Cuánto cerca del 50% cuenta como "equilibrio" y no como premium ni discount.
+TOL_EQUILIBRIO = 0.02
+
+
+def rango_operativo(ohlc, k=2, ref=None):
+    """El DEALING RANGE vigente: el último giro alto contra el último bajo.
+
+    🔑 LOS DOS ÚLTIMOS, uno de cada tipo — la misma doctrina que `tendencia`.
+    El rango que gobierna el precio ahora no es el del gráfico entero: es el de
+    la última pierna. Tomar el máximo y el mínimo absolutos de 163 velas
+    describe un rango que el precio abandonó hace cien.
+
+    `pierna` dice en qué orden vinieron: si primero el mínimo y luego el
+    máximo, la pierna fue ALCISTA y el retroceso se mide bajando desde el
+    máximo. Al revés si fue bajista. Sin eso, el 0,79 cae en el lado contrario
+    y la zona OTE queda del revés — que es peor que no darla.
+
+    ⚠️ `ref` corta el futuro: el rango que existía cuando alguien entró no es
+    el de ahora."""
+    if ref is None:
+        ref = len(ohlc) - 1
+    sw = [s for s in swings(ohlc, k) if s[0] <= ref]
+    alto = next((s for s in reversed(sw) if s[1] == 'alto'), None)
+    bajo = next((s for s in reversed(sw) if s[1] == 'bajo'), None)
+    if alto is None or bajo is None or alto[2] <= bajo[2]:
+        return None
+    techo, suelo = alto[2], bajo[2]
+    rango = techo - suelo
+    pierna = 'alcista' if bajo[0] < alto[0] else 'bajista'
+    # Los precios de la banda OTE, medida SIEMPRE desde el final de la pierna.
+    if pierna == 'alcista':
+        ote = (techo - OTE[1] * rango, techo - OTE[0] * rango)
+    else:
+        ote = (suelo + OTE[0] * rango, suelo + OTE[1] * rango)
+    return {'i_alto': alto[0], 'i_bajo': bajo[0], 'techo': techo,
+            'suelo': suelo, 'rango': rango, 'pierna': pierna,
+            'equilibrio': (techo + suelo) / 2.0, 'ote': ote, 'ref': ref}
+
+
+def ubica(rango, precio, tol=TOL_EQUILIBRIO):
+    """Dónde cae un precio dentro del rango operativo.
+
+        mitad      premium (mitad de arriba) · discount (abajo) · equilibrio
+        retroceso  0 = final de la pierna, 1 = donde empezó
+        en_ote     si cae en la banda 0,62-0,79
+
+    🔴 PREMIUM Y DISCOUNT NO DEPENDEN DE LA DIRECCIÓN DE LA PIERNA, y es el
+    error fácil de cometer. Premium es la mitad de ARRIBA del rango, siempre,
+    venga el precio subiendo o bajando. Lo que sí depende de la pierna es el
+    RETROCESO, porque se cuenta desde donde terminó el impulso.
+
+    🔑 Que el 0,5 salga como 'equilibrio' y no como 'discount' no es un matiz:
+    comprar en equilibrio y comprar en descuento son dos trades distintos, y
+    esa distinción es literalmente el nombre de la metodología."""
+    if not rango or rango['rango'] <= 0:
+        return None
+    frac = (precio - rango['suelo']) / rango['rango']   # 0 abajo, 1 arriba
+    if abs(frac - 0.5) <= tol:
+        mitad = 'equilibrio'
+    else:
+        mitad = 'premium' if frac > 0.5 else 'discount'
+    ret = (1 - frac) if rango['pierna'] == 'alcista' else frac
+    return {'mitad': mitad, 'frac': frac, 'retroceso': ret,
+            'en_ote': OTE[0] <= ret <= OTE[1]}
+
+
 def manipulacion(ohlc, k=2, ventana=3):
     """La PIERNA DE MANIPULACIÓN: barrida + reacción contraria inmediata.
 
@@ -918,6 +1000,24 @@ def esc_minimo_viejo():
                'estado': 'alcista'}
 
 
+def esc_rango():
+    """Una pierna ALCISTA limpia: mínimo de giro en 100, máximo de giro en 120.
+
+    Con esos dos números todo lo demás es aritmética comprobable a mano:
+    equilibrio en 110, y la banda OTE (62-79% de retroceso desde el máximo)
+    entre 104,20 y 107,60."""
+    o = [_v(102, 103, 101.5, 102.5), _v(102.5, 103.5, 102, 103),
+         _v(103, 104, 100.0, 100.5),          # i=2: giro bajo en 100,0
+         _v(100.5, 103, 100.4, 102.5), _v(102.5, 106, 102, 105.5),
+         _v(105.5, 112, 105, 111.5),
+         _v(111.5, 120.0, 111, 119.0),        # i=6: giro alto en 120,0
+         _v(119, 119.5, 114, 114.5), _v(114.5, 115, 109, 109.5),
+         _v(109.5, 110.5, 106.0, 106.5),      # i=9: retrocede a la zona OTE
+         _v(106.5, 112, 106.4, 111.5)]
+    return o, {'suelo': 100.0, 'techo': 120.0, 'equilibrio': 110.0,
+               'pierna': 'alcista', 'ote': (104.20, 107.60)}
+
+
 def probar():
     # ⚠️ El total se CUENTA, no se escribe a mano: lo tenía fijo en 17 cuando
     #    las comprobaciones eran 15, y un test que se inventa su propio marcador
@@ -1092,6 +1192,43 @@ def probar():
     #    etiqueta perdería todo su valor — sería un sinónimo de BOS.
     caso('un BOS a favor NO es un MSS',
          not any(x['i'] == 9 for x in m), [x['i'] for x in m])
+
+    print('── rango operativo: premium / discount / equilibrio y OTE ──')
+    o, t = esc_rango()
+    rg = rango_operativo(o)
+    caso('encuentra el rango %.0f-%.0f' % (t['suelo'], t['techo']),
+         rg and abs(rg['suelo'] - t['suelo']) < 1e-6
+         and abs(rg['techo'] - t['techo']) < 1e-6,
+         rg and (rg['suelo'], rg['techo']))
+    caso('la pierna es %s' % t['pierna'], rg and rg['pierna'] == t['pierna'],
+         rg and rg['pierna'])
+    caso('el equilibrio cae en %.0f' % t['equilibrio'],
+         rg and abs(rg['equilibrio'] - t['equilibrio']) < 1e-6,
+         rg and rg['equilibrio'])
+    caso('la banda OTE va de %.2f a %.2f' % t['ote'],
+         rg and abs(rg['ote'][0] - t['ote'][0]) < 1e-6
+         and abs(rg['ote'][1] - t['ote'][1]) < 1e-6, rg and rg['ote'])
+    # 🔴 EL CASO DEL DUEÑO: entra "en el 0,5 del fib". Eso NO es descuento, es
+    #    EQUILIBRIO — y comprar en equilibrio no es el mismo trade que comprar
+    #    en descuento. La distinción es literalmente el nombre de su método.
+    u = ubica(rg, 110.0)
+    caso('el 0,5 del fib sale como EQUILIBRIO, no como discount',
+         u and u['mitad'] == 'equilibrio', u)
+    caso('y NO está dentro de la banda OTE', u and not u['en_ote'], u)
+    u = ubica(rg, 106.0)
+    caso('un precio a 106 sí cae en la OTE (70% de retroceso)',
+         u and u['en_ote'] and u['mitad'] == 'discount', u)
+    caso('y un precio a 116 es PREMIUM',
+         ubica(rg, 116.0)['mitad'] == 'premium', ubica(rg, 116.0))
+    # 🔑 Premium/discount NO dependen de la dirección de la pierna; el
+    #    RETROCESO sí. Se comprueba dando la vuelta a la pierna a mano.
+    inv = dict(rg, pierna='bajista')
+    caso('al invertir la pierna, 106 sigue siendo discount',
+         ubica(inv, 106.0)['mitad'] == 'discount', ubica(inv, 106.0)['mitad'])
+    caso('pero su retroceso pasa de 0,70 a 0,30',
+         abs(ubica(rg, 106.0)['retroceso'] - 0.70) < 1e-6
+         and abs(ubica(inv, 106.0)['retroceso'] - 0.30) < 1e-6,
+         (ubica(rg, 106.0)['retroceso'], ubica(inv, 106.0)['retroceso']))
 
     print('── liquidez: EQH / REQH, tomada y sin tomar ──')
     o = esc_equal_highs()
