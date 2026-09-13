@@ -87,6 +87,18 @@ import rejilla_velas as RV        # noqa: E402
 
 # Precisión mínima MEDIDA para que una familia de hechos se pueda AFIRMAR.
 MIN_PRECISION = 90.0
+# 🔴🔴 AVISO GORDO (2026-09-13): TODA LA TABLA DE ABAJO ESTÁ MEDIDA CON UNA
+# TRAMPA, y se sabrá cuánto vale cuando se arregle el estimador del paso.
+# Hasta hoy el banco le REGALABA a la cadena el paso entre velas en vez de
+# dejar que lo midiera, que es lo que pasa en producción. Al quitarle el regalo:
+#     máximo y mínimo exactos   86-91%  →  70,1%
+#     alcista/bajista           93-97%  →  84,3%
+# O sea que estos números son OPTIMISTAS mientras el paso se mida mal. NO se
+# tocan todavía a propósito: cambiarlos ahora sería escribir otra tanda de
+# cifras que volverán a moverse en cuanto el estimador se arregle, y una tabla
+# que baila cada día no la cree nadie. Se re-mide UNA vez, después del arreglo.
+# ⚠️ Mientras tanto, cualquier cosa que se le enseñe a un cliente con estas
+#    tasas está prometiendo de más.
 # ⚠️ TODAS MEDIDAS EN CONDICIONES REALES: con la basura que rompió la captura
 # del dueño encima de las láminas (marca de agua de sesión, líneas verticales
 # de killzone, dibujos del trader) y quitándole el 14% de las velas —lo que el

@@ -72,6 +72,7 @@ sys.path.insert(0, os.path.join(RAIZ, 'tools'))
 
 import afina_velas as AF          # noqa: E402
 import hechos_grafico as HG       # noqa: E402
+import recorta_grafico as RG      # noqa: E402
 import rejilla_velas as RV        # noqa: E402
 
 AN, AL = 1400, 800
@@ -95,6 +96,9 @@ PISTAS_DIB = [False]
 # Interruptor del BORDE del cuerpo (relleno con contorno de otro color, como
 # TradingView). Ver el sexto agujero de fabrica en `lamina`.
 BORDES = [True]
+# Interruptor del PASO: True = la cadena lo mide sola (como en produccion),
+# False = se le regala el verdadero (como hacia el banco hasta el 13-sep).
+PASO_MEDIDO = [True]
 # Una vela no puede medir más de esto por la MEDIANA de su propio gráfico.
 TOPE_ALTO = 3.0
 MARGEN_X, MARGEN_Y = 60, 70
@@ -758,10 +762,38 @@ def _quita_velas(velas, fraccion, rnd):
 
 
 def paso_real(v):
-    """Paso entre velas de una lámina, sacado de su propia verdad."""
+    """Paso entre velas de una lámina, sacado de su propia verdad.
+
+    ⚠️ ESTO ES LA VERDAD, y solo vale para PUNTUAR (emparejar lo medido con lo
+    real). Dárselo a la cadena como dato de entrada es hacerse trampas: ver
+    `paso_estimado`."""
     ve = v['velas']
     return float(np.median([ve[j + 1]['x0'] - ve[j]['x0']
                             for j in range(len(ve) - 1)]))
+
+
+def paso_estimado(ruta):
+    """El paso que la cadena MIDE sola, igual que en producción.
+
+    🔴 SÉPTIMO AGUJERO DE FÁBRICA, y el más caro de todos (2026-09-13). El banco
+    le pasaba a la rejilla el paso VERDADERO (`paso_real`), así que probaba todo
+    lo demás y **nunca probaba al estimador del paso** — justo el eslabón que se
+    rompió en la cuarta captura del dueño.
+
+    Qué pasó allí: el estimador dijo 5,50 px donde el paso real es ~6,7 (medido
+    de dos formas independientes: los píxeles crudos de dos velas consecutivas,
+    y la autocorrelación de la tinta). Con un paso demasiado corto, la rejilla
+    cree que faltan velas donde no faltan y **rellena ~30 huecos inventados**:
+    163 velas donde hay ~127. Una vela inventada cae sobre el hueco blanco entre
+    dos reales, así que al medirla se lee fondo o el borde de la vecina — y de
+    ahí salían los "seis colores de cuerpo", la dirección al revés, y los
+    índices de vela corridos en todos los informes.
+
+    🔑 La lección, que ya se ha pagado tres veces: **un banco que le da la
+    respuesta a la pieza que prueba, no la prueba.** Si el dato se mide en
+    producción, en el banco también hay que medirlo."""
+    p = RG.panel(ruta)
+    return float(p['paso']) if p else None
 
 
 def _empareja(cols_med, velas_verdad, paso):
@@ -808,6 +840,7 @@ def probar(n_laminas, semilla, salida, tolerancia=1, con_guia=True,
     import collections
     por_familia = collections.defaultdict(lambda: [0, 0, 0])  # ok, dichos, reales
     recup = [0, 0]                                 # recuperadas, perdidas
+    pasos = []                                     # (estimado, real)
     for i in range(n_laminas):
         ruta = os.path.join(salida, 'lam_%02d.png' % i)
         v = lamina(ruta, rnd, marca_de_agua=MARCA_AGUA[0],
@@ -822,7 +855,11 @@ def probar(n_laminas, semilla, salida, tolerancia=1, con_guia=True,
             # la rejilla necesita las guías: es lo que le da la altura de una
             # columna añadida, interpolando entre sus dos vecinas
             a_img = np.asarray(Image.open(ruta).convert('RGB')).astype(int)
-            paso = paso_real(v)
+            # 🔴 EL PASO SE MIDE, NO SE REGALA. Ver `paso_estimado`.
+            paso = paso_estimado(ruta) if PASO_MEDIDO[0] else paso_real(v)
+            if not paso:
+                paso = paso_real(v)
+            pasos.append((paso, paso_real(v)))
             ys = [g[0] for g in gus] + [g[1] for g in gus]
             banda = (max(0, min(ys) - 40), min(a_img.shape[0], max(ys) + 40))
             cajas = [(c[0], c[1], g[0], g[1]) for c, g in zip(cols, gus)]
@@ -941,6 +978,15 @@ def probar(n_laminas, semilla, salida, tolerancia=1, con_guia=True,
                          == HG.tendencia(ohlc_med, hasta=pos)['estado'])
             fa[1] += 1; fa[2] += 1
 
+    if pasos:
+        err = [abs(a - b) for a, b in pasos]
+        malos = sum(1 for a, b in pasos if abs(a - b) > 0.5)
+        print('\n─ ESLABÓN A · MEDIR EL PASO (lo que el banco no probaba)')
+        print('   error mediano: %.2f px · peor caso: %.2f px' %
+              (np.median(err), max(err)))
+        print('   láminas con el paso mal por >0,5 px: %d de %d  (%.0f%%)'
+              % (malos, len(pasos), 100.0 * malos / len(pasos)))
+        print('   🔑 un paso corto INVENTA velas; uno largo se las SALTA.')
     print('\n%d láminas · %d velas · temas, colores y basura al azar%s'
           % (n_laminas, tot['velas'],
              '' if con_guia else '  ·  SIN la pista de la IA'))
@@ -975,6 +1021,8 @@ if __name__ == '__main__':
     ap.add_argument('--semilla', type=int, default=7)
     ap.add_argument('--tolerancia', type=int, default=1)
     ap.add_argument('--salida', default=os.path.join(RAIZ, 'out', 'banco_cadena'))
+    ap.add_argument('--paso-regalado', action='store_true',
+                    help='le da a la cadena el paso VERDADERO en vez de dejar que lo mida, como hacia el banco hasta el 13-sep')
     ap.add_argument('--sin-bordes', action='store_true',
                     help='dibuja los cuerpos SIN contorno, para medir cuanto '
                          'cuesta el borde con las MISMAS laminas')
@@ -1006,5 +1054,7 @@ if __name__ == '__main__':
     PISTAS_DIB[0] = a.pistas_dib
     if a.sin_bordes:
         BORDES[0] = False
+    if a.paso_regalado:
+        PASO_MEDIDO[0] = False
     probar(a.laminas, a.semilla, a.salida, a.tolerancia, not a.sin_guia,
            a.faltan, not a.sin_rejilla)
