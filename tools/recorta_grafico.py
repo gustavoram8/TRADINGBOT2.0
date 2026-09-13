@@ -167,13 +167,19 @@ def paso_por_huecos(a, x0, x1, y0=None, y1=None, min_run=3, franjas=9):
             ini = y0 + int(k * (alto - h) / max(1, franjas - 1))
             e, conf = _una_franja(a[ini:ini + h, x0:x1 + 1], min_run)
             if e:
-                cand.append((conf, e))
+                cand.append((conf, e, ini, ini + h - 1))
     if not cand:
         return None, 0.0
-    cand.sort(reverse=True)
-    buenos = [e for c, e in cand if c >= 0.6 * cand[0][0]][:9]
+    cand.sort(key=lambda t: -t[0])
+    buenos = [t[1] for t in cand if t[0] >= 0.6 * cand[0][0]][:9]
     base = float(np.median(buenos))
-    return _afina(a, x0, x1, y0, y1, base, min_run), float(cand[0][0])
+    # 🔴 EL AFINADO VA SOBRE LA FRANJA QUE GANO, NO SOBRE TODA LA ALTURA.
+    #    Se llamaba con la altura entera —barra de herramientas y eje de tiempo
+    #    incluidos—, donde TODAS las columnas tienen algo: no encontraba ni un
+    #    arranque de vela y devolvia el paso sin afinar. Pasaba en silencio, que
+    #    es lo peor: el afinado parecia estar puesto y no hacia nada.
+    fy0, fy1 = cand[0][2], cand[0][3]
+    return _afina(a, x0, x1, fy0, fy1, base, min_run), float(cand[0][0])
 
 
 def _afina(a, x0, x1, y0, y1, base, min_run):
@@ -348,23 +354,6 @@ def panel(ruta):
     a = np.asarray(Image.open(ruta).convert('RGB')).astype(int)
     H, W, _ = a.shape
     perfil = perfil_bordes(a)
-    paso, fuerza = paso_velas(perfil)
-    # ⏸️ `paso_por_huecos` (abajo) mide el paso MUCHO mejor que esto —54 de 80
-    # laminas del banco contra 18 de 80— y arregla la cuarta captura del dueno
-    # (5,50 donde el real es 6,7 → 6,68). PERO NO ESTA ACTIVADO, a proposito:
-    # al enchufarlo, el BOS de la vela x=886 se mueve de sitio, y ese BOS es el
-    # UNICO hecho de toda la cadena verificado contra una fuente independiente
-    # (la marca del indicador BoS/ChoCh del propio dueno).
-    # 🔴 Cambiar un hecho contrastado con el mundo real por una mejora de banco
-    #    no es una mejora: es un canje, y de los malos. Ya se decidio lo mismo
-    #    con `TOPE_ALTO` en `analizador2`.
-    # ⚠️ QUE FALTA PARA ACTIVARLO: el metodo nuevo se llama hoy sobre la imagen
-    #    ENTERA —eje de precios y barras incluidos— asi que los arranques de
-    #    vela que mide vienen sucios y el afinado por minimos cuadrados no
-    #    converge (10,69 donde el real es 10,50). Hay que acotarlo al panel
-    #    ANTES de medir. Lo que no se puede hacer es activarlo "a ver si cuela".
-    if not paso:
-        return None
     # 🔴 EL PANEL SE ACOTA POR DENSIDAD DE BORDES, NO POR PERIODICIDAD.
     # Se probó con periodicidad y falla: una LÍNEA DISCONTINUA también es
     # periódica. En la captura del OTE, las ventanas de la zona vacía de la
@@ -384,6 +373,24 @@ def panel(ruta):
         return None
     x0 = tramo[0] * paso_v
     x1 = min(W, tramo[1] * paso_v + VENTANA)
+
+    # 🔑 EL PASO SE MIDE AHORA, DENTRO DEL PANEL, Y NO ANTES. El orden importa
+    # mas de lo que parece: el panel se acota por DENSIDAD de bordes, que no
+    # necesita saber el paso, asi que no hay circularidad — y medir el paso
+    # sobre la imagen entera metia el eje de precios y las barras dentro de la
+    # cuenta, que es justo lo que impedia afinarlo (10,69 donde el real es
+    # 10,50, y ese 0,19 acumulado sobre 46 velas mueve la rejilla casi una vela).
+    # 🔴 `paso_por_huecos` cuenta de una vela a la siguiente; `paso_velas` lo
+    # hacia por periodicidad y BAJABA A LA MITAD mientras el parecido aguantara,
+    # que en una senal de peine es la direccion equivocada (si van cada 7,
+    # doblar sobre 3,5 encaja igual de bien). Medido en el banco: 18 de 80
+    # contra 54 de 80. El viejo se queda de reserva.
+    paso = paso_por_huecos(a, int(x0), int(x1))[0]
+    fuerza = 0.0
+    if not paso:
+        paso, fuerza = paso_velas(perfil[int(x0):int(x1) + 1])
+    if not paso:
+        return None
 
     # 🔴 EL ALTO NO SE RECORTA, A PROPÓSITO. Se probó detectarlo con la misma
     # medida de periodicidad por bandas horizontales, y en la captura zoomeada
