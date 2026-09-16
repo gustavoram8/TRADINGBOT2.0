@@ -546,6 +546,57 @@ inventados en C y E. ⚠️ **D se inventó la vela 141** — y es justo la vari
 control. Y los 7 días previos arreglaron **lo que la IA RECIBE**, no lo que escribe; hoy es el
 primer día que el análisis de sangre llega a la mesa del que redacta.
 
+### 🔴 EL SÉPTIMO AGUJERO, Y EL MÁS CARO: el banco le REGALABA el paso (2026-09-13/16)
+**El control de calidad le daba a la cadena el dato que más falla.** El banco le pasaba el paso
+entre velas sacado de su propia verdad (`paso_real`) en vez de dejar que lo midiera, que es lo que
+ocurre en producción. Así que probaba todo lo demás y **nunca probaba al estimador del paso**.
+Por eso llevaba meses en verde mientras el dueño veía fallos en su gráfico.
+- **Coste real de quitarle la chuleta:** extenso 85,9-88,7% → **70,1%**, dirección 93-97% → **84,3%**.
+  Esos eran los números de un examen con las respuestas delante.
+- 🔑 **LA REGLA, que ya se ha pagado tres veces: si el dato se mide en producción, en el banco
+  también hay que medirlo.** Un banco que le da la respuesta a la pieza que prueba, no la prueba.
+
+**El estimador viejo** medía por periodicidad y luego **bajaba a la mitad** mientras el parecido
+aguantara. En una señal de peine eso es la dirección equivocada (si van cada 7, doblar sobre 3,5
+encaja igual), y daba 3,25 donde el paso real era 8. Acertaba **18 de 80** láminas. Parecía bueno
+porque **se afinó contra las cuatro capturas del dueño** y no generaliza.
+
+✅ **`recorta_grafico.paso_por_huecos`** cuenta de una vela a la siguiente, como una persona.
+**78-79 de 80.** Tres piezas, cada una de mirar por qué fallaba:
+1. **Se juntan TODAS las franjas horizontales, no se elige una.** Elegir "la franja con la moda más
+   clara" era el punto frágil: en `mnq_5m_zoom` ganó una con 14 manchas en 1574 px —distancias de
+   32, 57, 184, 329— que no eran velas, y el paso salió 10,69 en vez de 10,50.
+2. **Los trozos de una misma vela se agrupan.** Una vela **hueca** (en las láminas del banco; las
+   capturas del dueño son rellenas con borde) deja TRES trozos —borde, mecha, borde— y contando de
+   trozo a trozo el paso salía un TERCIO. De 27 láminas mal, las 27 tenían velas huecas.
+   ⚠️ **El corte se calcula FRANJA POR FRANJA y la moda sobre el saco común**: calcularlo sobre el
+   saco junto devolvía pasos de 45, 29 y 18 px. Agrupar es local; quedarse con lo repetido, global.
+3. **Para afinar se elige la franja que más concuerda con el paso, no la más poblada** (la más
+   poblada es la más RUIDOSA: 188 arranques de 3-9 px sobre un paso real de 10,5).
+⛔ **Probados y descartados por el banco:** rellenar los huecos cortos por píxeles (53/80 → 43/80 —
+una punteada mete tinta entre velas y las funde) y pesar la confianza por cuántas velas hay
+(arregla una captura y rompe dos).
+
+**RESULTADO en la captura del dueño: paso 5,50 → 6,69 · 163 velas → 135**, y él verificó a ojo,
+vela por vela, que cada columna tiene la suya. ✅ **Las 135 son correctas**: el modelo devolvió 124
+y la rejilla recuperó 11. ⚠️ Yo había dicho que sobraban ~8 tratando las 127 columnas de Gemini
+como verdad — y Gemini **se deja velas**, por eso existe la rejilla.
+
+🔑 **Y EL COLOR SE ARREGLÓ SOLO.** Dos días persiguiendo "por qué no distingue vela alcista de
+bajista" —seis colores de cuerpo donde hay dos, 37 velas leídas como negro— y **el color nunca fue
+la causa: era el síntoma.** Con las columnas corridas se leía el borde de la vecina en vez del
+cuerpo. Arreglado el paso: velas leídas como negro **37 → 3**, y la vela que el dueño señaló
+—*"esa es alcista y la marcas bajista"*— ahora sale **alcista**.
+⚠️ **Él lo dijo tres veces** (*"mis velas NO son huecas"*) y yo seguí buscando en el sitio
+equivocado. Cuando el dueño insiste en lo mismo tres veces, la causa está en otra parte.
+
+**La cadena, medida DE VERDAD** (sin chuleta): láminas con el paso mal **75% → 4-8%** · extenso
+**70,1% → 85,5-86,9%** · dirección **84,3% → 92,3-96,5%**. O sea que se recuperó el nivel que se
+creía tener, pero esta vez es real.
+⚠️ **PENDIENTE:** `mes_5m` (4,09 donde 5,5) y `mes_ote_perdedor` (6,27 donde 7,4) siguen mal, y la
+tabla `PRECISION` de `analizador2` sigue marcada como OPTIMISTA: hay que re-medirla entera ahora
+que el paso se mide solo.
+
 **PENDIENTE:** encadenarlo todo en un solo programa, y **ensamblarlo con el analizador** —
 🔴 eso sí toca el sitio y no se mueve sin que el dueño lo diga. Fuera sigue MACD/RSI.
 
