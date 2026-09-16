@@ -46,13 +46,29 @@ def swings(ohlc, k=2):
     liquidez que barrer.
 
     ⚠️ Las `k` primeras y últimas velas NO pueden ser swing: les falta un lado.
-    Contarlas es el error clásico que inventa rupturas al borde del gráfico."""
+    Contarlas es el error clásico que inventa rupturas al borde del gráfico.
+
+    🔴 EL EMPATE SE PERMITE POR LA IZQUIERDA, Y ESO NO ES UN DETALLE. Con
+    `>` estricto en los dos lados, **dos velas contiguas con el mismo máximo
+    se anulan la una a la otra y el giro desaparece del gráfico**. Y dos
+    máximos iguales son justo un **EQH**: el giro más señalado que hay en ICT.
+    O sea que la definición más estricta borraba precisamente los giros que
+    más importan. Cazado en la captura real del dueño: sus velas 120 y 121
+    tienen el máximo EXACTO, el giro se esfumó, y el rango operativo se fue a
+    buscar giros **cincuenta velas atrás** — de ahí que el informe le dijera
+    "premium" donde su propia fib decía discount, dentro de la OTE.
+
+    Tolerando el empate a la izquierda (`>=`) y exigiéndolo estricto a la
+    derecha (`>`), de una tanda de velas iguales queda **una sola**: la
+    ÚLTIMA, que es donde el precio se dio la vuelta de verdad."""
     out = []
     for i in range(k, len(ohlc) - k):
-        vec = ohlc[i - k:i] + ohlc[i + 1:i + k + 1]
-        if all(_h(ohlc[i]) > _h(v) for v in vec):
+        izq, der = ohlc[i - k:i], ohlc[i + 1:i + k + 1]
+        if (all(_h(ohlc[i]) >= _h(v) for v in izq)
+                and all(_h(ohlc[i]) > _h(v) for v in der)):
             out.append((i, 'alto', _h(ohlc[i])))
-        if all(_l(ohlc[i]) < _l(v) for v in vec):
+        if (all(_l(ohlc[i]) <= _l(v) for v in izq)
+                and all(_l(ohlc[i]) < _l(v) for v in der)):
             out.append((i, 'bajo', _l(ohlc[i])))
     return out
 
