@@ -108,7 +108,13 @@ def _latido(p, paso):
     return float((a_ * b).sum() / d) if d > 1e-9 else 0.0
 
 
-def _una_franja(z, min_run):
+def _arranques(z, min_run):
+    """Donde empieza cada trozo de vela en una franja horizontal.
+
+    Una columna "tiene vela" si trae un trozo VERTICAL de al menos `min_run`
+    pixeles distintos del fondo. Asi una punteada horizontal —un pixel suelto—
+    no cuenta, que es lo que contamino tres medidas caseras el 13-sep.
+    """
     pl = z.reshape(-1, 3)
     v, n = np.unique(pl[:, 0] * 65536 + pl[:, 1] * 256 + pl[:, 2],
                      return_counts=True)
@@ -122,113 +128,169 @@ def _una_franja(z, min_run):
         runs = np.maximum(runs, cur)
     hay = runs >= min_run
     if hay.mean() > 0.95 or hay.mean() < 0.05:
-        return None, 0.0        # todo lleno o todo vacio: esa franja no sirve
-    arr = [i for i in range(len(hay)) if hay[i] and (i == 0 or not hay[i - 1])]
-    if len(arr) < 6:
-        return None, 0.0
-    d = np.diff(arr)
-    d = d[(d >= 2) & (d <= 60)]
-    if len(d) < 5:
-        return None, 0.0
-    vals, cnt = np.unique(d, return_counts=True)
-    moda = float(vals[cnt.argmax()])
-    cerca = d[np.abs(d - moda) <= 1]
-    return float(cerca.mean()), float(len(cerca)) / len(d)
+        return None            # todo lleno o todo vacio: esa franja no sirve
+    arr = np.array([i for i in range(len(hay))
+                    if hay[i] and (i == 0 or not hay[i - 1])], float)
+    return arr if len(arr) >= 6 else None
 
 
-def paso_por_huecos(a, x0, x1, y0=None, y1=None, min_run=3, franjas=9):
-    """El paso, contando de una vela a la siguiente, POR FRANJAS.
+def _corte_bimodal(todas):
+    """Donde separar "trozos de la misma vela" de "velas distintas".
+
+    🔴 POR QUE HACE FALTA. Una vela HUECA —en las laminas del banco; las
+    capturas del dueno son de velas rellenas con borde— deja TRES trozos de
+    tinta: borde izquierdo, mecha del centro y borde derecho, porque el interior
+    del cuerpo es fondo. Contando de trozo a trozo, el paso salia un TERCIO del
+    real. Medido: de 27 laminas mal, las 27 tenian velas huecas.
+
+    🔑 Dentro de una vela los trozos van MUY juntos y entre velas hay un salto
+    mayor, asi que las distancias son bimodales. El corte se busca donde mas se
+    separan los valores que DE VERDAD se repiten (los sueltos son ruido).
+
+    ⛔ Se probo taparlo por pixeles —rellenar el hueco corto si sus columnas
+    tenian algo de tinta— y el banco dijo que EMPEORA (53/80 -> 43/80): una
+    punteada o la rejilla meten tinta en el hueco de ENTRE velas y las funde.
+    Agrupar por distancias no mira la tinta, solo la geometria, y por eso no se
+    deja enganar por lo que haya pintado de fondo.
+    """
+    vals, cnt = np.unique(todas, return_counts=True)
+    usados = vals[cnt >= max(2, int(0.1 * cnt.max()))]
+    if len(usados) < 2:
+        return None
+    saltos = np.diff(usados)
+    k = int(saltos.argmax())
+    return (usados[k] + usados[k + 1]) / 2.0 if saltos[k] >= 2 else None
+
+
+def _junta(arr, corte):
+    """Los trozos de una franja, agrupados en velas."""
+    if corte is None:
+        return arr
+    g = [arr[0]]
+    for i in range(1, len(arr)):
+        if arr[i] - arr[i - 1] > corte:
+            g.append(arr[i])
+    return np.array(g, float)
+
+
+def paso_por_huecos(a, x0, x1, y0=None, y1=None, min_run=3, franjas=9,
+                    devuelve=False):
+    """El paso entre velas, contando de una a la siguiente. Sin periodicidad.
 
     🔑 Es lo que hace una persona: ver donde empieza cada vela y medir hasta la
-    siguiente. Una columna "tiene vela" si trae un trozo VERTICAL de al menos
-    `min_run` pixeles distintos del fondo — asi una punteada horizontal (un
-    pixel suelto) no cuenta, que es lo que contaminaba las medidas de hoy.
+    siguiente. El metodo viejo (`paso_velas`) lo hacia por periodicidad y luego
+    BAJABA A LA MITAD mientras el parecido aguantara, que en una senal de peine
+    es la direccion equivocada: si las velas van cada 7, doblar sobre 3,5 encaja
+    igual de bien. De ahi salia 3,25 donde el paso real era 8.
 
-    🔴 POR FRANJAS Y NO DE UNA, y esto es lo que lo hace funcionar en capturas
-    reales: `recorta_grafico.panel` devuelve la ALTURA ENTERA a proposito (para
-    no cortar velas), asi que la franja incluye la barra de herramientas, el eje
-    de tiempo y las cajas de sesion. Con todo eso dentro, "esta columna tiene
-    vela" sale que SI en el 100% de las columnas y no hay huecos que medir.
-    Se prueban varias franjas horizontales y gana la que da la moda mas clara:
-    una franja sin velas no produce un paso repetido, una con velas si.
+    🔴 SE JUNTAN TODAS LAS FRANJAS, NO SE ELIGE UNA. Antes ganaba la franja con
+    la moda mas clara, y esa eleccion era el punto fragil de todo: en
+    `mnq_5m_zoom` gano una con CATORCE manchas en 1574 px —distancias de 32, 57,
+    184, 329— que no eran velas de ninguna clase, y el paso salio 10,69 en vez
+    de 10,50. El numero no era impreciso: venia de otra cosa.
+    🔑 Una franja sin velas da distancias cualesquiera, distintas en cada
+    franja; el paso de verdad sale IGUAL en todas las que tocan velas. Asi que
+    se echan todas a un mismo saco y gana lo que se repite. Sin elecciones que
+    puedan salir mal.
 
-    ⚠️ Dos velas pegadas salen como UNA racha y esa distancia vale el doble, asi
-    que no se puede promediar: se toma la MODA y luego se afina promediando solo
-    las distancias a ±1 de ella (asi se recuperan los medios pixeles).
+    ⚠️ Va por franjas porque `panel()` devuelve la altura ENTERA a proposito
+    (para no cortar velas), y con la barra de herramientas y el eje de tiempo
+    dentro, "esta columna tiene vela" sale que si en el 100% de las columnas.
     """
     H = a.shape[0]
     if y0 is None:
         y0, y1 = 0, H - 1
     alto = y1 - y0 + 1
-    cand = []
+    crudos = []
     for k in range(franjas):
-        for frac in (0.5, 0.3):
+        for frac in (0.5, 0.3, 0.2):
             h = int(alto * frac)
             ini = y0 + int(k * (alto - h) / max(1, franjas - 1))
-            e, conf = _una_franja(a[ini:ini + h, x0:x1 + 1], min_run)
-            if e:
-                cand.append((conf, e, ini, ini + h - 1))
-    if not cand:
-        return None, 0.0
-    cand.sort(key=lambda t: -t[0])
-    buenos = [t[1] for t in cand if t[0] >= 0.6 * cand[0][0]][:9]
-    base = float(np.median(buenos))
-    # 🔴 EL AFINADO VA SOBRE LA FRANJA QUE GANO, NO SOBRE TODA LA ALTURA.
-    #    Se llamaba con la altura entera —barra de herramientas y eje de tiempo
-    #    incluidos—, donde TODAS las columnas tienen algo: no encontraba ni un
-    #    arranque de vela y devolvia el paso sin afinar. Pasaba en silencio, que
-    #    es lo peor: el afinado parecia estar puesto y no hacia nada.
-    fy0, fy1 = cand[0][2], cand[0][3]
-    return _afina(a, x0, x1, fy0, fy1, base, min_run), float(cand[0][0])
+            arr = _arranques(a[ini:ini + h, x0:x1 + 1], min_run)
+            if arr is not None:
+                crudos.append(arr)
+    if not crudos:
+        return (None, 0.0, None) if devuelve else (None, 0.0)
+
+    def saco(lista):
+        d = []
+        for arr in lista:
+            x = np.diff(arr)
+            x = x[(x >= 2) & (x <= 60)]
+            if len(x):
+                d.append(x)
+        return np.concatenate(d) if d else None
+
+    todas = saco(crudos)
+    if todas is None or len(todas) < 5:
+        return (None, 0.0, None) if devuelve else (None, 0.0)
+    # 🔴 EL CORTE SE CALCULA FRANJA POR FRANJA, Y LA MODA SOBRE EL SACO COMUN.
+    #    Las dos cosas por separado y en ese orden. Calcular el corte sobre el
+    #    saco junto lo rompe: cada franja tiene su propio ruido, y el salto mas
+    #    grande del histograma mezclado cae en cualquier sitio — salieron pasos
+    #    de 45, 29 y 18 px donde los reales son 6,7, 5,5 y 7,4.
+    #    Agrupar es una decision LOCAL (que trozos son de la misma vela, en esta
+    #    franja); quedarse con lo que se repite es una decision GLOBAL.
+    velas = []
+    for arr in crudos:
+        x = np.diff(arr)
+        x = x[(x >= 2) & (x <= 60)]
+        if len(x) < 5:
+            continue
+        g = _junta(arr, _corte_bimodal(x))
+        if len(g) >= 6:
+            velas.append(g)
+    juntas = saco(velas) if velas else None
+    if juntas is None or len(juntas) < 5:
+        juntas, velas = todas, crudos
+    vg, cg = np.unique(juntas, return_counts=True)
+    m = float(vg[cg.argmax()])
+    cerca = juntas[np.abs(juntas - m) <= 1]
+    base = float(cerca.mean())
+    conf = float(len(cerca)) / len(juntas)
+    # 🔴 PARA AFINAR SE ELIGE LA FRANJA QUE MEJOR CONCUERDA CON EL PASO, no la
+    #    que mas arranques tiene. Cogia `max(velas, key=len)` — o sea la mas
+    #    POBLADA, que es la mas RUIDOSA: en `mnq_5m_zoom` daba 188 arranques con
+    #    distancias de 3, 4, 5, 7 y 9 px sobre un paso real de 10,5. Eso no son
+    #    velas, son trozos, y ajustar la recta sobre ellos devolvia 10,69.
+    # 🔑 El paso ya lo decidio el saco comun; ahora solo hay que afinarlo sobre
+    #    la franja que mas de acuerdo esta con el, que es la que de verdad ve
+    #    velas enteras.
+    def _acuerdo(g):
+        x = np.diff(g)
+        x = x[(x >= 2) & (x <= 60)]
+        if len(x) < 5:
+            return -1.0
+        return float((np.abs(x - base) <= 1).mean())
+    arr = max(velas, key=_acuerdo)
+    fino = _afina_sobre(arr, base)
+    if devuelve:
+        return fino, conf, arr
+    return fino, conf
 
 
-def _afina(a, x0, x1, y0, y1, base, min_run):
-    """Ajusta el paso a TODAS las velas a la vez, por minimos cuadrados.
+def _afina_sobre(arr, base):
+    """Ajusta `x = origen + k * paso` sobre los arranques de vela, por minimos
+    cuadrados, para que el error NO se acumule a lo largo del panel.
 
-    🔴 POR QUE HACE FALTA, y casi se escapa. La moda de las distancias da un
-    paso aproximado —10,68 donde el real es 10,50— y ese 0,18 px parece
-    inofensivo. No lo es: se ACUMULA. Sobre 46 velas son 8 px, casi una vela
-    entera, y eso movio el BOS de la vela x=886 a otra. Ese BOS es el UNICO
-    hecho de toda la cadena verificado contra una fuente independiente (la
-    marca del indicador BoS/ChoCh del propio dueno), asi que romperlo no es un
-    detalle: es perder el unico contraste con el mundo real que tenemos.
+    🔴 Hace falta porque la moda da un paso aproximado —10,68 donde el real es
+    10,50— y ese 0,18 px parece inofensivo pero se ACUMULA: sobre 46 velas son
+    8 px, casi una vela entera, y eso movia el BOS de x=886, el unico hecho de
+    toda la cadena verificado contra una fuente independiente.
 
-    🔑 El arreglo es no fiarse de una distancia local sino ajustar la recta
-    `x = origen + k * paso` sobre los arranques de TODAS las velas del panel.
-    Asi el error no se acumula: se reparte.
-
-    ⚠️ Se descartan los arranques que no caen cerca de una ranura (velas
+    ⚠️ Se descartan los arranques que no caen cerca de una ranura (dos velas
     pegadas que salieron como una sola racha), o el ajuste lo arrastran ellos.
     """
-    if not base or base < 2.5:
+    if arr is None or len(arr) < 6 or not base or base < 2.5:
         return base
-    z = a[y0:y1 + 1, x0:x1 + 1]
-    pl = z.reshape(-1, 3)
-    v, n = np.unique(pl[:, 0] * 65536 + pl[:, 1] * 256 + pl[:, 2],
-                     return_counts=True)
-    c = int(v[n.argmax()])
-    fondo = np.array([c >> 16, (c >> 8) & 255, c & 255])
-    tinta = np.abs(z - fondo).sum(2) > 60
-    runs = np.zeros(tinta.shape[1], int)
-    cur = np.zeros(tinta.shape[1], int)
-    for fila in tinta:
-        cur = np.where(fila, cur + 1, 0)
-        runs = np.maximum(runs, cur)
-    hay = runs >= min_run
-    arr = np.array([i for i in range(len(hay))
-                    if hay[i] and (i == 0 or not hay[i - 1])], float)
-    if len(arr) < 6:
-        return base
-    paso = base
-    for _ in range(4):
+    paso = float(base)
+    for _ in range(5):
         k = np.round((arr - arr[0]) / paso)
-        pred = arr[0] + k * paso
-        cerca = np.abs(arr - pred) <= paso * 0.25
+        cerca = np.abs(arr - (arr[0] + k * paso)) <= paso * 0.25
         if cerca.sum() < 5:
             break
-        kk, xx = k[cerca], arr[cerca]
-        A = np.vstack([kk, np.ones(len(kk))]).T
-        sol, *_ = np.linalg.lstsq(A, xx, rcond=None)
+        A = np.vstack([k[cerca], np.ones(int(cerca.sum()))]).T
+        sol, *_ = np.linalg.lstsq(A, arr[cerca], rcond=None)
         if not (2.5 <= sol[0] <= 60):
             break
         paso = float(sol[0])
