@@ -597,6 +597,26 @@ creía tener, pero esta vez es real.
 tabla `PRECISION` de `analizador2` sigue marcada como OPTIMISTA: hay que re-medirla entera ahora
 que el paso se mide solo.
 
+### ✅ LA TABLA DE PRECISIÓN, RE-MEDIDA SIN CHULETA (2026-09-16)
+Primera tabla honesta del proyecto: el paso entre velas ya lo mide la cadena sola.
+
+| se AFIRMA en seco (≥90%) | con su tasa al lado | |
+|---|---|---|
+| **BOS 95,1** · acumulación (zona) **90,0** · rango operativo **90,0** | estructura 83,7 · barrida 83,3 · FVG 80,4 · DOL 78,5 · estado del FVG 76,8 · manipulación 76,5 · order block 75,9 · liquidez 73,8 · tendencia 72,2 · MSS 68,7 | |
+
+- 🔑 **Mínimo de las semillas, nunca la media**: si el número se le enseña a un cliente, vale el
+  peor de los que se han visto.
+- ⚠️ **Las familias con pocos casos por lámina** (MSS, DOL, tendencia, zona, OTE, rango) se miden
+  con **72 láminas ×2**, no 24 ×3: con 24 el MSS tenía 43 casos y bailaba entre 63 y 82 — ruido de
+  muestra pequeña. Tomar el mínimo de una muestra diminuta no es prudencia, es dejar que el ruido
+  fije lo que se le promete al cliente.
+- ⚠️ **`acum` y `rangop` caen EXACTAMENTE en 90,0**, justo en la raya. Se aplica la regla tal cual
+  —el listón no se mueve para que entre o salga nadie— pero son las dos primeras a revisar en la
+  próxima medición: medio punto las saca.
+- ⚠️ El **rango operativo** se afirma por su ZONA (premium/discount, 91,7%), no por sus extremos:
+  encontrar los dos giros exactos solo acierta el **67%**. Por eso la línea los llama aproximados.
+  Mismo patrón que la acumulación.
+
 **PENDIENTE:** encadenarlo todo en un solo programa, y **ensamblarlo con el analizador** —
 🔴 eso sí toca el sitio y no se mueve sin que el dueño lo diga. Fuera sigue MACD/RSI.
 

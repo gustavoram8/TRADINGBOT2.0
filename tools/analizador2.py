@@ -87,90 +87,56 @@ import rejilla_velas as RV        # noqa: E402
 
 # Precisión mínima MEDIDA para que una familia de hechos se pueda AFIRMAR.
 MIN_PRECISION = 90.0
-# 🔴🔴 AVISO GORDO (2026-09-13): TODA LA TABLA DE ABAJO ESTÁ MEDIDA CON UNA
-# TRAMPA, y se sabrá cuánto vale cuando se arregle el estimador del paso.
-# Hasta hoy el banco le REGALABA a la cadena el paso entre velas en vez de
-# dejar que lo midiera, que es lo que pasa en producción. Al quitarle el regalo:
-#     máximo y mínimo exactos   86-91%  →  70,1%
-#     alcista/bajista           93-97%  →  84,3%
-# O sea que estos números son OPTIMISTAS mientras el paso se mida mal. NO se
-# tocan todavía a propósito: cambiarlos ahora sería escribir otra tanda de
-# cifras que volverán a moverse en cuanto el estimador se arregle, y una tabla
-# que baila cada día no la cree nadie. Se re-mide UNA vez, después del arreglo.
-# ⚠️ Mientras tanto, cualquier cosa que se le enseñe a un cliente con estas
-#    tasas está prometiendo de más.
-# ⚠️ TODAS MEDIDAS EN CONDICIONES REALES: con la basura que rompió la captura
-# del dueño encima de las láminas (marca de agua de sesión, líneas verticales
-# de killzone, dibujos del trader) y quitándole el 14% de las velas —lo que el
-# modelo se deja de verdad— para recuperarlas con la rejilla.
-# 📜 Historia, en una línea: el 09-sep bajaron mucho (FVG 84,7 → 71,9) cuando la
-# fábrica estrenó la marca de agua, porque hasta entonces estaban medidas en un
-# mundo sin esa basura y eran optimistas. Volvieron a subir al arreglarlo.
-# 🔴 RE-MEDIDOS EL 09-sep DESPUÉS DE AÑADIR LA LIQUIDEZ, y varios SUBEN mucho
-# (FVG 71,9 → 86,3 · order block 68,9 → 83,5 · manipulación 69,2 → 81,4). No es
-# que el catálogo haya mejorado hoy: es que estos números llevaban días
-# ATRASADOS. Se fijaron el mismo día en que la fábrica estrenó la marca de agua
-# —cuando el extracto se caía con ella— y NO se volvieron a medir después del
-# arreglo (`afina_velas._recorta_tinta_ajena`) ni de los de esta sesión (fondo
-# en dos dimensiones, tope guiado, HUECO). O sea que el bloque llevaba días
-# diciéndole al cliente "acierta 72%" de algo que acierta 86%.
-# ⚠️ LECCIÓN, y va aquí para que no se repita: **arreglar el código obliga a
-#    re-medir**. Un número de precisión sin fecha de medición es un número
-#    inventado, y el error puede ir en las dos direcciones — este iba a favor,
-#    el próximo puede ir en contra.
-# 🔑 CADA CIFRA ES EL MÍNIMO DE TRES SEMILLAS (7 · 11 · 23, 24 láminas cada
-#    una, ~1.440 velas). No la media: si el número se le enseña a un cliente
-#    como "acierta X% de las veces", el que vale es el peor de los que se han
-#    visto, no el mejor ni el del medio.
+# ✅ TABLA RE-MEDIDA EL 16-sep, ESTA VEZ SIN CHULETA. Hasta el 13-sep el banco
+# le REGALABA a la cadena el paso entre velas en vez de dejar que lo midiera,
+# que es lo que pasa en produccion. O sea que todas las tablas anteriores eran
+# de un examen con las respuestas delante. Arreglado el estimador
+# (`recorta_grafico.paso_por_huecos`, 78-79 de 80 laminas contra 18 de 80), la
+# cadena recupera el nivel que se creia tener — pero ahora es de verdad:
+#     laminas con el paso mal   75%  ->  4-11%
+#     maximo y minimo exactos   70,1% -> 85,5-91,3%
+#     alcista/bajista           84,3% -> 92,3-96,5%
 #
-# 🔴 RE-MEDIDA ENTERA EL 12-sep, Y CASI TODO BAJA. No es que el codigo haya
-# empeorado: **la fabrica se hizo mas dura**. Las laminas llevan ahora velas
-# con BORDE de otro color —como las pinta TradingView y como son las del
-# dueno—, que es el sexto agujero, y con el borde dentro los numeros de antes
-# eran optimistas. Es la tercera vez que pasa lo mismo (marca de agua, velas
-# de 3 px, y ahora el borde) y el patron ya deberia estar aprendido: **cada vez
-# que la fabrica se parece mas a un grafico real, la tabla baja. Eso es la
-# fabrica funcionando, no el codigo rompiendose.**
+# 🔑 CADA CIFRA ES EL MINIMO DE LAS SEMILLAS MEDIDAS. No la media: si el numero
+#    se le ensena a un cliente como "acierta X% de las veces", vale el peor de
+#    los que se han visto.
+# ⚠️ Las familias con POCOS casos por lamina (MSS, DOL, tendencia, zona, OTE,
+#    rango) se miden con 72 laminas x2 semillas y no con 24 x3: con 24 laminas
+#    el MSS tenia 43 casos y bailaba entre 63 y 82, que es ruido de muestra
+#    pequena. El resto va con 24 x3, donde cada familia junta de 100 a 1.100
+#    casos reales.
 #
-#        familia        24 laminas x3      72 laminas x2   -> se usa
-#        BOS            95,1  95,9  99,3                      95,1
-#        barrida        89,1  84,6  90,9   91,6  91,4         84,6
-#        FVG            80,4  89,6  82,9                      80,4
-#        estado del FVG 76,9  85,8  78,1                      76,9
-#        order block    76,7  84,4  78,8                      76,7
-#        manipulacion   83,7  78,0  83,7                      78,0
-#        acumulacion~   93,0  91,0  93,9                      91,0
-#        liquidez       74,5  75,5  81,3                      74,5
-#        estructura     83,6  86,8  84,8                      83,6
-#        MSS / CHoCH    60,8  81,0  82,2   68,2  76,2         68,2  (*)
-#        DOL            78,6  93,0  77,1   81,4  79,3         77,1
-#        tendencia      79,2  91,7  83,3   72,2  84,7         72,2
-#        zona P/D/EQ    91,3  91,3  95,8   94,3  91,7         91,3
-#        banda OTE      82,6 100,0  91,7   88,6  91,7         82,6
-#        rango (2 giros) 56,5 78,3  83,3   65,7  75,0         56,5
+#        familia          s7     s11    s23    -> se usa
+#        BOS              95,1   95,5   99,3      95,1
+#        barrida          88,5   83,3   89,9      83,3
+#        FVG              80,4   89,3   81,7      80,4
+#        estado del FVG   76,8   85,4   76,9      76,8
+#        order block      75,9   83,3   76,5      75,9
+#        manipulacion     84,4   76,5   83,3      76,5
+#        acumulacion~     94,0   90,0   93,9      90,0
+#        liquidez         75,5   73,8   80,5      73,8
+#        estructura       83,7   85,3   84,4      83,7
+#        ── con 72 laminas x2 ──   s7     s23
+#        MSS / CHoCH              68,7   75,0      68,7
+#        DOL                      81,4   78,5      78,5
+#        tendencia                72,2   84,7      72,2
+#        zona P/D/EQ              94,3   91,7      91,7
+#        banda OTE                90,0   91,7      90,0
+#        rango (los 2 giros)      67,1   75,0      67,1
 #
-# (*) ⚠️ AL MSS NO SE LE APLICA EL MINIMO DE TODAS LAS CORRIDAS, y es la unica
-#     excepcion: el 60,8 salio de una tirada con **43 casos**, y con 43 casos el
-#     intervalo de confianza es de ±14 puntos — o sea que ese numero no
-#     distingue 60 de 75. Se usa el minimo de las tiradas GRANDES (134 y 149
-#     casos), que es 68,2. Tomar el minimo de una muestra diminuta no es
-#     prudencia: es dejar que el ruido fije lo que le decimos al cliente.
-#
-# 🔴 CONSECUENCIA GORDA: la BARRIDA cae por debajo del 90 y sale del nivel que
-# se afirma en seco. Hoy solo quedan DOS familias en firme —BOS (95,1) y
-# acumulacion como zona (91,0)—; todo lo demas se escribe con su tasa al lado.
-# Se deja asi a proposito en vez de bajar el liston: el liston existe para que
-# "se afirma" signifique algo.
-#
-# 🔑 A `rangop` se le pone el MINIMO de sus dos afirmaciones (zona 91,3 y banda
-# OTE 82,6), no el mejor: la linea afirma las dos a la vez, asi que vale lo que
-# vale la mas floja. Y los extremos del rango van como APROXIMADOS porque
-# encontrar los dos giros exactos solo acierta el 56-83% — mientras que la ZONA
-# acierta el 91%: aunque se elija un giro distinto, el precio suele caer del
-# mismo lado del punto medio. Mismo patron que la acumulacion.
-PRECISION = {'bos': 95.1, 'barrida': 84.6, 'fvg': 80.4, 'ob': 76.7,
-             'manip': 78.0, 'acum': 91.0, 'liq': 74.5, 'dol': 77.1,
-             'mss': 68.2, 'tend': 72.2, 'rangop': 82.6}
+# ⚠️ `acum` y `rangop` caen EXACTAMENTE en 90,0, o sea justo en la raya del
+#    nivel que se afirma en seco. Se aplica la regla tal cual —el liston no se
+#    mueve para que entre o salga nadie— pero son las dos primeras que hay que
+#    volver a mirar cuando se re-mida: medio punto las saca.
+# 🔑 A `rangop` se le pone el MINIMO de sus dos afirmaciones (zona 91,7 y banda
+#    OTE 90,0): la linea afirma las dos a la vez, asi que vale lo que la mas
+#    floja. Y los extremos del rango van como APROXIMADOS porque encontrar los
+#    dos giros exactos solo acierta el 67% — mientras que la ZONA acierta el
+#    92%: aunque se elija un giro distinto, el precio suele caer del mismo lado
+#    del punto medio. Mismo patron que la acumulacion.
+PRECISION = {'bos': 95.1, 'barrida': 83.3, 'fvg': 80.4, 'ob': 75.9,
+             'manip': 76.5, 'acum': 90.0, 'liq': 73.8, 'dol': 78.5,
+             'mss': 68.7, 'tend': 72.2, 'rangop': 90.0}
 # 🔑 A `rangop` se le pone el MÍNIMO de sus dos afirmaciones (zona 89,6 y
 # banda OTE 85,1), no el mejor: la línea afirma las dos a la vez, así que
 # vale lo que vale la más floja.
@@ -195,7 +161,7 @@ PRECISION = {'bos': 95.1, 'barrida': 84.6, 'fvg': 80.4, 'ob': 76.7,
 # exactas como dato firme, el número que le corresponde vuelve a ser 70,2.
 # El FVG se imprime CON su estado (intacto / tocado / CE / lleno / invertido),
 # así que la línea vale lo que vale el más flojo de los dos: 84,7 y 80,1.
-PRECISION_ESTADO = 76.9
+PRECISION_ESTADO = 76.8
 NOMBRE = {'bos': 'BOS', 'barrida': 'barrida de liquidez',
           'fvg': 'FVG', 'ob': 'order block', 'manip': 'pierna de manipulación',
           'acum': 'acumulación', 'liq': 'liquidez (BSL/SSL, EQH/EQL, LRL/HRL)',
