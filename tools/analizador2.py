@@ -40,14 +40,22 @@ va ANTES de medir, y por eso es el eslabón del que dependen todos los números
 de abajo. Ver `rejilla_velas`.
 
 ═══ QUÉ SE AFIRMA Y QUÉ NO ═══
-Cada familia lleva su precisión MEDIDA (banco de 24 láminas, 1.420 velas, EN
-CONDICIONES REALES: con el 14% de las velas fuera y recuperadas). El bloque
-tiene TRES niveles, no dos, y el nivel lo decide el banco, no yo:
+Cada familia lleva su precisión MEDIDA (banco de 72 y 144 láminas, EN
+CONDICIONES REALES: con el 14% de las velas fuera y recuperadas, y midiendo la
+cadena el paso entre velas ella sola). El bloque tiene TRES niveles, no dos, y
+el nivel lo decide el banco, no yo:
 
-    se AFIRMA en seco   BOS 97,1% · acumulación (zona) 94,2% · barrida 90,7%
-    se dice CON su      FVG+estado 81,0% · order block 83,5%
-    tasa de acierto     manipulación 81,4% · DOL 80,4% · liquidez 73,2%
+    se AFIRMA en seco   BOS 95,9% · acumulación (zona) 93,7% ·
+                        rango operativo (zona) 90,1%
+    se dice CON su      barrida 86,8% · FVG+estado 74,2% · DOL 80,6% ·
+    tasa de acierto     tendencia 75,7% · liquidez 74,4% · order block 73,6% ·
+                        manipulación 74,0% · MSS 69,4% (cláusula del BOS)
     no se escribe       cualquier cosa por debajo de MIN_MENCION
+
+⚠️ LOS NÚMEROS DE AQUÍ SALEN DE `PRECISION`, QUE ESTÁ ABAJO CON SU TABLA POR
+SEMILLA. Si se re-mide y solo se toca el diccionario, este párrafo pasa a
+mentir — ya ocurrió: estuvo días diciendo 97,1 y 90,7 cuando el banco decía
+otra cosa. Se cambian LOS DOS o ninguno.
 
 🔴 POR QUÉ TRES Y NO DOS (2026-09-06). Con dos niveles el bloque solo podía
 hablar de BOS y de barridas, y **jamás de un FVG, de un order block ni de
@@ -101,45 +109,52 @@ MIN_PRECISION = 90.0
 #    se le ensena a un cliente como "acierta X% de las veces", vale el peor de
 #    los que se han visto.
 # ⚠️ Las familias con POCOS casos por lamina (MSS, DOL, tendencia, zona, OTE,
-#    rango) se miden con 72 laminas x2 semillas y no con 24 x3: con 24 laminas
-#    el MSS tenia 43 casos y bailaba entre 63 y 82, que es ruido de muestra
-#    pequena. El resto va con 24 x3, donde cada familia junta de 100 a 1.100
-#    casos reales.
+#    rango) se miden con MAS laminas y no con mas semillas: el minimo de una
+#    muestra diminuta no es prudencia, es dejar que el ruido fije lo que se le
+#    promete al cliente. Prueba viva del 16-sep: con 72 laminas el MSS dio
+#    68,2 / 64,3 / 77,3 (117-149 casos por semilla) y con 144 dio 69,4 / 73,1
+#    (253-272 casos). El 64,3 habria SILENCIADO el MSS —cae bajo el 65 de
+#    MIN_MENCION— por puro ruido de muestra.
 #
-#        familia          s7     s11    s23    -> se usa
-#        BOS              95,1   95,5   99,3      95,1
-#        barrida          88,5   83,3   89,9      83,3
-#        FVG              80,4   89,3   81,7      80,4
-#        estado del FVG   76,8   85,4   76,9      76,8
-#        order block      75,9   83,3   76,5      75,9
-#        manipulacion     84,4   76,5   83,3      76,5
-#        acumulacion~     94,0   90,0   93,9      90,0
-#        liquidez         75,5   73,8   80,5      73,8
-#        estructura       83,7   85,3   84,4      83,7
-#        ── con 72 laminas x2 ──   s7     s23
-#        MSS / CHoCH              68,7   75,0      68,7
-#        DOL                      81,4   78,5      78,5
-#        tendencia                72,2   84,7      72,2
-#        zona P/D/EQ              94,3   91,7      91,7
-#        banda OTE                90,0   91,7      90,0
-#        rango (los 2 giros)      67,1   75,0      67,1
+# ── RE-MEDIDA EL 16-sep tras arreglar los giros con empate (ver HG.swings) ──
+#        familia          s7     s11    s23    -> se usa   (72 lam. x3)
+#        BOS              95,9   96,8   96,6      95,9
+#        barrida          90,4   86,8   90,6      86,8
+#        FVG              81,4   82,1   81,9      81,4
+#        estado del FVG   74,2   75,7   76,7      74,2
+#        order block      73,6   76,5   78,2      73,6
+#        manipulacion     80,7   74,0   81,3      74,0
+#        liquidez         76,2   74,4   75,0      74,4
+#        estructura       83,3   84,8   83,9      83,3
+#        ── con 144 laminas x2 ──  s7     s11
+#        MSS / CHoCH              69,4   73,1      69,4
+#        DOL                      80,6   83,3      80,6
+#        tendencia                75,7   79,2      75,7
+#        acumulacion~             93,7   93,9      93,7
+#        zona P/D/EQ              90,1   94,4      90,1
+#        banda OTE                94,3   95,8      94,3
+#        rango (los 2 giros)      68,1   71,8      68,1
 #
-# ⚠️ `acum` y `rangop` caen EXACTAMENTE en 90,0, o sea justo en la raya del
-#    nivel que se afirma en seco. Se aplica la regla tal cual —el liston no se
-#    mueve para que entre o salga nadie— pero son las dos primeras que hay que
-#    volver a mirar cuando se re-mida: medio punto las saca.
-# 🔑 A `rangop` se le pone el MINIMO de sus dos afirmaciones (zona 91,7 y banda
-#    OTE 90,0): la linea afirma las dos a la vez, asi que vale lo que la mas
+# ⚠️ `acum` se despego de la raya (90,0 -> 93,7), pero `rangop` sigue clavado
+#    en ella: 90,1 contra un liston de 90,0. Es la primera que hay que volver a
+#    mirar en la proxima medicion — una decima la saca.
+# 🔑 A `rangop` se le pone el MINIMO de sus dos afirmaciones (zona 90,1 y banda
+#    OTE 94,3): la linea afirma las dos a la vez, asi que vale lo que la mas
 #    floja. Y los extremos del rango van como APROXIMADOS porque encontrar los
-#    dos giros exactos solo acierta el 67% — mientras que la ZONA acierta el
-#    92%: aunque se elija un giro distinto, el precio suele caer del mismo lado
+#    dos giros exactos solo acierta el 68% — mientras que la ZONA acierta el
+#    90%: aunque se elija un giro distinto, el precio suele caer del mismo lado
 #    del punto medio. Mismo patron que la acumulacion.
-PRECISION = {'bos': 95.1, 'barrida': 83.3, 'fvg': 80.4, 'ob': 75.9,
-             'manip': 76.5, 'acum': 90.0, 'liq': 73.8, 'dol': 78.5,
-             'mss': 68.7, 'tend': 72.2, 'rangop': 90.0}
-# 🔑 A `rangop` se le pone el MÍNIMO de sus dos afirmaciones (zona 89,6 y
-# banda OTE 85,1), no el mejor: la línea afirma las dos a la vez, así que
-# vale lo que vale la más floja.
+# 🔴 Y UN LIMITE QUE ESTE NUMERO NO CUBRE, cazado con la captura real del
+#    dueno el 16-sep: el 90,1% esta medido contra NUESTRA definicion de rango
+#    (el ultimo giro de cada tipo). Si el trader dibuja su fib entre otros dos
+#    puntos —cosa legitima: el anclo en el minimo que ORIGINO el impulso y
+#    nosotros en el ultimo minimo de giro— el veredicto puede salir al reves
+#    (a el se le dijo "premium" donde su propia fib dice discount, dentro de la
+#    OTE) y el porcentaje no mide nada de ese riesgo. El banco no puede juzgar
+#    que rango habria dibujado una persona.
+PRECISION = {'bos': 95.9, 'barrida': 86.8, 'fvg': 81.4, 'ob': 73.6,
+             'manip': 74.0, 'acum': 93.7, 'liq': 74.4, 'dol': 80.6,
+             'mss': 69.4, 'tend': 75.7, 'rangop': 90.1}
 # 🔴 `piscina` YA NO ES UNA FAMILIA: la absorbe `liq`. `HG.piscinas` solo veía
 # los niveles con DOS O MÁS toques y los promediaba; `HG.liquidez` da esos
 # mismos y además los giros sueltos, con su etiqueta (EQH/EQL/REQH/REQL) y su
@@ -160,8 +175,8 @@ PRECISION = {'bos': 95.1, 'barrida': 83.3, 'fvg': 80.4, 'ob': 75.9,
 # hay uno ahí— sino dónde los corta. Si algún día la línea pasa a dar las velas
 # exactas como dato firme, el número que le corresponde vuelve a ser 70,2.
 # El FVG se imprime CON su estado (intacto / tocado / CE / lleno / invertido),
-# así que la línea vale lo que vale el más flojo de los dos: 84,7 y 80,1.
-PRECISION_ESTADO = 76.8
+# así que la línea vale lo que vale el más flojo de los dos: 81,4 y 74,2.
+PRECISION_ESTADO = 74.2
 NOMBRE = {'bos': 'BOS', 'barrida': 'barrida de liquidez',
           'fvg': 'FVG', 'ob': 'order block', 'manip': 'pierna de manipulación',
           'acum': 'acumulación', 'liq': 'liquidez (BSL/SSL, EQH/EQL, LRL/HRL)',
@@ -171,7 +186,8 @@ NOMBRE = {'bos': 'BOS', 'barrida': 'barrida de liquidez',
 # Por debajo de esto un hecho no se escribe en ninguna parte.
 # 🔴 BAJADO DE 78 A 65 EL 09-sep, y es una decisión, no un ajuste. Con la
 # fábrica midiendo el mundo real, FVG (71,9), order block (68,9) y pierna de
-# manipulación (69,2) caen por debajo de 78. Dejarlas fuera devuelve el
+# manipulación (69,2) —las cifras DE AQUEL DÍA; las de hoy están en la tabla
+# de `PRECISION`— caen por debajo de 78. Dejarlas fuera devuelve el
 # analizador a donde estaba: capaz de hablar de BOS y de barridas y de NINGUNA
 # pieza de ICT, que es exactamente lo que el dueño rechazó. Entran, pero cada
 # línea lleva su tasa de acierto MEDIDA al lado: "acierta 72% de las veces" no
@@ -181,8 +197,8 @@ MIN_MENCION = 65.0
 # como una CLÁUSULA de la línea del BOS y no como línea propia. Emitirlo aparte
 # imprimiría el mismo suceso dos veces, y un hecho repetido se lee como
 # confirmación (el mismo error que ya cazó `_sin_repetir`).
-# ⚠️ Pero la cláusula lleva SU PROPIA tasa: el BOS se afirma al 97,1% y que ese
-# BOS sea además un MSS solo al 87,0%. Meterla en una línea firme sin marcarla
+# ⚠️ Pero la cláusula lleva SU PROPIA tasa: el BOS se afirma al 95,9% y que ese
+# BOS sea además un MSS solo al 69,4%. Meterla en una línea firme sin marcarla
 # le regalaría a la afirmación floja la credibilidad de la fuerte.
 # `estruct` (las etiquetas HH/HL/LH/LL sueltas) tampoco entra: son ~30 líneas
 # por gráfico y lo que se quiere saber cabe en una, que es `tend`.
@@ -721,8 +737,8 @@ def bloque(velas, hs, escala, minimo=MIN_PRECISION, minimo_mencion=MIN_MENCION):
         if fam == 'bos':
             p = _pre(h['nivel'], escala)
             # 🔑 La cláusula del MSS va con SU PROPIA tasa. El BOS es firme
-            #    (97,1%); que ese BOS además VOLTEE la estructura se mide al
-            #    87,0%, y son dos afirmaciones distintas metidas en una frase.
+            #    (95,9%); que ese BOS además VOLTEE la estructura se mide al
+            #    69,4%, y son dos afirmaciones distintas metidas en una frase.
             extra = ('' if not h.get('mss') else
                      '  — y este BOS es un MSS/CHoCH: va en CONTRA de la '
                      'ruptura anterior, o sea que ahí la estructura cambia de '

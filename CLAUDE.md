@@ -602,20 +602,69 @@ Primera tabla honesta del proyecto: el paso entre velas ya lo mide la cadena sol
 
 | se AFIRMA en seco (≥90%) | con su tasa al lado | |
 |---|---|---|
-| **BOS 95,1** · acumulación (zona) **90,0** · rango operativo **90,0** | estructura 83,7 · barrida 83,3 · FVG 80,4 · DOL 78,5 · estado del FVG 76,8 · manipulación 76,5 · order block 75,9 · liquidez 73,8 · tendencia 72,2 · MSS 68,7 | |
+| **BOS 95,9** · acumulación (zona) **93,7** · rango operativo (zona) **90,1** | barrida 86,8 · estructura 83,3 · FVG 81,4 · DOL 80,6 · tendencia 75,7 · liquidez 74,4 · estado del FVG 74,2 · manipulación 74,0 · order block 73,6 · MSS 69,4 | |
 
 - 🔑 **Mínimo de las semillas, nunca la media**: si el número se le enseña a un cliente, vale el
   peor de los que se han visto.
-- ⚠️ **Las familias con pocos casos por lámina** (MSS, DOL, tendencia, zona, OTE, rango) se miden
-  con **72 láminas ×2**, no 24 ×3: con 24 el MSS tenía 43 casos y bailaba entre 63 y 82 — ruido de
-  muestra pequeña. Tomar el mínimo de una muestra diminuta no es prudencia, es dejar que el ruido
-  fije lo que se le promete al cliente.
-- ⚠️ **`acum` y `rangop` caen EXACTAMENTE en 90,0**, justo en la raya. Se aplica la regla tal cual
-  —el listón no se mueve para que entre o salga nadie— pero son las dos primeras a revisar en la
-  próxima medición: medio punto las saca.
-- ⚠️ El **rango operativo** se afirma por su ZONA (premium/discount, 91,7%), no por sus extremos:
-  encontrar los dos giros exactos solo acierta el **67%**. Por eso la línea los llama aproximados.
+- 🔑 **Para las familias raras se suben las LÁMINAS, no las semillas.** MSS con 72 láminas dio
+  68,2 / 64,3 / 77,3 (117-149 casos); con **144** dio 69,4 / 73,1 (253-272 casos). Ese **64,3
+  habría SILENCIADO el MSS** —cae bajo el 65 de `MIN_MENCION`— por puro ruido de muestra, y el MSS
+  es justo el hecho sobre el que el dueño construyó su tesis. Tomar el mínimo de una muestra
+  diminuta no es prudencia, es dejar que el ruido fije lo que se le promete al cliente.
+- ⚠️ **`acum` se despegó de la raya (90,0 → 93,7), pero `rangop` sigue clavado en ella: 90,1.**
+  Primera a revisar en la próxima medición: una décima la saca.
+- ⚠️ El **rango operativo** se afirma por su ZONA (premium/discount, 90,1%), no por sus extremos:
+  encontrar los dos giros exactos solo acierta el **68%**. Por eso la línea los llama aproximados.
   Mismo patrón que la acumulación.
+- 🔴 **LOS NÚMEROS VIVEN EN DOS SITIOS DENTRO DE `analizador2`** —el diccionario `PRECISION` y el
+  párrafo "QUÉ SE AFIRMA Y QUÉ NO" de la cabecera— y el 16-sep se cazó al segundo diciendo 97,1 y
+  90,7 cuando el banco decía otra cosa. **Se cambian los dos o ninguno.**
+
+### 🔴 DOS VELAS CON EL MISMO MÁXIMO BORRABAN EL GIRO (2026-09-16)
+Cazado preparando la captura del dueño, no en el banco. `swings()` pedía `>` **estricto por los dos
+lados**, así que **dos velas contiguas con el máximo idéntico fallaban las dos y el giro
+desaparecía**. Y dos máximos iguales son un **EQH**: la definición más estricta borraba justo los
+giros que más importan. 🔑 **En una serie medida en PÍXELES los empates no son raros, son
+constantes** — la `y` es un entero, así que dos velas a una fracción de tick caen en el mismo píxel.
+- En su captura, **entre la vela 72 y la 123 la cadena no veía UN SOLO giro**; ahora ve seis
+  (82, 87, 89, 95, 99 y 121). El *Structure Shift* alcista se mueve de la 120 a la **113**.
+- Arreglo: empate tolerado **por la izquierda** (`>=`) y estricto **por la derecha** (`>`) → de una
+  tanda de velas iguales queda **una**, la ÚLTIMA, que es donde el precio se dio la vuelta.
+- **Medido (72 láminas ×3):** rango operativo (2 giros) 67,1 → **72,9** · banda OTE 90,0 → **91,5** ·
+  premium/discount 94,3 → 91,7 · BOS 97,0 → 95,9 · estructura 85,2 → 83,3. Y **lo que ENCUENTRA sube
+  en todo**: BOS +1,4 · barrida +3,1 · estructura +2,9 · liquidez +2,3 · **MSS +7 a +9** · rango
+  +6,9. **Afirma un pelín peor y ve bastante más**, y el defecto era conceptual, no de porcentaje.
+
+### 🔴 SU FIB, MEDIDA AL PÍXEL — y el límite que el banco NO puede juzgar (2026-09-16)
+Él pidió la captura del trade porque no lo recordaba. Al prepararla salió lo gordo: **su fib está
+dibujada en la imagen**, así que no hacía falta preguntarle dónde la ancló. Midiendo las 7 líneas
+rojas y calculando dónde caerían con anclas en el mínimo de la **vela 117** y el máximo de la **120**:
+
+| | medido en la captura | calculado por la cadena |
+|---|---|---|
+| su 0,5 | y = 368,5 | y = 367,5 |
+| su 0,79 | y = 433,5 | y = 432,8 |
+
+**Un píxel.** Tercera verificación externa del proyecto (tras el BOS de su indicador y su línea SS).
+
+🔴 **Y con ESE rango entró en discount, DENTRO de la OTE** (cierre de la 123 en 0,698, mínimo en
+0,778). **El informe le dijo premium.** Arreglar el empate no lo resuelve: con los giros bien, la
+cadena ancla en la **99** (último mínimo de giro) contra la **121**, y él ancló en la **117** (el
+mínimo que ORIGINÓ el impulso). Rangos de 429 px contra 225. **Ninguna de las dos lecturas está
+mal.**
+
+🔴 **LO QUE ESTO DESTAPA, Y HAY QUE DECIRLO EN VOZ ALTA: el 90,1% de premium/discount está medido
+contra NUESTRA definición de rango. El banco no puede juzgar qué fib habría dibujado una persona,
+así que ese porcentaje NO CUBRE ese riesgo.** Es la primera familia del catálogo donde el número
+que se le enseñaría a un cliente no significa lo que parece.
+**Tres salidas, ofrecidas al dueño el 16-sep, SIN respuesta todavía:** (1) que el analizador no
+afirme premium/discount salvo que el trader diga dónde está su fib — **la recomendada**; (2) leer la
+fib de la imagen (factible: se acaba de hacer al píxel, pero no todos la dibujan); (3) reforzar el
+"aproximado" y dejarlo.
+
+⚠️ **Y su vela de entrada es la 123, no la 122** (error mío del 15-sep). Importa porque el bloque 2
+de la ventana es "lo que hizo TU vela de entrada". `tools/mapa_velas.py` y un recorte ×4 de la zona
+son lo que le permite comprobarlo sin fiarse.
 
 **PENDIENTE:** encadenarlo todo en un solo programa, y **ensamblarlo con el analizador** —
 🔴 eso sí toca el sitio y no se mueve sin que el dueño lo diga. Fuera sigue MACD/RSI.
