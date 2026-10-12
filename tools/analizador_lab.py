@@ -173,6 +173,21 @@ def mensaje_usuario(datos, notas, hechos=None, tabla=None, entrada=None):
             'measured.\n\n' % hechos)
     if tabla:
         cabeza += tabla + '\n\n'
+    # 🔴 LA DIRECCIÓN PUEDE NO SABERSE, y entonces NO se puede escribir "this
+    #    was a short trade — anchor your entire analysis to that fact". Cazado
+    #    el 17-oct: con los valores por defecto viejos el laboratorio le juraba
+    #    al modelo que un trade LARGO era corto, y el informe entero salió
+    #    anclado a esa mentira.
+    if str(datos.get('direction', '')).startswith('NOT PROVIDED'):
+        ancla = ('\nThe trade DIRECTION is unknown — the trader did not state '
+                 'it. 🔴 Do NOT guess it and do NOT write as if it were long '
+                 'or short. Describe what the measured facts show and say '
+                 'plainly that the direction was not provided. Analyze it ')
+    else:
+        ancla = ('\nThis was a %(direction)s trade — anchor your entire '
+                 'analysis to that fact. Locate where the trader entered and '
+                 'exited on the chart using the %(direction)s direction as '
+                 'your reference. Analyze it ' % datos)
     return (cabeza + 'Trade submitted for retrospective, educational analysis '
             '(approach: %(approach)s):\n\n'
             'Instrument: %(instrument)s\n'
@@ -184,10 +199,7 @@ def mensaje_usuario(datos, notas, hechos=None, tabla=None, entrada=None):
             'Traded aligned with HTF bias: %(aligned)s\n'
             'Approach / model used: %(approach)s\n'
             'Confluences identified by trader: %(confluences)s\n'
-            % datos + bloque +
-            '\nThis was a %(direction)s trade — anchor your entire analysis to '
-            'that fact. Locate where the trader entered and exited on the chart '
-            'using the %(direction)s direction as your reference. Analyze it '
+            % datos + bloque + ancla +
             'through the trader\'s stated approach (%(approach)s) via the '
             'METHODOLOGY ROUTER — if the approach is OTE / Std Dev, lead with '
             'the dedicated OTE / Standard Deviation lens (its distinct '
@@ -423,16 +435,26 @@ def main():
                     help='archivo de texto con la construcción del trade')
     ap.add_argument('--columnas', help='@ruta de las columnas ya obtenidas; '
                                        'sin esto no se puede hacer la variante C')
-    ap.add_argument('--instrumento', default='MES (Micro E-mini S&P 500)')
-    ap.add_argument('--direccion', default='short')
-    ap.add_argument('--sesion', default='NY AM')
-    ap.add_argument('--resultado', default='loss')
-    ap.add_argument('--htf', default='bearish')
-    ap.add_argument('--alineado', default='yes')
-    ap.add_argument('--approach', default='OTE / Standard Deviation')
-    ap.add_argument('--confluencias',
-                    default='MSS, OTE 0.5 retracement, stacked bearish FVGs '
-                            '(1H, 15m, 5m), HTF bearish bias')
+    # 🔴 NINGUNO LLEVA YA EL CONTENIDO DE UN TRADE CONCRETO. Hasta el 17-oct
+    #    `--confluencias` venía con "MSS, OTE 0.5 retracement, stacked bearish
+    #    FVGs (1H, 15m, 5m), HTF bearish bias" — las confluencias del trade de
+    #    SEPTIEMBRE, cableadas como valor por defecto. Así que la "prueba a
+    #    ciegas" de su captura nueva **no fue a ciegas**: fue PEOR, porque a la
+    #    IA se le entregó como cierta la tesis de otro trade de otro día, y
+    #    escribió "el trader mencionó FVGs bajistas apilados en 1H, 15m y 5m"
+    #    sobre un gráfico donde nadie dijo eso. Lo cazó el dueño leyendo la
+    #    salida; el comando no lo delataba por ningún lado.
+    # 🔑 Un valor por defecto que describe un caso concreto es una MENTIRA con
+    #    apariencia de configuración: no se ve en el comando, no sale en la
+    #    salida, y el modelo la trata como un hecho que le dio el trader.
+    ap.add_argument('--instrumento')
+    ap.add_argument('--direccion')
+    ap.add_argument('--sesion')
+    ap.add_argument('--resultado')
+    ap.add_argument('--htf')
+    ap.add_argument('--alineado')
+    ap.add_argument('--approach')
+    ap.add_argument('--confluencias')
     ap.add_argument('--idioma', default='Spanish')
     ap.add_argument('--modelo', metavar='PROVEEDOR:MODELO',
                     help='para leer el eje y que el bloque lleve PRECIOS')
@@ -470,10 +492,14 @@ def main():
     sitio = del_sitio()
     notas = (io.open(a.construccion, encoding='utf-8').read().strip()
              if a.construccion else '')
-    datos = {'instrument': a.instrumento, 'direction': a.direccion,
-             'session': a.sesion, 'result': a.resultado, 'htf': a.htf,
-             'aligned': a.alineado, 'approach': a.approach,
-             'confluences': a.confluencias, 'idioma': a.idioma}
+    # 🔑 "NOT PROVIDED" EXPLÍCITO, nunca un relleno plausible. Vacío invita a
+    #    inventar; el dato de otro trade miente con nuestra autoridad detrás.
+    ND = 'NOT PROVIDED — the trader did not state this. Do NOT assume a value.'
+    datos = {'instrument': a.instrumento or ND, 'direction': a.direccion or ND,
+             'session': a.sesion or ND, 'result': a.resultado or ND,
+             'htf': a.htf or ND, 'aligned': a.alineado or ND,
+             'approach': a.approach or ND,
+             'confluences': a.confluencias or ND, 'idioma': a.idioma}
 
     hechos_txt = None
     # 🔴 ANTES ERA `if a.columnas:` A SECAS, y sin archivo de columnas el
