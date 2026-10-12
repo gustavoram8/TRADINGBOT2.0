@@ -633,6 +633,54 @@ OTE = (0.62, 0.79)
 TOL_EQUILIBRIO = 0.02
 
 
+def _arma_rango(techo, suelo, i_alto, i_bajo, ref, del_trader=False):
+    """La aritmética común: equilibrio, banda OTE y dirección de la pierna.
+
+    `pierna` dice en qué orden vinieron: si primero el mínimo y luego el
+    máximo, la pierna fue ALCISTA y el retroceso se mide bajando desde el
+    máximo. Al revés si fue bajista. Sin eso, el 0,79 cae en el lado contrario
+    y la zona OTE queda del revés — que es peor que no darla."""
+    if techo <= suelo:
+        return None
+    rango = techo - suelo
+    pierna = 'alcista' if i_bajo < i_alto else 'bajista'
+    if pierna == 'alcista':
+        ote = (techo - OTE[1] * rango, techo - OTE[0] * rango)
+    else:
+        ote = (suelo + OTE[0] * rango, suelo + OTE[1] * rango)
+    return {'i_alto': i_alto, 'i_bajo': i_bajo, 'techo': techo,
+            'suelo': suelo, 'rango': rango, 'pierna': pierna,
+            'equilibrio': (techo + suelo) / 2.0, 'ote': ote, 'ref': ref,
+            'del_trader': del_trader}
+
+
+def rango_de(ohlc, i_bajo, i_alto, ref=None):
+    """El rango que dibujó EL TRADER: sus dos anclas, por número de vela.
+
+    🔴 POR QUÉ EXISTE (2026-09-17). `rango_operativo` elige los giros él solo y
+    acierta el 68% al dar los dos exactos — pero el problema de fondo no es la
+    precisión, es que **el rango operativo no es un hecho, es una elección**.
+    Medido sobre la captura real del dueño: su fib va del mínimo de la vela 117
+    al máximo de la 120 (verificado al PÍXEL contra las líneas que él mismo
+    dibujó), mientras la cadena anclaba en la 99 contra la 121. Con el suyo
+    entró en DISCOUNT dentro de la OTE; con el nuestro, en PREMIUM. **Las dos
+    lecturas son legítimas y nosotros le afirmábamos la contraria como un
+    hecho.**
+
+    🔑 Aquí los extremos NO son aproximados: los puso una persona. Por eso el
+    dict sale con `del_trader=True` y la línea se redacta sin el "aprox.".
+
+    ⚠️ Se toma el MÍNIMO de la vela de abajo y el MÁXIMO de la de arriba, que
+    es donde ancla un fib — no sus cierres."""
+    if ref is None:
+        ref = len(ohlc) - 1
+    n = len(ohlc)
+    if not (0 <= i_bajo < n and 0 <= i_alto < n):
+        return None
+    return _arma_rango(_h(ohlc[i_alto]), _l(ohlc[i_bajo]),
+                       i_alto, i_bajo, ref, del_trader=True)
+
+
 def rango_operativo(ohlc, k=2, ref=None):
     """El DEALING RANGE vigente: el último giro alto contra el último bajo.
 
@@ -653,19 +701,9 @@ def rango_operativo(ohlc, k=2, ref=None):
     sw = [s for s in swings(ohlc, k) if s[0] <= ref]
     alto = next((s for s in reversed(sw) if s[1] == 'alto'), None)
     bajo = next((s for s in reversed(sw) if s[1] == 'bajo'), None)
-    if alto is None or bajo is None or alto[2] <= bajo[2]:
+    if alto is None or bajo is None:
         return None
-    techo, suelo = alto[2], bajo[2]
-    rango = techo - suelo
-    pierna = 'alcista' if bajo[0] < alto[0] else 'bajista'
-    # Los precios de la banda OTE, medida SIEMPRE desde el final de la pierna.
-    if pierna == 'alcista':
-        ote = (techo - OTE[1] * rango, techo - OTE[0] * rango)
-    else:
-        ote = (suelo + OTE[0] * rango, suelo + OTE[1] * rango)
-    return {'i_alto': alto[0], 'i_bajo': bajo[0], 'techo': techo,
-            'suelo': suelo, 'rango': rango, 'pierna': pierna,
-            'equilibrio': (techo + suelo) / 2.0, 'ote': ote, 'ref': ref}
+    return _arma_rango(alto[2], bajo[2], alto[0], bajo[0], ref)
 
 
 def ubica(rango, precio, tol=TOL_EQUILIBRIO):

@@ -273,7 +273,7 @@ ANTES, DESPUES = 8, 2
 
 
 def bloque_de_hechos(imagen, columnas, prov=None, modelo=None, completo=False,
-                     entrada=None, salida=None):
+                     entrada=None, salida=None, rango=None):
     """El bloque de hechos de `analizador2`, en texto plano y SIN PÍXELES.
 
     🔴 LAS COORDENADAS EN PÍXELES HAY QUE QUITARLAS, y por poco se cuelan. El
@@ -301,7 +301,7 @@ def bloque_de_hechos(imagen, columnas, prov=None, modelo=None, completo=False,
     #    Sin `--entrada` la referencia es la última vela, que es lo correcto
     #    cuando lo que se describe es el gráfico y no una decisión.
     r = A2.analiza(imagen, prov=prov, modelo=modelo, cajas=cajas, verboso=False,
-                   ref=entrada)
+                   ref=entrada, rango=rango)
     firmes, marcados = A2.bloque(r['velas'], r['hechos'], r['escala'])
     total = len(r['velas'])
 
@@ -385,6 +385,12 @@ def bloque_de_hechos(imagen, columnas, prov=None, modelo=None, completo=False,
         lineas += ['']
     lineas += ['ALL MEASURED FACTS, in order (verified, >=90%% accuracy):']
     lineas += ['  - ' + t for _f, t in firmes] or ['  - (none)']
+    # 🔴 EL "NO SE SABE" VA ESCRITO, no se deja en blanco. Sin anclas el bloque
+    #    sale sin premium/discount, y un hueco callado delante de una tabla de
+    #    velas se rellena solo — es la misma lección que la ventana en tres:
+    #    etiquetar no es separar, y el silencio no es una instrucción.
+    if not rango:
+        lineas += ['', A2.AVISO_SIN_RANGO]
     if completo:
         # 🔑 Este segundo bloque NO es la lista "sin verificar" que fracasó en
         #    la prueba C. Aquella no estaba medida y se pedía desconfianza.
@@ -428,6 +434,14 @@ def main():
     #    `--vela-salida`; el choque reventaba el programa al arrancar.
     ap.add_argument('--vela-salida', type=int, dest='vela_salida',
                     help='número de vela donde salió el trader')
+    # 🔴 LAS DOS ANCLAS DE SU FIB, por número de vela (decisión del dueño,
+    #    2026-09-17). SIN ESTO el bloque NO dice premium/discount/OTE: el rango
+    #    operativo no es un hecho medible, es la elección del trader, y dos
+    #    lecturas legítimas del mismo gráfico dan veredictos opuestos.
+    ap.add_argument('--rango', metavar='BAJO,ALTO',
+                    help='las dos velas donde EL TRADER ancló su fib, p.ej. '
+                         '117,120 (mínimo de la primera, máximo de la '
+                         'segunda). Sin esto no se afirma premium/discount.')
     ap.add_argument('--sin-eje', action='store_true', dest='sin_eje',
                     help='corre aunque no se pueda leer el eje (prueba '
                          'DEGRADADA: sin precios)')
@@ -447,12 +461,20 @@ def main():
         prov = modelo = None
         if a.modelo:
             prov, _, modelo = a.modelo.partition(':')
+        rango = None
+        if a.rango:
+            try:
+                rango = tuple(int(x) for x in a.rango.split(','))
+                if len(rango) != 2:
+                    raise ValueError
+            except ValueError:
+                raise SystemExit('--rango va como BAJO,ALTO (p.ej. 117,120)')
         hechos_txt, _r, _marcados = bloque_de_hechos(
             a.imagen, a.columnas, prov, modelo,
-            entrada=a.entrada, salida=a.vela_salida)
+            entrada=a.entrada, salida=a.vela_salida, rango=rango)
         completo_txt, _r2, _m2 = bloque_de_hechos(
             a.imagen, a.columnas, prov, modelo, completo=True,
-            entrada=a.entrada, salida=a.vela_salida)
+            entrada=a.entrada, salida=a.vela_salida, rango=rango)
         tabla_txt = tabla_ohlc(_r)
         # 🔴 SIN EJE, LA PRUEBA NO VALE Y HAY QUE PARAR. Corrió entera el
         #    08-sep con el modelo de Gemini retirado: el bloque salió sin

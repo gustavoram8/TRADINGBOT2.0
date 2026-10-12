@@ -202,6 +202,26 @@ MIN_MENCION = 65.0
 # le regalaría a la afirmación floja la credibilidad de la fuerte.
 # `estruct` (las etiquetas HH/HL/LH/LL sueltas) tampoco entra: son ~30 líneas
 # por gráfico y lo que se quiere saber cabe en una, que es `tend`.
+# 🔴 LO QUE SE DICE CUANDO EL TRADER NO DIO SU FIB (decisión del dueño,
+# 2026-09-17, opción 1 de las tres que se le ofrecieron). El rango operativo no
+# es un hecho medible como un BOS: es una ELECCIÓN del trader, y dos lecturas
+# legítimas del mismo gráfico dan veredictos OPUESTOS. Medido sobre su captura
+# real: con su fib entró en DISCOUNT dentro de la OTE, con la nuestra en
+# PREMIUM — y se lo afirmamos como un hecho.
+#
+# ⚠️ ESTE AVISO NO ES OPCIONAL, y por eso no basta con borrar la línea: el
+#    bloque va con una tabla de velas delante, así que un hueco en silencio se
+#    rellena solo. Un "no se sabe" explícito sí es una instrucción.
+AVISO_SIN_RANGO = (
+    'PREMIUM / DISCOUNT / OTE: NOT AVAILABLE for this chart. The dealing range '
+    'is not a measurable fact like a break of structure — it is the trader\'s '
+    'own choice of two anchors, and two legitimate readings of the same chart '
+    'give OPPOSITE verdicts. The trader did not tell us where their fib is. '
+    '🔴 Therefore you must NOT say the entry was in premium, in discount, at '
+    'equilibrium, inside or outside the OTE, or at any fib percentage — not '
+    'even as a guess, and not by deriving it from the OHLC table. If their '
+    'reasoning depends on it, say that it cannot be checked from what we have.')
+
 FAMILIAS = ('bos', 'barrida', 'fvg', 'ob', 'liq', 'dol', 'tend', 'rangop',
             'manip', 'acum')
 # Cuántas velas de giro a cada lado para que un extremo cuente como swing.
@@ -549,12 +569,15 @@ def serie(velas):
     return out
 
 
-def hechos(ohlc, ref=None):
+def hechos(ohlc, ref=None, rango=None):
     """Los hechos, por familia, con el índice de la vela.
 
     `ref` es la vela desde la que se mira el DOL y la resistencia de cada
     nivel. Por defecto la última; el laboratorio le pasa la vela de ENTRADA
-    del trader, que es la única desde la que tiene sentido juzgar su decisión."""
+    del trader, que es la única desde la que tiene sentido juzgar su decisión.
+
+    `rango` son las DOS ANCLAS DE SU FIB como números de vela `(bajo, alto)`.
+    Sin ellas la familia `rangop` sale VACÍA a propósito — ver `AVISO_SIN_RANGO`."""
     g = HG.fvgs(ohlc)
     out = dict((f, []) for f in FAMILIAS)
 
@@ -673,7 +696,13 @@ def hechos(ohlc, ref=None):
     #    con la que el dueño toma sus trades —"entré en el 0,5 del fib"— y el
     #    catálogo no sabía calcularla: le pedíamos a la IA que juzgara sus
     #    entradas sin la vara con la que él las mide.
-    rg = HG.rango_operativo(ohlc, K_SWING, ref=r_ref)
+    # 🔴 SOLO SI EL TRADER DIO SUS ANCLAS (decisión del dueño, 2026-09-17).
+    #    El rango operativo NO es un hecho, es una ELECCIÓN: ver `HG.rango_de`.
+    #    Sin anclas no se emite nada — y el que arma el prompt tiene que decir
+    #    en voz alta que no se sabe (`AVISO_SIN_RANGO`), porque callar invita a
+    #    inventar: es la misma lección que la ventana en tres (etiquetar no es
+    #    separar; el silencio no es una instrucción).
+    rg = HG.rango_de(ohlc, rango[0], rango[1], ref=r_ref) if rango else None
     if rg:
         u = HG.ubica(rg, HG._c(ohlc[r_ref]))
         if u:
@@ -755,8 +784,12 @@ def bloque(velas, hs, escala, minimo=MIN_PRECISION, minimo_mencion=MIN_MENCION):
                      'discount': 'en DISCOUNT (la mitad BARATA)',
                      'equilibrio': 'en EQUILIBRIO (el 50% justo: ni caro ni '
                                    'barato)'}[h['mitad']]
+            # 🔑 Los extremos son EXACTOS porque los puso el trader. La
+            #    coletilla "APROXIMADOS" era honesta mientras los elegíamos
+            #    nosotros (68% de acierto); repetirla sobre las anclas que él
+            #    mismo dio sería tirarle dudas encima de su propio fib.
             return ('RANGO OPERATIVO en la vela %d (la referencia): la pierna '
-                    '%s va de%s a%s (extremos APROXIMADOS, giros de las velas '
+                    '%s va de%s a%s (las anclas que dio EL TRADER: velas '
                     '%d y %d) · equilibrio%s. El precio de esa vela está %s, '
                     'con un retroceso del %d%% · %s la banda OTE (62-79%%)%s'
                     % (h['i'], h['pierna'],
@@ -929,7 +962,7 @@ def _fmt(p):
 
 
 def analiza(ruta, prov=None, modelo=None, cajas=None, max_velas=80,
-            verboso=True, ref=None):
+            verboso=True, ref=None, rango=None):
     def aviso(i, n, r):
         if verboso:
             print('   tira %d/%d  %s' % (i, n, r))
@@ -973,7 +1006,7 @@ def analiza(ruta, prov=None, modelo=None, cajas=None, max_velas=80,
         except SystemExit:
             escala = None
     return {'panel': p, 'velas': velas, 'ohlc': ohlc, 'escala': escala,
-            'hechos': hechos(ohlc, ref)}
+            'hechos': hechos(ohlc, ref, rango)}
 
 
 if __name__ == '__main__':
