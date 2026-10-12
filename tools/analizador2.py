@@ -268,7 +268,8 @@ TOPE_ALTO = 3.0
 MODELO_POR_DEFECTO = 'gemini:gemini-3.6-flash'
 
 
-def _columnas_del_modelo(ruta, prov, modelo, max_velas, callback=None):
+def _columnas_del_modelo(ruta, prov, modelo, max_velas, callback=None,
+                         paso=None):
     """Llama al modelo una vez por tira y junta las columnas.
 
     ⚠️ Las tiras se SOLAPAN a propósito, así que la misma vela sale en dos.
@@ -285,12 +286,14 @@ def _columnas_del_modelo(ruta, prov, modelo, max_velas, callback=None):
     p = RG.panel(ruta)
     if not p:
         raise SystemExit('no se encontró un panel de velas en esa imagen.')
+    if paso:
+        p['paso'] = float(paso)
     clave = ci._clave(prov)
     carpeta = os.path.join(RAIZ, 'out', 'analizador2')
     if not os.path.isdir(carpeta):
         os.makedirs(carpeta)
     todas = []
-    tiras = RG.tiras(ruta, max_velas)
+    tiras = RG.tiras(ruta, max_velas, paso=paso)
     for i, (x0, y0, x1, y1) in enumerate(tiras):
         if callback:
             callback(i + 1, len(tiras), (x0, y0, x1, y1))
@@ -962,16 +965,39 @@ def _fmt(p):
 
 
 def analiza(ruta, prov=None, modelo=None, cajas=None, max_velas=80,
-            verboso=True, ref=None, rango=None):
+            verboso=True, ref=None, rango=None, paso=None):
+    """`paso` FUERZA los píxeles que hay entre vela y vela, saltándose al
+    estimador.
+
+    🔴 POR QUÉ EXISTE (2026-10-17). El estimador falla en 3 de las 6 capturas
+    reales del dueño —y siempre por lo BAJO—, y eso BLOQUEA todo lo demás: con
+    el paso corto la rejilla inventa columnas y la cadena entera trabaja sobre
+    velas que no existen. Pero el paso se puede medir POR FUERA y a mano (en
+    `nq_5m_oct`: 5,84 px, sacado del eje de tiempo —70,10 px por hora, 12 velas
+    de 5m— y confirmado contando velas en una franja limpia, 6,00 px).
+
+    🔑 Así se separan dos preguntas que llevaban todo el día mezcladas: *"¿sabe
+    medir el gráfico?"* (no, es un fallo abierto) y *"¿qué tal es el análisis?"*
+    (sin contestar porque la primera lo tapaba). Forzando el paso se contesta la
+    segunda hoy, y de paso se AÍSLA el fallo: si con el paso bueno sale bien, el
+    único roto es el estimador; si sale mal igual, hay más cosas rotas y conviene
+    saberlo.
+
+    ⚠️ Es una muleta de laboratorio, NO una solución: en producción nadie va a
+    medirle el eje de tiempo a la captura de un cliente. El estimador sigue
+    pendiente."""
     def aviso(i, n, r):
         if verboso:
             print('   tira %d/%d  %s' % (i, n, r))
     if cajas is None:
         if not (prov and modelo):
             raise SystemExit('hace falta --modelo, o --columnas ya obtenidas.')
-        cajas, p = _columnas_del_modelo(ruta, prov, modelo, max_velas, aviso)
+        cajas, p = _columnas_del_modelo(ruta, prov, modelo, max_velas, aviso,
+                                        paso=paso)
     else:
         p = RG.panel(ruta)
+        if paso:
+            p['paso'] = float(paso)
 
     # 🔴 LAS VELAS QUE EL MODELO SE DEJÓ. Sobre la captura real devolvió 88 de
     # ~102, y una vela que falta no se nota: la lista se cierra sobre sí misma.

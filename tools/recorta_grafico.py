@@ -469,7 +469,7 @@ def panel(ruta):
             'velas': int((x1 - x0) / paso)}
 
 
-def tiras(ruta, max_velas=MAX_VELAS, solape=6):
+def tiras(ruta, max_velas=MAX_VELAS, solape=6, paso=None):
     """Los recortes que hay que mandarle al modelo.
 
     ⚠️ Se solapan unas velas a propósito: la que cae justo en la costura
@@ -478,6 +478,11 @@ def tiras(ruta, max_velas=MAX_VELAS, solape=6):
     p = panel(ruta)
     if not p:
         return []
+    # 🔑 `paso` a mano: ver el porqué en `analizador2.analiza`. Las tiras se
+    #    cortan contando velas, así que un paso corto parte de más y uno largo
+    #    de menos — con el forzado, las tiras salen del tamaño que toca.
+    if paso:
+        p['paso'] = float(paso)
     ancho = int(max_velas * p['paso'])
     salto = int(max(1, (max_velas - solape) * p['paso']))
     out, x = [], p['x1']

@@ -273,7 +273,7 @@ ANTES, DESPUES = 8, 2
 
 
 def bloque_de_hechos(imagen, columnas, prov=None, modelo=None, completo=False,
-                     entrada=None, salida=None, rango=None):
+                     entrada=None, salida=None, rango=None, paso=None):
     """El bloque de hechos de `analizador2`, en texto plano y SIN PÍXELES.
 
     🔴 LAS COORDENADAS EN PÍXELES HAY QUE QUITARLAS, y por poco se cuelan. El
@@ -301,7 +301,7 @@ def bloque_de_hechos(imagen, columnas, prov=None, modelo=None, completo=False,
     #    Sin `--entrada` la referencia es la última vela, que es lo correcto
     #    cuando lo que se describe es el gráfico y no una decisión.
     r = A2.analiza(imagen, prov=prov, modelo=modelo, cajas=cajas, verboso=False,
-                   ref=entrada, rango=rango)
+                   ref=entrada, rango=rango, paso=paso)
     firmes, marcados = A2.bloque(r['velas'], r['hechos'], r['escala'])
     total = len(r['velas'])
 
@@ -408,7 +408,13 @@ def bloque_de_hechos(imagen, columnas, prov=None, modelo=None, completo=False,
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--imagen', required=True)
-    ap.add_argument('--construccion', required=True,
+    # 🔑 OPCIONAL A PROPÓSITO (2026-10-17, a petición del dueño). Mandó su
+    #    sexta captura SIN contarnos el trade —*"para ver qué logra detectar o
+    #    analizar por sí solo"*— y es la prueba más limpia que se puede hacer:
+    #    las variantes que fracasaron en la 1ª comparación real NO analizaban,
+    #    le REPETÍAN al trader sus propias confluencias. Sin su texto delante,
+    #    copiar es imposible. `mensaje_usuario` ya trataba `notas` vacías.
+    ap.add_argument('--construccion',
                     help='archivo de texto con la construcción del trade')
     ap.add_argument('--columnas', help='@ruta de las columnas ya obtenidas; '
                                        'sin esto no se puede hacer la variante C')
@@ -442,6 +448,13 @@ def main():
                     help='las dos velas donde EL TRADER ancló su fib, p.ej. '
                          '117,120 (mínimo de la primera, máximo de la '
                          'segunda). Sin esto no se afirma premium/discount.')
+    # 🔴 MULETA DE LABORATORIO, no una solución: ver `A2.analiza`. El
+    #    estimador del paso falla en 3 de las 6 capturas reales del dueño y eso
+    #    tapa todo lo demás. Midiendo el paso por fuera (eje de tiempo, o
+    #    contando velas) se puede probar el ANÁLISIS sin esperar a arreglarlo.
+    ap.add_argument('--paso', type=float,
+                    help='px entre vela y vela, medidos a mano, para saltarse '
+                         'al estimador (p.ej. 5.84). Muleta de laboratorio.')
     ap.add_argument('--sin-eje', action='store_true', dest='sin_eje',
                     help='corre aunque no se pueda leer el eje (prueba '
                          'DEGRADADA: sin precios)')
@@ -450,7 +463,8 @@ def main():
     a = ap.parse_args()
 
     sitio = del_sitio()
-    notas = io.open(a.construccion, encoding='utf-8').read().strip()
+    notas = (io.open(a.construccion, encoding='utf-8').read().strip()
+             if a.construccion else '')
     datos = {'instrument': a.instrumento, 'direction': a.direccion,
              'session': a.sesion, 'result': a.resultado, 'htf': a.htf,
              'aligned': a.alineado, 'approach': a.approach,
@@ -471,10 +485,12 @@ def main():
                 raise SystemExit('--rango va como BAJO,ALTO (p.ej. 117,120)')
         hechos_txt, _r, _marcados = bloque_de_hechos(
             a.imagen, a.columnas, prov, modelo,
-            entrada=a.entrada, salida=a.vela_salida, rango=rango)
+            entrada=a.entrada, salida=a.vela_salida, rango=rango,
+            paso=a.paso)
         completo_txt, _r2, _m2 = bloque_de_hechos(
             a.imagen, a.columnas, prov, modelo, completo=True,
-            entrada=a.entrada, salida=a.vela_salida, rango=rango)
+            entrada=a.entrada, salida=a.vela_salida, rango=rango,
+            paso=a.paso)
         tabla_txt = tabla_ohlc(_r)
         # 🔴 SIN EJE, LA PRUEBA NO VALE Y HAY QUE PARAR. Corrió entera el
         #    08-sep con el modelo de Gemini retirado: el bloque salió sin
