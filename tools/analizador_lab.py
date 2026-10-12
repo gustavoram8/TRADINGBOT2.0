@@ -285,7 +285,8 @@ def bloque_de_hechos(imagen, columnas, prov=None, modelo=None, completo=False,
     Se sustituyen por la POSICIÓN de la vela contando desde la izquierda, que
     sí es localizable mirando el gráfico y no depende de la resolución."""
     import analizador2 as A2
-    cajas = A2.lee_columnas(columnas)
+    # Sin archivo de columnas, `A2.analiza` se las pide al modelo y las guarda.
+    cajas = A2.lee_columnas(columnas) if columnas else None
     # 🔴 CON EL MODELO, PARA QUE HAYA PRECIOS. Sin él no hay escala del eje y el
     #    bloque sale diciendo "la vela 44 hizo un BOS" — un número que el modelo
     #    NO puede situar, porque está mirando una imagen y no puede contar 44
@@ -471,7 +472,14 @@ def main():
              'confluences': a.confluencias, 'idioma': a.idioma}
 
     hechos_txt = None
-    if a.columnas:
+    # 🔴 ANTES ERA `if a.columnas:` A SECAS, y sin archivo de columnas el
+    #    programa se saltaba el bloque de hechos EN SILENCIO: las variantes C y
+    #    E salían vacías y aun así imprimía "guardado en …" como si todo
+    #    hubiera ido bien. Le pasó al dueño el 17-oct con su captura nueva.
+    #    Es el mismo fallo que el guard de "sin eje" de veinte líneas más
+    #    abajo, que ya existía — una prueba degradada que no se anuncia es peor
+    #    que una que falla.
+    if a.columnas or a.modelo:
         prov = modelo = None
         if a.modelo:
             prov, _, modelo = a.modelo.partition(':')
@@ -552,6 +560,20 @@ def main():
     #    que este mismo error casi hace cambiar de modelo por nada. Se reutiliza
     #    ese buscador en vez de repetir la trampa: entorno → scalpel/.env →
     #    línea `environment=` del conf de supervisor.
+    # 🔴 SI SE PIDIERON VARIANTES QUE NECESITAN EL BLOQUE Y NO HAY BLOQUE, SE
+    #    PARA. Sin esto el programa corría entero, no imprimía ni una variante
+    #    y terminaba con un "guardado en …" tranquilizador. Le pasó al dueño el
+    #    17-oct: pidió `--solo C,E` sin `--columnas`, no salió NADA, y el
+    #    programa no dijo por qué. Un silencio con cara de éxito es el peor
+    #    resultado posible de una prueba.
+    if a.solo and not hechos_txt:
+        piden = set(x.strip().upper() for x in a.solo.split(','))
+        if piden & set('CDEF'):
+            raise SystemExit(
+                '🔴 Las variantes %s necesitan el bloque de hechos y no se pudo '
+                'construir.\n   Falta --columnas @ruta, o --modelo para que se '
+                'las pida al modelo.' % ','.join(sorted(piden & set('CDEF'))))
+
     import importlib.util
     _sp = importlib.util.spec_from_file_location(
         'ag', os.path.join(RAIZ, 'tools', 'agudeza_visual.py'))
