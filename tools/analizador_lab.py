@@ -301,8 +301,12 @@ def bloque_de_hechos(imagen, columnas, prov=None, modelo=None, completo=False,
     #    más fácil de parecer brillante y no servirle de nada a nadie.
     #    Sin `--entrada` la referencia es la última vela, que es lo correcto
     #    cuando lo que se describe es el gráfico y no una decisión.
-    r = A2.analiza(imagen, prov=prov, modelo=modelo, cajas=cajas, verboso=False,
-                   ref=entrada, rango=rango, paso=paso)
+    # 🔑 VERBOSO CUANDO HAY QUE PEDIR LAS COLUMNAS. Pedírselas al modelo tarda
+    #    MINUTOS por tira, y con `verboso=False` el programa se quedaba mudo
+    #    todo ese rato: el dueño no podía distinguir "está trabajando" de "se
+    #    colgó". Con el archivo ya hecho es instantáneo y no hace falta ruido.
+    r = A2.analiza(imagen, prov=prov, modelo=modelo, cajas=cajas,
+                   verboso=(cajas is None), ref=entrada, rango=rango, paso=paso)
     firmes, marcados = A2.bloque(r['velas'], r['hechos'], r['escala'])
     total = len(r['velas'])
 
