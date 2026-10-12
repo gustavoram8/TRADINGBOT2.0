@@ -297,8 +297,21 @@ def bloque_de_hechos(imagen, columnas, prov=None, modelo=None, completo=False,
     Se sustituyen por la POSICIÓN de la vela contando desde la izquierda, que
     sí es localizable mirando el gráfico y no depende de la resolución."""
     import analizador2 as A2
-    # Sin archivo de columnas, `A2.analiza` se las pide al modelo y las guarda.
-    cajas = A2.lee_columnas(columnas) if columnas else None
+    # 🔑 SIN `--columnas`, SE BUSCAN LAS YA GUARDADAS ANTES DE GASTAR CUOTA.
+    #    `A2.guarda_columnas` las escribe en out/analizador2/columnas_<img>.txt
+    #    tras la primera corrida, así que la segunda vez sobre la misma captura
+    #    es instantánea y gratis. Antes había que acordarse de la ruta y
+    #    escribirla a mano — y el 17-oct se le dio al dueño una ruta
+    #    equivocada, que es justo el error que esto hace imposible.
+    if columnas:
+        cajas = A2.lee_columnas(columnas)
+    else:
+        guardadas = A2._archivo_columnas(imagen)
+        if os.path.exists(guardadas):
+            print('   columnas reutilizadas de %s' % guardadas)
+            cajas = A2.lee_columnas('@' + guardadas)
+        else:
+            cajas = None          # que se las pida al modelo y las guarde
     # 🔴 CON EL MODELO, PARA QUE HAYA PRECIOS. Sin él no hay escala del eje y el
     #    bloque sale diciendo "la vela 44 hizo un BOS" — un número que el modelo
     #    NO puede situar, porque está mirando una imagen y no puede contar 44
