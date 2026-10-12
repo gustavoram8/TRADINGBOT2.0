@@ -480,6 +480,18 @@ def main():
     #    `--vela-salida`; el choque reventaba el programa al arrancar.
     ap.add_argument('--vela-salida', type=int, dest='vela_salida',
                     help='número de vela donde salió el trader')
+    # 🔑 LA FLECHA SE SEÑALA EN PÍXELES, NO EN NÚMERO DE VELA. `flechas.py` da
+    #    la x de cada flecha del gráfico, pero traducirla a número de vela
+    #    exigía reconstruir la rejilla a mano. Con esto se le pasa la x y el
+    #    programa busca a qué vela pertenece — que es lo que ya sabe hacer.
+    #    ⚠️ `flechas.py` encuentra TODAS las manchas con forma de flecha (9 en
+    #    la captura de octubre) y se equivoca al elegir cuál es la entrada, así
+    #    que la x la confirma una persona mirando el gráfico.
+    ap.add_argument('--entrada-x', type=int, dest='entrada_x',
+                    help='x en píxeles de la flecha de ENTRADA; se traduce a '
+                         'número de vela')
+    ap.add_argument('--salida-x', type=int, dest='salida_x',
+                    help='x en píxeles de la flecha de SALIDA')
     # 🔴 LAS DOS ANCLAS DE SU FIB, por número de vela (decisión del dueño,
     #    2026-09-17). SIN ESTO el bloque NO dice premium/discount/OTE: el rango
     #    operativo no es un hecho medible, es la elección del trader, y dos
@@ -513,6 +525,33 @@ def main():
              'htf': a.htf or ND, 'aligned': a.alineado or ND,
              'approach': a.approach or ND,
              'confluences': a.confluencias or ND, 'idioma': a.idioma}
+
+    # Las flechas en píxeles → números de vela, antes de nada más.
+    if a.entrada_x or a.salida_x:
+        import analizador2 as _A2
+        _cols = _A2._archivo_columnas(a.imagen)
+        if not os.path.exists(_cols):
+            raise SystemExit('🔴 --entrada-x necesita las columnas ya '
+                             'obtenidas. Corre una vez sin ella primero.')
+        _r0 = _A2.analiza(a.imagen, cajas=_A2.lee_columnas('@' + _cols),
+                          verboso=False, paso=a.paso)
+
+        def _vela_en(x):
+            for i, c in enumerate(_r0['velas']):
+                if c['x0'] - 2 <= x <= c['x1'] + 2:
+                    return i
+            return None
+        if a.entrada_x:
+            a.entrada = _vela_en(a.entrada_x)
+            print('   flecha de entrada en x=%d → vela %s'
+                  % (a.entrada_x, a.entrada))
+        if a.salida_x:
+            a.vela_salida = _vela_en(a.salida_x)
+            print('   flecha de salida  en x=%d → vela %s'
+                  % (a.salida_x, a.vela_salida))
+        if a.entrada is None:
+            raise SystemExit('🔴 ninguna vela cae en esa x. ¿Seguro que es la '
+                             'flecha de entrada?')
 
     hechos_txt = None
     # 🔴 ANTES ERA `if a.columnas:` A SECAS, y sin archivo de columnas el
