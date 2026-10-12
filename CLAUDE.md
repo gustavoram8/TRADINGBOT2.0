@@ -11,6 +11,31 @@
 
 ---
 
+## ⛔ LAS VELAS DEL DUEÑO NO SON HUECAS. NO SE DEDUCE: SE CONSULTA.
+> 🔴 **Error reincidente desde junio: más de CINCO veces afirmé que sus velas
+> eran huecas, él me corrigió, lo arreglé, y a las pocas semanas —con una
+> captura nueva— volví a caer.** Textual (17-oct): *"eres como un laberinto sin
+> salida… siempre te lo corrijo, me das la razón, lo terminas corrigiendo, todo
+> está bien, te envío una captura nueva o pasan algunos días, y vuelves a caer
+> en el mismo problema"*.
+>
+> **ANTES de escribir una sola frase sobre el color, el relleno o la forma de
+> las velas de una captura: correr `python3 tools/colores_velas.py --imagen X`
+> Y leer `docs/capturas_prueba/velas.md`.** Sin ficha, se le PREGUNTA a él.
+> Prohibido escribir "parecen huecas" / "el interior es el fondo" por mucho que
+> un corte de píxeles lo sugiera: ya lo sugirió cinco veces y las cinco mentía.
+>
+> **Sus velas son RELLENAS** — gris claro las alcistas, negro/gris oscuro las
+> bajistas. **Huecas solo las láminas del banco** (`banco_cadena.py` las sortea
+> a propósito); de ahí salió la confusión: un hallazgo cierto *sobre el banco*
+> se arrastró a sus capturas, donde es falso.
+>
+> ⚠️ Y la trampa que lo hace reincidir: en `nq_5m_oct` **la caja de sesión de
+> NY PM y su vela alcista son el MISMO RGB** `(206,208,213)`. Ninguna regla de
+> color los separa, y meter los "fondos" en una lista **borra sus velas
+> alcistas**. Medido: dos reglas automáticas probadas el 17-oct fallaron en
+> direcciones opuestas. **La máquina mide; la persona decide.**
+
 ## 🔧 Operativa (LEER SIEMPRE)
 - **Rama de trabajo:** `claude/gallant-volta-i7cqmf`
 - **Deploy en VPS** (Contabo `62.171.180.22:5001`, supervisor). Proceso: **`traderacelerator`** (¡una sola 'c', typo viejo!):
