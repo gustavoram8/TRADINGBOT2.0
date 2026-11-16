@@ -1,19 +1,20 @@
 # 99 · INVENTARIO DE ARCHIVOS
 
 > **Generado automáticamente** por `tools/empaqueta_contexto.py` el 2026-11-16.
-> Rama `claude/gallant-volta-i7cqmf` · último commit: 3455402 · 2026-10-12 · --entrada-x: la flecha se senala en pixeles, no en numero de vela
+> Rama `claude/gallant-volta-i7cqmf` · último commit: 0bb13da · 2026-11-16 · CONTEXTO_TRADEABLE: el expediente completo del proyecto, para entregar
 > No editar a mano: volver a correr el programa.
 
-**849 archivos** bajo control de versiones.
+**882 archivos** bajo control de versiones.
 
 ## Reparto por carpeta
 
 | Carpeta | Archivos | Peso | De qué proyecto |
 |---|---|---|---|
 | `scalpel` | 426 | 86.4 MB | Tradeable (el sitio) |
-| `tools` | 191 | 2.2 MB | Tradeable |
+| `tools` | 192 | 2.2 MB | Tradeable |
 | `docs` | 99 | 1.7 MB | Tradeable (+ manual del bot) |
 | `(raíz)` | 45 | 2.6 MB | Mezcla (ver doc 19) |
+| `CONTEXTO_TRADEABLE` | 32 | 455 KB | Este expediente |
 | `dashboard` | 16 | 187 KB | Bot viejo |
 | `app` | 15 | 143 KB | Bot viejo |
 | `deploy` | 8 | 207 KB | Tradeable (+ nginx del bot) |
@@ -197,6 +198,7 @@
 | ⚙️ `dns_cf.py` | 170 | Crea o actualiza registros DNS en Cloudflare desde la terminal. |
 | `edita_reel.py` | 351 | Monta un reel de verdad a partir de la grabación del sitio. |
 | 🔬 `eje_precio.py` | 307 | De píxel a PRECIO: leer el eje y ajustar la escala, tolerando lecturas malas. |
+| `empaqueta_contexto.py` | 386 | Regenera el inventario de CONTEXTO_TRADEABLE y arma el ZIP para entregar. |
 | `escena_pc.py` | 224 | La botarga EN SU PC, animada — los planos de personaje del reel 2. |
 | `extract_quiz_key.js` | 102 | Quiz answer-key extractor. |
 | 🔬 `flechas.py` | 330 | LAS FLECHAS DE ENTRADA Y SALIDA que el trader dibuja en su captura. |
@@ -469,7 +471,7 @@ Solo nombre y peso (qué es cada uno: `19_BOT_VIEJO_Y_RAIZ_DEL_REPO.md`).
 | `.gitignore` | 769 B |
 | `CHATGPT_TC_FULL_REVIEW.md` | 29 KB |
 | `CHATGPT_TC_REVIEW_ROUND2.md` | 8 KB |
-| `CLAUDE.md` | 102 KB |
+| `CLAUDE.md` | 103 KB |
 | `CLAUDE_ARCHIVE.md` | 359 KB |
 | `COPYRIGHT_REGISTRATION_GUIDE.md` | 6 KB |
 | `ICT - GATILLOS DE ENTRADA (EJEMPLOS) (1).pdf` | 1.3 MB |
