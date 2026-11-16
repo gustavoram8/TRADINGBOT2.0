@@ -1031,7 +1031,7 @@
       (HTTPS gratis via Let's Encrypt) para que el sitio corra en `https://traderaccelerator.com`
       en vez de `http://62.171.180.22:5001`.
 - [ ] **Migrar email de envío a cuenta dedicada** — actualmente los emails de verificación
-      OTP y recuperación de contraseña salen desde el Gmail personal `mauroramirezmij@gmail.com`.
+      OTP y recuperación de contraseña salen desde el Gmail personal del dueño (dirección omitida a propósito).
       Pasos una vez comprado el dominio:
       1. Crear Gmail dedicado (ej. `noreply.traderaccelerator@gmail.com` o configurar
          `hola@traderaccelerator.com` con Google Workspace ~$6/mes).

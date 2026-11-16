@@ -9,6 +9,17 @@
 > código previos, el cambio de nginx, verificación y plan de reversa). **Leerlo cuando el usuario
 > diga que quiere abrir el sitio, o al tocar nginx / pagos / correo / dominio.** Tampoco se carga solo.
 
+> 📁 **`CONTEXTO_TRADEABLE/`** = el EXPEDIENTE COMPLETO del proyecto (foto del 2026-11-15), hecho
+> para entregárselo a otra IA o desarrollador: qué es, historia, arquitectura, deploy, base de
+> datos, rutas, pagos, legal, seguridad, pruebas, pendientes, decisiones del dueño, y **toda la
+> investigación del Analizador 2.0** (carpeta `10_…/`). Empezar por `00_LEEME_PRIMERO.md`.
+> Su `15_PENDIENTES.md` lista **qué secciones de ESTE archivo quedaron viejas** (nginx "en
+> construcción", "GitHub Models hoy", "no auto-renew", "retomar PayPal"…): ante la duda, vale el
+> expediente. Regenerar inventario + ZIP: `python3 tools/empaqueta_contexto.py`.
+>
+> 🔴 **NUNCA push ni merge a `main`:** `.github/workflows/deploy.yml` se dispara con cualquier push
+> a `main` y REDESPLIEGA EL BOT VIEJO en el VPS (reactiva su nginx y sus procesos).
+
 ---
 
 ## ⛔ LAS VELAS DEL DUEÑO NO SON HUECAS. NO SE DEDUCE: SE CONSULTA.
@@ -31,7 +42,7 @@
 > se arrastró a sus capturas, donde es falso.
 >
 > ⚠️ Y la trampa que lo hace reincidir: en `nq_5m_oct` **la caja de sesión de
-> NY PM y su vela alcista son el MISMO RGB** `(206,208,213)`. Ninguna regla de
+> ASIA y su vela alcista son el MISMO RGB** `(206,208,213)`. Ninguna regla de
 > color los separa, y meter los "fondos" en una lista **borra sus velas
 > alcistas**. Medido: dos reglas automáticas probadas el 17-oct fallaron en
 > direcciones opuestas. **La máquina mide; la persona decide.**

@@ -1,0 +1,105 @@
+   rejilla: el modelo devolvió 124 columnas, 11 recuperadas
+
+panel x 0-1040 · paso 6.69 px · 135 velas medidas
+🔴 sin escala fiable: el bloque sale SIN precios (correcto).
+
+═══ HECHOS VERIFICADOS (20) ═══
+   familias que superan el 90% de precisión medida: BOS, acumulación, rango operativo (premium/discount/OTE)
+   · en torno a las velas 0-4 (extremos aproximados) · acumulación: unas 5 velas dentro de una franja (se pisan entre sí: el tramo mide el 34% de lo que suman sus velas)
+   · en torno a las velas 8-14 (extremos aproximados) · acumulación: unas 7 velas dentro de una franja (se pisan entre sí: el tramo mide el 28% de lo que suman sus velas)
+   · en torno a las velas 15-22 (extremos aproximados) · acumulación: unas 8 velas dentro de una franja (se pisan entre sí: el tramo mide el 24% de lo que suman sus velas)
+   · vela 23 (x=155) · BOS alcista: el CIERRE atravesó el swing de la vela 11
+   · en torno a las velas 35-55 (extremos aproximados) · acumulación: unas 21 velas dentro de una franja (se pisan entre sí: el tramo mide el 11% de lo que suman sus velas)
+   · vela 55 (x=369) · BOS bajista: el CIERRE atravesó el swing de la vela 46  — y este BOS es un MSS/CHoCH: va en CONTRA de la ruptura anterior, o sea que ahí la estructura cambia de manos  [MSS medido: acierta 69% de las veces]
+   · vela 56 (x=376) · BOS bajista: el CIERRE atravesó el swing de la vela 3
+   · vela 64 (x=429) · BOS bajista: el CIERRE atravesó el swing de la vela 59
+   · en torno a las velas 71-92 (extremos aproximados) · acumulación: unas 22 velas dentro de una franja (se pisan entre sí: el tramo mide el 8% de lo que suman sus velas)
+   · vela 80 (x=536) · BOS bajista: el CIERRE atravesó el swing de la vela 76
+   · vela 92 (x=616) · BOS bajista: el CIERRE atravesó el swing de la vela 87
+   · vela 93 (x=623) · BOS alcista: el CIERRE atravesó el swing de la vela 89  — y este BOS es un MSS/CHoCH: va en CONTRA de la ruptura anterior, o sea que ahí la estructura cambia de manos  [MSS medido: acierta 69% de las veces]
+   · en torno a las velas 97-104 (extremos aproximados) · acumulación: unas 8 velas dentro de una franja (se pisan entre sí: el tramo mide el 25% de lo que suman sus velas)
+   · vela 98 (x=657) · BOS bajista: el CIERRE atravesó el swing de la vela 82  — y este BOS es un MSS/CHoCH: va en CONTRA de la ruptura anterior, o sea que ahí la estructura cambia de manos  [MSS medido: acierta 69% de las veces]
+   · en torno a las velas 105-110 (extremos aproximados) · acumulación: unas 6 velas dentro de una franja (se pisan entre sí: el tramo mide el 26% de lo que suman sus velas)
+   · vela 113 (x=757) · BOS alcista: el CIERRE atravesó el swing de la vela 95  — y este BOS es un MSS/CHoCH: va en CONTRA de la ruptura anterior, o sea que ahí la estructura cambia de manos  [MSS medido: acierta 69% de las veces]
+   · en torno a las velas 115-119 (extremos aproximados) · acumulación: unas 5 velas dentro de una franja (se pisan entre sí: el tramo mide el 34% de lo que suman sus velas)
+   · vela 120 (x=804) · BOS alcista: el CIERRE atravesó el swing de la vela 60
+   · en torno a las velas 122-130 (extremos aproximados) · acumulación: unas 9 velas dentro de una franja (se pisan entre sí: el tramo mide el 25% de lo que suman sus velas)
+   · vela 131 (x=877) · BOS bajista: el CIERRE atravesó el swing de la vela 125  — y este BOS es un MSS/CHoCH: va en CONTRA de la ruptura anterior, o sea que ahí la estructura cambia de manos  [MSS medido: acierta 69% de las veces]
+
+─── NO se afirman todavía (69) ───
+   barrida de liquidez: 86.8% de precisión medida
+   FVG: 81.4% de precisión medida
+   order block: 73.6% de precisión medida
+   liquidez (BSL/SSL, EQH/EQL, LRL/HRL): 74.4% de precisión medida
+   DOL — lo que queda sin tomar: 80.6% de precisión medida
+   estructura de mercado (HH/HL/LH/LL): 75.7% de precisión medida
+   pierna de manipulación: 74.0% de precisión medida
+   · vela 2 (x=14) · order block alcista  [medido: acierta 74% de las veces]
+   · vela 11 (x=75) · FVG alcista — quedó INVALIDADO: un cierre lo atravesó en la vela 12  [medido: acierta 74% de las veces]
+   · vela 11 (x=75) · order block bajista  [medido: acierta 74% de las veces]
+   · vela 13 (x=88) · FVG bajista — quedó INVALIDADO: un cierre lo atravesó en la vela 23  [medido: acierta 74% de las veces]
+   · vela 16 (x=108) · FVG bajista — quedó INVALIDADO: un cierre lo atravesó en la vela 22  [medido: acierta 74% de las veces]
+   · vela 20 (x=135) · order block alcista  [medido: acierta 74% de las veces]
+   · vela 24 (x=162) · FVG alcista — quedó INVALIDADO: un cierre lo atravesó en la vela 29  [medido: acierta 74% de las veces]
+   · vela 24 (x=162) · order block bajista  [medido: acierta 74% de las veces]
+   · vela 24 (x=162) · BSL máximo de giro — SIN TOMAR todavía · HRL medido en la última vela: hay 5 zona(s) contraria(s) en el camino (OB de la vela 24, FVG de la vela 26, OB de la vela 27)  [medido: acierta 74% de las veces]
+   · vela 25 (x=168) · barrida alto: la mecha pasó el swing de la vela 11 y el cuerpo cerró DENTRO — no es ruptura  [medido: acierta 87% de las veces]
+   · vela 25 (x=168) · pierna de manipulación bajista: barrió el swing de la vela 11 y el precio se dio la vuelta (FVG en la vela 26)  [medido: acierta 74% de las veces]
+   · vela 26 (x=175) · FVG bajista — el precio entró en él pero no llegó al 50%, en la vela 27  [medido: acierta 74% de las veces]
+   · vela 27 (x=182) · order block bajista  [medido: acierta 74% de las veces]
+   · vela 29 (x=195) · FVG bajista — NO ha vuelto a tocarse  [medido: acierta 74% de las veces]
+   · vela 30 (x=202) · FVG bajista — se rellenó entero en la vela 31  [medido: acierta 74% de las veces]
+   · vela 32 (x=215) · order block bajista  [medido: acierta 74% de las veces]
+   · vela 35 (x=235) · FVG bajista — quedó INVALIDADO: un cierre lo atravesó en la vela 36  [medido: acierta 74% de las veces]
+   · vela 39 (x=262) · barrida bajo: la mecha pasó el swing de la vela 19 y el cuerpo cerró DENTRO — no es ruptura  [medido: acierta 87% de las veces]
+   · vela 39 (x=262) · order block alcista  [medido: acierta 74% de las veces]
+   · vela 39 (x=262) · pierna de manipulación alcista: barrió el swing de la vela 19 y el precio se dio la vuelta (FVG en la vela 41)  [medido: acierta 74% de las veces]
+   · vela 41 (x=275) · FVG alcista — quedó INVALIDADO: un cierre lo atravesó en la vela 45  [medido: acierta 74% de las veces]
+   · vela 46 (x=309) · SSL REQL (mínimos relativamente iguales) (3 toques: velas 19, 39, 46) — ya la tomaron en la vela 55  [medido: acierta 74% de las veces]
+   · vela 49 (x=329) · BSL REQH (máximos relativamente iguales) (2 toques: velas 43, 49) — SIN TOMAR todavía · HRL medido en la última vela: hay 1 zona(s) contraria(s) en el camino (OB de la vela 128)  [medido: acierta 74% de las veces]
+   · vela 53 (x=356) · order block bajista  [medido: acierta 74% de las veces]
+   · vela 56 (x=376) · FVG bajista — quedó INVALIDADO: un cierre lo atravesó en la vela 120  [medido: acierta 74% de las veces]
+   · vela 58 (x=389) · barrida bajo: la mecha pasó el swing de la vela 46 y el cuerpo cerró DENTRO — no es ruptura  [medido: acierta 87% de las veces]
+   · vela 58 (x=389) · order block bajista  [medido: acierta 74% de las veces]
+   · vela 58 (x=389) · pierna de manipulación alcista: barrió el swing de la vela 3 y el precio se dio la vuelta (FVG en la vela 61)  [medido: acierta 74% de las veces]
+   · vela 58 (x=389) · pierna de manipulación alcista: barrió el swing de la vela 39 y el precio se dio la vuelta (FVG en la vela 61)  [medido: acierta 74% de las veces]
+   · vela 58 (x=389) · pierna de manipulación alcista: barrió el swing de la vela 46 y el precio se dio la vuelta (FVG en la vela 61)  [medido: acierta 74% de las veces]
+   · vela 59 (x=396) · FVG bajista — quedó INVALIDADO: un cierre lo atravesó en la vela 60  [medido: acierta 74% de las veces]
+   · vela 60 (x=402) · order block alcista  [medido: acierta 74% de las veces]
+   · vela 61 (x=409) · FVG alcista — quedó INVALIDADO: un cierre lo atravesó en la vela 64  [medido: acierta 74% de las veces]
+   · vela 62 (x=416) · order block bajista  [medido: acierta 74% de las veces]
+   · vela 65 (x=436) · barrida bajo: la mecha pasó el swing de la vela 59 y el cuerpo cerró DENTRO — no es ruptura  [medido: acierta 87% de las veces]
+   · vela 65 (x=436) · FVG bajista — quedó INVALIDADO: un cierre lo atravesó en la vela 120  [medido: acierta 74% de las veces]
+   · vela 65 (x=436) · order block bajista  [medido: acierta 74% de las veces]
+   · vela 67 (x=449) · FVG bajista — quedó INVALIDADO: un cierre lo atravesó en la vela 120  [medido: acierta 74% de las veces]
+   · vela 69 (x=463) · FVG bajista — quedó INVALIDADO: un cierre lo atravesó en la vela 115  [medido: acierta 74% de las veces]
+   · vela 70 (x=469) · FVG bajista — quedó INVALIDADO: un cierre lo atravesó en la vela 115  [medido: acierta 74% de las veces]
+   · vela 71 (x=476) · FVG bajista — quedó INVALIDADO: un cierre lo atravesó en la vela 115  [medido: acierta 74% de las veces]
+   · vela 80 (x=536) · order block alcista  [medido: acierta 74% de las veces]
+   · vela 81 (x=543) · barrida bajo: la mecha pasó el swing de la vela 76 y el cuerpo cerró DENTRO — no es ruptura  [medido: acierta 87% de las veces]
+   · vela 82 (x=550) · SSL REQL (mínimos relativamente iguales) (2 toques: velas 72, 82) — ya la tomaron en la vela 96  [medido: acierta 74% de las veces]
+   · vela 83 (x=556) · pierna de manipulación alcista: barrió el swing de la vela 72 y el precio se dio la vuelta (FVG en la vela 86)  [medido: acierta 74% de las veces]
+   · vela 83 (x=556) · pierna de manipulación alcista: barrió el swing de la vela 76 y el precio se dio la vuelta (FVG en la vela 86)  [medido: acierta 74% de las veces]
+   · vela 86 (x=576) · FVG alcista — quedó INVALIDADO: un cierre lo atravesó en la vela 87  [medido: acierta 74% de las veces]
+   · vela 87 (x=583) · SSL REQL (mínimos relativamente iguales) (2 toques: velas 76, 87) — ya la tomaron en la vela 92  [medido: acierta 74% de las veces]
+   · vela 89 (x=596) · BSL EQH (máximos iguales) (2 toques: velas 77, 89) — ya la tomaron en la vela 93  [medido: acierta 74% de las veces]
+   · vela 93 (x=623) · barrida bajo: la mecha pasó el swing de la vela 87 y el cuerpo cerró DENTRO — no es ruptura  [medido: acierta 87% de las veces]
+   · vela 95 (x=637) · barrida alto: la mecha pasó el swing de la vela 89 y el cuerpo cerró DENTRO — no es ruptura  [medido: acierta 87% de las veces]
+   · vela 95 (x=637) · pierna de manipulación bajista: barrió el swing de la vela 77 y el precio se dio la vuelta (FVG en la vela 98)  [medido: acierta 74% de las veces]
+   · vela 95 (x=637) · pierna de manipulación bajista: barrió el swing de la vela 89 y el precio se dio la vuelta (FVG en la vela 98)  [medido: acierta 74% de las veces]
+   · vela 96 (x=643) · barrida bajo: la mecha pasó el swing de la vela 82 y el cuerpo cerró DENTRO — no es ruptura  [medido: acierta 87% de las veces]
+   · vela 97 (x=650) · order block bajista  [medido: acierta 74% de las veces]
+   · vela 98 (x=657) · FVG bajista — quedó INVALIDADO: un cierre lo atravesó en la vela 102  [medido: acierta 74% de las veces]
+   · vela 99 (x=663) · SSL mínimo de giro — SIN TOMAR todavía · HRL medido en la última vela: hay 1 zona(s) contraria(s) en el camino (OB de la vela 109)  [medido: acierta 74% de las veces]
+   · vela 109 (x=730) · order block alcista  [medido: acierta 74% de las veces]
+   · vela 115 (x=770) · FVG alcista — quedó INVALIDADO: un cierre lo atravesó en la vela 131  [medido: acierta 74% de las veces]
+   · vela 116 (x=777) · FVG alcista — quedó INVALIDADO: un cierre lo atravesó en la vela 134  [medido: acierta 74% de las veces]
+   · vela 120 (x=804) · FVG alcista — quedó INVALIDADO: un cierre lo atravesó en la vela 123  [medido: acierta 74% de las veces]
+   · vela 121 (x=810) · barrida alto: la mecha pasó el swing de la vela 60 y el cuerpo cerró DENTRO — no es ruptura  [medido: acierta 87% de las veces]
+   · vela 121 (x=810) · FVG alcista — quedó INVALIDADO: un cierre lo atravesó en la vela 124  [medido: acierta 74% de las veces]
+   · vela 121 (x=810) · BSL EQH (máximos iguales) (2 toques: velas 54, 121) — SIN TOMAR todavía · HRL medido en la última vela: hay 1 zona(s) contraria(s) en el camino (OB de la vela 128)  [medido: acierta 74% de las veces]
+   · vela 128 (x=857) · order block bajista  [medido: acierta 74% de las veces]
+   · vela 131 (x=877) · barrida alto: la mecha pasó el swing de la vela 95 y el cuerpo cerró DENTRO — no es ruptura  [medido: acierta 87% de las veces]
+   · vela 131 (x=877) · FVG bajista — se rellenó entero en la vela 132  [medido: acierta 74% de las veces]
+   · DOL en la vela 134 (la referencia) · liquidez que sigue SIN TOMAR: ARRIBA 3 nivel(es), el más cercano a 321 px de distancia y con el camino ESTORBADO por 1 zona(s) contraria(s) EN ESE MOMENTO (HRL); ABAJO 1 nivel(es), el más cercano a 108 px de distancia y con el camino ESTORBADO por 1 zona(s) contraria(s) EN ESE MOMENTO (HRL). Queda más cerca la de abajo.  [medido: acierta 81% de las veces]
+   · ESTRUCTURA DE MERCADO en la vela 134 (la referencia): ALCISTA — máximos Y mínimos ascendentes. Sale de los DOS últimos giros: el último máximo fue HH en la vela 121 y el último mínimo fue HL en la vela 125  [medido: acierta 76% de las veces]

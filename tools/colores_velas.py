@@ -22,7 +22,7 @@ dos RELLENAS, con un borde negro de 1 px. Lo que yo leía como "interior hueco"
 era el relleno gris claro de una vela alcista.
 
 🔴 Y AQUÍ ESTÁ LA TRAMPA DE VERDAD, que explica por qué esto reincide: en esa
-captura **la caja de sesión de NY PM está pintada en EXACTAMENTE el mismo RGB
+captura **la caja de sesión de ASIA está pintada en EXACTAMENTE el mismo RGB
 que su vela alcista** — `(206,208,213)` las dos. No se parecen: son el mismo
 número. Así que *ninguna regla basada en el color puede separarlas*, y cualquier
 intento de decidir "esto es fondo" mirando la paleta global va a borrarle las
@@ -124,7 +124,7 @@ def veredicto(f):
     La razón de fondo: con las velas a ~6 px de paso, **el fondo que queda
     entre dos velas es una tira de 3 px**, exactamente igual de ancha que el
     cuerpo de una vela. La geometría no los distingue, y el color tampoco: en
-    `nq_5m_oct` la caja de NY PM y la vela alcista son el MISMO `(206,208,213)`.
+    `nq_5m_oct` la caja de ASIA y la vela alcista son el MISMO `(206,208,213)`.
 
     🔑 Así que el veredicto lo pone el DUEÑO, una vez por captura, en
     `docs/capturas_prueba/velas.md`. La máquina mide; la persona decide. Es más

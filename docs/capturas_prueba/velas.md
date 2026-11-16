@@ -36,7 +36,7 @@ Las dos causas, medidas:
 1. Con las velas a ~6 px de paso, **el fondo que queda entre dos velas es una
    tira de 3 px** — exactamente igual de ancha que el cuerpo de una vela. La
    geometría no los separa.
-2. 🔴 En `nq_5m_oct` **la caja de sesión de NY PM y la vela alcista son el MISMO
+2. 🔴 En `nq_5m_oct` **la caja de sesión de ASIA y la vela alcista son el MISMO
    RGB**, `(206,208,213)`. No parecidos: idénticos. Ninguna regla de color puede
    separarlos, y cualquier intento de meter los "fondos" en una lista borra las
    velas alcistas enteras.
@@ -50,7 +50,9 @@ Las dos causas, medidas:
   bordes negros de 1 px.
 - **Bajistas: NEGRO / GRIS OSCURO.** Medido: `(74,74,74)` y `(0,0,0)`.
 - **RELLENAS las dos. NO son huecas.**
-- ⚠️ `(206,208,213)` es **además** el color de la caja de sesión de NY PM.
+- ⚠️ `(206,208,213)` es **además** el color de la caja de sesión de **ASIA** (x≈306-598).
+  (Las primeras notas decían "NY PM"; lo corrigió el dueño: en esa captura no
+  hay caja de NY PM.)
 
 ### `mnq_long_ote.png` · `mnq_5m.png` · `mnq_5m_zoom.png` · `mes_*.png`
 - **RELLENAS. NO son huecas.** Dicho por el dueño varias veces desde septiembre.
